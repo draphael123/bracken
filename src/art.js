@@ -42,8 +42,24 @@ export function bakeGrassTop(seed, eL, eR) {
 // Side edges on inner dirt (air beside but not above) get a darker fringe.
 export function bakeDirtEdge(seed, eL, eR) {
   const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd);
-  const side = (x0, dir) => { for (let y = 0; y < T; y++) if (rnd() < 0.6) px(g, x0, y, C.dirtD); if (rnd() < 0.3) px(g, x0 + dir, (rnd() * T) | 0, C.grassD); };
+  // cliff face: a darker stony strip with moss patches clinging to it
+  const side = (x0, dir) => {
+    for (let y = 0; y < T; y++) { px(g, x0, y, rnd() < 0.7 ? C.stoneD : C.dirtD); if (rnd() < 0.4) px(g, x0 + dir, y, C.dirtD); }
+    for (let i = 0; i < 3; i++) { const y = (rnd() * 12) | 0, h = 2 + ((rnd() * 4) | 0); for (let k = 0; k < h; k++) { px(g, x0, y + k, k & 1 ? C.grassD : C.grass); if (rnd() < 0.5) px(g, x0 + dir, y + k, C.grassD); } }
+    if (rnd() < 0.5) { const y = 4 + ((rnd() * 8) | 0); px(g, x0 + dir * 2, y, C.stone); px(g, x0 + dir * 3, y, C.stoneL); }
+  };
   if (eL) side(0, 1); if (eR) side(T - 1, -1);
+  return c;
+}
+// Dirt just under the grass line: a root or two curling down.
+export function bakeDirtRoots(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd);
+  const n = 1 + ((rnd() * 2) | 0);
+  for (let i = 0; i < n; i++) {
+    let x = 2 + ((rnd() * 12) | 0), y = 0; const dir = rnd() < 0.5 ? -1 : 1;
+    for (let k = 0; k < 10 + ((rnd() * 5) | 0) && y < T; k++) { px(g, x, y, C.woodD); if (k < 4) px(g, x + 1, y, C.wood); if (rnd() < 0.4) x += dir; if (x < 0 || x > 15) break; y++; }
+  }
+  if (rnd() < 0.4) { const x = (rnd() * 12) | 0, y = 8 + ((rnd() * 6) | 0); rect(g, x, y, 3, 2, C.stone); px(g, x, y, C.stoneL); }
   return c;
 }
 
@@ -183,23 +199,62 @@ export function bakeMid(w, h, seed) {
   rect(g, 0, h - 8, w, 8, colD);
   return c;
 }
-// Near trunks: tall dark trees with hanging leaf clusters. Drawn behind tiles.
+// Near trees: tall dark trunks with broadleaf canopies in the band the camera sees (layer y 90..190).
 export function bakeNear(w, h, seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
-  const trunk = '#2b3f2a', trunkL = '#3a5438', leaf = '#2f5e3a', leafD = '#264a2f', leafL = '#3f7a48';
+  const trunk = '#2b3f2a', trunkL = '#3a5438', trunkD = '#1f2f20';
+  const L1 = '#264a2f', L2 = '#2f5e3a', L3 = '#3f7a48', L4 = '#57964f';
   const trees = [];
-  for (let i = 0; i < w / 70; i++) trees.push({ x: rnd() * w, wd: 8 + rnd() * 8, s: rnd() });
+  for (let i = 0; i < w / 80; i++) trees.push({ x: rnd() * w, wd: 9 + rnd() * 8, s: rnd() });
+  const blob = (x, y, rx, ry, col, dcol) => ellipse(g, x, y, rx, ry, col, dcol);
   for (const t of trees) for (const dx of [-w, 0, w]) {
     const x = Math.round(t.x + dx), wd = Math.round(t.wd);
-    rect(g, x, 0, wd, h, trunk); rect(g, x, 0, 2, h, trunkL); rect(g, x + wd - 2, 0, 2, h, '#1f2f20');
-    // bark: short vertical streaks and the odd knot
-    for (let k = 0; k < h / 5; k++) { const bx = x + 2 + ((rnd() * (wd - 4)) | 0), by = (rnd() * h) | 0; rect(g, bx, by, 1, 3 + ((rnd() * 5) | 0), rnd() < 0.5 ? trunkL : '#1f2f20'); }
-    for (let k = 0; k < 3; k++) { const ky = 60 + rnd() * (h - 80); ellipse(g, x + wd / 2, ky, 2.5, 3, '#1f2f20'); px(g, x + (wd / 2) | 0, ky | 0, trunkL); }
-    // branches with leaf clusters in the band the camera actually sees (layer y 110..200)
-    for (let y = 120; y < h - 60; y += 26) { const right = (t.s + y) % 2 < 1; const bx = right ? x + wd + 14 : x - 14; line(g, right ? x + wd - 1 : x + 1, y, bx, y - 10, trunk, 3); ellipse(g, bx, y - 12, 12 + rnd() * 6, 5 + rnd() * 3, right ? leaf : leafD); ellipse(g, bx - 3, y - 15, 6, 3, leafL, leaf); }
-    for (let k = 0; k < 3; k++) { const lx = x + wd / 2 + (rnd() - 0.5) * 40, ly = 104 + rnd() * 30; ellipse(g, lx, ly, 16 + rnd() * 8, 7 + rnd() * 4, k & 1 ? leaf : leafD); if (k === 2) ellipse(g, lx - 4, ly - 3, 9, 3, leafL, leaf); }
-    rect(g, x - 3, h - 4, wd + 6, 4, trunk);
+    rect(g, x, 0, wd, h, trunk); rect(g, x, 0, 2, h, trunkL); rect(g, x + wd - 2, 0, 2, h, trunkD);
+    for (let k = 0; k < h / 5; k++) { const bx = x + 2 + ((rnd() * (wd - 4)) | 0), by = (rnd() * h) | 0; rect(g, bx, by, 1, 3 + ((rnd() * 5) | 0), rnd() < 0.5 ? trunkL : trunkD); }
+    for (let k = 0; k < 3; k++) { const ky = 190 + rnd() * (h - 200); ellipse(g, x + wd / 2, ky, 2.5, 3, trunkD); px(g, (x + wd / 2) | 0, ky | 0, trunkL); }
+    // limbs
+    for (let k = 0; k < 3; k++) { const y = 118 + k * 24 + rnd() * 8; const right = (k + (t.s < 0.5 ? 1 : 0)) & 1; const bx = right ? x + wd + 18 + rnd() * 8 : x - 18 - rnd() * 8; line(g, right ? x + wd - 1 : x + 1, y, bx, y - 14, trunk, 3); ellipse(g, bx, y - 16, 10 + rnd() * 5, 4 + rnd() * 2, L2, L1); ellipse(g, bx - 3, y - 19, 5, 2, L3, L2); }
+    // broadleaf canopy: layered blobs, dark base then lighter tops
+    const cx = x + wd / 2, cy = 112 + rnd() * 14, R = 34 + rnd() * 14;
+    for (let k = 0; k < 6; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.6; blob(cx + Math.cos(a) * r * 1.6, cy + Math.sin(a) * r * 0.7, R * 0.55 + rnd() * 8, R * 0.32 + rnd() * 4, L1); }
+    for (let k = 0; k < 6; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.5; blob(cx + Math.cos(a) * r * 1.5, cy - 4 + Math.sin(a) * r * 0.6, R * 0.45 + rnd() * 6, R * 0.26 + rnd() * 3, L2, L1); }
+    for (let k = 0; k < 4; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.4; blob(cx + Math.cos(a) * r * 1.4, cy - 10 + Math.sin(a) * r * 0.5, R * 0.32 + rnd() * 5, R * 0.18 + rnd() * 3, L3, L2); }
+    for (let k = 0; k < 3; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.3; blob(cx + Math.cos(a) * r * 1.4 - 6, cy - 16 + Math.sin(a) * r * 0.4, R * 0.2 + rnd() * 4, R * 0.1 + 2, L4, L3); }
+    // hanging leaf fringe under the canopy
+    for (let k = 0; k < 14; k++) { const lx = cx + (rnd() - 0.5) * R * 2.4, ly = cy + R * 0.35 + rnd() * 10; rect(g, lx | 0, ly | 0, 2, 3 + ((rnd() * 4) | 0), k & 1 ? L1 : L2); }
   }
+  return c;
+}
+// Foreground: fern fronds and grass along the bottom, a few hanging leaf clusters at the top. Drawn over everything.
+export function bakeFG(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const D = '#173523', M = '#1f4a2c', Lt = '#2b6236';
+  for (let i = 0; i < w / 14; i++) {
+    const x = rnd() * w, base = h + 2, n = 4 + ((rnd() * 4) | 0), tall = 14 + rnd() * 16;
+    for (let f = 0; f < n; f++) {
+      const a = -Math.PI / 2 + (f - n / 2) * 0.38 + (rnd() - 0.5) * 0.2, len = tall * (0.6 + rnd() * 0.5);
+      const ex = x + Math.cos(a) * len, ey = base + Math.sin(a) * len;
+      line(g, x, base, ex, ey, f & 1 ? D : M, 2);
+      for (let k = 2; k < len; k += 3) { const px_ = x + Math.cos(a) * k, py_ = base + Math.sin(a) * k; const s = 2 + (len - k) * 0.12; line(g, px_, py_, px_ + Math.cos(a + 1.2) * s, py_ + Math.sin(a + 1.2) * s, f & 1 ? M : Lt, 1); line(g, px_, py_, px_ + Math.cos(a - 1.2) * s, py_ + Math.sin(a - 1.2) * s, f & 1 ? M : Lt, 1); }
+    }
+  }
+  for (let i = 0; i < w / 6; i++) { const x = (rnd() * w) | 0; const hh = 3 + ((rnd() * 6) | 0); line(g, x, h, x + (rnd() < 0.5 ? -1 : 1), h - hh, rnd() < 0.5 ? D : M, 1); }
+  for (let i = 0; i < w / 90; i++) { const x = rnd() * w; for (let k = 0; k < 5; k++) { const lx = x + (rnd() - 0.5) * 40, ly = -6 + rnd() * 14; ellipse(g, lx, ly, 9 + rnd() * 6, 4 + rnd() * 3, k & 1 ? D : M); } line(g, x - 30, -4, x + 30, 2, D, 3); }
+  return c;
+}
+export function bakeSkyDusk(h) {
+  const [c, g] = canvas(1, h);
+  const top = [62, 40, 96], mid = [170, 84, 92], bot = [255, 160, 90];
+  for (let y = 0; y < h; y++) {
+    const t = y / (h - 1); const q = Math.round(t * 8) / 8;
+    const a = q < 0.55 ? top : mid, b = q < 0.55 ? mid : bot, k = q < 0.55 ? q / 0.55 : (q - 0.55) / 0.45;
+    px(g, 0, y, 'rgb(' + ((a[0] + (b[0] - a[0]) * k) | 0) + ',' + ((a[1] + (b[1] - a[1]) * k) | 0) + ',' + ((a[2] + (b[2] - a[2]) * k) | 0) + ')');
+  }
+  return c;
+}
+export function bakeSun() {
+  const [c, g] = canvas(40, 40);
+  circle(g, 20, 20, 19, 'rgba(255,200,120,0.25)'); circle(g, 20, 20, 14, 'rgba(255,210,140,0.5)'); circle(g, 20, 20, 10, '#ffe9b0', '#ffd98a');
   return c;
 }
 // Sun-shaft overlay: soft diagonal light bands.
