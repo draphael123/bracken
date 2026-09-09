@@ -40,7 +40,7 @@ function saveProgress() { try { localStorage.setItem('bracken.progress', JSON.st
 const RUN = 100, GRAV = 1000, JUMPV = -320, POGO = -330;
 const SWORD_DMG = 10, PLUNGE_DMG = 20;
 const DMG = { sprig: 20, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15 };
-const EHP = { sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 280, archer: 10, frog: 340, hopper: 10 };
+const EHP = { sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 340, hopper: 10 };
 const ST = { swing: 12, plunge: 15, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
 // ---------- bake ----------
@@ -77,7 +77,7 @@ function bakeAll(pal = {}) {
     dirt: [0, 1, 2, 3].map(i => ART.bakeDirt(10 + i)), top: {}, edge: {},
     log: [0, 1, 2].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true),
     thorns: [0, 1, 2, 3].map(i => ART.bakeThorns(70 + i)), crate: ART.bakeCrate(), roots: [0, 1, 2].map(i => ART.bakeDirtRoots(80 + i)),
-    reeds: [0, 1, 2].map(i => ART.bakeReeds(90 + i)),
+    reeds: [0, 1, 2].map(i => ART.bakeReeds(90 + i)), silt: [0, 1, 2].map(i => ART.bakeSilt(85 + i)), vine: [0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i)),
   };
   for (const eL of [0, 1]) for (const eR of [0, 1]) {
     TILE.top[eL + '' + eR] = [0, 1, 2, 3].map(i => ART.bakeGrassTop(100 + i + eL * 7 + eR * 13, eL, eR));
@@ -107,6 +107,8 @@ function resolveTiles() {
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null;
+    const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
+    if (underPool) { tileSpr[y * LW + x] = TILE.silt[(rnd() * 3) | 0]; continue; }
     if (t === T.SOLID) {
       const up = tileAt(x, y - 1), l = tileAt(x - 1, y), r = tileAt(x + 1, y);
       const eL = l === T.AIR || l === T.ONEWAY || l === T.REED || l === T.SPIKE ? 1 : 0, eR = r === T.AIR || r === T.ONEWAY || r === T.REED || r === T.SPIKE ? 1 : 0;
@@ -662,7 +664,7 @@ function updatePlayer(dt) {
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging) {
-    if (!P.ground && keys.down) { P.abuf = 0; if (spend(ST.plunge)) { P.plunge = true; P.vy = Math.max(P.vy, 60); P.atk = -1; P.hitSet.clear(); SFX.slash(); } }
+    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(ST.plunge)) { P.plunge = true; P.vy = Math.max(P.vy, 60); P.atk = -1; P.hitSet.clear(); SFX.slash(); } }
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend(ST.swing)) { P.atk = 0; P.hitSet.clear(); SFX.slash(); if (Math.random() < 0.35) SFX.effort(); if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk >= 0) {
@@ -725,6 +727,7 @@ function updatePlayer(dt) {
           P.inv = 0; damagePlayer(e.x, e.t === 'frog' ? DMG.crown : DMG.spined, { up: true, unblockable: true }); P.vy = -250;
           continue;
         }
+        if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.inv = 0; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.plunge = false; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
         hurtEnemy(e, PLUNGE_DMG, P.x, true); P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pogo(); pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); } squash(0.8, 1.25, 0.1); continue;
       }
       const front = Math.sign(P.x - e.x) === e.face;
@@ -747,6 +750,7 @@ function updatePlayer(dt) {
       P.hitSet.clear(); P.canCut = false; P.ground = false;
       if (e.t === 'thorn' || (e.t === 'frog' && e.mode !== 'dazed')) { P.inv = 0; SFX.clank(); sparks(P.x, P.y + 4, P.face, 8); number(e.x, e.y - e.h - 6, e.t === 'frog' ? 'CROWN OF THORNS' : 'SPINED', '#ffd36b'); damagePlayer(e.x, e.t === 'frog' ? DMG.crown : DMG.spined, { up: true, unblockable: true }); P.vy = -250; continue; }
       if (e.t === 'shield' || e.t === 'queen') { P.vy = keys.jump ? -260 : -190; SFX.clank(); sparks(e.x, e.y - e.h, P.face, 6); e.stagger = Math.max(e.stagger, 0.3); number(e.x, e.y - e.h - 6, 'HELM', '#c9d1dc'); squash(0.85, 1.2, 0.1); continue; }
+      if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
       hurtEnemy(e, 10, P.x, true); P.vy = keys.jump ? -290 : -220; SFX.pogo(); squash(0.8, 1.25, 0.1); continue;
     }
     const res = damagePlayer(e.x, DMG[e.t]);
@@ -772,7 +776,7 @@ function updatePlayer(dt) {
 // ---------- boss: the Hornet Queen ----------
 function setWall(col, solid) {
   const A = L.arena; const top = A.floor / TS - 6, bot = A.floor / TS - 1;
-  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.thorns[(ty + col) % 4] : null; }
+  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.vine[(ty + col) % 4] : null; }
 }
 function bossStart() {
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak();
@@ -792,13 +796,14 @@ function queenDies() {
 function updateQueen(e, dt) {
   const A = L.arena, floor = A.floor, p2 = e.phase === 2;
   e.modeT -= dt; e.anim += dt;
+  if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
   const drones = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
   const hoverTo = (tx, ty, sp) => { e.vx += (Math.max(-sp, Math.min(sp, (tx - e.x) * 3)) - e.vx) * Math.min(1, dt * 4); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - e.vy) * Math.min(1, dt * 4); };
   switch (e.mode) {
     case 'sleep': e.y = e.ty + Math.sin(e.anim * 1.5) * 3; return;
     case 'wake': hoverTo((A.x0 + A.x1) / 2, floor - 74, 60); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 1.2; } break;
     case 'hover': {
-      hoverTo(P.x + Math.sin(e.anim * 0.9) * 30, floor - 74 + Math.sin(e.anim * 2) * 6, p2 ? 150 : 100);
+      hoverTo(P.x + Math.sin(e.anim * 0.9) * 30, floor - 74 + Math.sin(e.anim * 2) * 6, p2 ? 110 : 75);
       e.face = Math.sign(P.x - e.x) || e.face;
       if (e.modeT <= 0) {
         // pick a move she hasn't just used; drones first if the swarm is thin
@@ -806,7 +811,7 @@ function updateQueen(e, dt) {
         let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0];
         e.last = pick;
         if (pick === 'call') { e.mode = 'call'; e.modeT = 0.9; SFX.buzz(); number(e.x, e.y - 20, 'CALLS THE SWARM', '#ffd36b'); }
-        else if (pick === 'dive') { e.mode = 'aim'; e.modeT = p2 ? 0.45 : 0.65; SFX.buzz(); }
+        else if (pick === 'dive') { e.mode = 'aim'; e.modeT = p2 ? 0.6 : 0.8; SFX.buzz(); }
         else if (pick === 'sweep') { e.mode = 'sweepStart'; e.modeT = 0.5; e.face = e.x < (A.x0 + A.x1) / 2 ? 1 : -1; }
         else if (pick === 'volley') { e.mode = 'volleyUp'; e.modeT = 0.7; SFX.buzz(); }
         else { e.mode = 'slamUp'; e.modeT = 0.8; SFX.buzz(); }
@@ -814,33 +819,34 @@ function updateQueen(e, dt) {
       break;
     }
     // venom volley: climb, hang, then a fan of seeds straight down at you. Step through the gaps or slash them.
-    case 'volleyUp': hoverTo(P.x, floor - 110, 170); if (e.modeT <= 0) { e.mode = 'volley'; e.modeT = p2 ? 0.9 : 1.1; e.shots = p2 ? 3 : 2; e.shotT = 0; } break;
+    case 'volleyUp': hoverTo(P.x, floor - 110, 140); if (e.modeT <= 0) { e.mode = 'volley'; e.modeT = 0.8; e.shots = 1; e.shotT = 0.1; } break;
     case 'volley': {
       hoverTo(P.x, floor - 110, 90); e.face = Math.sign(P.x - e.x) || e.face;
       e.shotT -= dt;
       if (e.shots > 0 && e.shotT <= 0) {
         e.shots--; e.shotT = 0.42; SFX.spit(); number(e.x, e.y - 18, 'VENOM', '#8fd160');
-        const n = p2 ? 6 : 5, spread = 1.5;
+        const n = p2 ? 5 : 4, spread = 1.5;
         for (let i = 0; i < n; i++) { const a = Math.PI / 2 + (i - (n - 1) / 2) * (spread / (n - 1)) + (Math.random() - 0.5) * 0.1; seeds.push({ x: e.x, y: e.y - 4, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, dead: false, life: 3, venom: true }); }
       }
       if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'rise'; e.modeT = 0.5; }
       break;
     }
     // slam: hover straight over you, drop like a stone, shockwaves run both ways along the floor. Jump them.
-    case 'slamUp': hoverTo(P.x, floor - 96, 180); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'slamHang'; e.modeT = p2 ? 0.3 : 0.45; number(e.x, e.y - 18, '!', '#ffd36b'); } break;
-    case 'slamHang': e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.mode = 'slam'; e.vy = 420; e.vx = 0; SFX.charge(); } break;
+    case 'slamUp': hoverTo(P.x, floor - 96, 150); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'slamHang'; e.modeT = p2 ? 0.45 : 0.6; number(e.x, e.y - 18, '!', '#ffd36b'); } break;
+    case 'slamHang': e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.mode = 'slam'; e.vy = 250; e.vx = 0; SFX.charge(); } break;
     case 'slam': if (e.y >= floor) {
       e.y = floor; e.vy = 0; shakeCam(7); SFX.heavy(); dust(e.x, e.y, 14);
       for (const d of [-1, 1]) waves.push({ x: e.x + d * 12, y: floor, dir: d, life: 2.2, sp: p2 ? 190 : 150 });
       e.mode = 'slamRest'; e.modeT = p2 ? 0.55 : 0.8; number(e.x, e.y - 20, 'SLAM', '#ffd36b');
     } break;
     case 'slamRest': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; } break;
+    case 'buck': if (e.modeT <= 0) { e.vx = 0; e.vy = 0; e.mode = 'hover'; e.modeT = 1.2; } break;
     case 'call': hoverTo(e.x, floor - 84, 60); if (e.modeT <= 0) { for (let i = 0; i < 2; i++) { const dx = A.x0 + (A.x1 - A.x0) * (0.3 + i * 0.4) + (Math.random() - 0.5) * 30; enemies.push({ t: 'wasp', x: dx, y: floor - 40, hx: dx, hy: floor - 40, vx: 0, vy: 0, w: 8, h: 6, hp: EHP.wasp, face: -1, alive: true, dying: 0, anim: Math.random() * 6, flash: 0, stagger: 0, drone: true }); burst(dx, floor - 40, 6, COLS.wasp, 50, 0.4); } e.mode = 'hover'; e.modeT = p2 ? 1.2 : 1.8; } break;
-    case 'aim': hoverTo(P.x, floor - 78, 140); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const dx = P.x - e.x, dy = floor - e.y, d = Math.hypot(dx, dy) || 1, sp = p2 ? 340 : 270; e.vx = dx / d * sp; e.vy = dy / d * sp; e.mode = 'dive'; e.modeT = 1.2; SFX.charge(); } break;
+    case 'aim': hoverTo(P.x, floor - 78, 140); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const dx = P.x - e.x, dy = floor - e.y, d = Math.hypot(dx, dy) || 1, sp = p2 ? 280 : 220; e.vx = dx / d * sp; e.vy = dy / d * sp; e.mode = 'dive'; e.modeT = 1.2; SFX.charge(); } break;
     case 'dive': if (e.y >= floor || e.modeT <= 0) { e.y = Math.min(e.y, floor); queenWinded(e, false); } break;
     case 'winded': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; } break;
-    case 'rise': hoverTo(e.x, floor - 74, 160); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = p2 ? 1.0 : 1.6; } break;
-    case 'sweepStart': hoverTo(e.face > 0 ? A.x0 + 16 : A.x1 - 16, floor - 16, 220); if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 2; e.vx = e.face * (p2 ? 230 : 180); e.vy = 0; SFX.charge(); } break;
+    case 'rise': hoverTo(e.x, floor - 74, 130); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = p2 ? 1.3 : 2.0; } break;
+    case 'sweepStart': hoverTo(e.face > 0 ? A.x0 + 16 : A.x1 - 16, floor - 16, 220); if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 2.4; e.vx = e.face * (p2 ? 180 : 140); e.vy = 0; SFX.charge(); } break;
     case 'sweep': e.y += (floor - 16 - e.y) * Math.min(1, dt * 6); if ((e.face > 0 && e.x > A.x1 - 16) || (e.face < 0 && e.x < A.x0 + 16) || e.modeT <= 0) { e.vx = 0; e.mode = 'rise'; e.modeT = 0.6; if (p2 && Math.random() < 0.5) { e.mode = 'sweepStart'; e.modeT = 0.4; e.face = -e.face; } } break;
   }
   e.x += e.vx * dt; e.y += e.vy * dt;
@@ -894,7 +900,16 @@ function updateEnemies(dt) {
     if (e.t === 'frog') { if (bossActive) beastSeen('frog'); if (bossActive || e.mode === 'sleep') updateFrog(e, dt); continue; }
     if (Math.abs(e.x - P.x) > 420) continue;
     if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[e.t] && PROG.beasts[e.t].seen)) beastSeen(e.t);
-    if (e.t === 'wasp') { e.x = e.hx + Math.sin(e.anim * 1.3) * 5; e.y = e.hy + Math.sin(e.anim * 2.4) * 5; e.face = Math.sign(Math.cos(e.anim * 1.3)) || 1; continue; }
+    if (e.t === 'wasp') {
+      if (e.drone && !P.dead) { // hive drones dart at you, then drift back to their post
+        e.dartT = (e.dartT === undefined ? 1.5 + Math.random() * 1.5 : e.dartT - dt);
+        if (e.dart) { e.dart -= dt; e.x += e.dvx * dt; e.y += e.dvy * dt; if (e.dart <= 0) { e.dart = 0; e.dartT = 2.2 + Math.random() * 1.6; } e.face = Math.sign(e.dvx) || e.face; continue; }
+        if (e.dartT <= 0 && Math.abs(P.x - e.x) < 160) { const dx = P.x - e.x, dy = (P.y - 8) - e.y, d = Math.hypot(dx, dy) || 1; e.dvx = dx / d * 150; e.dvy = dy / d * 150; e.dart = Math.min(0.7, d / 150); SFX.buzz(); number(e.x, e.y - 10, '!', '#ffd36b'); continue; }
+        e.hx += (Math.max(L.arena ? L.arena.x0 + 20 : 0, Math.min(L.arena ? L.arena.x1 - 20 : 99999, e.x)) - e.hx) * Math.min(1, dt * 2); e.hy += ((L.arena ? L.arena.floor - 42 : e.hy) - e.hy) * Math.min(1, dt * 1.5);
+        e.x += (e.hx + Math.sin(e.anim * 1.3) * 5 - e.x) * Math.min(1, dt * 3); e.y += (e.hy + Math.sin(e.anim * 2.4) * 5 - e.y) * Math.min(1, dt * 3); e.face = Math.sign(P.x - e.x) || e.face; continue;
+      }
+      e.x = e.hx + Math.sin(e.anim * 1.3) * 5; e.y = e.hy + Math.sin(e.anim * 2.4) * 5; e.face = Math.sign(Math.cos(e.anim * 1.3)) || 1; continue;
+    }
     if (e.t === 'spit') {
       const near = Math.abs(e.x - P.x) < 150 && Math.abs(e.y - P.y) < 90 && !P.dead;
       if (near) e.face = Math.sign(P.x - e.x) || e.face;
@@ -1126,7 +1141,7 @@ function update(dt) {
   }
   if (state === 'win') { if (confirmPress) { state = 'map'; map.node = NODES.findIndex(n => n.level === levelIndex); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; saveProgress(); music.play('select'); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   if (pausePress) { openMenu('play'); return; }
-  if (jumpPress) P.jbuf = 0.12; if (atkPress) P.abuf = 0.15; if (dodgePress) P.dbuf = 0.12;
+  if (jumpPress) P.jbuf = 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
   if (stop > 0) { stop -= dt; return; }
   levelTime += dt;
   slowT = Math.max(0, slowT - dt); const wdt = slowT > 0 ? dt * 0.3 : dt;
@@ -1175,7 +1190,8 @@ function drawWater(cx, cy, surfaceOnly = false) {
     if (!surfaceOnly) {
       if (p.shallow) {
         const d = p.depth || 22;
-        g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(60,110,150,0.75)'; g.fillRect(x0, y, x1 - x0, d); g.globalCompositeOperation = 'source-over';
+        g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(70,120,160,0.7)'; g.fillRect(x0, y, x1 - x0, d); g.globalCompositeOperation = 'source-over';
+        g.fillStyle = 'rgba(30,60,50,0.35)'; g.fillRect(x0, y + d - 2, x1 - x0, 2); // silt line
         g.fillStyle = 'rgba(200,235,255,0.22)';
         for (let x = p.x0 + 4; x < p.x1; x += 9) { const sx = x + Math.round(Math.sin(time * 1.6 + x * 0.21) * 3) - cx; if (sx > x0 && sx < x1 - 2) { g.fillRect(sx, y + 6 + Math.round(Math.sin(time * 2 + x) * 2), 2, 1); g.fillRect(sx + 3, y + 14 + Math.round(Math.cos(time * 1.7 + x) * 2), 3, 1); } }
       }
@@ -1188,10 +1204,10 @@ function drawWater(cx, cy, surfaceOnly = false) {
       continue;
     }
     if (p.shallow) { // the water itself, over the legs of whoever is wading; lighter near the surface
-      const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(120,190,225,0.55)'); gr.addColorStop(1, 'rgba(40,90,140,0.4)');
+      const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(90,175,215,0.5)'); gr.addColorStop(1, 'rgba(40,110,150,0.55)');
       g.fillStyle = gr; g.fillRect(x0, y, x1 - x0, h);
-      // mud lip at each bank
-      g.fillStyle = '#3d3128'; g.fillRect(x0, y - 1, 2, h + 1); g.fillRect(x1 - 2, y - 1, 2, h + 1);
+      // wet mud lips on the banks
+      g.fillStyle = '#3d3128'; g.fillRect(x0 - 1, y - 2, 2, h + 2); g.fillRect(x1 - 1, y - 2, 2, h + 2); g.fillStyle = 'rgba(40,30,20,0.5)'; g.fillRect(x0 - 8, y - 4, 8, 2); g.fillRect(x1, y - 4, 8, 2);
       for (const r of ripples) if (r.x > p.x0 && r.x < p.x1) { g.globalAlpha = Math.max(0, r.life) * 0.7; g.strokeStyle = '#dff5ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(r.x - cx), Math.round(p.y - cy) + 1, (1 - r.life) * 14 + 2, ((1 - r.life) * 14 + 2) * 0.3, 0, 0, 7); g.stroke(); }
       g.globalAlpha = 1;
     }

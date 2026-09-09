@@ -380,3 +380,23 @@ export function bakeHut() {
 }
 // A tiny flag for cleared nodes.
 export function bakeFlag() { const [c, g] = canvas(7, 10); rect(g, 1, 0, 1, 10, '#b3aca0'); fillPoly(g, [[2, 0], [7, 2], [2, 4]], '#8fd160'); return outline(c, OUT); }
+
+// Hive vine wall: hanging vines with leaves and a few amber comb cells. Closes the boss arenas.
+export function bakeVineWall(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  for (let i = 0; i < 4; i++) { const x = 1 + i * 4 + ((rnd() * 2) | 0); line(g, x, 0, x + (rnd() < 0.5 ? -1 : 1), T, rnd() < 0.5 ? '#2f5e3a' : '#264a2f', 2); }
+  for (let i = 0; i < 6; i++) { const x = (rnd() * 14) | 0, y = (rnd() * 14) | 0; rect(g, x, y, 3, 2, rnd() < 0.5 ? '#3f7a48' : '#57964f'); }
+  if (rnd() < 0.6) { const x = 3 + ((rnd() * 8) | 0), y = 2 + ((rnd() * 9) | 0); rect(g, x, y, 5, 4, '#e0b040'); rect(g, x + 1, y + 1, 3, 2, '#ffd36b'); px(g, x + 2, y + 2, '#b8541c'); }
+  return c;
+}
+
+// Silt: the floor of a shallow pool. Dark wet mud, pebbles, a little algae. No grass.
+export function bakeSilt(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 0, T, T, '#4a3f30');
+  for (let i = 0; i < 30; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, rnd() < 0.5 ? '#3a3024' : '#5a4d3a');
+  for (let i = 0; i < 3; i++) { const x = (rnd() * 13) | 0, y = (rnd() * 13) | 0; rect(g, x, y, 3, 2, '#7a7368'); px(g, x, y, '#9a9388'); }
+  for (let i = 0; i < 4; i++) px(g, (rnd() * T) | 0, (rnd() * 4) | 0, '#3f6e50');
+  rect(g, 0, 0, T, 1, '#3a5a48');
+  return c;
+}

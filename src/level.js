@@ -126,7 +126,7 @@ function marshWood() {
   const { block, floor, plat, reeds, crate, ent, coins } = L;
   const pools = [], movers = [];
   // shallow pools: the dip floor is one tile below the banks; the surface sits 4px under the bank top
-  const water = (x0, x1, yTop, shallow = false) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + (shallow ? 4 : 0), shallow, depth: shallow ? 28 : 0 });
+  const water = (x0, x1, yTop, shallow = false) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + (shallow ? 4 : 0), shallow, depth: shallow ? 12 : 0 });
 
   // ---- 1. The bank ----
   floor(0, 24, 22);
