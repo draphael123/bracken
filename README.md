@@ -53,8 +53,10 @@ eat the spines, and only the sword will do.
   it, or dodge through and hit it while it rests. Sword only.
 - **The Hornet Queen** — the boss in the hive clearing past the gate. She hovers out of reach,
   calls drones you can pogo off to get up to her, dives at you (block it and she's staggered on
-  the floor, where she takes double damage), and sweeps the floor at head height (jump or block).
-  Half health and she's enraged: faster, and she sweeps twice.
+  the floor, where she takes double damage), sweeps the floor at head height (jump or block),
+  hangs high and rains a fan of venom (step through the gaps or slash it), and slams the floor
+  sending shockwaves both ways (jump them, then hit her while she recovers). Half health and
+  she's enraged: faster, more venom, double sweeps.
 
 ## Level
 
