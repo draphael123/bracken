@@ -119,6 +119,6 @@ function brackenWood() {
 }
 
 export const LEVELS = [
-  { id: 'wood', name: 'BRACKEN WOOD', sub: 'the forest and the hive', build: brackenWood },
+  { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'next', name: '? ? ?', sub: 'beyond the gate', locked: true },
 ];

@@ -861,7 +861,7 @@ function drawSelect() {
     if (lv.locked) g.drawImage(PROP.lock, x + w - 16, y + 8);
     else {
       const p = PROG[lv.id];
-      if (p) { text(fmt(p.best), x + w - 8, y + 6, '#dfe8ff', 'right'); g.drawImage(PROP.coin[0], x + w - 60, y + 18); text(p.gold + '/' + p.total, x + w - 8, y + 19, '#ffd34a', 'right'); if (p.cleared) text('CLEARED', x + w - 8, y + 30, '#8fd160', 'right'); }
+      if (p) { text(fmt(p.best), x + w - 8, y + 6, '#dfe8ff', 'right'); g.drawImage(PROP.coin[0], x + w - 52, y + 18); text(p.gold + '/' + p.total, x + w - 8, y + 19, '#ffd34a', 'right'); if (p.cleared) text('CLEARED', x + 8, y + 30, '#8fd160'); }
       else text('not yet', x + w - 8, y + 30, '#9aa39a', 'right');
     }
   });
