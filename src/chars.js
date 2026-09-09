@@ -331,12 +331,13 @@ export function bakeFox() {
 }
 // The Goblin Chieftain — helmed, huge, two-handed club. 24×21. Frames: stand, walk, raise, slam, sweep, grab.
 export function bakeChief() {
-  const P2 = Object.assign({}, EP, { c: '#6b4a2a', C: '#4c2c17', b: '#8f2f28' });
-  const helm = ['........SSSSSSSS........', '.......SsssssssS........', '......yySsssssssSyy.....', '.......SssssssssS.......'];
-  const head = ['.......ggeoggggeog......', '.......gggggggggggg.....', '........ggGGGGGGgg......', '.........gggggggg.......'];
-  const body = ['......bbbbbbbbbbbb......', '.....gbbbbbbbbbbbbg.....', '.....gbbbbbbbbbbbbg.....', '.....gbbbbbbbbbbbbg.....', '......rrrrrrrrrrrr......', '......rrrrrrrrrrrr......'];
-  const legsA = ['......GGGG....GGGG......', '......GGGG....GGGG......', '.....GGGGG....GGGGG.....'];
-  const legsB = ['.......GGGG..GGGG.......', '.......GGGG..GGGG.......', '......GGGGG..GGGGG......'];
+  // The war chief: a horned iron helm, red war paint, a wolf-pelt pauldron, a trophy skull on the belt, a blood-red cloak.
+  const P2 = Object.assign({}, EP, { c: '#6b4a2a', C: '#4c2c17', b: '#8f2f28', f: '#8a7a68', F: '#5a4e42', h: '#e8dcc0', q: '#5a1a1a', Q: '#3a1010' });
+  const helm = ['....t...SSSSSSSS...t....', '.....t.SsssssssS..t.....', '......tSsssyysssSt......', '.......SssssssssS.......'];
+  const head = ['.......ggeorrggeog......', '......ggrgggggggrgg.....', '.......ggGGGGGGgg.......', '........gggggggg........'];
+  const body = ['...ffffbbbbbbbbbbbb.....', '..fFffgbbbbbbbbbbbbg....', '..fFf.gbbbhhbbbbbbbg....', '.qq...gbbbhhbbbbbbbg....', '.qq...rrrhhrrrrrrr......', '.qq...rrrrrrrrrrrr......'];
+  const legsA = ['.qq...GGGG....GGGG......', '.q....GGGG....GGGG......', '.....GGGGG....GGGGG.....'];
+  const legsB = ['.qq....GGGG..GGGG.......', '.q.....GGGG..GGGG.......', '......GGGGG..GGGGG......'];
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
   const top = [...helm, ...head];
   const pad = ['........................', '........................', '........................', '........................'];

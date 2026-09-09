@@ -376,11 +376,13 @@ function sporewood() {
   block(101, 130, 4, 27);
   ent('shaman', 108, 3, { face: -1 }); ent('sporeling', 114, 3, { face: -1 }); ent('sporeling', 119, 3, { face: -1 });
   for (let x = 121; x <= 125; x++) for (let y = 4; y <= 27; y++) set(x, y, 0); shelf(121, 4, 5);
+  block(121, 125, 12, 27); bouncer(123, 11); ent('glow', 122, 11); // the shelf gives way onto a cap: plunge into it to spring back up
   ent('glow', 104, 3); ent('glow', 128, 3); ent('check', 127, 3); coins([97, 7], [111, 2], [123, 2]);
 
   // ---- 5. The sleep marsh: violet spores. Block to hold your breath. ----
   block(131, 165, 14, 27);
-  ent('sign', 133, 13, { text: 'VIOLET SPORES PUT YOU TO SLEEP. BLOCK THROUGH.' });
+  plat(132, 8, 2); ent('glow', 132, 13); // a landing on the way down
+  ent('sign', 134, 13, { text: 'VIOLET SPORES PUT YOU TO SLEEP. BLOCK THROUGH.' });
   sleeps.push({ x0: 137 * TS, x1: 147 * TS, y0: 10 * TS, y1: 14 * TS }, { x0: 153 * TS, x1: 162 * TS, y0: 10 * TS, y1: 14 * TS });
   // ride the gusts over the violet: each vent lifts you to a shelf, the shelf gives way, the next gust catches you
   ent('vent', 139, 13, { period: 4, on: 1.5, h: 90, phase: 0 }); ent('vent', 144, 13, { period: 4, on: 1.5, h: 90, phase: 2 }); ent('vent', 155, 13, { period: 4, on: 1.5, h: 90, phase: 1 }); ent('vent', 160, 13, { period: 4, on: 1.5, h: 90, phase: 3 });
@@ -399,15 +401,17 @@ function sporewood() {
   // ---- 6b. The lantern terrace: glow caps light the way, a second shaman raises the dead ----
   floor(201, 244, 14);
   ent('check', 202, 13); ent('glow', 203, 13); ent('puffball', 206, 13); ent('lurker', 210, 13); ent('sporeling', 214, 13, { face: -1 }); ent('glow', 217, 13);
-  ent('vent', 208, 13, { period: 4.5, on: 1.8, h: 96, phase: 2 }); plat(206, 8, 4); coins([207, 7], [209, 7]); ent('mover', 229, 9, { len: 2, range: 5, cap: true, speed: 34 });
-  bouncer(220, 13); plat(218, 8, 5); coins([220, 10], [219, 6], [221, 6]); ent('drone', 224, 7);
+  ent('vent', 208, 13, { period: 4.5, on: 1.8, h: 96, phase: 2 }); plat(206, 8, 4); coins([207, 7], [209, 7]); ent('mover', 229, 9, { len: 2, range: 5, cap: true, speed: 34 }); ent('glow', 233, 13);
+  bouncer(220, 13); plat(218, 8, 5); coins([220, 10], [219, 6], [221, 6]);
   sleeps.push({ x0: 226 * TS, x1: 233 * TS, y0: 8 * TS, y1: 14 * TS }); ent('sporeling', 229, 13, { face: -1 }); ent('glow', 227, 13);
-  ent('shaman', 237, 13, { face: -1 }); ent('roller', 234, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
+  ent('shaman', 237, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
   ent('sign', 244, 13, { text: 'THE PILLARS. HOLD JUMP, OR PLUNGE INTO THE CAPS.' });
+  ent('sign', 201, 13, { text: 'THE STORM. LIT CAPS KEEP THE SPORES OFF.' });
   coins([208, 12], [231, 11], [239, 11]);
 
   // ---- 7. The drone gauntlet: caps on pillars over the drop ----
   shelf(252, 21, 3); shelf(258, 20, 3); shelf(264, 21, 3); // the low road: shelves that give way
+  block(245, 271, 26, 27); for (const x of [247, 253, 259, 265, 270]) bouncer(x, 25); ent('glow', 250, 25); ent('glow', 262, 25); // the pit has a floor: caps on it spring you back to the low road
   for (const [px0, top] of [[249, 18], [255, 20], [261, 18], [267, 20]]) { block(px0, px0 + 2, top, 27); for (let i = 0; i < 3; i++) bouncer(px0 + i, top - 1); }
   ent('drone', 252, 6); ent('drone', 258, 8); ent('drone', 264, 6);
   coins([252, 8], [258, 10], [264, 8], [270, 9]);
@@ -425,10 +429,11 @@ function sporewood() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
-    duskStart: undefined, music: 'theme2', night: true, glowNight: true,
-    palette: { sky: 'teal', near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(26,60,72,0.28)', canopy: ['#2a2a44', '#3a3454', '#4a4a6a', '#6a6a8a'] },
+    duskStart: -1, duskLen: 1, music: 'theme2', night: false, glowNight: true,
+    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: false, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
+    storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
     arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother' },
   };
 }

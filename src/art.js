@@ -513,31 +513,32 @@ export function bakeSkyTeal(h) { const [c, g] = canvas(1, h); const top = [12, 2
 // ---------- Round 20: dressing, critters, impact, and the Mother Cap proper ----------
 // The Mother Cap as pixel art: a 160x52 cap and a 32x100 stalk. Drawn from shapes but with dither, rim light, outlined spots and eyes.
 export function bakeMotherCap() {
-  const [cap, g] = canvas(160, 52);
+  // A sick giant: the cap sags to one side, mottled with rot, cracked, weeping. Sallow flesh where it used to be purple.
+  const [cap, g] = canvas(160, 56);
   const rnd = mulberry(77);
-  // underside gills
-  ellipse(g, 80, 40, 78, 10, '#3a2246');
-  for (let x = 6; x < 156; x += 4) line(g, x, 34, 80 + (x - 80) * 0.72, 49, x % 8 === 2 ? '#8a4a9a' : '#5a3268', 1);
-  ellipse(g, 80, 40, 78, 10, 'rgba(0,0,0,0)');
-  // dome
-  ellipse(g, 80, 30, 78, 22, '#6a3a7a', '#4a2a5a');
-  ellipse(g, 80, 28, 74, 19, '#7a4a8a');
-  ellipse(g, 66, 20, 52, 11, '#9a5aa8');
-  ellipse(g, 56, 15, 30, 6, '#b070c0');
-  // dither bands
-  for (let y = 8; y < 50; y++) for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78, dy = (y - 30) / 22; const r = dx * dx + dy * dy; if (r < 1 && r > 0.72 && ((x + y) & 1)) px(g, x, y, '#5a3268'); if (r < 0.6 && r > 0.45 && ((x + y) & 1) && y < 26) px(g, x, y, '#8a52a0'); }
-  // spots, outlined
-  for (const [sx, sy, r] of [[28, 26, 5], [50, 12, 6], [74, 9, 4], [96, 13, 7], [122, 22, 5], [140, 32, 4], [60, 30, 3], [108, 30, 4], [86, 24, 3], [38, 36, 3], [130, 12, 3]]) { ellipse(g, sx, sy, r, r * 0.7, '#e8e0f0', '#c8b8d8'); ellipse(g, sx - 1, sy - 1, r * 0.5, r * 0.3, '#fff8ff'); }
-  // rim highlight along the top edge
-  for (let x = 12; x < 148; x += 2) { const dx = (x - 80) / 78; const y = 30 - Math.sqrt(Math.max(0, 1 - dx * dx)) * 22; px(g, x, Math.round(y) + 1, '#c890d8'); }
+  const sag = x => Math.round(((x - 80) / 80) * 5); // the right side droops
+  // underside gills, weeping
+  for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78; if (Math.abs(dx) > 1) continue; const h = Math.sqrt(1 - dx * dx); const yb = 40 + sag(x) + Math.round(h * 9); for (let y = 34 + sag(x); y < yb; y++) px(g, x, y, (x >> 2) % 2 ? '#5a4a3a' : '#3a2e2c'); }
+  for (let x = 6; x < 156; x += 4) line(g, x, 34 + sag(x), 80 + (x - 80) * 0.72, 47 + sag(x), x % 8 === 2 ? '#8a7a4a' : '#5a4a3a', 1);
+  // dome: sallow flesh with a purple memory in the shadows
+  for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78; if (Math.abs(dx) > 1) continue; const h = Math.sqrt(1 - dx * dx); const top = 30 + sag(x) - Math.round(h * 22); for (let y = top; y <= 34 + sag(x); y++) { const k = (y - top) / Math.max(1, 34 + sag(x) - top); const col = k < 0.18 ? '#b8b070' : k < 0.5 ? '#8a8a54' : k < 0.8 ? '#6a6a44' : '#4a3a4a'; px(g, x, y, ((x + y) & 1) && k > 0.4 && k < 0.6 ? '#7a7a4a' : col); } }
+  // rot blotches with dark rims, and cracks
+  for (const [sx, sy, r] of [[30, 22, 7], [58, 12, 9], [92, 10, 6], [118, 18, 9], [142, 30, 6], [76, 26, 5], [104, 28, 6], [46, 30, 4]]) { ellipse(g, sx, sy + sag(sx), r, r * 0.7, '#4a3a2a', '#2c221c'); ellipse(g, sx - 1, sy + sag(sx) - 1, r * 0.5, r * 0.35, '#6a4a2a'); if (rnd() < 0.7) px(g, sx + 1, sy + sag(sx), '#b8c060'); }
+  for (let i = 0; i < 7; i++) { let x = 14 + ((rnd() * 132) | 0), y = 20 + ((rnd() * 10) | 0) + sag(x); for (let k = 0; k < 6 + ((rnd() * 8) | 0); k++) { px(g, x, y, '#2c221c'); x += rnd() < 0.6 ? 1 : 0; y += rnd() < 0.5 ? 1 : -1; } }
+  // pus-yellow weeping at the rim, drips hanging off the low side
+  for (let x = 10; x < 150; x += 3) if (rnd() < 0.5) px(g, x, 34 + sag(x), '#b8c060');
+  for (const x of [98, 116, 131, 146, 152]) { const h = 3 + ((rnd() * 6) | 0); rect(g, x, 40 + sag(x), 2, h, '#b8c060'); px(g, x, 40 + sag(x) + h, '#d8e080'); }
+  // a few pale spots that survived, the eyes' sockets dark
+  for (const [sx, sy, r] of [[40, 10, 3], [70, 6, 3], [128, 12, 2]]) ellipse(g, sx, sy + sag(sx), r, r * 0.7, '#d8d0c0', '#a8a090');
   outline(cap, OUT);
   const [stalk, s] = canvas(32, 100);
-  rect(s, 2, 0, 28, 100, '#3a3444'); rect(s, 2, 0, 5, 100, '#5a5468'); rect(s, 25, 0, 5, 100, '#241f2c');
-  for (let i = 0; i < 60; i++) { const x = 4 + ((rnd() * 24) | 0), y = (rnd() * 96) | 0; rect(s, x, y, 1, 2 + ((rnd() * 5) | 0), rnd() < 0.5 ? '#4a4458' : '#2c2736'); }
-  for (let y = 0; y < 100; y += 14) { rect(s, 3, y + 6, 26, 1, '#4e4860'); }
-  // the ring, and roots flaring at the base
-  rect(s, 0, 34, 32, 5, '#5a5468'); rect(s, 0, 39, 32, 2, '#241f2c'); rect(s, 0, 33, 32, 1, '#7a7488');
-  fillPoly(s, [[2, 100], [2, 86], [-4, 100]], '#3a3444'); fillPoly(s, [[30, 100], [30, 84], [36, 100]], '#3a3444'); rect(s, 0, 96, 32, 4, '#2c2736');
+  rect(s, 2, 0, 28, 100, '#4a4436'); rect(s, 2, 0, 5, 100, '#6a6450'); rect(s, 25, 0, 5, 100, '#2c2820');
+  for (let i = 0; i < 50; i++) { const x = 4 + ((rnd() * 24) | 0), y = (rnd() * 96) | 0; rect(s, x, y, 1, 2 + ((rnd() * 5) | 0), rnd() < 0.5 ? '#5a5444' : '#3a3428'); }
+  // veins of rot climbing the stalk, a split ring, oozing boils
+  for (let i = 0; i < 4; i++) { let x = 6 + ((rnd() * 20) | 0), y = 95; while (y > 10) { px(s, x, y, '#5a3a5a'); if (rnd() < 0.5) px(s, x + 1, y, '#3a2a3a'); y--; x += rnd() < 0.3 ? (rnd() < 0.5 ? -1 : 1) : 0; x = Math.max(4, Math.min(27, x)); } }
+  rect(s, 0, 34, 32, 5, '#6a6450'); rect(s, 0, 39, 32, 2, '#2c2820'); rect(s, 14, 33, 3, 8, '#2c2820');
+  for (const [bx, by] of [[9, 55], [20, 70], [12, 84], [23, 22]]) { ellipse(s, bx, by, 3, 2.5, '#8a8a54', '#4a3a2a'); px(s, bx, by - 1, '#b8c060'); }
+  fillPoly(s, [[2, 100], [2, 86], [-4, 100]], '#4a4436'); fillPoly(s, [[30, 100], [30, 84], [36, 100]], '#4a4436'); rect(s, 0, 96, 32, 4, '#3a3428');
   outline(stalk, OUT);
   return { cap, stalk };
 }

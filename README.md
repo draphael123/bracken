@@ -177,6 +177,15 @@ Any standard gamepad works: A jump, X swing, B dodge, LB/RB block, Start pause, 
 move. On touch devices (or with `?touch=1`) an on-screen pad appears: d-pad on the left, A/B/X/Y
 on the right, pause top-right.
 
+## Skills
+
+The store's SKILLS tab opens once the Stockade is cleared (the results card and the map point you
+there). SHIELD THROW (80 gold): press F (B on a gamepad) to hurl the shield forward. It costs 20
+stamina and comes back to you after about half a screen or on hitting a wall; anything it passes
+through takes 15, arrows and seeds in its path are swatted down, and puffballs pop. Two and a half
+seconds of cooldown, and you cannot block while it is away. Made for archers, spitters and shamans
+on ledges you would rather not climb.
+
 ## Iron Knight
 
 An opt-in mode in Settings: three lives per level. Lose them all and the knight falls, the level
