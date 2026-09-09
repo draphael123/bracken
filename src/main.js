@@ -1124,7 +1124,7 @@ function drawTitle(cx, cy) {
   const gx = VW / 2 - 60, gy = VH - 132; g.drawImage(PROP.gate, gx, gy, 120, 130);
   g.fillStyle = '#2a2230'; g.fillRect(0, VH - 22, VW, 22); for (let x = 0; x < VW; x += 16) g.drawImage(TILE.top['00'][(x / 16) % 4], x, VH - 22);
   g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(110,90,140,0.5)'; g.fillRect(0, VH - 22, VW, 22); g.globalCompositeOperation = 'source-over';
-  drawSet(K, 'idle', Math.floor(time * 3) % 4, VW / 2 - 4, VH - 22, 1, false);
+  drawSet(K, 'idle', Math.floor(time * 3) % 4, VW / 2 - 52, VH - 22, 1, false);
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -1167,10 +1167,10 @@ function render() {
   if (state === 'title') {
     g.drawImage(PROP.plank, VW / 2 - 70, 14);
     text('BRACKEN', VW / 2 + 1, 21, '#3a2214', 'center', 16); text('BRACKEN', VW / 2, 20, '#ffd36b', 'center', 16);
-    if (Math.floor(time * 2) % 2 === 0) text('PRESS ANY KEY', VW / 2, 132, '#8fd160', 'center');
-    text('ARROWS move  Z jump  X swing', VW / 2, 150, '#fff6e0', 'center');
-    text('C block  V dodge  DOWN+X plunge', VW / 2, 161, '#fff6e0', 'center');
-    text('ESC settings', VW / 2, 172, '#9aa39a', 'center');
+    if (Math.floor(time * 2) % 2 === 0) text('PRESS ANY KEY', VW / 2, 112, '#8fd160', 'center');
+    text('ARROWS move  Z jump  X swing', VW / 2, 128, '#fff6e0', 'center');
+    text('C block  V dodge  DOWN+X plunge', VW / 2, 139, '#fff6e0', 'center');
+    text('ESC settings', VW / 2, 169, '#9aa39a', 'center');
   }
   if (state === 'select') drawSelect();
   if (state === 'bestiary') drawBestiary();
