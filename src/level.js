@@ -115,6 +115,8 @@ function brackenWood() {
   // Vine walls at 287 and 321 close once you step in past 292.
   block(323, 323, 0, 8);
   plat(292, 6, 3); plat(315, 6, 3);
+  ent('deco', 296, 8, { kind: 'hiveBg' }); ent('deco', 314, 8, { kind: 'hiveBg' });
+  ent('deco', 293, 5, { kind: 'drip', hang: true }); ent('deco', 300, 4, { kind: 'drip', hang: true }); ent('deco', 309, 5, { kind: 'drip', hang: true }); ent('deco', 318, 4, { kind: 'drip', hang: true });
   ent('queen', 304, 3);
 
   return {
@@ -124,7 +126,7 @@ function brackenWood() {
     duskStart: 2700, duskLen: 1000, music: 'theme',
     weather: [{ x0: 0, x1: 1500, kind: 'pollen' }, { x0: 3150, x1: 3800, kind: 'mist' }, { x0: 4540, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 3150, kind: 'forest' }, { x0: 3150, x1: 3800, kind: 'water' }, { x0: 3800, x1: 4540, kind: 'forest' }, { x0: 4540, x1: 99999, kind: 'hive' }],
-    arena: { x0: 288 * TS, x1: 321 * TS, floor: 9 * TS, trigger: 292 * TS, wallL: 287, wallR: 321, boss: 'queen' },
+    arena: { x0: 288 * TS, x1: 321 * TS, floor: 9 * TS, trigger: 292 * TS, wallL: 287, wallR: 321, boss: 'queen', tint: '#e0b040', tintA: 0.12, fx: 'bees' },
   };
 }
 
@@ -219,6 +221,8 @@ function marshWood() {
   block(386, 401, 17, 17);
   for (let x = 402; x <= 403; x++) L.set(x, 18, 0); water(402, 403, 18, true);
   ent('throne', 394, 16); ent('frog', 394, 16);
+  ent('deco', 364, 17, { kind: 'frogStatue', v: 0 }); ent('deco', 384, 16, { kind: 'frogStatue', v: 1 }); ent('deco', 399, 16, { kind: 'frogStatue', v: 0 });
+  ent('deco', 370, 18, { kind: 'lilyLantern' }); ent('deco', 377, 18, { kind: 'lilyLantern' }); ent('deco', 402, 18, { kind: 'lilyLantern' });
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
@@ -226,7 +230,7 @@ function marshWood() {
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
-    arena: { x0: 361 * TS, x1: 403 * TS, floor: 18 * TS, trigger: 367 * TS, wallL: 360, wallR: 404, boss: 'frog', dais: { x0: 386 * TS, x1: 402 * TS, h: 16 } },
+    arena: { x0: 361 * TS, x1: 403 * TS, floor: 18 * TS, trigger: 367 * TS, wallL: 360, wallR: 404, boss: 'frog', dais: { x0: 386 * TS, x1: 402 * TS, h: 16 }, tint: '#3a8a5a', tintA: 0.1, fx: 'motes' },
   };
 }
 
@@ -328,6 +332,9 @@ function theStockade() {
   plat(334, 10, 4); plat(342, 9, 5); plat(351, 10, 4);
   plat(326, 18, 2); plat(336, 12, 2); plat(352, 12, 2); plat(360, 18, 2); // the rafter climb, both sides, for when the hall burns
   ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
+  ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
+  ent('deco', 336, 19, { kind: 'skullPile', v: 0 }); ent('deco', 351, 19, { kind: 'skullPile', v: 1 });
+  ent('deco', 338, 8, { kind: 'hangCage', hang: true }); ent('deco', 349, 8, { kind: 'hangCage', hang: true });
   ent('chief', 343, 19);
 
   return {
@@ -336,7 +343,7 @@ function theStockade() {
     palette: { dress: 'camp', haze: 'rgba(24,18,44,0.3)', sky: 'night', canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief' },
+    arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief', tint: '#c9463d', tintA: 0.1, fx: 'embers' },
   };
 }
 
@@ -424,6 +431,9 @@ function sporewood() {
   shelf(327, 15, 2); shelf(342, 15, 2);
   ent('gill', 330, 13); ent('gill', 333, 12); ent('gill', 337, 12); ent('gill', 340, 13);
   ent('mother', 335, 19);
+  ent('deco', 305, 19, { kind: 'rootDecor', v: 0 }); ent('deco', 318, 19, { kind: 'rootDecor', v: 1 }); ent('deco', 352, 19, { kind: 'rootDecor', v: 2 }); ent('deco', 366, 19, { kind: 'rootDecor', v: 0 });
+  ent('deco', 310, 19, { kind: 'sporePod' }); ent('deco', 322, 19, { kind: 'sporePod' }); ent('deco', 348, 19, { kind: 'sporePod' }); ent('deco', 360, 19, { kind: 'sporePod' });
+  ent('deco', 314, 19, { kind: 'skullPile', v: 0 }); ent('deco', 356, 19, { kind: 'skullPile', v: 1 });
   ent('glow', 300, 19); ent('glow', 370, 19); ent('glow', 314, 19); ent('glow', 356, 19);
   coins([306, 17], [364, 17]);
 
@@ -434,7 +444,7 @@ function sporewood() {
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
-    arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother' },
+    arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother', tint: '#9a5aa8', tintA: 0.1 },
   };
 }
 

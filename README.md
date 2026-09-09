@@ -154,6 +154,15 @@ layer so the parallax reads as depth. Hits leave an impact star and squash the f
 a plunge landing sends a shockwave through the dust, a parried blow flashes steel, and turning at a
 run kicks up a skid.
 
+## The four arenas
+
+Each boss fights somewhere that looks like nowhere else. The hive clearing is walled by vines and
+hung with papery combs that drip honey while bees drift through amber light. The Croaking Court is
+ringed by mossy stone frogs and lily lanterns glowing on the pond. The great hall is hung with war
+banners and cages, a throne of bones behind the Chieftain, embers rising. The hollow is roots,
+glowing spore pods and the bones of what the Mother Cap has eaten, under a violet haze. While she
+gasps with her gills open, she does nothing else: that window is yours.
+
 ## Caches and shrines
 
 Every level has an optional cache off the main path: a ledge above the plateau you reach by pogoing

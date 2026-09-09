@@ -668,3 +668,63 @@ export function bakeGiantCap(seed) {
   for (let i = 0; i < 8; i++) px(g, 40 + ((rnd() * 52) | 0), 8 + ((rnd() * 34) | 0), '#9a5aa8');
   return outline(c, OUT);
 }
+
+// ---------- boss arena set dressing ----------
+// The hive: a great papery nest of hex cells, dripping. Background.
+export function bakeHiveBg(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(120, 96);
+  ellipse(g, 60, 50, 56, 44, '#b8913a', '#8a6a28'); ellipse(g, 56, 44, 44, 34, '#d0a848'); ellipse(g, 50, 36, 26, 18, '#e0c060');
+  for (let y = 12; y < 92; y += 8) for (let x = 8 + (y / 8 % 2) * 5; x < 112; x += 10) { const dx = (x - 60) / 56, dy = (y - 50) / 44; if (dx * dx + dy * dy > 0.85) continue; const dark = rnd() < 0.25; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + 0.5, a2 = a + Math.PI / 3; line(g, x + Math.cos(a) * 4, y + Math.sin(a) * 4, x + Math.cos(a2) * 4, y + Math.sin(a2) * 4, '#6a4a18', 1); } if (dark) ellipse(g, x, y, 2.5, 2.5, '#3a2a10'); else if (rnd() < 0.3) ellipse(g, x, y, 2, 2, '#f0d070'); }
+  for (let i = 0; i < 5; i++) { const x = 20 + ((rnd() * 80) | 0); rect(g, x, 88, 2, 4 + ((rnd() * 5) | 0), '#e0b040'); px(g, x, 93 + ((rnd() * 3) | 0), '#ffe080'); }
+  return outline(c, OUT);
+}
+export function bakeHoneyDrip() { return [0, 1, 2].map(f => { const [c, g] = canvas(4, 12); rect(g, 1, 0, 2, 4 + f * 3, '#e0b040'); ellipse(g, 2, 4 + f * 3, 2, 2.5, '#ffd36b', '#e0b040'); px(g, 1, 3 + f * 3, '#fff0a0'); return c; }); }
+// The court: stone frog statues, mossy, and lily lanterns that glow on the water.
+export function bakeFrogStatue(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(22, 28);
+  rect(g, 2, 20, 18, 8, '#7c8797'); rect(g, 2, 20, 18, 2, '#9aa3b0'); rect(g, 4, 26, 14, 2, '#5a6270');
+  ellipse(g, 11, 14, 9, 6, '#8a9aa0', '#5a6a70'); ellipse(g, 11, 8, 6, 4, '#8a9aa0', '#5a6a70'); ellipse(g, 7, 6, 2, 2, '#5a6a70'); ellipse(g, 15, 6, 2, 2, '#5a6a70'); px(g, 7, 6, OUT); px(g, 15, 6, OUT);
+  for (let i = 0; i < 10; i++) px(g, 2 + ((rnd() * 18) | 0), 6 + ((rnd() * 20) | 0), rnd() < 0.5 ? '#4f9a58' : '#2f6e3a');
+  return outline(c, OUT);
+}
+export function bakeLilyLantern() { return [0, 1].map(f => { const [c, g] = canvas(12, 10); ellipse(g, 6, 8, 6, 2, '#4f9a58', '#2f6e3a'); fillPoly(g, [[6, 1], [3, 7], [9, 7]], f ? '#ffd0dc' : '#ff9ab0'); fillPoly(g, [[6, 3], [4, 7], [8, 7]], f ? '#fff6e0' : '#ffd0dc'); px(g, 6, 5, '#ffd36b'); return outline(c, OUT); }); }
+// The hall: a war banner, a throne of bones, skull piles, hanging cages.
+export function bakeWarBanner(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(44, 72);
+  rect(g, 20, 0, 4, 72, '#5c3a1d'); rect(g, 20, 0, 1, 72, '#7a4e28'); rect(g, 6, 2, 32, 3, '#5c3a1d');
+  fillPoly(g, [[7, 5], [37, 5], [37, 52], [22, 62], [7, 52]], '#8f2f28'); fillPoly(g, [[9, 7], [35, 7], [35, 50], [22, 58], [9, 50]], '#c9463d');
+  // a goblin face
+  ellipse(g, 22, 26, 9, 8, '#1b1626'); rect(g, 17, 22, 3, 3, '#e0b040'); rect(g, 24, 22, 3, 3, '#e0b040'); rect(g, 18, 30, 8, 2, '#e8dcc0'); px(g, 19, 32, '#e8dcc0'); px(g, 24, 32, '#e8dcc0');
+  for (let i = 0; i < 8; i++) px(g, 9 + ((rnd() * 26) | 0), 40 + ((rnd() * 16) | 0), '#8f2f28');
+  rect(g, 2, 4, 6, 2, '#e8dcc0'); rect(g, 36, 4, 6, 2, '#e8dcc0');
+  return outline(c, OUT);
+}
+export function bakeBoneThrone() {
+  const [c, g] = canvas(40, 40);
+  rect(g, 4, 20, 32, 20, '#b8a888'); rect(g, 6, 6, 28, 16, '#c9b998'); rect(g, 4, 20, 32, 2, '#e8dcc0');
+  for (const [x, y] of [[8, 8], [18, 4], [28, 8], [6, 26], [30, 26], [18, 30]]) { ellipse(g, x + 3, y + 3, 4, 3.5, '#e8dcc0', '#b8a888'); rect(g, x + 1, y + 2, 2, 2, OUT); rect(g, x + 4, y + 2, 2, 2, OUT); }
+  for (let i = 0; i < 6; i++) rect(g, 6 + i * 5, 12, 2, 8, '#e8dcc0');
+  rect(g, 2, 0, 3, 24, '#e8dcc0'); rect(g, 35, 0, 3, 24, '#e8dcc0'); px(g, 3, 0, '#c9463d'); px(g, 36, 0, '#c9463d');
+  return outline(c, OUT);
+}
+export function bakeSkullPile(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(26, 12);
+  for (let i = 0; i < 7; i++) { const x = 3 + ((rnd() * 18) | 0), y = 4 + ((rnd() * 5) | 0); ellipse(g, x, y, 3.5, 3, '#e8dcc0', '#b8a888'); px(g, x - 1, y, OUT); px(g, x + 1, y, OUT); }
+  rect(g, 2, 10, 22, 2, '#b8a888');
+  return outline(c, OUT);
+}
+export function bakeHangCage() {
+  const [c, g] = canvas(16, 44);
+  for (let y = 0; y < 16; y += 3) rect(g, 7, y, 2, 2, '#8b8378');
+  rect(g, 2, 16, 12, 24, '#3a3040'); rect(g, 3, 17, 10, 22, '#1b1626'); for (let x = 3; x < 13; x += 3) rect(g, x, 17, 1, 22, '#8b8378'); rect(g, 2, 16, 12, 1, '#b3aca0'); rect(g, 2, 39, 12, 1, '#b3aca0');
+  ellipse(g, 8, 24, 3, 3, '#e8dcc0'); px(g, 7, 24, OUT); px(g, 9, 24, OUT); rect(g, 7, 28, 2, 8, '#e8dcc0'); rect(g, 5, 30, 6, 1, '#e8dcc0');
+  return outline(c, OUT);
+}
+// The hollow: roots across the floor, glowing spore pods, and the bones of what she ate.
+export function bakeRootDecor(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(44, 10);
+  let x = 0, y = 7; while (x < 44) { const y2 = Math.max(2, Math.min(9, y + ((rnd() * 3) | 0) - 1)); line(g, x, y, x + 4, y2, '#4a4436', 2); line(g, x, y - 1, x + 4, y2 - 1, '#6a6450', 1); x += 4; y = y2; }
+  for (let i = 0; i < 4; i++) px(g, (rnd() * 44) | 0, 2 + ((rnd() * 6) | 0), '#5a3a5a');
+  return c;
+}
+export function bakeSporePod() { return [0, 1].map(f => { const [c, g] = canvas(12, 16); rect(g, 5, 0, 2, 5, '#5a5468'); ellipse(g, 6, 10, 5, 5.5, f ? '#b070c0' : '#9a5aa8', '#6a3a7a'); ellipse(g, 5, 8, 2, 2, f ? '#ffd0ff' : '#e0b0f0'); px(g, 8, 12, '#e0b0f0'); return outline(c, OUT); }); }
