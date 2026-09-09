@@ -102,22 +102,26 @@ Queen. Shrines are checkpoints and heal. Gold coins are the collectible. Deep wa
 
 **Bracken Wood**: glade → pits and crates → spitter ledge and shieldbearer step → shrine → wasp
 pit (pogo chain) → thorn climb → plateau with a moving log → arena → the hollow (stream, shrine)
-→ the ridge → gate at dusk → the hive clearing and the Queen. Pollen in the glade, mist in the
-hollow, rain and lightning over the hive.
+→ the ridge → the HELM PIT (three shieldbearers on posts over spikes: their helms are the stepping
+stones) → a quiet walk to the gate at dusk → the hive clearing and the Queen, who now has two low
+combs to fight from. Pollen in the glade, mist in the hollow, rain and lightning over the hive.
 
 **Marsh Wood** (unlocks when the wood is cleared): the bank → lily pads that sink under you →
 reed climb under an archer → archer islands → wading shallows (a dip in the ground, slow and
 tiring, hoppers waiting) → drifting logs against the current → the long river on a big raft, with
-hoppers leaping aboard and two archers on perches overhead → the flooded grove (pools, pads,
-hoppers, a spike goblin) → mud flats → the Croaking Court: a shallow pond, reed perches and the
+hoppers leaping aboard → the flooded grove (a dip full of hoppers) → a second, slower raft under
+two archers, finished on sinking pads with the frogs leaping after you → short mud flats → the Croaking Court: a shallow pond, reed perches and the
 King on his mud dais. It rains the whole way.
 
 **The Stockade** (unlocks when the marsh is cleared): the goblin camp at night. Watchtowers with
 horns (silence the archer or the camp comes running), rope bridges a goblin cuts under you with a
 net below, a palisade gate you crank open or blow open with a rolling barrel bomb, cages of birds
 and foxes (a freed fox fights beside you), braziers you tip to spill fire, pulley lifts, and the
-kennels and armoury (hounds, a shed archer, barrels by an inner gate), pulley lifts, and the
-great hall where the Chieftain waits. Bridges you lose stay lost for the attempt, but there is
+THE YARD (one room, every tool: free the fox to fight the hounds, tip the brazier to hold them,
+roll the barrel into the inner gate or crank it), the kennels and armoury, pulley lifts, and the
+great hall where the Chieftain waits. The level does not end when he falls: the hall burns from
+the floor up and you climb the rafters to the way out. The horn now brings five goblins and a hound;
+the watchtower can be climbed from either side. Bridges you lose stay lost for the attempt, but there is
 always a net and a set of ledges to climb back out. Spent barrels come back after a few seconds.
 
 **Sporewood** (unlocks when the stockade is cleared): the deep fungus under a teal night sky.
@@ -128,8 +132,10 @@ floor (slash to pop, stomp to bounce); spore VENTS breathe an updraft on a timer
 some caps ride moving ledges; plunging into any cap springs you higher than a held jump; violet SLEEP SPORES put you to sleep
 if you linger, so block to hold your breath and mash to wake; glow mushrooms light the way. The
 mycelium glade → the bouncer canyon → the lurker grove → the shelf climb under a toad shaman → the
-sleep marsh → the mycelium tunnels (low roof, no plunge) → the lantern terrace → the drone gauntlet
-(caps on pillars over a drop) → the hollow and the Mother Cap.
+sleep marsh (ride the vents from shelf to shelf over the violet, blocking between gusts) → the
+mycelium tunnels (low roof, no plunge) → the lantern terrace → the drone gauntlet (caps on pillars
+over a drop, or the low road of shelves that give way) → the hollow and the Mother Cap. When she
+tips, the hollow goes violet and the glow caps die.
 
 ## Dressing and life
 
@@ -142,6 +148,12 @@ as you wade near), goblin war totems, a fallen giant cap. A haze sits between th
 layer so the parallax reads as depth. Hits leave an impact star and squash the foe, kills ring out,
 a plunge landing sends a shockwave through the dust, a parried blow flashes steel, and turning at a
 run kicks up a skid.
+
+## Caches and shrines
+
+Every level has an optional cache off the main path: a ledge above the plateau you reach by pogoing
+the wasp, a reed climb over the shallows, coins lying on the ravine net, a shelf in the lurker grove
+reached by a lone cap. Shrines are spaced so no stretch runs more than about eighty tiles without one.
 
 ## World map, purse, and store
 

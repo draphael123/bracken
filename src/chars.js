@@ -353,7 +353,17 @@ export function bakeChief() {
   // the bow: a tall curve out front, arrow nocked
   const bow = spr([...pad, ...top, body[0].slice(0, 19) + '.w...', body[1].slice(0, 19) + '..w..', body[2].slice(0, 18) + 'lll.w.', body[3].slice(0, 19) + '..w..', body[4].slice(0, 19) + '.w...', body[5], ...legsA]);
   const leap = spr([...pad, ...top, ...body, '.....GGGGG..GGGGG.......', '......GGG....GGG........', '........................']);
-  return pack([stand, walk, raise, slam, sweep, grab, guard, slash, bow, leap], 12, 22, 16, 18);
+  // walk cycles: legs alternate and the body drops a row on the passing step (one extra blank row on top, last leg row trimmed)
+  const pad5 = [...pad, '........................'];
+  const legsC = ['......GGGG....GGGG......', '.....GGGGG....GGGGG.....'];
+  const stand2 = spr([...pad5, ...top, ...body, ...legsC]);
+  const guardRows = [helm[0], helm[1], helm[2], helm[3].slice(0, 20) + 'l...', head[0].slice(0, 20) + 'l...', head[1], head[2], head[3], body[0].slice(0, 18) + '.SSS..', body[1].slice(0, 18) + 'SsssS.', body[2].slice(0, 18) + 'SssyS.', body[3].slice(0, 18) + 'SsssS.', body[4].slice(0, 18) + '.SSS..', body[5]];
+  const guardWalk = spr([...swordUp, ...guardRows, ...legsB]);
+  const guardWalk2 = spr(['........................', ...swordUp, ...guardRows, ...legsC]);
+  const bowRows = [...top, body[0].slice(0, 19) + '.w...', body[1].slice(0, 19) + '..w..', body[2].slice(0, 18) + 'lll.w.', body[3].slice(0, 19) + '..w..', body[4].slice(0, 19) + '.w...', body[5]];
+  const bowWalk = spr([...pad, ...bowRows, ...legsB]);
+  const bowWalk2 = spr([...pad5, ...bowRows, ...legsC]);
+  return pack([stand, walk, raise, slam, sweep, grab, guard, slash, bow, leap, stand2, guardWalk, guardWalk2, bowWalk, bowWalk2], 12, 22, 16, 18);
 }
 
 // ---------- Sporewood ----------
