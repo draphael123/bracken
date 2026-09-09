@@ -1446,7 +1446,7 @@ function updateParticles(dt) {
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
 }
 function updateCamera(dt) {
-  const tx = P.x + P.face * 26 - VW / 2, ty = P.y - 104;
+  const tx = P.x + P.face * 26 - VW / 2, ty = P.y - 104 - (bossActive && boss && boss.t === 'mother' ? 34 : 0); // the hollow looks up at her gills
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
   const x0 = camLock ? camLock.x0 - 8 : 0, x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW;
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
