@@ -10,7 +10,7 @@ No dependencies. Plain canvas 2D at 320×180, integer-scaled, every sprite baked
 
 | Action | Keys |
 |---|---|
-| Move | Arrows / WASD |
+| Move | Arrows / WASD / d-pad |
 | Jump (hold for height) | Z / Space / W / K |
 | Swing | X / J / Enter |
 | Block (hold; drains stamina, slow walk, no jumping) | C / L |
@@ -92,9 +92,22 @@ hoppers, a thornback) → mud flats → the frog pond and the Bullfrog King. It 
 Any key on the title opens the world map. Walk the knight along the path with the arrows and
 press Z on a node: Bracken Wood, the Store hut, Marsh Wood (locked until the wood is cleared).
 Best time, gold, and a CLEARED flag are saved per level. Gold you finish a level with goes into
-your purse. The store sells knight skins (Black, Violet, River Blue); owned skins can be swapped
-any time. X on the map opens the **bestiary**: every foe you have met, how to beat it, and how
-many you've slain.
+your purse. The store has three tabs: knight skins (Black, Violet, River Blue), sword blades
+(Ember, Frost, Gilded), and upgrades (Heart of Oak: +25 health, Second Wind: +30 stamina). Owned
+skins and blades can be swapped any time. X on the map opens the **bestiary**: every foe you have
+met, how to beat it, and how many you've slain.
+
+## Medals
+
+Each clear is graded: a time medal (bronze, silver, gold by level thresholds), ALL GOLD when every
+coin is collected, and NO DAMAGE for a clear without a hit or a death. They show on the results
+card and as icons on the map.
+
+## Gamepad and touch
+
+Any standard gamepad works: A jump, X swing, B dodge, LB/RB block, Start pause, d-pad or stick to
+move. On touch devices (or with `?touch=1`) an on-screen pad appears: d-pad on the left, A/B/X/Y
+on the right, pause top-right.
 
 ## Settings (Esc)
 
