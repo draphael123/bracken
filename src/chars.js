@@ -271,8 +271,13 @@ export function bakeFrog() {
 }
 
 // Hopper — a marsh frog that leaps at you. 10×8. Frames: sit, leap.
-export function bakeHopper() {
-  const P2 = Object.assign({}, EP, { F: '#5a9a3a', D: '#3a6a2a', L: '#8fc85a', B: '#d8e0a0' });
+export const HOPPER_COLORS = {
+  green: { F: '#5a9a3a', D: '#3a6a2a', L: '#8fc85a', B: '#d8e0a0' },
+  yellow: { F: '#d9b83a', D: '#9a7a1a', L: '#f5e07a', B: '#f7f0c0' },
+  blue: { F: '#3a6aa0', D: '#244a78', L: '#6fa0d8', B: '#c8d8f0' },
+};
+export function bakeHopper(color = 'green') {
+  const P2 = Object.assign({}, EP, HOPPER_COLORS[color] || HOPPER_COLORS.green);
   const f = rows => outline(fromGrid(rows, P2, 1), OUT);
   const sit = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', '.DFFDDFFD.', '.DD....DD.'];
   const leap = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', 'DFD....DFD', 'D........D'];

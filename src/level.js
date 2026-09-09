@@ -159,7 +159,7 @@ function marshWood() {
   block(111, 130, 18, 27); block(113, 128, 19, 27); for (let x = 113; x <= 128; x++) L.set(x, 18, 0);
   water(113, 128, 18, true);
   ent('sign', 112, 17, { text: 'SHALLOWS ARE SLOW AND TIRING.' });
-  ent('hopper', 118, 18, { face: -1 }); ent('hopper', 125, 18, { face: 1 });
+  ent('hopper', 118, 18, { face: -1 }); ent('hopper', 125, 18, { face: 1, color: 'yellow' });
   coins([115, 15], [121, 15], [127, 15]);
 
   // ---- 6. Drift stream: logs ride the current, against you ----
@@ -172,30 +172,29 @@ function marshWood() {
   // ---- 7. The long river: a big raft, frogs leaping aboard, archers overhead ----
   water(176, 259, 19);
   movers.push({ kind: 'raft', x0: 176 * TS, x1: 258 * TS - 224, x: 176 * TS, y: 18 * TS + 8, w: 224, h: 8, speed: 40, frogs: true });
-  plat(200, 12, 4); ent('archer', 202, 11, { face: -1 });
-  plat(236, 12, 4); ent('archer', 238, 11, { face: 1 });
+  plat(200, 12, 4); plat(236, 12, 4);
   ent('wasp', 190, 15); ent('wasp', 218, 15); ent('wasp', 248, 15);
   coins([185, 15], [191, 13], [212, 15], [219, 13], [232, 15], [249, 13]);
   block(260, 274, 18, 27);
-  ent('check', 264, 17); crate(270, 17); ent('hopper', 268, 17, { face: -1 });
+  ent('check', 264, 17); crate(270, 17); ent('hopper', 268, 17, { face: -1, color: 'blue' });
 
   // ---- 8. The flooded grove: pools, pads, hoppers ----
   block(275, 318, 18, 27);
   for (let x = 280; x <= 292; x++) L.set(x, 18, 0); water(280, 292, 18, true);
-  ent('hopper', 283, 18, { face: -1 }); ent('hopper', 289, 18, { face: -1 });
+  ent('hopper', 283, 18, { face: -1, color: 'yellow' }); ent('hopper', 289, 18, { face: -1, color: 'blue' });
   reeds(294, 15, 3); coins([295, 14], [282, 15], [288, 15]);
   for (let x = 297; x <= 306; x++) for (let y = 18; y <= 27; y++) L.set(x, y, 0);
   water(297, 306, 19);
   for (const x of [298, 301, 304]) ent('pad', x, 18);
   coins([299, 16], [302, 16], [305, 16]);
-  ent('thorn', 311, 17, { face: -1 }); ent('hopper', 316, 17, { face: -1 });
+  ent('thorn', 311, 17, { face: -1 }); ent('hopper', 316, 17, { face: -1, color: 'yellow' });
   crate(314, 17);
 
   // ---- 9. Mud flats ----
   block(319, 340, 18, 27);
   ent('thorn', 324, 17, { face: -1 });
   for (let x = 328; x <= 334; x++) L.set(x, 18, 0); water(328, 334, 18, true);
-  ent('hopper', 331, 18, { face: -1 });
+  ent('hopper', 331, 18, { face: -1, color: 'blue' });
   reeds(336, 15, 3); coins([337, 14], [330, 15]);
   ent('check', 339, 17);
 
