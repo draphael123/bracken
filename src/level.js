@@ -339,13 +339,16 @@ function sporewood() {
   // ---- 2. The bouncer canyon: up the caps to the high path ----
   floor(45, 61, 26);
   bouncer(48, 25); plat(47, 19, 3); bouncer(49, 18); plat(48, 12, 3); plat(52, 12, 3); plat(56, 12, 3);
-  ent('puffball', 53, 11); ent('drone', 58, 8); ent('drone', 52, 16);
-  coins([50, 16], [54, 10], [58, 10]); ent('glow', 46, 25);
+  ent('mover', 52, 16, { len: 2, range: 4, cap: true, speed: 30 });
+  ent('vent', 58, 25, { period: 4, on: 1.8, h: 100 }); plat(57, 20, 3); ent('roller', 60, 25, { face: -1 });
+  ent('puffball', 53, 11); ent('drone', 58, 8);
+  coins([50, 16], [54, 10], [58, 10], [58, 22]); ent('glow', 46, 25); ent('glow', 61, 25);
+  ent('sign', 46, 25, { text: 'VENTS LIFT. ROLLERS POP.' });
   block(60, 100, 12, 27);
 
   // ---- 3. The lurker grove: some of the mushrooms are hungry ----
   ent('check', 63, 11);
-  ent('lurker', 70, 11); ent('sporeling', 74, 11, { face: -1 }); ent('puffball', 76, 11); ent('lurker', 79, 11);
+  ent('lurker', 70, 11); ent('sporeling', 74, 11, { face: -1 }); ent('puffball', 76, 11); ent('lurker', 79, 11); ent('roller', 85, 11, { face: -1 });
   ent('glow', 66, 11); ent('glow', 83, 11); ent('lurker', 87, 11); ent('sporeling', 91, 11, { face: -1 }); ent('puffball', 94, 11); ent('glow', 97, 11);
   coins([72, 9], [81, 9], [89, 9]);
 
@@ -361,21 +364,24 @@ function sporewood() {
   ent('sign', 133, 13, { text: 'VIOLET SPORES PUT YOU TO SLEEP. BLOCK THROUGH.' });
   sleeps.push({ x0: 137 * TS, x1: 147 * TS, y0: 8 * TS, y1: 14 * TS }, { x0: 153 * TS, x1: 162 * TS, y0: 8 * TS, y1: 14 * TS });
   ent('sporeling', 142, 13, { face: -1 }); ent('drone', 145, 9); ent('sporeling', 150, 13, { face: -1 }); ent('drone', 158, 10); ent('shield', 160, 13, { face: -1 });
+  ent('vent', 148, 13, { period: 5, on: 2, h: 90, phase: 1 }); plat(146, 8, 5); coins([147, 7], [150, 7]);
   ent('glow', 135, 13); ent('glow', 149, 13); ent('glow', 164, 13); coins([140, 11], [156, 11]);
   ent('check', 165, 13);
 
   // ---- 6. The mycelium tunnels: low roof, no room to plunge ----
   block(166, 200, 14, 27); block(166, 200, 0, 10);
-  ent('lurker', 172, 13); ent('sporeling', 176, 13, { face: -1 }); ent('sporeling', 181, 13, { face: 1 }); ent('puffball', 185, 13);
+  ent('lurker', 172, 13); ent('sporeling', 176, 13, { face: -1 }); ent('roller', 181, 13, { face: -1, speed: 70 }); ent('puffball', 185, 13);
   ent('lurker', 189, 13); ent('sporeling', 193, 13, { face: -1 }); ent('shield', 197, 13, { face: -1 });
   ent('glow', 168, 13); ent('glow', 178, 13); ent('glow', 187, 13); ent('glow', 196, 13); coins([174, 12], [183, 12], [191, 12]);
 
   // ---- 6b. The lantern terrace: glow caps light the way, a second shaman raises the dead ----
   floor(201, 244, 14);
   ent('glow', 203, 13); ent('puffball', 206, 13); ent('lurker', 210, 13); ent('sporeling', 214, 13, { face: -1 }); ent('glow', 217, 13);
+  ent('vent', 208, 13, { period: 4.5, on: 1.8, h: 96, phase: 2 }); plat(206, 8, 4); coins([207, 7], [209, 7]); ent('mover', 229, 9, { len: 2, range: 5, cap: true, speed: 34 });
   bouncer(220, 13); plat(218, 8, 5); coins([220, 10], [219, 6], [221, 6]); ent('drone', 224, 7);
   sleeps.push({ x0: 226 * TS, x1: 233 * TS, y0: 8 * TS, y1: 14 * TS }); ent('sporeling', 229, 13, { face: -1 }); ent('glow', 227, 13);
-  ent('shaman', 237, 13, { face: -1 }); ent('puffball', 234, 13); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
+  ent('shaman', 237, 13, { face: -1 }); ent('roller', 234, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
+  ent('sign', 244, 13, { text: 'THE PILLARS. HOLD JUMP, OR PLUNGE INTO THE CAPS.' });
   coins([208, 12], [231, 11], [239, 11]);
 
   // ---- 7. The drone gauntlet: caps on pillars over the drop ----

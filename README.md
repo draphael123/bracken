@@ -76,7 +76,8 @@ eat the spines, and only the sword will do.
 - **The Mother Cap** (Sporewood boss) — never moves; the hollow is her. Roots stab up through the
   floor on a rhythm (a sand-coloured tell, then the spike), and she belches rolling sleep clouds.
   Bounce off the caps under her to slash the four gill pods; then she tips, her heart shows at the
-  top of the stalk, and only the plunge can pierce it (three times).
+  top of the stalk, and only the plunge can pierce it (three times). The hollow is shown zoomed out
+  so you can see her whole, and landing a hit on her never costs you: you are safe for a moment after.
 - **The Goblin Chieftain** (Stockade boss) — swaps weapons every few swings. CLUB: an unblockable
   overhead that plants him (hit him then) and a blockable sweep (block it = PARRIED). SWORD AND
   SHIELD: quick two-hit slashes and a shield bash; the shield turns your blade from the front, so
@@ -122,7 +123,9 @@ always a net and a set of ledges to climb back out. Spent barrels come back afte
 **Sporewood** (unlocks when the stockade is cleared): the deep fungus under a teal night sky.
 Red caps are BOUNCERS (land on one, hold jump for extra height); shelf fungus snaps after you stand
 on it for a second and regrows later; puffballs burst into a spore cloud that slows you and drains
-stamina (slash them from range instead of walking into them); violet SLEEP SPORES put you to sleep
+stamina (slash them from range instead of walking into them); barrel-sized puffballs ROLL along the
+floor (slash to pop, stomp to bounce); spore VENTS breathe an updraft on a timer that carries you up;
+some caps ride moving ledges; plunging into any cap springs you higher than a held jump; violet SLEEP SPORES put you to sleep
 if you linger, so block to hold your breath and mash to wake; glow mushrooms light the way. The
 mycelium glade → the bouncer canyon → the lurker grove → the shelf climb under a toad shaman → the
 sleep marsh → the mycelium tunnels (low roof, no plunge) → the lantern terrace → the drone gauntlet
@@ -150,6 +153,12 @@ Any standard gamepad works: A jump, X swing, B dodge, LB/RB block, Start pause, 
 move. On touch devices (or with `?touch=1`) an on-screen pad appears: d-pad on the left, A/B/X/Y
 on the right, pause top-right.
 
+## Iron Knight
+
+An opt-in mode in Settings: three lives per level. Lose them all and the knight falls, the level
+is not cleared, and you are back on the map (gold you picked up is kept). Clear a level with it on
+and the map card shows an iron shield beside the medals.
+
 ## Saves
 
 Three save slots, picked after the title screen (LEFT/RIGHT, Z to play, X twice to erase). Each
@@ -161,7 +170,7 @@ older single save is picked up as slot 1.
 Difficulty (easy, normal, hard: damage taken and enemy health scale), music on/off, music
 volume and effects volume (independent), sound FX files or synth, a Z/X swap for jump and swing,
 screen shake, hit stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets),
-CRT scanlines, a pixel-scale cap, BACK TO SHRINE (counts as a death), RESTART LEVEL, and a reset
+CRT scanlines, a pixel-scale cap, IRON KNIGHT, BACK TO SHRINE (counts as a death), RESTART LEVEL, and a reset
 of the current save slot.
 
 ## Files
