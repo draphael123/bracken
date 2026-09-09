@@ -1,0 +1,213 @@
+// art.js — every tile, prop and background layer for BRACKEN, baked once.
+import { canvas, px, rect, line, circle, ellipse, fromGrid, outline, mulberry } from './px.js';
+
+export const OUT = '#1b1626';
+export const C = {
+  grass: '#5aa33e', grassL: '#8fd160', grassD: '#3f7a2c',
+  dirt: '#7a5230', dirtL: '#8f6540', dirtD: '#5e3b21', stone: '#8b8378', stoneD: '#5f5a52', stoneL: '#b3aca0',
+  wood: '#8a5a32', woodL: '#a8743f', woodD: '#5c3a1d',
+  vine: '#2f3d2a', thorn: '#d8d2b8', berry: '#c9463d',
+  gold: '#ffd36b',
+};
+
+const T = 16;
+
+// ---------- ground ----------
+function dirtBase(g, rnd, w = T, h = T) {
+  rect(g, 0, 0, w, h, C.dirt);
+  for (let i = 0; i < w * h / 6; i++) {
+    const x = (rnd() * w) | 0, y = (rnd() * h) | 0;
+    px(g, x, y, rnd() < 0.5 ? C.dirtD : C.dirtL);
+  }
+  for (let i = 0; i < 2; i++) if (rnd() < 0.5) { const x = (rnd() * (w - 3)) | 0, y = (rnd() * (h - 2)) | 0; rect(g, x, y, 3, 2, C.stone); px(g, x, y, C.stoneL); px(g, x + 2, y + 1, C.stoneD); }
+}
+export function bakeDirt(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd); return c; }
+
+// Grass-top dirt. eL/eR: air on that side → grass wraps down the edge.
+export function bakeGrassTop(seed, eL, eR) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  dirtBase(g, rnd);
+  for (let x = 0; x < T; x++) {
+    const d = 3 + (rnd() < 0.35 ? 1 : 0);
+    for (let y = 0; y < d; y++) px(g, x, y, C.grass);
+    px(g, x, d, ((x + d) & 1) ? C.grassD : C.dirtD);
+    if (rnd() < 0.3) px(g, x, 0, C.grassL);
+    if (rnd() < 0.15) px(g, x, 1, C.grassL);
+  }
+  for (let i = 0; i < 3; i++) { const x = (rnd() * T) | 0; px(g, x, 1 + ((rnd() * 2) | 0), C.grassD); }
+  const side = (x0, dir) => { for (let y = 0; y < 10; y++) { const w = y < 4 ? 2 : y < 7 ? 1 : (rnd() < 0.5 ? 1 : 0); for (let i = 0; i < w; i++) px(g, x0 + i * dir, y, y < 2 ? C.grass : ((y + i) & 1 ? C.grass : C.grassD)); } };
+  if (eL) side(0, 1); if (eR) side(T - 1, -1);
+  return c;
+}
+// Side edges on inner dirt (air beside but not above) get a darker fringe.
+export function bakeDirtEdge(seed, eL, eR) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd);
+  const side = (x0, dir) => { for (let y = 0; y < T; y++) if (rnd() < 0.6) px(g, x0, y, C.dirtD); if (rnd() < 0.3) px(g, x0 + dir, (rnd() * T) | 0, C.grassD); };
+  if (eL) side(0, 1); if (eR) side(T - 1, -1);
+  return c;
+}
+
+export function bakeLog(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 1, T, 7, C.wood); rect(g, 0, 1, T, 1, C.woodL); rect(g, 0, 6, T, 2, C.woodD);
+  for (let i = 0; i < 4; i++) { const x = (rnd() * T) | 0; rect(g, x, 3 + ((rnd() * 2) | 0), 2 + ((rnd() * 3) | 0), 1, C.woodD); }
+  rect(g, 0, 0, T, 1, C.woodD);
+  if (rnd() < 0.5) { px(g, 3, 0, C.grassD); px(g, 4, 0, C.grass); }
+  return c;
+}
+export function bakeLogEnd(seed, right) {
+  const c = bakeLog(seed); const g = c.getContext('2d');
+  const x = right ? T - 4 : 0;
+  rect(g, x, 1, 4, 7, C.woodL); rect(g, x + 1, 2, 2, 5, C.wood); rect(g, x + 1, 4, 2, 1, C.woodD); rect(g, right ? T - 1 : 0, 1, 1, 7, OUT);
+  return c;
+}
+
+export function bakeThorns(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  for (let i = 0; i < 6; i++) {
+    const x0 = (rnd() * T) | 0, y0 = 6 + ((rnd() * 8) | 0), x1 = (rnd() * T) | 0, y1 = 8 + ((rnd() * 8) | 0);
+    line(g, x0, y0, x1, y1, C.vine, 2);
+  }
+  rect(g, 0, 14, T, 2, C.vine);
+  for (let i = 0; i < 7; i++) { const x = (rnd() * T) | 0, y = 4 + ((rnd() * 8) | 0); px(g, x, y, C.thorn); px(g, x, y + 1, '#7a7660'); }
+  if (rnd() < 0.5) { const x = (rnd() * 14) | 0; rect(g, x, 9 + ((rnd() * 4) | 0), 2, 2, C.berry); }
+  return c;
+}
+
+export function bakeCrate() {
+  const [c, g] = canvas(T, T);
+  rect(g, 1, 1, 14, 14, C.wood);
+  for (let y = 4; y < 15; y += 4) rect(g, 1, y, 14, 1, C.woodD);
+  rect(g, 1, 1, 14, 1, C.woodL); rect(g, 1, 1, 1, 14, C.woodL);
+  line(g, 2, 2, 13, 13, C.woodD, 1); line(g, 13, 2, 2, 13, C.woodD, 1);
+  px(g, 2, 2, C.stoneD); px(g, 13, 2, C.stoneD); px(g, 2, 13, C.stoneD); px(g, 13, 13, C.stoneD);
+  return outline(c, OUT);
+}
+
+// ---------- props ----------
+export function bakeAcorn() {
+  const rows = ['..ww..', '.wwww.', 'WWWWWW', '.bbbb.', '.bLbb.', '.bbbb.', '..bb..'];
+  return outline(fromGrid(rows, { w: '#6b4a2a', W: '#4c2c17', b: '#b97a3c', L: '#e0a45f' }, 1), OUT);
+}
+export function bakeShrine(lit) {
+  const [c, g] = canvas(20, 34);
+  rect(g, 3, 28, 14, 5, C.stone); rect(g, 3, 28, 14, 1, C.stoneL); rect(g, 3, 32, 14, 1, C.stoneD);
+  rect(g, 7, 14, 6, 14, C.stone); rect(g, 7, 14, 1, 14, C.stoneL); rect(g, 12, 14, 1, 14, C.stoneD);
+  rect(g, 4, 6, 12, 8, C.stoneD); rect(g, 6, 7, 8, 6, lit ? C.gold : '#2a2f3d');
+  if (lit) { rect(g, 8, 8, 4, 4, '#fff1c0'); }
+  rect(g, 2, 4, 16, 2, C.stone); rect(g, 4, 2, 12, 2, C.stone); rect(g, 7, 0, 6, 2, C.stoneL);
+  px(g, 5, 15, C.grassD); px(g, 6, 20, C.grass); px(g, 13, 17, C.grassD);
+  return outline(c, OUT);
+}
+export function bakeGate() {
+  const [c, g] = canvas(48, 52);
+  const pillar = x => { rect(g, x, 12, 10, 40, C.stone); rect(g, x, 12, 2, 40, C.stoneL); rect(g, x + 8, 12, 2, 40, C.stoneD); for (let y = 16; y < 52; y += 6) rect(g, x + 2, y, 6, 1, C.stoneD); };
+  pillar(2); pillar(36);
+  for (let x = 0; x < 48; x++) { const t = (x - 24) / 24; const y = 12 - Math.round(10 * Math.sqrt(Math.max(0, 1 - t * t))); rect(g, x, y, 1, 14 - (y - 2), C.stone); if (x % 5 === 0) px(g, x, y + 3, C.stoneD); }
+  rect(g, 0, 10, 48, 1, C.stoneL);
+  for (let i = 0; i < 40; i++) { const x = (i * 37) % 48, y = 4 + (i * 13) % 20; px(g, x, y, i & 1 ? C.grass : C.grassD); }
+  for (let i = 0; i < 10; i++) { const x = 4 + (i * 11) % 40; line(g, x, 14, x + (i & 1 ? 1 : -1), 22 + (i * 7) % 12, C.grassD, 1); }
+  rect(g, 20, 20, 8, 6, C.gold); rect(g, 22, 22, 4, 2, '#fff1c0');
+  return outline(c, OUT);
+}
+export function bakeSign() {
+  const [c, g] = canvas(18, 18);
+  rect(g, 8, 8, 2, 10, C.woodD);
+  rect(g, 1, 1, 16, 8, C.wood); rect(g, 1, 1, 16, 1, C.woodL); rect(g, 1, 8, 16, 1, C.woodD);
+  rect(g, 3, 3, 8, 1, C.woodD); rect(g, 3, 5, 11, 1, C.woodD);
+  return outline(c, OUT);
+}
+export function bakeTuft(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(8, 6);
+  for (let i = 0; i < 4; i++) { const x = 1 + i * 2; const h = 2 + ((rnd() * 3) | 0); line(g, x, 5, x + (rnd() < 0.5 ? -1 : 1), 5 - h, rnd() < 0.5 ? C.grass : C.grassL, 1); }
+  return c;
+}
+export function bakeFlower(seed) {
+  const rnd = mulberry(seed); const col = ['#f4d35e', '#e8788a', '#fbf6ea', '#9ec7ff'][(rnd() * 4) | 0];
+  const [c, g] = canvas(5, 7); line(g, 2, 6, 2, 2, C.grassD, 1); px(g, 1, 4, C.grass);
+  rect(g, 1, 1, 3, 3, col); px(g, 2, 2, '#e0a45f'); px(g, 0, 2, col); px(g, 4, 2, col); px(g, 2, 0, col);
+  return c;
+}
+export function bakeMushroom(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(7, 7);
+  const cap = rnd() < 0.5 ? C.berry : '#d9a55b';
+  rect(g, 2, 3, 3, 4, '#f0e6c8'); rect(g, 0, 1, 7, 3, cap); rect(g, 1, 0, 5, 1, cap); px(g, 2, 1, '#fff1c0'); px(g, 5, 2, '#fff1c0');
+  return outline(c, OUT);
+}
+export function bakeBush(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(26, 16);
+  ellipse(g, 13, 10, 12, 6, C.grassD); ellipse(g, 9, 8, 7, 6, C.grass); ellipse(g, 17, 7, 7, 6, C.grass);
+  ellipse(g, 12, 5, 6, 4, C.grassL, C.grass);
+  for (let i = 0; i < 5; i++) if (rnd() < 0.6) px(g, 4 + ((rnd() * 18) | 0), 4 + ((rnd() * 8) | 0), C.berry);
+  return outline(c, OUT);
+}
+export function bakeShadow(w, h) { const [c, g] = canvas(w * 2, h * 2); ellipse(g, w, h, w, h, 'rgba(20,20,40,0.35)'); return c; }
+
+// ---------- background layers ----------
+export function bakeSky(h) {
+  const [c, g] = canvas(1, h);
+  const top = [104, 170, 220], bot = [205, 232, 210];
+  for (let y = 0; y < h; y++) {
+    const t = y / (h - 1), tt = Math.min(1, t * 1.15);
+    const q = Math.round(tt * 6) / 6;
+    const r = top[0] + (bot[0] - top[0]) * q, gg = top[1] + (bot[1] - top[1]) * q, b = top[2] + (bot[2] - top[2]) * q;
+    px(g, 0, y, 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')');
+  }
+  return c;
+}
+// Rolling far tree-line silhouette, tileable across w.
+export function bakeFar(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const col = '#7fb0a4', colD = '#6a9c90';
+  const ph = [rnd() * 6, rnd() * 6, rnd() * 6];
+  const yAt = x => { const u = x / w * Math.PI * 2; return Math.round(36 + 10 * Math.sin(u * 2 + ph[0]) + 6 * Math.sin(u * 5 + ph[1]) + 3 * Math.sin(u * 13 + ph[2])); };
+  for (let x = 0; x < w; x++) {
+    const y = yAt(x);
+    rect(g, x, y, 1, h - y, col);
+    if ((x % 7) < 2) rect(g, x, y + 4, 1, h, colD);
+  }
+  for (let i = 0; i < w / 6; i++) { const x = (rnd() * w) | 0; const y = yAt(x); rect(g, x, y - 3, 2, 4, col); px(g, x, y - 4, col); }
+  return c;
+}
+// Mid canopies: round blobs with trunks.
+export function bakeMid(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const col = '#4f8a5a', colD = '#3d6e46', trunk = '#385236';
+  const blobs = [];
+  for (let i = 0; i < w / 22; i++) blobs.push({ x: rnd() * w, y: 44 + rnd() * 30, r: 13 + rnd() * 10 });
+  for (const b of blobs) for (const dx of [-w, 0, w]) rect(g, Math.round(b.x + dx) - 2, Math.round(b.y), 4, h, trunk);
+  for (const b of blobs) for (const dx of [-w, 0, w]) {
+    circle(g, b.x + dx, b.y, b.r, colD); circle(g, b.x + dx - 3, b.y - 4, b.r * 0.7, col, colD);
+    circle(g, b.x + dx + b.r * 0.4, b.y - 2, b.r * 0.5, colD);
+  }
+  rect(g, 0, h - 8, w, 8, colD);
+  return c;
+}
+// Near trunks: tall dark trees with hanging leaf clusters. Drawn behind tiles.
+export function bakeNear(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const trunk = '#2b3f2a', trunkL = '#3a5438', leaf = '#2f5e3a', leafD = '#264a2f', leafL = '#3f7a48';
+  const trees = [];
+  for (let i = 0; i < w / 70; i++) trees.push({ x: rnd() * w, wd: 8 + rnd() * 8, s: rnd() });
+  for (const t of trees) for (const dx of [-w, 0, w]) {
+    const x = Math.round(t.x + dx), wd = Math.round(t.wd);
+    rect(g, x, 0, wd, h, trunk); rect(g, x, 0, 2, h, trunkL); rect(g, x + wd - 2, 0, 2, h, '#1f2f20');
+    // bark: short vertical streaks and the odd knot
+    for (let k = 0; k < h / 5; k++) { const bx = x + 2 + ((rnd() * (wd - 4)) | 0), by = (rnd() * h) | 0; rect(g, bx, by, 1, 3 + ((rnd() * 5) | 0), rnd() < 0.5 ? trunkL : '#1f2f20'); }
+    for (let k = 0; k < 3; k++) { const ky = 60 + rnd() * (h - 80); ellipse(g, x + wd / 2, ky, 2.5, 3, '#1f2f20'); px(g, x + (wd / 2) | 0, ky | 0, trunkL); }
+    // branches with leaf clusters in the band the camera actually sees (layer y 110..200)
+    for (let y = 120; y < h - 60; y += 26) { const right = (t.s + y) % 2 < 1; const bx = right ? x + wd + 14 : x - 14; line(g, right ? x + wd - 1 : x + 1, y, bx, y - 10, trunk, 3); ellipse(g, bx, y - 12, 12 + rnd() * 6, 5 + rnd() * 3, right ? leaf : leafD); ellipse(g, bx - 3, y - 15, 6, 3, leafL, leaf); }
+    for (let k = 0; k < 3; k++) { const lx = x + wd / 2 + (rnd() - 0.5) * 40, ly = 104 + rnd() * 30; ellipse(g, lx, ly, 16 + rnd() * 8, 7 + rnd() * 4, k & 1 ? leaf : leafD); if (k === 2) ellipse(g, lx - 4, ly - 3, 9, 3, leafL, leaf); }
+    rect(g, x - 3, h - 4, wd + 6, 4, trunk);
+  }
+  return c;
+}
+// Sun-shaft overlay: soft diagonal light bands.
+export function bakeShafts(w, h) {
+  const [c, g] = canvas(w, h);
+  for (let i = 0; i < 5; i++) {
+    const x0 = i * (w / 5) + 20; const pts = [[x0, 0], [x0 + 26, 0], [x0 - 4, h], [x0 - 30, h]];
+    g.globalAlpha = 0.07; g.fillStyle = '#fff6c8'; g.beginPath(); pts.forEach((p, j) => j ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fill();
+  }
+  return c;
+}
