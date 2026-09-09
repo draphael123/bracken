@@ -1,5 +1,5 @@
 // art.js — every tile, prop and background layer for BRACKEN, baked once.
-import { canvas, px, rect, line, circle, ellipse, fromGrid, outline, mulberry } from './px.js';
+import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, mulberry } from './px.js';
 
 export const OUT = '#1b1626';
 export const C = {
@@ -292,11 +292,12 @@ export function bakeLilyPad() {
   const mk = (col, colD, colL) => { const [c, g] = canvas(24, 7); ellipse(g, 12, 3.5, 11.5, 3, col, colD); ellipse(g, 10, 2.5, 6, 1.5, colL, col); line(g, 12, 3, 22, 1, colD, 1); px(g, 22, 0, 'rgba(0,0,0,0)'); return outline(c, OUT); };
   return [mk('#4f9a58', '#2f6e3a', '#8fd160'), mk('#3a7a48', '#264a2f', '#4f9a58')];
 }
-// Reeds: a one-way tile drawn as standing reeds with a seed head.
+// Reed mat: a floating peat slab (its top is the platform) with reeds growing out of it. 16×16, draw 8px up.
 export function bakeReeds(seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(T, T);
-  for (let i = 0; i < 5; i++) { const x = 1 + i * 3 + ((rnd() * 2) | 0); const h = 9 + ((rnd() * 6) | 0); line(g, x, T, x + (rnd() < 0.5 ? -1 : 1), T - h, rnd() < 0.5 ? '#6f8a3a' : '#8aa848', 1); rect(g, x, T - h - 2, 2, 3, '#6b4a2a'); }
-  rect(g, 0, 0, T, 1, 'rgba(0,0,0,0)');
+  rect(g, 0, 8, T, 8, '#4a3a2a'); rect(g, 0, 8, T, 2, '#6f8a3a'); rect(g, 0, 10, T, 1, '#5e4a34'); rect(g, 0, 15, T, 1, '#2f2418');
+  for (let i = 0; i < 5; i++) px(g, (rnd() * T) | 0, 11 + ((rnd() * 4) | 0), rnd() < 0.5 ? '#3d3128' : '#5e4a34');
+  for (let i = 0; i < 4; i++) { const x = 2 + i * 4 + ((rnd() * 2) | 0); const h = 5 + ((rnd() * 4) | 0); line(g, x, 9, x + (rnd() < 0.5 ? -1 : 1), 9 - h, rnd() < 0.5 ? '#6f8a3a' : '#8aa848', 1); if (rnd() < 0.6) rect(g, x + (rnd() < 0.5 ? -1 : 1), 9 - h - 2, 2, 3, '#6b4a2a'); }
   return c;
 }
 // Raft: lashed planks, 48×8.
@@ -321,3 +322,36 @@ export function bakePlank() {
 }
 // Rain drop streaks baked once, 4×8.
 export function bakeDrop() { const [c, g] = canvas(3, 8); line(g, 2, 0, 0, 7, 'rgba(200,230,255,0.75)', 1); return c; }
+
+// ---------- world map ----------
+// An overhead forest: green ground, tree clusters, a river, and a dirt path through the nodes.
+export function bakeMap(w, h, nodes, path, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  rect(g, 0, 0, w, h, '#4f8a3a');
+  for (let i = 0; i < w * h / 14; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#5a9a42' : '#457a33');
+  // forest clusters
+  const tree = (x, y, r) => { circle(g, x, y + 1, r, '#1f4a2a'); circle(g, x, y, r, '#2f6e3a', '#264a2f'); circle(g, x - r * 0.3, y - r * 0.3, r * 0.5, '#3f8a48', '#2f6e3a'); };
+  for (let i = 0; i < 60; i++) { const x = rnd() * w, y = rnd() * h; let near = false; for (const p of path) if (Math.hypot(p[0] - x, p[1] - y) < 22) near = true; if (!near) tree(x, y, 5 + rnd() * 6); }
+  // river down the right side into a pond by the last node
+  const river = [[w - 40, 0], [w - 60, 40], [w - 30, 80], [w - 70, 120], [w - 50, h]];
+  for (let i = 0; i + 1 < river.length; i++) { line(g, river[i][0], river[i][1], river[i + 1][0], river[i + 1][1], '#2a5f8a', 9); }
+  for (let i = 0; i + 1 < river.length; i++) { line(g, river[i][0], river[i][1], river[i + 1][0], river[i + 1][1], '#3b7fae', 6); }
+  ellipse(g, nodes[nodes.length - 1].x, nodes[nodes.length - 1].y + 10, 26, 10, '#2a5f8a'); ellipse(g, nodes[nodes.length - 1].x, nodes[nodes.length - 1].y + 10, 22, 7, '#3b7fae', '#5aa6c9');
+  // path
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#5e3b21', 7);
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#c9b27c', 4);
+  for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 6; for (let k = 1; k < n; k++) px(g, Math.round(path[i][0] + dx * k / n), Math.round(path[i][1] + dy * k / n), '#8f6540'); }
+  // node discs
+  for (const nd of nodes) { circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); }
+  return c;
+}
+// A hut for the store node, 20×18.
+export function bakeHut() {
+  const [c, g] = canvas(20, 18);
+  fillPoly(g, [[10, 0], [19, 8], [1, 8]], '#8f2f28'); fillPoly(g, [[10, 1], [17, 7], [3, 7]], '#c9463d');
+  rect(g, 3, 8, 14, 9, C.wood); rect(g, 3, 8, 14, 1, C.woodL); rect(g, 8, 11, 4, 6, C.woodD); rect(g, 13, 11, 2, 2, '#ffd36b');
+  rect(g, 4, 9, 12, 1, C.woodD); px(g, 10, 4, '#ffd36b');
+  return outline(c, OUT);
+}
+// A tiny flag for cleared nodes.
+export function bakeFlag() { const [c, g] = canvas(7, 10); rect(g, 1, 0, 1, 10, '#b3aca0'); fillPoly(g, [[2, 0], [7, 2], [2, 4]], '#8fd160'); return outline(c, OUT); }

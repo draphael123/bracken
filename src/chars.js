@@ -2,10 +2,11 @@
 import { canvas, px, rect, line, fromGrid, outline, flipX, whiten } from './px.js';
 import { OUT } from './art.js';
 
-const KP = { // knight palette
+const KP0 = { // knight palette
   s: '#c9d1dc', S: '#7c8797', b: '#3d5aa8', B: '#243a78', r: '#c9463d', k: '#f1c9a0',
   w: '#7a4a2a', W: '#4c2c17', y: '#e0b040', v: '#2a2f3d', o: OUT,
 };
+let KP = Object.assign({}, KP0);
 const BODY = [ // 10 wide, rows 0..10 (helmet + torso + belt)
   '..rSSSS...',
   '.rSssssS..',
@@ -75,7 +76,8 @@ function rotQuarter(c, q) { // rotate a square canvas by q quarter turns
   return o;
 }
 
-export function bakeKnight() {
+export function bakeKnight(skin = {}) {
+  KP = Object.assign({}, KP0, skin);
   const sh = [BX + 8, BY + 7]; // shoulder (front)
   const rest = (d = 0) => [sh[0] + 1, sh[1] + 2 + d, sh[0] + 3, sh[1] + 9 + d];
   const F = {

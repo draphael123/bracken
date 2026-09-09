@@ -28,6 +28,7 @@ function applySettings() { setVolume(SET.sfx); music.set(SET.music); setSfxFiles
 applySettings();
 const PROG = {};
 try { Object.assign(PROG, JSON.parse(localStorage.getItem('bracken.progress') || '{}')); } catch {}
+PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken';
 function saveProgress() { try { localStorage.setItem('bracken.progress', JSON.stringify(PROG)); } catch {} }
 
 // ---------- tuning ----------
@@ -38,7 +39,15 @@ const EHP = { sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 280, 
 const ST = { swing: 12, plunge: 15, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
 // ---------- bake ----------
-const K = bakeKnight();
+const SKINS = [
+  { id: 'bracken', name: 'BRACKEN BLUE', price: 0, pal: {} },
+  { id: 'black', name: 'BLACK KNIGHT', price: 30, pal: { b: '#2a2a34', B: '#15151c', r: '#c9463d', y: '#c9d1dc' } },
+  { id: 'purple', name: 'VIOLET KNIGHT', price: 40, pal: { b: '#6a3aa0', B: '#40206a', r: '#ffd36b', y: '#ffd36b' } },
+  { id: 'blue', name: 'RIVER BLUE', price: 50, pal: { b: '#2f7fe0', B: '#1f4fa0', r: '#fff6e0', y: '#e0b040' } },
+];
+const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
+let K = bakeKnight();
+function applySkin() { K = bakeKnight(skinById(PROG.skin).pal); }
 const SPR = { sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog() };
 const BIRD = bakeBird();
 const PARTS = bakeSpitterParts();
@@ -69,6 +78,7 @@ function bakeAll(pal = {}) {
   BG = { sky: ART.bakeSky(VH, sky[0], sky[1]), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: ART.bakeFar(320, 90, 1), mid: ART.bakeMid(480, 140, 2), near: ART.bakeNear(640, 300, 3, pal.canopy), fg: ART.bakeFG(640, VH, 4) };
 }
 bakeAll();
+applySkin();
 
 // ---------- level ----------
 let L = null, LW = 0, LH = 0, levelIndex = 0, grid0 = null, tileSpr = null;
@@ -109,7 +119,7 @@ let enemies = [], seeds = [], movers = [], parts = [], leaves = [], nums = [], g
 let acorns = [], signs = [], shrines = [], gate = null;
 let checkpoint = { x: 0, y: 0 };
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0;
-let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false;
+let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
 let boss = null, bossActive = false, bossWon = 0, camLock = null, bossMusicT = 0;
 let zoomT = 0, zoomAmt = 1, birds = [], drops = [], pollen = [], lightT = 8, lightFlash = 0, thunderT = 0, pogoChain = 0, tongue = null;
 const collectedCrates = new Set();
@@ -168,10 +178,101 @@ function winLevel() {
   state = 'win'; SFX.win();
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
   PROG[id] = { cleared: true, best: p.best ? Math.min(p.best, levelTime) : levelTime, gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths) };
+  PROG.coins = (PROG.coins || 0) + got; earned = got;
   saveProgress();
 }
 
 const levelLocked = lv => !!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !q.get('unlock'));
+
+// ---------- world map ----------
+const NODES = [
+  { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, name: 'BRACKEN WOOD' },
+  { id: 'store', kind: 'store', x: 156, y: 66, name: 'THE STORE' },
+  { id: 'marsh', kind: 'level', level: 1, x: 246, y: 118, name: 'MARSH WOOD' },
+];
+const PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118]];
+const NODE_AT = [0, 3, 6]; // PATH index of each node
+const MAPC = ART.bakeMap(VW, VH, NODES, PATH, 11);
+const HUT = ART.bakeHut(), FLAG = ART.bakeFlag();
+const map = { node: 0, seg: 0, t: 0, walking: 0, target: 0 }; // token position: on PATH segment seg at fraction t
+const nodeLocked = nd => nd.kind === 'level' && levelLocked(LEVELS[nd.level]);
+function mapPos() { const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; return [a[0] + (b[0] - a[0]) * map.t, a[1] + (b[1] - a[1]) * map.t]; }
+function mapGo(dir) {
+  if (map.walking) return;
+  const nx = map.node + dir; if (nx < 0 || nx >= NODES.length) { SFX.buzz(); return; }
+  if (nodeLocked(NODES[nx])) { SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, 'LOCKED', '#9aa39a'); return; }
+  map.target = nx; map.walking = dir; SFX.ui();
+}
+function updateMap(dt) {
+  if (map.walking) {
+    const goal = NODE_AT[map.target]; const sp = 1.6 * dt; // segments per second-ish, scaled below by length
+    const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    map.t += map.walking * (90 * dt) / len;
+    if (map.walking > 0 && map.t >= 1) { map.seg++; map.t = 0; if (map.seg >= goal) { map.seg = goal; map.t = 0; map.node = map.target; map.walking = 0; SFX.uiSel(); } }
+    if (map.walking < 0 && map.t <= 0) { if (map.seg <= goal) { map.seg = goal; map.t = 0; map.node = map.target; map.walking = 0; SFX.uiSel(); } else { map.seg--; map.t = 1; } }
+    if (Math.random() < dt * 10) { const [px, py] = mapPos(); parts.push({ x: px + camX + (Math.random() - 0.5) * 4, y: py + camY, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 0 }); }
+  }
+  if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
+  if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { state = 'store'; storeI = 0; SFX.uiSel(); } else { selI = nd.level; selectStart(); } }
+  if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
+  if (pausePress) { state = 'title'; SFX.ui(); }
+  PROG.mapNode = map.node;
+}
+function drawMap() {
+  g.drawImage(MAPC, 0, 0);
+  for (const nd of NODES) {
+    const lk = nodeLocked(nd); const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
+    if (nd.kind === 'store') g.drawImage(HUT, nd.x - 10, nd.y - 20);
+    else if (lk) g.drawImage(PROP.lock, nd.x - 3, nd.y - 16);
+    else if (p && p.cleared) g.drawImage(FLAG, nd.x - 3, nd.y - 18);
+    if (NODES[map.node] === nd && !map.walking) { g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.beginPath(); g.arc(nd.x, nd.y, 9 + Math.sin(time * 6), 0, 7); g.stroke(); }
+  }
+  const [px, py] = mapPos();
+  g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);
+  drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 3)) % (map.walking ? 6 : 4), px, py + 2, map.walking < 0 ? -1 : 1, false);
+  // header + node card
+  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text('BRACKEN', 6, 5, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right');
+  const nd = NODES[map.node];
+  if (!map.walking) {
+    const cw = 200, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 44;
+    g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(cx0, cy0, cw, 30); g.strokeStyle = '#8fd160'; g.strokeRect(cx0 + 0.5, cy0 + 0.5, cw - 1, 29);
+    text(nd.name, cx0 + cw / 2, cy0 + 5, '#fff6e0', 'center');
+    if (nd.kind === 'store') text('Z  enter', cx0 + cw / 2, cy0 + 17, '#9aa39a', 'center');
+    else { const p = PROG[LEVELS[nd.level].id]; text(p ? fmt(p.best) + '   ' + p.gold + '/' + p.total + (p.cleared ? '   CLEARED' : '') : 'Z  play', cx0 + cw / 2, cy0 + 17, p ? '#dfe8ff' : '#9aa39a', 'center'); }
+  }
+  text('ARROWS walk   Z enter   X bestiary   ESC', VW / 2, VH - 10, '#9aa39a', 'center');
+}
+
+// ---------- store ----------
+let storeI = 0, storeMsg = '', storeMsgT = 0;
+function updateStore(dt) {
+  storeMsgT = Math.max(0, storeMsgT - dt);
+  if (upPress) { storeI = (storeI + SKINS.length - 1) % SKINS.length; SFX.ui(); }
+  if (downPress) { storeI = (storeI + 1) % SKINS.length; SFX.ui(); }
+  if (confirmPress) {
+    const k = SKINS[storeI];
+    if (PROG.skins[k.id]) { PROG.skin = k.id; applySkin(); saveProgress(); SFX.uiSel(); storeMsg = k.name + ' equipped'; storeMsgT = 2; }
+    else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG.skins[k.id] = true; PROG.skin = k.id; applySkin(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
+    else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; }
+  }
+  if (pausePress) { state = 'map'; SFX.ui(); }
+}
+function drawStore() {
+  g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
+  const x = 24, y = 14, w = VW - 48, h = VH - 28;
+  g.fillStyle = 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  text('THE STORE', x + 12, y + 8, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], x + w - 60, y + 7); text(String(PROG.coins), x + w - 12, y + 8, '#ffd34a', 'right');
+  text('skins', x + 12, y + 24, '#9aa39a');
+  SKINS.forEach((k, i) => {
+    const yy = y + 38 + i * 22, sel = i === storeI, owned = !!PROG.skins[k.id], eq = PROG.skin === k.id;
+    if (sel) { g.fillStyle = 'rgba(60,90,60,0.5)'; g.fillRect(x + 8, yy - 3, w - 16, 20); text('>', x + 12, yy + 3, '#8fd160'); }
+    const kk = bakeKnight(k.pal); g.drawImage(kk.R.idle[0], x + 22, yy - 6);
+    text(k.name, x + 54, yy + 3, sel ? '#fff6e0' : '#c9d1dc');
+    text(eq ? 'EQUIPPED' : owned ? 'owned' : k.price + ' gold', x + w - 12, yy + 3, eq ? '#8fd160' : owned ? '#9aa39a' : (PROG.coins >= k.price ? '#ffd34a' : '#ff6b6b'), 'right');
+  });
+  text(storeMsgT > 0 ? storeMsg : 'Z buy / equip     ESC back', VW / 2, y + h - 12, storeMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
+  text('more wares soon', VW / 2, y + h - 24, '#5a5a5a', 'center');
+}
 
 // ---------- bestiary ----------
 const BEASTS = [
@@ -203,7 +304,7 @@ function drawBestiary() {
   text(seen ? b.sub : 'not yet met', px + 62, py + 22, '#9aa39a');
   if (seen) { text('slain ' + r.slain, px + 62, py + 34, '#c9d1dc'); const lines = wrap(b.desc, pw - 12); lines.slice(0, 9).forEach((l, i) => text(l, px + 6, py + 54 + i * 10, '#fff6e0')); }
   else text('Meet it in the wood.', px + 6, py + 54, '#9aa39a');
-  text('UP/DOWN browse   ESC back', VW / 2, VH - 12, '#9aa39a', 'center');
+  text('UP/DOWN browse   ESC map', VW / 2, VH - 12, '#9aa39a', 'center');
 }
 
 // ---------- intro ----------
@@ -798,7 +899,8 @@ function updateMovers(dt) {
       const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? 0.5 : -1.4) * dt)); m.y = m.y0 + m.sink * 16; m.dy = m.y - oldY;
       if (on && m.sink > 0.15 && Math.random() < dt * 6) parts.push({ x: m.x + Math.random() * m.w, y: m.y0 + 2, vx: 0, vy: -20, life: 0.3, max: 0.3, col: '#bfe6f5', size: 1, grav: 0 });
     } else if (m.kind === 'drift') { // rides the current against you and wraps around
-      m.x -= m.speed * dt; if (m.x + m.w < m.x0) { m.x = m.x1; if (P.onMover === m) P.onMover = null; m.dx = 0; continue; }
+      m.x -= m.speed * dt; if (m.x + m.w * 0.5 < m.x0) { m.x = m.x1; if (P.onMover === m) P.onMover = null; m.dx = 0; continue; }
+      if (P.onMover === m && P.x < m.x0 + 4) P.onMover = null; // the log slides under the bank; you step off
     } else if (m.kind === 'raft') { // waits at the dock until you board, then poles downstream
       if (P.onMover === m && !m.done) m.moving = true;
       if (m.moving) { m.x += m.speed * dt; if (m.x >= m.x1) { m.x = m.x1; m.moving = false; m.done = true; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); } if (Math.random() < dt * 8) parts.push({ x: m.x + (m.speed > 0 ? 0 : m.w), y: m.y + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
@@ -859,20 +961,13 @@ function updateCamera(dt) {
 
 function update(dt) {
   time += dt;
-  if (state === 'title') { ambient.set('forest'); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title'); else if (anyPress) { state = 'select'; SFX.uiSel(); music.play('select'); } return; }
-  if (state === 'select') {
-    if (upPress) { selI = (selI + LEVELS.length - 1) % LEVELS.length; SFX.ui(); }
-    if (downPress) { selI = (selI + 1) % LEVELS.length; SFX.ui(); }
-    if (confirmPress) selectStart();
-    else if (atkPress) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
-    if (pausePress) { state = 'title'; SFX.ui(); }
-    updateParticles(dt);
-    return;
-  }
+  if (state === 'title') { ambient.set('forest'); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title'); else if (anyPress) { state = 'map'; map.node = Math.min(NODES.length - 1, PROG.mapNode || 0); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; SFX.uiSel(); music.play('select'); } return; }
+  if (state === 'map') { updateMap(dt); updateParticles(dt); return; }
+  if (state === 'store') { updateStore(dt); updateParticles(dt); return; }
   if (state === 'bestiary') {
     if (upPress) { bestI = (bestI + BEASTS.length - 1) % BEASTS.length; SFX.ui(); }
     if (downPress) { bestI = (bestI + 1) % BEASTS.length; SFX.ui(); }
-    if (pausePress || confirmPress) { state = 'select'; SFX.ui(); }
+    if (pausePress || confirmPress) { state = 'map'; SFX.ui(); }
     updateParticles(dt);
     return;
   }
@@ -894,7 +989,7 @@ function update(dt) {
     updateParticles(dt);
     return;
   }
-  if (state === 'win') { if (confirmPress) { state = 'select'; music.play('select'); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { if (confirmPress) { state = 'map'; map.node = NODES.findIndex(n => n.level === levelIndex); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; saveProgress(); music.play('select'); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   if (pausePress) { openMenu('play'); return; }
   if (jumpPress) P.jbuf = 0.12; if (atkPress) P.abuf = 0.15; if (dodgePress) P.dbuf = 0.12;
   if (stop > 0) { stop -= dt; return; }
@@ -972,13 +1067,14 @@ function drawWorld(cx, cy, showPlayer) {
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   for (let ty = ty0; ty <= ty0 + 12; ty++) for (let tx = tx0; tx <= tx0 + 21; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
-    const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy);
+    const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0));
   }
   drawWater(cx, cy, false);
   for (const m of movers) {
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (m.kind === 'pad') g.drawImage(PROP.pad[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - cy);
     else if (m.kind === 'raft') g.drawImage(PROP.raft, Math.round(m.x) - cx, m.y - cy);
+    else if (m.kind === 'drift') { g.save(); g.beginPath(); g.rect(m.x0 - cx, 0, m.x1 + m.w - m.x0, VH); g.clip(); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); g.restore(); }
     else { const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); }
   }
   if (boss && boss.t === 'frog') g.drawImage(PROP.throne, Math.round(boss.x) - 32 - cx, L.arena.floor - 4 - cy);
@@ -1142,6 +1238,8 @@ function render() {
     if (intro.chars >= INTRO[intro.card].length && Math.floor(time * 3) % 2 === 0) text('Z', bx + bw - 12, by + bh - 11, '#8fd160', 'right');
     text('ESC skip', VW - 6, 4, '#9aa39a', 'right');
   } else if (state === 'title') drawTitle(cx, cy);
+  else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
+  else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else {
     const z = zoomT > 0 ? zoomAmt : 1;
     if (z > 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
@@ -1172,14 +1270,15 @@ function render() {
     text('C block  V dodge  DOWN+X plunge', VW / 2, 139, '#fff6e0', 'center');
     text('ESC settings', VW / 2, 169, '#9aa39a', 'center');
   }
-  if (state === 'select') drawSelect();
+
   if (state === 'bestiary') drawBestiary();
+  if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
   if (state === 'menu') drawMenu();
   if (state === 'win') {
     g.fillStyle = 'rgba(10,20,14,0.6)'; g.fillRect(40, 26, VW - 80, 130); g.strokeStyle = '#ffd36b'; g.strokeRect(40.5, 26.5, VW - 81, 129);
     text(L.arena ? (L.arena.boss === 'frog' ? 'THE KING CROAKS' : 'THE QUEEN FALLS') : 'THE GATE OPENS', VW / 2, 38, '#ffd36b', 'center', 12);
     text('time     ' + fmt(levelTime), VW / 2, 64, '#fff6e0', 'center');
-    text('gold     ' + got + ' / ' + total, VW / 2, 77, '#ffd34a', 'center');
+    text('gold     ' + got + ' / ' + total + '   +' + earned + ' purse', VW / 2, 77, '#ffd34a', 'center');
     text('foes     ' + kills, VW / 2, 90, '#fff6e0', 'center');
     text('blocks   ' + blocks + '   dodges ' + dodges, VW / 2, 103, '#fff6e0', 'center');
     text('deaths   ' + deaths, VW / 2, 116, '#fff6e0', 'center');
@@ -1221,7 +1320,7 @@ window.BK = {
   reset() { Object.assign(P, { dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),
-  get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get map() { return map; }, SKINS, applySkin, get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
 };

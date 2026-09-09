@@ -125,7 +125,7 @@ function marshWood() {
   const L = painter(320, 28);
   const { block, floor, plat, reeds, crate, ent, coins } = L;
   const pools = [], movers = [];
-  const water = (x0, x1, yTop, shallow = false) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS, shallow });
+  const water = (x0, x1, yTop, shallow = false) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + (shallow ? 10 : 0), shallow });
 
   // ---- 1. The bank ----
   floor(0, 24, 22);
@@ -162,7 +162,7 @@ function marshWood() {
 
   // ---- 6. Drift stream: logs ride the current, against you ----
   water(131, 160, 19);
-  for (let i = 0; i < 5; i++) movers.push({ kind: 'drift', x0: 131 * TS, x1: 160 * TS, x: 133 * TS + i * 96, y: 18 * TS + 8, w: 48, h: 8, speed: 28 });
+  for (let i = 0; i < 6; i++) movers.push({ kind: 'drift', x0: 131 * TS, x1: 161 * TS - 48, x: 132 * TS + i * 78, y: 18 * TS + 8, w: 48, h: 8, speed: 26 });
   coins([138, 16], [147, 16], [156, 16]);
   block(161, 175, 18, 27);
   ent('archer', 163, 17, { face: -1 });
@@ -171,9 +171,9 @@ function marshWood() {
   // ---- 7. The raft river: archers on both banks ----
   water(176, 240, 19);
   movers.push({ kind: 'raft', x0: 176 * TS, x1: 236 * TS, x: 176 * TS, y: 18 * TS + 8, w: 48, h: 8, speed: 40 });
-  block(190, 192, 14, 27); ent('archer', 191, 13, { face: -1 });
-  block(205, 207, 13, 27); ent('archer', 206, 12, { face: 1 });
-  block(222, 224, 14, 27); ent('archer', 223, 13, { face: -1 });
+  plat(189, 14, 4); ent('archer', 191, 13, { face: -1 });
+  plat(204, 13, 4); ent('archer', 206, 12, { face: 1 });
+  plat(221, 14, 4); ent('archer', 223, 13, { face: -1 });
   ent('wasp', 198, 15); ent('wasp', 214, 15); ent('wasp', 230, 15);
   coins([185, 15], [199, 13], [215, 13], [231, 13]);
   block(241, 275, 18, 27);

@@ -153,14 +153,14 @@ export const ambient = {
     if (!ac || kind === ambKind) return;
     ambKind = kind; stopAmb();
     if (!kind) { ambGain.gain.setTargetAtTime(0, ac.currentTime, 0.5); return; }
-    const start = () => ambGain.gain.setTargetAtTime(kind === 'forest' ? 0.35 : kind === 'rain' ? 0.5 : 0.28, ac.currentTime, 0.8);
+    const start = () => ambGain.gain.setTargetAtTime(kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : 0.14, ac.currentTime, 0.8);
     if (kind === 'forest') {
       const go = () => { if (ambKind !== 'forest') return; const s = ac.createBufferSource(); s.buffer = trackBuf.ambForest; s.loop = true; s.connect(ambGain); s.start(); ambNodes.push(s); start(); };
       if (trackBuf.ambForest) go(); else { trackPending.ambForest || fetch(TRACKS.ambForest).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf.ambForest = b; go(); }).catch(() => {}); }
       return;
     }
     const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
-    const f = ac.createBiquadFilter(); f.type = kind === 'rain' ? 'highpass' : 'bandpass'; f.frequency.value = kind === 'water' ? 900 : kind === 'rain' ? 1800 : 140; f.Q.value = kind === 'hive' ? 4 : 0.6;
+    const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = kind === 'water' ? 900 : kind === 'rain' ? 1400 : 140; f.Q.value = kind === 'hive' ? 4 : kind === 'rain' ? 0.4 : 0.6;
     const g = ac.createGain(); g.gain.value = kind === 'hive' ? 0.5 : 1;
     src.connect(f); f.connect(g); g.connect(ambGain); src.start(); ambNodes.push(src);
     if (kind === 'water') { const lfo = ac.createOscillator(); lfo.frequency.value = 0.3; const lg = ac.createGain(); lg.gain.value = 300; lfo.connect(lg); lg.connect(f.frequency); lfo.start(); ambNodes.push(lfo); }

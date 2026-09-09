@@ -82,11 +82,14 @@ reed climb under an archer → archer islands → wading shallows (slow, tiring)
 against the current → a raft you pole downriver while archers shoot from both banks → mud flats
 → the frog pond and the Bullfrog King. It rains the whole way.
 
-## Level select
+## World map, purse, and store
 
-Any key on the title opens the level select. Best time, gold, and a CLEARED mark are saved per
-level in the browser. Level 2 is a locked slot for now. X opens the **bestiary**: every foe you
-have met, with how to beat it and how many you've slain.
+Any key on the title opens the world map. Walk the knight along the path with the arrows and
+press Z on a node: Bracken Wood, the Store hut, Marsh Wood (locked until the wood is cleared).
+Best time, gold, and a CLEARED flag are saved per level. Gold you finish a level with goes into
+your purse. The store sells knight skins (Black, Violet, River Blue); owned skins can be swapped
+any time. X on the map opens the **bestiary**: every foe you have met, how to beat it, and how
+many you've slain.
 
 ## Settings (Esc)
 
