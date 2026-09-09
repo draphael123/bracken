@@ -35,6 +35,9 @@ The sword does one thing the jump can't: **the plunge**. Down + X in the air dri
 down. Landing it on a foe or a crate bounces you higher than a jump, so a row of wasps over a
 pit is a bridge, a shieldbearer is safest from above, and crates are springs.
 
+Plain jumps count too: land on a soft foe's head (sprig, spitter, wasp) and it dies with a small
+bounce. Helmed foes (the shieldbearer) just clank and bounce you off. Spined ones hurt.
+
 Not everything can be plunged. The **Thornback** has a spined back. The blade skates off, you
 eat the spines, and only the sword will do.
 
@@ -48,21 +51,30 @@ eat the spines, and only the sword will do.
 - **Wasp** — hovers over pits. Pogo fodder.
 - **Thornback** — armoured beetle. Winds up with a "!" and charges. Block the charge to stagger
   it, or dodge through and hit it while it rests. Sword only.
+- **The Hornet Queen** — the boss in the hive clearing past the gate. She hovers out of reach,
+  calls drones you can pogo off to get up to her, dives at you (block it and she's staggered on
+  the floor, where she takes double damage), and sweeps the floor at head height (jump or block).
+  Half health and she's enraged: faster, and she sweeps twice.
 
 ## Level
 
 Glade → pits and crates → spitter ledge and shieldbearer step → shrine → wasp pit (pogo chain)
 → thorn climb on logs → plateau with a moving log → arena → the hollow (drop, stream, shrine) →
-the ridge (log climb under fire, wasp gap, last stand) → gate at dusk. Shrines are checkpoints
-and heal. Gold coins are the collectible.
+the ridge (log climb under fire, wasp gap, last stand) → gate at dusk → the hive clearing and the
+Queen. Shrines are checkpoints and heal. Gold coins are the collectible. Streams drown you.
+
+## Level select
+
+Any key on the title opens the level select. Best time, gold, and a CLEARED mark are saved per
+level in the browser. Level 2 is a locked slot for now.
 
 ## Files
 
-- `src/level.js` — the map, painted with `floor / block / plat / spikes / crate / ent`.
+- `src/level.js` — the level registry; each level paints its map with `floor / block / plat / spikes / crate / ent`.
 - `src/main.js` — physics, combat, enemies, camera, render, intro, menu, screens.
 - `src/chars.js` — knight frames (text grids + drawn sword) and enemy sprites.
 - `src/art.js` — tiles, props, parallax layers.
-- `src/audio.js` — synth SFX; plays `audio/theme.ogg` (CC0, see `audio/CREDITS.txt`) with the synth loop as fallback.
+- `src/audio.js` — CC0 sample playback (`audio/manifest.json`) with synth fallbacks; three music tracks (theme / boss / select), see `audio/CREDITS.txt`.
 
 ## Debug
 

@@ -3,3 +3,10 @@ Music (CC0 / public domain, from OpenGameArt.org):
   https://opengameart.org/content/4-chiptunes-adventure
 
 All sound effects are synthesised in src/audio.js.
+- boss.ogg = "3. Boss Fight" and select.ogg = "4. Stage Select" from the same pack (CC0)
+
+Sound effects (all CC0, see audio/manifest.json for the name -> file map):
+- "RPG Sound Pack" by artisticdude - https://opengameart.org/content/rpg-sound-pack (swings, clangs, interface)
+- "Goblins Sound Pack" by artisticdude - https://opengameart.org/content/goblins-sound-pack (goblin voices)
+- "Impact Sounds" by Kenney - https://kenney.nl/assets/impact-sounds (impacts, footsteps, landings)
+Anything not in the manifest is synthesised in src/audio.js.

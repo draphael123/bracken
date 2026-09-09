@@ -197,3 +197,28 @@ export function bakeThornback() {
   const legs = [['.NN.NN.NN.NN..', '.N..N..N..N...'], ['..NN.NN.NN.NN.', '...N..N..N..N.'], ['.NN.NN.NN.NN..', '..N..N..N..N..'], ['..NN.NN.NN.NN.', '.N..N..N..N...']];
   return pack(legs.map(l => sprite([...shell, ...l])), 8, 9, 14, 8);
 }
+
+// Spitter pieces for its death: the cap pops off, the stem crumples.
+export function bakeSpitterParts() {
+  const cap = ['....rrrrrr....', '..rrrerrrrer..', '.rrrrrrrrrrrr.', 'rrerrrrrerrrrr', 'rrrrrrrrrrrrrr', '.RRRRRRRRRRRR.'];
+  const stem = ['...kkkkkkkk...', '...kkkkkkkk...', '...kkGGGGkk...', '...kkkkkkkk...', '..kkkkkkkkkk..'];
+  return { cap: pack([sprite(cap)], 8, 7, 12, 6), stem: pack([sprite(stem)], 8, 6, 12, 5) };
+}
+
+// Hornet Queen — a 24×14 crowned hornet. Frames: wings up, wings down. Faces right.
+export function bakeQueen() {
+  const head = ['.................yYYy...', '................yyyyyy..', '................oooooo..', '...............ooeooeoo.', '...............ooooooooo', '................oooooo..'];
+  const wingsUp = ['....lll.llll............', '..lllllllllll...........', '.llllllllllll...........'];
+  const wingsDn = ['........................', '..lll.llll..............', '.llllllllll.............'];
+  const body = [
+    'oyyooyyooyyooyyooooooo..',
+    'yyyooyyooyyooyyoooooooo.',
+    'oyyooyyooyyooyyooooooo..',
+    '.oooooyyooyyooooooooo...',
+    'oo..oo..oo..oo..oo......',
+  ];
+  const a = sprite([...head.slice(0, 3), ...wingsUp.map((w, i) => merge(w, head[3 + i])), ...body]);
+  const b = sprite([...head.slice(0, 3), ...wingsDn.map((w, i) => merge(w, head[3 + i])), ...body]);
+  return pack([a, b], 12, 14, 22, 12);
+}
+function merge(a, b) { let s = ''; for (let i = 0; i < Math.max(a.length, b.length); i++) { const x = a[i] || '.', y = b[i] || '.'; s += x !== '.' ? x : y; } return s; }

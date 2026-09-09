@@ -1,0 +1,80 @@
+{
+ "swing": [
+  "audio/sfx/swing_0.ogg",
+  "audio/sfx/swing_1.ogg",
+  "audio/sfx/swing_2.ogg"
+ ],
+ "hit": [
+  "audio/sfx/enemyHit_0.ogg",
+  "audio/sfx/enemyHit_1.ogg",
+  "audio/sfx/enemyHit_2.ogg"
+ ],
+ "kill": [
+  "audio/sfx/hitHeavy_0.ogg",
+  "audio/sfx/hitHeavy_1.ogg",
+  "audio/sfx/hitHeavy_2.ogg"
+ ],
+ "hurt": [
+  "audio/sfx/hurt_0.ogg"
+ ],
+ "land": [
+  "audio/sfx/land_0.ogg",
+  "audio/sfx/land_1.ogg"
+ ],
+ "clang": [
+  "audio/sfx/clang_0.ogg",
+  "audio/sfx/clang_1.ogg",
+  "audio/sfx/clang_2.ogg"
+ ],
+ "parry": [
+  "audio/sfx/parry_0.ogg",
+  "audio/sfx/parry_1.ogg"
+ ],
+ "crack": [
+  "audio/sfx/crumble_0.ogg",
+  "audio/sfx/crumble_1.ogg",
+  "audio/sfx/crumble_2.ogg"
+ ],
+ "stagger": [
+  "audio/sfx/stagger_0.ogg",
+  "audio/sfx/stagger_1.ogg"
+ ],
+ "slam": [
+  "audio/sfx/slam_0.ogg",
+  "audio/sfx/slam_1.ogg"
+ ],
+ "coin": [
+  "audio/sfx/gem_0.ogg"
+ ],
+ "ui": [
+  "audio/sfx/ui_0.ogg"
+ ],
+ "gobDie": [
+  "audio/sfx/gobDie_0.ogg",
+  "audio/sfx/gobDie_1.ogg"
+ ],
+ "gobHurt": [
+  "audio/sfx/gobHurt_0.ogg",
+  "audio/sfx/gobHurt_1.ogg",
+  "audio/sfx/gobHurt_2.ogg"
+ ],
+ "roar": [
+  "audio/sfx/roar_0.ogg",
+  "audio/sfx/roar_1.ogg",
+  "audio/sfx/roar_2.ogg"
+ ],
+ "bossHurt": [
+  "audio/sfx/bossHurt_0.ogg",
+  "audio/sfx/bossHurt_1.ogg"
+ ],
+ "step": [
+  "audio/sfx/step_0.ogg",
+  "audio/sfx/step_1.ogg",
+  "audio/sfx/step_2.ogg",
+  "audio/sfx/step_3.ogg"
+ ],
+ "stone": [
+  "audio/sfx/stoneHit_0.ogg",
+  "audio/sfx/stoneHit_1.ogg"
+ ]
+}
