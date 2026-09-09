@@ -73,10 +73,12 @@ eat the spines, and only the sword will do.
 - **Spore drone** (Sporewood) — a floating puffball that drifts at you and bursts. Swords bounce
   off it: stomp it out of the air or plunge it.
 - **Toad shaman** (Sporewood) — raises sporelings from the ground and blinks away when struck.
-- **The Mother Cap** (Sporewood boss) — never moves; the hollow is her. Roots stab up through the
-  floor on a rhythm (a sand-coloured tell, then the spike), and she belches rolling sleep clouds.
-  Bounce off the caps under her to slash the four gill pods; then she tips, her heart shows at the
-  top of the stalk, and only the plunge can pierce it (three times). The hollow is shown zoomed out
+- **The Mother Cap** (Sporewood boss) — a sick giant that never moves; the hollow is her. Her brood
+  seals her gills: kill every sporeling and drone she calls and the gills open for a while before she
+  calls more. Roots stab up through the floor on a rhythm, she belches rolling sleep clouds, and when
+  she shakes, spore clumps rain down (block them). Bounce off the caps under her to slash the four
+  gill pods while they are open; then she tips, her heart shows at the top of the stalk, and only the
+  plunge can pierce it (three times). The hollow is shown zoomed out
   so you can see her whole, and landing a hit on her never costs you: you are safe for a moment after.
 - **The Goblin Chieftain** (Stockade boss) — swaps weapons every few swings. CLUB: an unblockable
   overhead that plants him (hit him then) and a blockable sweep (block it = PARRIED). SWORD AND
@@ -124,7 +126,7 @@ the floor up and you climb the rafters to the way out. The horn now brings five 
 the watchtower can be climbed from either side. Bridges you lose stay lost for the attempt, but there is
 always a net and a set of ledges to climb back out. Spent barrels come back after a few seconds.
 
-**Sporewood** (unlocks when the stockade is cleared): the deep fungus under a teal night sky.
+**Sporewood** (unlocks when the stockade is cleared): a dusk forest overrun by giant mushrooms.
 Red caps are BOUNCERS (land on one, hold jump for extra height); shelf fungus snaps after you stand
 on it for a second and regrows later; puffballs burst into a spore cloud that slows you and drains
 stamina (slash them from range instead of walking into them); barrel-sized puffballs ROLL along the
@@ -134,8 +136,11 @@ if you linger, so block to hold your breath and mash to wake; glow mushrooms lig
 mycelium glade → the bouncer canyon → the lurker grove → the shelf climb under a toad shaman → the
 sleep marsh (ride the vents from shelf to shelf over the violet, blocking between gusts) → the
 mycelium tunnels (low roof, no plunge) → the lantern terrace → the drone gauntlet (caps on pillars
-over a drop, or the low road of shelves that give way) → the hollow and the Mother Cap. When she
-tips, the hollow goes violet and the glow caps die.
+over a drop, or the low road of shelves that give way; the pit has a floor with caps that spring you
+back) → the hollow and the Mother Cap. When she tips, the hollow goes violet and the glow caps die.
+No drop in Sporewood is bottomless any more: the shelf trap lands you on a cap, the pillars have a
+floor. The lantern terrace is a SPORE STORM: sleep clouds roll in from the right and only a lit glow
+cap keeps them off you, so run haven to haven, or block between them.
 
 ## Dressing and life
 
