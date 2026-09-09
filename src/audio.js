@@ -3,7 +3,7 @@ let ac = null, master = null, musicGain = null, noiseBuf = null;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { theme: './audio/theme.ogg', boss: './audio/boss.ogg', select: './audio/select.ogg' };
 const trackBuf = {}, trackPending = {};
-let musicSrc = null, currentTrack = null, wantTrack = 'theme';
+let musicSrc = null, currentTrack = null, wantTrack = 'theme', silenced = false;
 const clips = {}; // name -> [AudioBuffer]
 
 export function initAudio() {
@@ -100,7 +100,10 @@ function playFile(name) {
   musicGain.gain.value = musicOn ? (name === 'boss' ? 0.5 : 0.45) : 0;
 }
 export const music = {
-  play(name) { wantTrack = name; if (!ac) return; if (trackBuf[name]) playFile(name); else loadTrack(name); },
+  play(name) { wantTrack = name; silenced = false; if (!ac) return; if (trackBuf[name]) playFile(name); else loadTrack(name); },
+  preload(name) { if (ac) loadTrack(name); },
+  stop() { wantTrack = null; silenced = true; if (musicSrc) { try { musicSrc.stop(); } catch {} musicSrc = null; } currentTrack = null; },
+  loaded(name) { return !!trackBuf[name]; },
   set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? 0.45 : 0; },
   get on() { return musicOn; },
   get track() { return currentTrack; },
@@ -114,7 +117,7 @@ let step = 0, nextT = 0, timer = null;
 const STEP = 60 / 112 / 2;
 function schedule() {
   if (!ac) return;
-  if (currentTrack) { nextT = ac.currentTime; return; }
+  if (currentTrack || silenced) { nextT = ac.currentTime; return; }
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {

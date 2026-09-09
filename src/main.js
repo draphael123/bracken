@@ -21,7 +21,7 @@ addEventListener('resize', resize); resize();
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { music: true, sfx: 0.5, shake: true, sfxFiles: true };
+const SET = { music: true, sfx: 0.5, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('bracken.settings') || '{}')); } catch {}
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function applySettings() { setVolume(SET.sfx); music.set(SET.music); setSfxFiles(SET.sfxFiles); }
@@ -102,7 +102,7 @@ let acorns = [], signs = [], shrines = [], gate = null;
 let checkpoint = { x: 0, y: 0 };
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0;
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false;
-let boss = null, bossActive = false, bossWon = 0, camLock = null;
+let boss = null, bossActive = false, bossWon = 0, camLock = null, bossMusicT = 0;
 const collectedCrates = new Set();
 
 function loadLevel(i) {
@@ -156,6 +156,37 @@ function winLevel() {
   saveProgress();
 }
 
+// ---------- bestiary ----------
+const BEASTS = [
+  { t: 'sprig', name: 'SPRIG', sub: 'brush goblin', desc: 'Walks straight at you and bites. Sword it, stomp it, plunge it, or shove it back with the shield.' },
+  { t: 'shield', name: 'SHIELDBEARER', sub: 'helmed goblin', desc: 'Blocks anything from the front with a clank. Turns slowly, so cross behind him and strike, or plunge from above. Stomps clank off the helm.' },
+  { t: 'spit', name: 'SPITTER', sub: 'toadstool', desc: 'Spits a seed straight at your chest when you come near. Step aside, jump, block, or slash the seed out of the air.' },
+  { t: 'wasp', name: 'WASP', sub: 'over water', desc: 'A stepping stone with wings. Stomp or plunge it to bounce, and chain the bounces across a pit.' },
+  { t: 'thorn', name: 'THORNBACK', sub: 'spined beetle', desc: 'Winds up with a ! and charges. Block the charge to stagger it, or dodge through and hit it while it rests. The spines punish stomps and plunges. Sword only.' },
+  { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones you can pogo off. Block her dive and she is staggered on the floor, where she takes double damage. Jump or block her low sweep. Half health and she is enraged.' },
+];
+function beastRec(t) { PROG.beasts = PROG.beasts || {}; return PROG.beasts[t] = PROG.beasts[t] || { seen: false, slain: 0 }; }
+function beastSeen(t) { const r = beastRec(t); if (!r.seen) { r.seen = true; saveProgress(); } }
+function beastSlain(t) { const r = beastRec(t); r.seen = true; r.slain++; saveProgress(); }
+function drawBestiary() {
+  const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.6)'); vg.addColorStop(1, 'rgba(10,20,14,0.9)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
+  text('BESTIARY', VW / 2, 6, '#ffd36b', 'center');
+  const lx = 8, ly = 26;
+  BEASTS.forEach((b, i) => { const r = PROG.beasts && PROG.beasts[b.t]; const sel = i === bestI; if (sel) text('>', lx, ly + i * 13, '#8fd160'); text(r && r.seen ? b.name : '? ? ?', lx + 10, ly + i * 13, sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#6a6a6a')); });
+  const b = BEASTS[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
+  const px = 134, pw = VW - px - 8, py = 20, ph = VH - 40;
+  g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(px, py, pw, ph); g.strokeStyle = '#8fd160'; g.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
+  const set = SPR[b.t]; const c = set.R[0]; const sc = b.t === 'queen' ? 2 : 3; const cxp = px + 30, cyp = py + 26;
+  if (!seen) g.globalAlpha = 0.25;
+  drawSet(set, null, 0, cxp - (c.width / 2 - set.ax) * sc, cyp + (set.ay - c.height / 2) * sc, 1, !seen, sc, sc);
+  g.globalAlpha = 1;
+  text(seen ? b.name : 'UNKNOWN', px + 62, py + 10, '#ffd36b');
+  text(seen ? b.sub : 'not yet met', px + 62, py + 22, '#9aa39a');
+  if (seen) { text('slain ' + r.slain, px + 62, py + 34, '#c9d1dc'); const lines = wrap(b.desc, pw - 12); lines.slice(0, 9).forEach((l, i) => text(l, px + 6, py + 54 + i * 10, '#fff6e0')); }
+  else text('Meet it in the wood.', px + 6, py + 54, '#9aa39a');
+  text('UP/DOWN browse   ESC back', VW / 2, VH - 12, '#9aa39a', 'center');
+}
+
 // ---------- intro ----------
 const INTRO = [
   'The forest of Bracken has gone quiet. No birds, no woodcutters. Only the hum of wasps.',
@@ -167,18 +198,20 @@ function startIntro() { state = 'intro'; intro.card = 0; intro.chars = 0; intro.
 function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.length) { intro.chars = line.length; return; } intro.card++; intro.chars = 0; if (intro.card >= INTRO.length) startGame(); }
 
 // ---------- menu ----------
-const MENU = ['Music', 'Sound', 'Sound FX', 'Screen shake', 'Resume', 'Quit to title'];
-let menuI = 0, menuFrom = 'play', selI = 0;
+const MENU = ['Music', 'Sound', 'Sound FX', 'Screen shake', 'Hit stop', 'Damage numbers', 'Timer', 'Ambient life', 'Reset progress', 'Resume', 'Quit to title'];
+let menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0;
 function openMenu(from) { menuFrom = from; menuI = 0; state = 'menu'; }
 function menuAdjust(dir) {
   const k = MENU[menuI];
-  if (k === 'Music') SET.music = !SET.music; else if (k === 'Sound') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles; else return;
+  if (k === 'Music') SET.music = !SET.music; else if (k === 'Sound') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
+  else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Damage numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
 function menuConfirm() {
   const k = MENU[menuI];
   if (k === 'Resume') { state = menuFrom; SFX.uiSel(); }
   else if (k === 'Quit to title') { state = 'title'; music.play('select'); SFX.uiSel(); }
+  else if (k === 'Reset progress') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { for (const key in PROG) delete PROG[key]; saveProgress(); menuMsg = 'progress cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else menuAdjust(1);
 }
 function selectStart() {
@@ -267,8 +300,8 @@ function burst(x, y, n, cols, spd = 70, life = 0.5, grav = 300, size = 2) {
 }
 function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
-function number(x, y, txt, col) { nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
-function hitstop(t) { stop = Math.max(stop, t); }
+function number(x, y, txt, col) { if (!SET.numbers && typeof txt === 'number') return; nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
+function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 function shakeCam(n, k = 0) { if (SET.shake) { shake = Math.max(shake, n); kick += k; } }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 const invulnerable = () => P.inv > 0 || P.dodge > 0 || (window.BK && window.BK.god);
@@ -329,7 +362,7 @@ function hurtEnemy(e, dmg, fromX, plunge) {
     hitstop(e.t === 'queen' ? 0.25 : 0.09); shakeCam(e.t === 'queen' ? 8 : 3, dir * 2);
     burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);
     sparks(e.x, e.y - e.h / 2, dir, 6);
-    spawnCorpse(e, dir);
+    spawnCorpse(e, dir); beastSlain(e.t);
     if (e.t === 'queen') queenDies();
   } else {
     if (e.t === 'queen') SFX.bossHurt(); else if (e.t === 'sprig' || e.t === 'shield') SFX.gobHurt(); else SFX.hit();
@@ -501,6 +534,7 @@ function updatePlayer(dt) {
   for (const s of shrines) if (!s.lit && Math.abs(s.x - P.x) < 12 && Math.abs(s.y - P.y) < 20) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; SFX.check(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   if (gate && !L.arena && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play') winLevel();
   // boss arena trigger
+  if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload('boss');
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger && P.ground) bossStart();
 }
 
@@ -512,7 +546,7 @@ function setWall(col, solid) {
 function bossStart() {
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; camLock = { x0: L.arena.x0, x1: L.arena.x1 };
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true);
-  SFX.roar(); shakeCam(6); music.play('boss'); number(boss.x, boss.y - 30, 'THE HORNET QUEEN', '#ffd36b');
+  SFX.roar(); shakeCam(6); music.stop(); bossMusicT = 1.1; number(boss.x, boss.y - 30, 'THE HORNET QUEEN', '#ffd36b');
   burst(L.arena.wallL * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6); burst(L.arena.wallR * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6);
 }
 function queenWinded(e, blocked) {
@@ -563,8 +597,9 @@ function updateEnemies(dt) {
   for (const e of enemies) {
     if (!e.alive) continue;
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - dt); e.anim += dt;
-    if (e.t === 'queen') { if (bossActive || e.mode === 'sleep') updateQueen(e, dt); continue; }
+    if (e.t === 'queen') { if (bossActive) beastSeen('queen'); if (bossActive || e.mode === 'sleep') updateQueen(e, dt); continue; }
     if (Math.abs(e.x - P.x) > 420) continue;
+    if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[e.t] && PROG.beasts[e.t].seen)) beastSeen(e.t);
     if (e.t === 'wasp') { e.x = e.hx + Math.sin(e.anim * 1.3) * 5; e.y = e.hy + Math.sin(e.anim * 2.4) * 5; e.face = Math.sign(Math.cos(e.anim * 1.3)) || 1; continue; }
     if (e.t === 'spit') {
       const near = Math.abs(e.x - P.x) < 150 && Math.abs(e.y - P.y) < 90 && !P.dead;
@@ -611,6 +646,7 @@ function updateEnemies(dt) {
   }
   for (const s of seeds) { if (s.dead) continue; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt; if (s.life <= 0 || isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; burst(s.x, s.y, 3, ['#ff9a5c'], 30, 0.2, 0, 1); } }
   seeds = seeds.filter(s => !s.dead);
+  if (bossMusicT > 0) { bossMusicT -= dt; if (bossMusicT <= 0 && bossActive) music.play('boss'); }
   if (bossWon > 0) { bossWon -= dt; if (Math.random() < dt * 6) burst(boss.x + (Math.random() - 0.5) * 40, boss.y - 10 - Math.random() * 20, 8, COLS.queen, 80, 0.5); if (bossWon <= 0) winLevel(); }
 }
 function updateCorpses(dt) {
@@ -647,11 +683,11 @@ function updateParticles(dt) {
   for (const gh of ghosts) gh.life -= dt; ghosts = ghosts.filter(gh => gh.life > 0);
   for (const t of trail) t.life -= dt; trail = trail.filter(t => t.life > 0);
   killFlash = Math.max(0, killFlash - dt);
-  const want = 6 + Math.round(dusk() * 14);
+  const want = SET.ambient ? 6 + Math.round(dusk() * 14) : 0;
   if (fireflies.length < want && Math.random() < dt * 3) fireflies.push({ x: camX + Math.random() * VW, y: camY + 20 + Math.random() * (VH - 60), t: Math.random() * 6, life: 6 + Math.random() * 6 });
   for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; }
   fireflies = fireflies.filter(f => f.life > 0 && f.x > camX - 20 && f.x < camX + VW + 20);
-  if (Math.random() < dt * 2.5) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'][(Math.random() * 4) | 0] });
+  if (SET.ambient && Math.random() < dt * 2.5) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'][(Math.random() * 4) | 0] });
   for (const l of leaves) { l.t += dt; l.life -= dt; l.y += 22 * dt; l.x += Math.sin(l.t * 2.2) * 18 * dt + 6 * dt; }
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
 }
@@ -670,11 +706,20 @@ function update(dt) {
     if (upPress) { selI = (selI + LEVELS.length - 1) % LEVELS.length; SFX.ui(); }
     if (downPress) { selI = (selI + 1) % LEVELS.length; SFX.ui(); }
     if (confirmPress) selectStart();
+    else if (atkPress) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
     if (pausePress) { state = 'title'; SFX.ui(); }
     updateParticles(dt);
     return;
   }
+  if (state === 'bestiary') {
+    if (upPress) { bestI = (bestI + BEASTS.length - 1) % BEASTS.length; SFX.ui(); }
+    if (downPress) { bestI = (bestI + 1) % BEASTS.length; SFX.ui(); }
+    if (pausePress || confirmPress) { state = 'select'; SFX.ui(); }
+    updateParticles(dt);
+    return;
+  }
   if (state === 'menu') {
+    menuMsgT = Math.max(0, menuMsgT - dt);
     if (upPress) { menuI = (menuI + MENU.length - 1) % MENU.length; SFX.ui(); }
     if (downPress) { menuI = (menuI + 1) % MENU.length; SFX.ui(); }
     if (leftPress) menuAdjust(-1); if (rightPress) menuAdjust(1);
@@ -836,17 +881,18 @@ function drawWorld(cx, cy, showPlayer) {
 }
 function drawMenu() {
   g.fillStyle = 'rgba(10,14,12,0.7)'; g.fillRect(0, 0, VW, VH);
-  const x = 66, y = 26, w = VW - 132, h = 128;
+  const x = 60, y = 6, w = VW - 120, h = 168;
   g.fillStyle = 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-  text('SETTINGS', VW / 2, y + 8, '#ffd36b', 'center');
+  text('SETTINGS', VW / 2, y + 6, '#ffd36b', 'center');
   MENU.forEach((k, i) => {
-    const yy = y + 26 + i * 15, sel = i === menuI; const col = sel ? '#fff6e0' : '#9aa39a';
+    const yy = y + 20 + i * 12, sel = i === menuI; const col = sel ? '#fff6e0' : '#9aa39a';
     if (sel) text('>', x + 10, yy, '#8fd160');
     text(k, x + 22, yy, col);
-    const v = k === 'Music' ? (SET.music ? 'ON' : 'OFF') : k === 'Sound' ? Math.round(SET.sfx * 100) + '%' : k === 'Screen shake' ? (SET.shake ? 'ON' : 'OFF') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : '';
+    const onoff = v => v ? 'ON' : 'OFF';
+    const v = k === 'Music' ? onoff(SET.music) : k === 'Sound' ? Math.round(SET.sfx * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : '';
     if (v) text('< ' + v + ' >', x + w - 12, yy, col, 'right');
   });
-  text('ESC close', VW / 2, y + h - 10, '#9aa39a', 'center');
+  text(menuMsgT > 0 && menuMsg ? menuMsg : 'ESC close', VW / 2, y + h - 12, menuMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
 }
 function drawSelect() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.5)'); vg.addColorStop(1, 'rgba(10,20,14,0.85)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -865,7 +911,7 @@ function drawSelect() {
       else text('not yet', x + w - 8, y + 30, '#9aa39a', 'right');
     }
   });
-  text('Z  play      ESC  back', VW / 2, VH - 14, '#9aa39a', 'center');
+  text('Z  play     X  bestiary     ESC  back', VW / 2, VH - 14, '#9aa39a', 'center');
 }
 function render() {
   const sh = SET.shake ? shake : 0;
@@ -893,7 +939,7 @@ function render() {
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160');
     g.drawImage(PROP.coin[0], VW - 46, 5); text(got + '/' + total, VW - 36, 7, '#ffd34a');
-    if (state === 'play') text(fmt(levelTime), VW / 2, 7, '#dfe8ff', 'center');
+    if (state === 'play' && SET.timer) text(fmt(levelTime), VW / 2, 7, '#dfe8ff', 'center');
     if (bossActive && boss && boss.alive) { text('HORNET QUEEN', VW / 2, VH - 22, '#ffd36b', 'center'); bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.phase === 2 ? '#ff6b6b' : '#e0b040'); }
   }
   if (state === 'title') {
@@ -908,6 +954,7 @@ function render() {
     text('ESC settings   M music   R restart', VW / 2, 164, '#9aa39a', 'center');
   }
   if (state === 'select') drawSelect();
+  if (state === 'bestiary') drawBestiary();
   if (state === 'menu') drawMenu();
   if (state === 'win') {
     g.fillStyle = 'rgba(10,20,14,0.6)'; g.fillRect(40, 26, VW - 80, 130); g.strokeStyle = '#ffd36b'; g.strokeRect(40.5, 26.5, VW - 81, 129);
@@ -955,7 +1002,7 @@ window.BK = {
   reset() { Object.assign(P, { dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, respawnEnemies: () => spawnEntities(),
-  get boss() { return boss; }, get bossActive() { return bossActive; }, get level() { return L; },
+  get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
 };

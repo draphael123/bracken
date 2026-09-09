@@ -66,7 +66,13 @@ Queen. Shrines are checkpoints and heal. Gold coins are the collectible. Streams
 ## Level select
 
 Any key on the title opens the level select. Best time, gold, and a CLEARED mark are saved per
-level in the browser. Level 2 is a locked slot for now.
+level in the browser. Level 2 is a locked slot for now. X opens the **bestiary**: every foe you
+have met, with how to beat it and how many you've slain.
+
+## Settings (Esc)
+
+Music, sound volume, sound FX files or synth, screen shake, hit stop, damage numbers, the timer,
+ambient life (leaves and fireflies), and a reset of saved progress.
 
 ## Files
 
