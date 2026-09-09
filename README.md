@@ -53,9 +53,13 @@ eat the spines, and only the sword will do.
   it, or dodge through and hit it while it rests. Sword only.
 - **Goblin archer** (Marsh Wood) — keeps its distance and looses arcing arrows after a draw. Block
   them, or slash one to send it straight back and kill the archer. It won't cross water.
-- **The Bullfrog King** (Marsh Wood boss) — tongue lash at head height (block it to bite it and
-  daze him), a leap that shakes the ground (jump the waves, then hit him dazed), a croak that
-  calls flies out of the reeds (strike the swollen throat for double), and venom spit.
+- **Hopper** (Marsh Wood) — a marsh frog that leaps at you in long arcs and leaps aboard the raft
+  from the river. Swing when it lands, stomp it, or block the leap.
+- **The Bullfrog King** (Marsh Wood boss) — wears a crown of thorns: stomp or plunge him while he's
+  up and you pay for it. Tongue lash at head height (block it to bite it and daze him), a leap that
+  shakes the ground (jump the waves, then hit him dazed, when his head is fair game), a croak that
+  calls flies out of the reeds (strike the swollen throat for double), venom spit, and he hops away
+  when you crowd him.
 - **The Hornet Queen** — the boss in the hive clearing past the gate. She hovers out of reach,
   calls drones you can pogo off to get up to her, dives at you (block it and she's staggered on
   the floor, where she takes double damage), sweeps the floor at head height (jump or block),
@@ -78,9 +82,10 @@ pit (pogo chain) → thorn climb → plateau with a moving log → arena → the
 hollow, rain and lightning over the hive.
 
 **Marsh Wood** (unlocks when the wood is cleared): the bank → lily pads that sink under you →
-reed climb under an archer → archer islands → wading shallows (slow, tiring) → drifting logs
-against the current → a raft you pole downriver while archers shoot from both banks → mud flats
-→ the frog pond and the Bullfrog King. It rains the whole way.
+reed climb under an archer → archer islands → wading shallows (a dip in the ground, slow and
+tiring, hoppers waiting) → drifting logs against the current → the long river on a big raft, with
+hoppers leaping aboard and two archers on perches overhead → the flooded grove (pools, pads,
+hoppers, a thornback) → mud flats → the frog pond and the Bullfrog King. It rains the whole way.
 
 ## World map, purse, and store
 

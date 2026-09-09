@@ -122,10 +122,11 @@ function brackenWood() {
 }
 
 function marshWood() {
-  const L = painter(320, 28);
+  const L = painter(388, 28);
   const { block, floor, plat, reeds, crate, ent, coins } = L;
   const pools = [], movers = [];
-  const water = (x0, x1, yTop, shallow = false) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + (shallow ? 10 : 0), shallow });
+  // shallow pools: the dip floor is one tile below the banks; the surface sits 4px under the bank top
+  const water = (x0, x1, yTop, shallow = false) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + (shallow ? 4 : 0), shallow, depth: shallow ? 28 : 0 });
 
   // ---- 1. The bank ----
   floor(0, 24, 22);
@@ -154,10 +155,11 @@ function marshWood() {
   block(91, 110, 16, 27);
   ent('sprig', 100, 15, { face: -1 }); crate(106, 15); crate(106, 14);
 
-  // ---- 5. Wading shallows ----
-  block(111, 130, 18, 27); water(111, 130, 17, true);
+  // ---- 5. Wading shallows: a dip in the ground, water to just under the banks ----
+  block(111, 130, 18, 27); block(113, 128, 19, 27); for (let x = 113; x <= 128; x++) L.set(x, 18, 0);
+  water(113, 128, 18, true);
   ent('sign', 112, 17, { text: 'SHALLOWS ARE SLOW AND TIRING.' });
-  ent('sprig', 118, 17, { face: -1 }); ent('sprig', 125, 17, { face: 1 });
+  ent('hopper', 118, 18, { face: -1 }); ent('hopper', 125, 18, { face: 1 });
   coins([115, 15], [121, 15], [127, 15]);
 
   // ---- 6. Drift stream: logs ride the current, against you ----
@@ -168,36 +170,48 @@ function marshWood() {
   ent('archer', 163, 17, { face: -1 });
   ent('check', 168, 17); crate(173, 17);
 
-  // ---- 7. The raft river: archers on both banks ----
-  water(176, 240, 19);
-  movers.push({ kind: 'raft', x0: 176 * TS, x1: 236 * TS, x: 176 * TS, y: 18 * TS + 8, w: 48, h: 8, speed: 40 });
-  plat(189, 14, 4); ent('archer', 191, 13, { face: -1 });
-  plat(204, 13, 4); ent('archer', 206, 12, { face: 1 });
-  plat(221, 14, 4); ent('archer', 223, 13, { face: -1 });
-  ent('wasp', 198, 15); ent('wasp', 214, 15); ent('wasp', 230, 15);
-  coins([185, 15], [199, 13], [215, 13], [231, 13]);
-  block(241, 275, 18, 27);
+  // ---- 7. The long river: a big raft, frogs leaping aboard, archers overhead ----
+  water(176, 259, 19);
+  movers.push({ kind: 'raft', x0: 176 * TS, x1: 256 * TS - 96, x: 176 * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 40, frogs: true });
+  plat(200, 12, 4); ent('archer', 202, 11, { face: -1 });
+  plat(236, 12, 4); ent('archer', 238, 11, { face: 1 });
+  ent('wasp', 190, 15); ent('wasp', 218, 15); ent('wasp', 248, 15);
+  coins([185, 15], [191, 13], [212, 15], [219, 13], [232, 15], [249, 13]);
+  block(260, 274, 18, 27);
+  ent('check', 264, 17); crate(270, 17); ent('hopper', 268, 17, { face: -1 });
 
-  // ---- 8. Mud flats ----
-  ent('thorn', 248, 17, { face: -1 });
-  water(252, 262, 17, true);
-  ent('sprig', 257, 17, { face: -1 });
-  ent('thorn', 267, 17, { face: -1 });
-  reeds(263, 15, 3); coins([264, 14], [258, 15]);
-  ent('check', 272, 17);
+  // ---- 8. The flooded grove: pools, pads, hoppers ----
+  block(275, 318, 18, 27);
+  for (let x = 280; x <= 292; x++) L.set(x, 18, 0); water(280, 292, 18, true);
+  ent('hopper', 283, 18, { face: -1 }); ent('hopper', 289, 18, { face: -1 });
+  reeds(294, 15, 3); coins([295, 14], [282, 15], [288, 15]);
+  for (let x = 297; x <= 306; x++) for (let y = 18; y <= 27; y++) L.set(x, y, 0);
+  water(297, 306, 19);
+  for (const x of [298, 301, 304]) ent('pad', x, 18);
+  coins([299, 16], [302, 16], [305, 16]);
+  ent('thorn', 311, 17, { face: -1 }); ent('hopper', 316, 17, { face: -1 });
+  crate(314, 17);
 
-  // ---- 9. The frog pond ----
-  block(276, 319, 18, 27);
-  water(290, 302, 17, true);
-  ent('frog', 296, 17);
+  // ---- 9. Mud flats ----
+  block(319, 340, 18, 27);
+  ent('thorn', 324, 17, { face: -1 });
+  for (let x = 328; x <= 334; x++) L.set(x, 18, 0); water(328, 334, 18, true);
+  ent('hopper', 331, 18, { face: -1 });
+  reeds(336, 15, 3); coins([337, 14], [330, 15]);
+  ent('check', 339, 17);
+
+  // ---- 10. The frog pond ----
+  block(341, 387, 18, 27);
+  for (let x = 352; x <= 372; x++) L.set(x, 18, 0); water(352, 372, 18, true);
+  ent('frog', 362, 17);
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
     duskStart: undefined, music: 'theme2',
     palette: { grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
-    weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 3950, x1: 4250, kind: 'mist' }],
+    weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5100, x1: 5500, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
-    arena: { x0: 278 * TS, x1: 316 * TS, floor: 18 * TS, trigger: 284 * TS, wallL: 277, wallR: 317, boss: 'frog' },
+    arena: { x0: 343 * TS, x1: 385 * TS, floor: 18 * TS, trigger: 349 * TS, wallL: 342, wallR: 386, boss: 'frog' },
   };
 }
 

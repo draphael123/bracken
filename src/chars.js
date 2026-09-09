@@ -269,3 +269,12 @@ export function bakeFrog() {
   const open = sit.map((r, i) => i === 8 ? r.replace(/R/g, 'r') : i === 9 ? r.replace(/B/g, 'r') : i === 10 ? r.replace(/B/g, 'R') : r);
   return pack([f(sit), f(inflated), f(open)], 19, 16, 32, 14);
 }
+
+// Hopper — a marsh frog that leaps at you. 10×8. Frames: sit, leap.
+export function bakeHopper() {
+  const P2 = Object.assign({}, EP, { F: '#5a9a3a', D: '#3a6a2a', L: '#8fc85a', B: '#d8e0a0' });
+  const f = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const sit = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', '.DFFDDFFD.', '.DD....DD.'];
+  const leap = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', 'DFD....DFD', 'D........D'];
+  return pack([f(sit), f(leap)], 6, 7, 9, 6);
+}
