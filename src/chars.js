@@ -222,3 +222,48 @@ export function bakeQueen() {
   return pack([a, b], 12, 14, 22, 12);
 }
 function merge(a, b) { let s = ''; for (let i = 0; i < Math.max(a.length, b.length); i++) { const x = a[i] || '.', y = b[i] || '.'; s += x !== '.' ? x : y; } return s; }
+
+// Goblin archer — hooded sprig with a shortbow. 12×12. Frames: idle, draw (bow bent, arrow nocked), walk1, walk2.
+export function bakeArcher() {
+  const hood = ['....HHHH....', '...HHHHHH...', '..HHgeoggeH.', '..HHgggggg..', '...HgGGGg...'];
+  const bodyIdle = ['..bbbbbb.w..', '..bbbbbb.w..', '..rrrrrr.w..', '..GG..GG....', '.GG....GG...'];
+  const bodyDraw = ['..bbbbbbwww.', '..bbbbbbaaaw', '..rrrrrrwww.', '..GG..GG....', '.GG....GG...'];
+  const walk1 = ['..bbbbbb.w..', '..bbbbbb.w..', '..rrrrrr.w..', '..GG.GG.....', '..GG..GG....'];
+  const walk2 = ['..bbbbbb.w..', '..bbbbbb.w..', '..rrrrrr.w..', '...GGGG.....', '..GG..GG....'];
+  const P2 = Object.assign({}, EP, { H: '#3f5a33', b: '#6b4a2a', a: '#e8dcc0' });
+  const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
+  return pack([spr([...hood, ...bodyIdle]), spr([...hood, ...bodyDraw]), spr([...hood, ...walk1]), spr([...hood, ...walk2])], 6, 11, 8, 10);
+}
+
+// Bird — scatters from bushes. 6×4, two wing frames.
+export function bakeBird() {
+  const P2 = { b: '#3a3040', w: '#5a5068', y: '#e0b040' };
+  const f = rows => outline(fromGrid(rows, P2, 1), OUT);
+  return pack([f(['w....w', '.wbbw.', '..bby.', '......']), f(['......', '..bby.', '.wbbw.', 'w....w'])], 4, 4, 6, 4);
+}
+
+// The Bullfrog King — 32×18. Frames: sit, inflated (croak), mouth open.
+export function bakeFrog() {
+  const P2 = { F: '#5a9a3a', D: '#3a6a2a', L: '#8fc85a', B: '#d8e0a0', e: '#f3f0d2', o: OUT, r: '#c9463d', R: '#8f2f28', y: '#e0b040', p: '#ff7a9a' };
+  const f = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const sit = [
+    '......yyy....................yyy',
+    '.....DeeoD..................DeeoD',
+    '....DFeeoFD................DFeeoFD',
+    '...DFFFFFFFDDDDDDDDDDDDDDDDDFFFFFFFD',
+    '..DFFLLFFFFFFFFFFFFFFFFFFFFFFFFLLFFD',
+    '.DFFLLFFFFFFFFFFFFFFFFFFFFFFFFFFLLFFD',
+    '.DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD',
+    'DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD',
+    'DFFFFRRRRRRRRRRRRRRRRRRRRRRRRRRRFFFFD',
+    'DFFBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBFFD',
+    '.DFBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBFD.',
+    '.DDFFBBBBBBBBBBBBBBBBBBBBBBBBBBFFDD..',
+    '..DFFFFDDD..DFFFFFFFFFFFD..DDDFFFFD..',
+    '.DDFFFD......DDDDDDDDDDD......DFFFDD.',
+    'DDDDDD..........................DDDDDD',
+  ];
+  const inflated = sit.map((r, i) => (i >= 8 && i <= 11) ? r.replace(/B/g, 'L') : r);
+  const open = sit.map((r, i) => i === 8 ? r.replace(/R/g, 'r') : i === 9 ? r.replace(/B/g, 'r') : i === 10 ? r.replace(/B/g, 'R') : r);
+  return pack([f(sit), f(inflated), f(open)], 19, 16, 32, 14);
+}

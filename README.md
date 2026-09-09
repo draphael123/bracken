@@ -1,6 +1,6 @@
 # BRACKEN
 
-A 16-bit forest platformer vertical slice: a knight, a sword, a shield, and a plunge.
+A 16-bit forest platformer: a knight, a sword, a shield, and a plunge. Two levels, two bosses.
 
     node serve.mjs      →  http://localhost:5860
 
@@ -51,6 +51,11 @@ eat the spines, and only the sword will do.
 - **Wasp** — hovers over pits. Pogo fodder.
 - **Thornback** — armoured beetle. Winds up with a "!" and charges. Block the charge to stagger
   it, or dodge through and hit it while it rests. Sword only.
+- **Goblin archer** (Marsh Wood) — keeps its distance and looses arcing arrows after a draw. Block
+  them, or slash one to send it straight back and kill the archer. It won't cross water.
+- **The Bullfrog King** (Marsh Wood boss) — tongue lash at head height (block it to bite it and
+  daze him), a leap that shakes the ground (jump the waves, then hit him dazed), a croak that
+  calls flies out of the reeds (strike the swollen throat for double), and venom spit.
 - **The Hornet Queen** — the boss in the hive clearing past the gate. She hovers out of reach,
   calls drones you can pogo off to get up to her, dives at you (block it and she's staggered on
   the floor, where she takes double damage), sweeps the floor at head height (jump or block),
@@ -63,7 +68,19 @@ eat the spines, and only the sword will do.
 Glade → pits and crates → spitter ledge and shieldbearer step → shrine → wasp pit (pogo chain)
 → thorn climb on logs → plateau with a moving log → arena → the hollow (drop, stream, shrine) →
 the ridge (log climb under fire, wasp gap, last stand) → gate at dusk → the hive clearing and the
-Queen. Shrines are checkpoints and heal. Gold coins are the collectible. Streams drown you.
+Queen. Shrines are checkpoints and heal. Gold coins are the collectible. Deep water drowns you; shallows just slow you down and drain stamina.
+
+## Levels
+
+**Bracken Wood**: glade → pits and crates → spitter ledge and shieldbearer step → shrine → wasp
+pit (pogo chain) → thorn climb → plateau with a moving log → arena → the hollow (stream, shrine)
+→ the ridge → gate at dusk → the hive clearing and the Queen. Pollen in the glade, mist in the
+hollow, rain and lightning over the hive.
+
+**Marsh Wood** (unlocks when the wood is cleared): the bank → lily pads that sink under you →
+reed climb under an archer → archer islands → wading shallows (slow, tiring) → drifting logs
+against the current → a raft you pole downriver while archers shoot from both banks → mud flats
+→ the frog pond and the Bullfrog King. It rains the whole way.
 
 ## Level select
 
@@ -82,7 +99,7 @@ ambient life (leaves and fireflies), and a reset of saved progress.
 - `src/main.js` — physics, combat, enemies, camera, render, intro, menu, screens.
 - `src/chars.js` — knight frames (text grids + drawn sword) and enemy sprites.
 - `src/art.js` — tiles, props, parallax layers.
-- `src/audio.js` — CC0 sample playback (`audio/manifest.json`) with synth fallbacks; three music tracks (theme / boss / select), see `audio/CREDITS.txt`.
+- `src/audio.js` — CC0 sample playback (`audio/manifest.json`) with synth fallbacks; four music tracks (wood / marsh / boss / select), ambient beds (forest birds, water, hive drone, rain), and music ducking while something winds up. See `audio/CREDITS.txt`.
 
 ## Debug
 

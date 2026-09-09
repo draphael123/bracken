@@ -1,7 +1,8 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, noiseBuf = null;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { theme: './audio/theme.ogg', boss: './audio/boss.ogg', select: './audio/select.ogg' };
+const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', boss: './audio/boss.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
+let duckT = 1, ambKind = null, ambNodes = [], ambGain = null;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, currentTrack = null, wantTrack = 'theme', silenced = false;
 const clips = {}; // name -> [AudioBuffer]
@@ -11,6 +12,7 @@ export function initAudio() {
   ac = new (window.AudioContext || window.webkitAudioContext)();
   master = ac.createGain(); master.gain.value = vol; master.connect(ac.destination);
   musicGain = ac.createGain(); musicGain.gain.value = 0.16; musicGain.connect(master);
+  ambGain = ac.createGain(); ambGain.gain.value = 0; ambGain.connect(master);
   noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   startSynth();
@@ -84,6 +86,17 @@ export const SFX = {
   ui() { file('ui', 0.35) || tone('square', 700, 700, 0.04, 0.1); },
   uiSel() { tone('square', 900, 1300, 0.08, 0.12); },
   text() { tone('square', 1500, 1500, 0.02, 0.04); },
+  effort() { file('effort', 0.22, 1.35); },
+  gasp() { file('gobHurt', 0.3, 1.5) || tone('sawtooth', 500, 200, 0.2, 0.1); },
+  laugh() { file('laugh', 0.3, 1.4); },
+  sting() { [659, 784, 988, 1319, 1568].forEach((f, i) => tone('triangle', f, f, 0.35, 0.16, i * 0.07)); },
+  thunder() { noise(1.2, 0.5, 120, 0.4); tone('sine', 60, 30, 1.0, 0.35); },
+  croak() { tone('sawtooth', 70, 110, 0.35, 0.28); tone('square', 140, 90, 0.3, 0.1, 0.05); },
+  tongue() { noise(0.12, 0.25, 2500, 0.5); tone('sine', 900, 300, 0.15, 0.15); },
+  leap() { tone('sine', 120, 400, 0.25, 0.2); noise(0.1, 0.15, 600); },
+  bow() { tone('triangle', 700, 200, 0.12, 0.14); noise(0.08, 0.15, 3000); },
+  bird() { tone('sine', 1800, 2600, 0.08, 0.06); tone('sine', 2400, 1900, 0.1, 0.05, 0.1); },
+  splash() { noise(0.3, 0.4, 700, 0.5); tone('sine', 300, 120, 0.2, 0.15); },
 };
 
 // ---------- music: files, with the synth loop as a fallback for the theme ----------
@@ -92,19 +105,21 @@ function loadTrack(name) {
   trackPending[name] = true;
   fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
 }
+const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT;
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
   if (musicSrc) { try { musicSrc.stop(); } catch {} musicSrc = null; }
   musicSrc = ac.createBufferSource(); musicSrc.buffer = trackBuf[name]; musicSrc.loop = true;
   musicSrc.connect(musicGain); musicSrc.start(); currentTrack = name;
-  musicGain.gain.value = musicOn ? (name === 'boss' ? 0.5 : 0.45) : 0;
+  musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
 export const music = {
   play(name) { wantTrack = name; silenced = false; if (!ac) return; if (trackBuf[name]) playFile(name); else loadTrack(name); },
   preload(name) { if (ac) loadTrack(name); },
   stop() { wantTrack = null; silenced = true; if (musicSrc) { try { musicSrc.stop(); } catch {} musicSrc = null; } currentTrack = null; },
   loaded(name) { return !!trackBuf[name]; },
-  set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? 0.45 : 0; },
+  set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? trackVol(currentTrack) : 0; },
+  duck(on) { const t = on ? 0.35 : 1; if (t === duckT) return; duckT = t; if (musicGain && currentTrack && musicOn) musicGain.gain.setTargetAtTime(trackVol(currentTrack), ac.currentTime, 0.25); },
   get on() { return musicOn; },
   get track() { return currentTrack; },
 };
@@ -130,3 +145,27 @@ function schedule() {
   }
 }
 function startSynth() { nextT = ac.currentTime + 0.1; step = 0; if (timer) clearInterval(timer); timer = setInterval(schedule, 100); }
+
+// ---------- ambient beds: forest birds (file), running water, hive drone, rain (synth) ----------
+function stopAmb() { for (const n of ambNodes) { try { n.stop(); } catch {} } ambNodes = []; }
+export const ambient = {
+  set(kind) {
+    if (!ac || kind === ambKind) return;
+    ambKind = kind; stopAmb();
+    if (!kind) { ambGain.gain.setTargetAtTime(0, ac.currentTime, 0.5); return; }
+    const start = () => ambGain.gain.setTargetAtTime(kind === 'forest' ? 0.35 : kind === 'rain' ? 0.5 : 0.28, ac.currentTime, 0.8);
+    if (kind === 'forest') {
+      const go = () => { if (ambKind !== 'forest') return; const s = ac.createBufferSource(); s.buffer = trackBuf.ambForest; s.loop = true; s.connect(ambGain); s.start(); ambNodes.push(s); start(); };
+      if (trackBuf.ambForest) go(); else { trackPending.ambForest || fetch(TRACKS.ambForest).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf.ambForest = b; go(); }).catch(() => {}); }
+      return;
+    }
+    const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const f = ac.createBiquadFilter(); f.type = kind === 'rain' ? 'highpass' : 'bandpass'; f.frequency.value = kind === 'water' ? 900 : kind === 'rain' ? 1800 : 140; f.Q.value = kind === 'hive' ? 4 : 0.6;
+    const g = ac.createGain(); g.gain.value = kind === 'hive' ? 0.5 : 1;
+    src.connect(f); f.connect(g); g.connect(ambGain); src.start(); ambNodes.push(src);
+    if (kind === 'water') { const lfo = ac.createOscillator(); lfo.frequency.value = 0.3; const lg = ac.createGain(); lg.gain.value = 300; lfo.connect(lg); lg.connect(f.frequency); lfo.start(); ambNodes.push(lfo); }
+    if (kind === 'hive') { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 55; const og = ac.createGain(); og.gain.value = 0.12; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220; o.connect(lp); lp.connect(og); og.connect(ambGain); o.start(); ambNodes.push(o); const o2 = ac.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = 82.5; o2.connect(lp); o2.start(); ambNodes.push(o2); }
+    start();
+  },
+  get kind() { return ambKind; },
+};

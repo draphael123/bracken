@@ -76,5 +76,15 @@
  "stone": [
   "audio/sfx/stoneHit_0.ogg",
   "audio/sfx/stoneHit_1.ogg"
+ ],
+ "effort": [
+  "audio/sfx/gobGrunt_0.ogg",
+  "audio/sfx/gobGrunt_1.ogg",
+  "audio/sfx/gobGrunt_2.ogg"
+ ],
+ "laugh": [
+  "audio/sfx/gobChatter_0.ogg",
+  "audio/sfx/gobChatter_3.ogg",
+  "audio/sfx/gobChatter_5.ogg"
  ]
 }

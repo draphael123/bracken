@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -8,11 +8,12 @@ function painter(W, H) {
   const block = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); };
   const floor = (x0, x1, top) => block(x0, x1, top, H - 1);
   const plat = (x, y, len) => { for (let i = 0; i < len; i++) set(x + i, y, T.ONEWAY); };
+  const reeds = (x, y, len) => { for (let i = 0; i < len; i++) set(x + i, y, T.REED); };
   const spikes = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SPIKE); };
   const crate = (x, y) => set(x, y, T.CRATE);
   const ent = (t, x, y, extra = {}) => ents.push({ t, x, y, ...extra });
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
-  return { W, H, grid, ents, set, block, floor, plat, spikes, crate, ent, coins };
+  return { W, H, grid, ents, set, block, floor, plat, reeds, spikes, crate, ent, coins };
 }
 
 function brackenWood() {
@@ -113,12 +114,94 @@ function brackenWood() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 },
     pools: [{ x0: 85 * TS, x1: 98 * TS, y: 23 * TS }, { x0: 161 * TS, x1: 172 * TS, y: 13 * TS }, { x0: 215 * TS, x1: 218 * TS, y: 16 * TS }, { x0: 251 * TS, x1: 255 * TS, y: 10 * TS }],
     falls: [],
-    duskStart: 2700, duskLen: 1000,
-    arena: { x0: 276 * TS, x1: 309 * TS, floor: 9 * TS, trigger: 280 * TS, wallL: 275, wallR: 309 },
+    duskStart: 2700, duskLen: 1000, music: 'theme',
+    weather: [{ x0: 0, x1: 1500, kind: 'pollen' }, { x0: 3150, x1: 3800, kind: 'mist' }, { x0: 4350, x1: 99999, kind: 'rain' }],
+    ambient: [{ x0: 0, x1: 3150, kind: 'forest' }, { x0: 3150, x1: 3800, kind: 'water' }, { x0: 3800, x1: 4350, kind: 'forest' }, { x0: 4350, x1: 99999, kind: 'hive' }],
+    arena: { x0: 276 * TS, x1: 309 * TS, floor: 9 * TS, trigger: 280 * TS, wallL: 275, wallR: 309, boss: 'queen' },
+  };
+}
+
+function marshWood() {
+  const L = painter(320, 28);
+  const { block, floor, plat, reeds, crate, ent, coins } = L;
+  const pools = [], movers = [];
+  const water = (x0, x1, yTop, shallow = false) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS, shallow });
+
+  // ---- 1. The bank ----
+  floor(0, 24, 22);
+  ent('sign', 5, 21, { text: 'PADS SINK UNDER YOU.  KEEP MOVING.' });
+  ent('sprig', 16, 21, { face: -1 });
+  coins([9, 20], [12, 19]);
+
+  // ---- 2. Lily pond: pads that sink ----
+  water(25, 43, 23);
+  for (const x of [27, 30, 33, 36, 39, 42]) ent('pad', x, 22);
+  coins([30, 20], [36, 20], [42, 20]);
+  floor(44, 55, 22);
+  ent('check', 47, 21);
+
+  // ---- 3. Reed climb under an archer ----
+  reeds(49, 20, 3); reeds(52, 18, 3); reeds(55, 16, 2);
+  block(56, 74, 16, 27);
+  ent('archer', 62, 15, { face: -1 });
+  ent('sign', 58, 15, { text: 'SLASH AN ARROW TO SEND IT BACK.' });
+  coins([50, 19], [53, 17]);
+
+  // ---- 4. Archer island ----
+  water(75, 79, 17); ent('wasp', 77, 14);
+  block(80, 86, 16, 27); ent('archer', 83, 15, { face: -1 }); coins([82, 14], [84, 14]);
+  water(87, 90, 17); ent('wasp', 89, 14);
+  block(91, 110, 16, 27);
+  ent('sprig', 100, 15, { face: -1 }); crate(106, 15); crate(106, 14);
+
+  // ---- 5. Wading shallows ----
+  block(111, 130, 18, 27); water(111, 130, 17, true);
+  ent('sign', 112, 17, { text: 'SHALLOWS ARE SLOW AND TIRING.' });
+  ent('sprig', 118, 17, { face: -1 }); ent('sprig', 125, 17, { face: 1 });
+  coins([115, 15], [121, 15], [127, 15]);
+
+  // ---- 6. Drift stream: logs ride the current, against you ----
+  water(131, 160, 19);
+  for (let i = 0; i < 5; i++) movers.push({ kind: 'drift', x0: 131 * TS, x1: 160 * TS, x: 133 * TS + i * 96, y: 18 * TS + 8, w: 48, h: 8, speed: 28 });
+  coins([138, 16], [147, 16], [156, 16]);
+  block(161, 175, 18, 27);
+  ent('archer', 163, 17, { face: -1 });
+  ent('check', 168, 17); crate(173, 17);
+
+  // ---- 7. The raft river: archers on both banks ----
+  water(176, 240, 19);
+  movers.push({ kind: 'raft', x0: 176 * TS, x1: 236 * TS, x: 176 * TS, y: 18 * TS + 8, w: 48, h: 8, speed: 40 });
+  block(190, 192, 14, 27); ent('archer', 191, 13, { face: -1 });
+  block(205, 207, 13, 27); ent('archer', 206, 12, { face: 1 });
+  block(222, 224, 14, 27); ent('archer', 223, 13, { face: -1 });
+  ent('wasp', 198, 15); ent('wasp', 214, 15); ent('wasp', 230, 15);
+  coins([185, 15], [199, 13], [215, 13], [231, 13]);
+  block(241, 275, 18, 27);
+
+  // ---- 8. Mud flats ----
+  ent('thorn', 248, 17, { face: -1 });
+  water(252, 262, 17, true);
+  ent('sprig', 257, 17, { face: -1 });
+  ent('thorn', 267, 17, { face: -1 });
+  reeds(263, 15, 3); coins([264, 14], [258, 15]);
+  ent('check', 272, 17);
+
+  // ---- 9. The frog pond ----
+  block(276, 319, 18, 27);
+  water(290, 302, 17, true);
+  ent('frog', 296, 17);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
+    duskStart: undefined, music: 'theme2',
+    palette: { grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 3950, x1: 4250, kind: 'mist' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
+    arena: { x0: 278 * TS, x1: 316 * TS, floor: 18 * TS, trigger: 284 * TS, wallL: 277, wallR: 317, boss: 'frog' },
   };
 }
 
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
-  { id: 'next', name: '? ? ?', sub: 'beyond the gate', locked: true },
+  { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
 ];

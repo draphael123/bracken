@@ -160,9 +160,8 @@ export function bakeBush(seed) {
 export function bakeShadow(w, h) { const [c, g] = canvas(w * 2, h * 2); ellipse(g, w, h, w, h, 'rgba(20,20,40,0.35)'); return c; }
 
 // ---------- background layers ----------
-export function bakeSky(h) {
+export function bakeSky(h, top = [104, 170, 220], bot = [205, 232, 210]) {
   const [c, g] = canvas(1, h);
-  const top = [104, 170, 220], bot = [205, 232, 210];
   for (let y = 0; y < h; y++) {
     const t = y / (h - 1), tt = Math.min(1, t * 1.15);
     const q = Math.round(tt * 6) / 6;
@@ -200,10 +199,10 @@ export function bakeMid(w, h, seed) {
   return c;
 }
 // Near trees: tall dark trunks with rounded broadleaf canopies in the band the camera sees (layer y 90..190).
-export function bakeNear(w, h, seed) {
+export function bakeNear(w, h, seed, canopy = ['#264a2f', '#2f5e3a', '#3f7a48', '#57964f']) {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
   const trunk = '#2b3f2a', trunkL = '#3a5438', trunkD = '#1f2f20';
-  const L1 = '#264a2f', L2 = '#2f5e3a', L3 = '#3f7a48', L4 = '#57964f';
+  const [L1, L2, L3, L4] = canopy;
   const trees = [];
   for (let i = 0; i < w / 84; i++) trees.push({ x: rnd() * w, wd: 10 + rnd() * 7, s: rnd() });
   // a lobe = a cluster of circles that reads as one rounded leaf mass with a lit top
@@ -286,3 +285,39 @@ export function bakeCoin() {
     f(['..yy..', '.Yyyd.', '.Ydyd.', '.yyyd.', '.dyyd.', '..dd..']),
   ];
 }
+
+// ---------- Marsh Wood props ----------
+// Lily pad: a green disc with a notch, 24×6. Frame 2 is the sunk, darker version.
+export function bakeLilyPad() {
+  const mk = (col, colD, colL) => { const [c, g] = canvas(24, 7); ellipse(g, 12, 3.5, 11.5, 3, col, colD); ellipse(g, 10, 2.5, 6, 1.5, colL, col); line(g, 12, 3, 22, 1, colD, 1); px(g, 22, 0, 'rgba(0,0,0,0)'); return outline(c, OUT); };
+  return [mk('#4f9a58', '#2f6e3a', '#8fd160'), mk('#3a7a48', '#264a2f', '#4f9a58')];
+}
+// Reeds: a one-way tile drawn as standing reeds with a seed head.
+export function bakeReeds(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  for (let i = 0; i < 5; i++) { const x = 1 + i * 3 + ((rnd() * 2) | 0); const h = 9 + ((rnd() * 6) | 0); line(g, x, T, x + (rnd() < 0.5 ? -1 : 1), T - h, rnd() < 0.5 ? '#6f8a3a' : '#8aa848', 1); rect(g, x, T - h - 2, 2, 3, '#6b4a2a'); }
+  rect(g, 0, 0, T, 1, 'rgba(0,0,0,0)');
+  return c;
+}
+// Raft: lashed planks, 48×8.
+export function bakeRaft() {
+  const [c, g] = canvas(48, 8);
+  rect(g, 0, 1, 48, 6, C.wood); rect(g, 0, 1, 48, 1, C.woodL); rect(g, 0, 6, 48, 1, C.woodD);
+  for (let x = 6; x < 48; x += 6) rect(g, x, 1, 1, 6, C.woodD);
+  for (const x of [8, 24, 40]) { rect(g, x - 1, 0, 3, 8, '#b8a888'); rect(g, x, 0, 1, 8, '#8a7a5a'); }
+  return outline(c, OUT);
+}
+// Frog throne pad: a big lily pad, 64×10.
+export function bakeThronePad() {
+  const [c, g] = canvas(64, 10); ellipse(g, 32, 5, 31, 4.5, '#4f9a58', '#2f6e3a'); ellipse(g, 28, 3.5, 16, 2, '#8fd160', '#4f9a58'); line(g, 32, 5, 60, 2, '#2f6e3a', 1); return outline(c, OUT);
+}
+// Wooden plank for the title logo, 140×30.
+export function bakePlank() {
+  const [c, g] = canvas(140, 30);
+  rect(g, 2, 2, 136, 26, C.wood); rect(g, 2, 2, 136, 2, C.woodL); rect(g, 2, 26, 136, 2, C.woodD); rect(g, 2, 2, 2, 26, C.woodL); rect(g, 136, 2, 2, 26, C.woodD);
+  for (let i = 0; i < 9; i++) rect(g, 8 + i * 15, 6 + (i % 3) * 5, 6 + (i % 4) * 3, 1, C.woodD);
+  for (const x of [8, 130]) { rect(g, x, 8, 2, 2, C.stoneD); rect(g, x, 20, 2, 2, C.stoneD); }
+  return outline(c, OUT);
+}
+// Rain drop streaks baked once, 4×8.
+export function bakeDrop() { const [c, g] = canvas(3, 8); line(g, 2, 0, 0, 7, 'rgba(200,230,255,0.75)', 1); return c; }
