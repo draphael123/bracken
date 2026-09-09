@@ -150,12 +150,19 @@ Any standard gamepad works: A jump, X swing, B dodge, LB/RB block, Start pause, 
 move. On touch devices (or with `?touch=1`) an on-screen pad appears: d-pad on the left, A/B/X/Y
 on the right, pause top-right.
 
+## Saves
+
+Three save slots, picked after the title screen (LEFT/RIGHT, Z to play, X twice to erase). Each
+slot keeps its own levels, medals, purse, skins, swords, upgrades, bestiary and map position. An
+older single save is picked up as slot 1.
+
 ## Settings (Esc)
 
-Difficulty (easy, normal, hard: damage taken and enemy health scale), music on/off and music
-volume, sound volume, sound FX files or synth, a Z/X swap for jump and swing, screen shake, hit
-stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets), CRT scanlines, a
-pixel-scale cap, and a reset of saved progress.
+Difficulty (easy, normal, hard: damage taken and enemy health scale), music on/off, music
+volume and effects volume (independent), sound FX files or synth, a Z/X swap for jump and swing,
+screen shake, hit stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets),
+CRT scanlines, a pixel-scale cap, BACK TO SHRINE (counts as a death), RESTART LEVEL, and a reset
+of the current save slot.
 
 ## Files
 

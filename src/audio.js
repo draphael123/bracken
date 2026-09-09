@@ -1,5 +1,5 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
-let ac = null, master = null, musicGain = null, noiseBuf = null;
+let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', boss: './audio/boss.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
@@ -10,9 +10,10 @@ const clips = {}; // name -> [AudioBuffer]
 export function initAudio() {
   if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
   ac = new (window.AudioContext || window.webkitAudioContext)();
-  master = ac.createGain(); master.gain.value = vol; master.connect(ac.destination);
+  master = ac.createGain(); master.gain.value = 1; master.connect(ac.destination);
+  sfxGain = ac.createGain(); sfxGain.gain.value = vol; sfxGain.connect(master);
   musicGain = ac.createGain(); musicGain.gain.value = 0.16; musicGain.connect(master);
-  ambGain = ac.createGain(); ambGain.gain.value = 0; ambGain.connect(master);
+  ambGain = ac.createGain(); ambGain.gain.value = 0; ambGain.connect(sfxGain);
   noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   startSynth();
@@ -22,7 +23,7 @@ export function initAudio() {
   }).catch(() => {});
 }
 export const ready = () => !!ac;
-export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (master) master.gain.value = vol; }
+export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (sfxGain) sfxGain.gain.value = vol; }
 export function setSfxFiles(v) { sfxFiles = !!v; }
 export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); }
 export const musicIsFile = () => !!trackBuf[currentTrack];
@@ -33,12 +34,12 @@ function file(name, v = 0.6, rate = 1) {
   const arr = clips[name]; if (!arr) return false;
   const opts = arr.filter(Boolean); if (!opts.length) return false;
   const s = ac.createBufferSource(); s.buffer = opts[(Math.random() * opts.length) | 0]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
-  const g = ac.createGain(); g.gain.value = v; s.connect(g); g.connect(master); s.start();
+  const g = ac.createGain(); g.gain.value = v; s.connect(g); g.connect(sfxGain); s.start();
   return true;
 }
 
 // ---------- synth ----------
-function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = master) {
+function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = sfxGain) {
   if (!ac) return;
   const t = ac.currentTime + delay;
   const o = ac.createOscillator(), g = ac.createGain();
@@ -52,7 +53,7 @@ function noise(dur, v = 0.3, freq = 1000, q = 0.8, delay = 0) {
   const s = ac.createBufferSource(); s.buffer = noiseBuf;
   const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
   const g = ac.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + dur + 0.02);
+  s.connect(f); f.connect(g); g.connect(sfxGain); s.start(t); s.stop(t + dur + 0.02);
 }
 
 export const SFX = {
