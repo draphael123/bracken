@@ -2,7 +2,7 @@
 let ac = null, master = null, musicGain = null, noiseBuf = null;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', boss: './audio/boss.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
-let duckT = 1, ambKind = null, ambNodes = [], ambGain = null;
+let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, currentTrack = null, wantTrack = 'theme', silenced = false;
 const clips = {}; // name -> [AudioBuffer]
@@ -24,6 +24,7 @@ export function initAudio() {
 export const ready = () => !!ac;
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (master) master.gain.value = vol; }
 export function setSfxFiles(v) { sfxFiles = !!v; }
+export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); }
 export const musicIsFile = () => !!trackBuf[currentTrack];
 
 // ---------- samples ----------
@@ -97,6 +98,10 @@ export const SFX = {
   bow() { tone('triangle', 700, 200, 0.12, 0.14); noise(0.08, 0.15, 3000); },
   bird() { tone('sine', 1800, 2600, 0.08, 0.06); tone('sine', 2400, 1900, 0.1, 0.05, 0.1); },
   splash() { noise(0.3, 0.4, 700, 0.5); tone('sine', 300, 120, 0.2, 0.15); },
+  coinUp(k) { const r = 1 + k * 0.07; file('coin', 0.45, r) || (tone('square', 880 * r, 880 * r, 0.06, 0.12), tone('square', 1320 * r, 1320 * r, 0.11, 0.12, 0.06)); },
+  heart() { tone('sine', 70, 40, 0.14, 0.35); tone('sine', 60, 35, 0.16, 0.28, 0.16); },
+  cricket() { const f = 3800 + Math.random() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
+  fish() { noise(0.12, 0.2, 900, 0.6); tone('sine', 500, 200, 0.1, 0.08); },
 };
 
 // ---------- music: files, with the synth loop as a fallback for the theme ----------
@@ -105,7 +110,7 @@ function loadTrack(name) {
   trackPending[name] = true;
   fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
 }
-const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT;
+const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
   if (musicSrc) { try { musicSrc.stop(); } catch {} musicSrc = null; }

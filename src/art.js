@@ -324,27 +324,52 @@ export function bakePlank() {
 export function bakeDrop() { const [c, g] = canvas(3, 8); line(g, 2, 0, 0, 7, 'rgba(200,230,255,0.75)', 1); return c; }
 
 // ---------- world map ----------
-// An overhead forest: green ground, tree clusters, a river, and a dirt path through the nodes.
+// An overhead forest: meadows and dark woods, hills, a river with banks, and a dirt path through the nodes.
 export function bakeMap(w, h, nodes, path, seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
   rect(g, 0, 0, w, h, '#4f8a3a');
-  for (let i = 0; i < w * h / 14; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#5a9a42' : '#457a33');
-  // forest clusters
-  const tree = (x, y, r) => { circle(g, x, y + 1, r, '#1f4a2a'); circle(g, x, y, r, '#2f6e3a', '#264a2f'); circle(g, x - r * 0.3, y - r * 0.3, r * 0.5, '#3f8a48', '#2f6e3a'); };
-  for (let i = 0; i < 60; i++) { const x = rnd() * w, y = rnd() * h; let near = false; for (const p of path) if (Math.hypot(p[0] - x, p[1] - y) < 22) near = true; if (!near) tree(x, y, 5 + rnd() * 6); }
-  // river down the right side into a pond by the last node
-  const river = [[w - 40, 0], [w - 60, 40], [w - 30, 80], [w - 70, 120], [w - 50, h]];
-  for (let i = 0; i + 1 < river.length; i++) { line(g, river[i][0], river[i][1], river[i + 1][0], river[i + 1][1], '#2a5f8a', 9); }
-  for (let i = 0; i + 1 < river.length; i++) { line(g, river[i][0], river[i][1], river[i + 1][0], river[i + 1][1], '#3b7fae', 6); }
-  ellipse(g, nodes[nodes.length - 1].x, nodes[nodes.length - 1].y + 10, 26, 10, '#2a5f8a'); ellipse(g, nodes[nodes.length - 1].x, nodes[nodes.length - 1].y + 10, 22, 7, '#3b7fae', '#5aa6c9');
-  // path
-  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#5e3b21', 7);
-  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#c9b27c', 4);
-  for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 6; for (let k = 1; k < n; k++) px(g, Math.round(path[i][0] + dx * k / n), Math.round(path[i][1] + dy * k / n), '#8f6540'); }
+  // meadow patches and dark wood regions
+  for (let i = 0; i < 7; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 50, 14 + rnd() * 20, '#5e9a44', '#4f8a3a');
+  for (let i = 0; i < 4; i++) ellipse(g, rnd() * w, rnd() * h, 40 + rnd() * 50, 20 + rnd() * 22, '#3f7a30', '#4f8a3a');
+  for (let i = 0; i < w * h / 12; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#5a9a42' : '#457a33');
+  // hills top-left
+  for (let i = 0; i < 4; i++) { const hx = 20 + i * 34 + rnd() * 10, hy = 26 + rnd() * 8, r = 14 + rnd() * 6; circle(g, hx, hy, r, '#5e9a44'); circle(g, hx - 3, hy - 3, r * 0.6, '#79b25a', '#5e9a44'); line(g, hx - r, hy + 2, hx + r, hy + 2, '#3f7a30', 1); }
+  // river with banks, from top-right down past the pond
+  const river = [[w - 34, -4], [w - 58, 40], [w - 26, 82], [w - 70, 122], [w - 44, h + 4]];
+  const seg = (col, wd) => { for (let i = 0; i + 1 < river.length; i++) line(g, river[i][0], river[i][1], river[i + 1][0], river[i + 1][1], col, wd); };
+  seg('#c9b27c', 13); seg('#2a5f8a', 10); seg('#3b7fae', 7); seg('#5aa6c9', 2);
+  const last = nodes[nodes.length - 1]; ellipse(g, last.x, last.y + 12, 30, 12, '#c9b27c'); ellipse(g, last.x, last.y + 12, 27, 10, '#2a5f8a'); ellipse(g, last.x, last.y + 12, 23, 8, '#3b7fae', '#5aa6c9'); ellipse(g, last.x - 8, last.y + 9, 8, 2, '#8fd160', '#4f9a58'); ellipse(g, last.x + 10, last.y + 14, 6, 2, '#4f9a58', '#2f6e3a');
+  // trees: three sizes, lit from the top-left, denser inside the dark regions
+  const tree = (x, y, r) => { circle(g, x + 1, y + 2, r, 'rgba(20,40,20,0.45)'); circle(g, x, y, r, '#2f6e3a', '#264a2f'); circle(g, x - r * 0.3, y - r * 0.35, r * 0.55, '#3f8a48', '#2f6e3a'); px(g, (x - r * 0.4) | 0, (y - r * 0.5) | 0, '#57964f'); };
+  const spots = [];
+  for (let i = 0; i < 110; i++) { const x = rnd() * w, y = 18 + rnd() * (h - 18); let near = false; for (const p of path) if (Math.hypot(p[0] - x, p[1] - y) < 20) near = true; for (const nd of nodes) if (Math.hypot(nd.x - x, nd.y - y) < 26) near = true; if (Math.hypot(x - (w - 50), y - 60) < 40) near = true; if (!near) spots.push([x, y, 3 + rnd() * 6]); }
+  spots.sort((a, b) => a[1] - b[1]); for (const [x, y, r] of spots) tree(x, y, r);
+  // flowers, rocks, stumps
+  for (let i = 0; i < 40; i++) { const x = (rnd() * w) | 0, y = (rnd() * h) | 0; px(g, x, y, ['#f4d35e', '#e8788a', '#fbf6ea'][(rnd() * 3) | 0]); }
+  for (let i = 0; i < 10; i++) { const x = (rnd() * w) | 0, y = (rnd() * h) | 0; rect(g, x, y, 3, 2, '#8b8378'); px(g, x, y, '#b3aca0'); }
+  // path: dark edge, sand, pebbles, footprints
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#5e3b21', 8);
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#c9b27c', 5);
+  for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5; for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n); px(g, x + (k & 1 ? 1 : -1), y, '#8f6540'); if (k % 3 === 0) px(g, x, y + 1, '#e0d0a0'); } }
   // node discs
-  for (const nd of nodes) { circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); }
+  for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,40,20,0.35)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
+// Soft cloud puffs for level skies and the map, three sizes.
+export function bakeClouds() {
+  return [[28, 10], [40, 13], [56, 16]].map(([w, h], i) => {
+    const [c, g] = canvas(w, h + 2);
+    ellipse(g, w * 0.5, h * 0.7, w * 0.48, h * 0.32, 'rgba(255,255,255,0.85)');
+    ellipse(g, w * 0.35, h * 0.5, w * 0.24, h * 0.42, 'rgba(255,255,255,0.9)');
+    ellipse(g, w * 0.62, h * 0.45, w * 0.22, h * 0.4, 'rgba(255,255,255,0.9)');
+    ellipse(g, w * 0.5, h * 0.85, w * 0.42, h * 0.2, 'rgba(200,215,235,0.7)');
+    return c;
+  });
+}
+// A tiny signpost for map node labels, 10×12.
+export function bakeMapSign() { const [c, g] = canvas(10, 12); rect(g, 4, 5, 2, 7, C.woodD); rect(g, 0, 0, 10, 6, C.wood); rect(g, 0, 0, 10, 1, C.woodL); rect(g, 2, 2, 6, 1, C.woodD); return outline(c, OUT); }
+// A little fish, 5×3, silver.
+export function bakeFish() { const [c, g] = canvas(6, 4); rect(g, 1, 1, 3, 2, '#c9d1dc'); px(g, 0, 0, '#9aa39a'); px(g, 0, 3, '#9aa39a'); px(g, 4, 1, '#dfe8ff'); px(g, 2, 1, '#2a2f3d'); return c; }
 // A hut for the store node, 20×18.
 export function bakeHut() {
   const [c, g] = canvas(20, 18);

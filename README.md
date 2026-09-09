@@ -93,8 +93,10 @@ many you've slain.
 
 ## Settings (Esc)
 
-Music, sound volume, sound FX files or synth, screen shake, hit stop, damage numbers, the timer,
-ambient life (leaves and fireflies), and a reset of saved progress.
+Difficulty (easy, normal, hard: damage taken and enemy health scale), music on/off and music
+volume, sound volume, sound FX files or synth, a Z/X swap for jump and swing, screen shake, hit
+stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets), CRT scanlines, a
+pixel-scale cap, and a reset of saved progress.
 
 ## Files
 
