@@ -167,12 +167,11 @@ function marshWood() {
   for (let i = 0; i < 6; i++) movers.push({ kind: 'drift', x0: 131 * TS, x1: 161 * TS - 48, x: 132 * TS + i * 78, y: 18 * TS + 8, w: 48, h: 8, speed: 26 });
   coins([138, 16], [147, 16], [156, 16]);
   block(161, 175, 18, 27);
-  ent('archer', 163, 17, { face: -1 });
   ent('check', 168, 17); crate(173, 17);
 
   // ---- 7. The long river: a big raft, frogs leaping aboard, archers overhead ----
   water(176, 259, 19);
-  movers.push({ kind: 'raft', x0: 176 * TS, x1: 256 * TS - 96, x: 176 * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 40, frogs: true });
+  movers.push({ kind: 'raft', x0: 176 * TS, x1: 258 * TS - 224, x: 176 * TS, y: 18 * TS + 8, w: 224, h: 8, speed: 40, frogs: true });
   plat(200, 12, 4); ent('archer', 202, 11, { face: -1 });
   plat(236, 12, 4); ent('archer', 238, 11, { face: 1 });
   ent('wasp', 190, 15); ent('wasp', 218, 15); ent('wasp', 248, 15);

@@ -930,7 +930,7 @@ function updateEnemies(dt) {
       // land on the raft it rode in on, or on tiles
       let landed = false;
       if (e.raft && e.vy >= 0 && oldY <= e.raft.y + 1 && e.y >= e.raft.y && e.x > e.raft.x - 2 && e.x < e.raft.x + e.raft.w + 2) { e.y = e.raft.y; e.vy = 0; landed = true; e.x += e.raft.dx; }
-      else if (e.raft && !e.air && e.x > e.raft.x - 2 && e.x < e.raft.x + e.raft.w + 2 && Math.abs(e.y - e.raft.y) < 2) { e.x += e.raft.dx; landed = true; }
+      else if (e.raft && !e.air && e.x > e.raft.x - 2 && e.x < e.raft.x + e.raft.w + 2 && Math.abs(e.y - e.raft.y) < 6) { e.x += e.raft.dx; e.y = e.raft.y; e.vy = 0; landed = true; }
       else { const ty = Math.floor((e.y - 0.01) / TS); for (const tx of [Math.floor((e.x - 3) / TS), Math.floor((e.x + 3) / TS)]) { const t = tileAt(tx, ty); if (t === T.SOLID || t === T.CRATE || ((t === T.ONEWAY || t === T.REED) && oldY <= ty * TS + 0.5 && e.vy >= 0)) { e.y = ty * TS; e.vy = 0; landed = true; break; } } }
       if (landed && e.air) { e.air = false; dust(e.x, e.y, 3); e.stagger = 0.15; }
       if (!landed && e.vy > 0) e.air = true;
@@ -1039,7 +1039,7 @@ function updateMovers(dt) {
       if (P.onMover === m && P.x < m.x0 + 4) P.onMover = null; // the log slides under the bank; you step off
     } else if (m.kind === 'raft') { // waits at the dock until you board, then poles downstream
       if (P.onMover === m && !m.done) m.moving = true;
-      if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const aboard = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length; if (m.frogT <= 0 && aboard < 2) { m.frogT = 3 + Math.random() * 2.5; const side = Math.random() < 0.5 ? -1 : 1; const fx = m.x + m.w / 2 + side * (m.w / 2 + 20); const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58; enemies.push({ t: 'hopper', x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: EHP.hopper, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true }); burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } }
+      if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const aboard = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length; if (m.frogT <= 0 && aboard < 3) { m.frogT = 3 + Math.random() * 2.5; const side = Math.random() < 0.5 ? -1 : 1; const fx = m.x + m.w / 2 + side * (m.w / 2 + 20); const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58; enemies.push({ t: 'hopper', x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: EHP.hopper, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true }); burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } }
       if (m.moving) { m.x += m.speed * dt; if (m.x >= m.x1) { m.x = m.x1; m.moving = false; m.done = true; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); } if (Math.random() < dt * 8) parts.push({ x: m.x + (m.speed > 0 ? 0 : m.w), y: m.y + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
     } else {
       m.p += m.dir * m.speed / m.range * dt;
@@ -1240,7 +1240,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const m of movers) {
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (m.kind === 'pad') g.drawImage(PROP.pad[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - cy);
-    else if (m.kind === 'raft') g.drawImage(PROP.raft, Math.round(m.x) - cx, m.y - cy);
+    else if (m.kind === 'raft') { for (let rx = 0; rx < m.w; rx += 48) g.drawImage(PROP.raft, 0, 0, Math.min(48, m.w - rx), 8, Math.round(m.x) + rx - cx, m.y - cy, Math.min(48, m.w - rx), 8); }
     else if (m.kind === 'drift') { g.save(); g.beginPath(); g.rect(m.x0 - cx, 0, m.x1 + m.w - m.x0, VH); g.clip(); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); g.restore(); }
     else { const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); }
   }
