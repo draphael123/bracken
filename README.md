@@ -136,7 +136,9 @@ sleep marsh → the mycelium tunnels (low roof, no plunge) → the lantern terra
 Every level dresses its ground from its own kit: ferns, stumps and rocks in the wood (butterflies
 rest on the stumps and scatter when you run past), cattails and dragonflies in the marsh, skull
 posts, tents and campfires in the camp (crows perch on the posts and take off as you approach),
-tiny glowing caps and hanging moss in Sporewood. A haze sits between the far trees and the play
+tiny glowing caps and hanging moss in Sporewood. Each level also gets a landmark or two placed
+on flat ground: a hollow old oak, a sunken boat and a heron standing in the shallows (it lifts off
+as you wade near), goblin war totems, a fallen giant cap. A haze sits between the far trees and the play
 layer so the parallax reads as depth. Hits leave an impact star and squash the foe, kills ring out,
 a plunge landing sends a shockwave through the dust, a parried blow flashes steel, and turning at a
 run kicks up a skid.

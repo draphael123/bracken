@@ -614,3 +614,56 @@ export function bakeCrow() {
   const f = rows => outline(fromGrid(rows, { b: '#1b1626', B: '#2c2736', y: '#e0b040', e: '#c9463d' }, 1), '#0a0810');
   return [f(['......', '..bB..', '.bbbBy', '..bb..', '.b..b.']), f(['B....B', '.BbbB.', '..bbBy', '......', '......']), f(['......', '..bb..', 'BBbbBy', '......', '......'])];
 }
+
+// ---------- landmarks: one or two big set-pieces per level, drawn behind the play layer ----------
+export function bakeOldOak(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(72, 80);
+  // trunk with a hollow
+  rect(g, 26, 30, 20, 50, '#5c3a1d'); rect(g, 26, 30, 4, 50, '#7a4e28'); rect(g, 42, 30, 4, 50, '#3d2712');
+  fillPoly(g, [[26, 80], [18, 80], [26, 62]], '#5c3a1d'); fillPoly(g, [[46, 80], [54, 80], [46, 60]], '#5c3a1d'); fillPoly(g, [[18, 80], [10, 80], [22, 70]], '#3d2712');
+  ellipse(g, 36, 62, 6, 9, '#1b1626'); ellipse(g, 36, 60, 4, 6, '#0e0a14');
+  for (let i = 0; i < 30; i++) rect(g, 28 + ((rnd() * 16) | 0), 32 + ((rnd() * 46) | 0), 1, 2 + ((rnd() * 3) | 0), rnd() < 0.5 ? '#7a4e28' : '#3d2712');
+  // limbs and canopy lobes
+  line(g, 30, 34, 10, 16, '#5c3a1d', 3); line(g, 42, 32, 60, 12, '#5c3a1d', 3); line(g, 36, 30, 36, 10, '#5c3a1d', 3);
+  const lobes = [[14, 16, 15], [36, 10, 17], [58, 14, 14], [26, 22, 13], [48, 20, 13]];
+  for (const [x, y, r] of lobes) ellipse(g, x, y, r, r * 0.75, C.canopy ? C.canopy[1] : '#2a5e46');
+  for (const [x, y, r] of lobes) ellipse(g, x - r * 0.25, y - r * 0.3, r * 0.55, r * 0.35, C.canopy ? C.canopy[2] : '#3a7a55');
+  for (let i = 0; i < 14; i++) px(g, 4 + ((rnd() * 64) | 0), 4 + ((rnd() * 24) | 0), C.canopy ? C.canopy[3] : '#4f9a68');
+  return outline(c, OUT);
+}
+export function bakeBoat(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(44, 16);
+  fillPoly(g, [[2, 4], [42, 6], [36, 15], [8, 15]], '#5c3a1d'); fillPoly(g, [[4, 5], [40, 7], [35, 12], [9, 12]], '#7a4e28');
+  for (let x = 6; x < 38; x += 5) line(g, x, 6, x + 1, 14, '#3d2712', 1);
+  rect(g, 2, 4, 40, 2, '#8a5a32'); rect(g, 18, 0, 2, 6, '#5c3a1d');
+  for (let i = 0; i < 6; i++) px(g, 6 + ((rnd() * 32) | 0), 7 + ((rnd() * 5) | 0), '#4f9a58');
+  return outline(c, OUT);
+}
+export function bakeHeron() {
+  const P2 = { b: '#c9d1dc', B: '#7c8797', k: '#3a3040', y: '#e0b040', e: '#1b1626' };
+  const f = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const stand = f(['....bb..', '...bebyy', '...bb...', '...b....', '..Bb....', '.BBbb...', 'BBBBbb..', '.BBBB...', '...k....', '...k....', '...k....', '..kk....']);
+  const fly1 = f(['BBBB....', '.BBBb...', '..BBbb..', '...bbbyy', 'BBBBbb..', '.BBBBB..', '....k...', '....k...']);
+  const fly2 = f(['........', '........', '..bb....', '..bbbbyy', 'BBBBbb..', '.BBBBB..', 'BBBBk...', 'BBB.k...']);
+  return [stand, fly1, fly2];
+}
+export function bakeTotem(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(14, 40);
+  rect(g, 4, 6, 6, 34, '#5c3a1d'); rect(g, 4, 6, 2, 34, '#7a4e28');
+  // three faces stacked
+  for (let i = 0; i < 3; i++) { const y = 8 + i * 10; rect(g, 3, y, 8, 8, i === 1 ? '#c9463d' : '#6faa4a'); rect(g, 4, y + 2, 2, 2, '#1b1626'); rect(g, 8, y + 2, 2, 2, '#1b1626'); rect(g, 5, y + 5, 4, 1, '#1b1626'); if (rnd() < 0.5) rect(g, 6, y + 6, 2, 1, '#e8dcc0'); }
+  rect(g, 1, 4, 12, 3, '#e8dcc0'); rect(g, 0, 2, 3, 4, '#e8dcc0'); rect(g, 11, 2, 3, 4, '#e8dcc0'); rect(g, 6, 0, 2, 5, '#e8dcc0');
+  return outline(c, OUT);
+}
+export function bakeGiantCap(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(96, 44);
+  // a fallen cap on its side: stalk lying left, cap disc facing us
+  rect(g, 4, 28, 40, 12, '#3a3444'); rect(g, 4, 28, 40, 3, '#5a5468'); rect(g, 4, 37, 40, 3, '#241f2c');
+  for (let i = 0; i < 12; i++) rect(g, 6 + ((rnd() * 36) | 0), 30 + ((rnd() * 8) | 0), 2, 1, '#4e4860');
+  ellipse(g, 66, 26, 28, 18, '#6a3a7a', '#4a2a5a'); ellipse(g, 66, 26, 22, 13, '#4a2a5a');
+  for (let a = 0; a < 6.28; a += 0.32) line(g, 66, 26, 66 + Math.cos(a) * 21, 26 + Math.sin(a) * 12, '#8a4a9a', 1);
+  ellipse(g, 66, 26, 5, 3, '#3a2246');
+  for (const [sx, sy, r] of [[46, 14, 3], [60, 9, 4], [80, 12, 3], [90, 24, 3], [84, 38, 3]]) ellipse(g, sx, sy, r, r * 0.7, '#e8e0f0', '#c8b8d8');
+  for (let i = 0; i < 8; i++) px(g, 40 + ((rnd() * 52) | 0), 8 + ((rnd() * 34) | 0), '#9a5aa8');
+  return outline(c, OUT);
+}

@@ -123,6 +123,7 @@ function bakeAll(pal = {}) {
     shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
     motherCap: ART.bakeMotherCap(), impact: ART.bakeImpact(), impactSteel: ART.bakeImpact('#c9d1dc'), impactRed: ART.bakeImpact('#ff6b6b'),
     fern: [0, 1, 2].map(i => ART.bakeFern(400 + i)), stump: [0, 1].map(i => ART.bakeStump(410 + i)), rock: [0, 1, 2].map(i => ART.bakeRock(420 + i)), cattail: [0, 1, 2].map(i => ART.bakeCattail(430 + i)), lilyFlower: ART.bakeLilyFlower(), skullPost: ART.bakeSkullPost(), tent: [0, 1].map(i => ART.bakeTent(440 + i)), campfire: ART.bakeCampfire(), tinyCap: [ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)], moss: [0, 1, 2].map(i => ART.bakeMoss(460 + i)), butterfly: [ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')], dragonfly: ART.bakeDragonfly(), crow: ART.bakeCrow(),
+    oldOak: [0, 1].map(i => ART.bakeOldOak(470 + i)), boat: ART.bakeBoat(480), heron: ART.bakeHeron(), totem: [0, 1].map(i => ART.bakeTotem(490 + i)), giantCap: ART.bakeGiantCap(495),
     puffball: ART.bakePuffball(), glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
     towertop: ART.bakeTowerTop(), treehouse: [0, 1].map(i => ART.bakeTreehouse(320 + i)), torch: ART.bakeTorch(), cage: ART.bakeCage(), barrel: ART.bakeBarrel(), brazier: [ART.bakeBrazier(false), ART.bakeBrazier(true)], crank: ART.bakeCrank(), lift: ART.bakeLift(), horn: ART.bakeHorn(), fire: ART.bakeFire(),
     heart: outline(fromGrid(['.ww.ww.', 'wwwwwww', 'wLwwwww', '.wwwww.', '..www..', '...w...'], { w: '#e04848', L: '#ff9a9a' }, 1), ART.OUT),
@@ -227,7 +228,6 @@ function loadLevel(i) {
 }
 function spawnEntities() {
   enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = [];
-  spawnCritters();
   for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     const base = { x: px, y: py, vx: 0, vy: 0, face: e.face || 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0 };
@@ -274,6 +274,7 @@ function spawnEntities() {
   for (const d of decor) if (d.k === 'bush') d.birds = true;
   let changed = false; for (let i = 0; i < LW * LH; i++) if (grid0[i] !== L.grid[i]) { if (destroyed.has(i)) continue; L.grid[i] = grid0[i]; changed = true; }
   if (changed) resolveTiles();
+  spawnCritters();
 }
 function respawn() {
   setView('normal'); applyUpgrades();
@@ -1146,13 +1147,27 @@ function updateMother(e, dt) {
 }
 
 // ---------- critters: harmless life that reacts to you ----------
+function placeLandmarks() {
+  decor.forEach(d => { if (d.landmark) d.dead = true; }); for (let i = decor.length - 1; i >= 0; i--) if (decor[i].dead) decor.splice(i, 1);
+  const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood'); const rnd = mulberry(LW * 7 + 3);
+  const arenaX0 = L.arena ? L.arena.x0 / TS - 6 : LW;
+  const flats = []; for (let y = 4; y < LH - 1; y++) for (let x = 6; x < Math.min(LW - 8, arenaX0); x++) { let ok = true; for (let k = 0; k < 6 && ok; k++) if (!(tileAt(x + k, y) === T.SOLID && tileAt(x + k, y - 1) === T.AIR && tileAt(x + k, y - 2) === T.AIR && tileAt(x + k, y - 3) === T.AIR)) ok = false; if (ok) flats.push([x, y]); }
+  const used = []; const pick = () => { for (let t = 0; t < 40; t++) { const f = flats[(rnd() * flats.length) | 0]; if (f && used.every(u => Math.abs(u[0] - f[0]) > 40)) { used.push(f); return f; } } return null; };
+  const put = (c, dx, dy, extra = {}) => { const f = pick(); if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
+  if (dress === 'wood') { put(PROP.oldOak[0], 8, 0); put(PROP.oldOak[1], 8, 0); }
+  if (dress === 'marsh') { const deep = (L.pools || []).filter(p => p.shallow && p.x1 - p.x0 > 100); if (deep.length) { const p = deep[(rnd() * deep.length) | 0]; decor.push({ k: 'landmark', landmark: true, bg: true, x: p.x0 + 24, y: p.y - 6, c: PROP.boat }); } const f = put(PROP.oldOak[1], 8, 0); }
+  if (dress === 'camp') { put(PROP.totem[0], 20, 0); put(PROP.totem[1], 20, 0); }
+  if (dress === 'myc') { put(PROP.giantCap, 0, 0); }
+}
 function spawnCritters() {
+  placeLandmarks();
   critters = []; const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood'); const rnd = mulberry(LW * 3 + 5);
   const tops = []; for (let y = 2; y < LH - 1; y++) for (let x = 2; x < LW - 2; x++) if (tileAt(x, y) === T.SOLID && tileAt(x, y - 1) === T.AIR && tileAt(x, y - 2) === T.AIR) tops.push([x, y]);
   if (!tops.length) return;
   const pick = () => tops[(rnd() * tops.length) | 0];
   if (dress === 'wood') for (let i = 0; i < Math.min(14, LW / 22); i++) { const [x, y] = pick(); critters.push({ k: 'butterfly', x: x * TS + 8, y: y * TS - 14 - rnd() * 10, hx: x * TS + 8, hy: y * TS - 16, t: rnd() * 6, c: (rnd() * 3) | 0, vx: 0, vy: 0, flee: 0 }); }
   if (dress === 'marsh') for (const p of (L.pools || [])) if (!p.shallow && critters.filter(c => c.k === 'dragonfly').length < 8) for (let i = 0; i < Math.min(2, 1 + Math.floor((p.x1 - p.x0) / 260)); i++) critters.push({ k: 'dragonfly', x: p.x0 + rnd() * (p.x1 - p.x0), y: p.y - 12 - rnd() * 14, x0: p.x0, x1: p.x1, y0: p.y - 30, y1: p.y - 6, tx: 0, ty: 0, t: rnd() * 6, dart: 0, face: 1 });
+  if (dress === 'marsh') { const sh = (L.pools || []).filter(p => p.shallow); for (let i = 0; i < Math.min(3, sh.length); i++) { const p = sh[(i * 2 + 1) % sh.length]; critters.push({ k: 'heron', x: p.x0 + 30 + rnd() * Math.max(10, p.x1 - p.x0 - 60), y: p.y + 4, t: rnd() * 6, perched: true, vx: 0, vy: 0, life: 99 }); } }
   if (dress === 'camp') for (const d of decor) if (d.k === 'skull' && d.crow) critters.push({ k: 'crow', x: d.x + 5, y: d.y - 2, t: rnd() * 6, perched: true, vx: 0, vy: 0, life: 99 });
   if (dress === 'wood' || dress === 'marsh') for (const d of decor) if (d.k === 'stump' && rnd() < 0.7) critters.push({ k: 'butterfly', x: d.x + 7, y: d.y - 4, hx: d.x + 7, hy: d.y - 6, t: rnd() * 6, c: (rnd() * 3) | 0, vx: 0, vy: 0, flee: 0 });
 }
@@ -1168,17 +1183,21 @@ function updateCritters(dt) {
       c.dart -= dt;
       if (c.dart <= 0) { c.dart = 0.8 + Math.random() * 1.6; c.tx = c.x0 + 10 + Math.random() * (c.x1 - c.x0 - 20); c.ty = c.y0 + Math.random() * (c.y1 - c.y0); if (!P.dead && Math.abs(P.x - c.x) < 40) c.tx = c.x + (Math.sign(c.x - P.x) || 1) * 60; }
       const dx = c.tx - c.x, dy = c.ty - c.y; c.x += dx * Math.min(1, dt * 4); c.y += dy * Math.min(1, dt * 4) + Math.sin(c.t * 11) * 4 * dt; if (Math.abs(dx) > 2) c.face = Math.sign(dx);
+    } else if (c.k === 'heron') {
+      if (c.perched) { if (!P.dead && Math.abs(P.x - c.x) < 70 && Math.abs(P.y - c.y) < 40) { c.perched = false; c.vx = (Math.sign(c.x - P.x) || 1) * 55; c.vy = -45; c.life = 4; SFX.bird(); for (let i = 0; i < 4; i++) parts.push({ x: c.x, y: c.y, vx: (Math.random() - 0.5) * 40, vy: -30, life: 0.4, max: 0.4, col: '#bfe6f5', size: 1, grav: 200 }); } }
+      else { c.life -= dt; c.x += c.vx * dt; c.y += c.vy * dt; c.vy += Math.sin(c.t * 4) * 30 * dt - 6 * dt; }
     } else if (c.k === 'crow') {
       if (c.perched) { if (!P.dead && Math.abs(P.x - c.x) < 64 && Math.abs(P.y - c.y) < 40) { c.perched = false; c.vx = (Math.sign(c.x - P.x) || 1) * 70; c.vy = -70; c.life = 3; SFX.bird(); } }
       else { c.life -= dt; c.x += c.vx * dt; c.y += c.vy * dt; c.vy += Math.sin(c.t * 7) * 40 * dt - 8 * dt; }
     }
   }
-  critters = critters.filter(c => c.k !== 'crow' || c.perched || c.life > 0);
+  critters = critters.filter(c => (c.k !== 'crow' && c.k !== 'heron') || c.perched || c.life > 0);
 }
 function drawCritters(cx, cy) {
   for (const c of critters) { if (c.x < cx - 12 || c.x > cx + VW + 12) continue;
     if (c.k === 'butterfly') g.drawImage(PROP.butterfly[c.c][Math.floor(c.t * 10) % 2], Math.round(c.x - cx) - 3, Math.round(c.y - cy) - 2);
     else if (c.k === 'dragonfly') { const im = PROP.dragonfly[Math.floor(c.t * 30) % 2]; if (c.face < 0) { g.save(); g.translate(Math.round(c.x - cx), Math.round(c.y - cy)); g.scale(-1, 1); g.drawImage(im, -5, -2); g.restore(); } else g.drawImage(im, Math.round(c.x - cx) - 5, Math.round(c.y - cy) - 2); }
+    else if (c.k === 'heron') { const im = PROP.heron[c.perched ? 0 : 1 + Math.floor(c.t * 5) % 2]; const fl = c.perched ? P.x < c.x : c.vx < 0; if (fl) { g.save(); g.translate(Math.round(c.x - cx), Math.round(c.y - cy)); g.scale(-1, 1); g.drawImage(im, -4, -im.height + 2); g.restore(); } else g.drawImage(im, Math.round(c.x - cx) - 4, Math.round(c.y - cy) - im.height + 2); }
     else if (c.k === 'crow') { const im = PROP.crow[c.perched ? 0 : 1 + Math.floor(c.t * 10) % 2]; if (c.vx < 0 || (c.perched && P.x < c.x)) { g.save(); g.translate(Math.round(c.x - cx), Math.round(c.y - cy)); g.scale(-1, 1); g.drawImage(im, -3, -5); g.restore(); } else g.drawImage(im, Math.round(c.x - cx) - 3, Math.round(c.y - cy) - 5); }
   }
 }
@@ -2067,7 +2086,7 @@ window.BK = {
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),
-  get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, critters: () => critters, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
 };
