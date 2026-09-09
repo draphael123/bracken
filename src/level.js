@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -171,7 +171,7 @@ function marshWood() {
 
   // ---- 7. The long river: a big raft, frogs leaping aboard, archers overhead ----
   water(176, 259, 19);
-  movers.push({ kind: 'raft', x0: 176 * TS, x1: 258 * TS - 224, x: 176 * TS, y: 18 * TS + 8, w: 224, h: 8, speed: 40, frogs: true });
+  movers.push({ kind: 'raft', x0: 176 * TS, x1: 258 * TS - 224, x: 176 * TS, y: 18 * TS + 8, w: 224, h: 8, speed: 40, frogs: true, frogMax: 4, frogEvery: 2.2 });
   plat(200, 12, 4); plat(236, 12, 4);
   ent('wasp', 190, 15); ent('wasp', 218, 15); ent('wasp', 248, 15);
   coins([185, 15], [191, 13], [212, 15], [219, 13], [232, 15], [249, 13]);
@@ -200,8 +200,8 @@ function marshWood() {
 
   // ---- 10. The frog pond ----
   block(341, 387, 18, 27);
-  for (let x = 352; x <= 372; x++) L.set(x, 18, 0); water(352, 372, 18, true);
-  ent('frog', 362, 17);
+  for (let x = 349; x <= 362; x++) L.set(x, 18, 0); water(349, 362, 18, true);
+  ent('frog', 376, 17);
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
@@ -213,7 +213,102 @@ function marshWood() {
   };
 }
 
+
+function theStockade() {
+  const L = painter(302, 28);
+  const { block, floor, plat, crate, ent, coins, set } = L;
+  const pal = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PALISADE); };
+  const planks = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
+  const net = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  const movers = [];
+
+  // ---- 1. The outer wood: first signs of the goblins ----
+  floor(0, 70, 20);
+  ent('sign', 4, 19, { text: 'THE GOBLINS BUILT HERE. BREAK IT.' });
+  ent('sprig', 14, 19, { face: -1 }); ent('sprig', 22, 19, { face: -1 });
+  coins([9, 18], [18, 17], [26, 18]);
+  ent('cage', 31, 19, { kind: 'bird' });
+  ent('torch', 36, 19); ent('treehouse', 40, 8);
+
+  // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
+  block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13);
+  plat(46, 17, 3); plat(50, 14, 2);
+  ent('archer', 55, 12, { face: -1, horn: true });
+  ent('sign', 44, 19, { text: 'SILENCE THE HORN FIRST.' });
+  ent('sprig', 60, 19, { face: -1 }); ent('sapper', 66, 19, { face: -1 });
+  coins([47, 15], [51, 12], [64, 18]);
+
+  // ---- 3. Rope bridge over the ravine, with a goblin at the far end holding a knife ----
+  planks(71, 74, 20); planks(75, 86, 21); planks(87, 90, 20);
+  net(71, 90, 25);
+  plat(78, 23, 3); plat(83, 23, 3); block(87, 90, 23, 27); block(89, 90, 22, 27);
+  ent('bridge', 71, 20, { x1: 90 });
+  floor(91, 185, 20);
+  ent('sprig', 92, 19, { face: -1, cutter: true });
+  coins([76, 19], [81, 19], [86, 19]);
+  ent('check', 95, 19);
+
+  // ---- 4. The palisade gate: crank it open, or roll a barrel into it ----
+  ent('barrel', 96, 19); ent('crank', 98, 19, { wall: 101 });
+  pal(101, 15, 19);
+  ent('sapper', 106, 19, { face: -1 }); ent('sapper', 112, 19, { face: -1 }); ent('sprig', 109, 19, { face: -1 });
+  ent('torch', 103, 19); ent('torch', 115, 19);
+
+  // ---- 5. The camp ----
+  ent('treehouse', 122, 7); ent('treehouse', 150, 6); ent('treehouse', 176, 8);
+  block(120, 128, 17, 19); ent('brute', 124, 16, { face: -1 }); coins([121, 15], [126, 15]);
+  ent('hound', 133, 19, { face: -1 }); ent('cage', 140, 19, { kind: 'fox' });
+  ent('brazier', 146, 19); ent('sprig', 149, 19, { face: -1 }); ent('sprig', 153, 19, { face: 1 }); ent('sprig', 156, 19, { face: -1 });
+  ent('hound', 160, 19, { face: -1 }); ent('barrel', 163, 19); ent('shield', 168, 19, { face: -1 });
+  ent('brute', 174, 19, { face: -1 }); ent('sapper', 178, 19, { face: -1 });
+  ent('torch', 130, 19); ent('torch', 144, 19); ent('torch', 166, 19); ent('torch', 180, 19);
+  coins([137, 18], [158, 17], [171, 18], [183, 18]);
+  ent('check', 184, 19);
+
+  // ---- 6. The lift to the upper walkway ----
+  for (let y = 20; y <= 27; y++) { set(186, y, 0); set(187, y, 0); } net(186, 187, 26);
+  movers.push({ kind: 'lift', x: 186 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
+  block(188, 205, 12, 27);
+  ent('sapper', 196, 11, { face: -1 }); coins([192, 10], [200, 10]);
+
+  // ---- 7. The high bridge and the second tower ----
+  planks(206, 209, 12); planks(210, 217, 13); planks(218, 221, 12);
+  net(206, 221, 17);
+  ent('bridge', 206, 12, { x1: 221 });
+  block(222, 250, 12, 27);
+  ent('sprig', 223, 11, { face: -1, cutter: true });
+  plat(231, 10, 2); plat(235, 8, 2);
+  block(238, 240, 8, 11); plat(237, 7, 5); ent('towertop', 239, 7);
+  ent('archer', 239, 6, { face: -1, horn: true });
+  ent('brute', 245, 11, { face: -1 }); ent('hound', 248, 11, { face: -1 });
+  ent('torch', 226, 11); ent('torch', 244, 11);
+  coins([213, 11], [232, 9], [236, 7], [247, 10]);
+
+  // ---- 8. Down to the great hall ----
+  for (let y = 12; y <= 27; y++) { set(251, y, 0); set(252, y, 0); } net(251, 252, 26);
+  movers.push({ kind: 'lift', x: 251 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
+  floor(253, 301, 20);
+  ent('hound', 256, 19, { face: -1 }); ent('check', 259, 19);
+
+  // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
+  plat(265, 15, 4); ent('archer', 266, 14, { face: 1 });
+  plat(292, 15, 4); ent('archer', 294, 14, { face: -1 });
+  plat(270, 10, 4); plat(278, 9, 5); plat(287, 10, 4);
+  ent('brazier', 290, 19); ent('torch', 264, 19); ent('torch', 297, 19);
+  ent('chief', 279, 19);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
+    duskStart: undefined, music: 'theme', night: true,
+    palette: { sky: 'night', canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
+    weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    arena: { x0: 263 * TS, x1: 297 * TS, floor: 20 * TS, trigger: 268 * TS, wallL: 262, wallR: 298, boss: 'chief' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
+  { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', build: theStockade, needs: 'marsh' },
 ];

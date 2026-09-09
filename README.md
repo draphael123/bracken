@@ -1,6 +1,6 @@
 # BRACKEN
 
-A 16-bit forest platformer: a knight, a sword, a shield, and a plunge. Two levels, two bosses.
+A 16-bit forest platformer: a knight, a sword, a shield, and a plunge. Three levels, three bosses.
 
     node serve.mjs      →  http://localhost:5860
 
@@ -60,6 +60,14 @@ eat the spines, and only the sword will do.
   shakes the ground (jump the waves, then hit him dazed, when his head is fair game), a croak that
   calls flies out of the reeds (strike the swollen throat for double), venom spit, and he hops away
   when you crowd him.
+- **Sapper** (Stockade) — runs at you with a lit bomb and drops it at your feet. Block him and he
+  drops it on himself; dodge through and it lands where you were.
+- **Brute** (Stockade) — a club goblin. A double mark is the unblockable overhead (dodge it); a
+  single mark is the sweep (block it). Hit him while the club is up or while he rests.
+- **War hound** (Stockade) — a straight-line chaser that leaps low. Stomp it, or put fire between you.
+- **The Goblin Chieftain** (Stockade boss) — a slow unblockable overhead that plants him for a
+  moment (double damage), a blockable sweep, and a grab that throws you. No plunging his helm. At
+  half health he kicks the brazier and the hall burns; take to the rafters.
 - **The Hornet Queen** — the boss in the hive clearing past the gate. She hovers out of reach,
   calls drones you can pogo off to get up to her, dives at you (block it and she's staggered on
   the floor, where she takes double damage), sweeps the floor at head height (jump or block),
@@ -86,6 +94,12 @@ reed climb under an archer → archer islands → wading shallows (a dip in the 
 tiring, hoppers waiting) → drifting logs against the current → the long river on a big raft, with
 hoppers leaping aboard and two archers on perches overhead → the flooded grove (pools, pads,
 hoppers, a thornback) → mud flats → the frog pond and the Bullfrog King. It rains the whole way.
+
+**The Stockade** (unlocks when the marsh is cleared): the goblin camp at night. Watchtowers with
+horns (silence the archer or the camp comes running), rope bridges a goblin cuts under you with a
+net below, a palisade gate you crank open or blow open with a rolling barrel bomb, cages of birds
+and foxes (a freed fox fights beside you), braziers you tip to spill fire, pulley lifts, and the
+great hall where the Chieftain waits.
 
 ## World map, purse, and store
 

@@ -338,7 +338,7 @@ export function bakeMap(w, h, nodes, path, seed) {
   const river = [[w - 34, -4], [w - 58, 40], [w - 26, 82], [w - 70, 122], [w - 44, h + 4]];
   const seg = (col, wd) => { for (let i = 0; i + 1 < river.length; i++) line(g, river[i][0], river[i][1], river[i + 1][0], river[i + 1][1], col, wd); };
   seg('#c9b27c', 13); seg('#2a5f8a', 10); seg('#3b7fae', 7); seg('#5aa6c9', 2);
-  const last = nodes[nodes.length - 1]; ellipse(g, last.x, last.y + 12, 30, 12, '#c9b27c'); ellipse(g, last.x, last.y + 12, 27, 10, '#2a5f8a'); ellipse(g, last.x, last.y + 12, 23, 8, '#3b7fae', '#5aa6c9'); ellipse(g, last.x - 8, last.y + 9, 8, 2, '#8fd160', '#4f9a58'); ellipse(g, last.x + 10, last.y + 14, 6, 2, '#4f9a58', '#2f6e3a');
+  const last = nodes[2] || nodes[nodes.length - 1]; ellipse(g, last.x, last.y + 12, 30, 12, '#c9b27c'); ellipse(g, last.x, last.y + 12, 27, 10, '#2a5f8a'); ellipse(g, last.x, last.y + 12, 23, 8, '#3b7fae', '#5aa6c9'); ellipse(g, last.x - 8, last.y + 9, 8, 2, '#8fd160', '#4f9a58'); ellipse(g, last.x + 10, last.y + 14, 6, 2, '#4f9a58', '#2f6e3a');
   // trees: three sizes, lit from the top-left, denser inside the dark regions
   const tree = (x, y, r) => { circle(g, x + 1, y + 2, r, 'rgba(20,40,20,0.45)'); circle(g, x, y, r, '#2f6e3a', '#264a2f'); circle(g, x - r * 0.3, y - r * 0.35, r * 0.55, '#3f8a48', '#2f6e3a'); px(g, (x - r * 0.4) | 0, (y - r * 0.5) | 0, '#57964f'); };
   const spots = [];
@@ -351,6 +351,8 @@ export function bakeMap(w, h, nodes, path, seed) {
   for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#5e3b21', 8);
   for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#c9b27c', 5);
   for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5; for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n); px(g, x + (k & 1 ? 1 : -1), y, '#8f6540'); if (k % 3 === 0) px(g, x, y + 1, '#e0d0a0'); } }
+  // plank bridge where the path crosses the river
+  for (let i = 0; i + 1 < path.length; i++) { const a = path[i], b = path[i + 1]; for (let k = 0; k <= 10; k++) { const x = a[0] + (b[0] - a[0]) * k / 10, y = a[1] + (b[1] - a[1]) * k / 10; for (let j = 0; j + 1 < river.length; j++) { const p = river[j], q = river[j + 1]; const t = Math.max(0, Math.min(1, ((x - p[0]) * (q[0] - p[0]) + (y - p[1]) * (q[1] - p[1])) / ((q[0] - p[0]) ** 2 + (q[1] - p[1]) ** 2))); const rx = p[0] + (q[0] - p[0]) * t, ry = p[1] + (q[1] - p[1]) * t; if (Math.hypot(rx - x, ry - y) < 4) { rect(g, Math.round(rx) - 7, Math.round(ry) - 3, 14, 6, C.wood); rect(g, Math.round(rx) - 7, Math.round(ry) - 3, 14, 1, C.woodL); rect(g, Math.round(rx) - 7, Math.round(ry) + 2, 14, 1, C.woodD); } } } }
   // node discs
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,40,20,0.35)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
@@ -398,5 +400,59 @@ export function bakeSilt(seed) {
   for (let i = 0; i < 3; i++) { const x = (rnd() * 13) | 0, y = (rnd() * 13) | 0; rect(g, x, y, 3, 2, '#7a7368'); px(g, x, y, '#9a9388'); }
   for (let i = 0; i < 4; i++) px(g, (rnd() * T) | 0, (rnd() * 4) | 0, '#3f6e50');
   rect(g, 0, 0, T, 1, '#3a5a48');
+  return c;
+}
+
+// ---------- the Stockade ----------
+// Palisade: sharpened logs lashed together. Solid, but a barrel bomb breaks it.
+export function bakePalisade(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  for (let i = 0; i < 4; i++) { const x = i * 4; rect(g, x, 0, 4, T, C.wood); rect(g, x, 0, 1, T, C.woodL); rect(g, x + 3, 0, 1, T, C.woodD); if (rnd() < 0.5) px(g, x + 1 + ((rnd() * 2) | 0), (rnd() * T) | 0, C.woodD); }
+  rect(g, 0, 5, T, 1, '#b8a888'); rect(g, 0, 11, T, 1, '#b8a888');
+  return c;
+}
+export function bakePalisadeTop() { const [c, g] = canvas(T, 6); for (let i = 0; i < 4; i++) fillPoly(g, [[i * 4, 6], [i * 4 + 2, 0], [i * 4 + 4, 6]], C.woodL); return c; }
+// Plank: a rope-bridge deck tile (one-way), rope along the top.
+export function bakeBridgePlank(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 2, T, 4, C.wood); rect(g, 0, 2, T, 1, C.woodL); rect(g, 0, 5, T, 1, C.woodD); rect(g, 7, 2, 1, 4, C.woodD);
+  rect(g, 0, 0, T, 1, '#b8a888'); if (rnd() < 0.5) px(g, (rnd() * T) | 0, 3, C.woodD);
+  return c;
+}
+export function bakeNet() { const [c, g] = canvas(T, T); for (let x = 0; x < T; x += 4) line(g, x, 0, x, 8, '#b8a888', 1); for (let y = 0; y < 8; y += 4) line(g, 0, y, T, y, '#b8a888', 1); return c; }
+// Watchtower cap: a roofed platform, 32×18.
+export function bakeTowerTop() {
+  const [c, g] = canvas(32, 18);
+  fillPoly(g, [[16, 0], [31, 8], [1, 8]], '#5c3a1d'); fillPoly(g, [[16, 1], [28, 7], [4, 7]], '#8a5a32');
+  rect(g, 4, 8, 2, 8, C.wood); rect(g, 26, 8, 2, 8, C.wood); rect(g, 0, 16, 32, 2, C.wood); rect(g, 0, 16, 32, 1, C.woodL);
+  return outline(c, OUT);
+}
+// Treehouse in the canopy (background prop), 40×30.
+export function bakeTreehouse(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(40, 30);
+  rect(g, 4, 10, 32, 16, C.wood); rect(g, 4, 10, 32, 1, C.woodL); rect(g, 4, 25, 32, 1, C.woodD);
+  fillPoly(g, [[20, 0], [39, 11], [1, 11]], '#5c3a1d'); fillPoly(g, [[20, 2], [35, 10], [5, 10]], '#6b4a2a');
+  rect(g, 10, 15, 6, 6, '#ffd36b'); rect(g, 24, 15, 6, 6, rnd() < 0.5 ? '#ffd36b' : '#2a2f3d'); rect(g, 12, 17, 2, 2, '#fff1c0');
+  for (let i = 0; i < 3; i++) rect(g, 6 + i * 12, 26, 2, 4, C.woodD);
+  return outline(c, OUT);
+}
+export function bakeTorch() { const [c, g] = canvas(6, 14); rect(g, 2, 4, 2, 10, C.woodD); rect(g, 1, 2, 4, 3, '#b8a888'); rect(g, 1, 0, 4, 2, '#ffd36b'); px(g, 2, 0, '#fff1c0'); return outline(c, OUT); }
+export function bakeCage() { const [c, g] = canvas(16, 16); rect(g, 1, 1, 14, 14, 'rgba(20,16,30,0.3)'); for (let x = 1; x < 16; x += 3) rect(g, x, 1, 1, 14, '#8b8378'); rect(g, 1, 1, 14, 1, '#b3aca0'); rect(g, 1, 14, 14, 1, '#5f5a52'); rect(g, 6, 0, 4, 2, '#5f5a52'); return outline(c, OUT); }
+export function bakeBarrel() { const [c, g] = canvas(12, 14); rect(g, 1, 1, 10, 12, C.wood); rect(g, 1, 1, 2, 12, C.woodL); rect(g, 9, 1, 2, 12, C.woodD); rect(g, 0, 3, 12, 1, '#8b8378'); rect(g, 0, 10, 12, 1, '#8b8378'); rect(g, 4, 5, 4, 4, '#1b1626'); px(g, 6, 5, '#c9463d'); return outline(c, OUT); }
+export function bakeBrazier(lit) { const [c, g] = canvas(14, 16); rect(g, 6, 10, 2, 6, '#5f5a52'); rect(g, 3, 15, 8, 1, '#5f5a52'); rect(g, 2, 7, 10, 4, '#8b8378'); rect(g, 2, 7, 10, 1, '#b3aca0'); if (lit) { fillPoly(g, [[7, 0], [11, 7], [3, 7]], '#ff9a5c'); fillPoly(g, [[7, 2], [9, 7], [5, 7]], '#ffd36b'); } return outline(c, OUT); }
+export function bakeCrank() { const [c, g] = canvas(12, 14); rect(g, 4, 6, 4, 8, C.woodD); rect(g, 2, 2, 8, 5, '#8b8378'); rect(g, 2, 2, 8, 1, '#b3aca0'); line(g, 6, 4, 11, 0, '#5f5a52', 2); px(g, 11, 0, '#ffd36b'); return outline(c, OUT); }
+export function bakeLift() { const [c, g] = canvas(32, 8); rect(g, 0, 2, 32, 5, C.wood); rect(g, 0, 2, 32, 1, C.woodL); rect(g, 0, 6, 32, 1, C.woodD); for (let x = 8; x < 32; x += 8) rect(g, x, 2, 1, 5, C.woodD); rect(g, 15, 0, 2, 2, '#b8a888'); return outline(c, OUT); }
+export function bakeHorn() { const [c, g] = canvas(10, 8); fillPoly(g, [[0, 2], [9, 0], [9, 7], [0, 5]], '#e8dcc0'); rect(g, 0, 2, 2, 3, '#b8a888'); return outline(c, OUT); }
+// Fire: three flame frames, 16×16, drawn on the ground.
+export function bakeFire() {
+  return [0, 1, 2].map(f => { const [c, g] = canvas(T, T); const rnd = mulberry(400 + f);
+    for (let i = 0; i < 4; i++) { const x = 2 + i * 4 + ((rnd() * 2) | 0), h = 7 + ((rnd() * 8) | 0); fillPoly(g, [[x - 2, 16], [x, 16 - h], [x + 2, 16]], '#ff6b2c'); fillPoly(g, [[x - 1, 16], [x, 16 - h * 0.6], [x + 1, 16]], '#ffd36b'); }
+    for (let i = 0; i < 3; i++) px(g, (rnd() * T) | 0, (rnd() * 6) | 0, '#ffb060');
+    return c; });
+}
+// Night sky for the stockade: deep blue to a torch-orange horizon.
+export function bakeSkyNight(h) {
+  const [c, g] = canvas(1, h); const top = [18, 22, 48], mid = [48, 40, 78], bot = [140, 70, 50];
+  for (let y = 0; y < h; y++) { const t = y / (h - 1); const q = Math.round(t * 8) / 8; const a = q < 0.6 ? top : mid, b = q < 0.6 ? mid : bot, k = q < 0.6 ? q / 0.6 : (q - 0.6) / 0.4; px(g, 0, y, 'rgb(' + ((a[0] + (b[0] - a[0]) * k) | 0) + ',' + ((a[1] + (b[1] - a[1]) * k) | 0) + ',' + ((a[2] + (b[2] - a[2]) * k) | 0) + ')'); }
   return c;
 }

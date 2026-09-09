@@ -283,3 +283,64 @@ export function bakeHopper(color = 'green') {
   const leap = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', 'DFD....DFD', 'D........D'];
   return pack([f(sit), f(leap)], 6, 7, 9, 6);
 }
+
+// ---------- Stockade goblins ----------
+// Sapper — sprig with a bomb held overhead. 10×13. Frames: run1, run2.
+export function bakeSapper() {
+  const bomb = ['....oo....', '...oooo...', '...oooo...', '....oo....'];
+  const head = ['...gggg...', '..gggggg..', '.geoggeog.', '.gggggggg.', '..gGGGGg..'];
+  const legs = [['..rrrrrr..', '..GG..GG..', '.GG....GG.'], ['..rrrrrr..', '..GG.GG...', '..GG..GG..']];
+  const spr = rows => outline(fromGrid(rows, EP, 1), OUT);
+  return pack(legs.map(l => spr([...bomb, ...head, ...l])), 6, 14, 8, 13);
+}
+export function bakeBomb() { const c = outline(fromGrid(['.oo.', 'oooo', 'oooo', '.oo.'], { o: '#1b1626' }, 1), '#5f5a52'); return pack([c], 3, 3, 4, 4); }
+// Brute — a big goblin with a club. 16×16. Frames: stand, walk, raise (overhead tell), swing.
+export function bakeBrute() {
+  const P2 = Object.assign({}, EP, { c: '#6b4a2a', C: '#4c2c17' });
+  const head = ['.....gggggg.....', '....gggggggg....', '...ggeoggggeog..', '...gggggggggg...', '....ggGGGGgg....', '.....gggggg.....'];
+  const body = ['...bbbbbbbbbb...', '..gbbbbbbbbbbg..', '..gbbbbbbbbbbg..', '...rrrrrrrrrr...', '...rrrrrrrrrr...'];
+  const legsA = ['...GGG....GGG...', '...GGG....GGG...', '..GGGG....GGGG..'];
+  const legsB = ['....GGG..GGG....', '....GGG..GGG....', '...GGGG..GGGG...'];
+  const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const stand = spr([...head, ...body, ...legsA]);
+  const walk = spr([...head, ...body, ...legsB]);
+  const raise = spr(['.......cccc.....', '......cCCCCc....', '......cCCCCc....', '.......cccc.....', ...head, ...body, ...legsA]);
+  const swing = spr([...head, body[0], body[1], body[2].slice(0, 13) + 'ccc', body[3].slice(0, 13) + 'cCC', body[4].slice(0, 13) + 'ccc', ...legsB]);
+  return pack([stand, walk, raise, swing], 9, 17, 12, 16);
+}
+// War hound — low, fast. 14×7. Frames: run1, run2, leap.
+export function bakeHound() {
+  const P2 = Object.assign({}, EP, { h: '#5a4a3a', H: '#3a2e22' });
+  const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const body = ['..hhhhhhhhh.hh', '.hhhhhhhhhhhhh', 'hhhhhhhhhhhh..', 'hHhhhhhhhhhH..'];
+  const a = spr(['...........eh.', ...body, '.HH.HH..HH.HH.', '.H...H..H...H.']);
+  const b = spr(['...........eh.', ...body, '..HH.HH.HH.HH.', '..H...H.H...H.']);
+  const l = spr(['...........eh.', ...body, 'HH.......HH...', 'H.........H...']);
+  return pack([a, b, l], 8, 8, 12, 7);
+}
+// Fox — freed from a cage, fights for you a while. 12×6.
+export function bakeFox() {
+  const P2 = { f: '#d9782a', F: '#a0521a', w: '#fff6e0', e: '#1b1626' };
+  const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const a = spr(['.........fe.', 'ff...ffffff.', 'wffffffffff.', '.wffffffff..', '.FF..FF.FF..']);
+  const b = spr(['.........fe.', 'ff...ffffff.', 'wffffffffff.', '.wffffffff..', '..FF.FF..FF.']);
+  return pack([a, b], 6, 6, 10, 6);
+}
+// The Goblin Chieftain — helmed, huge, two-handed club. 24×21. Frames: stand, walk, raise, slam, sweep, grab.
+export function bakeChief() {
+  const P2 = Object.assign({}, EP, { c: '#6b4a2a', C: '#4c2c17', b: '#8f2f28' });
+  const helm = ['........SSSSSSSS........', '.......SsssssssS........', '......yySsssssssSyy.....', '.......SssssssssS.......'];
+  const head = ['.......ggeoggggeog......', '.......gggggggggggg.....', '........ggGGGGGGgg......', '.........gggggggg.......'];
+  const body = ['......bbbbbbbbbbbb......', '.....gbbbbbbbbbbbbg.....', '.....gbbbbbbbbbbbbg.....', '.....gbbbbbbbbbbbbg.....', '......rrrrrrrrrrrr......', '......rrrrrrrrrrrr......'];
+  const legsA = ['......GGGG....GGGG......', '......GGGG....GGGG......', '.....GGGGG....GGGGG.....'];
+  const legsB = ['.......GGGG..GGGG.......', '.......GGGG..GGGG.......', '......GGGGG..GGGGG......'];
+  const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const top = [...helm, ...head];
+  const stand = spr([...top, ...body, ...legsA]);
+  const walk = spr([...top, ...body, ...legsB]);
+  const raise = spr(['..........ccccc.........', '.........cCCCCCc........', '.........cCCCCCc........', '..........ccccc.........', ...top, ...body, ...legsA]);
+  const slam = spr([...top, body[0], body[1], body[2], body[3].slice(0, 19) + 'ccccc', body[4].slice(0, 19) + 'cCCCC', body[5].slice(0, 19) + 'ccccc', ...legsB]);
+  const sweep = spr([...top, body[0], body[1].slice(0, 19) + 'ccccc', body[2].slice(0, 19) + 'cCCCC', body[3].slice(0, 19) + 'ccccc', body[4], body[5], ...legsB]);
+  const grab = spr([...top, body[0], body[1].slice(0, 19) + 'ggggg', body[2].slice(0, 19) + 'ggggg', body[3], body[4], body[5], ...legsB]);
+  return pack([stand, walk, raise, slam, sweep, grab], 12, 21, 16, 20);
+}
