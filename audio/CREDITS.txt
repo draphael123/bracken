@@ -1,0 +1,5 @@
+Music (CC0 / public domain, from OpenGameArt.org):
+- theme.ogg = "Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg" from "4 Chiptunes (Adventure)" by Juhani Junkala (SubspaceAudio)
+  https://opengameart.org/content/4-chiptunes-adventure
+
+All sound effects are synthesised in src/audio.js.

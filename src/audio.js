@@ -1,5 +1,7 @@
 // audio.js — WebAudio synth SFX and a small pentatonic forest loop. No samples.
 let ac = null, master = null, musicGain = null, noiseBuf = null;
+let musicBuf = null, musicSrc = null;
+const MUSIC_URL = './audio/theme.ogg';
 
 export function initAudio() {
   if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
@@ -9,7 +11,17 @@ export function initAudio() {
   noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   startMusic();
+  // Real music: decode the level theme and hand over from the synth loop when it arrives.
+  fetch(MUSIC_URL).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { musicBuf = b; playFile(); }).catch(() => {});
 }
+function playFile() {
+  if (!ac || !musicBuf) return;
+  if (musicSrc) { try { musicSrc.stop(); } catch {} }
+  musicSrc = ac.createBufferSource(); musicSrc.buffer = musicBuf; musicSrc.loop = true;
+  musicSrc.connect(musicGain); musicSrc.start();
+  musicGain.gain.value = musicOn ? 0.45 : 0;
+}
+export const musicIsFile = () => !!musicBuf;
 export const ready = () => !!ac;
 let vol = 0.5;
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (master) master.gain.value = vol; }
@@ -74,6 +86,7 @@ let musicOn = true, step = 0, nextT = 0, timer = null;
 const STEP = 60 / 112 / 2;
 function schedule() {
   if (!ac) return;
+  if (musicBuf) { nextT = ac.currentTime; return; }
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
@@ -88,6 +101,6 @@ function schedule() {
 function startMusic() { nextT = ac.currentTime + 0.1; step = 0; if (timer) clearInterval(timer); timer = setInterval(schedule, 100); }
 export const music = {
   toggle() { musicOn = !musicOn; return musicOn; },
-  set(v) { musicOn = !!v; },
+  set(v) { musicOn = !!v; if (musicGain && musicBuf) musicGain.gain.value = musicOn ? 0.45 : 0; },
   get on() { return musicOn; },
 };

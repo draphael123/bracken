@@ -199,29 +199,38 @@ export function bakeMid(w, h, seed) {
   rect(g, 0, h - 8, w, 8, colD);
   return c;
 }
-// Near trees: tall dark trunks with broadleaf canopies in the band the camera sees (layer y 90..190).
+// Near trees: tall dark trunks with rounded broadleaf canopies in the band the camera sees (layer y 90..190).
 export function bakeNear(w, h, seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
   const trunk = '#2b3f2a', trunkL = '#3a5438', trunkD = '#1f2f20';
   const L1 = '#264a2f', L2 = '#2f5e3a', L3 = '#3f7a48', L4 = '#57964f';
   const trees = [];
-  for (let i = 0; i < w / 80; i++) trees.push({ x: rnd() * w, wd: 9 + rnd() * 8, s: rnd() });
-  const blob = (x, y, rx, ry, col, dcol) => ellipse(g, x, y, rx, ry, col, dcol);
+  for (let i = 0; i < w / 84; i++) trees.push({ x: rnd() * w, wd: 10 + rnd() * 7, s: rnd() });
+  // a lobe = a cluster of circles that reads as one rounded leaf mass with a lit top
+  const lobe = (x, y, r) => {
+    circle(g, x, y, r, L1);
+    circle(g, x - r * 0.15, y - r * 0.25, r * 0.8, L2, L1);
+    circle(g, x - r * 0.3, y - r * 0.45, r * 0.45, L3, L2);
+    if (r > 8) circle(g, x - r * 0.4, y - r * 0.6, r * 0.2, L4, L3);
+  };
   for (const t of trees) for (const dx of [-w, 0, w]) {
     const x = Math.round(t.x + dx), wd = Math.round(t.wd);
     rect(g, x, 0, wd, h, trunk); rect(g, x, 0, 2, h, trunkL); rect(g, x + wd - 2, 0, 2, h, trunkD);
     for (let k = 0; k < h / 5; k++) { const bx = x + 2 + ((rnd() * (wd - 4)) | 0), by = (rnd() * h) | 0; rect(g, bx, by, 1, 3 + ((rnd() * 5) | 0), rnd() < 0.5 ? trunkL : trunkD); }
     for (let k = 0; k < 3; k++) { const ky = 190 + rnd() * (h - 200); ellipse(g, x + wd / 2, ky, 2.5, 3, trunkD); px(g, (x + wd / 2) | 0, ky | 0, trunkL); }
-    // limbs
-    for (let k = 0; k < 3; k++) { const y = 118 + k * 24 + rnd() * 8; const right = (k + (t.s < 0.5 ? 1 : 0)) & 1; const bx = right ? x + wd + 18 + rnd() * 8 : x - 18 - rnd() * 8; line(g, right ? x + wd - 1 : x + 1, y, bx, y - 14, trunk, 3); ellipse(g, bx, y - 16, 10 + rnd() * 5, 4 + rnd() * 2, L2, L1); ellipse(g, bx - 3, y - 19, 5, 2, L3, L2); }
-    // broadleaf canopy: layered blobs, dark base then lighter tops
-    const cx = x + wd / 2, cy = 112 + rnd() * 14, R = 34 + rnd() * 14;
-    for (let k = 0; k < 6; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.6; blob(cx + Math.cos(a) * r * 1.6, cy + Math.sin(a) * r * 0.7, R * 0.55 + rnd() * 8, R * 0.32 + rnd() * 4, L1); }
-    for (let k = 0; k < 6; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.5; blob(cx + Math.cos(a) * r * 1.5, cy - 4 + Math.sin(a) * r * 0.6, R * 0.45 + rnd() * 6, R * 0.26 + rnd() * 3, L2, L1); }
-    for (let k = 0; k < 4; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.4; blob(cx + Math.cos(a) * r * 1.4, cy - 10 + Math.sin(a) * r * 0.5, R * 0.32 + rnd() * 5, R * 0.18 + rnd() * 3, L3, L2); }
-    for (let k = 0; k < 3; k++) { const a = rnd() * Math.PI * 2, r = rnd() * R * 0.3; blob(cx + Math.cos(a) * r * 1.4 - 6, cy - 16 + Math.sin(a) * r * 0.4, R * 0.2 + rnd() * 4, R * 0.1 + 2, L4, L3); }
-    // hanging leaf fringe under the canopy
-    for (let k = 0; k < 14; k++) { const lx = cx + (rnd() - 0.5) * R * 2.4, ly = cy + R * 0.35 + rnd() * 10; rect(g, lx | 0, ly | 0, 2, 3 + ((rnd() * 4) | 0), k & 1 ? L1 : L2); }
+    const cx = x + wd / 2, cy = 118 + rnd() * 10, R = 30 + rnd() * 10;
+    // limbs reach out from the trunk and end inside a leaf lobe, so nothing floats
+    for (let k = 0; k < 2; k++) {
+      const right = (k + (t.s < 0.5 ? 1 : 0)) & 1; const y = 128 + k * 26 + rnd() * 6;
+      const bx = right ? x + wd + 16 + rnd() * 10 : x - 16 - rnd() * 10, by = y - 10 - rnd() * 6;
+      line(g, right ? x + wd - 1 : x + 1, y, bx, by, trunk, 3);
+      lobe(bx, by - 2, 9 + rnd() * 3);
+    }
+    // crown: a ring of lobes around the centre, big ones low, smaller ones on top
+    lobe(cx, cy + 6, R * 0.75);
+    for (let k = 0; k < 5; k++) { const a = Math.PI + k * (Math.PI / 4); lobe(cx + Math.cos(a) * R * 0.85, cy + 4 + Math.sin(a) * R * 0.45, R * 0.42 + rnd() * 4); }
+    for (let k = 0; k < 3; k++) lobe(cx + (k - 1) * R * 0.5 + (rnd() - 0.5) * 6, cy - R * 0.35 - rnd() * 4, R * 0.36 + rnd() * 3);
+    lobe(cx - R * 0.1, cy - R * 0.62, R * 0.3);
   }
   return c;
 }
@@ -230,7 +239,7 @@ export function bakeFG(w, h, seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
   const D = '#173523', M = '#1f4a2c', Lt = '#2b6236';
   for (let i = 0; i < w / 14; i++) {
-    const x = rnd() * w, base = h + 2, n = 4 + ((rnd() * 4) | 0), tall = 14 + rnd() * 16;
+    const x = rnd() * w, base = h + 2, n = 4 + ((rnd() * 4) | 0), tall = 9 + rnd() * 9;
     for (let f = 0; f < n; f++) {
       const a = -Math.PI / 2 + (f - n / 2) * 0.38 + (rnd() - 0.5) * 0.2, len = tall * (0.6 + rnd() * 0.5);
       const ex = x + Math.cos(a) * len, ey = base + Math.sin(a) * len;
@@ -239,7 +248,6 @@ export function bakeFG(w, h, seed) {
     }
   }
   for (let i = 0; i < w / 6; i++) { const x = (rnd() * w) | 0; const hh = 3 + ((rnd() * 6) | 0); line(g, x, h, x + (rnd() < 0.5 ? -1 : 1), h - hh, rnd() < 0.5 ? D : M, 1); }
-  for (let i = 0; i < w / 90; i++) { const x = rnd() * w; for (let k = 0; k < 5; k++) { const lx = x + (rnd() - 0.5) * 40, ly = -6 + rnd() * 14; ellipse(g, lx, ly, 9 + rnd() * 6, 4 + rnd() * 3, k & 1 ? D : M); } line(g, x - 30, -4, x + 30, 2, D, 3); }
   return c;
 }
 export function bakeSkyDusk(h) {
@@ -265,4 +273,16 @@ export function bakeShafts(w, h) {
     g.globalAlpha = 0.07; g.fillStyle = '#fff6c8'; g.beginPath(); pts.forEach((p, j) => j ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fill();
   }
   return c;
+}
+
+// Gold coin, four-frame spin (wide, mid, edge, mid).
+export function bakeCoin() {
+  const pal = { y: '#ffd34a', Y: '#fff1a0', d: '#c98a1c', D: '#8a5a12' };
+  const f = rows => outline(fromGrid(rows, pal, 1), OUT);
+  return [
+    f(['.yyyy.', 'yYyyyy', 'yYdddy', 'yydddy', 'ydyyyd', '.dddd.']),
+    f(['..yy..', '.Yyyd.', '.Ydyd.', '.yyyd.', '.dyyd.', '..dd..']),
+    f(['..y...', '..Yd..', '..Yd..', '..yd..', '..yd..', '..d...']),
+    f(['..yy..', '.Yyyd.', '.Ydyd.', '.yyyd.', '.dyyd.', '..dd..']),
+  ];
 }

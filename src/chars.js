@@ -60,9 +60,11 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const gx = Math.sign(x1 - x0), gy = Math.sign(y1 - y0);
     px(g, x0 + gx - gy, y0 + gy + gx, KP.y); px(g, x0 + gx + gy, y0 + gy - gx, KP.y);
   }
-  if (shield) {
-    const sx = BX + 10 + dx, sy = BY + 6 + dy;
-    rect(g, sx, sy, 4, 8, KP.w); rect(g, sx + 1, sy + 1, 2, 6, KP.W); px(g, sx + 1, sy + 3, KP.y); px(g, sx + 2, sy + 3, KP.y); rect(g, sx, sy, 4, 1, KP.y); rect(g, sx, sy + 7, 4, 1, KP.y);
+  if (shield) { // kite shield held out front, covering the torso: steel rim, oak face, gold boss
+    const sx = BX + 9 + dx, sy = BY + 4 + dy;
+    const rows = ['.SSSSS.', 'SwwwwwS', 'SwwywwS', 'SwyyywS', 'SwwywwS', 'SwwwwwS', 'SwwwwwS', '.SwwwS.', '.SwwwS.', '..SwS..', '...S...'];
+    rows.forEach((r, yy) => { for (let xx = 0; xx < r.length; xx++) { const k = r[xx]; if (k !== '.') px(g, sx + xx, sy + yy, k === 'S' ? KP.S : k === 'w' ? KP.w : KP.y); } });
+    px(g, sx + 1, sy + 1, KP.s); px(g, sx + 2, sy + 1, KP.s); px(g, sx + 1, sy + 2, KP.s);
   }
   outline(c, OUT);
   return c;

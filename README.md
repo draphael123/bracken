@@ -13,7 +13,7 @@ No dependencies. Plain canvas 2D at 320×180, integer-scaled, every sprite baked
 | Move | Arrows / WASD |
 | Jump (hold for height) | Z / Space / W / K |
 | Swing | X / J / Enter |
-| Block (hold) | C / L |
+| Block (hold; drains stamina, slow walk, no jumping) | C / L |
 | Dodge roll | V / Shift |
 | Plunge | Down + X while airborne |
 | Drop through a log | Down + jump |
@@ -23,9 +23,11 @@ No dependencies. Plain canvas 2D at 320×180, integer-scaled, every sprite baked
 
 ## Health and stamina
 
-Health is a 100-point bar. Stamina is spent by swinging, plunging, dodging, and blocking a hit.
-It regenerates after half a second of not spending. Blocking with too little stamina is a
-**guard break**: the shield is knocked wide, you take half damage, and you stagger.
+Health is a 100-point bar. Stamina is spent by swinging, plunging, dodging, holding the shield up,
+and taking a hit on it. It regenerates after half a second of not spending. Run the bar dry while
+blocking and the arm drops for a moment ("TIRED"); take a hit on the shield with too little
+stamina and it's a **guard break**: half damage and a stagger. With the shield up you walk slowly
+and cannot jump.
 
 ## The hook
 
@@ -50,7 +52,9 @@ eat the spines, and only the sword will do.
 ## Level
 
 Glade → pits and crates → spitter ledge and shieldbearer step → shrine → wasp pit (pogo chain)
-→ thorn climb on logs → plateau with a moving log → arena → gate. Shrines are checkpoints and heal.
+→ thorn climb on logs → plateau with a moving log → arena → the hollow (drop, stream, shrine) →
+the ridge (log climb under fire, wasp gap, last stand) → gate at dusk. Shrines are checkpoints
+and heal. Gold coins are the collectible.
 
 ## Files
 
@@ -58,7 +62,7 @@ Glade → pits and crates → spitter ledge and shieldbearer step → shrine →
 - `src/main.js` — physics, combat, enemies, camera, render, intro, menu, screens.
 - `src/chars.js` — knight frames (text grids + drawn sword) and enemy sprites.
 - `src/art.js` — tiles, props, parallax layers.
-- `src/audio.js` — synth SFX and the pentatonic loop.
+- `src/audio.js` — synth SFX; plays `audio/theme.ogg` (CC0, see `audio/CREDITS.txt`) with the synth loop as fallback.
 
 ## Debug
 

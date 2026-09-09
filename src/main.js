@@ -32,7 +32,7 @@ const RUN = 100, GRAV = 1000, JUMPV = -320, POGO = -330;
 const SWORD_DMG = 10, PLUNGE_DMG = 20;
 const DMG = { sprig: 20, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20 };
 const EHP = { sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30 };
-const ST = { swing: 12, plunge: 15, dodge: 25, blockHit: 22, regen: 48, delay: 0.5 };
+const ST = { swing: 12, plunge: 15, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
 // ---------- bake ----------
 const K = bakeKnight();
@@ -49,17 +49,17 @@ for (const eL of [0, 1]) for (const eR of [0, 1]) {
   TILE.edge[eL + '' + eR] = [0, 1].map(i => ART.bakeDirtEdge(140 + i + eL * 3 + eR * 5, eL, eR));
 }
 const PROP = {
-  acorn: ART.bakeAcorn(), shrine: [ART.bakeShrine(false), ART.bakeShrine(true)], gate: ART.bakeGate(), sign: ART.bakeSign(),
+  acorn: ART.bakeAcorn(), coin: ART.bakeCoin(), shrine: [ART.bakeShrine(false), ART.bakeShrine(true)], gate: ART.bakeGate(), sign: ART.bakeSign(),
   tuft: [0, 1, 2, 3].map(i => ART.bakeTuft(200 + i)), flower: [0, 1, 2, 3].map(i => ART.bakeFlower(210 + i)),
   mushroom: [0, 1].map(i => ART.bakeMushroom(220 + i)), bush: [0, 1, 2].map(i => ART.bakeBush(230 + i)),
   shadow: ART.bakeShadow(6, 2),
   heart: outline(fromGrid(['.ww.ww.', 'wwwwwww', 'wLwwwww', '.wwwww.', '..www..', '...w...'], { w: '#e04848', L: '#ff9a9a' }, 1), ART.OUT),
   bolt: outline(fromGrid(['..gg.', '.gg..', 'gggg.', '..gg.', '.gg..'], { g: '#8fd160' }, 1), ART.OUT),
 };
-const BG = { sky: ART.bakeSky(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: ART.bakeFar(320, 90, 1), mid: ART.bakeMid(480, 140, 2), near: ART.bakeNear(640, 300, 3), fg: ART.bakeFG(640, VH, 4), shafts: ART.bakeShafts(VW, VH) };
+const BG = { sky: ART.bakeSky(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: ART.bakeFar(320, 90, 1), mid: ART.bakeMid(480, 140, 2), near: ART.bakeNear(640, 300, 3), fg: ART.bakeFG(640, VH, 4) };
 // Water pools and falls that live in the pits.
-const POOLS = [{ x0: 85 * TS, x1: 98 * TS, y: 26 * TS }, { x0: 161 * TS, x1: 172 * TS, y: 26 * TS }];
-const FALLS = [{ x: 98 * TS - 9, y0: 22 * TS, y1: 26 * TS, w: 8 }, { x: 172 * TS - 9, y0: 12 * TS, y1: 26 * TS, w: 8 }];
+const POOLS = [{ x0: 85 * TS, x1: 98 * TS, y: 26 * TS }, { x0: 161 * TS, x1: 172 * TS, y: 26 * TS }, { x0: 215 * TS, x1: 218 * TS, y: 19 * TS }, { x0: 251 * TS, x1: 255 * TS, y: 13 * TS }];
+const FALLS = [{ x: 98 * TS - 9, y0: 22 * TS, y1: 26 * TS, w: 8 }, { x: 172 * TS - 9, y0: 12 * TS, y1: 26 * TS, w: 8 }, { x: 218 * TS - 9, y0: 15 * TS, y1: 19 * TS, w: 6 }, { x: 255 * TS - 9, y0: 9 * TS, y1: 13 * TS, w: 6 }];
 
 // Per-tile sprite choice, resolved once from neighbours.
 const grid0 = new Uint8Array(LEVEL.grid);
@@ -95,7 +95,7 @@ resolveTiles();
 
 // ---------- world state ----------
 const P = { x: 0, y: 0, vx: 0, vy: 0, w: 10, h: 14, face: 1, ground: false, groundTile: 0, coyote: 0, jbuf: 0, abuf: 0, dbuf: 0, atk: -1, plunge: false, plungeRec: 0, canCut: false,
-  hp: 100, maxHp: 100, hpShown: 100, st: 100, maxSt: 100, stDelay: 0, stFlash: 0, block: false, dodge: 0, dodgeCd: 0, inv: 0, hurt: 0, anim: 0, dead: 0, onMover: null, hitSet: new Set(), drop: 0, dust: 0, sqX: 1, sqY: 1, sqT: 0, landT: 0 };
+  hp: 100, maxHp: 100, hpShown: 100, st: 100, maxSt: 100, stDelay: 0, stFlash: 0, block: false, dodge: 0, dodgeCd: 0, inv: 0, hurt: 0, anim: 0, dead: 0, onMover: null, hitSet: new Set(), drop: 0, dust: 0, sqX: 1, sqY: 1, sqT: 0, landT: 0, guardTired: 0 };
 let trail = [], killFlash = 0, fireflies = [];
 let enemies = [], seeds = [], movers = [], parts = [], leaves = [], nums = [], ghosts = [];
 let acorns = [], signs = [], shrines = [], gate = null;
@@ -124,7 +124,7 @@ function setupLevel() {
   acorns = []; signs = []; shrines = []; total = 0;
   for (const e of LEVEL.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
-    if (e.t === 'acorn') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
+    if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
     if (e.t === 'sign') signs.push({ x: px, y: py, text: e.text });
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
     if (e.t === 'gate') gate = { x: px, y: py };
@@ -323,13 +323,17 @@ function spend(cost) {
 }
 function updatePlayer(dt) {
   if (P.dead) { P.dead -= dt; if (P.dead <= 0) respawn(); return; }
-  for (const k of ['inv', 'hurt', 'coyote', 'jbuf', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT']) P[k] = Math.max(0, P[k] - dt);
-  if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * dt * (P.block ? 0.5 : 1));
+  for (const k of ['inv', 'hurt', 'coyote', 'jbuf', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
+  if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * dt);
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
   const stunned = P.hurt > 0;
   const attacking = P.atk >= 0;
   const dodging = P.dodge > 0;
-  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned;
+  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0;
+  if (P.block) { // holding the shield up costs stamina; run dry and the arm drops for a moment
+    P.st -= ST.hold * dt; P.stDelay = ST.delay;
+    if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+  }
   const move = (stunned || dodging) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 2) P.x += m.dx; else P.onMover = null; }
 
@@ -360,7 +364,7 @@ function updatePlayer(dt) {
   }
 
   // jump
-  if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging) {
+  if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block) {
     if (keys.down && P.ground && P.groundTile === T.ONEWAY) { P.drop = 0.2; P.jbuf = 0; }
     else { P.vy = JUMPV; P.ground = false; P.coyote = 0; P.jbuf = 0; P.onMover = null; P.canCut = true; P.block = false; SFX.jump(); dust(P.x, P.y, 3); squash(0.8, 1.2, 0.1); }
   }
@@ -535,7 +539,7 @@ function updateParticles(dt) {
   for (const l of leaves) { l.t += dt; l.life -= dt; l.y += 22 * dt; l.x += Math.sin(l.t * 2.2) * 18 * dt + 6 * dt; }
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
 }
-const dusk = () => Math.max(0, Math.min(1, (camX - 2200) / 900));
+const dusk = () => Math.max(0, Math.min(1, (camX - 2700) / 1000));
 function updateCamera(dt) {
   const tx = P.x + P.face * 26 - VW / 2, ty = P.y - 104;
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
@@ -606,7 +610,6 @@ function drawWorld(cx, cy, showPlayer) {
   drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawLayer(BG.mid, 0.3, VH - 140, cx, cy);
   drawLayer(BG.near, 0.55, -120, cx, cy);
-  g.drawImage(BG.shafts, Math.round(-((cx * 0.1) % 64)), 0); g.drawImage(BG.shafts, Math.round(-((cx * 0.1) % 64)) + VW, 0);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   for (let ty = ty0; ty <= ty0 + 12; ty++) for (let tx = tx0; tx <= tx0 + 21; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
@@ -618,7 +621,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const s of signs) g.drawImage(PROP.sign, s.x - 9 - cx, s.y - 18 - cy);
   for (const s of shrines) { g.drawImage(PROP.shrine[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
   if (gate) g.drawImage(PROP.gate, gate.x - 24 - cx, gate.y - 52 - cy);
-  for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.acorn, a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
+  for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
   for (const e of enemies) {
     if (e.x < cx - 30 || e.x > cx + VW + 30) continue;
     if (!e.alive) { if (e.dying > 0) { const t = 1 - e.dying / 0.35; drawSet(SPR[e.t], null, 0, e.x - cx, e.y - cy, e.face, true, 1 + t * 0.9, Math.max(0.05, 1 - t * 1.1), 1 - t * 0.7); } continue; }
@@ -731,7 +734,7 @@ function render() {
     g.drawImage(PROP.bolt, 6, 15);
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160');
-    g.drawImage(PROP.acorn, VW - 46, 5); text(got + '/' + total, VW - 36, 7, '#fff6e0');
+    g.drawImage(PROP.coin[0], VW - 46, 5); text(got + '/' + total, VW - 36, 7, '#ffd34a');
     if (state === 'play') text(fmt(levelTime), VW / 2, 7, '#dfe8ff', 'center');
   }
   if (state === 'title') {
@@ -750,7 +753,7 @@ function render() {
     g.fillStyle = 'rgba(10,20,14,0.6)'; g.fillRect(40, 26, VW - 80, 130); g.strokeStyle = '#ffd36b'; g.strokeRect(40.5, 26.5, VW - 81, 129);
     text('THE GATE OPENS', VW / 2, 38, '#ffd36b', 'center', 12);
     text('time     ' + fmt(levelTime), VW / 2, 64, '#fff6e0', 'center');
-    text('acorns   ' + got + ' / ' + total, VW / 2, 77, '#fff6e0', 'center');
+    text('gold     ' + got + ' / ' + total, VW / 2, 77, '#ffd34a', 'center');
     text('foes     ' + kills, VW / 2, 90, '#fff6e0', 'center');
     text('blocks   ' + blocks + '   dodges ' + dodges, VW / 2, 103, '#fff6e0', 'center');
     text('deaths   ' + deaths, VW / 2, 116, '#fff6e0', 'center');
