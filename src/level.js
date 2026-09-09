@@ -209,7 +209,7 @@ function marshWood() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
     duskStart: undefined, music: 'theme2',
-    palette: { grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
+    palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5100, x1: 5500, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
     arena: { x0: 343 * TS, x1: 385 * TS, floor: 18 * TS, trigger: 349 * TS, wallL: 342, wallR: 386, boss: 'frog', dais: { x0: 368 * TS, x1: 384 * TS, h: 16 } },
@@ -314,7 +314,7 @@ function theStockade() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
     duskStart: undefined, music: 'theme', night: true,
-    palette: { sky: 'night', canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
+    palette: { dress: 'camp', haze: 'rgba(24,18,44,0.3)', sky: 'night', canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
     arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief' },
@@ -403,7 +403,7 @@ function sporewood() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
     duskStart: undefined, music: 'theme2', night: true, glowNight: true,
-    palette: { sky: 'teal', near: 'mushroom', myc: true, canopy: ['#2a2a44', '#3a3454', '#4a4a6a', '#6a6a8a'] },
+    palette: { sky: 'teal', near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(26,60,72,0.28)', canopy: ['#2a2a44', '#3a3454', '#4a4a6a', '#6a6a8a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother' },

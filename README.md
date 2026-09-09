@@ -131,6 +131,16 @@ mycelium glade → the bouncer canyon → the lurker grove → the shelf climb u
 sleep marsh → the mycelium tunnels (low roof, no plunge) → the lantern terrace → the drone gauntlet
 (caps on pillars over a drop) → the hollow and the Mother Cap.
 
+## Dressing and life
+
+Every level dresses its ground from its own kit: ferns, stumps and rocks in the wood (butterflies
+rest on the stumps and scatter when you run past), cattails and dragonflies in the marsh, skull
+posts, tents and campfires in the camp (crows perch on the posts and take off as you approach),
+tiny glowing caps and hanging moss in Sporewood. A haze sits between the far trees and the play
+layer so the parallax reads as depth. Hits leave an impact star and squash the foe, kills ring out,
+a plunge landing sends a shockwave through the dust, a parried blow flashes steel, and turning at a
+run kicks up a skid.
+
 ## World map, purse, and store
 
 Any key on the title opens the world map. Walk the knight along the path with the arrows and
@@ -170,7 +180,8 @@ older single save is picked up as slot 1.
 Difficulty (easy, normal, hard: damage taken and enemy health scale), music on/off, music
 volume and effects volume (independent), sound FX files or synth, a Z/X swap for jump and swing,
 screen shake, hit stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets),
-CRT scanlines, a pixel-scale cap, IRON KNIGHT, BACK TO SHRINE (counts as a death), RESTART LEVEL, and a reset
+CRT scanlines, a pixel-scale cap, CAMERA (close, or wide: the view shows up to twice the world at a
+smaller pixel scale, picked from your display so it never shrinks on screen), IRON KNIGHT, BACK TO SHRINE (counts as a death), RESTART LEVEL, and a reset
 of the current save slot.
 
 ## Files

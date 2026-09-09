@@ -509,3 +509,108 @@ export function bakeGillPod() { return [0, 1].map(f => { const [c, g] = canvas(1
 // Sleep spore mote and spore mote: tiny.
 export function bakeMote(col) { const [c, g] = canvas(3, 3); px(g, 1, 0, col); px(g, 0, 1, col); px(g, 1, 1, '#ffffff'); px(g, 2, 1, col); px(g, 1, 2, col); return c; }
 export function bakeSkyTeal(h) { const [c, g] = canvas(1, h); const top = [12, 22, 34], mid = [26, 50, 62], bot = [60, 100, 100]; for (let y = 0; y < h; y++) { const t = y / (h - 1); const q = Math.round(t * 8) / 8; const a = q < 0.6 ? top : mid, b = q < 0.6 ? mid : bot, k = q < 0.6 ? q / 0.6 : (q - 0.6) / 0.4; px(g, 0, y, 'rgb(' + ((a[0] + (b[0] - a[0]) * k) | 0) + ',' + ((a[1] + (b[1] - a[1]) * k) | 0) + ',' + ((a[2] + (b[2] - a[2]) * k) | 0) + ')'); } return c; }
+
+// ---------- Round 20: dressing, critters, impact, and the Mother Cap proper ----------
+// The Mother Cap as pixel art: a 160x52 cap and a 32x100 stalk. Drawn from shapes but with dither, rim light, outlined spots and eyes.
+export function bakeMotherCap() {
+  const [cap, g] = canvas(160, 52);
+  const rnd = mulberry(77);
+  // underside gills
+  ellipse(g, 80, 40, 78, 10, '#3a2246');
+  for (let x = 6; x < 156; x += 4) line(g, x, 34, 80 + (x - 80) * 0.72, 49, x % 8 === 2 ? '#8a4a9a' : '#5a3268', 1);
+  ellipse(g, 80, 40, 78, 10, 'rgba(0,0,0,0)');
+  // dome
+  ellipse(g, 80, 30, 78, 22, '#6a3a7a', '#4a2a5a');
+  ellipse(g, 80, 28, 74, 19, '#7a4a8a');
+  ellipse(g, 66, 20, 52, 11, '#9a5aa8');
+  ellipse(g, 56, 15, 30, 6, '#b070c0');
+  // dither bands
+  for (let y = 8; y < 50; y++) for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78, dy = (y - 30) / 22; const r = dx * dx + dy * dy; if (r < 1 && r > 0.72 && ((x + y) & 1)) px(g, x, y, '#5a3268'); if (r < 0.6 && r > 0.45 && ((x + y) & 1) && y < 26) px(g, x, y, '#8a52a0'); }
+  // spots, outlined
+  for (const [sx, sy, r] of [[28, 26, 5], [50, 12, 6], [74, 9, 4], [96, 13, 7], [122, 22, 5], [140, 32, 4], [60, 30, 3], [108, 30, 4], [86, 24, 3], [38, 36, 3], [130, 12, 3]]) { ellipse(g, sx, sy, r, r * 0.7, '#e8e0f0', '#c8b8d8'); ellipse(g, sx - 1, sy - 1, r * 0.5, r * 0.3, '#fff8ff'); }
+  // rim highlight along the top edge
+  for (let x = 12; x < 148; x += 2) { const dx = (x - 80) / 78; const y = 30 - Math.sqrt(Math.max(0, 1 - dx * dx)) * 22; px(g, x, Math.round(y) + 1, '#c890d8'); }
+  outline(cap, OUT);
+  const [stalk, s] = canvas(32, 100);
+  rect(s, 2, 0, 28, 100, '#3a3444'); rect(s, 2, 0, 5, 100, '#5a5468'); rect(s, 25, 0, 5, 100, '#241f2c');
+  for (let i = 0; i < 60; i++) { const x = 4 + ((rnd() * 24) | 0), y = (rnd() * 96) | 0; rect(s, x, y, 1, 2 + ((rnd() * 5) | 0), rnd() < 0.5 ? '#4a4458' : '#2c2736'); }
+  for (let y = 0; y < 100; y += 14) { rect(s, 3, y + 6, 26, 1, '#4e4860'); }
+  // the ring, and roots flaring at the base
+  rect(s, 0, 34, 32, 5, '#5a5468'); rect(s, 0, 39, 32, 2, '#241f2c'); rect(s, 0, 33, 32, 1, '#7a7488');
+  fillPoly(s, [[2, 100], [2, 86], [-4, 100]], '#3a3444'); fillPoly(s, [[30, 100], [30, 84], [36, 100]], '#3a3444'); rect(s, 0, 96, 32, 4, '#2c2736');
+  outline(stalk, OUT);
+  return { cap, stalk };
+}
+// Impact star: two frames, 16x16, white-hot then thinning.
+export function bakeImpact(col = '#fff6e0') {
+  return [0, 1].map(f => { const [c, g] = canvas(16, 16); const r = f ? 7 : 4; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; const L = i % 2 ? r * 0.55 : r; line(g, 8, 8, 8 + Math.cos(a) * L, 8 + Math.sin(a) * L, col, 1); } if (!f) rect(g, 7, 7, 2, 2, '#ffffff'); return c; });
+}
+// ---- dressing ----
+export function bakeFern(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(14, 10);
+  for (let i = 0; i < 5; i++) { const a = -1.9 + i * 0.5, L = 6 + rnd() * 3; const x1 = 7 + Math.cos(a) * L, y1 = 9 + Math.sin(a) * L; line(g, 7, 9, x1, y1, C.grassD, 1); for (let k = 2; k < L; k += 2) { const bx = 7 + Math.cos(a) * k, by = 9 + Math.sin(a) * k; px(g, Math.round(bx - 1), Math.round(by), C.grass); px(g, Math.round(bx + 1), Math.round(by), C.grassL); } }
+  return c;
+}
+export function bakeStump(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(14, 10);
+  rect(g, 2, 3, 10, 7, '#5c3a1d'); rect(g, 2, 3, 2, 7, '#7a4e28'); rect(g, 10, 3, 2, 7, '#3d2712');
+  ellipse(g, 7, 3, 5, 2.5, '#c9b27c', '#8a5a32'); ellipse(g, 7, 3, 3, 1.5, '#b89a68'); ellipse(g, 7, 3, 1.5, 0.7, '#8a5a32');
+  for (let i = 0; i < 3; i++) rect(g, 3 + ((rnd() * 8) | 0), 5 + ((rnd() * 4) | 0), 1, 2, '#3d2712');
+  return outline(c, OUT);
+}
+export function bakeRock(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(12, 7);
+  const w = 6 + ((rnd() * 5) | 0), h = 3 + ((rnd() * 3) | 0);
+  ellipse(g, 6, 6 - h / 2, w / 2, h / 2, '#7c8797', '#5a6270'); ellipse(g, 5, 5 - h / 2, w / 4, h / 4, '#9aa3b0');
+  if (rnd() < 0.6) px(g, 4 + ((rnd() * 4) | 0), 6, C.grass);
+  return outline(c, OUT);
+}
+export function bakeCattail(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(10, 22);
+  const x = 4 + ((rnd() * 2) | 0);
+  line(g, x, 21, x, 6, '#5a8a3a', 1); line(g, x + 2, 21, x + 4, 4, '#4a7a30', 1); line(g, x - 2, 21, x - 3, 8, '#6a9a44', 1);
+  rect(g, x - 1, 3, 3, 7, '#5c3a1d'); rect(g, x, 3, 1, 7, '#7a4e28'); px(g, x, 2, '#c9b27c');
+  return c;
+}
+export function bakeLilyFlower() { const [c, g] = canvas(8, 6); ellipse(g, 4, 4, 4, 1.5, '#4f9a58', '#2f6e3a'); px(g, 3, 2, '#ff9ab0'); px(g, 4, 1, '#ffd0dc'); px(g, 5, 2, '#ff9ab0'); px(g, 4, 2, '#ffd36b'); return c; }
+export function bakeSkullPost() {
+  const [c, g] = canvas(10, 24);
+  rect(g, 4, 8, 2, 16, '#5c3a1d'); rect(g, 4, 8, 1, 16, '#7a4e28');
+  ellipse(g, 5, 4, 4, 3.5, '#e8dcc0', '#b8a888'); rect(g, 3, 4, 2, 2, OUT); rect(g, 6, 4, 2, 2, OUT); rect(g, 3, 7, 5, 1, '#b8a888'); px(g, 4, 8, OUT); px(g, 6, 8, OUT);
+  line(g, 2, 12, 8, 14, '#8a5a32', 1); px(g, 8, 15, '#c9463d');
+  return outline(c, OUT);
+}
+export function bakeTent(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(40, 22);
+  const col = rnd() < 0.5 ? '#6b4a2a' : '#5a4a3a', dark = '#3d2c1a', light = '#8a6a44';
+  fillPoly(g, [[2, 21], [20, 2], [38, 21]], col); fillPoly(g, [[20, 2], [38, 21], [20, 21]], dark);
+  fillPoly(g, [[20, 4], [14, 21], [26, 21]], '#241a10'); line(g, 20, 2, 20, 21, light, 1); line(g, 2, 21, 20, 2, light, 1);
+  for (let i = 0; i < 6; i++) px(g, 4 + ((rnd() * 14) | 0), 8 + ((rnd() * 12) | 0), light);
+  rect(g, 19, 0, 2, 3, '#8a5a32'); rect(g, 21, 0, 4, 2, '#c9463d');
+  return outline(c, OUT);
+}
+export function bakeCampfire() {
+  return [0, 1, 2].map(f => { const [c, g] = canvas(14, 14); rect(g, 2, 11, 10, 2, '#5c3a1d'); rect(g, 1, 12, 5, 2, '#3d2712'); rect(g, 8, 12, 5, 2, '#7a4e28');
+    const h = 6 + f * 2; fillPoly(g, [[3, 11], [7, 11 - h], [11, 11]], '#ff9a5c'); fillPoly(g, [[5, 11], [7 + (f === 1 ? 1 : -1), 11 - h + 3], [9, 11]], '#ffd36b'); px(g, 7 + (f - 1), 11 - h - 1, '#ff6b2c'); px(g, 4 - f, 4 - f, '#ffd36b');
+    return outline(c, OUT); });
+}
+export function bakeTinyCap(col, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(7, 7); const w = 2 + ((rnd() * 2) | 0);
+  rect(g, 3, 4, 1, 3, '#d8d0c8'); ellipse(g, 3, 4, w + 0.5, 1.8, col); px(g, 2, 3, '#ffffff');
+  return c;
+}
+export function bakeMoss(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(10, 14);
+  for (let i = 0; i < 4; i++) { const x = 1 + i * 2 + ((rnd() * 2) | 0), h = 5 + ((rnd() * 9) | 0); line(g, x, 0, x + (rnd() < 0.5 ? 1 : 0), h, rnd() < 0.5 ? '#3a5a4a' : '#4a7a5a', 1); px(g, x, h, '#7fd1a0'); }
+  return c;
+}
+export function bakeButterfly(col) {
+  return [0, 1].map(f => { const [c, g] = canvas(7, 5); if (f) { rect(g, 0, 1, 3, 3, col); rect(g, 4, 1, 3, 3, col); px(g, 1, 1, '#ffffff'); px(g, 5, 1, '#ffffff'); } else { rect(g, 1, 0, 2, 4, col); rect(g, 4, 0, 2, 4, col); } rect(g, 3, 1, 1, 3, OUT); return c; });
+}
+export function bakeDragonfly() {
+  return [0, 1].map(f => { const [c, g] = canvas(10, 5); rect(g, 0, 2, 8, 1, '#3a6aa0'); px(g, 8, 2, '#6fa0d8'); px(g, 9, 2, '#1b1626'); if (f) { rect(g, 2, 0, 5, 1, 'rgba(200,230,255,0.8)'); rect(g, 2, 4, 5, 1, 'rgba(200,230,255,0.8)'); } else { rect(g, 3, 1, 4, 1, 'rgba(200,230,255,0.6)'); rect(g, 3, 3, 4, 1, 'rgba(200,230,255,0.6)'); } return c; });
+}
+export function bakeCrow() {
+  const f = rows => outline(fromGrid(rows, { b: '#1b1626', B: '#2c2736', y: '#e0b040', e: '#c9463d' }, 1), '#0a0810');
+  return [f(['......', '..bB..', '.bbbBy', '..bb..', '.b..b.']), f(['B....B', '.BbbB.', '..bbBy', '......', '......']), f(['......', '..bb..', 'BBbbBy', '......', '......'])];
+}
