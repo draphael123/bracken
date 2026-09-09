@@ -49,25 +49,40 @@ eat the spines, and only the sword will do.
 - **Spitter** — toadstool on a ledge. Spits a seed straight at your chest. Step aside, jump,
   block, or slash it out of the air.
 - **Wasp** — hovers over pits. Pogo fodder.
-- **Thornback** — armoured beetle. Winds up with a "!" and charges. Block the charge to stagger
-  it, or dodge through and hit it while it rests. Sword only.
+- **Spike goblin** — a goblin in a spiked iron helm and back plate. Winds up with a "!" and
+  charges. Block the charge to stagger him, or dodge through and hit him while he rests. Stomping
+  the spikes hurts you: sword only.
 - **Goblin archer** (Marsh Wood) — keeps its distance and looses arcing arrows after a draw. Block
   them, or slash one to send it straight back and kill the archer. It won't cross water.
 - **Hopper** (Marsh Wood) — a marsh frog that leaps at you in long arcs and leaps aboard the raft
   from the river. Swing when it lands, stomp it, or block the leap.
-- **The Bullfrog King** (Marsh Wood boss) — wears a crown of thorns: stomp or plunge him while he's
+- **The Bullfrog King** (Marsh Wood boss) — big, and sits on a mud dais. Stomp or plunge him while he's
   up and you pay for it. Tongue lash at head height (block it to bite it and daze him), a leap that
   shakes the ground (jump the waves, then hit him dazed, when his head is fair game), a croak that
   calls flies out of the reeds (strike the swollen throat for double), venom spit, and he hops away
-  when you crowd him.
+  when you crowd him. His BREATH IN drags you toward his teeth: block to dig your heels in (he chokes and
+  is dazed), or get bitten and thrown.
 - **Sapper** (Stockade) — runs at you with a lit bomb and drops it at your feet. Block him and he
   drops it on himself; dodge through and it lands where you were.
 - **Brute** (Stockade) — a club goblin. A double mark is the unblockable overhead (dodge it); a
   single mark is the sweep (block it). Hit him while the club is up or while he rests.
 - **War hound** (Stockade) — a straight-line chaser that leaps low. Stomp it, or put fire between you.
-- **The Goblin Chieftain** (Stockade boss) — a slow unblockable overhead that plants him for a
-  moment (double damage), a blockable sweep, and a grab that throws you. No plunging his helm. At
-  half health he kicks the brazier and the hall burns; take to the rafters.
+- **Sporeling** (Sporewood) — a walking cap. Kill it and it bursts into a spore cloud that slows
+  and tires you, so finish it at range or step back.
+- **Lurker** (Sporewood) — looks like scenery until you pass, then lunges. Swing at plump caps.
+- **Spore drone** (Sporewood) — a floating puffball that drifts at you and bursts. Swords bounce
+  off it: stomp it out of the air or plunge it.
+- **Toad shaman** (Sporewood) — raises sporelings from the ground and blinks away when struck.
+- **The Mother Cap** (Sporewood boss) — never moves; the hollow is her. Roots stab up through the
+  floor on a rhythm (a sand-coloured tell, then the spike), and she belches rolling sleep clouds.
+  Bounce off the caps under her to slash the four gill pods; then she tips, her heart shows at the
+  top of the stalk, and only the plunge can pierce it (three times).
+- **The Goblin Chieftain** (Stockade boss) — swaps weapons every few swings. CLUB: an unblockable
+  overhead that plants him (hit him then) and a blockable sweep (block it = PARRIED). SWORD AND
+  SHIELD: quick two-hit slashes and a shield bash; the shield turns your blade from the front, so
+  parry the slash or roll behind him. BOW: he backs off and looses arrows you can parry straight
+  back at him. Any stance: when he crouches he leaps and stomps where you stand (shockwaves both
+  ways). At half health he kicks the brazier and two short strips of floor burn by the walls.
 - **The Hornet Queen** — the boss in the hive clearing past the gate. She hovers out of reach,
   calls drones you can pogo off to get up to her, dives at you (block it and she's staggered on
   the floor, where she takes double damage), sweeps the floor at head height (jump or block),
@@ -75,7 +90,7 @@ eat the spines, and only the sword will do.
   sending shockwaves both ways (jump them, then hit her while she recovers). Half health and
   she's enraged: faster, more venom, double sweeps.
 
-## Level
+## Level (the first one, in short)
 
 Glade → pits and crates → spitter ledge and shieldbearer step → shrine → wasp pit (pogo chain)
 → thorn climb on logs → plateau with a moving log → arena → the hollow (drop, stream, shrine) →
@@ -93,13 +108,25 @@ hollow, rain and lightning over the hive.
 reed climb under an archer → archer islands → wading shallows (a dip in the ground, slow and
 tiring, hoppers waiting) → drifting logs against the current → the long river on a big raft, with
 hoppers leaping aboard and two archers on perches overhead → the flooded grove (pools, pads,
-hoppers, a thornback) → mud flats → the frog pond and the Bullfrog King. It rains the whole way.
+hoppers, a spike goblin) → mud flats → the Croaking Court: a shallow pond, reed perches and the
+King on his mud dais. It rains the whole way.
 
 **The Stockade** (unlocks when the marsh is cleared): the goblin camp at night. Watchtowers with
 horns (silence the archer or the camp comes running), rope bridges a goblin cuts under you with a
 net below, a palisade gate you crank open or blow open with a rolling barrel bomb, cages of birds
 and foxes (a freed fox fights beside you), braziers you tip to spill fire, pulley lifts, and the
-great hall where the Chieftain waits.
+kennels and armoury (hounds, a shed archer, barrels by an inner gate), pulley lifts, and the
+great hall where the Chieftain waits. Bridges you lose stay lost for the attempt, but there is
+always a net and a set of ledges to climb back out. Spent barrels come back after a few seconds.
+
+**Sporewood** (unlocks when the stockade is cleared): the deep fungus under a teal night sky.
+Red caps are BOUNCERS (land on one, hold jump for extra height); shelf fungus snaps after you stand
+on it for a second and regrows later; puffballs burst into a spore cloud that slows you and drains
+stamina (slash them from range instead of walking into them); violet SLEEP SPORES put you to sleep
+if you linger, so block to hold your breath and mash to wake; glow mushrooms light the way. The
+mycelium glade → the bouncer canyon → the lurker grove → the shelf climb under a toad shaman → the
+sleep marsh → the mycelium tunnels (low roof, no plunge) → the lantern terrace → the drone gauntlet
+(caps on pillars over a drop) → the hollow and the Mother Cap.
 
 ## World map, purse, and store
 

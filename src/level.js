@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -198,10 +198,13 @@ function marshWood() {
   reeds(336, 15, 3); coins([337, 14], [330, 15]);
   ent('check', 339, 17);
 
-  // ---- 10. The frog pond ----
+  // ---- 10. The Croaking Court: a shallow pond, reed perches, and the King on his mud dais ----
   block(341, 387, 18, 27);
   for (let x = 349; x <= 362; x++) L.set(x, 18, 0); water(349, 362, 18, true);
-  ent('frog', 376, 17);
+  reeds(345, 16, 2); reeds(364, 16, 2);
+  block(368, 383, 17, 17);
+  for (let x = 384; x <= 385; x++) L.set(x, 18, 0); water(384, 385, 18, true);
+  ent('throne', 376, 16); ent('frog', 376, 16);
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
@@ -209,13 +212,13 @@ function marshWood() {
     palette: { grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5100, x1: 5500, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
-    arena: { x0: 343 * TS, x1: 385 * TS, floor: 18 * TS, trigger: 349 * TS, wallL: 342, wallR: 386, boss: 'frog' },
+    arena: { x0: 343 * TS, x1: 385 * TS, floor: 18 * TS, trigger: 349 * TS, wallL: 342, wallR: 386, boss: 'frog', dais: { x0: 368 * TS, x1: 384 * TS, h: 16 } },
   };
 }
 
 
 function theStockade() {
-  const L = painter(302, 28);
+  const L = painter(366, 28);
   const { block, floor, plat, crate, ent, coins, set } = L;
   const pal = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PALISADE); };
   const planks = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
@@ -265,37 +268,48 @@ function theStockade() {
   coins([137, 18], [158, 17], [171, 18], [183, 18]);
   ent('check', 184, 19);
 
+  // ---- 5b. The kennels and the armoury: hounds in the yard, an archer on the shed, barrels by the inner gate ----
+  floor(186, 249, 20);
+  ent('torch', 188, 19); ent('hound', 193, 19, { face: -1 }); ent('cage', 199, 19, { kind: 'bird' });
+  block(202, 208, 18, 19); ent('archer', 205, 17, { face: -1 }); coins([203, 16], [207, 16]);
+  ent('sapper', 211, 19, { face: -1 }); ent('torch', 214, 19); ent('brute', 217, 19, { face: -1 });
+  ent('treehouse', 221, 6);
+  ent('barrel', 223, 19); ent('barrel', 226, 19); ent('crank', 229, 19, { wall: 232 }); ent('shield', 231, 19, { face: -1 });
+  pal(232, 15, 19);
+  ent('sprig', 236, 19, { face: -1 }); ent('hound', 240, 19, { face: -1 }); ent('torch', 235, 19); ent('torch', 246, 19);
+  coins([193, 17], [213, 17], [224, 16], [238, 17], [244, 18]);
+  ent('check', 247, 19);
+
   // ---- 6. The lift to the upper walkway ----
-  for (let y = 20; y <= 27; y++) { set(186, y, 0); set(187, y, 0); } net(186, 187, 26);
-  movers.push({ kind: 'lift', x: 186 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
-  block(188, 205, 12, 27);
-  ent('sapper', 196, 11, { face: -1 }); coins([192, 10], [200, 10]);
+  for (let y = 20; y <= 27; y++) { set(250, y, 0); set(251, y, 0); } net(250, 251, 26);
+  movers.push({ kind: 'lift', x: 250 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
+  block(252, 269, 12, 27);
+  ent('sapper', 260, 11, { face: -1 }); coins([256, 10], [264, 10]);
 
   // ---- 7. The high bridge and the second tower ----
-  planks(206, 209, 12); planks(210, 217, 13); planks(218, 221, 12);
-  net(206, 221, 17);
-  ent('bridge', 206, 12, { x1: 221 });
-  block(222, 250, 12, 27);
-  ent('sprig', 223, 11, { face: -1, cutter: true });
-  plat(231, 10, 2); plat(235, 8, 2);
-  block(238, 240, 8, 11); plat(237, 7, 5); ent('towertop', 239, 7);
-  ent('archer', 239, 6, { face: -1, horn: true });
-  ent('brute', 245, 11, { face: -1 }); ent('hound', 248, 11, { face: -1 });
-  ent('torch', 226, 11); ent('torch', 244, 11);
-  coins([213, 11], [232, 9], [236, 7], [247, 10]);
+  planks(270, 273, 12); planks(274, 281, 13); planks(282, 285, 12);
+  net(270, 285, 17);
+  ent('bridge', 270, 12, { x1: 285 });
+  block(286, 314, 12, 27);
+  ent('sprig', 287, 11, { face: -1, cutter: true });
+  plat(295, 10, 2); plat(299, 8, 2);
+  block(302, 304, 8, 11); plat(301, 7, 5); ent('towertop', 303, 7);
+  ent('archer', 303, 6, { face: -1, horn: true });
+  ent('brute', 309, 11, { face: -1 }); ent('hound', 312, 11, { face: -1 });
+  ent('torch', 290, 11); ent('torch', 308, 11);
+  coins([277, 11], [296, 9], [300, 7], [311, 10]);
 
   // ---- 8. Down to the great hall ----
-  for (let y = 12; y <= 27; y++) { set(251, y, 0); set(252, y, 0); } net(251, 252, 26);
-  movers.push({ kind: 'lift', x: 251 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
-  floor(253, 301, 20);
-  ent('hound', 256, 19, { face: -1 }); ent('check', 259, 19);
+  for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26);
+  movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
+  floor(317, 365, 20);
+  ent('hound', 320, 19, { face: -1 }); ent('check', 323, 19);
 
   // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
-  plat(265, 15, 4); ent('archer', 266, 14, { face: 1 });
-  plat(292, 15, 4); ent('archer', 294, 14, { face: -1 });
-  plat(270, 10, 4); plat(278, 9, 5); plat(287, 10, 4);
-  ent('brazier', 290, 19); ent('torch', 264, 19); ent('torch', 297, 19);
-  ent('chief', 279, 19);
+  plat(329, 15, 4); plat(356, 15, 4);
+  plat(334, 10, 4); plat(342, 9, 5); plat(351, 10, 4);
+  ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
+  ent('chief', 343, 19);
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
@@ -303,7 +317,90 @@ function theStockade() {
     palette: { sky: 'night', canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 263 * TS, x1: 297 * TS, floor: 20 * TS, trigger: 268 * TS, wallL: 262, wallR: 298, boss: 'chief' },
+    arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief' },
+  };
+}
+
+
+function sporewood() {
+  const L = painter(376, 28);
+  const { block, floor, plat, crate, ent, coins, set } = L;
+  const bouncer = (x, y) => set(x, y, T.BOUNCER);
+  const shelf = (x, y, len) => { for (let i = 0; i < len; i++) set(x + i, y, T.SHELF); };
+  const sleeps = [];
+
+  // ---- 1. The mycelium glade: caps bounce, puffballs burst ----
+  floor(0, 44, 20);
+  ent('sign', 4, 19, { text: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT.' });
+  ent('glow', 8, 19); ent('puffball', 14, 19); ent('sporeling', 18, 19, { face: -1 }); ent('puffball', 22, 19);
+  bouncer(27, 19); coins([27, 15], [27, 12], [27, 9]);
+  ent('sporeling', 33, 19, { face: -1 }); ent('glow', 38, 19); ent('sign', 41, 19, { text: 'SLASH A PUFFBALL FROM RANGE.' });
+
+  // ---- 2. The bouncer canyon: up the caps to the high path ----
+  floor(45, 61, 26);
+  bouncer(48, 25); plat(47, 19, 3); bouncer(49, 18); plat(48, 12, 3); plat(52, 12, 3); plat(56, 12, 3);
+  ent('puffball', 53, 11); ent('drone', 58, 8); ent('drone', 52, 16);
+  coins([50, 16], [54, 10], [58, 10]); ent('glow', 46, 25);
+  block(60, 100, 12, 27);
+
+  // ---- 3. The lurker grove: some of the mushrooms are hungry ----
+  ent('check', 63, 11);
+  ent('lurker', 70, 11); ent('sporeling', 74, 11, { face: -1 }); ent('puffball', 76, 11); ent('lurker', 79, 11);
+  ent('glow', 66, 11); ent('glow', 83, 11); ent('lurker', 87, 11); ent('sporeling', 91, 11, { face: -1 }); ent('puffball', 94, 11); ent('glow', 97, 11);
+  coins([72, 9], [81, 9], [89, 9]);
+
+  // ---- 4. Shelf climb under the shaman; shelves snap under you ----
+  shelf(99, 10, 2); shelf(96, 8, 2); shelf(99, 6, 2);
+  block(101, 130, 4, 27);
+  ent('shaman', 108, 3, { face: -1 }); ent('sporeling', 114, 3, { face: -1 }); ent('sporeling', 119, 3, { face: -1 });
+  for (let x = 121; x <= 125; x++) for (let y = 4; y <= 27; y++) set(x, y, 0); shelf(121, 4, 5);
+  ent('glow', 104, 3); ent('glow', 128, 3); coins([97, 7], [111, 2], [123, 2]);
+
+  // ---- 5. The sleep marsh: violet spores. Block to hold your breath. ----
+  block(131, 165, 14, 27);
+  ent('sign', 133, 13, { text: 'VIOLET SPORES PUT YOU TO SLEEP. BLOCK THROUGH.' });
+  sleeps.push({ x0: 137 * TS, x1: 147 * TS, y0: 8 * TS, y1: 14 * TS }, { x0: 153 * TS, x1: 162 * TS, y0: 8 * TS, y1: 14 * TS });
+  ent('sporeling', 142, 13, { face: -1 }); ent('drone', 145, 9); ent('sporeling', 150, 13, { face: -1 }); ent('drone', 158, 10); ent('shield', 160, 13, { face: -1 });
+  ent('glow', 135, 13); ent('glow', 149, 13); ent('glow', 164, 13); coins([140, 11], [156, 11]);
+  ent('check', 165, 13);
+
+  // ---- 6. The mycelium tunnels: low roof, no room to plunge ----
+  block(166, 200, 14, 27); block(166, 200, 0, 10);
+  ent('lurker', 172, 13); ent('sporeling', 176, 13, { face: -1 }); ent('sporeling', 181, 13, { face: 1 }); ent('puffball', 185, 13);
+  ent('lurker', 189, 13); ent('sporeling', 193, 13, { face: -1 }); ent('shield', 197, 13, { face: -1 });
+  ent('glow', 168, 13); ent('glow', 178, 13); ent('glow', 187, 13); ent('glow', 196, 13); coins([174, 12], [183, 12], [191, 12]);
+
+  // ---- 6b. The lantern terrace: glow caps light the way, a second shaman raises the dead ----
+  floor(201, 244, 14);
+  ent('glow', 203, 13); ent('puffball', 206, 13); ent('lurker', 210, 13); ent('sporeling', 214, 13, { face: -1 }); ent('glow', 217, 13);
+  bouncer(220, 13); plat(218, 8, 5); coins([220, 10], [219, 6], [221, 6]); ent('drone', 224, 7);
+  sleeps.push({ x0: 226 * TS, x1: 233 * TS, y0: 8 * TS, y1: 14 * TS }); ent('sporeling', 229, 13, { face: -1 }); ent('glow', 227, 13);
+  ent('shaman', 237, 13, { face: -1 }); ent('puffball', 234, 13); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
+  coins([208, 12], [231, 11], [239, 11]);
+
+  // ---- 7. The drone gauntlet: caps on pillars over the drop ----
+  for (const [px0, top] of [[249, 18], [255, 20], [261, 18], [267, 20]]) { block(px0, px0 + 2, top, 27); for (let i = 0; i < 3; i++) bouncer(px0 + i, top - 1); }
+  ent('drone', 252, 6); ent('drone', 258, 8); ent('drone', 264, 6);
+  coins([252, 8], [258, 10], [264, 8], [270, 9]);
+  floor(271, 295, 14);
+  ent('check', 280, 13); ent('glow', 290, 13);
+
+  // ---- 8. The hollow: the Mother Cap. Caps under her fling you up to the gills; shelves by the walls give a breather, briefly ----
+  block(296, 375, 20, 27);
+  bouncer(332, 19); bouncer(338, 19);
+  shelf(327, 15, 2); shelf(342, 15, 2);
+  ent('gill', 330, 13); ent('gill', 333, 12); ent('gill', 337, 12); ent('gill', 340, 13);
+  ent('mother', 335, 19);
+  ent('glow', 300, 19); ent('glow', 370, 19); ent('glow', 314, 19); ent('glow', 356, 19);
+  coins([306, 17], [364, 17]);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
+    duskStart: undefined, music: 'theme2', night: true, glowNight: true,
+    palette: { sky: 'teal', near: 'mushroom', myc: true, canopy: ['#2a2a44', '#3a3454', '#4a4a6a', '#6a6a8a'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
+    arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother' },
   };
 }
 
@@ -311,4 +408,5 @@ export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', build: theStockade, needs: 'marsh' },
+  { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', build: sporewood, needs: 'stockade' },
 ];

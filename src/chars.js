@@ -194,10 +194,12 @@ export function bakeSeed() {
 }
 
 // Thornback — armoured beetle with a spined back. Four-frame leg scuttle.
+// Spike goblin (the 'thorn' kind) — a goblin in a spiked iron helm and back plate. 14×11, four-frame walk. Faces right.
 export function bakeThornback() {
-  const shell = ['..t.t.t.t.t...', '.tNtNtNtNtNt..', '.NnnnnnnnnnN..', 'NnnnnnnnnnnnN.', 'NnNnnnnnnnnnNe', '.NnnnnnnnnnnNo'];
-  const legs = [['.NN.NN.NN.NN..', '.N..N..N..N...'], ['..NN.NN.NN.NN.', '...N..N..N..N.'], ['.NN.NN.NN.NN..', '..N..N..N..N..'], ['..NN.NN.NN.NN.', '.N..N..N..N...']];
-  return pack(legs.map(l => sprite([...shell, ...l])), 8, 9, 14, 8);
+  const top = ['..S..S..S.....', '.SSSSSSSSSS...', '.SsssssssssS..', '..gggggeogg...', '..gggGGGGgg...'];
+  const back = ['.S.S.SS.S.S...', 'SSSSSSSSSSSSS.', '.SrrrrrrrrrS..', '..rrrrrrrrr...'];
+  const legs = [['..GG..GG......', '.GG....GG.....'], ['..GG.GG.......', '..GG..GG......'], ['...GGGG.......', '..GG..GG......'], ['..GG.GG.......', '.GG....GG.....']];
+  return pack(legs.map(l => sprite([...top, ...back, ...l])), 7, 12, 12, 11);
 }
 
 // Spitter pieces for its death: the cap pops off, the stem crumples.
@@ -302,11 +304,12 @@ export function bakeBrute() {
   const legsA = ['...GGG....GGG...', '...GGG....GGG...', '..GGGG....GGGG..'];
   const legsB = ['....GGG..GGG....', '....GGG..GGG....', '...GGGG..GGGG...'];
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
-  const stand = spr([...head, ...body, ...legsA]);
-  const walk = spr([...head, ...body, ...legsB]);
+  const pad = ['................', '................', '................', '................'];
+  const stand = spr([...pad, ...head, ...body, ...legsA]);
+  const walk = spr([...pad, ...head, ...body, ...legsB]);
   const raise = spr(['.......cccc.....', '......cCCCCc....', '......cCCCCc....', '.......cccc.....', ...head, ...body, ...legsA]);
-  const swing = spr([...head, body[0], body[1], body[2].slice(0, 13) + 'ccc', body[3].slice(0, 13) + 'cCC', body[4].slice(0, 13) + 'ccc', ...legsB]);
-  return pack([stand, walk, raise, swing], 9, 17, 12, 16);
+  const swing = spr([...pad, ...head, body[0], body[1], body[2].slice(0, 13) + 'ccc', body[3].slice(0, 13) + 'cCC', body[4].slice(0, 13) + 'ccc', ...legsB]);
+  return pack([stand, walk, raise, swing], 9, 19, 12, 16);
 }
 // War hound — low, fast. 14×7. Frames: run1, run2, leap.
 export function bakeHound() {
@@ -336,11 +339,50 @@ export function bakeChief() {
   const legsB = ['.......GGGG..GGGG.......', '.......GGGG..GGGG.......', '......GGGGG..GGGGG......'];
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
   const top = [...helm, ...head];
-  const stand = spr([...top, ...body, ...legsA]);
-  const walk = spr([...top, ...body, ...legsB]);
+  const pad = ['........................', '........................', '........................', '........................'];
+  const stand = spr([...pad, ...top, ...body, ...legsA]);
+  const walk = spr([...pad, ...top, ...body, ...legsB]);
   const raise = spr(['..........ccccc.........', '.........cCCCCCc........', '.........cCCCCCc........', '..........ccccc.........', ...top, ...body, ...legsA]);
-  const slam = spr([...top, body[0], body[1], body[2], body[3].slice(0, 19) + 'ccccc', body[4].slice(0, 19) + 'cCCCC', body[5].slice(0, 19) + 'ccccc', ...legsB]);
-  const sweep = spr([...top, body[0], body[1].slice(0, 19) + 'ccccc', body[2].slice(0, 19) + 'cCCCC', body[3].slice(0, 19) + 'ccccc', body[4], body[5], ...legsB]);
-  const grab = spr([...top, body[0], body[1].slice(0, 19) + 'ggggg', body[2].slice(0, 19) + 'ggggg', body[3], body[4], body[5], ...legsB]);
-  return pack([stand, walk, raise, slam, sweep, grab], 12, 21, 16, 20);
+  const slam = spr([...pad, ...top, body[0], body[1], body[2], body[3].slice(0, 19) + 'ccccc', body[4].slice(0, 19) + 'cCCCC', body[5].slice(0, 19) + 'ccccc', ...legsB]);
+  const sweep = spr([...pad, ...top, body[0], body[1].slice(0, 19) + 'ccccc', body[2].slice(0, 19) + 'cCCCC', body[3].slice(0, 19) + 'ccccc', body[4], body[5], ...legsB]);
+  const grab = spr([...pad, ...top, body[0], body[1].slice(0, 19) + 'ggggg', body[2].slice(0, 19) + 'ggggg', body[3], body[4], body[5], ...legsB]);
+  // sword and shield: round shield held out front, blade up behind it
+  const swordUp = ['........................', '....................l...', '....................l...', '....................l...'];
+  const guard = spr([...swordUp, helm[0], helm[1], helm[2], helm[3].slice(0, 20) + 'l...', head[0].slice(0, 20) + 'l...', head[1], head[2], head[3], body[0].slice(0, 18) + '.SSS..', body[1].slice(0, 18) + 'SsssS.', body[2].slice(0, 18) + 'SssyS.', body[3].slice(0, 18) + 'SsssS.', body[4].slice(0, 18) + '.SSS..', body[5], ...legsA]);
+  const slash = spr([...pad, ...top, body[0], body[1].slice(0, 18) + 'llllll', body[2].slice(0, 18) + '.SSS..', body[3].slice(0, 18) + 'SsssS.', body[4].slice(0, 18) + '.SSS..', body[5], ...legsB]);
+  // the bow: a tall curve out front, arrow nocked
+  const bow = spr([...pad, ...top, body[0].slice(0, 19) + '.w...', body[1].slice(0, 19) + '..w..', body[2].slice(0, 18) + 'lll.w.', body[3].slice(0, 19) + '..w..', body[4].slice(0, 19) + '.w...', body[5], ...legsA]);
+  const leap = spr([...pad, ...top, ...body, '.....GGGGG..GGGGG.......', '......GGG....GGG........', '........................']);
+  return pack([stand, walk, raise, slam, sweep, grab, guard, slash, bow, leap], 12, 22, 16, 18);
+}
+
+// ---------- Sporewood ----------
+const SP = Object.assign({}, EP, { m: '#9a5aa8', M: '#6a3a7a', t: '#e8e0f0', c: '#4aa0b0', C: '#2a6a7a', v: '#7a5aa8', V: '#4a2a6a', k: '#f0e6c8' });
+const sspr = rows => outline(fromGrid(rows, SP, 1), OUT);
+// Sporeling — a walking cap. 10×10, two frames.
+export function bakeSporeling() {
+  const cap = ['...mmmm...', '..mmtmmm..', '.mmmmmmtm.', 'mmmmmmmmmm', '.MMMMMMMM.'];
+  const a = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '..kk..kk..', '.kk....kk.']);
+  const b = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '...kkkk...', '..kk..kk..']);
+  return pack([a, b], 6, 11, 8, 10);
+}
+// Lurker — looks like a scenery mushroom until it lunges. 14×12: frame 0 hidden, frame 1 mouth open.
+export function bakeLurker() {
+  const cap = ['....vvvvvv....', '..vvvtvvvvtv..', '.vvvvvvvvvvvv.', 'vvvvvvvvvvvvvv', '.VVVVVVVVVVVV.'];
+  const a = sspr([...cap, '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '..kkkkkkkkkk..']);
+  const b = sspr([...cap, '...kkkkkkkk...', '..kkeokkeokk..', '..kRRRRRRRRk..', '..kRrrrrrrRk..', '...kRRRRRRk...', '..kkkkkkkkkk..']);
+  return pack([a, b], 8, 13, 12, 12);
+}
+// Spore drone — a floating puffball with a dark eye. 10×8, two frames (breathing).
+export function bakeDrone() {
+  const a = sspr(['...tttt...', '..tttttt..', '.ttteottt.', '.tttttttt.', '..tttttt..', '...tttt...']);
+  const b = sspr(['..tttttt..', '.tttttttt.', 'ttttteottt', 'tttttttttt', '.tttttttt.', '..tttttt..']);
+  return pack([a, b], 6, 7, 9, 7);
+}
+// Toad shaman — a toadstool that walks, wears a bone circlet, casts. 14×13: idle, cast.
+export function bakeShaman() {
+  const cap = ['....cccccc....', '..ccctccctcc..', '.cccccccccccc.', 'cctccccctccccc', 'cccccccccccccc', '.CCCCCCCCCCCC.'];
+  const stem = ['...kkkkkkkk...', '...kokkkkok...', '...kkkkkkkk...', '...kkkGGkkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
+  const cast = ['..tkkkkkkkkt..', '..tkokkkkokt..', '...kkkkkkkk...', '...kkGGGGkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
+  return pack([sspr([...cap, ...stem]), sspr([...cap, ...cast])], 8, 14, 12, 13);
 }

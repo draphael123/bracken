@@ -456,3 +456,56 @@ export function bakeSkyNight(h) {
   for (let y = 0; y < h; y++) { const t = y / (h - 1); const q = Math.round(t * 8) / 8; const a = q < 0.6 ? top : mid, b = q < 0.6 ? mid : bot, k = q < 0.6 ? q / 0.6 : (q - 0.6) / 0.4; px(g, 0, y, 'rgb(' + ((a[0] + (b[0] - a[0]) * k) | 0) + ',' + ((a[1] + (b[1] - a[1]) * k) | 0) + ',' + ((a[2] + (b[2] - a[2]) * k) | 0) + ')'); }
   return c;
 }
+
+// ---------- Sporewood ----------
+// Giant mushrooms for the near layer: thick stalks, wide caps with glowing gills underneath.
+export function bakeNearMushrooms(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const stalk = '#3a3444', stalkL = '#5a5468', stalkD = '#241f2c';
+  const caps = [['#6a3a7a', '#4a2a5a', '#9a5aa8'], ['#2a6a7a', '#1a4a5a', '#4aa0b0'], ['#7a3a4a', '#5a2a34', '#b05a6a']];
+  const shrooms = [];
+  for (let i = 0; i < w / 80; i++) shrooms.push({ x: rnd() * w, wd: 14 + rnd() * 10, cw: 44 + rnd() * 24, cy: 96 + rnd() * 26, k: (rnd() * 3) | 0 });
+  for (const m of shrooms) for (const dx of [-w, 0, w]) {
+    const x = Math.round(m.x + dx), wd = Math.round(m.wd), [C1, C2, C3] = caps[m.k];
+    rect(g, x, m.cy, wd, h, stalk); rect(g, x, m.cy, 3, h, stalkL); rect(g, x + wd - 3, m.cy, 3, h, stalkD);
+    for (let k = 0; k < h / 6; k++) { const bx = x + 3 + ((rnd() * (wd - 6)) | 0), by = m.cy + (rnd() * (h - m.cy)) | 0; rect(g, bx, by, 1, 2 + ((rnd() * 4) | 0), rnd() < 0.5 ? stalkL : stalkD); }
+    // ring on the stalk
+    rect(g, x - 2, m.cy + 14, wd + 4, 3, stalkL); rect(g, x - 2, m.cy + 17, wd + 4, 1, stalkD);
+    // gills under the cap, glowing
+    const cx = x + wd / 2; ellipse(g, cx, m.cy + 2, m.cw / 2, 7, C2);
+    for (let gx = -m.cw / 2 + 3; gx < m.cw / 2; gx += 4) line(g, cx + gx, m.cy, cx + gx * 0.6, m.cy + 7, C3, 1);
+    // cap
+    ellipse(g, cx, m.cy - 6, m.cw / 2, 14, C1, C2); ellipse(g, cx - m.cw * 0.12, m.cy - 12, m.cw * 0.28, 6, C3, C1);
+    for (let k = 0; k < 6; k++) { const sx = cx + (rnd() - 0.5) * m.cw * 0.8, sy = m.cy - 6 - rnd() * 10; ellipse(g, sx, sy, 2 + rnd() * 2, 1.5 + rnd(), '#e8e0f0'); }
+    ellipse(g, cx, m.cy - 6, m.cw / 2 + 1, 15, 'rgba(0,0,0,0)');
+  }
+  return c;
+}
+// Mycelium ground: pale threads over dark loam. Replaces the grass top.
+export function bakeMycTop(seed, eL, eR) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 0, T, T, '#3a3040'); for (let i = 0; i < 40; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, rnd() < 0.5 ? '#2a2230' : '#4a4050');
+  for (let x = 0; x < T; x++) { const d = 2 + (rnd() < 0.4 ? 1 : 0); for (let y = 0; y < d; y++) px(g, x, y, y === 0 ? '#e8f0e0' : '#b8c8b8'); }
+  for (let i = 0; i < 5; i++) { let x = (rnd() * T) | 0, y = 3; for (let k = 0; k < 6 + ((rnd() * 6) | 0) && y < T; k++) { px(g, x, y, '#a8b8b0'); if (rnd() < 0.5) x += rnd() < 0.5 ? -1 : 1; y++; } }
+  for (let i = 0; i < 2; i++) if (rnd() < 0.6) px(g, (rnd() * T) | 0, 2 + ((rnd() * 10) | 0), '#4aa0b0');
+  const side = (x0, dir) => { for (let y = 0; y < 8; y++) if (y < 3 || rnd() < 0.5) px(g, x0, y, '#b8c8b8'); };
+  if (eL) side(0, 1); if (eR) side(T - 1, -1);
+  return c;
+}
+export function bakeMycDirt(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#3a3040'); for (let i = 0; i < 40; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, rnd() < 0.5 ? '#2a2230' : '#4a4050'); for (let i = 0; i < 3; i++) { let x = (rnd() * T) | 0, y = (rnd() * T) | 0; for (let k = 0; k < 5; k++) { px(g, x, y, '#6a6a78'); x += rnd() < 0.5 ? -1 : 1; y += rnd() < 0.5 ? 1 : 0; } } return c; }
+// Bouncer cap: a springy red cap you land on. 16×16 (top 10 px used), frame 2 = squashed.
+export function bakeBouncer() {
+  const mk = (sq) => { const [c, g] = canvas(T, T); const h = sq ? 5 : 8; ellipse(g, 8, 10, 8, h * 0.6, '#c9463d', '#8f2f28'); ellipse(g, 6, 10 - h * 0.3, 4, 1.5, '#ff9a9a', '#c9463d'); px(g, 3, 9, '#fff1c0'); px(g, 11, 8, '#fff1c0'); px(g, 8, 11, '#fff1c0'); rect(g, 6, 13, 4, 3, '#f0e6c8'); return outline(c, OUT); };
+  return [mk(false), mk(true)];
+}
+// Shelf fungus: a one-way ledge that snaps after you stand on it.
+export function bakeShelf(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 2, T, 5, '#d9a55b'); rect(g, 0, 2, T, 1, '#f0d090'); rect(g, 0, 6, T, 1, '#8a5a32'); for (let i = 0; i < 4; i++) rect(g, 2 + i * 4, 4, 1, 2, '#b8813a'); if (rnd() < 0.5) px(g, (rnd() * T) | 0, 3, '#fff1c0'); return c; }
+// Puffball: a pale ball that bursts into spores.
+export function bakePuffball() { const [c, g] = canvas(14, 12); ellipse(g, 7, 7, 6.5, 5, '#e8e0d0', '#c8bcb0'); ellipse(g, 5, 5, 3, 2, '#fff8f0'); px(g, 7, 2, '#b8a8a0'); rect(g, 5, 11, 4, 1, '#a89890'); return outline(c, OUT); }
+// Glow mushroom: teal light. Frame 1 = dark.
+export function bakeGlowShroom(lit) { const [c, g] = canvas(12, 14); rect(g, 5, 7, 2, 7, lit ? '#8ad0d8' : '#4a5a5c'); ellipse(g, 6, 5, 6, 4, lit ? '#4aa0b0' : '#2a4a50', lit ? '#2a6a7a' : '#1a3038'); if (lit) { ellipse(g, 4, 3, 2.5, 1.5, '#bff0f0'); px(g, 9, 6, '#bff0f0'); } return outline(c, OUT); }
+// Gill pod: the Mother Cap's soft spot, 12×10, pulses.
+export function bakeGillPod() { return [0, 1].map(f => { const [c, g] = canvas(12, 10); ellipse(g, 6, 5, 5.5 + f, 4 + f * 0.5, '#9a5aa8', '#6a3a7a'); ellipse(g, 5, 4, 2.5, 1.5, '#e0b0f0'); px(g, 8, 6, '#ffd0ff'); return outline(c, OUT); }); }
+// Sleep spore mote and spore mote: tiny.
+export function bakeMote(col) { const [c, g] = canvas(3, 3); px(g, 1, 0, col); px(g, 0, 1, col); px(g, 1, 1, '#ffffff'); px(g, 2, 1, col); px(g, 1, 2, col); return c; }
+export function bakeSkyTeal(h) { const [c, g] = canvas(1, h); const top = [12, 22, 34], mid = [26, 50, 62], bot = [60, 100, 100]; for (let y = 0; y < h; y++) { const t = y / (h - 1); const q = Math.round(t * 8) / 8; const a = q < 0.6 ? top : mid, b = q < 0.6 ? mid : bot, k = q < 0.6 ? q / 0.6 : (q - 0.6) / 0.4; px(g, 0, y, 'rgb(' + ((a[0] + (b[0] - a[0]) * k) | 0) + ',' + ((a[1] + (b[1] - a[1]) * k) | 0) + ',' + ((a[2] + (b[2] - a[2]) * k) | 0) + ')'); } return c; }
