@@ -1253,7 +1253,7 @@ function theShop() {
 
 // ---------- Level 9. GALE MOOR: the high moor above the mine. The wind is the verb: it carries you, it pins you, it lifts you. ----------
 function galeMoor() {
-  const L = painter(332, 30);
+  const L = painter(524, 30);
   const { block, floor, plat, spikes, ent, coins, set } = L;
   const movers = [], gusts = [], pools = [], hags = [], stone = [];
   const menhir = (x, y0, y1) => { block(x, x, y0, y1); stone.push([x, x, y0, y1]); };
@@ -1314,24 +1314,60 @@ function galeMoor() {
   coins([248, 20], [258, 18], [268, 16], [280, 14], [292, 12], [298, 12]);
   ent('check', 298, 13);
 
-  // ---- 7. THE SUMMIT: a stair into cloud, and the Windcaller on the highest stone with his war-kite on four lines. ----
-  block(301, 331, 14, 29);
-  ladder(302, 303, 6, 13); for (let y = 6; y <= 13; y++) set(304, y, 0);
-  spikes(306, 307, 13); menhir(318, 10, 13); menhir(319, 10, 13);
-  plat(312, 12, 2); plat(315, 10, 2); plat(322, 10, 2); plat(325, 12, 2);
-  for (const x of [308, 312, 324, 327]) ent('tether', x, 13);
-  ent('windcaller', 318, 9);
-  ent('sign', 305, 13, { text: 'THE WINDCALLER. HIS KITE HOLDS THE SKY ON FOUR LINES. CUT A LINE AND THE KITE PULLS HIM OFF HIS FEET: CUT HIM THEN. CUT ALL FOUR AND THE WIND IS YOURS. WHEN HE DRAWS BREATH, EVERYTHING FALLS.' });
-  ent('check', 309, 13); ent('gate', 329, 13);
+  // ---- 7. THE HOWLING GAP: the ridge ends at a chasm. Five standing stones rise out of the bog, and between them the air goes UP: step off into a gap, the updraft lifts you, the gust carries you to the next stone. ----
+  floor(301, 306, 14);
+  block(307, 365, 27, 29); pools.push({ x0: 307 * TS, x1: 366 * TS, y: 26 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 307 * TS, x1: 366 * TS });
+  const pillar = (x, top, bottom = 26) => { block(x, x + 1, top, bottom); stone.push([x, x + 1, top, bottom]); };
+  pillar(312, 14); pillar(322, 12); pillar(334, 15); pillar(346, 11); pillar(358, 13);
+  floor(366, 396, 14);
+  for (const [x, h, w] of [[309, 230, 40], [318, 260, 64], [329, 220, 80], [341, 290, 80], [353, 250, 80], [363, 240, 48]]) ent('vent', x, 26, { period: 100, on: 100, h, wind: true, w }); // the whole gap is an updraft: the bog is a delay, never a trap
+  gusts.push({ x0: 300 * TS, x1: 366 * TS, y0: 2 * TS, y1: 26 * TS, dir: 1, period: 5, on: 2.2, phase: 0, moor: true, k: 1.5 });
+  ent('flagpost', 304, 13); ent('flagpost', 335, 14); ent('flagpost', 368, 13);
+  ent('harpy', 330, 6); ent('harpy', 350, 4);
+  ent('sign', 302, 13, { text: 'THE HOWLING GAP. THE STONES STAND IN THE BOG, AND THE AIR BETWEEN THEM GOES UP. STEP OFF INTO A GAP: THE UPDRAFT LIFTS YOU, THE GUST CARRIES YOU ON. DO NOT STAND STILL DOWN THERE.' });
+  coins([313, 12], [323, 10], [335, 13], [347, 9], [359, 11], [318, 18], [341, 16], [353, 17]);
+  ent('check', 368, 13);
+
+  // ---- 8. THE GALLERY OF GUSTS: ledges over the thorns, the wind turning every three breaths. Jump with it and you fly; against it you fall short. A tall stone at the end, and an updraft to get over it. ----
+  block(397, 423, 15, 29); spikes(397, 423, 14);
+  for (const x of [402, 413]) plat(x, 12, 6); // six tiles between each: only the tailwind gets you there. Let go of the stick over the ledge or it carries you past.
+  floor(424, 476, 14); pillar(430, 8, 13);
+  ent('vent', 427, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
+  gusts.push({ x0: 380 * TS, x1: 440 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 3, on: 1.4, phase: 0, alt: true, moor: true, k: 1.4 });
+  ent('flagpost', 386, 13); ent('flagpost', 404, 11); ent('flagpost', 425, 13); ent('hare', 390, 13, { face: 1 }); ent('harpy', 405, 5);
+  ent('sign', 382, 13, { text: 'THE GALLERY. THE WIND TURNS EVERY THREE BREATHS. JUMP WITH IT AND YOU FLY; AGAINST IT YOU FALL IN THE THORNS. THE STONE AT THE END: RIDE THE UPDRAFT OVER IT.' });
+  coins([404, 10], [415, 10], [427, 8], [434, 12]);
+  ent('check', 436, 13);
+
+  // ---- 9. THE FLAG ROAD: the last walk to the summit. Stones, hares, and the flags all pointing one way. ----
+  for (const [x, top] of [[450, 11], [462, 10], [470, 12]]) pillar(x, top, 13);
+  ent('deco', 444, 13, { kind: 'cairn' }); ent('deco', 456, 13, { kind: 'stone', v: 1 }); ent('flagpost', 447, 13); ent('flagpost', 466, 13);
+  ent('hare', 454, 13, { face: -1 }); ent('hare', 468, 13, { face: 1 }); ent('harpy', 458, 4);
+  gusts.push({ x0: 440 * TS, x1: 476 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 6, on: 2, phase: 1, moor: true, k: 1.2 });
+  ent('sign', 442, 13, { text: 'THE FLAG ROAD. THE SHAMAN IS ON THE STONES AHEAD. HE WILL NOT STAND STILL, AND NEITHER WILL THE WIND. THE STONES ARE HIS STAIR; THE WIND IS YOURS.' });
+  coins([446, 12], [452, 9], [458, 12], [464, 8], [472, 10]); ent('check', 474, 13);
+
+  // ---- 10. THE SUMMIT: three standing stones and two ledges in a ring of thorns. The shaman blinks between them and throws the sky at you. The gust reaches the ledges; the updrafts reach the stones. ----
+  block(476, 523, 13, 29);
+  spikes(478, 479, 12); spikes(519, 520, 12);
+  pillar(482, 12, 12); pillar(484, 10, 12); pillar(498, 4, 12); pillar(513, 8, 12);
+  plat(491, 7, 2); plat(506, 6, 2);
+  ent('vent', 494, 12, { period: 6, on: 2.6, h: 165, wind: true, w: 18 }); ent('vent', 509, 12, { period: 6, on: 2.6, h: 135, wind: true, w: 18, phase: 3 });
+  gusts.push({ x0: 477 * TS, x1: 522 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
+  ent('flagpost', 481, 12); ent('flagpost', 517, 12);
+  ent('windcaller', 498, 3);
+  ent('sign', 480, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. THE WIND IS THE ONLY STAIR UP TO HIM: THE GUST FOR THE LEDGES, THE UPDRAFTS FOR THE HIGH STONES. STRIKE HIM TWICE AND HE IS GONE AGAIN. WHEN HE CALLS THE WIND, THE THORNS ARE WAITING.' });
+  ent('check', 481, 12); ent('gate', 521, 12);
+  const roosts = [[484, 9], [498, 3], [513, 7], [491, 6], [506, 5]]; // where he stands: a stone's top, a ledge
 
   return {
-    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, thermals: true,
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
     duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
-    weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 300 * TS, x1: 99999, kind: 'mist' }],
+    weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 99999, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 306 * TS, x1: 329 * TS, floor: 14 * TS, trigger: 310 * TS, wallL: 305, wallR: 330, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
+    arena: { x0: 477 * TS, x1: 521 * TS, floor: 13 * TS, trigger: 484 * TS, wallL: 476, wallR: 522, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
   };
 }
 

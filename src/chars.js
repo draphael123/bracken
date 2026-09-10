@@ -896,3 +896,67 @@ export function bakeForgemaster() {
   const scald = f(['..........gggggg......s.........', '.........ggoogggg....sss........', '.........gggRRggg...s.s.........', '..........ggGGgg................', '.....IIIIiiiiiiiI...............', '.cccciiiiiiiiiiiiI..............', 'cCccCiiiiiiiiiiiiiI.............', 'cccccisiiiisiiiiiii.............', 'cCccCiiiiiiiiiiiiI..............', '.cccciiiiiiiiiiiiI..............', '.....IIIIiiiiiiII...............', '......II......II................', '.....II........II...............', '....III.........III.............']);
   return pack([idle, lunge, spray, kick, scald], 14, 15, 26, 22);
 }
+
+// The shaman of the moor: a goblin in a purple robe under an antler headdress, bone beads, a crooked staff with a lit knot. 16x18. idle / cast / blink
+export function bakeGoblinShaman() {
+  const SH = Object.assign({}, EP, { v: '#9a5acc', V: '#5a2a8a', m: '#f0e4ff', u: '#8a5a32', a: '#e8dcc0' });
+  const r = rows => outline(fromGrid(rows, SH, 1), OUT);
+  const idle = r([
+    '...a..aa..a.....',
+    '....a.aa.a......',
+    '....aVVVVa......',
+    '...vvVvvVvv.....',
+    '...gggeoge...m..',
+    '....ggggg...umu.',
+    '....gGGGg....u..',
+    '...vvvvvvv...u..',
+    '..vavvvvvav..u..',
+    '..vvavvvavv..u..',
+    '..vvvavavvv.uu..',
+    '..VvvvvvvvV.u...',
+    '..VvvvvvvvV.u...',
+    '...VVVVVVV..u...',
+    '...GG...GG..u...',
+    '...GG...GG..u...',
+    '..GGG...GGG.u...',
+    '................']);
+  const cast = r([
+    '...a..aa..a.....',
+    '....a.aa.a......',
+    '....aVVVVa......',
+    '...vvVvvVvv.....',
+    '...gggeoge......',
+    '....ggggg.......',
+    '....gGGGg.......',
+    '...vvvvvvvgg....',
+    '..vavvvvvvvvgumm',
+    '..vvavvvavvuuumm',
+    '..vvvavavvv..mm.',
+    '..VvvvvvvvV.....',
+    '..VvvvvvvvV.....',
+    '...VVVVVVV......',
+    '...GG...GG......',
+    '...GG...GG......',
+    '..GGG...GGG.....',
+    '................']);
+  const blink = r([
+    '................',
+    '..m...........m.',
+    '.....a.aa.a.....',
+    '.....aVVVVa.....',
+    '....vvVvvVvv....',
+    '....gggeoge..m..',
+    '.m...ggggg...u..',
+    '.....gGGGg...u..',
+    '....vvvvvvv..u..',
+    '...vavvvvvav.u..',
+    '...vvvavavvv.u..',
+    '...VvvvvvvvV.u..',
+    '....VVVVVVV.u...',
+    '..m..GG.GG..u.m.',
+    '.....GG.GG..u...',
+    '....GGG.GGG.u...',
+    '................',
+    '................']);
+  return pack([idle, cast, blink], 8, 17, 12, 16);
+}
