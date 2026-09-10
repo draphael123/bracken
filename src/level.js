@@ -1405,4 +1405,8 @@ export const LEVELS = [
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', build: galeMoor, needs: 'mineworks' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
+  { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
+// The editor puts its document here. Nothing else writes to it, and with no editor open it hands
+// back an empty room, so LEVELS is always safe to build.
+export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };

@@ -2,7 +2,7 @@
 import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
 import { bakeCook, bakeSnuffer, bakeSailer, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeGrub, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
-import { LEVELS, T, TS } from './level.js';
+import { LEVELS, T, TS, CUSTOM } from './level.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
 // ---------- display ----------
@@ -147,7 +147,7 @@ const dodgeCost = () => Math.max(8, ST.dodge - 2 * rankOf('footing')), plungeCos
 const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : !!(PROG[f] && PROG[f].cleared);
 let K = bakeKnight();
 const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro';
-const silverTotal = () => LEVELS.reduce((n, lv) => n + [1, 2, 4].filter(b => ((PROG[lv.id] || {}).silver || 0) & b).length, 0);
+const silverTotal = () => LEVELS.filter(lv => !lv.hidden).reduce((n, lv) => n + [1, 2, 4].filter(b => ((PROG[lv.id] || {}).silver || 0) & b).length, 0);
 const silverAvail = () => silverTotal() - (PROG.silverSpent || 0);
 const PYRO_SETS = { bracken: {}, silverknight: { s: '#dfe8f0', S: '#8aaac8', b: '#aab6c8', B: '#6a7a90', r: '#e8ecff' }, black: { s: '#3a3040', S: '#1e1826', b: '#2a2a34', B: '#15151c', r: '#c9463d' }, purple: { s: '#8a4ac0', S: '#50287a', b: '#3a2050', B: '#241238', r: '#ffd36b' }, blue: { s: '#4a90e0', S: '#2a5aa0', b: '#243a78', B: '#16244a', r: '#bfe6f5' }, marsh: { s: '#7a9a4a', S: '#4a6a2a', b: '#3a4e24', B: '#243018', r: '#8fd160' }, rose: { s: '#e07a9a', S: '#a03a5a', b: '#8a3a5a', B: '#5a2038', r: '#fff6e0' }, crimson: { s: '#c83a3a', S: '#7a1c24', b: '#5a1a1a', B: '#3a1010', r: '#ffd36b' }, verdant: { s: '#4aa05a', S: '#2a6a38', b: '#245a30', B: '#143a1c', r: '#ffd36b' }, frost: { s: '#dfe8f0', S: '#8aaac8', b: '#7a9ab8', B: '#4a6a88', r: '#3d5aa8' }, shadow: { s: '#4a3a5a', S: '#241a30', b: '#1e1828', B: '#100c18', r: '#6a3aa0' }, gilded: { s: '#e8c050', S: '#a0781c', b: '#8f6a1c', B: '#5a4010', r: '#c9463d' }, iron: { s: '#9aa3b0', S: '#5a6270', b: '#4a525e', B: '#2e343c', r: '#c9d1dc' }, spore: { s: '#9a5aa8', S: '#5a3068', b: '#5a5a34', B: '#3a3a20', r: '#b8c060' } };
 function applySkin() { const sk = skinById(PROG.skin); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : bakeKnight(pal); }
@@ -959,6 +959,14 @@ const KEYS = {
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
   initAudio(); anyPress = true;
+  if (state === 'editor') { // the editor owns the letters; only the arrows fall through, to pan
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
+    if (edKey(k, e)) { e.preventDefault(); return; }
+    if (isKey(e, KEYS.left)) keys.left = true; if (isKey(e, KEYS.right)) keys.right = true;
+    if (isKey(e, KEYS.up)) keys.up = true; if (isKey(e, KEYS.down)) keys.down = true;
+    if (isKey(e, KEYS.block)) keys.block = true;
+    e.preventDefault(); return;
+  }
   const zx = SET.swapZX && (e.key === 'z' || e.key === 'Z' || e.key === 'x' || e.key === 'X');
   const jumpK = zx ? isKey(e, ['x', 'X']) : isKey(e, KEYS.jump), atkK = zx ? isKey(e, ['z', 'Z']) : isKey(e, KEYS.atk);
   if (jumpK) { jumpPress = true; keys.jump = true; }
@@ -971,7 +979,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.left)) { keys.left = true; leftPress = true; }
   if (isKey(e, KEYS.right)) { keys.right = true; rightPress = true; }
   if (isKey(e, KEYS.down)) { keys.down = true; downPress = true; }
-  if (isKey(e, KEYS.up)) upPress = true;
+  if (isKey(e, KEYS.up)) { upPress = true; keys.up = true; }
   if (isKey(e, ['z', 'Z', 'Enter', ' ', 'Space'])) confirmPress = true;
   if (isKey(e, KEYS.pause)) pausePress = true;
   if (isKey(e, ['m', 'M'])) { SET.music = !SET.music; applySettings(); saveSettings(); }
@@ -979,6 +987,7 @@ addEventListener('keydown', e => {
   e.preventDefault();
 });
 addEventListener('keyup', e => {
+  if (state === 'editor') { if (isKey(e, KEYS.left)) keys.left = false; if (isKey(e, KEYS.right)) keys.right = false; if (isKey(e, KEYS.up)) keys.up = false; if (isKey(e, KEYS.down)) keys.down = false; if (isKey(e, KEYS.block)) keys.block = false; return; }
   const zx = SET.swapZX && (e.key === 'z' || e.key === 'Z' || e.key === 'x' || e.key === 'X');
   if (zx ? isKey(e, ['x', 'X']) : isKey(e, KEYS.jump)) keys.jump = false;
   if (zx ? isKey(e, ['z', 'Z']) : isKey(e, KEYS.atk)) keys.atk = false;
@@ -987,8 +996,20 @@ addEventListener('keyup', e => {
   if (isKey(e, KEYS.left)) keys.left = false;
   if (isKey(e, KEYS.right)) keys.right = false;
   if (isKey(e, KEYS.down)) keys.down = false;
+  if (isKey(e, KEYS.up)) keys.up = false;
 });
-addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; edPaint = 0; });
+// ---- the editor's mouse. Screen pixels come in; edMouse turns them into tiles. ----
+{
+  const toGame = ev => { const r = disp.getBoundingClientRect(); return [(ev.clientX - r.left - offX) / S, (ev.clientY - r.top - offY) / S]; };
+  disp.addEventListener('contextmenu', ev => { if (state === 'editor') ev.preventDefault(); });
+  disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev); edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
+  disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); edMouse(x, y, ev.button, false, true); });
+  addEventListener('mouseup', () => { if (state === 'editor') { edPaint = 0; edPainted = null; } });
+  disp.addEventListener('wheel', ev => { if (state !== 'editor') return; const items = edItems(edCat); const d = ev.deltaY > 0 ? 1 : -1;
+    if (ev.shiftKey) edCat = (edCat + d + ED_CATS.length) % ED_CATS.length; else edSel[edCat] = (edSel[edCat] + d + items.length) % items.length;
+    SFX.ui(); ev.preventDefault(); }, { passive: false });
+}
 // Gamepad: A jump, X swing, B dodge, RB/LB block, Start pause, d-pad or left stick to move.
 const pad = { prev: {} };
 function pollGamepad() {
@@ -1517,7 +1538,7 @@ function updatePlayer(dt) {
 
 // ---------- boss: the Hornet Queen ----------
 let titleI = 0;
-const titleItems = () => (readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE', 'SETTINGS', 'CONTROLS'] : ['NEW GAME', 'CHOOSE A SAVE', 'SETTINGS', 'CONTROLS']);
+const titleItems = () => (readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE', 'THE EDITOR', 'SETTINGS', 'CONTROLS'] : ['NEW GAME', 'CHOOSE A SAVE', 'THE EDITOR', 'SETTINGS', 'CONTROLS']);
 let miniActive = false, miniDone = false, miniIntroT = 0;
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
 const MINI_NAME = { greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD' };
@@ -3346,6 +3367,14 @@ function update(dt) {
   time += dt;
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
+  if (state === 'editor') {
+    if (!edDoc) { state = 'title'; return; }
+    const sp = (keys.block ? 460 : 200) * dt; // hold block to fly
+    if (keys.left) edCam.x -= sp; if (keys.right) edCam.x += sp;
+    if (keys.up) edCam.y -= sp; if (keys.down) edCam.y += sp;
+    edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
+    edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
+  }
   if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title');
     else {
       const items = titleItems();
@@ -3355,6 +3384,7 @@ function update(dt) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
         if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); state = 'map'; }
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; }
+        else if (k === 'THE EDITOR') edEnter();
         else if (k === 'SETTINGS') openMenu('title');
         else if (k === 'CONTROLS') state = 'controls';
       }
@@ -3410,6 +3440,7 @@ function update(dt) {
   }
   if (state === 'win') { if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
+  if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
   if (pausePress) { openMenu('play'); return; }
   if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
   if (stop > 0) { stop -= dt; return; }
@@ -3979,7 +4010,270 @@ function drawTitle(cx, cy) {
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
 }
-function desiredView() { const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && (boss.t === 'mother' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king'))) ? 'zoom' : 'normal'; }
+function desiredView() { if (state === 'editor') return 'zoom';
+  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && (boss.t === 'mother' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king'))) ? 'zoom' : 'normal'; }
+
+// ==================================================================================
+// THE EDITOR
+// A level in BRACKEN is already a plain object - a tile grid and a list of entities -
+// so the editor does not build a second model of anything. It edits L in place, and
+// PLAY hands the loader a copy. Painting a tile writes L.grid; placing a foe pushes
+// onto L.ents and re-runs spawnEntities(). The world you paint on is drawn by the
+// game's own drawWorld, so what you see is the level.
+// ==================================================================================
+let edDoc = null;              // { W, H, grid, ents, theme, name, start }
+let edCam = { x: 0, y: 0 }, edCur = { x: 0, y: 0 }, edCat = 0, edSel = [1, 0, 0, 0];
+let edUndo = [], edShowGrid = true, edMsg = '', edMsgT = 0, edPal = false, edTesting = false;
+let edPaint = 0, edPainted = null, edSlot = 0, edThemes = null;
+const ED_KEY = i => 'bracken.level.' + i, ED_SLOTS = 3;
+
+// the nine woods, borrowed for their look. Built once, the first time the editor opens.
+function edThemeList() {
+  if (edThemes) return edThemes;
+  edThemes = LEVELS.filter(l => !l.hidden).map(l => { const b = l.build();
+    return { name: l.name, palette: b.palette, weather: b.weather, ambient: b.ambient, music: b.music,
+      night: b.night, glowNight: b.glowNight, nightA: b.nightA, dark: b.dark, duskStart: b.duskStart, duskLen: b.duskLen }; });
+  return edThemes;
+}
+
+const ED_TILES = [['ERASE', T.AIR], ['STONE', T.SOLID], ['LEDGE', T.ONEWAY], ['SPIKES', T.SPIKE], ['CRATE', T.CRATE],
+  ['PLANK', T.PLANK], ['ROPE', T.NET], ['SPRING', T.BOUNCER], ['SHELF', T.SHELF], ['DOOR', T.PORT],
+  ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['SOFT ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB],
+  ['REEDS', T.REED], ['PALISADE', T.PALISADE]];
+const ED_FOES = ['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
+  'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat',
+  'troll', 'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer'];
+const ED_THINGS = ['coin', 'silver', 'check', 'gate', 'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball',
+  'lantern', 'firepit', 'rockfall', 'vent', 'npc'];
+const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER'];
+const ED_CATS = ['TILES', 'FOES', 'THINGS', 'TOOLS'];
+const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES : c === 2 ? ED_THINGS : ED_TOOLS;
+const edBrush = () => ({ cat: edCat, i: edSel[edCat], name: edItems(edCat)[edSel[edCat]] });
+
+function edSay(m) { edMsg = m; edMsgT = 2.4; }
+
+// ---- the document, and the level object the game reads ----
+function edBlank(W = 120, H = 28) {
+  const grid = new Uint8Array(W * H);
+  for (let x = 0; x < W; x++) for (let y = 20; y < H; y++) grid[y * W + x] = T.SOLID; // a floor to stand on
+  return { W, H, grid, ents: [{ t: 'gate', x: W - 6, y: 19 }], theme: 0, name: 'A NEW WOOD', start: { x: 3, y: 19 } };
+}
+function edLevelObj(doc, copy) {
+  const th = edThemeList()[doc.theme] || edThemeList()[0];
+  return { W: doc.W, H: doc.H,
+    grid: copy ? new Uint8Array(doc.grid) : doc.grid,
+    ents: copy ? doc.ents.map(e => Object.assign({}, e)) : doc.ents,
+    START: { x: doc.start.x, y: doc.start.y },
+    pools: [], falls: [], moversExtra: [], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
+    palette: th.palette, weather: th.weather, ambient: th.ambient, music: th.music,
+    night: th.night, glowNight: th.glowNight, nightA: th.nightA, dark: th.dark,
+    duskStart: th.duskStart === undefined ? -1 : th.duskStart, duskLen: th.duskLen || 1,
+    custom: true, strays: 0 };
+}
+const edIndex = () => LEVELS.findIndex(l => l.id === 'custom');
+
+// put the editor's document in front of the renderer without starting the game
+function edMount(rebake) {
+  L = edLevelObj(edDoc, false); LW = L.W; LH = L.H;
+  if (rebake) bakeAll(L.palette || {});
+  grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); marks = new Set();
+  tileSpr = new Array(LW * LH).fill(null); resolveTiles();
+  acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
+  edRespawn();
+}
+// entities changed: rebuild the live ones so the editor shows the real sprites
+function edRespawn() {
+  acorns = []; signs = []; shrines = []; gate = null; silvers = [];
+  for (const e of L.ents) { const px = e.x * TS + 8, py = (e.y + 1) * TS;
+    if (e.t === 'coin') acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 });
+    if (e.t === 'sign') signs.push({ x: px, y: py, text: e.text || 'A SIGN' });
+    if (e.t === 'silver') silvers.push({ x: px, y: py - 6, i: silvers.length, got: false, ph: Math.random() * 6 });
+    if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
+    if (e.t === 'gate') gate = { x: px, y: py }; }
+  spawnEntities();
+  for (const e of enemies) { e.stagger = 1e9; e.anim = 0; } // frozen while you work
+}
+
+function edEnter() {
+  edThemeList();
+  if (!edDoc) edDoc = edLoad(edSlot) || edBlank();
+  edTesting = false; state = 'editor'; edPal = false; edMsgT = 0;
+  edMount(true); music.stop(); setView('zoom');
+  edCam.x = Math.max(0, edDoc.start.x * TS - VW / 2); edCam.y = Math.max(0, LH * TS - VH);
+}
+function edPlay() {
+  if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GATE down first (THINGS)'); SFX.buzz(); return; }
+  edPush(); edTesting = true;
+  CUSTOM.build = () => edLevelObj(edDoc, true);
+  const i = edIndex(); LEVELS[i].name = edDoc.name; LEVELS[i].sub = 'made by hand';
+  loadLevel(i); startGame(); edSay('');
+}
+function edResume() { edTesting = false; state = 'editor'; edMount(true); music.stop(); edSay('back in the editor'); }
+
+// ---- undo ----
+function edPush() { edUndo.push({ g: new Uint8Array(edDoc.grid), e: JSON.stringify(edDoc.ents), s: { x: edDoc.start.x, y: edDoc.start.y } }); if (edUndo.length > 40) edUndo.shift(); }
+function edPop() {
+  const u = edUndo.pop(); if (!u) { edSay('nothing to undo'); return; }
+  edDoc.grid = u.g; edDoc.ents = JSON.parse(u.e); edDoc.start = u.s; edMount(false); edSay('undone'); SFX.ui();
+}
+
+// ---- save and load: run-length on the grid, because most of a level is air and stone ----
+function edRLE(gr) { let out = '', run = 1; for (let i = 1; i <= gr.length; i++) { if (i < gr.length && gr[i] === gr[i - 1]) { run++; continue; } out += gr[i - 1].toString(36) + (run > 1 ? run.toString(36) : '') + '.'; run = 1; } return out; }
+function edUnRLE(str, n) { const gr = new Uint8Array(n); let at = 0; for (const part of str.split('.')) { if (!part) continue; const v = parseInt(part[0], 36), c = part.length > 1 ? parseInt(part.slice(1), 36) : 1; for (let k = 0; k < c && at < n; k++) gr[at++] = v; } return gr; }
+function edSave(i) {
+  try { localStorage.setItem(ED_KEY(i), JSON.stringify({ v: 1, name: edDoc.name, W: edDoc.W, H: edDoc.H, theme: edDoc.theme, start: edDoc.start, ents: edDoc.ents, grid: edRLE(edDoc.grid) })); edSay('saved to slot ' + (i + 1)); SFX.medal(); }
+  catch (err) { edSay('could not save'); }
+}
+function edLoad(i) {
+  try { const raw = localStorage.getItem(ED_KEY(i)); if (!raw) return null; const d = JSON.parse(raw);
+    return { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 } }; }
+  catch (err) { return null; }
+}
+function edResize(dw) {
+  const W2 = Math.max(40, Math.min(600, edDoc.W + dw)); if (W2 === edDoc.W) { edSay(dw > 0 ? 'that is as wide as it goes' : 'that is as narrow as it goes'); return; }
+  edPush(); const g2 = new Uint8Array(W2 * edDoc.H);
+  for (let y = 0; y < edDoc.H; y++) for (let x = 0; x < Math.min(W2, edDoc.W); x++) g2[y * W2 + x] = edDoc.grid[y * edDoc.W + x];
+  if (W2 > edDoc.W) for (let x = edDoc.W; x < W2; x++) for (let y = 20; y < edDoc.H; y++) g2[y * W2 + x] = T.SOLID;
+  edDoc.grid = g2; edDoc.W = W2; edDoc.ents = edDoc.ents.filter(e => e.x < W2 - 1);
+  edMount(false); edSay('width ' + W2);
+}
+
+// ---- painting ----
+const edEntAt = (tx, ty) => { for (let i = L.ents.length - 1; i >= 0; i--) { const e = L.ents[i]; if (e.x === tx && e.y === ty) return i; } return -1; };
+function edPlace(tx, ty, erase) {
+  if (tx < 1 || ty < 0 || tx >= LW - 1 || ty >= LH) return;
+  const b = edBrush(), key = tx + ':' + ty;
+  if (edPainted && edPainted.has(key)) return; edPainted && edPainted.add(key);
+  if (b.cat === 3) return;
+  if (erase) { const i = edEntAt(tx, ty); if (i >= 0) { L.ents.splice(i, 1); edRespawn(); return; } edSetTile(tx, ty, T.AIR); return; }
+  if (b.cat === 0) { edSetTile(tx, ty, ED_TILES[b.i][1]); return; }
+  const t = b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i];
+  const old = edEntAt(tx, ty); if (old >= 0) L.ents.splice(old, 1);
+  const e = { t, x: tx, y: ty };
+  if (t === 'sign') e.text = 'A SIGN. WRITE ON IT LATER.';
+  if (t === 'npc') e.kind = 'squire';
+  if (t === 'vent') { e.period = 4; e.on = 2.4; e.h = 100; }
+  if (t === 'rockfall') e.every = 2.6;
+  if (t === 'spider') e.drop = 100;
+  if (t === 'firepit') { e.period = 3.2; e.on = 1.4; }
+  L.ents.push(e); edRespawn();
+}
+function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v) return; L.grid[i] = v; grid0[i] = v; tileSpr[i] = null; resolveTiles(); }
+
+// ---- input ----
+function edKey(k, ev) {
+  const shift = ev && ev.shiftKey, ctrl = ev && (ev.ctrlKey || ev.metaKey);
+  if (ctrl && k === 'z') { edPop(); return true; }
+  if (k === 'tab') { edPal = !edPal; SFX.ui(); return true; }
+  if (k === 'g') { edShowGrid = !edShowGrid; return true; }
+  if (k === 'r') { const nm = prompt('Name this wood', edDoc.name); if (nm) { edDoc.name = nm.toUpperCase().slice(0, 22); edSay('called ' + edDoc.name); } return true; }
+  if (k === 'p' || k === 'enter') { edPlay(); return true; }
+  if (k === 'escape') { if (edPal) { edPal = false; return true; } state = 'title'; music.play(menuTrack()); return true; }
+  if (k >= '1' && k <= '9') { const n = +k - 1; if (n < edItems(edCat).length) { edSel[edCat] = n; SFX.ui(); } return true; }
+  if (k === 'q') { edCat = (edCat + ED_CATS.length - 1) % ED_CATS.length; SFX.ui(); return true; }
+  if (k === 'e') { edCat = (edCat + 1) % ED_CATS.length; SFX.ui(); return true; }
+  if (k === '[') { edSel[edCat] = (edSel[edCat] + edItems(edCat).length - 1) % edItems(edCat).length; SFX.ui(); return true; }
+  if (k === ']') { edSel[edCat] = (edSel[edCat] + 1) % edItems(edCat).length; SFX.ui(); return true; }
+  if (k === 's') { edSave(shift ? 1 : edSlot); return true; }
+  if (k === 'l') { const d = edLoad(edSlot); if (d) { edPush(); edDoc = d; edMount(true); edSay('loaded slot ' + (edSlot + 1)); } else edSay('slot ' + (edSlot + 1) + ' is empty'); return true; }
+  if (k === 'n') { edPush(); edDoc = edBlank(); edMount(true); edSay('a new wood'); return true; }
+  if (k === 'f') { edSlot = (edSlot + 1) % ED_SLOTS; edSay('slot ' + (edSlot + 1) + (edLoad(edSlot) ? ' (' + edLoad(edSlot).name + ')' : ' (empty)')); return true; }
+  if (k === 't') { edPush(); edDoc.theme = (edDoc.theme + 1) % edThemeList().length; edMount(true); edSay(edThemeList()[edDoc.theme].name); return true; }
+  if (k === 'x') { edPush(); edDoc.start = { x: edCur.x, y: edCur.y }; edSay('the knight starts here'); SFX.equip(); return true; }
+  if (k === '-') { edResize(-10); return true; }
+  if (k === '=' || k === '+') { edResize(10); return true; }
+  return false;
+}
+function edMouse(mx, my, btn, down, moved) {
+  // screen pixels -> the level's tiles, through the same camera the world was drawn with
+  const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, edCam.x))), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, edCam.y)));
+  edCur.x = Math.floor((mx + cx) / TS); edCur.y = Math.floor((my + cy) / TS);
+  if (edPal) { if (down) edPalClick(mx, my); return; }
+  if (down) { edPush(); edPainted = new Set(); edPaint = btn === 2 ? 2 : 1; }
+  if (edPaint && (down || moved)) {
+    const b = edBrush();
+    if (b.cat === 3 && down) { // the tools act once, where you clicked
+      if (b.i === 0) { edDoc.start = { x: edCur.x, y: edCur.y }; edSay('the knight starts here'); SFX.equip(); }
+      else if (b.i === 1) { edDoc.theme = (edDoc.theme + 1) % edThemeList().length; edMount(true); edSay(edThemeList()[edDoc.theme].name); }
+      else if (b.i === 2) edResize(10); else edResize(-10);
+      return;
+    }
+    edPlace(edCur.x, edCur.y, edPaint === 2);
+  }
+}
+function edPalClick(mx, my) {
+  const bw = 96, bh = 11, x0 = 8, y0 = 26;
+  for (let c = 0; c < ED_CATS.length; c++) { const tx = x0 + c * 54; if (mx >= tx && mx < tx + 52 && my >= 12 && my < 23) { edCat = c; SFX.ui(); return; } }
+  const items = edItems(edCat);
+  for (let i = 0; i < items.length; i++) { const col = Math.floor(i / 12), row = i % 12; const bx = x0 + col * (bw + 4), by = y0 + row * bh;
+    if (mx >= bx && mx < bx + bw && my >= by && my < by + bh) { edSel[edCat] = i; SFX.ui(); edPal = false; return; } }
+  if (my > y0 + 12 * bh) edPal = false;
+}
+
+// ---- drawing ----
+function edSprFor(t) { return SPR[t] || null; }
+function drawEditor() {
+  if (!edDoc || !L || !L.custom) { state = 'title'; return; } // the editor is entered through the menu; never draw it half-built
+  const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, edCam.x))), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, edCam.y)));
+  camX = cx; camY = cy;
+  drawWorld(cx, cy, false);
+  // the grid, so you can count tiles
+  if (edShowGrid) {
+    g.globalAlpha = 0.18; g.fillStyle = '#ffffff';
+    for (let tx = Math.floor(cx / TS); tx <= Math.floor((cx + VW) / TS); tx++) { const x = tx * TS - cx; g.fillRect(x, 0, 1, VH); }
+    for (let ty = Math.floor(cy / TS); ty <= Math.floor((cy + VH) / TS); ty++) { const y = ty * TS - cy; g.fillRect(0, y, VW, 1); }
+    g.globalAlpha = 0.34;
+    for (let tx = Math.floor(cx / TS); tx <= Math.floor((cx + VW) / TS); tx++) if (tx % 8 === 0) g.fillRect(tx * TS - cx, 0, 1, VH);
+    for (let ty = Math.floor(cy / TS); ty <= Math.floor((cy + VH) / TS); ty++) if (ty % 8 === 0) g.fillRect(0, ty * TS - cy, VW, 1);
+    g.globalAlpha = 1;
+  }
+  // the edges of the world
+  g.strokeStyle = '#c9463d'; g.lineWidth = 1; g.strokeRect(0.5 - cx, 0.5 - cy, LW * TS - 1, LH * TS - 1);
+  // where the knight starts
+  { const sx = edDoc.start.x * TS + 8 - cx, sy = (edDoc.start.y + 1) * TS - cy;
+    g.globalAlpha = 0.75; drawSet(K, 'idle', Math.floor(time * 3) % 4, sx, sy, 1, false); g.globalAlpha = 1;
+    g.fillStyle = '#8fd160'; g.fillRect(sx - 9, sy - 30, 18, 7); text('START', sx, sy - 29, '#0f1a0f', 'center', 6); }
+  // the cursor
+  { const x = edCur.x * TS - cx, y = edCur.y * TS - cy, b = edBrush();
+    g.strokeStyle = edPaint === 2 ? '#ff6b6b' : '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, TS - 1, TS - 1);
+    if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
+      if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
+  }
+  // ---- chrome ----
+  g.fillStyle = 'rgba(12,10,18,0.86)'; g.fillRect(0, 0, VW, 11);
+  text(edDoc.name, 4, 2, UI.title, 'left', 6);
+  text(edThemeList()[edDoc.theme].name, 4 + edDoc.name.length * 6 + 14, 2, UI.dim, 'left', 6);
+  { const foes = L.ents.filter(e => ED_FOES.includes(e.t)).length, coins = L.ents.filter(e => e.t === 'coin').length;
+    const hasGate = L.ents.some(e => e.t === 'gate');
+    text(edDoc.W + 'x' + edDoc.H + '   ' + foes + ' FOES   ' + coins + ' COIN   SLOT ' + (edSlot + 1), VW - 4, 2, UI.dim, 'right', 6);
+    if (!hasGate) text('NO GATE: NO WAY OUT', VW / 2, 2, '#ff6b6b', 'center', 6); }
+  g.fillStyle = 'rgba(12,10,18,0.86)'; g.fillRect(0, VH - 26, VW, 26);
+  { const b = edBrush(); text(ED_CATS[edCat] + '  >  ' + b.name, 4, VH - 23, UI.sel, 'left', 6);
+    text(edCur.x + ',' + edCur.y, VW - 4, VH - 23, UI.dim, 'right', 6); }
+  if (edMsgT > 0) text(edMsg, 4, VH - 14, UI.title, 'left', 6);
+  else { text('LMB paint   RMB erase   WHEEL item   SHIFT+WHEEL group   TAB palette   ARROWS pan (hold C to fly)', 4, VH - 15, UI.dim, 'left', 6);
+    text('X start  T theme  R name  -/= width  P play  S/L save/load  N new  F slot  G grid  CTRL+Z undo  ESC out', 4, VH - 8, UI.dim, 'left', 6); }
+  if (edPal) drawEdPalette();
+}
+function drawEdPalette() {
+  g.fillStyle = 'rgba(10,8,16,0.94)'; g.fillRect(0, 0, VW, VH);
+  text('THE PALETTE', VW / 2, 3, UI.title, 'center');
+  const bw = 96, bh = 11, x0 = 8, y0 = 26;
+  ED_CATS.forEach((c, i) => { const tx = x0 + i * 54, sel = i === edCat;
+    g.fillStyle = sel ? 'rgba(60,90,60,0.9)' : 'rgba(40,36,50,0.8)'; g.fillRect(tx, 12, 52, 11);
+    if (sel) { g.strokeStyle = UI.sel; g.strokeRect(tx + 0.5, 12.5, 51, 10); }
+    text(c, tx + 26, 15, sel ? UI.sel : UI.dim, 'center', 6); });
+  const items = edItems(edCat);
+  items.forEach((it, i) => { const col = Math.floor(i / 12), row = i % 12, bx = x0 + col * (bw + 4), by = y0 + row * bh, sel = i === edSel[edCat];
+    if (bx + bw > VW) return;
+    g.fillStyle = sel ? 'rgba(60,90,60,0.7)' : 'rgba(30,26,40,0.7)'; g.fillRect(bx, by, bw, bh - 1);
+    if (sel) { g.strokeStyle = UI.sel; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 2); }
+    const sp = edCat === 1 ? SPR[ED_FOES[i]] : edCat === 2 ? SPR[ED_THINGS[i]] : null;
+    if (sp) { g.globalAlpha = 0.9; drawSet(sp, null, 0, bx + 9, by + bh - 2, 1, false, 0.55, 0.55); g.globalAlpha = 1; }
+    text(it, bx + 18, by + 2, sel ? UI.title : UI.text, 'left', 6); });
+  text('CLICK TO TAKE ONE   TAB OR ESC TO CLOSE', VW / 2, VH - 10, UI.dim, 'center', 6);
+}
+
 function render() {
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
@@ -3995,6 +4289,7 @@ function render() {
     text('ESC skip', VW - 6, 4, '#9aa39a', 'right');
   } else if (state === 'title' || state === 'slots') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
+  else if (state === 'editor') drawEditor();
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else {
     const z = zoomT > 0 ? zoomAmt : 1;
@@ -4137,7 +4432,7 @@ window.BK = {
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),
-  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = b.t === 'king' ? 'held' : b.t === 'owl' ? 'grounded' : b.t === 'ram' ? 'crash' : b.mode; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = b.t === 'king' ? 'held' : b.t === 'owl' ? 'grounded' : b.t === 'ram' ? 'crash' : b.mode; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
 };
