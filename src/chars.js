@@ -216,22 +216,101 @@ export function bakeSpitterParts() {
   return { cap: pack([sprite(cap)], 8, 7, 12, 6), stem: pack([sprite(stem)], 8, 6, 12, 5) };
 }
 
-// Hornet Queen — a 24×14 crowned hornet. Frames: wings up, wings down. Faces right.
+// Hornet Queen - a crowned hornet in three segments: a striped abdomen, a furred thorax, and a head of eyes under a circlet.
+// 24x12, facing right. Frames: 0 flap up, 1 flap down, 2 aim (reared, abdomen dropped, legs tucked), 3 dive (raked head-down),
+// 4 volley (abdomen curled under, the sting at the floor), 5 slam hang (wings flat, braced), 6 winded (down, wings crumpled), 7 sweep (low and level).
 export function bakeQueen() {
-  const head = ['.................yYYy...', '................yyyyyy..', '................oooooo..', '...............ooeooeoo.', '...............ooooooooo', '................oooooo..'];
-  const wingsUp = ['....lll.llll............', '..lllllllllll...........', '.llllllllllll...........'];
-  const wingsDn = ['........................', '..lll.llll..............', '.llllllllll.............'];
-  const body = [
-    'oyyooyyooyyooyyooooooo..',
-    'yyyooyyooyyooyyoooooooo.',
-    'oyyooyyooyyooyyooooooo..',
-    '.oooooyyooyyooooooooo...',
-    'oo..oo..oo..oo..oo......',
+  const QP = Object.assign({}, EP, { Y: '#fff1a0', c: '#ffd34a', C: '#c9962a', L: '#9ab0d8', v: '#8fd160', d: '#6a4a2a', D: '#3a2618', r: '#ff6b3a', R: '#c9463d' });
+  const q = rows => outline(fromGrid(rows, QP, 1), OUT);
+  const P = '........................';
+  const crownPts = '.................c.c.c..', crownBand = '................ccCccc..';
+  const brow = '................dddddd..', eyeA = '...............drrRRrrd.', eyeB = '...............drrRRrrd.', jaw = '................dDDDDd..';
+  const thx = [
+    '...........Dddddd.......',
+    'DyYyyYyyYyDdddddd.......',
+    'yYyyYyyYyyDdddddd.......',
+    'DyYyyYyyYyDDddddD.......',
+    '.DyyDDyyDDD.............',
   ];
-  const a = sprite([...head.slice(0, 3), ...wingsUp.map((w, i) => merge(w, head[3 + i])), ...body]);
-  const b = sprite([...head.slice(0, 3), ...wingsDn.map((w, i) => merge(w, head[3 + i])), ...body]);
-  return pack([a, b], 12, 14, 22, 12);
+  const legs = 'D...dd..dd..dd..........', legsTuck = 'D.....Dd.dd.dD..........', legsSplay = 'D..d...d..d...d.........';
+  const wUp = ['....llll.lllll..........', '..lLllllLlllll..........', '.llllLllllll............'];
+  const wDn = [P, '...llll.lllll...........', '..lLllllLllll...........'];
+  const wHi = ['..lll.llll..............', '.lLlllllLlll............', '..llllLlllll............'];
+  const wFlat = [P, 'llllllLlllllll..........', '.lLlllllLllll...........'];
+  const hover = w => q([crownPts, crownBand, merge(w[0], brow), merge(w[1], eyeA), merge(w[2], eyeB), jaw, ...thx, legs]);
+  // 2 aim: she rears, head high, abdomen swung down behind her, legs pulled in
+  const aim = q([
+    crownPts, crownBand,
+    merge(wHi[0], brow), merge(wHi[1], eyeA), merge(wHi[2], eyeB),
+    '.....DdddddD....dDDDDd..',
+    '..DyYyyYyyYyD...........',
+    '.DyYyyYyyYyyD...........',
+    '..DyYyyYyyYD............',
+    '...DyyDDyyD.............',
+    '....DDyyD...............',
+    legsTuck,
+  ]);
+  // 3 dive: raked from top-left to bottom-right, wings swept to stubs
+  const dive = q([
+    '..ll....................',
+    '..lLll..................',
+    'DyYyyYyD................',
+    '.yYyyYyyYD..............',
+    '..DyYyyYyyD.............',
+    '....Ddddddd..c.c.c......',
+    '.......DddddccCccc......',
+    '..........ddddddddd.....',
+    '..........ddrrRRrrd.....',
+    '..........ddrrRRrrd.....',
+    '...........dDDDDd.......',
+    P,
+  ]);
+  // 4 volley: hanging, the abdomen curled under her, the sting pointed at the floor
+  const volley = q([
+    crownPts, crownBand,
+    merge(wUp[0], brow), merge(wUp[1], eyeA), merge(wUp[2], eyeB), jaw,
+    '..........Ddddddd.......',
+    '..DyYyyYyyDdddddd.......',
+    '...DyYyyYyDDddddD.......',
+    '....DyYyyYD.............',
+    '.....DyyDD..............',
+    '......DvD...............',
+  ]);
+  // 5 slam hang: wings out flat, legs braced under her, the whole body compressed
+  const slam = q([
+    P, crownPts, crownBand,
+    merge(wFlat[1], eyeA), merge(wFlat[2], eyeB), jaw, ...thx, legs,
+  ]);
+  // 6 winded: on the floor, wings crumpled, head drooped, legs splayed
+  const winded = q([
+    P, P,
+    '..ll..ll................',
+    '..lLl.lLl.......c.c.c...',
+    '.....DdddddD...ccCccc...',
+    'DyYyyYyyYyDdddd.dddddd..',
+    'yYyyYyyYyyDdddddrrRRrrd.',
+    'DyYyyYyyYyDDdddddrrRRrd.',
+    '.DyyDDyyDDD......dDDDd..',
+    legsSplay,
+    P, P,
+  ]);
+  // 7 sweep: low and level, wings streaming back behind her
+  const sweep = q([
+    P, P,
+    '.lL.....................',
+    '.llll...........c.c.c...',
+    '..lLllL........ccCccc...',
+    '.....DdddddD....dddddd..',
+    'DyYyyYyyYyDdddddrrRRrrd.',
+    'yYyyYyyYyyDdddddrrRRrrd.',
+    'DyYyyYyyYyDDddddDDDDDd..',
+    '.DyyDDyyDDD.............',
+    '....dd..dd..dd..........',
+    P,
+  ]);
+  return pack([hover(wUp), hover(wDn), aim, dive, volley, slam, winded, sweep], 12, 14, 22, 12);
 }
+
 function merge(a, b) { let s = ''; for (let i = 0; i < Math.max(a.length, b.length); i++) { const x = a[i] || '.', y = b[i] || '.'; s += x !== '.' ? x : y; } return s; }
 
 // Goblin archer — hooded sprig with a shortbow. 12×12. Frames: idle, draw (bow bent, arrow nocked), walk1, walk2.
@@ -277,7 +356,33 @@ export function bakeFrog() {
   ];
   const inflated = sit.map((r, i) => (i >= 8 && i <= 11) ? r.replace(/B/g, 'L') : r);
   const open = sit.map((r, i) => i === 8 ? r.replace(/R/g, 'r') : i === 9 ? r.replace(/B/g, 'r') : i === 10 ? r.replace(/B/g, 'R') : r);
-  return pack([f(sit), f(inflated), f(open)], 19, 16, 32, 14);
+  const pad = '.'.repeat(38);
+  // The leap reads in the whole body, not the feet: he squashes to gather, stretches in the air, splats on landing.
+  // 3 crouch: two body rows out, padded down. He is low and wide and about to go.
+  const crouch = [pad, pad, ...sit.slice(0, 6), ...sit.slice(8, 12),
+    '..DFFFFFDD..DFFFFFFFFFFFD..DDFFFFFD..',
+    '.DDFFFFFD....DDDDDDDDDDD....DFFFFFDD.',
+    'DDDFFDDDD..................DDDDFFDDD.'];
+  // 4 leap: two body rows in, and the legs trail straight down under him
+  const leap = [...sit.slice(0, 7), sit[6], sit[6], ...sit.slice(7, 12),
+    '...DFFFD.....DFFFFFFFFD.....DFFFD....',
+    '...DFFFD......DDDDDDDD......DFFFD....',
+    '...DFFD........................DFFD..',
+    '...DDD..........................DDD..'];
+  // 5 land: three rows out and the legs thrown wide. He hits the boards flat.
+  const land = [pad, pad, pad, pad, ...sit.slice(0, 5), ...sit.slice(8, 12),
+    'DFFFFDD.....DFFFFFFFFFFFD.....DDFFFFD',
+    'DDDDDD.........DDDDDDDDD........DDDDD'];
+  // 6 dazed: down on the boards, the eyes gone, the mouth hanging open
+  const dazed = [pad, pad, pad,
+    '.....DDDDD..................DDDDD....',
+    '....DFDDDFD................DFDDDFD...',
+    ...sit.slice(3, 8),
+    'DFFFFrrrrrrrrrrrrrrrrrrrrrrrrrrrFFFFD',
+    'DFFrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrFFD',
+    '.DFRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRFD.',
+    'DFFFFDD.....DFFFFFFFFFFFD.....DDFFFFD'];
+  return pack([f(sit), f(inflated), f(open), f(crouch), f(leap), f(land), f(dazed)], 19, 16, 32, 14);
 }
 
 // Hopper — a marsh frog that leaps at you. 10×8. Frames: sit, leap.
@@ -730,6 +835,17 @@ export function bakePyro(skin = {}) {
 }
 
 // The keeper — an old badger merchant: spectacles, striped snout, a leather apron with a coin pouch, sleeves rolled. 14×16. Frames: idle, talk (a paw raised over the counter).
+// The scullion - Gorm's cook-boy, an apron, a ladle and a worried face. 12x13. Frames: idle, talk.
+export function bakeCook() {
+  const CK = Object.assign({}, EP, { a: '#e8e0d0', A: '#b8a888', q: '#8a5a32', Q: '#5c3a1d', k: '#f1c9a0', c: '#8f2f28', o: OUT });
+  const f = rows => outline(fromGrid(rows, CK, 1), OUT);
+  const hat = ['...aaaaa....', '..aaaaaaa...', '..qkkkkkq...'];
+  const face = ['..kkokkok...', '..kkkkkkk...'];
+  const body = ['..qaaaaaq.s.', '.qaaaaaaaqs.', '.qaaaaaaaqS.', '.qaAAAAAaq..', '..qaaaaaq...', '..QQ...QQ...', '..QQ...QQ...'];
+  const idle = f([...hat, ...face, '...kkkkk....', ...body]);
+  const talk = f([...hat, ...face, '...kkckk....', ...body]);
+  return pack([idle, talk], 7, 14, 10, 13);
+}
 export function bakeKeeper() {
   const KP2 = Object.assign({}, EP, { b: '#3a3448', B: '#1b1626', f: '#e8e0d0', a: '#8a5a32', A: '#5c3a1d', g: '#c9a83a', p: '#5a4a3a', o: OUT, e: '#f3f0d2', s: '#ffffff' });
   const k = rows => outline(fromGrid(rows, KP2, 1), OUT);
@@ -813,7 +929,17 @@ export function bakeGolem() {
   const stomp = f((() => { const R = body(0); for (let y = 9; y <= 14; y++) put(R, 30, y, 'cccc'); put(R, 30, 8, 'Cccc'); put(R, 30, 7, 'cccc'); put(R, 31, 6, 'ccc'); return R; })());
   const thr = f((() => { const R = body(0); put(R, 33, 6, 'cccc'); put(R, 34, 5, 'cccc'); put(R, 35, 4, 'ccc'); put(R, 36, 2, 'ww'); put(R, 35, 3, 'www'); put(R, 36, 1, 'w'); return R; })());
   const stagger = f((() => { const R = body(0); put(R, 15, 5, 'cwkccckwcc'); put(R, 15, 6, 'ckkccckkcc'); put(R, 14, 2, 'cCccGGccccCc'); put(R, 14, 3, 'cCccGGccccCc'); return R; })());
-  return pack([idle, walk1, walk2, stomp, thr, stagger], 20, 36, 30, 34);
+  // 6 shroud: both arms thrown wide and up, the ice coming with them
+  const shroud = f((() => { const R = body(0); for (const [ax, up] of [[3, 1], [33, 1]]) { for (let y = 9; y >= 5; y--) put(R, ax, y, 'cccc'); put(R, ax, 4, 'Cccc'); put(R, ax + (ax > 20 ? 1 : -1), 3, 'wcc'); } return R; })());
+  // 7 drink: it takes the beam in. Head back, chest open, every gem burning.
+  const drink = f((() => { const R = body(0); put(R, 14, 2, 'cCccwwccccCc'); put(R, 14, 3, 'cCccwwccccCc');
+    put(R, 5, 16, 'dcccc.....ccccwwwwcccc.....ccccd'); put(R, 5, 17, 'dcccc.....cccwwwwwwccc.....ccccd'); put(R, 5, 18, 'dcccc.....cccwwwwwwccc.....ccccd'); put(R, 5, 19, 'dcccc.....ccccwwwwcccc.....ccccd');
+    for (const ax of [3, 33]) { for (let y = 9; y >= 7; y--) put(R, ax, y, 'cccc'); put(R, ax, 6, 'Cccc'); } return R; })());
+  // 8 counter: it throws the light back. Head down, one arm out level, the chest a furnace.
+  const counter = f((() => { const R = body(0); put(R, 15, 5, 'ckkccckkcc'); put(R, 15, 6, 'cggccckgcc');
+    put(R, 5, 17, 'dcccc.....cccwwwwwwccc.....ccccd'); put(R, 5, 18, 'dcccc.....cccwwwwwwccc.....ccccd');
+    for (let x = 30; x <= 36; x += 3) put(R, x, 12, 'ccc'); put(R, 36, 11, 'www'); put(R, 36, 13, 'www'); put(R, 33, 11, 'ccc'); put(R, 33, 13, 'ccc'); return R; })());
+  return pack([idle, walk1, walk2, stomp, thr, stagger, shroud, drink, counter], 20, 36, 30, 34);
 }
 // The moor hare — fast, low, and it runs with the wind. 12×8. Frames: run1, run2, sit.
 export function bakeHare() {
@@ -958,5 +1084,46 @@ export function bakeGoblinShaman() {
     '....GGG.GGG.u...',
     '................',
     '................']);
-  return pack([idle, cast, blink], 8, 17, 12, 16);
+  // 3 howl: both arms up, staff high, robe streaming, mouth open on the call
+  const howl = r([
+    '.g.a..aa..a.g...',
+    '.gg.a.aa.a.gg...',
+    '..g.aVVVVa.g....',
+    '...vvVvvVvv..m..',
+    '...gggeoge..mum.',
+    '....gRRRg....m..',
+    '....gGGGg.......',
+    '...vvvvvvv......',
+    '..vvvvvvvvv.....',
+    '.vvvavvvavvv....',
+    '.vvvvvavvvvv....',
+    '.VvvvvvvvvvV....',
+    '..VvvvvvvvV.....',
+    '...VVVVVVV......',
+    '...GG...GG......',
+    '..GG.....GG.....',
+    '.GGG.....GGG....',
+    '................']);
+  // 4/5 walk: the robe swings and the staff plants. He does walk, in the last of it.
+  const stride = (a, b) => r([
+    '...a..aa..a.....',
+    '....a.aa.a......',
+    '....aVVVVa......',
+    '...vvVvvVvv.....',
+    '...gggeoge...m..',
+    '....ggggg...umu.',
+    '....gGGGg....u..',
+    '...vvvvvvv...u..',
+    '..vavvvvvav..u..',
+    '..vvavvvavv..u..',
+    '..vvvavavvv.uu..',
+    '..VvvvvvvvV.u...',
+    '..VvvvvvvvV.u...',
+    '...VVVVVVV..u...',
+    a, b,
+    '..GGG...GGG.u...',
+    '................']);
+  const walk1 = stride('...GG..GG...u...', '..GG....GG..u...');
+  const walk2 = stride('....GGGG....u...', '...GG..GG...u...');
+  return pack([idle, cast, blink, howl, walk1, walk2], 8, 17, 12, 16);
 }

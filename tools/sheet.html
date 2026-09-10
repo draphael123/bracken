@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>BRACKEN sprite sheet</title>
+<style>
+  body { background:#1b1626; color:#e8dcc0; font:12px monospace; margin:0; padding:12px; }
+  h2 { color:#ffd36b; font-size:13px; margin:14px 0 4px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; }
+  .f { text-align:center; }
+  .f canvas { image-rendering:pixelated; background:#2a2436; border:1px solid #4a4458; display:block; }
+  .f span { color:#c9b27c; font-size:10px; }
+</style></head><body>
+<div id="out"></div>
+<script type="module">
+import * as C from '../src/chars.js';
+const Q = new URLSearchParams(location.search); const SCALE = Number(Q.get('s') || 4); const ONLY = Q.get('only');
+// which bakers to show, and a label per frame
+const SHOW = [
+  ['bakeQueen', ['flapUp','flapDn','aim','dive','volley','slamHang','winded','sweep']],
+  ['bakeFrog', ['sit','inflated','open','crouch','leap','land','dazed']],
+  ['bakeGolem', ['idle','walk1','walk2','stomp','throw','stagger','shroud','drink','counter']],
+  ['bakeGoblinShaman', ['idle','cast','blink','howl','walk1','walk2']],
+  ['bakeChief', ['stand','walk','raise','slam','sweep','grab','guard','slash','bow','leap','stand2','gw','gw2','bw','bw2']],
+  ['bakeOwl', ['perch','wingsUp','wingsDn','screech','crash','glide','dive','land']],
+  ['bakeRamLord', ['stand','run1','run2','lower','crash','rear','leap']],
+  ['bakeCook', ['idle','talk']],
+];
+const out = document.getElementById('out');
+for (const [name, labels] of SHOW) {
+  if (ONLY && name.toLowerCase().indexOf(ONLY.toLowerCase()) < 0) continue;
+  const fn = C[name];
+  if (!fn) { const h = document.createElement('h2'); h.textContent = name + ' — MISSING'; out.appendChild(h); continue; }
+  let set; try { set = fn(); } catch (e) { const h = document.createElement('h2'); h.textContent = name + ' — THREW ' + e.message; out.appendChild(h); continue; }
+  const frames = set.R || (set.mounted && set.mounted.R) || [];
+  const h = document.createElement('h2'); h.textContent = name + '  (' + frames.length + ' frames, anchor ' + set.ax + ',' + set.ay + ')'; out.appendChild(h);
+  const row = document.createElement('div'); row.className = 'row';
+  frames.forEach((f, i) => {
+    const d = document.createElement('div'); d.className = 'f';
+    const c = document.createElement('canvas'); c.width = f.width * SCALE; c.height = f.height * SCALE;
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(f, 0, 0, c.width, c.height);
+    const s = document.createElement('span'); s.textContent = i + ' ' + (labels[i] || '');
+    d.appendChild(c); d.appendChild(s); row.appendChild(d);
+  });
+  out.appendChild(row);
+}
+</script></body></html>

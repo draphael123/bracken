@@ -549,12 +549,18 @@ export function bakeSkyTeal(h) { const [c, g] = canvas(1, h); const top = [12, 2
 // The Mother Cap as pixel art: a 160x52 cap and a 32x100 stalk. Drawn from shapes but with dither, rim light, outlined spots and eyes.
 export function bakeMotherCap() {
   // A sick giant: the cap sags to one side, mottled with rot, cracked, weeping. Sallow flesh where it used to be purple.
+  // Three states, because her breath is the whole fight: 0 SEALED (breathing in, gills clamped, she pulls you),
+  // 1 OPEN (breathing out, the gills flared and lit — the window you cut in), 2 TORN (the dome split, the heart showing).
+  const rnd0 = mulberry(77);
+  const makeCap = state => {
   const [cap, g] = canvas(160, 56);
   const rnd = mulberry(77);
   const sag = x => Math.round(((x - 80) / 80) * 5); // the right side droops
-  // underside gills, weeping
-  for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78; if (Math.abs(dx) > 1) continue; const h = Math.sqrt(1 - dx * dx); const yb = 40 + sag(x) + Math.round(h * 9); for (let y = 34 + sag(x); y < yb; y++) px(g, x, y, (x >> 2) % 2 ? '#5a4a3a' : '#3a2e2c'); }
-  for (let x = 6; x < 156; x += 4) line(g, x, 34 + sag(x), 80 + (x - 80) * 0.72, 47 + sag(x), x % 8 === 2 ? '#8a7a4a' : '#5a4a3a', 1);
+  // underside gills. Sealed they clamp to a dark seam; open they flare and light up from inside.
+  const deep = state === 0 ? 5 : 11, glow = state === 1;
+  for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78; if (Math.abs(dx) > 1) continue; const h = Math.sqrt(1 - dx * dx); const yb = 34 + sag(x) + Math.round(h * deep); for (let y = 34 + sag(x); y < yb; y++) px(g, x, y, glow ? (((x >> 2) % 2) ? '#c9a0ff' : '#5a3a6a') : ((x >> 2) % 2 ? '#4a3e34' : '#2c2420')); }
+  if (glow) { for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78; if (Math.abs(dx) > 1) continue; const h = Math.sqrt(1 - dx * dx); const yb = 34 + sag(x) + Math.round(h * deep); for (let y = yb - 2; y < yb; y++) px(g, x, y, ((x + y) & 1) ? '#e0b0f0' : '#9a5aa8'); } }
+  for (let x = 6; x < 156; x += 4) line(g, x, 34 + sag(x), 80 + (x - 80) * 0.72, (state === 0 ? 40 : 49) + sag(x), x % 8 === 2 ? (glow ? '#e0b0f0' : '#6a5a48') : (glow ? '#8a5aa0' : '#4a3e34'), 1);
   // dome: sallow flesh with a purple memory in the shadows
   for (let x = 0; x < 160; x++) { const dx = (x - 80) / 78; if (Math.abs(dx) > 1) continue; const h = Math.sqrt(1 - dx * dx); const top = 30 + sag(x) - Math.round(h * 22); for (let y = top; y <= 34 + sag(x); y++) { const k = (y - top) / Math.max(1, 34 + sag(x) - top); const col = k < 0.18 ? '#b8b070' : k < 0.5 ? '#8a8a54' : k < 0.8 ? '#6a6a44' : '#4a3a4a'; px(g, x, y, ((x + y) & 1) && k > 0.4 && k < 0.6 ? '#7a7a4a' : col); } }
   // rot blotches with dark rims, and cracks
@@ -565,8 +571,14 @@ export function bakeMotherCap() {
   for (const x of [98, 116, 131, 146, 152]) { const h = 3 + ((rnd() * 6) | 0); rect(g, x, 40 + sag(x), 2, h, '#b8c060'); px(g, x, 40 + sag(x) + h, '#d8e080'); }
   // a few pale spots that survived, the eyes' sockets dark
   for (const [sx, sy, r] of [[40, 10, 3], [70, 6, 3], [128, 12, 2]]) ellipse(g, sx, sy + sag(sx), r, r * 0.7, '#d8d0c0', '#a8a090');
+  // TORN: the dome splits down the middle and the pink of her shows through
+  if (state === 2) { for (let y = 4; y < 40; y++) { const w = 2 + Math.round(Math.sin(y * 0.4) * 2) + Math.round(y * 0.18); for (let x = 80 - w; x <= 80 + w; x++) px(g, x, y + sag(x), ((x + y) & 1) ? '#ff7a9a' : '#8f2f28'); px(g, 80 - w - 1, y, '#2c221c'); px(g, 80 + w + 1, y, '#2c221c'); } for (let i = 0; i < 20; i++) { const x = 66 + ((rnd() * 28) | 0), y = 6 + ((rnd() * 30) | 0); px(g, x, y, '#ffd0ff'); } }
   outline(cap, OUT);
+  return cap;
+  };
+  const cap = makeCap(0), capOpen = makeCap(1), capTorn = makeCap(2);
   const [stalk, s] = canvas(32, 100);
+  const rnd = rnd0;
   rect(s, 2, 0, 28, 100, '#4a4436'); rect(s, 2, 0, 5, 100, '#6a6450'); rect(s, 25, 0, 5, 100, '#2c2820');
   for (let i = 0; i < 50; i++) { const x = 4 + ((rnd() * 24) | 0), y = (rnd() * 96) | 0; rect(s, x, y, 1, 2 + ((rnd() * 5) | 0), rnd() < 0.5 ? '#5a5444' : '#3a3428'); }
   // veins of rot climbing the stalk, a split ring, oozing boils
@@ -575,7 +587,7 @@ export function bakeMotherCap() {
   for (const [bx, by] of [[9, 55], [20, 70], [12, 84], [23, 22]]) { ellipse(s, bx, by, 3, 2.5, '#8a8a54', '#4a3a2a'); px(s, bx, by - 1, '#b8c060'); }
   fillPoly(s, [[2, 100], [2, 86], [-4, 100]], '#4a4436'); fillPoly(s, [[30, 100], [30, 84], [36, 100]], '#4a4436'); rect(s, 0, 96, 32, 4, '#3a3428');
   outline(stalk, OUT);
-  return { cap, stalk };
+  return { cap, capOpen, capTorn, stalk };
 }
 // Impact star: two frames, 16x16, white-hot then thinning.
 export function bakeImpact(col = '#fff6e0') {
@@ -1015,6 +1027,12 @@ export function bakeCottage(shut) { const [c, g] = canvas(36, 32); rect(g, 3, 14
 export function bakeDeadTree(seed) { const rnd = mulberry(seed); const [c, g] = canvas(28, 56); rect(g, 11, 14, 6, 42, '#5a5468'); rect(g, 11, 14, 1, 42, '#6e6878'); rect(g, 16, 14, 1, 42, '#3a3444'); line(g, 13, 20, 2, 8, '#5a5468', 2); line(g, 15, 26, 26, 12, '#5a5468', 2); line(g, 13, 14, 9, 2, '#5a5468', 2); line(g, 15, 14, 20, 4, '#5a5468', 1); for (let i = 0; i < 5; i++) { const x = 4 + ((rnd() * 20) | 0), y = 10 + ((rnd() * 20) | 0); line(g, x, y, x, y + 6 + ((rnd() * 8) | 0), 'rgba(200,180,220,0.55)', 1); } for (let i = 0; i < 4; i++) px(g, 10 + ((rnd() * 8) | 0), 30 + ((rnd() * 22) | 0), '#9a5aa8'); return c; }
 
 // A hand lantern, dark: the lamplighter's quest item. 10×12.
+// A goblet off Gorm's table: gold, dented, a garnet in the bowl. 10x12.
+export function bakeCupIcon() { const [c, g] = canvas(10, 12); rect(g, 2, 1, 6, 5, '#e0b040'); rect(g, 2, 1, 6, 1, '#fff6c8'); rect(g, 3, 6, 4, 1, '#c9a83a'); rect(g, 4, 7, 2, 3, '#c9a83a'); rect(g, 2, 10, 6, 2, '#e0b040'); px(g, 3, 3, '#c9463d'); px(g, 6, 4, '#fff6c8'); return outline(c); }
+// A ground lens in a brass ring, off the glassworks benches. 12x12.
+export function bakeLensIcon() { const [c, g] = canvas(12, 12); ellipse(g, 6, 6, 5, 5, '#c9a83a'); ellipse(g, 6, 6, 3.6, 3.6, '#bfe6f5', '#7aa8c8'); px(g, 4, 4, '#ffffff'); px(g, 5, 4, '#ffffff'); px(g, 8, 8, '#eefaff'); return outline(c); }
+// Climbing spurs: two iron claws on leather straps. 10x12.
+export function bakeSpursIcon() { const [c, g] = canvas(10, 12); rect(g, 1, 1, 8, 2, '#8a5a32'); rect(g, 1, 6, 8, 2, '#8a5a32'); for (const y of [3, 8]) for (const x of [2, 5, 7]) { rect(g, x, y, 1, 2, '#c9d1dc'); px(g, x, y + 2, '#7c8797'); } px(g, 1, 1, '#c9b27c'); px(g, 8, 6, '#c9b27c'); return outline(c); }
 export function bakeLampIcon() { const [c, g] = canvas(10, 12); rect(g, 4, 0, 2, 2, '#8b8378'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 7, '#3a3444'); rect(g, 3, 4, 4, 5, '#6a5a3a'); px(g, 4, 6, '#ffd36b'); rect(g, 2, 10, 6, 1, '#5f5a52'); return outline(c); }
 // A lit or dark lantern on a tall post for the crown of the tree. 12×36.
 export function bakeCrownLantern(lit) { const [c, g] = canvas(12, 36); rect(g, 5, 8, 2, 28, C.woodD); rect(g, 5, 8, 1, 28, C.wood); rect(g, 2, 34, 8, 2, C.woodD); rect(g, 3, 0, 6, 2, '#5f5a52'); rect(g, 2, 2, 8, 8, lit ? '#ffd36b' : '#3a3444'); rect(g, 3, 3, 6, 6, lit ? '#fff6c8' : '#2a2630'); rect(g, 2, 10, 8, 1, '#5f5a52'); return outline(c); }

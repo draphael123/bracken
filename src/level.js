@@ -668,7 +668,7 @@ function kingswood() {
   ent('sign', 4, 19, { text: 'THE GOBLINS LIVE HERE. YOU ARE NOT WELCOME.' }); ent('npc', 9, 19, { kind: 'squire' });
   ent('sign', 313, 13, { text: 'KING GORM. WHILE THE CROWN SHIMMERS HE TURNS EVERY BLADE. CLIMB THE SCAFFOLD AND TREAD A PLATE WHEN HE PASSES UNDER ITS CAGE: IT HOLDS HIM, AND FOR A WHILE AFTER HIS HEAD IS UP AND HE BLEEDS LIKE ANY MAN. A CAGE THAT MISSES HIM WAS NOT EMPTY. HE THROWS WHAT HE CAN REACH WHILE YOU CLIMB, AND THE LITTER CHARGES: JUMP IT OR CLIMB. THE PITS BURN. WHEN HE RAGES HE CALLS THE COURT DOWN ON YOU.' });
   ent('door', 12, 19, { at: 12 }); ent('folk', 9, 19, { door: 12 }); ent('folk', 17, 19, { door: 12, alt: true }); ent('deco', 20, 19, { kind: 'well' });
-  ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]);
+  ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]); ent('npc', 26, 19, { kind: 'cook' });
   ent('sign', 29, 19, { text: 'THE THIEVES OF THE COURT SNATCH GOLD FROM YOUR PURSE AND RUN. CATCH ONE AND IT PAYS BACK WITH INTEREST.' });
   ent('thief', 34, 19, { face: -1 }); ent('door', 40, 19); ent('folk', 38, 19, { door: 40 });
   // the canopy road over the pasture, and a rope ladder up onto the first hall's roof
@@ -684,7 +684,7 @@ function kingswood() {
   ent('sign', 47, 19, { text: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND CUT FROM BEHIND, OR THROW THE SHIELD INTO THEM.' });
   ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('pike', 68, 19, { face: -1 });
   ent('brazier', 53, 19); ent('brazier', 66, 19); // oil braziers: tip them onto the line, or get burned
-  ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 });
+  ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 }); ent('stray', 72, 19, { kind: 'cup' });
   gate(84, 15, 19);
   coins([52, 18], [58, 17], [65, 18], [74, 17]);
   // the way around the gate if the bell rings: a two-wide hatch through the roof with ledges up it, onto the high road
@@ -714,7 +714,7 @@ function kingswood() {
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS: THE LEVER SWINGS THE RAM ACROSS THE ROAD, THE PLATE DROPS THE CAGE. USE THEM ON THE GOBLINS THAT BUILT THEM.' });
-  ent('pike', 142, 21, { face: -1 }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
+  ent('pike', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
   // the roads rejoin at 150: a slope of ledges from the burrow up to the yard
   block(150, 152, 18, 27); block(153, 158, 16, 27); block(159, 164, 14, 27); block(165, 190, 14, 27);
   ent('check', 167, 13);
@@ -743,7 +743,7 @@ function kingswood() {
   ent('firepit', 216, 20, { period: 3.4, on: 1.5, phase: 0.8 }); ent('brazier', 224, 20); ent('firepit', 265, 20, { period: 3.4, on: 1.5, phase: 2.4 });
   ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
   ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
-  coins([218, 19], [236, 19], [252, 18], [266, 19], [273, 19]);
+  ent('stray', 250, 20, { kind: 'cup' }); coins([218, 19], [236, 19], [252, 18], [266, 19], [273, 19]);
   block(275, 277, 17, 27); block(278, 281, 15, 27); block(282, 300, 14, 27);
   ent('check', 284, 13);
 
@@ -786,6 +786,7 @@ function kingswood() {
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    quest: { n: 3, item: 'cup', name: 'GOLD CUP', npc: 'cook', done: 'THE CUPS ARE OFF HIS TABLE', thanks: "THE SCULLION'S THANKS" },
     arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'king', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
     mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'greathound' },
   }
@@ -1033,7 +1034,7 @@ function hangingVillage() {
   ent('squirrel', 30, 51, { face: 1 }); ent('spider', 45, 44, { drop: 100 }); ent('spider', 65, 44, { drop: 100 });
   plat(56, 48, 3); ent('archer', 57, 47, { face: -1 }); plat(72, 46, 2); ent('silver', 73, 45); plat(76, 49, 3);
   set(40, tops.t4 - 1, T.BOUNCER); plat(38, 45, 2); plat(43, 43, 3); coins([39, 44], [44, 42], [45, 42]); ent('wasp', 48, 44); // a springy bough up to a high ledge
-  movers.push({ kind: 'lift', x: 62 * TS, y: (tops.t4 - 1) * TS, y0: (tops.t4 - 1) * TS, y1: 44 * TS, w: 32, h: 8, speed: 30 }); plat(66, 44, 3); coins([67, 43]); // a basket lift to a nest of coins
+  movers.push({ kind: 'lift', x: 62 * TS, y: (tops.t4 - 1) * TS, y0: (tops.t4 - 1) * TS, y1: 44 * TS, w: 32, h: 8, speed: 30 }); plat(66, 44, 3); coins([67, 43]); ent('relic', 68, 43, { kind: 'spurs' }); // a basket lift to a nest of coins
   ent('door', 84, 51, { at: 84 }); ent('folk', 87, 51, { door: 84 }); ent('thorn', 94, 51, { face: -1 });
   coins([26, 49], [38, 49], [50, 49], [60, 46], [80, 47], [98, 49]);
   ent('check', 12, 51);
@@ -1049,7 +1050,7 @@ function hangingVillage() {
   ent('door', 88, 37, { kind: 'cottage', at: 88 }); ent('folk', 91, 37, { door: 88, alt: true }); ent('deco', 84, 37, { kind: 'lanternPost' });
   ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 60, 37, { kind: 'cottage', at: 60 }); ent('folk', 63, 37, { door: 60, alt: true });
   ent('spider', 40, 30, { drop: 100 }); ent('stray', 30, 37, { kind: 'lamp' }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' });
-  plat(76, 34, 3); plat(26, 33, 3); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
+  plat(76, 34, 3); plat(26, 33, 3); ent('silver', 28, 32); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
   pit(42, 43, tops.t5); pit(72, 73, tops.t5);
   hole(52, 57, tops.t5); shelf(52, tops.t5, 6); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 }); ent('wasp', 55, 33); ent('thorn', 36, 37, { face: 1 }); // snapping branch and a sliding bough on the way to the crown
   ent('check', 10, 37);
@@ -1118,7 +1119,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   web(70, 71, 16, 19); ent('spider', 68, 9, { drop: 100 });
   plat(75, 11, 3); ent('receiver', 76, 10, { gate: 80 }); ent('mirror', 76, 19, { o: 1 });
   gateCol(80, 15, 19); ent('sign', 62, 19, { text: 'THE MIRRORS TURN WHEN YOU STRIKE THEM. SEND THE BEAM THROUGH THE WEB, THEN UP TO THE LENS OVER THE DOOR.' });
-  ent('miner', 56, 19, { face: -1 }); coins([50, 17], [58, 17], [64, 17], [73, 14]);
+  ent('miner', 56, 19, { face: -1 }); ent('stray', 51, 19, { kind: 'lens' }); coins([50, 17], [58, 17], [64, 17], [73, 14]);
   ent('check', 81, 19);
 
   // ---- 3. THE GALLERY OF STEPS: a shaft to climb. Stone ledges the slow way; ice ledges in the beam's column the fast way, until you turn the beam on and they melt. ----
@@ -1129,13 +1130,13 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   ice(95, 97, 16, 16); ice(95, 97, 12, 12); ice(95, 97, 8, 8); web(96, 96, 14, 14); web(96, 96, 10, 10);
   ent('receiver', 96, 4, { gate: 109 }); gateCol(109, 5, 7); gallery(109, 116, 4, 7);
   ent('spider', 90, 5, { drop: 120 }); ent('spider', 104, 5, { drop: 120 }); ent('grub', 103, 14, { face: -1 });
-  coins([86, 16], [103, 14], [86, 12], [103, 10], [86, 8], [96, 6]);
+  ent('silver', 104, 6); coins([86, 16], [103, 14], [86, 12], [103, 10], [86, 8], [96, 6]);
   works(19, [107, 'blowpipe']);
 
   // ---- 4. THE OVERLOOK: goblins on ledges you cannot reach, throwing lanterns. Turn one mirror and the beam sweeps their row and burns them off. The left ledges you can climb; fight there. ----
   gallery(112, 162, 4, 19); for (const x of [118, 138, 156]) ent('deco', x, 19, { kind: 'timber', v: 1 }); lamps(4, 116, 130, 146, 158); lamps(19, 124, 148); shards(19, false, 113, 133, 153); shards(4, true, 122, 140, 152);
   ent('sign', 114, 19, { text: 'THE OVERLOOK. THE GOBLINS UP THERE CANNOT BE REACHED. THE BEAM CAN REACH THEM: TURN THE MIRROR BY THE FAR CRYSTAL AND IT SWEEPS THEIR LEDGE. THE LEFT LEDGES YOU CAN CLIMB, AND SOMETHING IS WAITING ON THEM.' });
-  plat(114, 17, 3); plat(119, 14, 3); plat(115, 11, 3); ent('miner', 116, 10, { face: 1 }); ent('grub', 120, 13, { face: -1 }); coins([115, 16], [120, 13], [116, 10]);
+  plat(114, 17, 3); plat(119, 14, 3); plat(115, 11, 3); ent('stray', 115, 10, { kind: 'lens' }); ent('miner', 116, 10, { face: 1 }); ent('grub', 120, 13, { face: -1 }); coins([115, 16], [120, 13], [116, 10]);
   plat(128, 9, 5); plat(146, 9, 5); ent('rockgoblin', 130, 8, { face: 1 }); ent('rockgoblin', 148, 8, { face: -1 }); ent('rockgoblin', 137, 8, { face: 1 }); plat(135, 9, 4);
   ent('crystal', 158, 19, { dir: [-1, 0] }); ent('mirror', 152, 19, { o: 0 }); ent('mirror', 152, 8, { o: 1, fixed: true }); plat(151, 9, 3);
   ent('receiver', 113, 8, { gate: 161 }); plat(112, 9, 3); gateCol(161, 15, 19);
@@ -1159,7 +1160,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   // ---- 5b. THE OLD WORKINGS: the one dark room. ----
   gallery(164, 200, 22, 30); for (const x of [178, 192]) ent('deco', x, 30, { kind: 'timber', v: 1 }); shards(30, false, 174, 183); shards(22, true, 170, 186, 198);
   ladder(172, 173, 22, 30); ent('torchbracket', 168, 30); ent('minerlamp', 180, 30, { lit: false }); ent('minerlamp', 188, 30, { lit: false });
-  ent('bat', 176, 24); ent('bat', 184, 25); ent('bat', 194, 24);
+  ent('bat', 176, 24); ent('bat', 184, 25); ent('bat', 194, 24); ent('stray', 184, 30, { kind: 'lens' });
   plat(189, 26, 3); ent('crystal', 190, 25, { dir: [0, 1] }); ent('mirror', 190, 30, { o: 0 }); web(194, 195, 27, 30);
   ent('silver', 198, 30); ent('relic', 196, 30, { kind: 'lamp' }); coins([176, 28], [182, 28], [186, 28]);
   ent('sign', 166, 30, { text: 'THE OLD WORKINGS. TAKE THE TORCH. THE BATS HUNT WHATEVER IS LIT. A CRYSTAL AT THE FAR END, AND A WEB BETWEEN YOU AND THE MINER\'S LAMP.' });
@@ -1168,7 +1169,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   gallery(216, 236, 8, 19); lamps(8, 220, 232); shards(8, true, 225, 234); shards(19, false, 219);
   ent('sign', 217, 19, { text: 'GAS. A SPARK LIGHTS THE POCKET. NO STEEL, NO FIRE, NO TORCH. DODGE AND BLOCK AND KEEP GOING.' });
   ent('gas', 222, 19, { period: 7, phase: 0 }); ent('gas', 230, 19, { period: 7, phase: 3.5 }); ent('rockgoblin', 228, 19, { face: -1 }); ent('miner', 224, 19, { face: 1 });
-  coins([220, 17], [226, 17], [233, 17]);
+  ent('silver', 230, 17); coins([220, 17], [226, 17], [233, 17]);
 
   // ---- 7. THE MIRROR STAIR: four landings, four hatches, four relays. Each mirror you strike opens the hatch above it. ----
   gallery(236, 272, 4, 19); for (const x of [242, 266]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(19, 240, 268); lamps(4, 244, 264); shards(19, false, 238, 270); shards(4, true, 246, 258, 268);
@@ -1206,6 +1207,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
     duskStart: -1, duskLen: 1, music: 'cave', night: true, glowNight: true, nightA: 0.2, dark: 0.02,
     darkZones: [{ x0: 164 * TS, x1: 201 * TS, y0: 21 * TS, y1: 32 * TS, dark: 0.8 }],
     noSwing: [{ x0: 217 * TS, x1: 236 * TS, y0: 7 * TS, y1: 20 * TS }],
+    quest: { n: 3, item: 'lens', name: 'GROUND LENS', npc: 'foreman', done: 'THE LENSES ARE BACK ON THE BENCH', thanks: "THE FOREMAN'S THANKS" },
     palette: { sky: 'night', dress: 'none', hall: true, haze: 'rgba(150,170,240,0.08)', grass: '#8a8aa8', grassL: '#b8b8d8', grassD: '#5a5a7a', dirt: '#5e5e80', dirtL: '#7a7a9c', dirtD: '#3a3a58', canopy: ['#2a2a34', '#3a3a44', '#4a4a58', '#5a5a66'] },
     weather: [{ x0: 40 * TS, x1: 99999, kind: 'glitter' }], ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     arena: { x0: 341 * TS, x1: 370 * TS, floor: 26 * TS, trigger: 344 * TS, wallL: 340, wallR: 371, boss: 'golem', tint: '#bfe6f5', tintA: 0.08, fx: 'motes' },
@@ -1325,7 +1327,7 @@ function galeMoor() {
   ent('flagpost', 304, 13); ent('flagpost', 335, 14); ent('flagpost', 368, 13);
   ent('harpy', 330, 6); ent('harpy', 350, 4);
   ent('sign', 302, 13, { text: 'THE HOWLING GAP. THE STONES STAND IN THE BOG, AND THE AIR BETWEEN THEM GOES UP. STEP OFF INTO A GAP: THE UPDRAFT LIFTS YOU, THE GUST CARRIES YOU ON. DO NOT STAND STILL DOWN THERE.' });
-  coins([313, 12], [323, 10], [335, 13], [347, 9], [359, 11], [318, 18], [341, 16], [353, 17]);
+  ent('silver', 346, 10); coins([313, 12], [323, 10], [335, 13], [347, 9], [359, 11], [318, 18], [341, 16], [353, 17]);
   ent('check', 368, 13);
 
   // ---- 8. THE GALLERY OF GUSTS: ledges over the thorns, the wind turning every three breaths. Jump with it and you fly; against it you fall short. A tall stone at the end, and an updraft to get over it. ----
@@ -1336,7 +1338,7 @@ function galeMoor() {
   gusts.push({ x0: 380 * TS, x1: 440 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 3, on: 1.4, phase: 0, alt: true, moor: true, k: 1.4 });
   ent('flagpost', 386, 13); ent('flagpost', 404, 11); ent('flagpost', 425, 13); ent('hare', 390, 13, { face: 1 }); ent('harpy', 405, 5);
   ent('sign', 382, 13, { text: 'THE GALLERY. THE WIND TURNS EVERY THREE BREATHS. JUMP WITH IT AND YOU FLY; AGAINST IT YOU FALL IN THE THORNS. THE STONE AT THE END: RIDE THE UPDRAFT OVER IT.' });
-  coins([404, 10], [415, 10], [427, 8], [434, 12]);
+  ent('silver', 430, 7); coins([404, 10], [415, 10], [427, 8], [434, 12]);
   ent('check', 436, 13);
 
   // ---- 9. THE FLAG ROAD: the last walk to the summit. Stones, hares, and the flags all pointing one way. ----
