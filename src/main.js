@@ -1256,7 +1256,7 @@ function placeLandmarks() {
   const used = []; const pick = () => { for (let t = 0; t < 40; t++) { const f = flats[(rnd() * flats.length) | 0]; if (f && used.every(u => Math.abs(u[0] - f[0]) > 40)) { used.push(f); return f; } } return null; };
   const put = (c, dx, dy, extra = {}) => { const f = pick(); if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
   if (dress === 'wood') { put(PROP.oldOak[0], 8, 0); put(PROP.oldOak[1], 8, 0); }
-  if (dress === 'marsh') { const deep = (L.pools || []).filter(p => p.shallow && p.x1 - p.x0 > 100); if (deep.length) { const p = deep[(rnd() * deep.length) | 0]; decor.push({ k: 'landmark', landmark: true, bg: true, x: p.x0 + 24, y: p.y - 6, c: PROP.boat }); } const f = put(PROP.oldOak[1], 8, 0); }
+  if (dress === 'marsh') { put(PROP.oldOak[1], 8, 0); put(PROP.oldOak[0], 8, 0); }
   if (dress === 'camp') { put(PROP.totem[0], 20, 0); put(PROP.totem[1], 20, 0); }
   if (dress === 'myc') { put(PROP.giantCap, 0, 0); }
 }

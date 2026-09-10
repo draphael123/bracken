@@ -221,7 +221,7 @@ function marshWood() {
   block(386, 401, 17, 17);
   for (let x = 402; x <= 403; x++) L.set(x, 18, 0); water(402, 403, 18, true);
   ent('throne', 394, 16); ent('frog', 394, 16);
-  ent('deco', 364, 17, { kind: 'frogStatue', v: 0 }); ent('deco', 384, 16, { kind: 'frogStatue', v: 1 }); ent('deco', 399, 16, { kind: 'frogStatue', v: 0 });
+  ent('deco', 364, 17, { kind: 'frogStatue', v: 0 }); ent('deco', 389, 16, { kind: 'frogStatue', v: 1 }); ent('deco', 399, 16, { kind: 'frogStatue', v: 0 });
   ent('deco', 370, 18, { kind: 'lilyLantern' }); ent('deco', 377, 18, { kind: 'lilyLantern' }); ent('deco', 402, 18, { kind: 'lilyLantern' });
 
   return {
