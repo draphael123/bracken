@@ -795,6 +795,57 @@ export function bakeBat() {
   const fly2 = b(['............', '.....bb.....', '..bbbbbbbb..', 'bbbbBrrBbbbb', 'bb..bbbb..bb', '.....bb.....']);
   return pack([hang, fly1, fly2], 7, 7, 10, 6);
 }
+// The glow grub — a fat cave larva that lights its own way and spits acid. 16×8. Frames: crawl1, crawl2, spit.
+export function bakeGrub() {
+  const GP = Object.assign({}, EP, { g: '#b8d878', G: '#7a9a48', p: '#e8ff9a', P: '#ffffc8', k: '#3a3a2a' });
+  const q = rows => outline(fromGrid(rows, GP, 1), OUT);
+  const crawl1 = q(['......gggggggg..', '..ggggGgggGgggg.', '.gGggggggggggggP', 'gkggGgggGgggGgpP', 'gkgggggggggggggP', '.gGggggggggggggP', '..ggggGgggGgggg.', '...gg..gg..gg...']);
+  const crawl2 = q(['......gggggggg..', '..ggggGgggGgggg.', '.gGggggggggggggP', 'gkggGgggGgggGgpP', 'gkgggggggggggggP', '.gGggggggggggggP', '..ggggGgggGgggg.', '.gg..gg..gg.....']);
+  const spit = q(['......gggggggg..', '.gggggGgggGgggg.', 'gkGggggggggggggP', 'gkkgGgggGgggGgpP', 'gkgggggggggggggP', '.gGggggggggggggP', '..ggggGgggGgggg.', '...gg..gg..gg...']);
+  return pack([crawl1, crawl2, spit], 8, 8, 14, 7);
+}
+// The rock goblin — a mine goblin in a stone-scale hood who throws lanterns. 12×11. Frames: walk1, walk2, throw.
+export function bakeRockGoblin() {
+  const RG = Object.assign({}, KG, { h: '#8a919c', H: '#5a6270', y: '#ffd36b', l: '#ff9a5c' });
+  const r = rows => outline(fromGrid(rows, RG, 1), OUT);
+  const head = ['...hhhhhh...', '..hHhhhhHh..', '..hhhhhhhh..', '..ggeoggeo..', '...gggggg...', '...gGGGGg...'];
+  const walk1 = r([...head, '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '..GG..GG....', '.GG....GG...']);
+  const walk2 = r([...head, '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '...GGGG.....', '...GG.GG....']);
+  const thr = r(['...hhhhhh..y', '..hHhhhhHh.l', '..hhhhhhhh.y', '..ggeoggeoxx', '...gggggg.x.', '...gGGGGg...', '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
+  return pack([walk1, walk2, thr], 7, 12, 10, 11);
+}
+// THE FORGEMASTER, at twice the size: a hulking smith in a steam rig. Boiler pack on his back, a furnace grate for a belly, a hammer arm as long as he is tall. 48×34.
+// Frames: idle, raise, slam, drag, hurl, stun, breath.
+export function bakeForgemasterBig() {
+  const FP = Object.assign({}, KG, { i: '#8a919c', I: '#5a6270', c: '#6a4a3a', C: '#3a2a24', y: '#ffd36b', s: '#e8e0d0', k: '#3a3a44', K: '#22222c', r: '#ff6b2c', R: '#ffd36b', x: '#c9463d' });
+  const f = rows => outline(fromGrid(rows, FP, 1), OUT);
+  const W = 48, H = 34; const blank = () => Array.from({ length: H }, () => '.'.repeat(W));
+  const put = (rows, x, y, str) => { const row = rows[y]; rows[y] = row.slice(0, x) + str + row.slice(x + str.length); };
+  const body = (eyes = 'ey', mouth = 'GGG') => { const R = blank();
+    // helmet, goggles, jaw
+    put(R, 18, 0, 'iiiiiiiiii'); put(R, 17, 1, 'iiIIIIIIIIii'); put(R, 16, 2, 'iyyIIIIIIyyIi'); put(R, 16, 3, 'iy' + eyes[0] + 'yIIIIy' + eyes[1] + 'yIi'); put(R, 16, 4, 'iIIIIIIIIIIIi');
+    put(R, 17, 5, 'gggggggggggg'); put(R, 17, 6, 'gg' + mouth + 'ggg' + mouth + 'gg'); put(R, 18, 7, 'ggggggggggg');
+    // boiler pack
+    put(R, 6, 8, 'kkkkkk'); put(R, 5, 9, 'kKKKKKKk'); put(R, 5, 10, 'kKKKKKKk'); put(R, 4, 11, 'kkKKKKKKkk'); for (let y = 12; y <= 16; y++) put(R, 4, y, 'kKKKKKKKKk'); put(R, 4, 17, 'kkKKKKKKkk'); put(R, 5, 18, 'kKKKKKKk'); put(R, 5, 19, 'kkkkkkkk'); put(R, 8, 5, 'ii'); put(R, 8, 6, 'ii'); put(R, 8, 7, 'ii'); // the chimney
+    // torso and apron with the furnace grate
+    put(R, 15, 8, 'IIIIIIIIIIIIIII'); put(R, 14, 9, 'IiiiiiiiiiiiiiiI'); put(R, 14, 10, 'IiiiiiiiiiiiiiiI'); put(R, 14, 11, 'IiicccccccccciiI'); put(R, 14, 12, 'IiccCCCCCCCCcciI');
+    for (let y = 13; y <= 16; y++) put(R, 14, y, 'IiccCrrrrrrCcciI'); put(R, 14, 17, 'IiccCCCCCCCCcciI'); put(R, 14, 18, 'IiicccccccccciiI'); put(R, 14, 19, 'IiiiiiiiiiiiiiiI'); put(R, 15, 20, 'IIIIIIIIIIIIIII'); put(R, 16, 21, 'ccccccccccccc');
+    // legs and boots
+    for (const lx of [16, 24]) { put(R, lx, 22, 'IIIII'); for (let y = 23; y <= 25; y++) put(R, lx, y, 'IiiiI'); put(R, lx, 26, 'IIIII'); put(R, lx - 1, 27, 'IIIIII'); put(R, lx - 1, 28, 'IiiiiI'); put(R, lx - 1, 29, 'IIIIII'); put(R, lx - 2, 30, 'KKKKKKK'); put(R, lx - 2, 31, 'KKKKKKK'); }
+    return R; };
+  const hammerDown = R => { put(R, 30, 9, 'iii'); put(R, 31, 10, 'Iii'); put(R, 32, 11, 'Iii'); put(R, 33, 12, 'Iii'); put(R, 34, 13, 'Iii'); put(R, 35, 14, 'Iii'); put(R, 36, 15, 'Iii'); put(R, 37, 16, 'Iii'); put(R, 38, 17, 'Iii'); put(R, 38, 18, 'ccc'); for (let y = 19; y <= 26; y++) put(R, 39, y, 'c'); put(R, 35, 27, 'KKKKKKKKK'); put(R, 35, 28, 'KKKKKKKKK'); put(R, 35, 29, 'KKKKKKKKK'); put(R, 35, 30, 'KKKKKKKKK'); put(R, 35, 31, 'KKKKKKKKK'); return R; };
+  const hammerUp = R => { put(R, 30, 9, 'iii'); put(R, 32, 8, 'Iii'); put(R, 34, 7, 'Iii'); put(R, 36, 6, 'Iii'); put(R, 38, 5, 'Iii'); put(R, 39, 4, 'cc'); for (let y = 0; y <= 3; y++) put(R, 40, y, 'c'); put(R, 36, 0, 'KKKKKKKKK'); put(R, 36, 1, 'KKKKKKKKK'); put(R, 36, 2, 'KKKKKKKKK'); return R; };
+  const hammerSlam = R => { put(R, 30, 9, 'iii'); for (let x = 33; x <= 44; x += 3) put(R, x, 10 + (x - 30) / 3 * 0, 'iii'); put(R, 33, 10, 'Iii'); put(R, 36, 10, 'Iii'); put(R, 39, 10, 'Iii'); put(R, 42, 11, 'ccc'); for (let y = 12; y <= 25; y++) put(R, 44, y, 'c'); put(R, 39, 26, 'KKKKKKKKK'); put(R, 39, 27, 'KKKKKKKKK'); put(R, 39, 28, 'KKKKKKKKK'); put(R, 39, 29, 'KKKKKKKKK'); put(R, 39, 30, 'KKKKKKKKK'); put(R, 39, 31, 'KKKKKKKKK'); return R; };
+  const armOut = R => { put(R, 30, 12, 'iii'); put(R, 33, 12, 'iiiiiiiiiiiiii'); put(R, 33, 13, 'IIIIIIIIIIIIII'); put(R, 46, 11, 'y'); put(R, 46, 12, 'yy'); put(R, 46, 13, 'yy'); put(R, 46, 14, 'y'); return R; };
+  const idle = f(hammerDown(body()));
+  const raise = f(hammerUp(body()));
+  const slam = f(hammerSlam(body()));
+  const drag = f(armOut(body()));
+  const hurl = f(hammerUp(body('ey', 'GGG')));
+  const stun = f((() => { const R = body('xx', 'ggg'); put(R, 30, 12, 'iii'); put(R, 30, 13, 'iii'); put(R, 31, 14, 'Ii'); put(R, 31, 15, 'Ii'); put(R, 31, 16, 'Ii'); put(R, 31, 17, 'cc'); put(R, 30, 18, 'KKKK'); return R; })());
+  const breath = f((() => { const R = body('rr', 'rrr'); put(R, 18, 6, 'grrrrrrrrrg'); put(R, 18, 7, 'grrrRRRrrrg'); put(R, 30, 5, 'rrRRRRrr'); put(R, 33, 6, 'rrRRrr'); put(R, 30, 7, 'rrrrr'); return hammerDown(R); })());
+  return pack([idle, raise, slam, drag, hurl, stun, breath], 24, 32, 40, 32);
+}
 // The Forgemaster — a goblin engineer strapped into a steam rig: piston arm, boiler pack, goggles. 32×26. Frames: idle, lunge, spray, kick, scalded.
 export function bakeForgemaster() {
   const FP2 = Object.assign({}, KG, { i: '#8a919c', I: '#5a6270', c: '#6a4a3a', C: '#3a2a24', y: '#ffd36b', s: '#e8e0d0' });
