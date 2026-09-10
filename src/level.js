@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -843,10 +843,13 @@ function screePath() {
 
   // ---- 5. The crag wall: ledges up to the plateau, rocks on the way ----
   ent('goat', 266, 18, { face: -1 }); ent('troll', 261, 18, { face: -1 }); wall(270, 18);
-  plat(278, 16, 3); plat(274, 13, 3); plat(279, 10, 3); plat(283, 12, 2); ent('silver', 283, 11);
+  plat(277, 17, 3); plat(279, 10, 2); ent('silver', 280, 9);
   block(285, 363, 9, 27);
+  block(276, 284, 20, 27); // the foot of the wall: a step down from the bank, no pit
+  for (let y = 10; y <= 19; y++) { set(283, y, T.CLIMB); set(284, y, T.CLIMB); } // the crag wall: hold into the rock to cling, jump to kick up it
+  ent('sign', 276, 18, { text: 'THE CRAG WALL. HOLD INTO THE ROCK TO CLING. JUMP TO KICK UP.' });
   ent('rockfall', 281, 2, { every: 2.7 });
-  coins([279, 15], [275, 12], [280, 9], [284, 11]);
+  coins([278, 16], [282, 15], [282, 12]);
   ent('sprig', 290, 8, { face: -1 }); ent('deco', 288, 8, { kind: 'stone' });
   ent('check', 294, 8);
 
@@ -889,7 +892,7 @@ function screePath() {
   const G = grow(RA, RA, 176, 40);
   G.floor(176, 215, 14);
   for (let x = 190; x <= 197; x++) for (let y = 14; y <= 17; y++) G.set(x, y, 0); // the gully
-  G.R.scree.push({ x0: 190, x1: 197, y: 18, dir: -1 }); G.plat(196, 16, 2);
+  G.R.scree.push({ x0: 190, x1: 197, y: 18, dir: -1 }); G.plat(196, 16, 2); for (let y = 14; y <= 17; y++) G.set(198, y, T.CLIMB);
   G.ent('sign', 178, 13, { text: 'THE CAIRN FIELD. THE GULLY PULLS YOU BACK. JUMP THE FAR SIDE.' });
   G.ent('deco', 181, 13, { kind: 'stone', v: 0 }); G.ent('deco', 186, 13, { kind: 'cairn' }); G.ent('deco', 205, 13, { kind: 'stone', v: 2 }); G.ent('deco', 211, 13, { kind: 'cairn' });
   G.ent('rockfall', 193, 5, { every: 2.4 }); G.ent('harpy', 187, 8); G.ent('harpy', 212, 9);
@@ -926,6 +929,8 @@ function hangingVillage() {
   const shelf = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.SHELF); };
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the trunk walls either side
   const tops = { t0: 108, t1: 94, t2: 80, t3: 66, t4: 52, t5: 38, crown: 20 };
+  // the trees themselves: trunks one tier tall behind every bough, stacked so each reads as one tree from roots to crown
+  [108, 94, 80, 66, 52, 38, 20].forEach((top, i) => { for (const x of [16, 46, 76, 98]) ent('deco', x + (i % 2) * 6, top - 1, { kind: 'trunk', v: (x + i) % 3 }); });
 
   // ---- Tier 0. THE ROOTS: goblin shanties among the roots, a hill-folk cottage, the first spider ----
   block(0, W - 1, tops.t0, H - 1);
@@ -1013,7 +1018,7 @@ function hangingVillage() {
   ent('gate', 100, 19);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: true,
     palette: { dress: 'wood', hall: true, haze: 'rgba(200,220,180,0.14)' },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
@@ -1049,6 +1054,6 @@ export const LEVELS = [
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
   { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
-  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the tree-city', build: hangingVillage, needs: 'scree' },
+  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the tree-city', build: hangingVillage, needs: 'kings' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
 ];

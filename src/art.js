@@ -325,8 +325,9 @@ export function bakeDrop() { const [c, g] = canvas(3, 8); line(g, 2, 0, 0, 7, 'r
 
 // ---------- world map ----------
 // An overhead forest: meadows and dark woods, hills, a river with banks, and a dirt path through the nodes.
-export function bakeMap(w, h, nodes, path, seed) {
+export function bakeMap(w, h, nodes, path, seed, style = 'wood') {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  if (style === 'crag') return bakeCragMap(c, g, w, h, nodes, path, rnd);
   rect(g, 0, 0, w, h, '#4f8a3a');
   // meadow patches and dark wood regions
   for (let i = 0; i < 7; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 50, 14 + rnd() * 20, '#5e9a44', '#4f8a3a');
@@ -367,6 +368,28 @@ export function bakeMap(w, h, nodes, path, seed) {
   const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(60,40,20,0)'); vg.addColorStop(1, 'rgba(60,40,20,0.35)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
   // node discs
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,40,20,0.35)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
+  return c;
+}
+// The Crags map: grey fells, snow on the tops, peaks instead of trees, the same path and node discs.
+function bakeCragMap(c, g, w, h, nodes, path, rnd) {
+  rect(g, 0, 0, w, h, '#5e5e6c');
+  for (let i = 0; i < 8; i++) ellipse(g, rnd() * w, 30 + rnd() * (h - 30), 30 + rnd() * 50, 12 + rnd() * 18, '#6a6a78', '#5e5e6c');
+  for (let i = 0; i < 5; i++) ellipse(g, rnd() * w, 30 + rnd() * (h - 30), 26 + rnd() * 40, 10 + rnd() * 16, '#4e4e5a', '#5e5e6c');
+  for (let i = 0; i < w * h / 14; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#68687a' : '#525260');
+  for (let i = 0; i < 60; i++) { const x = (rnd() * w) | 0, y = 20 + ((rnd() * (h - 20)) | 0); px(g, x, y, ['#7a5a8a', '#6a4a7a', '#c9b84a'][(rnd() * 3) | 0]); }
+  for (let y = 0; y < 34; y++) for (let x = 0; x < w; x++) if (rnd() < (34 - y) / 34 * 0.9) px(g, x, y, (x + y) & 1 ? '#dfe8ee' : '#c9d4dc');
+  const peaks = [];
+  for (let i = 0; i < 40; i++) { const x = rnd() * w, y = 30 + rnd() * (h - 30); let near = false; for (const p of path) if (Math.hypot(p[0] - x, p[1] - y) < 22) near = true; for (const nd of nodes) if (Math.hypot(nd.x - x, nd.y - y) < 30) near = true; if (!near) peaks.push([x, y, 10 + rnd() * 16]); }
+  peaks.sort((a, b) => a[1] - b[1]);
+  for (const [x, y, r] of peaks) { fillPoly(g, [[x - r * 0.9, y + 4], [x, y - r * 1.4], [x + r * 0.9, y + 4]], '#4a4a58'); fillPoly(g, [[x - r * 0.8, y + 2], [x, y - r * 1.3], [x + r * 0.8, y + 2]], '#6a6f8a', '#5a5f7a'); fillPoly(g, [[x - r * 0.3, y - r * 0.85], [x, y - r * 1.3], [x + r * 0.3, y - r * 0.85]], '#dfe8ee'); }
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#3a3a44', 8);
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#a09a8c', 5);
+  for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5; for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n); if (rnd() < 0.5) px(g, x + ((rnd() * 3) | 0) - 1, y + ((rnd() * 3) | 0) - 1, '#6a6f8a'); } }
+  for (const nd of nodes) { const ox = nd.x, oy = nd.y;
+    if (nd.id === 'scree') { for (const [dx, dy] of [[-26, 10], [-10, 14], [12, 12], [28, 8]]) { rect(g, ox + dx, oy + dy, 5, 3, '#8a8478'); px(g, ox + dx + 1, oy + dy - 1, '#a8a090'); } for (let i = 0; i < 5; i++) px(g, (ox - 20 + rnd() * 40) | 0, (oy + 6 + rnd() * 12) | 0, '#c9b84a'); }
+    if (nd.kind === 'pass') { fillPoly(g, [[ox - 22, oy + 12], [ox - 12, oy - 8], [ox - 2, oy + 12]], '#4a4a58'); fillPoly(g, [[ox + 2, oy + 12], [ox + 12, oy - 8], [ox + 22, oy + 12]], '#4a4a58'); } }
+  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(20,20,40,0)'); vg.addColorStop(1, 'rgba(20,20,40,0.45)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,20,40,0.35)'); circle(g, nd.x, nd.y, 7, '#3a3a44'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'pass' ? '#dfe8ee' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
 // Soft cloud puffs for level skies and the map, three sizes.
@@ -995,3 +1018,11 @@ export function bakeDeadTree(seed) { const rnd = mulberry(seed); const [c, g] = 
 export function bakeLampIcon() { const [c, g] = canvas(10, 12); rect(g, 4, 0, 2, 2, '#8b8378'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 7, '#3a3444'); rect(g, 3, 4, 4, 5, '#6a5a3a'); px(g, 4, 6, '#ffd36b'); rect(g, 2, 10, 6, 1, '#5f5a52'); return outline(c); }
 // A lit or dark lantern on a tall post for the crown of the tree. 12×36.
 export function bakeCrownLantern(lit) { const [c, g] = canvas(12, 36); rect(g, 5, 8, 2, 28, C.woodD); rect(g, 5, 8, 1, 28, C.wood); rect(g, 2, 34, 8, 2, C.woodD); rect(g, 3, 0, 6, 2, '#5f5a52'); rect(g, 2, 2, 8, 8, lit ? '#ffd36b' : '#3a3444'); rect(g, 3, 3, 6, 6, lit ? '#fff6c8' : '#2a2630'); rect(g, 2, 10, 8, 1, '#5f5a52'); return outline(c); }
+
+// A great trunk for the tree-city: one tier tall (224 px) so a stack of them reads as one tree passing through every bough. 48×224, background.
+export function bakeTrunk(seed) { const rnd = mulberry(seed); const [c, g] = canvas(48, 224); rect(g, 12, 0, 24, 224, '#4c2c17'); rect(g, 12, 0, 4, 224, '#6a4020'); rect(g, 31, 0, 5, 224, '#2e1a0c'); for (let y = 0; y < 224; y += 6) { const w = 2 + ((rnd() * 4) | 0); rect(g, 16 + ((rnd() * 12) | 0), y, w, 1, '#3a2214'); } for (let i = 0; i < 3; i++) { const y = 20 + ((rnd() * 170) | 0); ellipse(g, 18 + ((rnd() * 12) | 0), y, 3, 4, '#2e1a0c', '#3a2214'); } const b1 = 30 + ((rnd() * 60) | 0), b2 = 120 + ((rnd() * 70) | 0); line(g, 14, b1, 0, b1 - 10, '#4c2c17', 3); line(g, 34, b2, 47, b2 - 12, '#4c2c17', 3); ellipse(g, 6, b1 - 14, 8, 6, '#2f5e3a', '#264a2f'); ellipse(g, 42, b2 - 16, 8, 6, '#3f7a48', '#2f5e3a'); return c; }
+
+// Crag rock face with hand-holds: hold into it to cling, jump to kick up it. 16×16, two variants.
+export function bakeClimbFace(v) { const rnd = mulberry(700 + v); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#5a5f6e'); for (let i = 0; i < 14; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, rnd() < 0.5 ? '#6a707c' : '#4a4f5a'); for (const [x, y] of v ? [[2, 3], [9, 8], [4, 12]] : [[8, 2], [2, 8], [10, 12]]) { rect(g, x, y, 5, 3, '#2e3038'); rect(g, x, y, 5, 1, '#1e2026'); rect(g, x, y + 3, 5, 1, '#8a919c'); } rect(g, 0, 0, 1, T, '#7c8797'); rect(g, T - 1, 0, 1, T, '#3a3e48'); return c; }
+// Stone-slab ledges for the Crags in place of the wood's log platforms. 16×16; end = 'L' | 'R' | null.
+export function bakeLedge(seed, end) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T; rect(g, x0, 3, x1 - x0, 6, '#7c8797'); rect(g, x0, 3, x1 - x0, 1, '#a8b0bc'); rect(g, x0, 8, x1 - x0, 1, '#4a4f5a'); rect(g, x0 + 1, 9, x1 - x0 - 2, 2, '#3a3e48'); for (let i = 0; i < 3; i++) px(g, x0 + 1 + ((rnd() * (x1 - x0 - 2)) | 0), 4 + ((rnd() * 4) | 0), rnd() < 0.5 ? '#8a919c' : '#c9b84a'); if (end === 'L') { rect(g, 1, 4, 1, 5, '#a8b0bc'); } if (end === 'R') { rect(g, T - 2, 4, 1, 5, '#4a4f5a'); } return c; }
