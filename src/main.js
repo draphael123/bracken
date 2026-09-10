@@ -38,6 +38,8 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto' };
+const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, mineworks: 1 }; // how far up the slope a level sits
+const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 const DIFF = { easy: { take: 0.6, ehp: 0.8, label: 'EASY' }, normal: { take: 1, ehp: 1, label: 'NORMAL' }, hard: { take: 1.4, ehp: 1.3, label: 'HARD' } };
 const DIFFS = ['easy', 'normal', 'hard'], SCALES = ['auto', 2, 3, 4];
 try { Object.assign(SET, JSON.parse(localStorage.getItem('bracken.settings') || '{}')); } catch {}
@@ -411,7 +413,7 @@ function spawnEnt(e) {
       case 'roller': props.push({ t: 'roller', x: px, y: py, vx: (e.face || 1) * (e.speed || 55), alive: true, rot: 0 }); break;
     }
   }
-  for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; e2.hp = Math.round(e2.hp * DIFF[SET.difficulty].ehp); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
+  const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t); e2.hp = Math.round(e2.hp * DIFF[SET.difficulty].ehp * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
 }
 function spawnEntitiesTail() {
   if (L.strays && straysGot.size >= L.strays && strayLast) props.push({ t: 'relic', x: strayLast.x, y: strayLast.y, kind: 'fleece', got: false, ph: 0 });
@@ -544,11 +546,12 @@ function drawMap() {
   g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text(mapCamY < CRAG_H - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
   const nd = NODES[map.node];
   if (!map.walking) {
-    const cw = 200, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 44;
-    panel(cx0, cy0, cw, 30, '#8fd160');
+    const cw = 224, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 58;
+    panel(cx0, cy0, cw, nd.kind === 'store' ? 30 : 40, '#8fd160');
     text(nd.name, cx0 + cw / 2, cy0 + 5, '#fff6e0', 'center');
     if (nd.kind === 'store') text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + cw / 2, cy0 + 17, '#9aa39a', 'center');
     else { const p = PROG[LEVELS[nd.level].id]; text(p ? fmt(p.best) + '   ' + p.gold + '/' + p.total + (p.cleared ? '   CLEARED' : '') : 'Z  play', cx0 + cw / 2, cy0 + 17, p ? '#dfe8ff' : '#9aa39a', 'center');
+      { const id = LEVELS[nd.level].id, tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p && p.cleared ? 1 : 0], cx0 + cw / 2, cy0 + 29, '#c9d1dc', 'center', 6); const pips = 1 + Math.round(tierOf(id) * 4); for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); } }
       if (p) { let mx = cx0 + 8; if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(mx + 4, cy0 + 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(mx + 3, cy0 + 8, 2, 2); mx += 12; } if (p.allGold) { g.drawImage(PROP.coin[0], mx, cy0 + 5); mx += 12; } if (p.noHit) { g.drawImage(PROP.heart, mx, cy0 + 5); mx += 12; } if (p.relic) { g.drawImage(PROP.relic[p.relic], mx, cy0 + 4); mx += 12; } if (p.quest) { g.drawImage(PROP.questIcon, mx, cy0 + 5); mx += 12; } if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(mx + 1, cy0 + 5, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(mx + 1, cy0 + 11, 7, 2); g.fillStyle = ART.OUT; g.fillRect(mx + 4, cy0 + 6, 1, 6); g.fillRect(mx + 2, cy0 + 8, 5, 1); } } }
   }
   text('ARROWS walk  Z enter  X bestiary  V equip  ESC', VW / 2, VH - 10, '#9aa39a', 'center');
@@ -696,7 +699,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
 const PAUSE_ITEMS = ['Resume', 'Equip', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects volume', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Iron Knight', 'Block', 'Tips', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Screen filter', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Reset this slot', 'Back'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Screen filter', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Reset this slot', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night'];
 let menuKind = 'pause';
 const menuItems = () => menuKind === 'pause' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
@@ -870,7 +873,7 @@ function burst(x, y, n, cols, spd = 70, life = 0.5, grav = 300, size = 2) {
 }
 function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
-function number(x, y, txt, col) { if (!SET.numbers && typeof txt === 'number') return; if (!SET.tips && typeof txt === 'string' && txt.length > 3) return; nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
+function number(x, y, txt, col) { if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */ nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
 function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 function shakeCam(n, k = 0) { if (SET.shake) { shake = Math.max(shake, n); kick += k; } }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
@@ -894,7 +897,7 @@ function damagePlayer(fromX, dmg, { up = false, unblockable = false } = {}) {
     dmg = Math.ceil(dmg / 2); P.hurt = 0.55;
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
-  dmg = Math.max(1, Math.round(dmg * DIFF[SET.difficulty].take));
+  dmg = Math.max(1, Math.round(dmg * DIFF[SET.difficulty].take * (1 + 0.4 * tierOf(curId()))));
   if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
   P.hp -= dmg; P.inv = 1.1; P.hurt = Math.max(P.hurt, 0.35); P.atk = -1; P.plunge = false; P.block = false; impactAt(P.x, P.y - 9, 'red');
   const dir = Math.sign(P.x - fromX) || -P.face;
@@ -964,6 +967,7 @@ function hurtEnemy(e, dmg, fromX, plunge) {
   if (e.t === 'ram' && e.mode === 'crash') dmg *= 2;
   if (e.t === 'heart') dmg = 1; // the heart counts hits, not damage: six of anything
   if (e.t === 'owl' && e.mode === 'crash') dmg *= 2;
+  if (e.t === 'forgemaster' && e.mode === 'scald') dmg *= 2; // the scald is the window, like every other boss's
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
@@ -1779,6 +1783,29 @@ function updateRocks(dt) {
   rocks = rocks.filter(r => !r.dead);
 }
 function shatterRock(r) { burst(r.x, r.y - 2, 8, ['#8a919c', '#5a6270', '#b0b8c4'], 60, 0.5); SFX.crumble ? SFX.crumble() : SFX.stone(); if (Math.abs(r.x - P.x) < 160) shakeCam(2); }
+// Tam, the squire: at the trailhead of every level, before and after it is cleared. Caged in the Stockade (that level keeps the kit quest).
+const TAM_LINES = {
+  wood: [['SIR KNIGHT. I AM TAM. I CARRY YOUR SPARE BLADE AND I WILL KEEP THE TRAIL BEHIND YOU.', 'THE HIVE TOOK THE HONEY AND THE WOODSMAN\'S NERVE. THE QUEEN IS PAST THE BADGER SETT.'],
+         ['THE QUEEN IS DEAD AND THE WOOD HUMS QUIETER. WELL STRUCK.', 'THE MARSH IS NEXT. THEY SAY A KING CROAKS THERE AND HIS COURT SITS ON A DAIS.']],
+  marsh: [['THE FERRYMAN WANTS COIN FOR THE CROSSING. I HAVE NONE. I HAVE YOUR SPARE BLADE.', 'GOBLINS CAME THROUGH LAST NIGHT, BOUND FOR THEIR STOCKADE. I WILL SCOUT AHEAD AND COUNT THEM.'],
+          ['THE FROG KING IS FROG SOUP. I WENT AHEAD TO COUNT GOBLINS.', 'THAT WAS A MISTAKE. COME QUICKLY.']],
+  spore: [['THEY TOOK MY HELM, HORN AND BLADE. YOU TOOK THEM BACK. I OWE YOU A WOOD\'S WORTH.', 'THE SPOREWOOD IS SICK. THE ELDER SAYS SOMETHING BREATHES AT THE BOTTOM OF IT.'],
+          ['THE WOOD BREATHES EASIER. THE ELDER WEPT.', 'THE GOBLIN KING HOLDS COURT PAST THE ROT. THEY SAY HE KEEPS A HOUND THE SIZE OF A CART.']],
+  kings: [['KINGSWOOD. GORM CALLS HIMSELF KING OF ALL OF IT. HIS COURT IS ALL FIRE AND DOGS.', 'IF YOU FALL, I WILL SAY YOU TRIPPED.'],
+          ['GORM IS DONE. THE GOBLINS ARE RUNNING FOR THE HILLS. THE CRAGS, THEY CALL THEM.', 'THE KEEPER SAYS THERE IS A HIGH ROAD, AND A HIGH STORE ON IT.']],
+  scree: [['THE HILL FOLK BAR THEIR DOORS. I DO NOT BLAME THEM. THE RAMS UP HERE HAVE A LORD.', 'THERE IS A SHEPHERD WHO LOST HER EWES. YOU FIND EVERYONE\'S LOST THINGS. IT IS A HABIT.'],
+          ['THE RAM LORD BROKE HIS OWN HORNS ON THE WALL. I SAW IT FROM THE FOLD GATE.', 'THERE IS A TOWN ON THE CLIFF ABOVE. IT HANGS. I AM NOT CLIMBING THAT.']],
+  hanging: [['A TOWN ON A CLIFF. THE REEVE IS AN OWL, AND THE OWL TAKES WHAT IT LIKES.', 'I WILL MIND THE MARKET. THE LAMPLIGHTER NEEDS A HAND.'],
+             ['THE REEVE IS FEATHERS. THE MARKET IS SINGING.', 'THE MINERS SAY THE GOBLINS WENT INTO THE MOUNTAIN. UNDER IT, EVEN.']],
+  mineworks: [['IT IS DARK IN THERE. THE FOREMAN HAS A LAMP. EARN IT.', 'THE GOBLINS BUILT AN ENGINE DOWN THERE. THE FOREMAN CALLS ITS MASTER THE FORGEMASTER.'],
+               ['THE FORGE IS COLD. THE MOUNTAIN GOES HIGHER STILL.', 'WE WILL SEE THE TOP OF IT, YOU AND I.']],
+};
+const TAM_MAP = {
+  wood: ['THE HIVE FIRST. I AM BEHIND YOU.', 'THE MARSH NEXT. A KING CROAKS.'], marsh: ['FERRY: PAY, OR BREAK THE SLUICE.', 'I WENT AHEAD. COME QUICKLY.'],
+  stockade: ['TAM IS INSIDE. FOLLOW THE TRACKS.', 'MY KIT IS BACK. THE SPORES NEXT.'], spore: ['SOMETHING BREATHES DOWN THERE.', 'GORM HOLDS COURT PAST THE ROT.'],
+  kings: ['GORM. ALL FIRE AND DOGS.', 'THEY RAN FOR THE CRAGS. SO DO WE'], scree: ['THE RAMS UP HERE HAVE A LORD.', 'A TOWN HANGS OFF THE CLIFF ABOVE'],
+  hanging: ['THE REEVE IS AN OWL. I AM NOT.', 'THEY WENT UNDER THE MOUNTAIN.'], mineworks: ['DARK IN THERE. EARN THE LAMP.', 'THE FORGE IS COLD. HIGHER STILL.'],
+};
 const NPC_LINES = pr => {
   const n = straysGot.size, need = questOf().n;
   if (pr.kind === 'keeper') return PROG.storeHint ? ['SOMETHING NEW CAME IN.', 'UP AT THE COUNTER AND HAVE A LOOK.'] : ['WELCOME, KNIGHT. UP AT THE COUNTER TO TRADE.', 'GOLD BUYS STEEL. STEEL BUYS TIME.'];
@@ -1788,6 +1815,7 @@ const NPC_LINES = pr => {
   if (pr.kind === 'shepherd') { if (n >= need) return ['BLESS YOU, KNIGHT.', 'MIND THE OLD RAM ON THE TOP.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE.', 'THE OTHERS WENT HIGHER.']; return ['MY THREE EWES STRAYED UP THE HILL.', 'BRING THEM AND THE FLEECE IS YOURS.']; }
   if (pr.kind === 'woodsman') { if (n >= need) return ['SWEET AS SUMMER. MY THANKS, KNIGHT.', 'MIND THE QUEEN. SHE HATES A THIEF.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE POTS.', 'THE SETT, THE RIDGE, THE FALLEN GIANT.']; return ['THE HORNETS CARRIED OFF MY HONEY. THREE POTS.', 'BRING THEM BACK AND I WILL SEE YOU RIGHT.']; }
   if (pr.kind === 'ferryman') { const fm = movers.find(mv => mv.ferry), toll = fm ? fm.toll : 10; const pay = !fm || fm.paid ? ['HOLD ON. THE CURRENT IS QUICK TODAY.'] : PROG.coins >= toll ? [toll + ' GOLD AND I POLE YOU OVER. UP TO PAY.', 'OR BREAK THE SLUICE AND WADE. YOUR FUNERAL.'] : [toll + ' GOLD, KNIGHT. YOU HAVE ' + PROG.coins + '.', 'THE SLUICE WHEEL IS FREE. THE FROGS ARE NOT.']; const q = n >= need ? ['MY TRAPS! THERE IS A GOOD LAD.'] : n > 0 ? ['THAT IS ' + n + ' OF MY THREE TRAPS.'] : ['THE FLOOD TOOK MY EEL TRAPS. THREE OF THEM.', 'ONE IS UNDER THE CHANNEL, I SWEAR IT.']; return pay.concat(q); }
+  if (pr.kind === 'squire' && curId() !== 'stockade') { const cl = !!(PROG[curId()] && PROG[curId()].cleared); const T2 = TAM_LINES[curId()]; if (T2) return cl ? T2[1] : T2[0]; }
   if (pr.kind === 'squire') { if (n >= need) return ['MY KIT! I OWE YOU, SIR KNIGHT.', 'THE CHIEFTAIN SWAPS WEAPONS. WATCH HIS HANDS.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE COFFERS.', 'THE WALL, THE DITCH, THE TUNNEL.']; return ['THEY TOOK MY KIT. HELM, HORN AND BLADE.', 'THREE COFFERS. THE WALL, THE DITCH, THE TUNNEL.']; }
   if (pr.kind === 'elder') { if (n >= need) return ['CLEAN LIGHT. THE WOOD REMEMBERS.', 'SHE HOLDS HER BREATH WHEN SHE PULLS. STRIKE WHEN SHE BREATHES OUT.']; if (n > 0) return ['THAT IS ' + n + ' OF THREE CLEAN CAPS.', 'THE CELLAR, THE CANOPY, THE BOG.']; return ['THE MOTHER IS SICK. HER SPORES ROT THE WOOD.', 'THREE CAPS STILL BURN CLEAN. BRING ME THEIR LIGHT.']; }
   return ['...'];
@@ -3094,7 +3122,8 @@ function render() {
   }
   if (flash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   const talkers = signs.concat(props.filter(pr => pr.t === 'npc').map(pr => { const ls = NPC_LINES(pr); return { x: pr.x, y: pr.y, text: ls[Math.floor(time / 2.6) % ls.length] }; }), props.filter(pr => pr.t === 'cage' && pr.kind === 'squire' && !pr.open).map(pr => ({ x: pr.x, y: pr.y, text: 'KNIGHT! BREAK THE BARS!' })));
-  for (const s of talkers) if (state === 'play' && Math.abs(s.x - P.x) < 28 && Math.abs(s.y - P.y) < 48) {
+  const nearest = state === 'play' ? talkers.filter(s => Math.abs(s.x - P.x) < 28 && Math.abs(s.y - P.y) < 48).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
+  for (const s of (nearest ? [nearest] : [])) {
     const lines = wrap(s.text, VW - 28); g.font = '8px "Press Start 2P", monospace'; let w = 0; for (const ln of lines) w = Math.max(w, g.measureText(ln).width); w += 12; const h = 8 + lines.length * 10; const x = Math.max(4, Math.min(VW - w - 4, Math.round(s.x - cx - w / 2)));
     g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(x, 30, w, h); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, 30.5, w - 1, h - 1);
     lines.forEach((ln, i) => text(ln, x + 6, 34 + i * 10, '#fff6e0'));
@@ -3121,6 +3150,7 @@ function render() {
     for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (VW - 42 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }
     g.drawImage(PROP.coin[0], VW - 46, 5); text((L && L.shop ? String(PROG.coins || 0) : got + '/' + total), VW - 36, 7, '#ffd34a');
     for (let i = 0; i < silvers.length; i++) { g.fillStyle = silvers[i].got ? '#dfe8ff' : 'rgba(223,232,255,0.28)'; g.beginPath(); g.arc(VW - 44 + i * 7, 22, 2.5, 0, 7); g.fill(); }
+    { const Q = questOf(); if (Q.item !== 'none') { const n = straysGot.size, done = n >= Q.n; text(Q.name + ' ' + n + '/' + Q.n, VW - 6, 28, done ? '#ffd36b' : '#c9b27c', 'right', 6); } }
     if (P.hp > 0 && P.hp <= 30 && state === 'play') { const k = 0.5 + 0.5 * Math.sin(time * (P.hp <= 15 ? 11 : 7)); const vg = g.createRadialGradient(VW / 2, VH / 2, 70, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(180,20,20,0)'); vg.addColorStop(1, 'rgba(180,20,20,' + (0.18 + 0.22 * k) + ')'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (state === 'play' && SET.timer && !(L && L.shop)) { g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(VW / 2 - 30, 2, 60, 14, 4); g.fill(); text(fmt(levelTime), VW / 2, 6, '#dfe8ff', 'center'); }
     drawEscapeHUD();
