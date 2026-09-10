@@ -2,7 +2,7 @@ Music (CC0 / public domain, from OpenGameArt.org):
 - theme.ogg = "Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg" from "4 Chiptunes (Adventure)" by Juhani Junkala (SubspaceAudio)
   https://opengameart.org/content/4-chiptunes-adventure
 
-- theme3.ogg = "Level 3", boss2.ogg = "Level 2", ending.ogg = "Ending" from "Retro Game Music Pack" (5 Action Chiptunes) by Juhani Junkala (CC0)
+- theme3.mp3 = "Level 3", boss2.ogg = "Level 2", ending.ogg = "Ending" from "Retro Game Music Pack" (5 Action Chiptunes) by Juhani Junkala (CC0)
   https://opengameart.org/content/5-chiptunes-action
 - boss.ogg = "3. Boss Fight" and select.ogg = "4. Stage Select" from the same pack (CC0)
 
@@ -14,4 +14,4 @@ Anything not in the manifest is synthesised in src/audio.js.
 - theme2.ogg = "2. Stage 2" from the same Junkala pack (CC0) - the Marsh Wood theme
 - ambience_forest.mp3 = "Forest Ambience" by TinyWorlds (CC0) https://opengameart.org/content/forest-ambience
 - knight effort/laugh = goblin grunts and chatter from the Goblins Sound Pack, pitched
-- theme4.ogg = "Level 1" from "Retro Game Music Pack" (5 Action Chiptunes) by Juhani Junkala (CC0) - The Scree Path theme. theme3/theme4 are lowpassed at 8.5 kHz to tame the top end.
+- theme4.mp3 = "Level 1" from "Retro Game Music Pack" (5 Action Chiptunes) by Juhani Junkala (CC0) - The Scree Path theme. theme3/theme4 are lowpassed at 8.5 kHz to tame the top end.

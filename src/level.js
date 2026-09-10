@@ -766,6 +766,25 @@ function screePath() {
 ;
 }
 
+// THE STORE: a room you walk into. The keeper is behind the counter; UP at the counter trades, UP at the door leaves.
+function theShop() {
+  const L = painter(40, 28);
+  const { block, floor, ent, set } = L;
+  floor(0, 39, 20); block(0, 1, 0, 27); block(38, 39, 0, 27); block(0, 39, 0, 12);
+  ent('sign', 7, 19, { text: 'THE STORE. UP AT THE COUNTER TO TRADE. UP AT THE DOOR TO LEAVE.' });
+  ent('exit', 3, 19); ent('torch', 10, 19); ent('torch', 31, 19);
+  ent('deco', 14, 19, { kind: 'wares', v: 0 }); ent('deco', 34, 19, { kind: 'wares', v: 1 });
+  ent('deco', 23, 19, { kind: 'counter' }); ent('npc', 24, 19, { kind: 'keeper' });
+  for (let x = 12; x <= 30; x++) ent('carpet', x, 19);
+  ent('deco', 29, 19, { kind: 'barrels' }); ent('deco', 18, 19, { kind: 'lanternPost' });
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
+    duskStart: -1, duskLen: 1, music: 'select', night: true, shop: true, interiors: [[2, 37, 13, 19]],
+    palette: { hall: true, sky: 'night', dress: 'none', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', grass: '#6a5a3a', grassL: '#8a7a4a', grassD: '#3a2a1a' },
+    weather: [], ambient: [],
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
@@ -773,4 +792,5 @@ export const LEVELS = [
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
   { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
+  { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
 ];

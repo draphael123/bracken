@@ -513,3 +513,13 @@ export function bakeSheep() {
   const walk = s(['..ffffffff..', '.ffffffffff.', '.ffffffffffz', '..ffffffff.z', '.z..z...z.ze', '.z..z...z.z.']);
   return pack([graze, look, walk], 7, 7, 10, 6);
 }
+
+// The keeper — a badger in an apron behind the counter. 12×10. Frames: idle, talk.
+export function bakeKeeper() {
+  const KP = Object.assign({}, EP, { b: '#3a3448', B: '#1b1626', f: '#e8e0d0', a: '#c9b27c', A: '#8a5a32' });
+  const k = rows => outline(fromGrid(rows, KP, 1), OUT);
+  const head = ['...bbbbbb...', '..bfbbbbfb..', '..bfbeebfb..', '..bbffffbb..', '...bbBBbb...'];
+  const talk = ['...bbbbbb...', '..bfbbbbfb..', '..bfbeebfb..', '..bbffffbb..', '...bBBBBb...'];
+  const body = ['..aaaaaaaa..', '.aaAaaaaAaa.', '.aaaaaaaaaa.', '..aaaaaaaa..', '..bb....bb..'];
+  return pack([k([...head, ...body]), k([...talk, ...body])], 7, 11, 10, 10);
+}

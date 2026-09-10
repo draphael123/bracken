@@ -913,3 +913,39 @@ export function bakeFence(seed) { const rnd = mulberry(seed); const [c, g] = can
 export function bakeCart(seed) { const rnd = mulberry(seed); const [c, g] = canvas(24, 16); rect(g, 2, 4, 18, 7, C.wood); rect(g, 2, 4, 18, 1, C.woodL); rect(g, 19, 8, 5, 1, C.woodD); for (let i = 0; i < 5; i++) ellipse(g, 5 + i * 3, 3 - ((rnd() * 2) | 0), 2, 2, rnd() < 0.5 ? '#c9b27c' : '#8a5a32'); circle(g, 7, 12, 3, '#3a2618', '#5c3a1d'); circle(g, 16, 12, 3, '#3a2618', '#5c3a1d'); px(g, 7, 12, C.woodL); px(g, 16, 12, C.woodL); return outline(c, OUT); }
 // A stone well with a roof, 20×24.
 export function bakeWell() { const [c, g] = canvas(20, 24); rect(g, 3, 14, 14, 10, '#6a707c'); for (let y = 14; y < 24; y += 3) for (let x = 3; x < 17; x += 5) rect(g, x + ((y / 3) % 2 ? 2 : 0), y, 4, 2, '#7c8797'); rect(g, 5, 16, 10, 3, '#1b1626'); rect(g, 2, 4, 2, 12, C.wood); rect(g, 16, 4, 2, 12, C.wood); fillPoly(g, [[0, 6], [10, 0], [20, 6]], C.woodD); fillPoly(g, [[2, 6], [10, 2], [18, 6]], C.wood); rect(g, 9, 6, 2, 8, '#5a6270'); rect(g, 8, 10, 4, 3, '#8a5a32'); return outline(c, OUT); }
+
+// ---------- the store as a room, and more scenery ----------
+// The keeper's counter: a plank top on a panelled front, coins and a ledger on it. 48×18.
+export function bakeCounter() { const [c, g] = canvas(48, 18); rect(g, 2, 6, 44, 12, C.wood); rect(g, 2, 6, 44, 1, C.woodL); for (let x = 6; x < 46; x += 8) rect(g, x, 9, 1, 8, C.woodD); rect(g, 0, 4, 48, 3, C.woodL); rect(g, 0, 6, 48, 1, C.woodD); rect(g, 8, 1, 10, 3, '#e8dcc0'); rect(g, 8, 1, 10, 1, '#c9b27c'); for (const x of [30, 34, 38]) { rect(g, x, 2, 3, 2, '#e0b040'); px(g, x, 2, '#fff6c8'); } return outline(c, OUT); }
+// Shelves of wares: bottles, a helm, a shield, sacks. 32×30, two arrangements.
+export function bakeWares(v) { const [c, g] = canvas(32, 30); rect(g, 0, 0, 32, 30, '#3a2618'); for (const y of [8, 18, 28]) { rect(g, 0, y, 32, 2, C.wood); rect(g, 0, y, 32, 1, C.woodL); }
+  if (v === 0) { rect(g, 3, 3, 3, 5, '#4aa0b0'); rect(g, 8, 2, 3, 6, '#c9463d'); rect(g, 13, 4, 3, 4, '#8fd160'); rect(g, 20, 1, 8, 7, '#c9d1dc'); rect(g, 21, 4, 6, 2, '#1b1626'); rect(g, 2, 12, 6, 6, '#c9b27c'); rect(g, 12, 11, 5, 7, '#8a5a32'); ellipse(g, 24, 14, 5, 4, '#c9463d', '#8f2f28'); px(g, 24, 13, '#e0b040'); rect(g, 4, 22, 8, 6, '#b8a888'); rect(g, 18, 21, 4, 7, '#7c8797'); rect(g, 25, 23, 5, 5, '#e0b040'); }
+  else { rect(g, 2, 2, 8, 6, '#8a5a32'); rect(g, 14, 1, 3, 7, '#e0b040'); rect(g, 20, 3, 4, 5, '#9a5aa8'); rect(g, 27, 2, 3, 6, '#4aa0b0'); rect(g, 3, 11, 10, 7, '#5a6270'); rect(g, 4, 12, 8, 1, '#9aa3b0'); rect(g, 18, 12, 5, 6, '#c9b27c'); rect(g, 26, 10, 4, 8, '#3f6e2c'); rect(g, 2, 22, 5, 6, '#c9463d'); rect(g, 10, 21, 8, 7, '#b8a888'); rect(g, 22, 23, 8, 5, '#8a5a32'); }
+  return outline(c, OUT); }
+// The shop door, 20×30: a heavy plank door with a lit fanlight.
+export function bakeShopDoor() { const [c, g] = canvas(20, 30); rect(g, 0, 0, 20, 30, '#3a2618'); rect(g, 2, 6, 16, 24, C.wood); for (let y = 8; y < 30; y += 5) rect(g, 2, y, 16, 1, C.woodD); rect(g, 9, 6, 2, 24, C.woodD); ellipse(g, 10, 4, 7, 3, '#ffd36b', '#b8842a'); px(g, 14, 18, '#e0b040'); return outline(c, OUT); }
+// A lantern on a post, lit. 8×28.
+export function bakeLanternPost() { const [c, g] = canvas(8, 28); rect(g, 3, 6, 2, 22, C.wood); rect(g, 1, 4, 6, 3, C.woodD); rect(g, 2, 7, 4, 6, '#ffd36b'); rect(g, 3, 8, 2, 3, '#fff6c8'); rect(g, 1, 13, 6, 1, C.woodD); rect(g, 3, 0, 2, 4, C.woodD); return outline(c, OUT); }
+// A straw skep beehive on a stand. 12×14.
+export function bakeBeehive() { const [c, g] = canvas(12, 14); rect(g, 1, 12, 10, 2, C.woodD); ellipse(g, 6, 7, 5.5, 6, '#e0b040', '#b8842a'); for (let y = 3; y < 12; y += 2) rect(g, 2, y, 8, 1, '#b8842a'); rect(g, 5, 9, 2, 2, '#3a2618'); px(g, 9, 2, '#1b1626'); px(g, 2, 5, '#1b1626'); return outline(c, OUT); }
+// A birdhouse on a pole with a bird on the perch. 10×22.
+export function bakeBirdhouse() { const [c, g] = canvas(10, 22); rect(g, 4, 10, 2, 12, C.wood); fillPoly(g, [[0, 4], [5, 0], [10, 4]], '#8f2f28'); rect(g, 1, 4, 8, 7, C.wood); rect(g, 1, 4, 8, 1, C.woodL); circle(g, 5, 7, 1.5, '#1b1626'); rect(g, 3, 10, 4, 1, C.woodD); px(g, 8, 9, '#4aa0b0'); px(g, 9, 9, '#4aa0b0'); px(g, 8, 8, '#4aa0b0'); return outline(c, OUT); }
+// A wicker fish trap on the bank. 16×10.
+export function bakeFishTrap(seed) { const rnd = mulberry(seed); const [c, g] = canvas(16, 10); ellipse(g, 8, 6, 7, 3.5, '#8a5a32', '#5c3a1d'); for (let x = 2; x < 14; x += 3) rect(g, x, 3, 1, 6, '#5c3a1d'); for (let y = 4; y < 9; y += 2) rect(g, 1, y, 14, 1, '#a86a4a'); rect(g, 14, 4, 2, 4, '#3a2618'); if (rnd() < 0.5) px(g, 6, 5, '#c9d1dc'); return outline(c, OUT); }
+// A rack of goblin spears. 18×18.
+export function bakeSpearRack() { const [c, g] = canvas(18, 18); rect(g, 1, 14, 16, 2, C.woodD); rect(g, 1, 8, 16, 1, C.wood); for (let i = 0; i < 4; i++) { const x = 3 + i * 4; rect(g, x, 3, 1, 13, '#8a5a32'); rect(g, x - 1, 0, 3, 4, '#c9d1dc'); px(g, x, 0, '#fff6e0'); } return outline(c, OUT); }
+// Three barrels stacked. 26×20.
+export function bakeBarrelStack() { const [c, g] = canvas(26, 20); const b = (x, y) => { rect(g, x, y, 10, 10, C.wood); rect(g, x, y + 2, 10, 1, '#5a6270'); rect(g, x, y + 7, 10, 1, '#5a6270'); rect(g, x + 4, y, 1, 10, C.woodD); rect(g, x, y, 1, 10, C.woodL); }; b(2, 10); b(14, 10); b(8, 0); return outline(c, OUT); }
+// Scattered bones. 16×6.
+export function bakeBones(seed) { const rnd = mulberry(seed); const [c, g] = canvas(16, 6); rect(g, 1, 3, 8, 1, '#e8dcc0'); px(g, 0, 2, '#e8dcc0'); px(g, 9, 4, '#e8dcc0'); rect(g, 10, 1, 5, 1, '#c9b27c'); px(g, 15, 0, '#c9b27c'); circle(g, 12, 4, 1.5, '#e8dcc0'); if (rnd() < 0.5) px(g, 4, 5, '#c9b27c'); return outline(c, OUT); }
+// Charm icons for the store: lucky, iron, feather, heart, swift.
+export function bakeCharms() {
+  const mk = f => { const [c, g] = canvas(10, 12); f(g); return outline(c, OUT); };
+  return {
+    lucky: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); circle(g, 5, 7, 4, '#ffd34a', '#b8842a'); px(g, 3, 5, '#fff6c8'); rect(g, 4, 6, 2, 3, '#b8842a'); }),
+    iron: mk(g => { rect(g, 2, 1, 6, 9, '#7c8797'); rect(g, 2, 1, 6, 1, '#c9d1dc'); rect(g, 2, 1, 1, 9, '#c9d1dc'); rect(g, 4, 4, 2, 4, '#3a3448'); }),
+    feather: mk(g => { fillPoly(g, [[8, 0], [2, 6], [1, 11], [6, 6]], '#c9d1dc'); fillPoly(g, [[8, 0], [4, 5], [3, 9]], '#e8ecf4'); rect(g, 1, 10, 2, 2, '#7c8797'); }),
+    heart: mk(g => { rect(g, 1, 3, 3, 3, '#e04848'); rect(g, 6, 3, 3, 3, '#e04848'); rect(g, 1, 5, 8, 3, '#e04848'); rect(g, 2, 8, 6, 2, '#e04848'); rect(g, 4, 10, 2, 1, '#e04848'); px(g, 2, 4, '#ff9a9a'); }),
+    swift: mk(g => { rect(g, 1, 2, 7, 2, '#8fd160'); rect(g, 3, 5, 6, 2, '#8fd160'); rect(g, 1, 8, 8, 2, '#8fd160'); px(g, 8, 2, '#dfffa0'); px(g, 9, 8, '#dfffa0'); }),
+  };
+}

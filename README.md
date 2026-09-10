@@ -277,6 +277,18 @@ the level slides right to make room; nothing after it changed):
   toward its wall (jump the far ledge), rocks off the cliff, a goat pen, harpies on the wind.
 Signs wrap to two lines now, so every one can be read.
 
+
+## The store is a room now
+
+The store node on the map walks you into the keeper's shop: a lamplit room with shelves of wares, a
+counter, and the keeper (a badger in an apron) behind it. Press UP at the counter to trade and UP at
+the door to leave. The trade screen has five tabs: SKINS, SWORDS, UPGRADES (Heart of Oak, Second Wind,
+KEEN EDGE +3 sword damage, RAZOR EDGE +3 more once Sporewood is cleared), SKILLS, and CHARMS. Charms are
+worn one at a time and show beside the relic on the HUD: LUCKY (gold drifts to you), IRON (a fifth
+less damage taken), FEATHER (a little more jump), HEART (every kill heals 5), SWIFT (a little more run).
+More scenery everywhere: beehives, birdhouses and lantern posts in the woods, fish traps on the marsh
+banks, spear racks, barrel stacks and bones in the camp, carts and fences on the crags.
+
 ## Skills
 
 The store's SKILLS tab opens once the Stockade is cleared (the results card and the map point you
