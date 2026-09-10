@@ -707,17 +707,17 @@ export function bakePyro(skin = {}) {
     jump: [knightFrame({ legs: 'jump', dy: -1, staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, staff: [sh[0] + 2, sh[1] + 8, sh[0] + 5, sh[1] - 7], plume: 2 })],
     land: knightFrame({ legs: 'land', dy: 2, staff: held(2), plume: 0 }),
-    atk: [
-      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], staff: [sh[0] - 6, sh[1] + 2, sh[0] - 1, sh[1] - 10], plume: 1 }),
-      knightFrame({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], staff: [sh[0] - 2, sh[1] + 2, sh[0] + 13, sh[1] + 1], plume: 2 }),
-      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], staff: [sh[0] - 1, sh[1] + 1, sh[0] + 11, sh[1] + 8], plume: 2 }),
-      knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], staff: [sh[0] - 1, sh[1], sh[0] + 6, sh[1] + 11], plume: 0 }),
+    atk: [ // the thrust: staff drawn back, driven straight out, pulled home. The flame does the rest.
+      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 1], staff: [sh[0] + 3, sh[1] + 2, sh[0] - 7, sh[1] + 3], plume: 1 }),
+      knightFrame({ dx: -3, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], staff: [sh[0] - 2, sh[1] + 2, sh[0] + 13, sh[1] + 1], plume: 2 }),
+      knightFrame({ dx: -3, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], staff: [sh[0] - 1, sh[1] + 1, sh[0] + 14, sh[1] + 1], plume: 2 }),
+      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], staff: [sh[0] + 1, sh[1] + 4, sh[0] + 8, sh[1] - 2], plume: 0 }),
       knightFrame({ legs: 'stand', staff: held(), plume: 0 }),
     ],
     plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], staff: [sh[0] - 1, sh[1] - 2, sh[0] - 1, sh[1] + 17], plume: 1 }),
     hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', staff: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
     crouch: knightFrame({ dy: 3, legs: 'crouch', staff: held(3) }),
-    block: [knightFrame({ legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], staff: [sh[0] + 2, sh[1] + 9, sh[0] + 7, sh[1] - 8] }), knightFrame({ legs: 'wide', dy: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], staff: [sh[0] + 2, sh[1] + 9, sh[0] + 7, sh[1] - 9] })],
+    block: [knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], staff: [sh[0] - 4, sh[1] + 4, sh[0] + 9, sh[1] + 2] }), knightFrame({ dx: -1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], staff: [sh[0] - 4, sh[1] + 4, sh[0] + 9, sh[1] + 1] })], // the jet stance: staff levelled in both hands
   };
   const tuck = knightFrame({ dy: 4, legs: 'crouch', staff: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 4] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
