@@ -159,16 +159,17 @@ export const ambient = {
     if (!ac || kind === ambKind) return;
     ambKind = kind; stopAmb();
     if (!kind) { ambGain.gain.setTargetAtTime(0, ac.currentTime, 0.5); return; }
-    const start = () => ambGain.gain.setTargetAtTime(kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : 0.14, ac.currentTime, 0.8);
+    const start = () => ambGain.gain.setTargetAtTime(kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : 0.14, ac.currentTime, 0.8);
     if (kind === 'forest') {
       const go = () => { if (ambKind !== 'forest') return; const s = ac.createBufferSource(); s.buffer = trackBuf.ambForest; s.loop = true; s.connect(ambGain); s.start(); ambNodes.push(s); start(); };
       if (trackBuf.ambForest) go(); else { trackPending.ambForest || fetch(TRACKS.ambForest).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf.ambForest = b; go(); }).catch(() => {}); }
       return;
     }
     const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
-    const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = kind === 'water' ? 900 : kind === 'rain' ? 1400 : 140; f.Q.value = kind === 'hive' ? 4 : kind === 'rain' ? 0.4 : 0.6;
+    const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = kind === 'water' ? 900 : kind === 'rain' ? 1400 : kind === 'wind' ? 420 : 140; f.Q.value = kind === 'hive' ? 4 : kind === 'rain' ? 0.4 : 0.6;
     const g = ac.createGain(); g.gain.value = kind === 'hive' ? 0.5 : 1;
     src.connect(f); f.connect(g); g.connect(ambGain); src.start(); ambNodes.push(src);
+    if (kind === 'wind') { const lfo = ac.createOscillator(); lfo.frequency.value = 0.16; const lg = ac.createGain(); lg.gain.value = 0.45; lfo.connect(lg); lg.connect(g.gain); lfo.start(); ambNodes.push(lfo); const lfo2 = ac.createOscillator(); lfo2.frequency.value = 0.07; const lg2 = ac.createGain(); lg2.gain.value = 220; lfo2.connect(lg2); lg2.connect(f.frequency); lfo2.start(); ambNodes.push(lfo2); }
     if (kind === 'water') { const lfo = ac.createOscillator(); lfo.frequency.value = 0.3; const lg = ac.createGain(); lg.gain.value = 300; lfo.connect(lg); lg.connect(f.frequency); lfo.start(); ambNodes.push(lfo); }
     if (kind === 'hive') { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 55; const og = ac.createGain(); og.gain.value = 0.12; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220; o.connect(lp); lp.connect(og); og.connect(ambGain); o.start(); ambNodes.push(o); const o2 = ac.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = 82.5; o2.connect(lp); o2.start(); ambNodes.push(o2); }
     start();
@@ -184,6 +185,10 @@ Object.assign(SFX, {
   puff() { noise(0.3, 0.3, 900, 0.4); tone('triangle', 320, 70, 0.22, 0.12); },
   chitter() { for (let i = 0; i < 4; i++) tone('square', 1700 + i * 200, 2300, 0.03, 0.05, i * 0.035); },
   hiss() { noise(0.22, 0.22, 3200, 0.6); },
+  bleat() { tone('sawtooth', 520, 470, 0.14, 0.1); tone('sawtooth', 560, 500, 0.12, 0.08, 0.16); tone('square', 540, 480, 0.1, 0.05, 0.3); },
+  goatCry() { tone('sawtooth', 380, 300, 0.2, 0.12); noise(0.06, 0.2, 1200, 1, 0.02); tone('sawtooth', 400, 320, 0.14, 0.08, 0.22); },
+  screech() { tone('sawtooth', 2200, 900, 0.22, 0.12); noise(0.1, 0.18, 2600, 1.3, 0.03); },
+  bellow() { file('roar', 0.6, 0.7) || (tone('sawtooth', 110, 60, 0.4, 0.3), noise(0.2, 0.4, 300, 0.6)); },
   snort() { noise(0.14, 0.3, 420, 0.6); tone('sawtooth', 140, 70, 0.16, 0.16); },
   clatter() { tone('square', 1100, 320, 0.06, 0.1); noise(0.06, 0.2, 2600, 1.1); tone('square', 800, 260, 0.05, 0.08, 0.05); },
   ribbit() { file('croak', 0.45, 1.5) || (tone('sawtooth', 200, 300, 0.09, 0.14), tone('sawtooth', 280, 170, 0.1, 0.12, 0.09)); },
@@ -205,4 +210,4 @@ Object.assign(SFX, {
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['theme', 'theme2', 'theme3', 'boss', 'boss2', 'ending', 'select', 'theme4'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];

@@ -360,6 +360,7 @@ export function bakeMap(w, h, nodes, path, seed) {
     if (nd.id === 'stockade') { for (let i = 0; i < 7; i++) { const x = ox - 22 + i * 7; rect(g, x, oy + 8, 2, 7, '#5c3a1d'); px(g, x, oy + 7, '#8a5a32'); } fillPoly(g, [[ox + 18, oy + 14], [ox + 26, oy + 4], [ox + 34, oy + 14]], '#6b4a2a'); fillPoly(g, [[ox + 26, oy + 4], [ox + 34, oy + 14], [ox + 26, oy + 14]], '#3d2c1a'); px(g, ox - 30, oy + 10, '#ff9a5c'); px(g, ox - 31, oy + 9, '#ffd36b'); }
     if (nd.id === 'spore') { for (const [dx, dy, r, col] of [[-26, 12, 5, '#c9463d'], [-16, 16, 3, '#9a5aa8'], [24, 10, 6, '#c9463d'], [34, 16, 3, '#4aa0b0'], [8, 18, 3, '#9a5aa8']]) { rect(g, ox + dx - 1, oy + dy, 2, 5, '#e8e0d0'); ellipse(g, ox + dx, oy + dy, r, r * 0.6, col, '#4a2a5a'); px(g, ox + dx - 2, oy + dy - 1, '#fff6e0'); } }
     if (nd.id === 'kings') { for (let i = 0; i < 6; i++) { const x = ox - 34 + rnd() * 68, y = oy + 6 + rnd() * 16, r = 5 + rnd() * 4; circle(g, x, y, r, ['#a83a2a', '#d9782a', '#e0b040'][(rnd() * 3) | 0], '#7a2a1a'); px(g, (x - r * 0.4) | 0, (y - r * 0.5) | 0, '#f0a040'); } rect(g, ox - 3, oy - 17, 7, 4, '#e0b040'); for (const x of [-3, 0, 3]) px(g, ox + x, oy - 18, '#e0b040'); px(g, ox, oy - 15, '#c9463d'); }
+    if (nd.id === 'scree') { for (const [dx, dy, w, h] of [[-30, 8, 22, 26], [-8, 4, 26, 34], [16, 10, 20, 22], [34, 6, 18, 28]]) { fillPoly(g, [[ox + dx - w / 2, oy + dy + 10], [ox + dx, oy + dy - h + 10], [ox + dx + w / 2, oy + dy + 10]], '#6a6f8a'); fillPoly(g, [[ox + dx - w / 2, oy + dy + 10], [ox + dx, oy + dy - h + 10], [ox + dx - w * 0.1, oy + dy + 10]], '#7a7f9a'); fillPoly(g, [[ox + dx - w * 0.18, oy + dy - h * 0.55 + 10], [ox + dx, oy + dy - h + 10], [ox + dx + w * 0.18, oy + dy - h * 0.55 + 10]], '#e8ecf4'); } for (let i = 0; i < 8; i++) px(g, (ox - 30 + rnd() * 60) | 0, (oy + 12 + rnd() * 8) | 0, '#a07ab8'); }
     if (nd.id === 'wood') { for (let i = 0; i < 6; i++) px(g, (ox - 20 + rnd() * 40) | 0, (oy + 10 + rnd() * 10) | 0, ['#f4d35e', '#e8788a', '#fbf6ea'][(rnd() * 3) | 0]); }
   }
   // a parchment vignette so the edges read as the edge of the map
@@ -829,3 +830,76 @@ export function bakeDoor(shut) {
 export function bakeCarpet() { const [c, g] = canvas(T, 6); rect(g, 0, 0, T, 6, '#8f2f28'); rect(g, 0, 0, T, 1, '#c9463d'); rect(g, 0, 5, T, 1, '#5a1a1a'); for (let x = 2; x < T; x += 5) px(g, x, 3, '#e0b040'); return c; }
 // Rust-dawn sky.
 export function bakeSkyAutumn(h) { const [c, g] = canvas(1, h); for (let y = 0; y < h; y++) { const t = y / (h - 1), q = Math.round(t * 8) / 8; const r = 70 + q * 170, gg = 40 + q * 120, b = 90 + q * 40; px(g, 0, y, 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')'); } return c; }
+
+// ---------- The Crags ----------
+// Dusk over the hills: violet up top, rose, then a gold band at the horizon.
+export function bakeSkyCrag(h) { const [c, g] = canvas(1, h); for (let y = 0; y < h; y++) { const t = y / (h - 1), q = Math.round(t * 9) / 9; const r = 60 + q * 190, gg = 40 + q * 120, b = 110 + q * 20 - Math.max(0, q - 0.7) * 150; px(g, 0, y, 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (Math.max(30, b) | 0) + ')'); } return c; }
+// Far ridge: blue-grey peaks with snow on the tops. Tiles horizontally.
+export function bakeFarCrags(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const ph = [rnd() * 6, rnd() * 6, rnd() * 6];
+  const yAt = x => { const u = x / w * Math.PI * 2; return Math.round(30 + 14 * Math.abs(Math.sin(u * 3 + ph[0])) + 8 * Math.abs(Math.sin(u * 7 + ph[1])) + 3 * Math.sin(u * 17 + ph[2])); };
+  for (let x = 0; x < w; x++) { const y = yAt(x); rect(g, x, y, 1, h - y, '#6a6f8a'); if (y < 40) rect(g, x, y, 1, Math.min(4, 40 - y), '#e8ecf4'); if ((x % 5) < 2) rect(g, x, y + 6, 1, h, '#5e6380'); }
+  for (let x = 0; x < w; x += 3) { const y = yAt(x); if (rnd() < 0.3) px(g, x, y + 8 + ((rnd() * 20) | 0), '#7a7f9a'); }
+  return c;
+}
+// Mid ridge: heather-purple shoulder of the hill with scree runs and a wind-bent tree or two.
+export function bakeMidCrags(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const ph = [rnd() * 6, rnd() * 6];
+  const yAt = x => { const u = x / w * Math.PI * 2; return Math.round(44 + 18 * Math.sin(u * 2 + ph[0]) + 8 * Math.sin(u * 5 + ph[1])); };
+  for (let x = 0; x < w; x++) { const y = yAt(x); rect(g, x, y, 1, h - y, '#5a4a6a'); rect(g, x, y, 1, 3, '#7a5a8a'); if ((x % 9) < 3) rect(g, x, y + 10, 1, h, '#4e4060'); }
+  for (let i = 0; i < w / 6; i++) { const x = (rnd() * w) | 0, y = yAt(x) + 4 + ((rnd() * 30) | 0); px(g, x, y, rnd() < 0.5 ? '#8a6aa0' : '#6a7a8a'); }
+  for (let i = 0; i < w / 60; i++) { const x = (rnd() * w) | 0, y = yAt(x); rect(g, x, y - 10, 2, 12, '#3a2e3a'); for (let k = 0; k < 4; k++) rect(g, x + 2 + k * 2, y - 8 - k, 3, 1, '#3a2e3a'); }
+  return c;
+}
+// Near layer: rocky outcrops, boulders, gorse and heather, the odd rowan. Content sits in the bottom 180px.
+export function bakeNearCrag(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const base = h - 120;
+  for (let i = 0; i < w / 90; i++) { const x = rnd() * w, wd = 40 + rnd() * 50, ht = 30 + rnd() * 60; for (const dx of [-w, 0, w]) { fillPoly(g, [[x + dx, h], [x + dx + wd * 0.2, base + 120 - ht], [x + dx + wd * 0.55, base + 110 - ht], [x + dx + wd, h]], '#4a4458'); fillPoly(g, [[x + dx + wd * 0.2, base + 120 - ht], [x + dx + wd * 0.55, base + 110 - ht], [x + dx + wd * 0.5, base + 120 - ht + 8], [x + dx + wd * 0.25, base + 128 - ht]], '#5e5870'); for (let k = 0; k < 8; k++) px(g, Math.round(x + dx + wd * (0.2 + rnd() * 0.6)), Math.round(h - rnd() * ht * 0.8), '#3a3448'); } }
+  for (let i = 0; i < w / 40; i++) { const x = rnd() * w, y = h - 8 - rnd() * 30, r = 4 + rnd() * 6; for (const dx of [-w, 0, w]) { ellipse(g, x + dx, y, r, r * 0.6, '#6a6f7a', '#4a4f5a'); ellipse(g, x + dx - r * 0.3, y - r * 0.2, r * 0.4, r * 0.25, '#8a8f9a'); } }
+  for (let i = 0; i < w / 18; i++) { const x = rnd() * w, y = h - 4 - rnd() * 40; const heather = rnd() < 0.6; for (const dx of [-w, 0, w]) { ellipse(g, x + dx, y, 6 + rnd() * 5, 3 + rnd() * 2, heather ? '#6a4a7a' : '#4a6a3a', heather ? '#4a3a5a' : '#3a4a2a'); for (let k = 0; k < 4; k++) px(g, Math.round(x + dx + (rnd() - 0.5) * 8), Math.round(y - 1 - rnd() * 3), heather ? '#a07ab8' : '#e0c040'); } }
+  for (let i = 0; i < w / 160; i++) { const x = rnd() * w, y = h - 20 - rnd() * 30; for (const dx of [-w, 0, w]) { rect(g, x + dx, y, 3, 40, '#3a2e2a'); rect(g, x + dx + 3, y + 6, 8, 2, '#3a2e2a'); rect(g, x + dx + 9, y + 2, 6, 2, '#3a2e2a'); ellipse(g, x + dx + 8, y - 4, 12, 7, '#7a4a3a', '#5a3a2a'); ellipse(g, x + dx + 4, y - 7, 6, 4, '#a86a4a'); for (let k = 0; k < 6; k++) px(g, Math.round(x + dx + (rnd() - 0.5) * 20 + 8), Math.round(y - 4 + (rnd() - 0.5) * 8), '#c9463d'); } }
+  return c;
+}
+// Ground dressing: heather tuft, gorse bush, thistle, standing stone, cairn.
+export function bakeHeather(seed) { const rnd = mulberry(seed); const [c, g] = canvas(12, 7); ellipse(g, 6, 5, 5, 2.5, '#5a4a6a', '#3a2e3a'); for (let i = 0; i < 7; i++) { const x = 1 + ((rnd() * 10) | 0), y = 1 + ((rnd() * 4) | 0); px(g, x, y, rnd() < 0.5 ? '#a07ab8' : '#c9a0e0'); } return c; }
+export function bakeGorse(seed) { const rnd = mulberry(seed); const [c, g] = canvas(18, 12); ellipse(g, 9, 8, 8, 4, '#3a5a2a', '#2a3a1a'); ellipse(g, 7, 5, 5, 3, '#4a6a3a'); for (let i = 0; i < 9; i++) px(g, 2 + ((rnd() * 14) | 0), 2 + ((rnd() * 8) | 0), rnd() < 0.7 ? '#e0c040' : '#ffe070'); return outline(c, OUT); }
+export function bakeThistle(seed) { const rnd = mulberry(seed); const [c, g] = canvas(8, 14); rect(g, 3, 5, 2, 9, '#4a6a3a'); for (let i = 0; i < 3; i++) rect(g, rnd() < 0.5 ? 0 : 5, 7 + i * 2, 3, 1, '#4a6a3a'); ellipse(g, 4, 4, 2.5, 3, '#6a8a4a'); ellipse(g, 4, 2, 2.5, 2, '#b070d0', '#8a4aa0'); px(g, 3, 1, '#e0a0f0'); return outline(c, OUT); }
+export function bakeStandingStone(seed) { const rnd = mulberry(seed); const [c, g] = canvas(16, 30); const w = 8 + ((rnd() * 5) | 0); fillPoly(g, [[3, 30], [4, 4], [4 + w * 0.4, 1], [3 + w, 3], [4 + w, 30]], '#7c8797'); fillPoly(g, [[4, 30], [5, 5], [5 + w * 0.3, 3], [5, 30]], '#9aa3b0'); for (let i = 0; i < 6; i++) px(g, 5 + ((rnd() * (w - 2)) | 0), 4 + ((rnd() * 24) | 0), rnd() < 0.5 ? '#5a6270' : '#8fb060'); return outline(c, OUT); }
+export function bakeCairn() { const [c, g] = canvas(12, 14); for (const [x, y, w] of [[1, 11, 10], [2, 8, 8], [3, 5, 6], [4, 2, 4]]) { rect(g, x, y, w, 3, '#7c8797'); rect(g, x, y, w, 1, '#9aa3b0'); rect(g, x, y + 2, w, 1, '#5a6270'); } return outline(c, OUT); }
+// Dry-stone wall tile and its cap: flat stones stacked without mortar.
+export function bakeDrystone(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 0; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } return c; }
+export function bakeDrystoneTop(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 3; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } for (let x = 0; x < T; x += 3) { rect(g, x, 0, 2, 3, '#8a919c'); px(g, x, 0, '#b0b8c4'); } return c; }
+// Scree: a loose grey top tile. Anything standing on it slides.
+export function bakeScreeTop(seed, dir) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); rect(g, 0, 0, T, 5, '#6a707c'); for (let i = 0; i < 14; i++) { const x = (rnd() * T) | 0, y = (rnd() * T) | 0; rect(g, x, y, 2, 1, rnd() < 0.5 ? '#8a919c' : '#5a6270'); } for (let i = 0; i < 3; i++) { const x = 2 + i * 5; px(g, x + (dir > 0 ? 1 : 0), 2, '#b0b8c4'); px(g, x, 3, '#9aa3b0'); } return c; }
+// A falling boulder, 14×12, and its shatter is particles.
+export function bakeBoulder() { const [c, g] = canvas(14, 12); ellipse(g, 7, 6, 6.5, 5.5, '#6a707c', '#4a4f5a'); ellipse(g, 5, 4, 3, 2, '#9aa3b0'); px(g, 9, 8, '#4a4f5a'); px(g, 3, 8, '#4a4f5a'); return outline(c, OUT); }
+// The shepherd's bothy: a stone hut with a turf roof, a lit window and a chimney. 56×40.
+export function bakeBothy() {
+  const [c, g] = canvas(56, 40);
+  rect(g, 4, 16, 48, 24, '#6a707c'); for (let y = 16; y < 40; y += 4) for (let x = 4; x < 52; x += 6) { rect(g, x + ((y / 4) % 2 ? 3 : 0), y, 5, 3, ((x + y) % 5) ? '#7c8797' : '#5e6470'); }
+  fillPoly(g, [[0, 18], [28, 2], [56, 18]], '#4a6a3a'); fillPoly(g, [[3, 17], [28, 4], [53, 17]], '#5a7a4a'); for (let x = 6; x < 50; x += 5) px(g, x, 10 + Math.abs(x - 28) / 4 | 0, '#6a8a4a');
+  rect(g, 40, 2, 5, 12, '#5a6270'); rect(g, 39, 1, 7, 2, '#7c8797');
+  rect(g, 10, 24, 10, 16, '#3a2e22'); rect(g, 11, 25, 8, 14, '#2c2018'); px(g, 17, 32, '#e0b040');
+  rect(g, 30, 24, 12, 10, '#ffd36b'); rect(g, 35, 24, 2, 10, '#5a4a3a'); rect(g, 30, 28, 12, 2, '#5a4a3a'); rect(g, 31, 25, 3, 2, '#fff6c8');
+  return outline(c, OUT);
+}
+// The windmill tower: tapered stone, a door, and the hub the sails turn on at the top. 44×80.
+export function bakeMill() {
+  const [c, g] = canvas(44, 80);
+  fillPoly(g, [[6, 80], [12, 14], [32, 14], [38, 80]], '#6a707c'); fillPoly(g, [[8, 80], [13, 16], [20, 16], [18, 80]], '#7c8797');
+  for (let y = 18; y < 80; y += 5) for (let x = 12; x < 32; x += 6) { const inset = (y - 14) / 66 * 6; rect(g, x - inset + ((y / 5) % 2 ? 2 : 0), y, 4, 3, ((x + y) % 7) ? '#6e7480' : '#5a6070'); }
+  fillPoly(g, [[8, 16], [22, 2], [36, 16]], '#4a3a2a'); fillPoly(g, [[11, 15], [22, 4], [33, 15]], '#5c4a34');
+  rect(g, 17, 62, 10, 18, '#3a2e22'); rect(g, 18, 63, 8, 16, '#2c2018');
+  rect(g, 19, 30, 6, 8, '#2a2f3d'); rect(g, 20, 31, 2, 2, '#ffd36b');
+  circle(g, 22, 22, 4, '#3a2e22'); circle(g, 22, 22, 2, '#8a5a32');
+  return outline(c, OUT);
+}
+// A sail arm: drawn along +y from the hub, 10×46 — rotated in place by the drawer.
+export function bakeSail() { const [c, g] = canvas(10, 46); rect(g, 4, 0, 2, 46, '#5c3a1d'); for (let y = 6; y < 44; y += 5) rect(g, 0, y, 9, 4, '#e8dcc0'); for (let y = 6; y < 44; y += 5) rect(g, 0, y, 9, 1, '#c9b27c'); rect(g, 0, 6, 1, 38, '#5c3a1d'); return c; }
+// The sheep-fold gate at the Ram Lord's arena: two stone posts with a hurdle. 24×22.
+export function bakeFoldGate() { const [c, g] = canvas(24, 22); rect(g, 0, 2, 4, 20, '#7c8797'); rect(g, 20, 2, 4, 20, '#7c8797'); rect(g, 0, 2, 4, 1, '#9aa3b0'); rect(g, 20, 2, 4, 1, '#9aa3b0'); for (let y = 6; y < 20; y += 4) rect(g, 4, y, 16, 2, '#8a5a32'); rect(g, 11, 4, 2, 16, '#5c3a1d'); return outline(c, OUT); }
+// A fleece for the relic set.
+export function bakeFleeceIcon() { const [c, g] = canvas(10, 12); ellipse(g, 5, 6, 4.5, 4, '#ffe6a0', '#c9a83a'); for (const [x, y] of [[2, 4], [5, 3], [8, 5], [4, 8], [7, 8]]) px(g, x, y, '#fff6c8'); px(g, 5, 6, '#e0b040'); return outline(c, OUT); }

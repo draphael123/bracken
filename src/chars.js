@@ -452,3 +452,64 @@ export function bakeKing() {
   const pad3 = ['........................', '........................', '........................'];
   return { seated: pack([idle, thr, sh], 11, 16, 18, 15), standing: pack([k([...pad3, ...crown, ...face, ...standBody]), k([...crown, ...face, ...slamBody, '........................', '........................', '........................'])], 11, 22, 18, 21) };
 }
+
+// ---------- The Crags: hill folk and beasts ----------
+const CP = Object.assign({}, EP, { h: '#8a8478', H: '#5a5448', f: '#e8e0d0', F: '#b8b0a0', v: '#7a5a8a', V: '#4a3a5a', c: '#5a4a3a', x: '#c9b27c', z: '#3a2e22', m: '#c9a83a' });
+const cspr = rows => outline(fromGrid(rows, CP, 1), OUT);
+// Crag harpy — a grey-winged diver with a hooked beak. 16×10. Frames: glide, flap, dive (wings folded), downed.
+export function bakeHarpy() {
+  const glide = cspr(['hh............hh', '.hhh........hhh.', '..hhhhhHHhhhh...', '....hhheehhh....', '.....hhmhhh.....', '......hhhh......', '.....H....H.....']);
+  const flap = cspr(['................', '......hhhhh.....', '..hhhhhHHhhhhh..', 'hhh.hhheehhh.hhh', '.....hhmhhh.....', '......hhhh......', '.....H....H.....']);
+  const dive = cspr(['................', '................', '......hheehh....', '.....hhhmhhhh...', '....hhhhhhhhhh..', '..hhhhhhhhhhhh..', '.hh.........hh..']);
+  const down = cspr(['................', '................', '................', 'hhhh..hhhhhh.hhh', 'hhhhhhhheehhhhhh', '.hhhhhhhmhhhhh..', '..H..H....H..H..']);
+  return pack([glide, flap, dive, down], 9, 7, 14, 7);
+}
+// Goat rider — a hill goblin on a shaggy crag goat. 16×13. Frames: run1, run2, buck (goat rearing), riderless goat run.
+export function bakeGoatRider() {
+  const rider = ['.......gggggg...', '......fggeoggf..', '......ffggggff..', '.....ffvvvvvff..', '......ffvvvvff..'];
+  const goatBody = ['ff...ffffffff.ff', '.fffffffffffffff', 'ffFffffffffffe.f', 'fFF..ffffffff.zz'];
+  const run1 = cspr([...rider, ...goatBody, '.zz.zz....zz.zz.', '.z...z....z...z.']);
+  const run2 = cspr([...rider, ...goatBody, '..zz.zz..zz.zz..', '..z...z..z...z..']);
+  const buck = cspr(['.......gggggg...', '......fggeoggf..', '......ffggggff..', '.....ffvvvvvff..', '......ffvvvvff..', '..........ffffff', '.....fffffffffef', 'ffFfffffffffff.z', 'fFFffffff.......', '.zz.zz..zz......', '.z...z..z.......']);
+  const goat1 = cspr(['................', '................', '................', '................', '................', ...goatBody, '.zz.zz....zz.zz.', '.z...z....z...z.']);
+  const goat2 = cspr(['................', '................', '................', '................', '................', ...goatBody, '..zz.zz..zz.zz..', '..z...z..z...z..']);
+  return pack([run1, run2, buck, goat1, goat2], 9, 12, 14, 11);
+}
+// The Ram Lord — a bighorn the size of a cart, curled horns like millstones. 30×20. Frames: stand, run1, run2, lower (charge tell), crash (head in the wall), rear.
+export function bakeRamLord() {
+  const RP = Object.assign({}, CP, { f: '#d8d0c0', F: '#a8a090', m: '#c9a83a', M: '#8a6a1a', r: '#c9463d' });
+  const r = rows => outline(fromGrid(rows, RP, 1), OUT);
+  const horns = ['......mmm..............mmm....', '.....mMMmm............mmMMm...', '....mM..mmm..........mmm..Mm..', '....mM.mmmm..........mmmm.Mm..', '.....mmmmff..........ffmmmm...'];
+  const head = ['.......fffffffffffffffff......', '......ffffffffffffffffffe.....', '......fFfffffffffffffffff.....', '.......ffffffffffffffff.......'];
+  const bodyStand = ['.....fffffffffffffffffff......', '....ffffffffffffffffffff......', '....ffFFffffffffffFFffff......', '....ffFFffffffffffFFffff......', '....zz.zz........zz.zz........', '....zz.zz........zz.zz........'];
+  const bodyRun1 = ['.....fffffffffffffffffff......', '....ffffffffffffffffffff......', '....ffFFffffffffffFFffff......', '...ffFFfffffffffffffFFff......', '..zz...zz......zz...zz........', '.zz.....zz....zz.....zz.......'];
+  const bodyRun2 = ['.....fffffffffffffffffff......', '....ffffffffffffffffffff......', '....ffFFffffffffffFFffff......', '....ffFFffffffffffFFffff......', '.....zzzz........zzzz.........', '......zz..........zz..........'];
+  const stand = r([...horns, ...head, ...bodyStand]);
+  const run1 = r([...horns, ...head, ...bodyRun1]);
+  const run2 = r([...horns, ...head, ...bodyRun2]);
+  const lowerHorns = ['..............................', '......mmm..............mmm....', '.....mMMmm............mmMMm...', '....mM..mmm..........mmm..Mm..', '....mM.mmmm..........mmmm.Mm..'];
+  const lowerHead = ['.....mmmmfffffffffffffffmmmm..', '......fffffffffffffffffffffe..', '......fFfffffffffffffffffff...', '.......ffffffffffffffffff.....'];
+  const lower = r([...lowerHorns, ...lowerHead, ...bodyStand]);
+  const crashHead = ['....rmmmmfffffffffffffffmmmm..', '...r..fffffffffffffffffffffe..', '....r.fFfffffffffffffffffff...', '.......ffffffffffffffffff.....'];
+  const crash = r([...lowerHorns, ...crashHead, ...bodyStand]);
+  const rearHorns = ['......mmm..............mmm....', '.....mMMmm............mmMMm...', '....mM..mmm..........mmm..Mm..', '....mM.mmmm..........mmmm.Mm..', '.....mmmmff..........ffmmmm...'];
+  const rearBody = ['.......fffffffffffffffff......', '......ffffffffffffffffffe.....', '......fFfffffffffffffffff.....', '......ffffffffffffffffff......', '.....ffffffffffffffffff.......', '....ffffffffffffffff..........', '....ffFFffffffffffff..........', '....ffFFffffffffff............', '....zz.zz.....zz.zz...........', '....zz.zz.....zz.zz...........'];
+  const rear = r([...rearHorns, ...rearBody]);
+  return pack([stand, run1, run2, lower, crash, rear], 16, 16, 26, 14);
+}
+// The shepherd — an old hill woman with a crook and a plaid. 10×16. Frames: idle, wave.
+export function bakeShepherd() {
+  const SP = Object.assign({}, CP, { p: '#7a4a5a', P: '#4a2a3a', t: '#e8dcc0', w: '#8a5a32' });
+  const s = rows => outline(fromGrid(rows, SP, 1), OUT);
+  const idle = s(['...ffff...', '..fFFFFf..', '..fteetf..', '..ftttf.w.', '...tttt.w.', '..ppPppww.', '.ppppppp.w', '.pPppppP.w', '..pppppp.w', '..PppppP.w', '...pppp..w', '..zz..zz..']);
+  const wave = s(['...ffff.f.', '..fFFFFff.', '..fteetff.', '..ftttfw..', '...tttt.w.', '..ppPppww.', '.ppppppp.w', '.pPppppP.w', '..pppppp.w', '..PppppP.w', '...pppp..w', '..zz..zz..']);
+  return pack([idle, wave], 6, 13, 8, 12);
+}
+// Sheep — 12×8, woolly. Frames: graze, look up, walk.
+export function bakeSheep() {
+  const s = rows => outline(fromGrid(rows, CP, 1), OUT);
+  const graze = s(['..ffffffff..', '.ffffffffff.', '.ffffffffffz', '..ffffffff.z', '..z..z.z..ze', '..z..z.z..z.']);
+  const look = s(['..ffffffffzz', '.fffffffffze', '.ffffffffffz', '..ffffffff..', '..z..z.z..z.', '..z..z.z..z.']);
+  const walk = s(['..ffffffff..', '.ffffffffff.', '.ffffffffffz', '..ffffffff.z', '.z..z...z.ze', '.z..z...z.z.']);
+  return pack([graze, look, walk], 7, 7, 10, 6);
+}

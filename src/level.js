@@ -568,10 +568,94 @@ function kingswood() {
   };
 }
 
+
+// ---------- THE CRAGS, level 1: THE SCREE PATH ----------
+// Foothills at dusk. Pastures and dry-stone walls, the shepherd's bothy, a cliff that drops rocks, the windmill, the scree slope, and the Ram Lord's fold.
+function screePath() {
+  const L = painter(364, 28);
+  const { block, floor, plat, crate, ent, coins, set } = L;
+  const movers = [], stone = [], scree = [];
+  const wall = (x, y) => { block(x, x, y, y); stone.push([x, x, y, y]); };
+
+  // ---- 1. The lower pasture: sheep, walls, the bothy and the shepherd ----
+  floor(0, 60, 20);
+  ent('deco', 8, 19, { kind: 'bothy' }); ent('torch', 14, 19);
+  ent('npc', 13, 19, { kind: 'shepherd' });
+  ent('sign', 4, 19, { text: 'THE SCREE PATH. THE HILL TAKES THE CARELESS.' });
+  wall(18, 19); wall(30, 19); wall(44, 19);
+  ent('goat', 36, 19, { face: -1 }); ent('harpy', 50, 14);
+  coins([12, 17], [24, 18], [40, 18], [48, 17]);
+  ent('sign', 22, 19, { text: 'THREE EWES STRAYED UP THE HILL. THE SHEPHERD WANTS THEM BACK.' });
+  ent('check', 58, 19);
+
+  // ---- 2. The terraces: three steps up the hill, a rockfall, the first stray ----
+  block(61, 80, 18, 27); block(81, 100, 16, 27); block(101, 120, 14, 27);
+  wall(62, 17); wall(82, 15); wall(102, 13);
+  plat(70, 14, 3); ent('stray', 71, 13); coins([70, 13], [72, 13]);
+  ent('goat', 72, 17, { face: -1 }); ent('rockfall', 90, 4, { every: 2.4 }); ent('rockfall', 94, 4, { every: 3.1 });
+  ent('deco', 84, 15, { kind: 'stone' }); ent('deco', 106, 13, { kind: 'stone' }); ent('deco', 112, 13, { kind: 'cairn' });
+  ent('goat', 96, 15, { face: -1 }); ent('harpy', 110, 8); ent('sprig', 108, 13, { face: -1 });
+  coins([66, 17], [76, 17], [86, 15], [98, 15], [104, 13], [116, 13]);
+  ent('check', 118, 13);
+
+  // ---- 3. The windmill rise: the sails lift you to the loft and the high path ----
+  block(121, 176, 14, 27);
+  ent('deco', 150, 13, { kind: 'mill' });
+  for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 150 * TS + 8, py: 13 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
+  plat(156, 6, 4); ent('stray', 158, 5); coins([157, 5], [159, 5]);
+  plat(162, 8, 3); plat(167, 9, 3); plat(172, 10, 3); ent('archer', 168, 8, { face: -1 }); ent('harpy', 162, 3);
+  coins([163, 7], [168, 7], [173, 9]);
+  wall(128, 13); wall(140, 13); ent('goat', 134, 13, { face: -1 }); ent('sprig', 144, 13, { face: -1 }); ent('sprig', 160, 13, { face: -1 });
+  ent('sign', 124, 13, { text: 'RIDE THE SAILS. THE LOFT IS WORTH THE CLIMB.' });
+  ent('deco', 138, 13, { kind: 'cairn' });
+  coins([131, 12], [146, 12], [164, 12], [170, 12]);
+  ent('check', 174, 13);
+
+  // ---- 4. The scree slope: the loose stone carries you down, rocks come off the cliff, harpies dive ----
+  const steps = [[177, 190, 14], [191, 200, 15], [201, 212, 16], [213, 224, 17], [225, 238, 18], [239, 250, 19]];
+  for (const [x0, x1, y] of steps) { block(x0, x1, y, 27); if (x0 > 177) scree.push({ x0, x1, y, dir: 1 }); }
+  ent('sign', 180, 13, { text: 'SCREE. IT SLIDES. BRACE OR BOUNCE.' });
+  ent('rockfall', 205, 5, { every: 2.6 }); ent('rockfall', 220, 5, { every: 2.2 }); ent('rockfall', 232, 5, { every: 2.9 });
+  ent('harpy', 200, 9); ent('harpy', 235, 11);
+  plat(246, 16, 3); ent('stray', 247, 15); coins([246, 15], [248, 15]);
+  coins([186, 13], [196, 14], [208, 15], [218, 16], [230, 17], [242, 18]);
+  ent('deco', 184, 13, { kind: 'stone' }); ent('deco', 244, 18, { kind: 'stone' });
+  // the gorge: a gap with a lone boulder pillar to cross it
+  block(254, 255, 21, 27);
+  block(256, 275, 19, 27);
+  ent('check', 260, 18);
+
+  // ---- 5. The crag wall: ledges up to the plateau, rocks on the way ----
+  ent('goat', 266, 18, { face: -1 }); wall(270, 18);
+  plat(278, 16, 3); plat(274, 13, 3); plat(279, 10, 3); plat(283, 12, 2);
+  block(285, 363, 9, 27);
+  ent('rockfall', 281, 2, { every: 2.7 });
+  coins([279, 15], [275, 12], [280, 9], [284, 11]);
+  ent('sprig', 290, 8, { face: -1 }); ent('deco', 288, 8, { kind: 'stone' });
+  ent('check', 294, 8);
+
+  // ---- 6. THE FOLD: the Ram Lord's walled pasture on the plateau ----
+  ent('sign', 296, 8, { text: 'THE RAM LORD. DODGE THE CHARGE. HE HITS THE WALL, YOU HIT HIM.' });
+  ent('deco', 301, 8, { kind: 'foldGate' }); ent('deco', 344, 8, { kind: 'foldGate' });
+  ent('deco', 306, 8, { kind: 'cairn' }); ent('deco', 340, 8, { kind: 'cairn' });
+  ent('ramlord', 332, 8);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
+    duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
+    stone, scree, strays: 3,
+    weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 300 * TS, x1: 346 * TS, floor: 9 * TS, trigger: 304 * TS, wallL: 299, wallR: 347, boss: 'ram', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
+  { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
 ];

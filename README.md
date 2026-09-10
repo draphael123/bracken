@@ -238,6 +238,24 @@ like plunges), the HUNTER'S CHARM in the marsh (gold comes to you), the IRON GAU
 net (swings cost no stamina), the GLOW LANTERN in the lurker grove (spores cannot put you to sleep),
 the THIEF CLOAK above the court (thieves cannot take your gold).
 
+## The Crags: world two
+
+**The Scree Path** (level 6, needs Kingswood) climbs out of the forest into the foothills at dusk:
+slate, heather, gold grass, and a rose sky with snow on the far peaks. The pasture has sheep that
+scatter, dry-stone walls, and the shepherd's bothy: she has lost three ewes up the hill, and finding
+all three (one on the terrace ledge, one in the windmill loft, one below the scree) drops the GOLDEN
+FLEECE relic where the last one stood, plus five gold. Then the terraces, where boulders come off the
+cliff on a rhythm (a dust warning, then the fall; they shatter on you or on goblins), the windmill,
+whose sails are rotating platforms that lift you to the loft and the high path, and the scree slope:
+loose stone that carries you downhill unless you brace with block or bounce over it. New foes: the
+CRAG HARPY (hangs in the wind, screams, dives in a line; block the dive and she is stunned on the
+ground for a plunge) and the GOAT RIDER (charges, hops walls and ledges; block the charge and the
+goat bucks its rider off). The boss is THE RAM LORD in the walled fold on the plateau: his horns turn
+the blade from the front, so dodge the charge and let him hit the wall, then cut him from behind or
+plunge between the horns while he reels. He stamps (shockwaves) and hops at you; at half health he
+charges twice and rocks fall from the cliff. Its own music: Juhani Junkala's Retro Game Music Pack
+"Level 1" (CC0), and a wind ambience.
+
 ## Skills
 
 The store's SKILLS tab opens once the Stockade is cleared (the results card and the map point you
