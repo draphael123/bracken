@@ -1,5 +1,5 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
-let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, trackG = null, muffled = false, lowHp = false, ambVol = 1;
+let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
@@ -22,8 +22,8 @@ export function initAudio() {
   noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   { // a short stone reverb for the galleries and halls: a decaying noise impulse
-    const len = Math.floor(ac.sampleRate * 1.3), ir = ac.createBuffer(2, len, ac.sampleRate); for (let ch = 0; ch < 2; ch++) { const c = ir.getChannelData(ch); for (let i = 0; i < len; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
-    const conv = ac.createConvolver(); conv.buffer = ir; revGain = ac.createGain(); revGain.gain.value = 0; sfxGain.connect(conv); conv.connect(revGain); revGain.connect(master); }
+    const len = Math.floor(ac.sampleRate * 0.8), ir = ac.createBuffer(1, len, ac.sampleRate); { const c = ir.getChannelData(0); for (let i = 0; i < len; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.4); }
+    conv = ac.createConvolver(); conv.buffer = ir; revGain = ac.createGain(); revGain.gain.value = 0; conv.connect(revGain); revGain.connect(master); }
   startSynth();
   loadTrack(wantTrack);
   fetch('./audio/manifest.json').then(r => r.json()).then(man => {
@@ -36,7 +36,7 @@ export function setSfxFiles(v) { sfxFiles = !!v; }
 export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); }
 export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
-export function setReverb(v) { if (revGain) revGain.gain.setTargetAtTime(Math.max(0, Math.min(0.5, v)), ac.currentTime, 0.3); }
+export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
 const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }

@@ -1121,11 +1121,11 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   // ---- 3. THE ICE GALLERY: the cavern proper. Ice walls the beam melts, spiders on threads, and a ladder down into the old workings. ----
   gallery(82, 136, 8, 19); for (const x of [90, 106, 122]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(8, 88, 104, 120, 132); lamps(19, 96, 116);
   plat(85, 11, 3); ent('crystal', 86, 10, { dir: [0, 1] }); ent('mirror', 86, 19, { o: 0 });
-  ice(100, 101, 16, 19); ent('mirror', 110, 19, { o: 0 }); ice(120, 121, 16, 19);
+  ice(100, 101, 16, 19); ice(120, 121, 16, 19); plat(109, 13, 3); coins([110, 12]); // one beam, two walls of ice on its way to the far mirror
   plat(127, 11, 3); ent('receiver', 128, 10, { gate: 134 }); ent('mirror', 128, 19, { o: 1 });
   gateCol(134, 15, 19);
   ent('spider', 94, 9, { drop: 100 }); ent('spider', 114, 9, { drop: 100 }); ent('grub', 106, 19, { face: -1 }); ent('rockgoblin', 124, 19, { face: -1 });
-  ent('sign', 84, 19, { text: 'THE ICE GALLERY. THE BEAM MELTS THE ICE IN A BREATH OR TWO. THREE MIRRORS. THE LADDER GOES DOWN TO THE OLD WORKINGS: DARK, AND WORTH IT.' });
+  ent('sign', 84, 19, { text: 'THE ICE GALLERY. THE BEAM MELTS THE ICE IN A BREATH OR TWO, BOTH WALLS, THEN THE FAR MIRROR SENDS IT UP TO THE LENS. THE LADDER GOES DOWN TO THE OLD WORKINGS: DARK, AND WORTH IT.' });
   coins([92, 17], [98, 14], [108, 17], [118, 14], [126, 17]);
   gallery(92, 93, 20, 21); ladder(92, 93, 20, 21); // the way down
   ent('check', 133, 19);
