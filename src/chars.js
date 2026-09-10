@@ -320,8 +320,8 @@ export function bakeBrute() {
   return pack([stand, walk, raise, swing], 9, 19, 12, 16);
 }
 // War hound — low, fast. 14×7. Frames: run1, run2, leap.
-export function bakeHound() {
-  const P2 = Object.assign({}, EP, { h: '#5a4a3a', H: '#3a2e22' });
+export function bakeHound(pal = {}) {
+  const P2 = Object.assign({}, EP, { h: '#5a4a3a', H: '#3a2e22' }, pal);
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
   const body = ['..hhhhhhhhh.hh', '.hhhhhhhhhhhhh', 'hhhhhhhhhhhh..', 'hHhhhhhhhhhH..'];
   const a = spr(['...........eh.', ...body, '.HH.HH..HH.HH.', '.H...H..H...H.']);
@@ -552,7 +552,9 @@ export function bakeRamLord() {
   const rearHorns = ['......mmm..............mmm....', '.....mMMmm............mmMMm...', '....mM..mmm..........mmm..Mm..', '....mM.mmmm..........mmmm.Mm..', '.....mmmmff..........ffmmmm...'];
   const rearBody = ['.......fffffffffffffffff......', '......ffffffffffffffffffe.....', '......fFfffffffffffffffff.....', '......ffffffffffffffffff......', '.....ffffffffffffffffff.......', '....ffffffffffffffff..........', '....ffFFffffffffffff..........', '....ffFFffffffffff............', '....zz.zz.....zz.zz...........', '....zz.zz.....zz.zz...........'];
   const rear = r([...rearHorns, ...rearBody]);
-  return pack([stand, run1, run2, lower, crash, rear], 16, 16, 26, 14);
+  const bodyLeap = bodyStand.map((row, i) => i === 4 ? '.....zzzz........zzzz.........' : i === 5 ? '......zz..........zz..........' : row);
+  const leap = r([...lowerHorns, ...lowerHead, ...bodyLeap]);
+  return pack([stand, run1, run2, lower, crash, rear, leap], 16, 16, 26, 14);
 }
 // The shepherd — an old hill woman with a crook and a plaid. 10×16. Frames: idle, wave.
 export function bakeShepherd() {
@@ -684,7 +686,10 @@ export function bakeOwl() {
   const wingsDown = o(['................................', '..............hh......hh........', '.............hhhh....hhhh.......', '.............hhhhhhhhhhhh.......', '.............hffyffhffyff.......', '.............hffoffhffoff.......', '..............hffffmfff.........', '........hhhhhhhhhhhhhhhhhhhh....', '......hhhhhhhhhhhhhhhhhhhhhhhh..', '....hhhhhhhhhhhhwwhhwwhhhhhhhhhh', '..hhhhh.....hhhhhhhhhhhh....hhhh', 'hhhh..........hhhhhhhh.........h', 'h..............mm..mm...........', '................................', '................................']);
   const screech = o(['...........hh......hh...........', '..........hhhh....hhhh..........', '.........hhhhhhhhhhhhhh.........', '........hhffyffhffyffhh.........', '.......hhhffoffhffoffhhh........', '......hhhhhffffmfffhhhhh........', '.....hhhhhhhffmrrmffhhhhhh......', '....hhhhhhhhhhmrrmhhhhhhhhh.....', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '..hhhhhhhhhwwhhhhhhwwhhhhhhhhh..', '.hhhh......hhhhhhhhhhh......hhhh', 'hhh.........hhhhhhhhh.........hh', '.............mm..mm.............', '.............mm..mm.............', '................................']);
   const crash = o(['................................', '................................', '................................', '..............mm..mm............', '.............hhhhhhhh...........', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '.hhhhhhhhhhhhwwhhhhwwhhhhhhhhhh.', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', '.hhhhhhhhhhhffoffhffoffhhhhhhhh.', '...hhhhhhhhhffyffhffyffhhhhhh...', '............hhhhhhhhhhhh........', '.............hhhh..hhhh.........', '..............hh....hh..........', '................................', '................................']);
-  return pack([perch, wingsUp, wingsDown, screech, crash], 17, 16, 24, 14);
+  const glide = o(['................................', '..............hh......hh........', '.............hhhh....hhhh.......', '.............hhhhhhhhhhhh.......', '.............hffyffhffyff.......', '.............hffoffhffoff.......', '..............hffffmfff.........', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', 'hhhhhhhhhhhhhhhhwwhhwwhhhhhhhhhh', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhh..', '.....hhhhh....hhhhhhhh....hhhh..', '..............hhhhhhhh..........', '...............mm..mm...........', '................................', '................................']);
+  const dive = o(['.........................hh.....', '........................hhhh....', '.......................hhhhhh...', '..............hh......hhhhhhh...', '.............hhhh....hhhhhhhh...', '.............hhhhhhhhhhhhhhhh...', '.............hffyffhffyffhhhh...', '.............hffoffhffoffhhh....', '..............hffffmfffhhh......', '.......hhhhhhhhhhhhhhhhhh.......', '.....hhhhhhhhhhwwhhwwhhhh.......', '...hhhhhhhhhhhhhhhhhhhh.........', '..............mm..mm............', '................................', '................................']);
+  const land = o(['h..............................h', 'hh............................hh', 'hhh...........hh......hh.....hhh', 'hhhh.........hhhh....hhhh...hhhh', 'hhhhh........hhhhhhhhhhhh..hhhhh', '.hhhhh.......hffyffhffyff.hhhhh.', '..hhhhh......hffoffhffoff.hhhh..', '...hhhhh......hffffmfff..hhhh...', '....hhhhhhhhhhhhhhhhhhhhhhhhh...', '.....hhhhhhhhhhhhhhhhhhhhhhh....', '.......hhhhhhhhwwhhwwhhhhh......', '..........hhhhhhhhhhhh..........', '............hhhhhhhh............', '............mm....mm............', '...........mm......mm...........']);
+  return pack([perch, wingsUp, wingsDown, screech, crash, glide, dive, land], 17, 16, 24, 14);
 }
 
 
