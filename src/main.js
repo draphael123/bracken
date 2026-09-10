@@ -37,7 +37,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false };
+const SET = { music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
 const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, mineworks: 1, moor: 1.1 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 const DIFF = { easy: { take: 0.6, ehp: 0.8, label: 'EASY' }, normal: { take: 1, ehp: 1, label: 'NORMAL' }, hard: { take: 1.4, ehp: 1.3, label: 'HARD' } };
@@ -598,25 +598,76 @@ function drawMap() {
     let last = 0; for (let k = 0; k < NODES.length; k++) if (!nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)'; for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 3)) % (map.walking ? 6 : 4), px, py + 2, map.lastDir || 1, false);
   // node labels
-  for (const nd of NODES) { const lk = nodeLocked(nd); const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : LEVELS[nd.level].name; const tw = lbl.length * 6 + 6; const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)); g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(lx - tw / 2, nd.y + 12, tw, 8); text(lbl, lx, nd.y + 13, lk ? '#7a7a8a' : '#fff6e0', 'center', 6); }
+  // node plates. The name is on a board you can read over the trees, and what you have taken out of that
+  // wood is written under it, so the map answers "what have I left there?" without walking to it.
+  for (const nd of NODES) {
+    const lk = nodeLocked(nd), here = NODES[map.node] === nd;
+    const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : LEVELS[nd.level].name;
+    const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
+    const twoLine = !!p && !lk;
+    const tw = Math.max(lbl.length * 6 + 10, twoLine ? 44 : 0), th = twoLine ? 17 : 10;
+    const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)), ly = nd.y + 12;
+    g.fillStyle = lk ? 'rgba(18,14,24,0.78)' : 'rgba(28,22,18,0.86)'; g.fillRect(lx - tw / 2, ly, tw, th);
+    g.strokeStyle = here ? UI.sel : lk ? 'rgba(140,130,120,0.35)' : 'rgba(201,178,124,0.55)'; g.lineWidth = 1;
+    g.strokeRect(lx - tw / 2 + 0.5, ly + 0.5, tw - 1, th - 1);
+    text(lbl, lx, ly + 2, lk ? '#7a7a8a' : here ? UI.title : UI.text, 'center', 6);
+    if (twoLine) { // one strip: medal, silver taken, quest, relic
+      let bx = lx - tw / 2 + 4; const by = ly + 11;
+      if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(bx + 2, by + 2, 2.5, 0, 7); g.fill(); } else { g.strokeStyle = 'rgba(255,255,255,0.2)'; g.beginPath(); g.arc(bx + 2, by + 2, 2.5, 0, 7); g.stroke(); }
+      bx += 8;
+      const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
+      for (let i = 0; i < 3; i++) { g.fillStyle = i < sv ? UI.silver : 'rgba(255,255,255,0.16)'; g.fillRect(bx + i * 4, by + 1, 3, 3); }
+      bx += 14;
+      g.fillStyle = p.quest ? '#8fd160' : 'rgba(255,255,255,0.16)'; g.fillRect(bx, by + 1, 3, 3); bx += 6;
+      g.fillStyle = p.relic ? '#c9a0ff' : 'rgba(255,255,255,0.16)'; g.fillRect(bx, by + 1, 3, 3); bx += 6;
+      if (p.cleared) { g.fillStyle = '#8fd160'; g.fillRect(lx + tw / 2 - 7, by, 2, 4); g.fillRect(lx + tw / 2 - 6, by + 3, 4, 2); g.fillRect(lx + tw / 2 - 4, by, 2, 4); }
+    }
+  }
   g.restore();
   // parchment frame + compass
   g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
   g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
   { const region = mapCamY < CRAG_H - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
-  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text(mapCamY < CRAG_H - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
+  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text(mapCamY < CRAG_H - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
+  { const real = LEVELS.filter(lv => !lv.hidden); const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
+    const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
+    g.drawImage(FLAG, 92, 4); text(cl + '/' + real.length, 104, 7, UI.dim, 'left', 6);
+    g.fillStyle = md >= mdMax ? MEDAL_COL[3] : '#8a8378'; g.beginPath(); g.arc(140, 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(139, 8, 2, 2);
+    text(md + '/' + mdMax, 148, 7, UI.dim, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
   const nd = NODES[map.node];
   if (!map.walking) {
-    const cw = 200, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 48;
-    panel(cx0, cy0, cw, nd.kind === 'store' ? 26 : 34, UI.sel);
+    const store = nd.kind === 'store';
+    const cw = 236, ch = store ? 26 : 54, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 12 - ch;
+    panel(cx0, cy0, cw, ch, UI.sel);
     text(nd.name, cx0 + 8, cy0 + 5, UI.title);
-    if (nd.kind === 'store') text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
-    else { const p = PROG[LEVELS[nd.level].id]; const hasRun = p && p.best !== undefined && p.best !== null && !Number.isNaN(p.best); text(hasRun ? fmt(p.best) + '   ' + (p.gold || 0) + '/' + (p.total || '?') + (p.cleared ? '   CLEARED' : '') : 'Z  play', cx0 + 8, cy0 + 15, hasRun ? UI.text : UI.dim, 'left', 6);
-      { const id = LEVELS[nd.level].id, tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p && p.cleared ? 1 : 0], cx0 + 8, cy0 + 24, '#c9d1dc', 'left', 6); const pips = 1 + Math.round(tierOf(id) * 4); for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); } }
-      if (p) { let mx = cx0 + cw - 44; if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(mx + 4, cy0 + 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(mx + 3, cy0 + 8, 2, 2); mx += 12; } if (p.allGold) { g.drawImage(PROP.coin[0], mx, cy0 + 5); mx += 12; } if (p.noHit) { g.drawImage(PROP.heart, mx, cy0 + 5); mx += 12; } if (p.relic && (PROP.relic[p.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[p.relic] || PROP.lampIcon, mx, cy0 + 4); mx += 12; } if (p.quest) { g.drawImage(PROP.questIcon, mx, cy0 + 5); mx += 12; } if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(mx + 1, cy0 + 5, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(mx + 1, cy0 + 11, 7, 2); g.fillStyle = ART.OUT; g.fillRect(mx + 4, cy0 + 6, 1, 6); g.fillRect(mx + 2, cy0 + 8, 5, 1); } } }
+    if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
+    else {
+      const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
+      const hasRun = p.best !== undefined && p.best !== null && !Number.isNaN(p.best);
+      // top right: how hard this wood is meant to be
+      const pips = 1 + Math.round(tierOf(id) * 4);
+      for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
+      text(lv.sub || '', cx0 + 8, cy0 + 13, UI.dim, 'left', 6);
+      // line one: your best, and what it was worth
+      const M = MEDALS[id] || [300, 450, 660];
+      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', cx0 + 8, cy0 + 23, hasRun ? UI.text : UI.dim, 'left', 6);
+      if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(cx0 + 94, cy0 + 25, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(cx0 + 93, cy0 + 24, 2, 2); text(MEDAL_NAME[p.medal], cx0 + 102, cy0 + 23, MEDAL_COL[p.medal], 'left', 6); }
+      else text('GOLD AT ' + fmt(M[0]), cx0 + 92, cy0 + 23, UI.dim, 'left', 6);
+      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, cy0 + 23, UI.sel, 'right', 6);
+      // line two: what is still in there
+      const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
+      let bx = cx0 + 8; const by = cy0 + 33;
+      g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 30;
+      g.drawImage(PROP.coin[0], bx, by - 1); text((p.gold || 0) + '/' + (p.total || '?'), bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 40;
+      g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'DONE' : 'OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 40;
+      if (PROP.relic[p.relic] || p.relic) { g.drawImage(PROP.relic[p.relic] || PROP.lampIcon, bx, by - 2); bx += 12; }
+      if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
+      if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
+      const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p.cleared ? 1 : 0], cx0 + 8, cy0 + 43, '#c9d1dc', 'left', 6);
+    }
   }
-  text('ARROWS walk  Z enter  X bestiary  V equip  ESC', VW / 2, VH - 10, '#9aa39a', 'center');
+  text('ARROWS  Z ENTER  X BEASTS  V EQUIP  ESC', VW / 2, VH - 8, '#9aa39a', 'center', 6);
 }
 
 // ---------- store ----------
@@ -654,31 +705,70 @@ function drawStore() {
   const perRow = 4, tw = Math.floor((w - 16) / perRow);
   tabs.forEach((t, k) => { const row = Math.floor(k / perRow), col = k % perRow, tx = x + 8 + col * tw, ty = y + 17 + row * 12, sel = k === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.8)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, ty, tw - 3, 11); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(tx + 0.5, ty + 0.5, tw - 4, 10); } text(t.name, tx + (tw - 3) / 2, ty + 3, sel ? UI.sel : UI.dim, 'center', 6); });
   const tab = tabs[storeTab], items = storeItems(tab);
-  const listX = x + 8, listW = w - 16 - 70, pvX = x + w - 68, pvY = y + 44, pvW = 60, pvH = h - 62;
-  const ROWS = 4, off = Math.max(0, Math.min(items.length - ROWS, storeI - ROWS + 2));
-  if (off > 0) text('^', listX + listW - 6, y + 44, UI.dim, 'center'); if (off + ROWS < items.length) text('v', listX + listW - 6, y + h - 22, UI.dim, 'center');
+  // The list carries names and prices only; everything you have to read lives in the panel on the right,
+  // where it has the room to be read. The old rows clipped every description at two short lines.
+  const listX = x + 8, listW = w - 16 - 112, pvX = x + w - 108, pvY = y + 42, pvW = 100, pvH = h - 60;
+  const ROWS = 8, ROWH = 13, off = Math.max(0, Math.min(Math.max(0, items.length - ROWS), storeI - ROWS + 2));
+  if (off > 0) text('^', listX + listW - 6, y + 42, UI.dim, 'center');
+  if (off + ROWS < items.length) text('v', listX + listW - 6, y + h - 20, UI.dim, 'center');
   if (!items.length) text('nothing here yet.', listX + listW / 2, y + 70, UI.dim, 'center');
+  const iconOf = k => k.id === 'none' ? null
+    : tab.key === 'skin' ? preview('skin:' + k.id + ':' + PROG.sword, () => bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal))).R.idle[0]
+    : tab.key === 'sword' ? preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal))).R.atk[1]
+    : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
+    : (k.id === 'fireWall' || k.id === 'cinderStep' || k.id === 'vent' || k.id === 'wisp' || k.id === 'kindle') ? FLAME_ICON
+    : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
+  const lockedOf = k => (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
   items.forEach((k, i) => {
     if (i < off || i >= off + ROWS) return;
-    const yy = y + 46 + (i - off) * 24, sel = i === storeI, owned = tab.rank ? rankOf(k.id) >= k.max : (k.id === 'none' || !!PROG[tab.owned][k.id]), eq = tab.key && (PROG[tab.key] === k.id || (k.id === 'none' && (!PROG[tab.key] || PROG[tab.key] === 'none') && !(tab.key === 'skill' && skillNow())));
-    if (sel) { g.fillStyle = 'rgba(60,90,60,0.45)'; g.fillRect(listX, yy - 3, listW, 23); g.fillStyle = UI.sel; g.fillRect(listX, yy - 3, 2, 23); }
-    const icon = k.id === 'none' ? null : tab.key === 'skin' ? preview('skin:' + k.id + ':' + PROG.sword, () => bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal))).R.idle[0] : tab.key === 'sword' ? preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal))).R.atk[1] : k.id === 'heart' || k.id === 'vigour' ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON : (k.id === 'fireWall' || k.id === 'cinderStep' || k.id === 'vent' || k.id === 'wisp' || k.id === 'kindle') ? FLAME_ICON : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
-    if (icon) { if (tab.key === 'skin' || tab.key === 'sword') g.drawImage(icon, 0, 0, icon.width, icon.height, listX + 4, yy - 4, 18, 18); else g.drawImage(icon, listX + 8, yy + 2); } else { g.fillStyle = '#5a5f5a'; g.fillRect(listX + 10, yy + 4, 6, 6); }
-    text(k.name, listX + 26, yy, sel ? UI.title : UI.text);
-    if (tab.rank) { const rr = rankOf(k.id); for (let p = 0; p < k.max; p++) { g.fillStyle = p < rr ? UI.sel : '#3a3a44'; g.fillRect(listX + 26 + k.name.length * 8 + 6 + p * 5, yy + 2, 4, 4); } text(k.per, listX + 26, yy + 10, UI.dim, 'left', 6); text(rr >= k.max ? 'PEAK' : k.prices[rr] + ' GOLD', listX + listW - 4, yy, rr >= k.max ? UI.sel : PROG.coins >= k.prices[rr] ? UI.gold : '#ff6b6b', 'right', 6); return; }
-    const locked = (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
-    const desc = locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' to unlock') : (k.desc || (k.feat ? 'earned' : ''));
-    if (desc) { const lines = wrap(desc, listW - 30 - 44, 6).slice(0, 2); lines.forEach((ln, q) => text(ln, listX + 26, yy + 10 + q * 7, locked ? '#ff9a5c' : UI.dim, 'left', 6)); }
-    text(eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD'), listX + listW - 4, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
+    const yy = y + 44 + (i - off) * ROWH, sel = i === storeI;
+    const owned = tab.rank ? rankOf(k.id) >= k.max : (k.id === 'none' || !!PROG[tab.owned][k.id]);
+    const eq = tab.key && (PROG[tab.key] === k.id || (k.id === 'none' && (!PROG[tab.key] || PROG[tab.key] === 'none') && !(tab.key === 'skill' && skillNow())));
+    if (sel) { g.fillStyle = 'rgba(60,90,60,0.45)'; g.fillRect(listX, yy - 2, listW, ROWH - 1); g.fillStyle = UI.sel; g.fillRect(listX, yy - 2, 2, ROWH - 1); }
+    const icon = iconOf(k);
+    if (icon) { if (tab.key === 'skin' || tab.key === 'sword') g.drawImage(icon, 0, 0, icon.width, icon.height, listX + 4, yy - 3, 12, 12); else g.drawImage(icon, 0, 0, icon.width, icon.height, listX + 5, yy - 1, 9, 9); }
+    else { g.fillStyle = '#5a5f5a'; g.fillRect(listX + 8, yy + 2, 5, 5); }
+    text(k.name, listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
+    if (tab.rank) { const rr = rankOf(k.id);
+      for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(listX + listW - 46 - k.max * 5 + q * 5, yy + 1, 4, 4); }
+      text(rr >= k.max ? 'PEAK' : k.prices[rr] + 'g', listX + listW - 4, yy, rr >= k.max ? UI.sel : PROG.coins >= k.prices[rr] ? UI.gold : '#ff6b6b', 'right', 6); return; }
+    const locked = lockedOf(k);
+    text(eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD'),
+      listX + listW - 4, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
   });
-  // the preview: what the thing looks like on you
-  g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(pvX, pvY, pvW, pvH); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(pvX + 0.5, pvY + 0.5, pvW - 1, pvH - 1);
-  { const k = items[storeI]; const mx = pvX + pvW / 2, my = pvY + pvH - 26;
+  // ---- the panel: what it looks like on you, what it costs, and the whole of what it does ----
+  g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(pvX, pvY, pvW, pvH);
+  g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(pvX + 0.5, pvY + 0.5, pvW - 1, pvH - 1);
+  { const k = items[storeI]; const mx = pvX + pvW / 2;
     if (k) {
-      if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') { const set = tab.key === 'hero' ? (k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal)))) : tab.key === 'skin' ? preview('skin:' + k.id + ':' + PROG.sword, () => bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal))) : preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal))); const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 3) % 4]; g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width), Math.round(my - fr.height * 2 + 8), fr.width * 2, fr.height * 2); }
-      else if (tab.rank) { const rr = rankOf(k.id); text(String(rr) + ' / ' + k.max, mx, pvY + 8, UI.title, 'center'); for (let p = 0; p < k.max; p++) { g.fillStyle = p < rr ? UI.sel : '#3a3a44'; g.fillRect(mx - k.max * 5 + p * 10 + 1, pvY + 24, 8, 8); } text(k.id === 'vigour' ? 'HEALTH' : k.id === 'breath' ? 'STAMINA' : k.id === 'recovery' ? 'REGEN' : k.id === 'temper' ? 'DAMAGE' : 'COST', mx, pvY + 40, UI.dim, 'center', 6); }
-      else { const icon = k.id === 'heart' ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON : (k.id === 'fireWall' || k.id === 'cinderStep' || k.id === 'vent' || k.id === 'wisp' || k.id === 'kindle') ? FLAME_ICON : PROP.charm[k.id] ? PROP.charm[k.id] : k.id === 'none' ? null : PROP.bolt; if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * 1.5), Math.round(pvY + 10), icon.width * 3, icon.height * 3); if (tab.key === 'menu') text('~ ~', mx, pvY + 50, UI.dim, 'center'); }
-      text(tab.name, mx, pvY + pvH - 10, UI.dim, 'center', 6);
+      const artB = pvY + 46; // the art sits in the top 46px, feet on that line
+      if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
+        const set = tab.key === 'hero' ? (k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
+          : tab.key === 'skin' ? preview('skin:' + k.id + ':' + PROG.sword, () => bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal)))
+          : preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal)));
+        const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 3) % 4];
+        const sc = 1.6; g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
+      } else if (tab.rank) {
+        const rr = rankOf(k.id);
+        text(rr + ' / ' + k.max, mx, pvY + 10, UI.title, 'center');
+        for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(mx - k.max * 5 + q * 10 + 1, pvY + 24, 8, 8); }
+        text(k.id === 'vigour' ? 'HEALTH' : k.id === 'breath' ? 'STAMINA' : k.id === 'recovery' ? 'REGEN' : k.id === 'temper' ? 'DAMAGE' : 'COST', mx, pvY + 36, UI.dim, 'center', 6);
+      } else {
+        const icon = iconOf(k);
+        if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * 1.5), Math.round(artB - icon.height * 3), icon.width * 3, icon.height * 3);
+        if (tab.key === 'menu') text('~ ~', mx, pvY + 30, UI.dim, 'center');
+      }
+      let ty = pvY + 50;
+      for (const ln of wrap(k.name, pvW - 10, 6).slice(0, 2)) { text(ln, mx, ty, UI.title, 'center', 6); ty += 8; }
+      // what it costs, or what you already have
+      const locked = lockedOf(k);
+      const owned = tab.rank ? rankOf(k.id) >= k.max : (k.id === 'none' || !!PROG[tab.owned][k.id]);
+      const eq = tab.key && PROG[tab.key] === k.id;
+      const cost = tab.rank ? (rankOf(k.id) >= k.max ? 'AT ITS PEAK' : k.prices[rankOf(k.id)] + ' GOLD')
+        : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
+      text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
+      const body = locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
+      for (const ln of wrap(body, pvW - 10, 6)) { if (ty > pvY + pvH - 10) break; text(ln, pvX + 5, ty, locked ? '#ff9a5c' : UI.dim, 'left', 6); ty += 7; }
     } }
   text(storeMsgT > 0 ? storeMsg : storeMode === 'equip' ? 'LEFT/RIGHT tabs   Z equip   ESC back' : 'LEFT/RIGHT tabs   Z buy or equip   ESC back', VW / 2, y + h - 10, storeMsgT > 0 ? UI.title : UI.dim, 'center', 6);
 }
@@ -782,10 +872,30 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Equip', 'Hero', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects volume', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Ambient volume', 'UI volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour-safe tells', 'FPS counter', 'Screen filter', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Reset this slot', 'Back'];
-const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night'];
+const PAUSE_ITEMS = ['Resume', 'Equip', 'Hero', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', 'Back'];
+const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
+const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
+const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
 let menuKind = 'pause';
+// one line each, so nobody has to guess what a switch does
+const SETTING_TIPS = {
+  'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
+  'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
+  'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
+  'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
+  'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth',
+  'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
+  'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds',
+  'Brightness': 'lifts or drops the whole picture', 'Screen filter': 'a colour grade over everything', 'Film grain': 'a faint moving grain, like old tape',
+  'Parallax': 'how many background layers move', 'Arena tint': 'the colour wash over boss rooms', 'Particles': 'how much comes off a hit',
+  'Foe outline': 'a bright rim on foes, easier to pick out', 'Boss intro': 'the letterbox and the name card', 'Foe health': 'bars over hurt foes',
+  'Reduce motion': 'less shake, less zoom, calmer screen', 'Screen shake': 'how hard the camera kicks', 'Hit stop': 'the freeze on a landed hit',
+  'Flashes': 'white flashes on big hits', 'Vignette': 'the dark edge of the screen', 'Weather': 'rain, spores, pollen, wind motes',
+  'Impact FX': 'stars and rings where things land', 'Hit numbers': 'the numbers off a hit', 'Timer': 'the run clock', 'Tenths': 'tenths on the clock',
+  'Ambient life': 'birds, fish, critters and idle folk', 'Scanlines': 'CRT lines over the picture', 'Pixel scale': 'how the picture fits your screen',
+  'Erase this save': 'erases this save', 'Sound test': 'listen to every track and cry',
+};
 const menuItems = () => menuKind === 'pause' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
 const isHeader = k => k[0] === '-';
 const MENU_ROWS = 10;
@@ -797,11 +907,18 @@ function openMenu(from) { menuFrom = from; menuKind = from === 'play' ? 'pause' 
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
   if (isHeader(k)) return;
-  if (k === 'HUD') SET.hud = SET.hud === 'full' ? 'minimal' : 'full'; else if (k === 'Screen filter') SET.filter = FILTERS[(FILTERS.indexOf(SET.filter) + dir + FILTERS.length) % FILTERS.length]; else if (k === 'Foe health') SET.foeBars = !SET.foeBars; else if (k === 'Look down') SET.lookDown = !SET.lookDown; else if (k === 'Boss intro') SET.bossIntro = !SET.bossIntro; else if (k === 'Rumble') SET.rumble = !SET.rumble; else if (k === 'Tenths') SET.tenths = !SET.tenths;
+  if (k === 'Brightness') SET.bright = BRIGHTS[(BRIGHTS.indexOf(SET.bright) + dir + BRIGHTS.length) % BRIGHTS.length];
+  else if (k === 'Parallax') SET.parallax = PARALLAX[(PARALLAX.indexOf(SET.parallax) + dir + PARALLAX.length) % PARALLAX.length];
+  else if (k === 'Arena tint') SET.tint = TINTS[(TINTS.indexOf(SET.tint) + dir + TINTS.length) % TINTS.length];
+  else if (k === 'Particles') SET.parts = PARTQ[(PARTQ.indexOf(SET.parts) + dir + PARTQ.length) % PARTQ.length];
+  else if (k === 'Foe outline') SET.rim = !SET.rim;
+  else if (k === 'Film grain') SET.grain = !SET.grain;
+  else if (k === 'Screen shake') { const i = SHAKES.indexOf(SET.shakeAmt); SET.shakeAmt = SHAKES[(i < 0 ? 2 : i + dir + SHAKES.length) % SHAKES.length]; SET.shake = SET.shakeAmt > 0; }
+  else if (k === 'HUD') SET.hud = SET.hud === 'full' ? 'minimal' : 'full'; else if (k === 'Screen filter') SET.filter = FILTERS[(FILTERS.indexOf(SET.filter) + dir + FILTERS.length) % FILTERS.length]; else if (k === 'Foe health') SET.foeBars = !SET.foeBars; else if (k === 'Look down') SET.lookDown = !SET.lookDown; else if (k === 'Boss intro') SET.bossIntro = !SET.bossIntro; else if (k === 'Rumble') SET.rumble = !SET.rumble; else if (k === 'Tenths') SET.tenths = !SET.tenths;
   else if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
-  else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects volume') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
-  else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Damage numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
-  else if (k === 'Game speed') { const SP = [1, 0.9, 0.8]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + 3) % 3]; menuMsg = SET.speed < 1 ? 'the world runs slower. the timer does not' : 'full speed'; menuMsgT = 3; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambient volume') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Colour-safe tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
+  else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
+  else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
+  else if (k === 'Game speed') { const SP = [1, 0.9, 0.8]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + 3) % 3]; menuMsg = SET.speed < 1 ? 'the world runs slower. the timer does not' : 'full speed'; menuMsgT = 3; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
   else if (k === 'Difficulty') SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + 3) % 3]; else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
@@ -816,7 +933,7 @@ function menuConfirm() {
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; SFX.uiSel(); }
   else if (k === 'Controls') { state = 'controls'; SFX.uiSel(); }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
-  else if (k === 'Reset this slot') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
+  else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; if (!P.dead) die(); SFX.uiSel(); } }
   else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadLevel(levelIndex); startGame(); SFX.uiSel(); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
   else menuAdjust(1);
@@ -960,13 +1077,14 @@ const overlap = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
 
 // ---------- feel helpers ----------
 function burst(x, y, n, cols, spd = 70, life = 0.5, grav = 300, size = 2) {
+  n = Math.max(1, Math.round(n * partScale()));
   for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, s = spd * (0.4 + Math.random() * 0.8); parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - spd * 0.3, life: life * (0.6 + Math.random() * 0.6), max: life, col: cols[(Math.random() * cols.length) | 0], size, grav }); }
 }
 function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */ nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
 function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
-function shakeCam(n, k = 0) { if (SET.shake) { shake = Math.max(shake, n); kick += k; } }
+function shakeCam(n, k = 0) { const a = SET.shakeAmt === undefined ? (SET.shake ? 1 : 0) : SET.shakeAmt; if (a > 0) { shake = Math.max(shake, n * a); kick += k * a; } }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || (window.BK && window.BK.god);
@@ -1398,6 +1516,8 @@ function updatePlayer(dt) {
 }
 
 // ---------- boss: the Hornet Queen ----------
+let titleI = 0;
+const titleItems = () => (readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE', 'SETTINGS', 'CONTROLS'] : ['NEW GAME', 'CHOOSE A SAVE', 'SETTINGS', 'CONTROLS']);
 let miniActive = false, miniDone = false, miniIntroT = 0;
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
 const MINI_NAME = { greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD' };
@@ -3226,7 +3346,20 @@ function update(dt) {
   time += dt;
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
-  if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title'); else if (anyPress) { state = 'slots'; slotI = slot; slotMsg = ''; SFX.uiSel(); music.play(menuTrack()); } return; }
+  if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title');
+    else {
+      const items = titleItems();
+      if (upPress) { titleI = (titleI + items.length - 1) % items.length; SFX.ui(); }
+      if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
+      if (confirmPress || jumpPress) {
+        const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
+        if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); state = 'map'; }
+        else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; }
+        else if (k === 'SETTINGS') openMenu('title');
+        else if (k === 'CONTROLS') state = 'controls';
+      }
+    }
+    return; }
   if (state === 'slots') {
     slotMsgT = Math.max(0, slotMsgT - dt);
     if (leftPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
@@ -3381,7 +3514,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + ((LH * TS - VH) - cy) * 0.1)); g.globalAlpha = 1; }
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + ((LH * TS - VH) - cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.dark) { g.fillStyle = '#1a1a22'; g.fillRect(0, 0, VW, VH); g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8); } // under the mountain there is only more mountain
-  else { drawLayer(BG.far, 0.15, VH - 90, cx, cy);
+  else if (SET.parallax !== 'off') { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(16,34,18,' + (0.4 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
@@ -3486,7 +3619,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const c of clouds2) { g.globalAlpha = Math.min(0.55, c.life * 0.3); g.fillStyle = c.sleep ? '#9a5aa8' : '#c8bcb0'; g.beginPath(); g.ellipse(Math.round(c.x - cx), Math.round(c.y - cy), c.r, c.r * 0.7, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   for (const lt of lights) if (lt.torch && lt.x > cx - 20 && lt.x < cx + VW + 20) g.drawImage(PROP.torch, Math.round(lt.x) - 3 - cx, Math.round(lt.y) - 4 - cy);
   if (L.arena && L.arena.boss === 'queen') { for (let ty = 0; ty < LH; ty++) for (let tx = Math.floor(L.arena.x0 / TS); tx < Math.floor(L.arena.x1 / TS); tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; const gx = tx * TS - cx, gy = ty * TS + 6 - cy; const gr = g.createRadialGradient(gx + n * 8, gy, 4, gx + n * 8, gy, n * 10 + 8); gr.addColorStop(0, 'rgba(255,220,120,0.35)'); gr.addColorStop(1, 'rgba(255,200,80,0)'); g.fillStyle = gr; g.fillRect(gx - 12, gy - 14, n * TS + 24, 28); } }
-  if (bossActive && L.arena && L.arena.tint) { g.globalAlpha = L.arena.tintA || 0.14; g.fillStyle = L.arena.tint; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
+  if (bossActive && L.arena && L.arena.tint && SET.tint !== 'off') { g.globalAlpha = (L.arena.tintA || 0.14) * (SET.tint === 'half' ? 0.5 : 1); g.fillStyle = L.arena.tint; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
   drawEscape(cx, cy);
   for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }
   for (const e of enemies) if (e.alive && e.t === 'spider') { g.strokeStyle = 'rgba(230,230,240,0.7)'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(e.x - cx) + 0.5, Math.round(e.restY - 26 - cy)); g.lineTo(Math.round(e.x - cx) + 0.5, Math.round(e.y - 8 - cy)); g.stroke(); }
@@ -3588,6 +3721,10 @@ function drawWorld(cx, cy, showPlayer) {
     const sprSet = e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
     const bigF = e.t === 'frog' ? 1.35 : e.t === 'ram' ? 1.5 : e.t === 'windcaller' ? 1.5 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
+    // a bright rim behind the sprite, for anyone who loses foes against the wood
+    if (SET.rim && sprSet && !e.harmless) { const rx = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0), ry = e.y - cy + bob; g.globalAlpha = 0.5;
+      for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, e.face, true, bigF * (1 + sq * 0.22), bigF * (1 - sq * 0.22));
+      g.globalAlpha = 1; }
     drawSet(sprSet, null, frame, e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0), e.y - cy + bob, e.face, e.flash > 0 || (wind && Math.floor(e.anim * 12) % 2 === 0), bigF * (1 + sq * 0.22), bigF * (1 - sq * 0.22));
     g.globalAlpha = 1;
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
@@ -3795,10 +3932,13 @@ function drawMenu() {
     if (sel) text('>', x + 10, yy, '#8fd160');
     text(k, x + 22, yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects volume' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambient volume' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour-safe tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     if (v) text('< ' + v + ' >', x + w - 12, yy, col, 'right');
   });
-  text(menuMsgT > 0 && menuMsg ? menuMsg : 'ESC close', VW / 2, y + h - 12, menuMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
+  { const k = M[menuI], tip = SETTING_TIPS[k];
+    if (menuMsgT > 0 && menuMsg) text(menuMsg, VW / 2, y + h - 12, '#ffd36b', 'center');
+    else if (tip) text(tip, VW / 2, y + h - 12, '#9aa39a', 'center', 6);
+    else text('ESC close', VW / 2, y + h - 12, '#9aa39a', 'center'); }
 }
 function drawSelect() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.5)'); vg.addColorStop(1, 'rgba(10,20,14,0.85)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -3909,8 +4049,19 @@ function render() {
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, VW / 2 - 98, 10, 196, Math.round(PROP.plank.height * 1.4));
     text('BRACKEN', VW / 2 + 2, 24, '#3a2214', 'center', 22); text('BRACKEN', VW / 2, 22, UI.gold, 'center', 22);
     text('a knight, a wood, a mountain', VW / 2, 50, UI.text, 'center', 6);
-    if (Math.floor(time * 2) % 2 === 0) text('PRESS ANY KEY', VW / 2, 118, UI.sel, 'center');
-    text(touchOn ? 'touch pad on screen' : 'ESC  settings and controls', VW / 2, 169, UI.dim, 'center', 6);
+    // the menu, on its own board so it reads over the gate
+    { const items = titleItems(), mw = 124, mx = VW / 2 - mw / 2, my = 82, mh = items.length * 12 + 18;
+      g.fillStyle = 'rgba(16,10,22,0.72)'; g.fillRect(mx, my, mw, mh);
+      g.strokeStyle = 'rgba(201,178,124,0.5)'; g.lineWidth = 1; g.strokeRect(mx + 0.5, my + 0.5, mw - 1, mh - 1);
+      items.forEach((k, i) => { const sel = i === titleI, yy = my + 5 + i * 12;
+        if (sel) { g.fillStyle = 'rgba(60,90,60,0.5)'; g.fillRect(mx + 2, yy - 2, mw - 4, 11); if (Math.floor(time * 3) % 2 === 0) text('>', mx + 6, yy, UI.sel); }
+        text(k, VW / 2 + 4, yy, sel ? UI.title : UI.dim, 'center'); });
+      // what waits in the save you would continue
+      const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
+      g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + 6, my + mh - 12, mw - 12, 1);
+      text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS WALKED' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
+        VW / 2, my + mh - 9, UI.dim, 'center', 6); }
+    text(touchOn ? 'touch pad on screen' : 'ARROWS choose   Z enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
   }
 
   if (state === 'slots') drawSlots();
@@ -3954,7 +4105,9 @@ function render() {
   dg.fillStyle = '#0b1410'; dg.fillRect(0, 0, disp.width, disp.height);
   dg.drawImage(buf, offX, offY, VW * S, VH * S);
   drawTouch();
-  if (SET.filter && SET.filter !== 'none') { const F = { warm: ['multiply', 'rgba(255,220,170,0.35)'], cool: ['multiply', 'rgba(180,210,255,0.35)'], sepia: ['multiply', 'rgba(230,200,150,0.5)'], night: ['multiply', 'rgba(120,130,200,0.45)'] }[SET.filter]; if (F) { dg.globalCompositeOperation = F[0]; dg.fillStyle = F[1]; dg.fillRect(offX, offY, VW * S, VH * S); dg.globalCompositeOperation = 'source-over'; } }
+  if (SET.filter && SET.filter !== 'none') { const F = { warm: ['multiply', 'rgba(255,220,170,0.35)'], cool: ['multiply', 'rgba(180,210,255,0.35)'], sepia: ['multiply', 'rgba(230,200,150,0.5)'], night: ['multiply', 'rgba(120,130,200,0.45)'], grey: ['saturation', 'hsl(0,0%,50%)'], vivid: ['saturation', 'hsl(0,100%,50%)'] }[SET.filter]; if (F) { dg.globalCompositeOperation = F[0]; dg.fillStyle = F[1]; dg.fillRect(offX, offY, VW * S, VH * S); dg.globalCompositeOperation = 'source-over'; } }
+  if (SET.bright && SET.bright !== 1) { dg.globalCompositeOperation = SET.bright > 1 ? 'lighter' : 'multiply'; dg.globalAlpha = SET.bright > 1 ? (SET.bright - 1) * 0.6 : 1; dg.fillStyle = SET.bright > 1 ? '#ffffff' : 'rgb(' + Math.round(255 * SET.bright) + ',' + Math.round(255 * SET.bright) + ',' + Math.round(255 * SET.bright) + ')'; dg.fillRect(offX, offY, VW * S, VH * S); dg.globalAlpha = 1; dg.globalCompositeOperation = 'source-over'; }
+  if (SET.grain) { dg.globalAlpha = 0.05; dg.fillStyle = '#ffffff'; for (let i = 0; i < 90; i++) dg.fillRect(offX + Math.random() * VW * S, offY + Math.random() * VH * S, S, S); dg.globalAlpha = 1; }
   if (SET.scanlines && S >= 2) { if (!scanPat) { const [pc, pg] = canvas(1, S); pg.fillStyle = 'rgba(0,0,0,0.22)'; pg.fillRect(0, S - 1, 1, 1); scanPat = dg.createPattern(pc, 'repeat'); } dg.fillStyle = scanPat; dg.fillRect(offX, offY, VW * S, VH * S); }
 }
 const fmt = t => { const m = Math.floor(t / 60), s = Math.floor(t % 60), d = Math.floor((t * 10) % 10); return m + ':' + String(s).padStart(2, '0') + (SET.tenths ? '.' + d : ''); };
