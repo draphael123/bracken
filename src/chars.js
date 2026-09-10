@@ -1024,6 +1024,49 @@ export function bakeForgemaster() {
 }
 
 // The shaman of the moor: a goblin in a purple robe under an antler headdress, bone beads, a crooked staff with a lit knot. 16x18. idle / cast / blink
+// THE SNUFFER - a hooded goblin with a long snuffing cone on a pole. It does not want you; it wants the lamps out.
+// 12x14, faces right. Frames: 0 walk1, 1 walk2, 2 reach (the cone up, about to snuff), 3 swipe (the pole across).
+export function bakeSnuffer() {
+  const NP = Object.assign({}, EP, { h: '#3a3448', H: '#1e1a2a', u: '#8a5a32', U: '#5c3a1d', z: '#5f5a52', Z: '#3a3444' });
+  const f = rows => outline(fromGrid(rows, NP, 1), OUT);
+  const hood = ['...hhhhhh...', '..hHhhhhHh..', '..hHgeogeh..', '..hhgggggh..', '...hhhhhh...'];
+  const torso = ['..hhhhhhhh..', '.hHhhhhhhHh.', '.hhhhhhhhhh.', '..hhhhhhhh..'];
+  const legA = ['..GG....GG..', '..GG....GG..', '.GGG....GGG.'];
+  const legB = ['...GG..GG...', '..GG....GG..', '.GG......GG.'];
+  // the pole and the cone: carried low while it walks, up when it reaches, level when it swings
+  const poleLow = ['..........u.', '..........u.', '.........zZ.', '.........zz.'];
+  const poleUp = ['.........zz.', '.........zZ.', '..........u.', '..........u.'];
+  const put = (base, over) => base.map((r, i) => over[i] ? merge(over[i], r) : r);
+  const walk1 = f([...hood, ...put(torso, poleLow), ...legA]);
+  const walk2 = f([...hood, ...put(torso, poleLow), ...legB]);
+  const reach = f(['.........zz.', '.........zZ.', ...hood.map((r, i) => i < 2 ? merge('..........u.', r) : r), ...torso, ...legA]);
+  const swipe = f([...hood, ...torso.map((r, i) => i === 1 ? merge('.....uuuuzZ.', r) : i === 2 ? merge('.........zz.', r) : r), ...legB]);
+  return pack([walk1, walk2, reach, swipe], 6, 15, 10, 14);
+}
+
+// THE SAILER - a moor goblin behind a plank of sail. Planted, it is nothing; in a gust it is a battering ram.
+// 14x14, faces right. Frames: 0 planted (sail down, braced), 1 sailing (sail up, feet off), 2 tumbled (over on its back).
+export function bakeSailer() {
+  const LP = Object.assign({}, EP, { c: '#c9b27c', C: '#8a7a58', u: '#8a5a32', U: '#5c3a1d', q: '#c9463d' });
+  const f = rows => outline(fromGrid(rows, LP, 1), OUT);
+  const planted = f([
+    '..............', '..............', '..............',
+    '...gggg....u..', '..ggeoge...u..', '..gggggg..cc..', '...gGGGg..cq..',
+    '..GGGGGGG.cc..', '.GGgggggG.cc..', '.GGgggggG.cc..', '..GgggggG.cc..',
+    '..GG...GG.cc..', '..GG...GG.Cc..', '.GGG...GGGCC..']);
+  const sailing = f([
+    '.......ccccccc', '.......cqqqqqc', '.......ccccccc',
+    '...gggg...u...', '..ggeoge..u...', '..gggggg..u...', '...gGGGg..u...',
+    '.GGGGGGGG.u...', 'GGgggggGG.u...', 'GGgggggGG.u...', '.GgggggGG.u...',
+    '..GG..GG......', '.GG....GG.....', '..............']);
+  const tumbled = f([
+    '..............', '..............', '..............', '..............',
+    '..............', '..cccccccccc..', '..cqqqqqqqqc..',
+    '..cccccccccc..', '.GGGGGGG..u...', 'GGgggeoGG.u...', 'GGgggggGG.u...',
+    '.GG..GG.......', 'GG....GG......', '..............']);
+  return pack([planted, sailing, tumbled], 7, 15, 12, 14);
+}
+
 export function bakeGoblinShaman() {
   const SH = Object.assign({}, EP, { v: '#9a5acc', V: '#5a2a8a', m: '#f0e4ff', u: '#8a5a32', a: '#e8dcc0' });
   const r = rows => outline(fromGrid(rows, SH, 1), OUT);

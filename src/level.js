@@ -881,6 +881,13 @@ function screePath() {
   ent('sprig', 290, 8, { face: -1 }); ent('deco', 288, 8, { kind: 'stone' });
   ent('check', 294, 8);
 
+  // ---- 5b. THE GULLY: one troll, twice the size, between you and the fold. The walls close and the fold gate opens when he goes down. ----
+  ent('sign', 296, 8, { text: 'THE HILL TROLL. HE IS TOO BIG TO TRADE WITH: HE HURLS WHEN YOU STAND OFF AND SWATS WHEN YOU CLOSE. THE ROCKS HE THROWS CAN BE PLUNGED. THE FOLD IS PAST HIM.' });
+  ent('troll', 302, 8, { face: -1, big: true, mini: true });
+  ent('deco', 299, 8, { kind: 'cairn' }); ent('deco', 306, 8, { kind: 'stone', v: 1 });
+  for (let y = 3; y <= 8; y++) set(309, y, T.PORT); // the fold gate: it opens when he falls
+  coins([300, 7], [305, 7]);
+
   // ---- 6. THE FOLD: the Ram Lord's walled pasture on the plateau ----
   ent('sign', 296, 8, { text: 'THE RAM LORD. HIS HIDE TURNS STEEL. A GREEN RING UNDER HIM MEANS HE IS DAZED: WHEN HE HITS THE WALL, AND FOR A BREATH WHEN HE LANDS FROM A LEAP. CUT HIM THEN. HE FEINTS: THE FIRST CHARGE MAY STOP SHORT. HE LEAPS: WATCH THE SHADOW. HE TOSSES.' });
   ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 327, 8, { kind: 'foldGate' });
@@ -896,6 +903,7 @@ function screePath() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 312 * TS, x1: 328 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 329, boss: 'ram', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
+    mini: { x0: 295 * TS, x1: 309 * TS, floor: 9 * TS, trigger: 298 * TS, wallL: 294, gate: 309, boss: 'troll' },
   }
   // ---- 4b. THE ROPEWAY: the gorge proper. A swing, a rope lift, the old mill's sails, another swing; harpies on the wind, rocks off the cliff, a ladder out of the bottom. ----
   const GA = grow(L, ret, 256, 56);
@@ -998,14 +1006,18 @@ function hangingVillage() {
   ent('sign', 8, 93, { text: 'THE LIFT RISES WHILE YOU STAND ON IT AND SINKS WHEN YOU STEP OFF. THE WINCH IS GOBLIN WORK. IT HOLDS.' });
 
   // ---- Tier 2. THE MARKET (walk right): hill folk and goblins live door to door; the Lamplighter wants three lanterns lit ----
-  ent('sign', 8, 79, { text: 'THE MARKET. THE LAMPLIGHTER HAS LOST THREE LAMPS TO THE SQUIRREL KNIGHTS. THE REEVE HATES A LIT LANTERN. THAT IS WORTH KNOWING.' });
-  ent('door', 14, 79, { kind: 'cottage', at: 14 }); ent('folk', 11, 79, { door: 14, alt: true }); ent('npc', 22, 79, { kind: 'lamplighter' }); ent('deco', 26, 79, { kind: 'lanternPost' });
+  ent('sign', 8, 79, { text: 'THE MARKET. THE LAMPLIGHTER HAS LOST THREE LAMPS TO THE SQUIRREL KNIGHTS. THE REEVE HATES A LIT LANTERN, SO THE GOBLINS SEND SNUFFERS UP THE BOUGHS TO PUT THE TOWN OUT. STRIKE A DARK LANTERN TWICE TO LIGHT IT. CUT THE SNUFFER AND IT STAYS LIT.' });
+  ent('door', 14, 79, { kind: 'cottage', at: 14 }); ent('folk', 11, 79, { door: 14, alt: true }); ent('npc', 22, 79, { kind: 'lamplighter' }); ent('deco', 26, 79, { kind: 'lanternPost' }); ent('lantern', 26, 79); ent('lantern', 56, 79); ent('lantern', 80, 79);
   ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' }); ent('stray', 44, 79, { kind: 'lamp' });
   ent('door', 50, 79, { at: 50 }); ent('folk', 47, 79, { door: 50 }); ent('deco', 56, 79, { kind: 'fence', v: 0 }); ent('door', 64, 79, { at: 64 }); ent('folk', 67, 79, { door: 64 });
-  ent('squirrel', 74, 79, { face: -1 }); ent('sprig', 84, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
+  ent('squirrel', 74, 79, { face: -1 }); ent('snuffer', 62, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
   plat(58, 76, 3); plat(78, 75, 3); coins([59, 75], [79, 74], [18, 77], [38, 77], [70, 77], [88, 77], [96, 77]);
   movers.push({ kind: 'swing', px: 44 * TS, py: 70 * TS, arm: 70, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 }); plat(40, 73, 2); plat(48, 72, 2); ent('spit', 49, 71, { face: -1 }); coins([44, 71]); // a rope swing over the well to a spitter's ledge
   ent('check', 96, 79);
+  // THE WEAVER: the wheel walk is webbed shut. She hangs over the far end of the market and comes down on a thread.
+  ent('sign', 70, 79, { text: 'THE WEAVER HANGS OVER THE WHEEL WALK. SHE COMES DOWN ON HER THREAD AND GOES BACK UP IT. HIT HER WHEN SHE IS DOWN. THE SNUFFERS PUT OUT WHAT YOU LIGHT: CUT THEM FIRST.' });
+  ent('spider', 88, 68, { drop: 150, big: true, mini: true });
+  for (let y = 73; y <= 79; y++) set(99, y, T.PORT); // her web across the wheel walk
   // 2 -> 3: the wheel walk: two water wheels stacked at the trunk lift you to the third bough
   band(1, W - 2, tops.t3); hole(100, 107, tops.t3);
   for (let i = 0; i < 4; i++) { movers.push({ kind: 'wheel', px: 104 * TS + 8, py: 75 * TS, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 }); movers.push({ kind: 'wheel', px: 104 * TS + 8, py: 68 * TS, r: 42, phase: i * Math.PI / 2 + 0.8, period: 6.4, x: 0, y: 0, w: 22, h: 6 }); }
@@ -1018,9 +1030,9 @@ function hangingVillage() {
   gusts.push({ x0: 20 * TS, x1: 90 * TS, y0: 12 * TS, y1: 20 * TS, dir: 1, period: 9, on: 2.2, phase: 3, alt: true, arena: true }); // the crown's crosswind, only while the Reeve fights
   hole(36, 40, tops.t3); ent('mover', 36, tops.t3, { len: 2, range: 3, speed: 36 }); hole(70, 74, tops.t3); ent('mover', 70, tops.t3, { len: 2, range: 3, speed: 36 }); // gaps in the bough with sliding boughs across them: the wind wants you off
   pit(52, 53, tops.t3); pit(30, 31, tops.t3); // pits the wind wants to push you into
-  ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('sapper', 60, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
+  ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('snuffer', 34, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
   plat(70, 62, 3); plat(40, 61, 3); coins([71, 61], [41, 60], [86, 63], [56, 63], [26, 63]);
-  ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' });
+  ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' }); ent('lantern', 14, 65); ent('lantern', 64, 65);
   ent('check', 20, 65); ent('stray', 71, 61, { kind: 'lamp' });
   // 3 -> 4: snapping branches up the trunk
   band(1, W - 2, tops.t4); hole(2, 9, tops.t4);
@@ -1046,10 +1058,10 @@ function hangingVillage() {
   ent('sign', 92, 51, { text: 'THE LAST CLIMB. SWING, THEN SWING AGAIN, THEN THE ROPE. OR HOLD INTO THE OCHRE ROCK TO CLING AND JUMP TO KICK UP IT. THE WIND IS WORSE UP HERE.' });
 
   // ---- Tier 5. THE LANTERN STAIR (walk left): the last lamp, a brute at the door, the way to the crown ----
-  ent('sign', 93, 37, { text: 'THE CROWN IS CLOSE. THE REEVE DOES NOT LIKE LIGHT: LIGHT EVERY LANTERN YOU PASS. THE LAMPLIGHTER WOULD.' });
+  ent('sign', 93, 37, { text: 'THE LANTERN STAIR. THE REEVE DOES NOT LIKE LIGHT: LIGHT EVERY LANTERN YOU PASS, AND KILL WHAT COMES TO PUT THEM OUT.' });
   ent('door', 88, 37, { kind: 'cottage', at: 88 }); ent('folk', 91, 37, { door: 88, alt: true }); ent('deco', 84, 37, { kind: 'lanternPost' });
   ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 60, 37, { kind: 'cottage', at: 60 }); ent('folk', 63, 37, { door: 60, alt: true });
-  ent('spider', 40, 30, { drop: 100 }); ent('stray', 30, 37, { kind: 'lamp' }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' });
+  ent('spider', 40, 30, { drop: 100 }); ent('snuffer', 54, 37, { face: -1 }); ent('snuffer', 24, 37, { face: 1 }); ent('stray', 30, 37, { kind: 'lamp' }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' }); ent('lantern', 20, 37); ent('lantern', 48, 37); ent('lantern', 84, 37);
   plat(76, 34, 3); plat(26, 33, 3); ent('silver', 28, 32); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
   pit(42, 43, tops.t5); pit(72, 73, tops.t5);
   hole(52, 57, tops.t5); shelf(52, tops.t5, 6); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 }); ent('wasp', 55, 33); ent('thorn', 36, 37, { face: 1 }); // snapping branch and a sliding bough on the way to the crown
@@ -1080,6 +1092,7 @@ function hangingVillage() {
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
     arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 26 * TS, wallL: 19, wallR: 90, boss: 'owl', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
+    mini: { x0: 72 * TS, x1: 99 * TS, floor: 80 * TS, trigger: 76 * TS, wallL: 71, gate: 99, boss: 'spider' },
   };
 }
 
@@ -1301,7 +1314,7 @@ function galeMoor() {
   menhir(232, 16, 21); ent('stray', 232, 15, { kind: 'kite' }); ent('vent', 228, 21, { period: 5, on: 3, h: 110, wind: true, phase: 3 });
   ent('kite', 197, 10); ent('kite', 220, 9); ent('kite', 236, 11); ent('harpy', 224, 7);
   for (let x = 200; x <= 205; x++) set(x, 22, 0); block(200, 205, 24, 29); pools.push({ x0: 200 * TS, x1: 206 * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 200 * TS, x1: 206 * TS });
-  ent('flagpost', 184, 21); ent('flagpost', 216, 21); ent('hare', 226, 21, { face: -1 });
+  ent('flagpost', 184, 21); ent('flagpost', 216, 21); ent('hare', 226, 21, { face: -1 }); ent('sailer', 202, 21, { face: -1 }); ent('sailer', 234, 21, { face: -1 });
   ent('sign', 181, 21, { text: 'THE KITE FIELD. THE GOBLINS HANG UNDER THE KITES AND DROP STONES. CUT THE STRING OR THE GOBLIN AND DOWN THEY BOTH COME. THE LOST KITES ARE ON THE POSTS.' });
   coins([188, 19], [194, 17], [210, 16], [217, 19], [230, 18], [237, 19]);
   ent('check', 238, 21);
@@ -1310,7 +1323,7 @@ function galeMoor() {
   block(240, 252, 22, 29); block(253, 264, 20, 29); block(265, 276, 18, 29); block(277, 288, 16, 29); block(289, 300, 14, 29);
   gusts.push({ x0: 240 * TS, x1: 301 * TS, y0: 4 * TS, y1: 23 * TS, dir: -1, period: 6, on: 3.2, phase: 1, moor: true, k: 1.1 });
   ent('vent', 250, 21, { period: 4, on: 2.6, h: 80, wind: true }); ent('vent', 262, 19, { period: 4, on: 2.6, h: 80, wind: true, phase: 1 }); ent('vent', 274, 17, { period: 4, on: 2.6, h: 80, wind: true, phase: 2 }); ent('vent', 286, 15, { period: 4, on: 2.6, h: 80, wind: true, phase: 3 });
-  ent('harpy', 262, 8); ent('harpy', 286, 5); ent('hare', 270, 17, { face: -1 }); ent('hare', 294, 13, { face: -1 });
+  ent('harpy', 262, 8); ent('harpy', 286, 5); ent('hare', 270, 17, { face: -1 }); ent('hare', 294, 13, { face: -1 }); ent('sailer', 258, 19, { face: 1 }); ent('sailer', 282, 15, { face: 1 });
   ent('flagpost', 246, 21); ent('flagpost', 282, 15);
   ent('sign', 242, 21, { text: 'THE RIDGE. THE WIND COMES DOWN IT AND WILL NOT LET YOU UP. WAIT BY AN UPDRAFT FOR THE LULL, RIDE IT, AND RUN FOR THE NEXT.' });
   coins([248, 20], [258, 18], [268, 16], [280, 14], [292, 12], [298, 12]);
@@ -1342,9 +1355,15 @@ function galeMoor() {
   ent('check', 436, 13);
 
   // ---- 9. THE FLAG ROAD: the last walk to the summit. Stones, hares, and the flags all pointing one way. ----
-  for (const [x, top] of [[450, 11], [462, 10], [470, 12]]) pillar(x, top, 13);
-  ent('deco', 444, 13, { kind: 'cairn' }); ent('deco', 456, 13, { kind: 'stone', v: 1 }); ent('flagpost', 447, 13); ent('flagpost', 466, 13);
-  ent('hare', 454, 13, { face: -1 }); ent('hare', 468, 13, { face: 1 }); ent('harpy', 458, 4);
+  for (const [x, top] of [[466, 10], [471, 12]]) pillar(x, top, 13);
+  ent('deco', 444, 13, { kind: 'cairn' }); ent('deco', 456, 13, { kind: 'stone', v: 1 }); ent('flagpost', 441, 13); ent('flagpost', 460, 13);
+  ent('hare', 468, 13, { face: 1 }); ent('harpy', 458, 4);
+  // ---- 9b. THE MASTHEAD: the biggest sail on the moor, on a walled stretch where the wind turns every few breaths. ----
+  ent('sign', 439, 13, { text: 'THE MASTHEAD. WHILE THE WIND IS IN HER SAIL SHE CANNOT BE STOPPED AND SHE CANNOT STEER. BLOCK HER OR LET THE WALL TAKE HER, THEN CUT HER WHILE SHE IS DOWN. IN THE LULL SHE IS JUST A GOBLIN.' });
+  ent('sailer', 452, 13, { face: -1, big: true, mini: true });
+  gusts.push({ x0: 438 * TS, x1: 464 * TS, y0: 4 * TS, y1: 14 * TS, dir: 1, period: 3.4, on: 1.5, phase: 0, alt: true, moor: true, k: 1.3 });
+  for (let y = 8; y <= 13; y++) set(463, y, T.PORT);
+  coins([446, 12], [458, 12]);
   gusts.push({ x0: 440 * TS, x1: 476 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 6, on: 2, phase: 1, moor: true, k: 1.2 });
   ent('sign', 442, 13, { text: 'THE FLAG ROAD. THE SHAMAN IS ON THE STONES AHEAD. HE WILL NOT STAND STILL, AND NEITHER WILL THE WIND. THE STONES ARE HIS STAIR; THE WIND IS YOURS.' });
   coins([446, 12], [452, 9], [458, 12], [464, 8], [472, 10]); ent('check', 474, 13);
@@ -1370,6 +1389,7 @@ function galeMoor() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 99999, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 477 * TS, x1: 521 * TS, floor: 13 * TS, trigger: 484 * TS, wallL: 476, wallR: 522, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
+    mini: { x0: 438 * TS, x1: 463 * TS, floor: 14 * TS, trigger: 442 * TS, wallL: 437, gate: 463, boss: 'sailer' },
   };
 }
 
