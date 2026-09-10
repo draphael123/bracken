@@ -1212,6 +1212,90 @@ function theShop() {
   };
 }
 
+// ---------- Level 9. GALE MOOR: the high moor above the mine. The wind is the verb: it carries you, it pins you, it lifts you. ----------
+function galeMoor() {
+  const L = painter(332, 30);
+  const { block, floor, plat, spikes, ent, coins, set } = L;
+  const movers = [], gusts = [], pools = [], hags = [], stone = [];
+  const menhir = (x, y0, y1) => { block(x, x, y0, y1); stone.push([x, x, y0, y1]); };
+  const plank = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
+  const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+
+  // ---- 1. THE MOOR GATE: heather, standing stones, the last still air before the causeway ----
+  floor(0, 40, 22);
+  ent('sign', 4, 21, { text: 'GALE MOOR. THE WIND OWNS THIS GROUND. THE FLAGS SHOW IT COMING: JUMP INTO A GUST AND IT CARRIES YOU FURTHER THAN YOUR LEGS CAN. THE UPDRAFTS LIFT YOU. THE HARES RUN WITH IT.' });
+  ent('npc', 9, 21, { kind: 'squire' }); ent('flagpost', 14, 21); ent('deco', 20, 21, { kind: 'stone', v: 0 }); ent('deco', 30, 21, { kind: 'cairn' }); ent('flagpost', 34, 21);
+  ent('hare', 26, 21, { face: 1 }); coins([12, 20], [18, 19], [24, 20]);
+  ent('check', 38, 21);
+
+  // ---- 2. THE CAUSEWAY: posts and planks over the bog. The gaps are longer than a jump; the gusts make up the rest. Stand still in the bog and it stands up. ----
+  block(40, 111, 25, 29); pools.push({ x0: 41 * TS, x1: 111 * TS, y: 24 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 41 * TS, x1: 111 * TS });
+  for (const [x0, x1] of [[41, 47], [52, 57], [62, 67], [72, 77], [82, 87], [92, 97], [102, 110]]) { plank(x0, x1, 21); ent('deco', x0, 20, { kind: 'fence', v: 0 }); }
+  gusts.push({ x0: 40 * TS, x1: 112 * TS, y0: 8 * TS, y1: 24 * TS, dir: 1, period: 5, on: 2.2, phase: 0, moor: true, k: 1.5 });
+  ent('flagpost', 44, 20); ent('flagpost', 78, 20); ent('flagpost', 108, 20);
+  ent('kite', 62, 11); ent('kite', 92, 11); ent('sign', 42, 20, { text: 'THE CAUSEWAY. WAIT FOR THE GUST, THEN JUMP. THE BOG BELOW IS SLOW, AND SOMETHING IN IT DOES NOT LIKE A STANDING MAN.' });
+  coins([50, 18], [60, 17], [70, 18], [80, 17], [90, 18], [100, 18]);
+
+  // ---- 3. THE STONE CIRCLE: the wind spins round the ring, every gust the other way. The silver is on the centre stone. ----
+  floor(111, 150, 22);
+  menhir(116, 19, 21); menhir(144, 19, 21); menhir(130, 17, 21); ent('silver', 130, 16); ent('vent', 126, 21, { period: 4, on: 2.4, h: 100, wind: true });
+  for (const x of [120, 124, 136, 140]) ent('deco', x, 21, { kind: 'stone', v: x % 3 });
+  gusts.push({ x0: 112 * TS, x1: 149 * TS, y0: 8 * TS, y1: 23 * TS, dir: 1, period: 2.8, on: 1.3, phase: 0.4, alt: true, moor: true, k: 1.2 });
+  ent('flagpost', 118, 21); ent('flagpost', 142, 21); ent('hare', 122, 21, { face: 1 }); ent('hare', 138, 21, { face: -1 });
+  ent('sign', 112, 21, { text: 'THE CIRCLE. THE WIND GOES ROUND THE STONES, ONE WAY AND THEN THE OTHER. THE UPDRAFT BY THE CENTRE STONE, AND THE RIGHT GUST, PUT YOU ON TOP OF IT.' });
+  coins([118, 20], [123, 19], [127, 18], [134, 18], [138, 19], [147, 20]);
+  ent('check', 148, 21);
+
+  // ---- 4. THE BOTHY: the lee of the hill. Still air, a warm door, and Tam, who goes no higher. ----
+  floor(150, 180, 22);
+  ent('deco', 158, 21, { kind: 'bothy' }); ent('npc', 164, 21, { kind: 'squire', bothy: true }); ent('torch', 161, 21); ent('deco', 172, 21, { kind: 'fence', v: 1 });
+  ent('sign', 153, 21, { text: 'THE LEE OF THE HILL. NO WIND HERE. THE SHEPHERD\'S CHILDREN LOST THREE KITES ON THE FIELD AHEAD, UP ON THE POSTS. THE WIND WILL LIFT YOU TO THEM.' });
+  ent('check', 176, 21); coins([156, 20], [168, 20]);
+
+  // ---- 5. THE KITE FIELD: goblins hang from box kites and drop stones. Three lost kites on tall posts, reached on the updrafts. ----
+  floor(180, 240, 22);
+  gusts.push({ x0: 180 * TS, x1: 240 * TS, y0: 4 * TS, y1: 23 * TS, dir: 1, period: 6, on: 2.4, phase: 2, moor: true, k: 1.3 });
+  menhir(190, 15, 21); ent('stray', 190, 14, { kind: 'kite' }); ent('vent', 186, 21, { period: 5, on: 3, h: 120, wind: true });
+  menhir(212, 13, 21); ent('stray', 212, 12, { kind: 'kite' }); ent('vent', 208, 21, { period: 5, on: 3, h: 150, wind: true, phase: 1.5 });
+  menhir(232, 16, 21); ent('stray', 232, 15, { kind: 'kite' }); ent('vent', 228, 21, { period: 5, on: 3, h: 110, wind: true, phase: 3 });
+  ent('kite', 197, 10); ent('kite', 220, 9); ent('kite', 236, 11); ent('harpy', 224, 7);
+  for (let x = 200; x <= 205; x++) set(x, 22, 0); block(200, 205, 24, 29); pools.push({ x0: 200 * TS, x1: 206 * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 200 * TS, x1: 206 * TS });
+  ent('flagpost', 184, 21); ent('flagpost', 216, 21); ent('hare', 226, 21, { face: -1 });
+  ent('sign', 181, 21, { text: 'THE KITE FIELD. THE GOBLINS HANG UNDER THE KITES AND DROP STONES. CUT THE STRING OR THE GOBLIN AND DOWN THEY BOTH COME. THE LOST KITES ARE ON THE POSTS.' });
+  coins([188, 19], [194, 17], [210, 16], [217, 19], [230, 18], [237, 19]);
+  ent('check', 238, 21);
+
+  // ---- 6. THE RIDGE RUN: the wind against you the whole way up. The updrafts by each step are the only way to make ground. ----
+  block(240, 252, 22, 29); block(253, 264, 20, 29); block(265, 276, 18, 29); block(277, 288, 16, 29); block(289, 300, 14, 29);
+  gusts.push({ x0: 240 * TS, x1: 301 * TS, y0: 4 * TS, y1: 23 * TS, dir: -1, period: 6, on: 3.2, phase: 1, moor: true, k: 1.1 });
+  ent('vent', 250, 21, { period: 4, on: 2.6, h: 80, wind: true }); ent('vent', 262, 19, { period: 4, on: 2.6, h: 80, wind: true, phase: 1 }); ent('vent', 274, 17, { period: 4, on: 2.6, h: 80, wind: true, phase: 2 }); ent('vent', 286, 15, { period: 4, on: 2.6, h: 80, wind: true, phase: 3 });
+  ent('harpy', 262, 8); ent('harpy', 286, 5); ent('hare', 270, 17, { face: -1 }); ent('hare', 294, 13, { face: -1 });
+  ent('flagpost', 246, 21); ent('flagpost', 282, 15);
+  ent('sign', 242, 21, { text: 'THE RIDGE. THE WIND COMES DOWN IT AND WILL NOT LET YOU UP. WAIT BY AN UPDRAFT FOR THE LULL, RIDE IT, AND RUN FOR THE NEXT.' });
+  coins([248, 20], [258, 18], [268, 16], [280, 14], [292, 12], [298, 12]);
+  ent('check', 298, 13);
+
+  // ---- 7. THE SUMMIT: a stair into cloud, and the Windcaller on the highest stone with his war-kite on four lines. ----
+  block(301, 331, 14, 29);
+  ladder(302, 303, 6, 13); for (let y = 6; y <= 13; y++) set(304, y, 0);
+  spikes(306, 307, 13); menhir(318, 10, 13); menhir(319, 10, 13);
+  plat(312, 12, 2); plat(315, 10, 2); plat(322, 10, 2); plat(325, 12, 2);
+  for (const x of [308, 312, 324, 327]) ent('tether', x, 13);
+  ent('windcaller', 318, 9);
+  ent('sign', 305, 13, { text: 'THE WINDCALLER. HIS KITE HOLDS THE SKY ON FOUR LINES. CUT A LINE AND THE KITE PULLS HIM OFF HIS FEET: CUT HIM THEN. CUT ALL FOUR AND THE WIND IS YOURS. WHEN HE DRAWS BREATH, EVERYTHING FALLS.' });
+  ent('check', 309, 13); ent('gate', 329, 13);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, thermals: true,
+    duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
+    palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
+    quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
+    weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 300 * TS, x1: 99999, kind: 'mist' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 306 * TS, x1: 329 * TS, floor: 14 * TS, trigger: 310 * TS, wallL: 305, wallR: 330, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
@@ -1221,6 +1305,7 @@ export const LEVELS = [
   { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', build: hangingVillage, needs: 'scree' },
   { id: 'mineworks', name: 'THE GLASSWORKS', sub: 'the mine that broke into light', build: theMineworks, needs: 'hanging' },
+  { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', build: galeMoor, needs: 'mineworks' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
 ];
