@@ -154,7 +154,22 @@ layer so the parallax reads as depth. Hits leave an impact star and squash the f
 a plunge landing sends a shockwave through the dust, a parried blow flashes steel, and turning at a
 run kicks up a skid.
 
-## The four arenas
+**Kingswood** (unlocks when Sporewood is cleared): the goblins' own forest, a rust-and-gold dawn
+under living trunks they have hollowed into halls. Townsfolk bolt for their doors and slam them.
+Thieves snatch your level gold and run (catch one and it comes back with interest; the Thief Cloak
+in the loft above the court stops them cold). Pikemen turn your blade from the front: jump them,
+get behind, or throw the shield. Alarm bells: a goblin runs to ring one and a portcullis drops
+ahead; break the bell first, or take the other road. The level forks twice into a HIGH ROAD of
+canopy walkways and swinging platforms and a LOW ROAD through the burrows, where the goblins' own
+traps (a lever that swings a log ram, a pressure plate that drops a cage) can be turned on them.
+Midway, the kennels: the HOUND MASTER rides a great hound and whistles the pack. Block his charge
+and the hound rears; plunge the rider to unseat him, and he mounts again if you are slow. The
+court at the end is a red carpet, banners, a gallery of watching goblins, and KING GORM UNDERLEAF
+on a palanquin carried by four bearers. Cut the bearers and the throne falls; then the sceptre,
+the shout that throws you back, and goblets; at the last he stands, and the court goes quiet.
+Its own music, Juhani Junkala's Retro Game Music Pack (CC0), with a second boss track for the King.
+
+## The five arenas
 
 Each boss fights somewhere that looks like nowhere else. The hive clearing is walled by vines and
 hung with papery combs that drip honey while bees drift through amber light. The Croaking Court is
@@ -200,13 +215,21 @@ with a habit: Steel; Ember (foes burn after a hit); Frost (hits hold foes still)
 shake out a coin); Shadow Edge (light, swings cost 7 stamina); Thorn (each hit mends 2); Moonsilver
 (15 a swing, shoves hard, costs 16).
 
+## Relics
+
+One per level, hidden in the caches, kept until you die: the HORNET CROWN in the wood (stomps strike
+like plunges), the HUNTER'S CHARM in the marsh (gold comes to you), the IRON GAUNTLET on the ravine
+net (swings cost no stamina), the GLOW LANTERN in the lurker grove (spores cannot put you to sleep),
+the THIEF CLOAK above the court (thieves cannot take your gold).
+
 ## Skills
 
 The store's SKILLS tab opens once the Stockade is cleared (the results card and the map point you
 there). SHIELD THROW (80 gold): press F (B on a gamepad) to hurl the shield forward. It costs 20
 stamina and comes back to you after about half a screen or on hitting a wall; anything it passes
-through takes 15, arrows and seeds in its path are swatted down, and puffballs pop. Two and a half
-seconds of cooldown, and you cannot block while it is away. Made for archers, spitters and shamans
+hits the first thing it meets: 15 to archers, spitters, shamans, wasps, drones and thieves, 10 to
+anything else; arrows and seeds in its path are swatted down, and puffballs pop. Two and a half
+seconds of cooldown from the catch, and you cannot block while it is away. Made for archers, spitters and shamans
 on ledges you would rather not climb.
 
 ## HUD, menus and map

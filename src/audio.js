@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', boss: './audio/boss.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
+const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.ogg', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -204,5 +204,5 @@ Object.assign(SFX, {
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'boss', 'select'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'theme3', 'boss', 'boss2', 'ending', 'select'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain'];

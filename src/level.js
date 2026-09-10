@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -65,7 +65,7 @@ function brackenWood() {
   block(144, 146, 10, 11);
   ent('spit', 145, 9, { face: -1 });
   ent('wasp', 145, 7);
-  plat(148, 5, 5); coins([149, 4], [150, 4], [151, 4], [152, 4]); // pogo the wasp for the cache
+  plat(148, 5, 5); coins([149, 4], [150, 4], [151, 4], [152, 4]); ent('relic', 150, 4, { kind: 'crown' }); // pogo the wasp for the cache
   ent('thorn', 153, 11, { face: -1 });
   crate(157, 11);
   ent('mover', 161, 12, { len: 3, range: 8 });
@@ -171,7 +171,7 @@ function marshWood() {
   ent('sign', 112, 17, { text: 'SHALLOWS ARE SLOW AND TIRING.' });
   ent('hopper', 118, 18, { face: -1 }); ent('hopper', 125, 18, { face: 1, color: 'yellow' });
   coins([115, 15], [121, 15], [127, 15]);
-  reeds(120, 14, 2); reeds(124, 11, 2); coins([124, 9], [125, 9], [121, 12]); // the reed cache
+  reeds(120, 14, 2); reeds(124, 11, 2); coins([124, 9], [125, 9], [121, 12]); ent('relic', 125, 10, { kind: 'charm' }); // the reed cache
 
   // ---- 6. Drift stream: logs ride the current, against you ----
   water(131, 160, 19);
@@ -262,7 +262,7 @@ function theStockade() {
 
   // ---- 3. Rope bridge over the ravine, with a goblin at the far end holding a knife ----
   planks(71, 74, 20); planks(75, 86, 21); planks(87, 90, 20);
-  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); // the ravine cache, on the net
+  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('relic', 88, 24, { kind: 'gauntlet' }); // the ravine cache, on the net
   plat(78, 23, 3); plat(83, 23, 3); block(87, 90, 23, 27); block(89, 90, 22, 27);
   ent('bridge', 71, 20, { x1: 90 });
   floor(91, 185, 20);
@@ -376,7 +376,7 @@ function sporewood() {
   // ---- 3. The lurker grove: some of the mushrooms are hungry ----
   ent('check', 63, 11);
   ent('lurker', 70, 11); ent('sporeling', 74, 11, { face: -1 }); ent('puffball', 76, 11); ent('lurker', 79, 11); ent('roller', 85, 11, { face: -1 });
-  ent('glow', 66, 11); ent('glow', 83, 11); ent('lurker', 87, 11); bouncer(90, 11); shelf(91, 7, 3); coins([91, 6], [92, 6], [93, 6]); // the grove cache ent('sporeling', 91, 11, { face: -1 }); ent('puffball', 94, 11); ent('glow', 97, 11);
+  ent('glow', 66, 11); ent('glow', 83, 11); ent('lurker', 87, 11); bouncer(90, 11); shelf(91, 7, 3); coins([91, 6], [92, 6], [93, 6]); ent('relic', 92, 6, { kind: 'lantern' }); // the grove cache ent('sporeling', 91, 11, { face: -1 }); ent('puffball', 94, 11); ent('glow', 97, 11);
   coins([72, 9], [81, 9], [89, 9]);
 
   // ---- 4. Shelf climb under the shaman; shelves snap under you ----
@@ -449,9 +449,114 @@ function sporewood() {
   };
 }
 
+
+function kingswood() {
+  const L = painter(430, 28);
+  const { block, floor, plat, crate, ent, coins, set } = L;
+  const gate = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
+  const ceiling = (x0, x1, y) => block(x0, x1, y - 3, y); // a roof three tiles thick, open sky above it
+  const movers = [];
+
+  // ---- 1. The rust wood: goblins live here. Townsfolk bolt for their doors. ----
+  floor(0, 44, 20);
+  ent('sign', 4, 19, { text: 'THE GOBLINS LIVE HERE. YOU ARE NOT WELCOME.' });
+  ent('door', 12, 19, { at: 12 }); ent('folk', 9, 19, { door: 12 }); ent('folk', 17, 19, { door: 12, alt: true });
+  ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]);
+  ent('sign', 29, 19, { text: 'THIEVES SNATCH GOLD. CATCH THEM FOR INTEREST.' });
+  ent('thief', 34, 19, { face: -1 }); ent('door', 40, 19); ent('folk', 38, 19, { door: 40 });
+  ent('check', 43, 19);
+
+  // ---- 2. The first hall: inside a trunk. A bell at the far end and a gate under it. ----
+  ceiling(45, 84, 16); block(45, 84, 20, 27);
+  ent('torch', 48, 19); ent('torch', 60, 19); ent('torch', 72, 19); ent('torch', 82, 19);
+  ent('sign', 47, 19, { text: 'PIKES HOLD THE LINE. JUMP THEM, OR THROW.' });
+  ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('pike', 68, 19, { face: -1 });
+  ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 });
+  gate(84, 15, 19);
+  coins([52, 18], [58, 17], [65, 18], [74, 17]);
+  // the way around the gate if the bell rings: a hatch in the ceiling onto the high road
+  for (let y = 13; y <= 16; y++) set(78, y, 0); plat(77, 12, 3);
+
+  // ---- 3. FORK ONE. High road: canopy walkways and swings, thieves and wasps. Low road: the burrow with a ram and a drop cage. ----
+  // high road (rows 6-12)
+  plat(85, 12, 4); plat(91, 10, 3); plat(96, 8, 4);
+  movers.push({ kind: 'swing', px: 104 * TS, py: 2 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
+  plat(111, 8, 3); ent('thief', 112, 7, { face: -1 }); plat(116, 9, 4); ent('wasp', 121, 7);
+  movers.push({ kind: 'swing', px: 127 * TS, py: 2 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period: 3.6, phase: 1.6 });
+  plat(134, 9, 4); ent('thief', 136, 8, { face: -1 }); plat(140, 11, 3); plat(145, 13, 4);
+  coins([87, 11], [93, 9], [98, 7], [104, 6], [112, 6], [118, 8], [127, 6], [135, 8], [141, 10], [146, 12]);
+  // low road (rows 18-22): the burrow
+  block(85, 150, 22, 27); ceiling(85, 150, 16);
+  for (let x = 85; x <= 150; x++) for (let y = 17; y <= 21; y++) set(x, y, 0);
+  ent('torch', 88, 21); ent('torch', 104, 21); ent('torch', 120, 21); ent('torch', 136, 21);
+  ent('pike', 96, 21, { face: -1 }); ent('lever', 100, 21, { ram: 106 }); ent('ram', 106, 17); ent('brute', 110, 21, { face: -1 });
+  ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
+  ent('sign', 90, 21, { text: 'THEIR TRAPS: THE LEVER SWINGS THE RAM, THE PLATE DROPS THE CAGE.' });
+  ent('pike', 142, 21, { face: -1 }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
+  // the roads rejoin at 150: a slope of ledges from the burrow up to the yard
+  block(150, 152, 18, 27); block(153, 158, 16, 27); block(159, 164, 14, 27); block(165, 190, 14, 27);
+  ent('check', 167, 13);
+
+  // ---- 4. The kennels: the Hound Master. Walls close, the gate opens when he falls. ----
+  ent('torch', 170, 13); ent('torch', 188, 13); ent('cage', 172, 13, { kind: 'bird' });
+  ent('master', 182, 13);
+  ent('sign', 169, 13, { text: 'THE HOUND MASTER. BLOCK THE CHARGE, THEN PLUNGE THE RIDER.' });
+  gate(190, 9, 13);
+  block(191, 210, 14, 27); ent('torch', 194, 13); coins([196, 12], [200, 12], [204, 12]); ent('check', 208, 13);
+
+  // ---- 5. FORK TWO. Canopy (rows 5-10) over the roots (rows 16-20). ----
+  // canopy
+  plat(211, 11, 3); plat(216, 9, 3); plat(221, 7, 4);
+  movers.push({ kind: 'swing', px: 231 * TS, py: 1 * TS, arm: 90, x: 0, y: 0, w: 48, h: 8, period: 3.0, phase: 0.8 });
+  plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1 });
+  movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
+  plat(261, 9, 3); plat(266, 11, 3); plat(271, 13, 4);
+  coins([212, 10], [217, 8], [223, 6], [231, 5], [239, 5], [245, 7], [254, 5], [262, 8], [267, 10], [272, 12]);
+  // roots
+  block(211, 275, 21, 27); ceiling(211, 275, 15);
+  for (let x = 211; x <= 275; x++) for (let y = 16; y <= 20; y++) set(x, y, 0);
+  ent('torch', 214, 20); ent('torch', 230, 20); ent('torch', 246, 20); ent('torch', 262, 20);
+  ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
+  ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
+  coins([218, 19], [236, 19], [252, 18], [266, 19], [273, 19]);
+  block(275, 277, 17, 27); block(278, 281, 15, 27); block(282, 300, 14, 27);
+  ent('check', 284, 13);
+
+  // ---- 6. The processional: townsfolk line a carpet, guards bar the way, banners hang. ----
+  ent('sign', 286, 13, { text: 'THE COURT. THEY ARE WATCHING.' });
+  for (const x of [288, 292, 296]) ent('carpet', x, 13);
+  ent('folk', 289, 13, { door: 300, alt: true }); ent('folk', 293, 13, { door: 300 }); ent('door', 299, 13);
+  ent('shield', 295, 13, { face: -1 }); ent('shield', 298, 13, { face: -1 });
+  ent('deco', 290, 13, { kind: 'banner', v: 0 }); ent('deco', 297, 13, { kind: 'banner', v: 1 });
+  ent('thief', 302, 13, { face: -1 }); coins([289, 12], [294, 12]);
+  // the cache: a hidden loft above the court holds the Thief Cloak
+  plat(303, 9, 3); plat(307, 7, 3); coins([304, 8], [308, 6], [309, 6]); ent('relic', 308, 6, { kind: 'cloak' });
+  ent('check', 312, 13);
+
+  // ---- 7. The throne room: King Gorm Underleaf on his palanquin. ----
+  block(300, 429, 14, 27);
+  for (const x of [318, 322, 326, 330, 334, 338, 342, 346, 350, 354, 358, 362, 366]) ent('carpet', x, 13);
+  ent('torch', 320, 13); ent('torch', 366, 13); ent('deco', 322, 13, { kind: 'banner', v: 0 }); ent('deco', 364, 13, { kind: 'banner', v: 1 });
+  ent('deco', 330, 13, { kind: 'skullPile', v: 0 }); ent('deco', 356, 13, { kind: 'skullPile', v: 1 });
+  plat(324, 9, 4); plat(360, 9, 4);
+  for (const x of [319, 325, 331, 355, 361, 367]) ent('folk', x, 9, { court: true, alt: x % 2 === 0 });
+  ent('king', 344, 13);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
+    duskStart: -1, duskLen: 1, music: 'theme3', night: false, glowNight: true,
+    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
+    weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'boss2', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
+    mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'master' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', build: sporewood, needs: 'stockade' },
+  { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
 ];

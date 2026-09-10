@@ -741,3 +741,60 @@ export function bakeCombPlat(seed, end) {
   if (end === 'L') rect(g, 0, 1, 2, 9, '#6a4a18'); if (end === 'R') rect(g, T - 2, 1, 2, 9, '#6a4a18');
   return outline(c, OUT);
 }
+
+// Relics: five small icons, 10x12.
+export function bakeRelics() {
+  const mk = f => { const [c, g] = canvas(10, 12); f(g); return outline(c, OUT); };
+  return {
+    crown: mk(g => { rect(g, 1, 5, 8, 6, '#e0b040'); for (const x of [1, 4, 7]) rect(g, x, 2, 2, 3, '#e0b040'); px(g, 2, 2, '#fff6c8'); px(g, 5, 2, '#c9463d'); px(g, 8, 2, '#fff6c8'); rect(g, 2, 8, 6, 1, '#b8842a'); }),
+    charm: mk(g => { rect(g, 4, 0, 2, 3, '#8a5a32'); ellipse(g, 5, 7, 4, 4, '#ffd34a', '#b8842a'); px(g, 4, 6, '#fff6c8'); rect(g, 4, 8, 2, 1, '#b8842a'); }),
+    gauntlet: mk(g => { rect(g, 2, 1, 6, 10, '#c9d1dc'); rect(g, 2, 1, 6, 1, '#7c8797'); rect(g, 3, 4, 1, 6, '#7c8797'); rect(g, 5, 4, 1, 6, '#7c8797'); rect(g, 0, 5, 3, 3, '#c9d1dc'); px(g, 3, 2, '#fff6e0'); }),
+    lantern: mk(g => { rect(g, 4, 0, 2, 2, '#5c3a1d'); rect(g, 2, 2, 6, 8, '#4aa0b0'); rect(g, 3, 3, 4, 6, '#bff0f0'); rect(g, 2, 10, 6, 1, '#5c3a1d'); px(g, 4, 5, '#ffffff'); }),
+    cloak: mk(g => { fillPoly(g, [[5, 0], [0, 9], [10, 9]], '#6a3aa0'); fillPoly(g, [[5, 2], [2, 8], [8, 8]], '#40206a'); rect(g, 3, 9, 4, 2, '#6a3aa0'); px(g, 5, 1, '#ffd36b'); }),
+  };
+}
+
+// ---------- Kingswood props ----------
+// Alarm bell on a post. Frames: still, swinging left, swinging right; broken.
+export function bakeBell() {
+  const mk = (tilt, broken) => { const [c, g] = canvas(16, 24); rect(g, 7, 6, 2, 18, '#5c3a1d'); rect(g, 2, 4, 12, 3, '#5c3a1d'); rect(g, 2, 4, 12, 1, '#7a4e28');
+    if (broken) { fillPoly(g, [[5, 8], [11, 8], [13, 16], [3, 16]], '#8a7a3a'); rect(g, 4, 17, 3, 2, '#b8842a'); rect(g, 9, 18, 3, 2, '#b8842a'); return outline(c, OUT); }
+    g.save(); g.translate(8, 7); g.rotate(tilt); fillPoly(g, [[-3, 0], [3, 0], [5, 8], [-5, 8]], '#e0b040'); rect(g, -5, 8, 10, 2, '#b8842a'); rect(g, -1, 10, 2, 2, '#5c3a1d'); px(g, -2, 2, '#fff6c8'); g.restore(); return outline(c, OUT); };
+  return [mk(0, false), mk(-0.5, false), mk(0.5, false), mk(0, true)];
+}
+// Portcullis tile: iron bars.
+export function bakePortcullis(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); for (let x = 1; x < T; x += 4) rect(g, x, 0, 2, T, '#5a6270'); for (let y = 2; y < T; y += 6) rect(g, 0, y, T, 2, '#7c8797'); for (let i = 0; i < 3; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, '#9aa3b0'); return c; }
+// The log ram: a heavy log with iron bands, drawn along its swing.
+export function bakeRamLog() { const [c, g] = canvas(12, 40); rect(g, 2, 0, 8, 40, '#5c3a1d'); rect(g, 2, 0, 2, 40, '#7a4e28'); rect(g, 8, 0, 2, 40, '#3d2712'); for (const y of [6, 20, 34]) { rect(g, 1, y, 10, 3, '#5a6270'); rect(g, 1, y, 10, 1, '#9aa3b0'); } for (let i = 0; i < 6; i++) px(g, 4 + (i % 3), 3 + i * 6, '#3d2712'); rect(g, 0, 36, 12, 4, '#7c8797'); return outline(c, OUT); }
+// A lever post for the ram.
+export function bakeLever(on) { const [c, g] = canvas(10, 14); rect(g, 3, 6, 4, 8, '#5a6270'); rect(g, 3, 6, 4, 1, '#9aa3b0'); line(g, 5, 8, on ? 9 : 1, 1, '#c9d1dc', 2); px(g, on ? 9 : 1, 1, '#c9463d'); return outline(c, OUT); }
+// Pressure plate.
+export function bakePlate(down) { const [c, g] = canvas(T, 6); rect(g, 1, down ? 4 : 2, T - 2, down ? 2 : 4, '#7c8797'); rect(g, 1, down ? 4 : 2, T - 2, 1, '#9aa3b0'); return c; }
+// The King's palanquin: a gilded throne on carrying poles. 48×30; the bearers are drawn separately.
+export function bakePalanquin() {
+  const [c, g] = canvas(48, 30);
+  rect(g, 0, 22, 48, 3, '#5c3a1d'); rect(g, 0, 22, 48, 1, '#7a4e28');
+  rect(g, 10, 4, 28, 20, '#8f2f28'); rect(g, 12, 6, 24, 16, '#c9463d'); rect(g, 12, 6, 24, 2, '#e07060');
+  rect(g, 8, 2, 4, 22, '#e0b040'); rect(g, 36, 2, 4, 22, '#e0b040'); rect(g, 8, 0, 32, 3, '#e0b040'); rect(g, 8, 0, 32, 1, '#fff6c8');
+  for (const x of [9, 22, 37]) px(g, x, 1, '#c9463d');
+  rect(g, 14, 18, 20, 6, '#b8842a'); rect(g, 14, 18, 20, 1, '#e0b040');
+  return outline(c, OUT);
+}
+// Autumn tree canopy for the near layer: rust, amber and gold lobes on dark trunks.
+export function bakeNearAutumn(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const trunks = []; for (let i = 0; i < w / 72; i++) trunks.push({ x: rnd() * w, wd: 10 + rnd() * 6, cy: 60 + rnd() * 50 });
+  const cols = [['#8a3a1a', '#b8541c', '#d9782a', '#f0a040'], ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], ['#8a5a1a', '#b8842a', '#e0b040', '#ffd36b']];
+  for (const t of trunks) for (const dx of [-w, 0, w]) { const x = Math.round(t.x + dx), wd = Math.round(t.wd); rect(g, x, t.cy, wd, h, '#3a2618'); rect(g, x, t.cy, 3, h, '#5a3a24'); rect(g, x + wd - 3, t.cy, 3, h, '#241a10'); for (let k = 0; k < h / 5; k++) rect(g, x + 3 + ((rnd() * (wd - 6)) | 0), t.cy + ((rnd() * (h - t.cy)) | 0), 1, 2 + ((rnd() * 4) | 0), rnd() < 0.5 ? '#5a3a24' : '#241a10');
+    const pal = cols[(rnd() * 3) | 0]; const cx = x + wd / 2;
+    for (let k = 0; k < 5; k++) { const lx = cx + (rnd() - 0.5) * 60, ly = t.cy - 6 - rnd() * 30, r = 16 + rnd() * 14; ellipse(g, lx, ly, r, r * 0.7, pal[1], pal[0]); ellipse(g, lx - r * 0.25, ly - r * 0.3, r * 0.5, r * 0.3, pal[2]); for (let q = 0; q < 6; q++) px(g, Math.round(lx + (rnd() - 0.5) * r * 1.4), Math.round(ly + (rnd() - 0.5) * r), pal[3]); } }
+  return c;
+}
+// Wooden hall interior tiles: planked wall for the ceilings and inner walls.
+export function bakeHallWall(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a3020'); for (let y = 0; y < T; y += 4) { rect(g, 0, y, T, 3, rnd() < 0.5 ? '#5a3a24' : '#513320'); rect(g, 0, y + 3, T, 1, '#2c1a10'); } for (let i = 0; i < 3; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, '#6a4a30'); return c; }
+// A goblin door in a trunk (bg), open and shut.
+export function bakeDoor(shut) { const [c, g] = canvas(16, 22); rect(g, 0, 0, 16, 22, '#3a2618'); ellipse(g, 8, 8, 7, 8, shut ? '#5c3a1d' : '#1b1626', '#241a10'); if (shut) { for (let y = 2; y < 18; y += 4) rect(g, 3, y, 10, 1, '#3d2712'); px(g, 11, 10, '#e0b040'); } return outline(c, OUT); }
+// A red carpet strip for the throne room (drawn on the floor row).
+export function bakeCarpet() { const [c, g] = canvas(T, 6); rect(g, 0, 0, T, 6, '#8f2f28'); rect(g, 0, 0, T, 1, '#c9463d'); rect(g, 0, 5, T, 1, '#5a1a1a'); for (let x = 2; x < T; x += 5) px(g, x, 3, '#e0b040'); return c; }
+// Rust-dawn sky.
+export function bakeSkyAutumn(h) { const [c, g] = canvas(1, h); for (let y = 0; y < h; y++) { const t = y / (h - 1), q = Math.round(t * 8) / 8; const r = 70 + q * 170, gg = 40 + q * 120, b = 90 + q * 40; px(g, 0, y, 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')'); } return c; }
