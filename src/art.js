@@ -1033,6 +1033,45 @@ export function bakeCupIcon() { const [c, g] = canvas(10, 12); rect(g, 2, 1, 6, 
 export function bakeLensIcon() { const [c, g] = canvas(12, 12); ellipse(g, 6, 6, 5, 5, '#c9a83a'); ellipse(g, 6, 6, 3.6, 3.6, '#bfe6f5', '#7aa8c8'); px(g, 4, 4, '#ffffff'); px(g, 5, 4, '#ffffff'); px(g, 8, 8, '#eefaff'); return outline(c); }
 // Climbing spurs: two iron claws on leather straps. 10x12.
 export function bakeSpursIcon() { const [c, g] = canvas(10, 12); rect(g, 1, 1, 8, 2, '#8a5a32'); rect(g, 1, 6, 8, 2, '#8a5a32'); for (const y of [3, 8]) for (const x of [2, 5, 7]) { rect(g, x, y, 1, 2, '#c9d1dc'); px(g, x, y + 2, '#7c8797'); } px(g, 1, 1, '#c9b27c'); px(g, 8, 6, '#c9b27c'); return outline(c); }
+// The three keys of Stormhold. 9x11 each, hung on a ring.
+export function bakeKeyIcon(kind) {
+  const C2 = { brass: ['#e0b040', '#c9962a', '#fff1a0'], iron: ['#c9d1dc', '#7c8797', '#eef4ff'], bone: ['#e8e0d0', '#b8a888', '#fff6e0'] }[kind] || ['#e0b040', '#c9962a', '#fff1a0'];
+  const [c, g] = canvas(9, 11);
+  ellipse(g, 4, 2, 3, 2.5, C2[0], C2[1]); px(g, 4, 2, '#2a2018');
+  rect(g, 4, 4, 2, 6, C2[0]); rect(g, 4, 4, 1, 6, C2[2]);
+  rect(g, 6, 7, 2, 1, C2[0]); rect(g, 6, 9, 3, 1, C2[0]); px(g, 4, 4, C2[2]);
+  return outline(c, OUT);
+}
+// A lock plate on a barred gate: iron, a keyhole, four rivets. 13x15.
+export function bakeLockPlate() {
+  const [c, g] = canvas(13, 15); rect(g, 1, 1, 11, 13, '#5f5a52'); rect(g, 1, 1, 11, 1, '#8a8378'); rect(g, 1, 13, 11, 1, '#3a3444');
+  for (const [x, y] of [[2, 2], [10, 2], [2, 12], [10, 12]]) px(g, x, y, '#b0b8c4');
+  ellipse(g, 6, 6, 2.5, 2.5, '#241e18'); rect(g, 5, 7, 2, 5, '#241e18'); px(g, 6, 5, '#12100c');
+  return outline(c, OUT);
+}
+// A goblin doorway: a plank door in a stone frame, and the same door barred. 20x28, two frames.
+export function bakeDoorway() {
+  return [0, 1].map(barred => { const [c, g] = canvas(20, 28);
+    rect(g, 0, 0, 20, 28, '#4a4440'); rect(g, 0, 0, 20, 2, '#6a6458'); rect(g, 0, 26, 20, 2, '#2c2820');
+    rect(g, 2, 2, 16, 26, '#241c14');
+    rect(g, 3, 3, 14, 25, '#5c3a1d'); for (let x = 3; x < 17; x += 4) rect(g, x, 3, 1, 25, '#3a2214');
+    rect(g, 3, 8, 14, 2, '#7a4e28'); rect(g, 3, 20, 14, 2, '#7a4e28');
+    ellipse(g, 14, 15, 1.5, 1.5, '#c9a83a');
+    if (barred) { for (const y of [7, 14, 21]) { rect(g, 1, y, 18, 3, '#5f5a52'); rect(g, 1, y, 18, 1, '#8a8378'); } rect(g, 8, 12, 4, 6, '#3a3444'); }
+    else { rect(g, 5, 5, 10, 20, 'rgba(255,180,90,0.10)'); }
+    return outline(c, OUT); });
+}
+// A corner of cobweb, three sizes, for a hollow nothing has swept in years. 28x22.
+export function bakeCobweb(v) {
+  const [c, g] = canvas(28, 22); const r = 10 + v * 6;
+  g.strokeStyle = 'rgba(232,220,200,0.55)'; g.lineWidth = 1;
+  for (let i = 0; i <= 6; i++) { const a2 = i / 6 * (Math.PI / 2); g.beginPath(); g.moveTo(0.5, 0.5); g.lineTo(Math.cos(a2) * r * 2.4, Math.sin(a2) * r * 2.2); g.stroke(); }
+  for (let k = 1; k <= 4; k++) { const rr = r * 0.5 * k; g.beginPath();
+    for (let i = 0; i <= 6; i++) { const a2 = i / 6 * (Math.PI / 2), x = Math.cos(a2) * rr * 1.2, y = Math.sin(a2) * rr * 1.1; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+    g.stroke(); }
+  g.fillStyle = 'rgba(255,246,224,0.35)'; for (let i = 0; i < 10; i++) g.fillRect((i * 7) % 26, (i * 5) % 20, 1, 1);
+  return c;
+}
 export function bakeLampIcon() { const [c, g] = canvas(10, 12); rect(g, 4, 0, 2, 2, '#8b8378'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 7, '#3a3444'); rect(g, 3, 4, 4, 5, '#6a5a3a'); px(g, 4, 6, '#ffd36b'); rect(g, 2, 10, 6, 1, '#5f5a52'); return outline(c); }
 // A lit or dark lantern on a tall post for the crown of the tree. 12×36.
 export function bakeCrownLantern(lit) { const [c, g] = canvas(12, 36); rect(g, 5, 8, 2, 28, C.woodD); rect(g, 5, 8, 1, 28, C.wood); rect(g, 2, 34, 8, 2, C.woodD); rect(g, 3, 0, 6, 2, '#5f5a52'); rect(g, 2, 2, 8, 8, lit ? '#ffd36b' : '#3a3444'); rect(g, 3, 3, 6, 6, lit ? '#fff6c8' : '#2a2630'); rect(g, 2, 10, 8, 1, '#5f5a52'); return outline(c); }

@@ -881,11 +881,9 @@ function screePath() {
   ent('sprig', 290, 8, { face: -1 }); ent('deco', 288, 8, { kind: 'stone' });
   ent('check', 294, 8);
 
-  // ---- 5b. THE GULLY: one troll, twice the size, between you and the fold. The walls close and the fold gate opens when he goes down. ----
-  ent('sign', 296, 8, { text: 'THE HILL TROLL. HE IS TOO BIG TO TRADE WITH: HE HURLS WHEN YOU STAND OFF AND SWATS WHEN YOU CLOSE. THE ROCKS HE THROWS CAN BE PLUNGED. THE FOLD IS PAST HIM.' });
-  ent('troll', 302, 8, { face: -1, big: true, mini: true });
+  // ---- 5b. THE GULLY: the last of the open hill before the fold. ----
   ent('deco', 299, 8, { kind: 'cairn' }); ent('deco', 306, 8, { kind: 'stone', v: 1 });
-  for (let y = 3; y <= 8; y++) set(309, y, T.PORT); // the fold gate: it opens when he falls
+  ent('harpy', 302, 2); ent('goat', 304, 8, { face: -1 });
   coins([300, 7], [305, 7]);
 
   // ---- 6. THE FOLD: the Ram Lord's walled pasture on the plateau ----
@@ -903,7 +901,6 @@ function screePath() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 312 * TS, x1: 328 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 329, boss: 'ram', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
-    mini: { x0: 295 * TS, x1: 309 * TS, floor: 9 * TS, trigger: 298 * TS, wallL: 294, gate: 309, boss: 'troll' },
   }
   // ---- 4b. THE ROPEWAY: the gorge proper. A swing, a rope lift, the old mill's sails, another swing; harpies on the wind, rocks off the cliff, a ladder out of the bottom. ----
   const GA = grow(L, ret, 256, 56);
@@ -962,9 +959,9 @@ function screePath() {
 // ---------- LEVEL 7: THE HANGING VILLAGE ----------
 // A tree-city that goes up, not across. Six tiers of floor bands zig-zag to the crown; every tier has a different way up.
 function hangingVillage() {
-  const W = 110, H = 112; const L = painter(W, H);
+  const W = 110, H = 132; const L = painter(W, H); // rows 112-131 are under the roots: the Weaver's hollow
   const { block, plat, ent, coins, set } = L;
-  const movers = [], gusts = [];
+  const movers = [], gusts = [], interiors = [];
   const band = (x0, x1, top) => block(x0, x1, top, top + 3);
   const hole = (x0, x1, top) => { for (let y = top; y <= top + 3; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); };
   const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
@@ -985,6 +982,22 @@ function hangingVillage() {
   ent('sprig', 50, 107, { face: -1 }); ent('spider', 76, 100, { drop: 110 }); ent('squirrel', 88, 107, { face: -1 }); ent('shield', 94, 107, { face: -1 });
   plat(24, 104, 3); plat(38, 102, 3); ent('mover', 68, 103, { len: 2, range: 6, speed: 40 }); ent('wasp', 45, 101); coins([8, 105], [25, 103], [39, 101], [66, 105], [72, 100], [84, 105], [98, 105]);
   ent('check', 98, 107);
+  // ---- THE WEB HOLLOW: under the roots. Everything down here is webbed, and something made it. ----
+  ent('doorway', 66, 107, { id: 'hollow-out', to: 'hollow-in', kind: 'goblin' });
+  ent('sign', 62, 107, { text: 'SOMETHING WENT DOWN THROUGH THE ROOTS AND DID NOT COME BACK. THE HOLE IS FULL OF WEB.' });
+  for (let y = 116; y <= 128; y++) for (let x = 20; x <= 74; x++) set(x, y, 0);
+  interiors.push([20, 74, 116, 128, 'earth']);
+  ent('doorway', 24, 128, { id: 'hollow-in', to: 'hollow-out', lock: [20, 74], label: 'THE WEB HOLLOW' });
+  for (const x of [28, 36, 44, 52, 60, 68]) { ent('deco', x, 116, { kind: 'cobweb', v: x % 3, hang: true }); }
+  for (const x of [32, 48, 64]) ent('deco', x, 128, { kind: 'cobweb', v: (x + 1) % 3 });
+  ent('torch', 26, 128); ent('spider', 34, 118, { drop: 90 }); ent('spider', 58, 118, { drop: 90 });
+  ent('spider', 46, 116, { drop: 110 });
+  ent('sign', 22, 128, { text: 'THE WEAVER. SHE RUNS HER THREAD TO GET OVER YOU AND COMES DOWN. SHE IS ONLY WORTH HITTING WHILE SHE IS ON THE FLOOR. SHE SPITS WEB FROM UP THERE: DO NOT BE UNDER IT.' });
+  ent('spider', 48, 118, { drop: 170, big: true, mini: true });
+  for (let y = 122; y <= 128; y++) set(75, y, T.PORT); // her larder, shut until she is dead
+  for (let y = 122; y <= 128; y++) for (let x = 76; x <= 84; x++) set(x, y, 0);
+  interiors.push([76, 84, 122, 128, 'earth']);
+  ent('silver', 82, 128); ent('stray', 79, 128, { kind: 'lamp' }); coins([78, 127], [80, 127], [83, 127]);
   // 0 -> 1: a rope ladder through the first bough
   band(1, W - 2, tops.t1); hole(100, 105, tops.t1); ladder(102, 103, tops.t1, tops.t0 - 1); // the first ladder stands in the open: nothing between the roots road and its foot
   ent('sign', 93, 107, { text: 'ROPE LADDERS: JUMP UP THROUGH THEM, DROP DOWN WITH DOWN+JUMP. THE VILLAGE IS SEVEN TIERS TALL. THE CROWN IS THE EIGHTH.' });
@@ -999,7 +1012,7 @@ function hangingVillage() {
   ent('sprig', 46, 93, { face: 1 }); ent('thorn', 20, 93, { face: 1 }); plat(20, 90, 3); ent('archer', 21, 89, { face: 1 });
   ent('door', 44, 93, { at: 44 }); ent('folk', 47, 93, { door: 44 });
   coins([92, 91], [80, 91], [62, 91], [54, 91], [40, 91], [22, 88], [12, 91]);
-  ent('check', 8, 93); ent('silver', 68, 90);
+  ent('check', 8, 93);
   // 1 -> 2: a counterweight lift at the trunk
   band(1, W - 2, tops.t2); hole(2, 7, tops.t2);
   movers.push({ kind: 'lift', x: 3 * TS, y: (tops.t1 - 1) * TS, y0: (tops.t1 - 1) * TS, y1: (tops.t2 - 1) * TS, w: 32, h: 8, speed: 34 });
@@ -1008,16 +1021,13 @@ function hangingVillage() {
   // ---- Tier 2. THE MARKET (walk right): hill folk and goblins live door to door; the Lamplighter wants three lanterns lit ----
   ent('sign', 8, 79, { text: 'THE MARKET. THE LAMPLIGHTER HAS LOST THREE LAMPS TO THE SQUIRREL KNIGHTS. THE REEVE HATES A LIT LANTERN, SO THE GOBLINS SEND SNUFFERS UP THE BOUGHS TO PUT THE TOWN OUT. STRIKE A DARK LANTERN TWICE TO LIGHT IT. CUT THE SNUFFER AND IT STAYS LIT.' });
   ent('door', 14, 79, { kind: 'cottage', at: 14 }); ent('folk', 11, 79, { door: 14, alt: true }); ent('npc', 22, 79, { kind: 'lamplighter' }); ent('deco', 26, 79, { kind: 'lanternPost' }); ent('lantern', 26, 79); ent('lantern', 56, 79); ent('lantern', 80, 79);
-  ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' }); ent('stray', 44, 79, { kind: 'lamp' });
+  ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' });
   ent('door', 50, 79, { at: 50 }); ent('folk', 47, 79, { door: 50 }); ent('deco', 56, 79, { kind: 'fence', v: 0 }); ent('door', 64, 79, { at: 64 }); ent('folk', 67, 79, { door: 64 });
   ent('squirrel', 74, 79, { face: -1 }); ent('snuffer', 62, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
   plat(58, 76, 3); plat(78, 75, 3); coins([59, 75], [79, 74], [18, 77], [38, 77], [70, 77], [88, 77], [96, 77]);
   movers.push({ kind: 'swing', px: 44 * TS, py: 70 * TS, arm: 70, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 }); plat(40, 73, 2); plat(48, 72, 2); ent('spit', 49, 71, { face: -1 }); coins([44, 71]); // a rope swing over the well to a spitter's ledge
   ent('check', 96, 79);
-  // THE WEAVER: the wheel walk is webbed shut. She hangs over the far end of the market and comes down on a thread.
-  ent('sign', 70, 79, { text: 'THE WEAVER HANGS OVER THE WHEEL WALK. SHE COMES DOWN ON HER THREAD AND GOES BACK UP IT. HIT HER WHEN SHE IS DOWN. THE SNUFFERS PUT OUT WHAT YOU LIGHT: CUT THEM FIRST.' });
-  ent('spider', 88, 68, { drop: 150, big: true, mini: true });
-  for (let y = 73; y <= 79; y++) set(99, y, T.PORT); // her web across the wheel walk
+  ent('sign', 70, 79, { text: 'THE SNUFFERS PUT OUT WHAT YOU LIGHT. CUT THEM FIRST, THEN RELIGHT THE POST.' });
   // 2 -> 3: the wheel walk: two water wheels stacked at the trunk lift you to the third bough
   band(1, W - 2, tops.t3); hole(100, 107, tops.t3);
   for (let i = 0; i < 4; i++) { movers.push({ kind: 'wheel', px: 104 * TS + 8, py: 75 * TS, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 }); movers.push({ kind: 'wheel', px: 104 * TS + 8, py: 68 * TS, r: 42, phase: i * Math.PI / 2 + 0.8, period: 6.4, x: 0, y: 0, w: 22, h: 6 }); }
@@ -1084,7 +1094,7 @@ function hangingVillage() {
   ent('gate', 100, 19);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: true,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(140,90,150,0.12)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone: [], scree: [], snowLine: 52,
@@ -1092,7 +1102,7 @@ function hangingVillage() {
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
     arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 26 * TS, wallL: 19, wallR: 90, boss: 'owl', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
-    mini: { x0: 72 * TS, x1: 99 * TS, floor: 80 * TS, trigger: 76 * TS, wallL: 71, gate: 99, boss: 'spider' },
+    mini: { x0: 20 * TS, x1: 75 * TS, floor: 129 * TS, trigger: 30 * TS, wallL: 19, gate: 75, boss: 'spider', y0: 114 * TS, y1: 131 * TS },
   };
 }
 
@@ -1240,7 +1250,10 @@ function theShopCrag() {
   ent('npc', 12, 19, { kind: 'shepherd' }); ent('npc', 35, 19, { kind: 'oldknight' });
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
-    duskStart: -1, duskLen: 1, music: 'select', night: true, shop: true, interiors: [[2, 37, 13, 19, 'stone']], stone: [[0, 39, 0, 27]],
+    duskStart: -1, duskLen: 1, music: 'select', night: true, shop: true, interiors: [[2, 37, 13, 19, 'stone']],
+    // No `stone` zone here. It used to carry one to mark the room as stone-dressed, but since the menhirs
+    // became single organic sprites drawn OVER cleared tiles, a zone the size of the whole shop blanked
+    // its floor and walls and left the keeper standing in the dark. palette.hall already dresses it.
     palette: { hall: true, sky: 'night', dress: 'none', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', grass: '#6a6a78', grassL: '#8a8a98', grassD: '#4a4a58' },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
   };
@@ -1360,7 +1373,7 @@ function galeMoor() {
   ent('hare', 468, 13, { face: 1 }); ent('harpy', 458, 4);
   // ---- 9b. THE MASTHEAD: the biggest sail on the moor, on a walled stretch where the wind turns every few breaths. ----
   ent('sign', 439, 13, { text: 'THE MASTHEAD. WHILE THE WIND IS IN HER SAIL SHE CANNOT BE STOPPED AND SHE CANNOT STEER. BLOCK HER OR LET THE WALL TAKE HER, THEN CUT HER WHILE SHE IS DOWN. IN THE LULL SHE IS JUST A GOBLIN.' });
-  ent('sailer', 452, 13, { face: -1, big: true, mini: true });
+  ent('sailer', 448, 13, { face: -1, big: true, mini: true }); // close enough to the trigger that you see her when the bar appears
   gusts.push({ x0: 438 * TS, x1: 464 * TS, y0: 4 * TS, y1: 14 * TS, dir: 1, period: 3.4, on: 1.5, phase: 0, alt: true, moor: true, k: 1.3 });
   for (let y = 8; y <= 13; y++) set(463, y, T.PORT);
   coins([446, 12], [458, 12]);
@@ -1389,7 +1402,7 @@ function galeMoor() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 99999, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 477 * TS, x1: 521 * TS, floor: 13 * TS, trigger: 484 * TS, wallL: 476, wallR: 522, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
-    mini: { x0: 438 * TS, x1: 463 * TS, floor: 14 * TS, trigger: 442 * TS, wallL: 437, gate: 463, boss: 'sailer' },
+    mini: { x0: 438 * TS, x1: 463 * TS, floor: 14 * TS, trigger: 441 * TS, wallL: 437, gate: 463, boss: 'sailer' },
   };
 }
 
