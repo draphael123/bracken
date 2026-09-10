@@ -367,7 +367,7 @@ function drawMap() {
   for (const c of mapClouds) { g.globalAlpha = 0.7; g.drawImage(CLOUD[c.k], Math.round(c.x), Math.round(c.y)); g.globalAlpha = 1; }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 3)) % (map.walking ? 6 : 4), px, py + 2, map.walking < 0 ? -1 : 1, false);
   // node labels
-  for (const nd of NODES) { const lk = nodeLocked(nd); const lbl = nd.kind === 'store' ? 'STORE' : LEVELS[nd.level].name; const tw = lbl.length * 4 + 6; const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)); g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(lx - tw / 2, nd.y + 12, tw, 8); text(lbl, lx, nd.y + 13, lk ? '#7a7a8a' : '#fff6e0', 'center', 6); }
+  for (const nd of NODES) { const lk = nodeLocked(nd); const lbl = nd.kind === 'store' ? 'STORE' : LEVELS[nd.level].name; const tw = lbl.length * 6 + 6; const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)); g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(lx - tw / 2, nd.y + 12, tw, 8); text(lbl, lx, nd.y + 13, lk ? '#7a7a8a' : '#fff6e0', 'center', 6); }
   // parchment frame + compass
   g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
   g.drawImage(PROP.compass, VW - 30, VH - 52);
