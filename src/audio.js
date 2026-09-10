@@ -221,6 +221,29 @@ Object.assign(SFX, {
   gobHurtLow() { file('gobHurt', 0.6, 0.75) || tone('sawtooth', 260, 120, 0.12, 0.18); },
 });
 
+// ---------- the newer creatures, and each boss's own call ----------
+Object.assign(SFX, {
+  grubSpit() { noise(0.14, 0.24, 700, 0.6); tone('sine', 380, 120, 0.18, 0.14); tone('square', 900, 400, 0.06, 0.05, 0.05); },
+  grubDie() { noise(0.3, 0.3, 400, 0.5); tone('sine', 260, 40, 0.35, 0.2); tone('sine', 700, 200, 0.2, 0.08, 0.05); },
+  rockLaugh() { file('laugh', 0.35, 1.15) || (tone('square', 320, 260, 0.08, 0.1), tone('square', 360, 300, 0.08, 0.1, 0.1), tone('square', 400, 330, 0.1, 0.1, 0.2)); },
+  golemChime() { [1046, 1318, 1568].forEach((f, i) => tone('sine', f, f * 0.98, 0.5, 0.12, i * 0.06)); noise(0.08, 0.08, 5000, 1.2); },
+  golemStomp() { tone('sine', 70, 35, 0.3, 0.4); noise(0.2, 0.35, 260, 0.6); tone('sine', 2093, 1568, 0.25, 0.08, 0.08); },
+  golemShatter() { noise(0.4, 0.45, 3200, 0.7); [2093, 1760, 1396, 1046, 784].forEach((f, i) => tone('sine', f, f * 0.7, 0.35, 0.12, i * 0.05)); tone('sawtooth', 120, 40, 0.5, 0.2); },
+  golemThrow() { noise(0.12, 0.2, 1800, 0.8); tone('sine', 1400, 2200, 0.1, 0.08); },
+  kiteChatter() { for (let i = 0; i < 3; i++) tone('square', 900 + i * 120, 1300, 0.04, 0.06, i * 0.05); noise(0.05, 0.08, 2400, 1.2, 0.15); },
+  hareSqueak() { tone('sine', 1800, 2600, 0.06, 0.08); tone('sine', 2400, 1900, 0.07, 0.06, 0.07); },
+  wightMoan() { tone('sawtooth', 90, 70, 0.9, 0.12); tone('sine', 140, 95, 0.9, 0.1, 0.05); noise(0.9, 0.08, 600, 0.3); },
+  callerChant() { tone('sawtooth', 220, 262, 0.35, 0.12); tone('sawtooth', 330, 392, 0.35, 0.08, 0.3); noise(0.7, 0.14, 500, 0.4); tone('sine', 880, 1320, 0.5, 0.05, 0.1); },
+  callerBlast() { noise(0.6, 0.5, 300, 0.4); tone('sawtooth', 160, 40, 0.5, 0.25); tone('sine', 1200, 300, 0.4, 0.1); },
+  forgeHammer() { file('slam', 0.6, 0.8) || tone('sine', 90, 40, 0.25, 0.4); tone('square', 1900, 1200, 0.08, 0.12, 0.02); noise(0.12, 0.3, 3000, 1.1, 0.02); },
+  forgeSteam() { noise(0.5, 0.28, 2200, 0.5); noise(0.3, 0.18, 900, 0.5, 0.1); },
+  forgeChain() { for (let i = 0; i < 5; i++) { noise(0.04, 0.16, 2600, 1.2, i * 0.07); tone('square', 700 - i * 40, 500, 0.04, 0.06, i * 0.07); } },
+  kingLaugh() { file('laugh', 0.45, 0.7) || (tone('sawtooth', 150, 130, 0.12, 0.2), tone('sawtooth', 170, 140, 0.12, 0.2, 0.14), tone('sawtooth', 190, 150, 0.16, 0.2, 0.28)); },
+  chiefBark() { file('roar', 0.45, 1.2) || (tone('sawtooth', 260, 120, 0.25, 0.22), noise(0.12, 0.22, 900)); },
+  owlHoot() { tone('sine', 520, 440, 0.18, 0.16); tone('sine', 480, 400, 0.22, 0.14, 0.2); },
+  frogBoom() { tone('sawtooth', 60, 90, 0.5, 0.3); tone('square', 120, 80, 0.4, 0.12, 0.05); noise(0.2, 0.12, 300, 0.6); },
+  queenShriek() { tone('sawtooth', 900, 1600, 0.3, 0.14); tone('sawtooth', 1200, 700, 0.3, 0.1, 0.1); noise(0.2, 0.1, 3000, 0.8); },
+});
 // ---------- UI and skill voices ----------
 Object.assign(SFX, {
   levelStart() { for (let i = 0; i < 4; i++) tone('square', [330, 415, 494, 659][i], [330, 415, 494, 659][i], 0.11, 0.09, i * 0.09); tone('triangle', 165, 165, 0.4, 0.08, 0.36); },

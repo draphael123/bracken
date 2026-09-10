@@ -1096,12 +1096,13 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   const gateCol = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
   block(0, W - 1, 0, H - 1);
   const interiors = [], pools = [];
-  const gallery = (x0, x1, y0, y1) => { carve(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, 'stone']); };
+  const gallery = (x0, x1, y0, y1, st = 'crystal') => { carve(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, st]); };
   const lamps = (y, ...xs) => { for (const x of xs) ent('minerlamp', x, y); };
+  const shards = (y, up, ...xs) => xs.forEach((x, i) => ent('shard', x, y, { v: (x + i) % 3, up, big: i % 3 === 0 }));
 
   // ---- 1. THE GATEHOUSE: the built mine. Timber, lamps, the foreman, and the first sight of crystal. ----
-  gallery(2, 40, 8, 19);
-  for (const x of [10, 24, 36]) ent('deco', x, 19, { kind: 'timber', v: 0 });
+  gallery(2, 40, 8, 19, 'stone');
+  for (const x of [10, 24, 36]) ent('deco', x, 19, { kind: 'timber', v: 0 }); shards(19, false, 38); shards(8, true, 34);
   lamps(8, 6, 16, 26, 36); lamps(19, 12, 30);
   ent('npc', 7, 19, { kind: 'squire' }); ent('sign', 4, 19, { text: 'THE GLASSWORKS. THE GOBLINS DUG FOR ORE AND BROKE INTO LIGHT. THE CRYSTALS THROW BEAMS. STRIKE A MIRROR TO TURN ONE. A BEAM BURNS WEB, MELTS ICE, AND OPENS THE DOORS THE MINERS SEALED.' });
   ent('npc', 13, 19, { kind: 'foreman' }); ent('door', 20, 19, { kind: 'cottage', at: 20 }); ent('folk', 17, 19, { door: 20, alt: true });
@@ -1110,7 +1111,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   ent('check', 38, 19);
 
   // ---- 2. THE FIRST LENS: one crystal, two mirrors, a web and a sealed door. Aim to burn, aim to open. ----
-  gallery(40, 82, 8, 19); for (const x of [46, 62, 78]) ent('deco', x, 19, { kind: 'timber', v: 1 }); lamps(8, 48, 66); lamps(19, 52, 72);
+  gallery(40, 82, 8, 19); for (const x of [46, 62, 78]) ent('deco', x, 19, { kind: 'timber', v: 1 }); lamps(8, 48, 66); lamps(19, 52, 72); shards(19, false, 41, 55, 67, 79); shards(8, true, 43, 58, 71);
   plat(43, 11, 3); ent('crystal', 44, 10, { dir: [0, 1] }); ent('mirror', 44, 19, { o: 0 });
   web(70, 71, 16, 19); ent('spider', 68, 9, { drop: 100 });
   plat(75, 11, 3); ent('receiver', 76, 10, { gate: 80 }); ent('mirror', 76, 19, { o: 1 });
@@ -1119,7 +1120,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   ent('check', 81, 19);
 
   // ---- 3. THE ICE GALLERY: the cavern proper. Ice walls the beam melts, spiders on threads, and a ladder down into the old workings. ----
-  gallery(82, 136, 8, 19); for (const x of [90, 106, 122]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(8, 88, 104, 120, 132); lamps(19, 96, 116);
+  gallery(82, 136, 8, 19); for (const x of [90, 106, 122]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(8, 88, 104, 120, 132); lamps(19, 96, 116); shards(19, false, 83, 95, 105, 113, 125, 131); shards(8, true, 91, 99, 111, 117, 129);
   plat(85, 11, 3); ent('crystal', 86, 10, { dir: [0, 1] }); ent('mirror', 86, 19, { o: 0 });
   ice(100, 101, 16, 19); ice(120, 121, 16, 19); plat(109, 13, 3); coins([110, 12]); // one beam, two walls of ice on its way to the far mirror
   plat(127, 11, 3); ent('receiver', 128, 10, { gate: 134 }); ent('mirror', 128, 19, { o: 1 });
@@ -1131,7 +1132,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   ent('check', 133, 19);
 
   // ---- 3b. THE OLD WORKINGS: the one dark room. A torch at the foot of the ladder, cold lamps, bats, and the lamp the foreman lost. ----
-  gallery(84, 120, 22, 30); for (const x of [98, 112]) ent('deco', x, 30, { kind: 'timber', v: 1 });
+  gallery(84, 120, 22, 30); for (const x of [98, 112]) ent('deco', x, 30, { kind: 'timber', v: 1 }); shards(30, false, 94, 103); shards(22, true, 90, 106, 118);
   ladder(92, 93, 22, 30); ent('torchbracket', 88, 30); ent('minerlamp', 100, 30, { lit: false }); ent('minerlamp', 108, 30, { lit: false });
   ent('bat', 96, 24); ent('bat', 104, 25); ent('bat', 114, 24);
   plat(109, 26, 3); ent('crystal', 110, 25, { dir: [0, 1] }); ent('mirror', 110, 30, { o: 0 }); web(114, 115, 27, 30);
@@ -1139,13 +1140,13 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
   ent('sign', 86, 30, { text: 'THE OLD WORKINGS. TAKE THE TORCH. THE BATS HUNT WHATEVER IS LIT. A CRYSTAL AT THE FAR END, AND A WEB BETWEEN YOU AND THE MINER\'S LAMP.' });
 
   // ---- 4. THE GAS POCKET: no sparks. A goblin who does not know that. ----
-  gallery(136, 156, 8, 19); lamps(8, 140, 152);
+  gallery(136, 156, 8, 19); lamps(8, 140, 152); shards(8, true, 145, 154); shards(19, false, 139);
   ent('sign', 137, 19, { text: 'GAS. A SPARK LIGHTS THE POCKET. NO STEEL, NO FIRE, NO TORCH. DODGE AND BLOCK AND KEEP GOING.' });
   ent('gas', 142, 19, { period: 7, phase: 0 }); ent('gas', 150, 19, { period: 7, phase: 3.5 }); ent('rockgoblin', 148, 19, { face: -1 }); ent('miner', 144, 19, { face: 1 });
   coins([140, 17], [146, 17], [153, 17]);
 
   // ---- 5. THE GREAT RIDE: one rail, four steps down, the tub flies every gap. Beams to duck, crystal off the roof, a wall to smash at the end. ----
-  gallery(156, 220, 8, 31); lamps(8, 160, 176, 192, 208, 216);
+  gallery(156, 220, 8, 31); lamps(8, 160, 176, 192, 208, 216); shards(8, true, 163, 170, 181, 188, 199, 206, 212, 218); shards(19, false, 171); shards(21, false, 185); shards(23, false, 201); shards(25, false, 215);
   ent('check', 158, 19); ent('sign', 157, 19, { text: 'THE GREAT RIDE. JUMP IN. THE RAIL STEPS DOWN FOUR TIMES AND THE TUB TAKES EVERY DROP. HOLD DOWN FOR THE BEAMS. THE ROOF SHEDS CRYSTAL WHERE THE LAMPS FLICKER. IT ENDS THROUGH THE WALL.' });
   block(156, 172, 20, 31); rail(158, 172, 20); ent('cart', 160, 19);
   block(173, 188, 22, 31); rail(173, 188, 22); block(189, 204, 24, 31); rail(189, 204, 24); block(205, 218, 26, 31); rail(205, 218, 26); // four clean steps down: the tub drops onto each rail
@@ -1155,7 +1156,7 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
 
   // ---- 6. THE HEART: the thing that grew in the light. Two crystals, two mirrors, and a golem that only bleeds lit. ----
   gallery(220, 238, 8, 25);
-  lamps(8, 224, 234);
+  lamps(8, 224, 234); shards(8, true, 226, 230, 233); shards(25, false, 225, 232);
   plat(221, 16, 3); ent('crystal', 222, 15, { dir: [0, 1] }); ent('mirror', 222, 25, { o: 0 });
   plat(235, 16, 3); ent('crystal', 236, 15, { dir: [0, 1] }); ent('mirror', 236, 25, { o: 1 }); // both start turned into the walls: turn them across the floor
   ent('golem', 229, 25);
@@ -1167,8 +1168,8 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
     duskStart: -1, duskLen: 1, music: 'cave', night: true, glowNight: true, dark: 0.02,
     darkZones: [{ x0: 84 * TS, x1: 121 * TS, y0: 21 * TS, y1: 32 * TS, dark: 0.8 }],
     noSwing: [{ x0: 137 * TS, x1: 156 * TS, y0: 7 * TS, y1: 20 * TS }],
-    palette: { sky: 'night', dress: 'none', hall: true, grass: '#6a6a78', grassL: '#8a8a98', grassD: '#4a4a58', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#2a2a34', '#3a3a44', '#4a4a58', '#5a5a66'] },
-    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
+    palette: { sky: 'night', dress: 'none', hall: true, haze: 'rgba(150,170,240,0.08)', grass: '#8a8aa8', grassL: '#b8b8d8', grassD: '#5a5a7a', dirt: '#5e5e80', dirtL: '#7a7a9c', dirtD: '#3a3a58', canopy: ['#2a2a34', '#3a3a44', '#4a4a58', '#5a5a66'] },
+    weather: [{ x0: 40 * TS, x1: 99999, kind: 'glitter' }], ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     arena: { x0: 221 * TS, x1: 238 * TS, floor: 26 * TS, trigger: 224 * TS, wallL: 220, wallR: 239, boss: 'golem', tint: '#bfe6f5', tintA: 0.08, fx: 'motes' },
   };
 }
