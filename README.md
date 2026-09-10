@@ -81,9 +81,13 @@ eat the spines, and only the sword will do.
   plunge can pierce it (three times). The hollow is shown zoomed out
   so you can see her whole, and landing a hit on her never costs you: you are safe for a moment after.
 - **The Goblin Chieftain** (Stockade boss) — swaps weapons every few swings. CLUB: an unblockable
-  overhead that plants him (hit him then) and a blockable sweep (block it = PARRIED). SWORD AND
+  overhead that plants him (hit him then), a blockable sweep (block it = PARRIED), a grab-and-throw,
+  and the WHIRL: he spins across the floor with the club out for a second and ends up DIZZY (double
+  damage while he reels). SWORD AND
   SHIELD: quick two-hit slashes and a shield bash; the shield turns your blade from the front, so
   parry the slash or roll behind him. BOW: he backs off and looses arrows you can parry straight
+  back, or calls a VOLLEY: four or five arrows go up and come down on the marked spots a moment later,
+  so step off the marks. He also leaps and stomps in any stance.
   back at him. Any stance: when he crouches he leaps and stomps where you stand (shockwaves both
   ways). At half health he kicks the brazier and two short strips of floor burn by the walls.
 - **The Hornet Queen** — the boss in the hive clearing past the gate. She hovers out of reach,
@@ -122,7 +126,9 @@ and foxes (a freed fox fights beside you), braziers you tip to spill fire, pulle
 THE YARD (one room, every tool: free the fox to fight the hounds, tip the brazier to hold them,
 roll the barrel into the inner gate or crank it), the kennels and armoury, pulley lifts, and the
 great hall where the Chieftain waits. The level does not end when he falls: the hall burns from
-the floor up and you climb the rafters to the way out. The horn now brings five goblins and a hound;
+the floor up and you climb the rafters to the way out: THE HALL BURNS. CLIMB TO THE GATE, with a
+marker on the gate; the rafters are two-tile hops on both sides, the fire stops just under the top beam,
+and dying in the fire resets the fire, not the Chieftain. The horn now brings five goblins and a hound;
 the watchtower can be climbed from either side. Bridges you lose stay lost for the attempt, but there is
 always a net and a set of ledges to climb back out. Spent barrels come back after a few seconds.
 
@@ -168,6 +174,9 @@ court at the end is a red carpet, banners, a gallery of watching goblins, and KI
 on a palanquin carried by four bearers. Cut the bearers and the throne falls; then the sceptre,
 the shout that throws you back, and goblets; at the last he stands, and the court goes quiet.
 Its own music, Juhani Junkala's Retro Game Music Pack (CC0), with a second boss track for the King.
+Clearing it opens the second skill at the store: GROUND SLAM (F on the ground: a quake that runs
+along the floor both ways, 15 and a stagger to everything it reaches, breaks crates; 25 stamina,
+3 seconds). Skills are equipped one at a time in the SKILLS tab, so F does whichever you chose.
 
 ## The five arenas
 
@@ -191,7 +200,8 @@ press Z on a node: Bracken Wood, the Store hut, Marsh Wood (locked until the woo
 Best time, gold, and a CLEARED flag are saved per level. Gold you finish a level with goes into
 your purse. The store has three tabs: knight skins (Black, Violet, River Blue), sword blades
 (Ember, Frost, Gilded), and upgrades (Heart of Oak: +25 health, Second Wind: +30 stamina). Owned
-skins and blades can be swapped any time. X on the map opens the **bestiary**: every foe you have
+skins and blades can be swapped any time. X on the map opens the **bestiary**, in two groups (FOES and BOSSES, LEFT/RIGHT to switch, each
+scrolling): every foe you have
 met, how to beat it, and how many you've slain.
 
 ## Medals

@@ -329,9 +329,9 @@ function theStockade() {
   ent('hound', 320, 19, { face: -1 }); ent('check', 323, 19);
 
   // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
-  plat(329, 15, 4); plat(356, 15, 4);
-  plat(334, 10, 4); plat(342, 9, 5); plat(351, 10, 4);
-  plat(326, 18, 2); plat(336, 12, 2); plat(352, 12, 2); plat(360, 18, 2); // the rafter climb, both sides, for when the hall burns
+  // the rafter climb, both sides, two tiles a jump, for when the hall burns; the gate sits on the top beam
+  plat(327, 18, 2); plat(329, 16, 3); plat(333, 14, 2); plat(336, 12, 2); plat(334, 10, 4); plat(338, 11, 3); plat(342, 9, 5);
+  plat(360, 18, 2); plat(356, 16, 3); plat(353, 14, 2); plat(350, 12, 2); plat(350, 10, 4); plat(347, 11, 3);
   ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
   ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
   ent('deco', 336, 19, { kind: 'skullPile', v: 0 }); ent('deco', 351, 19, { kind: 'skullPile', v: 1 });
@@ -474,8 +474,10 @@ function kingswood() {
   ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 });
   gate(84, 15, 19);
   coins([52, 18], [58, 17], [65, 18], [74, 17]);
-  // the way around the gate if the bell rings: a hatch in the ceiling onto the high road
-  for (let y = 13; y <= 16; y++) set(78, y, 0); plat(77, 12, 3);
+  // the way around the gate if the bell rings: a two-wide hatch through the roof with ledges up it, onto the high road
+  for (let x = 77; x <= 78; x++) for (let y = 13; y <= 16; y++) set(x, y, 0);
+  plat(77, 18, 2); plat(77, 16, 2); plat(77, 14, 2); plat(76, 12, 4);
+  ent('sign', 73, 19, { text: 'IF THE GATE FALLS: THE ROOF HATCH.' }); ent('torch', 79, 17); coins([77, 15], [78, 13]);
 
   // ---- 3. FORK ONE. High road: canopy walkways and swings, thieves and wasps. Low road: the burrow with a ram and a drop cage. ----
   // high road (rows 6-12)
@@ -545,7 +547,7 @@ function kingswood() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
     duskStart: -1, duskLen: 1, music: 'theme3', night: false, glowNight: true,
-    interiors: [[45, 84, 13, 20], [85, 150, 14, 22], [211, 275, 13, 21]], // hollowed trunks and burrows: a dark planked backdrop behind the play layer
+    interiors: [[45, 84, 17, 19], [85, 150, 17, 21], [211, 275, 16, 20]], // hollowed trunks and burrows: a dark planked backdrop behind the play layer
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
