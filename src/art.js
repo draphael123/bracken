@@ -1072,6 +1072,53 @@ export function bakeCobweb(v) {
   g.fillStyle = 'rgba(255,246,224,0.35)'; for (let i = 0; i < 10; i++) g.fillRect((i * 7) % 26, (i * 5) % 20, 1, 1);
   return c;
 }
+// ---------- STORMHOLD ----------
+// A bridge post: a stone stump with the rope made off round it. 10x22.
+export function bakeBridgePost() { const [c, g] = canvas(10, 22); rect(g, 1, 4, 8, 18, '#5a6270'); rect(g, 1, 4, 8, 2, '#8a919c'); rect(g, 1, 20, 8, 2, '#3a3e48');
+  for (const y of [8, 12, 16]) { rect(g, 0, y, 10, 2, '#c9b27c'); rect(g, 0, y, 10, 1, '#e8dcc0'); }
+  rect(g, 3, 0, 4, 4, '#5a6270'); return outline(c, OUT); }
+// A watch tower on a pier: stone, a shutter, a brazier on top. 22x46, background.
+export function bakeBridgeTower() { const [c, g] = canvas(22, 46); rect(g, 2, 6, 18, 40, '#4a4e58'); rect(g, 2, 6, 18, 2, '#6a6e7a'); rect(g, 2, 44, 18, 2, '#2c303a');
+  for (let y = 10; y < 44; y += 7) { rect(g, 2, y, 18, 1, '#3a3e48'); for (let x = 3 + ((y / 7) % 2 ? 5 : 0); x < 19; x += 9) rect(g, x, y + 1, 8, 5, '#565a66'); }
+  rect(g, 7, 16, 8, 9, '#241e18'); rect(g, 8, 17, 6, 7, '#3a2618');
+  rect(g, 0, 2, 22, 5, '#5a6270'); rect(g, 0, 2, 22, 1, '#8a919c');
+  for (let x = 1; x < 21; x += 5) rect(g, x, 0, 3, 3, '#5a6270');
+  rect(g, 9, 0, 4, 2, '#ff9a5c'); px(g, 10, 0, '#ffd36b');
+  return outline(c, OUT); }
+// The gatehouse at the far end: the way off the bridge and into the castle. 40x54, background.
+export function bakeGatehouse() { const [c, g] = canvas(40, 54); rect(g, 0, 6, 40, 48, '#4a4e58'); rect(g, 0, 6, 40, 2, '#6a6e7a');
+  for (let y = 12; y < 52; y += 8) { rect(g, 0, y, 40, 1, '#3a3e48'); for (let x = ((y / 8) % 2 ? 6 : 0); x < 40; x += 12) rect(g, x, y + 1, 10, 6, '#565a66'); }
+  fillPoly(g, [[12, 54], [12, 30], [20, 22], [28, 30], [28, 54]], '#1a1620');
+  rect(g, 13, 32, 14, 22, '#241e18'); for (let x = 14; x < 27; x += 4) rect(g, x, 32, 2, 22, '#3a3040');
+  for (let x = 0; x < 40; x += 7) rect(g, x, 0, 5, 7, '#5a6270');
+  rect(g, 4, 18, 5, 7, '#241e18'); rect(g, 31, 18, 5, 7, '#241e18');
+  return outline(c, OUT); }
+// A goblin forge and an anvil, for Smoke Row. 26x22 and 14x12.
+export function bakeForge() { const [c, g] = canvas(26, 22); rect(g, 1, 8, 24, 14, '#4a4440'); rect(g, 1, 8, 24, 2, '#6a6458');
+  rect(g, 5, 12, 14, 9, '#241e18'); rect(g, 6, 15, 12, 6, '#ff6b2c'); rect(g, 7, 17, 10, 4, '#ffd36b'); rect(g, 9, 18, 6, 2, '#fff6c8');
+  rect(g, 18, 0, 6, 9, '#3a3444'); rect(g, 18, 0, 6, 1, '#5a5468'); rect(g, 2, 6, 22, 2, '#5a5448');
+  return outline(c, OUT); }
+export function bakeAnvil() { const [c, g] = canvas(14, 12); rect(g, 2, 8, 10, 4, '#3a3e48'); rect(g, 4, 5, 6, 3, '#4a4e58'); rect(g, 1, 2, 12, 3, '#5a6270'); rect(g, 1, 2, 12, 1, '#8a919c');
+  fillPoly(g, [[0, 3], [1, 2], [1, 5]], '#5a6270'); return outline(c, OUT); }
+// One of the hill folk, locked in a cellar. 10x12 - the quest icon for Stormhold.
+export function bakeFolkIcon() { const [c, g] = canvas(10, 12); rect(g, 3, 0, 4, 3, '#8a5a32'); rect(g, 2, 3, 6, 4, '#f1c9a0'); px(g, 3, 4, OUT); px(g, 6, 4, OUT);
+  rect(g, 1, 7, 8, 4, '#6a5a8a'); rect(g, 2, 11, 2, 1, '#5c3a1d'); rect(g, 6, 11, 2, 1, '#5c3a1d'); return outline(c, OUT); }
+// Iron shoes: the planks do not give under you. 11x10.
+export function bakeShoesIcon() { const [c, g] = canvas(11, 10); for (const x of [0, 6]) { rect(g, x, 4, 5, 4, '#5a6270'); rect(g, x, 4, 5, 1, '#8a919c'); rect(g, x, 8, 5, 1, '#3a3e48'); rect(g, x + 1, 2, 3, 2, '#8a5a32'); }
+  return outline(c, OUT); }
+// THE CASTLE, on the mountain over Stormhold. It is drawn behind everything and it grows as you climb.
+export function bakeCastle(seed) { const rnd = mulberry(seed || 5); const [c, g] = canvas(150, 120);
+  fillPoly(g, [[0, 120], [26, 52], [58, 74], [86, 30], [116, 66], [150, 120]], '#4e4e66', '#3c3c50'); // the mountain it stands on
+  for (let i = 0; i < 60; i++) { const x = (rnd() * 150) | 0, y = 40 + ((rnd() * 78) | 0); px(g, x, y, rnd() < 0.5 ? '#5a5a74' : '#42425a'); }
+  fillPoly(g, [[62, 46], [86, 24], [110, 46]], '#eef4fa'); // snow on the peak
+  const keep = (x, w, top) => { rect(g, x, top, w, 60, '#6a6e86'); rect(g, x, top, w, 2, '#8e93ab'); rect(g, x + w - 2, top, 2, 60, '#4a4e62');
+    for (let y = top + 6; y < top + 58; y += 9) for (let bx = x + ((y % 2) ? 3 : 0); bx < x + w - 3; bx += 8) rect(g, bx, y, 6, 6, '#767b93');
+    for (let bx = x; bx < x + w; bx += 6) rect(g, bx, top - 4, 4, 4, '#6a6e86');
+    for (let y = top + 12; y < top + 50; y += 16) { rect(g, x + (w >> 1) - 1, y, 3, 6, '#1a1826'); if (rnd() < 0.7) { rect(g, x + (w >> 1) - 1, y + 1, 3, 4, '#ffb84a'); px(g, x + (w >> 1), y + 2, '#fff6c8'); } } };
+  keep(58, 18, 40); keep(78, 26, 28); keep(106, 16, 44);
+  fillPoly(g, [[76, 28], [91, 12], [106, 28]], '#57455f', '#3d3145'); // the great roof
+  rect(g, 90, 2, 2, 12, '#5c3a1d'); rect(g, 92, 3, 8, 5, '#c9463d'); // her banner
+  return outline(c, OUT); }
 export function bakeLampIcon() { const [c, g] = canvas(10, 12); rect(g, 4, 0, 2, 2, '#8b8378'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 7, '#3a3444'); rect(g, 3, 4, 4, 5, '#6a5a3a'); px(g, 4, 6, '#ffd36b'); rect(g, 2, 10, 6, 1, '#5f5a52'); return outline(c); }
 // A lit or dark lantern on a tall post for the crown of the tree. 12×36.
 export function bakeCrownLantern(lit) { const [c, g] = canvas(12, 36); rect(g, 5, 8, 2, 28, C.woodD); rect(g, 5, 8, 1, 28, C.wood); rect(g, 2, 34, 8, 2, C.woodD); rect(g, 3, 0, 6, 2, '#5f5a52'); rect(g, 2, 2, 8, 8, lit ? '#ffd36b' : '#3a3444'); rect(g, 3, 3, 6, 6, lit ? '#fff6c8' : '#2a2630'); rect(g, 2, 10, 8, 1, '#5f5a52'); return outline(c); }

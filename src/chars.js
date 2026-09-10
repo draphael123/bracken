@@ -1067,6 +1067,76 @@ export function bakeSailer() {
   return pack([planted, sailing, tumbled], 7, 15, 12, 14);
 }
 
+// ---------- STORMHOLD ----------
+// THE HEARTH GOBLIN - it lives here. It sleeps by the fire until you are close and then it fights
+// with whatever is to hand: a stool. 12x13. Frames: 0 asleep, 1 waking, 2 raise, 3 swing, 4/5 walk.
+export function bakeHearthGob() {
+  const HP = Object.assign({}, EP, { q: '#8a5a32', Q: '#5c3a1d', c: '#c9463d', u: '#6a4a2a' });
+  const f = rows => outline(fromGrid(rows, HP, 1), OUT);
+  const head = ['..gggggg....', '.ggeoggeog..', '.gggggggg...', '..gGGGGg....'];
+  const shut = ['..gggggg....', '.ggQQggQQg..', '.gggggggg...', '..gGGGGg....'];
+  const body = ['..cccccc....', '.cggggggc...', '.cggggggc...', '..cccccc....', '..GG..GG....', '.GGG..GGG...'];
+  const stool = ['....uuuu....', '....u..u....'];
+  const P = '............';
+  const asleep = f([P, P, '...zzz......', ...shut, '..cccccc....', '.cggggggc...', '.cggggggc...', '..cccccc....', '..GGGGGG....', '.GG....GG...']);
+  const waking = f([P, ...head, ...body, P]);
+  const raise = f([...stool, ...head, ...body]);
+  const swing = f([P, ...head, '..cccccc.uu.', '.cggggggcuu.', '.cggggggc...', '..cccccc....', '..GG..GG....', '.GGG..GGG...', P]);
+  const walkA = f([P, ...head, ...body.slice(0, 4), '..GG...GG...', '.GG.....GG..']);
+  const walkB = f([P, ...head, ...body.slice(0, 4), '...GGGG.....', '..GG..GG....']);
+  return pack([asleep, waking, raise, swing, walkA, walkB], 6, 14, 10, 13);
+}
+
+// THE ROPE CUTTER - he is not interested in you. He is interested in the rope. 12x13.
+// Frames: 0 walk, 1 raise (axe up), 2 chop (axe into the rope), 3 backing off.
+export function bakeCutter() {
+  const CP = Object.assign({}, EP, { a: '#8a919c', A: '#5a6270', u: '#8a5a32', U: '#5c3a1d' });
+  const f = rows => outline(fromGrid(rows, CP, 1), OUT);
+  const head = ['..gggggg....', '.ggeoggeog..', '.gggggggg...', '..gGGGGg....'];
+  const torso = ['..bbbbbb....', '.bbbbbbbb...', '.bbbbbbbb...', '..bbbbbb....'];
+  const legsA = ['..GG..GG....', '.GGG..GGG...'], legsB = ['...GGGG.....', '..GG..GG....'];
+  const P = '............';
+  const walk = f([P, ...head, ...torso, ...legsA]);
+  const raise = f(['........aaa.', '........aAa.', '.........u..', ...head, ...torso.map((r, i) => i === 1 ? r.slice(0, 9) + 'u..' : r), ...legsB]);
+  const chop = f([P, ...head, '..bbbbbb....', '.bbbbbbbbu..', '.bbbbbbbaaa.', '..bbbbb.aAa.', ...legsA]);
+  const back = f([P, ...head, ...torso, '..GG...GG...', '.GG.....GG..']);
+  return pack([walk, raise, chop, back], 6, 14, 10, 13);
+}
+
+// THE QUEEN'S LANCE - the biggest goblin in the game, in plate, with a lance he cannot steer.
+// 40x34. Frames: 0 stand, 1/2 walk, 3 couch (lance levelled), 4 charge, 5 thrust, 6 sweep,
+// 7 planted (the lance in a post, and him with it), 8 shield stance, 9 shield swing, 10 stagger.
+export function bakeLance() {
+  const LP = Object.assign({}, EP, { a: '#9aa3b0', A: '#5a6270', c: '#c9463d', C: '#8f2f28', u: '#8a5a32', U: '#5c3a1d', y: '#e0b040', m: '#3a3e48' });
+  const W = 40, H = 34; const blank = () => Array.from({ length: H }, () => '.'.repeat(W));
+  const put = (R, x, y, str) => { if (y < 0 || y >= H) return; const row = R[y]; R[y] = row.slice(0, x) + str + row.slice(x + str.length); };
+  const f = rows => outline(fromGrid(rows, LP, 1), OUT);
+  const body = legs => { const R = blank();
+    // a great helm with a red crest, and the shoulders of someone who has never lost
+    put(R, 14, 0, '..cc..'); put(R, 13, 1, '.cccc.'); put(R, 12, 2, 'aaaaaaaa');
+    put(R, 12, 3, 'aAaaaaAa'); put(R, 12, 4, 'aooaaooa'); put(R, 12, 5, 'aaaaaaaa'); put(R, 13, 6, 'aAAAAa');
+    put(R, 8, 7, 'aaaaaaaaaaaaaa'); put(R, 7, 8, 'aAaaaaaaaaaaaAa');
+    put(R, 7, 9, 'aAaccccccccaaAa'); put(R, 7, 10, 'aAaccyyccccaaAa'); put(R, 7, 11, 'aAaccccccccaaAa');
+    put(R, 8, 12, 'aaaaaaaaaaaaaa'); put(R, 9, 13, 'aaaaaaaaaaaa'); put(R, 9, 14, 'mmmmmmmmmmmm');
+    put(R, 9, 15, 'aaaaaaaaaaaa'); put(R, 10, 16, 'aaaaaaaaaa');
+    const L1 = legs === 1 ? [[10, 20], [22, 20]] : legs === 2 ? [[8, 22], [24, 18]] : [[11, 21], [21, 21]];
+    for (const [lx, sk] of L1) { for (let y = 17; y <= 27; y++) put(R, lx + (y > 22 ? (sk > 20 ? 1 : -1) : 0), y, 'aAaa'); put(R, lx - 1, 28, 'aaaaaa'); put(R, lx - 1, 29, 'AAAAAA'); }
+    return R; };
+  const lanceAt = (R, y, x0, len) => { put(R, x0, y, 'u'.repeat(Math.min(len, W - x0))); put(R, Math.min(W - 3, x0 + len), y - 1, 'aa'); put(R, Math.min(W - 3, x0 + len), y, 'aAa'); put(R, Math.min(W - 3, x0 + len), y + 1, 'aa'); };
+  const stand = (() => { const R = body(0); for (let y = 4; y <= 16; y++) put(R, 24, y, 'u'); put(R, 23, 2, 'aAa'); put(R, 23, 3, 'aa'); return R; })();
+  const walk1 = (() => { const R = body(1); for (let y = 4; y <= 16; y++) put(R, 24, y, 'u'); put(R, 23, 2, 'aAa'); return R; })();
+  const walk2 = (() => { const R = body(2); for (let y = 4; y <= 16; y++) put(R, 25, y, 'u'); put(R, 24, 2, 'aAa'); return R; })();
+  const couch = (() => { const R = body(0); lanceAt(R, 11, 16, 18); return R; })();
+  const charge = (() => { const R = body(1); lanceAt(R, 12, 14, 24); return R; })();
+  const thrust = (() => { const R = body(2); lanceAt(R, 10, 18, 21); return R; })();
+  const sweep = (() => { const R = body(1); for (let i = 0; i < 22; i++) put(R, 16 + i, 16 - Math.floor(i / 3), 'u'); put(R, 37, 10, 'aAa'); return R; })();
+  const planted = (() => { const R = body(0); for (let i = 0; i < 16; i++) put(R, 20 + i, 12 + Math.floor(i / 3), 'u'); put(R, 35, 17, 'aAa'); return R; })();
+  const guard = (() => { const R = body(0); for (let y = 6; y <= 18; y++) put(R, 25, y, 'aAaa'); put(R, 25, 5, 'aaaa'); put(R, 26, 11, 'yy'); return R; })();
+  const guardHit = (() => { const R = body(2); for (let y = 4; y <= 12; y++) put(R, 27, y, 'aAaa'); put(R, 24, 13, 'aaaaa'); return R; })();
+  const stagger = (() => { const R = body(0); put(R, 12, 4, 'aXXaaXXa'.replace(/X/g, 'o')); put(R, 13, 1, '.cccc.'); for (let y = 6; y <= 14; y++) put(R, 27, y, 'u'); return R; })();
+  return pack([stand, walk1, walk2, couch, charge, thrust, sweep, planted, guard, guardHit, stagger].map(f), 20, 30, 26, 30);
+}
+
 export function bakeGoblinShaman() {
   const SH = Object.assign({}, EP, { v: '#9a5acc', V: '#5a2a8a', m: '#f0e4ff', u: '#8a5a32', a: '#e8dcc0' });
   const r = rows => outline(fromGrid(rows, SH, 1), OUT);

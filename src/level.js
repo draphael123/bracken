@@ -1238,6 +1238,153 @@ function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crys
 }
 
 // THE HIGH STORE: the same trade in a stone cellar under the crags, with the shepherd and the old knight for company.
+// ============================================================================================
+// LEVEL 10 - STORMHOLD, the last hold.
+// What is left of the goblins after Kingswood, the Stockade and the crags has fallen back up
+// the mountain to the town they came from, and the Queen's castle stands over it in the snow.
+// The village is the lock and the castle is the door: three tiers, three houses, three keys,
+// three gates. You go indoors for the keys. You cross bridges to get anywhere. Then the last
+// gate opens on a bridge a quarter of a mile long, and the Queen's Lance is standing on it.
+// ============================================================================================
+function stormhold() {
+  const L = painter(430, 46); // rows 0-17 are the indoors, off where the street cannot reach
+  const { block, floor, plat, ent, coins, set, spikes } = L;
+  const movers = [], interiors = [], bridges = [];
+  const gateCol = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
+  const room = (x0, x1, y0, y1, st = 'stone') => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); interiors.push([x0, x1, y0, y1, st]); };
+  block(0, 429, 0, 18); // the indoor band is solid rock; every room below is cut out of it
+  const roof = (x0, x1, y) => block(x0, x1, y - 2, y); // a goblin roof: two courses of slate
+  // A span of rope and plank between two piers. `give` planks snap under a standing weight.
+  const span = (x0, x1, y, o) => { const opt = o || {};
+    for (let x = x0; x <= x1; x++) set(x, y, opt.give ? T.SHELF : T.PLANK);
+    bridges.push({ x: x0, x1, y, sway: opt.sway || 0, cut: !!opt.cut });
+    ent('deco', x0, y - 1, { kind: 'bridgepost' }); ent('deco', x1, y - 1, { kind: 'bridgepost' }); };
+
+  // ---- 1. THE UNDER STREET: the market gone to a war camp. Snow, stalls, and the castle above it all. ----
+  floor(0, 60, 34);
+  ent('npc', 8, 33, { kind: 'squire' });
+  ent('sign', 4, 33, { text: 'STORMHOLD. WHAT IS LEFT OF THEM LIVES HERE, AND THE QUEEN IS IN THE CASTLE ABOVE IT. THE GATES ARE LOCKED AND THE KEYS ARE INDOORS. STAND IN A DOORWAY AND PRESS UP.' });
+  ent('deco', 16, 33, { kind: 'cairn' }); ent('torch', 12, 33); ent('deco', 24, 33, { kind: 'barrels' });
+  ent('sprig', 30, 33, { face: -1 }); ent('shield', 40, 33, { face: -1 }); ent('torch', 34, 33);
+  coins([14, 32], [22, 31], [36, 32], [48, 32]);
+  ent('check', 20, 33);
+  // the first house: it is already open, so the doorway teaches itself
+  roof(44, 54, 30);
+  ent('doorway', 48, 33, { id: 'hearth-out', to: 'hearth-in', kind: 'goblin' });
+  ent('sign', 44, 33, { text: 'THE FIRST DOOR IS ON THE LATCH. WHAT IS INSIDE IS ASLEEP, AND WHAT IS ON THE NAIL IS THE BRASS KEY.' });
+  room(6, 30, 6, 13, 'hall');
+  ent('doorway', 9, 13, { id: 'hearth-in', to: 'hearth-out', lock: [6, 30], label: 'THE HEARTH HOUSE' });
+  ent('torch', 12, 13); ent('brazier', 20, 13); ent('deco', 26, 13, { kind: 'barrels' });
+  ent('hearthgob', 18, 13, { face: -1 }); ent('key', 28, 13, { kind: 'brass' });
+  coins([14, 12], [22, 12]);
+  ent('sign', 7, 13, { text: 'HEARTH GOBLINS SLEEP BY THE FIRE UNTIL YOU ARE CLOSE, AND THEN THEY FIGHT WITH WHATEVER IS TO HAND.' });
+  // the first span: short, low, and the planks give
+  block(61, 62, 34, 45); block(75, 76, 34, 45);
+  span(63, 74, 34, { give: true });
+  ent('sign', 58, 33, { text: 'THE PLANKS GIVE UNDER A STANDING WEIGHT. KEEP MOVING.' });
+  ent('deco', 66, 33, { kind: 'lanternPost' });
+  floor(77, 96, 34); ent('archer', 86, 33, { face: -1 }); coins([80, 33], [90, 33]);
+  ent('lockgate', 96, 33, { needs: 'brass', h: 6 }); gateCol(96, 28, 33);
+  ent('check', 92, 33);
+
+  // ---- 2. SMOKE ROW: forges and tanneries, and the spans start being watched. ----
+  floor(97, 150, 32);
+  ent('sign', 99, 31, { text: 'SMOKE ROW. THEY WORK IRON FOR THE CASTLE HERE. THE TOWERS COVER EVERY SPAN: PICK YOUR MOMENT.' });
+  ent('deco', 104, 31, { kind: 'forge' }); ent('brazier', 108, 31); ent('brazier', 120, 31);
+  ent('hearthgob', 114, 31, { face: -1 }); ent('brute', 130, 31, { face: -1 }); ent('sprig', 140, 31, { face: -1 });
+  roof(110, 124, 28); roof(132, 146, 28);
+  plat(126, 26, 4); ent('archer', 127, 25, { face: -1 }); coins([102, 30], [118, 30], [127, 25], [136, 30], [146, 30]);
+  ent('silver', 128, 25);
+  // the smithy: the iron key, and the smith
+  ent('doorway', 118, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
+  room(38, 66, 6, 14, 'stone');
+  ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
+  ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
+  ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
+  plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); coins([48, 13], [56, 9], [60, 13]);
+  ent('stray', 56, 9, { kind: 'folk' });
+  ent('sign', 39, 14, { text: 'THE SMITHY. THEY ARE MAKING SOMETHING LONG AND SHARP FOR SOMEONE LARGE.' });
+  // the second span: long, watched from both ends, and a cutter on the far post
+  block(151, 152, 32, 45); block(178, 179, 32, 45);
+  span(153, 177, 32, { sway: 1 });
+  ent('cutter', 177, 31, { face: -1, bridge: 153 });
+  ent('archer', 151, 30, { face: 1, fire: true }); ent('rockgoblin', 179, 30, { face: -1 });
+  ent('sign', 148, 31, { text: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE SHIELD CARRIES.' });
+  ent('deco', 160, 31, { kind: 'lanternPost' }); ent('deco', 170, 31, { kind: 'lanternPost' });
+  floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
+  coins([184, 31], [194, 30], [204, 31]);
+  // the tannery: a house you go through, not into, and the second captive
+  roof(186, 198, 28); ent('doorway', 190, 31, { id: 'tan-out', to: 'tan-in', kind: 'goblin' });
+  room(74, 98, 6, 13, 'earth');
+  ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
+  ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
+  ent('stray', 95, 13, { kind: 'folk' }); coins([84, 12], [90, 12], [96, 13]);
+  ent('lockgate', 208, 31, { needs: 'iron', h: 6 }); gateCol(208, 26, 31);
+  ent('check', 204, 31);
+
+  // ---- 3. THE HALLS: the officers' houses under the crag, and every span at once. ----
+  floor(209, 250, 30);
+  ent('sign', 211, 29, { text: 'THE HALLS. THE QUEEN\'S OFFICERS KEEP HOUSE UNDER THE CRAG. THE LAST KEY IS IN THE LONGHOUSE AND THE LONGHOUSE IS FULL.' });
+  ent('deco', 218, 29, { kind: 'banner', v: 0 }); ent('deco', 240, 29, { kind: 'banner', v: 1 });
+  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true });
+  roof(214, 232, 26); roof(236, 248, 26); ent('torch', 216, 29); ent('torch', 244, 29);
+  coins([214, 28], [228, 28], [238, 28], [248, 28]);
+  // the longhouse: the deepest room, the bone key at the back of it
+  ent('doorway', 228, 29, { id: 'long-out', to: 'long-in', kind: 'cottage' });
+  room(106, 160, 4, 15, 'hall');
+  ent('doorway', 109, 15, { id: 'long-in', to: 'long-out', lock: [106, 160], label: 'THE LONGHOUSE' });
+  ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
+  ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
+  plat(118, 11, 4); plat(128, 8, 5); plat(140, 11, 4); ent('archer', 129, 7, { face: -1 });
+  ent('stray', 130, 7, { kind: 'folk' }); ent('key', 158, 15, { kind: 'bone' });
+  coins([120, 10], [130, 7], [142, 10], [150, 14]);
+  ent('sign', 107, 15, { text: 'THE LONGHOUSE. THE THIRD OF THE HILL FOLK IS UP IN THE RAFTERS AND THE BONE KEY IS AT THE FAR END.' });
+  // a swaying span with a cutter, over the drop, to the last gate
+  block(251, 252, 30, 45); block(274, 275, 30, 45);
+  span(253, 273, 30, { sway: 2, give: true });
+  ent('cutter', 273, 29, { face: -1, bridge: 253 }); ent('harpy', 262, 20);
+  ent('archer', 251, 29, { face: 1, fire: true });
+  floor(276, 300, 30); ent('sprig', 284, 29, { face: -1 }); ent('shield', 294, 29, { face: -1 });
+  ent('silver', 288, 25); plat(286, 26, 4); coins([280, 29], [288, 25], [296, 29]);
+  ent('lockgate', 300, 29, { needs: 'bone', h: 7 }); gateCol(300, 23, 29);
+  ent('check', 296, 29);
+
+  // ---- 4. THE LONG BRIDGE: seven spans, six piers, and the Queen's Lance. ----
+  // one height the whole way, so his charge has one line to run and the piers are the rhythm
+  const BY = 30, P0 = 302; // the deck row: the piers are solid from here down and the deck planks sit on it
+  ent('sign', 302, BY - 1, { text: 'THE CASTLE BRIDGE. IT IS LONGER THAN THE VILLAGE. HE CANNOT TURN WHILE HE IS CHARGING: STEP OFF HIS LINE AND HE PUTS THE LANCE IN A POST. THE PIERS ARE THE ONLY GOOD GROUND AND THEY ARE WATCHED.' });
+  const piers = [];
+  for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
+    block(px0, px1, BY, 45); piers.push([px0, px1]);
+    if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1, give: k >= 2 }); }
+    if (k >= 1 && k <= 5) ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' });
+  }
+  // the towers loose at you on the open spans
+  ent('archer', 322, BY - 1, { face: 1, fire: true }); ent('archer', 358, BY - 1, { face: -1, fire: true });
+  ent('rockgoblin', 394, BY - 1, { face: -1 }); ent('archer', 412, BY - 1, { face: -1, fire: true });
+  ent('cutter', 340, BY - 1, { face: -1, bridge: 325 });
+  for (const x of [310, 328, 346, 364, 382, 400]) { ent('deco', x, BY - 1, { kind: 'lanternPost' }); coins([x + 4, BY - 2]); }
+  ent('silver', 373, BY - 2);
+  // the far gatehouse, and the way out
+  block(428, 429, 20, 45); floor(424, 429, BY);
+  ent('deco', 426, BY - 1, { kind: 'gatehouse' });
+  ent('gate', 427, BY - 1);
+  ent('lance', 320, BY - 1);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges,
+    duskStart: -1, duskLen: 1, music: 'theme4', night: true, glowNight: true, nightA: 0.26,
+    quest: { n: 3, item: 'folk', name: 'HILL FOLK', npc: 'squire', done: 'THEY ARE OUT OF THEIR CELLARS', reward: 'relic', relic: 'shoes' },
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
+      grass: '#cfd8e2', grassL: '#eef4ff', grassD: '#9aa8bc', dirt: '#4a4a58', dirtL: '#62626e', dirtD: '#32323c',
+      canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    castle: true, // the castle grows over the whole level: drawn behind everything
+    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'boss2', tint: '#6a7a9a', tintA: 0.10, fx: 'dust' },
+  };
+}
+
+// THE HIGH STORE: the same trade in a stone cellar under the crags, with the shepherd and the old knight for company.
 function theShopCrag() {
   const L = painter(40, 28);
   const { block, floor, ent, set } = L;
@@ -1281,7 +1428,7 @@ function theShop() {
 
 // ---------- Level 9. GALE MOOR: the high moor above the mine. The wind is the verb: it carries you, it pins you, it lifts you. ----------
 function galeMoor() {
-  const L = painter(524, 30);
+  const L = painter(596, 30);
   const { block, floor, plat, spikes, ent, coins, set } = L;
   const movers = [], gusts = [], pools = [], hags = [], stone = [];
   const menhir = (x, y0, y1) => { block(x, x, y0, y1); stone.push([x, x, y0, y1]); };
@@ -1364,35 +1511,51 @@ function galeMoor() {
   gusts.push({ x0: 380 * TS, x1: 440 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 3, on: 1.4, phase: 0, alt: true, moor: true, k: 1.4 });
   ent('flagpost', 386, 13); ent('flagpost', 404, 11); ent('flagpost', 425, 13); ent('hare', 390, 13, { face: 1 }); ent('harpy', 405, 5);
   ent('sign', 382, 13, { text: 'THE GALLERY. THE WIND TURNS EVERY THREE BREATHS. JUMP WITH IT AND YOU FLY; AGAINST IT YOU FALL IN THE THORNS. THE STONE AT THE END: RIDE THE UPDRAFT OVER IT.' });
-  ent('silver', 430, 7); coins([404, 10], [415, 10], [427, 8], [434, 12]);
+  coins([404, 10], [415, 10], [427, 8], [430, 7], [434, 12]);
   ent('check', 436, 13);
 
+  // ---- 9. THE WHISTLE STONES: the moor asks for everything it taught you at once. Four tall stones
+  // over the thorns with an updraft in every gap and a wind that turns, so each crossing is
+  // lift, then carry, then land - and the harpies work the gaps because they know you cannot stop. ----
+  block(437, 508, 15, 29); spikes(437, 508, 14);
+  floor(437, 444, 14);
+  const whistle = (x, top) => { pillar(x, top, 13); ent('flagpost', x, top - 1); };
+  whistle(448, 9); whistle(464, 6); whistle(480, 10); whistle(496, 7);
+  for (const [x, h] of [[456, 190], [472, 210], [488, 180], [502, 200]]) ent('vent', x, 13, { period: 100, on: 100, h, wind: true, w: 26 });
+  gusts.push({ x0: 444 * TS, x1: 508 * TS, y0: 0, y1: 14 * TS, dir: 1, period: 3.6, on: 1.6, phase: 0, alt: true, moor: true, k: 1.45 });
+  ent('sign', 439, 13, { text: 'THE WHISTLE STONES. THE AIR GOES UP IN EVERY GAP AND THE WIND TURNS EVERY FEW BREATHS. STEP OFF, LET IT LIFT YOU, AND LET THE GUST DO THE CARRYING. THERE IS NOTHING UNDER YOU BUT THORNS.' });
+  ent('harpy', 456, 3); ent('harpy', 488, 2); ent('kite', 472, 4);
+  ent('sailer', 442, 13, { face: 1 }); ent('hare', 504, 13, { face: -1 });
+  coins([448, 8], [464, 5], [480, 9], [496, 6], [456, 4], [488, 3]);
+  ent('silver', 464, 5);
+  floor(504, 548, 14); ent('check', 506, 13);
+
   // ---- 9. THE FLAG ROAD: the last walk to the summit. Stones, hares, and the flags all pointing one way. ----
-  for (const [x, top] of [[466, 10], [471, 12]]) pillar(x, top, 13);
-  ent('deco', 444, 13, { kind: 'cairn' }); ent('deco', 456, 13, { kind: 'stone', v: 1 }); ent('flagpost', 441, 13); ent('flagpost', 460, 13);
-  ent('hare', 468, 13, { face: 1 }); ent('harpy', 458, 4);
+  for (const [x, top] of [[538, 10], [543, 12]]) pillar(x, top, 13);
+  ent('deco', 516, 13, { kind: 'cairn' }); ent('deco', 528, 13, { kind: 'stone', v: 1 }); ent('flagpost', 513, 13); ent('flagpost', 532, 13);
+  ent('hare', 540, 13, { face: 1 }); ent('harpy', 530, 4);
   // ---- 9b. THE MASTHEAD: the biggest sail on the moor, on a walled stretch where the wind turns every few breaths. ----
-  ent('sign', 439, 13, { text: 'THE MASTHEAD. WHILE THE WIND IS IN HER SAIL SHE CANNOT BE STOPPED AND SHE CANNOT STEER. BLOCK HER OR LET THE WALL TAKE HER, THEN CUT HER WHILE SHE IS DOWN. IN THE LULL SHE IS JUST A GOBLIN.' });
-  ent('sailer', 448, 13, { face: -1, big: true, mini: true }); // close enough to the trigger that you see her when the bar appears
-  gusts.push({ x0: 438 * TS, x1: 464 * TS, y0: 4 * TS, y1: 14 * TS, dir: 1, period: 3.4, on: 1.5, phase: 0, alt: true, moor: true, k: 1.3 });
-  for (let y = 8; y <= 13; y++) set(463, y, T.PORT);
-  coins([446, 12], [458, 12]);
-  gusts.push({ x0: 440 * TS, x1: 476 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 6, on: 2, phase: 1, moor: true, k: 1.2 });
-  ent('sign', 442, 13, { text: 'THE FLAG ROAD. THE SHAMAN IS ON THE STONES AHEAD. HE WILL NOT STAND STILL, AND NEITHER WILL THE WIND. THE STONES ARE HIS STAIR; THE WIND IS YOURS.' });
-  coins([446, 12], [452, 9], [458, 12], [464, 8], [472, 10]); ent('check', 474, 13);
+  ent('sign', 511, 13, { text: 'THE MASTHEAD. WHILE THE WIND IS IN HER SAIL SHE CANNOT BE STOPPED AND SHE CANNOT STEER. BLOCK HER OR LET THE WALL TAKE HER, THEN CUT HER WHILE SHE IS DOWN. IN THE LULL SHE IS JUST A GOBLIN.' });
+  ent('sailer', 520, 13, { face: -1, big: true, mini: true }); // close enough to the trigger that you see her when the bar appears
+  gusts.push({ x0: 510 * TS, x1: 536 * TS, y0: 4 * TS, y1: 14 * TS, dir: 1, period: 3.4, on: 1.5, phase: 0, alt: true, moor: true, k: 1.3 });
+  for (let y = 8; y <= 13; y++) set(535, y, T.PORT);
+  coins([518, 12], [530, 12]);
+  gusts.push({ x0: 512 * TS, x1: 548 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 6, on: 2, phase: 1, moor: true, k: 1.2 });
+  ent('sign', 514, 13, { text: 'THE FLAG ROAD. THE SHAMAN IS ON THE STONES AHEAD. HE WILL NOT STAND STILL, AND NEITHER WILL THE WIND. THE STONES ARE HIS STAIR; THE WIND IS YOURS.' });
+  coins([518, 12], [524, 9], [530, 12], [536, 8], [544, 10]); ent('check', 546, 13);
 
   // ---- 10. THE SUMMIT: three standing stones and two ledges in a ring of thorns. The shaman blinks between them and throws the sky at you. The gust reaches the ledges; the updrafts reach the stones. ----
-  block(476, 523, 13, 29);
-  spikes(478, 479, 12); spikes(519, 520, 12);
-  pillar(482, 12, 12); pillar(484, 10, 12); pillar(498, 4, 12); pillar(513, 8, 12);
-  plat(491, 7, 2); plat(506, 6, 2);
-  ent('vent', 494, 12, { period: 6, on: 2.6, h: 165, wind: true, w: 18 }); ent('vent', 509, 12, { period: 6, on: 2.6, h: 135, wind: true, w: 18, phase: 3 });
-  gusts.push({ x0: 477 * TS, x1: 522 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
-  ent('flagpost', 481, 12); ent('flagpost', 517, 12);
-  ent('windcaller', 498, 3);
-  ent('sign', 480, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. THE WIND IS THE ONLY STAIR UP TO HIM: THE GUST FOR THE LEDGES, THE UPDRAFTS FOR THE HIGH STONES. STRIKE HIM TWICE AND HE IS GONE AGAIN. WHEN HE CALLS THE WIND, THE THORNS ARE WAITING.' });
-  ent('check', 481, 12); ent('gate', 521, 12);
-  const roosts = [[484, 9], [498, 3], [513, 7], [491, 6], [506, 5]]; // where he stands: a stone's top, a ledge
+  block(548, 595, 13, 29);
+  spikes(550, 551, 12); spikes(591, 592, 12);
+  pillar(554, 12, 12); pillar(556, 10, 12); pillar(570, 4, 12); pillar(585, 8, 12);
+  plat(563, 7, 2); plat(578, 6, 2);
+  ent('vent', 566, 12, { period: 6, on: 2.6, h: 165, wind: true, w: 18 }); ent('vent', 581, 12, { period: 6, on: 2.6, h: 135, wind: true, w: 18, phase: 3 });
+  gusts.push({ x0: 549 * TS, x1: 594 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
+  ent('flagpost', 553, 12); ent('flagpost', 589, 12);
+  ent('windcaller', 570, 3);
+  ent('sign', 552, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. THE WIND IS THE ONLY STAIR UP TO HIM: THE GUST FOR THE LEDGES, THE UPDRAFTS FOR THE HIGH STONES. STRIKE HIM TWICE AND HE IS GONE AGAIN. WHEN HE CALLS THE WIND, THE THORNS ARE WAITING.' });
+  ent('check', 553, 12); ent('gate', 593, 12);
+  const roosts = [[556, 9], [570, 3], [585, 7], [563, 6], [578, 5]]; // where he stands: a stone's top, a ledge
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
@@ -1401,8 +1564,8 @@ function galeMoor() {
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 99999, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 477 * TS, x1: 521 * TS, floor: 13 * TS, trigger: 484 * TS, wallL: 476, wallR: 522, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
-    mini: { x0: 438 * TS, x1: 463 * TS, floor: 14 * TS, trigger: 441 * TS, wallL: 437, gate: 463, boss: 'sailer' },
+    arena: { x0: 549 * TS, x1: 593 * TS, floor: 13 * TS, trigger: 556 * TS, wallL: 548, wallR: 594, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
+    mini: { x0: 510 * TS, x1: 535 * TS, floor: 14 * TS, trigger: 513 * TS, wallL: 509, gate: 535, boss: 'sailer' },
   };
 }
 
@@ -1416,6 +1579,7 @@ export const LEVELS = [
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', build: hangingVillage, needs: 'scree' },
   { id: 'mineworks', name: 'THE GLASSWORKS', sub: 'the mine that broke into light', build: theMineworks, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', build: galeMoor, needs: 'mineworks' },
+  { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', build: stormhold, needs: 'moor' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
