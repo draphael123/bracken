@@ -698,3 +698,39 @@ export function bakeOldKnight() {
   const nod = o(['............', '...sSSSs....', '..sssssss...', '..sSSSSSs...', '..skkkkks...', '..sgggggs...', '..bbbbbbb...', '.bBbbbbbBb.w', '.bbbbbbbbb.w', '.bBbbbbbBb.w', '..bbbbbbb..w', '..SS...SS..w', '..SS...SS..w', '..WW...WW..w']);
   return pack([idle, nod], 7, 15, 10, 14);
 }
+
+
+// ---------- The Mineworks ----------
+// Goblin miner — a hard hat with a candle, a pick over the shoulder. 12×12. Frames: walk1, walk2, dig (pick down), swing (pick forward).
+export function bakeMiner() {
+  const MP = Object.assign({}, KG, { c: '#c9b27c', C: '#8a7a5a', y: '#ffd36b', i: '#8a919c', I: '#5a6270' });
+  const mspr = rows => outline(fromGrid(rows, MP, 1), OUT);
+  const head = ['....y.......', '...cccccc...', '..cCCCCCCc..', '..ggeoggeog.', '...gggggg...', '...gGGGGg...'];
+  const walk1 = mspr([...head, '..xxxxxxx.i.', '.xxxxxxxx.i.', '..xxxxxx..i.', '..GG..GG....', '.GG....GG...']);
+  const walk2 = mspr([...head, '..xxxxxxx.i.', '.xxxxxxxx.i.', '..xxxxxx..i.', '...GGGG.....', '...GG.GG....']);
+  const dig = mspr([...head, '..xxxxxxxxx.', '.xxxxxxxxxxi', '..xxxxxx..II', '..GG..GG..I.', '.GG....GG...']);
+  const swing = mspr(['....y.......', '...cccccc...', '..cCCCCCCcii', '..ggeoggeoII', '...gggggg.I.', '...gGGGGgxI.', '..xxxxxxxxx.', '.xxxxxxxxx..', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
+  return pack([walk1, walk2, dig, swing], 7, 12, 10, 11);
+}
+// Cave bat — 12×6. Frames: hang (wings folded), fly1, fly2.
+export function bakeBat() {
+  const BP2 = Object.assign({}, EP, { b: '#3a3448', B: '#5a5468', r: '#ff4a3a' });
+  const b = rows => outline(fromGrid(rows, BP2, 1), OUT);
+  const hang = b(['....bbbb....', '...bbbbbb...', '...bbrrbb...', '....bbbb....', '.....bb.....', '....b..b....']);
+  const fly1 = b(['b..........b', 'bb...bb...bb', '.bbbbbbbbbb.', '..bbBrrBbb..', '....bbbb....', '.....bb.....']);
+  const fly2 = b(['............', '.....bb.....', '..bbbbbbbb..', 'bbbbBrrBbbbb', 'bb..bbbb..bb', '.....bb.....']);
+  return pack([hang, fly1, fly2], 7, 7, 10, 6);
+}
+// The Forgemaster — a goblin engineer strapped into a steam rig: piston arm, boiler pack, goggles. 32×26. Frames: idle, lunge, spray, kick, scalded.
+export function bakeForgemaster() {
+  const FP2 = Object.assign({}, KG, { i: '#8a919c', I: '#5a6270', c: '#6a4a3a', C: '#3a2a24', y: '#ffd36b', s: '#e8e0d0' });
+  const f = rows => outline(fromGrid(rows, FP2, 1), OUT);
+  const headR = ['..........gggggg................', '.........ggyyggyg...............', '.........gggggggg...............', '..........ggGGgg................'];
+  const pack1 = ['....cccc........................', '...cCccCc.......................', '...ccccccc......................', '...cCccCc.......................', '....cccc........................'];
+  const idle = f([...headR, '.....IIIIiiiiiiiI...............', '.cccciiiiiiiiiiiiI..............', 'cCccCiiiiiiiiiiiiiIII...........', 'ccccciiiiiiiiiiiiiiiII..........', 'cCccCiiiiiiiiiiiiI..I...........', '.cccciiiiiiiiiiiiI..............', '.....IIIIiiiiiiII...............', '......II......II................', '......II......II................', '.....III.....III................']);
+  const lunge = f([...headR, '.....IIIIiiiiiiiI...............', '.cccciiiiiiiiiiiiIIIIIIIIIIII...', 'cCccCiiiiiiiiiiiiiiiiiiiiiiiiIII', 'ccccciiiiiiiiiiiiIIIIIIIIIIIIIII', 'cCccCiiiiiiiiiiiiI..............', '.cccciiiiiiiiiiiiI..............', '.....IIIIiiiiiiII...............', '......II......II................', '......II......II................', '.....III.....III................']);
+  const spray = f([...headR, '.....IIIIiiiiiiiI....ssss.......', '.cccciiiiiiiiiiiiI..sssssss.....', 'cCccCiiiiiiiiiiiiiIIIsssssssss..', 'ccccciiiiiiiiiiiiiiiIIsssssss...', 'cCccCiiiiiiiiiiiiI....ssss......', '.cccciiiiiiiiiiiiI..............', '.....IIIIiiiiiiII...............', '......II......II................', '......II......II................', '.....III.....III................']);
+  const kick = f([...headR, '.....IIIIiiiiiiiI...............', '.cccciiiiiiiiiiiiI..............', 'cCccCiiiiiiiiiiiiiIII...........', 'ccccciiiiiiiiiiiiiiiII..........', 'cCccCiiiiiiiiiiiiI..I...........', '.cccciiiiiiiiiiiiI..............', '.....IIIIiiiiiiII...............', '......II........IIIIII..........', '......II..............II........', '.....III........................']);
+  const scald = f(['..........gggggg......s.........', '.........ggoogggg....sss........', '.........gggRRggg...s.s.........', '..........ggGGgg................', '.....IIIIiiiiiiiI...............', '.cccciiiiiiiiiiiiI..............', 'cCccCiiiiiiiiiiiiiI.............', 'cccccisiiiisiiiiiii.............', 'cCccCiiiiiiiiiiiiI..............', '.cccciiiiiiiiiiiiI..............', '.....IIIIiiiiiiII...............', '......II......II................', '.....II........II...............', '....III.........III.............']);
+  return pack([idle, lunge, spray, kick, scald], 14, 15, 26, 22);
+}

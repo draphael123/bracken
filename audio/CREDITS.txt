@@ -19,3 +19,4 @@ Anything not in the manifest is synthesised in src/audio.js.
 - king.mp3 = "Great Boss" by Spring Spring (Julie Damsgaard / Spring Enterprises), CC0 - https://opengameart.org/content/great-boss - King Gorm Underleaf's own theme. boss2.ogg now plays for the Goblin Chieftain.
 - town.mp3 = "Exploring Town" by Spring Spring (Julie Damsgaard / Spring Enterprises), CC0 - https://opengameart.org/content/exploring-town - a menu tune sold at the store (trimmed to 132 s with a fade).
 - adventure.mp3 = "The Adventure Begins" by Frenchyboy Studios, CC0 - https://opengameart.org/content/the-adventure-begins - a menu tune sold at the store.
+- cave.mp3 = "8-Bit Cave Loop" by Wolfgang_, CC0 - https://opengameart.org/content/8-bit-cave-loop - The Mineworks theme.

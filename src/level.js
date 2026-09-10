@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -1029,11 +1029,79 @@ function hangingVillage() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: true,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(140,90,150,0.12)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
-    stone: [], scree: [],
+    stone: [], scree: [], snowLine: 52,
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
     arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 26 * TS, wallL: 19, wallR: 90, boss: 'owl', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
+  };
+}
+
+// ---------- LEVEL 8: THE MINEWORKS ----------
+// Under the Hanging Village. Three galleries step down through the rock on rails and an ore lift, to the forge at the bottom.
+function theMineworks() {
+  const W = 200, H = 56; const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  const carve = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); };
+  const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
+  const soft = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOFT); };
+  const shelf = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.SHELF); };
+  const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  block(0, W - 1, 0, H - 1);
+  const interiors = [];
+  const gallery = (x0, x1, y0, y1) => { carve(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, 'stone']); };
+
+  // ---- Gallery A. The miners' camp, then the first rails, stepping down the grade to the ore lift ----
+  gallery(2, 127, 10, 19); gallery(64, 127, 20, 22); gallery(88, 127, 23, 25);
+  ent('sign', 4, 19, { text: 'THE MINEWORKS. THE FOREMAN LOST THREE CANARIES. THE CARTS ROLL WHEN YOU RIDE THEM.' });
+  ent('npc', 10, 19, { kind: 'foreman' }); ent('door', 18, 19, { kind: 'cottage', at: 18 }); ent('folk', 15, 19, { door: 18, alt: true }); ent('door', 30, 19, { kind: 'cottage', at: 30 }); ent('folk', 33, 19, { door: 30, alt: true });
+  for (const x of [8, 20, 32, 46, 58, 76, 98, 114]) ent('minerlamp', x, 10);
+  ent('deco', 24, 19, { kind: 'cart' }); ent('deco', 36, 19, { kind: 'barrels' });
+  rail(40, 60, 20); ent('cart', 42, 19); ent('sign', 38, 19, { text: 'JUMP IN. IT ROLLS WITH THE GRADE. JUMP THE GAPS WITH IT.' });
+  rail(64, 84, 23); rail(88, 121, 26); set(100, 25, T.CRATE); set(100, 24, T.CRATE);
+  ent('miner', 72, 22, { face: -1 }); ent('miner', 96, 25, { face: -1 }); ent('sprig', 54, 19, { face: -1 });
+  soft(117, 117, 17, 19); carve(118, 121, 16, 19); ent('stray', 120, 19, { kind: 'canary' }); ent('miner', 119, 19, { face: -1 }); // the first canary, in a pocket a miner digs open
+  ent('bat', 80, 12); ent('bat', 106, 15);
+  coins([44, 17], [50, 17], [56, 17], [66, 21], [74, 21], [82, 21], [92, 24], [106, 24], [112, 24]);
+  ent('check', 62, 19); ent('check', 86, 22);
+  // the ore lift: the pan goes down while a cart sits on it
+  carve(122, 125, 26, 36); ent('orelift', 124, 26, { to: 37 }); plat(122, 29, 2); ent('silver', 123, 28); ent('sign', 112, 25, { text: 'THE ORE LIFT. IT SINKS UNDER A LOADED CART. RIDE YOURS ONTO THE PAN.' });
+
+  // ---- Gallery B. Back the other way: a collapsing gallery, gas seams on the rails, bats in the dark ----
+  gallery(2, 127, 28, 36);
+  for (const x of [6, 22, 46, 64, 82, 100, 118]) ent('minerlamp', x, 28);
+  rail(60, 118, 37); ent('cart', 110, 36, { dir: -1 }); ent('gas', 96, 36, { period: 7, phase: 0 }); ent('gas', 76, 36, { period: 7, phase: 3.5 });
+  ent('bat', 90, 30); ent('bat', 70, 31); ent('miner', 104, 36, { face: -1 });
+  ent('check', 120, 36); ent('sign', 116, 36, { text: 'THE TIMBERS ARE ROTTEN PAST THE RAIL. RUN.' });
+  shelf(36, 37, 21); gallery(36, 58, 38, 40); carve(35, 35, 38, 40); ladder(35, 35, 38, 40); ent('stray', 57, 40, { kind: 'canary' }); ent('silver', 38, 40); ent('minerlamp', 47, 38); // the collapse: the floor snaps, you land in a pocket with the second canary
+  rail(12, 32, 37); ent('cart', 30, 36, { dir: -1 }); ent('gas', 20, 36, { period: 6, phase: 1 }); ent('bat', 26, 30);
+  coins([70, 35], [86, 35], [102, 35], [40, 35], [50, 35], [16, 35], [24, 35]);
+  ent('check', 12, 36);
+  // the shaft to the deep gallery
+  carve(6, 9, 37, 51); ladder(7, 8, 38, 51);
+
+  // ---- Gallery C. The deep gallery: near dark, rails to the forge, a soft plug the cart smashes ----
+  gallery(2, 160, 42, 51);
+  for (const x of [20, 60, 100]) ent('minerlamp', x, 42);
+  rail(12, 118, 52); ent('cart', 14, 51); soft(108, 109, 47, 51); ent('sign', 10, 51, { text: 'DARK. THE BATS HUNT LIGHT. THE CART DOES NOT CARE.' });
+  ent('bat', 30, 44); ent('bat', 50, 45); ent('bat', 75, 44); ent('miner', 40, 51, { face: -1 }); ent('miner', 86, 51, { face: -1 });
+  ent('gas', 55, 51, { period: 7, phase: 2 }); ent('gas', 80, 51, { period: 7, phase: 5 });
+  plat(90, 48, 3); ent('stray', 91, 47, { kind: 'canary' }); coins([22, 50], [36, 50], [48, 50], [64, 50], [72, 50], [96, 50]);
+  ent('check', 112, 51);
+  // ---- The Forge. THE FORGEMASTER. ----
+  rail(120, 156, 52); ent('cart', 156, 51, { auto: true, dir: -1, speed: 120 });
+  ent('minerlamp', 122, 42); ent('minerlamp', 142, 42); ent('hammer', 132, 51); ent('boiler', 150, 51); plat(156, 49, 2); plat(152, 46, 2); plat(148, 44, 3); ent('silver', 149, 43); // the coal chute: a climb up the forge wall to the silver
+  ent('deco', 126, 51, { kind: 'barrels' }); ent('deco', 154, 51, { kind: 'cart' });
+  ent('forgemaster', 140, 51);
+  ent('sign', 114, 51, { text: 'THE FORGE. THE HAMMER KEEPS TIME. THE CARTS KEEP COMING. BURST HIS BOILER.' });
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [], interiors,
+    duskStart: -1, duskLen: 1, music: 'cave', night: true, glowNight: true, dark: 0.72,
+    palette: { sky: 'night', dress: 'none', hall: true, grass: '#6a6a78', grassL: '#8a8a98', grassD: '#4a4a58', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#2a2a34', '#3a3a44', '#4a4a58', '#5a5a66'] },
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
+    quest: { n: 3, item: 'canary', name: 'CANARY', npc: 'foreman', done: 'THE BIRDS ARE BACK', reward: 'relic', relic: 'lamp' },
+    arena: { x0: 120 * TS, x1: 158 * TS, floor: 52 * TS, trigger: 124 * TS, wallL: 119, wallR: 159, boss: 'forgemaster', tint: '#ff9a5c', tintA: 0.08, fx: 'embers', slag: [126 * TS + 8, 138 * TS + 8, 148 * TS + 8] },
   };
 }
 
@@ -1083,7 +1151,8 @@ export const LEVELS = [
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
   { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
-  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the tree-city', build: hangingVillage, needs: 'scree' },
+  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', build: hangingVillage, needs: 'scree' },
+  { id: 'mineworks', name: 'THE MINEWORKS', sub: 'under the mountain', build: theMineworks, needs: 'hanging' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
 ];
