@@ -1042,17 +1042,22 @@ function hangingVillage() {
   // 5 -> crown: the long rope
   band(1, W - 2, tops.crown); hole(2, 5, tops.crown); ladder(3, 4, tops.crown, tops.t5 - 1);
 
-  // ---- The crown: THE OWL REEVE. Three lit lanterns on the great bough; bait its swoops into the light. ----
-  ent('sign', 8, 19, { text: 'THE OWL REEVE. IT SWOOPS: STAND BY A LIT LANTERN AND STEP ASIDE, AND IT CRASHES INTO THE LIGHT. IT SCREECHES SPIDERS DOWN. ITS GUST PUSHES. ITS TALONS CARRY. DODGE THOSE.' });
+  // ---- The crown: THE OWL REEVE. Three perches on the high branches with a dark lantern on each; ledges climb to every one. ----
+  ent('sign', 8, 19, { text: 'THE OWL REEVE. IT SITS ON THE HIGH BRANCHES. CLIMB TO IT AND CUT: TWO CUTS AND IT FLUSHES. LIGHT THE LANTERN ON A PERCH AND IT WILL NOT SIT THERE. LIGHT ALL THREE AND IT MUST COME DOWN TO YOU. ITS TALONS CARRY. DODGE THOSE.' });
   ent('check', 12, 19);
-  for (const x of [32, 54, 76]) ent('lantern', x, 19);
-  plat(26, 17, 3); plat(81, 17, 3); plat(51, 12, 6);
-  ent('deco', 40, 19, { kind: 'stone', v: 0 }); ent('deco', 68, 19, { kind: 'cairn' });
+  for (const x of [32, 76]) ent('lantern', x, 19); // two lit lanterns on the floor: a swooping owl still crashes into light
+  plat(24, 17, 3); plat(84, 17, 3); plat(29, 14, 3); plat(79, 14, 3); plat(34, 11, 3); plat(74, 11, 3); // the climb either side
+  plat(40, 9, 5); plat(51, 12, 6); plat(63, 9, 5); // the three perches
+  plat(47, 11, 2); plat(60, 10, 2); plat(70, 11, 2); // the links between them
+  for (const [x, y] of [[42, 8], [54, 11], [65, 8]]) ent('lantern', x, y, { dark: true, perch: true }); // a dark lantern on each perch: light it and the perch is denied
+  vine(48, 12, 19); vine(61, 11, 19); // two vines from the floor up to the links
+  ent('deco', 38, 19, { kind: 'stone', v: 0 }); ent('deco', 68, 19, { kind: 'cairn' });
+  coins([25, 16], [30, 13], [35, 10], [85, 16], [80, 13], [75, 10], [47, 10], [61, 9], [71, 10]);
   ent('owl', 54, 11);
   ent('gate', 100, 19);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, vines: [52, 68, 34], tall: { top: 20 * TS, bottom: 108 * TS },
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: true,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(140,90,150,0.12)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone: [], scree: [], snowLine: 52,
