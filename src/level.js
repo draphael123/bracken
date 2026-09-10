@@ -1053,6 +1053,9 @@ function theMineworks() {
 
   // ---- Gallery A. The miners' camp, then the first rails, stepping down the grade to the ore lift ----
   gallery(2, 127, 10, 19); gallery(64, 127, 20, 22); gallery(88, 127, 23, 25);
+  for (const x of [14, 40, 52, 68, 80, 92, 104, 116]) ent('deco', x, 19, { kind: 'timber', v: 0 });
+  for (const x of [12, 30, 42, 54, 70, 88, 106, 122]) ent('deco', x, 36, { kind: 'timber', v: 1 });
+  for (const x of [16, 28, 44, 58, 70, 84, 98, 114, 128, 144]) ent('deco', x, 51, { kind: 'timber', v: 0 });
   ent('sign', 4, 19, { text: 'THE MINEWORKS. THE FOREMAN LOST THREE CANARIES. THE CARTS ROLL WHEN YOU RIDE THEM.' });
   ent('npc', 10, 19, { kind: 'foreman' }); ent('door', 18, 19, { kind: 'cottage', at: 18 }); ent('folk', 15, 19, { door: 18, alt: true }); ent('door', 30, 19, { kind: 'cottage', at: 30 }); ent('folk', 33, 19, { door: 30, alt: true });
   for (const x of [8, 20, 32, 46, 58, 76, 98, 114]) ent('minerlamp', x, 10);
@@ -1073,7 +1076,7 @@ function theMineworks() {
   rail(60, 118, 37); ent('cart', 110, 36, { dir: -1 }); ent('gas', 96, 36, { period: 7, phase: 0 }); ent('gas', 76, 36, { period: 7, phase: 3.5 });
   ent('bat', 90, 30); ent('bat', 70, 31); ent('miner', 104, 36, { face: -1 });
   ent('check', 120, 36); ent('sign', 116, 36, { text: 'THE TIMBERS ARE ROTTEN PAST THE RAIL. RUN.' });
-  shelf(36, 37, 21); gallery(36, 58, 38, 40); carve(35, 35, 38, 40); ladder(35, 35, 38, 40); ent('stray', 57, 40, { kind: 'canary' }); ent('silver', 38, 40); ent('minerlamp', 47, 38); // the collapse: the floor snaps, you land in a pocket with the second canary
+  shelf(36, 37, 21); gallery(36, 58, 38, 40); carve(35, 35, 38, 40); ladder(35, 35, 38, 40); ent('stray', 57, 40, { kind: 'canary' }); ent('silver', 38, 40); ent('minerlamp', 47, 38, { lit: false }); // the collapse: the floor snaps, you land in a pocket with the second canary
   rail(12, 32, 37); ent('cart', 30, 36, { dir: -1 }); ent('gas', 20, 36, { period: 6, phase: 1 }); ent('bat', 26, 30);
   coins([70, 35], [86, 35], [102, 35], [40, 35], [50, 35], [16, 35], [24, 35]);
   ent('check', 12, 36);
@@ -1082,15 +1085,15 @@ function theMineworks() {
 
   // ---- Gallery C. The deep gallery: near dark, rails to the forge, a soft plug the cart smashes ----
   gallery(2, 160, 42, 51);
-  for (const x of [20, 60, 100]) ent('minerlamp', x, 42);
-  rail(12, 118, 52); ent('cart', 14, 51); soft(108, 109, 47, 51); ent('sign', 10, 51, { text: 'DARK. THE BATS HUNT LIGHT. THE CART DOES NOT CARE.' });
+  ent('minerlamp', 20, 42); for (const x of [40, 60, 80, 100]) ent('minerlamp', x, 51, { lit: false }); // the deep gallery's lamps have gone cold: strike one alight and the bats hunt it, not you
+  rail(12, 118, 52); ent('cart', 14, 51); soft(108, 109, 47, 51); ent('sign', 10, 51, { text: 'DARK. THE BATS HUNT LIGHT. STRIKE A COLD LAMP ALIGHT AND THEY HUNT THAT INSTEAD.' });
   ent('bat', 30, 44); ent('bat', 50, 45); ent('bat', 75, 44); ent('miner', 40, 51, { face: -1 }); ent('miner', 86, 51, { face: -1 });
   ent('gas', 55, 51, { period: 7, phase: 2 }); ent('gas', 80, 51, { period: 7, phase: 5 });
   plat(90, 48, 3); ent('stray', 91, 47, { kind: 'canary' }); coins([22, 50], [36, 50], [48, 50], [64, 50], [72, 50], [96, 50]);
   ent('check', 112, 51);
   // ---- The Forge. THE FORGEMASTER. ----
   rail(120, 156, 52); ent('cart', 156, 51, { auto: true, dir: -1, speed: 120 });
-  ent('minerlamp', 122, 42); ent('minerlamp', 142, 42); ent('hammer', 132, 51); ent('boiler', 150, 51); plat(156, 49, 2); plat(152, 46, 2); plat(148, 44, 3); ent('silver', 149, 43); // the coal chute: a climb up the forge wall to the silver
+  ent('minerlamp', 122, 51); ent('minerlamp', 142, 51); ent('hammer', 132, 51); ent('boiler', 150, 51); plat(156, 49, 2); plat(152, 46, 2); plat(148, 44, 3); ent('silver', 149, 43); // the coal chute: a climb up the forge wall to the silver
   ent('deco', 126, 51, { kind: 'barrels' }); ent('deco', 154, 51, { kind: 'cart' });
   ent('forgemaster', 140, 51);
   ent('sign', 114, 51, { text: 'THE FORGE. THE HAMMER KEEPS TIME. THE CARTS KEEP COMING. BURST HIS BOILER.' });

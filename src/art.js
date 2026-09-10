@@ -1057,6 +1057,8 @@ export function bakeCanary() { return [0, 1].map(f => { const [c, g] = canvas(12
 // A gas seam in the floor: a crack with a green vent. 16×8.
 export function bakeGasSeam() { const [c, g] = canvas(T, 8); rect(g, 2, 5, 12, 3, '#3a3e48'); rect(g, 4, 3, 8, 3, '#2e3038'); for (let x = 3; x < 13; x += 3) px(g, x, 4, '#6a9a5a'); rect(g, 6, 2, 4, 1, '#8fd160'); return c; }
 // A hanging miner's lamp. 8×12.
+// A mine's timber set: two posts and a lintel, a brace in each corner. h px tall, 40 wide. Drawn behind the knight.
+export function bakeTimberFrame(h) { const [c, g] = canvas(40, h); rect(g, 0, 0, 40, 6, '#5c3a1d'); rect(g, 0, 0, 40, 1, '#8a5a32'); rect(g, 0, 5, 40, 1, '#3a2214'); rect(g, 2, 6, 5, h - 6, '#4a3626'); rect(g, 33, 6, 5, h - 6, '#4a3626'); rect(g, 2, 6, 1, h - 6, '#6a4a2a'); rect(g, 33, 6, 1, h - 6, '#6a4a2a'); rect(g, 6, 6, 1, h - 6, '#2a1a10'); rect(g, 37, 6, 1, h - 6, '#2a1a10'); for (let y = 12; y < h; y += 14) { px(g, 4, y, '#2a1a10'); px(g, 35, y, '#2a1a10'); } line(g, 7, 6, 13, 12, '#5c3a1d', 2); line(g, 32, 6, 26, 12, '#5c3a1d', 2); return c; }
 export function bakeMinerLamp(lit) { const [c, g] = canvas(8, 12); rect(g, 3, 0, 2, 2, '#8b8378'); rect(g, 2, 2, 4, 1, '#5f5a52'); rect(g, 1, 3, 6, 7, lit ? '#ffd36b' : '#3a3444'); rect(g, 2, 4, 4, 5, lit ? '#fff6c8' : '#2a2630'); rect(g, 1, 10, 6, 2, '#5f5a52'); return outline(c); }
 // The ore lift pan: a chained iron platform. 64×10.
 export function bakeOrePan() { const [c, g] = canvas(64, 10); rect(g, 0, 3, 64, 6, '#5a6270'); rect(g, 0, 3, 64, 1, '#8a919c'); rect(g, 0, 8, 64, 1, '#3a3e48'); for (let x = 4; x < 64; x += 8) rect(g, x, 4, 2, 4, '#4a4f5a'); rect(g, 2, 0, 2, 3, '#8b8378'); rect(g, 60, 0, 2, 3, '#8b8378'); return c; }

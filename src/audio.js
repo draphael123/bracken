@@ -216,6 +216,10 @@ Object.assign(SFX, {
   shieldCatch() { tone('square', 900, 400, 0.06, 0.12); noise(0.05, 0.18, 2400, 1.2); tone('sine', 220, 180, 0.12, 0.1, 0.03); },
   medal() { for (let i = 0; i < 3; i++) tone('square', [523, 659, 784][i], [523, 659, 784][i], 0.12, 0.08, i * 0.1); tone('square', 1047, 1047, 0.3, 0.08, 0.3); },
   gillOpen() { tone('sine', 300, 900, 0.35, 0.12); tone('sine', 450, 1200, 0.35, 0.08, 0.05); noise(0.3, 0.1, 3000, 0.8); },
+  spark() { noise(0.04, 0.2, 4200, 1.4); tone('square', 2400, 1600, 0.05, 0.08, 0.02); tone('sine', 520, 380, 0.22, 0.1, 0.06); },
+  drip() { tone('sine', 1900 + Math.random() * 600, 900, 0.09, 0.05); tone('sine', 2600, 1400, 0.05, 0.03, 0.06); },
+  rattle(v = 1) { noise(0.05, 0.16 * v, 1400, 0.9); tone('square', 180 + Math.random() * 60, 120, 0.05, 0.05 * v, 0.01); },
+  rumble() { tone('sine', 60, 30, 0.7, 0.3); noise(0.6, 0.3, 180, 0.5); tone('sawtooth', 48, 34, 0.5, 0.1, 0.1); },
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
 });
 export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind });

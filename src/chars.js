@@ -702,6 +702,23 @@ export function bakeOldKnight() {
 
 // ---------- The Mineworks ----------
 // Goblin miner — a hard hat with a candle, a pick over the shoulder. 12×12. Frames: walk1, walk2, dig (pick down), swing (pick forward).
+// The foreman — a barrel-chested man in a flat cap with a lamp pinned to it, a grey beard, a red waistcoat and a ledger under one arm. 12×14. Frames: idle, talk.
+export function bakeForeman() {
+  const P2 = Object.assign({}, KG, { c: '#3a3444', C: '#26222e', k: '#f1c9a0', y: '#ffd36b', s: '#c9d1dc', S: '#8a919c', v: '#8a2a2a', V: '#5a1a1a', a: '#e8e0d0', x: '#c9b27c', h: '#4a3a2a', z: '#2a1a10' });
+  const f = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const head = ['....y.......', '...cccccc...', '..cCCCCCCc..', '..kkkkkkkk..', '..kokkkkok..', '..kkkkkkkk..', '..sSssssSs..', '...ssssss...'];
+  const idle = f([...head, '..avvvvvva..', '.aavVvvVvaax', '.a.vvvvvv.ax', '...vvvvvv..x', '...hhhhhh...', '..zz...zz...']);
+  const talk = f([...head, '..avvvvvvaa.', '.aavVvvVvaax', '.a.vvvvvv.ax', '...vvvvvv...', '...hhhhhh...', '..zz...zz...']);
+  return pack([idle, talk], 7, 15, 10, 14);
+}
+// The lamplighter — a thin figure in a long dark coat and a tall hat, carrying a pole with a lit wick at the top. 12×16. Frames: idle, talk (pole lifts).
+export function bakeLamplighter() {
+  const P2 = Object.assign({}, KG, { c: '#2a2a34', C: '#1a1a22', k: '#f1c9a0', y: '#ffd36b', Y: '#ff9a5c', q: '#8a5a32', v: '#3a3a5a', V: '#24243a', a: '#c9b27c', h: '#2a2a34', z: '#1a1a12' });
+  const f = rows => outline(fromGrid(rows, P2, 1), OUT);
+  const idle = f(['..........Y.', '...cccc...y.', '...cccc...q.', '..cccccc..q.', '..kkkkkk..q.', '..kokkok..q.', '...kkkk...q.', '..vvvvvv..q.', '.vvVvvVvv.q.', '.vvvvvvvvvq.', '.v.vvvvvv.q.', '...vvvvvv.q.', '...vvvvvv...', '...vvvvvv...', '...hh..hh...', '...zz..zz...']);
+  const talk = f(['.........Y..', '...cccc..y..', '...cccc..q..', '..cccccc.q..', '..kkkkkkkq..', '..kokkokaq..', '...kkkk.aq..', '..vvvvvvvq..', '.vvVvvVvvq..', '.vvvvvvvvq..', '.v.vvvvvvq..', '...vvvvvv...', '...vvvvvv...', '...vvvvvv...', '...hh..hh...', '...zz..zz...']);
+  return pack([idle, talk], 7, 17, 10, 16);
+}
 export function bakeMiner() {
   const MP = Object.assign({}, KG, { c: '#c9b27c', C: '#8a7a5a', y: '#ffd36b', i: '#8a919c', I: '#5a6270' });
   const mspr = rows => outline(fromGrid(rows, MP, 1), OUT);
