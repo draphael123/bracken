@@ -795,6 +795,23 @@ export function bakeBat() {
   const fly2 = b(['............', '.....bb.....', '..bbbbbbbb..', 'bbbbBrrBbbbb', 'bb..bbbb..bb', '.....bb.....']);
   return pack([hang, fly1, fly2], 7, 7, 10, 6);
 }
+// The moor hare — fast, low, and it runs with the wind. 12×8. Frames: run1, run2, sit.
+export function bakeHare() {
+  const HP2 = Object.assign({}, EP, { h: '#8a6a4a', H: '#5a4230', w: '#e8dcc0', r: '#c9463d' });
+  const q = rows => outline(fromGrid(rows, HP2, 1), OUT);
+  const run1 = q(['.........hh.', '........hhh.', '...hhhhhhhe.', '..hhhhhhhhh.', '.whhhhhhhhh.', '.hhhhhhhhw..', 'hh..hh..hh..', 'h....h....h.']);
+  const run2 = q(['.........hh.', '........hhh.', '...hhhhhhhe.', '..hhhhhhhhh.', '.whhhhhhhhh.', '.hhhhhhhhw..', '..hhhh.hhh..', '..h..h..h...']);
+  const sit = q(['........hh..', '........hhh.', '....hhhhhhe.', '...hhhhhhhh.', '..whhhhhhhh.', '..hhhhhhhhw.', '..hhhhhhhh..', '...hh...hh..']);
+  return pack([run1, run2, sit], 6, 8, 10, 7);
+}
+// The peat wight — a pale hand of bog-mist that rises where you stand too long. 10×14. Frames: rise1, rise2.
+export function bakeWight() {
+  const WP2 = Object.assign({}, EP, { m: '#c8d8c8', M: '#8aa08a', k: '#3a3a2a' });
+  const q = rows => outline(fromGrid(rows, WP2, 1), OUT);
+  const rise1 = q(['..m..m..m.', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '...mmmm...', '..mmMMmm..', '..mmmmmm..', '.mm.mm.mm.', 'm...m...m.']);
+  const rise2 = q(['.m..m..m..', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '..mmmmmm..', '..mmMMmm..', '.mmmmmmmm.', '.mm.mm.mm.', '.m...m...m']);
+  return pack([rise1, rise2], 5, 14, 8, 13);
+}
 // The glow grub — a fat cave larva that lights its own way and spits acid. 16×8. Frames: crawl1, crawl2, spit.
 export function bakeGrub() {
   const GP = Object.assign({}, EP, { g: '#b8d878', G: '#7a9a48', p: '#e8ff9a', P: '#ffffc8', k: '#3a3a2a' });

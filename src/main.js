@@ -2983,8 +2983,9 @@ function drawWorld(cx, cy, showPlayer) {
   const dk = dusk();
   if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + ((LH * TS - VH) - cy) * 0.1)); g.globalAlpha = 1; }
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + ((LH * TS - VH) - cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
-  drawLayer(BG.far, 0.15, VH - 90, cx, cy);
-  drawLayer(BG.mid, 0.3, VH - 140, cx, cy);
+  if (L.dark) { g.fillStyle = '#1a1a22'; g.fillRect(0, 0, VW, VH); g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8); } // under the mountain there is only more mountain
+  else { drawLayer(BG.far, 0.15, VH - 90, cx, cy);
+  drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(16,34,18,' + (0.4 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }

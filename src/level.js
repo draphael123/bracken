@@ -1109,12 +1109,12 @@ function theMineworks() {
   rail(40, 60, 20); ent('cart', 42, 19); ent('sign', 38, 19, { text: 'JUMP IN. THE CART ROLLS WITH THE GRADE AND FLIES THE BROKEN RAILS. JUMP AS IT LEAVES THE RAIL AND YOU CLEAR THE GAP TOGETHER. IT SMASHES WHAT IT HITS. CUT A STANDING CART AND IT ROLLS WITHOUT YOU.' });
   rail(64, 84, 23); rail(88, 121, 26); set(100, 25, T.CRATE); set(100, 24, T.CRATE);
   ent('miner', 72, 22, { face: -1 }); ent('grub', 96, 25, { face: -1 }); ent('sprig', 54, 19, { face: -1 }); ent('rockgoblin', 108, 25, { face: -1 });
-  soft(117, 117, 17, 19); carve(118, 121, 16, 19); for (let x = 118; x <= 121; x++) set(x, 20, T.SOLID); ent('stray', 120, 19, { kind: 'canary' }); ent('miner', 119, 19, { face: -1 }); // the first canary, in a pocket with its own floor
+  soft(117, 117, 17, 19); gallery(118, 121, 16, 19); for (let x = 118; x <= 121; x++) set(x, 20, T.SOLID); ent('stray', 120, 19, { kind: 'canary' }); ent('miner', 119, 19, { face: -1 }); // the first canary, in a pocket with its own floor
   ent('bat', 80, 12); ent('bat', 106, 15); ent('torchbracket', 90, 25);
   coins([44, 17], [50, 17], [56, 17], [66, 21], [74, 21], [82, 21], [92, 24], [106, 24], [112, 24]);
   ent('check', 62, 19); ent('check', 86, 22);
   // the ore lift: the pan goes down while a cart sits on it
-  carve(122, 125, 26, 36); ent('orelift', 124, 26, { to: 37 }); plat(122, 29, 2); ent('silver', 123, 28); ent('sign', 112, 25, { text: 'THE ORE LIFT. IT SINKS UNDER A LOADED CART. RIDE YOURS ONTO THE PAN.' });
+  gallery(122, 125, 26, 36); ent('orelift', 124, 26, { to: 37 }); plat(122, 29, 2); ent('silver', 123, 28); ent('sign', 112, 25, { text: 'THE ORE LIFT. IT SINKS UNDER A LOADED CART. RIDE YOURS ONTO THE PAN.' });
 
   // ---- Gallery B. Back the other way: a low beam over the rail, THE GAS CHAMBER, the collapse into the flooded sump, bats in the dark ----
   gallery(2, 127, 28, 36);
@@ -1124,13 +1124,13 @@ function theMineworks() {
   ent('sign', 106, 36, { text: 'GAS FROM HERE TO THE FAR TIMBERS. A SPARK LIGHTS THE WHOLE GALLERY. NO STEEL, NO FIRE. DODGE, BLOCK, DUCK, AND KEEP GOING. THE GOBLINS DO NOT KNOW BETTER.' });
   ent('bat', 90, 30); ent('bat', 70, 31); ent('rockgoblin', 84, 36, { face: 1 }); ent('rockgoblin', 66, 36, { face: 1 });
   ent('check', 120, 36); ent('sign', 58, 36, { text: 'CLEAR OF THE GAS. THE TIMBERS PAST HERE ARE ROTTEN. RUN.' });
-  shelf(36, 37, 21); gallery(36, 58, 38, 40); carve(35, 35, 38, 40); ladder(35, 35, 38, 40); ent('stray', 57, 40, { kind: 'canary' }); ent('silver', 38, 40); ent('minerlamp', 47, 38, { lit: false }); // the collapse: the floor snaps, you land in the sump with the second canary
-  pools.push({ x0: 37 * TS, x1: 58 * TS, y: 39 * TS + 4, shallow: true, depth: 12 }); // THE SUMP: knee-deep, black, and a torch goes out in it
+  shelf(36, 37, 21); gallery(35, 59, 38, 40); ladder(35, 35, 37, 40); set(35, 37, T.NET); ladder(59, 59, 37, 40); set(59, 37, T.NET); ent('stray', 57, 40, { kind: 'canary' }); ent('silver', 38, 40); ent('minerlamp', 47, 38, { lit: false }); ent('minerlamp', 40, 38); ent('minerlamp', 54, 38); // the collapse: the floor snaps, you land in the sump with the second canary; rope ladders out at both ends
+  pools.push({ x0: 36 * TS, x1: 59 * TS, y: 40 * TS + 4, shallow: true, depth: 12 }); // THE SUMP: knee-deep, black, and a torch goes out in it
   rail(12, 32, 37); ent('cart', 30, 36, { dir: -1 }); ent('gas', 20, 36, { period: 6, phase: 1 }); ent('bat', 26, 30); ent('torchbracket', 56, 36); ent('grub', 16, 36, { face: 1 });
   coins([70, 35], [86, 35], [102, 35], [40, 35], [50, 35], [16, 35], [24, 35]);
   ent('check', 12, 36);
   // the shaft to the deep gallery: a cage that sinks while you stand in it
-  carve(6, 9, 37, 51); ent('cagelift', 8, 37, { to: 51 }); ent('sign', 10, 36, { text: 'THE CAGE SINKS WHILE YOU STAND IN IT. IT COMES BACK UP EMPTY.' });
+  gallery(6, 9, 37, 51); ent('cagelift', 8, 37, { to: 51 }); ent('sign', 10, 36, { text: 'THE CAGE SINKS WHILE YOU STAND IN IT. IT COMES BACK UP EMPTY.' });
 
   // ---- Gallery C. The deep gallery: the one truly dark stretch. Cold lamps, grubs for light, rails east ----
   gallery(2, 300, 42, 51);
@@ -1142,7 +1142,7 @@ function theMineworks() {
   ent('check', 104, 51); ent('torchbracket', 106, 51);
 
   // ---- Gallery D. THE LONG HAUL: one rail, a long way, everything on it wants a rider, and the flood comes behind you ----
-  ent('sign', 112, 51, { text: 'THE LONG HAUL. THE CART IS FASTER THAN YOUR FEET AND IT DOES NOT STOP. HOLD DOWN TO DUCK THE BEAMS. JUMP THE FIRE AND LAND BACK IN THE TUB. THE PRESSES DROP ON A COUNT. THE ROTTEN RAIL HOLDS A TUB, NOT A STANDING WEIGHT. AND THE SUMP GATE IS OPEN: THE WATER FOLLOWS YOU IN.' });
+  ent('sign', 112, 51, { text: 'THE LONG HAUL. THE CART IS FASTER THAN YOUR FEET AND IT DOES NOT STOP. HOLD DOWN TO DUCK THE BEAMS. JUMP THE FIRE AND LAND BACK IN THE TUB. THE PRESSES DROP ON A COUNT. THE ROTTEN RAIL HOLDS A TUB, NOT A STANDING WEIGHT.' });
   for (const x of [128, 144, 160, 176, 192, 208, 224, 240]) ent('minerlamp', x, 42); for (const x of [124, 156, 188, 220]) ent('minerlamp', x, 51, { lit: false });
   ent('beam', 130, 51); ent('beam', 166, 51); ent('beam', 202, 51); ent('beam', 240, 51);
   ent('crusher', 146, 51, { every: 3.4, phase: 0 }); ent('crusher', 182, 51, { every: 3.0, phase: 1.2 }); ent('crusher', 226, 51, { every: 2.8, phase: 2 });
@@ -1170,7 +1170,6 @@ function theMineworks() {
     duskStart: -1, duskLen: 1, music: 'cave', night: true, glowNight: true, dark: 0.42,
     darkZones: [{ x0: 2 * TS, x1: 110 * TS, y0: 41 * TS, y1: 53 * TS, dark: 0.78 }], // only the deep gallery is truly dark
     noSwing: [{ x0: 62 * TS, x1: 104 * TS, y0: 27 * TS, y1: 38 * TS }], // the gas chamber
-    flood: { x0: 110 * TS, x1: 250 * TS, trigger: 118 * TS, y: 50 * TS + 8, speed: 118 },
     palette: { sky: 'night', dress: 'none', hall: true, grass: '#6a6a78', grassL: '#8a8a98', grassD: '#4a4a58', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#2a2a34', '#3a3a44', '#4a4a58', '#5a5a66'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     quest: { n: 3, item: 'canary', name: 'CANARY', npc: 'foreman', done: 'THE BIRDS ARE BACK', reward: 'relic', relic: 'lamp' },
