@@ -949,3 +949,41 @@ export function bakeCharms() {
     swift: mk(g => { rect(g, 1, 2, 7, 2, '#8fd160'); rect(g, 3, 5, 6, 2, '#8fd160'); rect(g, 1, 8, 8, 2, '#8fd160'); px(g, 8, 2, '#dfffa0'); px(g, 9, 8, '#dfffa0'); }),
   };
 }
+
+
+// ---------- The lower woods: quest items, the woodsman's cabin, the felled pine, the sluice, the siege engine, the puffball nest ----------
+export function bakeHoneyPot() { const [c, g] = canvas(12, 12); rect(g, 3, 4, 6, 6, '#c9a83a'); rect(g, 2, 5, 8, 4, '#e0b040'); rect(g, 4, 2, 4, 3, '#b8a888'); rect(g, 3, 3, 6, 1, '#e8dcc0'); px(g, 3, 6, '#fff6c8'); px(g, 4, 6, '#fff6c8'); return outline(c); }
+export function bakeCoffer() { const [c, g] = canvas(14, 11); rect(g, 2, 4, 10, 5, C.wood); rect(g, 2, 2, 10, 3, C.woodL); rect(g, 2, 4, 10, 1, C.woodD); rect(g, 6, 2, 2, 7, '#7c8797'); px(g, 6, 5, '#e0b040'); px(g, 7, 5, '#e0b040'); return outline(c); }
+export function bakeBrightCap() { const [c, g] = canvas(12, 13); rect(g, 5, 7, 2, 5, '#e8e0d0'); ellipse(g, 6, 5, 4.5, 3.5, '#7fe0e8', '#4aa0b0'); px(g, 4, 3, '#ffffff'); px(g, 5, 3, '#ffffff'); px(g, 8, 5, '#fff6c8'); return outline(c); }
+export function bakeQuestIcon() { const [c, g] = canvas(10, 10); rect(g, 2, 1, 6, 8, '#e8dcc0'); rect(g, 1, 1, 2, 8, '#c9b27c'); rect(g, 7, 1, 2, 8, '#c9b27c'); for (const y of [3, 5, 7]) rect(g, 3, y, 4, 1, '#8a5a32'); return c; }
+// The woodsman's log cabin. 44×32, background.
+export function bakeCabin() { const [c, g] = canvas(44, 32); rect(g, 4, 14, 36, 18, C.wood); for (let y = 15; y < 32; y += 4) rect(g, 4, y, 36, 1, C.woodD); rect(g, 4, 14, 36, 1, C.woodL); fillPoly(g, [[0, 15], [22, 0], [44, 15]], '#5c3a1d'); fillPoly(g, [[3, 14], [22, 2], [41, 14]], '#7a4e28', '#5c3a1d'); rect(g, 30, 5, 5, 8, '#6a707c'); rect(g, 30, 4, 5, 1, '#8b8378'); rect(g, 19, 20, 7, 12, '#2a1a10'); rect(g, 20, 21, 5, 11, '#3a2618'); px(g, 24, 26, '#e0b040'); rect(g, 8, 18, 6, 6, '#ffd36b'); rect(g, 10, 18, 1, 6, C.woodD); rect(g, 8, 20, 6, 1, C.woodD); return c; }
+// A tall pine, 18×66, base at the bottom centre. Four sword strokes fell it.
+export function bakePine() { const [c, g] = canvas(18, 66); rect(g, 7, 24, 5, 42, '#5c3a1d'); rect(g, 7, 24, 1, 42, '#7a4e28'); rect(g, 11, 24, 1, 42, '#3a2214'); for (let y = 28; y < 64; y += 9) px(g, 9, y, '#3a2214'); fillPoly(g, [[9, 0], [2, 16], [16, 16]], '#2f5e3a', '#264a2f'); fillPoly(g, [[9, 8], [1, 26], [17, 26]], '#3f7a48', '#2f5e3a'); fillPoly(g, [[9, 16], [0, 34], [18, 34]], '#57964f', '#3f7a48'); return outline(c); }
+// The same pine lying across a gap: len tiles long, crown to the right.
+export function bakeFallenPine(len) { const w = len * 16; const [c, g] = canvas(w, 16); rect(g, 0, 4, w - 26, 9, '#5c3a1d'); rect(g, 0, 4, w - 26, 1, '#7a4e28'); rect(g, 0, 12, w - 26, 1, '#3a2214'); for (let x = 6; x < w - 26; x += 11) rect(g, x, 6, 1, 5, '#3a2214'); ellipse(g, 1, 8, 2, 4.5, '#c9b27c', '#8a5a32'); fillPoly(g, [[w - 30, 8], [w - 14, 0], [w - 14, 16]], '#2f5e3a', '#264a2f'); fillPoly(g, [[w - 22, 8], [w - 6, 1], [w - 6, 15]], '#3f7a48', '#2f5e3a'); fillPoly(g, [[w - 14, 8], [w - 1, 3], [w - 1, 13]], '#57964f', '#3f7a48'); return outline(c); }
+// The sluice wheel on its post. 16×24. Closed: spokes upright; open: spokes turned.
+export function bakeSluice(open) { const [c, g] = canvas(16, 24); rect(g, 7, 10, 3, 14, '#5c3a1d'); rect(g, 7, 10, 1, 14, '#7a4e28'); rect(g, 2, 21, 12, 3, '#6a707c'); rect(g, 2, 21, 12, 1, '#8b8378'); circle(g, 8, 7, 6, '#8b8378'); circle(g, 8, 7, 4, '#b3aca0'); if (open) { line(g, 4, 3, 12, 11, OUT); line(g, 12, 3, 4, 11, OUT); } else { line(g, 8, 1, 8, 13, OUT); line(g, 2, 7, 14, 7, OUT); } px(g, 8, 7, '#5f5a52'); return outline(c); }
+// The goblins' siege engine. 36×28. Frames: cocked, fired, wrecked.
+export function bakeCatapult(f) { const [c, g] = canvas(36, 28); rect(g, 3, 20, 30, 4, C.wood); rect(g, 3, 20, 30, 1, C.woodL); circle(g, 8, 24, 3.5, '#5f5a52'); circle(g, 28, 24, 3.5, '#5f5a52'); px(g, 8, 24, '#8b8378'); px(g, 28, 24, '#8b8378');
+  if (f < 2) { fillPoly(g, [[12, 20], [17, 6], [19, 6], [24, 20]], '#7a4e28', '#5c3a1d'); rect(g, 15, 9, 6, 2, '#5f5a52');
+    if (f === 0) { line(g, 24, 19, 6, 5, '#8a5a32', 2); rect(g, 3, 2, 6, 4, '#8b8378'); rect(g, 4, 3, 4, 2, '#5f5a52'); ellipse(g, 6, 1, 3, 1.5, C.wood, C.woodD); }
+    else { line(g, 14, 19, 33, 3, '#8a5a32', 2); rect(g, 29, 0, 6, 4, '#8b8378'); rect(g, 30, 1, 4, 2, '#5f5a52'); } }
+  else { fillPoly(g, [[12, 20], [15, 12], [17, 12], [20, 20]], '#7a4e28', '#5c3a1d'); line(g, 4, 18, 32, 14, '#8a5a32', 2); rect(g, 22, 12, 5, 4, '#8b8378'); px(g, 10, 17, '#c9b27c'); px(g, 26, 11, '#c9b27c'); px(g, 30, 19, '#c9b27c'); }
+  return outline(c); }
+// A puffball nest: three ripe balls on a bed of mycelium. 24×18.
+export function bakeNest() { const [c, g] = canvas(24, 18); rect(g, 2, 14, 20, 3, '#9a5aa8'); rect(g, 4, 13, 16, 1, '#b07ac0'); ellipse(g, 7, 10, 5.5, 4.5, '#e8e0d0', '#c8bcb0'); ellipse(g, 16, 9, 6, 5, '#e8e0d0', '#c8bcb0'); ellipse(g, 11, 5, 4.5, 3.5, '#f0e8dc', '#d0c4b8'); px(g, 5, 8, '#fff6f0'); px(g, 14, 6, '#fff6f0'); px(g, 10, 3, '#fff6f0'); return outline(c); }
+
+// The kennel chain post: a stake with an iron ring and a hanging chain. 10×26.
+export function bakeChainPost() { const [c, g] = canvas(12, 28); rect(g, 4, 2, 4, 26, C.woodD); rect(g, 4, 2, 1, 26, C.wood); rect(g, 2, 0, 8, 3, '#5f5a52'); circle(g, 6, 8, 2.5, '#7c8797'); for (let i = 0; i < 5; i++) { rect(g, 8 + (i % 2), 10 + i * 3, 2, 2, '#8b8378'); } return outline(c); }
+// A floor grate for a fire pit. 16×6.
+export function bakeGrate() { const [c, g] = canvas(16, 6); rect(g, 0, 2, 16, 4, '#3a3a44'); for (let x = 1; x < 16; x += 3) rect(g, x, 1, 1, 5, '#6a707c'); rect(g, 0, 1, 16, 1, '#8b8378'); return c; }
+
+// Silver coin: three hide in every wood. Four spin frames like the gold one.
+export function bakeSilver() {
+  const pal = { y: '#c9d1dc', Y: '#ffffff', d: '#7c8797', D: '#4a5260' };
+  const f = rows => outline(fromGrid(rows, pal, 1), OUT);
+  return [f(['.yyyy.', 'yYyyyy', 'yYdddy', 'yydddy', 'ydyyyd', '.dddd.']), f(['..yy..', '.Yyyd.', '.Ydyd.', '.yyyd.', '.dyyd.', '..dd..']), f(['..y...', '..Yd..', '..Yd..', '..yd..', '..yd..', '..d...']), f(['..yy..', '.Yyyd.', '.Ydyd.', '.yyyd.', '.dyyd.', '..dd..'])];
+}
+// A hill cottage: stone walls, slate roof, a lit window, a door the folk slam. 36×32.
+export function bakeCottage(shut) { const [c, g] = canvas(36, 32); rect(g, 3, 14, 30, 18, '#8a8478'); for (let y = 15; y < 32; y += 4) for (let x = 3 + ((y / 4) | 0) % 2 * 3; x < 33; x += 6) rect(g, x, y, 4, 3, '#7a7468'); rect(g, 3, 14, 30, 1, '#a09a8c'); fillPoly(g, [[0, 15], [18, 0], [36, 15]], '#3a3a48'); fillPoly(g, [[3, 14], [18, 3], [33, 14]], '#4a4a5a', '#3a3a48'); rect(g, 25, 4, 5, 9, '#5a5448'); rect(g, 25, 3, 5, 1, '#8b8378'); if (shut) { rect(g, 15, 20, 7, 12, C.wood); rect(g, 15, 20, 1, 12, C.woodL); px(g, 20, 26, '#e0b040'); } else { rect(g, 15, 20, 7, 12, '#1e1a22'); rect(g, 16, 21, 5, 11, '#2c2630'); } rect(g, 6, 18, 6, 6, '#ffd36b'); rect(g, 8, 18, 1, 6, '#5a5448'); rect(g, 6, 20, 6, 1, '#5a5448'); return c; }

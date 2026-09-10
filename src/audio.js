@@ -4,7 +4,10 @@ let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
-let musicSrc = null, currentTrack = null, wantTrack = 'theme', silenced = false;
+let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
+// Chrome's AudioBufferSourceNode.loop turns to static after the first pass on buffers longer than ~70s (boss, theme3, theme4),
+// so a track loops by chaining fresh sources at the exact end time instead of the loop flag.
+function stopMusic() { for (const s of musicSrcs) { try { s.stop(); } catch {} } musicSrcs = []; musicSrc = null; if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicGen++; }
 const clips = {}; // name -> [AudioBuffer]
 
 export function initAudio() {
@@ -114,15 +117,22 @@ function loadTrack(name) {
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
-  if (musicSrc) { try { musicSrc.stop(); } catch {} musicSrc = null; }
-  musicSrc = ac.createBufferSource(); musicSrc.buffer = trackBuf[name]; musicSrc.loop = true;
-  musicSrc.connect(musicGain); musicSrc.start(); currentTrack = name;
+  stopMusic(); currentTrack = name;
+  const gen = musicGen, b = trackBuf[name]; let at = ac.currentTime + 0.03;
+  const chain = () => {
+    if (gen !== musicGen || currentTrack !== name) return;
+    const s = ac.createBufferSource(); s.buffer = b; s.connect(musicGain); s.start(at); musicSrcs.push(s); musicSrc = s;
+    s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
+    const startAt = at; at += b.duration;
+    musicTimer = setTimeout(chain, Math.max(50, (startAt + b.duration * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
+  };
+  chain();
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
 export const music = {
   play(name) { wantTrack = name; silenced = false; if (!ac) return; if (trackBuf[name]) playFile(name); else loadTrack(name); },
   preload(name) { if (ac) loadTrack(name); },
-  stop() { wantTrack = null; silenced = true; if (musicSrc) { try { musicSrc.stop(); } catch {} musicSrc = null; } currentTrack = null; },
+  stop() { wantTrack = null; silenced = true; stopMusic(); currentTrack = null; },
   loaded(name) { return !!trackBuf[name]; },
   set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? trackVol(currentTrack) : 0; },
   duck(on) { const t = on ? 0.35 : 1; if (t === duckT) return; duckT = t; if (musicGain && currentTrack && musicOn) musicGain.gain.setTargetAtTime(trackVol(currentTrack), ac.currentTime, 0.25); },
@@ -208,6 +218,7 @@ Object.assign(SFX, {
   gillOpen() { tone('sine', 300, 900, 0.35, 0.12); tone('sine', 450, 1200, 0.35, 0.08, 0.05); noise(0.3, 0.1, 3000, 0.8); },
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
 });
+export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, ambKind });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['theme', 'theme2', 'theme3', 'boss', 'boss2', 'ending', 'select', 'theme4'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];

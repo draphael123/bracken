@@ -523,3 +523,35 @@ export function bakeKeeper() {
   const body = ['..aaaaaaaa..', '.aaAaaaaAaa.', '.aaaaaaaaaa.', '..aaaaaaaa..', '..bb....bb..'];
   return pack([k([...head, ...body]), k([...talk, ...body])], 7, 11, 10, 10);
 }
+
+
+// ---------- Talking folk of the lower woods ----------
+const FP = Object.assign({}, EP, { c: '#3f6e2c', C: '#2a4a1c', k: '#f1c9a0', h: '#8a5a32', a: '#c9d1dc', A: '#7c8797', v: '#7a4a2a', V: '#4c2c17', q: '#5a4a3a', z: '#3a2214', d: '#3d5aa8', D: '#243a78', u: '#c9a83a', i: '#e8e0d0', I: '#7fe0e8', j: '#4aa0b0', O: '#fff6c8', x: '#5a6a9a', X: '#3a4a7a' });
+const fspr = rows => outline(fromGrid(rows, FP, 1), OUT);
+// The woodsman — broad, bearded, green cap, an axe over his shoulder. 12×14. Frames: idle, talk (the axe comes up).
+export function bakeWoodsman() {
+  const head = ['....cccc....', '...cCCCCc...', '..kkkkkkkk..', '..kokkkkok..'];
+  const idle = fspr([...head, '..kkkkkkkk..', '..hhhhhhhh..', '...hhhhhh...', '..vvvvvvvv.a', '.vVvvvvvvVaA', '.vvvvvvvvv.q', '.vVvvvvvvV.q', '..vvvvvvvv.q', '..zz..zz....', '..zz..zz....']);
+  const talk = fspr([...head, '..kkkkkkkk.a', '..hhhhhhhhaA', '...hhhhhh..q', '..vvvvvvvv.q', '.vVvvvvvvV.q', '.vvvvvvvvv..', '.vVvvvvvvV..', '..vvvvvvvv..', '..zz..zz....', '..zz..zz....']);
+  return pack([idle, talk], 7, 15, 10, 14);
+}
+// The ferryman — a stooped man in a grey-blue hood with a pole. 12×13. Frames: idle, talk.
+export function bakeFerryman() {
+  const idle = fspr(['...xxxx...q.', '..xxxxxx..q.', '..xkkkkx..q.', '..xkokokx.q.', '..xxkkkxx.q.', '.xxxxxxxxqq.', '.xXxxxxxxXq.', '.xxxxxxxxxq.', '.xXxxxxxXxq.', '.xxxxxxxxx..', '.xXxxxxxXx..', '..xxxxxxxx..', '..zz...zz...']);
+  const talk = fspr(['...xxxx..q..', '..xxxxxx.q..', '..xkkkkx.q..', '..xkokokxq..', '..xxkkkxxq..', '.xxxxxxxkq..', '.xXxxxxxxXq.', '.xxxxxxxxxq.', '.xXxxxxxXxq.', '.xxxxxxxxx..', '.xXxxxxxXx..', '..xxxxxxxx..', '..zz...zz...']);
+  return pack([idle, talk], 7, 14, 10, 13);
+}
+// The squire — a fair-haired youth in the realm's blue tabard, no helm. 12×13. Frames: idle, wave.
+export function bakeSquire() {
+  const head = ['...uuuuuu...', '..uuuuuuuu..', '..ukkkkkku..', '..ukokkoku..', '...kkkkkk...', '....kkkk....'];
+  const idle = fspr([...head, '...dddddd...', '..dDdyydDd..', '..dddyyddd..', '..dDddddDd..', '...dddddd...', '...zz..zz...', '...zz..zz...']);
+  const wave = fspr([...head, '...dddddd.k.', '..dDdyydDdk.', '..dddyydddd.', '..dDddddDd..', '...dddddd...', '...zz..zz...', '...zz..zz...']);
+  return pack([idle, wave], 7, 14, 10, 13);
+}
+// The elder — an old myconid, a wide clean cap over a pale face with a beard of mycelium. 12×13. Frames: idle, nod.
+export function bakeElder() {
+  const body = ['...tttttt...', '...tottot...', '...tttttt...', '..i.tttt.i..', '..i.tttt.i..', '....tttt....', '....tt.tt...', '....tt.tt...'];
+  const idle = fspr(['...jjjjjj...', '..jIIIIIIj..', '.jIIOIIIOIj.', '.jIIIIIIIIj.', '.jjjjjjjjjj.', ...body]);
+  const nod = fspr(['............', '..jjjjjjjj..', '.jIIOIIIOIj.', '.jIIIIIIIIj.', '.jjjjjjjjjj.', ...body]);
+  return pack([idle, nod], 7, 14, 10, 13);
+}

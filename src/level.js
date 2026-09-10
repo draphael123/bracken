@@ -21,20 +21,21 @@ function painter(W, H) {
 function grow(L, ret, col, n) {
   const W2 = L.W + n, H = L.H; const P = painter(W2, H);
   for (let y = 0; y < H; y++) for (let x = 0; x < L.W; x++) P.grid[y * W2 + (x >= col ? x + n : x)] = L.grid[y * L.W + x];
-  const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p;
-  const REF = ['ram', 'cage', 'gate', 'door', 'bell', 'at', 'wall', 'x1'];
+  const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p, shpEnd = p => p > col * TS ? p + n * TS : p; // an exclusive end that sits on the cut stays put
+  const REF = ['ram', 'cage', 'gate', 'door', 'bell', 'at', 'wall', 'x1', 'pool', 'ifDrained'];
   for (const e of L.ents) { e.x = sh(e.x); for (const k of REF) if (typeof e[k] === 'number') e[k] = sh(e[k]); }
   const R = Object.assign({}, ret, { W: W2 });
-  if (R.pools) R.pools = R.pools.map(p => ({ ...p, x0: shp(p.x0), x1: shp(p.x1) }));
-  if (R.sleeps) R.sleeps = R.sleeps.map(p => ({ ...p, x0: shp(p.x0), x1: shp(p.x1) }));
+  if (R.pools) R.pools = R.pools.map(p => ({ ...p, x0: shp(p.x0), x1: shpEnd(p.x1) }));
+  if (R.sleeps) R.sleeps = R.sleeps.map(p => ({ ...p, x0: shp(p.x0), x1: shpEnd(p.x1) }));
   if (R.moversExtra) R.moversExtra = R.moversExtra.map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number') o[k] = shp(o[k]); return o; });
-  for (const k of ['weather', 'ambient']) if (R[k]) R[k] = R[k].map(z => ({ ...z, x0: shp(z.x0), x1: z.x1 >= 99999 ? z.x1 : shp(z.x1) }));
+  for (const k of ['weather', 'ambient']) if (R[k]) R[k] = R[k].map(z => ({ ...z, x0: shp(z.x0), x1: z.x1 >= 99999 ? z.x1 : shpEnd(z.x1) }));
   for (const k of ['arena', 'mini']) if (R[k]) { const A = { ...R[k] }; for (const f of ['x0', 'x1', 'trigger']) if (typeof A[f] === 'number') A[f] = shp(A[f]); for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = sh(A[f]); if (A.dais) A.dais = { ...A.dais, x0: shp(A.dais.x0), x1: shp(A.dais.x1) }; R[k] = A; }
   if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.stone) R.stone = R.stone.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.scree) R.scree = R.scree.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));
   if (typeof R.duskStart === 'number' && R.duskStart > 0) R.duskStart = shp(R.duskStart);
   if (typeof R.escapeGate === 'number') R.escapeGate = sh(R.escapeGate);
+  if (R.storm) R.storm = { ...R.storm, x0: shp(R.storm.x0), x1: shpEnd(R.storm.x1) };
   P.R = R; P.done = () => Object.assign(R, { grid: P.grid, ents: L.ents.concat(P.ents) });
   return P;
 }
@@ -46,6 +47,7 @@ function brackenWood() {
   // ---- 1. Glade: learn to move, jump, swing ----
   floor(0, 30, 22);
   ent('sign', 5, 21, { text: 'ARROWS/WASD MOVE   Z JUMP   X SWING' });
+  ent('deco', 10, 21, { kind: 'cabin' }); ent('npc', 16, 21, { kind: 'woodsman' }); // the woodsman's cabin: he wants his honey back
   coins([12, 20], [13, 19], [14, 20]);
   ent('sprig', 22, 21, { face: -1 });
   floor(34, 49, 22);
@@ -78,7 +80,7 @@ function brackenWood() {
   // ---- 4. Thorn climb ----
   floor(121, 129, 22);
   spikes(122, 129, 21);
-  plat(119, 20, 3); plat(123, 18, 3); plat(127, 16, 3); plat(123, 14, 3); plat(127, 12, 3);
+  plat(119, 20, 3); plat(123, 18, 3); plat(127, 16, 3); plat(123, 14, 3); plat(127, 12, 3); ent('silver', 128, 11);
   coins([124, 17], [128, 15], [124, 13]);
 
   // ---- 5. Plateau ----
@@ -128,7 +130,7 @@ function brackenWood() {
   spikes(258, 266, 12);
   for (const x of [259, 262, 265]) { block(x, x + 1, 11, 12); ent('shield', x, 10, { face: -1 }); }
   ent('sign', 256, 8, { text: 'THEIR HELMS ARE STEPPING STONES.' });
-  plat(262, 5, 4); coins([263, 4], [264, 4], [260, 8], [264, 8]);
+  plat(262, 5, 4); coins([263, 4], [264, 4], [260, 8], [264, 8]); ent('silver', 265, 4);
   // the quiet walk: nothing to fight between the pit and the gate
   coins([270, 7], [273, 7], [276, 7]);
   ent('check', 280, 8);
@@ -147,24 +149,57 @@ function brackenWood() {
     pools: [{ x0: 85 * TS, x1: 98 * TS, y: 23 * TS }, { x0: 161 * TS, x1: 172 * TS, y: 13 * TS }, { x0: 215 * TS, x1: 218 * TS, y: 16 * TS }, { x0: 251 * TS, x1: 255 * TS, y: 10 * TS }],
     falls: [],
     duskStart: 2700, duskLen: 1000, music: 'theme',
+    quest: { n: 3, item: 'pot', name: 'HONEY POT', npc: 'woodsman', done: 'THE POTS ARE HOME', thanks: "THE WOODSMAN'S THANKS" },
     weather: [{ x0: 0, x1: 1500, kind: 'pollen' }, { x0: 3150, x1: 3800, kind: 'mist' }, { x0: 4540, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 3150, kind: 'forest' }, { x0: 3150, x1: 3800, kind: 'water' }, { x0: 3800, x1: 4540, kind: 'forest' }, { x0: 4540, x1: 99999, kind: 'hive' }],
     arena: { x0: 288 * TS, x1: 321 * TS, floor: 9 * TS, trigger: 292 * TS, wallL: 287, wallR: 321, boss: 'queen', tint: '#e0b040', tintA: 0.12, fx: 'bees' },
   }
   // ---- 5a. THE WASP ORCHARD: a fallen giant across the path (over it through the hives, or through it past the thorns), then a hive glade ----
-  const G = grow(L, ret, 130, 46);
+  // ---- 8b. THE FELLED PINE: a tarn in a cleft between the hollow and the ridge. Four strokes drop the pine across it; wasps hover for the pogo route. ----
+  const G0 = grow(L, ret, 235, 36);
+  G0.block(235, 241, 15, 27);
+  G0.ent('sign', 236, 14, { text: 'FOUR STROKES FELL A PINE. OR POGO THE WASPS.' });
+  G0.ent('felltree', 241, 14, { len: 14, dir: 1 });
+  G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS });
+  G0.block(242, 255, 24, 27);
+  G0.ent('wasp', 245, 11); G0.ent('wasp', 250, 11);
+  G0.coins([244, 13], [248, 13], [252, 13]);
+  G0.block(256, 270, 15, 27);
+  G0.ent('check', 259, 14); G0.ent('sprig', 265, 14, { face: -1 }); G0.coins([262, 13], [268, 13]);
+  const R0 = G0.done();
+  const G = grow(R0, R0, 130, 46);
   G.block(130, 175, 12, 27);
   G.ent('sign', 131, 11, { text: 'THE FALLEN GIANT. OVER THE TOP, OR THROUGH THE HOLLOW.' });
   G.ent('check', 133, 11); G.coins([135, 10], [137, 10]);
   G.block(139, 152, 8, 11); for (let x = 139; x <= 152; x++) { G.set(x, 9, 0); G.set(x, 10, 0); G.set(x, 11, 0); } // the hollow runs the whole trunk
-  G.spikes(145, 146, 11); G.ent('spit', 150, 11, { face: -1 }); G.coins([144, 10], [148, 10]);
+  G.spikes(145, 146, 11); G.ent('spit', 150, 11, { face: -1 }); G.coins([144, 10], [148, 10]); G.ent('silver', 152, 10);
   G.plat(136, 9, 2); G.coins([137, 8], [141, 6]); // up onto the trunk
   G.ent('wasp', 146, 6); G.ent('wasp', 150, 5); G.coins([146, 4], [150, 3]); G.ent('sprig', 144, 7, { face: -1 });
   G.plat(153, 9, 2); G.coins([154, 8]);
   G.ent('deco', 158, 11, { kind: 'hiveBg' }); G.ent('deco', 168, 11, { kind: 'hiveBg' });
   G.spikes(159, 167, 11); G.ent('wasp', 160, 9); G.ent('wasp', 163, 9); G.ent('wasp', 166, 9); G.coins([160, 7], [163, 7], [166, 7]); // pogo the wasps over the thorns
   G.ent('shield', 171, 11, { face: -1 }); G.crate(174, 11); G.coins([170, 9], [173, 10]);
-  return G.done();
+  G.ent('stray', 148, 7, { kind: 'pot' }); // the first honey pot, on top of the giant among the wasps
+  const R1 = G.done();
+  // ---- 3b. THE BADGER SETT: the road forks. Below, a dug run under the ridge: dark, spitters and thorns, a pot. Above, the ridge itself: wasps, a spitter on a hump, spikes, a cache with the third pot. ----
+  const G2 = grow(R1, R1, 121, 44);
+  G2.block(121, 126, 22, 27);
+  G2.ent('sign', 122, 21, { text: 'THE BADGER SETT BELOW, THE RIDGE ABOVE. BOTH REACH THE CLIMB.' });
+  G2.plat(122, 19, 2); G2.plat(125, 16, 2); // up onto the ridge
+  G2.block(127, 158, 14, 17); G2.block(127, 158, 22, 27); G2.block(159, 164, 22, 27);
+  G2.R.interiors = (G2.R.interiors || []).concat([[127, 158, 18, 21, 'earth']]);
+  G2.ent('glow', 129, 21); G2.ent('glow', 145, 21); G2.ent('glow', 156, 21);
+  G2.ent('thorn', 133, 21, { face: -1 }); G2.block(139, 141, 21, 21); G2.ent('spit', 140, 20, { face: -1 });
+  G2.spikes(146, 147, 22); G2.crate(150, 21); G2.crate(151, 21); G2.crate(151, 20); G2.ent('sprig', 154, 21, { face: -1 });
+  G2.ent('stray', 157, 21, { kind: 'pot' });
+  G2.coins([131, 20], [137, 20], [144, 19], [149, 19], [155, 19]);
+  // the ridge
+  G2.block(133, 135, 13, 13); G2.ent('spit', 134, 12, { face: -1 });
+  G2.ent('wasp', 141, 10); G2.ent('wasp', 149, 10); G2.spikes(145, 146, 13); G2.ent('thorn', 152, 13, { face: -1 });
+  G2.plat(143, 9, 3); G2.ent('stray', 144, 8, { kind: 'pot' });
+  G2.coins([130, 12], [138, 12], [143, 8], [145, 8], [151, 11], [157, 12]);
+  G2.ent('check', 162, 21); G2.coins([160, 20], [163, 20]);
+  return G2.done();
 ;
 }
 
@@ -222,7 +257,7 @@ function marshWood() {
   water(176, 259, 19);
   movers.push({ kind: 'raft', x0: 176 * TS, x1: 258 * TS - 224, x: 176 * TS, y: 18 * TS + 8, w: 224, h: 8, speed: 40, frogs: true, frogMax: 4, frogEvery: 2.2 });
   plat(200, 12, 4); plat(236, 12, 4);
-  ent('check', 202, 11);
+  ent('check', 202, 11); ent('silver', 238, 11);
   ent('wasp', 190, 15); ent('wasp', 218, 15); ent('wasp', 248, 15);
   coins([185, 15], [191, 13], [212, 15], [219, 13], [232, 15], [249, 13]);
   block(260, 274, 18, 27);
@@ -250,12 +285,12 @@ function marshWood() {
   ent('thorn', 348, 17, { face: -1 });
   for (let x = 351; x <= 355; x++) L.set(x, 18, 0); water(351, 355, 18, true);
   ent('hopper', 353, 18, { face: -1, color: 'blue' });
-  reeds(356, 15, 2); coins([357, 14], [352, 15]);
+  reeds(356, 15, 2); coins([357, 14], [352, 15]); ent('stray', 356, 14, { kind: 'trap' });
 
   // ---- 10. The Croaking Court: a shallow pond, reed perches, and the King on his mud dais ----
   block(359, 405, 18, 27);
   for (let x = 367; x <= 380; x++) L.set(x, 18, 0); water(367, 380, 18, true);
-  reeds(363, 16, 2); reeds(382, 16, 2);
+  reeds(363, 16, 2); reeds(382, 16, 2); ent('silver', 383, 15);
   block(386, 401, 17, 17);
   for (let x = 402; x <= 403; x++) L.set(x, 18, 0); water(402, 403, 18, true);
   ent('throne', 394, 16); ent('frog', 394, 16);
@@ -265,6 +300,7 @@ function marshWood() {
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
     duskStart: undefined, music: 'theme2',
+    quest: { n: 3, item: 'trap', name: 'EEL TRAP', npc: 'ferryman', done: 'THE TRAPS ARE BACK', thanks: "THE FERRYMAN'S THANKS" },
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
@@ -278,12 +314,27 @@ function marshWood() {
   plank(278, 282, 16); plank(286, 290, 15); plank(294, 298, 16); plank(302, 307, 15); plank(311, 315, 16); plank(319, 322, 17);
   G.ent('treehouse', 288, 6); G.ent('treehouse', 304, 6);
   G.ent('pad', 284, 18); G.ent('pad', 300, 18); G.ent('pad', 309, 18); G.ent('pad', 317, 18);
-  G.plat(303, 11, 3); G.ent('archer', 304, 10, { face: -1 }); G.plat(287, 11, 3); G.ent('archer', 288, 10, { face: -1 });
+  G.plat(303, 11, 3); G.ent('archer', 304, 10, { face: -1 }); G.plat(287, 11, 3); G.ent('archer', 288, 10, { face: -1 }); G.ent('silver', 306, 10);
   G.ent('wasp', 292, 13); G.ent('wasp', 310, 13);
   G.reeds(283, 15, 2); G.reeds(299, 14, 2); G.reeds(316, 15, 2);
   G.coins([280, 14], [288, 13], [296, 14], [304, 13], [313, 14], [320, 15], [284, 16], [309, 16]);
-  G.ent('check', 321, 16);
-  return G.done();
+  G.ent('check', 321, 16); G.ent('stray', 296, 15, { kind: 'trap' });
+  const R1 = G.done();
+  // ---- 6b. THE FERRY: a deep channel. Pay the ferryman and ride his punt under the archers, or break the sluice, drain the channel to shallows, and wade it with the frogs. ----
+  const F = grow(R1, R1, 161, 48);
+  F.block(161, 166, 18, 27);
+  F.ent('sign', 162, 17, { text: 'THE FERRY. PAY THE MAN, OR BREAK THE SLUICE AND WADE.' });
+  F.ent('sluice', 165, 17, { pool: 167, to: 21 });
+  F.ent('npc', 168, 17, { kind: 'ferryman', ride: true });
+  F.R.moversExtra.push({ kind: 'raft', x0: 167 * TS, x1: 203 * TS - 64, x: 167 * TS, y: 18 * TS + 8, w: 64, h: 8, speed: 32, ferry: true, toll: 10 });
+  F.R.pools.push({ x0: 167 * TS, x1: 203 * TS, y: 19 * TS, shallow: false, depth: 0 });
+  F.block(167, 202, 22, 27);
+  F.plat(181, 12, 3); F.ent('archer', 182, 11, { face: -1 }); F.plat(193, 12, 3); F.ent('archer', 194, 11, { face: -1 });
+  F.ent('wasp', 176, 15); F.ent('wasp', 188, 15); F.ent('wasp', 199, 15);
+  F.ent('hopper', 179, 21, { face: -1, ifDrained: 167 }); F.ent('hopper', 191, 21, { face: 1, color: 'yellow', ifDrained: 167 }); F.ent('stray', 185, 21, { kind: 'trap', ifDrained: 167 });
+  F.coins([172, 16], [178, 16], [186, 16], [192, 16], [198, 16], [175, 21], [196, 21]);
+  F.plat(200, 20, 2); F.block(203, 208, 18, 27); F.ent('check', 206, 17);
+  return F.done();
 ;
 }
 
@@ -305,7 +356,7 @@ function theStockade() {
   ent('torch', 36, 19); ent('treehouse', 40, 8);
 
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
-  block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13);
+  block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('silver', 57, 12);
   plat(46, 17, 3); plat(50, 14, 2); plat(59, 16, 2); plat(58, 13, 2); // two ways up
   ent('archer', 55, 12, { face: -1, horn: true });
   ent('check', 45, 19);
@@ -315,7 +366,7 @@ function theStockade() {
 
   // ---- 3. Rope bridge over the ravine, with a goblin at the far end holding a knife ----
   planks(71, 74, 20); planks(75, 86, 21); planks(87, 90, 20);
-  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('relic', 86, 24, { kind: 'gauntlet' }); // the ravine cache, on the net
+  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('relic', 86, 24, { kind: 'gauntlet' }); ent('silver', 73, 24); // the ravine cache, on the net
   plat(78, 23, 3); plat(83, 23, 3); block(87, 90, 23, 27); block(89, 90, 22, 27);
   ent('bridge', 71, 20, { x1: 90 });
   floor(91, 185, 20);
@@ -363,7 +414,7 @@ function theStockade() {
 
   // ---- 7. The high bridge and the second tower ----
   planks(270, 273, 12); planks(274, 281, 13); planks(282, 285, 12);
-  net(270, 285, 17);
+  net(270, 285, 17); ent('silver', 278, 16);
   plat(272, 15, 2); plat(280, 15, 2); plat(283, 13, 2); // the way back up once the ropes are cut: net → ledge → bank, either side
   ent('bridge', 270, 12, { x1: 285 });
   block(286, 314, 12, 27);
@@ -397,6 +448,7 @@ function theStockade() {
     palette: { dress: 'camp', haze: 'rgba(24,18,44,0.3)', sky: 'night', canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    quest: { n: 3, item: 'coffer', name: 'COFFER', npc: 'squire', done: 'THE KIT IS WHOLE', thanks: "THE SQUIRE'S THANKS" },
     escapeGate: 344, arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief', tint: '#c9463d', tintA: 0.1, fx: 'embers' },
   }
   // ---- 5c. THE SAPPERS' TUNNEL: the goblins dug under their own inner wall. A mound blocks the surface; the tunnel is the way. ----
@@ -414,7 +466,34 @@ function theStockade() {
   G.coins([255, 23], [260, 23], [268, 23], [275, 22], [283, 23], [289, 23]);
   G.ent('check', 292, 19); G.ent('torch', 293, 19);
   G.ent('treehouse', 262, 8); G.ent('treehouse', 278, 8); G.ent('sprig', 270, 13, { face: -1 }); G.coins([266, 12], [274, 12]); // goblins on the mound, out of reach and out of the way
-  return G.done();
+  G.ent('stray', 267, 23, { kind: 'coffer' });
+  const R1 = G.done();
+  // ---- 5d. THE WALL WALK: a caged squire at the fork. Above, planks along the top of a stake wall under archers, with a breach to jump. Below, the ditch: sappers, a hound, spikes, a brute. ----
+  const W2 = grow(R1, R1, 186, 44);
+  W2.block(186, 191, 20, 27);
+  W2.ent('sign', 187, 19, { text: 'THE WALL WALK ABOVE, THE DITCH BELOW. BOTH END AT THE KENNELS.' });
+  W2.ent('cage', 189, 19, { kind: 'squire' });
+  for (let y = 14; y <= 19; y++) { W2.set(190, y, T.NET); W2.set(191, y, T.NET); }
+  const pal2 = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) W2.set(x, y, T.PALISADE); };
+  pal2(192, 204, 15, 17); pal2(207, 223, 15, 17);
+  for (let x = 192; x <= 204; x++) W2.set(x, 14, T.PLANK); for (let x = 207; x <= 223; x++) W2.set(x, 14, T.PLANK);
+  W2.block(192, 223, 22, 27);
+  W2.R.interiors = (W2.R.interiors || []).concat([[192, 223, 18, 21, 'earth']]);
+  W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('sprig', 210, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });
+  W2.ent('stray', 212, 13, { kind: 'coffer' }); W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
+  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('sapper', 197, 21, { face: -1 }); W2.ent('hound', 203, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 214, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
+  W2.ent('stray', 222, 21, { kind: 'coffer' }); W2.coins([200, 20], [206, 20], [212, 20], [218, 20]);
+  W2.block(224, 229, 20, 27); W2.ent('check', 227, 19); W2.coins([225, 18]);
+  const R2 = W2.done();
+  // ---- 1b. THE SIEGE ENGINE: a catapult lobs barrels down the path as you come. Dodge them, close in, and wreck it. ----
+  const C = grow(R2, R2, 30, 40);
+  C.floor(30, 69, 20);
+  C.ent('sign', 31, 19, { text: 'THE ENGINE THROWS BARRELS. DODGE THEM, CLOSE IN, WRECK IT.' });
+  C.ent('check', 36, 19); C.ent('sprig', 41, 19, { face: -1 }); C.crate(46, 19); C.crate(47, 19); C.crate(47, 18);
+  C.ent('sprig', 53, 19, { face: -1 }); C.ent('shield', 59, 19, { face: -1 });
+  C.ent('catapult', 64, 19, { every: 2.6 }); C.ent('torch', 61, 19); C.ent('torch', 68, 19);
+  C.coins([38, 18], [44, 17], [50, 18], [56, 18], [62, 17]);
+  return C.done();
 ;
 }
 
@@ -429,17 +508,18 @@ function sporewood() {
   // ---- 1. The mycelium glade: caps bounce, puffballs burst ----
   floor(0, 44, 20);
   ent('sign', 4, 19, { text: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT.' });
+  ent('npc', 11, 19, { kind: 'elder' }); // the elder myconid wants clean light
   ent('glow', 8, 19); ent('puffball', 14, 19); ent('sporeling', 18, 19, { face: -1 }); ent('puffball', 22, 19);
   bouncer(27, 19); coins([27, 15], [27, 12], [27, 9]);
   ent('sporeling', 33, 19, { face: -1 }); ent('glow', 38, 19); ent('sign', 41, 19, { text: 'SLASH A PUFFBALL FROM RANGE.' });
 
   // ---- 2. The bouncer canyon: up the caps to the high path ----
   floor(45, 61, 26);
-  bouncer(48, 25); plat(47, 19, 3); bouncer(49, 18); plat(48, 12, 3); plat(52, 12, 3); plat(56, 12, 3);
+  bouncer(48, 25); plat(47, 19, 3); bouncer(49, 18); plat(48, 12, 3); plat(52, 12, 3); plat(56, 12, 3); ent('silver', 57, 11);
   ent('mover', 52, 16, { len: 2, range: 4, cap: true, speed: 30 });
-  ent('vent', 58, 25, { period: 4, on: 1.8, h: 100 }); plat(57, 20, 3); ent('roller', 60, 25, { face: -1 });
+  ent('vent', 58, 25, { period: 4, on: 1.8, h: 100 }); plat(57, 20, 3); ent('roller', 55, 25, { face: -1 });
   ent('puffball', 53, 11); ent('drone', 58, 8);
-  coins([50, 16], [54, 10], [58, 10], [58, 22]); ent('glow', 46, 25); ent('glow', 61, 25);
+  coins([50, 16], [54, 10], [58, 10], [58, 22]); ent('glow', 46, 25); ent('glow', 52, 25);
   ent('sign', 46, 25, { text: 'VENTS LIFT. ROLLERS POP.' });
   block(60, 100, 12, 27);
 
@@ -454,7 +534,7 @@ function sporewood() {
   block(101, 130, 4, 27);
   ent('shaman', 108, 3, { face: -1 }); ent('sporeling', 114, 3, { face: -1 }); ent('sporeling', 119, 3, { face: -1 });
   for (let x = 121; x <= 125; x++) for (let y = 4; y <= 27; y++) set(x, y, 0); shelf(121, 4, 5);
-  block(121, 125, 12, 27); bouncer(123, 11); ent('glow', 122, 11); // the shelf gives way onto a cap: plunge into it to spring back up
+  block(121, 125, 12, 27); bouncer(123, 11); ent('glow', 122, 11); ent('silver', 125, 11); // the shelf gives way onto a cap: plunge into it to spring back up
   ent('glow', 104, 3); ent('glow', 128, 3); ent('check', 127, 3); coins([97, 7], [111, 2], [123, 2]);
 
   // ---- 5. The sleep marsh: violet spores. Block to hold your breath. ----
@@ -488,8 +568,8 @@ function sporewood() {
   coins([208, 12], [231, 11], [239, 11]);
 
   // ---- 7. The drone gauntlet: caps on pillars over the drop ----
-  shelf(252, 21, 3); shelf(258, 20, 3); shelf(264, 21, 3); // the low road: shelves that give way
-  block(245, 271, 26, 27); for (const x of [247, 253, 259, 265, 270]) bouncer(x, 25); ent('glow', 250, 25); ent('glow', 262, 25); // the pit has a floor: caps on it spring you back to the low road
+  shelf(252, 21, 3); shelf(258, 20, 3); shelf(264, 21, 3); ent('silver', 259, 19); // the low road: shelves that give way
+  block(245, 271, 26, 27); for (const x of [247, 253, 259, 265, 270]) bouncer(x, 25); ent('glow', 252, 25); ent('glow', 264, 25); // the pit has a floor: caps on it spring you back to the low road
   for (const [px0, top] of [[249, 18], [255, 20], [261, 18], [267, 20]]) { block(px0, px0 + 2, top, 27); for (let i = 0; i < 3; i++) bouncer(px0 + i, top - 1); }
   ent('drone', 252, 6); ent('drone', 258, 8); ent('drone', 264, 6);
   coins([252, 8], [258, 10], [264, 8], [270, 9]);
@@ -515,6 +595,7 @@ function sporewood() {
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
+    quest: { n: 3, item: 'cap', name: 'CLEAN CAP', npc: 'elder', done: 'THE LIGHT IS GATHERED', thanks: "THE ELDER'S THANKS" },
     arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother', tint: '#9a5aa8', tintA: 0.1 },
   }
   // ---- 6c. THE PUFFBALL BOG: three sinks in the ground with caps at the bottom, lurkers between, drones above, a geyser, a shaman ----
@@ -528,8 +609,30 @@ function sporewood() {
   G.ent('glow', 247, 13); G.ent('glow', 257, 13); G.ent('glow', 268, 13); G.ent('glow', 280, 13); G.ent('glow', 287, 13);
   G.ent('shaman', 284, 13, { face: -1 }); G.ent('sporeling', 286, 13, { face: -1 });
   G.coins([253, 11], [254, 10], [263, 11], [264, 10], [265, 11], [275, 11], [276, 10], [277, 11], [250, 12], [272, 12], [283, 12]);
-  G.ent('check', 288, 13);
-  return G.done();
+  G.ent('check', 288, 13); G.ent('stray', 264, 18, { kind: 'cap' }); // a clean cap at the bottom of the middle sink
+  const R1 = G.done();
+  // ---- 6d. THE TUMBLE: a stepped hill. A puffball nest at the top rolls them down tier by tier; jump them, or stomp one and ride the bounce up. ----
+  const Tm = grow(R1, R1, 201, 40);
+  Tm.block(201, 207, 14, 27); Tm.block(208, 214, 12, 27); Tm.block(215, 221, 10, 27); Tm.block(222, 228, 8, 27); Tm.block(229, 236, 6, 27); Tm.block(237, 240, 14, 27);
+  Tm.ent('sign', 202, 13, { text: 'THE TUMBLE. THE NEST ROLLS THEM DOWN. JUMP THEM, OR STOMP AND RIDE.' });
+  Tm.ent('nest', 234, 5, { every: 2.4, dir: -1 });
+  Tm.ent('glow', 204, 13); Tm.ent('glow', 218, 9); Tm.ent('glow', 231, 5); Tm.ent('sporeling', 225, 7, { face: -1 }); Tm.ent('puffball', 211, 11);
+  Tm.coins([205, 12], [211, 9], [218, 7], [225, 5], [232, 3], [238, 13]);
+  Tm.ent('check', 239, 13);
+  const R2 = Tm.done();
+  // ---- 4b. THE FORK: off the shelf-climb plateau. Above, the cap canopy: ledges, spring caps, a drone. Below, the root cellar: a roofed run of lurkers, a roller and violet spores, with a cap at the end to spring you out. ----
+  const Fk = grow(R2, R2, 131, 44);
+  Fk.ent('sign', 129, 3, { text: 'THE CAP CANOPY ABOVE, THE ROOT CELLAR BELOW.' });
+  Fk.plat(133, 6, 3); Fk.set(139, 9, T.BOUNCER); Fk.plat(143, 4, 3); Fk.ent('puffball', 144, 3); Fk.plat(148, 6, 3); Fk.ent('drone', 151, 3); Fk.set(153, 8, T.BOUNCER); Fk.plat(156, 4, 3); Fk.ent('stray', 157, 3, { kind: 'cap' });
+  Fk.plat(160, 7, 3); Fk.ent('sporeling', 161, 6, { face: -1 }); Fk.ent('mover', 164, 6, { len: 2, range: 4, cap: true, speed: 30 }); Fk.plat(169, 8, 3); Fk.ent('puffball', 170, 7);
+  Fk.coins([134, 5], [139, 5], [149, 5], [153, 4], [162, 6], [171, 7]);
+  Fk.block(135, 170, 10, 13); Fk.block(131, 174, 20, 27);
+  Fk.R.interiors = (Fk.R.interiors || []).concat([[135, 170, 14, 19, 'earth']]);
+  Fk.ent('glow', 133, 19); Fk.ent('lurker', 140, 19); Fk.ent('stray', 145, 19, { kind: 'cap' }); Fk.ent('glow', 148, 19); Fk.ent('sporeling', 150, 19, { face: -1 }); Fk.ent('roller', 156, 19, { face: -1, speed: 60 }); Fk.ent('puffball', 160, 19);
+  Fk.R.sleeps.push({ x0: 162 * TS, x1: 169 * TS, y0: 14 * TS, y1: 20 * TS }); Fk.ent('drone', 165, 16); Fk.ent('glow', 170, 19); Fk.ent('lurker', 171, 19);
+  Fk.set(173, 19, T.BOUNCER); Fk.plat(171, 17, 2); Fk.plat(171, 14, 2);
+  Fk.coins([137, 18], [143, 18], [153, 18], [158, 18], [166, 18], [172, 13]);
+  return Fk.done();
 ;
 }
 
@@ -549,7 +652,7 @@ function kingswood() {
   ent('sign', 29, 19, { text: 'THIEVES SNATCH GOLD. CATCH THEM FOR INTEREST.' });
   ent('thief', 34, 19, { face: -1 }); ent('door', 40, 19); ent('folk', 38, 19, { door: 40 });
   // the canopy road over the pasture, and a rope ladder up onto the first hall's roof
-  plat(6, 16, 3); plat(11, 14, 3); plat(16, 12, 4); plat(22, 14, 3); plat(27, 16, 3); plat(33, 14, 3); plat(38, 12, 3);
+  plat(6, 16, 3); plat(11, 14, 3); plat(16, 12, 4); plat(22, 14, 3); plat(27, 16, 3); plat(33, 14, 3); plat(38, 12, 3); ent('silver', 18, 11);
   coins([7, 15], [12, 13], [18, 11], [23, 13], [28, 15], [34, 13], [39, 11]); ent('wasp', 25, 11);
   for (let y = 12; y <= 19; y++) set(44, y, T.NET);
   ent('sign', 41, 19, { text: 'ROPES GO UP. THE ROOF ROAD SKIPS THE HALL.' });
@@ -560,12 +663,13 @@ function kingswood() {
   ent('torch', 48, 19); ent('torch', 60, 19); ent('torch', 72, 19); ent('torch', 82, 19);
   ent('sign', 47, 19, { text: 'PIKES HOLD THE LINE. JUMP THEM, OR THROW.' });
   ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('pike', 68, 19, { face: -1 });
+  ent('brazier', 53, 19); ent('brazier', 66, 19); // oil braziers: tip them onto the line, or get burned
   ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 });
   gate(84, 15, 19);
   coins([52, 18], [58, 17], [65, 18], [74, 17]);
   // the way around the gate if the bell rings: a two-wide hatch through the roof with ledges up it, onto the high road
   for (let x = 77; x <= 78; x++) for (let y = 13; y <= 16; y++) set(x, y, 0);
-  plat(77, 18, 2); plat(77, 16, 2); plat(77, 14, 2); plat(76, 12, 4);
+  plat(77, 18, 2); plat(77, 16, 2); plat(77, 14, 2); plat(76, 12, 4); ent('silver', 79, 11);
   ent('sign', 73, 19, { text: 'IF THE GATE FALLS: THE ROOF HATCH.' }); ent('torch', 79, 17); coins([77, 15], [78, 13]);
 
   // ---- 3. FORK ONE. High road: canopy walkways and swings, thieves and wasps. Low road: the burrow with a ram and a drop cage. ----
@@ -573,6 +677,7 @@ function kingswood() {
   plat(85, 12, 4); plat(91, 10, 3); plat(96, 8, 4);
   movers.push({ kind: 'swing', px: 104 * TS, py: 2 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
   plat(111, 8, 3); ent('thief', 112, 7, { face: -1 }); plat(116, 9, 4); ent('wasp', 121, 7);
+  plat(103, 10, 3); plat(126, 11, 3); // ledges under the swings: miss the seat and you land here, not in the burrow
   movers.push({ kind: 'swing', px: 127 * TS, py: 2 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period: 3.6, phase: 1.6 });
   plat(134, 9, 4); ent('thief', 136, 8, { face: -1 }); plat(140, 11, 3); plat(145, 13, 4);
   coins([87, 11], [93, 9], [98, 7], [104, 6], [112, 6], [118, 8], [127, 6], [135, 8], [141, 10], [146, 12]);
@@ -581,6 +686,7 @@ function kingswood() {
   for (let x = 85; x <= 150; x++) for (let y = 17; y <= 21; y++) set(x, y, 0);
   ent('torch', 88, 21); ent('torch', 104, 21); ent('torch', 120, 21); ent('torch', 136, 21);
   ent('pike', 96, 21, { face: -1 }); ent('lever', 100, 21, { ram: 106 }); ent('ram', 106, 17); ent('brute', 110, 21, { face: -1 });
+  ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS: THE LEVER SWINGS THE RAM, THE PLATE DROPS THE CAGE.' });
   ent('pike', 142, 21, { face: -1 }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
@@ -590,24 +696,26 @@ function kingswood() {
 
   // ---- 4. The kennels: the Hound Master. Walls close, the gate opens when he falls. ----
   ent('torch', 170, 13); ent('torch', 188, 13); ent('cage', 172, 13, { kind: 'bird' });
-  ent('master', 182, 13);
+  ent('master', 182, 13); ent('chainpost', 187, 13); // a kennel hound on a chain: cut it loose and it goes for his mount
   ent('sign', 169, 13, { text: 'THE HOUND MASTER. BLOCK THE CHARGE, THEN PLUNGE THE RIDER.' });
   gate(190, 9, 13);
   block(191, 210, 14, 27); ent('torch', 194, 13); coins([196, 12], [200, 12], [204, 12]); ent('check', 208, 13);
-  plat(196, 11, 3); plat(201, 9, 3); plat(206, 11, 3); ent('archer', 202, 8, { face: -1 }); coins([197, 10], [202, 7], [207, 10]);
+  plat(196, 11, 3); plat(201, 9, 3); plat(206, 11, 3); ent('archer', 202, 8, { face: -1, fire: true }); coins([197, 10], [202, 7], [207, 10]);
 
   // ---- 5. FORK TWO. Canopy (rows 5-10) over the roots (rows 16-20). ----
   // canopy
   plat(211, 11, 3); plat(216, 9, 3); plat(221, 7, 4);
   movers.push({ kind: 'swing', px: 231 * TS, py: 1 * TS, arm: 90, x: 0, y: 0, w: 48, h: 8, period: 3.0, phase: 0.8 });
-  plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1 });
+  plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1, fire: true });
   movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
   plat(261, 9, 3); plat(266, 11, 3); plat(271, 11, 4);
+  plat(230, 10, 3); plat(253, 11, 3); // ledges under the canopy swings
   coins([212, 10], [217, 8], [223, 6], [231, 5], [239, 5], [245, 7], [254, 5], [262, 8], [267, 10], [272, 10]);
   // roots
   block(211, 275, 21, 27); ceiling(211, 275, 15);
   for (let x = 211; x <= 275; x++) for (let y = 16; y <= 20; y++) set(x, y, 0);
   ent('torch', 214, 20); ent('torch', 230, 20); ent('torch', 246, 20); ent('torch', 262, 20);
+  ent('firepit', 216, 20, { period: 3.4, on: 1.5, phase: 0.8 }); ent('brazier', 224, 20); ent('firepit', 265, 20, { period: 3.4, on: 1.5, phase: 2.4 });
   ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
   ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
   coins([218, 19], [236, 19], [252, 18], [266, 19], [273, 19]);
@@ -621,7 +729,7 @@ function kingswood() {
   ent('shield', 295, 13, { face: -1 }); ent('shield', 298, 13, { face: -1 });
   ent('deco', 290, 13, { kind: 'banner', v: 0 }); ent('deco', 297, 13, { kind: 'banner', v: 1 });
   ent('thief', 302, 13, { face: -1 }); coins([289, 12], [294, 12]);
-  plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1 }); coins([287, 9], [293, 7], [294, 7]);
+  plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1, fire: true }); coins([287, 9], [293, 7], [294, 7]);
   // the cache: a hidden loft above the court holds the Thief Cloak
   plat(303, 9, 3); plat(307, 7, 3); coins([304, 8], [308, 6], [309, 6]); ent('relic', 308, 6, { kind: 'cloak' });
   ent('check', 312, 13);
@@ -631,6 +739,7 @@ function kingswood() {
   for (let x = 318; x <= 368; x++) ent('carpet', x, 13);
   ent('torch', 320, 13); ent('torch', 366, 13); ent('deco', 326, 13, { kind: 'banner', v: 0 }); ent('deco', 360, 13, { kind: 'banner', v: 1 });
   ent('deco', 332, 13, { kind: 'skullPile', v: 0 }); ent('deco', 354, 13, { kind: 'skullPile', v: 1 });
+  ent('brazier', 329, 13); ent('brazier', 359, 13); // the court's braziers: tip them into the King's path
   // the galleries: the court cheers from balconies either side and throws goblets when the King shouts
   plat(318, 9, 6); plat(363, 9, 6); ent('torch', 318, 8); ent('torch', 368, 8);
   for (const x of [319, 321, 323, 364, 366, 368]) ent('folk', x, 8, { court: true, alt: x % 4 === 1 });
@@ -663,6 +772,7 @@ function kingswood() {
   G.plat(292, 18, 3); G.plat(299, 17, 3); G.plat(306, 18, 3); G.plat(313, 17, 3); G.plat(320, 18, 3); G.plat(324, 16, 2); // the way back up if the bridge falls
   G.plat(289, 24, 2); G.plat(292, 22, 2); G.plat(289, 20, 2); // and up from the gorge floor to the first ledge
   G.block(288, 323, 26, 27); G.ent('deco', 296, 25, { kind: 'skullPile', v: 0 }); G.ent('deco', 316, 25, { kind: 'skullPile', v: 1 }); // the gorge floor, bones and all
+  G.ent('firepit', 302, 25, { period: 3, on: 1.3, phase: 0 }); G.ent('firepit', 311, 25, { period: 3, on: 1.3, phase: 1.5 }); G.ent('silver', 307, 25);
   G.coins([293, 13], [301, 12], [309, 13], [317, 12], [300, 16], [314, 16], [321, 17]);
   G.ent('check', 326, 13);
   return G.done();
@@ -693,7 +803,7 @@ function screePath() {
   block(61, 80, 18, 27); block(81, 100, 16, 27); block(101, 120, 14, 27);
   wall(62, 17); wall(82, 15); wall(102, 13);
   plat(70, 14, 3); ent('stray', 71, 13); coins([70, 13], [72, 13]);
-  ent('goat', 72, 17, { face: -1 }); ent('rockfall', 90, 4, { every: 2.4 }); ent('rockfall', 94, 4, { every: 3.1 });
+  ent('goat', 72, 17, { face: -1 }); ent('shield', 78, 17, { face: -1 }); ent('rockfall', 90, 4, { every: 2.4 }); ent('rockfall', 94, 4, { every: 3.1 });
   ent('deco', 84, 15, { kind: 'stone' }); ent('deco', 106, 13, { kind: 'stone' }); ent('deco', 112, 13, { kind: 'cairn' });
   ent('goat', 96, 15, { face: -1 }); ent('harpy', 110, 8); ent('sprig', 108, 13, { face: -1 });
   coins([66, 17], [76, 17], [86, 15], [98, 15], [104, 13], [116, 13]);
@@ -704,9 +814,9 @@ function screePath() {
   ent('deco', 150, 13, { kind: 'mill' });
   for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 150 * TS + 8, py: 13 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
   plat(156, 6, 4); ent('stray', 158, 5); coins([157, 5], [159, 5]);
-  plat(162, 8, 3); plat(167, 9, 3); plat(172, 10, 3); ent('archer', 168, 8, { face: -1 }); ent('harpy', 162, 3);
+  plat(162, 8, 3); plat(167, 9, 3); plat(172, 10, 3); ent('archer', 168, 8, { face: -1 }); ent('harpy', 162, 3); ent('silver', 163, 7);
   coins([163, 7], [168, 7], [173, 9]);
-  wall(128, 13); wall(140, 13); ent('goat', 134, 13, { face: -1 }); ent('sprig', 144, 13, { face: -1 }); ent('sprig', 160, 13, { face: -1 });
+  wall(128, 13); wall(140, 13); ent('goat', 134, 13, { face: -1 }); ent('thorn', 138, 13, { face: -1 }); ent('sprig', 144, 13, { face: -1 }); ent('sprig', 160, 13, { face: -1 }); ent('sapper', 165, 13, { face: -1 });
   ent('sign', 124, 13, { text: 'RIDE THE SAILS. THE LOFT IS WORTH THE CLIMB.' });
   ent('deco', 138, 13, { kind: 'cairn' });
   coins([131, 12], [146, 12], [164, 12], [170, 12]);
@@ -727,8 +837,8 @@ function screePath() {
   ent('check', 260, 18);
 
   // ---- 5. The crag wall: ledges up to the plateau, rocks on the way ----
-  ent('goat', 266, 18, { face: -1 }); wall(270, 18);
-  plat(278, 16, 3); plat(274, 13, 3); plat(279, 10, 3); plat(283, 12, 2);
+  ent('goat', 266, 18, { face: -1 }); ent('brute', 262, 18, { face: -1 }); wall(270, 18);
+  plat(278, 16, 3); plat(274, 13, 3); plat(279, 10, 3); plat(283, 12, 2); ent('silver', 283, 11);
   block(285, 363, 9, 27);
   ent('rockfall', 281, 2, { every: 2.7 });
   coins([279, 15], [275, 12], [280, 9], [284, 11]);
@@ -736,10 +846,10 @@ function screePath() {
   ent('check', 294, 8);
 
   // ---- 6. THE FOLD: the Ram Lord's walled pasture on the plateau ----
-  ent('sign', 296, 8, { text: 'THE RAM LORD. DODGE THE CHARGE. HE HITS THE WALL, YOU HIT HIM.' });
-  ent('deco', 301, 8, { kind: 'foldGate' }); ent('deco', 344, 8, { kind: 'foldGate' });
-  ent('deco', 306, 8, { kind: 'cairn' }); ent('deco', 340, 8, { kind: 'cairn' });
-  ent('ramlord', 332, 8);
+  ent('sign', 296, 8, { text: 'THE RAM LORD. HE ONLY BLEEDS DAZED: MAKE HIM HIT THE WALL.' });
+  ent('deco', 305, 8, { kind: 'foldGate' }); ent('deco', 335, 8, { kind: 'foldGate' });
+  ent('deco', 309, 8, { kind: 'cairn' }); ent('deco', 331, 8, { kind: 'cairn' });
+  ent('ramlord', 324, 8);
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
@@ -748,10 +858,30 @@ function screePath() {
     stone, scree, strays: 3,
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 300 * TS, x1: 346 * TS, floor: 9 * TS, trigger: 304 * TS, wallL: 299, wallR: 347, boss: 'ram', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
+    arena: { x0: 304 * TS, x1: 336 * TS, floor: 9 * TS, trigger: 308 * TS, wallL: 303, wallR: 337, boss: 'ram', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
   }
+  // ---- 4b. THE ROPEWAY: the gorge proper. A swing, a rope lift, the old mill's sails, another swing; harpies on the wind, rocks off the cliff, a ladder out of the bottom. ----
+  const GA = grow(L, ret, 256, 56);
+  GA.block(256, 257, 19, 27); GA.block(258, 304, 26, 27); GA.block(305, 311, 19, 27);
+  GA.ent('sign', 256, 18, { text: 'THE ROPEWAY. SWING, RIDE THE LIFT, RIDE THE SAILS.' });
+  GA.R.moversExtra.push({ kind: 'swing', px: 263 * TS, py: 8 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
+  GA.plat(268, 16, 3);
+  GA.R.moversExtra.push({ kind: 'lift', x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
+  GA.plat(276, 12, 2);
+  GA.block(279, 283, 19, 27); GA.ent('deco', 281, 18, { kind: 'mill' });
+  for (let i = 0; i < 4; i++) GA.R.moversExtra.push({ kind: 'wheel', px: 281 * TS + 8, py: 19 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
+  GA.plat(285, 12, 3);
+  GA.R.moversExtra.push({ kind: 'swing', px: 291 * TS, py: 6 * TS, arm: 100, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.5 });
+  GA.plat(296, 14, 3); GA.plat(301, 16, 3);
+  GA.ent('rockfall', 270, 3, { every: 2.8 }); GA.ent('rockfall', 298, 3, { every: 2.5 });
+  GA.ent('harpy', 265, 10); GA.ent('harpy', 288, 8); GA.ent('thorn', 302, 15, { face: -1 }); GA.ent('shield', 308, 18, { face: -1 });
+  for (let y = 19; y <= 25; y++) { GA.set(303, y, T.NET); GA.set(304, y, T.NET); }
+  GA.ent('deco', 262, 25, { kind: 'stone', v: 1 }); GA.ent('deco', 290, 25, { kind: 'cairn' }); GA.ent('goat', 268, 25, { face: -1 });
+  GA.coins([263, 12], [269, 15], [272, 14], [277, 11], [281, 12], [286, 11], [291, 10], [297, 13], [302, 15], [275, 25], [295, 25]);
+  GA.ent('check', 309, 18);
+  const RA = GA.done();
   // ---- 3b. THE CAIRN FIELD: standing stones, a gully that drags you back, a goat pen, harpies on the wind ----
-  const G = grow(L, ret, 176, 40);
+  const G = grow(RA, RA, 176, 40);
   G.floor(176, 215, 14);
   for (let x = 190; x <= 197; x++) for (let y = 14; y <= 17; y++) G.set(x, y, 0); // the gully
   G.R.scree.push({ x0: 190, x1: 197, y: 18, dir: -1 }); G.plat(196, 16, 2);
@@ -762,7 +892,20 @@ function screePath() {
   G.ent('goat', 203, 13, { face: -1 }); G.ent('goat', 206, 13, { face: 1 }); G.ent('sprig', 184, 13, { face: -1 });
   G.coins([180, 12], [185, 11], [192, 17], [195, 17], [199, 12], [204, 11], [210, 12], [214, 12]);
   G.ent('check', 214, 13);
-  return G.done();
+  const RC = G.done();
+  // ---- 1b. THE HAMLET: the hill folk's cottages. They bar their doors; goblins raid the lane; the roofs are the high road, and a chimney ledge holds silver. ----
+  const B = grow(RC, RC, 61, 48);
+  B.floor(61, 108, 20);
+  B.ent('sign', 62, 19, { text: 'THE HAMLET. THE HILL FOLK BAR THEIR DOORS TO GOBLINS, AND TO YOU.' });
+  B.R.stone.push([64, 64, 19, 19], [107, 107, 19, 19]); B.block(64, 64, 19, 19); B.block(107, 107, 19, 19);
+  for (const [dx, alt] of [[70, false], [86, true], [102, false]]) { B.ent('door', dx, 19, { kind: 'cottage', at: dx }); B.ent('folk', dx - 3, 19, { door: dx, alt }); B.plat(dx - 2, 18, 5); }
+  B.ent('deco', 78, 19, { kind: 'well' }); B.ent('deco', 94, 19, { kind: 'fence', v: 0 });
+  B.ent('sprig', 74, 19, { face: -1 }); B.ent('shield', 90, 19, { face: -1 }); B.ent('thorn', 98, 19, { face: -1 }); B.ent('sapper', 105, 19, { face: -1 });
+  B.ent('archer', 87, 17, { face: -1 }); B.ent('goat', 80, 19, { face: -1 });
+  B.plat(85, 15, 2); B.ent('silver', 85, 14);
+  B.coins([68, 17], [71, 17], [77, 18], [84, 17], [88, 17], [100, 17], [103, 17], [96, 18]);
+  B.ent('check', 106, 19);
+  return B.done();
 ;
 }
 
