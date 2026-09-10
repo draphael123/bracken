@@ -701,8 +701,8 @@ function kingswood() {
 
   // ---- 4. The kennels: the Hound Master. Walls close, the gate opens when he falls. ----
   ent('torch', 170, 13); ent('torch', 188, 13); ent('cage', 172, 13, { kind: 'bird' });
-  ent('master', 182, 13); ent('chainpost', 187, 13); // a kennel hound on a chain: cut it loose and it goes for his mount
-  ent('sign', 169, 13, { text: 'THE HOUND MASTER. BLOCK THE CHARGE, THEN PLUNGE THE RIDER.' });
+  ent('greathound', 182, 13); ent('chainpost', 187, 13); // a kennel hound on a chain: cut it loose and it goes for his mount
+  ent('sign', 169, 13, { text: 'THE GREAT HOUND. JUMP THE LUNGE, DODGE THE POUNCE, KILL ITS PUPS FAST.' });
   gate(190, 9, 13);
   block(191, 210, 14, 27); ent('torch', 194, 13); coins([196, 12], [200, 12], [204, 12]); ent('check', 208, 13);
   plat(196, 11, 3); plat(201, 9, 3); plat(206, 11, 3); ent('archer', 202, 8, { face: -1, fire: true }); coins([197, 10], [202, 7], [207, 10]);
@@ -762,7 +762,7 @@ function kingswood() {
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
     arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'king', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
-    mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'master' },
+    mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'greathound' },
   }
   // ---- 5c. THE TOLL BRIDGE: a rope bridge over the gorge. Pikes hold it, a cutter waits at the far post; if it falls, ledges below lead back up. ----
   const G = grow(L, ret, 284, 44);
@@ -914,6 +914,115 @@ function screePath() {
 ;
 }
 
+// ---------- LEVEL 7: THE HANGING VILLAGE ----------
+// A tree-city that goes up, not across. Six tiers of floor bands zig-zag to the crown; every tier has a different way up.
+function hangingVillage() {
+  const W = 110, H = 112; const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  const movers = [], gusts = [];
+  const band = (x0, x1, top) => block(x0, x1, top, top + 3);
+  const hole = (x0, x1, top) => { for (let y = top; y <= top + 3; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); };
+  const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  const shelf = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.SHELF); };
+  block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the trunk walls either side
+  const tops = { t0: 108, t1: 94, t2: 80, t3: 66, t4: 52, t5: 38, crown: 20 };
+
+  // ---- Tier 0. THE ROOTS: goblin shanties among the roots, a hill-folk cottage, the first spider ----
+  block(0, W - 1, tops.t0, H - 1);
+  ent('sign', 4, 107, { text: 'THE HANGING VILLAGE. UP IS THE ONLY WAY. ROPES, WHEELS AND SWINGS.' });
+  ent('door', 14, 107, { at: 14 }); ent('folk', 11, 107, { door: 14 }); ent('sprig', 22, 107, { face: -1 });
+  ent('door', 34, 107, { at: 34 }); ent('folk', 31, 107, { door: 34 }); ent('deco', 44, 107, { kind: 'well' });
+  ent('door', 60, 107, { kind: 'cottage', at: 60 }); ent('folk', 57, 107, { door: 60, alt: true });
+  ent('sprig', 50, 107, { face: -1 }); ent('spider', 76, 100, { drop: 110 }); ent('squirrel', 88, 107, { face: -1 }); ent('shield', 94, 107, { face: -1 });
+  coins([8, 105], [27, 105], [40, 105], [66, 105], [72, 105], [84, 105], [98, 105]);
+  ent('check', 98, 107);
+  // 0 -> 1: a rope ladder through the first bough
+  band(1, W - 2, tops.t1); hole(100, 105, tops.t1); ladder(102, 103, tops.t1, tops.t0 - 1);
+  ent('sign', 96, 107, { text: 'ROPES: JUMP UP THROUGH THEM.' });
+
+  // ---- Tier 1. THE LOWER BOUGHS (walk left): spiders under the bough above, a branch that snaps over a gap, an archer's nest ----
+  hole(66, 71, tops.t1); shelf(66, tops.t1, 6); // the snapping branch: fall and you land on the roots, no worse
+  ent('sign', 74, 93, { text: 'THE BRANCH SNAPS. KEEP MOVING.' });
+  ent('spider', 84, 86, { drop: 100 }); ent('spider', 58, 86, { drop: 100 }); ent('spider', 36, 86, { drop: 100 });
+  ent('sprig', 50, 93, { face: 1 }); ent('thorn', 28, 93, { face: 1 }); plat(20, 90, 3); ent('archer', 21, 89, { face: 1 });
+  ent('door', 44, 93, { at: 44 }); ent('folk', 47, 93, { door: 44 });
+  coins([92, 91], [80, 91], [62, 91], [54, 91], [40, 91], [22, 88], [12, 91]);
+  ent('check', 8, 93); ent('silver', 68, 90);
+  // 1 -> 2: a counterweight lift at the trunk
+  band(1, W - 2, tops.t2); hole(2, 7, tops.t2);
+  movers.push({ kind: 'lift', x: 3 * TS, y: (tops.t1 - 1) * TS, y0: (tops.t1 - 1) * TS, y1: (tops.t2 - 1) * TS, w: 32, h: 8, speed: 34 });
+  ent('sign', 8, 93, { text: 'THE LIFT RISES WHILE YOU STAND ON IT.' });
+
+  // ---- Tier 2. THE MARKET (walk right): hill folk and goblins live door to door; the Lamplighter wants three lanterns lit ----
+  ent('sign', 8, 79, { text: 'THE MARKET. THE LAMPLIGHTER HAS LOST HIS LAMPS.' });
+  ent('door', 14, 79, { kind: 'cottage', at: 14 }); ent('folk', 11, 79, { door: 14, alt: true }); ent('npc', 22, 79, { kind: 'lamplighter' }); ent('deco', 26, 79, { kind: 'lanternPost' });
+  ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' }); ent('stray', 44, 79, { kind: 'lamp' });
+  ent('door', 50, 79, { at: 50 }); ent('folk', 47, 79, { door: 50 }); ent('deco', 56, 79, { kind: 'fence', v: 0 }); ent('door', 64, 79, { at: 64 }); ent('folk', 67, 79, { door: 64 });
+  ent('squirrel', 74, 79, { face: -1 }); ent('sprig', 84, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
+  plat(58, 76, 3); plat(78, 75, 3); coins([59, 75], [79, 74], [18, 77], [38, 77], [70, 77], [88, 77], [96, 77]);
+  ent('check', 96, 79);
+  // 2 -> 3: the wheel walk: two water wheels stacked at the trunk lift you to the third bough
+  band(1, W - 2, tops.t3); hole(100, 107, tops.t3);
+  for (let i = 0; i < 4; i++) { movers.push({ kind: 'wheel', px: 104 * TS + 8, py: 75 * TS, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 }); movers.push({ kind: 'wheel', px: 104 * TS + 8, py: 68 * TS + 8, r: 42, phase: i * Math.PI / 2 + 0.8, period: 6.4, x: 0, y: 0, w: 22, h: 6 }); }
+  ent('sign', 98, 79, { text: 'RIDE THE WHEELS UP. TWO OF THEM.' });
+
+  // ---- Tier 3. THE WINDY BOUGH (walk left): gusts push you along the bough; spiders, a sapper, a goblin house on stilts ----
+  ent('sign', 96, 65, { text: 'THE WIND COMES IN GUSTS. WAIT FOR THE LULL, OR LEAN INTO IT.' });
+  gusts.push({ x0: 20 * TS, x1: 92 * TS, y0: 56 * TS, y1: 66 * TS, dir: -1, period: 5, on: 1.6, phase: 0 });
+  ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('sapper', 60, 65, { face: 1 }); ent('sprig', 34, 65, { face: 1 });
+  plat(70, 62, 3); plat(40, 61, 3); coins([71, 61], [41, 60], [86, 63], [56, 63], [26, 63]);
+  ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' });
+  ent('check', 16, 65); ent('stray', 71, 61, { kind: 'lamp' });
+  // 3 -> 4: snapping branches up the trunk
+  band(1, W - 2, tops.t4); hole(2, 9, tops.t4);
+  shelf(8, 63, 2); shelf(4, 60, 2); shelf(8, 57, 2); shelf(4, 54, 2); shelf(7, 51, 2);
+  ent('sign', 12, 65, { text: 'THE BRANCHES SNAP UNDER YOU. CLIMB QUICK.' });
+
+  // ---- Tier 4. THE UPPER BOUGHS (walk right): the squirrel knight's ground; spiders, an archer nest, silver on a high ledge ----
+  ent('sign', 10, 51, { text: 'THE SQUIRREL KNIGHT STEALS AND CLIMBS. CATCH IT BEFORE IT DOES.' });
+  ent('door', 20, 51, { kind: 'cottage', at: 20 }); ent('folk', 17, 51, { door: 20, alt: true });
+  ent('squirrel', 30, 51, { face: 1 }); ent('spider', 45, 44, { drop: 100 }); ent('spider', 65, 44, { drop: 100 });
+  plat(56, 48, 3); ent('archer', 57, 47, { face: -1 }); plat(72, 46, 2); ent('silver', 73, 45); plat(76, 49, 3);
+  ent('door', 84, 51, { at: 84 }); ent('folk', 87, 51, { door: 84 }); ent('thorn', 94, 51, { face: -1 });
+  coins([26, 49], [38, 49], [50, 49], [60, 46], [80, 47], [98, 49]);
+  ent('check', 12, 51);
+  // 4 -> 5: swings, a ledge and a rope ladder at the trunk
+  band(1, W - 2, tops.t5); hole(100, 105, tops.t5);
+  movers.push({ kind: 'swing', px: 96 * TS, py: 46 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
+  movers.push({ kind: 'swing', px: 104 * TS, py: 42 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.5 });
+  plat(102, 44, 3); ladder(103, 104, tops.t5, 43);
+  ent('sign', 90, 51, { text: 'SWING, THEN SWING AGAIN, THEN THE ROPE.' });
+
+  // ---- Tier 5. THE LANTERN STAIR (walk left): the last lamp, a brute at the door, the way to the crown ----
+  ent('sign', 96, 37, { text: 'THE CROWN IS CLOSE. THE REEVE DOES NOT LIKE LIGHT.' });
+  ent('door', 88, 37, { kind: 'cottage', at: 88 }); ent('folk', 91, 37, { door: 88, alt: true }); ent('deco', 84, 37, { kind: 'lanternPost' });
+  ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 60, 37, { kind: 'cottage', at: 60 }); ent('folk', 63, 37, { door: 60, alt: true });
+  ent('spider', 40, 30, { drop: 100 }); ent('stray', 30, 37, { kind: 'lamp' }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' });
+  plat(76, 34, 3); plat(26, 33, 3); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
+  ent('check', 10, 37);
+  // 5 -> crown: the long rope
+  band(1, W - 2, tops.crown); hole(2, 5, tops.crown); ladder(3, 4, tops.crown, tops.t5 - 1);
+
+  // ---- The crown: THE OWL REEVE. Three lit lanterns on the great bough; bait its swoops into the light. ----
+  ent('sign', 8, 19, { text: 'THE OWL REEVE. IT SWOOPS. STAND BY A LANTERN AND STEP ASIDE.' });
+  ent('check', 12, 19);
+  for (const x of [32, 54, 76]) ent('lantern', x, 19);
+  plat(26, 17, 3); plat(81, 17, 3); plat(51, 12, 6);
+  ent('deco', 40, 19, { kind: 'stone', v: 0 }); ent('deco', 68, 19, { kind: 'cairn' });
+  ent('owl', 54, 11);
+  ent('gate', 100, 19);
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts,
+    duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: true,
+    palette: { dress: 'wood', hall: true, haze: 'rgba(200,220,180,0.14)' },
+    weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
+    arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 26 * TS, wallL: 19, wallR: 90, boss: 'owl', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
+  };
+}
+
 // THE STORE: a room you walk into. The keeper is behind the counter; UP at the counter trades, UP at the door leaves.
 function theShop() {
   const L = painter(40, 28);
@@ -940,5 +1049,6 @@ export const LEVELS = [
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
   { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
+  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the tree-city', build: hangingVillage, needs: 'scree' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
 ];

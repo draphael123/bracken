@@ -990,3 +990,8 @@ export function bakeCottage(shut) { const [c, g] = canvas(36, 32); rect(g, 3, 14
 
 // A dead tree for the rotting half of Sporewood: bare grey trunk, broken limbs, mycelium threads. 28×56, background.
 export function bakeDeadTree(seed) { const rnd = mulberry(seed); const [c, g] = canvas(28, 56); rect(g, 11, 14, 6, 42, '#5a5468'); rect(g, 11, 14, 1, 42, '#6e6878'); rect(g, 16, 14, 1, 42, '#3a3444'); line(g, 13, 20, 2, 8, '#5a5468', 2); line(g, 15, 26, 26, 12, '#5a5468', 2); line(g, 13, 14, 9, 2, '#5a5468', 2); line(g, 15, 14, 20, 4, '#5a5468', 1); for (let i = 0; i < 5; i++) { const x = 4 + ((rnd() * 20) | 0), y = 10 + ((rnd() * 20) | 0); line(g, x, y, x, y + 6 + ((rnd() * 8) | 0), 'rgba(200,180,220,0.55)', 1); } for (let i = 0; i < 4; i++) px(g, 10 + ((rnd() * 8) | 0), 30 + ((rnd() * 22) | 0), '#9a5aa8'); return c; }
+
+// A hand lantern, dark: the lamplighter's quest item. 10×12.
+export function bakeLampIcon() { const [c, g] = canvas(10, 12); rect(g, 4, 0, 2, 2, '#8b8378'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 7, '#3a3444'); rect(g, 3, 4, 4, 5, '#6a5a3a'); px(g, 4, 6, '#ffd36b'); rect(g, 2, 10, 6, 1, '#5f5a52'); return outline(c); }
+// A lit or dark lantern on a tall post for the crown of the tree. 12×36.
+export function bakeCrownLantern(lit) { const [c, g] = canvas(12, 36); rect(g, 5, 8, 2, 28, C.woodD); rect(g, 5, 8, 1, 28, C.wood); rect(g, 2, 34, 8, 2, C.woodD); rect(g, 3, 0, 6, 2, '#5f5a52'); rect(g, 2, 2, 8, 8, lit ? '#ffd36b' : '#3a3444'); rect(g, 3, 3, 6, 6, lit ? '#fff6c8' : '#2a2630'); rect(g, 2, 10, 8, 1, '#5f5a52'); return outline(c); }

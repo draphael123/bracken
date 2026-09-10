@@ -580,3 +580,53 @@ export function bakeTroll() {
   const swat = tr(pad([...head, '..mmmtttttttttmmm.', '.mttttttttttttttm.', '.tttTtttttttttttTT', '.tttTttttttttttTTT', '.tttTtttttttttt...', '.TTTTttttttttt....', '....tttttttttt....', '....ttttttttttt...', '.....TTT..TTT.....', '.....TTT..TTT.....', '.....TTT..TTT.....', '....TTTT..TTTT....'], 2));
   return pack([stand, walk1, walk2, throwF, swat], 10, 20, 16, 18);
 }
+
+
+// ---------- The Great Hound, the Hanging Village's beasts, and the Owl Reeve ----------
+const HP2 = Object.assign({}, EP, { h: '#5a4a3a', H: '#3a2e22', l: '#8a7a68', r: '#ff4a3a', t: '#e8dcc0', z: '#2a2018' });
+const hspr = rows => outline(fromGrid(rows, HP2, 1), OUT);
+// The Great Hound — a beast the length of a cart, low and fast. 32×12. Frames: stand, run1, run2, crouch (tell), pounce, howl, stunned.
+export function bakeGreatHound() {
+  const head = ['.........................hh.....', '........................hHhh....'];
+  const body = ['....hhhhhhhhhhhhhhhhhhhhhhhhhh..', '...hhhhhhhhhhhhhhhhhhhhhhhhhhhh.', '..hhhlhhhhhhhhhhhhhhhhhhhhhrhhht', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhhtt', '.hHhhhhhhhhhhhhhhhhhhhhhhhhhhhh.', '.hHhhhhhhhhhhhhhhhhhhhhhhhhhh...', '..hhhhhhhhhhhhhhhhhhhhhhhhhh....'];
+  const legsA = ['...HHHH...HHHH.......HHHH.HHHH..', '...HHH.....HHH.......HHH...HHH..', '...HHH.....HHH.......HHH...HHH..'];
+  const legsB = ['..HHHH.....HHHH....HHHH....HHHH.', '.HHH.........HHH..HHH........HHH', 'HHH...........HHHHH...........HH'];
+  const legsC = ['......HHHHHHH.......HHHHHHH.....', '.......HHHHH.........HHHHH......', '........HHH...........HHH.......'];
+  const stand = hspr([...head, ...body, ...legsA]);
+  const run1 = hspr([...head, ...body, ...legsB]);
+  const run2 = hspr([...head, ...body, ...legsC]);
+  const crouch = hspr(['................................', '................................', '.........................hh.....', '........................hHhh....', '....hhhhhhhhhhhhhhhhhhhhhhhhhh..', '...hhhhhhhhhhhhhhhhhhhhhhhhhhhh.', '..hhhlhhhhhhhhhhhhhhhhhhhhhrhhht', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhhtt', '.hHhhhhhhhhhhhhhhhhhhhhhhhhhhhh.', 'HHHHHHHH...HHHHH.....HHHHH...HHH', 'HH....HH.....HH.......HH......HH', '................................']);
+  const pounce = hspr(['..................hh............', '.................hHhh...........', '....hhhhhhhhhhhhhhhhhhhhhh......', '...hhhhhhhhhhhhhhhhhhhhhhhhh....', '..hhhlhhhhhhhhhhhhhhhhhhhhhrhht.', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhhtt', '.hHhhhhhhhhhhhhhhhhhhhhhhhhhhh..', 'HHHhhhhhhhhhhhhhhhhhhhhhhhHHH...', 'HH..hhhhhhhhhhhhhhhhhhhhhh..HHH.', '.......................HHH...HH.', '......................HH........', '................................']);
+  const howl = hspr(['.........................hhh....', '........................hhhht...', '.......................hhhhh....', '....hhhhhhhhhhhhhhhhhhhhHrhh....', '...hhhhhhhhhhhhhhhhhhhhhhhh.....', '..hhhlhhhhhhhhhhhhhhhhhhhh......', '..hhhhhhhhhhhhhhhhhhhhhhh.......', '.hHhhhhhhhhhhhhhhhhhhhhh........', '..hhhhhhhhhhhhhhhhhhhh..........', '...HHHH...HHHH....HHHH.HHHH.....', '...HHH.....HHH....HHH...HHH.....', '...HHH.....HHH....HHH...HHH.....']);
+  const stun = hspr(['................................', '................................', '...........HH.HH....HH.HH.......', '.........HHHHHHHHHHHHHHHHH......', '....hhhhhhhhhhhhhhhhhhhhhhhhhh..', '...hhhhhhhhhhhhhhhhhhhhhhhhhhhh.', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhhh.', '..hhhlhhhhhhhhhhhhhhhhhhhhhhrht.', '.hHhhhhhhhhhhhhhhhhhhhhhhhhhhhtt', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhh..', '................................', '................................']);
+  return pack([stand, run1, run2, crouch, pounce, howl, stun], 17, 12, 26, 12);
+}
+// Bough spider — hangs on a thread, drops on you. 12×8. Frames: hang, drop (legs wide).
+export function bakeSpider() {
+  const SP2 = Object.assign({}, EP, { b: '#3a3448', B: '#1b1626', r: '#ff4a3a', l: '#5a5468' });
+  const s = rows => outline(fromGrid(rows, SP2, 1), OUT);
+  const hang = s(['.....bb.....', '..l.bbbb.l..', '.l.bbbbbb.l.', 'l.bbrbbrbb.l', '.lbbbbbbbbl.', 'l..bbbbbb..l', '.l..bbbb..l.', 'l...l..l...l']);
+  const drop = s(['l....bb....l', '.l..bbbb..l.', '..lbbbbbbl..', 'lllbbrbbrlll', '...bbbbbb...', '..l.bbbb.l..', '.l..l..l..l.', 'l..........l']);
+  return pack([hang, drop], 7, 9, 10, 8);
+}
+// Squirrel knight — a red squirrel in a blue tabard, sword on its back, a plume of a tail. 12×11. Frames: run1, run2, leap.
+export function bakeSquirrel() {
+  const QP = Object.assign({}, EP, { q: '#c9463d', Q: '#8f2f28', d: '#3d5aa8', D: '#243a78', y: '#e0b040', s: '#c9d1dc', o: OUT });
+  const q = rows => outline(fromGrid(rows, QP, 1), OUT);
+  const run1 = q(['qq.......q..', 'qq......qqq.', '.qq....qqoq.', '..qqq..qqqq.', '...qqddddq..', '..QqqdydDq..', '..Q.qdddd...', '.Q..qqqq....', '....q..q....', '...qq..qq...', '............']);
+  const run2 = q(['.qq......q..', 'qq......qqq.', 'qq.....qqoq.', '.qqqq..qqqq.', '...qqddddq..', '..QqqdydDq..', '..Q.qdddd...', '.Q..qqqq....', '.....qq.....', '....qqqq....', '............']);
+  const leap = q(['............', 'qqq......q..', '.qqq....qqq.', '..qqqq.qqoq.', '....qqqqqqq.', '....qqddddqq', '...QqqdydDq.', '..Q.qdddd.q.', '.Q..qqqq..q.', '...qq..qq...', '............']);
+  return pack([run1, run2, leap], 7, 12, 10, 10);
+}
+// The Owl Reeve — a great horned owl, wings like sails. 32×20. Frames: perch, wings up, wings down, screech (grounded, beak open), crash (on its back).
+export function bakeOwl() {
+  const OP = Object.assign({}, EP, { h: '#7a5a3a', H: '#4a3620', f: '#e8dcc0', y: '#ffd36b', m: '#c9a83a', w: '#a08060', o: OUT, r: '#c9463d' });
+  const o = rows => outline(fromGrid(rows, OP, 1), OUT);
+  const headP = ['...........hh......hh...........', '..........hhhh....hhhh..........', '..........hhhhhhhhhhhh..........', '..........hffyffhffyff..........', '..........hffoffhffoff..........', '...........hffffmfff............', '............hffmmff.............'];
+  const perch = o([...headP, '...........hhhhhhhhhh...........', '..........hhhhhhhhhhhh..........', '..........hhwwhhhhwwhh..........', '..........hhhhhhhhhhhh..........', '...........hhhhhhhhhh...........', '............hhhhhhhh............', '.............mm..mm.............', '.............mm..mm.............']);
+  const wingsUp = o(['h..............................h', 'hh............................hh', 'hhh...........hh......hh.....hhh', 'hhhh.........hhhh....hhhh...hhhh', 'hhhhh........hhhhhhhhhhhh..hhhhh', '.hhhhh.......hffyffhffyff.hhhhh.', '..hhhhh......hffoffhffoff.hhhh..', '...hhhhh......hffffmfff..hhhh...', '....hhhhhhhhhhhhhhhhhhhhhhhhh...', '.....hhhhhhhhhhhhhhhhhhhhhhh....', '.......hhhhhhhhwwhhwwhhhhh......', '..........hhhhhhhhhhhh..........', '............hhhhhhhh............', '.............mm..mm.............', '................................']);
+  const wingsDown = o(['................................', '..............hh......hh........', '.............hhhh....hhhh.......', '.............hhhhhhhhhhhh.......', '.............hffyffhffyff.......', '.............hffoffhffoff.......', '..............hffffmfff.........', '........hhhhhhhhhhhhhhhhhhhh....', '......hhhhhhhhhhhhhhhhhhhhhhhh..', '....hhhhhhhhhhhhwwhhwwhhhhhhhhhh', '..hhhhh.....hhhhhhhhhhhh....hhhh', 'hhhh..........hhhhhhhh.........h', 'h..............mm..mm...........', '................................', '................................']);
+  const screech = o(['...........hh......hh...........', '..........hhhh....hhhh..........', '.........hhhhhhhhhhhhhh.........', '........hhffyffhffyffhh.........', '.......hhhffoffhffoffhhh........', '......hhhhhffffmfffhhhhh........', '.....hhhhhhhffmrrmffhhhhhh......', '....hhhhhhhhhhmrrmhhhhhhhhh.....', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '..hhhhhhhhhwwhhhhhhwwhhhhhhhhh..', '.hhhh......hhhhhhhhhhh......hhhh', 'hhh.........hhhhhhhhh.........hh', '.............mm..mm.............', '.............mm..mm.............', '................................']);
+  const crash = o(['................................', '................................', '................................', '..............mm..mm............', '.............hhhhhhhh...........', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '.hhhhhhhhhhhhwwhhhhwwhhhhhhhhhh.', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', '.hhhhhhhhhhhffoffhffoffhhhhhhhh.', '...hhhhhhhhhffyffhffyffhhhhhh...', '............hhhhhhhhhhhh........', '.............hhhh..hhhh.........', '..............hh....hh..........', '................................', '................................']);
+  return pack([perch, wingsUp, wingsDown, screech, crash], 17, 16, 24, 14);
+}
