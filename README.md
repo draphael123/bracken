@@ -230,7 +230,13 @@ Three save slots, picked after the title screen (LEFT/RIGHT, Z to play, X twice 
 slot keeps its own levels, medals, purse, skins, swords, upgrades, bestiary and map position. An
 older single save is picked up as slot 1.
 
-## Settings (Esc)
+## Pause and settings (Esc)
+
+In a level, Esc opens a short PAUSE menu: Resume, Back to shrine, Restart level, Return to map,
+the two volume sliders, Settings, Quit to title. The full settings list lives behind Settings, and
+on the title screen (Esc there). The sound test is on the title screen's settings only.
+
+### Settings
 
 Difficulty (easy, normal, hard: damage taken and enemy health scale), a SOUND TEST (every effect,
 music track and ambience bed, grouped, Z to play), music on/off, music

@@ -519,13 +519,17 @@ function startIntro() { state = 'intro'; intro.card = 0; intro.chars = 0; intro.
 function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.length) { intro.chars = line.length; return; } intro.card++; intro.chars = 0; if (intro.card >= INTRO.length) startGame(); }
 
 // ---------- menu ----------
-const MENU = ['- GAME -', 'Difficulty', 'Iron Knight', 'Block', 'Tips', 'Text speed', 'Swap Z / X', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Sound FX', '- VIDEO -', 'Camera', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Ambient life', 'Scanlines', 'Pixel scale', '- LEVEL -', 'Back to shrine', 'Restart level', 'Reset this slot', 'Resume', 'Quit to title'];
+// Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
+const PAUSE_ITEMS = ['Resume', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects volume', 'Settings', 'Quit to title'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Iron Knight', 'Block', 'Tips', 'Text speed', 'Swap Z / X', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Sound FX', '- VIDEO -', 'Camera', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Reset this slot', 'Back'];
+let menuKind = 'pause';
+const menuItems = () => menuKind === 'pause' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
 const isHeader = k => k[0] === '-';
 const MENU_ROWS = 10;
 let menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0;
-function openMenu(from) { menuFrom = from; menuI = 1; state = 'menu'; SFX.menuOpen(); }
+function openMenu(from) { menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
-  const k = MENU[menuI];
+  const k = menuItems()[menuI];
   if (isHeader(k)) return;
   if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
   else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects volume') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
@@ -534,8 +538,11 @@ function menuAdjust(dir) {
   applySettings(); saveSettings(); SFX.ui();
 }
 function menuConfirm() {
-  const k = MENU[menuI];
+  const k = menuItems()[menuI];
   if (k === 'Resume') { state = menuFrom; SFX.menuClose(); }
+  else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
+  else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
+  else if (k === 'Return to map') { setView('normal'); state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.level === levelIndex)); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; music.play('select'); SFX.menuClose(); }
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; SFX.uiSel(); }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play('select'); SFX.uiSel(); }
   else if (k === 'Reset this slot') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
@@ -1749,11 +1756,11 @@ function update(dt) {
   }
   if (state === 'menu') {
     menuMsgT = Math.max(0, menuMsgT - dt);
-    if (upPress) { do { menuI = (menuI + MENU.length - 1) % MENU.length; } while (isHeader(MENU[menuI])); SFX.ui(); }
-    if (downPress) { do { menuI = (menuI + 1) % MENU.length; } while (isHeader(MENU[menuI])); SFX.ui(); }
+    { const M = menuItems(); if (upPress) { do { menuI = (menuI + M.length - 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); }
+    if (downPress) { do { menuI = (menuI + 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); } }
     if (leftPress) menuAdjust(-1); if (rightPress) menuAdjust(1);
     if (confirmPress) menuConfirm();
-    if (pausePress) { state = menuFrom; SFX.menuClose(); }
+    if (pausePress) { if (menuKind === 'settings' && menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
     return;
   }
   if (state === 'intro') {
@@ -2077,18 +2084,19 @@ function drawMenu() {
   g.fillStyle = 'rgba(10,14,12,0.7)'; g.fillRect(0, 0, VW, VH);
   const x = 54, y = 6, w = VW - 108, h = 168;
   panel(x, y, w, h, '#ffd36b');
-  text('SETTINGS', VW / 2, y + 6, '#ffd36b', 'center');
+  text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS', VW / 2, y + 6, '#ffd36b', 'center');
   if (menuFrom === 'play' && L) text(LEVELS[levelIndex].name + '  ' + fmt(levelTime), VW / 2, y + h - 22, '#9aa39a', 'center');
-  const off = Math.max(0, Math.min(MENU.length - MENU_ROWS, menuI - MENU_ROWS + 2));
-  if (off > 0) text('^', x + w - 12, y + 14, '#9aa39a', 'center'); if (off + MENU_ROWS < MENU.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
-  MENU.forEach((k, i) => {
+  const M = menuItems();
+  const off = Math.max(0, Math.min(M.length - MENU_ROWS, menuI - MENU_ROWS + 2));
+  if (off > 0) text('^', x + w - 12, y + 14, '#9aa39a', 'center'); if (off + MENU_ROWS < M.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
+  M.forEach((k, i) => {
     if (i < off || i >= off + MENU_ROWS) return;
     const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : '#fff6e0') : (dim ? '#5a5f5a' : '#9aa39a');
     if (isHeader(k)) { text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     if (sel) text('>', x + 10, yy, '#8fd160');
     text(k, x + 22, yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' ? '' : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects volume' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' ? '' : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects volume' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : '';
     if (v) text('< ' + v + ' >', x + w - 12, yy, col, 'right');
   });
   text(menuMsgT > 0 && menuMsg ? menuMsg : 'ESC close', VW / 2, y + h - 12, menuMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
