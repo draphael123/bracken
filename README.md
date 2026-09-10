@@ -238,8 +238,10 @@ The HUD sits on dark plates: heart and health bar with a number and quarter tick
 timer, coins, the shield's cooldown once you own the throw, and three knight heads under Iron
 Knight. Every level opens on a name banner with a short fanfare. Boss bars carry a skull plate with
 ten ticks. Menus share one framed panel with corner studs, and the pause menu names the level and
-your time. The map is framed like a parchment, every node is labelled, and a compass sits in the
-corner.
+your time. The map is framed like a parchment, every node is labelled, each wood dresses its own corner (reeds
+and a pond, stakes and a tent, mushrooms, autumn trees and a crown), the store's chimney smokes,
+every boss lounges by its node until beaten, the card shows the relic you found there, and a
+compass sits in the corner.
 
 ## Iron Knight
 
@@ -265,7 +267,9 @@ Difficulty (easy, normal, hard: damage taken and enemy health scale), a SOUND TE
 music track and ambience bed, grouped, Z to play), music on/off, music
 volume and effects volume (independent), sound FX files or synth, a Z/X swap for jump and swing,
 screen shake, hit stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets),
-grouped under GAME / AUDIO / VIDEO / LEVEL: block HOLD or TOGGLE, tips (the little words over
+grouped under GAME / AUDIO / VIDEO / SAVE: a CONTROLS page, gamepad rumble, look-down camera on/off,
+HUD full or minimal (the plates hide when nothing is happening), a SCREEN FILTER (warm, cool, sepia,
+night), boss intro bars, health bars over hurt foes, timer tenths, block HOLD or TOGGLE, tips (the little words over
 the action) on/off, intro text speed, REDUCE MOTION (one switch for shake, hit stop, flashes and
 zoom), flashes, vignette, weather, impact FX, CRT scanlines, a pixel-scale cap, CAMERA (close, or wide: the view shows up to twice the world at a
 smaller pixel scale, picked from your display so it never shrinks on screen), IRON KNIGHT, BACK TO SHRINE (counts as a death), RESTART LEVEL, and a reset

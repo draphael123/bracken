@@ -353,6 +353,17 @@ export function bakeMap(w, h, nodes, path, seed) {
   for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5; for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n); px(g, x + (k & 1 ? 1 : -1), y, '#8f6540'); if (k % 3 === 0) px(g, x, y + 1, '#e0d0a0'); } }
   // plank bridge where the path crosses the river
   for (let i = 0; i + 1 < path.length; i++) { const a = path[i], b = path[i + 1]; for (let k = 0; k <= 10; k++) { const x = a[0] + (b[0] - a[0]) * k / 10, y = a[1] + (b[1] - a[1]) * k / 10; for (let j = 0; j + 1 < river.length; j++) { const p = river[j], q = river[j + 1]; const t = Math.max(0, Math.min(1, ((x - p[0]) * (q[0] - p[0]) + (y - p[1]) * (q[1] - p[1])) / ((q[0] - p[0]) ** 2 + (q[1] - p[1]) ** 2))); const rx = p[0] + (q[0] - p[0]) * t, ry = p[1] + (q[1] - p[1]) * t; if (Math.hypot(rx - x, ry - y) < 4) { rect(g, Math.round(rx) - 7, Math.round(ry) - 3, 14, 6, C.wood); rect(g, Math.round(rx) - 7, Math.round(ry) - 3, 14, 1, C.woodL); rect(g, Math.round(rx) - 7, Math.round(ry) + 2, 14, 1, C.woodD); } } } }
+  // each wood dresses its own corner of the map
+  for (const nd of nodes) {
+    const ox = nd.x, oy = nd.y;
+    if (nd.id === 'marsh') { for (let i = 0; i < 9; i++) { const x = ox - 30 + rnd() * 60, y = oy + 8 + rnd() * 14; line(g, x, y, x + (rnd() < 0.5 ? -1 : 1), y - 5 - rnd() * 4, '#5a8a3a', 1); px(g, x, y - 5, '#6b4a2a'); } ellipse(g, ox + 34, oy - 6, 9, 4, '#3b7fae', '#2a5f8a'); }
+    if (nd.id === 'stockade') { for (let i = 0; i < 7; i++) { const x = ox - 22 + i * 7; rect(g, x, oy + 8, 2, 7, '#5c3a1d'); px(g, x, oy + 7, '#8a5a32'); } fillPoly(g, [[ox + 18, oy + 14], [ox + 26, oy + 4], [ox + 34, oy + 14]], '#6b4a2a'); fillPoly(g, [[ox + 26, oy + 4], [ox + 34, oy + 14], [ox + 26, oy + 14]], '#3d2c1a'); px(g, ox - 30, oy + 10, '#ff9a5c'); px(g, ox - 31, oy + 9, '#ffd36b'); }
+    if (nd.id === 'spore') { for (const [dx, dy, r, col] of [[-26, 12, 5, '#c9463d'], [-16, 16, 3, '#9a5aa8'], [24, 10, 6, '#c9463d'], [34, 16, 3, '#4aa0b0'], [8, 18, 3, '#9a5aa8']]) { rect(g, ox + dx - 1, oy + dy, 2, 5, '#e8e0d0'); ellipse(g, ox + dx, oy + dy, r, r * 0.6, col, '#4a2a5a'); px(g, ox + dx - 2, oy + dy - 1, '#fff6e0'); } }
+    if (nd.id === 'kings') { for (let i = 0; i < 6; i++) { const x = ox - 34 + rnd() * 68, y = oy + 6 + rnd() * 16, r = 5 + rnd() * 4; circle(g, x, y, r, ['#a83a2a', '#d9782a', '#e0b040'][(rnd() * 3) | 0], '#7a2a1a'); px(g, (x - r * 0.4) | 0, (y - r * 0.5) | 0, '#f0a040'); } rect(g, ox - 3, oy - 17, 7, 4, '#e0b040'); for (const x of [-3, 0, 3]) px(g, ox + x, oy - 18, '#e0b040'); px(g, ox, oy - 15, '#c9463d'); }
+    if (nd.id === 'wood') { for (let i = 0; i < 6; i++) px(g, (ox - 20 + rnd() * 40) | 0, (oy + 10 + rnd() * 10) | 0, ['#f4d35e', '#e8788a', '#fbf6ea'][(rnd() * 3) | 0]); }
+  }
+  // a parchment vignette so the edges read as the edge of the map
+  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(60,40,20,0)'); vg.addColorStop(1, 'rgba(60,40,20,0.35)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
   // node discs
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,40,20,0.35)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
