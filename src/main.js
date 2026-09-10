@@ -105,6 +105,12 @@ const ABILITIES = [
   { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 25 stamina, 3s', needs: 'kings', needsName: 'Kingswood' },
 ];
 const STORE_TABS = [{ name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'SWORDS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'GEAR', items: UPGRADES, key: null, owned: 'items' }, { name: 'SKILLS', items: ABILITIES, key: 'skill', owned: 'items' }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }];
+let storeMode = 'buy', equipFrom = 'map';
+const EQUIP_TABS = STORE_TABS.filter(t => t.key);
+const storeTabs = () => storeMode === 'equip' ? EQUIP_TABS : STORE_TABS;
+const equipItems = tab => (tab.key === 'skill' || tab.key === 'charm' ? [{ id: 'none', name: 'NONE', desc: tab.key === 'skill' ? 'nothing on F' : 'nothing worn', price: 0 }] : []).concat(tab.items.filter(k => PROG[tab.owned][k.id]));
+const storeItems = tab => storeMode === 'equip' ? equipItems(tab) : tab.items;
+function openEquip(from) { storeMode = 'equip'; equipFrom = from; storeTab = 0; storeI = 0; storeMsgT = 0; state = 'store'; SFX.uiSel(); }
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
@@ -128,7 +134,7 @@ function bakeShieldIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#c9d1d
 const SHIELD_ICON = bakeShieldIcon();
 function bakeSlamIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#7c8797'; g.fillRect(1, 1, 8, 5); g.fillStyle = '#c9d1dc'; g.fillRect(1, 1, 8, 1); g.fillRect(1, 1, 2, 5); g.fillStyle = '#5c3a1d'; g.fillRect(4, 6, 2, 6); g.fillStyle = '#ffd36b'; g.fillRect(0, 10, 2, 1); g.fillRect(8, 10, 2, 1); return outline(c, '#1b1626'); }
 const SLAM_ICON = bakeSlamIcon();
-const skillNow = () => { const k = PROG.skill; if (k && PROG.items[k]) return k; if (PROG.items.shieldThrow) return 'shieldThrow'; if (PROG.items.groundSlam) return 'groundSlam'; return null; };
+const skillNow = () => { const k = PROG.skill; if (k === 'none') return null; if (k && PROG.items[k]) return k; if (PROG.items.shieldThrow) return 'shieldThrow'; if (PROG.items.groundSlam) return 'groundSlam'; return null; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
 const MASTER = bakeMaster(), KING = bakeKing(); SPR.harpy = bakeHarpy(); SPR.goat = bakeGoatRider(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
 // hopper kinds: hop cooldown, hop speed, health, damage
@@ -408,6 +414,7 @@ function updateMap(dt) {
   if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
   if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === 'shop'); selectStart(); } else { selI = nd.level; selectStart(); } }
   if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
+  if (dodgePress && !map.walking) openEquip('map');
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node;
 }
@@ -457,20 +464,20 @@ function drawMap() {
     else { const p = PROG[LEVELS[nd.level].id]; text(p ? fmt(p.best) + '   ' + p.gold + '/' + p.total + (p.cleared ? '   CLEARED' : '') : 'Z  play', cx0 + cw / 2, cy0 + 17, p ? '#dfe8ff' : '#9aa39a', 'center');
       if (p) { let mx = cx0 + 8; if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(mx + 4, cy0 + 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(mx + 3, cy0 + 8, 2, 2); mx += 12; } if (p.allGold) { g.drawImage(PROP.coin[0], mx, cy0 + 5); mx += 12; } if (p.noHit) { g.drawImage(PROP.heart, mx, cy0 + 5); mx += 12; } if (p.relic) { g.drawImage(PROP.relic[p.relic], mx, cy0 + 4); mx += 12; } if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(mx + 1, cy0 + 5, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(mx + 1, cy0 + 11, 7, 2); g.fillStyle = ART.OUT; g.fillRect(mx + 4, cy0 + 6, 1, 6); g.fillRect(mx + 2, cy0 + 8, 5, 1); } } }
   }
-  text('ARROWS walk   Z enter   X bestiary   ESC', VW / 2, VH - 10, '#9aa39a', 'center');
+  text('ARROWS walk  Z enter  X bestiary  V equip  ESC', VW / 2, VH - 10, '#9aa39a', 'center');
 }
 
 // ---------- store ----------
 let storeI = 0, storeMsg = '', storeMsgT = 0, storeTab = 0;
 function updateStore(dt) {
   storeMsgT = Math.max(0, storeMsgT - dt);
-  const tab = STORE_TABS[storeTab], items = tab.items;
-  if (leftPress) { storeTab = (storeTab + STORE_TABS.length - 1) % STORE_TABS.length; storeI = 0; SFX.ui(); }
-  if (rightPress) { storeTab = (storeTab + 1) % STORE_TABS.length; storeI = 0; SFX.ui(); }
-  if (upPress) { storeI = (storeI + items.length - 1) % items.length; SFX.ui(); }
-  if (downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
-  if (confirmPress) {
-    const k = items[storeI], owned = PROG[tab.owned][k.id];
+  const tabs = storeTabs(), tab = tabs[storeTab], items = storeItems(tab);
+  if (leftPress) { storeTab = (storeTab + tabs.length - 1) % tabs.length; storeI = 0; SFX.ui(); }
+  if (rightPress) { storeTab = (storeTab + 1) % tabs.length; storeI = 0; SFX.ui(); }
+  if (items.length && upPress) { storeI = (storeI + items.length - 1) % items.length; SFX.ui(); }
+  if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
+  if (confirmPress && items.length) {
+    const k = items[storeI], owned = k.id === 'none' || PROG[tab.owned][k.id];
     if (owned && tab.key) { PROG[tab.key] = k.id; applySkin(); saveProgress(); SFX.uiSel(); storeMsg = k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) { SFX.buzz(); storeMsg = 'clear ' + k.needsName + ' first'; storeMsgT = 2; }
@@ -478,32 +485,34 @@ function updateStore(dt) {
     else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) PROG[tab.key] = k.id; applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
     else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; }
   }
-  if (pausePress) { if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
+  if (pausePress) { if (storeMode === 'equip') { storeMode = 'buy'; state = equipFrom === 'map' ? 'map' : 'menu'; SFX.ui(); } else if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
 }
 const previewCache = {};
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
 function drawStore() {
-  g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
-  const x = 20, y = 10, w = VW - 40, h = VH - 20;
+  if (storeMode === 'equip' && equipFrom !== 'map') { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); } else { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); }
+  const x = 20, y = 10, w = VW - 40, h = VH - 20; const tabs = storeTabs();
   g.fillStyle = 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-  text('THE STORE', x + 10, y + 7, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], x + w - 58, y + 6); text(String(PROG.coins), x + w - 10, y + 7, '#ffd34a', 'right');
-  STORE_TABS.forEach((t, i) => { const tw = (w - 20) / STORE_TABS.length, tx = x + 10 + i * tw, sel = i === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.7)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, y + 20, tw - 4, 13); text((sel ? '<' : '') + t.name + (sel ? '>' : ''), tx + tw / 2 - 2, y + 23, sel ? '#8fd160' : '#9aa39a', 'center'); });
-  const tab = STORE_TABS[storeTab];
-  const ROWS = 5, off = Math.max(0, Math.min(tab.items.length - ROWS, storeI - ROWS + 2));
-  if (off > 0) text('^', x + w - 12, y + 36, '#9aa39a', 'center'); if (off + ROWS < tab.items.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
-  tab.items.forEach((k, i) => {
+  text(storeMode === 'equip' ? 'EQUIP' : 'THE STORE', x + 10, y + 7, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], x + w - 58, y + 6); text(String(PROG.coins), x + w - 10, y + 7, '#ffd34a', 'right');
+  tabs.forEach((t, i) => { const tw = (w - 20) / tabs.length, tx = x + 10 + i * tw, sel = i === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.7)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, y + 20, tw - 4, 13); text((sel ? '<' : '') + t.name + (sel ? '>' : ''), tx + tw / 2 - 2, y + 23, sel ? '#8fd160' : '#9aa39a', 'center'); });
+  const tab = tabs[storeTab], items = storeItems(tab);
+  const ROWS = 5, off = Math.max(0, Math.min(items.length - ROWS, storeI - ROWS + 2));
+  if (off > 0) text('^', x + w - 12, y + 36, '#9aa39a', 'center'); if (off + ROWS < items.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
+  if (!items.length) text('nothing here yet. the keeper sells these.', x + w / 2, y + 60, '#9aa39a', 'center');
+  items.forEach((k, i) => {
     if (i < off || i >= off + ROWS) return;
-    const yy = y + 42 + (i - off) * 22, sel = i === storeI, owned = !!PROG[tab.owned][k.id], eq = tab.key && PROG[tab.key] === k.id;
+    const yy = y + 42 + (i - off) * 22, sel = i === storeI, owned = k.id === 'none' || !!PROG[tab.owned][k.id], eq = tab.key && (PROG[tab.key] === k.id || (k.id === 'none' && (!PROG[tab.key] || PROG[tab.key] === 'none') && !(tab.key === 'skill' && skillNow())));
     if (sel) { g.fillStyle = 'rgba(60,90,60,0.5)'; g.fillRect(x + 6, yy - 3, w - 12, 20); text('>', x + 10, yy + 3, '#8fd160'); }
     if (tab.key === 'skin') { const kk = preview('skin:' + k.id + ':' + PROG.sword, () => bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal))); g.drawImage(kk.R.idle[0], x + 20, yy - 6); }
     else if (tab.key === 'sword') { const kk = preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal))); g.drawImage(kk.R.atk[1], x + 18, yy - 6); }
+    else if (k.id === 'none') { g.fillStyle = '#5a5f5a'; g.fillRect(x + 30, yy + 2, 6, 6); }
     else g.drawImage(k.id === 'heart' ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt, x + 28, yy + 1);
     const locked = (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
     text(k.name, x + 52, yy + 1, sel ? '#fff6e0' : '#c9d1dc');
     if (k.desc || k.feat) text(locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' to unlock') : (k.desc || 'earned'), x + 52, yy + 11, locked ? '#ff9a5c' : '#9aa39a');
     text(eq ? 'EQUIPPED' : owned ? 'owned' : locked ? 'locked' : k.price === 0 ? 'free' : k.price + ' gold', x + w - 10, yy + 3, eq ? '#8fd160' : owned ? '#9aa39a' : locked ? '#6a6a7a' : (PROG.coins >= k.price ? '#ffd34a' : '#ff6b6b'), 'right');
   });
-  text(storeMsgT > 0 ? storeMsg : 'LEFT/RIGHT tabs   Z buy / equip   ESC back', VW / 2, y + h - 12, storeMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
+  text(storeMsgT > 0 ? storeMsg : storeMode === 'equip' ? 'LEFT/RIGHT tabs   Z equip   ESC back' : 'LEFT/RIGHT tabs   Z buy / equip   ESC back', VW / 2, y + h - 12, storeMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
 }
 
 // ---------- bestiary ----------
@@ -569,7 +578,7 @@ function drawBestiary() {
   g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(px, py, pw, ph); g.strokeStyle = '#8fd160'; g.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
   const set = SPR[b.t]; const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
   if (!seen) g.globalAlpha = 0.25;
-  drawSet(set, null, 0, cxp - (c.width / 2 - set.ax) * sc, cyp + (set.ay - c.height / 2) * sc, 1, !seen, sc, sc);
+  { const nF = set.R.length, fr = seen ? Math.floor(time * (nF > 6 ? 4 : 7)) % nF : 0; const pace = seen ? Math.sin(time * 1.1) * 8 : 0, face = !seen ? 1 : (Math.cos(time * 1.1) >= 0 ? 1 : -1); const bob = seen && (b.t === 'wasp' || b.t === 'drone' || b.t === 'harpy' || b.t === 'queen') ? Math.round(Math.sin(time * 5) * 2) : 0; drawSet(set, null, fr, cxp + pace - (c.width / 2 - set.ax) * sc, cyp + bob + (set.ay - c.height / 2) * sc, face, !seen, sc, sc); }
   g.globalAlpha = 1;
   const fit = t => t.length * 8 > pw - 66 ? 6 : 8;
   text(seen ? b.name : 'UNKNOWN', px + 62, py + 10, '#ffd36b', 'left', fit(seen ? b.name : 'UNKNOWN'));
@@ -591,7 +600,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects volume', 'Settings', 'Quit to title'];
+const PAUSE_ITEMS = ['Resume', 'Equip', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects volume', 'Settings', 'Quit to title'];
 const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Iron Knight', 'Block', 'Tips', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Screen filter', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Reset this slot', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night'];
 let menuKind = 'pause';
@@ -618,6 +627,7 @@ function menuConfirm() {
   if (k === 'Resume') { state = menuFrom; SFX.menuClose(); }
   else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
+  else if (k === 'Equip') { openEquip('menu'); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.level === levelIndex)); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; music.play('select'); SFX.menuClose(); }
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; SFX.uiSel(); }
   else if (k === 'Controls') { state = 'controls'; SFX.uiSel(); }
@@ -815,6 +825,12 @@ function spawnCorpse(e, dir) {
     case 'harpy': Object.assign(c, { vx: dir * 40, vy: -60, spin: dir * 8, life: 1.0, max: 1.0, grav: 500 }); SFX.screech(); break;
     case 'goat': Object.assign(c, { vx: dir * 60, vy: -140, spin: dir * 6, life: 1.0, max: 1.0 }); SFX.goatCry(); break;
     case 'ram': Object.assign(c, { vx: -dir * 10, vy: -100, spin: dir * 0.6, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.bellow(); SFX.roar(); break;
+    case 'thief': Object.assign(c, { vx: dir * 100, vy: -170, spin: dir * 16, life: 1.0, max: 1.0 }); SFX.gobDie(); break;
+    case 'bearer': Object.assign(c, { vx: dir * 80, vy: -160, spin: dir * 12, life: 0.9, max: 0.9 }); SFX.gobDie(); break;
+    case 'pike': Object.assign(c, { vx: dir * 40, vy: -70, spin: 0, life: 1.1, max: 1.1, tip: true }); SFX.gobDie(); SFX.clank(); break;
+    case 'folk': Object.assign(c, { vx: dir * 40, vy: -110, spin: dir * 6, life: 0.8, max: 0.8 }); break;
+    case 'master': c.t = e.mounted ? 'master' : 'masterFoot'; Object.assign(c, { vx: -dir * 20, vy: -140, spin: dir * 3, life: 1.5, max: 1.5, grav: 600 }); SFX.gobDieLow(); SFX.yelp(); break;
+    case 'king': c.t = 'kingUp'; Object.assign(c, { vx: -dir * 10, vy: -110, spin: dir * 0.7, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.gobDieLow(); SFX.roar(); break;
     case 'hound': Object.assign(c, { vx: dir * 60, vy: -120, spin: dir * 6, life: 0.9, max: 0.9 }); SFX.yelp(); break;
     case 'brute': Object.assign(c, { vx: dir * 30, vy: -80, spin: 0, life: 1.2, max: 1.2, tip: true }); SFX.gobDieLow(); break;
     case 'chief': Object.assign(c, { vx: -dir * 10, vy: -100, spin: dir * 0.6, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.gobDieLow(); SFX.roar(); break;
@@ -1914,7 +1930,7 @@ function updateProps(dt) {
     if (pr.t === 'relic' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 10 && Math.abs(pr.y - 6 - (P.y - 8)) < 14) { pr.got = true; P.relic = pr.kind; const R = RELICS[pr.kind]; { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].relic = pr.kind; saveProgress(); } number(pr.x, pr.y - 26, R.name, R.col); number(pr.x, pr.y - 16, R.desc, '#fff6e0'); SFX.sting(); SFX.medal(); burst(pr.x, pr.y - 8, 18, [R.col, '#fff6e0'], 60, 0.8, -30, 1); ringAt(pr.x, pr.y - 8, 24, R.col, 0.4); slowT = 0.5; }
     if (pr.t === 'bell' && !pr.broken) { if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 12, P.face, 5); pr.swing = 0.5; if (pr.hp <= 0) { pr.broken = true; SFX.crack(); burst(pr.x, pr.y - 12, 10, ['#e0b040', '#b8842a'], 70, 0.6); number(pr.x, pr.y - 30, 'SILENCED', '#8fd160'); } } if (pr.swing > 0) pr.swing -= dt; if (pr.ringT > 0 && !pr.rung && !enemies.some(e => e.alive && e.ringer && Math.abs(e.x - pr.x) < 10)) pr.ringT = Math.max(0, pr.ringT - dt); }
     if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt; if (pr.timer < 0.6 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every + Math.random() * 0.8; rocks.push({ x: pr.x + (Math.random() - 0.5) * 8, y: pr.y, vy: 0, t: 0, dead: false }); SFX.stone(); } }
-    if (pr.t === 'npc' && pr.kind === 'keeper' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) { state = 'store'; storeI = 0; SFX.uiSel(); SFX.menuOpen && SFX.menuOpen(); }
+    if (pr.t === 'npc' && pr.kind === 'keeper' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) { storeMode = 'buy'; state = 'store'; storeI = 0; SFX.uiSel(); SFX.menuOpen && SFX.menuOpen(); }
     if (pr.t === 'exit' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 14) { state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.kind === 'store')); map.seg = NODE_AT[map.node]; map.t = 0; setView('normal'); SFX.uiSel(); music.play('select'); }
     if (pr.t === 'stray' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 12 && Math.abs(pr.y - P.y) < 16) { pr.got = true; straysGot.add(pr.x); strayLast = { x: pr.x, y: pr.y }; SFX.bleat(); burst(pr.x, pr.y - 4, 8, ['#e8e0d0', '#fff6c8'], 50, 0.5); number(pr.x, pr.y - 18, 'EWE ' + straysGot.size + '/' + (L.strays || 3), '#ffe6a0'); if (straysGot.size >= (L.strays || 3)) { number(pr.x, pr.y - 30, 'THE FLOCK IS WHOLE', '#ffd36b'); SFX.medal(); props.push({ t: 'relic', x: pr.x, y: pr.y, kind: 'fleece', got: false, ph: 0 }); for (let i = 0; i < 5; i++) acorns.push({ x: pr.x + (i - 2) * 6, y: pr.y - 10, got: false, ph: Math.random() * 6, crate: 'stray' + i, vy: -110 - Math.random() * 60 }); } }
     if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }

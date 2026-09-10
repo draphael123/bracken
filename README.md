@@ -289,6 +289,15 @@ less damage taken), FEATHER (a little more jump), HEART (every kill heals 5), SW
 More scenery everywhere: beehives, birdhouses and lantern posts in the woods, fish traps on the marsh
 banks, spear racks, barrel stacks and bones in the camp, carts and fences on the crags.
 
+
+## Equip
+
+The store sells; EQUIP is where you choose. Press V on the map, or pick Equip from the pause menu,
+(the V key) for a screen with four tabs: SKINS, SWORDS, SKILLS (the spells on F, or NONE), and CHARMS (worn one at
+a time, or NONE). It only lists what you own. The bestiary plates are alive now: every beast paces and
+animates on its plate, and every foe has its own death: thieves and bearers tumble, pikemen topple with
+their pikes, the Hound Master falls from the saddle, the King goes down standing.
+
 ## Skills
 
 The store's SKILLS tab opens once the Stockade is cleared (the results card and the map point you
