@@ -903,3 +903,13 @@ export function bakeSail() { const [c, g] = canvas(10, 46); rect(g, 4, 0, 2, 46,
 export function bakeFoldGate() { const [c, g] = canvas(24, 22); rect(g, 0, 2, 4, 20, '#7c8797'); rect(g, 20, 2, 4, 20, '#7c8797'); rect(g, 0, 2, 4, 1, '#9aa3b0'); rect(g, 20, 2, 4, 1, '#9aa3b0'); for (let y = 6; y < 20; y += 4) rect(g, 4, y, 16, 2, '#8a5a32'); rect(g, 11, 4, 2, 16, '#5c3a1d'); return outline(c, OUT); }
 // A fleece for the relic set.
 export function bakeFleeceIcon() { const [c, g] = canvas(10, 12); ellipse(g, 5, 6, 4.5, 4, '#ffe6a0', '#c9a83a'); for (const [x, y] of [[2, 4], [5, 3], [8, 5], [4, 8], [7, 8]]) px(g, x, y, '#fff6c8'); px(g, 5, 6, '#e0b040'); return outline(c, OUT); }
+
+// ---------- scenery pass ----------
+// A fallen log with a broken end and moss, 30×10.
+export function bakeFallenLog(seed) { const rnd = mulberry(seed); const [c, g] = canvas(30, 10); rect(g, 0, 2, 28, 7, C.wood); rect(g, 0, 2, 28, 1, C.woodL); rect(g, 0, 7, 28, 2, C.woodD); fillPoly(g, [[27, 2], [30, 4], [29, 7], [27, 9]], C.woodD); for (let i = 0; i < 6; i++) rect(g, 2 + ((rnd() * 22) | 0), 3 + ((rnd() * 4) | 0), 3, 1, C.woodD); for (let i = 0; i < 4; i++) px(g, 1 + ((rnd() * 24) | 0), 1 + ((rnd() * 2) | 0), '#5aa33e'); rect(g, 3, 0, 4, 2, '#2f5e3a'); return outline(c, OUT); }
+// A stretch of wooden fence, 32×12.
+export function bakeFence(seed) { const rnd = mulberry(seed); const [c, g] = canvas(32, 12); for (const x of [1, 15, 29]) { rect(g, x, 0, 2, 12, C.wood); px(g, x, 0, C.woodL); } rect(g, 0, 3, 32, 2, C.woodL); rect(g, 0, 7, 32, 2, C.wood); for (let i = 0; i < 3; i++) px(g, (rnd() * 32) | 0, 3 + ((rnd() * 6) | 0), C.woodD); return outline(c, OUT); }
+// A hand cart with a load, 24×16.
+export function bakeCart(seed) { const rnd = mulberry(seed); const [c, g] = canvas(24, 16); rect(g, 2, 4, 18, 7, C.wood); rect(g, 2, 4, 18, 1, C.woodL); rect(g, 19, 8, 5, 1, C.woodD); for (let i = 0; i < 5; i++) ellipse(g, 5 + i * 3, 3 - ((rnd() * 2) | 0), 2, 2, rnd() < 0.5 ? '#c9b27c' : '#8a5a32'); circle(g, 7, 12, 3, '#3a2618', '#5c3a1d'); circle(g, 16, 12, 3, '#3a2618', '#5c3a1d'); px(g, 7, 12, C.woodL); px(g, 16, 12, C.woodL); return outline(c, OUT); }
+// A stone well with a roof, 20×24.
+export function bakeWell() { const [c, g] = canvas(20, 24); rect(g, 3, 14, 14, 10, '#6a707c'); for (let y = 14; y < 24; y += 3) for (let x = 3; x < 17; x += 5) rect(g, x + ((y / 3) % 2 ? 2 : 0), y, 4, 2, '#7c8797'); rect(g, 5, 16, 10, 3, '#1b1626'); rect(g, 2, 4, 2, 12, C.wood); rect(g, 16, 4, 2, 12, C.wood); fillPoly(g, [[0, 6], [10, 0], [20, 6]], C.woodD); fillPoly(g, [[2, 6], [10, 2], [18, 6]], C.wood); rect(g, 9, 6, 2, 8, '#5a6270'); rect(g, 8, 10, 4, 3, '#8a5a32'); return outline(c, OUT); }
