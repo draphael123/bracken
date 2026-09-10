@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -666,7 +666,7 @@ function kingswood() {
   // ---- 1. The rust wood: goblins live here. Townsfolk bolt for their doors. ----
   floor(0, 44, 20);
   ent('sign', 4, 19, { text: 'THE GOBLINS LIVE HERE. YOU ARE NOT WELCOME.' }); ent('npc', 9, 19, { kind: 'squire' });
-  ent('sign', 313, 13, { text: 'KING GORM. WHILE THE CROWN SHIMMERS HE TURNS EVERY BLADE. CLIMB THE SCAFFOLD AND TREAD A PLATE WHEN HE PASSES UNDER ITS CAGE: IT HOLDS HIM, AND FOR A WHILE AFTER HIS HEAD IS UP AND HE BLEEDS LIKE ANY MAN. A CAGE THAT MISSES HIM WAS NOT EMPTY. HE THROWS WHAT HE CAN REACH WHILE YOU CLIMB. THE PITS BURN. WHEN HE RAGES, THE ROOF FALLS WHERE HE STEPS.' });
+  ent('sign', 313, 13, { text: 'KING GORM. WHILE THE CROWN SHIMMERS HE TURNS EVERY BLADE. CLIMB THE SCAFFOLD AND TREAD A PLATE WHEN HE PASSES UNDER ITS CAGE: IT HOLDS HIM, AND FOR A WHILE AFTER HIS HEAD IS UP AND HE BLEEDS LIKE ANY MAN. A CAGE THAT MISSES HIM WAS NOT EMPTY. HE THROWS WHAT HE CAN REACH WHILE YOU CLIMB, AND THE LITTER CHARGES: JUMP IT OR CLIMB. THE PITS BURN. WHEN HE RAGES HE CALLS THE COURT DOWN ON YOU.' });
   ent('door', 12, 19, { at: 12 }); ent('folk', 9, 19, { door: 12 }); ent('folk', 17, 19, { door: 12, alt: true }); ent('deco', 20, 19, { kind: 'well' });
   ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]);
   ent('sign', 29, 19, { text: 'THE THIEVES OF THE COURT SNATCH GOLD FROM YOUR PURSE AND RUN. CATCH ONE AND IT PAYS BACK WITH INTEREST.' });
@@ -1084,96 +1084,92 @@ function hangingVillage() {
 
 // ---------- LEVEL 8: THE MINEWORKS ----------
 // Under the Hanging Village. Three galleries step down through the rock on rails and an ore lift, to the forge at the bottom.
-function theMineworks() {
-  const W = 310, H = 56; const L = painter(W, H);
+function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crystal cavern. Bright halls, beams you aim, one great ride, and the thing that grew in the heart.
+  const W = 240, H = 40; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const carve = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); };
   const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
   const soft = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOFT); };
-  const shelf = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.SHELF); };
+  const ice = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.ICE); };
+  const web = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.WEB); };
   const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  const gateCol = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
   block(0, W - 1, 0, H - 1);
   const interiors = [], pools = [];
   const gallery = (x0, x1, y0, y1) => { carve(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, 'stone']); };
+  const lamps = (y, ...xs) => { for (const x of xs) ent('minerlamp', x, y); };
 
-  // ---- Gallery A. The miners' camp, then the first rails, stepping down the grade to the ore lift. Lit: lamps every few tiles. ----
-  gallery(2, 127, 10, 19); gallery(64, 127, 20, 22); gallery(88, 127, 23, 25);
-  for (const x of [14, 40, 52, 68, 80, 92, 104, 116]) ent('deco', x, 19, { kind: 'timber', v: 0 });
-  for (const x of [12, 30, 42, 54, 70, 88, 106, 122]) ent('deco', x, 36, { kind: 'timber', v: 1 });
-  for (const x of [16, 28, 44, 58, 70, 84, 98, 114, 132, 148, 164, 180, 196, 212, 228, 244]) ent('deco', x, 51, { kind: 'timber', v: 0 });
-  ent('npc', 7, 19, { kind: 'squire' }); ent('sign', 4, 19, { text: 'THE MINEWORKS. THE FOREMAN LOST THREE CANARIES. THE CARTS ROLL WHEN YOU RIDE THEM. THE TORCHES IN THE BRACKETS BURN A WHILE: TAKE ONE. THE GRUBS GLOW. DO NOT TOUCH THEM.' });
-  ent('npc', 10, 19, { kind: 'foreman' }); ent('door', 18, 19, { kind: 'cottage', at: 18 }); ent('folk', 15, 19, { door: 18, alt: true }); ent('door', 30, 19, { kind: 'cottage', at: 30 }); ent('folk', 33, 19, { door: 30, alt: true });
-  for (const x of [8, 20, 32, 46, 58, 70, 84, 98, 114]) ent('minerlamp', x, 10); for (const x of [68, 78, 96, 110]) ent('minerlamp', x, 22 + (x >= 88 ? 3 : 0));
-  ent('torchbracket', 26, 19);
-  ent('deco', 24, 19, { kind: 'cart' }); ent('deco', 36, 19, { kind: 'barrels' });
-  rail(40, 60, 20); ent('cart', 42, 19); ent('sign', 38, 19, { text: 'JUMP IN. THE CART ROLLS WITH THE GRADE AND FLIES THE BROKEN RAILS. JUMP AS IT LEAVES THE RAIL AND YOU CLEAR THE GAP TOGETHER. IT SMASHES WHAT IT HITS. CUT A STANDING CART AND IT ROLLS WITHOUT YOU.' });
-  rail(64, 84, 23); rail(88, 121, 26); set(100, 25, T.CRATE); set(100, 24, T.CRATE);
-  ent('miner', 72, 22, { face: -1 }); ent('grub', 96, 25, { face: -1 }); ent('sprig', 54, 19, { face: -1 }); ent('rockgoblin', 108, 25, { face: -1 });
-  soft(117, 117, 17, 19); gallery(118, 121, 16, 19); for (let x = 118; x <= 121; x++) set(x, 20, T.SOLID); ent('stray', 120, 19, { kind: 'canary' }); ent('miner', 119, 19, { face: -1 }); // the first canary, in a pocket with its own floor
-  ent('bat', 80, 12); ent('bat', 106, 15); ent('torchbracket', 90, 25);
-  coins([44, 17], [50, 17], [56, 17], [66, 21], [74, 21], [82, 21], [92, 24], [106, 24], [112, 24]);
-  ent('check', 62, 19); ent('check', 86, 22);
-  // the ore lift: the pan goes down while a cart sits on it
-  gallery(122, 125, 26, 36); ent('orelift', 124, 26, { to: 37 }); plat(122, 29, 2); ent('silver', 123, 28); ent('sign', 112, 25, { text: 'THE ORE LIFT. IT SINKS UNDER A LOADED CART. RIDE YOURS ONTO THE PAN.' });
+  // ---- 1. THE GATEHOUSE: the built mine. Timber, lamps, the foreman, and the first sight of crystal. ----
+  gallery(2, 40, 8, 19);
+  for (const x of [10, 24, 36]) ent('deco', x, 19, { kind: 'timber', v: 0 });
+  lamps(8, 6, 16, 26, 36); lamps(19, 12, 30);
+  ent('npc', 7, 19, { kind: 'squire' }); ent('sign', 4, 19, { text: 'THE GLASSWORKS. THE GOBLINS DUG FOR ORE AND BROKE INTO LIGHT. THE CRYSTALS THROW BEAMS. STRIKE A MIRROR TO TURN ONE. A BEAM BURNS WEB, MELTS ICE, AND OPENS THE DOORS THE MINERS SEALED.' });
+  ent('npc', 13, 19, { kind: 'foreman' }); ent('door', 20, 19, { kind: 'cottage', at: 20 }); ent('folk', 17, 19, { door: 20, alt: true });
+  ent('deco', 24, 19, { kind: 'cart' }); ent('deco', 33, 19, { kind: 'barrels' }); ent('torchbracket', 30, 19);
+  ent('miner', 28, 19, { face: -1 }); coins([9, 17], [15, 16], [22, 17], [34, 17]);
+  ent('check', 38, 19);
 
-  // ---- Gallery B. Back the other way: a low beam over the rail, THE GAS CHAMBER, the collapse into the flooded sump, bats in the dark ----
-  gallery(2, 127, 28, 36);
-  for (const x of [6, 22, 40, 56, 72, 88, 104, 118]) ent('minerlamp', x, 28);
-  rail(60, 118, 37); ent('cart', 110, 36, { dir: -1 }); ent('gas', 96, 36, { period: 7, phase: 0 }); ent('gas', 76, 36, { period: 7, phase: 3.5 });
-  ent('beam', 88, 36); ent('sign', 114, 36, { text: 'A LOW BEAM OVER THE RAIL. HOLD DOWN IN THE CART TO DUCK IT. A STANDING HEAD IS TAKEN OFF THE CART. ON FOOT YOU WALK UNDER IT.' });
-  ent('sign', 106, 36, { text: 'GAS FROM HERE TO THE FAR TIMBERS. A SPARK LIGHTS THE WHOLE GALLERY. NO STEEL, NO FIRE. DODGE, BLOCK, DUCK, AND KEEP GOING. THE GOBLINS DO NOT KNOW BETTER.' });
-  ent('bat', 90, 30); ent('bat', 70, 31); ent('rockgoblin', 84, 36, { face: 1 }); ent('rockgoblin', 66, 36, { face: 1 });
-  ent('check', 120, 36); ent('sign', 58, 36, { text: 'CLEAR OF THE GAS. THE TIMBERS PAST HERE ARE ROTTEN. RUN.' });
-  shelf(36, 37, 21); gallery(35, 59, 38, 40); ladder(35, 35, 37, 40); set(35, 37, T.NET); ladder(59, 59, 37, 40); set(59, 37, T.NET); ent('stray', 57, 40, { kind: 'canary' }); ent('silver', 38, 40); ent('minerlamp', 47, 38, { lit: false }); ent('minerlamp', 40, 38); ent('minerlamp', 54, 38); // the collapse: the floor snaps, you land in the sump with the second canary; rope ladders out at both ends
-  pools.push({ x0: 36 * TS, x1: 59 * TS, y: 40 * TS + 4, shallow: true, depth: 12 }); // THE SUMP: knee-deep, black, and a torch goes out in it
-  rail(12, 32, 37); ent('cart', 30, 36, { dir: -1 }); ent('gas', 20, 36, { period: 6, phase: 1 }); ent('bat', 26, 30); ent('torchbracket', 56, 36); ent('grub', 16, 36, { face: 1 });
-  coins([70, 35], [86, 35], [102, 35], [40, 35], [50, 35], [16, 35], [24, 35]);
-  ent('check', 12, 36);
-  // the shaft to the deep gallery: a cage that sinks while you stand in it
-  gallery(6, 9, 37, 51); ent('cagelift', 8, 37, { to: 51 }); ent('sign', 10, 36, { text: 'THE CAGE SINKS WHILE YOU STAND IN IT. IT COMES BACK UP EMPTY.' });
+  // ---- 2. THE FIRST LENS: one crystal, two mirrors, a web and a sealed door. Aim to burn, aim to open. ----
+  gallery(40, 82, 8, 19); for (const x of [46, 62, 78]) ent('deco', x, 19, { kind: 'timber', v: 1 }); lamps(8, 48, 66); lamps(19, 52, 72);
+  plat(43, 11, 3); ent('crystal', 44, 10, { dir: [0, 1] }); ent('mirror', 44, 19, { o: 0 });
+  web(70, 71, 16, 19); ent('spider', 68, 9, { drop: 100 });
+  plat(75, 11, 3); ent('receiver', 76, 10, { gate: 80 }); ent('mirror', 76, 19, { o: 1 });
+  gateCol(80, 15, 19); ent('sign', 62, 19, { text: 'THE MIRRORS TURN WHEN YOU STRIKE THEM. SEND THE BEAM THROUGH THE WEB, THEN UP TO THE LENS OVER THE DOOR.' });
+  ent('miner', 56, 19, { face: -1 }); coins([50, 17], [58, 17], [64, 17], [73, 14]);
+  ent('check', 81, 19);
 
-  // ---- Gallery C. The deep gallery: the one truly dark stretch. Cold lamps, grubs for light, rails east ----
-  gallery(2, 300, 42, 51);
-  ent('minerlamp', 20, 42); for (const x of [40, 60, 80, 100]) ent('minerlamp', x, 51, { lit: false }); // the deep gallery's lamps have gone cold: strike one alight and the bats hunt it, not you
-  rail(12, 246, 52); ent('cart', 14, 51); soft(108, 109, 47, 51); ent('sign', 10, 51, { text: 'DARK. THE BATS HUNT LIGHT. STRIKE A COLD LAMP ALIGHT AND THEY HUNT THAT INSTEAD. OR CARRY A TORCH, AND THEY HUNT YOU. THE GRUBS LIGHT THEIR OWN WAY.' });
-  ent('bat', 30, 44); ent('bat', 50, 45); ent('bat', 75, 44); ent('miner', 40, 51, { face: -1 }); ent('miner', 86, 51, { face: -1 }); ent('grub', 30, 51, { face: 1 }); ent('grub', 70, 51, { face: -1 });
-  ent('gas', 55, 51, { period: 7, phase: 2 }); ent('gas', 80, 51, { period: 7, phase: 5 });
-  plat(90, 48, 3); ent('stray', 91, 47, { kind: 'canary' }); coins([22, 50], [36, 50], [48, 50], [64, 50], [72, 50], [96, 50]);
-  ent('check', 104, 51); ent('torchbracket', 106, 51);
+  // ---- 3. THE ICE GALLERY: the cavern proper. Ice walls the beam melts, spiders on threads, and a ladder down into the old workings. ----
+  gallery(82, 136, 8, 19); for (const x of [90, 106, 122]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(8, 88, 104, 120, 132); lamps(19, 96, 116);
+  plat(85, 11, 3); ent('crystal', 86, 10, { dir: [0, 1] }); ent('mirror', 86, 19, { o: 0 });
+  ice(100, 101, 16, 19); ent('mirror', 110, 19, { o: 0 }); ice(120, 121, 16, 19);
+  plat(127, 11, 3); ent('receiver', 128, 10, { gate: 134 }); ent('mirror', 128, 19, { o: 1 });
+  gateCol(134, 15, 19);
+  ent('spider', 94, 9, { drop: 100 }); ent('spider', 114, 9, { drop: 100 }); ent('grub', 106, 19, { face: -1 }); ent('rockgoblin', 124, 19, { face: -1 });
+  ent('sign', 84, 19, { text: 'THE ICE GALLERY. THE BEAM MELTS THE ICE IN A BREATH OR TWO. THREE MIRRORS. THE LADDER GOES DOWN TO THE OLD WORKINGS: DARK, AND WORTH IT.' });
+  coins([92, 17], [98, 14], [108, 17], [118, 14], [126, 17]);
+  gallery(92, 93, 20, 21); ladder(92, 93, 20, 21); // the way down
+  ent('check', 133, 19);
 
-  // ---- Gallery D. THE LONG HAUL: one rail, a long way, everything on it wants a rider, and the flood comes behind you ----
-  ent('sign', 112, 51, { text: 'THE LONG HAUL. THE CART IS FASTER THAN YOUR FEET AND IT DOES NOT STOP. HOLD DOWN TO DUCK THE BEAMS. JUMP THE FIRE AND LAND BACK IN THE TUB. THE PRESSES DROP ON A COUNT. THE ROTTEN RAIL HOLDS A TUB, NOT A STANDING WEIGHT.' });
-  for (const x of [128, 144, 160, 176, 192, 208, 224, 240]) ent('minerlamp', x, 42); for (const x of [124, 156, 188, 220]) ent('minerlamp', x, 51, { lit: false });
-  ent('beam', 130, 51); ent('beam', 166, 51); ent('beam', 202, 51); ent('beam', 240, 51);
-  ent('crusher', 146, 51, { every: 3.4, phase: 0 }); ent('crusher', 182, 51, { every: 3.0, phase: 1.2 }); ent('crusher', 226, 51, { every: 2.8, phase: 2 });
-  ent('firevent', 138, 51, { every: 2.6 }); ent('firevent', 176, 51, { every: 2.2 }); ent('firevent', 212, 51, { every: 2.4 }); ent('firevent', 232, 51, { every: 2.0 });
-  carve(158, 159, 53, 54); for (let x = 158; x <= 159; x++) { set(x, 52, T.SHELF); set(x, 55, T.SPIKE); } // the rotten rail: a tub crosses it, a standing weight snaps it and drops onto the spikes
-  soft(198, 199, 47, 51); ent('miner', 168, 51, { face: -1 }); ent('miner', 216, 51, { face: -1 }); ent('spider', 150, 42, { drop: 110 }); ent('spider', 206, 42, { drop: 110 });
-  ent('bat', 194, 45); ent('bat', 230, 44);
-  plat(208, 46, 3); ent('silver', 209, 45); plat(190, 47, 2); coins([120, 50], [134, 50], [152, 50], [164, 50], [178, 50], [191, 46], [200, 50], [214, 50], [228, 50], [244, 50]);
-  ent('check', 114, 51); ent('check', 184, 51); ent('torchbracket', 186, 51);
-  ent('sign', 180, 51, { text: 'HALFWAY. THE PRESSES AHEAD DROP FASTER. A TORCH FROM THE BRACKET LIGHTS THE WAY, AND THE BATS.' });
+  // ---- 3b. THE OLD WORKINGS: the one dark room. A torch at the foot of the ladder, cold lamps, bats, and the lamp the foreman lost. ----
+  gallery(84, 120, 22, 30); for (const x of [98, 112]) ent('deco', x, 30, { kind: 'timber', v: 1 });
+  ladder(92, 93, 22, 30); ent('torchbracket', 88, 30); ent('minerlamp', 100, 30, { lit: false }); ent('minerlamp', 108, 30, { lit: false });
+  ent('bat', 96, 24); ent('bat', 104, 25); ent('bat', 114, 24);
+  plat(109, 26, 3); ent('crystal', 110, 25, { dir: [0, 1] }); ent('mirror', 110, 30, { o: 0 }); web(114, 115, 27, 30);
+  ent('silver', 118, 30); ent('relic', 116, 30, { kind: 'lamp' }); coins([96, 28], [102, 28], [106, 28]);
+  ent('sign', 86, 30, { text: 'THE OLD WORKINGS. TAKE THE TORCH. THE BATS HUNT WHATEVER IS LIT. A CRYSTAL AT THE FAR END, AND A WEB BETWEEN YOU AND THE MINER\'S LAMP.' });
 
-  // ---- The Forge. THE FORGEMASTER. A gantry over the floor, a beam rail above, two tubs below, the anvil, the hammer, the boiler. ----
-  rail(252, 298, 52); ent('cart', 298, 51, { auto: true, dir: -1, speed: 120 }); ent('cart', 254, 51);
-  for (let x = 262; x <= 292; x++) set(x, 47, T.RAIL); ent('cart', 292, 46, { auto: true, dir: -1, speed: 110 }); // the beam rail: a tub runs it high; cut it off the end and it falls on whatever is below
-  plat(256, 49, 3); plat(260, 44, 3); plat(266, 42, 3); plat(272, 40, 4); plat(278, 42, 3); plat(284, 44, 3); plat(288, 49, 3); // the gantry over the beam
-  for (const x of [254, 268, 282, 296]) ent('minerlamp', x, 51); for (const x of [258, 272, 286]) ent('minerlamp', x, 42); for (const x of [264, 280]) ent('minerlamp', x, 46);
-  ent('hammer', 264, 51); ent('anvil', 270, 51); ent('boiler', 284, 51); ent('hotplate', 260, 51); ent('hotplate', 276, 51); ent('hotplate', 292, 51);
-  plat(296, 46, 3); ent('silver', 297, 45);
-  ent('deco', 258, 51, { kind: 'barrels' }); ent('torchbracket', 250, 51);
-  ent('forgemaster', 276, 51);
-  ent('sign', 246, 51, { text: 'THE FORGE. HIS IRON TURNS HALF OF EVERY CUT. A CART INTO HIM STUNS HIM AND THEN HE TAKES IT ALL: CUT A STANDING TUB TO SEND IT, RIDE ONE AT HIM, OR CUT THE BEAM TUB OFF ITS RAIL ONTO HIS HEAD. HE DRAGS TUBS TO HIMSELF AND HURLS THEM. HE RINGS THE ANVIL AND HAMMERS FALL. THE PLATES GLOW BEFORE THEY BURN.' });
+  // ---- 4. THE GAS POCKET: no sparks. A goblin who does not know that. ----
+  gallery(136, 156, 8, 19); lamps(8, 140, 152);
+  ent('sign', 137, 19, { text: 'GAS. A SPARK LIGHTS THE POCKET. NO STEEL, NO FIRE, NO TORCH. DODGE AND BLOCK AND KEEP GOING.' });
+  ent('gas', 142, 19, { period: 7, phase: 0 }); ent('gas', 150, 19, { period: 7, phase: 3.5 }); ent('rockgoblin', 148, 19, { face: -1 }); ent('miner', 144, 19, { face: 1 });
+  coins([140, 17], [146, 17], [153, 17]);
+
+  // ---- 5. THE GREAT RIDE: one rail, four steps down, the tub flies every gap. Beams to duck, crystal off the roof, a wall to smash at the end. ----
+  gallery(156, 220, 8, 31); lamps(8, 160, 176, 192, 208, 216);
+  ent('check', 158, 19); ent('sign', 157, 19, { text: 'THE GREAT RIDE. JUMP IN. THE RAIL STEPS DOWN FOUR TIMES AND THE TUB TAKES EVERY DROP. HOLD DOWN FOR THE BEAMS. THE ROOF SHEDS CRYSTAL WHERE THE LAMPS FLICKER. IT ENDS THROUGH THE WALL.' });
+  block(156, 172, 20, 31); rail(158, 172, 20); ent('cart', 160, 19);
+  block(173, 188, 22, 31); rail(173, 188, 22); block(189, 204, 24, 31); rail(189, 204, 24); block(205, 218, 26, 31); rail(205, 218, 26); // four clean steps down: the tub drops onto each rail
+  ent('beam', 180, 21); ent('beam', 210, 25); ent('rockfall', 166, 9, { every: 2.2 }); ent('rockfall', 196, 9, { every: 2.4 }); ent('rockfall', 214, 9, { every: 2.6 });
+  soft(219, 220, 22, 26); ent('bat', 184, 14); ent('bat', 200, 16);
+  coins([164, 17], [170, 16], [173, 15], [178, 19], [186, 19], [189, 17], [196, 21], [203, 21], [205, 19], [212, 23], [217, 23]);
+
+  // ---- 6. THE HEART: the thing that grew in the light. Two crystals, two mirrors, and a golem that only bleeds lit. ----
+  gallery(220, 238, 8, 25);
+  lamps(8, 224, 234);
+  plat(221, 16, 3); ent('crystal', 222, 15, { dir: [0, 1] }); ent('mirror', 222, 25, { o: 0 });
+  plat(235, 16, 3); ent('crystal', 236, 15, { dir: [0, 1] }); ent('mirror', 236, 25, { o: 1 }); // both start turned into the walls: turn them across the floor
+  ent('golem', 229, 25);
+  ent('sign', 219, 25, { text: 'THE HEART. IT ONLY BLEEDS IN THE LIGHT. TURN BOTH MIRRORS ACROSS THE FLOOR AND CUT IT WHILE A BEAM IS ON IT, FACET BY FACET. IT STAMPS, AND A STAMP TURNS A MIRROR. IT THROWS SHARDS. IT RAISES ICE AGAINST THE LIGHT.' });
+  ent('gate', 237, 25);
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools, falls: [], moversExtra: [], interiors,
-    duskStart: -1, duskLen: 1, music: 'cave', night: true, glowNight: true, dark: 0.42,
-    darkZones: [{ x0: 2 * TS, x1: 110 * TS, y0: 41 * TS, y1: 53 * TS, dark: 0.78 }], // only the deep gallery is truly dark
-    noSwing: [{ x0: 62 * TS, x1: 104 * TS, y0: 27 * TS, y1: 38 * TS }], // the gas chamber
+    duskStart: -1, duskLen: 1, music: 'cave', night: true, glowNight: true, dark: 0.02,
+    darkZones: [{ x0: 84 * TS, x1: 121 * TS, y0: 21 * TS, y1: 32 * TS, dark: 0.8 }],
+    noSwing: [{ x0: 137 * TS, x1: 156 * TS, y0: 7 * TS, y1: 20 * TS }],
     palette: { sky: 'night', dress: 'none', hall: true, grass: '#6a6a78', grassL: '#8a8a98', grassD: '#4a4a58', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#2a2a34', '#3a3a44', '#4a4a58', '#5a5a66'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
-    quest: { n: 3, item: 'canary', name: 'CANARY', npc: 'foreman', done: 'THE BIRDS ARE BACK', reward: 'relic', relic: 'lamp' },
-    arena: { x0: 252 * TS, x1: 300 * TS, floor: 52 * TS, trigger: 256 * TS, wallL: 251, wallR: 301, boss: 'forgemaster', tint: '#ff9a5c', tintA: 0.08, fx: 'embers', slag: [258 * TS + 8, 274 * TS + 8, 290 * TS + 8] },
+    arena: { x0: 221 * TS, x1: 238 * TS, floor: 26 * TS, trigger: 224 * TS, wallL: 220, wallR: 239, boss: 'golem', tint: '#bfe6f5', tintA: 0.08, fx: 'motes' },
   };
 }
 
@@ -1224,7 +1220,7 @@ export const LEVELS = [
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
   { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', build: hangingVillage, needs: 'scree' },
-  { id: 'mineworks', name: 'THE MINEWORKS', sub: 'under the mountain', build: theMineworks, needs: 'hanging' },
+  { id: 'mineworks', name: 'THE GLASSWORKS', sub: 'the mine that broke into light', build: theMineworks, needs: 'hanging' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
 ];

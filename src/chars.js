@@ -795,6 +795,26 @@ export function bakeBat() {
   const fly2 = b(['............', '.....bb.....', '..bbbbbbbb..', 'bbbbBrrBbbbb', 'bb..bbbb..bb', '.....bb.....']);
   return pack([hang, fly1, fly2], 7, 7, 10, 6);
 }
+// THE FACET — a crystal golem grown in the cavern's heart. 40×40. Frames: idle, walk1, walk2, stomp, throw, stagger. Four gems: brow, left shoulder, right shoulder, chest.
+export function bakeGolem() {
+  const GP = Object.assign({}, EP, { c: '#bfe6f5', C: '#7aa8c8', d: '#4a6a90', w: '#eefaff', g: '#ff7ab8', G: '#a8306a', k: '#2a3a50' });
+  const f = rows => outline(fromGrid(rows, GP, 1), OUT);
+  const W = 40, H = 40; const blank = () => Array.from({ length: H }, () => '.'.repeat(W));
+  const put = (R, x, y, s) => { const row = R[y]; R[y] = row.slice(0, x) + s + row.slice(x + s.length); };
+  const body = (legs) => { const R = blank();
+    put(R, 16, 0, 'cccccccc'); put(R, 15, 1, 'cCccccccCc'); put(R, 14, 2, 'cCccggccccCc'); put(R, 14, 3, 'cCccggccccCc'); put(R, 14, 4, 'ccccccccccCc'); put(R, 15, 5, 'ckkccckkcc'); put(R, 15, 6, 'cwkccckwcc'); put(R, 16, 7, 'cccccccc'); put(R, 17, 8, 'dddddd');
+    put(R, 4, 9, 'cccc........................cccc'); put(R, 3, 10, 'cggcccccccccccccccccccccccccccggc'); put(R, 2, 11, 'cggccCccccccccccccccccccccCccggc'); put(R, 2, 12, 'ccccccCcccccccccccccccccccCccccc'); put(R, 3, 13, 'CcccccccCcccccccccccccccccccccC');
+    put(R, 4, 14, 'ddccccccc.ccccccccccc.cccccccdd'); for (let y = 15; y <= 20; y++) put(R, 5, y, 'dcccc.....ccccccccccccc.....ccccd'); put(R, 5, 17, 'dcccc.....cccccggggcccc.....ccccd'); put(R, 5, 18, 'dcccc.....cccccggggcccc.....ccccd');
+    put(R, 5, 21, 'dccccc....cccccccccccc....cccccd'); put(R, 6, 22, 'dcccc.....CcccccccccccC.....ccccd'); put(R, 7, 23, 'ddd.......cccccccccccc.......ddd'); put(R, 12, 24, 'ddcccccccccccccdd'); put(R, 12, 25, 'dcccccccccccccccd');
+    const L1 = legs === 1 ? [13, 23] : legs === 2 ? [11, 25] : [12, 24];
+    for (const lx of L1) { for (let y = 26; y <= 33; y++) put(R, lx, y, 'Cccc'); put(R, lx - 1, 34, 'CccccC'); put(R, lx - 1, 35, 'dddddd'); }
+    return R; };
+  const idle = f(body(0)), walk1 = f(body(1)), walk2 = f(body(2));
+  const stomp = f((() => { const R = body(0); for (let y = 9; y <= 14; y++) put(R, 30, y, 'cccc'); put(R, 30, 8, 'Cccc'); put(R, 30, 7, 'cccc'); put(R, 31, 6, 'ccc'); return R; })());
+  const thr = f((() => { const R = body(0); put(R, 33, 6, 'cccc'); put(R, 34, 5, 'cccc'); put(R, 35, 4, 'ccc'); put(R, 36, 2, 'ww'); put(R, 35, 3, 'www'); put(R, 36, 1, 'w'); return R; })());
+  const stagger = f((() => { const R = body(0); put(R, 15, 5, 'cwkccckwcc'); put(R, 15, 6, 'ckkccckkcc'); put(R, 14, 2, 'cCccGGccccCc'); put(R, 14, 3, 'cCccGGccccCc'); return R; })());
+  return pack([idle, walk1, walk2, stomp, thr, stagger], 20, 36, 30, 34);
+}
 // The moor hare — fast, low, and it runs with the wind. 12×8. Frames: run1, run2, sit.
 export function bakeHare() {
   const HP2 = Object.assign({}, EP, { h: '#8a6a4a', H: '#5a4230', w: '#e8dcc0', r: '#c9463d' });
