@@ -656,7 +656,7 @@ function kingswood() {
   // ---- 1. The rust wood: goblins live here. Townsfolk bolt for their doors. ----
   floor(0, 44, 20);
   ent('sign', 4, 19, { text: 'THE GOBLINS LIVE HERE. YOU ARE NOT WELCOME.' }); ent('npc', 9, 19, { kind: 'squire' });
-  ent('sign', 313, 13, { text: 'KING GORM. HE FIGHTS FROM THE THRONE UNTIL YOU BREAK IT. HIS BEARERS CARRY FIRE. HIS DOGS COME WHEN HE WHISTLES.' });
+  ent('sign', 313, 13, { text: 'KING GORM. CUT THE BEARERS AND THE THRONE FALLS. HE REACHES FOR YOU: DODGE THE HAND, OR STAND ABOVE IT. A CAGE OR A PARRY BRINGS HIS HEAD DOWN. WHEN HE WALKS, THE ROOF FALLS WHERE HE STEPS.' });
   ent('door', 12, 19, { at: 12 }); ent('folk', 9, 19, { door: 12 }); ent('folk', 17, 19, { door: 12, alt: true }); ent('deco', 20, 19, { kind: 'well' });
   ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]);
   ent('sign', 29, 19, { text: 'THE THIEVES OF THE COURT SNATCH GOLD FROM YOUR PURSE AND RUN. CATCH ONE AND IT PAYS BACK WITH INTEREST.' });
@@ -852,7 +852,7 @@ function screePath() {
   block(285, 363, 9, 27);
   block(276, 284, 20, 27); // the foot of the wall: a step down from the bank, no pit
   for (let y = 10; y <= 19; y++) { set(283, y, T.CLIMB); set(284, y, T.CLIMB); } // the crag wall: hold into the rock to cling, jump to kick up it
-  ent('sign', 276, 18, { text: 'THE CRAG WALL. HOLD INTO THE ROCK TO CLING. JUMP TO KICK UP AND AWAY, THEN BACK IN. THE HARPIES NEST IN THE CRACKS.' });
+  ent('sign', 276, 18, { text: 'THE CRAG WALL. THE OCHRE ROCK WITH THE CUT HANDHOLDS IS THE KIND YOU CAN CLIMB: HOLD INTO IT TO CLING, JUMP TO KICK UP AND AWAY, THEN BACK IN. THE HARPIES NEST IN THE CRACKS.' });
   ent('rockfall', 281, 2, { every: 2.7 });
   coins([278, 16], [282, 15], [282, 12]);
   ent('sprig', 290, 8, { face: -1 }); ent('deco', 288, 8, { kind: 'stone' });
@@ -932,6 +932,8 @@ function hangingVillage() {
   const hole = (x0, x1, top) => { for (let y = top; y <= top + 3; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); };
   const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
   const shelf = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.SHELF); };
+  const pit = (x0, x1, top) => { for (let x = x0; x <= x1; x++) { set(x, top, 0); set(x, top + 1, T.SPIKE); } }; // a rotten stretch of bough with goblin spikes set under it
+  const vine = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }; // a hanging vine: climb it like a rope
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the trunk walls either side
   const tops = { t0: 108, t1: 94, t2: 80, t3: 66, t4: 52, t5: 38, crown: 20 };
   // the mountain itself: rock pillars behind every ledge, stacked so each reads as one cliff from the valley to the crown, with timber struts under the ledges
@@ -951,11 +953,13 @@ function hangingVillage() {
   ent('sign', 96, 107, { text: 'ROPE LADDERS: JUMP UP THROUGH THEM, DROP DOWN WITH DOWN+JUMP. THE VILLAGE IS SEVEN TIERS TALL. THE CROWN IS THE EIGHTH.' });
 
   // ---- Tier 1. THE LOWER BOUGHS (walk left): spiders under the bough above, a branch that snaps over a gap, an archer's nest ----
-  hole(66, 71, tops.t1); shelf(66, tops.t1, 6); // the snapping branch: fall and you land on the roots, no worse
+  hole(66, 71, tops.t1); shelf(66, tops.t1, 6); vine(68, tops.t1, tops.t0 - 1); // the snapping branch: fall and you land on the roots, and a vine climbs back up through the gap
+  hole(50, 55, tops.t1); movers.push({ kind: 'swing', px: 52 * TS + 8, py: (tops.t1 - 9) * TS, arm: 76, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.5, vine: true }); vine(52, tops.t1, tops.t0 - 1); // a vine swings over a second gap; the vine below it is the way back up
+  pit(78, 79, tops.t1); ent('sign', 82, 93, { text: 'MIND THE PITS. THE BOUGH IS ROTTEN IN PLACES AND THE SPIKES UNDER IT ARE GOBLIN WORK. THE VINES CLIMB LIKE ROPES.' });
   hole(28, 33, tops.t1); ent('mover', 28, tops.t1, { len: 2, range: 4, speed: 44 }); ent('wasp', 30, 90); // a second gap: a bough that slides, and a wasp over it
   ent('sign', 74, 93, { text: 'THE BRANCH SNAPS UNDER A STANDING WEIGHT. KEEP MOVING. IT GROWS BACK IN A BREATH OR TWO.' });
   ent('spider', 84, 86, { drop: 100 }); ent('spider', 58, 86, { drop: 100 }); ent('spider', 36, 86, { drop: 100 });
-  ent('sprig', 50, 93, { face: 1 }); ent('thorn', 20, 93, { face: 1 }); plat(20, 90, 3); ent('archer', 21, 89, { face: 1 });
+  ent('sprig', 46, 93, { face: 1 }); ent('thorn', 20, 93, { face: 1 }); plat(20, 90, 3); ent('archer', 21, 89, { face: 1 });
   ent('door', 44, 93, { at: 44 }); ent('folk', 47, 93, { door: 44 });
   coins([92, 91], [80, 91], [62, 91], [54, 91], [40, 91], [22, 88], [12, 91]);
   ent('check', 8, 93); ent('silver', 68, 90);
@@ -984,6 +988,7 @@ function hangingVillage() {
   gusts.push({ x0: 20 * TS, x1: 92 * TS, y0: 56 * TS, y1: 66 * TS, dir: -1, period: 5, on: 1.6, phase: 0 });
   gusts.push({ x0: 20 * TS, x1: 90 * TS, y0: 12 * TS, y1: 20 * TS, dir: 1, period: 9, on: 2.2, phase: 3, alt: true, arena: true }); // the crown's crosswind, only while the Reeve fights
   hole(36, 40, tops.t3); ent('mover', 36, tops.t3, { len: 2, range: 3, speed: 36 }); hole(70, 74, tops.t3); ent('mover', 70, tops.t3, { len: 2, range: 3, speed: 36 }); // gaps in the bough with sliding boughs across them: the wind wants you off
+  pit(52, 53, tops.t3); pit(30, 31, tops.t3); // pits the wind wants to push you into
   ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('sapper', 60, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
   plat(70, 62, 3); plat(40, 61, 3); coins([71, 61], [41, 60], [86, 63], [56, 63], [26, 63]);
   ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' });
@@ -996,6 +1001,7 @@ function hangingVillage() {
   // ---- Tier 4. THE UPPER BOUGHS (walk right): the squirrel knight's ground; spiders, an archer nest, silver on a high ledge ----
   ent('sign', 10, 51, { text: 'THE SQUIRREL KNIGHT STEALS AND CLIMBS. CATCH IT BEFORE IT REACHES THE TRUNK, OR IT TAKES YOUR GOLD TO THE CROWN.' });
   ent('door', 20, 51, { kind: 'cottage', at: 20 }); ent('folk', 17, 51, { door: 20, alt: true });
+  hole(32, 37, tops.t4); movers.push({ kind: 'swing', px: 34 * TS + 8, py: (tops.t4 - 9) * TS, arm: 76, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 1.2, vine: true }); vine(34, tops.t4, tops.t3 - 1); pit(90, 91, tops.t4); // a vine swing over a gap to the windy bough, a vine up through it, a pit by the thorn
   ent('squirrel', 30, 51, { face: 1 }); ent('spider', 45, 44, { drop: 100 }); ent('spider', 65, 44, { drop: 100 });
   plat(56, 48, 3); ent('archer', 57, 47, { face: -1 }); plat(72, 46, 2); ent('silver', 73, 45); plat(76, 49, 3);
   set(40, tops.t4 - 1, T.BOUNCER); plat(38, 45, 2); plat(43, 43, 3); coins([39, 44], [44, 42], [45, 42]); ent('wasp', 48, 44); // a springy bough up to a high ledge
@@ -1007,8 +1013,8 @@ function hangingVillage() {
   band(1, W - 2, tops.t5); hole(100, 105, tops.t5);
   movers.push({ kind: 'swing', px: 96 * TS, py: 46 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
   movers.push({ kind: 'swing', px: 104 * TS, py: 42 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.5 });
-  plat(102, 44, 3); ladder(103, 104, tops.t5, 43); for (let y = tops.t5; y <= 51; y++) set(99, y, T.CLIMB); // and a rock face for those who would rather kick up it
-  ent('sign', 90, 51, { text: 'THE LAST CLIMB. SWING, THEN SWING AGAIN, THEN THE ROPE. LET GO AT THE TOP OF THE ARC. THE WIND IS WORSE UP HERE.' });
+  plat(102, 44, 3); ladder(103, 104, tops.t5, 43); for (let y = 44; y <= 51; y++) set(99, y, T.CLIMB); // and a short ochre rock face for those who would rather kick up it
+  ent('sign', 90, 51, { text: 'THE LAST CLIMB. SWING, THEN SWING AGAIN, THEN THE ROPE. OR HOLD INTO THE OCHRE ROCK TO CLING AND JUMP TO KICK UP IT. THE WIND IS WORSE UP HERE.' });
 
   // ---- Tier 5. THE LANTERN STAIR (walk left): the last lamp, a brute at the door, the way to the crown ----
   ent('sign', 96, 37, { text: 'THE CROWN IS CLOSE. THE REEVE DOES NOT LIKE LIGHT: LIGHT EVERY LANTERN YOU PASS. THE LAMPLIGHTER WOULD.' });
@@ -1016,6 +1022,7 @@ function hangingVillage() {
   ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 60, 37, { kind: 'cottage', at: 60 }); ent('folk', 63, 37, { door: 60, alt: true });
   ent('spider', 40, 30, { drop: 100 }); ent('stray', 30, 37, { kind: 'lamp' }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' });
   plat(76, 34, 3); plat(26, 33, 3); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
+  pit(42, 43, tops.t5); pit(72, 73, tops.t5);
   hole(52, 57, tops.t5); shelf(52, tops.t5, 6); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 }); ent('wasp', 55, 33); ent('thorn', 36, 37, { face: 1 }); // snapping branch and a sliding bough on the way to the crown
   ent('check', 10, 37);
   // 5 -> crown: the long rope
@@ -1031,7 +1038,7 @@ function hangingVillage() {
   ent('gate', 100, 19);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, tall: { top: 20 * TS, bottom: 108 * TS },
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, vines: [52, 68, 34], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: true,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(140,90,150,0.12)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone: [], scree: [], snowLine: 52,

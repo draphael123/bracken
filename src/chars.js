@@ -1,5 +1,5 @@
 // chars.js — the knight and the forest's enemies, baked from text grids + drawn sword.
-import { canvas, px, rect, line, fromGrid, outline, flipX, whiten } from './px.js';
+import { canvas, px, rect, line, circle, fromGrid, outline, flipX, whiten } from './px.js';
 import { OUT } from './art.js';
 
 const KP0 = { // knight palette
@@ -457,6 +457,58 @@ export function bakeKing() {
   const pad3 = ['........................', '........................', '........................'];
   return { seated: pack([idle, thr, sh], 11, 16, 18, 15), standing: pack([k([...pad3, ...crown, ...face, ...standBody]), k([...crown, ...face, ...slamBody, '........................', '........................', '........................'])], 11, 22, 18, 21) };
 }
+
+// KING GORM at three times the size: drawn with primitives, not a grid. Seated frames 72×48 (feet at the bottom edge), standing frames 64×64.
+// Frames — seated: idle, throw, shout, reach (the grab), held. Standing: stand, walk, slam, reach, grab, lift, kneel.
+export function bakeKingBig() {
+  const SK = '#6faa4a', SKD = '#3f6e2c', RB = '#c9463d', RBD = '#8f2f28', RBL = '#e07060', FUR = '#e8dcc0', GLD = '#ffd36b', GLD2 = '#a07a1c', EYE = '#f3f0d2', BELT = '#3a2e22', TOOTH = '#fff6e0', WOOD = '#5c3a1d';
+  const head = (g, x, y, mouth) => { // 30 wide, 22 tall; x,y = top-left. mouth: 0 shut, 1 open (shout), 2 gritted
+    rect(g, x + 3, y, 24, 6, SK); rect(g, x, y + 4, 30, 14, SK); rect(g, x + 2, y + 18, 26, 4, SKD); // skull, jaw, underbite shadow
+    rect(g, x + 1, y + 5, 3, 5, SKD); rect(g, x + 26, y + 5, 3, 5, SKD); // ear roots
+    rect(g, x - 3, y + 3, 5, 7, SK); rect(g, x + 28, y + 3, 5, 7, SK); // ears
+    rect(g, x + 6, y + 7, 6, 5, EYE); rect(g, x + 18, y + 7, 6, 5, EYE); rect(g, x + 9, y + 8, 2, 3, OUT); rect(g, x + 21, y + 8, 2, 3, OUT); // eyes
+    rect(g, x + 5, y + 6, 8, 1, SKD); rect(g, x + 17, y + 6, 8, 1, SKD); // brows
+    rect(g, x + 13, y + 11, 4, 3, SKD); // nose
+    if (mouth === 1) { rect(g, x + 8, y + 15, 14, 6, RBD); rect(g, x + 9, y + 15, 2, 2, TOOTH); rect(g, x + 19, y + 15, 2, 2, TOOTH); rect(g, x + 13, y + 19, 4, 2, RBL); }
+    else { rect(g, x + 8, y + 16, 14, 1, SKD); rect(g, x + 7, y + 15, 2, 3, TOOTH); rect(g, x + 21, y + 15, 2, 3, TOOTH); if (mouth === 2) rect(g, x + 10, y + 16, 10, 2, TOOTH); } // tusks up from the underbite
+  };
+  const crown = (g, x, y) => { rect(g, x, y + 3, 26, 5, GLD); rect(g, x, y + 7, 26, 1, GLD2); for (let i = 0; i < 5; i++) { rect(g, x + 1 + i * 6, y, 2, 4, GLD); px(g, x + 1 + i * 6, y, '#fff6e0'); } rect(g, x + 4, y + 4, 2, 2, RB); rect(g, x + 12, y + 4, 2, 2, '#4a90e0'); rect(g, x + 20, y + 4, 2, 2, '#4aa05a'); };
+  const arm = (g, x, y, dx, dy, fist) => { // an upper arm from (x,y) to (x+dx,y+dy), 7 thick, a fist at the end
+    line(g, x, y, x + dx, y + dy, RB, 7); line(g, x, y, x + dx, y + dy, RBD, 2); const fx = x + dx, fy = y + dy; rect(g, fx - 4, fy - 4, 9, 9, SK); rect(g, fx - 4, fy + 3, 9, 2, SKD); if (fist === 'open') { rect(g, fx + 4, fy - 5, 4, 2, SK); rect(g, fx + 4, fy - 1, 4, 2, SK); rect(g, fx + 4, fy + 3, 4, 2, SK); }
+  };
+  const sceptre = (g, x0, y0, x1, y1) => { line(g, x0, y0, x1, y1, WOOD, 3); circle(g, x1, y1, 4, GLD); circle(g, x1, y1, 2, RB); };
+  const boots = (g, x, y, apart) => { rect(g, x, y, 12, 8, SKD); rect(g, x, y + 6, 13, 2, OUT); rect(g, x + apart, y, 12, 8, SKD); rect(g, x + apart, y + 6, 13, 2, OUT); };
+  const robe = (g, x, y, w, h) => { rect(g, x, y, w, h, RB); rect(g, x + 2, y + 2, w - 4, 3, RBL); rect(g, x, y + h - 4, w, 4, RBD); rect(g, x - 2, y, w + 4, 4, FUR); for (let i = 0; i < w; i += 5) px(g, x + i, y + 1, '#c8bca0'); rect(g, x + 6, y + Math.floor(h / 2), w - 12, 4, BELT); rect(g, x + Math.floor(w / 2) - 3, y + Math.floor(h / 2) - 1, 6, 6, GLD); rect(g, x + Math.floor(w / 2) - 1, y + Math.floor(h / 2) + 1, 2, 2, GLD2); };
+  const finish = c => outline(c, OUT);
+  // ---- seated ----
+  const seated = (pose) => { const [c, g] = canvas(72, 48);
+    boots(g, 22, 40, 16); // feet on the litter
+    robe(g, 14, 18, 44, 26); // the belly
+    if (pose === 'throw') arm(g, 52, 22, 8, -16, 'fist'); else if (pose === 'reach') arm(g, 52, 24, 18, 6, 'open'); else arm(g, 52, 24, 6, 12, 'fist');
+    if (pose !== 'reach') sceptre(g, 58, 36, 66, 10);
+    arm(g, 18, 24, -6, 12, 'fist');
+    head(g, 21, pose === 'held' ? 6 : 0, pose === 'shout' ? 1 : pose === 'reach' ? 2 : 0); crown(g, 23, pose === 'held' ? 2 : -4);
+    return finish(c); };
+  // ---- standing ----
+  const standing = (pose) => { const [c, g] = canvas(64, 64);
+    const kneel = pose === 'kneel', walk = pose === 'walk';
+    if (kneel) { rect(g, 14, 52, 14, 10, SKD); rect(g, 36, 52, 14, 10, SKD); rect(g, 14, 60, 36, 2, OUT); } else boots(g, 16, 56, walk ? 22 : 18);
+    const by = kneel ? 30 : 20; robe(g, 12, by, 40, kneel ? 24 : 36);
+    if (pose === 'slam') { arm(g, 48, by + 4, 6, -22, 'fist'); sceptre(g, 54, by - 18, 38, by - 30); }
+    else if (pose === 'reach') { arm(g, 48, by + 6, 16, 4, 'open'); }
+    else if (pose === 'grab') { arm(g, 48, by + 6, 14, 10, 'fist'); }
+    else if (pose === 'lift') { arm(g, 48, by + 4, 4, -20, 'open'); arm(g, 16, by + 4, -4, -20, 'open'); }
+    else { arm(g, 48, by + 6, 4, 16, 'fist'); sceptre(g, 52, by + 26, 60, by - 6); }
+    if (pose !== 'lift') arm(g, 16, by + 6, -4, 16, 'fist');
+    head(g, 17, by - 20, pose === 'slam' ? 1 : pose === 'reach' || pose === 'grab' ? 2 : 0); crown(g, 19, by - 24);
+    return finish(c); };
+  return {
+    seated: pack(['idle', 'throw', 'shout', 'reach', 'held'].map(seated), 36, 48, 54, 45),
+    standing: pack(['stand', 'walk', 'slam', 'reach', 'grab', 'lift', 'kneel'].map(standing), 32, 64, 44, 60),
+  };
+}
+// A hall chandelier: an iron ring of candles on a chain. 24×16, hangs from its top.
+export function bakeChandelier() { const [c, g] = canvas(24, 16); rect(g, 11, 0, 2, 5, '#5a6270'); rect(g, 2, 9, 20, 3, '#3a3e48'); rect(g, 2, 9, 20, 1, '#8a919c'); for (let i = 0; i < 4; i++) { const x = 3 + i * 6; rect(g, x, 5, 2, 4, '#e8e0d0'); px(g, x, 4, '#ffd36b'); px(g, x + 1, 3, '#ff9a5c'); } rect(g, 4, 12, 16, 2, '#2a2c36'); return outline(c, OUT); }
 
 // ---------- The Crags: hill folk and beasts ----------
 const CP = Object.assign({}, EP, { h: '#8a8478', H: '#5a5448', f: '#e8e0d0', F: '#b8b0a0', v: '#7a5a8a', V: '#4a3a5a', c: '#5a4a3a', x: '#c9b27c', z: '#3a2e22', m: '#c9a83a' });
