@@ -1,6 +1,6 @@
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
-export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17 };
+export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -1108,136 +1108,121 @@ function hangingVillage() {
 
 // ---------- LEVEL 8: THE MINEWORKS ----------
 // Under the Hanging Village. Three galleries step down through the rock on rails and an ore lift, to the forge at the bottom.
-function theMineworks() { // THE GLASSWORKS: the goblins' mine broke into a crystal cavern and they built a glassworks in it. Nine rooms. Beams you aim; a golem keyed to them.
-  const W = 372, H = 40; const L = painter(W, H);
-  const { block, plat, ent, coins, set } = L;
-  const carve = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); };
-  const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
-  const soft = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOFT); };
-  const ice = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.ICE); };
-  const web = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.WEB); };
-  const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
-  const gateCol = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
-  const gateRow = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PORT); };
-  block(0, W - 1, 0, H - 1);
-  const interiors = [], pools = [];
-  const gallery = (x0, x1, y0, y1, st = 'crystal') => { carve(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, st]); };
-  const lamps = (y, ...xs) => { for (const x of xs) ent('minerlamp', x, y); };
-  const shards = (y, up, ...xs) => xs.forEach((x, i) => ent('shard', x, y, { v: (x + i) % 3, up, big: i % 3 === 0 }));
-  const works = (y, ...items) => items.forEach(([x, kind, v]) => ent('works', x, y, { kind, v: v || 0 }));
+// ============================================================================================
+// LEVEL 8 - THE SUNSPIRE. A mountain of crystal between the tree-city and the high moor.
+// You climb it, and it comes apart while you do. A crystal ledge rings under a standing weight,
+// then crazes, then goes, and it takes the crystals touching it with it and drops the pieces on
+// whatever is below - which you can use, if you are the one choosing when it happens.
+// Halfway up you break out of the cloud into the sun, and the sun makes all of it faster.
+// ============================================================================================
+function theSunspire() {
+  const W = 96, H = 150; const L = painter(W, H);
+  const { block, plat, ent, coins, set, spikes } = L;
+  const movers = [];
+  const CLOUD = 76; // above this row the sun is on the rock
+  const cryst = (x, n, y) => { for (let i = 0; i < n; i++) set(x + i, y, T.CRYST); };
+  const spires = (y, up, ...xs) => xs.forEach((x, i) => ent('deco', x, y, { kind: 'spire', v: (x + i) % 2, hang: up }));
+  block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the mountain either side
+  const band = (x0, x1, top) => block(x0, x1, top, top + 2);
 
-  // ---- 1. THE GATEHOUSE: the built mine, and the first kiln. ----
-  gallery(2, 40, 8, 19, 'stone');
-  for (const x of [10, 24, 36]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(8, 6, 16, 26, 36); lamps(19, 12, 30);
-  ent('npc', 7, 19, { kind: 'squire' }); ent('sign', 4, 19, { text: 'THE GLASSWORKS. THE GOBLINS DUG FOR ORE AND BROKE INTO LIGHT, AND BUILT KILNS TO WORK IT. THE CRYSTALS THROW BEAMS. STRIKE A MIRROR TO TURN ONE. A BEAM BURNS WEB, MELTS ICE, BURNS A GOBLIN, AND OPENS THE DOORS THE MINERS SEALED.' });
-  ent('npc', 13, 19, { kind: 'foreman' }); ent('door', 20, 19, { kind: 'cottage', at: 20 }); ent('folk', 17, 19, { door: 20, alt: true });
-  works(19, [24, 'kiln'], [33, 'rack'], [38, 'sand']); ent('torchbracket', 30, 19); shards(19, false, 38); shards(8, true, 34);
-  ent('miner', 28, 19, { face: -1 }); coins([9, 17], [15, 16], [22, 17], [34, 17]);
-  ent('check', 38, 19);
+  // ---- Tier 0. THE FOOT: the last of the grass, and the first crystal anyone can stand on ----
+  block(0, W - 1, 146, H - 1);
+  ent('npc', 8, 145, { kind: 'squire' });
+  ent('sign', 4, 145, { text: 'THE SUNSPIRE. THE CRYSTAL WILL HOLD YOU, BUT NOT FOR LONG. IT RINGS, THEN IT CRAZES, THEN IT GOES, AND IT TAKES WHAT IT IS TOUCHING WITH IT. KEEP MOVING. STRIKE ONE AND IT BREAKS WHEN YOU SAY SO.' });
+  ent('deco', 16, 145, { kind: 'cairn' }); ent('sprig', 30, 145, { face: -1 });
+  spires(145, false, 22, 38, 52); spires(146, true, 28, 46);
+  cryst(34, 4, 143); cryst(42, 4, 140); cryst(50, 4, 137);
+  coins([35, 142], [43, 139], [51, 136], [12, 144]);
+  ent('check', 20, 145);
+  // 0 -> 1: the first crystal stair, and it is only three steps
+  cryst(58, 3, 134); cryst(64, 3, 131); cryst(70, 4, 128);
+  ent('sign', 56, 145, { text: 'THREE STEPS. DO NOT STAND ON THE THIRD ADMIRING THE SECOND.' });
+  coins([59, 133], [65, 130], [71, 127]);
 
-  // ---- 2. THE FIRST LENS: one crystal, two mirrors, a web and a sealed door. Aim to burn, aim to open. ----
-  gallery(40, 82, 8, 19); for (const x of [46, 62, 78]) ent('deco', x, 19, { kind: 'timber', v: 1 }); lamps(8, 48, 66); lamps(19, 52, 72); shards(19, false, 41, 55, 67, 79); shards(8, true, 43, 58, 71);
-  works(19, [50, 'rack'], [64, 'window'], [79, 'crucible']);
-  plat(43, 11, 3); ent('crystal', 44, 10, { dir: [0, 1] }); ent('mirror', 44, 19, { o: 0 });
-  web(70, 71, 16, 19); ent('spider', 68, 9, { drop: 100 });
-  plat(75, 11, 3); ent('receiver', 76, 10, { gate: 80 }); ent('mirror', 76, 19, { o: 1 });
-  gateCol(80, 15, 19); ent('sign', 62, 19, { text: 'THE MIRRORS TURN WHEN YOU STRIKE THEM. SEND THE BEAM THROUGH THE WEB, THEN UP TO THE LENS OVER THE DOOR.' });
-  ent('miner', 56, 19, { face: -1 }); ent('stray', 51, 19, { kind: 'lens' }); coins([50, 17], [58, 17], [64, 17], [73, 14]);
-  ent('check', 81, 19);
+  // ---- Tier 1. THE LOWER FACE: shelves of crystal with rock between them. Harpies work the gaps. ----
+  band(1, 40, 124); band(56, W - 2, 124);
+  cryst(41, 15, 124);
+  ent('harpy', 30, 118); ent('harpy', 66, 116);
+  plat(20, 120, 4); plat(30, 116, 4); plat(44, 113, 4); plat(58, 116, 4); plat(70, 120, 4);
+  cryst(24, 5, 112); cryst(36, 5, 109); cryst(48, 5, 106); cryst(60, 5, 109);
+  ent('sign', 6, 123, { text: 'THE LOWER FACE. THE CRYSTAL RUNS ARE THE QUICK WAY AND THE ROCK LEDGES ARE THE SLOW ONE. THE HARPIES KNOW WHICH YOU ARE ON.' });
+  ent('rockgoblin', 22, 119, { face: 1 }); ent('rockgoblin', 72, 119, { face: -1 });
+  ent('bat', 40, 116); ent('bat', 56, 114); ent('grub', 46, 112, { face: -1 }); // below the cloud the face is shaded and damp, and things live in it
+  coins([25, 111], [37, 108], [49, 105], [61, 108], [21, 119], [71, 119]);
+  ent('silver', 49, 105);
+  ent('check', 8, 123);
+  band(1, 20, 104); band(34, W - 2, 104);
+  cryst(21, 13, 104);
 
-  // ---- 3. THE GALLERY OF STEPS: a shaft to climb. Stone ledges the slow way; ice ledges in the beam's column the fast way, until you turn the beam on and they melt. ----
-  gallery(82, 110, 4, 19); for (const x of [86, 106]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(19, 88, 104); lamps(4, 90, 102); shards(19, false, 84, 108); shards(4, true, 86, 100, 108);
-  ent('sign', 84, 19, { text: 'THE GALLERY OF STEPS. THE STONE LEDGES GO UP THE SLOW WAY. THE ICE LEDGES IN THE MIDDLE ARE THE FAST WAY, UNTIL THE BEAM IS ON: THEN THEY MELT, THE WEBS BURN, AND THE LENS AT THE TOP OPENS THE DOOR.' });
-  ent('crystal', 88, 19, { dir: [1, 0] }); ent('mirror', 96, 19, { o: 0 }); // strike it: '\' sends the beam up the column
-  for (const [x, y] of [[85, 17], [102, 15], [85, 13], [102, 11], [85, 9], [102, 7]]) plat(x, y, 3);
-  ice(95, 97, 16, 16); ice(95, 97, 12, 12); ice(95, 97, 8, 8); web(96, 96, 14, 14); web(96, 96, 10, 10);
-  ent('receiver', 96, 4, { gate: 109 }); gateCol(109, 5, 7); gallery(109, 116, 4, 7);
-  ent('spider', 90, 5, { drop: 120 }); ent('spider', 104, 5, { drop: 120 }); ent('grub', 103, 14, { face: -1 });
-  ent('silver', 104, 6); coins([86, 16], [103, 14], [86, 12], [103, 10], [86, 8], [96, 6]);
-  works(19, [107, 'blowpipe']);
+  // ---- Tier 2. THE ORGAN: a wall of tall crystal, and a run of ledges through it. ----
+  band(1, W - 2, 96); for (let x = 30; x <= 52; x++) set(x, 96, 0); for (let x = 30; x <= 52; x++) set(x, 97, 0); for (let x = 30; x <= 52; x++) set(x, 98, 0);
+  spires(96, true, 32, 38, 44, 50); spires(103, false, 28, 42, 56);
+  cryst(30, 6, 94); cryst(40, 6, 91); cryst(50, 5, 88);
+  ent('shardling', 34, 93, { face: 1 }); ent('shardling', 54, 87, { face: -1 }); ent('bat', 24, 90); ent('grub', 32, 93, { face: 1 });
+  ent('sign', 6, 95, { text: 'THE ORGAN. THEY GROW IN RANKS HERE AND THEY ALL RING THE SAME NOTE. IF ONE GOES THEY ALL GO.' });
+  plat(14, 92, 4); plat(6, 88, 4); coins([15, 91], [7, 87], [31, 93], [41, 90], [51, 87]);
+  band(1, 24, 84); band(60, W - 2, 84);
+  cryst(25, 35, 84);
+  ent('harpy', 40, 78); ent('rockgoblin', 64, 83, { face: -1 });
+  ent('sign', 62, 83, { text: 'THE LONG SHELF. ONE RUN OF CRYSTAL, THIRTY-FIVE ACROSS, AND NOTHING UNDER IT. RUN.' });
+  ent('check', 66, 83);
 
-  // ---- 4. THE OVERLOOK: goblins on ledges you cannot reach, throwing lanterns. Turn one mirror and the beam sweeps their row and burns them off. The left ledges you can climb; fight there. ----
-  gallery(112, 162, 4, 19); for (const x of [118, 138, 156]) ent('deco', x, 19, { kind: 'timber', v: 1 }); lamps(4, 116, 130, 146, 158); lamps(19, 124, 148); shards(19, false, 113, 133, 153); shards(4, true, 122, 140, 152);
-  ent('sign', 114, 19, { text: 'THE OVERLOOK. THE GOBLINS UP THERE CANNOT BE REACHED. THE BEAM CAN REACH THEM: TURN THE MIRROR BY THE FAR CRYSTAL AND IT SWEEPS THEIR LEDGE. THE LEFT LEDGES YOU CAN CLIMB, AND SOMETHING IS WAITING ON THEM.' });
-  plat(114, 17, 3); plat(119, 14, 3); plat(115, 11, 3); ent('stray', 115, 10, { kind: 'lens' }); ent('miner', 116, 10, { face: 1 }); ent('grub', 120, 13, { face: -1 }); coins([115, 16], [120, 13], [116, 10]);
-  plat(128, 9, 5); plat(146, 9, 5); ent('rockgoblin', 130, 8, { face: 1 }); ent('rockgoblin', 148, 8, { face: -1 }); ent('rockgoblin', 137, 8, { face: 1 }); plat(135, 9, 4);
-  ent('crystal', 158, 19, { dir: [-1, 0] }); ent('mirror', 152, 19, { o: 0 }); ent('mirror', 152, 8, { o: 1, fixed: true }); plat(151, 9, 3);
-  ent('receiver', 113, 8, { gate: 161 }); plat(112, 9, 3); gateCol(161, 15, 19);
-  ent('spider', 142, 5, { drop: 110 }); works(19, [126, 'kiln'], [140, 'rack'], [156, 'sand']);
-  coins([130, 7], [137, 7], [148, 7], [140, 17]);
-  ent('check', 160, 19);
+  // ---- Tier 3. THE CLOUD LINE. You come out of the grey into the sun, and the sun is not on your side. ----
+  band(1, 30, CLOUD); band(46, W - 2, CLOUD);
+  cryst(31, 15, CLOUD);
+  ent('sign', 8, CLOUD - 1, { text: 'ABOVE THE CLOUD THE SUN IS ON THE ROCK ALL DAY AND THE CRYSTAL IS HALF AS PATIENT. YOU WILL SEE IT COMING: IT GOES BRIGHT BEFORE IT GOES.' });
+  plat(10, 72, 4); plat(20, 68, 4); cryst(28, 6, 66); cryst(38, 6, 63); cryst(48, 6, 60);
+  ent('harpy', 34, 58); ent('harpy', 58, 56); ent('shardling', 30, 65, { face: 1 });
+  spires(CLOUD, true, 14, 24, 52, 62); spires(56, true, 44, 54);
+  coins([29, 65], [39, 62], [49, 59], [11, 71], [21, 67]);
+  ent('silver', 21, 67);
+  band(1, 22, 56); band(38, W - 2, 56);
+  cryst(23, 15, 56);
+  ent('check', 10, 55);
 
-  // ---- 5. THE ICE GALLERY: one beam, two walls of ice, the far mirror sends it up to the lens. A ladder down to the old workings. ----
-  gallery(162, 216, 8, 19); for (const x of [170, 186, 202]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(8, 168, 184, 200, 212); lamps(19, 176, 196); shards(19, false, 163, 175, 185, 193, 205, 211); shards(8, true, 171, 179, 191, 197, 209);
-  works(19, [166, 'window'], [188, 'lensring'], [204, 'crucible']);
-  plat(165, 11, 3); ent('crystal', 166, 10, { dir: [0, 1] }); ent('mirror', 166, 19, { o: 0 });
-  ice(180, 181, 16, 19); ice(200, 201, 16, 19); plat(189, 13, 3); coins([190, 12]);
-  plat(207, 11, 3); ent('receiver', 208, 10, { gate: 214 }); ent('mirror', 208, 19, { o: 1 });
-  gateCol(214, 15, 19);
-  ent('spider', 174, 9, { drop: 100 }); ent('spider', 194, 9, { drop: 100 }); ent('grub', 186, 19, { face: -1 }); ent('rockgoblin', 204, 19, { face: -1 });
-  ent('sign', 164, 19, { text: 'THE ICE GALLERY. THE BEAM MELTS THE ICE IN A BREATH OR TWO, BOTH WALLS, THEN THE FAR MIRROR SENDS IT UP TO THE LENS. THE LADDER GOES DOWN TO THE OLD WORKINGS: DARK, AND WORTH IT.' });
-  coins([172, 17], [178, 14], [188, 17], [198, 14], [206, 17]);
-  gallery(172, 173, 20, 21); ladder(172, 173, 20, 21);
-  ent('check', 213, 19);
+  // ---- Tier 4. THE GLARE: the crystal is lit through and you cannot stand anywhere for long. ----
+  band(1, W - 2, 48); for (let x = 18; x <= 40; x++) for (let y = 48; y <= 50; y++) set(x, y, 0);
+  cryst(18, 23, 48);
+  ent('shardling', 24, 47, { face: 1 }); ent('shardling', 36, 47, { face: -1 }); ent('harpy', 50, 42);
+  spires(48, true, 20, 30, 40, 60); spires(55, false, 12, 66);
+  plat(58, 44, 4); plat(68, 40, 4); cryst(44, 6, 44); cryst(54, 5, 41); cryst(64, 5, 38);
+  ent('sign', 6, 47, { text: 'THE GLARE. NOTHING UP HERE HOLDS. THE ROCK LEDGES ARE THE ONLY REST AND THERE ARE TWO OF THEM.' });
+  coins([45, 43], [55, 40], [65, 37], [59, 43], [69, 39]);
+  ent('stray', 65, 37, { kind: 'shard' });
+  band(1, 26, 36); band(42, W - 2, 36);
+  cryst(27, 15, 36);
+  ent('check', 12, 35);
 
-  // ---- 5b. THE OLD WORKINGS: the one dark room. ----
-  gallery(164, 200, 22, 30); for (const x of [178, 192]) ent('deco', x, 30, { kind: 'timber', v: 1 }); shards(30, false, 174, 183); shards(22, true, 170, 186, 198);
-  ladder(172, 173, 22, 30); ent('torchbracket', 168, 30); ent('minerlamp', 180, 30, { lit: false }); ent('minerlamp', 188, 30, { lit: false });
-  ent('bat', 176, 24); ent('bat', 184, 25); ent('bat', 194, 24); ent('stray', 184, 30, { kind: 'lens' });
-  plat(189, 26, 3); ent('crystal', 190, 25, { dir: [0, 1] }); ent('mirror', 190, 30, { o: 0 }); web(194, 195, 27, 30);
-  ent('silver', 198, 30); ent('relic', 196, 30, { kind: 'lamp' }); coins([176, 28], [182, 28], [186, 28]);
-  ent('sign', 166, 30, { text: 'THE OLD WORKINGS. TAKE THE TORCH. THE BATS HUNT WHATEVER IS LIT. A CRYSTAL AT THE FAR END, AND A WEB BETWEEN YOU AND THE MINER\'S LAMP.' });
-
-  // ---- 6. THE GAS POCKET: no sparks. ----
-  gallery(216, 236, 8, 19); lamps(8, 220, 232); shards(8, true, 225, 234); shards(19, false, 219);
-  ent('sign', 217, 19, { text: 'GAS. A SPARK LIGHTS THE POCKET. NO STEEL, NO FIRE, NO TORCH. DODGE AND BLOCK AND KEEP GOING.' });
-  ent('gas', 222, 19, { period: 7, phase: 0 }); ent('gas', 230, 19, { period: 7, phase: 3.5 }); ent('rockgoblin', 228, 19, { face: -1 }); ent('miner', 224, 19, { face: 1 });
-  ent('silver', 230, 17); coins([220, 17], [226, 17], [233, 17]);
-
-  // ---- 7. THE MIRROR STAIR: four landings, four hatches, four relays. Each mirror you strike opens the hatch above it. ----
-  gallery(236, 272, 4, 19); for (const x of [242, 266]) ent('deco', x, 19, { kind: 'timber', v: 0 }); lamps(19, 240, 268); lamps(4, 244, 264); shards(19, false, 238, 270); shards(4, true, 246, 258, 268);
-  ent('sign', 238, 19, { text: 'THE MIRROR STAIR. EVERY LANDING HAS A CRYSTAL, A MIRROR AND A LENS, AND A HATCH ABOVE IT. TURN THE MIRROR, LIGHT THE LENS OVER IT, THE HATCH OPENS. FOUR TIMES. THE LAST LENS OPENS THE DOOR TO THE RIDE.' });
-  // landing k: a crystal and a mirror on its floor, a hatch two rows over your head, the lens on the landing above, straight over the mirror
-  const stair = [[20, 238, 250, false], [17, 269, 256, true], [14, 238, 246, false], [11, 269, 262, true]];
-  stair.forEach(([y, cxp, mx, flip], k) => { if (k > 0) plat(238, y, 34); ent('crystal', cxp, y - 1, { dir: [flip ? -1 : 1, 0] }); ent('mirror', mx, y - 1, { o: flip ? 0 : 1 }); /* starts turned away: one strike aims it */ const hy = y - 2; gateRow(238, 271, hy); ent('receiver', mx, y - 4, { hatch: hy, gx0: 238, gx1: 271 }); });
-  plat(238, 8, 34); ent('receiver', 254, 4, { gate: 271 }); gateCol(271, 5, 7); gallery(271, 276, 4, 7); ent('crystal', 238, 7, { dir: [1, 0] }); ent('mirror', 254, 7, { o: 1 });
-  ent('rockgoblin', 244, 16, { face: 1 }); ent('miner', 262, 13, { face: -1 }); ent('rockgoblin', 246, 10, { face: 1 }); ent('grub', 256, 7, { face: -1 });
-  coins([244, 18], [258, 15], [250, 12], [244, 9], [258, 6]);
-  ent('check', 237, 19); works(19, [262, 'kiln'], [266, 'blowpipe']);
-
-  // ---- 8. THE GREAT RIDE: one rail, four steps down, the tub takes every drop. Beams to duck, crystal off the roof, a wall to smash at the end. ----
-  gallery(276, 340, 4, 31); lamps(8, 280, 296, 312, 328, 336); shards(8, true, 283, 290, 301, 308, 319, 326, 332, 338); shards(19, false, 291); shards(21, false, 305); shards(23, false, 321); shards(25, false, 335);
-  gallery(276, 280, 4, 19); ent('check', 278, 19); ent('sign', 277, 19, { text: 'THE GREAT RIDE. JUMP IN. THE RAIL STEPS DOWN FOUR TIMES AND THE TUB TAKES EVERY DROP. HOLD DOWN FOR THE BEAMS. THE ROOF SHEDS CRYSTAL WHERE THE LAMPS FLICKER. IT ENDS THROUGH THE WALL.' });
-  block(276, 292, 20, 31); rail(278, 292, 20); ent('cart', 280, 19);
-  block(293, 308, 22, 31); rail(293, 308, 22); block(309, 324, 24, 31); rail(309, 324, 24); block(325, 338, 26, 31); rail(325, 338, 26);
-  ent('beam', 300, 21); ent('beam', 330, 25); ent('rockfall', 286, 9, { every: 2.2 }); ent('rockfall', 316, 9, { every: 2.4 }); ent('rockfall', 334, 9, { every: 2.6 });
-  soft(339, 340, 22, 26); ent('bat', 304, 14); ent('bat', 320, 16);
-  coins([284, 17], [290, 16], [293, 15], [298, 19], [306, 19], [309, 17], [316, 21], [323, 21], [325, 19], [332, 23], [337, 23]);
-
-  // ---- 9. THE HEART: three crystals of three colours, the mirrors to aim them, and the thing that grew in the light. ----
-  gallery(340, 370, 6, 25); lamps(6, 344, 356, 366); shards(6, true, 346, 352, 362); shards(25, false, 345, 365);
-  works(25, [343, 'kiln'], [367, 'kiln']);
-  plat(341, 16, 3); ent('crystal', 342, 15, { dir: [0, 1], col: 'blue' }); ent('mirror', 342, 25, { o: 0 });
-  plat(367, 16, 3); ent('crystal', 368, 15, { dir: [0, 1], col: 'violet' }); ent('mirror', 368, 25, { o: 1 });
-  ent('crystal', 355, 6, { dir: [0, 1], col: 'green', hang: true }); // the green beam falls from the roof: he must be led under it
-  plat(348, 19, 3); plat(359, 19, 3); // two ledges to get off the line when he throws the light back
-  ent('golem', 355, 25);
-  ent('sign', 339, 25, { text: 'THE HEART. IT ONLY BLEEDS IN THE LIGHT, AND EACH FACET WANTS ITS OWN COLOUR: BLUE FROM THE LEFT, VIOLET FROM THE RIGHT, GREEN FROM THE ROOF. LIT TOO LONG, IT DRINKS THE BEAM AND THROWS IT BACK: GET OFF THE LINE. THE LAST FACET BREAKS ONLY LIT FROM BOTH SIDES AT ONCE.' });
-  ent('gate', 369, 25);
+  // ---- Tier 5. THE CROWN: the peak, and the thing that has been taking the sun all this time. ----
+  block(1, W - 2, 30, 34);
+  spikes(4, 12, 29); spikes(80, 90, 29);
+  spires(30, true, 8, 20, 74, 86); spires(29, false, 16, 78);
+  // A CANOPY of crystal over the whole crown, and two rock ledges to get up onto it. Standing on the
+  // canopy breaks it, and what comes down comes down on him: that is the only way to put his light out.
+  cryst(20, 56, 26);
+  plat(10, 22, 6); plat(78, 22, 6);
+  plat(30, 18, 5); plat(58, 18, 5);
+  spires(26, true, 26, 46, 66);
+  ent('sign', 16, 29, { text: 'THE SUNCATCHER. IT HAS BEEN DRINKING THIS MOUNTAIN\'S LIGHT SINCE BEFORE THE WOOD. IT TURNS ANY GROUND IT TOUCHES TO CRYSTAL AND THE CRYSTAL DOES WHAT CRYSTAL DOES. IT RAISES SPIRES: BREAK ONE OVER ITS HEAD.' });
+  ent('suncatcher', 47, 29);
+  ent('check', 18, 29); ent('gate', 92, 29);
+  ent('stray', 8, 25, { kind: 'shard' }); plat(4, 26, 6);
+  ent('silver', 88, 29);
+  ent('stray', 88, 25, { kind: 'shard' }); plat(86, 26, 6);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools, falls: [], moversExtra: [], interiors,
-    duskStart: -1, duskLen: 1, music: 'cave', night: true, glowNight: true, nightA: 0.2, dark: 0.02,
-    darkZones: [{ x0: 164 * TS, x1: 201 * TS, y0: 21 * TS, y1: 32 * TS, dark: 0.8 }],
-    noSwing: [{ x0: 217 * TS, x1: 236 * TS, y0: 7 * TS, y1: 20 * TS }],
-    quest: { n: 3, item: 'lens', name: 'GROUND LENS', npc: 'foreman', done: 'THE LENSES ARE BACK ON THE BENCH', thanks: "THE FOREMAN'S THANKS" },
-    palette: { sky: 'night', dress: 'none', hall: true, haze: 'rgba(150,170,240,0.08)', grass: '#8a8aa8', grassL: '#b8b8d8', grassD: '#5a5a7a', dirt: '#5e5e80', dirtL: '#7a7a9c', dirtD: '#3a3a58', canopy: ['#2a2a34', '#3a3a44', '#4a4a58', '#5a5a66'] },
-    weather: [{ x0: 40 * TS, x1: 99999, kind: 'glitter' }], ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
-    arena: { x0: 341 * TS, x1: 370 * TS, floor: 26 * TS, trigger: 344 * TS, wallL: 340, wallR: 371, boss: 'golem', tint: '#bfe6f5', tintA: 0.08, fx: 'motes' },
+    W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 145 }, pools: [], falls: [], moversExtra: movers,
+    duskStart: 99999, duskLen: 1, music: 'theme3', night: false, hasCryst: true, cloudLine: CLOUD, // duskStart -1 means ALWAYS dusk: this one is meant to be daylight
+    tall: { top: 26 * TS, bottom: 146 * TS },
+    quest: { n: 3, item: 'shard', name: 'SUNSHARD', npc: 'squire', done: 'THE LIGHT IS CARRIED DOWN', reward: 'relic', relic: 'sunshard' },
+    palette: { sky: [[126, 176, 214], [214, 232, 240]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag',
+      haze: 'rgba(200,222,240,0.16)', grass: '#bcd4e4', grassL: '#e8f2fa', grassD: '#8ea8bc',
+      dirt: '#5a6478', dirtL: '#727e94', dirtD: '#3c4456', canopy: ['#5a6478', '#6e7a90', '#8494ac', '#a8bcd0'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, trigger: 20 * TS, wallL: 1, wallR: 94, boss: 'suncatcher', music: 'boss2', tint: '#bfe6f5', tintA: 0.10, fx: 'motes' },
   };
 }
 
-// THE HIGH STORE: the same trade in a stone cellar under the crags, with the shepherd and the old knight for company.
 // ============================================================================================
 // LEVEL 10 - STORMHOLD, the last hold.
 // What is left of the goblins after Kingswood, the Stockade and the crags has fallen back up
@@ -1577,8 +1562,8 @@ export const LEVELS = [
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', build: kingswood, needs: 'spore' },
   { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', build: hangingVillage, needs: 'scree' },
-  { id: 'mineworks', name: 'THE GLASSWORKS', sub: 'the mine that broke into light', build: theMineworks, needs: 'hanging' },
-  { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', build: galeMoor, needs: 'mineworks' },
+  { id: 'spire', name: 'THE SUNSPIRE', sub: 'the mountain of crystal', build: theSunspire, needs: 'hanging' },
+  { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', build: stormhold, needs: 'moor' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },

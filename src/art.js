@@ -1119,6 +1119,37 @@ export function bakeCastle(seed) { const rnd = mulberry(seed || 5); const [c, g]
   fillPoly(g, [[76, 28], [91, 12], [106, 28]], '#57455f', '#3d3145'); // the great roof
   rect(g, 90, 2, 2, 12, '#5c3a1d'); rect(g, 92, 3, 8, 5, '#c9463d'); // her banner
   return outline(c, OUT); }
+// ---------- THE SUNSPIRE ----------
+// A crystal ledge, in three states: whole, crazed, and about to go. `lit` is above the cloud line,
+// where the sun is on it and everything happens faster.
+export function bakeCrystalTile(state, lit) {
+  const T2 = 16; const [c, g] = canvas(T2, T2);
+  const base = lit ? ['#bfe6f5', '#8fc8e8', '#6aa0c8'] : ['#8fa8c0', '#6a86a0', '#4e6480'];
+  const glint = lit ? '#ffffff' : '#cfe0ee';
+  for (let y = 0; y < T2; y++) for (let x = 0; x < T2; x++) { const k = ((x * 5 + y * 3) % 7);
+    px(g, x, y, k < 2 ? base[0] : k < 5 ? base[1] : base[2]); }
+  // facets: a few long diagonals catching the light
+  for (let i = 0; i < 4; i++) { const x0 = (i * 5) % T2; line(g, x0, 0, x0 + 6, T2, glint, 1); }
+  rect(g, 0, 0, T2, 1, base[0]); rect(g, 0, T2 - 2, T2, 2, base[2]);
+  if (state >= 1) { // crazed: a web of cracks
+    const rnd = mulberry(41 + state * 7);
+    for (let i = 0; i < 5 + state * 4; i++) { let x = (rnd() * T2) | 0, y = (rnd() * T2) | 0;
+      for (let k = 0; k < 4 + state * 2; k++) { px(g, x, y, state >= 2 ? '#1e2a38' : '#3a4e64'); x += rnd() < 0.5 ? 1 : 0; y += rnd() < 0.5 ? 1 : -1; if (y < 0 || y >= T2) break; } } }
+  if (state >= 2) { rect(g, 0, 0, T2, 1, '#ffffff'); for (let x = 0; x < T2; x += 3) px(g, x, T2 - 1, '#1e2a38'); }
+  return c;
+}
+// A crystal spire growing off the mountain, for scenery and for the Suncatcher to raise. 14x40.
+export function bakeSpire(v, lit) {
+  const [c, g] = canvas(14, 40); const col = lit ? ['#dff2ff', '#a8d8f0', '#6aa0c8'] : ['#a8c0d4', '#7e97b0', '#54687f'];
+  fillPoly(g, [[7, 0], [13, 22], [10, 40], [4, 40], [1, 22]], col[1], col[2]);
+  fillPoly(g, [[7, 0], [10, 22], [8, 40], [6, 40], [5, 22]], col[0]);
+  for (let y = 6; y < 38; y += 7) px(g, 6 + ((y / 7) % 2), y, '#ffffff');
+  if (v % 2) { fillPoly(g, [[2, 14], [6, 26], [3, 40], [0, 40]], col[1], col[2]); }
+  return outline(c, OUT);
+}
+// A sunshard: a splinter of the peak, still warm. 10x12.
+export function bakeSunshardIcon() { const [c, g] = canvas(10, 12); fillPoly(g, [[5, 0], [9, 6], [6, 12], [3, 12], [1, 6]], '#bfe6f5', '#7aa8c8');
+  fillPoly(g, [[5, 1], [7, 6], [5, 11], [4, 6]], '#eefaff'); px(g, 5, 3, '#ffffff'); px(g, 4, 8, '#ffe6a0'); return outline(c, OUT); }
 export function bakeLampIcon() { const [c, g] = canvas(10, 12); rect(g, 4, 0, 2, 2, '#8b8378'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 7, '#3a3444'); rect(g, 3, 4, 4, 5, '#6a5a3a'); px(g, 4, 6, '#ffd36b'); rect(g, 2, 10, 6, 1, '#5f5a52'); return outline(c); }
 // A lit or dark lantern on a tall post for the crown of the tree. 12×36.
 export function bakeCrownLantern(lit) { const [c, g] = canvas(12, 36); rect(g, 5, 8, 2, 28, C.woodD); rect(g, 5, 8, 1, 28, C.wood); rect(g, 2, 34, 8, 2, C.woodD); rect(g, 3, 0, 6, 2, '#5f5a52'); rect(g, 2, 2, 8, 8, lit ? '#ffd36b' : '#3a3444'); rect(g, 3, 3, 6, 6, lit ? '#fff6c8' : '#2a2630'); rect(g, 2, 10, 8, 1, '#5f5a52'); return outline(c); }

@@ -48,7 +48,8 @@ for (const [k, where] of used.relic) if (!relics.has(k)) say(`${k}  <- ${[...whe
 
 console.log('== creatures with a spawn case but no EHP / DMG / COLS / bestiary row ==');
 // parts of a boss and internals are not creatures you meet
-const NOT_A_BEAST = new Set(['gill', 'heart', 'bearer', 'master', 'squirrel', 'forgemaster']);
+// parked: their code is kept for a re-home but no level places them, so they are not missing anything
+const NOT_A_BEAST = new Set(['gill', 'heart', 'bearer', 'master', 'squirrel', 'forgemaster', 'golem']);
 const creatures = [...spawnCases].filter(t => (EHP.has(t) || COLS.has(t) || beasts.has(t)) && !NOT_A_BEAST.has(t));
 for (const t of creatures) {
   const miss = [];

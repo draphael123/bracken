@@ -1137,6 +1137,50 @@ export function bakeLance() {
   return pack([stand, walk1, walk2, couch, charge, thrust, sweep, planted, guard, guardHit, stagger].map(f), 20, 30, 26, 30);
 }
 
+// SHARDLING - a knot of crystal that walks. It goes off when it dies, so mind where you are standing.
+// 10x11. Frames: 0/1 walk, 2 bristling (about to burst).
+export function bakeShardling() {
+  const SP2 = Object.assign({}, EP, { c: '#bfe6f5', C: '#7aa8c8', w: '#eefaff', d: '#4a6a90' });
+  const f = rows => outline(fromGrid(rows, SP2, 1), OUT);
+  const a1 = f(['..c..c....', '.cccccc...', 'ccwccwcc..', 'ccccccccc.', '.cCcccCc..', '..ccccc...', '..dc.cd...', '..d...d...']);
+  const a2 = f(['...c.c....', '..cccc....', '.ccwccwcc.', 'ccccccccc.', '.cCcccCc..', '..ccccc...', '..d.c.d...', '...d.d....']);
+  const up = f(['.c..c..c..', 'cccccccc..', 'cwccccwc..', 'ccccccccc.', 'cwCcccCwc.', '.ccccccc..', '..dc.cd...', '..d...d...']);
+  return pack([a1, a2, up], 5, 12, 9, 11);
+}
+
+// THE SUNCATCHER - it has been drinking this mountain's light since before the wood, and it gives it
+// back as glass. 34x30. Frames: 0 still, 1/2 turning, 3 drink (open, taking the sun), 4 throw,
+// 5 raise (a spire coming up), 6 struck, 7 dimmed.
+export function bakeSuncatcher() {
+  const SC = Object.assign({}, EP, { c: '#bfe6f5', C: '#7aa8c8', w: '#ffffff', y: '#ffe6a0', Y: '#e0b040', d: '#4a6a90', D: '#2e4460' });
+  const W2 = 34, H2 = 30; const blank = () => Array.from({ length: H2 }, () => '.'.repeat(W2));
+  const put = (R, x, y, str) => { if (y < 0 || y >= H2) return; const r = R[y]; R[y] = r.slice(0, x) + str + r.slice(x + str.length); };
+  const f = rows => outline(fromGrid(rows, SC, 1), OUT);
+  const body = (core, arms) => { const R = blank();
+    // a crown of shards over a heavy crystal body
+    put(R, 12, 0, 'c..c..c'); put(R, 11, 1, 'cc.cc.cc'); put(R, 10, 2, 'ccccccccc');
+    put(R, 8, 3, 'ccccccccccccc'); put(R, 7, 4, 'cCcccccccccccCc');
+    put(R, 6, 5, 'cCccc' + core + 'ccccC c'.replace(' ', 'c'));
+    put(R, 6, 6, 'cCcc' + core + core + 'cccCc');
+    put(R, 6, 7, 'cCccc' + core + 'cccccCc');
+    put(R, 7, 8, 'cccccccccccccc'); put(R, 8, 9, 'ccccccccccccc');
+    put(R, 9, 10, 'ccccccccccc'); put(R, 10, 11, 'ccccccccc');
+    put(R, 11, 12, 'DDDDDDD');
+    // the legs it stands on: three crystal columns
+    for (const lx of [11, 15, 19]) { for (let y = 13; y <= 26; y++) put(R, lx, y, 'cC'); put(R, lx - 1, 27, 'ccc'); put(R, lx - 1, 28, 'DDD'); }
+    if (arms) for (const [ax, dir] of [[3, -1], [27, 1]]) { for (let y = 4; y <= 10; y++) put(R, ax + (dir < 0 ? 0 : 0), y, 'cc'); put(R, ax, 3, 'wc'); }
+    return R; };
+  const still = f(body('y', false));
+  const turn1 = f(body('y', false).map((r, i) => i === 6 ? r.replace('yy', 'Yy') : r));
+  const turn2 = f(body('y', false).map((r, i) => i === 6 ? r.replace('yy', 'yY') : r));
+  const drink = f((() => { const R = body('w', true); for (let i = 0; i < 5; i++) put(R, 4 + i * 6, 0, 'w'); return R; })());
+  const thr = f((() => { const R = body('y', true); put(R, 29, 5, 'www'); put(R, 30, 4, 'ww'); return R; })());
+  const raise = f((() => { const R = body('y', false); for (let y = 0; y <= 12; y++) { put(R, 2, y, 'cc'); put(R, 30, y, 'cc'); } return R; })());
+  const struck = f(body('D', false));
+  const dim = f((() => { const R = body('D', false); return R.map(r => r.replace(/c/g, 'C')); })());
+  return pack([still, turn1, turn2, drink, thr, raise, struck, dim], 17, 30, 26, 28);
+}
+
 export function bakeGoblinShaman() {
   const SH = Object.assign({}, EP, { v: '#9a5acc', V: '#5a2a8a', m: '#f0e4ff', u: '#8a5a32', a: '#e8dcc0' });
   const r = rows => outline(fromGrid(rows, SH, 1), OUT);
