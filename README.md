@@ -191,6 +191,15 @@ Any standard gamepad works: A jump, X swing, B dodge, LB/RB block, Start pause, 
 move. On touch devices (or with `?touch=1`) an on-screen pad appears: d-pad on the left, A/B/X/Y
 on the right, pause top-right.
 
+## Outfits and blades
+
+Twelve outfits: Bracken Blue, Black Knight, Violet Knight, River Blue, Marsh Green, Rose Knight,
+Crimson Guard, Verdant, Frost Plate, Shadow, Gilded Plate, and two you earn instead of buy: Iron
+Knight (clear any level in Iron Knight mode) and Sporeborn (clear Sporewood). Seven blades, each
+with a habit: Steel; Ember (foes burn after a hit); Frost (hits hold foes still); Gilded (kills
+shake out a coin); Shadow Edge (light, swings cost 7 stamina); Thorn (each hit mends 2); Moonsilver
+(15 a swing, shoves hard, costs 16).
+
 ## Skills
 
 The store's SKILLS tab opens once the Stockade is cleared (the results card and the map point you
@@ -227,7 +236,9 @@ Difficulty (easy, normal, hard: damage taken and enemy health scale), a SOUND TE
 music track and ambience bed, grouped, Z to play), music on/off, music
 volume and effects volume (independent), sound FX files or synth, a Z/X swap for jump and swing,
 screen shake, hit stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets),
-CRT scanlines, a pixel-scale cap, CAMERA (close, or wide: the view shows up to twice the world at a
+grouped under GAME / AUDIO / VIDEO / LEVEL: block HOLD or TOGGLE, tips (the little words over
+the action) on/off, intro text speed, REDUCE MOTION (one switch for shake, hit stop, flashes and
+zoom), flashes, vignette, weather, impact FX, CRT scanlines, a pixel-scale cap, CAMERA (close, or wide: the view shows up to twice the world at a
 smaller pixel scale, picked from your display so it never shrinks on screen), IRON KNIGHT, BACK TO SHRINE (counts as a death), RESTART LEVEL, and a reset
 of the current save slot.
 

@@ -122,6 +122,7 @@ export function bakeKnight(skin = {}) {
   const tuck = knightFrame({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(whiten) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -145,7 +146,8 @@ export function bakeSprig() {
   const frames = legs.map((l, i) => sprite([...(i & 1 ? shiftDown(head, 0) : head), ...cloth, ...l]));
   // bob: frames 1 and 3 drop the head a pixel
   const bobbed = legs.map((l, i) => i & 1 ? sprite(['..........', ...head.slice(0, 5), ...cloth, ...l]) : frames[i]);
-  return pack(bobbed, 6, 11, 8, 10);
+  const look = sprite([head[0], head[1], '.gggeogge.', head[3], head[4], head[5], ...cloth, ...legs[0]]);
+  return pack([...bobbed, look], 6, 11, 8, 10);
 }
 
 // Shieldbearer — helmet, tabard, round wooden shield held out front (right). 14×14, four-frame walk.
@@ -236,7 +238,8 @@ export function bakeArcher() {
   const walk2 = ['..bbbbbb.w..', '..bbbbbb.w..', '..rrrrrr.w..', '...GGGG.....', '..GG..GG....'];
   const P2 = Object.assign({}, EP, { H: '#3f5a33', b: '#6b4a2a', a: '#e8dcc0' });
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
-  return pack([spr([...hood, ...bodyIdle]), spr([...hood, ...bodyDraw]), spr([...hood, ...walk1]), spr([...hood, ...walk2])], 6, 11, 8, 10);
+  const hoodLook = [hood[0], hood[1], '..HHggeogge.', hood[3], hood[4]];
+  return pack([spr([...hood, ...bodyIdle]), spr([...hood, ...bodyDraw]), spr([...hood, ...walk1]), spr([...hood, ...walk2]), spr([...hoodLook, ...bodyIdle])], 6, 11, 8, 10);
 }
 
 // Bird — scatters from bushes. 6×4, two wing frames.
