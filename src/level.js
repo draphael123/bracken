@@ -262,7 +262,7 @@ function theStockade() {
 
   // ---- 3. Rope bridge over the ravine, with a goblin at the far end holding a knife ----
   planks(71, 74, 20); planks(75, 86, 21); planks(87, 90, 20);
-  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('relic', 88, 24, { kind: 'gauntlet' }); // the ravine cache, on the net
+  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('relic', 86, 24, { kind: 'gauntlet' }); // the ravine cache, on the net
   plat(78, 23, 3); plat(83, 23, 3); block(87, 90, 23, 27); block(89, 90, 22, 27);
   ent('bridge', 71, 20, { x1: 90 });
   floor(91, 185, 20);
@@ -335,7 +335,7 @@ function theStockade() {
   ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
   ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
   ent('deco', 336, 19, { kind: 'skullPile', v: 0 }); ent('deco', 351, 19, { kind: 'skullPile', v: 1 });
-  ent('deco', 338, 8, { kind: 'hangCage', hang: true }); ent('deco', 349, 8, { kind: 'hangCage', hang: true });
+  ent('deco', 344, 6, { kind: 'bough', hang: true }); ent('deco', 338, 8, { kind: 'hangCage', hang: true }); ent('deco', 349, 8, { kind: 'hangCage', hang: true });
   ent('chief', 343, 19);
 
   return {
@@ -464,6 +464,11 @@ function kingswood() {
   ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]);
   ent('sign', 29, 19, { text: 'THIEVES SNATCH GOLD. CATCH THEM FOR INTEREST.' });
   ent('thief', 34, 19, { face: -1 }); ent('door', 40, 19); ent('folk', 38, 19, { door: 40 });
+  // the canopy road over the pasture, and a rope ladder up onto the first hall's roof
+  plat(6, 16, 3); plat(11, 14, 3); plat(16, 12, 4); plat(22, 14, 3); plat(27, 16, 3); plat(33, 14, 3); plat(38, 12, 3);
+  coins([7, 15], [12, 13], [18, 11], [23, 13], [28, 15], [34, 13], [39, 11]); ent('wasp', 25, 11);
+  for (let y = 12; y <= 19; y++) set(44, y, T.NET);
+  ent('sign', 41, 19, { text: 'ROPES GO UP. THE ROOF ROAD SKIPS THE HALL.' });
   ent('check', 43, 19);
 
   // ---- 2. The first hall: inside a trunk. A bell at the far end and a gate under it. ----
@@ -505,6 +510,7 @@ function kingswood() {
   ent('sign', 169, 13, { text: 'THE HOUND MASTER. BLOCK THE CHARGE, THEN PLUNGE THE RIDER.' });
   gate(190, 9, 13);
   block(191, 210, 14, 27); ent('torch', 194, 13); coins([196, 12], [200, 12], [204, 12]); ent('check', 208, 13);
+  plat(196, 11, 3); plat(201, 9, 3); plat(206, 11, 3); ent('archer', 202, 8, { face: -1 }); coins([197, 10], [202, 7], [207, 10]);
 
   // ---- 5. FORK TWO. Canopy (rows 5-10) over the roots (rows 16-20). ----
   // canopy
@@ -531,17 +537,23 @@ function kingswood() {
   ent('shield', 295, 13, { face: -1 }); ent('shield', 298, 13, { face: -1 });
   ent('deco', 290, 13, { kind: 'banner', v: 0 }); ent('deco', 297, 13, { kind: 'banner', v: 1 });
   ent('thief', 302, 13, { face: -1 }); coins([289, 12], [294, 12]);
+  plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1 }); coins([287, 9], [293, 7], [294, 7]);
   // the cache: a hidden loft above the court holds the Thief Cloak
   plat(303, 9, 3); plat(307, 7, 3); coins([304, 8], [308, 6], [309, 6]); ent('relic', 308, 6, { kind: 'cloak' });
   ent('check', 312, 13);
 
   // ---- 7. The throne room: King Gorm Underleaf on his palanquin. ----
   block(300, 429, 14, 27);
-  for (const x of [318, 322, 326, 330, 334, 338, 342, 346, 350, 354, 358, 362, 366]) ent('carpet', x, 13);
-  ent('torch', 320, 13); ent('torch', 366, 13); ent('deco', 322, 13, { kind: 'banner', v: 0 }); ent('deco', 364, 13, { kind: 'banner', v: 1 });
-  ent('deco', 330, 13, { kind: 'skullPile', v: 0 }); ent('deco', 356, 13, { kind: 'skullPile', v: 1 });
-  plat(324, 9, 4); plat(360, 9, 4);
-  for (const x of [319, 325, 331, 355, 361, 367]) ent('folk', x, 9, { court: true, alt: x % 2 === 0 });
+  for (let x = 318; x <= 368; x++) ent('carpet', x, 13);
+  ent('torch', 320, 13); ent('torch', 366, 13); ent('deco', 326, 13, { kind: 'banner', v: 0 }); ent('deco', 360, 13, { kind: 'banner', v: 1 });
+  ent('deco', 332, 13, { kind: 'skullPile', v: 0 }); ent('deco', 354, 13, { kind: 'skullPile', v: 1 });
+  // the galleries: the court cheers from balconies either side and throws goblets when the King shouts
+  plat(318, 9, 6); plat(363, 9, 6); ent('torch', 318, 8); ent('torch', 368, 8);
+  for (const x of [319, 321, 323, 364, 366, 368]) ent('folk', x, 9, { court: true, alt: x % 4 === 1 });
+  ent('deco', 320, 9, { kind: 'banner', v: 1 }); ent('deco', 366, 9, { kind: 'banner', v: 0 });
+  // three cages hang over the carpet; the King drops them on you
+  for (const x of [330, 343, 356]) ent('dropcage', x, 6, { boss: true });
+  ent('deco', 338, 6, { kind: 'hangCage', hang: true }); ent('deco', 350, 6, { kind: 'hangCage', hang: true });
   ent('king', 344, 13);
 
   return {

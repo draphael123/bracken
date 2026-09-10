@@ -724,6 +724,16 @@ export function bakeSkullPile(seed) {
   rect(g, 2, 10, 22, 2, '#b8a888');
   return outline(c, OUT);
 }
+// A great bough of the old tree over the Chieftain's hall, 220×24: the cages hang from it.
+export function bakeBough() {
+  const [c, g] = canvas(220, 24);
+  fillPoly(g, [[0, 4], [40, 2], [110, 6], [180, 3], [220, 6], [220, 16], [180, 20], [110, 18], [40, 21], [0, 17]], '#3a2618');
+  fillPoly(g, [[0, 6], [40, 4], [110, 8], [180, 5], [220, 8], [220, 11], [180, 9], [110, 11], [40, 8], [0, 9]], '#5a3a24');
+  for (let x = 6; x < 214; x += 9) { rect(g, x, 12 + ((x / 9) % 3), 4, 1, '#241a10'); rect(g, x + 4, 9 + ((x / 9) % 2), 3, 1, '#6a4a30'); }
+  for (let x = 14; x < 210; x += 22) { rect(g, x, 0, 2, 5, '#3a2618'); for (let k = 0; k < 3; k++) rect(g, x - 3 + k * 3, 0 + k, 3, 2, ['#16301f', '#2a5e36', '#3a7a48'][k]); }
+  for (let x = 30; x < 200; x += 37) { rect(g, x, 18, 2, 6, '#3a2618'); rect(g, x - 2, 22, 6, 2, '#2a5e36'); }
+  return outline(c, OUT);
+}
 export function bakeHangCage() {
   const [c, g] = canvas(16, 44);
   for (let y = 0; y < 16; y += 3) rect(g, 7, y, 2, 2, '#8b8378');
@@ -804,7 +814,17 @@ export function bakeNearAutumn(w, h, seed) {
 // Wooden hall interior tiles: planked wall for the ceilings and inner walls.
 export function bakeHallWall(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a3020'); for (let y = 0; y < T; y += 4) { rect(g, 0, y, T, 3, rnd() < 0.5 ? '#5a3a24' : '#513320'); rect(g, 0, y + 3, T, 1, '#2c1a10'); } for (let i = 0; i < 3; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, '#6a4a30'); return c; }
 // A goblin door in a trunk (bg), open and shut.
-export function bakeDoor(shut) { const [c, g] = canvas(16, 22); rect(g, 0, 0, 16, 22, '#3a2618'); ellipse(g, 8, 8, 7, 8, shut ? '#5c3a1d' : '#1b1626', '#241a10'); if (shut) { for (let y = 2; y < 18; y += 4) rect(g, 3, y, 10, 1, '#3d2712'); px(g, 11, 10, '#e0b040'); } return outline(c, OUT); }
+// A goblin house against the trunk: timber walls, a thatched roof, a lit window, a chimney, and a round door that slams. 34×34, open and shut.
+export function bakeDoor(shut) {
+  const [c, g] = canvas(34, 34);
+  rect(g, 3, 14, 28, 20, '#5a3a24'); for (let y = 16; y < 34; y += 4) rect(g, 3, y, 28, 1, '#3d2712'); for (let x = 6; x < 30; x += 8) rect(g, x, 14, 2, 20, '#3a2618');
+  fillPoly(g, [[0, 15], [17, 1], [34, 15]], '#8a6a2a'); fillPoly(g, [[3, 14], [17, 3], [31, 14]], '#b8842a'); for (let x = 4; x < 31; x += 3) px(g, x, 6 + (Math.abs(x - 17) >> 1), '#e0b040'); for (let x = 2; x < 33; x += 2) px(g, x, 15, '#5c3a1d');
+  rect(g, 24, 2, 4, 9, '#5a6270'); rect(g, 23, 1, 6, 2, '#7c8797');
+  rect(g, 21, 19, 7, 7, '#ffd36b'); rect(g, 24, 19, 1, 7, '#3d2712'); rect(g, 21, 22, 7, 1, '#3d2712'); px(g, 22, 20, '#fff6c8');
+  ellipse(g, 11, 26, 6, 7, shut ? '#7a4e28' : '#1b1626', '#3d2712'); if (shut) { for (let y = 21; y < 32; y += 3) rect(g, 7, y, 8, 1, '#5c3a1d'); px(g, 14, 27, '#e0b040'); } else { rect(g, 16, 20, 2, 12, '#7a4e28'); px(g, 17, 27, '#e0b040'); }
+  rect(g, 6, 12, 2, 2, '#ffd36b'); px(g, 6, 11, '#5c3a1d');
+  return outline(c, OUT);
+}
 // A red carpet strip for the throne room (drawn on the floor row).
 export function bakeCarpet() { const [c, g] = canvas(T, 6); rect(g, 0, 0, T, 6, '#8f2f28'); rect(g, 0, 0, T, 1, '#c9463d'); rect(g, 0, 5, T, 1, '#5a1a1a'); for (let x = 2; x < T; x += 5) px(g, x, 3, '#e0b040'); return c; }
 // Rust-dawn sky.

@@ -435,7 +435,7 @@ export function bakeMaster() {
   const footHead = ['....gggggg..', '...fggeoggf.', '...ffggggff.'];
   const stand = kspr([...footHead, '..fffbbbbff.', '...ffbbbbff.', '....rrrrrr..', '....GG..GG..', '...GG....GG.']);
   const whip = kspr([...footHead, '..fffbbbbffz', '...ffbbbbffzz', '....rrrrrr.zz', '....GG..GG..', '...GG....GG.']);
-  return { mounted: pack([mA, mB], 12, 17, 20, 16), foot: pack([stand, whip], 6, 15, 10, 14) };
+  return { mounted: pack([mA, mB], 12, 12, 20, 16), foot: pack([stand, whip], 6, 9, 10, 14) };
 }
 // King Gorm Underleaf — seated on the throne (24×20: idle, throw, shout) and standing (24×26: stand, slam).
 export function bakeKing() {

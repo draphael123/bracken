@@ -128,7 +128,8 @@ roll the barrel into the inner gate or crank it), the kennels and armoury, pulle
 great hall where the Chieftain waits. The level does not end when he falls: the hall burns from
 the floor up and you climb the rafters to the way out: THE HALL BURNS. CLIMB TO THE GATE, with a
 marker on the gate; the rafters are two-tile hops on both sides, the fire stops just under the top beam,
-and dying in the fire resets the fire, not the Chieftain. The horn now brings five goblins and a hound;
+and dying in the fire resets the fire, not the Chieftain. The fire itself does not burn you. Two plunges
+in a row on the Chieftain and he shakes you off. The horn now brings five goblins and a hound;
 the watchtower can be climbed from either side. Bridges you lose stay lost for the attempt, but there is
 always a net and a set of ledges to climb back out. Spent barrels come back after a few seconds.
 
@@ -174,6 +175,11 @@ court at the end is a red carpet, banners, a gallery of watching goblins, and KI
 on a palanquin carried by four bearers. Cut the bearers and the throne falls; then the sceptre,
 the shout that throws you back, and goblets; at the last he stands, and the court goes quiet.
 Its own music, Juhani Junkala's Retro Game Music Pack (CC0), with a second boss track for the King.
+The goblins live in proper thatched houses now, the pasture has a canopy road and a rope ladder onto the
+first hall's roof, and the court has galleries either side with the crowd on them. The Hound Master has a
+health bar and an intro, a whip lash from the saddle and a leap (plunge him right after he lands).
+King Gorm, once grounded: the sceptre bolt marks the floor and strikes, the crown comes back like a
+boomerang, three cages drop from the rafters on his word, and the galleries throw goblets when he shouts.
 Clearing it opens the second skill at the store: GROUND SLAM (F on the ground: a quake that runs
 along the floor both ways, 15 and a stagger to everything it reaches, breaks crates; 25 stamina,
 3 seconds). Skills are equipped one at a time in the SKILLS tab, so F does whichever you chose.
