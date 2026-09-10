@@ -1,7 +1,7 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
-import { bakeKeeper, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing } from './chars.js';
+import { bakeKeeper, bakeCragRam, bakeTroll, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing } from './chars.js';
 import { LEVELS, T, TS } from './level.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, debugAudio } from './audio.js';
 
@@ -49,7 +49,7 @@ const PROG = {}; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsg
 try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slot') || 0))); } catch {}
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
-function progDefaults() { PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow'; }
+function progDefaults() { if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow'; }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
 function saveProgress() { try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {} }
@@ -58,8 +58,8 @@ loadSlot(slot);
 // ---------- tuning ----------
 const RUN = 100, GRAV = 1000, JUMPV = -320, POGO = -330;
 const SWORD_DMG = 10, PLUNGE_DMG = 20;
-const DMG = { sprig: 20, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 35, ram: 20, cage: 15, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
-const EHP = { sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 340, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, gill: 20, heart: 3, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 300 };
+const DMG = { troll: 25, sprig: 20, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 35, ram: 20, cage: 15, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+const EHP = { troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 340, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 300 };
 const ST = { swing: 12, plunge: 15, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
 // ---------- bake ----------
@@ -104,7 +104,13 @@ const ABILITIES = [
   { id: 'shieldThrow', name: 'SHIELD THROW', price: 80, desc: 'F: hurl the shield. 20 stamina, 2.5s', needs: 'stockade', needsName: 'the Stockade' },
   { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 25 stamina, 3s', needs: 'kings', needsName: 'Kingswood' },
 ];
-const STORE_TABS = [{ name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'SWORDS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'GEAR', items: UPGRADES, key: null, owned: 'items' }, { name: 'SKILLS', items: ABILITIES, key: 'skill', owned: 'items' }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }];
+const MENU_MUSIC = [
+  { id: 'select', name: 'STAGE SELECT', price: 0, desc: 'the map tune you know' },
+  { id: 'town', name: 'EXPLORING TOWN', price: 60, desc: 'a wandering tune for the map and menus' },
+  { id: 'adventure', name: 'THE ADVENTURE BEGINS', price: 60, desc: 'a bright march for the map and menus' },
+];
+const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
+const STORE_TABS = [{ name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'SWORDS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'GEAR', items: UPGRADES, key: null, owned: 'items' }, { name: 'SKILLS', items: ABILITIES, key: 'skill', owned: 'items' }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];
 let storeMode = 'buy', equipFrom = 'map';
 const EQUIP_TABS = STORE_TABS.filter(t => t.key);
 const storeTabs = () => storeMode === 'equip' ? EQUIP_TABS : STORE_TABS;
@@ -136,7 +142,7 @@ function bakeSlamIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#7c8797'
 const SLAM_ICON = bakeSlamIcon();
 const skillNow = () => { const k = PROG.skill; if (k === 'none') return null; if (k && PROG.items[k]) return k; if (PROG.items.shieldThrow) return 'shieldThrow'; if (PROG.items.groundSlam) return 'groundSlam'; return null; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
-const MASTER = bakeMaster(), KING = bakeKing(); SPR.harpy = bakeHarpy(); SPR.goat = bakeGoatRider(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
+const MASTER = bakeMaster(), KING = bakeKing(); SPR.harpy = bakeHarpy(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
 // hopper kinds: hop cooldown, hop speed, health, damage
 const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp: 1.35, hp: 10, dmg: 12 }, blue: { cd: 1.9, sp: 0.75, hp: 20, dmg: 22 } };
 const BIRD = bakeBird();
@@ -167,7 +173,7 @@ function bakeAll(pal = {}) {
     oldOak: [0, 1].map(i => ART.bakeOldOak(470 + i)), boat: ART.bakeBoat(480), heron: ART.bakeHeron(), totem: [0, 1].map(i => ART.bakeTotem(490 + i)), giantCap: ART.bakeGiantCap(495),
     skullMini: ART.bakeSkullMini(), compass: ART.bakeCompass(), relic: ART.bakeRelics(), bough: ART.bakeBough(), charm: ART.bakeCharms(), counter: ART.bakeCounter(), wares: [ART.bakeWares(0), ART.bakeWares(1)], shopDoor: ART.bakeShopDoor(), lanternPost: ART.bakeLanternPost(), beehive: ART.bakeBeehive(), birdhouse: ART.bakeBirdhouse(), fishTrap: [0, 1].map(i => ART.bakeFishTrap(800 + i)), spearRack: ART.bakeSpearRack(), barrelStack: ART.bakeBarrelStack(), bones: [0, 1].map(i => ART.bakeBones(810 + i)), fallenLog: [0, 1].map(i => ART.bakeFallenLog(770 + i)), fence: [0, 1].map(i => ART.bakeFence(780 + i)), cart: ART.bakeCart(790), well: ART.bakeWell(), heather: [0, 1, 2].map(i => ART.bakeHeather(730 + i)), gorse: [0, 1].map(i => ART.bakeGorse(740 + i)), thistle: [0, 1].map(i => ART.bakeThistle(750 + i)), standingStone: [0, 1, 2].map(i => ART.bakeStandingStone(760 + i)), cairn: ART.bakeCairn(), boulder: ART.bakeBoulder(), bothy: ART.bakeBothy(), mill: ART.bakeMill(), sail: ART.bakeSail(), foldGate: ART.bakeFoldGate(),
     bell: ART.bakeBell(), ramLog: ART.bakeRamLog(), lever: [ART.bakeLever(false), ART.bakeLever(true)], plate: [ART.bakePlate(false), ART.bakePlate(true)], palanquin: ART.bakePalanquin(), door: [ART.bakeDoor(false), ART.bakeDoor(true)], carpet: ART.bakeCarpet(),
-    puffball: ART.bakePuffball(), honeyPot: ART.bakeHoneyPot(), coffer: ART.bakeCoffer(), brightCap: ART.bakeBrightCap(), questIcon: ART.bakeQuestIcon(), cabin: ART.bakeCabin(), pine: ART.bakePine(), fallenPine: ART.bakeFallenPine(14), sluice: [ART.bakeSluice(false), ART.bakeSluice(true)], catapult: [0, 1, 2].map(i => ART.bakeCatapult(i)), nest: ART.bakeNest(), chainPost: ART.bakeChainPost(), grate: ART.bakeGrate(), silver: ART.bakeSilver(), cottage: [ART.bakeCottage(false), ART.bakeCottage(true)], glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
+    puffball: ART.bakePuffball(), honeyPot: ART.bakeHoneyPot(), coffer: ART.bakeCoffer(), brightCap: ART.bakeBrightCap(), questIcon: ART.bakeQuestIcon(), cabin: ART.bakeCabin(), pine: ART.bakePine(), fallenPine: ART.bakeFallenPine(14), sluice: [ART.bakeSluice(false), ART.bakeSluice(true)], catapult: [0, 1, 2].map(i => ART.bakeCatapult(i)), nest: ART.bakeNest(), chainPost: ART.bakeChainPost(), grate: ART.bakeGrate(), silver: ART.bakeSilver(), cottage: [ART.bakeCottage(false), ART.bakeCottage(true)], deadTree: [0, 1].map(i => ART.bakeDeadTree(880 + i)), glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
     towertop: ART.bakeTowerTop(), treehouse: [0, 1].map(i => ART.bakeTreehouse(320 + i)), torch: ART.bakeTorch(), cage: ART.bakeCage(), barrel: ART.bakeBarrel(), brazier: [ART.bakeBrazier(false), ART.bakeBrazier(true)], crank: ART.bakeCrank(), lift: ART.bakeLift(), horn: ART.bakeHorn(), fire: ART.bakeFire(),
     heart: outline(fromGrid(['.ww.ww.', 'wwwwwww', 'wLwwwww', '.wwwww.', '..www..', '...w...'], { w: '#e04848', L: '#ff9a9a' }, 1), ART.OUT),
     bolt: outline(fromGrid(['..gg.', '.gg..', 'gggg.', '..gg.', '.gg..'], { g: '#8fd160' }, 1), ART.OUT),
@@ -341,6 +347,7 @@ function spawnEnt(e) {
       case 'ram': props.push({ t: 'ram', x: px, y: py - 16, th: 0, active: 0, tm: 0, hit: new Set() }); break;
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, down: false }); break;
       case 'dropcage': props.push({ t: 'dropcage', x: px, y: py, y0: py, dropped: false, landed: 0, hit: new Set(), boss: !!e.boss, resetT: 0 }); break;
+      case 'troll': enemies.push({ ...base, t: 'troll', w: 16, h: 18, hp: EHP.troll, speed: 22, mode: 'walk', modeT: 0, throwT: 2, hitT: 0 }); break;
       case 'harpy': enemies.push({ ...base, t: 'harpy', hx: px, hy: py, w: 12, h: 7, hp: EHP.harpy, mode: 'hover', modeT: 0, face: -1, cd: 0 }); break;
       case 'goat': enemies.push({ ...base, t: 'goat', w: 14, h: 11, hp: EHP.goat, speed: 30, mode: 'patrol', modeT: 0, rider: true, timer: 0, air: false, hitT: 0 }); break;
       case 'ramlord': boss = { ...base, t: 'ram', w: 26, h: 14, hp: EHP.ram, maxHp: EHP.ram, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, n: 0 }; enemies.push(boss); break;
@@ -350,7 +357,7 @@ function spawnEnt(e) {
       case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + Math.random() * 2 }); break;
       case 'master': enemies.push({ ...base, t: 'master', w: 20, h: 16, hp: EHP.master, maxHp: EHP.master, mounted: true, mode: 'wait', modeT: 0, whistleT: 4, air: false, timer: 0, speed: 130 }); break;
       case 'king': boss = { ...base, t: 'king', w: 18, h: 15, hp: EHP.king, maxHp: EHP.king, mode: 'sleep', modeT: 0, phase: 1, dir: -1, gobletT: 3, summonT: 8, sweepT: 4, shoutT: 7, boltT: 3, crownT: 5, cageT: 7, last: '' }; enemies.push(boss); for (let i = 0; i < 4; i++) enemies.push({ ...base, t: 'bearer', w: 8, h: 10, hp: EHP.bearer, off: [-18, -6, 6, 18][i], face: -1 }); break;
-      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [PROP.banner[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [PROP.hangCage, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod] }[e.kind]; if (!K) break; const c = K[0]; deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? e.y * TS : py - c.height, c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: py - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: py - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: py - 11, r: 40, glow: true }); if (e.kind === 'lanternPost') lights.push({ x: px, y: py - 18, r: 40, torch: true }); if (e.kind === 'counter') lights.push({ x: px + 6, y: py - 20, r: 56, glow: true }); if (e.kind === 'mill') lights.push({ x: px, y: py - 46, r: 30, glow: true }); if (e.kind === 'sporePod') lights.push({ x: px, y: py - 8, r: 40, glow: true }); break; }
+      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [PROP.banner[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [PROP.hangCage, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod] }[e.kind]; if (!K) break; const c = K[0]; deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? e.y * TS : py - c.height, c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: py - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: py - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: py - 11, r: 40, glow: true }); if (e.kind === 'lanternPost') lights.push({ x: px, y: py - 18, r: 40, torch: true }); if (e.kind === 'counter') lights.push({ x: px + 6, y: py - 20, r: 56, glow: true }); if (e.kind === 'mill') lights.push({ x: px, y: py - 46, r: 30, glow: true }); if (e.kind === 'sporePod') lights.push({ x: px, y: py - 8, r: 40, glow: true }); break; }
       case 'sporeling': enemies.push({ ...base, t: 'sporeling', w: 8, h: 10, hp: EHP.sporeling, speed: 24 }); break;
       case 'lurker': enemies.push({ ...base, t: 'lurker', w: 12, h: 12, hp: EHP.lurker, mode: 'hide', modeT: 0 }); break;
       case 'drone': enemies.push({ ...base, t: 'drone', hx: px, hy: py, w: 9, h: 7, hp: EHP.drone }); break;
@@ -508,11 +515,11 @@ function updateStore(dt) {
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
   if (confirmPress && items.length) {
     const k = items[storeI], owned = k.id === 'none' || PROG[tab.owned][k.id];
-    if (owned && tab.key) { PROG[tab.key] = k.id; applySkin(); saveProgress(); SFX.uiSel(); storeMsg = k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
+    if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); applySkin(); saveProgress(); SFX.uiSel(); storeMsg = k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) { SFX.buzz(); storeMsg = 'clear ' + k.needsName + ' first'; storeMsgT = 2; }
     else if (k.feat && !featDone(k.feat)) { SFX.buzz(); storeMsg = k.featName + ' to earn it'; storeMsgT = 2; }
-    else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) PROG[tab.key] = k.id; applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
+    else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
     else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; }
   }
   if (pausePress) { if (storeMode === 'equip') { storeMode = 'buy'; state = equipFrom === 'map' ? 'map' : 'menu'; SFX.ui(); } else if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
@@ -524,7 +531,7 @@ function drawStore() {
   const x = 20, y = 10, w = VW - 40, h = VH - 20; const tabs = storeTabs();
   g.fillStyle = 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
   text(storeMode === 'equip' ? 'EQUIP' : 'THE STORE', x + 10, y + 7, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], x + w - 58, y + 6); text(String(PROG.coins), x + w - 10, y + 7, '#ffd34a', 'right');
-  tabs.forEach((t, i) => { const tw = (w - 20) / tabs.length, tx = x + 10 + i * tw, sel = i === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.7)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, y + 20, tw - 4, 13); text((sel ? '<' : '') + t.name + (sel ? '>' : ''), tx + tw / 2 - 2, y + 23, sel ? '#8fd160' : '#9aa39a', 'center'); });
+  tabs.forEach((t, i) => { const tw = (w - 20) / tabs.length, tx = x + 10 + i * tw, sel = i === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.7)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, y + 20, tw - 4, 13); text((sel ? '<' : '') + t.name + (sel ? '>' : ''), tx + tw / 2 - 2, y + (tabs.length > 5 ? 24 : 23), sel ? '#8fd160' : '#9aa39a', 'center', tabs.length > 5 ? 6 : 8); });
   const tab = tabs[storeTab], items = storeItems(tab);
   const ROWS = 5, off = Math.max(0, Math.min(items.length - ROWS, storeI - ROWS + 2));
   if (off > 0) text('^', x + w - 12, y + 36, '#9aa39a', 'center'); if (off + ROWS < items.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
@@ -569,9 +576,10 @@ const BEASTS = [
   { t: 'master', name: 'THE HOUND MASTER', sub: 'kennel keeper', desc: 'Never leaves the saddle. Every move is called: CHARGE (block it and the mount rears, then hit him), PINCER (two hounds from both walls: jump and they collide), FLANK (hounds hold behind you while he comes), WHIP (a crack along the floor: jump it), the lash and the leap. Cut the chained kennel hound loose and it goes for his mount. The gate opens when he falls.' },
   { t: 'king', name: 'KING GORM UNDERLEAF', sub: 'lord of the court', desc: 'Sits on a palanquin and does not get up. Cut the four bearers and the throne falls. Then: the sceptre sweeps, a bolt marks the floor and strikes, the crown comes back like a boomerang, cages drop from the rafters, and the court throws when he shouts. At the end he stands.' },
   { t: 'chief', name: 'GOBLIN CHIEFTAIN', sub: 'lord of the stockade', desc: 'He swaps weapons every few swings. Club: dodge the slam and hit him while it is planted. Sword and shield: block his slash to parry it, or get behind the shield. Bow: parry the arrows back at him. Whatever he holds, when he crouches he is about to leap on you: move.' },
-  { t: 'mother', name: 'THE MOTHER CAP', sub: 'root of the wood', desc: 'Her gills start open: cut them before she calls the brood that seals them. Vines whip across the floor from the walls, pods burst into spore clouds. She never moves; the hollow is her. Her brood seals her gills: kill every sporeling and drone she calls and the gills open for a while. Roots stab up on a rhythm, she belches sleep, and when she shakes, spore clumps rain down. Cut all four gills and she tips: plunge the heart.' },
+  { t: 'mother', name: 'THE MOTHER CAP', sub: 'root of the wood', desc: 'She never moves; the hollow is her, and she breathes. IN: her gills seal, she drags you toward the stalk, roots stab, pods and sleep spores fly, her brood climbs up. OUT: the gills flare open and everything stops. Bounce off the caps and cut them then. Every gill you cut drops a chunk of cap that springs you higher. Cut all four and she tips: the heart shows, vines whip, and six hits of anything end her.' },
   { t: 'harpy', name: 'CRAG HARPY', sub: 'diver of the cliffs', desc: 'Hangs in the wind above you, screams, and dives in a straight line. Block the dive and she hits the ground stunned: plunge her there. A sword hit sends her back to her perch.' },
-  { t: 'goat', name: 'GOAT RIDER', sub: 'hill-clan goblin', desc: 'A goblin on a crag goat. It charges and hops walls and ledges. Block the charge and the goat bucks its rider off: the goat bolts, the goblin lands at your feet.' },
+  { t: 'goat', name: 'CRAG RAM', sub: 'the hill charger', desc: 'A wild ram of the scree. It charges and hops walls and ledges. Block the charge and it rears, turned and open for a moment.' },
+  { t: 'troll', name: 'HILL TROLL', sub: 'boulder-thrower', desc: 'Slow, mossy, taller than a door. From range it hurls a boulder in an arc at where you are going: watch the shadow and the whistle. Up close it swats, heavy but blockable. Its hide is soft: the sword and the plunge both bite.' },
   { t: 'ram', name: 'THE RAM LORD', sub: 'lord of the fold', desc: 'His horns turn your blade from the front. Dodge or jump his charge and he hits the wall, stunned and soft: cut him from behind or plunge between the horns. He stamps the ground and hops at you. Half dead, he charges twice and rocks fall.' },
 ];
 function beastRec(t) { PROG.beasts = PROG.beasts || {}; return PROG.beasts[t] = PROG.beasts[t] || { seen: false, slain: 0 }; }
@@ -658,10 +666,10 @@ function menuConfirm() {
   else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
   else if (k === 'Equip') { openEquip('menu'); }
-  else if (k === 'Return to map') { setView('normal'); state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.level === levelIndex)); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; music.play('select'); SFX.menuClose(); }
+  else if (k === 'Return to map') { setView('normal'); state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.level === levelIndex)); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; SFX.uiSel(); }
   else if (k === 'Controls') { state = 'controls'; SFX.uiSel(); }
-  else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play('select'); SFX.uiSel(); }
+  else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Reset this slot') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; if (!P.dead) die(); SFX.uiSel(); } }
   else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadLevel(levelIndex); startGame(); SFX.uiSel(); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
@@ -811,7 +819,7 @@ function shakeCam(n, k = 0) { if (SET.shake) { shake = Math.max(shake, n); kick 
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || (window.BK && window.BK.god);
-const COLS = { harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'] };
+const COLS = { troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'] };
 
 // ---------- damage ----------
 function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const gp of gps) if (gp && gp.vibrationActuator && gp.vibrationActuator.playEffect) { gp.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: mag, weakMagnitude: mag * 0.6 }); break; } } catch {} }
@@ -852,6 +860,7 @@ function spawnCorpse(e, dir) {
     case 'sprig': case 'archer': Object.assign(c, { vx: dir * 90, vy: -190, spin: dir * 14, life: 1.0, max: 1.0 }); SFX.gobDie(); break;
     case 'hopper': Object.assign(c, { vx: dir * 70, vy: -160, spin: dir * 10, life: 0.9, max: 0.9 }); SFX.ribbit(); break;
     case 'sapper': Object.assign(c, { vx: dir * 90, vy: -190, spin: dir * 14, life: 1.0, max: 1.0 }); SFX.gobDie(); bombs.push({ x: e.x, y: e.y - 4, vx: 0, vy: -30, fuse: 0.6 }); break;
+    case 'troll': Object.assign(c, { vx: dir * 30, vy: -120, spin: dir * 3, life: 1.3, max: 1.3 }); SFX.thump(); break;
     case 'harpy': Object.assign(c, { vx: dir * 40, vy: -60, spin: dir * 8, life: 1.0, max: 1.0, grav: 500 }); SFX.screech(); break;
     case 'goat': Object.assign(c, { vx: dir * 60, vy: -140, spin: dir * 6, life: 1.0, max: 1.0 }); SFX.goatCry(); break;
     case 'ram': Object.assign(c, { vx: -dir * 10, vy: -100, spin: dir * 0.6, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.bellow(); SFX.roar(); break;
@@ -889,10 +898,11 @@ function swordEffect(e) {
 }
 function hurtEnemy(e, dmg, fromX, plunge) {
   if (e.t === 'king' && e.phase === 1) return;
-  if (e.t === 'gill' && mother && !mother.gillsOpen) { SFX.clank(); sparks(e.x, e.y - 6, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 18, 'SEALED', '#9aa39a'); P.grace = Math.max(P.grace, 0.3); return; }
+  if (e.t === 'gill' && mother && !mother.gillsOpen) { SFX.clank(); sparks(e.x, e.y - 6, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 18, 'SHE HOLDS HER BREATH', '#9aa39a'); P.grace = Math.max(P.grace, 0.3); return; }
   if (e.t === 'queen' && e.mode === 'winded') dmg *= 2;
   if (e.t === 'chief' && e.mode === 'planted') dmg *= 2;
   if (e.t === 'ram' && e.mode === 'crash') dmg *= 2;
+  if (e.t === 'heart') dmg = 1; // the heart counts hits, not damage: six of anything
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
@@ -911,16 +921,16 @@ function hurtEnemy(e, dmg, fromX, plunge) {
     if (PROG.charm === 'heart' && !e.harmless && P.hp > 0 && P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 5); number(P.x, P.y - 30, '+5', '#8fd160'); }
     if (e.t === 'sporeling') clouds2.push({ x: e.x, y: e.y - 5, r: 22, life: 3.5 });
     if (e.t === 'drone') clouds2.push({ x: e.x, y: e.y - 3, r: 18, life: 2.5 });
-    if (e.t === 'gill' && mother) { number(e.x, e.y - 18, 'GILL SNAPS', '#e0b0f0'); for (let i = 0; i < 2; i++) enemies.push({ t: 'sporeling', x: e.x + (i ? 14 : -14), y: e.y - 20, vx: 0, vy: -60, w: 8, h: 10, hp: EHP.sporeling, speed: 30, face: i ? 1 : -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.3 }); const left = enemies.filter(g => g.alive && g.t === 'gill').length; mother.rootT = Math.min(mother.rootT, 0.8); if (left === 0) { mother.mode = 'tip'; mother.modeT = 1.6; L.violet = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 999; number(mother.x, mother.y - 110, 'SHE TIPS', '#ff7a9a'); SFX.roar(); shakeCam(8); zoomKick(1.1, 0.5); } }
-    if (e.t === 'heart' && mother) { mother.alive = false; kills++; queenDies(); burst(mother.x, mother.y - 60, 40, COLS.mother, 120, 1.2); }
+    if (e.t === 'gill' && mother) { number(e.x, e.y - 18, 'GILL SNAPS', '#e0b0f0'); { const tx = Math.floor(e.x / TS), ty = Math.floor(L.arena.floor / TS) - 1, i = ty * LW + tx; if (L.grid[i] === T.AIR) { L.grid[i] = T.BOUNCER; tileSpr[i] = null; resolveTiles(); number(e.x, L.arena.floor - 26, 'A CAP FALLS: A SPRING', '#8fd160'); burst(e.x, L.arena.floor - 8, 14, ['#e8e0d0', '#9a5aa8'], 70, 0.7); shakeCam(3); } } for (let i = 0; i < 2; i++) enemies.push({ t: 'sporeling', x: e.x + (i ? 14 : -14), y: e.y - 20, vx: 0, vy: -60, w: 8, h: 10, hp: EHP.sporeling, speed: 30, face: i ? 1 : -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.3 }); const left = enemies.filter(g => g.alive && g.t === 'gill').length; mother.rootT = Math.min(mother.rootT, 0.8); if (left === 0) { mother.mode = 'tip'; mother.modeT = 1.6; L.violet = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 999; number(mother.x, mother.y - 110, 'SHE TIPS', '#ff7a9a'); SFX.roar(); shakeCam(8); zoomKick(1.1, 0.5); } }
+    if (e.t === 'heart' && mother) { mother.alive = false; kills++; queenDies(); L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; number(mother.x, mother.y - 130, 'THE WOOD BREATHES AGAIN', '#8fd160'); burst(mother.x, mother.y - 60, 40, COLS.mother, 120, 1.2); }
     if (e.t === 'chief') chiefDies(); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram') queenDies();
     if (e.t === 'thief' && e.loot > 0) { for (let i = 0; i < e.loot + 3; i++) acorns.push({ x: e.x + (i - e.loot / 2) * 6, y: e.y - 10, got: false, ph: Math.random() * 6, crate: 'thief' + e.x + i, vy: -110 - Math.random() * 60 }); number(e.x, e.y - 24, 'WITH INTEREST', '#ffd34a'); SFX.coin(); }
     if (e.t === 'folk') number(e.x, e.y - 18, 'SHAME', '#9aa39a');
     if (e.t === 'bearer' && boss && boss.t === 'king' && boss.alive) { boss.y += 2; shakeCam(3); SFX.thud(); number(boss.x, boss.y - 30, 'THE THRONE LURCHES', '#ffd36b'); if (!enemies.some(b => b.alive && b.t === 'bearer')) { boss.phase = 2; boss.y = L.arena.floor; boss.mode = 'grounded'; boss.modeT = 1.2; number(boss.x, boss.y - 36, 'THE THRONE FALLS', '#ff6b6b'); SFX.heavy(); shakeCam(8); zoomKick(1.12, 0.4); } }
-    if (e.t === 'master') { for (const h of enemies) if (h.alive && h.t === 'hound' && h.pack) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } if (L.mini) { for (let ty = 0; ty < LH; ty++) { const i = ty * LW + L.mini.gate; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } } setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null; number(e.x, e.y - 30, 'THE KENNELS OPEN', '#8fd160'); SFX.heavy(); } }
+    if (e.t === 'master') { for (const h of enemies) if (h.alive && h.t === 'hound' && h.pack) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } if (L.mini) { for (let ty = 0; ty < LH; ty++) { const i = ty * LW + L.mini.gate; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } } setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null; number(e.x, e.y - 30, 'THE KENNELS OPEN', '#8fd160'); SFX.heavy(); } music.play(L.music || 'theme'); }
   } else {
     if (e.t === 'shaman' && e.hp > 0) { burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); const dir2 = Math.sign(e.x - P.x) || 1; let nx = e.x + dir2 * 70; if (isSolid(Math.floor(nx / TS), Math.floor((e.y - 1) / TS)) || !isSolid(Math.floor(nx / TS), Math.floor((e.y + 1) / TS))) nx = e.x - dir2 * 70; e.x = nx; e.flash = 0.3; burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); number(e.x, e.y - 18, 'POOF', '#4aa0b0'); }
-    const voice = { harpy: 'screech', goat: 'goatCry', ram: 'bellow', queen: 'bossHurt', frog: 'croak', sprig: 'gobHurt', shield: 'gobHurt', archer: 'gobHurt', sapper: 'gobHurt', thorn: 'clatter', brute: 'snort', chief: 'snort', hound: 'yelp', wasp: 'chitter', spit: 'hiss', hopper: 'ribbit', sporeling: 'squelch', shaman: 'squelch', lurker: 'squelch', gill: 'squelch', heart: 'heart', mother: 'thump' }[e.t]; if (voice && SFX[voice]) SFX[voice](); else SFX.hit(); if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
+    const voice = { troll: 'snort', harpy: 'screech', goat: 'goatCry', ram: 'bellow', queen: 'bossHurt', frog: 'croak', sprig: 'gobHurt', shield: 'gobHurt', archer: 'gobHurt', sapper: 'gobHurt', thorn: 'clatter', brute: 'snort', chief: 'snort', hound: 'yelp', wasp: 'chitter', spit: 'hiss', hopper: 'ribbit', sporeling: 'squelch', shaman: 'squelch', lurker: 'squelch', gill: 'squelch', heart: 'heart', mother: 'thump' }[e.t]; if (voice && SFX[voice]) SFX[voice](); else SFX.hit(); if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
     hitstop(0.05); shakeCam(1.5, dir * 1.5);
     sparks(e.x - dir * 2, e.y - e.h / 2, dir, 5);
     if (e.t !== 'wasp' && e.t !== 'spit' && e.t !== 'queen' && e.t !== 'ram' && e.t !== 'harpy') e.vx = dir * (plunge ? 30 : 80);
@@ -947,7 +957,7 @@ function spend(cost) {
   P.st -= cost; P.stDelay = ST.delay; return true;
 }
 function updatePlayer(dt) {
-  if (P.dead) { P.dead -= dt; if (P.dead <= 0) { if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play('select'); SFX.roar(); } else respawn(); } return; }
+  if (P.dead) { P.dead -= dt; if (P.dead <= 0) { if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
   if (throwPress && skillNow() === 'groundSlam' && P.ground && !(P.slamCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { P.slamCd = 3; P.block = false; P.atk = -1; shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.2, sp: 210, hit: new Set() }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (throwPress && skillNow() === 'shieldThrow' && !thrown && !(P.throwCd > 0) && PROG.items.shieldThrow && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
@@ -1098,7 +1108,6 @@ function updatePlayer(dt) {
       const front = Math.sign(P.x - e.x) === e.face;
       if (e.t === 'mother' && e.tipped) continue;
       if (e.t === 'drone' || e.t === 'mother') { SFX.clank(); sparks(e.x, e.y - e.h / 2, P.face, 4); number(e.x, e.y - e.h - 6, e.t === 'mother' ? 'ARMOURED' : 'PUFF', '#9aa39a'); continue; }
-      if (e.t === 'heart') { SFX.clank(); number(e.x, e.y - 14, 'PLUNGE IT', '#ff7a9a'); continue; }
       if (e.t === 'ram' && e.mode !== 'crash') { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 14, e.y - 8, P.face, 5); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'HORNS', '#c9a83a'); continue; }
       if (e.t === 'pike' && front && e.stagger <= 0) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }
       if (e.t === 'king' && e.phase === 1) { SFX.clank(); number(e.x, e.y - 24, 'THE BEARERS FIRST', '#9aa39a'); continue; }
@@ -1131,7 +1140,7 @@ function updatePlayer(dt) {
       if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
       hurtEnemy(e, P.relic === 'crown' ? PLUNGE_DMG : 10, P.x, true); P.vy = keys.jump ? -290 : -220; SFX.pogo(); squash(0.8, 1.25, 0.1); continue;
     }
-    if (e.t === 'brute' || e.t === 'chief' || e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk' || e.t === 'king' || e.t === 'bearer' || e.t === 'pike' || e.t === 'master' || e.t === 'thief' || e.t === 'ram' || e.t === 'goat' || e.t === 'harpy') continue; // their damage comes from their attacks, not from touching them
+    if (e.t === 'brute' || e.t === 'chief' || e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk' || e.t === 'king' || e.t === 'bearer' || e.t === 'pike' || e.t === 'master' || e.t === 'thief' || e.t === 'ram' || e.t === 'goat' || e.t === 'harpy' || e.t === 'troll') continue; // their damage comes from their attacks, not from touching them
     const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : DMG[e.t]);
     if (res === 'blocked') {
       if (e.t === 'sapper' && e.fleeT <= 0) { bombs.push({ x: e.x, y: e.y - 4, vx: -Math.sign(P.x - e.x) * 20, vy: -40, fuse: 0.45 }); e.fleeT = 0; e.stagger = 0.7; e.vx = 0; number(e.x, e.y - 18, 'DROPPED IT', '#ffd36b'); }
@@ -1405,6 +1414,24 @@ const chiefShielded = e => e.t === 'chief' && e.stance === 'sword' && e.mode !==
 
 // ---------- mini-boss: the Hound Master ----------
 // ---------- The Crags: harpies dive, goat riders charge and hop, the Ram Lord hits walls ----------
+// The hill troll: keeps its distance and hurls boulders in an arc at where you are heading; swats when you close. Soft hide: everything hurts it.
+function updateTroll(e, dt) {
+  e.modeT -= dt; e.vy += 1000 * dt; if (e.vy > 320) e.vy = 320; e.hitT = Math.max(0, e.hitT - dt); e.throwT -= dt;
+  const d = P.x - e.x, ad = Math.abs(d), near = ad < 260 && Math.abs(e.y - P.y) < 80 && !P.dead;
+  let want = 0;
+  if (e.mode === 'throwTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.4; const tt = 0.9, tx = P.x + P.vx * 0.4; rocks.push({ x: e.x + e.face * 8, y: e.y - 24, vx: (tx - e.x) / tt, vy: -330, t: 0, dead: false, thrown: true }); SFX.heavy(); SFX.snort(); number(e.x, e.y - e.h - 10, 'HURLS', '#ff9a5c'); } }
+  else if (e.mode === 'throw') { if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; } }
+  else if (e.mode === 'swatTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'swat'; e.modeT = 0.35; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 36 && Math.abs(P.y - e.y) < 26) { const res = damagePlayer(e.x, DMG.troll); if (res === 'hit') { P.vx = e.face * 240; P.vy = -120; } else if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } } }
+  else if (e.mode === 'swat') { if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.7; } }
+  else if (e.stagger > 0) want = 0;
+  else if (near) { e.face = Math.sign(d) || e.face; if (ad < 32 && e.modeT <= 0) { e.mode = 'swatTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.snort(); } else if (e.throwT <= 0 && ad > 56 && ad < 240) { e.throwT = 3.4; e.mode = 'throwTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 10, '!!', '#ff9a5c'); SFX.snort(); } else want = ad > 64 ? e.face * e.speed : 0; }
+  else want = e.face * 8;
+  e.vx += (want - e.vx) * Math.min(1, dt * 5);
+  const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+  if (r.ground && tileAt(ftx, fty) === T.AIR && !isOneWay(tileAt(ftx, fty))) { e.vx = 0; if (!near) e.face = -e.face; }
+  if (r.hitX) { e.vx = 0; if (!near) e.face = -e.face; }
+}
 function updateHarpy(e, dt) {
   e.modeT -= dt; const dx = P.x - e.x, dy = (P.y - 8) - e.y, ad = Math.abs(dx);
   if (e.mode === 'hover') { e.x += (e.hx + Math.sin(e.anim * 1.1) * 8 - e.x) * Math.min(1, dt * 3); e.y += (e.hy + Math.sin(e.anim * 2.1) * 4 - e.y) * Math.min(1, dt * 3); e.face = Math.sign(dx) || e.face; e.cd = Math.max(0, (e.cd || 0) - dt);
@@ -1425,7 +1452,7 @@ function updateGoat(e, dt) {
   else if (e.mode === 'buck') { want = 0; if (e.modeT <= 0) e.mode = 'patrol'; }
   else if (e.stagger > 0) want = 0;
   else if (near) { e.face = Math.sign(d) || e.face; e.mode = 'charge'; want = e.face * 150; if (!e.bleated) { e.bleated = true; SFX.goatCry(); number(e.x, e.y - e.h - 8, '!', '#ffd36b'); }
-    if (ad < 16 && Math.abs(P.y - e.y) < 20 && e.hitT <= 0) { e.hitT = 0.7; const res = damagePlayer(e.x, DMG.goat); if (res === 'blocked') { e.rider = false; e.mode = 'buck'; e.modeT = 0.5; e.face = -e.face; e.fleeT = 3; e.harmless = true; e.h = 9; number(e.x, e.y - e.h - 10, 'BUCKED', '#8fd160'); SFX.goatCry(); enemies.push({ t: 'sprig', x: e.x, y: e.y - 6, vx: -e.face * 90, vy: -220, w: 8, h: 10, hp: EHP.sprig, speed: 40, face: -e.face, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.6 }); } else if (res === 'hit') { P.vx = e.face * 230; P.vy = -120; } } }
+    if (ad < 16 && Math.abs(P.y - e.y) < 20 && e.hitT <= 0) { e.hitT = 0.7; const res = damagePlayer(e.x, DMG.goat); if (res === 'blocked') { e.mode = 'buck'; e.modeT = 0.9; e.stagger = 0.9; e.face = -e.face; e.vx = e.face * 40; number(e.x, e.y - e.h - 10, 'REARS', '#8fd160'); SFX.goatCry(); } else if (res === 'hit') { P.vx = e.face * 230; P.vy = -120; } } }
   else { e.mode = 'patrol'; e.bleated = false; if (e.timer <= 0) { e.timer = 1.5 + Math.random() * 2; e.face = Math.random() < 0.5 ? -1 : 1; } want = e.face * 30; }
   if (!e.air) e.vx += (want - e.vx) * Math.min(1, dt * 8);
   const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 3), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
@@ -1467,11 +1494,11 @@ function updateRam(e, dt) {
 }
 // rocks off the cliff: a shadow where one will land, then it shatters on whatever it hits
 function updateRocks(dt) {
-  for (const r of rocks) { r.vy = Math.min(420, r.vy + 700 * dt); r.y += r.vy * dt; r.t += dt;
+  for (const r of rocks) { r.vy = Math.min(420, r.vy + 700 * dt); r.y += r.vy * dt; r.x += (r.vx || 0) * dt; r.t += dt;
     const tx = Math.floor(r.x / TS), ty = Math.floor((r.y + 1) / TS), t = tileAt(tx, ty);
     if (t === T.SOLID || (isOneWay(t) && r.vy > 0 && (r.y % TS) < 7) || r.y > LH * TS) { r.dead = true; shatterRock(r); continue; }
     if (!P.dead && Math.abs(P.x - r.x) < 9 && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, DMG.rock, { up: true }); shatterRock(r); continue; }
-    for (const e of enemies) if (e.alive && e.t !== 'ram' && e.t !== 'harpy' && !e.harmless && Math.abs(e.x - r.x) < 9 && e.y > r.y - 4 && e.y - e.h < r.y + 6) { r.dead = true; hurtEnemy(e, 15, r.x, false); shatterRock(r); break; }
+    for (const e of enemies) if (e.alive && e.t !== 'ram' && e.t !== 'harpy' && !(e.t === 'troll' && r.thrown) && !e.harmless && Math.abs(e.x - r.x) < 9 && e.y > r.y - 4 && e.y - e.h < r.y + 6) { r.dead = true; hurtEnemy(e, 15, r.x, false); shatterRock(r); break; }
   }
   rocks = rocks.filter(r => !r.dead);
 }
@@ -1483,7 +1510,7 @@ const NPC_LINES = pr => {
   if (pr.kind === 'woodsman') { if (n >= need) return ['SWEET AS SUMMER. MY THANKS, KNIGHT.', 'MIND THE QUEEN. SHE HATES A THIEF.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE POTS.', 'THE SETT, THE RIDGE, THE FALLEN GIANT.']; return ['THE HORNETS CARRIED OFF MY HONEY. THREE POTS.', 'BRING THEM BACK AND I WILL SEE YOU RIGHT.']; }
   if (pr.kind === 'ferryman') { const fm = movers.find(mv => mv.ferry), toll = fm ? fm.toll : 10; const pay = !fm || fm.paid ? ['HOLD ON. THE CURRENT IS QUICK TODAY.'] : PROG.coins >= toll ? [toll + ' GOLD AND I POLE YOU OVER. UP TO PAY.', 'OR BREAK THE SLUICE AND WADE. YOUR FUNERAL.'] : [toll + ' GOLD, KNIGHT. YOU HAVE ' + PROG.coins + '.', 'THE SLUICE WHEEL IS FREE. THE FROGS ARE NOT.']; const q = n >= need ? ['MY TRAPS! THERE IS A GOOD LAD.'] : n > 0 ? ['THAT IS ' + n + ' OF MY THREE TRAPS.'] : ['THE FLOOD TOOK MY EEL TRAPS. THREE OF THEM.', 'ONE IS UNDER THE CHANNEL, I SWEAR IT.']; return pay.concat(q); }
   if (pr.kind === 'squire') { if (n >= need) return ['MY KIT! I OWE YOU, SIR KNIGHT.', 'THE CHIEFTAIN SWAPS WEAPONS. WATCH HIS HANDS.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE COFFERS.', 'THE WALL, THE DITCH, THE TUNNEL.']; return ['THEY TOOK MY KIT. HELM, HORN AND BLADE.', 'THREE COFFERS. THE WALL, THE DITCH, THE TUNNEL.']; }
-  if (pr.kind === 'elder') { if (n >= need) return ['CLEAN LIGHT. THE WOOD REMEMBERS.', 'SHE IS SEALED WHILE HER BROOD LIVES. KILL THEM FIRST.']; if (n > 0) return ['THAT IS ' + n + ' OF THREE CLEAN CAPS.', 'THE CELLAR, THE CANOPY, THE BOG.']; return ['THE MOTHER IS SICK. HER SPORES ROT THE WOOD.', 'THREE CAPS STILL BURN CLEAN. BRING ME THEIR LIGHT.']; }
+  if (pr.kind === 'elder') { if (n >= need) return ['CLEAN LIGHT. THE WOOD REMEMBERS.', 'SHE HOLDS HER BREATH WHEN SHE PULLS. STRIKE WHEN SHE BREATHES OUT.']; if (n > 0) return ['THAT IS ' + n + ' OF THREE CLEAN CAPS.', 'THE CELLAR, THE CANOPY, THE BOG.']; return ['THE MOTHER IS SICK. HER SPORES ROT THE WOOD.', 'THREE CAPS STILL BURN CLEAN. BRING ME THEIR LIGHT.']; }
   return ['...'];
 };
 function updateMaster(e, dt) {
@@ -1601,14 +1628,14 @@ function updateMother(e, dt) {
   const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt;
   const gills = enemies.filter(g => g.alive && g.t === 'gill').length; const p2 = gills <= 2;
   if (e.mode === 'sleep') return;
-  if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'idle'; e.gillsOpen = true; e.openT = 15; e.rainT = 5; e.vineT = 3; e.podT = 6; number(e.x, floor - 120, 'THE GILLS ARE OPEN. CUT THEM.', '#e0b0f0'); SFX.gillOpen(); } return; }
+  if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'idle'; e.gillsOpen = true; e.openT = 8; e.rainT = 5; e.vineT = 3; e.podT = 6; number(e.x, floor - 120, 'THE GILLS ARE OPEN. CUT THEM.', '#e0b0f0'); SFX.gillOpen(); } return; }
   if (e.mode === 'tip') { if (e.modeT <= 0) { e.mode = 'open'; e.tipped = true; enemies.push({ t: 'heart', x: e.x, y: floor - 70, vx: 0, vy: 0, w: 16, h: 14, hp: EHP.heart, face: 1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0 }); number(e.x, floor - 96, 'THE HEART', '#ff7a9a'); } return; }
-  // the brood seals her gills; kill every one of them and the gills open for a while, then she calls more
+  // she breathes. IN: the gills seal, she pulls you toward the stalk and her brood comes up. OUT: the gills flare open and nothing else attacks. Cut them then.
   if (e.mode !== 'open') {
-    const brood = enemies.filter(g => g.alive && g.brood).length;
-    if (e.gillsOpen) { e.openT -= dt; if (e.openT <= 0) { e.gillsOpen = false; callBrood(e); } }
-    else if (brood === 0 && e.broodT <= 0) { e.gillsOpen = true; e.openT = p2 ? 13 : 16; number(e.x, floor - 120, 'THE GILLS OPEN. SHE GASPS.', '#e0b0f0'); SFX.gillOpen(); for (const gl of enemies) if (gl.alive && gl.t === 'gill') burst(gl.x, gl.y - 6, 6, ['#e0b0f0', '#ffd0ff'], 40, 0.5); }
-    e.broodT = Math.max(0, (e.broodT || 0) - dt);
+    if (e.gillsOpen) { e.openT -= dt; if (e.openT <= 0) { e.gillsOpen = false; e.inT = p2 ? 4.5 : 4; number(e.x, floor - 120, 'SHE BREATHES IN', '#c9a0ff'); SFX.buzz(); if (enemies.filter(g => g.alive && g.brood).length < 3) callBrood(e); } }
+    else { e.inT = (e.inT === undefined ? 4 : e.inT) - dt;
+      if (!P.dead && Math.abs(P.x - e.x) < 220 && Math.abs(P.y - floor) < 60) { const dir = Math.sign(e.x - P.x) || 1; P.x += dir * (P.ground ? (P.block ? 16 : 44) : 68) * dt; if (Math.random() < dt * 30) parts.push({ x: P.x - dir * 30 + (Math.random() - 0.5) * 24, y: P.y - 8 + (Math.random() - 0.5) * 16, vx: dir * 70, vy: 0, life: 0.4, max: 0.4, col: '#c9a0ff', size: 1, grav: 0 }); }
+      if (e.inT <= 0) { e.gillsOpen = true; e.openT = p2 ? 5 : 6.5; number(e.x, floor - 120, 'SHE BREATHES OUT. CUT THE GILLS.', '#e0b0f0'); SFX.gillOpen(); for (const gl of enemies) if (gl.alive && gl.t === 'gill') burst(gl.x, gl.y - 6, 6, ['#e0b0f0', '#ffd0ff'], 40, 0.5); } }
   }
   const calm = e.gillsOpen && e.mode !== 'open';
   // spore rain: she shakes, and clumps fall across the hollow
@@ -1622,7 +1649,7 @@ function updateMother(e, dt) {
   roots = roots.filter(rt => rt.t < rt.tell + rt.up + 0.2);
   // the vine sweep: a thorned vine bursts from one wall and whips across the floor. Jump it.
   e.vineT = (e.vineT === undefined ? 3 : e.vineT - dt * (calm ? 0.7 : 1));
-  if (e.vineT <= 0 && e.mode !== 'open') { e.vineT = p2 ? 5 : 6.5; const fromLeft = P.x > e.x; const x0 = fromLeft ? A.x0 + 4 : A.x1 - 4; vines.push({ x: x0, dir: fromLeft ? 1 : -1, y: floor, tell: 0.7, t: 0, len: 36, end: fromLeft ? A.x1 - 4 : A.x0 + 4, hitT: 0 }); number(x0, floor - 30, 'THE WALL STIRS', '#8fd160'); SFX.buzz(); }
+  if (e.vineT <= 0) { e.vineT = e.mode === 'open' ? 3.2 : p2 ? 5 : 6.5; const fromLeft = P.x > e.x; const x0 = fromLeft ? A.x0 + 4 : A.x1 - 4; vines.push({ x: x0, dir: fromLeft ? 1 : -1, y: floor, tell: 0.7, t: 0, len: 36, end: fromLeft ? A.x1 - 4 : A.x0 + 4, hitT: 0 }); number(x0, floor - 30, 'THE WALL STIRS', '#8fd160'); SFX.buzz(); }
   // the pod toss: three pods lob from the cap and burst into spore clouds where they land
   e.podT = (e.podT === undefined ? 6 : e.podT - dt * (calm ? 0.6 : 1));
   if (e.podT <= 0 && e.mode !== 'open' && e.mode !== 'shake') { e.podT = p2 ? 5.5 : 7.5; number(e.x, floor - 110, 'SHE SPITS PODS', '#c9a0ff'); SFX.squelch(); for (const off of [0, -50, 50]) { const sx = e.x, sy = floor - 90, Tf = 1.1, G = 380, tx = Math.max(A.x0 + 12, Math.min(A.x1 - 12, P.x + off)), dx = tx - sx, dy = floor - sy; seeds.push({ x: sx, y: sy, vx: dx / Tf, vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, g: G, spore: true, pod: true }); } }
@@ -1778,6 +1805,7 @@ function updateEnemies(dt) {
       else if (e.mode === 'thrust' && e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.5; }
       const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0; continue;
     }
+    if (e.t === 'troll') { updateTroll(e, dt); continue; }
     if (e.t === 'harpy') { updateHarpy(e, dt); continue; }
     if (e.t === 'goat') { updateGoat(e, dt); continue; }
     if (e.t === 'drone') { // drifts at you and bursts
@@ -2014,7 +2042,7 @@ function updateProps(dt) {
     if (pr.t === 'bell' && !pr.broken) { if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 12, P.face, 5); pr.swing = 0.5; if (pr.hp <= 0) { pr.broken = true; SFX.crack(); burst(pr.x, pr.y - 12, 10, ['#e0b040', '#b8842a'], 70, 0.6); number(pr.x, pr.y - 30, 'SILENCED', '#8fd160'); } } if (pr.swing > 0) pr.swing -= dt; if (pr.ringT > 0 && !pr.rung && !enemies.some(e => e.alive && e.ringer && Math.abs(e.x - pr.x) < 10)) pr.ringT = Math.max(0, pr.ringT - dt); }
     if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt; if (pr.timer < 0.6 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every + Math.random() * 0.8; rocks.push({ x: pr.x + (Math.random() - 0.5) * 8, y: pr.y, vy: 0, t: 0, dead: false }); SFX.stone(); } }
     if (pr.t === 'npc' && pr.kind === 'keeper' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) { storeMode = 'buy'; state = 'store'; storeI = 0; SFX.uiSel(); SFX.menuOpen && SFX.menuOpen(); }
-    if (pr.t === 'exit' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 14) { state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.kind === 'store')); map.seg = NODE_AT[map.node]; map.t = 0; setView('normal'); SFX.uiSel(); music.play('select'); }
+    if (pr.t === 'exit' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 14) { state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.kind === 'store')); map.seg = NODE_AT[map.node]; map.t = 0; setView('normal'); SFX.uiSel(); music.play(menuTrack()); }
     if (pr.t === 'npc' && pr.ride) { const fm = movers.find(mv => mv.ferry); if (fm) { pr.x = fm.x + 16; pr.y = fm.y; } }
     if (pr.t === 'npc' && pr.kind === 'ferryman' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 30 && Math.abs(P.y - pr.y) < 24) { const fm = movers.find(mv => mv.ferry); if (fm && !fm.paid) { if (PROG.coins >= fm.toll) { PROG.coins -= fm.toll; saveProgress(); fm.paid = true; marks.add('ferry:' + fm.x0); SFX.coin(); SFX.uiSel(); number(pr.x, pr.y - 28, 'PAID ' + fm.toll + ' GOLD', '#ffd34a'); number(pr.x, pr.y - 38, 'STEP ABOARD', '#bfe6f5'); } else { SFX.clank(); number(pr.x, pr.y - 28, 'NOT ENOUGH GOLD', '#ff6b6b'); } } }
     if (pr.t === 'stray' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 12 && Math.abs(pr.y - P.y) < 16) { const Q = questOf(); pr.got = true; straysGot.add(pr.x); strayLast = { x: pr.x, y: pr.y }; if (pr.kind === 'sheep') SFX.bleat(); else { SFX.coin(); SFX.sting(); } burst(pr.x, pr.y - 4, 8, ['#e8e0d0', '#fff6c8'], 50, 0.5); number(pr.x, pr.y - 18, Q.name + ' ' + straysGot.size + '/' + Q.n, '#ffe6a0'); if (straysGot.size >= Q.n) questDone(pr.x, pr.y); }
@@ -2205,7 +2233,7 @@ function updateCamera(dt) {
 
 function update(dt) {
   time += dt;
-  if (state === 'title') { ambient.set('forest'); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title'); else if (anyPress) { state = 'slots'; slotI = slot; slotMsg = ''; SFX.uiSel(); music.play('select'); } return; }
+  if (state === 'title') { ambient.set('forest'); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title'); else if (anyPress) { state = 'slots'; slotI = slot; slotMsg = ''; SFX.uiSel(); music.play(menuTrack()); } return; }
   if (state === 'slots') {
     slotMsgT = Math.max(0, slotMsgT - dt);
     if (leftPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
@@ -2253,7 +2281,7 @@ function update(dt) {
     updateParticles(dt);
     return;
   }
-  if (state === 'win') { if (confirmPress) { state = 'map'; map.node = NODES.findIndex(n => n.level === levelIndex); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; saveProgress(); music.play('select'); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { if (confirmPress) { state = 'map'; map.node = NODES.findIndex(n => n.level === levelIndex); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; saveProgress(); music.play(menuTrack()); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   if (pausePress) { openMenu('play'); return; }
   if (jumpPress) P.jbuf = 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
   if (stop > 0) { stop -= dt; return; }
@@ -2345,8 +2373,15 @@ function drawWorld(cx, cy, showPlayer) {
   drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawLayer(BG.mid, 0.3, VH - 140, cx, cy);
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
+  if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   if (BG.nearTrees) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   drawLayer(BG.near, 0.55, VH - 300, cx, cy);
+  if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
+    g.strokeStyle = 'rgba(160,120,70,0.75)'; g.lineWidth = 1; g.beginPath();
+    const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1);
+    for (let ty = 0; ty < LH; ty++) for (let tx = tx0; tx <= tx1; tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; if ((L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 4 && ty <= y1)) continue; if (L.arena && tx * TS >= L.arena.x0 && tx * TS < L.arena.x1) continue; const ya = ty * TS - cy; for (const rx of [tx * TS + 3, (tx + n) * TS - 4]) { g.moveTo(Math.round(rx - cx) + 0.5, Math.max(-2, ya - 140)); g.lineTo(Math.round(rx - cx) + 0.5, ya + 2); } }
+    g.stroke();
+  }
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0) continue; const earth = st === 'earth'; g.fillStyle = earth ? '#2c1e14' : '#2a1a10'; g.fillRect(sx, sy, w, h); if (earth) { g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); } g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2); continue; } g.fillStyle = '#3a2618'; for (let yy = sy + 4; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#1e120a'; for (let xx = sx + ((cx * 0) % 40); xx < sx + w; xx += 40) g.fillRect(xx, sy, 1, h); }
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
@@ -2457,6 +2492,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' ? 9 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
     else if (e.t === 'sprig' || e.t === 'bearer') frame = Math.abs(e.vx) > 4 || e.t === 'bearer' ? Math.floor(e.anim * 10) % 4 : (Math.floor(e.anim * 0.7) % 4 === 1 ? 4 : 0);
     else if (e.t === 'thief') frame = e.loot > 0 || Math.abs(e.vx) > 8 ? Math.floor(e.anim * 12) % 2 : (Math.floor(e.anim * 0.8) % 3 === 1 ? 2 : 0);
+    else if (e.t === 'troll') frame = e.mode === 'throwTell' || e.mode === 'throw' ? 3 : e.mode === 'swatTell' || e.mode === 'swat' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
     else if (e.t === 'harpy') frame = e.mode === 'dive' ? 2 : e.mode === 'downed' ? 3 : e.mode === 'aim' ? Math.floor(e.anim * 14) % 2 : Math.floor(e.anim * 6) % 2;
     else if (e.t === 'goat') frame = !e.rider ? 3 + Math.floor(e.anim * 12) % 2 : e.mode === 'buck' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 14 : 8)) % 2 : 0;
     else if (e.t === 'ram') frame = e.mode === 'lower' || e.mode === 'buttTell' || e.mode === 'callTell' ? 3 : e.mode === 'crash' ? 4 : e.mode === 'tossTell' || e.mode === 'toss' || e.mode === 'call' ? 5 : e.mode === 'stampTell' || e.mode === 'stamp' || e.mode === 'butt' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * (e.mode === 'charge' ? 16 : 8)) % 2 : 0;

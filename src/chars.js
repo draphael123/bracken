@@ -555,3 +555,28 @@ export function bakeElder() {
   const nod = fspr(['............', '..jjjjjjjj..', '.jIIOIIIOIj.', '.jIIIIIIIIj.', '.jjjjjjjjjj.', ...body]);
   return pack([idle, nod], 7, 14, 10, 13);
 }
+
+// Crag ram — a wild shaggy ram, horns curled tight, no rider. 16×9. Frames: run1, run2, rear, run1, run2 (the last two stand in for the old riderless goat).
+export function bakeCragRam() {
+  const RP = Object.assign({}, CP, { f: '#d8d0c0', F: '#a8a090', m: '#c9a83a', M: '#8a6a1a', z: '#3a2e22' });
+  const r = rows => outline(fromGrid(rows, RP, 1), OUT);
+  const head = ['............mmm.', '...........mMMm.', '....fffffff.mMm.', '..fffffffffffffo', '.ffFfffffffffff.', '.fFFfffffffffFf.', '..ffffffffffff..'];
+  const run1 = r([...head, '..zz.zz....zz.zz', '..z...z....z...z']);
+  const run2 = r([...head, '...zz.zz..zz.zz.', '...z...z..z...z.']);
+  const rear = r(['..........mmm...', '.........mMMm...', '..........mMm...', '.........ffffffo', '........ffffffff', '.......fffffffF.', '.....ffffffffff.', '....fFFfffffzz..', '..fffffffffz.z..', '..zz.zz.........', '..z...z.........']);
+  return pack([run1, run2, rear, run1, run2], 9, 10, 14, 9);
+}
+// Hill troll — a hulking mossy brute, taller than a door, that hurls boulders. 18×17. Frames: stand, walk1, walk2, throw (rock up), swat.
+export function bakeTroll() {
+  const TP = Object.assign({}, CP, { t: '#6a7a5a', T: '#46543a', m: '#3f6e2c', s: '#8a919c', S: '#5a6270', o: OUT });
+  const tr = rows => outline(fromGrid(rows, TP, 1), OUT);
+  const head = ['.....tttttttt.....', '....ttttttttttt...', '....ttoottotttt...', '....tttttttttt....', '.....ttTTTTtt.....'];
+  const body = ['..mmmtttttttttmmm.', '.mttttttttttttttm.', '.tttTttttttttTttt.', '.tttTttttttttTttt.', '.tttTttttttttTttt.', '.TTTTtttttttttTTT.', '....tttttttttt....', '....ttttttttttt...'];
+  const pad = (rows, n) => Array(n).fill('.'.repeat(18)).concat(rows);
+  const stand = tr(pad([...head, ...body, '.....TTT..TTT.....', '.....TTT..TTT.....', '.....TTT..TTT.....', '....TTTT..TTTT....'], 2));
+  const walk1 = tr(pad([...head, ...body, '....TTT....TTT....', '...TTT......TTT...', '...TTT......TTT...', '..TTTT......TTTT..'], 2));
+  const walk2 = tr(pad([...head, ...body, '......TTTTTT......', '......TTT.TTT.....', '.....TTT...TTT....', '....TTTT...TTTT...'], 2));
+  const throwF = tr(['..............sss.', '.............sSSs.', '.....tttttttt.sss.', '....ttttttttttttt.', '....ttoottotttTtt.', '....ttttttttttTtt.', '.....ttTTTTtt.Ttt.', '..mmmttttttttttmm.', '.mtttttttttttttt..', '.tttTttttttttttt..', '.tttTtttttttttt...', '.tttTttttttttt....', '.TTTTttttttttt....', '....tttttttttt....', '....ttttttttttt...', '.....TTT..TTT.....', '.....TTT..TTT.....', '.....TTT..TTT.....', '....TTTT..TTTT....']);
+  const swat = tr(pad([...head, '..mmmtttttttttmmm.', '.mttttttttttttttm.', '.tttTtttttttttttTT', '.tttTttttttttttTTT', '.tttTtttttttttt...', '.TTTTttttttttt....', '....tttttttttt....', '....ttttttttttt...', '.....TTT..TTT.....', '.....TTT..TTT.....', '.....TTT..TTT.....', '....TTTT..TTTT....'], 2));
+  return pack([stand, walk1, walk2, throwF, swat], 10, 20, 16, 18);
+}

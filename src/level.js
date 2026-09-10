@@ -36,6 +36,7 @@ function grow(L, ret, col, n) {
   if (typeof R.duskStart === 'number' && R.duskStart > 0) R.duskStart = shp(R.duskStart);
   if (typeof R.escapeGate === 'number') R.escapeGate = sh(R.escapeGate);
   if (R.storm) R.storm = { ...R.storm, x0: shp(R.storm.x0), x1: shpEnd(R.storm.x1) };
+  if (R.rot) R.rot = { x0: shp(R.rot.x0), x1: shpEnd(R.rot.x1) };
   P.R = R; P.done = () => Object.assign(R, { grid: P.grid, ents: L.ents.concat(P.ents) });
   return P;
 }
@@ -196,7 +197,7 @@ function brackenWood() {
   // the ridge
   G2.block(133, 135, 13, 13); G2.ent('spit', 134, 12, { face: -1 });
   G2.ent('wasp', 141, 10); G2.ent('wasp', 149, 10); G2.spikes(145, 146, 13); G2.ent('thorn', 152, 13, { face: -1 });
-  G2.plat(143, 9, 3); G2.ent('stray', 144, 8, { kind: 'pot' });
+  G2.plat(140, 11, 2); G2.plat(143, 9, 3); G2.ent('stray', 144, 8, { kind: 'pot' });
   G2.coins([130, 12], [138, 12], [143, 8], [145, 8], [151, 11], [157, 12]);
   G2.ent('check', 162, 21); G2.coins([160, 20], [163, 20]);
   return G2.done();
@@ -290,7 +291,7 @@ function marshWood() {
   // ---- 10. The Croaking Court: a shallow pond, reed perches, and the King on his mud dais ----
   block(359, 405, 18, 27);
   for (let x = 367; x <= 380; x++) L.set(x, 18, 0); water(367, 380, 18, true);
-  reeds(363, 16, 2); reeds(382, 16, 2); ent('silver', 383, 15);
+  reeds(363, 16, 2); reeds(382, 16, 2); ent('silver', 364, 15);
   block(386, 401, 17, 17);
   for (let x = 402; x <= 403; x++) L.set(x, 18, 0); water(402, 403, 18, true);
   ent('throne', 394, 16); ent('frog', 394, 16);
@@ -449,7 +450,7 @@ function theStockade() {
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
     quest: { n: 3, item: 'coffer', name: 'COFFER', npc: 'squire', done: 'THE KIT IS WHOLE', thanks: "THE SQUIRE'S THANKS" },
-    escapeGate: 344, arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief', tint: '#c9463d', tintA: 0.1, fx: 'embers' },
+    escapeGate: 344, arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief', music: 'boss2', tint: '#c9463d', tintA: 0.1, fx: 'embers' },
   }
   // ---- 5c. THE SAPPERS' TUNNEL: the goblins dug under their own inner wall. A mound blocks the surface; the tunnel is the way. ----
   const G = grow(L, ret, 250, 44);
@@ -507,7 +508,7 @@ function sporewood() {
 
   // ---- 1. The mycelium glade: caps bounce, puffballs burst ----
   floor(0, 44, 20);
-  ent('sign', 4, 19, { text: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT.' });
+  ent('sign', 4, 19, { text: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT. THE ROT RUNS DOWNHILL.' });
   ent('npc', 11, 19, { kind: 'elder' }); // the elder myconid wants clean light
   ent('glow', 8, 19); ent('puffball', 14, 19); ent('sporeling', 18, 19, { face: -1 }); ent('puffball', 22, 19);
   bouncer(27, 19); coins([27, 15], [27, 12], [27, 9]);
@@ -564,6 +565,7 @@ function sporewood() {
   sleeps.push({ x0: 226 * TS, x1: 233 * TS, y0: 8 * TS, y1: 14 * TS }); ent('sporeling', 229, 13, { face: -1 }); ent('glow', 227, 13);
   ent('shaman', 237, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
   ent('sign', 244, 13, { text: 'THE PILLARS. HOLD JUMP, OR PLUNGE INTO THE CAPS.' });
+  ent('deco', 205, 13, { kind: 'deadTree', v: 0 }); ent('deco', 238, 13, { kind: 'deadTree', v: 1 }); ent('deco', 292, 13, { kind: 'deadTree', v: 0 });
   ent('sign', 201, 13, { text: 'THE STORM. LIT CAPS KEEP THE SPORES OFF.' });
   coins([208, 12], [231, 11], [239, 11]);
 
@@ -571,7 +573,7 @@ function sporewood() {
   shelf(252, 21, 3); shelf(258, 20, 3); shelf(264, 21, 3); ent('silver', 259, 19); // the low road: shelves that give way
   block(245, 271, 26, 27); for (const x of [247, 253, 259, 265, 270]) bouncer(x, 25); ent('glow', 252, 25); ent('glow', 264, 25); // the pit has a floor: caps on it spring you back to the low road
   for (const [px0, top] of [[249, 18], [255, 20], [261, 18], [267, 20]]) { block(px0, px0 + 2, top, 27); for (let i = 0; i < 3; i++) bouncer(px0 + i, top - 1); }
-  ent('drone', 252, 6); ent('drone', 258, 8); ent('drone', 264, 6);
+  ent('drone', 252, 6); ent('drone', 264, 6);
   coins([252, 8], [258, 10], [264, 8], [270, 9]);
   floor(271, 295, 14);
   ent('check', 280, 13); ent('glow', 290, 13);
@@ -586,6 +588,7 @@ function sporewood() {
   ent('deco', 310, 19, { kind: 'sporePod' }); ent('deco', 322, 19, { kind: 'sporePod' }); ent('deco', 348, 19, { kind: 'sporePod' }); ent('deco', 360, 19, { kind: 'sporePod' });
   ent('deco', 314, 19, { kind: 'skullPile', v: 0 }); ent('deco', 356, 19, { kind: 'skullPile', v: 1 });
   ent('glow', 300, 19); ent('glow', 370, 19); ent('glow', 314, 19); ent('glow', 356, 19);
+  ent('deco', 302, 19, { kind: 'deadTree', v: 1 }); ent('deco', 368, 19, { kind: 'deadTree', v: 0 });
   coins([306, 17], [364, 17]);
 
   const ret = {
@@ -595,6 +598,7 @@ function sporewood() {
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
+    rot: { x0: 44 * TS, x1: 296 * TS }, // the wood sickens the deeper you go: a violet wash that grows with x, and lifts when she dies
     quest: { n: 3, item: 'cap', name: 'CLEAN CAP', npc: 'elder', done: 'THE LIGHT IS GATHERED', thanks: "THE ELDER'S THANKS" },
     arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother', tint: '#9a5aa8', tintA: 0.1 },
   }
@@ -603,7 +607,7 @@ function sporewood() {
   G.floor(245, 288, 14);
   for (const [x0, x1] of [[252, 255], [262, 266], [274, 278]]) { for (let x = x0; x <= x1; x++) for (let y = 14; y <= 19; y++) G.set(x, y, 0); for (let x = x0; x <= x1; x++) G.set(x, 19, T.BOUNCER); }
   G.ent('sign', 246, 13, { text: 'THE BOG. FALL IN, PLUNGE THE CAPS, BOUNCE OUT.' });
-  G.ent('lurker', 249, 13); G.ent('puffball', 259, 13); G.ent('lurker', 260, 13); G.ent('puffball', 269, 13); G.ent('lurker', 271, 13); G.ent('puffball', 281, 13);
+  G.ent('lurker', 249, 13); G.ent('deco', 257, 13, { kind: 'deadTree', v: 1 }); G.ent('puffball', 259, 13); G.ent('lurker', 260, 13); G.ent('puffball', 269, 13); G.ent('lurker', 271, 13); G.ent('puffball', 281, 13);
   G.ent('vent', 258, 13, { period: 4, on: 1.5, h: 90, phase: 1 }); G.ent('vent', 270, 13, { period: 5, on: 1.6, h: 90, phase: 3 });
   G.ent('drone', 254, 8); G.ent('drone', 264, 7); G.ent('drone', 276, 8);
   G.ent('glow', 247, 13); G.ent('glow', 257, 13); G.ent('glow', 268, 13); G.ent('glow', 280, 13); G.ent('glow', 287, 13);
@@ -622,7 +626,8 @@ function sporewood() {
   const R2 = Tm.done();
   // ---- 4b. THE FORK: off the shelf-climb plateau. Above, the cap canopy: ledges, spring caps, a drone. Below, the root cellar: a roofed run of lurkers, a roller and violet spores, with a cap at the end to spring you out. ----
   const Fk = grow(R2, R2, 131, 44);
-  Fk.ent('sign', 129, 3, { text: 'THE CAP CANOPY ABOVE, THE ROOT CELLAR BELOW.' });
+  Fk.ent('sign', 129, 3, { text: 'THE CAP CANOPY ABOVE, THE ROOT CELLAR BELOW. HOLD DOWN TO LOOK.' });
+  Fk.plat(132, 10, 2); Fk.plat(131, 15, 2); // steps down the shaft, so the cellar is a descent and not a blind drop
   Fk.plat(133, 6, 3); Fk.set(139, 9, T.BOUNCER); Fk.plat(143, 4, 3); Fk.ent('puffball', 144, 3); Fk.plat(148, 6, 3); Fk.ent('drone', 151, 3); Fk.set(153, 8, T.BOUNCER); Fk.plat(156, 4, 3); Fk.ent('stray', 157, 3, { kind: 'cap' });
   Fk.plat(160, 7, 3); Fk.ent('sporeling', 161, 6, { face: -1 }); Fk.ent('mover', 164, 6, { len: 2, range: 4, cap: true, speed: 30 }); Fk.plat(169, 8, 3); Fk.ent('puffball', 170, 7);
   Fk.coins([134, 5], [139, 5], [149, 5], [153, 4], [162, 6], [171, 7]);
@@ -630,7 +635,7 @@ function sporewood() {
   Fk.R.interiors = (Fk.R.interiors || []).concat([[135, 170, 14, 19, 'earth']]);
   Fk.ent('glow', 133, 19); Fk.ent('lurker', 140, 19); Fk.ent('stray', 145, 19, { kind: 'cap' }); Fk.ent('glow', 148, 19); Fk.ent('sporeling', 150, 19, { face: -1 }); Fk.ent('roller', 156, 19, { face: -1, speed: 60 }); Fk.ent('puffball', 160, 19);
   Fk.R.sleeps.push({ x0: 162 * TS, x1: 169 * TS, y0: 14 * TS, y1: 20 * TS }); Fk.ent('drone', 165, 16); Fk.ent('glow', 170, 19); Fk.ent('lurker', 171, 19);
-  Fk.set(173, 19, T.BOUNCER); Fk.plat(171, 17, 2); Fk.plat(171, 14, 2);
+  Fk.set(173, 19, T.BOUNCER); Fk.plat(171, 17, 2); Fk.plat(171, 14, 2); Fk.plat(174, 8, 2);
   Fk.coins([137, 18], [143, 18], [153, 18], [158, 18], [166, 18], [172, 13]);
   return Fk.done();
 ;
@@ -677,7 +682,7 @@ function kingswood() {
   plat(85, 12, 4); plat(91, 10, 3); plat(96, 8, 4);
   movers.push({ kind: 'swing', px: 104 * TS, py: 2 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
   plat(111, 8, 3); ent('thief', 112, 7, { face: -1 }); plat(116, 9, 4); ent('wasp', 121, 7);
-  plat(103, 10, 3); plat(126, 11, 3); // ledges under the swings: miss the seat and you land here, not in the burrow
+  plat(103, 10, 3); plat(107, 9, 2); plat(123, 10, 2); plat(126, 11, 3); plat(130, 10, 2); // a ledge road under each swing: the swing is the fast way, never the only way
   movers.push({ kind: 'swing', px: 127 * TS, py: 2 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period: 3.6, phase: 1.6 });
   plat(134, 9, 4); ent('thief', 136, 8, { face: -1 }); plat(140, 11, 3); plat(145, 13, 4);
   coins([87, 11], [93, 9], [98, 7], [104, 6], [112, 6], [118, 8], [127, 6], [135, 8], [141, 10], [146, 12]);
@@ -709,7 +714,7 @@ function kingswood() {
   plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1, fire: true });
   movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
   plat(261, 9, 3); plat(266, 11, 3); plat(271, 11, 4);
-  plat(230, 10, 3); plat(253, 11, 3); // ledges under the canopy swings
+  plat(228, 9, 2); plat(231, 10, 3); plat(235, 8, 2); plat(250, 10, 2); plat(253, 11, 3); plat(257, 10, 2); // a ledge road under each canopy swing
   coins([212, 10], [217, 8], [223, 6], [231, 5], [239, 5], [245, 7], [254, 5], [262, 8], [267, 10], [272, 10]);
   // roots
   block(211, 275, 21, 27); ceiling(211, 275, 15);
@@ -756,7 +761,7 @@ function kingswood() {
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'boss2', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
+    arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'king', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
     mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'master' },
   }
   // ---- 5c. THE TOLL BRIDGE: a rope bridge over the gorge. Pikes hold it, a cutter waits at the far post; if it falls, ledges below lead back up. ----
@@ -769,7 +774,7 @@ function kingswood() {
   G.ent('pike', 297, 13, { face: -1 }); G.ent('thief', 305, 13, { face: -1 }); G.ent('pike', 313, 13, { face: -1 });
   G.ent('sprig', 325, 13, { face: -1, cutter: true }); G.ent('wasp', 301, 10); G.ent('wasp', 318, 10);
   G.ent('deco', 291, 13, { kind: 'banner', v: 0 }); G.ent('deco', 320, 13, { kind: 'banner', v: 1 });
-  G.plat(292, 18, 3); G.plat(299, 17, 3); G.plat(306, 18, 3); G.plat(313, 17, 3); G.plat(320, 18, 3); G.plat(324, 16, 2); // the way back up if the bridge falls
+  G.plat(292, 18, 3); G.plat(298, 17, 3); G.plat(305, 18, 3); G.plat(311, 17, 3); G.plat(318, 18, 3); G.plat(324, 16, 2); // the way back up if the bridge falls: never more than three tiles to a rising ledge
   G.plat(289, 24, 2); G.plat(292, 22, 2); G.plat(289, 20, 2); // and up from the gorge floor to the first ledge
   G.block(288, 323, 26, 27); G.ent('deco', 296, 25, { kind: 'skullPile', v: 0 }); G.ent('deco', 316, 25, { kind: 'skullPile', v: 1 }); // the gorge floor, bones and all
   G.ent('firepit', 302, 25, { period: 3, on: 1.3, phase: 0 }); G.ent('firepit', 311, 25, { period: 3, on: 1.3, phase: 1.5 }); G.ent('silver', 307, 25);
@@ -802,10 +807,10 @@ function screePath() {
   // ---- 2. The terraces: three steps up the hill, a rockfall, the first stray ----
   block(61, 80, 18, 27); block(81, 100, 16, 27); block(101, 120, 14, 27);
   wall(62, 17); wall(82, 15); wall(102, 13);
-  plat(70, 14, 3); ent('stray', 71, 13); coins([70, 13], [72, 13]);
+  plat(70, 14, 3); plat(66, 16, 2); ent('stray', 71, 13); coins([70, 13], [72, 13]);
   ent('goat', 72, 17, { face: -1 }); ent('shield', 78, 17, { face: -1 }); ent('rockfall', 90, 4, { every: 2.4 }); ent('rockfall', 94, 4, { every: 3.1 });
   ent('deco', 84, 15, { kind: 'stone' }); ent('deco', 106, 13, { kind: 'stone' }); ent('deco', 112, 13, { kind: 'cairn' });
-  ent('goat', 96, 15, { face: -1 }); ent('harpy', 110, 8); ent('sprig', 108, 13, { face: -1 });
+  ent('troll', 92, 15, { face: -1 }); ent('harpy', 110, 8);
   coins([66, 17], [76, 17], [86, 15], [98, 15], [104, 13], [116, 13]);
   ent('check', 118, 13);
 
@@ -816,7 +821,7 @@ function screePath() {
   plat(156, 6, 4); ent('stray', 158, 5); coins([157, 5], [159, 5]);
   plat(162, 8, 3); plat(167, 9, 3); plat(172, 10, 3); ent('archer', 168, 8, { face: -1 }); ent('harpy', 162, 3); ent('silver', 163, 7);
   coins([163, 7], [168, 7], [173, 9]);
-  wall(128, 13); wall(140, 13); ent('goat', 134, 13, { face: -1 }); ent('thorn', 138, 13, { face: -1 }); ent('sprig', 144, 13, { face: -1 }); ent('sprig', 160, 13, { face: -1 }); ent('sapper', 165, 13, { face: -1 });
+  wall(128, 13); wall(140, 13); ent('goat', 134, 13, { face: -1 }); ent('thorn', 138, 13, { face: -1 }); ent('sprig', 160, 13, { face: -1 });
   ent('sign', 124, 13, { text: 'RIDE THE SAILS. THE LOFT IS WORTH THE CLIMB.' });
   ent('deco', 138, 13, { kind: 'cairn' });
   coins([131, 12], [146, 12], [164, 12], [170, 12]);
@@ -837,7 +842,7 @@ function screePath() {
   ent('check', 260, 18);
 
   // ---- 5. The crag wall: ledges up to the plateau, rocks on the way ----
-  ent('goat', 266, 18, { face: -1 }); ent('brute', 262, 18, { face: -1 }); wall(270, 18);
+  ent('goat', 266, 18, { face: -1 }); ent('troll', 261, 18, { face: -1 }); wall(270, 18);
   plat(278, 16, 3); plat(274, 13, 3); plat(279, 10, 3); plat(283, 12, 2); ent('silver', 283, 11);
   block(285, 363, 9, 27);
   ent('rockfall', 281, 2, { every: 2.7 });
@@ -868,14 +873,14 @@ function screePath() {
   GA.plat(268, 16, 3);
   GA.R.moversExtra.push({ kind: 'lift', x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   GA.plat(276, 12, 2);
-  GA.block(279, 283, 19, 27); GA.ent('deco', 281, 18, { kind: 'mill' });
+  GA.block(279, 283, 19, 23); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on an arch: the gorge floor runs under it
   for (let i = 0; i < 4; i++) GA.R.moversExtra.push({ kind: 'wheel', px: 281 * TS + 8, py: 19 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
   GA.plat(285, 12, 3);
   GA.R.moversExtra.push({ kind: 'swing', px: 291 * TS, py: 6 * TS, arm: 100, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.5 });
   GA.plat(296, 14, 3); GA.plat(301, 16, 3);
   GA.ent('rockfall', 270, 3, { every: 2.8 }); GA.ent('rockfall', 298, 3, { every: 2.5 });
-  GA.ent('harpy', 265, 10); GA.ent('harpy', 288, 8); GA.ent('thorn', 302, 15, { face: -1 }); GA.ent('shield', 308, 18, { face: -1 });
-  for (let y = 19; y <= 25; y++) { GA.set(303, y, T.NET); GA.set(304, y, T.NET); }
+  GA.ent('harpy', 265, 10); GA.ent('harpy', 288, 8); GA.ent('troll', 308, 18, { face: -1 });
+  for (let y = 19; y <= 25; y++) { GA.set(303, y, T.NET); GA.set(304, y, T.NET); GA.set(258, y, T.NET); GA.set(259, y, T.NET); } // rope ladders up both cliffs
   GA.ent('deco', 262, 25, { kind: 'stone', v: 1 }); GA.ent('deco', 290, 25, { kind: 'cairn' }); GA.ent('goat', 268, 25, { face: -1 });
   GA.coins([263, 12], [269, 15], [272, 14], [277, 11], [281, 12], [286, 11], [291, 10], [297, 13], [302, 15], [275, 25], [295, 25]);
   GA.ent('check', 309, 18);
@@ -900,7 +905,7 @@ function screePath() {
   B.R.stone.push([64, 64, 19, 19], [107, 107, 19, 19]); B.block(64, 64, 19, 19); B.block(107, 107, 19, 19);
   for (const [dx, alt] of [[70, false], [86, true], [102, false]]) { B.ent('door', dx, 19, { kind: 'cottage', at: dx }); B.ent('folk', dx - 3, 19, { door: dx, alt }); B.plat(dx - 2, 18, 5); }
   B.ent('deco', 78, 19, { kind: 'well' }); B.ent('deco', 94, 19, { kind: 'fence', v: 0 });
-  B.ent('sprig', 74, 19, { face: -1 }); B.ent('shield', 90, 19, { face: -1 }); B.ent('thorn', 98, 19, { face: -1 }); B.ent('sapper', 105, 19, { face: -1 });
+  B.ent('sprig', 74, 19, { face: -1 }); B.ent('shield', 90, 19, { face: -1 }); B.ent('goat', 99, 19, { face: -1 });
   B.ent('archer', 87, 17, { face: -1 }); B.ent('goat', 80, 19, { face: -1 });
   B.plat(85, 15, 2); B.ent('silver', 85, 14);
   B.coins([68, 17], [71, 17], [77, 18], [84, 17], [88, 17], [100, 17], [103, 17], [96, 18]);

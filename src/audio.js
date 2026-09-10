@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
+const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -218,7 +218,7 @@ Object.assign(SFX, {
   gillOpen() { tone('sine', 300, 900, 0.35, 0.12); tone('sine', 450, 1200, 0.35, 0.08, 0.05); noise(0.3, 0.1, 3000, 0.8); },
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
 });
-export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, ambKind });
+export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'theme3', 'boss', 'boss2', 'ending', 'select', 'theme4'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'theme3', 'theme4', 'boss', 'boss2', 'king', 'select', 'town', 'adventure', 'ending'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];
