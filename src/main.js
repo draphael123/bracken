@@ -1,7 +1,7 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
-import { bakeKeeper, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing } from './chars.js';
+import { bakeKeeper, bakeBard, bakeOldKnight, bakePyro, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing } from './chars.js';
 import { LEVELS, T, TS } from './level.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, debugAudio } from './audio.js';
 
@@ -49,7 +49,7 @@ const PROG = {}; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsg
 try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slot') || 0))); } catch {}
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
-function progDefaults() { if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow'; }
+function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow'; }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
 function saveProgress() { try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {} }
@@ -101,8 +101,10 @@ const CHARMS = [
   { id: 'swift', name: 'SWIFT CHARM', price: 80, desc: 'run a little faster' },
 ];
 const ABILITIES = [
-  { id: 'shieldThrow', name: 'SHIELD THROW', price: 80, desc: 'F: hurl the shield. 20 stamina, 2.5s', needs: 'stockade', needsName: 'the Stockade' },
-  { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 25 stamina, 3s', needs: 'kings', needsName: 'Kingswood' },
+  { id: 'shieldThrow', name: 'SHIELD THROW', price: 80, desc: 'F: hurl the shield. 20 stamina, 2.5s', needs: 'stockade', needsName: 'the Stockade', hero: 'knight' },
+  { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 25 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'knight' },
+  { id: 'fireWall', name: 'FIRE WALL', price: 80, desc: 'F: a line of flame ahead for 3s. 25 stamina, 4s', needs: 'stockade', needsName: 'the Stockade', hero: 'pyro' },
+  { id: 'cinderStep', name: 'CINDER STEP', price: 90, desc: 'F: a burning dash you cannot be hit in. 20 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'pyro' },
 ];
 const MENU_MUSIC = [
   { id: 'select', name: 'STAGE SELECT', price: 0, desc: 'the map tune you know' },
@@ -110,21 +112,28 @@ const MENU_MUSIC = [
   { id: 'adventure', name: 'THE ADVENTURE BEGINS', price: 60, desc: 'a bright march for the map and menus' },
 ];
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
-const STORE_TABS = [{ name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'SWORDS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'GEAR', items: UPGRADES, key: null, owned: 'items' }, { name: 'SKILLS', items: ABILITIES, key: 'skill', owned: 'items' }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];
+const HEROES = [
+  { id: 'knight', name: 'THE KNIGHT', price: 0, desc: 'sword, shield and the plunge. 100 health' },
+  { id: 'pyro', name: 'THE PYROMANCER', price: 15, silver: true, desc: 'staff and ember. hold C for the flare instead of a shield. 70 health. flame kick in the air' },
+];
+const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'SWORDS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'GEAR', items: UPGRADES, key: null, owned: 'items' }, { name: 'SKILLS', items: ABILITIES, key: 'skill', owned: 'items' }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];
 let storeMode = 'buy', equipFrom = 'map';
 const EQUIP_TABS = STORE_TABS.filter(t => t.key);
 const storeTabs = () => storeMode === 'equip' ? EQUIP_TABS : STORE_TABS;
 const equipItems = tab => (tab.key === 'skill' || tab.key === 'charm' ? [{ id: 'none', name: 'NONE', desc: tab.key === 'skill' ? 'nothing on F' : 'nothing worn', price: 0 }] : []).concat(tab.items.filter(k => PROG[tab.owned][k.id]));
-const storeItems = tab => storeMode === 'equip' ? equipItems(tab) : tab.items;
+const storeItems = tab => (storeMode === 'equip' ? equipItems(tab) : tab.items).filter(k => !k.hero || k.hero === hero());
 function openEquip(from) { storeMode = 'equip'; equipFrom = from; storeTab = 0; storeI = 0; storeMsgT = 0; state = 'store'; SFX.uiSel(); }
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
-const swordDmg = () => sword().dmg + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0);
+const swordDmg = () => Math.round((sword().dmg + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0)) * (isPyro() ? 0.7 : 1));
 const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : !!(PROG[f] && PROG[f].cleared);
 let K = bakeKnight();
-function applySkin() { K = bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal)); }
-function applyUpgrades() { P.maxHp = 100 + (PROG.items.heart ? 25 : 0); P.maxSt = 100 + (PROG.items.wind ? 30 : 0); }
+const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro';
+const silverTotal = () => LEVELS.reduce((n, lv) => n + [1, 2, 4].filter(b => ((PROG[lv.id] || {}).silver || 0) & b).length, 0);
+const silverAvail = () => silverTotal() - (PROG.silverSpent || 0);
+function applySkin() { const pal = Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : bakeKnight(pal); }
+function applyUpgrades() { P.maxHp = (isPyro() ? 70 : 100) + (PROG.items.heart ? 25 : 0); P.maxSt = 100 + (PROG.items.wind ? 30 : 0); }
 function bakeMotherIcon() {
   const [c, g] = canvas(44, 40);
   g.fillStyle = '#3a3444'; g.fillRect(17, 14, 10, 26); g.fillStyle = '#5a5468'; g.fillRect(17, 14, 2, 26); g.fillStyle = '#241f2c'; g.fillRect(25, 14, 2, 26);
@@ -140,9 +149,10 @@ function bakeShieldIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#c9d1d
 const SHIELD_ICON = bakeShieldIcon();
 function bakeSlamIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#7c8797'; g.fillRect(1, 1, 8, 5); g.fillStyle = '#c9d1dc'; g.fillRect(1, 1, 8, 1); g.fillRect(1, 1, 2, 5); g.fillStyle = '#5c3a1d'; g.fillRect(4, 6, 2, 6); g.fillStyle = '#ffd36b'; g.fillRect(0, 10, 2, 1); g.fillRect(8, 10, 2, 1); return outline(c, '#1b1626'); }
 const SLAM_ICON = bakeSlamIcon();
-const skillNow = () => { const k = PROG.skill; if (k === 'none') return null; if (k && PROG.items[k]) return k; if (PROG.items.shieldThrow) return 'shieldThrow'; if (PROG.items.groundSlam) return 'groundSlam'; return null; };
+const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
+const skillNow = () => { const k = PROG.skill; if (k === 'none') return null; if (k && PROG.items[k] && abilityHero(k) === hero()) return k; if (isPyro()) { if (PROG.items.fireWall) return 'fireWall'; if (PROG.items.cinderStep) return 'cinderStep'; return null; } if (PROG.items.shieldThrow) return 'shieldThrow'; if (PROG.items.groundSlam) return 'groundSlam'; return null; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
-const MASTER = bakeMaster(), KING = bakeKing(); SPR.harpy = bakeHarpy(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = SPR.woodsman; SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
+const MASTER = bakeMaster(), KING = bakeKing(); SPR.harpy = bakeHarpy(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = SPR.woodsman; SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
 // hopper kinds: hop cooldown, hop speed, health, damage
 const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp: 1.35, hp: 10, dmg: 12 }, blue: { cd: 1.9, sp: 0.75, hp: 20, dmg: 22 } };
 const BIRD = bakeBird();
@@ -153,7 +163,7 @@ function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
   TILE = {
     dirt: [0, 1, 2, 3].map(i => ART.bakeDirt(10 + i)), top: {}, edge: {},
-    log: [0, 1, 2].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true), comb: [0, 1, 2].map(i => ART.bakeCombPlat(560 + i)), combL: ART.bakeCombPlat(563, 'L'), combR: ART.bakeCombPlat(564, 'R'), ledge: [0, 1, 2].map(i => ART.bakeLedge(570 + i, null)), ledgeL: ART.bakeLedge(573, 'L'), ledgeR: ART.bakeLedge(574, 'R'), climb: [ART.bakeClimbFace(0), ART.bakeClimbFace(1)],
+    log: [0, 1, 2].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true), comb: [0, 1, 2].map(i => ART.bakeCombPlat(560 + i)), combL: ART.bakeCombPlat(563, 'L'), combR: ART.bakeCombPlat(564, 'R'), ropeNet: [0, 1].map(i => ART.bakeRopeNet(i)), ladder: { S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }, ledge: [0, 1, 2].map(i => ART.bakeLedge(570 + i, null)), ledgeL: ART.bakeLedge(573, 'L'), ledgeR: ART.bakeLedge(574, 'R'), climb: [ART.bakeClimbFace(0), ART.bakeClimbFace(1)],
     thorns: [0, 1, 2, 3].map(i => ART.bakeThorns(70 + i)), crate: ART.bakeCrate(), roots: [0, 1, 2].map(i => ART.bakeDirtRoots(80 + i)),
     reeds: [0, 1, 2].map(i => ART.bakeReeds(90 + i)), silt: [0, 1, 2].map(i => ART.bakeSilt(85 + i)), palisade: [0, 1, 2].map(i => ART.bakePalisade(300 + i)), palisadeTop: ART.bakePalisadeTop(), bouncer: ART.bakeBouncer(), shelf: [0, 1].map(i => ART.bakeShelf(330 + i)), port: [0, 1].map(i => ART.bakePortcullis(600 + i)), drystone: [0, 1, 2].map(i => ART.bakeDrystone(700 + i)), drystoneTop: [0, 1].map(i => ART.bakeDrystoneTop(710 + i)), scree: { 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }, hall: [0, 1, 2].map(i => ART.bakeHallWall(610 + i)), mycTop: {}, mycDirt: [0, 1, 2].map(i => ART.bakeMycDirt(340 + i)), plank: [0, 1].map(i => ART.bakeBridgePlank(310 + i)), net: ART.bakeNet(), vine: [0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i)),
   };
@@ -173,7 +183,7 @@ function bakeAll(pal = {}) {
     oldOak: [0, 1].map(i => ART.bakeOldOak(470 + i)), boat: ART.bakeBoat(480), heron: ART.bakeHeron(), totem: [0, 1].map(i => ART.bakeTotem(490 + i)), giantCap: ART.bakeGiantCap(495),
     skullMini: ART.bakeSkullMini(), compass: ART.bakeCompass(), relic: ART.bakeRelics(), bough: ART.bakeBough(), charm: ART.bakeCharms(), counter: ART.bakeCounter(), wares: [ART.bakeWares(0), ART.bakeWares(1)], shopDoor: ART.bakeShopDoor(), lanternPost: ART.bakeLanternPost(), beehive: ART.bakeBeehive(), birdhouse: ART.bakeBirdhouse(), fishTrap: [0, 1].map(i => ART.bakeFishTrap(800 + i)), spearRack: ART.bakeSpearRack(), barrelStack: ART.bakeBarrelStack(), bones: [0, 1].map(i => ART.bakeBones(810 + i)), fallenLog: [0, 1].map(i => ART.bakeFallenLog(770 + i)), fence: [0, 1].map(i => ART.bakeFence(780 + i)), cart: ART.bakeCart(790), well: ART.bakeWell(), heather: [0, 1, 2].map(i => ART.bakeHeather(730 + i)), gorse: [0, 1].map(i => ART.bakeGorse(740 + i)), thistle: [0, 1].map(i => ART.bakeThistle(750 + i)), standingStone: [0, 1, 2].map(i => ART.bakeStandingStone(760 + i)), cairn: ART.bakeCairn(), boulder: ART.bakeBoulder(), bothy: ART.bakeBothy(), mill: ART.bakeMill(), sail: ART.bakeSail(), foldGate: ART.bakeFoldGate(),
     bell: ART.bakeBell(), ramLog: ART.bakeRamLog(), lever: [ART.bakeLever(false), ART.bakeLever(true)], plate: [ART.bakePlate(false), ART.bakePlate(true)], palanquin: ART.bakePalanquin(), door: [ART.bakeDoor(false), ART.bakeDoor(true)], carpet: ART.bakeCarpet(),
-    puffball: ART.bakePuffball(), honeyPot: ART.bakeHoneyPot(), coffer: ART.bakeCoffer(), brightCap: ART.bakeBrightCap(), questIcon: ART.bakeQuestIcon(), cabin: ART.bakeCabin(), pine: ART.bakePine(), fallenPine: ART.bakeFallenPine(14), sluice: [ART.bakeSluice(false), ART.bakeSluice(true)], catapult: [0, 1, 2].map(i => ART.bakeCatapult(i)), nest: ART.bakeNest(), chainPost: ART.bakeChainPost(), grate: ART.bakeGrate(), silver: ART.bakeSilver(), trunk: [0, 1, 2].map(i => ART.bakeTrunk(900 + i)), lampIcon: ART.bakeLampIcon(), crownLantern: [ART.bakeCrownLantern(false), ART.bakeCrownLantern(true)], cottage: [ART.bakeCottage(false), ART.bakeCottage(true)], deadTree: [0, 1].map(i => ART.bakeDeadTree(880 + i)), glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
+    puffball: ART.bakePuffball(), honeyPot: ART.bakeHoneyPot(), coffer: ART.bakeCoffer(), brightCap: ART.bakeBrightCap(), questIcon: ART.bakeQuestIcon(), cabin: ART.bakeCabin(), pine: ART.bakePine(), fallenPine: ART.bakeFallenPine(14), sluice: [ART.bakeSluice(false), ART.bakeSluice(true)], catapult: [0, 1, 2].map(i => ART.bakeCatapult(i)), nest: ART.bakeNest(), chainPost: ART.bakeChainPost(), grate: ART.bakeGrate(), silver: ART.bakeSilver(), trunk: [0, 1, 2].map(i => ART.bakeTrunk(900 + i)), bracket: [ART.bakeBracket(0), ART.bakeBracket(1)], axle: ART.bakeAxle(), pillar: [0, 1, 2].map(i => ART.bakeRockPillar(910 + i)), strut: [ART.bakeStrut(0), ART.bakeStrut(1)], lampIcon: ART.bakeLampIcon(), crownLantern: [ART.bakeCrownLantern(false), ART.bakeCrownLantern(true)], cottage: [ART.bakeCottage(false), ART.bakeCottage(true)], deadTree: [0, 1].map(i => ART.bakeDeadTree(880 + i)), glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
     towertop: ART.bakeTowerTop(), treehouse: [0, 1].map(i => ART.bakeTreehouse(320 + i)), torch: ART.bakeTorch(), cage: ART.bakeCage(), barrel: ART.bakeBarrel(), brazier: [ART.bakeBrazier(false), ART.bakeBrazier(true)], crank: ART.bakeCrank(), lift: ART.bakeLift(), horn: ART.bakeHorn(), fire: ART.bakeFire(),
     heart: outline(fromGrid(['.ww.ww.', 'wwwwwww', 'wLwwwww', '.wwwww.', '..www..', '...w...'], { w: '#e04848', L: '#ff9a9a' }, 1), ART.OUT),
     bolt: outline(fromGrid(['..gg.', '.gg..', 'gggg.', '..gg.', '.gg..'], { g: '#8fd160' }, 1), ART.OUT),
@@ -206,6 +216,7 @@ function resolveTiles() {
         const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood');
         const flat2 = tileAt(x + 1, y - 1) === T.AIR && tileAt(x + 1, y) === T.SOLID && tileAt(x + 2, y - 1) === T.AIR && tileAt(x + 2, y) === T.SOLID;
         let roll = rnd();
+        if ((L.interiors || []).some(([ix0, ix1, iy0]) => x >= ix0 && x <= ix1 && y >= iy0 - 4 && y < iy0)) roll = 1; // a roof over a hall: no ferns, stumps or fences up there
         if (dress === 'myc') { roll = 1; if (rnd() < 0.42) decor.push({ k: 'tiny', x: x * TS + ((rnd() * 10) | 0), y: y * TS - 6, c: PROP.tinyCap[(rnd() * 4) | 0], ph: rnd() * 6 }); if (rnd() < 0.08) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); }
         else if (dress === 'none') { roll = 1; }
         else if (dress === 'crag') { roll = 1; if (!inZone) { const r2 = rnd(); if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 6) | 0), y: y * TS - 7, c: PROP.heather[(rnd() * 3) | 0], sway: 0 }); else if (r2 < 0.21 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 12, c: PROP.gorse[(rnd() * 2) | 0], birds: false }); else if (r2 < 0.26) decor.push({ k: 'fern', x: x * TS + 4, y: y * TS - 14, c: PROP.thistle[(rnd() * 2) | 0], sway: 0 }); else if (r2 < 0.32) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); } }
@@ -236,7 +247,7 @@ function resolveTiles() {
     else if (t === T.PORT) s = TILE.port[(x + y) % 2];
     else if (t === T.SHELF) s = TILE.shelf[(rnd() * 2) | 0];
     else if (t === T.PLANK) s = TILE.plank[(rnd() * 2) | 0];
-    else if (t === T.NET) s = TILE.net;
+    else if (t === T.NET) { const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET; let vr = 1, hr = 1; for (let k = 1; n(0, -k); k++) vr++; for (let k = 1; n(0, k); k++) vr++; for (let k = 1; n(-k, 0); k++) hr++; for (let k = 1; n(k, 0); k++) hr++; s = hr > vr ? TILE.ropeNet[(x + y) % 2] : TILE.ladder[n(1, 0) && !n(-1, 0) ? 'L' : n(-1, 0) && !n(1, 0) ? 'R' : 'S'][y % 2]; }
     else if (t === T.CLIMB) s = TILE.climb[(x + y) % 2];
     else if (t === T.SPIKE) s = TILE.thorns[(rnd() * 4) | 0];
     else if (t === T.CRATE) s = TILE.crate;
@@ -271,6 +282,7 @@ for (let i = 0; i < 4; i++) mapClouds.push({ x: Math.random() * VW, y: 10 + Math
 for (let i = 0; i < 2; i++) mapBirds.push({ t: Math.random() * 6, cx: 90 + i * 120, cy: 60 + i * 30, r: 24 + i * 10 });
 const collectedCrates = new Set();
 let destroyed = new Set(), cutBridges = new Set(); // tiles the player broke this attempt: they stay broken
+let embers = []; // the pyromancer's fireballs: { x, y, vx, vy, life, hit }
 let silvers = []; // the three silver coins of the level: { x, y, i, got }
 let marks = new Set(); // world changes that persist through death: 'tree:x' felled, 'pool:x0' drained, 'cat:x' wrecked, 'ferry:x0' paid, 'cage:x' opened
 function resetPools() { for (const p of (L.pools || [])) if (p.y0 !== undefined) { p.y = p.y0; p.shallow = p.shallow0; p.depth = p.depth0; p.draining = false; } }
@@ -364,7 +376,7 @@ function spawnEnt(e) {
       case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + Math.random() * 2 }); break;
       case 'master': enemies.push({ ...base, t: 'master', w: 20, h: 16, hp: EHP.master, maxHp: EHP.master, mounted: true, mode: 'wait', modeT: 0, whistleT: 4, air: false, timer: 0, speed: 130 }); break;
       case 'king': boss = { ...base, t: 'king', w: 18, h: 15, hp: EHP.king, maxHp: EHP.king, mode: 'sleep', modeT: 0, phase: 1, dir: -1, gobletT: 3, summonT: 8, sweepT: 4, shoutT: 7, boltT: 3, crownT: 5, cageT: 7, last: '' }; enemies.push(boss); for (let i = 0; i < 4; i++) enemies.push({ ...base, t: 'bearer', w: 8, h: 10, hp: EHP.bearer, off: [-18, -6, 6, 18][i], face: -1 }); break;
-      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [PROP.banner[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [PROP.hangCage, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod] }[e.kind]; if (!K) break; const c = K[0]; deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? e.y * TS : py - c.height, c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: py - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: py - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: py - 11, r: 40, glow: true }); if (e.kind === 'lanternPost') lights.push({ x: px, y: py - 18, r: 40, torch: true }); if (e.kind === 'counter') lights.push({ x: px + 6, y: py - 20, r: 56, glow: true }); if (e.kind === 'mill') lights.push({ x: px, y: py - 46, r: 30, glow: true }); if (e.kind === 'sporePod') lights.push({ x: px, y: py - 8, r: 40, glow: true }); break; }
+      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [PROP.banner[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [PROP.hangCage, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], bracket: [PROP.bracket[e.v || 0], true], axle: [PROP.axle, true], pillar: [PROP.pillar[e.v || 0], true], strut: [PROP.strut[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod] }[e.kind]; if (!K) break; const c = K[0]; deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? e.y * TS : py - c.height, c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: py - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: py - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: py - 11, r: 40, glow: true }); if (e.kind === 'lanternPost') lights.push({ x: px, y: py - 18, r: 40, torch: true }); if (e.kind === 'counter') lights.push({ x: px + 6, y: py - 20, r: 56, glow: true }); if (e.kind === 'mill') lights.push({ x: px, y: py - 46, r: 30, glow: true }); if (e.kind === 'sporePod') lights.push({ x: px, y: py - 8, r: 40, glow: true }); break; }
       case 'sporeling': enemies.push({ ...base, t: 'sporeling', w: 8, h: 10, hp: EHP.sporeling, speed: 24 }); break;
       case 'lurker': enemies.push({ ...base, t: 'lurker', w: 12, h: 12, hp: EHP.lurker, mode: 'hide', modeT: 0 }); break;
       case 'drone': enemies.push({ ...base, t: 'drone', hx: px, hy: py, w: 9, h: 7, hp: EHP.drone }); break;
@@ -400,7 +412,7 @@ function respawn() {
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0 });
-  spawnEntities(); seeds = []; nums = []; ghosts = []; rain = []; music.play(L.music || 'theme');
+  spawnEntities(); seeds = []; embers = []; nums = []; ghosts = []; rain = []; P.heat = 0; P.overheat = 0; P.cHeld = 0; music.play(L.music || 'theme');
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
 }
 function startGame() {
@@ -424,40 +436,37 @@ function winLevel() {
 const levelLocked = lv => !!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !q.get('unlock'));
 
 // ---------- world map ----------
-// Two maps: the Wood, and past the Mountain Pass, the Crags. The pass opens once Kingswood is cleared.
-const MAPS = [
-  { id: 'wood', name: 'THE WOOD', style: 'wood', seed: 11, nodeAt: [0, 3, 6, 8, 10, 12, 15, 17],
-    nodes: [
-      { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, name: 'BRACKEN WOOD' },
-      { id: 'store', kind: 'store', x: 156, y: 66, name: 'THE STORE' },
-      { id: 'marsh', kind: 'level', level: 1, x: 246, y: 118, name: 'MARSH WOOD' },
-      { id: 'stockade', kind: 'level', level: 2, x: 296, y: 34, name: 'THE STOCKADE' },
-      { id: 'spore', kind: 'level', level: 3, x: 214, y: 26, name: 'SPOREWOOD' },
-      { id: 'kings', kind: 'level', level: 4, x: 120, y: 30, name: 'KINGSWOOD' },
-      { id: 'pass', kind: 'pass', to: 1, x: 40, y: 64, name: 'THE MOUNTAIN PASS' },
-      { id: 'hanging', kind: 'level', level: 6, x: 22, y: 100, name: 'THE HANGING VILLAGE' },
-    ],
-    path: [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118], [268, 84], [296, 34], [258, 22], [214, 26], [170, 22], [120, 30], [92, 42], [64, 54], [40, 64], [30, 82], [22, 100]] },
-  { id: 'crags', name: 'THE CRAGS', style: 'crag', seed: 23, nodeAt: [0, 3],
-    nodes: [
-      { id: 'pass', kind: 'pass', to: 0, x: 36, y: 128, name: 'THE MOUNTAIN PASS' },
-      { id: 'scree', kind: 'level', level: 5, x: 120, y: 92, name: 'THE SCREE PATH' },
-    ],
-    path: [[36, 128], [62, 120], [92, 104], [120, 92]] },
+// One map, two regions: the Wood on the lower sheet, the Crags above it. The path climbs through the pass once Kingswood falls.
+const MAPW = 320, MAPH = 360, CRAG_H = 180;
+const WOOD_NODES = [
+  { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, name: 'BRACKEN WOOD' },
+  { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 66, name: 'THE STORE' },
+  { id: 'marsh', kind: 'level', level: 1, x: 246, y: 118, name: 'MARSH WOOD' },
+  { id: 'stockade', kind: 'level', level: 2, x: 296, y: 34, name: 'THE STOCKADE' },
+  { id: 'spore', kind: 'level', level: 3, x: 214, y: 26, name: 'SPOREWOOD' },
+  { id: 'kings', kind: 'level', level: 4, x: 120, y: 30, name: 'KINGSWOOD' },
 ];
-let mapIdx = 0, NODES = MAPS[0].nodes, PATH = MAPS[0].path, NODE_AT = MAPS[0].nodeAt, MAPC = null;
-function setMap(i) { mapIdx = Math.max(0, Math.min(MAPS.length - 1, i)); const M = MAPS[mapIdx]; NODES = M.nodes; PATH = M.path; NODE_AT = M.nodeAt; if (!M.bake) M.bake = ART.bakeMap(VW, VH, M.nodes, M.path, M.seed, M.style); MAPC = M.bake; PROG.mapId = mapIdx; }
-setMap(0);
-// put the token on the node of a level, whichever map holds it
-function gotoLevelNode(li) { for (let i = 0; i < MAPS.length; i++) { const k = MAPS[i].nodes.findIndex(n => n.level === li); if (k >= 0) { setMap(i); map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; return; } } map.node = 0; map.seg = 0; map.t = 0; }
+const WOOD_PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118], [268, 84], [296, 34], [258, 22], [214, 26], [170, 22], [120, 30], [92, 42], [64, 54], [40, 64]];
+const CRAG_NODES = [
+  { id: 'scree', kind: 'level', level: 5, x: 120, y: 92, name: 'THE SCREE PATH' },
+  { id: 'hanging', kind: 'level', level: 6, x: 214, y: 58, name: 'THE HANGING VILLAGE' },
+  { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 280, y: 36, name: 'THE HIGH STORE' },
+];
+const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36]];
+const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + CRAG_H })).concat(CRAG_NODES);
+const PATH = WOOD_PATH.map(([x, y]) => [x, y + CRAG_H]).concat([[38, 200]], CRAG_PATH);
+const NODE_AT = [0, 3, 6, 8, 10, 12, 20, 23, 25]; // PATH index of each node: wood 0-5, then scree, the village, the high store
+const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: 0, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: CRAG_H }, { x: 0, y: CRAG_H, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + CRAG_H], [38, 200]], [[38, 200], [36, 128]]]);
+let mapCamY = MAPH - 180;
+function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
 const HUT = ART.bakeHut(), FLAG = ART.bakeFlag();
 const map = { node: 0, seg: 0, t: 0, walking: 0, target: 0 }; // token position: on PATH segment seg at fraction t
-const nodeLocked = nd => nd.kind === 'level' ? levelLocked(LEVELS[nd.level]) : nd.kind === 'pass' ? !((PROG.kings && PROG.kings.cleared) || q.get('unlock')) : false;
+const nodeLocked = nd => nd.kind === 'level' ? levelLocked(LEVELS[nd.level]) : nd.kind === 'store' ? !!(nd.needs && !(PROG[nd.needs] && PROG[nd.needs].cleared) && !q.get('unlock')) : false;
 function mapPos() { const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; return [a[0] + (b[0] - a[0]) * map.t, a[1] + (b[1] - a[1]) * map.t]; }
 function mapGo(dir) {
   if (map.walking) return;
   const nx = map.node + dir; if (nx < 0 || nx >= NODES.length) { SFX.buzz(); return; }
-  if (nodeLocked(NODES[nx])) { SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, 'LOCKED', '#9aa39a'); return; }
+  if (nodeLocked(NODES[nx]) && NODES[nx].kind === 'level') { SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, 'LOCKED', '#9aa39a'); return; }
   map.target = nx; map.walking = dir; SFX.ui();
 }
 function updateMap(dt) {
@@ -470,17 +479,19 @@ function updateMap(dt) {
     if (Math.random() < dt * 10) { const [px, py] = mapPos(); parts.push({ x: px + camX + (Math.random() - 0.5) * 4, y: py + camY, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 0 }); }
   }
   if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
-  if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === 'shop'); selectStart(); } else if (nd.kind === 'pass') { setMap(nd.to); map.node = Math.max(0, NODES.findIndex(n => n.kind === 'pass')); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; saveProgress(); SFX.uiSel(); SFX.levelStart(); killFlash = 0.5; } else { selI = nd.level; selectStart(); } }
+  if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === (nd.shop || 'shop')); selectStart(); } else { selI = nd.level; selectStart(); } }
   if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
   if (dodgePress && !map.walking) openEquip('map');
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node;
+  { const [, py] = mapPos(); const want = Math.max(0, Math.min(MAPH - VH, py - VH * 0.55)); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
 }
 function drawMap() {
+  g.save(); g.translate(0, -Math.round(mapCamY));
   g.drawImage(MAPC, 0, 0);
   if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
-  // river sparkle
-  g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, 0], [VW - 58, 40], [VW - 26, 82], [VW - 70, 122], [VW - 44, VH]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
+  // river sparkle (the river is on the wood sheet)
+  g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, CRAG_H], [VW - 58, 40 + CRAG_H], [VW - 26, 82 + CRAG_H], [VW - 70, 122 + CRAG_H], [VW - 44, VH + CRAG_H]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
   // cloud shadows drift over the land, then the clouds themselves later
   for (const c of mapClouds) { c.x += c.sp * 0.016; if (c.x > VW + 60) c.x = -60; g.globalAlpha = 0.18; g.fillStyle = '#0a1a0a'; g.beginPath(); g.ellipse(c.x + 6, c.y + 10, CLOUD[c.k].width * 0.5, CLOUD[c.k].height * 0.45, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   // boss portraits: the queen hangs over the wood, the frog sits by the pond
@@ -499,7 +510,6 @@ function drawMap() {
     const lk = nodeLocked(nd); const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     if (nd.kind === 'store') g.drawImage(HUT, nd.x - 10, nd.y - 20);
     else if (lk) g.drawImage(PROP.lock, nd.x - 3, nd.y - 16);
-    else if (nd.kind === 'pass') { const by = nd.y - 24 + Math.round(Math.sin(time * 3) * 2); text(mapIdx === 0 ? 'TO THE CRAGS' : 'TO THE WOOD', nd.x, by, '#dfe8ee', 'center', 6); }
     else if (p && p.cleared) g.drawImage(FLAG, nd.x - 3, nd.y - 18);
     if (NODES[map.node] === nd && !map.walking) { g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.beginPath(); g.arc(nd.x, nd.y, 9 + Math.sin(time * 6), 0, 7); g.stroke(); }
   }
@@ -509,19 +519,19 @@ function drawMap() {
   for (const c of mapClouds) { g.globalAlpha = 0.7; g.drawImage(CLOUD[c.k], Math.round(c.x), Math.round(c.y)); g.globalAlpha = 1; }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 3)) % (map.walking ? 6 : 4), px, py + 2, map.walking < 0 ? -1 : 1, false);
   // node labels
-  for (const nd of NODES) { const lk = nodeLocked(nd); const lbl = nd.kind === 'store' ? 'STORE' : nd.kind === 'pass' ? 'THE PASS' : LEVELS[nd.level].name; const tw = lbl.length * 6 + 6; const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)); g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(lx - tw / 2, nd.y + 12, tw, 8); text(lbl, lx, nd.y + 13, lk ? '#7a7a8a' : '#fff6e0', 'center', 6); }
+  for (const nd of NODES) { const lk = nodeLocked(nd); const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : LEVELS[nd.level].name; const tw = lbl.length * 6 + 6; const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)); g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(lx - tw / 2, nd.y + 12, tw, 8); text(lbl, lx, nd.y + 13, lk ? '#7a7a8a' : '#fff6e0', 'center', 6); }
+  g.restore();
   // parchment frame + compass
   g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
   g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
-  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text(MAPS[mapIdx].name, 6, 5, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { const tot = LEVELS.reduce((n, lv) => n + [1, 2, 4].filter(b => ((PROG[lv.id] || {}).silver || 0) & b).length, 0); g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(tot), VW - 78, 6, '#dfe8ff', 'right'); }
+  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text(mapCamY < CRAG_H - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
   const nd = NODES[map.node];
   if (!map.walking) {
     const cw = 200, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 44;
     panel(cx0, cy0, cw, 30, '#8fd160');
     text(nd.name, cx0 + cw / 2, cy0 + 5, '#fff6e0', 'center');
-    if (nd.kind === 'store') text('Z  enter', cx0 + cw / 2, cy0 + 17, '#9aa39a', 'center');
-    else if (nd.kind === 'pass') text(nodeLocked(nd) ? 'SHUT UNTIL KINGSWOOD FALLS' : (mapIdx === 0 ? 'Z  cross to the Crags' : 'Z  back to the Wood'), cx0 + cw / 2, cy0 + 17, nodeLocked(nd) ? '#9aa39a' : '#dfe8ee', 'center');
+    if (nd.kind === 'store') text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + cw / 2, cy0 + 17, '#9aa39a', 'center');
     else { const p = PROG[LEVELS[nd.level].id]; text(p ? fmt(p.best) + '   ' + p.gold + '/' + p.total + (p.cleared ? '   CLEARED' : '') : 'Z  play', cx0 + cw / 2, cy0 + 17, p ? '#dfe8ff' : '#9aa39a', 'center');
       if (p) { let mx = cx0 + 8; if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(mx + 4, cy0 + 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(mx + 3, cy0 + 8, 2, 2); mx += 12; } if (p.allGold) { g.drawImage(PROP.coin[0], mx, cy0 + 5); mx += 12; } if (p.noHit) { g.drawImage(PROP.heart, mx, cy0 + 5); mx += 12; } if (p.relic) { g.drawImage(PROP.relic[p.relic], mx, cy0 + 4); mx += 12; } if (p.quest) { g.drawImage(PROP.questIcon, mx, cy0 + 5); mx += 12; } if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(mx + 1, cy0 + 5, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(mx + 1, cy0 + 11, 7, 2); g.fillStyle = ART.OUT; g.fillRect(mx + 4, cy0 + 6, 1, 6); g.fillRect(mx + 2, cy0 + 8, 5, 1); } } }
   }
@@ -539,11 +549,12 @@ function updateStore(dt) {
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
   if (confirmPress && items.length) {
     const k = items[storeI], owned = k.id === 'none' || PROG[tab.owned][k.id];
-    if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); applySkin(); saveProgress(); SFX.uiSel(); storeMsg = k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
+    if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.uiSel(); storeMsg = k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) { SFX.buzz(); storeMsg = 'clear ' + k.needsName + ' first'; storeMsgT = 2; }
     else if (k.feat && !featDone(k.feat)) { SFX.buzz(); storeMsg = k.featName + ' to earn it'; storeMsgT = 2; }
-    else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
+    else if (k.silver) { if (silverAvail() >= k.price) { PROG.silverSpent = (PROG.silverSpent || 0) + k.price; PROG[tab.owned][k.id] = true; PROG[tab.key] = k.id; applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); saveProgress(); SFX.coin(); SFX.sting(); SFX.medal(); storeMsg = 'bought ' + k.name; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - silverAvail()) + ' more silver'; storeMsgT = 2; } }
+    else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
     else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; }
   }
   if (pausePress) { if (storeMode === 'equip') { storeMode = 'buy'; state = equipFrom === 'map' ? 'map' : 'menu'; SFX.ui(); } else if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
@@ -571,7 +582,7 @@ function drawStore() {
     const locked = (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
     text(k.name, x + 52, yy + 1, sel ? '#fff6e0' : '#c9d1dc');
     if (k.desc || k.feat) text(locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' to unlock') : (k.desc || 'earned'), x + 52, yy + 11, locked ? '#ff9a5c' : '#9aa39a');
-    text(eq ? 'EQUIPPED' : owned ? 'owned' : locked ? 'locked' : k.price === 0 ? 'free' : k.price + ' gold', x + w - 10, yy + 3, eq ? '#8fd160' : owned ? '#9aa39a' : locked ? '#6a6a7a' : (PROG.coins >= k.price ? '#ffd34a' : '#ff6b6b'), 'right');
+    text(eq ? 'EQUIPPED' : owned ? 'owned' : locked ? 'locked' : k.price === 0 ? 'free' : k.price + (k.silver ? ' silver' : ' gold'), x + w - 10, yy + 3, eq ? '#8fd160' : owned ? '#9aa39a' : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? '#dfe8ff' : '#ffd34a') : '#ff6b6b'), 'right');
   });
   text(storeMsgT > 0 ? storeMsg : storeMode === 'equip' ? 'LEFT/RIGHT tabs   Z equip   ESC back' : 'LEFT/RIGHT tabs   Z buy / equip   ESC back', VW / 2, y + h - 12, storeMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
 }
@@ -990,6 +1001,8 @@ function spend(cost) {
 function updatePlayer(dt) {
   if (P.dead) { P.dead -= dt; if (P.dead <= 0) { if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
+  if (throwPress && isPyro() && skillNow() === 'fireWall' && P.ground && !(P.slamCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { P.slamCd = 4; P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08 }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (throwPress && isPyro() && skillNow() === 'cinderStep' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { P.throwCd = 3; P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0 }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (throwPress && skillNow() === 'groundSlam' && P.ground && !(P.slamCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { P.slamCd = 3; P.block = false; P.atk = -1; shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.2, sp: 210, hit: new Set() }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (throwPress && skillNow() === 'shieldThrow' && !thrown && !(P.throwCd > 0) && PROG.items.shieldThrow && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (P.caged > 0) { P.caged -= dt; P.vx = 0; }
@@ -1005,7 +1018,20 @@ function updatePlayer(dt) {
   const stunned = P.hurt > 0 || P.asleep > 0 || P.caged > 0;
   const attacking = P.atk >= 0;
   const dodging = P.dodge > 0;
-  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown;
+  if (isPyro()) { // C tapped = an ember; C held = the flare, a shield of fire that costs heat. Overheated, you have neither.
+    P.heat = Math.max(0, Math.min(100, (P.heat || 0))); P.overheat = Math.max(0, (P.overheat || 0) - dt);
+    if (keys.block) P.cHeld = (P.cHeld || 0) + dt; else { if (P.cHeld > 0 && P.cHeld < 0.14) castEmber(0); P.cHeld = 0; }
+    if (keys.block && P.cHeld >= 0.14 && !(P.overheat > 0)) { P.heat += 22 * dt; if (P.heat >= 100) { P.heat = 100; P.overheat = 1.6; number(P.x, P.y - 24, 'OVERHEATED', '#ff6b6b'); SFX.gasp(); } }
+    else P.heat -= (P.asleep > 0 || P.sleepM > 0.2 ? 8 : 16) * dt;
+    if (P.overheat > 0 && Math.random() < dt * 20) parts.push({ x: P.x + (Math.random() - 0.5) * 10, y: P.y - 12, vx: 0, vy: -30, life: 0.4, max: 0.4, col: '#8a8478', size: 1, grav: 0 });
+  }
+  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && (!isPyro() || (P.cHeld >= 0.14 && !(P.overheat > 0)));
+  if (isPyro() && P.block) { // the flare: burns what is next to you and what flies at you
+    if (Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 22, y: P.y - 8 + (Math.random() - 0.5) * 20, vx: (Math.random() - 0.5) * 20, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
+    P.flareTick = (P.flareTick || 0) - dt; if (P.flareTick <= 0) { P.flareTick = 0.3; for (const e of enemies) if (e.alive && !e.harmless && !e.maxHp && Math.abs(e.x - P.x) < 22 && Math.abs(e.y - P.y) < 22) { hurtEnemy(e, 2, P.x, false); e.burn = Math.max(e.burn || 0, 0.8); } }
+    for (const s of seeds) if (!s.dead && Math.abs(s.x - P.x) < 24 && Math.abs(s.y - (P.y - 8)) < 20) { s.dead = true; parries++; burst(s.x, s.y, 4, ['#ff9a5c', '#ffd36b'], 40, 0.3, 0, 1); }
+    for (const c of clouds2) if (Math.abs(c.x - P.x) < 30 && Math.abs(c.y - (P.y - 8)) < 24) c.life = Math.min(c.life, 0.2);
+  }
   if (keys.block && thrown && !P.saidNoShield) { P.saidNoShield = true; number(P.x, P.y - 22, 'NO SHIELD', '#9aa39a'); } if (!thrown) P.saidNoShield = false;
   if (P.block) {
     P.st -= ST.hold * dt; P.stDelay = ST.delay;
@@ -1043,6 +1069,14 @@ function updatePlayer(dt) {
   }
 
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
+  P.kickT = Math.max(0, (P.kickT || 0) - dt);
+  if (isPyro() && P.jbuf > 0 && !P.ground && P.coyote <= 0 && P.kickT <= 0 && !P.cling && !stunned && !dodging && !(P.overheat > 0) && P.heat < 100) {
+    P.jbuf = 0; P.kickT = 0.28; let hit = false;
+    for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 15 && e.y - e.h / 2 > P.y - 6 && e.y - e.h / 2 < P.y + 30) { hit = true; if (e.t === 'shield' || e.t === 'pike' || (e.t === 'ram' && e.mode !== 'crash') || e.t === 'mother' || e.t === 'gill') { SFX.clank(); } else { hurtEnemy(e, 12, P.x, true); e.burn = Math.max(e.burn || 0, 1.2); } }
+    for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - P.x) < 14 && pr.y > P.y && pr.y < P.y + 30) { hit = true; }
+    if (hit) { P.vy = POGO; pogoCount++; SFX.pogo(); number(P.x, P.y - 24, 'KICK', '#ff9a5c'); } else { P.vy = -250; P.heat = Math.min(100, P.heat + 20); SFX.puff(); }
+    P.canCut = false; P.plunge = false; P.ground = false; burst(P.x, P.y + 2, 10, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 70, 0.4, 200, 2); dust(P.x, P.y + 4, 4); // a kick is a burst: a tap gives the full launch
+  }
   if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block) {
     if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
     else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0; P.onMover = null; P.canCut = true; SFX.jump(); dust(P.x, P.y, 3); squash(0.8, 1.2, 0.1); }
@@ -1050,7 +1084,8 @@ function updatePlayer(dt) {
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging) {
-    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(ST.plunge)) { P.plunge = true; P.vy = Math.max(P.vy, 60); P.atk = -1; P.hitSet.clear(); SFX.slash(); } }
+    if (!P.ground && (keys.down || P.abufDown) && isPyro()) { P.abuf = 0; P.abufDown = false; castEmber(1); }
+    else if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(ST.plunge)) { P.plunge = true; P.vy = Math.max(P.vy, 60); P.atk = -1; P.hitSet.clear(); SFX.slash(); } }
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend(P.relic === 'gauntlet' ? 0 : sword().cost)) { P.atk = 0; P.hitSet.clear(); SFX.slash(); if (Math.random() < 0.35) SFX.effort(); if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk >= 0) {
@@ -1211,7 +1246,7 @@ function setWall(col, solid) {
   if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.vine[(ty + col) % 4] : null; }
 }
 function bossStart() {
-  bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; setView('zoom'); } camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
+  bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; setView('zoom'); } if (boss.t === 'owl') setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true);
   SFX.roar(); shakeCam(6); music.stop(); bossMusicT = 1.1; number(boss.x, boss.y - 30, boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? 'THE RAM LORD' : boss.t === 'owl' ? 'THE OWL REEVE' : 'THE HORNET QUEEN', '#ffd36b'); zoomKick(1.1, 0.4);
   burst(L.arena.wallL * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6); burst(L.arena.wallR * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6);
@@ -1509,6 +1544,12 @@ function updateOwl(e, dt) {
   const d = P.x - e.x, ad = Math.abs(d);
   if (e.mode === 'sleep') return;
   const lanterns = props.filter(pr => pr.t === 'lantern');
+  if (e.mode !== 'wake') { // two things always going on under its moves: spiders on threads from the bough, and feathers on their own clock
+    e.spiderT = (e.spiderT === undefined ? 5 : e.spiderT - dt); const nSp = enemies.filter(q => q.alive && q.t === 'spider').length;
+    if (e.spiderT <= 0 && nSp < (p2 ? 3 : 2)) { e.spiderT = p2 ? 7 : 9; const sx = Math.max(A.x0 + 40, Math.min(A.x1 - 40, P.x + (Math.random() < 0.5 ? -50 : 50))); enemies.push({ t: 'spider', x: sx, y: e.py + 30, restY: e.py + 30, drop: 150, mode: 'hang', modeT: 0, cd: 1.2, face: 1, w: 10, h: 8, hp: EHP.spider, hp0: EHP.spider, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0, vx: 0, vy: 0 }); number(sx, e.py + 20, 'A SPIDER DROPS', '#c080ff'); SFX.hiss(); }
+    e.rainT = (e.rainT === undefined ? 6 : e.rainT - dt);
+    if (e.rainT <= 0 && e.mode !== 'crash') { e.rainT = p2 ? 6 : 8.5; number(e.x, e.y - 24, 'FEATHERS', '#e8dcc0'); for (let i = 0; i < (p2 ? 7 : 5); i++) { const x = A.x0 + 20 + Math.random() * (A.x1 - A.x0 - 40); seeds.push({ x, y: floor - 150, vx: (Math.random() - 0.5) * 20, vy: 30 + Math.random() * 40, dead: false, life: 3.5, g: 260, feather: true }); } }
+  }
   const toward = (tx, ty, sp) => { const dx = tx - e.x, dy = ty - e.y, dd = Math.hypot(dx, dy) || 1; const st = Math.min(dd, sp * dt); e.x += dx / dd * st; e.y += dy / dd * st; return dd - st; };
   const perchX = e.px, perchY = e.py;
   switch (e.mode) {
@@ -1518,16 +1559,17 @@ function updateOwl(e, dt) {
         if (p2 && !e.doused) { e.doused = true; e.mode = 'douse'; e.modeT = 1.0; number(e.x, e.y - 24, 'IT BEATS OUT THE LIGHT', '#c080ff'); SFX.screech(); }
         else if (e.screechT <= 0) { e.screechT = p2 ? 9 : 12; e.mode = 'landing'; e.modeT = 1.2; e.tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, P.x + (Math.sign(e.x - P.x) || 1) * 44)); number(e.x, e.y - 24, 'IT COMES DOWN', '#ffd36b'); }
         else if (e.gustT <= 0 && ad < 200) { e.gustT = p2 ? 10 : 14; e.mode = 'gust'; e.modeT = 1.4; e.gustDir = P.x - e.x > 0 ? 1 : -1; number(e.x, e.y - 24, 'WING BEAT', '#c9d1dc'); SFX.buzz(); }
-        else if (e.featherT <= 0) { e.featherT = p2 ? 7 : 10; e.mode = 'feathers'; e.modeT = 0.6; number(e.x, e.y - 24, 'FEATHERS', '#e8dcc0'); for (let i = 0; i < (p2 ? 7 : 5); i++) { const x = A.x0 + 20 + Math.random() * (A.x1 - A.x0 - 40); seeds.push({ x, y: floor - 150, vx: (Math.random() - 0.5) * 20, vy: 30 + Math.random() * 40, dead: false, life: 3.5, g: 260, feather: true }); } }
-        else if (e.swoopT <= 0) { e.swoopT = p2 ? 3.2 : 4.2; e.mode = 'swoopTell'; e.modeT = 0.6; number(e.x, e.y - 24, '!!', '#ff6b6b'); SFX.screech(); }
+        else if (e.swoopT <= 0) { e.swoopT = p2 ? 3.2 : 4.2; e.grab = Math.random() < (p2 ? 0.4 : 0.25); e.mode = 'swoopTell'; e.modeT = 0.6; number(e.x, e.y - 24, e.grab ? 'TALONS' : '!!', e.grab ? '#ff9a5c' : '#ff6b6b'); SFX.screech(); }
       } break; }
     case 'douse': if (e.modeT <= 0) { let n = 0; for (const pr of lanterns) if (pr.lit && n < 2) { pr.lit = false; n++; burst(pr.x, pr.y - 30, 8, ['#ffd36b', '#3a3444'], 40, 0.5); } number(e.x, e.y - 24, 'TWO LANTERNS DARK. STRIKE THEM TWICE.', '#ffd36b'); for (const dx of [-30, 30]) enemies.push({ t: 'spider', x: e.px + dx, y: e.py + 30, restY: e.py + 30, drop: 140, mode: 'hang', modeT: 0, cd: 1, face: 1, w: 10, h: 8, hp: EHP.spider, hp0: EHP.spider, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0, vx: 0, vy: 0 }); e.mode = 'perch'; e.modeT = 1; } break;
     case 'swoopTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'swoop'; e.modeT = 1.6; const tx = P.x + (Math.sign(P.x - e.x) || 1) * 28, ty = P.y - 8; const dd = Math.hypot(tx - e.x, ty - e.y) || 1; e.vx = (tx - e.x) / dd * 300; e.vy = (ty - e.y) / dd * 300; e.face = Math.sign(e.vx) || e.face; SFX.leap(); } break;
     case 'swoop': { e.x += e.vx * dt; e.y += e.vy * dt;
-      if (!P.dead && ad < 20 && Math.abs((P.y - 8) - e.y) < 16 && e.hitT <= 0) { e.hitT = 1; const res = damagePlayer(e.x, DMG.owlSwoop); if (res === 'hit') { P.vx = Math.sign(e.vx) * 220; P.vy = -120; } else if (res === 'blocked') { e.mode = 'parried'; e.modeT = 1.2; e.stagger = 1.2; e.vx = -e.vx * 0.3; e.vy = -80; number(e.x, e.y - 20, 'PARRIED', '#8fd160'); } }
+      if (e.grab && !P.dead && ad < 20 && Math.abs((P.y - 8) - e.y) < 16 && e.hitT <= 0 && P.dodge <= 0) { e.hitT = 1; e.mode = 'carry'; e.modeT = 1.1; e.carryDir = P.x - (A.x0 + A.x1) / 2 > 0 ? 1 : -1; e.vy = -60; number(P.x, P.y - 24, 'CAUGHT', '#ff6b6b'); SFX.screech(); }
+      else if (!P.dead && ad < 20 && Math.abs((P.y - 8) - e.y) < 16 && e.hitT <= 0) { e.hitT = 1; const res = damagePlayer(e.x, DMG.owlSwoop); if (res === 'hit') { P.vx = Math.sign(e.vx) * 220; P.vy = -120; } else if (res === 'blocked') { e.mode = 'parried'; e.modeT = 1.2; e.stagger = 1.2; e.vx = -e.vx * 0.3; e.vy = -80; number(e.x, e.y - 20, 'PARRIED', '#8fd160'); } }
       for (const pr of lanterns) if (pr.lit && Math.abs(pr.x - e.x) < 16 && Math.abs((pr.y - 30) - e.y) < 18) { e.mode = 'crash'; e.modeT = p2 ? 2.0 : 2.5; e.stagger = e.modeT; e.vx = 0; e.vy = 0; number(e.x, e.y - 24, 'INTO THE LANTERN: HIT IT', '#8fd160'); SFX.heavy(); SFX.screech(); shakeCam(6); zoomKick(1.1, 0.3); burst(e.x, e.y, 16, COLS.owl, 80, 0.7); break; }
       if (e.y >= floor - 8) { e.y = floor - 8; e.vy = -Math.abs(e.vy) * 0.4; } if (e.x < A.x0 + 16 || e.x > A.x1 - 16) { e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.vx = -e.vx; }
       if (e.modeT <= 0 && e.mode === 'swoop') { e.mode = 'perch'; e.modeT = 1.4; } break; }
+    case 'carry': { e.x += e.carryDir * 170 * dt; e.y = Math.max(floor - 70, e.y + e.vy * dt); P.x = e.x; P.y = e.y + 12; P.vx = 0; P.vy = 0; P.ground = false; P.caged = 0.2; if (Math.random() < dt * 20) parts.push({ x: P.x, y: P.y - 8, vx: 0, vy: 30, life: 0.3, max: 0.3, col: '#e8dcc0', size: 1, grav: 0 }); if (e.modeT <= 0 || e.x < A.x0 + 30 || e.x > A.x1 - 30) { damagePlayer(e.x, DMG.screech, { unblockable: true, up: true }); P.vx = e.carryDir * 200; P.vy = 120; number(P.x, P.y - 24, 'DROPPED', '#ff6b6b'); e.mode = 'perch'; e.modeT = 1.2; } break; }
     case 'crash': { if (e.y < floor - 8) e.y = Math.min(floor - 8, e.y + 300 * dt); if (Math.floor(e.modeT / 0.7) !== Math.floor((e.modeT + dt) / 0.7)) number(e.x, e.y - 24, 'DAZED', '#8fd160'); if (e.modeT <= 0) { e.mode = 'perch'; e.modeT = 1.0; e.stagger = 0; } break; }
     case 'parried': if (e.modeT <= 0) { e.mode = 'perch'; e.modeT = 0.8; e.stagger = 0; } break;
     case 'landing': { const left = toward(e.tx, floor - 8, 260); e.face = Math.sign(P.x - e.x) || e.face; if (left <= 1 || e.modeT <= 0) { e.mode = 'screechTell'; e.modeT = 0.5; number(e.x, e.y - 24, 'IT DRAWS BREATH', '#ffd36b'); } break; }
@@ -1630,6 +1672,8 @@ function shatterRock(r) { burst(r.x, r.y - 2, 8, ['#8a919c', '#5a6270', '#b0b8c4
 const NPC_LINES = pr => {
   const n = straysGot.size, need = questOf().n;
   if (pr.kind === 'keeper') return PROG.storeHint ? ['SOMETHING NEW CAME IN.', 'UP AT THE COUNTER AND HAVE A LOOK.'] : ['WELCOME, KNIGHT. UP AT THE COUNTER TO TRADE.', 'GOLD BUYS STEEL. STEEL BUYS TIME.'];
+  if (pr.kind === 'bard') { const seen = Object.values(PROG.beasts || {}).filter(b => b && b.seen).length; const cleared = LEVELS.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length; const pool = ['THEY SAY THE HORNET QUEEN HATES A THIEF. WHO DOES NOT?', 'THE FROG KING DRAWS BREATH BEFORE HE PULLS. HOLD YOUR SHIELD UP.', 'CUT THE CHAINED HOUND LOOSE IN THE KENNELS. IT HAS OPINIONS.', 'THE OWL REEVE CANNOT ABIDE A LIT LANTERN.', 'A SONG FOR THE KNIGHT WHO FOUND ' + silverTotal() + ' SILVER. THE CROWD GOES WILD.']; return [cleared === 0 ? 'A NEW FACE. I SING OF THE WOODS. ASK ME ANYTHING, I WILL SING IT WRONG.' : 'YOU HAVE MET ' + seen + ' BEASTS AND CLEARED ' + cleared + ' WOODS. THAT IS A BALLAD.', pool[Math.floor(time / 8) % pool.length]]; }
+  if (pr.kind === 'oldknight') { const sv = silverAvail(); return [sv >= 15 ? 'FIFTEEN SILVER. THE KEEPER HAS A HERO FOR THAT. A HOT ONE.' : 'THREE SILVER COINS HIDE IN EVERY WOOD. THE KEEPER TRADES HEROES FOR THEM.', PROG.hero === 'pyro' ? 'A PYROMANCER. IN MY DAY WE HAD SHIELDS. YOURS IS ON FIRE.' : 'BLOCK EARLY, PLUNGE LATE. I LIVED THIS LONG.', 'THE HIGH BOUGHS ARE MINE NO MORE. MY KNEES. GO UP FOR ME.']; }
   if (pr.kind === 'shepherd') { if (n >= need) return ['BLESS YOU, KNIGHT.', 'MIND THE OLD RAM ON THE TOP.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE.', 'THE OTHERS WENT HIGHER.']; return ['MY THREE EWES STRAYED UP THE HILL.', 'BRING THEM AND THE FLEECE IS YOURS.']; }
   if (pr.kind === 'woodsman') { if (n >= need) return ['SWEET AS SUMMER. MY THANKS, KNIGHT.', 'MIND THE QUEEN. SHE HATES A THIEF.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE POTS.', 'THE SETT, THE RIDGE, THE FALLEN GIANT.']; return ['THE HORNETS CARRIED OFF MY HONEY. THREE POTS.', 'BRING THEM BACK AND I WILL SEE YOU RIGHT.']; }
   if (pr.kind === 'ferryman') { const fm = movers.find(mv => mv.ferry), toll = fm ? fm.toll : 10; const pay = !fm || fm.paid ? ['HOLD ON. THE CURRENT IS QUICK TODAY.'] : PROG.coins >= toll ? [toll + ' GOLD AND I POLE YOU OVER. UP TO PAY.', 'OR BREAK THE SLUICE AND WADE. YOUR FUNERAL.'] : [toll + ' GOLD, KNIGHT. YOU HAVE ' + PROG.coins + '.', 'THE SLUICE WHEEL IS FREE. THE FROGS ARE NOT.']; const q = n >= need ? ['MY TRAPS! THERE IS A GOOD LAD.'] : n > 0 ? ['THAT IS ' + n + ' OF MY THREE TRAPS.'] : ['THE FLOOD TOOK MY EEL TRAPS. THREE OF THEM.', 'ONE IS UNDER THE CHANNEL, I SWEAR IT.']; return pay.concat(q); }
@@ -1787,7 +1831,8 @@ function placeLandmarks() {
   decor.forEach(d => { if (d.landmark) d.dead = true; }); for (let i = decor.length - 1; i >= 0; i--) if (decor[i].dead) decor.splice(i, 1);
   const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood'); const rnd = mulberry(LW * 7 + 3);
   const arenaX0 = L.arena ? L.arena.x0 / TS - 6 : LW;
-  const flats = []; for (let y = 4; y < LH - 1; y++) for (let x = 6; x < Math.min(LW - 8, arenaX0); x++) { let ok = true; for (let k = 0; k < 6 && ok; k++) if (!(tileAt(x + k, y) === T.SOLID && tileAt(x + k, y - 1) === T.AIR && tileAt(x + k, y - 2) === T.AIR && tileAt(x + k, y - 3) === T.AIR)) ok = false; if (ok) flats.push([x, y]); }
+  const roof = (x, y) => (L.interiors || []).some(([ix0, ix1, iy0]) => x >= ix0 && x <= ix1 && y >= iy0 - 4 && y < iy0);
+  const flats = []; for (let y = 4; y < LH - 1; y++) for (let x = 6; x < Math.min(LW - 8, arenaX0); x++) { let ok = !roof(x, y); for (let k = 0; k < 6 && ok; k++) if (!(tileAt(x + k, y) === T.SOLID && tileAt(x + k, y - 1) === T.AIR && tileAt(x + k, y - 2) === T.AIR && tileAt(x + k, y - 3) === T.AIR)) ok = false; if (ok) flats.push([x, y]); }
   const used = []; const pick = () => { for (let t = 0; t < 40; t++) { const f = flats[(rnd() * flats.length) | 0]; if (f && used.every(u => Math.abs(u[0] - f[0]) > 40)) { used.push(f); return f; } } return null; };
   const put = (c, dx, dy, extra = {}) => { const f = pick(); if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
   if (dress === 'wood') { put(PROP.oldOak[0], 8, 0); put(PROP.oldOak[1], 8, 0); put(PROP.beehive, 10, 0); put(PROP.beehive, 30, 0); put(PROP.birdhouse, 20, 0); put(PROP.birdhouse, 50, 0); put(PROP.lanternPost, 40, 0); }
@@ -2122,10 +2167,38 @@ function explode(x, y, r, dmgP) {
   for (let ty = Math.floor((y - r) / TS); ty <= Math.floor((y + r) / TS); ty++) for (let tx = Math.floor((x - r) / TS); tx <= Math.floor((x + r) / TS); tx++) if (tileAt(tx, ty) === T.PALISADE) { const i = ty * LW + tx; L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 6, ['#8a5a32', '#5c3a1d'], 80, 0.5); }
   for (const pr of props) if (pr.t === 'barrel' && !pr.gone && pr.fuse <= 0 && Math.hypot(pr.x - x, pr.y - 7 - y) < r) { pr.fuse = 0.15; }
 }
+// The ember: the pyromancer's fireball. dir 0 = ahead, 1 = straight down (in the air).
+function castEmber(dir) {
+  if (P.dead || P.hurt > 0 || P.asleep > 0 || P.overheat > 0 || P.heat >= 100) { if (P.overheat > 0 || P.heat >= 100) number(P.x, P.y - 22, 'TOO HOT', '#ff6b6b'); return; }
+  P.heat = Math.min(100, P.heat + (dir ? 12 : 18)); if (P.heat >= 100) { P.overheat = 1.6; number(P.x, P.y - 24, 'OVERHEATED', '#ff6b6b'); }
+  embers.push(dir ? { x: P.x, y: P.y - 4, vx: 0, vy: 230, life: 0.8, hit: new Set() } : { x: P.x + P.face * 8, y: P.y - 12, vx: P.face * 200, vy: -55, life: 1.1, hit: new Set() });
+  P.atk = -1; SFX.puff(); SFX.charge(); burst(P.x + P.face * 8, P.y - 10, 5, ['#ff9a5c', '#ffd36b'], 40, 0.25, 0, 1);
+}
+function flinch(e) { // a foe struck by an ember in the middle of a tell loses the attack
+  if (!/Tell$/.test(e.mode || '') || e.t === 'ram' || e.t === 'mother') return false;
+  e.stagger = Math.max(e.stagger, 0.9); e.flash = 0.2; number(e.x, e.y - e.h - 12, 'FLINCHES', '#8fd160'); SFX.yelp();
+  if (e.t === 'greathound') { e.mode = 'skid'; e.modeT = 1.0; e.vx = e.face * 80; }
+  else if (e.t === 'owl') { e.mode = 'parried'; e.modeT = 1.2; e.vx = 0; e.vy = -60; }
+  else { e.modeT = Math.max(e.modeT || 0, 0.9); }
+  return true;
+}
+function updateEmbers(dt) {
+  for (const b of embers) { b.life -= dt; b.vy += 110 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+    if (Math.random() < dt * 40) parts.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 20, vy: -20, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
+    for (const s of seeds) if (!s.dead && Math.abs(s.x - b.x) < 9 && Math.abs(s.y - b.y) < 9) { s.dead = true; parries++; number(s.x, s.y - 8, 'BURNED', '#ff9a5c'); burst(s.x, s.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); }
+    for (const c of clouds2) if (Math.abs(c.x - b.x) < c.r + 4 && Math.abs(c.y - b.y) < c.r + 4) c.life = Math.min(c.life, 0.2);
+    for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - b.x) < 9 && Math.abs(pr.y - 6 - b.y) < 9) { pr.popped = true; clouds2.push({ x: pr.x, y: pr.y - 6, r: 12, life: 1.5 }); burst(pr.x, pr.y - 6, 10, ['#e8e0d0', '#c8bcb0'], 60, 0.5); b.life = 0; }
+    for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) { b.hit.add(e); const big = !!e.maxHp; if (e.t === 'ram' && e.mode !== 'crash') { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } else if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else { hurtEnemy(e, big ? 4 : 12, b.x, false); if (!big) e.burn = Math.max(e.burn || 0, 1.2); flinch(e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2); break; } }
+    const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
+    if (b.life > 0 && isSolid(tx, ty)) { b.life = 0; const fy = isSolid(tx, ty) && !isSolid(tx, ty - 1) ? ty * TS : Math.floor((b.y - b.vy * dt) / TS) * TS + TS; if (b.vy > 0) fires.push({ x: b.x, y: fy, life: 1.2, delay: 0 }); burst(b.x, b.y, 6, ['#ff9a5c', '#ffd36b'], 50, 0.35, 100, 1); SFX.crack(); }
+  }
+  embers = embers.filter(b => b.life > 0);
+}
 function updateProps(dt) {
   const hb = attackBox();
+  if (embers.length) updateEmbers(dt);
   for (const s of silvers) if (!s.got && !P.dead && Math.abs(s.x - P.x) < 10 && Math.abs(s.y - (P.y - 7)) < 13) { s.got = true; const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
-  for (const z of (L.gusts || [])) { const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (on && !P.dead) { P.vx += z.dir * (P.ground ? 200 : 260) * dt; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: z.dir * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: z.dir * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
+  for (const z of (L.gusts || [])) { if (z.arena && !bossActive) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * dt; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
@@ -2171,7 +2244,7 @@ function updateProps(dt) {
     if (pr.t === 'bell' && !pr.broken) { if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 12, P.face, 5); pr.swing = 0.5; if (pr.hp <= 0) { pr.broken = true; SFX.crack(); burst(pr.x, pr.y - 12, 10, ['#e0b040', '#b8842a'], 70, 0.6); number(pr.x, pr.y - 30, 'SILENCED', '#8fd160'); } } if (pr.swing > 0) pr.swing -= dt; if (pr.ringT > 0 && !pr.rung && !enemies.some(e => e.alive && e.ringer && Math.abs(e.x - pr.x) < 10)) pr.ringT = Math.max(0, pr.ringT - dt); }
     if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt; if (pr.timer < 0.6 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every + Math.random() * 0.8; rocks.push({ x: pr.x + (Math.random() - 0.5) * 8, y: pr.y, vy: 0, t: 0, dead: false }); SFX.stone(); } }
     if (pr.t === 'npc' && pr.kind === 'keeper' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) { storeMode = 'buy'; state = 'store'; storeI = 0; SFX.uiSel(); SFX.menuOpen && SFX.menuOpen(); }
-    if (pr.t === 'exit' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 14) { state = 'map'; setMap(0); map.node = Math.max(0, NODES.findIndex(n => n.kind === 'store')); map.seg = NODE_AT[map.node]; map.t = 0; setView('normal'); SFX.uiSel(); music.play(menuTrack()); }
+    if (pr.t === 'exit' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 14) { state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.kind === 'store' && (n.shop || 'shop') === LEVELS[levelIndex].id)); map.seg = NODE_AT[map.node]; map.t = 0; setView('normal'); SFX.uiSel(); music.play(menuTrack()); }
     if (pr.t === 'npc' && pr.ride) { const fm = movers.find(mv => mv.ferry); if (fm) { pr.x = fm.x + 16; pr.y = fm.y; } }
     if (pr.t === 'npc' && pr.kind === 'ferryman' && !P.dead && state === 'play' && upPress && Math.abs(P.x - pr.x) < 30 && Math.abs(P.y - pr.y) < 24) { const fm = movers.find(mv => mv.ferry); if (fm && !fm.paid) { if (PROG.coins >= fm.toll) { PROG.coins -= fm.toll; saveProgress(); fm.paid = true; marks.add('ferry:' + fm.x0); SFX.coin(); SFX.uiSel(); number(pr.x, pr.y - 28, 'PAID ' + fm.toll + ' GOLD', '#ffd34a'); number(pr.x, pr.y - 38, 'STEP ABOARD', '#bfe6f5'); } else { SFX.clank(); number(pr.x, pr.y - 28, 'NOT ENOUGH GOLD', '#ff6b6b'); } } }
     if (pr.t === 'stray' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 12 && Math.abs(pr.y - P.y) < 16) { const Q = questOf(); pr.got = true; straysGot.add(pr.x); strayLast = { x: pr.x, y: pr.y }; if (pr.kind === 'sheep') SFX.bleat(); else { SFX.coin(); SFX.sting(); } burst(pr.x, pr.y - 4, 8, ['#e8e0d0', '#fff6c8'], 50, 0.5); number(pr.x, pr.y - 18, Q.name + ' ' + straysGot.size + '/' + Q.n, '#ffe6a0'); if (straysGot.size >= Q.n) questDone(pr.x, pr.y); }
@@ -2367,7 +2440,7 @@ function update(dt) {
     slotMsgT = Math.max(0, slotMsgT - dt);
     if (leftPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (rightPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }
-    if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); setMap(PROG.mapId || 0); map.node = Math.max(0, Math.min(NODES.length - 1, PROG.mapNode || 0)); if (nodeLocked(NODES[map.node])) map.node = 0; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; state = 'map'; SFX.uiSel(); }
+    if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); map.node = Math.max(0, Math.min(NODES.length - 1, PROG.mapNode || 0)); { const [, py] = (() => { const a = PATH[NODE_AT[map.node]]; return [a[0], a[1]]; })(); mapCamY = Math.max(0, Math.min(MAPH - VH, py - VH * 0.55)); } if (nodeLocked(NODES[map.node])) map.node = 0; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; state = 'map'; SFX.uiSel(); }
     if (atkPress) { if (!readSlot(slotI)) { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else if (slotMsg === 'X again to erase' && slotMsgT > 0) { eraseSlot(slotI); slotMsg = 'slot ' + (slotI + 1) + ' erased'; slotMsgT = 2; SFX.crack(); } else { slotMsg = 'X again to erase'; slotMsgT = 2.5; SFX.ui(); } }
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
@@ -2512,7 +2585,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (let ty = 0; ty < LH; ty++) for (let tx = tx0; tx <= tx1; tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; if ((L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 4 && ty <= y1)) continue; if (L.arena && tx * TS >= L.arena.x0 && tx * TS < L.arena.x1) continue; const ya = ty * TS - cy; for (const rx of [tx * TS + 3, (tx + n) * TS - 4]) { g.moveTo(Math.round(rx - cx) + 0.5, Math.max(-2, ya - 140)); g.lineTo(Math.round(rx - cx) + 0.5, ya + 2); } }
     g.stroke();
   }
-  for (const [x0, x1, y0, y1, st] of (L.interiors || [])) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0) continue; const earth = st === 'earth'; g.fillStyle = earth ? '#2c1e14' : '#2a1a10'; g.fillRect(sx, sy, w, h); if (earth) { g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); } g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2); continue; } g.fillStyle = '#3a2618'; for (let yy = sy + 4; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#1e120a'; for (let xx = sx + ((cx * 0) % 40); xx < sx + w; xx += 40) g.fillRect(xx, sy, 1, h); }
+  for (const [x0, x1, y0, y1, st] of (L.interiors || [])) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0) continue; const earth = st === 'earth', stone = st === 'stone'; g.fillStyle = earth ? '#2c1e14' : stone ? '#2a2c36' : '#2a1a10'; g.fillRect(sx, sy, w, h); if (stone) { g.fillStyle = '#363a46'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7); g.fillStyle = '#1e2028'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); continue; } if (earth) { g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); } g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2); continue; } g.fillStyle = '#3a2618'; for (let yy = sy + 4; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#1e120a'; for (let xx = sx + ((cx * 0) % 40); xx < sx + w; xx += 40) g.fillRect(xx, sy, 1, h); }
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
@@ -2573,6 +2646,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawEscape(cx, cy);
   for (const f of fires) { if (f.delay > 0 || f.x < cx - 20 || f.x > cx + VW + 20) continue; g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }
   for (const e of enemies) if (e.alive && e.t === 'spider') { g.strokeStyle = 'rgba(230,230,240,0.7)'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(e.x - cx) + 0.5, Math.round(e.restY - 26 - cy)); g.lineTo(Math.round(e.x - cx) + 0.5, Math.round(e.y - 8 - cy)); g.stroke(); }
+  for (const b of embers) { g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), 4, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 2, 0, 7); g.fill(); }
   for (const b of bombs) if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);
   for (const f of foxes) drawSet(SPR.fox, null, Math.floor(f.t * 10) % 2, f.x - cx, f.y - cy, f.face, false);
   for (const d of deco) if (d.bg && d.x > cx - 140 && d.x < cx + VW + 4) g.drawImage(d.c, d.x - cx, d.y - cy);
@@ -2835,7 +2909,7 @@ function drawTitle(cx, cy) {
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
 }
-function desiredView() { const inLevel = state === 'play' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && boss.t === 'mother')) ? 'zoom' : 'normal'; }
+function desiredView() { const inLevel = state === 'play' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && (boss.t === 'mother' || boss.t === 'owl'))) ? 'zoom' : 'normal'; }
 function render() {
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
@@ -2877,6 +2951,7 @@ function render() {
     g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 6, Math.round(70 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(16 + Math.round(70 * i / 4), 6, 1, 6); }
     text(String(Math.max(0, Math.ceil(P.hp))), 90, 6, '#fff6e0');
     g.drawImage(PROP.bolt, 6, 15);
+    if (isPyro()) { g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(2, SET.iron ? 38 : 26, 104, 10, 4); g.fill(); const hy = SET.iron ? 41 : 29; bar(16, hy, 70, 4, (P.heat || 0) / 100, P.overheat > 0 ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ff9a5c') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (P.overheat > 0) text('HOT', 90, hy - 1, '#ff6b6b'); }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic) { g.drawImage(PROP.relic[P.relic], 92, 14); }
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], P.relic ? 104 : 92, 14); g.globalAlpha = 1; }
@@ -2970,7 +3045,7 @@ window.BK = {
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),
-  get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, strays: () => straysGot.size, audio: debugAudio, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
 };

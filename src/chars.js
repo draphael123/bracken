@@ -26,6 +26,7 @@ const PLUME = [
   ['..rSSSS...', 'rrSssssS..', '.SsssssS..'],
   ['.rrSSSS...', '.rSssssS..', 'rSsssssS..'],
 ];
+let BODY_REF = BODY, PLUME_REF = PLUME; // swapped while another hero bakes on the same rig
 const LEGS = {
   stand: ['.SS..SS...', '.SS..SS...', '.ww..ww...', '.ww..ww...', 'WWW..WWW..'],
   // six-frame run: stride, gather, pass, extend, stride (other), gather
@@ -47,10 +48,10 @@ const LEGS = {
 const W = 28, H = 28, BX = 8, BY = 3; // body drawn at (BX,BY); feet bottom at BY+16 = 19
 export const KNIGHT_ANCHOR = { ax: 13, ay: 19 };
 
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0 }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null }) {
   const [c, g] = canvas(W, H);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
-  const body = PLUME[plume].concat(BODY.slice(3));
+  const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
   draw(body, BX + dx, BY + dy);
   draw(LEGS[legs], BX + dx, BY + 11 + legsDy);
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
@@ -60,6 +61,10 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     px(g, x0, y0, KP.w); px(g, x0 + 1, y0, KP.w);
     const gx = Math.sign(x1 - x0), gy = Math.sign(y1 - y0);
     px(g, x0 + gx - gy, y0 + gy + gx, KP.y); px(g, x0 + gx + gy, y0 + gy - gx, KP.y);
+  }
+  if (staff) { // a wooden staff with an ember at its head
+    const [x0, y0, x1, y1] = staff.map((v, i) => v + (i & 1 ? dy : dx));
+    line(g, x0, y0, x1, y1, KP.w, 2); px(g, x1, y1, KP.y); px(g, x1 + Math.sign(x1 - x0), y1 + Math.sign(y1 - y0), KP.r); px(g, x1 - Math.sign(y1 - y0), y1 + Math.sign(x1 - x0), KP.r);
   }
   if (shield) { // kite shield held out front, covering the torso: steel rim, oak face, gold boss
     const sx = BX + 9 + dx, sy = BY + 4 + dy;
@@ -514,8 +519,7 @@ export function bakeSheep() {
   return pack([graze, look, walk], 7, 7, 10, 6);
 }
 
-// The keeper — a badger in an apron behind the counter. 12×10. Frames: idle, talk.
-export function bakeKeeper() {
+export function bakeKeeperOld() {
   const KP = Object.assign({}, EP, { b: '#3a3448', B: '#1b1626', f: '#e8e0d0', a: '#c9b27c', A: '#8a5a32' });
   const k = rows => outline(fromGrid(rows, KP, 1), OUT);
   const head = ['...bbbbbb...', '..bfbbbbfb..', '..bfbeebfb..', '..bbffffbb..', '...bbBBbb...'];
@@ -629,4 +633,68 @@ export function bakeOwl() {
   const screech = o(['...........hh......hh...........', '..........hhhh....hhhh..........', '.........hhhhhhhhhhhhhh.........', '........hhffyffhffyffhh.........', '.......hhhffoffhffoffhhh........', '......hhhhhffffmfffhhhhh........', '.....hhhhhhhffmrrmffhhhhhh......', '....hhhhhhhhhhmrrmhhhhhhhhh.....', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '..hhhhhhhhhwwhhhhhhwwhhhhhhhhh..', '.hhhh......hhhhhhhhhhh......hhhh', 'hhh.........hhhhhhhhh.........hh', '.............mm..mm.............', '.............mm..mm.............', '................................']);
   const crash = o(['................................', '................................', '................................', '..............mm..mm............', '.............hhhhhhhh...........', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '.hhhhhhhhhhhhwwhhhhwwhhhhhhhhhh.', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', '.hhhhhhhhhhhffoffhffoffhhhhhhhh.', '...hhhhhhhhhffyffhffyffhhhhhh...', '............hhhhhhhhhhhh........', '.............hhhh..hhhh.........', '..............hh....hh..........', '................................', '................................']);
   return pack([perch, wingsUp, wingsDown, screech, crash], 17, 16, 24, 14);
+}
+
+
+// ---------- The Pyromancer: a hooded fire-mage on the knight's rig. Robe, no shield, a staff with a live ember. ----------
+const PYRO_BODY = ['..rSSSS...', '.rSssssS..', 'rSsssssS..', '.SsvvvvS..', '.SssssSS..', '..SSSS....', '.BbbbbB...', 'SBbybbBS..', '.BbbbbbB..', '.BbbbbbB..', 'bbbbbbbbb.'];
+const PYRO_PLUME = [['..rSSSS...', '.rSssssS..', 'rSsssssS..'], ['..rSSSS...', 'rrSssssS..', '.SsssssS..'], ['.rrSSSS...', '.rSssssS..', 'rSsssssS..']];
+const PYRO_PAL = { s: '#b8462e', S: '#6a1e1e', b: '#3a2a4a', B: '#241a30', r: '#ffb040', k: '#f1c9a0', w: '#5a3a24', W: '#3a2214', y: '#ffd36b', v: '#f1c9a0', o: OUT };
+export function bakePyro(skin = {}) {
+  KP = Object.assign({}, KP0, PYRO_PAL, skin); BODY_REF = PYRO_BODY; PLUME_REF = PYRO_PLUME;
+  const sh = [BX + 8, BY + 7];
+  const held = (d = 0) => [sh[0] + 2, sh[1] + 10 + d, sh[0] + 4, sh[1] - 5 + d]; // staff carried upright at the side
+  const F = {
+    idle: [knightFrame({ staff: held(), plume: 0 }), knightFrame({ staff: held(), plume: 1 }), knightFrame({ dy: 1, staff: held(), plume: 2 }), knightFrame({ dy: 1, staff: held(), plume: 1 })],
+    run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, pump], i) => knightFrame({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, staff: [sh[0] + 2 + pump, sh[1] + 9, sh[0] + 5 + pump, sh[1] - 5] })),
+    jump: [knightFrame({ legs: 'jump', dy: -1, staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 5], plume: 1 })],
+    fall: [knightFrame({ legs: 'fall', staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, staff: [sh[0] + 2, sh[1] + 8, sh[0] + 5, sh[1] - 7], plume: 2 })],
+    land: knightFrame({ legs: 'land', dy: 2, staff: held(2), plume: 0 }),
+    atk: [
+      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], staff: [sh[0] - 6, sh[1] + 2, sh[0] - 1, sh[1] - 10], plume: 1 }),
+      knightFrame({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], staff: [sh[0] - 2, sh[1] + 2, sh[0] + 13, sh[1] + 1], plume: 2 }),
+      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], staff: [sh[0] - 1, sh[1] + 1, sh[0] + 11, sh[1] + 8], plume: 2 }),
+      knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], staff: [sh[0] - 1, sh[1], sh[0] + 6, sh[1] + 11], plume: 0 }),
+      knightFrame({ legs: 'stand', staff: held(), plume: 0 }),
+    ],
+    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], staff: [sh[0] - 1, sh[1] - 2, sh[0] - 1, sh[1] + 17], plume: 1 }),
+    hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', staff: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', staff: held(3) }),
+    block: [knightFrame({ legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], staff: [sh[0] + 2, sh[1] + 9, sh[0] + 7, sh[1] - 8] }), knightFrame({ legs: 'wide', dy: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], staff: [sh[0] + 2, sh[1] + 9, sh[0] + 7, sh[1] - 9] })],
+  };
+  const tuck = knightFrame({ dy: 4, legs: 'crouch', staff: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 4] });
+  F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
+  const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
+  const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(whiten) : whiten(F[k]);
+  const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
+  BODY_REF = BODY; PLUME_REF = PLUME; KP = Object.assign({}, KP0);
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+}
+
+// The keeper — an old badger merchant: spectacles, striped snout, a leather apron with a coin pouch, sleeves rolled. 14×16. Frames: idle, talk (a paw raised over the counter).
+export function bakeKeeper() {
+  const KP2 = Object.assign({}, EP, { b: '#3a3448', B: '#1b1626', f: '#e8e0d0', a: '#8a5a32', A: '#5c3a1d', g: '#c9a83a', p: '#5a4a3a', o: OUT, e: '#f3f0d2', s: '#ffffff' });
+  const k = rows => outline(fromGrid(rows, KP2, 1), OUT);
+  const head = ['....bbbbbb....', '...bfbbbbfb...', '...bfbbbbfb...', '..bbfffffffb..', '..bfggfggfbb..', '..bfgegegfb...', '...bffffffb...', '...bbbBBbbb...'];
+  const talk = ['....bbbbbb....', '...bfbbbbfb...', '...bfbbbbfb...', '..bbfffffffb..', '..bfggfggfbb..', '..bfgegegfb...', '...bffffffb...', '...bbBBBBbb...'];
+  const body = ['..aaaaaaaaaa..', '.aaAaaaaaaAaa.', '.aaaaaaaaaaaa.', '.aaaaggaaaaaa.', '..aaaaaaaaaa..', '..bbb....bbb..', '..bbb....bbb..', '..pp......pp..'];
+  const bodyTalk = ['..aaaaaaaaaab.', '.aaAaaaaaaAab.', '.aaaaaaaaaaaab', '.aaaaggaaaaaa.', '..aaaaaaaaaa..', '..bbb....bbb..', '..bbb....bbb..', '..pp......pp..'];
+  return pack([k([...head, ...body]), k([...talk, ...bodyTalk])], 8, 17, 12, 16);
+}
+// The bard — a hedgehog with a lute and a feathered cap. 12×13. Frames: idle, strum.
+export function bakeBard() {
+  const BP = Object.assign({}, EP, { q: '#6a4a3a', Q: '#3a2214', k: '#f1c9a0', c: '#3f6e2c', r: '#c9463d', w: '#8a5a32', W: '#5c3a1d', y: '#e0b040', o: OUT });
+  const b = rows => outline(fromGrid(rows, BP, 1), OUT);
+  const idle = b(['...r.cccc...', '..rccccccc..', '..qQqQqQqq..', '.qQqkkkkqQq.', '.qqqkokokqq.', '..qqkkkkqq..', '..qqqqqqqq..', '.qqqqqqqqqw.', '.qqqqqqqqwW.', '..qqqqqqwWy.', '...qq..qq.y.', '...QQ..QQ...']);
+  const strum = b(['...r.cccc...', '..rccccccc..', '..qQqQqQqq..', '.qQqkkkkqQq.', '.qqqkokokqq.', '..qqkkkkqq..', '..qqqqqqqqk.', '.qqqqqqqqqw.', '.qqqqqqqqwW.', '..qqqqqqwWy.', '...qq..qq.y.', '...QQ..QQ...']);
+  return pack([idle, strum], 7, 13, 10, 12);
+}
+// The old knight — a retired veteran in a dented helm and a patched surcoat, leaning on a stick. 12×15. Frames: idle, nod.
+export function bakeOldKnight() {
+  const OK = Object.assign({}, EP, { s: '#9aa3b0', S: '#5a6270', b: '#6a5a8a', B: '#3a2a4a', k: '#f1c9a0', w: '#8a5a32', W: '#5c3a1d', g: '#b8b0a0', o: OUT });
+  const o = rows => outline(fromGrid(rows, OK, 1), OUT);
+  const idle = o(['...sSSSs....', '..sssssss...', '..sSSSSSs...', '..skkkkks...', '..sgggggs...', '...ggggg....', '..bbbbbbb...', '.bBbbbbbBb.w', '.bbbbbbbbb.w', '.bBbbbbbBb.w', '..bbbbbbb..w', '..SS...SS..w', '..SS...SS..w', '..WW...WW..w']);
+  const nod = o(['............', '...sSSSs....', '..sssssss...', '..sSSSSSs...', '..skkkkks...', '..sgggggs...', '..bbbbbbb...', '.bBbbbbbBb.w', '.bbbbbbbbb.w', '.bBbbbbbBb.w', '..bbbbbbb..w', '..SS...SS..w', '..SS...SS..w', '..WW...WW..w']);
+  return pack([idle, nod], 7, 15, 10, 14);
 }
