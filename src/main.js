@@ -3,7 +3,7 @@ import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
 import { bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakePyro, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing } from './chars.js';
 import { LEVELS, T, TS } from './level.js';
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, debugAudio } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -37,14 +37,14 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto' };
+const SET = { music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false };
 const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, mineworks: 1 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 const DIFF = { easy: { take: 0.6, ehp: 0.8, label: 'EASY' }, normal: { take: 1, ehp: 1, label: 'NORMAL' }, hard: { take: 1.4, ehp: 1.3, label: 'HARD' } };
 const DIFFS = ['easy', 'normal', 'hard'], SCALES = ['auto', 2, 3, 4];
 try { Object.assign(SET, JSON.parse(localStorage.getItem('bracken.settings') || '{}')); } catch {}
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
-function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); resize(); }
+function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
 // Progress lives in one of three save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
@@ -455,7 +455,7 @@ function respawn() {
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null;
-  spawnEntities(); seeds = []; embers = []; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.cHeld = 0; music.play(L.music || 'theme');
+  spawnEntities(); seeds = []; embers = []; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
 }
 function startGame() {
@@ -597,8 +597,8 @@ function updateStore(dt) {
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
   if (confirmPress && items.length) {
     const k = items[storeI], owned = tab.rank ? false : (k.id === 'none' || PROG[tab.owned][k.id]);
-    if (tab.rank) { const r = rankOf(k.id); if (r >= k.max) { SFX.ui(); storeMsg = k.name + ' is at its peak'; storeMsgT = 1.5; } else if (PROG.coins >= k.prices[r]) { PROG.coins -= k.prices[r]; PROG.ranks[k.id] = r + 1; applyUpgrades(); if (k.id === 'vigour') P.hp = Math.min(P.maxHp, P.hp + 10); if (k.id === 'breath') P.st = Math.min(P.maxSt, P.st + 10); saveProgress(); SFX.coin(); SFX.sting(); statFlash = 0.8; storeMsg = k.name + ' rank ' + (r + 1); storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#8fd160', '#fff6c8'], 60, 0.6, -20, 1); } else { SFX.buzz(); storeMsg = 'need ' + (k.prices[r] - PROG.coins) + ' more gold'; storeMsgT = 2; } }
-    else if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.uiSel(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
+    if (tab.rank) { const r = rankOf(k.id); if (r >= k.max) { SFX.ui(); storeMsg = k.name + ' is at its peak'; storeMsgT = 1.5; } else if (PROG.coins >= k.prices[r]) { PROG.coins -= k.prices[r]; PROG.ranks[k.id] = r + 1; applyUpgrades(); if (k.id === 'vigour') P.hp = Math.min(P.maxHp, P.hp + 10); if (k.id === 'breath') P.st = Math.min(P.maxSt, P.st + 10); saveProgress(); SFX.coin(); SFX.rankUp(); statFlash = 0.8; storeMsg = k.name + ' rank ' + (r + 1); storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#8fd160', '#fff6c8'], 60, 0.6, -20, 1); } else { SFX.buzz(); storeMsg = 'need ' + (k.prices[r] - PROG.coins) + ' more gold'; storeMsgT = 2; } }
+    else if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) { SFX.buzz(); storeMsg = 'clear ' + k.needsName + ' first'; storeMsgT = 2; }
     else if (k.feat && !featDone(k.feat)) { SFX.buzz(); storeMsg = k.featName + ' to earn it'; storeMsgT = 2; }
@@ -729,8 +729,8 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Equip', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects volume', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Screen filter', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Reset this slot', 'Back'];
+const PAUSE_ITEMS = ['Resume', 'Equip', 'Hero', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects volume', 'Settings', 'Quit to title'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Ambient volume', 'UI volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour-safe tells', 'Screen filter', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Damage numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Reset this slot', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night'];
 let menuKind = 'pause';
 const menuItems = () => menuKind === 'pause' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
@@ -748,6 +748,7 @@ function menuAdjust(dir) {
   else if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
   else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects volume') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Damage numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
+  else if (k === 'Game speed') { const SP = [1, 0.9, 0.8]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + 3) % 3]; menuMsg = SET.speed < 1 ? 'the world runs slower. the timer does not' : 'full speed'; menuMsgT = 3; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambient volume') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'Colour-safe tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
   else if (k === 'Difficulty') SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + 3) % 3]; else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
@@ -757,6 +758,7 @@ function menuConfirm() {
   else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
   else if (k === 'Equip') { openEquip('menu'); }
+  else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; SFX.uiSel(); }
   else if (k === 'Controls') { state = 'controls'; SFX.uiSel(); }
@@ -906,7 +908,7 @@ function burst(x, y, n, cols, spd = 70, life = 0.5, grav = 300, size = 2) {
 }
 function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
-function number(x, y, txt, col) { if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */ nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
+function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */ nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
 function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 function shakeCam(n, k = 0) { if (SET.shake) { shake = Math.max(shake, n); kick += k; } }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
@@ -935,7 +937,7 @@ function damagePlayer(fromX, dmg, { up = false, unblockable = false } = {}) {
   P.hp -= dmg; P.inv = 1.1; P.hurt = Math.max(P.hurt, 0.35); P.atk = -1; P.plunge = false; P.block = false; impactAt(P.x, P.y - 9, 'red');
   const dir = Math.sign(P.x - fromX) || -P.face;
   P.vx = dir * 150; P.vy = up ? -230 : -170; P.ground = false;
-  hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; SFX.hurt(); rumble(180, 0.8);
+  hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; (isPyro() ? SFX.hurtPyro : SFX.hurt)(); rumble(180, 0.8);
   burst(P.x, P.y - 8, 8, ['#e04848', '#ffd36b'], 60, 0.4);
   number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
   if (P.hp <= 0) die();
@@ -1049,6 +1051,15 @@ function breakCrate(tx, ty) {
 }
 
 // ---------- player ----------
+function surface() { // what is underfoot, for the step and the landing
+  if (!L) return 'grass'; if ((L.pools || []).some(p => p.shallow && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 2)) return 'water';
+  const m = P.onMover; if (m && (m.kind === 'cart' || m.kind === 'orelift')) return 'iron'; if (m) return 'wood';
+  const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 1) / TS), t = tileAt(tx, ty);
+  if (t === T.RAIL) return 'iron'; if (t === T.ONEWAY || t === T.PLANK || t === T.SHELF) return 'wood';
+  if (L.snowLine !== undefined && ty <= L.snowLine) return 'snow';
+  if (L.dark || (L.stone || []).some(z => tx >= z[0] && tx <= z[1] && ty >= z[2] && ty <= z[3]) || (L.palette && (L.palette.dress === 'crag' || L.palette.hall))) return 'stone';
+  return 'grass';
+}
 function attackBox() {
   if (P.plunge) return { l: P.x - 10, r: P.x + 10, t: P.y - 6, b: P.y + 12 };
   if (P.atk >= 0.04 && P.atk < 0.16) return P.face > 0 ? { l: P.x + 2, r: P.x + 19, t: P.y - 17, b: P.y - 1 } : { l: P.x - 19, r: P.x - 2, t: P.y - 17, b: P.y - 1 };
@@ -1066,7 +1077,7 @@ function updatePlayer(dt) {
   if (throwPress && skillNow() === 'risingCut' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { P.throwCd = CD_MAX.risingCut; P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); SFX.slash(); SFX.pogo(); squash(0.8, 1.25, 0.12); dust(P.x, P.y, 6); ringAt(P.x, P.y - 10, 14, '#fff6e0', 0.2); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } // RISING CUT: the blade goes up and so do you, and whatever it catches
   if (throwPress && isPyro() && skillNow() === 'vent' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; P.throwCd = CD_MAX.vent; const dmg = Math.round(10 + heat * 0.5), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.atk = -1; ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
   if (throwPress && isPyro() && skillNow() === 'wisp' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { P.throwCd = CD_MAX.wisp; wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
-  if (P.riseT > 0) { P.riseT -= dt; const hb = { l: P.x - 11, r: P.x + 11, t: P.y - 36, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtEnemy(e, swordDmg() + 4, P.x, false); if (!big && e.t !== 'king' && e.t !== 'mother') { e.vy = -240; e.y -= 2; e.stagger = Math.max(e.stagger || 0, 0.7); e.air = true; } sparks(e.x, e.y - e.h / 2, P.face, 6); hitstop(0.05); } } }
+  if (P.riseT > 0) { P.riseT -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); const hb = { l: P.x - 11, r: P.x + 11, t: P.y - 36, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtEnemy(e, swordDmg() + 4, P.x, false); if (!big && e.t !== 'king' && e.t !== 'mother') { e.vy = -240; e.y -= 2; e.stagger = Math.max(e.stagger || 0, 0.7); e.air = true; } sparks(e.x, e.y - e.h / 2, P.face, 6); hitstop(0.05); } } }
   if (P.ground) P.riseUsed = false;
   if (throwPress && skillNow() === 'groundSlam' && P.ground && !(P.slamCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { P.slamCd = 3; P.block = false; P.atk = -1; shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.2, sp: 210, hit: new Set() }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (throwPress && skillNow() === 'shieldThrow' && !thrown && !(P.throwCd > 0) && PROG.items.shieldThrow && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
@@ -1152,7 +1163,7 @@ function updatePlayer(dt) {
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging) {
     if (!P.ground && (keys.down || P.abufDown) && isPyro()) { P.abuf = 0; P.abufDown = false; castEmber(1); }
     else if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { P.plunge = true; P.vy = Math.max(P.vy, 60); P.atk = -1; P.hitSet.clear(); SFX.slash(); } }
-    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend(P.relic === 'gauntlet' ? 0 : sword().cost)) { P.atk = 0; P.hitSet.clear(); SFX.slash(); if (Math.random() < 0.35) SFX.effort(); if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend(P.relic === 'gauntlet' ? 0 : sword().cost)) { P.atk = 0; P.hitSet.clear(); (isPyro() ? SFX.slashPyro : SFX.slash)(); if (Math.random() < 0.35) SFX.effort(); if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk >= 0) {
     P.atk += dt; if (P.atk > 0.3) P.atk = -1;
@@ -1160,6 +1171,7 @@ function updatePlayer(dt) {
       const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6;
       const px0 = P.x + P.face * 2, py0 = P.y - 9;
       trail.push({ x0: px0, y0: py0, x: px0 + Math.cos(ang) * 18 * P.face, y: py0 + Math.sin(ang) * 18, life: 0.11 });
+      if (isPyro() && Math.random() < 0.7) parts.push({ x: px0 + Math.cos(ang) * 16 * P.face, y: py0 + Math.sin(ang) * 16, vx: (Math.random() - 0.5) * 20, vy: -25, life: 0.28, max: 0.28, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -40 });
     }
   }
 
@@ -1178,9 +1190,9 @@ function updatePlayer(dt) {
   const prevVy = P.vy;
   const r = moveBody(P, P.vx * dt, P.vy * dt, P.drop > 0);
   if (r.hitX) P.vx = 0;
-  if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = 0.1; }
+  if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? 0.2 : 0.1; }
   else if (r.hitY) P.vy = 0;
-  if (!P.ground && wasGround && !P.onMover) P.coyote = 0.1;
+  if (!P.ground && wasGround && !P.onMover) P.coyote = SET.assist ? 0.2 : 0.1;
   if (!P.ground && P.vy >= 0) for (const m of movers) {
     if (prevY <= m.y + 1 + Math.max(0, m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; }
   }
@@ -1202,11 +1214,11 @@ function updatePlayer(dt) {
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
       if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); }
-    } else { const heavy = prevVy > 250; dust(P.x, P.y, heavy ? 9 : 4); SFX.land(); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
+    } else { const heavy = prevVy > 250; dust(P.x, P.y, heavy ? 9 : 4); SFX.land(surface()); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
   }
-  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.step(); } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
+  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.step(surface()); } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
   P.anim += dt;
 
@@ -1322,12 +1334,13 @@ function queenWinded(e, blocked) {
   shakeCam(4); SFX.thud(); dust(e.x, e.y, 10); number(e.x, e.y - 20, blocked ? 'STAGGERED' : 'WINDED', '#8fd160');
 }
 function queenDies() {
-  setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
+  SFX.bossDown(); setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
   for (const e of enemies) if (e.alive && (e.t === 'wasp' || e.t === 'hopper') && e.drone) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
 }
 // The Chieftain's death is not the end: the hall burns from the floor up and you climb the rafters to the way out.
 function chiefDies() {
+  SFX.bossDown();
   setView('normal'); bossActive = false; camLock = null; slowT = 1.0; music.play(L.music || 'theme');
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
   const A = L.arena; escape = { t: 0, fireY: A.floor + 6, x0: A.x0 - 8, x1: A.x1 + 8, hurtT: 0 };
@@ -2647,7 +2660,7 @@ function updateWeather(dt) {
   for (const d of drops) { d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; if (d.y > camY + VH + 4) d.life = 0; }
   drops = drops.filter(d => d.life > 0);
   lightFlash = Math.max(0, lightFlash - dt); if (thunderT > 0) { thunderT -= dt; if (thunderT <= 0) { SFX.thunder(); shakeCam(2); } }
-  if (SET.ambient && SET.weather && w.includes('wind')) { if (pollen.length < 34 * area && Math.random() < dt * 16) pollen.push({ x: camX - 20, y: camY + Math.random() * VH, t: Math.random() * 6, life: 4, wind: true }); }
+  if (SET.ambient && SET.weather && w.includes('wind')) { for (const d of decor) if ((d.k === 'tuft' || d.k === 'fern' || d.k === 'flower') && d.x > camX - 20 && d.x < camX + VW + 20) d.sway = Math.max(d.sway || 0, 0.25 + 0.25 * Math.sin(time * 2.2 + d.x * 0.03)); if (pollen.length < 34 * area && Math.random() < dt * 16) pollen.push({ x: camX - 20, y: camY + Math.random() * VH, t: Math.random() * 6, life: 4, wind: true }); }
   if (SET.ambient && SET.weather && w.includes('spore')) { if (pollen.length < 36 * area && Math.random() < dt * 10) pollen.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, t: Math.random() * 6, life: 7, spore: true }); }
   if (SET.ambient && w.includes('smoke')) { if (pollen.length < 30 && Math.random() < dt * 6) pollen.push({ x: camX + Math.random() * VW, y: camY + VH * 0.5 + Math.random() * VH * 0.5, t: Math.random() * 6, life: 5, smoke: true }); }
   if (SET.ambient && SET.weather && w.includes('pollen')) { if (pollen.length < 28 && Math.random() < dt * 8) pollen.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH * 0.8, t: Math.random() * 6, life: 8 }); }
@@ -2715,6 +2728,8 @@ function updateCamera(dt) {
 
 function update(dt) {
   time += dt;
+  music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
+  music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
   if (state === 'title') { ambient.set('forest'); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title'); else if (anyPress) { state = 'slots'; slotI = slot; slotMsg = ''; SFX.uiSel(); music.play(menuTrack()); } return; }
   if (state === 'slots') {
     slotMsgT = Math.max(0, slotMsgT - dt);
@@ -2726,6 +2741,7 @@ function update(dt) {
     return;
   }
   if (state === 'controls') { if (pausePress || confirmPress) { state = 'menu'; SFX.menuClose(); } return; }
+  if (state === 'herocard') { if (pausePress || confirmPress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'soundtest') {
     const cats = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES]; const list = cats[soundCat];
     if (leftPress) { soundCat = (soundCat + 2) % 3; soundI = 0; SFX.ui(); }
@@ -2763,13 +2779,13 @@ function update(dt) {
     updateParticles(dt);
     return;
   }
-  if (state === 'win') { if (confirmPress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
   if (pausePress) { openMenu('play'); return; }
-  if (jumpPress) P.jbuf = 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
+  if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
   if (stop > 0) { stop -= dt; return; }
   levelTime += dt;
-  slowT = Math.max(0, slowT - dt); const wdt = slowT > 0 ? dt * 0.3 : dt;
+  slowT = Math.max(0, slowT - dt); const wdt = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
   updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); updateWisp(wdt); updateProps(wdt); updateCorpses(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt);
   flash = Math.max(0, flash - dt);
@@ -2957,6 +2973,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (state === 'play' && !P.dead) { const t = talkers()[0]; if (t && !(t.who && t.who.t === 'npc')) text(talkGlyph(), t.x - cx, t.y - 26 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
   for (const s of shrines) { g.drawImage(PROP.shrine[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
   if (gate) g.drawImage(PROP.gate, gate.x - 24 - cx, gate.y - 52 - cy);
+  for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
   for (const s of silvers) if (s.x > cx - 12 && s.x < cx + VW + 12) { if (s.got) { g.globalAlpha = 0.22; g.drawImage(PROP.silver[0], s.x - 4 - cx, Math.round(s.y - 5) - cy); g.globalAlpha = 1; } else { g.globalAlpha = 0.28 + 0.16 * Math.sin(time * 5 + s.ph); g.fillStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(s.x - cx), Math.round(s.y - 2 - cy), 8, 0, 7); g.fill(); g.globalAlpha = 1; g.drawImage(PROP.silver[Math.floor(time * 6 + s.ph) % 4], s.x - 4 - cx, Math.round(s.y - 5 + Math.sin(time * 4 + s.ph) * 1.5) - cy); } }
   for (const c of corpses) {
@@ -3056,6 +3073,8 @@ function drawWorld(cx, cy, showPlayer) {
     }
   }
   if (wisp) { const x = Math.round(wisp.x - cx), y = Math.round(wisp.y - cy), f = Math.floor(time * 12) % 3; g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#ff9a5c'; g.fillRect(x - 2, y - 2 - f, 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1 - f, 2, 3); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y + 1 - f, 2, 1); }
+  if (L.palette && (L.palette.dress === 'wood' || L.palette.dress === 'marsh') && !L.night && !L.dark && SET.weather && SET.ambient) { // shafts of low sun through the leaves
+    g.save(); g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 5; i++) { const sx = ((i * 97 + 40) - cx * 0.35) % (VW + 120) - 60 + Math.sin(time * 0.3 + i) * 6; const a = 0.035 + 0.02 * Math.sin(time * 0.5 + i * 1.7); g.fillStyle = 'rgba(255,225,160,' + a.toFixed(3) + ')'; g.beginPath(); g.moveTo(sx, -10); g.lineTo(sx + 26, -10); g.lineTo(sx + 26 + 60, VH + 10); g.lineTo(sx + 60 - 8, VH + 10); g.closePath(); g.fill(); } g.restore(); }
   if (showPlayer && trail.length > 1) {
     for (let i = 1; i < trail.length; i++) {
       const a = trail[i - 1], b = trail[i]; const al = Math.min(1, b.life / 0.11);
@@ -3151,6 +3170,18 @@ function drawMother(cx, cy) {
   const heart = enemies.find(e => e.alive && e.t === 'heart');
   if (heart) { const hx = Math.round(heart.x - cx), hy = Math.round(heart.y - 6 - cy); const pulse = 1 + Math.sin(time * 6) * 0.12; g.globalAlpha = 0.5; g.fillStyle = '#ff7a9a'; g.beginPath(); g.ellipse(hx, hy, 14 * pulse, 12 * pulse, 0, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#c9463d'; g.beginPath(); g.ellipse(hx, hy, 7 * pulse, 6 * pulse, 0, 0, 7); g.fill(); g.fillStyle = '#ffd0ff'; g.fillRect(hx - 3, hy - 3, 2, 2); if (heart.flash > 0) { g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(hx, hy, 8, 7, 0, 0, 7); g.fill(); } }
 }
+function drawHeroCard() { // who you are right now: the numbers behind the bars
+  g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
+  const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h, '#ffd36b');
+  const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, '#ffd36b', 'center');
+  drawSet(K, 'idle', Math.floor(time * 3) % 4, x + 30, y + 52, 1, false);
+  const sk = skillNow(), skName = sk ? (ABILITIES.find(a => a.id === sk) || {}).name : 'NONE', ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
+  const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
+  const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill', skName], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold', String(PROG.coins)], ['silver', silverAvail() + ' spare']];
+  rows.forEach(([a, b], i) => { const yy = y + 20 + i * 11; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
+  const tr = TRAINING.map(t => t.name.toLowerCase() + ' ' + rankOf(t.id)).join('  '); text(tr, VW / 2, y + h - 22, '#8fd160', 'center', 6);
+  text('ESC back', VW / 2, y + h - 10, '#9aa39a', 'center');
+}
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h, '#ffd36b');
@@ -3193,7 +3224,7 @@ function drawMenu() {
     if (sel) text('>', x + 10, yy, '#8fd160');
     text(k, x + 22, yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects volume' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects volume' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambient volume' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'Colour-safe tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     if (v) text('< ' + v + ' >', x + w - 12, yy, col, 'right');
   });
   text(menuMsgT > 0 && menuMsg ? menuMsg : 'ESC close', VW / 2, y + h - 12, menuMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
@@ -3259,7 +3290,7 @@ function render() {
   }
   if (flash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page
-    const big = !!SET.bigText; const sz = 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 12 : 10; const bh = 14 + lines.length * lh + (talk.name ? 10 : 0); const by = VH - bh - 8;
+    const big = !!SET.bigText; const sz = big ? 10 : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 14 : 10; const bh = 14 + lines.length * lh + (talk.name ? 10 : 0); const by = VH - bh - 8;
     g.fillStyle = 'rgba(14,10,22,0.9)'; g.fillRect(bx, by, bw, bh); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
     let ty = by + 7; if (talk.name) { text(talk.name, bx + 8, ty, '#ffd36b', 'left', sz); ty += 10; }
     lines.forEach((ln, k) => text(ln, bx + 8, ty + k * lh, '#fff6e0', 'left', sz));
@@ -3314,6 +3345,7 @@ function render() {
   if (state === 'menu') drawMenu();
   if (state === 'soundtest') drawSoundTest();
   if (state === 'controls') drawControls();
+  if (state === 'herocard') drawHeroCard();
   if (state === 'gameover') {
     g.fillStyle = 'rgba(30,8,10,0.75)'; g.fillRect(40, 40, VW - 80, 100); g.strokeStyle = '#ff6b6b'; g.strokeRect(40.5, 40.5, VW - 81, 99);
     text('THE KNIGHT FALLS', VW / 2, 52, '#ff6b6b', 'center', 12);

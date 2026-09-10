@@ -1,5 +1,5 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
-let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null;
+let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
@@ -15,10 +15,15 @@ export function initAudio() {
   ac = new (window.AudioContext || window.webkitAudioContext)();
   master = ac.createGain(); master.gain.value = 1; master.connect(ac.destination);
   sfxGain = ac.createGain(); sfxGain.gain.value = vol; sfxGain.connect(master);
-  musicGain = ac.createGain(); musicGain.gain.value = 0.16; musicGain.connect(master);
+  musicLP = ac.createBiquadFilter(); musicLP.type = 'lowpass'; musicLP.frequency.value = 20000; musicLP.connect(master); // the music dulls behind a menu, a talk box, or a failing heart
+  musicGain = ac.createGain(); musicGain.gain.value = 0.16; musicGain.connect(musicLP);
+  uiGain = ac.createGain(); uiGain.gain.value = 0.8; uiGain.connect(master); // menu clicks have their own volume
   ambGain = ac.createGain(); ambGain.gain.value = 0; ambGain.connect(sfxGain);
   noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  { // a short stone reverb for the galleries and halls: a decaying noise impulse
+    const len = Math.floor(ac.sampleRate * 1.3), ir = ac.createBuffer(2, len, ac.sampleRate); for (let ch = 0; ch < 2; ch++) { const c = ir.getChannelData(ch); for (let i = 0; i < len; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    const conv = ac.createConvolver(); conv.buffer = ir; revGain = ac.createGain(); revGain.gain.value = 0; sfxGain.connect(conv); conv.connect(revGain); revGain.connect(master); }
   startSynth();
   loadTrack(wantTrack);
   fetch('./audio/manifest.json').then(r => r.json()).then(man => {
@@ -30,14 +35,19 @@ export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (sfxGain) s
 export function setSfxFiles(v) { sfxFiles = !!v; }
 export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); }
 export const musicIsFile = () => !!trackBuf[currentTrack];
+export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
+export function setReverb(v) { if (revGain) revGain.gain.setTargetAtTime(Math.max(0, Math.min(0.5, v)), ac.currentTime, 0.3); }
+export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : 0.14) * ambVol;
+function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- samples ----------
-function file(name, v = 0.6, rate = 1) {
+function file(name, v = 0.6, rate = 1, dest = null) {
   if (!ac || !sfxFiles) return false;
   const arr = clips[name]; if (!arr) return false;
   const opts = arr.filter(Boolean); if (!opts.length) return false;
   const s = ac.createBufferSource(); s.buffer = opts[(Math.random() * opts.length) | 0]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
-  const g = ac.createGain(); g.gain.value = v; s.connect(g); g.connect(sfxGain); s.start();
+  const g = ac.createGain(); g.gain.value = v; s.connect(g); g.connect(dest || sfxGain); s.start();
   return true;
 }
 
@@ -50,19 +60,19 @@ function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = sfxGain) {
   g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + 0.02);
 }
-function noise(dur, v = 0.3, freq = 1000, q = 0.8, delay = 0) {
+function noise(dur, v = 0.3, freq = 1000, q = 0.8, delay = 0, dest = null) {
   if (!ac) return;
   const t = ac.currentTime + delay;
   const s = ac.createBufferSource(); s.buffer = noiseBuf;
   const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
   const g = ac.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  s.connect(f); f.connect(g); g.connect(sfxGain); s.start(t); s.stop(t + dur + 0.02);
+  s.connect(f); f.connect(g); g.connect(dest || sfxGain); s.start(t); s.stop(t + dur + 0.02);
 }
 
 export const SFX = {
   jump() { tone('square', 280, 620, 0.12, 0.12); },
-  land() { file('land', 0.35) || noise(0.06, 0.12, 300, 0.5); },
-  step() { file('step', 0.18); },
+  land(surf) { if (surf === 'water') { noise(0.2, 0.3, 800, 0.5); tone('sine', 260, 120, 0.15, 0.1); return; } if (surf === 'wood') { tone('sine', 150, 70, 0.1, 0.2); file('land', 0.25, 1.1); return; } if (surf === 'stone' || surf === 'iron') { noise(0.05, 0.16, surf === 'iron' ? 2200 : 1500, 0.8); file('land', 0.3, 0.95); return; } if (surf === 'snow') { noise(0.1, 0.16, 700, 0.4); return; } file('land', 0.35) || noise(0.06, 0.12, 300, 0.5); },
+  step(surf) { if (surf === 'water') { noise(0.08, 0.12, 900, 0.5); return; } if (surf === 'wood') { tone('sine', 170, 90, 0.05, 0.08); file('step', 0.14, 1.15); return; } if (surf === 'stone') { noise(0.03, 0.09, 2600, 1.2); file('step', 0.14, 0.9); return; } if (surf === 'iron') { tone('square', 1200, 900, 0.03, 0.04); noise(0.03, 0.06, 3200, 1.4); return; } if (surf === 'snow') { noise(0.06, 0.08, 800, 0.5); return; } file('step', 0.18); },
   slash() { file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); },
   hit() { file('hit', 0.55) || (tone('square', 220, 70, 0.12, 0.22), noise(0.1, 0.25, 700)); },
   kill() { file('kill', 0.6) || (tone('square', 300, 60, 0.2, 0.25), noise(0.18, 0.3, 500), tone('triangle', 800, 1400, 0.12, 0.12, 0.02)); },
@@ -88,9 +98,9 @@ export const SFX = {
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },
   bossHurt() { file('bossHurt', 0.55) || tone('sawtooth', 300, 120, 0.25, 0.25); },
   buzz() { tone('sawtooth', 110, 130, 0.5, 0.12); tone('sawtooth', 220, 200, 0.5, 0.06); },
-  ui() { file('ui', 0.35) || tone('square', 700, 700, 0.04, 0.1); },
-  uiSel() { tone('square', 900, 1300, 0.08, 0.12); },
-  text() { tone('square', 1500, 1500, 0.02, 0.04); },
+  ui() { file('ui', 0.35, 1, uiGain) || tone('square', 700, 700, 0.04, 0.1, 0, uiGain); },
+  uiSel() { tone('square', 900, 1300, 0.08, 0.12, 0, uiGain); },
+  text() { tone('square', 1500, 1500, 0.02, 0.04, 0, uiGain); },
   effort() { file('effort', 0.22, 1.35); },
   gasp() { file('gobHurt', 0.3, 1.5) || tone('sawtooth', 500, 200, 0.2, 0.1); },
   laugh() { file('laugh', 0.3, 1.4); },
@@ -117,11 +127,13 @@ function loadTrack(name) {
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
-  stopMusic(); currentTrack = name;
+  if (trackG && musicSrcs.length) { const og = trackG, olds = musicSrcs; og.gain.setTargetAtTime(0, ac.currentTime, 0.22); setTimeout(() => { for (const s of olds) { try { s.stop(); } catch {} } try { og.disconnect(); } catch {} }, 1000); if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicSrcs = []; musicGen++; } else stopMusic(); // the old track fades under the new one
+  currentTrack = name;
+  const tg = ac.createGain(); tg.gain.value = 0.001; tg.connect(musicGain); trackG = tg; tg.gain.setTargetAtTime(1, ac.currentTime + 0.02, 0.28);
   const gen = musicGen, b = trackBuf[name]; let at = ac.currentTime + 0.03;
   const chain = () => {
     if (gen !== musicGen || currentTrack !== name) return;
-    const s = ac.createBufferSource(); s.buffer = b; s.connect(musicGain); s.start(at); musicSrcs.push(s); musicSrc = s;
+    const s = ac.createBufferSource(); s.buffer = b; s.connect(tg); s.start(at); musicSrcs.push(s); musicSrc = s;
     s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
     const startAt = at; at += b.duration;
     musicTimer = setTimeout(chain, Math.max(50, (startAt + b.duration * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
@@ -138,6 +150,8 @@ export const music = {
   duck(on) { const t = on ? 0.35 : 1; if (t === duckT) return; duckT = t; if (musicGain && currentTrack && musicOn) musicGain.gain.setTargetAtTime(trackVol(currentTrack), ac.currentTime, 0.25); },
   get on() { return musicOn; },
   get track() { return currentTrack; },
+  muffle(on) { if (!!on === muffled) return; muffled = !!on; applyMusicFilter(); },
+  lowHealth(on) { if (!!on === lowHp) return; lowHp = !!on; applyMusicFilter(); },
 };
 
 // Synth loop: four bars of C-major pentatonic arpeggio over a slow bass, until a file takes over.
@@ -169,7 +183,7 @@ export const ambient = {
     if (!ac || kind === ambKind) return;
     ambKind = kind; stopAmb();
     if (!kind) { ambGain.gain.setTargetAtTime(0, ac.currentTime, 0.5); return; }
-    const start = () => ambGain.gain.setTargetAtTime(kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : 0.14, ac.currentTime, 0.8);
+    const start = () => ambGain.gain.setTargetAtTime(ambTarget(kind), ac.currentTime, 0.8);
     if (kind === 'forest') {
       const go = () => { if (ambKind !== 'forest') return; const s = ac.createBufferSource(); s.buffer = trackBuf.ambForest; s.loop = true; s.connect(ambGain); s.start(); ambNodes.push(s); start(); };
       if (trackBuf.ambForest) go(); else { trackPending.ambForest || fetch(TRACKS.ambForest).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf.ambForest = b; go(); }).catch(() => {}); }
@@ -210,8 +224,13 @@ Object.assign(SFX, {
 // ---------- UI and skill voices ----------
 Object.assign(SFX, {
   levelStart() { for (let i = 0; i < 4; i++) tone('square', [330, 415, 494, 659][i], [330, 415, 494, 659][i], 0.11, 0.09, i * 0.09); tone('triangle', 165, 165, 0.4, 0.08, 0.36); },
-  menuOpen() { tone('square', 520, 780, 0.06, 0.06); tone('square', 780, 1040, 0.06, 0.05, 0.06); },
-  menuClose() { tone('square', 780, 520, 0.06, 0.06); tone('square', 520, 340, 0.06, 0.05, 0.06); },
+  menuOpen() { tone('square', 520, 780, 0.06, 0.06, 0, uiGain); tone('square', 780, 1040, 0.06, 0.05, 0.06, uiGain); },
+  menuClose() { tone('square', 780, 520, 0.06, 0.06, 0, uiGain); tone('square', 520, 340, 0.06, 0.05, 0.06, uiGain); },
+  equip() { tone('square', 660, 660, 0.05, 0.08, 0, uiGain); tone('square', 990, 990, 0.08, 0.08, 0.05, uiGain); tone('triangle', 1320, 1320, 0.14, 0.06, 0.1, uiGain); },
+  rankUp() { [523, 659, 784, 1047].forEach((f, i) => tone('square', f, f, 0.12, 0.09, i * 0.07, uiGain)); tone('triangle', 1047, 2093, 0.4, 0.08, 0.3, uiGain); noise(0.2, 0.06, 4000, 0.8, 0.3, uiGain); },
+  bossDown() { noise(0.8, 0.5, 200, 0.5); tone('sawtooth', 220, 55, 0.9, 0.3); tone('sawtooth', 165, 41, 0.9, 0.2, 0.05); [392, 466, 587].forEach((f, i) => tone('triangle', f, f, 0.5, 0.14, 0.5 + i * 0.16)); tone('triangle', 784, 784, 0.9, 0.16, 1.0); },
+  slashPyro() { noise(0.18, 0.2, 600, 0.5); tone('sine', 320, 110, 0.16, 0.1); file('swing', 0.22, 0.8); if (Math.random() < 0.5) tone('triangle', 1800, 900, 0.08, 0.04, 0.04); },
+  hurtPyro() { file('hurt', 0.55, 1.28) || (tone('sawtooth', 340, 90, 0.28, 0.22), noise(0.12, 0.18, 600)); },
   throwWhoosh() { noise(0.28, 0.22, 900, 0.5); for (let i = 0; i < 6; i++) tone('triangle', 700 - i * 60, 500 - i * 60, 0.05, 0.06, i * 0.045); },
   shieldCatch() { tone('square', 900, 400, 0.06, 0.12); noise(0.05, 0.18, 2400, 1.2); tone('sine', 220, 180, 0.12, 0.1, 0.03); },
   medal() { for (let i = 0; i < 3; i++) tone('square', [523, 659, 784][i], [523, 659, 784][i], 0.12, 0.08, i * 0.1); tone('square', 1047, 1047, 0.3, 0.08, 0.3); },
