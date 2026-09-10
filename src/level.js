@@ -311,6 +311,7 @@ function theStockade() {
   // ---- 7. The high bridge and the second tower ----
   planks(270, 273, 12); planks(274, 281, 13); planks(282, 285, 12);
   net(270, 285, 17);
+  plat(272, 15, 2); plat(280, 15, 2); plat(283, 13, 2); // the way back up once the ropes are cut: net → ledge → bank, either side
   ent('bridge', 270, 12, { x1: 285 });
   block(286, 314, 12, 27);
   ent('sprig', 287, 11, { face: -1, cutter: true }); ent('check', 292, 11);
