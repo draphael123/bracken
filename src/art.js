@@ -731,3 +731,13 @@ export function bakeSporePod() { return [0, 1].map(f => { const [c, g] = canvas(
 
 export function bakeSkullMini() { const [c, g] = canvas(9, 9); ellipse(g, 4, 3.5, 3.5, 3, '#e8dcc0', '#b8a888'); rect(g, 2, 3, 2, 2, OUT); rect(g, 5, 3, 2, 2, OUT); rect(g, 2, 6, 5, 1, '#b8a888'); px(g, 3, 7, OUT); px(g, 5, 7, OUT); return outline(c, OUT); }
 export function bakeCompass() { const [c, g] = canvas(26, 26); ellipse(g, 13, 13, 12, 12, 'rgba(230,210,170,0.5)', '#5c3a1d'); fillPoly(g, [[13, 2], [16, 13], [10, 13]], '#c9463d'); fillPoly(g, [[13, 24], [16, 13], [10, 13]], '#e8dcc0'); fillPoly(g, [[2, 13], [13, 10], [13, 16]], '#e8dcc0'); fillPoly(g, [[24, 13], [13, 10], [13, 16]], '#e8dcc0'); px(g, 13, 13, OUT); return outline(c, OUT); }
+
+// Comb ledge: a bright wax slab you can stand on, for the hive clearing. Reads against the dark hive behind it.
+export function bakeCombPlat(seed, end) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 2, T, 7, '#f0c860'); rect(g, 0, 2, T, 1, '#fff0a0'); rect(g, 0, 8, T, 1, '#b8842a'); rect(g, 0, 9, T, 1, '#6a4a18');
+  for (let x = 2; x < T; x += 6) { for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + 0.5, a2 = a + Math.PI / 3; line(g, x + Math.cos(a) * 2.5, 5 + Math.sin(a) * 2.5, x + Math.cos(a2) * 2.5, 5 + Math.sin(a2) * 2.5, '#b8842a', 1); } }
+  if (rnd() < 0.5) { rect(g, 4 + ((rnd() * 8) | 0), 9, 2, 3, '#e0b040'); }
+  if (end === 'L') rect(g, 0, 1, 2, 9, '#6a4a18'); if (end === 'R') rect(g, T - 2, 1, 2, 9, '#6a4a18');
+  return outline(c, OUT);
+}
