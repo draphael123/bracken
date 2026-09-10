@@ -256,6 +256,27 @@ plunge between the horns while he reels. He stamps (shockwaves) and hops at you;
 charges twice and rocks fall from the cliff. Its own music: Juhani Junkala's Retro Game Music Pack
 "Level 1" (CC0), and a wind ambience.
 
+
+## The long way round: every level grew a section
+
+Each level is about thirty seconds longer, with one new set piece slotted into its middle (the rest of
+the level slides right to make room; nothing after it changed):
+- **Bracken Wood: the Wasp Orchard.** A fallen giant lies across the path: go through the hollow past
+  thorns and a spitter, or over the top through the wasps. Then a hive glade where three wasps over a
+  thorn bed are the only way across (pogo them).
+- **Marsh Wood: the Drowned Village.** Stilt planks over deep water with sinking pads in the gaps, two
+  archers on the roofs, wasps, and lookout huts in the trees.
+- **The Stockade: the Sappers' Tunnel.** A mound blocks the surface; the goblins' own tunnel runs under it:
+  torches, barrels to roll into sappers and a brute, spikes, and a rope ladder up the far shaft.
+- **Sporewood: the Puffball Bog.** Three sinks in the ground with caps at the bottom (fall in, plunge the
+  caps, bounce out), lurkers and puffballs between them, spore geysers, drones overhead, a shaman.
+- **Kingswood: the Toll Bridge.** A rope bridge over a bone-strewn gorge held by pikemen and a thief; a
+  cutter waits at the far post and saws through once you are out over the drop. If it falls, ledges
+  lead back up from the gorge floor.
+- **The Scree Path: the Cairn Field.** Standing stones and cairns, a gully whose scree drags you back
+  toward its wall (jump the far ledge), rocks off the cliff, a goat pen, harpies on the wind.
+Signs wrap to two lines now, so every one can be read.
+
 ## Skills
 
 The store's SKILLS tab opens once the Stockade is cleared (the results card and the map point you

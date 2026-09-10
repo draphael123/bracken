@@ -1120,7 +1120,7 @@ function chiefDies() {
   setView('normal'); bossActive = false; camLock = null; slowT = 1.0; music.play(L.music || 'theme');
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
   const A = L.arena; escape = { t: 0, fireY: A.floor + 6, x0: A.x0 - 8, x1: A.x1 + 8, hurtT: 0 };
-  gate = { x: 344 * TS + 8, y: 9 * TS };
+  gate = { x: (L.escapeGate || 344) * TS + 8, y: 9 * TS };
   fires = fires.filter(f => f.life < 900); for (const pr of props) if (pr.t === 'brazier') { pr.lit = false; pr.tipped = true; }
   number(P.x, P.y - 40, 'THE HALL BURNS. CLIMB.', '#ff6b2c'); SFX.roar(); shakeCam(6); zoomKick(1.1, 0.5);
 }
