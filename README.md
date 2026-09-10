@@ -200,6 +200,15 @@ through takes 15, arrows and seeds in its path are swatted down, and puffballs p
 seconds of cooldown, and you cannot block while it is away. Made for archers, spitters and shamans
 on ledges you would rather not climb.
 
+## HUD, menus and map
+
+The HUD sits on dark plates: heart and health bar with a number and quarter ticks, stamina bar,
+timer, coins, the shield's cooldown once you own the throw, and three knight heads under Iron
+Knight. Every level opens on a name banner with a short fanfare. Boss bars carry a skull plate with
+ten ticks. Menus share one framed panel with corner studs, and the pause menu names the level and
+your time. The map is framed like a parchment, every node is labelled, and a compass sits in the
+corner.
+
 ## Iron Knight
 
 An opt-in mode in Settings: three lives per level. Lose them all and the knight falls, the level
@@ -214,7 +223,8 @@ older single save is picked up as slot 1.
 
 ## Settings (Esc)
 
-Difficulty (easy, normal, hard: damage taken and enemy health scale), music on/off, music
+Difficulty (easy, normal, hard: damage taken and enemy health scale), a SOUND TEST (every effect,
+music track and ambience bed, grouped, Z to play), music on/off, music
 volume and effects volume (independent), sound FX files or synth, a Z/X swap for jump and swing,
 screen shake, hit stop, damage numbers, the timer, ambient life (leaves, fireflies, crickets),
 CRT scanlines, a pixel-scale cap, CAMERA (close, or wide: the view shows up to twice the world at a

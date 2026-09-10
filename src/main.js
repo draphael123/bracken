@@ -3,7 +3,7 @@ import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
 import { bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman } from './chars.js';
 import { LEVELS, T, TS } from './level.js';
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -130,6 +130,7 @@ function bakeAll(pal = {}) {
     fern: [0, 1, 2].map(i => ART.bakeFern(400 + i)), stump: [0, 1].map(i => ART.bakeStump(410 + i)), rock: [0, 1, 2].map(i => ART.bakeRock(420 + i)), cattail: [0, 1, 2].map(i => ART.bakeCattail(430 + i)), lilyFlower: ART.bakeLilyFlower(), skullPost: ART.bakeSkullPost(), tent: [0, 1].map(i => ART.bakeTent(440 + i)), campfire: ART.bakeCampfire(), tinyCap: [ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)], moss: [0, 1, 2].map(i => ART.bakeMoss(460 + i)), butterfly: [ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')], dragonfly: ART.bakeDragonfly(), crow: ART.bakeCrow(),
     hiveBg: ART.bakeHiveBg(500), honeyDrip: ART.bakeHoneyDrip(), frogStatue: [0, 1].map(i => ART.bakeFrogStatue(510 + i)), lilyLantern: ART.bakeLilyLantern(), banner: [0, 1].map(i => ART.bakeWarBanner(520 + i)), boneThrone: ART.bakeBoneThrone(), skullPile: [0, 1].map(i => ART.bakeSkullPile(530 + i)), hangCage: ART.bakeHangCage(), rootDecor: [0, 1, 2].map(i => ART.bakeRootDecor(540 + i)), sporePod: ART.bakeSporePod(),
     oldOak: [0, 1].map(i => ART.bakeOldOak(470 + i)), boat: ART.bakeBoat(480), heron: ART.bakeHeron(), totem: [0, 1].map(i => ART.bakeTotem(490 + i)), giantCap: ART.bakeGiantCap(495),
+    skullMini: ART.bakeSkullMini(), compass: ART.bakeCompass(),
     puffball: ART.bakePuffball(), glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
     towertop: ART.bakeTowerTop(), treehouse: [0, 1].map(i => ART.bakeTreehouse(320 + i)), torch: ART.bakeTorch(), cage: ART.bakeCage(), barrel: ART.bakeBarrel(), brazier: [ART.bakeBrazier(false), ART.bakeBrazier(true)], crank: ART.bakeCrank(), lift: ART.bakeLift(), horn: ART.bakeHorn(), fire: ART.bakeFire(),
     heart: outline(fromGrid(['.ww.ww.', 'wwwwwww', 'wLwwwww', '.wwwww.', '..www..', '...w...'], { w: '#e04848', L: '#ff9a9a' }, 1), ART.OUT),
@@ -199,7 +200,7 @@ let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, ki
 const MEDALS = { wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
-let lives = Infinity;
+let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
 let boss = null, bossActive = false, bossWon = 0, camLock = null, bossMusicT = 0;
 let zoomT = 0, zoomAmt = 1, birds = [], drops = [], pollen = [], lightT = 8, lightFlash = 0, thunderT = 0, pogoChain = 0, tongue = null;
@@ -293,10 +294,10 @@ function startGame() {
   for (const a of acorns) a.got = false; for (const s of shrines) s.lit = false; collectedCrates.clear(); destroyed = new Set(); cutBridges = new Set();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
-  respawn(); camX = P.x - VW / 2; camY = P.y - 100;
+  respawn(); camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
 }
 function winLevel() {
-  state = 'win'; SFX.win();
+  state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
   PROG[id] = { cleared: true, best: p.best ? Math.min(p.best, levelTime) : levelTime, gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths) };
   PROG.coins = (PROG.coins || 0) + got; earned = got;
@@ -365,12 +366,17 @@ function drawMap() {
   for (const b of mapBirds) { b.t += 0.016; const bx = b.cx + Math.cos(b.t * 0.6) * b.r, by = b.cy + Math.sin(b.t * 0.6) * b.r * 0.4; drawSet(BIRD, null, Math.floor(b.t * 10) % 2, bx, by, Math.sin(b.t * 0.6) < 0 ? 1 : -1, false); }
   for (const c of mapClouds) { g.globalAlpha = 0.7; g.drawImage(CLOUD[c.k], Math.round(c.x), Math.round(c.y)); g.globalAlpha = 1; }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 3)) % (map.walking ? 6 : 4), px, py + 2, map.walking < 0 ? -1 : 1, false);
+  // node labels
+  for (const nd of NODES) { const lk = nodeLocked(nd); const lbl = nd.kind === 'store' ? 'STORE' : LEVELS[nd.level].name; const tw = lbl.length * 4 + 6; const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)); g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(lx - tw / 2, nd.y + 12, tw, 8); text(lbl, lx, nd.y + 13, lk ? '#7a7a8a' : '#fff6e0', 'center', 6); }
+  // parchment frame + compass
+  g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
+  g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
-  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text('BRACKEN', 6, 5, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right');
+  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text('THE WOOD', 6, 5, '#ffd36b'); g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right');
   const nd = NODES[map.node];
   if (!map.walking) {
     const cw = 200, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 44;
-    g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(cx0, cy0, cw, 30); g.strokeStyle = '#8fd160'; g.strokeRect(cx0 + 0.5, cy0 + 0.5, cw - 1, 29);
+    panel(cx0, cy0, cw, 30, '#8fd160');
     text(nd.name, cx0 + cw / 2, cy0 + 5, '#fff6e0', 'center');
     if (nd.kind === 'store') text('Z  enter', cx0 + cw / 2, cy0 + 17, '#9aa39a', 'center');
     else { const p = PROG[LEVELS[nd.level].id]; text(p ? fmt(p.best) + '   ' + p.gold + '/' + p.total + (p.cleared ? '   CLEARED' : '') : 'Z  play', cx0 + cw / 2, cy0 + 17, p ? '#dfe8ff' : '#9aa39a', 'center');
@@ -492,10 +498,10 @@ function startIntro() { state = 'intro'; intro.card = 0; intro.chars = 0; intro.
 function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.length) { intro.chars = line.length; return; } intro.card++; intro.chars = 0; if (intro.card >= INTRO.length) startGame(); }
 
 // ---------- menu ----------
-const MENU = ['Difficulty', 'Camera', 'Iron Knight', 'Music', 'Music volume', 'Effects volume', 'Sound FX', 'Swap Z / X', 'Screen shake', 'Hit stop', 'Damage numbers', 'Timer', 'Ambient life', 'Scanlines', 'Pixel scale', 'Back to shrine', 'Restart level', 'Reset this slot', 'Resume', 'Quit to title'];
+const MENU = ['Difficulty', 'Camera', 'Iron Knight', 'Sound test', 'Music', 'Music volume', 'Effects volume', 'Sound FX', 'Swap Z / X', 'Screen shake', 'Hit stop', 'Damage numbers', 'Timer', 'Ambient life', 'Scanlines', 'Pixel scale', 'Back to shrine', 'Restart level', 'Reset this slot', 'Resume', 'Quit to title'];
 const MENU_ROWS = 10;
 let menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0;
-function openMenu(from) { menuFrom = from; menuI = 0; state = 'menu'; }
+function openMenu(from) { menuFrom = from; menuI = 0; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = MENU[menuI];
   if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects volume') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
@@ -505,7 +511,8 @@ function menuAdjust(dir) {
 }
 function menuConfirm() {
   const k = MENU[menuI];
-  if (k === 'Resume') { state = menuFrom; SFX.uiSel(); }
+  if (k === 'Resume') { state = menuFrom; SFX.menuClose(); }
+  else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; SFX.uiSel(); }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play('select'); SFX.uiSel(); }
   else if (k === 'Reset this slot') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; if (!P.dead) die(); SFX.uiSel(); } }
@@ -766,7 +773,7 @@ function spend(cost) {
 function updatePlayer(dt) {
   if (P.dead) { P.dead -= dt; if (P.dead <= 0) { if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play('select'); SFX.roar(); } else respawn(); } return; }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
-  if (throwPress && !thrown && !(P.throwCd > 0) && PROG.items.shieldThrow && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; SFX.slash(); SFX.clank(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+  if (throwPress && !thrown && !(P.throwCd > 0) && PROG.items.shieldThrow && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'hurt', 'coyote', 'jbuf', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * dt);
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
@@ -1189,7 +1196,7 @@ function updateMother(e, dt) {
   if (e.mode !== 'open') {
     const brood = enemies.filter(g => g.alive && g.brood).length;
     if (e.gillsOpen) { e.openT -= dt; if (e.openT <= 0) { e.gillsOpen = false; callBrood(e); } }
-    else if (brood === 0 && e.broodT <= 0) { e.gillsOpen = true; e.openT = p2 ? 13 : 16; number(e.x, floor - 120, 'THE GILLS OPEN. SHE GASPS.', '#e0b0f0'); SFX.sting(); for (const gl of enemies) if (gl.alive && gl.t === 'gill') burst(gl.x, gl.y - 6, 6, ['#e0b0f0', '#ffd0ff'], 40, 0.5); }
+    else if (brood === 0 && e.broodT <= 0) { e.gillsOpen = true; e.openT = p2 ? 13 : 16; number(e.x, floor - 120, 'THE GILLS OPEN. SHE GASPS.', '#e0b0f0'); SFX.gillOpen(); for (const gl of enemies) if (gl.alive && gl.t === 'gill') burst(gl.x, gl.y - 6, 6, ['#e0b0f0', '#ffd0ff'], 40, 0.5); }
     e.broodT = Math.max(0, (e.broodT || 0) - dt);
   }
   const calm = e.gillsOpen && e.mode !== 'open';
@@ -1637,7 +1644,7 @@ function updateWeather(dt) {
 function updateThrown(dt) {
   if (!thrown) return; const s = thrown; s.t += dt;
   if (!s.back) { s.x += s.dir * 290 * dt; s.y += Math.sin(s.t * 14) * 8 * dt; const wall = isSolid(Math.floor((s.x + s.dir * 7) / TS), Math.floor(s.y / TS)); if (s.t > 0.5 || wall) { s.back = true; if (wall) { SFX.clank(); sparks(s.x, s.y, -s.dir, 4); } } }
-  else { const dx = P.x - s.x, dy = (P.y - 9) - s.y, d = Math.hypot(dx, dy) || 1; if (d < 10 || s.t > 3) { thrown = null; P.throwCd = 2.5; SFX.block(); impactAt(P.x + P.face * 6, P.y - 9, 'steel'); return; } const sp = 300 + s.t * 60; s.x += dx / d * sp * dt; s.y += dy / d * sp * dt; }
+  else { const dx = P.x - s.x, dy = (P.y - 9) - s.y, d = Math.hypot(dx, dy) || 1; if (d < 10 || s.t > 3) { thrown = null; P.throwCd = 2.5; SFX.shieldCatch(); impactAt(P.x + P.face * 6, P.y - 9, 'steel'); return; } const sp = 300 + s.t * 60; s.x += dx / d * sp * dt; s.y += dy / d * sp * dt; }
   const sb = { l: s.x - 6, r: s.x + 6, t: s.y - 6, b: s.y + 6 };
   for (const e of enemies) { if (!e.alive || s.hit.has(e) || !overlap(sb, box(e))) continue; s.hit.add(e); if (e.t === 'mother' || e.t === 'drone') { SFX.clank(); sparks(s.x, s.y, -s.dir, 3); continue; } hurtEnemy(e, 15, s.x - s.dir * 10, false); impactAt(s.x, s.y, 'steel'); SFX.clank(); if (e.t === 'archer' || e.t === 'spit' || e.t === 'shaman') number(e.x, e.y - e.h - 14, 'STRUCK', '#c9d1dc'); }
   for (const sd of seeds) if (!sd.dead && !sd.reflected && overlap(sb, { l: sd.x - 3, r: sd.x + 3, t: sd.y - 3, b: sd.y + 3 })) { sd.dead = true; parries++; SFX.parry(); sparks(sd.x, sd.y, -s.dir, 4); number(sd.x, sd.y - 8, 'SWATTED', '#8fd160'); }
@@ -1664,6 +1671,7 @@ function updateParticles(dt) {
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
 }
 function updateCamera(dt) {
+  if (bannerT > 0) bannerT -= dt;
   const lookDown = !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   const tx = P.x + P.face * 26 - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
@@ -1684,6 +1692,16 @@ function update(dt) {
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
   }
+  if (state === 'soundtest') {
+    const cats = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES]; const list = cats[soundCat];
+    if (leftPress) { soundCat = (soundCat + 2) % 3; soundI = 0; SFX.ui(); }
+    if (rightPress) { soundCat = (soundCat + 1) % 3; soundI = 0; SFX.ui(); }
+    if (upPress) { soundI = (soundI + list.length - 1) % list.length; SFX.ui(); }
+    if (downPress) { soundI = (soundI + 1) % list.length; SFX.ui(); }
+    if (confirmPress) { const n = list[soundI]; if (soundCat === 0) SFX[n](); else if (soundCat === 1) music.play(n); else ambient.set(n); }
+    if (pausePress) { state = 'menu'; ambient.set(menuFrom === 'play' ? null : 'forest'); music.play(menuFrom === 'play' ? (L.music || 'theme') : 'select'); SFX.menuClose(); }
+    return;
+  }
   if (state === 'gameover') { if (confirmPress || pausePress) { state = 'map'; map.node = NODES.findIndex(n => n.level === levelIndex); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; SFX.uiSel(); } return; }
   if (state === 'map') { updateMap(dt); updateParticles(dt); return; }
   if (state === 'store') { updateStore(dt); updateParticles(dt); return; }
@@ -1700,7 +1718,7 @@ function update(dt) {
     if (downPress) { menuI = (menuI + 1) % MENU.length; SFX.ui(); }
     if (leftPress) menuAdjust(-1); if (rightPress) menuAdjust(1);
     if (confirmPress) menuConfirm();
-    if (pausePress) { state = menuFrom; SFX.uiSel(); }
+    if (pausePress) { state = menuFrom; SFX.menuClose(); }
     return;
   }
   if (state === 'intro') {
@@ -2000,20 +2018,38 @@ function drawMother(cx, cy) {
   const heart = enemies.find(e => e.alive && e.t === 'heart');
   if (heart) { const hx = Math.round(heart.x - cx), hy = Math.round(heart.y - 6 - cy); const pulse = 1 + Math.sin(time * 6) * 0.12; g.globalAlpha = 0.5; g.fillStyle = '#ff7a9a'; g.beginPath(); g.ellipse(hx, hy, 14 * pulse, 12 * pulse, 0, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#c9463d'; g.beginPath(); g.ellipse(hx, hy, 7 * pulse, 6 * pulse, 0, 0, 7); g.fill(); g.fillStyle = '#ffd0ff'; g.fillRect(hx - 3, hy - 3, 2, 2); if (heart.flash > 0) { g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(hx, hy, 8, 7, 0, 0, 7); g.fill(); } }
 }
+function drawSoundTest() {
+  g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
+  const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h, '#ffd36b');
+  text('SOUND TEST', VW / 2, y + 6, '#ffd36b', 'center');
+  const cats = ['EFFECTS', 'MUSIC', 'AMBIENCE'], lists = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES], list = lists[soundCat];
+  cats.forEach((c, i) => { const sel = i === soundCat; text((sel ? '< ' : '') + c + (sel ? ' >' : ''), x + w / 2 + (i - 1) * 84, y + 18, sel ? '#8fd160' : '#9aa39a', 'center'); });
+  const cols = soundCat === 0 ? 3 : 1, rows = 11, perPage = cols * rows, page = Math.floor(soundI / perPage), start = page * perPage;
+  for (let i = start; i < Math.min(list.length, start + perPage); i++) { const k = i - start, cx0 = x + 10 + (k % cols) * (w - 20) / cols, cy0 = y + 32 + Math.floor(k / cols) * 11, sel = i === soundI; if (sel) text('>', cx0 - 2, cy0, '#8fd160'); text(list[i], cx0 + 8, cy0, sel ? '#fff6e0' : '#c9d1dc'); }
+  if (list.length > perPage) text('page ' + (page + 1) + '/' + Math.ceil(list.length / perPage), x + w - 8, y + h - 20, '#9aa39a', 'right');
+  text('Z play   LEFT/RIGHT group   ESC back', VW / 2, y + h - 10, '#9aa39a', 'center');
+}
+function panel(x, y, w, h, col = '#ffd36b') {
+  g.fillStyle = 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h);
+  g.strokeStyle = col; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
+  g.fillStyle = col; for (const [cx, cy] of [[x, y], [x + w - 3, y], [x, y + h - 3], [x + w - 3, y + h - 3]]) g.fillRect(cx, cy, 3, 3);
+}
 function drawMenu() {
   g.fillStyle = 'rgba(10,14,12,0.7)'; g.fillRect(0, 0, VW, VH);
   const x = 54, y = 6, w = VW - 108, h = 168;
-  g.fillStyle = 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  panel(x, y, w, h, '#ffd36b');
   text('SETTINGS', VW / 2, y + 6, '#ffd36b', 'center');
+  if (menuFrom === 'play' && L) text(LEVELS[levelIndex].name + '  ' + fmt(levelTime), VW / 2, y + h - 22, '#9aa39a', 'center');
   const off = Math.max(0, Math.min(MENU.length - MENU_ROWS, menuI - MENU_ROWS + 2));
-  if (off > 0) text('^', x + w / 2, y + 14, '#9aa39a', 'center'); if (off + MENU_ROWS < MENU.length) text('v', x + w / 2, y + h - 22, '#9aa39a', 'center');
+  if (off > 0) text('^', x + w - 12, y + 14, '#9aa39a', 'center'); if (off + MENU_ROWS < MENU.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
   MENU.forEach((k, i) => {
     if (i < off || i >= off + MENU_ROWS) return;
     const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : '#fff6e0') : (dim ? '#5a5f5a' : '#9aa39a');
     if (sel) text('>', x + 10, yy, '#8fd160');
     text(k, x + 22, yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects volume' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : '';
+    const v = k === 'Sound test' ? '' : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects volume' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? onoff(SET.shake) : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Damage numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : '';
     if (v) text('< ' + v + ' >', x + w - 12, yy, col, 'right');
   });
   text(menuMsgT > 0 && menuMsg ? menuMsg : 'ESC close', VW / 2, y + h - 12, menuMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
@@ -2086,18 +2122,23 @@ function render() {
   if (state === 'play' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play')) {
     { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (bossActive && boss && boss.mode === 'wake') { const k = Math.min(1, (1.6 - boss.modeT) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : 'THE HORNET QUEEN'; if (k >= 1) { text(nm, VW / 2 + 1, VH / 2 - 5, '#3a2214', 'center', 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', 12); } }
+    g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(2, 2, 104, SET.iron ? 36 : 24, 4); g.fill(); g.strokeStyle = 'rgba(255,246,224,0.18)'; g.beginPath(); g.roundRect(2.5, 2.5, 103, SET.iron ? 35 : 23, 4); g.stroke();
+    g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(VW - 54, 2, 52, 16, 4); g.fill();
     g.drawImage(PROP.heart, 5, 5);
     if (SET.iron) { for (let i = 0; i < 3; i++) { g.globalAlpha = i < lives ? 1 : 0.25; g.drawImage(K.R.idle[0], 0, 0, 12, 12, 6 + i * 11, 23, 12, 12); } g.globalAlpha = 1; text('IRON', 42, 26, '#c9d1dc'); }
     bar(16, 6, 70, 6, P.hp / P.maxHp, P.hp > 30 ? '#e04848' : (Math.floor(time * 6) % 2 ? '#ff7a6b' : '#e04848'), P.hpShown / P.maxHp);
+    g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 6, Math.round(70 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(16 + Math.round(70 * i / 4), 6, 1, 6); }
+    text(String(Math.max(0, Math.ceil(P.hp))), 90, 6, '#fff6e0');
     g.drawImage(PROP.bolt, 6, 15);
     if (PROG.items.shieldThrow) { const cd = P.throwCd || 0; g.globalAlpha = thrown || cd > 0 ? 0.45 : 1; g.drawImage(SHIELD_ICON, 76, 13); g.globalAlpha = 1; if (cd > 0) { g.fillStyle = '#c9d1dc'; g.fillRect(76, 26, Math.round(10 * (1 - cd / 2.5)), 1); } }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
-    bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160');
+    bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
     for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (VW - 42 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }
     g.drawImage(PROP.coin[0], VW - 46, 5); text(got + '/' + total, VW - 36, 7, '#ffd34a');
     if (P.hp > 0 && P.hp <= 30 && state === 'play') { const k = 0.5 + 0.5 * Math.sin(time * (P.hp <= 15 ? 11 : 7)); const vg = g.createRadialGradient(VW / 2, VH / 2, 70, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(180,20,20,0)'); vg.addColorStop(1, 'rgba(180,20,20,' + (0.18 + 0.22 * k) + ')'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (state === 'play' && SET.timer) text(fmt(levelTime), VW / 2, 7, '#dfe8ff', 'center');
-    if (bossActive && boss && boss.alive) { const nm = boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : 'HORNET QUEEN'; text(boss.phase === 2 ? nm + '  ENRAGED' : nm, VW / 2, VH - 22, boss.phase === 2 ? '#ff6b6b' : '#ffd36b', 'center'); if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart * 0.3 : 0.3 + gl / 4 * 0.7, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.phase === 2 ? '#ff6b6b' : '#e0b040'); }
+    if (state === 'play' && SET.timer) { g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(VW / 2 - 30, 2, 60, 14, 4); g.fill(); text(fmt(levelTime), VW / 2, 6, '#dfe8ff', 'center'); }
+    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1); g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 40); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 17, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); text(LEVELS[levelIndex].sub, VW / 2, VH / 2 + 5, '#c9d1dc', 'center'); g.globalAlpha = 1; }
+    if (bossActive && boss && boss.alive) { const nm = boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : 'HORNET QUEEN'; text(boss.phase === 2 ? nm + '  ENRAGED' : nm, VW / 2, VH - 22, boss.phase === 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart * 0.3 : 0.3 + gl / 4 * 0.7, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
   }
   if (state === 'title') {
     g.drawImage(PROP.plank, VW / 2 - 70, 14);
@@ -2112,6 +2153,7 @@ function render() {
   if (state === 'bestiary') drawBestiary();
   if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
   if (state === 'menu') drawMenu();
+  if (state === 'soundtest') drawSoundTest();
   if (state === 'gameover') {
     g.fillStyle = 'rgba(30,8,10,0.75)'; g.fillRect(40, 40, VW - 80, 100); g.strokeStyle = '#ff6b6b'; g.strokeRect(40.5, 40.5, VW - 81, 99);
     text('THE KNIGHT FALLS', VW / 2, 52, '#ff6b6b', 'center', 12);
@@ -2121,7 +2163,7 @@ function render() {
     if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, 124, '#8fd160', 'center');
   }
   if (state === 'win') {
-    g.fillStyle = 'rgba(10,20,14,0.6)'; g.fillRect(40, 26, VW - 80, 130); g.strokeStyle = '#ffd36b'; g.strokeRect(40.5, 26.5, VW - 81, 129);
+    panel(40, 26, VW - 80, 130, '#ffd36b');
     text(L.arena ? (L.arena.boss === 'frog' ? 'THE KING CROAKS' : L.arena.boss === 'chief' ? 'OUT OF THE FIRE' : L.arena.boss === 'mother' ? 'THE WOOD BREATHES AGAIN' : 'THE QUEEN FALLS') : 'THE GATE OPENS', VW / 2, 38, '#ffd36b', 'center', 12);
     text('time     ' + fmt(levelTime), VW / 2, 64, '#fff6e0', 'center');
     text('gold     ' + got + ' / ' + total + '   +' + earned + ' purse', VW / 2, 77, '#ffd34a', 'center');
@@ -2171,7 +2213,7 @@ window.BK = {
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),
-  get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get escape() { return escape; }, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, get escape() { return escape; }, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get bossActive() { return bossActive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
 };

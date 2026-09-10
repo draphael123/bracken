@@ -728,3 +728,6 @@ export function bakeRootDecor(seed) {
   return c;
 }
 export function bakeSporePod() { return [0, 1].map(f => { const [c, g] = canvas(12, 16); rect(g, 5, 0, 2, 5, '#5a5468'); ellipse(g, 6, 10, 5, 5.5, f ? '#b070c0' : '#9a5aa8', '#6a3a7a'); ellipse(g, 5, 8, 2, 2, f ? '#ffd0ff' : '#e0b0f0'); px(g, 8, 12, '#e0b0f0'); return outline(c, OUT); }); }
+
+export function bakeSkullMini() { const [c, g] = canvas(9, 9); ellipse(g, 4, 3.5, 3.5, 3, '#e8dcc0', '#b8a888'); rect(g, 2, 3, 2, 2, OUT); rect(g, 5, 3, 2, 2, OUT); rect(g, 2, 6, 5, 1, '#b8a888'); px(g, 3, 7, OUT); px(g, 5, 7, OUT); return outline(c, OUT); }
+export function bakeCompass() { const [c, g] = canvas(26, 26); ellipse(g, 13, 13, 12, 12, 'rgba(230,210,170,0.5)', '#5c3a1d'); fillPoly(g, [[13, 2], [16, 13], [10, 13]], '#c9463d'); fillPoly(g, [[13, 24], [16, 13], [10, 13]], '#e8dcc0'); fillPoly(g, [[2, 13], [13, 10], [13, 16]], '#e8dcc0'); fillPoly(g, [[24, 13], [13, 10], [13, 16]], '#e8dcc0'); px(g, 13, 13, OUT); return outline(c, OUT); }

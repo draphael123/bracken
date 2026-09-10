@@ -191,3 +191,18 @@ Object.assign(SFX, {
   gobDieLow() { file('gobDie', 0.7, 0.72) || (tone('sawtooth', 220, 60, 0.3, 0.22), noise(0.2, 0.2, 500, 0.6)); },
   gobHurtLow() { file('gobHurt', 0.6, 0.75) || tone('sawtooth', 260, 120, 0.12, 0.18); },
 });
+
+// ---------- UI and skill voices ----------
+Object.assign(SFX, {
+  levelStart() { for (let i = 0; i < 4; i++) tone('square', [330, 415, 494, 659][i], [330, 415, 494, 659][i], 0.11, 0.09, i * 0.09); tone('triangle', 165, 165, 0.4, 0.08, 0.36); },
+  menuOpen() { tone('square', 520, 780, 0.06, 0.06); tone('square', 780, 1040, 0.06, 0.05, 0.06); },
+  menuClose() { tone('square', 780, 520, 0.06, 0.06); tone('square', 520, 340, 0.06, 0.05, 0.06); },
+  throwWhoosh() { noise(0.28, 0.22, 900, 0.5); for (let i = 0; i < 6; i++) tone('triangle', 700 - i * 60, 500 - i * 60, 0.05, 0.06, i * 0.045); },
+  shieldCatch() { tone('square', 900, 400, 0.06, 0.12); noise(0.05, 0.18, 2400, 1.2); tone('sine', 220, 180, 0.12, 0.1, 0.03); },
+  medal() { for (let i = 0; i < 3; i++) tone('square', [523, 659, 784][i], [523, 659, 784][i], 0.12, 0.08, i * 0.1); tone('square', 1047, 1047, 0.3, 0.08, 0.3); },
+  gillOpen() { tone('sine', 300, 900, 0.35, 0.12); tone('sine', 450, 1200, 0.35, 0.08, 0.05); noise(0.3, 0.1, 3000, 0.8); },
+  heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
+});
+export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
+export const MUSIC_NAMES = ['theme', 'theme2', 'boss', 'select'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain'];
