@@ -1122,104 +1122,112 @@ function theSunspire() {
   const CLOUD = 76; // above this row the sun is on the rock
   const cryst = (x, n, y) => { for (let i = 0; i < n; i++) set(x + i, y, T.CRYST); };
   const spires = (y, up, ...xs) => xs.forEach((x, i) => ent('deco', x, y, { kind: 'spire', v: (x + i) % 2, hang: up }));
-  block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the mountain either side
-  const band = (x0, x1, top) => block(x0, x1, top, top + 2);
+  block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1);
 
-  // ---- Tier 0. THE FOOT: the last of the grass, and the first crystal anyone can stand on ----
+  // THE JUMP ENVELOPE, off the knight's own numbers. He rises 3.2 tiles, and the higher he lands the
+  // less of the arc is left: +0 rows buys 4 tiles across, +1 buys 3.6, +2 buys 3.2, +3 buys 2.5.
+  // Nothing on this mountain is placed by eye. A SHELF is a rock band with a crystal gap in it, and a
+  // STAIR always finishes three rows under that gap, where the jump up through it is legal.
+  // Build the stair FIRST and put the shelf's gap wherever the stair actually arrived. Choosing the
+  // gap first and hoping the zig-zag lands under it is how you end up with a six-tile hop at the top
+  // of every climb and a mountain nobody can get up.
+  const climb = (fromTop, top, x0, x1, startX, gw) => {
+    const land = top + 3;                 // the last ledge: three rows under the shelf, a legal jump
+    let y = fromTop - 3, x = startX, dir = 1, n = 0;
+    while (y > land) {
+      x = Math.max(x0, Math.min(x1 - 4, x));
+      cryst(x, 4, y);
+      if (n % 3 === 1) coins([x + 1, y - 1]);
+      const nx = x + dir * 3;
+      if (nx > x1 - 4 || nx < x0) dir = -dir;
+      x += dir * 3; y -= 2; n++;
+    }
+    x = Math.max(x0, Math.min(x1 - 4, x));
+    cryst(x, 4, land);
+    const gx = Math.max(2, Math.min(W - 2 - gw, x - ((gw - 4) >> 1)));  // the gap, directly overhead
+    block(1, gx - 1, top, top + 2); block(gx + gw, W - 2, top, top + 2);
+    cryst(gx, gw, top);
+    return { top, gx, gw, mid: gx + (gw >> 1) };
+  };
+
+  // ---- Tier 0. THE FOOT ----
   block(0, W - 1, 146, H - 1);
   ent('npc', 8, 145, { kind: 'squire' });
   ent('sign', 4, 145, { text: 'THE SUNSPIRE. THE CRYSTAL WILL HOLD YOU, BUT NOT FOR LONG. IT RINGS, THEN IT CRAZES, THEN IT GOES, AND IT TAKES WHAT IT IS TOUCHING WITH IT. KEEP MOVING. STRIKE ONE AND IT BREAKS WHEN YOU SAY SO.' });
   ent('deco', 16, 145, { kind: 'cairn' }); ent('sprig', 30, 145, { face: -1 });
   spires(145, false, 22, 38, 52); spires(146, true, 28, 46);
-  cryst(34, 4, 143); cryst(42, 4, 140); cryst(50, 4, 137);
-  coins([35, 142], [43, 139], [51, 136], [12, 144]);
-  ent('check', 20, 145);
-  // 0 -> 1: the first crystal stair, and it is only three steps
-  cryst(58, 3, 134); cryst(64, 3, 131); cryst(70, 4, 128);
-  ent('sign', 56, 145, { text: 'THREE STEPS. DO NOT STAND ON THE THIRD ADMIRING THE SECOND.' });
-  coins([59, 133], [65, 130], [71, 127]);
+  ent('check', 20, 145); coins([12, 144], [26, 144], [44, 144]);
+  ent('sign', 60, 145, { text: 'UP IS THE ONLY WAY OFF THIS. DO NOT STAND ANYWHERE ADMIRING THE VIEW.' });
 
-  // ---- Tier 1. THE LOWER FACE: shelves of crystal with rock between them. Harpies work the gaps. ----
-  band(1, 40, 124); band(56, W - 2, 124);
-  cryst(41, 15, 124);
-  ent('harpy', 30, 118); ent('harpy', 66, 116);
-  plat(20, 120, 4); plat(30, 116, 4); plat(44, 113, 4); plat(58, 116, 4); plat(70, 120, 4);
-  cryst(24, 5, 112); cryst(36, 5, 109); cryst(48, 5, 106); cryst(60, 5, 109);
-  ent('sign', 6, 123, { text: 'THE LOWER FACE. THE CRYSTAL RUNS ARE THE QUICK WAY AND THE ROCK LEDGES ARE THE SLOW ONE. THE HARPIES KNOW WHICH YOU ARE ON.' });
-  ent('rockgoblin', 22, 119, { face: 1 }); ent('rockgoblin', 72, 119, { face: -1 });
-  ent('bat', 40, 116); ent('bat', 56, 114); ent('grub', 46, 112, { face: -1 }); // below the cloud the face is shaded and damp, and things live in it
-  coins([25, 111], [37, 108], [49, 105], [61, 108], [21, 119], [71, 119]);
-  ent('silver', 49, 105);
-  ent('check', 8, 123);
-  band(1, 20, 104); band(34, W - 2, 104);
-  cryst(21, 13, 104);
+  // ---- Tier 1. THE LOWER FACE ----
+  const s1 = climb(146, 124, 30, 70, 34, 15);
+  ent('harpy', 34, 118); ent('harpy', 62, 114);
+  ent('rockgoblin', 20, 123, { face: 1 }); ent('rockgoblin', 74, 123, { face: -1 });
+  ent('bat', 44, 116); ent('grub', 50, 123, { face: -1 });
+  ent('sign', 6, 123, { text: 'THE LOWER FACE. THE CRYSTAL RUNS ARE THE QUICK WAY. THE HARPIES KNOW YOU CANNOT STOP ON THEM.' });
+  ent('check', 8, 123); coins([21, 122], [75, 122]); ent('silver', 48, 123);
+  ent('sign', 78, 123, { text: 'A CRYSTAL YOU STRIKE BREAKS WHEN YOU SAY SO, AND WHAT COMES OFF IT FALLS ON WHATEVER IS UNDER IT. THERE IS USUALLY SOMETHING UNDER IT.' });
 
-  // ---- Tier 2. THE ORGAN: a wall of tall crystal, and a run of ledges through it. ----
-  band(1, W - 2, 96); for (let x = 30; x <= 52; x++) set(x, 96, 0); for (let x = 30; x <= 52; x++) set(x, 97, 0); for (let x = 30; x <= 52; x++) set(x, 98, 0);
-  spires(96, true, 32, 38, 44, 50); spires(103, false, 28, 42, 56);
-  cryst(30, 6, 94); cryst(40, 6, 91); cryst(50, 5, 88);
-  ent('shardling', 34, 93, { face: 1 }); ent('shardling', 54, 87, { face: -1 }); ent('bat', 24, 90); ent('grub', 32, 93, { face: 1 });
-  ent('sign', 6, 95, { text: 'THE ORGAN. THEY GROW IN RANKS HERE AND THEY ALL RING THE SAME NOTE. IF ONE GOES THEY ALL GO.' });
-  plat(14, 92, 4); plat(6, 88, 4); coins([15, 91], [7, 87], [31, 93], [41, 90], [51, 87]);
-  band(1, 24, 84); band(60, W - 2, 84);
-  cryst(25, 35, 84);
-  ent('harpy', 40, 78); ent('rockgoblin', 64, 83, { face: -1 });
-  ent('sign', 62, 83, { text: 'THE LONG SHELF. ONE RUN OF CRYSTAL, THIRTY-FIVE ACROSS, AND NOTHING UNDER IT. RUN.' });
-  ent('check', 66, 83);
+  // ---- Tier 2. THE ORGAN ----
+  const s2 = climb(124, 104, 12, 84, 20, 13);
+  spires(104, true, 44, 62, 78); spires(103, false, 8, 88);
+  ent('shardling', 40, 103, { face: 1 }); ent('shardling', 66, 103, { face: -1 });
+  ent('bat', 30, 98); ent('grub', 56, 103, { face: 1 });
+  ent('sign', 6, 103, { text: 'THE ORGAN. IF ONE OF THEM GOES THEY ALL GO. CROSS IT LIKE YOU MEAN IT.' });
+  coins([26, 103], [70, 103]);
 
-  // ---- Tier 3. THE CLOUD LINE. You come out of the grey into the sun, and the sun is not on your side. ----
-  band(1, 30, CLOUD); band(46, W - 2, CLOUD);
-  cryst(31, 15, CLOUD);
-  ent('sign', 8, CLOUD - 1, { text: 'ABOVE THE CLOUD THE SUN IS ON THE ROCK ALL DAY AND THE CRYSTAL IS HALF AS PATIENT. YOU WILL SEE IT COMING: IT GOES BRIGHT BEFORE IT GOES.' });
-  plat(10, 72, 4); plat(20, 68, 4); cryst(28, 6, 66); cryst(38, 6, 63); cryst(48, 6, 60);
-  ent('harpy', 34, 58); ent('harpy', 58, 56); ent('shardling', 30, 65, { face: 1 });
-  spires(CLOUD, true, 14, 24, 52, 62); spires(56, true, 44, 54);
-  coins([29, 65], [39, 62], [49, 59], [11, 71], [21, 67]);
-  ent('silver', 21, 67);
-  band(1, 22, 56); band(38, W - 2, 56);
-  cryst(23, 15, 56);
-  ent('check', 10, 55);
+  const s3 = climb(104, 84, 20, 76, 30, 35);
+  ent('harpy', 40, 78); ent('rockgoblin', 66, 83, { face: -1 }); ent('shardling', 30, 83, { face: 1 });
+  ent('sign', 62, 83, { text: 'THE LONG SHELF. THIRTY-FIVE ACROSS AND NOTHING UNDER IT. RUN.' });
+  ent('check', 66, 83); coins([32, 83], [44, 83], [56, 83]);
+  ent('stray', 12, 83, { kind: 'shard' });
 
-  // ---- Tier 4. THE GLARE: the crystal is lit through and you cannot stand anywhere for long. ----
-  band(1, W - 2, 48); for (let x = 18; x <= 40; x++) for (let y = 48; y <= 50; y++) set(x, y, 0);
-  cryst(18, 23, 48);
-  ent('shardling', 24, 47, { face: 1 }); ent('shardling', 36, 47, { face: -1 }); ent('harpy', 50, 42);
-  spires(48, true, 20, 30, 40, 60); spires(55, false, 12, 66);
-  plat(58, 44, 4); plat(68, 40, 4); cryst(44, 6, 44); cryst(54, 5, 41); cryst(64, 5, 38);
-  ent('sign', 6, 47, { text: 'THE GLARE. NOTHING UP HERE HOLDS. THE ROCK LEDGES ARE THE ONLY REST AND THERE ARE TWO OF THEM.' });
-  coins([45, 43], [55, 40], [65, 37], [59, 43], [69, 39]);
-  ent('stray', 65, 37, { kind: 'shard' });
-  band(1, 26, 36); band(42, W - 2, 36);
-  cryst(27, 15, 36);
-  ent('check', 12, 35);
+  // ---- Tier 3. THE CLOUD LINE ----
+  const s4 = climb(84, CLOUD, 26, 70, 34, 15);
+  ent('sign', 8, CLOUD - 1, { text: 'ABOVE THE CLOUD THE SUN IS ON THE ROCK ALL DAY AND THE CRYSTAL IS HALF AS PATIENT. IT GOES BRIGHT BEFORE IT GOES.' });
+  spires(CLOUD, true, 14, 24, 52, 62); spires(CLOUD - 1, false, 6, 88);
+  ent('check', 10, CLOUD - 1); coins([16, CLOUD - 1], [80, CLOUD - 1]); ent('harpy', 58, 70);
+  ent('sign', 84, CLOUD - 1, { text: 'THE CLOUD IS UNDER YOU NOW. SO IS EVERYTHING ELSE.' });
 
-  // ---- Tier 5. THE CROWN: the peak, and the thing that has been taking the sun all this time. ----
-  block(1, W - 2, 30, 34);
+  // ---- Tier 4. THE GLARE ----
+  const s5 = climb(CLOUD, 56, 20, 76, 28, 15);
+  ent('shardling', 30, 55, { face: 1 }); ent('shardling', 48, 55, { face: -1 }); ent('harpy', 62, 50);
+  ent('silver', 44, 55); coins([28, 55], [60, 55]); ent('check', 10, 55);
+  ent('sign', 6, 55, { text: 'THE GLARE. THE ROCK LEDGES ARE THE ONLY REST UP HERE AND THERE ARE NOT MANY.' });
+
+  const s6 = climb(56, 36, 18, 78, 26, 15);
+  ent('harpy', 54, 30); ent('shardling', 60, 35, { face: -1 });
+  ent('check', 12, 35); coins([32, 35], [66, 35]);
+  ent('stray', 70, 35, { kind: 'shard' });
+
+  // ---- Tier 5. THE CROWN. The peak is a shelf like every other, with the way up through the middle. ----
+  const s7 = climb(36, 30, 30, 62, 38, 11);
+  block(1, s7.gx - 1, 31, 34); block(s7.gx + s7.gw, W - 2, 31, 34); // the crown's body, either side of the way up
   spikes(4, 12, 29); spikes(80, 90, 29);
   spires(30, true, 8, 20, 74, 86); spires(29, false, 16, 78);
-  // A CANOPY of crystal over the whole crown, and two rock ledges to get up onto it. Standing on the
-  // canopy breaks it, and what comes down comes down on him: that is the only way to put his light out.
+  // A CANOPY of crystal over the crown with a stair up onto it either side. Standing on the canopy
+  // breaks it, and what comes down comes down on him: that is the only way to put his light out.
   cryst(20, 56, 26);
-  plat(10, 22, 6); plat(78, 22, 6);
-  plat(30, 18, 5); plat(58, 18, 5);
-  spires(26, true, 26, 46, 66);
-  ent('sign', 16, 29, { text: 'THE SUNCATCHER. IT HAS BEEN DRINKING THIS MOUNTAIN\'S LIGHT SINCE BEFORE THE WOOD. IT TURNS ANY GROUND IT TOUCHES TO CRYSTAL AND THE CRYSTAL DOES WHAT CRYSTAL DOES. IT RAISES SPIRES: BREAK ONE OVER ITS HEAD.' });
-  ent('suncatcher', 47, 29);
+  plat(12, 29, 5); plat(16, 27, 4);
+  plat(79, 29, 5); plat(76, 27, 4);
+  ent('sign', 16, 29, { text: 'THE SUNCATCHER. IT HAS BEEN DRINKING THIS MOUNTAIN\'S LIGHT SINCE BEFORE THE WOOD. NOTHING TOUCHES IT WHILE IT IS BRIGHT. GET ABOVE IT: THE GLASS UP THERE WILL NOT HOLD YOU EITHER, AND THAT IS THE POINT.' });
+  ent('suncatcher', 60, 29);
+  // the last hop to the gate is over the thorns on two pieces of crystal, which will not wait for you
+  cryst(85, 3, 27); cryst(89, 3, 27);
   ent('check', 18, 29); ent('gate', 92, 29);
-  ent('stray', 8, 25, { kind: 'shard' }); plat(4, 26, 6);
-  ent('silver', 88, 29);
-  ent('stray', 88, 25, { kind: 'shard' }); plat(86, 26, 6);
+  ent('silver', 90, 26);
+  ent('stray', 24, 25, { kind: 'shard' });
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 145 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'theme3', night: false, hasCryst: true, cloudLine: CLOUD, // duskStart -1 means ALWAYS dusk: this one is meant to be daylight
+    duskStart: 99999, duskLen: 1, music: 'theme3', night: false, hasCryst: true, cloudLine: CLOUD, // duskStart -1 means ALWAYS dusk: this one is daylight
     tall: { top: 26 * TS, bottom: 146 * TS },
     quest: { n: 3, item: 'shard', name: 'SUNSHARD', npc: 'squire', done: 'THE LIGHT IS CARRIED DOWN', reward: 'relic', relic: 'sunshard' },
     palette: { sky: [[126, 176, 214], [214, 232, 240]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag',
       haze: 'rgba(200,222,240,0.16)', grass: '#bcd4e4', grassL: '#e8f2fa', grassD: '#8ea8bc',
       dirt: '#5a6478', dirtL: '#727e94', dirtD: '#3c4456', canopy: ['#5a6478', '#6e7a90', '#8494ac', '#a8bcd0'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, trigger: 20 * TS, wallL: 1, wallR: 94, boss: 'suncatcher', music: 'boss2', tint: '#bfe6f5', tintA: 0.10, fx: 'motes' },
+    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, trigger: 24 * TS, wallL: 1, wallR: 94, boss: 'suncatcher', music: 'boss2', tint: '#bfe6f5', tintA: 0.10, fx: 'motes' },
   };
 }
 
@@ -1252,7 +1260,7 @@ function stormhold() {
   ent('deco', 16, 33, { kind: 'cairn' }); ent('torch', 12, 33); ent('deco', 24, 33, { kind: 'barrels' });
   ent('sprig', 30, 33, { face: -1 }); ent('shield', 40, 33, { face: -1 }); ent('torch', 34, 33);
   coins([14, 32], [22, 31], [36, 32], [48, 32]);
-  ent('check', 20, 33);
+  ent('check', 20, 33); coins([10, 32], [18, 31], [28, 32], [36, 31]);
   // the first house: it is already open, so the doorway teaches itself
   roof(44, 54, 30);
   ent('doorway', 48, 33, { id: 'hearth-out', to: 'hearth-in', kind: 'goblin' });
@@ -1261,24 +1269,25 @@ function stormhold() {
   ent('doorway', 9, 13, { id: 'hearth-in', to: 'hearth-out', lock: [6, 30], label: 'THE HEARTH HOUSE' });
   ent('torch', 12, 13); ent('brazier', 20, 13); ent('deco', 26, 13, { kind: 'barrels' });
   ent('hearthgob', 18, 13, { face: -1 }); ent('key', 28, 13, { kind: 'brass' });
-  coins([14, 12], [22, 12]);
+  coins([12, 12], [16, 12], [20, 12], [24, 12], [26, 11]);
   ent('sign', 7, 13, { text: 'HEARTH GOBLINS SLEEP BY THE FIRE UNTIL YOU ARE CLOSE, AND THEN THEY FIGHT WITH WHATEVER IS TO HAND.' });
   // the first span: short, low, and the planks give
   block(61, 62, 34, 45); block(75, 76, 34, 45);
   span(63, 74, 34, { give: true });
   ent('sign', 58, 33, { text: 'THE PLANKS GIVE UNDER A STANDING WEIGHT. KEEP MOVING.' });
   ent('deco', 66, 33, { kind: 'lanternPost' });
-  floor(77, 96, 34); ent('archer', 86, 33, { face: -1 }); coins([80, 33], [90, 33]);
+  floor(77, 96, 34); ent('archer', 86, 33, { face: -1 }); coins([80, 33], [84, 32], [88, 32], [90, 33]);
+  ent('check', 60, 33);
   ent('lockgate', 96, 33, { needs: 'brass', h: 6 }); gateCol(96, 28, 33);
   ent('check', 92, 33);
 
   // ---- 2. SMOKE ROW: forges and tanneries, and the spans start being watched. ----
   floor(97, 150, 32);
   ent('sign', 99, 31, { text: 'SMOKE ROW. THEY WORK IRON FOR THE CASTLE HERE. THE TOWERS COVER EVERY SPAN: PICK YOUR MOMENT.' });
-  ent('deco', 104, 31, { kind: 'forge' }); ent('brazier', 108, 31); ent('brazier', 120, 31);
+  ent('deco', 104, 31, { kind: 'forge' }); ent('brazier', 108, 31); ent('brazier', 120, 31); ent('check', 140, 31);
   ent('hearthgob', 114, 31, { face: -1 }); ent('brute', 130, 31, { face: -1 }); ent('sprig', 140, 31, { face: -1 });
   roof(110, 124, 28); roof(132, 146, 28);
-  plat(126, 26, 4); ent('archer', 127, 25, { face: -1 }); coins([102, 30], [118, 30], [127, 25], [136, 30], [146, 30]);
+  plat(126, 26, 4); ent('archer', 127, 25, { face: -1 }); coins([102, 30], [110, 29], [118, 30], [127, 25], [132, 29], [136, 30], [144, 29], [146, 30]);
   ent('silver', 128, 25);
   // the smithy: the iron key, and the smith
   ent('doorway', 118, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
@@ -1286,7 +1295,7 @@ function stormhold() {
   ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
   ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
   ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
-  plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); coins([48, 13], [56, 9], [60, 13]);
+  plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13]);
   ent('stray', 56, 9, { kind: 'folk' });
   ent('sign', 39, 14, { text: 'THE SMITHY. THEY ARE MAKING SOMETHING LONG AND SHARP FOR SOMEONE LARGE.' });
   // the second span: long, watched from both ends, and a cutter on the far post
@@ -1303,7 +1312,7 @@ function stormhold() {
   room(74, 98, 6, 13, 'earth');
   ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
   ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
-  ent('stray', 95, 13, { kind: 'folk' }); coins([84, 12], [90, 12], [96, 13]);
+  ent('stray', 95, 13, { kind: 'folk' }); coins([80, 12], [84, 12], [88, 12], [90, 12], [96, 13]);
   ent('lockgate', 208, 31, { needs: 'iron', h: 6 }); gateCol(208, 26, 31);
   ent('check', 204, 31);
 
@@ -1311,9 +1320,9 @@ function stormhold() {
   floor(209, 250, 30);
   ent('sign', 211, 29, { text: 'THE HALLS. THE QUEEN\'S OFFICERS KEEP HOUSE UNDER THE CRAG. THE LAST KEY IS IN THE LONGHOUSE AND THE LONGHOUSE IS FULL.' });
   ent('deco', 218, 29, { kind: 'banner', v: 0 }); ent('deco', 240, 29, { kind: 'banner', v: 1 });
-  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true });
+  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true }); ent('check', 240, 29);
   roof(214, 232, 26); roof(236, 248, 26); ent('torch', 216, 29); ent('torch', 244, 29);
-  coins([214, 28], [228, 28], [238, 28], [248, 28]);
+  coins([214, 28], [220, 27], [228, 28], [232, 27], [238, 28], [244, 27], [248, 28]);
   // the longhouse: the deepest room, the bone key at the back of it
   ent('doorway', 228, 29, { id: 'long-out', to: 'long-in', kind: 'cottage' });
   room(106, 160, 4, 15, 'hall');
@@ -1322,7 +1331,7 @@ function stormhold() {
   ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
   plat(118, 11, 4); plat(128, 8, 5); plat(140, 11, 4); ent('archer', 129, 7, { face: -1 });
   ent('stray', 130, 7, { kind: 'folk' }); ent('key', 158, 15, { kind: 'bone' });
-  coins([120, 10], [130, 7], [142, 10], [150, 14]);
+  coins([116, 10], [120, 10], [126, 7], [130, 7], [138, 10], [142, 10], [150, 14], [154, 14]);
   ent('sign', 107, 15, { text: 'THE LONGHOUSE. THE THIRD OF THE HILL FOLK IS UP IN THE RAFTERS AND THE BONE KEY IS AT THE FAR END.' });
   // a swaying span with a cutter, over the drop, to the last gate
   block(251, 252, 30, 45); block(274, 275, 30, 45);
@@ -1337,6 +1346,7 @@ function stormhold() {
   // ---- 4. THE LONG BRIDGE: seven spans, six piers, and the Queen's Lance. ----
   // one height the whole way, so his charge has one line to run and the piers are the rhythm
   const BY = 30, P0 = 302; // the deck row: the piers are solid from here down and the deck planks sit on it
+  ent('check', 304, BY - 1);
   ent('sign', 302, BY - 1, { text: 'THE CASTLE BRIDGE. IT IS LONGER THAN THE VILLAGE. HE CANNOT TURN WHILE HE IS CHARGING: STEP OFF HIS LINE AND HE PUTS THE LANCE IN A POST. THE PIERS ARE THE ONLY GOOD GROUND AND THEY ARE WATCHED.' });
   const piers = [];
   for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
@@ -1344,6 +1354,9 @@ function stormhold() {
     if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1, give: k >= 2 }); }
     if (k >= 1 && k <= 5) ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' });
   }
+  // the last span, from the seventh pier to the gatehouse. Without it the bridge stopped nine tiles
+  // short of the door and there was no way off it at all.
+  span(415, 423, BY, { sway: 2, give: true });
   // the towers loose at you on the open spans
   ent('archer', 322, BY - 1, { face: 1, fire: true }); ent('archer', 358, BY - 1, { face: -1, fire: true });
   ent('rockgoblin', 394, BY - 1, { face: -1 }); ent('archer', 412, BY - 1, { face: -1, fire: true });
