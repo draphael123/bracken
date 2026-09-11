@@ -2033,6 +2033,9 @@ const REVIEW = {
   // the court's long runs went a hundred and twenty tiles without a checkpoint
   kings: L => { const R = rv(L); R.ent('check', 105, 21); R.ent('check', 267, 20); },
   scree: L => { rv(L).ent('check', 330, 18); },
+  // the sappers' tunnel was the busiest 38 tiles in the busiest level: the brute and one sapper go, and it is a
+  // held breath between the walls instead of another fight
+  stockade: L => { L.ents = L.ents.filter(e => !((e.t === 'brute' && e.x === 372 && e.y >= 21) || (e.t === 'sapper' && e.x === 368 && e.y >= 21))); },
   // a silver four rows over the street: a step up to it
   storm: L => { rv(L).plat(282, 28, 3); },
   // one spider in four goes: a fall off a climb should not land you in three more of them
