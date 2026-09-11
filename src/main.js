@@ -716,7 +716,7 @@ function drawMap() {
     if (nd.kind === 'store') g.drawImage(HUT, nd.x - 10, nd.y - 20);
     else if (lk) g.drawImage(PROP.lock, nd.x - 3, nd.y - 16);
     else if (p && p.cleared) g.drawImage(FLAG, nd.x - 3, nd.y - 18);
-    if (NODES[map.node] === nd && !map.walking) { g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.beginPath(); g.arc(nd.x, nd.y, 9 + Math.sin(time * 6), 0, 7); g.stroke(); }
+    if (NODES[map.node] === nd && !map.walking) { g.globalAlpha = 0.25; g.fillStyle = '#8fd160'; g.beginPath(); g.arc(nd.x, nd.y, 11 + Math.sin(time * 6) * 1.5, 0, 7); g.fill(); g.globalAlpha = 1; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.beginPath(); g.arc(nd.x, nd.y, 9 + Math.sin(time * 6), 0, 7); g.stroke(); }
   }
   const [px, py] = mapPos();
   g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);
@@ -729,13 +729,19 @@ function drawMap() {
   // node labels
   // node plates. The name is on a board you can read over the trees, and what you have taken out of that
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
+  const placed = [], hit = (x, y, w, h) => placed.some(r => x < r.x + r.w + 2 && x + w + 2 > r.x && y < r.y + r.h + 2 && y + h + 2 > r.y);
+  for (const n2 of NODES) placed.push({ x: n2.x - 8, y: n2.y - 20, w: 16, h: 26 }); // the nodes and their flags are not to be covered either
   for (const nd of NODES) {
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
     const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : LEVELS[nd.level].name;
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     const twoLine = !!p && !lk;
     const tw = Math.max(lbl.length * 6 + 10, twoLine ? 44 : 0), th = twoLine ? 17 : 10;
-    const lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)), ly = nd.y + 12;
+    let lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)), ly = nd.y + 12;
+    { const own = placed.findIndex(r => r.x === nd.x - 8 && r.y === nd.y - 20); const mine = own >= 0 ? placed.splice(own, 1)[0] : null;
+      const tries = [[0, 12], [-tw / 2 - 4, 12], [tw / 2 + 4, 12], [0, -22 - th], [0, 22], [-tw / 2 - 4, -10], [tw / 2 + 4, -10]];
+      for (const [dx, dy] of tries) { const x = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x + dx)), y = nd.y + dy; if (!hit(x - tw / 2, y, tw, th)) { lx = x; ly = y; break; } }
+      if (mine) placed.push(mine); placed.push({ x: lx - tw / 2, y: ly, w: tw, h: th }); }
     g.fillStyle = lk ? 'rgba(18,14,24,0.78)' : 'rgba(28,22,18,0.86)'; g.fillRect(lx - tw / 2, ly, tw, th);
     g.strokeStyle = here ? UI.sel : lk ? 'rgba(140,130,120,0.35)' : 'rgba(201,178,124,0.55)'; g.lineWidth = 1;
     g.strokeRect(lx - tw / 2 + 0.5, ly + 0.5, tw - 1, th - 1);
@@ -767,7 +773,8 @@ function drawMap() {
   const nd = NODES[map.node];
   if (!map.walking) {
     const store = nd.kind === 'store';
-    const cw = 236, ch = store ? 26 : 54, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), cy0 = VH - 12 - ch;
+    const tamLine = !store && TAM_MAP[LEVELS[nd.level].id] ? ('TAM: ' + TAM_MAP[LEVELS[nd.level].id][(PROG[LEVELS[nd.level].id] || {}).cleared ? 1 : 0]) : '';
+    const cw = Math.min(VW - 8, Math.max(200, tamLine.length * 6 + 18)), ch = store ? 26 : 58, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 22 : VH - 12 - ch;
     panel(cx0, cy0, cw, ch, UI.sel);
     text(nd.name, cx0 + 8, cy0 + 5, UI.title);
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
@@ -777,23 +784,23 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
-      text(lv.sub || '', cx0 + 8, cy0 + 13, UI.dim, 'left', 6);
+      text(lv.sub || '', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
       // line one: your best, and what it was worth
       const M = MEDALS[id] || [300, 450, 660];
-      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', cx0 + 8, cy0 + 23, hasRun ? UI.text : UI.dim, 'left', 6);
-      if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(cx0 + 94, cy0 + 25, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(cx0 + 93, cy0 + 24, 2, 2); text(MEDAL_NAME[p.medal], cx0 + 102, cy0 + 23, MEDAL_COL[p.medal], 'left', 6); }
-      else text('GOLD AT ' + fmt(M[0]), cx0 + 92, cy0 + 23, UI.dim, 'left', 6);
-      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, cy0 + 23, UI.sel, 'right', 6);
+      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', cx0 + 8, cy0 + 26, hasRun ? UI.text : UI.dim, 'left', 6);
+      if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(cx0 + 94, cy0 + 28, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(cx0 + 93, cy0 + 27, 2, 2); text(MEDAL_NAME[p.medal], cx0 + 102, cy0 + 26, MEDAL_COL[p.medal], 'left', 6); }
+      else text('GOLD AT ' + fmt(M[0]), cx0 + 92, cy0 + 26, UI.dim, 'left', 6);
+      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, cy0 + 26, UI.sel, 'right', 6);
       // line two: what is still in there
       const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
-      let bx = cx0 + 8; const by = cy0 + 33;
+      let bx = cx0 + 8; const by = cy0 + 36;
       g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 30;
       g.drawImage(PROP.coin[0], bx, by - 1); text((p.gold || 0) + '/' + (p.total || '?'), bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 40;
       g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'DONE' : 'OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 40;
       if (PROP.relic[p.relic] || p.relic) { g.drawImage(PROP.relic[p.relic] || PROP.lampIcon, bx, by - 2); bx += 12; }
       if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
       if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
-      const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p.cleared ? 1 : 0], cx0 + 8, cy0 + 43, '#c9d1dc', 'left', 6);
+      const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p.cleared ? 1 : 0], cx0 + 8, cy0 + 47, '#c9d1dc', 'left', 6);
     }
   }
   text('ARROWS  Z ENTER  X BEASTS  V EQUIP  ESC', VW / 2, VH - 8, '#9aa39a', 'center', 6);
@@ -960,17 +967,18 @@ function drawSlots() {
   text('CHOOSE A SAVE', VW / 2, 12, UI.title, 'center');
   const levels = LEVELS.filter(l => !l.hidden).length, cw = 92, gap = 8, x0 = (VW - (cw * SLOTS + gap * (SLOTS - 1))) / 2;
   for (let i = 0; i < SLOTS; i++) {
-    const p = readSlot(i), x = x0 + i * (cw + gap), y = 34, h = 104, sel = i === slotI;
+    const p = readSlot(i), x = x0 + i * (cw + gap), sel = i === slotI, y = 34 - (sel ? 3 : 0), h = 104;
+    if (sel) { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 2, cw + 4, h + 4); g.globalAlpha = 1; }
     g.fillStyle = sel ? 'rgba(30,26,44,0.95)' : 'rgba(20,16,30,0.85)'; g.fillRect(x, y, cw, h); g.strokeStyle = sel ? '#ffd36b' : '#4a4a5a'; g.strokeRect(x + 0.5, y + 0.5, cw - 1, h - 1);
     text('SLOT ' + (i + 1), x + cw / 2, y + 8, sel ? '#fff6e0' : '#9aa39a', 'center');
     if (!p) { text('empty', x + cw / 2, y + 44, '#6a6a7a', 'center'); text('new game', x + cw / 2, y + 58, sel ? '#8fd160' : '#4a5a4a', 'center'); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0);
-    const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const K2 = skin ? preview('slot:' + skin.id + ':' + (p.sword || 'steel'), () => bakeKnight(Object.assign({}, skin.pal, (SWORDS.find(w => w.id === (p.sword || 'steel')) || SWORDS[0]).pal))) : K;
+    const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const K2 = p.hero === 'pyro' ? preview('slot:pyro:' + (p.skin || 'bracken'), () => bakePyro(PYRO_SETS[p.skin || 'bracken'] || {})) : skin ? preview('slot:' + skin.id + ':' + (p.sword || 'steel'), () => bakeKnight(Object.assign({}, skin.pal, (SWORDS.find(w => w.id === (p.sword || 'steel')) || SWORDS[0]).pal))) : K;
     drawSet(K2, 'idle', Math.floor(time * 3) % 4, x + cw / 2, y + 44, 1, false);
     text(cleared + ' / ' + levels + ' woods', x + cw / 2, y + 52, '#fff6e0', 'center');
     text((p.coins || 0) + ' gold', x + cw / 2, y + 64, '#ffd34a', 'center');
     text(medals + ' medal pts', x + cw / 2, y + 76, '#c9d1dc', 'center');
-    if (p.spore && p.spore.cleared) text('COMPLETE', x + cw / 2, y + 90, '#8fd160', 'center');
+    if (cleared >= levels) text('COMPLETE', x + cw / 2, y + 90, '#8fd160', 'center');
   }
   text(slotMsgT > 0 && slotMsg ? slotMsg : 'ARROWS pick  Z play  X erase  ESC', VW / 2, VH - 24, slotMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
 }
@@ -1035,7 +1043,7 @@ const SETTING_TIPS = {
 const menuItems = () => menuKind === 'pause' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
 const isHeader = k => k[0] === '-';
 const MENU_ROWS = 10;
-let menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0;
+let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0;
 const BOSS_T = ['queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
 const BEAST_SHORT = { greathound: 'GREAT HOUND', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
@@ -1697,7 +1705,7 @@ function updatePlayer(dt) {
 }
 
 // ---------- boss: the Hornet Queen ----------
-let titleI = 0;
+let titleI = 0, titleBarY = null;
 const titleItems = () => (readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE', 'THE EDITOR', 'SETTINGS', 'CONTROLS'] : ['NEW GAME', 'CHOOSE A SAVE', 'THE EDITOR', 'SETTINGS', 'CONTROLS']);
 let miniActive = false, miniDone = false, miniIntroT = 0;
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
@@ -4536,23 +4544,25 @@ function panel(x, y, w, h, col = UI.border) {
   g.fillStyle = col; for (const [cx, cy] of [[x, y], [x + w - 3, y], [x, y + h - 3], [x + w - 3, y + h - 3]]) g.fillRect(cx, cy, 3, 3);
 }
 function drawMenu() {
-  g.fillStyle = 'rgba(10,14,12,0.7)'; g.fillRect(0, 0, VW, VH);
-  const x = 54, y = 6, w = VW - 108, h = 168;
+  const open = Math.min(1, (time - menuSince) / 0.22), eo = 1 - Math.pow(1 - open, 3);
+  g.fillStyle = 'rgba(10,14,12,' + (0.7 * eo).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
+  const x = 54, y = 6 + Math.round((1 - eo) * -14), w = VW - 108, h = 168;
   panel(x, y, w, h);
   text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS', VW / 2, y + 6, UI.title, 'center');
   if (menuFrom === 'play' && L) text(LEVELS[levelIndex].name + '  ' + fmt(levelTime), VW / 2, y + h - 22, '#9aa39a', 'center');
   const M = menuItems();
   const off = Math.max(0, Math.min(M.length - MENU_ROWS, menuI - MENU_ROWS + 2));
   if (off > 0) text('^', x + w - 12, y + 14, '#9aa39a', 'center'); if (off + MENU_ROWS < M.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
+  { const want = y + 22 + (menuI - off) * 12; menuBarY = menuBarY === null || Math.abs(menuBarY - want) > 60 ? want : menuBarY + (want - menuBarY) * 0.35;
+    if (!isHeader(M[menuI])) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = UI.sel; g.fillRect(x + 5, Math.round(menuBarY) - 2, 2, 11); } }
   M.forEach((k, i) => {
     if (i < off || i >= off + MENU_ROWS) return;
     const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : '#fff6e0') : (dim ? '#5a5f5a' : '#9aa39a');
-    if (isHeader(k)) { text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
-    if (sel) text('>', x + 10, yy, '#8fd160');
-    text(k, x + 22, yy, col);
+    if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
+    text(k, x + 16 + (sel ? 2 : 0), yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
     const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
-    if (v) text('< ' + v + ' >', x + w - 12, yy, col, 'right');
+    if (v) { const vw = String(v).length * 6 + (sel ? 22 : 8); g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(sel ? '< ' + v + ' >' : String(v), x + w - 14, yy, col, 'right'); }
   });
   { const k = M[menuI], tip = SETTING_TIPS[k];
     if (menuMsgT > 0 && menuMsg) text(menuMsg, VW / 2, y + h - 12, '#ffd36b', 'center');
@@ -4579,24 +4589,79 @@ function drawSelect() {
   });
   text('Z  play     X  bestiary     ESC  back', VW / 2, VH - 14, '#9aa39a', 'center');
 }
-// Title illustration: the knight small before the great gate at dusk.
-let titleLeaves = [];
+// Title illustration: dusk in the wood, the mountain the whole game climbs on the skyline - the Sunspire
+// catching the last light and the Queen's castle on the peak beyond it - a knight at a campfire before
+// the great gate, and the menu on its own board to the right so it never sits on the picture.
+let titleLeaves = [], HORIZON = null, titleSince = 0;
+function bakeHorizon() {
+  const W = 480, H = 96, [c, hg] = canvas(W, H), rnd = mulberry(4242);
+  const ridge = (base, amp, col, rim, step) => { hg.fillStyle = col; hg.beginPath(); hg.moveTo(0, H); let y = base;
+    const pts = []; for (let x = 0; x <= W; x += step) { y = Math.max(base - amp, Math.min(base + amp * 0.3, y + (rnd() - 0.55) * amp * 0.5)); pts.push([x, y]); hg.lineTo(x, y); }
+    hg.lineTo(W, H); hg.closePath(); hg.fill(); hg.fillStyle = rim; for (const [x, yy] of pts) if (rnd() < 0.7) hg.fillRect(x, Math.round(yy), step, 1); };
+  ridge(70, 26, '#3a3050', 'rgba(255,190,160,0.35)', 6);
+  // the Sunspire: a great blade of crystal with the sun still on one edge of it
+  const sx = 300; hg.fillStyle = '#4a5a7a'; hg.beginPath(); hg.moveTo(sx - 22, 72); hg.lineTo(sx - 4, 6); hg.lineTo(sx + 2, 0); hg.lineTo(sx + 8, 10); hg.lineTo(sx + 26, 72); hg.closePath(); hg.fill();
+  hg.fillStyle = '#8fb8d8'; hg.beginPath(); hg.moveTo(sx + 2, 0); hg.lineTo(sx + 8, 10); hg.lineTo(sx + 26, 72); hg.lineTo(sx + 12, 72); hg.closePath(); hg.fill();
+  hg.fillStyle = '#dff2ff'; hg.fillRect(sx + 2, 1, 1, 6); hg.fillRect(sx + 5, 8, 1, 10); hg.fillRect(sx + 9, 22, 1, 14);
+  for (const [dx, h] of [[-34, 22], [-26, 30], [34, 26], [44, 18]]) { hg.fillStyle = '#56688a'; hg.beginPath(); hg.moveTo(sx + dx - 5, 72); hg.lineTo(sx + dx, 72 - h); hg.lineTo(sx + dx + 5, 72); hg.closePath(); hg.fill(); hg.fillStyle = '#a8cce4'; hg.fillRect(sx + dx, 72 - h + 2, 1, 4); }
+  // the castle on the far peak, a few windows lit
+  const cx = 356; hg.fillStyle = '#2a2238'; hg.beginPath(); hg.moveTo(cx - 40, 72); hg.lineTo(cx - 8, 30); hg.lineTo(cx + 10, 26); hg.lineTo(cx + 44, 72); hg.closePath(); hg.fill();
+  for (const [x, w, h] of [[-8, 8, 22], [2, 10, 30], [14, 7, 18], [-16, 6, 14]]) { hg.fillRect(cx + x, 30 - h + 8, w, h); for (let k = 0; k < w; k += 3) hg.fillRect(cx + x + k, 30 - h + 6, 2, 2); }
+  hg.fillRect(cx + 6, 0, 1, 10); hg.fillStyle = '#c9463d'; hg.fillRect(cx + 7, 1, 4, 3);
+  hg.fillStyle = '#ffb060'; for (const [x, y] of [[-5, 22], [5, 14], [9, 20], [16, 26], [-13, 28]]) hg.fillRect(cx + x, y, 1, 2);
+  ridge(84, 12, '#2a2440', 'rgba(255,190,160,0.18)', 4);
+  return c;
+}
+const easeOutBack = k => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
 function drawTitle(cx, cy) {
+  if (!HORIZON) HORIZON = bakeHorizon();
   g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH);
   g.drawImage(BG.sun, Math.round(VW * 0.62), 46);
+  // a few long clouds lit from under
+  for (let i = 0; i < 4; i++) { const x = ((time * (3 + i) + i * 97) % (VW + 120)) - 60, y = 26 + i * 11; g.globalAlpha = 0.28; g.fillStyle = '#ffb8a0'; g.fillRect(Math.round(x), y, 46 - i * 6, 2); g.fillStyle = '#8a6a98'; g.fillRect(Math.round(x) + 6, y + 2, 34 - i * 5, 2); g.globalAlpha = 1; }
   g.globalAlpha = 0.9; drawLayer(BG.far, 0.15, VH - 90, time * 6, LH * TS - VH); g.globalAlpha = 1;
-  g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(120,80,140,0.6)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(120,80,140,0.45)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
+  g.drawImage(HORIZON, -70, VH - 140);
+  // the Sunspire glints now and then
+  { const k = (time % 5) / 5; if (k < 0.12) { g.globalAlpha = Math.sin(k / 0.12 * Math.PI) * 0.8; g.fillStyle = '#ffffff'; g.fillRect(232, VH - 139 + Math.round(k * 200), 2, 5); g.globalAlpha = 1; } }
   drawLayer(BG.near, 0.55, VH - 300, 40 + time * 3, LH * TS - VH);
-  g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(90,70,120,0.55)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
-  const gx = VW / 2 - 60, gy = VH - 132; g.drawImage(PROP.gate, gx, gy, 120, 130);
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(90,70,120,0.5)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
+  const gx = 36, gy = VH - 132; g.drawImage(PROP.gate, gx, gy, 120, 130);
   for (const tx of [gx - 10, gx + 122]) { const f = Math.floor(time * 10 + tx) % 3; g.fillStyle = '#5c3a1d'; g.fillRect(tx + 2, gy + 60, 3, 22); g.fillStyle = '#ff9a5c'; g.fillRect(tx, gy + 52 - (f === 1 ? 1 : 0), 7, 9); g.fillStyle = '#ffd36b'; g.fillRect(tx + 2, gy + 55, 3, 5); g.globalAlpha = 0.16 + 0.04 * Math.sin(time * 9 + tx); g.fillStyle = '#ffb060'; g.beginPath(); g.arc(tx + 3, gy + 58, 34, 0, 7); g.fill(); g.globalAlpha = 1; }
   for (const lf of titleLeaves) { g.globalAlpha = 0.85; g.fillStyle = lf.col; g.fillRect(Math.round(lf.x), Math.round(lf.y), 2, 2); g.globalAlpha = 1; }
   g.fillStyle = '#2a2230'; g.fillRect(0, VH - 22, VW, 22); for (let x = 0; x < VW; x += 16) g.drawImage(TILE.top['00'][(x / 16) % 4], x, VH - 22);
   g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(110,90,140,0.5)'; g.fillRect(0, VH - 22, VW, 22); g.globalCompositeOperation = 'source-over';
-  drawSet(K, 'idle', Math.floor(time * 3) % 4, VW / 2 - 52, VH - 22, 1, false);
+  // the campfire, and the knight warming his hands at it
+  { const fx = 150, fy = VH - 22, fl = Math.floor(time * 9) % 3;
+    g.globalCompositeOperation = 'lighter'; const gl = g.createRadialGradient(fx, fy - 6, 2, fx, fy - 6, 46 + Math.sin(time * 11) * 2); gl.addColorStop(0, 'rgba(255,170,90,0.42)'); gl.addColorStop(1, 'rgba(255,120,60,0)'); g.fillStyle = gl; g.fillRect(fx - 50, fy - 56, 100, 70); g.globalCompositeOperation = 'source-over';
+    g.drawImage(PROP.campfire[fl], fx - 7, fy - 13);
+    for (let i = 0; i < 7; i++) { const ph = (time * 0.8 + i / 7) % 1, sx = fx + Math.sin(i * 3.1 + time * 2) * 4 * ph + (i % 3 - 1) * 2, sy = fy - 10 - ph * 44; g.globalAlpha = (1 - ph) * 0.9; g.fillStyle = ph < 0.4 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(sx), Math.round(sy), 1, 1); } g.globalAlpha = 1;
+    drawSet(K, 'idle', Math.floor(time * 3) % 4, fx + 20, fy, -1, false); }
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
+}
+// SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
+// on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
+let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
+const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'soundtest', 'herocard', 'win', 'gameover']);
+function drawTransition() {
+  const dt = Math.min(0.1, Math.max(0, time - transLast)); transLast = time;
+  if (state !== transPrev) {
+    if (state === 'title') titleSince = time;
+    if (state === 'menu') menuSince = time;
+    const quiet = transPrev === null || OVERLAY_STATES.has(state) || OVERLAY_STATES.has(transPrev);
+    if (!quiet) { transT = 1; transKind = state === 'play' ? 'iris' : 'fade'; }
+    transPrev = state;
+  }
+  if (transT <= 0) return;
+  transT = Math.max(0, transT - dt * (transKind === 'iris' ? 2 : 3.4));
+  const k = transT;
+  if (transKind === 'iris' && !SET.reduceMotion) {
+    const ox = state === 'play' ? Math.round(P.x - camX) : VW / 2, oy = state === 'play' ? Math.round(P.y - camY) - 8 : VH / 2;
+    const r = Math.max(0.5, (1 - k) * (1 - k) * 260);
+    g.fillStyle = '#08060e'; g.beginPath(); g.rect(0, 0, VW, VH); g.arc(ox, oy, r, 0, Math.PI * 2, true); g.fill();
+  } else { g.fillStyle = 'rgba(8,6,14,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function desiredView() { if (state === 'editor') return 'zoom';
   const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && (boss.t === 'mother' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king' || boss.t === 'lance' || boss.t === 'suncatcher' || boss.t === 'roc'))) ? 'zoom' : 'normal'; }
@@ -4929,21 +4994,27 @@ function render() {
     if (bossActive && boss && boss.alive) { const nm = boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.dimmed ? 'THE SUNCATCHER  DIMMED' : 'THE SUNCATCHER') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : 'HORNET QUEEN'; text(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 ? nm + '  ENRAGED' : nm, VW / 2, VH - 22, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart * 0.3 : 0.3 + gl / 4 * 0.7, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.t === 'ram' && ramOpen(boss) ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
   }
   if (state === 'title') {
-    g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, VW / 2 - 98, 10, 196, Math.round(PROP.plank.height * 1.4));
-    text('BRACKEN', VW / 2 + 2, 24, '#3a2214', 'center', 22); text('BRACKEN', VW / 2, 22, UI.gold, 'center', 22);
-    text('a knight, a wood, a mountain', VW / 2, 50, UI.text, 'center', 6);
-    // the menu, on its own board so it reads over the gate
-    { const items = titleItems(), mw = 124, mx = VW / 2 - mw / 2, my = 82, mh = items.length * 12 + 18;
-      g.fillStyle = 'rgba(16,10,22,0.72)'; g.fillRect(mx, my, mw, mh);
-      g.strokeStyle = 'rgba(201,178,124,0.5)'; g.lineWidth = 1; g.strokeRect(mx + 0.5, my + 0.5, mw - 1, mh - 1);
-      items.forEach((k, i) => { const sel = i === titleI, yy = my + 5 + i * 12;
-        if (sel) { g.fillStyle = 'rgba(60,90,60,0.5)'; g.fillRect(mx + 2, yy - 2, mw - 4, 11); if (Math.floor(time * 3) % 2 === 0) text('>', mx + 6, yy, UI.sel); }
-        text(k, VW / 2 + 4, yy, sel ? UI.title : UI.dim, 'center'); });
+    const since = time - titleSince, e = easeOutBack(Math.min(1, since / 0.7)), ly = Math.round(10 - (1 - e) * 70);
+    const lw = 196, lh = Math.round(PROP.plank.height * 1.4), lx = VW / 2 - lw / 2;
+    g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
+    text('BRACKEN', VW / 2 + 2, ly + 14, '#3a2214', 'center', 22); text('BRACKEN', VW / 2, ly + 12, UI.gold, 'center', 22);
+    // a glint runs along the letters every few seconds
+    { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
+    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; text('a knight, a wood, a mountain', VW / 2, ly + 40, UI.text, 'center', 6); g.globalAlpha = 1; }
+    // the menu, on its own board to the right of the picture
+    { const items = titleItems(), mw = 138, mx = VW - mw - 8, my = 74, mh = items.length * 13 + 24;
+      const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 140);
+      panel(mx + ox, my, mw, mh);
+      const want = my + 6 + titleI * 13; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
+      g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, mw - 8, 12); g.fillStyle = UI.sel; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, 2, 12);
+      items.forEach((k, i) => { const sel = i === titleI, yy = my + 6 + i * 13, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
+        g.globalAlpha = a; text(k, mx + ox + 16 + (sel ? 2 : 0), yy, sel ? UI.title : UI.dim, 'left'); g.globalAlpha = 1;
+        if (sel) { const bob = Math.round(Math.sin(time * 6) * 1.5), cxs = mx + ox + 8 + bob; g.fillStyle = '#c9d1dc'; g.fillRect(cxs, yy + 3, 5, 1); g.fillStyle = '#e0b040'; g.fillRect(cxs + 5, yy + 1, 1, 5); g.fillStyle = '#7a4a2a'; g.fillRect(cxs + 6, yy + 3, 2, 1); } });
       // what waits in the save you would continue
       const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
-      g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + 6, my + mh - 12, mw - 12, 1);
-      text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS WALKED' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
-        VW / 2, my + mh - 9, UI.dim, 'center', 6); }
+      g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + ox + 6, my + mh - 14, mw - 12, 1);
+      text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
+        mx + ox + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
     text(touchOn ? 'touch pad on screen' : 'ARROWS choose   Z enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
   }
 
@@ -4979,6 +5050,7 @@ function render() {
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH); }
   if (!audioReady() && state === 'play') text('press a key for sound', VW - 4, VH - 12, '#9aa39a', 'right');
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
+  drawTransition();
   if (window.BK && window.BK.sheet) {
     g.fillStyle = '#3a4a6a'; g.fillRect(0, 0, VW, VH);
     let x = 4; const row = (set, keys, y) => { for (const k of keys) { let c = k == null ? set.R : set.R[k]; const arr = Array.isArray(c) ? c : [c]; for (const f of arr) { g.drawImage(f, x, y, f.width * 2, f.height * 2); x += f.width * 2 + 4; } } };
