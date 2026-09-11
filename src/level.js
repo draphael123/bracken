@@ -973,7 +973,7 @@ function hangingVillage() {
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the trunk walls either side
   const tops = { t0: 108, t1: 94, t2: 80, t3: 66, t4: 52, t5: 38, crown: 20 };
   // the mountain itself: rock pillars behind every ledge, stacked so each reads as one cliff from the valley to the crown, with timber struts under the ledges
-  [108, 94, 80, 66, 52, 38, 20].forEach((top, i) => { for (const x of [16, 46, 76, 98]) { ent('deco', x, top - 1, { kind: 'pillar', v: (x + i) % 3 }); if (top < 108) { ent('deco', x - 2, top + 4, { kind: 'strut', v: 0 }); ent('deco', x + 2, top + 4, { kind: 'strut', v: 1 }); } } });
+  [108, 94, 80, 66, 52, 38, 20].forEach((top, i) => { for (const x of [16, 46, 76, 98]) { if (top > tops.crown) ent('deco', x, top - 1, { kind: 'pillar', v: (x + i) % 3 }); /* (the crown has nothing over it: its pillars stood up into the sky) */ if (top < 108) { ent('deco', x - 2, top + 4, { kind: 'strut', v: 0 }); ent('deco', x + 2, top + 4, { kind: 'strut', v: 1 }); } } });
 
   // ---- Tier 0. THE ROOTS: goblin shanties among the roots, a hill-folk cottage, the first spider ----
   block(0, W - 1, tops.t0, H - 1);
@@ -1082,7 +1082,7 @@ function hangingVillage() {
   band(1, W - 2, tops.crown); hole(2, 5, tops.crown); ladder(3, 4, tops.crown, tops.t5 - 1);
 
   // ---- The crown: THE OWL REEVE. Three perches on the high branches with a dark lantern on each; ledges climb to every one. ----
-  ent('sign', 8, 19, { text: 'THE OWL REEVE. IT SITS ON THE HIGH BRANCHES. CLIMB TO IT AND CUT: TWO CUTS AND IT FLUSHES. LIGHT THE LANTERN ON A PERCH AND IT WILL NOT SIT THERE. LIGHT ALL THREE AND IT MUST COME DOWN TO YOU. ITS TALONS CARRY. DODGE THOSE.' });
+  ent('sign', 8, 19, { text: 'THE OWL REEVE. IT SITS ON THE HIGH BRANCHES. CLIMB TO IT AND CUT: TWO CUTS AND IT FLUSHES. LIGHT THE LANTERN ON A PERCH AND IT WILL NOT SIT THERE. LIGHT ALL THREE AND IT MUST COME DOWN TO YOU. ITS TALONS CARRY. DODGE THOSE. WHEN IT GOES UP OUT OF SIGHT, WATCH FOR ITS SHADOW. AND THE LIGHT HURTS ITS EYES: LIGHT A PERCH WHILE IT SITS THERE, OR STRIKE A LIT LANTERN WHILE IT IS CLOSE, AND IT FALLS.' });
   ent('check', 12, 19);
   for (const x of [32, 76]) ent('lantern', x, 19); // two lit lanterns on the floor: a swooping owl still crashes into light
   plat(24, 17, 3); plat(84, 17, 3); plat(29, 14, 3); plat(79, 14, 3); plat(34, 11, 3); plat(74, 11, 3); // the climb either side
@@ -1104,7 +1104,7 @@ function hangingVillage() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
-    arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 26 * TS, wallL: 19, wallR: 90, boss: 'owl', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
+    arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
     mini: { x0: 20 * TS, x1: 75 * TS, floor: 129 * TS, trigger: 30 * TS, wallL: 19, gate: 75, boss: 'spider', y0: 114 * TS, y1: 131 * TS },
   };
 }
