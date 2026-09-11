@@ -827,7 +827,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false;
 }
 function startGame() {
   state = 'play'; levelTime = 0; deaths = 0; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
-  for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
+  for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
   respawn(); camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
@@ -1798,7 +1798,14 @@ function breakCrate(tx, ty) {
   burst(tx * TS + 8, ty * TS + 8, 10, ['#8a5a32', '#a8743f', '#5c3a1d'], 80, 0.5, 350, 2);
   const key = tx + ',' + ty;
   if (!collectedCrates.has(key)) acorns.push({ x: tx * TS + 8, y: ty * TS + 8, got: false, ph: 0, crate: key, vy: -60 });
+  if (!healCrates.has(key) && Math.random() < 0.3) { healCrates.add(key); healths.push({ x: tx * TS + 8, y: ty * TS + 8, vy: -140, t: 0 }); } // a crate sometimes holds a heart
 }
+let healths = []; const healCrates = new Set();
+function updateHealths(dt) { for (const h of healths) { h.t += dt; h.vy = Math.min(300, h.vy + 700 * dt); const ny = h.y + h.vy * dt, tx = Math.floor(h.x / TS), ty = Math.floor(ny / TS);
+    if (h.vy > 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { h.y = ty * TS; h.vy = 0; } else h.y = ny;
+    if (!P.dead && P.hp < P.maxHp && Math.abs(P.x - h.x) < 10 && Math.abs(P.y - 8 - (h.y - 5)) < 14) { h.got = true; P.hp = Math.min(P.maxHp, P.hp + 20); SFX.mend(); number(P.x, P.y - 22, '+20', '#8fd160'); motes(h.x, h.y - 5, 10, 6, ['#ff9a9a', '#ffd0d0', '#fff6e0']); } }
+  healths = healths.filter(h => !h.got && h.t < 25); }
+function drawHealths(cx, cy) { for (const h of healths) { if (h.t > 21 && Math.floor(h.t * 8) % 2) continue; const x = Math.round(h.x - cx), y = Math.round(h.y - cy - 8 + Math.sin(h.t * 4) * 1.5); bloom(h.x - cx, h.y - cy - 5, 10, 0.3, 'warm'); g.drawImage(PROP.heart, x - Math.floor(PROP.heart.width / 2), y); } }
 
 // ---------- player ----------
 function surface() { // what is underfoot, for the step and the landing
@@ -4511,7 +4518,7 @@ function updateProps(dt) {
   for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) { if (p.draining || p.y0 === undefined) continue; let lift = 0; if (p.tide) lift = 8 + Math.sin(time * 2 * Math.PI / 26) * 8; if (p.rise > 0) { p.rise -= dt; lift = Math.max(lift, 14); } if (p.tide || p.rise !== undefined) { const want = p.y0 - lift; p.y += (want - p.y) * Math.min(1, dt * 4); p.depth = (p.depth0 || 12) + (p.y0 - p.y); } }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHoly(dt); updateSceptres(dt); updateTrial();
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial();
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -5190,7 +5197,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawRoofs(cx, cy);
   for (const pr of props) if (pr.t === 'treehouse' && pr.x > cx - 60 && pr.x < cx + VW + 60) g.drawImage(PROP.treehouse[pr.v], Math.round(pr.x) - 20 - cx, Math.round(pr.y) - 30 - cy);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) if (tx >= 0 && ty > 0 && tx < LW && ty < LH && L.grid[ty * LW + tx] === T.PALISADE && L.grid[(ty - 1) * LW + tx] !== T.PALISADE) g.drawImage(TILE.palisadeTop, tx * TS - cx, ty * TS - 6 - cy);
-  drawGateFx(cx, cy); drawHoly(cx, cy);
+  drawGateFx(cx, cy); drawHoly(cx, cy); drawHealths(cx, cy);
   // SCAFFOLDING: poles from the top deck down to the bottom of the pit, braced in an X between each pair, lashed where
   // they cross the planks; the crane on the last tower reaches out over the hoist
   for (const pr of props) if (pr.t === 'scaffold' && pr.x1 > cx - 20 && pr.x0 < cx + VW + 20) { const bot = LH * TS - cy, top = Math.round(pr.top - cy) - 4;

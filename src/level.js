@@ -178,7 +178,7 @@ function brackenWood() {
   G.ent('sign', 131, 11, { text: 'THE FALLEN GIANT. OVER THE TOP FOR THE COINS, OR THROUGH THE HOLLOW FOR THE QUIET. THE WOODSMAN\'S SHEEP WENT ONE OF THOSE WAYS.' });
   G.ent('check', 133, 11); G.coins([135, 10], [137, 10]);
   G.block(139, 152, 8, 11); for (let x = 139; x <= 152; x++) { G.set(x, 9, 0); G.set(x, 10, 0); G.set(x, 11, 0); } // the hollow runs the whole trunk
-  G.spikes(145, 146, 11); G.ent('spit', 150, 11, { face: -1 }); G.coins([144, 10], [148, 10]); G.ent('silver', 152, 10);
+  G.ent('spit', 150, 11, { face: -1 }); // (the spikes inside the trunk sat under a roof too low to jump them) G.coins([144, 10], [148, 10]); G.ent('silver', 152, 10);
   G.plat(136, 9, 2); G.coins([137, 8], [141, 6]); // up onto the trunk
   G.ent('wasp', 146, 6); G.ent('wasp', 150, 5); G.coins([146, 4], [150, 3]); G.ent('sprig', 144, 7, { face: -1 });
   G.plat(153, 9, 2); G.coins([154, 8]);
@@ -422,7 +422,7 @@ function theStockade() {
   ent('check', 247, 19);
 
   // ---- 6. The lift to the upper walkway ----
-  for (let y = 20; y <= 27; y++) { set(250, y, 0); set(251, y, 0); } net(250, 251, 26);
+  for (let y = 20; y <= 27; y++) { set(250, y, 0); set(251, y, 0); } net(250, 251, 26); for (let y = 21; y <= 25; y++) set(250, y, T.NET); // miss the lift and the net catches you: rungs up to where it waits
   movers.push({ kind: 'lift', x: 250 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   block(252, 269, 12, 27);
   ent('sapper', 260, 11, { face: -1 }); coins([256, 10], [264, 10]);
@@ -442,7 +442,7 @@ function theStockade() {
   coins([277, 11], [296, 9], [300, 7], [311, 10]);
 
   // ---- 8. Down to the great hall ----
-  for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26);
+  for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26); for (let y = 20; y <= 25; y++) set(316, y, T.NET); // and rungs up out of this one to the floor
   movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
   floor(317, 365, 20);
   ent('hound', 320, 19, { face: -1 }); ent('check', 323, 19);
@@ -477,7 +477,7 @@ function theStockade() {
   for (const x of [256, 266, 276, 286]) G.ent('torch', x, 24);
   G.ent('deco', 254, 24, { kind: 'skullPile', v: 0 }); G.ent('deco', 281, 24, { kind: 'skullPile', v: 1 });
   G.ent('sprig', 258, 24, { face: -1 }); G.ent('barrel', 262, 24); G.crate(264, 24); G.ent('sapper', 270, 24, { face: -1 });
-  G.spikes(272, 273, 24); G.ent('sprig', 277, 24, { face: -1 }); G.ent('barrel', 279, 24); G.crate(281, 24); G.crate(281, 23);
+  G.ent('sprig', 277, 24, { face: -1 }); // (a bed of spikes under a roof you cannot jump in was here: no way past it but through) G.ent('barrel', 279, 24); G.crate(281, 24); G.crate(281, 23);
   G.ent('sapper', 284, 24, { face: -1 }); G.ent('brute', 288, 24, { face: -1 });
   G.coins([255, 23], [260, 23], [268, 23], [275, 22], [283, 23], [289, 23]);
   G.ent('check', 292, 19); G.ent('torch', 293, 19);
