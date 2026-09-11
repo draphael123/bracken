@@ -5,7 +5,7 @@
 // usage: node tools/comments.mjs
 import fs from 'fs';
 let n = 0;
-for (const f of ['src/main.js', 'src/level.js', 'src/audio.js', 'src/art.js', 'src/chars.js']) {
+for (const f of ['src/main.js', 'src/level.js', 'src/audio.js', 'src/art.js', 'src/chars.js', 'src/px.js', 'src/reachcore.js']) {
   const lines = fs.readFileSync(new URL('../' + f, import.meta.url), 'utf8').split('\n');
   lines.forEach((ln, i) => {
     let q = null;
@@ -16,7 +16,8 @@ for (const f of ['src/main.js', 'src/level.js', 'src/audio.js', 'src/art.js', 's
       if (c === '/' && ln[k + 1] === '*') { const e = ln.indexOf('*/', k + 2); if (e < 0) break; k = e + 1; continue; }
       if (c === '/' && ln[k + 1] === '/') {
         const cm = ln.slice(k + 2);
-        if (/[;}]\s*[A-Za-z_$][\w.[\]']*\s*(=[^=]|\()/.test(cm) && /[;{}]\s*$/.test(cm.trim())) { console.log(`${f}:${i + 1}: ${cm.slice(0, 150)}`); n++; }
+        const looksCode = (/[;}]\s*[A-Za-z_$][\w.[\]']*\s*(=[^=]|\()/.test(cm) && /[;{}]\s*$/.test(cm.trim())) || /[A-Za-z_$][\w.]*\(\s*['"\[{\d][^)]*\)\s*;\s*$/.test(cm.trim()); // (also: a prose note that runs straight into a call and ends like a statement)
+        if (looksCode) { console.log(`${f}:${i + 1}: ${cm.slice(0, 150)}`); n++; }
         break;
       }
     }

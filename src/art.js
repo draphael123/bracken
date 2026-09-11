@@ -324,9 +324,35 @@ export function bakeDrop() { const [c, g] = canvas(3, 8); line(g, 2, 0, 0, 7, 'r
 
 // ---------- world map ----------
 // An overhead forest: meadows and dark woods, hills, a river with banks, and a dirt path through the nodes.
+// THE COAST, above the crags: the mountain's back face runs down to a river, the river to Saltreach at its mouth, and past it
+// the open sea with the reef, the wrecks and the islands the next part of the story goes out to.
+function bakeCoastMap(c, g, w, h, nodes, path, rnd) {
+  rect(g, 0, 0, w, h, '#2e7a88');
+  for (let i = 0; i < w * h / 10; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#3a8a98' : '#276e7c'); // the sea's grain
+  const coast = [[w, 0], [w, h], [0, h], [0, 150], [30, 142], [58, 150], [86, 138], [112, 128], [128, 112], [150, 104], [176, 112], [200, 96], [226, 84], [252, 62], [276, 40], [300, 18], [w, 8]];
+  fillPoly(g, coast.map(([x, y]) => [x, y + 6]), '#d0bc88'); fillPoly(g, coast, '#6e8a5a', '#5a7a4a'); // a beach under the land
+  for (let i = 0; i < 10; i++) { const x = 170 + rnd() * 140, y = 110 + rnd() * 60; ellipse(g, x, y, 12 + rnd() * 16, 6 + rnd() * 6, '#5a7a4a', '#4a6a40'); }
+  // the mountain's back face in the bottom right, with snow
+  fillPoly(g, [[w, h], [200, h], [236, 150], [262, 130], [290, 138], [w, 118]], '#6f7a84', '#555e68'); fillPoly(g, [[252, 136], [262, 130], [272, 134], [266, 138]], '#e8f0f4');
+  // the Long Water: from the falls down to the town
+  const riv = [[270, 150], [236, 140], [206, 128], [176, 118], [152, 108]];
+  for (let i = 0; i + 1 < riv.length; i++) { line(g, riv[i][0], riv[i][1], riv[i + 1][0], riv[i + 1][1], '#3a8a98', 5); line(g, riv[i][0], riv[i][1], riv[i + 1][0], riv[i + 1][1], '#7cc8c8', 2); }
+  for (const [x, y] of [[268, 144], [262, 146]]) rect(g, x, y, 2, 6, '#e8f4f0'); // the falls
+  // Saltreach: white houses and a bell tower at the river mouth
+  for (let k = 0; k < 6; k++) { const x = 136 + k * 5 + (k % 2), y = 100 + (k % 3); rect(g, x, y, 4, 3, '#f0ece0'); rect(g, x, y - 1, 4, 1, '#4a5664'); }
+  rect(g, 150, 94, 2, 7, '#8a96a0'); px(g, 150, 93, '#4a9a8a');
+  // the open sea: islands, a lighthouse, the reef and its wrecks
+  for (const [x, y, rx, ry] of [[46, 40, 16, 7], [96, 22, 10, 5], [150, 50, 8, 4], [22, 88, 9, 4]]) { ellipse(g, x, y + 2, rx + 2, ry + 1, '#d0bc88'); ellipse(g, x, y, rx, ry, '#6e8a5a', '#5a7a4a'); }
+  rect(g, 95, 14, 2, 7, '#f0ece0'); rect(g, 95, 16, 2, 1, '#c9463d'); px(g, 95, 13, '#ffd36b'); px(g, 96, 13, '#ffd36b'); // the lighthouse
+  for (let i = 0; i < 14; i++) { const x = 60 + rnd() * 70, y = 70 + rnd() * 30; px(g, x | 0, y | 0, '#e8f4f0'); } // the reef breaking
+  for (const [x, y] of [[82, 80], [104, 74]]) { line(g, x, y, x + 6, y - 2, '#6e604e', 1); line(g, x + 3, y - 1, x + 3, y - 6, '#6e604e', 1); } // wrecks
+  for (let i = 0; i < 24; i++) { const x = rnd() * w, y = rnd() * 90; if (y < 140) rect(g, x | 0, y | 0, 3, 1, 'rgba(232,244,240,0.5)'); } // whitecaps
+  return c;
+}
 export function bakeMap(w, h, nodes, path, seed, style = 'wood') {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
   if (style === 'crag') return bakeCragMap(c, g, w, h, nodes, path, rnd);
+  if (style === 'coast') return bakeCoastMap(c, g, w, h, nodes, path, rnd);
   rect(g, 0, 0, w, h, '#4f8a3a');
   // meadow patches and dark wood regions
   for (let i = 0; i < 7; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 50, 14 + rnd() * 20, '#5e9a44', '#4f8a3a');

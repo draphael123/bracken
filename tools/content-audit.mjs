@@ -16,7 +16,7 @@ const decoKinds = new Set([...(main.match(/const K = \{([\s\S]*?)\}\[e\.kind\]/)
 const EHP = table('EHP'), DMG = table('DMG'), COLS = table('COLS');
 const beasts = new Set([...main.matchAll(/\{ t: '(\w+)', name: ["']/g)].map(m => m[1]));
 const sprites = new Set([...main.matchAll(/SPR\.(\w+)\s*=/g)].map(m => m[1]));
-const strayIcons = new Set([...main.matchAll(/pr\.kind === '(\w+)' \?/g)].map(m => m[1]));
+const strayIcons = new Set([...main.matchAll(/pr\.kind === '(\w+)'[ )?]/g)].map(m => m[1]));
 const relics = new Set([...(main.match(/const RELICS = \{([\s\S]*?)\};/) || ['', ''])[1].matchAll(/(\w+):\s*\{/g)].map(m => m[1]));
 
 const used = { ent: new Map(), deco: new Map(), stray: new Map(), relic: new Map() };

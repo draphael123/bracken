@@ -32,6 +32,11 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++)
     if (stand(at(x, y)) && !solid(at(x, y - 1)) && at(x, y - 1) !== T.SPIKE) footing.add(key(x, y - 1));
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (climbable(at(x, y))) footing.add(key(x, y));
+  // SWIM WATER (the Long Water): every open cell of a swimmable pool is somewhere you can be - you swim to any
+  // neighbour, and at the surface you can leap out. A tide pool counts at its high water; a boss's tide does not.
+  const water = new Set(), surfRow = new Map();
+  for (const p of (L.pools || [])) { if (!p.swim || p.arenaTide) continue; const topPx = p.streetTide ? p.base + p.tideHi : p.y; const r0 = Math.floor(topPx / TSZ), r1 = Math.floor(((p.bottom ?? topPx + 64) - 1) / TSZ);
+    for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) if (!solid(at(x, y))) { water.add(key(x, y)); footing.add(key(x, y)); surfRow.set(key(x, y), r0); } }
 
   const seen = new Set(), q = [];
   const push = (x, y) => { const k = key(x, y); if (footing.has(k) && !seen.has(k)) { seen.add(k); q.push([x, y]); } };
@@ -55,6 +60,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     for (const arc of swings) if (arc.some(([ax, ay]) => Math.abs(ax - x) <= 2 && y - ay >= -1 && y - ay <= 3)) for (const [ax, ay] of arc) for (let dy = -3; dy <= 2; dy++) for (let dx = -3; dx <= 3; dx++) push(ax + dx, ay + dy);
     // stand in a doorway and press talk: you come out at the other one
     for (const dr of doors) if (Math.abs(dr.x - x) <= 1 && dr.y === y) { const to = doorTo.get(dr.to); if (to) { let ty = to.y; while (ty < H - 1 && !footing.has(key(to.x, ty))) ty++; push(to.x, ty); } }
+    // swim: any way through the water, and a leap out at the surface (a jump from the top row of the pool)
+    if (water.has(key(x, y))) { for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) push(x + dx, y + dy); const sr = surfRow.get(key(x, y)); if (y <= sr + 1) for (let dy = -JUMP_UP - 1; dy <= 0; dy++) for (let dx = -3; dx <= 3; dx++) push(x + dx, sr + dy); }
     // walk, and step up or down one
     for (const dx of [-1, 1]) for (const dy of [-1, 0, 1]) push(x + dx, y + dy);
     // climb

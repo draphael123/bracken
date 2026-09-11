@@ -9,7 +9,7 @@ import { LEVELS, TS } from '../src/level.js';
 const FOE = new Set(['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
   'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat', 'troll',
   'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer', 'hearthgob', 'cutter', 'shardling',
-  'folk', 'wight', 'greathound', 'ram']);
+  'folk', 'wight', 'greathound', 'ram', 'soldier', 'javelin', 'heavy', 'turtle', 'eel', 'heronfoe', 'crab', 'scout', 'siren', 'tideguard']);
 
 const rows = [];
 for (const lv of LEVELS) {

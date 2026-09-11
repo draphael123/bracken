@@ -44,6 +44,8 @@ for (const lv of LEVELS) {
     if (!solid(at(r.x0 - 1, r.y)) || at(r.x0 - 1, r.y) === T.PORT) c.add(r.x0);
     if (!solid(at(r.x1 + 1, r.y)) || at(r.x1 + 1, r.y) === T.PORT) c.add(r.x1);
     for (const e of L.ents) if (e.t === 'doorway' && e.y === r.y && e.x >= r.x0 && e.x <= r.x1) c.add(e.x);
+    // a floor under swim water is a riverbed: you swim up off it anywhere
+    for (const p of (L.pools || [])) if (p.swim) for (let x = r.x0; x <= r.x1; x++) if (x * 16 >= p.x0 && x * 16 < p.x1 && r.y * 16 >= (p.streetTide ? p.base + p.tideHi : p.y) - 16) c.add(x);
     return c; };
   const out = [];
   // a boss floor is walled in on purpose: the fight is what is at the end of it

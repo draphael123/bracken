@@ -1425,7 +1425,7 @@ function stormhold() {
   ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
   ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
   ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
-  plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); // steps to the shelf: it was five rows off the floor coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13]);
+  plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13]); // steps to the shelf: it was five rows off the floor
   ent('stray', 56, 9, { kind: 'folk' });
   ent('sign', 39, 14, { text: 'THE SMITHY. THEY ARE MAKING SOMETHING LONG AND SHARP FOR SOMEONE LARGE.' });
   // the second span: long, watched from both ends, and a cutter on the far post
@@ -2205,6 +2205,112 @@ function sprinkleCoins(L) {
     } }
   return L;
 }
+// ============================================================================================
+// LEVEL 12 - THE LONG WATER. Three days after the Queen fell, the melt off Highcrown began to run salt. The goblins paid
+// the deep a tribute for a hundred years to keep it asleep; the tribute has stopped, and the sea is coming inland to
+// collect. Down the mountain's back face on the falls, down the river on the Ferryman's raft with the Bore coming up it,
+// into SALTREACH at the river mouth, where the Tidebound are walking up the streets - and the Tide Herald is waiting in
+// the square with the sea behind him.
+// Its own look: the shore tile set, the sea sky and coast parallax, swim pools, waterfalls, the Bore, the tide.
+function longWater() {
+  const W = 416, H = 40; const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const pools = [], falls = [], movers = [];
+  const shallow = (x0, x1, top, d) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS - d, shallow: true, depth: d });
+  const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, bottom: bottom * TS }, extra || {}));
+  const fall = (lipX, y0, y1) => falls.push({ x0: lipX * TS + 10, x1: lipX * TS + 34, y0: y0 * TS - 6, y1: y1 * TS + 6 }); // pours off the lip at lipX into the next terrace
+  const plunge = (x0, x1, top, depth) => { air(x0, x1, top, top + depth - 1); deep(x0, x1, top, top + depth); };
+
+  // ---- 1. THE MELTFALLS: Highcrown's back face, five terraces and a fall off every lip ----
+  block(0, 13, 8, H - 1);
+  ent('npc', 4, 7, { kind: 'squire' });
+  ent('sign', 2, 7, { text: 'THE LONG WATER. THE MELT OFF THE MOUNTAIN RUNS SALT. THERE ARE BARNACLES ON THE STONES UP HERE, A HUNDRED MILES FROM THE SEA. FOLLOW THE WATER DOWN.' });
+  ent('check', 9, 7); shallow(6, 13, 8, 8); // the stream on the top ledge, running for the lip
+  fall(13, 8, 12);
+  block(14, 33, 12, H - 1); plunge(14, 18, 12, 3); ent('eel', 16, 14);
+  shallow(23, 32, 12, 8); ent('turtle', 27, 11, { face: -1 });
+  for (const x of [24, 29, 31]) ent('deco', x, 11, { kind: 'coralTuft', v: x % 3 });
+  ent('sign', 20, 11, { text: 'CORAL, GROWING IN A MOUNTAIN STREAM. THE FALLS HAVE POOLS UNDER THEM: THE WATER IS DEEP, BUT YOU CAN SWIM. HOLD UP TO RISE, DOWN TO DIVE, JUMP AT THE SURFACE TO CLIMB OUT.' });
+  coins([16, 13], [17, 13], [19, 10], [22, 10], [24, 9], [26, 9], [28, 9], [30, 10]); ent('crab', 31, 11, { face: -1 });
+  fall(33, 12, 16);
+  block(34, 55, 16, H - 1); plunge(34, 38, 16, 3);
+  ent('eel', 36, 18); coins([35, 18], [37, 18]); // the second pool, for anyone who dives
+  air(30, 33, 13, 15); ent('silver', 31, 15); coins([32, 15], [30, 15]); // the cave behind the second fall
+  shallow(42, 52, 16, 10); ent('heronfoe', 47, 15, { face: -1 });
+  ent('deco', 40, 15, { kind: 'barnacleRock', v: 0 }); ent('deco', 53, 15, { kind: 'saltCrust', v: 1 });
+  coins([41, 14], [44, 15], [45, 13], [47, 13], [49, 13], [51, 15], [54, 14]);
+  fall(55, 16, 20);
+  block(56, 79, 20, H - 1); plunge(56, 60, 20, 3); ent('eel', 58, 22);
+  ent('deco', 66, 19, { kind: 'drownedHut' }); ent('check', 63, 19);
+  ent('sign', 62, 19, { text: 'THE SHEPHERD\'S HUT. THE WATER CAME UP THE HILL IN THE NIGHT. THERE ARE FISH IN THE CHIMNEY. SOMEONE PALE WAS WATCHING FROM THE ROCKS.' });
+  block(73, 79, 18, 19); ent('scout', 69, 19, { face: 1 }); ent('scout', 77, 17, { face: -1 });
+  coins([57, 22], [59, 22], [62, 18], [64, 18], [67, 17], [70, 17], [75, 16], [78, 16]);
+  fall(79, 18, 24);
+  block(80, 105, 24, H - 1); plunge(80, 91, 24, 4); ent('eel', 84, 27); ent('eel', 89, 27);
+  ent('check', 95, 23); ent('crab', 99, 23, { face: -1 }); ent('turtle', 103, 23, { face: -1 });
+  ent('deco', 93, 23, { kind: 'barnacleRock', v: 1 }); ent('deco', 101, 23, { kind: 'coralTuft', v: 1 });
+  coins([81, 26], [83, 25], [86, 25], [87, 26], [89, 25], [90, 26], [92, 22], [96, 22], [100, 21], [103, 21], [104, 22]);
+  fall(105, 24, 28);
+  block(106, 127, 28, H - 1); shallow(110, 122, 28, 12); ent('heronfoe', 116, 27, { face: -1 });
+  for (const x of [112, 119]) ent('deco', x, 27, { kind: 'coralTuft', v: x % 3 });
+  block(128, 139, 27, H - 1); // the ferry dock
+  ent('sign', 129, 26, { text: 'THE FERRY. STAND ON THE RAFT AND IT GOES. THE BORE COMES UP THE RIVER ON THE TIDE: ON THE RAFT IT ONLY LIFTS YOU; IN THE WATER GET UP ON A ROCK. THE ROCKS WILL KNOCK YOU OFF THE RAFT: JUMP THEM. AND DO NOT LISTEN TO THE SINGING.' });
+  ent('check', 132, 26); ent('deco', 138, 26, { kind: 'seaLantern', v: 1 }); ent('npc', 136, 26, { kind: 'ferryman', ride: true });
+  coins([108, 26], [110, 26], [112, 25], [114, 25], [117, 24], [120, 25], [123, 26], [124, 25], [126, 26], [130, 25], [134, 25], [137, 25]); ent('scout', 124, 27, { face: -1 });
+
+  // ---- 2. THE FERRY RUN: the river, the raft, the rocks, the sirens and the Bore ----
+  block(140, 277, 34, H - 1); deep(140, 277, 28, 34, { river: true });
+  movers.push({ kind: 'raft', ferry: true, free: true, x0: 140 * TS, x1: 272 * TS, x: 140 * TS, y: 28 * TS - 4, w: 96, h: 8, speed: 58, big: true });
+  for (const x of [166, 198, 232, 258]) block(x, x + 1, 26, 33); // rocks in the stream: jump them on the raft, stand on them in the water
+  ent('siren', 166, 25, { face: -1 }); ent('siren', 198, 25, { face: -1 }); ent('siren', 258, 25, { face: -1 });
+  ent('eel', 176, 31); ent('eel', 214, 31); ent('eel', 246, 31);
+  ent('silver', 233, 25);
+  coins([152, 26], [156, 24], [160, 25], [164, 24], [172, 25], [178, 24], [184, 26], [190, 25], [196, 23], [206, 25], [212, 24], [220, 26], [226, 25], [230, 23], [236, 24], [240, 25], [244, 24], [250, 26], [256, 23], [262, 24], [266, 25], [270, 24]);
+  coins([150, 32], [190, 32], [224, 32], [268, 32]); // down on the riverbed, for a held breath
+
+  // ---- 3. SALTREACH: the fishing town at the river mouth, half in the water ----
+  block(278, 299, 27, H - 1);
+  ent('check', 282, 26); ent('npc', 287, 26, { kind: 'squire' });
+  ent('sign', 280, 26, { text: 'SALTREACH. HALF THE TOWN IS IN THE WATER AND THE TIDEBOUND ARE WALKING UP THE STREETS, TAKING THE FISHERFOLK DOWN WITH THEM. THE LOW STREET FLOODS WITH THE TIDE; THE JETTY STAYS DRY.' });
+  for (const [x, v] of [[291, 0], [297, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
+  block(300, 331, 29, H - 1); plat(300, 26, 32); // the low street, and the jetty over it
+  pools.push({ x0: 300 * TS, x1: 332 * TS, y: 29 * TS + 2, base: 29 * TS, tideLo: 2, tideHi: -28, tidePeriod: 20, swim: true, shallow: true, depth: 0, bottom: 29 * TS, streetTide: true });
+  ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('silver', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
+  ent('stray', 305, 28, { kind: 'fisher' }); ent('tideguard', 309, 28, { face: -1 });
+  ent('crab', 319, 28, { face: -1 }); ent('crab', 325, 28, { face: 1 });
+  coins([284, 25], [289, 25], [294, 25], [302, 25], [304, 27], [312, 27], [314, 25], [320, 27], [322, 28], [308, 24], [318, 24], [324, 25], [328, 24]);
+  block(332, 367, 27, H - 1);
+  for (const [x, v] of [[336, 0], [344, 1], [352, 0], [360, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
+  for (const x of [334, 349, 365]) ent('deco', x, 26, { kind: 'seaLantern', v: 1 });
+  ent('stray', 341, 26, { kind: 'fisher' }); ent('tideguard', 345, 26, { face: -1 });
+  ent('stray', 358, 26, { kind: 'fisher' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 363, 26, { face: -1 });
+  ent('deco', 333, 26, { kind: 'bellTower' });
+  ent('check', 364, 26); ent('deco', 339, 26, { kind: 'buoy' }); ent('deco', 353, 26, { kind: 'tributeChest' });
+  coins([335, 24], [338, 25], [340, 24], [343, 25], [348, 25], [351, 24], [356, 25], [359, 24], [362, 25], [366, 25]);
+
+  // ---- 4. THE SQUARE: the Tide Herald. The sea comes up the square in three steps; the stones in it are the dry ground ----
+  block(368, 408, 30, H - 1);
+  block(372, 375, 28, 29); block(378, 380, 27, 29); block(386, 390, 28, 29); block(393, 394, 28, 29); block(395, 397, 26, 29); block(402, 405, 28, 29); /* a step up to the high stone, or it walled the square in two */
+  block(409, 411, 28, H - 1); block(412, W - 1, 27, H - 1);
+  pools.push({ x0: 369 * TS, x1: 409 * TS, y: 30 * TS + 6, base: 30 * TS, swim: true, shallow: true, depth: 0, bottom: 30 * TS, arenaTide: true });
+  ent('herald', 391, 29);
+  ent('sign', 366, 26, { text: 'THE SQUARE. SOMEONE IS STANDING ON THE WATER. WHEN THE TIDE GOES OUT IT LEAVES HIM IN THE MUD: THAT IS WHEN HE CAN BE HURT.' });
+  ent('gate', 414, 26);
+
+  const ret = {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 7 }, pools, falls, moversExtra: movers,
+    duskStart: 99999, duskLen: 1, music: 'adventure', night: false,
+    wetZone: [0, 107], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
+    quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE FISHERFOLK ARE SAFE', reward: 'relic', relic: 'tidecharm' },
+    palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
+      grass: '#7a9a5a', grassL: '#a8c47a', grassD: '#5a7a44', dirt: '#555e68', dirtL: '#6f7a84', dirtD: '#3e454e', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
+    weather: [{ x0: 0, x1: 108 * TS, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 369 * TS, x1: 409 * TS, floor: 30 * TS, trigger: 370 * TS, wallL: 368, wallR: 409, boss: 'herald', music: 'boss2', tint: '#3a8aa0', tintA: 0.08, fx: 'motes' },
+  };
+  return ret;
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
@@ -2217,6 +2323,7 @@ export const LEVELS = [
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', build: stormhold, needs: 'moor' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', build: highcrownWhole, needs: 'storm' },
+  { id: 'longwater', name: 'THE LONG WATER', sub: 'the river to the sea', build: longWater, needs: 'crown' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
