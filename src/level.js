@@ -776,6 +776,7 @@ function kingswood() {
   plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1, fire: true }); coins([287, 9], [293, 7], [294, 7]);
   // the cache: a hidden loft above the court holds the Thief Cloak
   plat(303, 9, 3); plat(307, 7, 3); coins([304, 8], [308, 6], [309, 6]); ent('relic', 308, 6, { kind: 'cloak' });
+  plat(284, 12, 2); plat(298, 8, 3); // a step up to the court's ledges (they started a head too high to jump) and one across the gap to the loft
   ent('check', 312, 13);
 
   // ---- 7. The throne room: King Gorm Underleaf on his palanquin. ----
