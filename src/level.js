@@ -1646,6 +1646,80 @@ function galeMoor() {
   };
 }
 
+// MORE GOLD. Every real wood runs this after it is built: it finds the long walkable stretches that pay
+// too little for their length and lays small arcs of coins along them - never on a boss floor, never
+// in water, never on top of a sign, a door, a gate or a friend, never inside anything solid, and the
+// same arcs every time. A stretch that already has its share of coin is left as it is.
+function sprinkleCoins(L) {
+  const W = L.W, H = L.H, g = L.grid;
+  const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
+  const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
+  const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.REED || t === T.CRYST;
+  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 1, A.x1 / TS + 1]);
+  const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // over the water is fine, in it is not
+  const coins = new Set(L.ents.filter(e => e.t === 'coin').map(e => e.x + ',' + e.y));
+  const FIXED = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest']);
+  const keep = L.ents.filter(e => FIXED.has(e.t)); // things that stay put; a foe walks away from its gold
+  const busy = (x, y) => keep.some(e => Math.abs(e.x - x) <= 2 && Math.abs(e.y - y) <= 2);
+  const free = (x, y) => at(x, y) === T.AIR && !coins.has(x + ',' + y) && !busy(x, y) && !wet(x, y) && !rooms.some(([a, b]) => x >= a && x <= b);
+  const before = coins.size; let added = 0; const cap = Math.max(12, Math.round(before * 0.8));
+  // the ground as you walk it: follow the surface through steps of up to three rows (a jump), and lay a pair
+  // every seven tiles or so where there is none near (the rolling woods have almost no flat runs at all)
+  { const foot = (x, y) => stand(at(x, y + 1)) && !solid(at(x, y)) && at(x, y) !== T.SPIKE && !solid(at(x, y - 1)) && at(x, y + 1) !== T.CRYST;
+    const used = new Set(), near = (x, y) => { for (let dx = -2; dx <= 2; dx++) for (let dy = -2; dy <= 2; dy++) if (coins.has((x + dx) + ',' + (y + dy))) return true; return false; };
+    for (let x = 0; x < W && added < cap; x++) for (let y = 1; y < H - 1 && added < cap; y++) {
+      if (!foot(x, y) || used.has(x + ',' + y)) continue;
+      const path = [[x, y]]; used.add(x + ',' + y); let cx = x, cy = y;
+      for (;;) { let ny = null; for (const dy of [0, -1, 1, -2, 2, -3, 3]) if (foot(cx + 1, cy + dy) && !used.has((cx + 1) + ',' + (cy + dy))) { ny = cy + dy; break; } if (ny === null) break; cx++; cy = ny; path.push([cx, cy]); used.add(cx + ',' + cy); }
+      if (path.length < 12) continue;
+      for (let i = 3; i < path.length - 4 && added < cap; i += 5) { const [ax, ay] = path[i], [bx, by] = path[i + 1];
+        if (near(ax, ay) || !free(ax, ay) || !free(bx, by)) continue;
+        L.ents.push({ t: 'coin', x: ax, y: ay }, { t: 'coin', x: bx, y: by }); coins.add(ax + ',' + ay); coins.add(bx + ',' + by); added += 2; } } }
+  for (let y = 2; y < H - 1 && added < cap; y++) {
+    let x0 = -1;
+    for (let x = 0; x <= W && added < cap; x++) {
+      const ok = x < W && stand(at(x, y + 1)) && !solid(at(x, y)) && at(x, y) !== T.SPIKE && !solid(at(x, y - 1)) && at(x, y + 1) !== T.CRYST;
+      if (ok && x0 < 0) x0 = x;
+      if (ok || x0 < 0) continue;
+      const x1 = x - 1, len = x1 - x0 + 1; x0 = -1;
+      if (len < 7) continue;
+      let have = 0; for (let k = x1 - len + 1; k <= x1; k++) for (let dy = 0; dy <= 3; dy++) if (coins.has(k + ',' + (y - dy))) have++;
+      const want = Math.floor(len / 7) - have; if (want <= 0) continue;
+      // arcs of three: low, high, low - the height of a hop, so they read as a line to run and jump along
+      for (let a = 0, cx = x1 - len + 1 + 3; a < want && cx + 2 <= x1 - 2 && added < cap; cx += Math.max(6, Math.floor(len / (want + 1)))) {
+        const pts = [[cx, y], [cx + 1, y - 1], [cx + 2, y]];
+        if (!pts.every(([px, py]) => free(px, py))) continue;
+        for (const [px, py] of pts) { L.ents.push({ t: 'coin', x: px, y: py }); coins.add(px + ',' + py); added++; }
+        a++;
+      }
+    }
+  }
+  // gaps you jump: an arc of gold over the middle, where the jump goes anyway
+  for (let y = 2; y < H - 2 && added < cap; y++) for (let x = 1; x < W - 6 && added < cap; x++) {
+    if (!(stand(at(x, y + 1)) && !solid(at(x, y)))) continue;
+    let gw = 0; while (gw < 5 && !stand(at(x + 1 + gw, y + 1)) && !solid(at(x + 1 + gw, y))) gw++;
+    if (gw < 2 || gw > 4 || !stand(at(x + 1 + gw, y + 1)) || solid(at(x + 1 + gw, y))) continue;
+    const mid = x + 1 + (gw >> 1), pts = gw >= 3 ? [[mid - 1, y - 1], [mid, y - 2], [mid + 1, y - 1]] : [[mid, y - 1], [mid, y - 2]];
+    if (!pts.every(([px, py]) => free(px, py) && !solid(at(px, py - 1)))) continue;
+    for (const [px, py] of pts) { L.ents.push({ t: 'coin', x: px, y: py }); coins.add(px + ',' + py); added++; }
+    x += gw;
+  }
+  // short ledges with nothing on them get a pair
+  for (let y = 2; y < H - 1 && added < cap; y++) { let x0 = -1;
+    for (let x = 0; x <= W && added < cap; x++) {
+      const t1 = at(x, y + 1), ok = x < W && (t1 === T.ONEWAY || t1 === T.PLANK || t1 === T.SHELF) && at(x, y) === T.AIR;
+      if (ok && x0 < 0) x0 = x;
+      if (ok || x0 < 0) continue;
+      const x1 = x - 1, len = x1 - x0 + 1, s0 = x0; x0 = -1;
+      if (len < 3 || len > 12) continue;
+      let have = false; for (let k = s0; k <= x1; k++) for (let dy = 0; dy <= 2; dy++) if (coins.has(k + ',' + (y - dy))) have = true;
+      if (have) continue;
+      const m0 = s0 + (len >> 1) - 1, pts = [[m0, y], [m0 + 1, y]];
+      if (!pts.every(([px, py]) => free(px, py))) continue;
+      for (const [px, py] of pts) { L.ents.push({ t: 'coin', x: px, y: py }); coins.add(px + ',' + py); added++; }
+    } }
+  return L;
+}
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
@@ -1661,6 +1735,7 @@ export const LEVELS = [
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
+for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build; lv.build = () => sprinkleCoins(b()); }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };

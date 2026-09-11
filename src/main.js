@@ -4698,7 +4698,7 @@ function drawTitle(cx, cy) {
 let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
 const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'soundtest', 'herocard', 'win', 'gameover']);
 function drawTransition() {
-  const dt = Math.min(0.1, Math.max(0, time - transLast)); transLast = time;
+  const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
     if (state === 'title') titleSince = time;
     if (state === 'menu') menuSince = time;
