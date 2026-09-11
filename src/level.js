@@ -1645,13 +1645,13 @@ function highcrown() {
   ent('deco', 247, 17, { kind: 'throne' });
   ent('gqueen', 246, 17);
   plat(213, 14, 24);                            // the gallery
-  ent('archer', 218, 13, { face: 1 }); ent('archer', 229, 13, { face: 1 });
+  // (no archers on the gallery any more: the court has left her to it)
   for (const x of [216, 226, 235]) ent('support', x, 19, { top: 14 });
   for (const x of [212, 224, 236]) ent('deco', x, 13, { kind: 'hallWindow' });
   ent('deco', 219, 19, { kind: 'banner', v: 0 }); ent('deco', 233, 19, { kind: 'banner', v: 1 });
   for (const x of [210, 229]) ent('torch', x, 19);
   for (const x of [219, 231, 245]) ent('weight', x, 10, { len: 3, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them
-  ent('sign', 209, 19, { text: 'THE QUEEN. SHE HAS NEVER FOUGHT ALONE. ON HER THRONE THE COURT ARMOURS HER: BRING THE GALLERY DOWN ON HER, IT STANDS ON THREE PILLARS. ON HER FEET SHE THROWS AT HER CHANDELIERS, SHE THROWS HER SCEPTRE (LOW GOING, HIGH COMING BACK), AND WHEN SHE RAISES IT THE FLOOR ITSELF OBEYS HER.' });
+  ent('sign', 209, 19, { text: 'THE QUEEN. HER PLATE TURNS EVERY BLADE. THE GALLERY STANDS ON THREE PILLARS, EACH HOLDING ITS OWN STRETCH: BREAK A PILLAR WITH HER UNDER IT AND IT COMES DOWN ON HER, AND WHILE SHE IS PINNED SHE BLEEDS. HER MASONS BUILD THEM BACK. SHE THROWS HER SCEPTRE (LOW GOING, HIGH COMING BACK), SHE GOES UP ON HER GALLERY TO COME DOWN ON YOU, AND AT THE LAST SHE STEPS THROUGH SHADOW.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
