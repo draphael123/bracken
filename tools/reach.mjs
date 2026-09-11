@@ -25,7 +25,11 @@ for (const lv of LEVELS) {
   if (want && lv.id !== want) continue;
   const L = lv.build(), W = L.W, H = L.H, g = L.grid;
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
-  const assisted = !!(L.moversExtra && L.moversExtra.length) || (L.ents || []).some(e => ['mover', 'vent', 'doorway', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length);
+  // doorways the model follows itself (each one names the doorway it lets out at), so they no longer
+  // make a level ASSISTED; that used to hide a real miss among the indoor keys
+  const doors = (L.ents || []).filter(e => e.t === 'doorway' && e.id);
+  const doorTo = new Map(doors.map(d => [d.id, d]));
+  const assisted = !!(L.moversExtra && L.moversExtra.length) || (L.ents || []).some(e => ['mover', 'vent', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length);
 
   // every tile you could be standing on
   const key = (x, y) => x + ',' + y;
@@ -42,6 +46,8 @@ for (const lv of LEVELS) {
   while (q.length) {
     const [x, y] = q.pop();
     const springy = at(x, y + 1) === T.BOUNCER, up = springy ? BOUNCE_UP : JUMP_UP;
+    // stand in a doorway and press talk: you come out at the other one
+    for (const dr of doors) if (Math.abs(dr.x - x) <= 1 && dr.y === y) { const to = doorTo.get(dr.to); if (to) { let ty = to.y; while (ty < H - 1 && !footing.has(key(to.x, ty))) ty++; push(to.x, ty); } }
     // walk, and step up or down one
     for (const dx of [-1, 1]) for (const dy of [-1, 0, 1]) push(x + dx, y + dy);
     // climb

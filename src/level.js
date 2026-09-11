@@ -1339,6 +1339,9 @@ function stormhold() {
   ent('deco', 104, 31, { kind: 'forge' }); ent('brazier', 108, 31); ent('brazier', 120, 31); ent('check', 140, 31);
   ent('hearthgob', 114, 31, { face: -1 }); ent('brute', 130, 31, { face: -1 }); ent('sprig', 140, 31, { face: -1 });
   roof(110, 124, 28); roof(132, 146, 28);
+  // the rooftops are a road: up the lean-to steps at the forge, across the slates, over the archer's perch
+  // (the silver up here had no way to it at all: the roofs sit six rows over the street)
+  plat(103, 30, 3); plat(106, 28, 3);
   plat(126, 26, 4); ent('archer', 127, 25, { face: -1 }); coins([102, 30], [110, 29], [118, 30], [127, 25], [132, 29], [136, 30], [144, 29], [146, 30]);
   ent('silver', 128, 25);
   // the smithy: the iron key, and the smith
@@ -1347,7 +1350,7 @@ function stormhold() {
   ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
   ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
   ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
-  plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13]);
+  plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); // steps to the shelf: it was five rows off the floor coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13]);
   ent('stray', 56, 9, { kind: 'folk' });
   ent('sign', 39, 14, { text: 'THE SMITHY. THEY ARE MAKING SOMETHING LONG AND SHARP FOR SOMEONE LARGE.' });
   // the second span: long, watched from both ends, and a cutter on the far post
@@ -1381,7 +1384,7 @@ function stormhold() {
   ent('doorway', 109, 15, { id: 'long-in', to: 'long-out', lock: [106, 160], label: 'THE LONGHOUSE' });
   ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
   ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
-  plat(118, 11, 4); plat(128, 8, 5); plat(140, 11, 4); ent('archer', 129, 7, { face: -1 });
+  plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(140, 11, 4); ent('archer', 129, 7, { face: -1 }); // a real way into the rafters
   ent('stray', 130, 7, { kind: 'folk' }); ent('key', 158, 15, { kind: 'bone' });
   coins([116, 10], [120, 10], [126, 7], [130, 7], [138, 10], [142, 10], [150, 14], [154, 14]);
   ent('sign', 107, 15, { text: 'THE LONGHOUSE. THE THIRD OF THE HILL FOLK IS UP IN THE RAFTERS AND THE BONE KEY IS AT THE FAR END.' });
@@ -1398,21 +1401,26 @@ function stormhold() {
   // ---- 4. THE LONG BRIDGE: seven spans, six piers, and the Queen's Lance. ----
   // one height the whole way, so his charge has one line to run and the piers are the rhythm
   const BY = 30, P0 = 302; // the deck row: the piers are solid from here down and the deck planks sit on it
+  // the bridgehead: the one column between the bone gate and the first pier was open to the gorge, and
+  // anyone who walked through the gate without jumping fell out of the world on the way to the fight
+  block(301, 301, BY, 45);
   ent('check', 304, BY - 1);
   ent('sign', 302, BY - 1, { text: 'THE CASTLE BRIDGE. IT IS LONGER THAN THE VILLAGE. HE CANNOT TURN WHILE HE IS CHARGING: STEP OFF HIS LINE AND HE PUTS THE LANCE IN A POST. THE PIERS ARE THE ONLY GOOD GROUND AND THEY ARE WATCHED.' });
   const piers = [];
   for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
     block(px0, px1, BY, 45); piers.push([px0, px1]);
-    if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1, give: k >= 2 }); }
+    // sound planks: a duel of blocks and parries cannot be fought on boards that drop you for standing still.
+    // The give-planks are the street's lesson; out here the hazard is the holes his charge leaves.
+    if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1 }); }
     if (k >= 1 && k <= 5) ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' });
   }
   // the last span, from the seventh pier to the gatehouse. Without it the bridge stopped nine tiles
   // short of the door and there was no way off it at all.
-  span(415, 423, BY, { sway: 2, give: true });
+  span(415, 423, BY, { sway: 2 });
   // the towers loose at you on the open spans
   ent('archer', 322, BY - 1, { face: 1, fire: true }); ent('archer', 358, BY - 1, { face: -1, fire: true });
   ent('rockgoblin', 394, BY - 1, { face: -1 }); ent('archer', 412, BY - 1, { face: -1, fire: true });
-  ent('cutter', 340, BY - 1, { face: -1, bridge: 325 });
+  // (no rope cutter out here: a span dropping out from under a duel on a timer nobody can see is not a fight)
   for (const x of [310, 328, 346, 364, 382, 400]) { ent('deco', x, BY - 1, { kind: 'lanternPost' }); coins([x + 4, BY - 2]); }
   ent('silver', 373, BY - 2);
   // the far gatehouse, and the way out
