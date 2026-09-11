@@ -24,7 +24,7 @@ for (const lv of LEVELS) {
   const misses = [];
   for (const e of L.ents) { const w = WANT[e.t]; if (!w) continue; if (!near(e.x, e.y)) misses.push(`${w} at ${e.x},${e.y}`); }
   // and the boss, if the level has one
-  if (L.arena && L.arena.boss) { const b = L.ents.find(e => e.t === L.arena.boss); if (b && !near(b.x, b.y)) misses.push(`the boss (${L.arena.boss}) at ${b.x},${b.y}`); }
+  if (L.arena && L.arena.boss) { const b = L.ents.find(e => e.t === L.arena.boss || e.t === L.arena.boss + 'lord'); if (b && !near(b.x, b.y)) misses.push(`the boss (${L.arena.boss}) at ${b.x},${b.y}`); }
 
   // gold nobody can get to is worse than none: count the coins outside the fill (list them for one level)
   const lost = L.ents.filter(e => e.t === 'coin' && !jumpNear(e.x, e.y));

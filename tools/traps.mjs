@@ -15,7 +15,7 @@ for (const lv of LEVELS) {
   const L = lv.build();
   const R = floodReach(L, T), { seen, footing, key, expand, assisted } = R;
   // the goal: the boss if there is one, else the gate
-  const boss = L.arena && L.arena.boss && L.ents.find(e => e.t === L.arena.boss);
+  const boss = L.arena && L.arena.boss && L.ents.find(e => e.t === L.arena.boss || e.t === L.arena.boss + 'lord'); // (the Ram Lord is placed as 'ramlord')
   const goal = boss || L.ents.find(e => e.t === 'gate');
   if (!goal) { console.log(`== ${lv.id}: no boss or gate to aim for`); continue; }
   // every move, turned round
