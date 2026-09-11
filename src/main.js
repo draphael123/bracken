@@ -3,7 +3,7 @@ import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
 import { bakeSweep, bakePaladin, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeGrub, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
 import { LEVELS, T, TS, CUSTOM } from './level.js';
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -185,6 +185,16 @@ function bakeRiseIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#c9d1dc'
 const RISE_ICON = bakeRiseIcon();
 function bakeFlameIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#ff6b2c'; g.fillRect(2, 5, 6, 6); g.fillRect(3, 3, 4, 2); g.fillRect(4, 1, 2, 2); g.fillStyle = '#ffd36b'; g.fillRect(3, 7, 4, 4); g.fillRect(4, 5, 2, 2); g.fillStyle = '#fff6c8'; g.fillRect(4, 9, 2, 2); return outline(c, '#1b1626'); }
 const FLAME_ICON = bakeFlameIcon();
+// the pyromancer's five skills each get a picture of what they do, not the same flame five times
+const PIX_PAL = { o: '#ff6b2c', y: '#ffd36b', w: '#fff6c8', r: '#c9463d', R: '#8f2f28', d: '#1b1626', b: '#5c3a1d', s: '#7c8797' };
+function pixIcon(rows) { const [c, g] = canvas(rows[0].length, rows.length); rows.forEach((row, y) => [...row].forEach((ch, x) => { if (PIX_PAL[ch]) { g.fillStyle = PIX_PAL[ch]; g.fillRect(x, y, 1, 1); } })); return outline(c, '#1b1626'); }
+const PYRO_ICONS = {
+  fireWall: pixIcon(['....o.....', '....o.....', '.o..oo..o.', '.oo.oyo.o.', 'oyo.oyo.oo', 'oyooyyooyo', 'oyyoyyoyyo', 'oywyywyywo', 'oyyyyyyyyo', 'ssssssssss', 'bbbbbbbbbb', '..........']),
+  cinderStep: pixIcon(['..........', '......oo..', '.....oyyo.', '....oywyyo', 'yy..oywwyo', '...oyywyo.', 'oo.oyyyo..', '..oyyoo...', 'yyoo......', '.o..o.....', '...o......', '..........']),
+  vent: pixIcon(['..........', '....y.....', '.y..o..y..', '..o.o.o...', '...ooo....', 'yooowoooy.', '...ooo....', '..o.o.o...', '.y..o..y..', '....y.....', '..........', '..........']),
+  kindle: pixIcon(['....o.....', '...oyo....', '...oyo....', '.rr.o.rr..', 'rrrrrrrrr.', 'rwwrrrrrr.', 'rwrrrrrrR.', '.rrrrrrR..', '..rrrrR...', '...rrR....', '....R.....', '..........']),
+  wisp: pixIcon(['.....o....', '....oyo...', '...oyyyo..', '..oywwwyo.', '..oydwdyo.', '..oywwwyo.', '...oyyyo..', '..o.ooo...', '.o........', 'o..o......', '..o.......', '..........']),
+};
 let wisp = null; // the pyromancer's flame familiar
 const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
 const CD_MAX = { shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8 };
@@ -218,7 +228,7 @@ function bakeAll(pal = {}) {
     shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
     motherCap: ART.bakeMotherCap(), impact: ART.bakeImpact(), impactSteel: ART.bakeImpact('#c9d1dc'), impactRed: ART.bakeImpact('#ff6b6b'),
     fern: [0, 1, 2].map(i => ART.bakeFern(400 + i)), stump: [0, 1].map(i => ART.bakeStump(410 + i)), rock: [0, 1, 2].map(i => ART.bakeRock(420 + i)), cattail: [0, 1, 2].map(i => ART.bakeCattail(430 + i)), lilyFlower: ART.bakeLilyFlower(), skullPost: ART.bakeSkullPost(), tent: [0, 1].map(i => ART.bakeTent(440 + i)), campfire: ART.bakeCampfire(), tinyCap: [ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)], moss: [0, 1, 2].map(i => ART.bakeMoss(460 + i)), butterfly: [ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')], dragonfly: ART.bakeDragonfly(), crow: ART.bakeCrow(),
-    hiveBg: ART.bakeHiveBg(500), honeyDrip: ART.bakeHoneyDrip(), frogStatue: [0, 1].map(i => ART.bakeFrogStatue(510 + i)), lilyLantern: ART.bakeLilyLantern(), banner: [0, 1].map(i => ART.bakeWarBanner(520 + i)), boneThrone: ART.bakeBoneThrone(), skullPile: [0, 1].map(i => ART.bakeSkullPile(530 + i)), hangCage: ART.bakeHangCage(), rootDecor: [0, 1, 2].map(i => ART.bakeRootDecor(540 + i)), sporePod: ART.bakeSporePod(),
+    hiveBg: ART.bakeHiveBg(500), honeyDrip: ART.bakeHoneyDrip(), frogStatue: [0, 1].map(i => ART.bakeFrogStatue(510 + i)), lilyLantern: ART.bakeLilyLantern(), banner: [0, 1].map(i => ART.bakeWarBanner(520 + i)), bannerHung: [0, 1].map(i => ART.bakeWarBanner(520 + i, true)), gibbet: ART.bakeGibbet(), boneThrone: ART.bakeBoneThrone(), skullPile: [0, 1].map(i => ART.bakeSkullPile(530 + i)), hangCage: ART.bakeHangCage(), rootDecor: [0, 1, 2].map(i => ART.bakeRootDecor(540 + i)), sporePod: ART.bakeSporePod(),
     oldOak: [0, 1].map(i => ART.bakeOldOak(470 + i)), boat: ART.bakeBoat(480), heron: ART.bakeHeron(), totem: [0, 1].map(i => ART.bakeTotem(490 + i)), giantCap: ART.bakeGiantCap(495),
     skullMini: ART.bakeSkullMini(), compass: ART.bakeCompass(), relic: ART.bakeRelics(), bough: ART.bakeBough(), charm: ART.bakeCharms(), counter: ART.bakeCounter(), wares: [ART.bakeWares(0), ART.bakeWares(1)], shopDoor: ART.bakeShopDoor(), lanternPost: ART.bakeLanternPost(), beehive: ART.bakeBeehive(), birdhouse: ART.bakeBirdhouse(), fishTrap: [0, 1].map(i => ART.bakeFishTrap(800 + i)), spearRack: ART.bakeSpearRack(), barrelStack: ART.bakeBarrelStack(), bones: [0, 1].map(i => ART.bakeBones(810 + i)), fallenLog: [0, 1].map(i => ART.bakeFallenLog(770 + i)), fence: [0, 1].map(i => ART.bakeFence(780 + i)), cart: ART.bakeCart(790), well: ART.bakeWell(), heather: [0, 1, 2].map(i => ART.bakeHeather(730 + i)), gorse: [0, 1].map(i => ART.bakeGorse(740 + i)), thistle: [0, 1].map(i => ART.bakeThistle(750 + i)), standingStone: [0, 1, 2].map(i => ART.bakeStandingStone(760 + i)), cairn: ART.bakeCairn(), boulder: ART.bakeBoulder(), bothy: ART.bakeBothy(), mill: ART.bakeMill(), sail: ART.bakeSail(), foldGate: ART.bakeFoldGate(),
     bell: ART.bakeBell(), ramLog: ART.bakeRamLog(), lever: [ART.bakeLever(false), ART.bakeLever(true)], plate: [ART.bakePlate(false), ART.bakePlate(true)], palanquin: ART.bakePalanquin(), door: [ART.bakeDoor(false), ART.bakeDoor(true)], carpet: ART.bakeCarpet(),
@@ -445,10 +455,27 @@ function resetPools() { for (const p of (L.pools || [])) if (p.y0 !== undefined)
 // off you and make the wood a chore. A gate you have opened stays open for the rest of the attempt.
 const hasKey = k => marks.has('key:' + k);
 const KEY_NAME = { brass: 'THE BRASS KEY', iron: 'THE IRON KEY', bone: 'THE BONE KEY' };
-function openGateCol(col) {
-  for (let ty = 0; ty < LH; ty++) { const i = ty * LW + col; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
-  resolveTiles();
-}
+// A PORTCULLIS IS SEEN TO MOVE. Every gate the game drops or lifts slides in its slot - down fast with a clang,
+// up slowly on its chains - instead of blinking in or out. The tiles change at once (nobody slips under a
+// falling gate); only the drawing catches up.
+let gateFx = [];
+function closeGate(col, y0, y1) { const ys = [];
+  for (let ty = y0; ty <= y1; ty++) { const i = ty * LW + col; if (L.grid[i] === T.AIR) { L.grid[i] = T.PORT; ys.push(ty); } }
+  if (!ys.length) return; resolveTiles(); for (const ty of ys) tileSpr[ty * LW + col] = null;
+  gateFx.push({ col, ys, t: 0, dur: 0.28, closing: true }); SFX.gateDrop(); }
+function openGate(col, y0 = 0, y1 = LH - 1, mark = false) { const ys = [];
+  for (let ty = y0; ty <= y1; ty++) { const i = ty * LW + col; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; if (mark) destroyed.add(i); ys.push(ty); } }
+  if (!ys.length) return; resolveTiles(); gateFx.push({ col, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift(); }
+function updateGateFx(dt) { for (const f of gateFx) { f.t += dt;
+    if (f.closing && f.t >= f.dur && !f.landed) { f.landed = true; for (const ty of f.ys) { const i = ty * LW + f.col; if (L.grid[i] === T.PORT) tileSpr[i] = TILE.port[(ty + f.col) % 2]; }
+      const bx = f.col * TS + 8, by = (Math.max(...f.ys) + 1) * TS; dust(bx, by, 6); shakeCam(2.5); SFX.gateLand(); } }
+  gateFx = gateFx.filter(f => f.t < f.dur + 0.02); }
+function drawGateFx(cx, cy) { for (const f of gateFx) { const top = Math.min(...f.ys), bot = Math.max(...f.ys), h = (bot - top + 1) * TS, x = f.col * TS - cx;
+    if (x < -TS || x > VW) continue; const k = Math.min(1, f.t / f.dur), off = f.closing ? -h * (1 - k * k) : -h * (k * k * (3 - 2 * k));
+    g.save(); g.beginPath(); g.rect(x, top * TS - cy, TS, h); g.clip();
+    for (const ty of f.ys) g.drawImage(TILE.port[(ty + f.col) % 2], x, Math.round(ty * TS - cy + off));
+    g.restore(); } }
+function openGateCol(col) { openGate(col, 0, LH - 1, true); }
 function applyWorld() { let ch = false;
   for (const e of L.ents) if (e.t === 'lockgate' && marks.has('gate:' + e.x)) { for (let ty = 0; ty < LH; ty++) { const i = ty * LW + e.x; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); ch = true; } } } for (const e of L.ents) if (e.t === 'felltree' && marks.has('tree:' + e.x)) for (let x = e.x + 1; x <= e.x + (e.len || 12); x++) { const i = e.y * LW + x; if (L.grid[i] !== T.PLANK) { L.grid[i] = T.PLANK; tileSpr[i] = null; ch = true; } } return ch; }
 const questOf = () => L.quest || (L.strays ? { n: L.strays, item: 'sheep', name: 'EWE', done: 'THE FLOCK IS WHOLE', reward: 'fleece' } : { n: 3, item: 'none', name: 'ITEM', done: 'DONE' });
@@ -601,7 +628,7 @@ function spawnEnt(e) {
       case 'firevent': props.push({ t: 'firevent', x: px, y: py, every: e.every || 2.8, timer: 1 + Math.random() * 2, tell: 0, on: 0 }); break;
       case 'master': enemies.push({ ...base, t: 'master', w: 20, h: 16, hp: EHP.master, maxHp: EHP.master, mounted: true, mode: 'wait', modeT: 0, whistleT: 4, air: false, timer: 0, speed: 130 }); break;
       case 'king': boss = { ...base, t: 'king', w: 54, h: 45, hp: EHP.king, maxHp: EHP.king, mode: 'sleep', modeT: 0, phase: 1, dir: -1, gobletT: 3, summonT: 8, sweepT: 4, shoutT: 7, grabT: 5, cageT: 7, stepT: 0, throneT: 0, last: '' }; enemies.push(boss); break;
-      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [PROP.banner[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [PROP.hangCage, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], bracket: [PROP.bracket[e.v || 0], true], axle: [PROP.axle, true], pillar: [PROP.pillar[e.v || 0], true], strut: [PROP.strut[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod], timber: [PROP.timber[e.v || 0], true], cobweb: [PROP.cobweb[e.v || 0], true], tent: [PROP.tent[e.v || 0], true], spire: [TILE.spire[0][e.v || 0], true], throne: [SPR.throne, true], hallWindow: [HALLWIN || (HALLWIN = bakeHallWindow()), true], bridgepost: [PROP.bridgePost, false], bridgetower: [PROP.bridgeTower, true], gatehouse: [PROP.gatehouse, true], forge: [PROP.forge, true], anvil: [PROP.anvil, false] }[e.kind]; if (!K) break; const c = K[0]; const onPlank = !e.hang && tileAt(e.x, e.y + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
+      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [(e.hang ? PROP.bannerHung : PROP.banner)[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [e.hang ? PROP.hangCage : PROP.gibbet, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], bracket: [PROP.bracket[e.v || 0], true], axle: [PROP.axle, true], pillar: [PROP.pillar[e.v || 0], true], strut: [PROP.strut[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod], timber: [PROP.timber[e.v || 0], true], cobweb: [PROP.cobweb[e.v || 0], true], tent: [PROP.tent[e.v || 0], true], spire: [TILE.spire[0][e.v || 0], true], throne: [SPR.throne, true], hallWindow: [HALLWIN || (HALLWIN = bakeHallWindow()), true], bridgepost: [PROP.bridgePost, false], bridgetower: [PROP.bridgeTower, true], gatehouse: [PROP.gatehouse, true], forge: [PROP.forge, true], anvil: [PROP.anvil, false] }[e.kind]; if (!K) break; const c = K[0]; const onPlank = !e.hang && tileAt(e.x, e.y + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
         deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? e.y * TS : py - c.height + (onPlank ? 3 : 0), c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: py - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: py - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: py - 11, r: 40, glow: true }); if (e.kind === 'lanternPost') lights.push({ x: px, y: py - 18, r: 40, torch: true }); if (e.kind === 'counter') lights.push({ x: px + 6, y: py - 20, r: 56, glow: true }); if (e.kind === 'mill') lights.push({ x: px, y: py - 46, r: 30, glow: true }); if (e.kind === 'sporePod') lights.push({ x: px, y: py - 8, r: 40, glow: true }); break; }
       case 'sporeling': enemies.push({ ...base, t: 'sporeling', w: 8, h: 10, hp: EHP.sporeling, speed: 24 }); break;
       case 'lurker': enemies.push({ ...base, t: 'lurker', w: 12, h: 12, hp: EHP.lurker, mode: 'hide', modeT: 0 }); break;
@@ -639,7 +666,7 @@ function respawn() {
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null;
-  mendAll(); resetCastle(); spawnEntities(); seeds = []; embers = []; pyres = []; P.full = false; P.fullT = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
+  mendAll(); resetCastle(); spawnEntities(); seeds = []; gateFx = []; embers = []; pyres = []; P.full = false; P.fullT = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
 }
 function startGame() {
@@ -885,7 +912,7 @@ function drawStore() {
     : tab.key === 'skin' ? preview('skin:' + k.id + ':' + PROG.sword, () => bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal))).R.idle[0]
     : tab.key === 'sword' ? preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal))).R.atk[1]
     : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
-    : (k.id === 'fireWall' || k.id === 'cinderStep' || k.id === 'vent' || k.id === 'wisp' || k.id === 'kindle') ? FLAME_ICON
+    : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
   const lockedOf = k => (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
   items.forEach((k, i) => {
@@ -910,13 +937,17 @@ function drawStore() {
   g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(pvX + 0.5, pvY + 0.5, pvW - 1, pvH - 1);
   { const k = items[storeI]; const mx = pvX + pvW / 2;
     if (k) {
-      const artB = pvY + 46; // the art sits in the top 46px, feet on that line
+      // the art sits in the top 46px, feet on that line - unless the words need the room: then the art shrinks and
+      // the words move up (the WISP's line ran off the bottom of the box)
+      const lk0 = lockedOf(k), body0 = lk0 ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
+      const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + 7 * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
+      const squeeze = Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
         const set = tab.key === 'hero' ? (k.id === 'paladin' ? preview('hero:paladin', () => bakePaladin({})) : k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
           : tab.key === 'skin' ? preview('skin:' + k.id + ':' + PROG.sword, () => bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal)))
           : preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal)));
         const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 3) % 4];
-        const sc = 1.6; g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
+        const sc = squeeze ? 1.6 * (46 - squeeze) / 46 : 1.6; g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
       } else if (tab.rank) {
         const rr = rankOf(k.id);
         text(rr + ' / ' + k.max, mx, pvY + 10, UI.title, 'center');
@@ -924,10 +955,10 @@ function drawStore() {
         text(k.id === 'vigour' ? 'HEALTH' : k.id === 'breath' ? 'STAMINA' : k.id === 'recovery' ? 'REGEN' : k.id === 'temper' ? 'DAMAGE' : 'COST', mx, pvY + 36, UI.dim, 'center', 6);
       } else {
         const icon = iconOf(k);
-        if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * 1.5), Math.round(artB - icon.height * 3), icon.width * 3, icon.height * 3);
+        const isc = squeeze > 8 ? 2 : 3; if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * isc / 2), Math.round(artB - icon.height * isc), icon.width * isc, icon.height * isc);
         if (tab.key === 'menu') text('~ ~', mx, pvY + 30, UI.dim, 'center');
       }
-      let ty = pvY + 50;
+      let ty = pvY + 50 - squeeze;
       for (const ln of wrap(k.name, pvW - 10, 6).slice(0, 2)) { text(ln, mx, ty, UI.title, 'center', 6); ty += 8; }
       // what it costs, or what you already have
       const locked = lockedOf(k);
@@ -1301,11 +1332,16 @@ const COLS = { sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a'
 
 // ---------- damage ----------
 function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const gp of gps) if (gp && gp.vibrationActuator && gp.vibrationActuator.playEffect) { gp.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: mag, weakMagnitude: mag * 0.6 }); break; } } catch {} }
-function damagePlayer(fromX, dmg, { up = false, unblockable = false } = {}) {
+// where a sound is, for the mixer: full and centred on screen, panned and fading off it (bosses never fade far)
+function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH / 2), d = Math.hypot(dx, dy * 1.3), near = VW * 0.55;
+  return { pan: Math.max(-0.7, Math.min(0.7, dx / (VW * 0.75))), v: d <= near ? 1 : Math.max(big ? 0.6 : 0.18, 1 - (d - near) / (VW * 0.9)) }; }
+// the player's own sounds are never placed: whatever hurts them, the cry is theirs
+function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { return damagePlayer0(fromX, dmg, o); } finally { emitAt(was); } }
+function damagePlayer0(fromX, dmg, { up = false, unblockable = false } = {}) {
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (P.relic === 'banner') dmg = Math.max(1, Math.round(dmg * 0.8)); // the Queen's banner: they pull their blows
   if (P.dead || invulnerable()) return false;
-  if (P.aegis) { gainLight(12); P.st = Math.max(0, P.st - 8); P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.block(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
+  if (P.aegis) { gainLight(12); P.st = Math.max(0, P.st - 8); P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
   const front = Math.sign(fromX - P.x) === P.face || fromX === P.x;
   if (P.block && front && !unblockable) {
     if (P.st >= ST.blockHit) {
@@ -1393,9 +1429,10 @@ function swordEffect(e) {
   if (w.gold && !e.alive) { PROG.coins = (PROG.coins || 0) + 1; earned++; number(e.x, e.y - e.h - 12, '+1 gold', '#ffd34a'); SFX.coin(); }
 }
 const ONE_HIT = new Set(['wasp', 'harpy', 'bat', 'kite', 'drone', 'crow']); // wings: one blow of anything brings it down
-function hurtEnemy(e, dmg, fromX, plunge) {
+function hurtEnemy(e, dmg, fromX, plunge) { const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { return hurtEnemy0(e, dmg, fromX, plunge); } finally { emitAt(was); } }
+function hurtEnemy0(e, dmg, fromX, plunge) {
   if (isPaladin() && e.t === 'wight') dmg *= 2; // the light is hard on the dead
-  if (e.t === 'bale') { if (e.gone > 0) return; e.gone = 3; e.vx = 0; burst(e.x, e.y - 6, 14, COLS.bale, 70, 0.6); SFX.crack(); return; } // a bale bursts, and another comes tumbling after
+  if (e.t === 'bale') { if (e.gone > 0) return; e.gone = 3; e.vx = 0; burst(e.x, e.y - 6, 14, COLS.bale, 70, 0.6); SFX.baleBurst(); return; } // a bale bursts, and another comes tumbling after
   if (ONE_HIT.has(e.t) && !e.maxHp && !e.big && !e.mini) dmg = Math.max(dmg, e.hp);
   if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 20, e.y - 30, Math.sign(e.x - fromX) || 1, 5); return; } // his crown turns every blade: only a cage brings his head down
   if (e.t === 'bearer') { SFX.clank(); return; }
@@ -1666,7 +1703,7 @@ function updatePlayer(dt) {
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
       if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14);
-        if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.0, sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.heavy(); } } // HAMMERFALL: the maul comes down and the ground carries it both ways
+        if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.0, sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall(); } } // HAMMERFALL: the maul comes down and the ground carries it both ways
     } else { const heavy = prevVy > 250; dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
@@ -1783,7 +1820,7 @@ const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss 
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
   if (!L.mini) return;
-  for (let ty = 0; ty < LH; ty++) { const i = ty * LW + L.mini.gate; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
+  openGate(L.mini.gate, 0, LH - 1, true);
   setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
   number(e.x, e.y - 30, MINI_DONE[e.t] || 'THE WAY OPENS', '#8fd160'); SFX.heavy(); music.play(L.music || 'theme');
 }
@@ -2153,7 +2190,7 @@ function playerLight() { let r = P.relic === 'lamp' ? 90 : 26; if (wisp) r = Mat
 // Cave bat: hangs in the dark; flies at the nearest light, bites what carries it, then goes back to its roost.
 const windAt = (x, y) => { for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; if (x > z.x0 && x < z.x1 && y > z.y0 && y <= z.y1 + 4) { const ph = (time + (z.phase || 0)) % z.period; if (ph >= z.on) return 0; return z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; } } return 0; };
 function updateCrow(e, dt) { // storm crows: they come down the wind in strings, and they do not turn for anyone
-  if (!e.go) { if (!P.dead && Math.abs(e.x - P.x) < e.wake) e.go = true; else return; }
+  if (!e.go) { if (!P.dead && Math.abs(e.x - P.x) < e.wake) { e.go = true; SFX.caw(); } else return; }
   e.x += e.vx * dt; e.y = e.hy + Math.sin(e.anim * e.freq + e.ph) * e.amp; e.face = e.vx >= 0 ? 1 : -1;
   if (e.x < camX - 60) e.alive = false;
 }
@@ -2162,7 +2199,7 @@ function updateHorn(e, dt) { // a goblin with a ram's horn: he winds it at you, 
   const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 170 && Math.abs(P.y - e.y) < 60;
   if (e.stagger > 0) { e.mode = 'idle'; e.modeT = 1.2; return; }
   if (e.mode === 'idle') { e.face = Math.sign(d) || e.face; if (near && e.modeT <= 0) { e.mode = 'tell'; e.modeT = 0.7; SFX.snort(); } }
-  else if (e.mode === 'tell') { if (e.modeT <= 0) { e.mode = 'blow'; e.modeT = 1.5; SFX.bellow(); } }
+  else if (e.mode === 'tell') { if (e.modeT <= 0) { e.mode = 'blow'; e.modeT = 1.5; SFX.hornBlast(); } }
   else if (e.mode === 'blow') {
     if (!P.dead && Math.sign(d) === e.face && ad < 160 && Math.abs(P.y - e.y) < 44) { const k = 1 - ad / 180; if (P.ground) moveBody(P, e.face * 120 * k * dt, 0, false); else P.vx += e.face * 520 * k * dt; P.gustT = 0.25; }
     if (Math.random() < dt * 50) parts.push({ x: e.x + e.face * (10 + Math.random() * 30), y: e.y - 8 + (Math.random() - 0.5) * 16, vx: e.face * (220 + Math.random() * 120), vy: (Math.random() - 0.5) * 20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ffffff' : '#dfe8c0', size: Math.random() < 0.3 ? 2 : 1, grav: 0 });
@@ -2174,7 +2211,7 @@ function updateBale(e, dt) { // a heather bale the wind rolls along the moor; cu
   const w = windAt(e.x, e.y - 6); if (w) e.lastW = w;
   e.vx += ((w ? w * 150 : 0) - e.vx) * Math.min(1, dt * (w ? 1.6 : 0.7));
   e.vy = Math.min(320, e.vy + 1000 * dt);
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) { e.vy = Math.abs(e.vx) > 70 && Math.random() < dt * 5 ? -110 : 0; } if (r.hitX) e.vx = -e.vx * 0.4;
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) { e.vy = Math.abs(e.vx) > 70 && Math.random() < dt * 5 ? -110 : 0; if (e.vy < 0 && Math.abs(e.x - P.x) < 200) SFX.baleBump(); } if (r.hitX) e.vx = -e.vx * 0.4;
   e.spin = (e.spin || 0) + e.vx * dt / 6; e.face = 1;
   if (e.x < e.x0 * TS - 8 || e.x > e.x1 * TS + 24) e.gone = 1.5;
   if (Math.abs(e.vx) > 60 && r.ground && Math.random() < dt * 8) dust(e.x - Math.sign(e.vx) * 5, e.y, 1);
@@ -2248,17 +2285,17 @@ function updateStormShaman(e, dt) {
   e.vy = Math.min(320, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0;
   e.castFlash = Math.max(0, e.castFlash - dt); const d = P.x - e.x; e.face = Math.sign(d) || e.face;
   if (e.stagger > 0 || P.dead || Math.abs(d) > 220 || Math.abs(P.y - e.y) > 110) return;
-  e.castT -= dt; if (e.castT <= 0.4 && e.castT + dt > 0.4) { e.castFlash = 0.4; SFX.callerChant(); }
-  if (e.castT <= 0) { e.castT = 2.4; const a = Math.atan2((P.y - 8) - (e.y - 12), P.x - e.x); seeds.push({ x: e.x + Math.cos(a) * 10, y: e.y - 12 + Math.sin(a) * 10, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, dead: false, life: 3, bolt: true, owner: e }); SFX.callerBlast(); }
+  e.castT -= dt; if (e.castT <= 0.4 && e.castT + dt > 0.4) { e.castFlash = 0.4; SFX.stormChant(); }
+  if (e.castT <= 0) { e.castT = 2.4; const a = Math.atan2((P.y - 8) - (e.y - 12), P.x - e.x); seeds.push({ x: e.x + Math.cos(a) * 10, y: e.y - 12 + Math.sin(a) * 10, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, dead: false, life: 3, bolt: true, owner: e }); SFX.stormZap(); }
 }
 // the chimney sweep: he lives down a stack. Come near and he comes up with a handful of soot, throws it, and stays up a
 // moment to see it land - the only moment he can be reached - then he is back down the flue.
 function updateSweep(e, dt) {
   e.modeT -= dt; const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 110 && Math.abs(P.y - e.y) < 90;
-  if (e.mode === 'hide') { e.gone = 1; if (near && e.modeT <= 0) { e.mode = 'pop'; e.modeT = 0.45; e.gone = 0; SFX.gobHurt(); burst(e.x, e.y - 8, 6, ['#2a2630', '#5a5460'], 30, 0.4, -20, 1); } }
+  if (e.mode === 'hide') { e.gone = 1; if (near && e.modeT <= 0) { e.mode = 'pop'; e.modeT = 0.45; e.gone = 0; SFX.sweepPop(); burst(e.x, e.y - 8, 6, ['#2a2630', '#5a5460'], 30, 0.4, -20, 1); } }
   else if (e.mode === 'pop') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.3; const sx = e.x + e.face * 6, sy = e.y - 12, Tf = 0.8, G = 420; seeds.push({ x: sx, y: sy, vx: (P.x - sx) / Tf, vy: ((P.y - 8) - sy) / Tf - 0.5 * G * Tf, g: G, dead: false, life: 3, soot: true, owner: e }); SFX.throwWhoosh(); } }
   else if (e.mode === 'throw') { if (e.modeT <= 0) { e.mode = 'up'; e.modeT = 1.3; } }
-  else if (e.mode === 'up') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'hide'; e.modeT = 2.2; e.gone = 1; burst(e.x, e.y - 8, 4, ['#2a2630'], 20, 0.3, -20, 1); } }
+  else if (e.mode === 'up') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'hide'; e.modeT = 2.2; e.gone = 1; SFX.sweepHide(); burst(e.x, e.y - 8, 4, ['#2a2630'], 20, 0.3, -20, 1); } }
 }
 function updateGrub(e, dt) { // slow, fat, glowing: touching it burns, and it spits an arc of acid at you
   e.modeT -= dt; e.spitT -= dt; e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300; e.anim += dt;
@@ -2315,6 +2352,12 @@ function updateCarts(dt) {
     // rail ahead at cart height? a wall stops it dead; a gate, crate or stake wall breaks
     const ahead = tileAt(fx, Math.floor((m.y + m.h - 4) / TS));
     if (m.rolling && under !== T.RAIL && !pan && !m.auto && Math.abs(m.vx) > 0) m.vx *= Math.pow(0.03, dt); // off the rail a cart runs down
+    // the end of a rail over a drop is a buffer stop, not a way out of the room: the Forgemaster's tubs rolled off his
+    // armoury rail, down the stair and out of the fight. A tub he sent smashes on it (he sends another); one you
+    // kicked, or rode, stops dead.
+    if (m.rolling && !pan && under === T.RAIL && Math.abs(m.vx) > 5 && tileAt(fx, fy) !== T.RAIL && !isSolid(fx, fy)) {
+      if (m.auto && !m.ridden) { m.gone = true; m.respawnT = 999; burst(m.x + m.w / 2, m.y + 4, 12, ['#5a6270', '#8a919c', '#8a5a32'], 80, 0.5); SFX.heavy(); shakeCam(2); if (P.onMover === m) P.onMover = null; continue; }
+      m.x = ox; m.vx = 0; m.rolling = false; m.kicked = false; SFX.clank(); dust(m.x + m.w / 2, m.y + m.h, 4); }
     if (Math.abs(m.vx) > 50 && under === T.RAIL) { // wheels on iron: sparks off the flanges and a rattle you can hear from the next gallery
       if (Math.random() < dt * 14) parts.push({ x: m.x + (m.vx > 0 ? 2 : m.w - 2) + (Math.random() - 0.5) * 4, y: m.y + m.h - 1, vx: -Math.sign(m.vx) * (40 + Math.random() * 60), vy: -30 - Math.random() * 40, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 500 });
       m.rattleT = (m.rattleT || 0) - dt; if (m.rattleT <= 0) { m.rattleT = 0.19; if (SET.ambient && Math.abs(P.x - m.x) < 260 && Math.abs(P.y - m.y) < 120) SFX.rattle(P.onMover === m ? 1 : 0.5); } }
@@ -2527,6 +2570,7 @@ function updateForgemaster(e, dt) {
   e.vx += (want - e.vx) * Math.min(1, dt * 6);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
   e.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, e.x));
+  { const ph = Math.floor(e.anim * (Math.abs(e.vx) > 60 ? 4.5 : 3)); if (Math.abs(e.vx) > 10 && ph !== e.stepPh && ph % 2 === 0) { SFX.thump(); if (Math.abs(e.vx) > 60) shakeCam(1); } e.stepPh = ph; } // every plant of the boot lands
 }
 const forgeOpen = e => e.mode === 'stun' || e.mode === 'scald';
 const FACET_COL = ['blue', 'violet', 'green', 'both'];
@@ -2572,7 +2616,7 @@ function updateShardling(e, dt) {
   if (ad < 190 && !P.dead) e.face = Math.sign(d) || e.face;
   const want = ad < 190 && !P.dead && e.stagger <= 0 ? e.face * e.speed : 0;
   e.vx += (want - e.vx) * Math.min(1, dt * 6);
-  e.mode = ad < 40 ? 'bristle' : 'walk';
+  { const was = e.mode; e.mode = ad < 40 ? 'bristle' : 'walk'; if (e.mode === 'bristle' && was !== 'bristle') SFX.shardBristle(); }
   const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
   if (r.ground && tileAt(ftx, fty) === T.AIR) { e.vx = 0; e.face = -e.face; }
@@ -3362,16 +3406,17 @@ function galleryVolley(e) { let n = 0; for (const f of enemies) if (f.alive && f
 // only when the garrison is down. Catch the sentry, or break the bell, and the hall stays quiet.
 function raiseAlarm(id) {
   const sec = (L.alarms || []).find(a => a.id === id); if (!sec || sec.on || sec.done) return;
-  sec.on = true; SFX.thunder(); SFX.clank(); SFX.bellow(); shakeCam(5); flash = Math.max(flash, 0.18);
-  for (const [col, y0, y1] of sec.gates) for (let ty = y0; ty <= y1; ty++) { const i = ty * LW + col; if (L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[(ty + col) % 2]; } }
-  resolveTiles();
+  sec.on = true; sec.onT = 0; SFX.thunder(); SFX.clank(); SFX.bellow(); shakeCam(5); flash = Math.max(flash, 0.18);
+  for (const [col, y0, y1] of sec.gates) closeGate(col, y0, y1);
   for (const gd of sec.garrison) { const n0 = enemies.length; spawnEnt({ t: gd.t, x: gd.x, y: gd.y, face: gd.face || -1 }); for (let i = n0; i < enemies.length; i++) enemies[i].garrison = id; burst(gd.x * TS + 8, gd.y * TS, 8, ['#5a2a7a', '#e0b040'], 50, 0.4); }
 }
-function updateAlarms() {
-  for (const sec of (L.alarms || [])) if (sec.on && !sec.done && !enemies.some(e => e.alive && e.garrison === sec.id)) {
-    sec.done = true; SFX.medal(); SFX.clank();
-    for (const [col, y0, y1] of sec.gates) for (let ty = y0; ty <= y1; ty++) { const i = ty * LW + col; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; } }
-    resolveTiles();
+function updateAlarms(dt = 1 / 60) {
+  // the gates lift when the garrison is down, or after twenty seconds whatever is left of it:
+  // a garrison turned out on the far side of its own gate, or stuck in a pit, used to shut the hall for good
+  for (const sec of (L.alarms || [])) if (sec.on && !sec.done) sec.onT = (sec.onT || 0) + dt;
+  for (const sec of (L.alarms || [])) if (sec.on && !sec.done && (sec.onT > 20 || !enemies.some(e => e.alive && e.garrison === sec.id))) {
+    sec.done = true; SFX.medal();
+    for (const [col, y0, y1] of sec.gates) openGate(col, y0, y1);
   }
 }
 // dying puts the castle back: gates the alarm dropped go up (the section can be woken again), winch gates go down
@@ -3495,10 +3540,10 @@ function updateCastleProps(dt, hb) {
   for (const pr of props) {
     if (pr.t === 'winch') {
       const struck = hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr);
-      if (struck) { P.hitSet.add(pr); if (pr.open <= 0) { pr.open = pr.hold; SFX.clank(); SFX.stone(); for (let ty = pr.gy0; ty <= pr.gy1; ty++) { const i = ty * LW + pr.gate; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; } } resolveTiles(); } else { pr.open = pr.hold; SFX.ui(); } }
+      if (struck) { P.hitSet.add(pr); if (pr.open <= 0) { pr.open = pr.hold; SFX.clank(); openGate(pr.gate, pr.gy0, pr.gy1); } else { pr.open = pr.hold; SFX.ui(); } }
       if (pr.open > 0) { pr.open -= dt; pr.spin += dt * 6; if (Math.floor(pr.open * 2) !== Math.floor((pr.open + dt) * 2)) SFX.text();
-        if (pr.open <= 0) { pr.open = 0; SFX.heavy(); shakeCam(3); const gx = pr.gate * TS + 8;
-          for (let ty = pr.gy0; ty <= pr.gy1; ty++) { const i = ty * LW + pr.gate; if (L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[(ty + pr.gate) % 2]; } } resolveTiles();
+        if (pr.open <= 0) { pr.open = 0; const gx = pr.gate * TS + 8;
+          closeGate(pr.gate, pr.gy0, pr.gy1);
           if (!P.dead && Math.abs(P.x - gx) < 10 && P.y > pr.gy0 * TS && P.y - 14 < (pr.gy1 + 1) * TS) { damagePlayer(gx, DMG.crush, { unblockable: true }); P.x = gx + (P.x < gx ? -12 : 12); }
           for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - gx) < 10 && e.y > pr.gy0 * TS && e.y - e.h < (pr.gy1 + 1) * TS) hurtEnemy(e, 999, gx, false); } }
     }
@@ -3631,9 +3676,13 @@ function drawCritters(cx, cy) {
 }
 
 // ---------- enemies ----------
+// every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
+const windingUp = e => (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));
 function updateEnemies(dt) {
   for (const e of enemies) {
     if (!e.alive) continue;
+    emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
+    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) SFX.tell(!!e.maxHp || !!e.big || !!e.mini); e.wuWas = wu; }
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - dt); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt);
     if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { e.hp -= 2; e.flash = 0.06; number(e.x, e.y - e.h - 8, 2, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
     if (e.frozen > 0) e.frozen -= dt;
@@ -3956,10 +4005,10 @@ let pyres = [];
 const PYRE_DMG = 42, PYRE_SPLASH = 16;
 // THE PALADIN'S LIGHT: it comes from the maul landing and from whatever the Aegis turns aside, and it goes on
 // mending or on JUDGEMENT.
-function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(100, (P.light || 0) + n); if (!was && P.light >= 100) { SFX.heatFull(); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } }
-function castMend() { if ((P.light || 0) < 34) { SFX.buzz(); P.stFlash = 0.3; return; } P.light -= 34; P.hp = Math.min(P.maxHp, P.hp + 20); P.castT = 0.3; SFX.spark(); SFX.sting(); number(P.x, P.y - 24, '+20', '#fff6c8');
+function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(100, (P.light || 0) + n); if (!was && P.light >= 100) { SFX.lightFull(); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } }
+function castMend() { if ((P.light || 0) < 34) { SFX.buzz(); P.stFlash = 0.3; return; } P.light -= 34; P.hp = Math.min(P.maxHp, P.hp + 20); P.castT = 0.3; SFX.mend(); number(P.x, P.y - 24, '+20', '#fff6c8');
   for (let i = 0; i < 14; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 16, y: P.y - Math.random() * 20, vx: 0, vy: -40 - Math.random() * 40, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: Math.random() < 0.3 ? 2 : 1, grav: -20 }); }
-function castJudgement() { P.light = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.6); P.vx = 0; SFX.thunder(); SFX.medal(); SFX.heavy(); shakeCam(9); zoomKick(1.12, 0.35); killFlash = 0.035; hitstop(0.08); // a white flash: the red one is for being hurt
+function castJudgement() { P.light = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.6); P.vx = 0; SFX.judgement(); shakeCam(9); zoomKick(1.12, 0.35); killFlash = 0.035; hitstop(0.08); // a white flash: the red one is for being hurt
   for (let k = -3; k <= 3; k++) bolts.push({ x: P.x + k * 48, y: P.y, life: 0.45, storm: true, holy: true });
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 180 && Math.abs(e.y - P.y) < 110) { bolts.push({ x: e.x, y: e.y, life: 0.45, storm: true, holy: true }); hurtEnemy(e, e.maxHp ? 30 : 48, P.x, true); if (!e.maxHp && e.alive) e.stagger = Math.max(e.stagger || 0, 1.2); }
   for (const s of seeds) if (!s.dead && Math.abs(s.x - P.x) < 180) s.dead = true; }
@@ -4055,7 +4104,7 @@ function updateProps(dt) {
   for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) { if (p.draining || p.y0 === undefined) continue; let lift = 0; if (p.tide) lift = 8 + Math.sin(time * 2 * Math.PI / 26) * 8; if (p.rise > 0) { p.rise -= dt; lift = Math.max(lift, 14); } if (p.tide || p.rise !== undefined) { const want = p.y0 - lift; p.y += (want - p.y) * Math.min(1, dt * 4); p.depth = (p.depth0 || 12) + (p.y0 - p.y); } }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms();
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -4384,7 +4433,11 @@ function updateCamera(dt) {
   const x0 = camLock ? camLock.x0 - 8 : 0, x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW;
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
   // a level with its insides in a band of rock (Stormhold): from the street you never see into the band, and from a room you never see the street
-  if (L.indoorRow !== undefined) { const edge = (L.indoorRow + 1) * TS; if (P.y > edge) camY = Math.max(camY, edge); else camY = Math.min(camY, edge - VH); }
+  if (L.indoorRow !== undefined) { const edge = (L.indoorRow + 1) * TS; if (P.y > edge) camY = Math.max(camY, edge); else camY = Math.min(camY, edge - VH);
+    // inside one of the cellars and halls: frame the whole room, ceiling and all, when it fits (the camera sat on the
+    // floor and cut the ceiling off, and everything hung from it looked like it hung from nothing)
+    const tx = P.x / TS, ty = P.y / TS, rm = (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
+    if (rm) { const top = (rm[2] - 1) * TS, bot = (rm[3] + 2) * TS; camY = bot - top <= VH ? (top + bot) / 2 - VH / 2 : Math.max(top, Math.min(bot - VH, camY)); } }
   shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt);
 }
 
@@ -4473,7 +4526,7 @@ function update(dt) {
   if (stop > 0) { stop -= dt; return; }
   levelTime += dt;
   slowT = Math.max(0, slowT - dt); const wdt = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
-  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -4725,6 +4778,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawRoofs(cx, cy);
   for (const pr of props) if (pr.t === 'treehouse' && pr.x > cx - 60 && pr.x < cx + VW + 60) g.drawImage(PROP.treehouse[pr.v], Math.round(pr.x) - 20 - cx, Math.round(pr.y) - 30 - cy);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) if (tx >= 0 && ty > 0 && tx < LW && ty < LH && L.grid[ty * LW + tx] === T.PALISADE && L.grid[(ty - 1) * LW + tx] !== T.PALISADE) g.drawImage(TILE.palisadeTop, tx * TS - cx, ty * TS - 6 - cy);
+  drawGateFx(cx, cy);
   for (const pr of props) {
     if (pr.x < cx - 40 || pr.x > cx + VW + 40) continue;
     if (pr.t === 'towertop') g.drawImage(PROP.towertop, Math.round(pr.x) - 16 - cx, Math.round(pr.y) - 18 - cy);
@@ -4920,7 +4974,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'windcaller') frame = e.mode === 'fallen' ? 2 : e.mode === 'ground' ? 3 : e.mode === 'blink' || e.mode === 'appear' ? 2 : (e.mode === 'howlTell' || e.mode === 'howl') ? 3 : e.castFlash > 0 ? 1 : Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'golem') frame = e.mode === 'stagger' ? 5 : e.mode === 'drink' ? 7 : e.mode === 'counter' ? 8 : (e.mode === 'shroudTell' || e.mode === 'shroud') ? 6 : (e.mode === 'stompTell' || e.mode === 'stomp') ? 3 : e.mode === 'throwTell' || e.mode === 'throw' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
     else if (e.t === 'rockgoblin') frame = e.mode === 'throw' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
-    else if (e.t === 'forgemaster') frame = e.mode === 'stun' || e.mode === 'scald' ? 5 : e.mode === 'slamTell' || e.mode === 'anvilTell' || e.mode === 'hurlTell' ? 1 : e.mode === 'slam' || e.mode === 'anvil' || e.mode === 'hurl' ? 2 : e.mode === 'drag' || e.mode === 'dragTell' || e.mode === 'spray' || e.mode === 'sprayTell' ? 3 : e.mode === 'breath' || e.mode === 'breathTell' ? 6 : 0;
+    else if (e.t === 'forgemaster') frame = e.mode === 'stun' || e.mode === 'scald' ? 5 : e.mode === 'slamTell' || e.mode === 'anvilTell' || e.mode === 'hurlTell' ? 1 : e.mode === 'slam' || e.mode === 'anvil' || e.mode === 'hurl' ? 2 : e.mode === 'drag' || e.mode === 'dragTell' || e.mode === 'spray' || e.mode === 'sprayTell' ? 3 : e.mode === 'breath' || e.mode === 'breathTell' ? 6 : Math.abs(e.vx) > 10 ? [7, 0, 8, 0][Math.floor(e.anim * (Math.abs(e.vx) > 60 ? 4.5 : 3)) % 4] : 0; // he walks now: plant, pass, plant (his anim runs at twice time)
     else if (e.t === 'greathound') frame = e.mode === 'stun' || e.mode === 'skid' || e.mode === 'whine' || e.mode === 'landed' ? 6 : e.mode === 'howlTell' || e.mode === 'howl' ? 5 : e.mode === 'pounce' ? 4 : e.mode === 'lungeTell' || e.mode === 'pounceTell' || e.mode === 'snapTell' ? 3 : Math.abs(e.vx) > 10 ? 1 + Math.floor(e.anim * 14) % 2 : 0;
     else if (e.t === 'spider') frame = (e.mode === 'drop' || e.mode === 'dropTell' || e.mode === 'ground') ? 1 : e.mode === 'climb' ? 3 + Math.floor(e.anim * 10) % 2 : (Math.floor(e.anim * 1.5) % 3 === 0 ? 2 : 0);
     else if (e.squirrel) frame = e.vy !== 0 ? 2 : Math.floor(e.anim * 12) % 2;
@@ -4944,7 +4998,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'pike') frame = e.mode === 'thrust' ? 1 : e.mode === 'tell' ? 2 : 0;
     else if (e.t === 'archer') frame = e.draw > 0 ? 1 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
     else frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 22 : 10)) % 4 : 0;
-    const wind = (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));
+    const wind = windingUp(e);
     const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6) : 0;
     if (e.t === 'queen') { g.globalAlpha = 0.3; g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, L.arena.floor - 2 - cy); g.globalAlpha = 1; }
     if (e.t === 'kite' && e.alive) { const kx = Math.round(e.x - cx), ky = Math.round(e.y - e.h - 26 - cy) + (e.mode === 'fall' ? 10 : 0); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(kx + 0.5, Math.round(e.y - e.h - cy)); g.lineTo(kx + 0.5, ky + 8); g.stroke(); g.fillStyle = e.col; g.beginPath(); g.moveTo(kx, ky - 8); g.lineTo(kx + 7, ky); g.lineTo(kx, ky + 8); g.lineTo(kx - 7, ky); g.closePath(); g.fill(); g.fillStyle = '#2a2230'; g.fillRect(kx, ky - 8, 1, 16); g.fillRect(kx - 7, ky, 14, 1); for (let k = 1; k < 4; k++) { g.fillStyle = k % 2 ? '#ffd36b' : e.col; g.fillRect(kx - 1 + Math.round(Math.sin(time * 6 + k) * 2), ky + 8 + k * 4, 2, 2); } }
@@ -5604,7 +5658,7 @@ function render() {
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 92, 14); }
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], P.relic ? 104 : 92, 14); g.globalAlpha = 1; }
-    { const sk = skillNow(); if (sk) { const cd = skillCd(sk), max = CD_MAX[sk] || 3; g.globalAlpha = (sk === 'shieldThrow' && thrown) || cd > 0 ? 0.45 : 1; g.drawImage(sk === 'groundSlam' ? SLAM_ICON : sk === 'shieldThrow' ? SHIELD_ICON : sk === 'risingCut' ? RISE_ICON : FLAME_ICON, 76, 13); g.globalAlpha = 1; if (cd > 0) { g.fillStyle = '#c9d1dc'; g.fillRect(76, 26, Math.round(10 * (1 - cd / max)), 1); } } }
+    { const sk = skillNow(); if (sk) { const cd = skillCd(sk), max = CD_MAX[sk] || 3; g.globalAlpha = (sk === 'shieldThrow' && thrown) || cd > 0 ? 0.45 : 1; g.drawImage(sk === 'groundSlam' ? SLAM_ICON : sk === 'shieldThrow' ? SHIELD_ICON : sk === 'risingCut' ? RISE_ICON : PYRO_ICONS[sk] || FLAME_ICON, 76, 13); g.globalAlpha = 1; if (cd > 0) { g.fillStyle = '#c9d1dc'; g.fillRect(76, 26, Math.round(10 * (1 - cd / max)), 1); } } }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
     for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (VW - 42 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }

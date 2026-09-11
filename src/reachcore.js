@@ -34,8 +34,16 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   // start where the knight starts, and fall to whatever is under it
   { let sy = L.START.y; while (sy < H - 1 && !footing.has(key(L.START.x, sy))) sy++; push(L.START.x, sy); }
 
-  while (q.length) {
-    const [x, y] = q.pop();
+  // can a body (14px: one tile) get across the columns between x and x+dx at some height from row rTop down to
+  // rBot? A jump is not a teleport: the stacks between two chimney shafts stop it (the model used to jump
+  // straight through walls, which is how five pits with one ladder passed every tool)
+  // (only rock stops it: a gate opens, a crate breaks, a web burns - the tools that care about those check them)
+  const wall = t => t === T.SOLID;
+  const across = (x, dx, rTop, rBot) => { const s = Math.sign(dx);
+    for (let c = x + s; c !== x + dx; c += s) { let ok = false; for (let r = rTop; r <= rBot && !ok; r++) ok = !wall(at(c, r)); if (!ok) return false; }
+    return true; };
+  // everywhere you can get to from one tile (push is handed in, so tools/traps.mjs can run it backwards)
+  const expand = (x, y, push) => {
     const springy = at(x, y + 1) === T.BOUNCER, up = springy ? BOUNCE_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -3; dx <= 3; dx++) push(v.x + dx, ty); }
@@ -53,17 +61,20 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       // straight back - there is no float left to cross with (the Sunspire's side routes found this one)
       const tight = head < up && -dy >= head;
       const span = tight ? 1 : Math.round(JUMP_ACROSS * (1 - Math.abs(dy) / (up + 1.5)));
-      for (let dx = -span; dx <= span; dx++) push(x + dx, y + dy);
+      const apex = y - Math.min(up, head);
+      for (let dx = -span; dx <= span; dx++) if (!dx || across(x, dx, apex, Math.min(y, y + dy))) push(x + dx, y + dy);
     }
     // fall: straight down, and out to either side
     for (const dx of [-JUMP_ACROSS, -2, 0, 2, JUMP_ACROSS]) { let ny = y;
-      while (ny < H - 1 && !footing.has(key(x + dx, ny))) ny++;
+      if (dx && (wall(at(x + dx, y)) || !across(x, dx, y, y))) continue; // walk off the edge: nothing in the way, and not into a wall
+      while (ny < H - 1 && !footing.has(key(x + dx, ny)) && !wall(at(x + dx, ny))) ny++;
       if (footing.has(key(x + dx, ny))) push(x + dx, ny); }
     // crystal gives way under you, so a crystal floor is also a way DOWN (the Sunspire's geodes)
     if (at(x, y + 1) === T.CRYST) { let ny = y + 1;
       while (ny < H - 1 && !footing.has(key(x, ny))) ny++;
       if (footing.has(key(x, ny))) push(x, ny); }
-  }
+  };
+  while (q.length) { const [x, y] = q.pop(); expand(x, y, push); }
   const near = (x, y) => { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (seen.has(key(x + dx, y + dy))) return true; return false; };
   // a coin is got if you can stand under it within a jump: up to four rows below it, two to either side
   // (or inside the column of a vent you can stand in: you ride up through it)
@@ -71,5 +82,5 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   // - with open air between you and it: a coin on a roof is not got from the room under the roof
   const clearCol = (x, y0, y1) => { for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) if (solid(at(x, y)) && !climbable(at(x, y))) return false; return true; }; // (a rock face you cling to is not in the way)
   const jumpNear = (x, y) => { for (let dy = -2; dy <= 4; dy++) for (let dx = -2; dx <= 2; dx++) if (seen.has(key(x + dx, y + dy)) && clearCol(x + dx, y, y + dy) && clearCol(x, y, y + dy)) return true; return inVent(x, y); };
-  return { seen, footing, assisted, key, near, jumpNear };
+  return { seen, footing, assisted, key, near, jumpNear, expand };
 }

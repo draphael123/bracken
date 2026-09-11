@@ -1261,7 +1261,7 @@ export function bakeForgemasterBig() {
   const f = rows => outline(fromGrid(rows, FP, 1), OUT);
   const W = 48, H = 34; const blank = () => Array.from({ length: H }, () => '.'.repeat(W));
   const put = (rows, x, y, str) => { const row = rows[y]; rows[y] = row.slice(0, x) + str + row.slice(x + str.length); };
-  const body = (eyes = 'ey', mouth = 'GGG') => { const R = blank();
+  const body = (eyes = 'ey', mouth = 'GGG', step = 0) => { const R = blank();
     // helmet, goggles, jaw
     put(R, 18, 0, 'iiiiiiiiii'); put(R, 17, 1, 'iiIIIIIIIIii'); put(R, 16, 2, 'iyyIIIIIIyyIi'); put(R, 16, 3, 'iy' + eyes[0] + 'yIIIIy' + eyes[1] + 'yIi'); put(R, 16, 4, 'iIIIIIIIIIIIi');
     put(R, 17, 5, 'gggggggggggg'); put(R, 17, 6, 'gg' + mouth + 'ggg' + mouth + 'gg'); put(R, 18, 7, 'ggggggggggg');
@@ -1271,7 +1271,9 @@ export function bakeForgemasterBig() {
     put(R, 15, 8, 'IIIIIIIIIIIIIII'); put(R, 14, 9, 'IiiiiiiiiiiiiiiI'); put(R, 14, 10, 'IiiiiiiiiiiiiiiI'); put(R, 14, 11, 'IiicccccccccciiI'); put(R, 14, 12, 'IiccCCCCCCCCcciI');
     for (let y = 13; y <= 16; y++) put(R, 14, y, 'IiccCrrrrrrCcciI'); put(R, 14, 17, 'IiccCCCCCCCCcciI'); put(R, 14, 18, 'IiicccccccccciiI'); put(R, 14, 19, 'IiiiiiiiiiiiiiiI'); put(R, 15, 20, 'IIIIIIIIIIIIIII'); put(R, 16, 21, 'ccccccccccccc');
     // legs and boots
-    for (const lx of [16, 24]) { put(R, lx, 22, 'IIIII'); for (let y = 23; y <= 25; y++) put(R, lx, y, 'IiiiI'); put(R, lx, 26, 'IIIII'); put(R, lx - 1, 27, 'IIIIII'); put(R, lx - 1, 28, 'IiiiiI'); put(R, lx - 1, 29, 'IIIIII'); put(R, lx - 2, 30, 'KKKKKKK'); put(R, lx - 2, 31, 'KKKKKKK'); }
+    // a stride: one leg planted back, the other swung forward with its boot lifted (step 1 and -1 are the two halves)
+    const legs = step === 0 ? [[16, 0, 0], [24, 0, 0]] : step > 0 ? [[14, 0, -1], [26, 2, 1]] : [[18, 2, 1], [22, 0, -1]];
+    for (const [lx, lift, lean] of legs) { put(R, lx - lean, 22, 'IIIII'); for (let y = 23; y <= 25; y++) put(R, lx - (y < 24 ? lean : 0), y, 'IiiiI'); put(R, lx, 26 - lift, 'IIIII'); put(R, lx - 1, 27 - lift, 'IIIIII'); put(R, lx - 1, 28 - lift, 'IiiiiI'); put(R, lx - 1, 29 - lift, 'IIIIII'); put(R, lx - 2, 30 - lift, 'KKKKKKK'); put(R, lx - 2, 31 - lift, 'KKKKKKK'); }
     return R; };
   const hammerDown = R => { put(R, 30, 9, 'iii'); put(R, 31, 10, 'Iii'); put(R, 32, 11, 'Iii'); put(R, 33, 12, 'Iii'); put(R, 34, 13, 'Iii'); put(R, 35, 14, 'Iii'); put(R, 36, 15, 'Iii'); put(R, 37, 16, 'Iii'); put(R, 38, 17, 'Iii'); put(R, 38, 18, 'ccc'); for (let y = 19; y <= 26; y++) put(R, 39, y, 'c'); put(R, 35, 27, 'KKKKKKKKK'); put(R, 35, 28, 'KKKKKKKKK'); put(R, 35, 29, 'KKKKKKKKK'); put(R, 35, 30, 'KKKKKKKKK'); put(R, 35, 31, 'KKKKKKKKK'); return R; };
   const hammerUp = R => { put(R, 30, 9, 'iii'); put(R, 32, 8, 'Iii'); put(R, 34, 7, 'Iii'); put(R, 36, 6, 'Iii'); put(R, 38, 5, 'Iii'); put(R, 39, 4, 'cc'); for (let y = 0; y <= 3; y++) put(R, 40, y, 'c'); put(R, 36, 0, 'KKKKKKKKK'); put(R, 36, 1, 'KKKKKKKKK'); put(R, 36, 2, 'KKKKKKKKK'); return R; };
@@ -1284,7 +1286,8 @@ export function bakeForgemasterBig() {
   const hurl = f(hammerUp(body('ey', 'GGG')));
   const stun = f((() => { const R = body('xx', 'ggg'); put(R, 30, 12, 'iii'); put(R, 30, 13, 'iii'); put(R, 31, 14, 'Ii'); put(R, 31, 15, 'Ii'); put(R, 31, 16, 'Ii'); put(R, 31, 17, 'cc'); put(R, 30, 18, 'KKKK'); return R; })());
   const breath = f((() => { const R = body('rr', 'rrr'); put(R, 18, 6, 'grrrrrrrrrg'); put(R, 18, 7, 'grrrRRRrrrg'); put(R, 30, 5, 'rrRRRRrr'); put(R, 33, 6, 'rrRRrr'); put(R, 30, 7, 'rrrrr'); return hammerDown(R); })());
-  return pack([idle, raise, slam, drag, hurl, stun, breath], 24, 32, 40, 32);
+  const walkA = f(hammerDown(body('ey', 'GGG', 1))), walkB = f(hammerDown(body('ey', 'GGG', -1)));
+  return pack([idle, raise, slam, drag, hurl, stun, breath, walkA, walkB], 24, 32, 40, 32);
 }
 // The Forgemaster — a goblin engineer strapped into a steam rig: piston arm, boiler pack, goggles. 32×26. Frames: idle, lunge, spray, kick, scalded.
 export function bakeForgemaster() {

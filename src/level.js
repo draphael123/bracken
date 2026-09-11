@@ -1410,7 +1410,7 @@ function stormhold() {
   ent('stormshaman', 181, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
   ent('archer', 151, 30, { face: 1, fire: true }); ent('rockgoblin', 179, 30, { face: -1 });
   ent('sign', 148, 31, { text: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE SHIELD CARRIES.' });
-  ent('deco', 160, 31, { kind: 'lanternPost' }); ent('deco', 170, 31, { kind: 'lanternPost' });
+  ent('deco', 152, 31, { kind: 'lanternPost' }); ent('deco', 179, 31, { kind: 'lanternPost' }); // a lamp on each bank of the chimneys (they stood in the air over the old span)
   floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
   coins([184, 31], [194, 30], [204, 31]);
   // the tannery: a house you go through, not into, and the second captive
@@ -1490,8 +1490,11 @@ function stormhold() {
   block(153, 177, 44, 45); for (let y = 32; y <= 43; y++) set(153, y, T.NET);
   for (const [x0, top] of [[155, 31], [159, 29], [164, 30], [168, 29], [173, 30]]) { block(x0, x0 + 1, top, 43); ent('chimpot', x0 + 1, top - 1); } // up-hops are two tiles, drops three
   for (let x = 161; x <= 167; x++) set(x, 27, T.NET); // the washing line
+  // a rope ladder down every shaft, not just the first: the stacks wall each one off from the next (the last one
+  // climbs the far bank instead, so a fall there is a way on)
+  for (const [lx, top] of [[157, 31], [161, 29], [166, 30], [170, 29], [177, 32]]) for (let y = top; y <= 43; y++) set(lx, y, T.NET);
   ent('sweep', 159, 28, { face: -1 }); ent('sweep', 168, 28, { face: -1 });
-  ent('sign', 150, 31, { text: 'THE CHIMNEYS. THE SPAN IS DOWN, BUT THE STACKS OF THE OLD SOOTWORKS STILL STAND. MIND THE SWEEPS: THEY LIVE IN THEM, AND THEY THROW SOOT. FALL AND THERE IS A LADDER.' });
+  ent('sign', 150, 31, { text: 'THE CHIMNEYS. THE SPAN IS DOWN, BUT THE STACKS OF THE OLD SOOTWORKS STILL STAND. MIND THE SWEEPS: THEY LIVE IN THEM, AND THEY THROW SOOT. FALL, AND EVERY SHAFT HAS A LADDER.' });
   coins([157, 28], [162, 25], [164, 25], [166, 25], [171, 27], [176, 29], [162, 40], [171, 40]);
   // ---- (pass two) THE HOUSES AS PLACES. The longhouse is a feast: tables to fight over and three chandeliers to cut down
   // on whoever is under them. The smithy's forge breathes up to the shelf. The tannery hangs its hides from racks you climb. ----

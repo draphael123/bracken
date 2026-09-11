@@ -14,7 +14,8 @@ export function initAudio() {
   if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
   ac = new (window.AudioContext || window.webkitAudioContext)();
   master = ac.createGain(); master.gain.value = 1; master.connect(ac.destination);
-  sfxGain = ac.createGain(); sfxGain.gain.value = vol; sfxGain.connect(master);
+  sfxGain = ac.createGain(); sfxGain.gain.value = vol;
+  { const comp = ac.createDynamicsCompressor(); comp.threshold.value = -12; comp.knee.value = 10; comp.ratio.value = 3.5; comp.attack.value = 0.003; comp.release.value = 0.18; sfxGain.connect(comp); comp.connect(master); } // twenty things dying at once should not clip
   musicLP = ac.createBiquadFilter(); musicLP.type = 'lowpass'; musicLP.frequency.value = 20000; musicLP.connect(master); // the music dulls behind a menu, a talk box, or a failing heart
   musicGain = ac.createGain(); musicGain.gain.value = 0.16; musicGain.connect(musicLP);
   uiGain = ac.createGain(); uiGain.gain.value = 0.8; uiGain.connect(master); // menu clicks have their own volume
@@ -41,21 +42,40 @@ export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (
 const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
+// ---------- where a sound comes from ----------
+// main.js says where the thing making the next sounds is (emitAt({pan, v})), and every sound made until it says
+// otherwise goes through a panned, quieter bus: an archer off the right of the screen is off to the right and
+// further away. The player's own sounds are never placed. Buses are cached by rounded pan and volume.
+let emit = null; const busCache = {};
+export function emitAt(o) { emit = o && (o.v < 0.97 || Math.abs(o.pan) > 0.05) ? o : null; }
+export const emitNow = () => emit;
+function out() {
+  if (!emit || !ac) return sfxGain;
+  const p = Math.round(emit.pan * 10) / 10, v = Math.max(1, Math.round(emit.v * 10)) / 10, k = p + '|' + v;
+  let n = busCache[k];
+  if (!n) { n = ac.createGain(); n.gain.value = v; if (ac.createStereoPanner) { const sp = ac.createStereoPanner(); sp.pan.value = p; n.connect(sp); sp.connect(sfxGain); } else n.connect(sfxGain); busCache[k] = n; }
+  return n;
+}
+// the same sound twice in the same instant is one sound, louder, not two: six crows waking together caw once
+const lastAt = {};
+const gate = (k, sec) => { if (!ac) return false; const t = ac.currentTime; if (t - (lastAt[k] ?? -9) < sec) return false; lastAt[k] = t; return true; };
+
 // ---------- samples ----------
 function file(name, v = 0.6, rate = 1, dest = null) {
   if (!ac || !sfxFiles) return false;
   const arr = clips[name]; if (!arr) return false;
   const opts = arr.filter(Boolean); if (!opts.length) return false;
   const s = ac.createBufferSource(); s.buffer = opts[(Math.random() * opts.length) | 0]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
-  const g = ac.createGain(); g.gain.value = v; s.connect(g); g.connect(dest || sfxGain); s.start();
+  const g = ac.createGain(); g.gain.value = v; s.connect(g); g.connect(dest || out()); s.start();
   return true;
 }
 
 // ---------- synth ----------
-function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = sfxGain) {
+function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = null) {
   if (!ac) return;
   const t = ac.currentTime + delay;
-  if (dest === sfxGain) { const k = 0.97 + Math.random() * 0.06; f0 *= k; f1 *= k; } // no two the same: a fixed pitch is what makes synth sound like a machine
+  const fx = !dest || dest === sfxGain; if (!dest) dest = out();
+  if (fx) { const k = 0.97 + Math.random() * 0.06; f0 *= k; f1 *= k; } // no two the same: a fixed pitch is what makes synth sound like a machine
   const o = ac.createOscillator(), g = ac.createGain();
   o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
   g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
@@ -67,8 +87,19 @@ function noise(dur, v = 0.3, freq = 1000, q = 0.8, delay = 0, dest = null) {
   const s = ac.createBufferSource(); s.buffer = noiseBuf;
   const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq * (0.92 + Math.random() * 0.16); f.Q.value = q;
   const g = ac.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  s.connect(f); f.connect(g); g.connect(dest || sfxGain); s.start(t); s.stop(t + dur + 0.02);
+  s.connect(f); f.connect(g); g.connect(dest || out()); s.start(t); s.stop(t + dur + 0.02);
 }
+// a held note that swells in and dies away, through a lowpass: horns, chants, drones (tone() only strikes)
+function pad(type, f0, f1, dur, v = 0.2, delay = 0, lp = 1800, att = 0.06) {
+  if (!ac) return;
+  const t = ac.currentTime + delay, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + dur);
+  f.type = 'lowpass'; f.frequency.value = lp; f.Q.value = 0.7;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + att); g.gain.setValueAtTime(v, t + Math.max(att, dur * 0.6)); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(f); f.connect(g); g.connect(out()); o.start(t); o.stop(t + dur + 0.05);
+}
+// a struck bell: the note and two inharmonic partials over it, each dying at its own rate
+function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur, v, delay); tone('sine', f * 2.76, f * 2.75, dur * 0.55, v * 0.32, delay); tone('sine', f * 5.4, f * 5.38, dur * 0.3, v * 0.14, delay); }
 
 // THE HERO'S VOICE. Everything the player's own body makes - jumps, landings, steps, the swing, the hurt,
 // the death, the roll - comes in two kinds. The knight is steel: chain that jingles when he jumps and on
@@ -76,7 +107,7 @@ function noise(dur, v = 0.3, freq = 1000, q = 0.8, delay = 0, dest = null) {
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' ? 'pyro' : 'knight'; }
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' ? h : 'knight'; }
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
@@ -156,6 +187,22 @@ export const SFX = {
   cricket() { const f = 3800 + Math.random() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
   fish() { noise(0.12, 0.2, 900, 0.6); tone('sine', 500, 200, 0.1, 0.08); },
 };
+
+// THE PALADIN is heavier than the knight: plate, not chain - a dull clank in every step and landing where the
+// knight jingles - a maul that whooshes low and lands with a thud, and a little bell in everything holy.
+const plate = (v = 0.05) => { tone('square', vary(1150), 800, 0.05, v); tone('square', vary(1480), 1100, 0.04, v * 0.7, 0.012); noise(0.06, v * 1.8, 2400, 1.1); };
+const PAL = {
+  pJump() { tone('square', vary(200), vary(410), 0.11, 0.07); plate(0.04); noise(0.08, 0.06, 500, 0.6); },
+  pLand(surf) { SFX.land(surf); tone('sine', 120, 48, 0.14, 0.2); plate(0.05); },
+  pStep(surf) { stepN++; SFX.step(surf); tone('sine', vary(130), 70, 0.05, 0.07); if (stepN % 2) plate(0.02); },
+  pSlash() { file('swing', 0.5, 0.7) || noise(0.16, 0.24, 900, 0.5); noise(0.18, 0.12, 380, 0.5, 0.02); tone('sine', vary(170), 60, 0.2, 0.09, 0.06); },
+  pHurt() { file('hurt', 0.6, 0.82) || (tone('sawtooth', 200, 55, 0.34, 0.25), noise(0.15, 0.2, 400)); plate(0.07); },
+  pDie() { SFX.die(); for (let i = 0; i < 4; i++) { plate(0.05); tone('sine', 110 - i * 12, 50, 0.12, 0.12, 0.15 + i * 0.1); } bell(523, 1.6, 0.07, 0.55); },
+  pDodge() { noise(0.12, 0.22, 320, 0.6); tone('sine', 95, 40, 0.16, 0.22); plate(0.05); },
+  pPogo() { tone('square', vary(380), vary(760), 0.12, 0.13); bell(1046, 0.35, 0.05, 0.02); },
+  pEffort() { file('effort', 0.22, 1.1); },
+};
+for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
 
 // ---------- music: files, with the synth loop as a fallback for the theme ----------
 function loadTrack(name) {
@@ -285,6 +332,30 @@ Object.assign(SFX, {
   frogBoom() { tone('sawtooth', 60, 90, 0.5, 0.3); tone('square', 120, 80, 0.4, 0.12, 0.05); noise(0.2, 0.12, 300, 0.6); },
   queenShriek() { tone('sawtooth', 900, 1600, 0.3, 0.14); tone('sawtooth', 1200, 700, 0.3, 0.1, 0.1); noise(0.2, 0.1, 3000, 0.8); },
 });
+// ---------- the paladin's light ----------
+Object.assign(SFX, {
+  mend() { [523, 659, 784].forEach((f, i) => pad('triangle', f, f * 1.01, 0.7, 0.07, i * 0.07, 3000, 0.08)); bell(1568, 0.8, 0.05, 0.2); noise(0.5, 0.05, 6000, 1.2, 0.1); },
+  judgement() { noise(1.0, 0.45, 140, 0.4); tone('sine', 62, 28, 1.0, 0.4); tone('sawtooth', 110, 50, 0.6, 0.14); [784, 1175, 1568].forEach((f, i) => bell(f, 1.3, 0.09, 0.05 + i * 0.03)); },
+  lightFull() { bell(1046, 0.9, 0.08); bell(1568, 0.7, 0.05, 0.08); },
+  aegis() { file('clang', 0.4, 0.85) || tone('square', 700, 520, 0.08, 0.16); bell(880, 0.5, 0.07, 0.01); },
+  hammerfall() { SFX.heavy(); tone('sine', 58, 26, 0.5, 0.35); bell(392, 0.9, 0.08, 0.05); },
+  // ---- a portcullis: it rattles down its slot and lands, or it grinds up on its chain ----
+  gateDrop() { for (let i = 0; i < 5; i++) { noise(0.035, 0.16, 2400, 1.2, i * 0.045); tone('square', 620 - i * 30, 420, 0.03, 0.05, i * 0.045); } },
+  gateLand() { file('clang', 0.55, 0.7) || tone('square', 500, 300, 0.1, 0.2); tone('sine', 80, 34, 0.35, 0.35); noise(0.25, 0.3, 300, 0.6); },
+  gateLift() { for (let i = 0; i < 9; i++) { tone('square', 300 + (i % 2) * 60, 260, 0.03, 0.05, i * 0.075); noise(0.03, 0.1, 1800, 1.3, i * 0.075); } tone('sine', 70, 90, 0.7, 0.08); },
+  // ---- the moor and the town ----
+  caw() { if (!gate('caw', 0.35)) return; tone('sawtooth', vary(820), 560, 0.16, 0.1); noise(0.14, 0.12, 1500, 1); tone('sawtooth', vary(760), 520, 0.14, 0.08, 0.2); noise(0.12, 0.1, 1400, 1, 0.2); },
+  hornBlast() { pad('sawtooth', 146, 164, 1.35, 0.15, 0, 900, 0.12); pad('sawtooth', 147.5, 166, 1.35, 0.1, 0.01, 700, 0.12); pad('square', 73, 82, 1.3, 0.05, 0, 400, 0.15); noise(0.5, 0.08, 700, 0.5); },
+  baleBump() { if (!gate('bale', 0.12)) return; noise(0.08, 0.1, 520, 0.6); tone('sine', 110, 60, 0.07, 0.06); },
+  baleBurst() { for (let i = 0; i < 6; i++) noise(0.05, 0.18, 2600 + (i % 3) * 700, 0.9, i * 0.03); tone('sine', 140, 60, 0.12, 0.14); noise(0.4, 0.08, 1800, 0.4, 0.1); },
+  sweepPop() { tone('square', 170, 110, 0.08, 0.1); noise(0.28, 0.16, 650, 0.5); [720, 800, 660].forEach((f, i) => tone('square', f, f * 0.9, 0.05, 0.05, 0.12 + i * 0.07)); },
+  sweepHide() { noise(0.3, 0.12, 1100, 0.5); tone('sine', 300, 120, 0.25, 0.05); },
+  stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
+  stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
+  shardBristle() { if (!gate('bristle', 0.3)) return; [1568, 2093, 2637].forEach((f, i) => bell(f, 0.3, 0.035, i * 0.04)); noise(0.1, 0.05, 5200, 1.2); },
+  // ---- the telegraph: every enemy that winds up says so, a glint for the small ones, a low bell for the big ----
+  tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
+});
 // ---------- UI and skill voices ----------
 Object.assign(SFX, {
   levelStart() { for (let i = 0; i < 4; i++) tone('square', [330, 415, 494, 659][i], [330, 415, 494, 659][i], 0.11, 0.09, i * 0.09); tone('triangle', 165, 165, 0.4, 0.08, 0.36); },
@@ -341,6 +412,21 @@ const DIE = {
   hare() { tone('sine', 2200, 2900, 0.06, 0.1); tone('sine', 2800, 1200, 0.16, 0.1, 0.06); noise(0.12, 0.2, 300, 0.6, 0.2); },
   wight() { tone('sine', 210, 90, 0.9, 0.18); tone('sine', 214, 92, 0.9, 0.1, 0.05); noise(0.9, 0.16, 500, 0.15, 0.1); },
   kite() {},
+  folk() { file('gobHurt', 0.35, 1.6) || tone('sawtooth', 700, 300, 0.2, 0.1); },
+  crow() { tone('sawtooth', 900, 300, 0.25, 0.12); noise(0.3, 0.15, 2400, 0.4, 0.08); for (let i = 0; i < 3; i++) noise(0.04, 0.08, 3200, 1, 0.12 + i * 0.06); /* a caw cut short, and feathers */ },
+  horn() { gob(0.8) || tone('square', 320, 80, 0.3, 0.18); pad('sawtooth', 150, 88, 0.8, 0.09, 0.12, 700); /* the horn sighs out of him */ },
+  shardling() { noise(0.3, 0.3, 3600, 0.7); [2637, 2093, 1568, 1175].forEach((f, i) => bell(f, 0.35, 0.05, i * 0.05)); tone('sawtooth', 160, 60, 0.25, 0.1); },
+  sentry() { gob(1.05) || tone('square', 500, 110, 0.22, 0.16); bell(988, 0.8, 0.07, 0.12); SFX.clatter(); /* his bell hits the floor */ },
+  hearthgob() { gob(0.7, 0.65) || tone('sawtooth', 240, 60, 0.4, 0.22); noise(0.6, 0.18, 2400, 0.5, 0.12); tone('sine', 90, 40, 0.3, 0.25, 0.1); /* the fire goes out with him */ },
+  sweep() { gob(1.25) || tone('square', 560, 120, 0.22, 0.16); noise(0.45, 0.24, 520, 0.4, 0.05); SFX.clatter(); /* a cloud of soot and the brush */ },
+  stormshaman() { noise(0.5, 0.28, 900, 0.4); tone('triangle', 900, 200, 0.4, 0.13); SFX.stormZap(); pad('sine', 1200, 300, 0.8, 0.05, 0.2, 2500); },
+  cutter() { gob(0.95) || tone('square', 420, 90, 0.25, 0.18); tone('square', 1300, 1200, 0.12, 0.1, 0.1); noise(0.06, 0.2, 2200, 0.5, 0.1); /* the axe drops */ },
+  snuffer() { gob(0.9) || tone('square', 380, 90, 0.25, 0.18); tone('triangle', 1700, 1600, 0.1, 0.08, 0.1); SFX.puff(); },
+  sailer() { gob(1.1) || tone('square', 520, 110, 0.22, 0.16); for (let i = 0; i < 3; i++) noise(0.07, 0.18, 800, 0.6, 0.08 + i * 0.09); SFX.thud(); /* the sail flaps down */ },
+  suncatcher() { [2093, 1568, 1319, 1047, 784, 659, 523].forEach((f, i) => bell(f, 0.9, 0.09, i * 0.09)); pad('sine', 1760, 220, 1.3, 0.08, 0.2, 4000); noise(0.6, 0.35, 220, 0.5, 0.6); tone('sine', 55, 25, 0.9, 0.35, 0.6); /* the light goes out of it, note by note, and it lands */ },
+  roc() { tone('sawtooth', 2400, 500, 1.1, 0.18); tone('sawtooth', 2430, 480, 1.1, 0.09, 0.02); for (let i = 0; i < 4; i++) noise(0.12, 0.3, 320, 0.6, 0.4 + i * 0.18); tone('sine', 60, 25, 0.6, 0.4, 1.2); noise(0.4, 0.4, 200, 0.6, 1.2); /* the scream, the wings beat out, the fall */ },
+  gqueen() { file('roar', 0.6, 0.6) || tone('sawtooth', 110, 40, 1.2, 0.3); gob(0.55, 0.8); [2400, 1900, 1500, 1200, 950].forEach((f, i) => tone('triangle', f, f * 0.9, 0.2, 0.1, 0.8 + i * 0.12)); SFX.thunder(); /* the last of the line, and her crown rolling on the stone */ },
+  lance() { gob(0.6, 0.8) || tone('sawtooth', 200, 45, 0.6, 0.25); SFX.heavy(); [1500, 1200, 950, 700, 520].forEach((f, i) => { tone('square', f, f * 0.93, 0.18, 0.12, 0.3 + i * 0.16); noise(0.07, 0.26, f * 2, 0.5, 0.3 + i * 0.16); }); /* he goes down and the plate comes off him */ },
   // ---- bosses and the mini-bosses: a cry of their own over the boss drum ----
   queen() { tone('sawtooth', 2200, 600, 0.9, 0.2); tone('sawtooth', 2230, 590, 0.9, 0.1, 0.02); tone('square', 900, 200, 0.6, 0.1, 0.5); noise(0.6, 0.2, 1800, 0.3, 0.6); },
   frog() { tone('sawtooth', 130, 40, 1.2, 0.3); tone('sawtooth', 128, 38, 1.2, 0.14, 0.03); for (let i = 0; i < 5; i++) noise(0.06, 0.2, 350, 0.6, 0.5 + i * 0.13); /* a long croak, then the bubbles */ },
@@ -385,6 +471,21 @@ const HURT = {
   hare() { SFX.hareSqueak(); },
   wight() { tone('sine', 240, 160, 0.25, 0.14); },
   kite() { SFX.kiteChatter(); },
+  folk() { file('gobHurt', 0.3, 1.6) || tone('sawtooth', 700, 400, 0.1, 0.08); },
+  crow() { tone('sawtooth', 1000, 700, 0.07, 0.1); noise(0.08, 0.1, 3000, 0.8); },
+  horn() { gobH(0.8) || tone('square', 380, 240, 0.09, 0.12); },
+  shardling() { bell(2637, 0.2, 0.05); noise(0.05, 0.12, 5000, 0.8); },
+  sentry() { gobH(1.05) || tone('square', 560, 340, 0.08, 0.12); bell(988, 0.25, 0.04, 0.02); },
+  hearthgob() { gobH(0.7, 0.5) || tone('sawtooth', 240, 140, 0.14, 0.16); noise(0.12, 0.1, 2400, 0.6); },
+  sweep() { gobH(1.3) || tone('square', 640, 400, 0.08, 0.12); noise(0.14, 0.1, 600, 0.5, 0.03); /* a cough of soot */ },
+  stormshaman() { tone('triangle', 900, 500, 0.1, 0.12); noise(0.06, 0.14, 3000, 0.8); },
+  cutter() { gobH(0.95) || tone('square', 460, 280, 0.08, 0.14); },
+  snuffer() { gobH(0.9) || tone('square', 420, 260, 0.09, 0.14); },
+  sailer() { gobH(1.1) || tone('square', 560, 340, 0.08, 0.14); noise(0.06, 0.12, 800, 0.6); },
+  suncatcher() { bell(1319, 0.3, 0.07); bell(1760, 0.25, 0.05, 0.03); noise(0.05, 0.14, 5000, 0.5); },
+  roc() { tone('sawtooth', 2000, 1400, 0.14, 0.13); tone('sawtooth', 2030, 1380, 0.14, 0.06, 0.01); },
+  gqueen() { gobH(0.55, 0.6) || tone('sawtooth', 200, 120, 0.2, 0.2); tone('triangle', 2100, 2000, 0.08, 0.06, 0.03); },
+  lance() { SFX.clank(); gobH(0.6, 0.45) || tone('sawtooth', 220, 130, 0.14, 0.14); },
   queen() { tone('sawtooth', 1900, 1300, 0.14, 0.14); tone('sawtooth', 1920, 1280, 0.14, 0.07, 0.01); },
   frog() { SFX.croak(); },
   chief() { SFX.chiefBark(); },

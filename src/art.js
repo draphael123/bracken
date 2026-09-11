@@ -736,14 +736,15 @@ export function bakeFrogStatue(seed) {
 }
 export function bakeLilyLantern() { return [0, 1].map(f => { const [c, g] = canvas(12, 10); ellipse(g, 6, 8, 6, 2, '#4f9a58', '#2f6e3a'); fillPoly(g, [[6, 1], [3, 7], [9, 7]], f ? '#ffd0dc' : '#ff9ab0'); fillPoly(g, [[6, 3], [4, 7], [8, 7]], f ? '#fff6e0' : '#ffd0dc'); px(g, 6, 5, '#ffd36b'); return outline(c, OUT); }); }
 // The hall: a war banner, a throne of bones, skull piles, hanging cages.
-export function bakeWarBanner(seed) {
-  const rnd = mulberry(seed); const [c, g] = canvas(44, 72);
-  rect(g, 20, 0, 4, 72, '#5c3a1d'); rect(g, 20, 0, 1, 72, '#7a4e28'); rect(g, 6, 2, 32, 3, '#5c3a1d');
-  fillPoly(g, [[7, 5], [37, 5], [37, 52], [22, 62], [7, 52]], '#8f2f28'); fillPoly(g, [[9, 7], [35, 7], [35, 50], [22, 58], [9, 50]], '#c9463d');
+export function bakeWarBanner(seed, hung = false) { // hung: from a ceiling on two cords, no pole standing under it
+  const rnd = mulberry(seed); const [c, g] = canvas(44, 72); const o = hung ? 7 : 0;
+  if (hung) { rect(g, 20, 0, 4, 2, '#5a5460'); for (let i = 0; i <= 7; i++) { px(g, 21 - i * 2, i, '#3a2618'); px(g, 22 + i * 2, i, '#3a2618'); } rect(g, 6, 2 + o, 32, 3, '#5c3a1d'); }
+  else { rect(g, 20, 0, 4, 72, '#5c3a1d'); rect(g, 20, 0, 1, 72, '#7a4e28'); rect(g, 6, 2, 32, 3, '#5c3a1d'); }
+  fillPoly(g, [[7, 5 + o], [37, 5 + o], [37, 52 + o], [22, 62 + o], [7, 52 + o]], '#8f2f28'); fillPoly(g, [[9, 7 + o], [35, 7 + o], [35, 50 + o], [22, 58 + o], [9, 50 + o]], '#c9463d');
   // a goblin face
-  ellipse(g, 22, 26, 9, 8, '#1b1626'); rect(g, 17, 22, 3, 3, '#e0b040'); rect(g, 24, 22, 3, 3, '#e0b040'); rect(g, 18, 30, 8, 2, '#e8dcc0'); px(g, 19, 32, '#e8dcc0'); px(g, 24, 32, '#e8dcc0');
-  for (let i = 0; i < 8; i++) px(g, 9 + ((rnd() * 26) | 0), 40 + ((rnd() * 16) | 0), '#8f2f28');
-  rect(g, 2, 4, 6, 2, '#e8dcc0'); rect(g, 36, 4, 6, 2, '#e8dcc0');
+  ellipse(g, 22, 26 + o, 9, 8, '#1b1626'); rect(g, 17, 22 + o, 3, 3, '#e0b040'); rect(g, 24, 22 + o, 3, 3, '#e0b040'); rect(g, 18, 30 + o, 8, 2, '#e8dcc0'); px(g, 19, 32 + o, '#e8dcc0'); px(g, 24, 32 + o, '#e8dcc0');
+  for (let i = 0; i < 8; i++) px(g, 9 + ((rnd() * 26) | 0), 40 + o + ((rnd() * 16) | 0), '#8f2f28');
+  rect(g, 2, 4 + o, 6, 2, '#e8dcc0'); rect(g, 36, 4 + o, 6, 2, '#e8dcc0');
   return outline(c, OUT);
 }
 export function bakeBoneThrone() {
@@ -768,6 +769,16 @@ export function bakeBough() {
   for (let x = 6; x < 214; x += 9) { rect(g, x, 12 + ((x / 9) % 3), 4, 1, '#241a10'); rect(g, x + 4, 9 + ((x / 9) % 2), 3, 1, '#6a4a30'); }
   for (let x = 14; x < 210; x += 22) { rect(g, x, 0, 2, 5, '#3a2618'); for (let k = 0; k < 3; k++) rect(g, x - 3 + k * 3, 0 + k, 3, 2, ['#16301f', '#2a5e36', '#3a7a48'][k]); }
   for (let x = 30; x < 200; x += 37) { rect(g, x, 18, 2, 6, '#3a2618'); rect(g, x - 2, 22, 6, 2, '#2a5e36'); }
+  return outline(c, OUT);
+}
+// a cage on the ground needs something to hang from: a gibbet, a post with an arm and a brace
+export function bakeGibbet() {
+  const [c, g] = canvas(32, 64);
+  rect(g, 3, 2, 4, 62, '#4a3220'); rect(g, 3, 2, 1, 62, '#6a4a2c'); rect(g, 1, 60, 8, 4, '#3a2618'); // the post and its foot
+  rect(g, 3, 2, 26, 4, '#4a3220'); rect(g, 3, 2, 26, 1, '#6a4a2c'); line(g, 7, 16, 16, 6, '#4a3220', 2); // the arm and its brace
+  for (let y = 6; y < 16; y += 3) rect(g, 22, y, 2, 2, '#8b8378'); // the chain
+  rect(g, 17, 16, 12, 24, '#3a3040'); rect(g, 18, 17, 10, 22, '#1b1626'); for (let x = 18; x < 28; x += 3) rect(g, x, 17, 1, 22, '#8b8378'); rect(g, 17, 16, 12, 1, '#b3aca0'); rect(g, 17, 39, 12, 1, '#b3aca0');
+  ellipse(g, 23, 24, 3, 3, '#e8dcc0'); px(g, 22, 24, OUT); px(g, 24, 24, OUT); rect(g, 22, 28, 2, 8, '#e8dcc0'); rect(g, 20, 30, 6, 1, '#e8dcc0');
   return outline(c, OUT);
 }
 export function bakeHangCage() {
