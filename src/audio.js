@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
+const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -124,12 +124,14 @@ function loadTrack(name) {
   trackPending[name] = true;
   fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
 }
+// the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
+const TRACK_GAIN = { cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75 };
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
   if (trackG && musicSrcs.length) { const og = trackG, olds = musicSrcs; og.gain.setTargetAtTime(0, ac.currentTime, 0.22); setTimeout(() => { for (const s of olds) { try { s.stop(); } catch {} } try { og.disconnect(); } catch {} }, 1000); if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicSrcs = []; musicGen++; } else stopMusic(); // the old track fades under the new one
   currentTrack = name;
-  const tg = ac.createGain(); tg.gain.value = 0.001; tg.connect(musicGain); trackG = tg; tg.gain.setTargetAtTime(1, ac.currentTime + 0.02, 0.28);
+  const tg = ac.createGain(); tg.gain.value = 0.001; tg.connect(musicGain); trackG = tg; tg.gain.setTargetAtTime(TRACK_GAIN[name] || 1, ac.currentTime + 0.02, 0.28);
   const gen = musicGen, b = trackBuf[name]; let at = ac.currentTime + 0.03;
   const chain = () => {
     if (gen !== musicGen || currentTrack !== name) return;
@@ -358,5 +360,5 @@ const HURT = {
 SFX.dieOf = t => DIE[t] || null;
 SFX.hurtOf = t => HURT[t] || null;
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'theme3', 'theme4', 'boss', 'boss2', 'king', 'cave', 'select', 'town', 'adventure', 'ending'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'stormhold', 'boss', 'boss2', 'king', 'roc', 'select', 'ending'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];

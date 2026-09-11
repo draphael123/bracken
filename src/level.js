@@ -458,7 +458,7 @@ function theStockade() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: undefined, music: 'theme', night: true,
+    duskStart: undefined, music: 'stockade', night: true,
     palette: { dress: 'camp', haze: 'rgba(24,18,44,0.3)', sky: 'night', canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
@@ -607,7 +607,7 @@ function sporewood() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
-    duskStart: -1, duskLen: 1, music: 'theme2', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: true,
     palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: false, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
@@ -1095,7 +1095,7 @@ function hangingVillage() {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
-    duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'town', night: false, glowNight: true,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(140,90,150,0.12)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone: [], scree: [], snowLine: 52,
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
@@ -1272,7 +1272,7 @@ function theSunspire() {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 145 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'theme3', night: false, hasCryst: true, cloudLine: CLOUD, // duskStart -1 means ALWAYS dusk: this one is daylight
+    duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, hasCryst: true, cloudLine: CLOUD, // duskStart -1 means ALWAYS dusk: this one is daylight
     tall: { top: 26 * TS, bottom: 146 * TS },
     quest: { n: 3, item: 'shard', name: 'SUNSHARD', npc: 'squire', done: 'THE LIGHT IS CARRIED DOWN', reward: 'relic', relic: 'sunshard' },
     palette: { sky: [[126, 176, 214], [214, 232, 240]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag',
@@ -1431,7 +1431,7 @@ function stormhold() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges,
-    duskStart: -1, duskLen: 1, music: 'theme4', night: true, glowNight: true, nightA: 0.26,
+    duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,
     quest: { n: 3, item: 'folk', name: 'HILL FOLK', npc: 'squire', done: 'THEY ARE OUT OF THEIR CELLARS', reward: 'relic', relic: 'shoes' },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
       grass: '#cfd8e2', grassL: '#eef4ff', grassD: '#9aa8bc', dirt: '#4a4a58', dirtL: '#62626e', dirtD: '#32323c',
@@ -1617,7 +1617,7 @@ function galeMoor() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
-    duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: false,
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 99999, kind: 'mist' }],

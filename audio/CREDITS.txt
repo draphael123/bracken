@@ -20,3 +20,13 @@ Anything not in the manifest is synthesised in src/audio.js.
 - town.mp3 = "Exploring Town" by Spring Spring (Julie Damsgaard / Spring Enterprises), CC0 - https://opengameart.org/content/exploring-town - a menu tune sold at the store (trimmed to 132 s with a fade).
 - adventure.mp3 = "The Adventure Begins" by Frenchyboy Studios, CC0 - https://opengameart.org/content/the-adventure-begins - a menu tune sold at the store.
 - cave.mp3 = "8-Bit Cave Loop" by Wolfgang_, CC0 - https://opengameart.org/content/8-bit-cave-loop - The Mineworks theme.
+
+- From "12 Music Loops" by SubspaceAudio (Juhani Junkala), CC0 - https://opengameart.org/content/12-music-loops
+  (part of the "400 Indie Game Music Loops" pack, https://subspaceaudio.itch.io/indie-game-music-loops).
+  Each lowpassed at 9 kHz and level-matched, loop length untouched:
+  - stockade.ogg  = "006 [Heavy Metal Chiptunes] bgm_stage_F (faster)" - The Stockade
+  - sunspire.ogg  = "218 [Super Action Chiptunes] bgm_stage_9"         - The Sunspire
+  - stormhold.ogg = "133 [Retro Sports] bgm_stage_final"               - Stormhold
+  - roc.ogg       = "373 [Misc Extras] bgm_gojira_battle_A"            - the Roc, the Sunspire's boss
+- Every level now has its own track: town.mp3 plays in the Hanging Village, cave.mp3 in Sporewood and
+  adventure.mp3 on Gale Moor (all three still sold at the store as menu tunes).
