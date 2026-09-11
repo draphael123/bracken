@@ -71,7 +71,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG;
-const DMG = { sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+const DMG = { gqSceptre: 18, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
 const EHP = { sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 420, roc: 440, sentry: 14, gqueen: 560, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 const ST = { swing: 12, plunge: 32, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
@@ -576,6 +576,27 @@ function updateGateFx(dt) { for (const f of gateFx) { f.t += dt;
     if (f.closing && f.t >= f.dur && !f.landed) { f.landed = true; f.ys.forEach((ty, k) => { const i = ty * LW + f.col; if (L.grid[i] !== T.AIR) tileSpr[i] = f.spr ? f.spr[k] : TILE.port[(ty + f.col) % 2]; });
       const bx = f.col * TS + 8, by = (Math.max(...f.ys) + 1) * TS; dust(bx, by, 6); shakeCam(2.5); SFX.gateLand(); } }
   gateFx = gateFx.filter(f => f.t < f.dur + 0.02); }
+// HOW A GATE OPENS, said over it in pictures (never words): a winch's gate has a crank over it and a rope run from
+// the winch to it; a gate the alarm dropped has a bell, a red pip for every guard still up, and a bar running down
+// to when it lifts anyway; the armoury door has the smith's hammer; a locked gate points you toward its key.
+function drawGateHints(cx, cy) {
+  const gateTop = col => { for (let ty = 0; ty < LH; ty++) if (L.grid[ty * LW + col] === T.PORT) return ty; return -1; };
+  const plate = (x, y, edge) => { g.fillStyle = 'rgba(10,8,20,0.75)'; g.fillRect(x - 9, y - 9, 18, 18); g.strokeStyle = edge; g.lineWidth = 1; g.strokeRect(x - 8.5, y - 8.5, 17, 17); };
+  const bob = Math.round(Math.sin(time * 3) * 1.5);
+  for (const pr of props) if (pr.t === 'winch' && !(pr.open > 0)) { const top = gateTop(pr.gate); if (top < 0) continue; const gx = pr.gate * TS + 8 - cx, gy = top * TS - cy; if (gx < -60 || gx > VW + 60) continue;
+    g.strokeStyle = 'rgba(201,178,124,0.75)'; g.lineWidth = 1; g.setLineDash([2, 2]); g.beginPath(); g.moveTo(pr.x - cx + 0.5, pr.y - 18 - cy); g.lineTo(pr.x - cx + 0.5, gy - 4); g.lineTo(gx, gy - 4); g.stroke(); g.setLineDash([]); // the rope from the drum to the gate
+    const py2 = gy - 16 + bob; plate(gx, py2, '#c9a040'); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.arc(gx, py2, 4, 0, 7); g.stroke(); const a = time * 3; g.beginPath(); g.moveTo(gx, py2); g.lineTo(gx + Math.cos(a) * 6, py2 + Math.sin(a) * 6); g.stroke(); g.fillStyle = '#ffd36b'; g.fillRect(Math.round(gx + Math.cos(a) * 6) - 1, Math.round(py2 + Math.sin(a) * 6) - 1, 2, 2); // a turning crank
+    if (Math.abs(P.x - pr.x) < 120) { const k = 0.5 + 0.5 * Math.sin(time * 6); g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(Math.round(pr.x - cx), Math.round(pr.y - 10 - cy), 10 + k * 2, 12 + k * 2, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } } // and the winch itself glows: strike it
+  for (const sec of (L.alarms || [])) if (sec.on && !sec.done) { const left = enemies.filter(e => e.alive && e.garrison === sec.id).length;
+    for (const [col] of sec.gates) { const top = gateTop(col); if (top < 0) continue; const gx = col * TS + 8 - cx, gy = top * TS - cy - 16 + bob; if (gx < -40 || gx > VW + 40) continue;
+      plate(gx, gy, '#ff6b6b'); g.fillStyle = '#e0b040'; g.fillRect(gx - 3, gy - 4, 6, 5); g.fillRect(gx - 4, gy + 1, 8, 1); g.fillRect(gx - 1, gy + 2, 2, 2); // the bell
+      for (let i = 0; i < left; i++) { g.fillStyle = '#ff6b6b'; g.fillRect(gx - 8 + i * 5, gy + 11, 3, 3); } // a pip for every guard still standing
+      g.fillStyle = '#3a3040'; g.fillRect(gx - 9, gy - 13, 18, 2); g.fillStyle = '#ffd36b'; g.fillRect(gx - 9, gy - 13, Math.round(18 * Math.max(0, 1 - (sec.onT || 0) / 20)), 2); } } // and time running down to when it lifts anyway
+  if (L.mini && !miniDone) { const top = gateTop(L.mini.gate); if (top >= 0) { const gx = L.mini.gate * TS + 8 - cx, gy = top * TS - cy - 16 + bob; if (gx > -40 && gx < VW + 40) { plate(gx, gy, '#ff9a5c'); g.fillStyle = '#8a919c'; g.fillRect(gx - 5, gy - 5, 10, 5); g.fillStyle = '#5c3a1d'; g.fillRect(gx - 1, gy, 2, 6); } } } // the smith's hammer: he holds this door
+  for (const pr of props) if (pr.t === 'lockgate' && !pr.open && !hasKey(pr.needs) && Math.abs(P.x - pr.x) < 80 && Math.abs(P.y - pr.y) < 60) { const k = props.find(q => q.t === 'key' && q.kind === pr.needs && !q.got); if (!k) continue;
+    const dx = k.x - P.x, dy = k.y - P.y, d = Math.hypot(dx, dy) || 1, ax = Math.round(P.x - cx + dx / d * 22), ay = Math.round(P.y - 30 - cy + dy / d * 10), an = Math.atan2(dy, dx), pulse = 0.5 + 0.5 * Math.sin(time * 6);
+    g.globalAlpha = 0.6 + 0.4 * pulse; g.fillStyle = '#e0b040'; g.beginPath(); g.moveTo(ax + Math.cos(an) * 6, ay + Math.sin(an) * 6); g.lineTo(ax + Math.cos(an + 2.5) * 5, ay + Math.sin(an + 2.5) * 5); g.lineTo(ax + Math.cos(an - 2.5) * 5, ay + Math.sin(an - 2.5) * 5); g.closePath(); g.fill(); g.globalAlpha = 1; } // the key is that way
+}
 function drawGateFx(cx, cy) { for (const f of gateFx) { const top = Math.min(...f.ys), bot = Math.max(...f.ys), h = (bot - top + 1) * TS, x = f.col * TS - cx;
     if (x < -TS || x > VW) continue; const k = Math.min(1, f.t / f.dur), off = f.closing ? -h * (1 - k * k) : -h * (k * k * (3 - 2 * k));
     g.save(); g.beginPath(); g.rect(x, top * TS - cy, TS, h); g.clip();
@@ -774,7 +795,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false;
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null;
-  mendAll(); resetCastle(); spawnEntities(); seeds = []; gateFx = []; hallows = []; hammers = []; embers = []; pyres = []; P.full = false; P.fullT = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
+  mendAll(); resetCastle(); spawnEntities(); seeds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
 }
 function startGame() {
@@ -1665,7 +1686,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'king' && e.mode === 'held') dmg *= 2; // held by a cage: his head is down
   if (e.t === 'windcaller' && !callerOpen(e)) { SFX.buzz(); return; } // between stones there is nothing to cut
   if (e.t === 'windcaller') e.hits = (e.hits || 0) + 1;
-  if (e.t === 'gqueen') { if (e.mode === 'ceil' || e.mode === 'roofWait' || e.mode === 'sleep') { SFX.clank(); return; } if (gqOpen(e)) dmg = Math.round(dmg * 1.5); }
+  if (e.t === 'gqueen') { if (e.mode === 'ceil' || e.mode === 'roofWait' || e.mode === 'sleep' || (e.phase === 1 && e.mode !== 'topple')) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 40, Math.sign(e.x - fromX) || 1, 4); return; } if (gqOpen(e)) dmg = Math.round(dmg * 1.5); } // on her throne she is armoured by the whole court: bring the gallery down on her
   if (e.t === 'roc') { if (rocOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.5)); if (Math.random() < 0.5) { sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 3); } } } // in the air she is quick and hard to hurt; down, she is not
   if (e.t === 'kite' && e.mode !== 'fall') { e.mode = 'fall'; e.vy = -40; e.vx = (Math.sign(e.x - fromX) || 1) * 60; number(e.x, e.y - 40, 'THE STRING', '#ffd36b'); SFX.crack(); }
   if (e.t === 'golem') { const need = e.need || 'blue', cols = e.litCols || new Set(); const ok = need === 'both' ? cols.size >= 2 : cols.has(need); if (!ok) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); return; } } // dark crystal turns the blade; lit in the right colour, it bleeds
@@ -2872,9 +2893,10 @@ function updateShardling(e, dt) {
 // 3 THE CROWN: she goes up through her own ceiling to the roof. Up there she leaps from peak to peak and
 //   throws the slates, and the storm looks for the tallest iron on the mountain: stand where she jumps to
 //   a peak with a rod on it, and the lightning finds her crown.
-const gqOpen = e => ['slamRec', 'rec', 'dazed', 'struck', 'topple'].includes(e.mode);
+const gqOpen = e => ['slamRec', 'rec', 'dazed', 'struck', 'topple', 'sceptreWait'].includes(e.mode);
+let sceptres = []; // her sceptre in flight: out along the floor, back at head height
 const GQ_FRAME = { sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: 8,
-  chargeTell: 6, charge: 9, dazed: 10, chandTell: 2, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
+  chargeTell: 6, charge: 9, dazed: 10, chandTell: 2, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
 let HALLWIN = null;
 function bakeHallWindow() { const [c, g2] = canvas(18, 30); g2.fillStyle = '#1b1626'; g2.fillRect(0, 6, 18, 24); g2.beginPath(); g2.arc(9, 8, 9, Math.PI, 0); g2.fill(); g2.fillStyle = '#2a3050'; g2.fillRect(2, 8, 14, 20); g2.beginPath(); g2.arc(9, 8, 7, Math.PI, 0); g2.fill(); g2.fillStyle = '#3a4270'; for (let k = 0; k < 6; k++) g2.fillRect(3 + (k * 5) % 12, 10 + k * 3, 1, 4); g2.fillStyle = '#5a6270'; g2.fillRect(8, 2, 2, 26); g2.fillRect(2, 16, 14, 2); return c; }
 // her callouts ride over her head, like every boss's last words do
@@ -2900,8 +2922,16 @@ function gqCeiling(q) { // she goes up through her own roof, and what she brings
   resolveTiles(); SFX.heavy(); SFX.crack(); shakeCam(10); flash = Math.max(flash, 0.25);
   for (let k = 0; k < 20; k++) parts.push({ x: (H0.x0 + Math.random() * (H0.x1 - H0.x0 + 1)) * TS, y: H0.y1 * TS + 8, vx: (Math.random() - 0.5) * 120, vy: 40 + Math.random() * 80, life: 1.2, max: 1.2, col: Math.random() < 0.5 ? '#5a5a68' : '#3a3a44', size: 3, grav: 500 });
 }
+function updateSceptres(dt) { const A = L.arena; if (!A) { sceptres = []; return; }
+  for (const s of sceptres) { s.t += dt; s.x += s.dir * 250 * dt;
+    if (!s.back && (s.x < A.x0 + 20 || s.x > A.x1 - 20 || s.t > 1.4)) { s.back = true; s.dir = -s.dir; s.y = A.floor - 30; s.hit = false; SFX.clank(); }
+    if (Math.random() < dt * 30) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.25, max: 0.25, col: '#c9a0ff', size: 1, grav: 0, glow: true });
+    if (!P.dead && !s.hit && Math.abs(P.x - s.x) < 10 && s.y > P.y - 16 && s.y < P.y + 2) { s.hit = true; damagePlayer(s.x - s.dir * 10, DMG.gqSceptre); }
+    if (s.back && Math.abs(s.x - s.owner.x) < 18) s.done = true; }
+  sceptres = sceptres.filter(s => !s.done && s.t < 4 && s.owner.alive); }
 function updateGQueen(e, dt) {
   const A = L.arena, hall = A.floor, roof = A.roof;
+  if (e.phase > 1 && e.hp < e.maxHp * 0.15) { if (!e.enraged) { e.enraged = true; SFX.bellow(); shakeCam(8); flash = Math.max(flash, 0.25); } dt *= 1.3; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 56 - Math.random() * 10, vx: 0, vy: -40, life: 0.4, max: 0.4, col: '#ff6b2c', size: 2, grav: 0, fire: true }); } // THE CROWN BURNS
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
   const d = P.x - e.x, ad = Math.abs(d);
   let want = 0, physics = e.phase > 1 && e.mode !== 'ceil';
@@ -2914,13 +2944,13 @@ function updateGQueen(e, dt) {
     if (e.gusting > 0) { e.gusting -= dt; if (!P.dead) P.vx += e.gustDir * (P.ground ? 150 : 200) * dt; if (Math.random() < dt * 40) parts.push({ x: camX + (e.gustDir > 0 ? 0 : VW), y: camY + Math.random() * VH, vx: e.gustDir * 280, vy: 20, life: 1.2, max: 1.2, col: '#dfe8ff', size: 1, grav: 0 }); } }
   // THE LIGHTNING on the roof
   if (e.phase === 3 && e.mode !== 'ceil' && e.mode !== 'ceilTell' && e.mode !== 'roofWait') {
-    if (!(e.gather > 0)) { e.boltT -= dt; if (e.boltT <= 0) { e.boltT = 5; e.gather = 0.9; e.markX = P.x; const rods = props.filter(p => p.t === 'rod'); const near = rods.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; e.rodTarget = near && Math.abs(near.x - e.x) < 30 && e.y <= near.y + 6 ? near : null; SFX.thunder(); flash = Math.max(flash, 0.1); } }
+    if (!(e.gather > 0)) { e.boltT -= dt; if (e.boltT <= 0) { e.boltT = 4; e.gather = 0.9; e.markX = P.x; e.marks = [P.x - 46, P.x, P.x + 46]; const rods = props.filter(p => p.t === 'rod'); const near = rods.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; e.rodTarget = near && Math.abs(near.x - e.x) < 30 && e.y <= near.y + 6 ? near : null; SFX.thunder(); flash = Math.max(flash, 0.1); } }
     else { e.gather -= dt; if (e.gather <= 0) { e.gather = 0;
       const rods = props.filter(p => p.t === 'rod'), near = rods.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];
       if (near && Math.abs(near.x - e.x) < 30 && e.y <= near.y + 6) { // the tallest iron on the mountain is her crown
         bolts.push({ x: near.x, y: near.y - 18, life: 0.35, storm: true }); e.mode = 'struck'; e.modeT = 2.6; e.hp -= Math.round(e.maxHp * 0.06); e.flash = 0.5; e.vx = (e.x < near.x ? -1 : 1) * 70; e.vy = -140;
         SFX.thunder(); SFX.golemShatter(); shakeCam(10); flash = Math.max(flash, 0.5); gqSay(e, 'THE STORM FINDS HER CROWN', '#dfe8ff'); if (e.hp <= 0) hurtEnemy(e, 1, e.x, false); }
-      else { bolts.push({ x: e.markX, y: roof, life: 0.3, storm: true }); SFX.thunder(); shakeCam(6); flash = Math.max(flash, 0.3); if (!P.dead && Math.abs(P.x - e.markX) < 20 && P.y > roof - 48) damagePlayer(e.markX, DMG.gqBolt, { unblockable: true, up: true }); }
+      else { for (const mx of (e.marks || [e.markX])) { bolts.push({ x: mx, y: roof, life: 0.3, storm: true }); if (!P.dead && Math.abs(P.x - mx) < 18 && P.y > roof - 48) damagePlayer(mx, DMG.gqBolt, { unblockable: true, up: true }); } SFX.thunder(); shakeCam(6); flash = Math.max(flash, 0.3); }
       e.rodTarget = null; } }
   }
   switch (e.mode) {
@@ -2928,10 +2958,10 @@ function updateGQueen(e, dt) {
     // ---- phase one: the court ----
     case 'court': { e.x = e.throneX; e.y = e.throneY; e.vx = 0; e.vy = 0; e.face = -1; e.pointT -= dt; e.bombT -= dt; e.guardT -= dt;
       const guards = enemies.filter(en => en.alive && en.royal).length;
-      if (guards < 2 && e.guardT <= 0) { e.guardT = 8; const n0 = enemies.length; spawnEnt({ t: 'shield', x: Math.floor(e.throneX / TS) - 5 - guards * 3, y: Math.floor(hall / TS) - 1, face: -1 }); for (let i = n0; i < enemies.length; i++) enemies[i].royal = true; SFX.clank(); }
+      if (guards < 3 && e.guardT <= 0) { e.guardT = 6; const n0 = enemies.length; let gx = Math.floor(e.throneX / TS) - 3; while (gx > A.x0 / TS && isSolid(gx, Math.floor(hall / TS) - 1)) gx--; spawnEnt({ t: 'shield', x: gx - 2 - guards * 3, y: Math.floor(hall / TS) - 1, face: -1 }); /* (they spawned inside the dais: now at its foot) */ for (let i = n0; i < enemies.length; i++) enemies[i].royal = true; SFX.clank(); }
       const archers = enemies.some(en => en.alive && en.gallery);
       if (e.modeT <= 0) {
-        if (e.pointT <= 0 && archers && !L.galleryDown) { e.pointT = 3.8; e.mode = 'point'; e.modeT = 0.9; e.markX = Math.max(A.x0 + 20, Math.min(A.x1 - 60, P.x)); SFX.bellow(); }
+        if (e.pointT <= 0 && archers && !L.galleryDown) { e.pointT = 3.0; e.mode = 'point'; e.modeT = 0.9; e.markX = Math.max(A.x0 + 20, Math.min(A.x1 - 60, P.x)); SFX.bellow(); }
         else if (e.bombT <= 0) { e.bombT = archers ? 5 : 3; e.mode = 'throw'; e.modeT = 0.6; e.thrown = false; }
       }
       break; }
@@ -2942,13 +2972,15 @@ function updateGQueen(e, dt) {
     case 'topple': e.x = e.throneX; e.y = e.throneY; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 60, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0 }); if (e.modeT <= 0) { e.phase = 2; e.mode = 'rise'; e.modeT = 1.0; SFX.bellow(); gqSay(e, 'THE QUEEN RISES', '#ff6b6b'); } break;
     case 'rise': want = 0; if (e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.6; } break;
     // ---- phase two: the sceptre ----
-    case 'stand': { e.face = Math.sign(d) || e.face; want = ad > 44 ? e.face * 40 : 0; e.slamT -= dt; e.sweepT -= dt; e.chargeT -= dt; e.chandT = (e.chandT ?? 3) - dt;
+    case 'stand': { e.face = Math.sign(d) || e.face; want = ad > 44 ? e.face * 55 : 0; e.slamT -= dt; e.sweepT -= dt; e.chargeT -= dt; e.chandT = (e.chandT ?? 3) - dt; e.decreeT = (e.decreeT ?? 4) - dt; e.throwT2 = (e.throwT2 ?? 2.5) - dt;
       if (e.modeT <= 0 && !P.dead) {
         const ch = (e.chandT = (e.chandT ?? 3) - 0) <= 0 && props.find(pr => pr.t === 'weight' && pr.gq && pr.state === 'hang' && Math.abs(pr.x - P.x) < 34 && Math.abs(pr.x - e.x) > 30);
         if (ch) { e.chandT = 6.5; e.mode = 'chandTell'; e.modeT = 0.7; e.chand = ch; SFX.bellow(); gqSay(e, '!', '#ffd36b'); }
-        else if (e.chargeT <= 0 && ad > 100) { e.chargeT = 7; e.mode = 'chargeTell'; e.modeT = 0.8; SFX.bellow(); }
-        else if (e.slamT <= 0 && ad < 96) { e.slamT = 3.4; e.mode = 'slamTell'; e.modeT = 0.7; SFX.charge(); }
-        else if (e.sweepT <= 0 && ad < 54) { e.sweepT = 2.6; e.mode = 'sweepTell'; e.modeT = 0.45; SFX.snort(); }
+        else if (e.decreeT <= 0) { e.decreeT = 9; e.mode = 'decreeTell'; e.modeT = 0.9; SFX.callerChant(); ringAt(e.x, e.y - 30, 26, '#c9a0ff', 0.6); }
+        else if (e.throwT2 <= 0 && ad > 70) { e.throwT2 = 6.5; e.mode = 'sceptreTell'; e.modeT = 0.6; SFX.snort(); }
+        else if (e.chargeT <= 0 && ad > 100) { e.chargeT = 5.5; e.mode = 'chargeTell'; e.modeT = 0.8; SFX.bellow(); }
+        else if (e.slamT <= 0 && ad < 96) { e.slamT = 2.6; e.mode = 'slamTell'; e.modeT = 0.7; SFX.charge(); }
+        else if (e.sweepT <= 0 && ad < 54) { e.sweepT = 2.0; e.mode = 'sweepTell'; e.modeT = 0.45; SFX.snort(); }
       } break; }
     // she draws back and hurls the sceptre at the chain: it rings off it and comes back to her hand, and the chandelier shakes
     case 'chandTell': { const c = e.chand; e.face = Math.sign((c ? c.x : P.x) - e.x) || e.face; want = 0;
@@ -2957,6 +2989,17 @@ function updateGQueen(e, dt) {
           for (let k = 0; k < 10; k++) { const q = k / 10; parts.push({ x: e.x + (c.x - e.x) * q, y: (e.y - 50) + (c.y + c.len - 10 - (e.y - 50)) * q, vx: 0, vy: 0, life: 0.25, max: 0.25, col: '#c9d1dc', size: 2, grav: 0 }); }
           SFX.clank(); SFX.forgeChain(); burst(c.x, c.y + c.len - 12, 8, ['#ffd36b', '#fff6c8'], 50, 0.4); } }
       break; }
+    // THE DECREE: the sceptre goes up, the court's own ground answers - three royal shockwaves both ways, on a beat you
+    // jump to - and a guard comes in at the door behind you
+    case 'decreeTell': want = 0; e.face = Math.sign(d) || e.face; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 60 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: '#c9a0ff', size: 2, grav: 0, glow: true });
+      if (e.modeT <= 0) { e.mode = 'decree'; e.modeT = 1.5; e.decreeN = 0; e.decreeTick = 0; SFX.callerBlast(); shakeCam(5);
+        if (enemies.filter(en => en.alive && en.royal).length < 3) { const n0 = enemies.length; spawnEnt({ t: 'shield', x: A.wallL + 2, y: Math.floor(hall / TS) - 1, face: 1 }); for (let i = n0; i < enemies.length; i++) enemies[i].royal = true; SFX.clank(); } } break;
+    case 'decree': want = 0; e.decreeTick -= dt; if (e.decreeTick <= 0 && e.decreeN < 3) { e.decreeTick = 0.45; e.decreeN++; for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 24, y: hall, dir: dd, life: 1.8, sp: 185, royal: true }); SFX.forgeHammer(); shakeCam(4); dust(e.x, e.y, 8); }
+      if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.9; } break;
+    // THE SCEPTRE: thrown the length of the hall, low along the floor going out (jump it), at head height coming back
+    // (stay down). While it is out of her hand she has nothing to fight with.
+    case 'sceptreTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sceptreWait'; e.modeT = 3; sceptres.push({ x: e.x + e.face * 22, y: hall - 9, dir: e.face, back: false, t: 0, owner: e, hit: false }); SFX.throwWhoosh(); } break;
+    case 'sceptreWait': want = 0; if (!sceptres.some(s => s.owner === e) || e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.4; } break;
     case 'slamTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.25; SFX.forgeHammer(); shakeCam(9); zoomKick(1.08, 0.2); dust(e.x + e.face * 26, e.y, 14);
       const fl = e.phase === 3 ? roof : hall; for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 26, y: fl, dir: dd, life: 1.3, sp: 170 });
       if (!P.dead && ad < 40 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } break;
@@ -2973,11 +3016,11 @@ function updateGQueen(e, dt) {
     // ---- phase three: the roof ----
     case 'ceilTell': want = 0; if (e.modeT <= 0) { e.mode = 'ceil'; e.modeT = 3; gqCeiling(e); } break;
     case 'ceil': { const hx = (A.hole.x0 + A.hole.x1 + 1) * TS / 2; e.x += (hx - e.x) * Math.min(1, dt * 5); e.y -= 360 * dt;
-      if (e.y <= roof - 40) { e.x = hx + 48; e.y = roof; e.vy = 0; e.vx = 0; e.mode = 'roofWait'; e.modeT = 0.5; shakeCam(6); SFX.heavy(); } break; }
+      if (e.y <= roof - 40) { e.x = hx + 48; e.y = roof; e.vy = 0; e.vx = 0; e.mode = 'roofWait'; e.modeT = 0.5; shakeCam(6); SFX.heavy(); for (const dx of [-7, 7]) spawnEnt({ t: 'harpy', x: Math.floor(hx / TS) + dx, y: Math.floor(roof / TS) - 7 }); SFX.screech(); } break; } // her harpies come down out of the storm with her
     case 'roofWait': want = 0; e.face = Math.sign(d) || e.face; if (!P.dead && P.y <= roof + 2 && P.ground) { e.mode = 'roof'; e.modeT = 1; SFX.bellow(); } break;
     case 'roof': { e.face = Math.sign(d) || e.face; want = ad > 60 ? e.face * 34 : 0; e.slateT -= dt; e.leapT -= dt;
       if (e.modeT <= 0 && !P.dead) {
-        if (e.slateT <= 0 && ad > 50) { e.slateT = 2.8; e.mode = 'slateTell'; e.modeT = 0.45; }
+        if (e.slateT <= 0 && ad > 50) { e.slateT = 2.2; e.mode = 'slateTell'; e.modeT = 0.45; }
         else if (e.leapT <= 0) { e.leapT = 2.4; const rods = props.filter(p => p.t === 'rod'), nearP = rods.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
           // she goes up on the peak nearest you to throw from it - which is the whole idea
           if (nearP && Math.abs(nearP.x - P.x) < 110 && Math.random() < 0.65 && Math.abs(nearP.x - e.x) > 20) { e.tx = nearP.x; e.ty = nearP.y; } else { e.tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, P.x)); e.ty = roof; }
@@ -3923,7 +3966,7 @@ function drawCritters(cx, cy) {
 
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
-const windingUp = e => (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));
+const windingUp = e => (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -4412,7 +4455,7 @@ function updateProps(dt) {
   for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) { if (p.draining || p.y0 === undefined) continue; let lift = 0; if (p.tide) lift = 8 + Math.sin(time * 2 * Math.PI / 26) * 8; if (p.rise > 0) { p.rise -= dt; lift = Math.max(lift, 14); } if (p.tide || p.rise !== undefined) { const want = p.y0 - lift; p.y += (want - p.y) * Math.min(1, dt * 4); p.depth = (p.depth0 || 12) + (p.y0 - p.y); } }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHoly(dt);
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHoly(dt); updateSceptres(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -5336,7 +5379,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'roc' && e.alive && (e.mode === 'diveTell' || e.mode === 'dive') && e.tx !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 16), fy = Math.round(L.arena.floor - cy); g.globalAlpha = 0.25 + 0.25 * k; g.fillStyle = '#1b1626'; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, 16 + k * 3, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     if (e.t === 'gqueen' && e.alive && gqOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 24 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'gqueen' && e.alive && e.mode === 'point' && e.markX) { const k = 0.5 + 0.5 * Math.sin(time * 18), fy = Math.round(L.arena.floor - cy) - 2, mx = Math.round(e.markX - cx); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(mx - 10, fy - 4); g.lineTo(mx + 10, fy + 2); g.moveTo(mx + 10, fy - 4); g.lineTo(mx - 10, fy + 2); g.stroke(); g.globalAlpha = 1; }
-    if (e.t === 'gqueen' && e.alive && e.gather > 0 && e.markX !== undefined && !e.rodTarget) { const k = 1 - e.gather / 0.9, fy = Math.round(L.arena.roof - cy); g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#dfe8ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(e.markX - cx), fy - 1, 22 - k * 10, 5 - k * 2, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    if (e.t === 'gqueen' && e.alive && e.gather > 0 && e.markX !== undefined && !e.rodTarget) { const k = 1 - e.gather / 0.9, fy = Math.round(L.arena.roof - cy); g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#dfe8ff'; g.lineWidth = 1; for (const mx of (e.marks || [e.markX])) { g.beginPath(); g.ellipse(Math.round(mx - cx), fy - 1, 22 - k * 10, 5 - k * 2, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
     if (e.t === 'roc' && e.alive && rocOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 26 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'lance' && e.alive && lanceOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 24 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'ram' && ramOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 28 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.1; g.fillStyle = q % 2 ? '#8fd160' : '#fff6c8'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 22), Math.round(e.y - e.h * 1.5 - cy) - 8 + Math.round(Math.sin(a * 1.4) * 4), 2, 2); } } // dazed: a green ring under him, green motes over him
@@ -5365,7 +5408,9 @@ function drawWorld(cx, cy, showPlayer) {
   for (const b of bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), k = b.life / 0.28; if (b.storm) { g.globalAlpha = Math.min(1, k); g.fillStyle = b.holy ? '#ffd36b' : '#9ab8ff'; g.fillRect(x - 3, y - 220, 7, 220); g.fillStyle = b.holy ? '#fff6c8' : '#eef4ff'; for (let s = 0; s < 220; s += 14) g.fillRect(x - 1 + ((s * 7) % 5) - 2, y - s - 14, 3, 15); g.globalAlpha = 1; continue; } g.globalAlpha = k; g.fillStyle = '#dfffa0'; g.fillRect(x - 1, y - 200, 3, 200); g.fillStyle = '#8fd160'; g.fillRect(x - 3, y - 200, 7, 200); g.globalAlpha = 1; g.fillStyle = '#fff6e0'; g.fillRect(x - 1, y - 200, 2, 200); }
   for (const r of rain) { if (r.fired) continue; const x = Math.round(r.x - cx), y = Math.round(r.y - cy), hot = Math.floor(time * 10) % 2 === 0; g.fillStyle = r.bolt ? (hot ? '#8fd160' : '#dfffa0') : hot ? '#ff6b6b' : '#ffd36b'; g.fillRect(x - 4, y - 8, 2, 2); g.fillRect(x + 2, y - 8, 2, 2); g.fillRect(x - 2, y - 6, 2, 2); g.fillRect(x, y - 6, 2, 2); g.fillRect(x - 1, y - 4, 2, 2); g.globalAlpha = 0.25; g.fillRect(x - 6, y - 1, 12, 1); g.globalAlpha = 1; }
   for (const w of pwaves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); g.fillStyle = '#b8842a'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
-  for (const w of waves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); g.fillStyle = '#8a5a32'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#c9b27c'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
+  for (const s of sceptres) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 16); g.fillStyle = '#c9a040'; g.fillRect(-9, -1, 18, 2); g.fillStyle = '#8a5ac0'; g.fillRect(6, -3, 5, 5); g.fillStyle = '#e0c0ff'; g.fillRect(7, -2, 2, 2); g.restore(); bloom(s.x - cx, s.y - cy, 10, 0.35, 'cool'); }
+  for (const w of waves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); if (w.royal) { g.fillStyle = '#5a2a7a'; g.fillRect(x - 4, y - 7, 8, 7); g.fillStyle = '#c9a0ff'; g.fillRect(x - 2, y - 10, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 4, 4, 2); continue; } g.fillStyle = '#8a5a32'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#c9b27c'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
+  drawGateHints(cx, cy);
   if (showPlayer && !P.dead) {
     for (const gh of ghosts) drawSet(K, 'roll', gh.frame, gh.x - cx, gh.y - cy, gh.face, true, 1, 1, gh.life * 2);
     const vis = P.inv <= 0 || Math.floor(P.inv * 20) % 2 === 0;

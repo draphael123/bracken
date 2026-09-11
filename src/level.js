@@ -1538,7 +1538,7 @@ function stormhold() {
 // THE WINCHES: a struck winch holds its portcullis up for a few seconds; a cut counterweight falls.
 // ============================================================================================
 function highcrown() {
-  const W = 324, H = 70; const L = painter(W, H);
+  const W = 258, H = 70; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const port = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
@@ -1637,27 +1637,28 @@ function highcrown() {
   ent('deco', 127, 19, { kind: 'counter' }); ent('key', 128, 19, { kind: 'brass' });
 
   // ---- THE GREAT HALL (floor 20) and THE ROOF (8): THE GOBLIN QUEEN ----
+  // (the hall was 108 tiles long: a long walk to a woman on a chair. Now it is 44, with her dais at the far end.)
   block(208, W - 1, 20, H - 1);                 // the castle's mass under the hall
   block(208, W - 1, 8, 9);                      // the hall's roof, and the roof walk on it
-  block(317, W - 1, 0, 19);                     // the far wall
+  block(252, W - 1, 0, 19);                     // the far wall
   block(206, 207, 2, 7);                        // the battlement at the near end of the roof
-  block(300, 316, 18, 19); block(296, 299, 19, 19); // the dais and its step
-  ent('deco', 309, 17, { kind: 'throne' });
-  ent('gqueen', 308, 17);
-  plat(214, 14, 80);                            // the gallery
-  ent('archer', 230, 13, { face: 1 }); ent('archer', 256, 13, { face: 1 }); ent('archer', 282, 13, { face: 1 });
-  for (const x of [222, 256, 290]) ent('support', x, 19, { top: 14 });
-  for (const x of [218, 244, 268, 294]) ent('deco', x, 13, { kind: 'hallWindow' });
-  ent('deco', 234, 19, { kind: 'banner', v: 0 }); ent('deco', 278, 19, { kind: 'banner', v: 1 });
-  for (const x of [212, 240, 270]) ent('torch', x, 19);
-  for (const x of [236, 276, 304]) ent('weight', x, 10, { len: 3, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them
-  ent('sign', 211, 19, { text: 'THE QUEEN. SHE HAS NEVER FOUGHT ALONE. WHERE SHE POINTS, THE GALLERY LOOSES: BRING THE GALLERY DOWN ON HER, IT STANDS ON THREE PILLARS. ON HER FEET SHE THROWS AT HER OWN CHANDELIERS: WHEN ONE SHAKES, GET OUT FROM UNDER IT, OR GET HER UNDER IT. IF SHE GOES FOR THE ROOF, THE STORM IS UP THERE.' });
+  block(240, 251, 18, 19); block(237, 239, 19, 19); // the dais and its step
+  ent('deco', 247, 17, { kind: 'throne' });
+  ent('gqueen', 246, 17);
+  plat(213, 14, 24);                            // the gallery
+  ent('archer', 218, 13, { face: 1 }); ent('archer', 229, 13, { face: 1 });
+  for (const x of [216, 226, 235]) ent('support', x, 19, { top: 14 });
+  for (const x of [212, 224, 236]) ent('deco', x, 13, { kind: 'hallWindow' });
+  ent('deco', 219, 19, { kind: 'banner', v: 0 }); ent('deco', 233, 19, { kind: 'banner', v: 1 });
+  for (const x of [210, 229]) ent('torch', x, 19);
+  for (const x of [219, 231, 245]) ent('weight', x, 10, { len: 3, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them
+  ent('sign', 209, 19, { text: 'THE QUEEN. SHE HAS NEVER FOUGHT ALONE. ON HER THRONE THE COURT ARMOURS HER: BRING THE GALLERY DOWN ON HER, IT STANDS ON THREE PILLARS. ON HER FEET SHE THROWS AT HER CHANDELIERS, SHE THROWS HER SCEPTRE (LOW GOING, HIGH COMING BACK), AND WHEN SHE RAISES IT THE FLOOR ITSELF OBEYS HER.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
-  block(222, 226, 4, 7); block(262, 266, 4, 7); block(300, 304, 4, 7);
-  plat(219, 6, 3); plat(227, 6, 3); plat(259, 6, 3); plat(267, 6, 3); plat(297, 6, 3); plat(305, 6, 3);
-  ent('rod', 224, 3); ent('rod', 264, 3); ent('rod', 302, 3);
+  block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
+  plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
+  ent('rod', 216, 3); ent('rod', 230, 3); ent('rod', 244, 3);
 
-  const interiors = [[124, 206, 10, 63, 'stone'], [208, 316, 10, 19, 'stone']];
+  const interiors = [[124, 206, 10, 63, 'stone'], [208, 251, 10, 19, 'stone']];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 1, y: 63 }, pools: [], falls: [], moversExtra: [], interiors,
     reachExact: true, // the carts are the Forgemaster's props, not a way around the castle
@@ -1673,8 +1674,8 @@ function highcrown() {
       { id: 'chapel', gates: [[160, 10, 19]], garrison: [{ t: 'pike', x: 172, y: 19 }, { t: 'brute', x: 182, y: 19 }, { t: 'archer', x: 146, y: 13 }] },
     ],
     mini: { x0: 126 * TS, x1: 198 * TS, floor: 40 * TS, trigger: 134 * TS, wallL: 125, gate: 199, boss: 'forgemaster', y0: 26 * TS, y1: 41 * TS, slag: [140 * TS + 8, 158 * TS + 8, 180 * TS + 8] },
-    arena: { x0: 208 * TS, x1: 316 * TS, floor: 20 * TS, trigger: 214 * TS, wallL: 207, wallR: 317, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
-      roof: 8 * TS, gallery: { row: 14, x0: 214, x1: 293 }, hole: { x0: 255, x1: 258, y0: 8, y1: 9 }, rubble: [[250, 17, 4], [255, 15, 4], [250, 13, 4], [255, 11, 4], [255, 9, 4]] },
+    arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 211 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
+      roof: 8 * TS, gallery: { row: 14, x0: 213, x1: 236 }, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
   };
 }
 
