@@ -1375,6 +1375,8 @@ function hurtEnemy(e, dmg, fromX, plunge) {
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
   number(e.x, e.y - e.h - 6, dmg, plunge ? '#ffd36b' : '#fff6e0');
   const dir = Math.sign(e.x - fromX) || 1;
+  if (SET.impact !== false) for (let i = 0; i < 3; i++) { const an = (Math.random() - 0.5) * 1.1; parts.push({ x: e.x, y: e.y - e.h / 2, vx: Math.cos(an) * dir * (260 + Math.random() * 120), vy: Math.sin(an) * 200 - 30, life: 0.12, max: 0.12, col: i ? '#fff6e0' : '#ffffff', size: 1, grav: 0 }); }
+  if (!e.maxHp && e.alive && !isSolid(Math.floor((e.x + dir * (e.w / 2 + 3)) / TS), Math.floor((e.y - 4) / TS))) e.x += dir * 2;
   if (e.hp <= 0) {
     e.alive = false; kills++; killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(e.t); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
     { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
@@ -4090,6 +4092,51 @@ function bakeMenhir(z) { // a standing stone: one leaning, lichened slab over it
   g.fillStyle = '#4a5a2a'; g.fillRect(2, h - 2, w - 4, 2);
   return c;
 }
+// LIGHT. A warm bloom round anything burning, day or night, and long shafts of sun through the canopy in
+// a daylit wood. Both are baked once and stamped, so they cost nothing per frame.
+let GLOWS = null, SHAFT = null;
+function bakeGlows() {
+  const make = (r, g0, b) => { const [c, cg] = canvas(64, 64); const gr = cg.createRadialGradient(32, 32, 1, 32, 32, 32); gr.addColorStop(0, `rgba(${r},${g0},${b},1)`); gr.addColorStop(0.35, `rgba(${r},${g0},${b},0.45)`); gr.addColorStop(1, `rgba(${r},${g0},${b},0)`); cg.fillStyle = gr; cg.fillRect(0, 0, 64, 64); return c; };
+  GLOWS = { warm: make(255, 160, 80), gold: make(255, 220, 140), cool: make(150, 220, 255), green: make(160, 230, 120) };
+  const [s, sg] = canvas(24, 200); const gr = sg.createLinearGradient(0, 0, 0, 200); gr.addColorStop(0, 'rgba(255,248,220,0.55)'); gr.addColorStop(0.6, 'rgba(255,240,200,0.18)'); gr.addColorStop(1, 'rgba(255,240,200,0)'); sg.fillStyle = gr; sg.fillRect(0, 0, 24, 200);
+  const hg = sg.createLinearGradient(0, 0, 24, 0); sg.globalCompositeOperation = 'destination-in'; hg.addColorStop(0, 'rgba(0,0,0,0)'); hg.addColorStop(0.5, 'rgba(0,0,0,1)'); hg.addColorStop(1, 'rgba(0,0,0,0)'); sg.fillStyle = hg; sg.fillRect(0, 0, 24, 200);
+  SHAFT = s;
+}
+const bloom = (x, y, r, a, kind = 'warm') => { if (!GLOWS) bakeGlows(); g.globalAlpha = Math.min(1, a); g.drawImage(GLOWS[kind], Math.round(x - r), Math.round(y - r), r * 2, r * 2); };
+const daylit = () => !L.night && !L.glowNight && !L.dark && !L.violet && dusk() < 0.4 && !(L.weather || []).some(w => w.kind === 'rain' || w.kind === 'snow');
+function drawShafts(cx, cy) {
+  if (!SET.weather || SET.parts === 'low' || !daylit()) return;
+  if (!SHAFT) bakeGlows();
+  g.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 5; i++) { const span = VW + 160, x = (((i * 131 + 40 - cx * 0.35 + Math.sin(time * 0.2 + i) * 12) % span) + span) % span - 80, a = 0.2 + 0.07 * Math.sin(time * 0.5 + i * 1.7);
+    g.save(); g.translate(Math.round(x), -10); g.transform(1, 0, -0.35, 1, 0, 0); g.globalAlpha = a; g.drawImage(SHAFT, 0, 0, 24 + (i % 3) * 10, VH + 20); g.restore(); }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+function drawBloom(cx, cy) {
+  if (SET.parts === 'low') return;
+  const day = !(L.night || L.glowNight) && !L.dark, k = day ? 0.55 : 0.4;
+  g.globalCompositeOperation = 'lighter';
+  if (day) { for (const lt of lights) if (lt.x > cx - 40 && lt.x < cx + VW + 40 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit)) bloom(lt.x - cx, lt.y - cy, (lt.torch ? 22 : 18) + Math.sin(time * 9 + lt.x) * 1.5, 0.22 * k, lt.glow ? (lt.pink ? 'gold' : 'cool') : 'warm');
+    for (const f of fires) if (f.delay <= 0 && f.x > cx - 30 && f.x < cx + VW + 30) bloom(f.x - cx, f.y - 8 - cy, 20, 0.3 * k); }
+  for (const b of embers) bloom(b.x - cx, b.y - cy, 12, 0.5);
+  for (const b of pyres) bloom(b.x - cx, b.y - cy, 30, 0.55);
+  if (isPyro() && P.jet) bloom(P.x + P.face * (8 + JET_LEN / 2) - cx, P.y - 9 - cy, 38, 0.3);
+  if (isPyro() && P.full) bloom(P.x - cx, P.y - 10 - cy, 20, 0.25 + 0.1 * Math.sin(time * 9), 'gold');
+  if (wisp) bloom(wisp.x - cx, wisp.y - cy, 16, 0.4, 'gold');
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+// THE SWING. A blade leaves a crescent behind it; a staff thrust leaves a streak of flame.
+function drawSwing(cx, cy) {
+  if (P.atk < 0.02 || P.atk > 0.2 || P.dead) return;
+  const px = Math.round(P.x - cx), py = Math.round(P.y - cy) - 9, f = P.face, k = (P.atk - 0.02) / 0.18;
+  g.globalCompositeOperation = 'lighter';
+  if (isPyro()) { const len = 30 * Math.min(1, k * 2.5), a = 1 - k;
+    for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#ff9a5c'; const w = 2 + i * 2; g.fillRect(f > 0 ? px + 10 : px - 10 - len, py - 1 - i, len, w); } }
+  else { const a0 = -2.1, sweep = 2.6 * Math.min(1, k * 2.2), r = 17;
+    for (let i = 0; i < 4; i++) { const tail = 0.5 + i * 0.35; g.globalAlpha = (1 - k) * (0.5 - i * 0.1); g.strokeStyle = i === 0 ? '#ffffff' : i === 1 ? '#fff6e0' : '#dfe8ff'; g.lineWidth = 3 - i * 0.6; g.beginPath();
+      const s = a0 + Math.max(0, sweep - tail), e = a0 + sweep; if (f > 0) g.arc(px, py, r - i, s, e); else g.arc(px, py, r - i, Math.PI - e, Math.PI - s); g.stroke(); } }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
 function drawWorld(cx, cy, showPlayer) {
   g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
   const dk = dusk();
@@ -4111,6 +4158,7 @@ function drawWorld(cx, cy, showPlayer) {
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(16,34,18,' + (0.4 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
+  drawShafts(cx, cy);
   if (BG.nearTrees) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (!L.castle) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
@@ -4384,6 +4432,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (Math.abs(P.vx) > 10) { key = 'run'; frame = Math.floor(P.anim * 13) % 6; }
       const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
       drawSet(K, key, frame, P.x - cx, P.y - cy, P.face, false, sx, sy);
+      drawSwing(cx, cy);
       if (isPyro() && P.full) { const k = 0.5 + 0.5 * Math.sin(time * 9); g.globalAlpha = 0.18 + 0.14 * k; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(Math.round(P.x - cx), Math.round(P.y - cy) - 9, 11 + k * 2, 14 + k * 2, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       if (isPyro() && P.jet) { const jx = Math.round(P.x - cx) + P.face * 8, jy = Math.round(P.y - cy) - 9, f = time * 30; g.globalAlpha = 0.55; for (let i = 0; i < 6; i++) { const k = i / 6, w = 7 + k * 7 + Math.sin(f + i) * 2, len = JET_LEN / 6 + 2; g.fillStyle = k < 0.25 ? '#fff6c8' : k < 0.6 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(P.face > 0 ? jx + k * JET_LEN : jx - k * JET_LEN - len), Math.round(jy - w / 2 + Math.sin(f * 0.7 + i * 2) * 1.5), len, Math.round(w)); } g.globalAlpha = 1; }
       if (P.torch > 0) { const tx = Math.round(P.x - cx) - P.face * 7, ty = Math.round(P.y - cy) - 12; g.fillStyle = '#5c3a1d'; g.fillRect(tx - 1, ty - 2, 2, 8); const f = Math.floor(time * 12) % 3; g.fillStyle = '#ff9a5c'; g.fillRect(tx - 2, ty - 7 - (f === 1 ? 1 : 0), 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(tx - 1, ty - 6, 2, 3); }
@@ -4434,6 +4483,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (const z of L.fog) { if (z.x1 < cx || z.x0 > cx + VW) continue; const ws = props.filter(pr => pr.t === 'wisp' && pr.x >= z.x0 && pr.x <= z.x1), cut = ws.filter(w => w.cut).length; const a = z.alpha * (ws.length ? 1 - cut / ws.length : 1); if (a <= 0.02) continue; any = true; const x0 = Math.max(0, Math.round(z.x0 - cx)), x1 = Math.min(VW, Math.round(z.x1 - cx)); const gr = fg.createLinearGradient(x0, 0, x0 + 24, 0); fg.fillStyle = 'rgba(196,212,204,' + a.toFixed(3) + ')'; fg.fillRect(x0 + 12, 0, Math.max(0, x1 - x0 - 24), VH); const ge = fg.createLinearGradient(x0, 0, x0 + 12, 0); ge.addColorStop(0, 'rgba(196,212,204,0)'); ge.addColorStop(1, 'rgba(196,212,204,' + a.toFixed(3) + ')'); fg.fillStyle = ge; fg.fillRect(x0, 0, 12, VH); const ge2 = fg.createLinearGradient(x1 - 12, 0, x1, 0); ge2.addColorStop(0, 'rgba(196,212,204,' + a.toFixed(3) + ')'); ge2.addColorStop(1, 'rgba(196,212,204,0)'); fg.fillStyle = ge2; fg.fillRect(x1 - 12, 0, 12, VH); }
     if (any) { fg.globalCompositeOperation = 'destination-out'; const hole = (x, y, r) => { const gr = fg.createRadialGradient(x, y, r * 0.3, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); fg.fillStyle = gr; fg.fillRect(x - r, y - r, r * 2, r * 2); }; if (!P.dead) hole(P.x - cx, P.y - 8 - cy, 46); for (const pr of props) if (pr.t === 'wisp' && !pr.cut) hole(pr.x - cx, pr.y - 4 - cy, 30); g.drawImage(FOGC, 0, 0); }
   }
+  drawBloom(cx, cy);
   if (L.dark && (L.dark > 0.05 || (L.darkZones || []).some(z => P.x > z.x0 - 200 && P.x < z.x1 + 200 && P.y > z.y0 - 100 && P.y < z.y1 + 100) || darkNow > 0.05)) { // the mine: black, with holes for every lamp, fire and the light you carry
     if (!DARKC || DARKC.width !== VW || DARKC.height !== VH) { DARKC = document.createElement('canvas'); DARKC.width = VW; DARKC.height = VH; }
     const dg = DARKC.getContext('2d'); dg.globalCompositeOperation = 'source-over'; dg.clearRect(0, 0, VW, VH); { let dk = L.dark; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) dk = z.dark; darkNow += (dk - darkNow) * 0.08; } dg.fillStyle = 'rgba(4,4,10,' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH); dg.globalCompositeOperation = 'destination-out';
