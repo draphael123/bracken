@@ -1103,6 +1103,31 @@ export function bakeCobweb(v) {
   g.fillStyle = 'rgba(255,246,224,0.35)'; for (let i = 0; i < 10; i++) g.fillRect((i * 7) % 26, (i * 5) % 20, 1, 1);
   return c;
 }
+// A spider's orb web, where she hangs: eight spokes and four rings of silk, crisp pixels. 29x29, centre 14,14.
+export function bakeOrbWeb() {
+  const [c, g] = canvas(29, 29), S = '#eeeaf4', D = '#b8b4c8';
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + 0.2; line(g, 14, 14, 14 + Math.cos(a) * 13.5, 14 + Math.sin(a) * 13.5, i % 2 ? D : S); }
+  for (const r of [4, 7, 10, 13]) { let px0 = null; for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI * 2 + 0.2, x = 14 + Math.cos(a) * r, y = 14 + Math.sin(a) * r; if (px0) line(g, px0[0], px0[1], x, y, r === 13 ? S : D); px0 = [x, y]; } }
+  px(g, 14, 14, '#ffffff'); for (const [x, y] of [[9, 6], [21, 11], [7, 19], [18, 22]]) px(g, x, y, '#ffffff'); // dew
+  return c;
+}
+// Her sheet on the ground under the drop: a flat tangle of silk and a strand going up. 22x7, bottom row on the floor.
+export function bakeGroundWeb() {
+  const [c, g] = canvas(22, 7), S = '#eeeaf4', D = '#b8b4c8';
+  line(g, 1, 6, 20, 6, D); line(g, 3, 5, 18, 5, S); line(g, 2, 6, 7, 3, S); line(g, 19, 6, 14, 3, S); line(g, 7, 3, 14, 3, D);
+  for (const x of [5, 9, 13, 17]) line(g, x, 5, x + (x < 11 ? 2 : -2), 3, D);
+  line(g, 10, 3, 11, 0, S); px(g, 11, 0, '#ffffff'); px(g, 6, 5, '#ffffff'); px(g, 15, 4, '#ffffff');
+  return c;
+}
+// A causeway stilt: a tarred pile driven into the bog, a lashing where the plank sits on it. 6x64, top row under the board.
+export function bakeStilt() {
+  const [c, g] = canvas(6, 64);
+  rect(g, 1, 0, 4, 64, '#5c3a1d'); rect(g, 1, 0, 1, 64, '#8a5a32'); rect(g, 4, 0, 1, 64, '#3a2214');
+  for (const y of [14, 30, 46]) rect(g, 1, y, 4, 1, '#3a2214');
+  rect(g, 0, 2, 6, 3, '#c9b27c'); rect(g, 0, 2, 6, 1, '#e8dcc0'); // the lashing
+  rect(g, 1, 48, 4, 16, '#2e3a2a'); // bog-black where it goes in
+  return outline(c, OUT);
+}
 // ---------- STORMHOLD ----------
 // A bridge post: a stone stump with the rope made off round it. 10x22.
 export function bakeBridgePost() { const [c, g] = canvas(10, 22); rect(g, 1, 4, 8, 18, '#5a6270'); rect(g, 1, 4, 8, 2, '#8a919c'); rect(g, 1, 20, 8, 2, '#3a3e48');
