@@ -1406,8 +1406,8 @@ function stormhold() {
   ent('sign', 39, 14, { text: 'THE SMITHY. THEY ARE MAKING SOMETHING LONG AND SHARP FOR SOMEONE LARGE.' });
   // the second span: long, watched from both ends, and a cutter on the far post
   block(151, 152, 32, 45); block(178, 179, 32, 45);
-  span(153, 177, 32, { sway: 1 });
-  ent('stormshaman', 177, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
+  // (the span over the sootworks gorge came down: THE CHIMNEYS, below, are the crossing now)
+  ent('stormshaman', 181, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
   ent('archer', 151, 30, { face: 1, fire: true }); ent('rockgoblin', 179, 30, { face: -1 });
   ent('sign', 148, 31, { text: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE SHIELD CARRIES.' });
   ent('deco', 160, 31, { kind: 'lanternPost' }); ent('deco', 170, 31, { kind: 'lanternPost' });
@@ -1482,6 +1482,27 @@ function stormhold() {
   ent('deco', 426, BY - 1, { kind: 'gatehouse' });
   ent('gate', 427, BY - 1);
   ent('lance', 320, BY - 1);
+
+  // ---- (pass two) THE CHIMNEYS: the old sootworks gorge. The span is down; the chimney stacks still stand a hop apart,
+  // a washing line strung over the middle, and the sweeps who live in them come up to throw soot. The gorge has a floor
+  // now and a rope ladder up the near side: a fall is a climb back, not a death. ----
+  for (let x = 153; x <= 177; x++) set(x, 32, T.AIR);
+  block(153, 177, 44, 45); for (let y = 32; y <= 43; y++) set(153, y, T.NET);
+  for (const [x0, top] of [[155, 31], [159, 29], [164, 30], [168, 29], [173, 30]]) { block(x0, x0 + 1, top, 43); ent('chimpot', x0 + 1, top - 1); } // up-hops are two tiles, drops three
+  for (let x = 161; x <= 167; x++) set(x, 27, T.NET); // the washing line
+  ent('sweep', 159, 28, { face: -1 }); ent('sweep', 168, 28, { face: -1 });
+  ent('sign', 150, 31, { text: 'THE CHIMNEYS. THE SPAN IS DOWN, BUT THE STACKS OF THE OLD SOOTWORKS STILL STAND. MIND THE SWEEPS: THEY LIVE IN THEM, AND THEY THROW SOOT. FALL AND THERE IS A LADDER.' });
+  coins([157, 28], [162, 25], [164, 25], [166, 25], [171, 27], [176, 29], [162, 40], [171, 40]);
+  // ---- (pass two) THE HOUSES AS PLACES. The longhouse is a feast: tables to fight over and three chandeliers to cut down
+  // on whoever is under them. The smithy's forge breathes up to the shelf. The tannery hangs its hides from racks you climb. ----
+  for (const x of [121, 138, 152]) ent('weight', x, 4, { len: 4, lamp: true, hang: true });
+  plat(124, 14, 5); plat(142, 14, 5); ent('sapper', 146, 15, { face: -1 }); ent('hearthgob', 128, 15, { face: 1 });
+  ent('vent', 52, 14, { heat: true, h: 90, period: 3.4, on: 1.5, lift: 240, w: 12 });
+  plat(80, 11, 3); plat(85, 9, 3); plat(90, 11, 3); coins([81, 10], [86, 8], [91, 10]);
+  for (const x of [79, 84, 89, 94]) ent('deco', x, 6, { kind: 'banner', v: x % 2, hang: true });
+  ent('sprig', 82, 13, { face: 1 }); ent('sprig', 88, 13, { face: -1 });
+  // ---- (pass two) more of the goblins that live here: bombers on the street, a shaman on the roofs, a sweep in a house chimney ----
+  ent('sapper', 124, 31, { face: -1 }); ent('sapper', 200, 29, { face: -1 }); ent('stormshaman', 139, 25, { face: -1 }); ent('sweep', 122, 25, { face: -1 });
 
   // THE HOUSES. Every roof has a house under it, walls down to the street: the door you go in by is its
   // door, and a roof with no way in gets a door that stays shut. (They were a slate slab over a lone door.)

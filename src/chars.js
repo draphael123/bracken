@@ -1110,27 +1110,31 @@ export function bakeGoblinLance() {
     const run = (x, y, str) => { for (let i = 0; i < str.length; i++) if (str[i] !== '.') set(x + i, y, str[i]); };
     const seg = (x0, y0, x1, y1, ch, th = 1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1), steep = Math.abs(y1 - y0) > Math.abs(x1 - x0); for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; for (let t = 0; t < th; t++) set(x + (steep ? t : 0), y + (steep ? 0 : t), ch); } };
     const dy = o.dy || 0, lean = o.lean || 0; // crouch and lean move the whole upper body
-    const leg = (hx, fx, lift, back) => { const kx = (hx + fx) / 2 + (back ? -1 : 1), ky = 31 + dy / 2 - lift / 2; seg(hx, 27 + dy, kx, ky, back ? 'A' : 'a', 3); seg(kx, ky, fx, 34 - lift, back ? 'A' : 'a', 3); run(fx - 1, 35 - lift, back ? 'UUUU' : 'UUUUe'); };
+    // short, thick, bowed legs under a lot of goblin
+    const leg = (hx, fx, lift, back) => { const kx = (hx + fx) / 2 + (back ? -2 : 2), ky = 32 + dy / 3 - lift / 2; seg(hx, 29 + dy, kx, ky, back ? 'A' : 'a', 4); seg(kx, ky, fx, 34 - lift, back ? 'A' : 'a', 4); run(fx - 2, 35 - lift, back ? 'UUUUU' : 'UUUUUe'); };
     const shieldAt = (sx, sy, dark) => { run(sx, sy, '.yyyyy.'); for (let k = 1; k <= 7; k++) run(sx, sy + k, 'y' + (dark ? 'PPPPP' : 'ppppp') + 'y'); run(sx + 1, sy + 8, 'ypppy'); run(sx + 2, sy + 9, 'yyy'); set(sx + 3, sy + 3, 'y'); set(sx + 2, sy + 4, 'y'); set(sx + 3, sy + 4, 'y'); set(sx + 4, sy + 4, 'y'); set(sx + 3, sy + 5, 'y'); };
     const lanceSeg = (x0, y0, x1, y1) => { seg(x0, y0, x1, y1, 'u', 1); const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0); set(x1, y1, 'a'); set(x1 - ux, y1 - uy, 'a'); set(x1 + ux, y1 + uy, 'f'); set(x1 - ux * 4 - (uy ? 1 : 0), y1 - uy * 4 + (ux ? 1 : 0), 'c'); set(x1 - ux * 5 - (uy ? 1 : 0), y1 - uy * 5 + (ux ? 1 : 0), 'c'); set(x1 - ux * 5 - (uy ? 2 : 0), y1 - uy * 5 + (ux ? 2 : 0), 'C'); };
     if (o.shield === 'back') shieldAt(11 + lean, 15 + dy, true);
     const L1 = o.legs || [[19, 18, 0], [26, 27, 0]]; leg(19 + lean, L1[0][1], L1[0][2], true); leg(25 + lean, L1[1][1], L1[1][2], false);
-    // torso, hunched forward: plate, the purple tabard, a gold boss on the chest, a belt
-    const tx = 15 + lean, ty = 14 + dy;
-    run(tx + 2, ty, 'aaaaaaaaa'); run(tx + 1, ty + 1, 'aAaaaaaaaAa'); for (let k = 2; k <= 5; k++) run(tx, ty + k, 'aAaaaaaaaaaAa');
-    for (let k = 6; k <= 12; k++) run(tx + 1, ty + k, k === 8 ? 'UUUUyUUUUUU' : 'pPpppppppPp');
-    run(tx + 5, ty + 3, 'yy'); run(tx + 5, ty + 4, 'yy'); run(tx + 2, ty + 13, 'pPppppPp'); run(tx + 3, ty + 14, 'pp.pp.p');
-    run(tx - 1, ty - 1, 'aAa'); run(tx + 9, ty - 1, 'aaAa'); set(tx + 11, ty - 2, 'e');
-    // head: pushed forward, a kettle helm with a brim, the face under it
-    const hx = 24 + lean + (o.headDx || 0), hy = 3 + dy + (o.headDy || 0);
+    // a FAT goblin in plate: a round belly of a breastplate, the Queen's purple under it, a belt across the widest
+    // part, pauldrons on shoulders that are mostly neck, and a big head sat low on all of it
+    const cx = 21 + lean, ty = 12 + dy, tx = cx - 6;
+    for (let k = 0; k <= 16; k++) { const hw = Math.max(3, Math.round(10 * Math.sqrt(Math.max(0, 1 - ((k - 9) / 10) ** 2)))); const y = ty + k;
+      for (let x = cx - hw; x <= cx + hw; x++) { const edgeR = x >= cx + hw - 1, edgeL = x <= cx - hw;
+        set(x, y, k === 11 ? (x === cx ? 'y' : 'U') : k > 11 ? (edgeL || edgeR ? 'P' : 'p') : (edgeR ? 'A' : edgeL ? 'A' : 'a')); } }
+    run(cx - 3, ty + 3, 'ff'); run(cx - 4, ty + 4, 'f'); run(cx + 1, ty + 5, 'yy'); run(cx + 1, ty + 6, 'yy'); // the shine on the belly, and her boss on it
+    for (let x = cx - 6; x <= cx + 6; x += 3) set(x, ty + 17, 'p'); // the tabard's ragged hem
+    run(cx - 10, ty + 1, 'aaAa'); run(cx - 11, ty + 2, 'aAaaA'); run(cx + 5, ty, 'aaaAa'); run(cx + 5, ty + 1, 'aaaaAa'); set(cx + 9, ty - 1, 'e'); set(cx + 10, ty - 2, 'e'); // pauldrons, the front one spiked
+    // head: big, low, pushed a little forward; a kettle helm with a brim, the face under it
+    const hx = 23 + lean + (o.headDx || 0), hy = 2 + dy + (o.headDy || 0);
     run(hx - 6, hy - 3, o.plume === 'low' ? '.....' : 'cc...'); run(hx - 7, hy - 2, 'Cccc..'); run(hx - 6, hy - 1, '.Ccc');
-    run(hx - 2, hy - 1, 'aaaaaa'); run(hx - 3, hy, 'aAaaaaaa'); run(hx - 3, hy + 1, 'aAaaaaaaa'); run(hx - 5, hy + 2, 'AAAAAAAAAAAAA');
-    run(hx - 2, hy + 3, 'gggggggg'); run(hx - 2, hy + 4, 'gggggeog'); run(hx - 2, hy + 5, 'ggggggggggg'); run(hx - 1, hy + 6, 'GgggoooG'); set(hx + 4, hy + 5, 'e'); set(hx + 2, hy + 6, 'e'); run(hx, hy + 7, 'GGGGG');
-    run(hx + 7, hy + 4, 'gg'); run(hx + 8, hy + 5, 'gG'); set(hx + 9, hy + 6, 'G'); // the nose
-    run(hx - 7, hy + 2, 'gg'); run(hx - 8, hy + 1, 'gg'); set(hx - 9, hy, 'g'); run(hx - 6, hy + 3, 'Gg'); // an ear, out past the brim
+    run(hx - 3, hy - 1, 'aaaaaaa'); run(hx - 4, hy, 'aAaaaaaaa'); run(hx - 4, hy + 1, 'aAaaaaaaaa'); run(hx - 6, hy + 2, 'AAAAAAAAAAAAAAA');
+    run(hx - 3, hy + 3, 'ggggggggg'); run(hx - 3, hy + 4, 'ggggggeog'); run(hx - 3, hy + 5, 'gggggggggggg'); run(hx - 3, hy + 6, 'gGggggoooG'); run(hx - 2, hy + 7, 'GgggggggGG'); run(hx - 1, hy + 8, 'GGGGGGG');
+    set(hx + 4, hy + 6, 'e'); set(hx + 2, hy + 7, 'e'); set(hx + 5, hy + 7, 'e'); // tusks
+    run(hx + 7, hy + 4, 'gg'); run(hx + 8, hy + 5, 'ggG'); set(hx + 10, hy + 6, 'G'); // the nose
+    run(hx - 8, hy + 2, 'gg'); run(hx - 9, hy + 1, 'gg'); set(hx - 10, hy, 'g'); run(hx - 7, hy + 3, 'Gg'); // an ear, out past the brim
     if (o.eyes === 'x') { set(hx + 3, hy + 4, 'o'); set(hx + 4, hy + 4, 'o'); }
-    for (let yy = hy + 8; yy < ty; yy++) run(hx - 1, yy, 'AmmmA'); // a mail gorget: the head sits on the shoulders
-    const sx = tx + 10, sy = ty + 2;
+    const sx = cx + 7, sy = ty + 3;
     const hand = o.hand || [sx + 3, sy + 6]; seg(sx, sy, hand[0], hand[1], 'a', 2); run(hand[0] - 1, hand[1], 'aAa');
     if (o.lance) lanceSeg(...o.lance);
     if (o.blade) { seg(hand[0], hand[1], o.blade[0], o.blade[1], 'f', 2); set(o.blade[0], o.blade[1], 'a'); }
@@ -1170,6 +1174,17 @@ export function bakeGoblinLance() {
     make({ shield: 'front', hand: [30, 24], blade: [36, 30], legs: walkLegs[2] }),
   ].map(f);
   return pack(frames, 24, 36, 26, 30);
+}
+// CHIMNEY SWEEP — a sooty goblin in a battered top hat, with a brush. He lives in the stacks and comes up out of
+// them to throw soot. Frames: 0 up (brush on shoulder), 1 throw (arm over), 2 peeking (just the hat and eyes).
+export function bakeSweep() {
+  const SP = Object.assign({}, EP, { k: '#1e1a22', K: '#3a343e', g: '#5a7a3a', G: '#34462a', d: '#2a2630', t: '#b8a888' });
+  const f = rows => outline(fromGrid(rows, SP, 1), OUT);
+  const hat = ['...kkkk...', '...kKkk...', '..kkkkkk..'];
+  const up = f([...hat, '..gggggg..', '.gdoggdog.', '.gggggggg.', '..gGGGGg..', '..dddddd.t', '..dddddd.t', '..dddddd.t', '..GG..GG.t', '.GG....GGt']);
+  const thr = f([...hat, '..gggggg..', '.gdoggdog.', '.gggggggg.', '..gGGGGgtt', '..ddddddt.', '..dddddd..', '..dddddd..', '..GG..GG..', '.GG....GG.']);
+  const peek = f(['..........', '..........', '..........', '..........', '..........', '..........', '...kkkk...', '...kKkk...', '..kkkkkk..', '..gdoggd..', '..........', '..........', '..........']);
+  return pack([up, thr, peek], 6, 13, 8, 12);
 }
 // THE FACET — a crystal golem grown in the cavern's heart. 40×40. Frames: idle, walk1, walk2, stomp, throw, stagger. Four gems: brow, left shoulder, right shoulder, chest.
 export function bakeGolem() {
