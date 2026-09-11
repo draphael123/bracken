@@ -1848,20 +1848,22 @@ function galeMoor() {
   const rock = (x0, x1, y0, y1) => { block(x0, x1, y0, y1); stone.push([x0, x1, y0, y1]); }; // loose stone in the air, not grass
   const string = (x, y, n, gap, o) => { for (let i = 0; i < n; i++) ent('crow', x + i * gap, y, Object.assign({ ph: i * 0.7 }, o || {})); };
   const ribbon = (x0, x1, y, amp) => { for (let x = x0; x <= x1; x += 2) coins([x, Math.round(y + Math.sin((x - x0) * 0.35) * amp)]); };
-  // the teeth
-  spire(704, 13); crag(709, 7); spire(714, 10); crag(719, 6); spire(724, 13); crag(729, 8); spire(734, 11);
-  // the flock, among loose stone in the air
-  rock(742, 744, 9, 10); rock(756, 758, 14, 15); rock(748, 750, 4, 5);
-  string(746, 7, 4, 2); string(754, 12, 4, 2); string(764, 5, 3, 3, { amp: 18 });
-  // the needle: a slot through the rock with the wind pressing down in it
-  block(764, 767, 0, 5); block(764, 767, 18, 25); block(768, 794, 0, 8); block(768, 794, 15, 25);
-  string(784, 11, 3, 2, { amp: 5 });
+  // everything out here stands on the gorge floor: nothing hangs in the air (Daniel: no floating rocks)
+  const tower = (x0, x1, top) => { block(x0, x1, top, 25); stone.push([x0, x1, top, 25]); };
+  // the teeth: spires of every height, so you go over the short ones low and the tall ones high
+  spire(704, 13); spire(709, 8); spire(714, 11); spire(719, 7); spire(724, 13); spire(729, 9); spire(734, 11);
+  // the flock, among the stacks
+  tower(742, 744, 11); tower(748, 749, 15); tower(756, 758, 12);
+  string(746, 7, 4, 2); string(754, 9, 4, 2); string(764, 5, 3, 3, { amp: 18 });
+  // the organ pipes: tall stacks shoulder to shoulder - you skim along over their tops
+  for (const [x, top] of [[766, 10], [770, 8], [774, 10], [778, 7], [782, 9], [786, 7], [790, 10]]) tower(x, x + 1, top);
+  string(784, 5, 3, 2, { amp: 3 });
   // the storm: the shaman's weather, bolts out of the cloud on a beat
   for (const [x, ph] of [[803, 0], [811, 1.1], [819, 2.2], [827, 0.5], [846, 1.6]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
-  rock(806, 807, 7, 8); rock(820, 822, 12, 13); crag(838, 5); spire(850, 14);
+  tower(806, 807, 12); tower(820, 822, 11); tower(838, 839, 9); spire(850, 14);
   ent('harpy', 810, 5); ent('harpy', 832, 4); ent('kite', 800, 5); ent('kite', 828, 6);
   string(815, 9, 4, 2); string(840, 12, 5, 2, { amp: 14 });
-  ribbon(670, 700, 10, 3); ribbon(736, 741, 12, 1); ribbon(770, 792, 11, 1); ribbon(852, 858, 8, 2);
+  ribbon(670, 700, 10, 3); ribbon(736, 741, 9, 1); ribbon(766, 792, 5, 1); ribbon(852, 858, 8, 2);
   gusts.push({ x0: 666 * TS, x1: 860 * TS, y0: 0, y1: 26 * TS, dir: -1, period: 7, on: 1.8, phase: 2, moor: true, k: 0.8 });
 
   // ---- 14. THE SUMMIT: three standing stones and two ledges in a ring of thorns. The shaman blinks between
@@ -1887,7 +1889,7 @@ function galeMoor() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 548 * TS, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 861 * TS, x1: 905 * TS, floor: 13 * TS, trigger: 868 * TS, wallL: 860, wallR: 906, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
-    flight: { x1: 864, speed: 78, camY: 2, down: [[772, 790, 60]] }, // the Sky Road: the kite lets go over the summit's near edge
+    flight: { x1: 864, speed: 78, camY: 2, down: [] }, // the Sky Road: the kite lets go over the summit's near edge
   };
 }
 

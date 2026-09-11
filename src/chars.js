@@ -48,7 +48,7 @@ const LEGS = {
 const W = 28, H = 28, BX = 8, BY = 3; // body drawn at (BX,BY); feet bottom at BY+16 = 19
 export const KNIGHT_ANCHOR = { ax: 13, ay: 19 };
 
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null }) {
   const [c, g] = canvas(W, H);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
@@ -66,6 +66,15 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = staff.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, KP.w, 2); px(g, x1, y1, KP.y); px(g, x1 + Math.sign(x1 - x0), y1 + Math.sign(y1 - y0), KP.r); px(g, x1 - Math.sign(y1 - y0), y1 + Math.sign(x1 - x0), KP.r);
   }
+  if (maul) { // the paladin's maul: an oak haft, and a steel head set across the end of it with a gold band
+    const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
+    line(g, x0, y0, x1, y1, '#6a4428', 2);
+    const len = Math.hypot(x1 - x0, y1 - y0) || 1, qx = -(y1 - y0) / len, qy = (x1 - x0) / len;
+    line(g, Math.round(x1 - qx * 4), Math.round(y1 - qy * 4), Math.round(x1 + qx * 4), Math.round(y1 + qy * 4), KP.s, 4);
+    line(g, Math.round(x1 - qx * 4), Math.round(y1 - qy * 4), Math.round(x1 + qx * 4), Math.round(y1 + qy * 4), KP.S, 1);
+    px(g, Math.round(x1), Math.round(y1), KP.y); px(g, Math.round(x1 + qx), Math.round(y1 + qy), KP.y); px(g, Math.round(x1 - qx), Math.round(y1 - qy), KP.y);
+  }
+  if (glow) { const [gx, gy] = glow; px(g, gx + dx, gy + dy, '#fff6c8'); px(g, gx + dx - 1, gy + dy, KP.y); px(g, gx + dx + 1, gy + dy, KP.y); px(g, gx + dx, gy + dy - 1, KP.y); px(g, gx + dx, gy + dy + 1, KP.y); }
   if (shield) { // kite shield held out front, covering the torso: steel rim, oak face, gold boss
     const sx = BX + 9 + dx, sy = BY + 4 + dy;
     const rows = ['.SSSSS.', 'SwwwwwS', 'SwwywwS', 'SwyyywS', 'SwwywwS', 'SwwwwwS', 'SwwwwwS', '.SwwwS.', '.SwwwS.', '..SwS..', '...S...'];
@@ -1025,6 +1034,66 @@ export function bakeBale() {
       rows.push(r); }
     frames.push(outline(fromGrid(rows, BP, 1), OUT)); }
   return pack(frames, 6, 12, 12, 12);
+}
+// THE PALADIN: the knight's rig in pale plate - a winged helm, a blue tabard with a gold sun on it, gilded
+// sabatons - and a maul instead of a sword. Frames as the knight's, plus cast (MEND) and blast (JUDGEMENT);
+// the roll is a heavy step, not a tumble.
+const PAL_BODY = [
+  'y..SSSS...',
+  'yySssssS..',
+  '.ySsssssS.',
+  '.SsvvvvS..',
+  '.SssssSS..',
+  '..SSSS....',
+  '.BbbbbB...',
+  'SBbyybBS..',
+  'SByyyyBS..',
+  '.BbyybB...',
+  '.yyyyyy...',
+];
+const PAL_PLUME = [
+  ['y..SSSS...', 'yySssssS..', '.ySsssssS.'],
+  ['yy.SSSS...', '.ySssssS..', '.ySsssssS.'],
+  ['y..SSSS...', 'yySssssS..', 'yySsssssS.'],
+];
+const PAL_PAL = { s: '#eef2f8', S: '#98a4ba', b: '#3a5ab8', B: '#243a78', r: '#f0c040', y: '#f0c040', w: '#b8c0cc', W: '#9a7a32', v: '#2a2f3d' };
+export function bakePaladin(skin = {}) {
+  KP = Object.assign({}, KP0, PAL_PAL, skin); BODY_REF = PAL_BODY; PLUME_REF = PAL_PLUME;
+  const sh = [BX + 8, BY + 7];
+  const rest = (d = 0) => [sh[0] + 2, sh[1] + 1 + d, sh[0] + 5, sh[1] + 9 + d];   // the head grounded in front of him
+  const carry = (d = 0) => [sh[0] + 1, sh[1] + 3 + d, sh[0] - 8, sh[1] - 2 + d];  // slung back behind him at a run, clear of the helm
+  const F = {
+    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, maul: rest(i >> 1), plume: i % 3 })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, maul: carry() })),
+    jump: [knightFrame({ legs: 'jump', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], plume: 1 })],
+    fall: [knightFrame({ legs: 'fall', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 7], plume: 2 })],
+    land: knightFrame({ legs: 'land', dy: 2, maul: rest(2) }),
+    atk: [
+      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 9], plume: 1 }), // drawn back over the shoulder
+      knightFrame({ dx: 0, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], maul: [sh[0] + 1, sh[1] - 3, sh[0] + 5, sh[1] - 9], plume: 2 }),   // up and over
+      knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], maul: [sh[0] + 4, sh[1] + 2, sh[0] + 9, sh[1] + 7], plume: 2 }), // down
+      knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9], plume: 0 }), // the head in the ground
+      knightFrame({ maul: rest(), plume: 0 }),
+    ],
+    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 4], maul: [sh[0] - 1, sh[1] + 4, sh[0] - 1, sh[1] + 15], plume: 1 }),
+    hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', maul: rest(3) }),
+    // AEGIS: the maul planted upright before him, both hands on the haft
+    block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),
+    // MEND: the free hand up, the light in it
+    cast: [0, 1].map(i => knightFrame({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 7], maul: rest(), glow: [sh[0] + 1, sh[1] - 9 - i] })),
+    // JUDGEMENT: the maul straight up over his head, then down
+    blast: [knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] - 6], maul: [sh[0], sh[1] - 4, sh[0], sh[1] - 9], glow: [sh[0], sh[1] - 11] }),
+      knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9] })],
+  };
+  // the dodge is a heavy step: a lean and a stride, not a tumble
+  F.roll = [0, 1, 2, 3].map(i => knightFrame({ dx: i < 2 ? i : 3 - i, dy: 1, legs: i % 2 ? 'wide' : 'runC', maul: carry(1) }));
+  const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
+  const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(whiten) : whiten(F[k]);
+  const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
+  KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
 }
 // THE QUEEN'S LANCE, redrawn as what he is: a GOBLIN knight. Green face under an open kettle helm with a red
 // plume, ears out past the brim, a hooked nose and tusks; patched plate, the Queen's purple and gold, a kite
