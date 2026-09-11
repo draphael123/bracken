@@ -1026,6 +1026,82 @@ export function bakeBale() {
     frames.push(outline(fromGrid(rows, BP, 1), OUT)); }
   return pack(frames, 6, 12, 12, 12);
 }
+// THE QUEEN'S LANCE, redrawn as what he is: a GOBLIN knight. Green face under an open kettle helm with a red
+// plume, ears out past the brim, a hooked nose and tusks; patched plate, the Queen's purple and gold, a kite
+// shield on his back arm and a pennoned lance. Built from parts so every move has its own pose. 48x38.
+// Frames: 0 stand, 1-4 walk, 5 couch, 6-7 charge, 8 thrustTell, 9 thrust, 10 sweepTell, 11 sweep, 12 planted,
+// 13 guard, 14 guardTell, 15 guardSwing, 16-17 rush, 18 reel, 19 stumble, 20 vaultTell, 21 vault, 22 javTell,
+// 23 javThrow, 24 rise, 25 bashTell, 26 bash, 27-28 guard walk.
+export function bakeGoblinLance() {
+  const LP = Object.assign({}, EP, { a: '#9aa3b0', A: '#5a6270', c: '#c9463d', C: '#8f2f28', p: '#5a2a7a', P: '#3e1c56', y: '#e0b040', u: '#8a5a32', U: '#4a2e1c', m: '#3a3e48', f: '#c9d1dc' });
+  const W = 48, H = 38;
+  const make = o => {
+    const R = Array.from({ length: H }, () => Array(W).fill('.'));
+    const set = (x, y, ch) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < W && y < H) R[y][x] = ch; };
+    const run = (x, y, str) => { for (let i = 0; i < str.length; i++) if (str[i] !== '.') set(x + i, y, str[i]); };
+    const seg = (x0, y0, x1, y1, ch, th = 1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1), steep = Math.abs(y1 - y0) > Math.abs(x1 - x0); for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; for (let t = 0; t < th; t++) set(x + (steep ? t : 0), y + (steep ? 0 : t), ch); } };
+    const dy = o.dy || 0, lean = o.lean || 0; // crouch and lean move the whole upper body
+    const leg = (hx, fx, lift, back) => { const kx = (hx + fx) / 2 + (back ? -1 : 1), ky = 31 + dy / 2 - lift / 2; seg(hx, 27 + dy, kx, ky, back ? 'A' : 'a', 3); seg(kx, ky, fx, 34 - lift, back ? 'A' : 'a', 3); run(fx - 1, 35 - lift, back ? 'UUUU' : 'UUUUe'); };
+    const shieldAt = (sx, sy, dark) => { run(sx, sy, '.yyyyy.'); for (let k = 1; k <= 7; k++) run(sx, sy + k, 'y' + (dark ? 'PPPPP' : 'ppppp') + 'y'); run(sx + 1, sy + 8, 'ypppy'); run(sx + 2, sy + 9, 'yyy'); set(sx + 3, sy + 3, 'y'); set(sx + 2, sy + 4, 'y'); set(sx + 3, sy + 4, 'y'); set(sx + 4, sy + 4, 'y'); set(sx + 3, sy + 5, 'y'); };
+    const lanceSeg = (x0, y0, x1, y1) => { seg(x0, y0, x1, y1, 'u', 1); const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0); set(x1, y1, 'a'); set(x1 - ux, y1 - uy, 'a'); set(x1 + ux, y1 + uy, 'f'); set(x1 - ux * 4 - (uy ? 1 : 0), y1 - uy * 4 + (ux ? 1 : 0), 'c'); set(x1 - ux * 5 - (uy ? 1 : 0), y1 - uy * 5 + (ux ? 1 : 0), 'c'); set(x1 - ux * 5 - (uy ? 2 : 0), y1 - uy * 5 + (ux ? 2 : 0), 'C'); };
+    if (o.shield === 'back') shieldAt(11 + lean, 15 + dy, true);
+    const L1 = o.legs || [[19, 18, 0], [26, 27, 0]]; leg(19 + lean, L1[0][1], L1[0][2], true); leg(25 + lean, L1[1][1], L1[1][2], false);
+    // torso, hunched forward: plate, the purple tabard, a gold boss on the chest, a belt
+    const tx = 15 + lean, ty = 14 + dy;
+    run(tx + 2, ty, 'aaaaaaaaa'); run(tx + 1, ty + 1, 'aAaaaaaaaAa'); for (let k = 2; k <= 5; k++) run(tx, ty + k, 'aAaaaaaaaaaAa');
+    for (let k = 6; k <= 12; k++) run(tx + 1, ty + k, k === 8 ? 'UUUUyUUUUUU' : 'pPpppppppPp');
+    run(tx + 5, ty + 3, 'yy'); run(tx + 5, ty + 4, 'yy'); run(tx + 2, ty + 13, 'pPppppPp'); run(tx + 3, ty + 14, 'pp.pp.p');
+    run(tx - 1, ty - 1, 'aAa'); run(tx + 9, ty - 1, 'aaAa'); set(tx + 11, ty - 2, 'e');
+    // head: pushed forward, a kettle helm with a brim, the face under it
+    const hx = 24 + lean + (o.headDx || 0), hy = 3 + dy + (o.headDy || 0);
+    run(hx - 6, hy - 3, o.plume === 'low' ? '.....' : 'cc...'); run(hx - 7, hy - 2, 'Cccc..'); run(hx - 6, hy - 1, '.Ccc');
+    run(hx - 2, hy - 1, 'aaaaaa'); run(hx - 3, hy, 'aAaaaaaa'); run(hx - 3, hy + 1, 'aAaaaaaaa'); run(hx - 5, hy + 2, 'AAAAAAAAAAAAA');
+    run(hx - 2, hy + 3, 'gggggggg'); run(hx - 2, hy + 4, 'gggggeog'); run(hx - 2, hy + 5, 'ggggggggggg'); run(hx - 1, hy + 6, 'GgggoooG'); set(hx + 4, hy + 5, 'e'); set(hx + 2, hy + 6, 'e'); run(hx, hy + 7, 'GGGGG');
+    run(hx + 7, hy + 4, 'gg'); run(hx + 8, hy + 5, 'gG'); set(hx + 9, hy + 6, 'G'); // the nose
+    run(hx - 7, hy + 2, 'gg'); run(hx - 8, hy + 1, 'gg'); set(hx - 9, hy, 'g'); run(hx - 6, hy + 3, 'Gg'); // an ear, out past the brim
+    if (o.eyes === 'x') { set(hx + 3, hy + 4, 'o'); set(hx + 4, hy + 4, 'o'); }
+    for (let yy = hy + 8; yy < ty; yy++) run(hx - 1, yy, 'AmmmA'); // a mail gorget: the head sits on the shoulders
+    const sx = tx + 10, sy = ty + 2;
+    const hand = o.hand || [sx + 3, sy + 6]; seg(sx, sy, hand[0], hand[1], 'a', 2); run(hand[0] - 1, hand[1], 'aAa');
+    if (o.lance) lanceSeg(...o.lance);
+    if (o.blade) { seg(hand[0], hand[1], o.blade[0], o.blade[1], 'f', 2); set(o.blade[0], o.blade[1], 'a'); }
+    if (o.jav) { seg(o.jav[0], o.jav[1], o.jav[2], o.jav[3], 'u', 1); set(o.jav[2], o.jav[3], 'a'); }
+    if (o.shield === 'front') shieldAt(o.sx !== undefined ? o.sx : tx + 12, (o.sy !== undefined ? o.sy : ty + 1));
+    return R.map(r => r.join(''));
+  };
+  const f = rows => outline(fromGrid(rows, LP, 1), OUT);
+  const up = { lance: [31, 30, 31, 1], hand: [30, 20] };
+  const walkLegs = [[[19, 16, 0], [26, 29, 1]], [[19, 18, 2], [26, 27, 0]], [[19, 21, 0], [26, 24, 1]], [[19, 18, 0], [26, 27, 2]]];
+  const frames = [
+    make({ ...up, shield: 'back' }),
+    ...walkLegs.map((legs, i) => make({ ...up, shield: 'back', legs, dy: i % 2 ? 1 : 0, lance: [31 + (i % 2), 30, 31 + (i % 2), 1 + (i % 2)] })),
+    make({ shield: 'back', dy: 2, lean: -1, hand: [29, 19], lance: [18, 19, 46, 18], legs: [[19, 14, 0], [26, 30, 0]] }),
+    make({ shield: 'back', dy: 2, lean: 1, hand: [30, 19], lance: [18, 19, 47, 19], legs: [[19, 13, 2], [26, 31, 0]], plume: 'low' }),
+    make({ shield: 'back', dy: 1, lean: 1, hand: [30, 19], lance: [18, 19, 47, 19], legs: [[19, 20, 0], [26, 24, 3]], plume: 'low' }),
+    make({ shield: 'back', lean: -2, hand: [24, 18], lance: [6, 18, 34, 17] }),
+    make({ shield: 'back', lean: 2, dy: 1, hand: [34, 18], lance: [20, 18, 47, 18], legs: [[19, 14, 0], [26, 32, 0]] }),
+    make({ shield: 'back', lean: -1, hand: [27, 10], lance: [12, 24, 36, 2] }),
+    make({ shield: 'back', dy: 3, lean: 2, hand: [32, 24], lance: [18, 18, 46, 34], legs: [[19, 14, 0], [26, 31, 0]] }),
+    make({ shield: 'back', dy: 2, lean: 1, hand: [31, 20], lance: [26, 16, 42, 36], legs: [[19, 15, 0], [26, 29, 0]], eyes: 'x' }),
+    make({ shield: 'front', hand: [30, 24], blade: [36, 30] }),
+    make({ shield: 'front', lean: -2, hand: [22, 12], blade: [16, 4] }),
+    make({ shield: 'front', lean: 2, dy: 1, hand: [34, 22], blade: [44, 26], legs: [[19, 15, 0], [26, 31, 0]] }),
+    make({ shield: 'front', sx: 31, dy: 3, lean: 1, hand: [29, 24], blade: [34, 30], legs: [[19, 13, 2], [26, 30, 0]] }),
+    make({ shield: 'front', sx: 31, dy: 3, lean: 1, hand: [29, 24], blade: [34, 30], legs: [[19, 20, 0], [26, 25, 3]] }),
+    make({ shield: 'back', lean: -3, dy: 1, headDx: -2, hand: [26, 12], legs: [[19, 15, 0], [26, 24, 0]], eyes: 'x' }),
+    make({ shield: 'back', dy: 6, lean: 2, headDy: 1, hand: [34, 30], legs: [[19, 14, 0], [26, 32, 4]], eyes: 'x' }),
+    make({ shield: 'back', dy: 5, hand: [29, 22], lance: [31, 36, 31, 6], legs: [[19, 15, 0], [26, 29, 0]] }),
+    make({ shield: 'back', dy: -2, hand: [26, 22], lance: [25, 20, 25, 37], legs: [[19, 20, 4], [26, 25, 4]] }),
+    make({ shield: 'back', lean: -2, hand: [20, 8], jav: [12, 10, 30, 4], lance: [36, 30, 36, 6] }),
+    make({ shield: 'back', lean: 2, hand: [36, 14], lance: [38, 30, 38, 6] }),
+    make({ shield: 'front', lean: -1, hand: [18, 10], lance: [4, 4, 16, 14] }),
+    make({ shield: 'front', sx: 26, lean: -2, hand: [30, 20], lance: [32, 30, 32, 1] }),
+    make({ shield: 'front', sx: 33, lean: 3, dy: 1, hand: [30, 20], lance: [28, 30, 28, 1], legs: [[19, 14, 0], [26, 31, 0]] }),
+    make({ shield: 'front', hand: [30, 24], blade: [36, 30], dy: 1, legs: walkLegs[0] }),
+    make({ shield: 'front', hand: [30, 24], blade: [36, 30], legs: walkLegs[2] }),
+  ].map(f);
+  return pack(frames, 24, 36, 26, 30);
+}
 // THE FACET — a crystal golem grown in the cavern's heart. 40×40. Frames: idle, walk1, walk2, stomp, throw, stagger. Four gems: brow, left shoulder, right shoulder, chest.
 export function bakeGolem() {
   const GP = Object.assign({}, EP, { c: '#bfe6f5', C: '#7aa8c8', d: '#4a6a90', w: '#eefaff', g: '#ff7ab8', G: '#a8306a', k: '#2a3a50' });

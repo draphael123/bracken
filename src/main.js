@@ -1,7 +1,7 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
-import { bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeGrub, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
+import { bakeGoblinLance, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeGrub, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
 import { LEVELS, T, TS, CUSTOM } from './level.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
@@ -63,8 +63,8 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG;
-const DMG = { shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 20, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
-const EHP = { shardling: 18, suncatcher: 420, roc: 440, sentry: 14, gqueen: 560, hearthgob: 24, cutter: 20, lance: 460, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 340, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
+const DMG = { lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 20, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+const EHP = { shardling: 18, suncatcher: 420, roc: 440, sentry: 14, gqueen: 560, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 340, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 const ST = { swing: 12, plunge: 32, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
 // ---------- bake ----------
@@ -181,7 +181,7 @@ const CD_MAX = { shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, ri
 const skillCd = k => (k === 'groundSlam' || k === 'fireWall') ? (P.slamCd || 0) : (P.throwCd || 0);
 const skillNow = () => { const k = PROG.skill; if (k === 'none' || k === 'kindle') return null; if (k && PROG.items[k] && abilityHero(k) === hero()) return k; if (isPyro()) { if (PROG.items.fireWall) return 'fireWall'; if (PROG.items.cinderStep) return 'cinderStep'; return null; } if (PROG.items.shieldThrow) return 'shieldThrow'; if (PROG.items.groundSlam) return 'groundSlam'; return null; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
-const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = bakeGolem(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.windcaller = bakeGoblinShaman(); SPR.foreman = bakeForeman(); SPR.cook = bakeCook(); SPR.snuffer = bakeSnuffer(); SPR.sailer = bakeSailer(); SPR.hearthgob = bakeHearthGob(); SPR.cutter = bakeCutter(); SPR.lance = bakeLance(); SPR.shardling = bakeShardling(); SPR.suncatcher = bakeSuncatcher(); SPR.roc = bakeRoc(); SPR.sentry = bakeSentry(); SPR.gqueen = bakeGoblinQueen(); SPR.throne = bakeThrone(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
+const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = bakeGolem(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.windcaller = bakeGoblinShaman(); SPR.foreman = bakeForeman(); SPR.cook = bakeCook(); SPR.snuffer = bakeSnuffer(); SPR.sailer = bakeSailer(); SPR.hearthgob = bakeHearthGob(); SPR.cutter = bakeCutter(); SPR.lance = bakeGoblinLance(); SPR.shardling = bakeShardling(); SPR.suncatcher = bakeSuncatcher(); SPR.roc = bakeRoc(); SPR.sentry = bakeSentry(); SPR.gqueen = bakeGoblinQueen(); SPR.throne = bakeThrone(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
 // hopper kinds: hop cooldown, hop speed, health, damage
 const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp: 1.35, hp: 10, dmg: 12 }, blue: { cd: 1.9, sp: 0.75, hp: 20, dmg: 22 } };
 const BIRD = bakeBird();
@@ -557,7 +557,7 @@ function spawnEnt(e) {
       case 'gqueen': boss = { ...base, t: 'gqueen', w: 30, h: 52, hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
       case 'winch': props.push({ t: 'winch', x: px, y: py, gate: e.gate, gy0: e.gy0, gy1: e.gy1, open: 0, spin: 0, hold: e.hold || 6 }); break;
-      case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0 }); break;
+      case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, downT: 0 }); break;
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
       case 'rod': props.push({ t: 'rod', x: px, y: py }); break;
       case 'stal': props.push({ t: 'stal', x: px, y: e.y * TS, state: 'hang', t0: 0 }); break; // a crystal hanging from the shelf's underside
@@ -1703,7 +1703,7 @@ function updatePlayer(dt) {
       else if (e.t !== 'wasp' && e.t !== 'spit') { e.vx = Math.sign(e.x - P.x) * 150; e.stagger = 0.5; if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.9; } }
     }
   }
-  for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 })) { s.dead = true; if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } damagePlayer(s.x - s.vx * 0.1, s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? DMG.bolt : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed); }
+  for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 })) { s.dead = true; if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } damagePlayer(s.x - s.vx * 0.1, s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? DMG.bolt : s.jav ? DMG.lanceJav : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed); }
   if (tongue && tongue.active && !P.dead && Math.abs(P.y - 8 - tongue.y) < 9 && ((tongue.dir > 0 && P.x > tongue.x0 && P.x < tongue.x0 + tongue.len) || (tongue.dir < 0 && P.x < tongue.x0 && P.x > tongue.x0 - tongue.len))) { const res = damagePlayer(tongue.x0, DMG.tongue); if (res === 'blocked') { tongue.active = false; boss.mode = 'dazed'; boss.modeT = 1.3; number(boss.x, boss.y - 24, 'BITTEN TONGUE', '#8fd160'); SFX.tongue(); } else if (res === 'hit') { P.vx = tongue.dir * -160; tongue.active = false; } }
   if ((P.relic === 'charm' || PROG.charm === 'lucky') && !P.dead) for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 70 && Math.abs(a.y - P.y) < 50) { a.x += (P.x - a.x) * Math.min(1, dt * 6); a.y += ((P.y - 8) - a.y) * Math.min(1, dt * 6); }
   for (const a of acorns) {
@@ -2804,9 +2804,16 @@ function updateLance(e, dt) {
     // ---- phase one: the lance ----
     case 'pace': {
       e.face = Math.sign(d) || e.face; e.chargeT -= dt; e.thrustT -= dt; e.sweepT -= dt;
+      e.bashT = (e.bashT ?? 1.5) - dt; e.vaultT = (e.vaultT ?? 4) - dt; e.javT = (e.javT ?? 3) - dt;
       want = ad > 40 ? e.face * 52 : 0;
-      if (ad < 34 && e.sweepT <= 0) { e.sweepT = 4.5; e.mode = 'sweepTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, 'LOW', '#ffd36b'); SFX.snort(); }
+      // up close he mixes a low sweep (jump it) with a shield bash (roll away from it): you cannot answer both the same way
+      if (ad < 34 && e.sweepT <= 0 && !e.lastBash) { e.sweepT = 3.5; e.lastBash = true; e.mode = 'sweepTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, 'LOW', '#ffd36b'); SFX.snort(); }
+      else if (ad < 34 && e.bashT <= 0) { e.bashT = 4.5; e.lastBash = false; e.mode = 'bashTell'; e.modeT = 0.42; number(e.x, e.y - e.h - 12, '!', '#ff6b6b'); SFX.snort(); }
       else if (ad < 96 && ad > 30 && e.thrustT <= 0) { e.thrustT = 3.2; e.mode = 'thrustTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); }
+      // a stride or two off: he plants the lance and goes up it, and comes down on you point first
+      else if (ad > 60 && ad < 150 && e.vaultT <= 0) { e.vaultT = 9; e.mode = 'vaultTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 14, 'HE GOES UP', '#ff6b6b'); SFX.snort(); }
+      // keep your distance and he throws: three javelins, and then his hands are empty for a moment
+      else if (ad > 150 && e.javT <= 0) { e.javT = 6; e.mode = 'javTell'; e.modeT = 0.6; SFX.snort(); }
       else if (ad > 70 && e.chargeT <= 0) { e.chargeT = p2 ? 5 : 6.5; e.mode = 'couch'; e.modeT = 0.8; number(e.x, e.y - e.h - 14, 'HE LEVELS IT', '#ff6b6b'); SFX.bellow(); shakeCam(2); }
       break; }
     case 'couch': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 3.2; e.vx = e.face * 250; e.passT = -1; SFX.charge(); shakeCam(3); } break;
@@ -2816,15 +2823,7 @@ function updateLance(e, dt) {
         e.mode = 'pace'; e.modeT = 0.9; e.vx = e.face * 60; break; } } // it went through you: he pulls up, and that is not an opening
       // once he is past you he has nowhere to aim, and the lance goes into the deck a few strides on
       if (e.passT < 0 && (P.x - e.x) * e.face < -6) e.passT = 0.18; else if (e.passT > 0) e.passT -= dt;
-      // the deck he runs comes out behind him. The stone piers do not.
-      // he takes the deck out behind him, but only so much of it: the piers are stone and never go,
-      // and past two dozen planks the bridge would stop being a bridge and the fight would strand you.
-      { const tx = Math.floor(e.x / TS), ty = Math.floor((e.y + 2) / TS), i = ty * LW + tx;
-        // but never the boards you are about to land on: jumping him is the answer, and the answer cannot drop you in the gorge.
-        // And it goes in pairs, two boards in every five: a comb you hop across, not a four-tile hole that ends the fight.
-        if (e.broke.size < 24 && !e.broke.has(i) && tx % 5 < 2 && Math.abs(P.x - (tx * TS + 8)) > 44 && (L.grid[i] === T.PLANK || L.grid[i] === T.SHELF)) { e.broke.add(i);
-          L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); resolveTiles(); mending.push({ i, t: 5 + Math.random() }); if (e.broke.size >= 24) e.broke.clear();
-          for (let k = 0; k < 3; k++) parts.push({ x: tx * TS + 8, y: ty * TS + 6, vx: (Math.random() - 0.5) * 70, vy: 20, life: 1.1, max: 1.1, col: k ? '#8a5a32' : '#c9b27c', size: 2, grav: 430 }); } }
+      // (the deck stays whole now: a fight on a bridge that comes apart under you was a fight with the bridge)
       if (Math.random() < dt * 26) dust(e.x - e.face * 12, e.y, 3);
       const edge = e.face > 0 ? e.x > A.x1 - 26 : e.x < A.x0 + 26;
       if (edge || e.modeT <= 0 || (e.passT !== -1 && e.passT <= 0)) { e.mode = 'planted'; e.modeT = p2 ? 1.5 : 2.2; e.stagger = e.modeT; e.vx = 0;
@@ -2838,12 +2837,26 @@ function updateLance(e, dt) {
     case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; SFX.slash(); shakeCam(3);
       if (!P.dead && ad < 52 && Math.abs(P.y - e.y) < 18 && P.ground) { const res = damagePlayer(e.x, DMG.lanceSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d) * 260; P.vy = -120; } } } break;
     case 'sweep': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; } break;
+    // THE BASH: the shield comes round and puts you on your back. Blocking does not stop a shield: get out from in front of it.
+    case 'bashTell': e.face = Math.sign(d) || e.face; want = -e.face * 16; if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = 0.26; e.vx = e.face * 140; SFX.clank(); SFX.heavy(); shakeCam(3);
+      const hit = !P.dead && Math.sign(P.x - e.x) === e.face && ad < 40 && Math.abs(P.y - e.y) < 26; if (hit) { const res = damagePlayer(e.x, DMG.lanceBash, { unblockable: true }); if (res === 'hit') { P.vx = e.face * 330; P.vy = -150; } } e.whiff = !hit; } break;
+    case 'bash': want = 0; if (e.modeT <= 0) { e.mode = e.whiff ? 'recover' : (p2 ? 'guard' : 'pace'); e.modeT = e.whiff ? 0.6 : 0.5; } break;
+    // THE VAULT: up on the lance, over, and down point first; the landing throws a wave down the deck each way,
+    // and the point goes into the boards and holds him there
+    case 'vaultTell': e.face = Math.sign(d) || e.face; want = 0; if (e.modeT <= 0) { e.mode = 'vault'; e.airT = 0; e.tx = P.x; e.vx = Math.max(-270, Math.min(270, (P.x - e.x) / 0.8)); e.vy = -440; SFX.leap(); dust(e.x, e.y, 8); } break;
+    case 'vault': e.airT += dt; break;
+    // THE JAVELINS: three, in a fan, where you are and a stride either side
+    case 'javTell': e.face = Math.sign(d) || e.face; want = 0; if (e.modeT <= 0) { e.mode = 'javThrow'; e.modeT = 1.0; SFX.throwWhoosh();
+      for (let k = -1; k <= 1; k++) { const sx = e.x + e.face * 10, sy = e.y - 30, Tf = 0.85 + k * 0.08, G = 420, tx = P.x + k * 30, ty2 = P.y - 6; seeds.push({ x: sx, y: sy, vx: (tx - sx) / Tf, vy: (ty2 - sy) / Tf - 0.5 * G * Tf, g: G, dead: false, life: 3, arrow: true, jav: true }); } } break;
+    case 'javThrow': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.5; } break;
     // ---- phase two: he throws it away ----
     case 'rise': if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 1; } break;
     case 'guard': {
       e.face = Math.sign(d) || e.face; e.sweepT -= dt; e.rushT = (e.rushT === undefined ? 2 : e.rushT) - dt;
       want = ad > 22 ? e.face * 78 : 0;
-      if (ad < 30 && e.sweepT <= 0) { e.sweepT = 1.9; e.mode = 'guardTell'; e.modeT = 0.38; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
+      e.bashT = (e.bashT ?? 1.5) - dt;
+      if (ad < 30 && e.bashT <= 0 && e.sweepT > 0.6) { e.bashT = 3; e.mode = 'bashTell'; e.modeT = 0.36; number(e.x, e.y - e.h - 12, '!', '#ff6b6b'); }
+      else if (ad < 30 && e.sweepT <= 0) { e.sweepT = 1.9; e.mode = 'guardTell'; e.modeT = 0.38; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
       // back off him and he comes for you behind the shield: block it and he reels, jump it and he stumbles
       else if (ad > 44 && ad < 130 && e.rushT <= 0) { e.rushT = 3.4; e.mode = 'rushTell'; e.modeT = 0.5; SFX.snort(); }
       break; }
@@ -2860,13 +2873,17 @@ function updateLance(e, dt) {
     case 'guardTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'guardSwing'; e.modeT = 0.28; SFX.slash(); e.whiff = !reach(34, DMG.lanceGuard); } break;
     case 'guardSwing': if (e.modeT <= 0) { if (e.whiff) { e.mode = 'recover'; e.modeT = 0.55; } else { e.mode = 'guard'; e.modeT = 0.4; } } break;
   }
-  if (e.mode !== 'charge' && e.mode !== 'rush') e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'reel' || e.mode === 'stumble' ? 2 : 5));
+  if (e.mode !== 'charge' && e.mode !== 'rush' && e.mode !== 'vault') e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'reel' || e.mode === 'stumble' ? 2 : 5));
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
   e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x));
+  if (e.mode === 'vault' && r.ground && e.airT > 0.2) { e.mode = 'planted'; e.modeT = p2 ? 1.1 : 1.5; e.stagger = e.modeT; e.vx = 0;
+    SFX.heavy(); SFX.stone(); shakeCam(8); zoomKick(1.1, 0.3); dust(e.x, e.y, 14); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 14, y: floor, dir: dd, life: 1.2, sp: 175 });
+    if (!P.dead && Math.abs(P.x - e.x) < 30 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.lanceVault, { up: true });
+    number(e.x, e.y - e.h - 14, 'THE POINT STICKS: CUT HIM', '#8fd160'); }
   if (r.hitX && e.mode === 'rush') { e.mode = 'stumble'; e.modeT = 0.9; e.vx = 0; SFX.heavy(); shakeCam(4); }
   if (r.hitX && e.mode === 'charge') { e.mode = 'planted'; e.modeT = 2.2; e.stagger = 2.2; e.vx = 0; SFX.heavy(); shakeCam(7); }
 }
-const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover';
+const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
 
 // THE SNUFFER - it is not hunting you. It is putting the village out, one lamp at a time, and the Reeve likes that.
 function updateSnuffer(e, dt) {
@@ -3304,15 +3321,18 @@ function updateCastleProps(dt, hb) {
           if (!P.dead && Math.abs(P.x - gx) < 10 && P.y > pr.gy0 * TS && P.y - 14 < (pr.gy1 + 1) * TS) { damagePlayer(gx, DMG.crush, { unblockable: true }); P.x = gx + (P.x < gx ? -12 : 12); }
           for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - gx) < 10 && e.y > pr.gy0 * TS && e.y - e.h < (pr.gy1 + 1) * TS) hurtEnemy(e, 999, gx, false); } }
     }
+    if (pr.t === 'weight' && pr.lamp && pr.state === 'down') { pr.downT += dt; if (pr.downT > 7 && Math.abs(P.x - pr.x) > 30) { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; burst(pr.x, pr.y + pr.len - 8, 8, ['#ffd36b'], 40, 0.4); } }
     if (pr.t === 'weight') {
       if (pr.state === 'hang') { const by = pr.y + pr.len; if (hb && overlap(hb, { l: pr.x - 8, r: pr.x + 8, t: by - 10, b: by + 2 }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.state = 'fall'; pr.fy = by; pr.vy = 0; SFX.clank(); SFX.crack(); } }
       else if (pr.state === 'fall') { pr.vy = Math.min(420, pr.vy + 900 * dt); pr.fy += pr.vy * dt;
         const tx = Math.floor(pr.x / TS), ty = Math.floor(pr.fy / TS);
         // a ton of iron: whatever is under it is flat, however many of them (a boss only feels it)
         pr.hitE = pr.hitE || new Set();
-        for (const e of enemies) if (e.alive && Math.abs(e.x - pr.x) < e.w / 2 + 7 && pr.fy > e.y - e.h && pr.fy < e.y + 4 && !pr.hitE.has(e)) { pr.hitE.add(e); hurtEnemy(e, e.maxHp ? 30 : 999, pr.x, true); }
+        for (const e of enemies) if (e.alive && Math.abs(e.x - pr.x) < e.w / 2 + 7 && pr.fy > e.y - e.h && pr.fy < e.y + 4 && !pr.hitE.has(e)) { pr.hitE.add(e);
+          if (e.t === 'lance' && e.alive) { e.mode = 'reel'; e.modeT = 1.8; e.stagger = 1.8; e.vx = 0; number(e.x, e.y - e.h - 16, 'THE CAGE COMES DOWN ON HIM', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // knocked flat first, so his plate is no use to him
+          hurtEnemy(e, e.maxHp ? (pr.lamp ? 36 : 30) : 999, pr.x, true); }
         if (!P.dead && Math.abs(P.x - pr.x) < 10 && pr.fy > P.y - 16 && pr.fy < P.y + 2 && !pr.hitP) { pr.hitP = true; damagePlayer(pr.x, DMG.crush, { up: true, unblockable: true }); }
-        if (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) { pr.state = 'down'; pr.fy = ty * TS; SFX.heavy(); SFX.stone(); shakeCam(6); dust(pr.x - 6, pr.fy, 8); dust(pr.x + 6, pr.fy, 8); } }
+        if (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) { pr.state = 'down'; pr.downT = 0; pr.fy = ty * TS; if (pr.lamp) { burst(pr.x, pr.fy - 6, 16, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 90, 0.6, 0, 2); SFX.puff(); } SFX.heavy(); SFX.stone(); shakeCam(6); dust(pr.x - 6, pr.fy, 8); dust(pr.x + 6, pr.fy, 8); } }
     }
     if (pr.t === 'support' && !pr.broken) {
       if (pr.shake > 0) pr.shake -= dt;
@@ -4165,6 +4185,8 @@ function updateCamera(dt) {
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
   const x0 = camLock ? camLock.x0 - 8 : 0, x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW;
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
+  // a level with its insides in a band of rock (Stormhold): from the street you never see into the band, and from a room you never see the street
+  if (L.indoorRow !== undefined) { const edge = (L.indoorRow + 1) * TS; if (P.y > edge) camY = Math.max(camY, edge); else camY = Math.min(camY, edge - VH); }
   shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt);
 }
 
@@ -4404,6 +4426,53 @@ function drawSwing(cx, cy) {
       const s = a0 + Math.max(0, sweep - tail), e = a0 + sweep; if (f > 0) g.arc(px, py, r - i, s, e); else g.arc(px, py, r - i, Math.PI - e, Math.PI - s); g.stroke(); } }
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
+// THE CASTLE, on its mountain, far off: it sits between the far crags and the near hills, its mountain runs
+// down behind the hills and fades into the haze, and it grows as you cross the level toward it.
+function drawCastleBack(cx, cy) {
+  if (!L.castle) return; const art = PROP.castleRange || (PROP.castleRange = ART.bakeCastleRange(5));
+  const k = Math.max(0, Math.min(1, cx / Math.max(1, (LW * TS - VW)))), sc = (0.75 + k * 0.9) * (VH / 180);
+  const w = Math.round(art.width * sc), h = Math.round(art.height * sc);
+  const bx = Math.round(VW * 0.62 - w / 2 - cx * 0.04), by = Math.round(VH * 0.30 - 120 * sc + (((LH * TS - VH) - cy) * 0.04));
+  g.globalAlpha = 0.72 + k * 0.2; g.drawImage(art, bx, by, w, h); g.globalAlpha = 1;
+}
+// a goblin house front: timber boards between posts, a stone footing, lit windows with green shutters, horns
+// over the door, and a barred door where there is no way in. Baked once per house.
+function bakeHouseFront(h) {
+  const w = (h.x1 - h.x0 + 1) * TS, ht = (h.y1 - h.y0 + 1) * TS, rnd = mulberry(h.seed * 7 + 3), fh = 6;
+  const [c, x] = canvas(w, ht);
+  for (let bx = 0; bx < w; bx += 4) { x.fillStyle = (bx / 4) % 3 === 0 ? '#4a3222' : (bx / 4) % 3 === 1 ? '#5a3e2a' : '#533826'; x.fillRect(bx, 0, 4, ht); x.fillStyle = '#3a2618'; x.fillRect(bx, 0, 1, ht); }
+  for (let k = 0; k < w / 5; k++) { x.fillStyle = '#6a4a32'; x.fillRect((rnd() * w) | 0, (rnd() * ht) | 0, 1, 2 + ((rnd() * 3) | 0)); }
+  x.fillStyle = '#2e1c10'; x.fillRect(0, 0, w, 4); x.fillRect(0, (ht * 0.45) | 0, w, 2);
+  for (let p = 0; p < w - 4; p += 5 * TS) x.fillRect(p, 0, 3, ht); x.fillRect(w - 3, 0, 3, ht);
+  x.fillStyle = 'rgba(0,0,0,0.4)'; x.fillRect(0, 4, w, 3);
+  x.fillStyle = '#5a5850'; x.fillRect(0, ht - fh, w, fh); x.fillStyle = '#6e6c62'; for (let sx = 0; sx < w; sx += 9) x.fillRect(sx + ((sx / 9) % 2 ? 4 : 0), ht - fh + 2, 7, 2); x.fillStyle = '#3a3830'; x.fillRect(0, ht - fh, w, 1);
+  const doorPx = h.door !== null ? (h.door - h.x0) * TS + 8 : w / 2;
+  for (let wx = 14; wx < w - 22; wx += 4 * TS) { if (Math.abs(wx + 5 - doorPx) < 24) continue; const wy = 11, lit = rnd() < 0.8;
+    x.fillStyle = '#1e120a'; x.fillRect(wx - 1, wy - 1, 12, 11); x.fillStyle = lit ? '#ffb040' : '#2a2438'; x.fillRect(wx, wy, 10, 9); if (lit) { x.fillStyle = '#ffe0a0'; x.fillRect(wx + 1, wy + 1, 3, 3); }
+    x.fillStyle = '#1e120a'; x.fillRect(wx + 4, wy, 2, 9); x.fillRect(wx, wy + 4, 10, 1);
+    x.fillStyle = '#3f5a2c'; x.fillRect(wx - 4, wy - 1, 3, 11); x.fillRect(wx + 11, wy - 1, 3, 11); x.fillStyle = '#2c4020'; x.fillRect(wx - 4, wy + 4, 3, 1); x.fillRect(wx + 11, wy + 4, 3, 1);
+    x.fillStyle = '#6e6c62'; x.fillRect(wx - 2, wy + 10, 14, 2); }
+  if (h.door === null) { const dx = ((w / 2) | 0) - 7, dy = ht - fh - 22; x.fillStyle = '#1e120a'; x.fillRect(dx - 1, dy - 1, 16, 23); x.fillStyle = '#6a4428'; x.fillRect(dx, dy, 14, 22); x.fillStyle = '#4a2e1c'; for (let k = 3; k < 14; k += 4) x.fillRect(dx + k, dy, 1, 22); x.fillStyle = '#3a3a44'; x.fillRect(dx - 2, dy + 9, 18, 3); x.fillStyle = '#8a919c'; x.fillRect(dx - 2, dy + 9, 18, 1); }
+  { const hx = (doorPx | 0) - 8; x.fillStyle = '#e8dcc0'; x.fillRect(hx, 6, 4, 2); x.fillRect(hx - 2, 3, 2, 4); x.fillRect(hx + 12, 6, 4, 2); x.fillRect(hx + 16, 3, 2, 4); x.fillStyle = '#6a4428'; x.fillRect(hx + 4, 5, 8, 4); x.fillStyle = '#ff6b4a'; x.fillRect(hx + 6, 6, 1, 1); x.fillRect(hx + 9, 6, 1, 1); }
+  return c;
+}
+function drawHouses(cx, cy) {
+  for (const h of (L.houses || [])) { const x = h.x0 * TS - cx, y = h.y0 * TS - cy, w = (h.x1 - h.x0 + 1) * TS; if (x > VW || x + w < 0) continue;
+    if (!h.spr) h.spr = bakeHouseFront(h); g.drawImage(h.spr, Math.round(x), Math.round(y));
+    const chx = Math.round((h.x1 - 1) * TS - cx), chy = Math.round((h.y0 - 3) * TS - cy); g.fillStyle = '#4a4640'; g.fillRect(chx, chy - 10, 8, 10); g.fillStyle = '#5e5a52'; g.fillRect(chx, chy - 10, 2, 10); g.fillStyle = '#2a2622'; g.fillRect(chx - 1, chy - 12, 10, 3);
+    for (let k = 0; k < 4; k++) { const t2 = (time * 0.5 + k / 4 + h.seed * 0.13) % 1; g.globalAlpha = 0.4 * (1 - t2); g.fillStyle = '#a8a8b8'; g.beginPath(); g.arc(chx + 4 + t2 * 16, chy - 14 - t2 * 30, 2 + t2 * 5, 0, 7); g.fill(); } g.globalAlpha = 1; }
+}
+// ...and its roof: the slab you can walk on is slate, laid in courses, with snow on it and an eave that
+// overhangs the wall. Drawn over the tiles, after them.
+function bakeRoof(h) { const x0 = h.x0 - 1, x1 = h.x1 + 1, w = (x1 - x0 + 1) * TS + 4, ht = 3 * TS + 3, rnd = mulberry(h.seed * 3 + 1); const [c, x] = canvas(w, ht);
+  x.fillStyle = '#2a2c3a'; x.fillRect(0, 0, w, ht - 2);
+  for (let row = 0, y = 5; y < ht - 4; y += 5, row++) for (let sx = (row % 2) * 4 - 4; sx < w; sx += 8) { x.fillStyle = rnd() < 0.15 ? '#4a4458' : '#3e4052'; x.fillRect(sx + 1, y, 7, 4); x.fillStyle = '#525468'; x.fillRect(sx + 1, y, 7, 1); }
+  x.fillStyle = '#1b1626'; x.fillRect(0, ht - 3, w, 3); x.fillStyle = '#5a4a3a'; x.fillRect(0, ht - 4, w, 1); // the eave board
+  x.fillStyle = '#eef4ff'; x.fillRect(0, 0, w, 4); x.fillStyle = '#c8d4e8'; x.fillRect(0, 3, w, 1);
+  for (let sx = 2; sx < w - 2; sx += 3 + ((rnd() * 5) | 0)) { x.fillStyle = '#eef4ff'; x.fillRect(sx, 4, 2, 1 + ((rnd() * 3) | 0)); } // snow hanging over the slates
+  for (let sx = 6; sx < w - 6; sx += 10 + ((rnd() * 14) | 0)) { x.fillStyle = '#dfe8ff'; x.fillRect(sx, ht - 2, 1, 2 + ((rnd() * 3) | 0)); } // icicles
+  return c; }
+function drawRoofs(cx, cy) { for (const h of (L.houses || [])) { const x = (h.x0 - 1) * TS - 2 - cx, y = (h.y0 - 3) * TS - cy; if (x > VW || x + (h.x1 - h.x0 + 4) * TS < 0) continue; if (!h.roof) h.roof = bakeRoof(h); g.drawImage(h.roof, Math.round(x), Math.round(y)); } }
 function drawWorld(cx, cy, showPlayer) {
   g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
   const dk = dusk();
@@ -4411,17 +4480,8 @@ function drawWorld(cx, cy, showPlayer) {
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + ((LH * TS - VH) - cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.dark) { g.fillStyle = '#1a1a22'; g.fillRect(0, 0, VW, VH); g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8); } // under the mountain there is only more mountain
   else if (SET.parallax !== 'off') { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
-  drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
-  // THE CASTLE. It is on the first screen and it fills the last one, so it sits in front of the far
-  // crags and takes the place of the near ones - it IS this level's backdrop, and it is where you are going.
-  if (L.castle) {
-    const k = Math.max(0, Math.min(1, cx / Math.max(1, (LW * TS - VW)))), sc = (0.75 + k * 0.9) * (VH / 180);
-    const w = Math.round(PROP.castle.width * sc), h = Math.round(PROP.castle.height * sc);
-    // Its FOOT is pinned near the top third of the screen and the top runs off as it grows, so it always
-    // reads as something above you on a mountain, never as a building standing in the street.
-    const bx = Math.round(VW * 0.72 - w / 2 - cx * 0.04), by = Math.round(VH * 0.30 - h + (((LH * TS - VH) - cy) * 0.04));
-    g.globalAlpha = 0.8 + k * 0.2; g.drawImage(PROP.castle, bx, by, w, h); g.globalAlpha = 1;
-  }
+  drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
+  else drawCastleBack(cx, cy);
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(16,34,18,' + (0.4 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
@@ -4437,6 +4497,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0) continue; const earth = st === 'earth', stone = st === 'stone', glass = st === 'crystal'; g.fillStyle = earth ? '#2c1e14' : stone ? '#2a2c36' : glass ? '#3a3c5a' : '#2a1a10'; g.fillRect(sx, sy, w, h);
     if (glass) { g.fillStyle = '#4a4e74'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7); g.fillStyle = '#2a2c44'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#7a8ac8'; for (let i = 0; i < w * h / 700; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 61) % h); g.fillRect(rx, ry, 1, 3 + (i % 3) * 2); g.fillRect(rx + 1, ry + 2, 1, 2); } for (let i = 0; i < w * h / 500; i++) { const rx = sx + ((i * 131 + 7) % w), ry = sy + ((i * 71 + 3) % h); const tw = 0.5 + 0.5 * Math.sin(time * 3 + i * 1.7); if (tw > 0.75) { g.fillStyle = tw > 0.92 ? '#eefaff' : '#7aa8c8'; g.fillRect(rx, ry, 1, 1); } } continue; }
     if (stone) { g.fillStyle = '#363a46'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7); g.fillStyle = '#1e2028'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); continue; } if (earth) { g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); } g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2); continue; } g.fillStyle = '#3a2618'; for (let yy = sy + 4; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#1e120a'; for (let xx = sx + ((cx * 0) % 40); xx < sx + w; xx += 40) g.fillRect(xx, sy, 1, h); }
+  drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
@@ -4460,6 +4521,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.cap) { const n = m.w / TS; for (let i = 0; i < n; i++) { g.drawImage(TILE.mycDirt[i % 3], 0, 0, 16, 8, Math.round(m.x) + i * TS - cx, m.y + 8 - cy, 16, 8); g.drawImage(TILE.bouncer[0], Math.round(m.x) + i * TS - cx, m.y - 8 - cy); } }
     else { const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); }
   }
+  drawRoofs(cx, cy);
   for (const pr of props) if (pr.t === 'treehouse' && pr.x > cx - 60 && pr.x < cx + VW + 60) g.drawImage(PROP.treehouse[pr.v], Math.round(pr.x) - 20 - cx, Math.round(pr.y) - 30 - cy);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) if (tx >= 0 && ty > 0 && tx < LW && ty < LH && L.grid[ty * LW + tx] === T.PALISADE && L.grid[(ty - 1) * LW + tx] !== T.PALISADE) g.drawImage(TILE.palisadeTop, tx * TS - cx, ty * TS - 6 - cy);
   for (const pr of props) {
@@ -4485,6 +4547,11 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'carpet') g.drawImage(PROP.carpet, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 3 - cy);
     else if (pr.t === 'winch') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); g.fillStyle = '#3a2214'; g.fillRect(x - 1, y - 16, 3, 16); g.fillStyle = '#5a3a24'; g.beginPath(); g.arc(x, y - 12, 6, 0, 7); g.fill(); g.strokeStyle = '#8a5a32'; g.lineWidth = 1; for (let k = 0; k < 4; k++) { const a = pr.spin + k * Math.PI / 2; g.beginPath(); g.moveTo(x, y - 12); g.lineTo(x + Math.cos(a) * 8, y - 12 + Math.sin(a) * 8); g.stroke(); } g.fillStyle = '#5a6270'; g.fillRect(x - 1, y - 13, 3, 3);
       g.strokeStyle = 'rgba(90,98,112,0.8)'; g.beginPath(); g.moveTo(x, y - 18); g.lineTo(pr.gate * TS + 8 - cx, pr.gy0 * TS - cy); g.stroke(); if (pr.open > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x - 6, y - 24, Math.round(12 * pr.open / pr.hold), 2); } }
+    else if (pr.t === 'weight' && pr.lamp) { const x = Math.round(pr.x - cx), top = Math.round(pr.y - cy), by = Math.round((pr.state === 'hang' ? pr.y + pr.len : pr.fy) - cy), sx = x - 22, deck = Math.round(pr.y + pr.len + 3 * TS - cy);
+      g.fillStyle = '#3a2618'; g.fillRect(sx - 1, top - 2, 3, deck - top + 2); g.fillRect(sx - 1, top - 3, 26, 3); g.fillStyle = '#5a3a24'; g.fillRect(sx, top - 2, 1, deck - top); g.fillRect(sx + 18, top, 3, 5); // the standard and its arm
+      if (pr.state === 'hang') { g.strokeStyle = '#5a6270'; g.lineWidth = 1; for (let yy = top; yy < by - 12; yy += 3) { g.beginPath(); g.moveTo(x + 0.5, yy); g.lineTo(x + 0.5, yy + 2); g.stroke(); } }
+      if (pr.state !== 'down' || pr.downT < 1.2) { const cy2 = by - 12; g.fillStyle = '#2a2a34'; g.fillRect(x - 6, cy2, 12, 12); g.fillStyle = '#5a6270'; for (let k = -6; k <= 6; k += 4) g.fillRect(x + k, cy2, 1, 12); g.fillRect(x - 6, cy2, 12, 1); g.fillRect(x - 6, cy2 + 11, 12, 1);
+        if (pr.state !== 'down') { const f = Math.floor(time * 12) % 3; g.fillStyle = '#ff9a5c'; g.fillRect(x - 3, cy2 + 3 - (f === 1 ? 1 : 0), 6, 7); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, cy2 + 5, 4, 4); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, cy2 + 6, 2, 2); } } }
     else if (pr.t === 'weight') { const x = Math.round(pr.x - cx), top = Math.round(pr.y - cy), by = Math.round((pr.state === 'hang' ? pr.y + pr.len : pr.fy) - cy); if (pr.state === 'hang') { g.strokeStyle = '#5a6270'; g.lineWidth = 1; for (let yy = top; yy < by - 10; yy += 3) { g.beginPath(); g.moveTo(x, yy); g.lineTo(x, yy + 2); g.stroke(); } g.fillStyle = '#3a3e48'; g.fillRect(x - 3, top - 2, 7, 2); } g.fillStyle = '#3a3e48'; g.fillRect(x - 7, by - 10, 14, 10); g.fillStyle = '#5a6270'; g.fillRect(x - 6, by - 9, 12, 2); g.fillStyle = '#1b1626'; g.fillRect(x - 7, by - 1, 14, 1); if (pr.state === 'hang') { g.strokeStyle = '#8a919c'; g.beginPath(); g.arc(x, by - 12, 2, 0, 7); g.stroke(); } }
     else if (pr.t === 'support') { const x = Math.round(pr.x - cx) + (pr.shake > 0 ? Math.round(Math.sin(time * 60)) : 0), yb = Math.round(pr.y - cy), yt = Math.round(pr.top - cy); if (pr.broken) { g.fillStyle = '#4a4a58'; g.fillRect(x - 5, yb - 8, 10, 8); g.fillStyle = '#6a6a78'; g.fillRect(x - 4, yb - 9, 3, 2); g.fillRect(x + 1, yb - 10, 3, 3); }
       else { for (let yy = yt; yy < yb; yy += 8) { g.fillStyle = (yy / 8) % 2 ? '#5a5a68' : '#62626e'; g.fillRect(x - 5, yy, 10, Math.min(8, yb - yy)); g.fillStyle = '#3a3a44'; g.fillRect(x - 5, yy, 10, 1); } g.fillStyle = '#6e6e7a'; g.fillRect(x - 7, yt, 14, 3); g.fillRect(x - 7, yb - 3, 14, 3); if (pr.hp < 4) { g.strokeStyle = '#1b1626'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 3, yt + 10); for (let k = 0; k < 4 - pr.hp; k++) g.lineTo(x + (k % 2 ? 3 : -2), yt + 16 + k * 9); g.stroke(); } } }
@@ -4650,7 +4717,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'suncatcher') frame = e.mode === 'dim' ? 7 : e.mode === 'drink' ? 3 : (e.mode === 'throw' || e.mode === 'throwTell') ? 4 : e.mode === 'raise' ? 5 : e.flash > 0 ? 6 : Math.floor(e.anim * 2) % 2 ? 1 : 2;
     else if (e.t === 'hearthgob') frame = e.mode === 'asleep' ? 0 : e.mode === 'waking' ? 1 : e.mode === 'raise' ? 2 : e.mode === 'swing' ? 3 : Math.abs(e.vx) > 4 ? 4 + Math.floor(e.anim * 9) % 2 : 1;
     else if (e.t === 'cutter') frame = e.mode === 'raise' ? 1 : e.mode === 'chop' ? 2 : Math.abs(e.vx) > 6 ? 3 : 0;
-    else if (e.t === 'lance') frame = (e.mode === 'reel' || e.mode === 'stumble') ? 10 : e.mode === 'recover' ? (e.phase === 2 ? 9 : 5) : e.mode === 'guardSwing' ? 9 : (e.mode === 'guard' || e.mode === 'guardTell' || e.mode === 'rise' || e.mode === 'rushTell' || e.mode === 'rush') ? 8 : e.mode === 'planted' ? 7 : e.mode === 'sweep' || e.mode === 'sweepTell' ? 6 : (e.mode === 'thrust' || e.mode === 'thrustTell') ? 5 : e.mode === 'charge' ? 4 : e.mode === 'couch' ? 3 : Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 6) % 2 : 0;
+    else if (e.t === 'lance') { const p2 = e.phase === 2, mv = Math.abs(e.vx) > 6;
+      frame = ({ reel: 18, stumble: 19, planted: 12, couch: 5, thrustTell: 8, thrust: 9, sweepTell: 10, sweep: 11, bashTell: p2 ? 13 : 25, bash: p2 ? 16 : 26, vaultTell: 20, vault: 21, javTell: 22, javThrow: 23, rise: 24, guardTell: 14, guardSwing: 15, rushTell: 16 })[e.mode];
+      if (frame === undefined) frame = e.mode === 'charge' ? 6 + Math.floor(e.anim * 12) % 2 : e.mode === 'rush' ? 16 + Math.floor(e.anim * 12) % 2 : e.mode === 'recover' ? (p2 ? 15 : 9) : (p2 || e.mode === 'guard') ? (mv ? 27 + Math.floor(e.anim * 8) % 2 : 13) : (mv ? 1 + Math.floor(e.anim * 9) % 4 : 0); }
     else if (e.t === 'snuffer') frame = e.mode === 'snuffTell' ? 2 : (e.mode === 'swipeTell' || e.mode === 'swipe') ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 2 : 0;
     else if (e.t === 'sailer') frame = e.mode === 'tumble' ? 2 : e.mode === 'sail' ? 1 : 0;
     else if (e.t === 'troll') frame = e.mode === 'throwTell' || e.mode === 'throw' ? 3 : e.mode === 'swatTell' || e.mode === 'swat' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
@@ -4660,7 +4729,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'pike') frame = e.mode === 'thrust' ? 1 : e.mode === 'tell' ? 2 : 0;
     else if (e.t === 'archer') frame = e.draw > 0 ? 1 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
     else frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 22 : 10)) % 4 : 0;
-    const wind = (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell')) || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));
+    const wind = (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));
     const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6) : 0;
     if (e.t === 'queen') { g.globalAlpha = 0.3; g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, L.arena.floor - 2 - cy); g.globalAlpha = 1; }
     if (e.t === 'kite' && e.alive) { const kx = Math.round(e.x - cx), ky = Math.round(e.y - e.h - 26 - cy) + (e.mode === 'fall' ? 10 : 0); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(kx + 0.5, Math.round(e.y - e.h - cy)); g.lineTo(kx + 0.5, ky + 8); g.stroke(); g.fillStyle = e.col; g.beginPath(); g.moveTo(kx, ky - 8); g.lineTo(kx + 7, ky); g.lineTo(kx, ky + 8); g.lineTo(kx - 7, ky); g.closePath(); g.fill(); g.fillStyle = '#2a2230'; g.fillRect(kx, ky - 8, 1, 16); g.fillRect(kx - 7, ky, 14, 1); for (let k = 1; k < 4; k++) { g.fillStyle = k % 2 ? '#ffd36b' : e.col; g.fillRect(kx - 1 + Math.round(Math.sin(time * 6 + k) * 2), ky + 8 + k * 4, 2, 2); } }
@@ -4691,7 +4760,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
-  for (const s of seeds) { if (s.bolt) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#c9a0ff'; g.fillRect(x - 3, y - 1, 6, 2); g.fillRect(x - 1, y - 3, 2, 6); g.fillStyle = '#f0e4ff'; g.fillRect(x - 1, y - 1, 2, 2); g.globalAlpha = 0.5; g.fillStyle = '#9a5acc'; g.fillRect(x - Math.round(s.vx * 0.04) - 2, y - Math.round(s.vy * 0.04) - 2, 4, 4); g.globalAlpha = 1; } else if (s.arrow) { const a = Math.atan2(s.vy, s.vx); g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(a); g.fillStyle = '#e8dcc0'; g.fillRect(-5, -1, 8, 1); g.fillStyle = '#c9d1dc'; g.fillRect(3, -1, 3, 2); g.fillStyle = s.reflected ? '#8fd160' : '#c9463d'; g.fillRect(-6, -2, 2, 3); g.restore(); } else if (s.shard) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#bfe6f5'; g.fillRect(-5, -2, 10, 4); g.fillStyle = '#eefaff'; g.fillRect(-4, -1, 6, 1); g.restore(); } else if (s.acid) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#b8d878'; g.fillRect(x - 2, y - 2, 4, 4); g.fillStyle = '#e8ff9a'; g.fillRect(x - 1, y - 1, 2, 2); } else if (s.lantern) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x - 2, y - 4, 4, 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 3, 2, 3); g.fillStyle = '#8a919c'; g.fillRect(x - 1, y - 5, 2, 1); } else if (s.skull) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 6); g.fillStyle = '#e8e0d0'; g.fillRect(-4, -4, 8, 7); g.fillRect(-3, 3, 6, 2); g.fillStyle = '#2a2230'; g.fillRect(-3, -2, 2, 2); g.fillRect(1, -2, 2, 2); g.fillRect(-1, 3, 1, 2); g.fillRect(1, 3, 1, 2); g.restore(); } else if (s.goblet) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 9); g.fillStyle = '#e0b040'; g.fillRect(-3, -3, 6, 4); g.fillRect(-1, 1, 2, 3); g.fillStyle = '#fff6c8'; g.fillRect(-2, -3, 2, 1); g.restore(); } else if (s.pod) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#6a3a7a'; g.fillRect(x - 4, y - 5, 8, 8); g.fillStyle = '#9a5aa8'; g.fillRect(x - 3, y - 4, 6, 6); g.fillStyle = '#e0b0f0'; g.fillRect(x - 2, y - 4, 2, 2); g.fillStyle = '#3f6e2c'; g.fillRect(x - 1, y - 7, 2, 2); } else if (s.spore) { g.fillStyle = '#9a5aa8'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 3, 5, 5); g.fillStyle = '#e0b0f0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 3, 2, 2); } else if (s.venom) { g.fillStyle = '#8fd160'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 2, 4, 4); g.fillStyle = '#dfffa0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 2, 2, 1); } else drawSet(SPR.seed, null, 0, s.x - cx, s.y + 3 - cy, 1, false); }
+  for (const s of seeds) { if (s.bolt) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#c9a0ff'; g.fillRect(x - 3, y - 1, 6, 2); g.fillRect(x - 1, y - 3, 2, 6); g.fillStyle = '#f0e4ff'; g.fillRect(x - 1, y - 1, 2, 2); g.globalAlpha = 0.5; g.fillStyle = '#9a5acc'; g.fillRect(x - Math.round(s.vx * 0.04) - 2, y - Math.round(s.vy * 0.04) - 2, 4, 4); g.globalAlpha = 1; } else if (s.jav) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#8a5a32'; g.fillRect(-10, -1, 14, 2); g.fillStyle = '#c9d1dc'; g.fillRect(4, -2, 4, 4); g.fillStyle = '#eef4ff'; g.fillRect(7, -1, 2, 2); g.fillStyle = '#5a2a7a'; g.fillRect(-11, -2, 3, 4); g.restore(); } else if (s.arrow) { const a = Math.atan2(s.vy, s.vx); g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(a); g.fillStyle = '#e8dcc0'; g.fillRect(-5, -1, 8, 1); g.fillStyle = '#c9d1dc'; g.fillRect(3, -1, 3, 2); g.fillStyle = s.reflected ? '#8fd160' : '#c9463d'; g.fillRect(-6, -2, 2, 3); g.restore(); } else if (s.shard) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#bfe6f5'; g.fillRect(-5, -2, 10, 4); g.fillStyle = '#eefaff'; g.fillRect(-4, -1, 6, 1); g.restore(); } else if (s.acid) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#b8d878'; g.fillRect(x - 2, y - 2, 4, 4); g.fillStyle = '#e8ff9a'; g.fillRect(x - 1, y - 1, 2, 2); } else if (s.lantern) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x - 2, y - 4, 4, 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 3, 2, 3); g.fillStyle = '#8a919c'; g.fillRect(x - 1, y - 5, 2, 1); } else if (s.skull) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 6); g.fillStyle = '#e8e0d0'; g.fillRect(-4, -4, 8, 7); g.fillRect(-3, 3, 6, 2); g.fillStyle = '#2a2230'; g.fillRect(-3, -2, 2, 2); g.fillRect(1, -2, 2, 2); g.fillRect(-1, 3, 1, 2); g.fillRect(1, 3, 1, 2); g.restore(); } else if (s.goblet) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 9); g.fillStyle = '#e0b040'; g.fillRect(-3, -3, 6, 4); g.fillRect(-1, 1, 2, 3); g.fillStyle = '#fff6c8'; g.fillRect(-2, -3, 2, 1); g.restore(); } else if (s.pod) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#6a3a7a'; g.fillRect(x - 4, y - 5, 8, 8); g.fillStyle = '#9a5aa8'; g.fillRect(x - 3, y - 4, 6, 6); g.fillStyle = '#e0b0f0'; g.fillRect(x - 2, y - 4, 2, 2); g.fillStyle = '#3f6e2c'; g.fillRect(x - 1, y - 7, 2, 2); } else if (s.spore) { g.fillStyle = '#9a5aa8'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 3, 5, 5); g.fillStyle = '#e0b0f0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 3, 2, 2); } else if (s.venom) { g.fillStyle = '#8fd160'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 2, 4, 4); g.fillStyle = '#dfffa0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 2, 2, 1); } else drawSet(SPR.seed, null, 0, s.x - cx, s.y + 3 - cy, 1, false); }
   if (throneBlock) g.drawImage(PROP.palanquin, Math.round(throneBlock.x) - 36 - cx, Math.round(throneBlock.y) - 45 - cy, 72, 45);
   for (const r of rocks) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.x / TS), gy) && !isOneWay(tileAt(Math.floor(r.x / TS), gy))) gy++; const k = Math.max(0.3, 1 - (gy * TS - r.y) / 200); g.globalAlpha = 0.35 * k; g.drawImage(PROP.shadow, Math.round(r.x - cx) - 6, gy * TS - 2 - cy, 12, 3); g.globalAlpha = 1; if (r.lamp) g.drawImage(SPR.chandelier, Math.round(r.x - cx) - 12, Math.round(r.y - cy) - 14); else if (r.hammerRock) drawHammerRock(r, cx, cy); else g.drawImage(PROP.boulder, Math.round(r.x - cx) - 7, Math.round(r.y - cy) - 11); }
   for (const v of vines) { if (v.t < v.tell) continue; const x1 = Math.round(v.x - cx), y = Math.round(v.y - cy), x0 = Math.round(v.x - v.dir * v.len - cx); const lo = Math.min(x0, x1), hi = Math.max(x0, x1); g.fillStyle = '#3f6e2c'; g.fillRect(lo, y - 4, hi - lo, 3); g.fillStyle = '#8fd160'; g.fillRect(lo, y - 4, hi - lo, 1); for (let x = lo; x < hi; x += 6) { g.fillStyle = '#dfffa0'; g.fillRect(x + ((y + x) % 3), y - 7, 1, 3); } g.fillStyle = '#3f6e2c'; g.fillRect(x1 - 2, y - 8, 4, 8); }

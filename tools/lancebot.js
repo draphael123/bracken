@@ -5,7 +5,7 @@
 export function fightLance(B, opts = {}) {
   B.start(); B.load(LEVEL_INDEX(B)); B.step(2); B.reset(); B.god = !!opts.god;
   B.tp(306, 29); B.step(2); B.tp(311, 29);
-  const OPEN = m => ['planted', 'thrust', 'sweep', 'guardSwing', 'reel', 'stumble', 'recover'].includes(m);
+  const OPEN = m => ['planted', 'thrust', 'sweep', 'guardSwing', 'reel', 'stumble', 'recover', 'javThrow'].includes(m);
   const K = B.keys;
   const st = { frames: 0, hits: 0, deaths: 0, windows: 0, used: 0, plantDist: [], modes: {}, hitsTaken: 0, p2at: null, falls: 0, dmgBy: {} };
   const hist = []; let firstFall = null;
@@ -25,6 +25,12 @@ export function fightLance(B, opts = {}) {
     else if (b.mode === 'rush' && ad < 56 && !opts.parry) jump = true;
     else if (['thrustTell', 'thrust', 'rushTell', 'rush', 'guardTell', 'guardSwing'].includes(b.mode) && opts.parry && ad < 110) { K.block = true; B.P.face = dir; } // turn and take it on the shield
     else if (b.mode === 'sweepTell' && ad < 60) jump = true;
+    // the shield bash: no blocking a shield, so get out from in front of it (roll away)
+    else if ((b.mode === 'bashTell' || b.mode === 'bash') && ad < 64) { K[dir > 0 ? 'left' : 'right'] = true; if (b.mode === 'bashTell' && ad < 46 && B.P.ground) { B.P.face = -dir; B.press('dodge'); } }
+    // the vault: be somewhere else when he comes down, and hop the wave the landing throws
+    else if (b.mode === 'vaultTell' || b.mode === 'vault') { const away = Math.sign(B.P.x - (b.tx ?? b.x)) || -dir; K[away > 0 ? 'right' : 'left'] = true; }
+    // the javelins land where you were and a stride either side: close the distance under them
+    else if (b.mode === 'javTell') K[dir > 0 ? 'right' : 'left'] = true;
     else if (open) { if (ad > 18) K[dir > 0 ? 'right' : 'left'] = true; if (ad < 30 && f % 9 === 0) B.press('atk'); }
     else if (b.phase === 1) { const want = 100; if (ad < want - 10) K[dir > 0 ? 'left' : 'right'] = true; else if (ad > want + 30) K[dir > 0 ? 'right' : 'left'] = true; }
     else if (b.mode === 'guardTell') K[dir > 0 ? 'left' : 'right'] = true; // step out of the swing
@@ -32,6 +38,7 @@ export function fightLance(B, opts = {}) {
     // backed into a wall: go over him, not into the wall (only his weapon hurts, not his body)
     { const A = B.L.arena, cornered = (dir > 0 && B.P.x - A.x0 < 44) || (dir < 0 && A.x1 - B.P.x < 44);
       if (cornered && ad < 60 && B.P.ground && !open && b.mode !== 'charge') { K.left = dir < 0; K.right = dir > 0; K.block = false; jump = true; } }
+    for (const w of (B.waves ? (typeof B.waves === 'function' ? B.waves() : B.waves) : [])) if (Math.abs(w.x - B.P.x) < 34 && Math.sign(B.P.x - w.x) === w.dir && B.P.ground) jump = true;
     if (!B.P.ground && airDir) { K.left = airDir === 'left'; K.right = airDir === 'right'; }
     const mv = K.right ? 1 : K.left ? -1 : 0;
     // a hole ahead of your feet: jump it, like anyone would

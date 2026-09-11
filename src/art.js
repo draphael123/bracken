@@ -1119,6 +1119,31 @@ export function bakeCastle(seed) { const rnd = mulberry(seed || 5); const [c, g]
   fillPoly(g, [[76, 28], [91, 12], [106, 28]], '#57455f', '#3d3145'); // the great roof
   rect(g, 90, 2, 2, 12, '#5c3a1d'); rect(g, 92, 3, 8, 5, '#c9463d'); // her banner
   return outline(c, OUT); }
+// THE CASTLE ON ITS MOUNTAIN, as a backdrop: the same keeps and banner, but the mountain goes on down past
+// the foot of the frame between two lower shoulders, and the bottom of it fades into the haze. (The old art
+// was a cut-out: a triangle with a flat bottom edge, hanging in the sky.)
+export function bakeCastleRange(seed) { const rnd = mulberry(seed || 5), W = 300, H = 230, ox = 75; const [c, g] = canvas(W, H);
+  // the far shoulders, paler because they are further off
+  fillPoly(g, [[0, H], [0, 128], [22, 112], [48, 124], [70, 150], [230, 150], [256, 118], [280, 104], [300, 116], [300, H]], '#5e607a', '#54566e');
+  fillPoly(g, [[8, 118], [22, 112], [34, 118]], '#dfe6f0'); fillPoly(g, [[268, 110], [280, 104], [292, 110]], '#dfe6f0');
+  // her mountain, all the way down
+  fillPoly(g, [[18, H], [60, 150], [ox + 26, 52], [ox + 58, 74], [ox + 86, 30], [ox + 116, 66], [240, 148], [284, H]], '#4e4e66', '#3c3c50');
+  for (let i = 0; i < 140; i++) { const x = (rnd() * W) | 0, y = 40 + ((rnd() * (H - 40)) | 0); px(g, x, y, rnd() < 0.5 ? '#5a5a74' : '#42425a'); }
+  for (let i = 0; i < 14; i++) { const x = 60 + ((rnd() * 180) | 0), y = 96 + ((rnd() * 90) | 0); line(g, x, y, x + 6 + ((rnd() * 8) | 0), y + 10 + ((rnd() * 10) | 0), '#3a3a4e', 1); } // gullies
+  fillPoly(g, [[ox + 62, 46], [ox + 86, 24], [ox + 110, 46]], '#eef4fa');
+  // the road up to her gate, switchbacking, a few torches on it
+  let rx = 150, ry = 206; for (let k = 0; k < 6; k++) { const nx = k % 2 ? rx + 34 - k * 3 : rx - 34 + k * 3, ny = ry - 22; line(g, rx, ry, nx, ny, '#6a6658', 1); if (k % 2) px(g, nx, ny - 1, '#ffb84a'); rx = nx; ry = ny; }
+  const keep = (x, w, top) => { rect(g, x, top, w, 60, '#6a6e86'); rect(g, x, top, w, 2, '#8e93ab'); rect(g, x + w - 2, top, 2, 60, '#4a4e62');
+    for (let y = top + 6; y < top + 58; y += 9) for (let bx = x + ((y % 2) ? 3 : 0); bx < x + w - 3; bx += 8) rect(g, bx, y, 6, 6, '#767b93');
+    for (let bx = x; bx < x + w; bx += 6) rect(g, bx, top - 4, 4, 4, '#6a6e86');
+    for (let y = top + 12; y < top + 50; y += 16) { rect(g, x + (w >> 1) - 1, y, 3, 6, '#1a1826'); if (rnd() < 0.7) { rect(g, x + (w >> 1) - 1, y + 1, 3, 4, '#ffb84a'); } } };
+  keep(ox + 58, 18, 40); keep(ox + 78, 26, 28); keep(ox + 106, 16, 44);
+  fillPoly(g, [[ox + 76, 28], [ox + 91, 12], [ox + 106, 28]], '#57455f', '#3d3145');
+  rect(g, ox + 90, 2, 2, 12, '#5c3a1d'); rect(g, ox + 92, 3, 8, 5, '#c9463d');
+  outline(c, OUT);
+  // and it goes into the haze: the lower third fades out
+  g.globalCompositeOperation = 'destination-out'; const gr = g.createLinearGradient(0, 150, 0, H); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,1)'); g.fillStyle = gr; g.fillRect(0, 150, W, H - 150); g.globalCompositeOperation = 'source-over';
+  return c; }
 // ---------- THE SUNSPIRE ----------
 // A crystal ledge, in three states: whole, crazed, and about to go. `lit` is above the cloud line,
 // where the sun is on it and everything happens faster.

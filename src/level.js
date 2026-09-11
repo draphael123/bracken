@@ -1348,7 +1348,8 @@ function stormhold() {
   const gateCol = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
   const room = (x0, x1, y0, y1, st = 'stone') => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); interiors.push([x0, x1, y0, y1, st]); };
   block(0, 429, 0, 18); // the indoor band is solid rock; every room below is cut out of it
-  const roof = (x0, x1, y) => block(x0, x1, y - 2, y); // a goblin roof: two courses of slate
+  const roofs = [];
+  const roof = (x0, x1, y) => { block(x0, x1, y - 2, y); roofs.push([x0, x1, y]); }; // a goblin roof: two courses of slate, and a house under it
   // A span of rope and plank between two piers. `give` planks snap under a standing weight.
   const span = (x0, x1, y, o) => { const opt = o || {};
     for (let x = x0; x <= x1; x++) set(x, y, opt.give ? T.SHELF : T.PLANK);
@@ -1455,14 +1456,17 @@ function stormhold() {
   // anyone who walked through the gate without jumping fell out of the world on the way to the fight
   block(301, 301, BY, 45);
   ent('check', 304, BY - 1);
-  ent('sign', 302, BY - 1, { text: 'THE CASTLE BRIDGE. IT IS LONGER THAN THE VILLAGE. HE CANNOT TURN WHILE HE IS CHARGING: STEP OFF HIS LINE AND HE PUTS THE LANCE IN A POST. THE PIERS ARE THE ONLY GOOD GROUND AND THEY ARE WATCHED.' });
+  ent('sign', 302, BY - 1, { text: 'THE CASTLE BRIDGE, AND THE QUEEN\'S LANCE ON IT. HE CANNOT TURN WHILE HE IS CHARGING: GET UP ON A LOOKOUT OVER A PIER AND HE GOES UNDER YOU, AND INTO THE NEXT POST. THE FIRE CAGES HANG OVER THE SPANS: CUT A CHAIN AS HE GOES UNDER.' });
   const piers = [];
   for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
     block(px0, px1, BY, 45); piers.push([px0, px1]);
     // sound planks: a duel of blocks and parries cannot be fought on boards that drop you for standing still.
     // The give-planks are the street's lesson; out here the hazard is the holes his charge leaves.
     if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1 }); }
-    if (k >= 1 && k <= 5) ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' });
+    if (k >= 1 && k <= 5) { ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' });
+      plat(px0, BY - 3, 5); ent('brazier', px0 + 4, BY - 4); } // a lookout on every tower pier: hop up and his charge goes under you
+    // a fire cage over the middle of every span, on a lamp-standard: cut its chain as he goes under it
+    if (k > 0) ent('weight', px0 - 7, BY - 9, { len: 6, lamp: true });
   }
   // the last span, from the seventh pier to the gatehouse. Without it the bridge stopped nine tiles
   // short of the door and there was no way off it at all.
@@ -1479,8 +1483,15 @@ function stormhold() {
   ent('gate', 427, BY - 1);
   ent('lance', 320, BY - 1);
 
+  // THE HOUSES. Every roof has a house under it, walls down to the street: the door you go in by is its
+  // door, and a roof with no way in gets a door that stays shut. (They were a slate slab over a lone door.)
+  const houses = roofs.map(([x0, x1, y]) => { const mx = (x0 + x1) >> 1; let fy = y + 1; while (fy < L.H && L.grid[fy * L.W + mx] === T.AIR) fy++;
+    const door = L.ents.find(e => e.t === 'doorway' && e.y === fy - 1 && e.x > x0 && e.x < x1);
+    return { x0: x0 + 1, x1: x1 - 1, y0: y + 1, y1: fy - 1, door: door ? door.x : null, seed: x0 }; }).filter(h => h.y1 >= h.y0 + 1);
+
   return {
-    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges,
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges, houses,
+    indoorRow: 18, // rows 0-18 are the insides of the houses: the camera never shows them from the street, nor the street from inside
     duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,
     quest: { n: 3, item: 'folk', name: 'HILL FOLK', npc: 'squire', done: 'THEY ARE OUT OF THEIR CELLARS', reward: 'relic', relic: 'shoes' },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
