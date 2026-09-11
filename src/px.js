@@ -76,6 +76,7 @@ export function fromGrid(rows, pal, margin = 1) {
 // Dark 4-neighbour outline around every opaque pixel (the SNES sprite look).
 export function outline(c, color = '#1b1626') {
   const g = c.getContext('2d'), w = c.width, h = c.height;
+  g.setTransform(1, 0, 0, 1, 0, 0); // a baker that left a translate on its context drew the outline off the sprite (the Goblin Queen's, 12 px low)
   const img = g.getImageData(0, 0, w, h), d = img.data;
   const solid = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i++) solid[i] = d[i * 4 + 3] > 0 ? 1 : 0;
