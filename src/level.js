@@ -1252,10 +1252,11 @@ function theSunspire() {
   // ---- Tier 8. THE BELLOWS: hot, tall breaths in the glare, glass that goes in a second, and the harpies ride them ----
   ent('sign', 20, 79, { text: 'THE BELLOWS. THE BREATHS UP HERE THROW YOU HIGH, AND THE GLASS AT THE TOP IS LIT THROUGH. KEEP GOING.' });
   vent(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
-  vent(19, 69, 9, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 }); cryst(17, 5, 60);
-  plat(24, 60, 5); vent(26, 60, 4, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
-  shelf(56, 24, 5);
-  coins([14, 74], [19, 64], [26, 58], [14, 70], [19, 66]);
+  // the glass sits three rows under the shelf, not one: with no headroom there was no hop off it at all
+  vent(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 }); cryst(17, 5, 62);
+  plat(23, 62, 5); vent(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
+  shelf(56, 23, 5);
+  coins([14, 74], [19, 65], [25, 59], [14, 70], [19, 67]);
   ent('harpy', 40, 70); ent('harpy', 30, 64);
   geode(80, 90, 80); coins([81, 82], [83, 82], [85, 82], [87, 82], [89, 82], [70, 79], [76, 79]);
 
