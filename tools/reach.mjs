@@ -15,8 +15,8 @@ const JUMP_ACROSS = 6;                                        // with a run-up, 
 const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TS);      // a spring throws you much higher
 
 const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
-const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST;
-const climbable = t => t === T.NET || t === T.CLIMB;
+const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
+const climbable = t => t === T.CLIMB; // a NET is one-way rungs: a rope ladder is climbed by hopping rung to rung, so it is footing, not a ladder
 
 const want = process.argv[2];
 let bad = 0;
@@ -59,8 +59,12 @@ for (const lv of LEVELS) {
     if (climbable(at(x, y))) { push(x, y - 1); push(x, y + 1); }
     if (climbable(at(x, y - 1))) push(x, y - 1);
     // jump: anything within the arc, near side first
-    for (let dy = -up; dy <= 0; dy++) {
-      const span = Math.round(JUMP_ACROSS * (1 - Math.abs(dy) / (up + 1.5)));
+    let head = 0; while (head < up && !solid(at(x, y - 1 - head))) head++; // no jumping up through a ceiling
+    for (let dy = -Math.min(up, head); dy <= 0; dy++) {
+      // a ledge right under a ceiling: your head hits the rock just as your feet clear the lip, and you drop
+      // straight back - there is no float left to cross with (the Sunspire's side routes found this one)
+      const tight = head < up && -dy >= head;
+      const span = tight ? 1 : Math.round(JUMP_ACROSS * (1 - Math.abs(dy) / (up + 1.5)));
       for (let dx = -span; dx <= span; dx++) push(x + dx, y + dy);
     }
     // fall: straight down, and out to either side

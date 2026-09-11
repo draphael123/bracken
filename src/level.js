@@ -1092,6 +1092,7 @@ function hangingVillage() {
   coins([25, 16], [30, 13], [35, 10], [85, 16], [80, 13], [75, 10], [47, 10], [61, 9], [71, 10]);
   ent('owl', 54, 11);
   ent('gate', 100, 19);
+  coins([103, 51], [104, 50], [105, 51], [107, 51], [103, 43], [104, 43]); // the nook past the rock face pays
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
@@ -1289,6 +1290,34 @@ function theSunspire() {
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
   ent('deco', 6, 35, { kind: 'cairn' }); coins([4, 35], [9, 35], [15, 35]);
+
+
+  // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
+  // SIDE ROUTES: a goat path of stone up the side the crystal stair does not use, through a small lid of
+  // glass in the shelf above - slower, and it does not break, and it means neither end of a floor is a wall.
+  const sideRoute = (floorRow, shelfTop, xa, xb) => {
+    for (let yy = shelfTop + 1; yy <= shelfTop + 2; yy++) for (let x = xa; x <= xa + 2; x++) set(x, yy, T.AIR); // cut the gap first
+    cryst(xa, 3, shelfTop);
+    let y = floorRow - 2, k = 0;
+    while (y > shelfTop + 6) { const x = k % 2 ? xb : xa; plat(x, y, 3); if (k % 2) coins([x + 1, y - 1]); y -= 2; k++; }
+    // the last three stack straight up under the gap: the far ledges are under the rock, and a jump from there bangs its head
+    plat(xa, shelfTop + 6, 3); plat(xa, shelfTop + 4, 3); plat(xa, shelfTop + 2, 3); coins([xa + 1, shelfTop + 1]);
+  };
+  sideRoute(218, 196, 86, 90);     // the lower face, up the far wall past the camp
+  sideRoute(196, 172, 4, 8);       // the breathing rock's near end, up to the organ
+  sideRoute(80, 56, 84, 88);       // the bellows' far side, up to the chimney's foot
+  // STALACTITES: glass hanging under the shelves, each one over a step you have to stand on - the tops of the
+  // stairs, the side routes, the long walk under the cloud shelf. Pass under one and it shivers, then drops.
+  const stal = (x, y) => { if (L.grid[(y - 1) * W + x] === T.SOLID && L.grid[y * W + x] === T.AIR) ent('stal', x, y); };
+  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [33, 155], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32]]) stal(x, y);
+  // ISLANDS: in the two emptiest chambers, glass hung in the air, a shardling on it, and gold at the top
+  for (const [x, y, n] of [[40, 78, 4], [45, 76, 4], [50, 74, 4], [55, 72, 4], [60, 70, 4], [65, 68, 4], [70, 66, 4], [75, 64, 4]]) cryst(x, n, y);
+  coins([41, 77], [51, 73], [61, 69], [71, 65], [76, 63], [77, 63], [78, 63]); ent('shardling', 56, 71, { face: 1 }); ent('harpy', 66, 60);
+  for (const [x, y] of [[2, 129], [6, 127], [2, 125], [6, 123], [2, 121], [6, 119], [2, 117], [6, 115]]) cryst(x, 3, y);
+  plat(2, 113, 6); coins([2, 112], [3, 112], [4, 112], [5, 112], [6, 112], [3, 126], [7, 118]); ent('deco', 5, 112, { kind: 'bones' }); ent('shardling', 7, 122, { face: -1 });
+  // and more of the mountain's own: bats in the shade below the cloud, harpies and shardlings above it
+  ent('bat', 60, 205); ent('bat', 24, 186); ent('shardling', 40, 171, { face: 1 }); ent('harpy', 20, 142); ent('bat', 70, 140);
+  ent('harpy', 40, 44); ent('shardling', 40, 55, { face: -1 }); ent('harpy', 70, 104);
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
@@ -1656,28 +1685,48 @@ function sprinkleCoins(L) {
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.REED || t === T.CRYST;
-  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 1, A.x1 / TS + 1]);
+  // a boss room is a box, not a column: the Sunspire's roof arena spans the whole mountain's width
+  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 1, A.x1 / TS + 1, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // over the water is fine, in it is not
+  // a wading floor: lift its coin to just over the water, if a jump from the bottom still reaches it
+  const dry = ([x, y]) => { const p = (L.pools || []).find(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); if (!p) return [x, y];
+    const ny = Math.floor((p.y - 10) / TS); return y - ny <= 3 && at(x, ny) === T.AIR ? [x, ny] : [x, y]; };
   // a coin placed by hand inside a ledge or a wall is lifted to the first open space above it
   for (const e of L.ents) if (e.t === 'coin') { let n = 0; while (at(e.x, e.y) !== T.AIR && e.y > 1 && n++ < 4) e.y--; }
   const coins = new Set(L.ents.filter(e => e.t === 'coin').map(e => e.x + ',' + e.y));
   const FIXED = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest']);
   const keep = L.ents.filter(e => FIXED.has(e.t)); // things that stay put; a foe walks away from its gold
   const busy = (x, y) => keep.some(e => Math.abs(e.x - x) <= 2 && Math.abs(e.y - y) <= 2);
-  const free = (x, y) => at(x, y) === T.AIR && !coins.has(x + ',' + y) && !busy(x, y) && !wet(x, y) && !rooms.some(([a, b]) => x >= a && x <= b);
-  const before = coins.size; let added = 0; const cap = Math.max(12, Math.round(before * 0.8));
+  const free = (x, y) => at(x, y) === T.AIR && !coins.has(x + ',' + y) && !busy(x, y) && !wet(x, y) && !rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d);
+  const before = coins.size; let added = 0; const cap = Math.min(200, Math.max(150, Math.round(before * 1.6))); // a lot more gold: there should always be some in sight
   // the ground as you walk it: follow the surface through steps of up to three rows (a jump), and lay a pair
   // every seven tiles or so where there is none near (the rolling woods have almost no flat runs at all)
+  const paths = [];
   { const foot = (x, y) => stand(at(x, y + 1)) && !solid(at(x, y)) && at(x, y) !== T.SPIKE && !solid(at(x, y - 1)) && at(x, y + 1) !== T.CRYST;
-    const used = new Set(), near = (x, y) => { for (let dx = -2; dx <= 2; dx++) for (let dy = -2; dy <= 2; dy++) if (coins.has((x + dx) + ',' + (y + dy))) return true; return false; };
+    const used = new Set(), near = (x, y) => { for (let dx = -1; dx <= 1; dx++) for (let dy = -2; dy <= 2; dy++) if (coins.has((x + dx) + ',' + (y + dy))) return true; return false; };
     for (let x = 0; x < W && added < cap; x++) for (let y = 1; y < H - 1 && added < cap; y++) {
       if (!foot(x, y) || used.has(x + ',' + y)) continue;
       const path = [[x, y]]; used.add(x + ',' + y); let cx = x, cy = y;
       for (;;) { let ny = null; for (const dy of [0, -1, 1, -2, 2, -3, 3]) if (foot(cx + 1, cy + dy) && !used.has((cx + 1) + ',' + (cy + dy))) { ny = cy + dy; break; } if (ny === null) break; cx++; cy = ny; path.push([cx, cy]); used.add(cx + ',' + cy); }
-      if (path.length < 12) continue;
-      for (let i = 3; i < path.length - 4 && added < cap; i += 5) { const [ax, ay] = path[i], [bx, by] = path[i + 1];
-        if (near(ax, ay) || !free(ax, ay) || !free(bx, by)) continue;
-        L.ents.push({ t: 'coin', x: ax, y: ay }, { t: 'coin', x: bx, y: by }); coins.add(ax + ',' + ay); coins.add(bx + ',' + by); added += 2; } } }
+      if (path.length < 8) continue;
+      // pairs and threes by turns, every three steps: a trail you can follow with your eyes
+      for (let i = 2, n = 0; i < path.length - 3 && added < cap; i += 3, n++) { const pts = [path[i], path[i + 1]];
+        if (n % 2 && path[i + 2][1] === path[i][1] && path[i + 1][1] === path[i][1]) pts.splice(1, 1, [path[i + 1][0], path[i + 1][1] - 1], path[i + 2]);
+        for (let k = 0; k < pts.length; k++) pts[k] = dry(pts[k]);
+        if (pts.some(([px, py]) => near(px, py) || !free(px, py))) continue;
+        for (const [px, py] of pts) { L.ents.push({ t: 'coin', x: px, y: py }); coins.add(px + ',' + py); added++; } }
+      paths.push(path); } }
+  // HOP ARCS: over open, flat ground with room above it, three coins in the air where a jump would take
+  // you - so the walk between things is also a line of little jumps worth making
+  { const clear = (x, y) => at(x, y) === T.AIR && !coins.has(x + ',' + y);
+    const nearA = (x, y) => { for (let dx = -2; dx <= 2; dx++) for (let dy = -1; dy <= 4; dy++) if (coins.has((x + dx) + ',' + (y - dy))) return true; return false; };
+    for (const path of paths) for (let i = 4; i < path.length - 4 && added < cap; i += 7) { const [cx, cy] = path[i];
+      if (path[i - 1][1] !== cy || path[i + 1][1] !== cy) continue;
+      let room = true; for (let dx = -1; dx <= 1 && room; dx++) for (let dy = 1; dy <= 4; dy++) if (!clear(cx + dx, cy - dy)) { room = false; break; }
+      if (!room || nearA(cx, cy)) continue;
+      const pts = [[cx - 1, cy - 2], [cx, cy - 3], [cx + 1, cy - 2]];
+      if (!pts.every(([px, py]) => free(px, py))) continue;
+      for (const [px, py] of pts) { L.ents.push({ t: 'coin', x: px, y: py }); coins.add(px + ',' + py); added++; } } }
   for (let y = 2; y < H - 1 && added < cap; y++) {
     let x0 = -1;
     for (let x = 0; x <= W && added < cap; x++) {
@@ -1685,11 +1734,11 @@ function sprinkleCoins(L) {
       if (ok && x0 < 0) x0 = x;
       if (ok || x0 < 0) continue;
       const x1 = x - 1, len = x1 - x0 + 1; x0 = -1;
-      if (len < 7) continue;
+      if (len < 6) continue;
       let have = 0; for (let k = x1 - len + 1; k <= x1; k++) for (let dy = 0; dy <= 3; dy++) if (coins.has(k + ',' + (y - dy))) have++;
-      const want = Math.floor(len / 7) - have; if (want <= 0) continue;
+      const want = Math.floor(len / 5) - have; if (want <= 0) continue;
       // arcs of three: low, high, low - the height of a hop, so they read as a line to run and jump along
-      for (let a = 0, cx = x1 - len + 1 + 3; a < want && cx + 2 <= x1 - 2 && added < cap; cx += Math.max(6, Math.floor(len / (want + 1)))) {
+      for (let a = 0, cx = x1 - len + 1 + 3; a < want && cx + 2 <= x1 - 2 && added < cap; cx += Math.max(5, Math.floor(len / (want + 1)))) {
         const pts = [[cx, y], [cx + 1, y - 1], [cx + 2, y]];
         if (!pts.every(([px, py]) => free(px, py))) continue;
         for (const [px, py] of pts) { L.ents.push({ t: 'coin', x: px, y: py }); coins.add(px + ',' + py); added++; }

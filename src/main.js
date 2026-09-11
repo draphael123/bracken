@@ -383,6 +383,14 @@ function breakCrystal(i, chain) {
   }
   resolveTiles();
 }
+// the Sunspire's stalactites: pass under one and it shivers, then drops; seven seconds later the glass has grown back
+function updateStals(dt) {
+  for (const pr of props) { if (pr.t !== 'stal') continue;
+    if (pr.state === 'hang') { if (!P.dead && Math.abs(P.x - pr.x) < 14 && P.y > pr.y && P.y - pr.y < 150) { pr.state = 'shake'; pr.t0 = 0.55; SFX.crack(); } }
+    else if (pr.state === 'shake') { pr.t0 -= dt; if (pr.t0 <= 0) { pr.state = 'gone'; pr.t0 = 7; shards.push({ x: pr.x, y: pr.y + 12, vy: 60, life: 2.4, hit: new Set() }); SFX.clank(); burst(pr.x, pr.y + 6, 6, ['#dff2ff', '#8fc8e8'], 50, 0.4); } }
+    else { pr.t0 -= dt; if (pr.t0 <= 0) { pr.state = 'hang'; burst(pr.x, pr.y + 4, 4, ['#dff2ff'], 30, 0.3); } }
+  }
+}
 function updateCrystal(dt) {
   if (!L.hasCryst) return;
   // a standing weight crazes what is under you. The pyromancer is lighter and gets longer.
@@ -529,6 +537,7 @@ function spawnEnt(e) {
       case 'cagelift': movers.push({ kind: 'orelift', player: true, x: px - 16, y: (e.y + 1) * TS - 6, y0: (e.y + 1) * TS - 6, y1: e.to * TS - 6, w: 32, h: 6, dx: 0, dy: 0 }); break;
       case 'anvil': props.push({ t: 'anvil', x: px, y: py, ring: 0 }); break;
       case 'crystal': props.push({ t: 'crystal', x: px, y: py, dir: e.dir || [1, 0], col: e.col || 'blue', hang: !!e.hang }); lights.push({ x: px, y: py - 8, r: 60, glow: true }); break;
+      case 'stal': props.push({ t: 'stal', x: px, y: e.y * TS, state: 'hang', t0: 0 }); break; // a crystal hanging from the shelf's underside
       case 'shard': props.push({ t: 'shard', x: px, y: py, v: e.v || 0, up: !!e.up, big: !!e.big, ph: Math.random() * 6 }); if (e.big) lights.push({ x: px, y: py - (e.up ? -8 : 8), r: 44, glow: true }); break;
       case 'mirror': props.push({ t: 'mirror', x: px, y: py, o: e.o || 0, turnT: 0, fixed: !!e.fixed }); break;
       case 'receiver': props.push({ t: 'receiver', x: px, y: py, gate: e.gate, hatch: e.hatch, gx0: e.gx0, gx1: e.gx1, lit: false, litT: 0, opened: false }); break;
@@ -3587,6 +3596,7 @@ function updateProps(dt) {
   for (const z of (L.gusts || [])) { if (z.arena && !bossActive) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) { if (p.draining || p.y0 === undefined) continue; let lift = 0; if (p.tide) lift = 8 + Math.sin(time * 2 * Math.PI / 26) * 8; if (p.rise > 0) { p.rise -= dt; lift = Math.max(lift, 14); } if (p.tide || p.rise !== undefined) { const want = p.y0 - lift; p.y += (want - p.y) * Math.min(1, dt * 4); p.depth = (p.depth0 || 12) + (p.y0 - p.y); } }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
+  updateStals(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -4218,6 +4228,9 @@ function drawWorld(cx, cy, showPlayer) {
         text(barred ? 'BARRED' : 'E', xx, yy - 36 + Math.round(Math.sin(time * 6)), barred ? '#ff9a5c' : '#8fd160', 'center', 6); } }
     else if (pr.t === 'door') { if (pr.kind === 'cottage') g.drawImage(PROP.cottage[pr.shut ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 32 - cy); else g.drawImage(PROP.door[pr.shut ? 1 : 0], Math.round(pr.x) - 17 - cx, Math.round(pr.y) - 34 - cy); }
     else if (pr.t === 'carpet') g.drawImage(PROP.carpet, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 3 - cy);
+    else if (pr.t === 'stal') { if (pr.state !== 'gone') { const x = Math.round(pr.x - cx) + (pr.state === 'shake' ? Math.round(Math.sin(time * 70)) : 0), y = Math.round(pr.y - cy), lit = L.cloudLine !== undefined && pr.y / TS < L.cloudLine;
+      g.fillStyle = lit ? '#bfe6f5' : '#8fb8d8'; g.beginPath(); g.moveTo(x - 5, y); g.lineTo(x + 5, y); g.lineTo(x + 1, y + 16); g.lineTo(x - 1, y + 16); g.closePath(); g.fill(); g.fillStyle = '#eefaff'; g.fillRect(x - 2, y + 1, 1, 10); g.fillStyle = '#5a7a98'; g.fillRect(x + 2, y + 1, 1, 7);
+      g.strokeStyle = '#1b1626'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 5.5, y); g.lineTo(x - 1, y + 16.5); g.lineTo(x + 1, y + 16.5); g.lineTo(x + 5.5, y); g.stroke(); } }
     else if (pr.t === 'bell') g.drawImage(PROP.bell[pr.broken ? 3 : (pr.ringT > 0 || pr.swing > 0) ? 1 + Math.floor(time * 12) % 2 : 0], Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 24 - cy);
     else if (pr.t === 'exit') { g.drawImage(PROP.shopDoor, Math.round(pr.x) - 10 - cx, Math.round(pr.y) - 30 - cy); if (Math.abs(P.x - pr.x) < 14) text('UP', pr.x - cx, pr.y - 40 - cy + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
     else if (pr.t === 'npc') { /* drawn after the scenery, below, so counters and shelves never hide them */ }
