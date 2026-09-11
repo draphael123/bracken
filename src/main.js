@@ -1,7 +1,8 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import * as ART from './art.js';
-import { bakeSweep, bakePaladin, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, bakeFrog, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
+import { bakeFrog } from './redraw/frogking.js';
+import { bakeSweep, bakePaladin, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
 import { bakeQueen, bakeChief } from './redraw/queenchief.js';
 import { bakeWindcaller, bakeRamLord } from './redraw/callerram.js';
 import { bakeThornback, bakeHopper, bakeHarpy, bakeHound } from './redraw/foes1.js';
@@ -682,7 +683,7 @@ function spawnEnt(e) {
       case 'wasp': enemies.push({ ...base, t: 'wasp', hx: px, hy: py, w: 8, h: 6, hp: EHP.wasp, face: -1 }); break;
       case 'thorn': enemies.push({ ...base, t: 'thorn', w: 12, h: 11, hp: EHP.thorn, speed: 22, mode: 'walk', modeT: 0 }); break;
       case 'queen': boss = { ...base, t: 'queen', w: 40, h: 20, hp: EHP.queen, maxHp: EHP.queen, mode: 'sleep', modeT: 0, face: -1, tx: px, ty: py, dive: null, phase: 1 }; enemies.push(boss); break;
-      case 'frog': boss = { ...base, t: 'frog', w: 38, h: 19, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
+      case 'frog': boss = { ...base, t: 'frog', w: 40, h: 30, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
       case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire }); break;
       case 'hopper': { const col = e.color || 'green'; enemies.push({ ...base, t: 'hopper', color: col, w: 8, h: 6, hp: HOP[col].hp, timer: 0.5 + Math.random(), air: false }); break; }
       case 'pad': movers.push({ kind: 'pad', x0: px - 12, x: px - 12, y0: py - 2, y: py - 2, w: 24, h: 6, sink: 0, dx: 0, dy: 0 }); break;
@@ -922,7 +923,7 @@ function drawMap() {
     if (nh) drawSet(SPR.owl, null, 0, nh.x + 30, nh.y - 10 + qb, -1, false, 0.55, 0.55, cl('hanging'));
     { const nc = nd('crown'); if (nc) { g.globalAlpha = 0.85; g.drawImage(PROP.castle, Math.round(nc.x - 30), Math.round(nc.y - 58), 60, Math.round(60 * PROP.castle.height / PROP.castle.width)); g.globalAlpha = 1; drawSet(SPR.gqueen, null, 3, nc.x + 30, nc.y + 6, -1, false, 0.45, 0.45, cl('crown')); } }
     { const nr = nd('scree'); if (nr) drawSet(SPR.ram, null, 0, nr.x + 28, nr.y + 8, -1, false, 0.5, 0.5, cl('scree')); }
-    if (nm) drawSet(SPR.frog, null, Math.floor(time * 1.5) % 2, nm.x - 26, nm.y + 4, 1, false, 0.55, 0.55, cl('marsh'));
+    if (nm) drawSet(SPR.frog, null, Math.floor(time * 1.5) % 2, nm.x - 26, nm.y + 4, 1, false, 0.42, 0.42, cl('marsh'));
     if (ns) drawSet(SPR.chief, null, Math.floor(time * 4) % 2, ns.x - 22, ns.y + 6, 1, false, 0.7, 0.7, cl('stockade'));
     if (np) drawSet(SPR.mother, null, 0, np.x + 26, np.y + 8, 1, false, 0.5, 0.5, cl('spore'));
     if (nk) drawSet(SPR.king, null, 0, nk.x - 24, nk.y + 6, 1, false, 0.7, 0.7, cl('kings'));
@@ -2353,7 +2354,7 @@ function updateQueen(e, dt) {
 }
 
 // ---------- boss: the Bullfrog King ----------
-const frogFloor = (A, x) => (A.dais && x > A.dais.x0 && x < A.dais.x1) ? A.floor - A.dais.h : A.floor;
+const frogFloor = (A, x) => { const tx = Math.floor(x / TS); for (let ty = Math.floor(A.floor / TS) - 3; ty <= Math.floor(A.floor / TS) + 2; ty++) if (isSolid(tx, ty)) return ty * TS; return A.floor; }; // the real ground: the dais lifts him, the shallows drop him to the pond bed (he used to stand on the water)
 function updateFrog(e, dt) {
   const A = L.arena, p2 = e.phase === 2; const floor = frogFloor(A, e.x);
   e.modeT -= dt; e.anim += dt;
@@ -2364,7 +2365,8 @@ function updateFrog(e, dt) {
   switch (e.mode) {
     case 'sleep': e.y = floor; e.vy = 0; return;
     case 'wake': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 1.0; } break;
-    case 'idle': e.y = floor; e.vy = 0; e.face = Math.sign(P.x - e.x) || e.face;
+    case 'idle': e.y = floor; e.vy = 0; e.face = Math.sign(P.x - e.x) || e.face; if (e.vaultT > 0) e.vaultT -= dt;
+      if (!(e.vaultT > 0) && Math.min(e.x - A.x0, A.x1 - e.x) < 72 && Math.abs(P.x - e.x) < 90) { e.mode = 'crouch'; e.vault = true; e.modeT = 0.3; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); break; } /* pinned to a wall with you on him: he vaults the court instead of dying there */
       if (e.modeT <= 0) {
         const pool = ['tongue', 'leap', 'spit', 'hopAway', 'inhale']; if (flies < (p2 ? 3 : 2)) pool.push('croak', 'croak'); if (p2) pool.push('leap', 'hopAway', 'inhale');
         let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0]; e.last = pick;
@@ -2376,19 +2378,23 @@ function updateFrog(e, dt) {
         else { e.mode = 'croak'; e.modeT = 1.0; SFX.croak(); number(e.x, e.y - e.h - 12, 'CROAK', '#ffd36b'); }
       }
       break;
-    case 'tongueTell': if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = 0.55; tongue = { x0: e.x + e.face * 16, y: floor - 12, dir: e.face, len: 0, max: p2 ? 130 : 110, active: true }; SFX.tongue(); } break;
+    case 'tongueTell': if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = 0.55; tongue = { x0: e.x + e.face * 22, y: floor - 13, dir: e.face, len: 0, max: p2 ? 130 : 110, active: true }; SFX.tongue(); } break;
     case 'inhaleTell': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'inhale'; e.modeT = p2 ? 1.6 : 1.3; SFX.buzz(); } break;
     case 'inhale': { e.y = floor; e.vy = 0; // the pull: block to dig in, or you are dragged to his mouth and bitten
       if (!P.dead && Math.abs(P.y - e.y) < 40 && Math.abs(P.x - e.x) < 190) { const dir = Math.sign(e.x - P.x) || 1; const pull = P.block ? 22 : P.ground ? 84 : 120; P.x += dir * pull * dt; if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 30, y: P.y - 4 - Math.random() * 12, vx: dir * 120, vy: (Math.random() - 0.5) * 20, life: 0.35, max: 0.35, col: '#dfe8ff', size: 1, grav: 0 });
         if (Math.abs(P.x - e.x) < 26) { const res = damagePlayer(e.x, DMG.frog, {}); if (res === 'blocked') { e.mode = 'dazed'; e.modeT = 1.2; number(e.x, e.y - e.h - 12, 'CHOKED', '#8fd160'); SFX.croak(); } else if (res === 'hit') { P.vx = -dir * 200; P.vy = -220; number(P.x, P.y - 24, 'BITTEN', '#ff6b6b'); e.mode = 'idle'; e.modeT = 1.0; } } }
       if (e.mode === 'inhale' && e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.9; } break; }
     case 'tongue': { const t = 0.55 - e.modeT; tongue.len = t < 0.2 ? tongue.max * (t / 0.2) : t < 0.35 ? tongue.max : tongue.max * Math.max(0, (0.55 - t) / 0.2); if (e.modeT <= 0) { tongue = null; e.mode = 'idle'; e.modeT = p2 ? 0.7 : 1.0; } break; }
-    case 'hopAway': e.y = floor; e.vy = 0; if (e.modeT <= 0) { const dir = P.x < e.x ? 1 : -1; const tx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, e.x + dir * 90)); e.mode = 'hop'; e.vy = -260; e.vx = (tx - e.x) / 0.52; e.modeT = 1; SFX.leap(); number(e.x, e.y - e.h - 12, 'HOP', '#9aa39a'); } break;
-    case 'hop': e.x += e.vx * dt; if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { e.y = frogFloor(A, e.x); e.vy = 0; e.vx = 0; dust(e.x, e.y, 6); e.mode = 'idle'; e.modeT = 0.5; e.idleHits = 0; } break;
-    case 'crouch': if (e.modeT <= 0) { e.mode = 'leap'; const dx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)) - e.x; e.vy = -380; e.vx = dx / 0.76; e.modeT = 2; SFX.leap(); } break;
-    case 'leap': e.x += e.vx * dt; if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; shakeCam(7); SFX.heavy(); zoomKick(1.12, 0.2); dust(e.x, e.y, 16); for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 2.2, sp: p2 ? 180 : 150 }); e.mode = 'dazed'; e.modeT = p2 ? 0.7 : 1.0; number(e.x, e.y - e.h - 12, 'DAZED', '#8fd160'); } break;
+    case 'hopAway': e.y = floor; e.vy = 0; if (e.modeT <= 0) { const dir = P.x < e.x ? 1 : -1; if ((dir > 0 ? A.x1 - e.x : e.x - A.x0) < 110) { e.mode = 'crouch'; e.vault = true; e.modeT = 0.25; break; } const tx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, e.x + dir * 120)); e.mode = 'hop'; e.vy = -260; e.vx = (tx - e.x) / 0.52; e.modeT = 1; SFX.leap(); number(e.x, e.y - e.h - 12, 'HOP', '#9aa39a'); } break;
+    case 'hop': e.x += e.vx * dt; e.y += e.vy * dt; if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { e.y = frogFloor(A, e.x); e.vy = 0; e.vx = 0; dust(e.x, e.y, 6); e.mode = 'idle'; e.modeT = 0.5; e.idleHits = 0; } break;
+    case 'crouch': if (e.modeT <= 0) { e.mode = 'leap';
+        if (e.vault) { const away = Math.sign((A.x0 + A.x1) / 2 - e.x) || 1, tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, e.x + away * (220 + Math.random() * 80))); e.vy = -470; e.vx = (tx - e.x) / 0.94; e.face = away; } /* a high bound over your head to the far side */
+        else { const dx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)) - e.x; e.vy = -380; e.vx = dx / 0.76; }
+        e.modeT = 2; SFX.leap(); } break;
+    case 'leap': e.x += e.vx * dt; e.y += e.vy * dt; /* he never left the ground before: vy was integrated but never applied */ if (e.vy > 0 && e.y >= frogFloor(A, e.x) && e.vault) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; e.vault = false; e.vaultT = 3.5; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 12); if (p2) for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 1.6, sp: 150 }); e.mode = 'idle'; e.modeT = 0.55; e.idleHits = 0; break; }
+      if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; shakeCam(7); SFX.heavy(); zoomKick(1.12, 0.2); dust(e.x, e.y, 16); for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 2.2, sp: p2 ? 180 : 150 }); e.mode = 'dazed'; e.modeT = p2 ? 0.7 : 1.0; number(e.x, e.y - e.h - 12, 'DAZED', '#8fd160'); } break;
     case 'dazed': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.8; } break;
-    case 'spit': { e.y = floor; e.vy = 0; e.shotT -= dt; if (e.shots > 0 && e.shotT <= 0) { e.shots--; e.shotT = 0.35; SFX.spit(); const n = 3; for (let i = 0; i < n; i++) { const dx = P.x - e.x, dir = Math.sign(dx) || e.face; const a = -1.15 + i * 0.2; seeds.push({ x: e.x + dir * 12, y: e.y - 10, vx: Math.cos(a) * 170 * dir, vy: Math.sin(a) * 170, dead: false, life: 3, venom: true, g: 320 }); } } if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = 0.9; } break; }
+    case 'spit': { e.y = floor; e.vy = 0; e.shotT -= dt; if (e.shots > 0 && e.shotT <= 0) { e.shots--; e.shotT = 0.35; SFX.spit(); const n = 3; for (let i = 0; i < n; i++) { const dx = P.x - e.x, dir = Math.sign(dx) || e.face; const a = -1.15 + i * 0.2; seeds.push({ x: e.x + dir * 20, y: e.y - 18, vx: Math.cos(a) * 170 * dir, vy: Math.sin(a) * 170, dead: false, life: 3, venom: true, g: 320 }); } } if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = 0.9; } break; }
     case 'croak': e.y = floor; e.vy = 0; if (!e.rose) { e.rose = true; for (const p of (L.pools || [])) if (p.shallow && p.x0 >= A.x0 - 40 && p.x1 <= A.x1 + 40) { p.rise = p2 ? 5 : 3.5; } number(e.x, e.y - e.h - 24, 'THE POND RISES', '#bfe6f5'); SFX.splash(); } if (e.modeT <= 0) { e.rose = false; for (let i = 0; i < 2; i++) { const dx = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (i ? 70 : -70) + (Math.random() - 0.5) * 30)); const col = Math.random() < 0.6 ? 'green' : 'yellow'; enemies.push({ t: 'hopper', color: col, x: dx, y: floor, vx: 0, vy: -200, w: 8, h: 6, hp: HOP[col].hp, face: -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 0.6, air: true, drone: true }); burst(dx, floor, 6, ['#5a9a3a', '#8fc85a'], 50, 0.4); } e.mode = 'idle'; e.modeT = 0.9; } break;
   }
   if (e.mode !== 'leap' && e.mode !== 'hop') e.y = Math.min(e.y, frogFloor(A, e.x));
@@ -5454,7 +5460,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'ram' && ramOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 28 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.1; g.fillStyle = q % 2 ? '#8fd160' : '#fff6c8'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 22), Math.round(e.y - e.h * 1.5 - cy) - 8 + Math.round(Math.sin(a * 1.4) * 4), 2, 2); } } // dazed: a green ring under him, green motes over him
     if (e.t === 'ram' && e.mode === 'leap') { const fl = L.arena.floor; g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.ellipse(Math.round(e.landX - cx), Math.round(fl - cy) - 1, 16, 4, 0, 0, Math.PI * 2); g.fill(); }
     const sprSet = e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
-    const bigF = e.t === 'frog' ? 1.35 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
+    const bigF = e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
     const ps = poseOf(e, wind), pSX = bigF * (1 + sq * 0.22) * ps.sx, pSY = bigF * (1 - sq * 0.22) * ps.sy;
     // a bright rim behind the sprite, for anyone who loses foes against the wood
