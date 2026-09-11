@@ -1688,7 +1688,8 @@ function galeMoor() {
   const L = painter(596, 30);
   const { block, floor, plat, spikes, ent, coins, set } = L;
   const movers = [], gusts = [], pools = [], hags = [], stone = [];
-  const menhir = (x, y0, y1) => { block(x, x, y0, y1); stone.push([x, x, y0, y1]); };
+  // a standing stone never walls off the walk: you pass in front of it, and only its crown is a ledge to land on
+  const menhir = (x, y0, y1) => { set(x, y0, T.ONEWAY); stone.push([x, x, y0, y1]); };
   const plank = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
   const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
 
@@ -1749,7 +1750,7 @@ function galeMoor() {
   // ---- 7. THE HOWLING GAP: the ridge ends at a chasm. Five standing stones rise out of the bog, and between them the air goes UP: step off into a gap, the updraft lifts you, the gust carries you to the next stone. ----
   floor(301, 306, 14);
   block(307, 365, 27, 29); pools.push({ x0: 307 * TS, x1: 366 * TS, y: 26 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 307 * TS, x1: 366 * TS });
-  const pillar = (x, top, bottom = 26) => { block(x, x + 1, top, bottom); stone.push([x, x + 1, top, bottom]); };
+  const pillar = (x, top, bottom = 26) => { set(x, top, T.ONEWAY); set(x + 1, top, T.ONEWAY); stone.push([x, x + 1, top, bottom]); };
   pillar(312, 14); pillar(322, 12); pillar(334, 15); pillar(346, 11); pillar(358, 13);
   floor(366, 396, 14);
   for (const [x, h, w] of [[309, 230, 40], [318, 260, 64], [329, 220, 80], [341, 290, 80], [353, 250, 80], [363, 240, 48]]) ent('vent', x, 26, { period: 100, on: 100, h, wind: true, w }); // the whole gap is an updraft: the bog is a delay, never a trap
@@ -1806,13 +1807,14 @@ function galeMoor() {
   spikes(550, 551, 12); spikes(591, 592, 12);
   pillar(554, 12, 12); pillar(556, 10, 12); pillar(570, 4, 12); pillar(585, 8, 12);
   plat(563, 7, 2); plat(578, 6, 2);
-  ent('vent', 566, 12, { period: 6, on: 2.6, h: 165, wind: true, w: 18 }); ent('vent', 581, 12, { period: 6, on: 2.6, h: 135, wind: true, w: 18, phase: 3 });
+  ent('vent', 566, 12, { period: 100, on: 100, h: 108, wind: true, w: 18 }); ent('vent', 581, 12, { period: 100, on: 100, h: 94, wind: true, w: 18 }); // always on: the question is never WHEN, only where
   gusts.push({ x0: 549 * TS, x1: 594 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
   ent('flagpost', 553, 12); ent('flagpost', 589, 12);
   ent('windcaller', 570, 3);
   ent('sign', 552, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. THE WIND IS THE ONLY STAIR UP TO HIM: THE GUST FOR THE LEDGES, THE UPDRAFTS FOR THE HIGH STONES. STRIKE HIM TWICE AND HE IS GONE AGAIN. WHEN HE CALLS THE WIND, THE THORNS ARE WAITING.' });
   ent('check', 553, 12); ent('gate', 593, 12);
   const roosts = [[556, 9], [570, 3], [585, 7], [563, 6], [578, 5]]; // where he stands: a stone's top, a ledge
+  for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; } // the moor's wind lifts you well clear of whatever it is meant to lift you onto
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,

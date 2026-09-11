@@ -995,6 +995,37 @@ export function bakeBat() {
   const fly2 = b(['............', '.....bb.....', '..bbbbbbbb..', 'bbbbBrrBbbbb', 'bb..bbbb..bb', '.....bb.....']);
   return pack([hang, fly1, fly2], 7, 7, 10, 6);
 }
+// STORM CROW — they come down the moor wind in strings. 10x5, three wingbeats, facing right.
+export function bakeCrow() {
+  const CP = Object.assign({}, EP, { k: '#2a2433', K: '#4a4458', r: '#ff4a3a' });
+  const c = rows => outline(fromGrid(rows, CP, 1), OUT);
+  const up = c(['k.........', 'kk.....k..', '.kKkkkkkk.', '..kkkkkrky', '...kk.....']);
+  const mid = c(['..........', '..........', 'kkKkkkkkk.', '.kkkkkkrky', '..kk......']);
+  const down = c(['..........', '..........', '.kkkkkkkk.', 'kkKkkkkrky', 'kk....k...']);
+  return pack([up, mid, down], 5, 5, 10, 5);
+}
+// HORNBLOWER — a goblin with a ram's horn. Frames: idle (horn at the hip), tell (horn raised), blow (horn at the mouth).
+export function bakeHornblower() {
+  const head = ['...gggg.......', '..gggggg......', '.geoggeog.....', '.gggggggg.....', '..gGGGGg......', '...gggg.......'];
+  const legs = ['..GG..GG......', '.GG....GG.....'];
+  const idle = sprite([...head, '..rrrrrryy....', '..rrrrrr.yy...', ...legs]);
+  const tell = sprite(['...gggg...yy..', '..gggggg.yy...', '.geoggeogy....', head[3], head[4], head[5], '..rrrrrr......', '..rrrrrr......', ...legs]);
+  const blow = sprite([head[0], head[1], '.geoggeogyyy..', '.gGgggggg.yyyy', '..gGGGGg...yy.', head[5], '..rrrrrr......', '..rrrrrr......', ...legs]);
+  return pack([idle, tell, blow], 6, 11, 8, 10);
+}
+// HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
+export function bakeBale() {
+  const BP = Object.assign({}, EP, { y: '#d9b44a', Y: '#b08a32', w: '#8a6a32', h: '#9a5aa8' });
+  const frames = [];
+  for (let k = 0; k < 4; k++) { const rows = [];
+    for (let y = 0; y < 12; y++) { let r = ''; for (let x = 0; x < 12; x++) { const dx = x - 5.5, dy = y - 5.5;
+      if (dx * dx + dy * dy > 30) { r += '.'; continue; }
+      const band = ((x + y + k * 3) % 6 + 6) % 6, cross = ((x - y + k * 2) % 5 + 5) % 5;
+      r += band < 2 ? 'w' : cross === 0 ? 'Y' : (x * 7 + y * 3 + k) % 11 === 0 ? 'h' : 'y'; }
+      rows.push(r); }
+    frames.push(outline(fromGrid(rows, BP, 1), OUT)); }
+  return pack(frames, 6, 12, 12, 12);
+}
 // THE FACET — a crystal golem grown in the cavern's heart. 40×40. Frames: idle, walk1, walk2, stomp, throw, stagger. Four gems: brow, left shoulder, right shoulder, chest.
 export function bakeGolem() {
   const GP = Object.assign({}, EP, { c: '#bfe6f5', C: '#7aa8c8', d: '#4a6a90', w: '#eefaff', g: '#ff7ab8', G: '#a8306a', k: '#2a3a50' });
