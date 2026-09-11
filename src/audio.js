@@ -55,6 +55,7 @@ function file(name, v = 0.6, rate = 1, dest = null) {
 function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = sfxGain) {
   if (!ac) return;
   const t = ac.currentTime + delay;
+  if (dest === sfxGain) { const k = 0.97 + Math.random() * 0.06; f0 *= k; f1 *= k; } // no two the same: a fixed pitch is what makes synth sound like a machine
   const o = ac.createOscillator(), g = ac.createGain();
   o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
   g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
@@ -64,12 +65,50 @@ function noise(dur, v = 0.3, freq = 1000, q = 0.8, delay = 0, dest = null) {
   if (!ac) return;
   const t = ac.currentTime + delay;
   const s = ac.createBufferSource(); s.buffer = noiseBuf;
-  const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+  const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq * (0.92 + Math.random() * 0.16); f.Q.value = q;
   const g = ac.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   s.connect(f); f.connect(g); g.connect(dest || sfxGain); s.start(t); s.stop(t + dur + 0.02);
 }
 
+// THE HERO'S VOICE. Everything the player's own body makes - jumps, landings, steps, the swing, the hurt,
+// the death, the roll - comes in two kinds. The knight is steel: chain that jingles when he jumps and on
+// every other step, a clank in every landing, a blade that rings. The pyromancer is cloth and fire: a
+// robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
+// for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
+let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
+export function setHeroVoice(h) { heroVoice = h === 'pyro' ? 'pyro' : 'knight'; }
+const vary = f => f * (0.94 + Math.random() * 0.12);
+const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
+const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
 export const SFX = {
+  pJump() { if (heroVoice === 'pyro') { noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
+    else { tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
+  pLand(surf) { if (heroVoice === 'pyro') { if (surf === 'water') { SFX.land('water'); return; } noise(0.09, 0.14, 520, 0.5); tone('sine', 150, 60, 0.08, 0.1); if (surf === 'wood' || surf === 'stone') file('land', 0.14, 1.25); return; }
+    SFX.land(surf); tone('square', vary(1500), 1050, 0.04, 0.05); noise(0.04, 0.07, 3600, 1.4); },
+  pStep(surf) { stepN++; if (heroVoice === 'pyro') { if (surf === 'water') { noise(0.06, 0.08, 900, 0.5); return; } noise(0.04, 0.05, vary(650), 0.5); if (stepN % 2) file('step', 0.07, 1.3); return; }
+    SFX.step(surf); if (stepN % 2 === 0) tone('square', vary(2900), 2400, 0.025, 0.022); },
+  pSlash() { if (heroVoice === 'pyro') { file('swing', 0.26, 0.72); noise(0.2, 0.16, 1300, 0.5, 0.02); tone('sine', vary(300), 100, 0.16, 0.08); crackle(4, 0.03); return; }
+    file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); tone('triangle', vary(2300), 1900, 0.1, 0.025, 0.03); },
+  pHurt() { if (heroVoice === 'pyro') { file('hurt', 0.55, 1.3) || tone('sawtooth', 340, 90, 0.28, 0.22); noise(0.22, 0.1, 3000, 0.8, 0.03); return; }
+    file('hurt', 0.6) || (tone('sawtooth', 240, 60, 0.32, 0.25), noise(0.15, 0.2, 400)); tone('square', 900, 600, 0.06, 0.07); chain(0.02, 2); },
+  pDie() { if (heroVoice === 'pyro') { file('hurt', 0.6, 1.1); noise(0.9, 0.22, 1800, 0.4); tone('sine', 420, 60, 0.9, 0.18); crackle(6, 0.1); return; }
+    SFX.die(); for (let i = 0; i < 5; i++) tone('square', vary(1300 - i * 120), 500, 0.05, 0.06, 0.15 + i * 0.07); },
+  pDodge() { if (heroVoice === 'pyro') { noise(0.2, 0.2, 700, 0.4); tone('triangle', 260, 520, 0.12, 0.05); crackle(2, 0.05); return; }
+    SFX.dodge(); chain(0.025, 3); tone('sine', 110, 60, 0.1, 0.12, 0.12); },
+  pPogo() { if (heroVoice === 'pyro') { noise(0.08, 0.22, 1800, 0.8); tone('triangle', vary(480), vary(920), 0.11, 0.12); crackle(2); return; }
+    tone('square', vary(480), vary(980), 0.12, 0.15); tone('sine', vary(1900), 2500, 0.08, 0.06); },
+  pEffort() { file('effort', 0.22, heroVoice === 'pyro' ? 1.75 : 1.35); },
+  // the pyromancer's own fire
+  ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
+  heatFull() { tone('triangle', 880, 880, 0.14, 0.08); tone('triangle', 1320, 1320, 0.2, 0.08, 0.07); noise(0.3, 0.12, 1200, 0.4); },
+  pyre() { if (!ac) return; const t = ac.currentTime; const src = ac.createBufferSource(); src.buffer = noiseBuf; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.35); const gn = ac.createGain(); gn.gain.setValueAtTime(0.001, t); gn.gain.exponentialRampToValueAtTime(0.42, t + 0.08); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.7); src.connect(f); f.connect(gn); gn.connect(sfxGain); src.start(t); src.stop(t + 0.75);
+    tone('sawtooth', 110, 45, 0.5, 0.18); tone('sine', 80, 30, 0.6, 0.35, 0.04); crackle(6, 0.05); },
+  pyreBoom() { noise(0.55, 0.45, 480, 0.4); tone('sine', 64, 26, 0.75, 0.42); noise(0.25, 0.2, 2600, 0.7, 0.05); crackle(8, 0.08); },
+  jet(on) { if (!ac) return;
+    if (on && !jetSrc) { jetSrc = ac.createBufferSource(); jetSrc.buffer = noiseBuf; jetSrc.loop = true; const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 0.6;
+      jetGain = ac.createGain(); jetGain.gain.value = 0.0001; jetSrc.connect(f); f.connect(jetGain); jetGain.connect(sfxGain); jetSrc.start(); jetGain.gain.setTargetAtTime(0.14, ac.currentTime, 0.05); }
+    else if (!on && jetSrc) { const s0 = jetSrc, g0 = jetGain; g0.gain.setTargetAtTime(0.0001, ac.currentTime, 0.06); setTimeout(() => { try { s0.stop(); } catch {} }, 400); jetSrc = null; jetGain = null; }
+    else if (on && jetGain && Math.random() < 0.3) crackle(1); },
   jump() { tone('square', 280, 620, 0.12, 0.12); },
   land(surf) { if (surf === 'water') { noise(0.2, 0.3, 800, 0.5); tone('sine', 260, 120, 0.15, 0.1); return; } if (surf === 'wood') { tone('sine', 150, 70, 0.1, 0.2); file('land', 0.25, 1.1); return; } if (surf === 'stone' || surf === 'iron') { noise(0.05, 0.16, surf === 'iron' ? 2200 : 1500, 0.8); file('land', 0.3, 0.95); return; } if (surf === 'snow') { noise(0.1, 0.16, 700, 0.4); return; } file('land', 0.35) || noise(0.06, 0.12, 300, 0.5); },
   step(surf) { if (surf === 'water') { noise(0.08, 0.12, 900, 0.5); return; } if (surf === 'wood') { tone('sine', 170, 90, 0.05, 0.08); file('step', 0.14, 1.15); return; } if (surf === 'stone') { noise(0.03, 0.09, 2600, 1.2); file('step', 0.14, 0.9); return; } if (surf === 'iron') { tone('square', 1200, 900, 0.03, 0.04); noise(0.03, 0.06, 3200, 1.4); return; } if (surf === 'snow') { noise(0.06, 0.08, 800, 0.5); return; } file('step', 0.18); },

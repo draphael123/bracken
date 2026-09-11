@@ -3,7 +3,7 @@ import { canvas, mulberry, fromGrid, outline } from './px.js';
 import * as ART from './art.js';
 import { bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeGrub, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeTroll, bakeGreatHound, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeHarpy, bakeGoatRider, bakeRamLord, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeThornback, bakeQueen, bakeArcher, bakeBird, bakeFrog, bakeHopper, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeHound, bakeFox, bakeChief, bakeSporeling, bakeLurker, bakeDrone, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
 import { LEVELS, T, TS, CUSTOM } from './level.js';
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -153,7 +153,7 @@ const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro'
 const silverTotal = () => LEVELS.filter(lv => !lv.hidden).reduce((n, lv) => n + [1, 2, 4].filter(b => ((PROG[lv.id] || {}).silver || 0) & b).length, 0);
 const silverAvail = () => silverTotal() - (PROG.silverSpent || 0);
 const PYRO_SETS = { bracken: {}, silverknight: { s: '#dfe8f0', S: '#8aaac8', b: '#aab6c8', B: '#6a7a90', r: '#e8ecff' }, black: { s: '#3a3040', S: '#1e1826', b: '#2a2a34', B: '#15151c', r: '#c9463d' }, purple: { s: '#8a4ac0', S: '#50287a', b: '#3a2050', B: '#241238', r: '#ffd36b' }, blue: { s: '#4a90e0', S: '#2a5aa0', b: '#243a78', B: '#16244a', r: '#bfe6f5' }, marsh: { s: '#7a9a4a', S: '#4a6a2a', b: '#3a4e24', B: '#243018', r: '#8fd160' }, rose: { s: '#e07a9a', S: '#a03a5a', b: '#8a3a5a', B: '#5a2038', r: '#fff6e0' }, crimson: { s: '#c83a3a', S: '#7a1c24', b: '#5a1a1a', B: '#3a1010', r: '#ffd36b' }, verdant: { s: '#4aa05a', S: '#2a6a38', b: '#245a30', B: '#143a1c', r: '#ffd36b' }, frost: { s: '#dfe8f0', S: '#8aaac8', b: '#7a9ab8', B: '#4a6a88', r: '#3d5aa8' }, shadow: { s: '#4a3a5a', S: '#241a30', b: '#1e1828', B: '#100c18', r: '#6a3aa0' }, gilded: { s: '#e8c050', S: '#a0781c', b: '#8f6a1c', B: '#5a4010', r: '#c9463d' }, iron: { s: '#9aa3b0', S: '#5a6270', b: '#4a525e', B: '#2e343c', r: '#c9d1dc' }, spore: { s: '#9a5aa8', S: '#5a3068', b: '#5a5a34', B: '#3a3a20', r: '#b8c060' } };
-function applySkin() { const sk = skinById(PROG.skin); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : bakeKnight(pal); }
+function applySkin() { setHeroVoice(hero()); const sk = skinById(PROG.skin); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : bakeKnight(pal); }
 function applyUpgrades() { P.maxHp = (isPyro() ? 70 : 100) + (PROG.items.heart ? 25 : 0) + 10 * rankOf('vigour'); P.maxSt = 100 + (PROG.items.wind ? 30 : 0) + 10 * rankOf('breath'); }
 let statFlash = 0; // the HUD plate flashes when a rank lands
 function bakeMotherIcon() {
@@ -1277,7 +1277,7 @@ function damagePlayer(fromX, dmg, { up = false, unblockable = false } = {}) {
   P.hp -= dmg; P.inv = 1.1; P.hurt = Math.max(P.hurt, 0.35); P.atk = -1; P.plunge = false; P.block = false; impactAt(P.x, P.y - 9, 'red');
   const dir = Math.sign(P.x - fromX) || -P.face;
   P.vx = dir * 150; P.vy = up ? -230 : -170; P.ground = false;
-  hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; (isPyro() ? SFX.hurtPyro : SFX.hurt)(); rumble(180, 0.8);
+  hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; SFX.pHurt(); rumble(180, 0.8);
   burst(P.x, P.y - 8, 8, ['#e04848', '#ffd36b'], 60, 0.4);
   number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
   if (P.hp <= 0) die();
@@ -1285,7 +1285,7 @@ function damagePlayer(fromX, dmg, { up = false, unblockable = false } = {}) {
 }
 function die() {
   if (P.dead) return;
-  P.dead = 1.2; deaths++; P.hp = 0; SFX.die(); shakeCam(7); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
+  P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9);
 }
 // Per-enemy death: a corpse object animates the fall so every foe dies its own way.
@@ -1451,7 +1451,7 @@ function updatePlayer(dt) {
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
   if (throwPress && isPyro() && skillNow() === 'fireWall' && P.ground && !(P.slamCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { P.slamCd = 4; P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (throwPress && isPyro() && skillNow() === 'cinderStep' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { P.throwCd = 3; P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (throwPress && skillNow() === 'risingCut' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { P.throwCd = CD_MAX.risingCut; P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); SFX.slash(); SFX.pogo(); squash(0.8, 1.25, 0.12); dust(P.x, P.y, 6); ringAt(P.x, P.y - 10, 14, '#fff6e0', 0.2); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } // RISING CUT: the blade goes up and so do you, and whatever it catches
+  if (throwPress && skillNow() === 'risingCut' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { P.throwCd = CD_MAX.risingCut; P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); SFX.slash(); SFX.pPogo(); squash(0.8, 1.25, 0.12); dust(P.x, P.y, 6); ringAt(P.x, P.y - 10, 14, '#fff6e0', 0.2); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } // RISING CUT: the blade goes up and so do you, and whatever it catches
   if (throwPress && isPyro() && skillNow() === 'vent' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; P.throwCd = CD_MAX.vent; const dmg = Math.round(10 + heat * 0.5), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.atk = -1; ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
   if (throwPress && isPyro() && skillNow() === 'wisp' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { P.throwCd = CD_MAX.wisp; wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
   if (P.riseT > 0) { P.riseT -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); const hb = { l: P.x - 11, r: P.x + 11, t: P.y - 36, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtEnemy(e, swordDmg() + 4, P.x, false); if (!big && e.t !== 'king' && e.t !== 'mother') { e.vy = -240; e.y -= 2; e.stagger = Math.max(e.stagger || 0, 0.7); e.air = true; } sparks(e.x, e.y - e.h / 2, P.face, 6); hitstop(0.05); } } }
@@ -1483,13 +1483,14 @@ function updatePlayer(dt) {
     else if (P.full && P.fullT > 0) P.fullT -= dt;   // banked: it holds a few seconds before it starts to go
     else P.heat -= (P.asleep > 0 || P.sleepM > 0.2 ? 8 : 16) * dt;
     if (P.full && P.heat < 100) P.full = false;
+    SFX.jet(P.jet && !P.dead); // the jet roars for as long as it is held
     if (P.full && Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 14, vx: 0, vy: -40 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
   }
   P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !isPyro();
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
     const j = jetBox();
     for (let i = 0; i < 3; i++) if (Math.random() < dt * 70) { const k = Math.random(); parts.push({ x: P.x + P.face * (8 + k * JET_LEN), y: P.y - 9 + (Math.random() - 0.5) * (4 + k * 14), vx: P.face * (60 + Math.random() * 60), vy: -20 - Math.random() * 30, life: 0.25 + k * 0.2, max: 0.45, col: k < 0.3 ? '#fff6c8' : Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: k < 0.5 ? 1 : 2, grav: -60 }); }
-    P.jetTick = (P.jetTick || 0) - dt; if (P.jetTick <= 0) { P.jetTick = 0.2; for (const e of enemies) if (e.alive && !e.harmless && e.x + e.w / 2 > j.l && e.x - e.w / 2 < j.r && e.y > j.t && e.y - e.h < j.b) { hurtEnemy(e, heatDmg(e.maxHp ? 2 : 4), P.x - P.face * 10, false); e.burn = Math.max(e.burn || 0, 0.8); } if (Math.random() < 0.4) SFX.puff(); }
+    P.jetTick = (P.jetTick || 0) - dt; if (P.jetTick <= 0) { P.jetTick = 0.2; for (const e of enemies) if (e.alive && !e.harmless && e.x + e.w / 2 > j.l && e.x - e.w / 2 < j.r && e.y > j.t && e.y - e.h < j.b) { hurtEnemy(e, heatDmg(e.maxHp ? 2 : 4), P.x - P.face * 10, false); e.burn = Math.max(e.burn || 0, 0.8); } }
     for (const s of seeds) if (!s.dead && s.x > j.l - 6 && s.x < j.r + 6 && s.y > j.t - 6 && s.y < j.b + 6) { s.dead = true; parries++; burst(s.x, s.y, 4, ['#ff9a5c', '#ffd36b'], 40, 0.3, 0, 1); }
     for (const c of clouds2) if (c.x + c.r > j.l && c.x - c.r < j.r && Math.abs(c.y - (P.y - 8)) < 24) c.life = Math.min(c.life, 0.2);
   }
@@ -1503,7 +1504,7 @@ function updatePlayer(dt) {
 
   if (P.dbuf > 0 && P.ground && !attacking && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0) {
     P.dbuf = 0;
-    if (spend(dodgeCost())) { P.dodge = 0.3; P.dodgeCd = 0.5; P.vx = P.face * 215; P.block = false; dodges++; SFX.dodge(); dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1); }
+    if (spend(dodgeCost())) { P.dodge = 0.3; P.dodgeCd = 0.5; P.vx = P.face * 215; P.block = false; dodges++; SFX.pDodge(); dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1); }
   }
   if (dodging) { P.dodge -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2 }); }
 
@@ -1540,7 +1541,7 @@ function updatePlayer(dt) {
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
   if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block) {
     if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
-    else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0; P.onMover = null; P.canCut = true; SFX.jump(); dust(P.x, P.y, 3); squash(0.8, 1.2, 0.1); }
+    else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0; P.onMover = null; P.canCut = true; SFX.pJump(); dust(P.x, P.y, 3); squash(0.8, 1.2, 0.1); }
   }
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
@@ -1551,7 +1552,7 @@ function updatePlayer(dt) {
         P.heat = Math.min(100, (P.heat || 0) + 10); if (P.heat >= 100 && !P.full) bankHeat(); SFX.puff();
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend(P.relic === 'gauntlet' ? 0 : sword().cost)) { P.atk = 0; P.hitSet.clear(); (isPyro() ? SFX.slashPyro : SFX.slash)(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.effort(); if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend(P.relic === 'gauntlet' ? 0 : sword().cost)) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk >= 0) {
     P.atk += dt; if (P.atk > 0.3) P.atk = -1;
@@ -1568,8 +1569,8 @@ function updatePlayer(dt) {
   { // crag rock faces: hold into the rock while airborne to cling and slide slowly; jump to kick up and away
     const dir = keys.left ? -1 : keys.right ? 1 : 0, tx = Math.floor((P.x + dir * 6) / TS), ty = Math.floor((P.y - 8) / TS);
     const grip = dir !== 0 && !P.ground && P.vy > -40 && !(P.hurt > 0) && !P.plunge && (tileAt(tx, ty) === T.CLIMB || tileAt(tx, ty + 1) === T.CLIMB);
-    if (grip) { if (!P.cling) { P.cling = true; SFX.step(); } P.vy = Math.min(P.vy, P.relic === 'spurs' ? 0 : 26); P.face = dir; if (Math.random() < dt * 10) parts.push({ x: P.x + dir * 6, y: P.y - 4, vx: -dir * 20, vy: 24, life: 0.3, max: 0.3, col: '#8a919c', size: 1, grav: 200 });
-      if (P.jbuf > 0) { P.jbuf = 0; P.vy = JUMPV; P.vx = -dir * 150; P.cling = false; P.canCut = true; P.kicked = false; SFX.jump(); dust(P.x + dir * 6, P.y - 6, 4); } }
+    if (grip) { if (!P.cling) { P.cling = true; SFX.pStep(); } P.vy = Math.min(P.vy, P.relic === 'spurs' ? 0 : 26); P.face = dir; if (Math.random() < dt * 10) parts.push({ x: P.x + dir * 6, y: P.y - 4, vx: -dir * 20, vy: 24, life: 0.3, max: 0.3, col: '#8a919c', size: 1, grav: 200 });
+      if (P.jbuf > 0) { P.jbuf = 0; P.vy = JUMPV; P.vx = -dir * 150; P.cling = false; P.canCut = true; P.kicked = false; SFX.pJump(); dust(P.x + dir * 6, P.y - 6, 4); } }
     else P.cling = false;
   }
 
@@ -1587,7 +1588,7 @@ function updatePlayer(dt) {
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
-    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pogo(); }
+    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
     const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (L.grid[i] === T.BOUNCER) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
   }
   if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : 70; P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
@@ -1600,13 +1601,13 @@ function updatePlayer(dt) {
     if (P.plunge) {
       const ty = Math.floor((P.y + 2) / TS); let broke = false;
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
-      if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
+      if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); }
-    } else { const heavy = prevVy > 250; dust(P.x, P.y, heavy ? 9 : 4); SFX.land(surface()); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
+    } else { const heavy = prevVy > 250; dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
   }
-  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.step(surface()); } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
+  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
   P.anim += dt;
 
@@ -1633,7 +1634,7 @@ function updatePlayer(dt) {
         if (e.t === 'chief') { e.plungeN = (e.plungeN || 0) + 1; e.plungeT = 2.5; if (e.plungeN >= 2) { e.plungeN = 0; e.plungeT = 0; P.vx = (Math.sign(P.x - e.x) || -e.face) * 280; P.vy = -230; P.inv = Math.max(P.inv, 0.5); P.plunge = false; P.canCut = false; P.ground = false; P.hitSet.clear(); number(e.x, e.y - e.h - 12, 'SHAKEN OFF', '#ff6b6b'); SFX.roar(); SFX.clank(); shakeCam(4); e.stagger = 0; continue; } }
         if (e.t === 'mother' && e.tipped) continue;
         if (e.t === 'mother') { P.plunge = false; P.vy = -200; P.ground = false; P.canCut = false; SFX.clank(); number(e.x, P.y - 10, 'ARMOURED', '#9aa39a'); continue; }
-        if (e.t === 'heart') { hurtEnemy(e, 1, P.x, true); P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pogo(); pogoCount++; squash(0.8, 1.25, 0.1); continue; }
+        if (e.t === 'heart') { hurtEnemy(e, 1, P.x, true); P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; squash(0.8, 1.25, 0.1); continue; }
         if (e.t === 'thorn') {
       if (e.mode === 'charge' && Math.random() < dt * 9) SFX.clatter();
           P.plunge = false; P.ground = false; P.canCut = false; P.hitSet.clear();
@@ -1642,7 +1643,7 @@ function updatePlayer(dt) {
           continue;
         }
         if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.inv = 0; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.plunge = false; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
-        hurtEnemy(e, plungeDmg(), P.x, true); P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pogo(); pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); } squash(0.8, 1.25, 0.1); continue;
+        hurtEnemy(e, plungeDmg(), P.x, true); P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); } squash(0.8, 1.25, 0.1); continue;
       }
       const front = Math.sign(P.x - e.x) === e.face;
       if (e.t === 'mother' && e.tipped) continue;
@@ -1677,7 +1678,7 @@ function updatePlayer(dt) {
       if (e.t === 'master' && e.mounted && e.stagger > 0) { hurtEnemy(e, 20, P.x, true); e.stagger = Math.max(e.stagger, 0.7); number(e.x, e.y - 24, 'STUNNED', '#8fd160'); SFX.gobHurtLow(); SFX.thud(); P.vy = -260; P.plunge = false; P.ground = false; P.canCut = false; burst(e.x, e.y - 8, 12, COLS.master, 80, 0.6); continue; }
       if (e.t === 'shield' || e.t === 'queen' || e.t === 'brute' || e.t === 'chief' || e.t === 'king' || (e.t === 'master' && e.mounted) || (e.t === 'ram' && !ramOpen(e))) { P.vy = keys.jump ? -260 : -190; SFX.clank(); sparks(e.x, e.y - e.h, P.face, 6); e.stagger = Math.max(e.stagger, 0.3); number(e.x, e.y - e.h - 6, 'HELM', '#c9d1dc'); squash(0.85, 1.2, 0.1); continue; }
       if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
-      hurtEnemy(e, P.relic === 'crown' ? plungeDmg() : 10, P.x, true); P.vy = keys.jump ? -290 : -220; SFX.pogo(); squash(0.8, 1.25, 0.1); continue;
+      hurtEnemy(e, P.relic === 'crown' ? plungeDmg() : 10, P.x, true); P.vy = keys.jump ? -290 : -220; SFX.pPogo(); squash(0.8, 1.25, 0.1); continue;
     }
     if (e.t === 'brute' || e.t === 'chief' || e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk' || e.t === 'king' || e.t === 'bearer' || e.t === 'pike' || e.t === 'master' || e.t === 'thief' || e.t === 'ram' || e.t === 'goat' || e.t === 'harpy' || e.t === 'troll' || e.t === 'greathound' || e.t === 'spider' || e.t === 'owl' || e.t === 'miner' || e.t === 'bat' || e.t === 'forgemaster' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || (e.big && e.t !== 'sailer')) continue; // their damage comes from their attacks, not from touching them
     const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12));
@@ -3493,23 +3494,23 @@ function castEmber(dir) {
   if (!dir) P.castT = 0.2;
   if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); }
   embers.push(dir ? { x: P.x, y: P.y - 4, vx: 0, vy: 230, life: 0.8, hit: new Set() } : { x: P.x + P.face * 8, y: P.y - 12, vx: P.face * 200, vy: -55, life: 1.1, hit: new Set() });
-  P.atk = -1; SFX.puff(); SFX.charge(); burst(P.x + P.face * 8, P.y - 10, 5, ['#ff9a5c', '#ffd36b'], 40, 0.25, 0, 1);
+  P.atk = -1; SFX.ember(); burst(P.x + P.face * 8, P.y - 10, 5, ['#ff9a5c', '#ffd36b'], 40, 0.25, 0, 1);
 }
 // THE PYRE. The whole bar, all at once: one great ball of it that burns straight through the small
 // ones, bursts on the first big one or on stone, and leaves the ground on fire where it goes off.
 let pyres = [];
 const PYRE_DMG = 42, PYRE_SPLASH = 16;
-function bankHeat() { if (P.full) return; P.full = true; P.fullT = 5; SFX.spark(); SFX.charge(); ringAt(P.x, P.y - 10, 18, '#ffd36b', 0.3); burst(P.x, P.y - 10, 10, ['#ffd36b', '#fff6c8'], 50, 0.4, -40, 1); }
+function bankHeat() { if (P.full) return; P.full = true; P.fullT = 5; SFX.heatFull(); ringAt(P.x, P.y - 10, 18, '#ffd36b', 0.3); burst(P.x, P.y - 10, 10, ['#ffd36b', '#fff6c8'], 50, 0.4, -40, 1); }
 function castPyre() {
   P.full = false; P.heat = 0; P.fullT = 0; P.cHeld = -99; P.blastT = 0.34; P.atk = -1; P.jet = false;
   pyres.push({ x: P.x + P.face * 12, y: P.y - 11, vx: P.face * 250, dir: P.face, life: 1.5, t: 0, hit: new Set() });
-  P.vx -= P.face * 90; shakeCam(4, -P.face * 2); zoomKick(1.08, 0.2); hitstop(0.05); SFX.heavy(); SFX.charge(); SFX.puff();
+  P.vx -= P.face * 90; shakeCam(4, -P.face * 2); zoomKick(1.08, 0.2); hitstop(0.05); SFX.pyre();
   burst(P.x + P.face * 14, P.y - 11, 16, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 90, 0.45, 0, 2);
 }
 function pyreBurst(b) {
   if (b.done) return; b.done = true; b.life = 0;
   ringAt(b.x, b.y, 30, '#ffd36b', 0.35); burst(b.x, b.y, 26, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 120, 0.6, 60, 2);
-  shakeCam(6); zoomKick(1.06, 0.18); SFX.heavy(); SFX.crack();
+  shakeCam(6); zoomKick(1.06, 0.18); SFX.pyreBoom();
   for (const e of enemies) if (e.alive && !e.harmless && !b.hit.has(e) && Math.abs(e.x - b.x) < 30 + e.w / 2 && Math.abs(e.y - e.h / 2 - b.y) < 30) { hurtEnemy(e, PYRE_SPLASH, b.x, false); e.burn = Math.max(e.burn || 0, 2); }
   // and the ground under it catches: webs and palisades go up, the lamps light
   let gy = Math.floor(b.y / TS); for (let k = 0; k < 6 && !isSolid(Math.floor(b.x / TS), gy) && !isOneWay(tileAt(Math.floor(b.x / TS), gy)); k++) gy++;
@@ -3744,7 +3745,7 @@ function updateProps(dt) {
       if (hb && overlap(hb, rb)) { pop(false); sparks(pr.x, pr.y - 6, P.face, 4); continue; }
       const pb2 = box(P);
       if (!P.dead && overlap({ l: pb2.l + 1, r: pb2.r - 1, t: pb2.t + 2, b: pb2.b - 1 }, rb)) {
-        if (P.vy > 40 && pb2.b <= pr.y - 8 && P.dodge <= 0) { pop(true); P.vy = keys.jump ? -290 : -220; P.ground = false; P.canCut = false; P.plunge = false; SFX.pogo(); squash(0.8, 1.25, 0.1); }
+        if (P.vy > 40 && pb2.b <= pr.y - 8 && P.dodge <= 0) { pop(true); P.vy = keys.jump ? -290 : -220; P.ground = false; P.canCut = false; P.plunge = false; SFX.pPogo(); squash(0.8, 1.25, 0.1); }
         else { const res = damagePlayer(pr.x, DMG.roller); if (res === 'blocked') { pr.vx = -pr.vx; } else if (res === 'hit') pop(true); }
       }
     }
@@ -3917,6 +3918,7 @@ function updateCamera(dt) {
 
 function update(dt) {
   time += dt;
+  if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
   if (state === 'editor') {
