@@ -1812,16 +1812,15 @@ function galeMoor() {
   // ---- 10. THE MILLS: an old stone mill at the edge of a bog gully, and two more beyond it. The wind turns
   // the sails, and turns them back when it turns: ride a sail up and over and step off at the top. ----
   floor(548, 557, 14);
-  block(558, 590, 24, 29); pools.push({ x0: 558 * TS, x1: 591 * TS, y: 23 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 558 * TS, x1: 591 * TS });
+  block(558, 590, 24, 29); pools.push({ x0: 558 * TS, x1: 591 * TS, y: 23 * TS + 4, shallow: true, depth: 12 }); // (no bog-wights under the mills: the sails are hard enough)
   ladder(558, 558, 14, 23); // a rope ladder up the near bank for anyone the gully takes
   plat(560, 12, 2);
-  for (const hx of [566, 575, 584]) for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', mill: true, first: i === 0, towerH: 14 * TS, px: hx * TS + 8, py: 9 * TS, r: 42, phase: i * Math.PI / 2, period: 6, x: 0, y: 0, w: 22, h: 6 });
+  for (const hx of [566, 575, 584]) for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', mill: true, first: i === 0, towerH: 14 * TS, px: hx * TS + 8, py: 9 * TS, r: 42, phase: i * Math.PI / 2, period: 6, x: 0, y: 0, w: 40, h: 6 }); // broad sails: riding a turning wheel is the whole test
   floor(591, 600, 14);
-  gusts.push({ x0: 548 * TS, x1: 600 * TS, y0: 2 * TS, y1: 24 * TS, dir: 1, period: 4.6, on: 2.8, phase: 0, alt: true, moor: true, k: 1 });
+  gusts.push({ x0: 548 * TS, x1: 600 * TS, y0: 2 * TS, y1: 24 * TS, dir: 1, period: 4.6, on: 2.8, phase: 0, alt: true, moor: true, k: 0.35 }); // it turns the sails; it barely touches you
   ent('sign', 549, 13, { text: 'THE MILLS. THE WIND TURNS THE SAILS, AND WHEN THE WIND TURNS SO DO THEY. RIDE A SAIL UP AND STEP OFF AT THE TOP. THE GULLY IS ONLY BOG: THE LADDER BY THE BANK GETS YOU OUT.' });
   ent('check', 552, 13); ent('flagpost', 555, 13); ent('flagpost', 594, 13);
   coins([561, 11], [566, 6], [575, 6], [584, 6], [570, 22], [571, 22], [580, 22], [581, 22]);
-  ent('harpy', 579, 3);
 
   // ---- 11. THE TUMBLE: the last open moor, heather bales the wind rolls at you, and hornblowers on the
   // mounds who wind their horns at you as you come. (The mounds are steps, never walls.) ----
