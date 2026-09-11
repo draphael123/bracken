@@ -1116,10 +1116,10 @@ function hangingVillage() {
 // Halfway up you break out of the cloud into the sun, and the sun makes all of it faster.
 // ============================================================================================
 function theSunspire() {
-  const W = 96, H = 150; const L = painter(W, H);
+  const W = 96, H = 222; const L = painter(W, H);
   const { block, plat, ent, coins, set, spikes } = L;
   const movers = [];
-  const CLOUD = 76; // above this row the sun is on the rock
+  const CLOUD = 100; // above this row the sun is on the rock
   const cryst = (x, n, y) => { for (let i = 0; i < n; i++) set(x + i, y, T.CRYST); };
   const spires = (y, up, ...xs) => xs.forEach((x, i) => ent('deco', x, y, { kind: 'spire', v: (x + i) % 2, hang: up }));
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1);
@@ -1128,158 +1128,177 @@ function theSunspire() {
   // less of the arc is left: +0 rows buys 4 tiles across, +1 buys 3.6, +2 buys 3.2, +3 buys 2.5.
   // Nothing on this mountain is placed by eye. A SHELF is a rock band with a crystal gap in it, and a
   // STAIR always finishes three rows under that gap, where the jump up through it is legal.
-  // Build the stair FIRST and put the shelf's gap wherever the stair actually arrived. Choosing the
-  // gap first and hoping the zig-zag lands under it is how you end up with a six-tile hop at the top
-  // of every climb and a mountain nobody can get up.
+  // Build the stair FIRST and put the shelf's gap wherever the stair actually arrived.
   const climb = (fromTop, top, x0, x1, startX, gw) => {
-    const land = top + 3;                 // the last ledge: three rows under the shelf, a legal jump
+    const land = top + 3;
     let y = fromTop - 3, x = startX, dir = 1, n = 0;
     while (y > land) {
       x = Math.max(x0, Math.min(x1 - 4, x));
       cryst(x, 4, y);
-      if (n % 3 === 1) coins([x + 1, y - 1]);
-      const nx = x + dir * 3;
-      if (nx > x1 - 4 || nx < x0) dir = -dir;
+      if (n % 4 === 1) coins([x + 1, y - 1]);
+      const nx = x + dir * 3; if (nx > x1 - 4 || nx < x0) dir = -dir;
       x += dir * 3; y -= 2; n++;
     }
     x = Math.max(x0, Math.min(x1 - 4, x));
     cryst(x, 4, land);
-    const gx = Math.max(2, Math.min(W - 2 - gw, x - ((gw - 4) >> 1)));  // the gap, directly overhead
+    const gx = Math.max(2, Math.min(W - 2 - gw, x - ((gw - 4) >> 1)));
     block(1, gx - 1, top, top + 2); block(gx + gw, W - 2, top, top + 2);
     cryst(gx, gw, top);
     return { top, gx, gw, mid: gx + (gw >> 1) };
   };
-
-  // ---- Tier 0. THE FOOT ----
-  block(0, W - 1, 146, H - 1);
-  ent('npc', 8, 145, { kind: 'squire' });
-  ent('sign', 4, 145, { text: 'THE SUNSPIRE. THE CRYSTAL WILL HOLD YOU, BUT NOT FOR LONG. IT RINGS, THEN IT CRAZES, THEN IT GOES, AND IT TAKES WHAT IT IS TOUCHING WITH IT. KEEP MOVING. STRIKE ONE AND IT BREAKS WHEN YOU SAY SO.' });
-  ent('deco', 16, 145, { kind: 'cairn' }); ent('sprig', 30, 145, { face: -1 });
-  spires(145, false, 22, 38, 52); spires(146, true, 28, 46);
-  ent('check', 20, 145); coins([12, 144], [26, 144], [44, 144]);
-  ent('sign', 62, 145, { text: 'THE MOUNTAIN IS HOLLOW IN PLACES. WHERE THE GLASS LIES FLAT IN THE ROCK THERE IS ROOM UNDER IT. STAND ON IT AND FIND OUT WHAT FOR. IT GROWS BACK, AND YOU CAN JUMP UP THROUGH IT.' });
-
-  // ---- Tier 1. THE LOWER FACE ----
-  const s1 = climb(146, 124, 30, 70, 34, 15);
-  ent('harpy', 34, 118); ent('harpy', 62, 114);
-  ent('rockgoblin', 20, 123, { face: 1 }); ent('rockgoblin', 74, 123, { face: -1 });
-  ent('bat', 44, 116); ent('grub', 50, 123, { face: -1 });
-  ent('sign', 6, 123, { text: 'THE LOWER FACE. THE CRYSTAL RUNS ARE THE QUICK WAY. THE HARPIES KNOW YOU CANNOT STOP ON THEM.' });
-  ent('check', 8, 123); coins([21, 122], [75, 122]);
-  ent('sign', 78, 123, { text: 'A CRYSTAL YOU STRIKE BREAKS WHEN YOU SAY SO, AND WHAT COMES OFF IT FALLS ON WHATEVER IS UNDER IT. THERE IS USUALLY SOMETHING UNDER IT.' });
-
-  // ---- Tier 2. THE ORGAN ----
-  const s2 = climb(124, 104, 12, 84, 20, 13);
-  spires(104, true, 44, 62, 78); spires(103, false, 8, 88);
-  ent('shardling', 40, 103, { face: 1 }); ent('shardling', 66, 103, { face: -1 });
-  ent('bat', 30, 98); ent('grub', 56, 103, { face: 1 });
-  ent('sign', 6, 103, { text: 'THE ORGAN. IF ONE OF THEM GOES THEY ALL GO. CROSS IT LIKE YOU MEAN IT.' });
-  coins([26, 103], [70, 103]);
-
-  const s3 = climb(104, 84, 20, 76, 30, 35);
-  ent('harpy', 40, 78); ent('rockgoblin', 66, 83, { face: -1 }); ent('shardling', 30, 83, { face: 1 });
-  ent('sign', 62, 83, { text: 'THE LONG SHELF. THIRTY-FIVE ACROSS AND NOTHING UNDER IT. RUN.' });
-  ent('check', 74, 83); coins([32, 83], [44, 83], [56, 83]);
-  ent('stray', 12, 83, { kind: 'shard' });
-
-  // ---- Tier 3. THE CLOUD LINE ----
-  const s4 = climb(84, CLOUD, 26, 70, 34, 15);
-  ent('sign', 8, CLOUD - 1, { text: 'ABOVE THE CLOUD THE SUN IS ON THE ROCK ALL DAY AND THE CRYSTAL IS HALF AS PATIENT. IT GOES BRIGHT BEFORE IT GOES.' });
-  spires(CLOUD, true, 14, 24, 52, 62); spires(CLOUD - 1, false, 6, 88);
-  ent('check', 10, CLOUD - 1); coins([16, CLOUD - 1], [80, CLOUD - 1]); ent('harpy', 58, 70);
-  ent('sign', 84, CLOUD - 1, { text: 'THE CLOUD IS UNDER YOU NOW. SO IS EVERYTHING ELSE.' });
-
-  // ---- Tier 4. THE GLARE ----
-  const s5 = climb(CLOUD, 56, 20, 76, 28, 15);
-  ent('shardling', 30, 55, { face: 1 }); ent('shardling', 48, 55, { face: -1 }); ent('harpy', 62, 50);
-  coins([28, 55], [60, 55], [16, 55], [21, 55]); ent('check', 10, 55); ent('deco', 4, 55, { kind: 'cairn' });
-  ent('sign', 6, 55, { text: 'THE GLARE. THE ROCK LEDGES ARE THE ONLY REST UP HERE AND THERE ARE NOT MANY.' });
-
-  const s6 = climb(56, 36, 18, 78, 26, 15);
-  ent('harpy', 54, 30); ent('shardling', 60, 35, { face: -1 });
-  ent('check', 12, 35); coins([32, 35], [66, 35]);
-
-  // ---- Tier 5. THE CROWN. The peak is a shelf like every other, with the way up through the middle. ----
-  const s7 = climb(36, 30, 30, 62, 38, 11);
-  block(1, s7.gx - 1, 31, 34); block(s7.gx + s7.gw, W - 2, 31, 34); // the crown's body, either side of the way up
-  spikes(4, 12, 29); spikes(80, 90, 29);
-  spires(30, true, 8, 20, 74, 86); spires(29, false, 16, 78);
-  // A CANOPY of crystal over the crown with a stair up onto it either side. Standing on the canopy
-  // breaks it, and what comes down comes down on him: that is the only way to put his light out.
-  cryst(20, 56, 26);
-  plat(12, 29, 5); plat(16, 27, 4);
-  plat(79, 29, 5); plat(76, 27, 4);
-  ent('sign', 16, 29, { text: 'THE SUNCATCHER. IT HAS BEEN DRINKING THIS MOUNTAIN\'S LIGHT SINCE BEFORE THE WOOD. NOTHING TOUCHES IT WHILE IT IS BRIGHT. GET ABOVE IT: THE GLASS UP THERE WILL NOT HOLD YOU EITHER, AND THAT IS THE POINT.' });
-  ent('suncatcher', 60, 29);
-  // the last hop to the gate is over the thorns on two pieces of crystal, which will not wait for you
-  cryst(85, 3, 27); cryst(89, 3, 27);
-  ent('check', 18, 29); ent('gate', 92, 29);
-  ent('silver', 90, 26);
-  ent('stray', 24, 25, { kind: 'shard' });
-
-  // ---- THE WALL ENDS. Every tier is a stair up the middle and a floor out to both walls, and a
-  // floor that runs forty tiles into a wall is a dead end whatever is on it. So the ends are places:
-  // GEODES (a hollow under a crystal lid: you can see what is in it, you stand on the lid until it
-  // goes, and you jump out up through it once it has grown back - the same three-row jump as every
-  // shelf), CHIMNEYS (two rock faces two apart, kicked up, a slow way to the next tier's far end
-  // that does not break under you), an EYRIE up a goat path, and the hollows in the crown.
+  // THE THERMALS - the mountain breathes. A glowing crack in the rock lets go a column of hot air every
+  // few seconds, and the column carries you straight up while you stay in it. A vent lifts you `rise`
+  // rows and two more, so you come out over the ledge beside it with time to steer onto it. Every
+  // ledge in a chain sits one tile clear of the column below it, never over it.
+  const vent = (x, row, rise, o = {}) => ent('vent', x, row - 1, { heat: true, h: (rise + 2) * TS, period: o.period || 4.2, on: o.on || 2.2, phase: o.phase || 0, lift: o.lift || 190, w: 12, glass: !!o.glass });
+  const shelf = (top, gx, gw) => { block(1, gx - 1, top, top + 2); block(gx + gw, W - 2, top, top + 2); cryst(gx, gw, top); return { top, gx, gw }; };
+  // a GEODE: a hollow under a flush crystal lid. Stand on the lid, drop in, jump out once it regrows.
   const geode = (x0, x1, top) => {
-    block(x0 - 1, x1 + 1, top + 3, top + 3);                   // its floor hangs a row under the shelf
+    block(x0 - 1, x1 + 1, top + 3, top + 3);
     for (let y = top + 1; y <= top + 2; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR);
-    cryst(x0 + 1, x1 - x0 - 1, top);                           // the lid, flush in the rock
+    cryst(x0 + 1, x1 - x0 - 1, top);
   };
-  const chimney = (floorRow, topBand) => {                     // up the right wall, floorRow to topBand
+  // a CHIMNEY: two rock faces two apart up the right wall, kicked up. Slow, and it does not break.
+  const chimney = (floorRow, topBand) => {
     for (let y = topBand; y <= floorRow; y++) set(W - 2, y, T.CLIMB);
-    for (let y = topBand; y <= floorRow - 5; y++) set(W - 5, y, T.CLIMB); // hangs short: walk in under it
+    for (let y = topBand; y <= floorRow - 5; y++) set(W - 5, y, T.CLIMB);
     for (let y = topBand; y <= topBand + 2; y++) { set(W - 4, y, T.AIR); set(W - 3, y, T.AIR); }
-    plat(W - 4, topBand, 2);                                   // a stone lip over the top: walk over it, jump up through it
+    plat(W - 4, topBand, 2);
     coins([W - 4, floorRow - 4], [W - 3, floorRow - 9], [W - 4, floorRow - 14]);
   };
 
-  // tier 0: a camp where somebody gave up, and the first geode, where nothing can go wrong
-  geode(66, 74, 146);
-  coins([70, 145], [67, 148], [69, 148], [71, 148], [73, 148]);
-  ent('deco', 84, 145, { kind: 'tent' }); ent('deco', 89, 145, { kind: 'lanternPost' });
-  ent('deco', 92, 145, { kind: 'bones', v: 1 }); coins([80, 145], [87, 145]);
+  // ---- Tier 0. THE FOOT, with a camp where somebody gave up and the first geode ----
+  block(0, W - 1, 218, H - 1);
+  ent('npc', 8, 217, { kind: 'squire' });
+  ent('sign', 4, 217, { text: 'THE SUNSPIRE. THE CRYSTAL WILL HOLD YOU, BUT NOT FOR LONG. IT RINGS, THEN IT CRAZES, THEN IT GOES, AND IT TAKES WHAT IT IS TOUCHING WITH IT. KEEP MOVING. STRIKE ONE AND IT BREAKS WHEN YOU SAY SO.' });
+  ent('deco', 16, 217, { kind: 'cairn' }); ent('sprig', 30, 217, { face: -1 });
+  spires(217, false, 22, 38, 52); spires(218, true, 28, 46);
+  ent('check', 20, 217); coins([12, 216], [26, 216], [44, 216]);
+  ent('sign', 62, 217, { text: 'THE MOUNTAIN IS HOLLOW IN PLACES. WHERE THE GLASS LIES FLAT IN THE ROCK THERE IS ROOM UNDER IT. STAND ON IT AND FIND OUT WHAT FOR. IT GROWS BACK, AND YOU CAN JUMP UP THROUGH IT.' });
+  geode(66, 74, 218); coins([70, 217], [67, 220], [69, 220], [71, 220], [73, 220]);
+  ent('deco', 84, 217, { kind: 'tent' }); ent('deco', 89, 217, { kind: 'lanternPost' });
+  ent('deco', 92, 217, { kind: 'bones', v: 1 }); coins([80, 217], [87, 217]);
 
-  // tier 1 -> tier 2: the first chimney, from the far end of the lower face to the far end of the organ
-  chimney(123, 104);
-  ent('sign', 88, 123, { text: 'A CHIMNEY. HOLD INTO THE ROCK AND IT HOLDS YOU; JUMP AND YOU KICK OFF IT. SLOWER THAN THE GLASS, BUT IT IS STILL THERE WHEN YOU COME BACK DOWN.' });
-  ent('silver', 86, 103); ent('deco', 80, 103, { kind: 'bones' }); coins([76, 103], [83, 103]);
+  // ---- Tier 1. THE LOWER FACE: the first crystal climb ----
+  climb(218, 196, 30, 70, 34, 15);
+  ent('rockgoblin', 20, 195, { face: 1 }); ent('rockgoblin', 74, 195, { face: -1 }); ent('grub', 50, 195, { face: -1 });
+  ent('sign', 6, 195, { text: 'THE LOWER FACE. THE CRYSTAL RUNS ARE THE QUICK WAY. THE HARPIES KNOW YOU CANNOT STOP ON THEM.' });
+  ent('check', 8, 195); coins([21, 194], [75, 194]);
+  ent('sign', 78, 195, { text: 'A CRYSTAL YOU STRIKE BREAKS WHEN YOU SAY SO, AND WHAT COMES OFF IT FALLS ON WHATEVER IS UNDER IT. THERE IS USUALLY SOMETHING UNDER IT.' });
+  geode(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
+  ent('deco', 90, 195, { kind: 'bones' }); coins([86, 195], [91, 195]);
 
-  // tier 2, the other end: a geode under the organ's first sign
-  geode(8, 16, 104);
-  coins([12, 103], [9, 106], [11, 106], [13, 106], [15, 106]);
+  // ---- Tier 2. THE BREATHING ROCK: the thermals, taught on rock where a miss only drops you back ----
+  ent('sign', 48, 195, { text: 'THE MOUNTAIN BREATHES. WHERE THE ROCK IS CRACKED AND GLOWING IT LETS GO A GREAT BREATH EVERY FEW SECONDS, AND THE BREATH WILL CARRY YOU. STAND IN IT, GO UP, AND STEER OFF IT AT THE TOP.' });
+  vent(74, 196, 10, { phase: 0 }); plat(76, 186, 5);
+  vent(79, 186, 8, { phase: 1.4 }); plat(73, 178, 5);
+  vent(75, 178, 6, { phase: 2.8 });
+  shelf(172, 73, 5);
+  coins([74, 190], [74, 186], [79, 181], [75, 175]);
+  ent('harpy', 50, 184); ent('bat', 84, 182); ent('bat', 62, 178);
+  ent('check', 60, 195);
 
-  // tier 3: the long shelf ends in the biggest geode on the mountain, with a silver in it
-  geode(78, 90, 84);
-  ent('silver', 84, 86); coins([79, 86], [81, 86], [87, 86], [89, 86]);
+  // ---- Tier 3. THE ORGAN: it grows in ranks and they all ring the same note ----
+  climb(172, 152, 12, 84, 20, 13);
+  spires(152, true, 44, 62, 78); spires(151, false, 8, 88);
+  ent('harpy', 34, 166); ent('harpy', 62, 162); ent('bat', 44, 164);
+  ent('shardling', 40, 151, { face: 1 }); ent('shardling', 66, 151, { face: -1 });
+  ent('bat', 30, 146); ent('grub', 56, 151, { face: 1 });
+  ent('sign', 6, 151, { text: 'THE ORGAN. IF ONE OF THEM GOES THEY ALL GO. CROSS IT LIKE YOU MEAN IT.' });
+  coins([26, 151], [70, 151]);
+  geode(8, 16, 152); coins([12, 151], [9, 154], [11, 154], [13, 154], [15, 154]);
+  // the first chimney, from the organ's far end up to the long shelf's
+  chimney(171, 152);
+  ent('sign', 88, 171, { text: 'A CHIMNEY. HOLD INTO THE ROCK AND IT HOLDS YOU; JUMP AND YOU KICK OFF IT. SLOWER THAN THE GLASS, BUT IT IS STILL THERE WHEN YOU COME BACK DOWN.' });
+  ent('silver', 86, 151); ent('deco', 80, 151, { kind: 'bones' }); coins([76, 151], [83, 151], [80, 171], [84, 171]);
+  ent('deco', 4, 171, { kind: 'cairn' }); coins([8, 171], [13, 171]);
 
-  // tier 4: THE EYRIE. A goat path up the right wall, off the glass, to a shelf with a shard on it
-  for (let y = 62; y <= CLOUD - 1; y++) set(W - 2, y, T.CLIMB);
-  plat(84, 73, 3); plat(89, 71, 3); plat(84, 69, 3); plat(89, 67, 3); plat(80, 65, 14);
-  coins([90, 70], [85, 68], [90, 66]);
-  ent('stray', 88, 64, { kind: 'shard' }); ent('deco', 83, 64, { kind: 'bones' }); ent('harpy', 78, 60);
+  // ---- Tier 4. THE LONG SHELF ----
+  climb(152, 132, 20, 76, 30, 35);
+  ent('harpy', 40, 126); ent('rockgoblin', 66, 131, { face: -1 }); ent('shardling', 30, 131, { face: 1 });
+  ent('sign', 62, 131, { text: 'THE LONG SHELF. THIRTY-FIVE ACROSS AND NOTHING UNDER IT. RUN.' });
+  ent('check', 74, 131); coins([32, 131], [44, 131], [56, 131]);
+  ent('stray', 12, 131, { kind: 'shard' }); coins([18, 131], [24, 131]);
+  geode(82, 92, 132); ent('silver', 87, 134); coins([83, 134], [85, 134], [89, 134], [91, 134]);
 
-  // tier 5 -> tier 6: the second chimney, the only way up the glare that is not glass
+  // ---- Tier 5. THE FLUE: every thermal goes up through a crystal lid, and the lid gives under you ----
+  ent('sign', 93, 131, { text: 'THE FLUE. EVERY BREATH HERE GOES UP THROUGH GLASS, AND THE GLASS WILL NOT HOLD YOU FOR LONG AT THE TOP. STEP OFF IT. AND GLASS THAT BREAKS OVER A LIVE BREATH GOES UP, NOT DOWN: REMEMBER THAT WHEN SOMETHING WITH WINGS COMES FOR YOU.' });
+  vent(78, 132, 8, { phase: 0 }); cryst(76, 5, 124);
+  plat(68, 124, 5); vent(70, 124, 8, { phase: 1.4 }); cryst(68, 5, 116);
+  plat(76, 116, 5); vent(78, 116, 8, { phase: 2.8 });
+  shelf(108, 76, 5);
+  coins([78, 128], [70, 120], [78, 112], [70, 123], [78, 115]);
+  ent('harpy', 58, 118); ent('harpy', 86, 114);
+  coins([20, 107], [40, 107], [60, 107], [82, 107], [86, 107], [91, 107]);
+  geode(10, 20, 108); coins([15, 107], [11, 110], [13, 110], [15, 110], [17, 110], [19, 110]);
+
+  // ---- Tier 6. THE CLOUD LINE. You come out of the grey into the sun ----
+  climb(108, CLOUD, 26, 70, 66, 15); // the stair starts where the flue lets you out, not forty tiles away
+  ent('sign', 8, CLOUD - 1, { text: 'ABOVE THE CLOUD THE SUN IS ON THE ROCK ALL DAY AND THE CRYSTAL IS HALF AS PATIENT. IT GOES BRIGHT BEFORE IT GOES. THE BREATHS ARE HOTTER UP HERE, AND THEY CARRY FURTHER.' });
+  spires(CLOUD, true, 14, 24, 52, 62); spires(CLOUD - 1, false, 6, 88);
+  ent('check', 10, CLOUD - 1); coins([16, CLOUD - 1], [80, CLOUD - 1]); ent('harpy', 58, 94);
+  ent('sign', 84, CLOUD - 1, { text: 'THE CLOUD IS UNDER YOU NOW. SO IS EVERYTHING ELSE.' });
+
+  // ---- Tier 7. THE GLARE, and the eyrie up a goat path off the glass ----
+  climb(CLOUD, 80, 20, 76, 28, 15);
+  ent('shardling', 30, 79, { face: 1 }); ent('shardling', 48, 79, { face: -1 }); ent('harpy', 62, 74);
+  coins([28, 79], [60, 79], [16, 79], [21, 79]); ent('check', 10, 79); ent('deco', 4, 79, { kind: 'cairn' });
+  ent('sign', 6, 79, { text: 'THE GLARE. THE ROCK LEDGES ARE THE ONLY REST UP HERE AND THERE ARE NOT MANY.' });
+  for (let y = 86; y <= CLOUD - 1; y++) set(W - 2, y, T.CLIMB);
+  plat(84, 97, 3); plat(89, 95, 3); plat(84, 93, 3); plat(89, 91, 3); plat(80, 89, 14);
+  coins([90, 94], [85, 92], [90, 90]);
+  ent('stray', 88, 88, { kind: 'shard' }); ent('deco', 83, 88, { kind: 'bones' }); ent('harpy', 78, 84);
+
+  // ---- Tier 8. THE BELLOWS: hot, tall breaths in the glare, glass that goes in a second, and the harpies ride them ----
+  ent('sign', 20, 79, { text: 'THE BELLOWS. THE BREATHS UP HERE THROW YOU HIGH, AND THE GLASS AT THE TOP IS LIT THROUGH. KEEP GOING.' });
+  vent(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
+  vent(19, 69, 9, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 }); cryst(17, 5, 60);
+  plat(24, 60, 5); vent(26, 60, 4, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
+  shelf(56, 24, 5);
+  coins([14, 74], [19, 64], [26, 58], [14, 70], [19, 66]);
+  ent('harpy', 40, 70); ent('harpy', 30, 64);
+  geode(80, 90, 80); coins([81, 82], [83, 82], [85, 82], [87, 82], [89, 82], [70, 79], [76, 79]);
+
+  // ---- Tier 9. THE UPPER GLARE, and the second chimney: the only way up it that is not glass ----
+  climb(56, 36, 18, 78, 26, 15);
+  ent('shardling', 60, 35, { face: -1 });
+  ent('check', 12, 35); coins([32, 35], [66, 35]);
   chimney(55, 36);
-  coins([70, 55], [78, 55], [84, 55]);
+  coins([70, 55], [78, 55], [84, 55], [40, 55], [50, 55], [6, 55], [12, 55], [18, 55]); ent('deco', 3, 55, { kind: 'bones', v: 1 });
 
-  // tier 6: the crawl under the crown ends in a hollow either side. The chimney comes up into the right one.
+  // ---- Tier 10. THE CROWN: the Roc's nest. Glass set in the rock where she dives, and two breaths ----
+  const s10 = climb(36, 30, 30, 62, 38, 11);
+  block(1, s10.gx - 1, 31, 34); block(s10.gx + s10.gw, W - 2, 31, 34); // the crown's body, either side of the way up
+  spikes(4, 12, 29); spikes(80, 90, 29);
+  spires(30, true, 8, 20, 74, 86); spires(29, false, 16, 78);
+  // glass set flush in the crown's rock: where her dive puts her talons through it and holds her
+  cryst(14, 6, 30); cryst(49, 6, 30); cryst(66, 6, 30);
+  // two breaths with a knuckle of glass over each: stand on the glass while she is over it and the breath is coming
+  // the crown's breaths blow the glass out themselves, half a second in: be where she hovers over one when it goes
+  vent(26, 30, 5, { period: 5, on: 2.4, phase: 0, lift: 220, glass: true }); cryst(24, 4, 27);
+  vent(60, 30, 5, { period: 5, on: 2.4, phase: 2.5, lift: 220, glass: true }); cryst(58, 4, 27);
+  ent('sign', 16, 29, { text: 'THE ROC. THE HARPIES\' MOTHER NESTS ON THE PEAK, AND THE SUN HAS TURNED THE ENDS OF HER FEATHERS TO GLASS. WATCH FOR HER SHADOW: SHE COMES DOWN WHERE IT IS, AND IF IT IS ON THE GLASS SHE STAYS DOWN. THE BREATHS UP HERE BLOW THE GLASS OVER THEM OUT, AND IT GOES UP: SHE HOVERS OFF YOUR SHOULDER, SO STAND WHERE THAT PUTS HER OVER ONE.' });
+  ent('roc', 72, 29);
+  // the last hop to the gate is over the thorns on two pieces of crystal, which will not wait for you
+  plat(79, 29, 5); cryst(85, 3, 27); cryst(89, 3, 27); // a plank over the first of the thorns, then the glass
+  ent('check', 18, 29); ent('gate', 92, 29);
+  ent('silver', 90, 26);
+  ent('stray', 25, 26, { kind: 'shard' });
+  // the crawl under the crown ends in a hollow either side, and the second chimney comes up into the right one
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
   ent('deco', 6, 35, { kind: 'cairn' }); coins([4, 35], [9, 35], [15, 35]);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 145 }, pools: [], falls: [], moversExtra: movers,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, hasCryst: true, cloudLine: CLOUD, // duskStart -1 means ALWAYS dusk: this one is daylight
-    tall: { top: 26 * TS, bottom: 146 * TS },
+    tall: { top: 26 * TS, bottom: 218 * TS },
     quest: { n: 3, item: 'shard', name: 'SUNSHARD', npc: 'squire', done: 'THE LIGHT IS CARRIED DOWN', reward: 'relic', relic: 'sunshard' },
     palette: { sky: [[126, 176, 214], [214, 232, 240]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag',
       haze: 'rgba(200,222,240,0.16)', grass: '#bcd4e4', grassL: '#e8f2fa', grassD: '#8ea8bc',
       dirt: '#5a6478', dirtL: '#727e94', dirtD: '#3c4456', canopy: ['#5a6478', '#6e7a90', '#8494ac', '#a8bcd0'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, trigger: 24 * TS, wallL: 1, wallR: 94, boss: 'suncatcher', music: 'boss2', tint: '#bfe6f5', tintA: 0.10, fx: 'motes' },
+    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, trigger: 24 * TS, wallL: 1, wallR: 94, boss: 'roc', music: 'roc', tint: '#bfe6f5', tintA: 0.08, fx: 'motes' },
   };
 }
 

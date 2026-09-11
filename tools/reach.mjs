@@ -29,7 +29,10 @@ for (const lv of LEVELS) {
   // make a level ASSISTED; that used to hide a real miss among the indoor keys
   const doors = (L.ents || []).filter(e => e.t === 'doorway' && e.id);
   const doorTo = new Map(doors.map(d => [d.id, d]));
-  const assisted = !!(L.moversExtra && L.moversExtra.length) || (L.ents || []).some(e => ['mover', 'vent', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length);
+  // vents (updrafts, thermals) the model follows too: stand in one and you go up the column, and steer
+  // off the top onto anything within three tiles of it
+  const vents = (L.ents || []).filter(e => e.t === 'vent');
+  const assisted = !!(L.moversExtra && L.moversExtra.length) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length);
 
   // every tile you could be standing on
   const key = (x, y) => x + ',' + y;
@@ -46,6 +49,8 @@ for (const lv of LEVELS) {
   while (q.length) {
     const [x, y] = q.pop();
     const springy = at(x, y + 1) === T.BOUNCER, up = springy ? BOUNCE_UP : JUMP_UP;
+    for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TS);
+      for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -3; dx <= 3; dx++) push(v.x + dx, ty); }
     // stand in a doorway and press talk: you come out at the other one
     for (const dr of doors) if (Math.abs(dr.x - x) <= 1 && dr.y === y) { const to = doorTo.get(dr.to); if (to) { let ty = to.y; while (ty < H - 1 && !footing.has(key(to.x, ty))) ty++; push(to.x, ty); } }
     // walk, and step up or down one

@@ -1,5 +1,5 @@
 // chars.js — the knight and the forest's enemies, baked from text grids + drawn sword.
-import { canvas, px, rect, line, circle, fromGrid, outline, flipX, whiten } from './px.js';
+import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, flipX, whiten } from './px.js';
 import { OUT } from './art.js';
 
 const KP0 = { // knight palette
@@ -1221,6 +1221,83 @@ export function bakeShardling() {
 // THE SUNCATCHER - it has been drinking this mountain's light since before the wood, and it gives it
 // back as glass. 34x30. Frames: 0 still, 1/2 turning, 3 drink (open, taking the sun), 4 throw,
 // 5 raise (a spire coming up), 6 struck, 7 dimmed.
+// THE ROC - the harpies' mother, as big as a cart, nesting on the Sunspire's peak. A thousand years in
+// the glare have turned the ends of her feathers to glass: a crystal crest, glass-tipped primaries, and
+// she sheds them. 60x44, facing right, anchored at her talons. Frames: 0-2 hover (wings up, level,
+// down), 3 screech, 4 dive, 5 gust (wings swept forward), 6 grounded (wings down in the glass),
+// 7 stagger (head thrown up), 8 down.
+export function bakeRoc() {
+  const C = { h: '#8a8478', H: '#5a5448', d: '#3a3630', f: '#e8e0d0', F: '#b8b0a0', m: '#c9a83a', M: '#8a6a1a', c: '#bfe6f5', C: '#eefaff', q: '#7aa8c8', e: '#ff4a3a' };
+  const W = 60, H = 44;
+  const poly = (g, pts, k) => fillPoly(g, pts, C[k]);
+  // a wing: shoulder, then the leading edge out to the tip, then back along the trailing edge. The last
+  // few points of the trailing edge get glass tips.
+  const wing = (g, pts, far) => {
+    poly(g, pts, far ? 'H' : 'h');
+    const n = pts.length; for (let i = 2; i < n - 1; i++) { const [x, y] = pts[i]; px(g, x, y, C[i % 2 ? 'c' : 'C']); px(g, x + 1, y, C.q); }
+    if (!far) { for (let i = 1; i < n - 2; i++) line(g, pts[0][0], pts[0][1], pts[i][0] + (pts[i + 1][0] - pts[i][0]) / 2, pts[i][1] + (pts[i + 1][1] - pts[i][1]) / 2, C.H, 1); }
+    // the primaries splay like fingers past the tip: that is what makes it a bird of prey and not a goose
+    let ti = 1, best = -1; for (let i = 1; i < n; i++) { const dd = Math.hypot(pts[i][0] - pts[0][0], pts[i][1] - pts[0][1]); if (dd > best) { best = dd; ti = i; } }
+    const [tx, ty] = pts[ti], ux = (tx - pts[0][0]) / best, uy = (ty - pts[0][1]) / best, nb = pts[(ti + 1) % n];
+    for (let k = 0; k < 3; k++) { const bx = tx + (nb[0] - tx) * k * 0.28, by = ty + (nb[1] - ty) * k * 0.28, L = 5 - k;
+      line(g, bx, by, bx + ux * L, by + uy * L, C[far ? 'H' : 'h'], 2); px(g, Math.round(bx + ux * (L + 1)), Math.round(by + uy * (L + 1)), C.c); }
+  };
+  const frame = ({ wings = 'mid', head = 'up', legs = 'hang', rot = 0, dy = 0 }) => {
+    const [c, g] = canvas(W, H);
+    g.save(); g.translate(30, 30 + dy); g.rotate(rot); g.translate(-30, -30);
+    // far wing first (behind the body)
+    const WINGS = {
+      up: [[[27, 20], [23, 3], [30, 0], [36, 4], [34, 12], [31, 20]], [[23, 21], [15, 2], [22, 1], [29, 8], [29, 20]]],
+      mid: [[[27, 22], [48, 11], [55, 13], [52, 17], [44, 21], [33, 25]], [[24, 22], [5, 12], [2, 17], [8, 20], [16, 24], [24, 26]]],
+      down: [[[27, 23], [37, 38], [31, 42], [26, 38], [24, 28]], [[24, 24], [12, 38], [8, 35], [12, 29], [21, 25]]],
+      fold: [[[18, 20], [36, 19], [34, 24], [26, 26], [16, 25]], null],
+      forward: [[[30, 22], [50, 4], [57, 8], [54, 16], [46, 22], [36, 27]], [[26, 21], [40, 3], [46, 6], [42, 15], [32, 24]]],
+      splay: [[[32, 24], [53, 38], [49, 42], [42, 41], [34, 32]], [[22, 24], [4, 38], [7, 42], [15, 41], [24, 31]]],
+    }[wings];
+    if (WINGS[1]) wing(g, WINGS[1], true);
+    // tail: three long feathers, glass at the ends
+    poly(g, [[19, 25], [5, 21], [4, 25], [6, 29], [19, 29]], 'h'); line(g, 18, 26, 6, 23, C.H, 1); line(g, 18, 28, 6, 28, C.H, 1);
+    px(g, 4, 23, C.c); px(g, 4, 26, C.C); px(g, 5, 29, C.c);
+    // legs and talons
+    const LEG = { hang: [[26, 32, 25, 38], [31, 32, 31, 38]], plant: [[25, 32, 22, 40], [32, 32, 35, 40]], strike: [[27, 31, 36, 36], [31, 31, 40, 34]], none: [] }[legs];
+    for (const [x0, y0, x1, y1] of LEG) { line(g, x0, y0, x1, y1, C.M, 2); px(g, x1 - 1, y1 + 1, C.m); px(g, x1 + 1, y1 + 1, C.m); px(g, x1 + 2, y1, C.m); }
+    // body: a heavy grey barrel with a pale breast
+    ellipse(g, 27, 26, 11, 7.5, C.h); ellipse(g, 30, 28, 7, 4.5, C.f); line(g, 25, 29, 33, 30, C.F, 1); line(g, 26, 31, 32, 31, C.F, 1);
+    // neck and head, a hooked gold beak, a crest of crystal
+    const HEAD = { up: [41, 15], low: [43, 27], screech: [40, 12], thrown: [36, 11] }[head];
+    const [hx, hy] = HEAD;
+    poly(g, [[33, 21], [hx - 3, hy - 2], [hx + 1, hy + 2], [36, 26]], 'h');
+    ellipse(g, hx, hy, 5, 4.2, C.h);
+    const open = head === 'screech';
+    if (open) { poly(g, [[hx + 3, hy - 3], [hx + 9, hy - 3], [hx + 11, hy - 1], [hx + 4, hy]], 'm'); poly(g, [[hx + 3, hy + 1], [hx + 9, hy + 4], [hx + 3, hy + 3]], 'M'); px(g, hx + 11, hy, C.M); }
+    else { poly(g, [[hx + 3, hy - 3], [hx + 9, hy - 2], [hx + 11, hy + 1], [hx + 10, hy + 4], [hx + 8, hy + 1], [hx + 3, hy + 2]], 'm'); px(g, hx + 10, hy + 3, C.M); px(g, hx + 10, hy + 4, C.M); px(g, hx + 9, hy + 2, C.M); }
+    px(g, hx + 3, hy - 2, C.f); // the cere
+    line(g, hx - 2, hy - 3, hx + 4, hy - 2, C.d, 1); px(g, hx + 4, hy - 1, C.d); // the brow
+    px(g, hx + 1, hy - 1, C.e); px(g, hx + 2, hy - 1, C.e); px(g, hx + 2, hy, C.d);
+    // a ruff at the neck, and a crest of glass that sweeps back off the skull
+    for (let k = 0; k < 4; k++) px(g, 33 + k, 21 + (k % 2), C.d);
+    const crest = [[hx - 3, hy - 4, -3], [hx - 5, hy - 3, -4], [hx - 7, hy - 1, -4], [hx - 1, hy - 5, -2]];
+    for (const [x, y, lx] of crest) { poly(g, [[x, y + 2], [x + lx, y - 4], [x + 2, y + 1]], 'c'); px(g, x + lx + 1, y - 3, C.C); px(g, x, y, C.q); }
+    // near wing last, over the body
+    wing(g, WINGS[0], false);
+    g.restore();
+    outline(c, OUT);
+    return c;
+  };
+  const F = [
+    frame({ wings: 'up', legs: 'hang' }),
+    frame({ wings: 'mid', legs: 'hang', dy: -1 }),
+    frame({ wings: 'down', legs: 'hang', dy: -2 }),
+    frame({ wings: 'up', head: 'screech', legs: 'hang' }),
+    frame({ wings: 'fold', head: 'low', legs: 'strike', rot: 0.55, dy: -4 }),
+    frame({ wings: 'forward', legs: 'hang' }),
+    frame({ wings: 'splay', head: 'low', legs: 'plant' }),
+    frame({ wings: 'splay', head: 'thrown', legs: 'plant' }),
+    frame({ wings: 'splay', head: 'low', legs: 'none', rot: 0.25, dy: 3 }),
+  ];
+  return pack(F, 30, 41, 40, 30);
+}
+
 export function bakeSuncatcher() {
   const SC = Object.assign({}, EP, { c: '#bfe6f5', C: '#7aa8c8', w: '#ffffff', y: '#ffe6a0', Y: '#e0b040', d: '#4a6a90', D: '#2e4460' });
   const W2 = 34, H2 = 30; const blank = () => Array.from({ length: H2 }, () => '.'.repeat(W2));
