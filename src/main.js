@@ -5093,7 +5093,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const b of embers) { g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), 4, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 2, 0, 7); g.fill(); }
   for (const b of bombs) if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);
   for (const f of foxes) drawSet(SPR.fox, null, Math.floor(f.t * 10) % 2, f.x - cx, f.y - cy, f.face, false);
-  for (const d of deco) if (d.bg && d.x > cx - 140 && d.x < cx + VW + 4) g.drawImage(d.c, d.x - cx, d.y - cy);
+  for (const d of deco) if (d.bg && d.x > cx - 140 && d.x < cx + VW + 4) { if (d.kind === 'hiveBg') { g.globalAlpha = 0.5; g.drawImage(d.c, d.x - cx, d.y - cy); g.globalAlpha = 1; } else g.drawImage(d.c, d.x - cx, d.y - cy); } // (the great combs sit back: they are scenery, not somewhere to stand)
   for (const d of decor) if (d.bg && d.x > cx - 44 && d.x < cx + VW + 4) g.drawImage(d.c, d.x - cx, d.y - cy);
   for (const d of decor) if (!d.bg && d.x > cx - 30 && d.x < cx + VW + 4) {
     if (d.fire) { g.drawImage(PROP.campfire[Math.floor(time * 9 + d.x) % 3], d.x - cx, d.y - cy); continue; }

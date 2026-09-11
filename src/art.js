@@ -78,15 +78,14 @@ export function bakeLogEnd(seed, right) {
   return c;
 }
 
-export function bakeThorns(seed) {
+export function bakeThorns(seed) { // a bed of bramble, and thorns standing up out of it: pale, sharp and outlined - the one thing in the wood that says NOT HERE
   const rnd = mulberry(seed); const [c, g] = canvas(T, T);
-  for (let i = 0; i < 6; i++) {
-    const x0 = (rnd() * T) | 0, y0 = 6 + ((rnd() * 8) | 0), x1 = (rnd() * T) | 0, y1 = 8 + ((rnd() * 8) | 0);
-    line(g, x0, y0, x1, y1, C.vine, 2);
-  }
-  rect(g, 0, 14, T, 2, C.vine);
-  for (let i = 0; i < 7; i++) { const x = (rnd() * T) | 0, y = 4 + ((rnd() * 8) | 0); px(g, x, y, C.thorn); px(g, x, y + 1, '#7a7660'); }
-  if (rnd() < 0.5) { const x = (rnd() * 14) | 0; rect(g, x, 9 + ((rnd() * 4) | 0), 2, 2, C.berry); }
+  for (let i = 0; i < 4; i++) { const x0 = (rnd() * T) | 0, y0 = 10 + ((rnd() * 4) | 0), x1 = (rnd() * T) | 0, y1 = 12 + ((rnd() * 3) | 0); line(g, x0, y0, x1, y1, '#4a2a24', 2); }
+  rect(g, 0, 13, T, 3, '#4a2a24'); rect(g, 0, 13, T, 1, '#6a3a2a');
+  for (const bx of [2, 6, 10, 14]) { const x = Math.min(14, bx + ((rnd() * 2) | 0) - 1), h = 6 + ((rnd() * 4) | 0), top = 13 - h;
+    for (let r = top; r < 13; r++) { const w = 1 + Math.min(2, Math.floor((r - top) / 3)), x0 = x - (w >> 1); rect(g, x0 - 1, r, w + 2, 1, '#1b1210'); rect(g, x0, r, w, 1, r - top < 2 ? '#fff6e0' : '#d8ccb0'); }
+    px(g, x, top - 1, '#1b1210'); px(g, x, top, '#ff6b6b'); }
+  if (rnd() < 0.5) { const x = (rnd() * 14) | 0; rect(g, x, 11, 2, 2, C.berry); }
   return c;
 }
 

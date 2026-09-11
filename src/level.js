@@ -168,7 +168,7 @@ function brackenWood() {
   G0.ent('felltree', 241, 14, { len: 14, dir: 1 });
   G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS });
   G0.block(242, 255, 24, 27);
-  G0.ent('wasp', 245, 11); G0.ent('wasp', 250, 11);
+  G0.ent('wasp', 245, 13); G0.ent('wasp', 249, 13); G0.ent('wasp', 253, 13); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
   G0.coins([244, 13], [248, 13], [252, 13]);
   G0.block(256, 270, 15, 27);
   G0.ent('check', 259, 14); G0.ent('sprig', 265, 14, { face: -1 }); G0.coins([262, 13], [268, 13]);
@@ -183,7 +183,8 @@ function brackenWood() {
   G.ent('wasp', 146, 6); G.ent('wasp', 150, 5); G.coins([146, 4], [150, 3]); G.ent('sprig', 144, 7, { face: -1 });
   G.plat(153, 9, 2); G.coins([154, 8]);
   G.ent('deco', 158, 11, { kind: 'hiveBg' }); G.ent('deco', 168, 11, { kind: 'hiveBg' });
-  G.spikes(159, 167, 11); G.ent('wasp', 160, 9); G.ent('wasp', 163, 9); G.ent('wasp', 166, 9); G.coins([160, 7], [163, 7], [166, 7]); // pogo the wasps over the thorns
+  G.spikes(159, 167, 11); G.block(161, 162, 10, 11); G.block(165, 166, 10, 11); // a bed of thorns under the hives, and two mounds of earth up out of it to hop across
+  G.ent('wasp', 163, 7); G.ent('wasp', 167, 7); G.coins([161, 9], [165, 9], [163, 5], [167, 5]); // the wasps over the gaps are for the gold above them
   G.ent('shield', 171, 11, { face: -1 }); G.crate(174, 11); G.coins([170, 9], [173, 10]);
   G.ent('stray', 148, 7, { kind: 'pot' }); // the first honey pot, on top of the giant among the wasps
   const R1 = G.done();
