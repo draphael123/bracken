@@ -653,7 +653,24 @@ function sporewood() {
   Fk.R.sleeps.push({ x0: 162 * TS, x1: 169 * TS, y0: 14 * TS, y1: 20 * TS }); Fk.ent('drone', 165, 16); Fk.ent('glow', 170, 19); Fk.ent('lurker', 171, 19);
   Fk.set(173, 19, T.BOUNCER); Fk.plat(171, 17, 2); Fk.plat(171, 14, 2); Fk.plat(174, 8, 2);
   Fk.coins([137, 18], [143, 18], [153, 18], [158, 18], [166, 18], [172, 13]);
-  return Fk.done();
+  const R3 = Fk.done();
+  // ---- 7b. THE DEEP GILLS and THE SPROUTS: down into a cellar under the caps, black as pitch but for the glowbuds you strike,
+  // then out up a shaft on sprouts that shoot up when you stand on them (each step is a head too high to jump). ----
+  const Dg = grow(R3, R3, 424, 48), TSZ = 16;
+  Dg.block(424, 429, 14, 27);                                                  // the lip
+  Dg.block(430, 447, 4, 9); Dg.block(430, 445, 25, 27); Dg.block(446, 447, 23, 27); // the cellar: a roof over it, a floor under it, a step up at the far end
+  Dg.plat(431, 17, 2); Dg.plat(434, 21, 2);                                     // shelves down into it, so it is a climb down and not a blind drop
+  Dg.block(448, 452, 22, 27); Dg.block(453, 457, 18, 27); Dg.block(458, 471, 14, 27); // the shaft: floor, the sprout shelf, the lip out
+  Dg.ent('sign', 425, 13, { text: 'THE DEEP GILLS. BLACK AS A CELLAR DOWN THERE. STRIKE A GLOWBUD AND IT LIGHTS THE PLACE A WHILE. BEYOND IT THE SPROUTS GROW WHEN YOU STAND ON THEM: RIDE THEM UP.' });
+  for (const x of [432, 437, 442]) Dg.ent('glowbud', x, 24); Dg.ent('glowbud', 434, 20);
+  Dg.ent('lurker', 439, 24); Dg.ent('sporeling', 444, 24, { face: -1 }); Dg.ent('drone', 451, 16);
+  Dg.coins([433, 23], [436, 23], [440, 23], [443, 22], [455, 16], [460, 12], [462, 12]);
+  Dg.ent('check', 466, 13);
+  Dg.R.moversExtra = (Dg.R.moversExtra || []).concat([ // the sprouts: a bud you hop on; stand on it and it shoots up 56px, holds, and withers back
+    { kind: 'growcap', x: 450 * TSZ + 8 - 16, y: 22 * TSZ - 8, y0: 22 * TSZ - 8, y1: 22 * TSZ - 64, w: 32, h: 8, rise: 56, state: 'bud', k: 0 },
+    { kind: 'growcap', x: 456 * TSZ + 8 - 16, y: 18 * TSZ - 8, y0: 18 * TSZ - 8, y1: 18 * TSZ - 64, w: 32, h: 8, rise: 56, state: 'bud', k: 0 }]);
+  Dg.R.dark = 0.01; Dg.R.darkZones = (Dg.R.darkZones || []).concat([{ x0: 430 * TSZ, x1: 448 * TSZ, y0: 9 * TSZ, y1: 26 * TSZ, dark: 0.9 }]);
+  return Dg.done();
 ;
 }
 
