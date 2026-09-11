@@ -1322,7 +1322,27 @@ function burst(x, y, n, cols, spd = 70, life = 0.5, grav = 300, size = 2) {
   n = Math.max(1, Math.round(n * partScale()));
   for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, s = spd * (0.4 + Math.random() * 0.8); parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - spd * 0.3, life: life * (0.6 + Math.random() * 0.6), max: life, col: cols[(Math.random() * cols.length) | 0], size, grav }); }
 }
-function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
+function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ streak: true,  x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
+// FIRE, LIGHT AND SPARKS. Particles with a life of their own: drawParts() ramps a flame from white-hot through orange
+// and red to a puff of smoke, draws a spark as a streak along its flight, and lays a soft glow over anything hot.
+function flame(x, y, n = 4, spread = 5, up = 50, size = 3) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const l = 0.3 + Math.random() * 0.35; parts.push({ x: x + (Math.random() - 0.5) * spread * 2, y: y + (Math.random() - 0.5) * spread, vx: (Math.random() - 0.5) * 24, vy: -up * (0.5 + Math.random() * 0.7), life: l, max: l, col: '#ffd36b', size, grav: -30, fire: true, drag: 1.5 }); } }
+function motes(x, y, n = 6, spread = 10, cols = ['#fff6c8', '#ffd36b']) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const l = 0.7 + Math.random() * 0.5; parts.push({ x: x + (Math.random() - 0.5) * spread * 2, y: y + (Math.random() - 0.5) * spread, vx: (Math.random() - 0.5) * 16, vy: -20 - Math.random() * 40, life: l, max: l, col: cols[(Math.random() * cols.length) | 0], size: Math.random() < 0.3 ? 2 : 1, grav: -8, glow: true }); } }
+function streaks(x, y, n = 6, cols = ['#fff6c8', '#ffd36b'], spd = 160) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const a = Math.random() * Math.PI * 2, v = spd * (0.5 + Math.random() * 0.6), l = 0.22 + Math.random() * 0.18; parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: l, max: l, col: cols[(Math.random() * cols.length) | 0], size: 1, grav: 260, streak: true }); } }
+function smoke(x, y, n = 4, spread = 8) { for (let i = 0; i < n; i++) { const l = 0.8 + Math.random() * 0.5; parts.push({ x: x + (Math.random() - 0.5) * spread * 2, y: y + (Math.random() - 0.5) * spread, vx: (Math.random() - 0.5) * 14, vy: -18 - Math.random() * 16, life: l, max: l, col: Math.random() < 0.5 ? '#5a5460' : '#4a4450', size: 3, grav: -6, drag: 0.8 }); } }
+const HOT = new Set(['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c', '#dfffa0', '#c9a0ff', '#f0e4ff', '#bfe6f5', '#eefaff', '#fff6e0', '#9ab8ff', '#ffd34a']);
+function drawParts(cx, cy) {
+  for (const p of parts) { const f = Math.max(0, p.life / p.max), x = Math.round(p.x - cx), y = Math.round(p.y - cy);
+    if (x < -8 || x > VW + 8 || y < -8 || y > VH + 8) continue;
+    if (p.fire) { const c = f > 0.72 ? '#fff6c8' : f > 0.5 ? '#ffd36b' : f > 0.32 ? '#ff9a5c' : f > 0.18 ? '#c9463d' : '#4a4450'; const sz = Math.max(1, Math.round(p.size * (f > 0.18 ? 0.5 + f : 1.4 + (0.18 - f) * 4)));
+      g.globalAlpha = f > 0.18 ? 1 : f / 0.18 * 0.5; g.fillStyle = c; g.fillRect(x - (sz >> 1), y - (sz >> 1), sz, sz); continue; }
+    if (p.streak) { g.globalAlpha = Math.min(1, f * 2); g.strokeStyle = p.col; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 0.5, y + 0.5); g.lineTo(x + 0.5 - p.vx * 0.035, y + 0.5 - p.vy * 0.035); g.stroke(); continue; }
+    g.globalAlpha = Math.min(1, f * 2); g.fillStyle = p.col; g.fillRect(x, y, p.size, p.size); }
+  if (SET.parts !== 'low') { g.globalCompositeOperation = 'lighter'; // the hot ones glow
+    for (const p of parts) { const f = Math.max(0, p.life / p.max); if (!(p.fire ? f > 0.32 : p.glow || HOT.has(p.col))) continue; const x = Math.round(p.x - cx), y = Math.round(p.y - cy); if (x < -8 || x > VW + 8 || y < -8 || y > VH + 8) continue;
+      const r = (p.size || 1) + (p.fire ? 3 : 2); g.globalAlpha = (p.fire ? 0.16 : 0.22) * Math.min(1, f * 2); g.fillStyle = p.fire ? '#ff9a5c' : p.col; g.fillRect(x - r + 1, y - r + 1, r * 2 - 2 + (p.size || 1), r * 2 - 2 + (p.size || 1)); }
+    g.globalCompositeOperation = 'source-over'; }
+  g.globalAlpha = 1;
+}
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */ nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
 function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
@@ -1343,7 +1363,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false } = {}) {
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (P.relic === 'banner') dmg = Math.max(1, Math.round(dmg * 0.8)); // the Queen's banner: they pull their blows
   if (P.dead || invulnerable()) return false;
-  if (P.aegis) { gainLight(12); P.st = Math.max(0, P.st - 8); P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
+  if (P.aegis) { gainLight(12); P.st = Math.max(0, P.st - 8); P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); streaks(P.x + P.face * 10, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 150); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
   const front = Math.sign(fromX - P.x) === P.face || fromX === P.x;
   if (P.block && front && !unblockable) {
     if (P.st >= ST.blockHit) {
@@ -1364,12 +1384,13 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false } = {}) {
   hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; SFX.pHurt(); rumble(180, 0.8);
   burst(P.x, P.y - 8, 8, ['#e04848', '#ffd36b'], 60, 0.4);
   number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
+  if (P.hp > 0) crowdJeer(false);
   if (P.hp <= 0) die();
   return 'hit';
 }
 function die() {
   if (P.dead) return;
-  P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
+  P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9);
 }
 // Per-enemy death: a corpse object animates the fall so every foe dies its own way.
@@ -1468,7 +1489,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (SET.impact !== false) for (let i = 0; i < 3; i++) { const an = (Math.random() - 0.5) * 1.1; parts.push({ x: e.x, y: e.y - e.h / 2, vx: Math.cos(an) * dir * (260 + Math.random() * 120), vy: Math.sin(an) * 200 - 30, life: 0.12, max: 0.12, col: i ? '#fff6e0' : '#ffffff', size: 1, grav: 0 }); }
   if (!e.maxHp && e.alive && !isSolid(Math.floor((e.x + dir * (e.w / 2 + 3)) / TS), Math.floor((e.y - 4) / TS))) e.x += dir * 2;
   if (e.hp <= 0) {
-    e.alive = false; kills++; killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(e.t); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
+    e.alive = false; kills++; startle(e); killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(e.t); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
     { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
     burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);
     sparks(e.x, e.y - e.h / 2, dir, 6);
@@ -1542,10 +1563,11 @@ function updatePlayer(dt) {
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
   if (throwPress && isPyro() && skillNow() === 'fireWall' && P.ground && !(P.slamCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { P.slamCd = 4; P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (throwPress && isPyro() && skillNow() === 'cinderStep' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { P.throwCd = 3; P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (throwPress && skillNow() === 'risingCut' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { P.throwCd = CD_MAX.risingCut; P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); SFX.slash(); SFX.pPogo(); squash(0.8, 1.25, 0.12); dust(P.x, P.y, 6); ringAt(P.x, P.y - 10, 14, '#fff6e0', 0.2); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } // RISING CUT: the blade goes up and so do you, and whatever it catches
-  if (throwPress && isPyro() && skillNow() === 'vent' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; P.throwCd = CD_MAX.vent; const dmg = Math.round(10 + heat * 0.5), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.light = 0; P.atk = -1; ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
+  if (throwPress && isPyro() && skillNow() === 'cinderStep' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { P.throwCd = 3; P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); P.cinderT = 0.3; streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (throwPress && skillNow() === 'risingCut' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { P.throwCd = CD_MAX.risingCut; P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); SFX.slash(); SFX.pPogo(); squash(0.8, 1.25, 0.12); dust(P.x, P.y, 6); ringAt(P.x, P.y - 10, 14, '#fff6e0', 0.2); streaks(P.x + P.face * 6, P.y - 16, 8, ['#fff6e0', '#c9d1dc'], 170); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } // RISING CUT: the blade goes up and so do you, and whatever it catches
+  if (throwPress && isPyro() && skillNow() === 'vent' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; P.throwCd = CD_MAX.vent; const dmg = Math.round(10 + heat * 0.5), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.light = 0; P.atk = -1; ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); for (let a = 0; a < 18; a++) { const an = a / 18 * Math.PI * 2, sp = 70 + heat * 1.2; parts.push({ x: P.x, y: P.y - 8, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.45, max: 0.45, col: '#ffd36b', size: 3, grav: -20, fire: true, drag: 2.5 }); } smoke(P.x, P.y - 10, 5, 8); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
   if (throwPress && isPyro() && skillNow() === 'wisp' && !(P.throwCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { P.throwCd = CD_MAX.wisp; wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
+  if (P.cinderT > 0) { P.cinderT -= dt; flame(P.x - P.face * 4, P.y - 7, 2, 4, 30, 3); ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.12, frame: 1 }); } // the cinder step leaves fire where you were
   if (P.riseT > 0) { P.riseT -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); const hb = { l: P.x - 11, r: P.x + 11, t: P.y - 36, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtEnemy(e, swordDmg() + 4, P.x, false); if (!big && e.t !== 'king' && e.t !== 'mother') { e.vy = -240; e.y -= 2; e.stagger = Math.max(e.stagger || 0, 0.7); e.air = true; } sparks(e.x, e.y - e.h / 2, P.face, 6); hitstop(0.05); } } }
   if (P.ground) P.riseUsed = false;
   if (throwPress && skillNow() === 'groundSlam' && P.ground && !(P.slamCd > 0) && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { P.slamCd = 3; P.block = false; P.atk = -1; shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.2, sp: 210, hit: new Set() }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
@@ -1591,7 +1613,7 @@ function updatePlayer(dt) {
   P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && hero() === 'knight';
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
     const j = jetBox();
-    for (let i = 0; i < 3; i++) if (Math.random() < dt * 70) { const k = Math.random(); parts.push({ x: P.x + P.face * (8 + k * JET_LEN), y: P.y - 9 + (Math.random() - 0.5) * (4 + k * 14), vx: P.face * (60 + Math.random() * 60), vy: -20 - Math.random() * 30, life: 0.25 + k * 0.2, max: 0.45, col: k < 0.3 ? '#fff6c8' : Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: k < 0.5 ? 1 : 2, grav: -60 }); }
+    for (let i = 0; i < 3; i++) if (Math.random() < dt * 70) { const k = Math.random(); parts.push({ fire: true, drag: 1, x: P.x + P.face * (8 + k * JET_LEN), y: P.y - 9 + (Math.random() - 0.5) * (4 + k * 14), vx: P.face * (60 + Math.random() * 60), vy: -20 - Math.random() * 30, life: 0.25 + k * 0.2, max: 0.45, col: k < 0.3 ? '#fff6c8' : Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: k < 0.5 ? 1 : 2, grav: -60 }); }
     P.jetTick = (P.jetTick || 0) - dt; if (P.jetTick <= 0) { P.jetTick = 0.2; for (const e of enemies) if (e.alive && !e.harmless && e.x + e.w / 2 > j.l && e.x - e.w / 2 < j.r && e.y > j.t && e.y - e.h < j.b) { hurtEnemy(e, heatDmg(e.maxHp ? 2 : 4), P.x - P.face * 10, false); e.burn = Math.max(e.burn || 0, 0.8); } }
     for (const s of seeds) if (!s.dead && s.x > j.l - 6 && s.x < j.r + 6 && s.y > j.t - 6 && s.y < j.b + 6) { s.dead = true; parries++; burst(s.x, s.y, 4, ['#ff9a5c', '#ffd36b'], 40, 0.3, 0, 1); }
     for (const c of clouds2) if (c.x + c.r > j.l && c.x - c.r < j.r && Math.abs(c.y - (P.y - 8)) < 24) c.life = Math.min(c.life, 0.2);
@@ -1710,6 +1732,7 @@ function updatePlayer(dt) {
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
   }
+  if (P.ground && Math.abs(P.vx) > 90 && Math.sign(P.vx) !== P.face && !dodging) { if (Math.random() < dt * 30) dust(P.x + P.face * 3, P.y, 1); SFX.skid(); } // turning at a run: the boots skid
   if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
   P.anim += dt;
@@ -3696,11 +3719,61 @@ function drawCritters(cx, cy) {
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
 const windingUp = e => (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));
+// PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
+//  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
+//  - they LAUGH when one of them hits you, and all of them cheer when you fall;
+//  - they FLINCH when the one next to them dies, and a goblin nearly dead shakes and sweats;
+//  - at rest they breathe, look about, and mutter; walking they bob, and you hear their feet.
+const GOBLINISH = new Set(['sprig', 'thief', 'sapper', 'archer', 'pike', 'shield', 'brute', 'hearthgob', 'miner', 'sentry', 'sweep', 'thorn', 'rockgoblin', 'snuffer', 'cutter', 'horn', 'shaman', 'stormshaman', 'master', 'sailer']);
+const FLYERS = new Set(['wasp', 'bat', 'harpy', 'crow', 'drone', 'kite', 'sailer']);
+const HEAVY = new Set(['brute', 'hearthgob', 'troll', 'master', 'shield', 'goat', 'greathound']);
+function temper(e, dt) {
+  e.popT = Math.max(0, (e.popT || 0) - dt); e.jeerT = Math.max(0, (e.jeerT || 0) - dt); e.emoteT = Math.max(0, (e.emoteT || 0) - dt); e.lookT = Math.max(0, (e.lookT || 0) - dt); e.relT = Math.max(0, (e.relT || 0) - dt);
+  if (e.harmless || e.gone > 0 || e.maxHp || e.mini) return;
+  const dx = P.x - e.x, dy = P.y - e.y;
+  if (!e.seenP) {
+    if (!P.dead && Math.abs(dx) < 150 && Math.abs(dy) < 60 && !['sleep', 'asleep', 'hide'].includes(e.mode)) { e.seenP = true; e.popT = 0.35; e.emote = 'alert'; e.emoteT = 0.7; SFX.foeNotice(e.t); }
+    else if (Math.abs(e.vx || 0) < 4) { e.idleT = (e.idleT ?? 1 + Math.random() * 3) - dt; if (e.idleT <= 0) { e.idleT = 2.5 + Math.random() * 3.5; if (Math.random() < 0.6) e.lookT = 0.7 + Math.random() * 0.6; else if (GOBLINISH.has(e.t) && Math.abs(dx) < 240) SFX.foeMutter(e.t); } }
+  } else if (Math.abs(dx) > 320) e.seenP = false; // it has lost you: it will jump at the sight of you again
+  if (GOBLINISH.has(e.t) && e.hp0 && e.hp > 0 && e.hp < e.hp0 * 0.35 && Math.random() < dt * 2) parts.push({ x: e.x + (Math.random() < 0.5 ? -4 : 4), y: e.y - e.h - 2, vx: 0, vy: 20, life: 0.5, max: 0.5, col: '#9ad8ff', size: 1, grav: 120 }); // sweat
+  if (Math.abs(e.vx || 0) > 12 && !FLYERS.has(e.t) && Math.abs(dx) < 170 && Math.abs(dy) < 80) { const ph = Math.floor(e.anim * 6); if (ph !== e.stepPh2) { e.stepPh2 = ph; if (ph % 2 === 0) { const h = HEAVY.has(e.t); SFX.foeStep(h); if (h) dust(e.x, e.y, 1); } } }
+}
+// the crowd: they laugh at your hurt, cheer your fall, and flinch at each other's deaths
+function crowdJeer(cheer) { let who = null;
+  for (const e of enemies) if (e.alive && !e.maxHp && !e.mini && GOBLINISH.has(e.t) && Math.abs(e.x - P.x) < (cheer ? 220 : 170) && Math.abs(e.y - P.y) < 90 && !windingUp(e) && (cheer || Math.random() < 0.7)) { e.jeerT = cheer ? 2.2 : 0.9; e.emote = 'laugh'; e.emoteT = e.jeerT; who = who || e; }
+  if (who) SFX.foeJeer(who.t); }
+function startle(dead) { let who = null;
+  for (const o of enemies) if (o !== dead && o.alive && !o.maxHp && !o.mini && !o.harmless && Math.abs(o.x - dead.x) < 110 && Math.abs(o.y - dead.y) < 60) { o.popT = 0.3; o.emote = 'shock'; o.emoteT = 0.7; o.seenP = true; who = who || o; }
+  if (who && GOBLINISH.has(who.t)) SFX.foeGasp(who.t); }
+// THE BODY: breath at rest, a bob in the walk, a crouch into every wind-up and a stretch out of it, a recoil when struck,
+// a hop when startled or laughing, a shake when nearly dead; drawn over whatever frame the creature is on
+function poseOf(e, wind) {
+  const o = { dx: 0, dy: 0, sx: 1, sy: 1, face: e.lookT > 0 && !e.seenP ? -e.face : e.face };
+  if (!e.alive) return o;
+  const fly = FLYERS.has(e.t), mv = Math.abs(e.vx || 0) > 4, seed = ((e.hx || e.x0 || 0) * 0.37) % 6;
+  if (wind) { o.sy *= 0.9; o.sx *= 1.08; }
+  else if (e.relT > 0) { const k = e.relT / 0.18; o.sy *= 1 + 0.12 * k; o.sx *= 1 - 0.08 * k; }
+  else if (!mv && !fly) { const b = Math.sin(e.anim * 2.8 + seed); o.sy *= 1 + 0.03 * b; o.sx *= 1 - 0.015 * b; }
+  if (mv && !fly) o.dy -= Math.round(Math.abs(Math.sin(e.anim * 9 + seed)) * 1.2);
+  if (e.flash > 0) { o.dx -= (e.face || 1) * 1.5; o.sy *= 0.95; o.sx *= 1.04; }
+  if (e.popT > 0) o.dy -= Math.round(Math.sin(Math.PI * (1 - e.popT / 0.35)) * 5);
+  if (e.jeerT > 0) o.dy -= Math.round(Math.abs(Math.sin(e.jeerT * 13)) * 3);
+  if (GOBLINISH.has(e.t) && e.hp0 && e.hp < e.hp0 * 0.35 && !wind && Math.floor(time * 24) % 3 === 0) o.dx += Math.floor(time * 48) % 2 ? 1 : -1;
+  return o;
+}
+function drawEmote(e, x, y) { // x, y: over its head, on screen
+  const k = e.emoteT;
+  if (e.emote === 'alert') { g.globalAlpha = Math.min(1, k * 3); g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 4.5, y); g.lineTo(x - 7.5, y - 4); g.moveTo(x + 0.5, y - 2); g.lineTo(x + 0.5, y - 7); g.moveTo(x + 5.5, y); g.lineTo(x + 8.5, y - 4); g.stroke(); }
+  else if (e.emote === 'laugh') { const b = Math.round(Math.abs(Math.sin(k * 13)) * 2); g.globalAlpha = Math.min(1, k * 3); g.fillStyle = '#ffd36b'; for (const ox of [-4, 3]) { g.fillRect(x + ox, y - 3 - b, 1, 1); g.fillRect(x + ox + 1, y - 2 - b, 1, 1); g.fillRect(x + ox + 2, y - 3 - b, 1, 1); } }
+  else if (e.emote === 'shock') { g.globalAlpha = Math.min(1, k * 3); g.fillStyle = '#9ad8ff'; const dy = Math.round((0.7 - k) * 6); g.fillRect(x + 5, y - 2 + dy, 2, 2); g.fillRect(x + 5.5, y - 3 + dy, 1, 1); g.fillStyle = '#fff6e0'; g.fillRect(x - 6, y - 4, 1, 3); g.fillRect(x - 6, y, 1, 1); }
+  g.globalAlpha = 1;
+}
 function updateEnemies(dt) {
   for (const e of enemies) {
     if (!e.alive) continue;
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
-    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) SFX.tell(!!e.maxHp || !!e.big || !!e.mini); e.wuWas = wu; }
+    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (!wu && e.wuWas) e.relT = 0.18; e.wuWas = wu; }
+    if (Math.abs(e.x - P.x) < 420) temper(e, dt);
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - dt); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt);
     if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { e.hp -= 2; e.flash = 0.06; number(e.x, e.y - e.h - 8, 2, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
     if (e.frozen > 0) e.frozen -= dt;
@@ -4024,10 +4097,10 @@ const PYRE_DMG = 42, PYRE_SPLASH = 16;
 // THE PALADIN'S LIGHT: it comes from the maul landing and from whatever the Aegis turns aside, and it goes on
 // mending or on JUDGEMENT.
 function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(100, (P.light || 0) + n); if (!was && P.light >= 100) { SFX.lightFull(); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } }
-function castMend() { if ((P.light || 0) < 34) { SFX.buzz(); P.stFlash = 0.3; return; } P.light -= 34; P.hp = Math.min(P.maxHp, P.hp + 20); P.castT = 0.3; SFX.mend(); number(P.x, P.y - 24, '+20', '#fff6c8');
+function castMend() { if ((P.light || 0) < 34) { SFX.buzz(); P.stFlash = 0.3; return; } P.light -= 34; P.hp = Math.min(P.maxHp, P.hp + 20); P.castT = 0.3; SFX.mend(); motes(P.x, P.y - 10, 18, 10); ringAt(P.x, P.y - 12, 22, '#fff6c8', 0.45); ringAt(P.x, P.y - 12, 12, '#ffd36b', 0.3); number(P.x, P.y - 24, '+20', '#fff6c8');
   for (let i = 0; i < 14; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 16, y: P.y - Math.random() * 20, vx: 0, vy: -40 - Math.random() * 40, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: Math.random() < 0.3 ? 2 : 1, grav: -20 }); }
 function castJudgement() { P.light = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.6); P.vx = 0; SFX.judgement(); shakeCam(9); zoomKick(1.12, 0.35); killFlash = 0.035; hitstop(0.08); // a white flash: the red one is for being hurt
-  for (let k = -3; k <= 3; k++) bolts.push({ x: P.x + k * 48, y: P.y, life: 0.45, storm: true, holy: true });
+  for (let k = -3; k <= 3; k++) { bolts.push({ x: P.x + k * 48, y: P.y, life: 0.45, storm: true, holy: true }); ringAt(P.x + k * 48, P.y - 2, 14, '#fff6c8', 0.4); motes(P.x + k * 48, P.y - 4, 5, 6); } streaks(P.x, P.y - 12, 14, ['#fff6c8', '#ffd36b'], 220);
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 180 && Math.abs(e.y - P.y) < 110) { bolts.push({ x: e.x, y: e.y, life: 0.45, storm: true, holy: true }); hurtEnemy(e, e.maxHp ? 30 : 48, P.x, true); if (!e.maxHp && e.alive) e.stagger = Math.max(e.stagger || 0, 1.2); }
   for (const s of seeds) if (!s.dead && Math.abs(s.x - P.x) < 180) s.dead = true; }
 function bankHeat() { if (P.full) return; P.full = true; P.fullT = 5; SFX.heatFull(); ringAt(P.x, P.y - 10, 18, '#ffd36b', 0.3); burst(P.x, P.y - 10, 10, ['#ffd36b', '#fff6c8'], 50, 0.4, -40, 1); }
@@ -4035,11 +4108,11 @@ function castPyre() {
   P.full = false; P.heat = 0; P.fullT = 0; P.cHeld = -99; P.blastT = 0.34; P.atk = -1; P.jet = false;
   pyres.push({ x: P.x + P.face * 12, y: P.y - 11, vx: P.face * 250, dir: P.face, life: 1.5, t: 0, hit: new Set() });
   P.vx -= P.face * 90; shakeCam(4, -P.face * 2); zoomKick(1.08, 0.2); hitstop(0.05); SFX.pyre();
-  burst(P.x + P.face * 14, P.y - 11, 16, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 90, 0.45, 0, 2);
+  burst(P.x + P.face * 14, P.y - 11, 16, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 90, 0.45, 0, 2); streaks(P.x + P.face * 14, P.y - 11, 10, ['#fff6c8', '#ffd36b', '#ff9a5c'], 220); flame(P.x + P.face * 10, P.y - 11, 6, 4, 40, 3);
 }
 function pyreBurst(b) {
   if (b.done) return; b.done = true; b.life = 0;
-  ringAt(b.x, b.y, 30, '#ffd36b', 0.35); burst(b.x, b.y, 26, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 120, 0.6, 60, 2);
+  ringAt(b.x, b.y, 30, '#ffd36b', 0.35); ringAt(b.x, b.y, 46, '#ff6b2c', 0.5); burst(b.x, b.y, 26, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 120, 0.6, 60, 2); flame(b.x, b.y, 18, 14, 90, 4); streaks(b.x, b.y, 12, ['#fff6c8', '#ffd36b', '#ff9a5c'], 240); smoke(b.x, b.y - 6, 6, 10);
   shakeCam(6); zoomKick(1.06, 0.18); SFX.pyreBoom();
   for (const e of enemies) if (e.alive && !e.harmless && !b.hit.has(e) && Math.abs(e.x - b.x) < 30 + e.w / 2 && Math.abs(e.y - e.h / 2 - b.y) < 30) { hurtEnemy(e, PYRE_SPLASH, b.x, false); e.burn = Math.max(e.burn || 0, 2); }
   // and the ground under it catches: webs and palisades go up, the lamps light
@@ -4049,7 +4122,7 @@ function pyreBurst(b) {
 }
 function updatePyres(dt) {
   for (const b of pyres) { b.life -= dt; b.t += dt; b.x += b.vx * dt;
-    for (let i = 0; i < 3; i++) if (Math.random() < dt * 60) parts.push({ x: b.x - b.dir * (4 + Math.random() * 8), y: b.y + (Math.random() - 0.5) * 9, vx: -b.dir * (30 + Math.random() * 40), vy: -20 - Math.random() * 30, life: 0.35, max: 0.35, col: Math.random() < 0.3 ? '#fff6c8' : Math.random() < 0.6 ? '#ffd36b' : '#ff6b2c', size: 2, grav: -40 });
+    for (let i = 0; i < 3; i++) if (Math.random() < dt * 60) parts.push({ x: b.x - b.dir * (4 + Math.random() * 8), y: b.y + (Math.random() - 0.5) * 9, vx: -b.dir * (30 + Math.random() * 40), vy: -20 - Math.random() * 30, life: 0.35, max: 0.35, col: '#ffd36b', size: 3, grav: -40, fire: true, drag: 1 });
     for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - b.x) < 14 && Math.abs(s2.y - b.y) < 14) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); }
     for (const c of clouds2) if (Math.abs(c.x - b.x) < c.r + 8 && Math.abs(c.y - b.y) < c.r + 8) c.life = Math.min(c.life, 0.2);
     for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue;
@@ -4070,7 +4143,7 @@ function flinch(e) { // a foe struck by an ember in the middle of a tell loses t
   return true;
 }
 function updateWisp(dt) {
-  if (!wisp) return; const w = wisp; w.t += dt; w.life -= dt; w.cd = Math.max(0, w.cd - dt);
+  if (!wisp) return; const w = wisp; w.t += dt; w.life -= dt; w.cd = Math.max(0, w.cd - dt); if (Math.random() < dt * 30) flame(w.x, w.y + 2, 1, 2, 20, 2);
   if (w.life <= 0 || P.dead || !isPyro()) { burst(w.x, w.y, 8, ['#ffd36b', '#ff9a5c'], 40, 0.4, 0, 1); wisp = null; return; }
   if (w.target && (!w.target.alive || Math.hypot(w.target.x - P.x, w.target.y - P.y) > 140)) w.target = null;
   if (!w.target && w.cd <= 0) { let best = null, bd = 90; for (const e of enemies) if (e.alive && !e.harmless && e.t !== 'folk') { const dd = Math.hypot(e.x - P.x, e.y - 8 - (P.y - 8)); if (dd < bd) { bd = dd; best = e; } } w.target = best; }
@@ -4083,13 +4156,13 @@ function updateWisp(dt) {
 }
 function updateEmbers(dt) {
   for (const b of embers) { b.life -= dt; b.vy += 110 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
-    if (Math.random() < dt * 40) parts.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 20, vy: -20, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
+    if (Math.random() < dt * 50) flame(b.x - b.vx * 0.01, b.y, 1, 2, 22, 2);
     for (const s of seeds) if (!s.dead && Math.abs(s.x - b.x) < 9 && Math.abs(s.y - b.y) < 9) { s.dead = true; parries++; number(s.x, s.y - 8, 'BURNED', '#ff9a5c'); burst(s.x, s.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); }
     for (const c of clouds2) if (Math.abs(c.x - b.x) < c.r + 4 && Math.abs(c.y - b.y) < c.r + 4) c.life = Math.min(c.life, 0.2);
     for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - b.x) < 9 && Math.abs(pr.y - 6 - b.y) < 9) { pr.popped = true; clouds2.push({ x: pr.x, y: pr.y - 6, r: 12, life: 1.5 }); burst(pr.x, pr.y - 6, 10, ['#e8e0d0', '#c8bcb0'], 60, 0.5); b.life = 0; }
     for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) { b.hit.add(e); const big = !!e.maxHp; if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } else if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else { hurtEnemy(e, heatDmg(b.plunge ? (big ? 6 : 16) : (big ? 4 : 12)), b.x, false); if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2); break; } }
     const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
-    if (b.life > 0 && isSolid(tx, ty)) { b.life = 0; const fy = isSolid(tx, ty) && !isSolid(tx, ty - 1) ? ty * TS : Math.floor((b.y - b.vy * dt) / TS) * TS + TS; if (b.vy > 0) fires.push({ x: b.x, y: fy, life: 1.2, delay: 0, own: true }); burst(b.x, b.y, 6, ['#ff9a5c', '#ffd36b'], 50, 0.35, 100, 1); SFX.crack(); }
+    if (b.life > 0 && isSolid(tx, ty)) { b.life = 0; const fy = isSolid(tx, ty) && !isSolid(tx, ty - 1) ? ty * TS : Math.floor((b.y - b.vy * dt) / TS) * TS + TS; if (b.vy > 0) fires.push({ x: b.x, y: fy, life: 1.2, delay: 0, own: true }); burst(b.x, b.y, 6, ['#ff9a5c', '#ffd36b'], 50, 0.35, 100, 1); flame(b.x, b.y, 5, 4, 60, 3); ringAt(b.x, b.y, 10, '#ff9a5c', 0.2); SFX.crack(); }
   }
   embers = embers.filter(b => b.life > 0);
 }
@@ -4300,6 +4373,7 @@ function updateProps(dt) {
   for (const b of bombs) { b.fuse -= dt; b.vy += 700 * dt; b.x += b.vx * dt; b.y += b.vy * dt; if (isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { b.y = Math.floor(b.y / TS) * TS; b.vy = 0; b.vx *= 0.6; } if (Math.random() < dt * 20) parts.push({ x: b.x, y: b.y - 6, vx: 0, vy: -30, life: 0.25, max: 0.25, col: '#ffd36b', size: 1, grav: 0 }); if (b.fuse <= 0) { b.dead = true; explode(b.x, b.y - 2, 36, DMG.bomb); } }
   bombs = bombs.filter(b => !b.dead);
   for (const f of fires) { if (f.delay > 0) { f.delay -= dt; continue; } f.life -= dt;
+    if (!f.vent && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 9) flame(f.x, f.y - 7, 1, 5, 45, 3);
     { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - 14 && P.y <= f.y + 2) { if (isPyro() && PROG.items.kindle) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, DMG.fire, { up: true, unblockable: true }); } for (const e of enemies) if (e.alive && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, 10, f.x, false); } }
   fires = fires.filter(f => f.life > 0);
   for (const e of enemies) if (e.fireT > 0) e.fireT -= dt;
@@ -4426,7 +4500,7 @@ function updateParticles(dt) {
   for (const i of impacts) i.t += dt; impacts = impacts.filter(i => i.t < 0.16);
   for (const r of rings) r.t += dt; rings = rings.filter(r => r.t < r.life);
   updateCritters(dt);
-  for (const p of parts) { p.life -= dt; p.vy += p.grav * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
+  for (const p of parts) { p.life -= dt; p.vy += p.grav * dt; if (p.drag) { const k = 1 - p.drag * dt; p.vx *= k; p.vy *= k; } if (p.fire) p.vx += (Math.random() - 0.5) * 90 * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
   parts = parts.filter(p => p.life > 0);
   for (const n of nums) { n.life -= dt; n.y += n.vy * dt; n.vy *= Math.pow(0.05, dt); }
   nums = nums.filter(n => n.life > 0);
@@ -5052,14 +5126,16 @@ function drawWorld(cx, cy, showPlayer) {
     const sprSet = e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
     const bigF = e.t === 'frog' ? 1.35 : e.t === 'lance' ? 1.15 : e.t === 'ram' ? 1.5 : e.t === 'windcaller' ? 1.5 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
+    const ps = poseOf(e, wind), pSX = bigF * (1 + sq * 0.22) * ps.sx, pSY = bigF * (1 - sq * 0.22) * ps.sy;
     // a bright rim behind the sprite, for anyone who loses foes against the wood
-    if (SET.rim && sprSet && !e.harmless) { const rx = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0), ry = e.y - cy + bob; g.globalAlpha = 0.5;
-      for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, e.face, true, bigF * (1 + sq * 0.22), bigF * (1 - sq * 0.22));
+    if (SET.rim && sprSet && !e.harmless) { const rx = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, ry = e.y - cy + bob + ps.dy; g.globalAlpha = 0.5;
+      for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, ps.face, true, pSX, pSY);
       g.globalAlpha = 1; }
-    drawSet(sprSet, null, frame, e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0), e.y - cy + bob, e.face, e.flash > 0 || (wind && Math.floor(e.anim * 12) % 2 === 0), bigF * (1 + sq * 0.22), bigF * (1 - sq * 0.22));
+    drawSet(sprSet, null, frame, e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, e.y - cy + bob + ps.dy, ps.face, e.flash > 0 || (wind && Math.floor(e.anim * 12) % 2 === 0), pSX, pSY);
     g.globalAlpha = 1;
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
     if (wind) text('!', e.x - cx, e.y - e.h - 12 - cy, '#ffd36b', 'center');
+    else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF - cy + ps.dy) - 5);
     if (SET.foeBars && e.hp0 && e.hp < e.hp0 && e.hp > 0 && !e.maxHp && !e.harmless) { const bx = Math.round(e.x - cx) - 6, by = Math.round(e.y - e.h - cy) - 5; g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, 14, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, 12, 2); g.fillStyle = e.hp / e.hp0 > 0.5 ? '#8fd160' : '#ff6b6b'; g.fillRect(bx, by, Math.round(12 * e.hp / e.hp0), 2); }
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
@@ -5093,7 +5169,8 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.landT > 0 && Math.abs(P.vx) < 40) key = 'land';
       else if (Math.abs(P.vx) > 10) { key = 'run'; frame = Math.floor(P.anim * 13) % 6; }
       const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
-      drawSet(K, key, frame, P.x - cx, P.y - cy, P.face, false, sx, sy);
+      const br = key === 'idle' ? 1 + 0.018 * Math.sin(P.anim * 2.6) : 1; // at rest, he breathes
+      drawSet(K, key, frame, P.x - cx, P.y - cy, P.face, false, sx * (2 - br), sy * br);
       drawSwing(cx, cy);
       if (P.aegis) { const k = 0.5 + 0.5 * Math.sin(time * 8), ex = Math.round(P.x - cx), ey = Math.round(P.y - cy) - 12; g.globalAlpha = 0.14 + 0.08 * k; g.fillStyle = '#fff6c8'; g.beginPath(); g.ellipse(ex, ey, 17, 19, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.55 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, 17 + k, 19 + k, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } // the AEGIS
       if (isPyro() && P.full) { const k = 0.5 + 0.5 * Math.sin(time * 9); g.globalAlpha = 0.18 + 0.14 * k; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(Math.round(P.x - cx), Math.round(P.y - cy) - 9, 11 + k * 2, 14 + k * 2, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
@@ -5123,7 +5200,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const r of rings) { const k = r.t / r.life; g.globalAlpha = 1 - k; g.strokeStyle = r.col; g.lineWidth = k < 0.5 ? 2 : 1; g.beginPath(); g.arc(Math.round(r.x - cx), Math.round(r.y - cy), 2 + r.r * Math.pow(k, 0.6), 0, 7); g.stroke(); }
   g.globalAlpha = 1; g.lineWidth = 1;
   for (const i of impacts) { const set = i.kind === 'steel' ? PROP.impactSteel : i.kind === 'red' ? PROP.impactRed : PROP.impact; const c = set[i.t < 0.07 ? 0 : 1]; const sc = i.kind === 'plunge' ? 1.5 : 1; g.drawImage(c, Math.round(i.x - cx - 8 * sc), Math.round(i.y - cy - 8 * sc), 16 * sc, 16 * sc); }
-  for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - cx), Math.round(p.y - cy), p.size, p.size); }
+  drawParts(cx, cy);
   g.globalAlpha = 1;
   for (const pl of pollen) { if (pl.glitter) { const k = 0.5 + 0.5 * Math.sin(pl.t * 6); if (k > 0.55) { g.globalAlpha = (k - 0.55) * 2; g.fillStyle = k > 0.92 ? '#eefaff' : '#bfe6f5'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); if (k > 0.9) { g.fillRect(Math.round(pl.x - cx) - 1, Math.round(pl.y - cy), 3, 1); g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy) - 1, 1, 3); } g.globalAlpha = 1; } } else if (pl.wind) { g.globalAlpha = 0.35; g.fillStyle = '#fff6e0'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 6, 1); g.globalAlpha = 1; } else if (pl.bee) { g.fillStyle = Math.floor(pl.t * 20) % 2 ? '#e0b040' : '#1b1626'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 2, 1); } else if (pl.ember) { g.globalAlpha = Math.min(1, pl.life); g.fillStyle = Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); g.globalAlpha = 1; } else if (pl.mote) { g.globalAlpha = 0.4 + 0.3 * Math.sin(pl.t * 2); g.fillStyle = '#ffd0dc'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); g.globalAlpha = 1; } else if (pl.spore) { g.globalAlpha = 0.35 + 0.35 * Math.sin(pl.t * 2); g.drawImage(L.violet ? PROP.moteV : PROP.moteT, Math.round(pl.x - cx), Math.round(pl.y - cy)); } else if (pl.smoke) { g.globalAlpha = 0.18 * Math.min(1, pl.life); g.fillStyle = '#9aa39a'; g.fillRect(Math.round(pl.x - cx) - 2, Math.round(pl.y - cy) - 1, 4, 3); } else { g.globalAlpha = 0.35 + 0.35 * Math.sin(pl.t * 3); g.fillStyle = '#fff6c8'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); } }
   g.globalAlpha = 1;

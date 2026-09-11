@@ -356,6 +356,21 @@ Object.assign(SFX, {
   // ---- the telegraph: every enemy that winds up says so, a glint for the small ones, a low bell for the big ----
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
 });
+// ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
+const GOB_V = { sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3 };
+Object.assign(SFX, {
+  // it has seen you: a goblin's startled "hup!", a beast's own cry
+  foeNotice(t) { if (!gate('notice', 0.3)) return; const r = GOB_V[t];
+    if (r) { file('gobHurt', 0.3, r * 1.2) || tone('square', 500 * r, 800 * r, 0.08, 0.08); tone('square', 700 * r, 1150 * r, 0.06, 0.04, 0.03); return; }
+    const B = { hound: SFX.bark, greathound: SFX.bark, goat: SFX.bleat, harpy: SFX.screech, spider: SFX.hiss, bat: SFX.chitter, wasp: SFX.buzz, hopper: SFX.ribbit, sporeling: SFX.squelch, wight: SFX.wightMoan, hare: SFX.hareSqueak, crow: SFX.caw, troll: SFX.bellow, grub: SFX.squelch, shardling: SFX.shardBristle, lurker: SFX.squelch }[t]; if (B) B(); },
+  // it hit you, or you fell: the goblins laugh
+  foeJeer(t) { if (!gate('jeer', 0.6)) return; const r = GOB_V[t] || 1; file('laugh', 0.28, r * 1.1) || [0, 1, 2].forEach(i => tone('square', 420 * r, 340 * r, 0.07, 0.07, i * 0.11)); },
+  // goblin gibberish, muttered to itself while it waits
+  foeMutter(t) { const r = GOB_V[t]; if (!r || !gate('mutter', 1.6)) return; const n = 3 + ((Math.random() * 3) | 0); for (let i = 0; i < n; i++) tone('square', vary(240 * r), vary(200 * r), 0.05, 0.025, i * 0.075); },
+  foeGasp(t) { if (!gate('gasp', 0.5)) return; const r = GOB_V[t] || 1.2; file('gobHurt', 0.24, r * 1.4) || tone('sawtooth', 600 * r, 300 * r, 0.12, 0.06); },
+  foeStep(heavy) { if (!gate(heavy ? 'fstepH' : 'fstep', heavy ? 0.12 : 0.09)) return; if (heavy) { tone('sine', 90, 45, 0.1, 0.12); noise(0.05, 0.08, 300, 0.7); } else noise(0.03, 0.045, vary(900), 0.8); },
+  skid() { if (!gate('skid', 0.3)) return; noise(0.18, 0.09, 1800, 0.6); noise(0.1, 0.05, 700, 0.5, 0.05); },
+});
 // ---------- UI and skill voices ----------
 Object.assign(SFX, {
   levelStart() { for (let i = 0; i < 4; i++) tone('square', [330, 415, 494, 659][i], [330, 415, 494, 659][i], 0.11, 0.09, i * 0.09); tone('triangle', 165, 165, 0.4, 0.08, 0.36); },
