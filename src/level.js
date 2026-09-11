@@ -1696,7 +1696,7 @@ function theShop() {
 
 // ---------- Level 9. GALE MOOR: the high moor above the mine. The wind is the verb: it carries you, it pins you, it lifts you. ----------
 function galeMoor() {
-  const L = painter(596, 30);
+  const L = painter(908, 30);
   const { block, floor, plat, spikes, ent, coins, set } = L;
   const movers = [], gusts = [], pools = [], hags = [], stone = [];
   // a standing stone never walls off the walk: you pass in front of it, and only its crown is a ledge to land on
@@ -1810,21 +1810,78 @@ function galeMoor() {
   for (let y = 8; y <= 13; y++) set(535, y, T.PORT);
   coins([518, 12], [530, 12]);
   gusts.push({ x0: 512 * TS, x1: 548 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 6, on: 2, phase: 1, moor: true, k: 1.2 });
-  ent('sign', 514, 13, { text: 'THE FLAG ROAD. THE SHAMAN IS ON THE STONES AHEAD. HE WILL NOT STAND STILL, AND NEITHER WILL THE WIND. THE STONES ARE HIS STAIR; THE WIND IS YOURS.' });
+  ent('sign', 514, 13, { text: 'THE FLAG ROAD. THE FLAGS ALL POINT ONE WAY: OVER THE MILLS, ACROSS THE TUMBLE, TO THE KITE POST AT THE EDGE OF THE SKY. THE SHAMAN WAITS ON THE SUMMIT BEYOND IT.' });
   coins([518, 12], [524, 9], [530, 12], [536, 8], [544, 10]); ent('check', 546, 13);
 
-  // ---- 10. THE SUMMIT: three standing stones and two ledges in a ring of thorns. The shaman blinks between them and throws the sky at you. The gust reaches the ledges; the updrafts reach the stones. ----
-  block(548, 595, 13, 29);
-  spikes(550, 551, 12); spikes(591, 592, 12);
-  pillar(554, 12, 12); pillar(556, 10, 12); pillar(570, 4, 12); pillar(585, 8, 12);
-  plat(563, 7, 2); plat(578, 6, 2);
-  ent('vent', 566, 12, { period: 100, on: 100, h: 108, wind: true, w: 18 }); ent('vent', 581, 12, { period: 100, on: 100, h: 94, wind: true, w: 18 }); // always on: the question is never WHEN, only where
-  gusts.push({ x0: 549 * TS, x1: 594 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
-  ent('flagpost', 553, 12); ent('flagpost', 589, 12);
-  ent('windcaller', 570, 3);
-  ent('sign', 552, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. THE WIND IS THE ONLY STAIR UP TO HIM: THE GUST FOR THE LEDGES, THE UPDRAFTS FOR THE HIGH STONES. STRIKE HIM TWICE AND HE IS GONE AGAIN. WHEN HE CALLS THE WIND, THE THORNS ARE WAITING.' });
-  ent('check', 553, 12); ent('gate', 593, 12);
-  const roosts = [[556, 9], [570, 3], [585, 7], [563, 6], [578, 5]]; // where he stands: a stone's top, a ledge
+  // ---- 10. THE MILLS: an old stone mill at the edge of a bog gully, and two more beyond it. The wind turns
+  // the sails, and turns them back when it turns: ride a sail up and over and step off at the top. ----
+  floor(548, 557, 14);
+  block(558, 590, 24, 29); pools.push({ x0: 558 * TS, x1: 591 * TS, y: 23 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 558 * TS, x1: 591 * TS });
+  ladder(558, 558, 14, 23); // a rope ladder up the near bank for anyone the gully takes
+  plat(560, 12, 2);
+  for (const hx of [566, 575, 584]) for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', mill: true, first: i === 0, towerH: 14 * TS, px: hx * TS + 8, py: 9 * TS, r: 42, phase: i * Math.PI / 2, period: 6, x: 0, y: 0, w: 22, h: 6 });
+  floor(591, 600, 14);
+  gusts.push({ x0: 548 * TS, x1: 600 * TS, y0: 2 * TS, y1: 24 * TS, dir: 1, period: 4.6, on: 2.8, phase: 0, alt: true, moor: true, k: 1 });
+  ent('sign', 549, 13, { text: 'THE MILLS. THE WIND TURNS THE SAILS, AND WHEN THE WIND TURNS SO DO THEY. RIDE A SAIL UP AND STEP OFF AT THE TOP. THE GULLY IS ONLY BOG: THE LADDER BY THE BANK GETS YOU OUT.' });
+  ent('check', 552, 13); ent('flagpost', 555, 13); ent('flagpost', 594, 13);
+  coins([561, 11], [566, 6], [575, 6], [584, 6], [570, 22], [571, 22], [580, 22], [581, 22]);
+  ent('harpy', 579, 3);
+
+  // ---- 11. THE TUMBLE: the last open moor, heather bales the wind rolls at you, and hornblowers on the
+  // mounds who wind their horns at you as you come. (The mounds are steps, never walls.) ----
+  floor(600, 650, 14);
+  block(612, 615, 12, 13); block(630, 634, 12, 13); block(642, 644, 13, 13);
+  ent('horn', 613, 11, { face: -1 }); ent('horn', 631, 11, { face: -1 });
+  for (const x of [604, 622, 640]) ent('bale', x, 13, { x0: 600, x1: 650 });
+  ent('hare', 626, 13, { face: -1 });
+  gusts.push({ x0: 600 * TS, x1: 650 * TS, y0: 2 * TS, y1: 14 * TS, dir: -1, period: 5, on: 2.6, phase: 1, alt: true, moor: true, k: 1 });
+  ent('sign', 601, 13, { text: 'THE TUMBLE. THE WIND ROLLS THE CUT HEATHER ABOUT UP HERE, AND A BALE AT FULL TILT WILL PUT YOU ON YOUR BACK: JUMP IT OR CUT IT. THE HORNBLOWERS ON THE MOUNDS BLOW YOU BACK TOWARD THEM.' });
+  ent('check', 603, 13); ent('flagpost', 608, 13); ent('flagpost', 637, 13); ent('deco', 620, 13, { kind: 'cairn' });
+  coins([606, 11], [613, 9], [620, 11], [631, 9], [638, 11], [646, 12]);
+
+  // ---- 12. THE KITE POST: the edge of the moor, a wall of stone, and past it nothing but air. The shepherds'
+  // great kite is tethered here. ----
+  floor(650, 663, 14); block(664, 665, 5, 29);
+  ent('stormkite', 659, 13);
+  ent('sign', 652, 13, { text: 'THE KITE POST. PAST THE WALL IS THE SKY ROAD TO THE SUMMIT, AND THE ONLY WAY DOWN IT IS UNDER THE GREAT KITE. TAKE HOLD: THE ARROWS STEER, THE ROLL IS A DART. IT DOES NOT WAIT FOR YOU.' });
+  ent('check', 655, 13); ent('flagpost', 662, 13);
+
+  // ---- 13. THE SKY ROAD: the kite carries you down the wind to the summit - through the teeth of the crags,
+  // the crow strings, the needle and the storm. The view does not wait. ----
+  block(666, 859, 26, 29); spikes(666, 859, 25);
+  const spire = (x, top) => { block(x, x + 1, top, 25); stone.push([x, x + 1, top, 25]); }, crag = (x, bot) => { block(x, x + 1, 0, bot); stone.push([x, x + 1, 0, bot]); };
+  const rock = (x0, x1, y0, y1) => { block(x0, x1, y0, y1); stone.push([x0, x1, y0, y1]); }; // loose stone in the air, not grass
+  const string = (x, y, n, gap, o) => { for (let i = 0; i < n; i++) ent('crow', x + i * gap, y, Object.assign({ ph: i * 0.7 }, o || {})); };
+  const ribbon = (x0, x1, y, amp) => { for (let x = x0; x <= x1; x += 2) coins([x, Math.round(y + Math.sin((x - x0) * 0.35) * amp)]); };
+  // the teeth
+  spire(704, 13); crag(709, 7); spire(714, 10); crag(719, 6); spire(724, 13); crag(729, 8); spire(734, 11);
+  // the flock, among loose stone in the air
+  rock(742, 744, 9, 10); rock(756, 758, 14, 15); rock(748, 750, 4, 5);
+  string(746, 7, 4, 2); string(754, 12, 4, 2); string(764, 5, 3, 3, { amp: 18 });
+  // the needle: a slot through the rock with the wind pressing down in it
+  block(764, 767, 0, 5); block(764, 767, 18, 25); block(768, 794, 0, 8); block(768, 794, 15, 25);
+  string(784, 11, 3, 2, { amp: 5 });
+  // the storm: the shaman's weather, bolts out of the cloud on a beat
+  for (const [x, ph] of [[803, 0], [811, 1.1], [819, 2.2], [827, 0.5], [846, 1.6]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
+  rock(806, 807, 7, 8); rock(820, 822, 12, 13); crag(838, 5); spire(850, 14);
+  ent('harpy', 810, 5); ent('harpy', 832, 4); ent('kite', 800, 5); ent('kite', 828, 6);
+  string(815, 9, 4, 2); string(840, 12, 5, 2, { amp: 14 });
+  ribbon(670, 700, 10, 3); ribbon(736, 741, 12, 1); ribbon(770, 792, 11, 1); ribbon(852, 858, 8, 2);
+  gusts.push({ x0: 666 * TS, x1: 860 * TS, y0: 0, y1: 26 * TS, dir: -1, period: 7, on: 1.8, phase: 2, moor: true, k: 0.8 });
+
+  // ---- 14. THE SUMMIT: three standing stones and two ledges in a ring of thorns. The shaman blinks between
+  // them and throws the sky at you. The kite's string goes over the near edge and puts you down on it. ----
+  block(860, 907, 13, 29);
+  spikes(903, 904, 12);
+  pillar(866, 12, 12); pillar(868, 10, 12); pillar(882, 4, 12); pillar(897, 8, 12);
+  plat(875, 7, 2); plat(890, 6, 2);
+  ent('vent', 878, 12, { period: 100, on: 100, h: 108, wind: true, w: 18 }); ent('vent', 893, 12, { period: 100, on: 100, h: 94, wind: true, w: 18 }); // always on: the question is never WHEN, only where
+  gusts.push({ x0: 861 * TS, x1: 906 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
+  ent('flagpost', 865, 12); ent('flagpost', 901, 12);
+  ent('windcaller', 882, 3);
+  ent('sign', 870, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. THE UPDRAFTS NEVER STOP: RIDE ONE UP AND STEER ONTO HIS STONE. STRIKE HIM TWICE AND HE IS GONE AGAIN. WHEN HE CALLS THE WIND, THE THORNS ARE WAITING.' });
+  ent('check', 864, 12); ent('gate', 905, 12);
+  const roosts = [[868, 9], [882, 3], [897, 7], [875, 6], [890, 5]]; // where he stands: a stone's top, a ledge
   for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; } // the moor's wind lifts you well clear of whatever it is meant to lift you onto
 
   return {
@@ -1832,9 +1889,10 @@ function galeMoor() {
     duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: false,
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
-    weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 99999, kind: 'mist' }],
+    weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 548 * TS, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 549 * TS, x1: 593 * TS, floor: 13 * TS, trigger: 556 * TS, wallL: 548, wallR: 594, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
+    arena: { x0: 861 * TS, x1: 905 * TS, floor: 13 * TS, trigger: 868 * TS, wallL: 860, wallR: 906, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
+    flight: { x1: 864, speed: 78, camY: 2, down: [[772, 790, 60]] }, // the Sky Road: the kite lets go over the summit's near edge
     mini: { x0: 510 * TS, x1: 535 * TS, floor: 14 * TS, trigger: 513 * TS, wallL: 509, gate: 535, boss: 'sailer' },
   };
 }
