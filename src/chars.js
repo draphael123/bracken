@@ -798,39 +798,109 @@ export function bakeOwl() {
 }
 
 
-// ---------- The Pyromancer: a hooded fire-mage on the knight's rig. Robe, no shield, a staff with a live ember. ----------
-const PYRO_BODY = ['..rSSSS...', '.rSssssS..', 'rSsssssS..', '.SsvvvvS..', '.SssssSS..', '..SSSS....', '.BbbbbB...', 'SBbybbBS..', '.BbbbbbB..', '.BbbbbbB..', 'bbbbbbbbb.'];
-const PYRO_PLUME = [['..rSSSS...', '.rSssssS..', 'rSsssssS..'], ['..rSSSS...', 'rrSssssS..', '.SsssssS..'], ['.rrSSSS...', '.rSssssS..', 'rSsssssS..']];
+// ---------- The Pyromancer. Not the knight in a hood any more: her own body, drawn from scratch. ----------
+// A tall cowl that droops back with two embers for eyes in the dark of it, a capelet, a robe to the
+// ankles that flares and trails and bells out when she drops, a rope belt, and a staff taller than she
+// is with a caged flame at the head. Same canvas and anchor as the knight, so nothing else changes.
+// Palette keys (the skins recolour these): s/S robe, b/B capelet + the dark of the hood, r the glow
+// (eyes, hem, the flame), y brass, w/W the staff, k hands.
 const PYRO_PAL = { s: '#b8462e', S: '#6a1e1e', b: '#3a2a4a', B: '#241a30', r: '#ffb040', k: '#f1c9a0', w: '#5a3a24', W: '#3a2214', y: '#ffd36b', v: '#f1c9a0', o: OUT };
+// three cowls: 0 at rest, 1 streaming back (running), 2 blown up (falling, hurt). 11 wide, drawn so the
+// face opening is at the front (right); '.' is empty.
+const COWL = [
+  ['....SS.....', '...Sss.....', '..Ssssss...', '.Sssssss...', '.SssbBBBs..', 'SssbBrBrs..', '.SsbBBBBs..', '..SSbbbS...'],
+  ['SSS........', '.SSsss.....', '..Ssssss...', '.Sssssss...', '.SssbBBBs..', 'SssbBrBrs..', '.SsbBBBBs..', '..SSbbbS...'],
+  ['...........', '..SSs......', '.Sssssss...', 'SSssssss...', '.SssbBBBs..', 'SssbBrBrs..', '.SsbBBBBs..', '..SSbbbS...'],
+];
+function pyroFrame(o = {}) {
+  const { lean = 0, dy = 0, trail = 0, hemW = 11, bell = 0, feet = [[11, 18], [15, 18]], arm = null, arm2 = null,
+    staff = null, cowl = 0, flick = 0, sit = 0, flare = null, palm = null } = o;
+  const [c, g] = canvas(W, H);
+  const put = (x, y, k) => { if (KP[k]) px(g, Math.round(x), Math.round(y), KP[k]); };
+  // the staff goes behind her when she carries it, in front when she works it
+  const drawStaff = () => { if (!staff) return;
+    const [x0, y0, x1, y1] = staff; line(g, x0, y0 + dy, x1, y1 + dy, KP.w, 2);
+    const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0);
+    // a brass cage at the head with the flame in it
+    const hx = x1, hy = y1 + dy;
+    put(hx - uy, hy + ux, 'y'); put(hx + uy, hy - ux, 'y'); put(hx + ux, hy + uy, 'y');
+    put(hx, hy, flick ? 'y' : 'r'); put(hx + ux * 2, hy + uy * 2, flick ? 'r' : 'y');
+    put(hx + ux * 2 - uy, hy + uy * 2 + ux, 'r'); };
+  if (staff && staff[4] === 'back') drawStaff();
+  // boots, under the hem
+  for (const [fx, fy] of feet) { put(fx, fy + dy, 'W'); put(fx + 1, fy + dy, 'W'); }
+  // the robe: shoulders to hem, flaring, leaning with the body and trailing behind it
+  const top = 8 + sit, hem = 17 - Math.round(bell / 2);
+  for (let y = top; y <= hem; y++) {
+    const t = (y - top) / Math.max(1, hem - top);
+    const w = Math.round(7 + (hemW + bell - 7) * Math.pow(t, 1.3));
+    const cx = 13 + lean * (1 - t) - trail * t * t;
+    const l = Math.round(cx - w / 2), r = l + w - 1;
+    for (let x = l; x <= r; x++) put(x, y + dy, x === l ? 'S' : x === r ? 's' : (x === Math.round(cx) - 1 && y > top + 3) ? 'S' : 's');
+    if (y === hem) for (let x = l; x <= r; x++) if ((x + y) % 2 === 0 || bell) put(x, y + dy, 'r'); // the hem glows where it is singed
+  }
+  // the capelet over the shoulders, and the rope belt
+  for (let x = 10 + lean; x <= 16 + lean; x++) { put(x, top + dy, 'b'); put(x, top + 1 + dy, x === 10 + lean || x === 16 + lean ? 'B' : 'b'); }
+  put(9 + lean, top + 1 + dy, 'B'); put(17 + lean, top + 1 + dy, 'B');
+  for (let x = 11 + lean; x <= 15 + lean; x++) put(x, top + 4 + dy, 'y'); put(12 + lean, top + 5 + dy, 'y'); put(12 + lean, top + 6 + dy, 'W');
+  // the cowl
+  const cw = COWL[cowl], hx = 8 + lean, hy = top - 8 + dy;
+  cw.forEach((row, yy) => { for (let xx = 0; xx < row.length; xx++) { const k = row[xx]; if (k !== '.') put(hx + xx, hy + yy, k === 'r' && flick ? 'y' : k); } });
+  // sleeves: wide at the cuff, a hand at the end of each
+  const sleeve = a => { if (!a) return; const [x0, y0, x1, y1] = a; line(g, x0, y0 + dy, x1, y1 + dy, KP.s, 2); put(x1, y1 + dy, 'S'); put(x1 + Math.sign(x1 - x0 || 1), y1 + dy, 'k'); };
+  sleeve(arm2);
+  if (!staff || staff[4] !== 'back') drawStaff();
+  sleeve(arm);
+  if (palm) { const [x, y] = palm; put(x, y + dy, 'y'); put(x + 1, y + dy, 'r'); put(x, y - 1 + dy, 'r'); put(x, y + 1 + dy, 'r'); put(x + 2, y + dy, flick ? 'y' : 'r'); }
+  if (flare) { const [x, y, big] = flare; const pts = big ? [[0, 0, 'y'], [1, 0, 'y'], [2, 0, 'r'], [1, -1, 'r'], [1, 1, 'r'], [3, 0, 'r'], [2, -2, 'y'], [2, 2, 'y'], [0, -1, 'y'], [0, 1, 'y'], [4, -1, 'r'], [4, 1, 'r']] : [[0, 0, 'y'], [1, 0, 'r'], [0, -1, 'r'], [0, 1, 'r'], [2, 0, 'y']];
+    for (const [ddx, ddy, k] of pts) put(x + ddx, y + ddy + dy, k); }
+  outline(c, OUT);
+  return c;
+}
 export function bakePyro(skin = {}) {
-  KP = Object.assign({}, KP0, PYRO_PAL, skin); BODY_REF = PYRO_BODY; PLUME_REF = PYRO_PLUME;
-  const sh = [BX + 8, BY + 7];
-  const held = (d = 0) => [sh[0] + 2, sh[1] + 10 + d, sh[0] + 4, sh[1] - 5 + d]; // staff carried upright at the side
+  KP = Object.assign({}, KP0, PYRO_PAL, skin);
+  const up = (dx = 0, d = 0) => [17 + dx, 18 + d, 18 + dx, 0 + d]; // the staff stood upright in the front hand, taller than her
+  const hand = [16, 11, 17, 12];                                      // the front sleeve down to the staff
   const F = {
-    idle: [knightFrame({ staff: held(), plume: 0 }), knightFrame({ staff: held(), plume: 1 }), knightFrame({ dy: 1, staff: held(), plume: 2 }), knightFrame({ dy: 1, staff: held(), plume: 1 })],
-    run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, pump], i) => knightFrame({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, staff: [sh[0] + 2 + pump, sh[1] + 9, sh[0] + 5 + pump, sh[1] - 5] })),
-    jump: [knightFrame({ legs: 'jump', dy: -1, staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 5], plume: 1 })],
-    fall: [knightFrame({ legs: 'fall', staff: [sh[0] + 2, sh[1] + 8, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, staff: [sh[0] + 2, sh[1] + 8, sh[0] + 5, sh[1] - 7], plume: 2 })],
-    land: knightFrame({ legs: 'land', dy: 2, staff: held(2), plume: 0 }),
-    atk: [ // the thrust: staff drawn back, driven straight out, pulled home. The flame does the rest.
-      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 1], staff: [sh[0] + 3, sh[1] + 2, sh[0] - 7, sh[1] + 3], plume: 1 }),
-      knightFrame({ dx: -3, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], staff: [sh[0] - 2, sh[1] + 2, sh[0] + 13, sh[1] + 1], plume: 2 }),
-      knightFrame({ dx: -3, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], staff: [sh[0] - 1, sh[1] + 1, sh[0] + 14, sh[1] + 1], plume: 2 }),
-      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], staff: [sh[0] + 1, sh[1] + 4, sh[0] + 8, sh[1] - 2], plume: 0 }),
-      knightFrame({ legs: 'stand', staff: held(), plume: 0 }),
+    idle: [0, 1, 2, 3].map(i => pyroFrame({ dy: i >> 1, trail: [0, -1, 0, 1][i], staff: up(0, i >> 1), arm: hand, flick: i % 2, cowl: 0 })),
+    // she runs low and quick, the robe streaming behind and the staff carried like a lance
+    run: [0, 1, 2, 3, 4, 5].map(i => pyroFrame({ lean: 2, dy: [0, -1, 0, 0, -1, 0][i], trail: 3 + (i % 3 === 1 ? 1 : 0), hemW: 11,
+      feet: [[[9, 18], [16, 17]], [[11, 18], [15, 18]], [[13, 17], [12, 18]], [[16, 17], [9, 18]], [[15, 18], [11, 18]], [[12, 18], [13, 17]]][i],
+      staff: [7, 17, 22, 5, 'back'], arm: [17, 10, 19, 11], cowl: 1, flick: i % 2 })),
+    jump: [pyroFrame({ dy: -1, hemW: 12, feet: [[11, 17], [15, 17]], staff: [15, 16, 22, 1], arm: [16, 10, 18, 9], cowl: 0 }),
+      pyroFrame({ hemW: 12, bell: 1, feet: [[11, 17], [15, 17]], staff: [15, 16, 22, 1], arm: [16, 10, 18, 9], cowl: 2 })],
+    // falling, the robe bells out and her feet show
+    fall: [pyroFrame({ bell: 3, hemW: 12, feet: [[11, 18], [15, 18]], staff: [14, 16, 21, 1], arm: [16, 9, 19, 7], arm2: [10, 9, 7, 7], cowl: 2 }),
+      pyroFrame({ bell: 4, hemW: 13, dy: -1, feet: [[11, 18], [15, 19]], staff: [14, 16, 21, 1], arm: [16, 9, 19, 6], arm2: [10, 9, 7, 6], cowl: 2, flick: 1 })],
+    land: pyroFrame({ sit: 2, hemW: 13, staff: up(0, 2), arm: [16, 13, 17, 14], cowl: 0 }),
+    // the thrust: staff drawn back, driven straight out, flame off the end of it, pulled home
+    atk: [
+      pyroFrame({ lean: -1, feet: [[10, 18], [16, 18]], staff: [3, 11, 16, 10], arm: [15, 10, 13, 11], arm2: [11, 10, 9, 11], cowl: 0 }),
+      pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [9, 11, 25, 10], arm: [16, 10, 20, 10], arm2: [12, 10, 15, 11], cowl: 1, flare: [26, 10, false] }),
+      pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [10, 11, 26, 10], arm: [16, 10, 21, 10], arm2: [12, 10, 16, 11], cowl: 1, flare: [27, 10, true], flick: 1 }),
+      pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [8, 13, 21, 8], arm: [16, 10, 18, 11], cowl: 0 }),
+      pyroFrame({ staff: up(), arm: hand, cowl: 0 }),
     ],
-    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], staff: [sh[0] - 1, sh[1] - 2, sh[0] - 1, sh[1] + 17], plume: 1 }),
-    hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', staff: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
-    crouch: knightFrame({ dy: 3, legs: 'crouch', staff: held(3) }),
-    block: [knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], staff: [sh[0] - 4, sh[1] + 4, sh[0] + 9, sh[1] + 2] }), knightFrame({ dx: -1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], staff: [sh[0] - 4, sh[1] + 4, sh[0] + 9, sh[1] + 1] })], // the jet stance: staff levelled in both hands
+    // the plunge: the staff goes down first and she rides it, robe streaming up
+    plunge: pyroFrame({ bell: 4, hemW: 12, feet: [[11, 17], [15, 17]], staff: [13, 6, 13, 26], arm: [15, 10, 14, 13], arm2: [11, 10, 12, 13], cowl: 2, flick: 1 }),
+    hurt: pyroFrame({ lean: -2, trail: -1, dy: 1, feet: [[10, 18], [15, 18]], staff: [5, 17, 13, 3, 'back'], arm: [15, 9, 18, 6], arm2: [10, 9, 7, 6], cowl: 2 }),
+    crouch: pyroFrame({ sit: 3, hemW: 13, staff: up(0, 3), arm: [16, 14, 17, 15], cowl: 0 }),
+    // the jet: braced wide, the staff levelled in both hands
+    block: [0, 1].map(i => pyroFrame({ lean: 1, feet: [[9, 18], [17, 18]], staff: [7, 12, 23, 10], arm: [16, 10, 20, 11], arm2: [12, 10, 15, 12], cowl: 0, flick: i, trail: -i })),
+    // an ember off the palm: the other hand does the work, the staff stays up
+    cast: [pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [9, 18, 10, 0, 'back'], arm: [16, 10, 20, 9], cowl: 0, palm: [21, 9] }),
+      pyroFrame({ lean: 2, trail: 1, feet: [[10, 18], [16, 18]], staff: [9, 18, 10, 0, 'back'], arm: [16, 10, 21, 9], cowl: 1, palm: [22, 9], flick: 1 })],
+    // the pyre: the staff goes up over her head in both hands, then comes down like a hammer
+    blast: [pyroFrame({ lean: -1, dy: -1, feet: [[10, 18], [16, 18]], staff: [6, 2, 21, 0], arm: [15, 9, 17, 3], arm2: [11, 9, 10, 3], cowl: 2, flick: 1, bell: 1 }),
+      pyroFrame({ lean: 3, trail: 3, feet: [[8, 18], [18, 18]], staff: [11, 13, 25, 7], arm: [16, 10, 21, 9], arm2: [12, 10, 17, 10], cowl: 1, flare: [26, 6, true] })],
   };
-  const tuck = knightFrame({ dy: 4, legs: 'crouch', staff: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 4] });
+  const tuck = pyroFrame({ sit: 4, hemW: 12, bell: 2, staff: [9, 17, 19, 7], arm: [15, 13, 16, 14], cowl: 2 });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(whiten) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
-  BODY_REF = BODY; PLUME_REF = PLUME; KP = Object.assign({}, KP0);
+  KP = Object.assign({}, KP0);
   return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
 }
 
