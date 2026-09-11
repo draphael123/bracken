@@ -40,7 +40,12 @@ const q = new URLSearchParams(location.search);
 const SET = { music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
 const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
-const DIFF = { easy: { take: 0.6, ehp: 0.8, label: 'EASY' }, normal: { take: 1, ehp: 1, label: 'NORMAL' }, hard: { take: 1.4, ehp: 1.3, label: 'HARD' } };
+// DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
+// how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
+// you have not set; from the pause menu it sets the wood you are in.
+const DIFF = { easy: { take: 0.6, ehp: 0.75, bhp: 0.7, label: 'EASY', col: '#8fd160' }, normal: { take: 1, ehp: 1, bhp: 1, label: 'NORMAL', col: '#ffd36b' }, hard: { take: 1.4, ehp: 1.3, bhp: 1.3, label: 'HARD', col: '#ff6b6b' } };
+const diffOf = id => (PROG.diff && DIFF[PROG.diff[id]] ? PROG.diff[id] : DIFF[SET.difficulty] ? SET.difficulty : 'normal');
+const diffNow = () => DIFF[diffOf(curId())];
 const DIFFS = ['easy', 'normal', 'hard'], SCALES = ['auto', 2, 3, 4];
 try { Object.assign(SET, JSON.parse(localStorage.getItem('bracken.settings') || '{}')); } catch {}
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
@@ -602,7 +607,7 @@ function spawnEnt(e) {
       case 'roller': props.push({ t: 'roller', x: px, y: py, vx: (e.face || 1) * (e.speed || 55), alive: true, rot: 0 }); break;
     }
   }
-  const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t); e2.hp = Math.round(e2.hp * DIFF[SET.difficulty].ehp * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
+  const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t); e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
 }
 function spawnEntitiesTail() {
   if (L.strays && straysGot.size >= L.strays && strayLast) props.push({ t: 'relic', x: strayLast.x, y: strayLast.y, kind: 'fleece', got: false, ph: 0 });
@@ -692,6 +697,8 @@ function updateMap(dt) {
     if (Math.random() < dt * 10) { const [px, py] = mapPos(); parts.push({ x: px + camX + (Math.random() - 0.5) * 4, y: py + camY, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 0 }); }
   }
   if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
+  // up and down set the difficulty of the wood you are standing at
+  if ((upPress || downPress) && !map.walking) { const nd = NODES[map.node]; if (nd.kind !== 'store' && !nodeLocked(nd)) { const id = LEVELS[nd.level].id; PROG.diff = PROG.diff || {}; PROG.diff[id] = DIFFS[(DIFFS.indexOf(diffOf(id)) + (upPress ? 1 : -1) + 3) % 3]; SFX.ui(); saveProgress(); } }
   if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === (nd.shop || 'shop')); selectStart(); } else { selI = nd.level; selectStart(); } }
   if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
   if (dodgePress && !map.walking) openEquip('map');
@@ -794,6 +801,7 @@ function drawMap() {
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
       text(lv.sub || '', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
+      { const D = DIFF[diffOf(id)], rx = cx0 + cw - 8; text(D.label, rx, cy0 + 16, D.col, 'right', 6); const ax = rx - D.label.length * 6 - 8; g.fillStyle = D.col; g.fillRect(ax + 1, cy0 + 16, 1, 1); g.fillRect(ax, cy0 + 17, 3, 1); g.fillRect(ax, cy0 + 20, 3, 1); g.fillRect(ax + 1, cy0 + 21, 1, 1); } // this wood's difficulty, and the up/down that changes it
       // line one: your best, and what it was worth
       const M = MEDALS[id] || [300, 450, 660];
       text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', cx0 + 8, cy0 + 26, hasRun ? UI.text : UI.dim, 'left', 6);
@@ -812,7 +820,7 @@ function drawMap() {
       const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p.cleared ? 1 : 0], cx0 + 8, cy0 + 47, '#c9d1dc', 'left', 6);
     }
   }
-  text('ARROWS  Z ENTER  X BEASTS  V EQUIP  ESC', VW / 2, VH - 8, '#9aa39a', 'center', 6);
+  text('ARROWS MOVE  UP/DOWN DIFFICULTY  Z ENTER  X BEASTS  V EQUIP', VW / 2, VH - 8, '#9aa39a', 'center', 6);
 }
 
 // ---------- store ----------
@@ -1074,7 +1082,7 @@ function menuAdjust(dir) {
   else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
   else if (k === 'Game speed') { const SP = [1, 0.9, 0.8]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + 3) % 3]; menuMsg = SET.speed < 1 ? 'the world runs slower. the timer does not' : 'full speed'; menuMsgT = 3; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
-  else if (k === 'Difficulty') SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + 3) % 3]; else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
+  else if (k === 'Difficulty') { if (menuFrom === 'play' && L && !L.shop) { PROG.diff = PROG.diff || {}; PROG.diff[curId()] = DIFFS[(DIFFS.indexOf(diffOf(curId())) + dir + 3) % 3]; saveProgress(); } else SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + 3) % 3]; } else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
 function menuConfirm() {
@@ -1284,7 +1292,7 @@ function damagePlayer(fromX, dmg, { up = false, unblockable = false } = {}) {
     dmg = Math.ceil(dmg / 2); P.hurt = 0.55;
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
-  dmg = Math.max(1, Math.round(dmg * DIFF[SET.difficulty].take * (1 + 0.4 * tierOf(curId()))));
+  dmg = Math.max(1, Math.round(dmg * diffNow().take * (1 + 0.4 * tierOf(curId()))));
   if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
   P.hp -= dmg; P.inv = 1.1; P.hurt = Math.max(P.hurt, 0.35); P.atk = -1; P.plunge = false; P.block = false; impactAt(P.x, P.y - 9, 'red');
   const dir = Math.sign(P.x - fromX) || -P.face;
@@ -4967,7 +4975,7 @@ function drawMenu() {
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     text(k, x + 16 + (sel ? 2 : 0), yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? DIFF[SET.difficulty].label : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label + ' HERE' : DIFF[SET.difficulty].label + ' (DEFAULT)') : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     if (v) { const vw = String(v).length * 6 + (sel ? 22 : 8); g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(sel ? '< ' + v + ' >' : String(v), x + w - 14, yy, col, 'right'); }
   });
   { const k = M[menuI], tip = SETTING_TIPS[k];
