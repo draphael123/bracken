@@ -2311,6 +2311,135 @@ function longWater() {
   return ret;
 }
 
+// THE SHIPWRECK REEF. The Herald's glaive pointed out to sea, and this is what it pointed at: the reef where the
+// tribute fleet went down, and the ROYAL SEALS with it. Four ways of moving, one after the other. THE TIDEWAY: the
+// backs of wrecked hulls, crossed between tides, with the rigging as the high road when the sea is up. THE WRECKS:
+// the inside of a carrack lying on her side, decks to climb while the hold fills. THE REEF SHELF: all underwater,
+// where breath is the clock, air bells are the safe beats and the currents decide what you can reach. THE KEEL: the
+// tribute ship herself, up her ribs to the stern cabin. Then the hole at the end of it, and what lives in the hole.
+function shipwreckReef() {
+  const W = 460, H = 44; const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  const pools = [], movers = [], gusts = [], darkZones = [];
+  const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, bottom: bottom * TS }, extra || {}));
+  const current = (x0, x1, y0, y1, dir) => gusts.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y0: y0 * TS, y1: y1 * TS, dir, period: 1e9, on: 1e9, phase: 0, k: 1, current: true });
+
+  // ---- 1. THE TIDEWAY: the backs of the wrecks, and the sea coming and going over them ----
+  block(0, 12, 28, H - 1);
+  ent('npc', 4, 27, { kind: 'squire' });
+  ent('sign', 2, 27, { text: 'THE SHIPWRECK REEF. THE TRIBUTE NEVER STOPPED: THE SHIP CARRYING IT WENT DOWN HERE, AND THE THREE ROYAL SEALS WITH HER. BRING THEM BACK AND THE SEA HAS NO QUARREL LEFT. THE TIDE COMES OVER THE LOW HULLS: TAKE THE RIGGING WHEN IT DOES.' });
+  ent('check', 9, 27);
+  block(13, 118, 33, H - 1); // the reef bed under it all
+  block(16, 26, 26, 32); block(30, 42, 27, 32); block(46, 58, 25, 32); block(62, 74, 27, 32); block(78, 92, 26, 32); block(96, 118, 24, 32);
+  pools.push({ x0: 13 * TS, x1: 119 * TS, y: 33 * TS - 20, base: 33 * TS, tideLo: -20, tideHi: -148, tidePeriod: 22, swim: true, shallow: true, depth: 0, bottom: 33 * TS, streetTide: true, bell: true });
+  net(28, 29, 17, 25); net(60, 61, 15, 24); net(94, 95, 16, 23); // the shrouds: the high road when the sea is over the backs
+  plat(30, 18, 12); plat(50, 16, 10); plat(76, 17, 18); // spars across, from shroud to shroud
+  ent('deco', 22, 25, { kind: 'mastStump' }); ent('deco', 52, 24, { kind: 'mastStump' });
+  ent('deco', 36, 26, { kind: 'sailRag', v: 0 }); ent('deco', 84, 25, { kind: 'sailRag', v: 1 });
+  ent('deco', 66, 26, { kind: 'wreckBow' }); ent('deco', 104, 23, { kind: 'capstan' });
+  for (const [x, y, v] of [[20, 25, 0], [48, 24, 1], [88, 25, 2], [108, 23, 0]]) ent('deco', x, y, { kind: 'coralFan', v });
+  ent('sailor', 50, 24, { face: -1 }); ent('sailor', 86, 25, { face: -1 }); ent('netter', 106, 23, { face: -1 });
+  ent('petrel', 40, 19); ent('petrel', 88, 17);
+  ent('urchin', 36, 31); ent('urchin', 70, 31);
+  ent('sign', 18, 25, { text: 'THE WRECKS LIE WHERE THE REEF PUT THEM. HOLD UP TO CLIMB THE SHROUDS. AND WATCH THE WATER: WHEN IT RISES THE LOW BACKS GO UNDER, AND SO DO YOU.' });
+  ent('silver', 51, 15); ent('check', 100, 23);
+  coins([18, 25], [24, 25], [33, 26], [38, 26], [50, 24], [55, 24], [66, 26], [72, 26], [80, 25], [90, 25], [100, 23], [110, 23]);
+  coins([31, 17], [36, 17], [42, 17], [52, 15], [56, 15], [78, 16], [84, 16], [90, 16]);
+
+  // ---- 2. THE WRECKS: inside the carrack, decks up out of a hold that fills ----
+  block(119, 121, 8, H - 1); block(210, 212, 8, H - 1); block(119, 212, 32, H - 1);
+  air(119, 121, 21, 23); // the gash in her side you walk in through
+  block(122, 209, 6, 7); // her flank overhead: the inside of a ship, not the sky
+  plat(124, 28, 20); plat(152, 28, 18); plat(184, 28, 22);
+  plat(130, 23, 22); plat(166, 23, 26);
+  plat(124, 18, 18); plat(150, 18, 20); plat(186, 18, 20);
+  plat(126, 13, 30); plat(170, 13, 34);
+  net(146, 147, 14, 31); net(196, 197, 9, 22); // companionway ropes, bottom to top
+  air(210, 212, 29, 31); // the breach in her side: out into the reef
+  ent('deco', 133, 31, { kind: 'seaChest' }); ent('stray', 150, 31, { kind: 'seal' });
+  ent('deco', 160, 31, { kind: 'wheel' }); ent('deco', 190, 27, { kind: 'rigging', v: 0 }); ent('deco', 172, 22, { kind: 'rigging', v: 1 });
+  ent('deco', 142, 12, { kind: 'shipBell' }); ent('deco', 200, 12, { kind: 'figurehead' });
+  ent('check', 130, 12); ent('check', 200, 27); ent('sign', 128, 12, { text: 'HER HOLD FILLS AND EMPTIES WITH THE SEA OUTSIDE. THE FIRST SEAL IS DOWN THERE IN THE DARK. GO DOWN WHEN THE WATER GOES OUT, AND CLIMB WHEN IT COMES BACK.' });
+  pools.push({ x0: 122 * TS, x1: 210 * TS, y: 32 * TS - 8, base: 32 * TS, tideLo: -8, tideHi: -272, tidePeriod: 26, swim: true, shallow: true, depth: 0, bottom: 32 * TS, streetTide: true, bell: false });
+  ent('sailor', 136, 27, { face: 1 }); ent('sailor', 176, 22, { face: -1 }); ent('sailor', 196, 17, { face: -1 });
+  ent('netter', 160, 17, { face: 1 }); ent('netter', 190, 12, { face: -1 });
+  ent('urchin', 128, 30); ent('urchin', 168, 30); ent('urchin', 200, 30);
+  ent('silver', 178, 12);
+  coins([126, 27], [131, 27], [156, 27], [162, 27], [188, 27], [194, 27]);
+  coins([134, 22], [140, 22], [170, 22], [176, 22], [182, 22]);
+  coins([128, 17], [134, 17], [154, 17], [160, 17], [190, 17], [196, 17]);
+  coins([130, 12], [136, 12], [148, 12], [174, 12], [182, 12], [196, 12]);
+
+  // ---- 3. THE REEF SHELF: under the whole way, on one breath at a time ----
+  block(213, 330, 0, 12); block(213, 330, 37, H - 1);
+  block(232, 234, 20, 36); block(258, 260, 13, 24); block(258, 260, 30, 36); block(286, 288, 21, 36); block(310, 312, 13, 26);
+  // coral pillars, and the way through weaves: over the first, through the window in the second, over the third, under the fourth
+  block(262, 280, 34, 36); block(296, 308, 33, 36);
+  deep(210, 330, 13, 37, { reef: true, capped: true }); // rock all the way over it: there is no surface to breathe at
+  darkZones.push({ x0: 262 * TS, x1: 331 * TS, y0: 12 * TS, y1: 38 * TS, dark: 0.72 }); // the deep half of the shelf: the anglers are the only lights in it
+  current(236, 256, 14, 36, 1); current(290, 308, 14, 32, -1); // one carries you on, one stands in your way
+  ent('check', 270, 33); ent('check', 302, 32); // the two coral humps you can stand on, down here
+  for (const [x, y] of [[226, 36], [250, 36], [274, 33], [298, 32], [320, 36]]) ent('deco', x, y, { kind: 'airBell' }); // a bell every few strokes: the breath is the clock down here
+  ent('sign', 218, 36, { text: 'NO AIR DOWN HERE BUT WHAT THE DIVING BELLS HOLD. SWIM TO A BELL BEFORE YOUR BREATH GOES. THE CURRENT WILL CARRY YOU IF YOU LET IT, AND HOLD YOU IF YOU FIGHT IT.' });
+  for (const [x, y, v] of [[220, 36, 0], [244, 36, 1], [266, 33, 2], [300, 32, 0], [322, 36, 1]]) ent('deco', x, y, { kind: 'kelpTall', v });
+  for (const [x, y, v] of [[238, 36, 0], [276, 33, 1], [316, 36, 0]]) ent('deco', x, y, { kind: 'brainCoral', v });
+  ent('deco', 250, 36, { kind: 'urchinRock', v: 0 }); ent('deco', 294, 36, { kind: 'urchinRock', v: 1 });
+  ent('urchin', 240, 26); ent('urchin', 254, 20); ent('urchin', 282, 28); ent('urchin', 300, 22); ent('urchin', 318, 30);
+  ent('angler', 264, 30, { face: -1 }); ent('angler', 292, 24, { face: -1 }); ent('angler', 320, 28, { face: -1 });
+  ent('eel', 224, 34); ent('eel', 276, 32);
+  block(320, 328, 16, 19); air(321, 327, 17, 18); // the alcove the adverse current guards
+  ent('stray', 324, 18, { kind: 'seal' });
+  ent('silver', 255, 15);
+  coins([218, 33], [224, 30], [230, 27], [238, 24], [244, 22], [250, 18], [256, 16], [264, 20], [272, 26], [280, 30], [290, 28], [298, 24], [306, 20], [314, 18], [322, 22], [328, 30]);
+
+  // ---- 4. THE KEEL: the tribute ship, up her ribs to the stern cabin ----
+  block(331, 345, 30, H - 1); block(346, 352, 28, H - 1); block(353, 362, 26, H - 1);
+  block(366, 374, 24, H - 1); block(378, 386, 22, H - 1);
+  block(382, 400, 16, 17); block(382, 383, 17, 21); block(398, 400, 17, 21);
+  air(382, 383, 19, 20); plat(377, 21, 6); // her cabin door, and the gangway to it off the ribs
+  block(382, 400, 21, 21);
+  net(376, 377, 14, 23); net(364, 365, 19, 25); // her ribs, standing out of the reef and up past her cabin roof
+  deep(331, 340, 33, 38, { reef: true }); block(331, 340, 38, H - 1);
+  ent('check', 334, 29); ent('deco', 338, 29, { kind: 'wreckStern' });
+  ent('sign', 336, 29, { text: 'THE TRIBUTE SHIP. THE LAST SEAL IS IN THE STERN CABIN, WHICH IS NOW THE ONLY DRY ROOM IN THE SEA. CLIMB HER RIBS.' });
+  ent('deco', 356, 25, { kind: 'anchor' }); ent('deco', 370, 23, { kind: 'spar', v: 0 }); ent('deco', 390, 20, { kind: 'seaChest' });
+  ent('deco', 344, 29, { kind: 'lanternBuoy', v: 1 }); ent('deco', 388, 20, { kind: 'shipBell' });
+  ent('stray', 392, 20, { kind: 'seal' });
+  ent('sailor', 348, 27, { face: -1 }); ent('sailor', 370, 23, { face: -1 }); ent('netter', 358, 25, { face: -1 });
+  ent('petrel', 360, 18); ent('petrel', 386, 14);
+  ent('check', 404, 25);
+  block(387, 412, 26, H - 1); block(413, 424, 28, H - 1); // the broken deck under her cabin, running on to the hole
+  ent('sign', 406, 25, { text: 'THE HOLE AT THE END OF THE REEF. SOMETHING IN IT HAS BEEN EATING THE DEAD OF THIS SHIP FOR A HUNDRED YEARS. IT COMES OUT WHEN THE WATER IS HIGH: STAND ON THE STONES.' });
+  coins([334, 29], [340, 29], [348, 27], [356, 25], [362, 25], [368, 23], [374, 23], [380, 21], [386, 21], [396, 20], [404, 25], [410, 25], [418, 27]);
+
+  // ---- THE MAW: the arena, and the holes it lives in ----
+  block(425, 456, 34, H - 1);
+  block(430, 433, 31, 33); block(438, 442, 30, 33); block(447, 450, 31, 33); // coral stools: dry ground when the water comes up
+  block(453, 456, 30, H - 1); block(457, W - 1, 29, H - 1);
+  pools.push({ x0: 425 * TS, x1: 453 * TS, y: 34 * TS + 6, base: 34 * TS, swim: true, shallow: true, depth: 0, bottom: 34 * TS, arenaTide: true });
+  ent('deco', 427, 33, { kind: 'airBell' }); ent('deco', 451, 33, { kind: 'airBell' });
+  ent('reefmaw', 440, 33);
+  ent('gate', 458, 28);
+
+  const ret = {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones,
+    duskStart: 99999, duskLen: 1, music: 'adventure', night: false,
+    interiors: [[122, 209, 8, 32, 'stone'], [213, 330, 12, 38, 'stone']], // inside her hull, and under the shelf: rock and timber behind, not sky
+    wetZone: [0, 119], storm: true, dark: 0.01,
+    hullZones: [[16, 26, 26, 30], [30, 42, 27, 31], [46, 58, 25, 29], [62, 74, 27, 31], [78, 92, 26, 30], [96, 118, 24, 28], [119, 212, 6, 34], [378, 400, 15, 25]], // her timbers; below them the reef takes over again
+    quest: { n: 3, item: 'seal', name: 'ROYAL SEALS', npc: 'squire', done: 'THE SEALS ARE FOUND', reward: 'relic', relic: 'diverlamp' },
+    palette: { set: 'reef', sky: 'storm', far: 'reef', mid: 'wrecks', near: 'reef', fg: 'reef', dress: 'reef', haze: 'rgba(180,200,205,0.12)',
+      grass: '#5f7a68', grassL: '#88a890', grassD: '#40564a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e3a3a', '#2c4e4a', '#3a6258', '#548070'] },
+    weather: [{ x0: 0, x1: 213 * TS, kind: 'rain' }, { x0: 331 * TS, x1: 99999, kind: 'rain' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 425 * TS, x1: 453 * TS, floor: 34 * TS, trigger: 426 * TS, wallL: 424, wallR: 453, boss: 'reefmaw', music: 'boss2', tint: '#2a5a60', tintA: 0.1, fx: 'motes',
+      holes: [429 * TS, 437 * TS, 445 * TS, 451 * TS] },
+  };
+  return ret;
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
@@ -2324,6 +2453,7 @@ export const LEVELS = [
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', build: stormhold, needs: 'moor' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', build: highcrownWhole, needs: 'storm' },
   { id: 'longwater', name: 'THE LONG WATER', sub: 'the river to the sea', build: longWater, needs: 'crown' },
+  { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', build: shipwreckReef, needs: 'longwater' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
