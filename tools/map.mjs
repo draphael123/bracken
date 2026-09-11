@@ -1,3 +1,5 @@
+// tools/map.mjs — print a patch of a built level as text, with the reach fill marked: node tools/map.mjs <id> x0 x1 y0 y1
+// (* = a tile the knight can stand on and get to, # = rock, . = air, letters = other tiles by id: B oneway, H net, L port, N rail)
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 const [id, x0, x1, y0, y1] = process.argv.slice(2); const L = LEVELS.find(l => l.id === id).build();
