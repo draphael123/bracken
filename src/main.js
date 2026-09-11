@@ -666,7 +666,7 @@ function loadLevel(i) {
   }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
   spawnEntities();
-  P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; camX = 0; camY = LH * TS - VH;
+  P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
 }
 function spawnEntities() {
   webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
@@ -1955,6 +1955,20 @@ function updatePlayer(dt) {
     if (best) P.vx += Math.sign(best.x - P.x) * Math.min(Math.abs(best.x - P.x) * 45, 700) * dt;
   }
 
+  // LADDERS: a column of rope rungs. Hold up on one (or down at the top of one) to take hold; up and down climb it,
+  // jump lets go with a hop, a step sideways lets go, and at the top you step off onto the last rung.
+  { const netAt = (x, y) => tileAt(Math.floor(x / TS), Math.floor(y / TS)) === T.NET;
+    const here = netAt(P.x, P.y - 8) || netAt(P.x, P.y - 2), below = P.ground && netAt(P.x, P.y + 2);
+    if (!P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && ((keys.up && here) || (keys.down && below && !move))) { P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; SFX.pStep(); }
+    if (P.climb) {
+      const lx = Math.floor(P.x / TS) * TS + 8; P.x += (lx - P.x) * Math.min(1, dt * 14); P.vx = 0; P.abuf = 0;
+      const cy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = cy * 74; P.climbA = (P.climbA || 0) + Math.abs(P.vy) * dt;
+      if (cy && Math.floor(P.climbA / 7) !== Math.floor((P.climbA - Math.abs(P.vy) * dt) / 7)) SFX.pStep();
+      if (P.jbuf > 0) { P.jbuf = 0; P.climb = false; P.vy = JUMPV * 0.72; P.vx = move * 110; P.canCut = true; SFX.pJump(); }
+      else if (move && !keys.up && !keys.down) { P.climb = false; P.drop = 0.12; }
+      else if (stunned || P.hurt > 0 || !(here || netAt(P.x, P.y + 2))) P.climb = false;
+      else if (cy < 0 && !netAt(P.x, P.y - 1) && netAt(P.x, P.y + 1)) { P.climb = false; P.y = Math.floor((P.y + 1) / TS) * TS; P.vy = 0; P.ground = true; } // over the top: stand on the last rung
+    } }
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
   P.kickT = Math.max(0, (P.kickT || 0) - dt);
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
@@ -1984,7 +1998,7 @@ function updatePlayer(dt) {
     }
   }
 
-  P.vy += GRAV * dt * (P.plunge ? 1.6 : 1);
+  if (!P.climb) P.vy += GRAV * dt * (P.plunge ? 1.6 : 1);
   const maxFall = P.plunge ? 340 : 270; if (P.vy > maxFall) P.vy = maxFall;
   { // crag rock faces: hold into the rock while airborne to cling and slide slowly; jump to kick up and away
     const dir = keys.left ? -1 : keys.right ? 1 : 0, tx = Math.floor((P.x + dir * 6) / TS), ty = Math.floor((P.y - 8) / TS);
@@ -1997,7 +2011,7 @@ function updatePlayer(dt) {
   const wasGround = P.ground, prevY = P.y;
   P.ground = false;
   const prevVy = P.vy;
-  const r = moveBody(P, P.vx * dt, P.vy * dt, P.drop > 0);
+  const r = moveBody(P, P.vx * dt, P.vy * dt, P.drop > 0 || (P.climb && P.vy > 0));
   if (r.hitX) P.vx = 0;
   if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? 0.2 : 0.1; P.kicked = false; }
   else if (r.hitY) P.vy = 0;
@@ -5533,6 +5547,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if ((isPyro() || isPaladin()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
       else if ((isPyro() || isPaladin()) && P.castT > 0) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }
       else if (P.block || P.jet || P.aegis) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
+      else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
       else if (!P.ground) { key = P.vy < 0 ? 'jump' : 'fall'; frame = P.vy < 0 ? (P.vy < -150 ? 0 : 1) : (P.vy > 220 ? 1 : 0); }
       else if (keys.down && Math.abs(P.vx) < 10) key = 'crouch';
       else if (P.landT > 0 && Math.abs(P.vx) < 40) key = 'land';

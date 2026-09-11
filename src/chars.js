@@ -44,6 +44,9 @@ const LEGS = {
   crouch:['SS.SS.SS..', 'WWW.ww.WWW', '..........', '..........', '..........'],
   land:  ['.SS..SS...', 'SS....SS..', 'ww....ww..', 'WWW..WWW..', '..........'],
   wide:  ['SS.....SS.', 'SS.....SS.', 'ww.....ww.', 'ww.....ww.', 'WWW...WWW.'],
+  // on a ladder: one knee up on the higher rung, the other leg straight down to the lower one, then the other way
+  climbA:['.SS.SSS...', '.SS..SW...', '.ww.WWW...', '.ww.......', 'WWW.......'],
+  climbB:['.SSSS.SS..', '.WWW..SS..', '......ww..', '......ww..', '.....WWW..'],
 };
 const W = 28, H = 28, BX = 8, BY = 3; // body drawn at (BX,BY); feet bottom at BY+16 = 19
 export const KNIGHT_ANCHOR = { ax: 13, ay: 19 };
@@ -113,6 +116,10 @@ export function bakeKnight(skin = {}) {
       knightFrame({ legs: 'fall2', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 4, sh[1] - 5], plume: 2 }),
     ],
     land: knightFrame({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }),
+    climb: [
+      knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 0 }),
+      knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 1 }),
+    ],
     atk: [
       // 0 anticipation: sword drawn back over the shoulder, body leans away
       knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], sword: [sh[0] - 1, sh[1] - 4, sh[0] - 7, sh[1] - 10], plume: 1 }),
@@ -896,6 +903,11 @@ export function bakePyro(skin = {}) {
     fall: [pyroFrame({ bell: 3, hemW: 12, feet: [[11, 18], [15, 18]], staff: [14, 16, 21, 1], arm: [16, 9, 19, 7], arm2: [10, 9, 7, 7], cowl: 2 }),
       pyroFrame({ bell: 4, hemW: 13, dy: -1, feet: [[11, 18], [15, 19]], staff: [14, 16, 21, 1], arm: [16, 9, 19, 6], arm2: [10, 9, 7, 6], cowl: 2, flick: 1 })],
     land: pyroFrame({ sit: 2, hemW: 13, staff: up(0, 2), arm: [16, 13, 17, 14], cowl: 0 }),
+    // on a ladder: the staff across her back, a hand up for the next rung and a foot up on it, then the other
+    climb: [
+      pyroFrame({ hemW: 9, feet: [[11, 18], [15, 15]], staff: [7, 17, 21, 4, 'back'], arm: [16, 10, 18, 3], arm2: [11, 10, 13, 7], cowl: 0 }),
+      pyroFrame({ dy: 1, hemW: 9, feet: [[11, 15], [15, 18]], staff: [7, 17, 21, 4, 'back'], arm: [16, 10, 18, 6], arm2: [11, 10, 13, 3], cowl: 0, flick: 1 }),
+    ],
     // the thrust: staff drawn back, driven straight out, flame off the end of it, pulled home
     atk: [
       pyroFrame({ lean: -1, feet: [[10, 18], [16, 18]], staff: [3, 11, 16, 10], arm: [15, 10, 13, 11], arm2: [11, 10, 9, 11], cowl: 0 }),
@@ -1068,6 +1080,10 @@ export function bakePaladin(skin = {}) {
     jump: [knightFrame({ legs: 'jump', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 7], plume: 2 })],
     land: knightFrame({ legs: 'land', dy: 2, maul: rest(2) }),
+    climb: [
+      knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], maul: carry(), plume: 0 }),
+      knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], maul: carry(1), plume: 1 }),
+    ],
     atk: [
       knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 9], plume: 1 }), // drawn back over the shoulder
       knightFrame({ dx: 0, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], maul: [sh[0] + 1, sh[1] - 3, sh[0] + 5, sh[1] - 9], plume: 2 }),   // up and over
