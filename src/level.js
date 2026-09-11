@@ -1715,7 +1715,7 @@ function galeMoor() {
   block(40, 111, 25, 29); pools.push({ x0: 41 * TS, x1: 111 * TS, y: 24 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 41 * TS, x1: 111 * TS });
   for (const [x0, x1] of [[41, 47], [52, 57], [62, 67], [72, 77], [82, 87], [92, 97], [102, 110]]) { plank(x0, x1, 21); ent('deco', x0, 20, { kind: 'fence', v: 0 }); }
   gusts.push({ x0: 40 * TS, x1: 112 * TS, y0: 8 * TS, y1: 24 * TS, dir: 1, period: 5, on: 2.2, phase: 0, moor: true, k: 1.5 });
-  ent('flagpost', 44, 20); ent('flagpost', 78, 20); ent('flagpost', 108, 20);
+  ent('flagpost', 44, 20); ent('flagpost', 76, 20); ent('flagpost', 108, 20);
   ent('kite', 62, 11); ent('kite', 92, 11); ent('sign', 42, 20, { text: 'THE CAUSEWAY. WAIT FOR THE GUST, THEN JUMP. THE BOG BELOW IS SLOW, AND SOMETHING IN IT DOES NOT LIKE A STANDING MAN.' });
   coins([50, 18], [60, 17], [70, 18], [80, 17], [90, 18], [100, 18]);
 
@@ -1788,7 +1788,7 @@ function galeMoor() {
   // lift, then carry, then land - and the harpies work the gaps because they know you cannot stop. ----
   block(437, 508, 15, 29); spikes(437, 508, 14);
   floor(437, 444, 14);
-  const whistle = (x, top) => { pillar(x, top, 13); ent('flagpost', x, top - 1); };
+  const whistle = (x, top) => { pillar(x, top, 14); ent('flagpost', x, top - 1); }; // down through the thorns to the ground (it stood on the thorn tops, a tile in the air)
   whistle(448, 9); whistle(464, 6); whistle(480, 10); whistle(496, 7);
   for (const [x, h] of [[456, 190], [472, 210], [488, 180], [502, 200]]) ent('vent', x, 13, { period: 100, on: 100, h, wind: true, w: 26 });
   gusts.push({ x0: 444 * TS, x1: 508 * TS, y0: 0, y1: 14 * TS, dir: 1, period: 3.6, on: 1.6, phase: 0, alt: true, moor: true, k: 1.45 });
@@ -1803,11 +1803,7 @@ function galeMoor() {
   for (const [x, top] of [[538, 10], [543, 12]]) pillar(x, top, 13);
   ent('deco', 516, 13, { kind: 'cairn' }); ent('deco', 528, 13, { kind: 'stone', v: 1 }); ent('flagpost', 513, 13); ent('flagpost', 532, 13);
   ent('hare', 540, 13, { face: 1 }); ent('harpy', 530, 4);
-  // ---- 9b. THE MASTHEAD: the biggest sail on the moor, on a walled stretch where the wind turns every few breaths. ----
-  ent('sign', 511, 13, { text: 'THE MASTHEAD. WHILE THE WIND IS IN HER SAIL SHE CANNOT BE STOPPED AND SHE CANNOT STEER. BLOCK HER OR LET THE WALL TAKE HER, THEN CUT HER WHILE SHE IS DOWN. IN THE LULL SHE IS JUST A GOBLIN.' });
-  ent('sailer', 520, 13, { face: -1, big: true, mini: true }); // close enough to the trigger that you see her when the bar appears
   gusts.push({ x0: 510 * TS, x1: 536 * TS, y0: 4 * TS, y1: 14 * TS, dir: 1, period: 3.4, on: 1.5, phase: 0, alt: true, moor: true, k: 1.3 });
-  for (let y = 8; y <= 13; y++) set(535, y, T.PORT);
   coins([518, 12], [530, 12]);
   gusts.push({ x0: 512 * TS, x1: 548 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 6, on: 2, phase: 1, moor: true, k: 1.2 });
   ent('sign', 514, 13, { text: 'THE FLAG ROAD. THE FLAGS ALL POINT ONE WAY: OVER THE MILLS, ACROSS THE TUMBLE, TO THE KITE POST AT THE EDGE OF THE SKY. THE SHAMAN WAITS ON THE SUMMIT BEYOND IT.' });
@@ -1893,7 +1889,6 @@ function galeMoor() {
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 861 * TS, x1: 905 * TS, floor: 13 * TS, trigger: 868 * TS, wallL: 860, wallR: 906, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
     flight: { x1: 864, speed: 78, camY: 2, down: [[772, 790, 60]] }, // the Sky Road: the kite lets go over the summit's near edge
-    mini: { x0: 510 * TS, x1: 535 * TS, floor: 14 * TS, trigger: 513 * TS, wallL: 509, gate: 535, boss: 'sailer' },
   };
 }
 
