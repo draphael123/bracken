@@ -873,6 +873,9 @@ function spawnEnt(e) {
       case 'shardling': enemies.push({ ...base, t: 'shardling', w: 9, h: 11, hp: EHP.shardling, speed: 40, mode: 'walk', modeT: 0 }); break;
       case 'gqueen': boss = { ...base, t: 'gqueen', w: 30, h: 52, hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
+      case 'seabell': props.push({ t: 'seabell', x: px, y: py, swing: 0, cd: 0 }); break;
+      case 'capstan': props.push({ t: 'capstan', x: px, y: py, spin: 0, turns: 0, link: e.link, done: false }); break;
+      case 'sluice': props.push({ t: 'sluice', x: px, y: py, spin: 0, held: 0 }); break;
       case 'winch': props.push({ t: 'winch', x: px, y: py, gate: e.gate, gy0: e.gy0, gy1: e.gy1, open: 0, spin: 0, hold: e.hold || 6 }); break;
       case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, hang: !!e.hang, gq: !!e.gq, downT: 0 }); break;
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
@@ -4579,6 +4582,30 @@ function updateStals(dt) {
 }
 function updateCastleProps(dt, hb) {
   for (const pr of props) {
+    if (pr.t === 'seabell') { // THE SHIP'S BELL: strike it and the reef answers. The petrels go up off the wrecks and the drowned stand still to listen
+      pr.swing = Math.max(0, pr.swing - dt); pr.cd = Math.max(0, pr.cd - dt);
+      const struck = hb && overlap(hb, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr);
+      if (struck) { P.hitSet.add(pr); pr.swing = 1.2; SFX.seaBell(); shakeCam(2); ringAt(pr.x, pr.y - 14, 40, '#c9b27c', 0.4);
+        if (pr.cd <= 0) { pr.cd = 6;
+          for (const e of enemies) if (e.alive && Math.abs(e.x - pr.x) < 150) {
+            if (e.t === 'petrel') { e.mode = 'climb'; e.modeT = 3.5; e.hy -= 40; number(e.x, e.y - 12, 'SCATTERED', '#c9d1dc'); }
+            else if (e.t === 'sailor' || e.t === 'netter') { e.stagger = Math.max(e.stagger || 0, 1.6); e.flash = 0.2; number(e.x, e.y - e.h - 10, 'IT LISTENS', '#bfe6f5'); } } } }
+    }
+    if (pr.t === 'capstan') { // THE CAPSTAN: three turns of it and the cargo hoist is free to run
+      pr.spin = Math.max(0, pr.spin - dt);
+      const struck = hb && overlap(hb, { l: pr.x - 13, r: pr.x + 13, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr);
+      if (struck && !pr.done) { P.hitSet.add(pr); pr.turns++; pr.spin = 0.5; SFX.clank(); sparks(pr.x, pr.y - 8, P.face, 4);
+        if (pr.turns >= 3) { pr.done = true; SFX.gateOpen ? SFX.gateOpen() : SFX.thud(); number(pr.x, pr.y - 24, 'THE HOIST IS FREE', '#8fd160'); shakeCam(3);
+          for (const m of movers) if (m.link === pr.link) { m.locked = false; burst(m.x + m.w / 2, m.y, 10, ['#c9b27c', '#e8dcc0'], 50, 0.5); } }
+        else number(pr.x, pr.y - 24, pr.turns + ' OF 3', '#c9b27c'); }
+    }
+    if (pr.t === 'sluice') { // THE SLUICE: open it and the low street drains, for as long as the gate holds
+      pr.spin = Math.max(0, pr.spin - dt);
+      const struck = hb && overlap(hb, { l: pr.x - 8, r: pr.x + 8, t: pr.y - 20, b: pr.y }) && !P.hitSet.has(pr);
+      if (struck) { P.hitSet.add(pr); pr.spin = 0.6; SFX.clank();
+        const pool = (L.pools || []).find(q => q.streetTide); if (pool) { pool.drainT = 15; SFX.seaBell(); number(pr.x, pr.y - 24, 'THE STREET DRAINS', '#8fd160'); shakeCam(2); } }
+      if (pr.held > 0) pr.held -= dt;
+    }
     if (pr.t === 'winch') {
       const struck = hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr);
       if (struck) { P.hitSet.add(pr); if (pr.open <= 0) { pr.open = pr.hold; SFX.clank(); openGate(pr.gate, pr.gy0, pr.gy1); } else { pr.open = pr.hold; SFX.ui(); } }
@@ -5228,7 +5255,9 @@ function updateProps(dt) {
   for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (!z.current) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; }
     else if (Math.random() < dt * 26) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * (60 + Math.random() * 60), vy: -6, life: 1.1, max: 1.1, col: Math.random() < 0.5 ? '#bfe6f5' : '#7cc8c8', size: 1, grav: -4 }); if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * (z.brace && (P.block || P.aegis || P.jet) ? 0.3 : 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) if (p.streetTide) { // SALTREACH'S TIDE: in and out on a slow beat, the bell as it turns
-    const k = 0.5 - 0.5 * Math.cos((time % p.tidePeriod) / p.tidePeriod * Math.PI * 2); poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
+    let k = 0.5 - 0.5 * Math.cos((time % p.tidePeriod) / p.tidePeriod * Math.PI * 2);
+    if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
+    poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
   updateBore(dt);
   for (const p of (L.pools || [])) { if (p.draining || p.y0 === undefined) continue; let lift = 0; if (p.tide) lift = 8 + Math.sin(time * 2 * Math.PI / 26) * 8; if (p.rise > 0) { p.rise -= dt; lift = Math.max(lift, 14); } if (p.tide || p.rise !== undefined) { const want = p.y0 - lift; p.y += (want - p.y) * Math.min(1, dt * 4); p.depth = (p.depth0 || 12) + (p.y0 - p.y); } }
@@ -5487,6 +5516,7 @@ function updateMovers(dt) {
       m.x -= m.speed * dt; if (m.x + m.w * 0.5 < m.x0) { m.x = m.x1; if (P.onMover === m) P.onMover = null; m.dx = 0; continue; }
       if (P.onMover === m && P.x < m.x0 + 4) P.onMover = null; // the log slides under the bank; you step off
     } else if (m.kind === 'lift') { // a pulley platform: rides toward the far stop while you stand on it, drifts home when you leave
+      if (m.locked) { m.dx = 0; m.dy = 0; continue; }
       const on = P.onMover === m; const target = on ? m.y1 : m.y0; const dir = Math.sign(target - m.y);
       if (dir) { m.y += dir * m.speed * dt; if ((dir > 0 && m.y > target) || (dir < 0 && m.y < target)) m.y = target; }
       m.dy = m.y - oldY; if (on && Math.random() < dt * 4) SFX.stone();
@@ -6032,6 +6062,15 @@ function drawWorld(cx, cy, showPlayer) {
         text(barred ? 'BARRED' : 'E', xx, yy - 36 + Math.round(Math.sin(time * 6)), barred ? '#ff9a5c' : '#8fd160', 'center', 6); } }
     else if (pr.t === 'door') { if (pr.kind === 'cottage') g.drawImage(PROP.cottage[pr.shut ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 32 - cy); else g.drawImage(PROP.door[pr.shut ? 1 : 0], Math.round(pr.x) - 17 - cx, Math.round(pr.y) - 34 - cy); }
     else if (pr.t === 'carpet') g.drawImage(PROP.carpet, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 3 - cy);
+    else if (pr.t === 'seabell') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), sw = Math.round(Math.sin(time * 14) * 2 * Math.min(1, pr.swing));
+      g.drawImage(PROP.reef.shipBell, x - 8 + (pr.swing > 0 ? sw : 0), y - 18); }
+    else if (pr.t === 'capstan') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
+      g.save(); g.translate(x, y - 10); g.rotate(pr.turns * 0.5 + (pr.spin > 0 ? Math.sin(time * 20) * 0.12 : 0)); g.drawImage(PROP.reef.capstan, -13, -10); g.restore();
+      if (!pr.done) { g.fillStyle = '#c9b27c'; for (let k = 0; k < 3; k++) { g.globalAlpha = k < pr.turns ? 1 : 0.3; g.fillRect(x - 5 + k * 4, y - 24, 3, 3); } g.globalAlpha = 1; } }
+    else if (pr.t === 'sluice') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), pool = (L.pools || []).find(q => q.streetTide), open = pool && pool.drainT > 0;
+      g.fillStyle = '#4a5058'; g.fillRect(x - 7, y - 18, 14, 18); g.fillStyle = '#6f7a84'; g.fillRect(x - 7, y - 18, 14, 2);
+      g.fillStyle = open ? '#8fd160' : '#c9463d'; g.fillRect(x - 4, y - 15 + (open ? 6 : 0), 8, 6);
+      g.strokeStyle = '#8a6a3a'; g.lineWidth = 2; g.beginPath(); const a = pr.spin > 0 ? time * 18 : 0; g.moveTo(x - 6 * Math.cos(a), y - 20 - 6 * Math.sin(a)); g.lineTo(x + 6 * Math.cos(a), y - 20 + 6 * Math.sin(a)); g.stroke(); }
     else if (pr.t === 'winch') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); g.fillStyle = '#3a2214'; g.fillRect(x - 1, y - 16, 3, 16); g.fillStyle = '#5a3a24'; g.beginPath(); g.arc(x, y - 12, 6, 0, 7); g.fill(); g.strokeStyle = '#8a5a32'; g.lineWidth = 1; for (let k = 0; k < 4; k++) { const a = pr.spin + k * Math.PI / 2; g.beginPath(); g.moveTo(x, y - 12); g.lineTo(x + Math.cos(a) * 8, y - 12 + Math.sin(a) * 8); g.stroke(); } g.fillStyle = '#5a6270'; g.fillRect(x - 1, y - 13, 3, 3);
       g.strokeStyle = 'rgba(90,98,112,0.8)'; g.beginPath(); g.moveTo(x, y - 18); g.lineTo(pr.gate * TS + 8 - cx, pr.gy0 * TS - cy); g.stroke(); if (pr.open > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x - 6, y - 24, Math.round(12 * pr.open / pr.hold), 2); } }
     else if (pr.t === 'weight' && pr.lamp) { const x = Math.round(pr.x - cx), top = Math.round(pr.y - cy), by = Math.round((pr.state === 'hang' ? pr.y + pr.len : pr.fy) - cy), sx = x - 22, deck = Math.round(pr.y + pr.len + 3 * TS - cy);

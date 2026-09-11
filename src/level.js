@@ -2256,9 +2256,12 @@ function longWater() {
   fall(105, 24, 28);
   block(106, 127, 28, H - 1); shallow(110, 122, 28, 12); ent('heronfoe', 116, 27, { face: -1 });
   for (const x of [112, 119]) ent('deco', x, 27, { kind: 'coralTuft', v: x % 3 });
-  for (const [x, y, k, v] of [[21, 11, 'barnacleRock', 0], [44, 15, 'coralTuft', 2], [68, 19, 'barnacleRock', 1], [90, 23, 'saltCrust', 1], [97, 23, 'coralTuft', 0], [121, 27, 'barnacleRock', 0], [124, 27, 'saltCrust', 1]]) ent('deco', x, y, { kind: k, v });
+  for (const [x, y, k, v] of [[21, 11, 'barnacleRock', 0], [44, 15, 'coralTuft', 2], [68, 19, 'barnacleRock', 1], [101, 23, 'saltCrust', 1], [97, 23, 'coralTuft', 0], [121, 27, 'barnacleRock', 0], [124, 27, 'saltCrust', 1]]) ent('deco', x, y, { kind: k, v });
   block(128, 139, 27, H - 1); // the ferry dock
   ent('sign', 129, 26, { text: 'THE FERRY. STAND ON THE RAFT AND IT GOES. THE BORE COMES UP THE RIVER ON THE TIDE: ON THE RAFT IT ONLY LIFTS YOU; IN THE WATER GET UP ON A ROCK. THE ROCKS WILL KNOCK YOU OFF THE RAFT: JUMP THEM. AND DO NOT LISTEN TO THE SINGING.' });
+  air(132, 138, 30, 32); air(139, 139, 29, 32); // THE SMUGGLERS' CUT: a dry room under the dock, its mouth in the river
+  ent('silver', 134, 32); coins([136, 31], [137, 32], [133, 31]);
+  ent('sign', 136, 32, { text: 'SOMEBODY KEPT THIS ROOM DRY UNDER THE DOCK, AND KEPT IT QUIET. THERE IS A ROPE LADDER CUT OFF AT THE TOP AND A CHEST WITH THE HINGES PRISED OFF.' });
   ent('check', 132, 26); ent('deco', 138, 26, { kind: 'seaLantern', v: 1 }); ent('npc', 136, 26, { kind: 'ferryman', ride: true });
   coins([108, 26], [110, 26], [112, 25], [114, 25], [117, 24], [120, 25], [123, 26], [124, 25], [126, 26], [130, 25], [134, 25], [137, 25]); ent('scout', 124, 27, { face: -1 });
 
@@ -2268,8 +2271,10 @@ function longWater() {
   for (const x of [166, 198, 232, 258]) block(x, x + 1, 26, 33); // rocks in the stream: jump them on the raft, stand on them in the water
   ent('check', 232, 25); // the middle rock: somewhere to come back to on a long river
   ent('siren', 166, 25, { face: -1 }); ent('siren', 198, 25, { face: -1 }); ent('siren', 258, 25, { face: -1 });
+  ent('mover', 210, 24, { len: 3, range: 12, speed: 30 }); // a hatch cover, still drifting
+  coins([212, 22], [216, 22], [220, 22]);
   ent('eel', 176, 31); ent('eel', 214, 31); ent('eel', 246, 31);
-  ent('silver', 233, 25);
+  coins([233, 25], [234, 24]);
   coins([152, 26], [156, 24], [160, 25], [164, 24], [172, 25], [178, 24], [184, 26], [190, 25], [196, 23], [206, 25], [212, 24], [220, 26], [226, 25], [230, 23], [236, 24], [240, 25], [244, 24], [250, 26], [256, 23], [262, 24], [266, 25], [270, 24]);
   coins([150, 32], [190, 32], [224, 32], [268, 32]); // down on the riverbed, for a held breath
 
@@ -2281,6 +2286,7 @@ function longWater() {
   block(300, 331, 29, H - 1); plat(300, 26, 32); // the low street, and the jetty over it
   pools.push({ x0: 300 * TS, x1: 332 * TS, y: 29 * TS + 2, base: 29 * TS, tideLo: 2, tideHi: -28, tidePeriod: 20, swim: true, shallow: true, depth: 0, bottom: 29 * TS, streetTide: true });
   ent('sign', 300, 25, { text: 'THE LOW STREET. AT HIGH WATER THIS IS A CANAL AND THE JETTY IS THE ONLY DRY ROAD. AT LOW WATER THERE IS SILVER OUT ON THE FLATS.' });
+  ent('sluice', 302, 25); ent('sign', 305, 25, { text: 'THE SLUICE. THE TOWN USED IT TO DRAIN THE LOW STREET AFTER A SPRING TIDE. STRIKE THE WHEEL AND YOU HAVE A WHILE ON THE FLATS BEFORE THE SEA COMES BACK.' });
   ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('silver', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
   ent('stray', 305, 28, { kind: 'fisher' }); ent('tideguard', 309, 28, { face: -1 });
   ent('crab', 319, 28, { face: -1 }); ent('crab', 325, 28, { face: 1 });
@@ -2346,6 +2352,8 @@ function shipwreckReef() {
   ent('deco', 36, 26, { kind: 'sailRag', v: 0 }); ent('deco', 84, 25, { kind: 'sailRag', v: 1 });
   ent('deco', 66, 26, { kind: 'wreckBow' }); ent('deco', 104, 23, { kind: 'capstan' });
   for (const [x, y, v] of [[20, 25, 0], [48, 24, 1], [88, 25, 2], [108, 23, 0]]) ent('deco', x, y, { kind: 'coralFan', v });
+  for (const [x, y, r] of [[43, 22, 5], [59, 21, 5], [75, 22, 6]]) ent('mover', x, y, { len: 2, range: r, speed: 26 }); // wreckage still afloat: the high road between the shrouds
+  ent('seabell', 100, 23); ent('sign', 98, 23, { text: "A SHIP'S BELL, STILL ON ITS BRACKET. STRIKE IT: THE BIRDS GO UP OFF THE WRECKS, AND THE DROWNED STOP WHAT THEY ARE DOING TO LISTEN." });
   ent('sailor', 50, 24, { face: -1 }); ent('sailor', 86, 25, { face: -1 }); ent('netter', 106, 23, { face: -1 });
   ent('petrel', 40, 19); ent('petrel', 88, 17);
   ent('urchin', 36, 31); ent('urchin', 70, 31);
@@ -2364,15 +2372,20 @@ function shipwreckReef() {
   plat(126, 13, 30); plat(170, 13, 34);
   net(146, 147, 14, 31); net(196, 197, 9, 22); // companionway ropes, bottom to top
   air(210, 212, 29, 31); // the breach in her side: out into the reef
+  air(162, 172, 33, 35); for (const x of [160, 161]) for (let y = 33; y <= 35; y++) set(x, y, T.CRATE); // HER STRONGROOM, cargo stacked across the door
+  ent('silver', 170, 35); coins([164, 35], [166, 34], [168, 35], [171, 34]);
+  ent('sign', 164, 35, { text: 'THE STRONGROOM. THE TRIBUTE WENT DOWN WITH HER AND NOBODY CAME BACK FOR IT. THE LOCK IS STILL SET FROM THE INSIDE.' });
+  ent('capstan', 198, 27, { link: 'hoist' }); ent('sign', 194, 27, { text: 'THE CARGO HOIST. THREE TURNS OF THE CAPSTAN AND THE CHAIN RUNS FREE: STAND ON THE PALLET AND IT WILL TAKE YOU UP HER DECKS.' });
   ent('deco', 133, 31, { kind: 'seaChest' }); ent('stray', 150, 31, { kind: 'seal' });
   ent('deco', 160, 31, { kind: 'wheel' }); ent('deco', 190, 27, { kind: 'rigging', v: 0 }); ent('deco', 172, 22, { kind: 'rigging', v: 1 });
   ent('deco', 142, 12, { kind: 'shipBell' }); ent('deco', 200, 12, { kind: 'figurehead' });
   ent('check', 130, 12); ent('check', 200, 27); ent('sign', 128, 12, { text: 'HER HOLD FILLS AND EMPTIES WITH THE SEA OUTSIDE. THE FIRST SEAL IS DOWN THERE IN THE DARK. GO DOWN WHEN THE WATER GOES OUT, AND CLIMB WHEN IT COMES BACK.' });
+  movers.push({ kind: 'lift', link: 'hoist', locked: true, x: 202 * TS, y: 27 * TS, y0: 27 * TS, y1: 12 * TS, w: 32, h: 8, speed: 34 }); // the pallet: it runs her whole side once the capstan is turned
   pools.push({ x0: 122 * TS, x1: 210 * TS, y: 32 * TS - 8, base: 32 * TS, tideLo: -8, tideHi: -272, tidePeriod: 26, swim: true, shallow: true, depth: 0, bottom: 32 * TS, streetTide: true, bell: false });
   ent('sailor', 136, 27, { face: 1 }); ent('sailor', 176, 22, { face: -1 }); ent('sailor', 196, 17, { face: -1 });
   ent('netter', 160, 17, { face: 1 }); ent('netter', 190, 12, { face: -1 });
   ent('urchin', 128, 30); ent('urchin', 168, 30); ent('urchin', 200, 30);
-  ent('silver', 178, 12);
+  coins([178, 12], [180, 12]);
   coins([126, 27], [131, 27], [156, 27], [162, 27], [188, 27], [194, 27]);
   coins([134, 22], [140, 22], [170, 22], [176, 22], [182, 22]);
   coins([128, 17], [134, 17], [154, 17], [160, 17], [190, 17], [196, 17]);
@@ -2393,6 +2406,7 @@ function shipwreckReef() {
   for (const [x, y, v] of [[220, 36, 0], [244, 36, 1], [266, 33, 2], [300, 32, 0], [322, 36, 1]]) ent('deco', x, y, { kind: 'kelpTall', v });
   for (const [x, y, v] of [[238, 36, 0], [276, 33, 1], [316, 36, 0]]) ent('deco', x, y, { kind: 'brainCoral', v });
   ent('deco', 250, 36, { kind: 'urchinRock', v: 0 }); ent('deco', 294, 36, { kind: 'urchinRock', v: 1 });
+  ent('mover', 290, 30, { len: 3, range: 16, speed: 42 }); // a drifting plank: ride it through the current that will not let you swim
   ent('urchin', 240, 26); ent('urchin', 254, 20); ent('urchin', 282, 28); ent('urchin', 300, 22); ent('urchin', 318, 30);
   ent('angler', 264, 30, { face: -1 }); ent('angler', 292, 24, { face: -1 }); ent('angler', 320, 28, { face: -1 });
   ent('eel', 224, 34); ent('eel', 276, 32);
@@ -2417,6 +2431,8 @@ function shipwreckReef() {
   ent('stray', 392, 20, { kind: 'seal' });
   ent('sailor', 348, 27, { face: -1 }); ent('sailor', 370, 23, { face: -1 }); ent('netter', 358, 25, { face: -1 });
   ent('petrel', 360, 18); ent('petrel', 386, 14);
+  movers.push({ kind: 'lift', x: 404 * TS, y: 25 * TS, y0: 25 * TS, y1: 14 * TS, w: 32, h: 8, speed: 30 }); // the stern tackle, still rigged
+  coins([404, 13], [408, 13], [396, 14], [392, 14]);
   ent('check', 404, 25);
   block(387, 412, 26, H - 1); block(413, 424, 28, H - 1); // the broken deck under her cabin, running on to the hole
   ent('sign', 406, 25, { text: 'THE HOLE AT THE END OF THE REEF. SOMETHING IN IT HAS BEEN EATING THE DEAD OF THIS SHIP FOR A HUNDRED YEARS. IT COMES OUT WHEN THE WATER IS HIGH: STAND ON THE STONES.' });
