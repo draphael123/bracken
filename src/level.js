@@ -2013,7 +2013,88 @@ export const LEVELS = [
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
-for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build; lv.build = () => sprinkleCoins(b()); }
+// THE REVIEW PASS (2026-09-11). Each wood's fixes from the level review, laid on the finished level in its
+// own final coordinates (some woods are grafted from several builders) before the gold and the dressing.
+const rv = L => ({
+  ent: (t, x, y, o) => L.ents.push({ t, x, y, ...(o || {}) }),
+  coin: (x, y) => L.ents.push({ t: 'coin', x, y }),
+  tile: (x, y, t) => { if (x >= 0 && y >= 0 && x < L.W && y < L.H) L.grid[y * L.W + x] = t; },
+  plat: (x, y, w) => { for (let k = 0; k < w; k++) if (L.grid[y * L.W + x + k] === T.AIR) L.grid[y * L.W + x + k] = T.ONEWAY; },
+});
+const REVIEW = {
+  // a checkpoint in the long run between the thorn cut and the high path
+  wood: L => { const R = rv(L); R.ent('check', 119, 21); },
+  // a checkpoint by the old stones, and lily pads over the two long shallows (hop them and you are across
+  // before a wader is halfway), with gold on the way
+  marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
+  // and its own light in every part of it, so the long fungus wood stops being one colour from end to end
+  spore: L => { rv(L).ent('check', 330, 13);
+    L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, 504, [200, 60, 150], 0.16]]; },
+  // the court's long runs went a hundred and twenty tiles without a checkpoint
+  kings: L => { const R = rv(L); R.ent('check', 105, 21); R.ent('check', 267, 20); },
+  scree: L => { rv(L).ent('check', 330, 18); },
+  // a silver four rows over the street: a step up to it
+  storm: L => { rv(L).plat(282, 28, 3); },
+  // one spider in four goes: a fall off a climb should not land you in three more of them
+  hanging: L => { let n = 0; for (let i = L.ents.length - 1; i >= 0; i--) { const e = L.ents[i]; if (e.t === 'spider' && !e.big && !e.mini && (n++ % 4) === 3) L.ents.splice(i, 1); } },
+  // THE CLOUD CAMP: a foreman's tent and fire at the cloud line, and someone to tell you about the sun; and
+  // goblins who break the glass, who see you on crystal and smash it out from under you
+  spire: L => { const R = rv(L); R.ent('deco', 12, 99, { kind: 'tent', v: 0 }); R.ent('npc', 15, 99, { kind: 'foreman' }); R.ent('brazier', 17, 99);
+    R.ent('sign', 20, 99, { text: 'THE CLOUD LINE. ABOVE IT THE SUN IS ON THE GLASS, AND EVERYTHING UP THERE HAPPENS FASTER: THE LEDGES CRACK SOONER, THE BREATHS COME QUICKER. REST HERE FIRST.' });
+    R.ent('miner', 32, 195, { glass: true, face: -1 }); R.ent('miner', 24, 151, { glass: true, face: 1 }); },
+  // the castle had the fewest foes of anywhere: a watch in the ward, a hall guard, the kitchens staffed. And THE
+  // LEADS: from the choir loft up through a hatch onto the keep roof, a run along it with the whole mountain
+  // below, and a second hatch down at the far end of the chapel
+  crown: L => { const R = rv(L); R.ent('check', 62, 63);
+    for (const [t, x, y, f] of [['sprig', 40, 63, -1], ['sprig', 76, 63, 1], ['pike', 110, 63, -1], ['shield', 140, 63, 1], ['sprig', 166, 63, -1], ['sprig', 190, 63, -1], ['hearthgob', 150, 51, 1], ['hearthgob', 186, 51, -1], ['sprig', 150, 19, 1]]) R.ent(t, x, y, { face: f });
+    R.plat(149, 12, 3); R.plat(151, 10, 3);
+    for (let x = 151; x <= 153; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
+    for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
+    R.ent('sign', 156, 7, { text: 'THE LEADS. THE WHOLE MOUNTAIN IS UNDER YOU. THE HATCH AT THE FAR END DROPS YOU BACK INTO THE CHAPEL: DOWN AND JUMP.' });
+    R.ent('deco', 170, 7, { kind: 'banner', v: 1 }); R.ent('deco', 182, 7, { kind: 'barrels' });
+    // the armoury gantry's silver had no way up to it: ledges from the floor to the gantry, two rows at a time
+    R.plat(129, 38, 3); R.plat(132, 36, 3); R.plat(134, 34, 2); R.plat(139, 31, 2); R.plat(146, 29, 2); },
+};
+// SET DRESSING. After the gold, every real wood gets its own things left about on its ground - hives and
+// birdhouses in the wood, fish traps in the marsh, spear racks and tents in the camp, spore pods under the
+// fungus, cairns and fences on the hills, barrels and lamp posts in the towns, the Queen's banners in her
+// castle. Only on open ground with room over it, spaced out, never in a boss room, never on a sign, a door,
+// a gate or a friend, and the same every time. (The per-100 dressing count was the thinnest number we had.)
+const DRESS = {
+  wood: [['beehive'], ['birdhouse'], ['trunk', 3], ['fence', 2], ['deadTree', 2], ['cairn'], ['stone', 3]],
+  marsh: [['fishTrap', 2], ['lilyLantern'], ['deadTree', 2], ['fence', 2], ['barrels'], ['frogStatue', 1]],
+  stockade: [['barrels'], ['spearRack'], ['skullPile', 2], ['tent', 2], ['cart'], ['bones', 2], ['banner', 2]],
+  spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['deadTree', 2], ['bones', 2]],
+  kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3]],
+  scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
+  hanging: [['lanternPost'], ['barrels'], ['birdhouse'], ['beehive']],
+  spire: [['cairn'], ['bones', 2], ['stone', 3]],
+  moor: [['stone', 3], ['cairn'], ['fence', 2], ['bones', 2], ['deadTree', 2]],
+  storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2]],
+  crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage']],
+};
+function dressLevel(L, id) {
+  const set = DRESS[id]; if (!set) return L;
+  const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
+  const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
+  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
+  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost']);
+  const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
+  const placed = [];
+  const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 9 || Math.abs(py - y) > 4);
+  const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // in the water, not by it: a fish trap wants a bank
+  const stoneAt = (x, y) => (L.stone || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && y >= z[2] - 1 && y <= z[3] + 1);
+  for (let y = 2; y < H - 1; y++) for (let x = 2; x < W - 2; x++) {
+    // open ground three tiles wide with three rows of air over it
+    let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { if (at(x + dx, y + 1) !== T.SOLID) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
+    if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
+    const [kind, nv] = set[(rnd() * set.length) | 0];
+    L.ents.push({ t: 'deco', x, y, kind, v: nv ? (rnd() * nv) | 0 : 0, dressed: true }); placed.push([x, y]);
+  }
+  return L;
+}
+const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(L), id); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };

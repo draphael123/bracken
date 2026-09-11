@@ -7,11 +7,11 @@
 // top). It cannot model a mover, a swing or a gust, so a level that leans on those comes back ASSISTED and
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
 const RUN = 100, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
-const JUMP_UP = Math.ceil((JUMPV * JUMPV) / (2 * G) / TSZ);   // 3 tiles of rise
+const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
 const JUMP_ACROSS = 6;                                        // with a run-up, about six tiles of float
 const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws you much higher
 
-export function floodReach(L, T) {
+export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones)
   const W = L.W, H = L.H, g = L.grid;
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
@@ -36,7 +36,7 @@ export function floodReach(L, T) {
 
   while (q.length) {
     const [x, y] = q.pop();
-    const springy = at(x, y + 1) === T.BOUNCER, up = springy ? BOUNCE_UP : JUMP_UP;
+    const springy = at(x, y + 1) === T.BOUNCER, up = springy ? BOUNCE_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -3; dx <= 3; dx++) push(v.x + dx, ty); }
     // stand in a doorway and press talk: you come out at the other one

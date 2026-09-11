@@ -528,7 +528,7 @@ function spawnEnt(e) {
       case 'ram': props.push({ t: 'ram', x: px, y: py - 16, th: 0, active: 0, tm: 0, hit: new Set() }); break;
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, down: false }); break;
       case 'dropcage': props.push({ t: 'dropcage', x: px, y: py, y0: py, dropped: false, landed: 0, hit: new Set(), boss: !!e.boss, resetT: 0 }); break;
-      case 'miner': enemies.push({ ...base, t: 'miner', w: 10, h: 11, hp: EHP.miner, speed: 26, mode: 'walk', modeT: 0, digT: 0 }); break;
+      case 'miner': enemies.push({ ...base, t: 'miner', w: 10, h: 11, hp: EHP.miner, speed: 26, mode: 'walk', modeT: 0, digT: 0, glass: !!e.glass }); break;
       case 'bat': enemies.push({ ...base, t: 'bat', hx: px, hy: py, w: 10, h: 6, hp: EHP.bat, mode: 'hang', modeT: 0, cd: 0, face: -1 }); break;
       case 'grub': enemies.push({ ...base, t: 'grub', w: 14, h: 7, hp: EHP.grub, speed: 14, mode: 'crawl', modeT: 0, spitT: 2 + Math.random() * 2, glow: true }); lights.push({ x: px, y: py - 4, r: 52, glow: true, ref: enemies[enemies.length - 1] }); break;
       case 'rockgoblin': enemies.push({ ...base, t: 'rockgoblin', w: 10, h: 11, hp: EHP.rockgoblin, speed: 30, mode: 'walk', modeT: 0, throwT: 2 + Math.random() * 2 }); break;
@@ -1239,10 +1239,14 @@ function moveBody(b, dx, dy, allowDrop = false) {
   const r = { hitX: false, hitY: false, ground: false, groundTile: null };
   if (dx !== 0) {
     const dir = Math.sign(dx); let nx = b.x + dx;
-    const top = b.y - b.h + 0.5, bot = b.y - 0.5;
-    const ty0 = Math.floor(top / TS), ty1 = Math.floor(bot / TS);
     const edge = dir > 0 ? nx + b.w / 2 - 0.01 : nx - b.w / 2;
     const tx = Math.floor(edge / TS);
+    // LEDGE ASSIST, the knight's only: in the air, a ledge whose lip is within a few pixels of your feet is a step
+    // up, not a wall. A full jump clears three rows by half a pixel; without this a three-row jump was a coin toss.
+    if (b === P && !P.fly && !P.ground && P.vy > -90) { const fr = Math.floor((b.y - 0.5) / TS), lip = fr * TS;
+      if (isSolid(tx, fr) && b.y - lip > 0 && b.y - lip <= 6) { let room = true; for (let ty = Math.floor((lip - b.h) / TS); ty < fr && room; ty++) if (isSolid(tx, ty) || isSolid(Math.floor(b.x / TS), ty)) room = false; if (room) { b.y = lip; P.vy = Math.min(P.vy, 0); } } }
+    const top = b.y - b.h + 0.5, bot = b.y - 0.5;
+    const ty0 = Math.floor(top / TS), ty1 = Math.floor(bot / TS);
     for (let ty = ty0; ty <= ty1; ty++) if (isSolid(tx, ty)) { nx = dir > 0 ? tx * TS - b.w / 2 : (tx + 1) * TS + b.w / 2; r.hitX = true; break; }
     b.x = nx;
   }
@@ -1255,7 +1259,7 @@ function moveBody(b, dx, dy, allowDrop = false) {
       for (let tx = tx0; tx <= tx1; tx++) {
         const t = tileAt(tx, ty);
         if (t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT) { ny = ty * TS; r.ground = true; r.hitY = true; r.groundTile = t; break; }
-        if (isOneWay(t) && !allowDrop && b.y <= ty * TS + 0.5) { ny = ty * TS; r.ground = true; r.groundTile = t; }
+        if (isOneWay(t) && !allowDrop && b.y <= ty * TS + (b === P && !P.fly ? 6 : 0.5)) { ny = ty * TS; r.ground = true; r.groundTile = t; } // the knight is caught by a jump-through he is a few pixels short of
       }
     } else {
       const ty = Math.floor((ny - b.h) / TS);
@@ -2101,7 +2105,9 @@ function updateMiner(e, dt) {
   e.modeT -= dt; e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300;
   const d = P.x - e.x, ad = Math.abs(d), near = ad < 220 && Math.abs(e.y - P.y) < 60 && !P.dead;
   let want = 0;
-  if (e.mode === 'swingTell') { if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 26 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.miner); if (res === 'hit') P.vx = e.face * 160; else if (res === 'blocked') { e.stagger = 1.0; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } } }
+  if (e.glass && e.mode !== 'smashTell' && e.mode !== 'swingTell' && e.mode !== 'swing' && near && ad < 110 && P.ground && P.groundTile === T.CRYST && (e.smashCd = (e.smashCd || 0) - dt) <= 0) { e.mode = 'smashTell'; e.modeT = 0.8; e.smashCd = 3.5; e.face = Math.sign(d) || e.face; number(e.x, e.y - e.h - 12, 'HE BREAKS THE GLASS', '#bfe6f5'); SFX.gobHurt(); }
+  if (e.mode === 'smashTell') { if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.4; SFX.crack(); SFX.clank(); shakeCam(3); const ty = Math.floor((P.y + 2) / TS); for (const tx of [Math.floor((P.x - 6) / TS), Math.floor(P.x / TS), Math.floor((P.x + 6) / TS)]) { const i = ty * LW + tx; if (L.grid[i] === T.CRYST) crackCrystal(i, 3); } sparks(e.x + e.face * 8, e.y - 4, e.face, 6); } }
+  else if (e.mode === 'swingTell') { if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 26 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.miner); if (res === 'hit') P.vx = e.face * 160; else if (res === 'blocked') { e.stagger = 1.0; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } } }
   else if (e.mode === 'swing') { if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.8; } }
   else if (e.mode === 'dig') { e.digT -= dt; if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 8, y: e.y - 6 + (Math.random() - 0.5) * 12, vx: -e.face * 40, vy: -30, life: 0.3, max: 0.3, col: '#7a6a58', size: 1, grav: 300 }); if (e.digT <= 0) { const tx = Math.floor((e.x + e.face * 10) / TS); for (const ty of [Math.floor((e.y - 4) / TS), Math.floor((e.y - 14) / TS)]) { const i = ty * LW + tx; if (L.grid[i] === T.SOFT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#7a6a58', '#5a4a3a'], 60, 0.5); } } SFX.stone(); shakeCam(2); e.mode = 'walk'; e.modeT = 0.2; } }
   else if (e.stagger > 0) want = 0;
@@ -3173,6 +3179,7 @@ const TAM_MAP = {
 const NPC_LINES = pr => {
   const n = straysGot.size, need = questOf().n;
   if (pr.kind === 'keeper') return PROG.storeHint ? ['SOMETHING NEW CAME IN.', 'UP AT THE COUNTER AND HAVE A LOOK.'] : ['WELCOME, KNIGHT. UP AT THE COUNTER TO TRADE.', 'GOLD BUYS STEEL. STEEL BUYS TIME.'];
+  if (pr.kind === 'foreman' && curId() === 'spire') return ['WE CAME UP FOR THE GLASS AND THE GLASS CAME UP FOR US. SIT BY THE FIRE A MINUTE.', 'ABOVE THE CLOUD THE SUN IS ON IT ALL DAY. A LEDGE THAT HOLDS YOU FOR A BREATH DOWN HERE HOLDS YOU FOR HALF OF ONE UP THERE, AND THE VENTS BREATHE TWICE AS OFTEN.', 'SOME OF MY MEN WENT OVER TO THE GOBLINS. THEY SMASH THE GLASS UNDER ANYONE STANDING ON IT. DO NOT STAND ON IT NEAR THEM.'];
   if (pr.kind === 'foreman') return ['WE DUG FOR ORE AND HIT GLASS. THE CRYSTALS THROW LIGHT DOWN THE HALLS. STRIKE A MIRROR AND THE LIGHT TURNS.', 'THE BEAM BURNS WEB AND MELTS ICE AND OPENS THE DOORS WE SEALED. MY LAMP IS DOWN IN THE OLD WORKINGS, PAST A WEB.', 'SOMETHING GREW IN THE HEART OF IT. THE MEN WHO SAW IT SAY IT ONLY BLEEDS IN THE LIGHT.'];
   if (pr.kind === 'bard') { const seen = Object.values(PROG.beasts || {}).filter(b => b && b.seen).length; const cleared = LEVELS.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length; const pool = ['THEY SAY THE HORNET QUEEN HATES A THIEF. WHO DOES NOT?', 'THE FROG KING DRAWS BREATH BEFORE HE PULLS. HOLD YOUR SHIELD UP.', 'CUT THE CHAINED HOUND LOOSE IN THE KENNELS. IT HAS OPINIONS.', 'THE OWL REEVE CANNOT ABIDE A LIT LANTERN.', 'A SONG FOR THE KNIGHT WHO FOUND ' + silverTotal() + ' SILVER. THE CROWD GOES WILD.']; return [cleared === 0 ? 'A NEW FACE. I SING OF THE WOODS. ASK ME ANYTHING, I WILL SING IT WRONG.' : 'YOU HAVE MET ' + seen + ' BEASTS AND CLEARED ' + cleared + ' WOODS. THAT IS A BALLAD.', pool[Math.floor(time / 8) % pool.length]]; }
   if (pr.kind === 'oldknight') { const sv = silverAvail(); return [sv >= 15 ? 'FIFTEEN SILVER. THE KEEPER HAS A HERO FOR THAT. A HOT ONE.' : 'THREE SILVER COINS HIDE IN EVERY WOOD, TWENTY-SEVEN IN ALL. THE KEEPER TAKES THEM FOR A HERO, A BLADE AND A COAT.', PROG.hero === 'pyro' ? 'A PYROMANCER. IN MY DAY WE HAD SHIELDS. YOURS IS ON FIRE.' : 'BLOCK EARLY, PLUNGE LATE. I LIVED THIS LONG.', 'THE HIGH BOUGHS ARE MINE NO MORE. MY KNEES. GO UP FOR ME.']; }
@@ -4598,6 +4605,8 @@ function drawWorld(cx, cy, showPlayer) {
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
   else drawCastleBack(cx, cy);
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
+  // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
+  if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(16,34,18,' + (0.4 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
