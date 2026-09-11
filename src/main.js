@@ -76,7 +76,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.15 * (tal('heavyPlunge') + tal('firedropDmg')))); // (HEAVY PLUNGE, FIREDROP)
-const DMG = { dummy: 0, gqSceptre: 18, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+const DMG = { lanceWhirl: 12, dummy: 0, gqSceptre: 18, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
 const EHP = { dummy: 9999, sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 420, roc: 440, sentry: 14, gqueen: 560, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 const ST = { swing: 12, plunge: 32, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
@@ -3314,11 +3314,12 @@ function updateSpans(dt) {
 // away and becomes the opposite problem, close and guarded.
 function updateLance(e, dt) {
   const A = L.arena, floor = A.floor;
+  if (e.gust && (e.mode !== 'gale' || !e.alive)) { const gi = (L.gusts || []).indexOf(e.gust); if (gi >= 0) L.gusts.splice(gi, 1); e.gust = null; }
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
   e.vy += 1000 * dt; if (e.vy > 340) e.vy = 340;
   const d = P.x - e.x, ad = Math.abs(d), p2 = e.phase === 2;
   let want = 0;
-  const reach = (dist, dmg, opt) => { if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < dist && Math.abs(P.y - e.y) < 30) { const res = damagePlayer(e.x, dmg, opt); if (res === 'blocked' && !opt) { e.mode = 'reel'; e.modeT = 1.0; e.vx = -e.face * 60; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); SFX.clank(); } return res || 'hit'; } return null; };
+  const reach = (dist, dmg, opt) => { if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < dist && Math.abs(P.y - e.y) < 30) { const res = damagePlayer(e.x, dmg, opt); if (res === 'blocked' && !opt) { e.mode = 'reel'; e.modeT = 1.4; e.vx = -e.face * 60; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); SFX.clank(); } return res || 'hit'; } return null; };
   switch (e.mode) {
     case 'sleep': return;
     case 'wake': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 1.2; } break;
@@ -3327,7 +3328,7 @@ function updateLance(e, dt) {
     // ---- phase one: the lance ----
     case 'pace': {
       e.face = Math.sign(d) || e.face; e.chargeT -= dt; e.thrustT -= dt; e.sweepT -= dt;
-      e.bashT = (e.bashT ?? 1.5) - dt; e.vaultT = (e.vaultT ?? 4) - dt; e.javT = (e.javT ?? 3) - dt;
+      e.bashT = (e.bashT ?? 1.5) - dt; e.vaultT = (e.vaultT ?? 4) - dt; e.javT = (e.javT ?? 3) - dt; e.galeT = (e.galeT ?? 2) - dt;
       want = ad > 40 ? e.face * 52 : 0;
       // up close he mixes a low sweep (jump it) with a shield bash (roll away from it): you cannot answer both the same way
       if (ad < 34 && e.sweepT <= 0 && !e.lastBash) { e.sweepT = 3.5; e.lastBash = true; e.mode = 'sweepTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, 'LOW', '#ffd36b'); SFX.snort(); }
@@ -3336,7 +3337,8 @@ function updateLance(e, dt) {
       // a stride or two off: he plants the lance and goes up it, and comes down on you point first
       else if (ad > 60 && ad < 150 && e.vaultT <= 0) { e.vaultT = 9; e.mode = 'vaultTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 14, 'HE GOES UP', '#ff6b6b'); SFX.snort(); }
       // keep your distance and he throws: three javelins, and then his hands are empty for a moment
-      else if (ad > 150 && e.javT <= 0) { e.javT = 6; e.mode = 'javTell'; e.modeT = 0.6; SFX.snort(); }
+      else if (ad > 110 && (e.galeT ?? 2) <= 0) { e.galeT = 8; e.javT = Math.max(e.javT, 3); e.mode = 'galeTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 14, '!!', '#bfe6f5'); SFX.stormChant && SFX.stormChant(); SFX.bellow(); }
+      else if (ad > 150 && e.javT <= 0) { e.javT = 9; e.mode = 'javTell'; e.modeT = 0.6; SFX.snort(); }
       else if (ad > 70 && e.chargeT <= 0) { e.chargeT = p2 ? 5 : 6.5; e.mode = 'couch'; e.modeT = 0.8; number(e.x, e.y - e.h - 14, 'HE LEVELS IT', '#ff6b6b'); SFX.bellow(); shakeCam(2); }
       break; }
     case 'couch': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 3.2; e.vx = e.face * 250; e.passT = -1; SFX.charge(); shakeCam(3); } break;
@@ -3349,12 +3351,12 @@ function updateLance(e, dt) {
       // (the deck stays whole now: a fight on a bridge that comes apart under you was a fight with the bridge)
       if (Math.random() < dt * 26) dust(e.x - e.face * 12, e.y, 3);
       const edge = e.face > 0 ? e.x > A.x1 - 26 : e.x < A.x0 + 26;
-      if (edge || e.modeT <= 0 || (e.passT !== -1 && e.passT <= 0)) { e.mode = 'planted'; e.modeT = p2 ? 1.5 : 2.2; e.stagger = e.modeT; e.vx = 0;
+      if (edge || e.modeT <= 0 || (e.passT !== -1 && e.passT <= 0)) { e.mode = 'planted'; e.modeT = p2 ? 2.0 : 2.8; e.stagger = e.modeT; e.vx = 0;
         number(e.x, e.y - e.h - 14, 'THE LANCE STICKS: CUT HIM', '#8fd160'); SFX.heavy(); SFX.stone(); shakeCam(7); zoomKick(1.1, 0.3); dust(e.x + e.face * 18, e.y, 12); }
       break; }
     case 'planted': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.8; e.stagger = 0; } break;
     case 'thrustTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.34; SFX.slash(); e.whiff = !reach(96, DMG.lanceThrust); } break;
-    case 'thrust': if (e.modeT <= 0) { if (e.whiff) { e.mode = 'recover'; e.modeT = 0.55; } else { e.mode = 'pace'; e.modeT = 0.5; } } break;
+    case 'thrust': if (e.modeT <= 0) { if (e.whiff) { e.mode = 'recover'; e.modeT = 0.75; } else { e.mode = 'pace'; e.modeT = 0.5; } } break;
     // a swing that finds nothing leaves him over his front foot: that is the answer for anyone who will not stand and block
     case 'recover': if (e.modeT <= 0) { e.mode = p2 ? 'guard' : 'pace'; e.modeT = 0.4; } break;
     case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; SFX.slash(); shakeCam(3);
@@ -3372,13 +3374,27 @@ function updateLance(e, dt) {
     case 'javTell': e.face = Math.sign(d) || e.face; want = 0; if (e.modeT <= 0) { e.mode = 'javThrow'; e.modeT = 1.0; SFX.throwWhoosh();
       for (let k = -1; k <= 1; k++) { const sx = e.x + e.face * 10, sy = e.y - 30, Tf = 0.85 + k * 0.08, G = 420, tx = P.x + k * 30, ty2 = P.y - 6; seeds.push({ x: sx, y: sy, vx: (tx - sx) / Tf, vy: (ty2 - sy) / Tf - 0.5 * G * Tf, g: G, dead: false, life: 3, arrow: true, jav: true }); } } break;
     case 'javThrow': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.5; } break;
+    // THE GALE: the pennant goes up and the storm comes down the bridge at his back - it drags you to his point.
+    // Brace behind your shield, or get up on a lookout: the towers break the wind. When it drops, he thrusts.
+    case 'galeTell': e.face = Math.sign(d) || e.face; want = 0; if (Math.random() < dt * 50) parts.push({ x: e.x + e.face * (60 + Math.random() * 120), y: floor - 4 - Math.random() * 26, vx: -e.face * 160, vy: 0, life: 0.5, max: 0.5, col: '#dfe8ff', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'gale'; e.modeT = p2 ? 3 : 2.6; e.gust = { x0: A.x0, x1: A.x1, y0: floor - 2 * TS, y1: floor, dir: -e.face, period: 1e9, on: 1e9, phase: 0, k: 1.15, brace: true, lanceGale: true }; L.gusts = L.gusts || []; L.gusts.push(e.gust); SFX.gust && SFX.gust(); shakeCam(3); } break;
+    case 'gale': want = 0; e.face = Math.sign(d) || e.face; if (e.gust) e.gust.dir = -e.face;
+      if (!P.dead && P.y > floor - 2 * TS && P.x > A.x0 && P.x < A.x1 && ad > 20) { const pull = (P.block || P.aegis || P.jet) ? 16 : P.ground ? 78 : 40; moveBody(P, -e.face * pull * dt, 0, false); if (Math.random() < dt * 30) parts.push({ x: P.x + e.face * 10, y: P.y - 4 - Math.random() * 10, vx: -e.face * 140, vy: 0, life: 0.3, max: 0.3, col: '#dfe8ff', size: 1, grav: 0 }); } /* the deck drags you in; a braced shield holds, a lookout is out of it */
+      if (e.modeT <= 0) { if (e.gust) L.gusts.splice(L.gusts.indexOf(e.gust), 1); e.gust = null; if (ad < 100 && Math.abs(P.y - e.y) < 30) { e.thrustT = 3.2; e.mode = 'thrustTell'; e.modeT = 0.35; SFX.snort(); } else { e.mode = 'pace'; e.modeT = 0.6; } } break;
+    // THE WHIRLWIND: the shield goes round over his head and the air goes with it - stand on him and you are thrown
+    case 'whirlTell': want = 0; if (Math.random() < dt * 40) { const a = Math.random() * 6.28; parts.push({ x: e.x + Math.cos(a) * 40, y: e.y - 14 + Math.sin(a) * 18, vx: -Math.cos(a) * 90, vy: -Math.sin(a) * 50 - 20, life: 0.4, max: 0.4, col: '#dfe8ff', size: 1, grav: 0 }); }
+      if (e.modeT <= 0) { e.mode = 'whirl'; e.modeT = 0.5; SFX.gust && SFX.gust(); SFX.throwWhoosh(); shakeCam(4); ringAt(e.x, e.y - 14, 56, '#dfe8ff', 0.45);
+        if (!P.dead && ad < 56 && Math.abs(P.y - e.y) < 44) { const res = damagePlayer(e.x, DMG.lanceWhirl, { unblockable: true, up: true }); P.vx = (Math.sign(d) || 1) * 320; P.vy = -300; P.ground = false; } } break;
+    case 'whirl': want = 0; if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = 0.7; } break;
     // ---- phase two: he throws it away ----
     case 'rise': if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 1; } break;
     case 'guard': {
       e.face = Math.sign(d) || e.face; e.sweepT -= dt; e.rushT = (e.rushT === undefined ? 2 : e.rushT) - dt;
       want = ad > 22 ? e.face * 78 : 0;
       e.bashT = (e.bashT ?? 1.5) - dt;
-      if (ad < 30 && e.bashT <= 0 && e.sweepT > 0.6) { e.bashT = 3; e.mode = 'bashTell'; e.modeT = 0.36; number(e.x, e.y - e.h - 12, '!', '#ff6b6b'); }
+      e.whirlT = (e.whirlT ?? 5) - dt;
+      if (ad < 44 && e.whirlT <= 0) { e.whirlT = 7; e.mode = 'whirlTell'; e.modeT = 0.65; number(e.x, e.y - e.h - 12, '!!', '#bfe6f5'); SFX.snort(); }
+      else if (ad < 30 && e.bashT <= 0 && e.sweepT > 0.6) { e.bashT = 3; e.mode = 'bashTell'; e.modeT = 0.36; number(e.x, e.y - e.h - 12, '!', '#ff6b6b'); }
       else if (ad < 30 && e.sweepT <= 0) { e.sweepT = 1.9; e.mode = 'guardTell'; e.modeT = 0.38; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
       // back off him and he comes for you behind the shield: block it and he reels, jump it and he stumbles
       else if (ad > 44 && ad < 130 && e.rushT <= 0) { e.rushT = 3.4; e.mode = 'rushTell'; e.modeT = 0.5; SFX.snort(); }
@@ -3388,23 +3404,23 @@ function updateLance(e, dt) {
       want = e.face * 230;
       if (!P.dead && e.hitT <= 0 && ad < 22 && Math.abs(P.y - e.y) < 24) { e.hitT = 1;
         const res = damagePlayer(e.x, DMG.lanceRush);
-        if (res === 'blocked') { e.mode = 'reel'; e.modeT = 1.1; e.vx = -e.face * 90; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); SFX.clank(); shakeCam(3); break; }
+        if (res === 'blocked') { e.mode = 'reel'; e.modeT = 1.5; e.vx = -e.face * 90; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); SFX.clank(); shakeCam(3); break; }
         if (res === 'hit') { P.vx = e.face * 280; P.vy = -150; } }
-      if (e.modeT <= 0) { e.mode = e.hitT > 0 ? 'guard' : 'stumble'; e.modeT = e.hitT > 0 ? 0.5 : 0.8; e.vx = e.face * 40; if (e.mode === 'stumble') { SFX.heavy(); dust(e.x + e.face * 10, e.y, 6); } }
+      if (e.modeT <= 0) { e.mode = e.hitT > 0 ? 'guard' : 'stumble'; e.modeT = e.hitT > 0 ? 0.5 : 1.1; e.vx = e.face * 40; if (e.mode === 'stumble') { SFX.heavy(); dust(e.x + e.face * 10, e.y, 6); } }
       break; }
     case 'stumble': if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.4; } break;
     case 'guardTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'guardSwing'; e.modeT = 0.28; SFX.slash(); e.whiff = !reach(34, DMG.lanceGuard); } break;
-    case 'guardSwing': if (e.modeT <= 0) { if (e.whiff) { e.mode = 'recover'; e.modeT = 0.55; } else { e.mode = 'guard'; e.modeT = 0.4; } } break;
+    case 'guardSwing': if (e.modeT <= 0) { if (e.whiff) { e.mode = 'recover'; e.modeT = 0.75; } else { e.mode = 'guard'; e.modeT = 0.4; } } break;
   }
   if (e.mode !== 'charge' && e.mode !== 'rush' && e.mode !== 'vault') e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'reel' || e.mode === 'stumble' ? 2 : 5));
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
   e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x));
-  if (e.mode === 'vault' && r.ground && e.airT > 0.2) { e.mode = 'planted'; e.modeT = p2 ? 1.1 : 1.5; e.stagger = e.modeT; e.vx = 0;
+  if (e.mode === 'vault' && r.ground && e.airT > 0.2) { e.mode = 'planted'; e.modeT = p2 ? 1.5 : 1.9; e.stagger = e.modeT; e.vx = 0;
     SFX.heavy(); SFX.stone(); shakeCam(8); zoomKick(1.1, 0.3); dust(e.x, e.y, 14); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 14, y: floor, dir: dd, life: 1.2, sp: 175 });
     if (!P.dead && Math.abs(P.x - e.x) < 30 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.lanceVault, { up: true });
     number(e.x, e.y - e.h - 14, 'THE POINT STICKS: CUT HIM', '#8fd160'); }
-  if (r.hitX && e.mode === 'rush') { e.mode = 'stumble'; e.modeT = 0.9; e.vx = 0; SFX.heavy(); shakeCam(4); }
-  if (r.hitX && e.mode === 'charge') { e.mode = 'planted'; e.modeT = 2.2; e.stagger = 2.2; e.vx = 0; SFX.heavy(); shakeCam(7); }
+  if (r.hitX && e.mode === 'rush') { e.mode = 'stumble'; e.modeT = 1.2; e.vx = 0; SFX.heavy(); shakeCam(4); }
+  if (r.hitX && e.mode === 'charge') { e.mode = 'planted'; e.modeT = 2.8; e.stagger = 2.8; e.vx = 0; SFX.heavy(); shakeCam(7); }
 }
 const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
 
@@ -3954,8 +3970,8 @@ function updateCastleProps(dt, hb) {
         pr.hitE = pr.hitE || new Set();
         for (const e of enemies) if (e.alive && Math.abs(e.x - pr.x) < e.w / 2 + 7 && pr.fy > e.y - e.h && pr.fy < e.y + 4 && !pr.hitE.has(e)) { pr.hitE.add(e);
           if (e.t === 'gqueen' && e.alive && e.phase === 2) { e.mode = 'dazed'; e.modeT = 2.6; e.vx = 0; gqSay(e, 'HER OWN CHANDELIER', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // the thing she threw at comes down on her
-          if (e.t === 'lance' && e.alive) { e.mode = 'reel'; e.modeT = 1.8; e.stagger = 1.8; e.vx = 0; number(e.x, e.y - e.h - 16, 'THE CAGE COMES DOWN ON HIM', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // knocked flat first, so his plate is no use to him
-          hurtEnemy(e, e.maxHp ? (pr.lamp ? 36 : 30) : 999, pr.x, true); }
+          if (e.t === 'lance' && e.alive) { e.mode = 'reel'; e.modeT = 2.6; e.stagger = 2.6; e.vx = 0; number(e.x, e.y - e.h - 16, 'THE CAGE COMES DOWN ON HIM', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // knocked flat first, so his plate is no use to him
+          hurtEnemy(e, e.maxHp ? (pr.lamp ? (e.t === 'lance' ? 60 : 36) : 30) : 999, pr.x, true); }
         if (!P.dead && Math.abs(P.x - pr.x) < 10 && pr.fy > P.y - 16 && pr.fy < P.y + 2 && !pr.hitP) { pr.hitP = true; damagePlayer(pr.x, DMG.crush, { up: true, unblockable: true }); }
         if (pr.gq && !isSolid(tx, ty) && isOneWay(tileAt(tx, ty)) && L.arena && L.arena.gallery && ty === L.arena.gallery.row) { const A = L.arena; A.taken = A.taken || new Map();
           for (let bx = tx - 1; bx <= tx + 1; bx++) { const i = ty * LW + bx; if (isOneWay(L.grid[i])) { if (!A.taken.has(i)) A.taken.set(i, L.grid[i]); L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
@@ -4566,7 +4582,7 @@ function updateProps(dt) {
   const hb = attackBox();
   if (embers.length) updateEmbers(dt);
   for (const s of silvers) if (!s.got && !P.dead && Math.abs(s.x - P.x) < 10 && Math.abs(s.y - (P.y - 7)) < 13) { s.got = true; const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
-  for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
+  for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * (z.brace && (P.block || P.aegis || P.jet) ? 0.3 : 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) { if (p.draining || p.y0 === undefined) continue; let lift = 0; if (p.tide) lift = 8 + Math.sin(time * 2 * Math.PI / 26) * 8; if (p.rise > 0) { p.rise -= dt; lift = Math.max(lift, 14); } if (p.tide || p.rise !== undefined) { const want = p.y0 - lift; p.y += (want - p.y) * Math.min(1, dt * 4); p.depth = (p.depth0 || 12) + (p.y0 - p.y); } }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
   updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial();
@@ -5153,7 +5169,9 @@ function drawCastleBack(cx, cy) {
   const k = Math.max(0, Math.min(1, cx / Math.max(1, (LW * TS - VW)))), sc = (0.75 + k * 0.9) * (VH / 180);
   const w = Math.round(art.width * sc), h = Math.round(art.height * sc);
   const bx = Math.round(VW * 0.62 - w / 2 - cx * 0.04), by = Math.round(VH * 0.30 - 120 * sc + (((LH * TS - VH) - cy) * 0.04));
-  g.globalAlpha = 0.72 + k * 0.2; g.drawImage(art, bx, by, w, h); g.globalAlpha = 1;
+  // scaled by a fraction that changes as you walk, nearest-neighbour broke her dithering into crawling checkers and stair-stepped
+  // every slope; smoothed, the far range softens into the haze the way distance should
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.globalAlpha = 0.72 + k * 0.2; g.drawImage(art, bx, by, w, h); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
 }
 // a goblin house front: timber boards between posts, a stone footing, lit windows with green shutters, horns
 // over the door, and a barred door where there is no way in. Baked once per house.

@@ -1457,7 +1457,7 @@ function stormhold() {
   // anyone who walked through the gate without jumping fell out of the world on the way to the fight
   block(301, 301, BY, 45);
   ent('check', 304, BY - 1);
-  ent('sign', 302, BY - 1, { text: 'THE CASTLE BRIDGE, AND THE QUEEN\'S LANCE ON IT. HE CANNOT TURN WHILE HE IS CHARGING: GET UP ON A LOOKOUT OVER A PIER AND HE GOES UNDER YOU, AND INTO THE NEXT POST. THE FIRE CAGES HANG OVER THE SPANS: CUT A CHAIN AS HE GOES UNDER.' });
+  ent('sign', 302, BY - 1, { text: 'THE CASTLE BRIDGE, AND THE QUEEN\'S LANCE ON IT. HE CANNOT TURN WHILE HE IS CHARGING: GET UP ON A LOOKOUT OVER A PIER AND HE GOES UNDER YOU, AND INTO THE NEXT POST. THE FIRE CAGES HANG OVER THE SPANS: CUT A CHAIN AS HE GOES UNDER. WHEN HIS PENNANT GOES UP THE STORM COMES DOWN THE BRIDGE AT HIM: BRACE, OR GET UP A TOWER.' });
   const piers = [];
   for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
     block(px0, px1, BY, 45); piers.push([px0, px1]);
@@ -1485,18 +1485,17 @@ function stormhold() {
   ent('lance', 320, BY - 1);
 
   // ---- (pass two) THE CHIMNEYS: the old sootworks gorge. The span is down; the chimney stacks still stand a hop apart,
-  // a washing line strung over the middle, and the sweeps who live in them come up to throw soot. The gorge has a floor
+  // and the sweeps who live in them come up to throw soot. The gorge has a floor
   // now and a rope ladder up the near side: a fall is a climb back, not a death. ----
   for (let x = 153; x <= 177; x++) set(x, 32, T.AIR);
   block(153, 177, 44, 45); for (let y = 32; y <= 43; y++) set(153, y, T.NET);
   for (const [x0, top] of [[155, 31], [159, 29], [164, 30], [168, 29], [173, 30]]) { block(x0, x0 + 1, top, 43); ent('chimpot', x0 + 1, top - 1); } // up-hops are two tiles, drops three
-  for (let x = 161; x <= 167; x++) set(x, 27, T.NET); // the washing line
   // a rope ladder down every shaft, not just the first: the stacks wall each one off from the next (the last one
   // climbs the far bank instead, so a fall there is a way on)
   for (const [lx, top] of [[157, 31], [161, 29], [166, 30], [170, 29], [177, 32]]) for (let y = top; y <= 43; y++) set(lx, y, T.NET);
   ent('sweep', 159, 28, { face: -1 }); ent('sweep', 168, 28, { face: -1 });
   ent('sign', 150, 31, { text: 'THE CHIMNEYS. THE SPAN IS DOWN, BUT THE STACKS OF THE OLD SOOTWORKS STILL STAND. MIND THE SWEEPS: THEY LIVE IN THEM, AND THEY THROW SOOT. FALL, AND EVERY SHAFT HAS A LADDER.' });
-  coins([157, 28], [162, 25], [164, 25], [166, 25], [171, 27], [176, 29], [162, 40], [171, 40]);
+  coins([157, 28], [160, 27], [165, 28], [169, 27], [171, 27], [176, 29], [162, 40], [171, 40]);
   // ---- (pass two) THE HOUSES AS PLACES. The longhouse is a feast: tables to fight over and three chandeliers to cut down
   // on whoever is under them. The smithy's forge breathes up to the shelf. The tannery hangs its hides from racks you climb. ----
   for (const x of [121, 138, 152]) ent('weight', x, 4, { len: 4, lamp: true, hang: true });

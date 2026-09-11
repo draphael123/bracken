@@ -1134,12 +1134,21 @@ export function bakeBridgePost() { const [c, g] = canvas(10, 22); rect(g, 1, 4, 
   for (const y of [8, 12, 16]) { rect(g, 0, y, 10, 2, '#c9b27c'); rect(g, 0, y, 10, 1, '#e8dcc0'); }
   rect(g, 3, 0, 4, 4, '#5a6270'); return outline(c, OUT); }
 // A watch tower on a pier: stone, a shutter, a brazier on top. 22x46, background.
-export function bakeBridgeTower() { const [c, g] = canvas(22, 46); rect(g, 2, 6, 18, 40, '#4a4e58'); rect(g, 2, 6, 18, 2, '#6a6e7a'); rect(g, 2, 44, 18, 2, '#2c303a');
-  for (let y = 10; y < 44; y += 7) { rect(g, 2, y, 18, 1, '#3a3e48'); for (let x = 3 + ((y / 7) % 2 ? 5 : 0); x < 19; x += 9) rect(g, x, y + 1, 8, 5, '#565a66'); }
-  rect(g, 7, 16, 8, 9, '#241e18'); rect(g, 8, 17, 6, 7, '#3a2618');
-  rect(g, 0, 2, 22, 5, '#5a6270'); rect(g, 0, 2, 22, 1, '#8a919c');
-  for (let x = 1; x < 21; x += 5) rect(g, x, 0, 3, 3, '#5a6270');
-  rect(g, 9, 0, 4, 2, '#ff9a5c'); px(g, 10, 0, '#ffd36b');
+export function bakeBridgeTower() { // a pier's watchtower, as wide as the lookout slab it carries. 84x64: the slab sits on rows 16-24, the deck at the bottom
+  const [c, g] = canvas(84, 64), S = '#4a4e58', SL = '#6a6e7a', SD = '#2c303a', M = '#3a3e48';
+  // the body, rising from the pier to the slab
+  rect(g, 16, 24, 52, 40, S); rect(g, 16, 24, 3, 40, SL); rect(g, 65, 24, 3, 40, SD);
+  for (let y = 32; y < 62; y += 6) { rect(g, 19, y, 46, 1, M); for (let x = 20 + ((y / 6) % 2 ? 6 : 0); x < 64; x += 12) rect(g, x, y + 1, 1, 5, M); }
+  // the machicolations: a corbelled gallery flaring out under the slab, dark murder-holes between the corbels
+  rect(g, 6, 24, 72, 6, SL); rect(g, 6, 29, 72, 1, SD);
+  for (let x = 8; x < 76; x += 8) { rect(g, x, 30, 4, 3, S); rect(g, x + 1, 33, 2, 2, S); rect(g, x + 4, 30, 4, 2, '#1b1626'); }
+  // an arrow slit with a watch-fire behind it, and the door the Lance rides through
+  rect(g, 40, 38, 4, 10, '#1b1626'); rect(g, 41, 40, 2, 6, '#ff9a5c'); rect(g, 41, 41, 2, 2, '#ffd36b');
+  rect(g, 34, 52, 16, 12, '#1b1626'); rect(g, 36, 50, 12, 2, '#1b1626'); rect(g, 35, 54, 14, 10, '#241e18'); rect(g, 41, 54, 2, 10, '#1b1626');
+  rect(g, 33, 50, 1, 14, SL); rect(g, 50, 50, 1, 14, SD);
+  // the Queen's banner off the gallery, and the posts of the parapet above the slab at either end
+  rect(g, 20, 30, 7, 14, '#8f2f28'); rect(g, 20, 30, 7, 2, '#c9463d'); rect(g, 22, 36, 3, 3, '#ffd36b'); rect(g, 20, 44, 2, 2, '#8f2f28'); rect(g, 25, 44, 2, 2, '#8f2f28');
+  for (const x of [2, 78]) { rect(g, x, 8, 4, 8, S); rect(g, x, 8, 4, 1, SL); rect(g, x + 3, 9, 1, 7, SD); }
   return outline(c, OUT); }
 // The gatehouse at the far end: the way off the bridge and into the castle. 40x54, background.
 export function bakeGatehouse() { const [c, g] = canvas(40, 54); rect(g, 0, 6, 40, 48, '#4a4e58'); rect(g, 0, 6, 40, 2, '#6a6e7a');

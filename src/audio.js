@@ -350,6 +350,7 @@ Object.assign(SFX, {
   baleBurst() { for (let i = 0; i < 6; i++) noise(0.05, 0.18, 2600 + (i % 3) * 700, 0.9, i * 0.03); tone('sine', 140, 60, 0.12, 0.14); noise(0.4, 0.08, 1800, 0.4, 0.1); },
   sweepPop() { tone('square', 170, 110, 0.08, 0.1); noise(0.28, 0.16, 650, 0.5); [720, 800, 660].forEach((f, i) => tone('square', f, f * 0.9, 0.05, 0.05, 0.12 + i * 0.07)); },
   sweepHide() { noise(0.3, 0.12, 1100, 0.5); tone('sine', 300, 120, 0.25, 0.05); },
+  gust() { noise(0.9, 0.09, 420, 0.4); noise(0.6, 0.05, 900, 0.6); }, // a gale coming down the bridge
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
   shardBristle() { if (!gate('bristle', 0.3)) return; [1568, 2093, 2637].forEach((f, i) => bell(f, 0.3, 0.035, i * 0.04)); noise(0.1, 0.05, 5200, 1.2); },
