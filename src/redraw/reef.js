@@ -163,7 +163,8 @@ function needleJaw(G, o) {
       }
       const ti = Math.round(t);
       if (Math.abs(t - ti) > 0.16 || ti % 2 || t < 0.8 || t > L - 0.6) continue;
-      for (let e = 1; e <= (ti % 4 ? 1 : 2); e++) put(G, hinge[0] + A.u[0] * t + A.n[0] * sign * (w + e), hinge[1] + A.u[1] * t + A.n[1] * sign * (w + e), ch.tooth);
+      const fang = ti % 4 === 0;
+      for (let e = 1; e <= (fang ? 2 : 1); e++) put(G, hinge[0] + A.u[0] * t + A.n[0] * sign * (w + e), hinge[1] + A.u[1] * t + A.n[1] * sign * (w + e), fang && e === 1 ? ch.tooth2 : ch.tooth);
     }
   };
   wedge(up, o.up, o.thU, ch.hi, -1);
@@ -197,8 +198,8 @@ function halo(c, pts, rad, col) {
 }
 
 // ---------- THE DROWNED (sailor, netter, net) ----------
-// bloated grey-green flesh h/s/S/g, milky eye e, slack mouth m; weed k/K/q; rotted jerkin leather j/J/u;
-// rope n/N; pole wood w/W; wet iron i/I and lead weights d; old blood r
+// bloated grey-green flesh h/s/S/g, milky eye e, slack mouth m; weed k/K/q; rotted jerkin leather j/J/u torn open
+// on a raw wound r; rope n/N; pole wood w/W; wet iron i/I and lead weights d
 const RF = { o: OUT, h: '#b4c4a4', s: '#8ba089', S: '#5d7263', g: '#3d4c44', e: '#e6f0dc', m: '#43202c',
   k: '#5d7d36', K: '#3c5624', q: '#243a18',
   j: '#8a6a46', J: '#5b4329', u: '#38291a',
@@ -225,7 +226,7 @@ export function bakeSailor() {
     '.jJjjjJu.',
     'jJjjhjJJu',
     'jJjjjjJJu',
-    'jJhhjjJJu',
+    'jJhrjjJJu',
     'jJjjjjJJu',
     '.jJjjjJu.',
     '.uJJJJJu.',
@@ -351,7 +352,7 @@ export function bakeNetter() {
     'jJjjjjJu.',
     'jJjjhjJu.',
     'jJjjjjJJu',
-    'jJhjjjJJu',
+    'jJhrjjJJu',
     '.jJjjjJu.',
     '..uJJJu..',
     '..SshsS..',
@@ -529,7 +530,7 @@ export function bakeAngler() {
   const W = 36, H = 22, X = 14;
   const q = G => outline(fromGrid(rowsOf(settle(G)), AN, 1), OUT);
   const SP = 13.5;
-  const JAW = { hi: 'a', mid: 'A', lo: 'B', gum: 'p', tooth: 't', gullet: 'r', throat: 'm' };
+  const JAW = { hi: 'a', mid: 'A', lo: 'B', gum: 'p', tooth: 't', tooth2: 'T', gullet: 'r', throat: 'm' };
   const body = (G, dx) => {
     const p = [[19, 6.5], [22, 9], [22.5, 12.5], [21.5, 16], [19, 19], [14, 20.2], [9, 19.6], [5.5, 18], [3.6, 15], [4.2, 12], [7, 9.6], [12, 7.4]];
     gpoly(G, p.map(([x, y]) => [x + dx, y]), (x, y) => {
@@ -675,7 +676,7 @@ const MW = { o: OUT, h: '#5d7a4a', s: '#41583a', S: '#2a3a28', D: '#16211a', b: 
 export function bakeReefmaw() {
   const W = 88, H = 68, X = 43;
   const q = G => outline(fromGrid(rowsOf(settle(G)), MW, 1), OUT);
-  const JAW = { hi: 'h', mid: 's', lo: 'B', gum: 'p', tooth: 't', gullet: 'r', throat: 'm' };
+  const JAW = { hi: 'h', mid: 's', lo: 'B', gum: 'p', tooth: 't', tooth2: 'T', gullet: 'r', throat: 'm' };
   // a de Casteljau curve through the control points, radius lerped base -> neck
   const curve = (cp, r0, r1, steps = 44) => {
     const out = [];

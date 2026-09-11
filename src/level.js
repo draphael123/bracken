@@ -2239,21 +2239,24 @@ function longWater() {
   air(30, 33, 13, 15); ent('silver', 31, 15); coins([32, 15], [30, 15]); // the cave behind the second fall
   shallow(42, 52, 16, 10); ent('heronfoe', 47, 15, { face: -1 });
   ent('deco', 40, 15, { kind: 'barnacleRock', v: 0 }); ent('deco', 53, 15, { kind: 'saltCrust', v: 1 });
-  coins([41, 14], [44, 15], [45, 13], [47, 13], [49, 13], [51, 15], [54, 14]);
+  coins([41, 14], [44, 15], [45, 13], [47, 13], [49, 13], [51, 15], [54, 14], [36, 15], [38, 15], [43, 13], [52, 13]);
   fall(55, 16, 20);
   block(56, 79, 20, H - 1); plunge(56, 60, 20, 3); ent('eel', 58, 22);
   ent('deco', 66, 19, { kind: 'drownedHut' }); ent('check', 63, 19);
+  ent('sign', 74, 17, { text: 'THE SCOUTS ARE NOT GOBLINS. THEY ARE TALLER, AND THEY DO NOT SPEAK, AND THEY THROW A HARPOON HARDER THAN A MAN CAN.' });
   ent('sign', 62, 19, { text: 'THE SHEPHERD\'S HUT. THE WATER CAME UP THE HILL IN THE NIGHT. THERE ARE FISH IN THE CHIMNEY. SOMEONE PALE WAS WATCHING FROM THE ROCKS.' });
   block(73, 79, 18, 19); ent('scout', 69, 19, { face: 1 }); ent('scout', 77, 17, { face: -1 });
-  coins([57, 22], [59, 22], [62, 18], [64, 18], [67, 17], [70, 17], [75, 16], [78, 16]);
+  coins([57, 22], [59, 22], [62, 18], [64, 18], [67, 17], [70, 17], [75, 16], [78, 16], [61, 19], [65, 18], [72, 17], [76, 16]);
   fall(79, 18, 24);
   block(80, 105, 24, H - 1); plunge(80, 91, 24, 4); ent('eel', 84, 27); ent('eel', 89, 27);
-  ent('check', 95, 23); ent('crab', 99, 23, { face: -1 }); ent('turtle', 103, 23, { face: -1 });
+  ent('check', 95, 23); ent('sign', 92, 23, { text: 'THE POOL UNDER THIS FALL IS DEEPER THAN THE OTHERS AND THERE ARE TWO EELS IN IT. THE COINS AT THE BOTTOM ARE WORTH ONE BREATH, NOT TWO.' });
+  ent('crab', 99, 23, { face: -1 }); ent('turtle', 103, 23, { face: -1 });
   ent('deco', 93, 23, { kind: 'barnacleRock', v: 1 }); ent('deco', 101, 23, { kind: 'coralTuft', v: 1 });
   coins([81, 26], [83, 25], [86, 25], [87, 26], [89, 25], [90, 26], [92, 22], [96, 22], [100, 21], [103, 21], [104, 22]);
   fall(105, 24, 28);
   block(106, 127, 28, H - 1); shallow(110, 122, 28, 12); ent('heronfoe', 116, 27, { face: -1 });
   for (const x of [112, 119]) ent('deco', x, 27, { kind: 'coralTuft', v: x % 3 });
+  for (const [x, y, k, v] of [[21, 11, 'barnacleRock', 0], [44, 15, 'coralTuft', 2], [68, 19, 'barnacleRock', 1], [90, 23, 'saltCrust', 1], [97, 23, 'coralTuft', 0], [121, 27, 'barnacleRock', 0], [124, 27, 'saltCrust', 1]]) ent('deco', x, y, { kind: k, v });
   block(128, 139, 27, H - 1); // the ferry dock
   ent('sign', 129, 26, { text: 'THE FERRY. STAND ON THE RAFT AND IT GOES. THE BORE COMES UP THE RIVER ON THE TIDE: ON THE RAFT IT ONLY LIFTS YOU; IN THE WATER GET UP ON A ROCK. THE ROCKS WILL KNOCK YOU OFF THE RAFT: JUMP THEM. AND DO NOT LISTEN TO THE SINGING.' });
   ent('check', 132, 26); ent('deco', 138, 26, { kind: 'seaLantern', v: 1 }); ent('npc', 136, 26, { kind: 'ferryman', ride: true });
@@ -2263,6 +2266,7 @@ function longWater() {
   block(140, 277, 34, H - 1); deep(140, 277, 28, 34, { river: true });
   movers.push({ kind: 'raft', ferry: true, free: true, x0: 140 * TS, x1: 272 * TS, x: 140 * TS, y: 28 * TS - 4, w: 96, h: 8, speed: 58, big: true });
   for (const x of [166, 198, 232, 258]) block(x, x + 1, 26, 33); // rocks in the stream: jump them on the raft, stand on them in the water
+  ent('check', 232, 25); // the middle rock: somewhere to come back to on a long river
   ent('siren', 166, 25, { face: -1 }); ent('siren', 198, 25, { face: -1 }); ent('siren', 258, 25, { face: -1 });
   ent('eel', 176, 31); ent('eel', 214, 31); ent('eel', 246, 31);
   ent('silver', 233, 25);
@@ -2276,6 +2280,7 @@ function longWater() {
   for (const [x, v] of [[291, 0], [297, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
   block(300, 331, 29, H - 1); plat(300, 26, 32); // the low street, and the jetty over it
   pools.push({ x0: 300 * TS, x1: 332 * TS, y: 29 * TS + 2, base: 29 * TS, tideLo: 2, tideHi: -28, tidePeriod: 20, swim: true, shallow: true, depth: 0, bottom: 29 * TS, streetTide: true });
+  ent('sign', 300, 25, { text: 'THE LOW STREET. AT HIGH WATER THIS IS A CANAL AND THE JETTY IS THE ONLY DRY ROAD. AT LOW WATER THERE IS SILVER OUT ON THE FLATS.' });
   ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('silver', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
   ent('stray', 305, 28, { kind: 'fisher' }); ent('tideguard', 309, 28, { face: -1 });
   ent('crab', 319, 28, { face: -1 }); ent('crab', 325, 28, { face: 1 });
@@ -2286,8 +2291,9 @@ function longWater() {
   ent('stray', 341, 26, { kind: 'fisher' }); ent('tideguard', 345, 26, { face: -1 });
   ent('stray', 358, 26, { kind: 'fisher' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 363, 26, { face: -1 });
   ent('deco', 333, 26, { kind: 'bellTower' });
-  ent('check', 364, 26); ent('deco', 339, 26, { kind: 'buoy' }); ent('deco', 353, 26, { kind: 'tributeChest' });
-  coins([335, 24], [338, 25], [340, 24], [343, 25], [348, 25], [351, 24], [356, 25], [359, 24], [362, 25], [366, 25]);
+  ent('check', 364, 26); ent('sign', 350, 26, { text: 'THE TRIBUTE CHEST STANDS OPEN IN THE STREET AND NOBODY HAS TOUCHED IT. WHATEVER THEY ARE TAKING, IT IS NOT GOLD.' });
+  ent('deco', 339, 26, { kind: 'buoy' }); ent('deco', 353, 26, { kind: 'tributeChest' });
+  coins([335, 24], [338, 25], [340, 24], [343, 25], [348, 25], [351, 24], [356, 25], [359, 24], [362, 25], [366, 25], [333, 25], [346, 24], [354, 24], [364, 24]);
 
   // ---- 4. THE SQUARE: the Tide Herald. The sea comes up the square in three steps; the stones in it are the dry ground ----
   block(368, 408, 30, H - 1);
@@ -2380,7 +2386,8 @@ function shipwreckReef() {
   deep(210, 330, 13, 37, { reef: true, capped: true }); // rock all the way over it: there is no surface to breathe at
   darkZones.push({ x0: 262 * TS, x1: 331 * TS, y0: 12 * TS, y1: 38 * TS, dark: 0.72 }); // the deep half of the shelf: the anglers are the only lights in it
   current(236, 256, 14, 36, 1); current(290, 308, 14, 32, -1); // one carries you on, one stands in your way
-  ent('check', 270, 33); ent('check', 302, 32); // the two coral humps you can stand on, down here
+  ent('check', 270, 33); ent('check', 302, 32);
+  ent('sign', 264, 33, { text: 'THE DEEP HALF OF THE SHELF IS BLACK. THE LIGHTS DOWN THERE ARE NOT LANTERNS: THEY ARE ON THE ENDS OF STALKS, AND THEY ARE ATTACHED TO SOMETHING.' }); // the two coral humps you can stand on, down here
   for (const [x, y] of [[226, 36], [250, 36], [274, 33], [298, 32], [320, 36]]) ent('deco', x, y, { kind: 'airBell' }); // a bell every few strokes: the breath is the clock down here
   ent('sign', 218, 36, { text: 'NO AIR DOWN HERE BUT WHAT THE DIVING BELLS HOLD. SWIM TO A BELL BEFORE YOUR BREATH GOES. THE CURRENT WILL CARRY YOU IF YOU LET IT, AND HOLD YOU IF YOU FIGHT IT.' });
   for (const [x, y, v] of [[220, 36, 0], [244, 36, 1], [266, 33, 2], [300, 32, 0], [322, 36, 1]]) ent('deco', x, y, { kind: 'kelpTall', v });
@@ -2406,6 +2413,7 @@ function shipwreckReef() {
   ent('sign', 336, 29, { text: 'THE TRIBUTE SHIP. THE LAST SEAL IS IN THE STERN CABIN, WHICH IS NOW THE ONLY DRY ROOM IN THE SEA. CLIMB HER RIBS.' });
   ent('deco', 356, 25, { kind: 'anchor' }); ent('deco', 370, 23, { kind: 'spar', v: 0 }); ent('deco', 390, 20, { kind: 'seaChest' });
   ent('deco', 344, 29, { kind: 'lanternBuoy', v: 1 }); ent('deco', 388, 20, { kind: 'shipBell' });
+  ent('sign', 386, 20, { text: "THE CAPTAIN'S SEAL, STILL IN HER CABIN, AND THE WAX NOT EVEN CRACKED. SHE WENT DOWN WITH IT RATHER THAN HAND IT OVER. NOW YOU KNOW WHAT SHE WAS AFRAID OF." });
   ent('stray', 392, 20, { kind: 'seal' });
   ent('sailor', 348, 27, { face: -1 }); ent('sailor', 370, 23, { face: -1 }); ent('netter', 358, 25, { face: -1 });
   ent('petrel', 360, 18); ent('petrel', 386, 14);
@@ -2419,7 +2427,8 @@ function shipwreckReef() {
   block(430, 433, 31, 33); block(438, 442, 30, 33); block(447, 450, 31, 33); // coral stools: dry ground when the water comes up
   block(453, 456, 30, H - 1); block(457, W - 1, 29, H - 1);
   pools.push({ x0: 425 * TS, x1: 453 * TS, y: 34 * TS + 6, base: 34 * TS, swim: true, shallow: true, depth: 0, bottom: 34 * TS, arenaTide: true });
-  ent('deco', 427, 33, { kind: 'airBell' }); ent('deco', 451, 33, { kind: 'airBell' });
+  ent('deco', 427, 33, { kind: 'airBell' }); ent('deco', 452, 33, { kind: 'airBell' });
+  for (const x of [429, 437, 445, 451]) ent('deco', x, 33, { kind: 'bubbleVent' }); // its four holes, each one venting: watch which one is breathing
   ent('reefmaw', 440, 33);
   ent('gate', 458, 28);
 
