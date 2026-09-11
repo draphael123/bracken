@@ -1128,6 +1128,25 @@ export function bakeStilt() {
   rect(g, 1, 48, 4, 16, '#2e3a2a'); // bog-black where it goes in
   return outline(c, OUT);
 }
+// ---------- THE SUNSPIRE'S FROST ----------
+// An icicle under a ledge: a tapered spike, pale at the root. 7 wide, v = 0/1/2 -> 8/11/14 long. Hangs from its top row.
+export function bakeIcicle(v) { const len = [8, 11, 14][v % 3], [c, g] = canvas(7, len);
+  for (let y = 0; y < len; y++) { const w = Math.max(1, Math.round(5 * (1 - y / len))), x0 = 3 - Math.floor(w / 2); rect(g, x0, y, w, 1, y < 2 ? '#eaf6ff' : '#bfe0f0'); if (w > 1) px(g, x0 + w - 1, y, '#8ab8d4'); if (w > 2 && y % 3 === 1) px(g, x0 + 1, y, '#ffffff'); }
+  return c; }
+// A frost cluster on the ground: three little shards of ice. 10x7, bottom row on the ground.
+export function bakeFrost(v) { const [c, g] = canvas(10, 7);
+  const shard = (x, h, col) => { for (let y = 0; y < h; y++) { const w = y < h - 2 ? 1 : 2; rect(g, x - (w > 1 ? 0 : 0), 7 - h + y, w, 1, y === 0 ? '#ffffff' : col); } };
+  if (v % 2) { shard(2, 5, '#bfe0f0'); shard(5, 7, '#a8d4ec'); shard(7, 4, '#d6eefa'); } else { shard(1, 4, '#d6eefa'); shard(4, 6, '#a8d4ec'); shard(8, 5, '#bfe0f0'); }
+  rect(g, 0, 6, 10, 1, '#8ab8d4'); return c; }
+// Someone who came up for the glass and stayed: a block of ice with a figure in it. 18x22, bottom on the ground. v 0 = a goblin, 1 = a climber with a pick.
+export function bakeFrozen(v) { const [c, g] = canvas(18, 22);
+  rect(g, 1, 2, 16, 20, '#a8d4ec'); rect(g, 2, 3, 14, 18, '#bfe0f0');
+  if (v % 2 === 0) { rect(g, 6, 6, 6, 5, '#4f7a58'); rect(g, 4, 7, 2, 2, '#4f7a58'); rect(g, 12, 7, 2, 2, '#4f7a58'); px(g, 7, 8, '#dff2ff'); px(g, 10, 8, '#dff2ff'); rect(g, 6, 11, 6, 6, '#4a3f6a'); rect(g, 5, 12, 1, 4, '#4f7a58'); rect(g, 12, 11, 2, 1, '#4f7a58'); rect(g, 13, 9, 1, 3, '#4f7a58'); rect(g, 6, 17, 2, 3, '#3c5a44'); rect(g, 10, 17, 2, 3, '#3c5a44'); }
+  else { rect(g, 7, 5, 4, 4, '#c9a07a'); rect(g, 6, 4, 6, 2, '#6a4a3a'); rect(g, 6, 9, 6, 7, '#7a3a34'); rect(g, 11, 6, 1, 9, '#6a4a2a'); rect(g, 10, 5, 4, 1, '#9aa0aa'); rect(g, 6, 16, 2, 4, '#3a3a44'); rect(g, 10, 16, 2, 4, '#3a3a44'); }
+  g.globalAlpha = 0.55; rect(g, 2, 3, 14, 18, '#dff2ff'); g.globalAlpha = 1; // the ice over them
+  rect(g, 3, 4, 1, 12, '#ffffff'); rect(g, 4, 4, 3, 1, '#ffffff'); rect(g, 14, 14, 1, 5, '#eaf6ff');
+  for (const [x, y] of [[1, 0], [5, 1], [11, 0], [16, 1], [8, 1]]) rect(g, x, y, 2, 3 - (x % 2), '#bfe0f0'); // a rough top
+  rect(g, 0, 21, 18, 1, '#8ab8d4'); return outline(c, OUT); }
 // ---------- STORMHOLD ----------
 // A bridge post: a stone stump with the rope made off round it. 10x22.
 export function bakeBridgePost() { const [c, g] = canvas(10, 22); rect(g, 1, 4, 8, 18, '#5a6270'); rect(g, 1, 4, 8, 2, '#8a919c'); rect(g, 1, 20, 8, 2, '#3a3e48');
