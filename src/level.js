@@ -766,8 +766,7 @@ function kingswood() {
   for (let x = 318; x <= 368; x++) ent('carpet', x, 13);
   ent('torch', 320, 13); ent('torch', 366, 13); ent('deco', 326, 13, { kind: 'banner', v: 0 }); ent('deco', 360, 13, { kind: 'banner', v: 1 });
   ent('deco', 332, 13, { kind: 'skullPile', v: 0 }); ent('deco', 354, 13, { kind: 'skullPile', v: 1 });
-  ent('brazier', 329, 13); ent('brazier', 359, 13); // the court's braziers: tip them into the King's path
-  ent('firepit', 335, 12); ent('firepit', 351, 12); // two fire pits in the carpet: the King walks through them, you jump them
+  plat(322, 3, 3); plat(367, 3, 3); // the archers' perches under the roof, level with the winch decks: the King calls bowmen up when you hide on the scaffold
   // the galleries: the court cheers from balconies at either end and throws goblets when the King shouts
   plat(318, 9, 6); plat(366, 9, 5); ent('torch', 318, 8); ent('torch', 369, 8);
   for (const x of [319, 321, 323, 367, 369]) ent('folk', x, 8, { court: true, alt: x % 4 === 1 });

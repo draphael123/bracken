@@ -441,6 +441,9 @@ function resolveTiles() {
     else if (t === T.CRATE) s = TILE.crate;
     tileSpr[y * LW + x] = s;
   }
+  // a boss floor is a fighting floor: no fallen logs, stumps, fences, bushes, carts or campfires scattered on it (they read as things to jump or hide behind)
+  const BULKY = new Set(['log', 'stump', 'fence', 'bush', 'cart', 'tent', 'fire', 'skull']);
+  for (const A of [L.arena, L.mini]) if (A) for (let i = decor.length - 1; i >= 0; i--) { const d = decor[i]; if (BULKY.has(d.k) && d.x > A.x0 - TS && d.x < A.x1 + TS) { decor.splice(i, 1); if (d.fire) for (let j = lights.length - 1; j >= 0; j--) if (lights[j].x === d.x + 7 && lights[j].y === d.y + 8) lights.splice(j, 1); } }
 }
 
 // ---------- world state ----------
@@ -3703,6 +3706,10 @@ function updateKing(e, dt) {
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'carried'; e.modeT = 0.5; } return; }
   const climbing = !P.dead && P.y < floor - 40; // you are up on the scaffold: he reaches for whatever is near
   const goblet = (skull = false) => { const sx = e.x + e.face * 20, sy = e.y - 30, Tf = skull ? 0.95 : 0.8, G = 380, dx = P.x - sx, dy = (P.y - 8) - sy; seeds.push({ x: sx, y: sy, vx: Math.max(-240, Math.min(240, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, g: G, goblet: true, skull }); if (skull) { SFX.throwWhoosh(); SFX.effort(); } else SFX.clank(); e.throwT = 0.35; };
+  // THE ROYAL ARCHERS: stay up on the winch decks and he calls bowmen onto the roof perches at both ends; they lob arrows the length of the hall, a parried arrow knocks one down, and they go when you come down
+  { const high = !P.dead && P.y < floor - 110, bows = enemies.filter(q => q.alive && q.bowman); e.highT = high ? Math.min(4, (e.highT || 0) + dt) : Math.max(0, (e.highT || 0) - dt); e.bowT = Math.max(0, (e.bowT || 0) - dt);
+    if (e.highT > 2 && e.bowT <= 0 && !bows.length && e.mode !== 'held') { e.bowT = 11; SFX.hornBlast(); number(e.x, e.y - e.h - 16, '!!', '#ffd36b'); for (const px0 of [A.x0 + 7.5 * TS, A.x1 - 2.5 * TS]) { enemies.push({ t: 'archer', x: px0, y: 3 * TS - 18, vx: 0, vy: 0, w: 8, h: 10, hp: EHP.archer, speed: 0, face: Math.sign(P.x - px0) || 1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.2 + Math.random() * 0.6, draw: 0, bowman: true, life: 16 }); burst(px0, 3 * TS - 6, 8, ['#c9b27c', '#8a5a32'], 60, 0.4); } }
+    for (const q of bows) { q.life -= dt; if (q.life <= 0 || (!high && e.highT <= 0)) { q.alive = false; burst(q.x, q.y - 6, 8, ['#c9b27c', '#6faa4a'], 60, 0.4); } } }
   e.skullT = Math.max(0, (e.skullT || 0) - dt); if (climbing && e.skullT <= 0 && e.mode !== 'held' && e.mode !== 'wake' && e.mode !== 'sleep' && e.mode !== 'rise') { e.skullT = 5; goblet(true); }
   // THE GRAB: he reaches, and if the hand finds you it hurls you the length of the hall. Unblockable: dodge it, or be above it.
   const grab = () => { const reach = e.phase === 3 ? 74 : 62; if (!P.dead && Math.sign(P.x - e.x) === e.face && ad > 8 && ad < reach && P.y > e.y - 26 && P.y <= e.y + 4) { const res = damagePlayer(e.x, DMG.grab, { unblockable: true }); if (res === 'hit') { P.vx = e.face * 420; P.vy = -300; P.hurt = 0.7; P.ground = false; P.block = false; SFX.throwWhoosh(); SFX.bellow(); shakeCam(6); zoomKick(1.12, 0.3); } } };
@@ -4291,7 +4298,7 @@ function updateEnemies(dt) {
     }
     if (e.t === 'archer') {
       if (e.horn && !e.blown && !P.dead && Math.abs(P.x - e.x) < 210 && Math.abs(P.y - e.y) < 120) { e.hornT += dt; if (e.hornT > 1.3) { e.blown = true; hornSquadT = 1.2; number(e.x, e.y - 18, 'THE HORN!', '#ff6b6b'); SFX.roar(); shakeCam(3); } } else if (e.horn && !e.blown) e.hornT = Math.max(0, e.hornT - dt);
-      const d = P.x - e.x, ad = Math.abs(d), near = ad < 230 && Math.abs(e.y - P.y) < 70 && !P.dead;
+      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead;
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt);
       let want = 0;
@@ -4299,8 +4306,8 @@ function updateEnemies(dt) {
       else if (near && ad > 170 && e.draw <= 0) want = e.face * e.speed * 0.6;
       if (near && e.timer <= 0 && e.draw <= 0 && ad > 40) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); }
       if (e.draw > 0 && e.draw - dt <= 0) {
-        const sx = e.x + e.face * 5, sy = e.y - 7, Tf = 0.75, G = 320, dx = P.x - sx, dy = (P.y - 8) - sy;
-        seeds.push({ x: sx, y: sy, vx: Math.max(-200, Math.min(200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, arrow: true, g: G, owner: e, fire: e.fire });
+        const sx = e.x + e.face * 5, sy = e.y - 7, dx = P.x - sx, Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
+        seeds.push({ x: sx, y: sy, vx: Math.max(-(e.bowman ? 320 : 200), Math.min(e.bowman ? 320 : 200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, arrow: true, g: G, owner: e, fire: e.fire });
         if (e.fire) number(e.x, e.y - 20, 'FIRE', '#ff9a5c');
       }
       if (e.stagger > 0 || e.draw > 0) want = 0;
