@@ -47,7 +47,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
+const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
 const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
@@ -1476,7 +1476,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
 const PAUSE_ITEMS = ['Resume', 'Talents', 'Equip', 'Hero', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Back'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Font', 'Text colour', 'UI colour', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
 const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
@@ -1489,7 +1489,7 @@ const SETTING_TIPS = {
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
-  'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds',
+  'Font': 'the face everything is written in', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds',
   'Brightness': 'lifts or drops the whole picture', 'Screen filter': 'a colour grade over everything', 'Film grain': 'a faint moving grain, like old tape',
   'Parallax': 'how many background layers move', 'Arena tint': 'the colour wash over boss rooms', 'Particles': 'how much comes off a hit',
   'Foe outline': 'a bright rim on foes, easier to pick out', 'Boss intro': 'the letterbox and the name card', 'Foe health': 'bars over hurt foes',
@@ -1517,6 +1517,9 @@ function menuAdjust(dir) {
   else if (k === 'Foe outline') SET.rim = !SET.rim;
   else if (k === 'Film grain') SET.grain = !SET.grain;
   else if (k === 'Screen shake') { const i = SHAKES.indexOf(SET.shakeAmt); SET.shakeAmt = SHAKES[(i < 0 ? 2 : i + dir + SHAKES.length) % SHAKES.length]; SET.shake = SET.shakeAmt > 0; }
+  else if (k === 'Font') { const i = Math.max(0, FONTS.findIndex(f => f.id === SET.font)); SET.font = FONTS[(i + dir + FONTS.length) % FONTS.length].id; }
+  else if (k === 'Text colour') { const i = Math.max(0, INKS.findIndex(f => f.id === SET.ink)); SET.ink = INKS[(i + dir + INKS.length) % INKS.length].id; applyLook(); }
+  else if (k === 'UI colour') { const i = Math.max(0, UI_THEMES.findIndex(f => f.id === SET.uiTheme)); SET.uiTheme = UI_THEMES[(i + dir + UI_THEMES.length) % UI_THEMES.length].id; applyLook(); }
   else if (k === 'HUD') SET.hud = SET.hud === 'full' ? 'minimal' : 'full'; else if (k === 'Screen filter') SET.filter = FILTERS[(FILTERS.indexOf(SET.filter) + dir + FILTERS.length) % FILTERS.length]; else if (k === 'Foe health') SET.foeBars = !SET.foeBars; else if (k === 'Look down') SET.lookDown = !SET.lookDown; else if (k === 'Boss intro') SET.bossIntro = !SET.bossIntro; else if (k === 'Rumble') SET.rumble = !SET.rumble; else if (k === 'Tenths') SET.tenths = !SET.tenths;
   else if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
   else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'God mode') { SET.godmode = !SET.godmode; menuMsg = SET.godmode ? 'everything unlocked and free while this is on' : 'back to what you have earned'; menuMsgT = 2; if (!SET.godmode) { for (const tb of STORE_TABS) if (tb.key && tb.owned && PROG[tb.key] && !(PROG[tb.owned] || {})[PROG[tb.key]] && PROG[tb.key] !== 'none') PROG[tb.key] = tb.key === 'hero' ? 'knight' : (tb.items[0] || {}).id; applySkin(); applyUpgrades(); } }
@@ -5541,11 +5544,32 @@ function update(dt) {
 }
 
 // ---------- render ----------
-function text(s, x, y, col = '#fff6e0', align = 'left', size = 8) {
-  g.font = size + 'px "Press Start 2P", monospace'; g.textAlign = align; g.textBaseline = 'top';
+// THE LOOK: three faces to read in, a colour for the ink, and a colour for the frames and the
+// highlights. All of it is one setting each, and every menu, plate and talk box follows.
+const FONTS = [{ id: 'press', name: 'PIXEL', fam: '"Press Start 2P", monospace', sc: 1 },
+  { id: 'silk', name: 'SILKSCREEN', fam: '"Silkscreen", "Press Start 2P", monospace', sc: 1.15 },
+  { id: 'vt', name: 'TERMINAL', fam: '"VT323", monospace', sc: 1.7 }];
+const INKS = [{ id: 'parchment', name: 'PARCHMENT', c: '#fff6e0' }, { id: 'white', name: 'WHITE', c: '#ffffff' }, { id: 'amber', name: 'AMBER', c: '#ffd36b' },
+  { id: 'green', name: 'GREEN', c: '#b8f0a0' }, { id: 'cyan', name: 'CYAN', c: '#bfe6f5' }, { id: 'rose', name: 'ROSE', c: '#ffc0d0' }];
+// each theme: the body, the heading, the quiet text, the frame, the highlight, gold, silver, and the plate behind it all
+const UI_THEMES = [
+  { id: 'oak', name: 'OAK', text: '#e8dcc0', title: '#f2e8d0', dim: '#9aa39a', border: '#c9b27c', sel: '#8fd160', gold: '#ffd34a', silver: '#dfe8ff', plate: 'rgba(20,16,30,0.92)' },
+  { id: 'bone', name: 'BONE', text: '#e6e8ee', title: '#ffffff', dim: '#98a0ac', border: '#c8ccd4', sel: '#7cc8c8', gold: '#ffd36b', silver: '#dfe8ff', plate: 'rgba(16,18,26,0.92)' },
+  { id: 'ember', name: 'EMBER', text: '#ffd8b8', title: '#ffe8c8', dim: '#b08878', border: '#c9643d', sel: '#ff9a5c', gold: '#ffd34a', silver: '#ffd0b0', plate: 'rgba(28,14,12,0.92)' },
+  { id: 'tide', name: 'TIDE', text: '#d8f0f0', title: '#f0ffff', dim: '#8aa8b0', border: '#4aa0a8', sel: '#7cc8c8', gold: '#ffd36b', silver: '#dfe8ff', plate: 'rgba(10,26,32,0.92)' },
+  { id: 'moss', name: 'MOSS', text: '#e0f0d0', title: '#f4ffe8', dim: '#94a888', border: '#8fb05a', sel: '#8fd160', gold: '#ffd34a', silver: '#dfe8ff', plate: 'rgba(14,24,16,0.92)' },
+  { id: 'plain', name: 'PLAIN', text: '#ffffff', title: '#ffffff', dim: '#d0d0d0', border: '#ffffff', sel: '#ffee40', gold: '#ffee40', silver: '#ffffff', plate: 'rgba(0,0,0,0.94)' }];
+const fontNow = () => FONTS.find(f => f.id === SET.font) || FONTS[0];
+const inkNow = () => (INKS.find(i => i.id === SET.ink) || INKS[0]).c;
+const themeNow = () => UI_THEMES.find(t => t.id === SET.uiTheme) || UI_THEMES[0];
+function applyLook() { const t = themeNow(); for (const k of ['text', 'title', 'dim', 'border', 'sel', 'gold', 'silver']) UI[k] = t[k]; UI.plate = t.plate;
+  if (SET.ink && SET.ink !== 'parchment') { UI.text = inkNow(); UI.title = inkNow(); } }
+function text(s, x, y, col, align = 'left', size = 8) {
+  if (col === undefined) col = SET.ink === 'parchment' ? '#fff6e0' : inkNow();
+  const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; g.textAlign = align; g.textBaseline = 'top';
   g.fillStyle = ART.OUT; g.fillText(s, x + 1, y + 1); g.fillStyle = col; g.fillText(s, x, y);
 }
-function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; g.font = size + 'px "Press Start 2P", monospace'; for (const w of words) { const t = cur ? cur + ' ' + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
+function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; } for (const w of words) { const t = cur ? cur + ' ' + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
 function pickFrame(set, key, frame, face) {
   const dir = face < 0 ? 'L' : 'R'; let c = key == null ? set[dir] : set[dir][key]; if (Array.isArray(c)) c = c[((frame % c.length) + c.length) % c.length]; return c;
 }
@@ -6281,9 +6305,10 @@ function drawSoundTest() {
   if (list.length > perPage) text('page ' + (page + 1) + '/' + Math.ceil(list.length / perPage), x + w - 8, y + h - 20, '#9aa39a', 'right');
   text('Z play   LEFT/RIGHT group   ESC back', VW / 2, y + h - 10, '#9aa39a', 'center');
 }
-const UI = { text: '#e8dcc0', title: '#f2e8d0', dim: '#9aa39a', border: '#c9b27c', sel: '#8fd160', gold: '#ffd34a', silver: '#dfe8ff' };
+const UI = { text: '#e8dcc0', title: '#f2e8d0', dim: '#9aa39a', border: '#c9b27c', sel: '#8fd160', gold: '#ffd34a', silver: '#dfe8ff', plate: 'rgba(20,16,30,0.92)' };
+applyLook(); // whatever look was saved, before anything is drawn
 function panel(x, y, w, h, col = UI.border) {
-  g.fillStyle = 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h);
+  g.fillStyle = UI.plate || 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h);
   g.strokeStyle = col; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
   g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
   g.fillStyle = col; for (const [cx, cy] of [[x, y], [x + w - 3, y], [x, y + h - 3], [x + w - 3, y + h - 3]]) g.fillRect(cx, cy, 3, 3);
@@ -6302,11 +6327,11 @@ function drawMenu() {
     if (!isHeader(M[menuI])) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = UI.sel; g.fillRect(x + 5, Math.round(menuBarY) - 2, 2, 11); } }
   M.forEach((k, i) => {
     if (i < off || i >= off + MENU_ROWS) return;
-    const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : '#fff6e0') : (dim ? '#5a5f5a' : '#9aa39a');
+    const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     text(k, x + 16 + (sel ? 2 : 0), yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label + ' HERE' : DIFF[SET.difficulty].label + ' (DEFAULT)') : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label + ' HERE' : DIFF[SET.difficulty].label + ' (DEFAULT)') : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     if (v) { const vw = String(v).length * 6 + (sel ? 22 : 8); g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(sel ? '< ' + v + ' >' : String(v), x + w - 14, yy, col, 'right'); }
   });
   { const k = M[menuI], tip = SETTING_TIPS[k];
