@@ -51,7 +51,7 @@ function brackenWood() {
 
   // ---- 1. Glade: learn to move, jump, swing ----
   floor(0, 30, 22);
-  ent('sign', 5, 21, { text: 'ARROWS/WASD MOVE   Z JUMP   X SWING' }); ent('npc', 10, 21, { kind: 'squire' });
+  ent('sign', 5, 21, { text: 'ARROWS/WASD MOVE   Z JUMP   X SWING', pyro: 'ARROWS/WASD MOVE   Z JUMP   X STAFF   TAP C: AN EMBER   HOLD C: THE JET', paladin: 'ARROWS/WASD MOVE   Z JUMP   X MAUL, SLOW AND HEAVY' }); ent('npc', 10, 21, { kind: 'squire' });
   ent('sign', 284, 8, { text: 'THE HIVE. THE QUEEN COMES DOWN TO STING: JUMP IT, THEN CUT HER WHILE SHE PULLS FREE. HER WASPS ARE STEPPING STONES.' });
   ent('deco', 10, 21, { kind: 'cabin' }); ent('npc', 16, 21, { kind: 'woodsman' }); // the woodsman's cabin: he wants his honey back
   coins([12, 20], [13, 19], [14, 20]);
@@ -71,14 +71,14 @@ function brackenWood() {
   ent('shield', 71, 19, { face: -1 });
   plat(64, 18, 6);
   coins([66, 17], [68, 17]);
-  ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND IT ON A FOE AND YOU BOUNCE. HOLD JUMP AS YOU BOUNCE TO GO HIGHER. THE WOOD IS BUILT FOR IT.' });
+  ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND IT ON A FOE AND YOU BOUNCE. HOLD JUMP AS YOU BOUNCE TO GO HIGHER. THE WOOD IS BUILT FOR IT.', pyro: 'DOWN+X IN THE AIR: THE FIREDROP. A FIREBALL GOES DOWN AHEAD OF YOU, AND YOU BOUNCE OFF WHAT YOU LAND ON. HOLD JUMP AS YOU BOUNCE TO GO HIGHER. THE WOOD IS BUILT FOR IT.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. THE GROUND CARRIES THE BLOW BOTH WAYS, AND YOU BOUNCE OFF WHAT YOU LAND ON. HOLD JUMP AS YOU BOUNCE TO GO HIGHER.' });
   ent('check', 82, 21);
 
   // ---- 3. Wasp pit: pogo chain ----
   ent('wasp', 87, 20); ent('wasp', 90, 20); ent('wasp', 93, 20); ent('wasp', 96, 20);
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
-  ent('sign', 103, 21, { text: 'C BLOCK, V DODGE. A BLOCK TURNS A BLOW AND STAGGERS THE ONE WHO SWUNG IT. SPINED BACKS BREAK THE PLUNGE: CUT THOSE FROM THE SIDE.' });
+  ent('sign', 103, 21, { text: 'C BLOCK, V DODGE. A BLOCK TURNS A BLOW AND STAGGERS THE ONE WHO SWUNG IT. SPINED BACKS BREAK THE PLUNGE: CUT THOSE FROM THE SIDE.', pyro: 'NO SHIELD: V DODGE. TAP C FOR AN EMBER, HOLD IT FOR THE JET. THE HOTTER YOU RUN, THE HARDER IT ALL LANDS. SPINED BACKS BREAK THE PLUNGE: BURN THOSE FROM THE SIDE.', paladin: 'HOLD C: THE AEGIS, A WARD IN FRONT OF YOU FOR A BREATH AND A HALF. TAP C WITH HALF THE LIGHT: MEND. V: THE HEAVY STEP. SPINED BACKS BREAK THE PLUNGE: STRIKE THOSE FROM THE SIDE.' });
   ent('thorn', 109, 21, { face: -1 });
   crate(111, 21); crate(112, 21); crate(112, 20);
   ent('sprig', 116, 21, { face: -1 });
@@ -135,7 +135,7 @@ function brackenWood() {
   for (let x = 258; x <= 266; x++) for (let y = 9; y <= 12; y++) set(x, y, 0);
   spikes(258, 266, 12);
   for (const x of [259, 262, 265]) { block(x, x + 1, 11, 12); ent('shield', x, 10, { face: -1 }); }
-  ent('sign', 256, 8, { text: 'SHIELD GOBLINS HIDE BEHIND IRON. THEIR HELMS ARE STEPPING STONES: PLUNGE THE HELM, LAND BEHIND, CUT.' });
+  ent('sign', 256, 8, { text: 'SHIELD GOBLINS HIDE BEHIND IRON. THEIR HELMS ARE STEPPING STONES: PLUNGE THE HELM, LAND BEHIND, CUT.', pyro: 'SHIELD GOBLINS HIDE BEHIND IRON. FIRE GOES OVER A SHIELD: ARC AN EMBER. THEIR HELMS ARE STEPPING STONES: FIREDROP THE HELM, LAND BEHIND, BURN.', paladin: 'SHIELD GOBLINS HIDE BEHIND IRON. THEIR HELMS ARE STEPPING STONES: HAMMERFALL THE HELM, LAND BEHIND, STRIKE.' });
   plat(262, 5, 4); coins([263, 4], [264, 4], [260, 8], [264, 8]); ent('silver', 265, 4);
   // the quiet walk: nothing to fight between the pit and the gate
   coins([270, 7], [273, 7], [276, 7]);
@@ -220,7 +220,7 @@ function marshWood() {
   // ---- 1. The bank ----
   floor(0, 24, 22);
   ent('sign', 5, 21, { text: 'PADS SINK UNDER YOU.  KEEP MOVING.' }); ent('npc', 10, 21, { kind: 'squire' });
-  ent('sign', 357, 17, { text: 'THE KING\'S COURT. HE DRAWS BREATH BEFORE HE PULLS: HOLD YOUR SHIELD UP. HIS TONGUE COMES STRAIGHT. HIS LEAP DOES NOT. WHEN HE CROAKS THE POND RISES: GET TO THE REEDS OR THE DAIS.' });
+  ent('sign', 357, 17, { text: 'THE KING\'S COURT. HE DRAWS BREATH BEFORE HE PULLS: HOLD YOUR SHIELD UP. HIS TONGUE COMES STRAIGHT. HIS LEAP DOES NOT. WHEN HE CROAKS THE POND RISES: GET TO THE REEDS OR THE DAIS.', pyro: 'THE KING\'S COURT. HE DRAWS BREATH BEFORE HE PULLS: GET OUT OF THE LINE OF IT. HIS TONGUE COMES STRAIGHT. HIS LEAP DOES NOT. WHEN HE CROAKS THE POND RISES: GET TO THE REEDS OR THE DAIS.', paladin: 'THE KING\'S COURT. HE DRAWS BREATH BEFORE HE PULLS: RAISE THE AEGIS. HIS TONGUE COMES STRAIGHT. HIS LEAP DOES NOT. WHEN HE CROAKS THE POND RISES: GET TO THE REEDS OR THE DAIS.' });
   ent('sprig', 16, 21, { face: -1 });
   coins([9, 20], [12, 19]);
 
@@ -235,7 +235,7 @@ function marshWood() {
   reeds(49, 20, 3); reeds(52, 18, 3); reeds(55, 16, 2);
   block(56, 74, 16, 27);
   ent('archer', 62, 15, { face: -1 });
-  ent('sign', 58, 15, { text: 'THE ARCHERS ON THE STILTS. SLASH AN ARROW TO SEND IT BACK WHERE IT CAME FROM. BLOCK IF YOU ARE SLOW.' });
+  ent('sign', 58, 15, { text: 'THE ARCHERS ON THE STILTS. SLASH AN ARROW TO SEND IT BACK WHERE IT CAME FROM. BLOCK IF YOU ARE SLOW.', pyro: 'THE ARCHERS ON THE STILTS. BURN AN ARROW OUT OF THE AIR WITH THE JET, OR DODGE IT.', paladin: 'THE ARCHERS ON THE STILTS. STRIKE AN ARROW TO SEND IT BACK WHERE IT CAME FROM. THE AEGIS TURNS THEM TOO.' });
   coins([50, 19], [53, 17]);
 
   // ---- 4. Archer island ----
@@ -473,7 +473,7 @@ function theStockade() {
   for (let x = 250; x <= 291; x++) for (let y = 22; y <= 24; y++) G.set(x, y, 0); // the tunnel
   for (let y = 20; y <= 21; y++) { G.set(250, y, 0); G.set(251, y, 0); G.set(290, y, 0); G.set(291, y, 0); } // the shafts
   for (let y = 20; y <= 24; y++) { G.set(290, y, T.NET); G.set(291, y, T.NET); } // a rope ladder up the far shaft
-  G.ent('sign', 249, 19, { text: 'THE SAPPERS DUG UNDER THE WALL. SO WILL YOU. THEY CARRY POWDER: KILL THEM AT A DISTANCE, OR BLOCK THE BLAST.' });
+  G.ent('sign', 249, 19, { text: 'THE SAPPERS DUG UNDER THE WALL. SO WILL YOU. THEY CARRY POWDER: KILL THEM AT A DISTANCE, OR BLOCK THE BLAST.', pyro: 'THE SAPPERS DUG UNDER THE WALL. SO WILL YOU. THEY CARRY POWDER: KILL THEM AT A DISTANCE: THAT IS WHAT EMBERS ARE FOR.', paladin: 'THE SAPPERS DUG UNDER THE WALL. SO WILL YOU. THEY CARRY POWDER: KILL THEM AT A DISTANCE, OR TAKE THE BLAST ON THE AEGIS.' });
   for (const x of [256, 266, 276, 286]) G.ent('torch', x, 24);
   G.ent('deco', 254, 24, { kind: 'skullPile', v: 0 }); G.ent('deco', 281, 24, { kind: 'skullPile', v: 1 });
   G.ent('sprig', 258, 24, { face: -1 }); G.ent('barrel', 262, 24); G.crate(264, 24); G.ent('sapper', 270, 24, { face: -1 });
@@ -557,7 +557,7 @@ function sporewood() {
   // ---- 5. The sleep marsh: violet spores. Block to hold your breath. ----
   block(131, 165, 14, 27);
   plat(132, 8, 2); ent('glow', 132, 13); // a landing on the way down
-  ent('sign', 134, 13, { text: 'VIOLET SPORES PUT YOU TO SLEEP WHERE YOU STAND. BLOCK THROUGH A CLOUD, OR RUN. A SLEEPING KNIGHT IS A SPORELING\'S SUPPER.' });
+  ent('sign', 134, 13, { text: 'VIOLET SPORES PUT YOU TO SLEEP WHERE YOU STAND. BLOCK THROUGH A CLOUD, OR RUN. A SLEEPING KNIGHT IS A SPORELING\'S SUPPER.', pyro: 'VIOLET SPORES PUT YOU TO SLEEP WHERE YOU STAND. BURN A CLOUD AWAY WITH THE JET, OR RUN. A SLEEPING KNIGHT IS A SPORELING\'S SUPPER.', paladin: 'VIOLET SPORES PUT YOU TO SLEEP WHERE YOU STAND. HOLD THE AEGIS THROUGH A CLOUD, OR RUN. A SLEEPING KNIGHT IS A SPORELING\'S SUPPER.' });
   sleeps.push({ x0: 137 * TS, x1: 147 * TS, y0: 10 * TS, y1: 14 * TS }, { x0: 153 * TS, x1: 162 * TS, y0: 10 * TS, y1: 14 * TS });
   // ride the gusts over the violet: each vent lifts you to a shelf, the shelf gives way, the next gust catches you
   ent('vent', 139, 13, { period: 4, on: 1.5, h: 90, phase: 0 }); ent('vent', 144, 13, { period: 4, on: 1.5, h: 90, phase: 2 }); ent('vent', 155, 13, { period: 4, on: 1.5, h: 90, phase: 1 }); ent('vent', 160, 13, { period: 4, on: 1.5, h: 90, phase: 3 });
@@ -683,7 +683,7 @@ function kingswood() {
   // ---- 2. The first hall: inside a trunk. A bell at the far end and a gate under it. ----
   ceiling(45, 84, 16); block(45, 84, 20, 27);
   ent('torch', 48, 19); ent('torch', 60, 19); ent('torch', 72, 19); ent('torch', 82, 19);
-  ent('sign', 47, 19, { text: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND CUT FROM BEHIND, OR THROW THE SHIELD INTO THEM.' });
+  ent('sign', 47, 19, { text: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND CUT FROM BEHIND, OR THROW THE SHIELD INTO THEM.', pyro: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND BURN FROM BEHIND, OR ARC EMBERS OVER THE LINE.', paladin: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND STRIKE FROM BEHIND, OR CHARGE THE LINE.' });
   ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('pike', 68, 19, { face: -1 });
   ent('brazier', 53, 19); ent('brazier', 66, 19); // oil braziers: tip them onto the line, or get burned
   ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 }); ent('stray', 72, 19, { kind: 'cup' });
@@ -724,7 +724,7 @@ function kingswood() {
   // ---- 4. The kennels: the Hound Master. Walls close, the gate opens when he falls. ----
   ent('torch', 170, 13); ent('torch', 188, 13); ent('cage', 172, 13, { kind: 'bird' });
   ent('greathound', 182, 13); ent('chainpost', 187, 13); // a kennel hound on a chain: cut it loose and it goes for his mount
-  ent('sign', 169, 13, { text: 'THE GREAT HOUND. IT LUNGES LOW: JUMP IT. IT POUNCES HIGH: DODGE, OR IT LANDS ON YOU. WHEN IT HOWLS, KILL THE PUPS FAST. IT SKIDS ON A BLOCK.' });
+  ent('sign', 169, 13, { text: 'THE GREAT HOUND. IT LUNGES LOW: JUMP IT. IT POUNCES HIGH: DODGE, OR IT LANDS ON YOU. WHEN IT HOWLS, KILL THE PUPS FAST. IT SKIDS ON A BLOCK.', pyro: 'THE GREAT HOUND. IT LUNGES LOW: JUMP IT. IT POUNCES HIGH: DODGE, OR IT LANDS ON YOU. WHEN IT HOWLS, KILL THE PUPS FAST. IT DOES NOT LIKE FIRE.', paladin: 'THE GREAT HOUND. IT LUNGES LOW: JUMP IT. IT POUNCES HIGH: DODGE, OR IT LANDS ON YOU. WHEN IT HOWLS, KILL THE PUPS FAST. IT SKIDS ON THE AEGIS.' });
   gate(190, 9, 13);
   block(191, 210, 14, 27); ent('torch', 194, 13); coins([196, 12], [200, 12], [204, 12]); ent('check', 208, 13);
   plat(196, 11, 3); plat(201, 9, 3); plat(206, 11, 3); ent('archer', 202, 8, { face: -1, fire: true }); coins([197, 10], [202, 7], [207, 10]);
@@ -859,7 +859,7 @@ function screePath() {
   // ---- 4. The scree slope: the loose stone carries you down, rocks come off the cliff, harpies dive ----
   const steps = [[177, 190, 14], [191, 200, 15], [201, 212, 16], [213, 224, 17], [225, 238, 18], [239, 250, 19]];
   for (const [x0, x1, y] of steps) { block(x0, x1, y, 27); if (x0 > 177) scree.push({ x0, x1, y, dir: 1 }); }
-  ent('sign', 180, 13, { text: 'SCREE. IT SLIDES UNDER YOU AND CARRIES YOU DOWN. BRACE WITH BLOCK, OR BOUNCE ACROSS IT. THE TROLL THROWS ROCKS FROM ABOVE. WHEN THE HILL COMES DOWN, RUN. DO NOT STOP.' });
+  ent('sign', 180, 13, { text: 'SCREE. IT SLIDES UNDER YOU AND CARRIES YOU DOWN. BRACE WITH BLOCK, OR BOUNCE ACROSS IT. THE TROLL THROWS ROCKS FROM ABOVE. WHEN THE HILL COMES DOWN, RUN. DO NOT STOP.', pyro: 'SCREE. IT SLIDES UNDER YOU AND CARRIES YOU DOWN. BOUNCE ACROSS IT, OR RUN. THE TROLL THROWS ROCKS FROM ABOVE. WHEN THE HILL COMES DOWN, RUN. DO NOT STOP.', paladin: 'SCREE. IT SLIDES UNDER YOU AND CARRIES YOU DOWN. BOUNCE ACROSS IT, OR RUN. THE TROLL THROWS ROCKS FROM ABOVE. WHEN THE HILL COMES DOWN, RUN. DO NOT STOP.' });
   ent('rockfall', 205, 5, { every: 2.6 }); ent('rockfall', 220, 5, { every: 2.2 }); ent('rockfall', 232, 5, { every: 2.9 });
   ent('harpy', 200, 9); ent('harpy', 235, 11);
   plat(246, 16, 3); ent('stray', 247, 15); coins([246, 15], [248, 15]);
@@ -1410,7 +1410,7 @@ function stormhold() {
   // (the span over the sootworks gorge came down: THE CHIMNEYS, below, are the crossing now)
   ent('stormshaman', 181, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
   ent('archer', 151, 30, { face: 1, fire: true }); ent('rockgoblin', 179, 30, { face: -1 });
-  ent('sign', 148, 31, { text: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE SHIELD CARRIES.' });
+  ent('sign', 148, 31, { text: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE SHIELD CARRIES.', pyro: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. AN EMBER CARRIES.', paladin: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE BLESSED HAMMER CARRIES.' });
   ent('deco', 152, 31, { kind: 'lanternPost' }); ent('deco', 179, 31, { kind: 'lanternPost' }); // a lamp on each bank of the chimneys (they stood in the air over the old span)
   floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
   coins([184, 31], [194, 30], [204, 31]);
@@ -1802,6 +1802,47 @@ function highcrownWhole() {
   return R;
 }
 
+// THE TRIALS. A practice yard for each hero: stations in a row, each with a sign that says what to do, straw men
+// to do it to, and a gate that lifts when it is done. Nothing in a trial can hurt you. The gate at the far end
+// is the way out. (L.trial: the stations - where each starts, its gate, what counts, how many.)
+function trialYard(hero) {
+  const ST = {
+    knight: [
+      ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]]],
+      ['block', 3, 'THE SHIELD. HOLD C TO RAISE IT, AND FACE THE ARCHER. TURN THREE OF HIS ARROWS.', [['archer', 22]]],
+      ['pogo', 3, 'THE PLUNGE. JUMP, THEN DOWN+X IN THE AIR. LAND ON THE STRAW MEN AND YOU BOUNCE: BOUNCE THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]]],
+      ['dodge', 2, 'THE DODGE. V ROLLS YOU THROUGH A BLOW. ROLL TWICE.', []]],
+    pyro: [
+      ['ember', 3, 'THE EMBER. TAP C AND ONE FLIES. SET THE STRAW MAN ALIGHT THREE TIMES.', [['dummy', 18]]],
+      ['heat', 1, 'THE JET. HOLD C. EVERYTHING YOU BURN FILLS YOUR HEAT: BURN THE STRAW MAN UNTIL THE BAR IS FULL.', [['dummy', 14], ['dummy', 18]]],
+      ['firedrop', 2, 'THE FIREDROP. JUMP, THEN DOWN+X IN THE AIR: A FIREBALL GOES DOWN AHEAD OF YOU. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]]],
+      ['dodge', 2, 'NO SHIELD. YOU DODGE: V. ROLL TWICE. YOUR OWN FIRE NEVER BURNS YOU.', []]],
+    paladin: [
+      ['hit', 3, 'THE MAUL. X, SLOW AND HEAVY: EVERY THIRD BLOW IN A RUN STAGGERS. EVERY BLOW FILLS THE LIGHT. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]]],
+      ['aegis', 3, 'THE AEGIS. HOLD C: A WARD IN FRONT OF YOU FOR A BREATH AND A HALF, THEN IT MUST REST. TURN THREE ARROWS.', [['archer', 22]]],
+      ['mend', 1, 'MEND. HALF THE LIGHT HEALS YOU: TAP C. IT ROOTS YOU A MOMENT. THE LIGHT HAS BEEN FILLED FOR YOU HERE.', []],
+      ['hammerfall', 2, 'HAMMERFALL. JUMP, THEN DOWN+X IN THE AIR: THE GROUND CARRIES THE BLOW BOTH WAYS. CATCH THE STRAW MEN IN IT TWICE.', [['dummy', 12], ['dummy', 22]]],
+      ['judgement', 1, 'JUDGEMENT. WITH A FULL LIGHT, PRESS C AGAIN AND THE SKY ANSWERS. IT HAS BEEN FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]]]],
+  }[hero];
+  const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
+  const { block, ent, set } = L;
+  block(0, W - 1, 20, H - 1); block(0, 1, 0, 19); block(W - 2, W - 1, 0, 19);
+  const trial = [];
+  ST.forEach(([kind, n, text, things], i) => { const x0 = 4 + i * SW, gate = x0 + SW - 2;
+    ent('sign', x0 + 2, 19, { text }); ent('torch', x0 + 6, 19);
+    for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 17, 19); ent('archer', x0 + dx, 16, { face: -1 }); } else ent('dummy', x0 + dx, 19); }
+    for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
+    trial.push({ x0, gate, kind, n, fill: kind === 'mend' ? 60 : kind === 'judgement' ? 100 : 0 }); });
+  const xe = 4 + ST.length * SW;
+  ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD TAKES YOU BACK TO THE MAP. THE HERO MENU WILL SEND YOU HERE AGAIN WHENEVER YOU LIKE.' });
+  ent('gate', xe + 14, 19);
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], trial,
+    duskStart: -1, duskLen: 1, music: 'select', reachExact: true,
+    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10' },
+  };
+}
+
 // THE HIGH STORE: the same trade in a stone cellar under the crags, with the shepherd and the old knight for company.
 function theShopCrag() {
   const L = painter(40, 28);
@@ -2025,7 +2066,7 @@ function galeMoor() {
   gusts.push({ x0: 861 * TS, x1: 906 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
   ent('flagpost', 865, 12); ent('flagpost', 901, 12);
   ent('windcaller', 882, 3);
-  ent('sign', 870, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. STRIKE A BOLT, OR TAKE IT ON YOUR SHIELD, AND IT GOES BACK AT HIM AND KNOCKS HIM OFF HIS STONE. EVERY THIRD TIME HE COMES DOWN TO THE GROUND TO GATHER SOMETHING BIG: THAT IS YOUR MOMENT.' });
+  ent('sign', 870, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. STRIKE A BOLT, OR TAKE IT ON YOUR SHIELD, AND IT GOES BACK AT HIM AND KNOCKS HIM OFF HIS STONE. EVERY THIRD TIME HE COMES DOWN TO THE GROUND TO GATHER SOMETHING BIG: THAT IS YOUR MOMENT.', pyro: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. STRIKE A BOLT WITH YOUR STAFF AND IT GOES BACK AT HIM AND KNOCKS HIM OFF HIS STONE. EVERY THIRD TIME HE COMES DOWN TO THE GROUND TO GATHER SOMETHING BIG: THAT IS YOUR MOMENT.', paladin: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. STRIKE A BOLT, OR TAKE IT ON THE AEGIS, AND IT GOES BACK AT HIM AND KNOCKS HIM OFF HIS STONE. EVERY THIRD TIME HE COMES DOWN TO THE GROUND TO GATHER SOMETHING BIG: THAT IS YOUR MOMENT.' });
   ent('check', 864, 12); ent('gate', 905, 12);
   const roosts = [[868, 9], [882, 3], [897, 7], [875, 6], [890, 5]]; // where he stands: a stone's top, a ledge
   for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; } // the moor's wind lifts you well clear of whatever it is meant to lift you onto
@@ -2155,6 +2196,9 @@ export const LEVELS = [
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', build: stormhold, needs: 'moor' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', build: highcrownWhole, needs: 'storm' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
+  { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
+  { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
+  { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
