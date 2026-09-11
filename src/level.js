@@ -1560,7 +1560,7 @@ function highcrown() {
   ent('archer', 60, 51, { face: -1 }); ent('archer', 72, 51, { face: -1 });
   ent('stray', 26, 51, { kind: 'seal' });
   // the gatehouse top, off the wall walk: a silver among the crenels
-  plat(22, 50, 3); plat(22, 48, 3); plat(22, 46, 3); ent('silver', 16, 43); coins([13, 43], [19, 43]);
+  plat(22, 50, 3); plat(22, 48, 3); plat(22, 46, 3); coins([13, 43], [16, 43], [19, 43]); // (its silver went to the watchtower on the road up)
   // the courtyard: stables, a kennel, a well, the barracks door
   ent('deco', 36, 63, { kind: 'cart' }); ent('deco', 42, 63, { kind: 'barrels' }); ent('deco', 76, 63, { kind: 'well' }); ent('deco', 86, 63, { kind: 'spearRack' });
   ent('deco', 56, 63, { kind: 'banner', v: 0 }); ent('torch', 48, 63); ent('torch', 80, 63);
@@ -1632,7 +1632,7 @@ function highcrown() {
   for (const x of [140, 164, 184]) ent('deco', x, 13, { kind: 'hallWindow' });
   plat(140, 14, 16); ent('archer', 152, 13, { face: 1 }); ent('stray', 141, 13, { kind: 'seal' }); // the choir loft
   stair([[158, 17, 3], [154, 15, 3]]);
-  plat(128, 12, 4); ent('silver', 129, 11); stair([[134, 16, 3], [131, 14, 2]]); // up in the rafters
+  plat(128, 12, 4); coins([128, 11], [130, 11]); stair([[134, 16, 3], [131, 14, 2]]); // up in the rafters (its silver went to the scaffolds)
   ent('deco', 127, 19, { kind: 'counter' }); ent('key', 128, 19, { kind: 'brass' });
 
   // ---- THE GREAT HALL (floor 20) and THE ROOF (8): THE GOBLIN QUEEN ----
@@ -1649,7 +1649,8 @@ function highcrown() {
   for (const x of [218, 244, 268, 294]) ent('deco', x, 13, { kind: 'hallWindow' });
   ent('deco', 234, 19, { kind: 'banner', v: 0 }); ent('deco', 278, 19, { kind: 'banner', v: 1 });
   for (const x of [212, 240, 270]) ent('torch', x, 19);
-  ent('sign', 211, 19, { text: 'THE QUEEN. SHE HAS NEVER FOUGHT ALONE. WHERE SHE POINTS, THE GALLERY LOOSES: BRING THE GALLERY DOWN ON HER, IT STANDS ON THREE PILLARS. SHE WILL NOT STAY IN HER CHAIR, AND IF SHE GOES FOR THE ROOF, THE STORM IS UP THERE.' });
+  for (const x of [236, 276, 304]) ent('weight', x, 10, { len: 3, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them
+  ent('sign', 211, 19, { text: 'THE QUEEN. SHE HAS NEVER FOUGHT ALONE. WHERE SHE POINTS, THE GALLERY LOOSES: BRING THE GALLERY DOWN ON HER, IT STANDS ON THREE PILLARS. ON HER FEET SHE THROWS AT HER OWN CHANDELIERS: WHEN ONE SHAKES, GET OUT FROM UNDER IT, OR GET HER UNDER IT. IF SHE GOES FOR THE ROOF, THE STORM IS UP THERE.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(222, 226, 4, 7); block(262, 266, 4, 7); block(300, 304, 4, 7);
   plat(219, 6, 3); plat(227, 6, 3); plat(259, 6, 3); plat(267, 6, 3); plat(297, 6, 3); plat(305, 6, 3);
@@ -1674,6 +1675,129 @@ function highcrown() {
     arena: { x0: 208 * TS, x1: 316 * TS, floor: 20 * TS, trigger: 214 * TS, wallL: 207, wallR: 317, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
       roof: 8 * TS, gallery: { row: 14, x0: 214, x1: 293 }, hole: { x0: 255, x1: 258, y0: 8, y1: 9 }, rubble: [[250, 17, 4], [255, 15, 4], [250, 13, 4], [255, 11, 4], [255, 9, 4]] },
   };
+}
+
+// the castle's own second pass (a watch in the ward, THE LEADS over the keep, the armoury gantry's ledges), written
+// against the castle before it grew: it runs first, then the Scaffolds and the mountain road are opened around it
+const crownReview = L => { const R = rv(L); R.ent('check', 62, 63);
+    for (const [t, x, y, f] of [['sprig', 40, 63, -1], ['sprig', 76, 63, 1], ['pike', 110, 63, -1], ['shield', 140, 63, 1], ['sprig', 166, 63, -1], ['sprig', 190, 63, -1], ['hearthgob', 150, 51, 1], ['hearthgob', 186, 51, -1], ['sprig', 150, 19, 1]]) R.ent(t, x, y, { face: f });
+    R.plat(149, 12, 3); R.plat(151, 10, 3);
+    for (let x = 151; x <= 153; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
+    for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
+    R.ent('sign', 156, 7, { text: 'THE LEADS. THE WHOLE MOUNTAIN IS UNDER YOU. THE HATCH AT THE FAR END DROPS YOU BACK INTO THE CHAPEL: DOWN AND JUMP.' });
+    R.ent('deco', 170, 7, { kind: 'banner', v: 1 }); R.ent('deco', 182, 7, { kind: 'barrels' });
+    // the armoury gantry's silver had no way up to it: ledges from the floor to the gantry, two rows at a time
+    R.plat(129, 38, 3); R.plat(132, 36, 3); R.plat(134, 34, 2); R.plat(139, 31, 2); R.plat(146, 29, 2);
+    // the far corner of the entrance hall past the stair, and the leads past the second hatch: something at the end of each
+    R.coin(200, 63); R.coin(204, 63); R.ent('deco', 202, 63, { kind: 'spearRack' }); R.coin(200, 7); R.coin(203, 7); R.coin(205, 7); };
+
+// HIGHCROWN, WHOLE. The castle above is the core; round it:
+//  - it sits on the MOUNTAIN now: thirty rows of crag under it, and the moat is a chasm to the bottom of the world;
+//  - THE ROAD UP: the level starts at the foot of a gully and climbs a switchback of five terraces cut into the
+//    rock, over the mountain's shoulder past a watchtower and an eyrie, across a rope bridge over a gorge with a
+//    fall of water in it, through a barbican tower and up a broken stone bridge to the drawbridge;
+//  - THE SCAFFOLDS: inside the walls, between the ward and the keep, they are digging the foundations of a new
+//    tower. The pit has no bottom you would survive; across it stand three scaffold towers, a gantry over them, a
+//    bucket on a rope that swings you over the widest gap, chains to climb, and a hoist that lets you down the far side.
+function growDown(L, n) { // add n rows under the level: each column carries on down as its bottom row was (rock stays rock, a chasm stays a chasm)
+  const H2 = L.H + n, g = new Uint8Array(L.W * H2); g.set(L.grid);
+  for (let y = L.H; y < H2; y++) for (let x = 0; x < L.W; x++) g[y * L.W + x] = L.grid[(L.H - 1) * L.W + x];
+  L.grid = g; L.H = H2; return L;
+}
+function shiftCrown(R, col, n) { // what grow() does not know about in the castle: the alarms, the smith's slag, the Queen's hall parts
+  const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p;
+  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: a.garrison.map(gd => ({ ...gd, x: sh(gd.x) })) }));
+  if (R.mini && R.mini.slag) R.mini = { ...R.mini, slag: R.mini.slag.map(shp) };
+  if (R.arena) { const A = { ...R.arena };
+    if (A.gallery) A.gallery = { ...A.gallery, x0: sh(A.gallery.x0), x1: sh(A.gallery.x1) };
+    if (A.hole) A.hole = { ...A.hole, x0: sh(A.hole.x0), x1: sh(A.hole.x1) };
+    if (A.rubble) A.rubble = A.rubble.map(([x, y, w]) => [sh(x), y, w]);
+    R.arena = A; }
+  return R;
+}
+function highcrownWhole() {
+  const L0 = highcrown(); crownReview(L0); growDown(L0, 30);
+
+  // ---- THE SCAFFOLDS (opened at the old column 104, seventy wide: x 104-173) ----
+  const S = grow(L0, L0, 104, 70); shiftCrown(S.R, 104, 70);
+  { const { block, ent, set, coins } = S;
+    const deck = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
+    const rungs = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
+    block(104, 107, 64, S.R.H - 1); block(162, 173, 64, S.R.H - 1); // the two banks of the foundation pit; between them, nothing to the bottom
+    ent('check', 105, 63);
+    ent('sign', 106, 63, { text: 'THE NEW TOWER. THEY ARE DIGGING ITS FOUNDATIONS, AND THE PIT HAS NO BOTTOM YOU WOULD WALK AWAY FROM. UP THE SCAFFOLD, OVER ON THE BUCKET, UP THE CHAIN, ALONG THE GANTRY, AND THE HOIST LETS YOU DOWN THE FAR SIDE.' });
+    // tower A: decks four rows apart, a ladder of rungs up its far side
+    for (const y of [62, 58, 54, 50, 46]) deck(109, 116, y); rungs(116, 47, 61);
+    ent('sprig', 112, 57, { face: 1 }); ent('sprig', 111, 49, { face: 1 });
+    // the gantry over everything, with planks missing, and a mason on it who throws what he has
+    deck(109, 124, 40); deck(127, 138, 40); deck(142, 159, 40);
+    ent('rockgoblin', 134, 39, { face: -1 }); ent('archer', 156, 39, { face: -1 });
+    // the bucket: it hangs from the gantry over the widest gap (117-126) and swings from tower to tower
+    S.R.moversExtra = (S.R.moversExtra || []).concat([{ kind: 'swing', px: 122 * TS, py: 41 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 0, bucket: true }]);
+    // tower B: the landing deck, and a chain up from it to the gantry
+    for (const y of [46, 52, 58]) deck(127, 134, y); rungs(132, 41, 45); rungs(127, 47, 57); // (the lower decks catch a short jump off the bucket, and the rungs climb back)
+    ent('hearthgob', 130, 57, { face: -1 }); coins([129, 51], [131, 51], [133, 51]);
+    // tower C: the hoist's crane and a deck below with a silver on it; the chain back up if you get off there
+    for (const y of [48, 56]) deck(151, 157, y); rungs(151, 41, 55);
+    ent('silver', 155, 55);
+    S.R.moversExtra = S.R.moversExtra.concat([{ kind: 'lift', x: 160 * TS, y: 40 * TS, y0: 40 * TS, y1: 64 * TS, w: 32, h: 8, speed: 46, top: 36 * TS }]);
+    // the poles, braces and the crane: drawn, grounded at the bottom of the pit
+    ent('scaffold', 109, 40, { x1: 116 }); ent('scaffold', 127, 40, { x1: 134 }); ent('scaffold', 150, 36, { x1: 157, crane: true }); // (the crane's jib reaches four tiles past the tower, over the hoist)
+    ent('torch', 106, 63); ent('torch', 164, 63); ent('deco', 168, 63, { kind: 'barrels' });
+  }
+  const L1 = S.done();
+
+  // ---- THE ROAD UP (opened at column 0, 140 wide) ----
+  const M = grow(L1, L1, 0, 140); shiftCrown(M.R, 0, 140);
+  { const { block, ent, set, coins } = M, BOT = M.R.H - 1;
+    const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+    // the gully: a rock wall on the left, the mountain on the right, and five terraces between that the road
+    // zig-zags up, each shelf cut into the rock on one side, a pair of rock steps up at the open end
+    block(0, 40, 96, BOT); block(0, 2, 72, 95); block(41, 64, 72, BOT);
+    block(3, 8, 94, 95); block(3, 6, 92, 93);            // T1 -> T2, on the left
+    block(9, 40, 90, 91);                                // T2, off the mountain
+    block(37, 40, 88, 89); block(39, 40, 86, 87);        // T2 -> T3, on the right
+    block(3, 36, 84, 85);                                // T3, off the wall
+    block(3, 6, 82, 83); block(3, 4, 80, 81);            // T3 -> T4, on the left
+    block(7, 40, 78, 79);                                // T4, off the mountain
+    block(36, 40, 76, 77); block(38, 40, 74, 75);        // T4 -> the top, on the right
+    block(0, 35, 72, 73);                                // T5: a spur back over the gully (a gibbet, and gold)
+    ent('check', 12, 95);
+    ent('npc', 15, 95, { kind: 'squire' });
+    ent('sign', 18, 95, { text: 'HIGHCROWN IS AT THE TOP OF THIS ROAD. THE ROAD GOES UP THE GULLY IN FIVE TURNS, OVER THE SHOULDER, AND ACROSS TWO DROPS TO HER DRAWBRIDGE. THE WATCH CARRY BELLS: A SENTRY WHO SEES YOU RUNS FOR HIS. SEE HIM FIRST.' });
+    ent('goat', 30, 89, { face: -1 }); ent('sprig', 20, 83, { face: 1 }); ent('goat', 26, 77, { face: -1 }); ent('archer', 22, 71, { face: 1 });
+    ent('deco', 23, 95, { kind: 'cairn' }); ent('deco', 28, 95, { kind: 'deadTree', v: 0 }); ent('deco', 12, 83, { kind: 'stone', v: 1 }); ent('deco', 20, 89, { kind: 'bones', v: 0 });
+    ent('deco', 10, 71, { kind: 'hangCage' }); ent('deco', 30, 77, { kind: 'deadTree', v: 1 });
+    coins([8, 93], [5, 91], [38, 87], [40, 85], [5, 81], [4, 79], [37, 75], [39, 73], [4, 70], [6, 70], [8, 70]);
+    // the shoulder: an eyrie on the rocks, a broken engine from a siege that failed, the watchtower with its ladder
+    ent('check', 44, 71);
+    ent('deco', 46, 71, { kind: 'eyrie' }); ent('harpy', 47, 62); ent('harpy', 58, 60);
+    block(51, 55, 61, 71); for (const x of [51, 53, 55]) set(x, 60, T.SOLID); for (let y = 61; y <= 71; y++) set(50, y, T.NET);
+    ent('silver', 54, 59); ent('deco', 59, 71, { kind: 'siege' });
+    // the gorge, a fall of water down its near side, and a rope bridge over it
+    for (let x = 65; x <= 78; x++) set(x, 72, T.PLANK);
+    ent('cascade', 64, 73, { y1: BOT });
+    ent('deco', 64, 71, { kind: 'bridgepost' }); ent('harpy', 72, 63);
+    // the barbican: a tower with a passage through it at the bridge's height
+    block(79, 92, 56, BOT); air(79, 92, 68, 71); for (const x of [79, 82, 85, 88, 91]) set(x, 55, T.SOLID);
+    M.R.interiors = (M.R.interiors || []).concat([[79, 92, 68, 71, 'stone']]);
+    ent('torch', 85, 71); ent('shield', 88, 71, { face: -1 });
+    // a stone bridge that climbs to the castle's rock in broken steps, each on its own pier
+    block(93, 96, 72, 73); block(94, 95, 74, BOT);
+    block(99, 102, 70, 71); block(100, 101, 72, BOT);
+    block(105, 108, 68, 69); block(106, 107, 70, BOT);
+    block(110, 111, 66, 67); block(110, 111, 68, BOT);
+    block(112, 139, 64, BOT);                            // the castle's rock, before the moat
+    ent('harpy', 104, 60); ent('check', 116, 63);
+    ent('deco', 122, 63, { kind: 'siege' }); ent('deco', 132, 63, { kind: 'hangCage' }); ent('deco', 127, 63, { kind: 'cairn' });
+    coins([97, 69], [103, 67], [109, 65]);
+  }
+  const R = M.done();
+  // the old start by the drawbridge: the squire and her sign moved to the foot of the road
+  R.ents = R.ents.filter(e => !((e.t === 'npc' && e.kind === 'squire' && e.x === 141) || (e.t === 'sign' && e.x === 140)));
+  R.START = { x: 12, y: 95 };
+  R.weather = [{ x0: 0, x1: 333 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 333 * TS, kind: 'wind' }];
+  return R;
 }
 
 // THE HIGH STORE: the same trade in a stone cellar under the crags, with the shepherd and the old knight for company.
@@ -2027,7 +2151,7 @@ export const LEVELS = [
   { id: 'spire', name: 'THE SUNSPIRE', sub: 'the mountain of crystal', build: theSunspire, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', build: stormhold, needs: 'moor' },
-  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', build: highcrown, needs: 'storm' },
+  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', build: highcrownWhole, needs: 'storm' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
@@ -2067,15 +2191,6 @@ const REVIEW = {
   // the castle had the fewest foes of anywhere: a watch in the ward, a hall guard, the kitchens staffed. And THE
   // LEADS: from the choir loft up through a hatch onto the keep roof, a run along it with the whole mountain
   // below, and a second hatch down at the far end of the chapel
-  crown: L => { const R = rv(L); R.ent('check', 62, 63);
-    for (const [t, x, y, f] of [['sprig', 40, 63, -1], ['sprig', 76, 63, 1], ['pike', 110, 63, -1], ['shield', 140, 63, 1], ['sprig', 166, 63, -1], ['sprig', 190, 63, -1], ['hearthgob', 150, 51, 1], ['hearthgob', 186, 51, -1], ['sprig', 150, 19, 1]]) R.ent(t, x, y, { face: f });
-    R.plat(149, 12, 3); R.plat(151, 10, 3);
-    for (let x = 151; x <= 153; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
-    for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
-    R.ent('sign', 156, 7, { text: 'THE LEADS. THE WHOLE MOUNTAIN IS UNDER YOU. THE HATCH AT THE FAR END DROPS YOU BACK INTO THE CHAPEL: DOWN AND JUMP.' });
-    R.ent('deco', 170, 7, { kind: 'banner', v: 1 }); R.ent('deco', 182, 7, { kind: 'barrels' });
-    // the armoury gantry's silver had no way up to it: ledges from the floor to the gantry, two rows at a time
-    R.plat(129, 38, 3); R.plat(132, 36, 3); R.plat(134, 34, 2); R.plat(139, 31, 2); R.plat(146, 29, 2); },
 };
 // SET DRESSING. After the gold, every real wood gets its own things left about on its ground - hives and
 // birdhouses in the wood, fish traps in the marsh, spear racks and tents in the camp, spore pods under the

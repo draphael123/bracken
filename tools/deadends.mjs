@@ -40,8 +40,9 @@ for (const lv of LEVELS) {
     for (let x = r.x0; x <= r.x1; x++) { if (oneway(at(x, r.y + 1)) && at(x, r.y + 1) !== T.CRYST) c.add(x);
       if (at(x, r.y) === T.NET || at(x, r.y - 1) === T.NET || at(x - 1, r.y) === T.CLIMB || at(x + 1, r.y) === T.CLIMB) c.add(x); }
     // an end with no wall is a drop, and a drop goes somewhere
-    if (!solid(at(r.x0 - 1, r.y))) c.add(r.x0);
-    if (!solid(at(r.x1 + 1, r.y))) c.add(r.x1);
+    // (and a portcullis at the end is a door: a winch or a key or a boss opens it)
+    if (!solid(at(r.x0 - 1, r.y)) || at(r.x0 - 1, r.y) === T.PORT) c.add(r.x0);
+    if (!solid(at(r.x1 + 1, r.y)) || at(r.x1 + 1, r.y) === T.PORT) c.add(r.x1);
     for (const e of L.ents) if (e.t === 'doorway' && e.y === r.y && e.x >= r.x0 && e.x <= r.x1) c.add(e.x);
     return c; };
   const out = [];

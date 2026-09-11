@@ -20,7 +20,11 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const doors = (L.ents || []).filter(e => e.t === 'doorway' && e.id);
   const doorTo = new Map(doors.map(d => [d.id, d]));
   const vents = (L.ents || []).filter(e => e.t === 'vent');
-  const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.length) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
+  // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
+  // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
+  const lifts = (L.moversExtra || []).filter(m => m.kind === 'lift').map(m => ({ x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
+  const swings = (L.moversExtra || []).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
+  const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
 
   // every tile you could be standing on
   const key = (x, y) => x + ',' + y;
@@ -47,6 +51,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     const springy = at(x, y + 1) === T.BOUNCER, up = springy ? BOUNCE_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -3; dx <= 3; dx++) push(v.x + dx, ty); }
+    for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
+    for (const arc of swings) if (arc.some(([ax, ay]) => Math.abs(ax - x) <= 2 && y - ay >= -1 && y - ay <= 3)) for (const [ax, ay] of arc) for (let dy = -3; dy <= 2; dy++) for (let dx = -3; dx <= 3; dx++) push(ax + dx, ay + dy);
     // stand in a doorway and press talk: you come out at the other one
     for (const dr of doors) if (Math.abs(dr.x - x) <= 1 && dr.y === y) { const to = doorTo.get(dr.to); if (to) { let ty = to.y; while (ty < H - 1 && !footing.has(key(to.x, ty))) ty++; push(to.x, ty); } }
     // walk, and step up or down one

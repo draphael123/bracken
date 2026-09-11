@@ -781,6 +781,27 @@ export function bakeGibbet() {
   ellipse(g, 23, 24, 3, 3, '#e8dcc0'); px(g, 22, 24, OUT); px(g, 24, 24, OUT); rect(g, 22, 28, 2, 8, '#e8dcc0'); rect(g, 20, 30, 6, 1, '#e8dcc0');
   return outline(c, OUT);
 }
+// an eyrie on the crags: a heap of sticks the size of a cart, bones in it and two eggs
+export function bakeEyrie() {
+  const [c, g] = canvas(44, 18);
+  ellipse(g, 22, 13, 21, 6, '#4a3a2a'); ellipse(g, 22, 11, 18, 5, '#6a5238');
+  for (let i = 0; i < 26; i++) { const x = 3 + ((i * 37) % 38), y = 8 + ((i * 11) % 9); line(g, x, y, x + 6 - ((i * 5) % 12), y + 2 - ((i * 3) % 4), i % 3 ? '#7a6044' : '#3a2c1e', 1); }
+  ellipse(g, 22, 9, 12, 3, '#2a2018'); ellipse(g, 18, 8, 3, 4, '#e8e0d0'); ellipse(g, 25, 8, 3, 4, '#d8d0c0'); px(g, 17, 6, '#fff6e0');
+  rect(g, 30, 7, 6, 1, '#e8dcc0'); rect(g, 35, 6, 1, 3, '#e8dcc0'); // a bone over the rim
+  return outline(c, OUT);
+}
+// the engine of a siege that failed: a trebuchet on its side, its arm snapped, one wheel off
+export function bakeSiege() {
+  const [c, g] = canvas(56, 34);
+  line(g, 4, 32, 22, 8, '#5c3a1d', 3); line(g, 40, 32, 22, 8, '#5c3a1d', 3); line(g, 10, 22, 34, 22, '#4a3220', 2); // the A-frame
+  rect(g, 2, 30, 50, 3, '#4a3220'); rect(g, 2, 30, 50, 1, '#6a4a2c'); // the base beam
+  line(g, 22, 8, 50, 2, '#6a4a2c', 2); line(g, 22, 8, 14, 16, '#6a4a2c', 2); // the arm, snapped at the far end
+  line(g, 50, 2, 53, 6, '#8a6a44', 1); line(g, 50, 2, 54, 1, '#8a6a44', 1); // splinters
+  rect(g, 10, 14, 7, 6, '#3a3040'); rect(g, 11, 15, 5, 4, '#5a5460'); // the counterweight box
+  circle(g, 46, 29, 4, '#3a2618'); circle(g, 46, 29, 2, '#6a4a2c'); // a wheel, lying against it
+  rect(g, 30, 27, 4, 3, '#7c8797'); // a stone it never threw
+  return outline(c, OUT);
+}
 export function bakeHangCage() {
   const [c, g] = canvas(16, 44);
   for (let y = 0; y < 16; y += 3) rect(g, 7, y, 2, 2, '#8b8378');
