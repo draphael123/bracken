@@ -4300,7 +4300,9 @@ function drawWorld(cx, cy, showPlayer) {
   }
   for (const d of deco) if (!d.bg && d.x > cx - 60 && d.x < cx + VW + 4) { const c = d.anim ? d.anim[Math.floor(time * (d.kind === 'drip' ? 2 : 3) + d.ph) % d.anim.length] : d.c; g.drawImage(c, d.x - cx, d.y - cy); }
   for (const s of signs) g.drawImage(PROP.sign, s.x - 9 - cx, s.y - 18 - cy);
-  for (const pr of props) if (pr.t === 'npc' && pr.x > cx - 40 && pr.x < cx + VW + 40) { drawSet(SPR[pr.kind] || SPR.shepherd, null, talkTo === pr ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy, P.x < pr.x ? -1 : 1, false); if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
+  for (const pr of props) if (pr.t === 'npc' && pr.x > cx - 40 && pr.x < cx + VW + 40) { { const set = SPR[pr.kind] || SPR.shepherd, near = Math.abs(P.x - pr.x) < 90, ph = time + (pr.anim || 0) * 3, c0 = Array.isArray(set.R) ? set.R[0] : set.R, breathe = Math.sin(ph * 2.1) > 0.55 ? 1 + 1 / c0.height : 1;
+        const face = near ? (P.x < pr.x ? -1 : 1) : (Math.floor(ph / 3.3) % 2 ? 1 : -1);
+        drawSet(set, null, talkTo === pr ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy, face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
   if (state === 'play' && !P.dead) { const t = talkers()[0]; if (t && !(t.who && t.who.t === 'npc')) text(talkGlyph(), t.x - cx, t.y - 26 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
   for (const s of shrines) { g.drawImage(PROP.shrine[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
   if (gate) g.drawImage(PROP.gate, gate.x - 24 - cx, gate.y - 52 - cy);
@@ -4335,13 +4337,13 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
     else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
-    else if (e.t === 'hopper') frame = e.air ? 1 : 0;
+    else if (e.t === 'hopper') frame = e.air ? (e.vy < 0 ? 1 : 3) : (e.timer < 0.2 && Math.abs(P.x - e.x) < 170 ? 2 : 0);
     else if (e.t === 'frog') frame = e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : e.mode === 'croak' ? 1 : (e.mode === 'inhale' || e.mode === 'tongue' || e.mode === 'inhaleTell') ? 2 : 0;
-    else if (e.t === 'sapper') frame = Math.floor(e.anim * 10) % 2;
-    else if (e.t === 'sporeling') frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
-    else if (e.t === 'lurker') frame = e.mode === 'hide' ? 0 : 1;
-    else if (e.t === 'drone') frame = Math.floor(e.anim * 4) % 2;
-    else if (e.t === 'shaman') frame = e.cast > 0 ? 1 : 0;
+    else if (e.t === 'sapper') frame = e.fleeT > 0 ? 4 + Math.floor(e.anim * 12) % 2 : Math.floor(e.anim * 12) % 4;
+    else if (e.t === 'sporeling') frame = Math.abs(e.vx) > 4 ? [0, 2, 1, 3][Math.floor(e.anim * 9) % 4] : 0;
+    else if (e.t === 'lurker') frame = e.mode === 'hide' ? 0 : e.mode === 'rest' ? 2 : 1;
+    else if (e.t === 'drone') frame = Math.floor(e.anim * 1.1) % 6 === 0 && (e.anim * 1.1) % 1 < 0.15 ? 2 : [0, 3, 1, 3][Math.floor(e.anim * 5) % 4];
+    else if (e.t === 'shaman') frame = e.cast > 0 ? (Math.floor(e.anim * 10) % 2 ? 4 : 1) : Math.abs(e.vx || 0) > 4 ? 2 + Math.floor(e.anim * 6) % 2 : 0;
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
     else if (e.t === 'brute') frame = e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' ? 9 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
@@ -4352,13 +4354,13 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'grub') frame = e.mode === 'spit' ? 2 : Math.floor(e.anim * 5) % 2;
     else if (e.t === 'kite') frame = 0;
     else if (e.t === 'hare') frame = e.mode === 'run' ? Math.floor(e.anim * 12) % 2 : 2;
-    else if (e.t === 'wight') frame = Math.floor(e.anim * 4) % 2;
+    else if (e.t === 'wight') frame = Math.floor(e.anim * 6) % 4;
     else if (e.t === 'windcaller') frame = e.mode === 'blink' || e.mode === 'appear' ? 2 : (e.mode === 'howlTell' || e.mode === 'howl') ? 3 : e.castFlash > 0 ? 1 : Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'golem') frame = e.mode === 'stagger' ? 5 : e.mode === 'drink' ? 7 : e.mode === 'counter' ? 8 : (e.mode === 'shroudTell' || e.mode === 'shroud') ? 6 : (e.mode === 'stompTell' || e.mode === 'stomp') ? 3 : e.mode === 'throwTell' || e.mode === 'throw' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
     else if (e.t === 'rockgoblin') frame = e.mode === 'throw' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'forgemaster') frame = e.mode === 'stun' || e.mode === 'scald' ? 5 : e.mode === 'slamTell' || e.mode === 'anvilTell' || e.mode === 'hurlTell' ? 1 : e.mode === 'slam' || e.mode === 'anvil' || e.mode === 'hurl' ? 2 : e.mode === 'drag' || e.mode === 'dragTell' || e.mode === 'spray' || e.mode === 'sprayTell' ? 3 : e.mode === 'breath' || e.mode === 'breathTell' ? 6 : 0;
     else if (e.t === 'greathound') frame = e.mode === 'stun' || e.mode === 'skid' || e.mode === 'whine' || e.mode === 'landed' ? 6 : e.mode === 'howlTell' || e.mode === 'howl' ? 5 : e.mode === 'pounce' ? 4 : e.mode === 'lungeTell' || e.mode === 'pounceTell' || e.mode === 'snapTell' ? 3 : Math.abs(e.vx) > 10 ? 1 + Math.floor(e.anim * 14) % 2 : 0;
-    else if (e.t === 'spider') frame = (e.mode === 'drop' || e.mode === 'dropTell' || e.mode === 'ground') ? 1 : 0;
+    else if (e.t === 'spider') frame = (e.mode === 'drop' || e.mode === 'dropTell' || e.mode === 'ground') ? 1 : e.mode === 'climb' ? 3 + Math.floor(e.anim * 10) % 2 : (Math.floor(e.anim * 1.5) % 3 === 0 ? 2 : 0);
     else if (e.squirrel) frame = e.vy !== 0 ? 2 : Math.floor(e.anim * 12) % 2;
     else if (e.t === 'owl') frame = e.mode === 'crash' || e.mode === 'grounded' ? 4 : e.mode === 'screech' || e.mode === 'screechTell' ? 3 : e.mode === 'sit' || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'fanTell' || e.mode === 'fan' ? 0 : e.mode === 'swoop' ? 6 : e.mode === 'land' ? 7 : e.mode === 'takeoff' ? (Math.floor(e.anim * 14) % 2 ? 1 : 2) : e.mode === 'fly' ? (e.modeT > 2.4 ? 1 + Math.floor(e.anim * 9) % 2 : 5) : e.mode === 'carry' ? 1 + Math.floor(e.anim * 8) % 2 : 1 + Math.floor(e.anim * 8) % 2;
     else if (e.t === 'shardling') frame = e.mode === 'bristle' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
@@ -4373,7 +4375,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'harpy') frame = e.mode === 'dive' ? 2 : e.mode === 'downed' ? 3 : e.mode === 'aim' ? Math.floor(e.anim * 14) % 2 : Math.floor(e.anim * 6) % 2;
     else if (e.t === 'goat') frame = !e.rider ? 3 + Math.floor(e.anim * 12) % 2 : e.mode === 'buck' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 14 : 8)) % 2 : 0;
     else if (e.t === 'ram') frame = e.mode === 'lower' || e.mode === 'buttTell' || e.mode === 'leapTell' || e.mode === 'rear' ? 3 : e.mode === 'leap' ? 6 : e.mode === 'land' ? 4 : e.mode === 'crash' ? 4 : e.mode === 'tossTell' || e.mode === 'toss' || e.mode === 'call' ? 5 : e.mode === 'stampTell' || e.mode === 'stamp' || e.mode === 'butt' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * (e.mode === 'charge' ? 16 : 8)) % 2 : 0;
-    else if (e.t === 'pike') frame = e.mode === 'thrust' ? 1 : 0;
+    else if (e.t === 'pike') frame = e.mode === 'thrust' ? 1 : e.mode === 'tell' ? 2 : 0;
     else if (e.t === 'archer') frame = e.draw > 0 ? 1 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
     else frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 22 : 10)) % 4 : 0;
     const wind = (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell')) || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell'));

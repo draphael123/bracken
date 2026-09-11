@@ -396,7 +396,9 @@ export function bakeHopper(color = 'green') {
   const f = rows => outline(fromGrid(rows, P2, 1), OUT);
   const sit = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', '.DFFDDFFD.', '.DD....DD.'];
   const leap = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', 'DFD....DFD', 'D........D'];
-  return pack([f(sit), f(leap)], 6, 7, 9, 6);
+  const crouch = ['..........', '.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', 'DDFFDDFFDD'];
+  const fall = ['.eo....eo.', 'DFFFFFFFFD', 'FFLFFFFLFF', 'FBBBBBBBBF', '.DFD..DFD.', '..D....D..'];
+  return pack([f(sit), f(leap), f(crouch), f(fall)], 6, 7, 9, 6);
 }
 
 // ---------- Stockade goblins ----------
@@ -404,9 +406,10 @@ export function bakeHopper(color = 'green') {
 export function bakeSapper() {
   const bomb = ['....oo....', '...oooo...', '...oooo...', '....oo....'];
   const head = ['...gggg...', '..gggggg..', '.geoggeog.', '.gggggggg.', '..gGGGGg..'];
-  const legs = [['..rrrrrr..', '..GG..GG..', '.GG....GG.'], ['..rrrrrr..', '..GG.GG...', '..GG..GG..']];
+  const legs = [['..rrrrrr..', '..GG..GG..', '.GG....GG.'], ['..rrrrrr..', '..GG.GG...', '..GG..GG..'], ['..rrrrrr..', '...GGG....', '..GG.GG...'], ['..rrrrrr..', '..GG.GG...', '.GG...GG..']];
   const spr = rows => outline(fromGrid(rows, EP, 1), OUT);
-  return pack(legs.map(l => spr([...bomb, ...head, ...l])), 6, 14, 8, 13);
+  const arms = [['..........', 'g........g', '.g......g.', '..........'], ['..........', '.g......g.', 'g........g', '..........']];
+  return pack([...legs.map(l => spr([...bomb, ...head, ...l])), spr([...arms[0], ...head, ...legs[0]]), spr([...arms[1], ...head, ...legs[2]])], 6, 14, 8, 13);
 }
 export function bakeBomb() { const c = outline(fromGrid(['.oo.', 'oooo', 'oooo', '.oo.'], { o: '#1b1626' }, 1), '#5f5a52'); return pack([c], 3, 3, 4, 4); }
 // Brute — a big goblin with a club. 16×16. Frames: stand, walk, raise (overhead tell), swing.
@@ -488,27 +491,34 @@ export function bakeSporeling() {
   const cap = ['...mmmm...', '..mmtmmm..', '.mmmmmmtm.', 'mmmmmmmmmm', '.MMMMMMMM.'];
   const a = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '..kk..kk..', '.kk....kk.']);
   const b = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '...kkkk...', '..kk..kk..']);
-  return pack([a, b], 6, 11, 8, 10);
+  const c2 = sspr(['..........', ...cap, '..kkkkkk..', '..keokkok.', '..kk..kk..', '..kk..kk..']);
+  const d = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '..kkk.kk..', '.kk...kk..']);
+  return pack([a, b, c2, d], 6, 11, 8, 10);
 }
 // Lurker — looks like a scenery mushroom until it lunges. 14×12: frame 0 hidden, frame 1 mouth open.
 export function bakeLurker() {
   const cap = ['....vvvvvv....', '..vvvtvvvvtv..', '.vvvvvvvvvvvv.', 'vvvvvvvvvvvvvv', '.VVVVVVVVVVVV.'];
   const a = sspr([...cap, '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '..kkkkkkkkkk..']);
   const b = sspr([...cap, '...kkkkkkkk...', '..kkeokkeokk..', '..kRRRRRRRRk..', '..kRrrrrrrRk..', '...kRRRRRRk...', '..kkkkkkkkkk..']);
-  return pack([a, b], 8, 13, 12, 12);
+  const half = sspr([...cap, '...kkkkkkkk...', '..kkeokkeokk..', '..kkkkkkkkkk..', '..kRRRRRRRRk..', '...kkkkkkkk...', '..kkkkkkkkkk..']);
+  return pack([a, b, half], 8, 13, 12, 12);
 }
 // Spore drone — a floating puffball with a dark eye. 10×8, two frames (breathing).
 export function bakeDrone() {
   const a = sspr(['...tttt...', '..tttttt..', '.ttteottt.', '.tttttttt.', '..tttttt..', '...tttt...']);
   const b = sspr(['..tttttt..', '.tttttttt.', 'ttttteottt', 'tttttttttt', '.tttttttt.', '..tttttt..']);
-  return pack([a, b], 6, 7, 9, 7);
+  const blink = sspr(['...tttt...', '..tttttt..', '.tttoottt.', '.tttttttt.', '..tttttt..', '...tttt...']);
+  const mid = sspr(['..tttttt..', '.tttttttt.', '.ttteottt.', 'tttttttttt', '.tttttttt.', '..tttttt..']);
+  return pack([a, b, blink, mid], 6, 7, 9, 7);
 }
 // Toad shaman — a toadstool that walks, wears a bone circlet, casts. 14×13: idle, cast.
 export function bakeShaman() {
   const cap = ['....cccccc....', '..ccctccctcc..', '.cccccccccccc.', 'cctccccctccccc', 'cccccccccccccc', '.CCCCCCCCCCCC.'];
   const stem = ['...kkkkkkkk...', '...kokkkkok...', '...kkkkkkkk...', '...kkkGGkkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
   const cast = ['..tkkkkkkkkt..', '..tkokkkkokt..', '...kkkkkkkk...', '...kkGGGGkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
-  return pack([sspr([...cap, ...stem]), sspr([...cap, ...cast])], 8, 14, 12, 13);
+  const walkA = [...stem.slice(0, 5), '...kk....kk...', '..kk.....kk...'], walkB = [...stem.slice(0, 5), '..kk....kk....', '...kk....kk...'];
+  const cast2 = ['.t.kkkkkkkk.t.', 't.tkokkkkokt.t', '...kkkkkkkk...', '...kkGGGGkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
+  return pack([sspr([...cap, ...stem]), sspr([...cap, ...cast]), sspr([...cap, ...walkA]), sspr([...cap, ...walkB]), sspr([...cap, ...cast2])], 8, 14, 12, 13);
 }
 
 // ---------- Kingswood ----------
@@ -527,7 +537,8 @@ export function bakePike() {
   const head = ['...gggg...............', '..gggggg..............', '.geoggeog.............', '.gggggggg.............', '..gGGGGg..............'];
   const bodyG = ['..bbbbbb.hhhhhhhhhhhss', '..bbbbbb..............', '..rrrrrr..............', '..GG..GG..............', '.GG....GG.............'];
   const bodyT = ['..bbbbbb..............', '..bbbbbbhhhhhhhhhhhhss', '..rrrrrr..............', '...GG.GG..............', '..GG...GG.............'];
-  return pack([kspr([...head, ...bodyG]), kspr([...head, ...bodyT])], 6, 11, 10, 12);
+  const bodyB = ['..bbbbbb..............', 'hhbbbbbbhhhhhhhhss....', '..rrrrrr..............', '.GG..GG...............', 'GG....GG..............'];
+  return pack([kspr([...head, ...bodyG]), kspr([...head, ...bodyT]), kspr([...head, ...bodyB])], 6, 11, 10, 12);
 }
 // Townsfolk — small unarmed goblins in aprons and hoods, two colours. 8×9. Frames: run1, run2, cower.
 export function bakeFolk(alt) {
@@ -770,7 +781,10 @@ export function bakeSpider() {
   const s = rows => outline(fromGrid(rows, SP2, 1), OUT);
   const hang = s(['.....bb.....', '..l.bbbb.l..', '.l.bbbbbb.l.', 'l.bbrbbrbb.l', '.lbbbbbbbbl.', 'l..bbbbbb..l', '.l..bbbb..l.', 'l...l..l...l']);
   const drop = s(['l....bb....l', '.l..bbbb..l.', '..lbbbbbbl..', 'lllbbrbbrlll', '...bbbbbb...', '..l.bbbb.l..', '.l..l..l..l.', 'l..........l']);
-  return pack([hang, drop], 7, 9, 10, 8);
+  const hang2 = s(['.....bb.....', '.l..bbbb..l.', '..lbbbbbbl..', '.lbbrbbrbbl.', 'l.bbbbbbbb.l', '.l.bbbbbb.l.', 'l...bbbb...l', '.l..l..l..l.']);
+  const climb1 = s(['l....bb....l', '.l..bbbb..l.', '..lbbbbbbl..', '..bbrbbrbb..', '.lbbbbbbbbl.', 'l..bbbbbb..l', '....bbbb....', '...l....l...']);
+  const climb2 = s(['.l...bb...l.', 'l...bbbb...l', '.l.bbbbbb.l.', '..bbrbbrbb..', '..lbbbbbbl..', '.l.bbbbbb.l.', 'l...bbbb...l', '....l..l....']);
+  return pack([hang, drop, hang2, climb1, climb2], 7, 9, 10, 8);
 }
 // Squirrel knight — a red squirrel in a blue tabard, sword on its back, a plume of a tail. 12×11. Frames: run1, run2, leap.
 export function bakeSquirrel() {
@@ -1026,7 +1040,9 @@ export function bakeWight() {
   const q = rows => outline(fromGrid(rows, WP2, 1), OUT);
   const rise1 = q(['..m..m..m.', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '...mmmm...', '..mmMMmm..', '..mmmmmm..', '.mm.mm.mm.', 'm...m...m.']);
   const rise2 = q(['.m..m..m..', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '..mmmmmm..', '..mmMMmm..', '.mmmmmmmm.', '.mm.mm.mm.', '.m...m...m']);
-  return pack([rise1, rise2], 5, 14, 8, 13);
+  const rise3 = q(['m...m...m.', '.m..m..m..', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '...mmmm...', '..mmMMmm..', '.mmmmmmm..', '.m.mm.mm..', '..m...m..m']);
+  const rise4 = q(['...m..m..m', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '..mmmmmm..', '..mmMMmm..', '..mmmmmmm.', '..mm.mm.m.', 'm...m...m.']);
+  return pack([rise1, rise2, rise3, rise4], 5, 14, 8, 13);
 }
 // The glow grub — a fat cave larva that lights its own way and spits acid. 16×8. Frames: crawl1, crawl2, spit.
 export function bakeGrub() {
