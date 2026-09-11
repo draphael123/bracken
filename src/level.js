@@ -1562,14 +1562,14 @@ function highcrown() {
   // the wall walk, archers on it, and the steps up to it
   plat(22, 52, 53);
   stair([[30, 62], [34, 60], [38, 58], [42, 56], [46, 54]]);
-  ent('archer', 60, 51, { face: -1 }); ent('archer', 72, 51, { face: -1 });
+  ent('archer', 60, 51, { face: -1 }); ent('javelin', 72, 51, { face: -1 });
   ent('stray', 26, 51, { kind: 'seal' });
   // the gatehouse top, off the wall walk: a silver among the crenels
   plat(22, 50, 3); plat(22, 48, 3); plat(22, 46, 3); coins([13, 43], [16, 43], [19, 43]); // (its silver went to the watchtower on the road up)
   // the courtyard: stables, a kennel, a well, the barracks door
   ent('deco', 36, 63, { kind: 'cart' }); ent('deco', 42, 63, { kind: 'barrels' }); ent('deco', 76, 63, { kind: 'well' }); ent('deco', 86, 63, { kind: 'spearRack' });
   ent('deco', 56, 63, { kind: 'banner', v: 0 }); ent('torch', 48, 63); ent('torch', 80, 63);
-  ent('hound', 64, 63, { face: -1 }); ent('sprig', 28, 63, { face: 1 });
+  ent('hound', 64, 63, { face: -1 }); ent('soldier', 28, 63, { face: 1 });
   ent('sentry', 66, 63, { section: 'ward', range: 8, face: 1 });
   ent('bell', 84, 63, { section: 'ward' });
   ent('sign', 26, 63, { text: 'THE WARD. THE SENTRY BY THE WELL HAS A BELL BY THE BARRACKS. CATCH HIM BEFORE HE REACHES IT, OR BREAK IT. THE WEIGHT OVER THE BARRACKS DOOR WILL COME DOWN IF YOU CUT IT.' });
@@ -1594,7 +1594,7 @@ function highcrown() {
   ent('deco', 132, 63, { kind: 'banner', v: 1 }); ent('deco', 146, 63, { kind: 'spearRack' }); ent('deco', 168, 63, { kind: 'barrels' });
   ent('torch', 140, 63); ent('torch', 164, 63);
   ent('sentry', 152, 63, { section: 'hall', range: 12, face: 1 }); ent('bell', 176, 63, { section: 'hall' });
-  ent('shield', 138, 63, { face: -1 });
+  ent('soldier', 138, 63, { face: -1 }); ent('javelin', 160, 63, { face: -1 });
   air(198, 201, 52, 53); lid(198, 201, 52);    // the stair up, through the floor above
   stair([[184, 62], [188, 60], [192, 58], [196, 56], [198, 54]]);
   ent('sign', 134, 63, { text: 'THE ENTRANCE HALL. HER WATCH WALKS IT. THE STAIR IS AT THE FAR END, AND THE GATE BEFORE IT DROPS WITH THE BELL.' });
@@ -1635,7 +1635,7 @@ function highcrown() {
   for (const x of [134, 154, 178, 196]) ent('torch', x, 19);
   ent('deco', 144, 19, { kind: 'banner', v: 0 }); ent('deco', 188, 19, { kind: 'banner', v: 1 });
   for (const x of [140, 164, 184]) ent('deco', x, 13, { kind: 'hallWindow' });
-  plat(140, 14, 16); ent('archer', 152, 13, { face: 1 }); ent('stray', 141, 13, { kind: 'seal' }); // the choir loft
+  plat(140, 14, 16); ent('javelin', 152, 13, { face: 1 }); ent('stray', 141, 13, { kind: 'seal' }); // the choir loft
   stair([[158, 17, 3], [154, 15, 3]]);
   plat(128, 12, 4); coins([128, 11], [130, 11]); stair([[134, 16, 3], [131, 14, 2]]); // up in the rafters (its silver went to the scaffolds)
   ent('deco', 127, 19, { kind: 'counter' }); ent('key', 128, 19, { kind: 'brass' });
@@ -1673,9 +1673,9 @@ function highcrown() {
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
     alarms: [
-      { id: 'ward', gates: [[102, 58, 63]], garrison: [{ t: 'brute', x: 96, y: 63 }, { t: 'shield', x: 92, y: 63 }, { t: 'sprig', x: 98, y: 63 }] },
-      { id: 'hall', gates: [[182, 54, 63]], garrison: [{ t: 'pike', x: 150, y: 63 }, { t: 'pike', x: 158, y: 63 }, { t: 'shield', x: 144, y: 63 }] },
-      { id: 'chapel', gates: [[160, 10, 19]], garrison: [{ t: 'pike', x: 172, y: 19 }, { t: 'brute', x: 182, y: 19 }, { t: 'archer', x: 146, y: 13 }] },
+      { id: 'ward', gates: [[102, 58, 63]], garrison: [{ t: 'heavy', x: 96, y: 63 }, { t: 'soldier', x: 92, y: 63 }, { t: 'javelin', x: 98, y: 63 }] },
+      { id: 'hall', gates: [[182, 54, 63]], garrison: [{ t: 'soldier', x: 150, y: 63 }, { t: 'javelin', x: 158, y: 63 }, { t: 'soldier', x: 144, y: 63 }] },
+      { id: 'chapel', gates: [[160, 10, 19]], garrison: [{ t: 'soldier', x: 172, y: 19 }, { t: 'heavy', x: 182, y: 19 }, { t: 'javelin', x: 146, y: 13 }] },
     ],
     mini: { x0: 126 * TS, x1: 198 * TS, floor: 40 * TS, trigger: 134 * TS, wallL: 125, gate: 199, boss: 'forgemaster', y0: 26 * TS, y1: 41 * TS, slag: [140 * TS + 8, 158 * TS + 8, 180 * TS + 8] },
     arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 211 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
@@ -1686,7 +1686,7 @@ function highcrown() {
 // the castle's own second pass (a watch in the ward, THE LEADS over the keep, the armoury gantry's ledges), written
 // against the castle before it grew: it runs first, then the Scaffolds and the mountain road are opened around it
 const crownReview = L => { const R = rv(L); R.ent('check', 62, 63);
-    for (const [t, x, y, f] of [['sprig', 40, 63, -1], ['sprig', 76, 63, 1], ['pike', 110, 63, -1], ['shield', 140, 63, 1], ['sprig', 166, 63, -1], ['sprig', 190, 63, -1], ['hearthgob', 150, 51, 1], ['hearthgob', 186, 51, -1], ['sprig', 150, 19, 1]]) R.ent(t, x, y, { face: f });
+    for (const [t, x, y, f] of [['soldier', 40, 63, -1], ['javelin', 76, 63, 1], ['heavy', 110, 63, -1], ['soldier', 140, 63, 1], ['javelin', 166, 63, -1], ['soldier', 190, 63, -1], ['hearthgob', 150, 51, 1], ['hearthgob', 186, 51, -1], ['javelin', 150, 19, 1]]) R.ent(t, x, y, { face: f });
     R.plat(149, 12, 3); R.plat(151, 10, 3);
     for (let x = 151; x <= 153; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
     for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
@@ -1734,10 +1734,10 @@ function highcrownWhole() {
     ent('sign', 106, 63, { text: 'THE NEW TOWER. THEY ARE DIGGING ITS FOUNDATIONS, AND THE PIT HAS NO BOTTOM YOU WOULD WALK AWAY FROM. UP THE SCAFFOLD, OVER ON THE BUCKET, UP THE CHAIN, ALONG THE GANTRY, AND THE HOIST LETS YOU DOWN THE FAR SIDE.' });
     // tower A: decks four rows apart, a ladder of rungs up its far side
     for (const y of [62, 58, 54, 50, 46]) deck(109, 116, y); rungs(116, 47, 61);
-    ent('sprig', 112, 57, { face: 1 }); ent('sprig', 111, 49, { face: 1 });
+    ent('soldier', 112, 57, { face: 1 }); ent('javelin', 111, 49, { face: 1 });
     // the gantry over everything, with planks missing, and a mason on it who throws what he has
     deck(109, 124, 40); deck(127, 138, 40); deck(142, 159, 40);
-    ent('rockgoblin', 134, 39, { face: -1 }); ent('archer', 156, 39, { face: -1 });
+    ent('rockgoblin', 134, 39, { face: -1 }); ent('javelin', 156, 39, { face: -1 });
     // the bucket: it hangs from the gantry over the widest gap (117-126) and swings from tower to tower
     S.R.moversExtra = (S.R.moversExtra || []).concat([{ kind: 'swing', px: 122 * TS, py: 41 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 0, bucket: true }]);
     // tower B: the landing deck, and a chain up from it to the gantry
@@ -1771,7 +1771,7 @@ function highcrownWhole() {
     ent('check', 12, 95);
     ent('npc', 15, 95, { kind: 'squire' });
     ent('sign', 18, 95, { text: 'HIGHCROWN IS AT THE TOP OF THIS ROAD. THE ROAD GOES UP THE GULLY IN FIVE TURNS, OVER THE SHOULDER, AND ACROSS TWO DROPS TO HER DRAWBRIDGE. THE WATCH CARRY BELLS: A SENTRY WHO SEES YOU RUNS FOR HIS. SEE HIM FIRST.' });
-    ent('goat', 30, 89, { face: -1 }); ent('sprig', 20, 83, { face: 1 }); ent('goat', 26, 77, { face: -1 }); ent('archer', 22, 71, { face: 1 });
+    ent('goat', 30, 89, { face: -1 }); ent('soldier', 20, 83, { face: 1 }); ent('goat', 26, 77, { face: -1 }); ent('javelin', 22, 71, { face: 1 });
     ent('deco', 23, 95, { kind: 'cairn' }); ent('deco', 28, 95, { kind: 'deadTree', v: 0 }); ent('deco', 12, 83, { kind: 'stone', v: 1 }); ent('deco', 20, 89, { kind: 'bones', v: 0 });
     ent('deco', 10, 71, { kind: 'hangCage' }); ent('deco', 30, 77, { kind: 'deadTree', v: 1 });
     coins([8, 93], [5, 91], [38, 87], [40, 85], [5, 81], [4, 79], [37, 75], [39, 73], [4, 70], [6, 70], [8, 70]);
@@ -1787,7 +1787,7 @@ function highcrownWhole() {
     // the barbican: a tower with a passage through it at the bridge's height
     block(79, 92, 56, BOT); air(79, 92, 68, 71); for (const x of [79, 82, 85, 88, 91]) set(x, 55, T.SOLID);
     M.R.interiors = (M.R.interiors || []).concat([[79, 92, 68, 71, 'stone']]);
-    ent('torch', 85, 71); ent('shield', 88, 71, { face: -1 });
+    ent('torch', 85, 71); ent('heavy', 88, 71, { face: -1 }); /* a heavy knight holds the barbican */
     // a stone bridge that climbs to the castle's rock in broken steps, each on its own pier
     block(93, 96, 72, 73); block(94, 95, 74, BOT);
     block(99, 102, 70, 71); block(100, 101, 72, BOT);
