@@ -178,7 +178,7 @@ function brackenWood() {
   G.ent('sign', 131, 11, { text: 'THE FALLEN GIANT. OVER THE TOP FOR THE COINS, OR THROUGH THE HOLLOW FOR THE QUIET. THE WOODSMAN\'S SHEEP WENT ONE OF THOSE WAYS.' });
   G.ent('check', 133, 11); G.coins([135, 10], [137, 10]);
   G.block(139, 152, 8, 11); for (let x = 139; x <= 152; x++) { G.set(x, 9, 0); G.set(x, 10, 0); G.set(x, 11, 0); } // the hollow runs the whole trunk
-  G.ent('spit', 150, 11, { face: -1 }); // (the spikes inside the trunk sat under a roof too low to jump them) G.coins([144, 10], [148, 10]); G.ent('silver', 152, 10);
+  G.ent('spit', 150, 11, { face: -1 }); /* (the spikes inside the trunk sat under a roof too low to jump them) */ G.coins([144, 10], [148, 10]); G.ent('silver', 152, 10);
   G.plat(136, 9, 2); G.coins([137, 8], [141, 6]); // up onto the trunk
   G.ent('wasp', 146, 6); G.ent('wasp', 150, 5); G.coins([146, 4], [150, 3]); G.ent('sprig', 144, 7, { face: -1 });
   G.plat(153, 9, 2); G.coins([154, 8]);
@@ -256,8 +256,8 @@ function marshWood() {
 
   // ---- 6. Drift stream: logs ride the current, against you ----
   water(131, 160, 19);
-  ent('wisp', 138, 15); ent('wisp', 152, 14); ent('sign', 130, 17, { text: 'THE FOG. IT HIDES THE LOGS. THE WISPS IN IT ARE LIGHT: CUT ONE AND THE FOG THINS.' });
-  for (let i = 0; i < 6; i++) movers.push({ kind: 'drift', x0: 131 * TS, x1: 161 * TS - 48, x: 132 * TS + i * 78, y: 18 * TS + 8, w: 48, h: 8, speed: 26 });
+  ent('wisp', 138, 15); ent('wisp', 152, 14); ent('sign', 130, 17, { text: 'THE FOG ON THE STREAM. THE RAFT WAITS AT THE BANK: STEP ON AND IT CARRIES YOU OVER. THE WISPS IN THE FOG ARE LIGHT: CUT ONE AND IT THINS.' });
+  movers.push({ kind: 'raft', x0: 131 * TS, x1: 161 * TS - 96, x: 131 * TS, y: 18 * TS, w: 96, h: 8, speed: 34 }); // (six drifting logs in the fog were luck: a raft waits at the bank and carries you over)
   coins([138, 16], [147, 16], [156, 16]);
   block(161, 175, 18, 27);
   ent('check', 168, 17); crate(173, 17);
@@ -477,7 +477,7 @@ function theStockade() {
   for (const x of [256, 266, 276, 286]) G.ent('torch', x, 24);
   G.ent('deco', 254, 24, { kind: 'skullPile', v: 0 }); G.ent('deco', 281, 24, { kind: 'skullPile', v: 1 });
   G.ent('sprig', 258, 24, { face: -1 }); G.ent('barrel', 262, 24); G.crate(264, 24); G.ent('sapper', 270, 24, { face: -1 });
-  G.ent('sprig', 277, 24, { face: -1 }); // (a bed of spikes under a roof you cannot jump in was here: no way past it but through) G.ent('barrel', 279, 24); G.crate(281, 24); G.crate(281, 23);
+  G.ent('sprig', 277, 24, { face: -1 }); /* (a bed of spikes under a roof you cannot jump in was here: no way past it but through) */ G.ent('barrel', 279, 24); G.crate(281, 24); G.crate(281, 23);
   G.ent('sapper', 284, 24, { face: -1 }); G.ent('brute', 288, 24, { face: -1 });
   G.coins([255, 23], [260, 23], [268, 23], [275, 22], [283, 23], [289, 23]);
   G.ent('check', 292, 19); G.ent('torch', 293, 19);
@@ -543,7 +543,7 @@ function sporewood() {
   // ---- 3. The lurker grove: some of the mushrooms are hungry ----
   ent('check', 63, 11);
   ent('lurker', 70, 11); ent('sporeling', 74, 11, { face: -1 }); ent('puffball', 76, 11); ent('lurker', 79, 11); ent('roller', 85, 11, { face: -1 });
-  ent('glow', 66, 11); ent('glow', 83, 11); ent('lurker', 87, 11); bouncer(90, 11); shelf(91, 7, 3); coins([91, 6], [92, 6], [93, 6]); ent('relic', 92, 6, { kind: 'lantern' }); // the grove cache ent('sporeling', 91, 11, { face: -1 }); ent('puffball', 94, 11); ent('glow', 97, 11);
+  ent('glow', 66, 11); ent('glow', 83, 11); ent('lurker', 87, 11); bouncer(90, 11); shelf(91, 7, 3); coins([91, 6], [92, 6], [93, 6]); ent('relic', 92, 6, { kind: 'lantern' }); /* the grove cache */ ent('sporeling', 91, 11, { face: -1 }); ent('puffball', 94, 11); ent('glow', 97, 11);
   coins([72, 9], [81, 9], [89, 9]);
 
   // ---- 4. Shelf climb under the shaman; shelves snap under you ----
