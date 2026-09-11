@@ -1407,7 +1407,7 @@ function stormhold() {
   // the second span: long, watched from both ends, and a cutter on the far post
   block(151, 152, 32, 45); block(178, 179, 32, 45);
   span(153, 177, 32, { sway: 1 });
-  ent('cutter', 177, 31, { face: -1, bridge: 153 });
+  ent('stormshaman', 177, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
   ent('archer', 151, 30, { face: 1, fire: true }); ent('rockgoblin', 179, 30, { face: -1 });
   ent('sign', 148, 31, { text: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE SHIELD CARRIES.' });
   ent('deco', 160, 31, { kind: 'lanternPost' }); ent('deco', 170, 31, { kind: 'lanternPost' });
@@ -1442,7 +1442,7 @@ function stormhold() {
   // a swaying span with a cutter, over the drop, to the last gate
   block(251, 252, 30, 45); block(274, 275, 30, 45);
   span(253, 273, 30, { sway: 2, give: true });
-  ent('cutter', 273, 29, { face: -1, bridge: 253 }); ent('harpy', 262, 20);
+  ent('stormshaman', 273, 29, { face: -1 }); ent('harpy', 262, 20);
   ent('archer', 251, 29, { face: 1, fire: true });
   floor(276, 300, 30); ent('sprig', 284, 29, { face: -1 }); ent('shield', 294, 29, { face: -1 });
   ent('silver', 288, 25); plat(286, 26, 4); coins([280, 29], [288, 25], [296, 29]);
@@ -1869,14 +1869,13 @@ function galeMoor() {
   // ---- 14. THE SUMMIT: three standing stones and two ledges in a ring of thorns. The shaman blinks between
   // them and throws the sky at you. The kite's string goes over the near edge and puts you down on it. ----
   block(860, 907, 13, 29);
-  spikes(903, 904, 12);
   pillar(866, 12, 12); pillar(868, 10, 12); pillar(882, 4, 12); pillar(897, 8, 12);
   plat(875, 7, 2); plat(890, 6, 2);
   ent('vent', 878, 12, { period: 100, on: 100, h: 108, wind: true, w: 18 }); ent('vent', 893, 12, { period: 100, on: 100, h: 94, wind: true, w: 18 }); // always on: the question is never WHEN, only where
   gusts.push({ x0: 861 * TS, x1: 906 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
   ent('flagpost', 865, 12); ent('flagpost', 901, 12);
   ent('windcaller', 882, 3);
-  ent('sign', 870, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. THE UPDRAFTS NEVER STOP: RIDE ONE UP AND STEER ONTO HIS STONE. STRIKE HIM TWICE AND HE IS GONE AGAIN. WHEN HE CALLS THE WIND, THE THORNS ARE WAITING.' });
+  ent('sign', 870, 12, { text: 'THE SHAMAN OF THE MOOR. HE BLINKS FROM STONE TO STONE AND THROWS THE SKY AT YOU. STRIKE A BOLT, OR TAKE IT ON YOUR SHIELD, AND IT GOES BACK AT HIM AND KNOCKS HIM OFF HIS STONE. EVERY THIRD TIME HE COMES DOWN TO THE GROUND TO GATHER SOMETHING BIG: THAT IS YOUR MOMENT.' });
   ent('check', 864, 12); ent('gate', 905, 12);
   const roosts = [[868, 9], [882, 3], [897, 7], [875, 6], [890, 5]]; // where he stands: a stone's top, a ledge
   for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; } // the moor's wind lifts you well clear of whatever it is meant to lift you onto
