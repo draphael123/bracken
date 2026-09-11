@@ -880,15 +880,16 @@ function screePath() {
   ent('rockfall', 281, 2, { every: 2.7 });
   coins([278, 16], [282, 15], [282, 12]);
   ent('sprig', 290, 8, { face: -1 }); ent('deco', 288, 8, { kind: 'stone' });
-  ent('check', 294, 8);
 
   // ---- 5b. THE GULLY: the last of the open hill before the fold. ----
-  ent('deco', 299, 8, { kind: 'cairn' }); ent('deco', 306, 8, { kind: 'stone', v: 1 });
-  ent('harpy', 302, 2); ent('goat', 304, 8, { face: -1 });
-  coins([300, 7], [305, 7]);
+  ent('deco', 299, 8, { kind: 'cairn' }); ent('deco', 304, 7, { kind: 'stone', v: 1 });
+  ent('harpy', 295, 2); ent('goat', 293, 8, { face: -1 });
+  coins([296, 7], [302, 6]);
+  // the Ram Lord's stile: a lip of rock one step up outside the fold gate. The goats can't take a step, the harpies don't come this far: a quiet place to stand before the fight.
+  block(300, 311, 8, 8); ent('check', 308, 7);
 
   // ---- 6. THE FOLD: the Ram Lord's walled pasture on the plateau ----
-  ent('sign', 296, 8, { text: 'THE RAM LORD. HIS HIDE TURNS STEEL. A GREEN RING UNDER HIM MEANS HE IS DAZED: WHEN HE HITS THE WALL, AND FOR A BREATH WHEN HE LANDS FROM A LEAP. CUT HIM THEN. HE FEINTS: THE FIRST CHARGE MAY STOP SHORT. HE LEAPS: WATCH THE SHADOW. HE TOSSES.' });
+  ent('sign', 307, 7, { text: 'THE RAM LORD. HIS HIDE TURNS STEEL. A GREEN RING UNDER HIM MEANS HE IS DAZED: WHEN HE HITS THE WALL, AND FOR A BREATH WHEN HE LANDS FROM A LEAP. CUT HIM THEN. HE FEINTS: THE FIRST CHARGE MAY STOP SHORT. HE LEAPS: WATCH THE SHADOW. HE TOSSES.' });
   ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 327, 8, { kind: 'foldGate' });
   ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 327, 8, { kind: 'cairn' });
   ent('deco', 320, 8, { kind: 'bothy' }); ent('deco', 315, 8, { kind: 'fence', v: 0 }); ent('deco', 324, 8, { kind: 'fence', v: 1 }); ent('deco', 318, 8, { kind: 'cart' }); // the fold: a shepherd's hut, hurdles, a cart. Walls to run him into and nothing to hide on
