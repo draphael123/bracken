@@ -1157,7 +1157,7 @@ function theSunspire() {
   ent('deco', 16, 145, { kind: 'cairn' }); ent('sprig', 30, 145, { face: -1 });
   spires(145, false, 22, 38, 52); spires(146, true, 28, 46);
   ent('check', 20, 145); coins([12, 144], [26, 144], [44, 144]);
-  ent('sign', 60, 145, { text: 'UP IS THE ONLY WAY OFF THIS. DO NOT STAND ANYWHERE ADMIRING THE VIEW.' });
+  ent('sign', 62, 145, { text: 'THE MOUNTAIN IS HOLLOW IN PLACES. WHERE THE GLASS LIES FLAT IN THE ROCK THERE IS ROOM UNDER IT. STAND ON IT AND FIND OUT WHAT FOR. IT GROWS BACK, AND YOU CAN JUMP UP THROUGH IT.' });
 
   // ---- Tier 1. THE LOWER FACE ----
   const s1 = climb(146, 124, 30, 70, 34, 15);
@@ -1165,7 +1165,7 @@ function theSunspire() {
   ent('rockgoblin', 20, 123, { face: 1 }); ent('rockgoblin', 74, 123, { face: -1 });
   ent('bat', 44, 116); ent('grub', 50, 123, { face: -1 });
   ent('sign', 6, 123, { text: 'THE LOWER FACE. THE CRYSTAL RUNS ARE THE QUICK WAY. THE HARPIES KNOW YOU CANNOT STOP ON THEM.' });
-  ent('check', 8, 123); coins([21, 122], [75, 122]); ent('silver', 48, 123);
+  ent('check', 8, 123); coins([21, 122], [75, 122]);
   ent('sign', 78, 123, { text: 'A CRYSTAL YOU STRIKE BREAKS WHEN YOU SAY SO, AND WHAT COMES OFF IT FALLS ON WHATEVER IS UNDER IT. THERE IS USUALLY SOMETHING UNDER IT.' });
 
   // ---- Tier 2. THE ORGAN ----
@@ -1179,7 +1179,7 @@ function theSunspire() {
   const s3 = climb(104, 84, 20, 76, 30, 35);
   ent('harpy', 40, 78); ent('rockgoblin', 66, 83, { face: -1 }); ent('shardling', 30, 83, { face: 1 });
   ent('sign', 62, 83, { text: 'THE LONG SHELF. THIRTY-FIVE ACROSS AND NOTHING UNDER IT. RUN.' });
-  ent('check', 66, 83); coins([32, 83], [44, 83], [56, 83]);
+  ent('check', 74, 83); coins([32, 83], [44, 83], [56, 83]);
   ent('stray', 12, 83, { kind: 'shard' });
 
   // ---- Tier 3. THE CLOUD LINE ----
@@ -1192,13 +1192,12 @@ function theSunspire() {
   // ---- Tier 4. THE GLARE ----
   const s5 = climb(CLOUD, 56, 20, 76, 28, 15);
   ent('shardling', 30, 55, { face: 1 }); ent('shardling', 48, 55, { face: -1 }); ent('harpy', 62, 50);
-  ent('silver', 44, 55); coins([28, 55], [60, 55]); ent('check', 10, 55);
+  coins([28, 55], [60, 55], [16, 55], [21, 55]); ent('check', 10, 55); ent('deco', 4, 55, { kind: 'cairn' });
   ent('sign', 6, 55, { text: 'THE GLARE. THE ROCK LEDGES ARE THE ONLY REST UP HERE AND THERE ARE NOT MANY.' });
 
   const s6 = climb(56, 36, 18, 78, 26, 15);
   ent('harpy', 54, 30); ent('shardling', 60, 35, { face: -1 });
   ent('check', 12, 35); coins([32, 35], [66, 35]);
-  ent('stray', 70, 35, { kind: 'shard' });
 
   // ---- Tier 5. THE CROWN. The peak is a shelf like every other, with the way up through the middle. ----
   const s7 = climb(36, 30, 30, 62, 38, 11);
@@ -1217,6 +1216,59 @@ function theSunspire() {
   ent('check', 18, 29); ent('gate', 92, 29);
   ent('silver', 90, 26);
   ent('stray', 24, 25, { kind: 'shard' });
+
+  // ---- THE WALL ENDS. Every tier is a stair up the middle and a floor out to both walls, and a
+  // floor that runs forty tiles into a wall is a dead end whatever is on it. So the ends are places:
+  // GEODES (a hollow under a crystal lid: you can see what is in it, you stand on the lid until it
+  // goes, and you jump out up through it once it has grown back - the same three-row jump as every
+  // shelf), CHIMNEYS (two rock faces two apart, kicked up, a slow way to the next tier's far end
+  // that does not break under you), an EYRIE up a goat path, and the hollows in the crown.
+  const geode = (x0, x1, top) => {
+    block(x0 - 1, x1 + 1, top + 3, top + 3);                   // its floor hangs a row under the shelf
+    for (let y = top + 1; y <= top + 2; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR);
+    cryst(x0 + 1, x1 - x0 - 1, top);                           // the lid, flush in the rock
+  };
+  const chimney = (floorRow, topBand) => {                     // up the right wall, floorRow to topBand
+    for (let y = topBand; y <= floorRow; y++) set(W - 2, y, T.CLIMB);
+    for (let y = topBand; y <= floorRow - 5; y++) set(W - 5, y, T.CLIMB); // hangs short: walk in under it
+    for (let y = topBand; y <= topBand + 2; y++) { set(W - 4, y, T.AIR); set(W - 3, y, T.AIR); }
+    plat(W - 4, topBand, 2);                                   // a stone lip over the top: walk over it, jump up through it
+    coins([W - 4, floorRow - 4], [W - 3, floorRow - 9], [W - 4, floorRow - 14]);
+  };
+
+  // tier 0: a camp where somebody gave up, and the first geode, where nothing can go wrong
+  geode(66, 74, 146);
+  coins([70, 145], [67, 148], [69, 148], [71, 148], [73, 148]);
+  ent('deco', 84, 145, { kind: 'tent' }); ent('deco', 89, 145, { kind: 'lanternPost' });
+  ent('deco', 92, 145, { kind: 'bones', v: 1 }); coins([80, 145], [87, 145]);
+
+  // tier 1 -> tier 2: the first chimney, from the far end of the lower face to the far end of the organ
+  chimney(123, 104);
+  ent('sign', 88, 123, { text: 'A CHIMNEY. HOLD INTO THE ROCK AND IT HOLDS YOU; JUMP AND YOU KICK OFF IT. SLOWER THAN THE GLASS, BUT IT IS STILL THERE WHEN YOU COME BACK DOWN.' });
+  ent('silver', 86, 103); ent('deco', 80, 103, { kind: 'bones' }); coins([76, 103], [83, 103]);
+
+  // tier 2, the other end: a geode under the organ's first sign
+  geode(8, 16, 104);
+  coins([12, 103], [9, 106], [11, 106], [13, 106], [15, 106]);
+
+  // tier 3: the long shelf ends in the biggest geode on the mountain, with a silver in it
+  geode(78, 90, 84);
+  ent('silver', 84, 86); coins([79, 86], [81, 86], [87, 86], [89, 86]);
+
+  // tier 4: THE EYRIE. A goat path up the right wall, off the glass, to a shelf with a shard on it
+  for (let y = 62; y <= CLOUD - 1; y++) set(W - 2, y, T.CLIMB);
+  plat(84, 73, 3); plat(89, 71, 3); plat(84, 69, 3); plat(89, 67, 3); plat(80, 65, 14);
+  coins([90, 70], [85, 68], [90, 66]);
+  ent('stray', 88, 64, { kind: 'shard' }); ent('deco', 83, 64, { kind: 'bones' }); ent('harpy', 78, 60);
+
+  // tier 5 -> tier 6: the second chimney, the only way up the glare that is not glass
+  chimney(55, 36);
+  coins([70, 55], [78, 55], [84, 55]);
+
+  // tier 6: the crawl under the crown ends in a hollow either side. The chimney comes up into the right one.
+  for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
+  coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
+  ent('deco', 6, 35, { kind: 'cairn' }); coins([4, 35], [9, 35], [15, 35]);
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 145 }, pools: [], falls: [], moversExtra: movers,

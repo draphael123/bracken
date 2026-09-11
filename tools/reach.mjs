@@ -56,6 +56,10 @@ for (const lv of LEVELS) {
     for (const dx of [-JUMP_ACROSS, -2, 0, 2, JUMP_ACROSS]) { let ny = y;
       while (ny < H - 1 && !footing.has(key(x + dx, ny))) ny++;
       if (footing.has(key(x + dx, ny))) push(x + dx, ny); }
+    // crystal gives way under you, so a crystal floor is also a way DOWN (the Sunspire's geodes)
+    if (at(x, y + 1) === T.CRYST) { let ny = y + 1;
+      while (ny < H - 1 && !footing.has(key(x, ny))) ny++;
+      if (footing.has(key(x, ny))) push(x, ny); }
   }
 
   // is everything you are meant to touch inside the fill?
