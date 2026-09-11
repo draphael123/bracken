@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
+const TRACKS = { theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -399,5 +399,5 @@ const HURT = {
 SFX.dieOf = t => DIE[t] || null;
 SFX.hurtOf = t => HURT[t] || null;
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'stormhold', 'boss', 'boss2', 'king', 'roc', 'select', 'ending'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'stormhold', 'highcrown', 'boss', 'boss2', 'king', 'roc', 'queen', 'select', 'ending'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];

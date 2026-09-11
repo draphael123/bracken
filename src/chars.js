@@ -1242,6 +1242,104 @@ export function bakeShardling() {
 // she sheds them. 60x44, facing right, anchored at her talons. Frames: 0-2 hover (wings up, level,
 // down), 3 screech, 4 dive, 5 gust (wings swept forward), 6 grounded (wings down in the glass),
 // 7 stagger (head thrown up), 8 down.
+// THE SENTRY - one of the Queen's castle watch: a kettle helm, her purple and gold, and legs that are for
+// running to a bell. 10x10. Frames: walk1, walk2, alarm (arms up, shouting), run1, run2.
+export function bakeSentry() {
+  const QP = Object.assign({}, EP, { b: '#5a2a7a', B: '#3a1850', y: '#e0b040' });
+  const f = rows => outline(fromGrid(rows, QP, 1), OUT);
+  const helm = ['...SSSS...', '..SssssS..', '.SSSSSSSS.'], head = ['.geoggeog.', '.gggggggg.', '..gGGGGg..'], tab = ['..bbybbb..', '..bBbbBb..'];
+  const L1 = ['..GG..GG..', '.GG....GG.'], L2 = ['..GG.GG...', '..GG..GG..'], R1 = ['.GG....GG.', 'GG......GG'], R2 = ['...GGGG...', '..GG..GG..'];
+  const alarm = f(['g..SSSS..g', '.gSssssSg.', '.SSSSSSSS.', '.geoggeog.', '.gggoogg..', '..gGGGGg..', ...tab, ...L1]);
+  return pack([f([...helm, ...head, ...tab, ...L1]), f([...helm, ...head, ...tab, ...L2]), alarm, f([...helm, ...head, ...tab, ...R1]), f([...helm, ...head, ...tab, ...R2])], 6, 11, 8, 10);
+}
+// THE GOBLIN QUEEN - old, huge and clever. An iron crown with red stones, ears like a bat's, a hooked nose
+// and a grin with two tusks, an ermine collar over a gown of the Queen's purple, a cape the colour of old
+// blood behind it, and an iron sceptre the length of a knight. 56x72, facing right, anchored at her feet.
+// Frames: 0 seated, 1 seated pointing, 2 seated throwing, 3 stand, 4 walk1, 5 walk2, 6 slam raised,
+// 7 slam down, 8 sweep, 9 charge, 10 dazed, 11 leap, 12 throw slate, 13 struck (the storm in her crown), 14 down.
+export function bakeGoblinQueen() {
+  const C = { g: '#6faa4a', G: '#3f6e2c', d: '#2c4a1e', p: '#5a2a7a', P: '#3a1850', q: '#7a3a9a', y: '#e0b040', Y: '#a0781c', w: '#f2ece0', k: '#1b1626', r: '#7a1c24', R: '#4a0e14',
+    i: '#5a6270', I: '#3a3e48', j: '#8a919c', m: '#c9463d', e: '#ffd36b', t: '#f3f0d2', n: '#9a5aa8' };
+  const W = 56, H = 72;
+  const frame = ({ sit = 0, lean = 0, dy = 0, flare = 0, arm = [34, 26, 42, 30], arm2 = null, rod = null, head = 'grin', tilt = 0, feet = [[24, 58], [31, 58]], stars = 0, rot = 0 }) => {
+    const [c, g] = canvas(W, H);
+    g.translate(0, 12); // headroom for the crown's points
+    g.save(); g.translate(28, 58 + dy); g.rotate(rot); g.translate(-28, -58);
+    const poly = (pts, k) => fillPoly(g, pts.map(([x, y]) => [x + (y < 34 ? lean * (34 - y) / 20 : 0), y]), C[k]);
+    const P1 = (x, y, k) => px(g, Math.round(x + (y < 34 ? lean * (34 - y) / 20 : 0)), Math.round(y), C[k]);
+    // the cape behind everything
+    poly([[18, 24], [34, 24], [38 + flare, 56 - sit], [14 - flare, 56 - sit]], 'r'); poly([[16, 30], [20, 30], [16 - flare, 56 - sit], [13 - flare, 56 - sit]], 'R');
+    // the sceptre when it is carried behind her
+    const rodDraw = () => { if (!rod) return; const [x0, y0, x1, y1] = rod; line(g, x0, y0, x1, y1, C.I, 3); line(g, x0, y0, x1, y1, C.i, 1);
+      const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0); circle(g, x1, y1, 4, C.I); circle(g, x1, y1, 3, C.j); px(g, x1, y1, C.n); px(g, x1 + 1, y1 - 1, C.q);
+      for (const [a, b] of [[-5, 0], [5, 0], [0, -5], [0, 5]]) px(g, x1 + a, y1 + b, C.I); };
+    if (rod && rod[4] === 'back') rodDraw();
+    // the gown: a bell of purple from the waist, gold at the hem and down the front
+    for (const [fx, fy] of feet) { rect(g, fx - 2, fy - 1, 4, 2, C.k); }
+    const hem = 55 - sit, hw = 16 + flare;
+    poly([[20, 32], [36, 32], [28 + hw, hem], [28 - hw, hem]], 'p');
+    poly([[26, 32], [30, 32], [30 + hw * 0.18, hem], [26 - hw * 0.18, hem]], 'P');
+    for (let x = Math.round(28 - hw); x <= Math.round(28 + hw); x++) { px(g, x, hem, C.y); if (x % 3 === 0) px(g, x, hem - 1, C.Y); }
+    line(g, 28, 33, 28, hem - 1, C.y, 1);
+    if (sit) { poly([[22, 40], [42, 40], [42, 46], [22, 46]], 'q'); line(g, 22, 40, 42, 40, C.y, 1); } // her knees, over the throne's edge
+    // the bodice and the ermine
+    poly([[20, 21], [36, 21], [37, 33], [19, 33]], 'q'); for (let yy = 23; yy < 32; yy += 2) { P1(27, yy, 'y'); P1(29, yy, 'y'); }
+    poly([[15, 18], [41, 18], [39, 24], [17, 24]], 'w'); for (const [x, y] of [[19, 20], [24, 22], [30, 20], [35, 22], [38, 19], [21, 23]]) P1(x, y, 'k');
+    // the far arm
+    if (arm2) { const [x0, y0, x1, y1] = arm2; line(g, x0, y0, x1, y1, C.G, 4); circle(g, x1, y1, 2, C.G); }
+    // the head: big, green, bat ears, a hook of a nose, yellow eyes, a grin with two tusks
+    const hx = 28 + lean, hy = 12;
+    poly([[hx - 7, hy - 2], [hx - 16, hy - 6], [hx - 8, hy + 3]], 'g'); poly([[hx + 7, hy - 2], [hx + 16, hy - 6], [hx + 8, hy + 3]], 'g'); P1(hx - 12, hy - 3, 'G'); P1(hx + 12, hy - 3, 'G');
+    ellipse(g, hx, hy + 1, 8, 7.5, C.g); ellipse(g, hx + 1, hy + 4, 6, 3.5, C.G);
+    if (head === 'daze') { P1(hx - 3, hy - 1, 'k'); P1(hx - 2, hy, 'k'); P1(hx - 2, hy - 2, 'k'); P1(hx + 3, hy - 1, 'k'); P1(hx + 4, hy, 'k'); P1(hx + 4, hy - 2, 'k'); }
+    else { rect(g, hx - 4, hy - 1, 3, 2, C.e); rect(g, hx + 2, hy - 1, 3, 2, C.e); P1(hx - 2, hy - 1, 'm'); P1(hx + 4, hy - 1, 'm'); line(g, hx - 5, hy - 3, hx - 1, hy - 2, C.d, 1); line(g, hx + 6, hy - 3, hx + 2, hy - 2, C.d, 1); }
+    poly([[hx + 1, hy], [hx + 6, hy + 3], [hx + 2, hy + 4]], 'G'); // the nose
+    if (head === 'shout') { rect(g, hx - 3, hy + 5, 7, 3, C.k); P1(hx - 2, hy + 5, 't'); P1(hx + 3, hy + 5, 't'); }
+    else { line(g, hx - 4, hy + 6, hx + 4, hy + 6, C.k, 1); P1(hx - 3, hy + 5, 't'); P1(hx + 3, hy + 5, 't'); P1(hx - 3, hy + 4, 't'); P1(hx + 3, hy + 4, 't'); }
+    P1(hx - 6, hy + 3, 'd'); P1(hx + 5, hy - 4, 'd');
+    // the crown: iron, five points, a red stone in each
+    g.save(); g.translate(hx, hy - 4); g.rotate(tilt);
+    fillPoly(g, [[-8, 0], [8, 0], [9, -3], [-9, -3]], C.I); fillPoly(g, [[-8, -3], [8, -3], [8, -5], [-8, -5]], C.y);
+    for (const k of [-8, -4, 0, 4, 8]) { fillPoly(g, [[k - 2, -5], [k + 2, -5], [k, -11 - (k === 0 ? 3 : 0)]], C.i); px(g, k, -7, C.m); }
+    g.restore();
+    if (stars) for (let i = 0; i < 3; i++) { const a = i * 2.1 + stars; P1(hx + Math.cos(a) * 11, hy - 12 + Math.sin(a) * 3, 'e'); }
+    // the near arm and the sceptre in it
+    if (!rod || rod[4] !== 'back') rodDraw();
+    { const [x0, y0, x1, y1] = arm; line(g, x0, y0, x1, y1, C.q, 5); line(g, x0, y0, x1, y1, C.g, 3); circle(g, x1, y1, 3, C.g); } // a sleeve of the gown to the wrist
+    g.restore();
+    outline(c, OUT);
+    return c;
+  };
+  const F = [
+    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 25, 40, 36], rod: [40, 44, 44, 12], flare: 2 }),                                    // 0 seated
+    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 24, 50, 18], rod: [18, 46, 16, 14, 'back'], arm2: [22, 25, 18, 34], head: 'shout', flare: 2 }), // 1 pointing
+    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 24, 44, 6], rod: [18, 46, 16, 14, 'back'], head: 'shout', flare: 2 }),              // 2 throwing
+    frame({ arm: [34, 25, 40, 36], rod: [40, 50, 44, 14] }),                                                                                   // 3 stand
+    frame({ arm: [34, 25, 41, 35], rod: [42, 48, 47, 14], feet: [[21, 58], [34, 58]], lean: 1 }),                                                // 4 walk1
+    frame({ arm: [34, 25, 39, 36], rod: [40, 50, 43, 15], feet: [[26, 58], [30, 58]], dy: -1 }),                                                // 5 walk2
+    frame({ arm: [34, 24, 36, 4], arm2: [22, 24, 32, 4], rod: [34, 6, 12, -2], head: 'shout', lean: -2 }),                                     // 6 slam raised
+    frame({ arm: [34, 26, 48, 44], arm2: [22, 26, 44, 44], rod: [44, 42, 54, 56], head: 'shout', lean: 4, dy: 2, flare: 2 }),                 // 7 slam down
+    frame({ arm: [34, 26, 50, 38], rod: [30, 40, 55, 50], lean: 3, flare: 3, head: 'shout' }),                                                  // 8 sweep
+    frame({ arm: [34, 26, 48, 30], rod: [32, 32, 56, 30], lean: 6, flare: 4, head: 'shout', feet: [[18, 58], [36, 58]] }),                     // 9 charge
+    frame({ arm: [34, 26, 38, 40], rod: [14, 56, 50, 50, 'back'], head: 'daze', tilt: 0.45, stars: 1, lean: -1 }),                             // 10 dazed
+    frame({ arm: [34, 24, 44, 12], rod: [40, 20, 50, -2], flare: 7, feet: [[24, 54], [31, 54]], dy: -3, head: 'shout' }),                       // 11 leap
+    frame({ arm: [34, 24, 46, 8], arm2: [22, 25, 18, 34], rod: [18, 50, 14, 16, 'back'], head: 'shout' }),                                     // 12 throw slate
+    frame({ arm: [34, 24, 46, 10], arm2: [22, 24, 10, 10], rod: [14, 56, 50, 50, 'back'], head: 'daze', tilt: -0.3, flare: 5, stars: 2 }),      // 13 struck
+    frame({ arm: [34, 26, 46, 50], rod: [10, 56, 52, 54, 'back'], head: 'daze', tilt: 0.9, rot: 0.2, dy: 3, flare: 6 }),                        // 14 down
+  ];
+  return pack(F, 28, 70, 30, 50);
+}
+// THE THRONE - black oak and old iron, purple cushions, a skull on each post. 40x46, anchored at its foot.
+export function bakeThrone() {
+  const [c, g] = canvas(40, 46);
+  rect(g, 4, 4, 32, 36, '#3a2214'); rect(g, 6, 6, 28, 32, '#5a3a24'); rect(g, 9, 9, 22, 26, '#5a2a7a'); rect(g, 10, 10, 20, 2, '#7a3a9a');
+  for (let y = 12; y < 34; y += 4) rect(g, 18, y, 4, 2, '#e0b040');
+  rect(g, 2, 30, 36, 6, '#3a2214'); rect(g, 4, 30, 32, 2, '#7a4a2a'); rect(g, 6, 36, 4, 10, '#3a2214'); rect(g, 30, 36, 4, 10, '#3a2214');
+  for (const x of [1, 33]) { rect(g, x, 0, 6, 40, '#2a1a10'); circle(g, x + 3, 2, 3, '#e8dcc0'); px(g, x + 2, 2, '#1b1626'); px(g, x + 4, 2, '#1b1626'); }
+  rect(g, 12, 0, 16, 4, '#5a6270'); for (const k of [13, 19, 25]) { fillPoly(g, [[k, 0], [k + 3, 0], [k + 1.5, -4]], '#5a6270'); px(g, k + 1, 1, '#c9463d'); }
+  return outline(c, OUT);
+}
+
 export function bakeRoc() {
   const C = { h: '#8a8478', H: '#5a5448', d: '#3a3630', f: '#e8e0d0', F: '#b8b0a0', m: '#c9a83a', M: '#8a6a1a', c: '#bfe6f5', C: '#eefaff', q: '#7aa8c8', e: '#ff4a3a' };
   const W = 60, H = 44;

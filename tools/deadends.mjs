@@ -6,6 +6,7 @@
 // "Nothing" means no coin, silver, quest item, relic, key, sign, checkpoint, NPC or doorway.
 // usage: node tools/deadends.mjs [levelId] [minTail=8]
 import { LEVELS, T } from '../src/level.js';
+import { floodReach } from '../src/reachcore.js';
 
 const want = process.argv[2] && isNaN(+process.argv[2]) ? process.argv[2] : null;
 const MIN = +(process.argv.find(a => /^\d+$/.test(a)) || 8);
@@ -46,10 +47,12 @@ for (const lv of LEVELS) {
   const out = [];
   // a boss floor is walled in on purpose: the fight is what is at the end of it
   const TSZ = 16, rooms = [L.arena, L.mini].filter(Boolean);
-  const inRoom = (x, y) => rooms.some(A => x * TSZ >= A.x0 - TSZ && x * TSZ <= A.x1 + TSZ && (A.y0 === undefined || (y * TSZ >= A.y0 && y * TSZ <= A.y1)) && (A.y0 !== undefined || Math.abs(y * TSZ - (A.floor - TSZ)) <= 4 * TSZ));
+  const inRoom = (x, y) => rooms.some(A => x * TSZ >= A.x0 - TSZ && x * TSZ <= A.x1 + TSZ && (A.y0 === undefined || (y * TSZ >= A.y0 && y * TSZ <= A.y1)) && (A.y0 !== undefined || Math.abs(y * TSZ - (A.floor - TSZ)) <= 4 * TSZ || (A.roof !== undefined && Math.abs(y * TSZ - (A.roof - TSZ)) <= 4 * TSZ)));
+  // a run nobody can get onto is not a dead end, it is a roof (reach.mjs says if anything that matters is up there)
+  const R = floodReach(L, T), gotOnto = r => R.assisted || [...Array(r.x1 - r.x0 + 1)].some((_, k) => R.seen.has((r.x0 + k) + ',' + r.y));
   for (const r of runs) {
     if (r.x1 - r.x0 + 1 < MIN) continue;
-    if (inRoom((r.x0 + r.x1) >> 1, r.y)) continue;
+    if (inRoom((r.x0 + r.x1) >> 1, r.y) || !gotOnto(r)) continue;
     const c = [...exitCols(r)].sort((a, b) => a - b);
     const tails = [];
     if (!c.length) tails.push([r.x0, r.x1, 'a closed run with no way on at all']);
