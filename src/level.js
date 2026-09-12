@@ -1947,6 +1947,11 @@ function trialYard(hero) {
       ['firedrop', 2, 'THE FIREDROP. JUMP, THEN DOWN+X IN THE AIR: A FIREBALL GOES DOWN AHEAD OF YOU. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]]],
       ['heavyblow', 2, 'THE BELLOWS. HOLD X INSTEAD OF TAPPING IT: THE FLAME GATHERS BACK AND GOES OUT IN A CONE THAT THROWS THEM DOWN AND SETS THEM ALIGHT. THE BAR OVER YOUR HEAD SHOWS IT COMING. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]]],
       ['dodge', 2, 'NO SHIELD. YOU DODGE: V. ROLL TWICE. YOUR OWN FIRE NEVER BURNS YOU.', []]],
+    reaper: [
+      ['hit', 3, 'THE SWATHE. X. THE EDGE IS A BODY-LENGTH FROM HIS HANDS, SO IT CUTS EVERYTHING IN FRONT OF HIM AT ONCE AND HALF AS HARD AS A SWORD EACH - AND THE INSIDE OF THE ARC BARELY CUTS AT ALL, SO KEEP A STEP OF ROOM. HIT THE STRAW MEN THREE TIMES.', [['dummy', 16], ['dummy', 20]]],
+      ['heavyblow', 2, 'THE REAPING. HOLD X: HE PLANTS AND TAKES IT ROUND IN A FULL CIRCLE, BOTH SIDES OF HIM, THROUGH ANY GUARD - AND WHATEVER IT KILLS IS DRAGGED TO HIS FEET. LAND IT TWICE.', [['dummy', 13], ['dummy', 21]]],
+      ['pogo', 2, 'THE CULL. JUMP, THEN DOWN+X: HIS OWN WEIGHT DOES ALMOST NOTHING, BUT A SHADE TEARS OUT OF WHATEVER HE LANDS ON AND FIGHTS FOR HIM. YOU STILL BOUNCE. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]]],
+      ['dodge', 2, 'THE PASSING. V. HE DOES NOT ROLL - HE GOES THIN AND STEPS THROUGH, AND NOTHING TOUCHES HIM WHILE HE DOES. ROLL TWICE.', []]],
     pirate: [
       ['hit', 3, 'THE CUTLASS. X, AND KEEP GOING: HE GETS A RUN OF FIVE WHERE THE REST OF THEM GET THREE, AND NONE OF THEM WEIGH ANYTHING. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]]],
       ['parry', 3, 'NO SHIELD. TAP C AND THE CUTLASS GOES ACROSS FOR A FIFTH OF A SECOND: WHAT IT CATCHES IT TURNS COMPLETELY, AND THE JOLT SEATS A BALL IN THE PISTOL. TURN THREE ARROWS.', [['archer', 22]]],
@@ -3442,6 +3447,7 @@ export const LEVELS = [
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
   { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
   { id: 'trial_pirate', name: "THE FREEBOOTER'S TRIAL", sub: 'cutlass, pistol and hook', build: () => trialYard('pirate'), hidden: true },
+  { id: 'trial_reaper', name: "THE REAPER'S TRIAL", sub: 'scythe, grave and shade', build: () => trialYard('reaper'), hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
