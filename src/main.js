@@ -2373,7 +2373,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
-  e.hp -= dmg; e.flash = 0.12; if (e.t !== 'queen') e.stagger = 0.35; e.sq = 0.16;
+  e.hp -= dmg; e.flash = 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen') e.stagger = 0.35; e.sq = 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -6294,7 +6294,11 @@ function poseOf(e, wind) {
   else if (e.relT > 0) { const k = e.relT / 0.18; o.sy *= 1 + 0.12 * k; o.sx *= 1 - 0.08 * k; }
   else if (!mv && !fly) { const b = Math.sin(e.anim * 2.8 + seed); o.sy *= 1 + 0.03 * b; o.sx *= 1 - 0.015 * b; }
   if (mv && !fly) o.dy -= Math.round(Math.abs(Math.sin(e.anim * 9 + seed)) * 1.2);
-  if (e.flash > 0) { o.dx -= (e.face || 1) * 1.5; o.sy *= 0.95; o.sx *= 1.04; }
+  // STRUCK: it goes with the blow, not with its own facing, and it leans off the line of it
+  if (e.flash > 0) { const k = Math.min(1, e.flash / 0.12), d = e.hitDir || -(e.face || 1);
+    o.dx += d * 3.4 * k; o.dy -= Math.round(1.5 * k); o.sy *= 1 - 0.11 * k; o.sx *= 1 + 0.13 * k; o.rot = d * 0.16 * k; }
+  // TURNED: something that whips round at speed skids a moment before it goes the other way
+  if (e.turnT > 0) { const k = e.turnT / 0.18; o.rot = (o.rot || 0) - (e.face || 1) * 0.2 * k; o.dx -= (e.face || 1) * 2.4 * k; o.sy *= 1 - 0.05 * k; }
   if (e.popT > 0) o.dy -= Math.round(Math.sin(Math.PI * (1 - e.popT / 0.35)) * 5);
   if (e.jeerT > 0) o.dy -= Math.round(Math.abs(Math.sin(e.jeerT * 13)) * 3);
   if (GOBLINISH.has(e.t) && e.hp0 && e.hp < e.hp0 * 0.35 && !wind && Math.floor(time * 24) % 3 === 0) o.dx += Math.floor(time * 48) % 2 ? 1 : -1;
@@ -6315,6 +6319,9 @@ function updateEnemies(dt) {
     { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) e.relT = 0.18; e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt);
+    if (e.turnT > 0) e.turnT = Math.max(0, e.turnT - dt);
+    if (e.pFace === undefined) e.pFace = e.face; else if (e.face !== e.pFace) { if (Math.abs(e.vx) > 18 || e.lastSpeed > 18) e.turnT = 0.18; e.pFace = e.face; }
+    e.lastSpeed = Math.abs(e.vx || 0);
     if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { e.hp -= 2; e.flash = 0.06; number(e.x, e.y - e.h - 8, 2, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
     if (e.bleed > 0) { e.bleed -= dt; e.bleedT = (e.bleedT || 0) - dt; if (e.bleedT <= 0) { e.bleedT = 0.5; if (e.alive) { e.hp -= (e.bleedN || 1); e.flash = 0.05; number(e.x, e.y - e.h - 8, e.bleedN || 1, '#c9463d'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } }
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - e.h / 2, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#8f2f28', size: 1, grav: 120 }); }
@@ -7473,11 +7480,24 @@ function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let c
 function pickFrame(set, key, frame, face) {
   const dir = face < 0 ? 'L' : 'R'; let c = key == null ? set[dir] : set[dir][key]; if (Array.isArray(c)) c = c[((frame % c.length) + c.length) % c.length]; return c;
 }
-function drawSet(set, key, frame, x, y, face, white, sx = 1, sy = 1, alpha = 1) {
+function drawSet(set, key, frame, x, y, face, white, sx = 1, sy = 1, alpha = 1, rot = 0) {
   const c = pickFrame(white ? set.white : set, key, frame, face);
   const ax = face < 0 ? c.width - set.ax : set.ax;
-  if (sx === 1 && sy === 1 && alpha === 1) { g.drawImage(c, Math.round(x - ax), Math.round(y - set.ay)); return; }
-  g.save(); g.globalAlpha = alpha; g.translate(Math.round(x), Math.round(y)); g.scale(sx, sy); g.drawImage(c, -ax, -set.ay); g.restore();
+  if (sx === 1 && sy === 1 && alpha === 1 && !rot) { g.drawImage(c, Math.round(x - ax), Math.round(y - set.ay)); return; }
+  g.save(); g.globalAlpha = alpha; g.translate(Math.round(x), Math.round(y)); if (rot) g.rotate(rot); g.scale(sx, sy); g.drawImage(c, -ax, -set.ay); g.restore();
+}
+// THE TELL IS A COLOUR. A creature winding up used to strobe white every other frame, which is the same
+// signal as being hit and reads as neither. A wind-up wears an amber rim - one hue, one meaning, on every
+// creature in the game that has a tell - drawn off its own white silhouette and kept on the canvas it came
+// from, so it is baked once per frame that ever winds up.
+const TELL_COL = '#ffd36b';
+function tellOf(c) { return c.__tell || (c.__tell = whiten(c, TELL_COL)); }
+function drawTellRim(set, frame, x, y, face, sx, sy, rot, a) {
+  const c = tellOf(pickFrame(set.white, null, frame, face)); if (!c) return;
+  const ax = face < 0 ? c.width - set.ax : set.ax;
+  g.save(); g.globalAlpha = a; g.translate(Math.round(x), Math.round(y)); if (rot) g.rotate(rot); g.scale(sx, sy);
+  for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]]) g.drawImage(c, -ax + ox, -set.ay + oy);
+  g.restore(); g.globalAlpha = 1;
 }
 // Rotated draw about the sprite's centre (for corpses).
 function drawRot(set, frame, x, y, face, rot, alpha = 1) {
@@ -8211,14 +8231,16 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
     if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
     if (e.t === 'gqueen' && e.mode === 'shadow') g.globalAlpha = 0.12; else if (e.t === 'gqueen' && e.mode === 'shadowTell') g.globalAlpha = 1 - 0.6 * Math.min(1, (0.5 - e.modeT) / 0.5);
-    const ps = poseOf(e, wind), pSX = bigF * (1 + sq * 0.22) * ps.sx, pSY = bigF * (1 - sq * 0.22) * ps.sy;
+    const ps = poseOf(e, wind), pSX = bigF * (1 + sq * 0.22) * ps.sx, pSY = bigF * (1 - sq * 0.22) * ps.sy, pRot = ps.rot || 0;
     // a bright rim behind the sprite, for anyone who loses foes against the wood
     const inDark = (L.darkZones || []).some(z => e.x > z.x0 && e.x < z.x1 && e.y > z.y0 && e.y < z.y1) || (L.pools || []).some(q => q.swim && !q.dry && e.x > q.x0 && e.x < q.x1 && e.y > q.y);
     if ((SET.rim || inDark) && sprSet && !e.harmless) { // in a dark room or under water a foe gets a rim whatever the setting says: nothing may hurt you invisibly
  const rx = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, ry = e.y - cy + bob + ps.dy; g.globalAlpha = 0.5;
-      for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, ps.face, true, pSX, pSY);
+      for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, ps.face, true, pSX, pSY, 1, pRot);
       g.globalAlpha = 1; }
-    drawSet(sprSet, null, frame, e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, e.y - cy + bob + ps.dy, ps.face, e.flash > 0 || (wind && Math.floor(e.anim * 12) % 2 === 0), pSX, pSY);
+    { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, dy0 = e.y - cy + bob + ps.dy;
+      if (wind && sprSet.white && !e.harmless) drawTellRim(sprSet, frame, dx0, dy0, ps.face, pSX, pSY, pRot, 0.55 + 0.45 * Math.sin(e.anim * 22));
+      drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0, pSX, pSY, 1, pRot); }
     g.globalAlpha = 1;
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
     if (wind) text('!', e.x - cx, e.y - e.h - 12 - cy, '#ffd36b', 'center');
