@@ -519,6 +519,26 @@ export function bakeLurker() {
   const half = sspr([...cap, '...kkkkkkkk...', '..kkeokkeokk..', '..kkkkkkkkkk..', '..kRRRRRRRRk..', '...kkkkkkkk...', '..kkkkkkkkkk..']);
   return pack([a, b, half], 8, 13, 12, 12);
 }
+// SPITCAP — a tall rooted mushroom with a bladder for a cap. It swells, then lobs a spore bomb over your head.
+// 12×14. Frames: rest, swell (the bladder up and tight), spit (the bladder collapsed and the mouth open).
+export function bakeSpitcap() {
+  const stalk = ['...kkkkkk...', '...kkkkkk...', '...kokkok...', '...kkkkkk...', '...kkkkkk...', '..kk....kk..', '.kk......kk.'];
+  const rest = sspr(['....mmmm....', '..mmmmmmmm..', '.mmmtmmmtmm.', '.MMMMMMMMMM.', ...stalk]);
+  const swell = sspr(['...mmmmmm...', '.mmmmmmmmmm.', 'mmmtmmmmtmmm', 'mmmmmmmmmmmm', '.MMMMMMMMMM.', ...stalk.slice(1)]);
+  const spit = sspr(['............', '....mmmm....', '..mmMMMMmm..', '.mmMMttMMmm.', '.MMMMMMMMMM.', ...stalk.slice(1)]);
+  return pack([rest, swell, spit], 6, 15, 12, 14);
+}
+// WEAVER — the pale spider that hangs in the fungus. Fatter and softer than a wood spider, and it spits its
+// web at you instead of dropping on you. 12×9. Frames: hang, spit, scuttle1, scuttle2.
+export function bakeWeaver() {
+  const WP = Object.assign({}, EP, { b: '#c8bcd0', B: '#8a7e9a', r: '#ff4a3a', l: '#6a6278' });
+  const w = rows => outline(fromGrid(rows, WP, 1), OUT);
+  const hang = w(['.....bb.....', '..l.bbbb.l..', '.l.bBBBBb.l.', 'l.bbrbbrbb.l', '.lbBBBBBBbl.', 'l..bbbbbb..l', '.l..bbbb..l.', 'l...l..l...l']);
+  const spit = w(['.....bb.....', '.l..bbbb..l.', 'l..bbrrbb..l', '.lbbrbbrbbl.', 'l.bBBBBBBb.l', '.l.bbbbbb.l.', 'l...bbbb...l', '.l..l..l..l.']);
+  const sc1 = w(['l....bb....l', '.l..bbbb..l.', '..lbBBBBbl..', '..bbrbbrbb..', '.lbBBBBBBbl.', 'l..bbbbbb..l', '....bbbb....', '...l....l...']);
+  const sc2 = w(['.l...bb...l.', 'l...bbbb...l', '.l.bBBBBb.l.', '..bbrbbrbb..', '..lbBBBBbl..', '.l.bbbbbb.l.', 'l...bbbb...l', '....l..l....']);
+  return pack([hang, spit, sc1, sc2], 7, 9, 10, 8);
+}
 // Spore drone — a floating puffball with a dark eye. 10×8, two frames (breathing).
 export function bakeDrone() {
   const a = sspr(['...tttt...', '..tttttt..', '.ttteottt.', '.tttttttt.', '..tttttt..', '...tttt...']);

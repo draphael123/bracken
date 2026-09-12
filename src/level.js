@@ -519,6 +519,7 @@ function sporewood() {
   const { block, floor, plat, crate, ent, coins, set } = L;
   const bouncer = (x, y) => set(x, y, T.BOUNCER);
   const shelf = (x, y, len) => { for (let i = 0; i < len; i++) set(x + i, y, T.SHELF); };
+  const web = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.WEB); }; // a curtain: cut it, or burn it
   const sleeps = [];
 
   // ---- 1. The mycelium glade: caps bounce, puffballs burst ----
@@ -528,6 +529,7 @@ function sporewood() {
   ent('npc', 11, 19, { kind: 'elder' }); // the elder myconid wants clean light
   ent('glow', 8, 19); ent('puffball', 14, 19); ent('sporeling', 18, 19, { face: -1 }); ent('puffball', 22, 19);
   bouncer(27, 19); coins([27, 15], [27, 12], [27, 9]);
+  ent('spitcap', 30, 19, { face: -1 }); ent('sign', 31, 19, { text: 'SPITCAPS ARE ROOTED: THEY THROW INSTEAD. THE BOMB IS NOTHING, THE CLOUD IT LEAVES IS SLEEP. WHEN ONE SWELLS IT IS AT ITS WEAKEST.' });
   ent('sporeling', 33, 19, { face: -1 }); ent('glow', 38, 19); ent('sign', 41, 19, { text: 'PUFFBALLS BURST WHEN TOUCHED. SLASH ONE FROM RANGE AND IT BURSTS ON ITS OWN. THE CLOUD DRIFTS DOWNHILL.' });
 
   // ---- 2. The bouncer canyon: up the caps to the high path ----
@@ -543,6 +545,8 @@ function sporewood() {
   // ---- 3. The lurker grove: some of the mushrooms are hungry ----
   ent('check', 63, 11);
   ent('lurker', 70, 11); ent('sporeling', 74, 11, { face: -1 }); ent('puffball', 76, 11); ent('lurker', 79, 11); ent('roller', 85, 11, { face: -1 });
+  ent('spitcap', 77, 11, { face: -1 }); ent('spitcap', 84, 11, { face: 1 });
+  web(81, 8, 11); ent('spider', 82, 7, { drop: 70 }); coins([80, 10]);
   ent('glow', 66, 11); ent('glow', 83, 11); ent('lurker', 87, 11); bouncer(90, 11); shelf(91, 7, 3); coins([91, 6], [92, 6], [93, 6]); ent('relic', 92, 6, { kind: 'lantern' }); /* the grove cache */ ent('sporeling', 91, 11, { face: -1 }); ent('puffball', 94, 11); ent('glow', 97, 11);
   coins([72, 9], [81, 9], [89, 9]);
 
@@ -569,7 +573,13 @@ function sporewood() {
 
   // ---- 6. The mycelium tunnels: low roof, no room to plunge ----
   block(166, 200, 14, 27); block(166, 200, 0, 10);
+  // THE WEB TUNNELS. The fungus is somebody's larder: curtains across the road, weavers hanging in them,
+  // and the spiders that spin them dropping out of the roof. Cut a curtain and the whole thing goes.
+  ent('sign', 167, 13, { text: 'WEB ACROSS THE ROAD. ONE CUT TAKES A WHOLE CURTAIN. WEAVERS SPIT IT AT YOUR FEET: MASH OUT AND KEEP MOVING. FIRE EATS IT ALL.' });
   ent('lurker', 172, 13); ent('sporeling', 176, 13, { face: -1 }); ent('roller', 181, 13, { face: -1, speed: 70 }); ent('puffball', 185, 13);
+  web(174, 11, 13); web(180, 11, 13); web(188, 11, 13); web(195, 11, 13);
+  ent('weaver', 177, 11, { face: -1 }); ent('weaver', 191, 11, { face: -1 }); ent('spider', 184, 11, { drop: 44 }); ent('spider', 198, 11, { drop: 44 });
+  ent('deco', 170, 13, { kind: 'sporePod' }); ent('deco', 186, 13, { kind: 'sporePod' });
   ent('lurker', 189, 13); ent('sporeling', 193, 13, { face: -1 }); ent('shield', 197, 13, { face: -1 });
   ent('glow', 168, 13); ent('glow', 178, 13); ent('glow', 187, 13); ent('glow', 196, 13); coins([174, 12], [183, 12], [191, 12]);
 
@@ -579,7 +589,7 @@ function sporewood() {
   ent('vent', 208, 13, { period: 4.5, on: 1.8, h: 96, phase: 2 }); plat(206, 8, 4); coins([207, 7], [209, 7]); ent('mover', 229, 9, { len: 2, range: 5, cap: true, speed: 34 }); ent('glow', 233, 13);
   bouncer(220, 13); plat(218, 8, 5); coins([220, 10], [219, 6], [221, 6]);
   sleeps.push({ x0: 226 * TS, x1: 233 * TS, y0: 8 * TS, y1: 14 * TS }); ent('sporeling', 229, 13, { face: -1 }); ent('glow', 227, 13);
-  ent('shaman', 237, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
+  ent('shaman', 237, 13, { face: -1 }); ent('spitcap', 224, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
   ent('sign', 244, 13, { text: 'THE PILLARS. HOLD JUMP, OR PLUNGE INTO THE CAPS.' });
   ent('deco', 205, 13, { kind: 'deadTree', v: 0 }); ent('deco', 238, 13, { kind: 'deadTree', v: 1 }); ent('deco', 292, 13, { kind: 'deadTree', v: 0 });
   ent('sign', 201, 13, { text: 'THE STORM. THE VIOLET COMES IN WAVES. STAND UNDER A LIT CAP AND THE SPORES PASS YOU BY. THE CAPS GO OUT IF YOU HIT THEM.' });
@@ -590,6 +600,8 @@ function sporewood() {
   block(245, 271, 26, 27); for (const x of [247, 253, 259, 265, 270]) bouncer(x, 25); ent('glow', 252, 25); ent('glow', 264, 25); // the pit has a floor: caps on it spring you back to the low road
   for (const [px0, top] of [[249, 18], [255, 20], [261, 18], [267, 20]]) { block(px0, px0 + 2, top, 27); for (let i = 0; i < 3; i++) bouncer(px0 + i, top - 1); }
   ent('drone', 252, 6); ent('drone', 264, 6);
+  ent('weaver', 256, 8, { face: -1 }); ent('weaver', 268, 10, { face: -1 }); ent('spider', 262, 5, { drop: 120 });
+  web(257, 12, 17); web(266, 12, 17); // curtains strung between the pillars: cut them or take the long way round
   coins([252, 8], [258, 10], [264, 8], [270, 9]);
   floor(271, 295, 14);
   ent('check', 280, 13); ent('glow', 290, 13);
@@ -605,6 +617,8 @@ function sporewood() {
   ent('deco', 314, 19, { kind: 'skullPile', v: 0 }); ent('deco', 356, 19, { kind: 'skullPile', v: 1 });
   ent('glow', 300, 19); ent('glow', 370, 19); ent('glow', 314, 19); ent('glow', 356, 19);
   ent('deco', 302, 19, { kind: 'deadTree', v: 1 }); ent('deco', 368, 19, { kind: 'deadTree', v: 0 });
+  web(308, 14, 19); web(312, 14, 19); ent('spider', 310, 13, { drop: 110, big: true }); // THE LARDER: something big keeps the door
+  ent('weaver', 316, 15, { face: -1 }); ent('spitcap', 300, 19, { face: 1 }); ent('spitcap', 372, 19, { face: -1 });
   coins([306, 17], [364, 17]);
 
   const ret = {
@@ -825,8 +839,40 @@ function kingswood() {
   G.ent('firepit', 302, 25, { period: 3, on: 1.3, phase: 0 }); G.ent('firepit', 311, 25, { period: 3, on: 1.3, phase: 1.5 }); G.ent('silver', 307, 25);
   G.coins([293, 13], [301, 12], [309, 13], [317, 12], [300, 16], [314, 16], [321, 16]);
   G.ent('check', 326, 13);
-  return G.done();
-;
+  const R2 = G.done();
+
+  // ---- 4b. THE FIRED WOOD ----
+  // They put the wood between the kennels and the canopy to the torch rather than let you walk it. The floor of
+  // it is burning, so the crossing is all leaning trunks, branches that give way, and two ropes over the worst.
+  const F = grow({ W: R2.W, H: R2.H, grid: R2.grid, ents: R2.ents }, R2, 210, 54);
+  F.block(210, 218, 14, 27); F.block(259, 263, 14, 27); // the two banks
+  F.block(219, 258, 25, 27); // the burning floor of it, far enough down that a fall is a mistake, not the end
+  F.ent('sign', 212, 13, { text: 'THEY FIRED THE WOOD RATHER THAN LET YOU WALK IT. GO OVER IT: THE BRANCHES THAT GLOW GIVE WAY, THE ROPES DO NOT. NOTHING DOWN THERE IS WORTH THE BURN.' });
+  F.ent('torch', 216, 13); F.ent('torch', 260, 13);
+  F.plat(221, 13, 3); F.plat(226, 12, 3);
+  for (let i = 0; i < 3; i++) F.set(231 + i, 11, T.SHELF); // a branch already burning through
+  F.plat(236, 12, 3); F.plat(241, 14, 3);
+  for (let i = 0; i < 3; i++) F.set(246 + i, 12, T.SHELF);
+  F.plat(251, 13, 3); F.plat(255, 12, 3);
+  // the ropes: the fast way over the two widest gaps, with a ledge road under each so it is never the only way
+  F.R.moversExtra.push({ kind: 'swing', px: 233 * TS, py: 4 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0.4 });
+  F.R.moversExtra.push({ kind: 'swing', px: 250 * TS, py: 4 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.6, phase: 2.0 });
+  // the fire comes up through it in gouts, and the archers on the far bank light whatever you are standing on
+  F.ent('firevent', 224, 13, { every: 2.7 }); F.ent('firevent', 239, 12, { every: 3.2 }); F.ent('firevent', 253, 13, { every: 2.9 });
+  F.ent('firepit', 228, 24, { period: 3.2, on: 1.6, phase: 0 }); F.ent('firepit', 243, 24, { period: 3.2, on: 1.6, phase: 1.6 });
+  F.ent('brazier', 234, 24); F.ent('brazier', 249, 24);
+  F.ent('archer', 261, 13, { face: -1, fire: true }); F.ent('archer', 214, 13, { face: 1, fire: true });
+  F.ent('wasp', 229, 8); F.ent('wasp', 244, 7); F.ent('wasp', 256, 9); // smoked out of the eaves and furious
+  F.ent('thief', 222, 12, { face: -1 }); F.ent('thief', 252, 12, { face: -1 }); // carrying what they could grab
+  F.ent('sprig', 237, 11, { face: -1 }); F.ent('sprig', 257, 11, { face: -1 });
+  // the floor of the burn: a way back up if you fall, and something worth the trip
+  F.plat(224, 21, 3); F.plat(236, 21, 3); F.plat(246, 21, 3); // somewhere to stand out of the worst of it
+  for (const y of [22, 20, 18, 16]) F.plat(255, y, 3); // and the ladder of ledges up the far bank: a fall costs you the crossing, not the run
+  F.ent('silver', 236, 24); F.ent('deco', 231, 24, { kind: 'skullPile', v: 0 }); F.ent('deco', 247, 24, { kind: 'skullPile', v: 1 });
+  F.ent('hound', 225, 24, { face: 1 }); F.ent('hound', 241, 24, { face: -1 }); // their dogs got left down there and they are not friendly now
+  F.coins([222, 12], [227, 11], [233, 9], [237, 11], [242, 13], [247, 11], [252, 12], [256, 11], [224, 20], [240, 18], [252, 18]);
+  F.ent('check', 217, 13);
+  return F.done();
 }
 
 
