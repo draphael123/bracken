@@ -7466,7 +7466,7 @@ const inkNow = () => (INKS.find(i => i.id === SET.ink) || INKS[0]).c;
 const themeNow = () => UI_THEMES.find(t => t.id === SET.uiTheme) || UI_THEMES[0];
 function applyLook() { const t = themeNow(); for (const k of ['text', 'title', 'dim', 'border', 'sel', 'gold', 'silver']) UI[k] = t[k]; UI.plate = t.plate;
   if (SET.ink && SET.ink !== 'parchment') { UI.text = inkNow(); UI.title = inkNow(); } }
-let soundNoteT = 0;
+let soundNoteT = 0, winT = 0, winStamped = false;
 function spk(x, y, col) {   // a speaker with a bar through it: eight pixels that mean the same thing everywhere
   g.fillStyle = col; g.fillRect(x, y + 2, 2, 3); g.fillRect(x + 2, y + 1, 1, 5); g.fillRect(x + 3, y, 1, 7);
   g.fillStyle = '#e04848'; for (let i = 0; i < 7; i++) g.fillRect(x - 1 + i, y + i, 1, 1);
@@ -9286,19 +9286,39 @@ function render() {
     if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, 124, '#8fd160', 'center');
   }
   if (state === 'win') {
+    // THE MOMENT A LEVEL ENDS. It was a table of numbers that appeared all at once, which is a receipt, not a
+    // finish. The tally comes in a line at a time and the figures count themselves up; the medal is STAMPED
+    // on at the end of it, with the weight that implies. Z still skips straight out at any point.
+    const wt = (winT += 1 / 60);
+    const at = t0 => Math.max(0, Math.min(1, (wt - t0) * 7));
+    const cnt = (t0, v) => v * Math.max(0, Math.min(1, (wt - t0) * 2.4));
+    const line = (t0, str, y, col, size = 8) => { const k = at(t0); if (k <= 0) return; g.globalAlpha = k; text(str, VW / 2, y + Math.round((1 - k) * 5), col, 'center', size); g.globalAlpha = 1; };
     panel(40, 26, VW - 80, 130);
-    text(L.trial ? 'THE TRIAL IS DONE' : L.arena ? (L.arena.boss === 'frog' ? 'THE KING CROAKS' : L.arena.boss === 'chief' ? 'OUT OF THE FIRE' : L.arena.boss === 'mother' ? 'THE WOOD BREATHES AGAIN' : L.arena.boss === 'king' ? 'THE KING IS DOWN' : L.arena.boss === 'owl' ? 'THE REEVE FALLS' : L.arena.boss === 'forgemaster' ? 'THE FORGE COOLS' : L.arena.boss === 'herald' ? 'THE TIDE GOES OUT' : 'THE QUEEN FALLS') : 'THE GATE OPENS', VW / 2, 38, UI.title, 'center', 12);
-    text('time     ' + fmt(levelTime), VW / 2, 64, '#fff6e0', 'center');
-    text('gold     ' + got + ' / ' + total + '   +' + earned + ' purse', VW / 2, 77, '#ffd34a', 'center');
-    text('foes     ' + kills, VW / 2, 90, '#fff6e0', 'center');
-    text('blocks   ' + blocks + '   dodges ' + dodges, VW / 2, 103, '#fff6e0', 'center');
-    text('deaths   ' + deaths, VW / 2, 116, '#fff6e0', 'center');
-    if (winLevelUp) text('LEVEL ' + heroLevel() + '   +3 HEALTH  +5 STAMINA' + (heroLevel() % 2 === 0 ? '  +1 DAMAGE' : '') + '  +2 SKILL POINTS', VW / 2, 52, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', 6);
-    if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') text('NEW AT THE STORE: SHIELD THROW', VW / 2, 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0', 'center');
-    if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') text('NEW AT THE STORE: GROUND SLAM', VW / 2, 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0', 'center');
-    { const id = LEVELS[levelIndex].id, m = medalFor(id, levelTime); const bits = [m ? MEDAL_NAME[m] + ' TIME' : null, got >= total ? 'ALL GOLD' : null, hitsTaken === 0 && deaths === 0 ? 'NO DAMAGE' : null, SET.iron ? 'IRON KNIGHT' : null].filter(Boolean); if (bits.length) { const tw = bits.join('  ').length * 8; if (m) { g.fillStyle = MEDAL_COL[m]; g.beginPath(); g.arc(VW / 2 - tw / 2 - 10, 132, 5, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(VW / 2 - tw / 2 - 11, 131, 2, 2); } text(bits.join('  '), VW / 2, 128, m === 3 ? UI.gold : UI.sel, 'center'); } }
-    if (Math.floor(time * 2) % 2 === 0) text('Z  continue', VW / 2, 140, '#8fd160', 'center');
-  }
+    line(0, L.trial ? 'THE TRIAL IS DONE' : L.arena ? (L.arena.boss === 'frog' ? 'THE KING CROAKS' : L.arena.boss === 'chief' ? 'OUT OF THE FIRE' : L.arena.boss === 'mother' ? 'THE WOOD BREATHES AGAIN' : L.arena.boss === 'king' ? 'THE KING IS DOWN' : L.arena.boss === 'owl' ? 'THE REEVE FALLS' : L.arena.boss === 'forgemaster' ? 'THE FORGE COOLS' : L.arena.boss === 'herald' ? 'THE TIDE GOES OUT' : 'THE QUEEN FALLS') : 'THE GATE OPENS', 38, UI.title, 12);
+    line(0.30, 'time     ' + fmt(cnt(0.30, levelTime)), 64, '#fff6e0');
+    line(0.55, 'gold     ' + Math.round(cnt(0.55, got)) + ' / ' + total + '   +' + Math.round(cnt(0.55, earned)) + ' purse', 77, '#ffd34a');
+    line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
+    line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
+    line(1.20, 'deaths   ' + deaths, 116, '#fff6e0');
+    if (winLevelUp) line(0.15, 'LEVEL ' + heroLevel() + '   +3 HEALTH  +5 STAMINA' + (heroLevel() % 2 === 0 ? '  +1 DAMAGE' : '') + '  +2 SKILL POINTS', 52, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 6);
+    if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
+    if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
+    { const id = LEVELS[levelIndex].id, m = medalFor(id, levelTime);
+      const bits = [m ? MEDAL_NAME[m] + ' TIME' : null, got >= total ? 'ALL GOLD' : null, hitsTaken === 0 && deaths === 0 ? 'NO DAMAGE' : null, SET.iron ? 'IRON KNIGHT' : null].filter(Boolean);
+      if (bits.length) {
+        const STAMP = 1.45, k = Math.max(0, Math.min(1, (wt - STAMP) * 9));           // it comes down out of the air and lands
+        if (k > 0) {
+          if (!winStamped) { winStamped = true; SFX.heavy(); shakeCam(m === 3 ? 5 : 3); if (m) zoomKick(1.05, 0.18); }
+          const sc = 1 + 1.5 * (1 - k) * (1 - k), tw = bits.join('  ').length * 8;
+          g.save(); g.translate(VW / 2, 132); g.scale(sc, sc); g.globalAlpha = Math.min(1, k * 1.6); g.translate(-VW / 2, -132);
+          if (m) { g.fillStyle = MEDAL_COL[m]; g.beginPath(); g.arc(VW / 2 - tw / 2 - 10, 132, 5, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(VW / 2 - tw / 2 - 11, 131, 2, 2); }
+          text(bits.join('  '), VW / 2, 128, m === 3 ? UI.gold : UI.sel, 'center');
+          g.restore(); g.globalAlpha = 1;
+          if (k < 1) { g.globalAlpha = (1 - k) * 0.6; g.strokeStyle = m === 3 ? UI.gold : UI.sel; g.lineWidth = 1; g.beginPath(); g.arc(VW / 2, 132, 10 + 40 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
+        }
+      } else winStamped = true; }
+    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text('Z  continue', VW / 2, 140, '#8fd160', 'center');
+  } else { winT = 0; winStamped = false; }
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH); }
   if (!audioReady() && state === 'play') {
     const t0 = (soundNoteT += 1 / 60), full = t0 < 10, k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
