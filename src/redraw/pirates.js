@@ -883,19 +883,19 @@ export function bakeCaptain() {
   const q = G => outline(fromGrid(rowsOf(settle(G)), PR, 1), OUT);
   // 15 wide with column 7 on the centre
   const HEAD = [
-    '.......t.......',
-    '......tt.......',
-    '.....ttl.......',
+    '.....l.t.......',
+    '....lttl.......',
+    '...lttll.......',
     'bbbbbbbbbbbbb..',
     '.bbyybbbyybb...',
     '..bbbbbbbbb....',
     '...hhhhhhh.....',
     '..hshieeshy....',
     '..hshhhhhsh....',
-    '...kkKkkKkk....',
-    '...kKkkkKk.....',
-    '....kkyykk.....',
-    '.....kkkk......',
+    '...ttTttTtt....',
+    '...tTtttTt.....',
+    '....ttyytt.....',
+    '.....tttt......',
   ];
   // the brim down over his face, the head dropped (the tell frames and the beaching)
   const HEAD_D = [
@@ -907,10 +907,10 @@ export function bakeCaptain() {
     '..bbbbbbbbb....',
     '...bbbbbbb.....',
     '..hshhhhhsh....',
-    '...kkKkkKkk....',
-    '...kKkkkKk.....',
-    '....kkyykk.....',
-    '.....kkkk......',
+    '...ttTttTtt....',
+    '...tTtttTt.....',
+    '....ttyytt.....',
+    '.....tttt......',
     '...............',
   ];
   // the head back, his mouth open for the call
@@ -924,10 +924,10 @@ export function bakeCaptain() {
     '...hhhhhhh.....',
     '..hshieehsh....',
     '..hshmmmhsy....',
-    '...kkKkkKkk....',
-    '....kKkkkK.....',
-    '....kkyykk.....',
-    '.....kkkk......',
+    '...ttTttTtt....',
+    '....tTtttT.....',
+    '....ttyytt.....',
+    '.....tttt......',
   ];
   const TORSO = [
     '...rRrrRr....',
@@ -975,9 +975,30 @@ export function bakeCaptain() {
   // his blade: longer, broader and more curved than a deckhand's, with a gold basket over his fist
   const sabre = (G, hand, deg, len = 14) => { const A = axis(hand, deg); cutlass(G, hand, deg, len, 1.15, 1.35);
     for (const [d, s] of [[-1.6, 1.8], [0.2, 2.2], [1.6, 1.6]]) { const p = A(d, s); put(G, Math.round(p[0]), Math.round(p[1]), 'y'); } };
+  // THE BOAT CLOAK: it goes on before anything else, so the whole man stands in front of it
+  const cloak = (G, B, dy, pose) => {
+    const top = 17 + dy, HH = Math.max(4, FL - top), Y = f => top + Math.round(f * HH);
+    const pts = {
+      stand: [[-8, 0], [6, 0], [9, 0.62], [11, 0.86], [-12, 0.86], [-11, 0.58]],
+      swing: [[-8, 0], [6, 0], [9, 0.55], [10, 0.8], [-16, 0.88], [-18, 0.5], [-12, 0.2]],
+      stream: [[-8, 0], [6, 0], [8, 0.45], [9, 0.7], [-20, 0.82], [-23, 0.42], [-13, 0.15]],
+      spread: [[-10, 0], [7, 0], [15, 0.32], [11, 0.55], [-16, 0.72], [-24, 0.38], [-17, 0.08]],
+      pooled: [[-8, 0], [6, 0], [12, 0.92], [-17, 0.92], [-19, 0.48], [-12, 0.18]],
+    }[pose] || [[-8, 0], [6, 0], [9, 0.62], [11, 0.86], [-12, 0.86], [-11, 0.58]];
+    gpoly(G, pts.map(([x, f]) => [B + x, Y(f)]), (x, y) => {
+      const f = ((Math.floor((x - B) * 0.5 + (y - top) * 0.25) % 5) + 5) % 5;
+      return f === 0 ? 'B' : f < 4 ? 'b' : 'R';                             // black, a cold light in its folds, its own red lining
+    });
+    // the gold edge, all the way round the hem
+    const hem = pts.map(([x, f]) => [B + x, Y(f)]);
+    for (let i = 2; i < hem.length - 1; i++) gline(G, hem[i][0], hem[i][1], hem[i + 1][0], hem[i + 1][1], 'y');
+  };
+  // and the collar of it, standing up behind his head
+  const COLLAR = ['y.........y', 'byy.....yyb', 'bbby...ybbb', '.bbbbbbbbb.'];
   const frame = o => {
     const G = blank(W, H), B = X + (o.dx || 0), dy = o.dy || 0, O = B - 6;
     const P = v => [B + v[0], v[1] + dy];
+    if (!o.noCloak) { cloak(G, B, dy, o.coat); layer(G, g => stamp(g, B - 5, 8 + dy, COLLAR)); }
     if (o.blade && o.blade[3] === 'back') layer(G, g => sabre(g, P(o.blade[0]), o.blade[1], o.blade[2]));
     if (o.gun && o.gun[3] === 'back') layer(G, g => pistol(g, P(o.gun[0]), o.gun[1], o.gun[2]));
     if (o.hook && o.hook[2] === 'back') layer(G, g => stamp(g, P(o.hook[0])[0] - 3, P(o.hook[0])[1] - 3, o.hook[1] ? GRAP_U : GRAP_D));

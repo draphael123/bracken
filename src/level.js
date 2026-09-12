@@ -2767,6 +2767,18 @@ function theFlotilla() {
   ent('deco', 262, 13, { kind: 'sailRag', v: 0 }); ent('deco', 300, 8, { kind: 'sailRag', v: 1 }); ent('deco', 338, 4, { kind: 'sailRag', v: 0 });
   ent('deco', 268, 9, { kind: 'pennant', v: 1 }); ent('deco', 306, 4, { kind: 'pennant', v: 1 }); ent('deco', 344, 0, { kind: 'pennant', v: 1 });
   ent('deco', 280, 19, { kind: 'rigging', v: 0 }); ent('deco', 326, 19, { kind: 'rigging', v: 1 });
+  // ================= HER MASTS, WHICH WERE NOT THERE =================
+  // Every flag and every rag of canvas on the fleet was hung in open sky: mastTall is a five-tile prop and
+  // the masts it stands for are twenty, so the pennants flew on nothing at all. Each one gets a mast under
+  // it now - shrouds from the flag down to the first thing solid - which is also twenty tiles of rigging to
+  // climb that the level never had.
+  for (const e of L.ents) {
+    if (e.t !== 'deco' || (e.kind !== 'pennant' && e.kind !== 'sailRag')) continue;
+    for (let y = e.y + 1; y < H; y++) { const i2 = y * W + e.x;
+      if (L.grid[i2] !== T.AIR) break;
+      L.grid[i2] = T.NET; if (e.x + 1 < W && L.grid[y * W + e.x + 1] === T.AIR) L.grid[y * W + e.x + 1] = T.NET; }
+  }
+
   for (const x of [252, 264, 276, 288, 316, 330]) ent('deco', x, 24, { kind: 'gunport', v: x % 2 });
   ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 296, 21, { kind: 'wheel' });
   ent('deco', 244, 21, { kind: 'boardingNet' });

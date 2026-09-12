@@ -2617,9 +2617,11 @@ function updatePlayer(dt) {
   // A RUN YOU HAVE TO EARN: hold one direction for most of a second and the legs open up. It shows: dust off
   // the heels and streaks off the shoulders when it kicks in.
   const sprinting = P.ground && (P.runT || 0) > 0.8 && !P.block && !P.jet && !wading && !spored;
+  const sprintK = sprinting ? Math.min(1, ((P.runT || 0) - 0.8) / 0.5) : 0;   // it comes in over half a second, not in one frame
   if (sprinting && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
-  const cap = ((P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (sprinting ? 1.18 : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  if (sprinting && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
+  const cap = ((P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.18 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]); // the Sunspire's ice: slow to get going, slower to stop
   if (move && !groundAtk) {
     const acc = P.swim ? 900 : P.ground ? (onSlick ? 360 : 1000) : 700;
@@ -3129,7 +3131,7 @@ function updateWash(dt) {
   const W = L.wash; if (!W) return;
   if (!wash) wash = { t: W.every * 0.55, state: 'wait', x: 0, dir: -1 };
   wash.t -= dt;
-  if (wash.state === 'wait' && wash.t <= W.tell) { wash.state = 'tell'; wash.dir = wash.dir < 0 ? 1 : -1;
+  if (wash.state === 'wait' && wash.t <= W.tell) { wash.state = 'tell'; wash.called = false; wash.dir = wash.dir < 0 ? 1 : -1;
     number(P.x, P.y - 44, 'A SEA TO WINDWARD', '#a8cfc6'); SFX.wave(); shakeCam(3); }
   if (wash.state === 'tell' && wash.t <= 0) { wash.state = 'run';
     wash.x = Math.max(W.x0 - 60, Math.min(W.x1 + 60, P.x - wash.dir * 300)); // it comes out of the weather to windward of YOU
@@ -3935,9 +3937,9 @@ function updateCaptain(e, dt) {
   if (e.phase === 1 && e.hp < e.maxHp * 0.62) { e.phase = 2; e.mode = 'call'; e.modeT = 1.2; SFX.whistleCall(); number(e.x, e.y - 48, 'ALL HANDS AND A KEG', '#ffd36b'); if (L.wash) L.wash.every = 7; }
   if (e.phase === 2 && e.hp < e.maxHp * 0.32) { e.phase = 3; e.mode = 'call'; e.modeT = 1.2; SFX.whistleCall(); number(e.x, e.y - 48, 'HE WILL GO DOWN WITH HER', '#ff6b6b'); if (L.wash) { L.wash.every = 5.4; L.wash.dmg = Math.round(L.wash.dmg * 1.15); } }
   const p2 = e.phase >= 2, p3 = e.phase >= 3;
-  // THE SEA TAKES HIM WITH IT: while it does, he is nothing you can cut
-  if (wash && wash.state === 'run' && e.mode !== 'ride' && e.mode !== 'dead') {
-    e.mode = 'ride'; e.ride = true; e.stagger = 0; SFX.waveBreak(); number(e.x, e.y - 48, 'THE SEA HAS HIM', '#7cc8c8');
+  // HE RIDES THE ONE HE CALLED, and while he is on it he is nothing you can cut
+  if (wash && wash.state === 'run' && wash.called && e.mode !== 'ride' && e.mode !== 'dead') {
+    e.mode = 'ride'; e.ride = true; e.stagger = 0; SFX.waveBreak(); number(e.x, e.y - 48, 'HE RIDES IT IN', '#7cc8c8');
   }
   let want = 0;
   switch (e.mode) {
@@ -3945,7 +3947,7 @@ function updateCaptain(e, dt) {
     case 'call': { e.vx = 0;
       if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 10, y: e.y - 26, vx: e.face * 40, vy: -20, life: 0.4, max: 0.4, col: '#dff0f5', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.5; e.callT = p3 ? 9 : 13;
-        if (wash && wash.state === 'wait') { wash.state = 'tell'; wash.t = L.wash.tell; wash.dir = P.x > e.x ? -1 : 1; SFX.wave(); number(e.x, e.y - 40, 'HE CALLS IT UP', '#7cc8c8'); } } break; }
+        if (wash && wash.state === 'wait') { wash.state = 'tell'; wash.called = true; wash.t = L.wash.tell; wash.dir = P.x > e.x ? -1 : 1; SFX.wave(); number(e.x, e.y - 40, 'HE CALLS IT UP', '#7cc8c8'); } } break; }
     case 'stride': { e.face = Math.sign(d) || e.face;
       e.sabreT -= dt; e.shotT -= dt; e.hookT -= dt; e.kegT -= dt; e.callT -= dt;
       want = level && ad > 40 ? e.face * (p3 ? 88 : 70) : level && ad < 28 ? -e.face * 40 : e.face * 40;
