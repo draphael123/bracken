@@ -1690,11 +1690,7 @@ function highcrown() {
       grass: '#8a8a98', grassL: '#a8a8b8', grassD: '#5a5a66', dirt: '#4a4a58', dirtL: '#5e5e6c', dirtD: '#32323c',
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
-    alarms: [
-      { id: 'ward', gates: [[102, 58, 63]], garrison: [{ t: 'heavy', x: 96, y: 63 }, { t: 'soldier', x: 92, y: 63 }, { t: 'javelin', x: 98, y: 63 }] },
-      { id: 'hall', gates: [[182, 54, 63]], garrison: [{ t: 'soldier', x: 150, y: 63 }, { t: 'javelin', x: 158, y: 63 }, { t: 'soldier', x: 144, y: 63 }] },
-      { id: 'chapel', gates: [[160, 10, 19]], garrison: [{ t: 'soldier', x: 172, y: 19 }, { t: 'heavy', x: 182, y: 19 }, { t: 'javelin', x: 146, y: 13 }] },
-    ],
+
     mini: { x0: 126 * TS, x1: 198 * TS, floor: 40 * TS, trigger: 134 * TS, wallL: 125, gate: 199, boss: 'forgemaster', y0: 26 * TS, y1: 41 * TS, slag: [140 * TS + 8, 158 * TS + 8, 180 * TS + 8] },
     arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 211 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
       roof: 8 * TS, gallery: { row: 14, x0: 213, x1: 236 }, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
@@ -1815,6 +1811,31 @@ function highcrownWhole() {
     ent('harpy', 104, 60); ent('check', 116, 63);
     ent('deco', 122, 63, { kind: 'siege' }); ent('deco', 132, 63, { kind: 'hangCage' }); ent('deco', 127, 63, { kind: 'cairn' });
     coins([97, 69], [103, 67], [109, 65]);
+  }
+  // ---- HER GATES TAKE A KEY ----
+  // They used to drop behind you and only open when the room was cleared. Now each is a portcullis with its key
+  // on somebody in the room before it: find the key, open the gate, and fight whatever you feel like fighting.
+  { const { ent, set, coins } = M;
+    const port = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
+    port(242, 58, 63); ent('lockgate', 242, 63, { needs: 'brass', h: 6 });
+    port(392, 54, 63); ent('lockgate', 392, 63, { needs: 'iron', h: 10 });
+    port(370, 10, 19); ent('lockgate', 370, 19, { needs: 'bone', h: 10 });
+    ent('key', 228, 63, { kind: 'brass' }); ent('key', 380, 63, { kind: 'iron' }); ent('key', 358, 19, { kind: 'bone' });
+    ent('sign', 232, 63, { text: 'THE WARD GATE IS BARRED AND THE KEY IS ON ONE OF THEM. THEY ARE NOT CARRYING IT WELL.' });
+    ent('heavy', 236, 63, { face: -1 }); ent('soldier', 230, 63, { face: 1 }); ent('javelin', 224, 63, { face: -1 });
+    ent('soldier', 384, 63, { face: -1 }); ent('javelin', 376, 63, { face: 1 }); ent('soldier', 388, 63, { face: -1 });
+    ent('soldier', 362, 19, { face: -1 }); ent('heavy', 354, 19, { face: 1 }); ent('javelin', 366, 19, { face: -1 });
+
+    // ---- THE ROAD UP: it was a long empty walk, and it is her road, so it is watched ----
+    ent('deco', 186, 63, { kind: 'tent' }); ent('deco', 191, 63, { kind: 'tent' }); ent('brazier', 183, 63);
+    ent('deco', 196, 63, { kind: 'barrels' }); ent('deco', 179, 63, { kind: 'spearRack' }); ent('deco', 200, 63, { kind: 'cart' });
+    ent('sign', 177, 63, { text: 'THE ROAD PICKET. THERE IS A POT ON THE FIRE AND A GAME OF STONES HALF PLAYED. NOBODY HAS WATCHED THE ROAD IN A WHILE.' });
+    ent('soldier', 188, 63, { face: 1 }); ent('javelin', 193, 63, { face: -1 }); ent('soldier', 198, 63, { face: -1 });
+    coins([181, 62], [187, 62], [192, 62], [197, 62], [202, 62]);
+    ent('deco', 208, 63, { kind: 'bones' }); ent('hound', 206, 63, { face: 1 }); ent('hound', 212, 63, { face: -1 });
+    coins([205, 62], [209, 62], [213, 62]);
+    ent('soldier', 218, 63, { face: -1 }); ent('archer', 168, 63, { face: 1 });
+    ent('brazier', 172, 63); coins([170, 62], [174, 62], [220, 62]);
   }
   const R = M.done();
   // the old start by the drawbridge: the squire and her sign moved to the foot of the road
@@ -2262,7 +2283,7 @@ function longWater() {
   air(132, 138, 30, 32); air(139, 139, 29, 32); // THE SMUGGLERS' CUT: a dry room under the dock, its mouth in the river
   ent('silver', 134, 32); coins([136, 31], [137, 32], [133, 31]);
   ent('sign', 136, 32, { text: 'SOMEBODY KEPT THIS ROOM DRY UNDER THE DOCK, AND KEPT IT QUIET. THERE IS A ROPE LADDER CUT OFF AT THE TOP AND A CHEST WITH THE HINGES PRISED OFF.' });
-  ent('check', 132, 26); ent('deco', 138, 26, { kind: 'seaLantern', v: 1 }); ent('npc', 136, 26, { kind: 'ferryman', ride: true });
+  ent('check', 132, 26); ent('deco', 138, 26, { kind: 'seaLantern', v: 1 }); ent('deco', 136, 26, { kind: 'netPoles' }); // (the Ferryman used to stand here: the raft goes without him)
   coins([108, 26], [110, 26], [112, 25], [114, 25], [117, 24], [120, 25], [123, 26], [124, 25], [126, 26], [130, 25], [134, 25], [137, 25]); ent('scout', 124, 27, { face: -1 });
 
   // ---- 2. THE FERRY RUN: the river, the raft, the rocks, the sirens and the Bore ----
@@ -2422,7 +2443,7 @@ function shipwreckReef() {
   air(382, 383, 19, 20); plat(377, 21, 6); // her cabin door, and the gangway to it off the ribs
   block(382, 400, 21, 21);
   net(376, 377, 14, 23); net(364, 365, 19, 25); // her ribs, standing out of the reef and up past her cabin roof
-  deep(331, 340, 33, 38, { reef: true }); block(331, 340, 38, H - 1);
+  block(331, 340, 38, H - 1); // (a pool used to be carved here, entirely inside solid rock: it did nothing but cost a draw)
   ent('check', 334, 29); ent('deco', 338, 29, { kind: 'wreckStern' });
   ent('sign', 336, 29, { text: 'THE TRIBUTE SHIP. THE LAST SEAL IS IN THE STERN CABIN, WHICH IS NOW THE ONLY DRY ROOM IN THE SEA. CLIMB HER RIBS.' });
   ent('deco', 356, 25, { kind: 'anchor' }); ent('deco', 370, 23, { kind: 'spar', v: 0 }); ent('deco', 390, 20, { kind: 'seaChest' });
@@ -2459,7 +2480,7 @@ function shipwreckReef() {
       grass: '#5f7a68', grassL: '#88a890', grassD: '#40564a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e3a3a', '#2c4e4a', '#3a6258', '#548070'] },
     weather: [{ x0: 0, x1: 213 * TS, kind: 'rain' }, { x0: 331 * TS, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 425 * TS, x1: 453 * TS, floor: 34 * TS, trigger: 426 * TS, wallL: 424, wallR: 453, boss: 'reefmaw', music: 'boss2', tint: '#2a5a60', tintA: 0.1, fx: 'motes',
+    arena: { x0: 425 * TS, x1: 453 * TS, floor: 34 * TS, y0: 24 * TS, trigger: 426 * TS, wallL: 424, wallR: 453, boss: 'reefmaw', music: 'boss2', tint: '#2a5a60', tintA: 0.1, fx: 'motes',
       holes: [429 * TS, 437 * TS, 445 * TS, 451 * TS] },
   };
   return ret;
@@ -2482,7 +2503,7 @@ function theFlotilla() {
 
   // the sea the whole town floats on: fall in and you swim, and the nets down every side are how you get back up
   block(0, W - 1, 38, H - 1); block(377, W - 1, 11, 37); // past her stern the level ends: no water, nowhere to fall
-  pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true });
+  pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true }); // tar, bilge and worse: swim it and it eats you, so cross above it
 
   // ---- THE ROCK: the Ferryman will not go closer than this ----
   block(0, 22, 26, 37);
@@ -2493,7 +2514,10 @@ function theFlotilla() {
   coins([6, 25], [12, 25], [18, 25]);
 
   // ---- the first crossing: a lashed spar, then a rope ----
-  plat(23, 25, 4); net(29, 30, 26, 36); // the galley's bow net: climb back out of the gap
+  // FROM THE ROCK TO THE GALLEY: a spar, two crates riding the swell, and a rope to swing the last of it
+  plat(23, 25, 4); net(29, 30, 26, 36);
+  ent('mover', 26, 23, { len: 2, range: 0, bob: true }); ent('mover', 28, 20, { len: 2, range: 3, speed: 20, bob: true });
+  coins([26, 22], [28, 18]);
   movers.push({ kind: 'swing', px: 29 * TS, py: 13 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 });
 
   // ---- 1. THE GALLEY: long, low, and full of other people's neighbours ----
@@ -2512,15 +2536,26 @@ function theFlotilla() {
   ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT AND THERE IS A POT ON IT. WHOEVER WAS COOKING WENT UP ON DECK IN A HURRY.' });
   ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
   ent('deco', 66, 23, { kind: 'hammock', v: 0 }); ent('deco', 46, 23, { kind: 'coiledCable', v: 0 });
-  ent('deco', 50, 10, { kind: 'pennant', v: 0 });
+  // THE GALLEY'S RIG: two masts, her mainsail, shrouds either side, her colours at the truck
+  for (const [x, v] of [[50, 0], [78, 1]]) ent('deco', x, 23, { kind: 'mastTall', v });
+  ent('deco', 44, 16, { kind: 'sailRag', v: 0 }); ent('deco', 72, 15, { kind: 'sailRag', v: 1 });
+  ent('deco', 56, 20, { kind: 'rigging', v: 0 }); ent('deco', 86, 20, { kind: 'rigging', v: 1 });
+  ent('deco', 50, 9, { kind: 'pennant', v: 0 }); ent('deco', 78, 10, { kind: 'pennant', v: 2 });
+  for (const x of [36, 48, 62, 76, 88]) ent('deco', x, 26, { kind: 'gunport', v: x % 2 });
+  ent('deco', 33, 23, { kind: 'figurehead' }); ent('deco', 92, 23, { kind: 'boardingNet' });
   ent('check', 34, 23); ent('check', 88, 23);
   coins([36, 23], [42, 23], [48, 23], [56, 23], [64, 23], [72, 23], [80, 23], [90, 23]);
   coins([36, 29], [48, 29], [56, 29], [74, 29], [88, 29]);
   coins([50, 17], [50, 14], [49, 10], [52, 10]);
 
   // ---- the second crossing: a rope over open water, and a net up the prize's side ----
-  movers.push({ kind: 'swing', px: 104 * TS, py: 10 * TS, arm: 104, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.2 });
+  // THE LONG GAP: their washing line of spars, two swinging ropes out of the tops, and nothing under it but the harbour
+  movers.push({ kind: 'swing', px: 100 * TS, py: 9 * TS, arm: 112, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.2 });
+  movers.push({ kind: 'swing', px: 108 * TS, py: 8 * TS, arm: 120, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.2 });
+  ent('mover', 98, 22, { len: 2, range: 0, bob: true }); ent('mover', 104, 19, { len: 2, range: 4, speed: 22, bob: true });
+  ent('mover', 109, 22, { len: 2, range: 0, bob: true });
   net(110, 111, 18, 36);
+  coins([98, 21], [104, 17], [109, 21]);
 
   // ---- 2. THE HULK: a prize they never finished stripping ----
   block(113, 176, 22, 37); hullZones.push([113, 176, 22, 37]);
@@ -2531,12 +2566,18 @@ function theFlotilla() {
   ent('silver', 150, 29);
   ent('sign', 116, 21, { text: 'THE HULK. THEY TOOK HER TWO SUMMERS AGO AND NEVER FINISHED STRIPPING HER. THE GREY PLANKS WILL NOT HOLD A MAN: STAND ON ONE AND YOU WILL GO THROUGH TO WHAT IS UNDER IT.' });
   ent('boarder', 128, 21, { face: -1 }); ent('boarder', 162, 21, { face: -1 });
-  ent('cutlass', 146, 21, { face: 1 }); ent('bosun', 172, 21, { face: -1 }); ent('cutlass', 130, 28, { face: 1 });
+  ent('cutlass', 152, 21, { face: 1 }); ent('bosun', 172, 21, { face: -1 }); ent('cutlass', 130, 28, { face: 1 });
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
   ent('sign', 144, 21, { text: 'THE HOLD IS FULL OF WATER AND SOMEBODY ELSE OWNED IT FIRST. THERE IS A LADDER AT EITHER END.' });
   ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
   ent('silver', 172, 28); // down in her flooded hold, under the rotten planking
-  ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 158, 21, { kind: 'crowNest' });
+  ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 145, 9, { kind: 'crowNest' });
+  // THE HULK'S RIG: one mast still standing, her canvas in rags, her shrouds hanging off her
+  ent('deco', 145, 21, { kind: 'mastTall', v: 1 }); ent('deco', 152, 14, { kind: 'sailRag', v: 1 });
+  ent('deco', 122, 19, { kind: 'rigging', v: 1 }); ent('deco', 166, 19, { kind: 'rigging', v: 0 });
+  ent('deco', 145, 8, { kind: 'pennant', v: 1 });
+  for (const x of [120, 136, 150, 164]) ent('deco', x, 24, { kind: 'gunport', v: (x / 2) % 2 });
+  ent('deco', 176, 21, { kind: 'boardingNet' }); ent('deco', 114, 21, { kind: 'boardingNet' });
   ent('check', 118, 21); ent('check', 168, 21);
   coins([118, 21], [134, 21], [142, 21], [160, 21], [172, 21]);
   coins([120, 28], [126, 28], [154, 28], [166, 28]);
@@ -2546,12 +2587,17 @@ function theFlotilla() {
   ent('plank', 176, 21, { span: [177, 182], row: 21 });
   ent('sign', 173, 21, { text: 'THEIR BOARDING PLANK IS STOWED AGAINST THE RAIL. KNOCK IT DOWN AND IT WILL REACH THE POWDER HOY. OR SWIM, AND CLIMB HER NET, AND BE SEEN DOING IT.' });
   net(181, 182, 24, 36); net(183, 184, 24, 29);
+  ent('mover', 179, 22, { len: 2, range: 0, bob: true }); coins([179, 21]); // a hatch cover riding the swell, for anyone who will not drop the plank
 
   // ---- 3. THE POWDER HOY: what they blast wrecks open with ----
   block(183, 240, 25, 37); hullZones.push([183, 240, 25, 37]);
   rail(183, 186, 24);
   ent('keg', 192, 24); ent('keg', 206, 24); ent('keg', 220, 24);
   ent('deco', 198, 24, { kind: 'kegStack' }); ent('deco', 212, 24, { kind: 'chickenCoop' });
+  ent('deco', 206, 24, { kind: 'mastTall', v: 0 }); ent('deco', 200, 17, { kind: 'sailRag', v: 0 });
+  ent('deco', 206, 11, { kind: 'pennant', v: 2 }); ent('deco', 228, 22, { kind: 'rigging', v: 0 });
+  for (const x of [190, 204, 218, 232]) ent('deco', x, 27, { kind: 'gunport', v: x % 2 });
+  ent('deco', 184, 24, { kind: 'boardingNet' }); ent('deco', 240, 24, { kind: 'boardingNet' });
   ent('cannon', 232, 24, { hole: [245, 247, 24, 26] });
   ent('sign', 228, 24, { text: 'THE GUN IS LAID ON THE FLAGSHIP ALREADY: THEY WERE GOING TO CUT HER OUT IF THE SHARE WENT WRONG. STRIKE IT AND IT WILL OPEN HER SIDE. THE KEGS GO UP IF YOU HIT THEM, SO MIND WHERE YOU ARE STANDING.' });
   ent('cutlass', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
@@ -2562,44 +2608,56 @@ function theFlotilla() {
 
   // ---- the last crossing: her side, and the nets they board from ----
   net(243, 244, 16, 36);
+  movers.push({ kind: 'swing', px: 242 * TS, py: 9 * TS, arm: 104, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 2.1 });
+  ent('mover', 242, 21, { len: 2, range: 0, bob: true }); coins([242, 20]);
 
   // ---- 4. THE FLAGSHIP ----
   block(245, 376, 22, 37); hullZones.push([245, 376, 22, 37]);
   air(248, 340, 24, 26); // her gun deck, behind the side the hoy's gun opens
-  block(300, 376, 16, 21); block(336, 376, 11, 15);
-  air(336, 372, 12, 15); // the great cabin in her stern, open off the quarterdeck
-  net(300, 301, 10, 21); net(330, 331, 10, 21); // the two quick ways up her: she cuts one, then the other
+  // HER DECKS: the fight wants a flat floor with things to jump onto, not walls to be cornered against, so
+  // the quarterdeck and the poop are PLATFORMS on a few posts and the main deck runs clear from end to end.
+  plat(300, 16, 77); block(300, 301, 17, 21); block(372, 376, 17, 21);
+  plat(336, 11, 41); block(370, 371, 12, 15);
+  ent('deco', 352, 15, { kind: 'sternWindows' });
+  net(302, 303, 11, 21); net(330, 331, 6, 16); // the two quick ways up her: she cuts one, then the other
   block(292, 295, 19, 21); block(296, 299, 17, 21); // and the broken stair she cannot cut, up to her quarterdeck
-  net(356, 357, 10, 15); // the companionway out of the great cabin onto the poop: the last way up when both lines are gone
-  net(310, 311, 16, 26); // and the ladder up out of her gun deck, for anyone the falling deck drops into it
+  net(310, 311, 17, 26); // the ladder up out of her gun deck, for anyone the falling deck drops into it
   rail(245, 248, 21); rail(296, 299, 15);
   ent('sign', 250, 21, { text: 'THE FLAGSHIP. THE QUARTERMASTER HAS THE RUN OF HER AND SHE WILL NOT STAND AND FIGHT ON ONE DECK: SHE GOES UP, AND SHE CUTS AWAY WHAT SHE CAME UP BY.' });
   ent('marine', 306, 9, { face: -1 }); ent('marine', 334, 9, { face: -1 });
   ent('cutlass', 262, 21, { face: -1 }); ent('cutlass', 284, 21, { face: -1 }); ent('boarder', 320, 15, { face: -1 });
-  ent('cutlass', 274, 21, { face: 1 }); ent('bosun', 292, 21, { face: -1 }); ent('lookout', 316, 15, { face: 1 }); ent('cutlass', 344, 15, { face: -1 });
-  ent('deco', 268, 21, { kind: 'cannon' }); ent('deco', 292, 21, { kind: 'cannon' });
+  ent('cutlass', 274, 21, { face: 1 }); ent('bosun', 284, 21, { face: -1 }); ent('lookout', 316, 15, { face: 1 }); ent('cutlass', 344, 15, { face: -1 });
+  for (const [x, y] of [[266, 21], [322, 21], [312, 15], [348, 10]]) ent('cannon', x, y, { deck: true }); // HER OWN GUNS: when she goes behind her guard, bring one to bear
   ent('sign', 306, 15, { text: 'HER CHART HAS THE WRECKS MARKED, AND A RING DRAWN ROUND SOMETHING DEEPER, WITH A NOTE: THEIR SHARE, PAID MONTHLY.' });
-  ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 352, 15, { kind: 'plunder', v: 0 });
-  ent('deco', 344, 15, { kind: 'sternWindows' }); ent('deco', 360, 15, { kind: 'plunder', v: 2 });
+  ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 344, 10, { kind: 'plunder', v: 0 });
+  ent('deco', 360, 10, { kind: 'plunder', v: 2 });
   ent('deco', 256, 26, { kind: 'lanternDeck', v: 1 }); ent('deco', 288, 26, { kind: 'rumBarrels', v: 1 });
+  // THE FLAGSHIP: three masts, full canvas, and the black flag at her main truck
+  for (const [x, v] of [[268, 0], [306, 1], [344, 0]]) ent('deco', x, 21, { kind: 'mastTall', v });
+  ent('deco', 262, 13, { kind: 'sailRag', v: 0 }); ent('deco', 300, 8, { kind: 'sailRag', v: 1 }); ent('deco', 338, 4, { kind: 'sailRag', v: 0 });
+  ent('deco', 268, 9, { kind: 'pennant', v: 1 }); ent('deco', 306, 4, { kind: 'pennant', v: 1 }); ent('deco', 344, 0, { kind: 'pennant', v: 1 });
+  ent('deco', 280, 19, { kind: 'rigging', v: 0 }); ent('deco', 326, 19, { kind: 'rigging', v: 1 });
+  for (const x of [252, 264, 276, 288, 316, 330]) ent('deco', x, 24, { kind: 'gunport', v: x % 2 });
+  ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 296, 21, { kind: 'wheel' });
+  ent('deco', 244, 21, { kind: 'boardingNet' });
   ent('check', 254, 21); ent('check', 304, 15); ent('silver', 300, 26);
   coins([258, 21], [266, 21], [274, 21], [282, 21], [290, 21]);
   coins([252, 26], [266, 26], [278, 26], [296, 26]);
   coins([306, 15], [314, 15], [322, 15], [330, 15]);
-  coins([342, 15], [350, 15], [358, 15], [366, 15]);
+  coins([342, 10], [350, 10], [358, 10], [366, 10]);
   ent('quarter', 288, 21);
   ent('gate', 374, 10);
 
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones,
-    duskStart: 99999, duskLen: 1, music: 'flotilla', night: false,
+    duskStart: 99999, duskLen: 1, music: 'flotilla', night: false, swell: { amp: 2, period: 4.6 },
     interiors: [[34, 93, 26, 30, 'stone'], [116, 173, 24, 30, 'stone'], [248, 340, 24, 27, 'stone'], [340, 372, 12, 15, 'stone']],
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
     palette: { set: 'ship', sky: 'glare', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(240,235,205,0.10)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'boss2', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
-      decks: [[22 * TS, 258, 374], [16 * TS, 300, 374], [11 * TS, 336, 374]], cuts: [[300, 301, 10, 21], [330, 331, 10, 21]], fallTo: 292 },
+    arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, y0: 8 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'boss2', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
+      decks: [[22 * TS, 260, 370], [16 * TS, 304, 370], [11 * TS, 338, 368]], cuts: [[302, 303, 11, 21], [330, 331, 6, 16]], fallTo: 292 },
   };
   return ret;
 }

@@ -150,7 +150,7 @@ export const SFX = {
   gobHurt() { file('gobHurt', 0.4); },
   hurt() { file('hurt', 0.6) || (tone('sawtooth', 240, 60, 0.32, 0.25), noise(0.15, 0.2, 400)); },
   pogo() { tone('square', 480, 980, 0.13, 0.18); },
-  coin() { file('coin', 0.45) || (tone('square', 880, 880, 0.06, 0.12), tone('square', 1320, 1320, 0.11, 0.12, 0.06)); },
+  coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
   spit() { tone('sine', 420, 180, 0.13, 0.2); },
@@ -182,7 +182,7 @@ export const SFX = {
   bow() { tone('triangle', 700, 200, 0.12, 0.14); noise(0.08, 0.15, 3000); },
   bird() { tone('sine', 1800, 2600, 0.08, 0.06); tone('sine', 2400, 1900, 0.1, 0.05, 0.1); },
   splash() { noise(0.3, 0.4, 700, 0.5); tone('sine', 300, 120, 0.2, 0.15); },
-  coinUp(k) { const r = 1 + k * 0.07; file('coin', 0.45, r) || (tone('square', 880 * r, 880 * r, 0.06, 0.12), tone('square', 1320 * r, 1320 * r, 0.11, 0.12, 0.06)); },
+  coinUp(k) { const r = 1 + Math.min(k, 12) * 0.06; tone('triangle', 1046 * r, 1046 * r, 0.07, 0.11); tone('triangle', 1568 * r, 1568 * r, 0.13, 0.085, 0.045); tone('sine', 3136 * r, 3136 * r, 0.05, 0.03); noise(0.03, 0.03, 4200, 2.5); },
   heart() { tone('sine', 70, 40, 0.14, 0.35); tone('sine', 60, 35, 0.16, 0.28, 0.16); },
   cricket() { const f = 3800 + Math.random() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
   fish() { noise(0.12, 0.2, 900, 0.6); tone('sine', 500, 200, 0.1, 0.08); },
@@ -476,6 +476,7 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  bale() { noise(0.16, 0.24, 1400, 0.4); noise(0.1, 0.14, 700, 0.5, 0.03); }, // dry straw taking a blade
   turtle() { noise(0.06, 0.3, 1800, 0.4); tone('square', 300, 180, 0.07, 0.1); },
   crab() { noise(0.05, 0.26, 2600, 0.35); noise(0.05, 0.2, 1900, 0.4, 0.05); },
   urchin() { noise(0.07, 0.22, 3200, 0.3); tone('sine', 700, 400, 0.08, 0.06); },
