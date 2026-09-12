@@ -2035,7 +2035,7 @@ function menuConfirm() {
 }
 // THE HERO CHOICE: a new save picks any one of the three to start with; the other two are 15 silver each at the store
 let heroPick = { i: 0, stage: 'pick' };
-const PICK = ['knight', 'pyro', 'paladin'];
+const PICK = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];
 function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h); if (i < 0) return; PROG.tried = PROG.tried || {}; PROG.tried[h] = true; saveProgress(); loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); }
 function updateHeroPick() {
   if (heroPick.stage === 'pick') {
@@ -2046,14 +2046,33 @@ function updateHeroPick() {
 function drawHeroPick() {
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
   if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); text('a short practice yard for this hero. nothing in it can hurt you.', VW / 2, VH / 2 + 14, UI.dim, 'center', 6); text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 32, UI.sel, 'center', 6); return; }
-  text('CHOOSE YOUR HERO', VW / 2, 10, UI.title, 'center', 12);
-  const cw = Math.floor((VW - 24) / 3), LINES = { knight: ['sword and shield', 'the steady way in', '100 health'], pyro: ['staff and fire', 'no shield', '80 health', 'HARDER'], paladin: ['maul and light', 'slow and heavy', '120 health'] };
-  PICK.forEach((h, k) => { const x = 8 + k * (cw + 4), y = 30, sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
-    g.fillStyle = sel ? 'rgba(60,90,60,0.55)' : 'rgba(40,36,54,0.6)'; g.fillRect(x, y, cw, VH - 58); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, cw - 1, VH - 59); }
-    const set = h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken)) : h === 'paladin' ? preview('pick:paladin', () => bakePaladin({})) : preview('pick:knight', () => bakeKnight({})); const fr = set.R.idle[Math.floor(time * 3 + k) % 4];
-    const sc = 2; g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), y + 8, fr.width * sc, fr.height * sc);
-    text(H.name, x + cw / 2, y + 70, sel ? UI.title : UI.text, 'center', 6); let ly = y + 82; for (const ln of LINES[h]) for (const w2 of wrap(ln, cw - 2, 6)) { text(w2, x + cw / 2, ly, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6); ly += 8; } });
-  text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 20, UI.sel, 'center', 6); text('the other two are 15 silver each, later', VW / 2, VH - 11, UI.dim, 'center', 6);
+  text('CHOOSE YOUR HERO', VW / 2, 8, UI.title, 'center', 12);
+  const LINES = { knight: ['sword and shield', 'the steady way in', '100 health'],
+    pyro: ['staff and fire, no shield', 'heat banks into THE PYRE', '80 health', 'HARDER'],
+    paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
+    pirate: ['cutlass and pistol', 'gold is his powder', '90 health'],
+    reaper: ['a scythe: it cuts them ALL', 'and raises what falls', '95 health', 'HARDER'] };
+  const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 62;
+  PICK.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
+    g.fillStyle = sel ? 'rgba(60,90,60,0.55)' : 'rgba(40,36,54,0.6)'; g.fillRect(x, top, cw, ch);
+    if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, cw - 1, ch - 1); }
+    const set = h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken))
+      : h === 'paladin' ? preview('pick:paladin', () => bakePaladin({}))
+      : h === 'pirate' ? preview('pick:pirate', () => bakeFreebooter({}))
+      : h === 'reaper' ? preview('pick:reaper', () => bakeReaper({}))
+      : preview('pick:knight', () => bakeKnight({}));
+    const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 2 : 1.5;
+    g.globalAlpha = sel ? 1 : 0.7;
+    g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 8 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
+    g.globalAlpha = 1;
+    text({ knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'REAPER' }[h] || H.name, x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6);
+  });
+  // and the words, for the one you are looking at, where there is room for them
+  { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 16;
+    text(H.name, VW / 2, y0, UI.title, 'center');
+    LINES[h].forEach((ln, i) => text(ln, VW / 2, y0 + 12 + i * 9, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6)); }
+  text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
+  text('the other four are 15 silver each, later', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
 function selectStart() {
   const lv = LEVELS[selI];

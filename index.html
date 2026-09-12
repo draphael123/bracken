@@ -25,13 +25,22 @@
   #rotate b { color: #ffd36b; letter-spacing: 2px; }
   #rotate .ph { width: 54px; height: 90px; border: 3px solid #8fd160; border-radius: 8px; animation: tip 1.8s ease-in-out infinite; }
   @keyframes tip { 0%, 40% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+  #rotate .bk { color: #ffd36b; font: 22px monospace; letter-spacing: 6px; }
+  #rotate button { margin-top: 6px; background: none; border: 2px solid #8fd160; color: #8fd160; font: 12px monospace;
+    padding: 8px 14px; border-radius: 6px; letter-spacing: 1px; }
   @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+  body.upright #rotate { display: none !important; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="rotate"><div class="ph"></div><b>TURN IT SIDEWAYS</b><div>BRACKEN plays in landscape.<br>Rotate the phone and tap to play full screen.</div></div>
+<div id="rotate"><div class="bk">BRACKEN</div><div class="ph"></div><b>TURN IT SIDEWAYS</b><div>BRACKEN plays in landscape.<br>Rotate the phone and tap to play full screen.</div><button id="anyway">play it upright anyway</button></div>
 <div id="boot">booting…</div>
+<script>
+  // and a way past it: some people are going to play this on a phone held upright whatever we say
+  addEventListener('DOMContentLoaded', () => { const b = document.getElementById('anyway');
+    if (b) b.addEventListener('click', e => { e.stopPropagation(); document.body.classList.add('upright'); }); });
+</script>
 <script>
   window.addEventListener('error', e => { const b = document.getElementById('boot'); if (b) { b.textContent = 'ERROR: ' + e.message + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno; b.style.color = '#ff7a6b'; } });
   setTimeout(() => { const b = document.getElementById('boot'); if (b && !window.BK) { b.textContent = 'still booting after 8s — check console'; } }, 8000);
