@@ -31,7 +31,7 @@ function grow(L, ret, col, n) {
   if (R.moversExtra) R.moversExtra = R.moversExtra.map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number') o[k] = shp(o[k]); return o; });
   for (const k of ['weather', 'ambient']) if (R[k]) R[k] = R[k].map(z => ({ ...z, x0: shp(z.x0), x1: z.x1 >= 99999 ? z.x1 : shpEnd(z.x1) }));
   for (const k of ['arena', 'mini']) if (R[k]) { const A = { ...R[k] }; for (const f of ['x0', 'x1', 'trigger']) if (typeof A[f] === 'number') A[f] = shp(A[f]); for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = sh(A[f]); if (A.dais) A.dais = { ...A.dais, x0: shp(A.dais.x0), x1: shp(A.dais.x1) }; R[k] = A; }
-  if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
+  if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1, st]) => [sh(x0), sh(x1), y0, y1, st]); // keep the room's KIND: dropping it made every grown level's interior the default timber
   if (R.stone) R.stone = R.stone.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.scree) R.scree = R.scree.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));
   if (R.fog) R.fog = R.fog.map(z => ({ ...z, x0: shp(z.x0), x1: shpEnd(z.x1) }));
@@ -1726,7 +1726,7 @@ function highcrown() {
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
   ent('rod', 216, 3); ent('rod', 230, 3); ent('rod', 244, 3);
 
-  const interiors = [[124, 206, 10, 63, 'stone'], [208, 251, 10, 19, 'stone']];
+  const interiors = [[124, 206, 10, 63, 'royal'], [208, 251, 10, 19, 'royal']];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 1, y: 63 }, pools: [], falls: [], moversExtra: [], interiors,
     reachExact: true, // the carts are the Forgemaster's props, not a way around the castle
@@ -1846,7 +1846,7 @@ function highcrownWhole() {
     ent('deco', 64, 71, { kind: 'bridgepost' }); ent('harpy', 72, 63);
     // the barbican: a tower with a passage through it at the bridge's height
     block(79, 92, 56, BOT); air(79, 92, 68, 71); for (const x of [79, 82, 85, 88, 91]) set(x, 55, T.SOLID);
-    M.R.interiors = (M.R.interiors || []).concat([[79, 92, 68, 71, 'stone']]);
+    M.R.interiors = (M.R.interiors || []).concat([[79, 92, 68, 71, 'royal']]);
     ent('torch', 85, 71); ent('heavy', 88, 71, { face: -1 }); /* a heavy knight holds the barbican */
     // a stone bridge that climbs to the castle's rock in broken steps, each on its own pier
     block(93, 96, 72, 73); block(94, 95, 74, BOT);
@@ -1933,6 +1933,32 @@ function trialYard(hero) {
 }
 
 // THE HIGH STORE: the same trade in a stone cellar under the crags, with the shepherd and the old knight for company.
+function theShopSea() {
+  const L = painter(44, 30);
+  const { block, floor, ent, set, plat } = L;
+  const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  floor(0, 43, 22); block(0, 1, 0, 29); block(42, 43, 0, 29); block(0, 43, 0, 14);
+  block(2, 41, 15, 15);                                   // her deck beams overhead
+  ent('sign', 7, 21, { text: "THE CHANDLER. SHE MOORED A HULK OFF THE FLEET AND PUT A COUNTER IN HER ORLOP. UP AT THE COUNTER TO TRADE, UP AT THE HATCH TO LEAVE." });
+  ent('exit', 3, 21); ent('torch', 11, 21); ent('torch', 33, 21);
+  net(4, 5, 16, 21);                                      // the hatch she lets you in by
+  ent('deco', 15, 21, { kind: 'wares', v: 0 }); ent('deco', 37, 21, { kind: 'wares', v: 1 });
+  ent('deco', 24, 21, { kind: 'counter' }); ent('npc', 25, 21, { kind: 'keeper' });
+  ent('deco', 19, 21, { kind: 'rumBarrels', v: 0 }); ent('deco', 29, 21, { kind: 'kegStack' });
+  ent('deco', 13, 21, { kind: 'coiledCable', v: 0 }); ent('deco', 39, 21, { kind: 'plunder', v: 1 });
+  ent('deco', 9, 21, { kind: 'lanternDeck', v: 1 }); ent('deco', 31, 21, { kind: 'chartTable' });
+  ent('deco', 21, 21, { kind: 'seaChest' }); ent('deco', 35, 21, { kind: 'waterButt' });
+  ent('npc', 17, 21, { kind: 'ferryman' }); ent('npc', 28, 21, { kind: 'squire' });
+  plat(6, 18, 4); plat(12, 18, 3);                        // her upper shelf, where the dear stuff lives
+  ent('deco', 7, 17, { kind: 'seaChest' }); ent('deco', 13, 17, { kind: 'plunder', v: 0 });
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 21 }, pools: [], falls: [], moversExtra: [],
+    duskStart: -1, duskLen: 1, music: 'select', night: true, shop: true, interiors: [[2, 41, 16, 21, 'ship']],
+    palette: { set: 'ship', hall: true, sky: 'night', dress: 'none',
+      dirt: '#4a4038', dirtL: '#5e5246', dirtD: '#2e2620', grass: '#6a5c4c', grassL: '#8a7a64', grassD: '#453c2c' },
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
+  };
+}
 function theShopCrag() {
   const L = painter(40, 28);
   const { block, floor, ent, set } = L;
@@ -2555,7 +2581,7 @@ function shipwreckReef() {
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones,
     duskStart: 99999, duskLen: 1, music: 'reef', night: false,
-    interiors: [[34, 93, 26, 29, 'stone'], [116, 177, 22, 29, 'stone'], [247, 300, 24, 26, 'stone'], [302, 371, 17, 21, 'stone']], // ONLY the enclosed spaces: a backdrop that reaches above a deck hangs a stone wall in the sky
+    interiors: [[34, 93, 26, 29, 'ship'], [116, 177, 22, 29, 'ship'], [247, 300, 24, 26, 'ship'], [302, 371, 17, 21, 'ship']], // ONLY the enclosed spaces: a backdrop that reaches above a deck hangs a stone wall in the sky
     wetZone: [0, 119], storm: true, dark: 0.01,
     hullZones: [[16, 26, 26, 30], [30, 42, 27, 31], [46, 58, 25, 29], [62, 74, 27, 31], [78, 92, 26, 30], [96, 118, 24, 28], [119, 212, 6, 34], [378, 400, 15, 25]], // her timbers; below them the reef takes over again
     quest: { n: 3, item: 'seal', name: 'ROYAL SEALS', npc: 'squire', done: 'THE SEALS ARE FOUND', reward: 'relic', relic: 'diverlamp' },
@@ -2756,7 +2782,7 @@ function theFlotilla() {
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones,
     duskStart: 99999, duskLen: 1, music: 'flotilla', night: false, swell: { amp: 2, period: 4.6 },
-    interiors: [[34, 93, 26, 30, 'stone'], [116, 173, 24, 30, 'stone'], [248, 340, 24, 27, 'stone'], [340, 372, 12, 15, 'stone']],
+    interiors: [[34, 93, 26, 30, 'ship'], [116, 173, 24, 30, 'ship'], [248, 340, 24, 27, 'ship'], [340, 372, 12, 15, 'ship']],
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
     palette: { set: 'ship', sky: 'glare', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(240,235,205,0.10)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
@@ -2961,7 +2987,7 @@ function theHurricane() {
     // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface.
     storm2: { every: 9, tell: 1.2, y: 20 * TS, zones: [[330 * TS, 424 * TS], [486 * TS, 558 * TS], [560 * TS, 744 * TS]] },
     hullZones,
-    interiors: [[20, 740, 21, 26, 'stone'], [186, 214, 17, 19, 'stone'], [504, 540, 25, 26, 'stone'], [662, 742, 17, 19, 'stone']],
+    interiors: [[20, 740, 21, 26, 'ship'], [186, 214, 17, 19, 'ship'], [504, 540, 25, 26, 'ship'], [662, 742, 17, 19, 'ship']],
     quest: { n: 3, item: 'lamp', name: 'HER LANTERNS', npc: 'squire', done: 'SHE HAS HER LIGHTS BACK', reward: 'relic', relic: 'stormline' },
     palette: { set: 'ship', sky: 'storm', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
@@ -2998,7 +3024,7 @@ function theLamplitStreet() {
   const pools = [], movers = [], interiors = [], darkZones = [];
   const ST = 38, UP = 22, WL = 24 * TS;        // the paving, the roof road, and the water line between them
   // the masonry of the lower city: its top is the roof road, its underside is the street's vault
-  const mass = (x0, x1) => { block(x0, x1, UP, 27); interiors.push([x0, x1, 28, ST - 1, 'stone']); };
+  const mass = (x0, x1) => { block(x0, x1, UP, 27); interiors.push([x0, x1, 28, ST - 1, 'drowned']); };
   // a flooded stretch of street. The tide runs down all of them and turns on a timer.
   const flood = (x0, x1) => pools.push({ x0: x0 * TS, x1: x1 * TS, y: WL, bottom: ST * TS, shallow: false, swim: true, clear: true, runTide: true });
   const lamp = (x, dark) => ent('lantern', x, ST - 1, { city: true, dark: !!dark });
@@ -3063,7 +3089,7 @@ function theLamplitStreet() {
   air(194, 195, 18, 21);                        // the door in off the roof road
   air(241, 242, 18, 21);                        // and the passage OUT behind the gate, or the hall is a box
   port(240, 16, 21);                            // the gate itself, shut until he is down
-  interiors.push([196, 239, 14, 21, 'stone']);
+  interiors.push([196, 239, 14, 21, 'drowned']);
   darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.8 });
   ent('sign', 190, UP - 1, { text: 'THE MARKET HALL. SOMETHING IN THERE IS PUTTING THE LAMPS OUT ONE AT A TIME, AND WHEN THE LAST ONE GOES IT WILL STILL BE IN THERE WITH YOU.' });
   ent('check', 190, UP - 1);                    // the one outside his wall
@@ -3113,7 +3139,7 @@ function theLamplitStreet() {
   mass(358, 428);
   block(362, 363, 10, 21); block(424, 426, 10, 21); block(364, 423, 10, 11);
   air(362, 363, 18, 21); air(424, 426, 18, 21);
-  interiors.push([364, 423, 12, 21, 'stone']);
+  interiors.push([364, 423, 12, 21, 'drowned']);
   ent('sign', 360, UP - 1, { text: 'THE LAMP WORKS. A HUNDRED YEARS IT HAS BEEN PUSHING AIR DOWN THE CITY PIPES, AND THAT IS THE ONLY REASON ANY OF THIS IS DRY. WORK THE BEAM.' });
   ent('deco', 380, UP - 1, { kind: 'bellows' }); ent('deco', 404, UP - 1, { kind: 'bellows' });
   ent('deco', 392, 11, { kind: 'lampMain', v: 0, hang: true }); ent('deco', 416, 11, { kind: 'lampMain', v: 1, hang: true });
@@ -3165,7 +3191,7 @@ function theLamplitStreet() {
   mass(570, W - 1); block(570, W - 1, 28, 37);   // his gate stands on a solid mole: the street stops under it
   block(574, 575, 6, 21); block(696, 698, 6, 21); block(576, 695, 6, 7);
   air(574, 575, 18, 21);
-  interiors.push([576, 695, 8, 21, 'stone']);
+  interiors.push([576, 695, 8, 21, 'drowned']);
   darkZones.push({ x0: 576 * TS, x1: 698 * TS, y0: 7 * TS, y1: 23 * TS, dark: 0.8 });
   ent('sign', 572, UP - 1, { text: 'THE TOLL GATE. A HUNDRED YEARS OF SHARES CAME DOWN HERE TO A MAN IN A CHAIR. HE IS CARRIED, HE DOES NOT SWIM, AND HE WILL PUT THE LAMPS OUT TO DO IT IN THE DARK. PARRY THE BOOK. JUMP THE ROD. DO NOT TRY TO BLOCK THE WEIGHT.' });
   ent('check', 578, UP - 1);                     // the one outside his walls
@@ -3299,6 +3325,7 @@ export const LEVELS = [
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
   { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
+  { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 // THE REVIEW PASS (2026-09-11). Each wood's fixes from the level review, laid on the finished level in its

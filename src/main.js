@@ -796,6 +796,9 @@ function loadLevel(i) {
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; bakeAll(L.palette || {});
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
+  // a mini you have already put down stays down, and the gate it was standing in front of starts open
+  miniDone = !!((PROG[LEVELS[i].id] || {}).mini);
+  if (miniDone && L.mini && L.mini.gate !== undefined) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set(); straysGot = new Set(); strayLast = null; for (const p of (L.pools || [])) { p.y0 = p.y; p.shallow0 = p.shallow; p.depth0 = p.depth; } tileSpr = new Array(LW * LH).fill(null); resolveTiles();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
@@ -819,6 +822,9 @@ function spawnEntities() {
 }
 function spawnEnt(e) {
   if (e.ifDrained !== undefined && !marks.has('pool:' + e.ifDrained * TS)) return; // lives on the channel floor: only once the water is gone
+  // THE MINI OF A LEVEL IS KILLED ONCE. Where a level places several of his kind (eleven spiders in the
+  // village), only the one marked as the mini is left lying.
+  if (miniDone && !rushOn() && L.mini && e.t === L.mini.boss && (e.mini || !L.ents.some(q => q.t === e.t && q.mini))) return;
   const n0 = enemies.length;
   {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
@@ -1145,13 +1151,14 @@ const CRAG_NODES = [
 const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [54, 162], [22, 140], [18, 100], [30, 66], [50, 40]];
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: 11, x: 152, y: 104, name: 'THE LONG WATER' },
   { id: 'reef', kind: 'level', level: 12, x: 96, y: 72, name: 'THE SHIPWRECK REEF' },
+  { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 74, y: 56, name: 'THE CHANDLER' },
   { id: 'flotilla', kind: 'level', level: 13, x: 50, y: 44, name: 'THE FLOTILLA' },
   { id: 'hurricane', kind: 'level', level: 14, x: 22, y: 16, name: 'THE HURRICANE DECK' },
   { id: 'lamplit', kind: 'level', level: 15, x: 18, y: 52, name: 'THE LAMPLIT STREET' }]; // straight down off the wreck
-const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [62, 52], [50, 44], [38, 30], [22, 16], [16, 32], [18, 52]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
+const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [74, 56], [62, 52], [50, 44], [38, 30], [22, 16], [16, 32], [18, 52]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES);
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH);
-const NODE_AT = [0, 3, 6, 8, 10, 12, 20, 23, 25, 28, 31, 34, 39, 44, 47, 50, 52, 54]; // PATH index of each node: wood 0-5, the crags, then the coast
+const NODE_AT = [0, 3, 6, 8, 10, 12, 20, 23, 25, 28, 31, 34, 39, 44, 47, 48, 51, 53, 55]; // PATH index of each node: wood 0-5, the crags, then the coast
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172]]]);
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
@@ -2924,6 +2931,7 @@ function miniEnd(e) {
   if (!L.mini) return;
   openGate(L.mini.gate, 0, LH - 1, true);
   setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
+  if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].mini = true; saveProgress(); }
   number(e.x, e.y - 30, MINI_DONE[e.t] || 'THE WAY OPENS', '#8fd160'); SFX.heavy(); music.play(L.music || 'theme');
 }
 function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1; for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.palisade[(ty + col) % 3] : null; } }
@@ -7694,9 +7702,11 @@ function drawWorld(cx, cy, showPlayer) {
     for (let ty = 0; ty < LH; ty++) for (let tx = tx0; tx <= tx1; tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; if ((L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 4 && ty <= y1)) continue; if (L.arena && tx * TS >= L.arena.x0 && tx * TS < L.arena.x1) continue; const ya = ty * TS - cy; for (const rx of [tx * TS + 3, (tx + n) * TS - 4]) { g.moveTo(Math.round(rx - cx) + 0.5, Math.max(-2, ya - 140)); g.lineTo(Math.round(rx - cx) + 0.5, ya + 2); } }
     g.stroke();
   }
-  for (const [x0, x1, y0, y1, st] of (L.interiors || [])) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0) continue; const earth = st === 'earth', stone = st === 'stone', glass = st === 'crystal'; g.fillStyle = earth ? '#2c1e14' : stone ? '#2a2c36' : glass ? '#3a3c5a' : '#2a1a10'; g.fillRect(sx, sy, w, h);
-    if (glass) { g.fillStyle = '#4a4e74'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7); g.fillStyle = '#2a2c44'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#7a8ac8'; for (let i = 0; i < w * h / 700; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 61) % h); g.fillRect(rx, ry, 1, 3 + (i % 3) * 2); g.fillRect(rx + 1, ry + 2, 1, 2); } for (let i = 0; i < w * h / 500; i++) { const rx = sx + ((i * 131 + 7) % w), ry = sy + ((i * 71 + 3) % h); const tw = 0.5 + 0.5 * Math.sin(time * 3 + i * 1.7); if (tw > 0.75) { g.fillStyle = tw > 0.92 ? '#eefaff' : '#7aa8c8'; g.fillRect(rx, ry, 1, 1); } } continue; }
-    if (stone) { g.fillStyle = '#363a46'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7); g.fillStyle = '#1e2028'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); continue; } if (earth) { g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); } g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2); continue; } g.fillStyle = '#3a2618'; for (let yy = sy + 4; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#1e120a'; for (let xx = sx + ((cx * 0) % 40); xx < sx + w; xx += 40) g.fillRect(xx, sy, 1, h); }
+  for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
+    const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
+    if (sx > VW || sx + w < 0) continue;
+    drawRoom(st, sx, sy, w, h, x0, y0);
+  }
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
@@ -8234,6 +8244,109 @@ function drawWorld(cx, cy, showPlayer) {
   for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x - cx), Math.round(n.y - cy), n.col, 'center'); }
   g.globalAlpha = 1;
 }
+
+// THE WALL BEHIND THE PLAY LAYER. Each room kind is the place it is in: a goblin castle, a pirate's orlop and
+// a drowned counting house should not share a backdrop, and for four rounds they did.
+function drawRoom(st, sx, sy, w, h, tx0, ty0) {
+  const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
+  if (st === 'crystal') { g.fillStyle = '#3a3c5a'; g.fillRect(sx, sy, w, h);
+    g.fillStyle = '#4a4e74'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7);
+    g.fillStyle = '#2a2c44'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1);
+    g.fillStyle = '#7a8ac8'; for (let i = 0; i < w * h / 700; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 61) % h); g.fillRect(rx, ry, 1, 3 + (i % 3) * 2); g.fillRect(rx + 1, ry + 2, 1, 2); }
+    for (let i = 0; i < w * h / 500; i++) { const rx = sx + ((i * 131 + 7) % w), ry = sy + ((i * 71 + 3) % h); const tw = 0.5 + 0.5 * Math.sin(time * 3 + i * 1.7);
+      if (tw > 0.75) { g.fillStyle = tw > 0.92 ? '#eefaff' : '#7aa8c8'; g.fillRect(rx, ry, 1, 1); } }
+    return; }
+  if (st === 'earth') { g.fillStyle = '#2c1e14'; g.fillRect(sx, sy, w, h);
+    g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); }
+    g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2);
+    return; }
+  // ---------- THE QUEEN'S HALLS ----------
+  if (st === 'royal') {
+    g.fillStyle = '#2a1420'; g.fillRect(sx, sy, w, h);                                    // deep red plaster in shadow
+    g.fillStyle = '#3a1b2a'; for (let yy = sy + 6; yy < sy + h; yy += 12) g.fillRect(sx, yy, w, 6);
+    // the arcade: a gilt pilaster every three tiles, with an arched niche between each pair
+    for (let xx = sx - ((tx0 * TS) % 48) ; xx < sx + w; xx += 48) {
+      const nx = xx + 24, ny = sy + 10, nw = 26, nh = Math.max(12, h - 22);
+      if (nx + nw > sx && nx < sx + w) {                                                  // the niche, with a tapestry in it
+        g.fillStyle = '#1d0e18'; g.fillRect(Math.max(sx, nx), ny, Math.min(nw, sx + w - nx), nh);
+        for (let i = 0; i < nw; i++) { const a = Math.round(Math.sqrt(Math.max(0, (nw / 2) ** 2 - (i - nw / 2) ** 2)) * 0.5);
+          const px2 = nx + i; if (px2 < sx || px2 >= sx + w) continue; g.fillStyle = '#2a1420'; g.fillRect(px2, ny, 1, (nw / 2 - a) | 0); }
+        const seed = Math.abs(Math.round(nx / 48) * 7 + Math.round(ty0));
+        g.fillStyle = ['#6e1c28', '#3a2a6e', '#1c4a2e', '#5a2a6e'][seed % 4]; g.fillRect(Math.max(sx, nx + 5), ny + 5, Math.min(16, sx + w - nx - 5), nh - 10);
+        g.fillStyle = '#c9a040'; for (let yy = ny + 8; yy < ny + nh - 8; yy += 6) g.fillRect(Math.max(sx, nx + 6), yy, Math.min(14, sx + w - nx - 6), 1);
+        g.fillStyle = ['#e0b040', '#c9a0ff', '#8fd160', '#e08a40'][seed % 4]; g.fillRect(Math.max(sx, nx + 10), ny + 10 + (seed % 5) * 4, Math.min(6, sx + w - nx - 10), 4); // the device woven into it
+        g.fillStyle = '#e0b040'; g.fillRect(Math.max(sx, nx + 5), ny + 4, Math.min(16, sx + w - nx - 5), 1);
+      }
+      if (xx + 6 > sx && xx < sx + w) {                                                   // the pilaster itself
+        for (let i = 0; i < 6; i++) { const px2 = xx + i; if (px2 < sx || px2 >= sx + w) continue;
+          g.fillStyle = i === 0 ? '#140a10' : i === 1 ? '#8a6a28' : i < 5 ? '#c9a040' : '#7a5a1c'; g.fillRect(px2, sy, 1, h); }
+        g.fillStyle = '#e0b040'; g.fillRect(Math.max(sx, xx - 2), sy + 4, Math.min(10, sx + w - xx + 2), 3);
+        g.fillStyle = '#8a6a28'; g.fillRect(Math.max(sx, xx - 2), sy + 7, Math.min(10, sx + w - xx + 2), 1);
+      }
+    }
+    // a chandelier hung in the dark of the vault, and the glass bleeding colour down the wall
+    for (let xx = sx - ((tx0 * TS) % 96) + 48; xx < sx + w; xx += 96) {
+      if (xx < sx - 12 || xx > sx + w + 12) continue;
+      const cy2 = sy + 8, sw = 0.6 + 0.4 * Math.sin(time * 1.3 + xx * 0.05);
+      g.fillStyle = '#7a5a1c'; g.fillRect(xx, sy, 1, 8);
+      g.fillStyle = '#c9a040'; g.fillRect(xx - 7, cy2, 15, 2); g.fillRect(xx - 5, cy2 + 2, 11, 1);
+      for (let i = -6; i <= 6; i += 4) { g.fillStyle = '#ffd36b'; g.globalAlpha = 0.5 + 0.4 * sw; g.fillRect(xx + i, cy2 + 3, 1, 2); g.globalAlpha = 1; }
+      g.globalAlpha = 0.10 + 0.05 * sw; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(xx, cy2 + 4, 26, 0, 7); g.fill(); g.globalAlpha = 1;
+    }
+    return;
+  }
+  // ---------- AN ORLOP ----------
+  if (st === 'ship') {
+    g.fillStyle = '#241b14'; g.fillRect(sx, sy, w, h);
+    for (let yy = sy; yy < sy + h; yy += 4) { g.fillStyle = ((yy / 4) & 1) ? '#31241a' : '#2a1f16'; g.fillRect(sx, yy, w, 3); g.fillStyle = '#150f0a'; g.fillRect(sx, yy + 3, w, 1); }
+    // her frames, standing proud of the planking, with a knee at the head of each
+    for (let xx = sx - ((tx0 * TS) % 40); xx < sx + w; xx += 40) {
+      for (let i = 0; i < 5; i++) { const px2 = xx + i; if (px2 < sx || px2 >= sx + w) continue;
+        g.fillStyle = i === 0 ? '#120c08' : i === 1 ? '#4a3826' : i < 4 ? '#3d2e1f' : '#1b120c'; g.fillRect(px2, sy, 1, h); }
+      g.fillStyle = '#4a3826'; for (let i = 0; i < 10; i++) { const px2 = xx + 5 + i; if (px2 < sx || px2 >= sx + w) continue; g.fillRect(px2, sy + i, 1, 2); }
+      g.fillStyle = '#8a6a3a'; const bx = xx + 2; if (bx >= sx && bx < sx + w) { g.fillRect(bx, sy + 14, 1, 1); g.fillRect(bx, sy + 30, 1, 1); }
+    }
+    // a gunport with the grey of the sea behind it, and a lantern swinging on a hook
+    for (let xx = sx - ((tx0 * TS) % 120) + 60; xx < sx + w; xx += 120) {
+      if (xx < sx + 6 || xx + 14 > sx + w) continue;
+      g.fillStyle = '#0e0a07'; g.fillRect(xx, sy + 12, 14, 12); g.fillStyle = '#43525c'; g.fillRect(xx + 1, sy + 13, 12, 10);
+      g.fillStyle = '#5d707c'; g.fillRect(xx + 1, sy + 13 + ((Math.sin(time * 0.8) * 2 + 4) | 0), 12, 2);
+      g.fillStyle = '#2a1f16'; g.fillRect(xx - 1, sy + 11, 16, 1); g.fillRect(xx - 1, sy + 24, 16, 1);
+      const lx = xx + 30, sw = Math.sin(time * 1.6 + xx) * 2;
+      if (lx > sx && lx < sx + w) { g.fillStyle = '#3d2e1f'; g.fillRect(lx, sy, 1, 7);
+        g.fillStyle = '#5a6270'; g.fillRect(lx - 2 + sw, sy + 7, 5, 6); g.fillStyle = '#ffd36b'; g.fillRect(lx - 1 + sw, sy + 8, 3, 4);
+        g.globalAlpha = 0.12; g.beginPath(); g.arc(lx + sw, sy + 10, 20, 0, 7); g.fill(); g.globalAlpha = 1; }
+    }
+    return;
+  }
+  // ---------- A DROWNED ROOM ----------
+  if (st === 'drowned') {
+    g.fillStyle = '#16262a'; g.fillRect(sx, sy, w, h);
+    for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet
+      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }
+      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);
+    }
+    g.fillStyle = '#24402c'; for (let i = 0; i < w * h / 260; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 1, 2 + (i % 3)); }
+    // weed hanging off the courses, and a fish going through the room now and then
+    for (let xx = sx - ((tx0 * TS) % 28); xx < sx + w; xx += 28) { const hh = 5 + ((Math.abs(Math.round(xx)) * 7) % 9), sw2 = Math.sin(time * 0.9 + xx * 0.07) * 1.5;
+      for (let j = 0; j < hh; j++) { const px2 = xx + Math.round(sw2 * j / hh); if (px2 < sx || px2 >= sx + w) continue; g.fillStyle = j > hh - 3 ? '#3f7a54' : '#1e3d30'; g.fillRect(px2, sy + j, 1, 1); } }
+    { const fx = sx + ((time * 14 + tx0 * 9) % (w + 40)) - 20, fy = sy + 12 + Math.sin(time * 1.1 + tx0) * 6;
+      if (fx > sx && fx < sx + w - 4) { g.fillStyle = '#3a5a5e'; g.fillRect(fx, fy, 3, 2); g.fillRect(fx + 3, fy, 1, 1); } }
+    g.globalAlpha = 0.06 + 0.04 * Math.sin(time * 0.7);                                   // the light off the water, crawling
+    g.fillStyle = '#7cc8c8'; for (let yy = sy; yy < sy + h; yy += 16) g.fillRect(sx, yy + ((Math.sin(time * 0.5 + yy) * 4) | 0) + 4, w, 2);
+    g.globalAlpha = 1;
+    return;
+  }
+  // ---------- the old stone room, and the default timber ----------
+  if (st === 'stone') { g.fillStyle = '#2a2c36'; g.fillRect(sx, sy, w, h);
+    g.fillStyle = '#363a46'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7);
+    g.fillStyle = '#1e2028'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1);
+    return; }
+  g.fillStyle = '#2a1a10'; g.fillRect(sx, sy, w, h);
+  g.fillStyle = '#3a2618'; for (let yy = sy + 4; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1);
+  g.fillStyle = '#1e120a'; for (let xx = sx; xx < sx + w; xx += 40) g.fillRect(xx, sy, 1, h);
+}
+
 // Reflections: the strip of world above each pool, flipped into the water with a blue wash.
 const [reflC, reflG] = canvas(VW, 48);
 function drawReflections(cx, cy) {
