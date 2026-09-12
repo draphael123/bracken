@@ -1000,7 +1000,7 @@ function spawnEnt(e) {
       case 'chainpost': { const cut = marks.has('chain:' + e.x); props.push({ t: 'chainpost', x: px, y: py, hp: 3, cut, tx: e.x }); break; }
       case 'glowbud': { const pr = { t: 'glowbud', x: px, y: py, lit: 0 }; props.push(pr); lights.push({ x: px, y: py - 8, r: 18, glow: true }); pr.light = lights[lights.length - 1]; break; } // dim until you strike it
       case 'glow': props.push({ t: 'glow', x: px, y: py, dark: 0 }); lights.push({ x: px, y: py - 8, r: 52, glow: true, ref: null }); lights[lights.length - 1].ref = props[props.length - 1]; break;
-      case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, phase: (e.x % 7) * 0.9 }); break;
+      case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone }); break;
       case 'vent': props.push({ t: 'vent', x: px, y: py, period: e.period || 4, on: e.on || 1.6, phase: e.phase || 0, h: e.h || 112, wind: !!e.wind, heat: !!e.heat, glass: !!e.glass, lift: e.lift || 190, w: e.w || 13 }); break;
       case 'roller': props.push({ t: 'roller', x: px, y: py, vx: (e.face || 1) * (e.speed || 55), alive: true, rot: 0 }); break;
     }
@@ -6374,6 +6374,12 @@ function updateMovers(dt) {
     } else {
       if (m.kind === 'swing') { const th = Math.sin(time * 2 * Math.PI / m.period + m.phase) * 0.9; m.x = m.px + Math.sin(th) * m.arm - m.w / 2; m.y = m.py + Math.cos(th) * m.arm; m.dy = m.y - oldY; }
       if (m.bob) { m.y = m.y0 + Math.sin(time * 1.5 + (m.phase || 0)) * 5; m.dy = m.y - oldY; }
+      else if (m.vert) { // A RISING PILLAR: the water pushes it up out of itself and lets it back down
+        const ph = (time / m.period + (m.phase || 0)) % 1, k = ph < 0.5 ? ph * 2 : 2 - ph * 2;
+        const e2 = k * k * (3 - 2 * k); // it comes up slowly, holds at the top, and drops
+        m.y = m.y0 - m.rise * e2; m.dy = m.y - oldY;
+        if (m.dy < -0.4 && Math.random() < 0.5) parts.push({ x: m.x + Math.random() * m.w, y: m.y + 8, vx: 0, vy: 40, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#dff0f5' : '#7fc4e0', size: 1, grav: 140 });
+      }
       else { m.p += m.dir * m.speed / m.range * dt;
       if (m.p >= 1) { m.p = 1; m.dir = -1; } else if (m.p <= 0) { m.p = 0; m.dir = 1; }
       m.x = m.x0 + m.p * m.range; }
@@ -7038,6 +7044,12 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'swing' && m.bucket) { const bx = Math.round(m.x - cx), by = Math.round(m.y - cy), px2 = Math.round(m.px - cx), py2 = Math.round(m.py - cy); g.strokeStyle = '#8a919c'; g.lineWidth = 1; g.beginPath(); g.moveTo(px2 + 0.5, py2); g.lineTo(bx + m.w / 2 + 0.5, by - 10); g.stroke(); g.beginPath(); g.moveTo(bx + 3, by); g.lineTo(bx + m.w / 2, by - 10); g.lineTo(bx + m.w - 3, by); g.stroke();
       g.fillStyle = '#3a2618'; g.fillRect(px2 - 3, py2 - 2, 6, 4); g.fillStyle = '#5a3a24'; g.fillRect(bx + 1, by, m.w - 2, 10); g.fillStyle = '#7a5234'; for (let k = 3; k < m.w - 2; k += 6) g.fillRect(bx + k, by + 1, 2, 8); g.fillStyle = '#8a919c'; g.fillRect(bx, by, m.w, 2); g.fillRect(bx + 1, by + 8, m.w - 2, 2); g.fillStyle = '#a89a80'; g.fillRect(bx + 4, by - 2, m.w - 8, 2); } // the mason's bucket: iron-bound, a load of stone in it
     else if (m.kind === 'swing') { g.strokeStyle = m.vine ? '#3f6e2c' : '#c9b27c'; g.lineWidth = m.vine ? 2 : 1; g.beginPath(); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x - cx) + 2.5, Math.round(m.y - cy)); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x + m.w - cx) - 2.5, Math.round(m.y - cy)); g.stroke(); if (m.vine) { g.fillStyle = '#6faa4a'; for (let k = 1; k < 5; k++) { const t = k / 5; g.fillRect(Math.round(m.px + (m.x + 2 - m.px) * t - cx) + (k % 2 ? 1 : -3), Math.round(m.py + (m.y - m.py) * t - cy), 3, 2); g.fillRect(Math.round(m.px + (m.x + m.w - 2 - m.px) * t - cx) + (k % 2 ? -3 : 1), Math.round(m.py + (m.y - m.py) * t - cy) + 1, 3, 2); } } g.fillStyle = m.vine ? '#3f6e2c' : '#5c3a1d'; g.fillRect(Math.round(m.px - cx) - 3, Math.round(m.py - cy) - 3, 6, 4); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, Math.round(m.y) - cy); }
+    else if (m.stone) { const n = Math.max(1, Math.round(m.w / TS)); // A PILLAR OF THE OLD SLUICE: wet stone, weed on its head
+      for (let i = 0; i < n; i++) { const dx = Math.round(m.x) + i * TS - cx, dy = Math.round(m.y) - cy;
+        g.fillStyle = '#5a6470'; g.fillRect(dx, dy, TS, 10); g.fillStyle = '#6f7a84'; g.fillRect(dx, dy, TS, 3);
+        g.fillStyle = '#3e454e'; g.fillRect(dx, dy + 8, TS, 2); g.fillStyle = '#4a7264'; for (let k = 0; k < 3; k++) g.fillRect(dx + 2 + k * 5, dy - 1, 2, 2);
+        g.fillStyle = '#2e3640'; g.fillRect(dx, dy + 10, TS, 30); g.fillStyle = '#3e454e'; g.fillRect(dx + 2, dy + 12, 2, 26); }
+    }
     else if (m.cap) { const n = m.w / TS; for (let i = 0; i < n; i++) { g.drawImage(TILE.mycDirt[i % 3], 0, 0, 16, 8, Math.round(m.x) + i * TS - cx, m.y + 8 - cy, 16, 8); g.drawImage(TILE.bouncer[0], Math.round(m.x) + i * TS - cx, m.y - 8 - cy); } }
     else { const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); }
   }

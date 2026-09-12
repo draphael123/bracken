@@ -2387,7 +2387,36 @@ function longWater() {
     weather: [{ x0: 0, x1: 108 * TS, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 369 * TS, x1: 409 * TS, floor: 30 * TS, trigger: 370 * TS, wallL: 368, wallR: 409, boss: 'herald', music: 'boss2', tint: '#3a8aa0', tintA: 0.08, fx: 'motes' },
   };
-  return ret;
+  const R1 = ret;
+  // ---- 5. THE SLUICE STAIR: the old gates, and the piers of them riding up and down on the water ----
+  const G = grow({ W: R1.W, H: R1.H, grid: R1.grid, ents: R1.ents }, R1, 350, 66);
+  { const { block, plat, ent, coins, set } = G;
+    const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+    block(350, 358, 27, H - 1); block(407, 415, 27, H - 1);          // the two banks of it
+    block(350, 415, 36, H - 1);                                       // and the floor of the channel under the water
+    G.R.pools.push({ x0: 359 * TS, x1: 407 * TS, y: 30 * TS, bottom: 36 * TS, shallow: false, swim: true, sea: true, clear: true });
+    net(357, 358, 26, 35); net(407, 408, 26, 35);                     // a way back up onto either bank out of the water
+    // the gates themselves, standing over the channel, and the fall out of the near one
+    ent('deco', 355, 26, { kind: 'netPoles' }); ent('deco', 411, 26, { kind: 'netPoles' }); // on the banks: there is nothing to stand on over the channel, and the nets are at 357 and 407
+    ent('sluice', 356, 26); G.R.falls.push({ x0: 362 * TS - 6, x1: 362 * TS + 18, y0: 20 * TS, y1: 30 * TS + 6 });
+    ent('sign', 352, 26, { text: 'THE SLUICE STAIR. THE PIERS RIDE UP AND DOWN ON THE WATER: TAKE ONE AS IT COMES UP AND BE OFF IT BEFORE IT GOES. THE SCOUTS ON THE FAR BANK WILL NOT WAIT FOR YOU.' });
+    ent('check', 354, 26);
+    // SIX PIERS. Each one rises out of the channel and sinks back on its own beat: read them, do not rush them.
+    const piers = [[365, 0.0], [372, 0.35], [379, 0.7], [386, 0.15], [393, 0.5], [400, 0.85]];
+    for (const [x, ph] of piers) ent('mover', x, 34, { len: 3, range: 0, vert: true, rise: 8, period: 3.4, ph, stone: true });
+    coins([366, 26], [373, 26], [380, 26], [387, 26], [394, 26], [401, 26]);
+    // and a high road for anyone who would rather not: three planks off the gate frames, and a rope between them
+    plat(363, 20, 3); plat(371, 18, 3); plat(380, 20, 3); plat(389, 18, 3); plat(398, 20, 3);
+    coins([364, 19], [372, 17], [381, 19], [390, 17], [399, 19]);
+    G.R.moversExtra.push({ kind: 'swing', px: 376 * TS, py: 12 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.5 });
+    G.R.moversExtra.push({ kind: 'swing', px: 394 * TS, py: 12 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2.2 });
+    // who is holding it
+    ent('scout', 411, 26, { face: -1 }); ent('scout', 413, 26, { face: -1 }); ent('tideguard', 409, 26, { face: -1 });
+    ent('siren', 370, 32); ent('siren', 390, 33); ent('eel', 382, 34);
+    ent('silver', 386, 17);
+    ent('sign', 410, 26, { text: 'PAST THE STAIR. THE SQUARE IS AHEAD AND THE SEA IS STANDING IN IT.' });
+  }
+  return G.done();
 }
 
 // THE SHIPWRECK REEF. The Herald's glaive pointed out to sea, and this is what it pointed at: the reef where the
