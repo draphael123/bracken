@@ -42,9 +42,12 @@ function setView(mode) {
   viewMode = mode; const [w, h] = viewFor(mode); if (VW === w && VH === h) return;
   VW = w; VH = h; buf.width = w; buf.height = h; g.imageSmoothingEnabled = false; resize(); if (L) bakeAll(L.palette || {});
 }
-let S = 3, offX = 0, offY = 0, scanPat = null;
+let S = 3, offX = 0, offY = 0, scanPat = null, DPR = 1;
 function resize() {
-  disp.width = innerWidth || 1280; disp.height = innerHeight || 720;
+  DPR = Math.max(1, Math.min(3, (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1));
+  const cw = innerWidth || 1280, ch = innerHeight || 720;
+  disp.width = Math.round(cw * DPR); disp.height = Math.round(ch * DPR);
+  disp.style.width = cw + 'px'; disp.style.height = ch + 'px';
   S = Math.max(1, Math.floor(Math.min(disp.width / VW, disp.height / VH)));
   let cap = 'auto'; try { cap = SET.scale; } catch {} // SET is declared below; the first resize runs before it exists
   if (cap !== 'auto') S = Math.min(S, cap);
@@ -2037,7 +2040,7 @@ addEventListener('keyup', e => {
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; edPaint = 0; });
 // ---- the editor's mouse. Screen pixels come in; edMouse turns them into tiles. ----
 {
-  const toGame = ev => { const r = disp.getBoundingClientRect(); return [(ev.clientX - r.left - offX) / S, (ev.clientY - r.top - offY) / S]; };
+  const toGame = ev => { const r = disp.getBoundingClientRect(); return [((ev.clientX - r.left) * DPR - offX) / S, ((ev.clientY - r.top) * DPR - offY) / S]; };
   disp.addEventListener('contextmenu', ev => { if (state === 'editor') ev.preventDefault(); });
   disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev); edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
   disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); edMouse(x, y, ev.button, false, true); });
@@ -2081,7 +2084,7 @@ function touchPress(k) { initAudio(); anyPress = true; if (k === 'jump') { jumpP
 function touchRelease(k) { if (k && k !== 'pause' && k !== 'up') keys[k] = false; }
 if (touchOn) {
   layoutTouch(); addEventListener('resize', layoutTouch);
-  const upd = e => { e.preventDefault(); for (const t of e.changedTouches) { const k = zoneAt(t.clientX, t.clientY); const old = touches.get(t.identifier); if (old !== k) { touchRelease(old); if (k) touchPress(k); touches.set(t.identifier, k); } } };
+  const upd = e => { e.preventDefault(); for (const t of e.changedTouches) { const k = zoneAt(t.clientX * DPR, t.clientY * DPR); const old = touches.get(t.identifier); if (old !== k) { touchRelease(old); if (k) touchPress(k); touches.set(t.identifier, k); } } };
   disp.addEventListener('touchstart', upd, { passive: false }); disp.addEventListener('touchmove', upd, { passive: false });
   const end = e => { e.preventDefault(); for (const t of e.changedTouches) { touchRelease(touches.get(t.identifier)); touches.delete(t.identifier); } };
   disp.addEventListener('touchend', end, { passive: false }); disp.addEventListener('touchcancel', end, { passive: false });
@@ -2260,6 +2263,11 @@ function die() {
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9);
 }
 // Per-enemy death: a corpse object animates the fall so every foe dies its own way.
+function openYardRespawn(dt) {   // in the open yard a straw man is back on his feet in two seconds
+  if (!L || !L.openYard) return;
+  for (const e of enemies) { if (e.alive) continue; e.downT = (e.downT || 0) + dt;
+    if (e.downT > 2) { e.downT = 0; e.alive = true; e.hp = e.hp0 || e.maxHp || EHP[e.t] || 20; e.dying = 0; e.flash = 0; e.stagger = 0; e.mode = e.mode0 || e.mode; burst(e.x, e.y - 8, 8, ['#e0c088', '#c9a040'], 40, 0.4); } }
+}
 function spawnCorpse(e, dir) {
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
   switch (e.t) {
@@ -3013,7 +3021,7 @@ function updatePlayer(dt) {
 let titleI = 0, titleBarY = null;
 const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {}).cleared);
 const titleItems = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(rushUnlocked() ? ['BOSS RUSH'] : [], ['THE EDITOR', 'SETTINGS', 'CONTROLS']); };
+  return base.concat(rushUnlocked() ? ['BOSS RUSH'] : [], ['PRACTICE', 'THE EDITOR', 'SETTINGS', 'CONTROLS']); };
 let miniActive = false, miniDone = false, miniIntroT = 0;
 // THE NAME ON THE CARD. The intro banner used to carry its own chain of boss names and it had never been
 // extended past the crags, so THE CAPTAIN, THE QUARTERMASTER, THE REEFMAW and the TIDE HERALD all announced
@@ -6851,7 +6859,7 @@ function updateProps(dt) {
       if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
   }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial();
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -7376,6 +7384,7 @@ function update(dt) {
         if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
+        else if (k === 'PRACTICE') { loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
         else if (k === 'THE EDITOR') edEnter();
         else if (k === 'SETTINGS') openMenu('title');
         else if (k === 'CONTROLS') state = 'controls';
@@ -7391,6 +7400,7 @@ function update(dt) {
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
   }
+  if (state === 'practice') { updatePractice(); return; }
   if (state === 'controls') { if (pausePress || confirmPress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
@@ -8718,6 +8728,45 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 20, UI.sel, 'center', 6); }
   text('ESC back', VW / 2, y + h - 10, UI.dim, 'center', 6);
 }
+let practiceI = 0;
+const YARD_DRILLS = {
+  knight: 'sword, shield and the plunge',
+  pyro: 'ember, jet and the firedrop',
+  paladin: 'maul, aegis, mend, hammerfall',
+  open: 'straw men, steps, a gap, a wall, two guards',
+};
+// the open yard is not a hero: it is the fourth row, and it takes whoever you are in as you are
+const YARDS = () => HEROES.concat([{ id: 'open', name: 'THE OPEN YARD', free: true }]);
+function updatePractice() {
+  const rows = YARDS();
+  if (practiceI >= rows.length) practiceI = 0;
+  if (upPress) { practiceI = (practiceI + rows.length - 1) % rows.length; SFX.ui(); }
+  if (downPress) { practiceI = (practiceI + 1) % rows.length; SFX.ui(); }
+  if (pausePress) { state = 'title'; SFX.menuClose(); return; }
+  if (confirmPress || jumpPress) {
+    const h = rows[practiceI];
+    if (h.free) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); } return; }
+    if (!(PROG.heroes && PROG.heroes[h.id])) { SFX.buzz(); menuMsg = 'not yours yet'; menuMsgT = 2; return; }
+    PROG.hero = h.id; applySkin(); applyUpgrades(); saveProgress(); startTrial(h.id);
+  }
+}
+function drawPractice() {
+  g.fillStyle = 'rgba(10,14,12,0.82)'; g.fillRect(0, 0, VW, VH);
+  const x = 24, y = 12, w = VW - 48, h = VH - 24; panel(x, y, w, h);
+  text('THE PRACTICE YARDS', VW / 2, y + 6, UI.title, 'center');
+  text('every verb he has, and nothing that can hurt you', VW / 2, y + 19, UI.dim, 'center', 6);
+  YARDS().forEach((hr, i) => {
+    const owned = hr.free || !!(PROG.heroes && PROG.heroes[hr.id]), sel = i === practiceI, yy = y + 32 + i * 22;
+    if (sel) { g.fillStyle = 'rgba(143,209,96,0.14)'; g.fillRect(x + 6, yy - 3, w - 12, 20); g.fillStyle = UI.sel; g.fillRect(x + 6, yy - 3, 2, 20); }
+    text(hr.name, x + 16, yy, owned ? (sel ? UI.title : UI.text) : '#5a5f5a', 'left');
+    if (!owned) text('NOT YOURS YET', x + w - 16, yy, '#5a5f5a', 'right', 6);
+    else if (hr.free) text('NO GATES', x + w - 16, yy, '#c9b27c', 'right', 6);
+    else if (PROG.tried && PROG.tried[hr.id]) text('WALKED', x + w - 16, yy, UI.sel, 'right', 6);
+    wrap(YARD_DRILLS[hr.id], w - 36, 6).slice(0, 1).forEach((s2, j) => text(s2, x + 16, yy + 10 + j * 9, owned ? UI.dim : '#4a4f4a', 'left', 6));
+  });
+  text('A HERO YARD EQUIPS THAT HERO', VW / 2, y + h - 22, '#c9b27c', 'center', 6);
+  text('ARROWS choose     Z enter the yard     ESC back', VW / 2, y + h - 11, UI.dim, 'center', 6);
+}
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
@@ -8847,7 +8896,7 @@ function drawTitle(cx, cy) {
 // SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
 // on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
 let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
-const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'soundtest', 'herocard', 'win', 'gameover']);
+const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'soundtest', 'herocard', 'practice', 'win', 'gameover']);
 function drawTransition() {
   const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
@@ -9305,6 +9354,7 @@ function render() {
   if (state === 'menu') drawMenu();
   if (state === 'soundtest') drawSoundTest();
   if (state === 'controls') drawControls();
+  if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
   if (state === 'heropick') drawHeroPick();
   if (state === 'rushover' || state === 'rushwin') {

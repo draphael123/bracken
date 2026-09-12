@@ -1895,6 +1895,41 @@ function highcrownWhole() {
   return R;
 }
 
+function openYard() {
+  const W = 120, H = 30; const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  block(0, W - 1, 22, H - 1); block(0, 1, 0, 21); block(W - 2, W - 1, 0, 21);          // the yard, walled
+  ent('sign', 4, 21, { text: 'THE OPEN YARD. NOTHING IN HERE CAN HURT YOU AND NOTHING IN HERE ENDS. THE STRAW MEN COME BACK. ESC AND RETURN TO THE MAP WHEN YOU ARE DONE.' });
+  ent('torch', 8, 21); ent('torch', 112, 21);
+  // ---- the straw men: one on the floor, one on a table, one over the pit ----
+  for (const x of [16, 22, 28]) ent('dummy', x, 21);
+  ent('sign', 14, 21, { text: 'STRAW. THEY DO NOT FIGHT BACK AND THEY DO NOT STAY DOWN: SWING, RUN A COMBO, TIME A HEAVY BLOW.' });
+  // ---- the steps: every height worth jumping, in a row you can read ----
+  plat(36, 19, 4); plat(43, 17, 4); plat(50, 15, 4); plat(57, 13, 4);
+  ent('sign', 34, 21, { text: 'THE STEPS. TWO ROWS AT A TIME UP TO THE TOP, AND A DROP BACK DOWN: DOWN ON A LEDGE FALLS THROUGH IT.' });
+  coins([37, 18], [44, 16], [51, 14], [58, 12]);
+  ent('dummy', 52, 14);
+  // ---- the gap: wide enough that a walk will not do it ----
+  for (let x = 64; x <= 71; x++) for (let y = 22; y < H; y++) set(x, y, T.AIR);
+  block(64, 71, 28, H - 1);                                                             // a floor at the bottom of it, so nothing is lost
+  ent('sign', 62, 21, { text: 'THE GAP. A JUMP WILL NOT CROSS IT. TAP A WAY TWICE TO DASH, OR COME AT IT OFF THE STEPS.' });
+  ent('dummy', 68, 27);                                                                 // and one at the bottom to plunge onto
+  // ---- the wall: a climb, and a ledge to plunge off ----
+  block(78, 79, 8, 21); for (let y = 9; y <= 20; y++) { set(78, y, T.NET); set(79, y, T.NET); }
+  plat(80, 8, 6);
+  ent('sign', 74, 21, { text: 'THE WALL. CLIMB IT, AND PLUNGE OFF THE TOP: DOWN AND SWING IN THE AIR. LAND IT ON A STRAW MAN AND YOU BOUNCE.' });
+  for (const x of [86, 90, 94]) ent('dummy', x, 21);
+  coins([81, 7], [84, 7]);
+  // ---- and two guards, which is the only thing in here you cannot simply hit ----
+  ent('shield', 102, 21, { face: -1 }); ent('soldier', 108, 21, { face: -1 });
+  ent('sign', 98, 21, { text: 'A RAISED GUARD. A LIGHT BLOW TURNS ON IT. HOLD THE SWING INSTEAD: THE HEAVY BLOW IS THE ONLY THING THAT GOES THROUGH ONE. THESE TWO CANNOT HURT YOU EITHER.' });
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 6, y: 21 }, pools: [], falls: [], moversExtra: [], interiors: [],
+    trial: [], openYard: true, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
+    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10' },
+  };
+}
+
 // THE TRIALS. A practice yard for each hero: stations in a row, each with a sign that says what to do, straw men
 // to do it to, and a gate that lifts when it is done. Nothing in a trial can hurt you. The gate at the far end
 // is the way out. (L.trial: the stations - where each starts, its gate, what counts, how many.)
@@ -3395,6 +3430,7 @@ export const LEVELS = [
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', build: theHurricane, needs: 'flotilla' },
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', build: theLamplitStreet, needs: 'hurricane' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
+  { id: 'trial_open', name: 'THE OPEN YARD', sub: 'straw men, ledges and room', build: openYard, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
   { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
