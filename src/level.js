@@ -2861,9 +2861,10 @@ function theHurricane() {
   movers.push({ kind: 'swing', px: 276 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.4 });
   movers.push({ kind: 'swing', px: 296 * TS, py: 8 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2 });
   coins([230, 18], [244, 18], [258, 18], [274, 18], [288, 18], [304, 18], [318, 18], [278, 10], [298, 11], [236, 18], [252, 18], [266, 18], [282, 18], [296, 18], [312, 18], [240, 25], [256, 25], [272, 25], [290, 25]);
-  // HIS WATCH: the bosun who went over the side in the last blow, met amidships and not at the end of her
-  ent('sign', 288, 19, { text: 'SOMETHING CAME BACK ABOARD AT THE MAIN. WHILE A WAVE HAS HIM NOTHING WILL CUT HIM: CUT HIM WHEN IT DROPS HIM.' });
-  ent('drowned', 322, 19); ent('check', 292, 19);
+  // AMIDSHIPS: the hands who are still trying to save her, and do not care that you are aboard
+  ent('sign', 288, 19, { text: 'HER MAIN. THE CREW ARE STILL WORKING HER AND THEY WILL STILL KILL YOU FOR HER.' });
+  ent('boarder', 322, 19, { face: -1 }); ent('cutlass', 316, 19, { face: -1 }); ent('bosun', 328, 19, { face: -1 });
+  ent('check', 292, 19);
 
   // ================= 6. UNDER HER: the rent in her side, and the sea in the lightning =================
   // She is holed at the turn of the bilge. You go into the water and out under her keel, and the sky is looking
@@ -2964,7 +2965,6 @@ function theHurricane() {
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 702 * TS, x1: 744 * TS, floor: 16 * TS, y0: 6 * TS, trigger: 708 * TS, wallL: 701, wallR: 744, boss: 'captain', music: 'drowned', tint: '#2a5a6a', tintA: 0.12, fx: 'motes' },
-    mini: { x0: 300 * TS, x1: 330 * TS, floor: 20 * TS, y0: 8 * TS, trigger: 306 * TS, wallL: 299, wallR: 331, boss: 'drowned' },
     // HER MASTS GO ONE AT A TIME. Lightning finds the fore first, then the main, then the mizzen.
     masts: [{ x: 72, at: 104 * TS, fell: false }, { x: 270, at: 316 * TS, fell: false }, { x: 600, at: 640 * TS, fell: false }],
   };
