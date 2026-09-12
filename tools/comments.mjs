@@ -16,7 +16,14 @@ for (const f of ['src/main.js', 'src/level.js', 'src/audio.js', 'src/art.js', 's
       if (c === '/' && ln[k + 1] === '*') { const e = ln.indexOf('*/', k + 2); if (e < 0) break; k = e + 1; continue; }
       if (c === '/' && ln[k + 1] === '/') {
         const cm = ln.slice(k + 2);
-        const looksCode = (/[;}]\s*[A-Za-z_$][\w.[\]']*\s*(=[^=]|\()/.test(cm) && /[;{}]\s*$/.test(cm.trim())) || /[A-Za-z_$][\w.]*\(\s*['"\[{\d][^)]*\)\s*;\s*$/.test(cm.trim()); // (also: a prose note that runs straight into a call and ends like a statement)
+        const t = cm.trim();
+        // three shapes of swallowed code: a statement end followed by an assignment or call; a bare call that
+        // ends like a statement; and ANY comment whose tail still holds a brace or a semicolon-brace, which is
+        // what a swallowed `e.wuWas = wu; }` looks like (that one cost an hour).
+        const looksCode = (/[;}]\s*[A-Za-z_$][\w.[\]']*\s*(=[^=]|\()/.test(cm) && /[;{}]\s*$/.test(t))
+          || /[A-Za-z_$][\w.]*\(\s*['"\[{\d][^)]*\)\s*;\s*$/.test(t)
+          || /[;)]\s*[}\])]+\s*;?\s*$/.test(t)
+          || /[A-Za-z_$][\w.]*\s*=\s*[^=].*[;}]\s*$/.test(t);
         if (looksCode) { console.log(`${f}:${i + 1}: ${cm.slice(0, 150)}`); n++; }
         break;
       }

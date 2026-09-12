@@ -1999,11 +1999,19 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false } = {}) {
   if (P.aegis && frontA && !unblockable) { gainLight(5); trialEvent('aegis'); P.st = Math.max(0, P.st - 8 * (1 - 0.15 * tal('stalwart'))); if (tal('retribution')) { const f = nearFoe(fromX); if (f && !f.maxHp) { f.stagger = Math.max(f.stagger || 0, 0.9); f.flash = 0.15; } } P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); streaks(P.x + P.face * 10, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 150); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
   const front = Math.sign(fromX - P.x) === P.face || fromX === P.x;
   if (P.block && front && !unblockable) {
-    const perfect = tal('parry') && (P.blockT || 0) < 0.2, bc = perfect ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));
+    const perfect = (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11), bc = perfect ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));
     if (P.st >= bc) {
       P.st -= bc; P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) P.riposteT = 1;
       if (tal('vengeance')) { P.venge = Math.min(30, (P.venge || 0) + Math.round(dmg * 0.5)); number(P.x, P.y - 26, 'KEPT ' + P.venge, '#c9d1dc'); } // VENGEANCE
-      if (perfect) { const f = nearFoe(fromX); if (f && !f.maxHp) { f.stagger = Math.max(f.stagger || 0, 1); f.flash = 0.15; } SFX.parry(); ringAt(P.x + P.face * 9, P.y - 9, 16, '#fff6e0', 0.25); }
+      if (perfect) { // THE PARRY. Six frames, and it turns the blow round on whoever threw it.
+        const f = nearFoe(fromX);
+        if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.35 : 1.1); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 160; }
+        P.st = Math.min(P.maxSt, P.st + 12 + (tal('parry') ? 10 : 0)); P.riposteT = 1;
+        P.parryT = 0.22; parries++; trialEvent('parry');
+        SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); shakeCam(2.5, -P.face * 2);
+        ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6e0', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6e0');
+        sparks(P.x + P.face * 10, P.y - 9, P.face, 10);
+        return 'blocked'; }
       P.vx = -P.face * 90; hitstop(0.05); shakeCam(1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
       sparks(P.x + P.face * 9, P.y - 8, P.face, 7);
       return 'blocked';
@@ -2418,6 +2426,16 @@ function updatePlayer(dt) {
   const move = (stunned || dodging || P.aegis || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
+  // THE DASH: tap a direction twice and you go, on the ground or in the air, once per landing. It does not
+  // dodge anything - it is distance, not safety - and it costs a little wind.
+  { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
+    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !dodging && !P.block) {
+        if (spend(8)) { P.dash = 0.17; P.dashCd = 0.55; if (!P.ground) P.dashedAir = true;
+          P.vx = tapped * 265; P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
+          streaks(P.x, P.y - 9, -tapped, ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid(); }
+      } P.tapDir = tapped; P.tapT = time; } }
+  P.dash = Math.max(0, (P.dash || 0) - dt); P.dashCd = Math.max(0, (P.dashCd || 0) - dt); if (P.ground) P.dashedAir = false;
+  if (P.dash > 0) { ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); }
   if (P.dbuf > 0 && (P.swim || P.ground || (tal('airRoll') && !P.airRolled)) && !attacking && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0) {
     P.dbuf = 0;
     if (spend(dodgeCost())) {
@@ -2438,7 +2456,12 @@ function updatePlayer(dt) {
   const spored = clouds2.some(c => Math.hypot(P.x - c.x, P.y - 8 - c.y) < c.r);
   if (spored && clouds2.some(c => !c.mild && Math.hypot(P.x - c.x, P.y - 8 - c.y) < c.r)) { P.st = Math.max(0, P.st - 8 * dt); P.stDelay = Math.max(P.stDelay, 0.3); }
   P.gustT = Math.max(0, (P.gustT || 0) - dt);
-  const cap = ((P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  // A RUN YOU HAVE TO EARN: hold one direction for most of a second and the legs open up. It shows: dust off
+  // the heels and streaks off the shoulders when it kicks in.
+  const sprinting = P.ground && (P.runT || 0) > 0.8 && !P.block && !P.jet && !wading && !spored;
+  if (sprinting && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
+  else if (!sprinting) P.sprintFx = false;
+  const cap = ((P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (sprinting ? 1.18 : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]); // the Sunspire's ice: slow to get going, slower to stop
   if (move && !groundAtk) {
     const acc = P.swim ? 900 : P.ground ? (onSlick ? 360 : 1000) : 700;
@@ -2547,6 +2570,17 @@ function updatePlayer(dt) {
   const prevVy = P.vy;
   const r = moveBody(P, P.vx * dt, P.vy * dt, P.drop > 0 || (P.climb && P.vy > 0));
   if (r.hitX) P.vx = 0;
+  // THE MANTLE: coming down onto the lip of a ledge you did not quite make, with the button still held that
+  // way, you catch it. It is a save for a missed ledge, never a way up a wall: the step has to be within a
+  // boot of your feet and there has to be room to stand on it.
+  if (!P.ground && !P.plunge && !P.climb && !dodging && P.vy > -30 && P.vy < 260 && move) {
+    const fx = Math.floor((P.x + move * 9) / TS), fy = Math.floor((P.y + 2) / TS);
+    const top = fy * TS;
+    if (isSolid(fx, fy) && !isSolid(fx, fy - 1) && !isSolid(fx, fy - 2) && P.y - top > -2 && P.y - top < 11) {
+      P.y = top; P.x += move * 5; P.vy = -70; P.ground = false; P.coyote = 0.08; P.canCut = true;
+      squash(0.9, 1.14, 0.1); dust(P.x - move * 4, P.y, 2); SFX.pStep(surface()); number(P.x, P.y - 26, 'CAUGHT IT', '#8fd160');
+    }
+  }
   if (r.hitY && P.vy < 0) { // CORNER CORRECTION: clipped the lip of a block on the way up, so slide past it
     for (const dx of [-3, 3, -5, 5]) { const hx = Math.floor((P.x + dx) / TS), hy = Math.floor((P.y - P.h - 1) / TS);
       if (!isSolid(hx, hy) && !isSolid(hx, hy + 1)) { P.x += dx; P.vy = Math.min(P.vy, -120); break; } }
@@ -5678,7 +5712,7 @@ function updateEnemies(dt) {
   for (const e of enemies) {
     if (!e.alive) continue;
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
-    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (!wu && e.wuWas) e.relT = 0.18; e.wuWas = wu; }
+    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) e.relT = 0.18; e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt);
     if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { e.hp -= 2; e.flash = 0.06; number(e.x, e.y - e.h - 8, 2, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
@@ -6666,7 +6700,8 @@ function updateCamera(dt) {
   if (bannerT > 0) bannerT -= dt; if (miniIntroT > 0) miniIntroT -= dt;
   if (P.fly && flight) { camX = Math.max(0, Math.min(LW * TS - VW, flight.cx)); camY = Math.max(0, Math.min(LH * TS - VH, flight.cy)); shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt); return; }
   const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
-  const tx = P.x + P.face * 26 - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
+  // the camera leads your speed as well as your shoulders, so a hard turn does not snap
+  const tx = P.x + P.face * 26 + Math.max(-30, Math.min(30, P.vx * 0.2)) - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
   const x0 = camLock ? camLock.x0 - 8 : 0, x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW;
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
