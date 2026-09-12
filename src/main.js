@@ -1631,8 +1631,10 @@ function drawStore() {
   const x = 12, y = 6, w = VW - 24, h = VH - 12; const tabs = storeTabs();
   panel(x, y, w, h);
   text(storeMode === 'equip' ? 'EQUIP' : 'THE STORE', x + 8, y + 6, UI.title);
-  g.drawImage(PROP.coin[Math.floor(time * 8) % 4], x + w - 60, y + 5); text(String(PROG.coins), x + w - 8, y + 6, UI.gold, 'right');
-  g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], x + w - 108, y + 5); text(String(silverAvail()), x + w - 72, y + 6, UI.silver, 'right');
+  { const gold = String(PROG.coins), silv = String(silverAvail());
+    const gx = x + w - 10 - gold.length * 8, sx0 = gx - 22 - silv.length * 8;
+    g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], sx0 - 11, y + 5); text(silv, sx0, y + 6, UI.silver, 'left');
+    g.drawImage(PROP.coin[Math.floor(time * 8) % 4], gx - 11, y + 5); text(gold, gx, y + 6, UI.gold, 'left'); }
   // two rows of tabs, four across
   const perRow = 4, tw = Math.floor((w - 16) / perRow);
   tabs.forEach((t, k) => { const row = Math.floor(k / perRow), col = k % perRow, tx = x + 8 + col * tw, ty = y + 17 + row * 12, sel = k === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.8)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, ty, tw - 3, 11); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(tx + 0.5, ty + 0.5, tw - 4, 10); } text(t.name, tx + (tw - 3) / 2, ty + 3, sel ? UI.sel : UI.dim, 'center', 6); });
