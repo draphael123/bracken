@@ -2217,46 +2217,46 @@ function longWater() {
   const { block, plat, ent, coins, set } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const pools = [], falls = [], movers = [];
-  const shallow = (x0, x1, top, d) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS - d, shallow: true, depth: d });
-  const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, bottom: bottom * TS }, extra || {}));
-  const fall = (lipX, y0, y1) => falls.push({ x0: lipX * TS + 10, x1: lipX * TS + 34, y0: y0 * TS - 6, y1: y1 * TS + 6 }); // pours off the lip at lipX into the next terrace
+  const shallow = (x0, x1, top, d) => { const rows = Math.max(1, Math.round(d / TS)); air(x0, x1, top, top + rows - 1); pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 2, shallow: true, depth: rows * TS - 2 }); };
+  const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, clear: true, bottom: bottom * TS }, extra || {}));
+  const fall = (lipX, y0, y1) => falls.push({ x0: (lipX + 1) * TS - 6, x1: (lipX + 1) * TS + 20, y0: y0 * TS + 1, y1: y1 * TS + 6 }); // pours off the lip at lipX into the next terrace, out of the channel above it
   const plunge = (x0, x1, top, depth) => { air(x0, x1, top, top + depth - 1); deep(x0, x1, top, top + depth); };
 
   // ---- 1. THE MELTFALLS: Highcrown's back face, five terraces and a fall off every lip ----
   block(0, 13, 8, H - 1);
   ent('npc', 4, 7, { kind: 'squire' });
   ent('sign', 2, 7, { text: 'THE LONG WATER. THE MELT OFF THE MOUNTAIN RUNS SALT. THERE ARE BARNACLES ON THE STONES UP HERE, A HUNDRED MILES FROM THE SEA. FOLLOW THE WATER DOWN.' });
-  ent('check', 9, 7); shallow(6, 13, 8, 8); // the stream on the top ledge, running for the lip
+  ent('check', 4, 7); shallow(8, 13, 8, 16); // the stream on the top ledge, running for the lip
   fall(13, 8, 12);
   block(14, 33, 12, H - 1); plunge(14, 18, 12, 3); ent('eel', 16, 14);
-  shallow(23, 32, 12, 8); ent('turtle', 27, 11, { face: -1 });
-  for (const x of [24, 29, 31]) ent('deco', x, 11, { kind: 'coralTuft', v: x % 3 });
+  shallow(22, 33, 12, 16); ent('turtle', 27, 12, { face: -1 });
+  for (const x of [24, 29]) ent('deco', x, 12, { kind: 'coralTuft', v: x % 3 });
   ent('sign', 20, 11, { text: 'CORAL, GROWING IN A MOUNTAIN STREAM. THE FALLS HAVE POOLS UNDER THEM: THE WATER IS DEEP, BUT YOU CAN SWIM. HOLD UP TO RISE, DOWN TO DIVE, JUMP AT THE SURFACE TO CLIMB OUT.' });
   coins([16, 13], [17, 13], [19, 10], [22, 10], [24, 9], [26, 9], [28, 9], [30, 10]); ent('crab', 31, 11, { face: -1 });
   fall(33, 12, 16);
   block(34, 55, 16, H - 1); plunge(34, 38, 16, 3);
   ent('eel', 36, 18); coins([35, 18], [37, 18]); // the second pool, for anyone who dives
   air(30, 33, 13, 15); ent('silver', 31, 15); coins([32, 15], [30, 15]); // the cave behind the second fall
-  shallow(42, 52, 16, 10); ent('heronfoe', 47, 15, { face: -1 });
-  ent('deco', 40, 15, { kind: 'barnacleRock', v: 0 }); ent('deco', 53, 15, { kind: 'saltCrust', v: 1 });
+  shallow(41, 55, 16, 16); ent('heronfoe', 47, 15, { face: -1 });
+  ent('deco', 40, 15, { kind: 'barnacleRock', v: 0 }); ent('deco', 53, 16, { kind: 'saltCrust', v: 1 });
   coins([41, 14], [44, 15], [45, 13], [47, 13], [49, 13], [51, 15], [54, 14], [36, 15], [38, 15], [43, 13], [52, 13]);
   fall(55, 16, 20);
   block(56, 79, 20, H - 1); plunge(56, 60, 20, 3); ent('eel', 58, 22);
   ent('deco', 66, 19, { kind: 'drownedHut' }); ent('check', 63, 19);
-  ent('sign', 74, 17, { text: 'THE SCOUTS ARE NOT GOBLINS. THEY ARE TALLER, AND THEY DO NOT SPEAK, AND THEY THROW A HARPOON HARDER THAN A MAN CAN.' });
+  ent('sign', 70, 19, { text: 'THE SCOUTS ARE NOT GOBLINS. THEY ARE TALLER, AND THEY DO NOT SPEAK, AND THEY THROW A HARPOON HARDER THAN A MAN CAN.' });
   ent('sign', 62, 19, { text: 'THE SHEPHERD\'S HUT. THE WATER CAME UP THE HILL IN THE NIGHT. THERE ARE FISH IN THE CHIMNEY. SOMEONE PALE WAS WATCHING FROM THE ROCKS.' });
-  block(73, 79, 18, 19); ent('scout', 69, 19, { face: 1 }); ent('scout', 77, 17, { face: -1 });
+  block(73, 79, 18, 19); shallow(74, 79, 18, 16); ent('scout', 69, 19, { face: 1 }); ent('scout', 77, 17, { face: -1 });
   coins([57, 22], [59, 22], [62, 18], [64, 18], [67, 17], [70, 17], [75, 16], [78, 16], [61, 19], [65, 18], [72, 17], [76, 16]);
   fall(79, 18, 24);
   block(80, 105, 24, H - 1); plunge(80, 91, 24, 4); ent('eel', 84, 27); ent('eel', 89, 27);
-  ent('check', 95, 23); ent('sign', 92, 23, { text: 'THE POOL UNDER THIS FALL IS DEEPER THAN THE OTHERS AND THERE ARE TWO EELS IN IT. THE COINS AT THE BOTTOM ARE WORTH ONE BREATH, NOT TWO.' });
+  shallow(96, 105, 24, 16); ent('check', 95, 23); ent('sign', 92, 23, { text: 'THE POOL UNDER THIS FALL IS DEEPER THAN THE OTHERS AND THERE ARE TWO EELS IN IT. THE COINS AT THE BOTTOM ARE WORTH ONE BREATH, NOT TWO.' });
   ent('crab', 99, 23, { face: -1 }); ent('turtle', 103, 23, { face: -1 });
-  ent('deco', 93, 23, { kind: 'barnacleRock', v: 1 }); ent('deco', 101, 23, { kind: 'coralTuft', v: 1 });
+  ent('deco', 93, 23, { kind: 'barnacleRock', v: 1 }); ent('deco', 103, 24, { kind: 'coralTuft', v: 1 });
   coins([81, 26], [83, 25], [86, 25], [87, 26], [89, 25], [90, 26], [92, 22], [96, 22], [100, 21], [103, 21], [104, 22]);
   fall(105, 24, 28);
-  block(106, 127, 28, H - 1); shallow(110, 122, 28, 12); ent('heronfoe', 116, 27, { face: -1 });
-  for (const x of [112, 119]) ent('deco', x, 27, { kind: 'coralTuft', v: x % 3 });
-  for (const [x, y, k, v] of [[21, 11, 'barnacleRock', 0], [44, 15, 'coralTuft', 2], [68, 19, 'barnacleRock', 1], [101, 23, 'saltCrust', 1], [97, 23, 'coralTuft', 0], [121, 27, 'barnacleRock', 0], [124, 27, 'saltCrust', 1]]) ent('deco', x, y, { kind: k, v });
+  block(106, 127, 28, H - 1); shallow(110, 122, 28, 16); ent('heronfoe', 116, 27, { face: -1 });
+  for (const x of [112, 119]) ent('deco', x, 28, { kind: 'coralTuft', v: x % 3 });
+  for (const [x, y, k, v] of [[21, 11, 'barnacleRock', 0], [46, 16, 'coralTuft', 2], [68, 19, 'barnacleRock', 1], [101, 24, 'saltCrust', 1], [97, 24, 'coralTuft', 0], [124, 27, 'barnacleRock', 0], [124, 27, 'saltCrust', 1]]) ent('deco', x, y, { kind: k, v });
   block(128, 139, 27, H - 1); // the ferry dock
   ent('sign', 129, 26, { text: 'THE FERRY. STAND ON THE RAFT AND IT GOES. THE BORE COMES UP THE RIVER ON THE TIDE: ON THE RAFT IT ONLY LIFTS YOU; IN THE WATER GET UP ON A ROCK. THE ROCKS WILL KNOCK YOU OFF THE RAFT: JUMP THEM. AND DO NOT LISTEN TO THE SINGING.' });
   air(132, 138, 30, 32); air(139, 139, 29, 32); // THE SMUGGLERS' CUT: a dry room under the dock, its mouth in the river
@@ -2335,7 +2335,7 @@ function shipwreckReef() {
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
   const pools = [], movers = [], gusts = [], darkZones = [];
-  const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, bottom: bottom * TS }, extra || {}));
+  const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, clear: true, bottom: bottom * TS }, extra || {}));
   const current = (x0, x1, y0, y1, dir) => gusts.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y0: y0 * TS, y1: y1 * TS, dir, period: 1e9, on: 1e9, phase: 0, k: 1, current: true });
 
   // ---- 1. THE TIDEWAY: the backs of the wrecks, and the sea coming and going over them ----
@@ -2401,7 +2401,7 @@ function shipwreckReef() {
   current(236, 256, 14, 36, 1); current(290, 308, 14, 32, -1); // one carries you on, one stands in your way
   ent('check', 270, 33); ent('check', 302, 32);
   ent('sign', 264, 33, { text: 'THE DEEP HALF OF THE SHELF IS BLACK. THE LIGHTS DOWN THERE ARE NOT LANTERNS: THEY ARE ON THE ENDS OF STALKS, AND THEY ARE ATTACHED TO SOMETHING.' }); // the two coral humps you can stand on, down here
-  for (const [x, y] of [[226, 36], [250, 36], [274, 33], [298, 32], [320, 36]]) ent('deco', x, y, { kind: 'airBell' }); // a bell every few strokes: the breath is the clock down here
+  for (const [x, y] of [[226, 36], [244, 36], [262, 33], [278, 33], [298, 32], [316, 36]]) ent('deco', x, y, { kind: 'airBell' }); // a bell every few strokes: the breath is the clock down here
   ent('sign', 218, 36, { text: 'NO AIR DOWN HERE BUT WHAT THE DIVING BELLS HOLD. SWIM TO A BELL BEFORE YOUR BREATH GOES. THE CURRENT WILL CARRY YOU IF YOU LET IT, AND HOLD YOU IF YOU FIGHT IT.' });
   for (const [x, y, v] of [[220, 36, 0], [244, 36, 1], [266, 33, 2], [300, 32, 0], [322, 36, 1]]) ent('deco', x, y, { kind: 'kelpTall', v });
   for (const [x, y, v] of [[238, 36, 0], [276, 33, 1], [316, 36, 0]]) ent('deco', x, y, { kind: 'brainCoral', v });
@@ -2465,6 +2465,133 @@ function shipwreckReef() {
   return ret;
 }
 
+// THE FLOTILLA. A pirate fleet lashed into a floating town over the drowned city, working the wrecks and paying the
+// sea for the right. Four ships and the water between them: THE GALLEY (her oar deck full of Saltreach's missing
+// fisherfolk), THE HULK (a rotted prize whose deck goes through under you, and whose hold is full), THE POWDER HOY
+// (kegs, and a gun pointed at the flagship's side) and THE FLAGSHIP, where the Quartermaster falls back deck by deck
+// and cuts the lines behind her. What moves is the water between the hulls: ropes to swing, planks to drop, nets to
+// climb, and a long way down into the sea if you misjudge it.
+function theFlotilla() {
+  const W = 400, H = 40; const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
+  const rot = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); }; // planking that goes through under a standing weight
+  const pools = [], movers = [], hullZones = [];
+
+  // the sea the whole town floats on: fall in and you swim, and the nets down every side are how you get back up
+  block(0, W - 1, 38, H - 1);
+  pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true });
+
+  // ---- THE ROCK: the Ferryman will not go closer than this ----
+  block(0, 22, 26, 37);
+  ent('npc', 4, 25, { kind: 'squire' });
+  ent('sign', 2, 25, { text: 'THE FLOTILLA. FOUR SHIPS LASHED TOGETHER AND A TOWN BUILT ON TOP OF THEM. THEY WORK THE WRECKS AND PAY THE SEA A SHARE. THE FISHERFOLK THEY PRESSED OUT OF SALTREACH ARE ON THE OARS OF THE FIRST ONE.' });
+  ent('check', 8, 25); ent('deco', 17, 25, { kind: 'rowboat' });
+  ent('sign', 14, 25, { text: 'THE WATER BETWEEN THE HULLS IS DEEP AND THE NETS DOWN THEIR SIDES ARE HOW YOU GET BACK OUT OF IT. NOBODY DROWNS HERE. THEY JUST GET SEEN.' });
+  coins([6, 25], [12, 25], [18, 25]);
+
+  // ---- the first crossing: a lashed spar, then a rope ----
+  plat(23, 25, 4);
+  movers.push({ kind: 'swing', px: 29 * TS, py: 13 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 });
+
+  // ---- 1. THE GALLEY: long, low, and full of other people's neighbours ----
+  block(31, 96, 24, 33); hullZones.push([31, 96, 24, 33]);
+  air(34, 93, 26, 29); // her oar deck
+  air(58, 60, 24, 25); // the hatch down to it
+  rail(31, 34, 23); rail(93, 96, 23);
+  net(50, 51, 12, 23); plat(47, 11, 7); // her shrouds and the crow's nest
+  ent('lookout', 50, 10, { face: 1 });
+  ent('sign', 36, 23, { text: 'THE GALLEY. HER OAR DECK IS UNDER YOUR FEET AND THE HATCH IS AMIDSHIPS. THE LOOKOUT IN HER TOPS HAS A WHISTLE: IF HE GETS IT TO HIS MOUTH, THE WHOLE TOWN KNOWS.' });
+  for (const [x, y] of [[40, 29], [62, 29], [82, 29]]) ent('stray', x, y, { kind: 'fisher' });
+  for (const x of [38, 60, 80]) ent('deco', x, 29, { kind: 'oarBench' });
+  ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
+  ent('cutlass', 44, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 });
+  ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
+  ent('deco', 66, 23, { kind: 'hammock', v: 0 }); ent('deco', 46, 23, { kind: 'coiledCable', v: 0 });
+  ent('deco', 50, 10, { kind: 'pennant', v: 0 });
+  ent('check', 34, 23);
+  coins([36, 23], [42, 23], [48, 23], [56, 23], [64, 23], [72, 23], [80, 23], [90, 23]);
+  coins([36, 29], [48, 29], [56, 29], [74, 29], [88, 29]);
+  coins([50, 17], [50, 14], [49, 10], [52, 10]);
+
+  // ---- the second crossing: a rope over open water, and a net up the prize's side ----
+  movers.push({ kind: 'swing', px: 104 * TS, py: 10 * TS, arm: 104, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.2 });
+  net(110, 111, 18, 29);
+
+  // ---- 2. THE HULK: a prize they never finished stripping ----
+  block(113, 176, 22, 33); hullZones.push([113, 176, 22, 33]);
+  rot(120, 130, 22); rot(146, 156, 22); // her planking is rotten through here
+  air(116, 173, 24, 29); air(134, 138, 22, 23); // the hold, and the hole down into it
+  pools.push({ x0: 116 * TS, x1: 174 * TS, y: 26 * TS, bottom: 30 * TS, shallow: false, swim: true, clear: true });
+  ent('silver', 150, 29);
+  ent('sign', 116, 21, { text: 'THE HULK. THEY TOOK HER TWO SUMMERS AGO AND NEVER FINISHED STRIPPING HER. THE GREY PLANKS WILL NOT HOLD A MAN: STAND ON ONE AND YOU WILL GO THROUGH TO WHAT IS UNDER IT.' });
+  ent('boarder', 128, 21, { face: -1 }); ent('boarder', 162, 21, { face: -1 });
+  net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
+  ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
+  ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 158, 21, { kind: 'crowNest' });
+  ent('check', 118, 21);
+  coins([118, 21], [134, 21], [142, 21], [160, 21], [172, 21]);
+  coins([120, 28], [126, 28], [154, 28], [166, 28]);
+  coins([145, 16], [146, 12]);
+
+  // ---- the third crossing: their boarding plank, stowed upright until somebody drops it ----
+  ent('plank', 176, 21, { span: [177, 182], row: 21 });
+  ent('sign', 173, 21, { text: 'THEIR BOARDING PLANK IS STOWED AGAINST THE RAIL. KNOCK IT DOWN AND IT WILL REACH THE POWDER HOY. OR SWIM, AND CLIMB HER NET, AND BE SEEN DOING IT.' });
+  net(183, 184, 24, 29);
+
+  // ---- 3. THE POWDER HOY: what they blast wrecks open with ----
+  block(183, 240, 25, 33); hullZones.push([183, 240, 25, 33]);
+  rail(183, 186, 24);
+  ent('keg', 192, 24); ent('keg', 206, 24); ent('keg', 220, 24);
+  ent('deco', 198, 24, { kind: 'kegStack' }); ent('deco', 212, 24, { kind: 'chickenCoop' });
+  ent('cannon', 232, 24, { hole: [245, 247, 24, 26] });
+  ent('sign', 228, 24, { text: 'THE GUN IS LAID ON THE FLAGSHIP ALREADY: THEY WERE GOING TO CUT HER OUT IF THE SHARE WENT WRONG. STRIKE IT AND IT WILL OPEN HER SIDE. THE KEGS GO UP IF YOU HIT THEM, SO MIND WHERE YOU ARE STANDING.' });
+  ent('cutlass', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
+  ent('lookout', 188, 24, { face: 1 });
+  ent('check', 186, 24);
+  coins([190, 24], [196, 24], [204, 24], [216, 24], [226, 24], [236, 24]);
+
+  // ---- the last crossing: her side, and the nets they board from ----
+  net(243, 244, 16, 29);
+
+  // ---- 4. THE FLAGSHIP ----
+  block(245, 376, 22, 33); hullZones.push([245, 376, 22, 33]);
+  air(248, 340, 24, 26); // her gun deck, behind the side the hoy's gun opens
+  block(300, 376, 16, 21); block(336, 376, 11, 15);
+  air(336, 372, 12, 15); // the great cabin in her stern, open off the quarterdeck
+  net(300, 301, 10, 21); net(330, 331, 10, 21); // the two ways up her: she cuts one, then the other
+  rail(245, 248, 21); rail(296, 299, 15);
+  ent('sign', 250, 21, { text: 'THE FLAGSHIP. THE QUARTERMASTER HAS THE RUN OF HER AND SHE WILL NOT STAND AND FIGHT ON ONE DECK: SHE GOES UP, AND SHE CUTS AWAY WHAT SHE CAME UP BY.' });
+  ent('marine', 306, 9, { face: -1 }); ent('marine', 334, 9, { face: -1 });
+  ent('cutlass', 262, 21, { face: -1 }); ent('cutlass', 284, 21, { face: -1 }); ent('boarder', 320, 15, { face: -1 });
+  ent('deco', 268, 21, { kind: 'cannon' }); ent('deco', 292, 21, { kind: 'cannon' });
+  ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 352, 15, { kind: 'plunder', v: 0 });
+  ent('deco', 344, 15, { kind: 'sternWindows' }); ent('deco', 360, 15, { kind: 'plunder', v: 2 });
+  ent('deco', 256, 26, { kind: 'lanternDeck', v: 1 }); ent('deco', 288, 26, { kind: 'rumBarrels', v: 1 });
+  ent('check', 254, 21); ent('silver', 300, 26);
+  coins([258, 21], [266, 21], [274, 21], [282, 21], [290, 21]);
+  coins([252, 26], [266, 26], [278, 26], [296, 26]);
+  coins([306, 15], [314, 15], [322, 15], [330, 15]);
+  coins([342, 15], [350, 15], [358, 15], [366, 15]);
+  ent('quarter', 288, 21);
+  ent('gate', 374, 10);
+
+  const ret = {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones,
+    duskStart: 99999, duskLen: 1, music: 'stockade', night: false,
+    interiors: [[34, 93, 26, 30, 'stone'], [116, 173, 24, 30, 'stone'], [248, 340, 24, 27, 'stone'], [340, 372, 12, 15, 'stone']],
+    quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
+    palette: { set: 'ship', sky: 'glare', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(240,235,205,0.10)',
+      grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
+    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'boss2', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
+      decks: [[22 * TS, 258, 374], [16 * TS, 300, 374], [11 * TS, 336, 374]], cuts: [[300, 301, 10, 21], [330, 331, 10, 21]] },
+  };
+  return ret;
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', build: marshWood, needs: 'wood' },
@@ -2479,6 +2606,7 @@ export const LEVELS = [
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', build: highcrownWhole, needs: 'storm' },
   { id: 'longwater', name: 'THE LONG WATER', sub: 'the river to the sea', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', build: shipwreckReef, needs: 'longwater' },
+  { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', build: theFlotilla, needs: 'reef' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },

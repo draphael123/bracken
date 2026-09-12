@@ -347,6 +347,12 @@ function bakeCoastMap(c, g, w, h, nodes, path, rnd) {
   for (let i = 0; i < 14; i++) { const x = 60 + rnd() * 70, y = 70 + rnd() * 30; px(g, x | 0, y | 0, '#e8f4f0'); } // the reef breaking
   for (const [x, y] of [[82, 80], [104, 74]]) { line(g, x, y, x + 6, y - 2, '#6e604e', 1); line(g, x + 3, y - 1, x + 3, y - 6, '#6e604e', 1); } // wrecks
   for (let i = 0; i < 24; i++) { const x = rnd() * w, y = rnd() * 90; if (y < 140) rect(g, x | 0, y | 0, 3, 1, 'rgba(232,244,240,0.5)'); } // whitecaps
+  // THE ROUTE: the coast has no roads, so the way on is a sailing line - a dark wake under a pale dashed one
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#1d5060', 7);
+  for (let i = 0; i + 1 < path.length; i++) { const [ax, ay] = path[i], [bx, by] = path[i + 1], dx = bx - ax, dy = by - ay, n = Math.max(1, Math.hypot(dx, dy) / 4);
+    for (let k = 0; k < n; k++) { if (k % 2) continue; const x = Math.round(ax + dx * k / n), y = Math.round(ay + dy * k / n); rect(g, x - 1, y - 1, 3, 2, '#bfe6f5'); rect(g, x - 1, y - 1, 3, 1, '#f0ffff'); } }
+  for (let i = 0; i + 1 < path.length; i++) { const [ax, ay] = path[i], [bx, by] = path[i + 1], dx = bx - ax, dy = by - ay, n = Math.max(1, Math.hypot(dx, dy) / 12);
+    for (let k = 1; k < n; k++) { const x = Math.round(ax + dx * k / n), y = Math.round(ay + dy * k / n); px(g, x - 2, y + 2, 'rgba(240,255,255,0.7)'); px(g, x + 2, y + 2, 'rgba(240,255,255,0.7)'); } }
   return c;
 }
 export function bakeMap(w, h, nodes, path, seed, style = 'wood') {
