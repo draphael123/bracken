@@ -4125,18 +4125,31 @@ function updateQuarter(e, dt) {
         for (let i = 0; i < 8; i++) parts.push({ x: sx, y: sy, vx: e.face * (60 + Math.random() * 120), vy: (Math.random() - 0.5) * 60, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#fff6e0' : '#9aa39a', size: 2, grav: 20 }); } break; }
     case 'shoot': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.6; } break;
     case 'leap': { e.vx = 0; const to = qDeck({ deck: e.deckTo }), k = 1 - Math.max(0, e.modeT) / 0.7;
-      e.x = e.x + ((Math.max(to.x0 + 40, Math.min(to.x1 - 40, e.x + 60)) - e.x)) * Math.min(1, dt * 4);
-      e.y = floor + (to.y - floor) * k - Math.sin(k * Math.PI) * 22;
-      if (e.modeT <= 0) { e.deck = e.deckTo; e.y = qDeck(e).y; e.mode = 'cut'; e.modeT = 0.9; SFX.thud(); } break; }
+      if (e.lx0 === undefined) { e.lx0 = e.x; e.ly0 = e.y; }
+      // UP HER OWN RIGGING, ALONG, AND DOWN. A straight line from her feet to the deck above goes through
+      // whatever stands between, which on the main deck is the companion house.
+      const lx = Math.max(to.x0 + 24, Math.min(to.x1 - 24, e.lx0 + 40)), hiY = to.y - 34;
+      const cl = (v) => Math.max(0, Math.min(1, v));
+      const up = cl(k / 0.35), along = cl((k - 0.3) / 0.5), down = cl((k - 0.8) / 0.2);
+      e.y = e.ly0 + (hiY - e.ly0) * up + (to.y - hiY) * down;
+      e.x = e.lx0 + (lx - e.lx0) * along;
+      if (e.modeT <= 0) { e.deck = e.deckTo; e.x = lx; e.y = qDeck(e).y; e.lx0 = undefined; e.mode = 'cut'; e.modeT = 0.9; SFX.thud(); } break; }
     case 'cut': { e.vx = 0; if (e.modeT <= 0) { cutLine(e, e.deck - 1); e.mode = 'stride'; e.modeT = 0.8;
         e.guard = true; e.guardT = 16; number(e.x, e.y - 40, 'BEHIND HER GUARD: BRING A GUN TO BEAR', '#ff9a5c'); SFX.clank();
-        if (p3) { L.deckFall = { x: A.x1 / TS - 2, row: Math.floor(A.floor / TS), t: 0 }; number(e.x, e.y - 44, 'THE DECK IS GOING', '#ff6b6b'); } } break; }
+        if (p3) { L.deckFall = { x: A.fallFrom !== undefined ? A.fallFrom : A.x1 / TS - 2, row: Math.floor(A.floor / TS), t: 0 }; number(e.x, e.y - 44, 'THE DECK IS GOING', '#ff6b6b'); } } break; }
     case 'reel': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.6; } break;
     case 'dead': return;
   }
   if (e.stagger > 0) want = 0;
   e.vx += (want - e.vx) * Math.min(1, dt * 8);
-  if (e.mode !== 'leap') { e.x += e.vx * dt; e.x = Math.max(D.x0 + 10, Math.min(D.x1 - 10, e.x)); e.y = floor; }
+  if (e.mode !== 'leap') {
+    const nx = e.x + e.vx * dt, dirq = Math.sign(e.vx) || e.face;
+    // the ship is in her way like it is in yours: the companion house at the middle of the main deck stops her
+    const tx = Math.floor((nx + dirq * 9) / TS), ty0 = Math.floor((floor - 26) / TS), ty1 = Math.floor((floor - 6) / TS);
+    let blocked = false; for (let ty = ty0; ty <= ty1; ty++) if (isSolid(tx, ty)) blocked = true;
+    if (blocked) { e.vx = 0; } else e.x = nx;
+    e.x = Math.max(D.x0 + 10, Math.min(D.x1 - 10, e.x)); e.y = floor;
+  }
 }
 // the main deck going: one plank at a time from the bow, until there is nothing under you but the sea
 function updateDeckFall(dt) {
@@ -6627,13 +6640,16 @@ function updateCorpses(dt) {
   for (const c of corpses) {
     c.life -= dt;
     if (c.crumple) continue;
+    const py0 = c.y;
     c.vy += c.grav * dt; c.x += c.vx * dt; c.y += c.vy * dt;
     if (c.wobble) c.x += Math.sin(c.life * 18) * 30 * dt;
     if (c.flip) c.rot += (Math.PI - c.rot) * Math.min(1, dt * 12); else if (c.tip) c.rot += ((-c.face) * Math.PI / 2 - c.rot) * Math.min(1, dt * 7); else c.rot += c.spin * dt;
     if (c.flip && c.ground) c.frame = Math.floor(c.life * 12) % 2;
-    const ty = Math.floor(c.y / TS);
-    if (c.vy > 0 && isSolid(Math.floor(c.x / TS), ty)) {
-      c.y = ty * TS; c.ground = true;
+    const ty = Math.floor(c.y / TS), ctx = Math.floor(c.x / TS), ct = tileAt(ctx, ty);
+    const caught = isOneWay(ct) && ct !== T.NET && ct !== T.CRYST && py0 <= ty * TS + 2;
+    if (c.vy > 0 && (isSolid(ctx, ty) || caught)) {
+      c.y = ty * TS + (ct === T.PLANK ? 3 : 0); c.ground = true;   // a bridge's board sits a little down its tile
+
       if (c.t === 'wasp' || c.t === 'cap' || c.t === 'queen') { burst(c.x, c.y - 2, 6, COLS[c.t] || COLS.spit, 50, 0.4); if (c.t === 'queen') { shakeCam(6); SFX.heavy(); } c.vy = c.t === 'cap' ? -40 : 0; c.vx *= 0.4; if (c.t === 'wasp') c.life = Math.min(c.life, 0.25); }
       else if (!c.bounced) { c.vy = -c.vy * 0.35; c.bounced = true; c.vx *= 0.6; dust(c.x, c.y, 3); if (c.t === 'thorn') { SFX.stone(); } }
       else { c.vy = 0; c.vx *= 0.8; c.spin *= 0.3; }
