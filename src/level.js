@@ -380,7 +380,7 @@ function theStockade() {
 
   // ---- 3. Rope bridge over the ravine, with a goblin at the far end holding a knife ----
   planks(71, 74, 20); planks(75, 86, 21); planks(87, 90, 20);
-  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('relic', 86, 24, { kind: 'gauntlet' }); ent('silver', 73, 24); // the ravine cache, on the net
+  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('relic', 86, 24, { kind: 'gauntlet', hang: true }); ent('silver', 73, 24); // the ravine cache, on the net
   plat(78, 23, 3); plat(83, 23, 3); block(87, 90, 23, 27); block(89, 90, 22, 27);
   ent('bridge', 71, 20, { x1: 90 });
   floor(91, 185, 20);
@@ -482,7 +482,7 @@ function theStockade() {
   G.coins([255, 23], [260, 23], [268, 23], [275, 22], [283, 23], [289, 23]);
   G.ent('check', 292, 19); G.ent('torch', 293, 19);
   G.ent('treehouse', 262, 8); G.ent('treehouse', 278, 8); G.ent('sprig', 270, 13, { face: -1 }); G.coins([266, 12], [274, 12]); // goblins on the mound, out of reach and out of the way
-  G.ent('stray', 267, 23, { kind: 'coffer' });
+  G.ent('stray', 267, 24, { kind: 'coffer' });
   const R1 = G.done();
   // ---- 5d. THE WALL WALK: a caged squire at the fork. Above, planks along the top of a stake wall under archers, with a breach to jump. Below, the ditch: sappers, a hound, spikes, a brute. ----
   const W2 = grow(R1, R1, 186, 44);
@@ -743,7 +743,7 @@ function kingswood() {
   block(85, 150, 22, 27); ceiling(85, 150, 16);
   for (let x = 85; x <= 150; x++) for (let y = 17; y <= 21; y++) set(x, y, 0);
   ent('torch', 88, 21); ent('torch', 104, 21); ent('torch', 120, 21); ent('torch', 136, 21);
-  ent('pike', 96, 21, { face: -1 }); ent('lever', 100, 21, { ram: 106 }); ent('ram', 106, 17); ent('brute', 110, 21, { face: -1 });
+  ent('pike', 96, 21, { face: -1 }); ent('lever', 100, 21, { ram: 106 }); ent('ram', 106, 17, { hang: true }); ent('brute', 110, 21, { face: -1 });
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS: THE LEVER SWINGS THE RAM ACROSS THE ROAD, THE PLATE DROPS THE CAGE. USE THEM ON THE GOBLINS THAT BUILT THEM.' });
@@ -774,7 +774,7 @@ function kingswood() {
   for (let x = 211; x <= 275; x++) for (let y = 16; y <= 20; y++) set(x, y, 0);
   ent('torch', 214, 20); ent('torch', 230, 20); ent('torch', 246, 20); ent('torch', 262, 20);
   ent('firepit', 216, 20, { period: 3.4, on: 1.5, phase: 0.8 }); ent('brazier', 224, 20); ent('firepit', 265, 20, { period: 3.4, on: 1.5, phase: 2.4 });
-  ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
+  ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16, { hang: true }); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
   ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
   ent('stray', 250, 20, { kind: 'cup' }); coins([218, 19], [236, 19], [252, 18], [266, 19], [273, 19]);
   block(275, 277, 17, 27); block(278, 281, 15, 27); block(282, 300, 14, 27);
@@ -2764,7 +2764,7 @@ function theFlotilla() {
   ent('cannon', 118, 21, { deck: true });
   ent('sign', 114, 21, { text: 'A DECK GUN, LAID AND LOADED. ONE BLOW ON THE BREECH AND SHE SPEAKS: THE BALL GOES DOWN THE DECK AND TAKES EVERYTHING STANDING IN IT. THEN SHE IS TOO HOT TO TOUCH FOR A WHILE.' });
   ent('cannon', 192, 24, { deck: true });
-  ent('sign', 188, 21, { text: 'THE FLEET IS FULL OF THEM, AND SO IS HER SHIP. A BALL WILL BREAK A GUARD NOTHING ELSE WILL.' });
+  ent('sign', 188, 24, { text: 'THE FLEET IS FULL OF THEM, AND SO IS HER SHIP. A BALL WILL BREAK A GUARD NOTHING ELSE WILL.' });
   coins([330, 20], [338, 20], [346, 20], [354, 20], [362, 20]); ent('sign', 326, 21, { text: 'HER MAGAZINE. THE POWDER IS AFT AND HER GUNS ARE FORWARD, AND SHE WILL NOT THANK YOU FOR BEING DOWN HERE.' }); // HER OWN GUNS: when she goes behind her guard, bring one to bear
   ent('sign', 306, 15, { text: 'HER CHART HAS THE WRECKS MARKED, AND A RING DRAWN ROUND SOMETHING DEEPER, WITH A NOTE: THEIR SHARE, PAID MONTHLY.' });
   ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 344, 10, { kind: 'plunder', v: 0 });
@@ -2828,7 +2828,7 @@ function theHurricane() {
   const rot = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); }; // planking that gives under a standing weight
   const shroud = x => net(x, x + 1, 13, 19);   // a hand on any of these and the wave only soaks you
   const bob = (x, y, len = 2) => ent('mover', x, y, { len, range: 0, bob: true }); // wreckage riding the swell
-  const pools = [], movers = [], hullZones = [];
+  const pools = [], movers = [], hullZones = [], darkZones = [];
   const FOUL = { foulCol: '#7a8a3a', foulColL: '#b8c85a', foulColD: '#3a4a1e' };
 
   // THE SEA. Swimmable, and the worst place to be in a storm: the lightning runs along it.
@@ -2844,6 +2844,9 @@ function theHurricane() {
   // ================= 1. THE FORECASTLE: you come up out of her head =================
   block(16, 52, 16, 19); air(22, 50, 17, 19); air(51, 52, 17, 19);
   plat(53, 16, 4); net(53, 54, 15, 19);
+  ent('deco', 14, 17, { kind: 'figurehead', hang: true });                 // her head, hung off the bow under your feet
+  ent('deco', 20, 15, { kind: 'shipBell' }); ent('deco', 46, 15, { kind: 'anchor' });
+  ent('sign', 18, 15, { text: 'HER BELL. THEY RANG IT FOR THE WATCH AND FOR THE DEAD, AND IT IS STILL RINGING ITSELF.' });
   ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD AND YOU GET A BREATH OF WARNING. TAKE A LINE, GET INTO THE YARDS, OR GET BELOW. IF IT HAS YOU ON THE OPEN DECK: JUMP THE CREST, OR ROLL UNDER IT.' });
   ent('check', 30, 19); ent('npc', 34, 19, { kind: 'squire' });
   ent('sign', 44, 19, { text: 'HER LANTERNS ARE BLOWN OUT AND ROLLED INTO HER CORNERS. BRING THEM BACK AND SHE HAS HER LIGHTS.' });
@@ -2900,7 +2903,15 @@ function theHurricane() {
   ent('cutlass', 232, 26, { face: 1 }); ent('bosun', 260, 26, { face: -1 }); ent('marine', 292, 12, { face: -1 });
   // HER PUMPS, amidships, where there was nothing but deck: three strikes on the brake and the water in her
   // hold goes down for twenty seconds - which is the only way to walk her orlop dry and get what is down there.
-  ent('pump', 244, 19); ent('sign', 240, 19, { text: 'HER PUMPS. WORK THE BRAKE AND THE WATER IN HER HOLD GOES DOWN WHILE THEY RUN. THERE IS SOMETHING IN THE ORLOP THAT IS ONLY THERE WHEN IT IS DRY.' });
+  // HER GUN DECK: four laid guns on the orlop, and the last one trained on the magazine's bulkhead
+  block(268, 286, 21, 26);                                                 // the magazine, sealed
+  air(272, 282, 22, 25);
+  for (const x of [228, 240, 252]) ent('cannon', x, 26, { deck: true });
+  ent('cannon', 264, 26, { hole: [268, 271, 22, 25] });
+  ent('sign', 224, 26, { text: 'HER GUN DECK. THEY ARE ALL LAID AND ALL LOADED: ONE BLOW ON A BREECH AND SHE SPEAKS. THE LAST ONE IS TRAINED ON HER OWN MAGAZINE BULKHEAD, WHICH IS ONE WAY IN.' });
+  ent('deco', 276, 26, { kind: 'kegStack' }); ent('deco', 280, 26, { kind: 'plunder', v: 1 }); ent('silver', 274, 26);
+  ent('deco', 284, 26, { kind: 'coiledCable', v: 1 }); coins([273, 25], [278, 25], [282, 25]);
+  ent('pump', 244, 19, { pool: 424 }); ent('sign', 240, 19, { text: 'HER PUMPS. WORK THE BRAKE AND THE WATER IN HER HOLD GOES DOWN WHILE THEY RUN. THERE IS SOMETHING IN THE ORLOP THAT IS ONLY THERE WHEN IT IS DRY.' });
   ent('deco', 248, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });
   ent('sign', 226, 19, { text: 'THE WAIST IS THE WORST OF HER: NO RAIL WORTH THE NAME AND NOTHING TO HOLD BUT THE SHROUDS.' });
   air(236, 237, 20, 20); net(236, 237, 20, 26);
@@ -2945,7 +2956,8 @@ function theHurricane() {
   air(486, 556, 20, 27); // the gap between the two hulls, open to the sea
   block(500, 544, 24, 27); hullZones.push([500, 544, 24, 27]); // the wreck herself, down to her gunwale in it
   air(504, 540, 25, 26); air(520, 521, 24, 24); net(520, 521, 24, 26); // and a way up out of the wreck's hold, or it is a hole you fall into
-  pools.push({ x0: 486 * TS, x1: 557 * TS, y: 28 * TS, bottom: 34 * TS, shallow: false, swim: true, harm: true, clear: true, ...FOUL }); // her oil on the water
+  block(486, 556, 34, 35);                      // she is aground: the oil has a bottom, and things lie on it
+  pools.push({ x0: 486 * TS, x1: 557 * TS, y: 28 * TS, bottom: 34 * TS, shallow: false, swim: true, harm: true, clear: true, pumpOil: true, oilHi: 28 * TS, ...FOUL }); // her oil on the water, and her beam takes it down
   ent('sign', 482, 19, { text: 'SHE HAS RUN SOMETHING DOWN AND IT IS STILL ALONGSIDE. THERE IS OIL ON THE WATER BETWEEN THEM AND IT BURNS YOUR EYES: CROSS ON THE WRECKAGE AND THE ROPES.' });
   plat(488, 17, 4); plat(497, 15, 4); plat(508, 17, 5); plat(520, 15, 4); plat(530, 17, 4); plat(542, 15, 4); plat(551, 17, 5);
   bob(493, 21); bob(515, 21); bob(536, 21); bob(547, 21);
@@ -2956,6 +2968,12 @@ function theHurricane() {
   net(494, 495, 20, 33); net(548, 549, 20, 33);                            // two more over the side: the oil is never a room with no door
   net(504, 505, 24, 33); net(538, 539, 24, 33);                            // and two through the wreck herself, or the oil under her is a lid
   ent('deco', 522, 23, { kind: 'sternWindows' }); ent('deco', 506, 23, { kind: 'boardingNet' }); ent('check', 508, 16);
+  // HER OIL PUMP: work the beam and the foul water goes down to her bottom for twenty seconds, which is the
+  // only way to walk under the wreck and take what went down with her.
+  ent('pump', 508, 23, { pool: 486 });
+  ent('sign', 502, 23, { text: 'THE OIL LIES ON THE WATER BETWEEN THEM. WORK THIS BEAM AND IT GOES DOWN INTO HER BILGE WHILE IT RUNS: THERE IS SOMETHING ON THE BOTTOM UNDER HER.' });
+  ent('deco', 500, 33, { kind: 'plunder', v: 0 }); ent('deco', 536, 33, { kind: 'plunder', v: 2 }); ent('silver', 518, 33);
+  coins([496, 33], [508, 33], [524, 33], [532, 33], [544, 33]);
   ent('cutlass', 516, 23, { face: -1 }); ent('boarder', 534, 23, { face: -1 }); ent('marine', 500, 14, { face: -1 }); ent('cutlass', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
   ent('silver', 528, 23); ent('deco', 532, 23, { kind: 'plunder', v: 2 });
   coins([493, 20], [500, 14], [510, 16], [520, 14], [530, 16], [540, 14], [548, 16], [518, 23], [526, 23]);
@@ -2976,6 +2994,12 @@ function theHurricane() {
   ent('cutlass', 630, 26, { face: -1 }); ent('silver', 644, 26);
   // HER POWDER STORE, under the quarterdeck: the reason nobody goes aft with a light
   for (const hx of [664, 700, 730]) { air(hx, hx + 1, 20, 20); net(hx, hx + 1, 20, 26); }
+  // THE DARK HOLD: no lamp of hers has burned back here in a year, and the only light is what comes through
+  // her deck seams when the sky goes off.
+  darkZones.push({ x0: 560 * TS, x1: 656 * TS, y0: 20 * TS, y1: 28 * TS, dark: 0.88 });
+  ent('sign', 564, 26, { text: 'NO LIGHT BACK HERE. WAIT FOR THE SKY AND WALK WHILE IT IS WHITE.' });
+  ent('deco', 576, 26, { kind: 'hammock', v: 0 }); ent('deco', 592, 26, { kind: 'bones', v: 1 });
+  ent('marine', 584, 26, { face: -1 }); ent('cutlass', 600, 26, { face: 1 }); ent('boarder', 640, 26, { face: -1 });
   ent('sign', 660, 26, { text: 'HER POWDER STORE. NO LIGHT, NO IRON ON THE DECK, AND THE MAN WHO SAID SO IS AFT ON HER QUARTERDECK.' });
   ent('deco', 670, 26, { kind: 'kegStack' }); ent('deco', 686, 26, { kind: 'kegStack' }); ent('deco', 712, 26, { kind: 'rumBarrels', v: 1 });
   ent('deco', 696, 26, { kind: 'plunder', v: 0 }); ent('deco', 724, 26, { kind: 'plunder', v: 2 });
@@ -2998,6 +3022,22 @@ function theHurricane() {
   coins([682, 14], [694, 14], [706, 14], [718, 14], [728, 14], [696, 9], [704, 9]);
   ent('captain', 732, 15);
 
+  // ---- AND HER DECK IS NOT A PAVEMENT ----
+  // Three hundred tiles of her waist were one flat line at row 19. Every dozen tiles now there is planking
+  // that gives under a standing weight, a fallen spar to step up on, or a hole you jump, so crossing her
+  // waist is a thing you do rather than a thing you hold right through.
+  for (const [x, kind] of [[64, 'rot'], [96, 'spar'], [108, 'hole'], [232, 'rot'], [258, 'spar'], [292, 'hole'],
+                           [580, 'rot'], [608, 'spar'], [628, 'hole'], [644, 'rot']]) {
+    if (kind === 'rot') { rot(x, x + 3, 19); }
+    else if (kind === 'spar') { plat(x - 1, 16, 5); plat(x + 4, 14, 4); }
+    else { for (let q = 0; q <= 2; q++) set(x + q, 19, T.AIR); }             // a hole in her: jump it or drop into her hold
+  }
+  movers.push({ kind: 'swing', px: 120 * TS, py: 9 * TS, arm: 92, x: 0, y: 0, w: 32, h: 8, period: 3.3, phase: 1.4 });
+  movers.push({ kind: 'swing', px: 600 * TS, py: 9 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.7, phase: 0.3 });
+  movers.push({ kind: 'swing', px: 636 * TS, py: 9 * TS, arm: 84, x: 0, y: 0, w: 32, h: 8, period: 3.1, phase: 2.2 });
+  ent('deco', 700, 14, { kind: 'sternWindows' });                            // THE GREAT CABIN, lit from inside
+  ent('deco', 716, 15, { kind: 'chartTable' }); ent('deco', 690, 15, { kind: 'wheel' });
+
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 24, y: 19 }, pools, falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
@@ -3006,7 +3046,7 @@ function theHurricane() {
     wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 744 * TS, every: 9, tell: 3, speed: 210, dmg: 18 },
     // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface.
     storm2: { every: 9, tell: 1.2, y: 20 * TS, zones: [[330 * TS, 424 * TS], [486 * TS, 558 * TS], [560 * TS, 744 * TS]] },
-    hullZones,
+    hullZones, darkZones,
     interiors: [[20, 740, 21, 26, 'ship'], [186, 214, 17, 19, 'ship'], [504, 540, 25, 26, 'ship'], [662, 742, 17, 19, 'ship']],
     quest: { n: 3, item: 'lamp', name: 'HER LANTERNS', npc: 'squire', done: 'SHE HAS HER LIGHTS BACK', reward: 'relic', relic: 'stormline' },
     palette: { set: 'ship', sky: 'storm', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',

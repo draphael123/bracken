@@ -955,7 +955,7 @@ function spawnEnt(e) {
       case 'plank': props.push({ t: 'plank', x: px, y: py, span: e.span, row: e.row, down: false }); break;
       case 'seabell': props.push({ t: 'seabell', x: px, y: py, swing: 0, cd: 0 }); break;
       case 'capstan': props.push({ t: 'capstan', x: px, y: py, spin: 0, turns: 0, link: e.link, done: false }); break;
-      case 'pump': props.push({ t: 'pump', x: px, y: py, spin: 0, turns: 0, run: 0 }); break;
+      case 'pump': props.push({ t: 'pump', x: px, y: py, spin: 0, turns: 0, run: 0, pool: e.pool !== undefined ? e.pool * TS : undefined }); break;
       case 'sluice': props.push({ t: 'sluice', x: px, y: py, spin: 0, held: 0 }); break;
       case 'winch': props.push({ t: 'winch', x: px, y: py, gate: e.gate, gy0: e.gy0, gy1: e.gy1, open: 0, spin: 0, hold: e.hold || 6 }); break;
       case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, hang: !!e.hang, gq: !!e.gq, downT: 0 }); break;
@@ -6052,10 +6052,11 @@ function updateCastleProps(dt, hb) {
     }
     if (pr.t === 'pump') { // HER PUMPS: work the brake and the water in her hold goes down while it runs
       pr.spin = Math.max(0, pr.spin - dt);
-      const P2 = (L.pools || []).find(q => q.pumped);
+      const mine = q => pr.pool === undefined || q.x0 === pr.pool;   // a pump with a pool named drives only that one
+      const P2 = (L.pools || []).find(q => q.pumped && mine(q));
       // THE LAMP WORKS: the same beam, a different job. Working it blows the mains, which pushes the water in
       // the procession road down to wading depth and brings its dead lamps up; let it stop and the road fills.
-      const RD = (L.pools || []).find(q => q.pumpRoad);
+      const RD = (L.pools || []).find(q => q.pumpRoad && mine(q));
       if (RD) { const want = pr.run > 0 ? RD.roadLo : RD.roadHi;
         RD.y += (want - RD.y) * Math.min(1, dt * (pr.run > 0 ? 1.6 : 0.9));
         const d = RD.bottom - RD.y; RD.depth = Math.max(0, d); RD.shallow = d < 22; RD.dry = d <= 2;
@@ -6069,6 +6070,13 @@ function updateCastleProps(dt, hb) {
         if (P2) { P2.pumpY = (P2.pumpY === undefined ? P2.y : P2.pumpY) + 26 * dt; poolLevel(P2, Math.min(P2.base + 30, P2.pumpY)); }
         if (pr.run <= 0) { pr.turns = 0; number(pr.x, pr.y - 26, 'SHE IS FILLING AGAIN', '#ff9a5c'); SFX.gasp(); } }
       else if (P2) { P2.pumpY = (P2.pumpY === undefined ? P2.y : P2.pumpY) - 16 * dt; poolLevel(P2, Math.max(P2.base, P2.pumpY)); }
+      // HER OIL PUMP: while the beam works, the foul water goes down to the bottom of her and what is lying
+      // in it can be walked to. Stop, and it comes back up over your boots.
+      const OL = (L.pools || []).find(q => q.pumpOil && mine(q));
+      if (OL) { const want = pr.run > 0 ? OL.bottom - 2 : OL.oilHi;
+        OL.y += (want - OL.y) * Math.min(1, dt * (pr.run > 0 ? 1.5 : 0.8));
+        const d = OL.bottom - OL.y; OL.depth = Math.max(0, d); OL.shallow = d < 20; OL.dry = d <= 3;
+        if (pr.run > 0 && Math.random() < dt * 22) parts.push({ x: OL.x0 + Math.random() * (OL.x1 - OL.x0), y: OL.y, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#7a8a3a', size: 2, grav: -14 }); }
       const struck = hb && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 20, b: pr.y }) && !P.hitSet.has(pr);
       if (struck) { P.hitSet.add(pr); pr.turns++; pr.spin = 0.5; SFX.clank(); sparks(pr.x, pr.y - 10, P.face, 4);
         if (pr.turns >= 3) { pr.run = 20; SFX.gateOpen(); number(pr.x, pr.y - 26, 'THE HOLD IS GOING DOWN', '#8fd160'); shakeCam(3); }
