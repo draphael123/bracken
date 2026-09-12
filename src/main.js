@@ -1477,9 +1477,11 @@ function drawMap() {
   if (!map.walking) {
     const store = nd.kind === 'store';
     const tamLine = !store && TAM_MAP[LEVELS[nd.level].id] ? ('TAM: ' + TAM_MAP[LEVELS[nd.level].id][(PROG[LEVELS[nd.level].id] || {}).cleared ? 1 : 0]) : '';
-    const cw = Math.min(VW - 8, Math.max(200, tamLine.length * 6 + 18)), ch = store ? 26 : 58, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 21 : VH - 12 - ch;
+    const cw = Math.min(VW - 12, 218), ch = store ? 26 : 58;
+    const onRight = nd.x < VW / 2;                                   // the card goes to the far side of the node
+    const cx0 = onRight ? VW - cw - 6 : 6, low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 21 : VH - 12 - ch;
     panel(cx0, cy0, cw, ch, UI.sel);
-    text(nd.name, cx0 + 8, cy0 + 5, UI.title);
+    text(fitText(nd.name, cw - 52, 8), cx0 + 8, cy0 + 5, UI.title);
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
@@ -1487,7 +1489,7 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
-      text(lv.sub || '', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
+      text(fitText(lv.sub || '', cw - 80, 6), cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
       { const D = DIFF[diffOf(id)], rx = cx0 + cw - 8; text(D.label, rx, cy0 + 16, D.col, 'right', 6); const ax = rx - D.label.length * 6 - 8; g.fillStyle = D.col; g.fillRect(ax + 1, cy0 + 16, 1, 1); g.fillRect(ax, cy0 + 17, 3, 1); g.fillRect(ax, cy0 + 20, 3, 1); g.fillRect(ax + 1, cy0 + 21, 1, 1); } // this wood's difficulty, and the up/down that changes it
       // line one: your best, and what it was worth
       const M = MEDALS[id] || [300, 450, 660];
@@ -1504,7 +1506,7 @@ function drawMap() {
       if (PROP.relic[p.relic] || p.relic) { g.drawImage(PROP.relic[p.relic] || PROP.lampIcon, bx, by - 2); bx += 12; }
       if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
       if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
-      const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p.cleared ? 1 : 0], cx0 + 8, cy0 + 47, '#c9d1dc', 'left', 6);
+      const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text(fitText('TAM: ' + tm[p.cleared ? 1 : 0], cw - 16, 6), cx0 + 8, cy0 + 47, '#c9d1dc', 'left', 6);
     }
   }
   { const line = 'ARROWS MOVE   Z ENTER   X BEASTS   V EQUIP';
@@ -1828,11 +1830,11 @@ function drawStore() {
       const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + 7 * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
       const squeeze = Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
-        const set = tab.key === 'hero' ? (k.id === 'paladin' ? preview('hero:paladin:' + PROG.skin, () => bakePaladin(PAL_SETS[PROG.skin] || {})) : k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
+        const set = tab.key === 'hero' ? (k.id === 'paladin' ? preview('hero:paladin:' + PROG.skin, () => bakePaladin(PAL_SETS[PROG.skin] || {})) : k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : k.id === 'pirate' ? preview('hero:pirate:' + PROG.skin, () => bakeFreebooter(FREE_SETS[PROG.skin] || {})) : k.id === 'reaper' ? preview('hero:reaper:' + PROG.skin, () => bakeReaper(REAP_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
           : tab.key === 'skin' ? skinPreview(k)
           : preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal)));
         const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 3) % 4];
-        const sc = squeeze ? 1.6 * (46 - squeeze) / 46 : 1.6; g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
+        const sc = Math.max(1, Math.min(3, (46 - squeeze) / fr.height)); g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
       } else if (tab.rank) {
         const rr = rankOf(k.id);
         text(rr + ' / ' + k.max, mx, pvY + 10, UI.title, 'center');
@@ -9892,7 +9894,9 @@ function render() {
       g.fillStyle = 'rgba(12,10,20,0.85)'; g.fillRect(VW / 2 - w2 / 2, 14, w2, 11);
       g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, 14.5, w2 - 1, 10);
       text(rushMsg, VW / 2, 17, '#ffd36b', 'center', 6); }
-    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1); g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 40); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 17, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); text(LEVELS[levelIndex].sub, VW / 2, VH / 2 + 5, '#c9d1dc', 'center'); g.globalAlpha = 1; }
+    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? 20 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 40 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 17 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); text(LEVELS[levelIndex].sub, VW / 2, VH / 2 + 4, '#c9d1dc', 'center');
+      { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 20 + i * 9, '#ffd36b', 'center', 6)); }
+      g.globalAlpha = 1; }
     }
     if (miniActive && !bossActive) { const m = miniOne(); if (m) { text(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), VW / 2, VH - 22, m.phase === 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, VH - 11, 120, 5, Math.max(0, m.hp) / m.maxHp, m.mounted ? '#e0b040' : '#8fd160'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } } }
     if (bossActive && boss && boss.alive) { const nm = boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.dimmed ? 'THE SUNCATCHER  DIMMED' : 'THE SUNCATCHER') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'quarter' ? (boss.guard ? 'THE QUARTERMASTER  BEHIND HER GUARD' : boss.mode === 'cut' ? 'THE QUARTERMASTER  CUTTING THE LINE' : boss.phase === 3 ? 'THE QUARTERMASTER  THE POOP' : boss.phase === 2 ? 'THE QUARTERMASTER  THE QUARTERDECK' : 'THE QUARTERMASTER') : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  RIGHT OUT' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
