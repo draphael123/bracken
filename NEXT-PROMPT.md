@@ -1,57 +1,53 @@
 # BRACKEN — next session
 
-Live: bracken-nine.vercel.app. Everything here is committed and pushed.
+Live: bracken-nine.vercel.app. Everything here is committed, pushed and deployed.
 
-## THE HURRICANE DECK (level 14) — in progress, this is the live job
+## Done: THE HURRICANE DECK (level 14)
 
-Built and playable as a slice; **hidden from the map** (`hidden: true` on its LEVELS row) so it cannot break
-progression. Load it in the harness with `BK.load(14); BK.state = 'play'`.
+One ship, one storm. 384 columns, her own CC0 music, nine checkpoints, twenty-eight hands aboard, three
+lanterns for the squire (they pay THE STORM LINE), lightning that takes the fore and main masts down one at a
+time, and THE DROWNED BOSUN on the quarterdeck. She is on the map past the Flotilla and no longer hidden.
+Measured: max-aggression TTK 79 s (the Quartermaster is 92 s); a bot that stands in his arena dies in 23 s.
+All seven tools clean.
 
-What exists: `theHurricane()` in src/level.js — one ship, W264 H34, forecastle / open waist / quarterdeck,
-three masts whose shrouds are climbable NET every few strides, yards (ONEWAY) above the wash, a hold below the
-deck with hatches down, the existing pirate crew aboard, sea underneath that eats you.
-**THE WASH** is the rule: `L.wash = { y0, y1, x0, x1, every, tell, speed, dmg }` drives `updateWash` /
-`drawWash` in main.js — wait → tell (a wall builds at the edge she is coming from, with a shout and a shake) →
-run (it crosses the deck, damages and throws the player, and shoves the crew too). Holding a line means the
-tile at the player's chest is NET or CLIMB.
+The one thing that is a reskin rather than bespoke: the Bosun is the BOSUN's sprite tinted, weeded and drawn
+at 1.45x (`drownedFrom()` in main.js). It reads as "the same man, drowned", which is the fiction, but if you
+want him hand-drawn that is a job in src/redraw/pirates.js in the idiom documented at the top of that file.
 
-### Finish it, in this order
-1. ~~Verify hold-on saves you~~ — VERIFIED with the crew killed off: a bot parked on the open deck loses ~16 a
-   wash; a bot clinging to a shroud takes nothing across 20 seconds of washes. (The first reading looked bad
-   because teleporting the bot into mid-rigging costs it health before it grabs on.) DONE since: the wash carries you along her
-   when you are held, the throw is clamped at the rail so it can never put you straight over the side (a bot
-   parked on the stern edge through four washes never went in), and the sea has its own voice now —
-   `SFX.wave()` for the build and `SFX.waveBreak()` for the break, instead of the beast roar it was borrowing.
-2. **THE DROWNED BOSUN** — the boss, who comes over the rail *with* a wave: his arena is the quarterdeck at
-   x 212-244, he should use the wash as his clock (attack while you must also hold on), and the wave itself
-   should be the thing that resets the fight. Give him a wind-up per attack and a tell colour.
-3. **Lightning takes the masts down one at a time** — a fallen mast is a new bridge and a lost route at once.
-   The deck-fall code from the Quartermaster is the model.
-4. **Her own CC0 music** (she borrows `flotilla` right now) + creature voices for the boss, a map node, and then
-   drop `hidden: true`.
-5. The wash needs its own sound: there is no `SFX.wave` (it falls back to `roar`).
+## Next, in the order I would take it
 
-## Older open items
-- **Verify the web cut** in Sporewood: `cutWeb()` is called from the attack-hitbox loop next to `breakCrate`,
-  but the harness never started an attack (`BK.P.atk` stayed -1), so it is unverified. Tunnel curtains are waist
-  high so nothing can be sealed either way, and fire burns them.
-- **THE LONG WATER: 30-40 seconds longer**, platforming over rising water pillars.
-- **The Tide Herald needs more going on** — one more concurrent layer, not more HP.
-- **tools/newlevel.mjs** half finished: check 7 still prints the old "shows 0 wind-ups" text, and the flotilla
-  dead-end false positive (arena `y1` undefined in deadends' `inRoom`).
+1. **The heavy attack** — see `ASSESSMENT-HEAVY-ATTACK.md`. The verdict: one new verb (hold X) for all three
+   heroes, one 3-point talent per class, two chain talents, and re-measure every boss TTK afterwards.
+2. **THE LONG WATER: 30-40 seconds longer**, platforming over rising water pillars (still open from before).
+3. **The Tide Herald needs more going on** — one more concurrent layer, not more HP.
+4. **THE WINDCALLER has one told attack** — `node tools/newlevel.mjs` says so and it is right; his kit is thin
+   next to the later bosses.
+5. Optional: bespoke art for the Drowned Bosun.
 
 ## The staples — run these after any level edit
 ```
 node --check src/main.js && node --check src/level.js
-node tools/comments.mjs && node tools/content-audit.mjs && node tools/audit.mjs
+node tools/comments.mjs && node tools/content-audit.mjs && node tools/audit.mjs && node tools/newlevel.mjs
 node tools/reach.mjs && node tools/deadends.mjs && node tools/traps.mjs && node tools/quality.mjs
 ```
-A NEW LEVEL MUST BE ADDED TO THE `TIER` TABLE in main.js or its foes fight at wood strength.
+`tools/newlevel.mjs` now checks the things that bit us building her: the TIER table, unique music, creature
+voices, a map node, a checkpoint before the boss, water laid on top of land, the boss on the **boss-death
+list** (or the arena walls never open and the level never ends), the boss's branch on its own **health bar**
+(or it is called HORNET QUEEN), the boss in **windingUp()** (or it winds up in silence), and whether the start
+can reach more than a sliver of the level (her forecastle was a sealed box and every other tool passed it).
 
 ## Landmines that have bitten more than once
 - A patch script that writes only at the end loses every edit when a later assert throws — write after each rep.
 - Never put a `//` comment mid-line before more code (tools/comments.mjs catches it).
 - Name clashes: `solidish`, `motes`, `raiseAlarm`, `balls` all collided with existing globals.
-- `grow()` shifts coordinates: content added after a grow must be written in FINAL columns, and new swings go on
-  `F.R.moversExtra`, not `F.movers`.
-- The harness needs `BK.state = 'play'` after `BK.load(i)` or nothing updates.
+- `grow()` shifts coordinates: content added after a grow must be written in FINAL columns, and new swings go
+  on `F.R.moversExtra`, not `F.movers`. `grow()` does NOT remap custom fields (`wash`, `masts`).
+- The harness needs `BK.state = 'play'` after `BK.load(i)` or nothing updates, and there is no `BK.press`:
+  drive the attack with `window.dispatchEvent(new KeyboardEvent('keydown', {key: 'x'}))`.
+- An arena wider than about 40 tiles puts the boss off screen. Clamp anything that rides a wave to the player.
+- quality.mjs is the honest mirror for a new level: match the neighbours' foes/100, signs, checks and worstGap.
+
+## Verified this session
+- The Sporewood **web cut works**: one slash takes the whole curtain (36 web tiles to 34, column cleared).
+- Hold-on in the wash: a bot on a shroud takes nothing across 25 s of waves; on the open deck it loses ~16 a
+  wave; parked on the stern edge through four waves it never went over the side.
