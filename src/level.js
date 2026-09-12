@@ -2798,7 +2798,7 @@ function theHurricane() {
   // ================= 1. THE FORECASTLE: you come up out of her head =================
   block(16, 52, 16, 19); air(22, 50, 17, 19); air(51, 52, 17, 19);
   plat(53, 16, 4); net(53, 54, 15, 19);
-  ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD AND YOU GET A BREATH OF WARNING. TAKE A LINE, GET UP INTO THE YARDS, OR GET BELOW. THE DECK IS NOT A PLACE TO STAND WHEN SHE SHIPS ONE.' });
+  ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD AND YOU GET A BREATH OF WARNING. TAKE A LINE, GET INTO THE YARDS, OR GET BELOW. IF IT HAS YOU ON THE OPEN DECK: JUMP THE CREST, OR ROLL UNDER IT.' });
   ent('check', 30, 19); ent('npc', 34, 19, { kind: 'squire' });
   ent('sign', 44, 19, { text: 'HER LANTERNS ARE BLOWN OUT AND ROLLED INTO HER CORNERS. BRING THEM BACK AND SHE HAS HER LIGHTS.' });
   ent('deco', 40, 19, { kind: 'kegStack' }); ent('deco', 24, 19, { kind: 'hammock', v: 0 }); ent('deco', 32, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 46, 19, { kind: 'washing' }); ent('deco', 28, 19, { kind: 'hammock', v: 1 });
@@ -2827,6 +2827,7 @@ function theHurricane() {
   ent('sign', 121, 19, { text: 'SHE IS OPEN TO THE SEA HERE AND HER BILGE IS STANDING IN HER. THE GREEN WILL EAT YOU: GO OVER IT.' });
   plat(129, 17, 4); plat(137, 15, 4); plat(146, 17, 4); plat(155, 15, 4); plat(164, 17, 4);
   bob(133, 19); bob(142, 19); bob(151, 19); bob(160, 19); bob(169, 19); // her own wreckage, riding what is in her
+  for (const x of [134, 143, 152, 161, 170]) net(x, x + 1, 14, 26);      // and a net hanging into the bilge at every bay of it
   net(124, 125, 14, 19); net(175, 176, 14, 19);
   movers.push({ kind: 'swing', px: 150 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.6 });
   ent('marine', 140, 14, { face: -1 }); ent('cutlass', 166, 16, { face: -1 }); ent('lookout', 138, 14, { face: 1 }); ent('cutlass', 131, 16, { face: 1 }); // on her spars: the deck is gone under them
@@ -2905,7 +2906,9 @@ function theHurricane() {
   movers.push({ kind: 'swing', px: 504 * TS, py: 8 * TS, arm: 104, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.1 });
   movers.push({ kind: 'swing', px: 528 * TS, py: 8 * TS, arm: 112, x: 0, y: 0, w: 32, h: 8, period: 3.8, phase: 2.6 });
   net(484, 485, 14, 19); net(557, 558, 14, 19);
-  ent('deco', 512, 24, { kind: 'mastTall', v: 0 }); net(512, 513, 14, 23); // the wreck's mast, lying against her: a way up
+  ent('deco', 512, 24, { kind: 'mastTall', v: 0 }); net(512, 513, 14, 33); // the wreck's mast, lying against her: a way up, and down into the oil
+  net(494, 495, 20, 33); net(548, 549, 20, 33);                            // two more over the side: the oil is never a room with no door
+  net(504, 505, 24, 33); net(538, 539, 24, 33);                            // and two through the wreck herself, or the oil under her is a lid
   ent('deco', 522, 23, { kind: 'sternWindows' }); ent('deco', 506, 23, { kind: 'boardingNet' }); ent('check', 508, 16);
   ent('cutlass', 516, 23, { face: -1 }); ent('boarder', 534, 23, { face: -1 }); ent('marine', 500, 14, { face: -1 }); ent('cutlass', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
   ent('silver', 528, 23); ent('deco', 532, 23, { kind: 'plunder', v: 2 });
@@ -2954,7 +2957,7 @@ function theHurricane() {
     duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
     swell: { amp: 3, period: 3.8 }, stormClouds: true,
     // THE WASH: the rule of her open deck. It builds to windward, it tells you, and then it takes the deck.
-    wash: { y0: 8 * TS, y1: 20 * TS, x0: 16 * TS, x1: 744 * TS, every: 8.5, tell: 2.2, speed: 320, dmg: 18 },
+    wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 744 * TS, every: 9, tell: 3, speed: 210, dmg: 18 },
     // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface.
     storm2: { every: 9, tell: 1.2, y: 20 * TS, zones: [[330 * TS, 424 * TS], [486 * TS, 558 * TS], [560 * TS, 744 * TS]] },
     hullZones,
