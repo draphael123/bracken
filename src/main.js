@@ -752,6 +752,17 @@ function drawGateHints(cx, cy) {
   const gateTop = col => { for (let ty = 0; ty < LH; ty++) if (L.grid[ty * LW + col] === T.PORT) return ty; return -1; };
   const plate = (x, y, edge) => { g.fillStyle = 'rgba(10,8,20,0.75)'; g.fillRect(x - 9, y - 9, 18, 18); g.strokeStyle = edge; g.lineWidth = 1; g.strokeRect(x - 8.5, y - 8.5, 17, 17); };
   const bob = Math.round(Math.sin(time * 3) * 1.5);
+  // A GUN SAYS WHETHER IT WILL SPEAK: the gun and a spark while it is loaded, a fuse burning down while it is
+  // not. Four of these stand in the Quartermaster's arena and nobody knew they could be used at all.
+  for (const pr of props) if (pr.t === 'cannon' && pr.deck) { const gx = Math.round(pr.x - cx), gy = Math.round(pr.y - 26 - cy) + bob;
+    if (gx < -40 || gx > VW + 40) continue;
+    const hot = (pr.cool || 0) > 0, k = 0.5 + 0.5 * Math.sin(time * 6);
+    plate(gx, gy, hot ? '#9aa39a' : '#ffd36b');
+    g.fillStyle = hot ? '#5a6270' : '#c9d1dc'; g.fillRect(gx - 6, gy - 2, 11, 4); g.fillRect(gx + 5, gy - 1, 2, 2);
+    if (!hot) { g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#ffd36b'; g.fillRect(gx + 7, gy - 2, 2, 2); g.fillRect(gx + 6, gy - 4, 1, 1); g.globalAlpha = 1; }
+    else { g.fillStyle = '#3a3040'; g.fillRect(gx - 8, gy + 6, 16, 1); g.fillStyle = '#ff9a5c'; g.fillRect(gx - 8, gy + 6, Math.round(16 * (1 - pr.cool / 7)), 1); }
+    if (!hot && Math.abs(pr.x - P.x) < 60) text('X', gx, gy - 17, '#ffd36b', 'center', 6);
+  }
   for (const pr of props) if (pr.t === 'winch' && !(pr.open > 0)) { const top = gateTop(pr.gate); if (top < 0) continue; const gx = pr.gate * TS + 8 - cx, gy = top * TS - cy; if (gx < -60 || gx > VW + 60) continue;
     g.strokeStyle = 'rgba(201,178,124,0.75)'; g.lineWidth = 1; g.setLineDash([2, 2]); g.beginPath(); g.moveTo(pr.x - cx + 0.5, pr.y - 18 - cy); g.lineTo(pr.x - cx + 0.5, gy - 4); g.lineTo(gx, gy - 4); g.stroke(); g.setLineDash([]); // the rope from the drum to the gate
     const py2 = gy - 16 + bob; plate(gx, py2, '#c9a040'); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.arc(gx, py2, 4, 0, 7); g.stroke(); const a = time * 3; g.beginPath(); g.moveTo(gx, py2); g.lineTo(gx + Math.cos(a) * 6, py2 + Math.sin(a) * 6); g.stroke(); g.fillStyle = '#ffd36b'; g.fillRect(Math.round(gx + Math.cos(a) * 6) - 1, Math.round(py2 + Math.sin(a) * 6) - 1, 2, 2); // a turning crank
@@ -3098,10 +3109,10 @@ function updateBalls(dt) {
     if (Math.random() < dt * 40) parts.push({ x: b.x, y: b.y, vx: -Math.sign(b.vx) * 40, vy: -10, life: 0.4, max: 0.4, col: '#9aa39a', size: 2, grav: -20 });
     for (const e of enemies) { if (!e.alive || e.harmless || b.dead) continue;
       if (Math.abs(e.x - b.x) > e.w / 2 + 6 || b.y < e.y - e.h - 4 || b.y > e.y + 4) continue;
-      b.dead = true;
-      if (e.t === 'quarter' && e.guard) { e.guard = false; e.mode = 'reel'; e.modeT = 1.8; e.stagger = 1.8; hurtEnemy(e, 70, b.x, false); number(e.x, e.y - 40, 'HER GUARD IS BROKEN', '#8fd160'); SFX.crack(); shakeCam(6); hitstop(0.1); }
-      else hurtEnemy(e, e.maxHp ? 45 : 999, b.x, false);
-      burst(b.x, b.y, 12, ['#e8dcc0', '#9aa39a'], 90, 0.5); break; }
+      if (e.t === 'quarter' && e.guard) { b.dead = true; e.guard = false; e.mode = 'reel'; e.modeT = 1.8; e.stagger = 1.8; hurtEnemy(e, 70, b.x, false); number(e.x, e.y - 40, 'HER GUARD IS BROKEN', '#8fd160'); SFX.crack(); shakeCam(6); hitstop(0.1); }
+      else if (e.maxHp) { b.dead = true; hurtEnemy(e, 45, b.x, false); }
+      else { hurtEnemy(e, 999, b.x, false); b.through = (b.through || 0) + 1; if (b.through >= 6) b.dead = true; }
+      burst(b.x, b.y, 12, ['#e8dcc0', '#9aa39a'], 90, 0.5); if (b.dead) break; }
     if (b.t > 2 || isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { b.dead = true; burst(b.x, b.y, 8, ['#9aa39a', '#e8dcc0'], 70, 0.4); SFX.stone(); }
   }
   balls = balls.filter(b => !b.dead);

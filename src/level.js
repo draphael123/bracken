@@ -2757,6 +2757,14 @@ function theFlotilla() {
   // HER AFT GUN DECK: it was fifty tiles of empty corridor under her quarterdeck. It is her magazine now.
   ent('deco', 334, 21, { kind: 'plunder', v: 1 }); ent('deco', 352, 21, { kind: 'kegStack' }); ent('deco', 344, 21, { kind: 'lanternDeck', v: 0 });
   ent('silver', 360, 21); ent('cutlass', 340, 21, { face: -1 }); ent('marine', 356, 21, { face: -1 });
+  // ================= HER GUNS, AND WHERE YOU LEARN THEM =================
+  // Every gun in the fleet is laid and loaded, and one blow on the breech fires it. The first two are out
+  // here with six of her own crew standing down the line of the first, so the lesson arrives whole: a gun
+  // goes off, the deck clears, and you know what the four in her arena are for.
+  ent('cannon', 118, 21, { deck: true });
+  ent('sign', 114, 21, { text: 'A DECK GUN, LAID AND LOADED. ONE BLOW ON THE BREECH AND SHE SPEAKS: THE BALL GOES DOWN THE DECK AND TAKES EVERYTHING STANDING IN IT. THEN SHE IS TOO HOT TO TOUCH FOR A WHILE.' });
+  ent('cannon', 192, 24, { deck: true });
+  ent('sign', 188, 21, { text: 'THE FLEET IS FULL OF THEM, AND SO IS HER SHIP. A BALL WILL BREAK A GUARD NOTHING ELSE WILL.' });
   coins([330, 20], [338, 20], [346, 20], [354, 20], [362, 20]); ent('sign', 326, 21, { text: 'HER MAGAZINE. THE POWDER IS AFT AND HER GUNS ARE FORWARD, AND SHE WILL NOT THANK YOU FOR BEING DOWN HERE.' }); // HER OWN GUNS: when she goes behind her guard, bring one to bear
   ent('sign', 306, 15, { text: 'HER CHART HAS THE WRECKS MARKED, AND A RING DRAWN ROUND SOMETHING DEEPER, WITH A NOTE: THEIR SHARE, PAID MONTHLY.' });
   ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 344, 10, { kind: 'plunder', v: 0 });
