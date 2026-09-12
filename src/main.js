@@ -54,7 +54,7 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
-const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3 }; // how far up the slope a level sits
+const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
@@ -2835,6 +2835,24 @@ function callWatch(x) {
         enemies.push({ x: tx * TS + 8, y: ty * TS, w: 10, h: 18, t: 'cutlass', hp: EHP.cutlass, speed: 42, mode: 'walk', modeT: 0, cd: 0.6, face: -side, vx: 0, vy: 0, alive: true, anim: 0, flash: 0, stagger: 0, hitSet: new Set() });
         burst(tx * TS + 8, ty * TS - 8, 8, ['#c9b27c', '#e8dcc0'], 50, 0.4); spawned++; } } }
 }
+// A PACK, not a queue. Every frame each foe asks whether one of its mates is already closer to you on its own
+// side. If so it stops waiting its turn and walks PAST you to take the other side, so a crowd comes at you from
+// both hands instead of lining up politely on one. Crossing makes it the near one, and the one it passed goes round.
+function updatePack(dt) {
+  for (const e of enemies) {
+    if (!e.alive || e.harmless || e.maxHp || e.noGrav) { e.flanking = false; e.flankT = 0; continue; }
+    const d = P.x - e.x, side = Math.sign(d) || 1, ad = Math.abs(d);
+    if (ad > 120 || Math.abs(e.y - P.y) > 40 || P.dead) { e.flanking = false; e.flankT = 0; continue; }
+    let nearer = false;
+    for (const q of enemies) { if (q === e || !q.alive || q.harmless || q.maxHp) continue;
+      if (Math.abs(q.y - e.y) > 28) continue;
+      if ((Math.sign(P.x - q.x) || 1) !== side) continue;
+      if (Math.abs(P.x - q.x) < ad - 8) { nearer = true; break; } }
+    if (!nearer) { e.flanking = false; e.flankT = 0; continue; }
+    e.flankT = (e.flankT || 0) + dt;
+    e.flanking = e.flankT > 0.35;
+  }
+}
 function updateCrew(e, dt) {
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(e.y - P.y);
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt);
@@ -2844,7 +2862,7 @@ function updateCrew(e, dt) {
       if (!P.dead && Math.sign(d) === e.face && ad < 34 && dy < 22) { const res = damagePlayer(e.x, DMG.cutlass); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.8; e.stagger = 0.8; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } else if (res === 'hit') P.vx = e.face * 180; } } }
     else if (e.mode === 'slash') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.45; e.cd = 0.9; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
-    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 22 ? e.face * e.speed : 0; if (ad < 44 && P.atk >= 0 && Math.random() < dt * 4) e.guardT = 0.4;
+    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 22 || e.flanking) ? e.face * e.speed : 0; if (ad < 44 && P.atk >= 0 && Math.random() < dt * 4) e.guardT = 0.4;
       if (ad < 30 && e.cd <= 0) { e.mode = 'slashTell'; e.modeT = 0.34; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); } } else want = e.face * e.speed * 0.3; }
   } else if (e.t === 'boarder') { const near = ad < 230 && dy < 50 && !P.dead;
     if (e.mode === 'throwTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.3; SFX.throwWhoosh(); e.grap = { x: e.x + e.face * 8, y: e.y - 12, vx: e.face * 320, vy: -30, t: 0, hit: false }; } }
@@ -2873,7 +2891,7 @@ function updateCrew(e, dt) {
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk';
       if (near && !e.called && !(L.alarmT > 0) && ad > 60 && e.stagger <= 0) { e.called = true; e.mode = 'whistle'; e.modeT = 0.9; SFX.ui(); number(e.x, e.y - e.h - 12, 'HE HAS THE WHISTLE', '#ff9a5c'); }
-      else if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 30 ? e.face * e.speed : 0;
+      else if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 30 || e.flanking) ? e.face * e.speed : 0;
         if (ad < 40 && e.cd <= 0) { e.mode = 'swingTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } } else want = e.face * e.speed * 0.3; }
   } else if (e.t === 'lookout') { const sees = !P.dead && ad < 220 && dy < 60 && Math.sign(d) === e.face && !(P.crouch > 0);
     if (e.mode === 'shout') { e.vx = 0; if (e.modeT <= 0) { e.mode = 'scan'; e.modeT = 3; callWatch(e.x); } }
@@ -2903,7 +2921,7 @@ function updateReef(e, dt) {
       if (!P.dead && Math.sign(d) === e.face && ad < 44 && P.y > e.y - 16) { const res = damagePlayer(e.x, DMG.sailorHook); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.1; e.stagger = 1; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -110; } } } }
     else if (e.mode === 'hook') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.5; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
-    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 30 ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.4;
+    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 30 || e.flanking) ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.4;
       if (ad < 42 && e.cd <= 0) { e.mode = 'hookTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.charge(); } } else want = e.face * e.speed * 0.4; }
   } else if (e.t === 'netter') { const near = ad < 220 && dy < 70 && !P.dead;
     if (e.mode === 'castTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'cast'; e.modeT = 0.3; e.hasNet = false; SFX.throwWhoosh();
@@ -2963,7 +2981,7 @@ function updateShore(e, dt) {
     else if (e.mode === 'snapTell') { if (e.modeT <= 0) { e.mode = 'snap'; e.modeT = 0.25; SFX.slash(); if (!P.dead && Math.sign(d) === e.face && ad < 34 && dy < 18) { const res = damagePlayer(e.x, DMG.turtle); if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 8, 'PARRIED', '#8fd160'); } else if (res === 'hit') P.vx = e.face * 160; } } }
     else if (e.mode === 'snap') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.4; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
-    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 22 ? e.face * e.speed : 0; if (ad < 30 && e.cd <= 0) { e.mode = 'snapTell'; e.modeT = 0.4; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); SFX.snort(); } } else want = e.face * e.speed * 0.5; }
+    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 22 || e.flanking) ? e.face * e.speed : 0; if (ad < 30 && e.cd <= 0) { e.mode = 'snapTell'; e.modeT = 0.4; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); SFX.snort(); } } else want = e.face * e.speed * 0.5; }
   } else if (e.t === 'eel') { grav = false; const pl = e.pool = shoreHome(e); if (!pl || pl.dry) { e.y += 60 * dt; }
     const inMine = P.swim && pl && P.x > pl.x0 && P.x < pl.x1 && P.y > pl.y;
     const top = pl ? pl.y + 10 : e.y, bot = pl ? (pl.bottom || pl.y + 60) - 2 : e.y;
@@ -2980,7 +2998,7 @@ function updateShore(e, dt) {
     if (e.mode === 'flipped') { if (e.modeT <= 0) { e.mode = 'walk'; e.vy = -120; } }
     else if (e.mode === 'pinchTell') { if (e.modeT <= 0) { e.mode = 'pinch'; e.modeT = 0.25; SFX.clank(); if (!P.dead && ad < 26 && dy < 16) { const res = damagePlayer(e.x, DMG.crab); if (res === 'hit') P.vx = Math.sign(d || 1) * 170; } } }
     else if (e.mode === 'pinch') { if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 1.2; } }
-    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 20 ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.5; if (ad < 22 && e.cd <= 0) { e.mode = 'pinchTell'; e.modeT = 0.35; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } } else want = e.face * e.speed * 0.4; }
+    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 20 || e.flanking) ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.5; if (ad < 22 && e.cd <= 0) { e.mode = 'pinchTell'; e.modeT = 0.35; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } } else want = e.face * e.speed * 0.4; }
   } else if (e.t === 'scout') { near = ad < 240 && dy < 90 && !P.dead;
     if (e.mode === 'fade') { e.alpha = Math.max(0, e.modeT / 0.4); if (e.modeT <= 0) { e.x = Math.max(e.x - 260, Math.min(e.x + 260, e.x - Math.sign(d || 1) * 110)); e.mode = 'appear'; e.modeT = 0.4; burst(e.x, e.y - 8, 8, ['#a8cfc6', '#7ff0e0'], 40, 0.4); } }
     else if (e.mode === 'appear') { e.alpha = 1 - Math.max(0, e.modeT / 0.4); if (e.modeT <= 0) { e.alpha = 1; e.mode = 'watch'; e.cd = 1.2; e.throws = 0; } }
@@ -2997,7 +3015,7 @@ function updateShore(e, dt) {
       if (!P.dead && Math.sign(d) === e.face && ad < 48 && dy < 20) { const res = damagePlayer(e.x, DMG.tideguard); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.0; e.stagger = 1.0; e.vx = -e.face * 50; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -80; } } } }
     else if (e.mode === 'thrust') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.6; e.cd = 1.3; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
-    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 36 ? e.face * e.speed : 0; if (ad < 46 && e.cd <= 0) { e.mode = 'thrustTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.charge(); } } else want = 0; }
+    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 36 || e.flanking) ? e.face * e.speed : 0; if (ad < 46 && e.cd <= 0) { e.mode = 'thrustTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.charge(); } } else want = 0; }
   }
   if (e.stagger > 0) want = 0;
   if (grav) { e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300; }
@@ -5048,6 +5066,7 @@ function drawEmote(e, x, y) { // x, y: over its head, on screen
   g.globalAlpha = 1;
 }
 function updateEnemies(dt) {
+  updatePack(dt);
   for (const e of enemies) {
     if (!e.alive) continue;
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
