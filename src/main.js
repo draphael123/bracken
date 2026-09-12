@@ -867,7 +867,7 @@ function spawnEnt(e) {
       case 'scout': enemies.push({ ...base, t: 'scout', w: 8, h: 16, hp: EHP.scout, speed: 36, mode: 'watch', modeT: 0, cd: 1 + Math.random(), throws: 0, alpha: 1 }); break;
       case 'siren': enemies.push({ ...base, t: 'siren', w: 12, h: 16, hp: EHP.siren, mode: 'idle', modeT: 1 + Math.random() * 2, homeY: py, alpha: 1 }); break;
       case 'tideguard': enemies.push({ ...base, t: 'tideguard', w: 10, h: 20, hp: EHP.tideguard, speed: 22, mode: 'walk', modeT: 0, cd: 0.8 }); break;
-      case 'herald': boss = { ...base, t: 'herald', w: 18, h: 36, hp: EHP.herald, maxHp: EHP.herald, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, raiseT: 6, sweepT: 1.2, thrustT: 2, spearT: 4, maelT: 8, glideT: 4 }; enemies.push(boss); break;
+      case 'herald': boss = { ...base, t: 'herald', glaiveT: 6, callT: 5, disarmed: false, spearT: 3, maelT: 8, w: 18, h: 36, hp: EHP.herald, maxHp: EHP.herald, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, raiseT: 6, sweepT: 1.2, thrustT: 2, spearT: 4, maelT: 8, glideT: 4 }; enemies.push(boss); break;
       case 'soldier': enemies.push({ ...base, t: 'soldier', w: 10, h: 14, hp: EHP.soldier, speed: 30, mode: 'walk', modeT: 0, turnT: 0, cd: 0.6 }); break;
       case 'javelin': enemies.push({ ...base, t: 'javelin', w: 8, h: 12, hp: EHP.javelin, speed: 34, mode: 'walk', modeT: 0, cd: 1 + Math.random() }); break;
       case 'heavy': enemies.push({ ...base, t: 'heavy', w: 16, h: 22, hp: EHP.heavy, speed: 16, mode: 'walk', modeT: 0, cd: 0.6 }); break;
@@ -3638,6 +3638,7 @@ function updateMaw(e, dt) {
 // THE TIDE HERALD. He walks on the water. The square floods higher every phase and the stones in it are the dry ground.
 // When he raises the glaive the sea comes across the square; then the tide goes out and leaves him in the mud, open.
 function heraldPool() { return (L.pools || []).find(p => p.arenaTide); }
+const heraldGuard = () => enemies.filter(q => q.alive && q.called).length;
 function heraldGround(x) { const tx = Math.floor(x / TS); for (let ty = Math.floor(L.arena.floor / TS) - 5; ty <= Math.floor(L.arena.floor / TS); ty++) if (isSolid(tx, ty)) return ty * TS; return L.arena.floor; }
 let heraldWave = null, airBells = [], spouts = [];
 function updateHerald(e, dt) {
@@ -3654,15 +3655,41 @@ function updateHerald(e, dt) {
   let want = 0;
   switch (e.mode) {
     case 'wake': e.y = standY; if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.8; } break;
-    case 'stride': { e.face = Math.sign(d) || e.face; want = ad > 50 ? e.face * (p3 ? 62 : 44) : 0; e.raiseT -= dt; e.sweepT -= dt; e.thrustT -= dt; e.glideT -= dt;
+    case 'stride': { e.face = Math.sign(d) || e.face; want = ad > 50 ? e.face * (p3 ? 62 : 44) : 0; e.raiseT -= dt; e.sweepT -= dt; e.thrustT -= dt; e.glideT -= dt; e.callT -= dt; e.glaiveT -= dt; e.spearT -= dt; e.maelT -= dt;
       if (e.modeT <= 0 && !P.dead) {
-        if (e.raiseT <= 0) { e.raiseT = p3 ? 9 : 11; e.mode = 'raise'; e.modeT = 1.0; SFX.callerChant(); SFX.seaBell(); number(e.x, e.y - e.h - 12, '!!', '#7cc8c8'); }
+        if (e.glaiveT <= 0 && p3 && ad > 28 && !e.disarmed) { e.glaiveT = 12; e.mode = 'hurlTell'; e.modeT = 0.6; SFX.charge(); number(e.x, e.y - e.h - 12, 'HE THROWS IT', '#ffd36b'); }
+        else if (e.raiseT <= 0) { e.raiseT = p3 ? 9 : 11; e.mode = 'raise'; e.modeT = 1.0; SFX.callerChant(); SFX.seaBell(); number(e.x, e.y - e.h - 12, '!!', '#7cc8c8'); }
+        else if (e.callT <= 0 && p2 && heraldGuard() < (p3 ? 3 : 2)) { e.callT = p3 ? 8 : 12; e.mode = 'callTell'; e.modeT = 0.9; SFX.seaBell(); number(e.x, e.y - e.h - 12, 'HE CALLS HIS GUARD', '#7cc8c8'); }
         else if (p3 && e.glideT <= 0 && ad > 110) { e.glideT = 5; e.mode = 'glide'; e.modeT = 0.8; e.gx = P.x - Math.sign(d) * 40; SFX.throwWhoosh(); }
         else if (e.spearT <= 0 && ad > 60) { e.spearT = p3 ? 3.4 : 5; e.mode = 'spearTell'; e.modeT = p3 ? 0.55 : 0.75; SFX.charge(); number(e.x, e.y - e.h - 12, 'THE WATER STANDS UP', '#7cc8c8'); }
         else if (p2 && e.maelT <= 0 && ad < 150) { e.maelT = p3 ? 7 : 10; e.mode = 'maelTell'; e.modeT = 0.8; SFX.callerChant(); number(e.x, e.y - e.h - 12, 'HE TURNS THE SQUARE', '#7cc8c8'); }
         else if (e.sweepT <= 0 && ad < 70) { e.sweepT = p2 ? 2.2 : 2.8; e.mode = 'sweepTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'LOW', '#ffd36b'); SFX.snort(); }
         else if (e.thrustT <= 0 && ad < 118 && ad > 40) { e.thrustT = p2 ? 2.6 : 3.2; e.mode = 'thrustTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); }
       } break; }
+    case 'callTell': { want = 0;
+      if (Math.random() < dt * 40) { const a2 = Math.random() * 7; parts.push({ x: e.x + Math.cos(a2) * 40, y: e.y - 20 - Math.random() * 20, vx: -Math.cos(a2) * 50, vy: -20, life: 0.5, max: 0.5, col: '#7cc8c8', size: 1, grav: 0 }); }
+      if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.5;   // HIS GUARD: two of them come up out of the flood
+        const A2 = L.arena; for (const sx of [A2.x0 + 60, A2.x1 - 60]) {
+          const gy2 = heraldGround(sx);
+          enemies.push({ x: sx, y: gy2, vx: 0, vy: 0, face: sx > e.x ? -1 : 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0,
+            t: 'tideguard', w: 10, h: 20, hp: EHP.tideguard, speed: 22, mode: 'walk', modeT: 0, cd: 0.8, called: true });
+          burst(sx, gy2, 16, ['#7cc8c8', '#e8f4f0'], 90, 0.7); spouts.push({ x: sx, y: gy2, t: 0, life: 0.5 }); }
+        SFX.waveCrash(); shakeCam(4); }
+      break; }
+    case 'hurlTell': { want = -(Math.sign(d) || 1) * 90; e.face = Math.sign(d) || e.face; // he steps off you to get the room for it
+      if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 14, y: e.y - 26, vx: e.face * 40, vy: -20, life: 0.3, max: 0.3, col: '#e8f4f0', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'hurl'; e.modeT = 0.5; e.disarmed = true; SFX.throwWhoosh();
+        // THE GLAIVE goes down the square, sticks in a stone, and he has to go and get it
+        e.glaiveX = Math.max(L.arena.x0 + 30, Math.min(L.arena.x1 - 30, P.x + Math.sign(d || 1) * 30));
+        seeds.push({ x: e.x + e.face * 16, y: e.y - 22, vx: Math.sign(e.glaiveX - e.x) * 380, vy: 0, g: 0, life: 1.2, glaive: true, unblockable: false, stopX: e.glaiveX, from: e }); }
+      break; }
+    case 'hurl': if (e.modeT <= 0) { e.mode = 'fetch'; e.modeT = 4; } break;
+    case 'fetch': { // disarmed: he goes for it, and up close he can only shove
+      const dir = Math.sign((e.glaiveX || e.x) - e.x); want = dir * 150; e.face = dir || e.face;
+      if (Math.abs((e.glaiveX || e.x) - e.x) < 14 || e.modeT <= 0) { e.disarmed = false; e.mode = 'stride'; e.modeT = 0.4;
+        for (const q of seeds) if (q.glaive) q.dead = true;
+        SFX.clank(); number(e.x, e.y - e.h - 12, 'HE HAS IT BACK', '#9aa39a'); }
+      break; }
     case 'glide': { const dir = Math.sign(e.gx - e.x); want = dir * 300; e.face = dir || e.face; if (Math.random() < dt * 30) parts.push({ x: e.x - dir * 10, y: e.y - 2, vx: -dir * 60, vy: -20, life: 0.4, max: 0.4, col: '#e8f4f0', size: 2, grav: 200 }); if (Math.abs(e.gx - e.x) < 12 || e.modeT <= 0) { e.mode = 'sweepTell'; e.modeT = 0.4; e.face = Math.sign(d) || e.face; } break; }
     case 'spearTell': { e.face = Math.sign(d) || e.face; e.aimX = P.x; // SPEARS OF WATER: three columns stand up out of the flood where you were, one after the other
       if (Math.random() < dt * 40) parts.push({ x: e.aimX + (Math.random() - 0.5) * 40, y: floor + 4, vx: 0, vy: -40 - Math.random() * 40, life: 0.4, max: 0.4, col: '#7cc8c8', size: 1, grav: -30 });
@@ -3676,6 +3703,16 @@ function updateHerald(e, dt) {
       if (Math.random() < dt * 50) { const a2 = Math.random() * 7, r2 = 40 + Math.random() * 50; parts.push({ x: e.x + Math.cos(a2) * r2, y: floor - 6 - Math.random() * 20, vx: -Math.cos(a2) * 90, vy: -Math.sin(a2) * 40, life: 0.5, max: 0.5, col: '#7cc8c8', size: 1, grav: 0 }); }
       if (e.modeT <= 0) { e.mode = 'mael'; e.modeT = 2.2; SFX.boreRoar(); shakeCam(4); } break; }
     case 'mael': { // THE MAELSTROM: the flood turns around him and drags whatever is in it onto the glaive
+      e.spoutT = (e.spoutT || 0) - dt;
+      if (e.spoutT <= 0) { e.spoutT = p3 ? 0.34 : 0.5; // and the water stands up inside it
+        const sx = e.x + (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 90), gy2 = heraldGround(sx);
+        spouts.push({ x: sx, y: gy2, t: 0, life: 0.5 }); SFX.splash();
+        if (!P.dead && Math.abs(P.x - sx) < 13 && P.y > gy2 - 50 && P.y < gy2 + 8) { const res = damagePlayer(sx, DMG.heraldSpear, { up: true }); if (res === 'hit') { P.vy = -200; } } }
+      e.spoutT = (e.spoutT || 0) - dt;
+      if (e.spoutT <= 0) { e.spoutT = p3 ? 0.34 : 0.5; // and the water stands up inside it
+        const sx = e.x + (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 90), gy2 = heraldGround(sx);
+        spouts.push({ x: sx, y: gy2, t: 0, life: 0.5 }); SFX.splash();
+        if (!P.dead && Math.abs(P.x - sx) < 13 && P.y > gy2 - 50 && P.y < gy2 + 8) { const res = damagePlayer(sx, DMG.heraldSpear, { up: true }); if (res === 'hit') { P.vy = -200; } } }
       const pull = (P.block || P.aegis || P.jet) ? 40 : 120;
       if (!P.dead && ad < 170) { moveBody(P, Math.sign(e.x - P.x) * pull * dt, 0, false);
         if (ad < 26 && !e.maelHit) { e.maelHit = true; const res = damagePlayer(e.x, DMG.heraldMaelstrom, { up: true }); if (res === 'hit') { P.vx = Math.sign(P.x - e.x || 1) * 260; P.vy = -180; } } }
@@ -3895,10 +3932,30 @@ function updateWindcaller(e, dt) {
       if (e.castT <= 0 && !P.dead) { e.castT = p2 ? 1.2 : 1.8; e.castN = (e.castN || 0) + 1; const n = 1; const a0 = Math.atan2((P.y - 8) - (e.y - 14), P.x - e.x);
         for (let k = 0; k < n; k++) { const a = a0 + (k - (n - 1) / 2) * 0.28; seeds.push({ x: e.x + Math.cos(a) * 12, y: e.y - 14 + Math.sin(a) * 12, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, dead: false, life: 3.4, bolt: true }); }
         e.castFlash = 0.25; SFX.callerBlast(); }
+      e.stoneT = (e.stoneT === undefined ? 5 : e.stoneT) - dt; e.wallT = (e.wallT === undefined ? 8 : e.wallT) - dt;
       if ((e.hits || 0) >= (p2 ? 1 : 2)) { number(e.x, e.y - 30, 'GONE', '#c9a0ff'); goBlink(); }
-      else if (e.modeT <= 0) { if (e.howlT <= 0 && !P.dead) { e.howlT = p2 ? 8 : 11; e.mode = 'howlTell'; e.modeT = 1.1; number(e.x, e.y - 30, 'HE CALLS THE WIND', '#bfe6f5'); SFX.callerChant(); SFX.gasp(); } else goBlink(); }
+      else if (e.modeT <= 0) {
+        if (e.howlT <= 0 && !P.dead) { e.howlT = p2 ? 8 : 11; e.mode = 'howlTell'; e.modeT = 1.1; number(e.x, e.y - 30, 'HE CALLS THE WIND', '#bfe6f5'); SFX.callerChant(); SFX.gasp(); }
+        else if (e.stoneT <= 0 && !P.dead) { e.stoneT = p2 ? 5.5 : 8; e.mode = 'stoneTell'; e.modeT = 0.85; number(e.x, e.y - 30, 'HE LIFTS A STONE', '#9aa39a'); SFX.callerChant(); SFX.stone(); }
+        else if (e.wallT <= 0 && p2 && !P.dead) { e.wallT = 9; e.mode = 'wallTell'; e.modeT = 0.9; number(e.x, e.y - 30, 'THE MOOR GOES WHITE', '#e8f0f8'); SFX.gasp(); }
+        else goBlink(); }
       break; }
     case 'howlTell': if (e.modeT <= 0) { e.mode = 'howl'; e.modeT = 2.2; e.howlDir = Math.sign(P.x - (A.x0 + A.x1) / 2) || 1; SFX.buzz(); shakeCam(3); } break;
+    case 'stoneTell': { // A STANDING STONE comes up out of the heather over his head, and then it comes at you
+      if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 34 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#9aa39a' : '#c9a0ff', size: 2, grav: -20 });
+      if (e.modeT <= 0) { e.mode = 'stone'; e.modeT = 0.4; SFX.throwWhoosh(); shakeCam(3);
+        const a = Math.atan2((P.y - 10) - (e.y - 30), P.x - e.x);
+        seeds.push({ x: e.x + Math.cos(a) * 16, y: e.y - 30 + Math.sin(a) * 16, vx: Math.cos(a) * 210, vy: Math.sin(a) * 210, g: 260, life: 3, menhir: true, dmg: DMG.rock }); }
+      break; }
+    case 'stone': if (e.modeT <= 0) { e.mode = 'cast'; e.modeT = castLen; } break;
+    case 'wallTell': { // THE WHITE WALL: the gale drives a curtain of hail down the moor, and there is one gap in it
+      if (Math.random() < dt * 60) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: -200, vy: 40, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'wall'; e.modeT = 2.6; e.wallX = A.x1 + 30; e.wallGap = P.y - 8; SFX.buzz(); shakeCam(2); } break; }
+    case 'wall': { e.wallX -= 190 * dt;
+      if (Math.random() < dt * 90) parts.push({ x: e.wallX + (Math.random() - 0.5) * 10, y: camY + Math.random() * VH, vx: -240, vy: 60, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#e8f0f8' : '#bfe6f5', size: 2, grav: 0 });
+      if (!P.dead && Math.abs(P.x - e.wallX) < 14 && Math.abs((P.y - 10) - e.wallGap) > 26 && !(P.wallT > 0)) { P.wallT = 1; damagePlayer(e.wallX, DMG.gas, { unblockable: true }); number(P.x, P.y - 30, 'THE HAIL', '#e8f0f8'); }
+      P.wallT = Math.max(0, (P.wallT || 0) - dt);
+      if (e.wallX < A.x0 - 30 || e.modeT <= 0) { e.mode = 'cast'; e.modeT = castLen; } break; }
     case 'howl': { const dir = e.howlDir; if (!P.dead && P.x > A.x0 && P.x < A.x1) { P.vx += dir * (P.ground ? 210 : 260) * dt; P.gustT = 0.25; if (Math.random() < dt * 70) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: dir * 320, vy: 0, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 }); } if ((e.hits || 0) >= (p2 ? 1 : 2)) goBlink(); else if (e.modeT <= 0) goBlink(); break; }
     case 'blink': if (e.modeT <= 0 && (e.blinks = (e.blinks || 0) + 1) % 3 === 0) { const gx = Math.max(A.x0 + 48, Math.min(A.x1 - 48, P.x + (P.x < (A.x0 + A.x1) / 2 ? 110 : -110))); e.x = gx; e.y = A.floor; e.grounded = true; e.mode = 'appear'; e.modeT = 0.45; burst(e.x, e.y - 12, 14, ['#c9a0ff', '#e8dcc0'], 60, 0.5, -40, 1); SFX.puff(); }
       else if (e.modeT <= 0) { e.grounded = false; const far = roosts.filter(r => Math.abs(r[0] * TS + 16 - e.x) > 20 && Math.abs(r[0] * TS + 16 - P.x) > 50); const pool = far.length ? far : roosts; const pick = pool[Math.floor(Math.random() * pool.length)]; if (pick) { e.x = pick[0] * TS + 16; e.y = (pick[1] + 1) * TS; } e.mode = 'appear'; e.modeT = 0.45; burst(e.x, e.y - 12, 14, ['#c9a0ff', '#e8dcc0'], 60, 0.5, -40, 1); SFX.puff(); } break;
@@ -5521,7 +5578,7 @@ function drawCritters(cx, cy) {
 
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
-const windingUp = e => (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && e.mode === 'howlTell') || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'drowned' && (e.mode === 'hookTell' || e.mode === 'chainTell' || e.mode === 'spoutTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
+const windingUp = e => (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'drowned' && (e.mode === 'hookTell' || e.mode === 'chainTell' || e.mode === 'spoutTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -5881,6 +5938,15 @@ function updateEnemies(dt) {
     if (s.bolt && Math.random() < dt * 50) parts.push({ x: s.x, y: s.y, vx: (Math.random() - 0.5) * 30, vy: (Math.random() - 0.5) * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c9a0ff' : '#f0e4ff', size: 1, grav: 0 });
     if (s.life <= 0 || isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; burst(s.x, s.y, 3, [s.arrow ? '#e8dcc0' : s.spore ? '#c9a0ff' : s.acid ? '#b8d878' : '#ff9a5c'], 30, 0.2, 0, 1); if (s.lantern) { const ty = Math.floor(s.y / TS); const fy = isSolid(Math.floor(s.x / TS), ty) ? ty * TS : Math.floor((s.y + 8) / TS) * TS; fires.push({ x: s.x, y: fy, life: 2.4, delay: 0 }); SFX.crack(); if (inGas(s.x, s.y) && !P.gasCd) { P.gasCd = 2; gasBlast(s.x, s.y); } } if (s.acid) { for (let k = 0; k < 4; k++) parts.push({ x: s.x + (Math.random() - 0.5) * 10, y: s.y, vx: (Math.random() - 0.5) * 40, vy: -20, life: 0.4, max: 0.4, col: '#b8d878', size: 1, grav: 200 }); } if (s.fire && !s.reflected && s.life > 0) { const fy = Math.floor(s.y / TS) * TS; fires.push({ x: s.x, y: fy, life: 2.6, delay: 0 }); SFX.crack(); } if (s.slag) { const fy = Math.floor(s.y / TS) * TS; fires.push({ x: s.x, y: fy, life: 1.6, delay: 0 }); } if (s.spore && s.life > 0) clouds2.push({ x: s.x, y: s.y - 6, r: s.pod ? 20 : 11, life: s.pod ? 2.6 : 1.6, mild: true }); continue; }
     if (s.reflected) for (const e of enemies) if (e.alive && e.t !== 'queen' && e.t !== 'frog' && overlap({ l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 }, box(e))) { s.dead = true; if (e.t === 'windcaller') knockCaller(e); hurtEnemy(e, 10, s.x - s.vx, false); number(e.x, e.y - e.h - 14, 'RETURNED', '#8fd160'); break; }
+  }
+  for (const s of seeds) if (s.menhir && !s.dead) { // his stone: it tumbles, and where it lands it breaks
+    if (isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; burst(s.x, s.y, 16, ['#9aa39a', '#c9d1dc', '#5a6470'], 90, 0.7); SFX.stone(); shakeCam(4);
+      if (!P.dead && Math.abs(P.x - s.x) < 20 && Math.abs(P.y - s.y) < 24) damagePlayer(s.x, DMG.rock, { up: true }); }
+    else if (!P.dead && Math.abs(P.x - s.x) < 13 && Math.abs((P.y - 10) - s.y) < 18) { s.dead = true; damagePlayer(s.x, DMG.rock); burst(s.x, s.y, 12, ['#9aa39a', '#c9d1dc'], 80, 0.5); }
+  }
+  for (const s of seeds) if (s.glaive && !s.dead) { // it flies flat and stops where he aimed it
+    if ((s.vx > 0 && s.x >= s.stopX) || (s.vx < 0 && s.x <= s.stopX)) { s.vx = 0; s.stuck = true; }
+    if (!P.dead && !s.stuck && Math.abs(P.x - s.x) < 12 && Math.abs((P.y - 10) - s.y) < 16) { damagePlayer(s.x, DMG.heraldThrust); s.stuck = true; s.vx = 0; }
   }
   for (const s of seeds) if (s.dead && s.bomb && !s.burst) { // A SPORE BOMB does not hurt much: what it leaves does
     s.burst = true; clouds2.push({ x: s.x, y: s.y, r: 26, life: 4.5, sleep: true, vx: 0 });
