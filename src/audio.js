@@ -478,6 +478,9 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  spitcap() { noise(0.12, 0.3, 500, 0.5); tone('sine', 200, 90, 0.14, 0.1); noise(0.08, 0.16, 1100, 0.4, 0.06); }, // a wet bladder taking a blade
+  weaver() { noise(0.07, 0.2, 3000, 0.35); tone('sawtooth', 1400, 800, 0.07, 0.07); noise(0.05, 0.14, 2000, 0.5, 0.05); }, // chitin and a hiss
+  drowned() { noise(0.26, 0.3, 380, 0.5); tone('sawtooth', 130, 60, 0.26, 0.16); noise(0.18, 0.18, 900, 0.4, 0.08); tone('sine', 80, 44, 0.3, 0.1, 0.04); }, // a man full of water
   bale() { noise(0.16, 0.24, 1400, 0.4); noise(0.1, 0.14, 700, 0.5, 0.03); }, // dry straw taking a blade
   turtle() { noise(0.06, 0.3, 1800, 0.4); tone('square', 300, 180, 0.07, 0.1); },
   crab() { noise(0.05, 0.26, 2600, 0.35); noise(0.05, 0.2, 1900, 0.4, 0.05); },
