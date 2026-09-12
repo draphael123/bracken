@@ -12,6 +12,9 @@ import { bakeCutlass, bakeBoarder, bakeMarine, bakeBosun, bakeLookout, bakeQuart
 import * as LWT from './lw_tiles.js';
 import * as RFT from './reef_tiles.js';
 import * as FLT from './flot_tiles.js';
+import * as CTT from './city_tiles.js';
+import * as CTP from './city_props.js';
+import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
 import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.js';
 import { bakeSweep, bakePaladin, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeSpitcap, bakeWeaver, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
 import { bakeQueen, bakeChief } from './redraw/queenchief.js';
@@ -54,7 +57,7 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
-const TIER = { hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
+const TIER = { lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
@@ -87,8 +90,8 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.15 * (tal('heavyPlunge') + tal('firedropDmg')))); // (HEAVY PLUNGE, FIREDROP)
-const DMG = { foul: 9, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 18, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
-const EHP = { captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 520, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 420, roc: 440, sentry: 14, gqueen: 900, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
+const DMG = { watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 18, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+const EHP = { watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 520, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 420, roc: 440, sentry: 14, gqueen: 900, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 const ST = { swing: 12, plunge: 32, dodge: 25, blockHit: 16, hold: 9, regen: 48, delay: 0.5 };
 
 // ---------- bake ----------
@@ -413,6 +416,7 @@ const skillPress = k => (throwPress && skillNow() === k) || (skill2Press && skil
 const skillNow = () => { const mine = TREE.filter(n => n.hero === hero() && n.active && tal(n.id)); if (!mine.length) return null; const k = PROG.skill; return mine.some(n => n.id === k) ? k : mine[0].id; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
 const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = bakeGolem(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */
+SPR.watch = bakeWatch(); SPR.lampreeve = bakeLampreeve(); SPR.tollmaster = bakeTollmaster();
 SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: '#6a4a2c', W: '#4a3220', y: '#c9b27c', Y: '#9a8050', r: '#c9463d' };
   const rows = ['....ssss....', '...ssssss...', '...sesess...', '...ssssss...', '....SSSS....', '.....ww.....', '.yyyyyyyyyy.', 'yyYyyyyyyYyy', '.YyyyrryyyY.', '..yyrrrryy..', '..yyrrrryy..', '..yyyrryyy..', '..yYyyyyYy..', '...yyyyyy...', '.....ww.....', '.....ww.....', '.....ww.....', '.....ww.....', '...WWWWWW...', '..WWWWWWWW..'];
   const tilt = rows.map((r, i) => i < 14 ? '.' + r.slice(0, -1) : r);
@@ -423,7 +427,7 @@ const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp
 const BIRD = bakeBird();
 const PARTS = bakeSpitterParts();
 const PAL0 = Object.assign({}, ART.C);
-let TILE, PROP, BG, SHORE = null, REEF = null, FLOT = null, RAINART = null;
+let TILE, PROP, BG, SHORE = null, REEF = null, FLOT = null, CITY = null, RAINART = null;
 function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
   TILE = {
@@ -449,15 +453,15 @@ function bakeAll(pal = {}) {
     skullMini: ART.bakeSkullMini(), compass: ART.bakeCompass(), relic: ART.bakeRelics(), bough: ART.bakeBough(), charm: ART.bakeCharms(), counter: ART.bakeCounter(), wares: [ART.bakeWares(0), ART.bakeWares(1)], shopDoor: ART.bakeShopDoor(), lanternPost: ART.bakeLanternPost(), beehive: ART.bakeBeehive(), birdhouse: ART.bakeBirdhouse(), fishTrap: [0, 1].map(i => ART.bakeFishTrap(800 + i)), spearRack: ART.bakeSpearRack(), barrelStack: ART.bakeBarrelStack(), bones: [0, 1].map(i => ART.bakeBones(810 + i)), fallenLog: [0, 1].map(i => ART.bakeFallenLog(770 + i)), fence: [0, 1].map(i => ART.bakeFence(780 + i)), cart: ART.bakeCart(790), well: ART.bakeWell(), heather: [0, 1, 2].map(i => ART.bakeHeather(730 + i)), gorse: [0, 1].map(i => ART.bakeGorse(740 + i)), thistle: [0, 1].map(i => ART.bakeThistle(750 + i)), standingStone: [0, 1, 2].map(i => ART.bakeStandingStone(760 + i)), cairn: ART.bakeCairn(), boulder: ART.bakeBoulder(), bothy: ART.bakeBothy(), mill: ART.bakeMill(), sail: ART.bakeSail(), foldGate: ART.bakeFoldGate(),
     bell: ART.bakeBell(), ramLog: ART.bakeRamLog(), lever: [ART.bakeLever(false), ART.bakeLever(true)], plate: [ART.bakePlate(false), ART.bakePlate(true)], palanquin: ART.bakePalanquin(), door: [ART.bakeDoor(false), ART.bakeDoor(true)], carpet: ART.bakeCarpet(),
     puffball: ART.bakePuffball(), keyIcon: { brass: ART.bakeKeyIcon('brass'), iron: ART.bakeKeyIcon('iron'), bone: ART.bakeKeyIcon('bone') }, lockPlate: ART.bakeLockPlate(), doorway: ART.bakeDoorway(), cupIcon: ART.bakeCupIcon(), lensIcon: ART.bakeLensIcon(), honeyPot: ART.bakeHoneyPot(), coffer: ART.bakeCoffer(), brightCap: ART.bakeBrightCap(), questIcon: ART.bakeQuestIcon(), cabin: ART.bakeCabin(), pine: ART.bakePine(), fallenPine: ART.bakeFallenPine(14), sluice: [ART.bakeSluice(false), ART.bakeSluice(true)], catapult: [0, 1, 2].map(i => ART.bakeCatapult(i)), nest: ART.bakeNest(), chainPost: ART.bakeChainPost(), grate: ART.bakeGrate(), silver: ART.bakeSilver(), trunk: [0, 1, 2].map(i => ART.bakeTrunk(900 + i)), bracket: [ART.bakeBracket(0), ART.bakeBracket(1)], axle: ART.bakeAxle(), pillar: [0, 1, 2].map(i => ART.bakeRockPillar(910 + i)), strut: [ART.bakeStrut(0), ART.bakeStrut(1)], mineCart: ART.bakeMineCart(), canary: ART.bakeCanary(), gasSeam: ART.bakeGasSeam(), minerLamp: [ART.bakeMinerLamp(false), ART.bakeMinerLamp(true)], timber: [ART.bakeTimberFrame(160), ART.bakeTimberFrame(144), ART.bakeTimberFrame(48)], orePan: ART.bakeOrePan(), hammer: ART.bakeHammer(), boiler: [ART.bakeBoiler(false), ART.bakeBoiler(true)], snowCap: (() => { const [c, g] = canvas(16, 5); g.fillStyle = '#dfe8ee'; g.fillRect(0, 2, 16, 3); g.fillStyle = '#ffffff'; g.fillRect(2, 1, 5, 2); g.fillRect(10, 1, 4, 2); return c; })(), lampIcon: ART.bakeLampIcon(), crownLantern: [ART.bakeCrownLantern(false), ART.bakeCrownLantern(true)], cottage: [ART.bakeCottage(false), ART.bakeCottage(true)], deadTree: [0, 1].map(i => ART.bakeDeadTree(880 + i)), glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
-    sunshardIcon: ART.bakeSunshardIcon(), cobweb: [0, 1, 2].map(v => ART.bakeCobweb(v)), orbWeb: ART.bakeOrbWeb(), flot: { cannon: [FLP.bakeCannon(false), FLP.bakeCannon(true)], keg: [FLP.bakeKeg(false), FLP.bakeKeg(true)], kegStack: FLP.bakeKegStack(), gangplank: [FLP.bakeGangplank(false), FLP.bakeGangplank(true)], oarBench: FLP.bakeOarBench(), oar: FLP.bakeOar(), hammock: [0, 1].map(v => FLP.bakeHammock(v)), washing: FLP.bakeWashing(), cookPot: FLP.bakeCookPot(), rumBarrels: [0, 1].map(v => FLP.bakeRumBarrels(v)), chickenCoop: FLP.bakeChickenCoop(), chartTable: FLP.bakeChartTable(), plunder: [0, 1, 2].map(v => FLP.bakePlunder(v)), crowNest: FLP.bakeCrowNest(), mastTall: [0, 1].map(v => FLP.bakeMastTall(v)), pennant: [0, 1, 2].map(v => FLP.bakePennant(v)), boardingNet: FLP.bakeBoardingNet(), lanternDeck: [FLP.bakeLanternDeck(false), FLP.bakeLanternDeck(true)], waterButt: FLP.bakeWaterButt(), coiledCable: [0, 1].map(v => FLP.bakeCoiledCable(v)), gunport: [FLP.bakeGunport(false), FLP.bakeGunport(true)], sternWindows: FLP.bakeSternWindows(), shark: FLP.bakeShark(), whistle: FLP.bakeWhistle(), grapple: FLP.bakeGrapple() }, reef: { mastStump: RFP.bakeMastStump(), rigging: [0, 1].map(v => RFP.bakeRigging(v)), sailRag: [0, 1].map(v => RFP.bakeSailRag(v)), wreckBow: RFP.bakeWreckBow(), wreckStern: RFP.bakeWreckStern(), figurehead: RFP.bakeFigurehead(), capstan: RFP.bakeCapstan(), anchor: RFP.bakeAnchor(), seaChest: RFP.bakeSeaChest(), sealChest: RFP.bakeSealChest(), seal: RFP.bakeSeal(), sealIcon: RFP.bakeSealIcon(), shipBell: RFP.bakeShipBell(), lanternBuoy: [RFP.bakeLanternBuoy(false), RFP.bakeLanternBuoy(true)], coralFan: [0, 1, 2].map(v => RFP.bakeCoralFan(v)), brainCoral: [0, 1].map(v => RFP.bakeBrainCoral(v)), urchinRock: [0, 1].map(v => RFP.bakeUrchinRock(v)), starfish: [0, 1, 2].map(v => RFP.bakeStarfish(v)), spar: [0, 1].map(v => RFP.bakeSpar(v)), bubbleVent: RFP.bakeBubbleVent(), airBell: RFP.bakeAirBell(), kelpTall: [0, 1, 2].map(v => RFP.bakeKelpTall(v)), wheel: RFP.bakeWheel(), reefRock: [0, 1].map(v => RFP.bakeReefRock(v)) }, lw: { coralTuft: [0, 1, 2].map(v => LWP.bakeCoralTuft(v)), barnacleRock: [0, 1].map(v => LWP.bakeBarnacleRock(v)), saltCrust: [0, 1].map(v => LWP.bakeSaltCrust(v)), drownedHut: LWP.bakeDrownedHut(), rushes: [0, 1, 2].map(v => LWP.bakeRushes(v)), driftwood: [0, 1].map(v => LWP.bakeDriftwood(v)), shell: [0, 1, 2].map(v => LWP.bakeShell(v)), netPoles: LWP.bakeNetPoles(), rowboat: LWP.bakeRowboat(), pierPost: LWP.bakePierPost(), cottage: [0, 1].map(v => LWP.bakeCottage(v)), bellTower: LWP.bakeBellTower(), seaLantern: [LWP.bakeSeaLantern(false), LWP.bakeSeaLantern(true)], buoy: LWP.bakeBuoy(), kelp: [0, 1, 2].map(v => LWP.bakeKelp(v)), tidePool: LWP.bakeTidePool(), glaive: LWP.bakeGlaive(), tributeChest: LWP.bakeTributeChest(), sirenRock: LWP.bakeSirenRock(), raftBig: LWP.bakeRaftBig() }, icicle: [0, 1, 2].map(v => ART.bakeIcicle(v)), frost: [0, 1].map(v => ART.bakeFrost(v)), frozen: [0, 1].map(v => ART.bakeFrozen(v)), stilt: ART.bakeStilt(), groundWeb: ART.bakeGroundWeb(), bridgePost: ART.bakeBridgePost(), bridgeTower: ART.bakeBridgeTower(), gatehouse: ART.bakeGatehouse(), forge: ART.bakeForge(), anvil: ART.bakeAnvil(), folkIcon: ART.bakeFolkIcon(), castle: ART.bakeCastle(5), towertop: ART.bakeTowerTop(), treehouse: [0, 1].map(i => ART.bakeTreehouse(320 + i)), torch: ART.bakeTorch(), cage: ART.bakeCage(), barrel: ART.bakeBarrel(), brazier: [ART.bakeBrazier(false), ART.bakeBrazier(true)], crank: ART.bakeCrank(), lift: ART.bakeLift(), horn: ART.bakeHorn(), fire: ART.bakeFire(),
+    sunshardIcon: ART.bakeSunshardIcon(), cobweb: [0, 1, 2].map(v => ART.bakeCobweb(v)), orbWeb: ART.bakeOrbWeb(), flot: { cannon: [FLP.bakeCannon(false), FLP.bakeCannon(true)], keg: [FLP.bakeKeg(false), FLP.bakeKeg(true)], kegStack: FLP.bakeKegStack(), gangplank: [FLP.bakeGangplank(false), FLP.bakeGangplank(true)], oarBench: FLP.bakeOarBench(), oar: FLP.bakeOar(), hammock: [0, 1].map(v => FLP.bakeHammock(v)), washing: FLP.bakeWashing(), cookPot: FLP.bakeCookPot(), rumBarrels: [0, 1].map(v => FLP.bakeRumBarrels(v)), chickenCoop: FLP.bakeChickenCoop(), chartTable: FLP.bakeChartTable(), plunder: [0, 1, 2].map(v => FLP.bakePlunder(v)), crowNest: FLP.bakeCrowNest(), mastTall: [0, 1].map(v => FLP.bakeMastTall(v)), pennant: [0, 1, 2].map(v => FLP.bakePennant(v)), boardingNet: FLP.bakeBoardingNet(), lanternDeck: [FLP.bakeLanternDeck(false), FLP.bakeLanternDeck(true)], waterButt: FLP.bakeWaterButt(), coiledCable: [0, 1].map(v => FLP.bakeCoiledCable(v)), gunport: [FLP.bakeGunport(false), FLP.bakeGunport(true)], sternWindows: FLP.bakeSternWindows(), shark: FLP.bakeShark(), whistle: FLP.bakeWhistle(), grapple: FLP.bakeGrapple() }, city: { lamp: [0, 1, 2].map(v => CTP.bakeStreetlamp(v)), lampWreck: [0, 1].map(v => CTP.bakeLampWreck(v)), stall: [0, 1].map(v => CTP.bakeStall(v)), column: [0, 1].map(v => CTP.bakeColumn(v)), clerkDesk: CTP.bakeClerkDesk(), sealDrift: [0, 1].map(v => CTP.bakeSealDrift(v)), bellows: CTP.bakeBellows(), tollPost: CTP.bakeTollPost(), magistrate: CTP.bakeMagistrate(), drownedCart: CTP.bakeDrownedCart(), grating: CTP.bakeGrating(), cityWeed: [0, 1, 2].map(v => CTP.bakeCityWeed(v)), shellDrift: [0, 1].map(v => CTP.bakeShellDrift(v)), cityBrazier: [CTP.bakeCityBrazier(false), CTP.bakeCityBrazier(true)], lampMain: [0, 1].map(v => CTP.bakeLampMain(v)) }, reef: { mastStump: RFP.bakeMastStump(), rigging: [0, 1].map(v => RFP.bakeRigging(v)), sailRag: [0, 1].map(v => RFP.bakeSailRag(v)), wreckBow: RFP.bakeWreckBow(), wreckStern: RFP.bakeWreckStern(), figurehead: RFP.bakeFigurehead(), capstan: RFP.bakeCapstan(), anchor: RFP.bakeAnchor(), seaChest: RFP.bakeSeaChest(), sealChest: RFP.bakeSealChest(), seal: RFP.bakeSeal(), sealIcon: RFP.bakeSealIcon(), shipBell: RFP.bakeShipBell(), lanternBuoy: [RFP.bakeLanternBuoy(false), RFP.bakeLanternBuoy(true)], coralFan: [0, 1, 2].map(v => RFP.bakeCoralFan(v)), brainCoral: [0, 1].map(v => RFP.bakeBrainCoral(v)), urchinRock: [0, 1].map(v => RFP.bakeUrchinRock(v)), starfish: [0, 1, 2].map(v => RFP.bakeStarfish(v)), spar: [0, 1].map(v => RFP.bakeSpar(v)), bubbleVent: RFP.bakeBubbleVent(), airBell: RFP.bakeAirBell(), kelpTall: [0, 1, 2].map(v => RFP.bakeKelpTall(v)), wheel: RFP.bakeWheel(), reefRock: [0, 1].map(v => RFP.bakeReefRock(v)) }, lw: { coralTuft: [0, 1, 2].map(v => LWP.bakeCoralTuft(v)), barnacleRock: [0, 1].map(v => LWP.bakeBarnacleRock(v)), saltCrust: [0, 1].map(v => LWP.bakeSaltCrust(v)), drownedHut: LWP.bakeDrownedHut(), rushes: [0, 1, 2].map(v => LWP.bakeRushes(v)), driftwood: [0, 1].map(v => LWP.bakeDriftwood(v)), shell: [0, 1, 2].map(v => LWP.bakeShell(v)), netPoles: LWP.bakeNetPoles(), rowboat: LWP.bakeRowboat(), pierPost: LWP.bakePierPost(), cottage: [0, 1].map(v => LWP.bakeCottage(v)), bellTower: LWP.bakeBellTower(), seaLantern: [LWP.bakeSeaLantern(false), LWP.bakeSeaLantern(true)], buoy: LWP.bakeBuoy(), kelp: [0, 1, 2].map(v => LWP.bakeKelp(v)), tidePool: LWP.bakeTidePool(), glaive: LWP.bakeGlaive(), tributeChest: LWP.bakeTributeChest(), sirenRock: LWP.bakeSirenRock(), raftBig: LWP.bakeRaftBig() }, icicle: [0, 1, 2].map(v => ART.bakeIcicle(v)), frost: [0, 1].map(v => ART.bakeFrost(v)), frozen: [0, 1].map(v => ART.bakeFrozen(v)), stilt: ART.bakeStilt(), groundWeb: ART.bakeGroundWeb(), bridgePost: ART.bakeBridgePost(), bridgeTower: ART.bakeBridgeTower(), gatehouse: ART.bakeGatehouse(), forge: ART.bakeForge(), anvil: ART.bakeAnvil(), folkIcon: ART.bakeFolkIcon(), castle: ART.bakeCastle(5), towertop: ART.bakeTowerTop(), treehouse: [0, 1].map(i => ART.bakeTreehouse(320 + i)), torch: ART.bakeTorch(), cage: ART.bakeCage(), barrel: ART.bakeBarrel(), brazier: [ART.bakeBrazier(false), ART.bakeBrazier(true)], crank: ART.bakeCrank(), lift: ART.bakeLift(), horn: ART.bakeHorn(), fire: ART.bakeFire(),
     heart: outline(fromGrid(['.ww.ww.', 'wwwwwww', 'wLwwwww', '.wwwww.', '..www..', '...w...'], { w: '#e04848', L: '#ff9a9a' }, 1), ART.OUT),
     bolt: outline(fromGrid(['..gg.', '.gg..', 'gggg.', '..gg.', '.gg..'], { g: '#8fd160' }, 1), ART.OUT),
     lock: outline(fromGrid(['.SSS.', 'S...S', 'SSSSS', 'SSySS', 'SSSSS'], { S: '#8b8378', y: '#e0b040' }, 1), ART.OUT),
   };
   PROP.relic.fleece = ART.bakeFleeceIcon(); PROP.relic.spurs = ART.bakeSpursIcon(); PROP.relic.shoes = ART.bakeShoesIcon(); PROP.relic.sunshard = ART.bakeSunshardIcon(); PROP.relic.banner = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#5a6270'; g2.fillRect(1, 0, 1, 12); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 1, 7, 7); g2.fillStyle = '#e0b040'; g2.fillRect(4, 3, 3, 3); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 8, 3, 2); g2.fillRect(6, 8, 3, 2); return c; })(); PROP.sealIcon = (() => { const [c, g2] = canvas(10, 10); g2.fillStyle = '#7a1c24'; g2.beginPath(); g2.arc(5, 5, 4.5, 0, 7); g2.fill(); g2.fillStyle = '#c9463d'; g2.beginPath(); g2.arc(5, 5, 3, 0, 7); g2.fill(); g2.fillStyle = '#e0b040'; g2.fillRect(3, 3, 1, 1); g2.fillRect(6, 3, 1, 1); g2.fillRect(4, 5, 2, 2); g2.fillRect(3, 7, 4, 1); return c; })(); PROP.relic.lamp = PROP.relic.lamp || PROP.lampIcon; PROP.relic.tidecharm = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#c9b27c'; g2.fillRect(4, 0, 2, 3); g2.fillStyle = '#e8f4f0'; g2.beginPath(); g2.moveTo(5, 3); g2.lineTo(9, 7); g2.lineTo(8, 11); g2.lineTo(2, 11); g2.lineTo(1, 7); g2.closePath(); g2.fill(); g2.fillStyle = '#7cc8c8'; for (const x of [3, 5, 7]) g2.fillRect(x, 5, 1, 6); g2.fillStyle = '#4aa0a8'; g2.fillRect(2, 10, 7, 1); return c; })(); /* the Tide Charm: a scallop on a cord */ /* the miner's lamp relic had no icon: the HUD threw every frame once you held it */ PROP.relic.windcloak = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(5, 0); g.lineTo(9, 3); g.lineTo(9, 11); g.lineTo(5, 9); g.lineTo(1, 11); g.lineTo(1, 3); g.closePath(); g.fill(); g.fillStyle = '#7aa8c8'; g.fillRect(4, 1, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(4, 0, 2, 1); return c; })();
   const sky = (pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
-  SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
-  BG = { sky: pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
+  SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
+  BG = { sky: pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
 }
 bakeAll();
 applySkin();
@@ -490,8 +494,8 @@ function resolveTiles() {
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null;
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
-    const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = L.palette && L.palette.set === 'ship' && FLOT;
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = L.palette && L.palette.set === 'ship' && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -534,7 +538,7 @@ function resolveTiles() {
     } else if (t === T.ONEWAY) {
       const l = tileAt(x - 1, y) === T.ONEWAY, r = tileAt(x + 1, y) === T.ONEWAY;
       const inHive = L.arena && L.arena.boss === 'queen' && x * TS >= L.arena.x0 && x * TS < L.arena.x1;
-      const crag = L.palette && L.palette.dress === 'crag', shoreOW = L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : null);
+      const crag = L.palette && L.palette.dress === 'crag', shoreOW = L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : null);
       s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * 3) | 0];
     } else if (t === T.REED) s = TILE.reeds[(rnd() * 3) | 0];
     else if (t === T.PALISADE) s = TILE.palisade[(rnd() * 3) | 0];
@@ -578,7 +582,7 @@ let enemies = [], seeds = [], movers = [], parts = [], leaves = [], nums = [], g
 let acorns = [], signs = [], shrines = [], gate = null;
 let checkpoint = { x: 0, y: 0 };
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
-const MEDALS = { hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
+const MEDALS = { lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
@@ -590,7 +594,7 @@ let ripples = [], bombs = [], fires = [], props = [], lights = [], bridges = [],
 let clouds2 = [], roots = [], vines = [], shelfT = {}, mother = null;
 let throneBlock = null, talkTo = null, talk = null; // talk: the open dialogue { lines, i, who, name }; the world stands still while it is up // talkTo: the person you pressed UP beside; their words show while you stand there // the King's thrown litter, once it lands: solid tiles you can stand on
 let impacts = [], rings = [], critters = [], escape = null, stormT = 0, thrown = null, deco = [], pwaves = [], rain = [], bolts = [], rocks = [], straysGot = new Set(), strayLast = null;
-const RELICS = { stormline: { name: 'THE STORM LINE', desc: 'a line round your waist: the sea soaks you, but it cannot take you off her', col: '#a8cfc6' }, blackflag: { name: 'THE BLACK FLAG', desc: 'their own colours: whoever you stagger stays down half as long again', col: '#c9b27c' }, diverlamp: { name: "THE DIVER'S LAMP", desc: 'it lights the water around you, and the air lasts longer', col: '#bfe6f5' }, tidecharm: { name: 'TIDE CHARM', desc: 'hold your breath twice as long under the water', col: '#7cc8c8' }, banner: { name: 'THE QUEEN\'S BANNER', desc: 'goblins pull their blows: a fifth less hurt', col: '#c9a0ff' }, sunshard: { name: 'SUNSHARD', desc: 'crystal holds you twice as long', col: '#bfe6f5' }, shoes: { name: 'IRON SHOES', desc: 'the planks do not give under you', col: '#8a919c' }, spurs: { name: 'CLIMBING SPURS', desc: 'cling to rock without sliding', col: '#c9d1dc' }, lamp: { name: "MINER'S LAMP", desc: 'light around you in the dark', col: '#ffd36b' }, fleece: { name: 'GOLDEN FLEECE', desc: 'stamina returns twice as fast', col: '#ffe6a0' }, crown: { name: 'HORNET CROWN', desc: 'stomps strike like plunges', col: '#e0b040' }, charm: { name: "HUNTER'S CHARM", desc: 'gold comes to you', col: '#ffd34a' }, gauntlet: { name: 'IRON GAUNTLET', desc: 'swings cost no stamina', col: '#c9d1dc' }, lantern: { name: 'GLOW LANTERN', desc: 'spores cannot put you to sleep', col: '#4aa0b0' }, windcloak: { name: 'WINDCLOAK', desc: 'hold jump to glide', col: '#bfe6f5' }, cloak: { name: 'THIEF CLOAK', desc: 'thieves cannot take your gold', col: '#6a3aa0' } };
+const RELICS = { wick: { name: "THE LAMPLIGHTER'S WICK", desc: 'the fire in your hand stays lit, even when a blow lands', col: '#ffd36b' }, stormline: { name: 'THE STORM LINE', desc: 'a line round your waist: the sea soaks you, but it cannot take you off her', col: '#a8cfc6' }, blackflag: { name: 'THE BLACK FLAG', desc: 'their own colours: whoever you stagger stays down half as long again', col: '#c9b27c' }, diverlamp: { name: "THE DIVER'S LAMP", desc: 'it lights the water around you, and the air lasts longer', col: '#bfe6f5' }, tidecharm: { name: 'TIDE CHARM', desc: 'hold your breath twice as long under the water', col: '#7cc8c8' }, banner: { name: 'THE QUEEN\'S BANNER', desc: 'goblins pull their blows: a fifth less hurt', col: '#c9a0ff' }, sunshard: { name: 'SUNSHARD', desc: 'crystal holds you twice as long', col: '#bfe6f5' }, shoes: { name: 'IRON SHOES', desc: 'the planks do not give under you', col: '#8a919c' }, spurs: { name: 'CLIMBING SPURS', desc: 'cling to rock without sliding', col: '#c9d1dc' }, lamp: { name: "MINER'S LAMP", desc: 'light around you in the dark', col: '#ffd36b' }, fleece: { name: 'GOLDEN FLEECE', desc: 'stamina returns twice as fast', col: '#ffe6a0' }, crown: { name: 'HORNET CROWN', desc: 'stomps strike like plunges', col: '#e0b040' }, charm: { name: "HUNTER'S CHARM", desc: 'gold comes to you', col: '#ffd34a' }, gauntlet: { name: 'IRON GAUNTLET', desc: 'swings cost no stamina', col: '#c9d1dc' }, lantern: { name: 'GLOW LANTERN', desc: 'spores cannot put you to sleep', col: '#4aa0b0' }, windcloak: { name: 'WINDCLOAK', desc: 'hold jump to glide', col: '#bfe6f5' }, cloak: { name: 'THIEF CLOAK', desc: 'thieves cannot take your gold', col: '#6a3aa0' } };
 function impactAt(x, y, kind = 'hit') { if (SET.impact) impacts.push({ x, y, t: 0, kind }); }
 function ringAt(x, y, r = 18, col = '#fff6e0', life = 0.28) { if (SET.impact) rings.push({ x, y, r, col, t: 0, life }); }
 let slowT = 0, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
@@ -808,9 +812,10 @@ function loadLevel(i) {
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
 }
 function spawnEntities() {
-  washReset(); strikeReset(); webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
+  washReset(); strikeReset(); tideReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
   for (const e of L.ents) spawnEnt(e);
   spawnEntitiesTail();
+  lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
 }
 function spawnEnt(e) {
   if (e.ifDrained !== undefined && !marks.has('pool:' + e.ifDrained * TS)) return; // lives on the channel floor: only once the water is gone
@@ -838,6 +843,9 @@ function spawnEnt(e) {
       case 'lookout': enemies.push({ ...base, t: 'lookout', w: 8, h: 16, hp: EHP.lookout, speed: 24, mode: 'scan', modeT: 1.5, cd: 0, seen: 0 }); break;
       case 'captain': boss = { ...base, t: 'captain', w: 18, h: 28, hp: EHP.captain, maxHp: EHP.captain, mode: 'sleep', modeT: 0, face: -1, phase: 1, sabreT: 1.2, shotT: 2.6, hookT: 4.5, kegT: 7, callT: 10, ride: false, shots: 0 }; enemies.push(boss); break;
       case 'quarter': boss = { ...base, t: 'quarter', w: 12, h: 22, hp: EHP.quarter, maxHp: EHP.quarter, mode: 'sleep', modeT: 0, face: -1, phase: 1, deck: 0, shotT: 1.2, slashT: 1, cutT: 0, guard: false, guardT: 0 }; enemies.push(boss); break;
+      case 'tollmaster': boss = { ...base, t: 'tollmaster', w: 20, h: 30, hp: EHP.tollmaster, maxHp: EHP.tollmaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, onFoot: false, open: 0, ring: 0, ledgerT: 1.4, tollT: 3, rodT: 5.5, darkT: 9, flooded: false }; enemies.push(boss); break;
+      case 'lampreeve': enemies.push({ ...base, t: 'lampreeve', w: 12, h: 28, hp: EHP.lampreeve, maxHp: EHP.lampreeve, mini: true, mode: 'sleep', modeT: 0, face: -1, phase: 1, snuffT: 2.4, sweepT: 2, douseT: 5, hookT: 7, open: 0, target: null }); break;
+      case 'watch': enemies.push({ ...base, t: 'watch', w: 12, h: 22, hp: EHP.watch, speed: 24, mode: 'walk', modeT: 0, cd: 1 + Math.random() * 0.6, guardT: 0, heard: 0 }); break;
       case 'sailor': enemies.push({ ...base, t: 'sailor', w: 10, h: 18, hp: EHP.sailor, speed: 20, mode: 'walk', modeT: 0, cd: 1 }); break;
       case 'netter': enemies.push({ ...base, t: 'netter', w: 10, h: 18, hp: EHP.netter, speed: 26, mode: 'walk', modeT: 0, cd: 1 + Math.random(), hasNet: true }); break;
       case 'urchin': { const pl = (L.pools || []).find(q => q.swim && px > q.x0 && px < q.x1); enemies.push({ ...base, t: 'urchin', w: 12, h: 12, hp: EHP.urchin, mode: 'drift', modeT: 0, pool: pl || null, hx: px, hy: py, noGrav: true, spin: Math.random() * 6 }); break; }
@@ -920,7 +928,8 @@ function spawnEnt(e) {
       case 'spider': enemies.push({ ...base, t: 'spider', w: e.big ? 20 : 10, h: e.big ? 16 : 8, hp: e.big ? EHP.spider * 12 : EHP.spider, maxHp: e.big ? EHP.spider * 12 : undefined, big: !!e.big, mini: !!e.mini, restY: py, drop: e.drop || 100, mode: 'hang', modeT: 0, cd: 0, face: 1 }); break;
       case 'squirrel': enemies.push({ ...base, t: 'thief', squirrel: true, w: 8, h: 9, hp: EHP.spider, speed: 92, loot: 0, mode: 'stalk' }); break;
       case 'owl': boss = { ...base, t: 'owl', w: 24, h: 14, hp: EHP.owl, maxHp: EHP.owl, mode: 'sleep', modeT: 0, face: -1, phase: 1, px: px, py: py, tx: px, ty: py, swoopT: 2, screechT: 6, gustT: 9, featherT: 4, hitT: 0 }; enemies.push(boss); break;
-      case 'lantern': props.push({ t: 'lantern', x: px, y: py, lit: !e.dark, hits: 0, perch: !!e.perch }); lights.push({ x: px, y: py - 30, r: 50, glow: true, lantern: props[props.length - 1] }); break;
+      case 'lantern': { const pr = { t: 'lantern', x: px, y: py, lit: !e.dark, hits: 0, perch: !!e.perch, city: !!e.city, gut: 0 }; props.push(pr);
+        lights.push(pr.city ? { x: px, y: py - 40, r: 66, lantern: pr } : { x: px, y: py - 30, r: 50, glow: true, lantern: pr }); break; }
       case 'shardling': enemies.push({ ...base, t: 'shardling', w: 9, h: 11, hp: EHP.shardling, speed: 40, mode: 'walk', modeT: 0 }); break;
       case 'gqueen': boss = { ...base, t: 'gqueen', w: 30, h: 52, hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
@@ -963,7 +972,7 @@ function spawnEnt(e) {
       case 'firevent': props.push({ t: 'firevent', x: px, y: py, every: e.every || 2.8, timer: 1 + Math.random() * 2, tell: 0, on: 0 }); break;
       case 'master': enemies.push({ ...base, t: 'master', w: 20, h: 16, hp: EHP.master, maxHp: EHP.master, mounted: true, mode: 'wait', modeT: 0, whistleT: 4, air: false, timer: 0, speed: 130 }); break;
       case 'king': boss = { ...base, t: 'king', w: 54, h: 45, hp: EHP.king, maxHp: EHP.king, mode: 'sleep', modeT: 0, phase: 1, dir: -1, gobletT: 3, summonT: 8, sweepT: 4, shoutT: 7, grabT: 5, cageT: 7, stepT: 0, throneT: 0, last: '' }; enemies.push(boss); break;
-      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [(e.hang ? PROP.bannerHung : PROP.banner)[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [e.hang ? PROP.hangCage : PROP.gibbet, true], eyrie: [PROP.eyrie, false], siege: [PROP.siege, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], bracket: [PROP.bracket[e.v || 0], true], axle: [PROP.axle, true], pillar: [PROP.pillar[e.v || 0], true], strut: [PROP.strut[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod], timber: [PROP.timber[e.v || 0], true], cobweb: [PROP.cobweb[e.v || 0], true], tent: [PROP.tent[e.v || 0], true], spire: [TILE.spire[0][e.v || 0], true], throne: [SPR.throne, true], hallWindow: [HALLWIN || (HALLWIN = bakeHallWindow()), true], bridgepost: [PROP.bridgePost, false], bridgetower: [PROP.bridgeTower, true], gatehouse: [PROP.gatehouse, true], forge: [PROP.forge, true], anvil: [PROP.anvil, false], stilt: [PROP.stilt, true], frozen: [PROP.frozen[e.v || 0], true], cannon: [PROP.flot.cannon[0], false], oarBench: [PROP.flot.oarBench, false], oar: [PROP.flot.oar, false], hammock: [PROP.flot.hammock[(e.v || 0) % 2], true], washing: [PROP.flot.washing, true], cookPot: [PROP.flot.cookPot, false], rumBarrels: [PROP.flot.rumBarrels[(e.v || 0) % 2], false], chickenCoop: [PROP.flot.chickenCoop, false], chartTable: [PROP.flot.chartTable, false], plunder: [PROP.flot.plunder[(e.v || 0) % 3], false], crowNest: [PROP.flot.crowNest, true], mastTall: [PROP.flot.mastTall[(e.v || 0) % 2], true], pennant: [PROP.flot.pennant[(e.v || 0) % 3], true], boardingNet: [PROP.flot.boardingNet, true], lanternDeck: [PROP.flot.lanternDeck[e.v === 0 ? 0 : 1], false], waterButt: [PROP.flot.waterButt, false], coiledCable: [PROP.flot.coiledCable[(e.v || 0) % 2], false], gunport: [PROP.flot.gunport[e.v === 0 ? 0 : 1], true], sternWindows: [PROP.flot.sternWindows, true], kegStack: [PROP.flot.kegStack, false], mastStump: [PROP.reef.mastStump, false], rigging: [PROP.reef.rigging[(e.v || 0) % 2], true], sailRag: [PROP.reef.sailRag[(e.v || 0) % 2], true], wreckBow: [PROP.reef.wreckBow, true], wreckStern: [PROP.reef.wreckStern, true], figurehead: [PROP.reef.figurehead, false], capstan: [PROP.reef.capstan, false], anchor: [PROP.reef.anchor, false], seaChest: [PROP.reef.seaChest, false], shipBell: [PROP.reef.shipBell, false], lanternBuoy: [PROP.reef.lanternBuoy[e.v === 0 ? 0 : 1], false], coralFan: [PROP.reef.coralFan[(e.v || 0) % 3], false], brainCoral: [PROP.reef.brainCoral[(e.v || 0) % 2], false], urchinRock: [PROP.reef.urchinRock[(e.v || 0) % 2], false], spar: [PROP.reef.spar[(e.v || 0) % 2], false], bubbleVent: [PROP.reef.bubbleVent, false], airBell: [PROP.reef.airBell, false], kelpTall: [PROP.reef.kelpTall[(e.v || 0) % 3], false], wheel: [PROP.reef.wheel, false], reefRock: [PROP.reef.reefRock[(e.v || 0) % 2], false], coralTuft: [PROP.lw.coralTuft[(e.v || 0) % 3], false], barnacleRock: [PROP.lw.barnacleRock[(e.v || 0) % 2], false], saltCrust: [PROP.lw.saltCrust[(e.v || 0) % 2], false], drownedHut: [PROP.lw.drownedHut, true], fishCottage: [PROP.lw.cottage[(e.v || 0) % 2], true], bellTower: [PROP.lw.bellTower, true], seaLantern: [PROP.lw.seaLantern[e.v === 0 ? 0 : 1], false], buoy: [PROP.lw.buoy, false], tributeChest: [PROP.lw.tributeChest, false], rowboat: [PROP.lw.rowboat, false], netPoles: [PROP.lw.netPoles, true], pierPost: [PROP.lw.pierPost, false], tidePool: [PROP.lw.tidePool, false], kelp: [PROP.lw.kelp[(e.v || 0) % 3], false] }[e.kind]; if (!K) break; const c = K[0]; let gy = e.y; if (!e.hang && GROUNDED_DECO.has(e.kind)) { const gnd = (x, y) => isSolid(x, y) || isOneWay(tileAt(x, y)); let n = 0; while (gnd(e.x, gy) && n++ < 4) gy--; n = 0; while (!gnd(e.x, gy + 1) && n++ < 4) gy++; if (!gnd(e.x, gy + 1)) gy = e.y; } const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && tileAt(e.x, gy + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
+      case 'deco': { const K = { hiveBg: [PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [(e.hang ? PROP.bannerHung : PROP.banner)[e.v || 0], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [e.hang ? PROP.hangCage : PROP.gibbet, true], eyrie: [PROP.eyrie, false], siege: [PROP.siege, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], bracket: [PROP.bracket[e.v || 0], true], axle: [PROP.axle, true], pillar: [PROP.pillar[e.v || 0], true], strut: [PROP.strut[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod], timber: [PROP.timber[e.v || 0], true], cobweb: [PROP.cobweb[e.v || 0], true], tent: [PROP.tent[e.v || 0], true], spire: [TILE.spire[0][e.v || 0], true], throne: [SPR.throne, true], hallWindow: [HALLWIN || (HALLWIN = bakeHallWindow()), true], bridgepost: [PROP.bridgePost, false], bridgetower: [PROP.bridgeTower, true], gatehouse: [PROP.gatehouse, true], forge: [PROP.forge, true], anvil: [PROP.anvil, false], stilt: [PROP.stilt, true], frozen: [PROP.frozen[e.v || 0], true], cannon: [PROP.flot.cannon[0], false], oarBench: [PROP.flot.oarBench, false], oar: [PROP.flot.oar, false], hammock: [PROP.flot.hammock[(e.v || 0) % 2], true], washing: [PROP.flot.washing, true], cookPot: [PROP.flot.cookPot, false], rumBarrels: [PROP.flot.rumBarrels[(e.v || 0) % 2], false], chickenCoop: [PROP.flot.chickenCoop, false], chartTable: [PROP.flot.chartTable, false], plunder: [PROP.flot.plunder[(e.v || 0) % 3], false], crowNest: [PROP.flot.crowNest, true], mastTall: [PROP.flot.mastTall[(e.v || 0) % 2], true], pennant: [PROP.flot.pennant[(e.v || 0) % 3], true], boardingNet: [PROP.flot.boardingNet, true], lanternDeck: [PROP.flot.lanternDeck[e.v === 0 ? 0 : 1], false], waterButt: [PROP.flot.waterButt, false], coiledCable: [PROP.flot.coiledCable[(e.v || 0) % 2], false], gunport: [PROP.flot.gunport[e.v === 0 ? 0 : 1], true], sternWindows: [PROP.flot.sternWindows, true], kegStack: [PROP.flot.kegStack, false], mastStump: [PROP.reef.mastStump, false], rigging: [PROP.reef.rigging[(e.v || 0) % 2], true], sailRag: [PROP.reef.sailRag[(e.v || 0) % 2], true], wreckBow: [PROP.reef.wreckBow, true], wreckStern: [PROP.reef.wreckStern, true], figurehead: [PROP.reef.figurehead, false], capstan: [PROP.reef.capstan, false], anchor: [PROP.reef.anchor, false], seaChest: [PROP.reef.seaChest, false], shipBell: [PROP.reef.shipBell, false], lanternBuoy: [PROP.reef.lanternBuoy[e.v === 0 ? 0 : 1], false], coralFan: [PROP.reef.coralFan[(e.v || 0) % 3], false], brainCoral: [PROP.reef.brainCoral[(e.v || 0) % 2], false], urchinRock: [PROP.reef.urchinRock[(e.v || 0) % 2], false], spar: [PROP.reef.spar[(e.v || 0) % 2], false], bubbleVent: [PROP.reef.bubbleVent, false], cityWeed: [PROP.city.cityWeed[(e.v || 0) % 3], false], shellDrift: [PROP.city.shellDrift[(e.v || 0) % 2], false], lampWreck: [PROP.city.lampWreck[(e.v || 0) % 2], false], stall: [PROP.city.stall[(e.v || 0) % 2], true], column: [PROP.city.column[(e.v || 0) % 2], true], clerkDesk: [PROP.city.clerkDesk, false], sealDrift: [PROP.city.sealDrift[(e.v || 0) % 2], false], bellows: [PROP.city.bellows, true], tollPost: [PROP.city.tollPost, true], magistrate: [PROP.city.magistrate, true], drownedCart: [PROP.city.drownedCart, false], grating: [PROP.city.grating, true], lampMain: [PROP.city.lampMain[(e.v || 0) % 2], true], airBell: [PROP.reef.airBell, false], kelpTall: [PROP.reef.kelpTall[(e.v || 0) % 3], false], wheel: [PROP.reef.wheel, false], reefRock: [PROP.reef.reefRock[(e.v || 0) % 2], false], coralTuft: [PROP.lw.coralTuft[(e.v || 0) % 3], false], barnacleRock: [PROP.lw.barnacleRock[(e.v || 0) % 2], false], saltCrust: [PROP.lw.saltCrust[(e.v || 0) % 2], false], drownedHut: [PROP.lw.drownedHut, true], fishCottage: [PROP.lw.cottage[(e.v || 0) % 2], true], bellTower: [PROP.lw.bellTower, true], seaLantern: [PROP.lw.seaLantern[e.v === 0 ? 0 : 1], false], buoy: [PROP.lw.buoy, false], tributeChest: [PROP.lw.tributeChest, false], rowboat: [PROP.lw.rowboat, false], netPoles: [PROP.lw.netPoles, true], pierPost: [PROP.lw.pierPost, false], tidePool: [PROP.lw.tidePool, false], kelp: [PROP.lw.kelp[(e.v || 0) % 3], false] }[e.kind]; if (!K) break; const c = K[0]; let gy = e.y; if (!e.hang && GROUNDED_DECO.has(e.kind)) { const gnd = (x, y) => isSolid(x, y) || isOneWay(tileAt(x, y)); let n = 0; while (gnd(e.x, gy) && n++ < 4) gy--; n = 0; while (!gnd(e.x, gy + 1) && n++ < 4) gy++; if (!gnd(e.x, gy + 1)) gy = e.y; } const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && tileAt(e.x, gy + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
         deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? e.y * TS : pyg - c.height + (onPlank ? 3 : 0), c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
         if (e.kind === 'lanternDeck' && e.v !== 0) lights.push({ x: px, y: pyg - 18, r: 36, torch: true });
         if (e.kind === 'cookPot') lights.push({ x: px, y: pyg - 8, r: 26, torch: true });
@@ -1020,7 +1029,9 @@ const RUSH = [
   { lv: 'longwater', boss: 'herald' }, { lv: 'reef', boss: 'reefmaw' }, { lv: 'moor', boss: 'windcaller' },
   { lv: 'crown', boss: 'forgemaster', mini: true }, { lv: 'spire', boss: 'roc' },
   { lv: 'flotilla', boss: 'quarter' },
+  { lv: 'lamplit', boss: 'lampreeve', mini: true },
   { lv: 'hurricane', boss: 'captain' }, { lv: 'storm', boss: 'lance' }, { lv: 'crown', boss: 'gqueen' },
+  { lv: 'lamplit', boss: 'tollmaster' },
 ];
 let rush = null; // { i, lives, hits, t, single }
 const rushOn = () => !!rush;
@@ -1135,11 +1146,12 @@ const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: 11, x: 152, y: 104, name: 'THE LONG WATER' },
   { id: 'reef', kind: 'level', level: 12, x: 96, y: 72, name: 'THE SHIPWRECK REEF' },
   { id: 'flotilla', kind: 'level', level: 13, x: 50, y: 44, name: 'THE FLOTILLA' },
-  { id: 'hurricane', kind: 'level', level: 14, x: 22, y: 16, name: 'THE HURRICANE DECK' }];
-const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [62, 52], [50, 44], [38, 30], [22, 16]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
+  { id: 'hurricane', kind: 'level', level: 14, x: 22, y: 16, name: 'THE HURRICANE DECK' },
+  { id: 'lamplit', kind: 'level', level: 15, x: 18, y: 52, name: 'THE LAMPLIT STREET' }]; // straight down off the wreck
+const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [62, 52], [50, 44], [38, 30], [22, 16], [16, 32], [18, 52]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES);
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH);
-const NODE_AT = [0, 3, 6, 8, 10, 12, 20, 23, 25, 28, 31, 34, 39, 44, 47, 50, 52]; // PATH index of each node: wood 0-5, the crags, then the coast
+const NODE_AT = [0, 3, 6, 8, 10, 12, 20, 23, 25, 28, 31, 34, 39, 44, 47, 50, 52, 54]; // PATH index of each node: wood 0-5, the crags, then the coast
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172]]]);
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
@@ -1553,6 +1565,9 @@ const BEASTS = [
   { t: 'marine', name: 'MARINE', sub: 'in the tops', desc: 'Lives in the rigging and shoots down the length of a deck. He has to stand up to aim, and that is the moment to be somewhere else. Climb to him: he is nothing up close.' },
   { t: 'bosun', name: 'BOSUN', sub: 'he calls the watch', desc: 'Hits like a door with a belaying pin, and if he sees you before you are on him he puts the whistle to his mouth and the whole town knows. Close the distance or lose the level.' },
   { t: 'lookout', name: 'LOOKOUT', sub: 'eyes, and a whistle', desc: 'Cannot fight at all. All he does is see you, and then fill his lungs. He needs a breath and a bit to do it: that is how long you have.' },
+  { t: 'watch', name: 'THE DROWNED WATCH', sub: "a constable on his beat", desc: 'Still walking a beat in a city that drowned a hundred years ago. He guards with the haft of the halberd, so a light blow turns on it and only a HEAVY one gets through. He cannot see you under a burning lamp, and out of the light he hears you from twice as far and comes faster. His thrust has the longest reach of any foot soldier: step in or step out, never back.' },
+  { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it, and the fight gets smaller every time he does. Jump the low sweep of the pole; the black water he breathes hurts once and blinds you after; a line in your hand beats the hook. Reaching up to hood a lamp leaves him stretched and still, and everything lands double on him while he is.' },
+  { t: 'tollmaster', name: 'THE TOLLMASTER', sub: 'the magistrate of a drowned city', desc: 'He never stopped collecting. He is carried on a bier, which keeps him out of an easy reach, and the room is his weapon: he puts out a ring of lamps at a time, so the light you breathe and the light you see his tells by are the same light. PARRY the chained ledger and it staggers him outright. The coin weight cannot be blocked, only dodged. Jump the rod. Half down he sets the bier on the stones and the four bearers come off it, and that is the only time he is slow. Last of all he fills the square, and then the last lamp is the only air in the room.' },
   { t: 'captain', name: 'THE CAPTAIN', sub: 'he has not left her', desc: 'Four things, and he tells you every one: two cuts of the sabre up close, a brace of pistols levelled across her deck, a grapnel that hauls you in unless you have a hand on a line, and a lit keg kicked down her planking. He can call the sea himself - it carries him, nothing will cut him while it does, and it leaves him beached for a breath. Cut him in that breath.' },
   { t: 'quarter', name: 'THE QUARTERMASTER', sub: 'she holds the flotilla', desc: 'She will not stand and fight on one deck. Wide cutlass swings the shield can hold, an aimed pistol shot it cannot. Hurt her enough and she goes up a deck and cuts the way you came up. On the last deck she cuts the ship herself. When her blade is in a rope she cannot answer for it.' },
   { t: 'sailor', name: 'DROWNED SAILOR', sub: 'still working the wreck', desc: 'Slow and heavy, and the boathook reaches a long way low. Jump the sweep or take it on the shield: a parried hook leaves him wide open. He guards while you swing, so hit him after his own swing, not before.' },
@@ -1973,8 +1988,8 @@ function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
 // the creatures that have a recoil frame: it is the LAST frame of their set, and it holds for a fifth of a second
-const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine']);
-const COLS = { captain: ['#d14a3a', '#e6b94a', '#191622'], cutlass: ['#c9463d', '#8a4a2a', '#e8dcc0'], boarder: ['#8a6a3a', '#5a4424', '#c9b27c'], marine: ['#4a5a6a', '#2e3a48', '#c9d1dc'], bosun: ['#7a4a3a', '#4a2c22', '#ffd36b'], lookout: ['#9aa39a', '#6a7268', '#e8dcc0'], quarter: ['#3a2a4a', '#22182e', '#ffd36b'], sailor: ['#6a7a68', '#48584a', '#8a9a84'], netter: ['#5a6a60', '#3e4a44', '#7a8a80'], urchin: ['#2a2630', '#4a4458', '#8a84a0'], angler: ['#2e3a3e', '#1c2428', '#7ff0e0'], petrel: ['#3a3a44', '#22222a', '#c9d1dc'], reefmaw: ['#2e4a3a', '#1c2c24', '#8fb08a'], turtle: ['#5a6a3a', '#3e4a28', '#7a8a4a'], eel: ['#2a3a3a', '#3e5452', '#a8b8a0'], heronfoe: ['#8a96a0', '#c8d0d4', '#e0b040'], crab: ['#b8483a', '#e07060', '#e8c8a8'], scout: ['#a8cfc6', '#4a6a2a', '#7ff0e0'], siren: ['#a8cfc6', '#1f3a36', '#7ff0e0'], tideguard: ['#e07a6a', '#4a9a8a', '#a8cfc6'], herald: ['#e07a6a', '#4a9a8a', '#6a8a3a'], soldier: ['#5d4a8a', '#c9d1dc', '#6faa4a'], javelin: ['#8a5a32', '#5d4a8a', '#6faa4a'], heavy: ['#7c8797', '#c9d1dc', '#5d4a8a'], dummy: ['#c9b27c', '#8a5a32', '#e8dcc0'], sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a', '#c9a0ff', '#e8dcc0'], crow: ['#2a2433', '#4a4458', '#ff4a3a'], horn: ['#6faa4a', '#e0b040', '#c9463d'], bale: ['#d9b44a', '#8a6a32', '#9a5aa8'], shardling: ['#bfe6f5', '#eefaff', '#7aa8c8'], suncatcher: ['#bfe6f5', '#ffe6a0', '#7aa8c8'], roc: ['#8a8478', '#bfe6f5', '#c9a83a'], sentry: ['#6faa4a', '#5a2a7a', '#e0b040'], gqueen: ['#5a2a7a', '#6faa4a', '#e0b040'], hearthgob: ['#6faa4a', '#c9463d', '#8a5a32'], cutter: ['#6faa4a', '#8a919c', '#5d4a8a'], lance: ['#9aa3b0', '#c9463d', '#e0b040'], snuffer: ['#3a3448', '#8a5a32', '#ffd36b'], sailer: ['#6faa4a', '#c9b27c', '#c9463d'], miner: ['#6faa4a', '#c9b27c', '#8a919c'], bat: ['#3a3448', '#5a5468'], grub: ['#b8d878', '#e8ff9a', '#7a9a48'], rockgoblin: ['#6faa4a', '#8a919c', '#ffd36b'], golem: ['#bfe6f5', '#7aa8c8', '#ff7ab8'], kite: ['#c9463d', '#ffd36b', '#6faa4a'], hare: ['#8a6a4a', '#e8dcc0'], wight: ['#c8d8c8', '#8aa08a'], windcaller: ['#6faa4a', '#c9a0ff', '#e8dcc0'], forgemaster: ['#8a919c', '#6a4a3a', '#ffd36b'], greathound: ['#5a4a3a', '#3a2e22', '#ff4a3a'], spider: ['#3a3448', '#5a5468'], owl: ['#7a5a3a', '#e8dcc0', '#ffd36b'], troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], spitcap: ['#9a5aa8', '#e8e0f0', '#c9a0ff'], weaver: ['#c8bcd0', '#8a7e9a', '#ff4a3a'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'] };
+const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch']);
+const COLS = { watch: ['#36535e', '#9fb8a8', '#ccd4dc'], lampreeve: ['#2a3a34', '#8a6a44', '#14201e'], tollmaster: ['#5b3566', '#e6b94a', '#cfc6a8'], captain: ['#d14a3a', '#e6b94a', '#191622'], cutlass: ['#c9463d', '#8a4a2a', '#e8dcc0'], boarder: ['#8a6a3a', '#5a4424', '#c9b27c'], marine: ['#4a5a6a', '#2e3a48', '#c9d1dc'], bosun: ['#7a4a3a', '#4a2c22', '#ffd36b'], lookout: ['#9aa39a', '#6a7268', '#e8dcc0'], quarter: ['#3a2a4a', '#22182e', '#ffd36b'], sailor: ['#6a7a68', '#48584a', '#8a9a84'], netter: ['#5a6a60', '#3e4a44', '#7a8a80'], urchin: ['#2a2630', '#4a4458', '#8a84a0'], angler: ['#2e3a3e', '#1c2428', '#7ff0e0'], petrel: ['#3a3a44', '#22222a', '#c9d1dc'], reefmaw: ['#2e4a3a', '#1c2c24', '#8fb08a'], turtle: ['#5a6a3a', '#3e4a28', '#7a8a4a'], eel: ['#2a3a3a', '#3e5452', '#a8b8a0'], heronfoe: ['#8a96a0', '#c8d0d4', '#e0b040'], crab: ['#b8483a', '#e07060', '#e8c8a8'], scout: ['#a8cfc6', '#4a6a2a', '#7ff0e0'], siren: ['#a8cfc6', '#1f3a36', '#7ff0e0'], tideguard: ['#e07a6a', '#4a9a8a', '#a8cfc6'], herald: ['#e07a6a', '#4a9a8a', '#6a8a3a'], soldier: ['#5d4a8a', '#c9d1dc', '#6faa4a'], javelin: ['#8a5a32', '#5d4a8a', '#6faa4a'], heavy: ['#7c8797', '#c9d1dc', '#5d4a8a'], dummy: ['#c9b27c', '#8a5a32', '#e8dcc0'], sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a', '#c9a0ff', '#e8dcc0'], crow: ['#2a2433', '#4a4458', '#ff4a3a'], horn: ['#6faa4a', '#e0b040', '#c9463d'], bale: ['#d9b44a', '#8a6a32', '#9a5aa8'], shardling: ['#bfe6f5', '#eefaff', '#7aa8c8'], suncatcher: ['#bfe6f5', '#ffe6a0', '#7aa8c8'], roc: ['#8a8478', '#bfe6f5', '#c9a83a'], sentry: ['#6faa4a', '#5a2a7a', '#e0b040'], gqueen: ['#5a2a7a', '#6faa4a', '#e0b040'], hearthgob: ['#6faa4a', '#c9463d', '#8a5a32'], cutter: ['#6faa4a', '#8a919c', '#5d4a8a'], lance: ['#9aa3b0', '#c9463d', '#e0b040'], snuffer: ['#3a3448', '#8a5a32', '#ffd36b'], sailer: ['#6faa4a', '#c9b27c', '#c9463d'], miner: ['#6faa4a', '#c9b27c', '#8a919c'], bat: ['#3a3448', '#5a5468'], grub: ['#b8d878', '#e8ff9a', '#7a9a48'], rockgoblin: ['#6faa4a', '#8a919c', '#ffd36b'], golem: ['#bfe6f5', '#7aa8c8', '#ff7ab8'], kite: ['#c9463d', '#ffd36b', '#6faa4a'], hare: ['#8a6a4a', '#e8dcc0'], wight: ['#c8d8c8', '#8aa08a'], windcaller: ['#6faa4a', '#c9a0ff', '#e8dcc0'], forgemaster: ['#8a919c', '#6a4a3a', '#ffd36b'], greathound: ['#5a4a3a', '#3a2e22', '#ff4a3a'], spider: ['#3a3448', '#5a5468'], owl: ['#7a5a3a', '#e8dcc0', '#ffd36b'], troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], spitcap: ['#9a5aa8', '#e8e0f0', '#c9a0ff'], weaver: ['#c8bcd0', '#8a7e9a', '#ff4a3a'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'] };
 
 // ---------- damage ----------
 function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const gp of gps) if (gp && gp.vibrationActuator && gp.vibrationActuator.playEffect) { gp.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: mag, weakMagnitude: mag * 0.6 }); break; } } catch {} }
@@ -2030,6 +2045,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false } = {}) {
   if (tal('ashCloak') && (P.ashT || 0) > 0) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * tal('ashCloak')))); // ASH CLOAK, for a moment after a roll
   if (P.cryT > 0) dmg = Math.max(1, Math.round(dmg * 0.75)); // the war cry: blows land a quarter lighter
   P.hp -= dmg; P.inv = 1.1; P.hurt = Math.max(P.hurt, 0.35); P.atk = -1; P.plunge = false; P.block = false; impactAt(P.x, P.y - 9, 'red');
+  // a blow that lands puts out whatever you were carrying: the fire in your hand is the first thing to go
+  if (P.wick > 0 && P.relic !== 'wick') { P.wick = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }
   const dir = Math.sign(P.x - fromX) || -P.face;
   P.vx = dir * 150; P.vy = up ? -230 : -170; P.ground = false;
   hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; SFX.pHurt(); rumble(180, 0.8);
@@ -2076,6 +2093,9 @@ function spawnCorpse(e, dir) {
     case 'ram': Object.assign(c, { vx: -dir * 10, vy: -100, spin: dir * 0.6, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.bellow(); SFX.roar(); break;
     case 'thief': Object.assign(c, { vx: dir * 100, vy: -170, spin: dir * 16, life: 1.0, max: 1.0 }); SFX.gobDie(); break;
     case 'bearer': Object.assign(c, { vx: dir * 80, vy: -160, spin: dir * 12, life: 0.9, max: 0.9 }); SFX.gobDie(); break;
+    case 'watch': Object.assign(c, { vx: dir * 50, vy: -130, spin: dir * 5, life: 1.5, max: 1.5 }); break;
+    case 'lampreeve': Object.assign(c, { vx: dir * 30, vy: -110, spin: dir * 4, life: 2.2, max: 2.2, grav: 280 }); break;
+    case 'tollmaster': Object.assign(c, { vx: -18, vy: -70, spin: 2, life: 2.8, max: 2.8, grav: 300 }); break;
     case 'pike': Object.assign(c, { vx: dir * 40, vy: -70, spin: 0, life: 1.1, max: 1.1, tip: true }); SFX.gobDie(); SFX.clank(); break;
     case 'folk': Object.assign(c, { vx: dir * 40, vy: -110, spin: dir * 6, life: 0.8, max: 0.8 }); break;
     case 'master': c.t = e.mounted ? 'master' : 'masterFoot'; Object.assign(c, { vx: -dir * 20, vy: -140, spin: dir * 3, life: 1.5, max: 1.5, grav: 600 }); SFX.gobDieLow(); SFX.yelp(); break;
@@ -2120,6 +2140,9 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'dummy') { e.flash = 0.12; SFX.stone(); burst(e.x, e.y - 12, 6, COLS.dummy, 50, 0.4); if (dmg > 0) number(e.x, e.y - e.h - 6, Math.round(dmg), '#fff6e0'); return; } // straw takes it and stands
   if (L && L.trial && e.t === 'archer') { SFX.clank(); return; } // the trial's archer is there to shoot at you
   if (e.t === 'captain' && (e.ride || e.mode === 'ride')) { SFX.splash(); sparks(e.x, e.y - 16, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 44, 'THE SEA HAS HIM', '#9aa39a'); return; }
+  if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
+  else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
+  if (e.t === 'lampreeve' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); } // stretched over a lamp with both hands
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
   if (e.t === 'quarter' && e.guard) { SFX.clank(); sparks(e.x, e.y - 12, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 30, 'HER GUARD HOLDS', '#9aa39a'); return; }
@@ -2187,7 +2210,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
     if (e.t === 'drone') clouds2.push({ x: e.x, y: e.y - 3, r: 18, life: 2.5 });
     if (e.t === 'gill' && mother) { number(e.x, e.y - 18, 'GILL SNAPS', '#e0b0f0'); { const tx = Math.floor(e.x / TS), ty = Math.floor(L.arena.floor / TS) - 1, i = ty * LW + tx; if (L.grid[i] === T.AIR) { L.grid[i] = T.BOUNCER; tileSpr[i] = null; resolveTiles(); number(e.x, L.arena.floor - 26, 'A CAP FALLS: A SPRING', '#8fd160'); burst(e.x, L.arena.floor - 8, 14, ['#e8e0d0', '#9a5aa8'], 70, 0.7); shakeCam(3); } } for (let i = 0; i < 2; i++) enemies.push({ t: 'sporeling', x: e.x + (i ? 14 : -14), y: e.y - 20, vx: 0, vy: -60, w: 8, h: 10, hp: EHP.sporeling, speed: 30, face: i ? 1 : -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.3 }); const left = enemies.filter(g => g.alive && g.t === 'gill').length; mother.rootT = Math.min(mother.rootT, 0.8); if (left === 0) { mother.mode = 'tip'; mother.modeT = 1.6; L.violet = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 999; number(mother.x, mother.y - 110, 'SHE TIPS', '#ff7a9a'); SFX.roar(); SFX.dieOf('mother')(); shakeCam(8); zoomKick(1.1, 0.5); } }
     if (e.t === 'heart' && mother) { mother.alive = false; kills++; queenDies(mother); L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; number(mother.x, mother.y - 130, 'THE WOOD BREATHES AGAIN', '#8fd160'); burst(mother.x, mother.y - 60, 40, COLS.mother, 120, 1.2); }
-    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain')) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
+    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'tollmaster')) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
     if (e.t === 'thief' && e.loot > 0) { for (let i = 0; i < e.loot + 3; i++) acorns.push({ x: e.x + (i - e.loot / 2) * 6, y: e.y - 10, got: false, ph: Math.random() * 6, crate: 'thief' + e.x + i, vy: -110 - Math.random() * 60 }); number(e.x, e.y - 24, 'WITH INTEREST', '#ffd34a'); SFX.coin(); }
     if (e.t === 'folk') number(e.x, e.y - 18, 'SHAME', '#9aa39a');
     if (e.t === 'greathound') { for (const h of enemies) if (h.alive && h.t === 'hound' && h.pack) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } miniEnd(e); }
@@ -2554,7 +2577,7 @@ function updatePlayer(dt) {
     P.vy += 150 * dt; if (under > 15) P.vy -= 300 * dt; if (keys.down) P.vy += 430 * dt; if (keys.up || (keys.jump && under > 30)) P.vy -= 430 * dt;
     P.vy = Math.max(-190, Math.min(P.plunge ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) P.plunge = false; P.airRolled = false; P.canCut = true;
     if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
-    const bell = airBells.length ? airBells.find(b => Math.abs(b.x - P.x) < 22 && Math.abs(b.y - (P.y - 8)) < 20) : null;
+    const bell = nearAir(P.x, P.y - 8);
     if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5); P.drownT = 0; }
     else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
       if (P.breath <= 0) { P.breath = 0; P.drownT = (P.drownT || 0) - dt;
@@ -2563,6 +2586,7 @@ function updatePlayer(dt) {
     else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
   } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4); P.drownT = 0; }
   snareTick(dt);
+  if (P.soot > 0) P.soot = Math.max(0, P.soot - dt);   // the black water runs off the lens
   if (!P.climb && !P.swim) { // THE ARC: light at the apex, heavier coming down, heaviest if you ask for it
     const rising = P.vy < 0, apex = Math.abs(P.vy) < 62 && !P.ground;
     const fast = !P.ground && keys.down && !P.plunge && P.vy > -40 ? 2.1 : 1; // FAST FALL: ask for the ground and it comes
@@ -2684,6 +2708,7 @@ function updatePlayer(dt) {
       if (e.t === 'siren' && e.mode === 'dive') continue; // under the water
       if (e.t === 'soldier' && front && !P.heavy && e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
       if (e.t === 'heavy' && !P.heavy && e.mode !== 'rest' && !(e.parried > 0)) { SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
+      if (e.t === 'watch' && front && !P.heavy && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
       if (e.t === 'shield' && front && !P.heavy) {
         SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
@@ -2729,7 +2754,7 @@ function updatePlayer(dt) {
     else { const res = damagePlayer(s.x, s.boot ? DMG.capHook : DMG.drownChain);
       if (res !== 'blocked' && s.from && s.from.alive) { P.vx = Math.sign(s.from.x - P.x) * 380; P.vy = -60; P.ground = false; number(P.x, P.y - 30, 'HAULED IN', '#ff6b6b'); SFX.ropeHaul();
         if (s.boot) { P.hauled = { who: s.from, t: 0.45 }; } } } }
-  for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 })) { s.dead = true; if (s.net) { const res = damagePlayer(s.x, DMG.netterNet); if (res !== 'blocked') { P.snare = Math.max(P.snare || 0, 1.6); number(P.x, P.y - 26, 'NETTED', '#c9b27c'); burst(s.x, s.y, 10, ['#c9b27c', '#8a7a54'], 50, 0.6, 40, 2); SFX.thud(); } continue; } if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } const sres = damagePlayer(s.x - s.vx * 0.1, s.shot ? DMG.quarterShot : s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? DMG.bolt : s.jav ? DMG.lanceJav : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.soot ? DMG.sweep : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed); if (sres === 'blocked' && s.bolt) returnBolt(s); else if (sres === 'blocked' && ((P.block && tal('bulwark')) || (P.aegis && tal('reflect')))) reflectSeed(s); }
+  for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 })) { s.dead = true; if (s.net) { const res = damagePlayer(s.x, DMG.netterNet); if (res !== 'blocked') { P.snare = Math.max(P.snare || 0, 1.6); number(P.x, P.y - 26, 'NETTED', '#c9b27c'); burst(s.x, s.y, 10, ['#c9b27c', '#8a7a54'], 50, 0.6, 40, 2); SFX.thud(); } continue; } if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } const sres = damagePlayer(s.x - s.vx * 0.1, s.weight ? DMG.tollWeight : s.shot ? DMG.quarterShot : s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? DMG.bolt : s.jav ? DMG.lanceJav : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.soot ? DMG.sweep : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed, { unblockable: !!s.noBlock }); if (sres === 'blocked' && s.bolt) returnBolt(s); else if (sres === 'blocked' && ((P.block && tal('bulwark')) || (P.aegis && tal('reflect')))) reflectSeed(s); }
   if (tongue && tongue.active && !P.dead && Math.abs(P.y - 8 - tongue.y) < 9 && ((tongue.dir > 0 && P.x > tongue.x0 && P.x < tongue.x0 + tongue.len) || (tongue.dir < 0 && P.x < tongue.x0 && P.x > tongue.x0 - tongue.len))) { const res = damagePlayer(tongue.x0, DMG.tongue); if (res === 'blocked') { tongue.active = false; boss.mode = 'dazed'; boss.modeT = 1.3; number(boss.x, boss.y - 24, 'BITTEN TONGUE', '#8fd160'); SFX.tongue(); } else if (res === 'hit') { P.vx = tongue.dir * -160; tongue.active = false; } }
   if ((P.relic === 'charm' || PROG.charm === 'lucky') && !P.dead) for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 70 && Math.abs(a.y - P.y) < 50) { a.x += (P.x - a.x) * Math.min(1, dt * 6); a.y += ((P.y - 8) - a.y) * Math.min(1, dt * 6); }
   for (const p of (L.pools || [])) if (p.flow && p.swim && !p.dry) { // the current takes whatever is loose in it
@@ -2759,8 +2784,8 @@ const titleItems = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A 
   return base.concat(rushUnlocked() ? ['BOSS RUSH'] : [], ['THE EDITOR', 'SETTINGS', 'CONTROLS']); };
 let miniActive = false, miniDone = false, miniIntroT = 0;
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
-const MINI_NAME = { forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD' };
-const MINI_DONE = { forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN' };
+const MINI_NAME = { forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE' };
+const MINI_DONE = { forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS' };
 const miniName = () => (L.mini && MINI_NAME[L.mini.boss]) || 'THE BEAST';
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
@@ -2834,7 +2859,7 @@ function bossEnd(e) {
     case 'owl': { // it comes down through the boughs and every lantern in the village catches
       shakeCam(9); zoomKick(1.15, 0.6);
       for (let i = 0; i < 44; i++) parts.push({ x: x + (Math.random() - 0.5) * 56, y: y - 16 - Math.random() * 40, vx: (Math.random() - 0.5) * 90, vy: -20 + Math.random() * 40, life: 2.2 + Math.random(), max: 3.2, col: ['#e8dcc0', '#c9b27c', '#7a5a3a'][(Math.random() * 3) | 0], size: 2, grav: 26 }); // feathers, and they take their time
-      let lit = 0; for (const pr of props) if ((pr.t === 'lantern' || pr.t === 'minerlamp') && !pr.lit) { pr.lit = true; pr.hits = 0; lit++; burst(pr.x, pr.y - 8, 6, ['#ffd36b', '#fff6c8'], 40, 0.6); }
+      let lit = 0; for (const pr of props) if ((pr.t === 'lantern' || pr.t === 'minerlamp') && !pr.lit) { pr.lit = true; pr.hits = 0; pr.gut = 0; lit++; burst(pr.x, pr.y - 8, 6, ['#ffd36b', '#fff6c8'], 40, 0.6); }
       SFX.owlHoot(); if (lit) SFX.spark(); say('THE VILLAGE LIGHTS UP'); break;
     }
     case 'golem': { // it comes apart along its colours
@@ -2856,6 +2881,12 @@ function bossEnd(e) {
       const hp = (L.pools || []).find(q => q.arenaTide); if (hp) { hp.tideY = floor + 6; poolLevel(hp, floor + 6); }
       for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 40, vx: (Math.random() - 0.5) * 60, vy: -30 - Math.random() * 60, life: 1.6, max: 1.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#e8f4f0', size: 2, grav: 60 });
       props.push({ t: 'glaive', x, y: heraldGround(x) }); say('THE TIDE GOES OUT', '#7cc8c8'); break; }
+    case 'tollmaster': { // the ledger goes into the water, the square drains, and every lamp in the city comes up
+      shakeCam(14); zoomKick(1.2, 0.7); killFlash = 0.16; SFX.seaBell(); SFX.medal(); bossWon = 3;
+      const sq = (L.pools || []).find(q => q.square); if (sq) { sq.rising = null; sq.swim = false; poolLevel(sq, floor + 6); }
+      for (const pr of lamps) if (!pr.lit) { pr.lit = true; pr.gut = 0; burst(pr.x, pr.y - 40, 8, ['#ffd36b', '#fff6c8'], 50, 0.7); }
+      for (let i = 0; i < 54; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - Math.random() * 46, vx: (Math.random() - 0.5) * 90, vy: -40 - Math.random() * 80, life: 2, max: 2, col: ['#5b3566', '#e6b94a', '#cfc6a8'][(Math.random() * 3) | 0], size: 2, grav: 60 });
+      say('THE TOLL IS PAID', '#e6b94a'); break; }
     case 'captain': { // he goes down on his own quarterdeck, and the storm goes off her with him
       shakeCam(12); zoomKick(1.18, 0.6); killFlash = 0.14; SFX.waveCrash(); SFX.seaBell(); bossWon = 2.8;
       if (L.wash) { L.wash.every = 16; L.wash.dmg = Math.round(L.wash.dmg * 0.5); }
@@ -3529,6 +3560,234 @@ function cutLine(e, k) {
 // POWDER KEG kicked down the planking. And he can call the sea himself: he whistles, the wave comes early, it
 // carries him the length of her with nothing in it to cut, and it leaves him beached for a breath. That breath
 // is when he bleeds.
+// THE DROWNED WATCH. A constable still walking his beat: slow, patient, and he guards with the haft of his
+// halberd, so a light blow turns on it and only a heavy one gets through. The level's rule runs through him
+// too: OUT OF THE LIGHT HE HEARS YOU. In the dark he wakes at twice the distance, walks faster and thrusts
+// sooner; under a burning lamp he is half blind and keeps to his beat.
+// THE LAMPREEVE. The officer of the city's lamps, and the level's own rule turned on you: he walks the street
+// putting the lamps out behind him, and you fight him in a shrinking pool of light. Four told things:
+//   SNUFF  he goes to the nearest burning lamp and hoods it. Kill him before the last one goes.
+//   SWEEP  the pole at shin height, the whole width of him. Jump it; you cannot walk out of it.
+//   DOUSE  a cone of black water out of his mouth. It hurts, and for two seconds you cannot see past it.
+//   HOOK   the wick hook, thrown the length of the street, and it hauls you in. A line beats it.
+// His open window (A6): reaching up to hood a lamp leaves him stretched and still for a second and a half,
+// and everything lands double on him while he is.
+// THE TOLLMASTER. The magistrate of a city that drowned a hundred years ago and never stopped collecting. He
+// does not swim and he does not walk: he is carried on a bier, and the room's rule is his weapon.
+//   THE LEDGER  (close) the chained book, wide and slow. A PARRY is the answer and it staggers him outright.
+//   THE TOLL    (mid) he names a due and the weight comes off its chain. Lead on a chain: it cannot be blocked.
+//   THE ROD     (anywhere) the rod of office into the stones, and it runs along them both ways. Jump it.
+//   THE DARK    (the signature) he puts out a ring of lamps, and the room gets smaller. While he does it he is
+//               stood still with both hands over his head and everything lands DOUBLE on him.
+// Phase two he sets the bier down and the four bearers come off it, and that is the only time he is slow.
+// Phase three he floods the square, and the last lamp is the only air in the room.
+function updateTollmaster(e, dt) {
+  const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt;
+  const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 46;
+  if (e.mode === 'sleep') { e.y = floor; return; }
+  if (e.phase === 1 && e.hp < e.maxHp * 0.62) { e.phase = 2; e.mode = 'setDown'; e.modeT = 1.4; e.vx = 0;
+    SFX.gateDrop ? SFX.gateDrop() : SFX.heavy(); shakeCam(6); number(e.x, e.y - 52, 'SET HIM DOWN', '#ffd36b'); }
+  if (e.phase === 2 && e.hp < e.maxHp * 0.3) { e.phase = 3; e.mode = 'floodTell'; e.modeT = 1.6; e.vx = 0;
+    SFX.waveCrash ? SFX.waveCrash() : SFX.wave(); number(e.x, e.y - 52, 'HE CALLS THE WATER UP', '#ff6b6b'); }
+  const p2 = e.phase >= 2, p3 = e.phase >= 3;
+  let want = 0;
+  switch (e.mode) {
+    case 'wake': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.8; } break;
+    case 'borne': { // carried, or on his own feet: the same decision tree, different speed
+      e.face = Math.sign(d) || e.face;
+      e.ledgerT -= dt; e.tollT -= dt; e.rodT -= dt; e.darkT -= dt;
+      const sp = e.onFoot ? (p3 ? 46 : 38) : 66;
+      want = level && ad > 42 ? e.face * sp : level && ad < 26 ? -e.face * 30 : e.face * sp * 0.5;
+      if (e.darkT <= 0 && litLamps()) { e.mode = 'darkTell'; e.modeT = 0.8; e.darkT = p3 ? 9 : 12; number(e.x, e.y - 48, 'THE DARK', '#9a5aa8'); SFX.callerChant(); }
+      else if (level && ad < 56 && e.ledgerT <= 0) { e.mode = 'ledgerTell'; e.modeT = p3 ? 0.38 : 0.5; e.ledgerT = p3 ? 2 : 2.8; number(e.x, e.y - 48, 'THE LEDGER', '#ffd36b'); SFX.charge(); }
+      else if (e.rodT <= 0 && ad > 30) { e.mode = 'rodTell'; e.modeT = 0.54; e.rodT = p3 ? 4.2 : 6; number(e.x, e.y - 48, 'THE ROD: JUMP', '#ff9a5c'); SFX.charge(); }
+      else if (e.tollT <= 0 && ad > 64 && ad < 300) { e.mode = 'tollTell'; e.modeT = 0.62; e.tollT = p3 ? 2.8 : 4.2; e.aimY = P.y - 10; number(e.x, e.y - 48, 'HE NAMES A DUE', '#ff9a5c'); SFX.tollBell(); }
+      break; }
+    case 'ledgerTell': { want = -e.face * 14;
+      if (Math.random() < dt * 16) parts.push({ x: e.x - e.face * 16, y: e.y - 38 - Math.random() * 6, vx: -e.face * 20, vy: -14, life: 0.35, max: 0.35, col: '#cfc6a8', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'ledger'; e.modeT = 0.34; e.vx = e.face * 110; SFX.heavy();
+        if (!P.dead && Math.sign(d) === e.face && ad < 62 && Math.abs(P.y - e.y) < 34) {
+          const res = damagePlayer(e.x, DMG.tollLedger);
+          // a parry on the ledger is the showcase: it knocks the book out of his swing and opens him
+          if (res === 'blocked') { e.stagger = Math.max(e.stagger || 0, 1.2); e.open = Math.max(e.open, 1.2); e.mode = 'reel'; e.modeT = 1.2; number(e.x, e.y - 48, 'THE BOOK TURNS: CUT HIM', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); }
+          else if (res === 'hit') { P.vx = e.face * 300; P.vy = -150; } } }
+      break; }
+    case 'ledger': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
+    case 'reel': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.4; } break;
+    case 'tollTell': { want = 0; e.face = Math.sign(d) || e.face;
+      if (Math.random() < dt * 24) parts.push({ x: e.x + e.face * 16, y: e.y - 30, vx: 0, vy: -18, life: 0.3, max: 0.3, col: '#e6b94a', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'toll'; e.modeT = 0.4; tollWeight(e); } break; }
+    case 'toll': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
+    case 'rodTell': { want = 0; e.face = Math.sign(d) || e.face;
+      if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 12 + (Math.random() - 0.5) * 10, y: e.y - 4, vx: 0, vy: -30, life: 0.35, max: 0.35, col: '#8a96a0', size: 2, grav: 200 });
+      if (e.modeT <= 0) { e.mode = 'rod'; e.modeT = 0.45; SFX.heavy(); SFX.stone(); shakeCam(7); zoomKick(1.07, 0.2); dust(e.x, e.y, 12);
+        for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 16, y: floor, dir: dd, life: 1.8, sp: p3 ? 190 : 155 }); } break; }
+    case 'rod': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
+    case 'darkTell': { want = 0;
+      if (Math.random() < dt * 26) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 44 - Math.random() * 10, vx: 0, vy: -20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#2b403c' : '#9a5aa8', size: 2, grav: -18 });
+      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 1.5 : 2; e.open = e.modeT; tollDark(e);
+        number(e.x, e.y - 54, 'HIS HANDS ARE UP: CUT HIM', '#8fd160'); } break; }
+    case 'dark': { want = 0;
+      if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 40, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break; }
+    case 'setDown': { want = 0; // THE BEARERS come off the bier: four of the watch, and he walks from here
+      if (e.modeT <= 0 && !e.onFoot) { e.onFoot = true;
+        for (let i = 0; i < 4; i++) { const bx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, e.x + (i < 2 ? -1 : 1) * (22 + (i % 2) * 20)));
+          enemies.push({ x: bx, y: floor, vx: 0, vy: 0, face: i < 2 ? 1 : -1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0,
+            t: 'watch', w: 12, h: 22, hp: EHP.watch, speed: 24, mode: 'walk', modeT: 0, cd: 0.6 + i * 0.3, guardT: 0, heard: 1, bearer: true });
+          burst(bx, floor - 10, 8, COLS.watch, 60, 0.6); }
+        SFX.gobBark ? SFX.gobBark() : SFX.clank(); number(e.x, e.y - 50, 'THEY COME OFF THE BIER', '#ff9a5c');
+        e.mode = 'borne'; e.modeT = 0.6; }
+      break; }
+    case 'floodTell': { want = 0; // THE SQUARE FILLS. The lamps are the only air left in the room.
+      if (Math.random() < dt * 40) parts.push({ x: A.x0 + Math.random() * (A.x1 - A.x0), y: floor - Math.random() * 10, vx: 0, vy: -60, life: 0.6, max: 0.6, col: '#7cc8c8', size: 2, grav: -40 });
+      if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.8; e.flooded = true;
+        const sq = (L.pools || []).find(q => q.square);
+        if (sq) { sq.base = floor + 8; sq.swim = true; sq.rising = floor - 256; number(P.x, P.y - 50, 'THE SQUARE IS FILLING', '#7cc8c8'); }
+        SFX.waveBreak(); shakeCam(8); }
+      break; }
+    case 'dead': return;
+  }
+  if (e.stagger > 0) want = 0;
+  e.vx += (want - e.vx) * Math.min(1, dt * (e.onFoot ? 7 : 10));
+  e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x + e.vx * dt));
+  e.y = e.onFoot ? floor : floor - 4 + Math.sin(time * 2.4) * 1.5;   // while he is carried he rides a little high and sways
+}
+// THE TOLL: a bearer's hand swings the coin weight out on its chain. Lead on a chain is not a thing you block.
+function tollWeight(e) {
+  SFX.clank(); shakeCam(2);
+  const sx = e.x + e.face * 18, sy = e.y - 26, ty = e.aimY !== undefined ? e.aimY : P.y - 10;
+  const dd = Math.hypot(P.x - sx, ty - sy) || 1, sp = 300;
+  seeds.push({ x: sx, y: sy, vx: (P.x - sx) / dd * sp, vy: (ty - sy) / dd * sp - 60, g: 420, life: 2.2, weight: true, noBlock: true, spin: 0 });
+  for (let i = 0; i < 6; i++) parts.push({ x: sx, y: sy, vx: e.face * (40 + Math.random() * 70), vy: -20 - Math.random() * 40, life: 0.35, max: 0.35, col: '#e6b94a', size: 2, grav: 160 });
+}
+// THE DARK: a ring of lamps at a time, working out from him. The room gets smaller and you have to spend the
+// seconds he wants to get it back.
+function tollDark(e) {
+  const A = L.arena;
+  const lit = lamps.filter(pr => pr.lit && !(pr.gut > 0) && pr.x > A.x0 - 8 && pr.x < A.x1 + 8);
+  if (!lit.length) return;
+  lit.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x));
+  const n = e.phase >= 3 ? 3 : e.phase === 2 ? 2 : 1;
+  for (let i = 0; i < Math.min(n, lit.length); i++) snuffLamp(lit[i], 1.3);
+  SFX.puff(); ringAt(e.x, e.y - 40, 40, '#9a5aa8', 0.4);
+  for (let i = 0; i < 16; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 40, y: e.y - 30 - Math.random() * 20, vx: (Math.random() - 0.5) * 90, vy: -20, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#2b403c' : '#14201e', size: 2, grav: -10 });
+}
+function updateLampreeve(e, dt) {
+  const A = L.mini || { x0: 0, x1: LW * TS, floor: e.y }; const floor = A.floor;
+  e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt;
+  const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 40;
+  if (e.mode === 'sleep') { e.y = floor; if (miniActive) { e.mode = 'wake'; e.modeT = 1.2; SFX.hiss(); number(e.x, e.y - 48, 'HE PUTS THEM OUT BEHIND HIM', '#ff9a5c'); } return; }
+  const inRoom = pr => pr.x > A.x0 - 8 && pr.x < A.x1 + 8;
+  const burning = lamps.filter(pr => pr.lit && !(pr.gut > 0) && inRoom(pr));
+  // HE IS WORKING HIS WAY ALONG THE STREET: every lamp he hoods makes him quicker and the room smaller
+  if (e.phase === 1 && burning.length <= 1) { e.phase = 2; e.mode = 'draw'; e.modeT = 1; SFX.roar();
+    number(e.x, e.y - 44, 'THE LAST LAMP', '#ff6b6b'); }
+  const p2 = e.phase >= 2;
+  let want = 0;
+  switch (e.mode) {
+    case 'wake': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
+    case 'stalk': { e.sweepT -= dt; e.douseT -= dt; e.hookT -= dt; e.snuffT -= dt;
+      e.face = Math.sign(d) || e.face;
+      want = level && ad > 44 ? e.face * (p2 ? 84 : 62) : level && ad < 26 ? -e.face * 40 : e.face * 30;
+      if (e.snuffT <= 0 && burning.length) { // the nearest one TO HIM, so you can read which way he is going
+        let best = null, bd = 1e9; for (const pr of burning) { const q = Math.abs(pr.x - e.x); if (q < bd) { bd = q; best = pr; } }
+        e.target = best; e.mode = 'toLamp'; e.modeT = 4.5; e.snuffT = p2 ? 7 : 9.5;
+        number(e.x, e.y - 42, 'HE GOES FOR THE LAMP', '#ff9a5c'); SFX.heard(); }
+      else if (level && ad < 46 && e.sweepT <= 0) { e.mode = 'sweepTell'; e.modeT = p2 ? 0.34 : 0.46; e.sweepT = p2 ? 2 : 2.8; number(e.x, e.y - 42, 'LOW: JUMP IT', '#ffd36b'); SFX.charge(); }
+      else if (e.douseT <= 0 && ad < 150 && ad > 34) { e.mode = 'drawTell'; e.modeT = 0.6; e.douseT = p2 ? 4.6 : 6.4; number(e.x, e.y - 42, 'HE TAKES A BREATH', '#bfe6f5'); SFX.gasp && SFX.gasp(); }
+      else if (e.hookT <= 0 && ad > 70 && ad < 300) { e.mode = 'hookTell'; e.modeT = 0.55; e.hookT = p2 ? 5.4 : 7.5; number(e.x, e.y - 42, 'THE HOOK', '#ff9a5c'); SFX.grapple(); }
+      break; }
+    case 'toLamp': { const t = e.target;
+      if (!t || !t.lit || t.gut > 0) { e.mode = 'stalk'; e.modeT = 0.4; break; }
+      e.face = Math.sign(t.x - e.x) || e.face; want = e.face * (p2 ? 110 : 86);
+      if (Math.abs(t.x - e.x) < 22 || e.modeT <= 0) { e.mode = 'snuffTell'; e.modeT = 0.5; e.vx = 0; number(e.x, e.y - 42, 'HOODING IT', '#ff9a5c'); }
+      break; }
+    case 'snuffTell': { want = 0;
+      if (e.modeT <= 0) { e.mode = 'snuff'; e.modeT = 0.32; SFX.puff();
+        if (e.target) snuffLamp(e.target, 1.2);
+        for (let i = 0; i < 10; i++) parts.push({ x: (e.target ? e.target.x : e.x) + (Math.random() - 0.5) * 18, y: (e.target ? e.target.y - 40 : e.y - 30), vx: (Math.random() - 0.5) * 50, vy: -20 - Math.random() * 30, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#2b403c' : '#14201e', size: 2, grav: -10 }); }
+      break; }
+    case 'snuff': { want = 0;
+      if (e.modeT <= 0) { e.mode = 'reach'; e.modeT = p2 ? 1.1 : 1.5; e.open = e.modeT;
+        number(e.x, e.y - 46, 'STRETCHED: CUT HIM', '#8fd160'); } break; }
+    case 'reach': { want = 0; // the open window: up on his toes with both hands over his head
+      if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 16, y: e.y - 34, vx: 0, vy: -16, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.4; } break; }
+    case 'sweepTell': { want = -e.face * 20;
+      if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; e.vx = e.face * 150; SFX.swingUp ? SFX.swingUp(1) : SFX.pSlash();
+        reeveSweep(e); } break; }
+    case 'sweep': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.45; } break;
+    case 'drawTell': { want = 0; e.face = Math.sign(d) || e.face;
+      if (Math.random() < dt * 26) parts.push({ x: e.x + e.face * 10 + (Math.random() - 0.5) * 8, y: e.y - 26, vx: -e.face * 30, vy: 0, life: 0.3, max: 0.3, col: '#bfe6f5', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'draw'; e.modeT = 0.3; } break; }
+    case 'draw': if (e.modeT <= 0) { e.mode = 'douse'; e.modeT = 0.6; SFX.hiss(); reeveDouse(e); } break;
+    case 'douse': { want = 0;
+      if (Math.random() < dt * 40) parts.push({ x: e.x + e.face * (14 + Math.random() * 40), y: e.y - 22 + (Math.random() - 0.5) * 26, vx: e.face * 70, vy: 0, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#14201e' : '#2b403c', size: 3, grav: -12 });
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; } break; }
+    case 'hookTell': { want = 0; e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.5; SFX.ropeHaul();
+        const sx = e.x + e.face * 12, sy = e.y - 30, dd = Math.hypot(P.x - sx, (P.y - 10) - sy) || 1;
+        seeds.push({ x: sx, y: sy, vx: (P.x - sx) / dd * 340, vy: ((P.y - 10) - sy) / dd * 340, g: 0, life: 1, chain: true, from: e, boot: true }); } break; }
+    case 'hook': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
+    case 'dead': return;
+  }
+  if (e.stagger > 0) want = 0;
+  e.vx += (want - e.vx) * Math.min(1, dt * 8);
+  e.x = Math.max(A.x0 + 14, Math.min(A.x1 - 14, e.x + e.vx * dt)); e.y = floor;
+}
+// the pole along the stones: it is a low attack, so the answer is up and not back
+function reeveSweep(e) {
+  if (P.dead) return;
+  const d = P.x - e.x;
+  if (Math.sign(d) !== e.face || Math.abs(d) > 60 || Math.abs(P.y - e.y) > 26) return;
+  if (!P.ground && P.y < e.y - 14) { number(P.x, P.y - 28, 'OVER IT', '#8fd160'); return; } // you jumped: nothing happens
+  const res = damagePlayer(e.x, DMG.reeveSweep);
+  if (res === 'blocked') { e.stagger = Math.max(e.stagger, 0.6); number(e.x, e.y - 42, 'TURNED', '#8fd160'); }
+  else if (res === 'hit') { P.vx = e.face * 250; P.vy = -90; }
+}
+// the black water out of him: it hurts once, and then you cannot see for two seconds
+function reeveDouse(e) {
+  if (P.dead) return;
+  const d = P.x - e.x;
+  if (Math.sign(d) === e.face && Math.abs(d) < 80 && Math.abs(P.y - e.y) < 34) {
+    const res = damagePlayer(e.x, DMG.reeveDouse);
+    if (res !== 'blocked') { P.soot = 2; number(P.x, P.y - 34, 'BLINDED', '#2b403c'); }
+  }
+  for (const pr of lamps) if (pr.lit && Math.sign(pr.x - e.x) === e.face && Math.abs(pr.x - e.x) < 90) snuffLamp(pr, 0.8); // and it takes any lamp it reaches
+}
+function updateWatch(e, dt) {
+  e.modeT -= dt; e.anim += dt; if (e.guardT > 0) e.guardT -= dt;
+  const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - e.y) < 30;
+  const dark = !litNear(e.x, e.y - 10, 130);                 // his own patch of street: lit, or not
+  const see = dark ? 260 : 130;
+  if (dark && ad < see && level && !P.dead) { if (!(e.heard > 0)) { e.heard = 1; e.emoteT = 0.9; SFX.heard(); } }
+  else if (!dark) e.heard = 0;
+  const hunting = e.heard > 0 && ad < see * 1.4;
+  let want = 0;
+  switch (e.mode) {
+    case 'walk': { e.cd -= dt;
+      if (hunting && level) { e.face = Math.sign(d) || e.face; want = e.face * (dark ? 52 : 34); }
+      else { want = e.face * 20; if (e.modeT <= 0) { e.modeT = 2 + Math.random() * 2; if (Math.random() < 0.45) e.face = -e.face; } }
+      if (level && ad < (dark ? 62 : 44) && e.cd <= 0) { e.mode = 'thrustTell'; e.modeT = dark ? 0.42 : 0.56; e.cd = dark ? 1.5 : 2.2; e.face = Math.sign(d) || e.face; number(e.x, e.y - 30, '!', '#ffd36b'); SFX.charge(); }
+      else if (level && ad < 92 && e.cd <= 0 && !hunting) { e.mode = 'guard'; e.modeT = 0.8; e.cd = 1.2; }
+      break; }
+    case 'guard': { want = 0; e.guardT = 0.2;
+      if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 1.2; } break; }
+    case 'thrustTell': { want = 0;
+      if (Math.random() < dt * 14) parts.push({ x: e.x - e.face * 12, y: e.y - 16 - Math.random() * 6, vx: -e.face * 20, vy: -10, life: 0.3, max: 0.3, col: '#a8d8c8', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.26; e.vx = e.face * 130; SFX.pSlash();
+        // the longest reach any foot soldier in the game has, and it is a thrust: step in or step out, not back
+        if (!P.dead && Math.sign(d) === e.face && ad < 52 && Math.abs(P.y - e.y) < 26) {
+          const res = damagePlayer(e.x, DMG.watchThrust);
+          if (res === 'blocked') { e.stagger = Math.max(e.stagger, 0.7); e.mode = 'walk'; e.modeT = 0.9; number(e.x, e.y - 30, 'TURNED', '#8fd160'); }
+          else if (res === 'hit') { P.vx = e.face * 220; P.vy = -120; } } }
+      break; }
+    case 'thrust': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; } break;
+  }
+  if (e.stagger > 0) want = 0;
+  e.vx += (want - e.vx) * Math.min(1, dt * 9);
+}
 function updateCaptain(e, dt) {
   const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt;
   const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 34;
@@ -3721,6 +3980,69 @@ function heraldPool() { return (L.pools || []).find(p => p.arenaTide); }
 const heraldGuard = () => enemies.filter(q => q.alive && q.called).length;
 function heraldGround(x) { const tx = Math.floor(x / TS); for (let ty = Math.floor(L.arena.floor / TS) - 5; ty <= Math.floor(L.arena.floor / TS); ty++) if (isSolid(tx, ty)) return ty * TS; return L.arena.floor; }
 let heraldWave = null, airBells = [], spouts = [];
+// THE LAMPLIT STREET: the lamps of the drowned city, and the fire you carry between them.
+// A lit lamp is three things at once and that is the whole level: a light in the dark, a lungful of air under
+// its hood, and a thing that can be taken away from you. `lamps` is the city's lamps only, gathered once on
+// load so the breath clock is not filtering the prop list sixty times a second.
+let lamps = [];
+const lampAir = pr => ({ x: pr.x, y: pr.y - 40 });            // where the bubble sits: up under the iron hood
+function nearAir(x, y) { // a diving bell, or a lamp that is still burning
+  for (const b of airBells) if (Math.abs(b.x - x) < 22 && Math.abs(b.y - y) < 20) return b;
+  for (const pr of lamps) if (pr.lit && Math.abs(pr.x - x) < 24 && Math.abs(pr.y - 40 - y) < 34) return lampAir(pr);
+  return null;
+}
+const airList = () => lamps.length ? airBells.concat(lamps.filter(pr => pr.lit).map(lampAir)) : airBells;
+// is this spot in the light? The watch hunt by ear, and what they hear is you out of it.
+function litNear(x, y, r = 150) {
+  for (const pr of lamps) if (pr.lit && Math.hypot(pr.x - x, (pr.y - 30) - y) < r) return true;
+  for (const f of fires) if (f.delay <= 0 && Math.hypot(f.x - x, f.y - y) < r) return true;
+  for (const pr of props) if (pr.t === 'brazier' && pr.lit && Math.hypot(pr.x - x, pr.y - y) < r) return true;
+  return (P.wick > 0 && Math.hypot(P.x - x, P.y - 8 - y) < 70);
+}
+function lightLamp(pr) {
+  pr.lit = true; pr.gut = 0; pr.hits = 0;
+  number(pr.x, pr.y - 50, 'LIT', '#ffd36b'); SFX.lampUp(); SFX.spark();
+  ringAt(pr.x, pr.y - 40, 26, '#ffd36b', 0.4); burst(pr.x, pr.y - 40, 12, ['#ffd36b', '#fff6c8', '#dff6ee'], 56, 0.6, -30, 1);
+}
+// Nothing goes out without saying so first: a lamp gutters for a beat, with the flame gone blue and the air
+// under the hood breaking into beads, and then it dies. (C3: every hazard tells you where and when.)
+function snuffLamp(pr, tell = 1.1) {
+  if (!pr.lit || pr.gut > 0) return false;
+  pr.gut = tell; SFX.gutter(); number(pr.x, pr.y - 50, 'GUTTERING', '#ff9a5c');
+  return true;
+}
+function litLamps() { let n = 0; for (const pr of lamps) if (pr.lit) n++; return n; }
+// THE FIRE IN YOUR HAND. Stand at a burning lamp and you take a light off it; it lasts fourteen seconds, it
+// dies if you are hit, and it is the only way to light a dead lamp. Carry it down a street and you have opened
+// a route that was not there.
+function updateWick(dt) {
+  if (!lamps.length) return;
+  if (P.wick > 0 && !P.dead) {
+    P.wick -= dt;
+    if (Math.random() < dt * 18) parts.push({ x: P.x + P.face * -5 + (Math.random() - 0.5) * 3, y: P.y - 20 - Math.random() * 4, vx: (Math.random() - 0.5) * 14, vy: -26, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -30 });
+    if (P.wick <= 0) { P.wick = 0; number(P.x, P.y - 32, 'THE FIRE IS OUT', '#6a7a7a'); SFX.puff(); }
+  } else if (P.wick) P.wick = 0;
+  if (P.dead) return;
+  for (const pr of lamps) if (pr.lit && !(pr.gut > 0) && Math.abs(pr.x - P.x) < 24 && Math.abs((pr.y - 26) - (P.y - 8)) < 34) {
+    if (!(P.wick > 6)) { if (!(P.wick > 0)) { number(P.x, P.y - 36, 'FIRE IN HAND', '#ffd36b'); SFX.spark(); } P.wick = 14; }
+  }
+}
+// THE TIDE IN THE STREET. It runs one way down the road for a while and then it turns, and between the two
+// there is slack water. The same street is a ride one way and a crawl the other, and it says which way it is
+// running three ways: the streaks in the water, the lamps' chains leaning, and a called warning at the turn.
+let tideDir = 1, tideT = 0, tideTell = 0;
+function tideReset() { tideDir = 1; tideT = 0; tideTell = 0; }
+function updateStreetTide(dt) {
+  const S = L.streetTide; if (!S) return;
+  if (!tideT) { tideT = S.every; tideDir = 1; }
+  tideT -= dt;
+  if (tideT <= S.tell && tideTell <= 0) { tideTell = S.tell; number(P.x, P.y - 48, 'THE TIDE IS TURNING', '#bfe6f5'); SFX.wave(); }
+  if (tideTell > 0) tideTell -= dt;
+  if (tideT <= 0) { tideT = S.every; tideDir = -tideDir; SFX.waveBreak(); shakeCam(3);
+    number(P.x, P.y - 48, tideDir > 0 ? 'IT RUNS UP THE STREET' : 'IT RUNS DOWN THE STREET', '#7cc8c8'); }
+  const slack = tideT <= S.tell;
+  for (const p of (L.pools || [])) if (p.runTide) p.flow = slack ? 0 : tideDir * S.flow;
+}
 function updateHerald(e, dt) {
   const A = L.arena, floor = A.floor, pl = heraldPool(); e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
   const d = P.x - e.x, ad = Math.abs(d), p2 = e.phase >= 2, p3 = e.phase >= 3;
@@ -4923,7 +5245,7 @@ function updateSnuffer(e, dt) {
     for (const pr of props) if ((pr.t === 'lantern' || pr.t === 'minerlamp') && pr.lit && Math.abs(pr.y - e.y) < 40) { const q = Math.abs(pr.x - e.x); if (q < bd) { bd = q; best = pr; } }
     e.target = best;
   }
-  if (e.mode === 'snuffTell') { if (e.modeT <= 0) { const pr = e.target; if (pr && pr.lit) { pr.lit = false; pr.hits = 0; burst(pr.x, pr.y - 10, 10, ['#3a3448', '#5a5468', '#8a919c'], 40, 0.8, -20, 2); number(pr.x, pr.y - 26, 'PUT OUT', '#9aa39a'); SFX.puff(); } e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }
+  if (e.mode === 'snuffTell') { if (e.modeT <= 0) { const pr = e.target; if (pr && pr.lit && pr.city) { snuffLamp(pr, 0.9); e.mode = 'seek'; e.modeT = 0.6; e.target = null; return; } if (pr && pr.lit) { pr.lit = false; pr.hits = 0; burst(pr.x, pr.y - 10, 10, ['#3a3448', '#5a5468', '#8a919c'], 40, 0.8, -20, 2); number(pr.x, pr.y - 26, 'PUT OUT', '#9aa39a'); SFX.puff(); } e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }
   else if (e.mode === 'swipe') { if (e.modeT <= 0) { e.mode = 'seek'; e.modeT = 0.3; } }
   else if (e.mode === 'swipeTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 30 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.snuffer); if (res === 'blocked') { e.stagger = 0.8; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } } }
   else if (e.stagger > 0) want = 0;
@@ -5420,7 +5742,7 @@ function drawBigKite(x, y, ph) { // the great kite: red and gold, a bow tail
 }
 // Where a spider waits, drawn over the dusk grade so the silk stays white: her orb web at the anchor, a dotted drop-line
 // the whole way down, and a sheet of silk on the floor where she lands. You can read it from below when she is off the top of the screen.
-const GROUNDED_DECO = new Set(['spire', 'cairn', 'stone', 'bones', 'tent', 'lanternPost', 'barrels', 'cart', 'well', 'spearRack', 'skullPile', 'deadTree', 'anvil', 'forge', 'frozen', 'coralTuft', 'barnacleRock', 'drownedHut', 'fishCottage', 'bellTower', 'seaLantern', 'tributeChest', 'rowboat', 'netPoles', 'tidePool', 'mastStump', 'wreckBow', 'wreckStern', 'figurehead', 'capstan', 'anchor', 'seaChest', 'shipBell', 'coralFan', 'brainCoral', 'urchinRock', 'spar', 'airBell', 'wheel', 'reefRock', 'oarBench', 'oar', 'cookPot', 'rumBarrels', 'chickenCoop', 'chartTable', 'plunder', 'waterButt', 'coiledCable', 'kegStack', 'lanternDeck']);
+const GROUNDED_DECO = new Set(['cityWeed', 'shellDrift', 'lampWreck', 'stall', 'column', 'clerkDesk', 'sealDrift', 'bellows', 'tollPost', 'magistrate', 'drownedCart', 'spire', 'cairn', 'stone', 'bones', 'tent', 'lanternPost', 'barrels', 'cart', 'well', 'spearRack', 'skullPile', 'deadTree', 'anvil', 'forge', 'frozen', 'coralTuft', 'barnacleRock', 'drownedHut', 'fishCottage', 'bellTower', 'seaLantern', 'tributeChest', 'rowboat', 'netPoles', 'tidePool', 'mastStump', 'wreckBow', 'wreckStern', 'figurehead', 'capstan', 'anchor', 'seaChest', 'shipBell', 'coralFan', 'brainCoral', 'urchinRock', 'spar', 'airBell', 'wheel', 'reefRock', 'oarBench', 'oar', 'cookPot', 'rumBarrels', 'chickenCoop', 'chartTable', 'plunder', 'waterButt', 'coiledCable', 'kegStack', 'lanternDeck']);
 function drawSlick(cx, cy) {
   for (const z of (L.slick || [])) { const x0 = z[0] * TS - cx, x1 = (z[1] + 1) * TS - cx, y = z[2] * TS - cy; if (x1 < 0 || x0 > VW || y < -8 || y > VH + 8) continue;
     g.globalAlpha = 0.55; g.fillStyle = '#d6eefa'; g.fillRect(Math.round(x0), Math.round(y), Math.round(x1 - x0), 3); g.fillStyle = '#ffffff'; g.fillRect(Math.round(x0), Math.round(y), Math.round(x1 - x0), 1); g.globalAlpha = 1;
@@ -5501,6 +5823,17 @@ function updateCastleProps(dt, hb) {
     if (pr.t === 'pump') { // HER PUMPS: work the brake and the water in her hold goes down while it runs
       pr.spin = Math.max(0, pr.spin - dt);
       const P2 = (L.pools || []).find(q => q.pumped);
+      // THE LAMP WORKS: the same beam, a different job. Working it blows the mains, which pushes the water in
+      // the procession road down to wading depth and brings its dead lamps up; let it stop and the road fills.
+      const RD = (L.pools || []).find(q => q.pumpRoad);
+      if (RD) { const want = pr.run > 0 ? RD.roadLo : RD.roadHi;
+        RD.y += (want - RD.y) * Math.min(1, dt * (pr.run > 0 ? 1.6 : 0.9));
+        const d = RD.bottom - RD.y; RD.depth = Math.max(0, d); RD.shallow = d < 22; RD.dry = d <= 2;
+        if (pr.run > 0 && !RD.roadLitAt) { RD.roadLitAt = time; let n = 0;
+          for (const q of lamps) if (!q.lit && q.x > RD.x0 && q.x < RD.x1) { lightLamp(q); n++; }
+          if (n) number(pr.x, pr.y - 40, 'THE ROAD COMES UP: ' + n + ' LAMPS', '#ffd36b'); }
+        if (pr.run <= 0) RD.roadLitAt = 0;
+        if (RD.shallow && Math.random() < dt * 8) parts.push({ x: RD.x0 + Math.random() * (RD.x1 - RD.x0), y: RD.y, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#bfe6f5', size: 1, grav: -10 }); }
       if (pr.run > 0) { pr.run -= dt; pr.spin = Math.max(pr.spin, 0.2);
         if (Math.random() < dt * 26) parts.push({ x: pr.x + (Math.random() - 0.5) * 16, y: pr.y - 14, vx: (Math.random() - 0.5) * 40, vy: -70, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#7fc4e0', size: 1, grav: 200 });
         if (P2) { P2.pumpY = (P2.pumpY === undefined ? P2.y : P2.pumpY) + 26 * dt; poolLevel(P2, Math.min(P2.base + 30, P2.pumpY)); }
@@ -5671,7 +6004,7 @@ function drawCritters(cx, cy) {
 
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
-const windingUp = e => (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
+const windingUp = e => (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -5755,6 +6088,8 @@ function updateEnemies(dt) {
     if (e.t === 'captain') { if (bossActive) beastSeen('captain'); if (bossActive || e.mode === 'sleep') updateCaptain(e, dt); continue; }
     if (e.t === 'quarter') { updateQuarter(e, dt); continue; }
     // (the Roc was 32 tiles off across her crown and simply stopped; the Lance could freeze at the far end of his own bridge)
+    if (e.t === 'tollmaster') { if (bossActive) beastSeen('tollmaster'); if (bossActive || e.mode === 'sleep') updateTollmaster(e, dt); continue; }
+    if (e.t === 'lampreeve') { if (miniActive || e.mode !== 'sleep') updateLampreeve(e, dt); continue; }
     if (Math.abs(e.x - P.x) > 420) continue; // (bosses above never sleep at range: the Ram Lord used to freeze mid-charge when the fold was wide)
     { const bt = e.squirrel ? 'squirrel' : e.t; if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[bt] && PROG.beasts[bt].seen)) beastSeen(bt); }
     if (e.t === 'wasp') {
@@ -5832,6 +6167,7 @@ function updateEnemies(dt) {
     if (e.t === 'stormshaman') { updateStormShaman(e, dt); continue; }
     if (e.t === 'sweep') { updateSweep(e, dt); continue; }
     if (e.t === 'cutter') { updateCutter(e, dt); continue; }
+    if (e.t === 'watch') { updateWatch(e, dt); continue; }
     if (e.t === 'snuffer') { updateSnuffer(e, dt); continue; }
     if (e.t === 'sailer') { if (e.mini) beastSeen('sailer'); updateSailer(e, dt); continue; }
     if (e.t === 'troll') { updateTroll(e, dt); continue; }
@@ -6223,7 +6559,7 @@ function updateProps(dt) {
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
-  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateStrikes(dt); updateRush(dt);
+  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateStrikes(dt); updateStreetTide(dt); updateWick(dt); updateRush(dt);
   { const fp = (L.pools || []).find(p => p.harm && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
       if (Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 14, vx: 0, vy: -20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7a8a4a' : '#4a5a2a', size: 1, grav: -10 });
@@ -6232,6 +6568,12 @@ function updateProps(dt) {
   for (const sp of spouts) sp.t += dt; spouts = spouts.filter(sp => sp.t < sp.life);
   if (L.alarmT > 0) L.alarmT -= dt;
   for (const p of (L.pools || [])) { if (p.draining || p.y0 === undefined) continue; let lift = 0; if (p.tide) lift = 8 + Math.sin(time * 2 * Math.PI / 26) * 8; if (p.rise > 0) { p.rise -= dt; lift = Math.max(lift, 14); } if (p.tide || p.rise !== undefined) { const want = p.y0 - lift; p.y += (want - p.y) * Math.min(1, dt * 4); p.depth = (p.depth0 || 12) + (p.y0 - p.y); } }
+  // THE SQUARE FILLS: the Tollmaster's last phase walks a pool's surface up the walls, and the breath clock
+  // takes over from the health bar as the thing you are watching.
+  for (const p of (L.pools || [])) if (p.rising !== undefined && p.rising !== null) {
+    if (p.y > p.rising) { p.y -= 62 * dt; poolLevel(p, Math.max(p.rising, p.y));   // it comes up fast: five seconds, not fifteen
+      if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
+  }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
   updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial();
   for (const pr of props) {
@@ -6305,7 +6647,13 @@ function updateProps(dt) {
     if (pr.t === 'lantern') { if (pr.flareCd > 0) pr.flareCd -= dt;
       if (pr.lit && !pr.perch && boss && boss.t === 'owl' && bossActive && !(pr.flareCd > 0)) { const nearOwl = Math.hypot(boss.x - pr.x, boss.y - (pr.y - 30)) < 120; if (nearOwl && Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 20, y: pr.y - 30 + (Math.random() - 0.5) * 20, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#fff6c8', size: 1, grav: 0, glow: true }); /* it is close: strike me */
         if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 36, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.flareCd = 6; L.owlFlare = { x: pr.x, y: pr.y }; ringAt(pr.x, pr.y - 30, 120, '#ffd36b', 0.5); flash = Math.max(flash, 0.2); SFX.sting(); SFX.spark(); burst(pr.x, pr.y - 30, 18, ['#fff6c8', '#ffd36b'], 110, 0.6); } } }
-    if (pr.t === 'lantern' && !pr.lit && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 36, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hits++; SFX.clank(); sparks(pr.x, pr.y - 28, P.face, 4); if (pr.hits >= 2) { pr.lit = true; pr.hits = 0; number(pr.x, pr.y - 42, 'LIT', '#ffd36b'); SFX.sting(); burst(pr.x, pr.y - 30, 10, ['#ffd36b', '#fff6c8'], 50, 0.6, -20, 1); } else number(pr.x, pr.y - 42, 'STRIKE IT AGAIN', '#ffd36b'); }
+    if (pr.t === 'lantern' && pr.city && !pr.lit && hb && overlap(hb, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 50, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr);
+      if (P.wick > 0) { lightLamp(pr); P.wick = 0; }
+      else { SFX.clank(); sparks(pr.x, pr.y - 40, P.face, 3); number(pr.x, pr.y - 50, 'NO FIRE IN HAND', '#9aa39a'); } }
+    if (pr.t === 'lantern' && pr.gut > 0) { pr.gut -= dt;
+      if (Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y - 40, vx: 0, vy: -34, life: 0.5, max: 0.5, col: '#a8d8c8', size: 1, grav: -26 });
+      if (pr.gut <= 0) { pr.gut = 0; pr.lit = false; SFX.puff(); number(pr.x, pr.y - 50, 'OUT', '#6a7a7a'); burst(pr.x, pr.y - 40, 10, ['#2b403c', '#14201e', '#a8d8c8'], 40, 0.7, -20, 1); } }
+    if (pr.t === 'lantern' && !pr.city && !pr.lit && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 36, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hits++; SFX.clank(); sparks(pr.x, pr.y - 28, P.face, 4); if (pr.hits >= 2) { pr.lit = true; pr.hits = 0; number(pr.x, pr.y - 42, 'LIT', '#ffd36b'); SFX.sting(); burst(pr.x, pr.y - 30, 10, ['#ffd36b', '#fff6c8'], 50, 0.6, -20, 1); } else number(pr.x, pr.y - 42, 'STRIKE IT AGAIN', '#ffd36b'); }
     if (pr.t === 'nest') { if (pr.puff > 0) pr.puff -= dt; if (!P.dead && Math.abs(P.x - pr.x) < 340) { pr.timer -= dt; if (pr.timer <= 0) { pr.timer = pr.every; props.push({ t: 'roller', x: pr.x + pr.dir * 10, y: pr.y, vx: pr.dir * 55, alive: true, rot: 0, tumble: true, life: 10, vy: 0 }); SFX.puff(); burst(pr.x, pr.y - 8, 6, ['#e8e0d0', '#c8bcb0'], 40, 0.4); pr.puff = 0.3; } } }
     if (pr.t === 'tether' && !pr.cut) { pr.hitCd = Math.max(0, pr.hitCd - dt); if (hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 16, b: pr.y })) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 10, P.face, 4); if (pr.hp <= 0) { pr.cut = true; SFX.crack(); SFX.throwWhoosh(); burst(pr.x, pr.y - 12, 8, ['#c9d1dc', '#8b6a2a'], 60, 0.5); number(pr.x, pr.y - 26, 'THE LINE GOES', '#bfe6f5'); const wc = enemies.find(q => q.alive && q.t === 'windcaller'); if (wc && wc.phase === 1 && wc.mode !== 'sleep') { const left = props.filter(q => q.t === 'tether' && !q.cut).length; if (left === 0) { wc.mode = 'torn'; wc.modeT = 2.4; wc.stagger = 2.4; wc.vx = 0; number(wc.x, wc.y - 30, 'THE KITE TEARS FREE', '#ff6b6b'); SFX.roar(); shakeCam(6); zoomKick(1.1, 0.3); } else { wc.mode = 'yanked'; wc.modeT = 2.6; wc.stagger = 2.6; number(wc.x, wc.y - 30, 'PULLED OFF HIS FEET', '#8fd160'); SFX.gasp(); } } } else number(pr.x, pr.y - 22, 'FRAYS', '#ffd36b'); } }
     if (pr.t === 'mirror') { pr.turnT = Math.max(0, pr.turnT - dt); pr.glow = Math.max(0, (pr.glow || 0) - dt); if (!pr.fixed && hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y })) { P.hitSet.add(pr); pr.o = 1 - pr.o; pr.turnT = 0.25; SFX.clank(); SFX.spark(); sparks(pr.x, pr.y - 8, P.face, 5); number(pr.x, pr.y - 22, 'TURNED', '#bfe6f5'); } }
@@ -6459,10 +6807,10 @@ function drawFalls(cx, cy) {
     if (Math.random() < 0.25) parts.push({ x: f.x0 + Math.random() * (f.x1 - f.x0), y: f.y0 + 2, vx: (Math.random() - 0.5) * 20, vy: 20, life: 0.4, max: 0.4, col: '#e8f4f0', size: 1, grav: 200 }); } }
 // breath, as bubbles over your head while you are under
 function drawAirHint(cx, cy) { // when the air is going, the nearest diving bell gets an arrow at the edge of the screen
-  if (!P.swim || P.dead || !airBells.length) return;
+  const AIR = airList(); if (!P.swim || P.dead || !AIR.length) return;
   const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b = P.breath ?? mx;
   if (b > mx * 0.5) return;
-  let best = null, bd = 1e9; for (const a of airBells) { const dd = Math.hypot(a.x - P.x, a.y - P.y); if (dd < bd) { bd = dd; best = a; } }
+  let best = null, bd = 1e9; for (const a of AIR) { const dd = Math.hypot(a.x - P.x, a.y - P.y); if (dd < bd) { bd = dd; best = a; } }
   if (!best || bd < 40) return;
   const k = 0.4 + 0.6 * (1 - b / (mx * 0.5)), ang = Math.atan2(best.y - (P.y - 8), best.x - P.x);
   const rx = Math.round(P.x - cx + Math.cos(ang) * 34), ry = Math.round(P.y - 8 - cy + Math.sin(ang) * 34);
@@ -6994,8 +7342,8 @@ function drawWater(cx, cy, surfaceOnly = false) {
       }
       continue;
     }
-    if (p.swim && !p.shallow) { g.globalAlpha = p.capped ? 0.42 : p.streetTide ? 0.46 : p.clear ? 0.5 : 0.5; g.fillStyle = p.harm ? (p.foulColD || '#3a4a1e') : sea ? '#2e7a88' : '#3b7fae'; g.fillRect(x0, y + 3, x1 - x0, h - 3); g.globalAlpha = 1;
-      if (p.capped || p.streetTide || p.clear) { const gr2 = g.createLinearGradient(0, y, 0, y + h); gr2.addColorStop(0, 'rgba(10,26,32,0.45)'); gr2.addColorStop(0.3, 'rgba(10,26,32,0)'); gr2.addColorStop(1, 'rgba(6,16,22,0.5)'); g.fillStyle = gr2; g.fillRect(x0, y, x1 - x0, h); } } // over whoever is swimming in it: they are IN the water
+    if (p.swim && !p.shallow) { g.globalAlpha = p.capped ? 0.42 : p.runTide ? 0.46 : p.streetTide ? 0.46 : p.clear ? 0.5 : 0.5; g.fillStyle = p.harm ? (p.foulColD || '#3a4a1e') : sea ? '#2e7a88' : '#3b7fae'; g.fillRect(x0, y + 3, x1 - x0, h - 3); g.globalAlpha = 1;
+      if (p.capped || p.streetTide || p.runTide || p.clear) { const gr2 = g.createLinearGradient(0, y, 0, y + h); gr2.addColorStop(0, 'rgba(10,26,32,0.45)'); gr2.addColorStop(0.3, 'rgba(10,26,32,0)'); gr2.addColorStop(1, 'rgba(6,16,22,0.5)'); g.fillStyle = gr2; g.fillRect(x0, y, x1 - x0, h); } } // over whoever is swimming in it: they are IN the water
     if (p.shallow) { // the water itself, over the legs of whoever is wading; lighter near the surface
       const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(90,175,215,0.5)'); gr.addColorStop(1, 'rgba(40,110,150,0.55)');
       g.fillStyle = gr; g.fillRect(x0, y, x1 - x0, h);
@@ -7356,6 +7704,11 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'catapult') g.drawImage(PROP.catapult[pr.wrecked ? 2 : pr.fired > 0 ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 26 - cy);
     else if (pr.t === 'chainpost') { g.drawImage(PROP.chainPost, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 28 - cy); if (!pr.cut) drawSet(SPR.hound, null, Math.floor(time * 3) % 2, pr.x + 12 - cx, pr.y - cy, 1, false); }
     else if (pr.t === 'firepit') g.drawImage(PROP.grate, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 5 - cy);
+    else if (pr.t === 'lantern' && pr.city) { // THE STREETLAMP: a halo while it burns, a cold one while it gutters
+      const st = pr.lit ? (pr.gut > 0 ? 2 : 1) : 0;
+      if (st) { const k = st === 2 ? 0.10 + 0.08 * Math.sin(time * 22) : 0.20 + 0.06 * Math.sin(time * 3.4 + pr.x);
+        g.globalAlpha = k; g.fillStyle = st === 2 ? '#bfe6f5' : '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 40 - cy), st === 2 ? 24 : 34, 0, 7); g.fill(); g.globalAlpha = 1; }
+      g.drawImage(PROP.city.lamp[st], Math.round(pr.x) - 9 - cx, Math.round(pr.y) - 55 - cy); }
     else if (pr.t === 'lantern') { if (pr.lit) { g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 4 + pr.x); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 30 - cy), 26, 0, 7); g.fill(); g.globalAlpha = 1; } g.drawImage(PROP.crownLantern[pr.lit ? 1 : 0], Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy); }
     else if (pr.t === 'gas') g.drawImage(PROP.gasSeam, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 6 - cy);
     else if (pr.t === 'minerlamp') g.drawImage(PROP.minerLamp[pr.lit ? 1 : 0], Math.round(pr.x) - 4 - cx, Math.round(pr.y) - 14 - cy);
@@ -7522,6 +7875,14 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'lance') { const p2 = e.phase === 2, mv = Math.abs(e.vx) > 6;
       frame = ({ reel: 18, stumble: 19, planted: 12, couch: 5, thrustTell: 8, thrust: 9, sweepTell: 10, sweep: 11, bashTell: p2 ? 13 : 25, bash: p2 ? 16 : 26, vaultTell: 20, vault: 21, javTell: 22, javThrow: 23, rise: 24, guardTell: 14, guardSwing: 15, rushTell: 16 })[e.mode];
       if (frame === undefined) frame = e.mode === 'charge' ? 6 + Math.floor(e.anim * 12) % 2 : e.mode === 'rush' ? 16 + Math.floor(e.anim * 12) % 2 : e.mode === 'recover' ? (p2 ? 15 : 9) : (p2 || e.mode === 'guard') ? (mv ? 27 + Math.floor(e.anim * 8) % 2 : 13) : (mv ? 1 + Math.floor(e.anim * 9) % 4 : 0); }
+    else if (e.t === 'tollmaster') frame = e.mode === 'ledgerTell' ? 1 : e.mode === 'ledger' ? 2 : e.mode === 'tollTell' ? 3 : e.mode === 'toll' ? 4
+      : e.mode === 'darkTell' ? 5 : e.mode === 'dark' ? 6 : e.mode === 'setDown' ? 7 : e.mode === 'floodTell' ? 10
+      : e.dying > 0 ? 12 : (e.stagger > 0 || e.mode === 'reel') ? 11 : e.mode === 'rodTell' ? 5 : e.mode === 'rod' ? 7
+      : e.onFoot ? (Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 5) % 2 ? 9 : 8) : 8) : 0;
+    else if (e.t === 'lampreeve') frame = e.mode === 'snuffTell' ? 4 : e.mode === 'snuff' ? 5 : e.mode === 'reach' ? 4
+      : e.mode === 'sweepTell' ? 6 : e.mode === 'sweep' ? 7 : (e.mode === 'drawTell' || e.mode === 'draw') ? 8 : e.mode === 'douse' ? 9
+      : e.dying > 0 ? 11 : e.stagger > 0 ? 10 : Math.abs(e.vx) > 6 ? Math.floor(e.anim * 8) % 4 : 0;
+    else if (e.t === 'watch') frame = e.mode === 'thrust' ? 6 : e.mode === 'thrustTell' ? 5 : (e.mode === 'guard' || e.guardT > 0) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
     else if (e.t === 'snuffer') frame = e.mode === 'snuffTell' ? 2 : (e.mode === 'swipeTell' || e.mode === 'swipe') ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 2 : 0;
     else if (e.t === 'sailer') frame = e.mode === 'tumble' ? 2 : e.mode === 'sail' ? 1 : 0;
     else if (e.t === 'troll') frame = e.mode === 'throwTell' || e.mode === 'throw' ? 3 : e.mode === 'swatTell' || e.mode === 'swat' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
@@ -7576,7 +7937,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'ram' && e.mode === 'leap') { const fl = L.arena.floor; g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.ellipse(Math.round(e.landX - cx), Math.round(fl - cy) - 1, 16, 4, 0, 0, Math.PI * 2); g.fill(); }
     const sprSet = e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
-    const bigF = e.t === 'captain' ? 1.3 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
+    const bigF = e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
     if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
     if (e.t === 'gqueen' && e.mode === 'shadow') g.globalAlpha = 0.12; else if (e.t === 'gqueen' && e.mode === 'shadowTell') g.globalAlpha = 1 - 0.6 * Math.min(1, (0.5 - e.modeT) / 0.5);
@@ -7596,7 +7957,11 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
-  for (const s of seeds) { if (s.net && SPR.netArt) { const f = SPR.netArt.frames[Math.min(2, Math.floor(Math.max(0, 2.2 - s.life) * 3))]; g.drawImage(f, Math.round(s.x - cx) - 10, Math.round(s.y - cy) - 10); continue; } if (s.bolt) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#c9a0ff'; g.fillRect(x - 3, y - 1, 6, 2); g.fillRect(x - 1, y - 3, 2, 6); g.fillStyle = '#f0e4ff'; g.fillRect(x - 1, y - 1, 2, 2); g.globalAlpha = 0.5; g.fillStyle = '#9a5acc'; g.fillRect(x - Math.round(s.vx * 0.04) - 2, y - Math.round(s.vy * 0.04) - 2, 4, 4); g.globalAlpha = 1; } else if (s.jav) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#8a5a32'; g.fillRect(-10, -1, 14, 2); g.fillStyle = '#c9d1dc'; g.fillRect(4, -2, 4, 4); g.fillStyle = '#eef4ff'; g.fillRect(7, -1, 2, 2); g.fillStyle = '#5a2a7a'; g.fillRect(-11, -2, 3, 4); g.restore(); } else if (s.arrow) { const a = Math.atan2(s.vy, s.vx); g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(a); g.fillStyle = '#e8dcc0'; g.fillRect(-5, -1, 8, 1); g.fillStyle = '#c9d1dc'; g.fillRect(3, -1, 3, 2); g.fillStyle = s.reflected ? '#8fd160' : '#c9463d'; g.fillRect(-6, -2, 2, 3); g.restore(); } else if (s.shard) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#bfe6f5'; g.fillRect(-5, -2, 10, 4); g.fillStyle = '#eefaff'; g.fillRect(-4, -1, 6, 1); g.restore(); } else if (s.soot) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#2a2630'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); g.fillStyle = '#5a5460'; g.fillRect(x - 1, y - 2, 2, 1); } else if (s.acid) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#b8d878'; g.fillRect(x - 2, y - 2, 4, 4); g.fillStyle = '#e8ff9a'; g.fillRect(x - 1, y - 1, 2, 2); } else if (s.lantern) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x - 2, y - 4, 4, 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 3, 2, 3); g.fillStyle = '#8a919c'; g.fillRect(x - 1, y - 5, 2, 1); } else if (s.skull) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 6); g.fillStyle = '#e8e0d0'; g.fillRect(-4, -4, 8, 7); g.fillRect(-3, 3, 6, 2); g.fillStyle = '#2a2230'; g.fillRect(-3, -2, 2, 2); g.fillRect(1, -2, 2, 2); g.fillRect(-1, 3, 1, 2); g.fillRect(1, 3, 1, 2); g.restore(); } else if (s.goblet) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 9); g.fillStyle = '#e0b040'; g.fillRect(-3, -3, 6, 4); g.fillRect(-1, 1, 2, 3); g.fillStyle = '#fff6c8'; g.fillRect(-2, -3, 2, 1); g.restore(); } else if (s.pod) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#6a3a7a'; g.fillRect(x - 4, y - 5, 8, 8); g.fillStyle = '#9a5aa8'; g.fillRect(x - 3, y - 4, 6, 6); g.fillStyle = '#e0b0f0'; g.fillRect(x - 2, y - 4, 2, 2); g.fillStyle = '#3f6e2c'; g.fillRect(x - 1, y - 7, 2, 2); } else if (s.spore) { g.fillStyle = '#9a5aa8'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 3, 5, 5); g.fillStyle = '#e0b0f0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 3, 2, 2); } else if (s.venom) { g.fillStyle = '#8fd160'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 2, 4, 4); g.fillStyle = '#dfffa0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 2, 2, 1); } else drawSet(SPR.seed, null, 0, s.x - cx, s.y + 3 - cy, 1, false); }
+  for (const s of seeds) { if (s.weight) { // THE COIN WEIGHT: lead on a chain, turning over as it goes
+    const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
+    g.strokeStyle = '#8e98a3'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - Math.round(s.vx * 0.05), y - Math.round(s.vy * 0.05) - 4); g.lineTo(x, y); g.stroke();
+    g.fillStyle = '#47515b'; g.fillRect(x - 4, y - 4, 8, 8); g.fillStyle = '#8e98a3'; g.fillRect(x - 3, y - 3, 6, 3); g.fillStyle = '#e6b94a'; g.fillRect(x - 1, y - 1, 2, 2); continue; }
+  if (s.net && SPR.netArt) { const f = SPR.netArt.frames[Math.min(2, Math.floor(Math.max(0, 2.2 - s.life) * 3))]; g.drawImage(f, Math.round(s.x - cx) - 10, Math.round(s.y - cy) - 10); continue; } if (s.bolt) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#c9a0ff'; g.fillRect(x - 3, y - 1, 6, 2); g.fillRect(x - 1, y - 3, 2, 6); g.fillStyle = '#f0e4ff'; g.fillRect(x - 1, y - 1, 2, 2); g.globalAlpha = 0.5; g.fillStyle = '#9a5acc'; g.fillRect(x - Math.round(s.vx * 0.04) - 2, y - Math.round(s.vy * 0.04) - 2, 4, 4); g.globalAlpha = 1; } else if (s.jav) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#8a5a32'; g.fillRect(-10, -1, 14, 2); g.fillStyle = '#c9d1dc'; g.fillRect(4, -2, 4, 4); g.fillStyle = '#eef4ff'; g.fillRect(7, -1, 2, 2); g.fillStyle = '#5a2a7a'; g.fillRect(-11, -2, 3, 4); g.restore(); } else if (s.arrow) { const a = Math.atan2(s.vy, s.vx); g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(a); g.fillStyle = '#e8dcc0'; g.fillRect(-5, -1, 8, 1); g.fillStyle = '#c9d1dc'; g.fillRect(3, -1, 3, 2); g.fillStyle = s.reflected ? '#8fd160' : '#c9463d'; g.fillRect(-6, -2, 2, 3); g.restore(); } else if (s.shard) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#bfe6f5'; g.fillRect(-5, -2, 10, 4); g.fillStyle = '#eefaff'; g.fillRect(-4, -1, 6, 1); g.restore(); } else if (s.soot) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#2a2630'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); g.fillStyle = '#5a5460'; g.fillRect(x - 1, y - 2, 2, 1); } else if (s.acid) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#b8d878'; g.fillRect(x - 2, y - 2, 4, 4); g.fillStyle = '#e8ff9a'; g.fillRect(x - 1, y - 1, 2, 2); } else if (s.lantern) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x - 2, y - 4, 4, 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 3, 2, 3); g.fillStyle = '#8a919c'; g.fillRect(x - 1, y - 5, 2, 1); } else if (s.skull) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 6); g.fillStyle = '#e8e0d0'; g.fillRect(-4, -4, 8, 7); g.fillRect(-3, 3, 6, 2); g.fillStyle = '#2a2230'; g.fillRect(-3, -2, 2, 2); g.fillRect(1, -2, 2, 2); g.fillRect(-1, 3, 1, 2); g.fillRect(1, 3, 1, 2); g.restore(); } else if (s.goblet) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.life * 9); g.fillStyle = '#e0b040'; g.fillRect(-3, -3, 6, 4); g.fillRect(-1, 1, 2, 3); g.fillStyle = '#fff6c8'; g.fillRect(-2, -3, 2, 1); g.restore(); } else if (s.pod) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#6a3a7a'; g.fillRect(x - 4, y - 5, 8, 8); g.fillStyle = '#9a5aa8'; g.fillRect(x - 3, y - 4, 6, 6); g.fillStyle = '#e0b0f0'; g.fillRect(x - 2, y - 4, 2, 2); g.fillStyle = '#3f6e2c'; g.fillRect(x - 1, y - 7, 2, 2); } else if (s.spore) { g.fillStyle = '#9a5aa8'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 3, 5, 5); g.fillStyle = '#e0b0f0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 3, 2, 2); } else if (s.venom) { g.fillStyle = '#8fd160'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 2, 4, 4); g.fillStyle = '#dfffa0'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 2, 2, 1); } else drawSet(SPR.seed, null, 0, s.x - cx, s.y + 3 - cy, 1, false); }
   if (throneBlock) g.drawImage(PROP.palanquin, Math.round(throneBlock.x) - 36 - cx, Math.round(throneBlock.y) - 45 - cy, 72, 45);
   for (const r of rocks) if (r.thrown && r.tx !== undefined && !r.dead) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.tx / TS), gy) && !isOneWay(tileAt(Math.floor(r.tx / TS), gy))) gy++; const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(r.tx - cx), gy * TS - 1 - cy, 11, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
   for (const r of rocks) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.x / TS), gy) && !isOneWay(tileAt(Math.floor(r.x / TS), gy))) gy++; const k = Math.max(0.3, 1 - (gy * TS - r.y) / 200); g.globalAlpha = 0.35 * k; g.drawImage(PROP.shadow, Math.round(r.x - cx) - 6, gy * TS - 2 - cy, 12, 3); g.globalAlpha = 1; if (r.lamp) g.drawImage(SPR.chandelier, Math.round(r.x - cx) - 12, Math.round(r.y - cy) - 14); else if (r.hammerRock) drawHammerRock(r, cx, cy); else g.drawImage(PROP.boulder, Math.round(r.x - cx) - 7, Math.round(r.y - cy) - 11); }
@@ -7718,6 +8083,12 @@ function drawWorld(cx, cy, showPlayer) {
     if (!P.dead && L.night) glow(P.x - cx, P.y - 8 - cy, 48, L.glowNight ? 0.1 : 0.16);
     if (mother) { const gr = g.createRadialGradient(mother.x - cx, L.arena.floor - 96 - cy, 10, mother.x - cx, L.arena.floor - 96 - cy, 110); gr.addColorStop(0, 'rgba(180,100,220,0.3)'); gr.addColorStop(1, 'rgba(120,60,160,0)'); g.fillStyle = gr; g.fillRect(mother.x - cx - 110, L.arena.floor - 206 - cy, 220, 220); }
     g.globalCompositeOperation = 'source-over';
+  }
+  if (P.soot > 0) { // the Lampreeve's mouthful: a wash of black water over the lens, thinning as it runs off
+    const k = Math.min(1, P.soot / 2);
+    g.globalAlpha = 0.62 * k; g.fillStyle = '#0b1714'; g.fillRect(0, 0, VW, VH);
+    g.globalAlpha = 0.5 * k; for (let i = 0; i < 14; i++) { const a = (i * 97 + Math.floor(time * 60)) % VW; g.fillStyle = '#1e3330'; g.fillRect(a, (i * 53) % VH, 3 + (i % 4) * 4, 2); }
+    g.globalAlpha = 1;
   }
   if (killFlash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
   for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x - cx), Math.round(n.y - cy), n.col, 'center'); }
@@ -7951,7 +8322,7 @@ const ED_TILES = [['ERASE', T.AIR], ['STONE', T.SOLID], ['LEDGE', T.ONEWAY], ['S
   ['REEDS', T.REED], ['PALISADE', T.PALISADE]];
 const ED_FOES = ['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
   'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat',
-  'troll', 'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer'];
+  'troll', 'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer', 'watch'];
 const ED_THINGS = ['coin', 'silver', 'check', 'gate', 'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball',
   'lantern', 'firepit', 'rockfall', 'vent', 'npc'];
 const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER'];
@@ -8294,6 +8665,10 @@ function render() {
       : boss.mode === 'beach' ? 'THE CAPTAIN  BEACHED'
       : boss.mode === 'call' ? 'THE CAPTAIN  CALLING IT UP'
       : boss.phase === 3 ? 'THE CAPTAIN  HE GOES DOWN WITH HER' : 'THE CAPTAIN')
+   : boss.t === 'tollmaster' ? (boss.open > 0 ? 'THE TOLLMASTER  HANDS UP'
+      : boss.mode === 'setDown' ? 'THE TOLLMASTER  SETTING DOWN'
+      : boss.phase === 3 ? 'THE TOLLMASTER  THE SQUARE IS FULL'
+      : boss.onFoot ? 'THE TOLLMASTER  ON HIS OWN FEET' : 'THE TOLLMASTER  CARRIED')
    : 'HORNET QUEEN'; text(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 ? nm + '  ENRAGED' : nm, VW / 2, VH - 22, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart * 0.3 : 0.3 + gl / 4 * 0.7, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.t === 'ram' && ramOpen(boss) ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
   }
   if (state === 'title') {

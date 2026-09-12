@@ -74,6 +74,7 @@ for (const lv of LEVELS) {
   // 6. WATER THAT SITS IN THE LAND, NOT ON IT
   for (const p of (L.pools || [])) {
     if (p.streetTide || p.arenaTide || p.tide || p.draining || p.sea) continue;
+    if (p.dry || p.depth === 0) continue; // a pool that starts dry is not water yet (the Tollmaster fills his square in his last phase)
     const x0 = Math.floor(p.x0 / TS), x1 = Math.floor((p.x1 - 1) / TS);
     let floating = 0, n = 0;
     for (let x = x0; x <= x1; x += Math.max(1, Math.floor((x1 - x0) / 12))) {

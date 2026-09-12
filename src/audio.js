@@ -154,6 +154,13 @@ export const SFX = {
   zap() { noise(0.18, 0.34, 3000, 1.2); tone('sawtooth', 2200, 400, 0.16, 0.14); noise(0.5, 0.12, 1400, 0.7, 0.05); },
   wave() { noise(1.5, 0.30, 320, 0.5); noise(1.2, 0.22, 900, 0.7, 0.15); tone('sine', 70, 34, 1.4, 0.16); },
   waveBreak() { noise(0.9, 0.42, 1500, 0.5); noise(1.4, 0.30, 500, 0.6, 0.05); tone('sine', 90, 30, 0.8, 0.2); },
+  // THE LAMPLIT STREET. A lamp going out, the flame coming back, a constable hearing you in the dark, and the
+  // bell the Tollmaster names a due on.
+  gutter() { noise(0.5, 0.10, 700, 1.4); tone('sine', 300, 120, 0.45, 0.05); noise(0.3, 0.07, 2200, 2, 0.12); }, // a flame guttering under water
+  hiss() { noise(0.34, 0.12, 2600, 1.6); noise(0.22, 0.08, 1200, 2.2, 0.06); tone('sine', 520, 180, 0.3, 0.03, 0.04); }, // and the black water putting it out
+  lampUp() { tone('triangle', 420, 1100, 0.18, 0.07); tone('sine', 880, 1320, 0.14, 0.05, 0.05); noise(0.12, 0.08, 3200, 1.2); }, // it catches
+  heard() { tone('sine', 180, 130, 0.5, 0.06); tone('sine', 92, 70, 0.7, 0.05, 0.08); noise(0.4, 0.06, 420, 1.2, 0.04); }, // something in the dark has you
+  tollBell() { tone('sine', 196, 190, 1.6, 0.12); tone('sine', 392, 384, 1.2, 0.05, 0.01); tone('sine', 98, 96, 2, 0.07, 0.02); noise(0.2, 0.05, 900, 1.6); }, // a due named on a dead city's bell
   swingUp(k) { const r = 1 + Math.min(3, k) * 0.09; noise(0.07, 0.16, 1500 * r, 1.1); tone('triangle', 620 * r, 300 * r, 0.06, 0.05); }, // the run of blows climbs
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
@@ -416,6 +423,11 @@ export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, cu
 const gob = (rate, v = 0.5) => file('gobDie', v, rate);
 const gobH = (rate, v = 0.4) => file('gobHurt', v, rate);
 const DIE = {
+  // THE LAMPLIT STREET: nobody down here dies loudly. A constable goes down in his iron; the Lampreeve's pole
+  // rings on the flags; the Tollmaster goes under with his bell still going.
+  watch() { SFX.clank(); tone('sine', 140, 60, 0.5, 0.16); noise(0.3, 0.26, 380, 0.6, 0.04); noise(0.2, 0.2, 2400, 0.4, 0.14); },
+  lampreeve() { tone('sawtooth', 240, 70, 0.5, 0.18); noise(0.4, 0.3, 800, 0.5, 0.05); for (let i = 0; i < 3; i++) tone('triangle', 1200 - i * 200, 900 - i * 200, 0.12, 0.06, 0.2 + i * 0.13); tone('sine', 70, 34, 0.7, 0.12, 0.2); },
+  tollmaster() { tone('sine', 196, 190, 2.2, 0.14); tone('sine', 98, 94, 2.6, 0.1, 0.05); noise(0.8, 0.3, 300, 0.6, 0.1); tone('sine', 60, 28, 1.4, 0.12, 0.4); noise(0.6, 0.2, 900, 0.5, 0.5); },
   sprig() { gob(1) || (tone('square', 420, 90, 0.25, 0.2), noise(0.12, 0.2, 800)); },
   archer() { gob(1.18) || tone('square', 520, 110, 0.22, 0.18); tone('triangle', 900, 300, 0.18, 0.12, 0.04); /* the bowstring goes */ },
   sapper() { gob(1.3, 0.4) || tone('square', 600, 140, 0.2, 0.16); noise(0.05, 0.4, 2500, 0.3, 0.1); tone('sine', 900, 1800, 0.12, 0.1, 0.12); /* the fuse pops */ },
@@ -482,6 +494,9 @@ const DIE = {
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
   captain() { noise(0.16, 0.26, 700, 0.5); tone('sawtooth', 260, 120, 0.18, 0.16); tone('sine', 150, 90, 0.2, 0.1, 0.04); }, // a big man taking one and not liking it
+  watch() { SFX.clank(); noise(0.2, 0.2, 420, 0.6); tone('sine', 160, 96, 0.24, 0.1); }, // a helm, and a chest full of water under it
+  lampreeve() { noise(0.22, 0.22, 1100, 0.5); tone('sawtooth', 300, 150, 0.2, 0.12); noise(0.14, 0.14, 2600, 0.6, 0.08); tone('sine', 120, 70, 0.3, 0.08, 0.05); }, // something long and thin, complaining
+  tollmaster() { tone('sine', 150, 92, 0.34, 0.14); noise(0.26, 0.24, 520, 0.5); tone('sine', 196, 190, 0.5, 0.05, 0.04); }, // a heavy man, and a bell somewhere behind him
   spitcap() { noise(0.12, 0.3, 500, 0.5); tone('sine', 200, 90, 0.14, 0.1); noise(0.08, 0.16, 1100, 0.4, 0.06); }, // a wet bladder taking a blade
   weaver() { noise(0.07, 0.2, 3000, 0.35); tone('sawtooth', 1400, 800, 0.07, 0.07); noise(0.05, 0.14, 2000, 0.5, 0.05); }, // chitin and a hiss
   drowned() { noise(0.26, 0.3, 380, 0.5); tone('sawtooth', 130, 60, 0.26, 0.16); noise(0.18, 0.18, 900, 0.4, 0.08); tone('sine', 80, 44, 0.3, 0.1, 0.04); }, // a man full of water
