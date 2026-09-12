@@ -1370,14 +1370,14 @@ function drawTree() {
   // only if you happened to be in the branch that skill lives in.
   { const nameOf = id => { const n = TREE.find(q => q.id === id && q.hero === h); return n ? n.name : null; };
     const f = nameOf(skillNow()), g2 = nameOf(skill2Now());
-    const cell = (x, key, nm, col) => { const w = 62;
+    const cell = (x, key, nm, col) => { const w = 74;
       g.fillStyle = 'rgba(24,21,34,0.92)'; g.fillRect(x, 2, w, 11);
       g.strokeStyle = nm ? col : '#3e3a4c'; g.lineWidth = 1; g.strokeRect(x + 0.5, 2.5, w - 1, 10);
       g.fillStyle = nm ? col : '#3e3a4c'; g.fillRect(x + 1, 3, 9, 9);
       text(key, x + 5, 5, nm ? '#1b1626' : '#7a7a84', 'center', 6);
-      const short = nm ? (nm.length > 8 ? nm.slice(0, 8) : nm) : (key === 'G' && !tal('twinSkill') ? 'LOCKED' : 'EMPTY');
+      const short = nm ? (nm.length > 10 ? nm.slice(0, 10) : nm) : (key === 'G' && !tal('twinSkill') ? 'LOCKED' : 'EMPTY');
       text(short, x + 12, 5, nm ? UI.text : '#7a7a84', 'left', 6); };
-    cell(VW / 2 - 42, 'F', f, '#ffd36b'); cell(VW / 2 + 22, 'G', g2, '#8fd160'); } // (clear of the hero's name on the left and the points plate on the right)
+    cell(VW / 2 - 78, 'F', f, '#ffd36b'); cell(VW / 2 + 2, 'G', g2, '#8fd160'); } // (clear of the hero's name on the left and the points plate on the right)
   { const p = godMode() ? 'ANY' : String(left), w = (p.length + 7) * 6 + 8, x = VW - 8 - w; // the points to spend, in a plate of their own so they are the first thing you see
     g.fillStyle = any ? 'rgba(70,96,50,0.9)' : 'rgba(40,36,54,0.7)'; g.fillRect(x, 2, w, 11);
     if (any) { g.globalAlpha = 0.18 + 0.16 * Math.sin(time * 5); g.fillStyle = '#8fd160'; g.fillRect(x, 2, w, 11); g.globalAlpha = 1; }
@@ -1393,14 +1393,15 @@ function drawTree() {
   { const lk = 0.5 + 0.5 * Math.sin(time * 4);
     g.globalAlpha = b > 0 ? 0.55 + 0.45 * lk : 0.25; text('◀', 4, 16, b > 0 ? UI.gold : UI.dim, 'left', 6);
     g.globalAlpha = b < 2 ? 0.55 + 0.45 * lk : 0.25; text('▶', VW - 4, 16, b < 2 ? UI.gold : UI.dim, 'right', 6); g.globalAlpha = 1;
-    text('LEFT / RIGHT', VW / 2, 27, UI.dim, 'center', 6); }
+  }
   // the open tree: four rows down, up to three columns across, every skill under its own name
   const mine = ns.filter(n => n.branch === b), cols = Math.max(2, Math.max(...mine.map(n => n.col)) + 1);
-  const NS2 = 18, top = 27, rowH = 26, colW = Math.min(96, Math.floor((VW - 28) / cols)), x0 = Math.round((VW - colW * cols) / 2);
+  const NS2 = 18, top = 26, rowH = 25, colW = Math.min(96, Math.floor((VW - 28) / cols)), x0 = Math.round((VW - colW * cols) / 2);
   const pos = n => [x0 + Math.round(colW * (n.col + 0.5)), top + n.row * rowH];
   for (let r = 0; r < 4; r++) { const locked = heroLevel() < ROW_LV[r] && !godMode();
     g.fillStyle = r % 2 ? 'rgba(30,27,42,0.5)' : 'rgba(24,21,34,0.5)'; g.fillRect(8, top + r * rowH - 2, VW - 16, rowH - 3);
-    if (locked) { g.fillStyle = 'rgba(8,7,14,0.55)'; g.fillRect(8, top + r * rowH - 2, VW - 16, rowH - 3); text('LEVEL ' + ROW_LV[r], VW - 11, top + r * rowH + 6, '#8a7a5a', 'right', 6); } }
+    if (locked) { g.fillStyle = 'rgba(8,7,14,0.6)'; g.fillRect(8, top + r * rowH - 2, VW - 16, rowH - 3);
+      for (let q = 8; q < VW - 8; q += 8) { g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(q, top + r * rowH - 2, 4, rowH - 3); } } } // a shut row is hatched, and every node in it wears a padlock
   for (const n of mine) if (n.parent) { const p = mine.find(q => q.id === n.parent); if (!p) continue; // the line from a skill to what grows out of it
     const [x0, y0] = pos(p), [x1, y1] = pos(n); g.strokeStyle = tal(p.id) ? '#c9a040' : '#4a4658'; g.lineWidth = 2; g.beginPath();
     g.moveTo(x0 + 0.5, y0 + NS2); if (x0 !== x1) { g.lineTo(x0 + 0.5, y1 + NS2 / 2); g.lineTo(x1 + 0.5, y1 + NS2 / 2); } g.lineTo(x1 + 0.5, y1); g.stroke(); }
@@ -1408,13 +1409,18 @@ function drawTree() {
     g.fillStyle = lit ? '#2f2740' : '#171520'; g.fillRect(x - NS2 / 2, y, NS2, NS2);
     g.strokeStyle = sel ? '#fff6e0' : st === 'max' ? '#ffd36b' : lit ? '#c9a040' : ready ? '#8fd160' : '#3e3a4c'; g.lineWidth = n.active ? 2 : 1;
     g.strokeRect(x - NS2 / 2 + 0.5, y + 0.5, NS2 - 1, NS2 - 1);
+    if (st === 'level') { // THE LOCK, on the thing it locks: a shackle and a body, and the level it wants under it
+      const lx = x + NS2 / 2 - 6, ly = y + 1;
+      g.fillStyle = '#0d0b16'; g.fillRect(lx - 1, ly, 7, 7);
+      g.fillStyle = '#8a7a5a'; g.fillRect(lx + 1, ly, 3, 1); g.fillRect(lx, ly + 1, 1, 2); g.fillRect(lx + 4, ly + 1, 1, 2);
+      g.fillStyle = '#c9a040'; g.fillRect(lx, ly + 3, 5, 4); g.fillStyle = '#0d0b16'; g.fillRect(lx + 2, ly + 4, 1, 2); }
     if (ready && !sel) { g.globalAlpha = 0.1 + 0.12 * Math.sin(time * 5 + n.row); g.fillStyle = '#8fd160'; g.fillRect(x - NS2 / 2, y, NS2, NS2); g.globalAlpha = 1; }
     const ic = treeIcon(n); g.globalAlpha = lit ? 1 : st === 'level' || st === 'parent' ? 0.28 : 0.7; g.drawImage(ic, x - 6, y + 2, 12, 12); g.globalAlpha = 1;
     for (let k = 0; k < n.max; k++) { const px = x - (n.max * 4 - 1) / 2 + k * 4; g.fillStyle = k < r ? (r >= n.max ? '#ffd36b' : '#8fd160') : '#3e3a4c'; g.fillRect(Math.round(px), y + NS2 - 4, 3, 2); } // a pip for every point in it
     if (n.active) { g.fillStyle = lit && skillNow() === n.id ? '#ffd36b' : lit && skill2Now() === n.id ? '#8fd160' : 'rgba(60,56,76,0.9)';
       g.fillRect(x + NS2 / 2 - 5, y - 4, 10, 6); text(skillNow() === n.id && lit ? 'F' : skill2Now() === n.id && lit ? 'G' : '*', x + NS2 / 2, y - 4, lit && (skillNow() === n.id || skill2Now() === n.id) ? '#1b1626' : UI.dim, 'center', 6); }
     const nm = n.name.length * 6 > colW - 4 ? n.name.slice(0, Math.max(3, Math.floor((colW - 4) / 6))) : n.name;
-    text(nm, x, y + NS2 + 2, sel ? '#fff6e0' : lit ? UI.text : '#7a7a84', 'center', 6); }
+    text(nm, x, y + NS2 + 1, sel ? '#fff6e0' : st === 'max' ? UI.gold : lit ? UI.text : '#7a7a84', 'center', 6); }
   // FORGET ALL, and then what the chosen skill does
   const fy = top + 4 * rowH + 1; g.fillStyle = respec ? 'rgba(120,60,60,0.95)' : 'rgba(40,36,54,0.7)'; g.fillRect(VW / 2 - 34, fy, 68, 9);
   if (respec) { g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(VW / 2 - 33.5, fy + 0.5, 67, 8); }
@@ -1428,8 +1434,10 @@ function drawTree() {
     const need = st === 'level' ? 'OPENS AT LEVEL ' + ROW_LV[cur.row] : st === 'parent' ? 'NEEDS ' + TREE.find(q => q.id === cur.parent && q.hero === cur.hero).name : st === 'max' ? 'AT ITS PEAK' : any ? 'Z TO LEARN' : 'NO POINTS LEFT';
     text(need, VW - 12, dy + 3, st === 'level' || st === 'parent' || (st !== 'max' && !any) ? '#ff9a5c' : UI.sel, 'right', 6);
     const lines = wrap(cur.desc + (cur.active && cur.max > 1 ? '. every point past the first: a shorter wait and a harder blow' : ''), VW - 28, 6);
-    lines.slice(0, 2).forEach((ln, k) => text(ln, 12, dy + 10 + k * 7, UI.dim, 'left', 6)); }
-  text(cur && cur.active ? (tal(cur.id) ? 'Z LEARN    F PUTS IT ON F    G PUTS IT ON G    Q CLOSE' : 'Z LEARN IT FIRST, THEN F OR G TO SET THE KEY    Q CLOSE') : 'ARROWS MOVE    Z LEARN    F / G SET THE KEYS ON A SKILL    Q CLOSE', VW / 2, VH - 9, '#8a8a94', 'center', 6);
+    lines.slice(0, 3).forEach((ln, k) => text(ln, 12, dy + 9 + k * 7, UI.dim, 'left', 6)); }
+  { const act = cur && cur.active, on = act && tal(cur.id);
+    const line = on ? 'F PUTS IT ON F     G PUTS IT ON G     Q CLOSE' : act ? 'Z LEARN IT FIRST, THEN F OR G TO SET THE KEY     Q CLOSE' : 'ARROWS MOVE     Z LEARN     Q CLOSE';
+    text(line, VW / 2, VH - 9, on ? UI.sel : '#8a8a94', 'center', 6); }
 }
 function updateStore(dt) {
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold back: training and skills are learned in the talent trees now'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
@@ -1653,12 +1661,17 @@ function drawSlots() {
 function drawBestiary() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.6)'); vg.addColorStop(1, 'rgba(10,20,14,0.9)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
   text('BESTIARY', VW / 2, 4, UI.title, 'center');
-  text((bestTab === 0 ? '>' : ' ') + 'FOES', 14, 15, bestTab === 0 ? '#8fd160' : '#6a7a6a'); text((bestTab === 1 ? '>' : ' ') + 'BOSSES', 68, 15, bestTab === 1 ? '#8fd160' : '#6a7a6a');
+  text((bestTab === 0 ? '>' : ' ') + 'FOES', 8, 16, bestTab === 0 ? '#8fd160' : '#6a7a6a', 'left', 6); text((bestTab === 1 ? '>' : ' ') + 'BOSSES', 50, 16, bestTab === 1 ? '#8fd160' : '#6a7a6a', 'left', 6);
   const list = beastList(), lx = 8, ly = 30, ROWS = 11, off = Math.max(0, Math.min(list.length - ROWS, bestI - ROWS + 2));
-  list.forEach((b, i) => { if (i < off || i >= off + ROWS) return; const r = PROG.beasts && PROG.beasts[b.t]; const sel = i === bestI; const yy = ly + (i - off) * 12; if (sel) text('>', lx, yy, '#8fd160'); text(r && r.seen ? (BEAST_SHORT[b.t] || b.name) : '? ? ?', lx + 10, yy, sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#6a6a6a')); });
+  const LW2 = 86; // the width the names have before the card starts: anything longer is drawn small
+  list.forEach((b, i) => { if (i < off || i >= off + ROWS) return; const r = PROG.beasts && PROG.beasts[b.t]; const sel = i === bestI; const yy = ly + (i - off) * 12;
+    if (sel) text('>', lx, yy, '#8fd160');
+    const nm = r && r.seen ? (BEAST_SHORT[b.t] || b.name) : '? ? ?';
+    const sz = nm.length * 8 > LW2 ? 6 : 8, fit = nm.length * sz > LW2 ? nm.slice(0, Math.floor(LW2 / sz)) : nm;
+    text(fit, lx + 10, yy + (sz === 6 ? 1 : 0), sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#6a6a6a'), 'left', sz); });
   if (off > 0) text('^', 64, ly - 8, '#9aa39a', 'center'); if (off + ROWS < list.length) text('v', 64, ly + ROWS * 12, '#9aa39a', 'center');
   const b = list[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
-  const px = 122, pw = VW - px - 8, py = 20, ph = VH - 40;
+  const px = 112, pw = VW - px - 6, py = 18, ph = VH - 32;
   g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(px, py, pw, ph); g.strokeStyle = '#8fd160'; g.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
   const set = SPR[b.t]; const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
   if (!seen) g.globalAlpha = 0.25;
@@ -1667,9 +1680,20 @@ function drawBestiary() {
   const fit = t => t.length * 8 > pw - 66 ? 6 : 8;
   text(seen ? b.name : 'UNKNOWN', px + 62, py + 10, '#ffd36b', 'left', fit(seen ? b.name : 'UNKNOWN'));
   text(seen ? b.sub : 'not yet met', px + 62, py + 22, '#9aa39a', 'left', fit(seen ? b.sub : 'not yet met'));
-  if (seen) { text('slain ' + (r.slain || 0), px + 62, py + 34, '#c9d1dc'); let lines = wrap(b.desc, pw - 12), sz = 8, lh = 9; if (lines.length > 9) { lines = wrap(b.desc, pw - 12, 6); sz = 6; lh = 7; } lines.slice(0, 12).forEach((l, i) => text(l, px + 6, py + 52 + i * lh, '#fff6e0', 'left', sz)); }
+  if (seen) { text('slain ' + (r.slain || 0), px + 62, py + 34, '#c9d1dc');
+    let lines = wrap(b.desc, pw - 12), sz = 8, lh = 9;
+    if (lines.length > 8) { lines = wrap(b.desc, pw - 12, 6); sz = 6; lh = 7; }
+    const top2 = py + 46, per = Math.max(4, Math.floor((ph - (top2 - py) - 6) / lh));
+    bestPages = Math.max(1, Math.ceil(lines.length / per));
+    if (bestPage >= bestPages) bestPage = 0;
+    lines.slice(bestPage * per, bestPage * per + per).forEach((l, i) => text(l, px + 6, top2 + i * lh, '#fff6e0', 'left', sz));
+    if (bestPages > 1) { const tag = 'Z  MORE  ' + (bestPage + 1) + '/' + bestPages;
+      g.fillStyle = 'rgba(20,16,30,0.95)'; g.fillRect(px + pw - tag.length * 6 - 10, py + ph - 10, tag.length * 6 + 8, 9);
+      text(tag, px + pw - 6, py + ph - 9, UI.sel, 'right', 6); } }
   else text('Meet it in the wood.', px + 6, py + 54, '#9aa39a');
-  text('UP/DOWN browse  L/R group  ESC map', VW / 2, VH - 12, '#9aa39a', 'center');
+  { const ix = RUSH.findIndex(q => q.boss === b.t);
+    const line = seen && ix >= 0 ? 'UP/DOWN browse  L/R group  F FIGHT AGAIN  ESC map' : 'UP/DOWN browse  L/R group  ESC map';
+    text(line, VW / 2, VH - 9, '#9aa39a', 'center', 6); }
 }
 
 // ---------- intro ----------
@@ -1711,7 +1735,7 @@ const SETTING_TIPS = {
 const menuItems = () => menuKind === 'pause' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
 const isHeader = k => k[0] === '-';
 const MENU_ROWS = 10;
-let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0;
+let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
 const BOSS_T = ['queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
 const BEAST_SHORT = { greathound: 'GREAT HOUND', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
@@ -1779,7 +1803,7 @@ function drawHeroPick() {
     g.fillStyle = sel ? 'rgba(60,90,60,0.55)' : 'rgba(40,36,54,0.6)'; g.fillRect(x, y, cw, VH - 58); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, cw - 1, VH - 59); }
     const set = h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken)) : h === 'paladin' ? preview('pick:paladin', () => bakePaladin({})) : preview('pick:knight', () => bakeKnight({})); const fr = set.R.idle[Math.floor(time * 3 + k) % 4];
     const sc = 2; g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), y + 8, fr.width * sc, fr.height * sc);
-    text(H.name, x + cw / 2, y + 70, sel ? UI.title : UI.text, 'center', 6); let ly = y + 82; for (const ln of LINES[h]) for (const w2 of wrap(ln, cw - 8, 6)) { text(w2, x + cw / 2, ly, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6); ly += 8; } });
+    text(H.name, x + cw / 2, y + 70, sel ? UI.title : UI.text, 'center', 6); let ly = y + 82; for (const ln of LINES[h]) for (const w2 of wrap(ln, cw - 2, 6)) { text(w2, x + cw / 2, ly, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6); ly += 8; } });
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 20, UI.sel, 'center', 6); text('the other two are 15 silver each, later', VW / 2, VH - 11, UI.dim, 'center', 6);
 }
 function selectStart() {
@@ -7149,12 +7173,13 @@ function update(dt) {
   if (talentsPress && (state === 'play' || state === 'map' || state === 'paused' || state === 'store' || state === 'equip')) { treeFrom = state === 'paused' ? 'paused' : state; treeI = 0; state = 'tree'; talentsPress = false; SFX.menuOpen(); }
   if (state === 'tree') { updateTree(dt); updateParticles(dt); return; }
   if (state === 'bestiary' && throwPress) { // F on a boss you have already put down: fight it again, on its own
-    const b = BEASTS[bestI], ix = b ? RUSH.findIndex(q => q.boss === b.t) : -1;
+    const b = beastList()[bestI], ix = b ? RUSH.findIndex(q => q.boss === b.t) : -1;
     if (ix >= 0 && (PROG.beasts || {})[b.t]) { SFX.uiSel(); rushStart(ix); return; }
   }
   if (state === 'bestiary') {
-    { const n = beastList().length; if (upPress) { bestI = (bestI + n - 1) % n; SFX.ui(); } if (downPress) { bestI = (bestI + 1) % n; SFX.ui(); } if (leftPress || rightPress) { bestTab = 1 - bestTab; bestI = 0; SFX.ui(); } }
-    if (pausePress || confirmPress) { state = 'map'; SFX.ui(); }
+    { const n = beastList().length; if (upPress) { bestI = (bestI + n - 1) % n; bestPage = 0; SFX.ui(); } if (downPress) { bestI = (bestI + 1) % n; bestPage = 0; SFX.ui(); } if (leftPress || rightPress) { bestTab = 1 - bestTab; bestI = 0; bestPage = 0; SFX.ui(); } }
+    if (confirmPress && bestPages > 1) { bestPage = (bestPage + 1) % bestPages; SFX.ui(); }
+    else if (pausePress || confirmPress) { state = 'map'; SFX.ui(); }
     updateParticles(dt);
     return;
   }
@@ -8151,12 +8176,17 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
   const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, UI.title, 'center');
   drawSet(K, 'idle', Math.floor(time * 3) % 4, x + 30, y + 52, 1, false);
-  const sk = skillNow(), skName = sk ? (ABILITIES.find(a => a.id === sk) || {}).name : 'NONE', ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
+  const nameOfSkill = id => { if (!id) return 'NONE'; const n = TREE.find(q => q.id === id && q.hero === hero()); return n ? n.name : ((ABILITIES.find(a => a.id === id) || {}).name || 'NONE'); };
+  const skName = nameOfSkill(skillNow()), sk2Name = tal('twinSkill') ? nameOfSkill(skill2Now()) : 'LOCKED';
+  const ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
-  const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill', skName], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold', String(PROG.coins)], ['silver', silverAvail() + ' spare']];
-  rows.forEach(([a, b], i) => { const yy = y + 20 + i * 11; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
-  text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 32, UI.sel, 'center', 6); const tr = 'hero level ' + heroLevel() + '   skill points ' + ptsSpent(hero()) + ' of ' + ptsTotal() + '   tonics ' + (PROG.tonics || 0); text(tr, VW / 2, y + h - 22, '#8fd160', 'center', 6);
-  text('ESC back', VW / 2, y + h - 10, '#9aa39a', 'center');
+  const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold', String(PROG.coins)], ['silver', silverAvail() + ' spare']];
+  rows.forEach(([a, b], i) => { const yy = y + 18 + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
+  { const tr = 'level ' + heroLevel() + '   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
+    text(tr, VW / 2, y + h - 40, '#8fd160', 'center', 6);
+    text('T  TALENTS AND WHAT IS ON F AND G', VW / 2, y + h - 30, UI.gold, 'center', 6);
+    text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 20, UI.sel, 'center', 6); }
+  text('ESC back', VW / 2, y + h - 10, '#9aa39a', 'center', 6);
 }
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);

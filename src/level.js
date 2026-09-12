@@ -3021,7 +3021,7 @@ function theLamplitStreet() {
   flood(0, 44); flood(44, 78);
   lamp(22); lamp(50); lamp(66, true); lamp(74);
   ent('deco', 30, ST - 1, { kind: 'lampWreck', v: 0 }); ent('deco', 54, ST - 1, { kind: 'shellDrift', v: 0 });
-  ent('silver', 6, ST - 1); ent('deco', 10, ST - 1, { kind: 'sealDrift', v: 0 }); coins([8, 36], [14, 36]); // what went off the tribute ship, west along the paving
+  ent('deco', 6, ST - 1, { kind: 'sealDrift', v: 1 }); ent('deco', 10, ST - 1, { kind: 'sealDrift', v: 0 }); coins([8, 36], [14, 36]); // what went off the tribute ship, west along the paving
   ent('eel', 34, 32); ent('urchin', 46, ST - 1); ent('urchin', 62, ST - 1);
   ent('check', 52, UP - 1);
   coins([20, 36], [26, 34], [34, 36], [48, 36], [56, 34], [64, 36], [72, 36], [46, 21], [62, 21]);
@@ -3044,7 +3044,7 @@ function theLamplitStreet() {
   ent('eel', 108, 33); ent('eel', 144, 31); ent('urchin', 92, ST - 1); ent('urchin', 136, ST - 1); ent('urchin', 178, ST - 1);
   ent('snuffer', 120, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
   ent('stray', 128, ST - 1, { kind: 'lamp' });  // the first of his three lamps, down on the stones
-  ent('silver', 156, ST - 1);
+  ent('deco', 156, ST - 1, { kind: 'plunder', v: 1 });
   ent('check', 88, UP - 1); ent('check', 130, 22); ent('check', 180, ST - 1);
   ent('sign', 148, ST - 1, { text: 'THE TIDE RUNS DOWN THIS STREET AND THEN IT TURNS. GO WITH IT AND IT CARRIES YOU TWO LAMPS; GO AGAINST IT AND IT WILL NOT LET YOU REACH ONE.' });
   coins([84, 36], [92, 34], [100, 36], [108, 34], [116, 36], [124, 34], [132, 36], [140, 34], [148, 36], [156, 34], [164, 36], [172, 34], [180, 36],
@@ -3093,7 +3093,7 @@ function theLamplitStreet() {
   ent('deco', 294, ST - 1, { kind: 'bones', v: 1 });
   port(326, 28, ST - 1); ent('lockgate', 326, ST - 1, { needs: 'bone', h: 10 });
   ent('deco', 336, ST - 1, { kind: 'grating' });
-  ent('silver', 330, ST - 1); ent('silver', 334, ST - 1); ent('silver', 338, ST - 1); ent('deco', 344, ST - 1, { kind: 'sealDrift', v: 1 });
+  ent('deco', 330, ST - 1, { kind: 'plunder', v: 0 }); ent('silver', 334, ST - 1); ent('deco', 338, ST - 1, { kind: 'plunder', v: 2 }); ent('deco', 344, ST - 1, { kind: 'sealDrift', v: 1 });
   ent('stray', 333, 22, { kind: 'lamp' });                              // the second lamp, up in a vault
   ent('watch', 276, ST - 1, { face: -1 }); ent('watch', 312, ST - 1, { face: 1 }); ent('watch', 346, ST - 1, { face: -1 });
   ent('watch', 290, UP - 1, { face: -1 }); ent('watch', 324, UP - 1, { face: 1 });
@@ -3121,7 +3121,7 @@ function theLamplitStreet() {
   ent('stray', 386, UP - 1, { kind: 'lamp' });                          // the third lamp, on the bellows floor
   ent('npc', 372, UP - 1, { kind: 'lamplighter' });                     // the last lamplighter, and he will not leave
   ent('check', 366, UP - 1); ent('check', 420, UP - 1);
-  ent('silver', 408, UP - 1); ent('deco', 398, UP - 1, { kind: 'sealDrift', v: 0 });
+  ent('deco', 408, UP - 1, { kind: 'plunder', v: 1 }); ent('deco', 398, UP - 1, { kind: 'sealDrift', v: 0 });
   coins([366, 21], [374, 19], [382, 21], [390, 19], [398, 21], [406, 19], [414, 21], [422, 19]);
 
   // ================= 6. THE PROCESSION ROAD: the widest street and the fewest lamps =================
@@ -3148,7 +3148,7 @@ function theLamplitStreet() {
   ent('angler', 470, 33); ent('angler', 524, 31); ent('eel', 444, 31); ent('eel', 482, 34); ent('eel', 518, 30); ent('eel', 558, 33);
   ent('urchin', 442, ST - 1); ent('urchin', 478, ST - 1); ent('urchin', 506, ST - 1); ent('urchin', 542, ST - 1); ent('urchin', 566, ST - 1);
   ent('snuffer', 496, UP - 1, { face: -1 });
-  ent('silver', 472, 23); ent('silver', 522, 23);
+  ent('silver', 472, 22); ent('deco', 522, 22, { kind: 'plunder', v: 2 });
   ent('check', 436, UP - 1); ent('check', 472, 22); ent('check', 522, 22); ent('check', 564, UP - 1);
   ent('sign', 526, 22, { text: 'THE LAST LAMPS ON THE ROAD ARE DEAD AND THE SQUARE AT THE END OF IT IS LIT. HE KEEPS HIS OWN LIGHT ON AND NOBODY ELSE\'S.' });
   coins([434, 36], [442, 34], [450, 36], [458, 34], [466, 36], [476, 34], [484, 36], [492, 34], [500, 36], [508, 34], [516, 36], [526, 34], [534, 36], [542, 34], [550, 36], [558, 34], [566, 36],
@@ -3183,7 +3183,7 @@ function theLamplitStreet() {
   ent('tollmaster', 684, UP - 1, { face: -1 });
   pools.push({ x0: 650 * TS, x1: 695 * TS, y: UP * TS + 8, bottom: UP * TS + 8, base: UP * TS + 8, shallow: true, depth: 0, dry: true, swim: false, clear: true, square: true });
   coins([633, 19], [639, 17], [656, 19], [668, 19], [679, 19], [688, 19]);
-  ent('silver', 668, UP - 1);
+  ent('deco', 668, UP - 1, { kind: 'plunder', v: 0 });
 
   // ================= THE STREET, AS A PLACE: piers, and things hanging in the water =================
   // A flooded street with nothing in it is a box of blue. The city's arcade is still standing down there, so
