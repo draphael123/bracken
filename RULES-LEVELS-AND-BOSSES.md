@@ -137,3 +137,45 @@ Force every boss mode and confirm it fires.
 **D7. Measure the fight.** Max-aggression time-to-kill against the previous boss (the Quartermaster is 92 s,
 the Captain 79 s), and how long an idle bot survives in the arena (23 s for the Captain). A boss nobody has
 measured is a guess.
+
+---
+
+## E. What the fifteenth level added to the list
+
+**E1. Never rename a field with a blanket replace.** `streetTide` was already Saltreach's slow in-and-out
+tide (`tidePeriod`/`tideLo`/`tideHi`). Renaming every occurrence to give the drowned city its own running
+tide froze three pools in two other levels, and the reef's start went from seeing 98% of its own footing to
+0.6%. Grep first, rename the lines you wrote, and re-run `reach.mjs` on every level, not the new one.
+
+**E2. A signature that a sibling branch can starve does not exist.** The Lampreeve never went for a lamp and
+the Tollmaster never put one out, because in both chains a closer attack was asked for first and the player
+is nearly always close. **The thing the fight is about goes at the TOP of the chain.** (This is A3 again, and
+it will happen again: check it by watching a bot stand in the boss's face for a minute.)
+
+**E3. A surface you can tread water at is free air.** The swimmer floats up until their head is out, so any
+reachable water surface refills the breath clock whatever the level intended. If air is the resource, the
+water has to close over the player's head: the street's water line sits INSIDE the masonry, and the
+Tollmaster's square fills to its vault.
+
+**E4. Every step is two rows.** Three rows is 48 px against a 49 px jump. It goes in, but only just, and
+`audit.mjs` is right to call it UNREACHED. A climb should never be a pixel-perfect jump.
+
+**E5. A pool needs somewhere to BE.** `newlevel.mjs` used to flag any pool whose surface row was solid. A
+drowned street runs under six rows of stone with its water line inside them, which is correct and reads
+correctly; what is wrong is a pool with no open space between its surface and its bottom.
+
+**E6. Check the sprite fits its own canvas.** The Lampreeve's snuffer cone — the one shape that says what he
+is — was drawn at 22 to 34 px along a pole from a hand 12 rows down a 40-row grid, so it landed at row -22
+and was clipped off every frame. Put every set on a contact sheet and look at it (`BK.SPR`).
+
+**E7. A level's name is not the only name.** The boss bar had a branch for every boss; the INTRO BANNER had
+its own chain that stopped at the crags, so four bosses announced themselves as THE HORNET QUEEN. If two
+places name the same thing, make the second one ask the first (the bestiary names every creature).
+
+**E8. Nothing in a menu may be cut off.** Eight of the eighty bestiary entries lost the end of their
+description, one of them more than half. Measure the box, then either page it or shorten the copy.
+
+**E9. Every creature dies in its own voice.** Twenty-four of eighty fell back on one generic sound, and a
+drowned man and a sea urchin went out on the same noise. A voice is a BODY, a VENT, and a TAIL on the big
+ones. And an enemy must never swing with the player's own `pSlash`: you cannot hear a blow coming if it
+sounds like yours.

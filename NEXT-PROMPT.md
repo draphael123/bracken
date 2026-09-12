@@ -1,70 +1,64 @@
-# BRACKEN — next session
+# Where BRACKEN is, and what is next
 
-Live: bracken-nine.vercel.app. Everything below is committed, pushed and deployed.
+Live at bracken-nine.vercel.app. Deploy with `vercel deploy --prod --yes`, then `git push`.
 
-## Shipped this round (2026-09-12)
+## What just shipped
 
-- **THE HURRICANE DECK** rebuilt to 760 columns with THE BREACH, UNDER HER, the flooded hold, THE WRECK
-  ALONGSIDE, her powder store, storm clouds, lightning that says where it will strike, a properly told wave,
-  and **THE CAPTAIN** (13 hand-drawn frames, five behaviours). The Drowned Bosun has been removed entirely -
-  she has one boss.
-- **THE HEAVY BLOW** for all three heroes on the attack key held, with two talent nodes apiece.
-- **THE CURRENT** (`flow` on a pool) + **water with no bottom** drawn as its own thing; the Long Water's river
-  runs, the reef's shelf sets you back, and THE SUNKEN CART is a dive with two air bells and THE OLD EEL in it.
-- **THE FLOTILLA's three encounters** (the press gang, the choke, the rigging) out of the same five creatures.
-- **HER PUMPS** amidships on the Hurricane Deck: three strikes and the hold goes down for twenty seconds.
-- **THE BOSS RUSH**: nineteen fights, no portals, no new rooms - it loads the real level, drops you in the
-  arena, strips the level to the fight and moves on when the creature is off the board. Practise one boss with
-  F on its bestiary page. On the title once Highcrown has fallen (or `?rush=1`).
-- **THE FEEL PASS**: apex hang + heavier fall, fast fall, coyote off movers, corner correction, weighted
-  hitstop. See `ANALYSIS-FEEL.md`.
-- Earlier: the sluice stair, the Herald's two dead attacks + three new layers, the Windcaller's two new tells,
-  foul water drawn as poison, mast steps, the Flotilla's floating hands and sky-wall, the F/G slot bar, the map
-  opening where you left it, mobile full screen.
+**LEVEL 15 — THE LAMPLIT STREET.** A stone city a hundred feet under the sea, 700 columns, and one rule said
+three ways: **THE LAMPS ARE AIR.** A lit lamp is a light in the dark, a lungful of air under its hood, and a
+thing that can be taken from you; you take fire off a burning one and carry it to a dead one to open a route.
+Two roads all the way along — the dry broken roof road at row 22 and the flooded street at row 38, with the
+water line inside the masonry between them so nothing in the street can reach a surface. The tide runs down
+the street and turns on a timer. Seven sections: the descent past the tribute ship, the fish market, the
+market hall (**THE LAMPREEVE**, who walks to the nearest burning lamp and hoods it), the counting house (the
+vault crowns ARE the air), the lamp works (work the beam and the procession road drops to wading depth and
+its dead lamps come up), the procession road, and the toll gate (**THE TOLLMASTER**, carried on a bier:
+parry the ledger, dodge the weight, jump the rod, and he puts the lamps out a ring at a time; phase two sets
+the bier down and the bearers come off it, phase three fills the square to its vault).
 
-## The rules we build to
+New art: `city_tiles.js` (drowned masonry, a chain to climb, four parallax layers and no sky at all),
+`city_props.js` (the streetlamp in three states plus fifteen more), `redraw/city.js` (the drowned watch, the
+Lampreeve, the Tollmaster). New relic: **THE LAMPLIGHTER'S WICK**. Two new boss-rush fights.
 
-`RULES-LEVELS-AND-BOSSES.md` — thirty rules, all earned in play, twenty of them machine-checked by
-`tools/newlevel.mjs` (which now separates real bugs from design advice). Read it before building a level or a
-boss; it is shorter than the mistakes it prevents.
+**The screens between fights.** The talent tree had three things written on top of each other and cut every
+description at two lines; the hero card showed one skill where the hero holds two and ran off its own panel;
+the bestiary cut eight of its eighty entries off mid-sentence and pointed F at the wrong boss. All fixed.
 
-## The next level
+**Sound.** Twenty-four of the eighty creatures had no death voice and fell back on one generic noise; all
+eighty have their own now. Enemies no longer swing with the player's own sword sound: `foeSlash`, `haft` and
+`pole` are theirs.
 
-`IDEAS-NEXT-LEVEL.md` — **LEVEL 15: THE LAMPLIT STREET**, the drowned city the whole sea arc has been paying.
-Its rule is THE LAMPS ARE AIR (light is breath, and the lamps can be put out and relit); its boss is THE
-TOLLMASTER, carried on a bier, who snuffs the lamps a ring at a time and is only open while he does it.
+**The map** has life on the road between woods: boots print in the dirt, dust comes off them, and a bird goes
+off its branch, a hare two hops into the bracken, a fish out of the river as you pass. The drowned city's
+node breathes bubbles.
 
-## Open, in the order I would take it
+## Next, in the order I would take it
 
-1. **Balance the rush ramp**: every boss is tuned for a player who arrives with that level's relics and a
-   checkpoint thirty seconds back. Two passes of `tools/balance.mjs` and the bot sweep.
-2. **`ANALYSIS-WATER-LEVELS.md`** — still open: the reef's either-way stretch (loot on the low road, safety on
-   the high one) and air as a planned resource rather than a timer.
-3. **`ANALYSIS-FEEL.md`** — everything in it is done; what is left is the *next* tier, which I would rank:
-   hurt poses for the remaining common foes (shield, soldier, brute, hound), a tell colour channel on the
-   parry so it can be learned by eye, and skid/turn frames to go with the earned run.
-4. **Playtest the new verbs against the old levels**: the dash and the mantle change what a gap means, and the
-   fourteen levels were authored without them. Nothing became unreachable (the suite is unchanged) but some
-   gaps may now be trivial.
+1. **Balance the boss-rush ramp.** Nineteen fights in an order nobody has measured. `tools/balance.mjs` plus
+   a bot sweep: time-to-kill and idle-survival for each, then re-order.
+2. **Play the old levels with the new verbs.** The dash and the mantle change what a gap means and the first
+   fourteen woods were authored without them. Nothing became unreachable (the suite reports identical
+   numbers) but some gaps are now trivial. That is a design question, not a bug.
+3. **The reef's either-way stretch**, and air as a planned resource rather than a timer, now that the city
+   has taught the idea properly.
+4. **The next feel tier**: hurt poses for the shield goblin, the soldier, the brute and the hound (six are
+   done, these are the next most-met); a tell colour on the parry window; skid and turn frames for the
+   earned run.
+5. **The archer's bow** is one pixel thick and the cook is a pale blob — the two weakest sprites left after
+   the contact-sheet pass. The brute was the worst and is fixed.
+6. `tools/reach.mjs` calls the reef's start walled in because it cannot swim: teach the model water, or
+   whitelist a swim start, so the check keeps its teeth.
 
-## The staples — run these after any level edit
+## How to work on it
+
+Read `RULES-LEVELS-AND-BOSSES.md` first — every rule in it was earned by something going wrong, and the
+tools enforce fifteen of them. Run the staples after any level edit:
+
 ```
 node --check src/main.js && node --check src/level.js
 node tools/comments.mjs && node tools/content-audit.mjs && node tools/audit.mjs && node tools/newlevel.mjs
 node tools/reach.mjs && node tools/deadends.mjs && node tools/traps.mjs && node tools/quality.mjs
 ```
 
-## Landmines that have bitten more than once
-- A patch script that writes only at the end loses every edit when a later assert throws — write after each rep.
-- **Never insert a line ending in a `//` comment in front of code that continues on the same line.**
-- Re-running a patch script duplicates blocks (it has happened four times: `updateCaptain`, the Herald's modes,
-  the boss dispatch, the heavy-blow block). Make the script idempotent before re-running.
-- **Regex deletions eat more than the line**: removing the Drowned Bosun's boss-bar branch took the fallback
-  and the whole bar draw with it. Delete by exact string, then `node --check`.
-- `grow()` shifts coordinates; content added after a grow is in FINAL columns; new swings go on
-  `F.R.moversExtra`; it does not remap custom fields (`wash`, `masts`, `storm2`).
-- A boss dispatched below the 420 px range cull freezes in a wide arena. Bosses go above it.
-- A cooldown that is never initialised and never ticked means `undefined <= 0` is false forever and the attack
-  silently does not exist. It had happened to four attacks across two bosses.
-- The harness: `BK.state = 'play'` after `BK.load(i)`; drive keys with real `KeyboardEvent`s ('x' attack,
-  'z' jump); `BK.PROG.talents` is keyed by hero; `BK.rushStart(i)` runs one fight.
+Verify in the harness, never by eye: `BK.load(i)` then `BK.state = 'play'`, real `KeyboardEvent`s for input,
+`BK.tp(tx, ty)` to move, `BK.rushStart(i)` for one fight, and `BK.SPR` to put a sprite on a contact sheet.
