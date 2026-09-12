@@ -2,22 +2,59 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- viewport-fit=cover and no user scaling: on a phone the game wants the whole glass, and a pinch-zoom in the
+     middle of a fight is never what anybody meant -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1410">
 <title>BRACKEN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1410; }
+  /* dvh follows the phone's shrinking address bar; the old 100% jumped every time it hid */
+  @supports (height: 100dvh) { html, body { height: 100dvh; } }
+  body { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
   canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
   #boot { position: fixed; left: 12px; bottom: 10px; color: #cfc6b0; font: 12px monospace; opacity: .8; pointer-events: none; }
+  /* TURN IT SIDEWAYS: the game is a wide window and a portrait phone letterboxes it into a stamp */
+  #rotate { position: fixed; inset: 0; display: none; z-index: 30; background: #0b1410; color: #e8dcc0;
+    font: 14px/1.6 monospace; text-align: center; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 24px; }
+  #rotate b { color: #ffd36b; letter-spacing: 2px; }
+  #rotate .ph { width: 54px; height: 90px; border: 3px solid #8fd160; border-radius: 8px; animation: tip 1.8s ease-in-out infinite; }
+  @keyframes tip { 0%, 40% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+  @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="rotate"><div class="ph"></div><b>TURN IT SIDEWAYS</b><div>BRACKEN plays in landscape.<br>Rotate the phone and tap to play full screen.</div></div>
 <div id="boot">booting…</div>
 <script>
   window.addEventListener('error', e => { const b = document.getElementById('boot'); if (b) { b.textContent = 'ERROR: ' + e.message + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno; b.style.color = '#ff7a6b'; } });
   setTimeout(() => { const b = document.getElementById('boot'); if (b && !window.BK) { b.textContent = 'still booting after 8s — check console'; } }, 8000);
+
+  // FULL SCREEN ON A PHONE. A browser only grants it inside a real gesture, so the first touch asks for it (and
+  // for landscape, where the platform allows). Desktop is left alone: there a key or the menu asks instead.
+  (function () {
+    const coarse = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+    const go = () => {
+      const el = document.documentElement;
+      try { if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {}
+      try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+    };
+    window.bkFullscreen = () => { if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (e) {} } else go(); };
+    if (coarse) {
+      const once = () => { go(); removeEventListener('touchend', once); removeEventListener('pointerup', once); };
+      addEventListener('touchend', once, { passive: true });
+      addEventListener('pointerup', once, { passive: true });
+    }
+    // and if the phone comes back from the lock screen into portrait, the rotate card is CSS-driven, so it
+    // reappears on its own; nothing to do here but keep the canvas the size of what we were given
+    addEventListener('resize', () => { const c = document.getElementById('c'); if (c) { c.style.width = '100%'; c.style.height = '100%'; } });
+  })();
 </script>
 <script type="module" src="./src/main.js"></script>
 </body>
