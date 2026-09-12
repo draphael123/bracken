@@ -179,3 +179,47 @@ description, one of them more than half. Measure the box, then either page it or
 drowned man and a sea urchin went out on the same noise. A voice is a BODY, a VENT, and a TAIL on the big
 ones. And an enemy must never swing with the player's own `pSlash`: you cannot hear a blow coming if it
 sounds like yours.
+
+---
+
+## F. The shape of a level (the template)
+
+Everything above is a rule you can break a level by ignoring. This is the *shape* — what a level has to be
+made of before it is worth building. It is written out of one round of playtest notes, most of them a version
+of the same sentence: *"the level is a good length, but it's very repetitive and there's no variety."*
+
+**F1. SEVEN SECTIONS, NOT ONE STRETCH.** A level of 400–700 columns is seven named sections of 60–100. Name
+them before you place a tile: *the way in, the market, the hall, the vaults, the works, the procession road,
+the toll gate.* If two sections could swap places without anybody noticing, they are the same section twice.
+
+**F2. FIVE LANDMARKS, AND EACH ONE IS A PLACE.** A landmark is somewhere you would tell somebody to meet you:
+her figurehead, the gun deck, the oil pump, the dark hold, the great cabin. A stretch of the same planking with
+more foes on it is not a landmark. Each one must be built out of a verb the game already has, so it is a thing
+you *do*, not a thing you walk past. *Earned:* the Hurricane Deck was seven hundred tiles of identical deck.
+
+**F3. THE VERB BUDGET.** Every level uses at least four of the game's verbs and puts one of them somewhere new:
+jump, dash, plunge, climb, swim, block/parry, a machine (winch, pump, cannon, lever, cart), a carried thing
+(a key, a fire, a bucket), a light, a mover, a breakable wall. A level that is only "walk right and swing" is
+one verb, however many foes are on it.
+
+**F4. IT ALTERNATES.** Combat, then a climb or a crossing, then combat. Never two fights with only floor
+between them. *Earned:* "make sure there is at least some platforming in the level, not just combat."
+
+**F5. ONE MACHINE YOU CONTROL.** A pump that drops the water, a cannon that opens a wall, a winch that lifts a
+gate, a bellows that raises a floor. It must change the ROOM, be usable more than once, and be worth using.
+
+**F6. DISTINCT FROM ITS TWO NEIGHBOURS AT A GLANCE.** Different palette, a different interior kind, at least
+one creature the neighbours do not have, and one hazard they do not have. Take a screenshot of all three and
+look at them together; if you cannot tell them apart in a thumbnail, it is not a new level.
+*Earned:* "it's visually not distinct enough from the prior two levels."
+
+**F7. THE FURNITURE EVERY LEVEL CARRIES.** A shop or a shrine inside the arc. Three quest strays. Three
+silvers. A relic. Checkpoints to B6. A mini at roughly a third, the boss at the end — and **somewhere to go
+the moment the mini falls**, which is not an invisible unlock. *Earned:* "after beating the lampreeve there's
+nowhere to go", and "there needs to be a store in the water level area".
+
+**F8. THE RULE IS THE LEVEL.** Before anything else, write the one sentence the level is about and the three
+ways it says it (C2/C4). If the sentence is "there are more goblins", stop.
+
+**F9. WALK IT BEFORE YOU DRESS IT.** The whole level, start to gate, with no god mode, once per hero that can
+reach it. Every tool in `tools/` passes before the art goes on, and the audit's FLOAT count is zero.
