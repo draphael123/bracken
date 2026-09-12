@@ -54,7 +54,7 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
-const TIER = { wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
+const TIER = { hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
@@ -800,7 +800,7 @@ function loadLevel(i) {
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
 }
 function spawnEntities() {
-  webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
+  washReset(); webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
   for (const e of L.ents) spawnEnt(e);
   spawnEntitiesTail();
 }
@@ -2685,6 +2685,49 @@ function drawFins(cx, cy) {
 function drawBalls(cx, cy) {
   for (const b of balls) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy);
     g.fillStyle = '#1b1626'; g.fillRect(x - 3, y - 3, 6, 6); g.fillStyle = '#3a3a44'; g.fillRect(x - 2, y - 3, 4, 2); }
+}
+// THE WASH: the rule of THE HURRICANE DECK. A wall of water builds to windward, it tells you it is coming, and
+// then it goes down the whole deck. Hold a line (any rigging: net or climbing tile), get up into the yards above
+// it, or get below, and it only soaks you. Stand on the open deck and it takes you with it.
+let wash = null;
+function washReset() { wash = null; }
+function updateWash(dt) {
+  const W = L.wash; if (!W) return;
+  if (!wash) wash = { t: W.every * 0.55, state: 'wait', x: 0, dir: -1 };
+  wash.t -= dt;
+  if (wash.state === 'wait' && wash.t <= W.tell) { wash.state = 'tell'; wash.dir = wash.dir < 0 ? 1 : -1;
+    number(P.x, P.y - 44, wash.dir > 0 ? 'A SEA TO WINDWARD' : 'A SEA TO WINDWARD', '#a8cfc6'); SFX.wave ? SFX.wave() : SFX.roar(); shakeCam(3); }
+  if (wash.state === 'tell' && wash.t <= 0) { wash.state = 'run'; wash.x = wash.dir > 0 ? W.x0 - 40 : W.x1 + 40; shakeCam(6); rumble(300, 0.7); }
+  if (wash.state === 'run') {
+    wash.x += wash.dir * W.speed * dt;
+    for (let i = 0; i < 3; i++) parts.push({ x: wash.x + (Math.random() - 0.5) * 30, y: W.y1 - Math.random() * (W.y1 - W.y0), vx: wash.dir * 120, vy: -40 - Math.random() * 60, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#dff0f5' : '#a8cfc6', size: 2, grav: 300 });
+    const hit = Math.abs(P.x - wash.x) < 26 && P.y > W.y0 && P.y < W.y1 + 12;
+    if (hit && !P.dead && !P.washed) { // holding a line, or up in the yards, or below: the deck is the only bad place
+      const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS));
+      const held = t === T.NET || t === T.CLIMB || P.onRope;
+      P.washed = 0.8;
+      if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash ? SFX.splash() : SFX.crack(); shakeCam(4); P.vx = wash.dir * 40; }
+      else { damagePlayer(P.x, L.wash.dmg, { unblockable: true, up: true }); P.vx = wash.dir * 420; P.vy = -180; P.ground = false;
+        number(P.x, P.y - 30, 'SHE SHIPS ONE', '#ff6b6b'); shakeCam(8); hitstop(0.06); }
+    }
+    for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - wash.x) < 26 && e.y > W.y0 && e.y < W.y1 + 12) { e.vx = wash.dir * 260; e.vy = -120; e.stagger = Math.max(e.stagger, 0.5); }
+    if (wash.x < W.x0 - 80 || wash.x > W.x1 + 80) { wash.state = 'wait'; wash.t = W.every; }
+  }
+  P.washed = Math.max(0, (P.washed || 0) - dt);
+}
+function drawWash(cx, cy) {
+  const W = L.wash; if (!W || !wash) return;
+  const y0 = Math.round(W.y0 - cy), h = Math.round(W.y1 - W.y0) + 10;
+  if (wash.state === 'tell') { // the wall of it, building at the edge she is coming from
+    const k = 1 - Math.max(0, wash.t) / W.tell, x = wash.dir > 0 ? 0 : VW - Math.round(30 * k);
+    g.globalAlpha = 0.28 + 0.25 * k; g.fillStyle = '#7fb0c0'; g.fillRect(x, y0, Math.round(30 * k), h); g.globalAlpha = 1;
+    if (Math.floor(time * 6) % 2 === 0) text('>> SEA <<', wash.dir > 0 ? 30 : VW - 30, y0 + 8, '#dff0f5', 'center', 6);
+  }
+  if (wash.state !== 'run') return;
+  const x = Math.round(wash.x - cx);
+  g.globalAlpha = 0.5; g.fillStyle = '#6aa0b4'; g.fillRect(x - wash.dir * 60, y0, 60, h); g.globalAlpha = 1;
+  g.fillStyle = '#a8cfc6'; g.fillRect(x - 4, y0, 8, h);
+  g.fillStyle = '#dff0f5'; for (let i = 0; i < h; i += 6) g.fillRect(x - 2 + Math.round(Math.sin(time * 20 + i) * 3), y0 + i, 3, 3);
 }
 function snareTick(dt) {
   if (!(P.snare > 0)) return;
@@ -5641,7 +5684,7 @@ function updateProps(dt) {
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
-  updateBore(dt); updateDeckFall(dt); updateBalls(dt);
+  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt);
   { const fp = (L.pools || []).find(p => p.harm && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
       if (Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 14, vx: 0, vy: -20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7a8a4a' : '#4a5a2a', size: 1, grav: -10 });
@@ -6942,7 +6985,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
