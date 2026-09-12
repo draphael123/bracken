@@ -1584,13 +1584,13 @@ function drawTree() {
     for (let k = 0; k < n.max; k++) { const px = x - (n.max * 4 - 1) / 2 + k * 4; g.fillStyle = k < r ? (r >= n.max ? '#ffd36b' : '#8fd160') : '#3e3a4c'; g.fillRect(Math.round(px), ly + NS2 - 4, 3, 2); } // a pip for every point in it
     if (n.active) { g.fillStyle = lit && skillNow() === n.id ? '#ffd36b' : lit && skill2Now() === n.id ? '#8fd160' : 'rgba(60,56,76,0.9)';
       g.fillRect(x + NS2 / 2 - 5, ly - 4, 10, 6); text(skillNow() === n.id && lit ? 'F' : skill2Now() === n.id && lit ? 'G' : '*', x + NS2 / 2, ly - 4, lit && (skillNow() === n.id || skill2Now() === n.id) ? '#1b1626' : UI.dim, 'center', 6); }
-    const nm = n.name.length * 6 > colW - 4 ? n.name.slice(0, Math.max(3, Math.floor((colW - 4) / 6))) : n.name;
+    const nm = fitText(n.name, colW - 4, 6);
     text(nm, x, y + NS2 + 1, sel ? '#fff6e0' : st === 'max' ? UI.gold : lit ? UI.text : '#7a7a84', 'center', 6); }
   // FORGET ALL, and then what the chosen skill does
-  const fy = top + 4 * rowH + 1; g.fillStyle = respec ? 'rgba(120,60,60,0.95)' : 'rgba(40,36,54,0.7)'; g.fillRect(VW / 2 - 34, fy, 68, 9);
+  const fy = top + 4 * rowH + 5; g.fillStyle = respec ? 'rgba(120,60,60,0.95)' : 'rgba(40,36,54,0.7)'; g.fillRect(VW / 2 - 34, fy, 68, 9);
   if (respec) { g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(VW / 2 - 33.5, fy + 0.5, 67, 8); }
   text('FORGET ALL', VW / 2, fy + 2, respec ? UI.title : UI.dim, 'center', 6);
-  const dy = fy + 12; g.fillStyle = 'rgba(20,17,32,0.9)'; g.fillRect(8, dy, VW - 16, VH - dy - 11);
+  const dy = fy + 11; g.fillStyle = 'rgba(20,17,32,0.9)'; g.fillRect(8, dy, VW - 16, VH - dy - 10);
   if (treeMsgT > 0) { const w2 = treeMsg.length * 6 + 10; g.fillStyle = 'rgba(40,36,20,0.95)'; g.fillRect(VW / 2 - w2 / 2, fy - 11, w2, 10);
     g.strokeStyle = UI.gold; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, fy - 10.5, w2 - 1, 9); text(treeMsg, VW / 2, fy - 9, UI.gold, 'center', 6); }
   if (respec) text('forget every skill this hero knows and take all the points back. it costs nothing.', VW / 2, dy + 4, UI.dim, 'center', 6);
@@ -1835,7 +1835,7 @@ function drawBestiary() {
   list.forEach((b, i) => { if (i < off || i >= off + ROWS) return; const r = PROG.beasts && PROG.beasts[b.t]; const sel = i === bestI; const yy = ly + (i - off) * 12;
     if (sel) text('>', lx, yy, '#8fd160');
     const nm = r && r.seen ? (BEAST_SHORT[b.t] || b.name) : '? ? ?';
-    const sz = nm.length * 8 > LW2 ? 6 : 8, fit = nm.length * sz > LW2 ? nm.slice(0, Math.floor(LW2 / sz)) : nm;
+    const sz = textW(nm, 8) > LW2 ? 6 : 8, fit = fitText(nm, LW2, sz);
     text(fit, lx + 10, yy + (sz === 6 ? 1 : 0), sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#6a6a6a'), 'left', sz); });
   if (off > 0) text('^', 64, ly - 8, UI.dim, 'center'); if (off + ROWS < list.length) text('v', 64, ly + ROWS * 12, UI.dim, 'center');
   const b = list[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
@@ -1906,7 +1906,7 @@ const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
 const BOSS_T = ['queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
-const BEAST_SHORT = { greathound: 'GREAT HOUND', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
+const BEAST_SHORT = { turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', tideguard: 'TIDEGUARD', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', windcaller: 'WINDCALLER', suncatcher: 'SUNCATCHER', greathound: 'GREAT HOUND', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
 function openMenu(from) { menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
@@ -7499,6 +7499,8 @@ function text(s, x, y, col, align = 'left', size = 8) {
   const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; g.textAlign = align; g.textBaseline = 'top';
   g.fillStyle = ART.OUT; g.fillText(s, x + 1, y + 1); g.fillStyle = col; g.fillText(s, x, y);
 }
+function textW(s, size = 8) { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; return g.measureText(s).width; }
+function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); return t; }
 function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; } for (const w of words) { const t = cur ? cur + ' ' + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
 function pickFrame(set, key, frame, face) {
   const dir = face < 0 ? 'L' : 'R'; let c = key == null ? set[dir] : set[dir][key]; if (Array.isArray(c)) c = c[((frame % c.length) + c.length) % c.length]; return c;
@@ -8772,9 +8774,13 @@ function drawControls() {
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
   text('CONTROLS', VW / 2, y + 6, UI.title, 'center');
   const rows = [['move', 'ARROWS / WASD', 'STICK'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], ['heavy blow', 'HOLD SWING', 'HOLD X'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN ON A LEDGE', 'DOWN'], ['shrine', 'R (RETURN)', '']];
-  text('keyboard', x + 66, y + 20, '#9aa39a'); text('pad', x + w - 10, y + 20, '#9aa39a', 'right');
-  rows.forEach(([a, b, c], i) => { const yy = y + 30 + i * 11; text(a, x + 8, yy, UI.text); text(b, x + 66, yy, '#c9d1dc'); const btn = { A: '#8fd160', B: '#ff6b6b', X: '#5aa0e0', Y: '#ffd36b' }[c]; if (btn) { g.fillStyle = btn; g.beginPath(); g.arc(x + w - 12, yy + 4, 5, 0, 7); g.fill(); text(c, x + w - 12, yy + 1, '#1b1626', 'center', 6); } else text(c, x + w - 8, yy, '#c9d1dc', 'right', c.length > 6 ? 6 : 8); });
-  text('ESC back', VW / 2, y + h - 10, UI.dim, 'center');
+  text('keyboard', x + 80, y + 17, '#9aa39a', 'left', 6); text('pad', x + w - 10, y + 17, '#9aa39a', 'right', 6);
+  rows.forEach(([a, b, c], i) => { const yy = y + 26 + i * 9;
+    text(a, x + 8, yy, UI.text, 'left', 6); text(b, x + 80, yy, '#c9d1dc', 'left', 6);
+    const btn = { A: '#8fd160', B: '#ff6b6b', X: '#5aa0e0', Y: '#ffd36b' }[c];
+    if (btn) { g.fillStyle = btn; g.beginPath(); g.arc(x + w - 12, yy + 3, 4, 0, 7); g.fill(); text(c, x + w - 12, yy + 1, '#1b1626', 'center', 6); }
+    else text(c, x + w - 8, yy, '#c9d1dc', 'right', 6); });
+  text('ESC back', VW / 2, y + h - 9, UI.dim, 'center', 6);
 }
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -9331,7 +9337,7 @@ function render() {
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
     { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; text('a knight, a wood, a mountain', VW / 2, ly + 40, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu, on its own board to the right of the picture
-    { const items = titleItems(), mw = 138, mx = VW - mw - 8, my = 74, mh = items.length * 13 + 24;
+    { const items = titleItems(), mw = 138, mx = VW - mw - 8, mh = items.length * 13 + 24, my = Math.min(74, VH - 16 - mh);
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 140);
       panel(mx + ox, my, mw, mh);
       const want = my + 6 + titleI * 13; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
