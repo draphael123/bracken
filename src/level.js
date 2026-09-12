@@ -2333,7 +2333,15 @@ function longWater() {
   coins([108, 26], [110, 26], [112, 25], [114, 25], [117, 24], [120, 25], [123, 26], [124, 25], [126, 26], [130, 25], [134, 25], [137, 25]); ent('scout', 124, 27, { face: -1 });
 
   // ---- 2. THE FERRY RUN: the river, the raft, the rocks, the sirens and the Bore ----
-  block(140, 277, 34, H - 1); deep(140, 277, 28, 34, { river: true });
+  block(140, 277, 34, H - 1); deep(140, 277, 28, 34, { river: true, flow: 34 }); // it is a river: it carries whatever is in it downstream
+  // ---- THE SUNKEN CART: something went in here with a cart and never came up. Two breaths of trapped air
+  // under the rocks, an old eel in the hollow, and the river pushing you off it the whole time.
+  ent('sign', 137, 26, { text: 'SOMETHING WENT IN OFF THIS DOCK WITH A CART AND NEVER CAME UP. THE AIR UNDER THE ROCKS DOWNSTREAM WILL HOLD YOU IF YOU KNOW WHERE IT IS, AND THE RIVER WILL NOT WAIT WHILE YOU LOOK. THERE IS AN OLD EEL LIVING IN THE HOLLOW WITH IT.' });
+  ent('deco', 196, 31, { kind: 'airBell' }); ent('deco', 228, 31, { kind: 'airBell' });
+  ent('deco', 210, 33, { kind: 'rowboat' }); ent('deco', 220, 33, { kind: 'netPoles' });
+  ent('eel', 206, 33, { big: true }); ent('eel', 222, 33); ent('siren', 200, 31); // THE OLD EEL is what the cart went in with
+  ent('silver', 212, 33); coins([192, 30], [200, 32], [208, 33], [216, 32], [224, 31], [232, 30]);
+
   movers.push({ kind: 'raft', ferry: true, free: true, x0: 140 * TS, x1: 272 * TS, x: 140 * TS, y: 28 * TS - 4, w: 96, h: 8, speed: 58, big: true });
   for (const x of [166, 198, 232, 258]) block(x, x + 1, 26, 33); // rocks in the stream: jump them on the raft, stand on them in the water
   ent('check', 232, 25); // the middle rock: somewhere to come back to on a long river
@@ -2492,7 +2500,7 @@ function shipwreckReef() {
   block(232, 234, 20, 36); block(258, 260, 13, 24); block(258, 260, 30, 36); block(286, 288, 21, 36); block(310, 312, 13, 26);
   // coral pillars, and the way through weaves: over the first, through the window in the second, over the third, under the fourth
   block(262, 280, 34, 36); block(296, 308, 33, 36);
-  deep(210, 330, 13, 37, { reef: true, capped: true }); // rock all the way over it: there is no surface to breathe at
+  deep(210, 330, 13, 37, { reef: true, capped: true, flow: -26 }); // rock all the way over it: there is no surface to breathe at, and the sea under it sets you back the way you came
   darkZones.push({ x0: 262 * TS, x1: 331 * TS, y0: 12 * TS, y1: 38 * TS, dark: 0.72 }); // the deep half of the shelf: the anglers are the only lights in it
   current(236, 256, 14, 36, 1); current(290, 308, 14, 32, -1); // one carries you on, one stands in your way
   ent('check', 270, 33); ent('check', 302, 32);
@@ -2606,8 +2614,13 @@ function theFlotilla() {
   for (const [x, y] of [[40, 29], [62, 29], [82, 29]]) ent('stray', x, y, { kind: 'fisher' });
   for (const x of [38, 60, 80]) ent('deco', x, 29, { kind: 'oarBench' });
   ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
-  ent('cutlass', 44, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 });
-  ent('cutlass', 61, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 }); ent('marine', 51, 10, { face: -1 });
+  // THE PRESS GANG: eight of them in the open with a bosun whistling them onto you. They come in a crowd
+  // because a crowd is the only way they take anybody, and the crowd is the problem to solve.
+  ent('cutlass', 44, 23, { face: -1 }); ent('cutlass', 50, 23, { face: -1 }); ent('cutlass', 56, 23, { face: 1 });
+  ent('cutlass', 61, 23, { face: 1 }); ent('cutlass', 68, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 });
+  ent('cutlass', 84, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 });
+  ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('marine', 51, 10, { face: -1 });
+  ent('sign', 42, 23, { text: 'THE PRESS GANG. EIGHT OF THEM AND A WHISTLE: GET YOUR BACK TO HER MAST AND SWING WIDE, OR TAKE THE BOSUN FIRST AND WATCH THEM STOP COMING.' });
   ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT AND THERE IS A POT ON IT. WHOEVER WAS COOKING WENT UP ON DECK IN A HURRY.' });
   ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
   ent('deco', 66, 23, { kind: 'hammock', v: 0 }); ent('deco', 46, 23, { kind: 'coiledCable', v: 0 });
@@ -2641,7 +2654,11 @@ function theFlotilla() {
   ent('silver', 150, 29);
   ent('sign', 116, 21, { text: 'THE HULK. THEY TOOK HER TWO SUMMERS AGO AND NEVER FINISHED STRIPPING HER. THE GREY PLANKS WILL NOT HOLD A MAN: STAND ON ONE AND YOU WILL GO THROUGH TO WHAT IS UNDER IT.' });
   ent('boarder', 128, 21, { face: -1 }); ent('boarder', 162, 21, { face: -1 });
-  ent('cutlass', 152, 21, { face: 1 }); ent('bosun', 172, 21, { face: -1 }); ent('cutlass', 130, 29, { face: 1 });
+  // THE CHOKE: her boarding net is the only quick way through the hulk's waist and they are standing in the
+  // doorway of it, where a wide swing catches the frame and a heavy blow does not.
+  ent('boarder', 152, 21, { face: -1 }); ent('boarder', 156, 21, { face: -1 }); ent('bosun', 160, 21, { face: -1 });
+  ent('cutlass', 168, 21, { face: -1 }); ent('cutlass', 130, 29, { face: 1 });
+  ent('sign', 148, 21, { text: 'THEY HAVE THE NET DOORWAY. THERE IS NO ROOM IN IT FOR A WIDE SWING: COME THROUGH HEAVY, OR GO ROUND THROUGH HER HOLD.' });
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
   ent('sign', 144, 21, { text: 'THE HOLD IS FULL OF WATER AND SOMEBODY ELSE OWNED IT FIRST. THERE IS A LADDER AT EITHER END.' });
   ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
@@ -2676,8 +2693,14 @@ function theFlotilla() {
   ent('deco', 184, 24, { kind: 'boardingNet' }); ent('deco', 240, 24, { kind: 'boardingNet' });
   ent('cannon', 232, 24, { hole: [245, 247, 24, 26] });
   ent('sign', 228, 24, { text: 'THE GUN IS LAID ON THE FLAGSHIP ALREADY: THEY WERE GOING TO CUT HER OUT IF THE SHARE WENT WRONG. STRIKE IT AND IT WILL OPEN HER SIDE. THE KEGS GO UP IF YOU HIT THEM, SO MIND WHERE YOU ARE STANDING.' });
+  // THE RIGGING: three marines above her deck, shooting down it while you cross, and a spar to go up after them
+  ent('marine', 198, 14, { face: -1 }); ent('marine', 210, 14, { face: -1 }); ent('marine', 222, 14, { face: -1 });
   ent('cutlass', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
   ent('boarder', 236, 24, { face: -1 }); ent('cutlass', 190, 24, { face: 1 });
+  net(196, 197, 15, 23); net(210, 211, 15, 23); net(224, 225, 15, 23);
+  for (let x = 197; x <= 224; x++) set(x, 14, T.ONEWAY);
+  coins([200, 13], [210, 13], [220, 13]);
+  ent('sign', 194, 24, { text: 'MARINES IN HER RIGGING: THEY SHOOT DOWN THE DECK, SO DO NOT WALK IT. THE LINES GO UP EITHER SIDE OF THEM.' });
   ent('lookout', 188, 24, { face: 1 });
   ent('check', 186, 24);
   coins([190, 24], [196, 24], [204, 24], [216, 24], [226, 24], [236, 24]);
@@ -2722,6 +2745,7 @@ function theFlotilla() {
   ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 296, 21, { kind: 'wheel' });
   ent('deco', 244, 21, { kind: 'boardingNet' });
   ent('check', 254, 21); ent('check', 304, 15); ent('silver', 300, 26);
+
   coins([258, 21], [266, 21], [274, 21], [282, 21], [290, 21]);
   coins([252, 26], [266, 26], [278, 26], [296, 26]);
   coins([306, 15], [314, 15], [322, 15], [330, 15]);
@@ -2827,6 +2851,10 @@ function theHurricane() {
   ent('marine', 280, 10, { face: -1 }); ent('lookout', 270, 4, { face: -1 });
   ent('boarder', 240, 19, { face: -1 }); ent('cutlass', 256, 19, { face: -1 }); ent('cutlass', 300, 19, { face: -1 }); ent('boarder', 312, 19, { face: -1 });
   ent('cutlass', 232, 26, { face: 1 }); ent('bosun', 260, 26, { face: -1 }); ent('marine', 292, 12, { face: -1 });
+  // HER PUMPS, amidships, where there was nothing but deck: three strikes on the brake and the water in her
+  // hold goes down for twenty seconds - which is the only way to walk her orlop dry and get what is down there.
+  ent('pump', 244, 19); ent('sign', 240, 19, { text: 'HER PUMPS. WORK THE BRAKE AND THE WATER IN HER HOLD GOES DOWN WHILE THEY RUN. THERE IS SOMETHING IN THE ORLOP THAT IS ONLY THERE WHEN IT IS DRY.' });
+  ent('deco', 248, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });
   ent('sign', 226, 19, { text: 'THE WAIST IS THE WORST OF HER: NO RAIL WORTH THE NAME AND NOTHING TO HOLD BUT THE SHROUDS.' });
   air(236, 237, 20, 20); net(236, 237, 20, 26);
   ent('deco', 228, 19, { kind: 'washing' }); ent('deco', 320, 19, { kind: 'boardingNet' }); ent('deco', 246, 19, { kind: 'kegStack' }); ent('deco', 266, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 308, 19, { kind: 'washing' }); ent('deco', 286, 19, { kind: 'hammock', v: 0 });
@@ -2854,11 +2882,11 @@ function theHurricane() {
   ent('sign', 420, 19, { text: 'UP THROUGH HER AFTER HATCH. SHE IS FULL TO THE ORLOP BACK HERE.' });
 
   // ================= 7. HER FLOODED HOLD: over your boots and rising, and the pumps have stopped =================
-  pools.push({ x0: 424 * TS, x1: 478 * TS, y: 25 * TS + 4, bottom: 27 * TS, shallow: true, depth: 24 });
+  pools.push({ x0: 424 * TS, x1: 478 * TS, y: 25 * TS + 4, bottom: 27 * TS, shallow: true, depth: 24, pumped: true, base: 25 * TS + 4 }); // HER PUMPS answer this one
   ent('torch', 430, 26); ent('torch', 460, 26);
   ent('deco', 436, 26, { kind: 'kegStack' }); ent('deco', 452, 26, { kind: 'rumBarrels', v: 1 }); ent('deco', 472, 26, { kind: 'hammock', v: 1 }); ent('deco', 430, 26, { kind: 'plunder', v: 2 });
   ent('deco', 444, 26, { kind: 'hammock', v: 0 }); ent('deco', 468, 26, { kind: 'plunder', v: 1 });
-  ent('stray', 448, 26, { kind: 'lamp' }); ent('silver', 464, 26);
+  ent('stray', 448, 26, { kind: 'lamp' }); ent('silver', 464, 26); ent('deco', 456, 26, { kind: 'plunder', v: 1 }); coins([446, 26], [454, 26], [462, 26], [470, 26]); // (under the water until the pumps run)
   ent('cutlass', 440, 26, { face: 1 }); ent('marine', 470, 26, { face: -1 }); ent('boarder', 456, 26, { face: -1 }); ent('cutlass', 464, 26, { face: -1 });
   ent('sign', 426, 26, { text: 'THE PUMPS HAVE STOPPED AND NOBODY IS GOING BACK TO THEM. WADING IS SLOW: SHE IS TAKING IT FASTER THAN THAT.' });
   ent('check', 432, 26);

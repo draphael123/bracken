@@ -861,7 +861,8 @@ function spawnEnt(e) {
       case 'petrel': enemies.push({ ...base, t: 'petrel', w: 10, h: 8, hp: EHP.petrel, mode: 'hover', modeT: 1 + Math.random() * 2, hx: px, hy: py, noGrav: true, cd: 1 }); break;
       case 'reefmaw': boss = { ...base, t: 'reefmaw', w: 30, h: 44, hp: EHP.reefmaw, maxHp: EHP.reefmaw, mode: 'sleep', modeT: 0, face: -1, phase: 1, hole: 0, noGrav: true, alpha: 1, rise: 0 }; enemies.push(boss); break;
       case 'turtle': enemies.push({ ...base, t: 'turtle', w: 16, h: 10, hp: EHP.turtle, speed: 14, mode: 'walk', modeT: 0, cd: 0.8 }); break;
-      case 'eel': { const pl = (L.pools || []).find(q => q.swim && px > q.x0 && px < q.x1); enemies.push({ ...base, t: 'eel', w: 20, h: 8, hp: EHP.eel, mode: 'swim', modeT: 0, cd: 1, pool: pl || null, hx: px, hy: py, noGrav: true }); break; }
+      case 'eel': { const pl = (L.pools || []).find(q => q.swim && px > q.x0 && px < q.x1); // an OLD eel is a beast, not a hazard: eight times the eel and it keeps its own health bar
+        enemies.push({ ...base, t: 'eel', w: e.big ? 34 : 20, h: e.big ? 12 : 8, hp: e.big ? EHP.eel * 8 : EHP.eel, maxHp: e.big ? EHP.eel * 8 : undefined, big: !!e.big, mode: 'swim', modeT: 0, cd: 1, pool: pl || null, hx: px, hy: py, noGrav: true }); break; }
       case 'heronfoe': enemies.push({ ...base, t: 'heronfoe', w: 10, h: 20, hp: EHP.heronfoe, mode: 'stand', modeT: 0, cd: 0.6 }); break;
       case 'crab': enemies.push({ ...base, t: 'crab', w: 14, h: 9, hp: EHP.crab, speed: 26, mode: 'walk', modeT: 0, cd: 0.8 }); break;
       case 'scout': enemies.push({ ...base, t: 'scout', w: 8, h: 16, hp: EHP.scout, speed: 36, mode: 'watch', modeT: 0, cd: 1 + Math.random(), throws: 0, alpha: 1 }); break;
@@ -944,6 +945,7 @@ function spawnEnt(e) {
       case 'plank': props.push({ t: 'plank', x: px, y: py, span: e.span, row: e.row, down: false }); break;
       case 'seabell': props.push({ t: 'seabell', x: px, y: py, swing: 0, cd: 0 }); break;
       case 'capstan': props.push({ t: 'capstan', x: px, y: py, spin: 0, turns: 0, link: e.link, done: false }); break;
+      case 'pump': props.push({ t: 'pump', x: px, y: py, spin: 0, turns: 0, run: 0 }); break;
       case 'sluice': props.push({ t: 'sluice', x: px, y: py, spin: 0, held: 0 }); break;
       case 'winch': props.push({ t: 'winch', x: px, y: py, gate: e.gate, gy0: e.gy0, gy1: e.gy1, open: 0, spin: 0, hold: e.hold || 6 }); break;
       case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, hang: !!e.hang, gq: !!e.gq, downT: 0 }); break;
@@ -2436,6 +2438,15 @@ function updatePlayer(dt) {
   const swimP = !P.dead && !P.climb && (L.pools || []).find(p => p.swim && !p.shallow && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 8 && (p.bottom === undefined || P.y <= p.bottom + 4));
   if (swimP && !P.swim) { if (P.vy > 90) { burst(P.x, swimP.y, 12, ['#e8f4f0', '#7cc8c8'], 80, 0.5, 400, 1); SFX.splash(); } P.plunge = false; P.vy *= 0.35; }
   P.swim = !!swimP; const breathMax = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6;
+  if (P.swim && swimP.flow) { // THE CURRENT: it carries you, and it carries you whether you are swimming or not
+    const f = swimP.flow * (P.block || P.aegis ? 0.45 : 1);   // a shield braced across it holds you better
+    // whole pixels only, with the fraction kept: a sub-pixel push is rounded away by the collision step and
+    // the current was doing nothing at all
+    P.driftAcc = (P.driftAcc || 0) + f * dt;
+    const step = Math.trunc(P.driftAcc);
+    if (step) { P.driftAcc -= step; moveBody(P, step, 0, false); }
+    if (Math.random() < dt * 10) parts.push({ x: P.x - Math.sign(f) * 10, y: P.y - 4 - Math.random() * 10, vx: f * 0.8, vy: 0, life: 0.4, max: 0.4, col: '#bfe6f5', size: 1, grav: 0 });
+  }
   if (P.swim) { const under = swimP.capped ? 99 : P.y - swimP.y;
     P.vy += 150 * dt; if (under > 15) P.vy -= 300 * dt; if (keys.down) P.vy += 430 * dt; if (keys.up || (keys.jump && under > 30)) P.vy -= 430 * dt;
     P.vy = Math.max(-190, Math.min(P.plunge ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) P.plunge = false; P.airRolled = false; P.canCut = true;
@@ -2597,6 +2608,10 @@ function updatePlayer(dt) {
   for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 })) { s.dead = true; if (s.net) { const res = damagePlayer(s.x, DMG.netterNet); if (res !== 'blocked') { P.snare = Math.max(P.snare || 0, 1.6); number(P.x, P.y - 26, 'NETTED', '#c9b27c'); burst(s.x, s.y, 10, ['#c9b27c', '#8a7a54'], 50, 0.6, 40, 2); SFX.thud(); } continue; } if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } const sres = damagePlayer(s.x - s.vx * 0.1, s.shot ? DMG.quarterShot : s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? DMG.bolt : s.jav ? DMG.lanceJav : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.soot ? DMG.sweep : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed); if (sres === 'blocked' && s.bolt) returnBolt(s); else if (sres === 'blocked' && ((P.block && tal('bulwark')) || (P.aegis && tal('reflect')))) reflectSeed(s); }
   if (tongue && tongue.active && !P.dead && Math.abs(P.y - 8 - tongue.y) < 9 && ((tongue.dir > 0 && P.x > tongue.x0 && P.x < tongue.x0 + tongue.len) || (tongue.dir < 0 && P.x < tongue.x0 && P.x > tongue.x0 - tongue.len))) { const res = damagePlayer(tongue.x0, DMG.tongue); if (res === 'blocked') { tongue.active = false; boss.mode = 'dazed'; boss.modeT = 1.3; number(boss.x, boss.y - 24, 'BITTEN TONGUE', '#8fd160'); SFX.tongue(); } else if (res === 'hit') { P.vx = tongue.dir * -160; tongue.active = false; } }
   if ((P.relic === 'charm' || PROG.charm === 'lucky') && !P.dead) for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 70 && Math.abs(a.y - P.y) < 50) { a.x += (P.x - a.x) * Math.min(1, dt * 6); a.y += ((P.y - 8) - a.y) * Math.min(1, dt * 6); }
+  for (const p of (L.pools || [])) if (p.flow && p.swim && !p.dry) { // the current takes whatever is loose in it
+    for (const a of acorns) if (!a.got && a.x > p.x0 && a.x < p.x1 && a.y > p.y) a.x += p.flow * 0.35 * dt;
+    for (const e of enemies) if (e.alive && !e.maxHp && (e.t === 'eel' || e.t === 'siren' || e.t === 'urchin' || e.t === 'petrel') && e.x > p.x0 && e.x < p.x1 && e.y > p.y) e.x += p.flow * 0.18 * dt;
+  }
   for (const a of acorns) {
     if (a.got) continue;
     if (a.vy !== undefined) { a.vy += 400 * dt; a.y += a.vy * dt; const ty = Math.floor((a.y + 3) / TS); if (isSolid(Math.floor(a.x / TS), ty)) { a.y = ty * TS - 3; a.vy = 0; } }
@@ -5431,6 +5446,19 @@ function updateCastleProps(dt, hb) {
             if (e.t === 'petrel') { e.mode = 'climb'; e.modeT = 3.5; e.hy -= 40; number(e.x, e.y - 12, 'SCATTERED', '#c9d1dc'); }
             else if (e.t === 'sailor' || e.t === 'netter') { e.stagger = Math.max(e.stagger || 0, 1.6); e.flash = 0.2; number(e.x, e.y - e.h - 10, 'IT LISTENS', '#bfe6f5'); } } } }
     }
+    if (pr.t === 'pump') { // HER PUMPS: work the brake and the water in her hold goes down while it runs
+      pr.spin = Math.max(0, pr.spin - dt);
+      const P2 = (L.pools || []).find(q => q.pumped);
+      if (pr.run > 0) { pr.run -= dt; pr.spin = Math.max(pr.spin, 0.2);
+        if (Math.random() < dt * 26) parts.push({ x: pr.x + (Math.random() - 0.5) * 16, y: pr.y - 14, vx: (Math.random() - 0.5) * 40, vy: -70, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#7fc4e0', size: 1, grav: 200 });
+        if (P2) { P2.pumpY = (P2.pumpY === undefined ? P2.y : P2.pumpY) + 26 * dt; poolLevel(P2, Math.min(P2.base + 30, P2.pumpY)); }
+        if (pr.run <= 0) { pr.turns = 0; number(pr.x, pr.y - 26, 'SHE IS FILLING AGAIN', '#ff9a5c'); SFX.gasp(); } }
+      else if (P2) { P2.pumpY = (P2.pumpY === undefined ? P2.y : P2.pumpY) - 16 * dt; poolLevel(P2, Math.max(P2.base, P2.pumpY)); }
+      const struck = hb && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 20, b: pr.y }) && !P.hitSet.has(pr);
+      if (struck) { P.hitSet.add(pr); pr.turns++; pr.spin = 0.5; SFX.clank(); sparks(pr.x, pr.y - 10, P.face, 4);
+        if (pr.turns >= 3) { pr.run = 20; SFX.gateOpen(); number(pr.x, pr.y - 26, 'THE HOLD IS GOING DOWN', '#8fd160'); shakeCam(3); }
+        else number(pr.x, pr.y - 26, pr.turns + ' OF 3', '#c9b27c'); }
+    }
     if (pr.t === 'capstan') { // THE CAPSTAN: three turns of it and the cargo hoist is free to run
       pr.spin = Math.max(0, pr.spin - dt);
       const struck = hb && overlap(hb, { l: pr.x - 13, r: pr.x + 13, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr);
@@ -6798,6 +6826,35 @@ function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
 // FOUL WATER. Tar, bilge, and whatever a fleet tips over the side: a yellow-green scum on it, slicks turning
 // on the surface, gas breaking out of it, and the broken spars of the wrecks standing up through it. Every one
 // of these says the same thing in a different way, because one signal is never enough.
+// WATER WITH NO BOTTOM. Deep pools kill on contact and they were drawn exactly like water you can swim in.
+// This one has no foam, no crests and no light in it: a black sheen, a cold rim, and the slow turn of
+// something moving a long way down.
+function drawDeadWater(p, x0, x1, y, h, cx, cy) {
+  g.globalAlpha = 0.5; g.fillStyle = '#050a10'; g.fillRect(x0, y + 1, x1 - x0, Math.max(0, h - 1)); g.globalAlpha = 1;
+  g.fillStyle = '#243642'; g.fillRect(x0, y, x1 - x0, 2);
+  g.fillStyle = '#0b1a22'; g.fillRect(x0, y + 2, x1 - x0, 2);
+  g.globalAlpha = 0.5; g.fillStyle = '#38566a';
+  for (let x = Math.floor(p.x0 / 18) * 18; x < p.x1; x += 18) { const sx = Math.round(x + Math.sin(time * 0.5 + x * 0.11) * 7 - cx);
+    if (sx > x0 && sx < x1 - 6) g.fillRect(sx, y + 1 + (Math.sin(time * 0.9 + x) > 0 ? 0 : 1), 6, 1); }
+  g.globalAlpha = 0.28;
+  for (let k = 0; k < 5; k++) { const t2 = (time * 0.16 + k * 0.23) % 1, dx = p.x0 + 20 + ((k * 137) % Math.max(1, p.x1 - p.x0 - 40)) - cx, dy = y + 8 + t2 * 26;
+    if (dx > x0 && dx < x1) { g.fillStyle = '#1e3a48'; g.fillRect(dx, dy, 5, 2); g.fillRect(dx + 1, dy - 2, 3, 2); } }
+  g.globalAlpha = 1;
+}
+// AND THE CURRENT, DRAWN: streaks that travel the way it goes, so the water tells you before it takes you
+function drawFlow(p, x0, x1, y, h, cx, cy) {
+  if (!p.flow) return;
+  const dir = Math.sign(p.flow), sp = Math.min(90, Math.abs(p.flow));
+  g.globalAlpha = 0.33; g.fillStyle = '#dff0f5';
+  for (let r = 0; r < 4; r++) { const ry = y + 6 + r * Math.max(6, Math.floor(h / 5));
+    if (ry > y + h - 2) break;
+    for (let k = 0; k < 7; k++) { const span = Math.max(1, p.x1 - p.x0);
+      const sx = p.x0 + ((time * sp * (0.7 + r * 0.12) + k * span / 7 + r * 23) % span) - cx;
+      if (sx < x0 - 12 || sx > x1) continue;
+      const w = 7 + (k % 3) * 3; g.fillRect(Math.round(sx), ry, w, 1);
+      g.fillRect(Math.round(sx + (dir > 0 ? w : -2)), ry - 1, 2, 1); } }
+  g.globalAlpha = 1;
+}
 function drawFoul(p, x0, x1, y, h, cx, cy) {
   const scum = p.foulCol || '#7a8a3a', scumL = p.foulColL || '#a8b85a', dark = p.foulColD || '#3a4a1e';
   g.globalAlpha = 0.42; g.fillStyle = dark; g.fillRect(x0, y + 2, x1 - x0, Math.max(0, h - 2)); g.globalAlpha = 1;
@@ -6884,6 +6941,8 @@ function drawWater(cx, cy, surfaceOnly = false) {
       g.globalAlpha = 1;
     }
     if (p.harm) { drawFoul(p, x0, x1, y, h, cx, cy); continue; } // it hurts, so it does not get the clean blue surface
+    if (!p.shallow && !p.swim) { drawDeadWater(p, x0, x1, y, h, cx, cy); continue; } // and neither does water with no bottom to it
+    drawFlow(p, x0, x1, y, h, cx, cy);
     // surface: a bright band with travelling crests, and a darker line under it
     g.fillStyle = '#bfe6f5'; g.fillRect(x0, y, x1 - x0, 2);
     g.fillStyle = '#7fc4e0'; g.fillRect(x0, y + 2, x1 - x0, 1);
@@ -7181,6 +7240,16 @@ function drawWorld(cx, cy, showPlayer) {
       if (pr.down) g.drawImage(c, Math.round(pr.span[0] * TS - cx), Math.round(pr.row * TS - cy)); else g.drawImage(c, Math.round(pr.x - c.width / 2 - cx), Math.round(pr.y - c.height - cy)); }
     else if (pr.t === 'seabell') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), sw = Math.round(Math.sin(time * 14) * 2 * Math.min(1, pr.swing));
       g.drawImage(PROP.reef.shipBell, x - 8 + (pr.swing > 0 ? sw : 0), y - 18); }
+    else if (pr.t === 'pump') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), on = pr.run > 0;
+      g.fillStyle = '#3a3a44'; g.fillRect(x - 8, y - 14, 16, 14); g.fillStyle = '#5a6270'; g.fillRect(x - 8, y - 14, 16, 3);
+      g.fillStyle = '#2a2630'; g.fillRect(x - 5, y - 11, 10, 8);
+      g.fillStyle = on ? '#8fd160' : '#9aa39a'; for (let k = 0; k < 3; k++) g.fillRect(x - 4 + k * 4, y - 10 + (on && (Math.floor(time * 9) + k) % 2 ? 1 : 0), 2, 6);
+      { const a = pr.spin > 0 ? time * 14 : 0.4; g.strokeStyle = '#c9b27c'; g.lineWidth = 2; g.beginPath();
+        g.moveTo(x, y - 16); g.lineTo(x + Math.cos(a) * 11, y - 16 - Math.sin(a) * 5); g.stroke(); }
+      g.fillStyle = '#6f7a84'; g.fillRect(x - 10, y - 1, 20, 2);
+      if (on) { g.fillStyle = '#bfe6f5'; g.fillRect(x + 7, y - 8, 3, 8); text(Math.ceil(pr.run) + 'S', x, y - 24, '#8fd160', 'center', 6); }
+      else if (pr.turns) text(pr.turns + '/3', x, y - 24, '#c9b27c', 'center', 6);
+    }
     else if (pr.t === 'capstan') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
       g.save(); g.translate(x, y - 10); g.rotate(pr.turns * 0.5 + (pr.spin > 0 ? Math.sin(time * 20) * 0.12 : 0)); g.drawImage(PROP.reef.capstan, -13, -10); g.restore();
       if (!pr.done) { g.fillStyle = '#c9b27c'; for (let k = 0; k < 3; k++) { g.globalAlpha = k < pr.turns ? 1 : 0.3; g.fillRect(x - 5 + k * 4, y - 24, 3, 3); } g.globalAlpha = 1; } }
