@@ -455,10 +455,12 @@ bakeAll();
 applySkin();
 
 // ---------- level ----------
-let L = null, LW = 0, LH = 0, levelIndex = 0, grid0 = null, tileSpr = null;
+let L = null, LW = 0, LH = 0, levelIndex = 0, grid0 = null, tileSpr = null, tileDeep = null;
 const decor = [];
 const tileAt = (tx, ty) => (tx < 0 || tx >= LW) ? T.SOLID : (ty < 0 || ty >= LH) ? T.AIR : L.grid[ty * LW + tx];
+const solidish = (x, y) => { const t = tileAt(x, y); return t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.SOFT || t === T.ICE || t === T.CLIMB || t === T.WEB; };
 function resolveTiles() {
+  if (!tileDeep || tileDeep.length !== LW * LH) tileDeep = new Uint8Array(LW * LH);
   const rnd = mulberry(7);
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
@@ -526,6 +528,9 @@ function resolveTiles() {
     else if (t === T.SPIKE) s = TILE.thorns[(rnd() * 4) | 0];
     else if (t === T.CRATE) s = TILE.crate;
     tileSpr[y * LW + x] = s;
+    { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
+      let d = 0; if (solidish(x, y)) { while (d < 9 && solidish(x, y - 1 - d)) d++; }
+      tileDeep[y * LW + x] = d; }
   }
   // a boss floor is a fighting floor: no fallen logs, stumps, fences, bushes, carts or campfires scattered on it (they read as things to jump or hide behind)
   const BULKY = new Set(['log', 'stump', 'fence', 'bush', 'cart', 'tent', 'fire', 'skull']);
@@ -1532,7 +1537,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
 const PAUSE_ITEMS = ['Resume', 'Talents', 'Equip', 'Hero', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Font', 'Text colour', 'UI colour', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Back'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
 const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
@@ -1545,7 +1550,7 @@ const SETTING_TIPS = {
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
-  'Font': 'the face everything is written in', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds',
+  'Ground light': 'depth, carved edges and a sun on the ground', 'The air': 'haze, drifting motes and things in the way', 'Font': 'the face everything is written in', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds',
   'Brightness': 'lifts or drops the whole picture', 'Screen filter': 'a colour grade over everything', 'Film grain': 'a faint moving grain, like old tape',
   'Parallax': 'how many background layers move', 'Arena tint': 'the colour wash over boss rooms', 'Particles': 'how much comes off a hit',
   'Foe outline': 'a bright rim on foes, easier to pick out', 'Boss intro': 'the letterbox and the name card', 'Foe health': 'bars over hurt foes',
@@ -1573,6 +1578,8 @@ function menuAdjust(dir) {
   else if (k === 'Foe outline') SET.rim = !SET.rim;
   else if (k === 'Film grain') SET.grain = !SET.grain;
   else if (k === 'Screen shake') { const i = SHAKES.indexOf(SET.shakeAmt); SET.shakeAmt = SHAKES[(i < 0 ? 2 : i + dir + SHAKES.length) % SHAKES.length]; SET.shake = SET.shakeAmt > 0; }
+  else if (k === 'Ground light') SET.groundLight = SET.groundLight === false;
+  else if (k === 'The air') SET.air = SET.air === false;
   else if (k === 'Font') { const i = Math.max(0, FONTS.findIndex(f => f.id === SET.font)); SET.font = FONTS[(i + dir + FONTS.length) % FONTS.length].id; }
   else if (k === 'Text colour') { const i = Math.max(0, INKS.findIndex(f => f.id === SET.ink)); SET.ink = INKS[(i + dir + INKS.length) % INKS.length].id; applyLook(); }
   else if (k === 'UI colour') { const i = Math.max(0, UI_THEMES.findIndex(f => f.id === SET.uiTheme)); SET.uiTheme = UI_THEMES[(i + dir + UI_THEMES.length) % UI_THEMES.length].id; applyLook(); }
@@ -5350,7 +5357,7 @@ function updateEnemies(dt) {
   }
   seeds = seeds.filter(s => !s.dead);
   if (bossMusicT > 0) { bossMusicT -= dt; if (bossMusicT <= 0 && bossActive) music.play(L.arena.music || 'boss'); }
-  updateRain(dt); updateVines(dt); updateRocks(dt); updateEscape(dt);
+  updateRain(dt); updateVines(dt); updateRocks(dt); updateEscape(dt); updateAir(dt);
   if (bossWon > 0) { bossWon -= dt; if (Math.random() < dt * 6) burst(boss.x + (Math.random() - 0.5) * 40, boss.y - 10 - Math.random() * 20, 8, COLS.queen, 80, 0.5); if (bossWon <= 0) winLevel(); }
 }
 function updateCorpses(dt) {
@@ -5853,6 +5860,84 @@ function updatePolish(dt) {
   for (const f of fish) { f.vy += 380 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.life -= dt; if (f.vy > 0 && f.y >= f.sy) { f.life = 0; burst(f.x, f.sy, 5, ['#eefaff', '#bfe6f5'], 50, 0.3, 300, 1); } }
   fish = fish.filter(f => f.life > 0);
 }
+// THE AIR. Every level has some: a depth haze that sits between the far country and the ground you stand on,
+// so the background stops being a poster stuck behind the level; and a bed of whatever that air carries -
+// pollen off the wood, dust off the crags, spray off the sea, ash off the forges. It is the cheapest depth
+// there is and the game had almost none of it.
+const AIR = {
+  wood: { haze: '#cfe6a8', a: 0.10, mote: 'pollen', n: 14 }, marsh: { haze: '#b8d8c0', a: 0.13, mote: 'midge', n: 16 },
+  stockade: { haze: '#e0cfa0', a: 0.10, mote: 'ash', n: 10 }, spore: { haze: '#c0a0e0', a: 0.14, mote: 'spore', n: 16 },
+  kings: { haze: '#d8e8b0', a: 0.10, mote: 'pollen', n: 14 }, scree: { haze: '#e8c8a0', a: 0.12, mote: 'dust', n: 12 },
+  hanging: { haze: '#f0d0b0', a: 0.12, mote: 'dust', n: 12 }, spire: { haze: '#dff0ff', a: 0.14, mote: 'snow', n: 18 },
+  moor: { haze: '#dfe6f0', a: 0.13, mote: 'dust', n: 10 }, storm: { haze: '#cfd8ea', a: 0.12, mote: 'ash', n: 12 },
+  crown: { haze: '#e8c0b0', a: 0.12, mote: 'ash', n: 12 }, longwater: { haze: '#ffdcb0', a: 0.12, mote: 'spray', n: 12 },
+  reef: { haze: '#b8ccc8', a: 0.15, mote: 'spray', n: 14 }, flotilla: { haze: '#fff0c0', a: 0.12, mote: 'spray', n: 12 },
+};
+const MOTE = { pollen: ['#f0f0b0', '#ffffd0', 18, -6], midge: ['#2e2a24', '#3a3630', 12, 0], ash: ['#c8c0b4', '#8a8278', 14, -4],
+  spore: ['#d8b0ff', '#f0e0ff', 10, -8], dust: ['#e8d0a8', '#fff0d0', 16, 2], snow: ['#eaf6ff', '#ffffff', 10, 14],
+  spray: ['#e8f4f0', '#ffffff', 22, 4] };
+let airMotes = [];
+function updateAir(dt) {
+  const A = AIR[curId()]; if (!A || SET.air === false || !SET.weather || !SET.ambient) { airMotes.length = 0; return; }
+  const want = SET.parts === 'few' ? Math.round(A.n * 0.4) : A.n;
+  while (airMotes.length < want) airMotes.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, ph: Math.random() * 7, sp: 0.5 + Math.random(), z: Math.random() < 0.4 ? 0 : 1 });
+  const M = MOTE[A.mote] || MOTE.dust;
+  for (const m of airMotes) { m.ph += dt * m.sp;
+    m.x += (M[2] * 0.6 * m.sp + Math.sin(m.ph) * 6) * dt; m.y += (M[3] * m.sp + Math.cos(m.ph * 0.7) * 4) * dt;
+    if (m.x > camX + VW + 8) m.x = camX - 8; if (m.x < camX - 8) m.x = camX + VW + 8;
+    if (m.y > camY + VH + 8) m.y = camY - 8; if (m.y < camY - 8) m.y = camY + VH + 8;
+  }
+}
+// THINGS IN THE WAY. Nothing in this game ever passed between the camera and the knight, which is the cheapest
+// depth there is. Every two hundred pixels or so, something near the lens crosses the frame: a trunk in the wood,
+// a rock shoulder in the crags, a hanging rope at sea, a mast on the ships. Narrow and see-through, so they never
+// hide the fight - they just put something between you and it.
+function drawOccluders(cx, cy) {
+  const dress = (L.palette && (L.palette.dress || L.palette.set)) || 'wood';
+  if (L.shop || L.trial || dress === 'none' || SET.air === false) return;
+  const A = AIR[curId()], tint = A ? A.haze : '#c0c0c0';
+  const px = cx * 1.14, step = 232;
+  const i0 = Math.floor(px / step) - 1, i1 = Math.ceil((px + VW) / step) + 1;
+  for (let i = i0; i <= i1; i++) {
+    const h = Math.abs(Math.sin(i * 12.9898 + 7.233) * 43758.5453) % 1;
+    if (h < 0.45) continue;
+    const x = Math.round(i * step + (h - 0.5) * 90 - px), w = 9 + Math.round(h * 8);
+    if (x < -60 || x > VW + 60) continue;
+    const pxs = P.x - cx; g.globalAlpha = (0.5 + h * 0.16) * (Math.abs(pxs - x) < 26 && !P.dead ? 0.42 : 1); // it fades off you rather than hiding the fight
+    if (dress === 'crag' || dress === 'reef' || dress === 'shore') { // a shoulder of rock leaning into the frame
+      g.fillStyle = '#181c22'; g.beginPath(); g.moveTo(x - w, VH); g.lineTo(x - w + 3, VH - 60 - h * 40); g.lineTo(x + w, VH - 40 - h * 30); g.lineTo(x + w + 5, VH); g.closePath(); g.fill();
+      g.globalAlpha *= 0.5; g.fillStyle = tint; g.fillRect(x - w + 2, VH - 58 - h * 40, 2, 58 + h * 40);
+    } else if (dress === 'ship') { // a mast and its rigging, right by the lens
+      g.fillStyle = '#20170f'; g.fillRect(x, 0, w - 3, VH);
+      g.fillStyle = '#2c2116'; g.fillRect(x + w - 3, 0, 2, VH);
+      g.globalAlpha *= 0.8; g.strokeStyle = '#2a2118'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 2, 0); g.lineTo(x + 26 + h * 20, VH); g.stroke();
+    } else if (dress === 'marsh' || dress === 'myc') { // reeds and stems
+      g.fillStyle = '#101a14'; for (let k = 0; k < 4; k++) { const sx = x + k * 5, bend = Math.sin(time * 0.6 + i + k) * 4; g.beginPath(); g.moveTo(sx, VH); g.lineTo(sx + bend, VH - 70 - h * 50); g.lineTo(sx + 3 + bend, VH - 70 - h * 50); g.lineTo(sx + 3, VH); g.closePath(); g.fill(); }
+    } else { // a trunk, and a bough over the top of the frame
+      g.fillStyle = '#1a1410'; g.fillRect(x, 0, w, VH);
+      g.fillStyle = '#241c14'; g.fillRect(x + w - 3, 0, 3, VH);
+      g.globalAlpha *= 0.9; g.fillStyle = '#141a12';
+      g.beginPath(); g.moveTo(x + w, 8 + h * 14); g.quadraticCurveTo(x + w + 40, 2 + h * 10, x + w + 74, 16 + h * 20); g.lineTo(x + w + 74, 22 + h * 20); g.quadraticCurveTo(x + w + 40, 10 + h * 10, x + w, 16 + h * 14); g.closePath(); g.fill();
+    }
+    g.globalAlpha = 1;
+  }
+}
+function drawAirHaze(cx, cy) { // between the background and the ground
+  const A = AIR[curId()]; if (!A || SET.air === false) return;
+  const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, A.haze); gr.addColorStop(0.55, A.haze); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.globalAlpha = A.a * (L.night ? 0.4 : 1); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
+}
+function drawMotes(cx, cy, front) {
+  const A = AIR[curId()]; if (!A || !airMotes.length) return;
+  const M = MOTE[A.mote] || MOTE.dust;
+  for (const m of airMotes) { if ((m.z === 1) !== !!front) continue;
+    const x = Math.round(m.x - cx * (m.z ? 1.06 : 0.94)), y = Math.round(m.y - cy);
+    if (x < -4 || x > VW + 4 || y < -4 || y > VH + 4) continue;
+    g.globalAlpha = (m.z ? 0.5 : 0.32) * (0.6 + 0.4 * Math.sin(m.ph * 1.7));
+    g.fillStyle = m.z ? M[1] : M[0]; g.fillRect(x, y, m.z ? 2 : 1, m.z ? 2 : 1);
+  }
+  g.globalAlpha = 1;
+}
 const weatherAt = () => { let w = null; for (const z of (L.weather || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) w = w ? w + '+' + z.kind : z.kind; return w || ''; };
 function updateWeather(dt) {
   const area = VW * VH / 57600;
@@ -6236,6 +6321,51 @@ function bakeHouseFront(h) {
   { const hx = (doorPx | 0) - 8; x.fillStyle = '#e8dcc0'; x.fillRect(hx, 6, 4, 2); x.fillRect(hx - 2, 3, 2, 4); x.fillRect(hx + 12, 6, 4, 2); x.fillRect(hx + 16, 3, 2, 4); x.fillStyle = '#6a4428'; x.fillRect(hx + 4, 5, 8, 4); x.fillStyle = '#ff6b4a'; x.fillRect(hx + 6, 6, 1, 1); x.fillRect(hx + 9, 6, 1, 1); }
   return c;
 }
+// GROUND LIGHT. Three cheap passes over the tiles in view, and the reason a slab of rock stops looking like a
+// slab of rock. DEPTH: the further under open air a tile sits the darker it is, so ground has mass. CARVE: a
+// shadow thrown into the air under every overhang and beside every wall, so ground looks cut instead of pasted.
+// THE SUN: every level says where its light comes from and what colour it is, so the lit lips, the shaded faces
+// and the sky all agree.
+// the three shadows a carved edge throws, baked once: drawing a gradient per tile per frame is not free
+const AO = (() => { const mk = (w, h, dir, a) => { const [c, q] = ART.canvas ? ART.canvas(w, h) : [(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; return cv; })(), null];
+    const ctx = q || c.getContext('2d');
+    const gr = dir === 'down' ? ctx.createLinearGradient(0, 0, 0, h) : dir === 'left' ? ctx.createLinearGradient(0, 0, w, 0) : ctx.createLinearGradient(w, 0, 0, 0);
+    gr.addColorStop(0, 'rgba(8,8,16,' + a + ')'); gr.addColorStop(1, 'rgba(8,8,16,0)'); ctx.fillStyle = gr; ctx.fillRect(0, 0, w, h); return c; };
+  return { top: mk(16, 7, 'down', 0.4), left: mk(5, 16, 'left', 0.3), right: mk(5, 16, 'right', 0.3) };
+})();
+const SUNS = { wood: [1, '#ffe9b0', 0.16], marsh: [-1, '#cfe0d0', 0.12], stockade: [1, '#ffd9a0', 0.14], spore: [1, '#c9a0ff', 0.1],
+  kings: [1, '#ffe9b0', 0.14], scree: [-1, '#ffc890', 0.16], hanging: [-1, '#ffd0a0', 0.16], spire: [1, '#eaf6ff', 0.2],
+  moor: [-1, '#dfe6f0', 0.12], storm: [-1, '#e0e8ff', 0.12], crown: [-1, '#ffc0a0', 0.14],
+  longwater: [1, '#ffd9a8', 0.18], reef: [1, '#d8e8e4', 0.12], flotilla: [-1, '#fff4d0', 0.2] };
+function drawGroundLight(cx, cy, tx0, ty0) {
+  if (SET.groundLight === false) return;
+  const sun = SUNS[curId()] || [1, '#ffe9b0', 0.14], dir = sun[0];
+  const W = Math.ceil(VW / TS) + 1, H = Math.ceil(VH / TS) + 1;
+  g.fillStyle = '#0a0a12';
+  for (let ty = ty0; ty <= ty0 + H; ty++) for (let tx = tx0; tx <= tx0 + W; tx++) {
+    if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
+    const d = tileDeep[ty * LW + tx]; if (!d) continue;
+    g.globalAlpha = Math.min(0.34, d * 0.05); g.fillRect(tx * TS - cx, ty * TS - cy, TS, TS);
+  }
+  g.globalAlpha = 1;
+  for (let ty = ty0; ty <= ty0 + H; ty++) for (let tx = tx0; tx <= tx0 + W; tx++) {
+    if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1) continue;
+    if (solidish(tx, ty)) continue;
+    const x = tx * TS - cx, y = ty * TS - cy;
+    if (solidish(tx, ty - 1)) g.drawImage(AO.top, x, y);
+    if (solidish(tx - 1, ty)) g.drawImage(AO.left, x, y);
+    if (solidish(tx + 1, ty)) g.drawImage(AO.right, x + TS - 5, y);
+  }
+  for (let ty = ty0; ty <= ty0 + H; ty++) for (let tx = tx0; tx <= tx0 + W; tx++) {
+    if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
+    if (!solidish(tx, ty)) continue;
+    const x = tx * TS - cx, y = ty * TS - cy;
+    if (!solidish(tx, ty - 1)) { g.globalAlpha = sun[2]; g.fillStyle = sun[1]; g.fillRect(x, y, TS, 2); g.globalAlpha = sun[2] * 0.5; g.fillRect(x, y + 2, TS, 1); }
+    if (!solidish(tx + dir, ty)) { g.globalAlpha = sun[2] * 0.7; g.fillStyle = sun[1]; g.fillRect(dir > 0 ? x + TS - 2 : x, y, 2, TS); }
+    if (!solidish(tx - dir, ty)) { g.globalAlpha = 0.16; g.fillStyle = '#0a0a12'; g.fillRect(dir > 0 ? x : x + TS - 2, y, 2, TS); }
+  }
+  g.globalAlpha = 1;
+}
 function drawHouses(cx, cy) {
   for (const h of (L.houses || [])) { const x = h.x0 * TS - cx, y = h.y0 * TS - cy, w = (h.x1 - h.x0 + 1) * TS; if (x > VW || x + w < 0) continue;
     if (!h.spr) h.spr = bakeHouseFront(h); g.drawImage(h.spr, Math.round(x), Math.round(y));
@@ -6279,12 +6409,14 @@ function drawWorld(cx, cy, showPlayer) {
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0) continue; const earth = st === 'earth', stone = st === 'stone', glass = st === 'crystal'; g.fillStyle = earth ? '#2c1e14' : stone ? '#2a2c36' : glass ? '#3a3c5a' : '#2a1a10'; g.fillRect(sx, sy, w, h);
     if (glass) { g.fillStyle = '#4a4e74'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7); g.fillStyle = '#2a2c44'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#7a8ac8'; for (let i = 0; i < w * h / 700; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 61) % h); g.fillRect(rx, ry, 1, 3 + (i % 3) * 2); g.fillRect(rx + 1, ry + 2, 1, 2); } for (let i = 0; i < w * h / 500; i++) { const rx = sx + ((i * 131 + 7) % w), ry = sy + ((i * 71 + 3) % h); const tw = 0.5 + 0.5 * Math.sin(time * 3 + i * 1.7); if (tw > 0.75) { g.fillStyle = tw > 0.92 ? '#eefaff' : '#7aa8c8'; g.fillRect(rx, ry, 1, 1); } } continue; }
     if (stone) { g.fillStyle = '#363a46'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7); g.fillStyle = '#1e2028'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); continue; } if (earth) { g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); } g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2); continue; } g.fillStyle = '#3a2618'; for (let yy = sy + 4; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1); g.fillStyle = '#1e120a'; for (let xx = sx + ((cx * 0) % 40); xx < sx + w; xx += 40) g.fillRect(xx, sy, 1, h); }
+  drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
     const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0));
   }
+  drawGroundLight(cx, cy, tx0, ty0);
   for (const z of (L.stone || [])) { if (!z.spr) z.spr = bakeMenhir(z); const x = z[0] * TS - 6 - cx, y = z[2] * TS - 8 - cy; if (x < VW && y < VH && x > -z.spr.width && y > -z.spr.height) g.drawImage(z.spr, Math.round(x), Math.round(y)); }
   for (const r of (L.ropes || [])) { g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(r.x0 - cx) + 0.5, Math.round(r.y0 - cy) + 0.5); g.lineTo(Math.round(r.x1 - cx) + 0.5, Math.round(r.y1 - cy) + 0.5); g.stroke(); for (const [px, py, gy] of (r.posts || [])) { const x = Math.round(px - cx); g.fillStyle = '#4a3020'; g.fillRect(x - 2, Math.round(py - cy) - 4, 4, gy - py + 4); g.fillStyle = '#6a4a30'; g.fillRect(x - 1, Math.round(py - cy) - 4, 1, gy - py + 4); g.fillStyle = '#8b8378'; g.fillRect(x - 4, Math.round(py - cy) - 6, 8, 3); } }
   drawShards(cx, cy);
@@ -6713,6 +6845,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   for (const d of drops) g.drawImage(PROP.drop, Math.round(d.x - cx), Math.round(d.y - cy));
   if (lightFlash > 0) { g.fillStyle = 'rgba(235,240,255,' + (lightFlash > 0.12 ? 0.75 : lightFlash > 0.06 ? 0.2 : 0.45) + ')'; g.fillRect(0, 0, VW, VH); }
+  drawOccluders(cx, cy); drawMotes(cx, cy, true);
   drawLayer(BG.fg, 1.25, 0, cx, cy);
   if (dk > 0) { g.globalCompositeOperation = 'multiply'; g.globalAlpha = dk * 0.55; const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#8a6aa0'); gr.addColorStop(1, '#ffb070'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   if (L.fog && L.fog.length && state !== 'win') { // marsh fog: a bank you see through only near yourself and the wisps
@@ -6852,7 +6985,7 @@ function drawMenu() {
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     text(k, x + 16 + (sel ? 2 : 0), yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label + ' HERE' : DIFF[SET.difficulty].label + ' (DEFAULT)') : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label + ' HERE' : DIFF[SET.difficulty].label + ' (DEFAULT)') : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     if (v) { const vw = String(v).length * 6 + (sel ? 22 : 8); g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(sel ? '< ' + v + ' >' : String(v), x + w - 14, yy, col, 'right'); }
   });
   { const k = M[menuI], tip = SETTING_TIPS[k];
@@ -7021,7 +7154,7 @@ function edMount(rebake) {
   L = edLevelObj(edDoc, false); LW = L.W; LH = L.H;
   if (rebake) bakeAll(L.palette || {});
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set();
-  tileSpr = new Array(LW * LH).fill(null); resolveTiles();
+  tileSpr = new Array(LW * LH).fill(null); tileDeep = new Uint8Array(LW * LH); resolveTiles();
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
   edRespawn();
 }
