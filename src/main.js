@@ -1101,16 +1101,26 @@ function respawn() { P.martyrUsed = false; P.airRolled = false;
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
 }
 // the order is not the story order: a rush wants a ramp with a pulse in it, and the minis are the breathers
+// THE ORDER THEY ARE MET IN. The rush used to run in the order they happened to be written down, which put
+// the Chieftain before the Frog King and the Lance after the Captain. It is the campaign's own order now,
+// wood to drowned city, and each level's mini before its boss.
 const RUSH = [
-  { lv: 'wood', boss: 'queen' }, { lv: 'stockade', boss: 'chief' }, { lv: 'marsh', boss: 'frog' },
-  { lv: 'kings', boss: 'greathound', mini: true }, { lv: 'spore', boss: 'mother' }, { lv: 'scree', boss: 'ram' },
-  { lv: 'hanging', boss: 'spider', mini: true }, { lv: 'hanging', boss: 'owl' }, { lv: 'kings', boss: 'king' },
-  { lv: 'longwater', boss: 'herald' }, { lv: 'reef', boss: 'reefmaw' }, { lv: 'moor', boss: 'windcaller' },
-  { lv: 'crown', boss: 'forgemaster', mini: true }, { lv: 'spire', boss: 'roc' },
+  { lv: 'wood', boss: 'queen' },
+  { lv: 'marsh', boss: 'frog' },
+  { lv: 'stockade', boss: 'chief' },
+  { lv: 'spore', boss: 'mother' },
+  { lv: 'kings', boss: 'greathound', mini: true }, { lv: 'kings', boss: 'king' },
+  { lv: 'scree', boss: 'ram' },
+  { lv: 'hanging', boss: 'spider', mini: true }, { lv: 'hanging', boss: 'owl' },
+  { lv: 'spire', boss: 'roc' },
+  { lv: 'moor', boss: 'windcaller' },
+  { lv: 'storm', boss: 'lance' },
+  { lv: 'crown', boss: 'forgemaster', mini: true }, { lv: 'crown', boss: 'gqueen' },
+  { lv: 'longwater', boss: 'herald' },
+  { lv: 'reef', boss: 'reefmaw' },
   { lv: 'flotilla', boss: 'quarter' },
-  { lv: 'lamplit', boss: 'lampreeve', mini: true },
-  { lv: 'hurricane', boss: 'captain' }, { lv: 'storm', boss: 'lance' }, { lv: 'crown', boss: 'gqueen' },
-  { lv: 'lamplit', boss: 'tollmaster' },
+  { lv: 'hurricane', boss: 'captain' },
+  { lv: 'lamplit', boss: 'lampreeve', mini: true }, { lv: 'lamplit', boss: 'tollmaster' },
 ];
 let rush = null; // { i, lives, hits, t, single }
 const rushOn = () => !!rush;
