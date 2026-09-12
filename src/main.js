@@ -1134,6 +1134,51 @@ function rushLoad() {
   loadLevel(li); startGame();
   rushEnter(step);
 }
+function colosseumise(A) {
+  const fy = Math.floor(A.floor / TS), tx0 = Math.floor(A.x0 / TS), tx1 = Math.ceil(A.x1 / TS);
+  const L0 = Math.max(1, tx0 - 7), R0 = Math.min(LW - 2, tx1 + 7);
+  const top = Math.max(0, fy - 26);
+  for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
+    if (x > L0 && x < R0) continue;                       // the fight keeps its own room, whatever is in it
+    L.grid[y * LW + x] = y > fy ? T.SOLID : T.AIR;        // sand under it, open sky over it
+  }
+  for (let y = top; y <= fy; y++) for (const x of [L0 - 1, L0, R0, R0 + 1]) if (x > 0 && x < LW) L.grid[y * LW + x] = T.SOLID;
+  for (let x = L0 - 1; x <= R0 + 1; x++) if (x > 0 && x < LW) { L.grid[(fy + 1) * LW + x] = T.SOLID; L.grid[(fy + 2) * LW + x] = T.SOLID; }
+  tileSpr = new Array(LW * LH).fill(null); decor.length = 0; deco.length = 0;
+  L.interiors = [[L0 - 1, R0 + 1, top, fy - 1, 'colosseum']];
+  L.weather = []; L.ambient = [{ x0: 0, x1: 99999, kind: 'crowd' }];
+  L.fog = null; L.darkZones = null; L.houses = null; L.castle = false; L.colosseum = true; L.night = false; L.dark = 0; L.duskStart = 99999;
+  // the furniture of the bowl itself: braziers along both lips, and her colours over them
+  props = props.filter(pr => pr.x / TS > L0 && pr.x / TS < R0);
+  for (const x of [L0 + 1, R0 - 1]) { props.push({ t: 'brazier', x: x * TS + 8, y: fy * TS, lit: true }); lights.push({ x: x * TS + 8, y: fy * TS - 14, r: 54 }); }
+  colT = 0;
+}
+let colT = 0, colPortal = null;
+// THE PORTAL. It opens where the last one fell, and it is the only way on.
+function openPortal() {
+  const A = L.arena || L.mini; if (!A) return;
+  colPortal = { x: (A.x0 + A.x1) / 2, y: A.floor, t: 0 };
+  SFX.sting(); ringAt(colPortal.x, colPortal.y - 16, 30, '#c9a0ff', 0.4);
+}
+function updatePortal(dt) {
+  if (!colPortal) return; colPortal.t += dt;
+  if (Math.random() < dt * 30) parts.push({ x: colPortal.x + (Math.random() - 0.5) * 18, y: colPortal.y - Math.random() * 30, vx: 0, vy: -50 - Math.random() * 40, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#c9a0ff' : '#e0c0ff', size: 2, grav: -20 });
+  if (colPortal.t > 0.6 && !P.dead && Math.abs(P.x - colPortal.x) < 14 && Math.abs(P.y - colPortal.y) < 30) {
+    colPortal = null; rush.i++; rushLoad();
+  }
+}
+function drawPortal(cx, cy) {
+  if (!colPortal) return;
+  const x = Math.round(colPortal.x - cx), y = Math.round(colPortal.y - cy), k = Math.min(1, colPortal.t * 2);
+  const h = Math.round(34 * k), w = Math.round(13 * k);
+  g.globalAlpha = 0.85;
+  for (let i = 0; i < 5; i++) { g.fillStyle = ['#2a1040', '#4a1c6a', '#6a2a9a', '#9a5acc', '#c9a0ff'][i];
+    const ww = Math.round(w * (1 - i * 0.16)), hh = Math.round(h * (1 - i * 0.1));
+    g.fillRect(x - ww, y - hh + Math.round(Math.sin(time * 3 + i) * 1.5), ww * 2, hh); }
+  g.globalAlpha = 1;
+  g.fillStyle = '#e0c0ff'; for (let i = 0; i < 6; i++) { const a = time * 2 + i; g.fillRect(x + Math.round(Math.cos(a) * w * 1.2), y - h / 2 + Math.round(Math.sin(a * 1.3) * h * 0.4), 2, 2); }
+  text('ONWARD', x, y - h - 12, Math.floor(time * 3) % 2 ? '#e0c0ff' : '#c9a0ff', 'center', 6);
+}
 // drop the player in the arena, start the fight, and take the level away from around it
 function rushEnter(step) {
   const A = step.mini ? L.mini : L.arena; if (!A) { rush.i++; rushLoad(); return; }
@@ -1151,6 +1196,7 @@ function rushEnter(step) {
   boss = enemies.find(e => e.t === who) || enemies[0] || null;
   if (!boss) { rush.i++; rushLoad(); return; }
   if (step.mini) { miniActive = true; L.arena = L.mini; } // the mini's room IS the arena for the length of the rush
+  colosseumise(L.arena); colPortal = null;
   bossActive = false; bossStart();
   bannerT = 2.6; rush.started = true; rush.deadFor = 0; rushMsg = 'FIGHT ' + (rush.i + 1) + ' OF ' + RUSH.length; rushMsgT = 2.6;
 }
@@ -1160,7 +1206,8 @@ function rushBossDown() {         // called when the fight is over instead of wi
   rush.started = false;
   rush.hits += hitsTaken; rush.t += levelTime;
   if (rush.single) { rushWin(); return; }
-  rushNext = 3.4; rushMsg = 'NEXT: ' + rushName(RUSH[rush.i + 1]); rushMsgT = 3.4;
+  rushMsg = RUSH[rush.i + 1] ? 'THE GATE OPENS. NEXT: ' + rushName(RUSH[rush.i + 1]) : 'THE LAST OF THEM'; rushMsgT = 4;
+  if (RUSH[rush.i + 1]) openPortal(); else rushNext = 2.2;
   healths.push({ x: P.x + 20, y: P.y - 20, vy: -140, t: 0 });   // one heart for the win
   P.st = P.maxSt;
 }
@@ -2882,7 +2929,7 @@ function guardTurned() {
 }
 function attackBox() {
   if (isReaper() && P.heavy && P.atk >= 0.03 && P.atk < 0.26) {   // THE REAPING: a full circle, both sides of him
-    const r = 34 + 4 * tal('longHaft');
+    const r = 40 + 4 * tal('longHaft');
     return { l: P.x - r, r: P.x + r, t: P.y - 28, b: P.y + 4 };
   }
   if (P.heavy && P.atk >= 0.03 && P.atk < 0.22) { // it reaches further and lands lower than a swing
@@ -2893,7 +2940,7 @@ function attackBox() {
   if (isPyro() && P.atk >= 0.04 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 32, t: P.y - 15, b: P.y - 3 } : { l: P.x - 32, r: P.x - 2, t: P.y - 15, b: P.y - 3 }; // the staff thrusts: a lighter blow, a tile more reach
   if (isPaladin() && P.atk >= 0.06 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 26, t: P.y - 24, b: P.y + 1 } : { l: P.x - 26, r: P.x - 2, t: P.y - 24, b: P.y + 1 }; // the maul: over and down, a wide heavy arc
   if (isReaper() && P.atk >= 0.05 && P.atk < 0.2) {              // THE SWATHE: wide, long, and flat
-    const r = 32 + 4 * tal('longHaft'), back = 8 + 3 * tal('wideSwathe');
+    const r = 38 + 4 * tal('longHaft'), back = 10 + 3 * tal('wideSwathe');
     return P.face > 0 ? { l: P.x - back, r: P.x + r, t: P.y - 24, b: P.y + 2 } : { l: P.x - r, r: P.x + back, t: P.y - 24, b: P.y + 2 };
   }
   if (isPirate() && P.atk >= 0.03 && P.atk < 0.15) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 19, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 19, b: P.y - 1 };   // a cutlass is long and it is fast
@@ -7308,7 +7355,7 @@ function updateProps(dt) {
       if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
   }
   for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt);
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updatePortal(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -8207,7 +8254,7 @@ function drawSwing(cx, cy) {
   if (isPyro()) { const len = 30 * Math.min(1, k * 2.5), a = 1 - k;
     for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#ff9a5c'; const w = 2 + i * 2; g.fillRect(f > 0 ? px + 10 : px - 10 - len, py - 1 - i, len, w); } }
   if (isReaper()) {   // a long flat sweep, and on the heavy it goes all the way round
-    const full = P.heavy, r = full ? 34 : 30, a0 = full ? -Math.PI : -1.5, sweep = (full ? 6.28 : 2.6) * Math.min(1, k * 2.2);
+    const full = P.heavy, r = full ? 40 : 36, a0 = full ? -Math.PI : -1.5, sweep = (full ? 6.28 : 2.6) * Math.min(1, k * 2.2);
     for (let i = 0; i < 4; i++) { g.globalAlpha = (1 - k) * (0.55 - i * 0.11); g.strokeStyle = i === 0 ? '#dfffa0' : i === 1 ? '#8fd160' : '#5a8a3a'; g.lineWidth = 3 - i * 0.6; g.beginPath();
       const tail = 0.5 + i * 0.4, s2 = a0 + Math.max(0, sweep - tail), e2 = a0 + sweep;
       if (f > 0 || full) g.arc(px, py, r - i, s2, e2); else g.arc(px, py, r - i, Math.PI - e2, Math.PI - s2); g.stroke(); }
@@ -8314,13 +8361,15 @@ function bakeRoof(h) { const x0 = h.x0 - 1, x1 = h.x1 + 1, w = (x1 - x0 + 1) * T
   return c; }
 function drawRoofs(cx, cy) { for (const h of (L.houses || [])) { const x = (h.x0 - 1) * TS - 2 - cx, y = (h.y0 - 3) * TS - cy; if (x > VW || x + (h.x1 - h.x0 + 4) * TS < 0) continue; if (!h.roof) h.roof = bakeRoof(h); g.drawImage(h.roof, Math.round(x), Math.round(y)); } }
 function drawWorld(cx, cy, showPlayer) {
-  g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
-  const dk = dusk();
+  if (L.colosseum) { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#0e0c12'); gr.addColorStop(0.6, '#191620'); gr.addColorStop(1, '#241f28'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
+    g.globalAlpha = 0.10; g.fillStyle = '#ffd36b'; for (let i = 0; i < 40; i++) { const x = ((i * 137) % VW), y = ((i * 61) % VH); g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; }
+  else g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
+  const dk = L.colosseum ? 0 : dusk();
   if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + ((LH * TS - VH) - cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + ((LH * TS - VH) - cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.dark) { g.fillStyle = '#1a1a22'; g.fillRect(0, 0, VW, VH); g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8); } // under the mountain there is only more mountain
-  else if (SET.parallax !== 'off') { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
+  else if (SET.parallax !== 'off' && !L.colosseum) { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
   else drawCastleBack(cx, cy);
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
@@ -8329,8 +8378,8 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(16,34,18,' + (0.4 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
-  if (BG.nearTrees) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
-  if (!L.castle) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
+  if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
+  if (!L.castle && !L.colosseum) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
     g.strokeStyle = 'rgba(160,120,70,0.75)'; g.lineWidth = 1; g.beginPath();
     const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1);
@@ -8792,6 +8841,7 @@ function drawWorld(cx, cy, showPlayer) {
         else { const h = P.hookT; g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath();
           g.moveTo(Math.round(P.x - cx), Math.round(P.y - 12 - cy)); g.lineTo(Math.round(h.x - cx), Math.round(h.y - cy)); g.stroke();
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
+      drawPortal(cx, cy);
       drawRisen(cx, cy);
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
@@ -9131,6 +9181,43 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
     g.fillStyle = '#1b1208'; g.fillRect(sx, fl - 10, w, 10);                                 // the rood screen: dark oak along the foot of it
     g.fillStyle = '#2a1c0e'; for (let xx = sx - ((tx0 * TS) % 10); xx < sx + w; xx += 10) g.fillRect(xx, fl - 10, 2, 10);
     g.fillStyle = '#0f0a06'; g.fillRect(sx, fl - 11, w, 1);
+    return;
+  }
+  if (st === 'colosseum') {
+    const fl = sy + h;
+    g.fillStyle = '#1e1c24'; g.fillRect(sx, sy, w, h);
+    // the tiers: each one a step back and a shade darker going up
+    const TIER = 13, rows = Math.ceil(h / TIER) + 1;
+    for (let r = 0; r < rows; r++) {
+      const y = fl - (r + 1) * TIER, k = Math.min(1, r / rows);
+      const lit = 1 - k * 0.55;
+      g.fillStyle = 'rgb(' + Math.round(96 * lit) + ',' + Math.round(90 * lit) + ',' + Math.round(82 * lit) + ')';
+      g.fillRect(sx, y, w, TIER - 3);
+      g.fillStyle = 'rgb(' + Math.round(48 * lit) + ',' + Math.round(44 * lit) + ',' + Math.round(40 * lit) + ')';
+      g.fillRect(sx, y + TIER - 4, w, 4);
+      // and the crowd on it
+      const seed = r * 37;
+      for (let x = sx - ((tx0 * TS + seed) % 7); x < sx + w; x += 7) {
+        const j = Math.abs(Math.round((x + seed) * 13)) % 5;
+        if (j === 0) continue;
+        const bob = Math.round(Math.sin(time * (1.1 + r * 0.2) + x * 0.3) * 1.2);
+        const c = ['#2a2630', '#332c38', '#3a3040', '#2e2a34'][j % 4];
+        g.fillStyle = c; g.fillRect(x, y + 1 + bob, 4, 7);
+        g.fillStyle = ['#7a6a5a', '#6a5a4a', '#8a7a68'][j % 3]; g.fillRect(x + 1, y + bob, 3, 2);
+      }
+    }
+    // the wall under the lowest tier, and the iron rail along the top of it
+    g.fillStyle = '#3a3038'; g.fillRect(sx, fl - TIER, w, TIER);
+    g.fillStyle = '#15131a'; g.fillRect(sx, fl - TIER, w, 2);
+    g.fillStyle = '#6a6058'; for (let x = sx - ((tx0 * TS) % 22); x < sx + w; x += 22) { g.fillRect(x, fl - TIER - 7, 2, 7); }
+    g.fillStyle = '#6a6058'; g.fillRect(sx, fl - TIER - 8, w, 2);
+    // her colours hung over the rail, every fourth post
+    for (let x = sx - ((tx0 * TS) % 88); x < sx + w; x += 88) {
+      const seed = Math.abs(Math.round(x / 88)) % 3;
+      g.fillStyle = ['#6e1c28', '#2a3a6e', '#1c4a2e'][seed]; g.fillRect(x + 4, fl - TIER - 6, 11, 16);
+      g.fillStyle = '#c9a040'; g.fillRect(x + 4, fl - TIER - 6, 11, 2); g.fillRect(x + 8, fl - TIER + 2, 3, 3);
+      g.fillStyle = ['#6e1c28', '#2a3a6e', '#1c4a2e'][seed]; for (let i = 0; i < 5; i++) g.fillRect(x + 4 + i * 2, fl - TIER + 10, 2, 2 + (i % 2) * 2);
+    }
     return;
   }
   // ---------- the old stone room, and the default timber ----------
