@@ -291,7 +291,9 @@ const TREE = [];
 const TALENTS = [{ id: 'tree', name: 'THE TALENT TREES', desc: 'three trees of skills for this hero, and the skills on F and G among them. two points for every wood cleared the first time. Z to open' }];
 const heroLevel = () => LEVELS.filter(lv => !lv.hidden && PROG[lv.id] && PROG[lv.id].cleared).length;
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
-const tal = id => { const m = PROG.talents && PROG.talents[hero()]; const v = m ? m[id] : 0; return v === true ? 1 : (v || 0); };
+let trialVerbs = false;   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
+const tal = id => { const m = PROG.talents && PROG.talents[hero()]; const v = m ? m[id] : 0; const n = v === true ? 1 : (v || 0);
+  return (id === 'heavy' && trialVerbs) ? Math.max(1, n) : n; };
 const ptsSpent = h => { const m = talentsOf(h); return TREE.filter(n => n.hero === h).reduce((s, n) => s + Math.min(n.max, m[n.id] || 0), 0); };
 const ptsTotal = () => godMode() ? 99 : 2 * heroLevel();
 const ptsLeft = h => ptsTotal() - ptsSpent(h);
@@ -807,7 +809,7 @@ function drainPool(pr) { const p = (L.pools || []).find(p => p.x0 === pr.pool); 
 
 function loadLevel(i) {
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; bakeAll(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; bakeAll(L.palette || {});
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
   // a mini you have already put down stays down, and the gate it was standing in front of starts open
   miniDone = !!((PROG[LEVELS[i].id] || {}).mini);
@@ -1612,7 +1614,8 @@ function updateStore(dt) {
     if (tab.talent) learnTalent(k);
     else if (k.consumable) { const n = PROG.tonics || 0; if (n >= k.max) { SFX.ui(); storeMsg = 'you carry all you can'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.price) { if (!godMode()) PROG.coins -= k.price; PROG.tonics = n + 1; saveProgress(); SFX.coin(); storeMsg = k.name + ' ' + (n + 1) + ' of ' + k.max; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; } }
     else if (tab.rank) { const r = rankOf(k.id); if (r >= k.max) { SFX.ui(); storeMsg = k.name + ' is at its peak'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.prices[r]) { if (!godMode()) PROG.coins -= k.prices[r]; PROG.ranks[k.id] = r + 1; applyUpgrades(); if (k.id === 'vigour') P.hp = Math.min(P.maxHp, P.hp + 10); if (k.id === 'breath') P.st = Math.min(P.maxSt, P.st + 10); saveProgress(); SFX.coin(); SFX.rankUp(); statFlash = 0.8; storeMsg = k.name + ' rank ' + (r + 1); storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#8fd160', '#fff6c8'], 60, 0.6, -20, 1); } else { SFX.buzz(); storeMsg = 'need ' + (k.prices[r] - PROG.coins) + ' more gold'; storeMsgT = 2; } }
-    else if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2; }
+    else if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
+      if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. HIS TRIAL IS IN THE PAUSE MENU: A PRACTICE YARD FOR EVERY VERB HE HAS.'; storeMsgT = 5; } }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) { SFX.buzz(); storeMsg = 'clear ' + k.needsName + ' first'; storeMsgT = 2; }
     else if (k.feat && !featDone(k.feat)) { SFX.buzz(); storeMsg = k.featName + ' to earn it'; storeMsgT = 2; }
@@ -1870,7 +1873,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Talents', 'Equip', 'Hero', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+const PAUSE_ITEMS = ['Resume', 'Talents', 'Equip', 'Hero', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
 const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
@@ -1942,6 +1945,7 @@ function menuConfirm() {
   else if (k === 'Controls') { state = 'controls'; SFX.uiSel(); }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
+  else if (k === 'Hero trial') { state = 'play'; startTrial(hero()); }
   else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; if (!P.dead) die(); SFX.uiSel(); } }
   else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadLevel(levelIndex); startGame(); SFX.uiSel(); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
   else menuAdjust(1);
@@ -1949,7 +1953,7 @@ function menuConfirm() {
 // THE HERO CHOICE: a new save picks any one of the three to start with; the other two are 15 silver each at the store
 let heroPick = { i: 0, stage: 'pick' };
 const PICK = ['knight', 'pyro', 'paladin'];
-function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h); if (i < 0) return; loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); }
+function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h); if (i < 0) return; PROG.tried = PROG.tried || {}; PROG.tried[h] = true; saveProgress(); loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); }
 function updateHeroPick() {
   if (heroPick.stage === 'pick') {
     if (leftPress) { heroPick.i = (heroPick.i + 2) % 3; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % 3; SFX.ui(); }
@@ -6699,7 +6703,7 @@ function startSwing() { const quick = time - (P.lastSwingT ?? -9) < 0.75; P.comb
   SFX.swingUp ? SFX.swingUp(Math.min(3, P.combo - 1)) : null; // the run of them climbs in pitch
   P.heavySwing = (tal('thirdCut') || tal('concuss')) && P.combo % 3 === 0; const rip = tal('riposte') && P.riposteT > 0;
   P.swingMul = (P.heavySwing ? 1.5 : 1) * (rip ? 2 : 1); if (rip) { P.riposteT = 0; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); } if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140); } }
-function swingDmg(e) { if (e.t === 'dummy') trialEvent('hit');
+function swingDmg(e) { if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit');
   let extra = 0, mul = 1;
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); } return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
@@ -6788,7 +6792,7 @@ function updateEmbers(dt) {
     for (const s of seeds) if (!s.dead && Math.abs(s.x - b.x) < 9 && Math.abs(s.y - b.y) < 9) { s.dead = true; parries++; number(s.x, s.y - 8, 'BURNED', '#ff9a5c'); burst(s.x, s.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); }
     for (const c of clouds2) if (Math.abs(c.x - b.x) < c.r + 4 && Math.abs(c.y - b.y) < c.r + 4) c.life = Math.min(c.life, 0.2);
     for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - b.x) < 9 && Math.abs(pr.y - 6 - b.y) < 9) { pr.popped = true; clouds2.push({ x: pr.x, y: pr.y - 6, r: 12, life: 1.5 }); burst(pr.x, pr.y - 6, 10, ['#e8e0d0', '#c8bcb0'], 60, 0.5); b.life = 0; }
-    for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) { b.hit.add(e); const big = !!e.maxHp; if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } else if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else { hurtEnemy(e, Math.round(heatDmg(b.plunge ? (big ? 6 : 16) : (big ? 4 : 12)) * (b.plunge ? 1 + 0.15 * tal('firedropDmg') : 1)), b.x, false); if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : 'ember'); if (tal('stoke')) { P.heat = Math.min(100, (P.heat || 0) + 2 * tal('stoke')); if (P.heat >= 100 && !P.full) bankHeat(); } } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
+    for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) { b.hit.add(e); const big = !!e.maxHp; if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } else if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else { hurtEnemy(e, Math.round(heatDmg(b.plunge ? (big ? 6 : 16) : (big ? 4 : 12)) * (b.plunge ? 1 + 0.15 * tal('firedropDmg') : 1)), b.x, false); if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : b.cone ? 'heavyblow' : 'ember'); if (tal('stoke')) { P.heat = Math.min(100, (P.heat || 0) + 2 * tal('stoke')); if (P.heat >= 100 && !P.full) bankHeat(); } } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
       if (tal('scatter')) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - b.x) < 30 && Math.abs(q.y - b.y) < 26) { hurtEnemy(q, 3 * tal('scatter'), b.x, false); flame(q.x, q.y - q.h / 2, 3, 3, 30, 1); } ringAt(b.x, b.y, 22, '#ff9a5c', 0.25); } // SCATTER
       break; } }
     const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
