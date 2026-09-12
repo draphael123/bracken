@@ -2312,7 +2312,7 @@ function longWater() {
 
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 7 }, pools, falls, moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'adventure', night: false,
+    duskStart: 99999, duskLen: 1, music: 'longwater', night: false,
     wetZone: [0, 107], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE FISHERFOLK ARE SAFE', reward: 'relic', relic: 'tidecharm' },
     palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
@@ -2450,7 +2450,7 @@ function shipwreckReef() {
 
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones,
-    duskStart: 99999, duskLen: 1, music: 'adventure', night: false,
+    duskStart: 99999, duskLen: 1, music: 'reef', night: false,
     interiors: [[122, 209, 8, 32, 'stone'], [213, 330, 12, 38, 'stone']], // inside her hull, and under the shelf: rock and timber behind, not sky
     wetZone: [0, 119], storm: true, dark: 0.01,
     hullZones: [[16, 26, 26, 30], [30, 42, 27, 31], [46, 58, 25, 29], [62, 74, 27, 31], [78, 92, 26, 30], [96, 118, 24, 28], [119, 212, 6, 34], [378, 400, 15, 25]], // her timbers; below them the reef takes over again
@@ -2481,7 +2481,7 @@ function theFlotilla() {
   const pools = [], movers = [], hullZones = [];
 
   // the sea the whole town floats on: fall in and you swim, and the nets down every side are how you get back up
-  block(0, W - 1, 38, H - 1);
+  block(0, W - 1, 38, H - 1); block(377, W - 1, 11, 37); // past her stern the level ends: no water, nowhere to fall
   pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true });
 
   // ---- THE ROCK: the Ferryman will not go closer than this ----
@@ -2493,13 +2493,13 @@ function theFlotilla() {
   coins([6, 25], [12, 25], [18, 25]);
 
   // ---- the first crossing: a lashed spar, then a rope ----
-  plat(23, 25, 4);
+  plat(23, 25, 4); net(29, 30, 26, 36); // the galley's bow net: climb back out of the gap
   movers.push({ kind: 'swing', px: 29 * TS, py: 13 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 });
 
   // ---- 1. THE GALLEY: long, low, and full of other people's neighbours ----
-  block(31, 96, 24, 33); hullZones.push([31, 96, 24, 33]);
+  block(31, 96, 24, 37); hullZones.push([31, 96, 24, 37]); // her hull goes to the bottom: the way past is over her, not under
   air(34, 93, 26, 29); // her oar deck
-  air(58, 60, 24, 25); // the hatch down to it
+  air(58, 60, 24, 25); net(59, 59, 24, 29); // the hatch down to it, and the ladder back up
   rail(31, 34, 23); rail(93, 96, 23);
   net(50, 51, 12, 23); plat(47, 11, 7); // her shrouds and the crow's nest
   ent('lookout', 50, 10, { face: 1 });
@@ -2518,18 +2518,20 @@ function theFlotilla() {
 
   // ---- the second crossing: a rope over open water, and a net up the prize's side ----
   movers.push({ kind: 'swing', px: 104 * TS, py: 10 * TS, arm: 104, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.2 });
-  net(110, 111, 18, 29);
+  net(110, 111, 18, 36);
 
   // ---- 2. THE HULK: a prize they never finished stripping ----
-  block(113, 176, 22, 33); hullZones.push([113, 176, 22, 33]);
+  block(113, 176, 22, 37); hullZones.push([113, 176, 22, 37]);
   rot(120, 130, 22); rot(146, 156, 22); // her planking is rotten through here
   air(116, 173, 24, 29); air(134, 138, 22, 23); // the hold, and the hole down into it
   pools.push({ x0: 116 * TS, x1: 174 * TS, y: 26 * TS, bottom: 30 * TS, shallow: false, swim: true, clear: true });
+  net(170, 171, 22, 29); net(120, 121, 22, 29); // her ladders: up out of the flooded hold at either end
   ent('silver', 150, 29);
   ent('sign', 116, 21, { text: 'THE HULK. THEY TOOK HER TWO SUMMERS AGO AND NEVER FINISHED STRIPPING HER. THE GREY PLANKS WILL NOT HOLD A MAN: STAND ON ONE AND YOU WILL GO THROUGH TO WHAT IS UNDER IT.' });
   ent('boarder', 128, 21, { face: -1 }); ent('boarder', 162, 21, { face: -1 });
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
   ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
+  ent('silver', 172, 28); // down in her flooded hold, under the rotten planking
   ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 158, 21, { kind: 'crowNest' });
   ent('check', 118, 21);
   coins([118, 21], [134, 21], [142, 21], [160, 21], [172, 21]);
@@ -2539,10 +2541,10 @@ function theFlotilla() {
   // ---- the third crossing: their boarding plank, stowed upright until somebody drops it ----
   ent('plank', 176, 21, { span: [177, 182], row: 21 });
   ent('sign', 173, 21, { text: 'THEIR BOARDING PLANK IS STOWED AGAINST THE RAIL. KNOCK IT DOWN AND IT WILL REACH THE POWDER HOY. OR SWIM, AND CLIMB HER NET, AND BE SEEN DOING IT.' });
-  net(183, 184, 24, 29);
+  net(181, 182, 24, 36); net(183, 184, 24, 29);
 
   // ---- 3. THE POWDER HOY: what they blast wrecks open with ----
-  block(183, 240, 25, 33); hullZones.push([183, 240, 25, 33]);
+  block(183, 240, 25, 37); hullZones.push([183, 240, 25, 37]);
   rail(183, 186, 24);
   ent('keg', 192, 24); ent('keg', 206, 24); ent('keg', 220, 24);
   ent('deco', 198, 24, { kind: 'kegStack' }); ent('deco', 212, 24, { kind: 'chickenCoop' });
@@ -2554,14 +2556,17 @@ function theFlotilla() {
   coins([190, 24], [196, 24], [204, 24], [216, 24], [226, 24], [236, 24]);
 
   // ---- the last crossing: her side, and the nets they board from ----
-  net(243, 244, 16, 29);
+  net(243, 244, 16, 36);
 
   // ---- 4. THE FLAGSHIP ----
-  block(245, 376, 22, 33); hullZones.push([245, 376, 22, 33]);
+  block(245, 376, 22, 37); hullZones.push([245, 376, 22, 37]);
   air(248, 340, 24, 26); // her gun deck, behind the side the hoy's gun opens
   block(300, 376, 16, 21); block(336, 376, 11, 15);
   air(336, 372, 12, 15); // the great cabin in her stern, open off the quarterdeck
-  net(300, 301, 10, 21); net(330, 331, 10, 21); // the two ways up her: she cuts one, then the other
+  net(300, 301, 10, 21); net(330, 331, 10, 21); // the two quick ways up her: she cuts one, then the other
+  block(292, 295, 19, 21); block(296, 299, 17, 21); // and the broken stair she cannot cut, up to her quarterdeck
+  net(356, 357, 10, 15); // the companionway out of the great cabin onto the poop: the last way up when both lines are gone
+  net(310, 311, 16, 26); // and the ladder up out of her gun deck, for anyone the falling deck drops into it
   rail(245, 248, 21); rail(296, 299, 15);
   ent('sign', 250, 21, { text: 'THE FLAGSHIP. THE QUARTERMASTER HAS THE RUN OF HER AND SHE WILL NOT STAND AND FIGHT ON ONE DECK: SHE GOES UP, AND SHE CUTS AWAY WHAT SHE CAME UP BY.' });
   ent('marine', 306, 9, { face: -1 }); ent('marine', 334, 9, { face: -1 });
@@ -2580,14 +2585,14 @@ function theFlotilla() {
 
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones,
-    duskStart: 99999, duskLen: 1, music: 'stockade', night: false,
+    duskStart: 99999, duskLen: 1, music: 'flotilla', night: false,
     interiors: [[34, 93, 26, 30, 'stone'], [116, 173, 24, 30, 'stone'], [248, 340, 24, 27, 'stone'], [340, 372, 12, 15, 'stone']],
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
     palette: { set: 'ship', sky: 'glare', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(240,235,205,0.10)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'boss2', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
-      decks: [[22 * TS, 258, 374], [16 * TS, 300, 374], [11 * TS, 336, 374]], cuts: [[300, 301, 10, 21], [330, 331, 10, 21]] },
+      decks: [[22 * TS, 258, 374], [16 * TS, 300, 374], [11 * TS, 336, 374]], cuts: [[300, 301, 10, 21], [330, 331, 10, 21]], fallTo: 292 },
   };
   return ret;
 }

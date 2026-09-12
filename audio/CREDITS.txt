@@ -32,3 +32,8 @@ Anything not in the manifest is synthesised in src/audio.js.
   - queen.ogg     = "216 [Super Action Chiptunes] bgm_stage_7"         - the Goblin Queen
 - Every level now has its own track: town.mp3 plays in the Hanging Village, cave.mp3 in Sporewood and
   adventure.mp3 on Gale Moor (all three still sold at the store as menu tunes).
+
+- longwater.ogg = "Sailor Waltz with Water Effects C64 Style" by skrjablin (CC0 / CC-BY 3.0, used under CC0)
+  https://opengameart.org/content/sailor-waltz-with-water-effects-c64-style - THE LONG WATER
+- reef.mp3 = "Nautilus" by poinl (CC0) https://opengameart.org/content/nautilus - THE SHIPWRECK REEF (trimmed to 150 s with a fade, re-encoded at 128 kbps)
+- flotilla.ogg = "Pirate Game Tune" by Tozan (CC0) https://opengameart.org/content/pirate-game-tune - THE FLOTILLA

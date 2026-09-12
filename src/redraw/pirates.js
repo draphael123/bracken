@@ -15,20 +15,22 @@
 //           5 slash tell (blade drawn back over the shoulder, body wound back, front foot planted)
 //           6 slash (full swing through, blade low and forward, smear arc)
 //   canvas 32x28 (grid 30x26; 22 px feet to crown)   anchor ax 15, ay 27   pack w/h 10x18
-//   reach (the blade's iron): walk edge ax+4..ax+10, ay-5..ay-11; GUARD edge ax+1..ax+5, ay-16..ay-24 (it stands up
-//          across the face); TELL edge ax-12..ax-3, ay-15..ay-21 — behind him, nowhere near the player;
-//          SLASH edge ax+6..ax+16, ay-7..ay-13, the tip at ax+16, ay-8
+//   reach (the blade's steel): walk ax+4..ax+9, ay-9..ay-2 (carried low, the hilt's brass at ax+0..ax+5);
+//          GUARD ax+1..ax+5, ay-20..ay-14 — it stands up across the face;
+//          TELL ax-12..ax-5, ay-20..ay-14 — back over his shoulder, nowhere near the player;
+//          SLASH ax+7..ax+15, ay-10..ay-4, the tip at ax+15, ay-5
 //
-// bakeBoarder()  BOARDER — bigger and wider: bare tattooed arms, a leather jerkin over bare chest, a straw hat, and a
-//   GRAPPLE (three flukes on a ring) with its rope coiled in the off hand.
-//   frames: 0 walk contact, 1 pass, 2 contact (other foot), 3 pass   (grapple swinging at the hip)
+// bakeBoarder()  BOARDER — bigger and wider: bare tattooed arms, a leather jerkin over a bare chest, a straw hat, and
+//   a GRAPPLE (three flukes on a ring) with its rope coiled in the off hand.
+//   frames: 0 walk contact, 1 pass, 2 contact (other foot), 3 pass   (grapple carried at the hip, rope slung across)
 //           4 throw tell (body wound back, grapple swung up and behind the shoulder)
 //           5 throw (arm out, hand OPEN and EMPTY, the grapple gone, smear off the release)
 //           6 haul (both hands on the rope, leaning back, heels dug in, the line taut up and forward)
 //   canvas 38x30 (grid 36x28; 25 px feet to hat crown)   anchor ax 18, ay 29   pack w/h 12x20
-//   reach: walk grapple flukes ax+5..ax+9, ay-5..ay-9; TELL flukes ax-13..ax-9, ay-19..ay-23 (up behind him);
-//          THROW release hand ax+9, ay-15 (the grapple leaves there, the hand is empty);
-//          HAUL both fists ax+4..ax+8, ay-16..ay-18 and the rope runs from them out to ax+17, ay-24
+//   reach: walk grapple flukes ax+4..ax+8, ay-11..ay-6, its rope slung from ax-8 to ax+5;
+//          TELL flukes ax-13..ax-9, ay-23..ay-19 — up behind him;
+//          THROW the open hand at ax+10, ay-15 (the grapple leaves there; the rope trails ax-6..ax+12);
+//          HAUL both fists at about ax+2, ay-13 with the rope running taut from them out to ax+17, ay-20
 //
 // bakeMarine()  MARINE — the shooter who lives in the rigging: a battered felt hat, a bandolier of bolts across the
 //   chest, and a clumsy PISTOL-CROSSBOW (wooden stock, iron lathe, a bolt in the groove).
@@ -36,31 +38,36 @@
 //           1 perch scan (same crouch, head turned out to the viewer, both eyes)
 //           2 aim (stood up, weapon up and level, the off eye shut)
 //           3 shoot (recoil, the bolt gone, a puff of dust off the lathe)
-//           4, 5 climb (hand over hand on a rope, two poses)
-//   canvas 30x28 (grid 28x26; 22 px feet to hat, 14 px crouched)   anchor ax 14, ay 27   pack w/h 10x18
-//   reach: perch weapon lying ax-2..ax+7, ay-8..ay-11; AIM bolt tip ax+11, ay-15 (the stock at ax+1, ay-14);
-//          SHOOT muzzle ax+9, ay-16 — the bolt is gone and the puff sits at ax+10..ax+12, ay-15..ay-18;
-//          climb fists ax+2, ay-20 and ax+4, ay-15 (the rope runs up out of the canvas above them)
+//           4, 5 climb (hand over hand, two poses — the rope itself is the level's)
+//   canvas 30x28 (grid 28x26; 22 px feet to hat standing, 17 px crouched)   anchor ax 14, ay 27   pack w/h 10x18
+//   reach: perch the weapon lies across the knees, lathe and bolt ax-1..ax+9, ay-8..ay-3;
+//          AIM bolt tip ax+11, ay-14, the lathe standing at ax+9, ay-15..ay-10, the stock back at ax+1, ay-12;
+//          SHOOT the bolt is gone — muzzle ax+7, ay-12, flash ax+7, ay-15, puff ax+8..ax+11, ay-16..ay-14;
+//          climb fists ax+5, ay-20 and ax+5, ay-15 (frame 4), ax+4, ay-19 and ax+5, ay-16 (frame 5)
 //
 // bakeBosun()  BOSUN — the one who calls the others: heavy, a leather waistcoat over a linen shirt, a BELAYING PIN in
 //   one fist and a brass bosun's call on a lanyard at the chest.
-//   frames: 0 walk contact, 1 pass, 2 contact (other foot), 3 pass   (pin carried low)
-//           4 WHISTLE (head back, the call up at his mouth, chest out, two pale trills in front of his face)
+//   frames: 0 walk contact, 1 pass, 2 contact (other foot), 3 pass   (pin carried low and forward)
+//           4 WHISTLE (head back, the call up at his mouth, chest out, pale trills in front of his face)
 //           5 swing tell (pin cocked back past his ear, shoulder turned)
 //           6 swing (pin driven down and across, smear arc)
 //   canvas 36x30 (grid 34x28; 24 px feet to crown)   anchor ax 17, ay 29   pack w/h 12x20
-//   reach: walk pin head ax+6..ax+9, ay-8..ay-11; WHISTLE the call at ax+4, ay-19 with the trills out to ax+9, ay-21
-//          (the pin hangs at ax+5, ay-6); TELL pin head ax-6..ax-9, ay-20..ay-23 (cocked back behind his head);
-//          SWING pin head ax+11..ax+14, ay-6..ay-10 — it comes down and across in front of him
+//   reach: walk pin head ax+5..ax+8, ay-8..ay-2;
+//          WHISTLE the call at ax+5..ax+6, ay-19 and the trills out to ax+13, ay-22..ay-19 (the pin is out of the
+//          fight, hanging at ax-4..ax-1 down to the deck);
+//          TELL pin head ax-14..ax-8, ay-19..ay-17 — cocked back behind his head;
+//          SWING pin head ax+12..ax+17, ay-9..ay-5 — it comes down and across in front of him
 //
 // bakeLookout()  LOOKOUT — thin and sun-bleached, a rag round his head, a brass SPYGLASS, a call on a cord.
-//   frames: 0 idle (glass down at his side, weight on one hip, the off arm out on a rail that is not drawn)
+//   frames: 0 idle (glass hanging at his side, weight on one hip, the off arm out on a rail that is not drawn)
 //           1 scan (glass up to the eye, head and body turned along it)
-//           2 spot (starting upright, the glass dropping out of his hand, the other arm going for the call)
-//           3 shout (both hands cupped at the mouth, body pitched forward, two pale trills)
+//           2 spot (starting upright, the glass dropping out of his hand, the other hand on the call)
+//           3 shout (both hands cupped at the mouth, body pitched forward, pale trills)
 //   canvas 28x26 (grid 26x24; 20 px feet to crown)   anchor ax 13, ay 25   pack w/h 8x16
-//   reach: idle glass ax+3..ax+5, ay-4..ay-7; SCAN glass ax+4..ax+11, ay-15..ay-17 (level, out past his face);
-//          spot glass ax+5..ax+8, ay-8..ay-11 (falling); shout fists ax+3..ax+5, ay-14..ay-16, trills to ax+9, ay-17
+//   reach (brass — the call rides the chest at about ax+1, ay-10 in every frame): idle glass ax+4..ax+6, ay-9..ay-3
+//          (hanging by his leg); SCAN glass ax+3..ax+11, ay-17..ay-15 — level, out past his face;
+//          spot glass ax+5..ax+9, ay-11..ay-4, falling; SHOUT fists ax+3..ax+5, ay-16..ay-13, trills ax+8..ax+13,
+//          ay-18..ay-15
 //
 // bakeQuarter()  THE QUARTERMASTER (boss) — a woman in a long salt-faded coat over a sash and a cutlass belt, sea
 //   boots, a cocked hat with a black feather, one gold earring, a scar down the cheek. A heavy CUTLASS in the right
@@ -74,16 +81,19 @@
 //           8 cut line (the blade slicing DOWN through a rope at her feet, body coiled over it),
 //           9 stagger (head down, hat brim over the eyes, off hand out for balance),
 //           10 kneel (down on one knee, cutlass point in the deck, holding herself up on it)
-//   canvas 44x32 (grid 42x30; 27 px feet to the crown of the hat, 33 px wide in the leap)
+//   canvas 44x32 (grid 42x30; 28 px feet to the tip of the feather, 34 px across in the slash)
 //   anchor ax 20, ay 31   pack w/h 12x22
-//   reach: idle cutlass edge ax+4..ax+7, ay-4..ay-10, pistol muzzle ax+3, ay-18;
-//          TELL cutlass edge ax-16..ax-6, ay-18..ay-23 (far back over her shoulder), pistol muzzle ax-2, ay-14;
-//          SLASH cutlass edge ax+8..ax+19, ay-12..ay-15, the tip at ax+19, ay-13 — the longest reach she has;
-//          shoot tell muzzle ax+12, ay-17, cutlass behind her at ax-8, ay-6;
-//          SHOOT muzzle ax+12, ay-19 with the flash at ax+13..ax+16, ay-17..ay-21 and smoke out to ax+18;
-//          leap cutlass edge ax+2..ax+6, ay-24..ay-32 (up, over her), boots ax-6..ax+2, ay-1..ay-9;
-//          CUT LINE blade edge ax+4..ax+8, ay-3..ay-13, the point in the rope at ax+8, ay-3;
-//          stagger cutlass ax+6..ax+9, ay-2..ay-6; kneel the point grounded at ax+9, ay-1
+//   reach: idle cutlass ax-1..ax+10, ay-16..ay-1 (held low, its point by the deck), the pistol laid across her chest,
+//          lock and barrel ax-3..ax+4, ay-18..ay-7;
+//          walk the same, the cutlass out to ax+12, ay-1;
+//          TELL cutlass ax-19..ax+6, ay-23..ay-14 — drawn far back over her shoulder, nothing in front of her;
+//          SLASH cutlass ax+12..ax+22, ay-14..ay-10, the tip at ax+22, ay-12 — the longest reach she has;
+//          shoot tell muzzle ax+13, ay-16 (arm straight, the cutlass dropped behind to ax-12, ay-3);
+//          SHOOT muzzle about ax+10, ay-21 with the flash ax+10..ax+14, ay-23..ay-19 and smoke out to ax+19, ay-21;
+//          LEAP cutlass ax-10..ax+7, ay-28..ay-18 — up and over her, boots ax-7..ax+1, ay-8..ay-1;
+//          CUT LINE blade ax+5..ax+8, ay-11..ay-2, its point in the rope, and the cut line lies ax-3..ax+12, ay-7..ay-1;
+//          stagger cutlass ax+3..ax+8, ay-6..ay-1 (the pistol trails behind to ax-15);
+//          KNEEL the point grounded at ax+9, ay-1, the blade running up to ax+6, ay-7
 import { px, fromGrid, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -249,10 +259,10 @@ function spyglass(G, a, b) {
 const call = (G, x, y, nx, ny) => { gline(G, nx, ny, x, y + 1, 'P'); put(G, x, y, 'y'); put(G, x + 1, y, 'y'); put(G, x, y + 1, 'Y'); put(G, x + 1, y + 1, 'y'); };
 // two pale trills in front of a mouth — the one mark that makes a whistle read at 1x
 const TRILL = [
-  '.t..t',
-  't..t.',
-  't..t.',
-  '.t..t',
+  '..tt..t',
+  '.tt...t',
+  '.tt...t',
+  '..tt..t',
 ];
 // the grapple: three hooked flukes on a ring, drawn flukes-up or flukes-down, and a loose coil of rope
 const GRAP_U = [
@@ -836,11 +846,11 @@ export function bakeLookout() {
     return q(G);
   };
   const idle = frame({ legs: 'lean',
-    far: [[-4, 14], [-7, 14]], near: [[3, 15], [3, 18]], glass: [[3, 19], [4, 15]] });
+    far: [[-4, 14], [-7, 14]], near: [[3, 14], [4, 16]], glass: [[4, 16], [5, 20]] });
   const scan = frame({ legs: 'turn', dx: 1, hx: 1,
-    far: [[-1, 14], [1, 15]], near: [[3, 12], [5, 11]], glass: [[3, 11], [9, 10]] });
+    far: [[-1, 14], [1, 15]], near: [[3, 12], [4, 9]], glass: [[3, 9], [9, 8]] });
   const spot = frame({ legs: 'up', dy: -1, hx: 1, open: true,
-    far: [[-2, 14], [-1, 12]], near: [[4, 14], [6, 16]], glass: [[6, 18], [8, 15]] });
+    far: [[0, 14], [1, 14]], near: [[4, 14], [6, 16]], glass: [[6, 16], [8, 20]] });
   const shout = frame({ legs: 'pitch', dx: 1, dy: 1, hx: 1, open: true,
     far: [[1, 12], [3, 10]], near: [[3, 13], [4, 9]], trill: [6, 5] });
   return pack([idle, scan, spot, shout], X + 1, H + 1, 8, 16);
@@ -853,12 +863,12 @@ export function bakeQuarter() {
   // 13 wide with column 6 on the centre: a cocked hat with a black feather, a hard face with one gold earring and a
   // scar down the cheek, dark hair clubbed behind
   const HEAD = [
-    '.....b.......',
-    '....bB.......',
-    '....bb.......',
-    '...bbf.......',
-    '..fffFFf.....',
-    '.fffffFFFf...',
+    'b............',
+    '.bB..........',
+    '..bb.........',
+    '...bf........',
+    '..fffFF......',
+    '.ffffFFFf....',
     'ffffffffFFFf.',
     '..kkkkkkSs...',
     '..kShhhSeSh..',
@@ -868,12 +878,12 @@ export function bakeQuarter() {
   ];
   // the brim pulled down over the eyes, the head dropped
   const HEAD_D = [
-    '.....b.......',
-    '....bB.......',
-    '....bb.......',
-    '...bbf.......',
-    '..fffFFf.....',
-    '.fffffFFFf...',
+    'b............',
+    '.bB..........',
+    '..bb.........',
+    '...bf........',
+    '..fffFF......',
+    '.ffffFFFf....',
     'ffffffffFFFf.',
     '..ffffffff...',
     '..kkhhhShs...',
@@ -937,11 +947,11 @@ export function bakeQuarter() {
     leap: ['.....UUuu......',
       '....UU..uuu....',
       '...Uv..uuuuU...',
-      '..vvv..uUUu....',
-      '..vvvU.........',
-      '...vvU.........',
-      '...............',
-      '...............'],
+      '..vv...uUUu....',
+      '..vv...........',
+      '.vv............',
+      '.vvU...........',
+      'vvvU...........'],
     plant: ['.....UUuu......',
       '...UUU..uu.....',
       '..Uv.....uu....',
@@ -967,7 +977,7 @@ export function bakeQuarter() {
       stand: [[-6, 0], [5, 0], [5, 0.72], [3, 1], [-6, 1], [-8, 0.66]],
       swing: [[-6, 0], [5, 0], [4, 0.66], [2, 0.92], [-9, 1], [-12, 0.6], [-7, 0.25]],
       stream: [[-6, 0], [5, 0], [5, 0.55], [3, 0.78], [-11, 0.92], [-15, 0.5], [-7, 0.18]],
-      spread: [[-7, 0], [5, 0], [6, 0.45], [2, 0.7], [-9, 1], [-16, 0.5], [-11, 0.12]],
+      spread: [[-7, 0], [5, 0], [6, 0.4], [2, 0.62], [-9, 0.8], [-16, 0.42], [-11, 0.1]],
       pooled: [[-6, 0], [5, 0], [6, 1], [-11, 1], [-13, 0.5], [-8, 0.2]],
     }[pose];
     gpoly(G, pts.map(([x, f]) => [B + x, Y(f)]), (x, y) => {
@@ -1003,14 +1013,14 @@ export function bakeQuarter() {
     return c;
   };
   const idle = frame({ boots: 'stand', coat: 'stand',
-    far: [[-4, 19], [-1, 19]], near: [[4, 19], [5, 21]],
-    blade: [[5, 21], 58, 11], gun: [[-1, 19], -62, 8, 'back'] });
+    far: [[-4, 19], [-2, 18]], near: [[4, 19], [5, 21]],
+    blade: [[5, 21], 58, 11], gun: [[-2, 18], -32, 8] });
   const walk1 = frame({ boots: 'walkA', coat: 'swing', dy: 1,
-    far: [[-5, 19], [-2, 20]], near: [[5, 19], [6, 21]],
-    blade: [[6, 21], 52, 11], gun: [[-2, 20], -70, 8, 'back'] });
+    far: [[-5, 19], [-3, 19]], near: [[5, 19], [6, 21]],
+    blade: [[6, 21], 52, 11], gun: [[-3, 19], -36, 8] });
   const walk2 = frame({ boots: 'walkB', coat: 'stand',
-    far: [[-4, 20], [-1, 21]], near: [[4, 20], [5, 22]],
-    blade: [[5, 22], 48, 11], gun: [[-1, 21], -74, 8, 'back'] });
+    far: [[-4, 20], [-2, 20]], near: [[4, 20], [5, 22]],
+    blade: [[5, 22], 48, 11], gun: [[-2, 20], -40, 8] });
   const slashTell = frame({ boots: 'tell', dx: -2, dy: 1, hx: -1, coat: 'swing',
     far: [[-2, 18], [1, 18]], near: [[-3, 14], [-6, 12]],
     blade: [[-6, 12], -160, 12, 'back'], gun: [[1, 18], -30, 8, 'back'] });
