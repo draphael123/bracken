@@ -269,7 +269,11 @@ const TREE = [];
   N('paladin', 1, 1, 2, 'warded', 'WARDED', 3, 'while the aegis is up, what it cannot turn lands 8% lighter a point', 'stalwart');
   N('paladin', 1, 3, 2, 'crusade', 'CRUSADE', 1, 'dropping the aegis throws back and staggers everything near you', 'warded');
   N('paladin', 2, 1, 2, 'farTremor', 'FAR TREMOR', 3, 'the maul waves travel 20% further a point', 'ironLungs');
-  N('paladin', 2, 3, 2, 'earthshaker', 'EARTHSHAKER', 1, 'land hard from a height and the ground quakes both ways', 'farTremor'); }
+  N('paladin', 2, 3, 2, 'earthshaker', 'EARTHSHAKER', 1, 'land hard from a height and the ground quakes both ways', 'farTremor');
+  // THE SECOND KEY: until one of these is learned, a hero carries one skill at a time
+  N('knight', 1, 2, 2, 'twinSkill', 'BOTH HANDS', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'plated');
+  N('pyro', 1, 2, 2, 'twinSkill', 'TWO FLAMES', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'pilot');
+  N('paladin', 1, 2, 2, 'twinSkill', 'TWO OATHS', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'warded'); }
 const TALENTS = [{ id: 'tree', name: 'THE TALENT TREES', desc: 'three trees of skills for this hero, and the skills on F and G among them. two points for every wood cleared the first time. Z to open' }];
 const heroLevel = () => LEVELS.filter(lv => !lv.hidden && PROG[lv.id] && PROG[lv.id].cleared).length;
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
@@ -392,8 +396,8 @@ function drawHoly(cx, cy) {
 const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
 const CD_MAX = { lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
-const cdReady = k => !((P.cds && P.cds[k]) > 0), cdSet = k => { P.cds = P.cds || {}; P.cds[k] = cdOf(k); };
-const skill2Now = () => { const k = PROG.skill2; return k && k !== 'none' && k !== skillNow() && TREE.some(n => n.id === k && n.hero === hero() && n.active && tal(n.id)) ? k : null; };
+const cdReady = k => !((P.cds && P.cds[k]) > 0), cdSet = k => { P.cds = P.cds || {}; P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
+const skill2Now = () => { if (!tal('twinSkill')) return null; const k = PROG.skill2; return k && k !== 'none' && k !== skillNow() && TREE.some(n => n.id === k && n.hero === hero() && n.active && tal(n.id)) ? k : null; };
 const skillPress = k => (throwPress && skillNow() === k) || (skill2Press && skill2Now() === k);
 const skillNow = () => { const mine = TREE.filter(n => n.hero === hero() && n.active && tal(n.id)); if (!mine.length) return null; const k = PROG.skill; return mine.some(n => n.id === k) ? k : mine[0].id; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
@@ -1199,7 +1203,7 @@ function updateTree(dt) {
       else if (ptsLeft(hero()) < 1) say('no points left: clear another wood', SFX.buzz);
       else { m[cur.id] = (m[cur.id] || 0) + 1; if (cur.active && (!PROG.skill || PROG.skill === 'none' || !TREE.some(n => n.id === PROG.skill && n.hero === hero() && tal(n.id)))) PROG.skill = cur.id; applyUpgrades(); saveProgress(); statFlash = 0.8; say(cur.name + ' ' + m[cur.id] + ' of ' + cur.max, SFX.rankUp); burst(camX + VW / 2, camY + 30, 12, ['#fff6c8', '#ffd36b'], 50, 0.5, -20, 1); } } }
   if (throwPress && cur && cur.active) { if (tal(cur.id)) { if (PROG.skill2 === cur.id) PROG.skill2 = PROG.skill || 'none'; PROG.skill = cur.id; saveProgress(); say(cur.name + ' is on F', SFX.equip); } else say('learn it first', SFX.buzz); }
-  if (skill2Press && cur && cur.active) { if (tal(cur.id)) { if (skillNow() === cur.id) PROG.skill = PROG.skill2 && PROG.skill2 !== 'none' ? PROG.skill2 : 'none'; PROG.skill2 = cur.id; saveProgress(); say(cur.name + ' is on G', SFX.equip); } else say('learn it first', SFX.buzz); }
+  if (skill2Press && cur && cur.active) { if (!tal('twinSkill')) say('learn ' + (TREE.find(n => n.id === 'twinSkill' && n.hero === hero()) || {}).name + ' first: it opens the G key', SFX.buzz); else if (tal(cur.id)) { if (skillNow() === cur.id) PROG.skill = PROG.skill2 && PROG.skill2 !== 'none' ? PROG.skill2 : 'none'; PROG.skill2 = cur.id; saveProgress(); say(cur.name + ' is on G', SFX.equip); } else say('learn it first', SFX.buzz); }
   if (pausePress || talentsPress) { state = treeFrom; SFX.menuClose(); }
 }
 const TREE_ICON = {};
@@ -1232,7 +1236,10 @@ function drawTree() {
     g.strokeStyle = on ? '#ffd36b' : '#4a4658'; g.lineWidth = 1; g.strokeRect(x + 0.5, 14.5, tw - 1, 9);
     text(TBR[h][i], x + tw / 2 - (sp ? 6 : 0), 16, on ? UI.title : UI.dim, 'center', 6);
     if (sp) text(String(sp), x + tw - 4, 16, on ? UI.gold : '#7a7a84', 'right', 6); }
-  if (b > 0) text('<', 5, 16, UI.dim, 'left', 6); if (b < 2) text('>', VW - 5, 16, UI.dim, 'right', 6);
+  { const lk = 0.5 + 0.5 * Math.sin(time * 4);
+    g.globalAlpha = b > 0 ? 0.55 + 0.45 * lk : 0.25; text('◀', 4, 16, b > 0 ? UI.gold : UI.dim, 'left', 6);
+    g.globalAlpha = b < 2 ? 0.55 + 0.45 * lk : 0.25; text('▶', VW - 4, 16, b < 2 ? UI.gold : UI.dim, 'right', 6); g.globalAlpha = 1;
+    text('LEFT / RIGHT', VW / 2, 27, UI.dim, 'center', 6); }
   // the open tree: four rows down, up to three columns across, every skill under its own name
   const mine = ns.filter(n => n.branch === b), cols = Math.max(2, Math.max(...mine.map(n => n.col)) + 1);
   const NS2 = 18, top = 27, rowH = 26, colW = Math.min(96, Math.floor((VW - 28) / cols)), x0 = Math.round((VW - colW * cols) / 2);
@@ -1259,8 +1266,9 @@ function drawTree() {
   if (respec) { g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(VW / 2 - 33.5, fy + 0.5, 67, 8); }
   text('FORGET ALL', VW / 2, fy + 2, respec ? UI.title : UI.dim, 'center', 6);
   const dy = fy + 12; g.fillStyle = 'rgba(20,17,32,0.9)'; g.fillRect(8, dy, VW - 16, VH - dy - 11);
-  if (treeMsgT > 0) text(treeMsg, VW / 2, dy + 4, UI.gold, 'center', 6);
-  else if (respec) text('forget every skill this hero knows and take all the points back. it costs nothing.', VW / 2, dy + 4, UI.dim, 'center', 6);
+  if (treeMsgT > 0) { const w2 = treeMsg.length * 6 + 10; g.fillStyle = 'rgba(40,36,20,0.95)'; g.fillRect(VW / 2 - w2 / 2, fy - 11, w2, 10);
+    g.strokeStyle = UI.gold; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, fy - 10.5, w2 - 1, 9); text(treeMsg, VW / 2, fy - 9, UI.gold, 'center', 6); }
+  if (respec) text('forget every skill this hero knows and take all the points back. it costs nothing.', VW / 2, dy + 4, UI.dim, 'center', 6);
   else if (cur) { const st = nodeState(cur);
     text(cur.name + '  ' + tal(cur.id) + '/' + cur.max, 12, dy + 3, UI.title, 'left', 6);
     const need = st === 'level' ? 'OPENS AT LEVEL ' + ROW_LV[cur.row] : st === 'parent' ? 'NEEDS ' + TREE.find(q => q.id === cur.parent && q.hero === cur.hero).name : st === 'max' ? 'AT ITS PEAK' : any ? 'Z TO LEARN' : 'NO POINTS LEFT';
@@ -2122,7 +2130,9 @@ function updatePlayer(dt) {
       for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 42 && Math.abs(e.y - P.y) < 30) { hurtEnemy(e, Math.round(24 * amul('hammerLeap')), P.x, false); if (!e.maxHp) { e.vy = -180; e.stagger = Math.max(e.stagger || 0, 0.8); } } }
     else if (P.hleapT > 0) P.vx = P.face * 200; }
   if (P.caged > 0) { P.caged -= dt; P.vx = 0; }
-  if (P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - dt);
+  if (P.cds) for (const k in P.cds) { const was = P.cds[k]; P.cds[k] = Math.max(0, was - dt);
+    if (was > 0 && P.cds[k] <= 0) { P.skReady = P.skReady || {}; P.skReady[k] = 1; SFX.ui && SFX.ui(); } } // a skill coming back says so
+  if (P.skReady) for (const k in P.skReady) P.skReady[k] = Math.max(0, P.skReady[k] - dt * 1.6);
   for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'coyote', 'jbuf', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * (P.relic === 'fleece' ? 2 : 1) * (1 + 0.1 * tal('breath') + 0.07 * (tal('fleet') + tal('ironLungs'))) * dt);
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
@@ -7237,8 +7247,18 @@ function render() {
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 92, 14); }
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], P.relic ? 104 : 92, 14); g.globalAlpha = 1; }
-    { const sk = skillNow(); if (sk) { const cd = skillCd(sk), max = CD_MAX[sk] || 3; g.globalAlpha = (sk === 'shieldThrow' && thrown) || cd > 0 ? 0.45 : 1; g.drawImage(skillIcon(sk), 76, 13); g.globalAlpha = 1; if (cd > 0) { g.fillStyle = '#c9d1dc'; g.fillRect(76, 26, Math.round(10 * (1 - cd / max)), 1); } } }
-    { const sk2 = skill2Now(); if (sk2) { const cd = skillCd(sk2), max = CD_MAX[sk2] || 3; g.globalAlpha = (sk2 === 'shieldThrow' && thrown) || cd > 0 ? 0.45 : 1; g.drawImage(skillIcon(sk2), 89, 13); g.globalAlpha = 1; if (cd > 0) { g.fillStyle = '#8fd160'; g.fillRect(89, 26, Math.round(10 * (1 - cd / max)), 1); } } } // the second key's skill, beside the first
+    // THE SKILL SLOTS: the icon, the key it is on, and the wait drawn down over it, so a skill on cooldown is obvious
+    { const slot = (sk, x, key, col) => { if (!sk) return;
+        const cd = skillCd(sk), max = CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0, k = busy ? (cd > 0 ? cd / max : 1) : 0;
+        g.fillStyle = 'rgba(16,14,24,0.8)'; g.fillRect(x, 11, 14, 16);
+        g.globalAlpha = busy ? 0.4 : 1; g.drawImage(skillIcon(sk), x + 2, 12); g.globalAlpha = 1;
+        if (busy) { const h = Math.round(12 * k); g.fillStyle = 'rgba(10,10,18,0.72)'; g.fillRect(x + 1, 12 + (12 - h), 12, h);
+          g.fillStyle = col; g.fillRect(x + 1, 12 + (12 - h), 12, 1);
+          if (cd > 0) text(cd >= 1 ? String(Math.ceil(cd)) : '', x + 7, 16, '#fff6e0', 'center', 6); }
+        else { const ready = P.skReady && P.skReady[sk]; if (ready > 0) { g.globalAlpha = ready; g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(x - 0.5, 10.5, 15, 17); g.globalAlpha = 1; } }
+        g.strokeStyle = busy ? '#4a4658' : col; g.lineWidth = 1; g.strokeRect(x + 0.5, 11.5, 13, 15);
+        text(key, x + 7, 27, busy ? '#7a7a84' : col, 'center', 6); };
+      slot(skillNow(), 74, 'F', '#c9d1dc'); slot(skill2Now(), 92, 'G', '#8fd160'); }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
     for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (VW - 42 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }

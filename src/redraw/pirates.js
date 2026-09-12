@@ -240,8 +240,8 @@ function pxbow(G, hand, deg, loaded) {
 }
 // a brass spyglass: a drawn tube with a wider bell at the object end
 function spyglass(G, a, b) {
-  limb(G, a, b, 1.7, ['Y', 'y', 'y']);
-  limb(G, b, b, 2.4, ['Y', 'y', 'y']);
+  limb(G, a, b, 1.4, ['Y', 'y', 'y']);
+  limb(G, b, b, 2.2, ['Y', 'y', 'y']);
   put(G, ...a, 'Y');
   return b.map(Math.round);
 }
@@ -587,19 +587,19 @@ export function bakeMarine() {
       '.SS......sh..',
       'SSs.....shhh.'],
     climbA: ['....qqLl.....',
-      '...qqLLl.....',
-      '..qSllss.....',
-      '..SS...ss....',
+      '...qqLLll....',
+      '..qSS.llss...',
+      '..SS...sss...',
+      '..SS..shhh...',
+      '.SSs.........',
+      'SSs..........'],
+    climbB: ['....qqLl.....',
+      '....qqLLl....',
+      '...qSSlss....',
       '..SS...ss....',
       '.SSs...ss....',
+      '.......ss....',
       '......shhh...'],
-    climbB: ['....qqLl.....',
-      '....qLLll....',
-      '...qS.lss....',
-      '...SS.lsh....',
-      '..SS..shh....',
-      '..SS.........',
-      '.SSs.........'],
   };
   const arm = (G, sh, el, hd, far) => layer(G, g => {
     limb(g, sh, el, 2.2, far ? ['q', 'q', 'L'] : ['q', 'L', 'l']);
@@ -626,10 +626,10 @@ export function bakeMarine() {
     far: [[1, 14], [3, 14]], near: [[3, 13], [5, 13]], bow: [[5, 13], -3, true] });
   const shoot = frame({ legs: 'brace', dx: -1, dy: 1, hx: -1, head: 'aim',
     far: [[0, 14], [2, 15]], near: [[2, 12], [4, 12]], bow: [[4, 12], -14, false], puff: [9, 9] });
-  const climbA = frame({ legs: 'climbA', dx: -1, dy: 1, rope: [X + 4, 0, 25],
-    far: [[2, 11], [5, 12]], near: [[3, 9], [5, 6]] });
-  const climbB = frame({ legs: 'climbB', dx: -1, rope: [X + 4, 0, 25],
-    far: [[2, 9], [5, 7]], near: [[3, 13], [5, 12]] });
+  const climbA = frame({ legs: 'climbA', dy: 1,
+    far: [[3, 12], [5, 13]], near: [[4, 9], [6, 5]] });
+  const climbB = frame({ legs: 'climbB',
+    far: [[3, 9], [5, 6]], near: [[4, 13], [5, 10]] });
   return pack([perch('side'), perch('front'), aim, shoot, climbA, climbB], X + 1, H + 1, 10, 18);
 }
 
@@ -639,35 +639,35 @@ export function bakeBosun() {
   const q = G => outline(fromGrid(rowsOf(settle(G)), PR, 1), OUT);
   // 11 wide with column 5 on the centre: a balding sunburnt head, hair round the back of it, a heavy black beard
   const HEAD = [
-    '...sShhS...',
-    '..sshhhhSs.',
-    '.kkhhhhhSs.',
-    '.kKhhhheSh.',
-    '..kKhhhhms.',
-    '..kKkkkmSy.',
-    '...kkkKSs..',
+    '...sShS....',
+    '..sshhhhS..',
+    '.ksShhhhSs.',
+    '.kShhhheSh.',
+    '..khhhhhms.',
+    '..kKkkkkSy.',
+    '...kkkkSs..',
   ];
   // the whistle: the head tipped back and the beard jutting up and forward, the jaw open at the top of the face
   const HEAD_W = [
-    '...sShhS...',
+    '...sShS....',
     '..sshhhhSs.',
-    '..kkhhhheSh',
-    '..kKhhhhhSs',
-    '..kKkhhhmms',
-    '...kkkkkSss',
-    '....kkkKs..',
+    '..ksShhheSh',
+    '..kShhhhhSs',
+    '..khhhhhmms',
+    '..kKkkkkkSs',
+    '...kkkkkS..',
   ];
   const TORSO = [
-    '...sShhS...',
-    '..uUllluUv.',
-    '.uUllllluUv',
-    'uUullllluUv',
-    'uUulllllUv.',
-    'uUullllUUv.',
-    '.rRrrrRRv..',
-    '.vRrrrRv...',
-    '..vLllLq...',
-    '..qLllLq...',
+    '....sShhS....',
+    '..uUUllluUv..',
+    '.uUUllllluUv.',
+    'uUUUllllluUvv',
+    'uUUUlllllUvv.',
+    'uUUUllllUUvv.',
+    '..rRrrrRRv...',
+    '..vRrrrRv....',
+    '...vLllLq....',
+    '...qLllLq....',
   ];
   const LEGS = {
     a: ['.....qqLl......',
@@ -729,12 +729,12 @@ export function bakeBosun() {
     const G = blank(W, H), B = X + (o.dx || 0), dy = o.dy || 0, O = B - 5;
     const P = v => [B + v[0], v[1] + dy];
     if (o.back) layer(G, g => belay(g, P(o.pin[0]), o.pin[1]));
-    arm(G, P([-3, 15]), P(o.far[0]), P(o.far[1]), true);
+    arm(G, P([-4, 15]), P(o.far[0]), P(o.far[1]), true);
     stamp(G, B - 7, 21, LEGS[o.legs]);
-    stamp(G, O, 12 + dy, TORSO);
+    stamp(G, B - 6, 12 + dy, TORSO);
     layer(G, g => stamp(g, O + (o.hx || 0), 5 + dy, o.whistle ? HEAD_W : HEAD));
     if (!o.back) layer(G, g => belay(g, P(o.pin[0]), o.pin[1]));
-    arm(G, P([3, 15]), P(o.near[0]), P(o.near[1]), false);
+    arm(G, P([4, 15]), P(o.near[0]), P(o.near[1]), false);
     if (o.whistle) {
       layer(G, g => stamp(g, B + 6, 6 + dy, TRILL));
       layer(G, g => call(g, B + 4, 9 + dy, B - 1, 13 + dy));
@@ -853,12 +853,13 @@ export function bakeQuarter() {
   // 13 wide with column 6 on the centre: a cocked hat with a black feather, a hard face with one gold earring and a
   // scar down the cheek, dark hair clubbed behind
   const HEAD = [
-    '....b........',
-    '...bB........',
-    '...bb........',
-    '..bBf........',
-    '.ffffFFf.....',
-    'ffffffFFFf...',
+    '.....b.......',
+    '....bB.......',
+    '....bb.......',
+    '...bbf.......',
+    '..fffFFf.....',
+    '.fffffFFFf...',
+    'ffffffffFFFf.',
     '..kkkkkkSs...',
     '..kShhhSeSh..',
     '..kKhShhhms..',
@@ -867,12 +868,13 @@ export function bakeQuarter() {
   ];
   // the brim pulled down over the eyes, the head dropped
   const HEAD_D = [
-    '....b........',
-    '...bB........',
-    '...bb........',
-    '..bBf........',
-    '.ffffFFf.....',
-    'ffffffFFFf...',
+    '.....b.......',
+    '....bB.......',
+    '....bb.......',
+    '...bbf.......',
+    '..fffFFf.....',
+    '.fffffFFFf...',
+    'ffffffffFFFf.',
     '..ffffffff...',
     '..kkhhhShs...',
     '..kKhShhhms..',
@@ -935,11 +937,11 @@ export function bakeQuarter() {
     leap: ['.....UUuu......',
       '....UU..uuu....',
       '...Uv..uuuuU...',
-      '..vv...uUUu....',
-      '..vv...........',
-      '.vv............',
-      '.vvU...........',
-      'vvvU...........'],
+      '..vvv..uUUu....',
+      '..vvvU.........',
+      '...vvU.........',
+      '...............',
+      '...............'],
     plant: ['.....UUuu......',
       '...UUU..uu.....',
       '..Uv.....uu....',
@@ -957,16 +959,18 @@ export function bakeQuarter() {
       '.vvvvv..uu.....',
       'vvvvvvv.uuuU...'],
   };
-  // the long coat: a skirt of faded cloth hanging off the waist, its tails thrown by the step
+  // the long coat: a skirt of faded cloth hanging off the waist, its tails thrown by the step. The outline is given in
+  // fractions of the skirt's own height so that a crouched or kneeling frame folds it instead of turning it inside out.
   const coat = (G, B, dy, pose) => {
-    const top = 20 + dy, pts = {
-      stand: [[B - 6, top], [B + 5, top], [B + 4, FL - 4], [B + 5, FL - 2], [B - 7, FL - 2], [B - 8, FL - 5]],
-      swing: [[B - 6, top], [B + 5, top], [B + 3, FL - 5], [B + 3, FL - 3], [B - 11, FL - 1], [B - 13, FL - 6], [B - 9, top + 6]],
-      stream: [[B - 6, top], [B + 5, top], [B + 5, FL - 6], [B + 2, FL - 4], [B - 13, FL - 3], [B - 16, FL - 8], [B - 8, top + 5]],
-      spread: [[B - 7, top], [B + 5, top], [B + 6, FL - 9], [B + 2, FL - 7], [B - 12, FL - 4], [B - 17, FL - 11], [B - 15, top + 2], [B - 9, top + 4]],
-      pooled: [[B - 6, top], [B + 5, top], [B + 6, FL - 1], [B - 12, FL], [B - 13, FL - 5], [B - 8, top + 4]],
+    const top = 20 + dy, HH = Math.max(3, FL - top), Y = f => top + Math.round(f * HH);
+    const pts = {
+      stand: [[-6, 0], [5, 0], [5, 0.72], [3, 1], [-6, 1], [-8, 0.66]],
+      swing: [[-6, 0], [5, 0], [4, 0.66], [2, 0.92], [-9, 1], [-12, 0.6], [-7, 0.25]],
+      stream: [[-6, 0], [5, 0], [5, 0.55], [3, 0.78], [-11, 0.92], [-15, 0.5], [-7, 0.18]],
+      spread: [[-7, 0], [5, 0], [6, 0.45], [2, 0.7], [-9, 1], [-16, 0.5], [-11, 0.12]],
+      pooled: [[-6, 0], [5, 0], [6, 1], [-11, 1], [-13, 0.5], [-8, 0.2]],
     }[pose];
-    gpoly(G, pts, (x, y) => {
+    gpoly(G, pts.map(([x, f]) => [B + x, Y(f)]), (x, y) => {
       const f = ((Math.floor((x - B) * 0.8 + (y - top) * 0.4) % 4) + 4) % 4;
       return y > FL - 2 ? 'D' : f === 0 ? 'D' : f === 1 ? 'A' : f === 2 ? 'A' : 'a';
     });
@@ -989,7 +993,7 @@ export function bakeQuarter() {
     if (o.blade && o.blade[3] !== 'back') layer(G, g => cutlass(g, P(o.blade[0]), o.blade[1], o.blade[2], 0.95));
     arm(G, P([3, 16]), P(o.near[0]), P(o.near[1]), false);
     if (o.gun && o.gun[3] !== 'back') layer(G, g => pistol(g, P(o.gun[0]), o.gun[1], o.gun[2]));
-    if (o.rope) layer(G, g => { gline(g, ...P(o.rope[0]), ...P(o.rope[1]), (i) => (i % 2 ? 'p' : 'P')); gline(g, ...P(o.rope[2]), ...P(o.rope[3]), (i) => (i % 2 ? 'p' : 'P')); });
+    if (o.rope) layer(G, g => { for (let k = 0; k < 4; k += 2) for (let e = 0; e < 2; e++) gline(g, P(o.rope[k])[0], P(o.rope[k])[1] + e, P(o.rope[k + 1])[0], P(o.rope[k + 1])[1] + e, (i) => ((i + e) % 3 ? 'P' : 'p')); });
     if (o.flash) {
       const F = P(o.flash);
       layer(G, g => { stamp(g, F[0], F[1], ['..X..', '.XxX.', 'XxxxX', '.XxX.', '..X..']); stamp(g, F[0] + 5, F[1], ['.zZz.', 'zZZzZ', '.zZz.']); });
@@ -1024,14 +1028,14 @@ export function bakeQuarter() {
     far: [[-2, 14], [-4, 12]], near: [[2, 13], [3, 11]],
     blade: [[3, 11], -78, 11], gun: [[-4, 12], -130, 8, 'back'] });
   const cut = frame({ boots: 'tell', dx: 1, dy: 3, hx: 1, coat: 'stream', down: true,
-    far: [[-2, 17], [0, 19]], near: [[3, 14], [4, 15]],
-    blade: [[4, 15], 72, 10], gun: [[0, 19], 160, 8, 'back'],
-    rope: [[-3, 25], [4, 25], [6, 24], [10, 21]] });
+    far: [[-2, 17], [0, 19]], near: [[4, 13], [5, 14]],
+    blade: [[5, 14], 82, 11], gun: [[0, 19], 160, 8, 'back'],
+    rope: [[-4, 25], [3, 25], [7, 24], [11, 20]] });
   const stagger = frame({ boots: 'stand', dx: -1, dy: 4, hx: 2, coat: 'swing', down: true,
     far: [[-3, 17], [-6, 16]], near: [[4, 18], [6, 21]],
     blade: [[6, 21], 62, 10], gun: [[-6, 16], -176, 8, 'back'] });
   const kneel = frame({ boots: 'kneel', dy: 5, hx: 2, coat: 'pooled', down: true,
     far: [[-3, 17], [-1, 19]], near: [[5, 17], [7, 16]],
-    blade: [[7, 16], 80, 10], gun: [[-1, 19], 170, 8, 'back'] });
+    blade: [[7, 16], 80, 8], gun: [[-1, 19], 170, 8, 'back'] });
   return pack([idle, walk1, walk2, slashTell, slash, shootTell, shoot, leap, cut, stagger, kneel], X + 1, H + 1, 12, 22);
 }

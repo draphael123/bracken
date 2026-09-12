@@ -207,14 +207,12 @@ function deckTile(seed) {
 // their top edge and each plate's lower edge sits in its own shade; the butt between two plates moves course
 // by course, so it is a sheathed bottom and not a course of green brick.
 function copperPlates(g, rnd, y0, y1, C) {
-  for (let y = y0; y < y1; y++) rect(g, 0, y, T, 1, ((y - y0) % 5) === 4 ? C.d : C.m);
-  for (let y = y0; y < y1; y++) {
-    if (((y - y0) % 5) !== 0) continue;
-    for (let x = 0; x < T; x++) if (rnd() < 0.8) px(g, x, y, C.l);
-  }
-  for (let p = 0; y0 + p * 5 < y1; p++) {
+  // the plates run on the same 4-row pitch as the planking, keyed to the tile grid, so a sheathed bottom of
+  // any height laps continuously from tile to tile instead of breaking at every join
+  for (let y = y0; y < y1; y++) { const k = y & 3; rect(g, 0, y, T, 1, k === 0 ? C.l : k === 3 ? C.d : C.m); }
+  for (let p = (y0 >> 2); (p << 2) < y1; p++) {
     const bx = (rnd() * T) | 0;
-    for (let y = y0 + p * 5; y < Math.min(y1, y0 + p * 5 + 5); y++) { px(g, bx, y, C.d); if (rnd() < 0.4) px(g, bx + 1, y, C.l); }
+    for (let y = Math.max(y0, p << 2); y < Math.min(y1, (p << 2) + 4); y++) { px(g, bx, y, C.d); if (rnd() < 0.4) px(g, bx + 1, y, C.l); }
   }
   // the mottle the sea leaves on her, and one plate lifted so the bare metal shows
   for (let i = 0; i < 20; i++) { const x = (rnd() * T) | 0, y = y0 + ((rnd() * Math.max(1, y1 - y0)) | 0); px(g, x, y, rnd() < 0.5 ? C.l : C.d); }
@@ -223,8 +221,9 @@ function copperPlates(g, rnd, y0, y1, C) {
 
 // The outside of a tarred hull: black-brown courses with the caulk blacker still, bolt heads on the frames,
 // copper sheathing gone green where she sits in the water, barnacle crust along a seam, weed in the seams.
-// Variants 0 and 1 are her upper strakes (dry, a flake of paint, an iron strap); 2 and 3 carry the copper and
-// the crust, so a level wanting her waterline puts those two at the bottom of the stack.
+// Variants 0 and 1 are her upper strakes (dry, a flake of paint, an iron strap); variant 2 is the copper at
+// her waterline and variant 3 the copper under it in the shadow of her own bottom — so a level that wants a
+// hull to float puts 0/1 up top, then a row of 2, then 3 and down.
 function hullTile(seed, low) {
   const rnd = mulberry(seed); const [c, g] = canvas(T, T);
   plankBody(g, rnd, 0, HL);
@@ -238,10 +237,10 @@ function hullTile(seed, low) {
   }
   if (!low && rnd() < 0.45) paintFlake(g, rnd, 2 + ((rnd() * 9) | 0), 1 + 4 * ((rnd() * 4) | 0), 3 + ((rnd() * 5) | 0), rnd() < 0.6);
   if (low) {
-    const y0 = 2 + ((rnd() * 4) | 0), C = low > 1 ? CU2 : CU;
+    // the waterline strake keeps her black planking above the copper; below it she is sheathed to the keel
+    const y0 = low > 1 ? 0 : 2 + ((rnd() * 4) | 0), C = low > 1 ? CU2 : CU;
     copperPlates(g, rnd, y0, T, C);
-    // the line where the copper stops, and the barnacle crust that gathers on it
-    for (let x = 0; x < T; x++) px(g, x, y0 - 1, (x & 1) ? HL.caulk : C.d);
+    if (y0 > 0) for (let x = 0; x < T; x++) px(g, x, y0 - 1, (x & 1) ? HL.caulk : C.d);
     barnacles(g, rnd, 1 + ((rnd() * 10) | 0), y0 + 1 + ((rnd() * 6) | 0), 2);
     if (rnd() < 0.5) barnacles(g, rnd, 2 + ((rnd() * 11) | 0), y0 + 4 + ((rnd() * 7) | 0), 1);
     if (rnd() < 0.7) weedFringe(g, rnd, 1 + ((rnd() * 13) | 0), y0 + ((rnd() * 8) | 0), 2 + ((rnd() * 4) | 0));
@@ -281,7 +280,7 @@ function hullFace(g, rnd, x0, dir, low) {
   for (let y = 1; y < T; y += 5) if (rnd() < 0.7) bolt(g, rnd, dir > 0 ? x0 : x0 - 1, y);
   if (low) {
     const y0 = 3 + ((rnd() * 5) | 0), C = low > 1 ? CU2 : CU;
-    for (let y = y0; y < T; y++) { px(g, x0, y, ((y - y0) % 5) === 0 ? C.l : C.m); px(g, x1, y, C.d); }
+    for (let y = y0; y < T; y++) { px(g, x0, y, (y & 3) === 0 ? C.l : C.m); px(g, x1, y, C.d); }
     px(g, x0, y0 - 1, HL.caulk); px(g, x1, y0 - 1, HL.caulk);
     if (rnd() < 0.6) barnacles(g, rnd, x0 + (dir > 0 ? 0 : -1), y0 + 2 + ((rnd() * 5) | 0), 1);
     if (rnd() < 0.7) weedFringe(g, rnd, x1, y0 + ((rnd() * 6) | 0), 2 + ((rnd() * 3) | 0));
