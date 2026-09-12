@@ -1947,6 +1947,12 @@ function trialYard(hero) {
       ['firedrop', 2, 'THE FIREDROP. JUMP, THEN DOWN+X IN THE AIR: A FIREBALL GOES DOWN AHEAD OF YOU. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]]],
       ['heavyblow', 2, 'THE BELLOWS. HOLD X INSTEAD OF TAPPING IT: THE FLAME GATHERS BACK AND GOES OUT IN A CONE THAT THROWS THEM DOWN AND SETS THEM ALIGHT. THE BAR OVER YOUR HEAD SHOWS IT COMING. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]]],
       ['dodge', 2, 'NO SHIELD. YOU DODGE: V. ROLL TWICE. YOUR OWN FIRE NEVER BURNS YOU.', []]],
+    pirate: [
+      ['hit', 3, 'THE CUTLASS. X, AND KEEP GOING: HE GETS A RUN OF FIVE WHERE THE REST OF THEM GET THREE, AND NONE OF THEM WEIGH ANYTHING. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]]],
+      ['parry', 3, 'NO SHIELD. TAP C AND THE CUTLASS GOES ACROSS FOR A FIFTH OF A SECOND: WHAT IT CATCHES IT TURNS COMPLETELY, AND THE JOLT SEATS A BALL IN THE PISTOL. TURN THREE ARROWS.', [['archer', 22]]],
+      ['heavyblow', 2, 'THE PISTOL. HOLD X AND HE LEVELS IT: IT GOES THROUGH ANY GUARD AND NOTHING BLOCKS IT, AND THEN IT IS EMPTY. IT LOADS ITSELF SLOWLY - OR THE MOMENT GOLD REACHES YOU. FIRE IT TWICE.', [['dummy', 14], ['dummy', 20]]],
+      ['hook', 2, 'THE HOOK. HOLD C: A LINE ONTO RIGGING, A RAIL OR A NET HAULS YOU TO IT - ONTO A MAN IT HAULS HIM TO YOU, AND SHAKES A COIN LOOSE. THROW IT TWICE.', [['dummy', 20]]],
+      ['dodge', 2, 'AND THE ROLL. V. HE IS THE ONLY ONE OF THEM WHO HAS EVER HAD TO GET OUT OF THE WAY FOR A LIVING. ROLL TWICE.', []]],
     paladin: [
       ['hit', 3, 'THE MAUL. X, SLOW AND HEAVY: EVERY THIRD BLOW IN A RUN STAGGERS. EVERY BLOW FILLS THE LIGHT. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]]],
       ['aegis', 3, 'THE AEGIS. HOLD C: A WARD IN FRONT OF YOU FOR A BREATH AND A HALF, THEN IT MUST REST. TURN THREE ARROWS.', [['archer', 22]]],
@@ -1960,6 +1966,7 @@ function trialYard(hero) {
   block(0, W - 1, 20, H - 1); block(0, 1, 0, 19); block(W - 2, W - 1, 0, 19);
   const trial = [];
   ST.forEach(([kind, n, text, things], i) => { const x0 = 4 + i * SW, gate = x0 + SW - 2;
+    if (kind === 'heavyblow' && hero === 'pirate') L.coins([x0 + 8, 18], [x0 + 11, 18], [x0 + 16, 18], [x0 + 19, 18]);   // his powder, lying about
     ent('sign', x0 + 2, 19, { text }); ent('torch', x0 + 6, 19);
     for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 17, 19); ent('archer', x0 + dx, 16, { face: -1 }); } else ent('dummy', x0 + dx, 19); }
     for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
@@ -3434,6 +3441,7 @@ export const LEVELS = [
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
   { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
+  { id: 'trial_pirate', name: "THE FREEBOOTER'S TRIAL", sub: 'cutlass, pistol and hook', build: () => trialYard('pirate'), hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
