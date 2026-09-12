@@ -2715,65 +2715,141 @@ function theFlotilla() {
 // side. The rigging is the level: every line, shroud and ratline is a handhold, and the hold below is shelter
 // that costs you time. (IN PROGRESS: no boss yet, no music of its own, hidden from the map.)
 function theHurricane() {
-  const W = 264, H = 34; const L = painter(W, H);
+  const W = 384, H = 34; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
   const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
+  const rot = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); }; // planking that gives under a standing weight
+  const shroud = x => net(x, x + 1, 13, 19); // a hand on any of these and the sea only soaks you
   const pools = [], movers = [], hullZones = [];
 
-  // the sea she is in. Falling off her in this is not swimming, it is the end of the run.
+  // the sea she is in, and the bottom of the world under it so nothing falls out of the level
   pools.push({ x0: 0, x1: W * TS, y: 27 * TS, bottom: 33 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true });
 
-  // ---- THE SHIP ----
-  block(16, 248, 20, 31); hullZones.push([16, 248, 20, 31]); // her hull: the way along her is over her
-  air(20, 244, 21, 26); // her hold, hollow under the deck
-  // the forecastle and the quarterdeck stand above the waist, so there is high ground and low ground on her
-  block(20, 44, 16, 19); block(212, 244, 16, 19); air(22, 42, 17, 19); air(214, 242, 17, 19);
-  plat(45, 16, 4); plat(207, 16, 5);
-  rail(48, 206, 19); // (the waist is open deck: nothing between you and the sea but the rail)
+  // ---- HER HULL ----
+  block(16, 368, 20, 31); hullZones.push([16, 368, 20, 31]); // the way along her is over her, or through her
+  block(0, W - 1, 30, H - 1);
+  air(20, 364, 21, 26); // her hold, hollow the length of her
+  net(14, 15, 19, 29); net(369, 370, 19, 29); // HER LIFELINES over the bow and the stern: go in the water and you can still get back aboard
+  rail(49, 298, 19); // the waist is open deck from the forecastle to the quarterdeck
 
-  // ---- THE RIGGING: three masts and the lines between them. Every one of these is a handhold. ----
-  for (const mx of [64, 128, 196]) { net(mx, mx + 1, 6, 19); ent('deco', mx, 19, { kind: 'mastTall', v: mx % 3 ? 0 : 1 }); }
-  ent('deco', 58, 12, { kind: 'sailRag', v: 0 }); ent('deco', 122, 11, { kind: 'sailRag', v: 1 }); ent('deco', 190, 12, { kind: 'sailRag', v: 0 });
-  ent('deco', 64, 5, { kind: 'pennant', v: 1 }); ent('deco', 128, 5, { kind: 'pennant', v: 2 });
-  for (const sx of [52, 78, 96, 112, 144, 160, 176, 204]) net(sx, sx + 1, 13, 19); // the shrouds: a line every few strides, so the deck is always survivable
-  for (const [x0, x1, y] of [[66, 78, 12], [96, 112, 11], [144, 160, 12], [176, 190, 11]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); } // the yards, up out of the wash
-  ent('deco', 40, 19, { kind: 'rigging', v: 0 }); ent('deco', 210, 19, { kind: 'rigging', v: 1 });
-
-  // ---- THE HOLD: shelter, and slower. ----
-  for (const hx of [56, 120, 188]) { air(hx, hx + 1, 20, 20); net(hx, hx + 1, 20, 26); } // hatches down off the deck
-  ent('deco', 70, 26, { kind: 'kegStack' }); ent('deco', 100, 26, { kind: 'rumBarrels', v: 0 }); ent('deco', 150, 26, { kind: 'hammock', v: 0 });
-  ent('deco', 170, 26, { kind: 'hammock', v: 1 }); ent('deco', 210, 26, { kind: 'lanternDeck', v: 1 });
-  ent('torch', 80, 26); ent('torch', 140, 26); ent('torch', 200, 26);
-  coins([74, 25], [104, 25], [134, 25], [164, 25], [194, 25]);
-  ent('silver', 154, 26);
-
-  // ---- WHO IS ABOARD ----
+  // ================= 1. THE FORECASTLE: you come up out of her head =================
+  block(16, 48, 16, 19); air(22, 46, 17, 19); air(47, 48, 17, 19); // and the door aft onto the waist
+  plat(49, 16, 4); net(49, 50, 15, 19); // the rope up onto her head, because four rows is more than a jump
   ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD AND YOU GET A BREATH OF WARNING. TAKE A LINE, GET UP INTO THE YARDS, OR GET BELOW. THE DECK IS NOT A PLACE TO STAND WHEN SHE SHIPS ONE.' });
   ent('check', 30, 19); ent('npc', 34, 19, { kind: 'squire' });
-  ent('sign', 50, 19, { text: 'EVERY SHROUD AND RATLINE HOLDS. HOLD ON AND THE WAVE ONLY SOAKS YOU.' });
-  ent('cutlass', 88, 19, { face: -1 }); ent('cutlass', 118, 19, { face: -1 }); ent('boarder', 140, 19, { face: -1 });
-  ent('marine', 172, 15, { face: -1 }); ent('lookout', 128, 6, { face: -1 }); ent('bosun', 204, 19, { face: -1 });
-  ent('cutlass', 96, 26, { face: 1 }); ent('marine', 180, 26, { face: -1 });
-  ent('check', 150, 19); ent('check', 218, 19);
-  coins([54, 18], [70, 18], [86, 18], [102, 18], [118, 18], [134, 18], [150, 18], [166, 18], [182, 18], [198, 18]);
-  coins([68, 11], [100, 10], [146, 11], [178, 10]);
-  ent('sign', 216, 19, { text: 'HER STERN. (THE DROWNED BOSUN COMES OVER THE RAIL WITH THE WAVE. HE IS NOT BUILT YET.)' });
+  ent('sign', 40, 19, { text: 'EVERY SHROUD AND RATLINE HOLDS. HOLD ON AND THE WAVE ONLY SOAKS YOU. HER LANTERNS ARE BLOWN OUT AND ROLLED INTO HER CORNERS: BRING THEM BACK AND SHE HAS HER LIGHTS.' });
+  ent('deco', 44, 19, { kind: 'kegStack' }); ent('deco', 24, 19, { kind: 'hammock', v: 0 });
+  coins([28, 18], [36, 18], [42, 18]);
 
-  return {
+  // ================= 2. THE FORE WAIST: her foremast, and the hands still aboard =================
+  net(72, 73, 6, 19); ent('deco', 72, 19, { kind: 'mastTall', v: 0 }); ent('deco', 66, 12, { kind: 'sailRag', v: 0 });
+  ent('deco', 72, 5, { kind: 'pennant', v: 1 });
+  for (const x of [58, 84, 96]) shroud(x);
+  for (const [x0, x1, y] of [[74, 86, 12], [60, 70, 11]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); } // the fore yards, up out of the wash
+  ent('cutlass', 62, 19, { face: -1 }); ent('cutlass', 90, 19, { face: -1 }); ent('lookout', 72, 5, { face: -1 }); ent('cutlass', 76, 19, { face: 1 });
+  ent('marine', 80, 11, { face: -1 });
+  ent('sign', 54, 19, { text: 'THEY WANT HER BACK AND THEY DO NOT CARE THAT SHE IS SINKING.' }); ent('check', 86, 19);
+  air(64, 65, 20, 20); net(64, 65, 20, 26); // the fore hatch down into her hold
+  ent('deco', 56, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 94, 19, { kind: 'boardingNet' });
+  coins([60, 18], [68, 18], [78, 18], [88, 18], [66, 10], [80, 10]);
+
+  // ================= 3. THE BOATS: what is left of them, lashed on deck =================
+  ent('deco', 106, 19, { kind: 'rowboat' }); ent('deco', 124, 19, { kind: 'rowboat' });
+  plat(104, 16, 5); plat(122, 16, 5); // their keels: cover to stand on, and somewhere to be when it comes
+  ent('boarder', 112, 19, { face: -1 }); ent('cutlass', 132, 19, { face: 1 }); ent('marine', 116, 15, { face: -1 }); ent('cutlass', 126, 19, { face: -1 });
+  for (const x of [116, 136] ) shroud(x);
+  ent('sign', 100, 19, { text: 'THE BOATS ARE STOVE IN. NOBODY IS LEAVING HER TONIGHT.' });
+  air(118, 119, 20, 20); net(118, 119, 20, 26); // the main hatch
+  ent('check', 138, 19);
+  coins([105, 15], [110, 18], [123, 15], [130, 18], [136, 18]);
+
+  // ================= 4. THE GALLEY: a house on her deck, and the only dry corner in her =================
+  block(146, 178, 16, 19); air(148, 176, 17, 19); air(146, 147, 17, 19); air(177, 178, 17, 19); // her galley, with a door in each end of it
+  plat(179, 16, 4); net(143, 144, 15, 19); net(179, 180, 15, 19); // up onto her galley roof from either side
+  ent('torch', 152, 19); ent('deco', 156, 19, { kind: 'kegStack' }); ent('deco', 168, 19, { kind: 'chickenCoop' });
+  ent('sign', 150, 19, { text: 'HER GALLEY. THE STOVE IS OUT AND THE COOK IS GONE AND THE KETTLE IS STILL SWINGING.' });
+  ent('bosun', 164, 19, { face: -1 }); ent('cutlass', 172, 19, { face: -1 }); ent('boarder', 158, 19, { face: 1 });
+  ent('check', 148, 19); ent('stray', 174, 19, { kind: 'lamp' }); // one of her lanterns, rolled into the galley
+  ent('deco', 160, 15, { kind: 'lanternDeck', v: 1 }); // on her galley roof, not inside it
+  coins([154, 18], [162, 18], [170, 18], [158, 15], [174, 15]);
+
+  // ================= 5. THE MAIN WAIST: her mainmast, her tops, and the worst of the open deck =================
+  net(210, 211, 6, 19); ent('deco', 210, 19, { kind: 'mastTall', v: 1 }); ent('deco', 204, 11, { kind: 'sailRag', v: 1 });
+  ent('deco', 210, 5, { kind: 'pennant', v: 2 }); ent('deco', 210, 4, { kind: 'crowNest' });
+  for (const x of [192, 222, 240]) shroud(x);
+  for (const [x0, x1, y] of [[212, 228, 11], [194, 206, 12], [230, 244, 12]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); }
+  ent('marine', 220, 10, { face: -1 }); ent('lookout', 210, 4, { face: -1 });
+  ent('boarder', 198, 19, { face: -1 }); ent('cutlass', 232, 19, { face: -1 }); ent('boarder', 246, 19, { face: -1 });
+  ent('check', 190, 19); ent('sign', 186, 19, { text: 'THE WAIST IS THE WORST OF HER: NO RAIL WORTH THE NAME AND NOTHING TO HOLD BUT THE SHROUDS.' });
+  air(196, 197, 20, 20); net(196, 197, 20, 26);
+  ent('deco', 188, 19, { kind: 'washing' }); ent('deco', 250, 19, { kind: 'boardingNet' });
+  // her blocks and tackle swinging off the yards: a way across the worst of it, if you can time her roll
+  movers.push({ kind: 'swing', px: 216 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.4 });
+  movers.push({ kind: 'swing', px: 236 * TS, py: 8 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2 });
+  coins([190, 18], [200, 18], [214, 18], [226, 18], [238, 18], [248, 18], [216, 10], [236, 11]);
+
+  // ================= 6. WHERE SHE IS STOVE IN: a hole in the deck and the sea coming up through it =================
+  air(262, 272, 20, 20); rot(257, 259, 20); rot(274, 276, 20); // the planking round the hole gives under you
+  plat(261, 17, 3); plat(266, 16, 3); plat(271, 17, 3); // the spars they lashed over the hole: three steps, none of them long
+  net(256, 257, 13, 19); net(280, 281, 13, 19);
+  ent('sign', 252, 19, { text: 'SHE IS STOVE IN HERE AND THE SEA IS COMING UP THROUGH HER. THE PLANKS EITHER SIDE OF IT ARE GOING TOO. GO OVER IT OR GO ROUND IT BELOW.' });
+  ent('cutlass', 286, 19, { face: -1 }); ent('boarder', 292, 19, { face: -1 }); ent('marine', 280, 14, { face: -1 }); ent('cutlass', 258, 19, { face: 1 });
+  ent('check', 284, 19);
+  coins([265, 15], [270, 13], [278, 18], [288, 18]);
+
+  // ================= 7. HER HOLD: hammocks, casks, the pumps, and a foot of water the length of her =================
+  ent('torch', 70, 26); ent('torch', 130, 26); ent('torch', 200, 26); ent('torch', 300, 26);
+  ent('deco', 76, 26, { kind: 'kegStack' }); ent('deco', 90, 26, { kind: 'rumBarrels', v: 1 });
+  ent('deco', 110, 26, { kind: 'hammock', v: 0 }); ent('deco', 134, 26, { kind: 'hammock', v: 1 });
+  ent('deco', 226, 26, { kind: 'hammock', v: 0 }); ent('deco', 240, 26, { kind: 'kegStack' });
+  ent('deco', 310, 26, { kind: 'plunder', v: 0 }); ent('deco', 330, 26, { kind: 'plunder', v: 2 });
+  ent('stray', 84, 26, { kind: 'lamp' }); ent('stray', 316, 26, { kind: 'lamp' }); // two more of her lanterns
+  ent('cutlass', 102, 26, { face: 1 }); ent('marine', 146, 26, { face: -1 }); ent('cutlass', 234, 26, { face: -1 });
+  ent('bosun', 306, 26, { face: -1 }); ent('cutlass', 340, 26, { face: -1 }); ent('boarder', 272, 26, { face: -1 }); ent('cutlass', 180, 26, { face: 1 });
+  ent('check', 70, 26); ent('check', 244, 26); ent('sign', 66, 26, { text: 'HER HOLD. DRY OF THE WAVE AND SLOW AS TAR, AND THE WATER IS OVER YOUR BOOTS AND RISING.' });
+  ent('sign', 268, 26, { text: 'UNDER THE HOLE. THE SEA COMES IN HERE FASTER THAN THE PUMPS TAKE IT OUT.' });
+  ent('silver', 154, 26); ent('silver', 252, 26);
+  ent('silver', 66, 10); ent('silver', 330, 9); // one in her fore top and one on the mizzen yard, for anyone who goes up instead of along
+  // the water standing in the bottom of her: it wades, it does not swim
+  pools.push({ x0: 240 * TS, x1: 300 * TS, y: 26 * TS + 2, bottom: 27 * TS, shallow: true, depth: 14 });
+  coins([80, 25], [96, 25], [116, 25], [140, 25], [204, 25], [230, 25], [246, 25], [312, 25], [336, 25]);
+  // and the ladders up out of her, so the hold is a road and not a trap
+  for (const hx of [254, 300, 340]) { air(hx, hx + 1, 20, 20); net(hx, hx + 1, 20, 26); }
+
+  // ================= 8. THE QUARTERDECK: her mizzen, her great cabin, and the watch that never ended =================
+  block(300, 368, 16, 19); air(302, 366, 17, 19); air(300, 301, 17, 19);
+  plat(296, 16, 4); net(297, 298, 15, 19);
+  ent('sign', 294, 19, { text: 'HER QUARTERDECK. THE BOSUN WENT OVER THE SIDE IN THE LAST STORM AND SOMETHING CAME BACK ABOARD. WHILE A WAVE HAS HIM NOTHING WILL CUT HIM. WHEN IT DROPS HIM, CUT HIM THEN.' });
+  net(330, 331, 8, 15); ent('deco', 330, 15, { kind: 'mastTall', v: 1 }); ent('deco', 330, 7, { kind: 'pennant', v: 1 });
+  net(310, 311, 11, 15); net(342, 343, 11, 15); net(352, 353, 11, 15); // THE ARENA'S HANDHOLDS: without these the wave is a coin toss
+  for (let x = 322; x <= 338; x++) set(x, 10, T.ONEWAY); // the mizzen yard, above the worst of it
+  ent('deco', 318, 15, { kind: 'sailRag', v: 1 }); ent('deco', 346, 15, { kind: 'rigging', v: 0 });
+  ent('deco', 304, 15, { kind: 'lanternDeck', v: 0 }); ent('deco', 364, 15, { kind: 'sternWindows' });
+  ent('deco', 356, 19, { kind: 'plunder', v: 1 }); ent('torch', 308, 19); ent('check', 296, 19); // the last one outside her arena walls
+  coins([314, 14], [326, 14], [338, 14], [350, 14], [328, 9], [334, 9]);
+  ent('drowned', 356, 15);
+
+  const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 24, y: 19 }, pools, falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'flotilla', night: false, dark: 0.06,
+    duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
     swell: { amp: 3, period: 3.8 },
     // THE WASH: the rule of the level. It builds to windward, it tells you, and then it takes the deck.
-    wash: { y0: 8 * TS, y1: 20 * TS, x0: 16 * TS, x1: 248 * TS, every: 8.5, tell: 2.2, speed: 320, dmg: 18 },
+    wash: { y0: 8 * TS, y1: 20 * TS, x0: 16 * TS, x1: 368 * TS, every: 8.5, tell: 2.2, speed: 320, dmg: 18 },
     hullZones,
-    interiors: [[20, 244, 21, 26, 'stone']],
+    interiors: [[20, 364, 21, 26, 'stone'], [148, 176, 17, 19, 'stone'], [302, 366, 17, 19, 'stone']],
+    quest: { n: 3, item: 'lamp', name: 'HER LANTERNS', npc: 'squire', done: 'SHE HAS HER LIGHTS BACK', reward: 'relic', relic: 'stormline' },
     palette: { set: 'ship', sky: 'storm', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 310 * TS, x1: 368 * TS, floor: 16 * TS, y0: 6 * TS, trigger: 316 * TS, wallL: 309, wallR: 368, boss: 'drowned', music: 'drowned', tint: '#2a5a6a', tintA: 0.12, fx: 'motes' },
+    // HER MASTS GO ONE AT A TIME. Lightning finds the fore first, then the main: each one that comes down is a
+    // bridge you did not have and a way up you no longer have.
+    masts: [{ x: 72, at: 104 * TS, fell: false }, { x: 210, at: 252 * TS, fell: false }],
   };
+  return ret;
 }
 
 export const LEVELS = [
@@ -2791,7 +2867,7 @@ export const LEVELS = [
   { id: 'longwater', name: 'THE LONG WATER', sub: 'the river to the sea', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', build: shipwreckReef, needs: 'longwater' },
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', build: theFlotilla, needs: 'reef' },
-  { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', build: theHurricane, needs: 'flotilla', hidden: true }, // IN PROGRESS: hidden until she has a boss and her own music
+  { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', build: theHurricane, needs: 'flotilla' },
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },

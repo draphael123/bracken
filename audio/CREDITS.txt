@@ -42,3 +42,6 @@ Round 70: the wind-up (SFX.charge) no longer plays the boss roar clip, and block
 are synthesised apart instead of sharing one clang and one slam. Every creature of the three sea levels has
 its own hurt voice (src/audio.js HURT): shelled things click, fish snap, birds squawk, the drowned elves
 gasp thin, the drowned crew groan waterlogged, the pirates are six pitches of the human hurt clip.
+
+- hurricane.ogg = "WoWChapter3" from "War on Water: Tracks" by yd, CC0 - https://opengameart.org/content/war-on-water-tracks - THE HURRICANE DECK (lowpassed at 9 kHz, -7 dB to sit with the rest).
+- drowned.ogg = "esa.ogg" from "Enemy Ship Approaching" by yd, CC0 - https://opengameart.org/content/enemy-ship-approaching - the Drowned Bosun's own theme (lowpassed at 9 kHz, -13 dB). Built with the Sonatina Symphonic Orchestra soundfont and CC0 ocean waves from Freesound.
