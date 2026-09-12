@@ -2696,8 +2696,8 @@ function updateWash(dt) {
   if (!wash) wash = { t: W.every * 0.55, state: 'wait', x: 0, dir: -1 };
   wash.t -= dt;
   if (wash.state === 'wait' && wash.t <= W.tell) { wash.state = 'tell'; wash.dir = wash.dir < 0 ? 1 : -1;
-    number(P.x, P.y - 44, wash.dir > 0 ? 'A SEA TO WINDWARD' : 'A SEA TO WINDWARD', '#a8cfc6'); SFX.wave ? SFX.wave() : SFX.roar(); shakeCam(3); }
-  if (wash.state === 'tell' && wash.t <= 0) { wash.state = 'run'; wash.x = wash.dir > 0 ? W.x0 - 40 : W.x1 + 40; shakeCam(6); rumble(300, 0.7); }
+    number(P.x, P.y - 44, 'A SEA TO WINDWARD', '#a8cfc6'); SFX.wave(); shakeCam(3); }
+  if (wash.state === 'tell' && wash.t <= 0) { wash.state = 'run'; wash.x = wash.dir > 0 ? W.x0 - 40 : W.x1 + 40; SFX.waveBreak(); shakeCam(6); rumble(300, 0.7); }
   if (wash.state === 'run') {
     wash.x += wash.dir * W.speed * dt;
     for (let i = 0; i < 3; i++) parts.push({ x: wash.x + (Math.random() - 0.5) * 30, y: W.y1 - Math.random() * (W.y1 - W.y0), vx: wash.dir * 120, vy: -40 - Math.random() * 60, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#dff0f5' : '#a8cfc6', size: 2, grav: 300 });
@@ -2706,9 +2706,13 @@ function updateWash(dt) {
       const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS));
       const held = t === T.NET || t === T.CLIMB || P.onRope;
       P.washed = 0.8;
-      if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash ? SFX.splash() : SFX.crack(); shakeCam(4); P.vx = wash.dir * 40; }
-      else { damagePlayer(P.x, L.wash.dmg, { unblockable: true, up: true }); P.vx = wash.dir * 420; P.vy = -180; P.ground = false;
-        number(P.x, P.y - 30, 'SHE SHIPS ONE', '#ff6b6b'); shakeCam(8); hitstop(0.06); }
+      if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash(); shakeCam(4); P.vx = wash.dir * 90; }
+      else { damagePlayer(P.x, L.wash.dmg, { unblockable: true, up: true });
+        // it throws you down her deck, never straight off her: the rail stops the throw, so there is always
+        // one beat on the far side of it to catch a line
+        const rail = wash.dir > 0 ? W.x1 - 24 : W.x0 + 24, room = (rail - P.x) * wash.dir;
+        P.vx = wash.dir * Math.max(120, Math.min(420, room * 2.2)); P.vy = -180; P.ground = false;
+        number(P.x, P.y - 30, 'SHE SHIPS ONE', '#ff6b6b'); SFX.splash(); shakeCam(8); hitstop(0.06); }
     }
     for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - wash.x) < 26 && e.y > W.y0 && e.y < W.y1 + 12) { e.vx = wash.dir * 260; e.vy = -120; e.stagger = Math.max(e.stagger, 0.5); }
     if (wash.x < W.x0 - 80 || wash.x > W.x1 + 80) { wash.state = 'wait'; wash.t = W.every; }

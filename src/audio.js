@@ -150,6 +150,8 @@ export const SFX = {
   gobHurt() { file('gobHurt', 0.4); },
   hurt() { file('hurt', 0.6) || (tone('sawtooth', 240, 60, 0.32, 0.25), noise(0.15, 0.2, 400)); },
   pogo() { tone('square', 480, 980, 0.13, 0.18); },
+  wave() { noise(1.5, 0.30, 320, 0.5); noise(1.2, 0.22, 900, 0.7, 0.15); tone('sine', 70, 34, 1.4, 0.16); },
+  waveBreak() { noise(0.9, 0.42, 1500, 0.5); noise(1.4, 0.30, 500, 0.6, 0.05); tone('sine', 90, 30, 0.8, 0.2); },
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },

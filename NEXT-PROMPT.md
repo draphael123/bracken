@@ -18,9 +18,10 @@ tile at the player's chest is NET or CLIMB.
 ### Finish it, in this order
 1. ~~Verify hold-on saves you~~ — VERIFIED with the crew killed off: a bot parked on the open deck loses ~16 a
    wash; a bot clinging to a shroud takes nothing across 20 seconds of washes. (The first reading looked bad
-   because teleporting the bot into mid-rigging costs it health before it grabs on.) What is still worth doing:
-   the wash should also push you ALONG the deck when you are held, and it should not be able to throw you into
-   the sea from the windward rail without a chance to grab.
+   because teleporting the bot into mid-rigging costs it health before it grabs on.) DONE since: the wash carries you along her
+   when you are held, the throw is clamped at the rail so it can never put you straight over the side (a bot
+   parked on the stern edge through four washes never went in), and the sea has its own voice now —
+   `SFX.wave()` for the build and `SFX.waveBreak()` for the break, instead of the beast roar it was borrowing.
 2. **THE DROWNED BOSUN** — the boss, who comes over the rail *with* a wave: his arena is the quarterdeck at
    x 212-244, he should use the wash as his clock (attack while you must also hold on), and the wave itself
    should be the thing that resets the fight. Give him a wind-up per attack and a tell colour.
