@@ -2508,10 +2508,12 @@ function theFlotilla() {
   for (const x of [38, 60, 80]) ent('deco', x, 29, { kind: 'oarBench' });
   ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
   ent('cutlass', 44, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 });
+  ent('cutlass', 58, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 }); ent('marine', 51, 10, { face: -1 });
+  ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT AND THERE IS A POT ON IT. WHOEVER WAS COOKING WENT UP ON DECK IN A HURRY.' });
   ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
   ent('deco', 66, 23, { kind: 'hammock', v: 0 }); ent('deco', 46, 23, { kind: 'coiledCable', v: 0 });
   ent('deco', 50, 10, { kind: 'pennant', v: 0 });
-  ent('check', 34, 23);
+  ent('check', 34, 23); ent('check', 88, 23);
   coins([36, 23], [42, 23], [48, 23], [56, 23], [64, 23], [72, 23], [80, 23], [90, 23]);
   coins([36, 29], [48, 29], [56, 29], [74, 29], [88, 29]);
   coins([50, 17], [50, 14], [49, 10], [52, 10]);
@@ -2529,11 +2531,13 @@ function theFlotilla() {
   ent('silver', 150, 29);
   ent('sign', 116, 21, { text: 'THE HULK. THEY TOOK HER TWO SUMMERS AGO AND NEVER FINISHED STRIPPING HER. THE GREY PLANKS WILL NOT HOLD A MAN: STAND ON ONE AND YOU WILL GO THROUGH TO WHAT IS UNDER IT.' });
   ent('boarder', 128, 21, { face: -1 }); ent('boarder', 162, 21, { face: -1 });
+  ent('cutlass', 146, 21, { face: 1 }); ent('bosun', 172, 21, { face: -1 }); ent('cutlass', 130, 28, { face: 1 });
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
+  ent('sign', 144, 21, { text: 'THE HOLD IS FULL OF WATER AND SOMEBODY ELSE OWNED IT FIRST. THERE IS A LADDER AT EITHER END.' });
   ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
   ent('silver', 172, 28); // down in her flooded hold, under the rotten planking
   ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 158, 21, { kind: 'crowNest' });
-  ent('check', 118, 21);
+  ent('check', 118, 21); ent('check', 168, 21);
   coins([118, 21], [134, 21], [142, 21], [160, 21], [172, 21]);
   coins([120, 28], [126, 28], [154, 28], [166, 28]);
   coins([145, 16], [146, 12]);
@@ -2551,6 +2555,7 @@ function theFlotilla() {
   ent('cannon', 232, 24, { hole: [245, 247, 24, 26] });
   ent('sign', 228, 24, { text: 'THE GUN IS LAID ON THE FLAGSHIP ALREADY: THEY WERE GOING TO CUT HER OUT IF THE SHARE WENT WRONG. STRIKE IT AND IT WILL OPEN HER SIDE. THE KEGS GO UP IF YOU HIT THEM, SO MIND WHERE YOU ARE STANDING.' });
   ent('cutlass', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
+  ent('boarder', 236, 24, { face: -1 }); ent('cutlass', 190, 24, { face: 1 });
   ent('lookout', 188, 24, { face: 1 });
   ent('check', 186, 24);
   coins([190, 24], [196, 24], [204, 24], [216, 24], [226, 24], [236, 24]);
@@ -2571,11 +2576,13 @@ function theFlotilla() {
   ent('sign', 250, 21, { text: 'THE FLAGSHIP. THE QUARTERMASTER HAS THE RUN OF HER AND SHE WILL NOT STAND AND FIGHT ON ONE DECK: SHE GOES UP, AND SHE CUTS AWAY WHAT SHE CAME UP BY.' });
   ent('marine', 306, 9, { face: -1 }); ent('marine', 334, 9, { face: -1 });
   ent('cutlass', 262, 21, { face: -1 }); ent('cutlass', 284, 21, { face: -1 }); ent('boarder', 320, 15, { face: -1 });
+  ent('cutlass', 274, 21, { face: 1 }); ent('bosun', 292, 21, { face: -1 }); ent('lookout', 316, 15, { face: 1 }); ent('cutlass', 344, 15, { face: -1 });
   ent('deco', 268, 21, { kind: 'cannon' }); ent('deco', 292, 21, { kind: 'cannon' });
+  ent('sign', 306, 15, { text: 'HER CHART HAS THE WRECKS MARKED, AND A RING DRAWN ROUND SOMETHING DEEPER, WITH A NOTE: THEIR SHARE, PAID MONTHLY.' });
   ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 352, 15, { kind: 'plunder', v: 0 });
   ent('deco', 344, 15, { kind: 'sternWindows' }); ent('deco', 360, 15, { kind: 'plunder', v: 2 });
   ent('deco', 256, 26, { kind: 'lanternDeck', v: 1 }); ent('deco', 288, 26, { kind: 'rumBarrels', v: 1 });
-  ent('check', 254, 21); ent('silver', 300, 26);
+  ent('check', 254, 21); ent('check', 304, 15); ent('silver', 300, 26);
   coins([258, 21], [266, 21], [274, 21], [282, 21], [290, 21]);
   coins([252, 26], [266, 26], [278, 26], [296, 26]);
   coins([306, 15], [314, 15], [322, 15], [330, 15]);
