@@ -56,7 +56,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false };
+const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off' };
 const TIER = { lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
@@ -1871,7 +1871,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
 const PAUSE_ITEMS = ['Resume', 'Talents', 'Equip', 'Hero', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Back'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
 const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
@@ -1884,7 +1884,7 @@ const SETTING_TIPS = {
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
-  'Ground light': 'depth, carved edges and a sun on the ground', 'The air': 'haze, drifting motes and things in the way', 'Font': 'the face everything is written in', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds',
+  'Ground light': 'depth, carved edges and a sun on the ground', 'The air': 'haze, drifting motes and things in the way', 'Font': 'the face everything is written in', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds', 'Hitboxes': 'draw the boxes the game actually tests: what you hit with, what hits you',
   'Brightness': 'lifts or drops the whole picture', 'Screen filter': 'a colour grade over everything', 'Film grain': 'a faint moving grain, like old tape',
   'Parallax': 'how many background layers move', 'Arena tint': 'the colour wash over boss rooms', 'Particles': 'how much comes off a hit',
   'Foe outline': 'a bright rim on foes, easier to pick out', 'Boss intro': 'the letterbox and the name card', 'Foe health': 'bars over hurt foes',
@@ -1924,7 +1924,7 @@ function menuAdjust(dir) {
   else if (k === 'Invincible') { SET.invincible = !SET.invincible; menuMsg = SET.invincible ? 'nothing can hurt you (for testing)' : 'you can be hurt again'; menuMsgT = 2; }
   else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
-  else if (k === 'Game speed') { const SP = [1, 0.9, 0.8]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + 3) % 3]; menuMsg = SET.speed < 1 ? 'the world runs slower. the timer does not' : 'full speed'; menuMsgT = 3; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
+  else if (k === 'Game speed') { const SP = [1, 0.9, 0.8]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + 3) % 3]; menuMsg = SET.speed < 1 ? 'the world runs slower. the timer does not' : 'full speed'; menuMsgT = 3; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Hitboxes') { const B = ['off', 'hits', 'all']; SET.boxes = B[(B.indexOf(SET.boxes) + dir + 3) % 3]; menuMsg = SET.boxes === 'off' ? 'no boxes' : SET.boxes === 'hits' ? 'what you hit with, and what hits you' : 'every body, blow and thing in the air'; menuMsgT = 3; } else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
   else if (k === 'Difficulty') { if (menuFrom === 'play' && L && !L.shop) { PROG.diff = PROG.diff || {}; PROG.diff[curId()] = DIFFS[(DIFFS.indexOf(diffOf(curId())) + dir + 3) % 3]; saveProgress(); } else SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + 3) % 3]; } else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
@@ -2490,7 +2490,7 @@ function updateCharge(dt) {
     const k = Math.min(1, P.charge / heavyWind());
     if (Math.random() < dt * (10 + k * 40)) { const col = isPyro() ? (Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b') : isPaladin() ? '#ffe6a0' : '#dfe8ff';
       parts.push({ x: P.x + P.face * (isPyro() ? 10 : 2) + (Math.random() - 0.5) * 10, y: P.y - 18 - Math.random() * 14, vx: 0, vy: -30, life: 0.3, max: 0.3, col, size: 1, grav: -20 }); }
-    if (k >= 1 && !P.chargeFull) { P.chargeFull = true; SFX.tell(true); ringAt(P.x, P.y - 14, 14, isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff', 0.3); }
+    if (k >= 1 && !P.chargeFull) { P.chargeFull = true; SFX.tell(true); ringAt(P.x, P.y - 14, 14, isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff', 0.3); shakeCam(1.5); }
     if (k >= 1) fireHeavy();
   } else P.chargeFull = false;
 }
@@ -2511,6 +2511,13 @@ function fireHeavy() {
     if (tal('sunder')) { const y = P.y; for (let k = 1; k <= 3; k++) fires.push({ x: P.x + P.face * (14 + k * 12), y, life: 2.6, delay: k * 0.05, own: true }); }
     SFX.jet();
   }
+}
+// A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
+function guardTurned() {
+  if (!tal('heavy')) { if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4; hintMsg = 'A GUARD TURNS A LIGHT BLOW. THE HEAVY BLOW GOES THROUGH ONE: IT IS THE FIRST TALENT ON THE TREE.'; } return; }
+  if ((PROG.guardHeavy || 0) >= 4) return;
+  PROG.guardHeavy = (PROG.guardHeavy || 0) + 1; hintT = 4;
+  hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + (SET.swapZX ? 'Z' : 'X') + ' FOR A HEAVY ONE AND IT GOES THROUGH.';
 }
 function attackBox() {
   if (P.heavy && P.atk >= 0.03 && P.atk < 0.22) { // it reaches further and lands lower than a swing
@@ -2922,16 +2929,16 @@ function updatePlayer(dt) {
       if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + P.face * -20, e.y - 30, P.face, 5); continue; }
       if (e.turncoat) continue;
       if (e.t === 'master' && e.mounted && e.stagger <= 0) { SFX.clank(); sparks(e.x, e.y - 8, P.face, 4); number(e.x, e.y - e.h - 6, 'THE HOUND GUARDS HIM', '#9aa39a'); continue; }
-      if (chiefShielded(e) && front && !P.heavy) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - 10, P.face, 6); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'SHIELD', '#c9d1dc'); continue; }
+      if (chiefShielded(e) && front && !P.heavy) { guardTurned(); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - 10, P.face, 6); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'SHIELD', '#c9d1dc'); continue; }
       if (e.t === 'brute' && e.mode === 'raise') { hurtEnemy(e, swingDmg(e), P.x, false); swordEffect(e); continue; }
-      if (e.t === 'turtle' && front && !P.heavy && e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
-      if (e.t === 'crab' && front && !P.heavy && e.guardT > 0 && e.mode !== 'flipped') { SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 6, e.y - 5, e.face, 5); continue; } // claws up
+      if (e.t === 'turtle' && front && !P.heavy && e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
+      if (e.t === 'crab' && front && !P.heavy && e.guardT > 0 && e.mode !== 'flipped') { guardTurned(); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 6, e.y - 5, e.face, 5); continue; } // claws up
       if (e.t === 'siren' && e.mode === 'dive') continue; // under the water
-      if (e.t === 'soldier' && front && !P.heavy && e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
-      if (e.t === 'heavy' && !P.heavy && e.mode !== 'rest' && !(e.parried > 0)) { SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
-      if (e.t === 'watch' && front && !P.heavy && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
+      if (e.t === 'soldier' && front && !P.heavy && e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
+      if (e.t === 'heavy' && !P.heavy && e.mode !== 'rest' && !(e.parried > 0)) { guardTurned(); SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
+      if (e.t === 'watch' && front && !P.heavy && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
       if (e.t === 'shield' && front && !P.heavy) {
-        SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
+        guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
       } else { hurtEnemy(e, swingDmg(e), P.x, false); swordEffect(e);
         if (P.heavy && e.alive) { // a heavy blow moves whatever it lands on, and SUNDER leaves it open
@@ -7468,7 +7475,7 @@ const inkNow = () => (INKS.find(i => i.id === SET.ink) || INKS[0]).c;
 const themeNow = () => UI_THEMES.find(t => t.id === SET.uiTheme) || UI_THEMES[0];
 function applyLook() { const t = themeNow(); for (const k of ['text', 'title', 'dim', 'border', 'sel', 'gold', 'silver']) UI[k] = t[k]; UI.plate = t.plate;
   if (SET.ink && SET.ink !== 'parchment') { UI.text = inkNow(); UI.title = inkNow(); } }
-let soundNoteT = 0, winT = 0, winStamped = false;
+let soundNoteT = 0, winT = 0, winStamped = false, hintT = 0, hintMsg = '';
 function spk(x, y, col) {   // a speaker with a bar through it: eight pixels that mean the same thing everywhere
   g.fillStyle = col; g.fillRect(x, y + 2, 2, 3); g.fillRect(x + 2, y + 1, 1, 5); g.fillRect(x + 3, y, 1, 7);
   g.fillStyle = '#e04848'; for (let i = 0; i < 7; i++) g.fillRect(x - 1 + i, y + i, 1, 1);
@@ -7714,13 +7721,27 @@ function drawBloom(cx, cy) {
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 // THE SWING. A blade leaves a crescent behind it; a staff thrust leaves a streak of flame.
+function drawBoxes(cx, cy) {
+  if (!SET.boxes || SET.boxes === 'off' || state !== 'play') return;
+  const all = SET.boxes === 'all';
+  const R = (b, col, fill) => { if (!b) return; const x = Math.round(b.l - cx), y = Math.round(b.t - cy), w = Math.round(b.r - b.l), h = Math.round(b.b - b.t);
+    if (x > VW || x + w < 0) return;
+    if (fill) { g.globalAlpha = 0.16; g.fillStyle = col; g.fillRect(x, y, w, h); g.globalAlpha = 1; }
+    g.strokeStyle = col; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); };
+  for (const e of enemies) { if (!e.alive) continue; R(box(e), e.harmless ? '#8fd160' : '#ffd34a', windingUp(e)); }
+  for (const s of seeds) R({ l: s.x - 4, r: s.x + 4, t: s.y - 4, b: s.y + 4 }, '#ff9a5c', true);
+  if (all) { for (const b of bombs) R({ l: b.x - 5, r: b.x + 5, t: b.y - 5, b: b.y + 5 }, '#ff9a5c', true);
+    for (const w of waves) R({ l: w.x - 10, r: w.x + 10, t: w.y - 18, b: w.y }, '#ff6b6b', true);
+    for (const m of movers) if (m.w) R({ l: m.px !== undefined ? m.px + m.x - m.w / 2 : m.x, r: (m.px !== undefined ? m.px + m.x - m.w / 2 : m.x) + m.w, t: m.py !== undefined ? m.py + m.y : m.y, b: (m.py !== undefined ? m.py + m.y : m.y) + m.h }, '#9ab8dc', false); }
+  if (!P.dead) { R(box(P), '#ffffff', false); const ab = attackBox(); if (ab) R(ab, '#ff4d4d', true); }
+}
 function drawSwing(cx, cy) {
   if (P.atk < 0.02 || P.atk > 0.2 || P.dead) return;
   const px = Math.round(P.x - cx), py = Math.round(P.y - cy) - 9, f = P.face, k = (P.atk - 0.02) / 0.18;
   g.globalCompositeOperation = 'lighter';
   if (isPyro()) { const len = 30 * Math.min(1, k * 2.5), a = 1 - k;
     for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#ff9a5c'; const w = 2 + i * 2; g.fillRect(f > 0 ? px + 10 : px - 10 - len, py - 1 - i, len, w); } }
-  else { const pal = isPaladin(), a0 = -2.1, sweep = 2.6 * Math.min(1, k * 2.2), r = pal ? 23 : 17;
+  else { const pal = isPaladin(), a0 = -1.25, sweep = 2.25 * Math.min(1, k * 2.2), r = pal ? 25 : 18;
     for (let i = 0; i < 4; i++) { const tail = 0.5 + i * 0.35; g.globalAlpha = (1 - k) * (0.5 - i * 0.1); g.strokeStyle = pal ? (i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#f0c040') : i === 0 ? '#ffffff' : i === 1 ? '#fff6e0' : '#dfe8ff'; g.lineWidth = 3 - i * 0.6; g.beginPath();
       const s = a0 + Math.max(0, sweep - tail), e = a0 + sweep; if (f > 0) g.arc(px, py, r - i, s, e); else g.arc(px, py, r - i, Math.PI - e, Math.PI - s); g.stroke(); } }
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
@@ -8301,6 +8322,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if ((P.sleepM || 0) > 0.2) { g.fillStyle = '#c9a0ff'; g.fillRect(Math.round(P.x - cx) - 8, Math.round(P.y - cy) - 24, Math.round(16 * Math.min(1, P.sleepM / 1.3)), 2); }
     }
   }
+  drawBoxes(cx, cy);
   drawSlide(cx, cy); drawBeams(cx, cy);
   if (wisp) { const x = Math.round(wisp.x - cx), y = Math.round(wisp.y - cy), f = Math.floor(time * 12) % 3; g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#ff9a5c'; g.fillRect(x - 2, y - 2 - f, 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1 - f, 2, 3); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y + 1 - f, 2, 1); }
   if (L.palette && (L.palette.dress === 'wood' || L.palette.dress === 'marsh') && !L.night && !L.dark && SET.weather && SET.ambient) { // shafts of low sun through the leaves
@@ -8738,7 +8760,7 @@ function drawMenu() {
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     text(k, x + 16 + (sel ? 2 : 0), yy, col);
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label + ' HERE' : DIFF[SET.difficulty].label + ' (DEFAULT)') : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label + ' HERE' : DIFF[SET.difficulty].label + ' (DEFAULT)') : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     if (v) { const vw = String(v).length * 6 + (sel ? 22 : 8); g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(sel ? '< ' + v + ' >' : String(v), x + w - 14, yy, col, 'right'); }
   });
   { const k = M[menuI], tip = SETTING_TIPS[k];
@@ -9194,12 +9216,29 @@ function render() {
       g.strokeStyle = 'rgba(143,209,96,0.85)'; g.lineWidth = 1; g.beginPath(); g.roundRect(4.5, by + 0.5, w - 1, 10, 3); g.stroke();
       g.fillStyle = '#8fd160'; for (let i = 0; i < 3; i++) g.fillRect(w - 3, by + 3 + i, 1 + i * 2, 1);   // the little chevron of a thing waiting to be spent
       text(lab, 8, by + 3, '#eaffd8', 'left', 6); }
+    if (hintT > 0 && state === 'play') { hintT -= 1 / 60; const k = Math.min(1, hintT * 2);
+      const lines = wrap(hintMsg, VW - 60, 6), bw = Math.min(VW - 24, Math.max(...lines.map(l => l.length * 6)) + 16), bh = lines.length * 9 + 7;
+      g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.86)'; g.beginPath(); g.roundRect(VW / 2 - bw / 2, 44, bw, bh, 4); g.fill();
+      g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(VW / 2 - bw / 2 + 0.5, 44.5, bw - 1, bh - 1, 4); g.stroke();
+      lines.forEach((ln, i) => text(ln, VW / 2, 48 + i * 9, '#ffd36b', 'center', 6)); g.globalAlpha = 1; }
+    else if (state !== 'play') hintT = 0;
     if (state === 'play' && L.alarmT > 0) { const k = Math.min(1, L.alarmT / 14), lab = 'THE WATCH IS UP', w = lab.length * 6 + 10;
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
       g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 46.5, w - 1, 10); text(lab, VW / 2, 49, '#ffd0d0', 'center', 6);
       g.fillStyle = '#ff6b6b'; g.fillRect(VW / 2 - w / 2, 56, Math.round(w * k), 1); }
     if (state === 'play') drawAlarmHud();
     drawEscapeHUD();
+      // THE HEAVY BLOW, WINDING UP: a bar over his head that fills, and goes gold and wide when it is there
+      if ((P.charge || 0) > 0 && !P.dead) {
+        const k = Math.min(1, P.charge / heavyWind()), armed = k >= 0.55;
+        const bx = Math.round(P.x - cx) - 11, by = Math.round(P.y - cy) - 34;
+        g.fillStyle = 'rgba(10,8,20,0.78)'; g.fillRect(bx - 1, by - 1, 24, 5);
+        g.fillStyle = armed ? (isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff') : 'rgba(160,170,190,0.7)';
+        g.fillRect(bx, by, Math.round(22 * k), 3);
+        if (armed) { g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(bx, by, Math.round(22 * k), 1); }
+        g.fillStyle = armed ? '#ffd36b' : '#6a6a7a'; g.fillRect(bx + 12, by - 1, 1, 5);          // past this it lands if you let go
+        if (k >= 1) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(bx - 1.5, by - 1.5, 25, 6); }
+      }
       if ((P.combo || 0) > 1 && time - (P.lastSwingT ?? -9) < 0.75 && !P.dead) { // the run of blows, where you can see it
       const n = Math.min(5, P.combo), bx = Math.round(P.x - cx), by = Math.round(P.y - cy) - 34;
       for (let k = 0; k < n; k++) { const on = k < n;
