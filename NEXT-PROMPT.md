@@ -54,22 +54,31 @@ the win and death panels, which were laid straight over a bright busy level so t
 text, now drop the world two thirds behind them. The map's header strip is solid, so the town on its north
 edge stops being cut off by the top of the screen.
 
-## The polish pass, in the order I would take it
+## The polish pass
 
-The core is not the problem — the world art, the combat feedback, the transitions (there is already an iris on
-entering a level and a fade between screens) and the audio are all there. What reads as prototype is the
-furniture. The HUD was the worst of it and is done. What is left, most visible first:
+The core was not the problem. The world art, the combat feedback, the transitions (there is an iris on
+entering a level and a fade between screens) and the audio were all already there, and the player himself has
+squash, dust off his heels, skid, landing rings, hitstop, zoom kicks and per-surface footsteps. What read as
+prototype was the furniture around it. Done so far:
 
-1. **THE GROUND.** The dirt band under the grass is the single largest mass on screen in half the levels and
-   the least worked: a flat brown field with sparse speckle. Strata, roots coming through from the grass,
-   buried stone, the odd pot sherd or bone — the same treatment the interiors just got.
-2. **THE SECOND READ ON EVERY ENEMY.** Hurt poses for shield/soldier/brute/hound, a parry tell colour, skid
-   and turn frames. The tells are audible and coloured; they are not yet *posed*.
-3. **THE MOMENT A LEVEL ENDS.** The win panel is a table of numbers. The medal should land with weight — the
-   coin flying in, the time counting up, the medal stamping.
-4. **THE STORE AND THE EQUIP SCREENS** have not had the pass the talent tree and the bestiary got.
+1. **THE HUD.** A right margin (the gold count used to run off the screen at six characters), plates under the
+   quest line and the timer, a tab instead of a green banner for unspent points, and a sound notice that is a
+   plate for ten seconds and then a speaker glyph. The win and death panels drop the world behind them. The
+   map's header strip is solid.
+2. **THE GROUND.** Strata by depth - loam with root hair, clay with gravel seams, a cold bottom with bedrock -
+   and about one tile in twelve holds a sherd, a bone, a nail or a coin nobody came back for.
+3. **THE SECOND READ ON EVERY ENEMY.** A wind-up wears a pulsing amber rim (one hue, one meaning, all eighty
+   creatures); white is back to meaning "you hit it". Being struck throws the body along the line of the BLOW
+   and leans it. Anything that whips round at speed skids first. `drawSet` learned to rotate.
+4. **THE END OF A LEVEL.** The tally comes in a line at a time with the figures counting up, and the medal is
+   stamped on at the end of it with a ring, a shake and a zoom kick.
+
+Left on that list:
+
 5. **THE FIRST NINETY SECONDS.** The wood opens on a sign and a sprig. What a new player sees first is what
    they judge the whole thing by.
+6. **THE STORE AND EQUIP SCREENS** - the store is in better shape than expected (tabs, preview panel, footer);
+   its currency row at the top right is three unlabelled icons and a bare number.
 
 ## Still open from before the playtest
 
