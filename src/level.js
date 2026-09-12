@@ -1726,7 +1726,11 @@ function highcrown() {
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
   ent('rod', 216, 3); ent('rod', 230, 3); ent('rod', 244, 3);
 
-  const interiors = [[124, 206, 10, 63, 'royal'], [208, 251, 10, 19, 'royal']];
+  // FOUR FLOORS, FOUR ROOMS. The whole keep was drawn with her throne room's wall, so you came up out of the
+  // armoury into what looked like her hall and the Queen seemed to be standing right behind the smith. Each
+  // floor wears its own room now, and hers is the only royal one in the castle.
+  const interiors = [[124, 206, 54, 63, 'guard'], [124, 206, 42, 51, 'kitchen'], [124, 206, 26, 39, 'forge'],
+    [124, 206, 10, 19, 'chapel'], [208, 251, 10, 19, 'royal']];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 1, y: 63 }, pools: [], falls: [], moversExtra: [], interiors,
     reachExact: true, // the carts are the Forgemaster's props, not a way around the castle
@@ -1846,7 +1850,7 @@ function highcrownWhole() {
     ent('deco', 64, 71, { kind: 'bridgepost' }); ent('harpy', 72, 63);
     // the barbican: a tower with a passage through it at the bridge's height
     block(79, 92, 56, BOT); air(79, 92, 68, 71); for (const x of [79, 82, 85, 88, 91]) set(x, 55, T.SOLID);
-    M.R.interiors = (M.R.interiors || []).concat([[79, 92, 68, 71, 'royal']]);
+    M.R.interiors = (M.R.interiors || []).concat([[79, 92, 68, 71, 'guard']]);
     ent('torch', 85, 71); ent('heavy', 88, 71, { face: -1 }); /* a heavy knight holds the barbican */
     // a stone bridge that climbs to the castle's rock in broken steps, each on its own pier
     block(93, 96, 72, 73); block(94, 95, 74, BOT);

@@ -8383,36 +8383,65 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
     return; }
   // ---------- THE QUEEN'S HALLS ----------
   if (st === 'royal') {
-    g.fillStyle = '#2a1420'; g.fillRect(sx, sy, w, h);                                    // deep red plaster in shadow
-    g.fillStyle = '#3a1b2a'; for (let yy = sy + 6; yy < sy + h; yy += 12) g.fillRect(sx, yy, w, 6);
-    // the arcade: a gilt pilaster every three tiles, with an arched niche between each pair
-    for (let xx = sx - ((tx0 * TS) % 48) ; xx < sx + w; xx += 48) {
-      const nx = xx + 24, ny = sy + 10, nw = 26, nh = Math.max(12, h - 22);
-      if (nx + nw > sx && nx < sx + w) {                                                  // the niche, with a tapestry in it
-        g.fillStyle = '#1d0e18'; g.fillRect(Math.max(sx, nx), ny, Math.min(nw, sx + w - nx), nh);
-        for (let i = 0; i < nw; i++) { const a = Math.round(Math.sqrt(Math.max(0, (nw / 2) ** 2 - (i - nw / 2) ** 2)) * 0.5);
-          const px2 = nx + i; if (px2 < sx || px2 >= sx + w) continue; g.fillStyle = '#2a1420'; g.fillRect(px2, ny, 1, (nw / 2 - a) | 0); }
-        const seed = Math.abs(Math.round(nx / 48) * 7 + Math.round(ty0));
-        g.fillStyle = ['#6e1c28', '#3a2a6e', '#1c4a2e', '#5a2a6e'][seed % 4]; g.fillRect(Math.max(sx, nx + 5), ny + 5, Math.min(16, sx + w - nx - 5), nh - 10);
-        g.fillStyle = '#c9a040'; for (let yy = ny + 8; yy < ny + nh - 8; yy += 6) g.fillRect(Math.max(sx, nx + 6), yy, Math.min(14, sx + w - nx - 6), 1);
-        g.fillStyle = ['#e0b040', '#c9a0ff', '#8fd160', '#e08a40'][seed % 4]; g.fillRect(Math.max(sx, nx + 10), ny + 10 + (seed % 5) * 4, Math.min(6, sx + w - nx - 10), 4); // the device woven into it
-        g.fillStyle = '#e0b040'; g.fillRect(Math.max(sx, nx + 5), ny + 4, Math.min(16, sx + w - nx - 5), 1);
+    // HER HALL. The only royal room in the castle, and it is meant to be the richest thing in the game: a
+    // gilt cornice over a painted frieze, a bay every four tiles with a hung tapestry in an arched recess,
+    // a chequer dado at the foot of it, and her chandeliers burning in the dark of the vault.
+    g.fillStyle = '#2a1420'; g.fillRect(sx, sy, w, h);                                      // deep red plaster in shadow
+    g.fillStyle = '#3a1b2a'; for (let yy = sy + 8; yy < sy + h; yy += 14) g.fillRect(sx, yy, w, 7);
+    // the cornice, and the frieze of gold lozenges running under it
+    g.fillStyle = '#7a5a1c'; g.fillRect(sx, sy, w, 2); g.fillStyle = '#e0b040'; g.fillRect(sx, sy + 2, w, 1);
+    g.fillStyle = '#c9a040'; for (let xx = sx - ((tx0 * TS) % 8); xx < sx + w; xx += 8) { g.fillRect(xx + 3, sy + 4, 2, 2); g.fillRect(xx + 2, sy + 5, 4, 1); }
+    g.fillStyle = '#8a6a28'; g.fillRect(sx, sy + 7, w, 1);
+    const bay = 64;
+    for (let xx = sx - ((tx0 * TS) % bay); xx < sx + w; xx += bay) {
+      const seed = Math.abs(Math.round((xx + (tx0 * TS)) / bay) * 7 + Math.round(ty0));
+      const nx = xx + 14, nw = 34, ny = sy + 12, nh = Math.min(84, Math.max(16, h - 30));    // the recess, hung high: the wall shows under it
+      if (nx + nw > sx && nx < sx + w) {
+        const x0c = Math.max(sx, nx), wc = Math.min(nw - (x0c - nx), sx + w - x0c);
+        g.fillStyle = '#1d0e18'; g.fillRect(x0c, ny, wc, nh);
+        for (let i = 0; i < nw; i++) {                                                      // its arched head
+          const a2 = Math.round(Math.sqrt(Math.max(0, (nw / 2) ** 2 - (i - nw / 2) ** 2)) * 0.45);
+          const px2 = nx + i; if (px2 < sx || px2 >= sx + w) continue;
+          g.fillStyle = '#2a1420'; g.fillRect(px2, ny, 1, ((nw / 2) * 0.45 - a2) | 0);
+        }
+        const tw = nw - 10, tx = nx + 5, th = nh - 12;                                      // the tapestry, hung on its rod
+        const base = ['#5e1822', '#2e215a', '#173e26', '#4a2258'][seed % 4], lit = ['#82283a', '#443a80', '#26603c', '#6a3a7a'][seed % 4];
+        g.fillStyle = '#7a5a1c'; if (tx - 2 < sx + w) g.fillRect(Math.max(sx, tx - 2), ny + 4, Math.min(tw + 4, sx + w - tx + 2), 2);
+        for (let i = 0; i < tw; i++) { const px2 = tx + i; if (px2 < sx || px2 >= sx + w) continue;
+          g.fillStyle = (i % 6 < 2) ? lit : base; g.fillRect(px2, ny + 6, 1, th); }         // the folds of it, the light catching one in three
+        g.fillStyle = '#c9a040'; if (tx < sx + w) { g.fillRect(Math.max(sx, tx), ny + 6, Math.min(tw, sx + w - tx), 1); g.fillRect(Math.max(sx, tx), ny + 6 + th - 1, Math.min(tw, sx + w - tx), 1); }
+        for (let i = 0; i < tw; i += 5) { const px2 = tx + i; if (px2 < sx || px2 >= sx + w) continue; g.fillStyle = '#e0b040'; g.fillRect(px2, ny + 7 + th, 1, 3); }   // its fringe
+        const dx = tx + ((tw / 2) | 0), dy = ny + 6 + ((th / 2) | 0);                        // the device woven into it
+        if (dx > sx + 4 && dx < sx + w - 4) { const dc = ['#e0b040', '#c9a0ff', '#8fd160', '#e08a40'][seed % 4];
+          g.fillStyle = dc; for (let k = -4; k <= 4; k++) { const hwd = 4 - Math.abs(k); g.fillRect(dx - hwd, dy + k, hwd * 2 + 1, 1); }
+          g.fillStyle = '#2a1420'; g.fillRect(dx - 1, dy - 1, 3, 3); }
       }
-      if (xx + 6 > sx && xx < sx + w) {                                                   // the pilaster itself
-        for (let i = 0; i < 6; i++) { const px2 = xx + i; if (px2 < sx || px2 >= sx + w) continue;
-          g.fillStyle = i === 0 ? '#140a10' : i === 1 ? '#8a6a28' : i < 5 ? '#c9a040' : '#7a5a1c'; g.fillRect(px2, sy, 1, h); }
-        g.fillStyle = '#e0b040'; g.fillRect(Math.max(sx, xx - 2), sy + 4, Math.min(10, sx + w - xx + 2), 3);
-        g.fillStyle = '#8a6a28'; g.fillRect(Math.max(sx, xx - 2), sy + 7, Math.min(10, sx + w - xx + 2), 1);
+      for (let i = 0; i < 8; i++) {                                                          // the pilaster between the bays
+        const px2 = xx + i; if (px2 < sx || px2 >= sx + w) continue;
+        g.fillStyle = i === 0 ? '#140a10' : i === 1 ? '#8a6a28' : i < 6 ? '#c9a040' : i === 6 ? '#a07a28' : '#7a5a1c';
+        g.fillRect(px2, sy + 8, 1, h - 8);
+      }
+      if (xx + 10 > sx && xx - 3 < sx + w) {                                                 // its capital and its base
+        g.fillStyle = '#e0b040'; g.fillRect(Math.max(sx, xx - 3), sy + 9, Math.min(14, sx + w - xx + 3), 3);
+        g.fillStyle = '#8a6a28'; g.fillRect(Math.max(sx, xx - 3), sy + 12, Math.min(14, sx + w - xx + 3), 1);
+        g.fillStyle = '#a07a28'; g.fillRect(Math.max(sx, xx - 2), sy + h - 12, Math.min(12, sx + w - xx + 2), 4);
       }
     }
-    // a chandelier hung in the dark of the vault, and the glass bleeding colour down the wall
-    for (let xx = sx - ((tx0 * TS) % 96) + 48; xx < sx + w; xx += 96) {
+    // the chequer dado along the foot of the wall, green and gold
+    for (let xx = sx - ((tx0 * TS) % 12); xx < sx + w; xx += 12) {
+      const k = Math.abs(Math.round((xx + tx0 * TS) / 12)) & 1;
+      g.fillStyle = k ? '#1c3a2a' : '#4a3a10'; g.fillRect(xx, sy + h - 8, 6, 8);
+      g.fillStyle = k ? '#4a3a10' : '#1c3a2a'; g.fillRect(xx + 6, sy + h - 8, 6, 8);
+    }
+    g.fillStyle = '#c9a040'; g.fillRect(sx, sy + h - 9, w, 1);
+    // her chandeliers, hung in the dark of the vault
+    for (let xx = sx - ((tx0 * TS) % 128) + 64; xx < sx + w; xx += 128) {
       if (xx < sx - 12 || xx > sx + w + 12) continue;
-      const cy2 = sy + 8, sw = 0.6 + 0.4 * Math.sin(time * 1.3 + xx * 0.05);
-      g.fillStyle = '#7a5a1c'; g.fillRect(xx, sy, 1, 8);
-      g.fillStyle = '#c9a040'; g.fillRect(xx - 7, cy2, 15, 2); g.fillRect(xx - 5, cy2 + 2, 11, 1);
-      for (let i = -6; i <= 6; i += 4) { g.fillStyle = '#ffd36b'; g.globalAlpha = 0.5 + 0.4 * sw; g.fillRect(xx + i, cy2 + 3, 1, 2); g.globalAlpha = 1; }
-      g.globalAlpha = 0.10 + 0.05 * sw; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(xx, cy2 + 4, 26, 0, 7); g.fill(); g.globalAlpha = 1;
+      const cy2 = sy + 12, sw = 0.6 + 0.4 * Math.sin(time * 1.3 + xx * 0.05);
+      g.fillStyle = '#7a5a1c'; g.fillRect(xx, sy + 2, 1, 10);
+      g.fillStyle = '#c9a040'; g.fillRect(xx - 9, cy2, 19, 2); g.fillRect(xx - 6, cy2 + 2, 13, 1);
+      for (let i = -8; i <= 8; i += 4) { g.fillStyle = '#ffd36b'; g.globalAlpha = 0.5 + 0.4 * sw; g.fillRect(xx + i, cy2 + 3, 1, 3); g.globalAlpha = 1; }
+      g.globalAlpha = 0.12 + 0.06 * sw; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(xx, cy2 + 5, 30, 0, 7); g.fill(); g.globalAlpha = 1;
     }
     return;
   }
@@ -8456,6 +8485,117 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
     g.globalAlpha = 0.06 + 0.04 * Math.sin(time * 0.7);                                   // the light off the water, crawling
     g.fillStyle = '#7cc8c8'; for (let yy = sy; yy < sy + h; yy += 16) g.fillRect(sx, yy + ((Math.sin(time * 0.5 + yy) * 4) | 0) + 4, w, 2);
     g.globalAlpha = 1;
+    return;
+  }
+  // ---------- THE KEEP, FLOOR BY FLOOR ----------
+  // Every room in Highcrown was drawn with the Queen's own wall, so her hall, the chapel, the armoury and the
+  // kitchens were one continuous throne room and you could not tell which floor you were on. Four rooms, four
+  // walls: the guardroom is cold and hung with arms, the kitchens are black with soot and lit from the hearth,
+  // the armoury is iron and coal, and the chapel is tall, pale and full of coloured light.
+  if (st === 'guard') {
+    const fl = sy + h;                                                                      // the floor of the room: the camera never leaves it
+    g.fillStyle = '#23252e'; g.fillRect(sx, sy, w, h);
+    for (let yy = sy; yy < sy + h; yy += 9) { for (let xx = sx + (((yy / 9) & 1) ? 13 : 0); xx < sx + w; xx += 26) { g.fillStyle = '#2e313c'; g.fillRect(xx, yy, 24, 8); g.fillStyle = '#1b1d24'; g.fillRect(xx, yy + 7, 24, 1); } }
+    g.fillStyle = '#15161c'; g.fillRect(sx, fl - 12, w, 12);                                // the wainscot, black with shoulders
+    g.fillStyle = '#2a2c36'; g.fillRect(sx, fl - 13, w, 1);
+    for (let xx = sx - ((tx0 * TS) % 64); xx < sx + w; xx += 64) {
+      const lx = xx + 28;                                                                   // an arrow loop, and the night coming through it
+      if (lx > sx - 2 && lx < sx + w) {
+        g.fillStyle = '#10121a'; g.fillRect(lx, fl - 54, 4, 18); g.fillStyle = '#0a0b10'; g.fillRect(lx + 1, fl - 56, 2, 22);
+        g.globalAlpha = 0.08; g.fillStyle = '#9aa8d8'; g.fillRect(lx - 1, fl - 54, 6, 20); g.globalAlpha = 1;
+      }
+      const sh2 = xx + 50;                                                                  // and a shield hung beside it
+      if (sh2 > sx && sh2 < sx + w - 12) { const sd = Math.abs(Math.round(sh2 / 64)) % 3;
+        g.fillStyle = '#3a2a1c'; g.fillRect(sh2, fl - 50, 11, 3);
+        g.fillStyle = ['#5a2a32', '#2a3a5a', '#3a4a2a'][sd]; g.fillRect(sh2, fl - 48, 11, 9); g.fillRect(sh2 + 2, fl - 39, 7, 3);
+        g.fillStyle = '#8a7a4a'; g.fillRect(sh2 + 5, fl - 46, 1, 6); g.fillRect(sh2 + 2, fl - 44, 7, 1); }
+    }
+    return;
+  }
+  if (st === 'kitchen') {
+    const fl = sy + h;
+    g.fillStyle = '#1d1612'; g.fillRect(sx, sy, w, h);
+    for (let yy = sy; yy < sy + h; yy += 7) { g.fillStyle = ((yy / 7) & 1) ? '#261c16' : '#221912'; g.fillRect(sx, yy, w, 6); g.fillStyle = '#140e0a'; g.fillRect(sx, yy + 6, w, 1); }
+    g.fillStyle = '#0f0a08'; for (let i = 0; i < w * h / 120; i++) { const rx = sx + ((i * 83) % w), ry = sy + ((i * 47) % h); g.fillRect(rx, ry, 2 + (i % 3), 1); }   // soot
+    for (let xx = sx - ((tx0 * TS) % 88); xx < sx + w; xx += 88) {                           // the chimney breast, with the fire still in it
+      const bx = xx + 18, bw = 38;
+      if (bx + bw < sx || bx > sx + w) continue;
+      const cx0 = Math.max(sx, bx), cw = Math.min(bw - (cx0 - bx), sx + w - cx0);
+      g.fillStyle = '#120d0a'; g.fillRect(cx0, fl - 96, cw, 96);
+      g.fillStyle = '#2a1f18'; g.fillRect(cx0, fl - 96, cw, 3);
+      const fire = 0.55 + 0.45 * Math.sin(time * 7 + xx) * Math.sin(time * 3.1 + xx * 0.3);
+      g.globalAlpha = 0.20 + 0.14 * fire; g.fillStyle = '#ff9a3c'; g.fillRect(cx0, fl - 26, cw, 26); g.globalAlpha = 1;
+      for (let i = 0; i < 5; i++) { const ex = bx + 8 + i * 5; if (ex < sx || ex > sx + w) continue;
+        g.globalAlpha = 0.35 + 0.5 * ((fire + i * 0.2) % 1); g.fillStyle = '#ffb45c'; g.fillRect(ex, fl - 8 - ((i * 3) % 6), 2, 2); }
+      g.globalAlpha = 1;
+      g.fillStyle = '#4a4a52'; g.fillRect(Math.max(sx, bx + 4), fl - 64, Math.min(bw - 8, sx + w - bx - 4), 1);   // the pot crane
+      for (const [ox, pw] of [[8, 7], [20, 5], [28, 8]]) { const px2 = bx + ox; if (px2 < sx || px2 + pw > sx + w) continue;
+        g.fillStyle = '#3a3a42'; g.fillRect(px2 + ((pw / 2) | 0), fl - 63, 1, 5); g.fillRect(px2, fl - 58, pw, 5); g.fillStyle = '#22222a'; g.fillRect(px2, fl - 54, pw, 1); }
+    }
+    for (let xx = sx - ((tx0 * TS) % 34) + 6; xx < sx + w; xx += 34) {                       // onions and herbs on a nail
+      if (xx < sx || xx > sx + w - 3) continue; const n = 3 + (Math.abs(Math.round(xx)) % 3);
+      g.fillStyle = '#6a5a38'; g.fillRect(xx, fl - 80, 1, 4);
+      for (let j = 0; j < n; j++) { g.fillStyle = (j & 1) ? '#9a8a5a' : '#7a6a42'; g.fillRect(xx - 1, fl - 76 + j * 3, 3, 3); }
+    }
+    return;
+  }
+  if (st === 'forge') {
+    const fl = sy + h;
+    g.fillStyle = '#1a1a1e'; g.fillRect(sx, sy, w, h);
+    for (let yy = sy; yy < sy + h; yy += 9) { for (let xx = sx + (((yy / 9) & 1) ? 13 : 0); xx < sx + w; xx += 26) { g.fillStyle = '#232329'; g.fillRect(xx, yy, 24, 8); g.fillStyle = '#121215'; g.fillRect(xx, yy + 7, 24, 1); } }
+    const coal = 0.5 + 0.5 * Math.sin(time * 2.2);
+    g.globalAlpha = 0.11 + 0.07 * coal; g.fillStyle = '#ff6b2c'; g.fillRect(sx, fl - 30, w, 30); g.globalAlpha = 1;   // the coal light, off the floor
+    for (let xx = sx - ((tx0 * TS) % 56); xx < sx + w; xx += 56) {                           // a rack of blades, and a strap of iron
+      const rx = xx + 10;
+      if (rx > sx - 20 && rx < sx + w) {
+        g.fillStyle = '#15151a'; g.fillRect(Math.max(sx, rx), fl - 56, Math.min(34, sx + w - rx), 2);
+        for (let j = 0; j < 6; j++) { const bx = rx + 2 + j * 5; if (bx < sx || bx > sx + w - 2) continue;
+          const bl = 9 + ((Math.abs(Math.round(bx)) * 5) % 8);
+          g.fillStyle = '#565a64'; g.fillRect(bx, fl - 54, 1, bl); g.fillStyle = '#7a808c'; g.fillRect(bx, fl - 54, 1, 2);
+          g.fillStyle = '#3a2a1c'; g.fillRect(bx - 1, fl - 54 + bl, 3, 2); }
+      }
+      const ix = xx + 40;                                                                    // a bellows hung on the wall
+      if (ix > sx && ix < sx + w - 8) { g.fillStyle = '#2a2a30'; g.fillRect(ix, fl - 58, 8, 3); g.fillStyle = '#3a3a44'; g.fillRect(ix + 1, fl - 55, 6, 14); g.fillStyle = '#1a1a20'; g.fillRect(ix + 3, fl - 53, 2, 10); }
+    }
+    for (let i = 0; i < w / 26; i++) {                                                       // and the sparks going up out of shot
+      const sxp = sx + ((i * 137 + Math.round(tx0 * 13)) % w), ph = (time * 0.5 + i * 0.37) % 1;
+      g.globalAlpha = 0.7 * (1 - ph); g.fillStyle = ph < 0.5 ? '#ffd36b' : '#ff8a3c';
+      g.fillRect(sxp + Math.round(Math.sin(ph * 9 + i) * 3), fl - Math.round(ph * 120), 1, 1); g.globalAlpha = 1;
+    }
+    return;
+  }
+  if (st === 'chapel') {
+    const fl = sy + h;
+    g.fillStyle = '#2b2d38'; g.fillRect(sx, sy, w, h);
+    for (let yy = sy; yy < sy + h; yy += 10) { for (let xx = sx + (((yy / 10) & 1) ? 14 : 0); xx < sx + w; xx += 28) { g.fillStyle = '#393c4a'; g.fillRect(xx, yy, 26, 9); g.fillStyle = '#24262f'; g.fillRect(xx, yy + 8, 26, 1); } }
+    const lh = Math.min(64, Math.max(16, h - 46)), top = fl - 26 - lh;                       // the lancets stand on a sill a little over your head
+    for (let xx = sx - ((tx0 * TS) % 72); xx < sx + w; xx += 72) {
+      for (let i = 0; i < 30; i++) {                                                         // the vaulting: a rib springing from each bay
+        const a2 = (i / 30) * Math.PI / 2;
+        const px2 = xx + Math.round(Math.sin(a2) * 36), py2 = top - 6 - Math.round(Math.cos(a2) * 14), qx = xx + 72 - Math.round(Math.sin(a2) * 36);
+        g.fillStyle = '#4a4e5e'; if (px2 >= sx && px2 < sx + w) g.fillRect(px2, py2, 1, 2); if (qx >= sx && qx < sx + w) g.fillRect(qx, py2, 1, 2);
+      }
+      const lx = xx + 30, lw = 13;                                                           // the lancet, and its glass
+      if (lx + lw < sx || lx > sx + w) continue;
+      const seed = Math.abs(Math.round((lx + tx0 * TS) / 72) * 11 + Math.round(ty0)), cols = [['#5a2a4a', '#a04a6a'], ['#2a4a6a', '#4a8ac8'], ['#2a5a3a', '#5aa86a'], ['#6a5a1c', '#c9a040']][seed % 4];
+      const x0c = Math.max(sx, lx), wc = Math.min(lw - (x0c - lx), sx + w - x0c);
+      g.fillStyle = '#181a22'; g.fillRect(x0c, top, wc, lh);
+      for (let i = 0; i < lw; i++) {                                                         // its pointed head
+        const a3 = Math.round(Math.sqrt(Math.max(0, (lw / 2) ** 2 - (i - lw / 2) ** 2)) * 0.9);
+        const px2 = lx + i; if (px2 < sx || px2 >= sx + w) continue;
+        g.fillStyle = '#2b2d38'; g.fillRect(px2, top, 1, ((lw / 2 - a3) * 0.9) | 0);
+      }
+      for (let yy = top + 6; yy < top + lh - 2; yy += 5) for (let i = 1; i < lw - 1; i += 4) { const px2 = lx + i; if (px2 < sx || px2 >= sx + w - 2) continue;
+        g.fillStyle = ((yy + i) & 1) ? cols[0] : cols[1]; g.fillRect(px2, yy, 3, 4); }
+      g.fillStyle = '#20222b'; for (let yy = top + 5; yy < top + lh; yy += 5) g.fillRect(x0c, yy, wc, 1);
+      if (lx + 6 > sx && lx + 6 < sx + w) g.fillRect(lx + 6, top, 1, lh);                    // the mullion
+      g.fillStyle = '#4a4e5e'; g.fillRect(Math.max(sx, lx - 2), top + lh, Math.min(lw + 4, sx + w - lx + 2), 2);   // its sill
+      g.globalAlpha = 0.07 + 0.02 * Math.sin(time * 0.6 + seed);                             // and the bar of colour it lays down the wall
+      g.fillStyle = cols[1]; g.fillRect(Math.max(sx, lx - 4), top + lh + 2, Math.min(lw + 8, sx + w - lx + 4), 24); g.globalAlpha = 1;
+    }
+    g.fillStyle = '#1b1208'; g.fillRect(sx, fl - 10, w, 10);                                 // the rood screen: dark oak along the foot of it
+    g.fillStyle = '#2a1c0e'; for (let xx = sx - ((tx0 * TS) % 10); xx < sx + w; xx += 10) g.fillRect(xx, fl - 10, 2, 10);
+    g.fillStyle = '#0f0a06'; g.fillRect(sx, fl - 11, w, 1);
     return;
   }
   // ---------- the old stone room, and the default timber ----------
