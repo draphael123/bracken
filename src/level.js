@@ -3061,7 +3061,8 @@ function theLamplitStreet() {
   mass(188, 252);
   block(194, 195, 12, 21); block(240, 242, 12, 21); block(196, 239, 12, 13);
   air(194, 195, 18, 21);                        // the door in off the roof road
-  port(240, 16, 21);                            // and the gate out, shut until he is down
+  air(241, 242, 18, 21);                        // and the passage OUT behind the gate, or the hall is a box
+  port(240, 16, 21);                            // the gate itself, shut until he is down
   interiors.push([196, 239, 14, 21, 'stone']);
   darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.8 });
   ent('sign', 190, UP - 1, { text: 'THE MARKET HALL. SOMETHING IN THERE IS PUTTING THE LAMPS OUT ONE AT A TIME, AND WHEN THE LAST ONE GOES IT WILL STILL BE IN THERE WITH YOU.' });

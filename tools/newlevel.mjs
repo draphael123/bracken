@@ -156,6 +156,25 @@ for (const lv of LEVELS) {
     if (floaters.length) say(id, 'creatures standing on nothing: ' + floaters.slice(0, 6).map(e => e.t + '@' + e.x + ',' + e.y).join(' '));
   }
 
+  // 16. A GATE HAS TO OPEN ONTO SOMEWHERE
+  // (the Lampreeve's hall had ONE door: the portcullis at its far end was the first of THREE columns of wall,
+  // so when it lifted there was still a wall behind it, killing him sealed you in with his body, and the level
+  // could not be completed. Every other tool passed: everything inside the box was reachable, and the far side
+  // was written off as "behind the portcullis". The fill cannot judge it either, because it walks through
+  // water it does not know about and routes around the hall. So this is local: a gate is a doorway, which
+  // means open air on BOTH sides of it on at least one of its rows.)
+  {
+    const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT;
+    const cols = new Set();
+    for (let y = 0; y < L.H; y++) for (let x = 0; x < L.W; x++) if (L.grid[y * L.W + x] === T.PORT) cols.add(x);
+    for (const x of cols) {
+      let through = false;
+      for (let y = 0; y < L.H; y++) { if (L.grid[y * L.W + x] !== T.PORT) continue;
+        if (!solidT(L.grid[y * L.W + x - 1]) && !solidT(L.grid[y * L.W + x + 1])) { through = true; break; } }
+      if (!through) say(id, `the gate at x ${x} has a wall behind it: nothing gets through when it opens`);
+    }
+  }
+
   // 15. A LEVEL WANTS A FIGHT IN THE MIDDLE OF IT, NOT ONLY AT THE END
   if (L.W > 420 && L.arena && L.arena.boss && !(L.mini && L.mini.boss) && !L.ents.some(e => e.big || e.mini)) {
     note(id, 'nothing is named in the middle of it: a level this long wants one fight before the last one');

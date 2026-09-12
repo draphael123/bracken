@@ -2100,6 +2100,10 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false } = {}) {
   if (!P.dead && P.dodge > 0 && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; P.st = Math.min(P.maxSt, P.st + 20); P.riposteT = 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
   if (P.dead || invulnerable()) return false;
   const frontA = Math.sign(fromX - P.x) === P.face || fromX === P.x;
+  // THE SHOULDER: he does not roll away from it, he puts the pauldron in the way of it
+  if (P.shoulder > 0 && frontA && !unblockable) { P.st = Math.max(0, P.st - 6); P.shoulder = 0;
+    SFX.clank(); hitstop(0.05); sparks(P.x + P.face * 10, P.y - 12, P.face, 7); shakeCam(2, -P.face * 2);
+    number(P.x, P.y - 26, 'SHOULDERED', '#ffe6a0'); ringAt(P.x + P.face * 9, P.y - 10, 14, '#ffe6a0', 0.24); return 'blocked'; }
   if (P.aegis && !frontA && tal('warded')) dmg = Math.max(1, Math.round(dmg * (1 - 0.08 * tal('warded')))); // WARDED: the ward holds a little even where the shield does not face
   if (P.aegis && frontA && !unblockable) { gainLight(5); trialEvent('aegis'); P.st = Math.max(0, P.st - 8 * (1 - 0.15 * tal('stalwart'))); if (tal('retribution')) { const f = nearFoe(fromX); if (f && !f.maxHp) { f.stagger = Math.max(f.stagger || 0, 0.9); f.flash = 0.15; } } P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); streaks(P.x + P.face * 10, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 150); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
   const front = Math.sign(fromX - P.x) === P.face || fromX === P.x;
@@ -2552,9 +2556,11 @@ function updatePlayer(dt) {
   // dodge anything - it is distance, not safety - and it costs a little wind.
   { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
     if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !dodging && !P.block) {
-        if (spend(8)) { P.dash = 0.17; P.dashCd = 0.55; if (!P.ground) P.dashedAir = true;
-          P.vx = tapped * 265; P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
-          streaks(P.x, P.y - 9, -tapped, ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid(); }
+        if (spend(isPaladin() ? 10 : 8)) { P.dash = isPyro() ? 0.2 : isPaladin() ? 0.14 : 0.17; P.dashCd = isPaladin() ? 0.7 : 0.55; if (!P.ground) P.dashedAir = true;
+          P.vx = tapped * (isPyro() ? 300 : isPaladin() ? 230 : 265); P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
+          streaks(P.x, P.y - 9, -tapped, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid();
+          if (isPyro()) { P.alight = Math.max(P.alight || 0, 0.24); flame(P.x, P.y - 8, 4, 4, 40, 2); }   // even her dash leaves a scorch
+          if (isPaladin()) { P.shoulder = Math.max(P.shoulder || 0, 0.16); SFX.clank(); } }
       } P.tapDir = tapped; P.tapT = time; } }
   P.dash = Math.max(0, (P.dash || 0) - dt); P.dashCd = Math.max(0, (P.dashCd || 0) - dt); if (P.ground) P.dashedAir = false;
   if (P.dash > 0) { ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); }
@@ -2562,9 +2568,32 @@ function updatePlayer(dt) {
     P.dbuf = 0;
     if (spend(dodgeCost())) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
-      else if (!P.ground) { P.airRolled = true; P.vy = Math.min(P.vy, -80); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); } /* AIR ROLL */ P.dodge = isPaladin() ? 0.24 : 0.3; P.dodgeCd = 0.5; P.vx = P.face * (isPaladin() ? 165 : 215); P.block = false; dodges++; trialEvent('dodge'); SFX.pDodge(); dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1); }
+      else if (!P.ground) { P.airRolled = true; P.vy = Math.min(P.vy, -80); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); } /* AIR ROLL */
+      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : 0.3; P.dodgeCd = 0.5;
+      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : 215); P.block = false; dodges++; trialEvent('dodge'); SFX.pDodge();
+      if (isPyro()) { // THE CINDER ROLL: she goes through it alight, and it costs her heat
+        P.alight = 0.42; P.heat = Math.max(0, (P.heat || 0) - 8);
+        flame(P.x, P.y - 8, 6, 6, 60, 3); SFX.jet && SFX.jet(true); }
+      if (isPaladin()) { // THE SHOULDER: the pauldron goes first, and it turns what it meets
+        P.shoulder = 0.3; SFX.clank();
+        ringAt(P.x + P.face * 8, P.y - 10, 12, '#ffe6a0', 0.22); } dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1); }
   }
   if (dodging) { P.dodge -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2 }); }
+  // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
+  if (P.alight > 0) { P.alight -= dt;
+    if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 10, y: P.y - 4 - Math.random() * 14, vx: -P.vx * 0.12, vy: -20 - Math.random() * 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -30, fire: true });
+    P.alightHit = P.alightHit || new Set();
+    for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 16 && Math.abs(e.y - e.h / 2 - (P.y - 8)) < 18) {
+      if (!P.alightHit.has(e)) { P.alightHit.add(e);
+        hurtEnemy(e, Math.round(swordDmg() * 0.6), P.x, false); e.burn = Math.max(e.burn || 0, 2.2); flame(e.x, e.y - e.h / 2, 5, 5, 50, 2); } }
+  } else if (P.alight) { P.alight = 0; if (P.alightHit) P.alightHit.clear(); }
+  // THE PALADIN'S SHOULDER: the pauldron turns a blow that lands on it, and staggers what he runs into
+  if (P.shoulder > 0) { P.shoulder -= dt;
+    for (const e of enemies) if (e.alive && !e.maxHp && !e.harmless && Math.abs(e.x - P.x) < 18 && Math.abs(e.y - e.h / 2 - (P.y - 8)) < 20) {
+      if (!(e.shoved > 0)) { e.shoved = 0.6; e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = Math.sign(e.x - P.x || P.face) * 210; e.vy = -70;
+        hurtEnemy(e, Math.round(swordDmg() * 0.4), P.x, false); SFX.clank(); hitstop(0.03); } }
+  } else if (P.shoulder) P.shoulder = 0;
+  for (const e of enemies) if (e.shoved > 0) e.shoved -= dt;
 
   const groundAtk = attacking && P.ground;
   const wading = !P.dead && (L.pools || []).some(p => p.shallow && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 2);
@@ -2628,7 +2657,8 @@ function updatePlayer(dt) {
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis) {
-    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : 60); P.atk = -1; P.hitSet.clear(); SFX.slash();
+    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear();
+      if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
         embers.push({ x: P.x, y: P.y - 4, vx: 0, vy: 300, life: 1.1, hit: new Set(), plunge: true });
         P.heat = Math.min(100, (P.heat || 0) + 10); if (P.heat >= 100 && !P.full) bankHeat(); SFX.puff();
@@ -2663,7 +2693,7 @@ function updatePlayer(dt) {
   }
   if (P.swim) { const under = swimP.capped ? 99 : P.y - swimP.y;
     P.vy += 150 * dt; if (under > 15) P.vy -= 300 * dt; if (keys.down) P.vy += 430 * dt; if (keys.up || (keys.jump && under > 30)) P.vy -= 430 * dt;
-    P.vy = Math.max(-190, Math.min(P.plunge ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) P.plunge = false; P.airRolled = false; P.canCut = true;
+    P.vy = Math.max(-190, Math.min(P.plunge ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) { P.plunge = false; P.consecrate = false; } P.airRolled = false; P.canCut = true;
     if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
     const bell = nearAir(P.x, P.y - 8);
     if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5); P.drownT = 0; }
@@ -2735,7 +2765,10 @@ function updatePlayer(dt) {
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
       if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14);
-        if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0) * (1 + 0.2 * tal('farTremor')), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall(); } } // HAMMERFALL: the maul comes down and the ground carries it both ways
+        if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0) * (1 + 0.2 * tal('farTremor')), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
+          if (P.consecrate) { P.consecrate = false; gainLight(14); // THE CONSECRATION: where the maul lands, the ground is holy for a moment
+            ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
+            for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - e.h / 2 - (P.y - 10)) < 30) { hurtEnemy(e, Math.round(swordDmg() * 0.5), P.x, false); e.stagger = Math.max(e.stagger || 0, 0.5); } } } } // HAMMERFALL: the maul comes down and the ground carries it both ways
     } else { const heavy = prevVy > 250; if (heavy && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9 * (1 + 0.2 * tal('farTremor')), sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
       dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); hitstop(0.02); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
     pogoChain = 0;
