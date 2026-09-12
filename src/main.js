@@ -1960,6 +1960,14 @@ function drawParts(cx, cy) {
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */ nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
 function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
+// every blow used to hold the frame for the same three hundredths of a second, whatever it was. Weight it:
+// a tap is a tap, a heavy blow leans on it, and the blow that kills something leans hardest of all.
+function blowStop(e, dmg) {
+  let t = 0.026 + Math.min(0.05, (dmg || 0) / 700);
+  if (P.heavy) t += 0.04;
+  if (e.maxHp) t *= 0.8;          // a boss does not stop the world every time you touch it
+  hitstop(t);
+}
 function shakeCam(n, k = 0) { const a = SET.shakeAmt === undefined ? (SET.shake ? 1 : 0) : SET.shakeAmt; if (a > 0) { shake = Math.max(shake, n * a); kick += k * a; } }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
@@ -2176,8 +2184,9 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   } else {
     if (e.t === 'shaman' && e.hp > 0) { burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); const dir2 = Math.sign(e.x - P.x) || 1; let nx = e.x + dir2 * 70; if (isSolid(Math.floor(nx / TS), Math.floor((e.y - 1) / TS)) || !isSolid(Math.floor(nx / TS), Math.floor((e.y + 1) / TS))) nx = e.x - dir2 * 70; e.x = nx; e.flash = 0.3; burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); number(e.x, e.y - 18, 'POOF', '#4aa0b0'); }
     const voice = SFX.hurtOf(e.t); if (voice) voice(); else SFX.hit(); // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
-    hitstop(0.05); shakeCam(1.5, dir * 1.5);
-    sparks(e.x - dir * 2, e.y - e.h / 2, dir, 5);
+    blowStop(e, dmg, false); shakeCam(P.heavy ? 3 : 1.5, dir * (P.heavy ? 3 : 1.5));
+    sparks(e.x - dir * 2, e.y - e.h / 2, dir, P.heavy ? 9 : 5);
+    if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
     if (e.t !== 'wasp' && e.t !== 'spit' && e.t !== 'queen' && e.t !== 'ram' && e.t !== 'harpy') e.vx = dir * (plunge ? 30 : 80);
     if (e.t === 'king' && e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.y = L.arena.floor; e.mode = 'rise'; e.modeT = 1.3; e.h = 60; e.throne = { x: e.x, y: L.arena.floor }; number(e.x, e.y - 36, 'THE LITTER BREAKS. HE STANDS', '#ff6b6b'); SFX.heavy(); SFX.crack(); shakeCam(8); zoomKick(1.12, 0.4); burst(e.x, e.y, 16, ['#8b6a2a', '#c9b27c', '#c9463d'], 80, 0.7); }
     if (e.t === 'king' && e.phase === 2 && e.hp <= e.maxHp * 0.4) { e.phase = 3; e.throneT = 5; number(e.x, e.y - 70, 'THE KING RAGES', '#ff6b6b'); SFX.roar(); shakeCam(6); zoomKick(1.1, 0.3); for (const f of enemies) if (f.alive && f.t === 'folk' && f.court) f.cower = true; }
@@ -2517,8 +2526,14 @@ function updatePlayer(dt) {
     else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
   } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4); P.drownT = 0; }
   snareTick(dt);
-  if (!P.climb && !P.swim) P.vy += GRAV * dt * (P.plunge ? 1.6 : 1);
-  const maxFall = P.plunge ? 340 : 270; if (P.vy > maxFall) P.vy = maxFall;
+  if (!P.climb && !P.swim) { // THE ARC: light at the apex, heavier coming down, heaviest if you ask for it
+    const rising = P.vy < 0, apex = Math.abs(P.vy) < 62 && !P.ground;
+    const fast = !P.ground && keys.down && !P.plunge && P.vy > -40 ? 2.1 : 1; // FAST FALL: ask for the ground and it comes
+    const gk = P.plunge ? 1.6 : apex ? 0.62 : rising ? 1 : 1.2 * fast;
+    P.vy += GRAV * dt * gk;
+    if (apex && !P.hangFx) { P.hangFx = true; } else if (!apex) P.hangFx = false;
+  }
+  const maxFall = P.plunge ? 340 : (!P.ground && keys.down && P.vy > 0 ? 380 : 270); if (P.vy > maxFall) P.vy = maxFall; // FAST FALL gets its own ceiling, or the cap eats it
   { // crag rock faces: hold into the rock while airborne to cling and slide slowly; jump to kick up and away
     const dir = keys.left ? -1 : keys.right ? 1 : 0, tx = Math.floor((P.x + dir * 6) / TS), ty = Math.floor((P.y - 8) / TS);
     const grip = dir !== 0 && !P.ground && P.vy > -40 && !(P.hurt > 0) && !P.plunge && (tileAt(tx, ty) === T.CLIMB || tileAt(tx, ty + 1) === T.CLIMB);
@@ -2532,9 +2547,13 @@ function updatePlayer(dt) {
   const prevVy = P.vy;
   const r = moveBody(P, P.vx * dt, P.vy * dt, P.drop > 0 || (P.climb && P.vy > 0));
   if (r.hitX) P.vx = 0;
+  if (r.hitY && P.vy < 0) { // CORNER CORRECTION: clipped the lip of a block on the way up, so slide past it
+    for (const dx of [-3, 3, -5, 5]) { const hx = Math.floor((P.x + dx) / TS), hy = Math.floor((P.y - P.h - 1) / TS);
+      if (!isSolid(hx, hy) && !isSolid(hx, hy + 1)) { P.x += dx; P.vy = Math.min(P.vy, -120); break; } }
+  }
   if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? 0.2 : 0.1; P.kicked = false; }
   else if (r.hitY) P.vy = 0;
-  if (!P.ground && wasGround && !P.onMover) P.coyote = SET.assist ? 0.2 : 0.1;
+  if (!P.ground && wasGround) P.coyote = SET.assist ? 0.2 : 0.1; // (a mover counts: walking off a raft used to give no grace at all)
   if (!P.ground && P.vy >= 0) for (const m of movers) {
     if (prevY <= m.y + 1 + Math.max(0, m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
   }
@@ -2558,7 +2577,7 @@ function updatePlayer(dt) {
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14);
         if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0) * (1 + 0.2 * tal('farTremor')), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall(); } } // HAMMERFALL: the maul comes down and the ground carries it both ways
     } else { const heavy = prevVy > 250; if (heavy && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9 * (1 + 0.2 * tal('farTremor')), sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
-      dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
+      dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); hitstop(0.02); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
   }
@@ -6020,6 +6039,7 @@ function gasBlast(x, y) { // the whole chamber goes up: fire along the floor, an
 }
 // every swing: count the run of them (THIRD CUT, CONCUSSION), and spend a waiting RIPOSTE
 function startSwing() { const quick = time - (P.lastSwingT ?? -9) < 0.75; P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
+  SFX.swingUp ? SFX.swingUp(Math.min(3, P.combo - 1)) : null; // the run of them climbs in pitch
   P.heavySwing = (tal('thirdCut') || tal('concuss')) && P.combo % 3 === 0; const rip = tal('riposte') && P.riposteT > 0;
   P.swingMul = (P.heavySwing ? 1.5 : 1) * (rip ? 2 : 1); if (rip) { P.riposteT = 0; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); } if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140); } }
 function swingDmg(e) { if (e.t === 'dummy') trialEvent('hit');

@@ -154,6 +154,7 @@ export const SFX = {
   zap() { noise(0.18, 0.34, 3000, 1.2); tone('sawtooth', 2200, 400, 0.16, 0.14); noise(0.5, 0.12, 1400, 0.7, 0.05); },
   wave() { noise(1.5, 0.30, 320, 0.5); noise(1.2, 0.22, 900, 0.7, 0.15); tone('sine', 70, 34, 1.4, 0.16); },
   waveBreak() { noise(0.9, 0.42, 1500, 0.5); noise(1.4, 0.30, 500, 0.6, 0.05); tone('sine', 90, 30, 0.8, 0.2); },
+  swingUp(k) { const r = 1 + Math.min(3, k) * 0.09; noise(0.07, 0.16, 1500 * r, 1.1); tone('triangle', 620 * r, 300 * r, 0.06, 0.05); }, // the run of blows climbs
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
