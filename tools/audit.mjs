@@ -12,7 +12,7 @@ for (const lv of LEVELS) {
   // 1. floating props: anything placed at (x, y) should have ground at (x, y+1) — the DSL places ents on the tile they stand on
   for (const e of L.ents) {
     if (!['sign', 'npc', 'shrine', 'check', 'torch', 'deco', 'crate', 'brazier', 'well', 'door', 'folk', 'sprig', 'pike', 'brute', 'thief', 'plate', 'exit', 'relic', 'bell', 'cage', 'squire', 'stray', 'goat', 'ram', 'troll', 'miner'].includes(e.t)) continue;
-    if (e.hang || e.kind === 'hangCage' || e.t === 'torch' || (e.t === 'deco' && ['banner', 'axle', 'timber', 'pillar', 'strut', 'sailRag', 'rigging', 'pennant', 'gunport', 'hallWindow', 'hammock', 'washing', 'boardingNet', 'sternWindows', 'crowNest', 'mastTall', 'buoy', 'lanternBuoy'].includes(e.kind))) continue;
+    if (e.hang || e.kind === 'hangCage' || e.t === 'torch' || (e.t === 'deco' && ['banner', 'axle', 'timber', 'pillar', 'strut', 'sailRag', 'rigging', 'pennant', 'gunport', 'hallWindow', 'hammock', 'washing', 'boardingNet', 'sternWindows', 'crowNest', 'mastTall', 'buoy', 'lanternBuoy', 'airBell'].includes(e.kind))) continue;
     if (!standT(at(e.x, e.y + 1))) out.push(`FLOAT ${e.t}${e.kind ? ':' + e.kind : ''} at ${e.x},${e.y} (below=${at(e.x, e.y + 1)})${e.text ? ' "' + e.text.slice(0, 40) + '"' : ''}`);
   }
   // 2. reach: from every standable tile, mark where a jump (with the run) can land; a ONEWAY tile nobody can land on is flagged

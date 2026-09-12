@@ -103,7 +103,8 @@ for (const lv of LEVELS) {
 
   // 9. THE BOSS HAS A NAME ON ITS OWN HEALTH BAR
   if (L.arena && L.arena.boss) {
-    const b = L.arena.boss, bar = main.split('\n').find(l => l.includes("'HORNET QUEEN'; text(boss.t"));
+    const b = L.arena.boss, iq = main.indexOf("'HORNET QUEEN'; text(boss.t");
+    const bar = iq < 0 ? '' : main.slice(Math.max(0, iq - 6000), iq); // the chain runs over several lines now
     if (bar && b !== 'queen' && !bar.includes(`boss.t === '${b}'`)) say(id, `boss '${b}' has no branch on the boss bar in main.js: the bar will call it HORNET QUEEN`);
   }
 

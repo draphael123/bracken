@@ -857,6 +857,181 @@ export function bakeLookout() {
 }
 
 // ---------- THE QUARTERMASTER ----------
+// bakeCaptain()  THE CAPTAIN — the man whose ship you took, fighting on his own quarterdeck in a hurricane. The
+//   biggest man aboard: a wide tricorn with a white plume and gold trim, a black beard in two ringed braids, one
+//   eye gone milky, a deep red coat with gold facings, a baldric of pistols across his chest, a heavy sabre in
+//   his right hand and a grapnel in his left.
+//   frames: 0 idle, 1 walk contact, 2 walk pass, 3 sabre tell (blade back past his ear), 4 sabre through (smear),
+//           5 sabre backhand (the return cut, smear), 6 pistol tell (levelled, off eye shut), 7 pistol shot
+//           (flash, recoil), 8 grapnel tell (hook wound up overhead, rope coiled), 9 grapnel thrown (arm out,
+//           hand empty, rope trailing), 10 the call (head back, his whistle up, trills in front of his face),
+//           11 riding the sea (arms wide, coat streaming, blade up), 12 beached (down on one knee, blade planted)
+//   canvas 46x32 (grid 44x30)   anchor ax 21, ay 31   pack w/h 16x26
+export function bakeCaptain() {
+  const W = 46, H = 32, X = 21, FL = H - 1;
+  const q = G => outline(fromGrid(rowsOf(settle(G)), PR, 1), OUT);
+  // 15 wide with column 7 on the centre
+  const HEAD = [
+    '.......t.......',
+    '......tt.......',
+    '.....ttl.......',
+    'bbbbbbbbbbbbb..',
+    '.bbyybbbyybb...',
+    '..bbbbbbbbb....',
+    '...hhhhhhh.....',
+    '..hshieeshy....',
+    '..hshhhhhsh....',
+    '...kkKkkKkk....',
+    '...kKkkkKk.....',
+    '....kkyykk.....',
+    '.....kkkk......',
+  ];
+  // the brim down over his face, the head dropped (the tell frames and the beaching)
+  const HEAD_D = [
+    '.......t.......',
+    '......tt.......',
+    '.....ttl.......',
+    'bbbbbbbbbbbbb..',
+    '.bbyybbbyybb...',
+    '..bbbbbbbbb....',
+    '...bbbbbbb.....',
+    '..hshhhhhsh....',
+    '...kkKkkKkk....',
+    '...kKkkkKk.....',
+    '....kkyykk.....',
+    '.....kkkk......',
+    '...............',
+  ];
+  // the head back, his mouth open for the call
+  const HEAD_U = [
+    '........t......',
+    '.......tt......',
+    '......ttl......',
+    '.bbbbbbbbbbbb..',
+    '..bbyybbbyyb...',
+    '...bbbbbbbb....',
+    '...hhhhhhh.....',
+    '..hshieehsh....',
+    '..hshmmmhsy....',
+    '...kkKkkKkk....',
+    '....kKkkkK.....',
+    '....kkyykk.....',
+    '.....kkkk......',
+  ];
+  const TORSO = [
+    '...rRrrRr....',
+    '..rRRRRRRm...',
+    '.rRRtLtRRm...',
+    '.rRyRRyRRm...',
+    'rRRyRRyRRm...',
+    'rRRuUuuRRm...',
+    '.mRRuUuRmm...',
+    '.mRuUuuRm....',
+    '..mRRRRm.....',
+    '..mRRRRm.....',
+  ];
+  const BOOTS = {
+    stand: ['.....UUuu......', '....UU..uu.....', '....Uv...uu....', '...vv....uu....', '...vv....uu....', '..vv.....uu....', '..vv.....uuU...', '.vvvv...uuuuU..'],
+    walkA: ['.....UUuu......', '...UU....uu....', '...Uv.....uu...', '..vv......uu...', '..vv......uu...', '.vv.......uu...', '.vv.......uuU..', 'vvvv.....uuuuU.'],
+    walkB: ['.....UUuu......', '.....UUuu......', '....Uv.uu......', '...vv..uu......', '...vv..uu......', '..vv...uuU.....', '..vv...uuuU....', '.vvvv..........'],
+    tell: ['.....UUuu......', '...UUU..uu.....', '..vv.....uu....', '..vv.....uu....', '.vv......uu....', '.vv......uu....', 'vv.......uuU...', 'vvv.....uuuuU..'],
+    lunge: ['.....UUuu......', '....UU.....uu..', '...vv.......uu.', '..vv........uu.', '..vv........uu.', '.vv.........uu.', '.vv.........uuU', 'vvv........uuuu'],
+    plant: ['.....UUuu......', '...UUU..uu.....', '..Uv.....uu....', '..vv.....uu....', '.vv......uu....', '.vv......uu....', 'vv.......uuU...', 'vvv.....uuuuU..'],
+    wide: ['.....UUuu......', '..UUU.....uuu..', '..vv.......uu..', '.vv.........uu.', '.vv.........uu.', 'vv..........uu.', 'vv..........uuU', 'vvv........uuuu'],
+    kneel: ['...............', '.....UUuu......', '....UU..uu.....', '...Uv...uu.....', '..vv....uu.....', '..vv....uu.....', '.vvvvv..uu.....', 'vvvvvvv.uuuU...'],
+  };
+  // his coat: a long skirt of deep red, its tails thrown by the step and streaming when the sea has him
+  const coat = (G, B, dy, pose) => {
+    const top = 20 + dy, HH = Math.max(3, FL - top), Y = f => top + Math.round(f * HH);
+    const pts = {
+      stand: [[-7, 0], [6, 0], [6, 0.72], [4, 1], [-7, 1], [-9, 0.66]],
+      swing: [[-7, 0], [6, 0], [5, 0.66], [3, 0.92], [-10, 1], [-13, 0.6], [-8, 0.25]],
+      stream: [[-7, 0], [6, 0], [6, 0.55], [4, 0.78], [-13, 0.92], [-17, 0.5], [-8, 0.18]],
+      spread: [[-8, 0], [6, 0], [7, 0.4], [3, 0.62], [-10, 0.8], [-18, 0.42], [-12, 0.1]],
+      pooled: [[-7, 0], [6, 0], [7, 1], [-12, 1], [-14, 0.5], [-9, 0.2]],
+    }[pose];
+    gpoly(G, pts.map(([x, f]) => [B + x, Y(f)]), (x, y) => {
+      const f = ((Math.floor((x - B) * 0.8 + (y - top) * 0.4) % 4) + 4) % 4;
+      return y > FL - 2 ? 'm' : f === 0 ? 'm' : f === 1 ? 'R' : f === 2 ? 'R' : 'r';
+    });
+  };
+  const arm = (G, sh, el, hd, far) => layer(G, g => {
+    limb(g, sh, el, 3.2, far ? ['m', 'm', 'R'] : ['m', 'R', 'r']);
+    limb(g, el, hd, 2.8, far ? ['m', 'R', 'R'] : ['R', 'r', 'r']);
+    limb(g, hd, hd, 2.6, far ? ['g', 'S', 'S'] : ['S', 's', 'h']);
+  });
+  // a heavier blade than a deckhand's: longer, broader, with a knuckle bow
+  // his blade: longer, broader and more curved than a deckhand's, with a gold basket over his fist
+  const sabre = (G, hand, deg, len = 14) => { const A = axis(hand, deg); cutlass(G, hand, deg, len, 1.15, 1.35);
+    for (const [d, s] of [[-1.6, 1.8], [0.2, 2.2], [1.6, 1.6]]) { const p = A(d, s); put(G, Math.round(p[0]), Math.round(p[1]), 'y'); } };
+  const frame = o => {
+    const G = blank(W, H), B = X + (o.dx || 0), dy = o.dy || 0, O = B - 6;
+    const P = v => [B + v[0], v[1] + dy];
+    if (o.blade && o.blade[3] === 'back') layer(G, g => sabre(g, P(o.blade[0]), o.blade[1], o.blade[2]));
+    if (o.gun && o.gun[3] === 'back') layer(G, g => pistol(g, P(o.gun[0]), o.gun[1], o.gun[2]));
+    if (o.hook && o.hook[2] === 'back') layer(G, g => stamp(g, P(o.hook[0])[0] - 3, P(o.hook[0])[1] - 3, o.hook[1] ? GRAP_U : GRAP_D));
+    coat(G, B, dy, o.coat);
+    arm(G, P([-5, 16]), P(o.far[0]), P(o.far[1]), true);
+    stamp(G, B - 7, 22, BOOTS[o.boots]);
+    stamp(G, O + 1, 12 + dy, TORSO);
+    layer(G, g => stamp(g, O + (o.hx || 0) - 1, 1 + dy, o.up ? HEAD_U : o.down ? HEAD_D : HEAD));
+    if (o.blade && o.blade[3] !== 'back') layer(G, g => sabre(g, P(o.blade[0]), o.blade[1], o.blade[2]));
+    arm(G, P([3, 16]), P(o.near[0]), P(o.near[1]), false);
+    if (o.gun && o.gun[3] !== 'back') layer(G, g => pistol(g, P(o.gun[0]), o.gun[1], o.gun[2]));
+    if (o.hook && o.hook[2] !== 'back') layer(G, g => stamp(g, P(o.hook[0])[0] - 3, P(o.hook[0])[1] - 3, o.hook[1] ? GRAP_U : GRAP_D));
+    if (o.coil) layer(G, g => stamp(g, P(o.coil)[0] - 3, P(o.coil)[1] - 2, COIL));
+    if (o.rope) layer(G, g => { for (let e = 0; e < 2; e++) gline(g, P(o.rope[0])[0], P(o.rope[0])[1] + e, P(o.rope[1])[0], P(o.rope[1])[1] + e, i => ((i + e) % 3 ? 'P' : 'p')); });
+    if (o.trill) layer(G, g => { const [tx, ty] = P(o.trill); call(g, tx, ty, tx - 3, ty + 2); stamp(g, tx + 3, ty - 2, TRILL); });
+    if (o.flash) { const F = P(o.flash);
+      layer(G, g => { stamp(g, F[0], F[1], ['..X..', '.XxX.', 'XxxxX', '.XxX.', '..X..']); stamp(g, F[0] + 5, F[1], ['.zZz.', 'zZZzZ', '.zZz.']); }); }
+    const c = q(G);
+    if (o.smear) smear(c, ...o.smear);
+    return c;
+  };
+  const idle = frame({ boots: 'stand', coat: 'stand',
+    far: [[-5, 19], [-3, 18]], near: [[5, 19], [6, 21]],
+    blade: [[6, 21], 60, 14], hook: [[-3, 18], 0], coil: [-5, 20] });
+  const walk1 = frame({ boots: 'walkA', coat: 'swing', dy: 1,
+    far: [[-6, 19], [-4, 19]], near: [[6, 19], [7, 21]],
+    blade: [[7, 21], 52, 14], hook: [[-4, 19], 0] });
+  const walk2 = frame({ boots: 'walkB', coat: 'stand',
+    far: [[-5, 20], [-3, 20]], near: [[5, 20], [6, 22]],
+    blade: [[6, 22], 48, 14], hook: [[-3, 20], 0] });
+  const slashTell = frame({ boots: 'tell', dx: -2, dy: 1, hx: -1, coat: 'swing', down: true,
+    far: [[-2, 18], [1, 18]], near: [[-4, 13], [-8, 10]],
+    blade: [[-8, 10], -165, 15, 'back'], hook: [[1, 18], 0, 'back'] });
+  const slash1 = frame({ boots: 'lunge', dx: 3, dy: 1, hx: 2, coat: 'stream',
+    far: [[-2, 18], [-5, 20]], near: [[5, 16], [9, 16]],
+    blade: [[9, 16], 2, 16], hook: [[-5, 20], 0, 'back'],
+    smear: [1 + X + 9, 1 + 16, 17, -100, 26] });
+  const slash2 = frame({ boots: 'wide', dx: 2, dy: 2, hx: 1, coat: 'swing',
+    far: [[-3, 18], [-6, 18]], near: [[6, 20], [10, 23]],
+    blade: [[10, 23], 46, 16], hook: [[-6, 18], 0, 'back'],
+    smear: [1 + X + 10, 1 + 23, 17, 20, 120] });
+  const shootTell = frame({ boots: 'plant', coat: 'stand', dy: 1,
+    far: [[1, 15], [5, 14]], near: [[-1, 19], [-4, 21]],
+    gun: [[5, 14], -4, 10], blade: [[-4, 21], 146, 14, 'back'] });
+  const shoot = frame({ boots: 'stand', dx: -1, dy: 1, hx: -1, coat: 'swing',
+    far: [[1, 16], [5, 13]], near: [[-1, 20], [-4, 22]],
+    gun: [[5, 13], -22, 10], blade: [[-4, 22], 150, 14, 'back'], flash: [12, 5] });
+  const hookTell = frame({ boots: 'tell', dx: -1, dy: 1, hx: -1, coat: 'swing',
+    far: [[-4, 12], [-7, 7]], near: [[3, 19], [4, 21]],
+    hook: [[-7, 7], 1], blade: [[4, 21], 58, 14, 'back'], rope: [[-7, 8], [-2, 18]] });
+  const hook = frame({ boots: 'lunge', dx: 2, dy: 1, hx: 1, coat: 'stream',
+    far: [[0, 14], [7, 11]], near: [[4, 19], [5, 21]],
+    blade: [[5, 21], 58, 14, 'back'], rope: [[7, 11], [-6, 20]] });
+  const callT = frame({ boots: 'plant', coat: 'spread', dy: -1, up: true,
+    far: [[-3, 17], [-5, 19]], near: [[3, 15], [5, 11]],
+    trill: [6, 10], blade: [[-5, 19], 140, 14, 'back'], hook: [[-5, 19], 0, 'back'] });
+  const ride = frame({ boots: 'wide', dy: -2, coat: 'spread',
+    far: [[-6, 14], [-11, 11]], near: [[6, 14], [10, 9]],
+    blade: [[10, 9], -66, 16], hook: [[-11, 11], 1, 'back'] });
+  const beach = frame({ boots: 'kneel', dy: 3, hx: 1, coat: 'pooled', down: true,
+    far: [[-4, 20], [-6, 22]], near: [[4, 19], [6, 24]],
+    blade: [[6, 24], 88, 15], hook: [[-6, 22], 0, 'back'] });
+  return pack([idle, walk1, walk2, slashTell, slash1, slash2, shootTell, shoot, hookTell, hook, callT, ride, beach], X, FL, 16, 26);
+}
+
 export function bakeQuarter() {
   const W = 42, H = 30, X = 19, FL = H - 1;
   const q = G => outline(fromGrid(rowsOf(settle(G)), PR, 1), OUT);

@@ -150,6 +150,8 @@ export const SFX = {
   gobHurt() { file('gobHurt', 0.4); },
   hurt() { file('hurt', 0.6) || (tone('sawtooth', 240, 60, 0.32, 0.25), noise(0.15, 0.2, 400)); },
   pogo() { tone('square', 480, 980, 0.13, 0.18); },
+  strikeTell() { tone('sine', 900, 2600, 0.5, 0.05); tone('sine', 1300, 3100, 0.45, 0.035, 0.05); noise(0.4, 0.05, 5200, 3, 0.1); }, // the air going tight before a bolt
+  zap() { noise(0.18, 0.34, 3000, 1.2); tone('sawtooth', 2200, 400, 0.16, 0.14); noise(0.5, 0.12, 1400, 0.7, 0.05); },
   wave() { noise(1.5, 0.30, 320, 0.5); noise(1.2, 0.22, 900, 0.7, 0.15); tone('sine', 70, 34, 1.4, 0.16); },
   waveBreak() { noise(0.9, 0.42, 1500, 0.5); noise(1.4, 0.30, 500, 0.6, 0.05); tone('sine', 90, 30, 0.8, 0.2); },
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
@@ -478,6 +480,7 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  captain() { noise(0.16, 0.26, 700, 0.5); tone('sawtooth', 260, 120, 0.18, 0.16); tone('sine', 150, 90, 0.2, 0.1, 0.04); }, // a big man taking one and not liking it
   spitcap() { noise(0.12, 0.3, 500, 0.5); tone('sine', 200, 90, 0.14, 0.1); noise(0.08, 0.16, 1100, 0.4, 0.06); }, // a wet bladder taking a blade
   weaver() { noise(0.07, 0.2, 3000, 0.35); tone('sawtooth', 1400, 800, 0.07, 0.07); noise(0.05, 0.14, 2000, 0.5, 0.05); }, // chitin and a hiss
   drowned() { noise(0.26, 0.3, 380, 0.5); tone('sawtooth', 130, 60, 0.26, 0.16); noise(0.18, 0.18, 900, 0.4, 0.08); tone('sine', 80, 44, 0.3, 0.1, 0.04); }, // a man full of water
