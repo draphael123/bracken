@@ -48,8 +48,8 @@ const LEGS = {
   climbA:['.SS.SSS...', '.SS..SW...', '.ww.WWW...', '.ww.......', 'WWW.......'],
   climbB:['.SSSS.SS..', '.WWW..SS..', '......ww..', '......ww..', '.....WWW..'],
 };
-const W = 28, H = 28, BX = 8, BY = 3; // body drawn at (BX,BY); feet bottom at BY+16 = 19
-export const KNIGHT_ANCHOR = { ax: 13, ay: 19 };
+const W = 34, H = 32, BX = 11, BY = 6; // body drawn at (BX,BY); feet bottom at BY+16 = 22
+export const KNIGHT_ANCHOR = { ax: 16, ay: 22 };
 
 function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null }) {
   const [c, g] = canvas(W, H);
@@ -69,13 +69,19 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = staff.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, KP.w, 2); px(g, x1, y1, KP.y); px(g, x1 + Math.sign(x1 - x0), y1 + Math.sign(y1 - y0), KP.r); px(g, x1 - Math.sign(y1 - y0), y1 + Math.sign(x1 - x0), KP.r);
   }
-  if (maul) { // the paladin's maul: an oak haft, and a steel head set across the end of it with a gold band
+  if (maul) { // THE PALADIN'S MAUL: an oak haft, a gold langet, and a squared steel head wedged across the
+    // end of it. It was one thin bar laid over a stick, which at this size reads as an axe blade.
     const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
-    line(g, x0, y0, x1, y1, '#6a4428', 2);
-    const len = Math.hypot(x1 - x0, y1 - y0) || 1, qx = -(y1 - y0) / len, qy = (x1 - x0) / len;
-    line(g, Math.round(x1 - qx * 4), Math.round(y1 - qy * 4), Math.round(x1 + qx * 4), Math.round(y1 + qy * 4), KP.s, 4);
-    line(g, Math.round(x1 - qx * 4), Math.round(y1 - qy * 4), Math.round(x1 + qx * 4), Math.round(y1 + qy * 4), KP.S, 1);
-    px(g, Math.round(x1), Math.round(y1), KP.y); px(g, Math.round(x1 + qx), Math.round(y1 + qy), KP.y); px(g, Math.round(x1 - qx), Math.round(y1 - qy), KP.y);
+    const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
+    line(g, x0, y0, x1, y1, '#6a4428', 2);                                              // the haft
+    px(g, Math.round(x0 - ax), Math.round(y0 - ay), '#4a2e18');                          // its butt
+    const hx = x1 - ax * 0.5, hy = y1 - ay * 0.5;
+    const across = (t, hw, col) => line(g,
+      Math.round(hx + ax * t - qx * hw), Math.round(hy + ay * t - qy * hw),
+      Math.round(hx + ax * t + qx * hw), Math.round(hy + ay * t + qy * hw), col, 1);
+    for (let t = -2; t <= 2; t++) across(t, 3.5, KP.o);                                   // the block, outlined all round
+    for (let t = -1; t <= 1; t++) across(t, 2.5, t === -1 ? '#6e7a8c' : t === 1 ? '#e8eef6' : '#aab6c6');
+    across(-3, 1.6, KP.y);                                                                // the langet, gold on the haft
   }
   if (glow) { const [gx, gy] = glow; px(g, gx + dx, gy + dy, '#fff6c8'); px(g, gx + dx - 1, gy + dy, KP.y); px(g, gx + dx + 1, gy + dy, KP.y); px(g, gx + dx, gy + dy - 1, KP.y); px(g, gx + dx, gy + dy + 1, KP.y); }
   if (shield) { // kite shield held out front, covering the torso: steel rim, oak face, gold boss
@@ -1124,18 +1130,18 @@ export function bakePaladin(skin = {}) {
     land: knightFrame({ legs: 'land', dy: 2, maul: rest(2) }),
     // HOLD THE MAUL: up in both hands, and down into the planking, and the ground carries it
     heavy: [
-      knightFrame({ dx: -1, legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 6], maul: [sh[0] - 1, sh[1] - 6, sh[0] + 2, sh[1] - 22], plume: 2 }),
-      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], maul: [sh[0] + 4, sh[1] - 2, sh[0] + 14, sh[1] + 7], plume: 2 }),
-      knightFrame({ dx: 2, legs: 'wide', dy: 2, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 5], maul: [sh[0] + 3, sh[1] + 5, sh[0] + 10, sh[1] + 16], plume: 0 }),
+      knightFrame({ dx: -1, legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 6], maul: [sh[0] - 1, sh[1] - 1, sh[0] + 1, sh[1] - 7], plume: 2 }),
+      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], maul: [sh[0] + 3, sh[1] - 1, sh[0] + 8, sh[1] + 5], plume: 2 }),
+      knightFrame({ dx: 2, legs: 'wide', dy: 2, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 5], maul: [sh[0] + 2, sh[1] + 4, sh[0] + 7, sh[1] + 11], plume: 0 }),
     ],
     climb: [
       knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], maul: carry(), plume: 0 }),
       knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], maul: carry(1), plume: 1 }),
     ],
     atk: [
-      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 9], plume: 1 }), // drawn back over the shoulder
-      knightFrame({ dx: 0, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], maul: [sh[0] + 1, sh[1] - 3, sh[0] + 5, sh[1] - 9], plume: 2 }),   // up and over
-      knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], maul: [sh[0] + 4, sh[1] + 2, sh[0] + 9, sh[1] + 7], plume: 2 }), // down
+      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 8], plume: 1 }), // drawn back over the shoulder
+      knightFrame({ dx: 0, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], maul: [sh[0] + 1, sh[1] - 3, sh[0] + 5, sh[1] - 8], plume: 2 }),   // up and over
+      knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], maul: [sh[0] + 4, sh[1] + 2, sh[0] + 8, sh[1] + 7], plume: 2 }), // down
       knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9], plume: 0 }), // the head in the ground
       knightFrame({ maul: rest(), plume: 0 }),
     ],
@@ -1147,7 +1153,7 @@ export function bakePaladin(skin = {}) {
     // MEND: the free hand up, the light in it
     cast: [0, 1].map(i => knightFrame({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 7], maul: rest(), glow: [sh[0] + 1, sh[1] - 9 - i] })),
     // JUDGEMENT: the maul straight up over his head, then down
-    blast: [knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] - 6], maul: [sh[0], sh[1] - 4, sh[0], sh[1] - 9], glow: [sh[0], sh[1] - 11] }),
+    blast: [knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] - 6], maul: [sh[0], sh[1] - 3, sh[0], sh[1] - 8], glow: [sh[0], sh[1] - 13] }),
       knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9] })],
   };
   // the dodge is a heavy step: a lean and a stride, not a tumble
