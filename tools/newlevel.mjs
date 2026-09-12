@@ -81,7 +81,12 @@ for (const lv of LEVELS) {
       const surf = Math.floor(p.y / TS); n++;
       let ground = -1;
       for (let y = surf; y < L.H; y++) { const t = L.grid[y * L.W + x]; if (t === T.SOLID || t === T.CRATE) { ground = y; break; } }
-      if (ground === surf) floating++; // solid begins at the very row the surface is in: the water is laid on top of the land
+      // solid begins at the very row the surface is in. That is only wrong if there is nowhere for the water
+      // to BE: a drowned city's street runs under six rows of masonry with its water line inside the stone,
+      // and the water you see starts at the vault. So look for open space between the surface and the bottom.
+      if (ground === surf) { const bot = p.bottom !== undefined ? Math.floor(p.bottom / TS) : L.H - 1;
+        let room = false; for (let y = surf; y <= bot && !room; y++) { const t = L.grid[y * L.W + x]; if (t !== T.SOLID && t !== T.CRATE) room = true; }
+        if (!room) floating++; }
     }
     if (n && floating / n > 0.6) say(id, `a pool at x ${x0}-${x1} has its surface on top of the ground (it will read as a slab of water flying over the land)`);
   }

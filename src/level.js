@@ -2359,7 +2359,7 @@ function longWater() {
   ent('sign', 280, 26, { text: 'SALTREACH. HALF THE TOWN IS IN THE WATER AND THE TIDEBOUND ARE WALKING UP THE STREETS, TAKING THE FISHERFOLK DOWN WITH THEM. THE LOW STREET FLOODS WITH THE TIDE; THE JETTY STAYS DRY.' });
   for (const [x, v] of [[291, 0], [297, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
   block(300, 331, 29, H - 1); plat(300, 26, 32); // the low street, and the jetty over it
-  pools.push({ x0: 300 * TS, x1: 332 * TS, y: 29 * TS + 2, base: 29 * TS, tideLo: 2, tideHi: -28, tidePeriod: 20, swim: true, shallow: true, depth: 0, bottom: 29 * TS, runTide: true });
+  pools.push({ x0: 300 * TS, x1: 332 * TS, y: 29 * TS + 2, base: 29 * TS, tideLo: 2, tideHi: -28, tidePeriod: 20, swim: true, shallow: true, depth: 0, bottom: 29 * TS, streetTide: true });
   ent('sign', 300, 25, { text: 'THE LOW STREET. AT HIGH WATER THIS IS A CANAL AND THE JETTY IS THE ONLY DRY ROAD. AT LOW WATER THERE IS SILVER OUT ON THE FLATS.' });
   ent('sluice', 302, 25); ent('sign', 305, 25, { text: 'THE SLUICE. THE TOWN USED IT TO DRAIN THE LOW STREET AFTER A SPRING TIDE. STRIKE THE WHEEL AND YOU HAVE A WHILE ON THE FLATS BEFORE THE SEA COMES BACK.' });
   ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('silver', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
@@ -2449,7 +2449,7 @@ function shipwreckReef() {
   ent('check', 9, 27);
   block(13, 118, 33, H - 1); // the reef bed under it all
   block(16, 26, 26, 32); block(30, 42, 27, 32); block(46, 58, 25, 32); block(62, 74, 27, 32); block(78, 92, 26, 32); block(96, 118, 24, 32);
-  pools.push({ x0: 13 * TS, x1: 119 * TS, y: 33 * TS - 20, base: 33 * TS, tideLo: -20, tideHi: -148, tidePeriod: 22, swim: true, shallow: true, depth: 0, bottom: 33 * TS, runTide: true, bell: true });
+  pools.push({ x0: 13 * TS, x1: 119 * TS, y: 33 * TS - 20, base: 33 * TS, tideLo: -20, tideHi: -148, tidePeriod: 22, swim: true, shallow: true, depth: 0, bottom: 33 * TS, streetTide: true, bell: true });
   net(28, 29, 17, 25); net(60, 61, 15, 24); net(94, 95, 16, 23); // the shrouds: the high road when the sea is over the backs
   plat(30, 18, 12); plat(50, 16, 10); plat(76, 17, 18); // spars across, from shroud to shroud
   ent('deco', 22, 25, { kind: 'mastStump' }); ent('deco', 52, 24, { kind: 'mastStump' });
@@ -2485,7 +2485,7 @@ function shipwreckReef() {
   ent('deco', 142, 12, { kind: 'shipBell' }); ent('deco', 200, 12, { kind: 'figurehead' });
   ent('check', 130, 12); ent('check', 200, 27); ent('sign', 128, 12, { text: 'HER HOLD FILLS AND EMPTIES WITH THE SEA OUTSIDE. THE FIRST SEAL IS DOWN THERE IN THE DARK. GO DOWN WHEN THE WATER GOES OUT, AND CLIMB WHEN IT COMES BACK.' });
   movers.push({ kind: 'lift', link: 'hoist', locked: true, x: 202 * TS, y: 27 * TS, y0: 27 * TS, y1: 12 * TS, w: 32, h: 8, speed: 34 }); // the pallet: it runs her whole side once the capstan is turned
-  pools.push({ x0: 122 * TS, x1: 210 * TS, y: 32 * TS - 8, base: 32 * TS, tideLo: -8, tideHi: -272, tidePeriod: 26, swim: true, shallow: true, depth: 0, bottom: 32 * TS, runTide: true, bell: false });
+  pools.push({ x0: 122 * TS, x1: 210 * TS, y: 32 * TS - 8, base: 32 * TS, tideLo: -8, tideHi: -272, tidePeriod: 26, swim: true, shallow: true, depth: 0, bottom: 32 * TS, streetTide: true, bell: false });
   ent('sailor', 136, 27, { face: 1 }); ent('sailor', 176, 22, { face: -1 }); ent('sailor', 196, 17, { face: -1 });
   ent('netter', 160, 17, { face: 1 }); ent('netter', 190, 12, { face: -1 });
   ent('urchin', 128, 30); ent('urchin', 168, 30); ent('urchin', 200, 30);
@@ -3008,6 +3008,9 @@ function theLamplitStreet() {
   // ================= 1. THE DESCENT: down the line from the boat, past the tribute ship =================
   // Above the water line, so the lamp economy is taught in air before it is asked for under it.
   block(4, 36, 10, 13); air(7, 33, 11, 12);     // the wreck of the tribute ship, lying across the roofs
+  air(34, 36, 11, 12); plat(37, 13, 2);         // torn open at the stern: her hold is a room you can get into
+  ent('deco', 12, 12, { kind: 'sealDrift', v: 1 }); ent('deco', 24, 12, { kind: 'plunder', v: 0 }); ent('silver', 30, 12);
+  ent('sign', 18, 12, { text: 'THE TRIBUTE SHIP. SHE WENT DOWN ON TOP OF THE CITY SHE WAS PAYING, AND WHAT SHE WAS CARRYING IS STILL IN HER.' });
   ent('deco', 20, 9, { kind: 'mastStump' }); ent('deco', 12, 9, { kind: 'wreckBow' }); ent('deco', 30, 9, { kind: 'sternWindows' });
   ent('sign', 8, 9, { text: 'THE CITY WENT DOWN A HUNDRED YEARS AGO AND ITS LAMPS ARE STILL BURNING. NOBODY KNOWS ON WHAT. UNDER EVERY HOOD THERE IS AIR: THAT IS HOW YOU CROSS A STREET DOWN HERE.' });
   ent('check', 10, 9); ent('npc', 14, 9, { kind: 'squire' });
@@ -3027,8 +3030,8 @@ function theLamplitStreet() {
   // ================= 2. THE FISH MARKET: two roads, and the tide down the middle of one =================
   mass(80, 128); mass(136, 186);                // with a courtyard open to the water line between them
   flood(78, 190);
-  darkZones.push({ x0: 78 * TS, x1: 190 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.88 });
-  plat(130, 23, 5); plat(131, 20, 3);           // the courtyard: a ledge on the water, and a cornice over it
+  darkZones.push({ x0: 78 * TS, x1: 190 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.52 });
+  plat(130, 23, 5); plat(130, 21, 4);          // the courtyard: a ledge on the water, and a step across it
   air(94, 95, UP, 27); net(94, 95, UP, ST - 1); air(168, 169, UP, 27); net(168, 169, UP, ST - 1);
   ent('sign', 82, UP - 1, { text: "THE FISH MARKET. THE STALLS ARE STILL STANDING AND WHAT IS IN THEM IS STILL IN THEM. THE GOOD TAKINGS ARE DOWN ON THE STREET, WHICH IS WHERE THE WATCH ARE." });
   for (const x of [86, 112, 150, 176]) ent('deco', x, UP - 1, { kind: 'stall', v: x % 2 });
@@ -3057,7 +3060,7 @@ function theLamplitStreet() {
   air(194, 195, 18, 21);                        // the door in off the roof road
   port(240, 16, 21);                            // and the gate out, shut until he is down
   interiors.push([196, 239, 14, 21, 'stone']);
-  darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.9 });
+  darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.8 });
   ent('sign', 190, UP - 1, { text: 'THE MARKET HALL. SOMETHING IN THERE IS PUTTING THE LAMPS OUT ONE AT A TIME, AND WHEN THE LAST ONE GOES IT WILL STILL BE IN THERE WITH YOU.' });
   ent('check', 190, UP - 1);                    // the one outside his wall
   for (const x of [200, 210, 220, 230, 237]) lampUp(x);
@@ -3074,7 +3077,7 @@ function theLamplitStreet() {
   // the key is on the clerk who was locking it.
   mass(254, 356);
   flood(252, 356);
-  darkZones.push({ x0: 254 * TS, x1: 356 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.86 });
+  darkZones.push({ x0: 254 * TS, x1: 356 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.52 });
   ent('sign', 256, UP - 1, { text: 'THE COUNTING HOUSE. THIRTY YEARS OF TRIBUTE CAME IN HERE AND NONE OF IT EVER WENT OUT AGAIN. THE AIR STANDS UP UNDER THE VAULTS: GO FROM CROWN TO CROWN.' });
   for (const [vx, lip] of [[268, true], [300, false], [330, true]]) {   // three vaults, three pockets
     block(vx - 3, vx + 13, 16, 17); air(vx, vx + 10, 18, 27);
@@ -3128,7 +3131,7 @@ function theLamplitStreet() {
   // the one stretch THE LAMP WORKS answers: while the beam is working its surface drops to wading depth and
   // its dead lamps come up, and when the beam stops it fills again
   pools.push({ x0: 428 * TS, x1: 572 * TS, y: WL, bottom: ST * TS, shallow: false, swim: true, clear: true, runTide: true, pumpRoad: true, roadHi: WL, roadLo: 37 * TS });
-  darkZones.push({ x0: 428 * TS, x1: 572 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.92 });
+  darkZones.push({ x0: 428 * TS, x1: 572 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.58 });
   for (const [a, b] of [[470, 480], [520, 530]]) { plat(a + 1, 23, b - a - 2); plat(a + 2, 20, 3); } // two courtyards open on the water
   air(444, 445, UP, 27); net(444, 445, UP, ST - 1); air(556, 557, UP, ST - 1); net(556, 557, UP, ST - 1);
   ent('sign', 432, UP - 1, { text: 'THE PROCESSION ROAD. THEY CARRIED HIM UP AND DOWN IT ONCE A YEAR AND EVERY HOUSE ON IT PAID. THE LAMPS ALONG IT ARE MOSTLY DEAD.' });
@@ -3159,7 +3162,7 @@ function theLamplitStreet() {
   block(574, 575, 6, 21); block(696, 698, 6, 21); block(576, 695, 6, 7);
   air(574, 575, 18, 21);
   interiors.push([576, 695, 8, 21, 'stone']);
-  darkZones.push({ x0: 576 * TS, x1: 698 * TS, y0: 7 * TS, y1: 23 * TS, dark: 0.9 });
+  darkZones.push({ x0: 576 * TS, x1: 698 * TS, y0: 7 * TS, y1: 23 * TS, dark: 0.8 });
   ent('sign', 572, UP - 1, { text: 'THE TOLL GATE. A HUNDRED YEARS OF SHARES CAME DOWN HERE TO A MAN IN A CHAIR. HE IS CARRIED, HE DOES NOT SWIM, AND HE WILL PUT THE LAMPS OUT TO DO IT IN THE DARK. PARRY THE BOOK. JUMP THE ROD. DO NOT TRY TO BLOCK THE WEIGHT.' });
   ent('check', 578, UP - 1);                     // the one outside his walls
   ent('deco', 584, UP - 1, { kind: 'tollPost' }); ent('deco', 596, UP - 1, { kind: 'magistrate' });
@@ -3182,10 +3185,81 @@ function theLamplitStreet() {
   coins([633, 19], [639, 17], [656, 19], [668, 19], [679, 19], [688, 19]);
   ent('silver', 668, UP - 1);
 
+  // ================= THE STREET, AS A PLACE: piers, and things hanging in the water =================
+  // A flooded street with nothing in it is a box of blue. The city's arcade is still standing down there, so
+  // every dozen tiles a pier comes down from the vault or up off the paving - never both in one bay, so the
+  // street is a slalom you swim rather than a corridor you hold right on. They break the long swims up, they
+  // give you something to put between yourself and an angler, and they are what makes the road read as a road.
+  const busyAt = (x, r) => L.ents.some(e => e.t !== 'coin' && Math.abs(e.x - x) <= r && e.y >= 26 && e.y <= 40);
+  const arcade = (x0, x1, seed) => {
+    let k = seed;
+    for (let mark = x0 + 8; mark < x1 - 8; mark += 13) {
+      let x = -1; for (const o of [0, 2, -2, 4, -4, 6, -6]) if (!busyAt(mark + o, 2) && mark + o > x0 + 3 && mark + o < x1 - 5) { x = mark + o; break; }
+      if (x < 0) continue;
+      k++;
+      if (k & 1) { block(x, x + 1, 28, 32); for (let y = 33; y <= 34; y++) { set(x, y, T.NET); set(x + 1, y, T.NET); } }  // a hanging pier, with its chain
+      else { block(x, x + 1, 34, 37); set(x - 1, 34, T.ONEWAY); set(x + 2, 34, T.ONEWAY); }                                // a standing pier with a broken cornice
+      if ((k & 3) === 0) ent('deco', x, k & 1 ? 32 : 33, { kind: 'lampMain', v: k & 1, hang: true });
+    }
+  };
+  arcade(0, 44, 0); arcade(44, 78, 1); arcade(78, 190, 0); arcade(254, 356, 1); arcade(428, 572, 0);
+  // and the weed that grows on a street nobody walks: along the paving, and hanging off the vault
+  for (let x = 6; x < 570; x += 9) { if (busyAt(x, 2)) continue;
+    if ((x % 18) === 6 && L.grid[37 * W + x] === T.AIR && L.grid[38 * W + x] === T.SOLID) ent('deco', x, 37, { kind: 'cityWeed', v: (x >> 3) % 3 });
+    else if ((x % 27) === 15 && L.grid[28 * W + x] === T.AIR && L.grid[27 * W + x] === T.SOLID) ent('deco', x, 28, { kind: 'cityWeed', v: 2, hang: true });
+  }
+
+  // ================= THE ROOFS, AS A CLIMB: the dry road is not a corridor =================
+  // Everything above is laid out section by section; this pass goes back along the roof road and BREAKS it.
+  // Storeys stand on it, holes go through it into the street, mooring chains hang past it, and two hoists
+  // swing over the courtyards. The point is that the safe road costs you jumps, and every hole in it is also
+  // a way down to the fast one.
+  const storey = (x0, x1, top) => { block(x0, x1, top, UP - 1); for (let x = x0; x <= x1; x++) set(x, top, T.SOLID); }; // a floor standing on the road
+  const chain = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };   // a mooring chain: climb it
+  const holeIn = (x0, x1) => { air(x0, x1, UP, 27); };                                  // straight through into the water
+  const hoist = (px, py, arm, period, phase) => movers.push({ kind: 'swing', px: px * TS, py: py * TS, arm, x: 0, y: 0, w: 30, h: 8, period, phase });
+
+  // 1. the descent: one house to go over before the water, so the first thing the level asks for is a jump
+  storey(62, 70, 18); plat(59, 20, 3); chain(71, 18, 21);
+  ent('deco', 66, 17, { kind: 'shellDrift', v: 0 }); coins([60, 19], [66, 16], [72, 19]);
+
+  // 2. the fish market: two market houses, three holes through the road, and a hoist over the courtyard
+  storey(106, 110, 18); plat(103, 20, 3); chain(111, 18, 21);
+  storey(142, 148, 18); plat(139, 20, 3); plat(149, 20, 3); chain(141, 14, 17);
+  holeIn(92, 94); holeIn(180, 183); plat(181, 20, 2);
+  hoist(132, 12, 96, 3.4, 0.6);                // and the hoist over it, which is the way up onto the roofs
+  ent('deco', 108, 17, { kind: 'lampWreck', v: 1 }); ent('deco', 146, 17, { kind: 'shellDrift', v: 1 });
+  ent('lantern', 145, 17, { city: true, dark: true });     // a lamp up on the market roof, and it is out
+  coins([104, 19], [108, 16], [112, 19], [140, 19], [145, 16], [150, 19], [93, 19], [182, 19], [131, 20], [133, 20]);
+  ent('silver', 108, 16);
+
+  // 3. the counting house: its vault crowns are five rows over the road, so the way across a vault is the
+  // broken arch on either side and the chain down the middle of it - or you drop in and swim, which is where
+  // the air pocket and the seals are anyway
+  for (const vx of [268, 300, 330]) {
+    plat(vx - 2, 20, 4); plat(vx + 8, 20, 4); chain(vx + 5, 15, 26);   // and on up through the crown: the vaults are a high road too
+    coins([vx - 1, 19], [vx + 9, 19], [vx + 5, 21]);
+  }
+
+  // 4. the lamp works: the machine floor is a climb. Beams, the bellows tops, and a chain to the pipe gallery.
+  plat(370, 20, 4); plat(378, 18, 4); plat(386, 16, 4);
+  plat(398, 20, 5); plat(406, 18, 4); plat(414, 16, 4); chain(392, 12, 21);
+  ent('silver', 387, 15); coins([371, 19], [379, 17], [387, 15], [399, 19], [407, 17], [415, 15], [392, 16]);
+  ent('lantern', 415, 15, { city: true, dark: true });     // the gallery lamp: worth the climb
+
+  // 5. the procession road: a hoist over each courtyard, because the piers only take you halfway
+  hoist(474, 14, 96, 3.2, 0.2); hoist(524, 14, 96, 3.6, 1.8);
+
+  // 6. the approach to the toll gate: the last climb before his square
+  storey(618, 626, 18); plat(615, 20, 3); chain(627, 18, 21);
+  coins([616, 19], [622, 16], [628, 19]);
+
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 10, y: 9 }, pools, falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'drowned', night: false, glowNight: true, dark: 0.5, darkZones,
     lampAir: true,                               // THE RULE: a lit lamp is a lungful of air
+    // the slabs over the market hall, the lamp works and his square are roofs, not floors: no gold up there
+    noCoin: [[194, 242, 0, 12], [362, 426, 0, 10], [574, 698, 0, 6]],
     streetTide: { every: 14, tell: 2.4, flow: 34 },
     interiors,
     quest: { n: 3, item: 'lamp', name: 'HIS LAMPS', npc: 'lamplighter', done: 'THE STREET HAS ITS LIGHTS', reward: 'relic', relic: 'wick' },

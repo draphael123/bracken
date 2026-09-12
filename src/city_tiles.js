@@ -130,6 +130,25 @@ function cornice(seed, end, v) {
   return c;
 }
 
+// A MOORING CHAIN hanging down a wall, or a run of iron rungs set into it: what you climb in this city.
+// Two frames so a long chain does not read as one repeated link.
+function chainTile(seed, v) {
+  const rnd = mulberry(seed), [c, g] = canvas(T, T);
+  const mid = 7 + (v ? 1 : 0);
+  for (let y = 0; y < T; y++) {                      // the shadow it throws on the stone behind it
+    px(g, mid + 3, y, 'rgba(0,0,0,0.28)'); px(g, mid + 4, y, 'rgba(0,0,0,0.16)');
+  }
+  for (let y = 0; y < T; y += 4) {                   // a link: a ring standing edge-on, then one flat
+    const o = ((y >> 2) + v) & 1;
+    if (o) { rect(g, mid - 2, y, 5, 1, '#aab4bb'); rect(g, mid - 2, y + 1, 5, 2, '#78838b'); rect(g, mid - 2, y + 3, 5, 1, '#3b444b');
+      px(g, mid - 2, y + 1, '#3b444b'); px(g, mid + 2, y + 1, '#3b444b'); px(g, mid - 1, y, '#d2dae0'); }
+    else { rect(g, mid - 1, y, 3, 4, '#8b959c'); px(g, mid - 1, y, '#c2cad0'); px(g, mid - 1, y + 1, '#aab4bb'); px(g, mid + 1, y + 2, '#3b444b'); px(g, mid, y + 3, '#4c565d'); }
+    if (rnd() < 0.4) px(g, mid + (rnd() < 0.5 ? -2 : 2), y + ((rnd() * 4) | 0), '#6a4026');   // rust
+    if (rnd() < 0.3) px(g, mid - 3, y + ((rnd() * 4) | 0), WD[1]);                            // weed on the links
+  }
+  return c;
+}
+
 export function bakeCityTiles() {
   const top = {}, edge = {};
   for (const eL of [0, 1]) for (const eR of [0, 1]) {
@@ -143,6 +162,7 @@ export function bakeCityTiles() {
     silt: [0, 1, 2].map(i => citySilt(5400 + i)),
     ledge: [0, 1, 2].map(i => cornice(5500 + i, null, i)), ledgeL: cornice(5510, 'L', 0), ledgeR: cornice(5511, 'R', 0),
     wet: [0, 1, 2].map(i => cityWet(5600 + i)),
+    chain: [0, 1].map(i => chainTile(5700 + i, i)),
   };
 }
 

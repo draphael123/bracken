@@ -552,7 +552,7 @@ function resolveTiles() {
     else if (t === T.SHELF) s = (L.palette && L.palette.set === 'ship' && FLOT) ? FLOT.rotTop[(rnd() * 3) | 0] : TILE.shelf[(rnd() * 2) | 0];
     else if (t === T.CRYST) s = TILE.cryst[litRow(y) ? 1 : 0][Math.max(0, Math.min(2, crackAt[y * LW + x] || 0))];
     else if (t === T.PLANK) s = TILE.plank[(rnd() * 2) | 0];
-    else if (t === T.NET) { const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET; let vr = 1, hr = 1; for (let k = 1; n(0, -k); k++) vr++; for (let k = 1; n(0, k); k++) vr++; for (let k = 1; n(-k, 0); k++) hr++; for (let k = 1; n(k, 0); k++) hr++; s = hr > vr ? TILE.ropeNet[(x + y) % 2] : (L.vines && L.vines.includes(x)) ? TILE.vine[y % 2] : TILE.ladder[n(1, 0) && !n(-1, 0) ? 'L' : n(-1, 0) && !n(1, 0) ? 'R' : 'S'][y % 2]; }
+    else if (t === T.NET) { const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET; let vr = 1, hr = 1; for (let k = 1; n(0, -k); k++) vr++; for (let k = 1; n(0, k); k++) vr++; for (let k = 1; n(-k, 0); k++) hr++; for (let k = 1; n(k, 0); k++) hr++; s = cityT ? CITY.chain[(x + y) % 2] : hr > vr ? TILE.ropeNet[(x + y) % 2] : (L.vines && L.vines.includes(x)) ? TILE.vine[y % 2] : TILE.ladder[n(1, 0) && !n(-1, 0) ? 'L' : n(-1, 0) && !n(1, 0) ? 'R' : 'S'][y % 2]; }
     else if (t === T.CLIMB) s = TILE.climb[(x + y) % 2];
     else if (t === T.ICE) s = TILE.ice || (TILE.ice = bakeIceTile());
     else if (t === T.WEB) s = TILE.web || (TILE.web = bakeWebTile());
@@ -2783,6 +2783,16 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
 const titleItems = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
   return base.concat(rushUnlocked() ? ['BOSS RUSH'] : [], ['THE EDITOR', 'SETTINGS', 'CONTROLS']); };
 let miniActive = false, miniDone = false, miniIntroT = 0;
+// THE NAME ON THE CARD. The intro banner used to carry its own chain of boss names and it had never been
+// extended past the crags, so THE CAPTAIN, THE QUARTERMASTER, THE REEFMAW and the TIDE HERALD all announced
+// themselves as THE HORNET QUEEN. The bestiary already names every creature in the game: ask it.
+const bossTitle = b => {
+  const row = BEASTS.find(q => q.t === b.t);
+  const nm = row ? row.name : 'THE HORNET QUEEN';
+  if (b.t === 'golem') return nm + '  NEEDS ' + (b.need || 'blue').toUpperCase();
+  if (b.phase >= 3 && b.t === 'gqueen') return nm + '  THE CROWN';
+  return nm;
+};
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
 const MINI_NAME = { forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE' };
 const MINI_DONE = { forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS' };
@@ -4261,7 +4271,7 @@ function updateMiner(e, dt) {
   if (r.hitX) { e.vx = 0; if (!near) e.face = -e.face; }
 }
 // how bright the knight is: the lamp relic, the pyromancer's flare, nearby fires
-function playerLight() { let r = P.relic === 'lamp' ? 90 : P.relic === 'diverlamp' ? 80 : 26; if (wisp) r = Math.max(r, 64); if (P.torch > 0) r = Math.max(r, 84); if (isPyro() && P.jet) r = Math.max(r, 70); if (isPyro() && embers.length) r = Math.max(r, 50); return r; }
+function playerLight() { let r = P.relic === 'lamp' ? 90 : P.relic === 'diverlamp' ? 80 : 26; if (wisp) r = Math.max(r, 64); if (P.torch > 0) r = Math.max(r, 84); if (isPyro() && P.jet) r = Math.max(r, 70); if (isPyro() && embers.length) r = Math.max(r, 50); if (P.wick > 0) r = Math.max(r, 74); return r; }
 // Cave bat: hangs in the dark; flies at the nearest light, bites what carries it, then goes back to its roost.
 const windAt = (x, y) => { for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; if (x > z.x0 && x < z.x1 && y > z.y0 && y <= z.y1 + 4) { const ph = (time + (z.phase || 0)) % z.period; if (ph >= z.on) return 0; return z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir; } } return 0; };
 function updateCrow(e, dt) { // storm crows: they come down the wind in strings, and they do not turn for anyone
@@ -7706,8 +7716,14 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'firepit') g.drawImage(PROP.grate, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 5 - cy);
     else if (pr.t === 'lantern' && pr.city) { // THE STREETLAMP: a halo while it burns, a cold one while it gutters
       const st = pr.lit ? (pr.gut > 0 ? 2 : 1) : 0;
-      if (st) { const k = st === 2 ? 0.10 + 0.08 * Math.sin(time * 22) : 0.20 + 0.06 * Math.sin(time * 3.4 + pr.x);
-        g.globalAlpha = k; g.fillStyle = st === 2 ? '#bfe6f5' : '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 40 - cy), st === 2 ? 24 : 34, 0, 7); g.fill(); g.globalAlpha = 1; }
+      if (st) { const lx = Math.round(pr.x - cx), ly = Math.round(pr.y - 40 - cy), R0 = st === 2 ? 26 : 46;
+        const k = st === 2 ? 0.24 + 0.16 * Math.sin(time * 22) : 0.42 + 0.06 * Math.sin(time * 3.4 + pr.x);
+        const gr = g.createRadialGradient(lx, ly, 1, lx, ly, R0);
+        gr.addColorStop(0, (st === 2 ? 'rgba(191,230,245,' : 'rgba(255,231,168,') + (k * 0.85).toFixed(3) + ')');
+        gr.addColorStop(0.45, (st === 2 ? 'rgba(140,200,224,' : 'rgba(240,192,90,') + (k * 0.34).toFixed(3) + ')');
+        gr.addColorStop(1, st === 2 ? 'rgba(120,180,200,0)' : 'rgba(200,140,40,0)');
+        g.fillStyle = gr; g.fillRect(lx - R0, ly - R0, R0 * 2, R0 * 2);
+        if (st === 1 && SET.ambient && Math.random() < 0.5) parts.push({ x: pr.x + (Math.random() - 0.5) * 26, y: pr.y - 44 + Math.random() * 30, vx: 0, vy: -4 - Math.random() * 6, life: 1.4, max: 1.4, col: '#ffe9a8', size: 1, grav: 0 }); }
       g.drawImage(PROP.city.lamp[st], Math.round(pr.x) - 9 - cx, Math.round(pr.y) - 55 - cy); }
     else if (pr.t === 'lantern') { if (pr.lit) { g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 4 + pr.x); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 30 - cy), 26, 0, 7); g.fill(); g.globalAlpha = 1; } g.drawImage(PROP.crownLantern[pr.lit ? 1 : 0], Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy); }
     else if (pr.t === 'gas') g.drawImage(PROP.gasSeam, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 6 - cy);
@@ -8591,7 +8607,7 @@ function render() {
   if (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play')) {
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (SET.bossIntro && ((bossActive && boss && boss.mode === 'wake') || miniIntroT > 0)) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.dimmed ? 'THE SUNCATCHER  DIMMED' : 'THE SUNCATCHER') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : 'THE HORNET QUEEN'; if (k >= 1) { text(nm, VW / 2 + 1, VH / 2 - 5, '#3a2214', 'center', 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', 12); } }
+    if (SET.bossIntro && ((bossActive && boss && boss.mode === 'wake') || miniIntroT > 0)) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { text(nm, VW / 2 + 1, VH / 2 - 5, '#3a2214', 'center', 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', 12); } }
     g.fillStyle = 'rgba(10,8,20,0.38)'; g.beginPath(); g.roundRect(2, 2, 104, (SET.iron ? 36 : 24) + (isPyro() || isPaladin() ? 10 : 0), 4); g.fill();
     g.fillStyle = 'rgba(10,8,20,0.38)'; g.beginPath(); g.roundRect(VW - 54, 2, 52, 28, 4); g.fill();
     g.drawImage(PROP.heart, 5, 5);
