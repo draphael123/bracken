@@ -55,59 +55,29 @@ That is a lot. The gaps are in *how* these fire, not whether they exist.
 - Leads your speed as well as your shoulders.
 - Holds the frame for half of one as a boss commits to its tell.
 
-## Combat: the five I would do next
+## The recommendations as written — all twelve are now in
 
-1. **A parry window on melee, not just on projectiles.** Blocking already has a perfect-block; a 6-frame
-   window at the start of a block that *staggers the attacker and refunds the stamina* would turn blocking from
-   a damage sponge into a read. The game already has `e.stagger`, `P.riposteT` and a parry sound — this is
-   mostly a timer and a colour tell. **Biggest single combat win available.**
-2. **Hit reactions on the foe, not just a flash.** Every creature has frames; almost none has a hurt pose. Two
-   frames per common foe (a recoil and a stumble) would do more for impact than any camera work. Start with
-   the eight foes you meet most (sprig, shield, pike, cutlass, boarder, marine, sporeling, soldier).
-3. **Air combat.** A hit in the air should hold you up for a beat (an air-stall of ~0.12 s) and a killing blow
-   in the air should give a small upward bounce. Right now the air swing exists but has no consequence, so
-   fights collapse to the ground.
-4. **Combo escalation that the player can see.** The counter drives THIRD CUT invisibly. Show it: a small
-   chevron per step near the HUD, a wider blade arc on the third, and a brighter impact. It is the cheapest way
-   to make ordinary swings feel like they are going somewhere.
-5. **Directional knockback that respects the blow.** Every hit pushes the foe straight back at a fixed 80.
-   Scale it by damage and direction (a heavy from below pops them up, a running blow throws them further) and
-   the same swing starts reading as different swings.
-
-## Jumping and platforming: the five I would do next
-
-1. **Ledge mantle.** Miss a ledge by three pixels with upward momentum and you should catch it. This is the
-   single most-felt platformer nicety after coyote time, and every level in the game has hand-placed ledges to
-   benefit from it.
-2. **Run acceleration with a top speed you have to earn.** Speed is a flat 100 with instant turnaround. A
-   0.12 s ramp to 100 and a 0.25 s ramp to a 118 sprint would make long decks and roads feel like *travel*
-   rather than a constant. (The `momentum` talent already rewards a second of running — this gives it a body.)
-2b. **Skid and turn frames** to go with it: the skid sound already exists, the pose does not.
-3. **A dash with a cooldown, on the ground and in the air.** The dodge roll is the closest thing, but it is a
-   defensive i-frame and costs stamina. A short horizontal dash that *does not* dodge would open the level
-   geometry — and the AIR ROLL talent proves the input is free.
-4. **Springs, gusts and swings should carry momentum out.** Leaving a swing at the top of its arc currently
-   drops your speed to the walk cap; keeping it (and showing it with a streak) would make the rigging in the
-   two ship levels feel like a playground instead of a set of steps.
-5. **Landing recovery you can cancel.** A hard landing has 0.16 s of `landT`; letting a jump or dodge cancel it
-   (as attacks already sort of do) removes the one place the controls take the wheel from the player.
-
-## Two cheap wins in the camera
-
-- **Look-ahead by velocity, not just facing.** The camera leads 26 px by facing; leading by `vx * 0.22` as well
-  would stop the hard turns from snapping.
-- **A held-frame on a boss's wind-up.** Half a frame of stop when a boss commits to its tell would read as
-  "here it comes" without a single new asset.
+They are kept here because the reasoning is the useful part, and because the numbers say what was changed and
+why: the melee parry (the block button had no read in it), hit reactions (a white flash was all the impact a
+hit had), air combat (the air swing had no consequence, so fights collapsed to the ground), visible combo
+escalation (THIRD CUT drove off an invisible counter), knockback that respects the blow (a flat 80 for
+everything), the ledge mantle (the last fairness gap), an earned top speed (a flat 100 with instant
+turnaround), a dash that is distance rather than safety, momentum out of ropes and rafts, a cancellable
+landing, a camera that leads velocity, and a held frame as a boss commits.
 
 ## What I would not do
 
 - **More screen shake.** It is already at the right level and there is a setting for people who want less.
 - **Longer hitstop on ordinary hits.** Weighted is enough; more would make the ordinary swing feel gluey.
 - **A double jump.** The pyromancer had one and it was removed for a reason: it flattens every level's
-  vertical design, and the game has springs, vents, gusts and the rising cut for height.
+  vertical design, and the game has springs, vents, gusts, the rising cut and now a dash for reach.
 
-## If I could only do three
+## The next tier, in the order I would take it
 
-1. **The melee parry window** — turns the block button into a decision.
-2. **The ledge mantle** — the last big fairness gap in the jump.
-3. **Hurt poses for the eight commonest foes** — impact you can see, not just hear.
+1. **Hurt poses for the rest of the common foes**: the shield goblin, the soldier, the brute, the hound. Six
+   are done; these four are the next most-met.
+2. **A tell colour channel on the parry**, so the window can be learned by eye and not by feel.
+3. **Skid and turn frames** to go with the earned run: the sound exists, the pose does not.
+4. **Playtest the new verbs against the old levels.** The dash and the mantle change what a gap means, and the
+   fourteen levels were authored without them. Nothing became unreachable (the whole suite reports identical
+   numbers) but some gaps may now be trivial, and that is a design question rather than a bug.
