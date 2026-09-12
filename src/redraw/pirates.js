@@ -397,7 +397,11 @@ export function bakeCutlass() {
     hand: [5, 15], deg: 24, len: 11,
     far: [[-2, 14], [-3, 16]], near: [[3, 14]],
     smear: [1 + X + 3, 1 + 15, 13, -96, 30] });
-  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, slash], X + 1, H + 1, 10, 18);
+  // HURT: knocked off the front foot, head down, the blade swung out wide and loose
+  const hurtF = frame({ legs: 'tell', dx: -2, dy: 2, hx: -1,
+    hand: [-5, 18], deg: 150, len: 9,
+    far: [[-3, 16], [-6, 18]], near: [[-2, 16]] });
+  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, slash, hurtF], X + 1, H + 1, 10, 18);
 }
 
 // ---------- BOARDER ----------
@@ -522,7 +526,11 @@ export function bakeBoarder() {
   const haul = frame({ legs: 'dug', dx: -2, dy: 2, hx: -1,
     far: [[1, 13], [4, 12]], near: [[2, 14], [5, 13]],
     rope: [[4, 13], [19, 6]] });
-  return pack([walk(0), walk(1), walk(2), walk(3), tell, thr, haul], X + 1, H + 1, 12, 20);
+  // HURT: off the back foot, head down, the grapple hanging where it fell
+  const hurtB = frame({ legs: 'wind', dx: -2, dy: 2, hx: -1,
+    far: [[-4, 18], [-7, 20]], near: [[-2, 18], [-4, 21]],
+    coil: [4, 19], rope: [[-4, 21], [1, 23], [6, 21]], grap: [-6, 20, 'up'] });
+  return pack([walk(0), walk(1), walk(2), walk(3), tell, thr, haul, hurtB], X + 1, H + 1, 12, 20);
 }
 
 // ---------- MARINE ----------
@@ -640,7 +648,10 @@ export function bakeMarine() {
     far: [[3, 12], [5, 13]], near: [[4, 9], [6, 5]] });
   const climbB = frame({ legs: 'climbB',
     far: [[3, 9], [5, 6]], near: [[4, 13], [5, 10]] });
-  return pack([perch('side'), perch('front'), aim, shoot, climbA, climbB], X + 1, H + 1, 10, 18);
+  // HURT: knocked back off the aim, the bow dropped across him
+  const hurtM = frame({ legs: 'brace', dx: -2, dy: 2, hx: -1, head: 'front',
+    far: [[-3, 16], [-6, 18]], near: [[-2, 16], [-4, 18]], bow: [[-4, 18], 148, true] });
+  return pack([perch('side'), perch('front'), aim, shoot, climbA, climbB, hurtM], X + 1, H + 1, 10, 18);
 }
 
 // ---------- BOSUN ----------
@@ -1038,10 +1049,10 @@ export function bakeQuarter() {
   // 13 wide with column 6 on the centre: a cocked hat with a black feather, a hard face with one gold earring and a
   // scar down the cheek, dark hair clubbed behind
   const HEAD = [
-    'b............',
-    '.bB..........',
-    '..bb.........',
-    '...bf........',
+    '......t......',
+    '.....ttl.....',
+    'b....tt......',
+    '.bB..bf......',
     '..fffFF......',
     '.ffffFFFf....',
     'ffffffffFFFf.',
@@ -1053,10 +1064,10 @@ export function bakeQuarter() {
   ];
   // the brim pulled down over the eyes, the head dropped
   const HEAD_D = [
-    'b............',
-    '.bB..........',
-    '..bb.........',
-    '...bf........',
+    '......t......',
+    '.....ttl.....',
+    'b....tt......',
+    '.bB..bf......',
     '..fffFF......',
     '.ffffFFFf....',
     'ffffffffFFFf.',
@@ -1067,16 +1078,16 @@ export function bakeQuarter() {
     '....kKSShs...',
   ];
   const TORSO = [
-    '...aAaAa...',
-    '..aAAAAAD..',
-    '.aAAlLlAAD.',
-    '.aAAlLlAAD.',
-    'aAAAlLlAAD.',
-    'aAArRrrAAD.',
-    '.DAArRrADD.',
-    '.DAuUuuAD..',
-    '..DAAAAD...',
-    '..DAAAAD...',
+    '...nNnNn...',
+    '..nNNNNNd..',
+    '.nNNsIsNNd.',
+    '.nNyNlNyNd.',
+    'nNNyNlNyNd.',
+    'nNNrRrrNNd.',
+    '.dNNrRrNdd.',
+    '.dNyUyyNd..',
+    '..dNNNNd...',
+    '..dNNNNd...',
   ];
   const BOOTS = {
     stand: ['.....UUuu......',
@@ -1157,12 +1168,12 @@ export function bakeQuarter() {
     }[pose];
     gpoly(G, pts.map(([x, f]) => [B + x, Y(f)]), (x, y) => {
       const f = ((Math.floor((x - B) * 0.8 + (y - top) * 0.4) % 4) + 4) % 4;
-      return y > FL - 2 ? 'D' : f === 0 ? 'D' : f === 1 ? 'A' : f === 2 ? 'A' : 'a';
+      return y > FL - 2 ? 'd' : f === 0 ? 'd' : f === 1 ? 'N' : f === 2 ? 'N' : 'n';
     });
   };
   const arm = (G, sh, el, hd, far) => layer(G, g => {
-    limb(g, sh, el, 3.0, far ? ['D', 'D', 'A'] : ['D', 'A', 'a']);
-    limb(g, el, hd, 2.6, far ? ['D', 'A', 'A'] : ['A', 'a', 'a']);
+    limb(g, sh, el, 3.0, far ? ['d', 'd', 'N'] : ['d', 'N', 'n']);
+    limb(g, el, hd, 2.6, far ? ['d', 'N', 'N'] : ['N', 'n', 'n']);
     limb(g, hd, hd, 2.4, far ? ['g', 'S', 'S'] : ['S', 's', 'h']);
   });
   const frame = o => {

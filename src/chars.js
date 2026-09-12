@@ -174,7 +174,9 @@ export function bakeSprig() {
   // bob: frames 1 and 3 drop the head a pixel
   const bobbed = legs.map((l, i) => i & 1 ? sprite(['..........', ...head.slice(0, 5), ...cloth, ...l]) : frames[i]);
   const look = sprite([head[0], head[1], '.gggeogge.', head[3], head[4], head[5], ...cloth, ...legs[0]]);
-  return pack([...bobbed, look], 6, 11, 8, 10);
+  // HURT: the head snaps back, the mouth opens, the knees give
+  const hurt = sprite(['..........', '...gggg...', '..gggggg..', '.goggggog.', '.ggg..ggg.', '..gGGGGg..', '..rrrrrr..', '.rrrrrr...', '.GG...GG..', 'GG.....GG.']);
+  return pack([...bobbed, look, hurt], 6, 11, 8, 10);
 }
 
 // Shieldbearer — helmet, tabard, round wooden shield held out front (right). 14×14, four-frame walk.
@@ -515,7 +517,9 @@ export function bakeSporeling() {
   const b = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '...kkkk...', '..kk..kk..']);
   const c2 = sspr(['..........', ...cap, '..kkkkkk..', '..keokkok.', '..kk..kk..', '..kk..kk..']);
   const d = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '..kkk.kk..', '.kk...kk..']);
-  return pack([a, b, c2, d], 6, 11, 8, 10);
+  // HURT: the cap crushes down over the stalk and it folds at the foot
+  const hurt = sspr(['..........', '..mmmmmm..', '.mmmtmmmm.', 'mmmmmmmmmm', '.MMMMMMMM.', '..kkkkkk..', '..koookok.', '..kk..kk..', '.kk....kk.', '..........']);
+  return pack([a, b, c2, d, hurt], 6, 11, 8, 10);
 }
 // Lurker — looks like a scenery mushroom until it lunges. 14×12: frame 0 hidden, frame 1 mouth open.
 export function bakeLurker() {
@@ -580,7 +584,9 @@ export function bakePike() {
   const bodyG = ['..bbbbbb.hhhhhhhhhhhss', '..bbbbbb..............', '..rrrrrr..............', '..GG..GG..............', '.GG....GG.............'];
   const bodyT = ['..bbbbbb..............', '..bbbbbbhhhhhhhhhhhhss', '..rrrrrr..............', '...GG.GG..............', '..GG...GG.............'];
   const bodyB = ['..bbbbbb..............', 'hhbbbbbbhhhhhhhhss....', '..rrrrrr..............', '.GG..GG...............', 'GG....GG..............'];
-  return pack([kspr([...head, ...bodyG]), kspr([...head, ...bodyT]), kspr([...head, ...bodyB])], 6, 11, 10, 12);
+  // HURT: the pike drops across him and the head goes back
+  const hurtP = kspr(['......................', '...gggg...............', '..gggggg..............', '.goggggog.............', '..gGGGGg..............', '..bbbbbb.hhhh.........', '..bbbbbbhhhh..........', '..rrrrrr..............', '.GG...GG..............', 'GG.....GG.............']);
+  return pack([kspr([...head, ...bodyG]), kspr([...head, ...bodyT]), kspr([...head, ...bodyB]), hurtP], 6, 11, 10, 12);
 }
 // Townsfolk — small unarmed goblins in aprons and hoods, two colours. 8×9. Frames: run1, run2, cower.
 export function bakeFolk(alt) {
