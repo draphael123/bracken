@@ -1346,7 +1346,7 @@ function drawMap() {
   g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
   { const region = mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
-  g.fillStyle = 'rgba(20,16,30,0.8)'; g.fillRect(0, 0, VW, 18); text(mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
+  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
   { const real = LEVELS.filter(lv => !lv.hidden); const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
     const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
     g.drawImage(FLAG, 92, 4); text(cl + '/' + real.length, 104, 7, UI.dim, 'left', 6);
@@ -1356,7 +1356,7 @@ function drawMap() {
   if (!map.walking) {
     const store = nd.kind === 'store';
     const tamLine = !store && TAM_MAP[LEVELS[nd.level].id] ? ('TAM: ' + TAM_MAP[LEVELS[nd.level].id][(PROG[LEVELS[nd.level].id] || {}).cleared ? 1 : 0]) : '';
-    const cw = Math.min(VW - 8, Math.max(200, tamLine.length * 6 + 18)), ch = store ? 26 : 58, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 22 : VH - 12 - ch;
+    const cw = Math.min(VW - 8, Math.max(200, tamLine.length * 6 + 18)), ch = store ? 26 : 58, cx0 = Math.max(4, Math.min(VW - cw - 4, nd.x - cw / 2)), low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 21 : VH - 12 - ch;
     panel(cx0, cy0, cw, ch, UI.sel);
     text(nd.name, cx0 + 8, cy0 + 5, UI.title);
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
