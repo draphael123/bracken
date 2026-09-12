@@ -1,5 +1,5 @@
 // art.js — every tile, prop and background layer for BRACKEN, baked once.
-import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, mulberry } from './px.js';
+import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, mulberry, shade, rgb, hex } from './px.js';
 
 export const OUT = '#1b1626';
 export const C = {
@@ -27,27 +27,29 @@ export function bakeDirt(seed) { const rnd = mulberry(seed); const [c, g] = canv
 // that flat brown field is the largest single mass on the screen. Dig down and it changes the way ground does:
 // loam with root hair in it, then a clay with seams of gravel through it, then a cold compacted bottom with
 // bedrock showing - and every so often something somebody lost, a sherd or a bone or a nail, sitting in it.
-const DEEP = [
-  { base: '#6e4a2c', lo: '#54341c', hi: '#87603c', grit: '#8b8378' },   // loam
-  { base: '#5e4028', lo: '#452c18', hi: '#75533a', grit: '#7c766c' },   // clay
-  { base: '#4a3524', lo: '#342216', hi: '#5e4632', grit: '#6a6660' },   // the cold bottom
-];
+const cool = (h, k) => { const [r, gg, b] = rgb(h); const m = (r + gg + b) / 3;   // toward its own grey as it goes down
+  return hex(r + (m - r) * k, gg + (m - gg) * k, b + (m - b) * k); };
+function deepPal(band) {   // the strata are mixed from whatever this level calls dirt
+  const k = [0.12, 0.26, 0.42][band] || 0.12, dark = [-0.18, -0.3, -0.42][band] || -0.18;
+  return { base: cool(shade(C.dirt, dark), k), lo: cool(shade(C.dirtD, dark), k), hi: cool(shade(C.dirtL, dark * 0.6), k),
+    grit: shade(C.stone, band === 0 ? 0 : -0.12) };
+}
 export function bakeDirtDeep(seed, band) {
-  const rnd = mulberry(seed), D = DEEP[band] || DEEP[0]; const [c, g] = canvas(T, T);
+  const rnd = mulberry(seed), D = deepPal(band); const [c, g] = canvas(T, T);
   rect(g, 0, 0, T, T, D.base);
   for (let i = 0; i < T * T / 5; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, rnd() < 0.5 ? D.lo : D.hi);
   if (band === 0) {                                                       // root hair, still reaching down
     for (let i = 0; i < 2; i++) { let x = 1 + ((rnd() * 14) | 0), y = (rnd() * 6) | 0;
-      for (let k = 0; k < 5 + ((rnd() * 6) | 0) && y < T; k++) { px(g, x, y, C.woodD); if (rnd() < 0.4) x += rnd() < 0.5 ? -1 : 1; y++; if (x < 0 || x > 15) break; } }
+      for (let k = 0; k < 5 + ((rnd() * 6) | 0) && y < T; k++) { px(g, x, y, shade(C.dirtD, -0.35)); if (rnd() < 0.4) x += rnd() < 0.5 ? -1 : 1; y++; if (x < 0 || x > 15) break; } }
   }
   if (band >= 1) {                                                        // a seam of gravel lying the way it settled
     const y0 = 2 + ((rnd() * 11) | 0), n = 3 + ((rnd() * 4) | 0);
     for (let i = 0; i < n; i++) { const x = (rnd() * (T - 2)) | 0, dy = y0 + (rnd() < 0.5 ? 0 : 1);
-      rect(g, x, dy, 2, 1, D.grit); px(g, x, dy, '#b3aca0'); }
+      rect(g, x, dy, 2, 1, D.grit); px(g, x, dy, shade(C.stone, 0.3)); }
   }
   if (band === 2 && rnd() < 0.55) {                                       // bedrock coming up through it
     const y0 = 6 + ((rnd() * 8) | 0);
-    for (let x = 0; x < T; x++) { const h = 1 + ((rnd() * 2) | 0); for (let k = 0; k < h; k++) px(g, x, Math.min(T - 1, y0 + k), k ? '#4a4640' : '#6a6660'); }
+    for (let x = 0; x < T; x++) { const h = 1 + ((rnd() * 2) | 0); for (let k = 0; k < h; k++) px(g, x, Math.min(T - 1, y0 + k), shade(C.stone, k ? -0.45 : -0.25)); }
   }
   if (rnd() < 0.085) {                                                    // and something somebody lost
     const x = 3 + ((rnd() * 9) | 0), y = 4 + ((rnd() * 8) | 0), k = (rnd() * 4) | 0;
