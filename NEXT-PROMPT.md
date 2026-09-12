@@ -2,63 +2,89 @@
 
 Live at bracken-nine.vercel.app. Deploy with `vercel deploy --prod --yes`, then `git push`.
 
-## What just shipped
+## What just shipped (the playtest queue, worked through end to end)
 
-**LEVEL 15 — THE LAMPLIT STREET.** A stone city a hundred feet under the sea, 700 columns, and one rule said
-three ways: **THE LAMPS ARE AIR.** A lit lamp is a light in the dark, a lungful of air under its hood, and a
-thing that can be taken from you; you take fire off a burning one and carry it to a dead one to open a route.
-Two roads all the way along — the dry broken roof road at row 22 and the flooded street at row 38, with the
-water line inside the masonry between them so nothing in the street can reach a surface. The tide runs down
-the street and turns on a timer. Seven sections: the descent past the tribute ship, the fish market, the
-market hall (**THE LAMPREEVE**, who walks to the nearest burning lamp and hoods it), the counting house (the
-vault crowns ARE the air), the lamp works (work the beam and the procession road drops to wading depth and
-its dead lamps come up), the procession road, and the toll gate (**THE TOLLMASTER**, carried on a bier:
-parry the ledger, dodge the weight, jump the rod, and he puts the lamps out a ring at a time; phase two sets
-the bier down and the bearers come off it, phase three fills the square to its vault).
+Daniel played the sea arc and the drowned city and filed sixteen reports. All of them are in, plus the first
+slice of the polish pass he asked for after them. In the order they were fixed:
 
-New art: `city_tiles.js` (drowned masonry, a chain to climb, four parallax layers and no sky at all),
-`city_props.js` (the streetlamp in three states plus fifteen more), `redraw/city.js` (the drowned watch, the
-Lampreeve, the Tollmaster). New relic: **THE LAMPLIGHTER'S WICK**. Two new boss-rush fights.
+**THE HURRICANE DECK stopped being seven hundred tiles of the same planking.** Five things you remember, each
+a place rather than a stretch, and each built out of a verb the game already has: HER HEAD (the figurehead
+hung under your feet at the bow, her bell, her anchor); HER GUN DECK (four laid guns on the orlop, the last
+trained on her own magazine bulkhead — fire it and the powder room is yours); HER OIL PUMP (work the beam and
+the foul water goes down to her bilge for twenty seconds, which is the only way to walk under the wreck); THE
+DARK HOLD (no lamp back here in a year: the only light is the sky through her deck seams); and her waist is
+no longer a pavement — rot that gives under a standing weight, fallen spars, holes to jump, three more
+swinging cargoes, and the great cabin at the end of her.
 
-**The screens between fights.** The talent tree had three things written on top of each other and cut every
-description at two lines; the hero card showed one skill where the hero holds two and ran off its own panel;
-the bestiary cut eight of its eighty entries off mid-sentence and pointed F at the wrong boss. All fixed.
+**NOTHING STANDS IN THE AIR.** The floating-props sweep the audit had been asking for since the barrels: the
+bell, the anchor and the oil sign on deck, the plunder on her bottom (she is aground now, so the oil has a
+floor), the two rams that a lever DROPS saying so with `hang`, the ravine cache lying in its net on purpose,
+the ditch coffer down the two rows to the floor. All sixteen levels: zero floating props.
 
-**Sound.** Twenty-four of the eighty creatures had no death voice and fell back on one generic noise; all
-eighty have their own now. Enemies no longer swing with the player's own sword sound: `foeSlash`, `haft` and
-`pole` are theirs.
+**THE QUARTERMASTER'S CLIPPING.** Her deck span was the whole main deck and the only thing that had ever
+stopped her was that span's two ends, so she strode straight through the companion house amidships and leapt
+through it as well. The ship is in her way the way it is in yours now, and the leap goes up her own rigging,
+along above the deck she is leaving, and down onto the one she is taking. Measured over all three phases,
+twice: zero frames with any part of her inside a solid tile. Her ship also keeps its footings — the planking
+that falls away in phase three used to run out from under the companion house and the stern castle.
 
-**The map** has life on the road between woods: boots print in the dirt, dust comes off them, and a bird goes
-off its branch, a hare two hops into the bracken, a fish out of the river as you pass. The drowned city's
-node breathes bubbles.
+**A BODY LIES ON THE BRIDGE IT DIED ON.** Corpses only ever stopped on solid rock, so everything killed on a
+rope bridge, a gangplank or a one-way deck fell through the boards and came to rest underneath — dead men
+hanging off nothing below the walkway, which is exactly what was reported. A plank catches a body from above
+the same way it catches your feet, and rests it on the board; a rope net still does not.
 
-## Next, in the order I would take it
+**FOUR FLOORS, FOUR ROOMS.** "Something got mixed up with the goblin queen's area, it's right after the
+forgemaster?" It was not — the chapel is between them — but every room in Highcrown was drawn with HER wall,
+so you came up out of the armoury into gilt pilasters and hung tapestries and the Queen appeared to be
+standing behind her own smith. The castle wears a room per floor now: the guardroom (cold ashlar, a black
+wainscot, an arrow loop with the night through it, a shield hung beside each), the kitchens (soot, a chimney
+breast with the fire still in it, a pot crane, onions on a nail), the armoury (iron lit from the floor by the
+coal, a rack of blades and a bellows per bay, sparks), the chapel (pale stone, a rib vault, a lancet of
+coloured glass on a sill laying its bar of colour down the wall) — and HER HALL, the only royal room in the
+castle and richer than it was: a gilt cornice over a frieze of lozenges, a bay every four tiles with a
+tapestry hung on its rod in an arched recess (folds, gold border, fringe, her device woven in the middle), a
+green-and-gold chequer dado, and her chandeliers burning.
 
-1. **Balance the boss-rush ramp.** Nineteen fights in an order nobody has measured. `tools/balance.mjs` plus
-   a bot sweep: time-to-kill and idle-survival for each, then re-order.
-2. **Play the old levels with the new verbs.** The dash and the mantle change what a gap means and the first
-   fourteen woods were authored without them. Nothing became unreachable (the suite reports identical
-   numbers) but some gaps are now trivial. That is a design question, not a bug.
-3. **The reef's either-way stretch**, and air as a planned resource rather than a timer, now that the city
-   has taught the idea properly.
-4. **The next feel tier**: hurt poses for the shield goblin, the soldier, the brute and the hound (six are
-   done, these are the next most-met); a tell colour on the parry window; skid and turn frames for the
-   earned run.
-5. **The archer's bow** is one pixel thick and the cook is a pale blob — the two weakest sprites left after
-   the contact-sheet pass. The brute was the worst and is fixed.
-6. `tools/reach.mjs` calls the reef's start walled in because it cannot swim: teach the model water, or
-   whitelist a swim start, so the check keeps its teeth.
+**THE FIRST POLISH SLICE**, all of it read off screenshots of the real game: the gold count ran off the right
+edge of the screen at six characters, so the whole right cluster hangs off one margin now and its plate is cut
+to fit; the quest line got a plate; the timer stopped being a bare mono readout in the middle of the sky; the
+talent badge went from a green banner the width of a sentence to a tab; "press a key for sound" went from grey
+text parked over the play field forever to a plate for ten seconds and then a speaker glyph in the corner; and
+the win and death panels, which were laid straight over a bright busy level so the trees read through the
+text, now drop the world two thirds behind them. The map's header strip is solid, so the town on its north
+edge stops being cut off by the top of the screen.
 
-## How to work on it
+## The polish pass, in the order I would take it
 
-Read `RULES-LEVELS-AND-BOSSES.md` first — every rule in it was earned by something going wrong, and the
-tools enforce fifteen of them. Run the staples after any level edit:
+The core is not the problem — the world art, the combat feedback, the transitions (there is already an iris on
+entering a level and a fade between screens) and the audio are all there. What reads as prototype is the
+furniture. The HUD was the worst of it and is done. What is left, most visible first:
+
+1. **THE GROUND.** The dirt band under the grass is the single largest mass on screen in half the levels and
+   the least worked: a flat brown field with sparse speckle. Strata, roots coming through from the grass,
+   buried stone, the odd pot sherd or bone — the same treatment the interiors just got.
+2. **THE SECOND READ ON EVERY ENEMY.** Hurt poses for shield/soldier/brute/hound, a parry tell colour, skid
+   and turn frames. The tells are audible and coloured; they are not yet *posed*.
+3. **THE MOMENT A LEVEL ENDS.** The win panel is a table of numbers. The medal should land with weight — the
+   coin flying in, the time counting up, the medal stamping.
+4. **THE STORE AND THE EQUIP SCREENS** have not had the pass the talent tree and the bestiary got.
+5. **THE FIRST NINETY SECONDS.** The wood opens on a sign and a sprig. What a new player sees first is what
+   they judge the whole thing by.
+
+## Still open from before the playtest
+
+- **Balance the boss-rush ramp.** Nineteen fights in an order nobody has measured. A `bench(ix)` harness is
+  written and works (the Hornet Queen measures 42.1 s); the sweep of all nineteen was interrupted.
+- **Play the old levels with the new verbs.** The dash and the mantle change what a gap means and the first
+  fourteen woods were authored without them.
+- **The reef's either-way stretch**, the archer's bow and the cook sprite, and teaching `reach.mjs` to swim.
+
+## The tools, every time
 
 ```
 node --check src/main.js && node --check src/level.js
-node tools/comments.mjs && node tools/content-audit.mjs && node tools/audit.mjs && node tools/newlevel.mjs
-node tools/reach.mjs && node tools/deadends.mjs && node tools/traps.mjs && node tools/quality.mjs
+node tools/comments.mjs && node tools/content-audit.mjs && node tools/audit.mjs
+node tools/newlevel.mjs && node tools/reach.mjs && node tools/deadends.mjs && node tools/traps.mjs && node tools/quality.mjs
 ```
 
-Verify in the harness, never by eye: `BK.load(i)` then `BK.state = 'play'`, real `KeyboardEvent`s for input,
-`BK.tp(tx, ty)` to move, `BK.rushStart(i)` for one fight, and `BK.SPR` to put a sprite on a contact sheet.
+`RULES-LEVELS-AND-BOSSES.md` is the law and the tools enforce sixteen of it.

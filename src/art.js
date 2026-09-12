@@ -23,6 +23,41 @@ function dirtBase(g, rnd, w = T, h = T) {
 }
 export function bakeDirt(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd); return c; }
 
+// THE GROUND, IN SECTION. Under the grass line every tile was the same speckled brown, and in half the levels
+// that flat brown field is the largest single mass on the screen. Dig down and it changes the way ground does:
+// loam with root hair in it, then a clay with seams of gravel through it, then a cold compacted bottom with
+// bedrock showing - and every so often something somebody lost, a sherd or a bone or a nail, sitting in it.
+const DEEP = [
+  { base: '#6e4a2c', lo: '#54341c', hi: '#87603c', grit: '#8b8378' },   // loam
+  { base: '#5e4028', lo: '#452c18', hi: '#75533a', grit: '#7c766c' },   // clay
+  { base: '#4a3524', lo: '#342216', hi: '#5e4632', grit: '#6a6660' },   // the cold bottom
+];
+export function bakeDirtDeep(seed, band) {
+  const rnd = mulberry(seed), D = DEEP[band] || DEEP[0]; const [c, g] = canvas(T, T);
+  rect(g, 0, 0, T, T, D.base);
+  for (let i = 0; i < T * T / 5; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, rnd() < 0.5 ? D.lo : D.hi);
+  if (band === 0) {                                                       // root hair, still reaching down
+    for (let i = 0; i < 2; i++) { let x = 1 + ((rnd() * 14) | 0), y = (rnd() * 6) | 0;
+      for (let k = 0; k < 5 + ((rnd() * 6) | 0) && y < T; k++) { px(g, x, y, C.woodD); if (rnd() < 0.4) x += rnd() < 0.5 ? -1 : 1; y++; if (x < 0 || x > 15) break; } }
+  }
+  if (band >= 1) {                                                        // a seam of gravel lying the way it settled
+    const y0 = 2 + ((rnd() * 11) | 0), n = 3 + ((rnd() * 4) | 0);
+    for (let i = 0; i < n; i++) { const x = (rnd() * (T - 2)) | 0, dy = y0 + (rnd() < 0.5 ? 0 : 1);
+      rect(g, x, dy, 2, 1, D.grit); px(g, x, dy, '#b3aca0'); }
+  }
+  if (band === 2 && rnd() < 0.55) {                                       // bedrock coming up through it
+    const y0 = 6 + ((rnd() * 8) | 0);
+    for (let x = 0; x < T; x++) { const h = 1 + ((rnd() * 2) | 0); for (let k = 0; k < h; k++) px(g, x, Math.min(T - 1, y0 + k), k ? '#4a4640' : '#6a6660'); }
+  }
+  if (rnd() < 0.085) {                                                    // and something somebody lost
+    const x = 3 + ((rnd() * 9) | 0), y = 4 + ((rnd() * 8) | 0), k = (rnd() * 4) | 0;
+    if (k === 0) { rect(g, x, y, 4, 1, '#b8926a'); px(g, x, y + 1, '#8a6a48'); px(g, x + 3, y + 1, '#8a6a48'); }          // a sherd
+    else if (k === 1) { rect(g, x, y, 5, 1, '#d8d2b8'); px(g, x - 1, y - 1, '#d8d2b8'); px(g, x + 5, y + 1, '#d8d2b8'); } // a bone
+    else if (k === 2) { rect(g, x, y, 1, 4, '#7c766c'); rect(g, x - 1, y, 3, 1, '#9a948a'); }                             // a nail
+    else { px(g, x, y, '#ffd36b'); px(g, x + 1, y, '#c9a040'); px(g, x, y + 1, '#c9a040'); px(g, x + 1, y + 1, '#8a6a28'); } // a coin nobody came back for
+  }
+  return c;
+}
 // Grass-top dirt. eL/eR: air on that side → grass wraps down the edge.
 export function bakeGrassTop(seed, eL, eR) {
   const rnd = mulberry(seed); const [c, g] = canvas(T, T);
