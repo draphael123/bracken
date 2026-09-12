@@ -864,6 +864,15 @@ export function bakeMastTall(v) {
   }
   // the grain and the long checks in her
   for (const ox of [1, 3] ) for (let y = 6; y < H - 2; y++) if (hsh(ox, y, 5) < 0.6) px(g, lx(y) + ox + (y % 11 === 0 ? 1 : 0), y, wood);
+  // HER STEP: where she goes through the deck there is a partner ring and oak wedges, or she would read as a
+  // column pasted on the sky instead of a mast standing in a ship
+  { const b = H - 1, a0 = lx(b) - 3, b0 = rx(b) + 3;
+    rect(g, a0, b - 5, b0 - a0 + 1, 6, woodD); rect(g, a0, b - 5, b0 - a0 + 1, 1, wood);
+    rect(g, a0, b - 1, b0 - a0 + 1, 1, woodDD);
+    for (const wx of [a0, b0 - 1]) { rect(g, wx, b - 4, 2, 4, woodDD); px(g, wx, b - 4, wood); }
+    rect(g, a0 + 1, b - 6, b0 - a0 - 1, 2, ir0); rect(g, a0 + 1, b - 6, b0 - a0 - 1, 1, ir1);
+    px(g, a0 + 1, b - 6, ir3); px(g, b0 - 1, b - 6, ir3);
+    for (const bx of [a0 + 2, b0 - 3]) px(g, bx, b - 3, ir1); }
   // the truck at her head, the iron bands down her, and the mast hoops on the lower part
   rect(g, 4, 0, 8, 2, plM); rect(g, 4, 0, 8, 1, pl); px(g, 11, 1, woodDD);
   for (const by of [34, 58]) { rect(g, lx(by) - 1, by, rx(by) - lx(by) + 3, 2, ir0); rect(g, lx(by) - 1, by, rx(by) - lx(by) + 3, 1, ir1); px(g, lx(by) - 1, by, ir3); }

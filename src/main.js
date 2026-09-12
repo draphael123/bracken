@@ -6460,6 +6460,32 @@ function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
   g.fillStyle = col; g.fillRect(x, y, Math.round(w * Math.max(0, frac)), h);
   g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(x, y, Math.round(w * Math.max(0, frac)), 1);
 }
+// FOUL WATER. Tar, bilge, and whatever a fleet tips over the side: a yellow-green scum on it, slicks turning
+// on the surface, gas breaking out of it, and the broken spars of the wrecks standing up through it. Every one
+// of these says the same thing in a different way, because one signal is never enough.
+function drawFoul(p, x0, x1, y, h, cx, cy) {
+  const scum = p.foulCol || '#7a8a3a', scumL = p.foulColL || '#a8b85a', dark = p.foulColD || '#3a4a1e';
+  g.globalAlpha = 0.42; g.fillStyle = dark; g.fillRect(x0, y + 2, x1 - x0, Math.max(0, h - 2)); g.globalAlpha = 1;
+  g.fillStyle = scum; g.fillRect(x0, y, x1 - x0, 3);                       // the scum lying on it
+  g.fillStyle = scumL; g.fillRect(x0, y, x1 - x0, 1);
+  g.fillStyle = dark; g.fillRect(x0, y + 3, x1 - x0, 1);
+  for (let x = Math.floor(p.x0 / 12) * 12; x < p.x1; x += 12) {            // and lumps of it, turning as it drifts
+    const sx = x + ((time * 7 + x * 0.7) % 24) - cx, w = 5 + ((x / 12) % 3) * 3;
+    if (sx < x0 - 8 || sx > x1) continue;
+    g.fillStyle = ((x / 12) | 0) % 2 ? scumL : scum; g.fillRect(Math.round(sx), y + 1 + (Math.sin(time * 1.7 + x) > 0 ? 0 : 1), w, 2);
+  }
+  g.fillStyle = 'rgba(180,210,110,0.75)';                                  // gas coming up out of it
+  for (let k = 0; k < 7; k++) { const t = (time * 0.5 + k * 0.31) % 1, bx = p.x0 + 10 + ((k * 97) % Math.max(1, p.x1 - p.x0 - 20)) - cx, by = y + 26 - t * 24;
+    if (bx > x0 && bx < x1 && by > y + 3) g.fillRect(bx, by, 2, 2); }
+  // the teeth: broken spars and ribs of the wrecks standing out of it, sun on one side, wet dark on the other
+  for (let x = Math.ceil(p.x0 / 46) * 46; x < p.x1; x += 46) {
+    const sx = Math.round(x - cx + Math.sin(x * 0.31) * 6); if (sx < x0 - 6 || sx > x1 + 6) continue;
+    const th = 7 + ((x / 46) % 3) * 4, bob = Math.round(Math.sin(time * 1.2 + x * 0.05) * 1.5), lean = ((x / 46) % 2) ? 1 : -1;
+    for (let k = 0; k < th; k++) { const px2 = sx + Math.round(lean * k * 0.28);
+      g.fillStyle = k < 2 ? '#e8dcc0' : (k % 3 === 0 ? '#5a4a32' : '#3a2e1e'); g.fillRect(px2, y - th + k + bob, 2, 1); }
+    g.fillStyle = 'rgba(180,210,110,0.5)'; g.fillRect(sx - 2, y + bob, 6, 2); // the scum caught round its foot
+  }
+}
 function drawWater(cx, cy, surfaceOnly = false) {
   for (const p of (L.pools || [])) {
     if (p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH) continue;
@@ -6482,7 +6508,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
       }
       continue;
     }
-    if (p.swim && !p.shallow) { g.globalAlpha = p.capped ? 0.42 : p.streetTide ? 0.46 : p.clear ? 0.5 : 0.5; g.fillStyle = sea ? '#2e7a88' : '#3b7fae'; g.fillRect(x0, y + 3, x1 - x0, h - 3); g.globalAlpha = 1;
+    if (p.swim && !p.shallow) { g.globalAlpha = p.capped ? 0.42 : p.streetTide ? 0.46 : p.clear ? 0.5 : 0.5; g.fillStyle = p.harm ? (p.foulColD || '#3a4a1e') : sea ? '#2e7a88' : '#3b7fae'; g.fillRect(x0, y + 3, x1 - x0, h - 3); g.globalAlpha = 1;
       if (p.capped || p.streetTide || p.clear) { const gr2 = g.createLinearGradient(0, y, 0, y + h); gr2.addColorStop(0, 'rgba(10,26,32,0.45)'); gr2.addColorStop(0.3, 'rgba(10,26,32,0)'); gr2.addColorStop(1, 'rgba(6,16,22,0.5)'); g.fillStyle = gr2; g.fillRect(x0, y, x1 - x0, h); } } // over whoever is swimming in it: they are IN the water
     if (p.shallow) { // the water itself, over the legs of whoever is wading; lighter near the surface
       const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(90,175,215,0.5)'); gr.addColorStop(1, 'rgba(40,110,150,0.55)');
@@ -6492,6 +6518,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
       for (const r of ripples) if (r.x > p.x0 && r.x < p.x1) { g.globalAlpha = Math.max(0, r.life) * 0.7; g.strokeStyle = '#dff5ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(r.x - cx), Math.round(p.y - cy) + 1, (1 - r.life) * 14 + 2, ((1 - r.life) * 14 + 2) * 0.3, 0, 0, 7); g.stroke(); }
       g.globalAlpha = 1;
     }
+    if (p.harm) { drawFoul(p, x0, x1, y, h, cx, cy); continue; } // it hurts, so it does not get the clean blue surface
     // surface: a bright band with travelling crests, and a darker line under it
     g.fillStyle = '#bfe6f5'; g.fillRect(x0, y, x1 - x0, 2);
     g.fillStyle = '#7fc4e0'; g.fillRect(x0, y + 2, x1 - x0, 1);

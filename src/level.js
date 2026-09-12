@@ -2518,7 +2518,7 @@ function shipwreckReef() {
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones,
     duskStart: 99999, duskLen: 1, music: 'reef', night: false,
-    interiors: [[122, 209, 8, 32, 'stone'], [213, 330, 12, 38, 'stone']], // inside her hull, and under the shelf: rock and timber behind, not sky
+    interiors: [[34, 93, 26, 29, 'stone'], [116, 177, 22, 29, 'stone'], [247, 300, 24, 26, 'stone'], [302, 371, 17, 21, 'stone']], // ONLY the enclosed spaces: a backdrop that reaches above a deck hangs a stone wall in the sky
     wetZone: [0, 119], storm: true, dark: 0.01,
     hullZones: [[16, 26, 26, 30], [30, 42, 27, 31], [46, 58, 25, 29], [62, 74, 27, 31], [78, 92, 26, 30], [96, 118, 24, 28], [119, 212, 6, 34], [378, 400, 15, 25]], // her timbers; below them the reef takes over again
     quest: { n: 3, item: 'seal', name: 'ROYAL SEALS', npc: 'squire', done: 'THE SEALS ARE FOUND', reward: 'relic', relic: 'diverlamp' },
@@ -2549,7 +2549,7 @@ function theFlotilla() {
 
   // the sea the whole town floats on: fall in and you swim, and the nets down every side are how you get back up
   block(0, W - 1, 38, H - 1); block(377, W - 1, 11, 37); // past her stern the level ends: no water, nowhere to fall
-  pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true }); // tar, bilge and worse: swim it and it eats you, so cross above it
+  pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true, foulCol: '#7a8a3a', foulColL: '#b8c85a', foulColD: '#3a4a1e' }); // tar, bilge and worse: swim it and it eats you, so cross above it
 
   // ---- THE ROCK: the Ferryman will not go closer than this ----
   block(0, 22, 26, 37);
@@ -2578,7 +2578,7 @@ function theFlotilla() {
   for (const x of [38, 60, 80]) ent('deco', x, 29, { kind: 'oarBench' });
   ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
   ent('cutlass', 44, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 });
-  ent('cutlass', 58, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 }); ent('marine', 51, 10, { face: -1 });
+  ent('cutlass', 61, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 }); ent('marine', 51, 10, { face: -1 });
   ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT AND THERE IS A POT ON IT. WHOEVER WAS COOKING WENT UP ON DECK IN A HURRY.' });
   ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
   ent('deco', 66, 23, { kind: 'hammock', v: 0 }); ent('deco', 46, 23, { kind: 'coiledCable', v: 0 });
@@ -2612,12 +2612,13 @@ function theFlotilla() {
   ent('silver', 150, 29);
   ent('sign', 116, 21, { text: 'THE HULK. THEY TOOK HER TWO SUMMERS AGO AND NEVER FINISHED STRIPPING HER. THE GREY PLANKS WILL NOT HOLD A MAN: STAND ON ONE AND YOU WILL GO THROUGH TO WHAT IS UNDER IT.' });
   ent('boarder', 128, 21, { face: -1 }); ent('boarder', 162, 21, { face: -1 });
-  ent('cutlass', 152, 21, { face: 1 }); ent('bosun', 172, 21, { face: -1 }); ent('cutlass', 130, 28, { face: 1 });
+  ent('cutlass', 152, 21, { face: 1 }); ent('bosun', 172, 21, { face: -1 }); ent('cutlass', 130, 29, { face: 1 });
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
   ent('sign', 144, 21, { text: 'THE HOLD IS FULL OF WATER AND SOMEBODY ELSE OWNED IT FIRST. THERE IS A LADDER AT EITHER END.' });
   ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
   ent('silver', 172, 28); // down in her flooded hold, under the rotten planking
   ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 145, 9, { kind: 'crowNest' });
+  net(145, 146, 10, 20); plat(144, 10, 3); // her mast is climbable and her top is a place to stand: the lookout up there was standing on nothing
   // THE HULK'S RIG: one mast still standing, her canvas in rags, her shrouds hanging off her
   ent('deco', 145, 21, { kind: 'mastTall', v: 1 }); ent('deco', 152, 14, { kind: 'sailRag', v: 1 });
   ent('deco', 122, 19, { kind: 'rigging', v: 1 }); ent('deco', 166, 19, { kind: 'rigging', v: 0 });
@@ -2666,14 +2667,19 @@ function theFlotilla() {
   plat(336, 11, 41); block(370, 371, 12, 15);
   ent('deco', 352, 15, { kind: 'sternWindows' });
   net(302, 303, 11, 21); net(330, 331, 6, 16); // the two quick ways up her: she cuts one, then the other
+  net(366, 367, 11, 15); // and the stern ladder she cannot cut: whatever she does, there is a way after her
   block(292, 295, 19, 21); block(296, 299, 17, 21); // and the broken stair she cannot cut, up to her quarterdeck
   net(310, 311, 17, 26); // the ladder up out of her gun deck, for anyone the falling deck drops into it
   rail(245, 248, 21); rail(296, 299, 15);
   ent('sign', 250, 21, { text: 'THE FLAGSHIP. THE QUARTERMASTER HAS THE RUN OF HER AND SHE WILL NOT STAND AND FIGHT ON ONE DECK: SHE GOES UP, AND SHE CUTS AWAY WHAT SHE CAME UP BY.' });
-  ent('marine', 306, 9, { face: -1 }); ent('marine', 334, 9, { face: -1 });
+  ent('marine', 306, 15, { face: -1 }); ent('marine', 340, 10, { face: -1 }); // they were standing in the air over her quarterdeck
   ent('cutlass', 262, 21, { face: -1 }); ent('cutlass', 284, 21, { face: -1 }); ent('boarder', 320, 15, { face: -1 });
   ent('cutlass', 274, 21, { face: 1 }); ent('bosun', 284, 21, { face: -1 }); ent('lookout', 316, 15, { face: 1 }); ent('cutlass', 344, 15, { face: -1 });
-  for (const [x, y] of [[266, 21], [322, 21], [312, 15], [348, 10]]) ent('cannon', x, y, { deck: true }); // HER OWN GUNS: when she goes behind her guard, bring one to bear
+  for (const [x, y] of [[266, 21], [322, 21], [312, 15], [348, 10]]) ent('cannon', x, y, { deck: true });
+  // HER AFT GUN DECK: it was fifty tiles of empty corridor under her quarterdeck. It is her magazine now.
+  ent('deco', 334, 21, { kind: 'plunder', v: 1 }); ent('deco', 352, 21, { kind: 'kegStack' }); ent('deco', 344, 21, { kind: 'lanternDeck', v: 0 });
+  ent('silver', 360, 21); ent('cutlass', 340, 21, { face: -1 }); ent('marine', 356, 21, { face: -1 });
+  coins([330, 20], [338, 20], [346, 20], [354, 20], [362, 20]); ent('sign', 326, 21, { text: 'HER MAGAZINE. THE POWDER IS AFT AND HER GUNS ARE FORWARD, AND SHE WILL NOT THANK YOU FOR BEING DOWN HERE.' }); // HER OWN GUNS: when she goes behind her guard, bring one to bear
   ent('sign', 306, 15, { text: 'HER CHART HAS THE WRECKS MARKED, AND A RING DRAWN ROUND SOMETHING DEEPER, WITH A NOTE: THEIR SHARE, PAID MONTHLY.' });
   ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 344, 10, { kind: 'plunder', v: 0 });
   ent('deco', 360, 10, { kind: 'plunder', v: 2 });
@@ -2725,7 +2731,7 @@ function theHurricane() {
   const pools = [], movers = [], hullZones = [];
 
   // the sea she is in, and the bottom of the world under it so nothing falls out of the level
-  pools.push({ x0: 0, x1: W * TS, y: 27 * TS, bottom: 33 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true });
+  pools.push({ x0: 0, x1: W * TS, y: 27 * TS, bottom: 33 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true, foulCol: '#2a4a4a', foulColL: '#6a8a88', foulColD: '#12222a' }); // black water in a hurricane: it still kills you
 
   // ---- HER HULL ----
   block(16, 368, 20, 31); hullZones.push([16, 368, 20, 31]); // the way along her is over her, or through her
