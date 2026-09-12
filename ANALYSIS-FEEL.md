@@ -33,6 +33,28 @@ That is a lot. The gaps are in *how* these fire, not whether they exist.
    steel impact), and eases off on bosses so they do not stop the world every time you touch them. A hard
    landing holds a frame. A run of swings climbs in pitch.
 
+## Done in the second pass (all five combat items, all five platforming items, both camera items)
+
+**Combat**
+1. **The parry window**, for everyone: six frames from the shield going up (eleven with the PARRY talent). It
+   costs no stamina, gives twelve back, staggers whatever swung (a boss too, briefly, and a small foe is thrown),
+   leaves the next blow a riposte, and lands with a stop, a zoom kick and a ring.
+2. **Hurt poses** for the six commonest creatures (sprig, pike, sporeling, deckhand, boarder, marine).
+3. **Air combat**: a hit in the air holds you up; a kill in the air throws you back up.
+4. **The run of blows, shown**: a chevron per swing over the shoulder, the third in gold.
+5. **Knockback that is the blow's**: scaled by damage, half again on a heavy, and a heavy from below lifts them.
+
+**Platforming**
+6. **The mantle** — seven pixels short of a lip and moving into it, you catch it.
+7. **The earned run** — a fifth faster after most of a second in one direction, with dust and streaks.
+8. **The dash** — double-tap a direction, 265 for a sixth of a second, eight stamina, no i-frames, no new key.
+9. **Momentum out of swings and rafts** — what the rope gave you, you keep.
+10. **A landing you can leave early** — a jump or a dodge clears the recovery.
+
+**Camera**
+- Leads your speed as well as your shoulders.
+- Holds the frame for half of one as a boss commits to its tell.
+
 ## Combat: the five I would do next
 
 1. **A parry window on melee, not just on projectiles.** Blocking already has a perfect-block; a 6-frame

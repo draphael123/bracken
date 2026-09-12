@@ -24,14 +24,16 @@ Live: bracken-nine.vercel.app. Everything below is committed, pushed and deploye
 
 ## Open, in the order I would take it
 
-1. **`ANALYSIS-FEEL.md`** — the three I would do: a **melee parry window** (turns blocking into a read), a
-   **ledge mantle** (the last fairness gap in the jump), and **hurt poses for the eight commonest foes**.
-2. **`ANALYSIS-WATER-LEVELS.md`** — still open: the reef's either-way stretch, and air as a planned resource
-   rather than a timer.
-3. **The Quartermaster** is bigger (1.25x) but not yet visually distinct — a red-and-gold coat and a taller
-   plume in `src/redraw/pirates.js`, the way the Captain got one.
-4. **Balance the rush ramp**: every boss is tuned for a player who arrives with that level's relics and a
+1. **Balance the rush ramp**: every boss is tuned for a player who arrives with that level's relics and a
    checkpoint thirty seconds back. Two passes of `tools/balance.mjs` and the bot sweep.
+2. **`ANALYSIS-WATER-LEVELS.md`** — still open: the reef's either-way stretch (loot on the low road, safety on
+   the high one) and air as a planned resource rather than a timer.
+3. **`ANALYSIS-FEEL.md`** — everything in it is done; what is left is the *next* tier, which I would rank:
+   hurt poses for the remaining common foes (shield, soldier, brute, hound), a tell colour channel on the
+   parry so it can be learned by eye, and skid/turn frames to go with the earned run.
+4. **Playtest the new verbs against the old levels**: the dash and the mantle change what a gap means, and the
+   fourteen levels were authored without them. Nothing became unreachable (the suite is unchanged) but some
+   gaps may now be trivial.
 
 ## The staples — run these after any level edit
 ```
