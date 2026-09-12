@@ -577,7 +577,7 @@ function sporewood() {
   // and the spiders that spin them dropping out of the roof. Cut a curtain and the whole thing goes.
   ent('sign', 167, 13, { text: 'WEB ACROSS THE ROAD. ONE CUT TAKES A WHOLE CURTAIN. WEAVERS SPIT IT AT YOUR FEET: MASH OUT AND KEEP MOVING. FIRE EATS IT ALL.' });
   ent('lurker', 172, 13); ent('sporeling', 176, 13, { face: -1 }); ent('roller', 181, 13, { face: -1, speed: 70 }); ent('puffball', 185, 13);
-  web(174, 11, 13); web(180, 11, 13); web(188, 11, 13); web(195, 11, 13);
+  web(174, 12, 13); web(180, 12, 13); web(188, 12, 13); web(195, 12, 13); // waist high across the tunnel: cut them, burn them, or vault the lot
   ent('weaver', 177, 11, { face: -1 }); ent('weaver', 191, 11, { face: -1 }); ent('spider', 184, 11, { drop: 44 }); ent('spider', 198, 11, { drop: 44 });
   ent('deco', 170, 13, { kind: 'sporePod' }); ent('deco', 186, 13, { kind: 'sporePod' });
   ent('lurker', 189, 13); ent('sporeling', 193, 13, { face: -1 }); ent('shield', 197, 13, { face: -1 });
