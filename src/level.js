@@ -3067,18 +3067,18 @@ function theLamplitStreet() {
   plat(37, 10, 3); net(40, 41, 6, ST - 1);      // the diver's line: off the wreck and down through the surface
   ent('sign', 44, UP - 1, { text: 'THE WATER STARTS HERE. THE ROOFS ARE DRY AND SLOW. THE STREET IS FAST AND IT DOES NOT LET YOU BREATHE.' });
   mass(44, 76); air(58, 59, UP, 27); net(58, 59, UP, ST - 1);   // the first shaft down into the street
-  flood(0, 44); flood(44, 78);
+  flood(8, 44);                                 // the way in: you come down through the water and out of it
   lamp(22); lamp(50); lamp(66, true); lamp(74);
   ent('deco', 30, ST - 1, { kind: 'lampWreck', v: 0 }); ent('deco', 54, ST - 1, { kind: 'shellDrift', v: 0 });
   ent('deco', 6, ST - 1, { kind: 'sealDrift', v: 1 }); ent('deco', 10, ST - 1, { kind: 'sealDrift', v: 0 }); coins([8, 36], [14, 36]); // what went off the tribute ship, west along the paving
-  ent('eel', 34, 32); ent('urchin', 46, ST - 1); ent('urchin', 62, ST - 1);
+  ent('eel', 30, 32); ent('urchin', 24, ST - 1); ent('urchin', 38, ST - 1);
   ent('check', 52, UP - 1);
   coins([20, 36], [26, 34], [34, 36], [48, 36], [56, 34], [64, 36], [72, 36], [46, 21], [62, 21]);
   weed(28, ST - 1, 1); weed(70, ST - 1, 0);
 
   // ================= 2. THE FISH MARKET: two roads, and the tide down the middle of one =================
   mass(80, 128); mass(136, 186);                // with a courtyard open to the water line between them
-  flood(78, 190);
+  flood(150, 190);                              // and the market's far end, where the main under it has gone
   darkZones.push({ x0: 78 * TS, x1: 190 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.52 });
   plat(130, 23, 5); plat(130, 21, 4);          // the courtyard: a ledge on the water, and a step across it
   air(94, 95, UP, 27); net(94, 95, UP, ST - 1); air(168, 169, UP, 27); net(168, 169, UP, ST - 1);
@@ -3089,8 +3089,8 @@ function theLamplitStreet() {
   lamp(84); lamp(104); lamp(124, true); lamp(146); lamp(166, true); lamp(184);
   lampUp(90); lampUp(132, true); lampUp(172);
   ent('watch', 98, UP - 1, { face: -1 }); ent('watch', 154, UP - 1, { face: -1 });
-  ent('watch', 114, ST - 1, { face: -1 }); ent('watch', 160, ST - 1, { face: 1 });
-  ent('eel', 108, 33); ent('eel', 144, 31); ent('urchin', 92, ST - 1); ent('urchin', 136, ST - 1); ent('urchin', 178, ST - 1);
+  ent('watch', 114, ST - 1, { face: -1 }); ent('watch', 136, ST - 1, { face: 1 }); ent('watch', 100, ST - 1, { face: -1 });
+  ent('eel', 158, 33); ent('eel', 172, 31); ent('urchin', 164, ST - 1); ent('urchin', 178, ST - 1); ent('urchin', 186, ST - 1);
   ent('snuffer', 120, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
   ent('stray', 128, ST - 1, { kind: 'lamp' });  // the first of his three lamps, down on the stones
   ent('deco', 156, ST - 1, { kind: 'plunder', v: 1 });
@@ -3126,7 +3126,7 @@ function theLamplitStreet() {
   // the air. Swim up into a pocket, breathe, swim on. The seals of thirty years are behind a portcullis and
   // the key is on the clerk who was locking it.
   mass(254, 356);
-  flood(252, 356);
+  flood(288, 340);                              // the counting house: its vaults are the flooded part of it
   darkZones.push({ x0: 254 * TS, x1: 356 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.52 });
   ent('sign', 256, UP - 1, { text: 'THE COUNTING HOUSE. THIRTY YEARS OF TRIBUTE CAME IN HERE AND NONE OF IT EVER WENT OUT AGAIN. THE AIR STANDS UP UNDER THE VAULTS: GO FROM CROWN TO CROWN.' });
   for (const [vx, lip] of [[268, true], [300, false], [330, true]]) {   // three vaults, three pockets
@@ -3147,7 +3147,7 @@ function theLamplitStreet() {
   ent('stray', 333, 22, { kind: 'lamp' });                              // the second lamp, up in a vault
   ent('watch', 276, ST - 1, { face: -1 }); ent('watch', 312, ST - 1, { face: 1 }); ent('watch', 346, ST - 1, { face: -1 });
   ent('watch', 290, UP - 1, { face: -1 }); ent('watch', 324, UP - 1, { face: 1 });
-  ent('eel', 282, 33); ent('eel', 316, 30); ent('angler', 342, 34); ent('urchin', 300, ST - 1); ent('urchin', 320, ST - 1);
+  ent('eel', 296, 33); ent('eel', 316, 30); ent('angler', 330, 34); ent('urchin', 300, ST - 1); ent('urchin', 320, ST - 1);
   ent('check', 266, UP - 1); ent('check', 271, 22); ent('check', 348, ST - 1);
   coins([258, 36], [266, 34], [274, 36], [282, 34], [290, 36], [298, 34], [306, 36], [314, 34], [322, 36], [338, 34], [346, 36],
     [272, 22], [302, 26], [334, 22], [264, 21], [292, 21], [328, 21], [352, 21]);
@@ -3180,7 +3180,7 @@ function theLamplitStreet() {
   mass(430, 470); mass(480, 520); mass(530, 568);
   // the one stretch THE LAMP WORKS answers: while the beam is working its surface drops to wading depth and
   // its dead lamps come up, and when the beam stops it fills again
-  pools.push({ x0: 428 * TS, x1: 572 * TS, y: WL, bottom: ST * TS, shallow: false, swim: true, clear: true, runTide: true, pumpRoad: true, roadHi: WL, roadLo: 37 * TS });
+  pools.push({ x0: 468 * TS, x1: 524 * TS, y: WL, bottom: ST * TS, shallow: false, swim: true, clear: true, runTide: true, pumpRoad: true, roadHi: WL, roadLo: 37 * TS });
   darkZones.push({ x0: 428 * TS, x1: 572 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.58 });
   for (const [a, b] of [[470, 480], [520, 530]]) { plat(a + 1, 23, b - a - 2); plat(a + 2, 20, 3); } // two courtyards open on the water
   air(444, 445, UP, 27); net(444, 445, UP, ST - 1); air(556, 557, UP, ST - 1); net(556, 557, UP, ST - 1);
@@ -3195,8 +3195,8 @@ function theLamplitStreet() {
   ent('watch', 438, ST - 1, { face: -1 }); ent('watch', 460, ST - 1, { face: 1 }); ent('watch', 488, ST - 1, { face: -1 });
   ent('watch', 510, ST - 1, { face: 1 }); ent('watch', 534, ST - 1, { face: -1 }); ent('watch', 560, ST - 1, { face: -1 });
   ent('watch', 450, UP - 1, { face: -1 }); ent('watch', 500, UP - 1, { face: 1 }); ent('watch', 550, UP - 1, { face: -1 });
-  ent('angler', 470, 33); ent('angler', 524, 31); ent('eel', 444, 31); ent('eel', 482, 34); ent('eel', 518, 30); ent('eel', 558, 33);
-  ent('urchin', 442, ST - 1); ent('urchin', 478, ST - 1); ent('urchin', 506, ST - 1); ent('urchin', 542, ST - 1); ent('urchin', 566, ST - 1);
+  ent('angler', 476, 33); ent('angler', 516, 31); ent('eel', 482, 34); ent('eel', 496, 30); ent('eel', 508, 33);
+  ent('urchin', 474, ST - 1); ent('urchin', 488, ST - 1); ent('urchin', 502, ST - 1); ent('urchin', 514, ST - 1); ent('urchin', 520, ST - 1);
   ent('snuffer', 496, UP - 1, { face: -1 });
   ent('silver', 472, 22); ent('deco', 522, 22, { kind: 'plunder', v: 2 });
   ent('check', 436, UP - 1); ent('check', 472, 22); ent('check', 522, 22); ent('check', 564, UP - 1);
@@ -3308,6 +3308,13 @@ function theLamplitStreet() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 10, y: 9 }, pools, falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'drowned', night: false, glowNight: true, dark: 0.5, darkZones,
     lampAir: true,                               // THE RULE: a lit lamp is a lungful of air
+    // the cold of the place, as banks over the dry street: only a lamp opens a hole in it
+    fog: [{ x0: 44 * TS, x1: 152 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.5 },
+      { x0: 190 * TS, x1: 290 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.52 },
+      { x0: 340 * TS, x1: 470 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.48 },
+      { x0: 524 * TS, x1: 700 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.54 }],
+    fogLamps: true,                              // and it is the LAMPS that cut it, not a wisp
+    fogCol: '150,186,178',                       // and it is cold green water in it, not the marsh's white
     // the slabs over the market hall, the lamp works and his square are roofs, not floors: no gold up there
     noCoin: [[194, 242, 0, 12], [362, 426, 0, 10], [574, 698, 0, 6]],
     streetTide: { every: 14, tell: 2.4, flow: 34 },
