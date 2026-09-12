@@ -16,9 +16,11 @@ run (it crosses the deck, damages and throws the player, and shoves the crew too
 tile at the player's chest is NET or CLIMB.
 
 ### Finish it, in this order
-1. **Verify hold-on actually saves you.** A bot standing on the open deck lost 32 HP over two washes; a bot sent
-   up the shrouds lost the same, so either the held check is not firing or the damage came from the crew and the
-   lookout. Test with the crew removed before touching the code.
+1. ~~Verify hold-on saves you~~ — VERIFIED with the crew killed off: a bot parked on the open deck loses ~16 a
+   wash; a bot clinging to a shroud takes nothing across 20 seconds of washes. (The first reading looked bad
+   because teleporting the bot into mid-rigging costs it health before it grabs on.) What is still worth doing:
+   the wash should also push you ALONG the deck when you are held, and it should not be able to throw you into
+   the sea from the windward rail without a chance to grab.
 2. **THE DROWNED BOSUN** — the boss, who comes over the rail *with* a wave: his arena is the quarterdeck at
    x 212-244, he should use the wash as his clock (attack while you must also hold on), and the wave itself
    should be the thing that resets the fight. Give him a wind-up per attack and a tell colour.
