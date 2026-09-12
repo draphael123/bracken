@@ -438,18 +438,22 @@ export function bakeSapper() {
 export function bakeBomb() { const c = outline(fromGrid(['.oo.', 'oooo', 'oooo', '.oo.'], { o: '#1b1626' }, 1), '#5f5a52'); return pack([c], 3, 3, 4, 4); }
 // Brute — a big goblin with a club. 16×16. Frames: stand, walk, raise (overhead tell), swing.
 export function bakeBrute() {
-  const P2 = Object.assign({}, EP, { c: '#6b4a2a', C: '#4c2c17' });
-  const head = ['.....gggggg.....', '....gggggggg....', '...ggeoggggeog..', '...gggggggggg...', '....ggGGGGgg....', '.....gggggg.....'];
-  const body = ['...bbbbbbbbbb...', '..gbbbbbbbbbbg..', '..gbbbbbbbbbbg..', '...rrrrrrrrrr...', '...rrrrrrrrrr...'];
-  const legsA = ['...GGG....GGG...', '...GGG....GGG...', '..GGGG....GGGG..'];
-  const legsB = ['....GGG..GGG....', '....GGG..GGG....', '...GGGG..GGGG...'];
+  const P2 = Object.assign({}, EP, { c: '#8a6438', C: '#5a3c1c', v: '#7ab558' });
+  //                        18 wide, hunched: the shoulders are the widest part of him
+  const head = ['.....gggggggg.....', '....gggggggggg....', '...ggeoggggeogg...', '...ggggggggggggg..', '....gtGGGGGGtg....', '.....gggggggg.....'];
+  const shldr = ['..GGGgggggggGGG...', '.GGGGGggggGGGGGG..', 'GGGvGGGGGGGGGvGGG.'];
+  const body = ['.GbbbbbbbbbbbbbG..', '.GbbbbrrrrbbbbbG..', '..GbbbbbbbbbbG....', '..rrrrrrrrrrrr....'];
+  const legsA = ['...GGGG....GGGG...', '...GGGG....GGGG...', '..GGGGG....GGGGG..'];
+  const legsB = ['....GGGG..GGGG....', '....GGGG..GGGG....', '...GGGGG..GGGGG...'];
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
-  const pad = ['................', '................', '................', '................'];
-  const stand = spr([...pad, ...head, ...body, ...legsA]);
-  const walk = spr([...pad, ...head, ...body, ...legsB]);
-  const raise = spr(['.......cccc.....', '......cCCCCc....', '......cCCCCc....', '.......cccc.....', ...head, ...body, ...legsA]);
-  const swing = spr([...pad, ...head, body[0], body[1], body[2].slice(0, 13) + 'ccc', body[3].slice(0, 13) + 'cCC', body[4].slice(0, 13) + 'ccc', ...legsB]);
-  return pack([stand, walk, raise, swing], 9, 19, 12, 16);
+  const pad = ['..................', '..................', '..................', '..................'];
+  // the club, carried low in his right fist, its head down by his shin
+  const low = rows => { const o = rows.slice(); o[o.length - 3] = o[o.length - 3].slice(0, 15) + 'ccc'; o[o.length - 2] = o[o.length - 2].slice(0, 15) + 'cCC'; o[o.length - 1] = o[o.length - 1].slice(0, 15) + 'cCc'; return o; };
+  const stand = spr(low([...pad, ...head, ...shldr, ...body, ...legsA]));
+  const walk = spr(low([...pad, ...head, ...shldr, ...body, ...legsB]));
+  const raise = spr(['.......cccc.......', '......cCCCCc......', '......cCCCCc......', '.......cccc.......', ...head, ...shldr, ...body, ...legsA]);
+  const swing = spr([...pad, ...head, ...shldr, body[0], body[1].slice(0, 15) + 'ccc', body[2].slice(0, 14) + 'cCCc', body[3].slice(0, 14) + 'ccc.', ...legsB]);
+  return pack([stand, walk, raise, swing], 10, 21, 14, 18);
 }
 // War hound — low, fast. 14×7. Frames: run1, run2, leap.
 export function bakeHound(pal = {}) {

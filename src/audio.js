@@ -161,6 +161,14 @@ export const SFX = {
   lampUp() { tone('triangle', 420, 1100, 0.18, 0.07); tone('sine', 880, 1320, 0.14, 0.05, 0.05); noise(0.12, 0.08, 3200, 1.2); }, // it catches
   heard() { tone('sine', 180, 130, 0.5, 0.06); tone('sine', 92, 70, 0.7, 0.05, 0.08); noise(0.4, 0.06, 420, 1.2, 0.04); }, // something in the dark has you
   tollBell() { tone('sine', 196, 190, 1.6, 0.12); tone('sine', 392, 384, 1.2, 0.05, 0.01); tone('sine', 98, 96, 2, 0.07, 0.02); noise(0.2, 0.05, 900, 1.6); }, // a due named on a dead city's bell
+  // a blade in someone else's hand: duller and lower than yours, because that is how you tell them apart
+  foeSlash() { noise(0.09, 0.2, 900, 1.2); tone('sawtooth', 380, 170, 0.08, 0.07); noise(0.05, 0.12, 2400, 0.5, 0.04); },
+  // a halberd driven out: the haft first, then the head arriving
+  haft() { noise(0.06, 0.16, 420, 1.6); tone('square', 210, 130, 0.09, 0.09); tone('triangle', 1500, 800, 0.05, 0.05, 0.05); noise(0.07, 0.14, 2600, 0.5, 0.06); },
+  // a long pole swung through water: a low whoosh with the wood ringing in it
+  pole() { noise(0.22, 0.2, 320, 1.8); tone('sine', 160, 80, 0.2, 0.08); tone('triangle', 520, 300, 0.12, 0.05, 0.06); noise(0.1, 0.1, 1400, 0.5, 0.1); },
+  // the bog wight: cold air where a mouth should be
+  wightTouch() { pad('sine', 320, 140, 0.7, 0.07, 0, 1200, 0.14); noise(0.5, 0.1, 700, 0.6); tone('sine', 90, 60, 0.6, 0.06, 0.05); },
   swingUp(k) { const r = 1 + Math.min(3, k) * 0.09; noise(0.07, 0.16, 1500 * r, 1.1); tone('triangle', 620 * r, 300 * r, 0.06, 0.05); }, // the run of blows climbs
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
@@ -428,6 +436,34 @@ const DIE = {
   watch() { SFX.clank(); tone('sine', 140, 60, 0.5, 0.16); noise(0.3, 0.26, 380, 0.6, 0.04); noise(0.2, 0.2, 2400, 0.4, 0.14); },
   lampreeve() { tone('sawtooth', 240, 70, 0.5, 0.18); noise(0.4, 0.3, 800, 0.5, 0.05); for (let i = 0; i < 3; i++) tone('triangle', 1200 - i * 200, 900 - i * 200, 0.12, 0.06, 0.2 + i * 0.13); tone('sine', 70, 34, 0.7, 0.12, 0.2); },
   tollmaster() { tone('sine', 196, 190, 2.2, 0.14); tone('sine', 98, 94, 2.6, 0.1, 0.05); noise(0.8, 0.3, 300, 0.6, 0.1); tone('sine', 60, 28, 1.4, 0.12, 0.4); noise(0.6, 0.2, 900, 0.5, 0.5); },
+  // ---- THE SEA ARC: men who work ships, and what lives under them ----
+  // pirates: a shout cut off, iron on the deck, and a body going down on planking
+  cutlass() { file('gobDie', 0.5, 0.92) || tone('square', 300, 90, 0.26, 0.2); tone('triangle', 900, 400, 0.14, 0.1, 0.04); noise(0.16, 0.24, 2200, 0.4, 0.06); },
+  boarder() { file('gobDie', 0.6, 0.7) || tone('sawtooth', 220, 70, 0.34, 0.22); noise(0.3, 0.3, 500, 0.5, 0.05); tone('sine', 90, 44, 0.4, 0.14, 0.12); },
+  marine() { file('gobDie', 0.45, 1.12) || tone('square', 420, 120, 0.22, 0.18); tone('triangle', 1400, 600, 0.1, 0.08, 0.03); noise(0.2, 0.2, 3000, 0.35, 0.08); /* the lathe of the bow goes with him */ },
+  bosun() { file('gobDie', 0.6, 0.66) || tone('sawtooth', 200, 64, 0.36, 0.22); tone('sine', 2100, 900, 0.26, 0.07, 0.05); /* the call on its lanyard, one last note */ noise(0.26, 0.26, 700, 0.5, 0.1); },
+  lookout() { file('gobDie', 0.4, 1.3) || tone('square', 520, 150, 0.2, 0.16); noise(0.18, 0.18, 2600, 0.4, 0.05); tone('triangle', 700, 300, 0.2, 0.06, 0.12); },
+  sailor() { file('gobDie', 0.5, 0.86) || tone('sawtooth', 250, 80, 0.3, 0.2); noise(0.24, 0.24, 900, 0.5, 0.06); },
+  netter() { file('gobDie', 0.5, 1) || tone('square', 340, 110, 0.24, 0.18); noise(0.3, 0.2, 1600, 0.4, 0.06); /* the net falls in a heap */ },
+  // the fish: no voice at all, so all of it is water and body
+  eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
+  urchin() { noise(0.14, 0.26, 3400, 0.3); for (let i = 0; i < 5; i++) tone('triangle', 1600 + i * 200, 900, 0.07, 0.05, i * 0.035); /* the spines go everywhere */ },
+  angler() { tone('sawtooth', 200, 70, 0.3, 0.2); noise(0.3, 0.3, 600, 0.5, 0.03); tone('sine', 1200, 300, 0.18, 0.06, 0.06); /* its lamp goes out */ noise(0.24, 0.16, 1400, 0.4, 0.16); },
+  petrel() { tone('sawtooth', 1300, 400, 0.16, 0.12); tone('square', 900, 300, 0.12, 0.08, 0.05); noise(0.22, 0.16, 2400, 0.4, 0.08); },
+  crab() { noise(0.12, 0.3, 2800, 0.35); for (let i = 0; i < 4; i++) noise(0.05, 0.2, 2200 - i * 300, 0.5, 0.06 + i * 0.05); /* the shell comes apart in pieces */ },
+  turtle() { noise(0.2, 0.3, 1200, 0.4); tone('square', 260, 90, 0.2, 0.14); tone('sine', 80, 40, 0.4, 0.12, 0.08); },
+  heronfoe() { tone('sawtooth', 1000, 300, 0.2, 0.14); tone('square', 1400, 500, 0.14, 0.1, 0.04); noise(0.26, 0.2, 2000, 0.4, 0.1); },
+  scout() { tone('sine', 700, 200, 0.24, 0.14); noise(0.2, 0.2, 1800, 0.4); pad('sine', 500, 260, 0.4, 0.04, 0.06, 2400); /* the tidebound go back to water */ },
+  siren() { tone('sine', 900, 300, 0.4, 0.14); pad('sine', 660, 240, 0.7, 0.06, 0.04, 2200); noise(0.4, 0.2, 700, 0.5, 0.1); /* the song comes apart */ },
+  tideguard() { SFX.clank(); tone('sine', 420, 140, 0.3, 0.14); noise(0.34, 0.26, 900, 0.5, 0.06); tone('sine', 70, 36, 0.5, 0.12, 0.14); },
+  spitcap() { noise(0.3, 0.34, 480, 0.5); tone('sine', 200, 60, 0.3, 0.16); noise(0.4, 0.2, 1200, 0.4, 0.12); /* a wet bladder giving up */ },
+  weaver() { noise(0.16, 0.26, 3000, 0.35); for (let i = 0; i < 3; i++) tone('sawtooth', 1500 - i * 300, 700, 0.09, 0.07, i * 0.06); noise(0.3, 0.16, 1800, 0.4, 0.14); /* chitin, and the curtain sagging */ },
+  squirrel() { tone('square', 1500, 700, 0.09, 0.1); tone('triangle', 1100, 500, 0.07, 0.07, 0.05); noise(0.12, 0.12, 2600, 0.4, 0.03); },
+  // ---- and the four that end a level ----
+  reefmaw() { tone('sawtooth', 120, 40, 0.7, 0.26); noise(0.7, 0.36, 380, 0.5, 0.05); tone('sine', 60, 28, 1.1, 0.16, 0.2); noise(0.5, 0.24, 1100, 0.4, 0.4); SFX.waveCrash && SFX.waveCrash(); },
+  herald() { tone('sine', 300, 90, 0.8, 0.18); pad('sine', 440, 180, 1.2, 0.07, 0.05, 2000); noise(0.8, 0.3, 600, 0.5, 0.1); tone('sine', 55, 26, 1.4, 0.14, 0.3); },
+  quarter() { file('gobDie', 0.6, 0.8) || tone('sawtooth', 240, 70, 0.5, 0.22); tone('triangle', 1000, 380, 0.2, 0.1, 0.06); noise(0.5, 0.3, 700, 0.5, 0.08); tone('sine', 70, 32, 0.9, 0.14, 0.2); },
+  captain() { tone('sawtooth', 200, 60, 0.7, 0.24); noise(0.6, 0.32, 520, 0.5, 0.04); tone('sine', 196, 190, 1.4, 0.08, 0.1); /* the ship's bell rings itself */ tone('sine', 60, 28, 1.2, 0.15, 0.25); },
   sprig() { gob(1) || (tone('square', 420, 90, 0.25, 0.2), noise(0.12, 0.2, 800)); },
   archer() { gob(1.18) || tone('square', 520, 110, 0.22, 0.18); tone('triangle', 900, 300, 0.18, 0.12, 0.04); /* the bowstring goes */ },
   sapper() { gob(1.3, 0.4) || tone('square', 600, 140, 0.2, 0.16); noise(0.05, 0.4, 2500, 0.3, 0.1); tone('sine', 900, 1800, 0.12, 0.1, 0.12); /* the fuse pops */ },
@@ -548,6 +584,7 @@ const HURT = {
   greathound() { tone('sawtooth', 260, 180, 0.16, 0.18); noise(0.08, 0.2, 400, 0.6); },
   bat() { SFX.chitter(); },
   spider() { SFX.hiss(); },
+  squirrel() { tone('square', 1700, 1100, 0.06, 0.08); tone('triangle', 1300, 900, 0.05, 0.05, 0.03); }, // a chitter and it is gone
   grub() { noise(0.1, 0.3, 450, 0.5); tone('sine', 260, 140, 0.1, 0.14); },
   troll() { tone('sawtooth', 150, 90, 0.2, 0.2); noise(0.1, 0.2, 200, 0.6); },
   harpy() { SFX.screech(); },

@@ -371,25 +371,25 @@ export function bakeLampreeve() {
     return c;
   };
   const stride = k => frame({ legs: k === 1 ? 'strideA' : k === 3 ? 'strideB' : 'stand', dy: k & 1 ? 1 : 0, ladder: true,
-    far: [[-4, 24], [-5, 27]], near: [[3, 18], [4, 12]], pole: [[4, 12], -86, 34] });
+    far: [[-4, 24], [-5, 27]], near: [[3, 24], [4, 20]], pole: [[4, 20], -86, 20] });
   const snuffTell = frame({ legs: 'coil', ladder: true, hx: 1,
-    far: [[-2, 20], [1, 15]], near: [[4, 17], [7, 11]], pole: [[7, 11], -38, 34] });
+    far: [[-2, 20], [1, 15]], near: [[4, 21], [7, 17]], pole: [[7, 17], -40, 21] });
   const snuff = frame({ legs: 'lunge', dx: 1, dy: 1, down: true, ladder: true,
-    far: [[0, 21], [4, 19]], near: [[5, 19], [9, 17]], pole: [[9, 17], 6, 34], puff: [17, 18],
-    smear: [1 + X + 10, 1 + 16, 13, -70, -10] });
+    far: [[0, 21], [4, 19]], near: [[5, 20], [9, 18]], pole: [[9, 18], 8, 20], puff: [16, 19],
+    smear: [1 + X + 12, 1 + 18, 12, -60, 0] });
   const sweepTell = frame({ legs: 'coil', dx: -1, down: true, hx: -1, ladder: true,
-    far: [[-4, 22], [-8, 24]], near: [[1, 23], [-4, 26]], pole: [[-4, 26], -170, 34, 'back'] });
+    far: [[-4, 22], [-8, 24]], near: [[1, 23], [-4, 25]], pole: [[-4, 25], -168, 20, 'back'] });
   const sweep = frame({ legs: 'lunge', dx: 2, dy: 2, ladder: true,
-    far: [[-1, 22], [3, 26]], near: [[4, 23], [9, 28]], pole: [[9, 28], 6, 34],
-    smear: [1 + X + 12, 1 + 30, 16, -40, 30] });
+    far: [[-1, 22], [3, 26]], near: [[4, 24], [8, 28]], pole: [[8, 28], 4, 20],
+    smear: [1 + X + 12, 1 + 30, 14, -40, 30] });
   const draw = frame({ legs: 'stand', up: true, dy: -1, ladder: true,
-    far: [[-5, 21], [-7, 18]], near: [[4, 21], [6, 17]], pole: [[6, 17], -72, 34], puff: [8, 12] });
+    far: [[-5, 21], [-7, 18]], near: [[4, 24], [6, 21]], pole: [[6, 21], -74, 20], puff: [8, 14] });
   const douse = frame({ legs: 'bent', dx: 1, dy: 2, down: true, ladder: true,
-    far: [[-3, 23], [-6, 25]], near: [[4, 22], [7, 24]], pole: [[7, 24], 40, 34], dark: [8, 16, 4, 22] });
+    far: [[-3, 23], [-6, 25]], near: [[4, 22], [7, 24]], pole: [[7, 24], 42, 20], dark: [9, 17, 4, 20] });
   const hurtF = frame({ legs: 'kneel', dx: -2, dy: 3, up: true,
-    far: [[-5, 24], [-9, 26]], near: [[2, 23], [5, 27]], pole: [[5, 27], 54, 34] });
+    far: [[-5, 24], [-9, 26]], near: [[2, 23], [5, 27]], pole: [[5, 27], 56, 20] });
   const kneel = frame({ legs: 'kneel', dy: 4, down: true,
-    far: [[-4, 25], [-7, 28]], near: [[3, 25], [5, 30]], pole: [[5, 30], 84, 34] });
+    far: [[-4, 25], [-7, 28]], near: [[3, 25], [5, 30]], pole: [[5, 30], 86, 20] });
   return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel], X + 1, H + 1, 14, 30);
 }
 
@@ -455,7 +455,7 @@ export function bakeTollmaster() {
     for (let x = B - 16; x <= B + 16; x += 1) put(G, x, y0 - 1, (x & 3) === 0 ? 'U' : 'u');   // the rail along it
     for (const px0 of [-15, -11, 11, 15]) { put(G, B + px0, y0 - 1, 'y'); put(G, B + px0, y0 - 2, 'Y'); } // and its gilt pins
     // the pall hanging off it, purple gone black in the water
-    gpoly(G, [[B - 14, y0 + 2], [B + 14, y0 + 2], [B + 12, y0 + 7], [B - 12, y0 + 7]], (x, y) => ((x + y) & 3) === 0 ? 'r' : ((x + y) & 1) ? 'R' : 'z');
+    gpoly(G, [[B - 14, y0 + 3], [B + 14, y0 + 3], [B + 12, y0 + 7], [B - 12, y0 + 7]], (x, y) => ((x + y) & 7) === 0 ? 'd' : ((x + y) & 1) ? 'z' : 'R'); // the pall: black with a thread of purple in it
   };
   // THE LEDGER: a great book on a chain, the thing he hits with. Shown open (reading, the dark) or shut (a club).
   const ledger = (G, hand, deg, open) => {
@@ -490,9 +490,9 @@ export function bakeTollmaster() {
   });
   // the robe's skirt, which is all he has instead of legs while he is carried
   const skirt = (G, B, dy, pose) => {
-    const top = 24 + dy, bot = pose === 'bier' ? 33 + dy : FL;
+    const top = 24 + dy, bot = pose === 'bier' ? 29 + dy : FL;
     const pts = {
-      bier: [[-8, top], [8, top], [11, bot], [-11, bot]],
+      bier: [[-7, top], [7, top], [9, bot], [-9, bot]],
       stand: [[-8, top], [8, top], [12, FL], [-12, FL]],
       stride: [[-8, top], [8, top], [14, FL], [-10, FL]],
       wide: [[-9, top], [9, top], [16, FL], [-16, FL]],

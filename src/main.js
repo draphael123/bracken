@@ -1164,6 +1164,69 @@ function mapToSaved() {
   map.node = nodeLocked(NODES[n]) ? 0 : n; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
   const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
 }
+// what lives along the road, placed against the PATH so it is always beside the walk and never in the sea
+let mapCrit = [], mapPrints = [], mapPuffs = [], mapStepT = 0, mapCritSeeded = false;
+function seedMapLife() {
+  if (mapCritSeeded) return; mapCritSeeded = true;
+  const at = (i, dx, dy) => { const p = PATH[Math.min(PATH.length - 1, i)]; return [p[0] + dx, p[1] + dy]; };
+  const K2 = [['bird', 2, 14, -16], ['hare', 5, -16, 8], ['bird', 9, 18, -14], ['crow', 14, -14, -12],
+    ['hare', 19, 16, 10], ['bird', 24, -18, -14], ['crow', 29, 15, -12], ['hare', 33, -15, 9],
+    ['gull', 40, 14, -18], ['fish', 44, -16, 6], ['gull', 48, 18, -14], ['fish', 51, -14, 8]];
+  for (const [k, i, dx, dy] of K2) { const [x, y] = at(i, dx, dy);
+    mapCrit.push({ k, x, y, hx: x, hy: y, t: Math.random() * 6, flee: 0, vx: 0, vy: 0, face: dx > 0 ? -1 : 1, up: 0 }); }
+}
+function updateMapLife(dt, px, py) {
+  seedMapLife();
+  mapStepT += dt;
+  if (map.walking && mapStepT > 0.16) { // boots in the dirt, and the dust off them
+    mapStepT = 0;
+    mapPrints.push({ x: px + (Math.random() - 0.5) * 3, y: py + 1, life: 3.2 });
+    if (mapPrints.length > 26) mapPrints.shift();
+    mapPuffs.push({ x: px, y: py, vx: -(map.lastDir || 1) * (6 + Math.random() * 8), vy: -4 - Math.random() * 6, life: 0.5 });
+    SFX.step();
+  }
+  for (const p of mapPrints) p.life -= dt;
+  mapPrints = mapPrints.filter(p => p.life > 0);
+  for (const q of mapPuffs) { q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 10 * dt; }
+  mapPuffs = mapPuffs.filter(q => q.life > 0);
+  for (const c of mapCrit) {
+    c.t += dt;
+    const near = Math.hypot(c.x - px, c.y - py) < 26;
+    if (near && c.flee <= 0 && !c.gone) { c.flee = c.k === 'fish' ? 0.9 : 2.4;
+      if (c.k === 'bird' || c.k === 'crow') { c.vx = (c.x < px ? -1 : 1) * 26; c.vy = -22; }
+      else if (c.k === 'hare') { c.vx = (c.x < px ? -1 : 1) * 34; c.vy = 0; c.up = 0.3; }
+      else if (c.k === 'fish') { c.vy = -30; c.vx = 6; }
+      if (c.k === 'gull' && Math.random() < 0.5) c.vy = -14; }
+    if (c.flee > 0) { c.flee -= dt; c.x += c.vx * dt; c.y += c.vy * dt;
+      if (c.k === 'hare') { c.up = Math.max(0, c.up - dt); c.vx *= 0.94; }
+      if (c.k === 'fish') { c.vy += 90 * dt; }
+      if (c.flee <= 0 && (c.k === 'bird' || c.k === 'crow')) { c.x = c.hx; c.y = c.hy; c.vx = 0; c.vy = 0; } // it comes back to its branch
+      if (c.flee <= 0 && c.k === 'fish') { c.x = c.hx; c.y = c.hy; } }
+    else if (c.k === 'gull') { c.x = c.hx + Math.cos(c.t * 0.5) * 16; c.y = c.hy + Math.sin(c.t * 0.5) * 6; c.face = Math.sin(c.t * 0.5) < 0 ? 1 : -1; }
+    else if (c.k === 'hare' && Math.random() < dt * 0.4) { c.face = -c.face; }
+  }
+}
+function drawMapLife() {
+  for (const p of mapPrints) { g.globalAlpha = Math.min(0.5, p.life * 0.22); g.fillStyle = '#3a2a18'; g.fillRect(Math.round(p.x) - 1, Math.round(p.y), 2, 1); }
+  for (const q of mapPuffs) { g.globalAlpha = Math.min(0.6, q.life * 1.2); g.fillStyle = '#c9b892'; g.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); }
+  g.globalAlpha = 1;
+  for (const c of mapCrit) {
+    if (c.k === 'bird' || c.k === 'gull') { const fr = Math.floor(c.t * 10) % 2;
+      if (c.k === 'gull') { g.globalAlpha = 0.9; drawSet(BIRD, null, fr, c.x, c.y, c.face, false, 1.15, 1.15); g.globalAlpha = 1; }
+      else if (c.flee > 0) drawSet(BIRD, null, fr, c.x, c.y, c.vx < 0 ? 1 : -1, false);
+      else { g.fillStyle = '#3a2a3a'; g.fillRect(Math.round(c.x) - 2, Math.round(c.y) - 3, 4, 3); g.fillStyle = '#c98a4a'; g.fillRect(Math.round(c.x) - 1, Math.round(c.y) - 4, 2, 2); } } // sat on its branch
+    else if (c.k === 'crow') { const im = PROP.crow[c.flee > 0 ? 1 + Math.floor(c.t * 10) % 2 : 0], fl = c.flee > 0 ? c.vx < 0 : c.face < 0;
+      if (fl) { g.save(); g.translate(Math.round(c.x), Math.round(c.y)); g.scale(-1, 1); g.drawImage(im, -3, -5); g.restore(); } else g.drawImage(im, Math.round(c.x) - 3, Math.round(c.y) - 5); }
+    else if (c.k === 'hare') { const y = c.y - Math.round(Math.sin((0.3 - c.up) / 0.3 * Math.PI) * 4 * (c.up > 0 ? 1 : 0));
+      drawSet(SPR.hare, null, c.flee > 0 ? 1 : 0, c.x, y, c.flee > 0 ? (c.vx < 0 ? -1 : 1) : c.face, false, 0.8, 0.8); }
+    else if (c.k === 'fish' && c.flee > 0) { g.save(); g.translate(Math.round(c.x), Math.round(c.y)); g.rotate(Math.atan2(c.vy, 30)); g.drawImage(FISH, -3, -2); g.restore(); }
+    else if (c.k === 'fish') { g.globalAlpha = 0.4 + 0.2 * Math.sin(c.t * 3); g.fillStyle = '#cfe8f0'; g.fillRect(Math.round(c.x), Math.round(c.y), 2, 1); g.globalAlpha = 1; } // a ring on the water
+  }
+  // THE DROWNED CITY: its node is under the sea, so it breathes instead of burning
+  { const nd = NODES.find(n => n.id === 'lamplit');
+    if (nd && !nodeLocked(nd)) { if (Math.random() < 0.4) mapPuffs.push({ x: nd.x + (Math.random() - 0.5) * 10, y: nd.y - 2, vx: (Math.random() - 0.5) * 4, vy: -12 - Math.random() * 8, life: 1.4 });
+      g.globalAlpha = 0.10 + 0.05 * Math.sin(time * 2.2); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(nd.x, nd.y, 9, 0, 7); g.fill(); g.globalAlpha = 1; } }
+}
 function mapPos() { const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; return [a[0] + (b[0] - a[0]) * map.t, a[1] + (b[1] - a[1]) * map.t]; }
 function mapGo(dir) {
   if (map.walking) return;
@@ -1219,6 +1282,7 @@ function drawMap() {
     if (NODES[map.node] === nd && !map.walking) { g.globalAlpha = 0.25; g.fillStyle = '#8fd160'; g.beginPath(); g.arc(nd.x, nd.y, 11 + Math.sin(time * 6) * 1.5, 0, 7); g.fill(); g.globalAlpha = 1; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.beginPath(); g.arc(nd.x, nd.y, 9 + Math.sin(time * 6), 0, 7); g.stroke(); }
   }
   const [px, py] = mapPos();
+  updateMapLife(0.016, px, py); drawMapLife();
   g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);
   for (const b of mapBirds) { b.t += 0.016; const bx = b.cx + Math.cos(b.t * 0.6) * b.r, by = b.cy + Math.sin(b.t * 0.6) * b.r * 0.4; drawSet(BIRD, null, Math.floor(b.t * 10) % 2, bx, by, Math.sin(b.t * 0.6) < 0 ? 1 : -1, false); }
   for (const c of mapClouds) { g.globalAlpha = 0.7; g.drawImage(CLOUD[c.k], Math.round(c.x), Math.round(c.y)); g.globalAlpha = 1; }
@@ -3408,7 +3472,7 @@ function updateCrew(e, dt) {
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt);
   let want = 0, grav = true;
   if (e.t === 'cutlass') { const near = ad < 190 && dy < 40 && !P.dead;
-    if (e.mode === 'slashTell') { if (e.modeT <= 0) { e.mode = 'slash'; e.modeT = 0.26; SFX.pSlash(); e.vx = e.face * 90;
+    if (e.mode === 'slashTell') { if (e.modeT <= 0) { e.mode = 'slash'; e.modeT = 0.26; SFX.foeSlash(); e.vx = e.face * 90;
       if (!P.dead && Math.sign(d) === e.face && ad < 34 && dy < 22) { const res = damagePlayer(e.x, DMG.cutlass); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.8; e.stagger = 0.8; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } else if (res === 'hit') P.vx = e.face * 180; } } }
     else if (e.mode === 'slash') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.45; e.cd = 0.9; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
@@ -3749,7 +3813,7 @@ function updateLampreeve(e, dt) {
       if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 16, y: e.y - 34, vx: 0, vy: -16, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.4; } break; }
     case 'sweepTell': { want = -e.face * 20;
-      if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; e.vx = e.face * 150; SFX.swingUp ? SFX.swingUp(1) : SFX.pSlash();
+      if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; e.vx = e.face * 150; SFX.pole();
         reeveSweep(e); } break; }
     case 'sweep': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.45; } break;
     case 'drawTell': { want = 0; e.face = Math.sign(d) || e.face;
@@ -3810,7 +3874,7 @@ function updateWatch(e, dt) {
       if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 1.2; } break; }
     case 'thrustTell': { want = 0;
       if (Math.random() < dt * 14) parts.push({ x: e.x - e.face * 12, y: e.y - 16 - Math.random() * 6, vx: -e.face * 20, vy: -10, life: 0.3, max: 0.3, col: '#a8d8c8', size: 1, grav: 0 });
-      if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.26; e.vx = e.face * 130; SFX.pSlash();
+      if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.26; e.vx = e.face * 130; SFX.haft();
         // the longest reach any foot soldier in the game has, and it is a thrust: step in or step out, not back
         if (!P.dead && Math.sign(d) === e.face && ad < 52 && Math.abs(P.y - e.y) < 26) {
           const res = damagePlayer(e.x, DMG.watchThrust);
@@ -3849,9 +3913,9 @@ function updateCaptain(e, dt) {
       else if (e.shotT <= 0 && ad > 40) { e.mode = 'shootTell'; e.modeT = p3 ? 0.4 : 0.55; e.shotT = p3 ? 2.4 : 3.4; e.shots = p2 ? 2 : 1; e.aimY = P.y - 9; number(e.x, e.y - 42, 'TAKING AIM', '#ff9a5c'); }
       else if (e.callT <= 0) { e.mode = 'call'; e.modeT = 1.1; e.callT = p3 ? 9 : 13; SFX.whistleCall(); }
       break; }
-    case 'sabreTell': if (e.modeT <= 0) { e.mode = 'sabre1'; e.modeT = 0.26; SFX.pSlash(); e.vx = e.face * 150;
+    case 'sabreTell': if (e.modeT <= 0) { e.mode = 'sabre1'; e.modeT = 0.26; SFX.foeSlash(); e.vx = e.face * 150;
       capCut(e, 56, DMG.capSabre); } break;
-    case 'sabre1': if (e.modeT <= 0) { e.mode = 'sabre2'; e.modeT = 0.3; SFX.pSlash(); e.vx = e.face * 90; capCut(e, 50, Math.round(DMG.capSabre * 0.8)); } break;
+    case 'sabre1': if (e.modeT <= 0) { e.mode = 'sabre2'; e.modeT = 0.3; SFX.foeSlash(); e.vx = e.face * 90; capCut(e, 50, Math.round(DMG.capSabre * 0.8)); } break;
     case 'sabre2': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.4; } break;
     case 'shootTell': { e.face = Math.sign(d) || e.face; e.vx = 0;
       if (Math.random() < dt * 26) parts.push({ x: e.x + e.face * 14, y: e.y - 18, vx: 0, vy: -18, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0 });
@@ -3919,7 +3983,7 @@ function updateQuarter(e, dt) {
       if (sameDeck && ad < 42 && e.slashT <= 0) { e.mode = 'slashTell'; e.modeT = p3 ? 0.3 : 0.42; e.slashT = p3 ? 1.5 : 2.2; number(e.x, e.y - 34, '!', '#ffd36b'); SFX.charge(); }
       else if (e.shotT <= 0 && ad < 300 && (ad > 40 || !sameDeck)) { e.mode = 'shootTell'; e.modeT = p3 ? 0.45 : 0.6; e.shotT = p3 ? 2 : 2.8; e.aimY = P.y - 9; number(e.x, e.y - 34, 'TAKING AIM', '#ff9a5c'); }
       break; }
-    case 'slashTell': if (e.modeT <= 0) { e.mode = 'slash'; e.modeT = 0.3; SFX.pSlash(); e.vx = e.face * 130;
+    case 'slashTell': if (e.modeT <= 0) { e.mode = 'slash'; e.modeT = 0.3; SFX.foeSlash(); e.vx = e.face * 130;
       if (!P.dead && Math.sign(d) === e.face && ad < 46 && Math.abs(P.y - e.y) < 28) { const res = damagePlayer(e.x, DMG.quarterSlash); if (res === 'blocked') { e.mode = 'reel'; e.modeT = 0.9; e.stagger = 0.9; number(e.x, e.y - 34, 'PARRIED', '#8fd160'); } else if (res === 'hit') { P.vx = e.face * 240; P.vy = -120; } } } break;
     case 'slash': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.5; } break;
     case 'shootTell': { e.face = Math.sign(d) || e.face; e.vx = 0;
@@ -4350,7 +4414,7 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
   if (e.life <= 0 || P.dead) { e.alive = false; burst(e.x, e.y - 6, 6, COLS.wight, 20, 0.6, -10, 1); return; }
   e.face = Math.sign(d) || e.face; e.x += e.face * 46 * dt; e.y = e.riseY - 1 + Math.sin(e.anim * 3) * 2;
   if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - Math.random() * 12, vx: 0, vy: -15, life: 0.6, max: 0.6, col: '#c8d8c8', size: 1, grav: 0 });
-  if (!P.dead && ad < 10 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 1.2; const res = damagePlayer(e.x, DMG.wight); if (res === 'hit') { P.vx *= 0.2; P.stDelay = 0.8; number(P.x, P.y - 24, 'COLD', '#c8d8c8'); } }
+  if (!P.dead && ad < 10 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 1.2; SFX.wightTouch(); const res = damagePlayer(e.x, DMG.wight); if (res === 'hit') { P.vx *= 0.2; P.stDelay = 0.8; number(P.x, P.y - 24, 'COLD', '#c8d8c8'); } }
 }
 function updateWindcaller(e, dt) {
   // The shaman of the moor. He stands on a stone and throws bolts of sky at you. Struck twice, or left too long, he is gone in a gust and on another stone.
