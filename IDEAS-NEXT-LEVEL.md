@@ -1,67 +1,97 @@
-# Level 14 — pirate, and not the Flotilla again
+# Level 15 — THE LAMPLIT STREET
 
-THE FLOTILLA was four ships lashed together and still: you crossed them. To stay pirate without repeating it,
-14 has to change what a ship IS — put it under fire, put it on its side, put it in a sea that moves, or take
-it apart. Five pitches, each with the one rule you can read from across the room.
+The arc has been pointing at this for three levels and has now said it twice in dialogue. The Long Water's
+seals were payment. The Flotilla was paying a share and the Quartermaster's last words were *"the share was not
+for the sea — it was for something under it, in a street with lights."* The Reef's outro: *"there are lights
+under it, deeper down, in rows. Like a street."* The Captain died and the storm went off her.
 
-## 1. THE CHASE — one ship, under broadside  ★ my pick
-A single ship running from a bigger one that sails alongside you the whole level. **The rule you read: her
-gunports come open, and three seconds later that stretch of deck is gone.** The Flotilla's vocabulary — decks,
-ladders, rigging, nets — with a clock and a gun laid on it.
-- The enemy ship is the level's parallax AND its threat: she drifts closer and further, so the same deck is
-  safe one minute and raked the next. Get behind the mast, drop through a hatch, or be somewhere else.
-- Broadsides eat the terrain (the Quartermaster's deck-fall code already does this) — the route decays as you
-  run it, so the way back is never the way you came.
-- Grapples come over and drag the ships together for a boarding wave; cut the lines or fight the wave.
-- Foes: boarders swinging across on lines, a gun captain who lays the next broadside (kill him and you buy
-  yourself thirty seconds), powder monkeys running charges you can set off.
-- Boss: **THE GUNNER** on the enemy ship's gun deck — you finally board her, and you fight in her own battery
-  with loaded guns you can turn on him. Reuses the cannon-breaks-the-guard rule from the Quartermaster, inverted.
-- New work: the moving sister ship, broadside telegraph, grapple lines. Everything else exists.
+So: **you go down to the street, and you find out who has been collecting.**
 
-## 2. THE CARENAGE — a ship on her side
-A pirate careening beach in a sea cave: they have hauled a great ship over onto her beam ends to scrape her, and
-she is the level. **A ship on her side is a whole new platforming surface** — masts become horizontal bridges out
-over the water, the deck is a wall you climb with the ladders running sideways, gunports are windows in the floor,
-the keel is a ridge you walk.
-- The rule: the tide. Out, and the careened hull is walkable; in, and the low half floods, so the level plays
-  twice in two different shapes.
-- Around her: the tar cauldrons, the capstans and the shore camp — a pirate town without another fleet in it.
-- Foes: scrapers with long hooks, tar-throwers, a capstan crew that can haul the ship further over (the level
-  TILTS a few degrees mid-fight and everything loose slides).
-- Boss: **THE CAREENMASTER**, who fights you along the hull and cuts the careening tackle: she rights the ship
-  in the third phase and the whole arena stands up.
+---
 
-## 3. THE HURRICANE DECK — the sea does the moving
-One ship, one storm, no second ship. **The rule: the wave you can see coming.** A green wall builds to windward;
-when it breaks over the deck anything not holding a line goes over the side.
-- Ropes, shrouds and rings are grab points — the level teaches "hold on" the way the reef taught "hold breath".
-- The deck pitches: platforms are never level twice, and the swell code from the Flotilla drives it for real
-  instead of for looks.
-- Lightning takes the masts down one at a time, and a fallen mast is a new bridge and a lost route at once.
-- Foes: the crew are not your problem — they are trying to save the ship. The problem is what the storm washes
-  aboard. Boss: **THE DROWNED BOSUN**, who comes over the rail with the wave and fights you between them.
+## The one rule, readable from across the room: THE LAMPS ARE AIR
 
-## 4. THE HULKS — prison ships on a mudflat
-Condemned ships chained in an estuary and used as gaols. You go in to take somebody out. **The rule: the tide
-clock** — out, the mud between hulls is walkable and the level is a prison break on foot; in, it is swimming and
-the low decks flood with you in them.
-- Structure the game has not done: get in, find the one you came for, get out with the whole estuary awake.
-- Foes: gaolers with keys (Highcrown's key gates, at sea), crimps, a hulk-master's dogs.
-- Boss: **THE GAOLER** fought on a flooding orlop deck, the water rising through the fight.
+A drowned city lit by whale-oil lamps in iron cages that have burned since it went under — nobody knows on
+what. Under each lamp's hood is a bubble of air. **Light is breath.** The route is lamp to lamp, and that one
+sentence carries the whole level:
 
-## 5. THE DRY DOCK — where the fleet is built
-Half-built hulls as skeletal terrain: ribs you climb through, sawpits, pitch cauldrons, a crane that swings
-timber across the yard. **The rule: the launch.** They slip a finished ship down the ways in the last third —
-with you on her — and the level ends at sea.
-- The best "how a pirate fleet works" texture; the weakest hook until the launch, which is superb.
-- Boss: **THE MASTER SHIPWRIGHT** in the crane bay, fought around the crane's swinging load.
+- Swim between lamps and your breath runs; reach one and it fills.
+- The lamps are objects in the world, so they can be **put out** (by the level, by a foe, by you) and **lit**
+  again from another lamp — carry fire down a street and you have opened a route.
+- A dark stretch is not just a breath problem: there are things in the city that only come where the light has
+  gone, and they can hear you.
 
-## If you want one sentence
-**THE CHASE** is the one I would build: it keeps everything the Flotilla taught the player, and then puts a gun
-on it — the same decks, read completely differently, because a ship that is being shot at is not a place, it is
-a timer.
+That satisfies the standing rules the hard way round: one rule, said three ways (the light you can see, the
+breath gauge, and what the dark brings), with its own telegraph — a lamp guttering before it dies.
 
-## Whatever it is, 14 needs
-A TIER entry, a map node, its own CC0 music, its own creature voices, a mid-level fight that is not the boss,
-a checkpoint before the boss, and one rule legible from across the room.
+## The shape of it (about 700 columns, H 46)
+
+1. **THE DESCENT.** Down the reef face on the diver's line from the boat, past the wreck of the tribute ship.
+   Teaches the lamp economy with three lamps in easy reach and nothing hunting you yet.
+2. **THE FISH MARKET.** The city's outskirts: stalls, a colonnade, the first **drowned watch**. Two roads —
+   the street (swim, fast, exposed) and the arcade roofs (dry, slow, safe) — and the loot is on the street.
+   This is where the new `flow` current earns its keep: **the tide runs down the street and reverses on a
+   timer**, so the same road is a ride one way and a crawl the other, and the lamps' chains lean to tell you
+   which way it is running.
+3. **THE SNUFFER** *(mid-level fight, per rule A9)*. Something that works its way along the street putting the
+   lamps out behind you: you fight it in a shrinking pool of light and it must be killed before the last lamp
+   in the section goes. Four told attacks, and its signature is the level's own rule turned on you.
+4. **THE COUNTING HOUSE.** Where the tribute went: a flooded strongroom, the seals of thirty years in it, and
+   the game's key-and-gate verb underwater (a key on a drowned clerk, a portcullis of iron bars). Air pockets
+   under the vaulted ceilings — the roof IS the air, so the ceiling shape is the platforming.
+5. **THE LAMP WORKS.** The machine room of the level: a pump-and-bellows house (the Hurricane's pump verb,
+   reversed) that pushes air down the street's lamp pipes. Work it and you **relight a whole section**, which
+   opens the low road you could not cross. Stop working it and the street goes dark behind you.
+6. **THE PROCESSION ROAD.** The approach: the widest street, the deepest water, the fewest lamps, and the
+   drowned watch in numbers — the level's hardest swim, with the rising pillars verb (piers of a collapsed
+   bridge) to break it up.
+7. **THE TOLL GATE.** His room.
+
+## The boss: THE TOLLMASTER
+
+Not a beast — the sea arc has had its beast. A man in a chair, of a sort: the magistrate of a city that
+drowned a hundred years ago and never stopped collecting the toll, carried on a bier by four drowned bearers,
+with the ledger chained to his wrist. He does not swim. He is carried.
+
+Four told attacks, and the room's rule is his weapon:
+
+1. **THE LEDGER** *(close)* — he swings the chained book; wide, blockable, and a **parry** is the answer (the
+   new parry window gets its showcase fight).
+2. **THE TOLL** *(mid)* — he calls a due and one of his bearers throws the coin-weight: a heavy flung sinker on
+   a chain that must be dodged, not blocked.
+3. **THE DARK** *(the signature)* — he puts out the lamps around the square, one ring at a time, so the fight
+   is played in a shrinking circle of light: outside it your breath runs and you cannot see his tells. **You
+   relight them** from the brazier at the square's edge, which costs you the seconds he wants.
+4. **THE BEARERS** *(phase two)* — he sets the bier down and the four bearers come off it. Kill them and he
+   must carry himself, which is the only time he is slow.
+5. *Phase three:* he **floods the square** — the last lamp is the only air in the room, and the fight becomes
+   breath against damage.
+
+His open window, per rule A6: every time he snuffs a ring of lamps he is **stationary and lit** for two
+seconds doing it. That is when he bleeds.
+
+## What it reuses, and what is new
+
+**Reuses:** the current (`flow`), air bells (as lamps), the breath clock, rising pillars, keys and gates, the
+pump verb, the deck-fall verb (a collapsing arcade), the wash (as a tide surge down the street), cuttable
+lines, the new parry/heavy/dash/mantle verbs.
+**New work:** the lamp object (lit/guttering/out, an air source, relightable), a darkness mask that follows the
+lamps, the drowned-watch creature (one new foe, three frames), the Snuffer (mid-fight), the Tollmaster and his
+bearers, a CC0 track, and the city tileset — which is the biggest single cost and the reason to build this one
+over any other pitch: **it is a town, and the game has two towns of art to borrow from** (Saltreach's stone and
+the Hanging Village's timber), drowned and relit.
+
+## Why this one and not another
+
+- It closes a thread the game has planted three times, so it reads as the arc's destination rather than another
+  stop.
+- Its rule (light is air) is new to the game and cannot be confused with the wash, the tide or the swell.
+- It gives the four verbs shipped this round their showcase: the parry against the Ledger, the dash across the
+  dark, the mantle on the arcade roofs, the heavy blow against a guard of drowned watch.
+- And it earns its length honestly: a city is a place you explore, so the 700 columns are rooms rather than
+  more deck.
+
+## The first cut, if it needs one
+
+Sections 1, 2, 3, 6 and 7 are the level. THE COUNTING HOUSE and THE LAMP WORKS are the two that could be built
+second — but the Lamp Works is where the rule becomes a machine you operate, so I would fight for it.

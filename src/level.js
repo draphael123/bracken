@@ -1478,7 +1478,7 @@ function stormhold() {
   block(151, 152, 32, 45); block(178, 179, 32, 45);
   // (the span over the sootworks gorge came down: THE CHIMNEYS, below, are the crossing now)
   ent('stormshaman', 181, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
-  ent('archer', 151, 30, { face: 1, fire: true }); ent('rockgoblin', 179, 30, { face: -1 });
+  ent('archer', 151, 31, { face: 1, fire: true }); ent('rockgoblin', 179, 31, { face: -1 }); // (her floor there is row 32: these two were standing two rows over it)
   ent('sign', 148, 31, { text: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE SHIELD CARRIES.', pyro: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. AN EMBER CARRIES.', paladin: 'A GOBLIN WITH AN AXE IS WORTH MORE THAN A GOBLIN WITH A SWORD, IF HE IS STANDING ON THE ROPE. THE BLESSED HAMMER CARRIES.' });
   ent('deco', 152, 31, { kind: 'lanternPost' }); ent('deco', 179, 31, { kind: 'lanternPost' }); // a lamp on each bank of the chimneys (they stood in the air over the old span)
   floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
@@ -1574,7 +1574,7 @@ function stormhold() {
   for (const x of [79, 84, 89, 94]) ent('deco', x, 6, { kind: 'banner', v: x % 2, hang: true });
   ent('sprig', 82, 13, { face: 1 }); ent('sprig', 88, 13, { face: -1 });
   // ---- (pass two) more of the goblins that live here: bombers on the street, a shaman on the roofs, a sweep in a house chimney ----
-  ent('sapper', 124, 31, { face: -1 }); ent('sapper', 200, 29, { face: -1 }); ent('stormshaman', 139, 25, { face: -1 }); ent('sweep', 122, 25, { face: -1 });
+  ent('sapper', 124, 31, { face: -1 }); ent('sapper', 200, 31, { face: -1 }); ent('stormshaman', 139, 25, { face: -1 }); ent('sweep', 122, 25, { face: -1 });
 
   // THE HOUSES. Every roof has a house under it, walls down to the street: the door you go in by is its
   // door, and a roof with no way in gets a door that stays shut. (They were a slate slab over a lone door.)
@@ -2829,7 +2829,7 @@ function theHurricane() {
   bob(133, 19); bob(142, 19); bob(151, 19); bob(160, 19); bob(169, 19); // her own wreckage, riding what is in her
   net(124, 125, 14, 19); net(175, 176, 14, 19);
   movers.push({ kind: 'swing', px: 150 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.6 });
-  ent('marine', 140, 14, { face: -1 }); ent('cutlass', 170, 19, { face: -1 }); ent('lookout', 138, 14, { face: 1 }); ent('cutlass', 128, 19, { face: 1 });
+  ent('marine', 140, 14, { face: -1 }); ent('cutlass', 166, 16, { face: -1 }); ent('lookout', 138, 14, { face: 1 }); ent('cutlass', 131, 16, { face: 1 }); // on her spars: the deck is gone under them
   coins([133, 18], [142, 18], [151, 18], [160, 18], [169, 18], [138, 14], [156, 14]);
   ent('deco', 122, 19, { kind: 'boardingNet' }); ent('deco', 118, 19, { kind: 'kegStack' }); ent('deco', 178, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 172, 19, { kind: 'boardingNet' });
 

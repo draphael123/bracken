@@ -14,6 +14,8 @@ const want = process.argv[2] || null;
 const TS = 16;
 let problems = 0;
 const say = (id, msg) => { console.log('  ' + id.padEnd(10) + msg); problems++; };
+const note = (id, msg) => { notes.push('  ' + id.padEnd(10) + '- ' + msg); };
+const notes = [];
 
 // what main.js knows
 const tierTable = (main.match(/const TIER = \{([^}]*)\}/) || [, ''])[1];
@@ -117,6 +119,44 @@ for (const lv of LEVELS) {
     if (share < 0.05) say(id, `the start can only reach ${Math.round(share * 100)}% of the level's footing: it is probably walled in (her forecastle was, and every other tool passed)`);
   }
 
+  // 11. AN ARENA WIDER THAN THE SCREEN PUTS THE BOSS OFF IT
+  // (the Captain's first arena was 84 tiles and he froze 32 tiles away behind the range cull; the Quartermaster's
+  // is 116 and she can still be off screen when she rides a deck)
+  { const OWNS_ROOM = new Set(['roc', 'lance', 'owl', 'quarter', 'forgemaster', 'king', 'spider']); // these were built to range the whole of it
+    for (const k of ['arena', 'mini']) { const A = L[k]; if (!A || !A.boss) continue;
+      const w = Math.round((A.x1 - A.x0) / TS);
+      if (w > 46 && !OWNS_ROOM.has(A.boss)) note(id, `${k} '${A.boss}' is ${w} tiles wide: over about 44 a boss can be off the screen, so clamp whatever carries it`);
+    } }
+
+  // 12. THE BOSS THE ARENA NAMES HAS TO BE IN THE LEVEL
+  for (const k of ['arena', 'mini']) { const A = L[k]; if (!A || !A.boss) continue;
+    if (!L.ents.some(e => e.t === A.boss || e.t === A.boss + 'lord')) say(id, `${k} names boss '${A.boss}' but the level places no such creature`);
+  }
+
+  // 13. WATER THAT HURTS MUST SAY SO IN COLOUR
+  // (the Flotilla's harbour ate swimmers while being drawn as clean blue sea for a whole round)
+  for (const p of (L.pools || [])) if (p.harm && !p.foulCol) say(id, 'a pool with harm has no foulCol: water that hurts has to look like it hurts');
+
+  // 14. NOTHING STANDS IN THE AIR
+  // (four hands on the Flotilla, two of them in the Quartermaster's arena, and the audit's whitelist hid them)
+  { const solidish = t => t === T.SOLID || t === T.ONEWAY || t === T.CRATE || t === T.PALISADE || t === T.PLANK || t === T.NET
+      || t === T.BOUNCER || t === T.SHELF || t === T.PORT || t === T.RAIL || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CRYST || t === T.REED || t === T.CLIMB;
+    // what does not stand: swimmers, fliers, things that hang from a thread, and the traps that swing from a roof
+    const swims = new Set(['eel', 'siren', 'urchin', 'angler', 'petrel', 'wasp', 'drone', 'spider', 'weaver', 'bat', 'crow', 'harpy', 'kite',
+      'lookout', 'marine', 'spit', 'thorn', 'reefmaw', 'roc', 'owl', 'queen', 'gill', 'heart', 'mother', 'shardling', 'suncatcher', 'netter',
+      'ram', 'sailer', 'turtle', 'crab', 'heronfoe', 'scout', 'siren']);
+    const inWater = e => (L.pools || []).some(p => p.shallow && !p.dry && !p.harm && e.x * TS >= p.x0 - 8 && e.x * TS <= p.x1 + 8 && (e.y + 1) * TS >= p.y - 24 && (e.y + 1) * TS <= (p.bottom || p.y + 40) + 8); // WADING counts; floating over the deep does not
+    const floaters = L.ents.filter(e => foeTypes.has(e.t) && !swims.has(e.t) && !solidish(L.grid[(e.y + 1) * L.W + e.x]) && !inWater(e));
+    if (floaters.length) say(id, 'creatures standing on nothing: ' + floaters.slice(0, 6).map(e => e.t + '@' + e.x + ',' + e.y).join(' '));
+  }
+
+  // 15. A LEVEL WANTS A FIGHT IN THE MIDDLE OF IT, NOT ONLY AT THE END
+  if (L.W > 420 && L.arena && L.arena.boss && !(L.mini && L.mini.boss) && !L.ents.some(e => e.big || e.mini)) {
+    note(id, 'nothing is named in the middle of it: a level this long wants one fight before the last one');
+  }
+
   if (problems === before) console.log('  ' + id.padEnd(10) + 'plugged in.');
 }
 console.log(problems ? `\n${problems} thing${problems === 1 ? '' : 's'} to plug in.` : '\nevery level is plugged in.');
+
+if (notes.length) { console.log('-- advice, which is not a bug --'); for (const n of notes) console.log(n); }
