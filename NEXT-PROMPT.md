@@ -22,6 +22,18 @@ Live: bracken-nine.vercel.app. Everything below is committed, pushed and deploye
   foul water drawn as poison, mast steps, the Flotilla's floating hands and sky-wall, the F/G slot bar, the map
   opening where you left it, mobile full screen.
 
+## The rules we build to
+
+`RULES-LEVELS-AND-BOSSES.md` — thirty rules, all earned in play, twenty of them machine-checked by
+`tools/newlevel.mjs` (which now separates real bugs from design advice). Read it before building a level or a
+boss; it is shorter than the mistakes it prevents.
+
+## The next level
+
+`IDEAS-NEXT-LEVEL.md` — **LEVEL 15: THE LAMPLIT STREET**, the drowned city the whole sea arc has been paying.
+Its rule is THE LAMPS ARE AIR (light is breath, and the lamps can be put out and relit); its boss is THE
+TOLLMASTER, carried on a bier, who snuffs the lamps a ring at a time and is only open while he does it.
+
 ## Open, in the order I would take it
 
 1. **Balance the rush ramp**: every boss is tuned for a player who arrives with that level's relics and a
