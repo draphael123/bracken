@@ -1386,7 +1386,9 @@ function drawMap() {
       const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text('TAM: ' + tm[p.cleared ? 1 : 0], cx0 + 8, cy0 + 47, '#c9d1dc', 'left', 6);
     }
   }
-  text('ARROWS MOVE  UP/DOWN DIFFICULTY  Z ENTER  X BEASTS  V EQUIP', VW / 2, VH - 8, '#9aa39a', 'center', 6);
+  { const line = 'ARROWS MOVE   Z ENTER   X BEASTS   V EQUIP';
+    g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
+    text(line, VW / 2, VH - 8, UI.dim, 'center', 6); }
 }
 
 // ---------- store ----------
@@ -1431,7 +1433,70 @@ function updateTree(dt) {
   if (pausePress || talentsPress) { state = treeFrom; SFX.menuClose(); }
 }
 const TREE_ICON = {};
-function treeIcon(n) { if (n.active) return skillIcon(n.id); return TREE_ICON[n.hero + n.branch] || (TREE_ICON[n.hero + n.branch] = pixIcon(BRANCH_PIX[n.hero][n.branch])); }
+// WHAT A TALENT IS, AS A SHAPE. Eight glyphs, picked off what the talent does rather than which tree it is
+// in, because ninety-eight nodes drawing three pictures is ninety-five nodes you cannot tell apart.
+// A NODE'S GLYPH IS WHAT IT DOES TO YOU, not which tree it grows in: mapping on the theme word gave the
+// paladin's LIGHT branch eight identical crosses and the knight's BLADE eight identical swords, which is the
+// same problem in a different colour. The verb wins, and where a name is all theme it is named here.
+const TAL_BY_NAME = {
+  mercy: 'heart', smite: 'blade', martyr: 'shield', zeal: 'flame', ascension: 'boot', consecrate: 'ring',
+  radiance: 'light', devotion: 'light', lightLance: 'blade', divineShield: 'shield', sanctuary: 'ring',
+  beacon: 'light', crusade: 'chev', blessedHammer: 'ring', faithHp: 'heart', warCry: 'chev',
+  thirdCut: 'blade', riposte: 'shield', risingCut: 'blade', reaper: 'heart', flurry: 'chev',
+  steady: 'shield', parry: 'shield', shieldThrow: 'chev', bash: 'shield', bulwark: 'shield',
+  footing: 'boot', breath: 'heart', groundSlam: 'ring', bounding: 'boot', airRoll: 'boot', skip: 'boot',
+  vent: 'ring', stoke: 'heart', brand: 'flame', longFlame: 'flame', updraft: 'boot', fireWall: 'shield',
+  searing: 'blade', wisp: 'light', blaze: 'flame', fleet: 'boot', emberSkin: 'shield', cinderStep: 'boot',
+  heatShield: 'shield', kindle: 'flame', phoenix: 'heart', stalwart: 'shield', reflect: 'shield',
+  holyCharge: 'boot', retribution: 'ring', ironLungs: 'heart', shockwave: 'ring', concuss: 'ring',
+  wrath: 'heart', whetstone: 'blade', heavyPlunge: 'ring', ironhide: 'shield', swiftness: 'boot',
+  spring: 'boot', hotFlame: 'flame', leapFlame: 'boot', firedropDmg: 'flame', lightFeet: 'boot',
+  hearth: 'heart', sureStride: 'boot', heavyMaul: 'blade', hammerfallDmg: 'ring', lunge: 'blade',
+  whirlwind: 'ring', meteor: 'flame', flameRing: 'ring', hammerLeap: 'boot', bleed: 'blade',
+  execute: 'blade', plated: 'shield', vengeance: 'heart', momentum: 'boot', evasion: 'boot',
+  scatter: 'chev', conflagration: 'flame', pilot: 'light', backdraft: 'flame', ashCloak: 'shield',
+  emberHeart: 'heart', warded: 'shield', farTremor: 'ring', earthshaker: 'ring', heavy: 'blade',
+  sunder: 'blade', twinSkill: 'chev',
+};
+const TAL_KIND = id => {
+  if (TAL_BY_NAME[id]) return TAL_BY_NAME[id];
+  const k = id.toLowerCase();
+  if (/(shield|guard|block|parry|plate|ward|hide)/.test(k)) return 'shield';
+  if (/(step|stride|feet|swift|dash|roll|leap|spring|bound|skip|fleet|charge|lunge)/.test(k)) return 'boot';
+  if (/(slam|tremor|shock|quake|ring|whirl|hammer|plunge)/.test(k)) return 'ring';
+  if (/(breath|lung|vigour|heart|hp|temper|hearth)/.test(k)) return 'heart';
+  if (/(fire|flame|ember|heat|pyre|scorch|jet|cinder|blaze|brand)/.test(k)) return 'flame';
+  if (/(light|holy|mend|aegis|divine|radiance|beacon)/.test(k)) return 'light';
+  if (/(twin|call|cry|horn|throw)/.test(k)) return 'chev';
+  return 'blade';
+};
+const TAL_ICON = {};
+function talIcon(id) {
+  const kind = TAL_KIND(id);
+  if (TAL_ICON[kind]) return TAL_ICON[kind];
+  const [c, gg] = canvas(12, 12); const p = (x, y, col) => { gg.fillStyle = col; gg.fillRect(x, y, 1, 1); };
+  const S = { steel: '#dfe8ff', steelD: '#8a96a8', gold: '#e0b040', goldD: '#a0781c', wood: '#8a5a32', red: '#c9463d',
+    fire: '#ff9a5c', fireL: '#ffd36b', holy: '#fff6c8', green: '#8fd160', dark: '#2a2230' };
+  if (kind === 'blade') { for (let i = 0; i < 7; i++) { p(4 + i, 7 - i, S.steel); p(5 + i, 7 - i, S.steelD); }
+    p(3, 8, S.gold); p(2, 9, S.wood); p(3, 9, S.wood); p(1, 10, S.goldD); p(2, 10, S.gold); p(4, 9, S.goldD); }
+  else if (kind === 'shield') { for (let y = 1; y < 8; y++) for (let x = 2 + (y > 5 ? y - 5 : 0); x < 10 - (y > 5 ? y - 5 : 0); x++) p(x, y, (x + y) % 2 ? S.steel : S.steelD);
+    for (let x = 2; x < 10; x++) p(x, 1, S.gold); p(5, 4, S.red); p(6, 4, S.red); p(5, 5, S.red); p(6, 5, S.red); for (let y = 8; y < 10; y++) { p(5, y, S.steelD); p(6, y, S.steelD); } }
+  else if (kind === 'boot') { for (let x = 2; x < 8; x++) { p(x, 8, S.wood); p(x, 9, S.dark); } for (let y = 3; y < 8; y++) { p(6, y, S.wood); p(7, y, '#5c3a1d'); }
+    p(8, 8, S.wood); p(9, 8, S.dark); for (let i = 0; i < 3; i++) { p(1 - 0 + i, 4 + i, S.steel); p(1 + i, 3 + i, S.steelD); } }
+  else if (kind === 'flame') { const F = [[5, 1], [4, 2], [5, 2], [6, 2], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [4, 7], [5, 7], [6, 7]];
+    for (const [x, y] of F) p(x, y, y < 4 ? S.fireL : y < 6 ? S.fire : '#c9463d'); p(5, 3, '#fff6e0'); p(5, 4, '#fff6e0'); }
+  else if (kind === 'light') { p(5, 0, S.holy); p(5, 1, S.holy); for (let y = 2; y < 9; y++) { p(5, y, S.gold); p(6, y, S.goldD); } for (let x = 2; x < 10; x++) { p(x, 4, S.gold); p(x, 5, S.goldD); }
+    for (const [x, y] of [[2, 1], [9, 1], [1, 6], [10, 6], [5, 10]]) p(x, y, S.holy); }
+  else if (kind === 'heart') { const Hs = [[3, 2], [4, 1], [5, 2], [6, 1], [7, 2], [2, 3], [8, 3], [2, 4], [8, 4], [3, 5], [7, 5], [4, 6], [6, 6], [5, 7], [5, 8]];
+    for (let y = 2; y <= 5; y++) for (let x = 3; x <= 7; x++) p(x, y, S.red); for (const [x, y] of Hs) p(x, y, y < 4 ? '#ff8080' : S.red); p(4, 2, '#ffb0b0'); }
+  else if (kind === 'ring') { for (let a = 0; a < 24; a++) { const an = a / 24 * Math.PI * 2; p(Math.round(5.5 + Math.cos(an) * 4.5), Math.round(5.5 + Math.sin(an) * 4.5), a % 2 ? S.steel : S.steelD); }
+    for (let a = 0; a < 12; a++) { const an = a / 12 * Math.PI * 2; p(Math.round(5.5 + Math.cos(an) * 2.4), Math.round(5.5 + Math.sin(an) * 2.4), S.gold); } p(5, 5, S.holy); }
+  else { for (let i = 0; i < 5; i++) { p(2 + i, 7 - i, S.green); p(3 + i, 7 - i, '#5a8a3a'); p(10 - i - 2, 7 - i, S.green); }
+    for (let i = 0; i < 5; i++) { p(2 + i, 10 - i, S.green); p(10 - i - 2, 10 - i, '#5a8a3a'); } }
+  outline(c, ART.OUT);
+  TAL_ICON[kind] = c; return c;
+}
+function treeIcon(n) { if (n.active) return skillIcon(n.id); return talIcon(n.id); }
 const BRANCH_PIX = {
   knight: [['.......ss.', '......sws.', '.....sws..', '....sws...', '...sws....', '..sws.....', 'bbss......', '.bb.......', 'b.b.......', '..........'],
     ['.ssssss...', 'sssrrsss..', 'ssrrrrss..', 'ssrrrrss..', '.ssrrss...', '.sssss....', '..sss.....', '...s......', '..........', '..........'],
@@ -1488,19 +1553,30 @@ function drawTree() {
     const [x0, y0] = pos(p), [x1, y1] = pos(n); g.strokeStyle = tal(p.id) ? '#c9a040' : '#4a4658'; g.lineWidth = 2; g.beginPath();
     g.moveTo(x0 + 0.5, y0 + NS2); if (x0 !== x1) { g.lineTo(x0 + 0.5, y1 + NS2 / 2); g.lineTo(x1 + 0.5, y1 + NS2 / 2); } g.lineTo(x1 + 0.5, y1); g.stroke(); }
   for (const n of mine) { const [x, y] = pos(n), st = nodeState(n), r = tal(n.id), sel = ns[treeI] === n, lit = r > 0, ready = st === 'open' && any;
-    g.fillStyle = lit ? '#2f2740' : '#171520'; g.fillRect(x - NS2 / 2, y, NS2, NS2);
+    const ly = sel ? y - 1 : y;                                       // the one under the cursor stands a pixel proud
+    g.fillStyle = lit ? '#2f2740' : '#171520'; g.fillRect(x - NS2 / 2, ly, NS2, NS2);
+    if (sel) { const bk = 0.5 + 0.5 * Math.sin(time * 6), r = 2 + Math.round(bk * 1.5);   // A BRACKET THAT BREATHES
+      g.fillStyle = 'rgba(255,246,224,' + (0.10 + 0.10 * bk).toFixed(2) + ')'; g.fillRect(x - NS2 / 2 - r, ly - r, NS2 + r * 2, NS2 + r * 2);
+      g.strokeStyle = '#fff6e0'; g.lineWidth = 1;
+      const L2 = 6, x0b = x - NS2 / 2 - r, x1b = x + NS2 / 2 + r, y0b = ly - r, y1b = ly + NS2 + r;
+      g.beginPath();
+      g.moveTo(x0b + 0.5, y0b + L2); g.lineTo(x0b + 0.5, y0b + 0.5); g.lineTo(x0b + L2, y0b + 0.5);
+      g.moveTo(x1b - L2, y0b + 0.5); g.lineTo(x1b - 0.5, y0b + 0.5); g.lineTo(x1b - 0.5, y0b + L2);
+      g.moveTo(x1b - 0.5, y1b - L2); g.lineTo(x1b - 0.5, y1b - 0.5); g.lineTo(x1b - L2, y1b - 0.5);
+      g.moveTo(x0b + L2, y1b - 0.5); g.lineTo(x0b + 0.5, y1b - 0.5); g.lineTo(x0b + 0.5, y1b - L2);
+      g.stroke(); }
     g.strokeStyle = sel ? '#fff6e0' : st === 'max' ? '#ffd36b' : lit ? '#c9a040' : ready ? '#8fd160' : '#3e3a4c'; g.lineWidth = n.active ? 2 : 1;
-    g.strokeRect(x - NS2 / 2 + 0.5, y + 0.5, NS2 - 1, NS2 - 1);
+    g.strokeRect(x - NS2 / 2 + 0.5, ly + 0.5, NS2 - 1, NS2 - 1);
     if (st === 'level') { // THE LOCK, on the thing it locks: a shackle and a body, and the level it wants under it
-      const lx = x + NS2 / 2 - 6, ly = y + 1;
-      g.fillStyle = '#0d0b16'; g.fillRect(lx - 1, ly, 7, 7);
-      g.fillStyle = '#8a7a5a'; g.fillRect(lx + 1, ly, 3, 1); g.fillRect(lx, ly + 1, 1, 2); g.fillRect(lx + 4, ly + 1, 1, 2);
-      g.fillStyle = '#c9a040'; g.fillRect(lx, ly + 3, 5, 4); g.fillStyle = '#0d0b16'; g.fillRect(lx + 2, ly + 4, 1, 2); }
-    if (ready && !sel) { g.globalAlpha = 0.1 + 0.12 * Math.sin(time * 5 + n.row); g.fillStyle = '#8fd160'; g.fillRect(x - NS2 / 2, y, NS2, NS2); g.globalAlpha = 1; }
-    const ic = treeIcon(n); g.globalAlpha = lit ? 1 : st === 'level' || st === 'parent' ? 0.28 : 0.7; g.drawImage(ic, x - 6, y + 2, 12, 12); g.globalAlpha = 1;
-    for (let k = 0; k < n.max; k++) { const px = x - (n.max * 4 - 1) / 2 + k * 4; g.fillStyle = k < r ? (r >= n.max ? '#ffd36b' : '#8fd160') : '#3e3a4c'; g.fillRect(Math.round(px), y + NS2 - 4, 3, 2); } // a pip for every point in it
+      const lx = x + NS2 / 2 - 6, lky = ly + 1;
+      g.fillStyle = '#0d0b16'; g.fillRect(lx - 1, lky, 7, 7);
+      g.fillStyle = '#8a7a5a'; g.fillRect(lx + 1, lky, 3, 1); g.fillRect(lx, lky + 1, 1, 2); g.fillRect(lx + 4, lky + 1, 1, 2);
+      g.fillStyle = '#c9a040'; g.fillRect(lx, lky + 3, 5, 4); g.fillStyle = '#0d0b16'; g.fillRect(lx + 2, lky + 4, 1, 2); }
+    if (ready && !sel) { g.globalAlpha = 0.1 + 0.12 * Math.sin(time * 5 + n.row); g.fillStyle = '#8fd160'; g.fillRect(x - NS2 / 2, ly, NS2, NS2); g.globalAlpha = 1; }
+    const ic = treeIcon(n); g.globalAlpha = lit ? 1 : st === 'level' || st === 'parent' ? 0.28 : 0.7; g.drawImage(ic, x - 6, ly + 3, 12, 12); g.globalAlpha = 1;
+    for (let k = 0; k < n.max; k++) { const px = x - (n.max * 4 - 1) / 2 + k * 4; g.fillStyle = k < r ? (r >= n.max ? '#ffd36b' : '#8fd160') : '#3e3a4c'; g.fillRect(Math.round(px), ly + NS2 - 4, 3, 2); } // a pip for every point in it
     if (n.active) { g.fillStyle = lit && skillNow() === n.id ? '#ffd36b' : lit && skill2Now() === n.id ? '#8fd160' : 'rgba(60,56,76,0.9)';
-      g.fillRect(x + NS2 / 2 - 5, y - 4, 10, 6); text(skillNow() === n.id && lit ? 'F' : skill2Now() === n.id && lit ? 'G' : '*', x + NS2 / 2, y - 4, lit && (skillNow() === n.id || skill2Now() === n.id) ? '#1b1626' : UI.dim, 'center', 6); }
+      g.fillRect(x + NS2 / 2 - 5, ly - 4, 10, 6); text(skillNow() === n.id && lit ? 'F' : skill2Now() === n.id && lit ? 'G' : '*', x + NS2 / 2, ly - 4, lit && (skillNow() === n.id || skill2Now() === n.id) ? '#1b1626' : UI.dim, 'center', 6); }
     const nm = n.name.length * 6 > colW - 4 ? n.name.slice(0, Math.max(3, Math.floor((colW - 4) / 6))) : n.name;
     text(nm, x, y + NS2 + 1, sel ? '#fff6e0' : st === 'max' ? UI.gold : lit ? UI.text : '#7a7a84', 'center', 6); }
   // FORGET ALL, and then what the chosen skill does
@@ -1519,7 +1595,7 @@ function drawTree() {
     lines.slice(0, 3).forEach((ln, k) => text(ln, 12, dy + 9 + k * 7, UI.dim, 'left', 6)); }
   { const act = cur && cur.active, on = act && tal(cur.id);
     const line = on ? 'F PUTS IT ON F     G PUTS IT ON G     Q CLOSE' : act ? 'Z LEARN IT FIRST, THEN F OR G TO SET THE KEY     Q CLOSE' : 'ARROWS MOVE     Z LEARN     Q CLOSE';
-    text(line, VW / 2, VH - 9, on ? UI.sel : '#8a8a94', 'center', 6); }
+    text(line, VW / 2, VH - 9, on ? UI.sel : UI.dim, 'center', 6); }
 }
 function updateStore(dt) {
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold back: training and skills are learned in the talent trees now'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
@@ -1728,7 +1804,7 @@ function drawSlots() {
     const p = readSlot(i), x = x0 + i * (cw + gap), sel = i === slotI, y = 34 - (sel ? 3 : 0), h = 104;
     if (sel) { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 2, cw + 4, h + 4); g.globalAlpha = 1; }
     g.fillStyle = sel ? 'rgba(30,26,44,0.95)' : 'rgba(20,16,30,0.85)'; g.fillRect(x, y, cw, h); g.strokeStyle = sel ? '#ffd36b' : '#4a4a5a'; g.strokeRect(x + 0.5, y + 0.5, cw - 1, h - 1);
-    text('SLOT ' + (i + 1), x + cw / 2, y + 8, sel ? '#fff6e0' : '#9aa39a', 'center');
+    text('SLOT ' + (i + 1), x + cw / 2, y + 8, sel ? '#fff6e0' : UI.dim, 'center');
     if (!p) { text('empty', x + cw / 2, y + 44, '#6a6a7a', 'center'); text('new game', x + cw / 2, y + 58, sel ? '#8fd160' : '#4a5a4a', 'center'); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0);
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const K2 = p.hero === 'paladin' ? preview('slot:paladin', () => bakePaladin({})) : p.hero === 'pyro' ? preview('slot:pyro:' + (p.skin || 'bracken'), () => bakePyro(PYRO_SETS[p.skin || 'bracken'] || {})) : skin ? preview('slot:' + skin.id + ':' + (p.sword || 'steel'), () => bakeKnight(Object.assign({}, skin.pal, (SWORDS.find(w => w.id === (p.sword || 'steel')) || SWORDS[0]).pal))) : K;
@@ -1738,7 +1814,7 @@ function drawSlots() {
     text(medals + ' medal pts', x + cw / 2, y + 76, '#c9d1dc', 'center');
     if (cleared >= levels) text('COMPLETE', x + cw / 2, y + 90, '#8fd160', 'center');
   }
-  text(slotMsgT > 0 && slotMsg ? slotMsg : 'ARROWS pick  Z play  X erase  ESC', VW / 2, VH - 24, slotMsgT > 0 ? '#ffd36b' : '#9aa39a', 'center');
+  text(slotMsgT > 0 && slotMsg ? slotMsg : 'ARROWS pick  Z play  X erase  ESC', VW / 2, VH - 24, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
 }
 function drawBestiary() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.6)'); vg.addColorStop(1, 'rgba(10,20,14,0.9)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -1751,7 +1827,7 @@ function drawBestiary() {
     const nm = r && r.seen ? (BEAST_SHORT[b.t] || b.name) : '? ? ?';
     const sz = nm.length * 8 > LW2 ? 6 : 8, fit = nm.length * sz > LW2 ? nm.slice(0, Math.floor(LW2 / sz)) : nm;
     text(fit, lx + 10, yy + (sz === 6 ? 1 : 0), sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#6a6a6a'), 'left', sz); });
-  if (off > 0) text('^', 64, ly - 8, '#9aa39a', 'center'); if (off + ROWS < list.length) text('v', 64, ly + ROWS * 12, '#9aa39a', 'center');
+  if (off > 0) text('^', 64, ly - 8, UI.dim, 'center'); if (off + ROWS < list.length) text('v', 64, ly + ROWS * 12, UI.dim, 'center');
   const b = list[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
   const px = 112, pw = VW - px - 6, py = 18, ph = VH - 32;
   g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(px, py, pw, ph); g.strokeStyle = '#8fd160'; g.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
@@ -8411,7 +8487,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
     text(tr, VW / 2, y + h - 40, '#8fd160', 'center', 6);
     text('T  TALENTS AND WHAT IS ON F AND G', VW / 2, y + h - 30, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 20, UI.sel, 'center', 6); }
-  text('ESC back', VW / 2, y + h - 10, '#9aa39a', 'center', 6);
+  text('ESC back', VW / 2, y + h - 10, UI.dim, 'center', 6);
 }
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -8420,20 +8496,20 @@ function drawControls() {
   const rows = [['move', 'ARROWS / WASD', 'STICK'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], ['heavy blow', 'HOLD SWING', 'HOLD X'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN ON A LEDGE', 'DOWN'], ['shrine', 'R (RETURN)', '']];
   text('keyboard', x + 66, y + 20, '#9aa39a'); text('pad', x + w - 10, y + 20, '#9aa39a', 'right');
   rows.forEach(([a, b, c], i) => { const yy = y + 30 + i * 11; text(a, x + 8, yy, UI.text); text(b, x + 66, yy, '#c9d1dc'); const btn = { A: '#8fd160', B: '#ff6b6b', X: '#5aa0e0', Y: '#ffd36b' }[c]; if (btn) { g.fillStyle = btn; g.beginPath(); g.arc(x + w - 12, yy + 4, 5, 0, 7); g.fill(); text(c, x + w - 12, yy + 1, '#1b1626', 'center', 6); } else text(c, x + w - 8, yy, '#c9d1dc', 'right', c.length > 6 ? 6 : 8); });
-  text('ESC back', VW / 2, y + h - 10, '#9aa39a', 'center');
+  text('ESC back', VW / 2, y + h - 10, UI.dim, 'center');
 }
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h);
   text('SOUND TEST', VW / 2, y + 6, UI.title, 'center');
   const cats = ['EFFECTS', 'MUSIC', 'AMBIENCE'], lists = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES], list = lists[soundCat];
-  cats.forEach((c, i) => { const sel = i === soundCat; text((sel ? '< ' : '') + c + (sel ? ' >' : ''), x + w / 2 + (i - 1) * 84, y + 18, sel ? '#8fd160' : '#9aa39a', 'center'); });
+  cats.forEach((c, i) => { const sel = i === soundCat; text((sel ? '< ' : '') + c + (sel ? ' >' : ''), x + w / 2 + (i - 1) * 84, y + 18, sel ? '#8fd160' : UI.dim, 'center'); });
   const cols = soundCat === 0 ? 3 : 1, rows = 11, perPage = cols * rows, page = Math.floor(soundI / perPage), start = page * perPage;
   for (let i = start; i < Math.min(list.length, start + perPage); i++) { const k = i - start, cx0 = x + 10 + (k % cols) * (w - 20) / cols, cy0 = y + 32 + Math.floor(k / cols) * 11, sel = i === soundI; if (sel) text('>', cx0 - 2, cy0, '#8fd160'); text(list[i], cx0 + 8, cy0, sel ? '#fff6e0' : '#c9d1dc'); }
   if (list.length > perPage) text('page ' + (page + 1) + '/' + Math.ceil(list.length / perPage), x + w - 8, y + h - 20, '#9aa39a', 'right');
-  text('Z play   LEFT/RIGHT group   ESC back', VW / 2, y + h - 10, '#9aa39a', 'center');
+  text('Z play   LEFT/RIGHT group   ESC back', VW / 2, y + h - 10, UI.dim, 'center');
 }
-const UI = { text: '#e8dcc0', title: '#f2e8d0', dim: '#9aa39a', border: '#c9b27c', sel: '#8fd160', gold: '#ffd34a', silver: '#dfe8ff', plate: 'rgba(20,16,30,0.92)' };
+const UI = { text: '#f0e8d4', title: '#fff6e0', dim: '#c2c9c2', border: '#d9c28c', sel: '#a8e06e', gold: '#ffd34a', silver: '#eaf0ff', plate: 'rgba(16,13,24,0.96)' };
 applyLook(); // whatever look was saved, before anything is drawn
 function panel(x, y, w, h, col = UI.border) {
   g.fillStyle = UI.plate || 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h);
@@ -8447,10 +8523,10 @@ function drawMenu() {
   const x = 54, y = 6 + Math.round((1 - eo) * -14), w = VW - 108, h = 168;
   panel(x, y, w, h);
   text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS', VW / 2, y + 6, UI.title, 'center');
-  if (menuFrom === 'play' && L) text(LEVELS[levelIndex].name + '  ' + fmt(levelTime), VW / 2, y + h - 22, '#9aa39a', 'center');
+  if (menuFrom === 'play' && L) text(LEVELS[levelIndex].name + '  ' + fmt(levelTime), VW / 2, y + h - 22, UI.dim, 'center');
   const M = menuItems();
   const off = Math.max(0, Math.min(M.length - MENU_ROWS, menuI - MENU_ROWS + 2));
-  if (off > 0) text('^', x + w - 12, y + 14, '#9aa39a', 'center'); if (off + MENU_ROWS < M.length) text('v', x + w - 12, y + h - 22, '#9aa39a', 'center');
+  if (off > 0) text('^', x + w - 12, y + 14, UI.dim, 'center'); if (off + MENU_ROWS < M.length) text('v', x + w - 12, y + h - 22, UI.dim, 'center');
   { const want = y + 22 + (menuI - off) * 12; menuBarY = menuBarY === null || Math.abs(menuBarY - want) > 60 ? want : menuBarY + (want - menuBarY) * 0.35;
     if (!isHeader(M[menuI])) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = UI.sel; g.fillRect(x + 5, Math.round(menuBarY) - 2, 2, 11); } }
   M.forEach((k, i) => {
@@ -8465,7 +8541,7 @@ function drawMenu() {
   { const k = M[menuI], tip = SETTING_TIPS[k];
     if (menuMsgT > 0 && menuMsg) text(menuMsg, VW / 2, y + h - 12, '#ffd36b', 'center');
     else if (tip) text(tip, VW / 2, y + h - 12, '#9aa39a', 'center', 6);
-    else text('ESC close', VW / 2, y + h - 12, '#9aa39a', 'center'); }
+    else text('ESC close', VW / 2, y + h - 12, UI.dim, 'center'); }
 }
 function drawSelect() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.5)'); vg.addColorStop(1, 'rgba(10,20,14,0.85)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -8485,7 +8561,7 @@ function drawSelect() {
       else text('not yet', x + w - 8, y + 30, '#9aa39a', 'right');
     }
   });
-  text('Z  play     X  bestiary     ESC  back', VW / 2, VH - 14, '#9aa39a', 'center');
+  text('Z  play     X  bestiary     ESC  back', VW / 2, VH - 14, UI.dim, 'center');
 }
 // Title illustration: dusk in the wood, the mountain the whole game climbs on the skyline - the Sunspire
 // catching the last light and the Queen's castle on the peak beyond it - a knight at a campfire before
@@ -8985,14 +9061,14 @@ function render() {
     text(won ? 'you went through the lot' : 'fight ' + ((r.i || 0) + 1) + ' of ' + RUSH.length + ': ' + rushName(RUSH[r.i || 0]), VW / 2, 68, '#fff6e0', 'center');
     text('time ' + fmt(Math.round(r.t || 0)) + '    hits ' + (r.hits || 0) + '    lives left ' + (r.lives || 0), VW / 2, 84, '#c9d1dc', 'center');
     if (rec.bestT) text('best ' + fmt(rec.bestT) + '   fewest hits ' + (rec.bestHits === undefined ? '-' : rec.bestHits), VW / 2, 98, '#8fd160', 'center');
-    text('Z TO TRY AGAIN     ESC TO THE MAP', VW / 2, 126, '#8a8a94', 'center', 6);
+    text('Z TO TRY AGAIN     ESC TO THE MAP', VW / 2, 126, UI.dim, 'center', 6);
   }
   if (state === 'gameover') {
     g.fillStyle = 'rgba(30,8,10,0.75)'; g.fillRect(40, 40, VW - 80, 100); g.strokeStyle = '#ff6b6b'; g.strokeRect(40.5, 40.5, VW - 81, 99);
     text('THE KNIGHT FALLS', VW / 2, 52, '#ff6b6b', 'center', 12);
     text('no lives left', VW / 2, 76, '#fff6e0', 'center');
     text('time ' + fmt(levelTime) + '   foes ' + kills, VW / 2, 92, '#c9d1dc', 'center');
-    text('the wood keeps its gold', VW / 2, 106, '#9aa39a', 'center');
+    text('the wood keeps its gold', VW / 2, 106, UI.dim, 'center');
     if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, 124, '#8fd160', 'center');
   }
   if (state === 'win') {
