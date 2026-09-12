@@ -37,3 +37,8 @@ Anything not in the manifest is synthesised in src/audio.js.
   https://opengameart.org/content/sailor-waltz-with-water-effects-c64-style - THE LONG WATER
 - reef.mp3 = "Nautilus" by poinl (CC0) https://opengameart.org/content/nautilus - THE SHIPWRECK REEF (trimmed to 150 s with a fade, re-encoded at 128 kbps)
 - flotilla.ogg = "Pirate Game Tune" by Tozan (CC0) https://opengameart.org/content/pirate-game-tune - THE FLOTILLA
+
+Round 70: the wind-up (SFX.charge) no longer plays the boss roar clip, and block / gateLand / aegis / thud
+are synthesised apart instead of sharing one clang and one slam. Every creature of the three sea levels has
+its own hurt voice (src/audio.js HURT): shelled things click, fish snap, birds squawk, the drowned elves
+gasp thin, the drowned crew groan waterlogged, the pirates are six pitches of the human hurt clip.

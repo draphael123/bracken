@@ -158,12 +158,12 @@ export const SFX = {
   die() { file('hurt', 0.7, 0.7); tone('sawtooth', 320, 40, 0.7, 0.28); tone('square', 200, 50, 0.5, 0.15, 0.1); },
   check() { [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.25, 0.18, i * 0.09)); },
   win() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone('triangle', f, f, 0.3, 0.2, i * 0.12)); },
-  block() { file('clang', 0.45, 1.2) || (tone('square', 900, 700, 0.06, 0.2), tone('sine', 1800, 1500, 0.14, 0.14), noise(0.06, 0.25, 2600)); },
+  block() { tone('square', 520, 380, 0.07, 0.2); noise(0.09, 0.26, 900, 0.5); tone('sine', 260, 170, 0.12, 0.12, 0.01); }, // a dull wooden-backed shield taking it
   guardBreak() { file('stagger', 0.6) || (tone('sawtooth', 500, 90, 0.35, 0.3), noise(0.2, 0.3, 900)); },
   dodge() { noise(0.14, 0.18, 1200, 0.4); tone('triangle', 300, 700, 0.1, 0.06); },
   heavy() { file('slam', 0.55) || (tone('square', 140, 40, 0.22, 0.32), noise(0.16, 0.35, 400), tone('triangle', 900, 1500, 0.1, 0.12, 0.02)); },
-  charge() { file('roar', 0.35, 1.4) || (tone('sawtooth', 120, 260, 0.35, 0.16), noise(0.3, 0.12, 500)); },
-  thud() { file('slam', 0.5, 0.8) || (tone('sine', 90, 40, 0.2, 0.35), noise(0.1, 0.25, 250)); },
+  charge() { noise(0.22, 0.1, 700, 0.8); tone('sawtooth', 150, 300, 0.22, 0.08); tone('square', 300, 520, 0.1, 0.05, 0.1); }, // a breath drawn and a weapon coming back, not a lion
+  thud() { tone('sine', 110, 46, 0.18, 0.32); tone('triangle', 220, 120, 0.1, 0.12); noise(0.08, 0.18, 320, 0.6); }, // something wooden and heavy meeting the ground
   stone() { file('stone', 0.4); },
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },
   bossHurt() { file('bossHurt', 0.55) || tone('sawtooth', 300, 120, 0.25, 0.25); },
@@ -300,7 +300,7 @@ Object.assign(SFX, {
   bleat() { tone('sawtooth', 520, 470, 0.14, 0.1); tone('sawtooth', 560, 500, 0.12, 0.08, 0.16); tone('square', 540, 480, 0.1, 0.05, 0.3); },
   goatCry() { tone('sawtooth', 380, 300, 0.2, 0.12); noise(0.06, 0.2, 1200, 1, 0.02); tone('sawtooth', 400, 320, 0.14, 0.08, 0.22); },
   screech() { tone('sawtooth', 2200, 900, 0.22, 0.12); noise(0.1, 0.18, 2600, 1.3, 0.03); },
-  bellow() { file('roar', 0.6, 0.7) || (tone('sawtooth', 110, 60, 0.4, 0.3), noise(0.2, 0.4, 300, 0.6)); },
+  bellow() { file('roar', 0.6, 0.62) || tone('sawtooth', 110, 60, 0.4, 0.3); tone('sawtooth', 70, 44, 0.5, 0.2, 0.04); noise(0.3, 0.3, 220, 0.6); }, // a ram: lower, and it carries
   snort() { noise(0.14, 0.3, 420, 0.6); tone('sawtooth', 140, 70, 0.16, 0.16); },
   clatter() { tone('square', 1100, 320, 0.06, 0.1); noise(0.06, 0.2, 2600, 1.1); tone('square', 800, 260, 0.05, 0.08, 0.05); },
   ribbit() { file('croak', 0.45, 1.5) || (tone('sawtooth', 200, 300, 0.09, 0.14), tone('sawtooth', 280, 170, 0.1, 0.12, 0.09)); },
@@ -313,7 +313,7 @@ Object.assign(SFX, {
 Object.assign(SFX, {
   grubSpit() { noise(0.14, 0.24, 700, 0.6); tone('sine', 380, 120, 0.18, 0.14); tone('square', 900, 400, 0.06, 0.05, 0.05); },
   grubDie() { noise(0.3, 0.3, 400, 0.5); tone('sine', 260, 40, 0.35, 0.2); tone('sine', 700, 200, 0.2, 0.08, 0.05); },
-  rockLaugh() { file('laugh', 0.35, 1.15) || (tone('square', 320, 260, 0.08, 0.1), tone('square', 360, 300, 0.08, 0.1, 0.1), tone('square', 400, 330, 0.1, 0.1, 0.2)); },
+  rockLaugh() { file('laugh', 0.3, 1.45) || (tone('square', 320, 260, 0.08, 0.1), tone('square', 360, 300, 0.08, 0.1, 0.1), tone('square', 400, 330, 0.1, 0.1, 0.2)); },
   golemChime() { [1046, 1318, 1568].forEach((f, i) => tone('sine', f, f * 0.98, 0.5, 0.12, i * 0.06)); noise(0.08, 0.08, 5000, 1.2); },
   golemStomp() { tone('sine', 70, 35, 0.3, 0.4); noise(0.2, 0.35, 260, 0.6); tone('sine', 2093, 1568, 0.25, 0.08, 0.08); },
   golemShatter() { noise(0.4, 0.45, 3200, 0.7); [2093, 1760, 1396, 1046, 784].forEach((f, i) => tone('sine', f, f * 0.7, 0.35, 0.12, i * 0.05)); tone('sawtooth', 120, 40, 0.5, 0.2); },
@@ -326,8 +326,8 @@ Object.assign(SFX, {
   forgeHammer() { file('slam', 0.6, 0.8) || tone('sine', 90, 40, 0.25, 0.4); tone('square', 1900, 1200, 0.08, 0.12, 0.02); noise(0.12, 0.3, 3000, 1.1, 0.02); },
   forgeSteam() { noise(0.5, 0.28, 2200, 0.5); noise(0.3, 0.18, 900, 0.5, 0.1); },
   forgeChain() { for (let i = 0; i < 5; i++) { noise(0.04, 0.16, 2600, 1.2, i * 0.07); tone('square', 700 - i * 40, 500, 0.04, 0.06, i * 0.07); } },
-  kingLaugh() { file('laugh', 0.45, 0.7) || (tone('sawtooth', 150, 130, 0.12, 0.2), tone('sawtooth', 170, 140, 0.12, 0.2, 0.14), tone('sawtooth', 190, 150, 0.16, 0.2, 0.28)); },
-  chiefBark() { file('roar', 0.45, 1.2) || (tone('sawtooth', 260, 120, 0.25, 0.22), noise(0.12, 0.22, 900)); },
+  kingLaugh() { file('laugh', 0.5, 0.62) || (tone('sawtooth', 150, 130, 0.12, 0.2), tone('sawtooth', 170, 140, 0.12, 0.2, 0.14), tone('sawtooth', 190, 150, 0.16, 0.2, 0.28)); },
+  chiefBark() { file('roar', 0.4, 1.55) || tone('sawtooth', 300, 140, 0.18, 0.22); tone('square', 420, 200, 0.1, 0.12, 0.02); noise(0.1, 0.18, 1200, 0.7); }, // a bark: short, high, clipped
   owlHoot() { tone('sine', 520, 440, 0.18, 0.16); tone('sine', 480, 400, 0.22, 0.14, 0.2); },
   frogBoom() { tone('sawtooth', 60, 90, 0.5, 0.3); tone('square', 120, 80, 0.4, 0.12, 0.05); noise(0.2, 0.12, 300, 0.6); },
   queenShriek() { tone('sawtooth', 900, 1600, 0.3, 0.14); tone('sawtooth', 1200, 700, 0.3, 0.1, 0.1); noise(0.2, 0.1, 3000, 0.8); },
@@ -337,11 +337,11 @@ Object.assign(SFX, {
   mend() { [523, 659, 784].forEach((f, i) => pad('triangle', f, f * 1.01, 0.7, 0.07, i * 0.07, 3000, 0.08)); bell(1568, 0.8, 0.05, 0.2); noise(0.5, 0.05, 6000, 1.2, 0.1); },
   judgement() { noise(1.0, 0.45, 140, 0.4); tone('sine', 62, 28, 1.0, 0.4); tone('sawtooth', 110, 50, 0.6, 0.14); [784, 1175, 1568].forEach((f, i) => bell(f, 1.3, 0.09, 0.05 + i * 0.03)); },
   lightFull() { bell(1046, 0.9, 0.08); bell(1568, 0.7, 0.05, 0.08); },
-  aegis() { file('clang', 0.4, 0.85) || tone('square', 700, 520, 0.08, 0.16); bell(880, 0.5, 0.07, 0.01); },
+  aegis() { bell(880, 0.6, 0.09); bell(1320, 0.45, 0.05, 0.01); tone('sine', 440, 520, 0.12, 0.06); }, // light, not metal
   hammerfall() { SFX.heavy(); tone('sine', 58, 26, 0.5, 0.35); bell(392, 0.9, 0.08, 0.05); },
   // ---- a portcullis: it rattles down its slot and lands, or it grinds up on its chain ----
   gateDrop() { for (let i = 0; i < 5; i++) { noise(0.035, 0.16, 2400, 1.2, i * 0.045); tone('square', 620 - i * 30, 420, 0.03, 0.05, i * 0.045); } },
-  gateLand() { file('clang', 0.55, 0.7) || tone('square', 500, 300, 0.1, 0.2); tone('sine', 80, 34, 0.35, 0.35); noise(0.25, 0.3, 300, 0.6); },
+  gateLand() { tone('sine', 70, 30, 0.5, 0.4); tone('square', 180, 90, 0.16, 0.16); noise(0.35, 0.3, 240, 0.6); bell(140, 0.7, 0.05, 0.02); }, // iron, and a lot of it
   gateLift() { for (let i = 0; i < 9; i++) { tone('square', 300 + (i % 2) * 60, 260, 0.03, 0.05, i * 0.075); noise(0.03, 0.1, 1800, 1.3, i * 0.075); } tone('sine', 70, 90, 0.7, 0.08); },
   // ---- the moor and the town ----
   caw() { if (!gate('caw', 0.35)) return; tone('sawtooth', vary(820), 560, 0.16, 0.1); noise(0.14, 0.12, 1500, 1); tone('sawtooth', vary(760), 520, 0.14, 0.08, 0.2); noise(0.12, 0.1, 1400, 1, 0.2); },
@@ -350,6 +350,14 @@ Object.assign(SFX, {
   baleBurst() { for (let i = 0; i < 6; i++) noise(0.05, 0.18, 2600 + (i % 3) * 700, 0.9, i * 0.03); tone('sine', 140, 60, 0.12, 0.14); noise(0.4, 0.08, 1800, 0.4, 0.1); },
   sweepPop() { tone('square', 170, 110, 0.08, 0.1); noise(0.28, 0.16, 650, 0.5); [720, 800, 660].forEach((f, i) => tone('square', f, f * 0.9, 0.05, 0.05, 0.12 + i * 0.07)); },
   sweepHide() { noise(0.3, 0.12, 1100, 0.5); tone('sine', 300, 120, 0.25, 0.05); },
+  boom() { noise(1.1, 0.34, 140, 0.4); noise(0.5, 0.2, 700, 0.5, 0.01); tone('sine', 90, 28, 0.9, 0.22); tone('square', 60, 30, 0.3, 0.08, 0.02); }, // a gun, and a keg
+  bowShot() { tone('square', 900, 500, 0.05, 0.1); noise(0.09, 0.16, 2600, 0.7); tone('sine', 320, 200, 0.08, 0.06, 0.01); },
+  grapple() { noise(0.12, 0.14, 900, 0.6); tone('triangle', 420, 260, 0.1, 0.08); },
+  ropeHaul() { noise(0.5, 0.09, 500, 0.9); tone('sawtooth', 120, 90, 0.45, 0.05); },
+  whistleCall() { tone('sine', 2100, 2600, 0.16, 0.09); tone('sine', 2600, 2200, 0.2, 0.08, 0.15); tone('sine', 2400, 3000, 0.14, 0.07, 0.34); },
+  fuse() { noise(0.5, 0.07, 4200, 0.5); noise(0.4, 0.05, 6000, 0.4, 0.12); },
+  crumble() { noise(0.4, 0.16, 420, 0.5); noise(0.3, 0.1, 900, 0.6, 0.06); tone('square', 150, 70, 0.2, 0.07); },
+  gateOpen() { noise(0.5, 0.12, 300, 0.7); tone('sawtooth', 90, 130, 0.5, 0.08); },
   mawRoar() { noise(0.9, 0.2, 260, 0.4); tone('sawtooth', 90, 46, 0.7, 0.16); tone('square', 60, 40, 0.5, 0.1, 0.05); }, // the moray coming out of its hole
   mawSnap() { file('crack', 0.6) || (noise(0.12, 0.34, 1400, 0.5), tone('square', 220, 70, 0.1, 0.14)); },
   seaBell() { bell(196, 2.4, 0.12); bell(98, 3.0, 0.07, 0.02); }, // Saltreach's bell, as the tide turns
@@ -450,7 +458,7 @@ const DIE = {
   sailer() { gob(1.1) || tone('square', 520, 110, 0.22, 0.16); for (let i = 0; i < 3; i++) noise(0.07, 0.18, 800, 0.6, 0.08 + i * 0.09); SFX.thud(); /* the sail flaps down */ },
   suncatcher() { [2093, 1568, 1319, 1047, 784, 659, 523].forEach((f, i) => bell(f, 0.9, 0.09, i * 0.09)); pad('sine', 1760, 220, 1.3, 0.08, 0.2, 4000); noise(0.6, 0.35, 220, 0.5, 0.6); tone('sine', 55, 25, 0.9, 0.35, 0.6); /* the light goes out of it, note by note, and it lands */ },
   roc() { tone('sawtooth', 2400, 500, 1.1, 0.18); tone('sawtooth', 2430, 480, 1.1, 0.09, 0.02); for (let i = 0; i < 4; i++) noise(0.12, 0.3, 320, 0.6, 0.4 + i * 0.18); tone('sine', 60, 25, 0.6, 0.4, 1.2); noise(0.4, 0.4, 200, 0.6, 1.2); /* the scream, the wings beat out, the fall */ },
-  gqueen() { file('roar', 0.6, 0.6) || tone('sawtooth', 110, 40, 1.2, 0.3); gob(0.55, 0.8); [2400, 1900, 1500, 1200, 950].forEach((f, i) => tone('triangle', f, f * 0.9, 0.2, 0.1, 0.8 + i * 0.12)); SFX.thunder(); /* the last of the line, and her crown rolling on the stone */ },
+  gqueen() { file('roar', 0.62, 0.52) || tone('sawtooth', 110, 40, 1.2, 0.3); gob(0.55, 0.8); [2400, 1900, 1500, 1200, 950].forEach((f, i) => tone('triangle', f, f * 0.9, 0.2, 0.1, 0.8 + i * 0.12)); SFX.thunder(); /* the last of the line, and her crown rolling on the stone */ },
   lance() { gob(0.6, 0.8) || tone('sawtooth', 200, 45, 0.6, 0.25); SFX.heavy(); [1500, 1200, 950, 700, 520].forEach((f, i) => { tone('square', f, f * 0.93, 0.18, 0.12, 0.3 + i * 0.16); noise(0.07, 0.26, f * 2, 0.5, 0.3 + i * 0.16); }); /* he goes down and the plate comes off him */ },
   // ---- bosses and the mini-bosses: a cry of their own over the boss drum ----
   queen() { tone('sawtooth', 2200, 600, 0.9, 0.2); tone('sawtooth', 2230, 590, 0.9, 0.1, 0.02); tone('square', 900, 200, 0.6, 0.1, 0.5); noise(0.6, 0.2, 1800, 0.3, 0.6); },
@@ -464,7 +472,30 @@ const DIE = {
   golem() { SFX.golemShatter(); for (let i = 0; i < 10; i++) tone('triangle', 3200 - i * 220, 2400 - i * 200, 0.25, 0.08, 0.2 + i * 0.07); noise(0.7, 0.2, 4000, 0.3, 0.3); /* the glass comes down */ },
   windcaller() { tone('sine', 520, 1400, 0.5, 0.16); tone('sine', 1400, 300, 0.7, 0.14, 0.5); noise(1.4, 0.3, 700, 0.15, 0.3); noise(0.8, 0.25, 300, 0.2, 0.9); /* the chant runs backwards and the wind goes out of him */ },
 };
+// Every creature in the three sea levels had no voice at all and fell back to the same generic hit. These are
+// theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
+// drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  turtle() { noise(0.06, 0.3, 1800, 0.4); tone('square', 300, 180, 0.07, 0.1); },
+  crab() { noise(0.05, 0.26, 2600, 0.35); noise(0.05, 0.2, 1900, 0.4, 0.05); },
+  urchin() { noise(0.07, 0.22, 3200, 0.3); tone('sine', 700, 400, 0.08, 0.06); },
+  eel() { noise(0.12, 0.26, 900, 0.5); tone('sine', 240, 120, 0.12, 0.12); },
+  angler() { noise(0.14, 0.3, 700, 0.5); tone('sawtooth', 180, 80, 0.16, 0.14); },
+  reefmaw() { noise(0.3, 0.34, 420, 0.5); tone('sawtooth', 120, 60, 0.3, 0.2); tone('sine', 70, 40, 0.4, 0.14, 0.05); },
+  heronfoe() { tone('sawtooth', 900, 1500, 0.1, 0.12); noise(0.08, 0.14, 2400, 0.5, 0.02); },
+  petrel() { tone('sawtooth', 1200, 1800, 0.07, 0.1); tone('square', 1500, 900, 0.06, 0.08, 0.06); },
+  scout() { tone('sine', 700, 420, 0.12, 0.1); noise(0.1, 0.12, 2200, 0.5); },
+  siren() { tone('sine', 880, 500, 0.2, 0.1); pad('sine', 660, 400, 0.3, 0.04, 0.02, 3000); },
+  tideguard() { SFX.clank(); tone('sine', 480, 300, 0.14, 0.1); noise(0.1, 0.14, 1400, 0.5); },
+  herald() { tone('sine', 320, 200, 0.26, 0.14); pad('sine', 480, 300, 0.4, 0.05, 0.02, 2400); noise(0.16, 0.14, 900, 0.6); },
+  sailor() { tone('sawtooth', 200, 110, 0.2, 0.16); noise(0.18, 0.2, 600, 0.6); },
+  netter() { tone('sawtooth', 260, 140, 0.16, 0.14); noise(0.14, 0.18, 800, 0.6); },
+  cutlass() { file('hurt', 0.4, 1.18) || tone('square', 420, 260, 0.09, 0.14); },
+  boarder() { file('hurt', 0.5, 0.86) || tone('square', 300, 180, 0.11, 0.16); },
+  marine() { file('hurt', 0.4, 1.3) || tone('square', 480, 300, 0.08, 0.13); },
+  bosun() { file('hurt', 0.55, 0.78) || tone('square', 260, 150, 0.12, 0.17); },
+  lookout() { file('hurt', 0.35, 1.5) || tone('square', 560, 340, 0.07, 0.12); },
+  quarter() { file('hurt', 0.5, 1.05) || tone('square', 380, 230, 0.1, 0.15); tone('sine', 200, 140, 0.14, 0.08, 0.03); },
   sprig() { gobH(1) || tone('square', 500, 300, 0.08, 0.14); },
   archer() { gobH(1.2) || tone('square', 620, 380, 0.08, 0.14); },
   sapper() { gobH(1.35, 0.35) || tone('square', 700, 450, 0.07, 0.12); },

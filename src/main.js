@@ -2610,7 +2610,7 @@ function chiefDies() {
 // A NETTER'S NET holds you where it lands: mash a direction, jump or attack to tear out of it.
 // what a keg does: everything within reach of it, the planking over it, and you if you are still standing there
 function kegBlast(x, y) {
-  SFX.boom ? SFX.boom() : SFX.crack(); shakeCam(9); zoomKick(1.1, 0.35); flash = Math.max(flash, 0.2); rumble(220, 1); hitstop(0.06);
+  SFX.boom(); shakeCam(9); zoomKick(1.1, 0.35); flash = Math.max(flash, 0.2); rumble(220, 1); hitstop(0.06);
   ringAt(x, y, 54, '#ffd36b', 0.45); burst(x, y, 26, ['#ffd36b', '#ff9a5c', '#c9463d', '#3a3a44'], 160, 0.9, 120, 3);
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - x) < 54 && Math.abs(e.y - y) < 48) { hurtEnemy(e, DMG.kegBlast, x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1.4); e.vx = (Math.sign(e.x - x) || 1) * 260; e.vy = -160; } }
   for (const pr of props) if (pr.t === 'keg' && !pr.gone && pr.fuse <= 0 && Math.abs(pr.x - x) < 60 && Math.abs(pr.y - y) < 40) pr.fuse = 0.4; // one keg lights the next
@@ -2831,7 +2831,7 @@ function shoreHome(e) { return e.pool || (L.pools || []).find(q => q.swim && e.x
 // and once the whistle goes the whole town knows. Kill the lookout before he fills his lungs.
 function callWatch(x) {
   if (L.alarmT > 0) { L.alarmT = Math.max(L.alarmT, 14); return; }
-  L.alarmT = 14; SFX.horn ? SFX.horn() : SFX.bark(); shakeCam(2); flash = Math.max(flash, 0.1);
+  L.alarmT = 14; SFX.whistleCall(); shakeCam(2); flash = Math.max(flash, 0.1);
   number(P.x, P.y - 34, 'THE WATCH IS CALLED', '#ff6b6b');
   const gy = Math.floor(P.y / TS); let spawned = 0;
   for (const side of [1, -1]) { const sx = P.x + side * 150;
@@ -2872,7 +2872,7 @@ function updateCrew(e, dt) {
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 22 || e.flanking) ? e.face * e.speed : 0; if (ad < 44 && P.atk >= 0 && Math.random() < dt * 4) e.guardT = 0.4;
       if (ad < 30 && e.cd <= 0) { e.mode = 'slashTell'; e.modeT = 0.34; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); } } else want = e.face * e.speed * 0.3; }
   } else if (e.t === 'boarder') { const near = ad < 230 && dy < 50 && !P.dead;
-    if (e.mode === 'throwTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.3; SFX.throwWhoosh(); e.grap = { x: e.x + e.face * 8, y: e.y - 12, vx: e.face * 320, vy: -30, t: 0, hit: false }; } }
+    if (e.mode === 'throwTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.3; SFX.grapple(); e.grap = { x: e.x + e.face * 8, y: e.y - 12, vx: e.face * 320, vy: -30, t: 0, hit: false }; } }
     else if (e.mode === 'throw') { if (e.modeT <= 0 && !e.grap) { e.mode = 'walk'; e.cd = 2.6; } }
     else if (e.mode === 'haul') { e.vx = 0;
       if (!P.dead) { const pull = 230; moveBody(P, Math.sign(e.x - P.x) * pull * dt, 0, false); if (Math.random() < dt * 12) parts.push({ x: P.x, y: P.y - 10, vx: Math.sign(e.x - P.x) * 40, vy: -10, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 0 }); }
@@ -2883,7 +2883,7 @@ function updateCrew(e, dt) {
       if (!g2.hit && !P.dead && Math.abs(g2.x - P.x) < 12 && Math.abs(g2.y - (P.y - 9)) < 16) { g2.hit = true; e.grap = null; e.mode = 'haul'; e.modeT = 0.9; SFX.clank(); number(P.x, P.y - 26, 'HOOKED', '#ff9a5c'); }
       else if (g2.t > 0.9 || isSolid(Math.floor(g2.x / TS), Math.floor(g2.y / TS))) e.grap = null; }
   } else if (e.t === 'marine') { grav = false; e.y = e.hy;
-    if (e.mode === 'shootTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'shoot'; e.modeT = 0.3; SFX.bowShot ? SFX.bowShot() : SFX.throwWhoosh();
+    if (e.mode === 'shootTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'shoot'; e.modeT = 0.3; SFX.bowShot();
       const sx = e.x + e.face * 7, sy = e.y - 10, dd = Math.hypot(P.x - sx, (P.y - 8) - sy) || 1;
       seeds.push({ x: sx, y: sy, vx: (P.x - sx) / dd * 300, vy: ((P.y - 8) - sy) / dd * 300, g: 60, life: 2, arrow: true }); } }
     else if (e.mode === 'shoot') { if (e.modeT <= 0) { e.mode = 'perch'; e.cd = 1.8 + Math.random(); } }
@@ -2931,7 +2931,7 @@ function updateReef(e, dt) {
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 30 || e.flanking) ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.4;
       if (ad < 42 && e.cd <= 0) { e.mode = 'hookTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.charge(); } } else want = e.face * e.speed * 0.4; }
   } else if (e.t === 'netter') { const near = ad < 220 && dy < 70 && !P.dead;
-    if (e.mode === 'castTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'cast'; e.modeT = 0.3; e.hasNet = false; SFX.throwWhoosh();
+    if (e.mode === 'castTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'cast'; e.modeT = 0.3; e.hasNet = false; SFX.throwWhoosh(); SFX.ropeHaul();
       const sx = e.x + e.face * 6, sy = e.y - 12, Tf = Math.max(0.5, Math.min(1.0, ad / 260)), G = 300;
       seeds.push({ x: sx, y: sy, vx: (P.x - sx) / Tf, vy: ((P.y - 8) - sy) / Tf - 0.5 * G * Tf, g: G, life: 2.2, net: true, from: e }); } }
     else if (e.mode === 'cast') { if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 3.2; } }
@@ -4833,14 +4833,14 @@ function updateCastleProps(dt, hb) {
   for (const pr of props) {
     if (pr.t === 'keg' && !pr.gone) { // A POWDER KEG: hit it and the fuse takes a breath and a half. Then it takes out whatever is beside it, including you
       const struck = hb && overlap(hb, { l: pr.x - 8, r: pr.x + 8, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr);
-      if (struck && pr.fuse <= 0) { P.hitSet.add(pr); pr.fuse = 1.5; SFX.spark ? SFX.spark() : SFX.crack(); number(pr.x, pr.y - 20, 'LIT', '#ff9a5c'); }
+      if (struck && pr.fuse <= 0) { P.hitSet.add(pr); pr.fuse = 1.5; SFX.fuse(); number(pr.x, pr.y - 20, 'LIT', '#ff9a5c'); }
       if (pr.fuse > 0) { pr.fuse -= dt;
         if (Math.random() < dt * 40) parts.push({ x: pr.x + (Math.random() - 0.5) * 6, y: pr.y - 14, vx: (Math.random() - 0.5) * 30, vy: -50, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
         if (pr.fuse <= 0) { pr.gone = true; kegBlast(pr.x, pr.y - 7); } }
     }
     if (pr.t === 'cannon' && !pr.fired) { // THE GUN: laid on the flagship already. One blow on the breech and her side comes in
       const struck = hb && overlap(hb, { l: pr.x - 16, r: pr.x + 16, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr);
-      if (struck) { P.hitSet.add(pr); pr.fired = true; pr.smoke = 1.2; SFX.boom ? SFX.boom() : SFX.crack(); shakeCam(8); zoomKick(1.08, 0.3); flash = Math.max(flash, 0.12); rumble(200, 0.9);
+      if (struck) { P.hitSet.add(pr); pr.fired = true; pr.smoke = 1.2; SFX.boom(); shakeCam(8); zoomKick(1.08, 0.3); flash = Math.max(flash, 0.12); rumble(200, 0.9);
         const h = pr.hole; if (h) { for (let y = h[2]; y <= h[3]; y++) for (let x = h[0]; x <= h[1]; x++) { const i = y * LW + x; if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null;
           for (let q = 0; q < 2; q++) parts.push({ x: x * TS + 8, y: y * TS + 8, vx: 60 + Math.random() * 160, vy: -40 - Math.random() * 80, life: 1.2, max: 1.2, col: Math.random() < 0.5 ? '#6a5a44' : '#c9b27c', size: 2, grav: 280 }); } }
           number(h[0] * TS, h[2] * TS - 10, 'HER SIDE IS OPEN', '#8fd160'); }
@@ -4866,7 +4866,7 @@ function updateCastleProps(dt, hb) {
       pr.spin = Math.max(0, pr.spin - dt);
       const struck = hb && overlap(hb, { l: pr.x - 13, r: pr.x + 13, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr);
       if (struck && !pr.done) { P.hitSet.add(pr); pr.turns++; pr.spin = 0.5; SFX.clank(); sparks(pr.x, pr.y - 8, P.face, 4);
-        if (pr.turns >= 3) { pr.done = true; SFX.gateOpen ? SFX.gateOpen() : SFX.thud(); number(pr.x, pr.y - 24, 'THE HOIST IS FREE', '#8fd160'); shakeCam(3);
+        if (pr.turns >= 3) { pr.done = true; SFX.gateOpen(); number(pr.x, pr.y - 24, 'THE HOIST IS FREE', '#8fd160'); shakeCam(3);
           for (const m of movers) if (m.link === pr.link) { m.locked = false; burst(m.x + m.w / 2, m.y, 10, ['#c9b27c', '#e8dcc0'], 50, 0.5); } }
         else number(pr.x, pr.y - 24, pr.turns + ' OF 3', '#c9b27c'); }
     }
