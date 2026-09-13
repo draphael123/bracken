@@ -78,6 +78,12 @@ function instrument(BK) {
     if (typeof s === 'string' && s.length) {
       const w = rawMeasure(s).width, al = g.textAlign;
       const l = al === 'center' ? x - w / 2 : al === 'right' || al === 'end' ? x - w : x;
+      // EVERY UI STRING ON THIS FRAME, AND WHERE IT SAT. Two strings on top of each other is the commonest
+      // menu bug there is - a row label and its right-hand badge meeting in the middle, a list grown by two
+      // rows walking into its own footer - and it never shows up as an overflow, because both halves are
+      // inside the frame. It only shows up as a mess. So: write them all down and compare them.
+      if (!g.__world && box.texts) { const h = parseInt(g.font, 10) || 8;
+        box.texts.push({ s, l, r: l + w, t: y, b: y + h }); }
       // a world-space string is ALLOWED to be off screen: a damage number over a creature at the edge of the
       // view is not a bug. Only the plates count - a menu, or the HUD and banner bands of a level.
       const VW = BK.view.VW;
@@ -87,6 +93,23 @@ function instrument(BK) {
       }
     }
     return rawText(s, x, y, ...rest);
+  };
+  box.texts = [];
+  box.clearTexts = () => { box.texts.length = 0; };
+  // what is lying on top of what. A string is drawn twice (its shadow, then itself), so identical text never
+  // counts; and a little touching is normal where a glyph box is wider than its ink, so it takes a real overlap.
+  box.overlaps = () => {
+    const out = [], T = box.texts;
+    for (let i = 0; i < T.length; i++) for (let j = i + 1; j < T.length; j++) {
+      const a = T[i], b = T[j];
+      if (a.s === b.s) continue;
+      const ow = Math.min(a.r, b.r) - Math.max(a.l, b.l), oh = Math.min(a.b, b.b) - Math.max(a.t, b.t);
+      if (ow <= 2 || oh <= 2) continue;
+      const area = ow * oh, small = Math.min((a.r - a.l) * (a.b - a.t), (b.r - b.l) * (b.b - b.t));
+      if (area < small * 0.3) continue;
+      out.push('"' + a.s.slice(0, 26) + '" and "' + b.s.slice(0, 26) + '" are drawn on top of each other (' + Math.round(ow) + 'x' + Math.round(oh) + 'px of overlap)');
+    }
+    return out.slice(0, 6);
   };
   box.drain = () => { const out = { errs: box.errs.slice(), nans: box.nans.slice(), cut: box.cut.slice() }; box.errs.length = 0; box.nans.length = 0; box.cut.length = 0; return out; };
   box.off = () => { removeEventListener('error', onErr); removeEventListener('unhandledrejection', onErr); g.drawImage = rawDraw; g.fillText = rawText; };
@@ -180,7 +203,9 @@ async function sweepScreens(BK, inst, F) {
       // what is on the screen once everything has finished arriving.
       for (let i = 0; i < 15; i++) BK.step(6);
       inst.drain();
-      for (let i = 0; i < 3; i++) BK.step(2);
+      for (let i = 0; i < 2; i++) BK.step(2);
+      inst.clearTexts(); BK.step(1);                  /* one clean frame, and then look at what is lying on what */
+      for (const m of inst.overlaps()) F('OVERLAP', SEV.odd, st + ': ' + m);
       const fs = frameStats(BK);
       if (fs && (fs.colours < 4 || fs.flat > 0.99)) F('BLANK', SEV.bug, 'the ' + st + ' screen came back empty');
     } catch (e) { F('CRASH', SEV.bug, 'the ' + st + ' screen threw: ' + (e && e.message)); }
@@ -188,6 +213,28 @@ async function sweepScreens(BK, inst, F) {
     for (const m of d.errs) F('CRASH', SEV.bug, st + ': ' + m);
     for (const m of d.nans) F('NAN', SEV.bug, st + ': ' + m);
     for (const m of d.cut) F('TEXTCUT', SEV.odd, st + ': ' + m);
+    // AND EVERY TAB AND ROW OF IT. Most menu bugs live on the third tab of something: the equip board's
+    // TALENTS row had its name and its cost lying across each other and no first-face sweep would ever see it.
+    const U = BK.ui;
+    if (U) {
+      const faces = [];
+      if (st === 'store' || st === 'equip') { U.storeMode = st === 'equip' ? 'equip' : 'store';
+        for (let t = 0; t < U.tabs(); t++) for (const r of [0, 1, 99]) faces.push(() => { U.storeTab = t; U.storeI = Math.min(r, Math.max(0, U.items() - 1)); }); }
+      else if (st === 'tree') { for (let i = 0; i < U.treeRows(); i += 3) faces.push(() => { U.treeI = i; }); }
+      else if (st === 'bestiary') { for (const tb of [0, 1]) for (let i = 0; i < 40; i += 7) faces.push(() => { U.bestTab = tb; U.bestI = Math.min(i, Math.max(0, U.beasts() - 1)); }); }
+      else if (st === 'practice') { for (let i = 0; i < 6; i++) faces.push(() => { U.practiceI = i; }); }
+      else if (st === 'title') { for (let i = 0; i < 7; i++) faces.push(() => { U.titleI = i; }); }
+      else if (st === 'menu') { for (let i = 0; i < 26; i += 4) faces.push(() => { U.menuI = Math.min(i, Math.max(0, U.menuCount() - 1)); }); }
+      for (const set of faces) {
+        try { set(); inst.clearTexts(); BK.step(1); }
+        catch (e) { F('CRASH', SEV.bug, st + ' threw on one of its rows: ' + (e && e.message)); continue; }
+        for (const m of inst.overlaps()) F('OVERLAP', SEV.odd, st + ': ' + m);
+        const d2 = inst.drain();
+        for (const m of d2.cut) F('TEXTCUT', SEV.odd, st + ': ' + m);
+        for (const m of d2.errs) F('CRASH', SEV.bug, st + ': ' + m);
+      }
+      inst.drain();
+    }
     await frame();
   }
   BK.state = was;

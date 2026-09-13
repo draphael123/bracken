@@ -59,7 +59,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 1, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off' };
+const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off' };
 const TIER = { lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
@@ -70,6 +70,10 @@ const diffOf = id => (PROG.diff && DIFF[PROG.diff[id]] ? PROG.diff[id] : DIFF[SE
 const diffNow = () => DIFF[diffOf(curId())];
 const DIFFS = ['easy', 'normal', 'hard'], SCALES = ['auto', 2, 3, 4];
 try { Object.assign(SET, JSON.parse(localStorage.getItem('bracken.settings') || '{}')); } catch {}
+// THE WORLD SLOWED DOWN, AND AN OLD SETTINGS FILE MUST NOT HOLD IT BACK. Anyone who has played before has a
+// saved `speed: 1` in their settings, which would silently keep them at the old pace. Take the new default
+// once, and never touch it again - if they turn it back up, that is their choice and it sticks.
+if (!SET.speedV2) { SET.speed = 0.6; SET.speedV2 = 1; try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
@@ -1753,7 +1757,7 @@ function drawTree() {
   const dy = fy + 11; g.fillStyle = 'rgba(20,17,32,0.9)'; g.fillRect(8, dy, VW - 16, VH - dy - 10);
   if (treeMsgT > 0) { const w2 = treeMsg.length * 6 + 10; g.fillStyle = 'rgba(40,36,20,0.95)'; g.fillRect(VW / 2 - w2 / 2, fy - 11, w2, 10);
     g.strokeStyle = UI.gold; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, fy - 10.5, w2 - 1, 9); text(treeMsg, VW / 2, fy - 9, UI.gold, 'center', 6); }
-  if (respec) text('forget every skill this hero knows and take all the points back. it costs nothing.', VW / 2, dy + 4, UI.dim, 'center', 6);
+  if (respec) wrap('forget every skill this hero knows and take all the points back. it costs nothing.', VW - 24, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, dy + 4 + i * 8, UI.dim, 'center', 6));
   else if (cur) { const st = nodeState(cur);
     text(cur.name + '  ' + tal(cur.id) + '/' + cur.max, 12, dy + 3, UI.title, 'left', 6);
     const need = st === 'level' ? 'OPENS AT LEVEL ' + ROW_LV[cur.row] : st === 'parent' ? 'NEEDS ' + TREE.find(q => q.id === cur.parent && q.hero === cur.hero).name : st === 'max' ? 'AT ITS PEAK' : any ? 'Z TO LEARN' : 'NO POINTS LEFT';
@@ -1829,9 +1833,15 @@ function drawStore() {
     const icon = iconOf(k);
     if (icon) { if (tab.key === 'skin' || tab.key === 'sword') g.drawImage(icon, 0, 0, icon.width, icon.height, listX + 4, yy - 3, 12, 12); else g.drawImage(icon, 0, 0, icon.width, icon.height, listX + 5, yy - 1, 9, 9); }
     else { g.fillStyle = '#5a5f5a'; g.fillRect(listX + 8, yy + 2, 5, 5); }
-    text((tab.talent && k.tier > 1 ? '  '.repeat(k.tier - 1) : '') + k.name, listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
-    if (tab.talent) { text(ptsLeft(hero()) > 0 ? ptsLeft(hero()) + ' TO SPEND' : 'Z OPEN', listX + listW - 4, yy, ptsLeft(hero()) > 0 ? UI.gold : UI.sel, 'right', 6); return; }
-    if (k.consumable) { text((PROG.tonics || 0) + '/' + k.max + '  ' + k.price + ' GOLD', listX + listW - 4, yy, (PROG.tonics || 0) >= k.max ? UI.sel : PROG.coins >= k.price ? UI.gold : '#ff6b6b', 'right', 6); return; }
+    // the badge goes on first and the name takes what is left of the row: they used to be laid out from
+    // opposite ends with nothing measuring the gap, and on a long name they met in the middle
+    const nameOf = () => (tab.talent && k.tier > 1 ? '  '.repeat(k.tier - 1) : '') + k.name;
+    const rowName = (badge) => text(fitText(nameOf(), listW - 26 - (badge ? textW(badge, 6) + 6 : 0), 6), listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
+    if (tab.talent) { const bg = ptsLeft(hero()) > 0 ? ptsLeft(hero()) + ' TO SPEND' : 'Z OPEN';
+      rowName(bg); text(bg, listX + listW - 4, yy, ptsLeft(hero()) > 0 ? UI.gold : UI.sel, 'right', 6); return; }
+    if (k.consumable) { const bg = (PROG.tonics || 0) + '/' + k.max + '  ' + k.price + ' GOLD';
+      rowName(bg); text(bg, listX + listW - 4, yy, (PROG.tonics || 0) >= k.max ? UI.sel : PROG.coins >= k.price ? UI.gold : '#ff6b6b', 'right', 6); return; }
+    rowName(lockedOf(k) ? 'LOCKED' : eq ? 'EQUIPPED' : owned ? 'OWNED' : String(k.price || ''));   /* `locked` belongs to the preview card, not to this row */
     if (tab.rank) { const rr = rankOf(k.id);
       for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(listX + listW - 46 - k.max * 5 + q * 5, yy + 1, 4, 4); }
       text(rr >= k.max ? 'PEAK' : k.prices[rr] + 'g', listX + listW - 4, yy, rr >= k.max ? UI.sel : PROG.coins >= k.prices[rr] ? UI.gold : '#ff6b6b', 'right', 6); return; }
@@ -2092,7 +2102,7 @@ function menuAdjust(dir) {
   else if (k === 'Invincible') { SET.invincible = !SET.invincible; menuMsg = SET.invincible ? 'nothing can hurt you (for testing)' : 'you can be hurt again'; menuMsgT = 2; }
   else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
-  else if (k === 'Game speed') { const SP = [1, 0.9, 0.8]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + 3) % 3]; menuMsg = SET.speed < 1 ? 'the world runs slower. the timer does not' : 'full speed'; menuMsgT = 3; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Hitboxes') { const B = ['off', 'hits', 'all']; SET.boxes = B[(B.indexOf(SET.boxes) + dir + 3) % 3]; menuMsg = SET.boxes === 'off' ? 'no boxes' : SET.boxes === 'hits' ? 'what you hit with, and what hits you' : 'every body, blow and thing in the air'; menuMsgT = 3; } else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
+  else if (k === 'Game speed') { const SP = [1, 0.85, 0.7, 0.6, 0.5]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + SP.length * 2) % SP.length]; menuMsg = SET.speed < 1 ? 'the whole world runs at ' + Math.round(SET.speed * 100) + '%: his legs, their blows, the clock and all' : 'full tilt: the knight crosses the screen in three seconds'; menuMsgT = 3.5; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Hitboxes') { const B = ['off', 'hits', 'all']; SET.boxes = B[(B.indexOf(SET.boxes) + dir + 3) % 3]; menuMsg = SET.boxes === 'off' ? 'no boxes' : SET.boxes === 'hits' ? 'what you hit with, and what hits you' : 'every body, blow and thing in the air'; menuMsgT = 3; } else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
   else if (k === 'Difficulty') { if (menuFrom === 'play' && L && !L.shop) { PROG.diff = PROG.diff || {}; PROG.diff[curId()] = DIFFS[(DIFFS.indexOf(diffOf(curId())) + dir + 3) % 3]; saveProgress(); } else SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + 3) % 3]; } else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
@@ -3266,11 +3276,11 @@ function updatePlayer(dt) {
   P.gustT = Math.max(0, (P.gustT || 0) - dt);
   // A RUN YOU HAVE TO EARN: hold one direction for most of a second and the legs open up. It shows: dust off
   // the heels and streaks off the shoulders when it kicks in.
-  const sprinting = P.ground && (P.runT || 0) > 1.1 && !P.block && !P.jet && !wading && !spored;
+  const sprinting = (P.runT || 0) > 1.1 && !P.block && !P.jet && !wading && !spored;   /* it carries through a jump: momentum is not lost in the air */
   const sprintK = sprinting ? Math.min(1, ((P.runT || 0) - 1.1) / 0.6) : 0;   // it comes in over half a second, not in one frame
-  if (sprinting && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
+  if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
-  if (sprinting && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
+  if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
   const cap = ((P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * tal('seaLegs')) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]); // the Sunspire's ice: slow to get going, slower to stop
   if (move && !groundAtk) {
@@ -3433,7 +3443,12 @@ function updatePlayer(dt) {
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
   }
-  P.runT = P.ground && Math.abs(P.vx) > 110 ? (P.runT || 0) + dt : 0; P.ashT = Math.max(0, (P.ashT || 0) - dt);
+  // THE SPRINT COULD NOT BE REACHED AND DID NOT SURVIVE A JUMP. It counted time spent over 110px/s - but the
+  // cap without charms is 92, so the counter never moved and the sprint never happened, EXCEPT when a gust or
+  // a mover or a charm pushed you over the line, which is exactly why the speed read as inconsistent. And it
+  // was thrown away the instant your feet left the ground, so a jump taken at a run landed at a walk. It
+  // counts a fraction of your own top speed now, and it is kept (not grown) while you are in the air.
+  if (Math.abs(P.vx) > RUN * 0.86) { if (P.ground) P.runT = (P.runT || 0) + dt; } else P.runT = 0; P.ashT = Math.max(0, (P.ashT || 0) - dt);
   if (P.ground && Math.abs(P.vx) > 90 && Math.sign(P.vx) !== P.face && !dodging) { if (Math.random() < dt * 30) dust(P.x + P.face * 3, P.y, 1); SFX.skid(); } // turning at a run: the boots skid
   if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
@@ -8030,8 +8045,11 @@ function update(dt) {
   if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
   updateCharge(STEP);
   if (stop > 0) { stop -= dt; return; }
-  levelTime += dt;
   slowT = Math.max(0, slowT - dt); const wdt = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
+  // THE CLOCK RUNS ON WORLD TIME, NOT WALL TIME. Every medal in the game was set against a world running at
+  // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
+  // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
+  levelTime += dt * (SET.speed || 1);
   updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt);
   flash = Math.max(0, flash - dt);
@@ -9446,21 +9464,29 @@ function updatePractice() {
   }
 }
 function drawPractice() {
+  // SIX ROWS WHERE THERE USED TO BE FOUR. The list was laid out at a fixed 22 pixels a row from a fixed top,
+  // which fitted the knight, the pyromancer, the paladin and the yard - and then the Freebooter and the
+  // Reaper arrived and the last two rows went straight through the two lines of footer. The row height comes
+  // out of the space that is actually left now, and every string in here is measured before it is drawn.
   g.fillStyle = 'rgba(10,14,12,0.82)'; g.fillRect(0, 0, VW, VH);
-  const x = 24, y = 12, w = VW - 48, h = VH - 24; panel(x, y, w, h);
-  text('THE PRACTICE YARDS', VW / 2, y + 6, UI.title, 'center');
-  text('every verb he has, and nothing that can hurt you', VW / 2, y + 19, UI.dim, 'center', 6);
-  YARDS().forEach((hr, i) => {
-    const owned = hr.free || !!(PROG.heroes && PROG.heroes[hr.id]), sel = i === practiceI, yy = y + 32 + i * 22;
-    if (sel) { g.fillStyle = 'rgba(143,209,96,0.14)'; g.fillRect(x + 6, yy - 3, w - 12, 20); g.fillStyle = UI.sel; g.fillRect(x + 6, yy - 3, 2, 20); }
-    text(hr.name, x + 16, yy, owned ? (sel ? UI.title : UI.text) : '#5a5f5a', 'left');
-    if (!owned) text('NOT YOURS YET', x + w - 16, yy, '#5a5f5a', 'right', 6);
-    else if (hr.free) text('NO GATES', x + w - 16, yy, '#c9b27c', 'right', 6);
-    else if (PROG.tried && PROG.tried[hr.id]) text('WALKED', x + w - 16, yy, UI.sel, 'right', 6);
-    wrap(YARD_DRILLS[hr.id], w - 36, 6).slice(0, 1).forEach((s2, j) => text(s2, x + 16, yy + 10 + j * 9, owned ? UI.dim : '#4a4f4a', 'left', 6));
+  const x = 8, y = 8, w = VW - 16, h = VH - 16; panel(x, y, w, h);
+  text('THE PRACTICE YARDS', VW / 2, y + 5, UI.title, 'center');
+  text(fitText('every verb he has, and nothing that can hurt you', w - 12, 6), VW / 2, y + 17, UI.dim, 'center', 6);
+  const rows = YARDS(), top = y + 27, foot = 20;                       /* two lines of footer at the bottom */
+  const rowH = Math.max(15, Math.min(22, Math.floor((h - (top - y) - foot) / rows.length)));
+  const twoLine = rowH >= 19;                                          /* room for the drill under the name? */
+  rows.forEach((hr, i) => {
+    const owned = hr.free || !!(PROG.heroes && PROG.heroes[hr.id]), sel = i === practiceI, yy = top + i * rowH;
+    if (sel) { g.fillStyle = 'rgba(143,209,96,0.14)'; g.fillRect(x + 4, yy - 2, w - 8, rowH - 2); g.fillStyle = UI.sel; g.fillRect(x + 4, yy - 2, 2, rowH - 2); }
+    const badge = !owned ? ['NOT YOURS YET', '#5a5f5a'] : hr.free ? ['NO GATES', '#c9b27c']
+      : heroLevel(hr.id) === 0 ? ['L0  NEW', '#c9b27c'] : (PROG.tried && PROG.tried[hr.id]) ? ['WALKED  L' + heroLevel(hr.id), UI.sel] : ['L' + heroLevel(hr.id), UI.dim];
+    const bw = textW(badge[0], 6);
+    text(badge[0], x + w - 8, yy + (twoLine ? 0 : 1), badge[1], 'right', 6);
+    text(fitText(hr.name, w - 24 - bw, 8), x + 12, yy, owned ? (sel ? UI.title : UI.text) : '#5a5f5a', 'left');
+    if (twoLine) text(fitText(YARD_DRILLS[hr.id] || '', w - 24, 6), x + 12, yy + 10, owned ? UI.dim : '#4a4f4a', 'left', 6);
   });
-  text('A HERO YARD EQUIPS THAT HERO', VW / 2, y + h - 22, '#c9b27c', 'center', 6);
-  text('ARROWS move   Z or X enter the yard   ESC back', VW / 2, y + h - 11, UI.dim, 'center', 6);
+  text('A HERO YARD EQUIPS THAT HERO', VW / 2, y + h - 19, '#c9b27c', 'center', 6);
+  text(fitText('ARROWS move   Z or X enter   ESC back', w - 12, 6), VW / 2, y + h - 10, UI.dim, 'center', 6);
 }
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -9990,7 +10016,10 @@ function render() {
     g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 6, Math.round(70 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(16 + Math.round(70 * i / 4), 6, 1, 6); }
     text(String(Math.max(0, Math.ceil(P.hp))), 90, 6, '#fff6e0');
     for (let i = 0; i < (PROG.tonics || 0); i++) g.drawImage(TONIC_ICON, 90 + i * 7, 14); // the tonics you carry
-    if (SET.invincible || SET.godmode) text((SET.invincible ? 'INVINCIBLE ' : '') + (SET.godmode ? 'GOD MODE' : ''), 6, 30, '#ff9a5c', 'left', 6);
+    // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
+    // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
+    if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + (isPyro() || isPaladin() || isPirate() || isReaper() ? 10 : 0);
+      text((SET.invincible ? 'INVINCIBLE ' : '') + (SET.godmode ? 'GOD MODE' : ''), 6, 2 + ph + 3, '#ff9a5c', 'left', 6); }
     g.drawImage(PROP.bolt, 6, 15);
     if (isPyro()) { const hy = SET.iron ? 41 : 29; bar(16, hy, 70, 4, (P.heat || 0) / 100, P.full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (P.full) text('PYRE: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8'); }
     if (isPaladin()) { const hy = SET.iron ? 41 : 29, full = (P.light || 0) >= 100; bar(16, hy, 70, 4, (P.light || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#f0c040', (P.light || 0) / 100); g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 3, 2, 9); g.fillRect(5, hy, 8, 2); if (full) text('JUDGEMENT: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8'); }
@@ -10092,8 +10121,9 @@ function render() {
       { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 20 + i * 9, '#ffd36b', 'center', 6)); }
       g.globalAlpha = 1; }
     }
-    if (miniActive && !bossActive) { const m = miniOne(); if (m) { text(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), VW / 2, VH - 22, m.phase === 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, VH - 11, 120, 5, Math.max(0, m.hp) / m.maxHp, m.mounted ? '#e0b040' : '#8fd160'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } } }
-    if (bossActive && boss && boss.alive) { const nm = boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.dimmed ? 'THE SUNCATCHER  DIMMED' : 'THE SUNCATCHER') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'quarter' ? (boss.guard ? 'THE QUARTERMASTER  BEHIND HER GUARD' : boss.mode === 'cut' ? 'THE QUARTERMASTER  CUTTING THE LINE' : boss.phase === 3 ? 'THE QUARTERMASTER  THE POOP' : boss.phase === 2 ? 'THE QUARTERMASTER  THE QUARTERDECK' : 'THE QUARTERMASTER') : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  RIGHT OUT' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
+    if (state === 'menu' || state === 'win' || state === 'gameover') { /* the plates own the screen: the boss bar waits */ }
+    else if (miniActive && !bossActive) { const m = miniOne(); if (m) { text(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), VW / 2, VH - 22, m.phase === 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, VH - 11, 120, 5, Math.max(0, m.hp) / m.maxHp, m.mounted ? '#e0b040' : '#8fd160'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } } }
+    else if (bossActive && boss && boss.alive) { const nm = boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.dimmed ? 'THE SUNCATCHER  DIMMED' : 'THE SUNCATCHER') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'quarter' ? (boss.guard ? 'THE QUARTERMASTER  BEHIND HER GUARD' : boss.mode === 'cut' ? 'THE QUARTERMASTER  CUTTING THE LINE' : boss.phase === 3 ? 'THE QUARTERMASTER  THE POOP' : boss.phase === 2 ? 'THE QUARTERMASTER  THE QUARTERDECK' : 'THE QUARTERMASTER') : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  RIGHT OUT' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
       : boss.mode === 'beach' ? 'THE CAPTAIN  BEACHED'
       : boss.mode === 'call' ? 'THE CAPTAIN  CALLING IT UP'
       : boss.phase === 3 ? 'THE CAPTAIN  HE GOES DOWN WITH HER' : 'THE CAPTAIN')
@@ -10256,6 +10286,21 @@ window.BK = {
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
+  // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
+  // the screen's first face. Most menu bugs live on the third tab of something.
+  ui: {
+    get storeMode() { return storeMode; }, set storeMode(v) { storeMode = v; },
+    get storeTab() { return storeTab; }, set storeTab(v) { storeTab = v; },
+    get storeI() { return storeI; }, set storeI(v) { storeI = v; },
+    get treeI() { return treeI; }, set treeI(v) { treeI = v; },
+    get bestI() { return bestI; }, set bestI(v) { bestI = v; },
+    get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
+    get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
+    get titleI() { return titleI; }, set titleI(v) { titleI = v; },
+    get menuI() { return menuI; }, set menuI(v) { menuI = v; },
+    tabs: () => storeTabs().length, items: () => storeItems(storeTabs()[storeTab]).length, menuCount: () => menuItems().length,
+    treeRows: () => TREE.length, beasts: () => beastList().length,
+  },
   // THE PLAYTEST BOT. Loaded only when it is asked for, so it costs nothing to ship it.
   //   await BK.playtest()                                   every level, both passes
   //   await BK.playtest({ levels: ['reef'], mode: 'play' })  one level, one pass
