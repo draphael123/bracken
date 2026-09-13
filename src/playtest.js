@@ -290,6 +290,12 @@ export async function run(BK, opts = {}) {
       else if (inRock && GROUNDED.has(e.t) && !INROCK_OK.has(e.kind)) F('INSOLID', SEV.bug, (e.t + (e.kind ? ':' + e.kind : '')) + ' inside rock', e.x + ',' + e.y);
       if (GROUNDED.has(e.t) && !HANGS.has(e.kind) && !standT(at(e.x, e.y + 1)))
         F('FLOAT', SEV.odd, (e.t + (e.kind ? ':' + e.kind : '')) + ' stands on nothing', e.x + ',' + e.y);
+      // A TORCH CAN HANG ON A WALL, so the ground under it is not the test: the test is ground under it OR
+      // rock beside it. (tools/audit.mjs exempts torches outright, which is how one spent months in the air
+      // over a ledge in Kingswood.)
+      if ((e.t === 'torch' || e.t === 'brazier') && !e.hang && !standT(at(e.x, e.y + 1))
+        && !solidT(at(e.x - 1, e.y)) && !solidT(at(e.x + 1, e.y)))
+        F('FLOAT', SEV.odd, 'a ' + e.t + ' with no ground under it and no wall beside it', e.x + ',' + e.y);
       if (e.t === 'sign' && !(e.text || '').trim()) F('EMPTY', SEV.odd, 'a sign with nothing on it', e.x + ',' + e.y);
       if (e.t === 'sign' && (e.text || '').length > 420) F('LONGSIGN', SEV.note, 'a sign of ' + e.text.length + ' characters', e.x + ',' + e.y);
     }
@@ -472,6 +478,10 @@ const frame = () => new Promise(r => setTimeout(r, 0));
 
 // ---------------------------------------------------------------- the written report
 function format(r) {
+  // ONE LINE PER FINDING. Walking every row of every tab of every screen finds the same collision forty
+  // times over, and a report you have to scroll past is a report nobody reads.
+  { const seen = new Set(); r.findings = r.findings.filter(f => { const k = f.level + '|' + f.kind + '|' + f.msg;
+      if (seen.has(k)) return false; seen.add(k); return true; }); }
   const bug = r.findings.filter(f => f.sev === SEV.bug), odd = r.findings.filter(f => f.sev === SEV.odd), note = r.findings.filter(f => f.sev === SEV.note);
   const out = [];
   out.push('');
