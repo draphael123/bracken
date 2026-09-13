@@ -899,7 +899,17 @@ export function bakeSquirrel() {
 // The Owl Reeve — a great horned owl, wings like sails. 32×20. Frames: perch, wings up, wings down, screech (grounded, beak open), crash (on its back).
 export function bakeOwl() {
   const OP = Object.assign({}, EP, { h: '#7a5a3a', H: '#4a3620', f: '#e8dcc0', y: '#ffd36b', m: '#c9a83a', w: '#a08060', o: OUT, r: '#c9463d' });
-  const o = rows => outline(fromGrid(rows, OP, 1), OUT);
+  // TWICE THE SIZE. He is the reeve of a whole wood and he was thirty-four pixels across - smaller than the
+  // hill troll and half the golem. Each cell of the grid is drawn as a two-by-two block and the outline is
+  // laid on AFTER the scaling, so the silhouette stays one pixel thick and only his feathers get heavier,
+  // which is what a big owl ought to look like anyway. (fromGrid's third argument is the MARGIN, not a
+  // scale: there is no scale in it, which is why this does the blocks itself.)
+  const o = rows => { const m = 2, sc = 2;
+    const w = Math.max(...rows.map(r => r.length)) * sc + m * 2, h = rows.length * sc + m * 2;
+    const [c, g2] = canvas(w, h);
+    rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x];
+      if (k !== '.' && OP[k]) { g2.fillStyle = OP[k]; g2.fillRect(x * sc + m, y * sc + m, sc, sc); } } });
+    return outline(c, OUT); };
   const headP = ['...........hh......hh...........', '..........hhhh....hhhh..........', '..........hhhhhhhhhhhh..........', '..........hffyffhffyff..........', '..........hffoffhffoff..........', '...........hffffmfff............', '............hffmmff.............'];
   const perch = o([...headP, '...........hhhhhhhhhh...........', '..........hhhhhhhhhhhh..........', '..........hhwwhhhhwwhh..........', '..........hhhhhhhhhhhh..........', '...........hhhhhhhhhh...........', '............hhhhhhhh............', '.............mm..mm.............', '.............mm..mm.............']);
   const wingsUp = o(['h..............................h', 'hh............................hh', 'hhh...........hh......hh.....hhh', 'hhhh.........hhhh....hhhh...hhhh', 'hhhhh........hhhhhhhhhhhh..hhhhh', '.hhhhh.......hffyffhffyff.hhhhh.', '..hhhhh......hffoffhffoff.hhhh..', '...hhhhh......hffffmfff..hhhh...', '....hhhhhhhhhhhhhhhhhhhhhhhhh...', '.....hhhhhhhhhhhhhhhhhhhhhhh....', '.......hhhhhhhhwwhhwwhhhhh......', '..........hhhhhhhhhhhh..........', '............hhhhhhhh............', '.............mm..mm.............', '................................']);
@@ -909,7 +919,7 @@ export function bakeOwl() {
   const glide = o(['................................', '..............hh......hh........', '.............hhhh....hhhh.......', '.............hhhhhhhhhhhh.......', '.............hffyffhffyff.......', '.............hffoffhffoff.......', '..............hffffmfff.........', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', 'hhhhhhhhhhhhhhhhwwhhwwhhhhhhhhhh', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhh..', '.....hhhhh....hhhhhhhh....hhhh..', '..............hhhhhhhh..........', '...............mm..mm...........', '................................', '................................']);
   const dive = o(['.........................hh.....', '........................hhhh....', '.......................hhhhhh...', '..............hh......hhhhhhh...', '.............hhhh....hhhhhhhh...', '.............hhhhhhhhhhhhhhhh...', '.............hffyffhffyffhhhh...', '.............hffoffhffoffhhh....', '..............hffffmfffhhh......', '.......hhhhhhhhhhhhhhhhhh.......', '.....hhhhhhhhhhwwhhwwhhhh.......', '...hhhhhhhhhhhhhhhhhhhh.........', '..............mm..mm............', '................................', '................................']);
   const land = o(['h..............................h', 'hh............................hh', 'hhh...........hh......hh.....hhh', 'hhhh.........hhhh....hhhh...hhhh', 'hhhhh........hhhhhhhhhhhh..hhhhh', '.hhhhh.......hffyffhffyff.hhhhh.', '..hhhhh......hffoffhffoff.hhhh..', '...hhhhh......hffffmfff..hhhh...', '....hhhhhhhhhhhhhhhhhhhhhhhhh...', '.....hhhhhhhhhhhhhhhhhhhhhhh....', '.......hhhhhhhhwwhhwwhhhhh......', '..........hhhhhhhhhhhh..........', '............hhhhhhhh............', '............mm....mm............', '...........mm......mm...........']);
-  return pack([perch, wingsUp, wingsDown, screech, crash, glide, dive, land], 17, 16, 24, 14);
+  return pack([perch, wingsUp, wingsDown, screech, crash, glide, dive, land], 34, 32, 44, 26);   /* the anchor and the body double with him */
 }
 
 

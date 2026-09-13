@@ -1389,6 +1389,15 @@ function theSunspire() {
   ent('deco', 30, 195, { kind: 'frozen', v: 0 }); ent('deco', 20, 131, { kind: 'frozen', v: 1 }); ent('deco', 12, 79, { kind: 'frozen', v: 0 }); ent('deco', 44, 55, { kind: 'frozen', v: 1 });
   set(87, 28, T.CRYST); set(87, 29, T.CRYST);
   L.ents = L.ents.filter(e => !(e.t === 'deco' && e.kind === 'spire' && e.x === 16 && e.y === 29)); // it stood on the sign
+  // ---- THE EYRIE. The summit was the same ice and crag as the ninety rows of climb under it, so the last
+  // room of the level looked like one more ledge on the way up. It is a NEST now: the thing has been living
+  // here a long time and the floor says so - bones it did not finish, the shells of what it hatched, feathers
+  // trodden into the ice, and the wall of the nest itself heaped round the rim.
+  for (const x of [6, 12, 84, 90]) ent('deco', x, 29, { kind: 'eyrie' });
+  for (const [x, v] of [[20, 0], [34, 1], [58, 0], [72, 1]]) ent('deco', x, 29, { kind: 'bones', v });
+  for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
+  for (const [x, v] of [[16, 0], [44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'cairn', v });
+  ent('sign', 30, 29, { text: 'THE EYRIE. IT HAS BEEN NESTING ON THIS ROCK SINCE BEFORE THE WOOD HAD A NAME, AND EVERYTHING ON THE FLOOR OF IT CAME UP HERE THE SAME WAY YOU DID.' });
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, hasCryst: true, cloudLine: CLOUD, frost: true, snowLine: 999,
@@ -1399,7 +1408,7 @@ function theSunspire() {
       haze: 'rgba(200,222,240,0.16)', grass: '#bcd4e4', grassL: '#e8f2fa', grassD: '#8ea8bc',
       dirt: '#5a6478', dirtL: '#727e94', dirtD: '#3c4456', canopy: ['#5a6478', '#6e7a90', '#8494ac', '#a8bcd0'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, trigger: 24 * TS, wallL: 1, wallR: 94, boss: 'roc', music: 'roc', tint: '#bfe6f5', tintA: 0.08, fx: 'motes' },
+    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'roc', music: 'roc', tint: '#cfe8ff', tintA: 0.14, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest */
   };
 }
 
