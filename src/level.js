@@ -3555,6 +3555,67 @@ const DRESS = {
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage']],
   lamplit: [['cityWeed', 3], ['shellDrift', 2], ['lampWreck', 2], ['sealDrift', 2], ['drownedCart'], ['column', 2]],
 };
+// per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
+const GARRISON = {
+  marsh: [['hopper', 5], ['spit', 4], ['archer', 3], ['thorn', 3], ['turtle', 3], ['heronfoe', 3]],   // 46 was thirteen under the level before it
+  spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2]],
+  scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],       // 58 sat twenty-two under Kingswood
+  spire: [['shardling', 9], ['harpy', 7], ['bat', 6], ['sentry', 5], ['rockgoblin', 4], ['crow', 5], ['goat', 3]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
+  storm: [['hearthgob', 3], ['cutter', 3], ['sentry', 2]],
+  crown: [['soldier', 3], ['javelin', 2], ['heavy', 2]],
+  longwater: [['scout', 5], ['tideguard', 5], ['crab', 5], ['siren', 4], ['eel', 4], ['netter', 4], ['angler', 3]],
+  reef: [['angler', 6], ['crab', 6], ['sailor', 5], ['netter', 4], ['petrel', 4], ['scout', 4], ['tideguard', 3], ['turtle', 3]],
+  hurricane: [['cutlass', 3], ['scout', 3], ['tideguard', 2]],
+  lamplit: [['watch', 6], ['wight', 6], ['snuffer', 5], ['tideguard', 5], ['scout', 5], ['crab', 4], ['angler', 4], ['sailor', 4], ['netter', 3]],  // the LAST level must be the hardest thing in the game
+};
+function garrison(L, id) {
+  const set = GARRISON[id]; if (!set) return L;
+  const W = L.W, H = L.H, g = L.grid;
+  const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
+  const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
+  const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
+  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2]);
+  const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
+  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest']);
+  const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
+  // every place a creature could stand, left to right
+  const spots = [];
+  for (let x = 6; x < W - 6; x++) for (let y = 2; y < H - 1; y++) {
+    if (!stand(at(x, y + 1)) || at(x, y) !== T.AIR || at(x, y - 1) !== T.AIR || at(x, y - 2) !== T.AIR) continue;
+    if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;          // a ledge one tile wider than it stands on: the Sunspire has almost nothing three tiles across
+    if (wet(x, y) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
+    if (keep.some(([kx, ky]) => Math.abs(kx - x) < 4 && Math.abs(ky - y) < 4)) continue;
+    spots.push([x, y]); break;                                                   // one per column: the highest floor
+  }
+  if (spots.length < 8) return L;
+  const taken = [], left = [];
+  const rnd = mulberryL(id.length * 613 + id.charCodeAt(1) * 7 + 11);
+  const want = set.reduce((s, [, n]) => s + n, 0);
+  // spread them: walk the level in `want` bands and take one spot from each, so a garrison is never a crowd
+  const list = [];
+  for (const [kind, n] of set) for (let i = 0; i < n; i++) list.push(kind);
+  for (let i = list.length - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; const t = list[i]; list[i] = list[j]; list[j] = t; }
+  for (let b = 0; b < list.length; b++) {
+    const lo = Math.floor(spots.length * b / list.length), hi = Math.floor(spots.length * (b + 1) / list.length);
+    let put = null;
+    for (let k = lo; k < hi; k++) { const [x, y] = spots[(k + ((rnd() * (hi - lo)) | 0)) % Math.max(1, hi - lo) + lo] || spots[k];
+      if (taken.some(([tx, ty]) => Math.abs(tx - x) < 8 && Math.abs(ty - y) < 6)) continue; put = [x, y]; break; }
+    if (!put) { left.push(list[b]); continue; }
+    taken.push(put);
+    L.ents.push({ t: list[b], x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
+  }
+  // whatever the bands could not fit goes anywhere still free: a band with no room used to simply lose its
+  // creature, which is how the Sunspire asked for thirty-one and got thirteen
+  for (const kind of left) {
+    let put = null;
+    for (let k = 0; k < spots.length; k++) { const [x, y] = spots[((k * 7 + ((rnd() * spots.length) | 0)) % spots.length)];
+      if (taken.some(([tx, ty]) => Math.abs(tx - x) < 8 && Math.abs(ty - y) < 6)) continue; put = [x, y]; break; }
+    if (!put) break;
+    taken.push(put);
+    L.ents.push({ t: kind, x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
+  }
+  return L;
+}
 function dressLevel(L, id) {
   const set = DRESS[id]; if (!set) return L;
   const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
@@ -3585,7 +3646,7 @@ function dressLevel(L, id) {
   return L;
 }
 const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(L), id); }; }
+for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(garrison(L, id)), id); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };
