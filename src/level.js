@@ -1406,7 +1406,15 @@ function theSunspire() {
   // (pass two) the frost: some who came up for the glass are still here, and the slab over the crown's thorns stands on a glass stem
   ent('deco', 30, 195, { kind: 'frozen', v: 0 }); ent('deco', 20, 131, { kind: 'frozen', v: 1 }); ent('deco', 12, 79, { kind: 'frozen', v: 0 }); ent('deco', 44, 55, { kind: 'frozen', v: 1 });
   set(87, 28, T.CRYST); set(87, 29, T.CRYST);
-  L.ents = L.ents.filter(e => !(e.t === 'deco' && e.kind === 'spire' && e.x === 16 && e.y === 29)); // it stood on the sign
+    // ---- THE RESONANCE FORKS: the mountain's own rule, with a handle on it ----
+  // The Sunspire had ONE machine in two hundred and twenty-two rows, and its whole rule is that crystal holds
+  // whatever touches it and then lets go. A fork of the same crystal, driven into the rock: strike it and
+  // EVERYTHING of its kind within five tiles lets go at once. It opens a face you could not climb, it drops a
+  // shelf you could not reach past - and it takes the ledge under your own feet if you were standing on
+  // crystal, which is the whole of the choice. Six seconds before it will sound again.
+  for (const [x, y] of [[56, 200], [48, 136], [67, 104], [48, 79], [45, 35]]) ent('resonance', x, y);
+  ent('sign', 57, 200, { text: 'A FORK OF THE SAME GLASS, DRIVEN INTO THE ROCK. STRIKE IT AND EVERY CRYSTAL WITHIN THE RING LETS GO AT ONCE. THE ONE UNDER YOUR FEET IS WITHIN THE RING.' });
+L.ents = L.ents.filter(e => !(e.t === 'deco' && e.kind === 'spire' && e.x === 16 && e.y === 29)); // it stood on the sign
   // ---- THE EYRIE. The summit was the same ice and crag as the ninety rows of climb under it, so the last
   // room of the level looked like one more ledge on the way up. It is a NEST now: the thing has been living
   // here a long time and the floor says so - bones it did not finish, the shells of what it hatched, feathers

@@ -1057,6 +1057,7 @@ function spawnEnt(e) {
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
       case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
+      case 'resonance': props.push({ t: 'resonance', x: px, y: py, r: (e.r || 5) * TS, cool: 0, ring: 0, said: 0 }); break;
       // AN IRON BULKHEAD. e.span is [x0, x1, y0, y1] in tiles; nothing but a round shot moves it.
       case 'bulkhead': props.push({ t: 'bulkhead', x: px, y: py, span: e.span, open: false, shake: 0, hit: 0 }); break;
       case 'plank': props.push({ t: 'plank', x: px, y: py, span: e.span, row: e.row, down: false }); break;
@@ -6833,6 +6834,32 @@ function updateCastleProps(dt, hb) {
           number(h[0] * TS, h[2] * TS - 10, 'HER SIDE IS OPEN', '#8fd160'); }
         for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - pr.x) < 40 && Math.abs(e.y - pr.y) < 30) { e.stagger = Math.max(e.stagger || 0, 1.2); } }
     }
+    if (pr.t === 'resonance') {
+      pr.cool = Math.max(0, (pr.cool || 0) - dt); pr.ring = Math.max(0, (pr.ring || 0) - dt);
+      if (pr.ring > 0 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y - 18 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#dff2ff' : '#bfe6f5', size: 1, grav: -20 });
+      const struck = hb && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 26, b: pr.y }) && !P.hitSet.has(pr);
+      if (struck) { P.hitSet.add(pr);
+        if (pr.cool > 0) { SFX.ui(); number(pr.x, pr.y - 30, 'STILL RINGING', '#9aa39a'); }
+        else {
+          pr.cool = 6; pr.ring = 1.1;
+          SFX.crystal ? SFX.crystal() : SFX.spark(); SFX.sting(); shakeCam(5); zoomKick(1.05, 0.25); rumble(160, 0.6);
+          ringAt(pr.x, pr.y - 14, pr.r, '#bfe6f5', 0.5);
+          // everything of its own kind inside the ring lets go at once, the ledge under you included
+          const t0 = Math.max(0, Math.floor((pr.x - pr.r) / TS)), t1 = Math.min(LW - 1, Math.ceil((pr.x + pr.r) / TS));
+          const y0 = Math.max(0, Math.floor((pr.y - pr.r) / TS)), y1 = Math.min(LH - 1, Math.ceil((pr.y + pr.r) / TS));
+          let n = 0;
+          for (let ty = y0; ty <= y1; ty++) for (let tx = t0; tx <= t1; tx++) {
+            const i = ty * LW + tx; if (L.grid[i] !== T.CRYST) continue;
+            if (Math.hypot(tx * TS + 8 - pr.x, ty * TS + 8 - (pr.y - 8)) > pr.r) continue;
+            breakCrystal(i, n++ > 0);
+          }
+          resolveTiles();
+          number(pr.x, pr.y - 34, n ? 'IT ALL LETS GO' : 'NOTHING TO SHAKE', n ? '#bfe6f5' : '#9aa39a');
+          if (!(PROG.forkTold > 2)) { PROG.forkTold = (PROG.forkTold || 0) + 1; hintT = 4;
+            hintMsg = 'THE FORK SHAKES EVERY CRYSTAL WITHIN ITS RING AT ONCE - THE ONE YOU ARE STANDING ON AS WELL. IT WILL NOT SOUND AGAIN UNTIL IT HAS STOPPED RINGING.'; }
+        } }
+      continue;
+    }
     if (pr.t === 'bulkhead') { pr.shake = Math.max(0, (pr.shake || 0) - dt); pr.hit = Math.max(0, (pr.hit || 0) - dt);
       if (!pr.open && hb && overlap(hb, { l: pr.span[0] * TS - 4, r: (pr.span[1] + 1) * TS + 4, t: pr.span[2] * TS, b: (pr.span[3] + 1) * TS }) && !P.hitSet.has(pr)) {
         P.hitSet.add(pr); pr.shake = 0.22; pr.hit = 0.7; SFX.clank(); sparks(P.x + P.face * 10, P.y - 10, P.face, 5);
@@ -8784,6 +8811,33 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'door') { if (pr.kind === 'cottage') g.drawImage(PROP.cottage[pr.shut ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 32 - cy); else g.drawImage(PROP.door[pr.shut ? 1 : 0], Math.round(pr.x) - 17 - cx, Math.round(pr.y) - 34 - cy); }
     else if (pr.t === 'carpet') g.drawImage(PROP.carpet, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 3 - cy);
     else if (pr.t === 'keg') { if (pr.gone || !PROP.flot) continue; const c = PROP.flot.keg[pr.fuse > 0 ? 1 : 0]; g.drawImage(c, Math.round(pr.x - c.width / 2 - cx), Math.round(pr.y - c.height - cy)); }
+    else if (pr.t === 'resonance') {
+      const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
+      if (x < -40 || x > VW + 40) continue;
+      const ready = pr.cool <= 0, sh = pr.ring > 0 ? Math.round((Math.random() - 0.5) * 3) : 0;
+      // how far it reaches, drawn on the ground, so the choice is never a guess
+      if (ready && Math.abs(P.x - pr.x) < pr.r + 60) {
+        const k = 0.35 + 0.25 * Math.sin(time * 3);
+        g.globalAlpha = 0.10 + 0.05 * k; g.fillStyle = '#bfe6f5';
+        g.beginPath(); g.ellipse(x, y - 8, pr.r, pr.r * 0.42, 0, 0, 7); g.fill();
+        g.globalAlpha = 0.35 + 0.2 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1;
+        g.beginPath(); g.ellipse(x + 0.5, y - 8, pr.r, pr.r * 0.42, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+      }
+      g.fillStyle = '#4a5262'; g.fillRect(x - 2 + sh, y - 14, 4, 14);          // the post it is driven into
+      g.fillStyle = '#6a7488'; g.fillRect(x - 2 + sh, y - 14, 1, 14);
+      g.fillStyle = '#2e3440'; g.fillRect(x - 5 + sh, y - 2, 10, 3);          // and the boss of it
+      const lit = ready ? '#dff2ff' : '#5a6a78', dim = ready ? '#8fc8e8' : '#3e4a58';
+      for (const d of [-4, 4]) {                                               // the two prongs
+        g.fillStyle = dim; g.fillRect(x + d - 1 + sh, y - 26, 3, 13);
+        g.fillStyle = lit; g.fillRect(x + d + sh, y - 26, 1, 13);
+        g.fillStyle = lit; g.fillRect(x + d - 1 + sh, y - 28, 3, 2);
+      }
+      g.fillStyle = dim; g.fillRect(x - 4 + sh, y - 15, 9, 3);
+      if (ready) { g.globalAlpha = 0.18 + 0.12 * Math.sin(time * 4); g.fillStyle = '#bfe6f5';
+        g.beginPath(); g.arc(x + sh, y - 22, 11, 0, 7); g.fill(); g.globalAlpha = 1; }
+      else { const k2 = 1 - pr.cool / 6; g.fillStyle = '#3e4a58'; g.fillRect(x - 5, y - 32, 10, 2);
+        g.fillStyle = '#7aa8c8'; g.fillRect(x - 5, y - 32, Math.round(10 * k2), 2); }
+      continue; }
     else if (pr.t === 'bulkhead') { if (pr.open) continue;
       const [sx0, sx1, sy0, sy1] = pr.span;
       const jx = pr.shake > 0 ? Math.round((Math.random() - 0.5) * 3) : 0;
