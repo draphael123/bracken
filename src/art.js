@@ -522,6 +522,16 @@ export function bakeBridgePlank(seed) {
   rect(g, 0, 0, T, 1, '#b8a888'); if (rnd() < 0.5) px(g, (rnd() * T) | 0, 3, C.woodD);
   return c;
 }
+export function bakeBridgePlankEnd(seed, dir) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 2, T, 4, C.wood); rect(g, 0, 2, T, 1, C.woodL); rect(g, 0, 5, T, 1, C.woodD);
+  rect(g, 0, 0, T, 1, '#b8a888'); if (rnd() < 0.5) px(g, 4 + ((rnd() * 7) | 0), 3, C.woodD);
+  const e = dir > 0 ? T - 2 : 0;                                   // the sawn end of the run
+  rect(g, e, 1, 2, 6, C.woodD); rect(g, e + (dir > 0 ? 0 : 1), 1, 1, 6, '#3a2414');
+  px(g, dir > 0 ? T - 4 : 3, 3, '#5a4a3a'); px(g, dir > 0 ? T - 4 : 3, 4, '#2a1e12');   // the bolt through it
+  rect(g, dir > 0 ? T - 5 : 2, 6, 3, 3, C.woodD);                  // and the bracket it rests on
+  return c;
+}
 export function bakeNet() { const [c, g] = canvas(T, T); for (let x = 0; x < T; x += 4) line(g, x, 0, x, 8, '#b8a888', 1); for (let y = 0; y < 8; y += 4) line(g, 0, y, T, y, '#b8a888', 1); return c; }
 // Watchtower cap: a roofed platform, 32×18.
 export function bakeTowerTop() {

@@ -6,7 +6,7 @@
 // It follows doorways (each names the doorway it lets out at) and vents (ride the column, steer off the
 // top). It cannot model a mover, a swing or a gust, so a level that leans on those comes back ASSISTED and
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
-const RUN = 100, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
+const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
 const JUMP_ACROSS = 6;                                        // with a run-up, about six tiles of float
 const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws you much higher
