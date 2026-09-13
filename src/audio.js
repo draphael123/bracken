@@ -258,7 +258,13 @@ function playFile(name) {
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
 export const music = {
-  play(name) { wantTrack = name; silenced = false; if (!ac) return; if (trackBuf[name]) playFile(name); else loadTrack(name); },
+  play(name) { wantTrack = name; silenced = false; if (!ac) return;
+    if (trackBuf[name]) { playFile(name); return; }
+    // A TRACK WITH NO FILE IS PLAYED BY THE SYNTH - but the synth only runs while `currentTrack` is null,
+    // and nothing was clearing it. So walking into UNDERLEAF left the PREVIOUS level's file playing and
+    // the level had no theme of its own at all, which is exactly what it sounded like.
+    if (!TRACKS[name]) { stopMusic(); currentTrack = null; nextT = ac.currentTime + 0.05; step = 0; return; }
+    loadTrack(name); },
   preload(name) { if (ac) loadTrack(name); },
   stop() { wantTrack = null; silenced = true; stopMusic(); currentTrack = null; },
   loaded(name) { return !!trackBuf[name]; },

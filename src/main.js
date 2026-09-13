@@ -102,7 +102,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.15 * (tal('heavyPlunge') + tal('firedropDmg')))); // (HEAVY PLUNGE, FIREDROP)
-const DMG = { granSweep: 26, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 18, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+const DMG = { roofFall: 34, granSweep: 26, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, capSabre: 20, capShot: 16, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 18, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 26, gqSweep: 20, gqCharge: 30, gqSlate: 14, gqBolt: 24, gqArrow: 12, crush: 18, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
 const EHP = { grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 520, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 420, roc: 440, sentry: 14, gqueen: 900, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 160, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 // THE METER PACES THE WRONG HALF OF THE FIGHT. A swing costs 12 and comes off the blade, so eight swings
 // empty you and that is a fine rhythm - two full three-cut runs and then you breathe. But a DODGE cost 25,
@@ -628,6 +628,18 @@ function bakeStem(h, seed) {
   cg.fillRect(3, h - 2, 10, 2);
   STEMS.set(key, c); return c;
 }
+// A tile is part of the drain's brick barrel only if it is one course from the hole: the arch over it, the
+// invert under it, and the two side walls. Everything else under a village is the ground it was built on.
+const linesDrain = (x, y) => {
+  if (!(L.drainZones || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && y >= 35 && y <= 41)) return false;
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+    if (!dx && !dy) continue;
+    const nx = x + dx, ny = y + dy;
+    if (nx < 0 || ny < 0 || nx >= LW || ny >= LH) continue;
+    if (ny >= 37 && ny <= 39 && L.grid[ny * LW + nx] === T.AIR) return true;
+  }
+  return false;
+};
 function resolveTiles() {
   if (!tileDeep || tileDeep.length !== LW * LH) tileDeep = new Uint8Array(LW * LH);
   const rnd = mulberry(7);
@@ -646,7 +658,7 @@ function resolveTiles() {
       const inZone = (L.stone || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) || (L.scree || []).some(z => x >= z.x0 && x <= z.x1 && y === z.y);
       const eL = l === T.AIR || isOneWay(l) || l === T.SPIKE ? 1 : 0, eR = r === T.AIR || isOneWay(r) || r === T.SPIKE ? 1 : 0;
       if (up !== T.SOLID && up !== T.CRATE) {
-        const villDrain = villT && (L.drainZones || []).some(z => x >= z[0] && x <= z[1] && y >= 35 && y <= 41);
+        const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? REEF.hullTop[(rnd() * 4) | 0] : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
         const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood');
         const flat2 = tileAt(x + 1, y - 1) === T.AIR && tileAt(x + 1, y) === T.SOLID && tileAt(x + 2, y - 1) === T.AIR && tileAt(x + 2, y) === T.SOLID;
@@ -657,6 +669,14 @@ function resolveTiles() {
         else if (dress === 'none') { roll = 1; }
         else if (dress === 'crag') { roll = 1; if (!inZone) { const r2 = rnd(); if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 6) | 0), y: y * TS - 7, c: PROP.heather[(rnd() * 3) | 0], sway: 0 }); else if (r2 < 0.21 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 12, c: PROP.gorse[(rnd() * 2) | 0], birds: false }); else if (r2 < 0.26) decor.push({ k: 'fern', x: x * TS + 4, y: y * TS - 14, c: PROP.thistle[(rnd() * 2) | 0], sway: 0 }); else if (r2 < 0.32) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); } }
         else if (dress === 'camp') { roll = 1; const r2 = rnd(); if (r2 < 0.03 && flat2) decor.push({ k: 'cart', x: x * TS, y: y * TS - 16, c: PROP.cart, bg: true }); else if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 }); else if (r2 < 0.21) { decor.push({ k: 'skull', x: x * TS + 3, y: y * TS - 24, c: PROP.skullPost, crow: rnd() < 0.5 }); } else if (r2 < 0.25 && flat2) decor.push({ k: 'tent', x: x * TS - 4, y: y * TS - 22, c: PROP.tent[(rnd() * 2) | 0], bg: true }); else if (r2 < 0.28) { decor.push({ k: 'fire', x: x * TS + 1, y: y * TS - 14, c: PROP.campfire[0], fire: true }); lights.push({ x: x * TS + 8, y: y * TS - 6, r: 38 }); } else if (r2 < 0.34) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); }
+        else if (dress === 'village') { roll = 1; const r2 = rnd();
+          if (r2 < 0.03 && flat2) decor.push({ k: 'cart', x: x * TS, y: y * TS - 16, c: PROP.cart, bg: true });
+          else if (r2 < 0.06 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 16, c: PROP.beanpoles[(rnd() * 2) | 0], birds: false, bg: true });
+          else if (r2 < 0.09 && flat2) decor.push({ k: 'rock', x: x * TS, y: y * TS - 14, c: PROP.gardenWall[(rnd() * 3) | 0], bg: true });
+          else if (r2 < 0.11) decor.push({ k: 'rock', x: x * TS + 3, y: y * TS - 11, c: PROP.skep });
+          else if (r2 < 0.26) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 });
+          else if (r2 < 0.34) decor.push({ k: 'flower', x: x * TS + 3 + ((rnd() * 8) | 0), y: y * TS - 6, c: PROP.flower[(rnd() * 4) | 0], sway: 0 });
+          else if (r2 < 0.38) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); }
         else if (dress === 'shore') { roll = 1; const wet = L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1], r2 = rnd();
           if (wet) { if (r2 < 0.1) decor.push({ k: 'rock', x: x * TS + 3, y: y * TS - 4, c: PROP.lw.saltCrust[(rnd() * 2) | 0] }); else if (r2 < 0.16) decor.push({ k: 'rock', x: x * TS + 3, y: y * TS - 8, c: PROP.lw.coralTuft[(rnd() * 3) | 0] }); else if (r2 < 0.22) decor.push({ k: 'tuft', x: x * TS + 2, y: y * TS - 16, c: PROP.lw.rushes[(rnd() * 3) | 0], sway: 0 }); }
           else { if (r2 < 0.14) decor.push({ k: 'tuft', x: x * TS + 2 + ((rnd() * 6) | 0), y: y * TS - 16, c: PROP.lw.rushes[(rnd() * 3) | 0], sway: 0 }); else if (r2 < 0.24) decor.push({ k: 'rock', x: x * TS + ((rnd() * 10) | 0), y: y * TS - 4, c: PROP.lw.shell[(rnd() * 3) | 0] }); else if (r2 < 0.27 && flat2) decor.push({ k: 'log', x: x * TS, y: y * TS - 7, c: PROP.lw.driftwood[(rnd() * 2) | 0] }); else if (r2 < 0.31) decor.push({ k: 'rock', x: x * TS, y: y * TS - 10, c: PROP.lw.barnacleRock[(rnd() * 2) | 0] }); } }
@@ -675,7 +695,7 @@ function resolveTiles() {
       } else if (shipT) s = deckZ ? FLOT.deck[(rnd() * 4) | 0] : FLOT.hull[(rnd() * 4) | 0];
       else if (timber) s = REEF.hull[(rnd() * 4) | 0];
       else if (eL || eR) s = SET2 ? SET2.edge[eL + '' + eR][(rnd() * 2) | 0] : TILE.edge[eL + '' + eR][(rnd() * 2) | 0];
-      else if (villT) s = (L.drainZones || []).some(z => x >= z[0] && x <= z[1] && y >= 35 && y <= 41) ? VILL.silt[(rnd() * 3) | 0] : VILL.fill[(rnd() * 4) | 0];
+      else if (villT) s = linesDrain(x, y) ? VILL.silt[(rnd() * 3) | 0] : VILL.fill[(rnd() * 4) | 0];
       else if (SET2) s = SET2.fill[(rnd() * 4) | 0];
       else if (!(L.palette && L.palette.myc) && tileAt(x, y - 2) !== T.SOLID && rnd() < 0.4) s = TILE.roots[(rnd() * 3) | 0];
       else if (L.palette && L.palette.myc) s = TILE.mycDirt[(rnd() * 3) | 0];
@@ -690,7 +710,7 @@ function resolveTiles() {
     } else if (t === T.ONEWAY) {
       const l = tileAt(x - 1, y) === T.ONEWAY, r = tileAt(x + 1, y) === T.ONEWAY;
       const inHive = L.arena && L.arena.boss === 'queen' && x * TS >= L.arena.x0 && x * TS < L.arena.x1;
-      const crag = L.palette && L.palette.dress === 'crag', shoreOW = L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : null);
+      const crag = L.palette && L.palette.dress === 'crag', shoreOW = L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : null);
       s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * 3) | 0];
     } else if (t === T.REED) s = TILE.reeds[(rnd() * 3) | 0];
     else if (t === T.PALISADE) s = TILE.palisade[(rnd() * 3) | 0];
@@ -1133,6 +1153,9 @@ function spawnEnt(e) {
       case 'sluice': props.push({ t: 'sluice', x: px, y: py, spin: 0, held: 0 }); break;
       case 'winch': props.push({ t: 'winch', x: px, y: py, gate: e.gate, gy0: e.gy0, gy1: e.gy1, open: 0, spin: 0, hold: e.hold || 6 }); break;
       case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, hang: !!e.hang, gq: !!e.gq, downT: 0 }); break;
+      case 'timber': props.push({ t: 'timber', x: px, y: py, x0: e.x0, x1: e.x1, row: e.row, floor: e.floor,
+        deep: e.deep || 2, hp: e.state === 'cracked' ? 1 : 3, state: e.state || 'sound', broken: marks.has('tim:' + e.x),
+        creakT: 0, shake: 0, armT: 0, dust: 0 }); break;
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
       case 'rod': props.push({ t: 'rod', x: px, y: py }); break;
       case 'scaffold': props.push({ t: 'scaffold', x0: e.x * TS, x1: (e.x1 + 1) * TS, top: e.y * TS, crane: !!e.crane }); break;
@@ -7511,6 +7534,65 @@ function updateCastleProps(dt, hb) {
           if (pr.hp <= 0) { pr.broken = true; pr.creakT = 0.45; SFX.crack(); shakeCam(4); } } } }
   }
 }
+// IT COMES DOWN. Everything under the span takes it, the roof opens, and the rubble lands where it fell.
+function dropTimber(pr) {
+  if (pr.broken) return;
+  pr.broken = true; marks.add('tim:' + Math.round(pr.x / TS));
+  const x0 = pr.x0, x1 = pr.x1, row = pr.row, fl = pr.floor;
+  // 1. THE ROOF OPENS. Two or three courses out of the back of the span, which is a hole into whatever
+  //    is above it - the way on, or the way something else gets at you.
+  for (let x = x0; x <= x1; x++) for (let y = row; y > row - pr.deep; y--) {
+    const i = y * LW + x; const t = L.grid[i];
+    if (t === T.SOLID || t === T.SOFT || t === T.ONEWAY) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); }
+  }
+  // 2. THE RUBBLE LANDS. A mound, highest in the middle: a stair up on one side and a wall across the
+  //    gallery on the other, and you do not get to choose which.
+  const mid = (x0 + x1) / 2, half = Math.max(1, (x1 - x0) / 2);
+  for (let x = x0; x <= x1; x++) {
+    const h = Math.max(0, Math.round(3 * (1 - Math.abs(x - mid) / (half + 0.5))));
+    for (let k = 0; k < h; k++) { const i = (fl - k) * LW + x;
+      if (L.grid[i] === T.AIR) { L.grid[i] = T.SOLID; tileSpr[i] = null; destroyed.delete(i); } }
+  }
+  resolveTiles();
+  // 3. AND WHATEVER WAS UNDER IT. This is the reason to do it at all.
+  for (const e of enemies) { if (!e.alive || e.harmless) continue;
+    if (e.x < x0 * TS - 4 || e.x > (x1 + 1) * TS + 4) continue;
+    if (e.y < row * TS || e.y > (fl + 2) * TS) continue;
+    hurtEnemy(e, e.maxHp ? 70 : 999, e.x + 1, false);
+    if (e.alive) { e.stagger = Math.max(e.stagger || 0, 1.4); number(e.x, e.y - e.h - 14, 'UNDER IT', '#8fd160'); } }
+  if (!P.dead && P.x > x0 * TS - 4 && P.x < (x1 + 1) * TS + 4 && P.y > row * TS && P.y < (fl + 2) * TS)
+    damagePlayer(P.x - 1, DMG.roofFall, { up: true, unblockable: true });
+  for (let x = x0; x <= x1; x += 1) for (let q = 0; q < 3; q++)
+    parts.push({ x: x * TS + Math.random() * TS, y: row * TS + 6, vx: (Math.random() - 0.5) * 50, vy: 40 + Math.random() * 180, life: 1.1, max: 1.1, col: Math.random() < 0.4 ? '#6a6478' : Math.random() < 0.7 ? '#4a4658' : '#8a8298', size: 2, grav: 420 });
+  dust(mid * TS, fl * TS, 18); SFX.crack(); SFX.stone(); SFX.heavy(); SFX.thunder();
+  shakeCam(10); zoomKick(1.1, 0.4); hitstop(0.05); rumble(220, 0.8);
+  number(mid * TS, row * TS - 10, 'IT COMES DOWN', '#ff9a5c');
+  if (!(PROG.timberTold > 1)) { PROG.timberTold = (PROG.timberTold || 0) + 1; hintT = 5;
+    hintMsg = 'NOTHING DOWN HERE IS HOLDING ITSELF UP. A SET OF TIMBER HOLDS THAT SPAN OF ROOF: CUT IT AND THE ROOF KILLS WHATEVER IS UNDER IT, OPENS A HOLE WHERE IT WAS, AND LEAVES A MOUND YOU CAN CLIMB - OR CANNOT GET PAST.'; }
+}
+// a set nobody has looked at in two hundred years: it groans before it goes, and the dust comes first
+function updateTimber(dt, hb) {
+  for (const pr of props) {
+    if (pr.t !== 'timber' || pr.broken) continue;
+    pr.shake = Math.max(0, pr.shake - dt);
+    const under = !P.dead && P.x > pr.x0 * TS - 6 && P.x < (pr.x1 + 1) * TS + 6 && P.y > pr.row * TS && P.y < (pr.floor + 2) * TS;
+    // THE DUST IS THE TELL. A set that is about to go sheds before it drops, over the whole span, and it
+    // is the only warning you get in the deep workings.
+    if (pr.state === 'going' && under) { pr.armT = (pr.armT || 0) + dt;
+      if (pr.armT > 0.35 && Math.random() < dt * 46) parts.push({ x: (pr.x0 + Math.random() * (pr.x1 - pr.x0 + 1)) * TS, y: pr.row * TS + 4, vx: 0, vy: 34, life: 0.6, max: 0.6, col: '#8a8298', size: 1, grav: 260 });
+      if (pr.armT > 0.7 && !pr.said) { pr.said = 1; SFX.crack(); number(pr.x, pr.row * TS - 12, 'IT IS GOING', '#ff6b6b'); }
+      if (pr.armT > 2.1) { dropTimber(pr); continue; } }
+    // a cracked set goes if you land hard anywhere under it - the mine punishes a heavy landing
+    if (pr.state === 'cracked' && under && P.ground && P.landT > 0 && (P.fellFrom || 0) > 3) { dropTimber(pr); continue; }
+    if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.row * TS, b: pr.floor * TS + 8 }) && !P.hitSet.has(pr)) {
+      P.hitSet.add(pr); pr.hp -= P.heavy ? 2 : 1; pr.shake = 0.3;
+      SFX.crack(); SFX.stone(); sparks(pr.x, P.y - 8, P.face, 5);
+      burst(pr.x, P.y - 8, 6, ['#8a5a32', '#5c3a1d'], 60, 0.5);
+      if (pr.hp <= 0) dropTimber(pr);
+      else number(pr.x, pr.row * TS - 8, pr.hp === 1 ? 'ONE MORE' : 'IT GIVES', '#ffd36b');
+    }
+  }
+}
 function ringBell(b) {
   if (b.section) { b.rung = true; raiseAlarm(b.section); return; } b.rung = true; SFX.thunder(); SFX.clank(); shakeCam(4); number(b.x, b.y - 30, 'THE GATE DROPS', '#ff6b6b'); for (let ty = 0; ty < LH; ty++) { const i = ty * LW + b.gate; if (ty >= 15 && ty <= 19 && L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[(ty + b.gate) % 2]; } } burst(b.gate * TS + 8, 17 * TS, 10, ['#7c8797', '#c9d1dc'], 60, 0.5); }
 
@@ -7571,6 +7653,7 @@ function placeLandmarks() {
   if (dress === 'crag') { put(PROP.cart, 20, 0); put(PROP.fence[0], 40, 0); put(PROP.lanternPost, 60, 0); put(PROP.bones[1], 30, 0); }
   if (dress === 'marsh') { put(PROP.oldOak[1], 8, 0); put(PROP.oldOak[0], 8, 0); }
   if (dress === 'camp') { put(PROP.totem[0], 20, 0); put(PROP.totem[1], 20, 0); }
+  if (dress === 'village') { put(PROP.dovecote, 14, 0); put(PROP.lychgate, 20, 0); put(PROP.yew[0], 8, 0); put(PROP.yew[1], 40, 0); put(PROP.stocks, 26, 0); put(PROP.trough, 52, 0); }
   if (dress === 'myc') { put(PROP.giantCap, 0, 0); }
 }
 function spawnCritters() {
@@ -7584,6 +7667,7 @@ function spawnCritters() {
   if (dress === 'marsh') { const sh = (L.pools || []).filter(p => p.shallow); for (let i = 0; i < Math.min(3, sh.length); i++) { const p = sh[(i * 2 + 1) % sh.length]; critters.push({ k: 'heron', x: p.x0 + 30 + rnd() * Math.max(10, p.x1 - p.x0 - 60), y: p.y + 4, t: rnd() * 6, perched: true, vx: 0, vy: 0, life: 99 }); } }
   if (dress === 'crag') for (let i = 0; i < Math.min(10, LW / 30); i++) { const [x, y] = pick(); if (L.arena && x * TS > L.arena.x0 - 40) continue; critters.push({ k: 'sheep', x: x * TS + 8, y: y * TS, t: rnd() * 6, vx: 0, vy: 0, flee: 0, face: rnd() < 0.5 ? -1 : 1, life: 99 }); }
   if (dress === 'camp') for (const d of decor) if (d.k === 'skull' && d.crow) critters.push({ k: 'crow', x: d.x + 5, y: d.y - 2, t: rnd() * 6, perched: true, vx: 0, vy: 0, life: 99 });
+  if (dress === 'village') for (const e of L.ents) if (e.t === 'deco' && (e.kind === 'grave' || e.kind === 'lychgate') && rnd() < 0.5) critters.push({ k: 'crow', x: e.x * TS + 6, y: (e.y + 1) * TS - 12, t: rnd() * 6, perched: true, vx: 0, vy: 0, life: 99 });
   if (dress === 'wood' || dress === 'marsh') for (const d of decor) if (d.k === 'stump' && rnd() < 0.7) critters.push({ k: 'butterfly', x: d.x + 7, y: d.y - 4, hx: d.x + 7, hy: d.y - 6, t: rnd() * 6, c: (rnd() * 3) | 0, vx: 0, vy: 0, flee: 0 });
 }
 function updateCritters(dt) {
@@ -8860,7 +8944,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -9197,13 +9281,27 @@ function bakeHouseFront(h) {
   x.fillStyle = 'rgba(0,0,0,0.4)'; x.fillRect(0, 4, w, 3);
   x.fillStyle = '#5a5850'; x.fillRect(0, ht - fh, w, fh); x.fillStyle = '#6e6c62'; for (let sx = 0; sx < w; sx += 9) x.fillRect(sx + ((sx / 9) % 2 ? 4 : 0), ht - fh + 2, 7, 2); x.fillStyle = '#3a3830'; x.fillRect(0, ht - fh, w, 1);
   const doorPx = h.door !== null ? (h.door - h.x0) * TS + 8 : w / 2;
-  for (let wx = 14; wx < w - 22; wx += 4 * TS) { if (Math.abs(wx + 5 - doorPx) < 24) continue; const wy = 11, lit = h.asleep ? false : rnd() < 0.8;   /* in UNDERLEAF every window is dark, so a LIT one means something heard you */
+  const doorPx2 = h.door2 != null ? (h.door2 - h.x0) * TS + 8 : null;
+  for (let wx = 14; wx < w - 22; wx += 4 * TS) { if (Math.abs(wx + 5 - doorPx) < 24) continue; if (doorPx2 !== null && Math.abs(wx + 5 - doorPx2) < 24) continue; const wy = 11, lit = h.asleep ? false : rnd() < 0.8;   /* in UNDERLEAF every window is dark, so a LIT one means something heard you */
     x.fillStyle = '#1e120a'; x.fillRect(wx - 1, wy - 1, 12, 11); x.fillStyle = lit ? '#ffb040' : '#2a2438'; x.fillRect(wx, wy, 10, 9); if (lit) { x.fillStyle = '#ffe0a0'; x.fillRect(wx + 1, wy + 1, 3, 3); }
     x.fillStyle = '#1e120a'; x.fillRect(wx + 4, wy, 2, 9); x.fillRect(wx, wy + 4, 10, 1);
     x.fillStyle = '#3f5a2c'; x.fillRect(wx - 4, wy - 1, 3, 11); x.fillRect(wx + 11, wy - 1, 3, 11); x.fillStyle = '#2c4020'; x.fillRect(wx - 4, wy + 4, 3, 1); x.fillRect(wx + 11, wy + 4, 3, 1);
     x.fillStyle = '#6e6c62'; x.fillRect(wx - 2, wy + 10, 14, 2); }
-  if (h.door === null) { const dx = ((w / 2) | 0) - 7, dy = ht - fh - 22; x.fillStyle = '#1e120a'; x.fillRect(dx - 1, dy - 1, 16, 23); x.fillStyle = '#6a4428'; x.fillRect(dx, dy, 14, 22); x.fillStyle = '#4a2e1c'; for (let k = 3; k < 14; k += 4) x.fillRect(dx + k, dy, 1, 22); x.fillStyle = '#3a3a44'; x.fillRect(dx - 2, dy + 9, 18, 3); x.fillStyle = '#8a919c'; x.fillRect(dx - 2, dy + 9, 18, 1); }
-  { const hx = (doorPx | 0) - 8; x.fillStyle = '#e8dcc0'; x.fillRect(hx, 6, 4, 2); x.fillRect(hx - 2, 3, 2, 4); x.fillRect(hx + 12, 6, 4, 2); x.fillRect(hx + 16, 3, 2, 4); x.fillStyle = '#6a4428'; x.fillRect(hx + 4, 5, 8, 4); x.fillStyle = '#ff6b4a'; x.fillRect(hx + 6, 6, 1, 1); x.fillRect(hx + 9, 6, 1, 1); }
+  if (ht > 5 * TS) for (let wx = 22; wx < w - 26; wx += 5 * TS) { const wy = ht - fh - 58, lit = h.asleep ? false : rnd() < 0.5;
+    if (wy < 14) continue;
+    x.fillStyle = '#1e120a'; x.fillRect(wx - 1, wy - 1, 10, 9); x.fillStyle = lit ? '#ffb040' : '#241e30'; x.fillRect(wx, wy, 8, 7);
+    x.fillStyle = '#1e120a'; x.fillRect(wx + 3, wy, 2, 7); x.fillRect(wx, wy + 3, 8, 1);
+    x.fillStyle = '#6e6c62'; x.fillRect(wx - 2, wy + 8, 12, 2);
+    if (rnd() < 0.5) { x.fillStyle = '#3f5a2c'; for (let k = 0; k < 7; k++) x.fillRect(wx - 3 + ((k * 5) % 13), wy + 10 + k * 3, 3, 3); }   /* ivy up the boards */ }
+  if (h.door === null) { const dh = 26, dx = ((w / 2) | 0) - 7, dy = ht - dh;
+    x.fillStyle = '#141008'; x.fillRect(dx - 2, dy - 3, 18, dh + 3);                                    /* the reveal, cut back into the wall */
+    x.fillStyle = '#6a4428'; x.fillRect(dx, dy, 14, dh); x.fillStyle = '#4a2e1c'; for (let k = 3; k < 14; k += 4) x.fillRect(dx + k, dy, 1, dh);
+    x.fillStyle = '#7e5432'; x.fillRect(dx, dy, 14, 1);
+    x.fillStyle = '#3a3a44'; x.fillRect(dx - 2, dy + 11, 18, 3); x.fillStyle = '#8a919c'; x.fillRect(dx - 2, dy + 11, 18, 1);   /* the hinge band */
+    x.fillStyle = '#c9a040'; x.fillRect(dx + 11, dy + 14, 2, 2);                                        /* the latch */
+    x.fillStyle = '#5a5850'; x.fillRect(dx - 3, ht - 3, 20, 3); x.fillStyle = '#75736a'; x.fillRect(dx - 3, ht - 3, 20, 1);     /* and the worn step */
+    x.fillStyle = '#2e1c10'; x.fillRect(dx - 3, dy - 4, 20, 2); }
+  for (const dpx of doorPx2 !== null ? [doorPx, doorPx2] : [doorPx]) { const hx = (dpx | 0) - 8; x.fillStyle = '#e8dcc0'; x.fillRect(hx, 6, 4, 2); x.fillRect(hx - 2, 3, 2, 4); x.fillRect(hx + 12, 6, 4, 2); x.fillRect(hx + 16, 3, 2, 4); x.fillStyle = '#6a4428'; x.fillRect(hx + 4, 5, 8, 4); x.fillStyle = '#ff6b4a'; x.fillRect(hx + 6, 6, 1, 1); x.fillRect(hx + 9, 6, 1, 1); }
   return c;
 }
 // GROUND LIGHT. Three cheap passes over the tiles in view, and the reason a slab of rock stops looking like a

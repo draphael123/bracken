@@ -107,6 +107,27 @@ function turfTop(seed, eL, eR) {
   return c;
 }
 
+// THE VILLAGE'S OWN LEDGE. Everywhere else in BRACKEN a one-way platform is a felled log, because
+// everywhere else is a wood. A village does not have logs lying about at first-floor height - it has
+// STAGING: a sawn board on an iron bracket, strapped and bolted to the wall, put up by somebody who
+// was working on the roof and never took it down again. Same silhouette, entirely different trade.
+function villagePlat(seed, end) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T, w = x1 - x0;
+  rect(g, x0, 3, w, 6, '#6a5136');                                  // the sawn board, on edge
+  rect(g, x0, 3, w, 1, '#9a7a4e');                                  // its lit arris
+  rect(g, x0, 8, w, 1, '#3e2e1c');
+  for (let i = 0; i < 4; i++) { const gx = x0 + 1 + ((rnd() * (w - 2)) | 0); rect(g, gx, 4 + ((rnd() * 3) | 0), 2 + ((rnd() * 3) | 0), 1, '#57422a'); }
+  rect(g, x0, 9, w, 2, '#2e2620');                                  // the shadow it throws on its own bracket
+  // the iron: a strap over the top of the board and a bolt through it, every other tile
+  if ((seed & 1) === 0 || end) { const bx = x0 + (end === 'R' ? w - 6 : 3);
+    rect(g, bx, 2, 3, 9, '#4a4f5a'); rect(g, bx, 2, 1, 9, '#7c8797'); px(g, bx + 1, 6, '#c9b84a'); }
+  for (let i = 0; i < 2; i++) px(g, x0 + 2 + ((rnd() * (w - 4)) | 0), 5, '#8a919c');   // nail heads
+  if (end === 'L') { rect(g, 1, 3, 1, 7, '#9a7a4e'); rect(g, 2, 10, 2, 3, '#4a4f5a'); }
+  if (end === 'R') { rect(g, T - 2, 3, 1, 7, '#3e2e1c'); rect(g, T - 4, 10, 2, 3, '#4a4f5a'); }
+  return c;
+}
+
 export function bakeVillageTiles() {
   const top = {}, edge = {}, turf = {};
   for (const eL of [0, 1]) for (const eR of [0, 1]) {
@@ -120,6 +141,6 @@ export function bakeVillageTiles() {
     fill: [0, 1, 2, 3].map(i => villageFill(7400 + i)),
     silt: [0, 1, 2].map(i => drainTile(7500 + i)),
     wet: [0, 1, 2].map(i => drainTile(7510 + i)),
-    ledge: null, ledgeL: null, ledgeR: null,
+    ledge: [0, 1, 2].map(i => villagePlat(7600 + i, null)), ledgeL: villagePlat(7603, 'L'), ledgeR: villagePlat(7604, 'R'),
   };
 }
