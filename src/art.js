@@ -38,6 +38,18 @@ export function bakeDirtDeep(seed, band) {
   const rnd = mulberry(seed), D = deepPal(band); const [c, g] = canvas(T, T);
   rect(g, 0, 0, T, T, D.base);
   for (let i = 0; i < T * T / 5; i++) px(g, (rnd() * T) | 0, (rnd() * T) | 0, rnd() < 0.5 ? D.lo : D.hi);
+  /* A SEAM. The single biggest mass on the screen in half the levels is this tile repeated four hundred
+     times, and four speckle patterns is not enough to hide that. A third of them get a course of something
+     else through them - gravel, a pale clay, a dark band of wet - laid at an angle so the grid breaks up. */
+  if (rnd() < 0.34) { const y0 = 2 + ((rnd() * 11) | 0), th = 1 + ((rnd() * 2) | 0), rise = rnd() < 0.5 ? 0 : (rnd() < 0.5 ? 1 : -1);
+    const col = rnd() < 0.45 ? D.grit : rnd() < 0.5 ? shade(D.base, 0.16) : shade(D.base, -0.22);
+    for (let x = 0; x < T; x++) { const y = y0 + Math.round(rise * (x - T / 2) / 6);
+      for (let k = 0; k < th; k++) if (y + k >= 0 && y + k < T) px(g, x, y + k, rnd() < 0.25 ? shade(col, -0.2) : col); } }
+  /* and something bedded in it: a boulder the diggers went round */
+  if (rnd() < 0.22) { const bx = ((rnd() * 10) | 0), by = ((rnd() * 9) | 0), bw = 5 + ((rnd() * 4) | 0), bh = 4 + ((rnd() * 3) | 0);
+    ellipse(g, bx + bw / 2, by + bh / 2, bw / 2, bh / 2, D.grit);
+    ellipse(g, bx + bw / 2 - 1, by + bh / 2 - 1, bw / 3, bh / 3, shade(D.grit, 0.18));
+    for (let i = 0; i < 3; i++) px(g, bx + ((rnd() * bw) | 0), by + ((rnd() * bh) | 0), shade(D.grit, -0.3)); }
   if (band === 0) {                                                       // root hair, still reaching down
     for (let i = 0; i < 2; i++) { let x = 1 + ((rnd() * 14) | 0), y = (rnd() * 6) | 0;
       for (let k = 0; k < 5 + ((rnd() * 6) | 0) && y < T; k++) { px(g, x, y, shade(C.dirtD, -0.35)); if (rnd() < 0.4) x += rnd() < 0.5 ? -1 : 1; y++; if (x < 0 || x > 15) break; } }
@@ -72,6 +84,15 @@ export function bakeGrassTop(seed, eL, eR) {
     if (rnd() < 0.15) px(g, x, 1, C.grassL);
   }
   for (let i = 0; i < 3; i++) { const x = (rnd() * T) | 0; px(g, x, 1 + ((rnd() * 2) | 0), C.grassD); }
+  /* WHAT IS IN THE LIP. Under the turf the ground shows what it is made of: a stone half out of it, the
+     end of a root that ran along under the grass, and a rim of paler soil where the water gets at it. */
+  { const lip = 4 + ((rnd() * 2) | 0);
+    for (let x = 0; x < T; x++) if (rnd() < 0.5) px(g, x, lip + ((rnd() * 2) | 0), shade(C.dirtL, 0.14));
+    if (rnd() < 0.45) { const rx = 1 + ((rnd() * 11) | 0), rw = 3 + ((rnd() * 4) | 0), ry = lip + 1 + ((rnd() * 3) | 0);
+      for (let k = 0; k < rw; k++) px(g, rx + k, ry + (k > rw / 2 ? 1 : 0), C.woodD);
+      px(g, rx, ry - 1, shade(C.woodD, 0.2)); }
+    if (rnd() < 0.4) { const sx = 1 + ((rnd() * 12) | 0), sy = lip + 2 + ((rnd() * 4) | 0);
+      rect(g, sx, sy, 3, 2, C.stone); rect(g, sx, sy, 3, 1, C.stoneL); px(g, sx + 2, sy + 1, C.stoneD); } }
   const side = (x0, dir) => { for (let y = 0; y < 10; y++) { const w = y < 4 ? 2 : y < 7 ? 1 : (rnd() < 0.5 ? 1 : 0); for (let i = 0; i < w; i++) px(g, x0 + i * dir, y, y < 2 ? C.grass : ((y + i) & 1 ? C.grass : C.grassD)); } };
   if (eL) side(0, 1); if (eR) side(T - 1, -1);
   return c;
@@ -100,18 +121,46 @@ export function bakeDirtRoots(seed) {
   return c;
 }
 
+// A FELLED LOG, AND IT SHOULD LOOK LIKE ONE. It was a flat brown bar with a light line on top: no bark,
+// no round, no end to it. A log is a CYLINDER seen from the side - dark along the bottom where it turns
+// away, a bright band along the top third where the light lands, bark in short vertical splits, a knot or
+// two where a branch came off, and moss on the upper side because it has been lying there. 16x16; the
+// standable surface is the top, so it keeps its top edge and gets its depth downward.
 export function bakeLog(seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(T, T);
-  rect(g, 0, 1, T, 7, C.wood); rect(g, 0, 1, T, 1, C.woodL); rect(g, 0, 6, T, 2, C.woodD);
-  for (let i = 0; i < 4; i++) { const x = (rnd() * T) | 0; rect(g, x, 3 + ((rnd() * 2) | 0), 2 + ((rnd() * 3) | 0), 1, C.woodD); }
-  rect(g, 0, 0, T, 1, C.woodD);
-  if (rnd() < 0.5) { px(g, 3, 0, C.grassD); px(g, 4, 0, C.grass); }
+  const bark = shade(C.wood, -0.18), barkD = shade(C.woodD, -0.15), lit = shade(C.woodL, 0.1);
+  rect(g, 0, 0, T, 1, barkD);                                   /* the top edge, in shadow against the sky */
+  rect(g, 0, 1, T, 2, lit);                                     /* and the band of light just under it */
+  rect(g, 0, 3, T, 4, bark);
+  rect(g, 0, 7, T, 2, barkD);                                   /* the underside turning away */
+  for (let i = 0; i < 5; i++) { const x = (rnd() * T) | 0, y = 2 + ((rnd() * 5) | 0), h = 1 + ((rnd() * 3) | 0);
+    rect(g, x, y, 1, h, rnd() < 0.5 ? C.woodD : shade(C.wood, 0.12)); }      /* the splits in the bark */
+  if (rnd() < 0.55) { const kx = 2 + ((rnd() * 11) | 0);         /* a knot where a branch came off */
+    ellipse(g, kx + 1, 4, 2, 2, C.woodD); ellipse(g, kx + 1, 4, 1, 1, shade(C.woodD, -0.3)); px(g, kx, 3, lit); }
+  for (let x = 0; x < T; x++) if (rnd() < 0.34) { px(g, x, 1, C.grassD); if (rnd() < 0.5) px(g, x, 0, C.grass); }
+  for (let i = 0; i < 2; i++) if (rnd() < 0.4) { const x = (rnd() * (T - 2)) | 0;   /* lichen on the upper side */
+    px(g, x, 2, '#8a9a72'); px(g, x + 1, 2, '#6f8059'); }
   return c;
 }
+// AND THE CUT END, which is the whole reason a log reads as a log: sapwood, heartwood, a ring or two and
+// the crack that opened as it dried. `right` puts the cut on the right-hand end.
 export function bakeLogEnd(seed, right) {
   const c = bakeLog(seed); const g = c.getContext('2d');
-  const x = right ? T - 4 : 0;
-  rect(g, x, 1, 4, 7, C.woodL); rect(g, x + 1, 2, 2, 5, C.wood); rect(g, x + 1, 4, 2, 1, C.woodD); rect(g, right ? T - 1 : 0, 1, 1, 7, OUT);
+  const rnd = mulberry(seed * 7 + 3);
+  // THE CUT FACE IS THE WHOLE POINT. Sawn end grain is PALE - much paler than the bark around it - and that
+  // contrast is what makes a brown bar read as a log at all. Rings out from the heart, a rim of bark, and
+  // the crack that opened as it dried.
+  const RIM = '#4a2f18', SAP = '#e0c191', RING = '#a87a49', HEART = '#c9a173', CORE = '#8a6034';
+  const cx = right ? T - 3.5 : 2.5, cy = 4.5;
+  for (let x = right ? T - 7 : 0; x < (right ? T : 7); x++) for (let y = 0; y < 10; y++) {
+    const dx = (x - cx) * 0.86, dy = y - cy, d = Math.sqrt(dx * dx + dy * dy);
+    if (d > 4.5) continue;
+    px(g, x, y, d > 3.7 ? RIM : d > 3.0 ? SAP : d > 2.3 ? RING : d > 1.5 ? HEART : d > 0.8 ? RING : CORE);
+  }
+  { const dir = right ? 1 : -1;                                         /* the drying crack, out of the heart */
+    for (let k = 1; k <= 3; k++) px(g, Math.round(cx) + dir * k, Math.round(cy) - (k > 1 ? 1 : 0), RIM); }
+  if (rnd() < 0.5) px(g, Math.round(cx), Math.round(cy) + 2, RIM);
+  px(g, Math.round(cx) - 1, Math.round(cy) - 1, '#f2e0bc');             /* the light on the upper side of it */
   return c;
 }
 
