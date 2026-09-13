@@ -28,6 +28,7 @@ export const THREAT = {
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
   propman: 2.5, clinger: 2, pitwarden: 0, minerlamp: 0, timber: 0, gas: 0,
+  prise: 3, holdfast: 2.5, drownedking: 0, ballast: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

@@ -450,3 +450,41 @@ And when the bot goes BACKWARDS on purpose - forty tiles to a door to fetch the 
 gate in front of it - `maxX` stops rising and it looks exactly like being stuck. A level
 with a door or a gate in it is judged on whether it ever got INDOORS, never on how far
 right it walked.
+
+## N. WATER YOU CAN SEE THE BOTTOM OF
+
+`drawWater` has two branches and the one it takes by default paints a swim pool as an
+**opaque rectangle over everything inside it**. Every swim pool in the game says
+`clear: true` to take the other one - the water goes over the player and the creatures as a
+wash, and the level stays visible underneath. The Deep's pool did not say it, and because
+that pool is a hundred and fifty rows tall, the *entire level* was hidden: decks, wrecks,
+holds, foes, all under one flat sheet of blue, with the creatures apparently standing on
+nothing. It took a pixel probe to find, because the tiles were resolved, the sprites were
+baked, and the draw call ran - the paint just landed on top of it.
+
+- **Every `swim` pool says `clear: true`.** `tools/newlevel.mjs` fails a level without it.
+- A pool the size of a level also wants `wash` (how heavy its water is - 0.5 over a hundred
+  and fifty rows is a blue fog) and `grad: false` (the clear-water depth gradient is sized
+  for a pond; a level-tall pool carries its own gloom in `L.tall`).
+- `L.tall` takes `col` and `deepest` now. Its default is the Hanging Wood's canopy green,
+  which is the wrong colour at the bottom of the sea.
+
+And a related one, in the same level and found in the same hour: **one row of planking is a
+three-pixel board.** A deck drawn as a single `T.PLANK` row, underwater, in the dark, reads
+as nothing at all. A ship has a hull under her deck: lay the board and two courses under it.
+
+## O. ONE REACH MODEL
+
+`src/reachcore.js` is the only flood fill. `tools/reach.mjs`, `tools/audit.mjs`,
+`tools/traps.mjs`, `tools/deadends.mjs`, the coin sprinkler and the playtest bot all run on
+it. `audit.mjs` used to carry its OWN, written earlier and never updated: it could not climb
+DOWN a rope, could not ride a lift, could not follow a door and did not know what swims, so
+it called half the Undercrown and the floor of the Deep unreachable and was quietly ignored
+for years of rounds. A second opinion nobody trusts is worse than no opinion.
+
+This is the same rule as the THREAT table in `src/threat.js`. When two files answer the same
+question, one of them is wrong and nobody knows which.
+
+A rope is climbed DOWN as well as up, by the way - the model had rungs as footing and a jump
+that could go up them, and no way to step onto one from directly above. That alone stranded
+thirty rows of the mine and everything they led to.

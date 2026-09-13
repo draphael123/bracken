@@ -2067,7 +2067,7 @@ function undercrown() {
   ent('sprig', 44, 33, { face: 1 }); ent('sprig', 56, 33, { face: -1 }); ent('miner', 54, 33, { face: -1 });
   ent('rockgoblin', 44, 33, { face: -1 }); ent('sentry', 66, 33, { section: 'works', range: 9, face: 1 });
   ent('bell', 44, 33, { section: 'works' });
-  ent('deco', 64, 33, { kind: 'wares' }); ent('deco', 76, 33, { kind: 'barrels' }); ent('deco', 46, 33, { kind: 'coffer' });
+  ent('deco', 64, 33, { kind: 'wares' }); ent('deco', 76, 33, { kind: 'barrels' }); ent('deco', 44, 33, { kind: 'coffer' });
   ent('check', 68, 33);
   ent('sign', 74, 33, { text: 'THEY RAN THE TUBS ON THIS LEVEL UNTIL THE DAY IT STOPPED. THE SENTRY HAS A BELL AT THE SHAFT HEAD AND EVERYTHING BELOW HERE CAN HEAR IT.' });
   coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32], [84, 32], [42, 32], [46, 32], [50, 32], [57, 32], [63, 32], [69, 32], [75, 32], [81, 32]);
@@ -2087,10 +2087,10 @@ function undercrown() {
   for (let x = 20; x <= 52; x++) set(x, 56, T.AIR);
   block(20, 52, 57, 62); water(20, 52, 56, 60);
   ent('sign', 80, 55, { text: 'THE FLOODED LEVEL. THEY STOPPED PUMPING WHEN THE DIGGERS STOPPED COMING BACK. THE PLANKS ACROSS IT ARE THE ONLY DRY WAY, AND THE SET OVER THEM IS ALREADY GOING.' });
-  boards(24, 32, 52); boards(38, 48, 52);
-  plat(34, 50, 4);
-  timber(28, 52, 22, 34, 47, { deep: 2, state: 'going' });
-  timber(44, 52, 38, 50, 47, { deep: 2 });
+  boards(20, 32, 54); boards(38, 52, 54);                          /* the dry way: two courses over the water, and reachable off either bank */
+  plat(34, 52, 4);                                                 /* and the step over the gap in the middle of it */
+  timber(28, 54, 22, 34, 49, { deep: 2, state: 'going' });         /* the sets stand ON the planks, and the course they hold is the gallery's own roof */
+  timber(44, 54, 38, 50, 49, { deep: 2 });
   ent('propman', 54, 55, { face: -1 }); ent('propman', 70, 55, { face: 1 });
   ent('rockgoblin', 66, 55, { face: -1 }); ent('rockgoblin', 14, 55, { face: 1 });
   ent('miner', 74, 55, { face: -1 }); ent('miner', 58, 55, { face: 1 }); ent('sprig', 18, 55, { face: 1 });
@@ -2117,6 +2117,7 @@ function undercrown() {
   ent('sign', 10, 121, { text: 'THE GREAT STOPE. THEY TOOK THE WHOLE SEAM OUT AND LEFT THE TIMBER TO HOLD THE HILL UP. EVERY SPAN ACROSS IT IS A SET, WHICH MEANS EVERY SPAN ACROSS IT CAN BE BROUGHT DOWN - INCLUDING THE ONE YOU ARE STANDING ON. THE OVERMAN KEEPS THEM SET.' });
   boards(30, 44, 112); boards(52, 66, 112); boards(40, 56, 100);
   plat(46, 106, 6); plat(24, 106, 6); plat(68, 106, 6);
+  plat(10, 90, 6); plat(17, 94, 6); plat(24, 98, 8); plat(33, 100, 7);   /* the stages down the west wall: off the rope, and onto the top walkway */
   ent('propman', 36, 111, { face: 1, mini: true });
   ent('propman', 60, 111, { face: -1 });
   ent('rockgoblin', 46, 99, { face: 1 }); ent('miner', 54, 99, { face: -1 });
@@ -2131,7 +2132,7 @@ function undercrown() {
   timber(59, 112, 52, 66, 112, { deep: 1, state: 'cracked' });
   timber(48, 100, 40, 56, 100, { deep: 1 });
   coins([32, 111], [38, 111], [44, 111], [54, 111], [60, 111], [66, 111], [42, 99], [48, 99], [54, 99], [26, 105], [70, 105], [35, 111], [41, 111], [57, 111], [63, 111], [45, 99], [51, 99], [28, 105], [72, 105], [48, 105]);
-  ent('silver', 48, 94);
+  ent('silver', 48, 97);
   ent('minerlamp', 14, 121, { lit: true }); ent('minerlamp', 88, 121, { lit: true });
   ent('deco', 20, 121, { kind: 'barrels' }); ent('deco', 92, 121, { kind: 'wares' });
   ent('deco', 26, 121, { kind: 'coffer' }); ent('minerlamp', 32, 121, { lit: false }); ent('minerlamp', 76, 121, { lit: true });
@@ -2161,8 +2162,8 @@ function undercrown() {
   ent('deco', 24, 166, { kind: 'barrels' }); ent('deco', 78, 166, { kind: 'wares' }); ent('deco', 8, 166, { kind: 'coffer' });
   ent('sprig', 20, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1 }); ent('miner', 26, 166, { face: 1 });
   coins([16, 165], [30, 165], [44, 165], [58, 165], [72, 165], [84, 165], [22, 165], [36, 165], [50, 165], [64, 165], [78, 165], [90, 165], [8, 165]);
-  plat(30, 158, 5); plat(46, 156, 6); plat(62, 158, 5);
-  coins([32, 157], [48, 155], [64, 157]);
+  plat(30, 164, 5); plat(46, 164, 6); plat(62, 164, 5);            /* he aims at the FLOOR: these have to be somewhere you can actually get to */
+  coins([32, 163], [48, 163], [64, 163]);
   ent('pitwarden', 56, 166, { face: -1 });
   ent('gate', 90, 166);
 
@@ -2208,17 +2209,24 @@ function undercrown() {
 function theDeep() {
   const L = painter(112, 188);
   const { block, floor, plat, ent, coins, set, spikes } = L;
-  const movers = [], interiors = [], pools = [];
+  const movers = [], interiors = [], pools = [], airRooms = [];
   block(0, 111, 0, 187);
   const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
-  const deck = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };          /* a hull's deck: standable, and the stones sit on it */
-  const hull = (x0, x1, y0, y1) => { cut(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, 'ship']); };
+  /* A SHIP HAS A HULL UNDER HER DECK. One row of planking is a three-pixel board, and three pixels at the
+     bottom of a dark trench is nothing at all: every creature down here read as standing on open water. */
+  const deck = (x0, x1, y) => { for (let x = x0; x <= x1; x++) { set(x, y, T.PLANK); set(x, y + 1, T.SOLID); set(x, y + 2, T.SOLID); } };
+  const hull = (x0, x1, y0, y1) => { cut(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, 'ship']);
+    airRooms.push([x0, x1, y0, y1]); };   /* HER HOLD IS THE AIR. The deck is the road and the hold under it is the breath; the open trench between two ships is the price */
   const rib = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
   const rope = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
   const rock = (x0, x1, y0, y1) => block(x0, x1, y0, y1);
   // THE WATER, in one piece, from the shelf to the floor of the trench. `bottom` is how far down
   // the swim reaches; under it is rock, and the rock is where a stone puts you.
-  const sea = (x0, x1, top, bot) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS, swim: true, bottom: bot * TS, depth: (bot - top) * TS });
+  const sea = (x0, x1, top, bot) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS, swim: true, bottom: bot * TS, depth: (bot - top) * TS, clear: true, wash: 0.34, grad: false });
+  /* CLEAR WATER. Every other swim pool in the game says `clear` and this one did not, so drawWater took the
+     branch that paints the pool as an OPAQUE rectangle over everything in it - a hundred and fifty rows of
+     flat blue, with the decks, the wrecks and the creatures all underneath it. The wash goes over the top
+     of the level instead, thin, because it has to cover the whole descent. */
   const stone = (x, y, kind) => ent('ballast', x, y, { kind: kind || 'stone' });
   const air = (x, y) => ent('deco', x, y, { kind: 'airBell' });
 
@@ -2232,6 +2240,9 @@ function theDeep() {
   stone(16, 27); stone(28, 27);
   coins([10, 26], [14, 26], [22, 26], [30, 26], [38, 26]);
   ent('sailor', 24, 27, { face: -1 }); ent('lookout', 34, 27, { face: -1 });
+  ent('netter', 14, 27, { face: 1 }); ent('crab', 30, 27, { face: -1 });
+  ent('petrel', 48, 22); ent('scout', 20, 27, { face: 1 });
+  ent('sign', 34, 27, { text: 'AND THE BREATH. A HULL KEEPS A POCKET OF AIR UNDER HER OWN DECK FOR A HUNDRED YEARS IF NOBODY LETS IT OUT, AND THAT IS EVERY BREATH YOU ARE GOING TO GET FROM HERE DOWN.' });
   // the water starts where the deck ends, and the first shelf of rock is what teaches the verb
   sea(41, 107, 20, 35);   /* it has to reach PAST the shelf floor: two pools that only touch leave a dry course between them */
   rock(58, 107, 22, 26); rock(41, 50, 30, 31);
@@ -2245,8 +2256,8 @@ function theDeep() {
   // ---- 2. THE UPPER TRENCH (rows 34-72). Ships stacked, and their decks are the road down. ----
   cut(6, 105, 34, 72);
   rock(0, 5, 34, 72); rock(106, 111, 34, 72);
-  ent('check', 54, 40); air(54, 38); air(90, 52); air(20, 60);
-  ent('sign', 50, 40, { text: 'HULL ON HULL, THIRTY YEARS OF THEM. THE DECKS ARE THE ONLY FLOOR DOWN HERE AND THE AIR IS IN THE HOLDS - A SHIP KEEPS A POCKET OF IT UNDER HER OWN DECK FOR A HUNDRED YEARS IF NOBODY LETS IT OUT.' });
+  ent('check', 54, 41); air(54, 38); air(90, 52); air(20, 60);
+  ent('sign', 50, 41, { text: 'HULL ON HULL, THIRTY YEARS OF THEM. THE DECKS ARE THE ONLY FLOOR DOWN HERE AND THE AIR IS IN THE HOLDS - A SHIP KEEPS A POCKET OF IT UNDER HER OWN DECK FOR A HUNDRED YEARS IF NOBODY LETS IT OUT.' });
   deck(30, 58, 42); hull(31, 57, 38, 41);
   deck(66, 96, 48); hull(67, 95, 44, 47);
   deck(14, 44, 56); hull(15, 43, 52, 55);
@@ -2255,55 +2266,86 @@ function theDeep() {
   coins([34, 41], [44, 41], [52, 41], [70, 47], [80, 47], [90, 47], [20, 55], [30, 55], [38, 55], [64, 63], [74, 63], [84, 63]);
   ent('sailor', 48, 41, { face: -1 }); ent('netter', 84, 47, { face: -1 }); ent('angler', 24, 50);
   ent('scout', 34, 55, { face: 1 }); ent('eel', 96, 58); ent('crab', 68, 63, { face: 1 });
+  ent('sailor', 74, 47, { face: 1 }); ent('crab', 38, 41, { face: -1 }); ent('netter', 22, 55, { face: 1 });
+  ent('scout', 86, 63, { face: -1 }); ent('urchin', 52, 46); ent('urchin', 44, 60);
+  ent('petrel', 66, 36); ent('angler', 88, 56); ent('eel', 30, 46);
+  ent('siren', 60, 52); ent('tideguard', 92, 47, { face: -1 });
+  ent('boarder', 42, 41, { face: 1 }); ent('boarder', 80, 63, { face: -1 });
+  ent('wight', 56, 41, { face: -1 }); ent('wight', 36, 55, { face: 1 });
+  ent('sailor', 90, 47, { face: -1 }); ent('sailor', 66, 63, { face: 1 }); ent('tideguard', 20, 55, { face: 1 });
+  ent('check', 78, 47); ent('check', 62, 63);
+  ent('sign', 70, 47, { text: 'IT IS ALL DOWN. MASTS, SPARS, CREW, CARGO - AND EVERY ONE OF THEM WAS SENT. THE DECKS ARE THE ONLY FLOOR YOU HAVE AND THE SHORTEST WAY BETWEEN TWO OF THEM IS A STONE.' });
   ent('deco', 36, 41, { kind: 'wreckBow' }); ent('deco', 86, 47, { kind: 'sternWindows' });
   ent('deco', 22, 55, { kind: 'capstan' }); ent('deco', 80, 63, { kind: 'shipBell' });
   rope(100, 34, 70); rope(8, 40, 70);
   ent('silver', 92, 38);
+  ent('stray', 94, 47, { kind: 'coffer' });
 
   cut(74, 82, 73, 73);                                             /* the throat into the beds */
 
   // ---- 3. THE HOLDFAST BEDS (rows 74-112). Rooted things that will not let you go up. ----
   cut(6, 105, 74, 112);
   rock(0, 5, 74, 112); rock(106, 111, 74, 112);
-  ent('check', 20, 80); air(20, 78); air(88, 90); air(48, 104);
-  ent('sign', 24, 80, { text: 'THE BEDS. WHAT IS ROOTED HERE DOES NOT COME AFTER YOU - IT WAITS, AND WHEN IT HAS YOU IT WILL NOT LET YOU RISE, STONE OR NO STONE. CUT IT OFF YOU. AND DO NOT BE CARRYING ANYTHING WHEN IT CATCHES YOU.' });
+  ent('check', 16, 81); air(20, 78); air(88, 92); air(48, 104);   /* clear of the hull under the deck at 88 */
+  ent('sign', 20, 81, { text: 'THE BEDS. WHAT IS ROOTED HERE DOES NOT COME AFTER YOU - IT WAITS, AND WHEN IT HAS YOU IT WILL NOT LET YOU RISE, STONE OR NO STONE. CUT IT OFF YOU. AND DO NOT BE CARRYING ANYTHING WHEN IT CATCHES YOU.' });
   deck(12, 40, 82); hull(13, 39, 78, 81);
   deck(62, 98, 88); hull(63, 97, 84, 87);
   deck(20, 52, 96); hull(21, 51, 92, 95);
   deck(60, 96, 104); hull(61, 95, 100, 103);
   rock(40, 62, 106, 110); cut(44, 50, 106, 110);
   stone(24, 81); stone(80, 87); stone(36, 95); stone(72, 103);
-  ent('holdfast', 50, 82, { face: -1 }); ent('holdfast', 74, 88, { face: -1 });
-  ent('holdfast', 30, 96, { face: 1 }); ent('holdfast', 88, 104, { face: -1 });
-  ent('holdfast', 66, 110, { face: 1 });
+  ent('holdfast', 30, 81, { face: -1 }); ent('holdfast', 80, 87, { face: -1 });
+  ent('holdfast', 40, 95, { face: 1 }); ent('holdfast', 84, 103, { face: -1 });
+  ent('holdfast', 56, 105, { face: 1 });
   ent('angler', 56, 92); ent('eel', 42, 100); ent('netter', 90, 87, { face: -1 });
-  ent('urchin', 46, 106); ent('urchin', 54, 106);
+  ent('urchin', 46, 106); ent('urchin', 54, 106); ent('urchin', 36, 106);
+  ent('sailor', 34, 81, { face: -1 }); ent('crab', 70, 87, { face: 1 }); ent('scout', 46, 95, { face: -1 });
+  ent('tideguard', 76, 103, { face: -1 }); ent('siren', 24, 90); ent('petrel', 60, 76);
+  ent('eel', 84, 96); ent('angler', 18, 100); ent('netter', 50, 103, { face: 1 });
+  ent('boarder', 24, 81, { face: 1 }); ent('boarder', 88, 87, { face: -1 });
+  ent('wight', 44, 95, { face: -1 }); ent('wight', 68, 103, { face: 1 });
+  ent('angler', 72, 92); ent('angler', 30, 108); ent('siren', 88, 98);
+  ent('check', 76, 87); ent('check', 66, 103);
+  ent('sign', 66, 87, { text: 'THE BEDS GREW ON WHAT SANK, AND THEY HAVE HAD THIRTY YEARS OF IT TO GROW ON. A THING THAT NEVER MOVES DOES NOT HAVE TO BE FAST. IT ONLY HAS TO BE WHERE YOU WERE GOING.' });
   coins([16, 81], [26, 81], [34, 81], [68, 87], [76, 87], [86, 87], [24, 95], [32, 95], [44, 95], [64, 103], [78, 103], [90, 103]);
   ent('deco', 18, 81, { kind: 'kelpTall' }); ent('deco', 92, 87, { kind: 'coralFan' });
   ent('deco', 28, 95, { kind: 'brainCoral' }); ent('deco', 84, 103, { kind: 'kelpTall' });
   rope(10, 76, 110); ent('silver', 30, 78);
+  ent('stray', 50, 95, { kind: 'coffer' });
 
   cut(30, 38, 113, 113);                                           /* and down into the grounds */
 
   // ---- 4. THE PRISE GROUNDS (rows 114-150). One claw, and its whole job is your hands. ----
   cut(6, 105, 114, 150);
   rock(0, 5, 114, 150); rock(106, 111, 114, 150);
-  ent('check', 86, 120); air(86, 118); air(30, 130); air(76, 144);
-  ent('sign', 82, 120, { text: 'AND THIS IS WHERE THEY LIVE. THE PRISE DOES NOT WANT TO KILL YOU, IT WANTS WHAT YOU ARE HOLDING - AND IT KNOWS WHAT THAT COSTS YOU DOWN HERE. KILL IT BEFORE YOU PICK ANYTHING UP, OR DO NOT BE CARRYING ANYTHING WHEN IT COMES.' });
+  ent('check', 86, 121); air(86, 118); air(30, 130); air(76, 144);
+  ent('sign', 82, 121, { text: 'AND THIS IS WHERE THEY LIVE. THE PRISE DOES NOT WANT TO KILL YOU, IT WANTS WHAT YOU ARE HOLDING - AND IT KNOWS WHAT THAT COSTS YOU DOWN HERE. KILL IT BEFORE YOU PICK ANYTHING UP, OR DO NOT BE CARRYING ANYTHING WHEN IT COMES.' });
   deck(58, 98, 122); hull(59, 97, 118, 121);
   deck(14, 52, 130); hull(15, 51, 126, 129);
   deck(56, 94, 138); hull(57, 93, 134, 137);
   deck(16, 54, 146); hull(17, 53, 142, 145);
   stone(70, 121); stone(30, 129); stone(66, 137); stone(28, 145, 'chain');
-  ent('prise', 84, 122, { face: -1 }); ent('prise', 26, 130, { face: 1 });
-  ent('prise', 78, 138, { face: -1 }); ent('prise', 40, 146, { face: 1 });
-  ent('holdfast', 44, 130, { face: -1 }); ent('holdfast', 70, 146, { face: -1 });
+  ent('prise', 84, 121, { face: -1 }); ent('prise', 26, 129, { face: 1 });
+  ent('prise', 78, 137, { face: -1 }); ent('prise', 40, 145, { face: 1 });
+  ent('holdfast', 44, 129, { face: -1 }); ent('holdfast', 46, 145, { face: -1 });
   ent('angler', 96, 134); ent('eel', 20, 140); ent('crab', 90, 122, { face: -1 });
+  ent('prise', 62, 121, { face: 1 }); ent('prise', 66, 137, { face: -1 });
+  ent('sailor', 90, 137, { face: -1 }); ent('scout', 20, 129, { face: 1 }); ent('netter', 50, 145, { face: -1 });
+  ent('tideguard', 30, 145, { face: 1 }); ent('siren', 72, 130); ent('urchin', 58, 152);
+  ent('eel', 82, 126); ent('petrel', 36, 116); ent('crab', 24, 145, { face: 1 });
+  ent('wight', 34, 129, { face: 1 }); ent('wight', 86, 121, { face: -1 });
+  ent('boarder', 70, 121, { face: 1 }); ent('boarder', 26, 145, { face: 1 });
+  ent('marine', 78, 129, { face: -1 }); ent('bosun', 74, 137, { face: 1 });
+  ent('cutlass', 22, 129, { face: 1 }); ent('cutlass', 48, 145, { face: -1 });
+  ent('prise', 92, 121, { face: -1 }); ent('tideguard', 62, 137, { face: -1 }); ent('tideguard', 44, 145, { face: -1 });
+  ent('check', 40, 129); ent('check', 76, 137);
+  ent('sign', 30, 129, { text: 'THEY HAVE PRISED EVERY CHEST ON THIS FLOOR OPEN AND THEY WILL PRISE YOU OPEN TOO IF YOU GIVE THEM THE TIME. WHAT THEY TAKE IS NOT BLOOD. DOWN HERE THAT IS WORSE.' });
   coins([62, 121], [74, 121], [88, 121], [20, 129], [34, 129], [46, 129], [60, 137], [72, 137], [86, 137], [22, 145], [36, 145], [48, 145]);
   ent('deco', 66, 121, { kind: 'wreckStern' }); ent('deco', 24, 129, { kind: 'figurehead' });
   ent('deco', 88, 137, { kind: 'anchor' }); ent('deco', 44, 145, { kind: 'seaChest' });
   ent('silver', 92, 118);
-  rock(28, 88, 151, 157); cut(54, 62, 151, 157);                    /* the last throat, down onto the hoard */
+  ent('stray', 20, 145, { kind: 'coffer' });
+  rock(10, 96, 151, 157); cut(14, 22, 151, 157);                    /* the last throat, down onto the hoard at the near end of it */
 
   // ---- 5. THE HOARD (rows 158-182). All of it, and the man it was going to. ----
   cut(8, 103, 158, 181);
@@ -2315,21 +2357,28 @@ function theDeep() {
   ent('deco', 46, 181, { kind: 'anchor' }); ent('deco', 86, 181, { kind: 'capstan' });
   coins([26, 180], [38, 180], [50, 180], [62, 180], [78, 180], [90, 180], [34, 180], [70, 180]);
   plat(30, 172, 6); plat(52, 170, 8); plat(76, 172, 6);
+  airRooms.push([10, 101, 158, 181]);   /* AND THE HOARD BREATHES. It is thirty years of hulls and casks in one heap and there is air in all of it - which is the point: the last fight in the game asks how HEAVY you are, and one question at a time is enough. The breath is the descent's clock, not his. */
   coins([32, 171], [56, 169], [78, 171]);
+  ent('sailor', 20, 181, { face: 1 }); ent('crab', 92, 181, { face: -1 }); ent('urchin', 84, 176);
+  ent('sign', 26, 181, { text: 'AND HE IS TOO HEAVY TO COME UP AND YOU ARE TOO LIGHT TO GO DOWN. PICK SOMETHING UP AND MEET HIM ON THE FLOOR - AND DROP IT WHEN THE FLOOR IS WHERE THE BLOW IS GOING.' });
+  ent('wight', 14, 181, { face: 1 }); ent('wight', 98, 181, { face: -1 });
+  ent('boarder', 34, 171, { face: 1 }); ent('boarder', 80, 171, { face: -1 });
+  ent('marine', 56, 169, { face: -1 }); ent('siren', 44, 174); ent('siren', 70, 174);
+  ent('check', 24, 181);
   ent('drownedking', 56, 181, { face: -1 });
   ent('gate', 100, 181);
 
   return {
-    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors,
-    ballast: true, dark: 0.42,
-    duskStart: -1, duskLen: 1, music: 'drowned', night: true, glowNight: true, nightA: 0.44,
-    tall: { top: 20 * TS, bottom: 182 * TS },
-    quest: { n: 3, item: 'seal', name: 'THE LAST SEALS', npc: 'squire', done: 'NOBODY IS OWED ANYTHING NOW', reward: 'relic', relic: 'tidecharm' },
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors, airRooms,
+    ballast: true, dark: 0.18,
+    duskStart: -1, duskLen: 1, music: 'deep', night: true, glowNight: true, nightA: 0.24,
+    tall: { top: 20 * TS, bottom: 182 * TS, col: '6,16,28', deepest: 0.3 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
+    quest: { n: 3, item: 'coffer', name: 'TRIBUTE COFFERS', npc: 'squire', done: 'THIRTY YEARS OF IT, AND NONE OF IT EVER GOT THERE', reward: 'relic', relic: 'gauntlet' },
     palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)',
       grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
       canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
-    arena: { x0: 12 * TS, x1: 100 * TS, floor: 182 * TS, trigger: 30 * TS, wallL: 11, wallR: 101, boss: 'drownedking', music: 'boss2', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 158 * TS, y1: 183 * TS },
+    arena: { x0: 30 * TS, x1: 74 * TS, floor: 182 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'drownedking', music: 'boss2', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 158 * TS, y1: 183 * TS },
   };
 }
 
@@ -3718,12 +3767,12 @@ function theHurricane() {
   ent('deco', 248, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });
   ent('sign', 226, 19, { text: 'THE WAIST IS THE WORST OF HER: NO RAIL WORTH THE NAME AND NOTHING TO HOLD BUT THE SHROUDS.' });
   air(236, 237, 20, 20); net(236, 237, 20, 26);
-  ent('deco', 228, 19, { kind: 'washing' }); ent('deco', 320, 19, { kind: 'boardingNet' }); ent('deco', 246, 19, { kind: 'kegStack' }); ent('deco', 266, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 308, 19, { kind: 'washing' }); ent('deco', 286, 19, { kind: 'hammock', v: 0 });
+  ent('deco', 228, 19, { kind: 'washing' }); ent('deco', 320, 19, { kind: 'boardingNet' }); ent('deco', 246, 19, { kind: 'kegStack' }); ent('deco', 264, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 308, 19, { kind: 'washing' }); ent('deco', 286, 19, { kind: 'hammock', v: 0 });
   movers.push({ kind: 'swing', px: 276 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.4 });
   movers.push({ kind: 'swing', px: 296 * TS, py: 8 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2 });
   coins([230, 18], [244, 18], [258, 18], [274, 18], [288, 18], [304, 18], [318, 18], [278, 10], [298, 11], [236, 18], [252, 18], [266, 18], [282, 18], [296, 18], [312, 18], [240, 25], [256, 25], [272, 25], [290, 25]);
   // AMIDSHIPS: the hands who are still trying to save her, and do not care that you are aboard
-  ent('sign', 288, 19, { text: 'HER MAIN. THE CREW ARE STILL WORKING HER AND THEY WILL STILL KILL YOU FOR HER.' });
+  ent('sign', 290, 19, { text: 'HER MAIN. THE CREW ARE STILL WORKING HER AND THEY WILL STILL KILL YOU FOR HER.' });
   ent('boarder', 322, 19, { face: -1 }); ent('cutlass', 316, 19, { face: -1 }); ent('bosun', 328, 19, { face: -1 });
   ent('check', 292, 19);
 
@@ -3806,7 +3855,7 @@ function theHurricane() {
   for (const [x0, x1, y] of [[602, 616, 11], [580, 594, 12], [620, 634, 12]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); }
   ent('boarder', 578, 19, { face: -1 }); ent('cutlass', 592, 19, { face: -1 }); ent('bosun', 624, 19, { face: -1 });
   ent('scout', 610, 10, { face: -1 }); ent('cutlass', 640, 19, { face: -1 }); ent('lookout', 600, 5, { face: -1 });
-  ent('cutlass', 566, 19, { face: 1 }); ent('boarder', 604, 19, { face: -1 }); ent('marine', 634, 12, { face: -1 }); ent('cutlass', 650, 19, { face: -1 });
+  ent('cutlass', 566, 19, { face: 1 }); ent('boarder', 601, 19, { face: -1 }); ent('marine', 634, 12, { face: -1 }); ent('cutlass', 650, 19, { face: -1 });
   ent('check', 572, 19); ent('sign', 566, 19, { text: 'THE LAST OF HER OPEN DECK. HER POWDER IS UNDER YOUR FEET AND HER CAPTAIN IS AFT.' });
   air(636, 637, 20, 20); net(636, 637, 20, 26);
   ent('deco', 570, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 650, 19, { kind: 'boardingNet' }); ent('deco', 584, 19, { kind: 'kegStack' }); ent('deco', 616, 19, { kind: 'washing' }); ent('deco', 644, 19, { kind: 'hammock', v: 1 }); ent('deco', 596, 19, { kind: 'boardingNet' });

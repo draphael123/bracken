@@ -73,6 +73,10 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     // climb
     if (climbable(at(x, y))) { push(x, y - 1); push(x, y + 1); }
     if (climbable(at(x, y - 1))) push(x, y - 1);
+    // A ROPE IS CLIMBED DOWN AS WELL AS UP. Rungs were footing and a jump could go UP them, but nothing
+    // could step onto one from directly above - so a shaft entered at the top of its own rope read as
+    // sealed. That is what stranded thirty rows of the Undercrown and everything they led to.
+    if (at(x, y + 1) === T.NET) push(x, y + 1);
     // jump: anything within the arc, near side first
     let head = 0; while (head < up && !solid(at(x, y - 1 - head))) head++; // no jumping up through a ceiling
     for (let dy = -Math.min(up, head); dy <= 0; dy++) {
@@ -92,7 +96,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     // the planking in its ceiling read as sealed - which is how a silver in Kingswood spent months being
     // reported unreachable when you get in by pressing down on the boards over it.
     { const u = at(x, y + 1);
-      if (u === T.ONEWAY || u === T.PLANK || u === T.SHELF || u === T.REED) { let ny = y + 2;
+      if (u === T.ONEWAY || u === T.PLANK || u === T.SHELF || u === T.REED || u === T.NET) { let ny = y + 2;   /* and you let go of the bottom of a rope the same way */
         while (ny < H - 1 && !footing.has(key(x, ny)) && !wall(at(x, ny))) ny++;
         if (footing.has(key(x, ny))) push(x, ny); } }
     // crystal gives way under you, so a crystal floor is also a way DOWN (the Sunspire's geodes)

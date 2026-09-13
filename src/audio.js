@@ -291,17 +291,28 @@ const HUSH_BASS = ['A2', 'F2', 'C3', 'E2'];
 const MINE_LEAD = [[null, null, 'D3', null, null, null, 'F3', null], [null, null, null, 'C3', null, null, null, null],
   [null, 'A2', null, null, 'D3', null, null, null], [null, null, null, null, 'A2', null, null, null]];
 const MINE_BASS = ['D2', 'D2', 'A1', 'D2'];
+// THE DEEP. Two notes a bar and neither of them resolves, over a drone that is barely a note at all, and
+// a long way off something that might be a hull settling. Nothing down here is in a hurry.
+const DEEP_LEAD = [[null, null, null, 'E3', null, null, null, null], [null, null, 'C3', null, null, null, null, null],
+  [null, null, null, null, 'B2', null, null, null], [null, 'E3', null, null, null, null, null, null]];
+const DEEP_BASS = ['E2', 'C2', 'E2', 'A1'];
 let step = 0, nextT = 0, timer = null;
-const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2, STEP_MINE = 60 / 48 / 2;
+const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2, STEP_MINE = 60 / 48 / 2, STEP_DEEP = 60 / 40 / 2;
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
-  const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', SL = mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
+  const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', SL = deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
       const delay = nextT - ac.currentTime;
-      if (mine) {
+      if (deep) {
+        const nm = DEEP_LEAD[bar][i];
+        if (nm) tone('sine', N[nm], N[nm] * 0.995, SL * 3.4, 0.13, delay, musicGain);
+        if (i === 0) { const b = N[DEEP_BASS[bar]]; tone('sine', b, b * 0.99, SL * 8.8, 0.36, delay, musicGain); }
+        if (bar === 3 && i === 4) { tone('triangle', 70, 52, 1.6, 0.09, delay, musicGain); }   /* a hull settling, a long way off */
+        if (bar === 1 && i === 6) { tone('sine', 44, 40, 2.4, 0.11, delay, musicGain); }       /* and the pressure */
+      } else if (mine) {
         const nm = MINE_LEAD[bar][i];
         if (nm) tone('triangle', N[nm], N[nm], SL * 2.2, 0.15, delay, musicGain);
         if (i === 0) { const b = N[MINE_BASS[bar]]; tone('sine', b, b, SL * 8.6, 0.34, delay, musicGain); }
@@ -476,6 +487,9 @@ const DIE = {
   // UNDERLEAF. Everything here dies the way it lived: the assassin without a sound worth the name, the
   // berserker taking the whole street with him, and the old woman's stick going over on the cobbles.
   assassin() { noise(0.1, 0.16, 3200, 0.7); tone('sine', 420, 180, 0.14, 0.05); noise(0.18, 0.1, 900, 0.4, 0.06); tone('triangle', 900, 700, 0.06, 0.05, 0.16); },
+  prise() { noise(0.3, 0.24, 1400, 0.55); tone('square', 300, 120, 0.2, 0.1, 0.02); noise(0.16, 0.14, 500, 0.4, 0.14); },
+  holdfast() { noise(0.36, 0.3, 500, 0.5); tone('sine', 180, 60, 0.4, 0.14, 0.03); },
+  drownedking() { tone('sine', 90, 36, 1.1, 0.3, 0.02); noise(0.6, 0.5, 240, 0.7, 0.06); SFX.heavy(); for (let i = 0; i < 3; i++) tone('triangle', 500 - i * 90, 200, 0.22, 0.07, 0.3 + i * 0.16); tone('sine', 50, 34, 1.4, 0.16, 0.5); },
   propman() { tone('square', 210, 90, 0.28, 0.16); noise(0.3, 0.2, 260, 0.5, 0.03); tone('sine', 110, 60, 0.3, 0.1, 0.1); },
   clinger() { noise(0.34, 0.3, 900, 0.6); tone('sine', 320, 90, 0.3, 0.12, 0.02); noise(0.2, 0.16, 260, 0.5, 0.16); },
   pitwarden() { tone('sawtooth', 140, 44, 0.75, 0.24); noise(0.5, 0.4, 220, 0.8, 0.05); SFX.heavy(); for (let i = 0; i < 4; i++) { tone('triangle', 1800 - i * 200, 700, 0.09, 0.05, 0.22 + i * 0.1); noise(0.1, 0.1, 2600, 0.45, 0.24 + i * 0.1); } tone('sine', 70, 32, 0.9, 0.16, 0.34); },
@@ -582,6 +596,9 @@ const DIE = {
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
   assassin() { noise(0.08, 0.13, 2800, 0.7); tone('sine', 500, 340, 0.09, 0.05); },
+  prise() { noise(0.14, 0.18, 1600, 0.5); tone('square', 360, 240, 0.1, 0.08); },
+  holdfast() { noise(0.18, 0.22, 600, 0.45); tone('sine', 220, 120, 0.14, 0.08); },
+  drownedking() { tone('sine', 130, 80, 0.3, 0.2); noise(0.26, 0.3, 300, 0.6); },
   propman() { tone('square', 260, 180, 0.14, 0.12); noise(0.14, 0.2, 400, 0.5); },
   clinger() { noise(0.16, 0.22, 1100, 0.5); tone('sine', 420, 180, 0.14, 0.08); },
   pitwarden() { tone('sawtooth', 180, 110, 0.24, 0.2); noise(0.22, 0.3, 280, 0.65); tone('sine', 90, 60, 0.28, 0.12, 0.03); },
@@ -682,5 +699,5 @@ SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.
 SFX.dieOf = t => DIE[t] || null;
 SFX.hurtOf = t => HURT[t] || null;
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];

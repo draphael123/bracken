@@ -145,6 +145,11 @@ for (const lv of LEVELS) {
   // 13. WATER THAT HURTS MUST SAY SO IN COLOUR
   // (the Flotilla's harbour ate swimmers while being drawn as clean blue sea for a whole round)
   for (const p of (L.pools || [])) if (p.harm && !p.foulCol) say(id, 'a pool with harm has no foulCol: water that hurts has to look like it hurts');
+  // A SWIM POOL THAT DOES NOT SAY `clear` IS PAINTED AS AN OPAQUE RECTANGLE OVER EVERYTHING INSIDE IT.
+  // That is the branch drawWater takes without it, and on a pool the size of a level it hides the whole
+  // level: decks, wrecks, creatures and all, under one flat blue sheet. Every other pool in the game says it.
+  for (const p of (L.pools || [])) if (p.swim && !p.shallow && !p.clear && !p.capped && !p.streetTide && !p.runTide)
+    say(id, 'a swim pool with no `clear`: the water will be painted OVER everything in it (x ' + Math.round(p.x0 / TS) + '-' + Math.round(p.x1 / TS) + ')');
 
   // 14. NOTHING STANDS IN THE AIR
   // (four hands on the Flotilla, two of them in the Quartermaster's arena, and the audit's whitelist hid them)
