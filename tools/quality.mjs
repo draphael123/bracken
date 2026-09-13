@@ -5,12 +5,12 @@
 // enemy type doing all the work.
 // usage: node tools/quality.mjs
 import { LEVELS, TS } from '../src/level.js';
-import { worstGap } from '../src/threat.js';
+import { worstGap, spanOf, THREAT } from '../src/threat.js';
 
-const FOE = new Set(['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
-  'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat', 'troll',
-  'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer', 'hearthgob', 'cutter', 'shardling', 'assassin', 'berserker',
-  'folk', 'wight', 'greathound', 'ram', 'soldier', 'javelin', 'heavy', 'sailor', 'netter', 'urchin', 'angler', 'petrel', 'cutlass', 'boarder', 'marine', 'bosun', 'lookout', 'turtle', 'eel', 'heronfoe', 'crab', 'scout', 'siren', 'tideguard', 'watch', 'snuffer', 'lampreeve', 'tollmaster', 'captain', 'quarter', 'reefmaw', 'herald']);
+// WHAT COUNTS AS A CREATURE is `src/threat.js` and nothing else. This file carried its own list, written
+// before the mine, the trench and the city, so a Propman, a Clinger, a Pit Warden, a Prise and a Holdfast
+// were all invisible to it - which is how the Undercrown read as FIVE kinds when it has nine.
+const FOE = new Set(Object.keys(THREAT).filter(k => THREAT[k] > 0));
 
 const rows = [];
 for (const lv of LEVELS) {
@@ -19,9 +19,12 @@ for (const lv of LEVELS) {
   const n = t => L.ents.filter(e => e.t === t).length;
   const foes = L.ents.filter(e => FOE.has(e.t));
   const kinds = new Set(foes.map(e => e.t));
-  // "length" is how far you travel: wide levels by width, tall ones by height
+  // HOW FAR YOU TRAVEL, on the one measure the whole toolchain uses. Wide by width and tall by height
+  // put the two shapes on different scales: the Deep read 44.7 foes a hundred against the Wood's 9.8 and
+  // looked four times as dense when it is not - a tall level spreads its content over its WIDTH as well.
+  // `spanOf` is what tools/curve.mjs and the bot score against, so it is what this one measures against.
   const vertical = L.H > L.W;
-  const len = vertical ? L.H : L.W;
+  const len = spanOf(L.W, L.H);
   const checks = L.ents.filter(e => e.t === 'check').map(e => vertical ? e.y : e.x).sort((a, b) => a - b);
   const gap = worstGap(L.ents, L.W, L.H, L.arena);   /* and the boss arena is not a run with no checkpoint in it */
   rows.push({

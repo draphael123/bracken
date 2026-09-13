@@ -71,6 +71,9 @@ for (const lv of LEVELS) {
   const n = t => L.ents.filter(e => e.t === t).length;
   const flags = [];
   if (n('silver') !== 3) flags.push(`silver ${n('silver')}`);
+  // and say when the pipeline had to take some away: a level with more than three was placing pickups that
+  // light up, make their noise and never reach the ledger, because a silver's bit is 1 << i and it reads three
+  if (L.silverExtra) flags.push(`${L.silverExtra} silver over three, turned into gold`);
   if (!MEDALS.has(lv.id)) flags.push('NO MEDALS');
   const q = L.quest || (L.strays ? { n: L.strays } : null);
   if (!q) flags.push('no quest');

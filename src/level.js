@@ -1,4 +1,5 @@
 import { floodReach } from './reachcore.js';
+import { spanOf } from './threat.js';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
@@ -3050,6 +3051,31 @@ function galeMoor() {
 // too little for their length and lays small arcs of coins along them - never on a boss floor, never
 // in water, never on top of a sign, a door, a gate or a friend, never inside anything solid, and the
 // same arcs every time. A stretch that already has its share of coin is left as it is.
+
+// THREE SILVER COINS HIDE IN EVERY WOOD, and the game only counts three: a silver's progress bit is
+// `1 << i` and the ledger reads bits 1, 2 and 4. Seven levels had drifted over that across the rounds -
+// the Hurricane had SEVEN - and every one past the third was a pickup that lit up, made its noise, and
+// did nothing at all. Keep the three that are furthest apart (they are the three that ask for the most
+// walking) and turn the rest into what they are worth in gold.
+function silverTrim(L) {
+  const sv = L.ents.filter(e => e.t === 'silver');
+  if (sv.length <= 3) return L;
+  const tall = L.H > L.W, key = e => tall ? e.y : e.x;
+  const sorted = sv.slice().sort((a, b) => key(a) - key(b));
+  const keep = new Set([sorted[0], sorted[sorted.length - 1]]);
+  /* and the one furthest from both ends, so the three are spread over the whole walk */
+  let best = null, bd = -1;
+  for (const e of sorted) { if (keep.has(e)) continue;
+    const d = Math.min(Math.abs(key(e) - key(sorted[0])), Math.abs(key(e) - key(sorted[sorted.length - 1])));
+    if (d > bd) { bd = d; best = e; } }
+  if (best) keep.add(best);
+  L.silverExtra = sv.length - keep.size;
+  for (const e of sv) { if (keep.has(e)) continue;
+    e.t = 'coin';
+    for (const dx of [-2, 2]) L.ents.push({ t: 'coin', x: e.x + dx, y: e.y }); }
+  return L;
+}
+
 function sprinkleCoins(L) {
   const W = L.W, H = L.H, g = L.grid;
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
@@ -3057,7 +3083,7 @@ function sprinkleCoins(L) {
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.REED || t === T.CRYST;
   // a boss room is a box, not a column: the Sunspire's roof arena spans the whole mountain's width
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 1, A.x1 / TS + 1, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
-  const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // over the water is fine, in it is not
+  const wet = (x, y) => (L.pools || []).some(p => (p.shallow || p.harm) && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // over a wading pool is fine, IN it is not - but you can swim to a coin, and the Deep is one pool a hundred and fifty rows deep
   // a wading floor: lift its coin to just over the water, if a jump from the bottom still reaches it
   const dry = ([x, y]) => { const p = (L.pools || []).find(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); if (!p) return [x, y];
     const ny = Math.floor((p.y - 10) / TS); return y - ny <= 3 && at(x, ny) === T.AIR ? [x, ny] : [x, y]; };
@@ -3072,7 +3098,12 @@ function sprinkleCoins(L) {
   const R = floodReach(L, T), gettable = (x, y) => R.assisted || R.jumpNear(x, y);
   const fenced = (x, y) => (L.noCoin || []).some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d);
   const free = (x, y) => at(x, y) === T.AIR && !coins.has(x + ',' + y) && !busy(x, y) && !wet(x, y) && !rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d) && gettable(x, y) && !fenced(x, y);
-  const before = coins.size; let added = 0; const cap = Math.min(200, Math.max(150, Math.round(before * 1.6))); // a lot more gold: there should always be some in sight
+  const before = coins.size; let added = 0;
+  // HOW MUCH GOLD IS A LEVEL'S WORTH? A flat two hundred is a lot in a four-hundred-column wood and
+  // nothing in a nine-hundred-column moor, so it is measured against the same SPAN the difficulty curve
+  // and the bot score against. The campaign's own typical is about forty a hundred.
+  const span = spanOf(W, H);
+  const cap = Math.min(460, Math.max(150, Math.round(span * 0.42) - before)); // a lot more gold: there should always be some in sight
   // the ground as you walk it: follow the surface through steps of up to three rows (a jump), and lay a pair
   // every seven tiles or so where there is none near (the rolling woods have almost no flat runs at all)
   const paths = [];
@@ -3144,6 +3175,29 @@ function sprinkleCoins(L) {
       if (!pts.every(([px, py]) => free(px, py))) continue;
       for (const [px, py] of pts) { L.ents.push({ t: 'coin', x: px, y: py }); coins.add(px + ',' + py); added++; }
     } }
+  // A LEVEL THAT GOES DOWN HAS NO LONG FLAT RUNS IN IT, and every pass above this one needs one. The Deep
+  // came out at fourteen coins a hundred against a campaign typical of forty, and the Undercrown at
+  // seventeen - not because they were meant to be poor but because the sprinkler could not see their shape.
+  // In a shaft the way you travel is the ROPE and the DROP, so that is where the gold goes.
+  { const put = (x, y) => { if (!free(x, y)) return false; L.ents.push({ t: 'coin', x, y }); coins.add(x + ',' + y); added++; return true; };
+    const nearC = (x, y) => { for (let dx = -1; dx <= 1; dx++) for (let dy = -2; dy <= 2; dy++) if (coins.has((x + dx) + ',' + (y + dy))) return true; return false; };
+    // DOWN A ROPE: every third rung, off the side you can take with one hand (the rung itself is not air)
+    for (let x = 1; x < W - 1 && added < cap; x++) { let run = 0;
+      for (let y = 1; y < H && added < cap; y++) {
+        const rope = at(x, y) === T.NET || at(x, y) === T.CLIMB;
+        if (!rope) { run = 0; continue; }
+        run++; if (run < 4 || run % 3 || nearC(x, y)) continue;
+        if (!put(x + 1, y)) put(x - 1, y); } }
+    // AND THE DROP OFF A LEDGE: three down the line of the fall, where you are going anyway
+    for (let y = 2; y < H - 8 && added < cap; y++) for (let x = 1; x < W - 1 && added < cap; x++) {
+      if (!(stand(at(x, y + 1)) && !solid(at(x, y)))) continue;          /* standing here */
+      const d = x + 1 < W && !stand(at(x + 1, y + 1)) && at(x + 1, y) === T.AIR ? 1 : (!stand(at(x - 1, y + 1)) && at(x - 1, y) === T.AIR ? -1 : 0);
+      if (!d) continue;                                                  /* with a lip on one side of it */
+      let fall = 0; while (fall < 14 && at(x + d, y + 1 + fall) === T.AIR) fall++;
+      if (fall < 6 || nearC(x + d, y + 2)) continue;                     /* and a real drop under the lip */
+      for (const k of [2, 5, 8]) if (k < fall) put(x + d, y + k);
+      x += 2; }
+  }
   return L;
 }
 // ============================================================================================
@@ -3715,6 +3769,15 @@ function theHurricane() {
   ent('lookout', 72, 5, { face: -1 }); ent('marine', 80, 11, { face: -1 });
   ent('sign', 57, 19, { text: 'THEY WANT HER BACK AND THEY DO NOT CARE THAT SHE IS SINKING.' });
   air(66, 67, 20, 20); net(66, 67, 20, 26); // the fore hatch down into her hold
+  // FORWARD OF THE HATCH: her forepeak, where the cable and the spare canvas live. It is a walk with an end
+  // to it, so it is worth the walk - the stores, the men guarding them, and her silver at the head of her.
+  ent('sign', 60, 26, { text: 'HER FOREPEAK. CABLE, CANVAS AND WHAT THE BOSUN DID NOT WANT ON DECK - AND THEY HAVE PUT MEN ON IT, WHICH TELLS YOU WHAT IS DOWN THERE.' });
+  ent('deco', 56, 26, { kind: 'coiledCable', v: 0 }); ent('deco', 48, 26, { kind: 'kegStack' });
+  ent('deco', 40, 26, { kind: 'rumBarrels', v: 1 }); ent('deco', 32, 26, { kind: 'waterButt' });
+  ent('deco', 26, 26, { kind: 'plunder', v: 2 }); ent('deco', 22, 26, { kind: 'chartTable' });
+  ent('cutlass', 44, 26, { face: 1 }); ent('marine', 34, 26, { face: 1 }); ent('bosun', 26, 26, { face: 1 });
+  ent('torch', 38, 26); ent('silver', 24, 26);
+  coins([58, 25], [54, 25], [50, 25], [46, 25], [42, 25], [38, 25], [30, 25], [28, 25], [22, 25], [20, 25]);
   ent('deco', 56, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 116, 19, { kind: 'boardingNet' });
   ent('stray', 90, 26, { kind: 'lamp' }); ent('torch', 84, 26); // her third lantern, rolled forward into her fore hold
   ent('check', 96, 19);
@@ -3761,7 +3824,7 @@ function theHurricane() {
   for (const x of [228, 240, 252]) ent('cannon', x, 26, { deck: true });
   ent('cannon', 264, 26, { hole: [268, 271, 22, 25] });
   ent('sign', 224, 26, { text: 'HER GUN DECK. THEY ARE ALL LAID AND ALL LOADED: ONE BLOW ON A BREECH AND SHE SPEAKS. THE LAST ONE IS TRAINED ON HER OWN MAGAZINE BULKHEAD, WHICH IS ONE WAY IN.' });
-  ent('deco', 276, 26, { kind: 'kegStack' }); ent('deco', 280, 26, { kind: 'plunder', v: 1 }); ent('silver', 274, 26);
+  ent('deco', 276, 26, { kind: 'kegStack' }); ent('deco', 280, 26, { kind: 'plunder', v: 1 });
   ent('deco', 284, 26, { kind: 'coiledCable', v: 1 }); coins([273, 25], [278, 25], [282, 25]);
   ent('pump', 244, 19, { pool: 424 }); ent('sign', 240, 19, { text: 'HER PUMPS. WORK THE BRAKE AND THE WATER IN HER HOLD GOES DOWN WHILE THEY RUN. THERE IS SOMETHING IN THE ORLOP THAT IS ONLY THERE WHEN IT IS DRY.' });
   ent('deco', 248, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });
@@ -4332,6 +4395,11 @@ const DRESS = {
   storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2]],
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage']],
   lamplit: [['cityWeed', 3], ['shellDrift', 2], ['lampWreck', 2], ['sealDrift', 2], ['drownedCart'], ['column', 2]],
+  underleaf: [['barrels'], ['wares'], ['fence', 2], ['cart'], ['well'], ['lanternPost'], ['beehive']],
+  undercrown: [['barrels'], ['wares'], ['bones', 2], ['cairn'], ['stone', 3], ['cart'], ['spearRack']],
+  deep: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['shellDrift', 2], ['seaChest']],
+  longwater: [['coralTuft', 3], ['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['pierPost'], ['netPoles']],
+  reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
 };
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
 const GARRISON = {
@@ -4465,12 +4533,12 @@ function dressLevel(L, id) {
   const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
-  const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 9 || Math.abs(py - y) > 4);
-  const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // in the water, not by it: a fish trap wants a bank
+  const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
+  const wet = (x, y) => (L.pools || []).some(p => (p.shallow || p.harm) && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // in a WADING pool, not by it: a fish trap wants a bank. Coral belongs under the sea, so a swim pool is not a reason to leave a floor bare
   const stoneAt = (x, y) => (L.stone || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && y >= z[2] - 1 && y <= z[3] + 1);
   for (let y = 2; y < H - 1; y++) for (let x = 2; x < W - 2; x++) {
     // open ground three tiles wide with three rows of air over it
-    let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { if (at(x + dx, y + 1) !== T.SOLID) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
+    let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
     if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     const [kind, nv] = set[(rnd() * set.length) | 0];
     L.ents.push({ t: 'deco', x, y, kind, v: nv ? (rnd() * nv) | 0 : 0, dressed: true }); placed.push([x, y]);
@@ -4487,7 +4555,7 @@ function dressLevel(L, id) {
   return L;
 }
 const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(checkpoints(garrison(L, id))), id); }; }
+for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(silverTrim(checkpoints(garrison(L, id)))), id); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };
