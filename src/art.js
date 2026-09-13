@@ -1588,6 +1588,48 @@ export function bakeVine(v) { const [c, g] = canvas(T, T); const sx = v ? 7 : 8;
 // Stone-slab ledges for the Crags in place of the wood's log platforms. 16×16; end = 'L' | 'R' | null.
 export function bakeLedge(seed, end) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T; rect(g, x0, 3, x1 - x0, 6, '#7c8797'); rect(g, x0, 3, x1 - x0, 1, '#a8b0bc'); rect(g, x0, 8, x1 - x0, 1, '#4a4f5a'); rect(g, x0 + 1, 9, x1 - x0 - 2, 2, '#3a3e48'); for (let i = 0; i < 3; i++) px(g, x0 + 1 + ((rnd() * (x1 - x0 - 2)) | 0), 4 + ((rnd() * 4) | 0), rnd() < 0.5 ? '#8a919c' : '#c9b84a'); if (end === 'L') { rect(g, 1, 4, 1, 5, '#a8b0bc'); } if (end === 'R') { rect(g, T - 2, 4, 1, 5, '#4a4f5a'); } return c; }
 
+// THREE MORE LEDGES, BECAUSE A PLATFORM SHOULD BELONG TO THE PLACE IT IS IN. The wood gets a felled log,
+// the crags get a stone slab, the marsh gets a duckboard - and the castle, the mine and the goblin camp
+// were all still standing on the wood's logs. 16x16; end = 'L' | 'R' | null.
+
+// THE CASTLE: a squared oak beam out of the wall, strapped in iron, chamfered on top where boots go.
+export function bakeBeam(seed, end) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T, w = x1 - x0;
+  rect(g, x0, 3, w, 7, '#4a3826');
+  rect(g, x0, 3, w, 1, '#7a6040'); rect(g, x0, 4, w, 1, '#5e4830');          /* the chamfer */
+  rect(g, x0, 9, w, 1, '#2a1e14'); rect(g, x0 + 1, 10, w - 2, 1, '#1e150e');
+  for (let i = 0; i < 3; i++) { const gx = x0 + 1 + ((rnd() * (w - 2)) | 0); rect(g, gx, 6 + ((rnd() * 2) | 0), 2 + ((rnd() * 3) | 0), 1, '#3a2a1c'); }
+  for (const sx of [x0 + 3, x0 + 11]) if (sx > x0 && sx < x1 - 1) { rect(g, sx, 3, 2, 7, '#6a727e'); rect(g, sx, 3, 1, 7, '#98a0ac'); px(g, sx, 6, '#3a3e48'); }
+  if (end === 'L') rect(g, 1, 4, 1, 6, '#7a6040');
+  if (end === 'R') rect(g, T - 2, 4, 1, 6, '#241a12');
+  return c; }
+
+// THE MINE: staging. Two rough sawn boards laid over a joist, nailed, pale with rock dust where the
+// traffic went and dark under the edge.
+export function bakeStaging(seed, end) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T, w = x1 - x0;
+  rect(g, x0, 3, w, 3, '#8a7250'); rect(g, x0, 3, w, 1, '#a68c62');
+  rect(g, x0, 6, w, 1, '#3a2e20');                                          /* the seam between the boards */
+  rect(g, x0, 7, w, 2, '#77603f');
+  rect(g, x0, 9, w, 1, '#2e2418'); rect(g, x0 + 1, 10, w - 2, 1, '#221a11');
+  for (let i = 0; i < 2; i++) rect(g, x0 + 1 + ((rnd() * (w - 3)) | 0), 4, 3, 1, '#6a5638');    /* the saw's grain */
+  for (const nx of [x0 + 2, x0 + 9, x0 + 13]) if (nx > x0 && nx < x1 - 1) { px(g, nx, 4, '#4a4f5a'); px(g, nx, 8, '#4a4f5a'); }
+  if (end === 'L') rect(g, 1, 3, 1, 7, '#a68c62');
+  if (end === 'R') rect(g, T - 2, 3, 1, 7, '#2e2418');
+  return c; }
+
+// THE STOCKADE: split poles, laid side by side and lashed. Nothing in a goblin camp is sawn.
+export function bakeLashed(seed, end) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T, w = x1 - x0;
+  rect(g, x0, 3, w, 3, '#6b5433'); rect(g, x0, 3, w, 1, '#8a6f45');
+  rect(g, x0, 6, w, 3, '#5a4529'); rect(g, x0, 6, w, 1, '#77603a');
+  rect(g, x0, 9, w, 2, '#2e2416');
+  for (let i = 0; i < 3; i++) { const kx = x0 + 1 + ((rnd() * (w - 2)) | 0); px(g, kx, 4 + ((rnd() * 4) | 0), '#3f3020'); }
+  for (const lx of [x0 + 4, x0 + 11]) if (lx > x0 && lx < x1 - 1) { rect(g, lx, 3, 2, 7, '#b8a878'); rect(g, lx, 5, 2, 1, '#8a7a52'); rect(g, lx, 8, 2, 1, '#8a7a52'); }
+  if (end === 'L') { rect(g, 1, 4, 1, 6, '#8a6f45'); px(g, 1, 3, '#3f3020'); }
+  if (end === 'R') { rect(g, T - 2, 4, 1, 6, '#2e2416'); px(g, T - 2, 3, '#3f3020'); }
+  return c; }
+
 // THE MARSH'S OWN LEDGE. A wood gets a felled log; a marsh gets a DUCKBOARD - sawn boards nailed across
 // two stakes driven into the mud, half rotted, weed growing up between them and a water line along the
 // bottom edge where it sits in the wet. 16x16; end = 'L' | 'R' | null.
