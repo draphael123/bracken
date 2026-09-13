@@ -151,6 +151,63 @@ export function bakeShrine(lit) {
   px(g, 5, 15, C.grassD); px(g, 6, 20, C.grass); px(g, 13, 17, C.grassD);
   return outline(c, OUT);
 }
+// THE MARKERS. One per kind of country, lit and unlit, all 20x34 with the foot on the last row so they drop
+// straight into the shrine draw. `lit` is the only state: they are all dark until you reach them.
+export function bakeShrineKind(kind, lit) {
+  const [c, g] = canvas(20, 34);
+  const fire = lit ? '#ffd36b' : '#2a2f3d', fireL = lit ? '#fff1c0' : '#3a4050';
+  const base = () => { rect(g, 3, 30, 14, 4, C.stone); rect(g, 3, 30, 14, 1, C.stoneL); rect(g, 3, 33, 14, 1, C.stoneD); };
+  if (kind === 'marsh') {                                   // a lantern on a leaning post, out over the bog
+    rect(g, 4, 32, 12, 2, '#3a2a1c');
+    line(g, 9, 32, 12, 10, '#4a3420', 2); line(g, 9, 32, 12, 10, '#5e4428', 1);
+    rect(g, 8, 8, 9, 3, '#4a3420');
+    rect(g, 9, 11, 7, 9, '#2a2418'); rect(g, 10, 12, 5, 7, fire); if (lit) rect(g, 11, 14, 3, 3, fireL);
+    rect(g, 9, 20, 7, 2, '#4a3420');
+    px(g, 5, 30, C.grassD); px(g, 14, 31, C.grassD); px(g, 7, 31, C.grass);
+  } else if (kind === 'crag') {                             // a cairn with a brand pushed into the top of it
+    for (const [x, y, w, h] of [[3, 28, 14, 5], [4, 24, 12, 4], [5, 20, 10, 4], [6, 17, 8, 3], [7, 14, 6, 3]]) {
+      rect(g, x, y, w, h, C.stone); rect(g, x, y, w, 1, C.stoneL); rect(g, x, y + h - 1, w, 1, C.stoneD); }
+    rect(g, 9, 4, 2, 11, '#4a3420');
+    rect(g, 7, 1, 6, 5, fire); if (lit) { rect(g, 8, 2, 4, 3, fireL); px(g, 9, 0, '#fff6e0'); }
+  } else if (kind === 'myc') {                              // a cap on a stalk, and the gills glow
+    rect(g, 8, 18, 4, 15, '#d8cfc0'); rect(g, 8, 18, 1, 15, '#f0e6d4');
+    ellipse(g, 10, 17, 9, 5, lit ? '#c9a0ff' : '#5a4a6a');
+    ellipse(g, 10, 15, 8, 4, lit ? '#e0c0ff' : '#6a5a7a');
+    for (const x of [5, 8, 12, 15]) px(g, x, 19, fire);
+    if (lit) { px(g, 7, 13, '#fff1c0'); px(g, 13, 12, '#fff1c0'); }
+  } else if (kind === 'hall') {                             // an iron cresset on a bracket
+    base(); rect(g, 8, 14, 4, 16, '#3e444e'); rect(g, 8, 14, 1, 16, '#5a626e');
+    rect(g, 5, 10, 10, 5, '#2e343c'); rect(g, 5, 10, 10, 1, '#4a525c');
+    for (const x of [6, 9, 12]) rect(g, x, 6, 2, 5, fire);
+    if (lit) { rect(g, 8, 3, 3, 4, fireL); px(g, 9, 1, '#fff6e0'); }
+    rect(g, 4, 15, 12, 1, '#2e343c');
+  } else if (kind === 'ship') {                             // a ship's bell on a bracket, and a lamp in it
+    rect(g, 3, 31, 14, 3, '#5a4632'); rect(g, 3, 31, 14, 1, '#7a6248');
+    rect(g, 9, 12, 2, 19, '#4a3c2c');
+    rect(g, 5, 9, 10, 3, '#6a5a3a');
+    fillPoly(g, [[6, 12], [14, 12], [12, 22], [8, 22]], lit ? '#e0b040' : '#6a6a58');
+    fillPoly(g, [[7, 13], [10, 13], [9, 21], [8, 21]], lit ? '#ffe6a0' : '#8a8a74');
+    rect(g, 8, 22, 4, 2, lit ? '#ffd36b' : '#5a5a4a');
+    if (lit) px(g, 10, 25, '#fff1c0');
+  } else if (kind === 'reef') {                             // a diving bell on a chain, with a lamp under it
+    for (let y = 0; y < 8; y += 3) rect(g, 9, y, 2, 2, '#6a7078');
+    fillPoly(g, [[4, 8], [16, 8], [14, 22], [6, 22]], '#4a5a62');
+    fillPoly(g, [[5, 9], [9, 9], [8, 21], [7, 21]], '#5e727c');
+    rect(g, 6, 22, 8, 2, '#3a464e');
+    rect(g, 8, 24, 4, 5, fire); if (lit) { rect(g, 9, 25, 2, 3, fireL); }
+    for (const x of [5, 15]) px(g, x, 20, '#7cc8c8');
+  } else if (kind === 'city') {                             // a hooded street lamp, the way the drowned city lights itself
+    rect(g, 6, 31, 8, 3, '#3a3e46'); rect(g, 6, 31, 8, 1, '#525862');
+    rect(g, 9, 12, 2, 19, '#3a3e46'); rect(g, 9, 12, 1, 19, '#565e68');
+    fillPoly(g, [[4, 12], [16, 12], [13, 6], [7, 6]], '#2e343c');
+    rect(g, 4, 12, 12, 1, '#4a525c');
+    rect(g, 7, 13, 6, 7, fire); if (lit) { rect(g, 8, 14, 4, 5, fireL); px(g, 10, 21, '#fff1c0'); }
+    rect(g, 6, 20, 8, 2, '#2e343c');
+  } else {                                                  // the wood's own: the stone shrine it always was
+    return bakeShrine(lit);
+  }
+  return outline(c, OUT);
+}
 export function bakeGate() {
   const [c, g] = canvas(48, 52);
   const pillar = x => { rect(g, x, 12, 10, 40, C.stone); rect(g, x, 12, 2, 40, C.stoneL); rect(g, x + 8, 12, 2, 40, C.stoneD); for (let y = 16; y < 52; y += 6) rect(g, x + 2, y, 6, 1, C.stoneD); };

@@ -523,7 +523,8 @@ function bakeAll(pal = {}) {
     TILE.edge[eL + '' + eR] = [0, 1].map(i => ART.bakeDirtEdge(140 + i + eL * 3 + eR * 5, eL, eR));
   }
   PROP = {
-    coin: ART.bakeCoin(), shrine: [ART.bakeShrine(false), ART.bakeShrine(true)], gate: ART.bakeGate(), sign: ART.bakeSign(),
+    coin: ART.bakeCoin(), shrine: [ART.bakeShrine(false), ART.bakeShrine(true)],
+    shrineOf: Object.fromEntries(['wood', 'marsh', 'crag', 'myc', 'hall', 'ship', 'reef', 'city'].map(k => [k, [ART.bakeShrineKind(k, false), ART.bakeShrineKind(k, true)]])), gate: ART.bakeGate(), sign: ART.bakeSign(),
     tuft: [0, 1, 2, 3].map(i => ART.bakeTuft(200 + i)), flower: [0, 1, 2, 3].map(i => ART.bakeFlower(210 + i)),
     mushroom: [0, 1].map(i => ART.bakeMushroom(220 + i)), bush: [0, 1, 2].map(i => ART.bakeBush(230 + i)),
     shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
@@ -3799,6 +3800,35 @@ function bossStart() {
   ({ queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow }[boss.t] || SFX.roar)(); shakeCam(6); music.stop(); bossMusicT = 1.1; number(boss.x, boss.y - 30, boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.dimmed ? 'THE SUNCATCHER  DIMMED' : 'THE SUNCATCHER') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : 'THE HORNET QUEEN', '#ffd36b'); zoomKick(1.1, 0.4);
   burst(L.arena.wallL * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6); burst(L.arena.wallR * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6);
 }
+// A SLAM SHAKES THE COMB LOOSE. The section over her head goes; it lodges three rows down as a ledge that
+// was not there before, and whatever was living in that cell comes out of the hole. Three of them, spread
+// across her hall, so she cannot bring the same piece down twice.
+function combFall(e) {
+  const A = L.arena; if (!A || A.boss !== 'queen') return;
+  A.comb = A.comb || { rows: [], n: 0 };
+  if (A.comb.n >= 3) return;
+  const ax0 = Math.floor(A.x0 / TS) + 2, ax1 = Math.ceil(A.x1 / TS) - 5;
+  let cx = Math.max(ax0, Math.min(ax1, Math.floor(e.x / TS) - 1));
+  // never the same piece twice: step along until this one is still up
+  let tries = 0;
+  while (tries++ < 40 && (A.comb.rows.some(r => Math.abs(r - cx) < 5) || L.grid[3 * LW + cx] !== T.ONEWAY))
+    cx = ax0 + ((cx - ax0 + 6) % Math.max(1, ax1 - ax0));
+  if (L.grid[3 * LW + cx] !== T.ONEWAY) return;
+  A.comb.rows.push(cx); A.comb.n++;
+  const w = 4, ly = 6;
+  for (let x = cx; x < cx + w; x++) { const i = 3 * LW + x;
+    if (L.grid[i] === T.ONEWAY) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); }
+    for (let q = 0; q < 3; q++) parts.push({ x: x * TS + 8, y: 3 * TS + 10, vx: (Math.random() - 0.5) * 60, vy: 20 + Math.random() * 60, life: 1.1, max: 1.1, col: Math.random() < 0.5 ? '#e0b040' : '#c9a83a', size: 2, grav: 320 });
+  }
+  // it lodges three rows down, and that is a floor you did not have
+  for (let x = cx; x < cx + w; x++) { const i = ly * LW + x;
+    if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; destroyed.delete(i); } }
+  resolveTiles(); SFX.crack(); SFX.thud(); shakeCam(6); zoomKick(1.05, 0.2);
+  dust(cx * TS + w * TS / 2, ly * TS, 12);
+  number(cx * TS + w * TS / 2, ly * TS - 14, 'THE COMB COMES DOWN', '#ffd36b');
+  // and what was living in the cell comes out of the hole
+  for (let q = 0; q < 2; q++) spawnEnt({ t: 'wasp', x: cx + 1 + q * 2, y: 4, drone: true });
+}
 function queenWinded(e, blocked) {
   e.mode = 'winded'; e.modeT = e.phase === 2 ? 1.1 : 1.5; e.vx = 0; e.vy = 0; e.y = L.arena.floor;
   shakeCam(4); SFX.thud(); dust(e.x, e.y, 10); number(e.x, e.y - 20, blocked ? 'STAGGERED' : 'WINDED', '#8fd160');
@@ -4218,6 +4248,7 @@ function updateQueen(e, dt) {
       e.y = floor; e.vy = 0; shakeCam(7); SFX.heavy(); dust(e.x, e.y, 14);
       for (const d of [-1, 1]) waves.push({ x: e.x + d * 12, y: floor, dir: d, life: 2.2, sp: p2 ? 190 : 150 });
       e.mode = 'slamRest'; e.modeT = p2 ? 0.55 : 0.8; number(e.x, e.y - 20, 'SLAM', '#ffd36b');
+      combFall(e);                                        // and the hall loses a piece of its ceiling
     } break;
     case 'slamRest': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; } break;
     case 'buck': if (e.modeT <= 0) { e.vx = 0; e.vy = 0; e.mode = 'hover'; e.modeT = 1.2; } break;
@@ -5713,7 +5744,17 @@ function updateGolem(e, dt) {
   const facet = Math.min(3, Math.floor((e.maxHp - e.hp) / (e.maxHp / 4))); e.need = FACET_COL[facet];
   // the counter-beam: lit for two seconds and it drinks the light and throws it back along a sweep
   e.litT = e.lit && e.mode !== 'stagger' ? (e.litT || 0) + dt : Math.max(0, (e.litT || 0) - dt * 2); e.cbCd = Math.max(0, (e.cbCd || 0) - dt);
-  if (e.litT > 2 && e.cbCd <= 0 && e.mode === 'walk') { e.mode = 'drink'; e.modeT = 0.6; e.litT = 0; e.cbCd = 5; number(e.x, e.y - e.h - 12, 'IT DRINKS THE LIGHT', '#ff7ab8'); SFX.golemChime(); SFX.gasp(); }
+  if (e.litT > 2 && e.cbCd <= 0 && e.mode === 'walk') { e.mode = 'drink'; e.modeT = 0.6; e.litT = 0; e.cbCd = 5; number(e.x, e.y - e.h - 12, 'IT DRINKS THE LIGHT', '#ff7ab8'); SFX.golemChime(); SFX.gasp();
+    // AND IT TAKES WHAT FED IT. Every source whose colour is on him goes dark for fourteen seconds, so
+    // leaving the light on him is not merely a missed window - it spends the colour you were going to need.
+    const cols = e.litCols || new Set(); let took = 0;
+    for (const cr of props) { if (cr.t !== 'crystal' || cr.dark > 0) continue;
+      if (!cols.has(cr.col || 'blue')) continue;
+      cr.dark = 14; took++;
+      burst(cr.x, cr.y - 8, 14, ['#3a3448', '#5a5468', '#eefaff'], 70, 0.6);
+      number(cr.x, cr.y - 24, 'DRUNK', '#ff7ab8'); }
+    if (took) { SFX.crack(); if (!(PROG.facetTold > 1)) { PROG.facetTold = (PROG.facetTold || 0) + 1; hintT = 4.5;
+      hintMsg = 'IT DRANK THE SOURCE. THAT COLOUR IS GONE UNTIL THE GLASS RELIGHTS: GET THE LIGHT OFF IT ONCE YOU HAVE HAD YOUR WINDOW.'; } } }
   if (facet > e.facets) { e.facets = facet; e.mode = 'stagger'; e.modeT = 1.6; e.stagger = 1.6; e.vx = 0; burst(e.x, e.y - 20, 20, COLS.golem, 90, 0.8); shakeCam(6); zoomKick(1.1, 0.3); SFX.golemShatter(); number(e.x, e.y - e.h - 14, 'A FACET SHATTERS', '#ff7ab8'); if (facet >= 2) e.phase = 2; }
   let want = 0;
   switch (e.mode) {
@@ -6408,6 +6449,12 @@ const MIRROR = [(dx, dy) => [-dy, -dx], (dx, dy) => [dy, dx]]; // o 0 is '/', o 
 function traceBeams(dt) {
   beams = []; const litRx = new Set();
   for (const cr of props) { if (cr.t !== 'crystal') continue;
+    // A SOURCE THE FACET HAS DRUNK IS DARK. It comes back on its own, but not soon: the light is a resource
+    // in that fight now, not a switch, and spending it is what the drink costs you.
+    if (cr.dark > 0) { cr.dark -= dt;
+      if (Math.random() < dt * 8) parts.push({ x: cr.x + (Math.random() - 0.5) * 10, y: cr.y - 8 - Math.random() * 8, vx: 0, vy: -14, life: 0.5, max: 0.5, col: '#3a3448', size: 1, grav: 0 });
+      if (cr.dark <= 0) { SFX.spark(); ringAt(cr.x, cr.y - 8, 16, '#eefaff', 0.3); number(cr.x, cr.y - 22, 'IT LIGHTS AGAIN', '#bfe6f5'); }
+      continue; }
     let x = cr.x, y = cr.y - 8, [dx, dy] = cr.dir; let x0 = x, y0 = y; const col = cr.col || 'blue';
     for (let n = 0; n < 60; n++) {
       const nx = x + dx * TS, ny = y + dy * TS, tx = Math.floor(nx / TS), ty = Math.floor(ny / TS), t = tileAt(tx, ty);
@@ -9005,7 +9052,17 @@ function drawWorld(cx, cy, showPlayer) {
         const face = near ? (P.x < pr.x ? -1 : 1) : (Math.floor(ph / 3.3) % 2 ? 1 : -1);
         drawSet(set, null, talkTo === pr ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy, face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
   if (state === 'play' && !P.dead) { const t = talkers()[0]; if (t && !(t.who && t.who.t === 'npc')) text(talkGlyph(), t.x - cx, t.y - 26 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
-  for (const s of shrines) { g.drawImage(PROP.shrine[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
+  // A CHECKPOINT BELONGS TO ITS WOOD: the same grey stone shrine used to stand in a bog, on a ship's deck, a
+  // hundred feet under the sea and on a mountain of glass.
+  const shKind = (() => { const p = L.palette || {}, d = p.dress, st = p.set;
+    if (st === 'ship') return 'ship'; if (st === 'city') return 'city';
+    if (st === 'reef' || st === 'shore') return 'reef';
+    if (d === 'myc' || p.myc) return 'myc'; if (d === 'marsh') return 'marsh';
+    if (d === 'crag') return 'crag'; if (p.hall || L.castle) return 'hall';
+    { const id = (LEVELS[levelIndex] || {}).id; if (id === 'crown' || id === 'storm' || id === 'stockade') return 'hall'; }   /* their palettes carry no dress: name them */
+    return 'wood'; })();
+  const shPair = (PROP.shrineOf && PROP.shrineOf[shKind]) || PROP.shrine;
+  for (const s of shrines) { g.drawImage(shPair[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
   if (gate) g.drawImage(PROP.gate, gate.x - 24 - cx, gate.y - 52 - cy);
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);

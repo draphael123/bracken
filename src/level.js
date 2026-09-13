@@ -148,6 +148,7 @@ function brackenWood() {
   plat(292, 6, 3); plat(315, 6, 3);
   ent('deco', 296, 8, { kind: 'hiveBg' }); ent('deco', 314, 8, { kind: 'hiveBg' });
   ent('deco', 293, 5, { kind: 'drip', hang: true }); ent('deco', 300, 4, { kind: 'drip', hang: true }); ent('deco', 309, 5, { kind: 'drip', hang: true }); ent('deco', 318, 4, { kind: 'drip', hang: true });
+  for (let x = 290; x <= 319; x++) set(x, 3, T.ONEWAY);   /* her comb, over the whole hall: her own slams bring it down */
   ent('queen', 304, 3);
 
   const ret = {
@@ -3582,6 +3583,54 @@ const GARRISON = {
   hurricane: [['cutlass', 3], ['scout', 3], ['tideguard', 2]],
   lamplit: [['watch', 6], ['wight', 6], ['snuffer', 5], ['tideguard', 5], ['scout', 5], ['crab', 4], ['angler', 4], ['sailor', 4], ['netter', 3]],  // the LAST level must be the hardest thing in the game
 };
+// ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
+// Measured across the campaign and they are bunched and then absent: Highcrown had ELEVEN of them and SEVEN
+// of its gaps were zero - they were stacked on the same tile, so a hundred-tile castle had four real ones.
+// Kingswood had a hundred and eighteen columns between two and then a gap of two. Stormhold had a run of a
+// hundred and twenty-six. This does both halves of the job: it throws away any checkpoint standing on top of
+// another, and then fills any run longer than seventy-two by putting one on the nearest ground the player can
+// actually stand on. A tall level is measured by HEIGHT, because that is the direction you travel it.
+function checkpoints(L) {
+  const W = L.W, H = L.H, g = L.grid, tall = H > 60;
+  const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
+  const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
+  const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
+  const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
+  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2]);
+  const key = e => tall ? e.y : e.x;
+  let ch = (L.ents || []).filter(e => e.t === 'check').sort((a, b) => key(a) - key(b));
+  // 1. one of them is enough
+  const kept = [];
+  // TWO ON THE SAME TILE is a duplicate; two on the same FLOOR at opposite ends of a castle are not. Highcrown
+  // has seven checkpoints on one row because it has seven rooms on that row, and keying on one axis threw six
+  // of them away and left a two-hundred-tile run.
+  for (const c of ch) { if (kept.some(k => Math.abs(k.x - c.x) < 5 && Math.abs(k.y - c.y) < 5)) continue; kept.push(c); }
+  L.ents = L.ents.filter(e => e.t !== 'check' || kept.includes(e));
+  ch = kept;
+  // 2. and no run longer than seventy-two
+  const MAXRUN = 72;
+  const place = (want) => {
+    let best = null, bd = 1e9;
+    for (let x = 4; x < W - 4; x++) for (let y = 2; y < H - 2; y++) {
+      if (!stand(at(x, y + 1)) || at(x, y) !== T.AIR || at(x, y - 1) !== T.AIR || at(x, y - 2) !== T.AIR) continue;
+      if (!stand(at(x - 1, y + 1)) || !stand(at(x + 1, y + 1))) continue;
+      if (wet(x, y) || rooms.some(([a2, b2]) => x >= a2 && x <= b2)) continue;
+      const d = Math.abs((tall ? y : x) - want); if (d < bd) { bd = d; best = [x, y]; }
+    }
+    return bd < MAXRUN ? best : null;   /* the nearest ground that will hold one, even if it is most of a run away */
+  };
+  const marks = ch.map(key);
+  const runs = [];
+  for (let i = 1; i < marks.length; i++) if (marks[i] - marks[i - 1] > MAXRUN) runs.push([marks[i - 1], marks[i]]);
+  if (marks.length && marks[0] > MAXRUN) runs.push([0, marks[0]]);
+  const put = [];
+  for (const [a2, b2] of runs) { const n = Math.ceil((b2 - a2) / MAXRUN);
+    for (let k = 1; k < n; k++) { const want = a2 + (b2 - a2) * k / n;
+      const spot = place(want);
+      if (spot && !put.some(([px, py]) => Math.abs((tall ? py : px) - (tall ? spot[1] : spot[0])) < 12)) {
+        put.push(spot); L.ents.push({ t: 'check', x: spot[0], y: spot[1], filled: true }); } } }
+  return L;
+}
 function garrison(L, id) {
   const set = GARRISON[id]; if (!set) return L;
   const W = L.W, H = L.H, g = L.grid;
@@ -3669,7 +3718,7 @@ function dressLevel(L, id) {
   return L;
 }
 const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(garrison(L, id)), id); }; }
+for (const lv of LEVELS) if (!lv.hidden) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(checkpoints(garrison(L, id))), id); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };
