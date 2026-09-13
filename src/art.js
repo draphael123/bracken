@@ -1765,3 +1765,78 @@ export function bakeMurkWreck(seed, back, col0, lit) {
   }
   return c;
 }
+
+// ============================================================================================
+// THE TINY CAPS. Press Start 2P is drawn on an eight-pixel cell; asked for six it is resampled, and B,
+// D, 8 and 0 all come out the same grey smudge - which is most of the HUD, every label and every number
+// in the game. This is a 5x5 cap on a SIX pixel advance, which is exactly what Press Start 2P measures at
+// 6px, so not one line of layout moves. It is baked white; main.js tints a copy per ink colour.
+const TINY_ORDER = ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_|~';
+const TINY_ROWS = ['........#....#.#...#.#....#...#...#..##.....#......#...#.....#.#..............................#..###....#....###..####..#..#..#####..###..#####..###...###.................#.........#.....###...###...###..####...####.####..#####.#####..####.#...#.#####.....#.#...#.#.....#...#.#...#..###..####...###..####...####.#####.#...#.#...#.#...#.#...#.#...#.#####...###.#.....###.....#...........#.........', '........#....#.#..#####..####....#..#.#.....#.....#.....#.....#.....#........................#..#..##..##...#...#.....#.#..#..#.....#.........#.#...#.#...#...#.....#.....#...#####...#...#...#.#.###.#...#.#...#.#.....#...#.#.....#.....#.....#...#...#.......#.#..#..#.....##.##.##..#.#...#.#...#.#...#.#...#.#.......#...#...#.#...#.#...#..#.#...#.#.....#....#....#......#....#.#..........#....#..#.', '........#..........#.#...###....#....#.#..........#.....#...#####..###........#####.........#...#.#.#...#......#....##..#####.####..####.....#...###...####..............#.............#....##..#.#.#.#####.####..#.....#...#.###...###...#.###.#####...#.......#.###...#.....#.#.#.#.#.#.#...#.####..#.#.#.####...###....#...#...#.#...#.#.#.#...#.....#.....#.....#.....#.....#.................#...#.##..', '..................#####.####...#....#..#..........#.....#.....#.....#.....#................#....##..#...#.....#.......#....#......#.#...#...#...#...#.....#...#.....#.....#...#####...#.........#.....#...#.#...#.#.....#...#.#.....#.....#...#.#...#...#...#...#.#..#..#.....#...#.#..##.#...#.#.....#..#..#..#......#...#...#...#..#.#..##.##..#.#....#....#......#......#....#.................#.........', '........#..........#.#....#...#...#..##.#..........#...#.....#.#.........#............#...#......###...###..#####.####.....#..####...###....#....###...###.........#.......#.........#......#....###..#...#.####...####.####..#####.#......###..#...#.#####..###..#...#.#####.#...#.#...#..###..#......##.#.#...#.####....#....###....#...#...#.#...#...#...#####...###.....#.###.........#####...#.........'];
+export const TINY = { order: TINY_ORDER, w: 5, h: 5, adv: 6 };
+export function bakeTinyFont() {
+  const [c, g] = canvas(TINY_ORDER.length * TINY.adv, TINY.h);
+  g.fillStyle = '#ffffff';
+  for (let y = 0; y < TINY.h; y++) { const row = TINY_ROWS[y];
+    for (let x = 0; x < row.length; x++) if (row[x] === '#') g.fillRect(x, y, 1, 1); }
+  return c;
+}
+
+// ============================================================================================
+// THE NEAR THING. A level had a far layer, a mid layer and a near layer, and then the camera - and
+// nothing at all between the camera and the level, so every outdoor wood was a flat diorama seen through
+// a window. This is the branch you are standing under and the grass you are standing in: one course of
+// silhouette at more than one to one, dark enough to be a shape and never a detail, with long gaps in it
+// so it frames the view instead of roofing it. 256 wide, tiles across, anchored to the SCREEN.
+const NW = 256;
+function nearCanvas(h) { const c = document.createElement('canvas'); c.width = NW; c.height = h; return [c, c.getContext('2d')]; }
+
+// OVERHEAD: a bough with its leaves on, coming in from the top. Sparse - four or five clumps in a screen.
+export function bakeNearBough(seed, col, dark) {
+  const rnd = mulberry(seed); const [c, g] = nearCanvas(42);
+  let x = -20;
+  while (x < NW + 20) {
+    if (rnd() < 0.34) { x += 34 + ((rnd() * 44) | 0); continue; }            /* a gap: most of the sky stays open */
+    const w = 30 + ((rnd() * 34) | 0), drop = 12 + ((rnd() * 20) | 0);
+    g.fillStyle = dark; g.fillRect(x + 2, 0, w - 4, 3);                      /* the bough it hangs from */
+    g.fillRect(x + ((w / 2) | 0), 0, 3, (drop * 0.6) | 0);
+    g.fillStyle = col;
+    for (let i = 0; i < 6 + ((rnd() * 6) | 0); i++) {
+      const lx = x + 2 + ((rnd() * (w - 6)) | 0), ly = 1 + ((rnd() * drop) | 0), r = 5 + ((rnd() * 6) | 0);
+      g.beginPath(); g.ellipse(lx, ly, r, r * 0.72, 0, 0, 7); g.fill(); }
+    g.fillStyle = dark;
+    for (let i = 0; i < 3; i++) { const lx = x + 4 + ((rnd() * (w - 8)) | 0);
+      g.beginPath(); g.ellipse(lx, 2 + ((rnd() * 6) | 0), 5, 4, 0, 0, 7); g.fill(); }
+    x += w + 8 + ((rnd() * 26) | 0);
+  }
+  return c;
+}
+// OVERHEAD, ON THE CRAGS: no leaves up there. A lip of rock and what is hanging off it.
+export function bakeNearLedge(seed, col, dark) {
+  const rnd = mulberry(seed); const [c, g] = nearCanvas(42);
+  let x = -20;
+  while (x < NW + 20) {
+    if (rnd() < 0.38) { x += 40 + ((rnd() * 52) | 0); continue; }
+    const w = 36 + ((rnd() * 46) | 0), drop = 8 + ((rnd() * 16) | 0);
+    g.fillStyle = col; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + w, 0);
+    let px0 = x + w, py = 0;
+    while (px0 > x) { const st = 5 + ((rnd() * 9) | 0); px0 -= st; py = 2 + ((rnd() * drop) | 0); g.lineTo(px0, py); }
+    g.closePath(); g.fill();
+    g.fillStyle = dark; g.fillRect(x, 0, w, 2);
+    for (let i = 0; i < 3; i++) { const ix = x + 4 + ((rnd() * (w - 8)) | 0), ih = 3 + ((rnd() * 7) | 0);
+      g.fillRect(ix, 1, 2, ih); }                                            /* a root, or an icicle, or a rope end */
+    x += w + 10 + ((rnd() * 30) | 0);
+  }
+  return c;
+}
+// UNDERFOOT: the blades you are standing in, coming up off the bottom edge.
+export function bakeNearBlades(seed, col, dark, tall) {
+  const rnd = mulberry(seed); const [c, g] = nearCanvas(22);
+  const base = 22;
+  for (let i = 0; i < NW / 3; i++) {
+    const x = rnd() * NW, h = (tall ? 8 : 5) + rnd() * (tall ? 13 : 8), lean = (rnd() - 0.5) * 7;
+    g.strokeStyle = rnd() < 0.4 ? dark : col; g.lineWidth = 1 + (rnd() < 0.3 ? 1 : 0);
+    g.beginPath(); g.moveTo(x, base); g.quadraticCurveTo(x + lean * 0.5, base - h * 0.6, x + lean, base - h); g.stroke();
+  }
+  return c;
+}

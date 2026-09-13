@@ -1699,7 +1699,11 @@ function drawMap() {
   // header + node card
   { const region = mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
   g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
-  { const real = LEVELS.filter(lv => !lv.hidden); const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
+  /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
+     walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
+     medals. They join the count the moment you have set foot in one, which is also when it stops being a
+     spoiler to say they exist. */
+  { const real = LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])); const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
     const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
     g.drawImage(FLAG, 92, 4); text(cl + '/' + real.length, 104, 7, UI.dim, 'left', 6);
     g.fillStyle = md >= mdMax ? MEDAL_COL[3] : '#8a8378'; g.beginPath(); g.arc(140, 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(139, 8, 2, 2);
@@ -9695,12 +9699,39 @@ function spk(x, y, col) {   // a speaker with a bar through it: eight pixels tha
   g.fillStyle = col; g.fillRect(x, y + 2, 2, 3); g.fillRect(x + 2, y + 1, 1, 5); g.fillRect(x + 3, y, 1, 7);
   g.fillStyle = '#e04848'; for (let i = 0; i < 7; i++) g.fillRect(x - 1 + i, y + i, 1, 1);
 }
+
+// THE SMALLEST TEXT IN THE GAME IS THE MOST OF IT: every HUD label, every count, every sign. Press Start
+// 2P is drawn on an eight-pixel cell, and asked for six the browser resamples it - B, D, 8 and 0 all come
+// out the same grey smudge. ART's tiny caps are 5x5 on a SIX pixel advance, which is exactly what Press
+// Start 2P measures at 6px, so nothing moves; they are baked white and tinted per ink colour and cached.
+// A string with a lower-case letter in it is being murmured, not shouted, and keeps the soft font.
+let TINYF = null; const TINY_TINT = new Map();
+const tinyOK = (s2, size) => size <= 6 && typeof s2 === 'string' && !/[a-z]/.test(s2);
+function tinyTint(col) {
+  let c = TINY_TINT.get(col); if (c) return c;
+  if (!TINYF) TINYF = ART.bakeTinyFont();
+  c = document.createElement('canvas'); c.width = TINYF.width; c.height = TINYF.height;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  x.drawImage(TINYF, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, c.width, c.height);
+  TINY_TINT.set(col, c); return c;
+}
+function drawTiny(str, x, y, col) {
+  const f = tinyTint(col), A = ART.TINY;
+  for (let i = 0; i < str.length; i++) { const k = A.order.indexOf(str[i]); if (k < 0) continue;
+    g.drawImage(f, k * A.adv, 0, A.w, A.h, x + i * A.adv, y, A.w, A.h); }
+}
+
 function text(s, x, y, col, align = 'left', size = 8) {
   if (col === undefined) col = SET.ink === 'parchment' ? '#fff6e0' : inkNow();
+  if (tinyOK(s, size) && SET.font === 'press') {
+    const w = s.length * ART.TINY.adv - 1, px0 = Math.round(align === 'center' ? x - w / 2 : align === 'right' ? x - w : x), py0 = Math.round(y);
+    drawTiny(s, px0 + 1, py0 + 1, ART.OUT); drawTiny(s, px0, py0, col); return;
+  }
   const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; g.textAlign = align; g.textBaseline = 'top';
   g.fillStyle = ART.OUT; g.fillText(s, x + 1, y + 1); g.fillStyle = col; g.fillText(s, x, y);
 }
-function textW(s, size = 8) { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; return g.measureText(s).width; }
+function textW(s, size = 8) { if (tinyOK(s, size) && SET.font === 'press') return s.length * ART.TINY.adv;
+  const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; return g.measureText(s).width; }
 function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); return t; }
 function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; } for (const w of words) { const t = cur ? cur + ' ' + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
 function pickFrame(set, key, frame, face) {
@@ -9750,6 +9781,36 @@ function drawMurk(cx) {
     for (; x < VW; x += w) g.drawImage(c, Math.round(x), y); g.globalAlpha = 1; };
   lay(m.back, 0.10, Math.round(VH * 0.60) - 120, 0.85);
   lay(m.front, 0.22, Math.round(VH * 0.74) - 120, 0.9);
+}
+
+
+// THE NEAR LAYER, per level, baked once. A level with its own `palette.fg` (the sea sets and the drowned
+// city) already has one and keeps it; everything else had nothing between the camera and the world.
+// Which silhouette it is comes off the dressing, and the colours off the canopy.
+let NEARL = null, NEAR_ID = null;
+function nearFor() {
+  const id = curId(); if (NEAR_ID === id && NEARL !== undefined) return NEARL;
+  NEAR_ID = id; NEARL = null;
+  const P0 = L.palette || {};
+  if (P0.fg || L.colosseum || L.trial || L.dark) return NEARL;    /* it has its own, or it is a room and not a place - and a level in the dark has THE MURK behind it already, which is the same job from the other side */
+  const dress = P0.dress || 'wood', rock = dress === 'crag' || dress === 'none';
+  const can = P0.canopy || ['#16301f', '#1f4a2c', '#2a5e36'];
+  const col = P0.nearCol || (rock ? '#2a2a32' : can[1] || '#1f4a2c');
+  const dark = P0.nearDark || (rock ? '#191920' : can[0] || '#16301f');
+  const sd = id.length * 311 + id.charCodeAt(0) * 7;
+  NEARL = { top: rock ? ART.bakeNearLedge(sd, col, dark) : ART.bakeNearBough(sd, col, dark),
+    bot: ART.bakeNearBlades(sd + 91, col, dark, dress === 'marsh' || dress === 'myc') };
+  return NEARL;
+}
+function drawNear(cx) {
+  if (SET.parallax === 'off' || SET.parts === 'low') return;
+  const n = nearFor(); if (!n) return;
+  const lay = (c, f, y) => { const w = c.width; let x = ((-cx * f) % w + w) % w; if (x > 0) x -= w;
+    for (; x < VW; x += w) g.drawImage(c, Math.round(x), y); };
+  g.globalAlpha = 0.9;
+  lay(n.top, 1.35, -8);
+  lay(n.bot, 1.5, VH - 22);
+  g.globalAlpha = 1;
 }
 
 function drawLayer(c, f, baseY, cx, cy) {
@@ -10863,7 +10924,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (lightFlash > 0) { g.fillStyle = 'rgba(235,240,255,' + (lightFlash > 0.12 ? 0.75 : lightFlash > 0.06 ? 0.2 : 0.45) + ')'; g.fillRect(0, 0, VW, VH); }
   drawShaftsFront(cx, cy); drawLightCones(cx, cy);
   drawOccluders(cx, cy); drawMotes(cx, cy, true);
-  drawLayer(BG.fg, 1.25, 0, cx, cy);
+  drawLayer(BG.fg, 1.25, 0, cx, cy); drawNear(cx);
   if (dk > 0) { g.globalCompositeOperation = 'multiply'; g.globalAlpha = dk * 0.55; const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#8a6aa0'); gr.addColorStop(1, '#ffb070'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   if (L.fog && L.fog.length && state !== 'win') { // a bank you see through only near yourself, the wisps, or (in the drowned city) a lamp
     if (!FOGC || FOGC.width !== VW || FOGC.height !== VH) { FOGC = document.createElement('canvas'); FOGC.width = VW; FOGC.height = VH; }
