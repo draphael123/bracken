@@ -9223,18 +9223,24 @@ function bakeRoof(h) { const x0 = h.x0 - 1, x1 = h.x1 + 1, w = (x1 - x0 + 1) * T
   // quiet road. Courses of reed laid up the pitch, a ridge of turf pegged along the top, and the cut ends
   // hanging ragged over the eave.
   if (h.thatch) {
-    x.fillStyle = '#5a4a2a'; x.fillRect(0, 0, w, ht - 2);
-    for (let row = 0, y = 4; y < ht - 3; y += 4, row++) {
-      for (let sx = (row % 2) * 3 - 3; sx < w; sx += 6) {
-        const t = rnd(); x.fillStyle = t < 0.2 ? '#7a6438' : t < 0.6 ? '#8f7742' : '#a68a4e';
-        x.fillRect(sx + 1, y, 5, 4); x.fillStyle = '#4a3c20'; x.fillRect(sx + 1, y + 3, 5, 1); }
+    // Straw is COMBED DOWNWARD, in long strokes from the ridge to the eave. Laid in horizontal courses with
+    // a line under each one it is brickwork, which is what it looked like and why it had to be redone.
+    x.fillStyle = '#4a3c20'; x.fillRect(0, 0, w, ht - 2);
+    for (let sx = 0; sx < w; sx++) {
+      const t = rnd(), tone = t < 0.12 ? '#6a5730' : t < 0.4 ? '#8a7340' : t < 0.72 ? '#9c8348' : '#b09256';
+      const top = 2 + ((rnd() * 3) | 0), bot = ht - 3 + ((rnd() * 4) | 0);
+      x.fillStyle = tone; x.fillRect(sx, top, 1, bot - top);
+      if (rnd() < 0.22) { x.fillStyle = '#c2a464'; x.fillRect(sx, top + 2 + ((rnd() * 6) | 0), 1, 3 + ((rnd() * 8) | 0)); }   /* a lit strand */
+      if (rnd() < 0.16) { x.fillStyle = '#3e3218'; x.fillRect(sx, top + 6 + ((rnd() * 14) | 0), 1, 4 + ((rnd() * 9) | 0)); }  /* and a dark one */
     }
-    for (let sx = 0; sx < w; sx += 2) { x.fillStyle = rnd() < 0.4 ? '#b89a58' : '#9c8348'; x.fillRect(sx, 0, 2, 5); }
-    x.fillStyle = '#3f6e2c'; x.fillRect(0, 0, w, 3);                       /* the turf ridge */
-    x.fillStyle = '#4f8a38'; x.fillRect(0, 0, w, 1);
-    for (let sx = 3; sx < w - 3; sx += 7 + ((rnd() * 6) | 0)) { x.fillStyle = '#6a5a30'; x.fillRect(sx, 1, 1, 3); }   /* the pegs */
-    x.fillStyle = '#3a2e18'; x.fillRect(0, ht - 3, w, 3);
-    for (let sx = 1; sx < w - 1; sx += 2) { x.fillStyle = rnd() < 0.5 ? '#8f7742' : '#6a5730'; x.fillRect(sx, ht - 4, 1, 2 + ((rnd() * 3) | 0)); }   /* the ragged cut ends */
+    // the two rods pegged across the pitch that hold the straw on
+    for (const ry of [Math.round(ht * 0.42), Math.round(ht * 0.72)]) {
+      x.fillStyle = '#5c4a26'; x.fillRect(0, ry, w, 1);
+      for (let sx = 2; sx < w - 2; sx += 9 + ((rnd() * 7) | 0)) { x.fillStyle = '#3a2e18'; x.fillRect(sx, ry - 1, 1, 3); } }
+    x.fillStyle = '#2f5a26'; x.fillRect(0, 0, w, 4);                       /* the turf ridge, pegged along the top */
+    x.fillStyle = '#4f8a38'; x.fillRect(0, 0, w, 2);
+    for (let sx = 3; sx < w - 3; sx += 6 + ((rnd() * 5) | 0)) { x.fillStyle = '#6a5a30'; x.fillRect(sx, 1, 1, 4); }
+    x.fillStyle = '#241c10'; x.fillRect(0, ht - 2, w, 2);                  /* the shadow under the eave */
     return c;
   }
   x.fillStyle = '#2a2c3a'; x.fillRect(0, 0, w, ht - 2);

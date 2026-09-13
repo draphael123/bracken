@@ -1178,7 +1178,7 @@ function underleaf() {
   ent('sign', 159, R - 1, { text: 'THE TERRACE. EVERY DOOR ON THIS STRETCH HAS SOMEBODY BEHIND IT AND THE WHOLE STREET IS BOARDS. THE THATCH IS OVER YOUR HEAD FOR A REASON.' });
   // FIVE HOUSES AT FIVE HEIGHTS. A terrace of identical roofs at one height reads as one long building; a
   // village is people who each built their own, so the roofline is a saw and crossing it is the platforming.
-  for (const [x0, x1, y, gob] of [[164, 176, 30, 'sprig'], [180, 192, 28, 'archer'], [196, 208, 30, 'sprig'], [212, 224, 27, 'shield'], [228, 240, 29, 'sapper']]) {
+  for (const [x0, x1, y, gob] of [[164, 176, 28, 'sprig'], [180, 192, 26, 'archer'], [196, 208, 28, 'sprig'], [212, 224, 26, 'shield'], [228, 240, 27, 'sapper']]) {
     thatch(x0, x1, y); ent('window', x0 + 4, y + 1, { gob, dx: x0 + 6, dy: R - 1 });
     ent('deco', x0 + 9, R - 1, { kind: 'cottage' });
   }
@@ -1187,7 +1187,7 @@ function underleaf() {
   coins([166, 29], [184, 27], [200, 29], [216, 26], [232, 28]);
   coins([170, 29], [188, 27], [204, 29], [220, 26], [236, 28], [168, R - 2], [186, R - 2], [206, R - 2], [224, R - 2], [242, R - 2]);
   for (const dx of [170, 186, 202, 218, 234]) ent('deco', dx, R - 1, { kind: 'waterButt' });
-  for (const [dx, dy] of [[176, 29], [192, 27], [208, 29], [224, 26]]) ent('deco', dx, dy, { kind: 'washing' });
+  for (const [dx, dy] of [[176, 27], [192, 25], [208, 27], [224, 25]]) ent('deco', dx, dy, { kind: 'washing' });
   for (const [a2, b2, y2] of [[165, 175, 29], [181, 191, 27], [197, 207, 29], [213, 223, 26], [229, 239, 28]]) run(a2, b2, y2, 3);                              /* the whole terrace roofline, paid by the tile */
   ent('assassin', 188, 27, { face: -1 }); ent('assassin', 220, 26, { face: -1 });
   ent('brute', 172, R - 1, { face: -1, sleeper: true });
@@ -1201,8 +1201,8 @@ function underleaf() {
   for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 247 * TS + 8, py: 24 * TS, r: 40, phase: i * Math.PI / 2, period: 7.5, x: 0, y: 0, w: 22, h: 6 });
   plat(241, 27, 2);                                 // the step from the terrace onto the mill cap
   ent('sign', 236, R - 1, { text: 'THE WINDMILL. RIDE A SAIL UP AND STEP OFF AT THE TOP OF ITS TURN: THE CHURCH ROOF IS HIGHER THAN ANYTHING ELSE IN UNDERLEAF.' });
-  ent('stray', 232, 28, { kind: 'lamp' });
-  plat(241, 27, 2);
+  ent('stray', 232, 26, { kind: 'lamp' });
+  plat(241, 26, 2);
   ent('check', 200, R - 1); ent('check', 238, R - 1);
 
   // ---- 4. THE CHURCH. The biggest roof in the village, and the BELLRINGER going for the rope. ----
@@ -1345,7 +1345,7 @@ function underleaf() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 18, hush: true,
-    duskStart: -1, duskLen: 1, music: 'underleaf', night: true, glowNight: true, nightA: 0.30,
+    duskStart: -1, duskLen: 1, music: 'underleaf', night: true, glowNight: true, nightA: 0.24,
     // the mill's own din: inside this, nothing you do can be heard over the wheel
     din: [{ x0: 108 * TS, x1: 136 * TS }],
     quest: { n: 3, item: 'lamp', name: 'CANDLES', npc: 'elder', done: 'THE DEAD ARE LIT', reward: 'relic', relic: 'soles' },

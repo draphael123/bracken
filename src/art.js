@@ -271,7 +271,7 @@ export function bakeMidVillage(w, h, seed) {
 export function bakeNearVillage(w, h, seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
   const base = 120;
-  for (let x = 0; x < w; x++) rect(g, x, base + 34 + Math.round(2 * Math.sin(x / 14)), 1, h, '#2a2a34');   /* the garden wall */
+  for (let x = 0; x < w; x++) rect(g, x, base + 34 + Math.round(2 * Math.sin(x / 14)), 1, 26, '#2a2a34');   /* the garden wall: a BAND, not a fill to the bottom of the canvas - filled, it is a black slab across half the screen */
   for (let x = 0; x < w; x += 7) rect(g, x, base + 30 + Math.round(2 * Math.sin(x / 14)), 5, 4, '#343442');
   for (let i = 0; i < w / 80; i++) { const x = (rnd() * w) | 0;                                            /* lean-tos against it */
     const wd = 18 + ((rnd() * 14) | 0), ht = 16 + ((rnd() * 10) | 0);
