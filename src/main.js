@@ -1790,7 +1790,9 @@ function drawTree() {
     const ic = treeIcon(n); g.globalAlpha = lit ? 1 : st === 'level' || st === 'parent' ? 0.28 : 0.7; g.drawImage(ic, x - 6, ly + 3, 12, 12); g.globalAlpha = 1;
     for (let k = 0; k < n.max; k++) { const px = x - (n.max * 4 - 1) / 2 + k * 4; g.fillStyle = k < r ? (r >= n.max ? '#ffd36b' : '#8fd160') : '#3e3a4c'; g.fillRect(Math.round(px), ly + NS2 - 4, 3, 2); } // a pip for every point in it
     if (n.active) { g.fillStyle = lit && skillNow() === n.id ? '#ffd36b' : lit && skill2Now() === n.id ? '#8fd160' : 'rgba(60,56,76,0.9)';
-      g.fillRect(x + NS2 / 2 - 5, ly - 4, 10, 6); text(skillNow() === n.id && lit ? 'F' : skill2Now() === n.id && lit ? 'G' : '*', x + NS2 / 2, ly - 4, lit && (skillNow() === n.id || skill2Now() === n.id) ? '#1b1626' : UI.dim, 'center', 6); }
+      // IN THE CORNER OF THE NODE, NOT ABOVE IT. At ly-4 it sat in the row above's NAME, which is drawn under
+      // its own node - so every skill in the tree had a * lying across the name of the thing over it.
+      g.fillRect(x + NS2 / 2 - 7, ly + 1, 7, 6); text(skillNow() === n.id && lit ? 'F' : skill2Now() === n.id && lit ? 'G' : '*', x + NS2 / 2 - 3, ly + 1, lit && (skillNow() === n.id || skill2Now() === n.id) ? '#1b1626' : UI.dim, 'center', 6); }
     const nm = fitText(n.name, colW - 4, 6);
     text(nm, x, y + NS2 + 1, sel ? '#fff6e0' : st === 'max' ? UI.gold : lit ? UI.text : '#7a7a84', 'center', 6); }
   // FORGET ALL, and then what the chosen skill does
@@ -1808,8 +1810,8 @@ function drawTree() {
     const lines = wrap(cur.desc + (cur.active && cur.max > 1 ? '. every point past the first: a shorter wait and a harder blow' : ''), VW - 28, 6);
     lines.slice(0, 3).forEach((ln, k) => text(ln, 12, dy + 9 + k * 7, UI.dim, 'left', 6)); }
   { const act = cur && cur.active, on = act && tal(cur.id);
-    const line = on ? 'F PUTS IT ON F     G PUTS IT ON G     Q CLOSE' : act ? 'Z LEARN IT FIRST, THEN F OR G TO SET THE KEY     Q CLOSE' : 'ARROWS MOVE     Z LEARN     Q CLOSE';
-    text(line, VW / 2, VH - 9, on ? UI.sel : UI.dim, 'center', 6); }
+    const line = on ? 'F SETS IT ON F   G SETS IT ON G   Q CLOSE' : act ? 'Z LEARN IT, THEN F OR G FOR THE KEY   Q CLOSE' : 'ARROWS MOVE   Z LEARN   Q CLOSE';   /* the long one was 336px wide in a 320 view */
+    text(fitText(line, VW - 12, 6), VW / 2, VH - 9, on ? UI.sel : UI.dim, 'center', 6); }
 }
 function updateStore(dt) {
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold back: training and skills are learned in the talent trees now'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
@@ -1857,8 +1859,9 @@ function drawStore() {
   // where it has the room to be read. The old rows clipped every description at two short lines.
   const listX = x + 8, listW = w - 16 - 112, pvX = x + w - 108, pvY = y + 42, pvW = 100, pvH = h - 60;
   const ROWS = 8, ROWH = 13, off = Math.max(0, Math.min(Math.max(0, items.length - ROWS), storeI - ROWS + 2));
-  if (off > 0) text('^', listX + listW - 6, y + 42, UI.dim, 'center');
-  if (off + ROWS < items.length) text('v', listX + listW - 6, y + h - 20, UI.dim, 'center');
+  // the scroll marks go in the GUTTER left of the list, not over the first and last rows' prices
+  if (off > 0) text('^', listX - 5, y + 46, UI.dim, 'center', 6);
+  if (off + ROWS < items.length) text('v', listX - 5, y + h - 24, UI.dim, 'center', 6);
   if (!items.length) text('nothing here yet.', listX + listW / 2, y + 70, UI.dim, 'center');
   const iconOf = k => k.id === 'none' ? null
     : tab.key === 'skin' ? skinPreview(k).R.idle[0]
@@ -1884,13 +1887,17 @@ function drawStore() {
       rowName(bg); text(bg, listX + listW - 4, yy, ptsLeft(hero()) > 0 ? UI.gold : UI.sel, 'right', 6); return; }
     if (k.consumable) { const bg = (PROG.tonics || 0) + '/' + k.max + '  ' + k.price + ' GOLD';
       rowName(bg); text(bg, listX + listW - 4, yy, (PROG.tonics || 0) >= k.max ? UI.sel : PROG.coins >= k.price ? UI.gold : '#ff6b6b', 'right', 6); return; }
-    rowName(lockedOf(k) ? 'LOCKED' : eq ? 'EQUIPPED' : owned ? 'OWNED' : String(k.price || ''));   /* `locked` belongs to the preview card, not to this row */
-    if (tab.rank) { const rr = rankOf(k.id);
+    if (tab.rank) { const rr = rankOf(k.id); const bg = rr >= k.max ? 'PEAK' : k.prices[rr] + 'g';
+      rowName(bg + '     ');   /* the rank pips sit left of the price and want room too */
       for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(listX + listW - 46 - k.max * 5 + q * 5, yy + 1, 4, 4); }
-      text(rr >= k.max ? 'PEAK' : k.prices[rr] + 'g', listX + listW - 4, yy, rr >= k.max ? UI.sel : PROG.coins >= k.prices[rr] ? UI.gold : '#ff6b6b', 'right', 6); return; }
+      text(bg, listX + listW - 4, yy, rr >= k.max ? UI.sel : PROG.coins >= k.prices[rr] ? UI.gold : '#ff6b6b', 'right', 6); return; }
     const locked = lockedOf(k);
-    text(eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD'),
-      listX + listW - 4, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
+    // THE BADGE THE ROW ACTUALLY DRAWS, not an approximation of it. It was measured against `k.price` while
+    // the thing drawn was "60 GOLD", so the name was cut to leave room for two characters and then ran into
+    // seven - which is how THE ADVENTURE BEGINS ended up lying across its own price.
+    const bg = eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
+    rowName(bg);
+    text(bg, listX + listW - 4, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
   });
   // ---- the panel: what it looks like on you, what it costs, and the whole of what it does ----
   g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(pvX, pvY, pvW, pvH);
