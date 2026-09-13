@@ -390,6 +390,17 @@ function applySkin() { setHeroVoice(hero()); if (PROG.perHero) PROG.charm = (PRO
    const sk = skinById(PROG.skin); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : isPaladin() ? bakePaladin(PAL_SETS[sk.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[sk.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[sk.id] || {}) : bakeKnight(pal); }
 function applyUpgrades() { const lv = heroLevel(); P.maxHp = (isPyro() ? 80 : isPaladin() ? 120 : isPirate() ? 90 : isReaper() ? 95 : 100) + (PROG.items.heart ? 25 : 0) + 3 * lv + 8 * tal('ironhide') + 6 * tal('hearth') + 10 * tal('faithHp'); P.maxSt = 100 + (PROG.items.wind ? 30 : 0) + 5 * lv; } // the hero's level: +3 health and +5 stamina a wood (more would flatten the slope the tiers build)
 let statFlash = 0; // the HUD plate flashes when a rank lands
+// THE BEAM A ROPE IS TIED TO. 16x6: a squared timber with an iron ring under it and a lashing round the ring.
+function bakeRopeBeam() {
+  const [c, g2] = canvas(16, 6);
+  g2.fillStyle = '#3a2a1c'; g2.fillRect(0, 0, 16, 3);
+  g2.fillStyle = '#5a4632'; g2.fillRect(0, 0, 16, 1);
+  g2.fillStyle = '#241a10'; g2.fillRect(0, 2, 16, 1);
+  g2.fillStyle = '#6a7078'; g2.fillRect(7, 3, 2, 2); g2.fillRect(6, 4, 4, 1);
+  g2.fillStyle = '#3e444a'; g2.fillRect(7, 4, 1, 1);
+  g2.fillStyle = '#b8a888'; g2.fillRect(6, 5, 4, 1);
+  return c;
+}
 function bakeMotherIcon() {
   const [c, g] = canvas(44, 40);
   g.fillStyle = '#3a3444'; g.fillRect(17, 14, 10, 26); g.fillStyle = '#5a5468'; g.fillRect(17, 14, 2, 26); g.fillStyle = '#241f2c'; g.fillRect(25, 14, 2, 26);
@@ -630,7 +641,12 @@ function resolveTiles() {
     else if (t === T.SHELF) s = (L.palette && L.palette.set === 'ship' && FLOT) ? FLOT.rotTop[(rnd() * 3) | 0] : TILE.shelf[(rnd() * 2) | 0];
     else if (t === T.CRYST) s = TILE.cryst[litRow(y) ? 1 : 0][Math.max(0, Math.min(2, crackAt[y * LW + x] || 0))];
     else if (t === T.PLANK) { const l = tileAt(x - 1, y) === T.PLANK, r = tileAt(x + 1, y) === T.PLANK; s = !l ? TILE.plankL : !r ? TILE.plankR : TILE.plank[(rnd() * 2) | 0]; }
-    else if (t === T.NET) { const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET; let vr = 1, hr = 1; for (let k = 1; n(0, -k); k++) vr++; for (let k = 1; n(0, k); k++) vr++; for (let k = 1; n(-k, 0); k++) hr++; for (let k = 1; n(k, 0); k++) hr++; s = cityT ? CITY.chain[(x + y) % 2] : hr > vr ? TILE.ropeNet[(x + y) % 2] : (L.vines && L.vines.includes(x)) ? TILE.vine[y % 2] : TILE.ladder[n(1, 0) && !n(-1, 0) ? 'L' : n(-1, 0) && !n(1, 0) ? 'R' : 'S'][y % 2]; }
+    else if (t === T.NET) { const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET;
+      // A ROPE IS TIED TO SOMETHING. Where a run of rungs starts in open air - hung from a beam the tile map
+      // does not know about, or from a yard that is only decor - it read as a chain floating in the void. The
+      // head of every run now gets the thing it is tied to drawn across it: a beam, and a ring on the beam.
+      if (!n(0, -1) && !n(-1, 0) && !n(1, 0) && !isSolid(x, y - 1))
+        decor.push({ k: 'rock', bg: true, x: x * TS, y: y * TS - 5, c: PROP.ropeBeam || (PROP.ropeBeam = bakeRopeBeam()) }); let vr = 1, hr = 1; for (let k = 1; n(0, -k); k++) vr++; for (let k = 1; n(0, k); k++) vr++; for (let k = 1; n(-k, 0); k++) hr++; for (let k = 1; n(k, 0); k++) hr++; s = cityT ? CITY.chain[(x + y) % 2] : hr > vr ? TILE.ropeNet[(x + y) % 2] : (L.vines && L.vines.includes(x)) ? TILE.vine[y % 2] : TILE.ladder[n(1, 0) && !n(-1, 0) ? 'L' : n(-1, 0) && !n(1, 0) ? 'R' : 'S'][y % 2]; }
     else if (t === T.CLIMB) s = TILE.climb[(x + y) % 2];
     else if (t === T.ICE) s = TILE.ice || (TILE.ice = bakeIceTile());
     else if (t === T.WEB) s = TILE.web || (TILE.web = bakeWebTile());
@@ -1038,6 +1054,8 @@ function spawnEnt(e) {
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
       case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
+      // AN IRON BULKHEAD. e.span is [x0, x1, y0, y1] in tiles; nothing but a round shot moves it.
+      case 'bulkhead': props.push({ t: 'bulkhead', x: px, y: py, span: e.span, open: false, shake: 0, hit: 0 }); break;
       case 'plank': props.push({ t: 'plank', x: px, y: py, span: e.span, row: e.row, down: false }); break;
       case 'seabell': props.push({ t: 'seabell', x: px, y: py, swing: 0, cd: 0 }); break;
       case 'capstan': props.push({ t: 'capstan', x: px, y: py, spin: 0, turns: 0, link: e.link, done: false }); break;
@@ -3914,6 +3932,18 @@ function updateBalls(dt) {
       else if (e.maxHp) { b.dead = true; hurtEnemy(e, 45, b.x, false); }
       else { hurtEnemy(e, 999, b.x, false); b.through = (b.through || 0) + 1; if (b.through >= 6) b.dead = true; }
       burst(b.x, b.y, 12, ['#e8dcc0', '#9aa39a'], 90, 0.5); if (b.dead) break; }
+    // A ROUND SHOT AND AN IRON DOOR. This is checked before the wall test below, because the door IS wall.
+    for (const pr of props) { if (pr.t !== 'bulkhead' || pr.open || b.dead) continue;
+      const [sx0, sx1, sy0, sy1] = pr.span;
+      if (b.x < sx0 * TS - 4 || b.x > (sx1 + 1) * TS + 4 || b.y < sy0 * TS - 4 || b.y > (sy1 + 1) * TS + 4) continue;
+      b.dead = true; pr.open = true; pr.shake = 0.5;
+      for (let y = sy0; y <= sy1; y++) for (let x = sx0; x <= sx1; x++) { const i = y * LW + x;
+        if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i);
+          for (let q = 0; q < 2; q++) parts.push({ x: x * TS + 8, y: y * TS + 8, vx: Math.sign(b.vx) * (60 + Math.random() * 200), vy: -50 - Math.random() * 90, life: 1.1, max: 1.1, col: Math.random() < 0.5 ? '#6a7078' : '#3e444a', size: 2, grav: 300 }); } }
+      resolveTiles(); SFX.crack(); SFX.stone(); shakeCam(8); zoomKick(1.06, 0.25); rumble(200, 0.8);
+      number((sx0 + sx1) / 2 * TS, sy0 * TS - 10, 'THE BULKHEAD IS DOWN', '#8fd160');
+      burst(b.x, b.y, 20, ['#9aa39a', '#e8dcc0', '#6a7078'], 120, 0.7); }
+    if (b.dead) continue;
     if (b.t > 2 || isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { b.dead = true; burst(b.x, b.y, 8, ['#9aa39a', '#e8dcc0'], 70, 0.4); SFX.stone(); }
   }
   balls = balls.filter(b => !b.dead);
@@ -6775,6 +6805,12 @@ function updateCastleProps(dt, hb) {
           number(h[0] * TS, h[2] * TS - 10, 'HER SIDE IS OPEN', '#8fd160'); }
         for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - pr.x) < 40 && Math.abs(e.y - pr.y) < 30) { e.stagger = Math.max(e.stagger || 0, 1.2); } }
     }
+    if (pr.t === 'bulkhead') { pr.shake = Math.max(0, (pr.shake || 0) - dt); pr.hit = Math.max(0, (pr.hit || 0) - dt);
+      if (!pr.open && hb && overlap(hb, { l: pr.span[0] * TS - 4, r: (pr.span[1] + 1) * TS + 4, t: pr.span[2] * TS, b: (pr.span[3] + 1) * TS }) && !P.hitSet.has(pr)) {
+        P.hitSet.add(pr); pr.shake = 0.22; pr.hit = 0.7; SFX.clank(); sparks(P.x + P.face * 10, P.y - 10, P.face, 5);
+        if (!(pr.said > 0)) { pr.said = 4; number(pr.x, pr.y - 26, 'IRON', '#9aa39a');
+          hintT = 4; hintMsg = 'NO BLADE TOUCHES HER BULKHEADS. PUT A ROUND SHOT THROUGH ONE: STAND BEYOND A DECK GUN SO IT FIRES THE WAY YOU WANT, AND STRIKE THE BREECH.'; } }
+      pr.said = Math.max(0, (pr.said || 0) - dt); }
     if (pr.t === 'cannon' && pr.smoke > 0) pr.smoke -= dt;
     if (pr.t === 'plank' && !pr.down) { // THEIR BOARDING PLANK, stowed against the rail
       const struck = hb && overlap(hb, { l: pr.x - 8, r: pr.x + 8, t: pr.y - 26, b: pr.y }) && !P.hitSet.has(pr);
@@ -8720,6 +8756,19 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'door') { if (pr.kind === 'cottage') g.drawImage(PROP.cottage[pr.shut ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 32 - cy); else g.drawImage(PROP.door[pr.shut ? 1 : 0], Math.round(pr.x) - 17 - cx, Math.round(pr.y) - 34 - cy); }
     else if (pr.t === 'carpet') g.drawImage(PROP.carpet, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 3 - cy);
     else if (pr.t === 'keg') { if (pr.gone || !PROP.flot) continue; const c = PROP.flot.keg[pr.fuse > 0 ? 1 : 0]; g.drawImage(c, Math.round(pr.x - c.width / 2 - cx), Math.round(pr.y - c.height - cy)); }
+    else if (pr.t === 'bulkhead') { if (pr.open) continue;
+      const [sx0, sx1, sy0, sy1] = pr.span;
+      const jx = pr.shake > 0 ? Math.round((Math.random() - 0.5) * 3) : 0;
+      const x0 = sx0 * TS - cx + jx, y0 = sy0 * TS - cy, w = (sx1 - sx0 + 1) * TS, h = (sy1 - sy0 + 1) * TS;
+      if (x0 > VW || x0 + w < 0) continue;
+      g.fillStyle = '#2e343a'; g.fillRect(x0, y0, w, h);
+      g.fillStyle = '#3e464e'; for (let y = y0; y < y0 + h; y += 6) g.fillRect(x0, y, w, 4);
+      g.fillStyle = '#1a1e22'; for (let y = y0 + 5; y < y0 + h; y += 6) g.fillRect(x0, y, w, 1);
+      g.fillStyle = '#6a7078'; for (let y = y0 + 2; y < y0 + h; y += 6) for (let x = x0 + 2; x < x0 + w; x += 5) g.fillRect(x, y, 1, 1);
+      g.fillStyle = '#565e66'; g.fillRect(x0, y0 + Math.floor(h / 2) - 2, w, 4);
+      g.fillStyle = '#20262a'; g.fillRect(x0, y0 + Math.floor(h / 2) + 2, w, 1);
+      if (pr.hit > 0) { g.globalAlpha = pr.hit; g.fillStyle = '#e8dcc0'; g.fillRect(x0, y0 + Math.floor(h / 2) - 2, w, 4); g.globalAlpha = 1; }
+      continue; }
     else if (pr.t === 'cannon') { if (!PROP.flot) continue; const c = PROP.flot.cannon[pr.fired ? 1 : 0]; g.drawImage(c, Math.round(pr.x - 15 - cx), Math.round(pr.y - c.height - cy));
       if (pr.smoke > 0 && Math.random() < 0.5) parts.push({ x: pr.x + 18, y: pr.y - 10, vx: 40 + Math.random() * 60, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, col: '#9aa39a', size: 2, grav: -10 }); }
     else if (pr.t === 'plank') { if (!PROP.flot) continue; const c = PROP.flot.gangplank[pr.down ? 1 : 0];

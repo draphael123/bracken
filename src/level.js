@@ -2991,6 +2991,23 @@ function theHurricane() {
   ent('boarder', 322, 19, { face: -1 }); ent('cutlass', 316, 19, { face: -1 }); ent('bosun', 328, 19, { face: -1 });
   ent('check', 292, 19);
 
+  // ---- HER BULKHEADS: iron across the orlop, and only a round shot moves one ----
+  { const door = (x, gun, teach) => {
+      for (let y = 23; y <= 26; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); }
+      ent('bulkhead', x, 26, { span: [x, x + 1, 23, 26] });
+      ent('cannon', gun, 26, { deck: true });
+      if (teach) { ent('sign', teach, 26, { text: 'HER BULKHEADS ARE IRON AND YOUR BLADE IS NOT. THE GUNS ARE STILL LAID AND THERE IS STILL SHOT IN THE LOCKER: STAND SO THE GUN POINTS AT THE DOOR, AND STRIKE THE BREECH. SHE WILL NOT SPEAK AGAIN UNTIL SHE HAS COOLED.' }); }   /* the sign wants a deck under it */
+    };
+    door(372, 358, 353);                      // 1. the gun sits in front of the door: the verb, taught plainly
+    door(596, 612, null);                     // 2. the gun is BEYOND it - come at it from the far side
+    ent('sign', 586, 26, { text: 'THIS ONE IS TRAINED THE WRONG WAY. THE HATCH ABOVE HER GOES DOWN PAST THE DOOR.' });
+    for (let y = 20; y <= 22; y++) { set(604, y, T.AIR); set(605, y, T.AIR); }   // the hatch down past it
+    set(604, 22, T.PLANK); set(605, 22, T.PLANK);
+    door(208, 194, null);                     // 3. and one on the long dark run forward
+    ent('sign', 186, 26, { text: 'THE FORWARD MAGAZINE. THEY SHUT IT WHEN SHE STRUCK AND NOBODY HAS BEEN IN SINCE.' });
+    coins([374, 25], [376, 25], [598, 25], [600, 25], [210, 25], [212, 25]);
+  }
+
   // ================= 6. UNDER HER: the rent in her side, and the sea in the lightning =================
   // She is holed at the turn of the bilge. You go into the water and out under her keel, and the sky is looking
   // for the water the whole way: an air bell every so often, and a hatch aft to come up through.
