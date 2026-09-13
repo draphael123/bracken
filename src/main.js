@@ -78,7 +78,11 @@ const PROG = {}; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsg
 try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slot') || 0))); } catch {}
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
-function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.ranks = PROG.ranks || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow';
+function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
+  if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
+    const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
+    for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
+    if (PROG.charm) PROG.charmOf[h] = PROG.charm; } PROG.ranks = PROG.ranks || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow';
   { const OLD = { vigour: [40, 60, 90, 130, 180], breath: [40, 60, 90, 130, 180], recovery: [60, 100, 160], temper: [50, 80, 120, 170, 230], footing: [60, 100, 160] }; let back = 0; for (const id in OLD) for (let r = 0; r < (PROG.ranks[id] || 0); r++) back += OLD[id][r] || 0; if (back) { PROG.coins += back; PROG.ranks = {}; PROG.refundNote = back; } } // the training went: its gold comes back
   if (!PROG.skillRefund) { const OLD = { shieldThrow: 80, groundSlam: 90, fireWall: 80, cinderStep: 90, risingCut: 100, vent: 100, kindle: 90, wisp: 120 }; let back = 0; for (const id in OLD) if (PROG.items[id]) { back += OLD[id]; delete PROG.items[id]; } PROG.skillRefund = true; if (back) { PROG.coins += back; PROG.refundNote = (PROG.refundNote || 0) + back; } } // the skills left the store for the trees: their gold comes back
   PROG.talents = PROG.talents || {}; PROG.tonics = PROG.tonics || 0; }
@@ -338,7 +342,8 @@ const TREE = [];
   N('pirate', 1, 2, 2, 'twinSkill', 'BOTH HANDS FULL', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'looter');
   N('reaper', 1, 2, 2, 'twinSkill', 'BOTH HANDS', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'press'); }
 const TALENTS = [{ id: 'tree', name: 'THE TALENT TREES', desc: 'three trees of skills for this hero, and the skills on F and G among them. two points for every wood cleared the first time. Z to open' }];
-const heroLevel = () => LEVELS.filter(lv => !lv.hidden && PROG[lv.id] && PROG[lv.id].cleared).length;
+const heroLevel = h => Object.keys((PROG.done || {})[h || hero()] || {}).length;   /* the woods THIS hero has walked, not the woods the save has */
+const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
 let trialVerbs = false;   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
 const tal = id => { const m = PROG.talents && PROG.talents[hero()]; const v = m ? m[id] : 0; const n = v === true ? 1 : (v || 0);
@@ -351,6 +356,7 @@ const cdOf = k => (CD_MAX[k] || 3) * (1 - 0.15 * Math.max(0, tal(k) - 1)); // a 
 const amul = k => 1 + 0.25 * Math.max(0, tal(k) - 1); // and its blow deepens
 const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'SWORDS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'TALENTS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];
 let storeMode = 'buy', equipFrom = 'map';
+function setEquip(key, id) { PROG[key] = id; if (key === 'charm') { PROG.charmOf = PROG.charmOf || {}; PROG.charmOf[hero()] = id; } }   /* a charm is worn by a hero: the next hero starts bare */
 const EQUIP_TABS = STORE_TABS.filter(t => t.key || t.talent); // (talents can be learned from the map and the pause menu too)
 const storeTabs = () => storeMode === 'equip' ? EQUIP_TABS : STORE_TABS;
 const equipItems = tab => tab.talent ? tab.items : (tab.key === 'skill' || tab.key === 'charm' ? [{ id: 'none', name: 'NONE', desc: tab.key === 'skill' ? 'nothing on F' : 'nothing worn', price: 0 }] : []).concat(tab.items.filter(k => owns(tab, k.id)));
@@ -376,7 +382,8 @@ const PYRO_SETS = { dawn: { s: '#f0b0c0', S: '#a86070', b: '#8a4a5a', B: '#5a2a3
 const REAP_SETS = { black: { b: '#16141e', B: '#0c0b12' }, purple: { b: '#33254a', B: '#1c1430', y: '#c9a0ff' }, blue: { b: '#1e2c46', B: '#111a2c', y: '#7cc8c8' }, marsh: { b: '#27331f', B: '#151d11' }, rose: { b: '#3e2431', B: '#24141d', y: '#e0a0b8' }, crimson: { b: '#3a1820', B: '#200c11', y: '#ff6b6b' }, verdant: { b: '#1e3a26', B: '#102216' }, frost: { b: '#28384a', B: '#16202c', y: '#bfe6f5', r: '#eef4ff' }, shadow: { b: '#1e1a2c', B: '#100e18', y: '#9a5aa8' }, gilded: { b: '#3a2e16', B: '#1f180a', y: '#ffd36b', r: '#e0b040' }, iron: { b: '#2a2e34', B: '#171a1e' }, spore: { b: '#2e2e1c', B: '#1a1a0e', y: '#c9a0ff' }, silverknight: { b: '#3a4048', B: '#22262c', r: '#f4f8ff' }, dawn: { b: '#46303a', B: '#281a20', y: '#ffd36b' }, emberplate: { b: '#3a1c0e', B: '#200f06', y: '#ff9a5c' }, tide: { b: '#14343a', B: '#0a1e22', y: '#7cc8c8' } };
 const FREE_SETS = { black: { b: '#1e2028', B: '#101218', r: '#8a2a30' }, purple: { b: '#4a2a6a', B: '#2a1840' }, blue: { b: '#23508a', B: '#143056' }, marsh: { b: '#3a5a34', B: '#22381e' }, rose: { b: '#9a4a66', B: '#5e2a3e' }, crimson: { b: '#7a2028', B: '#4a1016' }, verdant: { b: '#2a6a3a', B: '#164024' }, frost: { b: '#4a6a8a', B: '#2a4058', s: '#eef4ff', r: '#7aa8c8' }, shadow: { b: '#2e2640', B: '#171226', r: '#6a4a9a' }, gilded: { b: '#6a5220', B: '#3e2e10', y: '#ffd36b', r: '#c9a040' }, iron: { b: '#3a424e', B: '#222830' }, spore: { b: '#4a4a2e', B: '#2c2c18', r: '#9a5aa8' }, silverknight: { b: '#5a6472', B: '#343c46', s: '#f4f8ff' }, dawn: { b: '#8a5a6a', B: '#503240', r: '#e0a0a8' }, emberplate: { b: '#6a3018', B: '#3e1a0c', r: '#e06a2c' }, tide: { b: '#1e5a5e', B: '#103438', r: '#7cc8c8' } };
 const PAL_SETS = { black: { s: '#6a6a76', S: '#3a3a44', b: '#2a2a34', B: '#15151c', r: '#c9463d', y: '#c9463d' }, purple: { b: '#6a3aa0', B: '#40206a' }, blue: { b: '#2f7fe0', B: '#1f4fa0' }, marsh: { b: '#5a7a3a', B: '#3a4e24', r: '#c9b27c', y: '#c9b27c' }, rose: { b: '#d0648a', B: '#8a3a5a' }, crimson: { b: '#a8323a', B: '#6a1c24' }, verdant: { b: '#3a8a4a', B: '#245a30' }, frost: { s: '#e8f2ff', S: '#9ab8d8', b: '#7a9ab8', B: '#4a6a88', r: '#bfe6f5', y: '#bfe6f5' }, shadow: { s: '#6a6078', S: '#3a3048', b: '#3a2f4a', B: '#1e1828', r: '#8a6ac0', y: '#8a6ac0' }, gilded: { s: '#ffe6a0', S: '#c9a040', b: '#d9a83a', B: '#8f6a1c' }, iron: { s: '#9aa3b0', S: '#5a6270', b: '#4a525e', B: '#2e343c' }, spore: { b: '#8a8a54', B: '#5a5a34', r: '#9a5aa8', y: '#9a5aa8' }, silverknight: { s: '#f4f8ff', S: '#aab6c8', b: '#c9d1dc', B: '#7c8797', r: '#dfe8ff', y: '#dfe8ff' }, dawn: { b: '#e8a0b0', B: '#a0606a' }, emberplate: { s: '#7a7070', S: '#4a4040', b: '#b8541c', B: '#7a3010' }, tide: { b: '#2a8a8a', B: '#1a5a5a', r: '#bfe6f5', y: '#bfe6f5' } };
-function applySkin() { setHeroVoice(hero()); const sk = skinById(PROG.skin); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : isPaladin() ? bakePaladin(PAL_SETS[sk.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[sk.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[sk.id] || {}) : bakeKnight(pal); }
+function applySkin() { setHeroVoice(hero()); if (PROG.perHero) PROG.charm = (PROG.charmOf || {})[hero()] || null;   /* the charm follows the hero, not the save (and never before the save has been migrated, or an old one loses it) */
+   const sk = skinById(PROG.skin); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : isPaladin() ? bakePaladin(PAL_SETS[sk.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[sk.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[sk.id] || {}) : bakeKnight(pal); }
 function applyUpgrades() { const lv = heroLevel(); P.maxHp = (isPyro() ? 80 : isPaladin() ? 120 : isPirate() ? 90 : isReaper() ? 95 : 100) + (PROG.items.heart ? 25 : 0) + 3 * lv + 8 * tal('ironhide') + 6 * tal('hearth') + 10 * tal('faithHp'); P.maxSt = 100 + (PROG.items.wind ? 30 : 0) + 5 * lv; } // the hero's level: +3 health and +5 stamina a wood (more would flatten the slope the tiers build)
 let statFlash = 0; // the HUD plate flashes when a rank lands
 function bakeMotherIcon() {
@@ -1255,11 +1262,13 @@ function startGame() {
 }
 let winLevelUp = false;
 function winLevel() {
-  winLevelUp = !((PROG[LEVELS[levelIndex].id] || {}).cleared) && !LEVELS[levelIndex].hidden;
+  PROG.done = PROG.done || {};
+  winLevelUp = !heroDone()[LEVELS[levelIndex].id] && !LEVELS[levelIndex].hidden;
   state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
   PROG[id] = { relic: p.relic, quest: p.quest, silver: p.silver, cleared: true, best: p.best ? Math.min(p.best, levelTime) : levelTime, gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths) };
   PROG.coins = (PROG.coins || 0) + got; earned = got;
+  if (!LEVELS[levelIndex].hidden) heroDone()[id] = 1;
   if (winLevelUp) { applyUpgrades(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
   PROG[id].medal = Math.max(p.medal || 0, medalFor(id, levelTime)); if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true;
   saveProgress();
@@ -1401,6 +1410,7 @@ function updateMap(dt) {
   { const [, py] = mapPos(); const want = Math.max(0, Math.min(MAPH - VH, py - VH * 0.55)); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
 }
 function drawMap() {
+  g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
   g.drawImage(MAPC, 0, 0);
   if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
@@ -1520,6 +1530,7 @@ function drawMap() {
   { const line = 'ARROWS MOVE   Z ENTER   X BEASTS   V EQUIP';
     g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
     text(line, VW / 2, VH - 8, UI.dim, 'center', 6); }
+  g.__world = false;
 }
 
 // ---------- store ----------
@@ -1766,13 +1777,14 @@ function updateStore(dt) {
     if (tab.talent) learnTalent(k);
     else if (k.consumable) { const n = PROG.tonics || 0; if (n >= k.max) { SFX.ui(); storeMsg = 'you carry all you can'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.price) { if (!godMode()) PROG.coins -= k.price; PROG.tonics = n + 1; saveProgress(); SFX.coin(); storeMsg = k.name + ' ' + (n + 1) + ' of ' + k.max; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; } }
     else if (tab.rank) { const r = rankOf(k.id); if (r >= k.max) { SFX.ui(); storeMsg = k.name + ' is at its peak'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.prices[r]) { if (!godMode()) PROG.coins -= k.prices[r]; PROG.ranks[k.id] = r + 1; applyUpgrades(); if (k.id === 'vigour') P.hp = Math.min(P.maxHp, P.hp + 10); if (k.id === 'breath') P.st = Math.min(P.maxSt, P.st + 10); saveProgress(); SFX.coin(); SFX.rankUp(); statFlash = 0.8; storeMsg = k.name + ' rank ' + (r + 1); storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#8fd160', '#fff6c8'], 60, 0.6, -20, 1); } else { SFX.buzz(); storeMsg = 'need ' + (k.prices[r] - PROG.coins) + ' more gold'; storeMsgT = 2; } }
-    else if (owned && tab.key) { PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
-      if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. HIS TRIAL IS IN THE PAUSE MENU: A PRACTICE YARD FOR EVERY VERB HE HAS.'; storeMsgT = 5; } }
+    else if (owned && tab.key) { setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
+      if (tab.key === 'hero' && heroLevel(k.id) === 0) { storeMsg = k.name + ' starts at nothing: no levels, no points, no charm. Walk a wood with him and he grows.'; storeMsgT = 5.5; }
+      else if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. HIS TRIAL IS IN THE PAUSE MENU: A PRACTICE YARD FOR EVERY VERB HE HAS.'; storeMsgT = 5; } }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) { SFX.buzz(); storeMsg = 'clear ' + k.needsName + ' first'; storeMsgT = 2; }
     else if (k.feat && !featDone(k.feat)) { SFX.buzz(); storeMsg = k.featName + ' to earn it'; storeMsgT = 2; }
-    else if (k.silver) { if (silverAvail() >= k.price) { PROG.silverSpent = (PROG.silverSpent || 0) + k.price; PROG[tab.owned][k.id] = true; PROG[tab.key] = k.id; applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); saveProgress(); SFX.coin(); SFX.sting(); SFX.medal(); storeMsg = 'bought ' + k.name; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - silverAvail()) + ' more silver'; storeMsgT = 2; } }
-    else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) PROG[tab.key] = k.id; if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
+    else if (k.silver) { if (silverAvail() >= k.price) { PROG.silverSpent = (PROG.silverSpent || 0) + k.price; PROG[tab.owned][k.id] = true; setEquip(tab.key, k.id); applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); saveProgress(); SFX.coin(); SFX.sting(); SFX.medal(); storeMsg = 'bought ' + k.name; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - silverAvail()) + ' more silver'; storeMsgT = 2; } }
+    else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
     else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; }
   }
   if (pausePress) { if (storeMode === 'equip') { storeMode = 'buy'; state = equipFrom === 'map' ? 'map' : 'menu'; SFX.ui(); } else if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
@@ -1860,6 +1872,7 @@ function drawStore() {
       const owned = tab.rank ? rankOf(k.id) >= k.max : (k.id === 'none' || owns(tab, k.id));
       const eq = tab.key && PROG[tab.key] === k.id;
       const cost = tab.talent ? 'LEVEL ' + heroLevel() + '  ' + ptsLeft(hero()) + ' POINTS' : k.consumable ? (PROG.tonics || 0) + ' OF ' + k.max + ' CARRIED' : tab.rank ? (rankOf(k.id) >= k.max ? 'AT ITS PEAK' : k.prices[rankOf(k.id)] + ' GOLD')
+        : tab.key === 'hero' && (eq || owned) ? (eq ? 'EQUIPPED  L' : 'OWNED  L') + heroLevel(k.id)   /* a hero carries his own level now: the card has to say which */
         : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
       text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
       const body = locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');

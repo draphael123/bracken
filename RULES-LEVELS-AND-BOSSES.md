@@ -261,6 +261,21 @@ it dies three times in the same place it NOTES THE PLACE, lifts itself over it a
 ends with every corner a plain run cannot get past instead of only the first one. That is the pass that sees
 BALANCE: hits taken, deaths, how far it got, and where it stopped.
 
+*THE SCREENS* pass walks every menu in the game - title, slots, hero pick, map, store, equip, tree, bestiary,
+controls, sound test, practice, pause, win, game over, rush over, rush win, hero card - draws each one until
+everything has finished sliding in, and measures every string on it. **This is the guard against the oldest
+bug in this project: a plate laid out against 400 pixels when the buffer is 320.** It also catches a screen
+that throws, which is worse and much easier to miss. Note that `BK.step(n)` is n updates and ONE draw, and a
+panel that slides in is animated against the number of DRAWS it has had - so the pass draws fifteen times and
+only then judges what is on the screen.
+
+**There is no sprite-clipping check, and there should not be one.** It was tried: every sprite here is
+tight-cropped to its widest pose, so the widest pose touches its own border BY DESIGN. "Touches the edge" gave
+300 findings; "touches an edge where its brothers have margin" gave 140, all of them lunges and overheads
+using a canvas sized for exactly that. Once the pixels are baked, a frame that was cut and a frame that
+exactly fits are the same picture. If it needs solving it has to be solved at BAKE time - `knightFrame()`
+reporting the extent it drew to, and the bake asserting it fits.
+
 **The findings, and what each one means.**
 
 | kind | severity | what it is |
@@ -274,7 +289,7 @@ BALANCE: hits taken, deaths, how far it got, and where it stopped.
 | `TEXTCUT` | odd | a UI string drawn outside the 320-wide buffer |
 | `FLOAT` | odd | furniture standing on nothing |
 | `DOUBLE` | odd | two creatures on the same tile |
-| `SLOW` | odd | the worst frame in the level cost more than 18ms |
+| `SLOW` | odd | nine frames in ten cost more than 16ms (a p90, not a worst case: wall-clock on a shared machine picks up whatever else the computer was doing) |
 | `DARK` | odd | more than half the sweep frames were nearly black |
 | `LONGGAP` | odd | more than 150 columns with no checkpoint |
 | `THIN` | odd | fewer than three kinds of creature in the whole level |
@@ -283,10 +298,13 @@ BALANCE: hits taken, deaths, how far it got, and where it stopped.
 | `ASSISTED` | note | outside the reach fill on a level with movers, gusts or doors: may be a ride away |
 | `UNWEIGHED` | note | an entity type with no threat weight, so the balance figures do not count it |
 
-**Keeping it honest.** Two sets in `playtest.js` hold the things that LOOK wrong and are not: `INROCK_OK`
-(a gunport is a hole in a hull, a window is a hole in a house) and `INROCK_FOE` (an urchin lives in the sea
-bed, a grub lives in the rock). A silver is a collectable and hangs in the air on purpose, so it is not
-furniture. Add to those sets rather than ignoring a finding — an ignored finding comes back every run.
+**Keeping it honest.** Three lists in `playtest.js` hold the things that LOOK wrong and are not: `INROCK_OK`
+(a gunport is a hole in a hull, a window is a hole in a house), `INROCK_FOE` (an urchin lives in the sea bed,
+a grub lives in the rock) and `NOT_A_FOE` (the furniture and machinery, which weighs nothing). A silver is a
+collectable and hangs in the air on purpose, so it is not furniture. World-space text is exempt from the
+overflow check because `drawWorld` and `drawMap` set `g.__world` — a damage number over a creature at the edge
+of the view is not a bug. Add to those lists rather than ignoring a finding — an ignored finding comes back
+every run, and a report nobody trusts is a report nobody reads.
 
 **When to run it.** Before every deploy that touched a level, a creature or the draw. It takes about a minute
 for the whole campaign. If the BUGS column is not empty, do not ship.

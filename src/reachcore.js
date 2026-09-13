@@ -88,6 +88,13 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       if (dx && (wall(at(x + dx, y)) || !across(x, dx, y, y))) continue; // walk off the edge: nothing in the way, and not into a wall
       while (ny < H - 1 && !footing.has(key(x + dx, ny)) && !wall(at(x + dx, ny))) ny++;
       if (footing.has(key(x + dx, ny))) push(x + dx, ny); }
+    // DOWN ON A LEDGE FALLS THROUGH IT. The model had no drop-through at all, so a room whose only door is
+    // the planking in its ceiling read as sealed - which is how a silver in Kingswood spent months being
+    // reported unreachable when you get in by pressing down on the boards over it.
+    { const u = at(x, y + 1);
+      if (u === T.ONEWAY || u === T.PLANK || u === T.SHELF || u === T.REED) { let ny = y + 2;
+        while (ny < H - 1 && !footing.has(key(x, ny)) && !wall(at(x, ny))) ny++;
+        if (footing.has(key(x, ny))) push(x, ny); } }
     // crystal gives way under you, so a crystal floor is also a way DOWN (the Sunspire's geodes)
     if (at(x, y + 1) === T.CRYST) { let ny = y + 1;
       while (ny < H - 1 && !footing.has(key(x, ny))) ny++;

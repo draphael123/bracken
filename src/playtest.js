@@ -42,6 +42,8 @@ const THREAT = {
   miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3,
 };
 // props that hang on purpose: a banner is meant to be in the air
+// the furniture, the scenery and the machinery: none of it is a creature and none of it weighs anything
+const NOT_A_FOE = /^(coin|sign|deco|npc|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2)$/;
 const HANGS = new Set(['banner', 'axle', 'timber', 'pillar', 'strut', 'sailRag', 'rigging', 'pennant', 'gunport',
   'hallWindow', 'hammock', 'washing', 'boardingNet', 'sternWindows', 'crowNest', 'mastTall', 'buoy',
   'lanternBuoy', 'airBell', 'hangCage', 'cobweb', 'bough', 'drip', 'hiveBg', 'eyrie', 'spire', 'rootDecor']);
@@ -161,6 +163,47 @@ export function makeBot(BK) {
   };
 }
 
+// ---------------------------------------------------------------- the screens
+// EVERY SCREEN IN THE GAME, DRAWN AND MEASURED. The buffer is 320 wide on the close camera and every menu
+// overflow this game has ever shipped came from somebody laying a plate out against 400. This walks the lot,
+// renders each one, and the fillText instrument catches anything that leaves the frame. It also catches a
+// screen that throws, which is worse and harder to notice.
+const SCREENS = ['title', 'slots', 'heropick', 'map', 'store', 'equip', 'tree', 'bestiary', 'controls',
+  'soundtest', 'practice', 'menu', 'win', 'gameover', 'rushover', 'rushwin', 'herocard'];
+async function sweepScreens(BK, inst, F) {
+  const was = BK.state;
+  for (const st of SCREENS) {
+    try {
+      BK.state = st;
+      // BK.step(n) is n updates and ONE draw, and a panel that slides in is animated against the number of
+      // DRAWS it has had, not the clock. So: draw it fifteen times over a second and a half, and only judge
+      // what is on the screen once everything has finished arriving.
+      for (let i = 0; i < 15; i++) BK.step(6);
+      inst.drain();
+      for (let i = 0; i < 3; i++) BK.step(2);
+      const fs = frameStats(BK);
+      if (fs && (fs.colours < 4 || fs.flat > 0.99)) F('BLANK', SEV.bug, 'the ' + st + ' screen came back empty');
+    } catch (e) { F('CRASH', SEV.bug, 'the ' + st + ' screen threw: ' + (e && e.message)); }
+    const d = inst.drain();
+    for (const m of d.errs) F('CRASH', SEV.bug, st + ': ' + m);
+    for (const m of d.nans) F('NAN', SEV.bug, st + ': ' + m);
+    for (const m of d.cut) F('TEXTCUT', SEV.odd, st + ': ' + m);
+    await frame();
+  }
+  BK.state = was;
+}
+
+// ---------------------------------------------------------------- the art (and why there is no art check)
+// THERE WAS A SPRITE-CLIPPING CHECK HERE AND IT DID NOT WORK. The idea was sound - the paladin's maul head
+// was drawn off the side of every heavy frame for a week - but every sprite in this game is tight-cropped to
+// its widest pose, so the widest pose TOUCHES THE BORDER BY DESIGN. Flagging "touches its own edge" gave 300
+// findings and no signal; flagging "touches an edge where its brothers have margin" gave 140, and all of them
+// were lunges and overheads reaching the full width of a canvas that was sized for exactly that. Once the
+// pixels are baked, a frame that was cut and a frame that exactly fits are the same picture.
+//
+// If this needs solving, it has to be solved AT BAKE TIME: knightFrame() and friends would have to report the
+// extent they drew to, and the bake asserts it fits. Do not put a pixel-reading version back here.
+
 // ---------------------------------------------------------------- the run
 export async function run(BK, opts = {}) {
   const t00 = performance.now();
@@ -222,7 +265,7 @@ export async function run(BK, opts = {}) {
     // the shape of the fight, so balance is in the same report as everything else
     { let foes = 0, threat = 0, checks = 0; const kinds = new Set();
       for (const e of (built.ents || [])) { if (e.t === 'check') { checks++; continue; }
-        const w = THREAT[e.t]; if (w === undefined) { if (!/^(coin|sign|deco|npc|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy)$/.test(e.t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + e.t + '"'); continue; }
+        const w = THREAT[e.t]; if (w === undefined) { if (!NOT_A_FOE.test(e.t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + e.t + '"'); continue; }
         if (w > 0) { foes++; threat += w * (e.mini ? 2 : 1); kinds.add(e.t); } }
       const span = W + Math.max(0, H - 30) * 3;
       const cx = (built.ents || []).filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b);
@@ -236,7 +279,7 @@ export async function run(BK, opts = {}) {
     // ---- 2. the sweep: look at every part of it, on the real loop, with the real art ----
     if (mode !== 'play') {
       inst.drain();
-      let blanks = 0, dark = 0, frames = 0, worstMs = 0, stuckIn = 0;
+      let blanks = 0, dark = 0, frames = 0, stuckIn = 0; const ms = [];
       try {
         BK.load(i); BK.state = 'play'; BK.start(); BK.god = true; BK.reset();
         const L = BK.L;
@@ -250,7 +293,7 @@ export async function run(BK, opts = {}) {
           BK.tp(sx, sy); BK.P.hp = BK.P.maxHp; BK.P.dead = 0;
           const t0 = performance.now();
           BK.step(sweepSteps);
-          worstMs = Math.max(worstMs, (performance.now() - t0) / sweepSteps);
+          ms.push((performance.now() - t0) / sweepSteps);
           frames++;
           const fs = frameStats(BK);
           if (fs) { if (fs.colours < 4 || fs.flat > 0.985) blanks++; if (fs.lum < 6) dark++; }
@@ -266,8 +309,13 @@ export async function run(BK, opts = {}) {
       if (blanks) F('BLANK', SEV.bug, blanks + ' of ' + frames + ' sweep frames had nothing on them');
       if (dark > frames * 0.5 && frames > 3) F('DARK', SEV.odd, dark + ' of ' + frames + ' sweep frames were nearly black');
       if (stuckIn > frames * 0.25) F('INROCK', SEV.odd, 'the bot stood inside rock at ' + stuckIn + ' of ' + frames + ' stops');
-      if (worstMs > 18) F('SLOW', SEV.odd, 'the worst frame cost ' + worstMs.toFixed(1) + 'ms');
-      row.stats.worstMs = +worstMs.toFixed(1);
+      // THE NINETIETH PERCENTILE, NOT THE WORST. Wall-clock on a shared machine picks up whatever else the
+      // computer was doing, and one 400ms stall from somebody else's build is not a slow level.
+      ms.sort((a, b) => a - b);
+      const p90 = ms.length ? ms[Math.min(ms.length - 1, Math.floor(ms.length * 0.9))] : 0;
+      const med = ms.length ? ms[Math.floor(ms.length / 2)] : 0;
+      if (p90 > 16) F('SLOW', SEV.odd, 'nine frames in ten cost over ' + p90.toFixed(1) + 'ms (median ' + med.toFixed(1) + ')');
+      row.stats.ms90 = +p90.toFixed(1);
       const d = inst.drain();
       for (const m of d.errs) F('CRASH', SEV.bug, m);
       for (const m of d.nans) F('NAN', SEV.bug, m);
@@ -344,7 +392,15 @@ export async function run(BK, opts = {}) {
     await frame();
   }
 
-  // ---- 4. is the ramp a ramp? ----
+  // ---- 4. every screen in the game, and the art itself ----
+  if (mode !== 'play') {
+    const F = (kind, sev, msg, where) => { add('(screens)', kind, sev, msg, where); };
+    inst.drain();
+    await sweepScreens(BK, inst, F);
+    log('  screens swept');
+  }
+
+  // ---- 5. is the ramp a ramp? ----
   { const ix = report.levels.filter(r => r.stats.thr100 !== undefined)
       .map(r => ({ id: r.id, v: Math.round(r.stats.thr100 * 2 + r.stats.kinds * 3 + r.stats.worstGap / 20) }));
     for (let k = 1; k < ix.length; k++) { const d = ix[k].v - ix[k - 1].v;
@@ -375,9 +431,9 @@ function format(r) {
   out.push('BRACKEN PLAYTEST   ' + r.levels.length + ' levels   ' + (r.ms / 1000).toFixed(1) + 's');
   out.push('  ' + bug.length + ' bug   ' + odd.length + ' odd   ' + note.length + ' note');
   out.push('');
-  out.push(pad('level', 12) + pad('size', 9) + pad('reach', 7) + pad('foes', 6) + pad('kinds', 7) + pad('thr/100', 9) + pad('gap', 6) + pad('walked', 8) + pad('deaths', 8) + 'worst ms');
+  out.push(pad('level', 12) + pad('size', 9) + pad('reach', 7) + pad('foes', 6) + pad('kinds', 7) + pad('thr/100', 9) + pad('gap', 6) + pad('walked', 8) + pad('deaths', 8) + 'ms p90');
   for (const l of r.levels) { const s = l.stats;
-    out.push(pad(l.id, 12) + pad(s.size || '', 9) + pad(s.reached || '', 7) + pad(s.foes ?? '', 6) + pad(s.kinds ?? '', 7) + pad(s.thr100 ?? '', 9) + pad(s.worstGap ?? '', 6) + pad(s.walked || '', 8) + pad(s.deaths ?? '', 8) + (s.worstMs ?? '')); }
+    out.push(pad(l.id, 12) + pad(s.size || '', 9) + pad(s.reached || '', 7) + pad(s.foes ?? '', 6) + pad(s.kinds ?? '', 7) + pad(s.thr100 ?? '', 9) + pad(s.worstGap ?? '', 6) + pad(s.walked || '', 8) + pad(s.deaths ?? '', 8) + (s.ms90 ?? '')); }
   for (const [name, list] of [['BUGS', bug], ['ODD', odd], ['NOTES', note]]) {
     if (!list.length) continue;
     out.push(''); out.push('== ' + name + ' ==');
