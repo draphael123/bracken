@@ -422,3 +422,31 @@ Ram Lord's mount, and scoring it at 4 made Kingswood read eight points harder th
 **And the campaign is ACTS, not a line.** Each one opens a little under the last one's
 peak and ends above it; that small step down at a boundary is pacing. The rule is there to
 catch a COLLAPSE and a WALL, not a breath.
+
+## M. THE BOT CAN PLAY NOW — WHAT IT KNOWS AND WHAT IT STILL DOES NOT
+
+It could only WALK, which is why it reported 16% of Bracken Wood and 7% of the Marsh and
+called half the campaign BRUTAL. Those were never findings about the levels; they were the
+shape of the bot. It now knows five more things:
+
+- **A MOVER IS FOOTING.** Rafts, pads, lifts, carts, sails and the Undercrown's beam are
+  the floor; they are just not tiles. Asking only the tile grid made the whole marsh
+  crossing read as a twenty-tile hole.
+- **A MOVER'S EDGE IS A GAP, NOT A PLACE TO STAND STILL.** The first riding rule only knew
+  how to stop, so it stood politely on a sinking lily pad until it went under.
+- **THE JUMP IS SIZED TO THE GAP.** A full 26-frame hold clears six tiles. For a two-tile
+  hop it is a way of landing somewhere else.
+- **IT POGOS.** A creature under you while you are falling is a STEP, not a threat.
+- **IT OPENS DOORS, GOES FOR THE KEY FIRST, AND WALKS BACK FOR ONE.** A shut gate in front
+  of it is not "stuck", it is an instruction.
+
+**It still cannot fight.** It swings at whatever is in arm's reach and nothing else - no
+blocking, no dodging a tell, no reading a boss. So `BRUTAL` and a low `walked` on a
+combat-dense level is still the bot, not the level. What the run genuinely proves is that
+nothing crashes, nothing spawns in rock, nothing floats, nothing is unreachable, and the
+geometry holds. **It does not prove a level is completable.** Drive it by hand for that.
+
+And when the bot goes BACKWARDS on purpose - forty tiles to a door to fetch the key for the
+gate in front of it - `maxX` stops rising and it looks exactly like being stuck. A level
+with a door or a gate in it is judged on whether it ever got INDOORS, never on how far
+right it walked.

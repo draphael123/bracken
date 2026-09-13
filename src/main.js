@@ -1564,10 +1564,10 @@ const nodeSecret = nd => nd.kind === 'level' && !!LEVELS[nd.level].hidden && nod
 // because that is how it is stored and how it survives the garrison being retuned under it.
 function secretWants(lv) {
   if (lv.needsTime) { const p = PROG[lv.needsTime.id] || {}, nm = (LEVELS.find(q => q.id === lv.needsTime.id) || {}).name || '';
-    return 'WALK ' + nm + ' IN ' + fmt(lv.needsTime.t) + (p.best !== undefined ? '  (BEST ' + fmt(p.best) + ')' : ''); }
+    return ['WALK ' + nm + ' IN ' + fmt(lv.needsTime.t), p.best !== undefined ? 'YOUR BEST IS ' + fmt(p.best) : 'YOU HAVE NOT WALKED IT YET']; }
   if (lv.needsKills) { const nm = (LEVELS.find(q => q.id === lv.needsKills.id) || {}).name || '';
-    return 'PUT DOWN ' + Math.round(lv.needsKills.pct * 100) + '% OF ' + nm + '  (BEST ' + Math.round(killPct(lv) * 100) + '%)'; }
-  return 'SOMETHING IS STILL OWED';
+    return ['PUT DOWN ' + Math.round(lv.needsKills.pct * 100) + '% OF ' + nm, 'YOU HAVE PUT DOWN ' + Math.round(killPct(lv) * 100) + '%']; }
+  return ['SOMETHING IS STILL OWED', ''];
 }
 function mapGo(dir) {
   if (map.walking) return;
@@ -1644,7 +1644,7 @@ function drawMap() {
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
-    const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : LEVELS[nd.level].name;
+    const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : LEVELS[nd.level].name;
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     const twoLine = !!p && !lk;
     const tw = Math.max(lbl.length * 6 + 10, twoLine ? 44 : 0), th = twoLine ? 17 : 10;
@@ -1689,16 +1689,17 @@ function drawMap() {
     const onRight = nd.x < VW / 2;                                   // the card goes to the far side of the node
     const cx0 = onRight ? VW - cw - 6 : 6, low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 21 : VH - 12 - ch;
     panel(cx0, cy0, cw, ch, UI.sel);
-    text(fitText(nd.name, cw - 52, 8), cx0 + 8, cy0 + 5, UI.title);
+    { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
+      text(fitText(secret ? '? ? ?' : nd.name, cw - 52, 8), cx0 + 8, cy0 + 5, UI.title); }
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
       if (lv.secret && nodeLocked(nd)) {
         /* A SECRET STILL OWED: its name is not yours yet, but its price is. */
-        text('? ? ?', cx0 + 8, cy0 + 5, UI.title);
+        const [asks, yours] = secretWants(lv);
         text('SOMETHING IS DOWN THERE', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
-        text(fitText(secretWants(lv), cw - 16, 6), cx0 + 8, cy0 + 28, UI.gold, 'left', 6);
-        text('AND IT IS NOT OPEN YET', cx0 + 8, cy0 + 40, UI.dim, 'left', 6);
+        text(fitText(asks, cw - 16, 6), cx0 + 8, cy0 + 29, UI.gold, 'left', 6);
+        text(fitText(yours, cw - 16, 6), cx0 + 8, cy0 + 41, UI.dim, 'left', 6);
       } else {
       const hasRun = p.best !== undefined && p.best !== null && !Number.isNaN(p.best);
       // top right: how hard this wood is meant to be
