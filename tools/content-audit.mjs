@@ -8,7 +8,9 @@ import { LEVELS } from '../src/level.js';
 
 const main = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const list = (re, n = 1) => { const out = new Set(); let m; while ((m = re.exec(main))) out.add(m[n]); return out; };
-const table = name => { const m = main.match(new RegExp('const ' + name + ' = \\{([^\\n]*)')); if (!m) return new Set();
+// THE WHOLE TABLE, NOT ITS FIRST LINE. This read to the end of the line, so the moment EHP or COLS grew
+// past one line every name after the wrap went invisible and the tool called forty creatures healthless.
+const table = name => { const m = main.match(new RegExp('const ' + name + ' = \\{([\\s\\S]*?)\\};')); if (!m) return new Set();
   return new Set([...m[1].matchAll(/(?:^\s*|[{,]\s*)'?([A-Za-z_][A-Za-z0-9_]*)'?\s*:/g)].map(x => x[1])); };
 
 const spawnCases = list(/case '(\w+)':/g);

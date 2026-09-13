@@ -35,7 +35,7 @@ for (const lv of LEVELS) {
   const span = spanOf(cols, R.H);
   const per100 = threat / (span / 100);
   const index = indexOf({ threat, kinds: kinds.size, hazTiles, gap, span });
-  rows.push({ id: lv.id, cols: span, foes, threat: Math.round(threat), kinds: kinds.size, per100: +per100.toFixed(1), haz: hazTiles, checks, gap, index });
+  rows.push({ id: lv.id, arc: lv.arc || null, cols: span, foes, threat: Math.round(threat), kinds: kinds.size, per100: +per100.toFixed(1), haz: hazTiles, checks, gap, index });
 }
 
 const pad = (s, n) => String(s).padEnd(n);
@@ -54,6 +54,10 @@ console.log('');
 let bad = 0;
 for (let i = 1; i < rows.length; i++) {
   const d = rows[i].index - rows[i - 1].index;
+  // A NEW ARC IS ALLOWED TO BREATHE. The ramp was one line because the game was one road; a campaign of
+  // fifty levels is four or five roads, and the first level of a new one being quieter than the last boss
+  // of the old one is the breath between chapters, not a mistake. Inside an arc the rule is unchanged.
+  if (rows[i].arc) { console.log(`  ${rows[i].id} opens ${rows[i].arc.toUpperCase()} at ${rows[i].index} (${rows[i - 1].id} closed the last one at ${rows[i - 1].index})`); continue; }
   if (d < RAMP_DROP) { console.log(`  ${rows[i].id} is ${-d} EASIER than ${rows[i - 1].id} before it`); bad++; }
   if (d > RAMP_WALL) { console.log(`  ${rows[i].id} is ${d} harder than ${rows[i - 1].id} before it - a wall`); bad++; }
 }

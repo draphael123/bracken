@@ -1889,3 +1889,23 @@ export function bakeNearBlades(seed, col, dark, tall) {
   }
   return c;
 }
+
+// THE SIGN OF THE BROKEN LANCE. A town with one road through it says what it is by what is hanging over
+// the road: a wrought bracket off the gable, two rings, and a painted board with the house's device on
+// it - here a lance, snapped, which is a joke the men drinking under it have all heard.
+export function bakeInnSign() {
+  const [c, g] = canvas(22, 20);
+  rect(g, 0, 0, 3, 2, '#3a3e48');                                  /* into the wall */
+  rect(g, 2, 1, 12, 1, '#4a4f5a'); rect(g, 2, 0, 12, 1, '#6a727e'); /* the bracket */
+  for (let i = 3; i < 11; i += 3) rect(g, i, 2, 1, 2, '#3a3e48');  /* its scrollwork */
+  rect(g, 4, 2, 1, 4, '#6a727e'); rect(g, 12, 2, 1, 4, '#6a727e'); /* the two rings */
+  rect(g, 2, 6, 13, 12, '#3a2a1c');                                /* the board */
+  rect(g, 3, 7, 11, 10, '#6b4a2a');
+  rect(g, 3, 7, 11, 1, '#8a6038'); rect(g, 3, 16, 11, 1, '#2a1c12');
+  /* the device: a lance, snapped, and a bend of colour behind it */
+  rect(g, 4, 9, 9, 2, '#9a3a3a');
+  for (let k = 0; k < 4; k++) px(g, 4 + k, 13 - k, '#e8dcc0');
+  for (let k = 0; k < 4; k++) px(g, 9 + k, 12 - k, '#e8dcc0');
+  px(g, 8, 10, '#c9d1dc'); px(g, 9, 9, '#c9d1dc');
+  return outline(c, OUT);
+}

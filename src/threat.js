@@ -29,6 +29,11 @@ export const THREAT = {
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
   propman: 2.5, clinger: 2, pitwarden: 0, minerlamp: 0, timber: 0, gas: 0,
   prise: 3, holdfast: 2.5, drownedking: 0, ballast: 0,
+  /* THE ROAD PEOPLE, weighed against the men already in the table: a soldier is 34 health and a 14 point
+     swing and he is a 3, so a sworn sword at 44 and 18 is more than that; a heavy knight is 120 and an
+     unblockable overhead at 4, and a hedge knight is 92 with an unblockable leap. And the runner is
+     worth more than the hurt he does, because what he costs you is everybody else. */
+  swornsword: 3.5, hedgeknight: 4.5, runner: 1.5, crossbow: 3, closedhelm: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

@@ -4310,6 +4310,213 @@ function theLamplitStreet() {
   };
 }
 
+
+
+// ============================================================================================
+// LEVEL 20 - WAYMEET. You came up out of the sea and the sea went back with you, and nobody inland knows
+// why. Three roads meet here, so everything going anywhere goes through it: an inn worth the name, a smith
+// who never sits down, a stable yard full of other people's horses, and sworn swords off the road waiting
+// for weather and waiting for work. The work is you. Somebody has put it about that the man who was at
+// Highcrown when it fell should answer for it, and has hung a purse on it - so the innkeeper still serves,
+// the smith still works, the crier still cries, and every blade in the common room has just looked up.
+// ITS OWN RULE: holding the shield is not the answer to a man who fights the way you do. The PARRY is -
+// the guard raised as the blow lands, six frames - and the town teaches it on slower and slower men until
+// the last one, who cannot be hurt any other way at all.
+//
+// THE HEIGHTS, because a town is the first level in this game built mostly upward off one street:
+//   36  the road          35  what you stand on
+//   33  the awnings over the stalls (a jump clears three rows, so this is the first step up)
+//   29  the roofs, and the men on them: a ladder from the street, or two hops off an awning
+//   0-24 the insides. The camera never shows one of them from the street.
+function waymeet() {
+  const W = 560, H = 46, R = 36;
+  const L = painter(W, H);
+  const { block, floor, plat, ent, coins, set, spikes } = L;
+  const movers = [], interiors = [], roofs = [], pools = [];
+  block(0, W - 1, 0, 24);
+  const room = (x0, x1, y0, y1, st = 'timber') => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); interiors.push([x0, x1, y0, y1, st]); };
+  /* A HOUSE IS ITS ROOF and the street runs on underneath it, because a building that blocks the road is a
+     wall and this town has one road. Three courses: the tile you walk on and the two under it. */
+  const tiles = (x0, x1, y) => { for (let x = x0; x <= x1; x++) { set(x, y, T.SOLID); set(x, y + 1, T.SOLID); set(x, y + 2, T.SOLID); } roofs.push([x0, x1, y]); };
+  const awning = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
+  const board = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
+  /* EVERY LADDER RUNS TO THE STREET. One that stops under the thing it serves is a ladder into a ceiling. */
+  const ladder = (x, top) => { for (let y = top; y <= R - 1; y++) set(x, y, T.NET); };
+  const stair = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
+  const post = (x) => ent('deco', x, R - 1, { kind: 'lanternPost' });
+  const sign = (x, text) => ent('sign', x, R - 1, { text });
+
+  // ---------------- 1. THE WEST ROAD (x 0-84). The milestone, the gate, and the notice. ----------------
+  floor(0, 84, R);
+  sign(4, 'WAYMEET. THREE ROADS MEET HERE SO EVERYTHING GOING ANYWHERE COMES THROUGH IT, WHICH IS WHY THERE IS AN INN WORTH THE NAME AND WHY THERE ARE MEN IN IT WITH NOTHING TO DO. THE SEA WENT BACK. NOBODY HERE KNOWS THAT AND NOBODY HERE WOULD BELIEVE IT OF YOU.');
+  ent('check', 8, R - 1);
+  ent('deco', 12, R - 1, { kind: 'cairn' }); ent('deco', 6, R - 1, { kind: 'fence', v: 0 });
+  ent('npc', 16, R - 1, { kind: 'shepherd' }); ent('dog', 20, R - 1); ent('deco', 24, R - 1, { kind: 'fence', v: 1 });
+  coins([10, R - 2], [14, R - 2], [18, R - 2], [22, R - 2], [28, R - 2]);
+  /* THE GATEHOUSE: a wall with an arch through it. You do not go round a town wall. */
+  /* the arch has to go all the way through: jambs that reach the road are not a gate, they are a wall */
+  block(30, 49, 24, R - 1);
+  room(30, 49, R - 6, R - 1, 'hall');
+  ent('deco', 30, R - 1, { kind: 'gatehouse' });
+  post(28); post(52);
+  sign(52, 'THE NOTICE ON THE GATE HAS YOUR FACE ON IT AND IT IS NOT A CRIME THEY ARE ACCUSING YOU OF. IT IS A SUMMONS, AND THERE IS A PURSE ON IT. NOBODY IN THIS TOWN WANTS YOU DEAD. THAT IS NOT THE SAME AS NOBODY DRAWING.');
+  ent('deco', 56, R - 1, { kind: 'stocks' }); ent('deco', 62, R - 1, { kind: 'trough' });
+  /* THE FIRST ONE, in the arch, where you cannot walk round him - and he is the slowest man in the town. */
+  ent('swornsword', 40, R - 1, { face: -1 });
+  sign(68, 'HE WILL SHOW YOU THE BLOW BEFORE HE THROWS IT. HOLDING THE SHIELD UP ONLY MEANS HE SHOVES YOU. RAISE IT AS IT LANDS - NOT BEFORE - AND HE IS WIDE OPEN, AND SO IS EVERY MAN IN THIS TOWN AFTER HIM.');
+  ent('swornsword', 76, R - 1, { face: -1 }); ent('swornsword', 66, R - 1, { face: -1 });
+  ent('pike', 56, R - 1, { face: -1 }); ent('thief', 60, R - 1, { face: 1 });
+  coins([34, R - 2], [38, R - 2], [42, R - 2], [58, R - 2], [66, R - 2], [72, R - 2], [80, R - 2]);
+
+  // ---------------- 2. THE MARKET CROSS (x 85-206). The square, and the town going about it. -----------
+  floor(85, 206, R);
+  ent('deco', 92, R - 1, { kind: 'well' }); ent('deco', 100, R - 1, { kind: 'stall', v: 0 });
+  ent('deco', 110, R - 1, { kind: 'stall', v: 1 }); ent('deco', 118, R - 1, { kind: 'wares' });
+  ent('deco', 126, R - 1, { kind: 'barrels' }); ent('deco', 134, R - 1, { kind: 'cart' });
+  ent('deco', 148, R - 1, { kind: 'column' }); ent('deco', 162, R - 1, { kind: 'stall', v: 0 });
+  ent('deco', 174, R - 1, { kind: 'dovecote' }); ent('deco', 188, R - 1, { kind: 'waterButt' });
+  post(96); post(142); post(186);
+  ent('npc', 104, R - 1, { kind: 'bard' }); ent('npc', 130, R - 1, { kind: 'cook' });
+  ent('npc', 170, R - 1, { kind: 'keeper' }); ent('dog', 122, R - 1); ent('dog', 180, R - 1);
+  sign(88, 'THE MARKET CROSS. THEY ARE STILL SELLING AND THE CRIER IS STILL CRYING. NOBODY HERE IS YOUR ENEMY AND EVERY ONE OF THEM IS IN THE WAY.');
+  /* THE SQUARE. Eleven of them between you and the far side, and three more on the awnings over your
+     head, because a market is a crowd and a crowd is where a purse gets collected. */
+  for (const x of [96, 106, 114, 122, 132, 140, 148, 166, 178, 190, 202]) ent('swornsword', x, R - 1, { face: -1 });
+  for (const x of [104, 136, 168]) ent('crossbow', x, R - 4, { face: -1 });
+  for (const x of [112, 160]) ent('thief', x, R - 1, { face: 1 });
+  for (const x of [152, 194]) ent('runner', x, R - 1, { face: -1 });
+  ent('hedgeknight', 128, R - 1, { face: -1 }); ent('hedgeknight', 184, R - 1, { face: -1 });
+  ent('pike', 144, R - 1, { face: -1 }); ent('hound', 176, R - 1, { face: -1 });
+  ent('check', 158, R - 1);
+  sign(156, 'THE BOY IS NOT THE PROBLEM. WHAT HE DOES IS GO AND TELL SOMEBODY, AND EVERY SWORD IN THE STREET PUTS ITS DRINK DOWN. SHUT HIM UP, OR DEAL WITH WHAT HE BRINGS.');
+  /* the awnings over the stalls: the first thing above the road, and the way past the crowd */
+  awning(98, 120, R - 3); awning(130, 146, R - 3); awning(158, 180, R - 3);
+  awning(124, 128, R - 6); awning(150, 156, R - 6);
+  coins([102, R - 4], [110, R - 4], [118, R - 4], [134, R - 4], [142, R - 4], [164, R - 4], [172, R - 4]);
+  coins([126, R - 7], [152, R - 7]);
+  coins([90, R - 2], [124, R - 2], [158, R - 2], [192, R - 2], [200, R - 2]);
+  ent('check', 198, R - 1);
+  ent('silver', 152, R - 8);
+
+  // ---------------- 3. THE BROKEN LANCE (x 207-300). The inn, and the common room. -------------------
+  floor(207, 300, R);
+  tiles(212, 262, R - 7);                                  /* her roof, and the road runs under it */
+  ladder(210, R - 8); ladder(264, R - 8);
+  ent('deco', 236, R - 8, { kind: 'innSign', hang: true });
+  post(216); post(258);
+  sign(210, 'THE BROKEN LANCE. FOUR ROOMS, A GOOD FIRE AND A BAD NAME. THE DOOR IS OPEN BECAUSE THE DOOR IS ALWAYS OPEN.');
+  ent('doorway', 224, R - 1, { id: 'lance-out', to: 'lance-in' });
+  ent('doorway', 252, R - 1, { id: 'lance-back', to: 'lance-far' });
+  ent('deco', 230, R - 1, { kind: 'barrels' }); ent('deco', 246, R - 1, { kind: 'waterButt' });
+  ent('npc', 218, R - 1, { kind: 'oldknight' });
+  coins([220, R - 2], [228, R - 2], [240, R - 2], [256, R - 2], [268, R - 2], [280, R - 2], [292, R - 2]);
+  coins([216, R - 9], [230, R - 9], [244, R - 9], [258, R - 9]);
+  for (const x of [268, 276, 284, 296]) ent('swornsword', x, R - 1, { face: -1 });
+  ent('hedgeknight', 290, R - 1, { face: -1 }); ent('pike', 272, R - 1, { face: 1 });
+  for (const x of [220, 234, 248, 260]) ent('swornsword', x, R - 8, { face: -1 });   /* they are on her roof too */
+  ent('crossbow', 240, R - 8, { face: -1 }); ent('hound', 256, R - 1, { face: -1 });
+  /* THE COMMON ROOM. Two doors, so you come out the far end and do not walk the same street twice. */
+  /* `floor` fills to the bottom of the WORLD, so a floor laid inside a room on row 21 buries the street
+     twenty rows below it. A room cut out of the solid block at the top already has one: rows 21-24. */
+  room(20, 62, 8, 20, 'hall');
+  ent('doorway', 24, 20, { id: 'lance-in', to: 'lance-out' });
+  ent('doorway', 58, 20, { id: 'lance-far', to: 'lance-back' });
+  /* FURNISH IT. A room forty tiles wide with four things in it is a barn; a common room is benches and
+     tables and a fire somebody is cooking on, and the men who stand up out of it. */
+  ent('deco', 28, 20, { kind: 'forge' }); ent('deco', 31, 20, { kind: 'cookPot' });
+  ent('deco', 35, 20, { kind: 'oarBench' }); ent('deco', 39, 20, { kind: 'chartTable' });
+  ent('deco', 43, 20, { kind: 'oarBench' }); ent('deco', 47, 20, { kind: 'chartTable' });
+  ent('deco', 51, 20, { kind: 'oarBench' }); ent('deco', 55, 20, { kind: 'rumBarrels', v: 0 });
+  ent('deco', 59, 20, { kind: 'coffer' }); ent('deco', 24, 20, { kind: 'barrels' });
+  ent('deco', 33, 13, { kind: 'washing' }); ent('deco', 52, 13, { kind: 'wares' });
+  ent('deco', 45, 20, { kind: 'counter' }); ent('npc', 44, 20, { kind: 'keeper' });
+  ent('deco', 37, 8, { kind: 'hallWindow', hang: true }); ent('deco', 49, 8, { kind: 'hallWindow', hang: true });
+  awning(30, 54, 14);                                      /* the gallery over the common room */
+  stair(27, 14, 20); stair(56, 14, 20);
+  ent('sign', 22, 20, { text: 'THE COMMON ROOM. THE INNKEEPER WILL NOT LOOK AT YOU AND HE WILL NOT THROW YOU OUT EITHER. EVERY OTHER MAN IN HERE HAS PUT HIS CUP DOWN.' });
+  /* THE COMMON ROOM STANDS UP. This is the room the level is for: nine of them at once in a space the
+     size of a barn, with two on the gallery shooting down into it. */
+  for (const x of [30, 36, 44, 50, 56]) ent('swornsword', x, 20, { face: 1 });
+  ent('hedgeknight', 40, 20, { face: 1 }); ent('hedgeknight', 52, 20, { face: -1 });
+  ent('heavy', 34, 20, { face: 1 });
+  ent('crossbow', 33, 13, { face: 1 }); ent('crossbow', 48, 13, { face: -1 });
+  ent('swornsword', 42, 13, { face: -1 });
+  ent('runner', 26, 20, { face: 1 }); ent('thief', 60, 20, { face: -1 });
+  coins([26, 19], [30, 19], [36, 19], [44, 19], [50, 19], [56, 19], [34, 13], [40, 13], [46, 13]);
+  ent('check', 60, 20); ent('silver', 40, 12);
+  ent('stray', 50, 13, { kind: 'cup' });
+
+  // ---------------- 4. THE SMITHY AND THE BACK LANES (x 301-436). Roofs, and men above you. -----------
+  floor(301, 436, R);
+  ent('deco', 306, R - 1, { kind: 'forge' }); ent('deco', 312, R - 1, { kind: 'anvil' });
+  ent('npc', 316, R - 1, { kind: 'cook' });
+  sign(304, 'THE SMITH HAS NOT LOOKED UP ONCE. THEY HAVE BEEN COMING THROUGH HIS YARD ALL AFTERNOON AND HE HAS WORK ON.');
+  ent('deco', 322, R - 1, { kind: 'trough' }); ent('deco', 330, R - 1, { kind: 'cart' });
+  tiles(320, 352, R - 7); ladder(318, R - 8);
+  tiles(368, 400, R - 7); ladder(366, R - 8); ladder(402, R - 8);
+  awning(354, 366, R - 3); awning(404, 420, R - 3);
+  board(336, 344, R - 10); stair(335, R - 10, R - 8);   /* up off the smithy roof, not out of the rock: rows 0-24 are the insides and they are solid */
+  /* THE BACK LANES. Above you the whole way: two roofs of them, and a mill pond at the end of it that
+     is the only thing in the town that is not a man. */
+  for (const x of [326, 338, 350]) ent('swornsword', x, R - 8, { face: -1 });
+  for (const x of [374, 386, 398]) ent('swornsword', x, R - 8, { face: -1 });
+  ent('crossbow', 332, R - 8, { face: -1 }); ent('crossbow', 392, R - 8, { face: -1 });
+  ent('crossbow', 340, R - 11, { face: -1 });
+  for (const x of [310, 328, 346, 362, 380, 396, 414, 432]) ent('swornsword', x, R - 1, { face: -1 });
+  ent('hedgeknight', 318, R - 1, { face: -1 }); ent('hedgeknight', 356, R - 1, { face: -1 });
+  ent('hedgeknight', 404, R - 1, { face: -1 }); ent('heavy', 424, R - 1, { face: -1 });
+  ent('pike', 336, R - 1, { face: 1 }); ent('pike', 388, R - 1, { face: -1 });
+  ent('runner', 360, R - 1, { face: -1 }); ent('runner', 408, R - 1, { face: -1 });
+  ent('hound', 370, R - 1, { face: -1 });
+  sign(356, 'THEY ARE ABOVE YOU NOW. A BOLT CAN BE TAKEN ON THE SHIELD AND IT GOES BACK UP THE STAIR IT CAME DOWN - WHICH IS WHY YOUR GUARD IS UP WHEN THE MAN WITH THE POLEAXE ARRIVES.');
+  ent('deco', 412, R - 1, { kind: 'stall', v: 1 }); ent('deco', 434, R - 1, { kind: 'mill' });
+  /* THE MILL POND. The wheel is still turning because nobody stopped it, and it is the one stretch of
+     this level where the ground is not ground. */
+  for (let y = R; y <= R + 3; y++) for (let x = 440; x <= 470; x++) set(x, y, T.AIR);
+  pools.push({ x0: 440 * TS, x1: 471 * TS, y: R * TS, swim: true, clear: true, bottom: (R + 4) * TS, depth: 4 * TS, wash: 0.4 });
+  post(338); post(390); post(428);
+  coins([324, R - 8], [336, R - 8], [348, R - 8], [372, R - 8], [384, R - 8], [396, R - 8],
+    [358, R - 4], [408, R - 4], [416, R - 4], [338, R - 11], [344, R - 11],
+    [308, R - 2], [328, R - 2], [354, R - 2], [398, R - 2], [432, R - 2]);
+  ent('check', 430, R - 1); ent('silver', 342, R - 11);
+  ent('stray', 340, R - 8, { kind: 'cup' }); ent('stray', 416, R - 4, { kind: 'cup' });
+
+  // ---------------- 5. THE CHAPEL YARD (x 437-559). Under the bell, with the town watching. -----------
+  floor(437, W - 1, R);
+  ent('deco', 442, R - 1, { kind: 'lychgate' }); ent('deco', 450, R - 1, { kind: 'yew', v: 0 });
+  ent('deco', 458, R - 1, { kind: 'grave', v: 0 }); ent('deco', 464, R - 1, { kind: 'grave', v: 1 });
+  sign(446, 'THE CHAPEL YARD. HE HAS BEEN STANDING HERE SINCE THE BELL WENT AND HE HAS NOT DRAWN YET. HE IS NOT HERE TO KILL YOU. HE IS HERE TO CARRY YOU OUT, AND HE IS VERY GOOD AT IT.');
+  ent('check', 470, R - 1);
+  sign(474, 'NOTHING GETS THROUGH PLATE. NOT A CUT, NOT A PLUNGE, NOT FIRE - IT ALL TURNS AND THE WORD COMES UP AND NOTHING HAPPENS. THE ONLY THING THAT OPENS A MAN IN FULL PLATE IS HIS OWN BLOW ANSWERED. TAKE IT ON THE BEAT, OR GO THROUGH IT.');
+  /* THE YARD ITSELF, because the last room in a level should not be an empty stretch of road: the tower
+     at one end, the yews at the other, and the stones he has been standing among all afternoon. */
+  ent('deco', 490, R - 1, { kind: 'bellTower' });
+  for (const [x, v] of [[498, 0], [506, 1], [514, 2], [522, 0], [530, 1], [538, 2]]) ent('deco', x, R - 1, { kind: 'grave', v });
+  ent('deco', 494, R - 1, { kind: 'yew', v: 1 }); ent('deco', 542, R - 1, { kind: 'yew', v: 0 });
+  ent('deco', 534, R - 1, { kind: 'lychgate' }); ent('deco', 510, R - 1, { kind: 'cairn' });
+  post(488); post(540); post(516);
+  ent('swornsword', 456, R - 1, { face: -1 }); ent('swornsword', 476, R - 1, { face: -1 });
+  ent('hedgeknight', 466, R - 1, { face: -1 }); ent('heavy', 486, R - 1, { face: -1 });
+  ent('closedhelm', 524, R - 1, { face: -1 });
+  ent('gate', 556, R - 1);
+  coins([444, R - 2], [454, R - 2], [462, R - 2], [468, R - 2]);
+  /* three in a wood and no more: the fourth was being picked up and never reaching the ledger */
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs,
+    indoorRow: 24,                                 /* rows 0-24 are insides: never shown from the street */
+    music: 'waymeet', duskStart: 0.55, duskLen: 0.45,
+    quest: { n: 3, item: 'cup', name: 'HIS CUPS', npc: 'keeper', done: 'THE HOUSE IS SQUARE AGAIN', reward: 'relic', relic: 'spurs' },
+    palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk',
+      haze: 'rgba(210,190,160,0.12)', murkCol: '#2e2a34',
+      grass: '#6a8a46', grassL: '#8fb060', grassD: '#47612e', dirt: '#7a6248', dirtL: '#8f7458', dirtD: '#54402c',
+      canopy: ['#2a3a24', '#3a5230', '#4a6a3c', '#5e8248'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
+    arena: { x0: 492 * TS, x1: 536 * TS, floor: R * TS, trigger: 498 * TS, wallL: 491, wallR: 537, boss: 'closedhelm',
+      music: 'boss2', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -4338,6 +4545,10 @@ export const LEVELS = [
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
   { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: theDeep, needs: 'lamplit' },
+  /* THE SECOND ROAD. The sea arc closes in the trench; this opens the one that goes inland, which is
+     why it is allowed to be quieter than the boss before it - see the arc rule in tools/curve.mjs. */
+  { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
+    rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'deep' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];

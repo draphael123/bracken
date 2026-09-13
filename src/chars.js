@@ -2335,3 +2335,247 @@ export function bakeGoblinShaman() {
   const walk2 = stride('....GGGG....u...', '...GG..GG...u...');
   return pack([idle, cast, blink, howl, walk1, walk2], 8, 17, 12, 16);
 }
+
+
+// ---------- WAYMEET ----------
+// THE ROAD PEOPLE. Every soldier in BRACKEN until now has been the goblin queen's - purple livery, green
+// hands. These are the first men-at-arms in the game and they are not an army: they are guests. A town
+// where three roads meet has an inn worth the name, and an inn worth the name has sworn swords in it
+// waiting for weather and waiting for work. Each is built on ONE shape you can read across a square: a
+// kettle hat's brim, a great helm's block, a bare head running, a crossbow held flat, and a cross.
+const WM = Object.assign({}, EP, { s: '#c9d1dc', S: '#7c8797', d: '#4a4f5a', a: '#e8dcc0', A: '#b8a888',
+  q: '#9a3a3a', Q: '#5e2222', u: '#3a5a8a', U: '#22355a', v: '#5a3a24', V: '#33200f', z: '#e0b040', Z: '#8a6a1a',
+  m: '#8a6a4a', M: '#5c3a1d', f: '#f3d2a8', j: '#2a2f3d', h: '#6a4a2a', H: '#43301c' });
+const wspr = rows => outline(fromGrid(rows, WM, 1), OUT);
+// one grid over another: '.' in the top layer lets the bottom one through. Arms, weapons and shields are
+// LAYERS, because building them as extra rows is how they end up drawn under the feet.
+const lay = (base, over) => base.map((b, i) => { const o = over[i] || ''; return b.split('').map((ch, k) => (o[k] && o[k] !== '.') ? o[k] : ch).join(''); });
+const pad = (rows, w) => rows.map(r => r + '.'.repeat(Math.max(0, w - r.length)));
+
+// THE SWORN SWORD - a kettle hat with a brim wider than his shoulders, mail to the knee, a kite shield up
+// at his front and an arming sword. He is slow and he tells you everything: he is the parry lesson.
+export function bakeSwornSword() {
+  const W = 14;
+  const base = pad([
+    '.....ssss.....',      /* the dome */
+    '....sSSSSSs...',
+    'ssssssssssssss',      /* and the brim, wider than his shoulders: nothing else in the town has one */
+    '.SSSSSSSSSSSS.',
+    '....sffffs....',
+    '....sfjjfs....',
+    '...uuuuuuuu...',
+    '..uUUUUUUUUu..',
+    '..uUqqqqqqUu..',
+    '..uUqqqqqqUu..',
+    '..uUUUUUUUUu..',
+    '...vvvvvvvv...',
+    '...vv....vv...',
+    '...vv....vv...',
+    '..VV......VV..'], W);
+  /* the shield on his near arm, and the sword low behind him */
+  const guard = pad([
+    '..............', '..............', '..............', '..............', '..............', '..............',
+    '.ss...........', 'sSSs..........', 'sSszs.........', 'sSSs..........', 'sSSs..........', '.ss...........'], W);
+  const swordLow = pad([
+    '..............', '..............', '..............', '..............', '..............', '..............',
+    '..............', '..........mss.', '...........mm.', '...........m..'], W);
+  const swordUp = pad([
+    '...........ss.', '..........ss..', '.........mm...', '..............', '..............', '..............',
+    '..............', '..........m...'], W);
+  const swordOut = pad([
+    '..............', '..............', '..............', '..............', '..............', '..............',
+    '..............', '..........mmmm', '..........sss.'], W);
+  const stepB = pad([], 0);
+  const legsB = ['....vvvvvv....', '...vv....vv...', '...vv.....vv..', '..VV.......VV.'];
+  const withLegs = (b, legs) => b.slice(0, 11).concat(legs);
+  const walk1 = wspr(lay(base, lay(guard, swordLow)));
+  const walk2 = wspr(lay(withLegs(base, legsB), lay(guard, swordLow)));
+  const tell = wspr(lay(base, lay(guard, swordUp)));
+  const cut = wspr(lay(withLegs(base, legsB), lay(guard, swordOut)));
+  const rest = wspr(lay(base, guard));
+  return pack([walk1, walk2, tell, cut, rest], 7, 15, 10, 14);
+}
+
+// THE HEDGE KNIGHT - a great helm is a BLOCK with one slit in it, and the poleaxe over his shoulder is the
+// only thing in the town that breaks a man's outline above his head. His surcoat has been washed too often.
+export function bakeHedgeKnight() {
+  const W = 18;
+  const base = pad([
+    '.....ssssss.....',
+    '....sSSSSSSs....',
+    '....sSSSSSSs....',
+    '....sjjjjjjs....',      /* the slit */
+    '....sSSSSSSs....',
+    '.....SSSSSS.....',
+    '...ssssssssss...',
+    '..sSqqqqqqqqSs..',
+    '..sSqqqzzqqqSs..',
+    '..sSqqzzzzqqSs..',
+    '..sSqqqzzqqqSs..',
+    '..sSqqqqqqqqSs..',
+    '...sSSSSSSSSs...',
+    '....ss....ss....',
+    '....sS....Ss....',
+    '....ss....ss....',
+    '...dd......dd...'], W);
+  const legsB = ['.....ssssss.....', '....ss....ss....', '...sS......Ss...', '..dd........dd..'];
+  const shoulder = pad([
+    '..........mm....', '.........mm.....', '........mm......', '.......mm.......', '......mm........'], W);
+  const axeUp = pad([
+    '......mMMm......', '......mMMm......', '.......mm.......', '.......mm.......', '.......mm.......'], W);
+  const axeOut = pad([
+    '................', '................', '................', '................', '................', '................',
+    '................', '..........mmmmmm', '..........mMMMMm', '...........mmmm.'], W);
+  const withLegs = (b, legs) => b.slice(0, 13).concat(legs);
+  const walk1 = wspr(lay(base, shoulder));
+  const walk2 = wspr(lay(withLegs(base, legsB), shoulder));
+  const tell = wspr(lay(base, axeUp));
+  const swing = wspr(lay(withLegs(base, legsB), axeOut));
+  const leap = wspr(lay(pad([
+    '.....ssssss.....', '....sSSSSSSs....', '....sSSSSSSs....', '....sjjjjjjs....', '....sSSSSSSs....', '.....SSSSSS.....',
+    '...ssssssssss...', '..sSqqqqqqqqSs..', '..sSqqqzzqqqSs..', '..sSqqzzzzqqSs..', '..sSqqqzzqqqSs..', '..sSqqqqqqqqSs..',
+    '...sSSSSSSSSs...', '...ss......ss...', '..ss........ss..', '.dd..........dd.'], W), axeUp));
+  return pack([walk1, walk2, tell, swing, leap], 9, 18, 12, 16);
+}
+
+// THE RUNNER - a squire with no armour on and a feather in his cap, leaning into it. He is the only one in
+// the town who is FAST, he barely hurts you, and he is the only one who goes and FETCHES somebody.
+export function bakeRunner() {
+  const W = 12;
+  const head = ['....zz......', '...aaaa.....', '..aafffa....', '..aafjfa....', '...afffa....', '....aaa.....'];
+  const run1 = wspr(pad([...head,
+    '...hhhhh....', '..hHhhhHh...', '.mhHhhhHh...', '.m.hhhhh....', '...vv.vv....', '..vv...vv...', '.VV.....V...'], W));
+  const run2 = wspr(pad([...head,
+    '...hhhhh....', '..hHhhhHh...', '.mhHhhhHh...', '.m.hhhhh....', '....vvvv....', '...vv..vv...', '...V....VV..'], W));
+  const shout = wspr(pad(['.a........a.', '..a......a..', '...a....a...', ...head,
+    '...hhhhh....', '..hHhhhHh...', '..hHhhhHh...', '...hhhhh....', '...vv.vv....', '..vv...vv...'], W));
+  const stab = wspr(pad([...head,
+    '...hhhhh....', '..hHhhhHh...', '..hHhhhHhmmm', '...hhhhh.ss.', '...vv.vv....', '..vv...vv...', '.VV.....V...'], W));
+  return pack([run1, run2, shout, stab], 6, 13, 8, 12);
+}
+
+// THE CROSSBOWMAN - the prod held flat across his chest is a horizontal bar and nothing else in the town
+// has one. He stands in a window or at the head of a stair, and the bolt is the one thing a shield
+// does not turn.
+export function bakeCrossbowman() {
+  const W = 16;
+  const base = pad([
+    '...ssssss.......',
+    '...sSSSSs.......',
+    '...sfffjs.......',
+    '....sffs........',
+    '...uuuuuu.......',
+    '..uUUUUUUu......',
+    '..uUUUUUUu......',
+    '..uUUUUUUu......',
+    '...uuuuuu.......',
+    '...vv..vv.......',
+    '...vv..vv.......',
+    '..VV....VV......'], W);
+  const spanning = pad([
+    '................', '................', '................', '................',
+    '.....mm.........', '....mmmm........', '....mMMm........', '.....mm.........'], W);
+  const level = pad([
+    '................', '................', '................', '................',
+    '.m............m.', '.mmmmmmmmmmmmmm.', '.m..sss.....M...', '................'], W);
+  const shot = pad([
+    '................', '................', '................', '................',
+    '.m............m.', '.mmmmmmmmmm.....', '.m..sss.........', '................'], W);
+  return pack([wspr(lay(base, spanning)), wspr(lay(base, level)), wspr(lay(base, shot))], 6, 13, 10, 12);
+}
+
+// THE CLOSED HELM - the biggest man in the game and the only one who never opens. A rounded great helm
+// with one slit, pauldrons wider than a doorway, and a sword he rests POINT DOWN in front of him like a
+// cross. Everything else in this town is a person; he is a shape. Frames: stand, walk, raise, cut, stamp,
+// and OPEN - the one frame where the plate is not between you and him, and the only one worth a swing.
+export function bakeClosedHelm() {
+  const W = 28;
+  const body = pad([
+    '..........ssssssss..........',
+    '.........sSSSSSSSSs.........',
+    '.........sSSSSSSSSs.........',
+    '.........sjjjjjjjjs.........',      /* the slit */
+    '.........sSSSSSSSSs.........',
+    '..........SSSSSSSS..........',
+    '....sssssssssssssssssss.....',      /* the pauldrons */
+    '...sSSSSSSSSSSSSSSSSSSSs....',
+    '...sSSddddddddddddddSSSSs...',
+    '.....ssssssssssssssss.......',
+    '.....sSqqqqqqqqqqqqSs.......',
+    '.....sSqqqqzzzzqqqqSs.......',
+    '.....sSqqqzzZZzzzqqSs.......',
+    '.....sSqqqqzzzzqqqqSs.......',
+    '.....sSqqqqqqqqqqqqSs.......',
+    '.....sSSqqqqqqqqqqSSs.......',
+    '......ssssssssssssss........',
+    '......sSSSSSSSSSSSSs........',
+    '......sddddddddddddSs.......',
+    '.......ssssssssssss.........',
+    '.......ss........ss.........',
+    '.......sS........Ss.........',
+    '.......ss........ss.........',
+    '......dd..........dd........'], W);
+  const legsB = ['........ssssssss............', '.......ss........ss.........', '......sS..........Ss........', '.....dd............dd.......'];
+  /* the sword, point down, in front of him: a cross */
+  const cross = pad([
+    '............................', '............................', '............................',
+    '............................', '............................', '............................',
+    '............................', '............................',
+    '.........ssssssssss.........',      /* the crossguard, and it is the widest bright thing on him */
+    '..........sSSSSSSs..........',
+    '............ssss............',
+    '............sSSs............',
+    '............sSSs............',
+    '............sSSs............',
+    '............sSSs............',
+    '............sSSs............',
+    '............sSSs............',
+    '............sSSs............',
+    '............sSSs............',
+    '.............ss.............',
+    '.............ss.............',
+    '..............s.............'], W)
+  const raised = pad([
+    '.....................ssss...', '....................ssss....', '...................ssss.....', '..................mm........',
+    '.................mm.........', '................mm..........'], W);
+  const outCut = pad([
+    '............................', '............................', '............................', '............................',
+    '............................', '............................', '............................', '............................',
+    '............................', '............................', '..................ssssssssss', '..................sSSSSSSSSs',
+    '...................mmm......'], W);
+  const stampLegs = ['.......ss........ss.........', '......sSS........SSs........', '.....dddd........dddd.......', '.....dddd........dddd.......'];
+  const withLegs = (b, legs) => b.slice(0, 20).concat(legs);
+  const stand = wspr(lay(body, cross));
+  const walk = wspr(lay(withLegs(body, legsB), cross));
+  const raise = wspr(lay(body, raised));
+  const cut = wspr(lay(withLegs(body, legsB), outCut));
+  const stamp = wspr(lay(withLegs(body, stampLegs), cross));
+  /* OPEN: the guard is off the line, both arms are wide and the slit has gone bright. */
+  const open = wspr(lay(pad([
+    'ss......................ss..',
+    '.ss....................ss...',
+    '..ss..................ss....',
+    '...ss................ss.....',
+    '..........ssssssss..........',
+    '.........sSSSSSSSSs.........',
+    '.........sSSSSSSSSs.........',
+    '.........szzzzzzzzs.........',
+    '.........sSSSSSSSSs.........',
+    '..........SSSSSSSS..........',
+    '.....sssssssssssssssss......',
+    '....sSSSSSSSSSSSSSSSSSs.....',
+    '.....ssssssssssssssss.......',
+    '.....sSqqqqqqqqqqqqSs.......',
+    '.....sSqqqqzzzzqqqqSs.......',
+    '.....sSqqqzzZZzzzqqSs.......',
+    '.....sSqqqqzzzzqqqqSs.......',
+    '.....sSSqqqqqqqqqqSSs.......',
+    '......ssssssssssssss........',
+    '......sSSSSSSSSSSSSs........',
+    '.......ssssssssssss.........',
+    '.......ss........ss.........',
+    '.......sS........Ss.........',
+    '.......ss........ss.........',
+    '......dd..........dd........'], W), pad([], 0)));
+  return pack([stand, walk, raise, cut, stamp, open], 14, 28, 20, 26);
+}
