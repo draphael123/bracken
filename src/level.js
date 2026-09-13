@@ -385,7 +385,7 @@ function theStockade() {
     ent('silver', 55, 9);
     coins([47, 11], [50, 11], [56, 9], [59, 9], [63, 11], [65, 11]); }
   // and two more of their knights further up the camp, now that you have met one
-  ent('heavy', 208, 19, { face: -1 }); ent('heavy', 300, 19, { face: -1 });
+  ent('heavy', 208, 19, { face: -1 }); ent('heavy', 268, 19, { face: -1 });   /* 300 lands inside rock once the groups have shifted the map */
 
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
   block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('silver', 57, 12);
@@ -2571,7 +2571,7 @@ function shipwreckReef() {
   ent('seabell', 100, 23); ent('sign', 98, 23, { text: "A SHIP'S BELL, STILL ON ITS BRACKET. STRIKE IT: THE BIRDS GO UP OFF THE WRECKS, AND THE DROWNED STOP WHAT THEY ARE DOING TO LISTEN." });
   ent('scout', 50, 24, { face: -1 }); ent('sailor', 86, 25, { face: -1 }); ent('siren', 106, 23, { face: -1 });
   ent('petrel', 40, 19); ent('petrel', 88, 17);
-  ent('crab', 36, 31); ent('turtle', 70, 31);
+  ent('urchin', 36, 31); ent('urchin', 70, 31);
   ent('sign', 18, 25, { text: 'THE WRECKS LIE WHERE THE REEF PUT THEM. HOLD UP TO CLIMB THE SHROUDS. AND WATCH THE WATER: WHEN IT RISES THE LOW BACKS GO UNDER, AND SO DO YOU.' });
   ent('silver', 51, 15); ent('check', 100, 23);
   coins([18, 25], [24, 25], [33, 26], [38, 26], [50, 24], [55, 24], [66, 26], [72, 26], [80, 25], [90, 25], [100, 23], [110, 23]);
