@@ -285,9 +285,57 @@ export function makeBot(BK) {
         if (Math.abs(e.x - P.x) < 15 && dy > 8 && dy < 50) { keys.down = true; tick.pogoCd = 18; break; } }
     }
 
-    // and hit whatever is in reach, in front or behind
-    for (const e of BK.enemies()) { if (!e.alive || e.t === 'folk' || e.t === 'fisher' || e.t === 'bale') continue;
-      if (Math.abs(e.x - P.x) < 28 && Math.abs(e.y - P.y) < 24) { BK.press('atk'); break; } }
+    // ================================ THE FIGHT ================================
+    // It could only do one thing: swing at whatever happened to be in arm's reach, so it walked into a
+    // spear and kept walking, and every combat-dense level came back BRUTAL - which was never a finding
+    // about the level. What it needs is not to win fights; it is to GET THROUGH them, which is four rules:
+    //   1. PICK ONE, and only one that is actually in the way - the nearest live thing at your own height,
+    //      in front of you, close enough to matter. A creature behind you is somebody else's problem.
+    //   2. A WIND-UP IS AN INSTRUCTION. `BK.telling` is the same predicate the yellow ! is drawn from, so
+    //      the bot reads exactly what a player is shown: stand and guard at range, roll THROUGH it up close
+    //      (a blow you are already inside of is the one a shield does not help with).
+    //   3. OTHERWISE KEEP COMING. The first version stepped back after every swing to be tidy about
+    //      spacing and halved how far it got in the level: it spent the run oscillating at arm's length.
+    //      Walk in, swing, walk in. Never hold the shield up while travelling - a guard is half speed.
+    //   4. GIVE UP. Some things cannot be killed from the ground, and some respawn. After four seconds on
+    //      one creature it is written off and the bot goes back to walking.
+    tick.rollCd = Math.max(0, (tick.rollCd || 0) - 1);
+    tick.frame = (tick.frame || 0) + 1;
+    tick.skip = tick.skip || new Map();
+    let foe = null, fd = 1e9;
+    if (!P.swim && !(P.dead > 0)) for (const e of BK.enemies()) {
+      if (!e.alive || e.harmless || e.dying > 0) continue;
+      if (e.t === 'folk' || e.t === 'fisher' || e.t === 'bale' || e.t === 'dummy' || e.t === 'sheep') continue;
+      if ((tick.skip.get(e) || 0) > tick.frame) continue;
+      if (Math.abs(e.y - P.y) > 30) continue;
+      const dx = e.x - P.x, d = Math.abs(dx);
+      /* AND ONLY WHAT IS ACTUALLY STOPPING YOU. Fighting everything it could see cost it a third of the
+         level: most creatures in this game can simply be walked past, and a bot that stops for all of
+         them proves nothing except that it can stop. Something on top of you is a fight; something in
+         front of you is only a fight once you have stopped getting anywhere. */
+      if (d > 28 && !(dir && Math.sign(dx) === dir && d < 74 && still > 18)) continue;
+      if (d < fd) { fd = d; foe = e; }
+    }
+    let fighting = false;
+    if (foe) {
+      const fdir = Math.sign(foe.x - P.x) || 1;
+      const face = () => { keys.left = fdir < 0; keys.right = fdir > 0; };
+      const telling = BK.telling ? BK.telling(foe) : false;
+      const reach = ((foe.h || 12) > 22 || foe.big) ? 32 : 24;
+      if (foe !== tick.foe) { tick.foe = foe; tick.foeT = 0; } else tick.foeT = (tick.foeT || 0) + 1;
+      if (tick.foeT > 240) { tick.skip.set(foe, tick.frame + 600); tick.foe = null; }   /* four seconds is enough */
+      else if (telling && fd < reach + 8 && tick.rollCd <= 0) {
+        fighting = true; tick.rollCd = 40;                       /* inside its reach: roll out the back of it */
+        keys.left = fdir > 0; keys.right = fdir < 0; BK.press('dodge');
+      } else if (telling && fd < 70) {
+        fighting = true; face(); keys.left = keys.right = false; keys.block = true;   /* stand and take it on the shield */
+      } else {
+        fighting = true; face(); keys.block = false;
+        if (fd < reach + 4 && (P.st === undefined ? 100 : P.st) > 12 && P.atk < 0) BK.press('atk');
+      }
+    }
+    if (!fighting) { keys.block = false; tick.foe = null; }
+    if (fighting) still = Math.min(still, 150);   /* a fight is not being stuck, but it is not forever either */
 
     if (still > 260) { still = 0; tries++; if (tries > 7) return 'stuck'; BK.press('dodge'); }
     return null;
