@@ -51,7 +51,7 @@ const LEGS = {
 const W = 34, H = 32, BX = 11, BY = 6; // body drawn at (BX,BY); feet bottom at BY+16 = 22
 export const KNIGHT_ANCHOR = { ax: 16, ay: 22 };
 
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null }) {
   const [c, g] = canvas(W, H);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
@@ -109,6 +109,23 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const ax = Math.sign(x1 - x0) || 1, ay2 = Math.sign(y1 - y0) || -1;
     px(g, Math.round(x1), Math.round(y1), '#8a939f'); px(g, Math.round(x1 + ax), Math.round(y1), '#c9d1dc');
     px(g, Math.round(x1), Math.round(y1 + ay2), '#c9d1dc'); px(g, Math.round(x1 + ax), Math.round(y1 + ay2), '#8a939f');
+  }
+  if (greatsword) { // THE GREATSWORD: a straight bar of steel as long as he is, held in both hands.
+    // A scythe is read by its CURVE and a two-hander by its LENGTH and its CROSS - so the guard is drawn
+    // wide and the fuller is drawn all the way up, or at sixteen pixels it is just a stick.
+    const [x0, y0, x1, y1] = greatsword.map((v, i) => v + (i & 1 ? dy : dx));
+    const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
+    line(g, Math.round(x0 - ax * 4), Math.round(y0 - ay * 4), Math.round(x0 + ax), Math.round(y0 + ay), '#2a2218', 2);   /* the long grip */
+    px(g, Math.round(x0 - ax * 5), Math.round(y0 - ay * 5), '#8a7a5a');                                                  /* the pommel */
+    px(g, Math.round(x0 - ax * 6), Math.round(y0 - ay * 6), '#5a4e38');
+    line(g, Math.round(x0 + ax * 2), Math.round(y0 + ay * 2), Math.round(x1 - ax * 2), Math.round(y1 - ay * 2), '#7a828e', 3);  /* the blade, three wide */
+    line(g, Math.round(x0 + ax * 2 + qx), Math.round(y0 + ay * 2 + qy), Math.round(x1 - ax * 2 + qx), Math.round(y1 - ay * 2 + qy), '#c9d1dc', 1);
+    line(g, Math.round(x0 + ax * 3), Math.round(y0 + ay * 3), Math.round(x1 - ax * 4), Math.round(y1 - ay * 4), '#3e444e', 1);  /* the fuller down the middle */
+    for (let t = 4; t < len - 3; t += 5) px(g, Math.round(x0 + ax * t), Math.round(y0 + ay * t), '#8fd160');             /* the runes cut into it */
+    px(g, Math.round(x1), Math.round(y1), '#eef4fa'); px(g, Math.round(x1 - ax), Math.round(y1 - ay), '#eef4fa');        /* the point */
+    line(g, Math.round(x0 + ax * 2 - qx * 4), Math.round(y0 + ay * 2 - qy * 4), Math.round(x0 + ax * 2 + qx * 4), Math.round(y0 + ay * 2 + qy * 4), '#8a939f', 2);  /* the cross */
+    px(g, Math.round(x0 + ax * 2 - qx * 4), Math.round(y0 + ay * 2 - qy * 4), '#c9d1dc');
+    px(g, Math.round(x0 + ax * 2 + qx * 4), Math.round(y0 + ay * 2 + qy * 4), '#c9d1dc');
   }
   if (scythe) { // THE SCYTHE: a long haft, and the blade set across the end of it, curving away and forward.
     // The haft is what he holds; the edge is a whole body-length from his hands, which is the entire hero.
@@ -1208,71 +1225,76 @@ export function bakeFreebooter(skin = {}) {
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
   return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
 }
-// THE REAPER: a hood with nothing in it but two green lights, a robe the colour of wet ash, and a scythe
-// whose edge is a body-length from his hands. He is the longest reach in the game and the worst thing in it
-// to be standing next to.
+// THE DEATH KNIGHT: a horned helm with nothing in it but two green lights, plate the colour of a cold
+// forge, a torn red surcoat, and a two-handed sword as long as he is with runes cut down the fuller.
+// The silhouette has to say KNIGHT at sixteen pixels and say it from the horns and the pauldrons, because
+// that is all there is room for - so the horns are the outermost pixels of the sprite and the shoulders
+// are the widest.
 const REAP_BODY = [
-  '...vvvv...',
-  '..vvvvvv..',
-  '.vvkkkkvv.',
-  '.vkkyykkv.',
-  '..vkkkkv..',
-  '..vvvvvv..',
-  '.bbBvvBbb.',
-  '.bbBrrBbb.',
-  '.bbBvvBbb.',
-  '.bbbvvbbb.',
+  's........s',
+  'vv......vv',
+  '.vvSSSSvv.',
+  '..Skyyks..',
+  '..SkkkkS..',
+  '..vSSSSv..',
+  'SSbbBBbbSS',
+  'SSbBrrBbSS',
+  '.SbbrrbbS.',
+  '.bbbrrbbb.',
   '..bbbbbb..',
 ];
 const REAP_PLUME = [
-  ['...vvvv...', '..vvvvvv..', '.vvkkkkvv.'],
-  ['..vvvv....', '..vvvvvv..', '.vvkkkkvv.'],
-  ['...vvvvv..', '..vvvvvv..', '.vvkkkkvv.'],
+  ['s........s', 'vv......vv', '.vvSSSSvv.'],
+  ['s........s', 'vv.....vvs', '.vvSSSSvv.'],
+  ['.s......s.', 'vv......vv', '.vvSSSSvv.'],
 ];
-const REAP_PAL = { s: '#c9cfd8', S: '#7a828e', b: '#2a2438', B: '#171322', r: '#d8d2b8', y: '#8fd160',
-  k: '#0d0f14', w: '#6a5a42', W: '#3e3428', v: '#1b1a26' };
+const REAP_PAL = { s: '#b9c2cf', S: '#68707e', b: '#232a38', B: '#141824', r: '#5e1822', y: '#8fd160',
+  k: '#0a0c10', w: '#6a5a42', W: '#3e3428', v: '#39404e' };
 export function bakeReaper(skin = {}) {
   KP = Object.assign({}, KP0, REAP_PAL, skin); BODY_REF = REAP_BODY; PLUME_REF = REAP_PLUME;
   const sh = [BX + 8, BY + 7];
-  const rest = (d = 0) => [sh[0] - 1, sh[1] + 8 + d, sh[0] + 3, sh[1] - 8 + d];     // the haft stood up, blade high
-  const carry = (d = 0) => [sh[0] + 1, sh[1] + 7 + d, sh[0] - 6, sh[1] - 4 + d];    // laid back over the shoulder at a run
+  /* A TWO-HANDER IS CARRIED, NOT HELD OUT. At rest and at a run it lies back over the shoulder - that is
+     the pose that says greatsword from across the room, and it keeps the blade out of his own legs. */
+  const rest = (d = 0) => [sh[0] + 2, sh[1] + 4 + d, sh[0] - 10, sh[1] - 11 + d];
+  const carry = (d = 0) => [sh[0] + 3, sh[1] + 5 + d, sh[0] - 12, sh[1] - 4 + d];
   const F = {
-    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, scythe: rest(i >> 1), plume: i % 3 })),
-    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, scythe: carry() })),
-    jump: [knightFrame({ legs: 'jump', dy: -1, scythe: [sh[0], sh[1] + 5, sh[0] + 5, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', scythe: [sh[0], sh[1] + 5, sh[0] + 6, sh[1] - 6], plume: 1 })],
-    fall: [knightFrame({ legs: 'fall', scythe: [sh[0], sh[1] + 5, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, scythe: [sh[0], sh[1] + 4, sh[0] + 7, sh[1] - 5], plume: 2 })],
-    land: knightFrame({ legs: 'land', dy: 2, scythe: rest(2) }),
-    // THE REAPING: he plants, winds the whole thing back behind him, and takes it round in a circle
+    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, greatsword: rest(i >> 1), plume: i % 3 })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, greatsword: carry() })),
+    jump: [knightFrame({ legs: 'jump', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 6, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 7, sh[1] - 5], plume: 1 })],
+    fall: [knightFrame({ legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 4, sh[0] - 7, sh[1] - 4], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, greatsword: [sh[0] + 2, sh[1] + 3, sh[0] - 8, sh[1] - 2], plume: 2 })],
+    land: knightFrame({ legs: 'land', dy: 2, greatsword: rest(2) }),
+    /* THE REAPING: he sets his feet, takes the whole thing back behind him and carries it round in a circle.
+       The middle frame is the one that sells the weight - it is straight up over his head and he is under it. */
     heavy: [
-      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 1], scythe: [sh[0] - 3, sh[1] + 4, sh[0] - 9, sh[1] - 5], plume: 2 }),
-      knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 5], scythe: [sh[0] + 1, sh[1] - 5, sh[0] + 3, sh[1] - 13], plume: 1 }),
-      knightFrame({ dx: 2, legs: 'runC', dy: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], scythe: [sh[0] + 4, sh[1] - 3, sh[0] + 13, sh[1] + 4], plume: 0 }),
+      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 1], greatsword: [sh[0] - 3, sh[1] + 3, sh[0] - 12, sh[1] - 5], plume: 2 }),
+      knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], greatsword: [sh[0] + 1, sh[1] - 4, sh[0] + 2, sh[1] - 17], plume: 1 }),
+      knightFrame({ dx: 2, legs: 'runC', dy: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] - 1, sh[0] + 16, sh[1] + 5], plume: 0 }),
     ],
     climb: [
-      knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], scythe: carry(), plume: 0 }),
-      knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], scythe: carry(1), plume: 1 }),
+      knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], greatsword: carry(), plume: 0 }),
+      knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], greatsword: carry(1), plume: 1 }),
     ],
-    // THE SWATHE: back over the shoulder, round in a flat wide arc, and out at the end of it
+    /* THE SWATHE: back over the shoulder, up, and round in one flat wide arc that takes everything in front */
     atk: [
-      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], scythe: [sh[0] - 3, sh[1] + 3, sh[0] - 8, sh[1] - 6], plume: 1 }),
-      knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], scythe: [sh[0] + 2, sh[1] - 4, sh[0] + 4, sh[1] - 12], plume: 2 }),
-      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], scythe: [sh[0] + 5, sh[1] - 2, sh[0] + 14, sh[1] - 1], plume: 2 }),
-      knightFrame({ dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], scythe: [sh[0] + 4, sh[1] + 1, sh[0] + 12, sh[1] + 6], plume: 0 }),
-      knightFrame({ scythe: rest(), plume: 0 }),
+      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 2, sh[0] - 11, sh[1] - 6], plume: 1 }),
+      knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], greatsword: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] - 16], plume: 2 }),
+      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 17, sh[1] - 1], plume: 2 }),
+      knightFrame({ dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 }),
+      knightFrame({ greatsword: rest(), plume: 0 }),
     ],
-    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0], sh[1] + 3], scythe: [sh[0], sh[1] - 4, sh[0], sh[1] + 12], plume: 1 }),
-    hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', scythe: [sh[0] + 1, sh[1] + 6, sh[0] + 6, sh[1] - 3], plume: 2 }),
-    crouch: knightFrame({ dy: 3, legs: 'crouch', scythe: rest(3) }),
-    // THE TOLL: the haft across him in both hands, head down, taking it out of them
-    block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], scythe: [sh[0] - 5, sh[1] + 2 + i, sh[0] + 7, sh[1] - 2 + i], glow: [sh[0] + 1, sh[1] + 6] })),
-    // RAISE: the free hand down, and the green coming up out of the ground under it
-    cast: [0, 1].map(i => knightFrame({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 5], scythe: rest(), glow: [sh[0] + 5, sh[1] + 8 + i] })),
-    // THE LAST HARVEST: the scythe up over his head in both hands, and everything marked answers it
-    blast: [knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] - 6], scythe: [sh[0], sh[1] - 2, sh[0], sh[1] - 14], glow: [sh[0], sh[1] - 16] }),
-      knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], scythe: [sh[0] + 4, sh[1] - 1, sh[0] + 13, sh[1] + 5], glow: [sh[0] + 10, sh[1] + 2] })],
+    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0], sh[1] + 3], greatsword: [sh[0], sh[1] - 3, sh[0], sh[1] + 13], plume: 1 }),
+    hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 5, sh[0] - 6, sh[1] - 1], plume: 2 }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', greatsword: rest(3) }),
+    /* THE TOLL: the point driven into the ground in both hands, head down, taking it out of them */
+    block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], greatsword: [sh[0] + 2, sh[1] - 2 + i, sh[0] + 4, sh[1] + 12 + i], glow: [sh[0] + 4, sh[1] + 12] })),
+    /* RAISE: the sword held off to one side and the free hand down, green coming up out of the ground */
+    cast: [0, 1].map(i => knightFrame({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 5], greatsword: [sh[0] - 2, sh[1] + 2, sh[0] - 10, sh[1] - 5], glow: [sh[0] + 5, sh[1] + 8 + i] })),
+    /* THE LAST HARVEST: the blade straight up in both hands, and everything marked answers it */
+    blast: [knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] - 6], greatsword: [sh[0], sh[1] - 3, sh[0], sh[1] - 18], glow: [sh[0], sh[1] - 20] }),
+      knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], greatsword: [sh[0] + 4, sh[1] - 1, sh[0] + 16, sh[1] + 6], glow: [sh[0] + 12, sh[1] + 3] })],
   };
-  // THE PASSING: he does not roll. He goes thin and steps through.
-  F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 1, legs: i % 2 ? 'wide' : 'runC', scythe: carry(1), plume: i % 3 }));
+  /* THE PASSING: he does not roll. He goes thin and steps through. */
+  F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 1, legs: i % 2 ? 'wide' : 'runC', greatsword: carry(1), plume: i % 3 }));
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);

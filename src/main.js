@@ -179,7 +179,7 @@ const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PRO
 const HEROES = [
   { id: 'knight', name: 'THE KNIGHT', price: 15, silver: true, desc: 'sword, shield and the plunge. 100 health' },
   { id: 'pyro', name: 'THE PYROMANCER', price: 15, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else' },
-  { id: 'reaper', name: 'THE REAPER', price: 15, silver: true, desc: "a scythe, and 95 health. the longest reach in the wood and the worst thing to stand next to: THE SWATHE cuts EVERYTHING in a wide arc in front of him and half as hard as a sword each, and the inside of the arc barely cuts at all, so he wants a step of room. HOLD X for THE REAPING: a full circle, both sides, and whatever it kills is dragged to his feet. the plunge is THE CULL - his own weight does almost nothing, but a SHADE tears out of whatever he lands on. V is THE PASSING: he goes thin and steps THROUGH them, and what he passes through is MARKED. tap C to RAISE what is lying there - a WIGHT, a SHADE or a WISP, by what it was. hold C for THE TOLL" },
+  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 15, silver: true, desc: "a two-handed sword, and 95 health. the longest reach in the wood and the worst thing to stand in front of: THE SWATHE cuts EVERYTHING in a wide arc and half as hard as a sword each, and the inside of the arc barely cuts at all, so he wants a step of room. HOLD X for THE REAPING: the whole blade round in a circle, both sides, through any guard, and whatever it kills is dragged to his feet. the plunge is THE CULL - his own weight does almost nothing, but something tears up out of whatever he lands on. V is THE PASSING: he steps THROUGH them, and what he passes through is MARKED. tap C to RAISE what is lying there - a SKELETON, an ARCHER or a BURNING SKULL, by what it was. they kill nothing; they stand between you and the blow and come apart doing it. hold C for THE TOLL" },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 15, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 15, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. the dead take double' },
 ];
@@ -197,7 +197,7 @@ const rankOf = id => (PROG.ranks && PROG.ranks[id]) || 0; // (TRAINING is gone f
 // (the ones with numbers in them grow with every point). The ACTIVE skills - the ones on F - live in the trees
 // now, not the store: a point learns one, more points shorten its wait and deepen its blow. F on a learned one
 // puts it on F. Forgetting everything is free.
-const TBR = { knight: ['BLADE', 'SHIELD', 'ROAD'], pyro: ['EMBER', 'JET', 'ASH'], paladin: ['LIGHT', 'AEGIS', 'HAMMER'], pirate: ['POWDER', 'PURSE', 'STEEL'], reaper: ['SCYTHE', 'GRAVE', 'SHADE'] };
+const TBR = { knight: ['BLADE', 'SHIELD', 'ROAD'], pyro: ['EMBER', 'JET', 'ASH'], paladin: ['LIGHT', 'AEGIS', 'HAMMER'], pirate: ['POWDER', 'PURSE', 'STEEL'], reaper: ['BLADE', 'GRAVE', 'RUNE'] };
 const ROW_LV = [0, 2, 5, 8];
 const TREE = [];
 { const N = (hero, branch, row, col, id, name, max, desc, parent, active) => {
@@ -303,18 +303,18 @@ const TREE = [];
   N('paladin', 2, 1, 2, 'farTremor', 'FAR TREMOR', 3, 'the maul waves travel 20% further a point', 'ironLungs');
   N('paladin', 2, 3, 2, 'earthshaker', 'EARTHSHAKER', 1, 'land hard from a height and the ground quakes both ways', 'farTremor');
   // THE REAPER
-  N('reaper', 0, 0, 0, 'longHaft', 'LONG HAFT', 3, 'the swathe and the reaping reach a quarter of a tile further a point', null);
+  N('reaper', 0, 0, 0, 'longHaft', 'LONG REACH', 3, 'the swathe and the reaping reach a quarter of a tile further a point', null);
   N('reaper', 0, 0, 1, 'wideSwathe', 'WIDE SWATHE', 3, 'the swathe cuts further BEHIND you as well a point', null);
   N('reaper', 0, 1, 0, 'keen', 'KEEN', 1, 'the inside of the arc cuts properly: nothing standing on you is safe any more', 'longHaft');
-  N('reaper', 0, 1, 1, 'scytheThrown', 'THROWN SCYTHE', 3, 'F: it goes out until it finds SOMETHING, cuts it, marks it, and comes straight back to his hand. one throw, one creature. +3 damage and a quarter tile of reach a point', null, true);
-  N('reaper', 0, 2, 0, 'rend', 'REND', 1, 'anything wearing your mark bleeds when the scythe finds it', 'keen');
+  N('reaper', 0, 1, 1, 'scytheThrown', 'THE HURLED BLADE', 3, 'F: it goes out until it finds SOMETHING, cuts it, marks it, and comes straight back to his hand. one throw, one creature. +3 damage and a quarter tile of reach a point', null, true);
+  N('reaper', 0, 2, 0, 'rend', 'REND', 1, 'anything wearing your mark bleeds when the blade finds it', 'keen');
   N('reaper', 0, 3, 0, 'fullCircle', 'THE FULL CIRCLE', 1, 'the reaping goes round twice', 'rend');
-  N('reaper', 1, 0, 0, 'graveGoods', 'GRAVE GOODS', 3, "what you raise lasts four seconds longer and hits one harder a point. they were never meant to kill for you: they hold a foe's attention while you do", null);
+  N('reaper', 1, 0, 0, 'graveGoods', 'GRAVE GOODS', 3, "your skeletons last four seconds longer, hit one harder and hold together for one more blow a point. they were never meant to kill for you: they stand in the way while you do", null);
   N('reaper', 1, 0, 1, 'gleaner', 'GLEANER', 3, 'every death near you is worth a fifth more to the harvest a point');
-  N('reaper', 1, 1, 0, 'press', 'THE PRESS', 1, 'a third one can be standing at once', 'graveGoods');
+  N('reaper', 1, 1, 0, 'press', 'THE PRESS', 1, 'a third skeleton can be standing at once', 'graveGoods');
   N('reaper', 1, 1, 1, 'graveTide', 'GRAVE TIDE', 3, 'F: hands come up out of the floor ahead of you, holding and tearing at whatever is standing on it', null, true);
-  N('reaper', 1, 2, 0, 'ossuary', 'OSSUARY', 1, 'once every twelve seconds you can raise something out of nothing at all', 'press');
-  N('reaper', 1, 3, 0, 'secondDeath', 'SECOND DEATH', 1, 'what you raised comes apart when its time is up, and takes what is near it with it', 'ossuary');
+  N('reaper', 1, 2, 0, 'ossuary', 'OSSUARY', 1, 'once every twelve seconds you can raise one out of bare ground, with no body to do it from', 'press');
+  N('reaper', 1, 3, 0, 'secondDeath', 'SECOND DEATH', 1, 'a skeleton that comes apart - broken or out of time - takes what is near it with it', 'ossuary');
   N('reaper', 2, 0, 0, 'deepToll', 'DEEP TOLL', 3, 'the toll takes more out of them and gives more back a point', null);
   N('reaper', 2, 0, 1, 'soulBrand', 'SOUL BRAND', 3, 'your mark lasts two seconds longer a point');
   N('reaper', 2, 1, 0, 'longPassing', 'LONG PASSING', 1, 'the passing goes half again as far, and marks everything it goes through', 'deepToll');
@@ -359,17 +359,19 @@ const TREE = [];
   N('pirate', 1, 2, 2, 'twinSkill', 'BOTH HANDS FULL', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'looter');
   N('reaper', 1, 2, 2, 'twinSkill', 'BOTH HANDS', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'press');
   // ---- THE REAPER, the rest of him ----
-  N('reaper', 0, 2, 1, 'whetScythe', 'WHETTED', 3, '+1 scythe damage a point', 'wideSwathe');
+  N('reaper', 0, 2, 1, 'whetScythe', 'WHETTED', 3, '+1 greatsword damage a point', 'wideSwathe');
   N('reaper', 0, 3, 1, 'harvestMoon', 'HARVEST MOON', 3, 'F: he plants the arc where he stands and leaves it hanging there. anything that walks through it is cut, over and over, for three seconds', 'whetScythe', true);
+  N('reaper', 0, 1, 2, 'deathGrip', 'DEATH GRIP', 3, 'F: the rune goes out, takes the nearest thing in front of him and DRAGS IT TO HIS FEET, marked and off balance. a boss will not come, but it wears the mark. +2 damage and a tile and a half of reach a point', 'keen', true);
+  N('reaper', 1, 1, 2, 'unholyGround', 'UNHOLY GROUND', 3, 'F: a patch of floor that is his. Anything of theirs standing in it is marked and bleeds; anything of yours standing in it stops running out of time and puts a bone back. a second longer a point', 'graveGoods', true);
   N('reaper', 0, 3, 2, 'winnow', 'WINNOWED', 1, 'a marked foe under a quarter of its health falls to the next thing you do to it, whatever that was', 'sunder');
   N('reaper', 1, 0, 2, 'mortcloth', 'MORTCLOTH', 3, '+6 health a point');
   N('reaper', 1, 2, 1, 'gravebound', 'GRAVEBOUND', 3, 'the wait on every skill is 8% shorter a point', 'press');
-  N('reaper', 1, 3, 1, 'gravecall', 'GRAVECALL', 3, 'F: he does not wait for a body. Three stand up around him at once, out of nothing, and they cost no harvest', 'gravebound', true);
+  N('reaper', 1, 3, 1, 'gravecall', 'GRAVECALL', 3, 'F: he does not wait for a body. Three skeletons stand up around him at once, out of bare ground, and they cost no harvest', 'gravebound', true);
   N('reaper', 1, 3, 2, 'dueRites', 'DUE RITES', 1, 'a kill that happens inside the ring of your toll leaves a heart behind', 'mortcloth');
   N('reaper', 2, 0, 2, 'deathwatch', 'DEATHWATCH', 3, 'the toll reaches a third of a tile further a point');
   N('reaper', 2, 2, 1, 'shroud', 'THE SHROUD', 3, 'for a moment after a passing, blows land 12% lighter a point', 'longPassing');
   N('reaper', 2, 3, 1, 'deadWeight', 'THE WEIGHT', 3, 'F: everything near him is dragged in to the haft, and cut on the way', 'shroud', true);
-  N('reaper', 2, 3, 2, 'coldComfort', 'COLD COMFORT', 1, 'while nothing of yours is standing, the scythe cuts half as hard again', 'deathwatch');
+  N('reaper', 2, 3, 2, 'coldComfort', 'COLD COMFORT', 1, 'while no skeleton of yours is standing, the greatsword cuts half as hard again', 'deathwatch');
   // ---- THE PIRATE, the rest of him ----
   N('pirate', 0, 2, 1, 'heavyShot', 'HEAVY SHOT', 3, 'the ball hits 15% harder a point', 'quickHands');
   N('pirate', 0, 3, 1, 'broadside', 'BROADSIDE', 3, 'F: he empties everything he has straight down the deck, through everything standing in the line of it', 'heavyShot', true);
@@ -476,6 +478,8 @@ const PAL_ICONS = {
   holyCharge: pixIcon(['..........', '.ssssss...', 'sssyysss..', 'ssyyyyss..', 'ssyyyyss.y', '.ssyyss.yy', '.ssssss.y.', '..ssss....', '...ss.....', '..........', '..........', '..........']),
   blessedHammer: pixIcon(['.y......y.', '..wwwww...', '.ywwwwwy..', '..wwwww...', '....b.....', '....b...y.', '....b.....', '.y..b.....', '....b.....', '..........', '..........', '..........']) };
 const MORE_ICONS = {
+  deathGrip: pixIcon(['..........', '..y.......', '.y.y......', '..y.y.....', '...y.y....', '....y.y...', '.....yyy..', '....yy.yy.', '....y...y.', '..........', '..........', '..........']),
+  unholyGround: pixIcon(['..........', '....y.....', '..y.y.y...', '.y..y..y..', '..y.y.y...', '....y.....', '.yyyyyyyy.', 'y.y....y.y', '..........', '..........', '..........', '..........']),
   scytheThrown: pixIcon(['.......ss.', '......ss..', '.....ss...', '....ss....', '...wss....', '..ww......', '.ww...y...', 'ww...y.y..', '......y...', '..........', '..........', '..........']),
   graveTide: pixIcon(['..........', '..y....y..', '.y.y..y.y.', '.y.y..y.y.', '.yyy..yyy.', '..y....y..', 'wwwwwwwwww', 'wwwwwwwwww', '..........', '..........', '..........', '..........']),
   wraithStep: pixIcon(['...yy.....', '..yyyy....', '..yyyy....', '...yy.....', '..y..y....', '.y....y...', '......y.yy', '.......yyy', '.......yy.', '..........', '..........', '..........']),
@@ -545,7 +549,7 @@ function drawHoly(cx, cy) {
   for (const m of hammers) { g.save(); g.translate(Math.round(m.x - cx), Math.round(m.y - cy)); g.rotate(m.t * 14); g.fillStyle = '#c9a040'; g.fillRect(-1, -1, 2, 7); g.fillStyle = '#fff6c8'; g.fillRect(-4, -5, 8, 4); g.fillStyle = '#ffd36b'; g.fillRect(-4, -5, 8, 1); g.restore(); bloom(m.x - cx, m.y - cy, 10, 0.4, 'gold'); }
 }
 const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
-const CD_MAX = { harvestMoon: 8, gravecall: 12, deadWeight: 6, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, wraithStep: 5, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5 };
+const CD_MAX = { deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 12, deadWeight: 6, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, wraithStep: 5, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
 const cdReady = k => !((P.cds && P.cds[k]) > 0), cdSet = k => { P.cds = P.cds || {}; P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
 const skill2Now = () => { if (!tal('twinSkill')) return null; const k = PROG.skill2; return k && k !== 'none' && k !== skillNow() && TREE.some(n => n.id === k && n.hero === hero() && n.active && tal(n.id)) ? k : null; };
@@ -1003,7 +1007,7 @@ function loadLevel(i) {
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
 }
 function spawnEntities() {
-  shots = []; bodies = []; risen = []; rbolts = []; hands = []; moons = []; thrownScythe = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
+  shots = []; bodies = []; risen = []; rbolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
   washReset(); strikeReset(); tideReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
   for (const e of L.ents) spawnEnt(e);
   spawnEntitiesTail();
@@ -1796,8 +1800,10 @@ function talIcon(id) {
     for (let y = 2; y <= 5; y++) for (let x = 3; x <= 7; x++) p(x, y, S.red); for (const [x, y] of Hs) p(x, y, y < 4 ? '#ff8080' : S.red); p(4, 2, '#ffb0b0'); }
   else if (kind === 'ring') { for (let a = 0; a < 24; a++) { const an = a / 24 * Math.PI * 2; p(Math.round(5.5 + Math.cos(an) * 4.5), Math.round(5.5 + Math.sin(an) * 4.5), a % 2 ? S.steel : S.steelD); }
     for (let a = 0; a < 12; a++) { const an = a / 12 * Math.PI * 2; p(Math.round(5.5 + Math.cos(an) * 2.4), Math.round(5.5 + Math.sin(an) * 2.4), S.gold); } p(5, 5, S.holy); }
-  else if (kind === 'scythe') { for (let i = 0; i < 7; i++) { p(2 + i, 9 - i, '#6a5a42'); p(3 + i, 9 - i, '#3e3428'); }   // a haft and a hooked edge
-    for (let i = 0; i < 6; i++) { const a2 = i / 6 * 1.5; p(Math.round(8 - Math.sin(a2) * 5), Math.round(2 + (1 - Math.cos(a2)) * 5), '#eef4fa'); }
+  else if (kind === 'scythe') { for (let i = 0; i < 8; i++) { p(5, 1 + i, '#c9d1dc'); p(6, 1 + i, '#7a828e'); }        /* the blade */
+    p(5, 0, '#eef4fa'); p(6, 0, '#eef4fa'); p(5, 4, '#8fd160');                                                            /* the point, and a rune in the fuller */
+    for (let i = 0; i < 7; i++) p(2 + i, 9, '#8a939f'); p(2, 9, '#c9d1dc'); p(8, 9, '#c9d1dc');                            /* the cross */
+    p(5, 10, '#2a2218'); p(6, 10, '#2a2218'); p(5, 11, '#8a7a5a');
     p(8, 2, '#ffffff'); p(9, 3, '#c9cfd8'); }
   else if (kind === 'skull') { for (let y = 2; y <= 7; y++) for (let x = 3; x <= 8; x++) p(x, y, '#d8d2b8');   // a skull, with the green in it
     p(3, 2, '#0d0f14'); p(8, 2, '#0d0f14'); p(4, 4, '#0d0f14'); p(5, 4, '#8fd160'); p(7, 4, '#0d0f14'); p(6, 4, '#8fd160');
@@ -1817,7 +1823,7 @@ function talIcon(id) {
 }
 function treeIcon(n) { if (n.active) return skillIcon(n.id); return talIcon(n.id); }
 const BRANCH_PIX = {
-  reaper: [['........ss', '.......ss.', '......ss..', '.....ss...', '....wss...', '...ww.....', '..ww......', '.ww.......', 'ww........', '..........'],
+  reaper: [['....ss....', '....ss....', '....ss....', '....ss....', '....ss....', '..wwssww..', '....ww....', '....ww....', '....WW....', '..........'],
     ['..........', '...yyy....', '..y...y...', '.y.....y..', '.y.yyy.y..', '.y.....y..', '..y...y...', '...yyy....', '..........', '..........'],
     ['....yy....', '...yyyy...', '..yyyyyy..', '..yy..yy..', '..yyyyyy..', '...yyyy...', '....yy....', '..........', '..........', '..........']],
   pirate: [['..........', '.......yy.', '......yy..', 'ssyyyyy...', 'ssyyyy....', 'ww........', '.ww.......', '..w.......', '..........', '..........'],
@@ -2335,7 +2341,7 @@ function drawHeroPick() {
     pyro: ['staff and fire, no shield', 'heat banks into THE PYRE', '80 health', 'HARDER'],
     paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
     pirate: ['cutlass and pistol', 'gold is his powder', '90 health'],
-    reaper: ['a scythe: it cuts them ALL', 'and raises what falls', '95 health', 'HARDER'] };
+    reaper: ['a greatsword: it cuts them ALL', 'and raises what falls', '95 health', 'HARDER'] };
   const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 62;
   PICK.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
     g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
@@ -2590,6 +2596,20 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false } = {}) {
   if (P.relic === 'banner') dmg = Math.max(1, Math.round(dmg * 0.8)); // the Queen's banner: they pull their blows
   if (!P.dead && P.dodge > 0 && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; P.st = Math.min(P.maxSt, P.st + 20); P.riposteT = 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
   if (P.dead || invulnerable()) return false;
+  { const sd = Math.sign(fromX - P.x) || P.face;
+    let g2 = null, gd = 1e9;
+    for (const r of risen) { if (r.life <= 0 || r.kind === 'wisp' || !(r.hp > 0)) continue;
+      if (Math.sign(r.x - P.x) !== sd) continue;                       /* it has to be on the side the blow came from */
+      const d = Math.abs(r.x - P.x); if (d > 34 || d < 4) continue;
+      if (Math.abs(r.y - P.y) > 22) continue;
+      if (d < gd) { gd = d; g2 = r; } }
+    if (g2) { g2.hp -= 1; g2.flash = 0.22; g2.life = Math.min(g2.life, g2.life);
+      SFX.clank(); hitstop(0.04); shakeCam(2); sparks(g2.x, g2.y - 10, sd, 6);
+      burst(g2.x, g2.y - 9, 5, ['#e8e2cc', '#9a927c'], 60, 0.5);
+      if (g2.hp <= 0) { g2.life = 0; number(g2.x, g2.y - 26, 'IT COMES APART', '#e8e2cc'); SFX.crack();
+        burst(g2.x, g2.y - 9, 14, ['#e8e2cc', '#9a927c', '#8fd160'], 90, 0.7); }
+      else number(g2.x, g2.y - 26, 'IT TAKES IT', '#e8e2cc');
+      return 'blocked'; } }
   const frontA = Math.sign(fromX - P.x) === P.face || fromX === P.x;
   // THE SHOULDER: he does not roll away from it, he puts the pauldron in the way of it
   if (P.shoulder > 0 && frontA && !unblockable) { P.st = Math.max(0, P.st - 6); P.shoulder = 0;
@@ -2936,7 +2956,7 @@ function updateCharge(dt) {
     if (k >= 1) fireHeavy();
   } else P.chargeFull = false;
 }
-let bodies = [], risen = [], rbolts = [], hands = [], thrownScythe = null;
+let bodies = [], risen = [], rbolts = [], hands = [], thrownScythe = null, grips = [], unholy = [];
 const TOLL_R = () => 56 + 6 * tal('deathwatch');   // how far THE TOLL reaches, and the circle that is drawn to say so (DEATHWATCH widens it, so it cannot be a fixed number)
 const SHOOTERS = new Set(['archer', 'javelin', 'scout', 'marine', 'boarder', 'spitter', 'thorn', 'harpy', 'lookout', 'sapper', 'siren', 'petrel', 'gull', 'urchin', 'spitcap', 'shardling', 'suncatcher']);
 const CASTERS = new Set(['shaman', 'weaver', 'wight', 'lurker', 'sporeling', 'windcaller', 'snuffer', 'eel', 'angler', 'bat', 'wisp', 'hearthgob', 'spider', 'cutter', 'watch']);
@@ -2970,7 +2990,8 @@ function raiseBody() {
 // second - twenty-four a second, against the reaper's own swing of fourteen - and three of them up meant the
 // player could stand and watch. They chip now, and what they are worth is that nothing is looking at you.
 function riseAt(x, y, kind) {
-  risen.push({ x, y, vx: 0, vy: 0, kind, face: Math.sign(P.x - x) || P.face, life: 9 + 4 * tal('graveGoods'), cd: 0.6, anim: Math.random() * 3, ground: false });
+  risen.push({ x, y, vx: 0, vy: 0, kind, face: Math.sign(P.x - x) || P.face, life: 9 + 4 * tal('graveGoods'), cd: 0.6, anim: Math.random() * 3, ground: false,
+    hp: 3 + tal('graveGoods'), flash: 0, rise: 0.35 });
   SFX.gasp ? SFX.gasp() : SFX.ui(); ringAt(x, y - 8, 14, '#8fd160', 0.3); motes(x, y - 8, 10, 9);
   for (let i = 0; i < 10; i++) parts.push({ x: x + (Math.random() - 0.5) * 12, y, vx: (Math.random() - 0.5) * 40, vy: -50 - Math.random() * 60, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#8fd160' : '#dfffa0', size: 2, grav: 40 });
 }
@@ -2978,7 +2999,7 @@ function updateRisen(dt) {
   for (const b of bodies) b.life -= dt;
   bodies = bodies.filter(b => b.life > 0);
   for (const r of risen) {
-    r.life -= dt; r.anim += dt; r.cd -= dt;
+    r.life -= dt; r.anim += dt; r.cd -= dt; r.flash = Math.max(0, (r.flash || 0) - dt); r.rise = Math.max(0, (r.rise || 0) - dt);
     let tgt = null, td = 1e9;
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue; const d = Math.hypot(e.x - r.x, e.y - r.y); if (d < 190 && d < td) { td = d; tgt = e; } }
     if (r.kind === 'wisp') {                                   // it drifts after you and throws
@@ -3050,10 +3071,20 @@ function drawRisen(cx, cy) {
     const x = Math.round(r.x - cx), y = Math.round(r.y - cy), a = Math.min(1, r.life * 1.2) * (r.kind === 'wisp' ? 0.75 : 0.9);
     const bob = r.kind === 'wisp' ? Math.round(Math.sin(r.anim * 4) * 2) : 0;
     g.globalAlpha = a;
-    if (r.kind === 'wisp') { g.fillStyle = '#1b2a18'; g.beginPath(); g.arc(x, y + bob, 6, 0, 7); g.fill();
-      g.fillStyle = '#8fd160'; g.fillRect(x - 2, y - 1 + bob, 1, 1); g.fillRect(x + 1, y - 1 + bob, 1, 1);
-      g.globalAlpha = a * 0.3; g.beginPath(); g.arc(x, y + bob, 11, 0, 7); g.fill(); }
-    else wraith(x, y, r.kind, r.face, r.anim, a);
+    if (r.kind === 'wisp') {                                          /* A BURNING SKULL, floating: the caster's share */
+      const sy = y + bob;
+      for (let i = 0; i < 3; i++) { const t2 = (r.anim * 2 + i / 3) % 1;   /* the flame coming off the crown */
+        g.globalAlpha = a * 0.5 * (1 - t2); g.fillStyle = t2 < 0.4 ? '#dfffa0' : '#8fd160';
+        g.fillRect(x - 2 + i * 2, sy - 7 - Math.round(t2 * 7), 1, 2); }
+      g.globalAlpha = a; g.fillStyle = '#e8e2cc'; g.fillRect(x - 3, sy - 5, 7, 5); g.fillRect(x - 2, sy - 6, 5, 1);
+      g.fillStyle = '#b9b2a0'; g.fillRect(x - 3, sy - 2, 7, 1);
+      g.fillStyle = '#06080a'; g.fillRect(x - 2, sy - 4, 2, 2); g.fillRect(x + 1, sy - 4, 2, 2);
+      g.fillStyle = '#e8e2cc'; g.fillRect(x - 2, sy - 1, 5, 1);
+      g.fillStyle = '#7a7466'; for (let k = 0; k < 4; k++) g.fillRect(x - 2 + k, sy - 1, 1, 1);
+      g.globalAlpha = a * (0.7 + 0.3 * Math.sin(r.anim * 6)); g.fillStyle = '#8fd160';
+      g.fillRect(x - 2, sy - 4, 1, 2); g.fillRect(x + 2, sy - 4, 1, 2);
+      g.globalAlpha = a * 0.28; g.beginPath(); g.arc(x, sy - 3, 10, 0, 7); g.fill(); }
+    else wraith(x, y, r.kind, r.face, r.anim, a, 0, r.flash || 0, r.rise || 0);
     g.globalAlpha = 1;
     const k = r.life < 2 ? r.life / 2 : 1; if (k < 1 && Math.random() < 0.3) parts.push({ x: r.x, y: r.y - 8, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: -10 });
   }
@@ -3079,40 +3110,58 @@ function drawRisen(cx, cy) {
   for (const b of rbolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy);
     g.fillStyle = '#dfffa0'; g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 0.5; g.fillStyle = '#8fd160'; g.fillRect(x - 3, y - 3, 7, 7); g.globalAlpha = 1; }
 }
-// A THING HE HAS RAISED. Not a box: a cowl with nothing in it but two lights, a body that narrows into a
-// hem the ground never quite holds, and whatever it carried in life. `deep` draws it heavier and taller.
-function wraith(x, y, kind, face, anim, a, deep = 0) {
-  const h = 17 + deep * 3, w = (kind === 'shade' ? 8 : 10) + deep;
-  const sway = Math.sin(anim * 3 + x * 0.2) * 0.8;
-  g.globalAlpha = a * 0.22; g.fillStyle = '#0a1208';                       // the cold it stands in
-  g.beginPath(); g.ellipse(x, y, w * 0.9, 3, 0, 0, 7); g.fill();
-  // the hem: four tatters that move, none of them reaching the floor together
-  g.globalAlpha = a * 0.8; g.fillStyle = '#101a12';
-  for (let i = 0; i < 5; i++) { const tx = x - w / 2 + i * (w / 4.5), tl = 3 + ((i * 7 + Math.floor(anim * 5 + i)) % 4);
-    g.fillRect(Math.round(tx + sway), y - tl, 2, tl); }
-  // the body, narrow at the foot and wide at the shoulder
+// WHAT HE RAISES. Not a ghost - a SKELETON, and the difference is the whole point: a ghost is a thing you
+// look through and a skeleton is a thing that stands in the way. It is drawn as bone so you can count the
+// hits it has left in it at a glance, and the green is only in the sockets, which is the one part of it
+// that is still his.
+function wraith(x, y, kind, face, anim, a, deep = 0, flash = 0, rise = 0) {
+  const h = 17 + deep * 2;
+  const sway = Math.sin(anim * 3 + x * 0.2) * 0.6;
+  const B = flash > 0 ? '#ffffff' : '#e8e2cc', M = flash > 0 ? '#f4f0e2' : '#b9b2a0', D = flash > 0 ? '#c8c4b6' : '#7a7466';
+  const sx = Math.round(x + sway), sunk = Math.round(rise * 18);        /* it comes up out of the ground */
+  g.save(); g.beginPath(); g.rect(x - 16, y - h - 8, 32, h + 8 - sunk); g.clip();
+  g.globalAlpha = a * 0.25; g.fillStyle = '#0a1208';
+  g.beginPath(); g.ellipse(x, y, 7 + deep, 3, 0, 0, 7); g.fill();       /* the cold it stands in */
   g.globalAlpha = a;
-  for (let i = 0; i < h - 4; i++) { const t = i / (h - 5), ww = Math.round(w * (0.55 + 0.45 * t));
-    g.fillStyle = i > h - 11 ? '#131c16' : '#0d1410';
-    g.fillRect(Math.round(x - ww / 2 + sway * (1 - t)), y - 4 - i, ww, 1); }
-  // the cowl, and what is inside it
-  const hy = y - h + 1;
-  g.fillStyle = '#0a100c'; g.fillRect(x - 4, hy, 8, 7); g.fillRect(x - 3, hy - 2, 6, 2);
-  g.fillStyle = '#161f18'; g.fillRect(x - 4, hy, 8, 2); g.fillRect(x + (face > 0 ? 3 : -4), hy, 1, 7);
-  g.fillStyle = '#000000'; g.fillRect(x - 3, hy + 2, 6, 4);
-  const lit = 0.6 + 0.4 * Math.sin(anim * 6 + x);
+  const st = Math.floor(anim * 6) % 2;                                  /* the legs alternate: bones walk badly */
+  for (const [lx, o] of [[-3, st], [2, 1 - st]]) {                      /* two legs, each a shin and a thigh */
+    g.fillStyle = D; g.fillRect(sx + lx, y - 7, 2, 4);
+    g.fillStyle = M; g.fillRect(sx + lx + (o ? 1 : -1), y - 4, 2, 4);
+    g.fillStyle = D; g.fillRect(sx + lx + (o ? 1 : -1) - 1, y - 1, 4, 1); }
+  g.fillStyle = M; g.fillRect(sx - 4, y - 9, 9, 2);                     /* the pelvis */
+  g.fillStyle = D; g.fillRect(sx - 4, y - 8, 9, 1);
+  g.fillStyle = M; g.fillRect(sx - 1, y - h + 6, 2, h - 15);            /* the spine */
+  for (let i = 0; i < 3; i++) { const ry = y - 11 - i * 2;              /* the ribs, widest at the top */
+    const w2 = 4 - i * 0 + (i === 0 ? -1 : 0);
+    g.fillStyle = i % 2 ? M : B; g.fillRect(sx - 1 - w2, ry, w2, 1); g.fillRect(sx + 1, ry, w2, 1);
+    g.fillStyle = D; g.fillRect(sx - 1 - w2, ry + 1, 1, 1); g.fillRect(sx + w2, ry + 1, 1, 1); }
+  g.fillStyle = B; g.fillRect(sx - 5, y - h + 5, 11, 2);                /* the collar bones */
+  g.fillStyle = D; g.fillRect(sx - 5, y - h + 7, 11, 1);
+  const hy = y - h;                                                     /* THE SKULL */
+  g.fillStyle = B; g.fillRect(sx - 3, hy, 7, 5); g.fillRect(sx - 2, hy - 1, 5, 1);
+  g.fillStyle = M; g.fillRect(sx - 3, hy + 3, 7, 1);
+  g.fillStyle = '#06080a'; g.fillRect(sx - 2, hy + 1, 2, 2); g.fillRect(sx + 1, hy + 1, 2, 2);   /* the sockets */
+  g.fillStyle = D; g.fillRect(sx, hy + 3, 1, 1);                                                 /* the nasal notch */
+  g.fillStyle = B; g.fillRect(sx - 2, hy + 4, 5, 1);                                             /* the jaw */
+  g.fillStyle = D; for (let k = 0; k < 4; k++) g.fillRect(sx - 2 + k, hy + 4, 1, 1);
+  const lit = 0.6 + 0.4 * Math.sin(anim * 6 + x);                       /* and the two lights in the sockets */
   g.globalAlpha = a * lit; g.fillStyle = '#8fd160';
-  g.fillRect(x - 2 + (face > 0 ? 1 : 0), hy + 3, 1, 2); g.fillRect(x + 1 + (face > 0 ? 1 : 0), hy + 3, 1, 2);
-  g.globalAlpha = a * lit * 0.25; g.fillStyle = '#8fd160';
-  g.beginPath(); g.arc(x, hy + 4, 7, 0, 7); g.fill();
+  g.fillRect(sx - 2 + (face > 0 ? 1 : 0), hy + 1, 1, 2); g.fillRect(sx + 1 + (face > 0 ? 1 : 0), hy + 1, 1, 2);
+  g.globalAlpha = a * lit * 0.22; g.beginPath(); g.arc(sx, hy + 2, 8, 0, 7); g.fill();
   g.globalAlpha = a;
-  // and what it had in its hands
-  if (kind === 'wight') { g.fillStyle = '#5a4634'; g.fillRect(x + face * 4, y - h + 6, face * 2, 2);   // a haft, held out
-    g.fillStyle = '#7a828e'; g.fillRect(x + face * 6, y - h + 4, face * 3, 2); }
-  else { g.strokeStyle = '#4a3e2e'; g.lineWidth = 1; g.beginPath();                                      // a small scythe
-    g.moveTo(x + face * 4, y - 3); g.lineTo(x + face * 5, y - h + 3); g.stroke();
-    g.strokeStyle = '#b8c8b0'; g.beginPath(); g.arc(x + face * 5, y - h + 3, 4, face > 0 ? 2.2 : 0.9, face > 0 ? 4.0 : 2.7); g.stroke(); }
-  g.globalAlpha = 1;
+  // AND WHAT IT CARRIED. A skeleton with a rusted sword is a body-block; one with a bow stands at the back.
+  if (kind === 'wight') {
+    g.fillStyle = M; g.fillRect(sx + face * 4, y - h + 7, face * 3, 2);                            /* the arm out */
+    g.fillStyle = '#5a4a38'; g.fillRect(sx + face * 6, y - h + 8, face * 2, 2);                    /* the grip */
+    g.fillStyle = '#8a7f6e'; g.fillRect(sx + face * 7, y - h + 4, face * 2, 7);                    /* a rusted blade */
+    g.fillStyle = '#b3a892'; g.fillRect(sx + face * 7, y - h + 4, face * 1, 7);
+  } else if (kind === 'shade') {
+    g.fillStyle = M; g.fillRect(sx + face * 3, y - h + 7, face * 3, 2);
+    g.strokeStyle = '#5a4a38'; g.lineWidth = 1; g.beginPath();                                      /* a bow, half rotted */
+    g.arc(sx + face * 5, y - h + 8, 5, face > 0 ? -1.1 : 2.0, face > 0 ? 1.1 : 4.2); g.stroke();
+    g.strokeStyle = '#9a927c'; g.beginPath(); g.moveTo(sx + face * 5, y - h + 3); g.lineTo(sx + face * 5, y - h + 13); g.stroke();
+  }
+  g.restore(); g.globalAlpha = 1;
 }
 // THE CULL. His own weight does nothing. What does the work is the thing that tears out of whatever he lands
 // on: it comes up out of the body, takes one swing at everything within reach of it, and is gone in half a
@@ -3122,6 +3171,92 @@ function cullAt(x, y, dmg, face) {
   culls.push({ x, y, t: 0, dmg, face: face || 1, struck: false });
   SFX.hiss ? SFX.hiss() : SFX.puff(); ringAt(x, y - 8, 20, '#8fd160', 0.3);
   for (let i = 0; i < 14; i++) parts.push({ x: x + (Math.random() - 0.5) * 12, y: y - Math.random() * 10, vx: (Math.random() - 0.5) * 40, vy: -70 - Math.random() * 60, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#8fd160' : '#1b2a18', size: 2, grav: 40 });
+}
+// DEATH GRIP. A two-handed sword has one problem and it is that everything worth hitting is standing
+// somewhere else. He puts the rune out, takes hold of the nearest thing in front of him and DRAGS IT IN -
+// to his feet, marked, and too off balance to do anything about the first swing. It does not work on a
+// boss, because nothing in this game moves a boss: a boss gets the mark and the stagger and stays where it
+// is, which is still worth the stamina.
+function deathGrip() {
+  let b = null, bd = 1e9;
+  const reach = 150 + 24 * tal('deathGrip');
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
+    if (Math.sign(e.x - P.x) !== P.face) continue;
+    const d = Math.abs(e.x - P.x); if (d > reach || d < 16) continue;
+    if (Math.abs(e.y - P.y) > 44) continue;
+    if (d < bd) { bd = d; b = e; } }
+  if (!b) { number(P.x, P.y - 26, 'NOTHING IN FRONT', '#9aa39a'); SFX.buzz(); return false; }
+  markFoe(b, true); b.stagger = Math.max(b.stagger || 0, 0.85); b.flash = 0.2;
+  SFX.hiss ? SFX.hiss() : SFX.puff(); SFX.clank(); P.castT = 0.25;
+  hurtEnemy(b, 4 + 2 * tal('deathGrip'), P.x, false);
+  if (!b.alive) return true;
+  if (b.maxHp) { number(b.x, b.y - b.h - 14, 'IT WILL NOT COME', '#9aa39a'); return true; }
+  grips.push({ e: b, t: 0, x0: b.x, tx: P.x + P.face * 22 });
+  number(b.x, b.y - b.h - 14, 'COME HERE', '#8fd160');
+  return true;
+}
+function updateGrips(dt) {
+  for (const gp of grips) {
+    gp.t += dt; const e = gp.e;
+    if (!e || !e.alive) { gp.t = 9; continue; }
+    const k = Math.min(1, gp.t / 0.28), ease = k * k * (3 - 2 * k);
+    e.x = gp.x0 + (gp.tx - gp.x0) * ease; e.vx = 0;
+    e.stagger = Math.max(e.stagger || 0, 0.3);
+    if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 10, y: e.y - e.h / 2, vx: (P.x - e.x) * 1.4, vy: (Math.random() - 0.5) * 40, life: 0.35, max: 0.35, col: '#8fd160', size: 1, grav: 0 });
+    if (k >= 1 && !gp.done) { gp.done = 1; dust(e.x, e.y, 6); SFX.thud(); shakeCam(2); }
+  }
+  grips = grips.filter(gp => gp.t < 0.34);
+}
+// THE GRIP ITSELF, drawn: a chain of runes from his hand to whatever it has hold of, so the pull is a
+// thing that happens between two bodies and not a creature sliding for no reason.
+function drawGrips(cx, cy) {
+  for (const gp of grips) { const e = gp.e; if (!e) continue;
+    const x0 = Math.round(P.x - cx), y0 = Math.round(P.y - 14 - cy), x1 = Math.round(e.x - cx), y1 = Math.round(e.y - (e.h || 12) / 2 - cy);
+    const n = 7, fade = Math.max(0, 1 - gp.t / 0.34);
+    g.globalAlpha = 0.85 * fade; g.fillStyle = '#8fd160';
+    for (let i = 0; i <= n; i++) { const t2 = i / n, wob = Math.sin(t2 * 9 + time * 22) * 2 * (1 - t2);
+      g.fillRect(Math.round(x0 + (x1 - x0) * t2) - 1, Math.round(y0 + (y1 - y0) * t2 + wob) - 1, 2, 2); }
+    g.globalAlpha = 0.5 * fade; g.fillStyle = '#dfffa0';
+    g.fillRect(x1 - 3, y1 - 3, 6, 6); g.globalAlpha = 1; }
+}
+// UNHOLY GROUND. A patch of floor that belongs to him. Anything of his standing in it stops running out of
+// time and puts a bone back; anything of theirs standing in it is marked and bleeds for as long as it stays.
+// It is the answer to the one thing the raising could never do - hold a PLACE instead of a moment.
+function unholyGround() {
+  unholy.push({ x: P.x, y: P.y, r: 52, life: 6 + tal('unholyGround'), tick: 0 });
+  SFX.crack(); SFX.hiss ? SFX.hiss() : SFX.puff(); shakeCam(3); P.castT = 0.3;
+  ringAt(P.x, P.y - 4, 52, '#8fd160', 0.4); number(P.x, P.y - 30, 'UNHOLY GROUND', '#8fd160');
+  for (let i = 0; i < 18; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 100, y: P.y, vx: (Math.random() - 0.5) * 30, vy: -30 - Math.random() * 60, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#8fd160' : '#2a3a24', size: 2, grav: 50 });
+  return true;
+}
+function updateUnholy(dt) {
+  for (const u of unholy) {
+    u.life -= dt; u.tick -= dt;
+    if (u.tick <= 0) { u.tick = 0.5;
+      for (const e of enemies) { if (!e.alive || e.harmless) continue;
+        if (Math.abs(e.x - u.x) > u.r || Math.abs(e.y - u.y) > 30) continue;
+        hurtEnemy(e, 3, u.x, false); markFoe(e); }
+      for (const r of risen) { if (r.life <= 0) continue;
+        if (Math.abs(r.x - u.x) > u.r || Math.abs(r.y - u.y) > 34) continue;
+        r.life += 0.5; if (r.hp < 3 + tal('graveGoods') && Math.random() < 0.34) { r.hp++; r.flash = 0.15; } }
+    }
+    if (Math.random() < dt * 30) { const gx = u.x + (Math.random() - 0.5) * u.r * 2;
+      parts.push({ x: gx, y: u.y - 1, vx: 0, vy: -14 - Math.random() * 16, life: 0.9, max: 0.9, col: '#8fd160', size: 1, grav: -6 }); }
+  }
+  unholy = unholy.filter(u => u.life > 0);
+}
+function drawUnholy(cx, cy) {
+  for (const u of unholy) {
+    const x = Math.round(u.x - cx), y = Math.round(u.y - cy), k = Math.min(1, u.life / 1.2), pulse = 0.5 + 0.5 * Math.sin(time * 5);
+    g.globalAlpha = (0.13 + 0.07 * pulse) * k; g.fillStyle = '#8fd160';
+    g.beginPath(); g.ellipse(x, y, u.r, 12, 0, 0, 7); g.fill();
+    g.globalAlpha = (0.4 + 0.25 * pulse) * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(x, y, u.r, 12, 0, 0, 7); g.stroke();
+    g.globalAlpha = 0.5 * k; g.fillStyle = '#dfffa0';
+    for (let i = 0; i < 8; i++) { const a2 = i / 8 * 6.283 + time * 0.4;
+      g.fillRect(Math.round(x + Math.cos(a2) * (u.r - 5)) - 1, Math.round(y + Math.sin(a2) * 8) - 1, 2, 2); }
+    g.globalAlpha = 1;
+  }
 }
 function updateCulls(dt) {
   for (const c of culls) {
@@ -3349,6 +3484,10 @@ function updatePlayer(dt) {
   // RING OF FIRE
   if (isPyro() && skillPress('flameRing') && cdReady('flameRing') && canAct()) { if (spend(20)) { cdSet('flameRing'); fireRings.push({ x: P.x, y: P.y - 8, r: 6, hit: new Set() }); SFX.puff(); SFX.heavy(); P.castT = 0.25; } else tired(); }
   // SPEAR OF LIGHT: straight ahead to the first wall, through everything
+  /* DEATH GRIP: he does not go to it. It comes to him. */
+  if (isReaper() && skillPress('deathGrip') && cdReady('deathGrip') && canAct()) { if (spend(20)) { if (deathGrip()) cdSet('deathGrip'); } else tired(); }
+  /* UNHOLY GROUND: a patch of floor that is his */
+  if (isReaper() && skillPress('unholyGround') && cdReady('unholyGround') && canAct()) { if (spend(26)) { cdSet('unholyGround'); unholyGround(); } else tired(); }
   // THE SCYTHE THROWN: it goes out and it comes back, and it cuts both ways.
   if (isReaper() && skillPress('scytheThrown') && cdReady('scytheThrown') && canAct()) { if (spend(26)) { cdSet('scytheThrown');
     P.castT = 0.25; SFX.pSlash();
@@ -8320,7 +8459,7 @@ function updateProps(dt) {
       if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
   }
   for (const p of (L.pools || [])) if (p.draining && !p.frogDry) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updatePortal(dt);
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updateGrips(dt); updateUnholy(dt); updatePortal(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -9991,7 +10130,7 @@ function drawWorld(cx, cy, showPlayer) {
           g.moveTo(Math.round(P.x - cx), Math.round(P.y - 12 - cy)); g.lineTo(Math.round(h.x - cx), Math.round(h.y - cy)); g.stroke();
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
       drawPortal(cx, cy);
-      drawRisen(cx, cy);
+      drawUnholy(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy);
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
@@ -11100,7 +11239,7 @@ function render() {
     }
     if (isReaper()) { const hy = SET.iron ? 41 : 29, full = (P.harvest || 0) >= 100;
       bar(16, hy, 70, 4, (P.harvest || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#dfffa0' : '#8fd160') : '#5a8a3a', (P.harvest || 0) / 100);
-      g.fillStyle = '#8fd160'; g.fillRect(7, hy - 2, 2, 8); g.fillRect(5, hy - 3, 6, 1); g.fillRect(10, hy - 2, 1, 2);   // a little scythe
+      g.fillStyle = '#8fd160'; g.fillRect(7, hy - 4, 2, 9); g.fillRect(4, hy + 2, 8, 1); g.fillRect(7, hy + 5, 2, 2);   /* a little greatsword: blade, cross, grip */
       // WHAT C DOES RIGHT NOW. One key does three things - tap to raise, hold for the toll, tap at a full
       // harvest for the last of it - and nothing on the screen ever said which. It says now, and it changes
       // as the bar fills and as a body comes within reach of him.
