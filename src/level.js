@@ -385,7 +385,7 @@ function theStockade() {
     ent('silver', 55, 9);
     coins([47, 11], [50, 11], [56, 9], [59, 9], [63, 11], [65, 11]); }
   // and two more of their knights further up the camp, now that you have met one
-  ent('heavy', 208, 19, { face: -1 }); ent('heavy', 268, 19, { face: -1 });   /* 300 lands inside rock once the groups have shifted the map */
+  ent('heavy', 208, 19, { face: -1 }); ent('heavy', 223, 19, { face: -1 }); ent('heavy', 249, 19, { face: -1 });   /* base coordinates, checked against where the GROUPS put them in the built level: 268 and 300 land inside rock */
 
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
   block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('silver', 57, 12);

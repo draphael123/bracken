@@ -9768,7 +9768,8 @@ function drawMenu() {
   if (menuFrom === 'play' && L) text(LEVELS[levelIndex].name + '  ' + fmt(levelTime), VW / 2, y + h - 22, UI.dim, 'center');
   const M = menuItems();
   const off = Math.max(0, Math.min(M.length - MENU_ROWS, menuI - MENU_ROWS + 2));
-  if (off > 0) text('^', x + w - 12, y + 14, UI.dim, 'center'); if (off + MENU_ROWS < M.length) text('v', x + w - 12, y + h - 22, UI.dim, 'center');
+  // in the gutter, clear of the rows' values and of the level line along the foot of the board
+  if (off > 0) text('^', x + 6, y + 16, UI.dim, 'center', 6); if (off + MENU_ROWS < M.length) text('v', x + 6, y + h - 30, UI.dim, 'center', 6);
   { const want = y + 22 + (menuI - off) * 12; menuBarY = menuBarY === null || Math.abs(menuBarY - want) > 60 ? want : menuBarY + (want - menuBarY) * 0.35;
     if (!isHeader(M[menuI])) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = UI.sel; g.fillRect(x + 5, Math.round(menuBarY) - 2, 2, 11); } }
   M.forEach((k, i) => {
