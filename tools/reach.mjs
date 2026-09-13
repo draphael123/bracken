@@ -14,7 +14,7 @@ import { floodReach } from '../src/reachcore.js';
 const want = process.argv[2];
 let bad = 0;
 for (const lv of LEVELS) {
-  if (lv.hidden) continue;
+  if (lv.hidden && !lv.secret) continue;
   if (want && lv.id !== want) continue;
   const L = lv.build(), W = L.W;
   const { seen, footing, assisted, near, jumpNear } = floodReach(L, T);

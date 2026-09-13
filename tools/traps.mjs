@@ -11,7 +11,7 @@ import { floodReach } from '../src/reachcore.js';
 const want = process.argv[2];
 let bad = 0;
 for (const lv of LEVELS) {
-  if (lv.hidden || (want && lv.id !== want)) continue;
+  if ((lv.hidden && !lv.secret) || (want && lv.id !== want)) continue;
   const L = lv.build();
   const R = floodReach(L, T), { seen, footing, key, expand, assisted } = R;
   // the goal: the boss if there is one, else the gate

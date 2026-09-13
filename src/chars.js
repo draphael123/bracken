@@ -1637,6 +1637,121 @@ export function bakeHearthGob() {
 
 // THE ROPE CUTTER - he is not interested in you. He is interested in the rope. 12x13.
 // Frames: 0 walk, 1 raise (axe up), 2 chop (axe into the rope), 3 backing off.
+// ============================================================================================
+// UNDERLEAF'S TWO. The village is asleep, so the level is read by EAR - and these two are that
+// rule made into creatures. One of them is the quietest thing in the game and one of them is
+// the loudest, and neither of them fights you the way a goblin normally does.
+// ============================================================================================
+
+// THE GOBLIN ASSASSIN - 14x16. The only goblin in Underleaf who is awake, and the only one who
+// is not carrying a light. He works from above: a hood, a wrap over the face, two short knives
+// held point-down. Frames: 0 perch (crouched, knives in), 1/2 stalk, 3 the drop (knives out,
+// falling), 4 stab, 5 gone (a smear of nothing).
+export function bakeAssassin() {
+  const AP = Object.assign({}, EP, { h: '#26222e', H: '#16131c', v: '#3a3448', a: '#9aa3b0', A: '#5a6270', e: '#d8e070' });
+  const f = rows => outline(fromGrid(rows, AP, 1), OUT);
+  const P = '..............';
+  // the hood is the silhouette: a peak, a deep face, nothing of the goblin in it but two lights
+  const hood = ['....hhhh......', '...hhhhhh.....', '..hhHHHHhh....', '..hHeHHeHh....', '..hhHHHHhh....', '...hvvvvh.....'];
+  const perch = f([P, P, ...hood, '..hhvvvvhh....', '.hhvvvvvvhh...', '..hvvvvvvh....', '..hh....hh....', '.hh......hh...', P, P, P]);
+  const stalk1 = f([P, ...hood, '..hhvvvvhh..a.', '.hhvvvvvvhhA..', '..hvvvvvvh....', '..hh...hh.....', '.hh.....hh....', '.h.......hh...', P, P, P]);
+  const stalk2 = f([P, ...hood, '.a.hhvvvvhh...', '..Ahhvvvvvvh..', '..hvvvvvvh....', '...hh.hh......', '..hh...hh.....', '.hh.....h.....', P, P, P]);
+  const drop = f(['a.........a...', 'A.hhhhhh..A...', 'a.hhHHHHh.a...', '..hHeHHeHh....', '..hhHHHHhh....', '...hvvvvh.....', '..hhvvvvhh....', '.hhvvvvvvhh...', '..hvvvvvvh....', '...hh..hh.....', '...hh..hh.....', '...h....h.....', P, P, P, P]);
+  const stab = f([P, P, ...hood, '..hhvvvvhhaaaa', '.hhvvvvvvhAAA.', '..hvvvvvvh....', '..hh...hh.....', '.hh.....hh....', P, P, P]);
+  const gone = f([P, P, P, '....vv........', '...vvvv.......', '....vv........', '.....v........', P, P, P, P, P, P, P, P, P]);
+  return pack([perch, stalk1, stalk2, drop, stab, gone], 7, 17, 9, 15);
+}
+
+// THE GOBLIN BERSERKER - 20x22. No armour, no shield, no guard and no intention of stopping.
+// He sleeps chained or shut in, and when he is woken he is the loudest thing in the valley.
+// Frames: 0 asleep (slumped), 1 waking, 2/3 run, 4 windup (both arms back), 5 swing, 6 stumble.
+export function bakeBerserker() {
+  // He is a BRUTE gone wrong, so he is drawn out of the brute's own letters: the same green, the same tusks,
+  // the same dark limbs. What makes him a berserker is what is missing - no tunic, no shield, nothing on him
+  // at all except a band of red paint across the eyes - and the cleaver, which is the biggest single thing
+  // any goblin in the game carries.
+  const BP = Object.assign({}, EP, { c: '#c9463d', C: '#8f2f28', i: '#c9d1dc', I: '#7c8797', u: '#8a5a32', U: '#5c3a1d', v: '#7ab558' });
+  const W = 22, H = 22;
+  const ctr = str => { const l = Math.floor((W - str.length) / 2); return '.'.repeat(l) + str + '.'.repeat(W - str.length - l); };
+  const pad = n => Array.from({ length: n }, () => '.'.repeat(W));
+  const put = (rows, y, x, str) => { if (y < 0 || y >= rows.length) return; rows[y] = rows[y].slice(0, x) + str + rows[y].slice(x + str.length); };
+  const f = rows => outline(fromGrid(rows, BP, 1), OUT);
+  // THE HEAD: jammed down between the shoulders, all jaw, with the paint across both eyes
+  const head = (shut) => [
+    ctr('gggggg'), ctr('gggggggg'),
+    ctr('cc' + (shut ? 'GGGGGG' : 'eoggeo') + 'cc'),      /* the band, and the eyes inside it */
+    ctr('gggggggggg'), ctr('tgGGGGGGgt'), ctr('gggggg')];
+  const shoulders = [ctr('GGGgggggggggGGG'), ctr('GGGGGgggggggGGGGG'), ctr('GGvGGGGGGGGGGvGG')];
+  const chest = [ctr('GggggggggggG'), ctr('GgggccccccgggG'), ctr('GggggccccgggG'), ctr('GGggggggggGG')];
+  const legs = k => k === 1 ? [ctr('GGG....GGG'), ctr('GGG......GGG'), ctr('GGGG....GGGG')]
+    : k === 2 ? [ctr('....GGGGGG....'), ctr('...GGG..GGG...'), ctr('..GGGG..GGGG..')]
+      : [ctr('GGGG..GGGG'), ctr('GGGG..GGGG'), ctr('GGGGG..GGGGG')];
+  const body = (shut, k) => [...pad(4), ...head(shut), ...shoulders, ...chest, ...legs(k), ...pad(2)];
+  // THE CLEAVER: a slab of iron on a short haft, and it is nearly as long as he is tall
+  // the cleaver is a SLAB, and it has to read at 1x from across a dark street - so it is five wide and it
+  // is the only pale thing on him. Overhead in the windup it is the whole top of the sprite: that is the
+  // one mark he gives you and it should be impossible to mistake for anything else he does.
+  const cleaverLow = rows => { for (let y = 13; y <= 15; y++) put(rows, y, 17, 'uu');
+    put(rows, 16, 16, 'iiiii'); put(rows, 17, 16, 'iIIIi'); put(rows, 18, 16, 'iIIIi'); put(rows, 19, 16, 'iiiii'); return rows; };
+  const cleaverUp = rows => { for (let y = 7; y <= 11; y++) put(rows, y, 15 - (y - 7), 'uu');
+    put(rows, 1, 6, 'iiiiiiii'); put(rows, 2, 6, 'iIIIIIIi'); put(rows, 3, 6, 'iIIIIIIi'); put(rows, 4, 7, 'iiiiii'); put(rows, 5, 9, 'ii'); put(rows, 6, 10, 'uu'); return rows; };
+  const cleaverOut = rows => { for (let y = 12; y <= 13; y++) put(rows, y, 14, 'uu');
+    put(rows, 11, 16, 'iiiiii'); put(rows, 12, 16, 'iIIIIi'); put(rows, 13, 16, 'iIIIIi'); put(rows, 14, 17, 'iiiii'); return rows; };
+
+  const asleep = (() => { const r = [...pad(9), ...head(true).slice(0, 5).map(s2 => s2), ...shoulders, ...chest, ...pad(2)];
+    while (r.length < H) r.push('.'.repeat(W));
+    put(r, 20, 4, 'GGGG...GGGG'); put(r, 13, 2, 'uuiiii');   /* slumped, with the cleaver across his knees */
+    return f(r.slice(0, H)); })();
+  const waking = f(cleaverLow(body(false, 0)));
+  const run1 = f(cleaverLow(body(false, 1)));
+  const run2 = f(cleaverLow(body(false, 2)));
+  const wind = f(cleaverUp(body(false, 0)));
+  const swing = f(cleaverOut(body(false, 2)));
+  const stumble = (() => { const r = [...pad(8), ...head(true), ...shoulders, ...chest, ...pad(1)];
+    while (r.length < H) r.push('.'.repeat(W));
+    put(r, 21, 5, 'GG......GG'); put(r, 14, 1, 'iiiiuu');
+    return f(r.slice(0, H)); })();
+  return pack([asleep, waking, run1, run2, wind, swing, stumble], 11, 21, 14, 17);
+}
+
+// THE GRANDMOTHER OF UNDERLEAF - 24x26. The oldest goblin alive, in a shawl, on a stick, with two
+// white eyes that have not seen anything for forty years. She is not big. She does not need to be.
+// Frames: 0 sitting, 1 rising, 2/3 walking (feeling ahead with the stick), 4 listening (hand cupped,
+// perfectly still), 5 the sweep, 6 the stick thrown, 7 rapping the floor (her own giveaway).
+export function bakeGrandmother() {
+  const GP = Object.assign({}, EP, { m: '#7aa85a', M: '#47693a', v: '#6a5a7a', V: '#463a52', e: '#f6f6ee', u: '#8a5a32', U: '#5c3a1d', k: '#d8d2c0' });
+  const W = 24, H = 26;
+  const blank = () => Array.from({ length: H }, () => '.'.repeat(W));
+  const put = (R, x, y, s2) => { if (y < 0 || y >= H || x < 0) return; R[y] = R[y].slice(0, x) + s2 + R[y].slice(x + s2.length); };
+  const f = rows => outline(fromGrid(rows, GP, 1), OUT);
+  // the shawl IS the silhouette: a hood of cloth with a small green face in the middle of it and
+  // two blind white eyes that do not track you
+  const head = (R, x, y) => {
+    put(R, x + 1, y, 'vvvvvv'); put(R, x, y + 1, 'vvvvvvvv');
+    put(R, x, y + 2, 'vvmmmmvv'); put(R, x, y + 3, 'vmeMMemv');
+    put(R, x, y + 4, 'vmmmmmmv'); put(R, x + 1, y + 5, 'vmMMmv'); put(R, x + 1, y + 6, 'vvvvvv');
+  };
+  const body = (R, y, lean) => {
+    put(R, 5 + lean, y, 'vvvvvvvvvv'); put(R, 4 + lean, y + 1, 'vvvvvvvvvvvv');
+    put(R, 4 + lean, y + 2, 'vvvVVVVvvvvv'); put(R, 4 + lean, y + 3, 'vvvvvvvvvvvv');
+    put(R, 4 + lean, y + 4, 'vvvVVVVvvvvv'); put(R, 5 + lean, y + 5, 'vvvvvvvvvv');
+    put(R, 6 + lean, y + 6, 'MMM..MMM'); put(R, 5 + lean, y + 7, 'MMM....MMM');
+  };
+  const stick = (R, x, y, len, dx) => { for (let k = 0; k < len; k++) put(R, x + Math.round(k * dx), y + k, 'u'); };
+  const sit = (() => { const R = blank(); head(R, 7, 8); body(R, 15, 0); put(R, 4, 22, 'VVVVVVVVVVVVVV'); stick(R, 18, 12, 9, 0); return f(R); })();
+  const rise = (() => { const R = blank(); head(R, 7, 5); body(R, 12, 0); stick(R, 18, 10, 11, 0); return f(R); })();
+  const walk = k => { const R = blank(); head(R, 7, 3 + (k ? 0 : 1)); body(R, 10 + (k ? 0 : 1), 0);
+    stick(R, 17, 8, 13, k ? 0.15 : -0.05); put(R, 16 + (k ? 2 : 0), 21, 'kk'); return f(R); };
+  const listen = (() => { const R = blank(); head(R, 7, 3); body(R, 10, 0);
+    put(R, 15, 4, 'mm'); put(R, 16, 5, 'mmm'); put(R, 16, 6, 'mm');   /* the cupped hand, up beside the ear */
+    stick(R, 5, 10, 11, 0); return f(R); })();
+  const sweep = (() => { const R = blank(); head(R, 7, 4); body(R, 11, 1);
+    for (let k = 0; k < 16; k++) put(R, 6 + k, 18 - Math.floor(k / 5), 'u'); put(R, 21, 15, 'kk'); return f(R); })();
+  const thrown = (() => { const R = blank(); head(R, 7, 3); body(R, 10, 0); put(R, 16, 9, 'mm'); return f(R); })();
+  const rap = (() => { const R = blank(); head(R, 7, 5); body(R, 12, 0); stick(R, 17, 13, 8, 0); put(R, 16, 21, 'kkkk'); return f(R); })();
+  return pack([sit, rise, walk(0), walk(1), listen, sweep, thrown, rap], 12, 27, 13, 24);
+}
+
 export function bakeCutter() {
   const CP = Object.assign({}, EP, { a: '#8a919c', A: '#5a6270', u: '#8a5a32', U: '#5c3a1d' });
   const f = rows => outline(fromGrid(rows, CP, 1), OUT);

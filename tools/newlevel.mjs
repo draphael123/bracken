@@ -21,6 +21,7 @@ const notes = [];
 const tierTable = (main.match(/const TIER = \{([^}]*)\}/) || [, ''])[1];
 const tiers = new Set([...tierTable.matchAll(/(\w+):/g)].map(m => m[1]));
 const tracks = new Set([...(audio.match(/const TRACKS = \{([^}]*)\}/) || [, ''])[1].matchAll(/(\w+):/g)].map(m => m[1]));
+const synthNames = new Set([...(audio.match(/MUSIC_NAMES = \[([^\]]*)\]/) || [, ''])[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
 const voices = new Set([...audio.matchAll(/^  (\w+)\(\) \{/gm)].map(m => m[1]));
 const hurtBlock = audio.slice(audio.indexOf('const HURT = {'));
 const hasVoice = t => new RegExp('^  ' + t + '\(\)', 'm').test(hurtBlock);
@@ -38,10 +39,10 @@ const updateOf = b => {
   return main.slice(i, j < 0 ? undefined : j); };
 
 const musicUsed = new Map();
-for (const lv of LEVELS) { if (lv.hidden) continue; const m = lv.build().music; if (m) musicUsed.set(m, (musicUsed.get(m) || []).concat(lv.id)); }
+for (const lv of LEVELS) { if (lv.hidden && !lv.secret) continue; const m = lv.build().music; if (m) musicUsed.set(m, (musicUsed.get(m) || []).concat(lv.id)); }
 
 for (const lv of LEVELS) {
-  if (lv.hidden || (want && lv.id !== want)) continue;
+  if ((lv.hidden && !lv.secret) || (want && lv.id !== want)) continue;
   const L = lv.build(), id = lv.id;
   const before = problems;
 
@@ -50,7 +51,9 @@ for (const lv of LEVELS) {
 
   // 2. ITS OWN THEME
   if (!L.music) say(id, 'has no music set');
-  else if (!tracks.has(L.music)) say(id, `music '${L.music}' is not in TRACKS in audio.js`);
+  // a track can be a FILE in TRACKS or a pattern the synth plays by name (UNDERLEAF has no file and does
+  // not want one); either way it has to be a track the game knows about, which is MUSIC_NAMES.
+  else if (!tracks.has(L.music) && !synthNames.has(L.music)) say(id, `music '${L.music}' is neither a file in TRACKS nor a name in MUSIC_NAMES in audio.js`);
   else { const sharers = (musicUsed.get(L.music) || []).filter(x => x !== id); if (sharers.length) say(id, `shares its theme '${L.music}' with ${sharers.join(', ')}`); }
 
   // 3. A VOICE FOR EVERY CREATURE IT PLACES

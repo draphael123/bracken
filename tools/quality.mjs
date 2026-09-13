@@ -8,12 +8,12 @@ import { LEVELS, TS } from '../src/level.js';
 
 const FOE = new Set(['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
   'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat', 'troll',
-  'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer', 'hearthgob', 'cutter', 'shardling',
+  'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer', 'hearthgob', 'cutter', 'shardling', 'assassin', 'berserker',
   'folk', 'wight', 'greathound', 'ram', 'soldier', 'javelin', 'heavy', 'sailor', 'netter', 'urchin', 'angler', 'petrel', 'cutlass', 'boarder', 'marine', 'bosun', 'lookout', 'turtle', 'eel', 'heronfoe', 'crab', 'scout', 'siren', 'tideguard', 'watch', 'snuffer', 'lampreeve', 'tollmaster', 'captain', 'quarter', 'reefmaw', 'herald']);
 
 const rows = [];
 for (const lv of LEVELS) {
-  if (lv.hidden) continue;
+  if (lv.hidden && !lv.secret) continue;
   const L = lv.build();
   const n = t => L.ents.filter(e => e.t === t).length;
   const foes = L.ents.filter(e => FOE.has(e.t));

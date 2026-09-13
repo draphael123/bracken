@@ -21,7 +21,7 @@ const WORTH = { silver: 4, stray: 4, relic: 4, key: 4, npc: 2, doorway: 10, gate
 
 let total = 0;
 for (const lv of LEVELS) {
-  if (lv.hidden || (want && lv.id !== want)) continue;
+  if ((lv.hidden && !lv.secret) || (want && lv.id !== want)) continue;
   const L = lv.build(), W = L.W, H = L.H, g = L.grid;
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const runs = [];

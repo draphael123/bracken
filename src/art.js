@@ -208,6 +208,181 @@ export function bakeShrineKind(kind, lit) {
   }
   return outline(c, OUT);
 }
+// ============================================================================================
+// UNDERLEAF'S SKYLINE. A village reads as a village from a long way off, and it reads by its
+// BIG ROOFS: a windmill's cap and sails, a church spire, the long low roof of a school, and
+// chimneys with the night's last smoke still coming out of them. All three layers are the same
+// village at three distances, so the horizon is never empty and never repeats at the same beat.
+// ============================================================================================
+
+// FAR: the ridge the village sits under, and the spire and the two mills that break its line.
+export function bakeFarVillage(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const ph = [rnd() * 6, rnd() * 6];
+  const yAt = x => { const u = x / w * Math.PI * 2; return Math.round(26 + 7 * Math.sin(u * 2 + ph[0]) + 4 * Math.sin(u * 5 + ph[1])); };
+  for (let x = 0; x < w; x++) { const y = yAt(x); rect(g, x, y, 1, h - y, '#3e4a60'); rect(g, x, y, 1, 2, '#56637e'); }
+  // a wood along the top of the ridge: the village has its back to it
+  for (let i = 0; i < w / 7; i++) { const x = (rnd() * w) | 0, y = yAt(x); const th = 5 + ((rnd() * 6) | 0);
+    for (let k = 0; k < th; k++) rect(g, x - ((th - k) >> 1), y - th + k, th - k, 1, '#333d50'); }
+  // THE SPIRE. One tall thin thing on a flat horizon is the whole silhouette of a village.
+  { const x = Math.round(w * 0.62), y = yAt(x);
+    rect(g, x - 4, y - 22, 9, 22, '#3e4a60'); fillPoly(g, [[x - 5, y - 22], [x + 5, y - 22], [x, y - 40]], '#333d50');
+    rect(g, x, y - 45, 1, 6, '#56637e'); rect(g, x - 2, y - 44, 5, 1, '#56637e');
+    rect(g, x - 2, y - 16, 4, 5, '#4a5468'); }                       /* the louvre, catching what light there is */
+  // TWO MILLS on the ridge, one either side, sails crossed
+  for (const fx of [0.22, 0.86]) { const x = Math.round(w * fx), y = yAt(x);
+    fillPoly(g, [[x - 6, y], [x + 6, y], [x + 4, y - 17], [x - 4, y - 17]], '#3e4a60');
+    fillPoly(g, [[x - 6, y - 17], [x + 6, y - 17], [x, y - 25]], '#333d50');
+    for (const [dx, dy] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) { for (let k = 3; k < 14; k++) px(g, x + dx * k, y - 19 + dy * k, '#56637e'); } }
+  return c;
+}
+
+// MID: the village itself, roof behind roof - cottages, the long school, a tithe barn, chimneys.
+export function bakeMidVillage(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const base = 46;
+  const roof = (x, wd, ht, col, cap) => {                            /* a house is a box and a pitch, and the pitch is what you see */
+    rect(g, x, base - ht, wd, ht, col);
+    for (let k = 0; k <= wd >> 1; k++) rect(g, x + k, base - ht - (wd >> 1) + k, wd - k * 2, 1, cap);
+  };
+  // the ordinary houses, gable end on, all slightly different heights so the roofline is a saw
+  let x = -20;
+  while (x < w + 20) { const wd = 14 + ((rnd() * 16) | 0), ht = 12 + ((rnd() * 14) | 0);
+    roof(x, wd, ht, '#4e4668', '#635882');
+    if (rnd() < 0.55) { const cx2 = x + 2 + ((rnd() * (wd - 4)) | 0); rect(g, cx2, base - ht - (wd >> 1) - 6, 3, 8, '#443c5c');
+      for (let k = 0; k < 5; k++) px(g, cx2 + 1 + ((rnd() * 3) | 0) - 1, base - ht - (wd >> 1) - 8 - k * 3, '#4a4458'); }  /* smoke */
+    if (rnd() < 0.4) rect(g, x + 2 + ((rnd() * (wd - 5)) | 0), base - ht + 3, 2, 3, '#8a6a2a');   /* somebody is still up */
+    x += wd + 1 + ((rnd() * 4) | 0); }
+  // THE SCHOOL: one long low roof with a row of identical windows and a little bell-cote on the ridge
+  { const sx = Math.round(w * 0.30), wd = 74, ht = 16;
+    rect(g, sx, base - ht, wd, ht, '#584c68');
+    for (let k = 0; k <= 9; k++) rect(g, sx + k, base - ht - 9 + k, wd - k * 2, 1, '#6b5c7e');
+    for (let i = 0; i < 6; i++) rect(g, sx + 7 + i * 11, base - ht + 4, 4, 6, '#1c1826');
+    rect(g, sx + (wd >> 1) - 3, base - ht - 15, 6, 7, '#6b5c7e'); rect(g, sx + (wd >> 1) - 2, base - ht - 13, 4, 4, '#1a1622');
+    fillPoly(g, [[sx + (wd >> 1) - 4, base - ht - 15], [sx + (wd >> 1) + 4, base - ht - 15], [sx + (wd >> 1), base - ht - 21]], '#4e4668'); }
+  // THE TITHE BARN: the biggest roof in any village, and nearly all of it is roof
+  { const bx = Math.round(w * 0.72), wd = 52;
+    for (let k = 0; k <= 16; k++) rect(g, bx + k, base - 4 - 16 + k, wd - k * 2, 1, '#5a4c62');
+    rect(g, bx, base - 6, wd, 6, '#443a4e'); rect(g, bx + (wd >> 1) - 5, base - 12, 10, 12, '#2e2638'); }
+  return c;
+}
+
+// NEAR: the gardens and yards that back onto the street - walls, water butts, a lean-to, washing.
+export function bakeNearVillage(w, h, seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(w, h);
+  const base = 120;
+  for (let x = 0; x < w; x++) rect(g, x, base + 34 + Math.round(2 * Math.sin(x / 14)), 1, h, '#2a2a34');   /* the garden wall */
+  for (let x = 0; x < w; x += 7) rect(g, x, base + 30 + Math.round(2 * Math.sin(x / 14)), 5, 4, '#343442');
+  for (let i = 0; i < w / 80; i++) { const x = (rnd() * w) | 0;                                            /* lean-tos against it */
+    const wd = 18 + ((rnd() * 14) | 0), ht = 16 + ((rnd() * 10) | 0);
+    rect(g, x, base + 34 - ht, wd, ht, '#302a3c');
+    for (let k = 0; k < wd; k++) rect(g, x + k, base + 34 - ht - Math.round(k * 0.35), 1, 2, '#3e364c'); }
+  for (let i = 0; i < w / 120; i++) { const x = (rnd() * w) | 0;                                           /* washing nobody took in */
+    for (let k = 0; k < 4; k++) { const lx = x + k * 9; rect(g, lx, base + 8, 6, 7, k % 2 ? '#4a4458' : '#54506a'); } }
+  for (let i = 0; i < w / 70; i++) { const x = (rnd() * w) | 0; rect(g, x, base + 26, 7, 8, '#3a2e28'); rect(g, x, base + 26, 7, 1, '#4e4038'); }  /* water butts */
+  return c;
+}
+
+// A LOW DRYSTONE GARDEN WALL, 32x10. Undressed stone, a coping course on top, and moss in the joints.
+export function bakeGardenWall(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(32, 10);
+  for (let y = 3; y < 10; y += 3) for (let x = ((y / 3) % 2 ? 3 : 0); x < 32; x += 6) {
+    const w = 4 + ((rnd() * 3) | 0); rect(g, x, y, w, 3, rnd() < 0.3 ? '#5e6472' : '#6a707c');
+    rect(g, x, y, w, 1, '#7c8490'); }
+  rect(g, 0, 0, 32, 3, '#767e8a'); rect(g, 0, 0, 32, 1, '#8a929e');
+  for (let i = 0; i < 7; i++) px(g, (rnd() * 32) | 0, 3 + ((rnd() * 7) | 0), '#4a6a48');   // moss
+  return outline(c, OUT);
+}
+// BEAN POLES, 20x26. Three canes tied at the top with the crop up them - the sign says runner beans.
+export function bakeBeanpoles(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(20, 26);
+  for (const [x0, x1] of [[2, 9], [10, 10], [18, 11]]) { line(g, x0, 26, x1, 2, '#8a5a32', 1); }
+  rect(g, 8, 0, 5, 2, '#6a4a28');
+  for (let i = 0; i < 34; i++) { const t = rnd(), y = 3 + ((rnd() * 22) | 0), x = Math.round(10 + (y - 3) / 23 * (t < 0.5 ? -8 : 8) * (0.4 + rnd() * 0.6));
+    rect(g, x, y, 2, 2, rnd() < 0.25 ? '#2f6e3a' : '#3f8a4a'); }
+  for (let i = 0; i < 5; i++) px(g, 4 + ((rnd() * 12) | 0), 8 + ((rnd() * 16) | 0), '#c9463d');   // the flowers
+  return outline(c, OUT);
+}
+// A SKEP - a straw beehive on a stone, 16x16. Coiled rope of straw, a mouth at the bottom, one bee out late.
+export function bakeSkep(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(16, 16);
+  rect(g, 1, 14, 14, 2, '#6a707c');
+  for (let i = 0; i < 6; i++) { const w = 12 - i * 1.4, y = 13 - i * 2;
+    rect(g, Math.round(8 - w / 2), y, Math.round(w), 2, i % 2 ? '#c9a85a' : '#b8963f');
+    rect(g, Math.round(8 - w / 2), y, Math.round(w), 1, '#dfc478'); }
+  rect(g, 6, 12, 4, 2, '#3a2a18');
+  px(g, 12, 6, '#e0b040'); px(g, 13, 5, '#1b1626');
+  return outline(c, OUT);
+}
+// A STONE TROUGH, 22x10, with the water still in it and a ring of green round the line.
+export function bakeTrough(seed) {
+  const [c, g] = canvas(22, 10);
+  rect(g, 0, 2, 22, 8, '#6a707c'); rect(g, 0, 2, 22, 1, '#828a96');
+  rect(g, 2, 4, 18, 5, '#2e3a44'); rect(g, 2, 4, 18, 2, '#3e5a66');
+  rect(g, 2, 4, 18, 1, '#557a86');
+  for (let x = 2; x < 20; x += 5) px(g, x, 6, '#4a6a58');
+  return outline(c, OUT);
+}
+// THE STOCKS on the green, 24x20: two posts, a hinged board with three holes, and nobody in them tonight.
+export function bakeStocks() {
+  const [c, g] = canvas(24, 20);
+  rect(g, 1, 4, 3, 16, C.wood); rect(g, 20, 4, 3, 16, C.wood);
+  rect(g, 1, 4, 3, 1, C.woodL); rect(g, 20, 4, 3, 1, C.woodL);
+  rect(g, 0, 8, 24, 4, C.wood); rect(g, 0, 8, 24, 1, C.woodL); rect(g, 0, 11, 24, 1, C.woodD);
+  for (const x of [6, 11, 16]) { rect(g, x, 8, 3, 4, '#1b1626'); rect(g, x, 9, 3, 2, '#0d0b16'); }
+  rect(g, 0, 18, 24, 2, '#5a5a52');
+  return outline(c, OUT);
+}
+// A DOVECOTE on a post, 16x24: a little house of holes, and two birds still in it.
+export function bakeDovecote() {
+  const [c, g] = canvas(16, 24);
+  rect(g, 6, 12, 4, 12, '#5c3a1d'); rect(g, 6, 12, 1, 12, '#7a5030');
+  rect(g, 1, 5, 14, 9, '#8a7a60'); rect(g, 1, 5, 14, 1, '#a89878');
+  fillPoly(g, [[0, 5], [16, 5], [8, 0]], '#5a4a3a');
+  for (const [hx, hy] of [[4, 7], [8, 7], [4, 10], [8, 10]]) { rect(g, hx, hy, 3, 3, '#1b1626'); }
+  px(g, 5, 8, '#e8ecf4'); px(g, 9, 11, '#c9d1dc');
+  rect(g, 4, 13, 9, 1, '#6a5a44');
+  return outline(c, OUT);
+}
+// HEADSTONES, 14x18. Three of them: one upright and new, one leaning, one broken off at the shoulder.
+export function bakeGrave(v) {
+  const rnd = mulberry(90 + v * 7); const [c, g] = canvas(14, 18);
+  const stone = '#7c8490', dark = '#5e6472', lit = '#929aa6';
+  if (v === 2) { rect(g, 3, 10, 8, 8, stone); rect(g, 3, 10, 8, 1, lit); rect(g, 4, 16, 6, 2, dark);
+    rect(g, 9, 12, 4, 2, dark); }                        /* the top of it lying in the grass */
+  else { const lean = v === 1 ? 1 : 0;
+    for (let y = 3; y < 18; y++) { const dx = lean ? Math.round((17 - y) * 0.18) : 0;
+      rect(g, 3 + dx, y, 8, 1, y < 5 ? lit : stone); }
+    const tx = lean ? 1 : 0;
+    rect(g, 3 + tx, 2, 8, 2, stone); px(g, 6 + tx, 1, stone); px(g, 7 + tx, 1, stone);
+    for (let i = 0; i < 4; i++) rect(g, 5 + tx, 6 + i * 2, 4, 1, dark);   /* whatever is cut into it */
+  }
+  for (let i = 0; i < 5; i++) px(g, 1 + ((rnd() * 12) | 0), 14 + ((rnd() * 4) | 0), '#3f6e2c');
+  return outline(c, OUT);
+}
+// A LYCHGATE, 34x30: the roofed gate you carry the dead in through, and the only way into the churchyard.
+export function bakeLychgate() {
+  const [c, g] = canvas(34, 30);
+  rect(g, 2, 8, 4, 22, C.wood); rect(g, 28, 8, 4, 22, C.wood);
+  rect(g, 2, 8, 4, 1, C.woodL); rect(g, 28, 8, 4, 1, C.woodL);
+  rect(g, 0, 6, 34, 3, '#5a4a3a');
+  for (let k = 0; k <= 8; k++) rect(g, k * 2, 6 - k, 34 - k * 4, 2, k % 2 ? '#8a7250' : '#6f5c40');   // the little roof
+  rect(g, 6, 18, 22, 2, C.woodD); rect(g, 6, 24, 22, 2, C.woodD);
+  for (let x = 8; x < 28; x += 5) rect(g, x, 18, 2, 8, C.wood);
+  return outline(c, OUT);
+}
+// A YEW, 30x36. Every churchyard has one and it is older than the church.
+export function bakeYew(seed) {
+  const rnd = mulberry(seed); const [c, g] = canvas(30, 36);
+  rect(g, 12, 22, 6, 14, '#3a2a22'); rect(g, 12, 22, 2, 14, '#4e3a2e');
+  rect(g, 10, 34, 11, 2, '#2a1e18');
+  for (let i = 0; i < 90; i++) { const a = rnd() * 6.28, r = rnd() * 13;
+    const x = Math.round(15 + Math.cos(a) * r), y = Math.round(14 + Math.sin(a) * r * 0.85);
+    rect(g, x, y, 2, 2, rnd() < 0.3 ? '#1b3a24' : rnd() < 0.6 ? '#25512f' : '#2f6a3a'); }
+  for (let i = 0; i < 6; i++) px(g, 8 + ((rnd() * 15) | 0), 8 + ((rnd() * 14) | 0), '#c9463d');   // the berries
+  return outline(c, OUT);
+}
+
 export function bakeGate() {
   const [c, g] = canvas(48, 52);
   const pillar = x => { rect(g, x, 12, 10, 40, C.stone); rect(g, x, 12, 2, 40, C.stoneL); rect(g, x + 8, 12, 2, 40, C.stoneD); for (let y = 16; y < 52; y += 6) rect(g, x + 2, y, 6, 1, C.stoneD); };

@@ -66,7 +66,7 @@ for (const t of beasts) if (!used.ent.has(t) && !SPAWNED_BY_THE_WORLD.has(t)) sa
 console.log('== per level: silver, quest strays, relic, medals ==');
 const MEDALS = new Set([...(main.match(/const MEDALS = \{([^\n]*)/) || ['', ''])[1].matchAll(/(\w+):\s*\[/g)].map(m => m[1]));
 for (const lv of LEVELS) {
-  if (lv.hidden) continue;
+  if (lv.hidden && !lv.secret) continue;
   const L = lv.build();
   const n = t => L.ents.filter(e => e.t === t).length;
   const flags = [];

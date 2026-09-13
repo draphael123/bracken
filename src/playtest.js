@@ -38,6 +38,7 @@ const THREAT = {
   watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
   // creatures and standing hazards the table had never been given a weight for: they were all reported as
   // UNWEIGHED every run, which is the tool saying "the threat number for this level is short by this much"
+  assassin: 3.5, berserker: 5, grandmother: 6,
   heronfoe: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
   dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
   frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
@@ -47,7 +48,7 @@ const THREAT = {
 };
 // props that hang on purpose: a banner is meant to be in the air
 // the furniture, the scenery and the machinery: none of it is a creature and none of it weighs anything
-const NOT_A_FOE = /^(coin|sign|deco|npc|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost)$/;
+const NOT_A_FOE = /^(coin|sign|deco|npc|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|window|well|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost)$/;
 const HANGS = new Set(['banner', 'axle', 'timber', 'pillar', 'strut', 'sailRag', 'rigging', 'pennant', 'gunport',
   'hallWindow', 'hammock', 'washing', 'boardingNet', 'sternWindows', 'crowNest', 'mastTall', 'buoy',
   'lanternBuoy', 'airBell', 'hangCage', 'cobweb', 'bough', 'drip', 'hiveBg', 'eyrie', 'spire', 'rootDecor']);
@@ -272,7 +273,7 @@ export async function run(BK, opts = {}) {
   const report = { started: new Date().toISOString(), levels: [], findings: [], ms: 0 };
   const add = (lvl, kind, sev, msg, where) => { const f = { level: lvl, kind, sev, msg, where }; report.findings.push(f); return f; };
 
-  const list = LEVELS.map((lv, i) => ({ lv, i })).filter(({ lv }) => !lv.hidden && (!want || want.includes(lv.id)));
+  const list = LEVELS.map((lv, i) => ({ lv, i })).filter(({ lv }) => (!lv.hidden || lv.secret) && (!want || want.includes(lv.id)));   /* a SECRET level is a real level: it is only hidden from the campaign's count */
   log('%cBRACKEN PLAYTEST — ' + list.length + ' levels, mode ' + mode, 'font-weight:bold');
 
   for (const { lv, i } of list) {

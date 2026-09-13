@@ -32,7 +32,7 @@ console.log('== 1. FIGHTS  (hits to kill: knight / pyro staff / paladin, start k
 console.log(pad('level', 9) + pad('tier', 5) + pad('foes', 5) + pad('toughest regular', 30) + pad('boss', 34) + 'typical blow -> hits to die k/p/pal');
 let goldSoFar = 0; const goldBy = []; let lvIdx = 0; // the hero's level on arriving: one per wood cleared before this one (+3 health, +1 damage every second)
 for (const lv of LEVELS) {
-  if (lv.hidden) continue;
+  if (lv.hidden && !lv.secret) continue;
   const L = lv.build(), tr = TIER[lv.id] || 0, ents = L.ents || [];
   const bossT = L.arena && L.arena.boss, miniT = L.mini && L.mini.boss;
   const foes = ents.filter(e => EHP[e.t] !== undefined && !NOT_FOES.has(e.t) && e.t !== bossT && e.t !== miniT && !(e.t === 'ram' && bossT !== 'ram')); // (the Kingswood rams are battering rams)

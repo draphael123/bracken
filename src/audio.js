@@ -271,23 +271,39 @@ export const music = {
 };
 
 // Synth loop: four bars of C-major pentatonic arpeggio over a slow bass, until a file takes over.
-const N = { C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196, A3: 220, B3: 246.94, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, A4: 440, B4: 493.88, C5: 523.25, C2: 65.41, G2: 98, A2: 110, F2: 87.31 };
+const N = { E2: 82.41, A1: 55, E5: 659.25, A5: 880, C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196, A3: 220, B3: 246.94, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, A4: 440, B4: 493.88, C5: 523.25, C2: 65.41, G2: 98, A2: 110, F2: 87.31 };
 const LEAD = [['C4', 'E4', 'G4', 'C5', 'G4', 'E4', 'D4', 'E4'], ['G3', 'B3', 'D4', 'G4', 'D4', 'B3', 'A3', 'B3'], ['A3', 'C4', 'E4', 'A4', 'E4', 'C4', 'B3', 'C4'], ['F3', 'A3', 'C4', 'F4', 'C4', 'A3', 'G3', 'A3']];
 const BASS = ['C2', 'G2', 'A2', 'F2'];
+// UNDERLEAF HAS NO FILE, AND DOES NOT WANT ONE. It is the quietest level in the game, so it gets the
+// quietest music there is: one low drone, a handful of plucked notes with more rest than note between them,
+// and a bell a long way off that never resolves. Nothing here builds, because nothing here is allowed to.
+const HUSH_LEAD = [['A3', null, 'C4', null, 'E4', null, null, 'D4'], [null, 'A3', null, null, 'G3', null, 'E3', null],
+  ['F3', null, 'A3', null, 'C4', null, null, 'B3'], [null, 'E3', null, null, 'A3', null, null, null]];
+const HUSH_BASS = ['A2', 'F2', 'C3', 'E2'];
 let step = 0, nextT = 0, timer = null;
-const STEP = 60 / 112 / 2;
+const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2;
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
+  const hush = wantTrack === 'underleaf', SL = hush ? STEP_HUSH : STEP;
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
-      const f = N[LEAD[bar][i]]; const delay = nextT - ac.currentTime;
-      tone('triangle', f, f, STEP * 0.9, i === 0 ? 0.5 : 0.32, delay, musicGain);
-      if (i === 0) tone('sine', N[BASS[bar]], N[BASS[bar]], STEP * 7, 0.55, delay, musicGain);
-      if (i === 4) tone('sine', N[BASS[bar]] * 1.5, N[BASS[bar]] * 1.5, STEP * 3, 0.3, delay, musicGain);
+      const delay = nextT - ac.currentTime;
+      if (hush) {
+        const nm = HUSH_LEAD[bar][i];
+        if (nm) tone('triangle', N[nm], N[nm], SL * 1.7, 0.19, delay, musicGain);
+        if (i === 0) { const b = N[HUSH_BASS[bar]]; tone('sine', b, b, SL * 8.4, 0.30, delay, musicGain); }
+        if (i === 3 && bar % 2 === 0) { const b2 = N[HUSH_BASS[bar]] * 2; tone('sine', b2, b2, SL * 4, 0.08, delay, musicGain); }
+        if (bar === 3 && i === 5) tone('sine', N.A5, N.A5 * 0.998, 2.6, 0.055, delay, musicGain);   /* the bell, somewhere else */
+      } else {
+        const f = N[LEAD[bar][i]];
+        tone('triangle', f, f, SL * 0.9, i === 0 ? 0.5 : 0.32, delay, musicGain);
+        if (i === 0) tone('sine', N[BASS[bar]], N[BASS[bar]], SL * 7, 0.55, delay, musicGain);
+        if (i === 4) tone('sine', N[BASS[bar]] * 1.5, N[BASS[bar]] * 1.5, SL * 3, 0.3, delay, musicGain);
+      }
     }
-    nextT += STEP; step++;
+    nextT += SL; step++;
   }
 }
 function startSynth() { nextT = ac.currentTime + 0.1; step = 0; if (timer) clearInterval(timer); timer = setInterval(schedule, 100); }
@@ -439,6 +455,13 @@ export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, cu
 const gob = (rate, v = 0.5) => file('gobDie', v, rate);
 const gobH = (rate, v = 0.4) => file('gobHurt', v, rate);
 const DIE = {
+  // UNDERLEAF. Everything here dies the way it lived: the assassin without a sound worth the name, the
+  // berserker taking the whole street with him, and the old woman's stick going over on the cobbles.
+  assassin() { noise(0.1, 0.16, 3200, 0.7); tone('sine', 420, 180, 0.14, 0.05); noise(0.18, 0.1, 900, 0.4, 0.06); tone('triangle', 900, 700, 0.06, 0.05, 0.16); },
+  berserker() { tone('sawtooth', 190, 60, 0.55, 0.2); noise(0.4, 0.34, 300, 0.7, 0.04); SFX.heavy(); tone('sine', 80, 38, 0.7, 0.14, 0.12); for (let i = 0; i < 2; i++) { tone('triangle', 1400 - i * 260, 500, 0.1, 0.07, 0.24 + i * 0.11); noise(0.12, 0.12, 2200, 0.5, 0.26 + i * 0.11); } },
+  grandmother() { tone('sine', 300, 140, 0.5, 0.12); noise(0.22, 0.14, 700, 0.5, 0.05);
+    for (let i = 0; i < 4; i++) tone('triangle', 760 - i * 70, 520 - i * 60, 0.09, 0.06, 0.22 + i * 0.1);   /* the stick going over, end over end */
+    tone('sine', 90, 44, 0.9, 0.1, 0.3); },
   // THE LAMPLIT STREET: nobody down here dies loudly. A constable goes down in his iron; the Lampreeve's pole
   // rings on the flags; the Tollmaster goes under with his bell still going.
   watch() { SFX.clank(); tone('sine', 140, 60, 0.5, 0.16); noise(0.3, 0.26, 380, 0.6, 0.04); noise(0.2, 0.2, 2400, 0.4, 0.14); },
@@ -537,6 +560,9 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  assassin() { noise(0.08, 0.13, 2800, 0.7); tone('sine', 500, 340, 0.09, 0.05); },
+  berserker() { tone('sawtooth', 240, 150, 0.2, 0.18); noise(0.18, 0.28, 360, 0.6); tone('sine', 120, 80, 0.24, 0.1, 0.03); },
+  grandmother() { tone('sine', 380, 260, 0.16, 0.09); noise(0.12, 0.12, 900, 0.5); tone('triangle', 700, 600, 0.07, 0.05, 0.08); },
   captain() { noise(0.16, 0.26, 700, 0.5); tone('sawtooth', 260, 120, 0.18, 0.16); tone('sine', 150, 90, 0.2, 0.1, 0.04); }, // a big man taking one and not liking it
   watch() { SFX.clank(); noise(0.2, 0.2, 420, 0.6); tone('sine', 160, 96, 0.24, 0.1); }, // a helm, and a chest full of water under it
   lampreeve() { noise(0.22, 0.22, 1100, 0.5); tone('sawtooth', 300, 150, 0.2, 0.12); noise(0.14, 0.14, 2600, 0.6, 0.08); tone('sine', 120, 70, 0.3, 0.08, 0.05); }, // something long and thin, complaining
@@ -629,5 +655,5 @@ const HURT = {
 SFX.dieOf = t => DIE[t] || null;
 SFX.hurtOf = t => HURT[t] || null;
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];

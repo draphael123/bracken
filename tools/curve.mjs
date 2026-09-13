@@ -22,6 +22,7 @@ const THREAT = {
   // twelve creatures and standing hazards this table had never been given a weight for. Every one of them
   // was counted as ZERO, so every level that used them read as easier than it is - and the ramp this tool
   // reports was measured on a count that was short. (Kept in step with the same table in src/playtest.js.)
+  assassin: 3.5, berserker: 5, grandmother: 6,
   heronfoe: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
   dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
   frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
@@ -31,6 +32,8 @@ const HAZ = new Set([T.SPIKE]);
 
 const rows = [];
 for (const lv of LEVELS) {
+  // THE RAMP IS THE CAMPAIGN'S. A secret level is a bonus hanging off the side of act one, not the
+  // seventeenth step of a sixteen-step slope, and counting it makes every reading after it a lie.
   if (lv.hidden) continue;
   const R = lv.build();
   const cols = R.W;
