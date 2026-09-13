@@ -2551,9 +2551,9 @@ function shipwreckReef() {
   for (const [x, y, v] of [[20, 25, 0], [48, 24, 1], [88, 25, 2], [108, 23, 0]]) ent('deco', x, y, { kind: 'coralFan', v });
   for (const [x, y, r] of [[43, 22, 5], [59, 21, 5], [75, 22, 6]]) ent('mover', x, y, { len: 2, range: r, speed: 26 }); // wreckage still afloat: the high road between the shrouds
   ent('seabell', 100, 23); ent('sign', 98, 23, { text: "A SHIP'S BELL, STILL ON ITS BRACKET. STRIKE IT: THE BIRDS GO UP OFF THE WRECKS, AND THE DROWNED STOP WHAT THEY ARE DOING TO LISTEN." });
-  ent('sailor', 50, 24, { face: -1 }); ent('sailor', 86, 25, { face: -1 }); ent('netter', 106, 23, { face: -1 });
+  ent('scout', 50, 24, { face: -1 }); ent('sailor', 86, 25, { face: -1 }); ent('siren', 106, 23, { face: -1 });
   ent('petrel', 40, 19); ent('petrel', 88, 17);
-  ent('urchin', 36, 31); ent('urchin', 70, 31);
+  ent('crab', 36, 31); ent('turtle', 70, 31);
   ent('sign', 18, 25, { text: 'THE WRECKS LIE WHERE THE REEF PUT THEM. HOLD UP TO CLIMB THE SHROUDS. AND WATCH THE WATER: WHEN IT RISES THE LOW BACKS GO UNDER, AND SO DO YOU.' });
   ent('silver', 51, 15); ent('check', 100, 23);
   coins([18, 25], [24, 25], [33, 26], [38, 26], [50, 24], [55, 24], [66, 26], [72, 26], [80, 25], [90, 25], [100, 23], [110, 23]);
@@ -2579,9 +2579,9 @@ function shipwreckReef() {
   ent('check', 130, 12); ent('check', 200, 27); ent('sign', 128, 12, { text: 'HER HOLD FILLS AND EMPTIES WITH THE SEA OUTSIDE. THE FIRST SEAL IS DOWN THERE IN THE DARK. GO DOWN WHEN THE WATER GOES OUT, AND CLIMB WHEN IT COMES BACK.' });
   movers.push({ kind: 'lift', link: 'hoist', locked: true, x: 202 * TS, y: 27 * TS, y0: 27 * TS, y1: 12 * TS, w: 32, h: 8, speed: 34 }); // the pallet: it runs her whole side once the capstan is turned
   pools.push({ x0: 122 * TS, x1: 210 * TS, y: 32 * TS - 8, base: 32 * TS, tideLo: -8, tideHi: -272, tidePeriod: 26, swim: true, shallow: true, depth: 0, bottom: 32 * TS, streetTide: true, bell: false });
-  ent('sailor', 136, 27, { face: 1 }); ent('sailor', 176, 22, { face: -1 }); ent('sailor', 196, 17, { face: -1 });
+  ent('sailor', 136, 27, { face: 1 }); ent('scout', 176, 22, { face: -1 }); ent('sailor', 196, 17, { face: -1 });
   ent('netter', 160, 17, { face: 1 }); ent('netter', 190, 12, { face: -1 });
-  ent('urchin', 128, 30); ent('urchin', 168, 30); ent('urchin', 200, 30);
+  ent('urchin', 128, 30); ent('crab', 168, 30); ent('urchin', 200, 30);
   coins([178, 12], [180, 12]);
   coins([126, 27], [131, 27], [156, 27], [162, 27], [188, 27], [194, 27]);
   coins([134, 22], [140, 22], [170, 22], [176, 22], [182, 22]);
@@ -2604,7 +2604,7 @@ function shipwreckReef() {
   for (const [x, y, v] of [[238, 36, 0], [276, 33, 1], [316, 36, 0]]) ent('deco', x, y, { kind: 'brainCoral', v });
   ent('deco', 250, 36, { kind: 'urchinRock', v: 0 }); ent('deco', 294, 36, { kind: 'urchinRock', v: 1 });
   ent('mover', 290, 30, { len: 3, range: 16, speed: 42 }); // a drifting plank: ride it through the current that will not let you swim
-  ent('urchin', 240, 26); ent('urchin', 254, 20); ent('urchin', 282, 28); ent('urchin', 300, 22); ent('urchin', 318, 30);
+  ent('turtle', 240, 26); ent('crab', 254, 20); ent('urchin', 282, 28); ent('urchin', 300, 22); ent('urchin', 318, 30);
   ent('angler', 264, 30, { face: -1 }); ent('angler', 292, 24, { face: -1 }); ent('angler', 320, 28, { face: -1 });
   ent('eel', 224, 34); ent('eel', 276, 32);
   block(320, 328, 16, 19); air(321, 327, 17, 18); // the alcove the adverse current guards
@@ -2709,10 +2709,10 @@ function theFlotilla() {
   ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
   // THE PRESS GANG: eight of them in the open with a bosun whistling them onto you. They come in a crowd
   // because a crowd is the only way they take anybody, and the crowd is the problem to solve.
-  ent('cutlass', 44, 23, { face: -1 }); ent('cutlass', 50, 23, { face: -1 }); ent('cutlass', 56, 23, { face: 1 });
+  ent('sailor', 44, 23, { face: -1 }); ent('netter', 50, 23, { face: -1 }); ent('crab', 56, 23, { face: 1 });
   ent('cutlass', 61, 23, { face: 1 }); ent('cutlass', 68, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 });
-  ent('cutlass', 84, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 });
-  ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('marine', 51, 10, { face: -1 });
+  ent('sailor', 84, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 });
+  ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('scout', 51, 10, { face: -1 });
   ent('sign', 42, 23, { text: 'THE PRESS GANG. EIGHT OF THEM AND A WHISTLE: GET YOUR BACK TO HER MAST AND SWING WIDE, OR TAKE THE BOSUN FIRST AND WATCH THEM STOP COMING.' });
   ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT AND THERE IS A POT ON IT. WHOEVER WAS COOKING WENT UP ON DECK IN A HURRY.' });
   ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
@@ -2750,7 +2750,7 @@ function theFlotilla() {
   // THE CHOKE: her boarding net is the only quick way through the hulk's waist and they are standing in the
   // doorway of it, where a wide swing catches the frame and a heavy blow does not.
   ent('boarder', 152, 21, { face: -1 }); ent('boarder', 156, 21, { face: -1 }); ent('bosun', 160, 21, { face: -1 });
-  ent('cutlass', 168, 21, { face: -1 }); ent('cutlass', 130, 29, { face: 1 });
+  ent('cutlass', 168, 21, { face: -1 }); ent('netter', 130, 29, { face: 1 });
   ent('sign', 148, 21, { text: 'THEY HAVE THE NET DOORWAY. THERE IS NO ROOM IN IT FOR A WIDE SWING: COME THROUGH HEAVY, OR GO ROUND THROUGH HER HOLD.' });
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
   ent('sign', 144, 21, { text: 'THE HOLD IS FULL OF WATER AND SOMEBODY ELSE OWNED IT FIRST. THERE IS A LADDER AT EITHER END.' });
@@ -2787,9 +2787,9 @@ function theFlotilla() {
   ent('cannon', 232, 24, { hole: [245, 247, 24, 26] });
   ent('sign', 228, 24, { text: 'THE GUN IS LAID ON THE FLAGSHIP ALREADY: THEY WERE GOING TO CUT HER OUT IF THE SHARE WENT WRONG. STRIKE IT AND IT WILL OPEN HER SIDE. THE KEGS GO UP IF YOU HIT THEM, SO MIND WHERE YOU ARE STANDING.' });
   // THE RIGGING: three marines above her deck, shooting down it while you cross, and a spar to go up after them
-  ent('marine', 198, 14, { face: -1 }); ent('marine', 210, 14, { face: -1 }); ent('marine', 222, 14, { face: -1 });
-  ent('cutlass', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
-  ent('boarder', 236, 24, { face: -1 }); ent('cutlass', 190, 24, { face: 1 });
+  ent('marine', 198, 14, { face: -1 }); ent('marine', 210, 14, { face: -1 }); ent('scout', 222, 14, { face: -1 });
+  ent('crab', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
+  ent('boarder', 236, 24, { face: -1 }); ent('sailor', 190, 24, { face: 1 });
   net(196, 197, 15, 23); net(210, 211, 15, 23); net(224, 225, 15, 23);
   for (let x = 197; x <= 224; x++) set(x, 14, T.ONEWAY);
   coins([200, 13], [210, 13], [220, 13]);
@@ -2925,8 +2925,8 @@ function theHurricane() {
   ent('deco', 72, 5, { kind: 'pennant', v: 1 });
   for (const x of [60, 86, 100, 112]) shroud(x);
   for (const [x0, x1, y] of [[74, 88, 12], [60, 70, 11], [100, 112, 12]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); }
-  ent('cutlass', 62, 19, { face: -1 }); ent('cutlass', 92, 19, { face: -1 }); ent('cutlass', 106, 19, { face: 1 });
-  ent('cutlass', 76, 19, { face: 1 }); ent('boarder', 114, 19, { face: -1 }); ent('cutlass', 70, 26, { face: 1 }); ent('marine', 100, 26, { face: -1 });
+  ent('sailor', 62, 19, { face: -1 }); ent('netter', 92, 19, { face: -1 }); ent('crab', 106, 19, { face: 1 });
+  ent('scout', 76, 19, { face: 1 }); ent('tideguard', 114, 19, { face: -1 }); ent('cutlass', 70, 26, { face: 1 }); ent('scout', 100, 26, { face: -1 });
   ent('lookout', 72, 5, { face: -1 }); ent('marine', 80, 11, { face: -1 });
   ent('sign', 57, 19, { text: 'THEY WANT HER BACK AND THEY DO NOT CARE THAT SHE IS SINKING.' });
   air(66, 67, 20, 20); net(66, 67, 20, 26); // the fore hatch down into her hold
@@ -2955,7 +2955,7 @@ function theHurricane() {
   plat(217, 16, 4); net(182, 183, 15, 19); net(217, 218, 15, 19);
   ent('torch', 190, 19); ent('deco', 194, 19, { kind: 'kegStack' }); ent('deco', 206, 19, { kind: 'chickenCoop' });
   ent('sign', 188, 19, { text: 'HER GALLEY. THE STOVE IS OUT AND THE COOK IS GONE AND THE KETTLE IS STILL SWINGING.' });
-  ent('bosun', 202, 19, { face: -1 }); ent('cutlass', 210, 19, { face: -1 }); ent('cutlass', 194, 19, { face: 1 }); ent('marine', 218, 15, { face: -1 });
+  ent('bosun', 202, 19, { face: -1 }); ent('cutlass', 210, 19, { face: -1 }); ent('sailor', 194, 19, { face: 1 }); ent('marine', 218, 15, { face: -1 });
   ent('check', 186, 19); ent('stray', 212, 19, { kind: 'lamp' });
   ent('deco', 198, 15, { kind: 'lanternDeck', v: 1 });
   coins([192, 18], [200, 18], [208, 18], [196, 15], [212, 15]);
@@ -2965,7 +2965,7 @@ function theHurricane() {
   ent('deco', 270, 5, { kind: 'pennant', v: 2 }); ent('deco', 270, 4, { kind: 'crowNest' });
   for (const x of [232, 248, 284, 300, 316]) shroud(x);
   for (const [x0, x1, y] of [[272, 288, 11], [250, 262, 12], [292, 306, 12], [232, 246, 11]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); }
-  ent('marine', 280, 10, { face: -1 }); ent('lookout', 270, 4, { face: -1 });
+  ent('scout', 280, 10, { face: -1 }); ent('lookout', 270, 4, { face: -1 });
   ent('boarder', 240, 19, { face: -1 }); ent('cutlass', 256, 19, { face: -1 }); ent('cutlass', 300, 19, { face: -1 }); ent('boarder', 312, 19, { face: -1 });
   ent('cutlass', 232, 26, { face: 1 }); ent('bosun', 260, 26, { face: -1 }); ent('marine', 292, 12, { face: -1 });
   // HER PUMPS, amidships, where there was nothing but deck: three strikes on the brake and the water in her
@@ -3030,7 +3030,7 @@ function theHurricane() {
   ent('deco', 436, 26, { kind: 'kegStack' }); ent('deco', 452, 26, { kind: 'rumBarrels', v: 1 }); ent('deco', 472, 26, { kind: 'hammock', v: 1 }); ent('deco', 430, 26, { kind: 'plunder', v: 2 });
   ent('deco', 444, 26, { kind: 'hammock', v: 0 }); ent('deco', 468, 26, { kind: 'plunder', v: 1 });
   ent('stray', 448, 26, { kind: 'lamp' }); ent('silver', 464, 26); ent('deco', 456, 26, { kind: 'plunder', v: 1 }); coins([446, 26], [454, 26], [462, 26], [470, 26]); // (under the water until the pumps run)
-  ent('cutlass', 440, 26, { face: 1 }); ent('marine', 470, 26, { face: -1 }); ent('boarder', 456, 26, { face: -1 }); ent('cutlass', 464, 26, { face: -1 });
+  ent('netter', 440, 26, { face: 1 }); ent('marine', 470, 26, { face: -1 }); ent('boarder', 456, 26, { face: -1 }); ent('crab', 464, 26, { face: -1 });
   ent('sign', 426, 26, { text: 'THE PUMPS HAVE STOPPED AND NOBODY IS GOING BACK TO THEM. WADING IS SLOW: SHE IS TAKING IT FASTER THAN THAT.' });
   ent('check', 432, 26);
   coins([434, 25], [442, 25], [450, 25], [458, 25], [466, 25], [474, 25]);
@@ -3058,7 +3058,7 @@ function theHurricane() {
   ent('sign', 502, 23, { text: 'THE OIL LIES ON THE WATER BETWEEN THEM. WORK THIS BEAM AND IT GOES DOWN INTO HER BILGE WHILE IT RUNS: THERE IS SOMETHING ON THE BOTTOM UNDER HER.' });
   ent('deco', 500, 33, { kind: 'plunder', v: 0 }); ent('deco', 536, 33, { kind: 'plunder', v: 2 }); ent('silver', 518, 33);
   coins([496, 33], [508, 33], [524, 33], [532, 33], [544, 33]);
-  ent('cutlass', 516, 23, { face: -1 }); ent('boarder', 534, 23, { face: -1 }); ent('marine', 500, 14, { face: -1 }); ent('cutlass', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
+  ent('scout', 516, 23, { face: -1 }); ent('tideguard', 534, 23, { face: -1 }); ent('marine', 500, 14, { face: -1 }); ent('sailor', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
   ent('silver', 528, 23); ent('deco', 532, 23, { kind: 'plunder', v: 2 });
   coins([493, 20], [500, 14], [510, 16], [520, 14], [530, 16], [540, 14], [548, 16], [518, 23], [526, 23]);
   ent('check', 560, 19);
@@ -3069,7 +3069,7 @@ function theHurricane() {
   for (const x of [572, 586, 614, 630, 646] ) shroud(x);
   for (const [x0, x1, y] of [[602, 616, 11], [580, 594, 12], [620, 634, 12]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); }
   ent('boarder', 578, 19, { face: -1 }); ent('cutlass', 592, 19, { face: -1 }); ent('bosun', 624, 19, { face: -1 });
-  ent('marine', 610, 10, { face: -1 }); ent('cutlass', 640, 19, { face: -1 }); ent('lookout', 600, 5, { face: -1 });
+  ent('scout', 610, 10, { face: -1 }); ent('cutlass', 640, 19, { face: -1 }); ent('lookout', 600, 5, { face: -1 });
   ent('cutlass', 566, 19, { face: 1 }); ent('boarder', 604, 19, { face: -1 }); ent('marine', 634, 12, { face: -1 }); ent('cutlass', 650, 19, { face: -1 });
   ent('check', 572, 19); ent('sign', 566, 19, { text: 'THE LAST OF HER OPEN DECK. HER POWDER IS UNDER YOUR FEET AND HER CAPTAIN IS AFT.' });
   air(636, 637, 20, 20); net(636, 637, 20, 26);
@@ -3195,7 +3195,7 @@ function theLamplitStreet() {
   lamp(22); lamp(50); lamp(66, true); lamp(74);
   ent('deco', 30, ST - 1, { kind: 'lampWreck', v: 0 }); ent('deco', 54, ST - 1, { kind: 'shellDrift', v: 0 });
   ent('deco', 6, ST - 1, { kind: 'sealDrift', v: 1 }); ent('deco', 10, ST - 1, { kind: 'sealDrift', v: 0 }); coins([8, 36], [14, 36]); // what went off the tribute ship, west along the paving
-  ent('eel', 30, 32); ent('urchin', 24, ST - 1); ent('urchin', 38, ST - 1);
+  ent('angler', 30, 32); ent('crab', 24, ST - 1); ent('urchin', 38, ST - 1);
   ent('check', 52, UP - 1);
   coins([20, 36], [26, 34], [34, 36], [48, 36], [56, 34], [64, 36], [72, 36], [46, 21], [62, 21]);
   weed(28, ST - 1, 1); weed(70, ST - 1, 0);
@@ -3212,9 +3212,9 @@ function theLamplitStreet() {
   ent('deco', 140, UP - 1, { kind: 'drownedCart' }); ent('deco', 118, UP - 1, { kind: 'sealDrift', v: 0 });
   lamp(84); lamp(104); lamp(124, true); lamp(146); lamp(166, true); lamp(184);
   lampUp(90); lampUp(132, true); lampUp(172);
-  ent('watch', 98, UP - 1, { face: -1 }); ent('watch', 154, UP - 1, { face: -1 });
-  ent('watch', 114, ST - 1, { face: -1 }); ent('watch', 136, ST - 1, { face: 1 }); ent('watch', 100, ST - 1, { face: -1 });
-  ent('eel', 158, 33); ent('eel', 172, 31); ent('urchin', 164, ST - 1); ent('urchin', 178, ST - 1); ent('urchin', 186, ST - 1);
+  ent('wight', 98, UP - 1, { face: -1 }); ent('tideguard', 154, UP - 1, { face: -1 });
+  ent('scout', 114, ST - 1, { face: -1 }); ent('watch', 136, ST - 1, { face: 1 }); ent('wight', 100, ST - 1, { face: -1 });
+  ent('eel', 158, 33); ent('eel', 172, 31); ent('urchin', 164, ST - 1); ent('crab', 178, ST - 1); ent('urchin', 186, ST - 1);
   ent('snuffer', 120, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
   ent('stray', 128, ST - 1, { kind: 'lamp' });  // the first of his three lamps, down on the stones
   ent('deco', 156, ST - 1, { kind: 'plunder', v: 1 });
@@ -3270,8 +3270,8 @@ function theLamplitStreet() {
   ent('deco', 330, ST - 1, { kind: 'plunder', v: 0 }); ent('silver', 334, ST - 1); ent('deco', 338, ST - 1, { kind: 'plunder', v: 2 }); ent('deco', 344, ST - 1, { kind: 'sealDrift', v: 1 });
   ent('stray', 333, 22, { kind: 'lamp' });                              // the second lamp, up in a vault
   ent('watch', 276, ST - 1, { face: -1 }); ent('watch', 312, ST - 1, { face: 1 }); ent('watch', 346, ST - 1, { face: -1 });
-  ent('watch', 290, UP - 1, { face: -1 }); ent('watch', 324, UP - 1, { face: 1 });
-  ent('eel', 296, 33); ent('eel', 316, 30); ent('angler', 330, 34); ent('urchin', 300, ST - 1); ent('urchin', 320, ST - 1);
+  ent('wight', 290, UP - 1, { face: -1 }); ent('tideguard', 324, UP - 1, { face: 1 });
+  ent('eel', 296, 33); ent('angler', 316, 30); ent('angler', 330, 34); ent('urchin', 300, ST - 1); ent('crab', 320, ST - 1);
   ent('check', 266, UP - 1); ent('check', 271, 22); ent('check', 348, ST - 1);
   coins([258, 36], [266, 34], [274, 36], [282, 34], [290, 36], [298, 34], [306, 36], [314, 34], [322, 36], [338, 34], [346, 36],
     [272, 22], [302, 26], [334, 22], [264, 21], [292, 21], [328, 21], [352, 21]);
@@ -3290,7 +3290,7 @@ function theLamplitStreet() {
   ent('pump', 396, UP - 1);
   ent('sign', 400, UP - 1, { text: 'WHILE THE BEAM IS WORKING, THE PROCESSION ROAD GOES DOWN AND ITS LAMPS COME UP. WHEN IT STOPS, SO DOES THE ROAD.' });
   for (const x of [368, 388, 412, 422]) lampUp(x);
-  ent('watch', 374, UP - 1, { face: 1 }); ent('watch', 410, UP - 1, { face: -1 });
+  ent('scout', 374, UP - 1, { face: 1 }); ent('watch', 410, UP - 1, { face: -1 });
   ent('snuffer', 418, UP - 1, { face: -1 });
   ent('stray', 386, UP - 1, { kind: 'lamp' });                          // the third lamp, on the bellows floor
   ent('npc', 372, UP - 1, { kind: 'lamplighter' });                     // the last lamplighter, and he will not leave
@@ -3316,11 +3316,11 @@ function theLamplitStreet() {
   // THE PIERS of the collapsed bridge: they come up out of the paving and go down again
   for (const [x, ph] of [[448, 0], [462, 1.1], [494, 2.2], [512, 0.6], [544, 1.7]])
     ent('mover', x, ST - 1, { len: 3, range: 0, vert: true, rise: 9, period: 3.6, ph, stone: true });
-  ent('watch', 438, ST - 1, { face: -1 }); ent('watch', 460, ST - 1, { face: 1 }); ent('watch', 488, ST - 1, { face: -1 });
-  ent('watch', 510, ST - 1, { face: 1 }); ent('watch', 534, ST - 1, { face: -1 }); ent('watch', 560, ST - 1, { face: -1 });
-  ent('watch', 450, UP - 1, { face: -1 }); ent('watch', 500, UP - 1, { face: 1 }); ent('watch', 550, UP - 1, { face: -1 });
+  ent('wight', 438, ST - 1, { face: -1 }); ent('watch', 460, ST - 1, { face: 1 }); ent('watch', 488, ST - 1, { face: -1 });
+  ent('watch', 510, ST - 1, { face: 1 }); ent('wight', 534, ST - 1, { face: -1 }); ent('tideguard', 560, ST - 1, { face: -1 });
+  ent('scout', 450, UP - 1, { face: -1 }); ent('watch', 500, UP - 1, { face: 1 }); ent('watch', 550, UP - 1, { face: -1 });
   ent('angler', 476, 33); ent('angler', 516, 31); ent('eel', 482, 34); ent('eel', 496, 30); ent('eel', 508, 33);
-  ent('urchin', 474, ST - 1); ent('urchin', 488, ST - 1); ent('urchin', 502, ST - 1); ent('urchin', 514, ST - 1); ent('urchin', 520, ST - 1);
+  ent('urchin', 474, ST - 1); ent('urchin', 488, ST - 1); ent('crab', 502, ST - 1); ent('urchin', 514, ST - 1); ent('urchin', 520, ST - 1);
   ent('snuffer', 496, UP - 1, { face: -1 });
   ent('silver', 472, 22); ent('deco', 522, 22, { kind: 'plunder', v: 2 });
   ent('check', 436, UP - 1); ent('check', 472, 22); ent('check', 522, 22); ent('check', 564, UP - 1);
