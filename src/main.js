@@ -809,7 +809,7 @@ let embers = []; // the pyromancer's fireballs: { x, y, vx, vy, life, hit }
 let FOGC = null, DARKC = null, darkNow = 0.5;
 let silvers = []; // the three silver coins of the level: { x, y, i, got }
 let marks = new Set(); // world changes that persist through death: 'tree:x' felled, 'pool:x0' drained, 'cat:x' wrecked, 'ferry:x0' paid, 'cage:x' opened
-function resetPools() { for (const p of (L.pools || [])) if (p.y0 !== undefined) { p.y = p.y0; p.shallow = p.shallow0; p.depth = p.depth0; p.draining = false; } }
+function resetPools() { for (const p of (L.pools || [])) if (p.y0 !== undefined) { p.y = p.y0; p.shallow = p.shallow0; p.depth = p.depth0; p.draining = false; p.dry = false; p.frogDry = false; } } /* a pond the King drained is full again on the retry */
 // re-apply the persistent world changes to a freshly restored grid; true if any tile changed
 // Keys live in `marks`, like the felled tree and the drained channel, so dying does not take them
 // off you and make the wood a chore. A gate you have opened stays open for the rest of the attempt.
@@ -1038,7 +1038,7 @@ function spawnEnt(e) {
       case 'tether': props.push({ t: 'tether', x: px, y: py, hp: 2, cut: false, hitCd: 0 }); break;
       case 'flagpost': props.push({ t: 'flagpost', x: px, y: py, ph: Math.random() * 6 }); break;
       case 'windcaller': boss = { ...base, t: 'windcaller', w: 16, h: 32, hp: EHP.windcaller, maxHp: EHP.windcaller, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, sweepT: 3, liftT: 6, stillT: 11, sx: px, sy: py }; enemies.push(boss); break;
-      case 'golem': boss = { ...base, t: 'golem', w: 30, h: 34, hp: EHP.golem, maxHp: EHP.golem, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, stompT: 3, throwT: 5, shroudT: 8, lit: false, facets: 0 }; enemies.push(boss); break;
+      case 'golem': { const gm = { ...base, t: 'golem', mini: !!e.mini, w: 30, h: 34, hp: EHP.golem, maxHp: EHP.golem, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, stompT: 3, throwT: 5, shroudT: 8, lit: false, facets: 0 }; if (!e.mini) boss = gm; enemies.push(gm); } break;
       case 'hotplate': props.push({ t: 'hotplate', x: px, y: py, glow: 0, hot: 0 }); lights.push({ x: px, y: py - 4, r: 40, glow: true, warm: true, plate: props[props.length - 1] }); break;
       case 'forgemaster': { const fm = { ...base, t: 'forgemaster', mini: !!e.mini, w: 40, h: 32, hp: EHP.forgemaster, maxHp: EHP.forgemaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, sprayT: 6, dragT: 7, anvilT: 10, breathT: 5, hammerT: 2.6, cartT: 5, slagT: 6, plateT: 4 }; if (!e.mini) boss = fm; enemies.push(fm); } break;
       case 'cart': movers.push({ kind: 'cart', x: px - 14, y: py - 10, x0: px - 14, y0: py - 10, w: 28, h: 10, dir: e.dir || 1, vx: 0, vy: 0, rolling: !!e.auto, auto: !!e.auto, gone: false, respawnT: 0, hit: new Set(), speed: e.speed || 140, dx: 0, dy: 0 }); break;
@@ -1058,6 +1058,7 @@ function spawnEnt(e) {
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
       case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
+      case 'barricade': props.push({ t: 'barricade', x: px, y: py, tx: e.x, ty: e.y, w: e.w || 2, h: e.h || 2, alive: true, shake: 0 }); break;
       case 'resonance': props.push({ t: 'resonance', x: px, y: py, r: (e.r || 5) * TS, cool: 0, ring: 0, said: 0 }); break;
       // AN IRON BULKHEAD. e.span is [x0, x1, y0, y1] in tiles; nothing but a round shot moves it.
       case 'bulkhead': props.push({ t: 'bulkhead', x: px, y: py, span: e.span, open: false, shake: 0, hit: 0 }); break;
@@ -1074,7 +1075,7 @@ function spawnEnt(e) {
       case 'cascade': props.push({ t: 'cascade', x: e.x * TS + 12, y0: e.y * TS, y1: (e.y1 + 1) * TS, ph: Math.random() * 3 }); break;
       case 'stal': props.push({ t: 'stal', x: px, y: e.y * TS, state: 'hang', t0: 0 }); break; // a crystal hanging from the shelf's underside
       case 'roc': boss = { ...base, t: 'roc', w: 34, h: 26, hp: EHP.roc, maxHp: EHP.roc, mode: 'sleep', modeT: 0, face: -1, phase: 1, diveT: 2.2, gustT: 5.5, featherT: 3, hitT: 0, vy: 0, side: 1, nestX: px, nestY: py }; enemies.push(boss); break;
-      case 'suncatcher': boss = { ...base, t: 'suncatcher', w: 26, h: 28, hp: EHP.suncatcher, maxHp: EHP.suncatcher, mode: 'sleep', modeT: 0, face: -1, phase: 1, drinkT: 5, throwT: 2.4, spireT: 4, spires: [], hitT: 0 }; enemies.push(boss); break;
+      case 'suncatcher': { const sc = { ...base, t: 'suncatcher', mini: !!e.mini, w: 26, h: 28, hp: EHP.suncatcher, maxHp: EHP.suncatcher, mode: 'sleep', modeT: 0, face: -1, phase: 1, drinkT: 5, throwT: 2.4, spireT: 4, spires: [], hitT: 0 }; if (!e.mini) boss = sc; enemies.push(sc); } break;
       case 'hearthgob': enemies.push({ ...base, t: 'hearthgob', w: 10, h: 13, hp: EHP.hearthgob, speed: 42, mode: 'asleep', modeT: 0, swingT: 0 }); break;
       case 'sweep': enemies.push({ ...base, t: 'sweep', w: 8, h: 12, hp: EHP.sweep, mode: 'hide', modeT: Math.random(), gone: 1 }); break;
       case 'chimpot': props.push({ t: 'chimpot', x: px, y: py, ph: Math.random() * 3 }); break;
@@ -3753,7 +3754,7 @@ function updatePlayer(dt) {
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
   // and without y0/y1 the Weaver's fight started while you were three tiers below her.
   if (L.mini && !miniActive && !miniDone && P.x > L.mini.trigger && P.x < L.mini.x1 - 24 && P.ground
-    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { miniActive = true; miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } music.play(L.mini.music || 'boss'); setWallAt(L.mini.wallL, true, L.mini.floor); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff }[mb.t] || SFX.roar)(); SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
+    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { miniActive = true; miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); setView('zoom'); } music.play(L.mini.music || 'boss'); setWallAt(L.mini.wallL, true, L.mini.floor); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger && (L.arena.y0 !== undefined ? P.y > L.arena.y0 && P.y <= L.arena.floor + 4 : P.ground && Math.abs(P.y - L.arena.floor) < 48)) bossStart(); // the floor check keeps a tall level's lower tiers from waking the boss
 }
 
@@ -3774,8 +3775,8 @@ const bossTitle = b => {
   return nm;
 };
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
-const MINI_NAME = { forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE' };
-const MINI_DONE = { forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS' };
+const MINI_NAME = { forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE', suncatcher: 'THE SUNCATCHER', golem: 'THE FACET' };
+const MINI_DONE = { forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS', suncatcher: 'THE QUARRY GOES DARK', golem: 'THE LIGHT IS LET THROUGH' };
 const miniName = () => (L.mini && MINI_NAME[L.mini.boss]) || 'THE BEAST';
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
@@ -3789,7 +3790,7 @@ function miniEnd(e) {
 function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1; for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.palisade[(ty + col) % 3] : null; } }
 function setWall(col, solid) {
   const A = L.arena; const top = A.floor / TS - 6, bot = A.floor / TS - 1;
-  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? (L.arena.boss === 'chief' ? TILE.palisade[(ty + col) % 3] : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'suncatcher' || L.arena.boss === 'roc') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
+  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? (L.arena.boss === 'chief' ? TILE.palisade[(ty + col) % 3] : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'suncatcher' || L.arena.boss === 'roc' || L.arena.boss === 'golem') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
   // her hall is shut by portcullises, and you see them come down: both doors, with the clang, when she wakes
   if (solid && L.arena.boss === 'gqueen') { const ys = []; for (let ty = top; ty <= bot; ty++) ys.push(ty); const spr = ys.map(ty => tileSpr[ty * LW + col]); for (const ty of ys) tileSpr[ty * LW + col] = null; gateFx.push({ col, ys, t: 0, dur: 0.3, closing: true, spr }); SFX.gateDrop(); }
   if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.vine[(ty + col) % 4] : null; }
@@ -3829,6 +3830,25 @@ function combFall(e) {
   // and what was living in the cell comes out of the hole
   for (let q = 0; q < 2; q++) spawnEnt({ t: 'wasp', x: cx + 1 + q * 2, y: 4, drone: true });
 }
+// HE GOES THROUGH IT. The stakes come out of the deck and that lane is open for the rest of the fight:
+// whatever the barricade was doing for you - stopping his javelins, breaking his gale, planting his charge -
+// it does not do any more, and there is one fewer place on the bridge where you can make him stop.
+function smashBarricade(pr, e) {
+  if (!pr || !pr.alive) return; pr.alive = false;
+  for (let x = pr.tx; x < pr.tx + pr.w; x++) for (let y = pr.ty - pr.h + 1; y <= pr.ty; y++) {
+    const i = y * LW + x; if (L.grid[i] !== T.PALISADE) continue;
+    L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i);
+    for (let q = 0; q < 4; q++) parts.push({ x: x * TS + 8, y: y * TS + 8, vx: (e ? e.face : 1) * (40 + Math.random() * 130), vy: -40 - Math.random() * 110, life: 0.9, max: 0.9, col: Math.random() < 0.5 ? '#8a5a32' : '#5c3a1d', size: 2, grav: 420 });
+  }
+  resolveTiles(); SFX.crack(); SFX.stone(); shakeCam(7); zoomKick(1.08, 0.22); hitstop(0.04);
+  dust(pr.x, pr.y, 12);
+  const left = props.filter(p => p.t === 'barricade' && p.alive).length;
+  number(pr.x, pr.y - 30, left ? 'HE GOES THROUGH IT  ' + left + ' LEFT' : 'THE BRIDGE IS BARE', left ? '#ff9a5c' : '#ff6b6b');
+  if (!(PROG.barTold > 1)) { PROG.barTold = (PROG.barTold || 0) + 1; hintT = 4;
+    hintMsg = 'THE BARRICADES ARE THE ONLY THING ON THE BRIDGE THAT WILL STOP A CHARGE WHERE YOU WANT IT. THEY STOP HIS JAVELINS AND BREAK HIS WIND AS WELL - AND EACH ONE HE RUNS THROUGH IS GONE.'; }
+}
+const barricadeAt = (wx, wy) => { const tx = Math.floor(wx / TS), ty = Math.floor(wy / TS);
+  return props.find(p => p.t === 'barricade' && p.alive && tx >= p.tx && tx < p.tx + p.w && ty > p.ty - p.h && ty <= p.ty); };
 function queenWinded(e, blocked) {
   e.mode = 'winded'; e.modeT = e.phase === 2 ? 1.1 : 1.5; e.vx = 0; e.vy = 0; e.y = L.arena.floor;
   shakeCam(4); SFX.thud(); dust(e.x, e.y, 10); number(e.x, e.y - 20, blocked ? 'STAGGERED' : 'WINDED', '#8fd160');
@@ -4269,8 +4289,40 @@ function updateQueen(e, dt) {
 
 // ---------- boss: the Bullfrog King ----------
 const frogFloor = (A, x) => { const tx = Math.floor(x / TS); for (let ty = Math.floor(A.floor / TS) - 3; ty <= Math.floor(A.floor / TS) + 2; ty++) if (isSolid(tx, ty)) return ty * TS; return A.floor; }; // the real ground: the dais lifts him, the shallows drop him to the pond bed (he used to stand on the water)
+const frogPool = A => (L.pools || []).find(p => p.frogDry) || (L.pools || []).find(p => p.shallow && p.x0 >= A.x0 - 40 && p.x1 <= A.x1 + 40);
+// HE PULLS HIS OWN PLUG. Everything that made the pond a pond stops: it will not rise for him again, and the
+// bed of it is the new floor of the fight.
+function frogDrain(e) {
+  e.drained = true; e.phase = 3; e.drain = 2.4; e.mode = 'croak3'; e.modeT = 2.4; e.vx = 0; e.rose = false;
+  const pl = frogPool(L.arena); if (pl) { pl.draining = true; pl.frogDry = true; pl.rise = 0; }
+  SFX.croak(); shakeCam(8); zoomKick(1.14, 0.5); killFlash = 0.08;
+  number(e.x, e.y - e.h - 26, 'HE PULLS THE COURT OUT', '#bfe6f5');
+  hintT = 4.5; hintMsg = 'HE HAS LET HIS OWN POND OUT. THE BED OF IT IS A DROP NOW, NOT A WADE - AND EVERY TIME HE GOES FOR THE WATER HE IS STUCK IN THE MUD OF IT.';
+}
+// and the bed under it: a row out of the middle of the court, so the hall is two banks and a pit
+function frogPit(A) {
+  const pl = frogPool(A); if (pl) { pl.dry = true; pl.depth = 0; pl.shallow = false; }
+  const x0 = Math.floor(A.x0 / TS) + 8, x1 = Math.floor(A.x1 / TS) - 25;
+  const bed = Math.floor(A.floor / TS) + 1;
+  for (let x = x0; x <= x1; x++) { const i = bed * LW + x;
+    if (L.grid[i] === T.SOLID) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i);
+      for (let q = 0; q < 2; q++) parts.push({ x: x * TS + 8, y: bed * TS, vx: (Math.random() - 0.5) * 70, vy: -60 - Math.random() * 60, life: 0.9, max: 0.9, col: Math.random() < 0.5 ? '#5a4a3c' : '#3d3128', size: 2, grav: 400 }); } }
+  resolveTiles(); SFX.heavy(); SFX.splash(); shakeCam(7); dust((x0 + x1) * TS / 2, bed * TS, 16);
+  number((x0 + x1) * TS / 2, bed * TS - 30, 'THE COURT IS A PIT', '#8fd160');
+  // and what lived in the pond is on the mud with you
+  for (let i = 0; i < 3; i++) { const dx = (x0 + 1 + i * 3) * TS + 8, col = i === 1 ? 'yellow' : 'green';
+    enemies.push({ t: 'hopper', color: col, x: dx, y: (bed + 1) * TS, vx: 0, vy: -220, w: 8, h: 6, hp: HOP[col].hp, face: -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 0.6, air: true, drone: true });
+    burst(dx, (bed + 1) * TS, 6, ['#5a9a3a', '#8fc85a'], 50, 0.4); }
+}
 function updateFrog(e, dt) {
-  const A = L.arena, p2 = e.phase === 2; const floor = frogFloor(A, e.x);
+  const A = L.arena, p2 = e.phase >= 2, p3 = e.phase === 3; const floor = frogFloor(A, e.x);
+  if (e.phase === 2 && e.hp <= e.maxHp * 0.34 && !e.drained) { frogDrain(e); return; }
+  if (e.drain > 0) { /* the pond going out: it takes a moment, and neither of you can do anything about it */
+    e.drain -= dt; const pl = frogPool(A);
+    if (pl) { pl.y += 22 * dt; pl.depth = Math.max(0, pl.depth - 22 * dt); pl.shallow = pl.depth > 1; pl.dry = pl.depth <= 1;
+      if (Math.random() < dt * 40) parts.push({ x: pl.x0 + Math.random() * (pl.x1 - pl.x0), y: pl.y, vx: (Math.random() - 0.5) * 40, vy: -30, life: 0.5, max: 0.5, col: '#bfe6f5', size: 1, grav: 120 }); }
+    if (e.drain <= 0) { e.drain = 0; frogPit(A); }
+    e.y = floor; e.vy = 0; e.modeT -= dt; return; }
   e.modeT -= dt; e.anim += dt;
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
   const flies = enemies.filter(d => d.alive && d.t === 'hopper' && d.drone).length;
@@ -4306,10 +4358,20 @@ function updateFrog(e, dt) {
         else { const dx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)) - e.x; e.vy = -380; e.vx = dx / 0.76; }
         e.modeT = 2; SFX.leap(); } break;
     case 'leap': e.x += e.vx * dt; e.y += e.vy * dt; /* he never left the ground before: vy was integrated but never applied */ if (e.vy > 0 && e.y >= frogFloor(A, e.x) && e.vault) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; e.vault = false; e.vaultT = 3.5; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 12); if (p2) for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 1.6, sp: 150 }); e.mode = 'idle'; e.modeT = 0.55; e.idleHits = 0; break; }
-      if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; shakeCam(7); SFX.heavy(); zoomKick(1.12, 0.2); dust(e.x, e.y, 16); for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 2.2, sp: p2 ? 180 : 150 }); e.mode = 'dazed'; e.modeT = p2 ? 0.7 : 1.0; number(e.x, e.y - e.h - 12, 'DAZED', '#8fd160'); } break;
+      if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; shakeCam(7); SFX.heavy(); zoomKick(1.12, 0.2); dust(e.x, e.y, 16); for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 2.2, sp: p2 ? 180 : 150 });
+        const inBed = p3 && fl2 > A.floor + 4;                 /* he went for the water and it is not there */
+        e.mode = inBed ? 'mired' : 'dazed'; e.modeT = inBed ? 2.2 : (p2 ? 0.7 : 1.0);
+        number(e.x, e.y - e.h - 12, inBed ? 'STUCK IN THE MUD' : 'DAZED', '#8fd160');
+        if (inBed) { SFX.splash(); burst(e.x, fl2, 14, ['#5a4a3c', '#3d3128', '#736050'], 80, 0.7); } } break;
+    case 'croak3': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.6; } break;
+    // THE MUD: out of water he still goes for the bed, and there is nothing in it to push off
+    case 'mired': e.y = floor; e.vy = 0; if (Math.random() < dt * 24) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 2, vx: (Math.random() - 0.5) * 50, vy: -40, life: 0.5, max: 0.5, col: '#5a4a3c', size: 2, grav: 300 });
+      if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.5; e.idleHits = 0; } break;
     case 'dazed': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.8; } break;
     case 'spit': { e.y = floor; e.vy = 0; e.shotT -= dt; if (e.shots > 0 && e.shotT <= 0) { e.shots--; e.shotT = 0.35; SFX.spit(); const n = 3; for (let i = 0; i < n; i++) { const dx = P.x - e.x, dir = Math.sign(dx) || e.face; const a = -1.15 + i * 0.2; seeds.push({ x: e.x + dir * 20, y: e.y - 18, vx: Math.cos(a) * 170 * dir, vy: Math.sin(a) * 170, dead: false, life: 3, venom: true, g: 320 }); } } if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = 0.9; } break; }
-    case 'croak': e.y = floor; e.vy = 0; if (!e.rose) { e.rose = true; for (const p of (L.pools || [])) if (p.shallow && p.x0 >= A.x0 - 40 && p.x1 <= A.x1 + 40) { p.rise = p2 ? 5 : 3.5; } number(e.x, e.y - e.h - 24, 'THE POND RISES', '#bfe6f5'); SFX.splash(); } if (e.modeT <= 0) { e.rose = false; for (let i = 0; i < 2; i++) { const dx = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (i ? 70 : -70) + (Math.random() - 0.5) * 30)); const col = Math.random() < 0.6 ? 'green' : 'yellow'; enemies.push({ t: 'hopper', color: col, x: dx, y: floor, vx: 0, vy: -200, w: 8, h: 6, hp: HOP[col].hp, face: -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 0.6, air: true, drone: true }); burst(dx, floor, 6, ['#5a9a3a', '#8fc85a'], 50, 0.4); } e.mode = 'idle'; e.modeT = 0.9; } break;
+    case 'croak': e.y = floor; e.vy = 0; if (!e.rose) { e.rose = true;
+      if (p3) { number(e.x, e.y - e.h - 24, 'AND NOTHING COMES', '#9aa39a'); SFX.croak(); }
+      else { for (const p of (L.pools || [])) if (p.shallow && p.x0 >= A.x0 - 40 && p.x1 <= A.x1 + 40) { p.rise = p2 ? 5 : 3.5; } number(e.x, e.y - e.h - 24, 'THE POND RISES', '#bfe6f5'); SFX.splash(); } } if (e.modeT <= 0) { e.rose = false; for (let i = 0; i < 2; i++) { const dx = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (i ? 70 : -70) + (Math.random() - 0.5) * 30)); const col = Math.random() < 0.6 ? 'green' : 'yellow'; enemies.push({ t: 'hopper', color: col, x: dx, y: floor, vx: 0, vy: -200, w: 8, h: 6, hp: HOP[col].hp, face: -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 0.6, air: true, drone: true }); burst(dx, floor, 6, ['#5a9a3a', '#8fc85a'], 50, 0.4); } e.mode = 'idle'; e.modeT = 0.9; } break;
   }
   if (e.mode !== 'leap' && e.mode !== 'hop') e.y = Math.min(e.y, frogFloor(A, e.x));
   e.x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, e.x));
@@ -5738,7 +5800,7 @@ const forgeOpen = e => e.mode === 'stun' || e.mode === 'scald';
 const FACET_COL = ['blue', 'violet', 'green', 'both'];
 function updateGolem(e, dt) {
   // It only bleeds in the light. A beam on it lights a facet; cut the facet away. It stamps (a stamp turns a mirror it stands by), throws shards, and raises ice against the beam.
-  const A = L.arena, floor = A.floor, p2 = e.phase === 2; e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300; e.anim = (e.anim || 0) + dt;
+  const A = e.mini ? L.mini : L.arena, floor = A.floor, p2 = e.phase === 2; e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300; e.anim = (e.anim || 0) + dt;
   const d = P.x - e.x, ad = Math.abs(d);
   if (e.mode === 'sleep') return;
   const facet = Math.min(3, Math.floor((e.maxHp - e.hp) / (e.maxHp / 4))); e.need = FACET_COL[facet];
@@ -6055,7 +6117,7 @@ function updateRoc(e, dt) {
   e.x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, e.x)); e.y = Math.min(e.y, floor);
 }
 function updateSuncatcher(e, dt) {
-  const A = L.arena, floor = A.floor;
+  const A = e.mini ? L.mini : L.arena, floor = A.floor;
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
   const d = P.x - e.x, ad = Math.abs(d), p2 = e.hp <= e.maxHp / 2;
   e.face = Math.sign(d) || e.face;
@@ -6287,6 +6349,8 @@ function updateLance(e, dt) {
     SFX.heavy(); SFX.stone(); shakeCam(8); zoomKick(1.1, 0.3); dust(e.x, e.y, 14); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 14, y: floor, dir: dd, life: 1.2, sp: 175 });
     if (!P.dead && Math.abs(P.x - e.x) < 30 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.lanceVault, { up: true });
     number(e.x, e.y - e.h - 14, 'THE POINT STICKS: CUT HIM', '#8fd160'); }
+  // what he ran into: if it was a barricade, it is not there any more (and it still stops him this once)
+  if (r.hitX && (e.mode === 'charge' || e.mode === 'rush')) smashBarricade(barricadeAt(e.x + e.face * 14, e.y - 10), e);
   if (r.hitX && e.mode === 'rush') { e.mode = 'stumble'; e.modeT = 1.2; e.vx = 0; SFX.heavy(); shakeCam(4); }
   if (r.hitX && e.mode === 'charge') { e.mode = 'planted'; e.modeT = 2.8; e.stagger = 2.8; e.vx = 0; SFX.heavy(); shakeCam(7); }
 }
@@ -6456,7 +6520,11 @@ function traceBeams(dt) {
       if (cr.dark <= 0) { SFX.spark(); ringAt(cr.x, cr.y - 8, 16, '#eefaff', 0.3); number(cr.x, cr.y - 22, 'IT LIGHTS AGAIN', '#bfe6f5'); }
       continue; }
     let x = cr.x, y = cr.y - 8, [dx, dy] = cr.dir; let x0 = x, y0 = y; const col = cr.col || 'blue';
-    for (let n = 0; n < 60; n++) {
+    // 60 steps is 60 TILES, and a beam that ran further than that fell off the end of the loop without ever
+    // pushing its segment - so it did not draw, did not burn, and did not light the Facet. It simply was not
+    // there, silently, and only in the rooms wide enough to show it. The cap is a guard against a mirror loop,
+    // not a range: make it longer than any room and let the wall stop the beam.
+    for (let n = 0; n < 160; n++) {
       const nx = x + dx * TS, ny = y + dy * TS, tx = Math.floor(nx / TS), ty = Math.floor(ny / TS), t = tileAt(tx, ty);
       const mr = props.find(p => p.t === 'mirror' && Math.floor(p.x / TS) === tx && Math.floor((p.y - 8) / TS) === ty);
       if (mr) { beams.push({ x0, y0, x1: mr.x, y1: mr.y - 8, col }); x = mr.x; y = mr.y - 8; [dx, dy] = MIRROR[mr.o](dx, dy); x0 = x; y0 = y; mr.glow = 0.3; continue; }
@@ -7201,12 +7269,12 @@ function updateEnemies(dt) {
     if (e.t === 'greathound') { updateGreatHound(e, dt); continue; }
     if (e.t === 'owl') { if (bossActive) beastSeen('owl'); if (bossActive || e.mode === 'sleep') updateOwl(e, dt); continue; }
     if (e.t === 'forgemaster') { const live = e.mini ? miniActive : bossActive; if (live) beastSeen('forgemaster'); if (live || e.mode === 'sleep') updateForgemaster(e, dt); continue; }
-    if (e.t === 'golem') { if (bossActive) beastSeen('golem'); if (bossActive || e.mode === 'sleep') updateGolem(e, dt); continue; }
+    if (e.t === 'golem') { const live = e.mini ? miniActive : bossActive; if (live) beastSeen('golem'); if (live || e.mode === 'sleep') updateGolem(e, dt); continue; }
     if (e.t === 'king') { if (bossActive) beastSeen('king'); if (bossActive || e.mode === 'sleep') updateKing(e, dt); continue; }
     if (e.t === 'herald') { if (bossActive) beastSeen('herald'); if (bossActive || e.mode === 'sleep') updateHerald(e, dt); continue; }
     if (e.t === 'gqueen') { if (bossActive) beastSeen('gqueen'); if (bossActive || e.mode === 'sleep') updateGQueen(e, dt); continue; }
     if (e.t === 'roc') { if (bossActive) beastSeen('roc'); if (bossActive || e.mode === 'sleep') updateRoc(e, dt); continue; }
-    if (e.t === 'suncatcher') { if (bossActive) beastSeen('suncatcher'); if (bossActive || e.mode === 'sleep') updateSuncatcher(e, dt); continue; }
+    if (e.t === 'suncatcher') { const live = e.mini ? miniActive : bossActive; if (live) beastSeen('suncatcher'); if (live || e.mode === 'sleep') updateSuncatcher(e, dt); continue; }
     if (e.t === 'lance') { if (bossActive) beastSeen('lance'); if (bossActive || e.mode === 'sleep') updateLance(e, dt); continue; }
     if (e.t === 'windcaller') { if (bossActive) beastSeen('windcaller'); if (bossActive || e.mode === 'sleep') updateWindcaller(e, dt); continue; }
     if (e.t === 'captain') { if (bossActive) beastSeen('captain'); if (bossActive || e.mode === 'sleep') updateCaptain(e, dt); continue; }
@@ -7708,7 +7776,7 @@ function updateProps(dt) {
     if (p.y > p.rising) { p.y -= 62 * dt; poolLevel(p, Math.max(p.rising, p.y));   // it comes up fast: five seconds, not fifteen
       if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
   }
-  for (const p of (L.pools || [])) if (p.draining) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
+  for (const p of (L.pools || [])) if (p.draining && !p.frogDry) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
   updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updatePortal(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }

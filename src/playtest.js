@@ -36,6 +36,10 @@ const THREAT = {
   shardling: 2, suncatcher: 3, sentry: 2, lookout: 1.5, bosun: 3, cutlass: 2.5, boarder: 3, marine: 2.5,
   eel: 2, urchin: 1, angler: 2.5, siren: 3, crab: 1.5, scout: 2, tideguard: 3, petrel: 1.5, gull: 1,
   watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
+  // creatures and standing hazards the table had never been given a weight for: they were all reported as
+  // UNWEIGHED every run, which is the tool saying "the threat number for this level is short by this much"
+  heronfoe: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
+  dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
   frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
   reefmaw: 6, quarter: 6, captain: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
@@ -43,7 +47,7 @@ const THREAT = {
 };
 // props that hang on purpose: a banner is meant to be in the air
 // the furniture, the scenery and the machinery: none of it is a creature and none of it weighs anything
-const NOT_A_FOE = /^(coin|sign|deco|npc|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2)$/;
+const NOT_A_FOE = /^(coin|sign|deco|npc|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost)$/;
 const HANGS = new Set(['banner', 'axle', 'timber', 'pillar', 'strut', 'sailRag', 'rigging', 'pennant', 'gunport',
   'hallWindow', 'hammock', 'washing', 'boardingNet', 'sternWindows', 'crowNest', 'mastTall', 'buoy',
   'lanternBuoy', 'airBell', 'hangCage', 'cobweb', 'bough', 'drip', 'hiveBg', 'eyrie', 'spire', 'rootDecor']);

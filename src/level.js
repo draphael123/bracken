@@ -1037,7 +1037,22 @@ function screePath() {
   B.plat(85, 15, 2); B.ent('silver', 85, 14);
   B.coins([68, 17], [71, 17], [77, 18], [84, 17], [88, 17], [100, 17], [103, 17], [96, 18]);
   B.ent('check', 106, 19);
-  return B.done();
+  const RD = B.done();
+  // ---- 5c. THE GLASS QUARRY: where the hill folk took the glass out of the crag, and what grew back in it ----
+  const Q = grow(RD, RD, 436, 44);
+  Q.block(436, 479, 9, 27);
+  for (let x = 447; x <= 469; x++) Q.set(x, 9, T.CRYST);      // the seam: his floor, and the half of the room that burns
+  for (let y = 3; y <= 8; y++) Q.set(476, y, T.PORT);         // the quarry gate, shut while he is in here
+  Q.ent('check', 438, 8);
+  Q.ent('sign', 442, 8, { text: 'THE GLASS QUARRY. THEY TOOK THE SEAM OUT OF THIS CUT AND SOMETHING GREW BACK IN IT. WHEN IT TAKES THE SUN, EVERY PIECE OF GLASS UNDER YOU LIGHTS: GET ONTO THE ROCK AT EITHER END, OR UP ON THE OLD STAGINGS. IT RAISES SPIRES BESIDE YOU - BREAK THEM WHILE IT IS UNDER THEM.' });
+  // the stagings the quarrymen left: the cold road over his seam, and never more than three tiles a hop
+  Q.plat(445, 6, 3); Q.plat(450, 5, 3); Q.plat(455, 4, 3); Q.plat(460, 4, 3); Q.plat(465, 5, 3); Q.plat(470, 6, 3);
+  Q.coins([446, 5], [451, 4], [461, 3], [466, 4], [471, 5], [443, 8], [473, 8]);
+  Q.ent('deco', 439, 8, { kind: 'stone' }); Q.ent('deco', 474, 8, { kind: 'stone', v: 1 });
+  Q.ent('deco', 444, 8, { kind: 'cairn' }); Q.ent('silver', 456, 3);
+  Q.ent('suncatcher', 458, 8, { mini: true });
+  Q.R.mini = { x0: 441 * TS, x1: 475 * TS, floor: 9 * TS, trigger: 446 * TS, wallL: 440, gate: 476, boss: 'suncatcher', y0: 0, y1: 10 * TS };
+  return Q.done();
 ;
 }
 
@@ -1346,8 +1361,30 @@ function theSunspire() {
   ent('harpy', 40, 70); ent('harpy', 30, 64);
   geode(80, 90, 80); coins([81, 82], [83, 82], [85, 82], [87, 82], [89, 82], [70, 79], [76, 79]);
 
+
+  // ---- Tier 8b. THE GEODE OF THE GLARE: a hollow in the shelf with three coloured seams in its roof,
+  // and the thing that grew under them. Light is the only thing that opens it: a curtain burns whatever
+  // stands in that one column, and a mirror at the foot of a curtain lays the colour FLAT along the floor,
+  // which is the whole width of the room. Its stomp turns your mirrors back. ----
+  block(32, 48, 49, 50);                                    // the roof of the hollow
+  for (let y = 50; y <= 55; y++) set(51, y, T.PORT);         // the way on, shut while it stands
+  ent('check', 24, 55);
+  ent('sign', 27, 55, { text: 'A GEODE BIG ENOUGH TO STAND IN, AND SOMETHING GREW IN IT. IT ONLY BLEEDS IN THE LIGHT, AND ONLY IN THE COLOUR IT IS SHOWING. THE SEAMS IN THE ROOF DROP A CURTAIN EACH: STRIKE THE MIRROR AT THE FOOT OF ONE AND THAT COLOUR RUNS FLAT ALONG THE FLOOR. IT WILL TURN THEM BACK, AND IT WILL DRINK A SEAM DRY.' });
+  ent('crystal', 35, 51, { dir: [0, 1], col: 'blue', hang: true });
+  ent('crystal', 40, 51, { dir: [0, 1], col: 'violet', hang: true });
+  ent('crystal', 45, 51, { dir: [0, 1], col: 'green', hang: true });
+  // TWO of the three seams have a mirror at the foot, and the third has none. Blue and violet can be laid
+  // FLAT along the floor and along its shoulders, so they reach wherever it walks; GREEN stays a column,
+  // and the only way to put green on it is to make it stand in that one place. Which is why the last facet
+  // takes two colours at once: green where it falls, and a line you laid to meet it there.
+  // (Both mirrors are inside a jumping strike from the floor: a room you fight in wants no ledges in it.)
+  ent('mirror', 35, 55); ent('mirror', 40, 54);
+  ent('golem', 43, 55, { mini: true });
+  coins([33, 55], [37, 55], [47, 55], [49, 55]);
+  ent('deco', 31, 55, { kind: 'cairn' });
+
   // ---- Tier 9. THE UPPER GLARE, and the second chimney: the only way up it that is not glass ----
-  climb(56, 36, 18, 78, 26, 15);
+  climb(56, 36, 52, 84, 78, 15); // the stair to the crown starts at the FAR end of the shelf now: the geode is on the road, not beside it
   ent('shardling', 60, 35, { face: -1 });
   ent('check', 12, 35); coins([32, 35], [66, 35]);
   chimney(55, 36);
@@ -1402,7 +1439,7 @@ function theSunspire() {
   plat(2, 113, 6); coins([2, 112], [3, 112], [4, 112], [5, 112], [6, 112], [3, 126], [7, 118]); ent('deco', 5, 112, { kind: 'bones' }); ent('shardling', 7, 122, { face: -1 });
   // and more of the mountain's own: bats in the shade below the cloud, harpies and shardlings above it
   ent('bat', 60, 205); ent('bat', 24, 186); ent('shardling', 40, 171, { face: 1 }); ent('harpy', 20, 142); ent('bat', 70, 140);
-  ent('harpy', 40, 44); ent('shardling', 40, 55, { face: -1 }); ent('harpy', 70, 104);
+  ent('harpy', 40, 44); ent('shardling', 62, 55, { face: -1 }); ent('harpy', 70, 104); /* he used to stand where the geode is now */
 
   // (pass two) the frost: some who came up for the glass are still here, and the slab over the crown's thorns stands on a glass stem
   ent('deco', 30, 195, { kind: 'frozen', v: 0 }); ent('deco', 20, 131, { kind: 'frozen', v: 1 }); ent('deco', 12, 79, { kind: 'frozen', v: 0 }); ent('deco', 44, 55, { kind: 'frozen', v: 1 });
@@ -1436,6 +1473,7 @@ L.ents = L.ents.filter(e => !(e.t === 'deco' && e.kind === 'spire' && e.x === 16
       dirt: '#5a6478', dirtL: '#727e94', dirtD: '#3c4456', canopy: ['#5a6478', '#6e7a90', '#8494ac', '#a8bcd0'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'roc', music: 'roc', tint: '#cfe8ff', tintA: 0.14, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest */
+    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS },   /* it used to wake a quarter of the way across the summit, before you had seen the nest */
   };
 }
 
@@ -1587,6 +1625,13 @@ function stormhold() {
   block(428, 429, 20, 45); floor(424, 429, BY);
   ent('deco', 426, BY - 1, { kind: 'gatehouse' });
   ent('gate', 427, BY - 1);
+  // ---- THE BARRICADES: the goblins walled their own bridge, and that is the shape of the fight on it ----
+  // One across each span. They stop a javelin, they break his gale, and a charge that runs into one plants
+  // him where you want him - and takes the barricade with it. Six of them, and then the bridge is bare.
+  for (const bx of [316, 334, 352, 370, 388, 406]) {
+    for (let x = bx; x <= bx + 1; x++) for (let y = BY - 2; y <= BY - 1; y++) set(x, y, T.PALISADE);
+    ent('barricade', bx, BY - 1, { w: 2, h: 2 });
+  }
   ent('lance', 320, BY - 1);
 
   // ---- (pass two) THE CHIMNEYS: the old sootworks gorge. The span is down; the chimney stacks still stand a hop apart,
@@ -3693,7 +3738,7 @@ function dressLevel(L, id) {
   const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
-  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost']);
+  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
   const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 9 || Math.abs(py - y) > 4);
