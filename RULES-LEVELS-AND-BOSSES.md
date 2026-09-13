@@ -308,3 +308,48 @@ every run, and a report nobody trusts is a report nobody reads.
 
 **When to run it.** Before every deploy that touched a level, a creature or the draw. It takes about a minute
 for the whole campaign. If the BUGS column is not empty, do not ship.
+
+## H. THE MARK, AND WHAT A TALENT COSTS
+
+Two laws that used to be conventions, and drifted because a convention that nothing checks is a wish.
+Both are enforced by a tool now; both tools exit non-zero, so a broken one fails the same way a syntax
+error does.
+
+**THE MARK — `node tools/tells.mjs`**
+
+Over a creature's head there are exactly two marks, and they answer exactly one question: *can I block
+this?*
+
+- **`!` in `#ffd36b` (yellow)** — the shield turns it. Block it, or parry it if you are quick.
+- **`!!` in `#ff6b6b` (red)** — no shield in the game turns it. Move.
+
+`LOW` and `HIGH` are the same promise with the *how* attached: the word says which way to get out of it,
+the colour still says whether the shield is one of the ways. A low sweep that cannot be blocked is `LOW`
+in **red**.
+
+Everything else a creature says over its own head — `WHIRL`, `TOSSED`, `THE STORM`, `HE WILL GO DOWN WITH
+HER` — is narration, in whatever colour suits it, and the tool ignores it. The moment you make one of those
+a `!` or a `!!` it becomes a promise and gets audited.
+
+Half the damage in BRACKEN is unblockable. If the mark cannot be trusted, the shield is a coin flip and the
+player has to memorise fifty movesets instead of reading one symbol. The tool reads every creature update
+function, follows each windup down its chain to the blow at the end of it, and fails if a mark disagrees
+with what it finds. Windups whose blow is thrown by something else entirely (the Forgemaster does not
+strike you, he hurls a cart) are in a written honesty list, not guessed at.
+
+**WHAT A TALENT COSTS — `node tools/talents.mjs`**
+
+A campaign pays **32 points** — two a wood, sixteen woods. A node's price is its shape, not a number typed
+at the call site:
+
+- an **active**, or a stacking bump — **1 point a rank**, as they always were.
+- a **single-rank node** is a RULE, and a rule is worth more than a percentage — **2 points**, or **3** when
+  it sits in the last row of a branch.
+
+And the last row of a branch needs **8 points already spent in that branch**. Three branches with no rung
+between them is three ladders, and a tree you can sprinkle across and still reach the bottom of is a
+shopping list.
+
+The tool also fails on any node that **nothing reads** — no `tal('id')` anywhere outside the tree, no
+`skillPress('id')` for an active. That is the one talent bug you cannot see from inside the game: it does
+not crash, it does not look wrong, and the description is right there promising otherwise. It found five.
