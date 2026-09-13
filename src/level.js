@@ -821,7 +821,7 @@ function kingswood() {
   // the galleries: the court cheers from balconies at either end and throws goblets when the King shouts
   plat(318, 9, 6); plat(366, 9, 5); ent('torch', 318, 8); ent('torch', 369, 8);
   for (const x of [319, 321, 323, 367, 369]) ent('folk', x, 8, { court: true, alt: x % 4 === 1 });
-  ent('deco', 320, 9, { kind: 'banner', v: 1 }); ent('deco', 368, 9, { kind: 'banner', v: 0 });
+  ent('deco', 320, 8, { kind: 'banner', v: 1 }); ent('deco', 368, 8, { kind: 'banner', v: 0 });   /* ON the gallery, not level with its boards: at row 9 they hung a tile under it in open air */
   // THE SCAFFOLD: three tiers of ledges up to the winch decks. Every step is two or three tiles up and at most two across.
   for (const x of [325, 338, 351, 360]) plat(x, 11, 3);
   for (const x of [330, 342, 356]) plat(x, 8, 3);
@@ -1377,10 +1377,12 @@ function hangingVillage() {
   ent('check', 98, 107);
   // ---- THE WEB HOLLOW: under the roots. Everything down here is webbed, and something made it. ----
   ent('doorway', 66, 107, { id: 'hollow-out', to: 'hollow-in', kind: 'goblin' });
+  ent('doorway', 74, 107, { id: 'hollow-far', to: 'hollow-back', kind: 'goblin' });
   ent('sign', 62, 107, { text: 'SOMETHING WENT DOWN THROUGH THE ROOTS AND DID NOT COME BACK. THE HOLE IS FULL OF WEB.' });
   for (let y = 116; y <= 128; y++) for (let x = 20; x <= 74; x++) set(x, y, 0);
   interiors.push([20, 74, 116, 128, 'earth']);
   ent('doorway', 24, 128, { id: 'hollow-in', to: 'hollow-out', lock: [20, 74], label: 'THE WEB HOLLOW' });
+  ent('doorway', 71, 128, { id: 'hollow-back', to: 'hollow-far', lock: [20, 74], label: 'OUT THE FAR SPLIT' });
   for (const x of [28, 36, 44, 52, 60, 68]) { ent('deco', x, 116, { kind: 'cobweb', v: x % 3, hang: true }); }
   for (const x of [32, 48, 64]) ent('deco', x, 128, { kind: 'cobweb', v: (x + 1) % 3 });
   ent('torch', 26, 128); ent('spider', 34, 118, { drop: 90 }); ent('spider', 58, 118, { drop: 90 });
@@ -1804,11 +1806,13 @@ function stormhold() {
   // the first house: it is already open, so the doorway teaches itself
   roof(44, 54, 30);
   ent('doorway', 48, 33, { id: 'hearth-out', to: 'hearth-in', kind: 'goblin' });
+  ent('doorway', 53, 33, { id: 'hearth-far', to: 'hearth-back', kind: 'goblin' });
   ent('sign', 44, 33, { text: 'THE FIRST DOOR IS ON THE LATCH. WHAT IS INSIDE IS ASLEEP, AND WHAT IS ON THE NAIL IS THE BRASS KEY.' });
   room(6, 30, 6, 13, 'hall');
   ent('doorway', 9, 13, { id: 'hearth-in', to: 'hearth-out', lock: [6, 30], label: 'THE HEARTH HOUSE' });
   ent('torch', 12, 13); ent('brazier', 20, 13); ent('deco', 26, 13, { kind: 'barrels' });
-  ent('hearthgob', 18, 13, { face: -1 }); ent('key', 28, 13, { kind: 'brass' });
+  ent('hearthgob', 18, 13, { face: -1 }); ent('key', 26, 13, { kind: 'brass' });
+  ent('doorway', 29, 13, { id: 'hearth-back', to: 'hearth-far', lock: [6, 30], label: 'OUT THE BACK' });
   coins([12, 12], [16, 12], [20, 12], [24, 12], [26, 11]);
   ent('sign', 7, 13, { text: 'HEARTH GOBLINS SLEEP BY THE FIRE UNTIL YOU ARE CLOSE, AND THEN THEY FIGHT WITH WHATEVER IS TO HAND.' });
   // the first span: short, low, and the planks give
@@ -1833,14 +1837,16 @@ function stormhold() {
   plat(126, 26, 4); ent('archer', 127, 25, { face: -1 }); coins([102, 30], [110, 29], [118, 30], [127, 25], [132, 29], [136, 30], [144, 29], [146, 30]);
   ent('silver', 128, 25);
   // the smithy: the iron key, and the smith
-  ent('doorway', 118, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
+  ent('doorway', 113, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
+  ent('doorway', 122, 31, { id: 'smithy-far', to: 'smithy-back', kind: 'goblin' });
   room(38, 66, 6, 14, 'stone');
   ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
   ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
   ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
   plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13]); // steps to the shelf: it was five rows off the floor
   ent('stray', 56, 9, { kind: 'folk' });
-  ent('sign', 39, 14, { text: 'THE SMITHY. THEY ARE MAKING SOMETHING LONG AND SHARP FOR SOMEONE LARGE.' });
+  ent('doorway', 65, 14, { id: 'smithy-back', to: 'smithy-far', lock: [38, 66], label: 'OUT THE SLACK-TUB DOOR' });
+  ent('sign', 39, 14, { text: 'THE SMITHY. THEY ARE MAKING SOMETHING LONG AND SHARP FOR SOMEONE LARGE. THE BACK DOOR IS PAST THE SHELF.' });
   // the second span: long, watched from both ends, and a cutter on the far post
   block(151, 152, 32, 45); block(178, 179, 32, 45);
   // (the span over the sootworks gorge came down: THE CHIMNEYS, below, are the crossing now)
@@ -1851,11 +1857,13 @@ function stormhold() {
   floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
   coins([184, 31], [194, 30], [204, 31]);
   // the tannery: a house you go through, not into, and the second captive
-  roof(186, 198, 28); ent('doorway', 190, 31, { id: 'tan-out', to: 'tan-in', kind: 'goblin' });
+  roof(186, 198, 28); ent('doorway', 188, 31, { id: 'tan-out', to: 'tan-in', kind: 'goblin' });
+  ent('doorway', 196, 31, { id: 'tan-far', to: 'tan-back', kind: 'goblin' });
   room(74, 98, 6, 13, 'earth');
   ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
   ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
-  ent('stray', 95, 13, { kind: 'folk' }); coins([80, 12], [84, 12], [88, 12], [90, 12], [96, 13]);
+  ent('stray', 95, 13, { kind: 'folk' }); coins([80, 12], [84, 12], [88, 12], [90, 12]);
+  ent('doorway', 97, 13, { id: 'tan-back', to: 'tan-far', lock: [74, 98], label: 'OUT PAST THE PITS' });
   ent('lockgate', 208, 31, { needs: 'iron', h: 6 }); gateCol(208, 26, 31);
   ent('check', 204, 31);
 
@@ -1867,15 +1875,17 @@ function stormhold() {
   roof(214, 232, 26); roof(236, 248, 26); ent('torch', 216, 29); ent('torch', 244, 29);
   coins([214, 28], [220, 27], [228, 28], [232, 27], [238, 28], [244, 27], [248, 28]);
   // the longhouse: the deepest room, the bone key at the back of it
-  ent('doorway', 228, 29, { id: 'long-out', to: 'long-in', kind: 'cottage' });
+  ent('doorway', 220, 29, { id: 'long-out', to: 'long-in', kind: 'cottage' });
+  ent('doorway', 244, 29, { id: 'long-far', to: 'long-back', kind: 'cottage' });
   room(106, 160, 4, 15, 'hall');
   ent('doorway', 109, 15, { id: 'long-in', to: 'long-out', lock: [106, 160], label: 'THE LONGHOUSE' });
   ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
   ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
   plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(136, 10, 4); ent('archer', 129, 7, { face: -1 }); // a real way into the rafters
-  ent('stray', 130, 7, { kind: 'folk' }); ent('key', 158, 15, { kind: 'bone' });
+  ent('stray', 130, 7, { kind: 'folk' }); ent('key', 156, 15, { kind: 'bone' });
+  ent('doorway', 159, 15, { id: 'long-back', to: 'long-far', lock: [106, 160], label: 'OUT THE GABLE END' });
   coins([116, 10], [120, 10], [126, 7], [130, 7], [137, 9], [139, 9], [150, 14], [154, 14]);
-  ent('sign', 107, 15, { text: 'THE LONGHOUSE. THE THIRD OF THE HILL FOLK IS UP IN THE RAFTERS AND THE BONE KEY IS AT THE FAR END.' });
+  ent('sign', 107, 15, { text: 'THE LONGHOUSE. THE THIRD OF THE HILL FOLK IS UP IN THE RAFTERS, THE BONE KEY IS AT THE FAR END, AND SO IS THE DOOR OUT: NOBODY WALKS A LONGHOUSE TWICE.' });
   // a swaying span with a cutter, over the drop, to the last gate
   block(251, 252, 30, 45); block(274, 275, 30, 45);
   span(253, 273, 30, { sway: 2, give: true });
@@ -1953,8 +1963,8 @@ function stormhold() {
   // THE HOUSES. Every roof has a house under it, walls down to the street: the door you go in by is its
   // door, and a roof with no way in gets a door that stays shut. (They were a slate slab over a lone door.)
   const houses = roofs.map(([x0, x1, y]) => { const mx = (x0 + x1) >> 1; let fy = y + 1; while (fy < L.H && L.grid[fy * L.W + mx] === T.AIR) fy++;
-    const door = L.ents.find(e => e.t === 'doorway' && e.y === fy - 1 && e.x > x0 && e.x < x1);
-    return { x0: x0 + 1, x1: x1 - 1, y0: y + 1, y1: fy - 1, door: door ? door.x : null, seed: x0 }; }).filter(h => h.y1 >= h.y0 + 1);
+    const drs = L.ents.filter(e => e.t === 'doorway' && !e.lock && e.y === fy - 1 && e.x > x0 && e.x < x1).map(e => e.x);
+    return { x0: x0 + 1, x1: x1 - 1, y0: y + 1, y1: fy - 1, door: drs.length ? drs[0] : null, door2: drs.length > 1 ? drs[1] : null, seed: x0 }; }).filter(h => h.y1 >= h.y0 + 1);
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges, houses,
@@ -2103,8 +2113,8 @@ function highcrown() {
   // FOUR FLOORS, FOUR ROOMS. The whole keep was drawn with her throne room's wall, so you came up out of the
   // armoury into what looked like her hall and the Queen seemed to be standing right behind the smith. Each
   // floor wears its own room now, and hers is the only royal one in the castle.
-  const interiors = [[124, 206, 54, 63, 'guard'], [124, 206, 42, 51, 'kitchen'], [124, 206, 26, 39, 'forge'],
-    [124, 206, 10, 19, 'chapel'], [208, 251, 10, 19, 'royal']];
+  const interiors = [[124, 206, 54, 63, 'guard'], [124, 206, 42, 53, 'kitchen'], [124, 206, 26, 41, 'forge'],
+    [124, 206, 8, 25, 'chapel'], [208, 251, 8, 19, 'royal']];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 1, y: 63 }, pools: [], falls: [], moversExtra: [], interiors,
     reachExact: true, // the carts are the Forgemaster's props, not a way around the castle
@@ -2115,8 +2125,11 @@ function highcrown() {
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
 
-    mini: { x0: 126 * TS, x1: 198 * TS, floor: 40 * TS, trigger: 134 * TS, wallL: 125, gate: 199, boss: 'forgemaster', y0: 26 * TS, y1: 41 * TS, slag: [140 * TS + 8, 158 * TS + 8, 180 * TS + 8] },
-    arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 211 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
+    /* THE BEAM RAIL over the armoury floor is his second storey: he leaps to it, pours off it, and drops
+       off it. Without these three numbers the whole upper half of the fight is simply off. */
+    mini: { x0: 126 * TS, x1: 198 * TS, floor: 40 * TS, trigger: 134 * TS, wallL: 125, gate: 199, boss: 'forgemaster', y0: 26 * TS, y1: 41 * TS, slag: [140 * TS + 8, 158 * TS + 8, 180 * TS + 8],
+      beam: 35 * TS, beamL: 142 * TS, beamR: 182 * TS },
+    arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
       roof: 8 * TS, gallery: { row: 14, x0: 213, x1: 236 }, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
   };
 }

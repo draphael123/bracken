@@ -573,7 +573,7 @@ function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
   TILE = {
     dirt: [0, 1, 2, 3].map(i => ART.bakeDirt(10 + i)), deep: [0, 1, 2].map(b => [0, 1, 2, 3].map(i => ART.bakeDirtDeep(140 + b * 11 + i, b))), top: {}, edge: {},
-    log: [0, 1, 2].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true), comb: [0, 1, 2].map(i => ART.bakeCombPlat(560 + i)), combL: ART.bakeCombPlat(563, 'L'), combR: ART.bakeCombPlat(564, 'R'), ropeNet: [0, 1].map(i => ART.bakeRopeNet(i)), vine: [0, 1].map(i => ART.bakeVine(i)), rail: [0, 1].map(i => ART.bakeRail(i)), soft: [0, 1, 2].map(i => ART.bakeSoftRock(930 + i)), ladder: { S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }, ledge: [0, 1, 2].map(i => ART.bakeLedge(570 + i, null)), ledgeL: ART.bakeLedge(573, 'L'), ledgeR: ART.bakeLedge(574, 'R'), climb: [ART.bakeClimbFace(0), ART.bakeClimbFace(1)],
+    log: [0, 1, 2].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true), comb: [0, 1, 2].map(i => ART.bakeCombPlat(560 + i)), combL: ART.bakeCombPlat(563, 'L'), combR: ART.bakeCombPlat(564, 'R'), ropeNet: [0, 1].map(i => ART.bakeRopeNet(i)), vine: [0, 1].map(i => ART.bakeVine(i)), rail: [0, 1].map(i => ART.bakeRail(i)), soft: [0, 1, 2].map(i => ART.bakeSoftRock(930 + i)), ladder: { S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }, ledge: [0, 1, 2].map(i => ART.bakeLedge(570 + i, null)), ledgeL: ART.bakeLedge(573, 'L'), ledgeR: ART.bakeLedge(574, 'R'), duck: [0, 1, 2].map(i => ART.bakeDuckboard(580 + i, null)), duckL: ART.bakeDuckboard(583, 'L'), duckR: ART.bakeDuckboard(584, 'R'), capLedge: [0, 1, 2].map(i => ART.bakeCapLedge(590 + i, null)), capLedgeL: ART.bakeCapLedge(593, 'L'), capLedgeR: ART.bakeCapLedge(594, 'R'), climb: [ART.bakeClimbFace(0), ART.bakeClimbFace(1)],
     thorns: [0, 1, 2, 3].map(i => ART.bakeThorns(70 + i)), crate: ART.bakeCrate(), roots: [0, 1, 2].map(i => ART.bakeDirtRoots(80 + i)),
     reeds: [0, 1, 2].map(i => ART.bakeReeds(90 + i)), silt: [0, 1, 2].map(i => ART.bakeSilt(85 + i)), palisade: [0, 1, 2].map(i => ART.bakePalisade(300 + i)), palisadeTop: ART.bakePalisadeTop(), bouncer: ART.bakeBouncer(), shelf: [0, 1].map(i => ART.bakeShelf(330 + i)), cryst: [0, 1].map(l => [0, 1, 2].map(st => ART.bakeCrystalTile(st, !!l))), spire: [0, 1].map(l => [0, 1].map(v => ART.bakeSpire(v, !!l))), port: [0, 1].map(i => ART.bakePortcullis(600 + i)), drystone: [0, 1, 2].map(i => ART.bakeDrystone(700 + i)), drystoneTop: [0, 1].map(i => ART.bakeDrystoneTop(710 + i)), scree: { 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }, hall: [0, 1, 2].map(i => ART.bakeHallWall(610 + i)), mycTop: {}, mycDirt: [0, 1, 2].map(i => ART.bakeMycDirt(340 + i)), plank: [0, 1].map(i => ART.bakeBridgePlank(310 + i)), plankL: ART.bakeBridgePlankEnd(312, -1), plankR: ART.bakeBridgePlankEnd(313, 1), net: ART.bakeNet(), vine: [0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i)),
   };
@@ -714,7 +714,9 @@ function resolveTiles() {
     } else if (t === T.ONEWAY) {
       const l = tileAt(x - 1, y) === T.ONEWAY, r = tileAt(x + 1, y) === T.ONEWAY;
       const inHive = L.arena && L.arena.boss === 'queen' && x * TS >= L.arena.x0 && x * TS < L.arena.x1;
-      const crag = L.palette && L.palette.dress === 'crag', shoreOW = L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : null);
+      const crag = L.palette && L.palette.dress === 'crag', shoreOW = L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
+        : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
+        : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null);
       s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * 3) | 0];
     } else if (t === T.REED) s = TILE.reeds[(rnd() * 3) | 0];
     else if (t === T.PALISADE) s = TILE.palisade[(rnd() * 3) | 0];
@@ -6095,7 +6097,19 @@ function updateForgemaster(e, dt) {
     e.cartT -= dt; if (e.cartT <= 0) { e.cartT = p2 ? 5 : 7; const c = movers.find(mv => mv.kind === 'cart' && mv.gone && mv.auto); if (c) { c.gone = false; c.x = c.x0; c.y = c.y0; c.vx = 0; c.vy = 0; c.rolling = true; c.ridden = false; c.kicked = false; c.hit.clear(); SFX.stone(); } }
     e.slagT -= dt; if (e.slagT <= 0) { e.slagT = p2 ? 4.5 : 6; for (const sx of (A.slag || [])) if (Math.random() < 0.7) { seeds.push({ x: sx, y: floor - 150, vx: 0, vy: 40, dead: false, life: 3, g: 300, slag: true }); parts.push({ x: sx, y: floor - 150, vx: 0, vy: 20, life: 0.5, max: 0.5, col: '#ff9a5c', size: 2, grav: 0 }); } }
     if (p2) { e.plateT -= dt; if (e.plateT <= 0) { e.plateT = 5; const pls = props.filter(pr => pr.t === 'hotplate'); const pick = pls.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x)).slice(0, 2); for (const pl of pick) pl.glow = 0.9; SFX.hiss(); } }
-    if (p2 && !e.opened) { e.opened = true; if (L.dark) L.dark = Math.min(L.dark, 0.5); number(e.x, e.y - e.h - 12, 'THE FURNACE OPENS', '#ff6b2c'); SFX.roar(); shakeCam(6); for (const dx of [-90, 90]) enemies.push({ t: 'bat', x: e.x + dx, y: floor - 90, hx: e.x + dx, hy: floor - 90, w: 10, h: 6, hp: EHP.bat, hp0: EHP.bat, mode: 'hang', modeT: 0, cd: 0.5, face: -1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0, vx: 0, vy: 0 }); }
+    // THE TIERS. Every third of his health he leaves the floor, and in the second half he does it on a
+  // timer as well - so 'he is not down here' becomes a state the fight keeps returning to.
+  if (!e.up && e.mode !== 'sleep' && e.mode !== 'wake' && e.mode !== 'stun' && e.mode !== 'scald' && A.beam !== undefined) {
+    const third = e.hp / e.hp0;
+    e.upCd = Math.max(0, (e.upCd || 0) - dt);
+    const wantUp = (third < 0.66 && !(e.went66)) || (third < 0.33 && !(e.went33)) || (p2 && e.upCd <= 0 && e.mode === 'pace' && e.modeT <= 0);
+    if (wantUp && (e.mode === 'pace' || e.mode === 'stride')) {
+      if (third < 0.33) e.went33 = 1; else if (third < 0.66) e.went66 = 1;
+      e.upCd = 13; e.beamX = Math.max(A.x0 + 40, Math.min(A.x1 - 40, P.x));
+      e.mode = 'leapTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'HE TAKES THE BEAM', '#ffd36b'); SFX.charge();
+    }
+  }
+  if (p2 && !e.opened) { e.opened = true; if (L.dark) L.dark = Math.min(L.dark, 0.5); number(e.x, e.y - e.h - 12, 'THE FURNACE OPENS', '#ff6b2c'); SFX.roar(); shakeCam(6); for (const dx of [-90, 90]) enemies.push({ t: 'bat', x: e.x + dx, y: floor - 90, hx: e.x + dx, hy: floor - 90, w: 10, h: 6, hp: EHP.bat, hp0: EHP.bat, mode: 'hang', modeT: 0, cd: 0.5, face: -1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0, vx: 0, vy: 0 }); }
   }
   let want = 0;
   const nearestCart = () => { let best = null, bd = 1e9; for (const c of movers) if (c.kind === 'cart' && !c.gone && Math.abs(c.y + c.h - floor) < 20 && P.onMover !== c) { const dd = Math.abs(c.x + c.w / 2 - e.x); if (dd < bd && dd > 30) { bd = dd; best = c; } } return best; };
@@ -6103,12 +6117,13 @@ function updateForgemaster(e, dt) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 1; } break;
     case 'stun': want = 0; if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - e.h - 4, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0 }); if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; e.stagger = 0; number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#9aa39a'); } break;
     case 'scald': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; e.stagger = 0; } break;
-    case 'pace': { e.face = Math.sign(d) || e.face; want = ad > 110 ? e.face * 44 : ad < 50 ? -e.face * 30 : 0; for (const k of ['slamT', 'sprayT', 'dragT', 'anvilT', 'breathT']) e[k] -= dt;
+    case 'pace': { e.face = Math.sign(d) || e.face; want = ad > 110 ? e.face * 44 : ad < 50 ? -e.face * 30 : 0; for (const k of ['slamT', 'sprayT', 'dragT', 'anvilT', 'breathT']) e[k] -= dt; e.bellT = (e.bellT || 0) - dt;
       if (e.modeT <= 0 && !P.dead) {
         const cart = nearestCart();
         if (e.dragT <= 0 && cart) { e.dragT = p2 ? 9 : 12; e.mode = 'dragTell'; e.modeT = 0.7; e.cart = cart; number(e.x, e.y - e.h - 12, 'THE CHAIN', '#ffd36b'); SFX.forgeChain(); }
         else if (e.anvilT <= 0) { e.anvilT = p2 ? 9 : 13; e.mode = 'anvilTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE RINGS THE ANVIL', '#ffd36b'); SFX.charge(); }
         else if (p2 && e.breathT <= 0 && ad < 140) { e.breathT = 9; e.mode = 'breathTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'THE FURNACE', '#ff6b2c'); SFX.gasp(); }
+        else if (e.bellT <= 0 && ad > 46 && ad < 170) { e.bellT = p2 ? 6 : 9; e.mode = 'bellowsTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 12, 'THE BELLOWS', '#e8e0d0'); SFX.charge(); }
         else if (e.sprayT <= 0 && ad < 120) { e.sprayT = p2 ? 6 : 8; e.mode = 'sprayTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, 'STEAM', '#e8e0d0'); SFX.hiss(); }
         else if (e.slamT <= 0 && ad < 70) { e.slamT = p2 ? 3 : 4; e.mode = 'slamTell'; e.modeT = 0.7; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.forgeSteam(); }
         else if (ad > 60) { e.mode = 'stride'; e.modeT = 0.9; }
@@ -6127,10 +6142,66 @@ function updateForgemaster(e, dt) {
     case 'anvil': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.7; } break;
     case 'breathTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'breath'; e.modeT = 1.4; for (let k = 1; k <= 8; k++) fires.push({ x: e.x + e.face * (24 + k * 14), y: floor, life: 1.6, delay: k * 0.08 }); SFX.roar(); SFX.puff(); shakeCam(3); } break;
     case 'breath': want = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * (24 + Math.random() * 30), y: e.y - 20 + (Math.random() - 0.5) * 12, vx: e.face * 120, vy: (Math.random() - 0.5) * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff6b2c' : '#ffd36b', size: 2, grav: 0 }); if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.9; } break;
+    /* THE BELLOWS. He puts his shoulder into the great bellows and a wall of hot air comes off it.
+       It does not do much, and that is the point: it SHOVES, and the floor of an armoury is laid
+       with hotplates. The blow is what it pushes you onto. */
+    case 'bellowsTell': e.face = Math.sign(d) || e.face; want = 0;
+      if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 16, y: e.y - 22 + (Math.random() - 0.5) * 14, vx: e.face * 40, vy: 0, life: 0.4, max: 0.4, col: '#e8e0d0', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'bellows'; e.modeT = 0.8; SFX.forgeSteam(); SFX.puff(); shakeCam(3);
+        for (let k = 1; k <= 9; k++) seeds.push({ x: e.x + e.face * (20 + k * 16), y: e.y - 18 + (Math.random() - 0.5) * 20, vx: e.face * 300, vy: 0, dead: false, life: 0.5, g: 0, steam: true });
+        if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 160 && Math.abs(P.y - e.y) < 30) {
+          P.vx = e.face * 430; P.vy = -120; P.ground = false;
+          damagePlayer(e.x, DMG.steam, { up: true }); number(P.x, P.y - 26, 'BLOWN BACK', '#ffd36b');
+          for (const pl of props) if (pl.t === 'hotplate' && Math.abs(pl.x - (P.x + e.face * 70)) < 40) pl.glow = 0.9; } }
+      break;
+    case 'bellows': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.8; } break;
+    /* UP ONTO THE BEAM. He crouches, and then he is gone off the floor. */
+    case 'leapTell': want = 0; e.face = Math.sign(d) || e.face;
+      if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 2, vx: (Math.random() - 0.5) * 30, vy: -40, life: 0.4, max: 0.4, col: '#8a919c', size: 2, grav: 200 });
+      if (e.modeT <= 0) { e.mode = 'leap'; e.modeT = 1.3; e.vy = -600; e.vx = Math.sign((e.beamX || e.x) - e.x) * 120; e.up = 1;
+        SFX.bellow(); SFX.heavy(); shakeCam(4); dust(e.x, e.y, 12); }
+      break;
+    case 'leap': want = e.vx; if (e.modeT <= 0 || (e.vy >= 0 && e.y < floor - 40 && e.ground)) { e.mode = 'beam'; e.modeT = 1.2; e.pourT = 0.8; e.downT = p2 ? 4.5 : 6; } break;
+    /* ON THE BEAM: out of reach, and he makes the floor the dangerous place instead. */
+    case 'beam': { e.face = Math.sign(d) || e.face; want = ad > 30 ? e.face * 52 : 0;
+      e.pourT -= dt; e.downT -= dt;
+      if (e.downT <= 0 || e.y > floor - 30) { e.mode = 'dropTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'HE COMES DOWN', '#ff6b6b'); SFX.charge(); break; }
+      if (e.pourT <= 0) { e.pourT = p2 ? 1.5 : 2.1; e.mode = 'pourTell'; e.modeT = 0.55;
+        number(e.x, e.y - e.h - 12, 'HE POURS', '#ff9a5c'); SFX.hiss(); }
+      break; }
+    case 'pourTell': want = 0;
+      if (Math.random() < dt * 40) parts.push({ x: e.x + e.face * 14 + (Math.random() - 0.5) * 8, y: e.y - 6, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 300 });
+      if (e.modeT <= 0) { e.mode = 'pour'; e.modeT = 0.9; SFX.forgeSteam();
+        for (let k = 0; k < (p2 ? 5 : 3); k++) seeds.push({ x: e.x + e.face * (10 + k * 13), y: e.y - 4, vx: 0, vy: 60, dead: false, life: 3, g: 340, slag: true }); }
+      break;
+    case 'pour': want = 0; if (e.modeT <= 0) { e.mode = 'beam'; e.modeT = 0.7; } break;
+    /* AND OFF IT. Five courses of smith arriving at once, and it goes out both ways along the floor. */
+    case 'dropTell': want = 0;
+      if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 4, vx: 0, vy: 50, life: 0.4, max: 0.4, col: '#8a919c', size: 2, grav: 300 });
+      if (e.modeT <= 0) { e.mode = 'drop'; e.modeT = 1.6; e.vy = 260; e.vx = Math.sign(d) * 60; e.up = 0; SFX.bellow(); }
+      break;
+    case 'drop': { want = e.vx;
+      if (e.ground || e.y >= floor - 2) { e.mode = 'landed'; e.modeT = 0.7; e.vx = 0;
+        shakeCam(11); zoomKick(1.12, 0.35); hitstop(0.05); SFX.forgeHammer(); SFX.stone(); SFX.heavy(); dust(e.x - 20, floor, 16); dust(e.x + 20, floor, 16);
+        for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 30, y: floor, dir: dd, life: 1.8, sp: p2 ? 210 : 180 });
+        for (let k = 0; k < 18; k++) parts.push({ x: e.x + (Math.random() - 0.5) * 50, y: floor, vx: (Math.random() - 0.5) * 180, vy: -80 - Math.random() * 120, life: 0.7, max: 0.7, col: Math.random() < 0.4 ? '#ffd36b' : '#8a919c', size: 2, grav: 400 });
+        if (!P.dead && ad < 52 && Math.abs(P.y - floor) < 30) damagePlayer(e.x, DMG.hammer, { unblockable: true, up: true });
+        number(e.x, e.y - e.h - 14, 'THE ANVIL FALLS', '#ff6b6b'); }
+      else if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; }
+      break; }
+    case 'landed': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.5; } break;
   }
   if (e.stagger > 0 && e.mode !== 'stun') want = 0;
-  e.vx += (want - e.vx) * Math.min(1, dt * 6);
+  e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'leap' || e.mode === 'drop' ? 2 : 6));
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+  e.ground = !!r.ground;
+  // THE BEAM IS A FLOOR WHEN HE IS ON IT. moveBody will not stand him on a rail, so while he is up the
+  // beam's course is held for him; the moment he drops he is back on the armoury floor like everything else.
+  if (A.beam !== undefined && (e.mode === 'beam' || e.mode === 'pourTell' || e.mode === 'pour' || e.mode === 'dropTell')) {
+    e.y = A.beam; e.vy = 0; e.ground = true;
+    e.x = Math.max(A.beamL === undefined ? A.x0 + 40 : A.beamL, Math.min(A.beamR === undefined ? A.x1 - 40 : A.beamR, e.x));
+  }
+  if (e.mode === 'leap' && e.vy > 0 && A.beam !== undefined && e.y >= A.beam && e.y < A.beam + 26) { e.y = A.beam; e.vy = 0; e.mode = 'beam'; e.modeT = 1.2; e.pourT = 0.8; e.downT = p2 ? 4.5 : 6; }
   e.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, e.x));
   { const ph = Math.floor(e.anim * (Math.abs(e.vx) > 60 ? 4.5 : 3)); if (Math.abs(e.vx) > 10 && ph !== e.stepPh && ph % 2 === 0) { SFX.thump(); if (Math.abs(e.vx) > 60) shakeCam(1); } e.stepPh = ph; } // every plant of the boot lands
 }

@@ -1588,6 +1588,45 @@ export function bakeVine(v) { const [c, g] = canvas(T, T); const sx = v ? 7 : 8;
 // Stone-slab ledges for the Crags in place of the wood's log platforms. 16×16; end = 'L' | 'R' | null.
 export function bakeLedge(seed, end) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T; rect(g, x0, 3, x1 - x0, 6, '#7c8797'); rect(g, x0, 3, x1 - x0, 1, '#a8b0bc'); rect(g, x0, 8, x1 - x0, 1, '#4a4f5a'); rect(g, x0 + 1, 9, x1 - x0 - 2, 2, '#3a3e48'); for (let i = 0; i < 3; i++) px(g, x0 + 1 + ((rnd() * (x1 - x0 - 2)) | 0), 4 + ((rnd() * 4) | 0), rnd() < 0.5 ? '#8a919c' : '#c9b84a'); if (end === 'L') { rect(g, 1, 4, 1, 5, '#a8b0bc'); } if (end === 'R') { rect(g, T - 2, 4, 1, 5, '#4a4f5a'); } return c; }
 
+// THE MARSH'S OWN LEDGE. A wood gets a felled log; a marsh gets a DUCKBOARD - sawn boards nailed across
+// two stakes driven into the mud, half rotted, weed growing up between them and a water line along the
+// bottom edge where it sits in the wet. 16x16; end = 'L' | 'R' | null.
+export function bakeDuckboard(seed, end) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T, w = x1 - x0;
+  rect(g, x0, 3, w, 7, '#4a4232');                                        // the boards, on edge
+  for (let bx = x0; bx < x1; bx += 4) { const t = rnd();
+    rect(g, bx, 3, 3, 6, t < 0.3 ? '#5e5440' : t < 0.7 ? '#6a5f46' : '#574d3a');
+    rect(g, bx, 3, 3, 1, '#857a5c'); }
+  rect(g, x0, 9, w, 1, '#2a2418');
+  for (let i = 0; i < 3; i++) px(g, x0 + 1 + ((rnd() * (w - 2)) | 0), 4 + ((rnd() * 4) | 0), '#3a3226');
+  for (let i = 0; i < 4; i++) { const gx = x0 + ((rnd() * w) | 0);        // weed coming up through the joints
+    px(g, gx, 2, rnd() < 0.5 ? '#3f6e2c' : '#53894a'); if (rnd() < 0.5) px(g, gx, 1, '#6faa4a'); }
+  rect(g, x0, 10, w, 1, '#3a4a38');                                       // the wet line, and the stain under it
+  for (let x = x0; x < x1; x++) if (rnd() < 0.4) px(g, x, 11, '#2e3a2c');
+  if ((seed & 1) === 0 || end) { const sx = x0 + (end === 'R' ? w - 5 : 3);   // a stake through the boards
+    rect(g, sx, 2, 2, 13, '#463a26'); rect(g, sx, 2, 1, 13, '#6a5a3c'); px(g, sx, 8, '#2a2418'); }
+  if (end === 'L') rect(g, 1, 3, 1, 7, '#857a5c');
+  if (end === 'R') rect(g, T - 2, 3, 1, 7, '#2a2418');
+  return c;
+}
+// AND THE DEEP FUNGUS. A bracket that grew out of the rock and set hard: a pale cap with gills under it,
+// spotted on top, and the spores coming off the rim. 16x16; end = 'L' | 'R' | null.
+export function bakeCapLedge(seed, end) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? T - 2 : T, w = x1 - x0;
+  rect(g, x0, 2, w, 4, '#8a7ea8');                                        // the cap
+  rect(g, x0, 2, w, 1, '#c8bcd8');
+  rect(g, x0, 6, w, 2, '#6a5e88');
+  for (let i = 0; i < 4; i++) { const sx = x0 + 1 + ((rnd() * (w - 2)) | 0); px(g, sx, 3, '#e0d4f0'); px(g, sx + 1, 4, '#b0a4c8'); }
+  for (let gx = x0; gx < x1; gx += 2) { rect(g, gx, 8, 1, 3 + ((rnd() * 2) | 0), '#4a3e66'); px(g, gx, 8, '#5e5280'); }  // the gills
+  rect(g, x0, 11, w, 1, '#2e2640');
+  for (let i = 0; i < 3; i++) px(g, x0 + ((rnd() * w) | 0), 12 + ((rnd() * 3) | 0), '#9a8ac0');   // spores coming off it
+  if (end === 'L') { rect(g, 1, 3, 1, 5, '#c8bcd8'); rect(g, 2, 2, 1, 1, '#e0d4f0'); }
+  if (end === 'R') { rect(g, T - 2, 3, 1, 5, '#4a3e66'); }
+  return c;
+}
+
 // A rope ladder tile: two ropes with wooden rungs and knots. side = 'L' | 'R' for the halves of a two-wide ladder, or null for a single column.
 export function bakeRopeLadder(v, side) { const rnd = mulberry(650 + v); const [c, g] = canvas(T, T); const rope = (x) => { rect(g, x, 0, 2, T, '#c9b27c'); rect(g, x, 0, 1, T, '#e0d0a0'); for (let y = (v ? 2 : 4); y < T; y += 6) rect(g, x, y, 2, 1, '#8a7a5a'); }; if (side !== 'R') rope(2); if (side !== 'L') rope(12); const x0 = side === 'R' ? 0 : 3, x1 = side === 'L' ? T : 13; for (const y of [3, 11]) { rect(g, x0, y, x1 - x0, 3, '#8a5a32'); rect(g, x0, y, x1 - x0, 1, '#b07a44'); rect(g, x0, y + 2, x1 - x0, 1, '#5c3a1d'); if (side !== 'R') { px(g, 2, y - 1, '#e0d0a0'); px(g, 3, y + 3, '#8a7a5a'); } if (side !== 'L') { px(g, 13, y - 1, '#e0d0a0'); px(g, 12, y + 3, '#8a7a5a'); } } if (rnd() < 0.4) px(g, 7 + ((rnd() * 4) | 0), 3 + ((rnd() * 2) | 0), '#5c3a1d'); return c; }
 // A knotted rope net for the wide nets under bridges. 16×16.
