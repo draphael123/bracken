@@ -1219,25 +1219,28 @@ export function bakeHoldfast() {
 // gone green, a crown that has not been off in thirty years, and the chain of every ship he ever
 // took wound round him twice. He is the heaviest thing in the world and he has never once come up.
 export function bakeDrownedKing() {
+  // HE IS THE HEAVIEST THING IN THE WORLD AND HE SHOULD LOOK IT. The first one was thirty columns wide and
+  // NINETEEN rows tall - a goblin chieftain's build - and packed against an anchor eleven pixels below the
+  // bottom of its own image, so the last boss in the game hovered over the floor of his own hoard. This one
+  // is 44x30 and built on a silhouette: a barnacled crown, a narrow head with two lamps in it, a mantle of
+  // chain and weed spread wider than anything else in the game, a torso INSIDE that spread with the arms
+  // clear of it, and greaves gone into the silt. Frames: stand, walk, THE DEBT, THE SLAM, THE UNDERTOW.
   const DP = Object.assign({}, EP, { p: '#4a7a6e', P: '#2e5248', s: '#8a9a94', S: '#5a6a66', y: '#c9a83a', Y: '#8a7020',
-    i: '#5a6270', I: '#3a3e48', g: '#7ff0e0', k: '#12201e', w: '#9ab0a8', e: '#f6f6ee' });
+    i: '#5a6270', I: '#3a3e48', g: '#7ff0e0', k: '#12201e', w: '#9ab0a8', e: '#f6f6ee', v: '#2e6a4a', V: '#1c4430', b: '#b8c0b4' });
   const d = rows => outline(fromGrid(rows, DP, 1), OUT);
-  const crown = ['....y.y.y.y.y.................', '....yyyyyyyyy.................', '....yYYYYYYYy.................'];
-  const head = ['.....sssssss..................', '....sSSSSSSSs.................', '....sSkggkSSs.................', '....sSSSSSSSs.................', '.....wwwwwww..................'];
-  const body = ['...ppppppppppp................', '..pPPPPPPPPPPp................', '..pPiiiiiiiPPp................', '..pPPPPPPPPPPp................', '..pPiiiiiiiPPp................', '...pppppppppp.................', '...pPPPPPPPp..................'];
-  const legs1 = ['....pp.....pp.................', '....pp.....pp.................', '...PPP.....PPP................', '..IIII.....IIII...............'];
-  const legs2 = ['.....ppppppp..................', '....pp.....pp.................', '...PPP.....PPP................', '.IIIII.......IIIII............'];
-  const stand = d([...crown, ...head, ...body, ...legs1]);
-  const walk = d([...crown, ...head, ...body, ...legs2]);
-  /* THE DEBT: both arms up and the whole trench comes with them */
-  const raise = d(['..i.....y.y.y.......i.........', '..i.....yyyyy.......i.........', '..i....yYYYYYy......i.........',
-    '..i..sssssss........i.........', '..i.sSSSSSSSs.......i.........', '..ipSkggkSSs........i.........', '..ipSSSSSSSs........i.........', '..ipwwwwwww.........i.........',
-    ...body.slice(0, 5), '...pppppppppp.................', '...pPPPPPPPp..................', ...legs1]);
-  /* THE SLAM: everything over his head and then through the floor of the sea */
-  const swing = d([...crown, ...head, ...body.slice(0, 4), '..pPPPPPPPPPPpiiiiiiii........', '...ppppppppppiIIIIIIIi........', '...pPPPPPPPp..iiiiiiii........', ...legs2]);
-  const light = d(['....y.y.y.y.y.................', '....yyyyyyyyy.................', '....yYYYYYYYy.................',
-    ...head, ...body, '....pp.....pp.................', '...ppp.....ppp................', '..pp.........pp...............', '.pp...........pp..............']);
-  return pack([stand, walk, raise, swing, light], 15, 32, 30, 32);
+  const over = (base, arms) => base.map((b, i) => b.split('').map((ch, k) => arms[i][k] !== '.' ? arms[i][k] : ch).join(''));
+  const crown = ['...............y.y.y.y.y....................', '..............yyyyyyyyyyy...................', '..............yYYYYYYYYYy...................'];
+  const head = ['...............sssssssss....................', '..............sSSSSSSSSSs...................', '..............sSggSSSggSs...................', '..............sSSSSSSSSSs...................', '...............wSSSSSSSw....................', '................wwwwwww.....................'];
+  const mantle = ['.........iiiiiiivvvvvvviiiiiii..............', '.......iiIIIIIIIIIIIIIIIIIIIIIii............', '......iIIIIIIIIIIIIIIIIIIIIIIIIIi...........', '.....iIIIIvIIIIIIIIIIIIIIIIvIIIIIi..........'];
+  const torso = ['..........ppppppppppppppp...................', '..........pPPPPPPPPPPPPPp...................', '..........pPPiiiiiiiiiPPp...................', '..........pPPiyyyyyyyiPPp...................', '..........pPPiiiiiiiiiPPp...................', '..........pPPPPPPPPPPPPPp...................', '..........pPPPPPPPPPPPPPp...................', '..........pPPvvPPPPPvvPPp...................', '..........ppppppppppppppp...................'];
+  const down = ['.....ii..................ii.................', '....iIIi................iIIi................', '....iIIi................iIIi................', '....iIIi................iIIi................', '....iIIi................iIIi................', '....sSSs................sSSs................', '.....ss.................iIIi................', '........................sSSs................', '.........................ii.................'];
+  const up = ['ii.....................................ii...', 'iIIi..................................iIIi..', 'iIIi..................................iIIi..', '.iIIi................................iIIi...', '..iIIi..............................iIIi....', '...sSSs............................sSSs.....', '....ss..............................ss......', '............................................', '............................................'];
+  const slam = ['.........................iiiiiiiiiii........', '........................iIIIIIIIIIIIi.......', '.....ii..................iIIIIIIIIIi........', '....iIIi..................iiiiiiiii.........', '....iIIi....................................', '....sSSs....................................', '.....ss.....................................', '............................................', '............................................'];
+  const wide = ['iIIi..................................iIIi..', '.sSSs................................sSSs...', '..ss..................................ss....', '............................................', '............................................', '............................................', '............................................', '............................................', '............................................'];
+  const legsA = ['.........pPPPPPP...PPPPPPp..................', '.........pPPPPPP...PPPPPPp..................', '........iIIIIIIi...iIIIIIIi.................', '........iIIIIIIi...iIIIIIIi.................', '.......sSSSSSSSs...sSSSSSSSs................', '.......sSSSSSSSs...sSSSSSSSs................', '......vvvvvvvvvv...vvvvvvvvvv...............', '.....VVVVVVVVVVVVVVVVVVVVVVVVV..............'];
+  const legsB = ['........pPPPPPPPP.PPPPPPPPp.................', '.......pPPPPPPP.....PPPPPPPp................', '.......iIIIIIIi.....iIIIIIIi................', '......iIIIIIIi.......iIIIIIIi...............', '.....sSSSSSSSs.......sSSSSSSSs..............', '.....sSSSSSSSs.......sSSSSSSSs..............', '....vvvvvvvvvv.......vvvvvvvvvv.............', '...VVVVVVVVVVVVVVVVVVVVVVVVVVVVV............'];
+  const put = (a, legs) => d([...crown, ...head, ...mantle, ...over(torso, a), ...legs]);
+  return pack([put(down, legsA), put(down, legsB), put(up, legsA), put(slam, legsB), put(wide, legsA)], 23, 31, 30, 32);
 }
 // Cave bat — 12×6. Frames: hang (wings folded), fly1, fly2.
 export function bakeBat() {
