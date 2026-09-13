@@ -6350,7 +6350,17 @@ function updateRam(e, dt) {
       for (const gt of enemies) if (gt.alive && gt.t === 'goat' && gt.called && !gt.flung && Math.abs(gt.x - e.x) < 18 && Math.abs(gt.y - e.y) < 16) { gt.flung = 1.2; gt.air = true; gt.vx = e.face * 250; gt.vy = -190; gt.y -= 2; gt.hitT = 0; SFX.goatCry(); number(gt.x, gt.y - gt.h - 8, 'FLUNG', '#ffd36b'); } // he goes through the flock and the flock goes through you
       if (e.feint && e.modeT < 2.55) { e.feint = false; e.mode = 'rear'; e.modeT = 0.55; e.vx *= 0.2; dust(e.x + e.face * 12, e.y, 10); SFX.snort(); number(e.x, e.y - e.h - 12, '!!', '#ff9a5c'); break; } // THE FEINT: he pulls up short and rears; the real charge follows
       if (!P.dead && ad < 22 && Math.abs(P.y - e.y) < 24 && e.hitT <= 0) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.ramLord); if (res === 'hit') { P.vx = e.face * 260; P.vy = -160; } else if (res === 'blocked') { P.vx = e.face * 200; number(P.x, P.y - 24, 'SHOVED', '#c9d1dc'); } }
-      if (e.x <= A.x0 + 16 || e.x >= A.x1 - 16 || e.modeT <= 0) { e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.vx = 0; e.mode = 'crash'; e.modeT = p2 ? 1.7 : 2.4; shakeCam(9); SFX.heavy(); SFX.stone(); SFX.sting(); zoomKick(1.12, 0.3); dust(e.x + e.face * 14, e.y, 14); number(e.x, e.y - e.h - 12, 'INTO THE WALL', '#8fd160'); const n = p2 ? 4 : 2; for (let i = 0; i < n; i++) rocks.push({ x: A.x0 + 24 + Math.random() * (A.x1 - A.x0 - 48), y: floor - 150, vy: 0, t: 0, dead: false }); sparks(e.x + e.face * 14, e.y - 10, e.face, 8); }
+      // ENRAGED, HE DOES NOT RUN THE SAME LINE TWICE. In the second phase he takes the wall at an angle and
+      // BANKS off it instead of burying his horns in it: the charge comes back down the arena without the
+      // dazed pause, and the safe ground behind him stops being safe. Twice, and then he crashes like before.
+      if (p2 && (e.x <= A.x0 + 16 || e.x >= A.x1 - 16) && (e.banks || 0) < 2 && e.modeT > 0.5) {
+        e.banks = (e.banks || 0) + 1; e.face = -e.face; e.vx = e.face * 60;
+        e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x));
+        e.vy = -180; e.modeT = Math.max(e.modeT, 1.6);
+        shakeCam(6); SFX.stone(); SFX.bellow(); dust(e.x - e.face * 14, e.y, 12);
+        for (let q = 0; q < 10; q++) parts.push({ x: e.x - e.face * 16, y: e.y - 6 - Math.random() * 16, vx: -e.face * (60 + Math.random() * 140), vy: -40 - Math.random() * 80, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#8a919c' : '#d8d0c0', size: 2, grav: 260 });
+        number(e.x, e.y - e.h - 12, 'OFF THE WALL', '#ff9a5c'); break; }
+      if (e.x <= A.x0 + 16 || e.x >= A.x1 - 16 || e.modeT <= 0) { e.banks = 0; e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.vx = 0; e.mode = 'crash'; e.modeT = p2 ? 1.7 : 2.4; shakeCam(9); SFX.heavy(); SFX.stone(); SFX.sting(); zoomKick(1.12, 0.3); dust(e.x + e.face * 14, e.y, 14); number(e.x, e.y - e.h - 12, 'INTO THE WALL', '#8fd160'); const n = p2 ? 4 : 2; for (let i = 0; i < n; i++) rocks.push({ x: A.x0 + 24 + Math.random() * (A.x1 - A.x0 - 48), y: floor - 150, vy: 0, t: 0, dead: false }); sparks(e.x + e.face * 14, e.y - 10, e.face, 8); }
       break;
     case 'rear': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 3; e.chain = p2 ? 1 : 0; SFX.bellow(); dust(e.x - e.face * 12, e.y, 8); } break;
     case 'leapTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'leap'; e.modeT = 2; e.vy = -430; e.landX = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)); e.vx = (e.landX - e.x) / 0.86; e.airT = 0; SFX.leap(); dust(e.x, e.y, 10); } break;

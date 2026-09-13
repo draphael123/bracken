@@ -325,7 +325,11 @@ function marshWood() {
   G.R.pools.push({ x0: 277 * TS, x1: 322 * TS, y: 19 * TS, shallow: false, depth: 0 });
   plank(278, 282, 16); plank(286, 290, 15); plank(294, 298, 16); plank(302, 307, 15); plank(311, 315, 16); plank(319, 322, 17);
   G.ent('treehouse', 288, 6); G.ent('treehouse', 304, 6);
-  G.ent('pad', 284, 18); G.ent('pad', 300, 18); G.ent('pad', 309, 18); G.ent('pad', 317, 18);
+  // THE DROWNED VILLAGE IS A LILY CROSSING NOW. Four pads across forty tiles of fog was not a crossing, it was
+  // four pads: you could not see the next one and there was no rhythm to find. Thirteen of them, spaced so
+  // that every jump is reachable and none of them is a rest - and in fog that thick the only way to read the
+  // run is to keep moving and trust the one you can just see.
+  for (const x of [281, 285, 289, 293, 297, 300, 304, 308, 312, 315, 318, 321]) G.ent('pad', x, 18);
   G.plat(303, 11, 3); G.ent('archer', 304, 10, { face: -1 }); G.plat(287, 11, 3); G.ent('archer', 288, 10, { face: -1 }); G.ent('silver', 306, 10);
   G.ent('wasp', 292, 13); G.ent('wasp', 310, 13);
   G.R.fog = (G.R.fog || []).concat([{ x0: 278 * TS, x1: 322 * TS, alpha: 0.86 }]); G.ent('wisp', 291, 12); G.ent('wisp', 306, 13); G.ent('wisp', 318, 12); // the village drowns in fog too; three wisps light it
@@ -368,6 +372,20 @@ function theStockade() {
   coins([9, 18], [18, 17], [26, 18]);
   ent('cage', 31, 19, { kind: 'bird' });
   ent('torch', 36, 19); ent('treehouse', 40, 8);
+  // ---- THE GANTRY. Forty tiles of flat camp road with nothing to do on it but hold right. They have built a
+  // walkway over the top of it to watch the road from, and the only things worth taking in this end of the
+  // camp are up there: a climb, three stepped ledges, a rope down off the far end, and their own KNIGHT
+  // standing on it - the first goblin knight in the game, on the one stretch you cannot simply walk past.
+  { for (let y = 13; y <= 19; y++) { set(44, y, T.NET); set(45, y, T.NET); }   // the ladder up to it
+    plat(46, 12, 5); plat(54, 10, 5); plat(62, 12, 5);                        // up, over, and down again
+    for (let y = 13; y <= 19; y++) { set(66, y, T.NET); set(67, y, T.NET); }  // and the rope down the far end
+    ent('sign', 42, 19, { text: 'THE GANTRY OVER THE ROAD. THEY WATCH THE WOOD FROM UP THERE AND THEY KEEP WHAT THEY TAKE UP THERE TOO. THE THING STANDING ON IT IS NOT A BRUSH GOBLIN.' });
+    ent('heavy', 56, 9, { face: -1 });                                        // their knight, and the first of them
+    ent('archer', 63, 11, { face: -1 });
+    ent('silver', 55, 9);
+    coins([47, 11], [50, 11], [56, 9], [59, 9], [63, 11], [65, 11]); }
+  // and two more of their knights further up the camp, now that you have met one
+  ent('heavy', 208, 19, { face: -1 }); ent('heavy', 300, 19, { face: -1 });
 
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
   block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('silver', 57, 12);
