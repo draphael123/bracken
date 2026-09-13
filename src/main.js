@@ -3563,10 +3563,18 @@ function updatePlayer(dt) {
   // THE MANTLE: coming down onto the lip of a ledge you did not quite make, with the button still held that
   // way, you catch it. It is a save for a missed ledge, never a way up a wall: the step has to be within a
   // boot of your feet and there has to be room to stand on it.
-  if (!P.ground && !P.plunge && !P.climb && !dodging && P.vy > -30 && P.vy < 260 && move) {
+  // THE MANTLE, AND THE LOOP IT WAS IN. Catching a lip you are falling past pops you onto it and nudges you
+  // five pixels forward. The window was `P.y - top > -2`, which includes standing ON the lip - and the mantle
+  // itself sets ground=false and vy=-70, so the moment vy climbed back over -30 it caught the SAME lip again.
+  // On a long flat run that is a five-pixel shove every frame on top of your legs: the player crossed plain
+  // ground at six times his own speed, on some stretches and not others, depending on where the loop could
+  // start. He must now be genuinely BELOW the lip, and he cannot catch another for a quarter of a second.
+  P.mantleCd = Math.max(0, (P.mantleCd || 0) - dt);
+  if (!P.ground && !P.plunge && !P.climb && !dodging && !(P.mantleCd > 0) && P.vy > -30 && P.vy < 260 && move) {
     const fx = Math.floor((P.x + move * 9) / TS), fy = Math.floor((P.y + 2) / TS);
     const top = fy * TS;
-    if (isSolid(fx, fy) && !isSolid(fx, fy - 1) && !isSolid(fx, fy - 2) && P.y - top > -2 && P.y - top < 11) {
+    if (isSolid(fx, fy) && !isSolid(fx, fy - 1) && !isSolid(fx, fy - 2) && P.y - top > 3 && P.y - top < 11) {
+      P.mantleCd = 0.25;
       P.y = top; P.x += move * 5; P.vy = -70; P.ground = false; P.coyote = 0.08; P.canCut = true;
       squash(0.9, 1.14, 0.1); dust(P.x - move * 4, P.y, 2); SFX.pStep(surface()); number(P.x, P.y - 26, 'CAUGHT IT', '#8fd160');
     }
