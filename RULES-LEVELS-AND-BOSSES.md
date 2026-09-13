@@ -353,3 +353,45 @@ shopping list.
 The tool also fails on any node that **nothing reads** — no `tal('id')` anywhere outside the tree, no
 `skillPress('id')` for an active. That is the one talent bug you cannot see from inside the game: it does
 not crash, it does not look wrong, and the description is right there promising otherwise. It found five.
+
+## I. TWO RULES OF PAINT ORDER (learned building THE UNDERCROWN)
+
+**EVERY LADDER IS HUNG LAST.** A gallery cut after a ladder erases the rungs it runs
+through, and it does it silently: the shaft still looks like a shaft, the ladder art is
+still drawn above and below, and there is a four-course gap in the middle of it that you
+only find by falling down it. Two of the Undercrown's five shafts were broken this way.
+Lay every `T.NET` run after the last `cut()`/`block()`/`floor()` in the level, and put a
+comment on the line that says nothing is dug after it. (This is the same lesson as
+digging the drain last, learned from the other end.)
+
+**A BOSS ARENA IS ENTERED FROM THE LEFT.** The trigger is `P.x > arena.trigger` - there
+is no direction flag. A route that lands the player on the RIGHT of the arena means the
+fight never starts, `bossActive` stays false, and *the boss cannot be hurt at all*, which
+reads as a damage bug and is not one. If the descent arrives on the wrong side, put a
+drift or a gallery between the two so the player walks the length of it and comes at the
+arena from the left.
+
+**AND A ROOF HAS TO BE A ROOF.** A `timber` set's `row` is the course it opens. Cut the
+gallery under it six tall and that course is already air, so the best beat in the level -
+the hole opening into the working above you - happens into a hole that was always there.
+Galleries that carry a set are four courses, and the course above them is solid.
+
+## J. A LEVEL CAN ASK FOR A BODY COUNT
+
+`needsTime: { id, t }` gates on a best time (UNDERLEAF wants Kingswood in three minutes).
+`needsKills: { id, pct }` gates on a FRACTION of a level's garrison (THE UNDERCROWN wants
+four goblins in five of Highcrown's). It is stored as a fraction, not a number, so the
+gate survives that garrison being retuned under it: `winLevel` writes down `slain` and
+`slainOf`, and `slainOf` is counted ONCE, at the start of the level, before anything has
+fallen over.
+
+Two gates on the same level should ask for opposite things. Highcrown's gold time wants
+you through it; the Undercrown wants you to leave nothing standing in it.
+
+## K. tools/floaters.mjs
+
+`newlevel.mjs` catches a CREATURE standing on nothing. Nothing caught a PROP standing on
+nothing, and a banner hanging two tiles over a gallery floor is the same bug with a
+quieter failure: it does not break the level, it just looks broken, and you only find it
+by walking past it. Run it with the rest. Kinds that are MEANT to hang are named in
+`HANGS`; anything carrying `hang: true` says so for itself.
