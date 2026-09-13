@@ -223,3 +223,70 @@ ways it says it (C2/C4). If the sentence is "there are more goblins", stop.
 
 **F9. WALK IT BEFORE YOU DRESS IT.** The whole level, start to gate, with no god mode, once per hero that can
 reach it. Every tool in `tools/` passes before the art goes on, and the audit's FLOAT count is zero.
+
+---
+
+## G. THE PLAYTEST BOT
+
+The tools in `tools/` read the levels as data. They cannot see a sprite, a string that runs off the edge of
+the screen, a frame that comes back black, or a crash three thousand frames into the Hurricane. `src/playtest.js`
+runs inside the page, on the real loop, with the real art, and looks at what actually comes out of it. It found
+the thing that had been wrong with every swinging log in the game since they were written.
+
+**How to run it.**
+
+```
+bracken-nine.vercel.app/?playtest=1        every level, both passes, the report left on the page
+                       ?playtest=1&mode=sweep      art and geometry only (faster)
+                       ?playtest=1&level=reef      one level
+```
+
+From the console (or from an agent driving the page):
+
+```js
+const r = await BK.playtest();                                  // -> the report object
+await BK.playtest({ levels: ['reef', 'lamplit'], mode: 'play' });
+console.log(r.text);                                            // the written report
+```
+
+**What the two passes do.**
+
+*THE SWEEP* stands the bot on the footing every seven columns, the whole length of the level, and renders
+eighteen frames at each stop. That is the pass that sees ART: a prop in the air, a creature spawned inside
+rock, a frame with nothing on it, a caption drawn off the edge of a panel, a sprite drawn at NaN, a level that
+costs thirty milliseconds a frame.
+
+*THE PLAY* pass puts a greedy bot on the ground with no god mode and lets it fight its way to the gate. When
+it dies three times in the same place it NOTES THE PLACE, lifts itself over it and carries on, so the report
+ends with every corner a plain run cannot get past instead of only the first one. That is the pass that sees
+BALANCE: hits taken, deaths, how far it got, and where it stopped.
+
+**The findings, and what each one means.**
+
+| kind | severity | what it is |
+|---|---|---|
+| `CRASH` | bug | an exception thrown while the level was running |
+| `NAN` | bug | something drawn at a non-finite coordinate, with the stack |
+| `BLANK` | bug | a rendered frame with nothing on it |
+| `INSOLID` | bug | a creature or a piece of furniture spawned inside rock |
+| `UNREACHABLE` | bug | a gate, checkpoint, silver or quest item the reach model cannot get to on a level with no movers |
+| `STUCK` (never died) | bug | the bot could not get past something and was not being killed: that is geometry |
+| `TEXTCUT` | odd | a UI string drawn outside the 320-wide buffer |
+| `FLOAT` | odd | furniture standing on nothing |
+| `DOUBLE` | odd | two creatures on the same tile |
+| `SLOW` | odd | the worst frame in the level cost more than 18ms |
+| `DARK` | odd | more than half the sweep frames were nearly black |
+| `LONGGAP` | odd | more than 150 columns with no checkpoint |
+| `THIN` | odd | fewer than three kinds of creature in the whole level |
+| `RAMP` | odd | a level out of line with the one before it |
+| `BRUTAL` | odd/note | the bot died a great many times getting through |
+| `ASSISTED` | note | outside the reach fill on a level with movers, gusts or doors: may be a ride away |
+| `UNWEIGHED` | note | an entity type with no threat weight, so the balance figures do not count it |
+
+**Keeping it honest.** Two sets in `playtest.js` hold the things that LOOK wrong and are not: `INROCK_OK`
+(a gunport is a hole in a hull, a window is a hole in a house) and `INROCK_FOE` (an urchin lives in the sea
+bed, a grub lives in the rock). A silver is a collectable and hangs in the air on purpose, so it is not
+furniture. Add to those sets rather than ignoring a finding — an ignored finding comes back every run.
+
+**When to run it.** Before every deploy that touched a level, a creature or the draw. It takes about a minute
+for the whole campaign. If the BUGS column is not empty, do not ship.

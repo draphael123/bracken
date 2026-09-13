@@ -475,7 +475,7 @@ function theStockade() {
   for (let y = 20; y <= 24; y++) { G.set(290, y, T.NET); G.set(291, y, T.NET); } // a rope ladder up the far shaft
   G.ent('sign', 249, 19, { text: 'THE SAPPERS DUG UNDER THE WALL. SO WILL YOU. THEY CARRY POWDER: KILL THEM AT A DISTANCE, OR BLOCK THE BLAST.', pyro: 'THE SAPPERS DUG UNDER THE WALL. SO WILL YOU. THEY CARRY POWDER: KILL THEM AT A DISTANCE: THAT IS WHAT EMBERS ARE FOR.', paladin: 'THE SAPPERS DUG UNDER THE WALL. SO WILL YOU. THEY CARRY POWDER: KILL THEM AT A DISTANCE, OR TAKE THE BLAST ON THE AEGIS.' });
   for (const x of [256, 266, 276, 286]) G.ent('torch', x, 24);
-  G.ent('deco', 254, 24, { kind: 'skullPile', v: 0 }); G.ent('deco', 281, 24, { kind: 'skullPile', v: 1 });
+  G.ent('deco', 254, 24, { kind: 'skullPile', v: 0 }); G.ent('deco', 273, 24, { kind: 'skullPile', v: 1 });   /* 281 was where the crate stack goes: the skulls were inside it */
   G.ent('sprig', 258, 24, { face: -1 }); G.ent('barrel', 262, 24); G.crate(264, 24); G.ent('sapper', 270, 24, { face: -1 });
   G.ent('sprig', 277, 24, { face: -1 }); /* (a bed of spikes under a roof you cannot jump in was here: no way past it but through) */ G.ent('barrel', 279, 24); G.crate(281, 24); G.crate(281, 23);
   G.ent('sapper', 284, 24, { face: -1 }); G.ent('brute', 288, 24, { face: -1 });
@@ -3316,7 +3316,7 @@ function theLamplitStreet() {
   ent('watch', 592, UP - 1, { face: -1 }); ent('watch', 608, UP - 1, { face: 1 });
   ent('watch', 632, UP - 1, { face: -1 }); ent('snuffer', 644, UP - 1, { face: -1 });
   ent('check', 646, UP - 1);                     // three tiles outside his wall: a death costs the square, not the road
-  ent('sign', 620, UP - 1, { text: 'THE BRAZIERS IN HIS SQUARE NEVER WENT OUT. WHEN HE TAKES THE LAMPS, TAKE FIRE OFF ONE AND PUT THEM BACK: IT COSTS YOU THE SECONDS HE WANTS.' });
+  ent('sign', 616, UP - 1, { text: 'THE BRAZIERS IN HIS SQUARE NEVER WENT OUT. WHEN HE TAKES THE LAMPS, TAKE FIRE OFF ONE AND PUT THEM BACK: IT COSTS YOU THE SECONDS HE WANTS.' });
   coins([582, 21], [590, 19], [598, 21], [606, 19], [614, 21], [622, 19], [630, 21], [638, 19], [646, 21]);
   // HIS SQUARE: 44 tiles, two rings of lamps, the braziers at the edges, and the pool that fills it
   ent('brazier', 652, UP - 1); ent('brazier', 690, UP - 1);
@@ -3525,6 +3525,15 @@ function dressLevel(L, id) {
     const [kind, nv] = set[(rnd() * set.length) | 0];
     L.ents.push({ t: 'deco', x, y, kind, v: nv ? (rnd() * nv) | 0 : 0, dressed: true }); placed.push([x, y]);
   }
+  // AND THEN TAKE BACK ANYTHING THE LEVEL HAS SINCE BUILT OVER. The sprinkler only lays dressing on open
+  // ground, but a level can stack crates or raise a palisade on that ground afterwards, and the skull pile
+  // ends up inside the crate. (The playtest bot found one in the stockade.)
+  L.ents = L.ents.filter(e => !e.dressed || at(e.x, e.y) === T.AIR);
+  // TWO OF THE SAME CREATURE ON THE SAME TILE is a copy-paste, never a design: one of them is invisible
+  // behind the other and the room is a creature heavier than it reads.
+  { const seen = new Set();
+    L.ents = L.ents.filter(e => { if (!/^(sprig|spit|wasp|hopper|shield|archer|thorn|soldier|javelin|heavy|brute|sapper|hound|pike|cutlass|boarder|marine|watch|wight|snuffer|cutter|sentry|rockgoblin|miner|goat|harpy|crab|scout|eel|urchin|angler|siren|sailor|netter|petrel)$/.test(e.t)) return true;
+      const k = e.t + '@' + e.x + ',' + e.y; if (seen.has(k)) return false; seen.add(k); return true; }); }
   return L;
 }
 const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };

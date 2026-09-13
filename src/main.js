@@ -7703,8 +7703,12 @@ function updateMovers(dt) {
       if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const aboard = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length; if (m.frogT <= 0 && aboard < (m.frogMax || 3)) { m.frogT = (m.frogEvery || 3) + Math.random() * 2; const side = Math.random() < 0.5 ? -1 : 1; const fx = m.x + m.w / 2 + side * (m.w / 2 + 20); const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58; const col = ['green', 'green', 'yellow', 'blue'][(Math.random() * 4) | 0]; enemies.push({ t: 'hopper', color: col, x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: HOP[col].hp, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true }); burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } }
       if (m.moving) { m.x += m.speed * dt; if (m.x >= m.x1) { m.x = m.x1; m.moving = false; m.done = true; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); } if (Math.random() < dt * 8) parts.push({ x: m.x + (m.speed > 0 ? 0 : m.w), y: m.y + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
     } else {
+      // A SWING SETS ITS OWN X OFF THE ARM. It used to fall through into the straight-line path below, which
+      // is `m.x = m.x0 + m.p * m.range` - and a swing has neither x0 nor range, so EVERY SWING IN THE GAME
+      // had an x of NaN from its first frame: invisible rope, invisible log, and a platform whose box was
+      // NaN so nobody could ever stand on it. (The playtest bot found this by watching for a draw at NaN.)
       if (m.kind === 'swing') { const th = Math.sin(time * 2 * Math.PI / m.period + m.phase) * 0.9; m.x = m.px + Math.sin(th) * m.arm - m.w / 2; m.y = m.py + Math.cos(th) * m.arm; m.dy = m.y - oldY; }
-      if (m.bob) { m.y = m.y0 + Math.sin(time * 1.5 + (m.phase || 0)) * 5; m.dy = m.y - oldY; }
+      else if (m.bob) { m.y = m.y0 + Math.sin(time * 1.5 + (m.phase || 0)) * 5; m.dy = m.y - oldY; }
       else if (m.vert) { // A RISING PILLAR: the water pushes it up out of itself and lets it back down
         const ph = (time / m.period + (m.phase || 0)) % 1, k = ph < 0.5 ? ph * 2 : 2 - ph * 2;
         const e2 = k * k * (3 - 2 * k); // it comes up slowly, holds at the top, and drops
@@ -8425,6 +8429,7 @@ function bakeRoof(h) { const x0 = h.x0 - 1, x1 = h.x1 + 1, w = (x1 - x0 + 1) * T
   return c; }
 function drawRoofs(cx, cy) { for (const h of (L.houses || [])) { const x = (h.x0 - 1) * TS - 2 - cx, y = (h.y0 - 3) * TS - cy; if (x > VW || x + (h.x1 - h.x0 + 4) * TS < 0) continue; if (!h.roof) h.roof = bakeRoof(h); g.drawImage(h.roof, Math.round(x), Math.round(y)); } }
 function drawWorld(cx, cy, showPlayer) {
+  g.__world = true;   /* a string drawn in here lives in the world and is allowed off the edge: the playtest bot reads this */
   if (L.colosseum) { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#0e0c12'); gr.addColorStop(0.6, '#191620'); gr.addColorStop(1, '#241f28'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10; g.fillStyle = '#ffd36b'; for (let i = 0; i < 40; i++) { const x = ((i * 137) % VW), y = ((i * 61) % VH); g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; }
   else g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
@@ -9013,7 +9018,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (killFlash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
   for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x - cx), Math.round(n.y - cy), n.col, 'center'); }
-  g.globalAlpha = 1;
+  g.globalAlpha = 1; g.__world = false;
 }
 
 // THE WALL BEHIND THE PLAY LAYER. Each room kind is the place it is in: a goblin castle, a pirate's orlop and
@@ -9549,6 +9554,57 @@ function bakeHorizon() {
   return c;
 }
 const easeOutBack = k => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+// THE COLUMN ON THE ROAD. Nine of them with three torches, walking the road at the foot of the frame, right
+// to left, over and over, out from behind the menu board and away past the camp. They are eleven pixels tall
+// and they are the only reason the picture reads as a country with something happening in it.
+function drawTitleColumn() {
+  const gy = VH - 21, span = VW + 120;
+  for (let i = 0; i < 9; i++) {
+    const x = ((time * 8 + i * 17) % span) - 60, xx = Math.round(VW + 30 - x);
+    if (xx < -10 || xx > VW + 10) continue;
+    const st = Math.floor(time * 5 + i) % 2, y = gy - st;
+    if (i % 3 === 1) {                                                          // every third one carries a light
+      g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.14;
+      g.fillStyle = '#ff9a5c'; g.beginPath(); g.arc(xx + 4, y - 15, 16, 0, 7); g.fill();
+      g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    }
+    g.fillStyle = '#0e0a14'; g.fillRect(xx, y - 9, 4, 9);                        // the body
+    g.fillRect(xx + (st ? 0 : 1), y, 2, 2); g.fillRect(xx + (st ? 2 : 3), y, 1, 2);  // and the legs of it
+    if (i % 3 === 1) { g.fillStyle = '#140f1c'; g.fillRect(xx + 4, y - 15, 1, 9);
+      const f = Math.floor(time * 11 + i) % 3;
+      g.fillStyle = '#ff9a5c'; g.fillRect(xx + 3, y - 18 + (f === 1 ? 1 : 0), 3, 4);
+      g.fillStyle = '#ffd36b'; g.fillRect(xx + 4, y - 17, 1, 2); }
+    else if (i % 3 === 2) { g.fillStyle = '#221a2a'; g.fillRect(xx + 4, y - 14, 1, 9); }  // and a spear
+  }
+}
+// A SKEIN OF CROWS, going the other way, out of the wood and over the ridge, under the sign.
+function drawTitleCrows() {
+  const t0 = (time * 0.045) % 1.7;
+  if (t0 > 1) return;
+  const bx = -40 + t0 * (VW + 80), by = 66 - t0 * 10;
+  g.fillStyle = '#221a28';
+  for (let i = 0; i < 7; i++) {
+    const x = Math.round(bx - i * 10 + Math.sin(time + i) * 2), y = Math.round(by + (i % 3) * 5 + Math.sin(time * 1.6 + i * 0.7) * 2);
+    if (x < -4 || x > VW) continue;
+    const up = Math.floor(time * 7 + i * 1.7) % 2;
+    g.fillRect(x, y, 1, 1); g.fillRect(x - 2, y + (up ? -1 : 1), 2, 1); g.fillRect(x + 1, y + (up ? -1 : 1), 2, 1);
+  }
+}
+// THE BRACKEN THE PLACE IS NAMED AFTER, standing across the bottom of the frame and moving in the same wind
+// as the leaves. A foreground is the cheapest depth there is and the picture had none at all.
+function drawTitleBracken() {
+  for (let i = 0; i < 30; i++) {
+    const x = ((i * 47 + 13) % (VW + 30)) - 15, h = 14 + ((i * 37) % 20), lean = Math.sin(time * 0.8 + i * 1.3) * (2 + h * 0.06);
+    const base = VH + 3, deep = i % 3 === 0, col = deep ? '#0d1610' : i % 3 === 1 ? '#16281a' : '#111f14';
+    const tip = deep ? '#1c3220' : '#24402a';
+    g.strokeStyle = col; g.lineWidth = 2; g.beginPath();
+    g.moveTo(x, base); g.quadraticCurveTo(x + lean * 0.5, base - h * 0.6, x + lean, base - h); g.stroke();
+    for (let f = 0; f <= 4; f++) { const t = 0.3 + f * 0.17, fy = base - h * t, fx = x + lean * t, sp = 7 - f;
+      g.strokeStyle = f > 2 ? tip : col; g.lineWidth = f > 2 ? 1 : 2;
+      g.beginPath(); g.moveTo(fx, fy); g.quadraticCurveTo(fx - sp * 0.7, fy - 1, fx - sp, fy - 4);
+      g.moveTo(fx, fy); g.quadraticCurveTo(fx + sp * 0.7, fy - 1, fx + sp, fy - 4); g.stroke(); }
+  }
+}
 function drawTitle(cx, cy) {
   if (!HORIZON) HORIZON = bakeHorizon();
   g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH);
@@ -9557,11 +9613,13 @@ function drawTitle(cx, cy) {
   for (let i = 0; i < 4; i++) { const x = ((time * (3 + i) + i * 97) % (VW + 120)) - 60, y = 26 + i * 11; g.globalAlpha = 0.28; g.fillStyle = '#ffb8a0'; g.fillRect(Math.round(x), y, 46 - i * 6, 2); g.fillStyle = '#8a6a98'; g.fillRect(Math.round(x) + 6, y + 2, 34 - i * 5, 2); g.globalAlpha = 1; }
   g.globalAlpha = 0.9; drawLayer(BG.far, 0.15, VH - 90, time * 6, LH * TS - VH); g.globalAlpha = 1;
   g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(120,80,140,0.45)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
+  drawTitleCrows();
   g.drawImage(HORIZON, -70, VH - 140);
   // the Sunspire glints now and then
   { const k = (time % 5) / 5; if (k < 0.12) { g.globalAlpha = Math.sin(k / 0.12 * Math.PI) * 0.8; g.fillStyle = '#ffffff'; g.fillRect(232, VH - 139 + Math.round(k * 200), 2, 5); g.globalAlpha = 1; } }
   drawLayer(BG.near, 0.55, VH - 300, 40 + time * 3, LH * TS - VH);
   g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(90,70,120,0.5)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
+  drawTitleColumn();
   const gx = 36, gy = VH - 132; g.drawImage(PROP.gate, gx, gy, 120, 130);
   for (const tx of [gx - 10, gx + 122]) { const f = Math.floor(time * 10 + tx) % 3; g.fillStyle = '#5c3a1d'; g.fillRect(tx + 2, gy + 60, 3, 22); g.fillStyle = '#ff9a5c'; g.fillRect(tx, gy + 52 - (f === 1 ? 1 : 0), 7, 9); g.fillStyle = '#ffd36b'; g.fillRect(tx + 2, gy + 55, 3, 5); g.globalAlpha = 0.16 + 0.04 * Math.sin(time * 9 + tx); g.fillStyle = '#ffb060'; g.beginPath(); g.arc(tx + 3, gy + 58, 34, 0, 7); g.fill(); g.globalAlpha = 1; }
   for (const lf of titleLeaves) { g.globalAlpha = 0.85; g.fillStyle = lf.col; g.fillRect(Math.round(lf.x), Math.round(lf.y), 2, 2); g.globalAlpha = 1; }
@@ -9572,7 +9630,14 @@ function drawTitle(cx, cy) {
     g.globalCompositeOperation = 'lighter'; const gl = g.createRadialGradient(fx, fy - 6, 2, fx, fy - 6, 46 + Math.sin(time * 11) * 2); gl.addColorStop(0, 'rgba(255,170,90,0.42)'); gl.addColorStop(1, 'rgba(255,120,60,0)'); g.fillStyle = gl; g.fillRect(fx - 50, fy - 56, 100, 70); g.globalCompositeOperation = 'source-over';
     g.drawImage(PROP.campfire[fl], fx - 7, fy - 13);
     for (let i = 0; i < 7; i++) { const ph = (time * 0.8 + i / 7) % 1, sx = fx + Math.sin(i * 3.1 + time * 2) * 4 * ph + (i % 3 - 1) * 2, sy = fy - 10 - ph * 44; g.globalAlpha = (1 - ph) * 0.9; g.fillStyle = ph < 0.4 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(sx), Math.round(sy), 1, 1); } g.globalAlpha = 1;
+    // his shadow, thrown away from the fire, and the smoke of it going up into the last of the light
+    g.globalAlpha = 0.3; g.fillStyle = '#120c1a'; g.beginPath(); g.ellipse(fx + 26, fy - 1, 11, 3, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+    for (let i = 0; i < 9; i++) { const ph = ((time * 0.34 + i / 9) % 1);
+      g.globalAlpha = (1 - ph) * 0.22; g.fillStyle = '#6a5a58';
+      g.fillRect(Math.round(fx + Math.sin(i * 2.1 + time * 0.8 + ph * 3) * (4 + ph * 14)), Math.round(fy - 16 - ph * 62), 2 + Math.round(ph * 3), 2 + Math.round(ph * 2)); }
+    g.globalAlpha = 1;
     drawSet(K, 'idle', Math.floor(time * 3) % 4, fx + 20, fy, -1, false); }
+  drawTitleBracken();
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -10037,7 +10102,6 @@ function render() {
     { const items = titleItems(), mw = 138, mx = VW - mw - 8, mh = items.length * 13 + 24, my = Math.min(74, VH - 16 - mh);
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 140);
       panel(mx + ox, my, mw, mh);
-      text('Z or X to choose', mx + mw / 2, my + items.length * 13 + 10, UI.dim, 'center', 6);
       const want = my + 6 + titleI * 13; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
       g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, mw - 8, 12); g.fillStyle = UI.sel; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, 2, 12);
       items.forEach((k, i) => { const sel = i === titleI, yy = my + 6 + i * 13, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
@@ -10048,7 +10112,7 @@ function render() {
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + ox + 6, my + mh - 14, mw - 12, 1);
       text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
         mx + ox + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
-    text(touchOn ? 'touch pad on screen' : 'ARROWS choose   Z enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
+    text(touchOn ? 'touch pad on screen' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
   }
 
   if (state === 'slots') drawSlots();
@@ -10169,6 +10233,7 @@ document.getElementById('boot').remove();
 window.BK = {
   P, god: false, keys, SET, PROG, SPR, get view() { return { x: camX, y: camY, buf, VW, VH }; }, /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
+  sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
@@ -10178,6 +10243,18 @@ window.BK = {
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
+  // THE PLAYTEST BOT. Loaded only when it is asked for, so it costs nothing to ship it.
+  //   await BK.playtest()                                   every level, both passes
+  //   await BK.playtest({ levels: ['reef'], mode: 'play' })  one level, one pass
+  async playtest(o) { const m = await import('./playtest.js'); return m.run(window.BK, o || {}); },
 };
+// ?playtest=1 runs the whole thing as soon as the art is baked and leaves the report on the page
+if (q.get('playtest') === '1') setTimeout(async () => {
+  const r = await window.BK.playtest({ mode: q.get('mode') || 'both', levels: q.get('level') ? [q.get('level')] : null });
+  window.__PLAYTEST = r;
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'position:fixed;inset:0;overflow:auto;background:#0e0c14;color:#dfe8ff;font:11px/1.4 monospace;padding:12px;z-index:99;white-space:pre';
+  pre.textContent = r.text; document.body.appendChild(pre);
+}, 1200);
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 rafQueued = true; requestAnimationFrame(frame);
