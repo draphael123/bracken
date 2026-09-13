@@ -29,6 +29,9 @@ const standT = t => solidT(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHEL
 
 // what each creature is worth as a threat - the same table tools/curve.mjs uses, so the two agree
 const THREAT = {
+  /* the Undercrown: the propman is worth more than he hits for, because what he costs you is TIME on a
+     set you already paid for; the clinger is worth almost nothing on its own and everything over a drop */
+  propman: 2.5, clinger: 2, pitwarden: 0, minerlamp: 0, timber: 0, gas: 0,
   sprig: 1, spit: 1, wasp: 1.5, hopper: 1, shield: 2, archer: 2, thorn: 2, spitter: 1.5, turtle: 1.5,
   brute: 3.5, sapper: 3, hound: 2.5, pike: 3, soldier: 3, javelin: 2.5, heavy: 4, crow: 1, bat: 1,
   sporeling: 1.5, lurker: 2.5, spitcap: 2, weaver: 3, shaman: 3, thief: 1, folk: 0, squirrel: 0,

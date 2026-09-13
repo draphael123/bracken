@@ -1980,6 +1980,201 @@ function stormhold() {
   };
 }
 
+
+// ============================================================================================
+// THE UNDERCROWN - the secret level under Highcrown, and the only one in the game that goes DOWN.
+//
+// The castle stands on a hill that is not there any more. They dug the iron out from under it for two
+// hundred years and stopped only because the diggers stopped coming back, and what is left is a hole
+// with a castle balanced on it. NOTHING DOWN HERE IS HOLDING ITSELF UP: every gallery is a span of roof
+// on a set of timber, and a set of timber is three blows of your own.
+//
+// THE VERB IS THE COLLAPSE, and it is never simply good. Cutting a set does three things at once:
+//   IT KILLS whatever was standing under the span. That is the weapon.
+//   IT OPENS A HOLE where the roof was, which is the way down - or the way something comes down at you.
+//   IT LEAVES A MOUND of rubble on the floor, which is a stair you did not have and a wall across a
+//   gallery you may still have wanted.
+// So you are not clearing a mine. You are choosing which parts of it still exist, and you are doing it
+// in one direction, because everything you break is behind you the moment you use it.
+//
+// It opens on the ONE THING Highcrown can be asked for that its gold time cannot: four goblins in five.
+// Underleaf asks you to be quick through Kingswood; the Undercrown asks you to leave nothing standing in
+// Highcrown, which is the opposite instruction to the same castle.
+// ============================================================================================
+function undercrown() {
+  const L = painter(104, 196);
+  const { block, floor, plat, ent, coins, set, spikes } = L;
+  const movers = [], interiors = [], pools = [];
+  block(0, 103, 0, 195);                             // it is all rock until something is dug out of it
+  const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  // A GALLERY: a level driven into the rock, timbered, with a roof course over it that can be brought down.
+  const gallery = (x0, x1, fl, h = 4) => { cut(x0, x1, fl - h, fl - 1); interiors.push([x0, x1, fl - h, fl - 1, 'earth']); };
+  const shaft = (x, w, y0, y1) => { cut(x, x + w - 1, y0, y1); };
+  const ladder = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
+  const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
+  const boards = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
+  const shelf = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); };
+  const water = (x0, x1, yTop, d) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + 4, depth: d || 40 });
+  // A SET OF TIMBER. `state` says what it will take: sound wants three blows of your own, cracked wants
+  // one (or a heavy landing anywhere under it), going is already failing and drops on its own once you
+  // walk under it. deep is how many courses of roof come out when it goes.
+  const timber = (x, fl, x0, x1, row, o = {}) => ent('timber', x, fl - 1, { x0, x1, row, floor: fl - 1, deep: o.deep || 2, state: o.state || 'sound' });
+
+  // ---- 1. THE ADIT (rows 10-24). In under the castle's own footings, and the first set teaches it. ----
+  gallery(2, 46, 24, 4);
+  ent('sign', 4, 23, { text: 'THE UNDERCROWN. THEY TOOK THE IRON OUT FROM UNDER HER CASTLE FOR TWO HUNDRED YEARS AND STOPPED ONLY BECAUSE THE DIGGERS STOPPED COMING BACK. NOTHING DOWN HERE IS HOLDING ITSELF UP. A SET OF TIMBER HOLDS A SPAN OF ROOF: CUT IT AND THE ROOF KILLS WHATEVER IS UNDER IT, OPENS A HOLE WHERE IT WAS, AND LEAVES A MOUND YOU CAN CLIMB. NONE OF THAT IS FREE.' });
+  ent('check', 6, 23);
+  ent('deco', 10, 23, { kind: 'barrels' }); ent('minerlamp', 14, 23, { lit: true }); ent('deco', 18, 23, { kind: 'wares' });
+  ent('minerlamp', 30, 23, { lit: true }); ent('minerlamp', 42, 23, { lit: true });
+  rail(20, 46, 24); ent('cart', 44, 23);
+  coins([8, 22], [12, 22], [16, 22], [22, 22], [28, 22], [34, 22], [40, 22]);
+  ent('sign', 20, 23, { text: 'THE FIRST SET IS OVER THE TWO OF THEM. THREE BLOWS AND THE ROOF IS ON THEM INSTEAD OF YOU - AND THE MOUND IT LEAVES IS THE ONLY WAY UP ONTO THE LEVEL ABOVE. YOU DO NOT GET TO HAVE BOTH.' });
+  timber(30, 24, 24, 36, 19, { deep: 3 });
+  ent('miner', 28, 23, { face: 1 }); ent('sprig', 34, 23, { face: -1 });
+  ent('propman', 20, 23, { face: 1 });
+  ent('rockgoblin', 40, 23, { face: -1 }); ent('miner', 44, 23, { face: -1 }); ent('sprig', 36, 23, { face: -1 });
+  ent('bat', 22, 20); ent('bat', 38, 20);
+  ent('deco', 26, 23, { kind: 'barrels' }); ent('deco', 38, 23, { kind: 'wares' }); ent('deco', 12, 23, { kind: 'coffer' });
+  ent('stray', 16, 23, { kind: 'lamp' });                          /* the first lamp: somebody put it down and did not pick it up */
+  ent('check', 22, 23);
+  cut(24, 36, 15, 18); interiors.push([24, 36, 15, 18, 'earth']);   /* the working above it, and row 19 between them is the roof the set holds */
+  coins([26, 17], [30, 17], [34, 17], [28, 17], [32, 17]); ent('silver', 30, 17);
+  ent('minerlamp', 26, 18, { lit: false }); ent('deco', 34, 18, { kind: 'barrels' });
+
+  // ---- 2. THE FIRST WORKINGS (rows 24-58). Galleries stacked three deep, joined by a shaft. ----
+  shaft(46, 6, 16, 44);
+  gallery(40, 86, 34, 4);
+  ent('check', 50, 33);
+  rail(50, 84, 34); ent('cart', 82, 33, { auto: true, dir: -1, speed: 110 });
+  ent('minerlamp', 54, 33, { lit: true }); ent('minerlamp', 70, 33, { lit: true }); ent('minerlamp', 84, 33, { lit: true });
+  ent('deco', 58, 33, { kind: 'barrels' });
+  ent('sign', 52, 33, { text: 'THE FIRST WORKINGS. THE MAN WITH THE PROP ON HIS SHOULDER IS NOT COMING FOR YOU: HE IS GOING TO THE TIMBER, AND WHILE HE IS STANDING BY IT YOU WILL NEVER GET IT DOWN. THE ORDER IS THE MAN AND THEN THE WOOD.' });
+  timber(62, 34, 56, 70, 29, { deep: 2 });
+  timber(78, 34, 72, 84, 29, { deep: 2, state: 'cracked' });
+  ent('propman', 68, 33, { face: -1 }); ent('propman', 80, 33, { face: -1 });
+  ent('rockgoblin', 62, 33, { face: -1 }); ent('miner', 74, 33, { face: 1 });
+  ent('sprig', 44, 33, { face: 1 }); ent('sprig', 56, 33, { face: -1 }); ent('miner', 54, 33, { face: -1 });
+  ent('rockgoblin', 44, 33, { face: -1 }); ent('sentry', 66, 33, { section: 'works', range: 9, face: 1 });
+  ent('bell', 44, 33, { section: 'works' });
+  ent('deco', 64, 33, { kind: 'wares' }); ent('deco', 76, 33, { kind: 'barrels' }); ent('deco', 46, 33, { kind: 'coffer' });
+  ent('check', 68, 33);
+  ent('sign', 74, 33, { text: 'THEY RAN THE TUBS ON THIS LEVEL UNTIL THE DAY IT STOPPED. THE SENTRY HAS A BELL AT THE SHAFT HEAD AND EVERYTHING BELOW HERE CAN HEAR IT.' });
+  coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32], [84, 32], [42, 32], [46, 32], [50, 32], [57, 32], [63, 32], [69, 32], [75, 32], [81, 32]);
+  cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'earth']);   /* row 29 is the roof over the gallery below */
+  coins([58, 27], [64, 27], [70, 27], [76, 27], [82, 27], [61, 27], [67, 27], [73, 27], [79, 27]);
+  ent('stray', 66, 28, { kind: 'lamp' });                          /* the second: up in the old working, where nobody goes */
+  ent('deco', 57, 28, { kind: 'barrels' }); ent('minerlamp', 72, 28, { lit: false });
+  ent('bat', 60, 27); ent('bat', 76, 27);
+
+  shaft(86, 6, 26, 56);
+  ent('clinger', 87, 34, { face: 1 }); ent('clinger', 87, 46, { face: 1 });
+  ent('sign', 84, 33, { text: 'THE SHAFT. WHAT IS ON THE WALL OF IT IS BLIND AND HAS NO INTEREST IN YOU STANDING STILL. IT LETS GO WHEN YOU ARE IN THE AIR BESIDE IT, AND WHAT KILLS YOU IS THE FLOOR ARRIVING EARLY. SWING AND IT LETS GO.' });
+
+  // ---- 3. THE FLOODED LEVEL (rows 46-84). They stopped pumping a long time ago. ----
+  gallery(10, 90, 56, 6);
+  ent('check', 84, 55);
+  for (let x = 20; x <= 52; x++) set(x, 56, T.AIR);
+  block(20, 52, 57, 62); water(20, 52, 56, 60);
+  ent('sign', 80, 55, { text: 'THE FLOODED LEVEL. THEY STOPPED PUMPING WHEN THE DIGGERS STOPPED COMING BACK. THE PLANKS ACROSS IT ARE THE ONLY DRY WAY, AND THE SET OVER THEM IS ALREADY GOING.' });
+  boards(24, 32, 52); boards(38, 48, 52);
+  plat(34, 50, 4);
+  timber(28, 52, 22, 34, 47, { deep: 2, state: 'going' });
+  timber(44, 52, 38, 50, 47, { deep: 2 });
+  ent('propman', 54, 55, { face: -1 }); ent('propman', 70, 55, { face: 1 });
+  ent('rockgoblin', 66, 55, { face: -1 }); ent('rockgoblin', 14, 55, { face: 1 });
+  ent('miner', 74, 55, { face: -1 }); ent('miner', 58, 55, { face: 1 }); ent('sprig', 18, 55, { face: 1 });
+  ent('grub', 82, 55, { face: -1 }); ent('grub', 12, 55, { face: 1 });
+  ent('bat', 64, 50); ent('bat', 78, 50); ent('bat', 34, 50);
+  ent('rockgoblin', 60, 55, { face: 1 }); ent('sprig', 76, 55, { face: -1 });
+  ent('check', 62, 55);
+  ent('deco', 70, 55, { kind: 'barrels' }); ent('deco', 16, 55, { kind: 'wares' }); ent('deco', 84, 55, { kind: 'coffer' });
+  ent('sign', 66, 55, { text: 'THE GAS SITS IN THE LOW PLACES AND THE LAMPS ARE WHY THEY CARRIED CANARIES. WHAT IS IN THE WATER HAS BEEN DOWN HERE LONGER THAN ANY OF THEM.' });
+  ent('stray', 80, 55, { kind: 'lamp' });                          /* the third: still burning, which is the worst of the three */
+  ent('minerlamp', 62, 55, { lit: true }); ent('minerlamp', 78, 55, { lit: true });
+  ent('gas', 44, 55); ent('gas', 30, 55);
+  coins([26, 51], [30, 51], [40, 51], [46, 51], [60, 54], [68, 54], [76, 54], [86, 54], [28, 51], [42, 51], [56, 54], [64, 54], [72, 54], [82, 54], [12, 54], [16, 54]);
+  ent('silver', 36, 49);
+  ent('clinger', 9, 62, { face: 1 });
+  shaft(6, 6, 56, 88);
+  ent('clinger', 7, 70, { face: 1 }); ent('clinger', 7, 80, { face: 1 });
+
+  // ---- 4. THE GREAT STOPE (rows 84-124). One void, crossed on the timber itself. ----
+  cut(6, 96, 88, 122); interiors.push([6, 96, 88, 122, 'earth']);
+  block(0, 103, 123, 128);
+  floor(6, 30, 122); floor(80, 96, 122);
+  ent('check', 12, 121);
+  ent('sign', 10, 121, { text: 'THE GREAT STOPE. THEY TOOK THE WHOLE SEAM OUT AND LEFT THE TIMBER TO HOLD THE HILL UP. EVERY SPAN ACROSS IT IS A SET, WHICH MEANS EVERY SPAN ACROSS IT CAN BE BROUGHT DOWN - INCLUDING THE ONE YOU ARE STANDING ON. THE OVERMAN KEEPS THEM SET.' });
+  boards(30, 44, 112); boards(52, 66, 112); boards(40, 56, 100);
+  plat(46, 106, 6); plat(24, 106, 6); plat(68, 106, 6);
+  ent('propman', 36, 111, { face: 1, mini: true });
+  ent('propman', 60, 111, { face: -1 });
+  ent('rockgoblin', 46, 99, { face: 1 }); ent('miner', 54, 99, { face: -1 });
+  ent('rockgoblin', 26, 121, { face: 1 }); ent('miner', 94, 121, { face: -1 }); ent('sprig', 82, 121, { face: -1 });
+  ent('sprig', 32, 111, { face: 1 }); ent('miner', 64, 111, { face: -1 });
+  ent('check', 46, 105);
+  ent('sign', 30, 111, { text: 'THE OVERMAN SETS THEM AS FAST AS YOU CUT THEM. TAKE HIM OFF THE SPAN FIRST, AND MIND WHICH SPAN YOU ARE STANDING ON WHEN YOU DO IT.' });
+  ent('clinger', 7, 96, { face: 1 }); ent('clinger', 95, 104, { face: -1 });
+  ent('bat', 40, 92); ent('bat', 62, 92); ent('bat', 52, 94); ent('bat', 30, 96); ent('bat', 74, 96);
+  ent('rockgoblin', 52, 111, { face: -1 }); ent('sprig', 44, 99, { face: 1 });
+  timber(37, 112, 30, 44, 112, { deep: 1 });
+  timber(59, 112, 52, 66, 112, { deep: 1, state: 'cracked' });
+  timber(48, 100, 40, 56, 100, { deep: 1 });
+  coins([32, 111], [38, 111], [44, 111], [54, 111], [60, 111], [66, 111], [42, 99], [48, 99], [54, 99], [26, 105], [70, 105], [35, 111], [41, 111], [57, 111], [63, 111], [45, 99], [51, 99], [28, 105], [72, 105], [48, 105]);
+  ent('silver', 48, 94);
+  ent('minerlamp', 14, 121, { lit: true }); ent('minerlamp', 88, 121, { lit: true });
+  ent('deco', 20, 121, { kind: 'barrels' }); ent('deco', 92, 121, { kind: 'wares' });
+  ent('deco', 26, 121, { kind: 'coffer' }); ent('minerlamp', 32, 121, { lit: false }); ent('minerlamp', 76, 121, { lit: true });
+  coins([18, 120], [24, 120], [84, 120], [90, 120]);
+  plat(74, 100, 6);
+  ent('check', 94, 121);
+
+  // ---- 5. THE LAST DRIFT AND THE PIT. A boss arena is entered from the LEFT - the trigger is a line you
+  //         cross going right - so the shaft does not drop you into his pit. It drops you into a low drift
+  //         over it, and you walk the length of that drift to the ladder at the far end before you meet him.
+  shaft(84, 8, 122, 136);
+  cut(10, 92, 137, 140); interiors.push([10, 92, 137, 140, 'earth']);
+  ent('check', 86, 140);
+  ent('sign', 82, 140, { text: 'THE LAST DRIFT. THEY DROVE THIS ONE TO GET AT WHATEVER WAS UNDER THE PIT AND THEY NEVER FINISHED IT. THE LADDER DOWN IS AT THE FAR END.' });
+  ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
+  ent('rockgoblin', 68, 140, { face: -1 }); ent('miner', 50, 140, { face: 1 }); ent('sprig', 30, 140, { face: 1 });
+  ent('propman', 58, 140, { face: -1 });
+  timber(44, 141, 36, 54, 136, { deep: 2 });
+  coins([78, 139], [70, 139], [62, 139], [54, 139], [46, 139], [38, 139], [30, 139], [22, 139], [16, 139]);
+  shaft(10, 6, 141, 166);
+
+  cut(4, 98, 144, 166); interiors.push([4, 98, 144, 166, 'earth']);
+  floor(4, 98, 167);
+  ent('check', 16, 166);
+  ent('sign', 20, 166, { text: 'THE PIT. THE OVERSEER IS STILL DOWN HERE AND HE HAS BEEN FOR THIRTY YEARS. HIS PICK IS NOT AIMED AT YOU: IT IS AIMED AT THE FLOOR, AND THERE IS ONLY SO MUCH OF IT. WHEN THE LAMP ON HIS HELM GOES OUT YOU HAVE HIS CHAIN AND HIS BOOTS TO GO ON.' });
+  ent('minerlamp', 12, 166, { lit: true }); ent('minerlamp', 50, 166, { lit: true }); ent('minerlamp', 86, 166, { lit: true });
+  ent('deco', 24, 166, { kind: 'barrels' }); ent('deco', 78, 166, { kind: 'wares' }); ent('deco', 8, 166, { kind: 'coffer' });
+  ent('sprig', 20, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1 }); ent('miner', 26, 166, { face: 1 });
+  coins([16, 165], [30, 165], [44, 165], [58, 165], [72, 165], [84, 165], [22, 165], [36, 165], [50, 165], [64, 165], [78, 165], [90, 165], [8, 165]);
+  plat(30, 158, 5); plat(46, 156, 6); plat(62, 158, 5);
+  coins([32, 157], [48, 155], [64, 157]);
+  ent('pitwarden', 56, 166, { face: -1 });
+  ent('gate', 90, 166);
+
+  // EVERY LADDER IS HUNG LAST. A gallery cut after a ladder erases the rungs it runs through and does it
+  // silently: the shaft still looks like a shaft, and there is a four-course gap in the middle of it that
+  // you only find by falling down it. Nothing is dug after this line.
+  ladder(46, 18, 43); ladder(90, 28, 55); ladder(10, 56, 87); ladder(88, 121, 136); ladder(14, 141, 166); ladder(78, 100, 121);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
+    timber: true, dark: 0.34,
+    duskStart: -1, duskLen: 1, music: 'mineworks', night: true, glowNight: true, nightA: 0.4,
+    tall: { top: 10 * TS, bottom: 168 * TS },
+    quest: { n: 3, item: 'lamp', name: 'DEAD MEN\'S LAMPS', npc: 'squire', done: 'THEY ARE ALL ACCOUNTED FOR', reward: 'relic', relic: 'soles' },
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', haze: 'rgba(30,26,34,0.34)',
+      grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
+      canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
+    mini: { x0: 30 * TS, x1: 70 * TS, floor: 112 * TS, trigger: 36 * TS, wallL: 29, gate: 71, boss: 'propman', y0: 96 * TS, y1: 114 * TS },
+    arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'pitwarden', music: 'boss2', tint: '#2a2018', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
+  };
+}
+
 // ============================================================================================
 // LEVEL 11 - HIGHCROWN, the Goblin Queen's castle.
 // Stormhold's long bridge ends at her drawbridge. Everything the goblins have left is in here: the
@@ -3864,6 +4059,7 @@ export const LEVELS = [
   { id: 'trial_reaper', name: "THE REAPER'S TRIAL", sub: 'scythe, grave and shade', build: () => trialYard('reaper'), hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
+  { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 // THE REVIEW PASS (2026-09-11). Each wood's fixes from the level review, laid on the finished level in its

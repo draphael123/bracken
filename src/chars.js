@@ -1125,6 +1125,66 @@ export function bakeMiner() {
   const swing = mspr(['....y.......', '...cccccc...', '..cCCCCCCcii', '..ggeoggeoII', '...gggggg.I.', '...gGGGGgxI.', '..xxxxxxxxx.', '.xxxxxxxxx..', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
   return pack([walk1, walk2, dig, swing], 7, 12, 10, 11);
 }
+// ============================================================================================
+// THE UNDERCROWN, three of them.
+// ============================================================================================
+// THE PROPMAN — 12x12. A goblin whose whole job is to hold the mine up, and who has been doing it so
+// long he is bent to the shape of the timber he carries. He does not want to fight you. He wants to get
+// to the set you broke and PUT IT BACK, and every one he puts back is a collapse you have to buy twice.
+// He is read by the PROP: a pit prop carried across both shoulders, the widest thing in the level.
+export function bakePropman() {
+  const PP = Object.assign({}, KG, { w: '#8a5a32', W: '#5c3a1d', m: '#6a707c', c: '#c9b27c' });
+  const p = rows => outline(fromGrid(rows, PP, 1), OUT);
+  const head = ['...cccc.....', '..cCCCCc....', '..ggeoggo...', '...gggg.....'];
+  const carry = ['wwwwwwwwwwww', 'WWWWWWWWWWWW'];
+  const walk1 = p([...carry, ...head, '..GGGGGG....', '.GGGGGGGG...', '..GGGGGG....', '..GG..GG....', '.GG....GG...']);
+  const walk2 = p([...carry, ...head, '..GGGGGG....', '.GGGGGGGG...', '..GGGGGG....', '...GGGG.....', '...GG.GG....']);
+  /* SETTING IT: down on one knee with the prop stood on end, which is the two seconds he is worth killing in */
+  const setUp = p(['.....ww.....', '.....ww.....', '...cccc.ww..', '..cCCCCc.ww.', '..ggeoggo.ww', '...gggg...ww', '..GGGGGG..ww', '.GGGGGGGG.ww', '..GGGGGG..ww', '..GGGG....ww', '.GGGGGG...ww']);
+  const run = p([...carry, ...head, '..GGGGGGG...', '.GGGGGGGGG..', '..GGGGGG....', '.GG...GGG...', 'GG......GG..']);
+  return pack([walk1, walk2, setUp, run], 7, 12, 12, 11);
+}
+// THE CLINGER — 10x10. Pale, blind and boneless; it has spent its whole life on the wall of a shaft with
+// its back to the rock. It does not walk and it cannot be fought on the ground, because it only ever
+// commits when you are IN THE AIR beside it: it lets go, falls with you, and takes hold.
+export function bakeClinger() {
+  const CP = Object.assign({}, EP, { p: '#cfc8b8', P: '#9a9280', v: '#6a5a70', r: '#c9463d', e: '#f6f6ee' });
+  const c = rows => outline(fromGrid(rows, CP, 1), OUT);
+  /* ON THE WALL: flattened against it, limbs folded, nothing showing but a pale seam */
+  const cling = c(['..pppp....', '.pPPPPp...', '.pvrrvp...', '.pPPPPp...', '..pppp....', '..pPPp....', '.p.PP.p...', 'p..pp..p..', '...pp.....', '..p..p....']);
+  /* FALLING: everything open at once - four arms out and the mouth with it */
+  const fall1 = c(['p..pppp..p', '.pPPPPPPp.', 'p.pvrrvp.p', '.pPPPPPPp.', 'p..pppp..p', '..pPPPPp..', '.p.pppp.p.', 'p...pp...p', '..p.pp.p..', '.p..pp..p.']);
+  const fall2 = c(['.p.pppp.p.', 'p.pPPPPp.p', '.ppvrrvpp.', 'p.pPPPPp.p', '.p.pppp.p.', '..pPPPPp..', 'p..pppp..p', '.p..pp..p.', 'p...pp...p', '..p.pp.p..']);
+  /* HOLDING ON: wrapped round whatever it caught */
+  const hold = c(['..pppp....', '.pPPPPp...', '.pvrrvp...', 'ppPPPPpp..', 'p.pppp.p..', 'p.pPPp.p..', '.p.pp.p...', '..pppp....', '..p..p....', '.p....p...']);
+  return pack([cling, fall1, fall2, hold], 5, 10, 10, 10);
+}
+// THE PIT WARDEN — 26x28, and he is the reason nobody has come up out of the Undercrown in thirty years.
+// An overseer gone to the dark: a lamp where his face should be, a chain over one shoulder and a pick as
+// long as a man. Everything about him is HEAVY, so the silhouette leads with the pick head and the lamp.
+export function bakePitWarden() {
+  const WP = Object.assign({}, EP, { i: '#5a6270', I: '#3a3e48', s: '#8a919c', S: '#5f5a52', y: '#ffd36b', Y: '#e0b040',
+    h: '#4a3e32', H: '#2e261e', c: '#8a5a32', C: '#5c3a1d', k: '#1a1620', g: '#6faa4a', G: '#3f6e2c', r: '#ff6b2c' });
+  const w = rows => outline(fromGrid(rows, WP, 1), OUT);
+  /* the lamp on the helm, the iron collar, and the chain that never comes off */
+  const headRows = (lit) => ['........yy................', '.......yYYy...............',
+    '......iiiiii..............', '.....iIIIIIIi.............',
+    '.....i' + (lit ? 'kggk' : 'kkkk') + 'i.............', '.....iIIIIIIi.............', '......ssssss..............'];
+  const body = ['....hhhhhhhhhh............', '...hHHHHHHHHHHh...........', '...hHHhhhhhhHHh...........',
+    '...hHHHHHHHHHHh...........', '....hhhhhhhhhh............', '....hHHHHHHHHh............', '.....hhhhhhhh.............'];
+  const legs1 = ['.....hh....hh.............', '.....hh....hh.............', '....HHH....HHH............', '...IIII....IIII...........'];
+  const legs2 = ['......hhhhhh..............', '.....hh....hh.............', '....HHH....HHH............', '..IIIII......IIIII........'];
+  /* THE PICK, carried low at a walk and over the head at the tell: it is most of what you see of him */
+  const pickLow = (rows) => rows.map((r, i) => i >= 8 && i <= 13 ? r.slice(0, 15) + 'CCC'.slice(0, 3) + r.slice(18) : r);
+  const stand = w([...headRows(1), ...body, ...legs1]);
+  const walk = w([...headRows(1), ...body, ...legs2]);
+  const raise = w(['...........sss............', '..........sSSSs...........', '.........sSSSSSs..........', '..........CCCC............',
+    ...headRows(1).slice(0, 5), '......ssssss..hCC.........', ...body.slice(0, 5), '....hhhhhhhhhh.CC.........', '.....hhhhhhhh...C.........', ...legs1]);
+  const swing = w([...headRows(1), ...body.slice(0, 4),
+    '....hhhhhhhhhhCCCCCC......', '....hHHHHHHHHhCCsSSSs.....', '.....hhhhhhhh...sSSSs.....', ...legs2]);
+  const dark = w([...headRows(0), ...body, ...legs1]);
+  return pack([stand, walk, raise, swing, dark], 13, 28, 26, 28);
+}
 // Cave bat — 12×6. Frames: hang (wings folded), fly1, fly2.
 export function bakeBat() {
   const BP2 = Object.assign({}, EP, { b: '#3a3448', B: '#5a5468', r: '#ff4a3a' });

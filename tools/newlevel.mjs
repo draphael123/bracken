@@ -151,7 +151,7 @@ for (const lv of LEVELS) {
   { const solidish = t => t === T.SOLID || t === T.ONEWAY || t === T.CRATE || t === T.PALISADE || t === T.PLANK || t === T.NET
       || t === T.BOUNCER || t === T.SHELF || t === T.PORT || t === T.RAIL || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CRYST || t === T.REED || t === T.CLIMB;
     // what does not stand: swimmers, fliers, things that hang from a thread, and the traps that swing from a roof
-    const swims = new Set(['eel', 'siren', 'urchin', 'angler', 'petrel', 'wasp', 'drone', 'spider', 'weaver', 'bat', 'crow', 'harpy', 'kite',
+    const swims = new Set(['clinger', 'eel', 'siren', 'urchin', 'angler', 'petrel', 'wasp', 'drone', 'spider', 'weaver', 'bat', 'crow', 'harpy', 'kite',
       'lookout', 'marine', 'spit', 'thorn', 'reefmaw', 'roc', 'owl', 'queen', 'gill', 'heart', 'mother', 'shardling', 'suncatcher', 'netter',
       'ram', 'sailer', 'turtle', 'crab', 'heronfoe', 'scout', 'siren']);
     const inWater = e => (L.pools || []).some(p => p.shallow && !p.dry && !p.harm && e.x * TS >= p.x0 - 8 && e.x * TS <= p.x1 + 8 && (e.y + 1) * TS >= p.y - 24 && (e.y + 1) * TS <= (p.bottom || p.y + 40) + 8); // WADING counts; floating over the deep does not
