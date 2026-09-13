@@ -19,26 +19,41 @@ bracken-nine.vercel.app/?playtest=1        (or localhost:5860/?playtest=1)
 
 If the BUGS column is not empty, do not ship.
 
-## Open, in the order I would take them
+## Open — Daniel's live playtest queue (2026-09-12, in the order he reported them)
 
-1. **THE RAMP IS A SAWTOOTH.** `tools/curve.mjs` says stockade is a +27 wall after marsh, storm a +44 wall
-   after moor, longwater 34 easier than crown, and LAMPLIT — the last level — is easier than the eleventh.
-   The reef (46) is as light as the second level and sits thirteenth. Work already done: a placement helper
-   found safe standing spots at reef `108,23 148,22 340,29 184,22 55,24 373,23 212,31` and lamplit
-   `231,21 68,37 392,21 576,21 360,21 617,19 428,21`. The spire is packed vertically and needs a different
-   finder (band by rows, not columns).
-2. **PERFORMANCE.** The bot's worst frame: spore 28ms, storm 27ms, moor 20ms, spire 17ms, hanging 17ms.
-   Those four cannot hold 60fps on a slow machine. Find what each is drawing per frame that it does not need to.
-3. **A silver at 361,25 in Kingswood is outside the reach fill** (`node tools/reach.mjs kings`). It sits on
-   open ground at row 25 with the floor at 26, so the pocket it is in must be walled off from the start.
-4. **POSED HURT FRAMES** for the four most-seen creatures (sprig, shield, soldier, brute). They take a blow
-   and keep their idle pose.
-5. **THE FIRST NINETY SECONDS.** Rework the opening of BRACKEN WOOD: the bot needed lifting six times in it,
-   at tiles 53, 92, 174, 255 and 339, and died eighteen times.
-6. **MUSIC THAT RESPONDS** — a combat/explore split.
-7. **A REASON TO REPLAY** — a seeded run, or NG+.
-8. **THE GREAT FORGE** — the next level. `IDEAS-NEXT-LEVEL.md` has the pitch; section F has the template.
-   Daniel has twice said "all but the new level", so do not start this without asking.
+**LEVEL DESIGN** (the big ones; each wants its own sitting)
+1. **THE MARSH** — only ONE log section, and more lilypad jumping in the fog. The bot also needs lifting at
+   marsh tiles 32 and 56 twice over, and dies more there than anywhere else in the game.
+2. **THE STOCKADE** — good as it is, but it needs at least one PLATFORMING section, and GOBLIN KNIGHTS should
+   start appearing here.
+3. **THE SCREE PATH** — needs platforming sections too, and THE RAM LORD should change the path he runs once
+   he enrages.
+4. **THE FORGEMASTER AND THE GOBLIN QUEEN ARE BACK TO BACK.** There must be a minute or two of play between
+   them. There is also a gate on the LEFT of that room that cannot be opened - find out whether it is meant
+   to be openable or should not be drawn as a gate at all.
+5. **A GAP BETWEEN THE CASTLE AREAS** — an `interiors` band stops short and leaves a purple void with a floor
+   strip under it. (Screenshot: dark oak + purple, so Highcrown or Stormhold.)
+
+**FEEL AND FIGHT**
+6. **TERRAIN CHANGES HIS SPEED.** Measured in the stockade: on a PLANK bridge he covers 0.92px a step, which
+   is exactly right for 92px/s at the 60% world speed. On two different stretches of plain SOLID he covered
+   1.25 and **5.75** px a step with the same `vx` of 92. So something other than `vx` is moving him -
+   `P.driftAcc` (main.js ~3354) and `updateSlide` are the suspects, and the stockade has slides in it. Find
+   out what is applying a drift outside a slide zone.
+7. **THE RAMP IS STILL A SAWTOOTH** - stockade +27 after marsh, storm +44 after moor, longwater -34 after
+   crown, and lamplit (the LAST level) easier than the eleventh.
+8. Posed hurt frames for sprig, shield, soldier and brute.
+9. Music that responds to combat; a reason to replay.
+
+**ART**
+10. The Owl Reeve is twice the size now but still "a little basic" - he wants a redraw, not a scale. That is
+    eight frames of 64-wide pixel art and should be done properly.
+11. Early-level music: every one of the sixteen levels DOES have its own track (I checked - `crown` is
+    `highcrown`, nothing is shared), but seven of them are stock library tracks with stock names (theme,
+    theme2, theme3, theme4, cave, town, adventure) and they sound it. New ones need new audio files -
+    ElevenLabs `generate_music` is available if Daniel wants bespoke ones.
+12. Verify the claim that every creature has its own voice: `SFX.dieOf(t)` coverage against the full
+    creature list.
 
 ## Standing warnings
 
