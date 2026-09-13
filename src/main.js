@@ -318,7 +318,7 @@ const TREE = [];
   N('reaper', 2, 0, 0, 'deepToll', 'DEEP TOLL', 3, 'the toll takes more out of them and gives more back a point', null);
   N('reaper', 2, 0, 1, 'soulBrand', 'SOUL BRAND', 3, 'your mark lasts two seconds longer a point');
   N('reaper', 2, 1, 0, 'longPassing', 'LONG PASSING', 1, 'the passing goes half again as far, and marks everything it goes through', 'deepToll');
-  N('reaper', 2, 1, 1, 'wraithStep', 'WRAITH STEP', 3, 'F: he is not there. He is a length of the wood away, and everything between wears his mark', null, true);
+  N('reaper', 2, 1, 1, 'longStride', 'THE LONG STEP', 3, 'the passing carries him a quarter of a tile further and costs 2 less stamina a point', null);
   N('reaper', 2, 2, 0, 'lastRites', 'LAST RITES', 3, 'the last harvest reaps them from higher up a point, and hurts the rest more', 'longPassing');
   N('reaper', 2, 3, 0, 'grave', 'THE COLD', 3, '+8 health a point', 'lastRites');
   // THE FREEBOOTER
@@ -370,7 +370,7 @@ const TREE = [];
   N('reaper', 1, 3, 2, 'dueRites', 'DUE RITES', 1, 'a kill that happens inside the ring of your toll leaves a heart behind', 'mortcloth');
   N('reaper', 2, 0, 2, 'deathwatch', 'DEATHWATCH', 3, 'the toll reaches a third of a tile further a point');
   N('reaper', 2, 2, 1, 'shroud', 'THE SHROUD', 3, 'for a moment after a passing, blows land 12% lighter a point', 'longPassing');
-  N('reaper', 2, 3, 1, 'deadWeight', 'THE WEIGHT', 3, 'F: everything near him is dragged in to the haft, and cut on the way', 'shroud', true);
+  N('reaper', 2, 3, 1, 'gripAll', 'THE WHOLE ROW', 1, 'DEATH GRIP takes the whole line in front of him instead of the nearest thing. All of it arrives at once.', 'shroud');
   N('reaper', 2, 3, 2, 'coldComfort', 'COLD COMFORT', 1, 'while no skeleton of yours is standing, the greatsword cuts half as hard again', 'deathwatch');
   // ---- THE PIRATE, the rest of him ----
   N('pirate', 0, 2, 1, 'heavyShot', 'HEAVY SHOT', 3, 'the ball hits 15% harder a point', 'quickHands');
@@ -413,7 +413,7 @@ const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
 const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 14 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + Math.floor(heroLevel() / 2) + tal('whetstone') + tal('heavyMaul') + tal('fiveBlades') + tal('whetScythe')) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
 const footTal = () => tal('footing') + tal('fleet') + tal('ironLungs') + tal('swash');
-const dodgeCost = () => Math.max(8, ST.dodge - 2 * footTal()), plungeCost = () => Math.max(12, ST.plunge - 2 * footTal());
+const dodgeCost = () => Math.max(6, ST.dodge - 2 * footTal() - (isReaper() ? 2 * tal('longStride') : 0)), plungeCost = () => Math.max(12, ST.plunge - 2 * footTal());
 const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : !!(PROG[f] && PROG[f].cleared);
 let K = bakeKnight();
 // TESTING (for now): GOD MODE owns everything and every wood is open, for as long as it is on - nothing is written into
@@ -482,7 +482,6 @@ const MORE_ICONS = {
   unholyGround: pixIcon(['..........', '....y.....', '..y.y.y...', '.y..y..y..', '..y.y.y...', '....y.....', '.yyyyyyyy.', 'y.y....y.y', '..........', '..........', '..........', '..........']),
   scytheThrown: pixIcon(['.......ss.', '......ss..', '.....ss...', '....ss....', '...wss....', '..ww......', '.ww...y...', 'ww...y.y..', '......y...', '..........', '..........', '..........']),
   graveTide: pixIcon(['..........', '..y....y..', '.y.y..y.y.', '.y.y..y.y.', '.yyy..yyy.', '..y....y..', 'wwwwwwwwww', 'wwwwwwwwww', '..........', '..........', '..........', '..........']),
-  wraithStep: pixIcon(['...yy.....', '..yyyy....', '..yyyy....', '...yy.....', '..y..y....', '.y....y...', '......y.yy', '.......yyy', '.......yy.', '..........', '..........', '..........']),
   grapeshot: pixIcon(['..........', '.......y..', '.....y..y.', 'ss...y.y..', 'ssyyyy..y.', 'ww....y.y.', '.ww....y..', '..w....y.y', '..........', '..........', '..........', '..........']),
   rum: pixIcon(['...ww.....', '...ww.....', '..wwww....', '.wrrrrw...', '.wrrrrw...', '.wryyrw...', '.wrrrrw...', '.wrrrrw...', '..wwww....', '..........', '..........', '..........']),
   boarding: pixIcon(['.......yy.', '......yy..', '.....y....', '....y.....', '...y......', '..y...ss..', '.y...s..s.', 'y....s..s.', '......ss..', '..........', '..........', '..........']),
@@ -495,7 +494,7 @@ const MORE_ICONS = {
   divineShield: pixIcon(['...yyyy...', '..y....y..', '.y..ss..y.', 'y..ssss..y', 'y...ss...y', 'y..ssss..y', 'y..s..s..y', '.y......y.', '..y....y..', '...yyyy...', '..........', '..........']),
   hammerLeap: pixIcon(['..y.......', '.y..sss...', 'y..swwws..', '...sssss..', '.....b....', '.....b....', '.....b....', '..........', 'y.y....y.y', 'ssssssssss', 'bbbbbbbbbb', '..........']) };
 // the new actives borrow the icon of their nearest kin: a flame on a Reaper's tree reads as a bug
-const SKILL_KIN = { harvestMoon: 'scytheThrown', deadWeight: 'graveTide', gravecall: 'graveTide', broadside: 'grapeshot', blackSpot: 'grapeshot', keelhaul: 'boarding' };
+const SKILL_KIN = { harvestMoon: 'scytheThrown', gravecall: 'graveTide', broadside: 'grapeshot', blackSpot: 'grapeshot', keelhaul: 'boarding' };
 const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : PYRO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || MORE_ICONS[SKILL_KIN[k]] || FLAME_ICON;
 let wisp = null; // the pyromancer's flame familiar
 let meteors = [], fireRings = [], lanceBeams = [], moons = []; // METEOR, RING OF FIRE, SPEAR OF LIGHT in flight, and the HARVEST MOON standing where he planted it
@@ -549,7 +548,7 @@ function drawHoly(cx, cy) {
   for (const m of hammers) { g.save(); g.translate(Math.round(m.x - cx), Math.round(m.y - cy)); g.rotate(m.t * 14); g.fillStyle = '#c9a040'; g.fillRect(-1, -1, 2, 7); g.fillStyle = '#fff6c8'; g.fillRect(-4, -5, 8, 4); g.fillStyle = '#ffd36b'; g.fillRect(-4, -5, 8, 1); g.restore(); bloom(m.x - cx, m.y - cy, 10, 0.4, 'gold'); }
 }
 const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
-const CD_MAX = { deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 12, deadWeight: 6, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, wraithStep: 5, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5 };
+const CD_MAX = { deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 12, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
 const cdReady = k => !((P.cds && P.cds[k]) > 0), cdSet = k => { P.cds = P.cds || {}; P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
 const skill2Now = () => { if (!tal('twinSkill')) return null; const k = PROG.skill2; return k && k !== 'none' && k !== skillNow() && TREE.some(n => n.id === k && n.hero === hero() && n.active && tal(n.id)) ? k : null; };
@@ -1554,13 +1553,29 @@ function drawMapLife() {
       g.globalAlpha = 0.10 + 0.05 * Math.sin(time * 2.2); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(nd.x, nd.y, 9, 0, 7); g.fill(); g.globalAlpha = 1; } }
 }
 function mapPos() { const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; return [a[0] + (b[0] - a[0]) * map.t, a[1] + (b[1] - a[1]) * map.t]; }
-const nodeSecret = nd => nd.kind === 'level' && !!LEVELS[nd.level].hidden && nodeLocked(nd);
+// A SECRET IS ONLY HIDDEN UNTIL YOU HAVE WALKED THE LEVEL IT HANGS OFF. After that it is a door on
+// the road with its price written on it: you are told there is something there and what it costs, and
+// you are not told what it is. The other thing was a coin toss.
+const secretHost = lv => lv && (lv.needsTime ? lv.needsTime.id : lv.needsKills ? lv.needsKills.id : null);
+const secretShown = nd => { const h = nd.kind === 'level' ? secretHost(LEVELS[nd.level]) : null;
+  return !!(h && (PROG[h] || {}).cleared); };
+const nodeSecret = nd => nd.kind === 'level' && !!LEVELS[nd.level].hidden && nodeLocked(nd) && !secretShown(nd);
+// AND WHAT IT ASKS FOR, in one line. The kill gate is said as a FRACTION of whatever is in there,
+// because that is how it is stored and how it survives the garrison being retuned under it.
+function secretWants(lv) {
+  if (lv.needsTime) { const p = PROG[lv.needsTime.id] || {}, nm = (LEVELS.find(q => q.id === lv.needsTime.id) || {}).name || '';
+    return 'WALK ' + nm + ' IN ' + fmt(lv.needsTime.t) + (p.best !== undefined ? '  (BEST ' + fmt(p.best) + ')' : ''); }
+  if (lv.needsKills) { const nm = (LEVELS.find(q => q.id === lv.needsKills.id) || {}).name || '';
+    return 'PUT DOWN ' + Math.round(lv.needsKills.pct * 100) + '% OF ' + nm + '  (BEST ' + Math.round(killPct(lv) * 100) + '%)'; }
+  return 'SOMETHING IS STILL OWED';
+}
 function mapGo(dir) {
   if (map.walking) return;
   let nx = map.node + dir;
   while (nx >= 0 && nx < NODES.length && nodeSecret(NODES[nx])) nx += dir;   /* walk straight past what you have not found */
   if (nx < 0 || nx >= NODES.length) { SFX.buzz(); return; }
-  if (nodeLocked(NODES[nx]) && NODES[nx].kind === 'level') { SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, 'LOCKED', '#9aa39a'); return; }
+  if (nodeLocked(NODES[nx]) && NODES[nx].kind === 'level') { const lv = LEVELS[NODES[nx].level];
+    SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, lv.secret ? 'NOT YET' : 'LOCKED', '#9aa39a'); return; }
   map.target = nx; map.walking = dir; SFX.ui();
 }
 function updateMap(dt) {
@@ -1678,6 +1693,13 @@ function drawMap() {
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
+      if (lv.secret && nodeLocked(nd)) {
+        /* A SECRET STILL OWED: its name is not yours yet, but its price is. */
+        text('? ? ?', cx0 + 8, cy0 + 5, UI.title);
+        text('SOMETHING IS DOWN THERE', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
+        text(fitText(secretWants(lv), cw - 16, 6), cx0 + 8, cy0 + 28, UI.gold, 'left', 6);
+        text('AND IT IS NOT OPEN YET', cx0 + 8, cy0 + 40, UI.dim, 'left', 6);
+      } else {
       const hasRun = p.best !== undefined && p.best !== null && !Number.isNaN(p.best);
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
@@ -1700,6 +1722,7 @@ function drawMap() {
       if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
       if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
       const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text(fitText('TAM: ' + tm[p.cleared ? 1 : 0], cw - 16, 6), cx0 + 8, cy0 + 47, '#c9d1dc', 'left', 6);
+      }
     }
   }
   { const line = 'ARROWS MOVE   Z ENTER   X BEASTS   V EQUIP';
@@ -3199,21 +3222,28 @@ function cullAt(x, y, dmg, face) {
 // boss, because nothing in this game moves a boss: a boss gets the mark and the stagger and stays where it
 // is, which is still worth the stamina.
 function deathGrip() {
-  let b = null, bd = 1e9;
-  const reach = 150 + 24 * tal('deathGrip');
+  const reach = 150 + 24 * tal('deathGrip'), all = !!tal('gripAll');
+  const row = [];
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
     if (Math.sign(e.x - P.x) !== P.face) continue;
     const d = Math.abs(e.x - P.x); if (d > reach || d < 16) continue;
     if (Math.abs(e.y - P.y) > 44) continue;
-    if (d < bd) { bd = d; b = e; } }
-  if (!b) { number(P.x, P.y - 26, 'NOTHING IN FRONT', '#9aa39a'); SFX.buzz(); return false; }
-  markFoe(b, true); b.stagger = Math.max(b.stagger || 0, 0.85); b.flash = 0.2;
+    row.push([d, e]); }
+  if (!row.length) { number(P.x, P.y - 26, 'NOTHING IN FRONT', '#9aa39a'); SFX.buzz(); return false; }
+  row.sort((a, b2) => a[0] - b2[0]);
+  /* THE WHOLE ROW: all of it arrives at once, and it arrives in the order it was standing in */
+  const take = all ? row : [row[0]];
   SFX.hiss ? SFX.hiss() : SFX.puff(); SFX.clank(); P.castT = 0.25;
-  hurtEnemy(b, 4 + 2 * tal('deathGrip'), P.x, false);
-  if (!b.alive) return true;
-  if (b.maxHp) { number(b.x, b.y - b.h - 14, 'IT WILL NOT COME', '#9aa39a'); return true; }
-  grips.push({ e: b, t: 0, x0: b.x, tx: P.x + P.face * 22 });
-  number(b.x, b.y - b.h - 14, 'COME HERE', '#8fd160');
+  if (all && row.length > 1) { shakeCam(4); number(P.x, P.y - 34, 'THE WHOLE ROW', '#8fd160'); }
+  let n = 0;
+  for (const [, b] of take) {
+    markFoe(b, true); b.stagger = Math.max(b.stagger || 0, 0.85); b.flash = 0.2;
+    hurtEnemy(b, 4 + 2 * tal('deathGrip'), P.x, false);
+    if (!b.alive) continue;
+    if (b.maxHp) { number(b.x, b.y - b.h - 14, 'IT WILL NOT COME', '#9aa39a'); continue; }
+    grips.push({ e: b, t: 0, x0: b.x, tx: P.x + P.face * (22 + n * 14) }); n++;
+    if (!all) number(b.x, b.y - b.h - 14, 'COME HERE', '#8fd160');
+  }
   return true;
 }
 function updateGrips(dt) {
@@ -3520,16 +3550,6 @@ function updatePlayer(dt) {
     for (let k = 1; k <= 6; k++) { const hx = P.x + P.face * (18 + k * 13);
       hands.push({ x: hx, y: P.y, life: 1.4 + 0.2 * tal('graveTide'), delay: k * 0.06, hit: new Set() }); }
   } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
-  // WRAITH STEP: he is simply somewhere else, and everything he passed wears his mark
-  if (isReaper() && skillPress('wraithStep') && cdReady('wraithStep') && canAct()) { if (spend(16)) { cdSet('wraithStep');
-    const far = 64 + 14 * tal('wraithStep'), x0 = P.x;
-    for (let d = 8; d <= far; d += 8) { const tx = Math.floor((P.x + P.face * d) / TS);
-      if (isSolid(tx, Math.floor((P.y - 8) / TS))) break; P.x = P.x + P.face * 8; }
-    P.inv = Math.max(P.inv, 0.3); ghosts.push({ x: x0, y: P.y, face: P.face, frame: 0, life: 0.3 });
-    for (const e of enemies) if (e.alive && !e.harmless && (e.x - x0) * P.face > -8 && (e.x - P.x) * P.face < 8 && Math.abs(e.y - P.y) < 34) markFoe(e);
-    motes(P.x, P.y - 10, 10, 9); SFX.pDodge();
-  } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
-
   // ---- THE HARVEST MOON: he plants the arc and walks away from it, and it keeps cutting ----
   if (isReaper() && skillPress('harvestMoon') && cdReady('harvestMoon') && canAct()) { if (spend(20)) { cdSet('harvestMoon');
     moons.push({ x: P.x, y: P.y - 12, r: 32 + 5 * tal('harvestMoon'), t: 3, tick: 0.2, dmg: Math.round(9 * amul('harvestMoon')) });
@@ -3542,14 +3562,6 @@ function updatePlayer(dt) {
       motes(rx, P.y - 10, 5, 7); burst(rx, P.y, 8, ['#8fd160', '#141a16'], 60, 0.5); }
     SFX.gobDie(); SFX.heavy(); shakeCam(5); zoomKick(1.06, 0.25); ringAt(P.x, P.y - 10, 44, '#8fd160', 0.45);
     number(P.x, P.y - 32, 'GRAVECALL', '#8fd160'); } else tired(); }
-  // ---- THE WEIGHT: everything near him comes to the haft whether it meant to or not ----
-  if (isReaper() && skillPress('deadWeight') && cdReady('deadWeight') && canAct()) { if (spend(22)) { cdSet('deadWeight');
-    const R = 84; SFX.throwWhoosh(); SFX.heavy(); shakeCam(6); zoomKick(1.05, 0.22); ringAt(P.x, P.y - 10, R, '#8fd160', 0.5);
-    for (const e of enemies) { if (!e.alive || e.harmless) continue;
-      if (Math.hypot(e.x - P.x, e.y - P.y) > R) continue;
-      if (!e.maxHp) { e.x += (P.x - e.x) * 0.7; e.vy = Math.min(e.vy || 0, -70); e.stagger = Math.max(e.stagger || 0, 0.7); }
-      hurtEnemy(e, Math.round((e.maxHp ? 10 : 15) * amul('deadWeight')), P.x - (Math.sign(e.x - P.x) || 1) * 20, false); markFoe(e); }
-    number(P.x, P.y - 30, 'THE WEIGHT', '#8fd160'); } else tired(); }
   // ---- BROADSIDE: everything he has, down the deck, in one line ----
   if (isPirate() && skillPress('broadside') && cdReady('broadside') && canAct()) { if (spend(24)) { cdSet('broadside');
     const y0 = P.y - 12; let len = 0;
@@ -3755,7 +3767,7 @@ function updatePlayer(dt) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
       else if (!P.ground) { P.airRolled = true; P.vy = Math.min(P.vy, -80); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); } /* AIR ROLL */
       P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : 0.3; P.dodgeCd = 0.5;
-      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? (230 + ((P.rum || 0) > 0 ? 90 : 0)) * (1 + 0.1 * tal('swash')) : isReaper() ? 250 * (tal('longPassing') ? 1.5 : 1) : 215); P.block = false; dodges++;
+      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? (230 + ((P.rum || 0) > 0 ? 90 : 0)) * (1 + 0.1 * tal('swash')) : isReaper() ? 250 * (tal('longPassing') ? 1.5 : 1) * (1 + 0.08 * tal('longStride')) : 215); P.block = false; dodges++;
       if (isReaper()) { P.inv = Math.max(P.inv, P.dodge + 0.06);   /* THE PASSING: he is not there to be hit */
         P.passT = 0.34 * (tal('longPassing') ? 1.5 : 1);
         ringAt(P.x, P.y - 10, 16, '#8fd160', 0.25);

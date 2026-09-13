@@ -47,3 +47,17 @@ export const indexOf = ({ threat, kinds, hazTiles = 0, gap, span }) =>
 // player has nowhere to have learned it.
 export const RAMP_DROP = -8;   // a step down bigger than this is a collapse, not an act opening
 export const RAMP_WALL = 26;   // a step up bigger than this is a wall
+
+// THE WORST RUN WITH NO CHECKPOINT IN IT - and the arena is not one of them. Every level that ends in a
+// boss put its last checkpoint at the arena DOOR, which is right, and then the measure counted the whole
+// fight as a run with no checkpoint in it, which made Stormhold read a hundred and twenty-six and Kingswood
+// a hundred and eighteen for doing exactly the correct thing. A boss arena is not a walk. It stops at the
+// door. (A TALL level is measured by height, because that is the direction you travel it.)
+export function worstGap(ents, W, H, arena) {
+  const tall = H > 60, key = e => tall ? e.y : e.x;
+  const end = arena ? Math.round((tall ? arena.floor : arena.x0) / 16) : (tall ? H : W);
+  const cx = (ents || []).filter(e => e.t === 'check').map(key).sort((a, b) => a - b);
+  let gap = cx.length ? cx[0] : end;
+  for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
+  return Math.max(gap, end - (cx[cx.length - 1] || 0));
+}

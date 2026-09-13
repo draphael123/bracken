@@ -207,6 +207,12 @@ function brackenWood() {
   G2.plat(140, 11, 2); G2.plat(143, 9, 3); G2.ent('stray', 144, 8, { kind: 'pot' });
   G2.coins([130, 12], [138, 12], [143, 8], [145, 8], [151, 11], [157, 12]);
   G2.ent('check', 162, 21); G2.coins([160, 20], [163, 20]);
+  // THE LEVEL THAT TEACHES THE GAME HAD THE LEAST TO SAY IN IT: eight signs, and a hundred and fifty-one
+  // columns of silence through the hive, the crown and the whole run home. There is no tutorial in this
+  // game, there are signs. (G2 is the last grow, so these columns are the final ones.)
+  G2.ent('sign', 200, 11, { text: 'THE HIVE. IT IS NOT A WALL, IT IS A CEILING, AND EVERYTHING UNDER IT IS ANGRY ABOUT SOMETHING YOU HAVE NOT DONE YET. THE COMB HOLDS. DO NOT STAND STILL UNDER A HOLE.' });
+  G2.ent('sign', 248, 11, { text: 'A CROWN, IN A WOOD. SOMEBODY WORE THAT AND SOMEBODY TOOK IT OFF THEM, AND NEITHER OF THEM IS STILL HERE. WHAT IS LYING ON THE GROUND IN THIS WOOD IS YOURS.' });
+  G2.ent('sign', 288, 11, { text: 'THORNS DO NOT MOVE AND DO NOT STOP. EVERYTHING ELSE IN THIS WOOD CAN BE WALKED ROUND; THESE HAVE TO BE GONE OVER. A JUMP HELD IS HALF A TILE HIGHER THAN A JUMP TAPPED.' });
   return G2.done();
 ;
 }
@@ -352,6 +358,11 @@ function marshWood() {
   F.ent('hopper', 179, 21, { face: -1, ifDrained: 167 }); F.ent('hopper', 191, 21, { face: 1, color: 'yellow', ifDrained: 167 }); F.ent('stray', 185, 21, { kind: 'trap', ifDrained: 167 });
   F.coins([172, 16], [178, 16], [186, 16], [192, 16], [198, 16], [175, 21], [196, 21]);
   F.plat(200, 20, 2); F.block(203, 208, 18, 27); F.ent('check', 206, 17);
+  // AND THE MARSH WENT QUIET FOR A HUNDRED AND THIRTY COLUMNS: the whole pad crossing and the archers
+  // after it, which is where both of its rules are actually asked for.
+  F.ent('sign', 286, 11, { text: 'THE SPITTERS SIT STILL AND LET THE MARSH DO THE WALKING FOR THEM. WHAT THEY THROW ARCS: STAND WHERE IT HAS ALREADY BEEN.' });
+  F.ent('sign', 335, 10, { text: 'THE PADS GO UNDER YOU. NOT QUICKLY - QUICKLY ENOUGH. A PAD YOU ARE STILL STANDING ON IS A PAD YOU HAVE ALREADY SPENT, AND THE NEXT ONE IS THREE STRIDES OFF.' });
+  F.ent('sign', 405, 10, { text: 'BOWS ACROSS THE WATER AND NOTHING TO STAND BEHIND. GO WHEN THE STRING GOES AND NOT BEFORE: AN ARROW IN THE AIR IS AN ARROW THAT IS NOT COMING AGAIN FOR A MOMENT.' });
   return F.done();
 ;
 }
@@ -3700,6 +3711,14 @@ function theHurricane() {
   ent('deco', 700, 14, { kind: 'sternWindows' });                            // THE GREAT CABIN, lit from inside
   ent('deco', 716, 15, { kind: 'chartTable' }); ent('deco', 690, 15, { kind: 'wheel' });
 
+  // FIVE POCKETS OF DECK WITH ONE WAY IN AND NO WAY ON. The whole rule of this ship is THE RIGGING IS THE
+  // LEVEL: the deck under the upper works is broken into bays by the deckhouses, and you drop into a bay off
+  // a shroud, take what is down there, and go back up another. Most of the bays have a shroud at each end.
+  // Five of them did not, so they were forty tiles of walking out and forty back for a coin - and one of
+  // them, the long bay abaft the mainmast, was shut at BOTH ends. Every bay has two shrouds now.
+  for (const x of [266, 267, 287, 288, 370, 371, 374, 375, 557, 558, 594, 595])
+    for (let y = 20; y <= 26; y++) set(x, y, T.NET);
+
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 24, y: 19 }, pools, falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
@@ -4162,7 +4181,11 @@ function checkpoints(L) {
     let best = null, bd = 1e9;
     for (let x = 4; x < W - 4; x++) for (let y = 2; y < H - 2; y++) {
       if (!stand(at(x, y + 1)) || at(x, y) !== T.AIR || at(x, y - 1) !== T.AIR || at(x, y - 2) !== T.AIR) continue;
-      if (!stand(at(x - 1, y + 1)) || !stand(at(x + 1, y + 1))) continue;
+      // A LEDGE ONE TILE WIDER THAN ITS FOOTING still holds a checkpoint. Asking for three tiles meant the
+      // Long Water's two-tile ledges out in the river were all rejected, the filler gave up silently, and a
+      // ninety-four column run with no checkpoint in it stood. (The garrison placer learned this on the
+      // Sunspire and this one never heard about it.)
+      if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;
       if (wet(x, y) || rooms.some(([a2, b2]) => x >= a2 && x <= b2)) continue;
       const d = Math.abs((tall ? y : x) - want); if (d < bd) { bd = d; best = [x, y]; }
     }

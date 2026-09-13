@@ -5,6 +5,7 @@
 // enemy type doing all the work.
 // usage: node tools/quality.mjs
 import { LEVELS, TS } from '../src/level.js';
+import { worstGap } from '../src/threat.js';
 
 const FOE = new Set(['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
   'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat', 'troll',
@@ -22,8 +23,7 @@ for (const lv of LEVELS) {
   const vertical = L.H > L.W;
   const len = vertical ? L.H : L.W;
   const checks = L.ents.filter(e => e.t === 'check').map(e => vertical ? e.y : e.x).sort((a, b) => a - b);
-  let gap = 0; for (let i = 1; i < checks.length; i++) gap = Math.max(gap, checks[i] - checks[i - 1]);
-  if (checks.length) gap = Math.max(gap, checks[0], len - checks[checks.length - 1]);
+  const gap = worstGap(L.ents, L.W, L.H, L.arena);   /* and the boss arena is not a run with no checkpoint in it */
   rows.push({
     id: lv.id, len, vertical,
     foes: foes.length, kinds: kinds.size,

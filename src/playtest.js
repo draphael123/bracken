@@ -21,7 +21,7 @@
 // Everything it finds is a FINDING: a kind, a severity, where it happened and what it was. Nothing here
 // changes the game; the bot restores the save, the hero and the settings it borrowed when it is done.
 import { LEVELS, T, TS } from './level.js';
-import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf } from './threat.js';
+import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap } from './threat.js';
 import { floodReach } from './reachcore.js';
 
 const SEV = { bug: 3, odd: 2, note: 1 };
@@ -123,24 +123,117 @@ function frameStats(BK) {
 // it arrives, holds the jump so it gets its full height, takes a rope when the goal is above it, drops through
 // a ledge when the goal is below, and swings at anything within arm's reach. When it stops making ground it
 // tries the other things it knows - a dash, a back-up-and-run, a drop - before it gives up and says where.
+//
+// AND IT CAN NOW DO THE THREE THINGS THE GAME IS MADE OF. Until this, the bot could only WALK, which is why
+// it reported sixteen per cent of Bracken Wood and seven of the Marsh and called half the campaign BRUTAL:
+// it was drowning in the first pool, standing on a raft fighting it, and walking into the side of every
+// house in the game. Those were not findings about the levels. They were the shape of the bot.
+//   IT SWIMS. Water is not a floor. Under water it strokes for the surface when its breath is going, rises
+//     toward standable ground ahead of it, and jumps out when its head is near the top.
+//   IT RIDES. Standing on a mover it stops walking off the front of it, and only steps off where there is
+//     something to step onto.
+//   IT GOES THROUGH DOORS. This is the one that matters: half the keys in this game are indoors, so a bot
+//     that cannot open a door cannot open a gate either, and every key-gated level ended at its first gate.
+//     Inside a room it goes for the KEY first and the far door second, which is the route the room was built
+//     to teach.
 export function makeBot(BK) {
   let hold = 0, tapT = 0, tap = 0, still = 0, best = -1e9, tries = 0;
+  let lastDoor = null, doorCd = 0, swimUp = 0;
   return function tick(goalX) {
     const P = BK.P, L = BK.L, keys = BK.keys, W = L.W;
     const at = (tx, ty) => (tx < 0 || ty < 0 || tx >= W || ty >= L.H) ? T.SOLID : L.grid[ty * W + tx];
+    // A MOVER IS FOOTING. The whole marsh crossing is six lily pads three tiles apart, and the bot read
+    // every one of them as a hole because the only thing it ever asked was the tile grid - so it jumped on
+    // every frame of the crossing, never cleared three tiles off a sinking pad, and drowned. Rafts, pads,
+    // lifts, carts, sails and the Undercrown's beam are all the same case: they are the floor. Just not tiles.
+    const foot = (tx, ty) => { if (standT(at(tx, ty))) return true;
+      const px = tx * TS + 8, py = ty * TS;
+      for (const m of BK.movers()) { if (m.gone || m.sink > 0.55) continue;
+        const top = m.y + (m.kind === 'pad' ? 2 : 0);
+        if (px >= m.x - 4 && px <= m.x + (m.w || 16) + 4 && top >= py - 10 && top <= py + TS + 8) return true; }
+      return false; };
+    let fx = Math.floor(P.x / TS), fy = Math.floor(P.y / TS);
+    doorCd = Math.max(0, doorCd - 1);
+
+    // ---- THE DOORS. Where am I, and what is this room for? ----
+    const props = BK.props();
+    const room = (L.interiors || []).find(([x0, x1, y0, y1]) => fx >= x0 && fx <= x1 && fy >= y0 - 1 && fy <= y1 + 2);
+    const doorAt = p => Math.abs(p.x - P.x) < 11 && Math.abs(p.y - P.y) < 18;
+    if (room) {
+      // INSIDE: the key first - it is why the room exists - and then the door that is not the one I came in by
+      const mine = p => p.x >= room[0] * TS && p.x <= (room[1] + 1) * TS;
+      const key = props.find(p => p.t === 'key' && !p.got && mine(p));
+      const outs = props.filter(p => p.t === 'doorway' && mine(p));
+      const out = outs.find(p => p.id !== lastDoor) || outs[0];
+      if (key) goalX = key.x;
+      else if (out) { goalX = out.x;
+        if (doorAt(out) && doorCd <= 0) { doorCd = 40; lastDoor = out.to || null; tick.seek = null; BK.press('talk'); keys.up = true; BK.doorNow(); still = 0; best = -1e9; } }
+    } else {
+      // OUTSIDE AND STUCK. A locked gate in front of you means a key behind you, and in this game the key
+      // is indoors - so the answer is a DOOR, and the door is usually a long way back. The first version
+      // of this only looked a hundred and fifty pixels around itself, which is nine tiles, so it never
+      // found one: Stormhold's hearth house is forty-eight tiles behind the gate it opens. It picks the
+      // nearest door it has not already been through and WALKS BACK TO IT.
+      // A SHUT GATE IN FRONT OF YOU IS NOT "STUCK", it is an INSTRUCTION, and waiting sixty frames to
+      // notice wastes the run: go and find the door the moment you can see the gate.
+      const shut = props.find(p => p.t === 'lockgate' && !p.open && Math.abs(p.x - P.x) < 90);
+      if (!tick.seek && (shut || still > 60) && doorCd <= 0) {
+        let d = null, bd = 1e9;
+        for (const p of props) { if (p.t !== 'doorway' || p.lock || (tick.used && tick.used.has(p.id))) continue;
+          const q = Math.abs(p.x - P.x); if (q < bd) { bd = q; d = p; } }
+        if (d) { tick.seek = d; tick.seekT = 1400; }
+      }
+      if (tick.seek) { goalX = tick.seek.x; tick.seekT--;
+        if (doorAt(tick.seek)) { doorCd = 40; lastDoor = tick.seek.to || null;
+          tick.used = tick.used || new Set(); tick.used.add(tick.seek.id);
+          BK.press('talk'); keys.up = true; BK.doorNow(); tick.seek = null; still = 0; best = -1e9; }
+        else if (tick.seekT <= 0) { tick.used = tick.used || new Set(); tick.used.add(tick.seek.id); tick.seek = null; } }
+    }
+
     const dir = P.x < goalX - 10 ? 1 : P.x > goalX + 10 ? -1 : 0;
-    const fx = Math.floor(P.x / TS), fy = Math.floor(P.y / TS);
+    fx = Math.floor(P.x / TS); fy = Math.floor(P.y / TS);
     keys.left = dir < 0; keys.right = dir > 0; keys.down = false;
+
+    // ---- THE WATER. It strokes for air, and it climbs out where there is something to climb out onto. ----
+    if (P.swim) {
+      const breath = P.breath === undefined ? 6 : P.breath;
+      const landAhead = dir && (foot(fx + dir, fy) || foot(fx + dir, fy + 1) || foot(fx + dir * 2, fy));
+      keys.up = breath < 4 || landAhead || at(fx, fy - 2) === T.AIR;
+      keys.down = !keys.up && !!dir && foot(fx + dir, fy + 3);   /* the way on is under: duck for it */
+      if (still % 20 === 0) BK.press('jump');                          /* and try the surface now and then */
+      if (still > 200) { keys.up = true; BK.press('jump'); }
+      return still > 340 ? (still = 0, ++tries > 7 ? 'stuck' : null) : null;
+    }
+    keys.up = false;
+
+    // ---- THE MOVERS. There are two things to do on one and they are opposites. If it is CARRYING you
+    // the right way, stand still and let it. If it is not, the edge of it is a gap and the answer is to
+    // JUMP - which is the whole marsh crossing, six lily pads three tiles apart, each one sinking under
+    // you. The first version of this rule only knew how to stop, so the bot stood politely on a sinking
+    // pad until it went under.
+    let leap = false;
+    if (P.onMover) {
+      const m = P.onMover, edge = dir && !foot(fx + dir, fy + 1) && !foot(fx + dir, fy + 2);
+      const carrying = dir && Math.sign(m.vx || m.dx || 0) === dir && !edge;
+      const sinking = (m.sink || 0) > 0.15 || m.kind === 'pad';
+      if (carrying) { keys.left = keys.right = false; still = Math.max(0, still - 1); }   /* ride it */
+      else if (edge) leap = true;                                                        /* the deck ends: go */
+      if (sinking && !carrying) leap = true;                                             /* and never linger on one that is going down */
+    }
 
     // is it getting anywhere? (a respawn throws it back to a checkpoint: that is not being stuck)
     if (P.dead > 0 || Math.abs(P.x - (tick.lastX || P.x)) > 90) { best = -1e9; still = 0; }
     tick.lastX = P.x;
     if (P.x * dir > best) { best = P.x * dir; still = 0; tries = 0; } else still++;
 
-    // a rope at him, and the way on is up
-    const rope = at(fx, fy - 1) === T.NET || at(fx, fy - 2) === T.NET;
-    if (rope && still > 30) { keys.up = true; keys.left = keys.right = false; }
-    else keys.up = false;
+    // A ROPE AT HIM, and the way on is up - or DOWN, which it could never do. Half of the Undercrown is a
+    // shaft with a ladder in it and the only direction that helps is the one the bot did not have.
+    const rope = at(fx, fy - 1) === T.NET || at(fx, fy - 2) === T.NET || at(fx, fy) === T.NET;
+    if (rope && still > 30) {
+      const below = at(fx, fy + 2) === T.NET || at(fx, fy + 3) === T.NET;
+      if (below && !foot(fx, fy + 1)) keys.down = true; else keys.up = true;
+      keys.left = keys.right = false;
+    } else keys.up = false;
 
     // look two tiles on: a wall to clear, a hole to cross, or thorns to hop. A jump has to START two tiles
     // before the hole and be HELD past the apex, or it lands a third of a tile short - which is exactly what
@@ -152,11 +245,27 @@ export function makeBot(BK) {
       // a HOLE is jumped at the LAST tile: a jump two tiles early lands a third of a tile short of the far
       // side, which is precisely how the bot spent forty deaths on the first gap in Bracken Wood
       const nx = fx + dir;
-      if (!standT(at(nx, fy)) && !standT(at(nx, fy + 1))) need = true;
+      if (!foot(nx, fy) && !foot(nx, fy + 1)) need = true;
       if (at(nx, fy - 1) === T.SPIKE || at(nx, fy) === T.SPIKE) need = true;
     }
-    if (P.ground && (need || (still > 40 && still % 24 < 2))) hold = 26;
-    if (hold > 0) { if (hold === 26) BK.press('jump'); keys.jump = true; hold--; } else keys.jump = false;
+    // HOW LONG TO HOLD IT. Twenty-six frames is a full-height jump and it clears six tiles; for a
+    // two-tile hop it is a way of landing somewhere else. The marsh crossing is six lily pads three
+    // tiles apart and the bot was sailing clean over the one it was aiming at and into the water past
+    // it. So: find the next thing worth landing on and hold for as long as THAT needs, not always the
+    // most it has. (Anything higher than where it stands still gets the full jump.)
+    if (P.ground && (need || leap || (still > 40 && still % 24 < 2))) {
+      let want = 26;
+      if (dir) for (let k = 1; k <= 7; k++) { const tx = fx + dir * k;
+        let ty = null; for (let q = -2; q <= 3; q++) if (foot(tx, fy + q) && !foot(tx, fy + q - 1)) { ty = fy + q; break; }
+        /* a creature standing over the gap is a step, and it is the only one there is */
+        if (ty === null) for (const e of BK.enemies()) { if (!e.alive || e.harmless) continue;
+          if (Math.floor(e.x / TS) === tx && e.y > (fy - 4) * TS && e.y < (fy + 5) * TS) { ty = Math.floor(e.y / TS); break; } }
+        if (ty === null) continue;
+        want = ty < fy ? 26 : Math.max(9, Math.min(26, 6 + k * 4));   /* up is always the full jump */
+        break; }
+      hold = want;
+    }
+    if (hold > 0) { if (!tick.jumping) { BK.press('jump'); tick.jumping = 1; } keys.jump = true; hold--; } else { keys.jump = false; tick.jumping = 0; }
 
     // a dash when a jump plainly is not enough: tap the way twice
     if (still > 110 && still % 40 === 0) { tap = 3; tapT = 0; }
@@ -164,6 +273,17 @@ export function makeBot(BK) {
 
     // drop through a ledge if the goal is a long way below
     if (P.ground && still > 70 && at(fx, fy) === T.ONEWAY) keys.down = true;
+
+    // A CREATURE UNDER YOU WHILE YOU ARE FALLING IS A STEP. Plunge on it and you bounce, and four wasps
+    // over a pit is a bridge - which is the whole middle of Bracken Wood and every pogo chain after it.
+    tick.pogoCd = Math.max(0, (tick.pogoCd || 0) - 1);
+    if (!P.ground && P.vy > 45 && !P.swim && tick.pogoCd <= 0) {
+      for (const e of BK.enemies()) { if (!e.alive || e.harmless || e.t === 'folk' || e.t === 'fisher') continue;
+        const dy = (e.y - (e.h || 10) / 2) - P.y;
+        /* clearly BELOW and clearly under: after a bounce the one you just hit is still beside you, and
+           plunging on it again from a standstill is a plunge into the pit with extra steps */
+        if (Math.abs(e.x - P.x) < 15 && dy > 8 && dy < 50) { keys.down = true; tick.pogoCd = 18; break; } }
+    }
 
     // and hit whatever is in reach, in front or behind
     for (const e of BK.enemies()) { if (!e.alive || e.t === 'folk' || e.t === 'fisher' || e.t === 'bale') continue;
@@ -313,9 +433,7 @@ export async function run(BK, opts = {}) {
       for (let i = 0; i < built.grid.length; i++) if (built.grid[i] === T.SPIKE) hazTiles++;
       for (const p of (built.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4);
         else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }   /* breath is a hazard with nothing in it */
-      const cx = (built.ents || []).filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b);
-      let gap = cx.length ? cx[0] : W; for (let k = 1; k < cx.length; k++) gap = Math.max(gap, cx[k] - cx[k - 1]);
-      gap = Math.max(gap, W - (cx[cx.length - 1] || 0));
+      const gap = worstGap(built.ents, W, H, built.arena);
       Object.assign(row.stats, { foes, threat: Math.round(threat), kinds: kinds.size, checks, worstGap: gap, haz: hazTiles, thr100: +(threat / (span / 100)).toFixed(1), index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) });
       if (gap > 150) F('LONGGAP', SEV.odd, gap + ' columns with no checkpoint in them');
       if (kinds.size < 3) F('THIN', SEV.odd, 'only ' + kinds.size + ' kind(s) of creature in the whole level');
@@ -421,9 +539,10 @@ export async function run(BK, opts = {}) {
         // that is bad at the game, which is not news
         // THE BOT CANNOT SWIM and it cannot ride. On a level whose way on is a current, a tide or a mover, a
         // short walk is the bot's limit, not the level's, so it is worth a look and never a bug.
-        const wet = (built.pools || []).some(p => p.swim) || (built.moversExtra || []).length > 0;
+        const wet = (built.pools || []).some(p => p.swim) || (built.moversExtra || []).length > 0
+          || (built.ents || []).some(e => e.t === 'doorway' || e.t === 'lockgate');
         if (pct < 60 && dd <= 1 && !lifts.length && BK.state === 'play')
-          F('STUCK', wet ? SEV.odd : SEV.bug, 'the bot reached ' + pct + '% and was neither killed nor lifted: ' + (wet ? 'it cannot swim or ride, so look by hand' : 'something is in the way'));
+          F('STUCK', wet ? SEV.odd : SEV.bug, 'the bot reached ' + pct + '% and was neither killed nor lifted: ' + (wet ? 'it swims, rides and opens doors, but not well - look by hand' : 'something is in the way'));
         else if (pct < 60 && BK.state === 'play') F('BRUTAL', SEV.odd, 'the bot died ' + dd + ' times and still only got ' + pct + '% of the way');
         else if (dd > 8) F('BRUTAL', SEV.note, 'the bot died ' + dd + ' times crossing it');
       } catch (e) { F('CRASH', SEV.bug, 'the play pass threw: ' + (e && e.message), (e && e.stack || '').split('\n')[1]); }

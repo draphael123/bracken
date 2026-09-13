@@ -9,7 +9,7 @@
 // The index is deliberately crude and deliberately STATIC - it is what the level contains, not how a player
 // does. It is for spotting a level that is out of order with its neighbours, not for tuning a number.
 import { LEVELS, T, TS } from '../src/level.js';
-import { THREAT, spanOf, indexOf, RAMP_DROP, RAMP_WALL } from '../src/threat.js';
+import { THREAT, spanOf, indexOf, worstGap, RAMP_DROP, RAMP_WALL } from '../src/threat.js';
 
 const HAZ = new Set([T.SPIKE]);
 
@@ -31,10 +31,7 @@ for (const lv of LEVELS) {
   for (const p of (R.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4);
     else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }   // breath is a hazard with nothing in it
   // the worst run of level with no checkpoint in it
-  const cx = (R.ents || []).filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b);
-  let gap = cx.length ? cx[0] : cols;
-  for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
-  gap = Math.max(gap, cols - (cx[cx.length - 1] || 0));
+  const gap = worstGap(R.ents, cols, R.H, R.arena);
   const span = spanOf(cols, R.H);
   const per100 = threat / (span / 100);
   const index = indexOf({ threat, kinds: kinds.size, hazTiles, gap, span });
