@@ -1008,7 +1008,7 @@ function loadLevel(i) {
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
 }
 function spawnEntities() {
-  shots = []; bodies = []; risen = []; rbolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
+  shots = []; bodies = []; risen = []; rbolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
   washReset(); strikeReset(); tideReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
   for (const e of L.ents) spawnEnt(e);
   spawnEntitiesTail();
@@ -1164,6 +1164,7 @@ function spawnEnt(e) {
       case 'timber': props.push({ t: 'timber', x: px, y: py, x0: e.x0, x1: e.x1, row: e.row, floor: e.floor,
         deep: e.deep || 2, hp: e.state === 'cracked' ? 1 : 3, state: e.state || 'sound', broken: marks.has('tim:' + e.x),
         creakT: 0, shake: 0, armT: 0, dust: 0 }); break;
+      case 'ballast': props.push({ t: 'ballast', x: px, y: py, kind: e.kind || 'stone', held: false, vy: 0, ph: Math.random() * 6, home: py }); break;
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
       case 'rod': props.push({ t: 'rod', x: px, y: py }); break;
       case 'scaffold': props.push({ t: 'scaffold', x0: e.x * TS, x1: (e.x1 + 1) * TS, top: e.y * TS, crane: !!e.crane }); break;
@@ -3817,7 +3818,7 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = ((P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * tal('seaLegs')) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : (P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * tal('seaLegs')) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]); // the Sunspire's ice: slow to get going, slower to stop
   if (move && !groundAtk) {
     const acc = P.swim ? 900 : P.ground ? (onSlick ? 360 : 1000) : 700;
@@ -3852,7 +3853,11 @@ function updatePlayer(dt) {
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
   P.kickT = Math.max(0, (P.kickT || 0) - dt);
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
-  if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block && !P.aegis) {
+  // LETTING GO COMES FIRST. Standing on the floor of the sea with a stone in your hands, the jump key is
+  // not a jump - there is nothing to jump with. It is the only way up, and the ground jump was eating the
+  // buffer before the water ever saw it.
+  if (P.jbuf > 0 && P.ballast && P.swim) { P.jbuf = 0; dropBallast(true); }
+  else if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block && !P.aegis) {
     if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
     else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1) * (1 + 0.02 * (tal('spring') + tal('leapFlame') + tal('ascension'))); P.ground = false; P.coyote = 0; P.jbuf = 0;
       // WHAT THE ROPE GAVE YOU, YOU KEEP: leaving a swing or a raft at speed used to drop you to a walking pace
@@ -3901,9 +3906,17 @@ function updatePlayer(dt) {
     if (Math.random() < dt * 10) parts.push({ x: P.x - Math.sign(f) * 10, y: P.y - 4 - Math.random() * 10, vx: f * 0.8, vy: 0, life: 0.4, max: 0.4, col: '#bfe6f5', size: 1, grav: 0 });
   }
   if (P.swim) { const under = swimP.capped ? 99 : P.y - swimP.y;
-    P.vy += 150 * dt; if (under > 15) P.vy -= 300 * dt; if (keys.down) P.vy += 430 * dt; if (keys.up || (keys.jump && under > 30)) P.vy -= 430 * dt;
-    P.vy = Math.max(-190, Math.min(P.plunge ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) { P.plunge = false; P.consecrate = false; } P.airRolled = false; P.canCut = true;
-    if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
+    // HELD BALLAST TURNS THE WATER OVER. Without it the sea pushes you up and the kick pushes you
+    // harder; with it there is nothing under you but more water and the stone wants the bottom.
+    const heavy = !!P.ballast;
+    P.vy += (heavy ? 330 : 150) * dt; if (under > 15 && !heavy) P.vy -= 300 * dt;
+    if (keys.down) P.vy += 430 * dt; if (!heavy && (keys.up || (keys.jump && under > 30))) P.vy -= 430 * dt;
+    if (heavy && keys.up) P.vy -= 90 * dt;                                   /* you can strain against it. Barely. */
+    P.vy = Math.max(heavy ? -40 : -190, Math.min(P.plunge ? 210 : heavy ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) { P.plunge = false; P.consecrate = false; } P.airRolled = false; P.canCut = true;
+    // LET IT GO. Underwater the jump key has always meant GO UP; when you are heavy the only way up
+    // is to open your hands, so it is the same key doing the same thing by the only means left.
+    if (P.jbuf > 0 && P.ballast) { P.jbuf = 0; dropBallast(true); }
+    else if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
     const bell = nearAir(P.x, P.y - 8);
     if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5); P.drownT = 0; }
     else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
@@ -8005,6 +8018,46 @@ function updateTimber(dt, hb) {
     }
   }
 }
+// A STONE OFF THE BOTTOM. You take one by walking onto it and you are carrying it until you let go;
+// it is never in an inventory and there is never more than one. What is down there can take it off you.
+function takeBallast(pr) {
+  if (P.ballast || pr.held || P.dead) return;
+  P.ballast = pr; pr.held = true; pr.vy = 0;
+  SFX.clank(); SFX.thud(); number(P.x, P.y - 30, BALLAST_NAME[pr.kind] || 'BALLAST', '#bfe6f5');
+  burst(pr.x, pr.y, 6, ['#8a919c', '#bfe6f5'], 40, 0.4);
+  if (!(PROG.ballastTold > 1)) { PROG.ballastTold = (PROG.ballastTold || 0) + 1; hintT = 5;
+    hintMsg = 'YOU ARE TOO LIGHT TO BE DOWN HERE. CARRYING IT YOU SINK AND YOU WALK THE BOTTOM; PRESS JUMP TO LET IT GO AND YOU COME UP. THERE ARE ONLY SO MANY OF THEM IN A ROOM.'; }
+}
+function dropBallast(kick) {
+  const pr = P.ballast; if (!pr) return;
+  P.ballast = null; pr.held = false; pr.vy = 60; pr.cd = 0.7; pr.x = P.x; pr.y = P.y + 4;
+  if (kick) { P.vy = Math.min(P.vy, -150); burst(P.x, P.y - 6, 10, ['#e8f4f0', '#7cc8c8'], 70, 0.5, 300, 1); SFX.splash(); }
+  SFX.stone(); number(P.x, P.y - 30, 'LET GO', '#bfe6f5');
+}
+const BALLAST_NAME = { stone: 'A STONE OFF THE BOTTOM', chain: 'A FATHOM OF HER CHAIN', chest: 'SOMEBODY\'S TRIBUTE' };
+function updateBallast(dt) {
+  for (const pr of props) {
+    if (pr.t !== 'ballast') continue;
+    if (pr.held) { pr.x = P.x + P.face * 5; pr.y = P.y - 3; continue; }
+    /* it falls, in water or out of it, and it rests on whatever it finds */
+    pr.vy = Math.min(140, pr.vy + (P.swim ? 160 : 900) * dt);
+    const ty = Math.floor((pr.y + 3) / TS);
+    if (isSolid(Math.floor(pr.x / TS), ty) || isOneWay(tileAt(Math.floor(pr.x / TS), ty))) { pr.y = ty * TS - 1; pr.vy = 0; }
+    else pr.y += pr.vy * dt;
+    pr.cd = Math.max(0, (pr.cd || 0) - dt);
+    if (!P.dead && !P.ballast && !(pr.cd > 0) && Math.abs(pr.x - P.x) < 11 && Math.abs(pr.y - (P.y - 6)) < 14) takeBallast(pr);
+  }
+}
+function drawBallast(cx, cy) {
+  for (const pr of props) { if (pr.t !== 'ballast') continue;
+    const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), k = pr.kind;
+    if (k === 'chain') { g.fillStyle = '#5a6270'; for (let i = 0; i < 4; i++) { g.fillRect(x - 4 + (i % 2) * 3, y - 8 + i * 3, 5, 3); } g.fillStyle = '#8a919c'; for (let i = 0; i < 4; i++) g.fillRect(x - 4 + (i % 2) * 3, y - 8 + i * 3, 5, 1); }
+    else if (k === 'chest') { g.fillStyle = '#3a2a1c'; g.fillRect(x - 6, y - 8, 12, 8); g.fillStyle = '#5a4026'; g.fillRect(x - 6, y - 8, 12, 2); g.fillStyle = '#8a919c'; g.fillRect(x - 6, y - 4, 12, 1); g.fillRect(x - 1, y - 8, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 4, 2, 2); }
+    else { g.fillStyle = '#5a6270'; g.beginPath(); g.arc(x, y - 4, 5, 0, 7); g.fill(); g.fillStyle = '#7c8797'; g.beginPath(); g.arc(x - 1, y - 5, 3, 0, 7); g.fill(); g.fillStyle = '#3a3e48'; g.fillRect(x - 4, y - 1, 8, 1); }
+    if (!pr.held && !P.ballast && Math.abs(pr.x - P.x) < 40 && Math.abs(pr.y - P.y) < 40) { const b = 0.5 + 0.5 * Math.sin(time * 5 + pr.ph);
+      g.globalAlpha = 0.25 + 0.25 * b; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - 4, 9, 0, 7); g.stroke(); g.globalAlpha = 1; }
+  }
+}
 function ringBell(b) {
   if (b.section) { b.rung = true; raiseAlarm(b.section); return; } b.rung = true; SFX.thunder(); SFX.clank(); shakeCam(4); number(b.x, b.y - 30, 'THE GATE DROPS', '#ff6b6b'); for (let ty = 0; ty < LH; ty++) { const i = ty * LW + b.gate; if (ty >= 15 && ty <= 19 && L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[(ty + b.gate) % 2]; } } burst(b.gate * TS + 8, 17 * TS, 10, ['#7c8797', '#c9d1dc'], 60, 0.5); }
 
@@ -9359,7 +9412,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -10409,7 +10462,7 @@ function drawWorld(cx, cy, showPlayer) {
           g.moveTo(Math.round(P.x - cx), Math.round(P.y - 12 - cy)); g.lineTo(Math.round(h.x - cx), Math.round(h.y - cy)); g.stroke();
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
       drawPortal(cx, cy);
-      drawUnholy(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy);
+      drawUnholy(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); if (L.ballast) drawBallast(cx, cy);
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
