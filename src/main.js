@@ -293,7 +293,7 @@ const TREE = [];
   N('reaper', 0, 0, 0, 'longHaft', 'LONG HAFT', 3, 'the swathe and the reaping reach a quarter of a tile further a point', null);
   N('reaper', 0, 0, 1, 'wideSwathe', 'WIDE SWATHE', 3, 'the swathe cuts further BEHIND you as well a point', null);
   N('reaper', 0, 1, 0, 'keen', 'KEEN', 1, 'the inside of the arc cuts properly: nothing standing on you is safe any more', 'longHaft');
-  N('reaper', 0, 1, 1, 'scytheThrown', 'THROWN SCYTHE', 3, 'F: it goes out from you and comes back. the throw cuts, the catch cuts for half, and everything it touches is marked. +3 damage and a quarter tile of reach a point', null, true);
+  N('reaper', 0, 1, 1, 'scytheThrown', 'THROWN SCYTHE', 3, 'F: it goes out until it finds SOMETHING, cuts it, marks it, and comes straight back to his hand. one throw, one creature. +3 damage and a quarter tile of reach a point', null, true);
   N('reaper', 0, 2, 0, 'rend', 'REND', 1, 'anything wearing your mark bleeds when the scythe finds it', 'keen');
   N('reaper', 0, 3, 0, 'fullCircle', 'THE FULL CIRCLE', 1, 'the reaping goes round twice', 'rend');
   N('reaper', 1, 0, 0, 'graveGoods', 'GRAVE GOODS', 3, "what you raise lasts four seconds longer and hits one harder a point. they were never meant to kill for you: they hold a foe's attention while you do", null);
@@ -2628,7 +2628,14 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'tideguard' && e.mode !== 'rest' && e.mode !== 'thrust' && !(e.stagger > 0) && Math.sign(fromX - e.x) === e.face) { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); }
   if (e.t === 'crab' && e.mode === 'flipped') dmg = Math.round(dmg * 2);
   if (e.t === 'siren' && e.alive && e.hp - dmg > 0 && e.mode !== 'dive') { e.mode = 'dive'; e.modeT = 6; SFX.splash(); burst(e.x, e.y - 6, 10, ['#e8f4f0', '#7cc8c8'], 60, 0.4); }
-  if (e.t === 'gqueen') { if (e.mode !== 'pinned') { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 40, Math.sign(e.x - fromX) || 1, 4); if (!(e.armourSaid > 0)) { e.armourSaid = 3; ringAt(e.x, e.y - 30, 22, '#c9d1dc', 0.3); } return; } } // her court's plate turns every blade: only the gallery coming down on her gets through
+  if (e.t === 'gqueen') { if (e.mode !== 'pinned') {
+    SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 40, Math.sign(e.x - fromX) || 1, 4);
+    e.wardHit = 0.4;                                            // the shell flares where the blade met it
+    if (!(e.armourSaid > 0)) { e.armourSaid = 1.2; ringAt(e.x, e.y - 30, 26, '#c9a0ff', 0.3);
+      number(e.x, e.y - 52, 'WARDED', '#c9a0ff');
+      PROG.gqTold = (PROG.gqTold || 0) + 1;
+      if (PROG.gqTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING CUTS HER WHILE THE COURT HOLDS HER PLATE. BREAK A SUPPORT AND BRING HER OWN GALLERY DOWN ON HER.'; } }
+    return; } } // her court's plate turns every blade: only the gallery coming down on her gets through
   if (e.t === 'roc') { if (rocOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.5)); if (Math.random() < 0.5) { sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 3); } } } // in the air she is quick and hard to hurt; down, she is not
   if (e.t === 'kite' && e.mode !== 'fall') { e.mode = 'fall'; e.vy = -40; e.vx = (Math.sign(e.x - fromX) || 1) * 60; number(e.x, e.y - 40, 'THE STRING', '#ffd36b'); SFX.crack(); }
   if (e.t === 'golem') { const need = e.need || 'blue', cols = e.litCols || new Set(); const ok = need === 'both' ? cols.size >= 2 : cols.has(need); if (!ok) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); return; } } // dark crystal turns the blade; lit in the right colour, it bleeds
@@ -2847,11 +2854,15 @@ function updateRisen(dt) {
     const sp = 330; s.x += (s.out ? s.dir : 0) * sp * dt;
     if (!s.out) { const d = P.x - s.x, dy = (P.y - 12) - s.y; const dl = Math.hypot(d, dy) || 1; s.x += d / dl * sp * dt; s.y += dy / dl * sp * dt; if (dl < 14) thrownScythe = null; }
     else if (Math.abs(s.x - P.x) > s.reach) s.out = false;
-    if (thrownScythe) { for (const e of enemies) { if (!e.alive || e.harmless || s.hit.has(e)) continue;
-      if (Math.abs(e.x - s.x) < e.w / 2 + 10 && Math.abs((e.y - e.h / 2) - s.y) < 18) { s.hit.add(e);
-        hurtEnemy(e, Math.round((11 + 3 * tal('scytheThrown')) * (s.out ? 1 : 0.5)), s.x - s.dir * 20, false); markFoe(e); sparks(e.x, e.y - e.h / 2, s.dir, 6); } }
-      if (!s.out && !s.turned) { s.turned = true; s.hit.clear(); } }
-    if (s && s.t > 4) thrownScythe = null; }
+    // ONE THROW, ONE CREATURE. It used to cut everything in the line on the way out and everything again on
+    // the way back, and because it kept flying it would sit inside a crowd chewing through it. It now finds
+    // the FIRST thing in its path, takes it, and turns for home on the spot - and nothing it passes on the
+    // way back is touched at all.
+    if (thrownScythe && s.out) { for (const e of enemies) { if (!e.alive || e.harmless) continue;
+      if (Math.abs(e.x - s.x) < e.w / 2 + 10 && Math.abs((e.y - e.h / 2) - s.y) < 18) {
+        hurtEnemy(e, 11 + 3 * tal('scytheThrown'), s.x - s.dir * 20, false); markFoe(e);
+        sparks(e.x, e.y - e.h / 2, s.dir, 8); SFX.clank(); s.out = false; break; } } }
+    if (s && s.t > 3) thrownScythe = null; }
   for (const h of hands) { h.delay -= dt; if (h.delay > 0) continue; h.life -= dt;
     for (const e of enemies) { if (!e.alive || e.harmless || h.hit.has(e)) continue;
       if (Math.abs(e.x - h.x) < 12 && Math.abs(e.y - h.y) < 22) { h.hit.add(e); hurtEnemy(e, 10 + 4 * tal('graveTide'), h.x, false); markFoe(e);
@@ -8992,6 +9003,23 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'golem' && e.alive) { const gx = Math.round(e.x - cx), gy = Math.round(e.y - cy); const NEED = { blue: '#bfe6f5', violet: '#c8a8ff', green: '#a8ffb8', both: '#fff6e0' }; const gems = [[0, -34], [-11, -25], [11, -25], [0, -18]]; gems.forEach(([ox, oy], k) => { const broken = k < (e.facets || 0), isNext = k === (e.facets || 0); const okNow = e.lit && (e.need === 'both' ? (e.litCols && e.litCols.size >= 2) : (e.litCols && e.litCols.has(e.need))); g.fillStyle = broken ? '#2a3a50' : isNext ? (okNow ? (Math.floor(time * 10) % 2 ? '#fff6e0' : NEED[e.need]) : NEED[e.need]) : '#a8306a'; g.fillRect(gx + ox - 2, gy + oy - 2, 4, 4); if (!broken && e.lit) { g.globalAlpha = 0.35; g.fillStyle = '#ff7ab8'; g.beginPath(); g.arc(gx + ox, gy + oy, 7, 0, 7); g.fill(); g.globalAlpha = 1; } }); if (e.lit) { g.globalAlpha = 0.18; g.fillStyle = '#eefaff'; g.fillRect(gx - 18, gy - e.h - 2, 36, e.h + 2); g.globalAlpha = 1; } }
     if (e.t === 'forgemaster' && forgeOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 30 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'roc' && e.alive && (e.mode === 'diveTell' || e.mode === 'dive') && e.tx !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 16), fy = Math.round(L.arena.floor - cy); g.globalAlpha = 0.25 + 0.25 * k; g.fillStyle = '#1b1626'; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, 16 + k * 3, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+    // WHILE SHE IS WARDED SHE WEARS IT: a violet shell round her that turns over slowly and flares white
+    // where a blade has just come off it. The moment the gallery pins her it is gone and the green ring says
+    // so - two states, two colours, and never both.
+    if (e.t === 'gqueen' && e.alive && !gqOpen(e) && bossActive) {
+      const ex = Math.round(e.x - cx), ey = Math.round(e.y - cy) - 26, k2 = 0.5 + 0.5 * Math.sin(time * 2.2);
+      e.wardHit = Math.max(0, (e.wardHit || 0) - 1 / 60);
+      g.globalAlpha = 0.18 + 0.1 * k2 + (e.wardHit || 0) * 0.9;
+      g.strokeStyle = (e.wardHit || 0) > 0.15 ? '#f0e6ff' : '#9a5aa8'; g.lineWidth = (e.wardHit || 0) > 0.15 ? 2 : 1;
+      g.beginPath(); g.ellipse(ex, ey, 26, 34, 0, 0, 7); g.stroke();
+      g.globalAlpha = 0.10 + 0.06 * k2; g.fillStyle = '#5a2a7a';
+      g.beginPath(); g.ellipse(ex, ey, 25, 33, 0, 0, 7); g.fill();
+      /* the plates of it, turning */
+      g.globalAlpha = 0.3 + 0.2 * k2; g.strokeStyle = '#c9a0ff'; g.lineWidth = 1;
+      for (let i = 0; i < 4; i++) { const a = time * 0.7 + i * 1.57;
+        g.beginPath(); g.ellipse(ex, ey, 26 * Math.abs(Math.cos(a)), 34, 0, 0, 7); g.stroke(); }
+      g.globalAlpha = 1;
+    }
     if (e.t === 'gqueen' && e.alive && gqOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 24 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'gqueen' && e.alive && e.mode === 'point' && e.markX) { const k = 0.5 + 0.5 * Math.sin(time * 18), fy = Math.round(L.arena.floor - cy) - 2, mx = Math.round(e.markX - cx); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(mx - 10, fy - 4); g.lineTo(mx + 10, fy + 2); g.moveTo(mx + 10, fy - 4); g.lineTo(mx - 10, fy + 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'gqueen' && e.alive && e.gather > 0 && e.markX !== undefined && !e.rodTarget) { const k = 1 - e.gather / 0.9, fy = Math.round(L.arena.roof - cy); g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#dfe8ff'; g.lineWidth = 1; for (const mx of (e.marks || [e.markX])) { g.beginPath(); g.ellipse(Math.round(mx - cx), fy - 1, 22 - k * 10, 5 - k * 2, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
@@ -10159,6 +10187,25 @@ function render() {
     g.drawImage(PROP.bolt, 6, 15);
     if (isPyro()) { const hy = SET.iron ? 41 : 29; bar(16, hy, 70, 4, (P.heat || 0) / 100, P.full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (P.full) text('PYRE: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8'); }
     if (isPaladin()) { const hy = SET.iron ? 41 : 29, full = (P.light || 0) >= 100; bar(16, hy, 70, 4, (P.light || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#f0c040', (P.light || 0) / 100); g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 3, 2, 9); g.fillRect(5, hy, 8, 2); if (full) text('JUDGEMENT: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8'); }
+    // BREATH BELONGS ON THE PLATE. It was six pale pips floating over his head - and the half of the Shipwreck
+    // Reef that has no surface to breathe at is also the half that is dark, so the pips were invisible and the
+    // four damage every one and a third seconds arrived from nowhere. It is a bar now, with the other bars,
+    // and it goes red and flashes before it starts costing you.
+    if ((state === 'play' || state === 'talk') && P.swim && !P.dead) {
+      const mx2 = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b2 = Math.max(0, P.breath ?? mx2), k2 = b2 / mx2;
+      const by = (SET.iron ? 41 : 29) + (isPyro() || isPaladin() || isPirate() || isReaper() ? 10 : 0);
+      g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(2, by - 4, 104, 13, 3); g.fill();
+      const low = k2 < 0.34, fl = low && Math.floor(time * 8) % 2;
+      bar(16, by, 70, 4, k2, k2 <= 0 ? '#ff6b6b' : low ? (fl ? '#ffd0d0' : '#ff6b6b') : '#7cc8c8', k2);
+      g.fillStyle = low ? (fl ? '#ffd0d0' : '#ff6b6b') : '#bfe6f5';                       // a bubble for the icon
+      g.beginPath(); g.arc(9, by + 2, 3.5, 0, 7); g.fill();
+      g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(8, by, 1, 1);
+      text(k2 <= 0 ? 'NO AIR' : low ? 'BREATH' : '', 90, by - 1, low ? (fl ? '#ffd0d0' : '#ff6b6b') : UI.dim, 'left', 6);
+      if (k2 <= 0) { const a2 = 0.10 + 0.08 * Math.sin(time * 9);                          // and the dark closes in
+        const vg2 = g.createRadialGradient(VW / 2, VH / 2, VH * 0.3, VW / 2, VH / 2, VH * 0.95);
+        vg2.addColorStop(0, 'rgba(120,20,30,0)'); vg2.addColorStop(1, 'rgba(120,20,30,' + a2.toFixed(3) + ')');
+        g.fillStyle = vg2; g.fillRect(0, 0, VW, VH); }
+    }
     if (isReaper()) { const hy = SET.iron ? 41 : 29, full = (P.harvest || 0) >= 100;
       bar(16, hy, 70, 4, (P.harvest || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#dfffa0' : '#8fd160') : '#5a8a3a', (P.harvest || 0) / 100);
       g.fillStyle = '#8fd160'; g.fillRect(7, hy - 2, 2, 8); g.fillRect(5, hy - 3, 6, 1); g.fillRect(10, hy - 2, 1, 2);   // a little scythe

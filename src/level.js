@@ -2502,8 +2502,12 @@ function longWater() {
     const piers = [[365, 0.0], [372, 0.35], [379, 0.7], [386, 0.15], [393, 0.5], [400, 0.85]];
     for (const [x, ph] of piers) ent('mover', x, 34, { len: 3, range: 0, vert: true, rise: 8, period: 3.4, ph, stone: true });
     coins([366, 26], [373, 26], [380, 26], [387, 26], [394, 26], [401, 26]);
-    // and a high road for anyone who would rather not: three planks off the gate frames, and a rope between them
-    plat(363, 20, 3); plat(371, 18, 3); plat(380, 20, 3); plat(389, 18, 3); plat(398, 20, 3);
+    // and a high road for anyone who would rather not. These were one-way LEDGES, which in a shore palette are
+    // green and mossy, so five slabs of turf hung in the open sky over the sea and looked like a mistake. They
+    // are rock now, and the tide has them: each one rises and falls out of step with the next, which is the
+    // rule of this level said one more time.
+    for (const [x, y, ph] of [[363, 22, 0], [371, 21, 0.55], [380, 22, 1.1], [389, 21, 1.65], [398, 22, 2.2]])
+      ent('mover', x, y, { len: 3, range: 0, vert: true, rise: 26, period: 4.2, ph, stone: true });
     coins([364, 19], [372, 17], [381, 19], [390, 17], [399, 19]);
     G.R.moversExtra.push({ kind: 'swing', px: 376 * TS, py: 12 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.5 });
     G.R.moversExtra.push({ kind: 'swing', px: 394 * TS, py: 12 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2.2 });

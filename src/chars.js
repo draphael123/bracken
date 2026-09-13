@@ -1738,26 +1738,30 @@ export function bakeGoblinQueen() {
     if (rod && rod[4] === 'back') rodDraw();
     // the gown: a bell of purple from the waist, gold at the hem and down the front
     for (const [fx, fy] of feet) { rect(g, fx - 2, fy - 1, 4, 2, C.k); }
-    const hem = 55 - sit, hw = 23 + flare;
-    poly([[19, 31], [37, 31], [28 + hw, hem], [28 - hw, hem]], 'p');
-    poly([[25, 31], [31, 31], [31 + hw * 0.2, hem], [25 - hw * 0.2, hem]], 'P');
-    for (let q = 0; q < 5; q++) { const fx = 28 - hw + 4 + q * ((hw * 2 - 8) / 4); line(g, fx, 33, 28 + (fx - 28) * 1.25, hem - 1, C.P, 1); } // the pleats of it
+    const hem = 55 - sit, hw = 27 + flare;
+    poly([[13, 34], [43, 34], [28 + hw, hem], [28 - hw, hem]], 'p');
+    poly([[24, 34], [32, 34], [32 + hw * 0.22, hem], [24 - hw * 0.22, hem]], 'P');
+    for (let q = 0; q < 6; q++) { const fx = 28 - hw + 4 + q * ((hw * 2 - 8) / 5); line(g, fx, 36, 28 + (fx - 28) * 1.2, hem - 1, C.P, 1); } // the pleats of it
     for (let x = Math.round(28 - hw); x <= Math.round(28 + hw); x++) { px(g, x, hem, C.y); px(g, x, hem - 1, x % 3 === 0 ? C.Y : C.y); if (x % 4 === 0) px(g, x, hem - 2, C.Y); }
-    line(g, 28, 33, 28, hem - 1, C.y, 1);
-    if (sit) { poly([[19, 40], [45, 40], [45, 47], [19, 47]], 'q'); line(g, 19, 40, 45, 40, C.y, 1); } // her knees, over the throne's edge
-    // the bodice and the ermine
-    poly([[16, 19], [40, 19], [39, 24], [33, 28], [23, 28], [17, 24]], 'q');   // wide at the chest
-    poly([[23, 28], [33, 28], [37, 31], [19, 31]], 'q');                       // and out again to the hip
-    ellipse(g, 23.5 + lean * 0.3, 24, 5, 3.6, C.n); ellipse(g, 32.5 + lean * 0.3, 24, 5, 3.6, C.n);
-    ellipse(g, 23.5 + lean * 0.3, 25.6, 4.6, 2.2, C.q); ellipse(g, 32.5 + lean * 0.3, 25.6, 4.6, 2.2, C.q);
-    ellipse(g, 22.5 + lean * 0.3, 22.8, 2.4, 1.4, C.q); ellipse(g, 31.5 + lean * 0.3, 22.8, 2.4, 1.4, C.q);
-    for (let x = 23; x <= 33; x++) { px(g, x, 28, C.y); px(g, x, 29, C.Y); }    // the girdle, round the narrow of her
-    P1(28, 28, 'm'); P1(26, 29, 'Y'); P1(30, 29, 'Y');
-    poly([[14, 16], [42, 16], [39, 21], [33, 21], [28, 25], [23, 21], [17, 21]], 'w');
+    line(g, 28, 36, 28, hem - 1, C.y, 1);
+    if (sit) { poly([[15, 41], [49, 41], [49, 48], [15, 48]], 'q'); line(g, 15, 41, 49, 41, C.y, 1); } // her knees, over the throne's edge
+    // THE BODICE. No waist: she goes out from the shoulder and keeps going. The belly is the widest part of
+    // her and it hangs OVER the belt, which is where the weight of a body actually shows.
+    poly([[15, 19], [41, 19], [42, 25], [43, 31], [41, 35], [15, 35], [13, 31], [14, 25]], 'q');
+    ellipse(g, 28 + lean * 0.2, 31.5, 15, 5.5, C.q);                           // the belly itself, over the belt
+    ellipse(g, 28 + lean * 0.2, 30, 13.5, 3.6, C.n);                           // and the light on the top of it
+    for (const yy of [28.5, 32.5]) { g.globalAlpha = 0.5; ellipse(g, 28 + lean * 0.2, yy, 11 - (yy > 30 ? 2 : 0), 0.9, C.P); g.globalAlpha = 1; }  // the folds of it
+    // the bust: full, sitting high over the belly, with the shadow under
+    ellipse(g, 22 + lean * 0.3, 24, 6.6, 5, C.n); ellipse(g, 34 + lean * 0.3, 24, 6.6, 5, C.n);
+    ellipse(g, 22 + lean * 0.3, 26.4, 6, 2.8, C.q); ellipse(g, 34 + lean * 0.3, 26.4, 6, 2.8, C.q);
+    ellipse(g, 20.5 + lean * 0.3, 22.4, 3.2, 1.8, C.q); ellipse(g, 32.5 + lean * 0.3, 22.4, 3.2, 1.8, C.q);
+    for (let x = 16; x <= 40; x++) { px(g, x, 34, C.y); px(g, x, 35, C.Y); }   // the belt, UNDER her, not round her
+    P1(28, 34, 'm'); P1(25, 35, 'Y'); P1(31, 35, 'Y'); P1(22, 34, 'Y'); P1(34, 34, 'Y');
+    poly([[12, 15], [44, 15], [41, 21], [34, 22], [28, 27], [22, 22], [15, 21]], 'w');   // the ermine, and a deep neckline in it
     for (const [x, y] of [[17, 18], [22, 20], [34, 20], [39, 18], [19, 20], [37, 19], [28, 17]]) P1(x, y, 'k');
     for (let q = -3; q <= 3; q++) { const nx = 28 + q * 2, ny = 21 + Math.abs(q); P1(nx, ny, q === 0 ? 'm' : 'y'); if (q === 0) P1(nx, ny + 1, 'r'); } // the stones at her throat
     // the far arm
-    if (arm2) { const [x0, y0, x1, y1] = arm2; line(g, x0, y0, x1, y1, C.G, 4); circle(g, x1, y1, 2, C.G); }
+    if (arm2) { const [x0, y0, x1, y1] = arm2; line(g, x0, y0, x1, y1, C.G, 6); circle(g, x1, y1, 3, C.G); }
     // the head: big, green, bat ears, a hook of a nose, yellow eyes, a grin with two tusks
     const hx = 28 + lean, hy = 12;
     poly([[hx - 7, hy - 2], [hx - 16, hy - 6], [hx - 8, hy + 3]], 'g'); poly([[hx + 7, hy - 2], [hx + 16, hy - 6], [hx + 8, hy + 3]], 'g'); P1(hx - 12, hy - 3, 'G'); P1(hx + 12, hy - 3, 'G');
@@ -1767,6 +1771,8 @@ export function bakeGoblinQueen() {
     if (head === 'daze') { P1(hx - 3, hy - 1, 'k'); P1(hx - 2, hy, 'k'); P1(hx - 2, hy - 2, 'k'); P1(hx + 3, hy - 1, 'k'); P1(hx + 4, hy, 'k'); P1(hx + 4, hy - 2, 'k'); }
     else { rect(g, hx - 4, hy - 1, 3, 2, C.e); rect(g, hx + 2, hy - 1, 3, 2, C.e); P1(hx - 2, hy - 1, 'm'); P1(hx + 4, hy - 1, 'm'); line(g, hx - 5, hy - 3, hx - 1, hy - 2, C.d, 1); line(g, hx + 6, hy - 3, hx + 2, hy - 2, C.d, 1); }
     poly([[hx + 1, hy], [hx + 6, hy + 3], [hx + 2, hy + 4]], 'G'); // the nose
+    ellipse(g, hx, hy + 9, 7.5, 3, C.g); ellipse(g, hx, hy + 10, 6, 1.6, C.G);   // the jowl, and the throat under it
+    for (const [ex, ey] of [[hx - 6, hy + 8], [hx + 6, hy + 8]]) { P1(ex, ey, 'y'); P1(ex, ey + 1, 'Y'); }   // and more of her jewels on it
     if (head === 'shout') { rect(g, hx - 3, hy + 5, 7, 3, C.k); P1(hx - 2, hy + 5, 't'); P1(hx + 3, hy + 5, 't'); }
     else { line(g, hx - 4, hy + 6, hx + 4, hy + 6, C.k, 1); P1(hx - 3, hy + 5, 't'); P1(hx + 3, hy + 5, 't'); P1(hx - 3, hy + 4, 't'); P1(hx + 3, hy + 4, 't'); }
     P1(hx - 6, hy + 3, 'd'); P1(hx + 5, hy - 4, 'd');
@@ -1778,7 +1784,7 @@ export function bakeGoblinQueen() {
     if (stars) for (let i = 0; i < 3; i++) { const a = i * 2.1 + stars; P1(hx + Math.cos(a) * 11, hy - 12 + Math.sin(a) * 3, 'e'); }
     // the near arm and the sceptre in it
     if (!rod || rod[4] !== 'back') rodDraw();
-    { const [x0, y0, x1, y1] = arm; line(g, x0, y0, x1, y1, C.q, 5); line(g, x0, y0, x1, y1, C.g, 3); circle(g, x1, y1, 3, C.g); } // a sleeve of the gown to the wrist
+    { const [x0, y0, x1, y1] = arm; line(g, x0, y0, x1, y1, C.q, 8); line(g, x0, y0, x1, y1, C.g, 5); circle(g, x1, y1, 3.5, C.g); } // a sleeve of the gown to the wrist
     g.restore();
     outline(c, OUT);
     return c;
