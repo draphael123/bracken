@@ -16,6 +16,7 @@ import * as CTT from './city_tiles.js';
 import * as CTP from './city_props.js';
 import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
 import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.js';
+import { bakeVillageTiles } from './village_tiles.js';
 import { bakeSweep, bakePaladin, bakeFreebooter, bakeReaper, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeAssassin, bakeBerserker, bakeGrandmother, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeSpitcap, bakeWeaver, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman } from './chars.js';
 import { bakeQueen, bakeChief } from './redraw/queenchief.js';
 import { bakeWindcaller, bakeRamLord } from './redraw/callerram.js';
@@ -563,7 +564,7 @@ const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp
 const BIRD = bakeBird();
 const PARTS = bakeSpitterParts();
 const PAL0 = Object.assign({}, ART.C);
-let TILE, PROP, BG, SHORE = null, REEF = null, FLOT = null, CITY = null, RAINART = null;
+let TILE, PROP, BG, VILL = null, SHORE = null, REEF = null, FLOT = null, CITY = null, RAINART = null;
 function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
   TILE = {
@@ -600,7 +601,7 @@ function bakeAll(pal = {}) {
   };
   PROP.relic.fleece = ART.bakeFleeceIcon(); PROP.relic.spurs = ART.bakeSpursIcon(); PROP.relic.shoes = ART.bakeShoesIcon(); PROP.relic.sunshard = ART.bakeSunshardIcon(); PROP.relic.banner = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#5a6270'; g2.fillRect(1, 0, 1, 12); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 1, 7, 7); g2.fillStyle = '#e0b040'; g2.fillRect(4, 3, 3, 3); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 8, 3, 2); g2.fillRect(6, 8, 3, 2); return c; })(); PROP.sealIcon = (() => { const [c, g2] = canvas(10, 10); g2.fillStyle = '#7a1c24'; g2.beginPath(); g2.arc(5, 5, 4.5, 0, 7); g2.fill(); g2.fillStyle = '#c9463d'; g2.beginPath(); g2.arc(5, 5, 3, 0, 7); g2.fill(); g2.fillStyle = '#e0b040'; g2.fillRect(3, 3, 1, 1); g2.fillRect(6, 3, 1, 1); g2.fillRect(4, 5, 2, 2); g2.fillRect(3, 7, 4, 1); return c; })(); PROP.relic.lamp = PROP.relic.lamp || PROP.lampIcon; PROP.relic.tidecharm = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#c9b27c'; g2.fillRect(4, 0, 2, 3); g2.fillStyle = '#e8f4f0'; g2.beginPath(); g2.moveTo(5, 3); g2.lineTo(9, 7); g2.lineTo(8, 11); g2.lineTo(2, 11); g2.lineTo(1, 7); g2.closePath(); g2.fill(); g2.fillStyle = '#7cc8c8'; for (const x of [3, 5, 7]) g2.fillRect(x, 5, 1, 6); g2.fillStyle = '#4aa0a8'; g2.fillRect(2, 10, 7, 1); return c; })(); /* the Tide Charm: a scallop on a cord */ /* the miner's lamp relic had no icon: the HUD threw every frame once you held it */ PROP.relic.windcloak = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(5, 0); g.lineTo(9, 3); g.lineTo(9, 11); g.lineTo(5, 9); g.lineTo(1, 11); g.lineTo(1, 3); g.closePath(); g.fill(); g.fillStyle = '#7aa8c8'; g.fillRect(4, 1, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(4, 0, 2, 1); return c; })();
   const sky = (pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
-  SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
+  VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
   BG = { sky: pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
 }
 bakeAll();
@@ -635,7 +636,8 @@ function resolveTiles() {
     const t = tileAt(x, y); let s = null;
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = L.palette && L.palette.set === 'ship' && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    const villT = L.palette && L.palette.set === 'village' && VILL;
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : villT ? VILL : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -644,7 +646,8 @@ function resolveTiles() {
       const inZone = (L.stone || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) || (L.scree || []).some(z => x >= z.x0 && x <= z.x1 && y === z.y);
       const eL = l === T.AIR || isOneWay(l) || l === T.SPIKE ? 1 : 0, eR = r === T.AIR || isOneWay(r) || r === T.SPIKE ? 1 : 0;
       if (up !== T.SOLID && up !== T.CRATE) {
-        s = deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? REEF.hullTop[(rnd() * 4) | 0] : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
+        const villDrain = villT && (L.drainZones || []).some(z => x >= z[0] && x <= z[1] && y >= 35 && y <= 41);
+        s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? REEF.hullTop[(rnd() * 4) | 0] : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
         const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood');
         const flat2 = tileAt(x + 1, y - 1) === T.AIR && tileAt(x + 1, y) === T.SOLID && tileAt(x + 2, y - 1) === T.AIR && tileAt(x + 2, y) === T.SOLID;
         let roll = rnd();
@@ -672,6 +675,7 @@ function resolveTiles() {
       } else if (shipT) s = deckZ ? FLOT.deck[(rnd() * 4) | 0] : FLOT.hull[(rnd() * 4) | 0];
       else if (timber) s = REEF.hull[(rnd() * 4) | 0];
       else if (eL || eR) s = SET2 ? SET2.edge[eL + '' + eR][(rnd() * 2) | 0] : TILE.edge[eL + '' + eR][(rnd() * 2) | 0];
+      else if (villT) s = (L.drainZones || []).some(z => x >= z[0] && x <= z[1] && y >= 35 && y <= 41) ? VILL.silt[(rnd() * 3) | 0] : VILL.fill[(rnd() * 4) | 0];
       else if (SET2) s = SET2.fill[(rnd() * 4) | 0];
       else if (!(L.palette && L.palette.myc) && tileAt(x, y - 2) !== T.SOLID && rnd() < 0.4) s = TILE.roots[(rnd() * 3) | 0];
       else if (L.palette && L.palette.myc) s = TILE.mycDirt[(rnd() * 3) | 0];
@@ -710,7 +714,7 @@ function resolveTiles() {
     else if (t === T.ICE) s = TILE.ice || (TILE.ice = bakeIceTile());
     else if (t === T.WEB) s = TILE.web || (TILE.web = bakeWebTile());
     else if (t === T.RAIL) s = TILE.rail[x % 2];
-    else if (t === T.SOFT) s = TILE.soft[(x + y) % 3];
+    else if (t === T.SOFT) s = villT ? VILL.turf[(tileAt(x - 1, y) === T.AIR ? 1 : 0) + '' + (tileAt(x + 1, y) === T.AIR ? 1 : 0)][(rnd() * 4) | 0] : TILE.soft[(x + y) % 3];
     else if (t === T.SPIKE) s = TILE.thorns[(rnd() * 4) | 0];
     else if (t === T.CRATE) s = TILE.crate;
     tileSpr[y * LW + x] = s;
@@ -750,7 +754,7 @@ let impacts = [], rings = [], critters = [], escape = null, stormT = 0, thrown =
 const RELICS = { soles: { name: 'THE FELTED SOLES', desc: 'your feet make no sound, and you land like a cat', col: '#8fd160' }, wick: { name: "THE LAMPLIGHTER'S WICK", desc: 'the fire in your hand stays lit, even when a blow lands', col: '#ffd36b' }, stormline: { name: 'THE STORM LINE', desc: 'a line round your waist: the sea soaks you, but it cannot take you off her', col: '#a8cfc6' }, blackflag: { name: 'THE BLACK FLAG', desc: 'their own colours: whoever you stagger stays down half as long again', col: '#c9b27c' }, diverlamp: { name: "THE DIVER'S LAMP", desc: 'it lights the water around you, and the air lasts longer', col: '#bfe6f5' }, tidecharm: { name: 'TIDE CHARM', desc: 'hold your breath twice as long under the water', col: '#7cc8c8' }, banner: { name: 'THE QUEEN\'S BANNER', desc: 'goblins pull their blows: a fifth less hurt', col: '#c9a0ff' }, sunshard: { name: 'SUNSHARD', desc: 'crystal holds you twice as long', col: '#bfe6f5' }, shoes: { name: 'IRON SHOES', desc: 'the planks do not give under you', col: '#8a919c' }, spurs: { name: 'CLIMBING SPURS', desc: 'cling to rock without sliding', col: '#c9d1dc' }, lamp: { name: "MINER'S LAMP", desc: 'light around you in the dark', col: '#ffd36b' }, fleece: { name: 'GOLDEN FLEECE', desc: 'stamina returns twice as fast', col: '#ffe6a0' }, crown: { name: 'HORNET CROWN', desc: 'stomps strike like plunges', col: '#e0b040' }, charm: { name: "HUNTER'S CHARM", desc: 'gold comes to you', col: '#ffd34a' }, gauntlet: { name: 'IRON GAUNTLET', desc: 'swings cost no stamina', col: '#c9d1dc' }, lantern: { name: 'GLOW LANTERN', desc: 'spores cannot put you to sleep', col: '#4aa0b0' }, windcloak: { name: 'WINDCLOAK', desc: 'hold jump to glide', col: '#bfe6f5' }, cloak: { name: 'THIEF CLOAK', desc: 'thieves cannot take your gold', col: '#6a3aa0' } };
 function impactAt(x, y, kind = 'hit') { if (SET.impact) impacts.push({ x, y, t: 0, kind }); }
 function ringAt(x, y, r = 18, col = '#fff6e0', life = 0.28) { if (SET.impact) rings.push({ x, y, r, col, t: 0, life }); }
-let slowT = 0, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
+let hushT = 0, slowT = 0, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
 const CLOUD = ART.bakeClouds(), MAPSIGN = ART.bakeMapSign(), FISH = ART.bakeFish();
 for (let i = 0; i < 6; i++) clouds.push({ x: Math.random() * 900, y: 8 + Math.random() * 50, k: i % 3, sp: 4 + Math.random() * 5 });
 for (let i = 0; i < 4; i++) mapClouds.push({ x: Math.random() * VW, y: 10 + Math.random() * 120, k: i % 3, sp: 5 + Math.random() * 4 });
@@ -3439,6 +3443,7 @@ function updatePlayer(dt) {
   if (P.cds) for (const k in P.cds) { const was = P.cds[k]; P.cds[k] = Math.max(0, was - dt);
     if (was > 0 && P.cds[k] <= 0) { P.skReady = P.skReady || {}; P.skReady[k] = 1; SFX.ui && SFX.ui(); } } // a skill coming back says so
   if (P.skReady) for (const k in P.skReady) P.skReady[k] = Math.max(0, P.skReady[k] - dt * 1.6);
+  hushT = Math.max(0, hushT - dt);
   for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'coyote', 'jbuf', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
@@ -3797,7 +3802,7 @@ function updatePlayer(dt) {
   // counts a fraction of your own top speed now, and it is kept (not grown) while you are in the air.
   if (Math.abs(P.vx) > RUN * 0.86) { if (P.ground) P.runT = (P.runT || 0) + dt; } else P.runT = 0; P.ashT = Math.max(0, (P.ashT || 0) - dt);
   if (P.ground && Math.abs(P.vx) > 90 && Math.sign(P.vx) !== P.face && !dodging) { if (Math.random() < dt * 30) dust(P.x + P.face * 3, P.y, 1); SFX.skid(); } // turning at a run: the boots skid
-  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); if (L.hush && P.relic !== 'soles') noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
+  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); if (L.hush && P.relic !== 'soles') { noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); footMark(); } } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
   P.anim += dt;
 
@@ -6367,25 +6372,52 @@ function noiseAt(x, y, r, what, depth) {
     if (!e.seenP) { e.seenP = true; e.emote = 'shock'; e.emoteT = 0.6; } }
   for (const pr of props) { if (pr.t !== 'window' || pr.lit) continue;
     if (Math.hypot(pr.x - x, pr.y - y) > r) continue;
-    pr.lit = 1; pr.openT = 0.9 + Math.random() * 0.5; SFX.ui();
+    pr.lit = 1; pr.openT = 1.5 + Math.random() * 0.7; pr.flick = 0.45; SFX.ui(); if (SFX.lampOn) SFX.lampOn();
     number(pr.x, pr.y - 16, 'A LIGHT', '#ffd36b');
+    for (let q = 0; q < 5; q++) parts.push({ x: pr.x + (Math.random() - 0.5) * 8, y: pr.y - 4, vx: (Math.random() - 0.5) * 12, vy: -18 - Math.random() * 10, life: 0.7, max: 0.7, col: '#ffd36b', size: 1, grav: -10 });
     // ...and that light is a sound of its own, two houses along. Three hops, so a mistake is a street and
     // not the whole village at once.
     if ((depth || 0) < 3) setTimeout(() => { try { noiseAt(pr.x, pr.y, 78, null, (depth || 0) + 1); } catch (err) { } }, 260); }
 }
+// WHAT CAME OFF THE GROUND YOU JUST PUT A FOOT ON. Nothing in this level tells you a surface is loud in
+// words; it tells you by what flies up off it, and the two quiet materials are the two that throw nothing.
+function footMark() {
+  const t = P.groundTile, n = (a, b2, col, vy) => { for (let i = 0; i < a; i++) parts.push({ x: P.x - P.face * (2 + Math.random() * 6), y: P.y - 1, vx: -P.face * (10 + Math.random() * b2), vy: vy * (0.4 + Math.random()), life: 0.4 + Math.random() * 0.3, max: 0.7, col, size: 1, grav: 160 }); };
+  if (t === T.SOFT) { if (Math.random() < 0.4) n(1, 12, '#4a8a50', -14); return; }        /* moss: almost nothing */
+  if (t === T.NET || t === T.CLIMB) return;                                                /* rope: nothing at all */
+  if (t === T.PLANK || t === T.SHELF) { n(2, 30, Math.random() < 0.5 ? '#8a7350' : '#5c4a2c', -26); return; }
+  if (t === T.CRATE) { n(3, 40, '#8a5a32', -30); return; }
+  n(2, 24, Math.random() < 0.5 ? '#6a6678' : '#4a4658', -20);                              /* cobbles: grit */
+}
 function updateHush(dt) {
   for (const n of noises) n.t += dt; noises = noises.filter(n => n.t < n.life);
+  if (P.ground && P.groundTile === T.SOFT && Math.abs(P.vx) > 40 && Math.random() < dt * 9 && P.y < 31 * TS)
+    parts.push({ x: P.x + (Math.random() - 0.5) * 10, y: P.y + 2, vx: (Math.random() - 0.5) * 14, vy: 6, life: 2.2, max: 2.2, col: Math.random() < 0.5 ? '#9c8348' : '#b09256', size: 1, grav: 7, drift: true });
   for (const pr of props) { if (pr.t !== 'window' || !pr.lit || pr.done) continue;
-    pr.openT -= dt;
+    pr.openT -= dt; pr.flick = Math.max(0, (pr.flick || 0) - dt);
+    if (Math.random() < dt * 5) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y - 10 - Math.random() * 8, vx: (Math.random() - 0.5) * 10, vy: -6, life: 1.1, max: 1.1, col: '#c9b27c', size: 1, grav: -3, drift: true });   /* moths */
     if (pr.openT <= 0) { pr.done = true;
       spawnEnt({ t: pr.gob || 'sprig', x: Math.round(pr.dx !== undefined ? pr.dx : pr.x / TS), y: Math.round(pr.dy !== undefined ? pr.dy : (pr.y / TS) + 1), face: P.x < pr.x ? -1 : 1, awake: true });
       const n0 = enemies[enemies.length - 1]; if (n0) { n0.woke = 1; if (n0.mode === 'asleep') n0.mode = 'wake'; }
       burst(pr.x, pr.y - 6, 6, ['#ffd36b', '#fff6c8'], 40, 0.4); SFX.doorOpen ? SFX.doorOpen() : SFX.stone(); } }
 }
 function drawHush(cx, cy) {
-  for (const n of noises) { const k = n.t / n.life, rr = n.r * (0.35 + 0.65 * k);
-    g.globalAlpha = (1 - k) * 0.55; g.strokeStyle = n.loud > 100 ? '#ff6b6b' : n.loud > 60 ? '#ffd36b' : '#bfe6f5'; g.lineWidth = 1;
-    g.beginPath(); g.ellipse(Math.round(n.x - cx), Math.round(n.y - cy) - 2, rr, rr * 0.34, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+  for (const n of noises) {
+    const k = n.t / n.life, x = Math.round(n.x - cx), y = Math.round(n.y - cy) - 2;
+    const col = n.loud > 100 ? '#ff6b6b' : n.loud > 60 ? '#ffd36b' : '#bfe6f5';
+    // THE WAVE: a leading edge that goes out to the full reach and a slower echo behind it, so the ring
+    // reads as something LEAVING rather than a circle that appears. The edge is what touches the windows.
+    const rr = n.r * Math.min(1, k * 1.25);
+    g.globalAlpha = (1 - k) * 0.8; g.strokeStyle = col; g.lineWidth = 2;
+    g.beginPath(); g.ellipse(x, y, rr, rr * 0.34, 0, 0, 7); g.stroke();
+    if (k > 0.22) { const r2 = n.r * (k - 0.22) * 1.1;
+      g.globalAlpha = (1 - k) * 0.3; g.lineWidth = 1;
+      g.beginPath(); g.ellipse(x, y, r2, r2 * 0.34, 0, 0, 7); g.stroke(); }
+    // the dust it kicks up at the source, and a smear of it low on the ground
+    if (k < 0.3) { g.globalAlpha = (0.3 - k) * 1.4; g.fillStyle = col;
+      g.beginPath(); g.ellipse(x, y, 6 + k * 30, 2 + k * 8, 0, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+  }
 }
 // THE GOBLIN ASSASSIN. The only goblin in Underleaf who is awake, and the only one carrying no light.
 // He is not a fight you walk into - he is a fight that arrives. He waits motionless and nearly invisible;
@@ -6446,13 +6478,17 @@ function updateGrandmother(e, dt) {
     case 'feel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; } break;
     case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; e.stagger = 0; } break;
     // THE LISTEN: three seconds of nothing. The quietest thing you can do is hold the shield up and not move.
-    case 'listenTell': want = 0; if (e.modeT <= 0) { e.mode = 'listen'; e.modeT = p2 ? 2.2 : 3; e.caught = false; } break;
+    case 'listenTell': want = 0;
+      if (e.modeT <= 0) { e.mode = 'listen'; e.modeT = p2 ? 2.2 : 3; e.caught = false;
+        music.duck(true); hushT = e.modeT; SFX.heard(); ringAt(e.x, e.y - 14, 70, '#f6f6ee', 0.6); } break;
     case 'listen': {
       want = 0; e.vx = 0;
       if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 16 - Math.random() * 10, vx: 0, vy: -10, life: 0.5, max: 0.5, col: '#f6f6ee', size: 1, grav: 0 });
-      if (e.caught) { e.mode = 'throwTell'; e.modeT = 0.4; number(e.x, e.y - e.h - 16, 'SHE HEARD THAT', '#ff6b6b'); SFX.snort(); break; }
-      if (e.modeT <= 0) { e.mode = 'rap'; e.modeT = 1.9; e.stagger = 1.9;
-        SFX.stone(); SFX.thud(); shakeCam(5); ringAt(e.x, e.y, 46, '#f6f6ee', 0.5);
+      hushT = Math.max(hushT, e.modeT);
+      if (e.caught) { e.mode = 'throwTell'; e.modeT = 0.4; number(e.x, e.y - e.h - 16, 'SHE HEARD THAT', '#ff6b6b'); SFX.snort(); music.duck(false); hushT = 0; shakeCam(3); break; }
+      if (e.modeT <= 0) { e.mode = 'rap'; e.modeT = 1.9; e.stagger = 1.9; music.duck(false); hushT = 0;
+        SFX.stone(); SFX.thud(); shakeCam(6); zoomKick(1.05, 0.25); hitstop(0.05); noiseAt(e.x, e.y, 120, null);
+        ringAt(e.x, e.y, 46, '#f6f6ee', 0.5); dust(e.x, e.y, 10);
         number(e.x, e.y - e.h - 16, 'NOTHING. AND THAT IS HER OWN NOISE', '#8fd160'); }
       break; }
     case 'throwTell': want = 0; e.face = Math.sign(e.ear - e.x) || e.face;
@@ -7753,9 +7789,15 @@ function updateEnemies(dt) {
     if (e.t === 'shardling') { updateShardling(e, dt); continue; }
     if (e.sleeper && !e.woke) {                     /* in bed, and not a fight until something wakes it */
       e.vy = Math.min(320, (e.vy || 0) + 1000 * dt); moveBody(e, 0, e.vy * dt, false); e.anim += dt * 0.25;
+      e.snoreT = (e.snoreT === undefined ? 1 + Math.random() * 4 : e.snoreT) - dt;
+      if (e.snoreT <= 0 && Math.abs(e.x - P.x) < 240) { e.snoreT = 3 + Math.random() * 4;
+        e.zzT = 1.4; if (SFX.snore) SFX.snore(); else SFX.puff();
+        noiseAt(e.x, e.y - 6, 34, null);           /* it is asleep, not silent - the village breathes too */ }
+      e.zzT = Math.max(0, (e.zzT || 0) - dt);
       if (!P.dead && Math.abs(P.x - e.x) < 26 && Math.abs(P.y - e.y) < 22) { e.woke = 1; e.sleeper = false; e.emote = 'shock'; e.emoteT = 0.7; SFX.foeGasp && SFX.foeGasp(e.t); }
       continue; }
     if (e.sleeper === false && e.woke === 1 && e.mode === undefined) e.woke = 2;
+    if (e.sleeper === true && e.zzT > 0 && Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * 6, y: e.y - e.h - 2, vx: (Math.random() - 0.5) * 8, vy: -16, life: 0.9, max: 0.9, col: '#c9d1dc', size: 1, grav: -4 });
     if (e.t === 'grandmother') { if (bossActive) beastSeen('grandmother'); if (bossActive || e.mode === 'sleep') updateGrandmother(e, dt); continue; }
     if (e.t === 'assassin') { beastSeen('assassin'); updateAssassin(e, dt); continue; }
     if (e.t === 'berserker') { beastSeen('berserker'); updateBerserker(e, dt); continue; }
@@ -9379,9 +9421,16 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'window') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
       if (x < -20 || x > VW + 20) continue;
       g.fillStyle = '#2a2434'; g.fillRect(x - 5, y - 6, 10, 12);
-      if (pr.lit) { const k = pr.done ? 1 : Math.min(1, 1.4 - pr.openT);
-        g.fillStyle = '#ffd36b'; g.globalAlpha = 0.55 + 0.45 * Math.sin(time * 9) * (pr.done ? 0.2 : 1);
-        g.fillRect(x - 4, y - 5, 8, 10); g.globalAlpha = 0.16 * k; g.beginPath(); g.arc(x, y, 22, 0, 7); g.fill(); g.globalAlpha = 1;
+      if (pr.lit) { const k = pr.done ? 1 : Math.min(1, 1.9 - pr.openT);
+        const gut = pr.flick > 0 ? (Math.random() < 0.4 ? 0.35 : 1) : 1;                 /* the candle guttering as it takes */
+        g.fillStyle = '#ffd36b'; g.globalAlpha = (0.55 + 0.45 * Math.sin(time * 9) * (pr.done ? 0.2 : 1)) * gut;
+        g.fillRect(x - 4, y - 5, 8, 10);
+        // SOMEBODY WALKS ACROSS IT before the door opens: a shape in the window is worth a hundred words
+        if (!pr.done && pr.openT < 1.0 && pr.openT > 0.25) { const sx = Math.round((1.0 - pr.openT) / 0.75 * 10) - 5;
+          g.fillStyle = '#3a2a18'; g.fillRect(x + sx - 2, y - 4, 4, 9); g.fillRect(x + sx - 1, y - 6, 2, 2); }
+        g.globalAlpha = 0.16 * k * gut; g.beginPath(); g.arc(x, y, 24, 0, 7); g.fill();
+        g.globalAlpha = 0.07 * k * gut; g.beginPath(); g.ellipse(x, y + 26, 20, 9, 0, 0, 7); g.fill();   /* and it falls on the street */
+        g.globalAlpha = 1;
         g.fillStyle = '#8a6a2a'; g.fillRect(x - 1, y - 5, 1, 10); g.fillRect(x - 4, y, 8, 1); }
       else { g.fillStyle = '#3a3448'; g.fillRect(x - 4, y - 5, 8, 10); g.fillStyle = '#4a4458'; g.fillRect(x - 1, y - 5, 1, 10); g.fillRect(x - 4, y, 8, 1); }
       g.fillStyle = '#5c3a1d'; g.fillRect(x - 6, y - 7, 12, 1); g.fillRect(x - 6, y + 6, 12, 1);
@@ -10892,6 +10941,13 @@ function render() {
     if (z > 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
     drawWorld(cx, cy, true);
     if (z > 1) g.restore();
+  }
+  if (hushT > 0) {                                   /* THE LISTEN: the level's own held breath */
+    const k = Math.min(1, hushT * 2), px2 = Math.round(P.x - camX), py2 = Math.round(P.y - 10 - camY);
+    const gr = g.createRadialGradient(px2, py2, 30, px2, py2, 150);
+    gr.addColorStop(0, 'rgba(8,8,14,0)'); gr.addColorStop(1, 'rgba(8,8,14,' + (0.62 * k) + ')');
+    g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
+    g.globalAlpha = 0.10 * k; g.fillStyle = '#f6f6ee'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   }
   if (flash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page

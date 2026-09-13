@@ -652,6 +652,9 @@ const HURT = {
   golem() { tone('triangle', 2600, 1900, 0.12, 0.14); tone('triangle', 1300, 1000, 0.1, 0.1, 0.03); noise(0.05, 0.2, 5000, 0.4); },
   windcaller() { tone('square', 700, 420, 0.1, 0.14); tone('sine', 1300, 1700, 0.08, 0.08, 0.04); },
 };
+// UNDERLEAF. A goblin asleep, and a candle being struck in a window across the street.
+SFX.snore = () => { if (!gate('snore', 0.4)) return; tone('sawtooth', 90, 58, 0.5, 0.05); noise(0.45, 0.05, 240, 0.8, 0.02); tone('sine', 150, 110, 0.3, 0.03, 0.35); };
+SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.08, 0.05, 0.02); tone('sine', 620, 740, 0.22, 0.04, 0.06); };
 SFX.dieOf = t => DIE[t] || null;
 SFX.hurtOf = t => HURT[t] || null;
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');

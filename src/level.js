@@ -1111,7 +1111,7 @@ function underleaf() {
   coins([8, R - 2], [22, R - 2], [50, R - 2]);
   // the first house teaches the whole level in one screen: a loud board, a window, and a way over the top
   thatch(30, 44, 29);
-  ent('window', 36, 30, { gob: 'sprig', dx: 38, dy: R - 1 });
+  ent('window', 36, 28, { gob: 'sprig', dx: 38, dy: R - 1 });
   ent('sign', 26, R - 1, { text: 'THE BOARDS ACROSS THE DITCH ARE LOUD AND THE THATCH OVER THE HOUSE IS NOT. BOTH OF THEM GET YOU PAST. ONE OF THEM WAKES THE HOUSE.' });
   up(24, R, 29, 2);                                // 32, 30 - then the roof at 29 is one step
   plat(46, 31, 3);                                 // and down off the far end
@@ -1142,7 +1142,7 @@ function underleaf() {
   ent('deco', 122, R - 1, { kind: 'mill' });
   up(116, R, 28, -3);
   ent('doorway', 130, R - 1, { id: 'mill-out', to: 'mill-in', kind: 'goblin' });
-  ent('doorway', 124, 28, { id: 'mill-top', to: 'mill-in', kind: 'goblin', label: 'DOWN THE CHIMNEY' });   /* in off the roof */
+  ent('doorway', 124, 27, { id: 'mill-top', to: 'mill-in', kind: 'goblin', label: 'DOWN THE CHIMNEY' });   /* in off the roof */
   room(96, 124, 6, 13, 'hall');                     // ...and its loft, up in the indoor band
   ent('doorway', 99, 13, { id: 'mill-in', to: 'mill-out', lock: [96, 124], label: 'THE MILL LOFT' });
   ent('key', 120, 13, { kind: 'brass' });
@@ -1162,7 +1162,7 @@ function underleaf() {
   ent('deco', 118, R - 1, { kind: 'waterButt' }); ent('deco', 134, R - 1, { kind: 'cart' });
   ent('deco', 144, R - 1, { kind: 'trough' }); ent('deco', 128, 27, { kind: 'dovecote' });
   ent('deco', 118, R - 1, { kind: 'gardenWall', v: 2 }); ent('deco', 92, R - 1, { kind: 'trough' });
-  coins([82, R - 2], [90, R - 2], [122, 32], [126, 30], [132, 27], [138, 27], [148, R - 2]);
+  coins([82, R - 2], [90, R - 2], [122, 32], [126, 27], [132, 27], [138, 27], [148, R - 2]);
   gateCol(157, 28, R - 1); ent('lockgate', 157, R - 1, { needs: 'brass', h: 7 });
   gateCol(157, 37, 39);
 
@@ -1178,24 +1178,26 @@ function underleaf() {
   ent('sign', 159, R - 1, { text: 'THE TERRACE. EVERY DOOR ON THIS STRETCH HAS SOMEBODY BEHIND IT AND THE WHOLE STREET IS BOARDS. THE THATCH IS OVER YOUR HEAD FOR A REASON.' });
   // FIVE HOUSES AT FIVE HEIGHTS. A terrace of identical roofs at one height reads as one long building; a
   // village is people who each built their own, so the roofline is a saw and crossing it is the platforming.
+  // EVERYTHING ON A ROOF IS DERIVED FROM THE ROOF. The roofline has moved twice and the numbers typed
+  // beside it did not, which buried forty-two coins, windows and doorways in the thatch. One table now.
   for (const [x0, x1, y, gob] of [[164, 176, 28, 'sprig'], [180, 192, 26, 'archer'], [196, 208, 28, 'sprig'], [212, 224, 26, 'shield'], [228, 240, 27, 'sapper']]) {
-    thatch(x0, x1, y); ent('window', x0 + 4, y + 1, { gob, dx: x0 + 6, dy: R - 1 });
+    thatch(x0, x1, y);
+    ent('window', x0 + 4, y - 1, { gob, dx: x0 + 6, dy: R - 1 });        // in the gable, above the straw
     ent('deco', x0 + 9, R - 1, { kind: 'cottage' });
+    ent('deco', x0 + 5, R - 1, { kind: 'waterButt' });
+    ent('deco', x0 + 11, y - 1, { kind: 'washing' });
+    run(x0 + 1, x1 - 1, y - 1, 3);                                        // and the run along the top of it
   }
-  up(160, R, 30, 2);                                // onto the terrace at the near end
-  plat(178, 29, 2); plat(194, 29, 2); plat(210, 29, 2); plat(226, 28, 2);   // a board between each pair, never more than two tiles of climb
-  coins([166, 29], [184, 27], [200, 29], [216, 26], [232, 28]);
-  coins([170, 29], [188, 27], [204, 29], [220, 26], [236, 28], [168, R - 2], [186, R - 2], [206, R - 2], [224, R - 2], [242, R - 2]);
-  for (const dx of [170, 186, 202, 218, 234]) ent('deco', dx, R - 1, { kind: 'waterButt' });
-  for (const [dx, dy] of [[176, 27], [192, 25], [208, 27], [224, 25]]) ent('deco', dx, dy, { kind: 'washing' });
-  for (const [a2, b2, y2] of [[165, 175, 29], [181, 191, 27], [197, 207, 29], [213, 223, 26], [229, 239, 28]]) run(a2, b2, y2, 3);                              /* the whole terrace roofline, paid by the tile */
-  ent('assassin', 188, 27, { face: -1 }); ent('assassin', 220, 26, { face: -1 });
+  up(160, R, 28, 2);                                // onto the terrace at the near end
+  plat(178, 27, 2); plat(194, 27, 2); plat(210, 27, 2); plat(226, 26, 2);   // a board between each pair, never more than two tiles of climb
+  coins([168, R - 2], [186, R - 2], [206, R - 2], [224, R - 2], [242, R - 2]);
+  ent('assassin', 188, 25, { face: -1 }); ent('assassin', 220, 25, { face: -1 });
   ent('brute', 172, R - 1, { face: -1, sleeper: true });
   ent('shield', 202, R - 1, { face: 1, sleeper: true });
-  ent('hearthgob', 218, 26, { face: -1, sleeper: true });
+  ent('hearthgob', 218, 25, { face: -1, sleeper: true });
   ent('sprig', 234, R - 1, { face: -1, sleeper: true });
   ent('thief', 256, R - 1, { face: -1, sleeper: true });
-  ent('silver', 204, 28);
+  ent('silver', 204, 26);
   // THE WINDMILL: a tower off the end of the terrace with four sails turning over the lane
   block(244, 250, 26, 33); thatch(243, 251, 25);
   for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 247 * TS + 8, py: 24 * TS, r: 40, phase: i * Math.PI / 2, period: 7.5, x: 0, y: 0, w: 22, h: 6 });
@@ -1225,7 +1227,7 @@ function underleaf() {
   ent('brute', 328, R - 1, { face: -1, sleeper: true });
   thatch(274, 310, 26);                             // the nave roof, over an open street
   ent('doorway', 292, R - 1, { id: 'church-out', to: 'church-in', kind: 'goblin' });
-  ent('doorway', 280, 26, { id: 'church-top', to: 'church-in', kind: 'goblin', label: 'IN THROUGH THE LOUVRE' });
+  ent('doorway', 280, 25, { id: 'church-top', to: 'church-in', kind: 'goblin', label: 'IN THROUGH THE LOUVRE' });
   up(272, R, 26, -3);
   room(140, 196, 6, 16, 'hall');                    // the nave, up in the indoor band
   ent('doorway', 144, 16, { id: 'church-in', to: 'church-out', lock: [140, 196], label: 'THE CHURCH' });
@@ -1265,7 +1267,7 @@ function underleaf() {
   ent('sign', 338, R - 1, { text: 'THE SCHOOL. THE YARD IS ALL BOARDS AND THE ROOF IS ALL THATCH, AND THE BONE KEY IS ON THE MASTER\'S DESK.' });
   thatch(352, 390, 28);
   ent('doorway', 370, R - 1, { id: 'school-out', to: 'school-in', kind: 'goblin' });
-  ent('doorway', 358, 28, { id: 'school-top', to: 'school-in', kind: 'goblin', label: 'DOWN THE BELL-COTE' });
+  ent('doorway', 358, 27, { id: 'school-top', to: 'school-in', kind: 'goblin', label: 'DOWN THE BELL-COTE' });
   up(348, R, 28, 2);
   plat(392, 30, 3);
   room(210, 258, 8, 15, 'hall');
@@ -1301,8 +1303,8 @@ function underleaf() {
   block(436, 442, R + 1, 45); water(436, 442, R);   // the duck pond, in the middle of the open
   thatch(420, 430, 29); thatch(452, 462, 29);
   up(416, R, 29, 2); plat(432, 31, 3); plat(450, 31, 3);
-  ent('window', 424, 30, { gob: 'archer', dx: 426, dy: R - 1 });
-  ent('window', 456, 30, { gob: 'heavy', dx: 458, dy: R - 1 });
+  ent('window', 424, 28, { gob: 'archer', dx: 426, dy: R - 1 });
+  ent('window', 456, 28, { gob: 'heavy', dx: 458, dy: R - 1 });
   ent('assassin', 446, R - 1, { face: -1 });
   ent('check', 432, R - 1);
   ent('archer', 422, 28, { face: 1, sleeper: true });
@@ -1344,12 +1346,12 @@ function underleaf() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
-    indoorRow: 18, hush: true,
+    indoorRow: 18, hush: true, drainZones: [[162, 332], [338, 466]],
     duskStart: -1, duskLen: 1, music: 'underleaf', night: true, glowNight: true, nightA: 0.24,
     // the mill's own din: inside this, nothing you do can be heard over the wheel
     din: [{ x0: 108 * TS, x1: 136 * TS }],
     quest: { n: 3, item: 'lamp', name: 'CANDLES', npc: 'elder', done: 'THE DEAD ARE LIT', reward: 'relic', relic: 'soles' },
-    palette: { sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'camp', haze: 'rgba(40,44,70,0.20)',
+    palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'camp', haze: 'rgba(40,44,70,0.20)',
       grass: '#3a5a46', grassL: '#4e7a58', grassD: '#263a2e', dirt: '#3a3444', dirtL: '#4a4458', dirtD: '#26222e',
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
