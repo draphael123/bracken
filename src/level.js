@@ -2186,6 +2186,153 @@ function undercrown() {
   };
 }
 
+
+// ============================================================================================
+// THE DEEP - the trench the tribute went into, and the only level in the game where you are
+// too LIGHT to be where you are going.
+//
+// Five levels of sea and every one of them is a journey ACROSS: the tide moves the floor, the
+// breath runs down, the decks are the road, the wash comes from windward, the lamps are air.
+// This one goes DOWN, and it inverts the thing the whole game takes for granted - that you
+// fall. Here you float, and falling is something you have to arrange.
+//
+// THE VERB IS BALLAST. A stone off a wreck's deck is a key that opens DOWNWARD: carry it and
+// you sink, walk the bottom, and move like a man in armour; let it go - the JUMP key, because
+// underwater that key has always meant GO UP - and you surge, and the stone lies where it
+// falls until you come back for it. There are only so many of them in a room, and two things
+// down here have opinions about which of you is holding one.
+//
+// AND WHAT IS AT THE BOTTOM. Thirty years of the goblin Queen's tribute went into this trench,
+// hull on hull, and none of it was ever going to the goblins.
+// ============================================================================================
+function theDeep() {
+  const L = painter(112, 188);
+  const { block, floor, plat, ent, coins, set, spikes } = L;
+  const movers = [], interiors = [], pools = [];
+  block(0, 111, 0, 187);
+  const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const deck = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };          /* a hull's deck: standable, and the stones sit on it */
+  const hull = (x0, x1, y0, y1) => { cut(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, 'ship']); };
+  const rib = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
+  const rope = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
+  const rock = (x0, x1, y0, y1) => block(x0, x1, y0, y1);
+  // THE WATER, in one piece, from the shelf to the floor of the trench. `bottom` is how far down
+  // the swim reaches; under it is rock, and the rock is where a stone puts you.
+  const sea = (x0, x1, top, bot) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS, swim: true, bottom: bot * TS, depth: (bot - top) * TS });
+  const stone = (x, y, kind) => ent('ballast', x, y, { kind: kind || 'stone' });
+  const air = (x, y) => ent('deco', x, y, { kind: 'airBell' });
+
+  // ---- 1. THE SHELF (rows 10-28). The last dry deck in the world, and the first stone. ----
+  cut(4, 107, 10, 27);
+  deck(4, 40, 28); block(4, 40, 29, 31);
+  ent('sign', 6, 27, { text: 'THE DEEP. EVERY SHIP SHE EVER SENT WENT INTO THIS TRENCH AND NONE OF THEM CAME UP. YOU WILL NOT EITHER, NOT THE WAY YOU ARE: A MAN IS TOO LIGHT TO BE DOWN THERE. TAKE A STONE OFF THE DECK. CARRYING IT YOU SINK AND YOU WALK THE BOTTOM. PRESS JUMP TO LET IT GO AND YOU COME UP. THERE ARE ONLY SO MANY OF THEM IN A ROOM.' });
+  ent('check', 8, 27);
+  ent('deco', 12, 27, { kind: 'capstan' }); ent('deco', 20, 27, { kind: 'seaChest' }); ent('deco', 32, 27, { kind: 'anchor' });
+  ent('deco', 26, 27, { kind: 'coiledCable' }); ent('deco', 36, 27, { kind: 'mastStump' });
+  stone(16, 27); stone(28, 27);
+  coins([10, 26], [14, 26], [22, 26], [30, 26], [38, 26]);
+  ent('sailor', 24, 27, { face: -1 }); ent('lookout', 34, 27, { face: -1 });
+  // the water starts where the deck ends, and the first shelf of rock is what teaches the verb
+  sea(41, 107, 20, 35);   /* it has to reach PAST the shelf floor: two pools that only touch leave a dry course between them */
+  rock(58, 107, 22, 26); rock(41, 50, 30, 31);
+  cut(41, 107, 28, 31);   /* the water beside the deck goes down to the shelf floor */
+  ent('sign', 38, 27, { text: 'THE SHELF OVERHANGS. YOU CANNOT SWIM UNDER IT AND YOU CANNOT GET OVER IT. GO HEAVY, WALK UNDER, AND LET GO ON THE FAR SIDE.' });
+  air(52, 21); coins([44, 24], [48, 24], [54, 24]);
+  rock(41, 107, 32, 33); cut(51, 57, 32, 33);                       /* the only way down is the gap under the shelf */
+  sea(6, 105, 34, 182);                                            /* and from here to the floor of the trench it is all water */
+  coins([52, 31], [55, 31]);
+
+  // ---- 2. THE UPPER TRENCH (rows 34-72). Ships stacked, and their decks are the road down. ----
+  cut(6, 105, 34, 72);
+  rock(0, 5, 34, 72); rock(106, 111, 34, 72);
+  ent('check', 54, 40); air(54, 38); air(90, 52); air(20, 60);
+  ent('sign', 50, 40, { text: 'HULL ON HULL, THIRTY YEARS OF THEM. THE DECKS ARE THE ONLY FLOOR DOWN HERE AND THE AIR IS IN THE HOLDS - A SHIP KEEPS A POCKET OF IT UNDER HER OWN DECK FOR A HUNDRED YEARS IF NOBODY LETS IT OUT.' });
+  deck(30, 58, 42); hull(31, 57, 38, 41);
+  deck(66, 96, 48); hull(67, 95, 44, 47);
+  deck(14, 44, 56); hull(15, 43, 52, 55);
+  deck(58, 90, 64); hull(59, 89, 60, 63);
+  stone(40, 41); stone(78, 47); stone(26, 55); stone(70, 63);
+  coins([34, 41], [44, 41], [52, 41], [70, 47], [80, 47], [90, 47], [20, 55], [30, 55], [38, 55], [64, 63], [74, 63], [84, 63]);
+  ent('sailor', 48, 41, { face: -1 }); ent('netter', 84, 47, { face: -1 }); ent('angler', 24, 50);
+  ent('scout', 34, 55, { face: 1 }); ent('eel', 96, 58); ent('crab', 68, 63, { face: 1 });
+  ent('deco', 36, 41, { kind: 'wreckBow' }); ent('deco', 86, 47, { kind: 'sternWindows' });
+  ent('deco', 22, 55, { kind: 'capstan' }); ent('deco', 80, 63, { kind: 'shipBell' });
+  rope(100, 34, 70); rope(8, 40, 70);
+  ent('silver', 92, 38);
+
+  cut(74, 82, 73, 73);                                             /* the throat into the beds */
+
+  // ---- 3. THE HOLDFAST BEDS (rows 74-112). Rooted things that will not let you go up. ----
+  cut(6, 105, 74, 112);
+  rock(0, 5, 74, 112); rock(106, 111, 74, 112);
+  ent('check', 20, 80); air(20, 78); air(88, 90); air(48, 104);
+  ent('sign', 24, 80, { text: 'THE BEDS. WHAT IS ROOTED HERE DOES NOT COME AFTER YOU - IT WAITS, AND WHEN IT HAS YOU IT WILL NOT LET YOU RISE, STONE OR NO STONE. CUT IT OFF YOU. AND DO NOT BE CARRYING ANYTHING WHEN IT CATCHES YOU.' });
+  deck(12, 40, 82); hull(13, 39, 78, 81);
+  deck(62, 98, 88); hull(63, 97, 84, 87);
+  deck(20, 52, 96); hull(21, 51, 92, 95);
+  deck(60, 96, 104); hull(61, 95, 100, 103);
+  rock(40, 62, 106, 110); cut(44, 50, 106, 110);
+  stone(24, 81); stone(80, 87); stone(36, 95); stone(72, 103);
+  ent('holdfast', 50, 82, { face: -1 }); ent('holdfast', 74, 88, { face: -1 });
+  ent('holdfast', 30, 96, { face: 1 }); ent('holdfast', 88, 104, { face: -1 });
+  ent('holdfast', 66, 110, { face: 1 });
+  ent('angler', 56, 92); ent('eel', 42, 100); ent('netter', 90, 87, { face: -1 });
+  ent('urchin', 46, 106); ent('urchin', 54, 106);
+  coins([16, 81], [26, 81], [34, 81], [68, 87], [76, 87], [86, 87], [24, 95], [32, 95], [44, 95], [64, 103], [78, 103], [90, 103]);
+  ent('deco', 18, 81, { kind: 'kelpTall' }); ent('deco', 92, 87, { kind: 'coralFan' });
+  ent('deco', 28, 95, { kind: 'brainCoral' }); ent('deco', 84, 103, { kind: 'kelpTall' });
+  rope(10, 76, 110); ent('silver', 30, 78);
+
+  cut(30, 38, 113, 113);                                           /* and down into the grounds */
+
+  // ---- 4. THE PRISE GROUNDS (rows 114-150). One claw, and its whole job is your hands. ----
+  cut(6, 105, 114, 150);
+  rock(0, 5, 114, 150); rock(106, 111, 114, 150);
+  ent('check', 86, 120); air(86, 118); air(30, 130); air(76, 144);
+  ent('sign', 82, 120, { text: 'AND THIS IS WHERE THEY LIVE. THE PRISE DOES NOT WANT TO KILL YOU, IT WANTS WHAT YOU ARE HOLDING - AND IT KNOWS WHAT THAT COSTS YOU DOWN HERE. KILL IT BEFORE YOU PICK ANYTHING UP, OR DO NOT BE CARRYING ANYTHING WHEN IT COMES.' });
+  deck(58, 98, 122); hull(59, 97, 118, 121);
+  deck(14, 52, 130); hull(15, 51, 126, 129);
+  deck(56, 94, 138); hull(57, 93, 134, 137);
+  deck(16, 54, 146); hull(17, 53, 142, 145);
+  stone(70, 121); stone(30, 129); stone(66, 137); stone(28, 145, 'chain');
+  ent('prise', 84, 122, { face: -1 }); ent('prise', 26, 130, { face: 1 });
+  ent('prise', 78, 138, { face: -1 }); ent('prise', 40, 146, { face: 1 });
+  ent('holdfast', 44, 130, { face: -1 }); ent('holdfast', 70, 146, { face: -1 });
+  ent('angler', 96, 134); ent('eel', 20, 140); ent('crab', 90, 122, { face: -1 });
+  coins([62, 121], [74, 121], [88, 121], [20, 129], [34, 129], [46, 129], [60, 137], [72, 137], [86, 137], [22, 145], [36, 145], [48, 145]);
+  ent('deco', 66, 121, { kind: 'wreckStern' }); ent('deco', 24, 129, { kind: 'figurehead' });
+  ent('deco', 88, 137, { kind: 'anchor' }); ent('deco', 44, 145, { kind: 'seaChest' });
+  ent('silver', 92, 118);
+  rock(28, 88, 151, 157); cut(54, 62, 151, 157);                    /* the last throat, down onto the hoard */
+
+  // ---- 5. THE HOARD (rows 158-182). All of it, and the man it was going to. ----
+  cut(8, 103, 158, 181);
+  floor(8, 103, 182);
+  ent('check', 14, 181); air(14, 160); air(94, 160);
+  ent('sign', 18, 181, { text: 'AND HERE IT ALL IS. EVERY SHIP, EVERY CHEST, EVERY SEAL - THIRTY YEARS OF IT, IN ONE HEAP, AT THE BOTTOM OF THE SEA. IT WAS NEVER GOING TO THE GOBLINS. HE IS TOO HEAVY TO COME UP AND YOU ARE TOO LIGHT TO GO DOWN: PICK SOMETHING UP AND MEET HIM ON THE FLOOR.' });
+  stone(22, 181, 'chest'); stone(94, 181, 'chest'); stone(58, 181, 'chain');
+  ent('deco', 30, 181, { kind: 'seaChest' }); ent('deco', 74, 181, { kind: 'tributeChest' });
+  ent('deco', 46, 181, { kind: 'anchor' }); ent('deco', 86, 181, { kind: 'capstan' });
+  coins([26, 180], [38, 180], [50, 180], [62, 180], [78, 180], [90, 180], [34, 180], [70, 180]);
+  plat(30, 172, 6); plat(52, 170, 8); plat(76, 172, 6);
+  coins([32, 171], [56, 169], [78, 171]);
+  ent('drownedking', 56, 181, { face: -1 });
+  ent('gate', 100, 181);
+
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors,
+    ballast: true, dark: 0.42,
+    duskStart: -1, duskLen: 1, music: 'drowned', night: true, glowNight: true, nightA: 0.44,
+    tall: { top: 20 * TS, bottom: 182 * TS },
+    quest: { n: 3, item: 'seal', name: 'THE LAST SEALS', npc: 'squire', done: 'NOBODY IS OWED ANYTHING NOW', reward: 'relic', relic: 'tidecharm' },
+    palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)',
+      grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
+      canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
+    arena: { x0: 12 * TS, x1: 100 * TS, floor: 182 * TS, trigger: 30 * TS, wallL: 11, wallR: 101, boss: 'drownedking', music: 'boss2', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 158 * TS, y1: 183 * TS },
+  };
+}
+
 // ============================================================================================
 // LEVEL 11 - HIGHCROWN, the Goblin Queen's castle.
 // Stormhold's long bridge ends at her drawbridge. Everything the goblins have left is in here: the
@@ -4075,9 +4222,10 @@ export const LEVELS = [
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
   { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
   { id: 'trial_pirate', name: "THE FREEBOOTER'S TRIAL", sub: 'cutlass, pistol and hook', build: () => trialYard('pirate'), hidden: true },
-  { id: 'trial_reaper', name: "THE REAPER'S TRIAL", sub: 'scythe, grave and shade', build: () => trialYard('reaper'), hidden: true },
+  { id: 'trial_reaper', name: "THE DEATH KNIGHT'S TRIAL", sub: 'greatsword, grave and bone', build: () => trialYard('reaper'), hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
+  { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: theDeep, needs: 'lamplit' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];

@@ -1315,14 +1315,14 @@ export function bakeReaper(skin = {}) {
   const sh = [BX + 8, BY + 7];
   /* A TWO-HANDER IS CARRIED, NOT HELD OUT. At rest and at a run it lies back over the shoulder - that is
      the pose that says greatsword from across the room, and it keeps the blade out of his own legs. */
-  const rest = (d = 0) => [sh[0] + 2, sh[1] + 4 + d, sh[0] - 10, sh[1] - 11 + d];
-  const carry = (d = 0) => [sh[0] + 3, sh[1] + 5 + d, sh[0] - 12, sh[1] - 4 + d];
+  const rest = (d = 0) => [sh[0] - 3, sh[1] + 5 + d, sh[0] + 13, sh[1] + 9 + d];    /* low guard, across the body, point forward and down */
+  const carry = (d = 0) => [sh[0] - 4, sh[1] + 6 + d, sh[0] + 12, sh[1] + 11 + d];  /* at a run the point drops further: he is dragging it */
   const F = {
-    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, greatsword: rest(i >> 1), plume: i % 3 })),
-    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, greatsword: carry() })),
+    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], greatsword: rest(i >> 1), plume: i % 3 })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 6], greatsword: carry() })),
     jump: [knightFrame({ legs: 'jump', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 6, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 7, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 4, sh[0] - 7, sh[1] - 4], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, greatsword: [sh[0] + 2, sh[1] + 3, sh[0] - 8, sh[1] - 2], plume: 2 })],
-    land: knightFrame({ legs: 'land', dy: 2, greatsword: rest(2) }),
+    land: knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 7], greatsword: rest(2) }),
     /* THE REAPING: he sets his feet, takes the whole thing back behind him and carries it round in a circle.
        The middle frame is the one that sells the weight - it is straight up over his head and he is under it. */
     heavy: [
@@ -1344,9 +1344,9 @@ export function bakeReaper(skin = {}) {
     ],
     plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0], sh[1] + 3], greatsword: [sh[0], sh[1] - 3, sh[0], sh[1] + 13], plume: 1 }),
     hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 5, sh[0] - 6, sh[1] - 1], plume: 2 }),
-    crouch: knightFrame({ dy: 3, legs: 'crouch', greatsword: rest(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 8], greatsword: rest(3) }),
     /* THE TOLL: the point driven into the ground in both hands, head down, taking it out of them */
-    block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], greatsword: [sh[0] + 2, sh[1] - 2 + i, sh[0] + 4, sh[1] + 12 + i], glow: [sh[0] + 4, sh[1] + 12] })),
+    block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3 + i], greatsword: [sh[0] + 2, sh[1] - 4 + i, sh[0] + 3, sh[1] + 13 + i], glow: [sh[0] + 3, sh[1] + 13] })),
     /* RAISE: the sword held off to one side and the free hand down, green coming up out of the ground */
     cast: [0, 1].map(i => knightFrame({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 5], greatsword: [sh[0] - 2, sh[1] + 2, sh[0] - 10, sh[1] - 5], glow: [sh[0] + 5, sh[1] + 8 + i] })),
     /* THE LAST HARVEST: the blade straight up in both hands, and everything marked answers it */
