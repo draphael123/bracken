@@ -9448,7 +9448,17 @@ function updateWeather(dt) {
     for (let i = 0; i < 3 * area; i++) if (drops.length < 90 * area) drops.push({ x: camX - 20 + Math.random() * (VW + 60), y: camY - 10, vx: -50, vy: 300 + Math.random() * 60, life: 1.2 });
     lightT -= dt; if (lightT <= 0) { lightT = 7 + Math.random() * 9; lightFlash = 0.18; thunderT = 0.5 + Math.random() * 0.6; }
   }
-  for (const d of drops) { d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; if (d.y > camY + VH + 4) d.life = 0; }
+  for (const d of drops) { d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; if (d.y > camY + VH + 4) d.life = 0;
+    /* what it lands on: rock, a roof, a deck, or the top of the water */
+    const tx = Math.floor(d.x / TS), ty = Math.floor((d.y + 4) / TS), t = tileAt(tx, ty);
+    const hit = t !== T.AIR && t !== T.SPIKE && t !== T.NET && t !== T.CLIMB && t !== T.WEB;
+    const pool = !hit && (L.pools || []).some(p => !p.dry && d.x >= p.x0 && d.x <= p.x1 && d.y + 4 >= p.y && d.y - 6 < p.y);
+    if (hit || pool) { d.life = 0;
+      if (SET.parts !== 'low' && Math.random() < 0.5) {
+        const sy = pool ? (L.pools.find(p => d.x >= p.x0 && d.x <= p.x1 && d.y + 4 >= p.y && d.y - 6 < p.y) || { y: d.y }).y : ty * TS;
+        if (pool) ripples.push({ x: d.x, life: 1 });
+        else for (let k = 0; k < 2; k++) parts.push({ x: d.x, y: sy - 1, vx: (k ? 34 : -34) + (Math.random() - 0.5) * 20, vy: -50 - Math.random() * 30, life: 0.22, max: 0.22, col: '#cfe4f0', size: 1, grav: 420 });
+      } } }
   drops = drops.filter(d => d.life > 0);
   lightFlash = Math.max(0, lightFlash - dt); if (thunderT > 0) { thunderT -= dt; if (thunderT <= 0) { SFX.thunder(); shakeCam(2); } }
   if (SET.ambient && SET.weather && w.includes('wind')) { for (const d of decor) if ((d.k === 'tuft' || d.k === 'fern' || d.k === 'flower') && d.x > camX - 20 && d.x < camX + VW + 20) d.sway = Math.max(d.sway || 0, 0.25 + 0.25 * Math.sin(time * 2.2 + d.x * 0.03)); if (pollen.length < 34 * area && Math.random() < dt * 16) pollen.push({ x: camX - 20, y: camY + Math.random() * VH, t: Math.random() * 6, life: 4, wind: true }); }
@@ -9720,6 +9730,28 @@ function drawRot(set, frame, x, y, face, rot, alpha = 1) {
   const c = pickFrame(set, null, frame, face); const ax = face < 0 ? c.width - set.ax : set.ax;
   g.save(); g.globalAlpha = alpha; g.translate(Math.round(x), Math.round(y - c.height / 2)); g.rotate(rot); g.drawImage(c, -ax, -(set.ay - c.height / 2)); g.restore();
 }
+
+// THE MURK, per level, baked once. Which set it is comes off the palette's `far`, which already says what
+// is out there; the colours come off the palette too, so a level never has somebody else's dark behind it.
+let MURK = null, MURK_ID = null;
+function murkFor() {
+  const id = curId(); if (MURK_ID === id && MURK) return MURK;
+  const P0 = L.palette || {}, far = P0.far || '', set = P0.set || '';
+  const base = P0.murkCol || (set === 'city' ? '#26344a' : set === 'reef' || far === 'sea' || far === 'wrecks' ? '#183440' : '#2a2834');
+  const lit = P0.murkLit || (set === 'city' ? '#c9a24a' : set === 'reef' ? '#2e6a70' : '#4a3a26');
+  const bake = far === 'city' || set === 'city' ? ART.bakeMurkCity : far === 'sea' || far === 'wrecks' || set === 'reef' || set === 'ship' ? ART.bakeMurkWreck : ART.bakeMurkRock;
+  MURK = { back: bake(id.length * 71 + 13, true, base, lit), front: bake(id.length * 131 + 7, false, base, lit) };
+  MURK_ID = id; return MURK;
+}
+function drawMurk(cx) {
+  if (SET.parallax === 'off') return;
+  const m = murkFor();
+  const lay = (c, f, y, a) => { g.globalAlpha = a; const w = c.width; let x = ((-cx * f) % w + w) % w; if (x > 0) x -= w;
+    for (; x < VW; x += w) g.drawImage(c, Math.round(x), y); g.globalAlpha = 1; };
+  lay(m.back, 0.10, Math.round(VH * 0.60) - 120, 0.85);
+  lay(m.front, 0.22, Math.round(VH * 0.74) - 120, 0.9);
+}
+
 function drawLayer(c, f, baseY, cx, cy) {
   const w = c.width; const dY = (LH * TS - VH) - cy;
   let x = ((-cx * f) % w + w) % w; if (x > 0) x -= w;
@@ -9891,7 +9923,81 @@ function bakeGlows() {
   SHAFT = s;
 }
 const bloom = (x, y, r, a, kind = 'warm') => { if (!GLOWS) bakeGlows(); g.globalAlpha = Math.min(1, a); g.drawImage(GLOWS[kind], Math.round(x - r), Math.round(y - r), r * 2, r * 2); };
-const daylit = () => !L.night && !L.glowNight && !L.dark && !L.violet && dusk() < 0.4 && !(L.weather || []).some(w => w.kind === 'rain' || w.kind === 'snow');
+// IS THE SUN OUT WHERE YOU ARE STANDING? This asked whether the LEVEL had any rain in it anywhere, so one
+// wet zone at the far end of Bracken Wood turned the sun off over the whole four hundred columns of it and
+// no shaft has been drawn in the wood since. It is the weather HERE, and it comes and goes as you walk.
+const daylit = () => !L.night && !L.glowNight && !L.dark && !L.violet && dusk() < 0.4 && !/rain|snow/.test(weatherAt());
+
+// THE LIGHT COMES INTO THE ROOM, not just onto the wall behind it. The shafts were drawn under the terrain,
+// which makes them a pattern on the backdrop; the thing that reads as sunlight is a shaft falling ACROSS the
+// air you are standing in and stopping dead on whatever it lands on. So: the same leaning bands again, in
+// front of everything, clipped to the sky - the open air above the first solid tile in each column, sampled
+// every four pixels. A bough, a roof, a deck or the ground all cut it, and a cave has no sky in it at all.
+let skyTop = null, SHAFT_A = 0.2, SHAFT_DBG = false;
+function skylineNow(cx, cy) {
+  const n = (VW >> 2) + 2;
+  if (!skyTop || skyTop.length !== n) skyTop = new Int16Array(n);
+  const ty0 = Math.max(0, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, ty0 + Math.ceil(VH / TS) + 1);
+  for (let i = 0; i < n; i++) { const tx = Math.floor((cx + i * 4) / TS);
+    let y = VH + 8;
+    for (let ty = ty0; ty <= ty1; ty++) if (solidish(tx, ty)) { y = ty * TS - cy; break; }
+    skyTop[i] = y; }
+  return skyTop;
+}
+
+// A LAMP IN THE DARK THROWS A SHAFT, NOT A BALL. Every light in the game was a radial glow and a hole in
+// the darkness, which lights the wall it is on and nothing else; what tells you a room is lit is the cone
+// of it coming down through the air. So: one soft wedge under each lit thing, in the dark levels only,
+// with the lamp's own colour and a slow guttering on it. It is drawn over the world and under the
+// darkness pass, which is where light belongs.
+function drawLightCones(cx, cy) {
+  if (SET.parts === 'low' || !SET.ambient) return;
+  if (!(L.dark || L.night || L.glowNight)) return;
+  g.globalCompositeOperation = 'lighter';
+  for (const lt of lights) {
+    if (lt.x < cx - 70 || lt.x > cx + VW + 70) continue;
+    if (lt.ref && lt.ref.dark > 0) continue;
+    if (lt.lantern && !lt.lantern.lit) continue;
+    const r = lt.r || 30, x = Math.round(lt.x - cx), y = Math.round(lt.y - cy);
+    const gut = 0.86 + 0.14 * Math.sin(time * (lt.torch ? 7.3 : 2.1) + lt.x * 0.11);
+    /* and it stops on the floor under it, or a lamp in a gallery lights forty rows of solid rock */
+    let drop = 224; { const tx = Math.floor(lt.x / TS), ty0 = Math.floor(lt.y / TS);
+      for (let n = 0; n < 14; n++) if (solidish(tx, ty0 + 1 + n)) { drop = (ty0 + 1 + n) * TS - lt.y; break; } }
+    if (drop < 26) continue;              /* a lamp standing ON the floor has no shaft under it: its pool is the glow it already has */
+    const h = Math.min(r * 2.0 * gut, drop + r * 0.5), w = r * 0.85;   /* it may spill a little onto what it lands on; it may not go through it */
+    const c = lt.pink ? '255,150,195' : lt.torch ? '255,196,116' : lt.glow ? '200,235,255' : '255,228,164';
+    const gr = g.createLinearGradient(0, y - 2, 0, y + h);
+    gr.addColorStop(0, 'rgba(' + c + ',' + (0.15 * gut).toFixed(3) + ')');
+    gr.addColorStop(0.45, 'rgba(' + c + ',' + (0.07 * gut).toFixed(3) + ')');
+    gr.addColorStop(1, 'rgba(' + c + ',0)');
+    g.fillStyle = gr;
+    g.beginPath(); g.moveTo(x - 3, y - 2); g.lineTo(x + 3, y - 2); g.lineTo(x + w, y + h); g.lineTo(x - w, y + h); g.closePath(); g.fill();
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+function drawShaftsFront(cx, cy) {
+  if (!SET.weather || SET.parts === 'low' || !daylit()) return;
+  if (!SHAFT) bakeGlows();
+  const sl = skylineNow(cx, cy), n = sl.length;
+  let any = false; for (let i = 0; i < n; i++) if (sl[i] > 8) { any = true; break; }
+  if (!any) return;                                   /* under a roof, there is nothing for the sun to come through */
+  g.save();
+  /* and it spills a little onto what it lands on: a shaft that stops dead at the lip of the ground is a
+     pattern in the air, and the part of a sunbeam you actually read is where it comes down on something */
+  g.beginPath(); g.moveTo(-4, -4); g.lineTo(-4, sl[0] + 12);
+  for (let i = 0; i < n; i++) { g.lineTo(i * 4, sl[i] + 12); g.lineTo((i + 1) * 4, sl[i] + 12); }
+  g.lineTo(VW + 4, -4); g.closePath(); g.clip();
+  g.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 4; i++) { const span = VW + 200, x = (((i * 173 + 70 - cx * 0.35 + Math.sin(time * 0.16 + i * 2.1) * 14) % span) + span) % span - 100;
+    g.save(); g.translate(Math.round(x), -10); g.transform(1, 0, -0.4, 1, 0, 0);
+    g.globalAlpha = (SHAFT_A || 0.2) + 0.06 * Math.sin(time * 0.45 + i * 1.9);
+    g.drawImage(SHAFT, 0, 0, 20 + (i % 3) * 12, VH + 20); g.restore(); }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  if (SHAFT_DBG) { g.fillStyle = 'rgba(255,0,0,0.35)'; g.fillRect(0, 0, VW, VH); }
+  g.restore();
+}
+
 function drawShafts(cx, cy) {
   if (!SET.weather || SET.parts === 'low' || !daylit()) return;
   if (!SHAFT) bakeGlows();
@@ -9907,6 +10013,8 @@ function drawWindFx() {
   if (!windFx.on && !windFx.soon) return; const d = windFx.dir;
   if (windFx.on) { g.strokeStyle = '#ffffff'; g.lineWidth = 1;
     for (let i = 0; i < 46; i++) { const sp = 380 + (i * 53) % 220, len = 18 + (i * 29) % 30, span = VW + 120; let x = ((i * 137 + time * sp) % span); if (d < 0) x = span - x; x -= 60; const y = (i * 71 + Math.floor(i / 7) * 13) % VH;
+      const wx = Math.floor((x + camX) / TS), wy = Math.floor((y + camY) / TS);
+      if (isSolid(wx, wy) || isSolid(wx - Math.round(d * len / TS), wy)) continue;   /* a gust is AIR moving: it does not blow through forty rows of rock */
       g.lineWidth = i % 3 === 0 ? 2 : 1; g.globalAlpha = 0.28 + ((i * 7) % 5) * 0.07; g.beginPath(); g.moveTo(Math.round(x), y + 0.5); g.lineTo(Math.round(x - d * len), y + 0.5); g.stroke(); }
     g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 12); g.fillStyle = '#eefaff'; const ex = d > 0 ? 6 : VW - 6;
     for (let k = 0; k < 3; k++) { const cxk = ex + d * (k * 9 + ((time * 40) % 9)), cyk = VH * 0.42; g.beginPath(); g.moveTo(cxk + d * 6, cyk); g.lineTo(cxk - d * 2, cyk - 8); g.lineTo(cxk - d * 2, cyk - 4); g.lineTo(cxk + d * 1, cyk); g.lineTo(cxk - d * 2, cyk + 4); g.lineTo(cxk - d * 2, cyk + 8); g.closePath(); g.fill(); }
@@ -10102,7 +10210,13 @@ function drawWorld(cx, cy, showPlayer) {
   if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + ((LH * TS - VH) - cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + ((LH * TS - VH) - cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
-  if (L.dark) { g.fillStyle = '#1a1a22'; g.fillRect(0, 0, VW, VH); g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8); } // under the mountain there is only more mountain
+  if (L.dark) { const P0 = L.palette || {};
+    g.fillStyle = P0.murk || '#1a1a22'; g.fillRect(0, 0, VW, VH);
+    drawMurk(cx);                                                 /* the far wall of a dark room: rooftops, rock or wrecks, anchored to the SCREEN */
+    g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8);
+    { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
+      g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }                 /* and the dark closes over the top of it */
+  } // under the mountain there is only more mountain
   else if (SET.parallax !== 'off' && !L.colosseum) { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
   else drawCastleBack(cx, cy);
@@ -10747,6 +10861,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   for (const d of drops) g.drawImage(PROP.drop, Math.round(d.x - cx), Math.round(d.y - cy));
   if (lightFlash > 0) { g.fillStyle = 'rgba(235,240,255,' + (lightFlash > 0.12 ? 0.75 : lightFlash > 0.06 ? 0.2 : 0.45) + ')'; g.fillRect(0, 0, VW, VH); }
+  drawShaftsFront(cx, cy); drawLightCones(cx, cy);
   drawOccluders(cx, cy); drawMotes(cx, cy, true);
   drawLayer(BG.fg, 1.25, 0, cx, cy);
   if (dk > 0) { g.globalCompositeOperation = 'multiply'; g.globalAlpha = dk * 0.55; const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#8a6aa0'); gr.addColorStop(1, '#ffb070'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
@@ -12073,7 +12188,7 @@ window.BK = {
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),
   risen: () => risen, bodies: () => bodies,
-  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)

@@ -1707,3 +1707,61 @@ export function bakeOrePan() { const [c, g] = canvas(64, 10); rect(g, 0, 3, 64, 
 // The forge's hammer head and the boiler.
 export function bakeHammer() { const [c, g] = canvas(28, 24); rect(g, 12, 0, 4, 10, '#4a4f5a'); rect(g, 2, 10, 24, 14, '#3a3e48'); rect(g, 2, 10, 24, 2, '#8a919c'); rect(g, 2, 22, 24, 2, '#1e2028'); rect(g, 4, 13, 20, 8, '#5a6270'); for (let i = 0; i < 3; i++) px(g, 6 + i * 8, 15, '#b0b8c4'); return outline(c); }
 export function bakeBoiler(burst) { const [c, g] = canvas(30, 40); rect(g, 4, 6, 22, 30, burst ? '#8a4a3a' : '#6a4a3a'); rect(g, 4, 6, 22, 2, '#a07060'); rect(g, 4, 34, 22, 2, '#3a2a24'); for (let y = 12; y < 34; y += 7) rect(g, 4, y, 22, 1, '#3a2a24'); rect(g, 8, 0, 14, 6, '#5a6270'); rect(g, 12, 36, 6, 4, '#3a3e48'); circle(g, 15, 20, 5, '#3a3e48'); circle(g, 15, 20, 3, burst ? '#ff6b6b' : '#ffd36b'); if (burst) { for (let i = 0; i < 6; i++) rect(g, 6 + i * 3, 2 - (i % 2) * 2, 2, 3, '#e8e0d0'); } return outline(c); }
+
+// ============================================================================================
+// THE MURK. A dark level was given a flat fill and six grey bars for a backdrop, and every one of them -
+// the mine, the drowned street, the trench, the halls under the castle - had a black rectangle above head
+// height with nothing in it at all. Its own far and mid layers are no help: they are positioned against the
+// bottom of the world, so in a level whose floor is near the bottom they sit UNDER the ground.
+// So the dark gets its own backdrop, anchored to the screen instead of to the world: two courses of
+// silhouette that say what is out there in the dark without ever being legible. 256 wide, tiles across.
+const MW = 256, MH = 120;
+function murkCanvas() { const c = document.createElement('canvas'); c.width = MW; c.height = MH; return [c, c.getContext('2d')]; }
+
+// A DROWNED STREET: the storeys nobody has been up to in thirty years, and a window here and there that
+// somebody's lamp is still behind.
+export function bakeMurkCity(seed, back, col0, lit) {
+  const rnd = mulberry(seed), col = back ? shade(col0, -0.32) : col0; const [c, g] = murkCanvas();
+  let x = -10;
+  while (x < MW + 10) {
+    const w = 22 + ((rnd() * 30) | 0), h = 34 + ((rnd() * (back ? 48 : 70)) | 0), y = MH - h;
+    g.fillStyle = col; g.fillRect(x, y, w, h);
+    if (rnd() < 0.4) { g.beginPath(); g.moveTo(x - 2, y); g.lineTo(x + w / 2, y - 9 - ((rnd() * 10) | 0)); g.lineTo(x + w + 2, y); g.closePath(); g.fill(); }  /* a gable */
+    else { g.fillRect(x + 3 + ((rnd() * (w - 8)) | 0), y - 6 - ((rnd() * 6) | 0), 4, 8); }                                                                     /* or a chimney */
+    for (let wy = y + 6; wy < MH - 8; wy += 11) for (let wx = x + 4; wx < x + w - 5; wx += 9) {
+      if (rnd() < 0.55) continue;
+      g.fillStyle = rnd() < (back ? 0.07 : 0.13) ? lit : shade(col, -0.45); g.fillRect(wx, wy, 3, 4); g.fillStyle = col; }
+    x += w + 1 + ((rnd() * 5) | 0);
+  }
+  return c;
+}
+// UNDER THE MOUNTAIN: a broken back of rock, with the sets they left holding what they could.
+export function bakeMurkRock(seed, back, col0, lit) {
+  const rnd = mulberry(seed), col = back ? shade(col0, -0.32) : col0; const [c, g] = murkCanvas();
+  g.fillStyle = col; g.beginPath(); g.moveTo(-4, MH);
+  let x = -4, y = MH - 30 - ((rnd() * 30) | 0);
+  g.lineTo(x, y);
+  while (x < MW + 10) { const step = 10 + ((rnd() * 20) | 0); x += step; y += (rnd() - 0.5) * (back ? 26 : 42); y = Math.max(14, Math.min(MH - 16, y)); g.lineTo(x, y); }
+  g.lineTo(MW + 10, MH); g.closePath(); g.fill();
+  for (let i = 0; i < (back ? 4 : 7); i++) { const px0 = ((rnd() * MW) | 0), ph = 16 + ((rnd() * 26) | 0);
+    g.fillStyle = shade(col, 0.18); g.fillRect(px0, MH - ph, 3, ph); g.fillRect(px0 - 5, MH - ph, 13, 3); }   /* a set of timber */
+  for (let i = 0; i < 3; i++) { const lx = ((rnd() * MW) | 0); g.fillStyle = lit; g.fillRect(lx, MH - 12 - ((rnd() * 20) | 0), 2, 2); }
+  return c;
+}
+// THE TRENCH: what she sent down, lying where it stopped.
+export function bakeMurkWreck(seed, back, col0, lit) {
+  const rnd = mulberry(seed), col = back ? shade(col0, -0.32) : col0; const [c, g] = murkCanvas();
+  let x = -20;
+  while (x < MW + 20) {
+    const w = 50 + ((rnd() * 60) | 0), h = 18 + ((rnd() * 22) | 0), y = MH - h - ((rnd() * (back ? 20 : 44)) | 0), tilt = (rnd() - 0.5) * 0.35;
+    g.save(); g.translate(x, y); g.rotate(tilt);
+    g.fillStyle = col; g.beginPath(); g.moveTo(0, 0); g.lineTo(w, 0); g.lineTo(w - 9, h); g.lineTo(7, h); g.closePath(); g.fill();   /* her hull */
+    g.fillRect(6, -3, w - 12, 3);
+    const mx = 12 + ((rnd() * (w - 24)) | 0), mh = 26 + ((rnd() * 40) | 0);
+    g.fillRect(mx, -mh, 2, mh); g.fillRect(mx - 12, -mh + 8 + ((rnd() * 10) | 0), 26, 2);                                            /* her mast and a spar */
+    if (rnd() < 0.5) { g.fillStyle = lit; g.fillRect(mx - 1, -mh - 3, 3, 3); }
+    g.restore();
+    x += w - 14;
+  }
+  return c;
+}
