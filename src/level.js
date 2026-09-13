@@ -2115,6 +2115,7 @@ function galeMoor() {
   ent('sign', 112, 21, { text: 'THE CIRCLE. THE WIND GOES ROUND THE STONES, ONE WAY AND THEN THE OTHER. THE UPDRAFT BY THE CENTRE STONE, AND THE RIGHT GUST, PUT YOU ON TOP OF IT.' });
   coins([118, 20], [123, 19], [127, 18], [134, 18], [138, 19], [147, 20]);
   ent('check', 148, 21);
+  ent('check', 92, 24);   /* the opening gap was a hundred and ten */
 
   // ---- 4. THE BOTHY: the lee of the hill. Still air, a warm door, and Tam, who goes no higher. ----
   floor(150, 180, 22);
@@ -2227,13 +2228,17 @@ function galeMoor() {
   ent('stormkite', 659, 13);
   ent('sign', 652, 13, { text: 'THE KITE POST. PAST THE WALL IS THE SKY ROAD TO THE SUMMIT, AND THE ONLY WAY DOWN IT IS UNDER THE GREAT KITE. TAKE HOLD: THE ARROWS STEER, THE ROLL IS A DART. IT DOES NOT WAIT FOR YOU.' });
   ent('check', 655, 13); ent('flagpost', 662, 13);
+  // TWO HUNDRED AND NINE COLUMNS WITH NO CHECKPOINT IN THEM, the worst run in the game, and it is the last
+  // stretch before the Windcaller - so a death out here costs you the whole approach. Three now: fifty-five,
+  // forty, forty and seventy-four.
+  ent('check', 704, 12); ent('check', 757, 11); ent('check', 806, 11);   /* checked against the built grid: 710 and 766 are inside rock */
 
   // ---- 13. THE SKY ROAD: the kite carries you down the wind to the summit - through the teeth of the crags,
   // the crow strings, the needle and the storm. The view does not wait. ----
   block(666, 859, 26, 29); spikes(666, 859, 25);
   const spire = (x, top) => { block(x, x + 1, top, 25); stone.push([x, x + 1, top, 25]); }, crag = (x, bot) => { block(x, x + 1, 0, bot); stone.push([x, x + 1, 0, bot]); };
   const rock = (x0, x1, y0, y1) => { block(x0, x1, y0, y1); stone.push([x0, x1, y0, y1]); }; // loose stone in the air, not grass
-  const string = (x, y, n, gap, o) => { for (let i = 0; i < n; i++) ent('crow', x + i * gap, y, Object.assign({ ph: i * 0.7 }, o || {})); };
+  const string = (x, y, n, gap, o) => { for (let i = 0; i < n; i++) ent('harpy', x + i * gap, y, Object.assign({ ph: i * 0.7 }, o || {})); };
   const ribbon = (x0, x1, y, amp) => { for (let x = x0; x <= x1; x += 2) coins([x, Math.round(y + Math.sin((x - x0) * 0.35) * amp)]); };
   // everything out here stands on the gorge floor: nothing hangs in the air (Daniel: no floating rocks)
   const tower = (x0, x1, top) => { block(x0, x1, top, 25); stone.push([x0, x1, top, 25]); };
@@ -3559,12 +3564,13 @@ const DRESS = {
 const GARRISON = {
   marsh: [['hopper', 5], ['spit', 4], ['archer', 3], ['thorn', 3], ['turtle', 3], ['heronfoe', 3]],   // 46 was thirteen under the level before it
   spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2]],
+  moor: [['goat', 5], ['rockgoblin', 5], ['harpy', 4], ['kite', 4], ['troll', 2], ['sailer', 3]],   // seven kinds over NINE HUNDRED columns, and twenty-three of them crows
   scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],       // 58 sat twenty-two under Kingswood
-  spire: [['shardling', 9], ['harpy', 7], ['bat', 6], ['sentry', 5], ['rockgoblin', 4], ['crow', 5], ['goat', 3]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
+  spire: [['shardling', 10], ['harpy', 8], ['bat', 7], ['sentry', 6], ['rockgoblin', 5], ['crow', 5], ['goat', 4], ['troll', 3], ['kite', 4], ['spider', 3]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
   storm: [['hearthgob', 3], ['cutter', 3], ['sentry', 2]],
   crown: [['soldier', 3], ['javelin', 2], ['heavy', 2]],
-  longwater: [['scout', 5], ['tideguard', 5], ['crab', 5], ['siren', 4], ['eel', 4], ['netter', 4], ['angler', 3]],
-  reef: [['angler', 6], ['crab', 6], ['sailor', 5], ['netter', 4], ['petrel', 4], ['scout', 4], ['tideguard', 3], ['turtle', 3]],
+  longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
+  reef: [['angler', 8], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 3]],
   hurricane: [['cutlass', 3], ['scout', 3], ['tideguard', 2]],
   lamplit: [['watch', 6], ['wight', 6], ['snuffer', 5], ['tideguard', 5], ['scout', 5], ['crab', 4], ['angler', 4], ['sailor', 4], ['netter', 3]],  // the LAST level must be the hardest thing in the game
 };
@@ -3583,11 +3589,18 @@ function garrison(L, id) {
   for (let x = 6; x < W - 6; x++) for (let y = 2; y < H - 1; y++) {
     if (!stand(at(x, y + 1)) || at(x, y) !== T.AIR || at(x, y - 1) !== T.AIR || at(x, y - 2) !== T.AIR) continue;
     if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;          // a ledge one tile wider than it stands on: the Sunspire has almost nothing three tiles across
-    if (wet(x, y) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
+    if (rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     if (keep.some(([kx, ky]) => Math.abs(kx - x) < 4 && Math.abs(ky - y) < 4)) continue;
     spots.push([x, y]); break;                                                   // one per column: the highest floor
   }
   if (spots.length < 8) return L;
+  // HOW FAR APART IS FAR ENOUGH depends on the shape of the level. Eight columns is right for a road; on a
+  // tower ninety-six wide it rejects nearly every spot, which is why the Sunspire asked for fifty-five and
+  // got fourteen. A tall level spaces by HEIGHT instead.
+  // WHO CAN BE PUT IN THE WATER. The Long Water is mostly water, so refusing every wet spot left the
+  // sprinkler nowhere to work - and an eel belongs in the water anyway.
+  const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor']);
+  const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];
   const rnd = mulberryL(id.length * 613 + id.charCodeAt(1) * 7 + 11);
   const want = set.reduce((s, [, n]) => s + n, 0);
@@ -3598,8 +3611,9 @@ function garrison(L, id) {
   for (let b = 0; b < list.length; b++) {
     const lo = Math.floor(spots.length * b / list.length), hi = Math.floor(spots.length * (b + 1) / list.length);
     let put = null;
-    for (let k = lo; k < hi; k++) { const [x, y] = spots[(k + ((rnd() * (hi - lo)) | 0)) % Math.max(1, hi - lo) + lo] || spots[k];
-      if (taken.some(([tx, ty]) => Math.abs(tx - x) < 8 && Math.abs(ty - y) < 6)) continue; put = [x, y]; break; }
+    for (let k = lo; k < hi; k++) { const [x, y, isWet] = spots[(k + ((rnd() * (hi - lo)) | 0)) % Math.max(1, hi - lo) + lo] || spots[k];
+      if (isWet && !SWIMS.has(list[b])) continue;
+      if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
     if (!put) { left.push(list[b]); continue; }
     taken.push(put);
     L.ents.push({ t: list[b], x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
@@ -3608,8 +3622,9 @@ function garrison(L, id) {
   // creature, which is how the Sunspire asked for thirty-one and got thirteen
   for (const kind of left) {
     let put = null;
-    for (let k = 0; k < spots.length; k++) { const [x, y] = spots[((k * 7 + ((rnd() * spots.length) | 0)) % spots.length)];
-      if (taken.some(([tx, ty]) => Math.abs(tx - x) < 8 && Math.abs(ty - y) < 6)) continue; put = [x, y]; break; }
+    for (let k = 0; k < spots.length; k++) { const [x, y, isWet] = spots[((k * 7 + ((rnd() * spots.length) | 0)) % spots.length)];
+      if (isWet && !SWIMS.has(kind)) continue;
+      if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
     if (!put) break;
     taken.push(put);
     L.ents.push({ t: kind, x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
