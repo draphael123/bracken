@@ -34,6 +34,19 @@ If the BUGS column is not empty, do not ship.
 5. **A GAP BETWEEN THE CASTLE AREAS** — an `interiors` band stops short and leaves a purple void with a floor
    strip under it. (Screenshot: dark oak + purple, so Highcrown or Stormhold.)
 
+6. **THE SHIPWRECK REEF wants more of itself** — Daniel: "more we can do with different routes, water jets
+   that change speed, etc." The bones are there (`gusts` with `current: true`, `capped` pools, air bells);
+   what it needs is a fork with two honest routes and jets that push at different strengths.
+7. **THE QUEEN'S WALKWAY.** Daniel asked to get rid of it. READ THIS FIRST: it is not scenery. The row-14
+   gallery is the ONLY way to damage her - `gqOpen = e => e.mode === 'pinned'` - and it is held up by three
+   breakable `support` pillars; break one and that section falls, pins her, and takes 7% off her. Since the
+   ward is now legible (she wears it, a turned blow says WARDED, and the first three turned blows say where
+   the answer is) the walkway may now read as the answer rather than as clutter. Ask before deleting it; if
+   he still wants it gone, the fight needs a different window or it becomes unwinnable.
+8. **A WHITE BLOB FOLLOWS THE REAPER.** Reported four times with screenshots, on different levels, always a
+   pale rectangle beside him. THE PASSING was drawing a WHITE silhouette of him and that was fixed and
+   deployed - confirm with a hard refresh before chasing anything else. If it persists, it is not the ghost.
+
 **FEEL AND FIGHT**
 6. **TERRAIN CHANGES HIS SPEED.** Measured in the stockade: on a PLANK bridge he covers 0.92px a step, which
    is exactly right for 92px/s at the 60% world speed. On two different stretches of plain SOLID he covered
