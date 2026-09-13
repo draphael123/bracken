@@ -578,36 +578,49 @@ export function bakeChief() {
 }
 
 // ---------- Sporewood ----------
-const SP = Object.assign({}, EP, { m: '#9a5aa8', M: '#6a3a7a', t: '#e8e0f0', c: '#4aa0b0', C: '#2a6a7a', v: '#7a5aa8', V: '#4a2a6a', k: '#f0e6c8' });
+const SP = Object.assign({}, EP, { m: '#9a5aa8', M: '#6a3a7a', t: '#e8e0f0', c: '#4aa0b0', C: '#2a6a7a', v: '#7a5aa8', V: '#4a2a6a', k: '#f0e6c8',
+  i: '#4a3560', I: '#2a1c3c', z: '#c97a3a', Z: '#8a4418', q: '#d8cfe8', Q: '#9a8fb0', j: '#7fe0c8', J: '#3a8a78' });   /* the inky, the earthstar's rays, the morel's pits, the drone's veil */
 const sspr = rows => outline(fromGrid(rows, SP, 1), OUT);
 // Sporeling — a walking cap. 10×10, two frames.
 export function bakeSporeling() {
+  // FIVE FUNGI, NOT ONE CAP IN FIVE PAINTS. The sporeling, the lurker, the spitcap and the shaman all had
+  // the same silhouette - a smooth dome with white dots on a pale stub - and you told them apart by hue,
+  // which is no use at all in a purple wood at night. Each of them is a different MUSHROOM now, and the
+  // difference is in the outline. This one is the little agaric: a wide dome and a SKIRT round its stem.
   const cap = ['...mmmm...', '..mmtmmm..', '.mmmmmmtm.', 'mmmmmmmmmm', '.MMMMMMMM.'];
-  const a = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '..kk..kk..', '.kk....kk.']);
-  const b = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '...kkkk...', '..kk..kk..']);
-  const c2 = sspr(['..........', ...cap, '..kkkkkk..', '..keokkok.', '..kk..kk..', '..kk..kk..']);
-  const d = sspr([...cap, '..kkkkkk..', '..keokkok.', '..kkkkkk..', '..kkk.kk..', '.kk...kk..']);
-  // HURT: the cap crushes down over the stalk and it folds at the foot
-  const hurt = sspr(['..........', '..mmmmmm..', '.mmmtmmmm.', 'mmmmmmmmmm', '.MMMMMMMM.', '..kkkkkk..', '..koookok.', '..kk..kk..', '.kk....kk.', '..........']);
+  const skirt = '..kKKKKKk.';
+  const a = sspr([...cap, skirt, '..kkeokok.', '..kkkkkk..', '..kk..kk..', '.kk....kk.']);
+  const b = sspr([...cap, skirt, '..kkeokok.', '..kkkkkk..', '...kkkk...', '..kk..kk..']);
+  const c2 = sspr(['..........', ...cap, skirt, '..kkeokok.', '..kk..kk..', '..kk..kk..']);
+  const d = sspr([...cap, skirt, '..kkeokok.', '..kkkkkk..', '..kkk.kk..', '.kk...kk..']);
+  /* HURT: the cap crushes down over the stalk and it folds at the foot */
+  const hurt = sspr(['..........', '..mmmmmm..', '.mmmtmmmm.', 'mmmmmmmmmm', '.MMMMMMMM.', '..kKKKKKk.', '..kkoookk.', '..kk..kk..', '.kk....kk.', '..........']);
   return pack([a, b, c2, d, hurt], 6, 11, 8, 10);
 }
+
 // Lurker — looks like a scenery mushroom until it lunges. 14×12: frame 0 hidden, frame 1 mouth open.
 export function bakeLurker() {
-  const cap = ['....vvvvvv....', '..vvvtvvvvtv..', '.vvvvvvvvvvvv.', 'vvvvvvvvvvvvvv', '.VVVVVVVVVVVV.'];
-  const a = sspr([...cap, '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '...kkkkkkkk...', '..kkkkkkkkkk..']);
-  const b = sspr([...cap, '...kkkkkkkk...', '..kkeokkeokk..', '..kRRRRRRRRk..', '..kRrrrrrrRk..', '...kRRRRRRk...', '..kkkkkkkkkk..']);
-  const half = sspr([...cap, '...kkkkkkkk...', '..kkeokkeokk..', '..kkkkkkkkkk..', '..kRRRRRRRRk..', '...kkkkkkkk...', '..kkkkkkkkkk..']);
-  return pack([a, b, half], 8, 13, 12, 12);
+  // AN INKY CAP: tall, narrow, bell-shaped, and going off at the rim - it hangs there looking like the
+  // scenery it is standing in until the front of it opens. Nothing else in the wood is this NARROW.
+  const bell = ['.....ii.....', '....iiii....', '...iiqiii...', '...iiiiii...', '..iiiiiiii..', '..iIiiiiIi..', '.iIiIiIiIiI.', '.I.I.I.I.I.I'];
+  const a = sspr([...bell, '....kkkk....', '....kkkk....', '....kkkk....', '....kkkk....', '...kkkkkk...']);
+  const b = sspr([...bell, '....kkkk....', '...keokok...', '..kRRRRRRk..', '..kRrrrrRk..', '...kkkkkk...']);
+  const half = sspr([...bell, '....kkkk....', '...keokok...', '...kkkkkk...', '..kRRRRRRk..', '...kkkkkk...']);
+  return pack([a, b, half], 6, 13, 10, 12);
 }
+
 // SPITCAP — a tall rooted mushroom with a bladder for a cap. It swells, then lobs a spore bomb over your head.
 // 12×14. Frames: rest, swell (the bladder up and tight), spit (the bladder collapsed and the mouth open).
 export function bakeSpitcap() {
+  // AN EARTHSTAR. The cap does not dome, it SPLITS - four rays folded back off a sac in the middle, and
+  // the sac is what swells and what it lobs at you. The star is readable at a glance and at any hue.
   const stalk = ['...kkkkkk...', '...kkkkkk...', '...kokkok...', '...kkkkkk...', '...kkkkkk...', '..kk....kk..', '.kk......kk.'];
-  const rest = sspr(['....mmmm....', '..mmmmmmmm..', '.mmmtmmmtmm.', '.MMMMMMMMMM.', ...stalk]);
-  const swell = sspr(['...mmmmmm...', '.mmmmmmmmmm.', 'mmmtmmmmtmmm', 'mmmmmmmmmmmm', '.MMMMMMMMMM.', ...stalk.slice(1)]);
-  const spit = sspr(['............', '....mmmm....', '..mmMMMMmm..', '.mmMMttMMmm.', '.MMMMMMMMMM.', ...stalk.slice(1)]);
+  const rest = sspr(['.z........z.', '.zz.mmmm.zz.', 'zZzmmttmmzZz', '.ZZmmmmmmZZ.', '..MMMMMMMM..', ...stalk]);
+  const swell = sspr(['z..........z', 'zz..mmmm..zz', 'Zz.mmmmmm.zZ', 'Z.mmmttmmm.Z', '..mmmmmmmm..', '..MMMMMMMM..', ...stalk.slice(1)]);
+  const spit = sspr(['zz........zz', '.Zz.MMMM.zZ.', '..ZmMttMmZ..', '..mMMMMMMm..', '..MMMMMMMM..', ...stalk.slice(1)]);
   return pack([rest, swell, spit], 6, 15, 12, 14);
 }
+
 // WEAVER — the pale spider that hangs in the fungus. Fatter and softer than a wood spider, and it spits its
 // web at you instead of dropping on you. 12×9. Frames: hang, spit, scuttle1, scuttle2.
 export function bakeWeaver() {
@@ -621,21 +634,27 @@ export function bakeWeaver() {
 }
 // Spore drone — a floating puffball with a dark eye. 10×8, two frames (breathing).
 export function bakeDrone() {
-  const a = sspr(['...tttt...', '..tttttt..', '.ttteottt.', '.tttttttt.', '..tttttt..', '...tttt...']);
-  const b = sspr(['..tttttt..', '.tttttttt.', 'ttttteottt', 'tttttttttt', '.tttttttt.', '..tttttt..']);
-  const blink = sspr(['...tttt...', '..tttttt..', '.tttoottt.', '.tttttttt.', '..tttttt..', '...tttt...']);
-  const mid = sspr(['..tttttt..', '.tttttttt.', '.ttteottt.', 'tttttttttt', '.tttttttt.', '..tttttt..']);
-  return pack([a, b, blink, mid], 6, 7, 9, 7);
+  // A SPORE VEIL, not a blob. A little cap with a long skirt of threads under it, drifting - the threads
+  // are the whole silhouette and they are what tells you it is floating rather than standing.
+  const a = sspr(['...qqqq...', '..qqqqqq..', '.qqqeoqqq.', '.qQQQQQQq.', '..j.jj.j..', '..j.jj.j..', '...j..j...']);
+  const b = sspr(['..qqqqqq..', '.qqqqqqqq.', 'qqqqqeoqqq', '.qQQQQQQq.', '..jj..jj..', '.j.j..j.j.', '.j......j.']);
+  const blink = sspr(['...qqqq...', '..qqqqqq..', '.qqqooqqq.', '.qQQQQQQq.', '..j.jj.j..', '...jjjj...', '...j..j...']);
+  const mid = sspr(['..qqqqqq..', '.qqqqqqqq.', '.qqqeoqqq.', 'qQQQQQQQQq', '..jj..jj..', '..j.jj.j..', '..j....j..']);
+  return pack([a, b, blink, mid], 6, 8, 9, 7);
 }
+
 // Toad shaman — a toadstool that walks, wears a bone circlet, casts. 14×13: idle, cast.
 export function bakeShaman() {
-  const cap = ['....cccccc....', '..ccctccctcc..', '.cccccccccccc.', 'cctccccctccccc', 'cccccccccccccc', '.CCCCCCCCCCCC.'];
-  const stem = ['...kkkkkkkk...', '...kokkkkok...', '...kkkkkkkk...', '...kkkGGkkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
-  const cast = ['..tkkkkkkkkt..', '..tkokkkkokt..', '...kkkkkkkk...', '...kkGGGGkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
-  const walkA = [...stem.slice(0, 5), '...kk....kk...', '..kk.....kk...'], walkB = [...stem.slice(0, 5), '..kk....kk....', '...kk....kk...'];
-  const cast2 = ['.t.kkkkkkkk.t.', 't.tkokkkkokt.t', '...kkkkkkkk...', '...kkGGGGkk...', '...kkkkkkkk...', '..kk......kk..', '.kk........kk.'];
-  return pack([sspr([...cap, ...stem]), sspr([...cap, ...cast]), sspr([...cap, ...walkA]), sspr([...cap, ...walkB]), sspr([...cap, ...cast2])], 8, 14, 12, 13);
+  // A MOREL: a tall pitted cone instead of a cap, honeycombed all over, and a bone circlet round the foot
+  // of it. Nothing else in the wood has a POINT on top.
+  const cap = ['.....cc.....', '....cCcC....', '...cCccCc...', '...cCccCc...', '..cCccCccC..', '..cCccCccC..', '.cCccCccCcc.', '.CCcCCcCCcC.', 'cccccccccccc', '.CCCCCCCCCC.'];
+  const stem = ['...kkkkkk...', '...kokkok...', '...kkkkkk...', '...kkGGkk...', '...kkkkkk...', '..kk....kk..', '.kk......kk.'];
+  const cast = ['..tkkkkkkt..', '..tkokkokt..', '...kkkkkk...', '...kGGGGk...', '...kkkkkk...', '..kk....kk..', '.kk......kk.'];
+  const walkA = [...stem.slice(0, 5), '...kk...kk..', '..kk....kk..'], walkB = [...stem.slice(0, 5), '..kk...kk...', '...kk...kk..'];
+  const cast2 = ['.t.kkkkkk.t.', 't.tkokkokt.t', '...kkkkkk...', '...kGGGGk...', '...kkkkkk...', '..kk....kk..', '.kk......kk.'];
+  return pack([sspr([...cap, ...stem]), sspr([...cap, ...cast]), sspr([...cap, ...walkA]), sspr([...cap, ...walkB]), sspr([...cap, ...cast2])], 6, 17, 10, 16);
 }
+
 
 // ---------- Kingswood ----------
 const KG = Object.assign({}, EP, { h: '#5a4a3a', H: '#3a2e22', q: '#5a1a1a', Q: '#3a1010', f: '#8a7a68', F: '#5a4e42', a: '#e8dcc0', x: '#c9b27c', z: '#7a5a2a' });
@@ -850,14 +869,40 @@ export function bakeElder() {
 
 // Crag ram — a wild shaggy ram, horns curled tight, no rider. 16×9. Frames: run1, run2, rear, run1, run2 (the last two stand in for the old riderless goat).
 export function bakeCragRam() {
-  const RP = Object.assign({}, CP, { f: '#d8d0c0', F: '#a8a090', m: '#c9a83a', M: '#8a6a1a', z: '#3a2e22' });
+  // THE HORN IS THE ANIMAL. It had three gold pixels for one and a fleece with no shape in it, so it read
+  // as a sheep going sideways. A crag ram is a heavy curl of horn over a dark face, a barrel of fleece
+  // with the light on top of it and the shadow slung under, a beard, and four black legs. 18x12.
+  const RP = Object.assign({}, CP, { f: '#d8d0c0', F: '#a8a090', G: '#7e786c', m: '#c9a83a', M: '#8a6a1a', n: '#8a7f70', z: '#3a2e22', o: '#1b1626' });
   const r = rows => outline(fromGrid(rows, RP, 1), OUT);
-  const head = ['............mmm.', '...........mMMm.', '....fffffff.mMm.', '..fffffffffffffo', '.ffFfffffffffff.', '.fFFfffffffffFf.', '..ffffffffffff..'];
-  const run1 = r([...head, '..zz.zz....zz.zz', '..z...z....z...z']);
-  const run2 = r([...head, '...zz.zz..zz.zz.', '...z...z..z...z.']);
-  const rear = r(['..........mmm...', '.........mMMm...', '..........mMm...', '.........ffffffo', '........ffffffff', '.......fffffffF.', '.....ffffffffff.', '....fFFfffffzz..', '..fffffffffz.z..', '..zz.zz.........', '..z...z.........']);
-  return pack([run1, run2, rear, run1, run2], 9, 10, 14, 9);
+  const head = [
+    '.............mmM..',
+    '............mMmMm.',
+    '............mM.Mm.',
+    '.....fffff..mMMm..',
+    '...fffffffffnnnn..',
+    '..ffffffffffnnonn.',
+    '..fFffffffffFnnn..',
+    '..FFfffffffff.n...',
+    '...GFFFFFFFFG.....'];
+  const run1 = r([...head, '..zz.zz....zz.zz..', '..z...z....z...z..', '..o...o....o...o..']);
+  const run2 = r([...head, '...zz.zz..zz.zz...', '...z...z..z...z...', '...o...o..o...o...']);
+  const rear = r([
+    '..........mmM.....',
+    '.........mMmMm....',
+    '.........mM.Mm....',
+    '..........mMMm....',
+    '.........fnnnn....',
+    '........ffnnonn...',
+    '.......fffFnnn....',
+    '.....ffffffff.....',
+    '...ffFffffff......',
+    '..FFffffffzz......',
+    '..GFFFFFFz.z......',
+    '..zz.zz...........',
+    '..z...z...........']);
+  return pack([run1, run2, rear, run1, run2], 9, 12, 14, 9);
 }
+
 // Hill troll — a hulking mossy brute, taller than a door, that hurls boulders. 18×17. Frames: stand, walk1, walk2, throw (rock up), swat.
 export function bakeTroll() {
   const TP = Object.assign({}, CP, { t: '#6a7a5a', T: '#46543a', m: '#3f6e2c', s: '#8a919c', S: '#5a6270', o: OUT });
@@ -1244,22 +1289,30 @@ export function bakeDrownedKing() {
 }
 // Cave bat — 12×6. Frames: hang (wings folded), fly1, fly2.
 export function bakeBat() {
+  // IT WAS A SMUDGE WITH A RED SLIT IN IT. A bat is ears, a small body and two big scalloped wings, and
+  // the scallop is the whole read: a smooth wing is a bird. 14x8. Frames: hanging (folded), and two beats.
   const BP2 = Object.assign({}, EP, { b: '#3a3448', B: '#5a5468', r: '#ff4a3a' });
   const b = rows => outline(fromGrid(rows, BP2, 1), OUT);
-  const hang = b(['....bbbb....', '...bbbbbb...', '...bbrrbb...', '....bbbb....', '.....bb.....', '....b..b....']);
-  const fly1 = b(['b..........b', 'bb...bb...bb', '.bbbbbbbbbb.', '..bbBrrBbb..', '....bbbb....', '.....bb.....']);
-  const fly2 = b(['............', '.....bb.....', '..bbbbbbbb..', 'bbbbBrrBbbbb', 'bb..bbbb..bb', '.....bb.....']);
-  return pack([hang, fly1, fly2], 7, 7, 10, 6);
+  const hang = b(['...b......b...', '...bb....bb...', '....bbbbbb....', '...bbbrrbbb...', '....bBbbBb....', '.....bbbb.....', '......bb......', '.....b..b.....']);
+  const fly1 = b(['b............b', 'bb..........bb', '.bb.b..b.b.bb.', '..bbbbbbbbbb..', '...b.bbbb.b...', '...bBbrrbBb...', '....bbbbbb....', '.....b..b.....']);
+  const fly2 = b(['..............', '..............', '...bbbbbbbb...', '..bBbbrrbbBb..', '.bbbbbbbbbbbb.', 'bb.b.bbbb.b.bb', 'b...b....b...b', '.....b..b.....']);
+  return pack([hang, fly1, fly2], 7, 8, 10, 6);
 }
+
 // STORM CROW — they come down the moor wind in strings. 10x5, three wingbeats, facing right.
 export function bakeCrow() {
-  const CP = Object.assign({}, EP, { k: '#2a2433', K: '#4a4458', r: '#ff4a3a' });
+  // A BIRD, NOT A BAR. It was a flat dark rectangle with a red dot in it: no beak, no tail, no wing. A
+  // crow in the air is a head, a wedge of body, a fanned tail and two wings that go up, level and down -
+  // and the wingbeat is the only thing that says BIRD at this size. 13x8, facing right.
+  const CP = Object.assign({}, EP, { k: '#2a2433', K: '#4a4458', r: '#ff4a3a', y: '#c9a83a' });
   const c = rows => outline(fromGrid(rows, CP, 1), OUT);
-  const up = c(['k.........', 'kk.....k..', '.kKkkkkkk.', '..kkkkkrky', '...kk.....']);
-  const mid = c(['..........', '..........', 'kkKkkkkkk.', '.kkkkkkrky', '..kk......']);
-  const down = c(['..........', '..........', '.kkkkkkkk.', 'kkKkkkkrky', 'kk....k...']);
-  return pack([up, mid, down], 5, 5, 10, 5);
+  const body = ['kkkkkkkkKkkry', '.kkkkkkkkkkk.', '..kkkkkkkk...', '....k...k....'];
+  const up = c(['..k.....k....', '..kk...kk....', '...kkkkk.....', ...body]);
+  const mid = c(['.............', 'kkk.......k..', '.kkkkkkkkk...', ...body]);
+  const down = c(['.............', '.............', '.............', ...body, '..kk...kk....', '..k.....k....']);
+  return pack([up, mid, down], 7, 5, 11, 5);
 }
+
 // HORNBLOWER — a goblin with a ram's horn. Frames: idle (horn at the hip), tell (horn raised), blow (horn at the mouth).
 export function bakeHornblower() {
   const head = ['...gggg.......', '..gggggg......', '.geoggeog.....', '.gggggggg.....', '..gGGGGg......', '...gggg.......'];
@@ -1625,13 +1678,17 @@ export function bakeGolem() {
 }
 // The moor hare — fast, low, and it runs with the wind. 12×8. Frames: run1, run2, sit.
 export function bakeHare() {
-  const HP2 = Object.assign({}, EP, { h: '#8a6a4a', H: '#5a4230', w: '#e8dcc0', r: '#c9463d' });
+  // A HARE WITH NO EARS IS A LUMP. That is what it was: a brown mass with a darker back. The ears are
+  // most of what a hare IS - long, laid back over the shoulders when it runs, up when it sits - and the
+  // white scut and the eye do the rest. 13x9, facing right.
+  const HP2 = Object.assign({}, EP, { h: '#8a6a4a', H: '#5a4230', w: '#e8dcc0', e: '#1b1626', r: '#c9463d' });
   const q = rows => outline(fromGrid(rows, HP2, 1), OUT);
-  const run1 = q(['.........hh.', '........hhh.', '...hhhhhhhe.', '..hhhhhhhhh.', '.whhhhhhhhh.', '.hhhhhhhhw..', 'hh..hh..hh..', 'h....h....h.']);
-  const run2 = q(['.........hh.', '........hhh.', '...hhhhhhhe.', '..hhhhhhhhh.', '.whhhhhhhhh.', '.hhhhhhhhw..', '..hhhh.hhh..', '..h..h..h...']);
-  const sit = q(['........hh..', '........hhh.', '....hhhhhhe.', '...hhhhhhhh.', '..whhhhhhhh.', '..hhhhhhhhw.', '..hhhhhhhh..', '...hh...hh..']);
-  return pack([run1, run2, sit], 6, 8, 10, 7);
+  const run1 = q(['......hh.hh..', '.....hh.hh...', '.....hhhhhh..', '...hhhhhhhhh.', '.HhhhhhhhhhHe', 'whhhhhhhhhhh.', '.HhhhhhhhhH..', 'hh..hh..hh...', 'h....h....h..']);
+  const run2 = q(['......hh.hh..', '.....hh.hh...', '.....hhhhhh..', '...hhhhhhhhh.', '.HhhhhhhhhhHe', 'whhhhhhhhhhh.', '.HhhhhhhhhH..', '..hhhh.hhh...', '..h..h..h....']);
+  const sit = q(['.......h.h...', '.......h.h...', '.......hhh...', '....hhhhhhh..', '...hhhhhhhHe.', '.wHhhhhhhhh..', '..hhhhhhhh...', '..hhhhhhhh...', '...hh...hh...']);
+  return pack([run1, run2, sit], 6, 9, 10, 7);
 }
+
 // The peat wight — a pale hand of bog-mist that rises where you stand too long. 10×14. Frames: rise1, rise2.
 export function bakeWight() {
   const WP2 = Object.assign({}, EP, { m: '#c8d8c8', M: '#8aa08a', k: '#3a3a2a' });
