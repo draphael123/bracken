@@ -21,6 +21,7 @@
 // Everything it finds is a FINDING: a kind, a severity, where it happened and what it was. Nothing here
 // changes the game; the bot restores the save, the hero and the settings it borrowed when it is done.
 import { LEVELS, T, TS } from './level.js';
+import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf } from './threat.js';
 import { floodReach } from './reachcore.js';
 
 const SEV = { bug: 3, odd: 2, note: 1 };
@@ -28,27 +29,6 @@ const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === 
 const standT = t => solidT(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
 
 // what each creature is worth as a threat - the same table tools/curve.mjs uses, so the two agree
-const THREAT = {
-  /* the Undercrown: the propman is worth more than he hits for, because what he costs you is TIME on a
-     set you already paid for; the clinger is worth almost nothing on its own and everything over a drop */
-  propman: 2.5, clinger: 2, pitwarden: 0, minerlamp: 0, timber: 0, gas: 0,
-  sprig: 1, spit: 1, wasp: 1.5, hopper: 1, shield: 2, archer: 2, thorn: 2, spitter: 1.5, turtle: 1.5,
-  brute: 3.5, sapper: 3, hound: 2.5, pike: 3, soldier: 3, javelin: 2.5, heavy: 4, crow: 1, bat: 1,
-  sporeling: 1.5, lurker: 2.5, spitcap: 2, weaver: 3, shaman: 3, thief: 1, folk: 0, squirrel: 0,
-  goat: 2, ram: 4, harpy: 2.5, troll: 4, spider: 3, sailer: 2, snuffer: 2.5, cutter: 3, hearthgob: 3,
-  shardling: 2, suncatcher: 3, sentry: 2, lookout: 1.5, bosun: 3, cutlass: 2.5, boarder: 3, marine: 2.5,
-  eel: 2, urchin: 1, angler: 2.5, siren: 3, crab: 1.5, scout: 2, tideguard: 3, petrel: 1.5, gull: 1,
-  watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
-  // creatures and standing hazards the table had never been given a weight for: they were all reported as
-  // UNWEIGHED every run, which is the tool saying "the threat number for this level is short by this much"
-  assassin: 3.5, berserker: 5, grandmother: 6,
-  heronfoe: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
-  dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
-  frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
-  reefmaw: 6, quarter: 6, captain: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
-  sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
-  miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3,
-};
 // props that hang on purpose: a banner is meant to be in the air
 // the furniture, the scenery and the machinery: none of it is a creature and none of it weighs anything
 const NOT_A_FOE = /^(coin|sign|deco|npc|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|window|well|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost)$/;
@@ -280,7 +260,7 @@ export async function run(BK, opts = {}) {
   log('%cBRACKEN PLAYTEST — ' + list.length + ' levels, mode ' + mode, 'font-weight:bold');
 
   for (const { lv, i } of list) {
-    const row = { id: lv.id, name: lv.name, findings: [], stats: {} };
+    const row = { id: lv.id, name: lv.name, secret: !!lv.secret, findings: [], stats: {} };
     report.levels.push(row);
     const F = (kind, sev, msg, where) => { const f = add(lv.id, kind, sev, msg, where); row.findings.push(f); };
 
@@ -328,11 +308,15 @@ export async function run(BK, opts = {}) {
       for (const e of (built.ents || [])) { if (e.t === 'check') { checks++; continue; }
         const w = THREAT[e.t]; if (w === undefined) { if (!NOT_A_FOE.test(e.t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + e.t + '"'); continue; }
         if (w > 0) { foes++; threat += w * (e.mini ? 2 : 1); kinds.add(e.t); } }
-      const span = W + Math.max(0, H - 30) * 3;
+      const span = spanOf(W, H);
+      let hazTiles = 0;
+      for (let i = 0; i < built.grid.length; i++) if (built.grid[i] === T.SPIKE) hazTiles++;
+      for (const p of (built.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4);
+        else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }   /* breath is a hazard with nothing in it */
       const cx = (built.ents || []).filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b);
       let gap = cx.length ? cx[0] : W; for (let k = 1; k < cx.length; k++) gap = Math.max(gap, cx[k] - cx[k - 1]);
       gap = Math.max(gap, W - (cx[cx.length - 1] || 0));
-      Object.assign(row.stats, { foes, threat: Math.round(threat), kinds: kinds.size, checks, worstGap: gap, thr100: +(threat / (span / 100)).toFixed(1) });
+      Object.assign(row.stats, { foes, threat: Math.round(threat), kinds: kinds.size, checks, worstGap: gap, haz: hazTiles, thr100: +(threat / (span / 100)).toFixed(1), index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) });
       if (gap > 150) F('LONGGAP', SEV.odd, gap + ' columns with no checkpoint in them');
       if (kinds.size < 3) F('THIN', SEV.odd, 'only ' + kinds.size + ' kind(s) of creature in the whole level');
     }
@@ -462,11 +446,15 @@ export async function run(BK, opts = {}) {
   }
 
   // ---- 5. is the ramp a ramp? ----
-  { const ix = report.levels.filter(r => r.stats.thr100 !== undefined)
-      .map(r => ({ id: r.id, v: Math.round(r.stats.thr100 * 2 + r.stats.kinds * 3 + r.stats.worstGap / 20) }));
+  // THE RAMP IS THE CAMPAIGN'S, and it is the same index tools/curve.mjs prints - the two have to agree or
+  // one of them is lying. A SECRET level is a bonus hanging off the side of an act, not the next step on a
+  // sixteen-step slope: counting it makes every reading after it wrong. (UNDERLEAF sits beside Kingswood and
+  // UNDERCROWN beside Highcrown; neither is anybody's next level.)
+  { const ix = report.levels.filter(r => r.stats.index !== undefined && !r.secret)
+      .map(r => ({ id: r.id, v: r.stats.index }));
     for (let k = 1; k < ix.length; k++) { const d = ix[k].v - ix[k - 1].v;
-      if (d < -8) add(ix[k].id, 'RAMP', SEV.odd, 'is ' + -d + ' EASIER than ' + ix[k - 1].id + ' before it');
-      if (d > 26) add(ix[k].id, 'RAMP', SEV.odd, 'is ' + d + ' harder than ' + ix[k - 1].id + ' before it - a wall'); }
+      if (d < RAMP_DROP) add(ix[k].id, 'RAMP', SEV.odd, 'is ' + -d + ' EASIER than ' + ix[k - 1].id + ' before it');
+      if (d > RAMP_WALL) add(ix[k].id, 'RAMP', SEV.odd, 'is ' + d + ' harder than ' + ix[k - 1].id + ' before it - a wall'); }
     report.ramp = ix; }
 
   // put the game back the way it was

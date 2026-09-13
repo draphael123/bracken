@@ -381,12 +381,12 @@ function theStockade() {
     plat(46, 12, 5); plat(54, 10, 5); plat(62, 12, 5);                        // up, over, and down again
     for (let y = 13; y <= 19; y++) { set(66, y, T.NET); set(67, y, T.NET); }  // and the rope down the far end
     ent('sign', 42, 19, { text: 'THE GANTRY OVER THE ROAD. THEY WATCH THE WOOD FROM UP THERE AND THEY KEEP WHAT THEY TAKE UP THERE TOO. THE THING STANDING ON IT IS NOT A BRUSH GOBLIN.' });
-    ent('heavy', 56, 9, { face: -1 });                                        // their knight, and the first of them
+    ent('pike', 56, 9, { face: -1 });                                         /* their best spear, not one of HER knights: a heavy at level three is the castle's creature four levels early */
     ent('archer', 63, 11, { face: -1 });
     ent('silver', 55, 9);
     coins([47, 11], [50, 11], [56, 9], [59, 9], [63, 11], [65, 11]); }
   // and two more of their knights further up the camp, now that you have met one
-  ent('heavy', 208, 19, { face: -1 }); ent('heavy', 223, 19, { face: -1 }); ent('heavy', 249, 19, { face: -1 });   /* base coordinates, checked against where the GROUPS put them in the built level: 268 and 300 land inside rock */
+  ent('brute', 208, 19, { face: -1 }); ent('shield', 223, 19, { face: -1 }); ent('brute', 249, 19, { face: -1 });   /* base coordinates, checked against where the GROUPS put them in the built level: 268 and 300 land inside rock */
 
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
   block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('silver', 57, 12);
@@ -410,7 +410,7 @@ function theStockade() {
   // ---- 4. The palisade gate: crank it open, or roll a barrel into it ----
   ent('barrel', 96, 19); ent('crank', 98, 19, { wall: 101 });
   pal(101, 15, 19);
-  ent('sapper', 106, 19, { face: -1 }); ent('sapper', 112, 19, { face: -1 }); ent('sprig', 109, 19, { face: -1 });
+  ent('sapper', 106, 19, { face: -1 }); ent('sprig', 109, 19, { face: -1 });
   ent('torch', 103, 19); ent('torch', 115, 19);
 
   // ---- 5. The yard: every tool in one room. Free the fox, tip the brazier on the hounds, roll the barrel into the inner gate. ----
@@ -432,7 +432,7 @@ function theStockade() {
   for (let x = 187; x <= 200; x++) set(x, 20, T.RAIL); ent('cart', 188, 19); ent('pike', 195, 19, { face: -1 }); ent('pike', 198, 19, { face: -1 }); ent('sign', 186, 19, { text: 'A LOOT CART ON THE RAIL. CUT IT AND IT ROLLS. THE PIKES HOLD THE LINE. NOT AGAINST A CART.' });
   ent('torch', 188, 19); ent('hound', 193, 19, { face: -1 }); ent('cage', 199, 19, { kind: 'bird' });
   block(203, 205, 15, 19); plat(202, 14, 5); ent('towertop', 204, 14); ent('archer', 204, 13, { face: -1, horn: true }); plat(199, 17, 2); plat(207, 17, 2); coins([203, 13], [207, 16]); // the third horn tower: silence it or the kennels empty onto you
-  ent('sapper', 211, 19, { face: -1 }); ent('torch', 214, 19); ent('brute', 217, 19, { face: -1 }); ent('check', 215, 19);
+  ent('torch', 214, 19); ent('brute', 217, 19, { face: -1 }); ent('check', 215, 19);
   ent('treehouse', 221, 6);
   ent('barrel', 223, 19); ent('barrel', 226, 19); ent('crank', 229, 19, { wall: 232 }); ent('shield', 231, 19, { face: -1 }); ent('brazier', 228, 19);
   pal(232, 15, 19);
@@ -516,7 +516,7 @@ function theStockade() {
   W2.R.interiors = (W2.R.interiors || []).concat([[192, 223, 18, 21, 'earth']]);
   W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('sprig', 210, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });
   W2.ent('stray', 212, 13, { kind: 'coffer' }); W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
-  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('sapper', 197, 21, { face: -1 }); W2.ent('hound', 203, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 214, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
+  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('sprig', 197, 21, { face: -1 }); W2.ent('hound', 203, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 214, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
   W2.ent('stray', 222, 21, { kind: 'coffer' }); W2.coins([200, 20], [206, 20], [212, 20], [218, 20]);
   W2.block(224, 229, 20, 27); W2.ent('check', 227, 19); W2.coins([225, 18]);
   const R2 = W2.done();
@@ -734,7 +734,7 @@ function kingswood() {
   ceiling(45, 84, 16); block(45, 84, 20, 27);
   ent('torch', 48, 19); ent('torch', 60, 19); ent('torch', 72, 19); ent('torch', 82, 19);
   ent('sign', 47, 19, { text: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND CUT FROM BEHIND, OR THROW THE SHIELD INTO THEM.', pyro: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND BURN FROM BEHIND, OR ARC EMBERS OVER THE LINE.', paladin: 'PIKE GOBLINS HOLD THE LINE AND BRACE WHEN YOU CHARGE. JUMP THE PIKE AND STRIKE FROM BEHIND, OR CHARGE THE LINE.' });
-  ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('pike', 68, 19, { face: -1 });
+  ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('sprig', 68, 19, { face: -1 });
   ent('brazier', 53, 19); ent('brazier', 66, 19); // oil braziers: tip them onto the line, or get burned
   ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 }); ent('stray', 72, 19, { kind: 'cup' });
   gate(84, 15, 19);
@@ -766,7 +766,7 @@ function kingswood() {
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS: THE LEVER SWINGS THE RAM ACROSS THE ROAD, THE PLATE DROPS THE CAGE. USE THEM ON THE GOBLINS THAT BUILT THEM.' });
-  ent('pike', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
+  ent('sprig', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
   // the roads rejoin at 150: a slope of ledges from the burrow up to the yard
   block(150, 152, 18, 27); block(153, 158, 16, 27); block(159, 164, 14, 27); block(165, 190, 14, 27);
   ent('check', 167, 13);
@@ -787,7 +787,7 @@ function kingswood() {
   movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
   plat(261, 9, 3); plat(266, 11, 3); plat(271, 11, 4);
   plat(228, 9, 2); plat(231, 10, 3); plat(235, 8, 2); plat(250, 10, 2); plat(253, 11, 3); plat(257, 10, 2); // a ledge road under each canopy swing
-  coins([212, 10], [217, 8], [223, 6], [231, 5], [239, 5], [245, 7], [254, 5], [262, 8], [267, 10], [272, 10]);
+  coins([212, 10], [217, 8], [223, 6], [231, 6], [239, 6], [245, 7], [254, 6], [262, 8], [267, 10], [272, 10]);   /* the apex of the arc was a course over the top of anybody's jump */
   // roots
   block(211, 275, 21, 27); ceiling(211, 275, 15);
   for (let x = 211; x <= 275; x++) for (let y = 16; y <= 20; y++) set(x, y, 0);
@@ -795,7 +795,7 @@ function kingswood() {
   ent('firepit', 216, 20, { period: 3.4, on: 1.5, phase: 0.8 }); ent('brazier', 224, 20); ent('firepit', 265, 20, { period: 3.4, on: 1.5, phase: 2.4 });
   ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16, { hang: true }); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
   ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
-  ent('stray', 250, 20, { kind: 'cup' }); coins([218, 19], [236, 19], [252, 18], [266, 19], [273, 19]);
+  ent('stray', 250, 20, { kind: 'cup' }); coins([218, 19], [236, 19], [252, 19], [266, 19], [273, 19]);
   block(275, 277, 17, 27); block(278, 281, 15, 27); block(282, 300, 14, 27);
   ent('check', 284, 13);
 
@@ -849,8 +849,8 @@ function kingswood() {
   G.ent('bridge', 288, 14, { x1: 323 });
   G.ent('sign', 285, 13, { text: 'THE TOLL BRIDGE. PAY IN STEEL, AND HURRY: THE GOBLINS CUT THE ROPES BEHIND YOU. IF IT FALLS, THE LEDGES BELOW STILL REACH THE FAR BANK.' });
   G.ent('door', 286, 13); G.ent('torch', 288, 13); G.ent('torch', 323, 13);
-  G.ent('pike', 297, 13, { face: -1 }); G.ent('thief', 305, 13, { face: -1 }); G.ent('pike', 313, 13, { face: -1 });
-  G.ent('sprig', 325, 13, { face: -1, cutter: true }); G.ent('wasp', 301, 10); G.ent('wasp', 318, 10);
+  G.ent('pike', 297, 13, { face: -1 }); G.ent('thief', 305, 13, { face: -1 }); G.ent('thief', 313, 13, { face: -1 });
+  G.ent('sprig', 325, 13, { face: -1, cutter: true }); G.ent('wasp', 301, 10);
   G.ent('deco', 291, 13, { kind: 'banner', v: 0 }); G.ent('deco', 320, 13, { kind: 'banner', v: 1 });
   G.plat(292, 18, 3); G.plat(298, 17, 3); G.plat(304, 18, 3); G.plat(310, 17, 3); G.plat(316, 18, 3); G.plat(321, 17, 2); G.plat(324, 16, 2); // the way back up if the bridge falls: never more than three tiles to the next ledge
   G.plat(289, 24, 2); G.plat(292, 22, 2); G.plat(289, 20, 2); // and up from the gorge floor to the first ledge
@@ -881,7 +881,7 @@ function kingswood() {
   F.ent('firepit', 228, 24, { period: 3.2, on: 1.6, phase: 0 }); F.ent('firepit', 243, 24, { period: 3.2, on: 1.6, phase: 1.6 });
   F.ent('brazier', 234, 24); F.ent('brazier', 249, 24);
   F.ent('archer', 261, 13, { face: -1, fire: true }); F.ent('archer', 214, 13, { face: 1, fire: true });
-  F.ent('wasp', 229, 8); F.ent('wasp', 244, 7); F.ent('wasp', 256, 9); // smoked out of the eaves and furious
+  F.ent('wasp', 229, 8); F.ent('wasp', 248, 7); /* smoked out of the eaves and furious */
   F.ent('thief', 222, 12, { face: -1 }); F.ent('thief', 252, 12, { face: -1 }); // carrying what they could grab
   F.ent('sprig', 237, 11, { face: -1 }); F.ent('sprig', 257, 11, { face: -1 });
   // the floor of the burn: a way back up if you fall, and something worth the trip
@@ -889,7 +889,7 @@ function kingswood() {
   for (const y of [22, 20, 18, 16]) F.plat(255, y, 3); // and the ladder of ledges up the far bank: a fall costs you the crossing, not the run
   F.ent('silver', 236, 24); F.ent('deco', 231, 24, { kind: 'skullPile', v: 0 }); F.ent('deco', 247, 24, { kind: 'skullPile', v: 1 });
   F.ent('hound', 225, 24, { face: 1 }); F.ent('hound', 241, 24, { face: -1 }); // their dogs got left down there and they are not friendly now
-  F.coins([222, 12], [227, 11], [233, 9], [237, 11], [242, 13], [247, 11], [252, 12], [256, 11], [224, 20], [240, 18], [252, 18]);
+  F.coins([222, 12], [227, 11], [233, 9], [237, 11], [242, 13], [247, 11], [252, 12], [256, 11], [224, 20], [240, 18], [254, 17]);   /* it was a column short of the ledge it belongs on */
   F.ent('check', 217, 13);
   return F.done();
 }
@@ -4120,16 +4120,17 @@ const DRESS = {
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
 const GARRISON = {
   marsh: [['hopper', 5], ['spit', 4], ['archer', 3], ['thorn', 3], ['turtle', 3], ['heronfoe', 3]],   // 46 was thirteen under the level before it
-  spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2]],
+  spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2], ['thorn', 2], ['spider', 1]],   // eight kinds was the thinnest roster in the wood
   moor: [['goat', 5], ['rockgoblin', 5], ['harpy', 4], ['kite', 4], ['troll', 2], ['sailer', 3]],   // seven kinds over NINE HUNDRED columns, and twenty-three of them crows
-  scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],       // 58 sat twenty-two under Kingswood
-  spire: [['shardling', 10], ['harpy', 8], ['bat', 7], ['sentry', 6], ['rockgoblin', 5], ['crow', 5], ['goat', 4], ['troll', 3], ['kite', 4], ['spider', 3]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
-  storm: [['hearthgob', 3], ['cutter', 3], ['sentry', 2]],
-  crown: [['soldier', 3], ['javelin', 2], ['heavy', 2]],
+  scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],
+  hanging: [['snuffer', 3], ['cutter', 2], ['rockgoblin', 2]],   // thirty-four creatures over eight floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood
+  spire: [['shardling', 13], ['harpy', 10], ['bat', 7], ['sentry', 8], ['rockgoblin', 7], ['crow', 5], ['goat', 4], ['troll', 4], ['kite', 4], ['spider', 3], ['snuffer', 2]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
+  storm: [['hearthgob', 5], ['cutter', 5], ['sentry', 2], ['pike', 1]],
+  crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
   longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
-  reef: [['angler', 8], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 3]],
-  hurricane: [['cutlass', 3], ['scout', 3], ['tideguard', 2]],
-  lamplit: [['watch', 6], ['wight', 6], ['snuffer', 5], ['tideguard', 5], ['scout', 5], ['crab', 4], ['angler', 4], ['sailor', 4], ['netter', 3]],  // the LAST level must be the hardest thing in the game
+  reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
+  hurricane: [['cutlass', 6], ['scout', 6], ['tideguard', 5], ['marine', 3], ['boarder', 3]],   // one ship in one storm, and eight creatures on it
+  lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
 // Measured across the campaign and they are bunched and then absent: Highcrown had ELEVEN of them and SEVEN

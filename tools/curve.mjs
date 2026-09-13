@@ -9,25 +9,8 @@
 // The index is deliberately crude and deliberately STATIC - it is what the level contains, not how a player
 // does. It is for spotting a level that is out of order with its neighbours, not for tuning a number.
 import { LEVELS, T, TS } from '../src/level.js';
+import { THREAT, spanOf, indexOf, RAMP_DROP, RAMP_WALL } from '../src/threat.js';
 
-// what each creature is worth as a threat. Not health: how much ATTENTION it takes.
-const THREAT = {
-  sprig: 1, spit: 1, wasp: 1.5, hopper: 1, shield: 2, archer: 2, thorn: 2, spitter: 1.5, turtle: 1.5,
-  brute: 3.5, sapper: 3, hound: 2.5, pike: 3, soldier: 3, javelin: 2.5, heavy: 4, crow: 1, bat: 1,
-  sporeling: 1.5, lurker: 2.5, spitcap: 2, weaver: 3, shaman: 3, thief: 1, folk: 0, squirrel: 0,
-  goat: 2, ram: 4, harpy: 2.5, troll: 4, spider: 3, sailer: 2, snuffer: 2.5, cutter: 3, hearthgob: 3,
-  shardling: 2, suncatcher: 3, sentry: 2, lookout: 1.5, bosun: 3, cutlass: 2.5, boarder: 3, marine: 2.5,
-  eel: 2, urchin: 1, angler: 2.5, siren: 3, crab: 1.5, scout: 2, tideguard: 3, petrel: 1.5, gull: 1,
-  watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
-  // twelve creatures and standing hazards this table had never been given a weight for. Every one of them
-  // was counted as ZERO, so every level that used them read as easier than it is - and the ramp this tool
-  // reports was measured on a count that was short. (Kept in step with the same table in src/playtest.js.)
-  assassin: 3.5, berserker: 5, grandmother: 6,
-  heronfoe: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
-  dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
-  frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
-  reefmaw: 6, quarter: 6, captain: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
-};
 const HAZ = new Set([T.SPIKE]);
 
 const rows = [];
@@ -52,9 +35,9 @@ for (const lv of LEVELS) {
   let gap = cx.length ? cx[0] : cols;
   for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
   gap = Math.max(gap, cols - (cx[cx.length - 1] || 0));
-  const span = cols + Math.max(0, R.H - 30) * 3;   // a tall level is long, it is just long upwards
+  const span = spanOf(cols, R.H);
   const per100 = threat / (span / 100);
-  const index = Math.round(per100 * 2 + kinds.size * 3 + hazTiles / (span / 100) * 1.5 + gap / 20);
+  const index = indexOf({ threat, kinds: kinds.size, hazTiles, gap, span });
   rows.push({ id: lv.id, cols: span, foes, threat: Math.round(threat), kinds: kinds.size, per100: +per100.toFixed(1), haz: hazTiles, checks, gap, index });
 }
 
@@ -74,7 +57,7 @@ console.log('');
 let bad = 0;
 for (let i = 1; i < rows.length; i++) {
   const d = rows[i].index - rows[i - 1].index;
-  if (d < -6) { console.log(`  ${rows[i].id} is ${-d} EASIER than ${rows[i - 1].id} before it`); bad++; }
-  if (d > 26) { console.log(`  ${rows[i].id} is ${d} harder than ${rows[i - 1].id} before it - a wall`); bad++; }
+  if (d < RAMP_DROP) { console.log(`  ${rows[i].id} is ${-d} EASIER than ${rows[i - 1].id} before it`); bad++; }
+  if (d > RAMP_WALL) { console.log(`  ${rows[i].id} is ${d} harder than ${rows[i - 1].id} before it - a wall`); bad++; }
 }
 console.log(bad ? `\n${bad} step(s) out of line.` : '\nthe ramp climbs.');

@@ -395,3 +395,30 @@ nothing, and a banner hanging two tiles over a gallery floor is the same bug wit
 quieter failure: it does not break the level, it just looks broken, and you only find it
 by walking past it. Run it with the rest. Kinds that are MEANT to hang are named in
 `HANGS`; anything carrying `hang: true` says so for itself.
+
+## L. ONE TABLE, ONE INDEX, ONE THRESHOLD — `src/threat.js`
+
+The difficulty ramp was measured twice, by `tools/curve.mjs` and by the bot, and the two
+disagreed about the campaign. Three separate reasons, all of them the same reason:
+
+1. **The threat table lived twice** and had drifted by TWENTY entries. `curve.mjs` even
+   carried a comment saying "kept in step with the same table in src/playtest.js" — a
+   convention nothing checks is a wish. Every level using `miner`, `grub`, `master`,
+   `netter`, `sailor`, `kite`, `horn`, `sweep`, `drone` or `stormshaman` was weighted in
+   the bot and weighted at ZERO in the tool.
+2. **The bot's index was missing a whole term.** It scored threat, kinds and the
+   checkpoint gap and did not count HAZARD, so Gale Moor — 235 tiles of spike and drop —
+   read thirty-nine points softer in the bot than in the tool.
+3. **They disagreed on what counts as out of line**: the bot allowed a drop of 8, the
+   tool allowed 6, so the same campaign passed one and failed the other.
+
+`src/threat.js` now holds the table, `spanOf`, `indexOf`, `RAMP_DROP` and `RAMP_WALL`,
+and both import it. **If you add a creature, weight it there and nowhere else.**
+
+A hazard the player can turn against them — a battering ram hung on a lever, a firepit —
+is weighted LOW. It is not aimed at you until you aim it. `ent('ram')` is a prop, not the
+Ram Lord's mount, and scoring it at 4 made Kingswood read eight points harder than it is.
+
+**And the campaign is ACTS, not a line.** Each one opens a little under the last one's
+peak and ends above it; that small step down at a boundary is pacing. The rule is there to
+catch a COLLAPSE and a WALL, not a breath.
