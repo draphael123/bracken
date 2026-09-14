@@ -1242,7 +1242,8 @@ function spawnEnt(e) {
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
          even had its sprite baked and waiting in PROP.) tools/content-audit.mjs is what catches this. */
-      case 'deco': { const K = { longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
+      case 'deco': { const K = { fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
+        longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         skep: [PROP.skep, false], trough: [PROP.trough, false], stocks: [PROP.stocks, false], dovecote: [PROP.dovecote, false],
         grave: [PROP.grave[e.v || 0], false], lychgate: [PROP.lychgate, false], yew: [PROP.yew[e.v || 0], false],
@@ -11270,7 +11271,9 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
       else if (P.dodge > 0) { key = 'roll'; frame = Math.floor((0.3 - P.dodge) / 0.3 * 4) * (P.face > 0 ? 1 : -1); }
       else if (P.plunge) key = 'plunge';
-      else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2; }
+      else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
+        /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
+        if (P.atk >= (isReaper() ? 0.36 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
       else if (P.charge > 0) { key = 'heavy'; frame = 0; }
       else if (P.atk >= 0) { key = 'atk'; frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
@@ -11950,7 +11953,6 @@ function drawMenu() {
   const x = 54, y = 6 + Math.round((1 - eo) * -14), w = VW - 108, h = 168;
   panel(x, y, w, h);
   text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS', VW / 2, y + 6, UI.title, 'center');
-  if (menuFrom === 'play' && L) text(LEVELS[levelIndex].name + '  ' + fmt(levelTime), VW / 2, y + h - 22, UI.dim, 'center');
   const M = menuItems();
   const off = Math.max(0, Math.min(M.length - MENU_ROWS, menuI - MENU_ROWS + 2));
   // in the gutter, clear of the rows' values and of the level line along the foot of the board
@@ -11969,7 +11971,8 @@ function drawMenu() {
     if (vs) { g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(vs, x + w - 14, yy, col, 'right'); }
   });
   { const k = M[menuI], tip = SETTING_TIPS[k], ty = y + h - 14;
-    const lines = menuMsgT > 0 && menuMsg ? wrap(menuMsg, w - 18, 6) : tip ? wrap(tip, w - 18, 6) : ['ESC close'];
+    /* the level and its clock live in the strip when there is no tip to show: drawn above it, the strip sat on top of them */
+    const lines = menuMsgT > 0 && menuMsg ? wrap(menuMsg, w - 18, 6) : tip ? wrap(tip, w - 18, 6) : [menuFrom === 'play' && L ? LEVELS[levelIndex].name + '  ' + fmt(levelTime) + '   ESC close' : 'ESC close'];
     const two = lines.slice(0, 2), col2 = menuMsgT > 0 && menuMsg ? '#ffd36b' : tip ? '#9aa39a' : UI.dim;
     g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x + 4, ty - 9 - (two.length - 1) * 8, w - 8, 13 + (two.length - 1) * 8);
     two.forEach((ln, i) => text(ln, VW / 2, ty - (two.length - 1 - i) * 8, col2, 'center', 6)); }
@@ -12437,7 +12440,7 @@ function render() {
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (SET.bossIntro && ((bossActive && boss && boss.mode === 'wake') || miniIntroT > 0)) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { text(nm, VW / 2 + 1, VH / 2 - 5, '#3a2214', 'center', 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', 12); } }
-    board(1, 1, 106, (SET.iron ? 38 : 26) + (isPyro() || isPaladin() || isPirate() || isReaper() ? 10 : 0), UI.border, 'rgba(10,8,20,0.5)', true);
+    board(1, 1, 116, (SET.iron ? 38 : 26) + (isPyro() || isPaladin() || isPirate() || isReaper() ? 10 : 0), UI.border, 'rgba(10,8,20,0.5)', true);
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = Math.max(52, lab.length * 6 + 22);
       board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); }
     g.drawImage(PROP.heart, 5, 5);
