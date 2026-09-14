@@ -2,7 +2,10 @@
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
-  ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg' };
+  ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
+  /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
+  musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
+  musBeach: './audio/musBeach.ogg', musSailor: './audio/musSailor.ogg', musDungeon: './audio/musDungeon.ogg' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -177,7 +180,26 @@ export const SFX = {
   jump() { tone('square', 280, 620, 0.12, 0.12); },
   land(surf) { if (surf === 'water') { noise(0.2, 0.3, 800, 0.5); tone('sine', 260, 120, 0.15, 0.1); return; } if (surf === 'wood') { tone('sine', 150, 70, 0.1, 0.2); file('land', 0.25, 1.1); return; } if (surf === 'stone' || surf === 'iron') { noise(0.05, 0.16, surf === 'iron' ? 2200 : 1500, 0.8); file('land', 0.3, 0.95); return; } if (surf === 'snow') { noise(0.1, 0.16, 700, 0.4); return; } file('land', 0.35) || noise(0.06, 0.12, 300, 0.5); },
   step(surf) { if (surf === 'water') { noise(0.08, 0.12, 900, 0.5); return; } if (surf === 'wood') { tone('sine', 170, 90, 0.05, 0.08); file('step', 0.14, 1.15); return; } if (surf === 'stone') { noise(0.03, 0.09, 2600, 1.2); file('step', 0.14, 0.9); return; } if (surf === 'iron') { tone('square', 1200, 900, 0.03, 0.04); noise(0.03, 0.06, 3200, 1.4); return; } if (surf === 'snow') { noise(0.06, 0.08, 800, 0.5); return; } file('step', 0.18); },
-  slash() { file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); },
+  slash() { (Math.random() < 0.5 && file('swish', 0.42)) || file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); },   /* two pools of air: three swings was one swing on a loop */
+  // WHAT THE BLADE MET. Every hit already THREW the right thing (sparks off plate, chips off wood, dust off stone) and
+  // every hit SOUNDED the same. The pools are Kenney's CC0 impacts and a bone-break pack; the synth under them is
+  // only there while the files load, or when the player has chosen synth sound.
+  impact(mat, heavy) { if (!gate('imp', 0.035)) return;
+    const POOL = { steel: 'imp_steel', wood: 'imp_wood', flesh: 'imp_flesh', soft: 'imp_soft', fungus: 'imp_soft', bone: 'imp_bone', stone: 'imp_stone', shell: 'imp_stone', crystal: 'imp_glass', chitin: 'imp_wood' };
+    const base = POOL[mat] || 'imp_flesh', name = heavy && clips[base + 'H'] ? base + 'H' : base;
+    if (file(name, mat === 'bone' ? 0.3 : 0.38, heavy ? 0.9 : 1)) return;
+    if (mat === 'steel') { tone('square', 1760, 1320, 0.05, 0.05); tone('triangle', 2637, 2600, 0.18, 0.04); }
+    else if (mat === 'wood' || mat === 'chitin') { noise(0.06, 0.18, 900, 1.2); tone('sine', 180, 120, 0.08, 0.1); }
+    else if (mat === 'stone' || mat === 'shell') { noise(0.08, 0.2, 500, 0.8); tone('sine', 110, 70, 0.1, 0.1); }
+    else if (mat === 'crystal') { tone('sine', 3136, 3100, 0.25, 0.04); tone('sine', 4186, 4100, 0.2, 0.03, 0.01); }
+    else if (mat === 'bone') { noise(0.05, 0.22, 2400, 2); noise(0.05, 0.16, 1200, 2, 0.03); }
+    else { noise(0.07, 0.16, 400, 0.7); tone('sine', 140, 80, 0.08, 0.12); } },
+  // THE DEATH KNIGHT'S OWN. He was borrowing a wight's touch, a ram's bellow, a keg going up and a golem's foot.
+  dkDrain() { if (!gate('dkDrain', 0.25)) return; pad('sawtooth', 220, 70, 0.55, 0.06, 0, 700, 0.02); noise(0.45, 0.09, 380, 1.4); tone('sine', 62, 48, 0.14, 0.2, 0.05); tone('sine', 58, 44, 0.16, 0.16, 0.26); },   /* a breath pulled in, and a heartbeat that is not his */
+  dkSurge() { pad('sawtooth', 55, 110, 0.7, 0.12, 0, 900, 0.5); pad('square', 110, 220, 0.7, 0.05, 0, 1400, 0.55); noise(0.6, 0.12, 300, 0.9, 0.1);
+    for (const [d, v] of [[0.72, 0.34], [0.96, 0.28], [1.4, 0.22]]) tone('sine', 70, 38, 0.22, v, d); tone('sawtooth', 180, 60, 0.5, 0.08, 0.72); },   /* the blood swells toward him, then three beats of it arriving */
+  dkPlant() { noise(0.18, 0.2, 2600, 3); tone('sawtooth', 420, 90, 0.2, 0.08); tone('sine', 60, 30, 0.5, 0.36, 0.08); noise(0.5, 0.26, 180, 0.6, 0.08); file('imp_stone', 0.36, 0.7);
+    for (let i = 0; i < 3; i++) noise(0.12, 0.07, 3200, 4, 0.22 + i * 0.07); },   /* a scrape, the ground taking the blade, and the bolts hissing out of it */
   hit() { file('hit', 0.55) || (tone('square', 220, 70, 0.12, 0.22), noise(0.1, 0.25, 700)); },
   kill() { file('kill', 0.6) || (tone('square', 300, 60, 0.2, 0.25), noise(0.18, 0.3, 500), tone('triangle', 800, 1400, 0.12, 0.12, 0.02)); },
   gobDie() { file('gobDie', 0.5); },
@@ -813,5 +835,5 @@ export const heroKitTable = () => HERO_KIT;
 export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.startsWith('vo_')).map(k => k.slice(3).split('_')[0]))].sort();
 export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];

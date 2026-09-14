@@ -71,3 +71,12 @@ AMBIENCE AND THE INN (all CC0, OpenGameArt.org; looped, levelled and re-encoded)
 - vo_m5_* = "Voice Clip Pack - Male Adventurer RPG" by wolfwoot (Brandon Song) - https://opengameart.org/content/voice-clip-pack-male-adventurer-rpg
 - vo_m6_*, vo_zom_* = "Zombie / Skeleton / Monster Voice Effects" by ArcadeParty - https://opengameart.org/content/zombie-skeleton-monster-voice-effects
 - vo_ex_die = "Death Sounds" by Exewin - https://opengameart.org/content/death-sounds-0
+
+
+IMPACTS, SWINGS AND MORE MUSIC (all CC0 / public domain, licence read on each page)
+- "Impact Sounds" by Kenney (kenney.nl/assets/impact-sounds) - imp_steel/wood/flesh/soft/glass/stone pools
+- "Swishes Sound Pack" by artisticdude (opengameart.org/content/swishes-sound-pack) - swish pool
+- "Deep Bone Crack/Break SFX" by Zane Little Music (opengameart.org/content/deep-bone-crackbreak-sfx) - imp_bone pool
+- "8bit Action Stage Select" by MintoDog (opengameart.org/content/8bit-action-stage-select) - musForest, musCastle, musMountain, musUnder, musBeach
+- "Sailor Waltz with Water Effects C64 Style" by skrjablin (opengameart.org/content/sailor-waltz-with-water-effects-c64-style), CC0 option - musSailor
+- "Spooky Dungeon" by Memoraphile (opengameart.org/content/spooky-dungeon), CC0 option - musDungeon

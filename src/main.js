@@ -2902,6 +2902,7 @@ function chips(x, y, dir, n, cols, spd = 150, grav = 520, size = 1, streak = fal
   for (let i = 0; i < n; i++) { const an = (Math.random() - 0.5) * 1.6, v = spd * (0.5 + Math.random() * 0.7);
     parts.push({ streak, x, y, vx: Math.cos(an) * dir * v, vy: Math.sin(an) * v - spd * 0.5, life: 0.3 + Math.random() * 0.2, max: 0.5, col: cols[(Math.random() * cols.length) | 0], size: streak ? 1 : size + (i % 3 === 0 ? 1 : 0), grav }); } }
 function hitSpray(e, dir) {
+  SFX.impact(MAT[e.t] || 'flesh', !!(e.maxHp || e.big || P.heavy));   /* the sound of what was hit plays even with the impact effects turned off */
   if (SET.impact === false) return;
   const x = e.x, y = e.y - e.h / 2, m = MAT[e.t];
   if (m === 'steel') { sparks(x - dir * 3, y, dir, 5); chips(x, y, dir, 2, ['#ffffff', '#eef4ff'], 260, 0, 1, true); }
@@ -3597,7 +3598,7 @@ function spend(cost) {
   P.st -= cost; P.stDelay = ST.delay; return true;
 }
 function updatePlayer(dt) {
-  if (P.dead) { P.dead -= dt; if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
+  if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
   /* THE DANCE: H, standing still on the ground, and again to stop. Anything else you do - move, jump, swing, block,
      take a blow - and the dance is over, because a fight is not a party. */
@@ -8528,14 +8529,14 @@ function drainFrom(e, amt) {
   hurtEnemy(e, amt, P.x, false); e.x = x0; e.vx = vx0; if (!e.maxHp) e.stagger = Math.min(e.stagger || 0, 0.12);
   const took = Math.max(0, Math.min(amt, before - Math.max(0, e.hp)));
   P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(took * 0.6))); gainHarvest(2);
-  drainLinks.push({ e, t: 0 }); if (SFX.wightTouch) SFX.wightTouch();   /* a cold breath going in */
+  drainLinks.push({ e, t: 0 }); if (SFX.wightTouch) SFX.dkDrain();   /* a cold breath going in */
   for (let i = 0; i < 6; i++) parts.push({ x: e.x, y: e.y - e.h / 2, vx: (P.x - e.x) * (1.6 + Math.random()), vy: ((P.y - 12) - (e.y - e.h / 2)) * (1.6 + Math.random()) - 20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#c0283a' : '#ff6b6b', size: 2, grav: 0 });
 }
 /* BLOOD SURGE: the full bar. Everything near him bleeds into him at once, and everything that is not a boss is
    held where it stands - frozen - while he walks among it. */
 function bloodSurge() {
   P.harvest = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.5);
-  SFX.judgement ? SFX.judgement() : SFX.heavy(); SFX.squelch(); SFX.bellow && SFX.bellow(); SFX.boom && SFX.boom(); shakeCam(7); zoomKick(1.08, 0.3); killFlash = 0.03;
+  SFX.judgement ? SFX.judgement() : SFX.heavy(); SFX.squelch(); SFX.bellow && SFX.dkSurge(); SFX.boom && shakeCam(7); zoomKick(1.08, 0.3); killFlash = 0.03;
   const R = 120 + 8 * tal('lastRites'); ringAt(P.x, P.y - 12, 60, '#c0283a', 0.5); number(P.x, P.y - 30, 'BLOOD SURGE', '#ff6b6b');
   let took = 0;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
@@ -8551,7 +8552,7 @@ function bloodSurge() {
 }
 function plantBlade(n) {
   const x = P.x + P.face * 14, y = P.y;
-  SFX.heavy(); SFX.crack(); SFX.stone(); SFX.golemStomp && SFX.golemStomp(); shakeCam(n > 1 ? 5 : 7, P.face * 2); zoomKick(1.06, 0.25); hitstop(0.06);
+  SFX.heavy(); SFX.crack(); SFX.stone(); SFX.golemStomp && SFX.dkPlant(); shakeCam(n > 1 ? 5 : 7, P.face * 2); zoomKick(1.06, 0.25); hitstop(0.06);
   ringAt(x, y - 2, 22, '#c0283a', 0.35); dust(x, y, 8);
   for (let i = 0; i < 14; i++) parts.push({ x: x + (Math.random() - 0.5) * 10, y: y - 2, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 140, life: 0.5, max: 0.5, col: Math.random() < 0.6 ? '#a01a2a' : '#3a0a10', size: 2, grav: 520 });
   const dmg = Math.round(swordDmg() * (0.62 + 0.1 * tal('heavy')) * (n > 1 ? 0.8 : 1));
@@ -9808,7 +9809,9 @@ function updateWeather(dt) {
   let amb = 'forest'; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) amb = z.kind;
   /* THE SECOND LAYER: step inside a room and the place goes behind a wall - the inn's common room, a ship's hold, a hollow trunk */
   { const tx = P.x / TS, ty = P.y / TS, room = !L.colosseum && (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
-    if (room) amb = ({ town: 'tavern', ship: 'hold', shore: 'hold', forest: 'hall', wind: 'hall', rain: 'hall', water: 'hall' })[amb] || amb; }
+    if (room) amb = ({ town: 'tavern', ship: 'hold', shore: 'hold', forest: 'hall', wind: 'hall', rain: 'hall', water: 'hall' })[amb] || amb;
+    /* and a room has walls: the blows and the cries come back off them. Only on the step in and the step out, so a warp's own reverb is left alone */
+    if (!!room !== !!P.revRoom) { P.revRoom = !!room; setReverb(room ? (L.dark ? 0.4 : 0.28) : (L.dark ? 0.34 : 0.04)); } }
   ambient.set(amb);
   /* THE THINGS IN THE WORLD MAKE THEIR OWN NOISE: a forge rings, a mill wheel knocks, a fire talks - from where they are */
   /* one smith, one hammer: an anvil beside a forge is the same man, so only the forge strikes; and slower, a strike every few seconds, not a metronome */
@@ -10184,9 +10187,10 @@ function drawLayer(c, f, baseY, cx, cy) {
 }
 function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
   g.fillStyle = ART.OUT; g.fillRect(x - 1, y - 1, w + 2, h + 2);
-  g.fillStyle = '#2a2230'; g.fillRect(x, y, w, h);
+  g.fillStyle = '#2a2230'; g.fillRect(x, y, w, h); g.fillStyle = '#1a1420'; g.fillRect(x, y, w, 1);   /* a track sunk into the plate */
   if (ghost !== null && ghost > frac) { g.fillStyle = colGhost; g.fillRect(x, y, Math.round(w * ghost), h); }
   g.fillStyle = col; g.fillRect(x, y, Math.round(w * Math.max(0, frac)), h);
+  { const fw = Math.round(w * Math.max(0, Math.min(1, frac))); if (fw > 0 && h >= 3) { g.fillStyle = 'rgba(255,255,255,0.3)'; g.fillRect(x, y, fw, 1); g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(x, y + h - 1, fw, 1); if (fw < w) { g.fillStyle = 'rgba(255,255,255,0.55)'; g.fillRect(x + fw - 1, y, 1, h); } } }
   g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(x, y, Math.round(w * Math.max(0, frac)), 1);
 }
 // FOUL WATER. Tar, bilge, and whatever a fleet tips over the side: a yellow-green scum on it, slicks turning
@@ -11240,6 +11244,15 @@ function drawWorld(cx, cy, showPlayer) {
   for (const s of sceptres) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 16); g.fillStyle = '#c9a040'; g.fillRect(-9, -1, 18, 2); g.fillStyle = '#8a5ac0'; g.fillRect(6, -3, 5, 5); g.fillStyle = '#e0c0ff'; g.fillRect(7, -2, 2, 2); g.restore(); bloom(s.x - cx, s.y - cy, 10, 0.35, 'cool'); }
   for (const w of waves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); if (w.royal) { g.fillStyle = '#5a2a7a'; g.fillRect(x - 4, y - 7, 8, 7); g.fillStyle = '#c9a0ff'; g.fillRect(x - 2, y - 10, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 4, 4, 2); continue; } g.fillStyle = '#8a5a32'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#c9b27c'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
   drawGateHints(cx, cy);
+  /* THE FALL. He used to be gone the frame he died - one moment a knight, the next a puff - so a death read as a
+     glitch. Now there is a body for the second and a bit before the respawn: the blow snaps him back, he goes to
+     one knee, he goes over, and he fades where he fell. Every hero has hurt and crouch, so every hero falls. */
+  if (showPlayer && P.dead > 0 && K && K.R) { const k = 1.2 - P.dead, hs = isReaper() ? 1.22 : 1;
+    let key = K.R.hurt ? 'hurt' : 'idle', frame = 0, rot = 0, dy = 0, al = 1;
+    if (k < 0.12) frame = 0; else if (k < 0.3) frame = 1;
+    else if (k < 0.52) { key = K.R.crouch ? 'crouch' : key; dy = 1; }
+    else { key = K.R.crouch ? 'crouch' : key; const t2 = Math.min(1, (k - 0.52) / 0.12); rot = -P.face * Math.PI / 2 * t2; dy = 1 - Math.round(4 * t2); al = Math.max(0, Math.min(1, P.dead / 0.4)); }
+    drawSet(K, key, frame, P.x - cx, P.y - cy + dy, P.face, false, hs, hs, al, rot); }
   if (showPlayer && !P.dead) {
     // A ROLL leaves a WHITE silhouette of him, which is right for a roll. THE PASSING must not: a white
     // knight-shaped blob at low alpha reads as a missing texture, not as a man going thin. His own colours,
@@ -11897,12 +11910,40 @@ function drawSoundTest() {
 }
 const UI = { text: '#f0e8d4', title: '#fff6e0', dim: '#c2c9c2', border: '#d9c28c', sel: '#a8e06e', gold: '#ffd34a', silver: '#eaf0ff', plate: 'rgba(16,13,24,0.96)' };
 applyLook(); // whatever look was saved, before anything is drawn
-function panel(x, y, w, h, col = UI.border) {
-  g.fillStyle = UI.plate || 'rgba(20,16,30,0.92)'; g.fillRect(x, y, w, h);
-  g.strokeStyle = col; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-  g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
-  g.fillStyle = col; for (const [cx, cy] of [[x, y], [x + w - 3, y], [x, y + h - 3], [x + w - 3, y + h - 3]]) g.fillRect(cx, cy, 3, 3);
+/* THE BOARD. Every menu, the talk box and the HUD plates were a flat fill with a one-pixel line round it - a debug
+   rectangle, next to sprites that have three shades and an outline. A board is now BAKED once per size and colour:
+   a dark outline, a two-tone bevel in the UI colour, a gilt inner line, riveted corners with a glint, and a plate
+   that is lighter at the top and dithered so it reads as a surface and not a hole. */
+const BOARDS = new Map();
+function shade(hex, k) { const n = parseInt(hex.slice(1), 16), r = n >> 16, gg = (n >> 8) & 255, b = n & 255, f = v => Math.max(0, Math.min(255, Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k)));
+  return '#' + ((1 << 24) | (f(r) << 16) | (f(gg) << 8) | f(b)).toString(16).slice(1); }
+function bakeBoard(w, h, col, plate, light) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const b = c.getContext('2d');
+  const hi = shade(col, 0.35), lo = shade(col, -0.45), deep = shade(col, -0.7);
+  b.fillStyle = plate; b.fillRect(2, 2, w - 4, h - 4);
+  const gr = b.createLinearGradient(0, 2, 0, h - 2); gr.addColorStop(0, 'rgba(255,255,255,' + (light ? 0.05 : 0.07) + ')'); gr.addColorStop(0.5, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.22)');
+  b.fillStyle = gr; b.fillRect(2, 2, w - 4, h - 4);
+  b.fillStyle = 'rgba(255,255,255,0.025)'; for (let y = 3; y < h - 3; y += 2) for (let x = 3 + (y % 4 === 1 ? 1 : 0); x < w - 3; x += 4) b.fillRect(x, y, 1, 1);
+  b.fillStyle = '#0a0810'; b.fillRect(0, 1, w, h - 2); b.fillRect(1, 0, w - 2, h);                    /* the outline, corners clipped */
+  b.fillStyle = plate; b.fillRect(3, 3, w - 6, h - 6); b.fillStyle = gr; b.fillRect(3, 3, w - 6, h - 6);
+  b.fillStyle = lo; b.fillRect(1, 1, w - 2, 2); b.fillRect(1, 1, 2, h - 2); b.fillRect(1, h - 3, w - 2, 2); b.fillRect(w - 3, 1, 2, h - 2);   /* the bevel */
+  b.fillStyle = hi; b.fillRect(2, 1, w - 4, 1); b.fillRect(1, 2, 1, h - 4);
+  b.fillStyle = deep; b.fillRect(2, h - 2, w - 4, 1); b.fillRect(w - 2, 2, 1, h - 4);
+  b.fillStyle = 'rgba(255,211,107,0.28)'; b.fillRect(5, 4, w - 10, 1); b.fillStyle = 'rgba(0,0,0,0.35)'; b.fillRect(5, h - 5, w - 10, 1);   /* gilt line and its shadow */
+  for (const [cx, cy] of [[1, 1], [w - 6, 1], [1, h - 6], [w - 6, h - 6]]) {                              /* a rivet in each corner */
+    b.fillStyle = '#0a0810'; b.fillRect(cx, cy, 5, 5); b.fillStyle = col; b.fillRect(cx + 1, cy + 1, 3, 3); b.fillStyle = hi; b.fillRect(cx + 1, cy + 1, 1, 1); b.fillStyle = deep; b.fillRect(cx + 3, cy + 3, 1, 1); }
+  return c;
 }
+function board(x, y, w, h, col = UI.border, plate = UI.plate || 'rgba(20,16,30,0.92)', light = false) {
+  w = Math.max(12, Math.round(w)); h = Math.max(12, Math.round(h));
+  const k = w + 'x' + h + col + plate + light; let c = BOARDS.get(k);
+  if (!c) { if (BOARDS.size > 64) BOARDS.clear(); c = bakeBoard(w, h, col, plate, light); BOARDS.set(k, c); }
+  g.drawImage(c, Math.round(x), Math.round(y));
+}
+function panel(x, y, w, h, col = UI.border) { board(x, y, w, h, col); }
+/* a little sword, for the row you are on */
+function swordCursor(x, y, col = UI.sel) { g.fillStyle = '#0a0810'; g.fillRect(x - 1, y + 1, 9, 3); g.fillStyle = '#dfe8ff'; g.fillRect(x + 2, y + 2, 6, 1); g.fillStyle = '#fff'; g.fillRect(x + 7, y + 2, 1, 1);
+  g.fillStyle = col; g.fillRect(x + 1, y, 1, 5); g.fillStyle = '#8a5a32'; g.fillRect(x - 1, y + 2, 2, 1); }
 function drawMenu() {
   const open = Math.min(1, (time - menuSince) / 0.22), eo = 1 - Math.pow(1 - open, 3);
   g.fillStyle = 'rgba(10,14,12,' + (0.7 * eo).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
@@ -11915,11 +11956,11 @@ function drawMenu() {
   // in the gutter, clear of the rows' values and of the level line along the foot of the board
   if (off > 0) text('^', x + 6, y + 16, UI.dim, 'center', 6); if (off + MENU_ROWS < M.length) text('v', x + 6, y + h - 30, UI.dim, 'center', 6);
   { const want = y + 22 + (menuI - off) * 12; menuBarY = menuBarY === null || Math.abs(menuBarY - want) > 60 ? want : menuBarY + (want - menuBarY) * 0.35;
-    if (!isHeader(M[menuI])) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = UI.sel; g.fillRect(x + 5, Math.round(menuBarY) - 2, 2, 11); } }
+    if (!isHeader(M[menuI])) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 1); swordCursor(x + 5, Math.round(menuBarY) + 1); } }
   M.forEach((k, i) => {
     if (i < off || i >= off + MENU_ROWS) return;
     const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
-    if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
+    if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
     const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
@@ -12386,7 +12427,7 @@ function render() {
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page
     const big = !!SET.bigText; const sz = big ? 10 : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 14 : 10; const bh = 14 + lines.length * lh + (talk.name ? 10 : 0); const by = VH - bh - 8;
     const dress = (L && L.palette && L.palette.dress) || 'wood'; const bc = L && L.dark ? '#7aa8c8' : dress === 'crag' ? '#8a919c' : dress === 'marsh' ? '#4a9a6e' : dress === 'camp' ? '#8b6a2a' : (L && L.palette && L.palette.myc) ? '#9a5aa8' : '#8b6a2a';
-    g.fillStyle = 'rgba(14,10,22,0.9)'; g.fillRect(bx, by, bw, bh); g.strokeStyle = bc; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1); g.strokeStyle = 'rgba(255,255,255,0.1)'; g.strokeRect(bx + 2.5, by + 2.5, bw - 5, bh - 5);
+    board(bx, by, bw, bh, bc, 'rgba(14,10,22,0.92)');
     let ty = by + 7; if (talk.name) { text(talk.name, bx + 8, ty, UI.title, 'left', sz); ty += 10; }
     lines.forEach((ln, k) => text(ln, bx + 8, ty + k * lh, '#fff6e0', 'left', sz));
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 6, by + bh - 9, '#8fd160', 'right', 6);
@@ -12396,9 +12437,9 @@ function render() {
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (SET.bossIntro && ((bossActive && boss && boss.mode === 'wake') || miniIntroT > 0)) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { text(nm, VW / 2 + 1, VH / 2 - 5, '#3a2214', 'center', 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', 12); } }
-    g.fillStyle = 'rgba(10,8,20,0.38)'; g.beginPath(); g.roundRect(2, 2, 104, (SET.iron ? 36 : 24) + (isPyro() || isPaladin() || isPirate() || isReaper() ? 10 : 0), 4); g.fill();
+    board(1, 1, 106, (SET.iron ? 38 : 26) + (isPyro() || isPaladin() || isPirate() || isReaper() ? 10 : 0), UI.border, 'rgba(10,8,20,0.5)', true);
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = Math.max(52, lab.length * 6 + 22);
-      g.fillStyle = 'rgba(10,8,20,0.38)'; g.beginPath(); g.roundRect(VW - 6 - pw, 2, pw, 28, 4); g.fill(); }
+      board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); }
     g.drawImage(PROP.heart, 5, 5);
     if (SET.iron) { for (let i = 0; i < 3; i++) { g.globalAlpha = i < lives ? 1 : 0.25; g.drawImage(K.R.idle[0], 0, 0, 12, 12, 6 + i * 11, 23, 12, 12); } g.globalAlpha = 1; text('IRON', 42, 26, '#c9d1dc'); }
     if (P.torch > 0 && state !== 'win') { const tx = 112, ty = 6; g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(tx - 4, ty - 2, 30, 16, 4); g.fill(); g.fillStyle = '#5c3a1d'; g.fillRect(tx, ty + 5, 2, 7); const f = Math.floor(time * 12) % 3; g.fillStyle = '#ff9a5c'; g.fillRect(tx - 1, ty - (f === 1 ? 1 : 0), 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(tx, ty + 1, 2, 3); bar(tx + 6, ty + 4, 16, 3, Math.min(1, P.torch / 30), P.torch < 6 && Math.floor(time * 6) % 2 ? '#ff6b6b' : '#ffd36b'); }

@@ -1394,7 +1394,7 @@ function underleaf() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 18, hush: true,
-    duskStart: -1, duskLen: 1, music: 'underleaf', night: true, glowNight: true, nightA: 0.24,
+    duskStart: -1, duskLen: 1, music: 'musForest', night: true, glowNight: true, nightA: 0.24,
     // the mill's own din: inside this, nothing you do can be heard over the wheel
     din: [{ x0: 108 * TS, x1: 136 * TS }],
     quest: { n: 3, item: 'lamp', name: 'CANDLES', npc: 'elder', done: 'THE DEAD ARE LIT', reward: 'relic', relic: 'soles' },
@@ -2034,7 +2034,7 @@ function stormhold() {
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     castle: true, // the castle grows over the whole level: drawn behind everything
-    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'boss2', tint: '#6a7a9a', tintA: 0.10, fx: 'dust' },
+    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust' },
   };
 }
 
@@ -2222,7 +2222,7 @@ function undercrown() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
     timber: true, dark: 0.34,
-    duskStart: -1, duskLen: 1, music: 'mineworks', night: true, glowNight: true, nightA: 0.4,
+    duskStart: -1, duskLen: 1, music: 'musUnder', night: true, glowNight: true, nightA: 0.4,
     tall: { top: 10 * TS, bottom: 168 * TS },
     quest: { n: 3, item: 'lamp', name: 'DEAD MEN\'S LAMPS', npc: 'squire', done: 'THEY ARE ALL ACCOUNTED FOR', reward: 'relic', relic: 'soles' },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.34)',   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
@@ -2230,7 +2230,7 @@ function undercrown() {
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     mini: { x0: 30 * TS, x1: 70 * TS, floor: 112 * TS, trigger: 36 * TS, wallL: 29, gate: 71, boss: 'propman', y0: 96 * TS, y1: 114 * TS },
-    arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'pitwarden', music: 'boss2', tint: '#2a2018', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
+    arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'pitwarden', music: 'musDungeon', tint: '#2a2018', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }
 
@@ -2418,7 +2418,7 @@ function theDeep() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors, airRooms,
     ballast: true, dark: 0.18,
-    duskStart: -1, duskLen: 1, music: 'deep', night: true, glowNight: true, nightA: 0.24,
+    duskStart: -1, duskLen: 1, music: 'musDungeon', night: true, glowNight: true, nightA: 0.24,
     tall: { top: 20 * TS, bottom: 182 * TS, col: '6,16,28', deepest: 0.3 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
     quest: { n: 3, item: 'coffer', name: 'TRIBUTE COFFERS', npc: 'squire', done: 'THIRTY YEARS OF IT, AND NONE OF IT EVER GOT THERE', reward: 'relic', relic: 'gauntlet' },
     palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)',
@@ -2843,7 +2843,7 @@ function theShopSea() {
   ent('deco', 7, 17, { kind: 'seaChest' }); ent('deco', 13, 17, { kind: 'plunder', v: 0 });
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 21 }, pools: [], falls: [], moversExtra: [],
-    duskStart: -1, duskLen: 1, music: 'select', night: true, shop: true, interiors: [[2, 41, 16, 21, 'ship']],
+    duskStart: -1, duskLen: 1, music: 'musSailor', night: true, shop: true, interiors: [[2, 41, 16, 21, 'ship']],
     palette: { set: 'ship', hall: true, sky: 'night', dress: 'none',
       dirt: '#4a4038', dirtL: '#5e5246', dirtD: '#2e2620', grass: '#6a5c4c', grassL: '#8a7a64', grassD: '#453c2c' },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
@@ -3088,7 +3088,7 @@ function galeMoor() {
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 548 * TS, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 861 * TS, x1: 905 * TS, floor: 13 * TS, trigger: 868 * TS, wallL: 860, wallR: 906, boss: 'windcaller', music: 'boss2', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
+    arena: { x0: 861 * TS, x1: 905 * TS, floor: 13 * TS, trigger: 868 * TS, wallL: 860, wallR: 906, boss: 'windcaller', music: 'musMountain', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
     flight: { x1: 864, speed: 78, camY: 2, down: [] }, // the Sky Road: the kite lets go over the summit's near edge
   };
 }

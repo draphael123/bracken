@@ -419,5 +419,127 @@
   "audio/sfx/vo/amb_hammer_3.ogg",
   "audio/sfx/vo/amb_hammer_4.ogg",
   "audio/sfx/vo/amb_hammer_5.ogg"
+ ],
+ "imp_steel": [
+  "audio/sfx/imp_steel_0.ogg",
+  "audio/sfx/imp_steel_1.ogg",
+  "audio/sfx/imp_steel_2.ogg",
+  "audio/sfx/imp_steel_3.ogg",
+  "audio/sfx/imp_steel_4.ogg",
+  "audio/sfx/imp_steel_5.ogg",
+  "audio/sfx/imp_steel_6.ogg",
+  "audio/sfx/imp_steel_7.ogg",
+  "audio/sfx/imp_steel_8.ogg",
+  "audio/sfx/imp_steel_9.ogg"
+ ],
+ "imp_steelH": [
+  "audio/sfx/imp_steelH_0.ogg",
+  "audio/sfx/imp_steelH_1.ogg",
+  "audio/sfx/imp_steelH_2.ogg",
+  "audio/sfx/imp_steelH_3.ogg",
+  "audio/sfx/imp_steelH_4.ogg",
+  "audio/sfx/imp_steelH_5.ogg",
+  "audio/sfx/imp_steelH_6.ogg",
+  "audio/sfx/imp_steelH_7.ogg",
+  "audio/sfx/imp_steelH_8.ogg",
+  "audio/sfx/imp_steelH_9.ogg"
+ ],
+ "imp_wood": [
+  "audio/sfx/imp_wood_0.ogg",
+  "audio/sfx/imp_wood_1.ogg",
+  "audio/sfx/imp_wood_2.ogg",
+  "audio/sfx/imp_wood_3.ogg",
+  "audio/sfx/imp_wood_4.ogg",
+  "audio/sfx/imp_wood_5.ogg",
+  "audio/sfx/imp_wood_6.ogg",
+  "audio/sfx/imp_wood_7.ogg",
+  "audio/sfx/imp_wood_8.ogg",
+  "audio/sfx/imp_wood_9.ogg"
+ ],
+ "imp_woodH": [
+  "audio/sfx/imp_woodH_0.ogg",
+  "audio/sfx/imp_woodH_1.ogg",
+  "audio/sfx/imp_woodH_2.ogg",
+  "audio/sfx/imp_woodH_3.ogg",
+  "audio/sfx/imp_woodH_4.ogg"
+ ],
+ "imp_flesh": [
+  "audio/sfx/imp_flesh_0.ogg",
+  "audio/sfx/imp_flesh_1.ogg",
+  "audio/sfx/imp_flesh_2.ogg",
+  "audio/sfx/imp_flesh_3.ogg",
+  "audio/sfx/imp_flesh_4.ogg"
+ ],
+ "imp_fleshH": [
+  "audio/sfx/imp_fleshH_0.ogg",
+  "audio/sfx/imp_fleshH_1.ogg",
+  "audio/sfx/imp_fleshH_2.ogg",
+  "audio/sfx/imp_fleshH_3.ogg",
+  "audio/sfx/imp_fleshH_4.ogg"
+ ],
+ "imp_soft": [
+  "audio/sfx/imp_soft_0.ogg",
+  "audio/sfx/imp_soft_1.ogg",
+  "audio/sfx/imp_soft_2.ogg",
+  "audio/sfx/imp_soft_3.ogg",
+  "audio/sfx/imp_soft_4.ogg",
+  "audio/sfx/imp_soft_5.ogg",
+  "audio/sfx/imp_soft_6.ogg",
+  "audio/sfx/imp_soft_7.ogg",
+  "audio/sfx/imp_soft_8.ogg",
+  "audio/sfx/imp_soft_9.ogg"
+ ],
+ "imp_glass": [
+  "audio/sfx/imp_glass_0.ogg",
+  "audio/sfx/imp_glass_1.ogg",
+  "audio/sfx/imp_glass_2.ogg",
+  "audio/sfx/imp_glass_3.ogg",
+  "audio/sfx/imp_glass_4.ogg",
+  "audio/sfx/imp_glass_5.ogg",
+  "audio/sfx/imp_glass_6.ogg",
+  "audio/sfx/imp_glass_7.ogg",
+  "audio/sfx/imp_glass_8.ogg",
+  "audio/sfx/imp_glass_9.ogg"
+ ],
+ "imp_glassH": [
+  "audio/sfx/imp_glassH_0.ogg",
+  "audio/sfx/imp_glassH_1.ogg",
+  "audio/sfx/imp_glassH_2.ogg",
+  "audio/sfx/imp_glassH_3.ogg",
+  "audio/sfx/imp_glassH_4.ogg"
+ ],
+ "imp_stone": [
+  "audio/sfx/imp_stone_0.ogg",
+  "audio/sfx/imp_stone_1.ogg",
+  "audio/sfx/imp_stone_2.ogg",
+  "audio/sfx/imp_stone_3.ogg",
+  "audio/sfx/imp_stone_4.ogg"
+ ],
+ "imp_bone": [
+  "audio/sfx/imp_bone_0.ogg",
+  "audio/sfx/imp_bone_1.ogg",
+  "audio/sfx/imp_bone_2.ogg",
+  "audio/sfx/imp_bone_3.ogg",
+  "audio/sfx/imp_bone_4.ogg",
+  "audio/sfx/imp_bone_5.ogg",
+  "audio/sfx/imp_bone_6.ogg",
+  "audio/sfx/imp_bone_7.ogg",
+  "audio/sfx/imp_bone_8.ogg",
+  "audio/sfx/imp_bone_9.ogg"
+ ],
+ "swish": [
+  "audio/sfx/swish_0.ogg",
+  "audio/sfx/swish_1.ogg",
+  "audio/sfx/swish_2.ogg",
+  "audio/sfx/swish_3.ogg",
+  "audio/sfx/swish_4.ogg",
+  "audio/sfx/swish_5.ogg",
+  "audio/sfx/swish_6.ogg",
+  "audio/sfx/swish_7.ogg",
+  "audio/sfx/swish_8.ogg",
+  "audio/sfx/swish_9.ogg",
+  "audio/sfx/swish_10.ogg",
+  "audio/sfx/swish_11.ogg",
+  "audio/sfx/swish_12.ogg"
  ]
 }
