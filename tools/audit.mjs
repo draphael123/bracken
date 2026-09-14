@@ -4,7 +4,7 @@ import { LEVELS, T, TS } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 const want = process.argv[2];
 const RUN = 100, JUMPV = -320, G = 1000, COY = 0.1;
-const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PLANK || t === T.PORT || t === T.SHELF || t === T.RAIL || t === T.SOFT || t === T.BOUNCER || t === T.CRYST;
+const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PLANK || t === T.PORT || t === T.SHELF || t === T.RAIL || t === T.SOFT || t === T.BOUNCER || t === T.CRYST || t === T.ICE;   /* ice is a floor: the Frostfell's rams and trolls stand on its tarns */
 const standT = t => solidT(t) || t === T.ONEWAY || t === T.REED;
 for (const lv of LEVELS) {
   if (lv.hidden && !lv.secret) continue; if (want && lv.id !== want) continue;

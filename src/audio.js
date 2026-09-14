@@ -676,7 +676,7 @@ const DIE = {
   cutter() { gob(0.95) || tone('square', 420, 90, 0.25, 0.18); tone('square', 1300, 1200, 0.12, 0.1, 0.1); noise(0.06, 0.2, 2200, 0.5, 0.1); /* the axe drops */ },
   snuffer() { gob(0.9) || tone('square', 380, 90, 0.25, 0.18); tone('triangle', 1700, 1600, 0.1, 0.08, 0.1); SFX.puff(); },
   sailer() { gob(1.1) || tone('square', 520, 110, 0.22, 0.16); for (let i = 0; i < 3; i++) noise(0.07, 0.18, 800, 0.6, 0.08 + i * 0.09); SFX.thud(); /* the sail flaps down */ },
-  suncatcher() { [2093, 1568, 1319, 1047, 784, 659, 523].forEach((f, i) => bell(f, 0.9, 0.09, i * 0.09)); pad('sine', 1760, 220, 1.3, 0.08, 0.2, 4000); noise(0.6, 0.35, 220, 0.5, 0.6); tone('sine', 55, 25, 0.9, 0.35, 0.6); /* the light goes out of it, note by note, and it lands */ },
+  suncatcher() { [1568, 1319, 1047, 880, 740, 587, 494].forEach((f, i) => bell(f, 0.7, 0.07, i * 0.08)); noise(0.9, 0.4, 3000, 0.5, 0.2); noise(0.6, 0.35, 220, 0.5, 0.6); tone('sine', 55, 25, 0.9, 0.35, 0.6); /* the rime comes off it all at once, and what is under it falls in pieces */ },
   roc() { tone('sawtooth', 2400, 500, 1.1, 0.18); tone('sawtooth', 2430, 480, 1.1, 0.09, 0.02); for (let i = 0; i < 4; i++) noise(0.12, 0.3, 320, 0.6, 0.4 + i * 0.18); tone('sine', 60, 25, 0.6, 0.4, 1.2); noise(0.4, 0.4, 200, 0.6, 1.2); /* the scream, the wings beat out, the fall */ },
   gqueen() { file('roar', 0.62, 0.52) || tone('sawtooth', 110, 40, 1.2, 0.3); gob(0.55, 0.8); [2400, 1900, 1500, 1200, 950].forEach((f, i) => tone('triangle', f, f * 0.9, 0.2, 0.1, 0.8 + i * 0.12)); SFX.thunder(); /* the last of the line, and her crown rolling on the stone */ },
   lance() { gob(0.6, 0.8) || tone('sawtooth', 200, 45, 0.6, 0.25); SFX.heavy(); [1500, 1200, 950, 700, 520].forEach((f, i) => { tone('square', f, f * 0.93, 0.18, 0.12, 0.3 + i * 0.16); noise(0.07, 0.26, f * 2, 0.5, 0.3 + i * 0.16); }); /* he goes down and the plate comes off him */ },
@@ -784,7 +784,7 @@ const HURT = {
   cutter() { gobH(0.95) || tone('square', 460, 280, 0.08, 0.14); },
   snuffer() { gobH(0.9) || tone('square', 420, 260, 0.09, 0.14); },
   sailer() { gobH(1.1) || tone('square', 560, 340, 0.08, 0.14); noise(0.06, 0.12, 800, 0.6); },
-  suncatcher() { bell(1319, 0.3, 0.07); bell(1760, 0.25, 0.05, 0.03); noise(0.05, 0.14, 5000, 0.5); },
+  suncatcher() { noise(0.06, 0.18, 4200, 0.6); bell(988, 0.25, 0.06); tone('sine', 220, 140, 0.12, 0.08); },   /* the rime cracks, and something under it groans */
   roc() { tone('sawtooth', 2000, 1400, 0.14, 0.13); tone('sawtooth', 2030, 1380, 0.14, 0.06, 0.01); },
   gqueen() { gobH(0.55, 0.6) || tone('sawtooth', 200, 120, 0.2, 0.2); tone('triangle', 2100, 2000, 0.08, 0.06, 0.03); },
   lance() { SFX.clank(); gobH(0.6, 0.45) || tone('sawtooth', 220, 130, 0.14, 0.14); },

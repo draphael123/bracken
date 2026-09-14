@@ -4587,6 +4587,201 @@ function waymeet() {
   };
 }
 
+// ============================================================================================
+// THE FROSTFELL - the high fell over the road inland, where the ice-cutters worked the tarns.
+// THE RULE: FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK. The cutters left a FIREBOX by every
+// sheet of ice they had a use for. Strike one and it roars: the ice it governs melts from the box
+// outward, and when it gutters the cold closes over the same tiles again. It opens a door, it drops a
+// tarn full of trolls into black water, it takes the rime off the thing in the glacier - and it takes
+// the ice out from under you just the same. Said three ways: pale ice over black water you can see
+// through the holes, steam and orange light on ice that is going, and a frost that creeps back
+// sparkling a moment before the sheet closes.
+//   1 THE COL            0-79    the way up, rams on the rise, the first ice underfoot
+//   2 THE CUTTERS' CAMP  80-159  tents, a pedlar, and the store hut with an ice door (the firebox, taught)
+//   3 THE ICE QUARRY     160-229 the mini: the quarry troll among the cut blocks, then the haul road
+//   4 THE FROZEN TARNS   230-329 three tarns: holes to slide over, a sheet of trolls to drop, a gantry over it
+//   5 THE FROZEN FALL    330-409 a climb up the face beside a frozen waterfall, and the cave behind it
+//   6 THE HIGH SNOWFIELD 410-499 crevasses, kites on the wind, and the buried dead who get up for the still
+//   7 THE GLACIER        500-611 down into the ice, and the Rimewright's hall
+// ============================================================================================
+function theFrostfell() {
+  const W = 612, H = 34, G = 27, FS = 15;
+  const L = painter(W, H);
+  const { block, floor, plat, ent, coins, set, spikes } = L;
+  const pools = [], slick = [], interiors = [];
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const ice = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.ICE); };
+  const sign = (x, y, text) => ent('sign', x, y, { text });
+  /* A TARN: an ice sheet one course thick over three rows of black water, and holes sawn in it. The water is
+     dead water (no swimming in this cold): the ice is the only floor, and the sheet is slick end to end. */
+  const tarn = (x0, x1, ...holes) => {
+    air(x0, x1, G + 1, H - 1); ice(x0, x1, G, G);   /* no bed: a tarn up here goes down further than anyone has been */
+    for (const hx of holes) air(hx, hx + 2, G, G);
+    pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: (G + 1) * TS, bottom: H * TS });
+    slick.push([x0, x1, G]);
+  };
+  /* A FIREBOX, and the rectangle of ice it answers for (none: it only warms what stands by it) */
+  const firebox = (x, y, r) => ent('firebox', x, y, r ? { x0: r[0], x1: r[1], y0: r[2], y1: r[3] } : {});
+
+  // ---------------- 1. THE COL (x 0-79). The way up, and the first ice underfoot. ----------------
+  floor(0, 79, G);
+  sign(4, G - 1, 'THE FROSTFELL. FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.');
+  ent('check', 7, G - 1); ent('npc', 10, G - 1, { kind: 'squire' });
+  ent('deco', 14, G - 1, { kind: 'cairn' }); ent('hare', 20, G - 1);
+  block(26, 33, G - 2, G - 1); block(34, 45, G - 4, G - 1); block(46, 51, G - 2, G - 1);   /* the rise: two rows a step */
+  ent('goat', 40, G - 5, { face: -1 }); ent('harpy', 37, G - 10); ent('deco', 44, G - 5, { kind: 'frozen', v: 0 });
+  ice(54, 66, G, G); slick.push([54, 66, G]);   /* a frozen puddle with rock under it: the slide taught where a slip costs nothing */
+  sign(53, G - 1, 'ICE UNDERFOOT: SLOW TO START AND SLOWER TO STOP. THE RAMS KNOW IT.');
+  ent('goat', 63, G - 1, { face: -1 }); ent('crow', 60, G - 8); ent('rockgoblin', 72, G - 1, { face: -1 });
+  ent('deco', 76, G - 1, { kind: 'cairn' });
+  coins([28, G - 3], [38, G - 5], [42, G - 5], [58, G - 2], [62, G - 2]);
+
+  // ---------------- 2. THE CUTTERS' CAMP (x 80-159). The firebox, taught on a door. ----------------
+  floor(80, 159, G);
+  ent('check', 84, G - 1);
+  sign(86, G - 1, "THE ICE-CUTTERS' CAMP. THEY LEFT IN A HURRY, AND LEFT THEIR FIREBOXES LAID.");
+  ent('deco', 90, G - 1, { kind: 'tent', v: 0 }); ent('deco', 96, G - 1, { kind: 'cart' }); ent('deco', 100, G - 1, { kind: 'barrels' });
+  ent('deco', 104, G - 1, { kind: 'tent', v: 1 }); ent('deco', 92, G - 1, { kind: 'frozen', v: 1 });
+  ent('wight', 98, G - 1, { face: -1 }); ent('rockgoblin', 106, G - 1, { face: -1 });
+  /* THE STORE HUT: stone walls, a turf roof the road goes over, and a door of ice on its far side that a
+     man cannot cut. The firebox by it can. */
+  block(110, 113, G - 2, G - 1); block(114, 117, G - 4, G - 1);   /* up the snow bank onto the roof */
+  block(118, 132, G - 6, G - 1); air(119, 131, G - 4, G - 1); interiors.push([119, 131, G - 4, G - 1, 'hall']);
+  ice(132, 132, G - 4, G - 1);
+  firebox(134, G - 1, [132, 132, G - 4, G - 1]);
+  sign(144, G - 1, 'STRIKE THE FIREBOX. THE ICE BY IT GOES, AND WHEN THE FIRE DOES, IT COMES BACK.');
+  ent('stray', 124, G - 1, { kind: 'pick' }); ent('deco', 121, G - 1, { kind: 'barrels' });
+  coins([122, G - 1], [127, G - 1], [129, G - 3]);
+  /* the smoke hole in the roof: the slow way in, for whoever will not wait on a fire */
+  for (const x of [125, 126]) { set(x, G - 6, T.ONEWAY); set(x, G - 5, T.AIR); }
+  ent('rockgoblin', 129, G - 7, { face: -1 }); ent('kite', 146, G - 9);
+  /* THE PEDLAR: he came up for the cutters' custom and the weather kept him */
+  ent('deco', 151, G - 1, { kind: 'tent', v: 0 }); ent('npc', 149, G - 1, { kind: 'keeper' });
+  sign(147, G - 1, "A PEDLAR SITS OUT THE WEATHER IN THE CUTTERS' TENT. HE WILL TRADE.");
+  ent('rockgoblin', 140, G - 1, { face: -1 }); ent('wight', 154, G - 1, { face: -1 });
+  /* the squatters: goblins came up for what the cutters left and sleep by the laid fires */
+  ent('hearthgob', 94, G - 1, { face: 1 }); ent('hearthgob', 102, G - 1, { face: -1 }); ent('hearthgob', 138, G - 1, { face: 1 });
+  ent('check', 156, G - 1);
+  coins([86, G - 2], [94, G - 2], [111, G - 3], [115, G - 5], [122, G - 7], [138, G - 2], [141, G - 2], [152, G - 2]);
+
+  // ---------------- 3. THE ICE QUARRY (x 160-229). The quarry troll, then the haul road. ----------------
+  floor(160, 229, G);
+  sign(158, G - 1, 'THE QUARRY. SOMETHING BIG HAS BEEN LIVING ON WHAT THE CUTTERS LEFT.');
+  ice(170, 171, G - 2, G - 1); ice(179, 180, G - 1, G - 1); ice(188, 189, G - 2, G - 1); ice(195, 195, G - 2, G - 1);   /* blocks of cut ice, left where they were sawn */
+  ent('troll', 184, G - 1, { big: true, mini: true, face: -1 });
+  /* the quarry face, and the haul tunnel through it that the troll has been keeping shut */
+  block(197, 202, 6, G - 5); air(198, 202, G - 4, G - 1);
+  for (let y = G - 4; y <= G - 1; y++) set(197, y, T.PORT);
+  sign(206, G - 1, 'THE HAUL ROAD RUNS DOWN TO THE TARNS, WHERE THE CUTTERS SAWED THEIR ICE.');
+  ent('deco', 207, G - 1, { kind: 'cart' }); ent('rockgoblin', 216, G - 1, { face: -1 }); ent('goat', 224, G - 1, { face: -1 });
+  /* the ice teeth: where the melt runs off the road it freezes in blades, and a sledge goes round them */
+  spikes(210, 212, G); spikes(219, 221, G);
+  ent('harpy', 220, G - 8); ent('deco', 227, G - 1, { kind: 'cairn' });
+  coins([174, G - 3], [192, G - 2], [208, G - 2], [214, G - 2], [222, G - 2]);
+
+  // ---------------- 4. THE FROZEN TARNS (x 230-329). Slide, drop, and cross over. ----------------
+  floor(230, 329, G);
+  tarn(234, 254, 240, 248);
+  ent('goat', 236, G - 1, { face: 1 }); ent('crow', 246, G - 7); ent('crow', 250, G - 8);
+  sign(231, G - 1, 'THE TARNS. THE WATER UNDER THE ICE IS BLACK, AND NOTHING COMES BACK OUT OF IT.');
+  /* the left outcrop, and the firebox that answers for the whole of the middle tarn */
+  block(255, 255, G - 2, G - 1); block(256, 261, G - 4, G - 1);
+  ent('check', 257, G - 5); firebox(259, G - 5, [262, 288, G, G]);
+  sign(256, G - 5, 'THIS FIREBOX TAKES THE WHOLE TARN, AND ANYTHING STANDING ON IT.');
+  tarn(262, 288);
+  ent('troll', 271, G - 1, { face: -1 }); ent('troll', 283, G - 1, { face: -1 }); ent('rockgoblin', 277, G - 1, { face: -1 });
+  /* THE CUTTERS' GANTRY: planks from outcrop to outcrop, the way over that no fire takes away */
+  for (let x = 265; x <= 288; x++) set(x, G - 4, T.PLANK);
+  ent('harpy', 269, G - 10); ent('harpy', 283, G - 11);
+  ent('silver', 276, G - 7);   /* over the middle of the gantry, in among the harpies: a jump off the planks for it */
+  block(289, 290, G - 2, G - 1); block(291, 296, G - 4, G - 1); block(297, 297, G - 2, G - 1);
+  ent('check', 293, G - 5); ent('deco', 295, G - 5, { kind: 'cairn' });
+  tarn(298, 322, 304, 314);
+  ent('crow', 309, G - 7); ent('shardling', 320, G - 1, { face: -1 }); ent('goat', 300, G - 1, { face: 1 });
+  ent('check', 326, G - 1);
+  coins([244, G - 2], [252, G - 2], [258, G - 6], [268, G - 5], [276, G - 5], [284, G - 5], [300, G - 2], [310, G - 2], [320, G - 2]);
+
+  // ---------------- 5. THE FROZEN FALL (x 330-409). Up the face, and the cave behind the ice. ----------------
+  floor(330, 351, G);
+  block(352, 409, 13, H - 1);                          /* the massif */
+  ice(350, 351, 13, G - 1);                            /* the fall itself: stopped in one night and never started again */
+  air(352, 362, G - 5, G - 1); interiors.push([352, 362, G - 5, G - 1, 'crystal']);
+  firebox(346, G - 1, [350, 351, G - 5, G - 1]);
+  sign(333, G - 1, 'THE FROZEN FALL. THERE IS A CAVE BEHIND IT, AND A FIREBOX IN FRONT OF IT.');
+  ent('stray', 360, G - 1, { kind: 'pick' }); ent('silver', 357, G - 3); ent('bat', 356, G - 5);
+  /* up the face on the snow ledges, two rows at a time */
+  plat(332, G - 2, 4); plat(338, G - 4, 4); plat(344, G - 6, 4); plat(338, G - 8, 4); plat(332, G - 10, 4); plat(338, G - 12, 4); plat(344, 13, 6);
+  ent('harpy', 335, G - 14); ent('harpy', 347, G - 17); ent('crow', 342, G - 16);
+  ent('check', 356, 12);
+  sign(358, 12, 'THE SNOWFIELD. WHAT IS BURIED UP HERE GETS UP FOR ANYONE WHO STANDS STILL.');
+  ent('goat', 372, 12, { face: -1 }); ent('shardling', 383, 12, { face: -1 }); ent('troll', 394, 12, { face: -1 }); ent('wight', 404, 12, { face: -1 });
+  ent('deco', 366, 12, { kind: 'frozen', v: 1 }); ent('deco', 391, 12, { kind: 'cairn' });
+  spikes(368, 370, 13); spikes(378, 380, 13); spikes(386, 388, 13); spikes(398, 400, 13);   /* ice teeth along the top of the massif */
+  spikes(336, 338, G);   /* and under the face, where whatever fell off it froze */
+  coins([334, G - 3], [340, G - 5], [346, G - 7], [340, G - 9], [334, G - 11], [340, G - 13], [376, 11], [386, 11], [398, 11]);
+
+  // ---------------- 6. THE HIGH SNOWFIELD (x 410-499). Crevasses, and nowhere to stand still. ----------------
+  block(410, 499, FS, H - 1);
+  ent('check', 414, FS - 1);
+  sign(416, FS - 1, 'THE CREVASSES DO NOT GIVE BACK WHAT FALLS IN THEM. JUMP THEM LIKE YOU MEAN IT.');
+  for (const cx of [425, 447, 471]) { air(cx, cx + 2, FS, H - 1); pools.push({ x0: cx * TS, x1: (cx + 3) * TS, y: (H - 4) * TS, bottom: H * TS }); }
+  ent('shardling', 437, FS - 1, { face: -1 }); ent('wight', 444, FS - 1, { face: -1 }); ent('kite', 438, FS - 8);
+  spikes(432, 434, FS); spikes(456, 458, FS); spikes(463, 465, FS); spikes(490, 491, FS);   /* the snow hides ice teeth: they show as a ridge, and they are jumped */
+  ent('stray', 452, FS - 1, { kind: 'pick' }); ent('deco', 454, FS - 1, { kind: 'cart' });
+  ent('shardling', 458, FS - 1, { face: -1 }); ent('crow', 456, FS - 6); ent('kite', 462, FS - 8); ent('wight', 468, FS - 1, { face: -1 }); ent('troll', 440, FS - 1, { face: -1 });
+  ent('check', 478, FS - 1);
+  /* THE WAYMARK: a pillar of old ice the cutters used for a sighting post, with the last silver on it */
+  block(481, 482, FS - 2, FS - 1); block(485, 487, FS - 4, FS - 1);
+  ent('silver', 486, FS - 6); ent('goat', 493, FS - 1, { face: -1 }); ent('harpy', 490, FS - 9);
+  ent('deco', 420, FS - 1, { kind: 'frozen', v: 0 }); ent('deco', 444, FS - 1, { kind: 'cairn' }); ent('deco', 468, FS - 1, { kind: 'frozen', v: 1 });
+  coins([420, FS - 2], [426, FS - 3], [448, FS - 3], [472, FS - 3], [481, FS - 3], [486, FS - 5], [496, FS - 2]);
+
+  // ---------------- 7. THE GLACIER (x 500-611). Down into the ice, and the Rimewright's hall. ----------------
+  block(500, W - 1, 0, H - 1);
+  air(500, 503, 6, FS - 1);
+  /* the way down is a stair of the glacier's own ledges, two rows a step, the roof coming down with it */
+  [[500, 505, 15], [506, 511, 17], [512, 517, 19], [518, 523, 21], [524, 529, 23], [530, 535, 25], [536, 555, 27]].forEach(([x0, x1, f]) => air(x0, x1, f - 6, f - 1));
+  air(556, 596, 17, G - 1);                             /* THE HALL: forty across and ten high - all of it on the screen at once - and a roof that drops what it holds */
+  air(597, W - 1, G - 6, G - 1);
+  interiors.push([500, W - 1, 6, G - 1, 'stone']);
+  ent('bat', 508, 11); ent('grub', 520, 20, { face: -1 }); ent('bat', 527, 17); ent('shardling', 533, 24, { face: -1 });
+  ent('spider', 545, 21, { drop: 70 }); ent('rockgoblin', 547, G - 1, { face: -1 });
+  ent('spider', 515, 13, { drop: 60 }); ent('spider', 522, 15, { drop: 60 });   /* the ice spiders keep to the roof of the stair */
+  spikes(540, 542, G);
+  sign(537, G - 1, 'THE RIMEWRIGHT. BURN THE RIME OFF IT AT A FIREBOX, OR BREAK ITS OWN SPIRES ON IT.');
+  ent('check', 550, G - 1);
+  firebox(565, G - 1); firebox(587, G - 1);
+  ent('suncatcher', 584, G - 1);
+  ent('gate', 606, G - 1);
+  coins([502, 14], [509, 16], [515, 18], [521, 20], [527, 22], [533, 24], [544, G - 2], [600, G - 2]);
+
+  /* WHAT THE FELL KEEPS: the cutters' leavings, the stones they piled, and the ones the cold kept */
+  for (const [x, y, kind, v] of [[18, G - 1, 'stone', 0], [30, G - 3, 'cairn', 0], [50, G - 3, 'bones', 0], [70, G - 1, 'deadTree', 0], [82, G - 1, 'lanternPost', 0],
+    [108, G - 1, 'barrels', 0], [214, G - 1, 'bones', 1], [328, G - 1, 'deadTree', 1], [331, G - 1, 'bones', 0], [374, 12, 'stone', 1], [408, 12, 'deadTree', 0],
+    [412, FS - 1, 'cairn', 0], [428, FS - 1, 'bones', 1], [450, FS - 1, 'frozen', 1], [476, FS - 1, 'stone', 2], [495, FS - 1, 'deadTree', 1],
+    [503, FS - 1, 'bones', 0], [520, 20, 'spire', 1], [535, 24, 'spire', 0], [598, G - 1, 'bones', 1], [603, G - 1, 'cairn', 0]]) ent('deco', x, y, { kind, v });
+  ent('wight', 375, 12, { face: -1 }); ent('harpy', 401, 7);
+
+  /* THE LADDERS ARE HUNG LAST: nothing is dug after this line. The cutters' shaft from the top of the massif
+     down into the cave behind the fall - the long way in, for whoever will not wait on a fire. */
+  air(361, 361, 14, G - 6); for (let y = 13; y <= G - 1; y++) set(361, y, T.NET);
+  for (let y = G - 5; y <= G - 1; y++) set(126, y, T.NET);   /* and the store hut's ladder up to its smoke hole, the way back out */
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra: [], interiors, slick,
+    hags: [{ x0: 430 * TS, x1: 468 * TS }],        /* the buried cutters: stand still on the snowfield and one gets up */
+    duskStart: 99999, duskLen: 1, music: 'snow', night: false, frost: true, snowLine: 999,
+    quest: { n: 3, item: 'pick', name: 'ICE PICKS', npc: 'squire', done: 'THE CUTTERS HAVE THEIR PICKS BACK', reward: 'relic', relic: 'crampons' },
+    palette: { sky: [[118, 132, 158], [206, 214, 228]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(214,224,240,0.22)',
+      grass: '#dfe8f2', grassL: '#ffffff', grassD: '#a4b4c8', dirt: '#525c74', dirtL: '#68748c', dirtD: '#383f52',
+      canopy: ['#46506a', '#5a6680', '#76849c', '#a6b4c8'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'snow' }, { x0: 230 * TS, x1: 330 * TS, kind: 'mist' }, { x0: 410 * TS, x1: 500 * TS, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 500 * TS, kind: 'wind' }, { x0: 500 * TS, x1: 99999, kind: 'cave' }],
+    arena: { x0: 556 * TS, x1: 596 * TS, floor: G * TS, y0: 16 * TS, trigger: 561 * TS, wallL: 555, wallR: 597, boss: 'suncatcher', music: 'boss3', tint: '#bfe6f5', tintA: 0.12, fx: 'motes' },
+    mini: { x0: 162 * TS, x1: 196 * TS, floor: G * TS, y0: (G - 14) * TS, y1: (G + 1) * TS, trigger: 166 * TS, wallL: 161, gate: 197, boss: 'troll', name: 'THE QUARRY TROLL' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -4620,6 +4815,7 @@ export const LEVELS = [
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'deep' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
+  { id: 'frost', name: 'THE FROSTFELL', sub: 'the frozen high fell', rule: 'FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.', build: theFrostfell, needs: 'hunt' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -4702,6 +4898,7 @@ const DRESS = {
   deep: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['shellDrift', 2], ['seaChest']],
   longwater: [['coralTuft', 3], ['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['pierPost'], ['netPoles']],
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
+  frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
 };
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
 const GARRISON = {
@@ -4716,6 +4913,7 @@ const GARRISON = {
   longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
   reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
   hurricane: [['cutlass', 6], ['scout', 6], ['tideguard', 5], ['marine', 3], ['boarder', 3]],   // one ship in one storm, and eight creatures on it
+  frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
   lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
