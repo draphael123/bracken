@@ -5352,7 +5352,7 @@ export const LEVELS = [
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'deep' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   /* THE ROAD INLAND goes on through the goblin lord's own hunting grounds, and the Hound Master comes off the bench for it */
-  { id: 'hunt', name: 'THE HUNT', sub: "the goblin lord's hunting grounds", rule: 'THE PACK IS HIS WEAPON, AND THE WHISTLE IS HIS TELL.', build: theHunt, needs: 'waymeet' },
+  { id: 'hunt', name: 'THE HUNT', sub: "the goblin lord's hunting grounds", rule: 'THE PACK IS HIS WEAPON, AND THE WHISTLE IS HIS TELL.', build: theHunt, needs: 'deep' }   /* WAYMEET IS OFF THE ROAD: an optional town, and the road inland does not wait on it */,
   /* THE ROAD INLAND, UP: after the Hunt, the pass over the hill, and the troll that was benched for want of a hill to throw. */
   { id: 'quarry', name: 'THE QUARRY PASS', sub: 'the road inland, through the hill', rule: 'THE HILL THROWS WHAT IT CAN LIFT.', build: quarryPass, needs: 'hunt' },
   { id: 'frost', name: 'THE FROSTFELL', sub: 'the frozen high fell', rule: 'FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.', build: theFrostfell, needs: 'quarry' },   /* up from the pass onto the fell */

@@ -426,7 +426,9 @@ const ROW_NEED = [0, 0, 0, 8];   // what the LAST row of a branch costs you in c
 const nodeState = n => { const m = talentsOf(n.hero), r = m[n.id] || 0; if (r >= n.max) return 'max'; if (heroLevel() < ROW_LV[n.row] && !godMode()) return 'level'; if (n.parent && !(m[n.parent] > 0)) return 'parent'; if (branchPts(n.hero, n.branch) < ROW_NEED[n.row] && !godMode()) return 'branch'; return r > 0 ? 'some' : 'open'; };
 const cdOf = k => (CD_MAX[k] || 3) * (1 - 0.15 * Math.max(0, tal(k) - 1)) * (1 - 0.08 * (tal('gravebound') + tal('handOverHand'))); // a skill's wait shortens with every point past the first, and GRAVEBOUND / HAND OVER HAND shorten all of them
 const amul = k => 1 + 0.25 * Math.max(0, tal(k) - 1); // and its blow deepens
-const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'TALENTS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];
+/* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
+const PRACTICE = [{ id: 'practiceYard', name: 'THE PRACTICE YARD', price: 0, practice: true, desc: 'step through the portal into a yard of straw men and plain platforms. nothing there can kill you. pause to leave.' }];
+const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'TALENTS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }, { name: 'PRACTICE', items: PRACTICE, key: null, owned: 'items' }];
 let storeMode = 'buy', equipFrom = 'map';
 function setEquip(key, id) { PROG[key] = id; if (key === 'charm') { PROG.charmOf = PROG.charmOf || {}; PROG.charmOf[hero()] = id; } }   /* a charm is worn by a hero: the next hero starts bare */
 const EQUIP_TABS = STORE_TABS.filter(t => t.key || t.talent); // (talents can be learned from the map and the pause menu too)
@@ -1557,15 +1559,15 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: 11, x: 152, y: 104
   { id: 'hurricane', kind: 'level', level: 14, x: 22, y: 16, name: 'THE HURRICANE DECK' },
   { id: 'lamplit', kind: 'level', level: 15, x: 18, y: 52, name: 'THE LAMPLIT STREET' },
   { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 60, y: 86, name: 'THE DEEP' },
-  { id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 96, y: 100, name: 'WAYMEET' },
+  { id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 30, y: 116, name: 'WAYMEET' },   /* off the road on a spur of its own, like the Underleaf and the Undercrown */
   { id: 'hunt', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hunt'), x: 150, y: 132, name: 'THE HUNT' },   /* by id, not by number: the road inland is being laid by several hands at once */
   { id: 'quarry', kind: 'level', level: LEVELS.findIndex(l => l.id === 'quarry'), x: 212, y: 110, name: 'THE QUARRY PASS' },
   { id: 'frost', kind: 'level', level: LEVELS.findIndex(l => l.id === 'frost'), x: 252, y: 92, name: 'THE FROSTFELL' },
   { id: 'skyship', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyship'), x: 292, y: 80, name: 'THE SKY SHIP' }]; // straight down off the wreck, then straight down off the world - and then back up out of it, inland, to the first dry town on the road
-const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [74, 56], [62, 52], [50, 44], [38, 30], [22, 16], [16, 32], [18, 52], [34, 68], [60, 86], [76, 96], [96, 100], [114, 110], [132, 122], [150, 132], [176, 126], [196, 118], [212, 110], [232, 104], [252, 92], [272, 86], [292, 80]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
+const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [74, 56], [62, 52], [50, 44], [38, 30], [22, 16], [16, 32], [18, 52], [34, 68], [60, 86], [44, 102], [30, 116], [44, 102], [60, 86], [84, 104], [108, 118], [130, 126], [150, 132], [176, 126], [196, 118], [212, 110], [232, 104], [252, 92], [272, 86], [292, 80]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES);
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH);
-const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 40, 45, 48, 49, 52, 54, 56, 58, 60, 63, 66, 68, 70]; // PATH index of each node: wood 0-5, the crags, then the coast
+const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 40, 45, 48, 49, 52, 54, 56, 58, 60, 66, 69, 71, 73]; // PATH index of each node: wood 0-5, the crags, then the coast
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172]]]);
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
@@ -2103,6 +2105,7 @@ function updateStore(dt) {
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
   if (confirmPress && items.length) {
     const k = items[storeI], owned = tab.talent || k.consumable ? false : (k.id === 'none' || owns(tab, k.id));
+    if (k.practice) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); } return; }
     if (tab.talent) learnTalent(k);
     else if (k.consumable) { const n = PROG.tonics || 0; if (n >= k.max) { SFX.ui(); storeMsg = 'you carry all you can'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.price) { if (!godMode()) PROG.coins -= k.price; PROG.tonics = n + 1; saveProgress(); SFX.coin(); storeMsg = k.name + ' ' + (n + 1) + ' of ' + k.max; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; } }
     else if (tab.rank) { const r = rankOf(k.id); if (r >= k.max) { SFX.ui(); storeMsg = k.name + ' is at its peak'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.prices[r]) { if (!godMode()) PROG.coins -= k.prices[r]; PROG.ranks[k.id] = r + 1; applyUpgrades(); if (k.id === 'vigour') P.hp = Math.min(P.maxHp, P.hp + 10); if (k.id === 'breath') P.st = Math.min(P.maxSt, P.st + 10); saveProgress(); SFX.coin(); SFX.rankUp(); statFlash = 0.8; storeMsg = k.name + ' rank ' + (r + 1); storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#8fd160', '#fff6c8'], 60, 0.6, -20, 1); } else { SFX.buzz(); storeMsg = 'need ' + (k.prices[r] - PROG.coins) + ' more gold'; storeMsgT = 2; } }
@@ -2119,6 +2122,13 @@ function updateStore(dt) {
   if (pausePress) { if (storeMode === 'equip') { storeMode = 'buy'; state = equipFrom === 'map' ? 'map' : 'menu'; SFX.ui(); } else if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
 }
 const previewCache = {};
+/* the portal on the practice card: a stone arch with the yard's light in it */
+const PORTAL_ICON = (() => { const [c, g2] = canvas(12, 14);
+  g2.fillStyle = '#3a3448'; g2.fillRect(2, 0, 8, 13); g2.fillRect(0, 3, 12, 10);
+  g2.fillStyle = '#5a5070'; g2.fillRect(3, 1, 6, 1); g2.fillRect(1, 4, 1, 8); g2.fillRect(10, 4, 1, 8);
+  g2.fillStyle = '#4fa0c8'; g2.fillRect(3, 2, 6, 10); g2.fillRect(2, 4, 8, 8);
+  g2.fillStyle = '#9fe6f0'; g2.fillRect(4, 3, 4, 8); g2.fillStyle = '#c9a0ff'; g2.fillRect(5, 5, 2, 4); g2.fillStyle = '#fff6e0'; g2.fillRect(5, 6, 1, 1);
+  g2.fillStyle = '#6a5a44'; g2.fillRect(0, 12, 12, 2); return c; })();
 // a skin, shown on the hero you are playing: the pyromancer in its robes, the paladin in its plate and tabard
 const skinPreview = k => preview('skin:' + hero() + ':' + k.id + ':' + PROG.sword, () => isPyro() ? bakePyro(Object.assign({}, PYRO_SETS[k.id] || k.pal, swordById(PROG.sword).pal)) : isPaladin() ? bakePaladin(PAL_SETS[k.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[k.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[k.id] || {}) : bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal)));
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
@@ -2147,7 +2157,7 @@ function drawStore() {
   const iconOf = k => k.id === 'none' ? null
     : tab.key === 'skin' ? skinPreview(k).R.idle[0]
     : tab.key === 'sword' ? weaponPreview(k).R.atk[1]
-    : tab.talent ? treeIcon(treeNodes()[0]) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
+    : k.practice ? PORTAL_ICON : tab.talent ? treeIcon(treeNodes()[0]) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
     : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
   const lockedOf = k => (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
@@ -2176,7 +2186,7 @@ function drawStore() {
     // THE BADGE THE ROW ACTUALLY DRAWS, not an approximation of it. It was measured against `k.price` while
     // the thing drawn was "60 GOLD", so the name was cut to leave room for two characters and then ran into
     // seven - which is how THE ADVENTURE BEGINS ended up lying across its own price.
-    const bg = eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
+    const bg = k.practice ? 'ENTER' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
     rowName(bg);
     text(bg, listX + listW - 4, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
   });
@@ -2214,7 +2224,7 @@ function drawStore() {
       const eq = tab.key && PROG[tab.key] === k.id;
       const cost = tab.talent ? 'LEVEL ' + heroLevel() + '  ' + ptsLeft(hero()) + ' POINTS' : k.consumable ? (PROG.tonics || 0) + ' OF ' + k.max + ' CARRIED' : tab.rank ? (rankOf(k.id) >= k.max ? 'AT ITS PEAK' : k.prices[rankOf(k.id)] + ' GOLD')
         : tab.key === 'hero' && (eq || owned) ? (eq ? 'EQUIPPED  L' : 'OWNED  L') + heroLevel(k.id)   /* a hero carries his own level now: the card has to say which */
-        : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
+        : k.practice ? 'Z TO STEP THROUGH' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
       text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
       const body = locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
       for (const ln of wrap(body, pvW - 10, 6)) { if (ty > pvY + pvH - 10) break; text(ln, pvX + 5, ty, locked ? '#ff9a5c' : UI.dim, 'left', 6); ty += 7; }
@@ -4016,7 +4026,12 @@ function updatePlayer(dt) {
           if (isPaladin()) { P.shoulder = Math.max(P.shoulder || 0, 0.16); SFX.clank(); } }
       } P.tapDir = tapped; P.tapT = time; } }
   P.dash = Math.max(0, (P.dash || 0) - dt); P.dashCd = Math.max(0, (P.dashCd || 0) - dt); if (P.ground) P.dashedAir = false;
-  if (P.dash > 0) { ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); }
+  if (P.dash > 0) { ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
+    /* THE DASH STRIKE. Every hero's dash was distance and nothing else; now it cuts what it goes through, once a dash each, for a little over half a swing */
+    P.dashHits = P.dashHits || new Set();
+    for (const e of enemies) { if (!e.alive || e.harmless || P.dashHits.has(e)) continue; const ew = (e.w || 12) / 2, eh = e.h || 16;
+      if (e.x + ew > P.x - 12 && e.x - ew < P.x + 12 && e.y > P.y - 22 && e.y - eh < P.y) { P.dashHits.add(e); hurtEnemy(e, Math.round(swordDmg() * 0.6), P.x - P.face * 10, false); sparks(e.x, e.y - eh / 2, P.face, 5); } } }
+  else if (P.dashHits) P.dashHits = null;
   /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
   if (P.dbuf > 0 && (P.swim || P.ground || (tal('airRoll') && !P.airRolled)) && (!attacking || (P.atk >= 0.18 && !P.heavy)) && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
@@ -9264,9 +9279,9 @@ function plantBlade(n) {
   ringAt(x, y - 2, 22, '#c0283a', 0.35); dust(x, y, 8);
   for (let i = 0; i < 14; i++) parts.push({ x: x + (Math.random() - 0.5) * 10, y: y - 2, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 140, life: 0.5, max: 0.5, col: Math.random() < 0.6 ? '#a01a2a' : '#3a0a10', size: 2, grav: 520 });
   const dmg = Math.round(swordDmg() * (0.62 + 0.1 * tal('heavy')) * (n > 1 ? 0.8 : 1));
-  for (const a of [-0.16, -0.48, -0.82, -1.15, -1.5]) { const sp = 250 + Math.random() * 30;
+  /* TWO BOLTS. A fan of five forward and two behind cleared a room from one planted blade: now it is two, low and high, forward */
+  for (const a of [-0.22, -0.78]) { const sp = 250 + Math.random() * 30;
     bloodBolts.push({ x, y: y - 4, vx: Math.cos(a) * sp * P.face, vy: Math.sin(a) * sp, life: 0.9, dmg, hit: new Set(), trail: [] }); }
-  for (const a of [-0.35, -0.9]) bloodBolts.push({ x, y: y - 4, vx: -Math.cos(a) * 170 * P.face, vy: Math.sin(a) * 170, life: 0.55, dmg: Math.round(dmg * 0.6), hit: new Set(), trail: [] });
 }
 function updateBloodBolts(dt) {
   for (const b of bloodBolts) { b.life -= dt; b.trail.push([b.x, b.y]); if (b.trail.length > 6) b.trail.shift();
