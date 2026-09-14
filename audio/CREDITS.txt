@@ -88,3 +88,31 @@ IMPACTS, SWINGS AND MORE MUSIC (all CC0 / public domain, licence read on each pa
 - "Sailor Waltz with Water Effects C64 Style" by skrjablin (opengameart.org/content/sailor-waltz-with-water-effects-c64-style), CC0 option - musSailor
 - "Spooky Dungeon" by Memoraphile (opengameart.org/content/spooky-dungeon), CC0 option - musDungeon
 - "wind woosh loop" by SketchMan3 (opengameart.org/content/wind-woosh-loop), CC0 - ambWind (every wind level)
+
+
+ONE THEME PER LEVEL, ONE PER BOSS (all CC0, licence field read on each OpenGameArt page, 2026-09-14).
+Every file: edge silence trimmed, lowpassed at 9 kHz, levelled to a -14 dB mean with a limiter, OGG Vorbis q4 (q3 over 140 s).
+Where a page offers several licences, CC0 is one of them and is the one used.
+LEVELS
+- sleepers.ogg    = "Haunting Chiptune Loop [Void Estate]" (void_estate_0.ogg) by Zane Little Music - https://opengameart.org/content/haunting-chiptune-loop-void-estate - UNDERLEAF
+- trench.ogg      = "Underwater Theme" (2nd variation) by Spring Spring - https://opengameart.org/content/underwater-theme-1 - THE DEEP
+- barrows.ogg     = "8-bit - Perilous Dungeon" by HydroGene - https://opengameart.org/content/8-bit-perilous-dungeon - THE UNDERCROWN
+- quarry.ogg      = "Cavern and Blade" by zesona - https://opengameart.org/content/cavern-and-blade - THE QUARRY PASS
+- skysail.ogg     = "Ile Flotante / Village In The Air" by Le Mandrill - https://opengameart.org/content/%C3%AEle-flotante-village-in-the-air - THE SKY SHIP
+BOSSES
+- frogking.ogg    = "Battle! vs Minor Gyokaijuu" by Spring Spring - https://opengameart.org/content/battle-vs-minor-gyokaijuu - the Frog King (MARSH WOOD)
+- sporemother.ogg = "Nightmare{Chiptune}[Final]" by Centurion_of_war - https://opengameart.org/content/nightmarechiptunefinal - the fungus mother (SPOREWOOD)
+- ramlord.ogg     = "8-bit Danger!! Strong Boss" by HydroGene - https://opengameart.org/content/8-bit-danger-strong-boss - the Ram Lord (THE SCREE PATH)
+- owlreeve.ogg    = "Zelda Style 8-bit Boss Theme" by HydroGene - https://opengameart.org/content/zelda-style-8-bit-boss-theme - the Owl Reeve (THE HANGING VILLAGE)
+- grandmother.ogg = "MonsterVania - Ghost Land" by HydroGene - https://opengameart.org/content/monstervania-ghost-land - UNDERLEAF's boss
+- herald.ogg      = "Phantasy Boss Battle Encounter" (BossBattle.ogg from bossbattle_files.zip) by ansimuz - https://opengameart.org/content/phantasy-boss-battle-encounter - the Tide Herald (THE LONG WATER)
+- reefmaw.ogg     = "Boss Battle #3 [8-bit re-upload]" (V1) by nene - https://opengameart.org/content/boss-battle-3-8-bit-re-upload - the Reefmaw (THE SHIPWRECK REEF)
+- closedhelm.ogg  = "Duel of the Dungeons" by Umplix - https://opengameart.org/content/duel-of-the-dungeons - the Closed Helm (WAYMEET)
+- quartermaster.ogg = "Sailors Battle - Midi Theme" by Doge - https://opengameart.org/content/sailors-battle-midi-theme - the Quartermaster (THE FLOTILLA)
+- houndmaster.ogg = "Boss Fight 2" (Boss Fight 2.ogg from boss_fight_2_files.zip) by ansimuz - https://opengameart.org/content/boss-fight-2 - the Hound Master (THE HUNT)
+- masthead.ogg    = "8-bit - Slay The Evil" by HydroGene - https://opengameart.org/content/8-bit-slay-the-evil - the Masthead (THE SKY SHIP)
+- hilltroll.ogg   = "Boss Battle #6 [8-bit]" (V1) by nene - https://opengameart.org/content/boss-battle-6-8-bit - the Hill Troll (THE QUARRY PASS)
+- rimewright.ogg  = "Fields of Ice" by Jonathan So - https://opengameart.org/content/fields-of-ice - the Rimewright (THE FROSTFELL)
+- captain.ogg     = "Most Stereotypical Boss Theme Ever" by Spring Spring - https://opengameart.org/content/most-stereotypical-boss-theme-ever - the Captain (THE HURRICANE DECK)
+- tollmaster.ogg  = "8-bit - Infinite Darkness" by HydroGene - https://opengameart.org/content/8-bit-infinite-darkness - the Tollmaster (THE LAMPLIT STREET)
+NOTE: boss4.ogg and king.mp3 are the same recording ("Great Boss"), and musSailor.ogg is longwater.ogg's Sailor Waltz; no level or boss now plays boss4.

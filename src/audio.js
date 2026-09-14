@@ -5,7 +5,11 @@ const TRACKS = { hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.o
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
-  musBeach: './audio/musBeach.ogg', musSailor: './audio/musSailor.ogg', musDungeon: './audio/musDungeon.ogg' };
+  musBeach: './audio/musBeach.ogg', musSailor: './audio/musSailor.ogg', musDungeon: './audio/musDungeon.ogg',
+  /* ONE THEME PER LEVEL, ONE PER BOSS: all CC0 from OpenGameArt, levelled to the rest (audio/CREDITS.txt) */
+  sleepers: './audio/sleepers.ogg', trench: './audio/trench.ogg', barrows: './audio/barrows.ogg', quarry: './audio/quarry.ogg', skysail: './audio/skysail.ogg',
+  frogking: './audio/frogking.ogg', sporemother: './audio/sporemother.ogg', ramlord: './audio/ramlord.ogg', owlreeve: './audio/owlreeve.ogg', herald: './audio/herald.ogg', reefmaw: './audio/reefmaw.ogg', closedhelm: './audio/closedhelm.ogg',
+  quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -846,5 +850,5 @@ export const heroKitTable = () => HERO_KIT;
 export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.startsWith('vo_')).map(k => k.slice(3).split('_')[0]))].sort();
 export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
