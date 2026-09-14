@@ -28,6 +28,7 @@ import { bakeWindcaller, bakeRamLord } from './redraw/callerram.js';
 import { bakeThornback, bakeHopper, bakeHarpy, bakeHound } from './redraw/foes1.js';
 import { bakeGrub, bakeDrone, bakeGreatHound, bakeTroll } from './redraw/foes2.js';
 import { bakeHoundMaster } from './redraw/hunt.js';
+import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM } from './level.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
@@ -117,9 +118,9 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.15 * (tal('heavyPlunge') + tal('firedropDmg')))); // (HEAVY PLUNGE, FIREDROP)
 const DMG = { rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
-  helmCut: 21, helmStamp: 18, helmGrab: 22,
+  helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, wardenPick: 24, wardenChain: 14, wardenFall: 20, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
-const EHP = { masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 620,
+const EHP = { masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, pitwarden: 560, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 430, roc: 360, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 // THE METER PACES THE WRONG HALF OF THE FIGHT. A swing costs 12 and comes off the blade, so eight swings
 // empty you and that is a fine rhythm - two full three-cut runs and then you breathe. But a DODGE cost 25,
@@ -598,7 +599,7 @@ const skill2Now = () => { if (!tal('twinSkill')) return null; const k = PROG.ski
 const skillPress = k => (throwPress && skillNow() === k) || (skill2Press && skill2Now() === k);
 const skillNow = () => { const mine = TREE.filter(n => n.hero === hero() && n.active && tal(n.id)); if (!mine.length) return null; const k = PROG.skill; return mine.some(n => n.id === k) ? k : mine[0].id; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
-const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.pitwarden = bakePitWarden(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakeClosedHelm(); SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = bakeGolem(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */
+const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.pitwarden = bakePitWarden(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = bakeGolem(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */
 SPR.watch = bakeWatch(); SPR.lampreeve = bakeLampreeve(); SPR.tollmaster = bakeTollmaster();
 SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: '#6a4a2c', W: '#4a3220', y: '#c9b27c', Y: '#9a8050', r: '#c9463d' };
   const rows = ['....ssss....', '...ssssss...', '...sesess...', '...ssssss...', '....SSSS....', '.....ww.....', '.yyyyyyyyyy.', 'yyYyyyyyyYyy', '.YyyyrryyyY.', '..yyrrrryy..', '..yyrrrryy..', '..yyyrryyy..', '..yYyyyyYy..', '...yyyyyy...', '.....ww.....', '.....ww.....', '.....ww.....', '.....ww.....', '...WWWWWW...', '..WWWWWWWW..'];
@@ -710,7 +711,7 @@ function resolveTiles() {
        ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
        being the same grey rock with grass on it. */
     const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && CROWN;
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : villT ? VILL : crownT ? CROWN : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? CROWN : villT ? VILL : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -730,6 +731,7 @@ function resolveTiles() {
         else if (dress === 'none') { roll = 1; }
         else if (dress === 'crag') { roll = 1; if (!inZone) { const r2 = rnd(); if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 6) | 0), y: y * TS - 7, c: PROP.heather[(rnd() * 3) | 0], sway: 0 }); else if (r2 < 0.21 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 12, c: PROP.gorse[(rnd() * 2) | 0], birds: false }); else if (r2 < 0.26) decor.push({ k: 'fern', x: x * TS + 4, y: y * TS - 14, c: PROP.thistle[(rnd() * 2) | 0], sway: 0 }); else if (r2 < 0.32) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); } }
         else if (dress === 'camp') { roll = 1; const r2 = rnd(); if (r2 < 0.03 && flat2) decor.push({ k: 'cart', x: x * TS, y: y * TS - 16, c: PROP.cart, bg: true }); else if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 }); else if (r2 < 0.21) { decor.push({ k: 'skull', x: x * TS + 3, y: y * TS - 24, c: PROP.skullPost, crow: rnd() < 0.5 }); } else if (r2 < 0.25 && flat2) decor.push({ k: 'tent', x: x * TS - 4, y: y * TS - 22, c: PROP.tent[(rnd() * 2) | 0], bg: true }); else if (r2 < 0.28) { decor.push({ k: 'fire', x: x * TS + 1, y: y * TS - 14, c: PROP.campfire[0], fire: true }); lights.push({ x: x * TS + 8, y: y * TS - 6, r: 38 }); } else if (r2 < 0.34) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); }
+        else if (dress === 'village' && crownT) { roll = 1; }   /* NO CART PARKED ON A WALL-WALK: the masons' stone grows nothing */
         else if (dress === 'village') { roll = 1; const r2 = rnd();
           if (r2 < 0.03 && flat2) decor.push({ k: 'cart', x: x * TS, y: y * TS - 16, c: PROP.cart, bg: true });
           else if (r2 < 0.06 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 16, c: PROP.beanpoles[(rnd() * 2) | 0], birds: false, bg: true });
@@ -1213,7 +1215,8 @@ function spawnEnt(e) {
       case 'hedgeknight': enemies.push({ ...base, t: 'hedgeknight', w: 12, h: 16, hp: EHP.hedgeknight, maxHp: EHP.hedgeknight, speed: 22, mode: 'walk', modeT: 0, turnT: 0, cd: 1.2, leapT: 4 + Math.random() * 2 }); break;
       case 'runner': enemies.push({ ...base, t: 'runner', w: 8, h: 12, hp: EHP.runner, maxHp: EHP.runner, speed: 62, mode: 'walk', modeT: 0, cd: 0.9, fetched: 0 }); break;
       case 'crossbow': enemies.push({ ...base, t: 'crossbow', w: 10, h: 12, hp: EHP.crossbow, maxHp: EHP.crossbow, speed: 0, mode: 'span', modeT: 1.2, cd: 0, perch: true }); break;
-      case 'closedhelm': { const ch = { ...base, t: 'closedhelm', w: 20, h: 26, hp: EHP.closedhelm, maxHp: EHP.closedhelm, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, cutT: 2.2, stampT: 6, grabT: 9, openT: 0 }; boss = ch; enemies.push(ch); } break;
+      case 'lancer': enemies.push({ ...base, t: 'lancer', w: 22, h: 30, hp: EHP.lancer * (e.mini ? 2 : 1), mounted: true, mode: 'ride', modeT: 0.6, cd: 1, hitT: 0, hx0: (e.x - (e.range || 12)) * TS + 8, hx1: (e.x + (e.range || 12)) * TS + 8, mini: !!e.mini, miniBig: !!e.mini, phase: 1 }); break;   /* THE SERJEANT rides the length of his beat and no further */
+      case 'closedhelm': { const ch = { ...base, t: 'closedhelm', w: 24, h: 50, hp: EHP.closedhelm, maxHp: EHP.closedhelm, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, cutT: 1.2, thrustT: 3, bashT: 5.5, judgeT: 8, open: 0, ward: true }; boss = ch; enemies.push(ch); } break;
       case 'drownedking': { const dk = { ...base, t: 'drownedking', w: 30, h: 32, hp: EHP.drownedking, maxHp: EHP.drownedking, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, haulT: 6, debtT: 10 }; boss = dk; enemies.push(dk); } break;
       case 'propman': enemies.push({ ...base, t: 'propman', w: 12, h: 13, hp: EHP.propman, mode: 'walk', modeT: 1, hitT: 0, swingT: 2, home: px, mini: !!e.mini }); break;
       case 'clinger': enemies.push({ ...base, t: 'clinger', w: 10, h: 11, hp: EHP.clinger, mode: 'cling', modeT: 0, hitT: 0, wallX: px, wallY: py, holdT: 0 }); break;
@@ -1279,6 +1282,7 @@ function spawnEnt(e) {
       case 'harpy': enemies.push({ ...base, t: 'harpy', hx: px, hy: py, w: 12, h: 7, hp: EHP.harpy, mode: 'hover', modeT: 0, face: -1, cd: 0 }); break;
       case 'goat': enemies.push({ ...base, t: 'goat', w: 14, h: 11, hp: EHP.goat, speed: 30, mode: 'patrol', modeT: 0, rider: true, timer: 0, air: false, hitT: 0 }); break;
       case 'ramlord': boss = { ...base, t: 'ram', w: 48, h: 32, hp: EHP.ram, maxHp: EHP.ram, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, n: 0 }; enemies.push(boss); break;
+      case 'guest': props.push({ t: 'guest', x: px, y: py, v: e.v || 0, face: e.face || 1, anim: Math.random() * 7 }); break;   /* THE BEER GARDEN: drinkers, not creatures */
       case 'npc': props.push({ t: 'npc', x: px, y: py, kind: e.kind, ride: !!e.ride, anim: Math.random() * 6 }); break;
       case 'exit': props.push({ t: 'exit', x: px, y: py }); break;
       case 'stray': props.push({ t: 'stray', kind: e.kind || 'sheep', x: px, y: py, got: straysGot.has(px), anim: Math.random() * 6 }); if (e.kind === 'folk' && straysGot.has(px)) props.push(camper([...straysGot].indexOf(px))); break;
@@ -1364,7 +1368,7 @@ function spawnEntitiesTail() {
 let ambushMsg = '', ambushSub = '', ambushMsgT = 0, ambushCol = '#ff6b6b';
 const AMB = { tell: 0.9, beat: 1.3, maxWave: 70, up: 10, down: 6 };
 const AMB_FLY = new Set(['wasp', 'crow', 'bat', 'harpy', 'kite', 'drone', 'petrel', 'gull']);
-const AMB_STILL = new Set(['lurker', 'spit', 'spitcap', 'urchin', 'watch', 'sentry', 'turret', 'clinger', 'puffball']);   /* no legs to fall on: raised, they would hang in the air where they were put */
+const AMB_STILL = new Set(['lancer', 'lurker', 'spit', 'spitcap', 'urchin', 'watch', 'sentry', 'turret', 'clinger', 'puffball']);   /* no legs to fall on: raised, they would hang in the air where they were put */
 const ambushLive = () => ((L && L.ambushes) || []).find(A => A.st && A.st !== 'done');
 function ambushSay(msg, sub, col, t) { ambushMsg = msg; ambushSub = sub; ambushCol = col; ambushMsgT = t; }
 /* THE GATE STANDS ON ITS OWN COLUMN'S FLOOR: up onto a rock it meets, down to the bottom of a dip, and up until a ceiling or too tall to jump */
@@ -2466,7 +2470,8 @@ const BEASTS = [
   { t: 'hedgeknight', name: 'HEDGE KNIGHT', sub: 'nobody owns him', desc: 'A great helm, a poleaxe and a surcoat that has been washed too many times. The swing round the side is a single mark and can be taken on the beat. The jump is a double mark and cannot be answered at all - it can only be left. Sometimes the first swing is a feint: guard on the second.' },
   { t: 'runner', name: 'THE RUNNER', sub: "somebody's squire", desc: 'Quick, unarmoured, and barely worth a swing. What he is for is the shout: once, he stops and fetches every sworn sword who can hear him, and they come at a trot. Reach him before he opens his mouth or deal with what he brings.' },
   { t: 'crossbow', name: 'CROSSBOWMAN', sub: 'up a stair', desc: 'He does not move and he will not come down. He winds, he levels, and the bolt goes where you were standing when he levelled it. The shield turns it - and sends it back up the stair - so he is the reason your guard is up when somebody walks in with a sword. A bolt goes through a shield held up early: only a guard raised as it lands turns it, and that one goes back up the stair.' },
-  { t: 'closedhelm', name: 'THE CLOSED HELM', sub: 'he is only here for the purse', desc: 'Full plate, and there is no way through it. Every cut, every plunge, every point of fire TURNS - the word comes up and nothing happens. The only thing that opens a man in plate is his own blow answered: take the cut on the beat, or go through it on a dodge, and he is open for a second and a half. The stamp and the reach are double marks and neither of them can be answered that way: the first has to be jumped and the second has to be left. Half way down he stops being polite and puts two cuts together. Keep your distance and he closes it: THE SHOULDER is a single mark, and taken on the beat it opens him like the cut. Let it past and the wall does the same.' },
+  { t: 'closedhelm', name: 'THE PALADIN', sub: 'sworn to the chapel', desc: 'A holy ward stands round him and every blade, bolt and flame comes off it. Only his own SWORD opens him: the cut and the thrust are single marks - meet them on the beat (a parry, the ward raised as it lands, the drain or a roll through it) and the ward breaks for a breath. THE BASH is a double mark along a red line: roll through it or be gone. JUDGEMENT marks where you stand: guard it or step off the mark.' },
+  { t: 'lancer', name: 'SERJEANT', sub: 'mounted, on the bridge', desc: 'A man-at-arms on a barded horse, riding his beat end to end. The charge is a single mark: take it on the shield and he goes over the back of his horse, or jump or roll it. Close to him he swipes with his sword. Mounted, the barding takes some of every cut; in the road he is a man with a sword and no horse.' },
   { t: 'drownedking', name: 'THE DROWNED KING', sub: 'the last one he could spare', desc: 'He has been down here the whole time, and the tribute was never going to the goblins. He is too heavy to come up and you are too light to go down, so the fight is the same question the trench has been asking all the way: how heavy are you right now? THE SLAM goes along the floor and only touches what is standing on it. THE UNDERTOW takes anything LIGHT and brings it into his reach. And when he calls THE DEBT in, thirty years of it comes up off the bottom between you. And THE ANCHOR goes round at the height you jump to: the slam wants you off the floor, the anchor wants you on it.' },
   { t: 'propman', name: 'THE PROPMAN', sub: 'he holds the mine up', desc: 'He does not want to fight you. He wants to get to the nearest set of timber and PROP IT, and while he is standing by one that set will not come down - he puts the blow back in it faster than you can take it out. Kill the propman and then cut the timber; do it the other way round and you have done the work twice. He swings the prop itself, which is slow, wide and heavy. The Overman does not wait to be reached: he throws timber.' },
   { t: 'clinger', name: 'THE CLINGER', sub: 'it waits on the wall', desc: 'Blind, pale, and flat against the rock of a shaft, where it looks like nothing at all. It has no interest in you on the ground. It commits when you are IN THE AIR beside it: it lets go, falls with you, takes hold, and rides you down - and what kills you is the floor, not the thing. Swing while it has you and it lets go.' },
@@ -2584,7 +2589,7 @@ const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
 const BOSS_T = ['closedhelm', 'drownedking', 'pitwarden', 'queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter', 'master', 'masthead'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
-const BEAST_SHORT = { swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE CLOSED HELM', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', pitwarden: 'THE PIT WARDEN', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', tideguard: 'TIDEGUARD', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
+const BEAST_SHORT = { swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', pitwarden: 'THE PIT WARDEN', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', tideguard: 'TIDEGUARD', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
 function openMenu(from) { menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
@@ -2950,10 +2955,10 @@ function addHurtPose(set) { if (!set || !set.R || !set.R.length || set.hurtMade)
   set.hurtMade = true; }
 const MADE_HURT = [];   /* every one of the ten has its hurt pose drawn in its baker now; addHurtPose stays for a creature that has none yet */
 for (const t of MADE_HURT) addHurtPose(SPR[t]);
-const HAS_HURT = new Set(['masthead', 'sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', 'tideguard', 'brute', 'heavy', 'soldier', 'sailor', 'angler', 'goat', 'hearthgob', 'spider', 'thorn', ...MADE_HURT]);
+const HAS_HURT = new Set(['closedhelm', 'lancer', 'masthead', 'sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', 'tideguard', 'brute', 'heavy', 'soldier', 'sailor', 'angler', 'goat', 'hearthgob', 'spider', 'thorn', ...MADE_HURT]);
 const COLS = { masthead: ['#6faa4a', '#efe6d2', '#c9463d'], swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
-  closedhelm: ['#c9d1dc', '#9a3a3a', '#e0b040'],
+  closedhelm: ['#eef2f6', '#f2cc58', '#3d5eb0'], lancer: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   prise: ['#b8a898', '#e0d4c4', '#c9463d'], holdfast: ['#4a8a7a', '#c9463d', '#6a8a80'], drownedking: ['#4a7a6e', '#c9a83a', '#7ff0e0'], propman: ['#6faa4a', '#8a5a32', '#c9b27c'], clinger: ['#cfc8b8', '#9a9280', '#c9463d'], pitwarden: ['#4a3e32', '#8a919c', '#ffd36b'], grandmother: ['#6a5a7a', '#7aa85a', '#f6f6ee'], assassin: ['#26222e', '#3a3448', '#d8e070'], berserker: ['#8fd160', '#4a7a32', '#c9463d'], watch: ['#36535e', '#9fb8a8', '#ccd4dc'], lampreeve: ['#2a3a34', '#8a6a44', '#14201e'], tollmaster: ['#5b3566', '#e6b94a', '#cfc6a8'], captain: ['#d14a3a', '#e6b94a', '#191622'], cutlass: ['#c9463d', '#8a4a2a', '#e8dcc0'], boarder: ['#8a6a3a', '#5a4424', '#c9b27c'], marine: ['#4a5a6a', '#2e3a48', '#c9d1dc'], bosun: ['#7a4a3a', '#4a2c22', '#ffd36b'], lookout: ['#9aa39a', '#6a7268', '#e8dcc0'], quarter: ['#3a2a4a', '#22182e', '#ffd36b'], sailor: ['#6a7a68', '#48584a', '#8a9a84'], netter: ['#5a6a60', '#3e4a44', '#7a8a80'], urchin: ['#2a2630', '#4a4458', '#8a84a0'], angler: ['#2e3a3e', '#1c2428', '#7ff0e0'], petrel: ['#3a3a44', '#22222a', '#c9d1dc'], reefmaw: ['#2e4a3a', '#1c2c24', '#8fb08a'], turtle: ['#5a6a3a', '#3e4a28', '#7a8a4a'], eel: ['#2a3a3a', '#3e5452', '#a8b8a0'], heronfoe: ['#8a96a0', '#c8d0d4', '#e0b040'], crab: ['#b8483a', '#e07060', '#e8c8a8'], scout: ['#a8cfc6', '#4a6a2a', '#7ff0e0'], siren: ['#a8cfc6', '#1f3a36', '#7ff0e0'], tideguard: ['#e07a6a', '#4a9a8a', '#a8cfc6'], herald: ['#e07a6a', '#4a9a8a', '#6a8a3a'], soldier: ['#5d4a8a', '#c9d1dc', '#6faa4a'], javelin: ['#8a5a32', '#5d4a8a', '#6faa4a'], heavy: ['#7c8797', '#c9d1dc', '#5d4a8a'], dummy: ['#c9b27c', '#8a5a32', '#e8dcc0'], sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a', '#c9a0ff', '#e8dcc0'], crow: ['#2a2433', '#4a4458', '#ff4a3a'], horn: ['#6faa4a', '#e0b040', '#c9463d'], bale: ['#d9b44a', '#8a6a32', '#9a5aa8'], shardling: ['#bfe6f5', '#eefaff', '#7aa8c8'], suncatcher: ['#bfe6f5', '#7fe8ff', '#4a6a90'], roc: ['#8a8478', '#bfe6f5', '#c9a83a'], sentry: ['#6faa4a', '#5a2a7a', '#e0b040'], gqueen: ['#5a2a7a', '#6faa4a', '#e0b040'], hearthgob: ['#6faa4a', '#c9463d', '#8a5a32'], cutter: ['#6faa4a', '#8a919c', '#5d4a8a'], lance: ['#9aa3b0', '#c9463d', '#e0b040'], snuffer: ['#3a3448', '#8a5a32', '#ffd36b'], sailer: ['#6faa4a', '#c9b27c', '#c9463d'], miner: ['#6faa4a', '#c9b27c', '#8a919c'], bat: ['#3a3448', '#5a5468'], grub: ['#b8d878', '#e8ff9a', '#7a9a48'], rockgoblin: ['#6faa4a', '#8a919c', '#ffd36b'], golem: ['#bfe6f5', '#7aa8c8', '#ff7ab8'], kite: ['#c9463d', '#ffd36b', '#6faa4a'], hare: ['#8a6a4a', '#e8dcc0'], wight: ['#c8d8c8', '#8aa08a'], windcaller: ['#6faa4a', '#c9a0ff', '#e8dcc0'], forgemaster: ['#8a919c', '#6a4a3a', '#ffd36b'], greathound: ['#5a4a3a', '#3a2e22', '#ff4a3a'], spider: ['#3a3448', '#5a5468'], owl: ['#7a5a3a', '#e8dcc0', '#ffd36b'], troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], spitcap: ['#9a5aa8', '#e8e0f0', '#c9a0ff'], weaver: ['#c8bcd0', '#8a7e9a', '#ff4a3a'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'] };
 
 // ---------- damage ----------
@@ -3096,6 +3101,7 @@ function openYardRespawn(dt) {   // in the open yard a straw man is back on his 
     if (e.downT > 2) { e.downT = 0; e.alive = true; e.hp = e.hp0 || e.maxHp || EHP[e.t] || 20; e.dying = 0; e.flash = 0; e.stagger = 0; e.mode = e.mode0 || e.mode; burst(e.x, e.y - 8, 8, ['#e0c088', '#c9a040'], 40, 0.4); } }
 }
 function spawnCorpse(e, dir) {
+  if (e.t === 'closedhelm') e.lastFrame = 12;   /* he goes down on one knee, the sword in the ground */
   if ((e === boss || e.mini) && e.lastSet) { bossBodies.push({ set: e.lastSet, frame: e.lastFrame || 0, x: e.x, y: e.y, face: e.face || 1, big: e.lastBigF || 1, t: 0, dur: 1.4 }); SFX.gobDieLow(); return; }   /* a boss leaves a body, not a tumble */
   if (isPirate() && !P.loaded && !P.dead) reloadPistol('');   /* a kill seats a ball: it used to be any coin, which made the pistol free */
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
@@ -3106,6 +3112,7 @@ function spawnCorpse(e, dir) {
     case 'sapper': Object.assign(c, { vx: dir * 90, vy: -190, spin: dir * 14, life: 1.0, max: 1.0 }); SFX.gobDie(); bombs.push({ x: e.x, y: e.y - 4, vx: 0, vy: -30, fuse: 0.6 }); break;
     case 'grandmother': Object.assign(c, { vx: dir * 20, vy: -70, spin: dir * 1, life: 1.6, max: 1.6 }); SFX.gobDie(); break;
     case 'assassin': Object.assign(c, { vx: dir * 20, vy: -60, spin: dir * 2, life: 0.7, max: 0.7 }); SFX.puff(); break;
+    case 'lancer': c.frame = 15; Object.assign(c, { vx: dir * 50, vy: -150, spin: dir * 4, life: 1.3, max: 1.3 }); SFX.heavy(); if (e.mounted) { c.vy = -220; lancerLoose(e); } break;
     case 'berserker': Object.assign(c, { vx: dir * 60, vy: -150, spin: dir * 3, life: 1.4, max: 1.4 }); SFX.heavy(); break;
     case 'hearthgob': Object.assign(c, { vx: dir * 40, vy: -130, spin: dir * 5, life: 1.1, max: 1.1 }); SFX.gobDie(); break;
     case 'cutter': Object.assign(c, { vx: dir * 40, vy: -130, spin: dir * 5, life: 1.1, max: 1.1 }); SFX.gobDie(); break;
@@ -3172,7 +3179,7 @@ const ONE_HIT = new Set(['wasp', 'harpy', 'bat', 'kite', 'drone', 'crow']); // w
 const fullHp = e => e.maxHp || e.hp0 || e.hp; // what it stood up with
 /* WHAT IT IS MADE OF decides what comes off it when it is struck. Anything not named is flesh. */
 const MAT = {};
-for (const t of ['swornsword', 'hedgeknight', 'closedhelm', 'crossbow', 'soldier', 'heavy', 'javelin', 'watch', 'tideguard', 'lance', 'sentry', 'shield', 'forgemaster', 'pitwarden', 'tollmaster', 'lampreeve', 'captain', 'quarter', 'marine', 'herald', 'king', 'cutlass', 'boarder', 'bosun', 'sailor', 'netter']) MAT[t] = 'steel';
+for (const t of ['swornsword', 'hedgeknight', 'closedhelm', 'lancer', 'crossbow', 'soldier', 'heavy', 'javelin', 'watch', 'tideguard', 'lance', 'sentry', 'shield', 'forgemaster', 'pitwarden', 'tollmaster', 'lampreeve', 'captain', 'quarter', 'marine', 'herald', 'king', 'cutlass', 'boarder', 'bosun', 'sailor', 'netter']) MAT[t] = 'steel';
 for (const t of ['bale', 'dummy', 'sailer', 'sweep', 'masthead']) MAT[t] = 'wood';
 for (const t of ['sporeling', 'lurker', 'spitcap', 'shaman', 'drone', 'mother', 'gill', 'heart', 'spit']) MAT[t] = 'fungus';
 for (const t of ['wight', 'drownedking']) MAT[t] = 'bone';
@@ -3202,7 +3209,7 @@ function hitSpray(e, dir) {
    a cut from behind, the third cut of a run, a riposte, a plunge, a dash. Taps barely move it and it drains if you stop
    pressing. Full, they BREAK: they stop where they stand for a couple of seconds and take half as much again. Things
    that fly, and the bosses whose whole fight is their own opening, do not carry one. */
-const POISE_HEAVY = new Set(['brute', 'heavy', 'hedgeknight', 'troll', 'shield', 'swornsword', 'pike', 'berserker', 'watch', 'tideguard', 'bosun', 'boarder', 'soldier', 'hound']);
+const POISE_HEAVY = new Set(['lancer', 'brute', 'heavy', 'hedgeknight', 'troll', 'shield', 'swornsword', 'pike', 'berserker', 'watch', 'tideguard', 'bosun', 'boarder', 'soldier', 'hound']);
 const POISE_SKIP = new Set(['roc', 'owl', 'windcaller', 'queen', 'mother', 'gill', 'heart', 'king', 'bearer', 'dummy', 'wasp', 'drone', 'kite', 'captain', 'closedhelm', 'gqueen', 'golem']);
 const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : (e.big || e.mini) ? 60 : POISE_HEAVY.has(e.t) ? 40 : 0;
 function addPoise(e, dmg, fromX, plunge) {
@@ -3248,7 +3255,7 @@ function wallSlam(e) {
 }
 const KNOCK_SKIP = new Set(['wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker']);
 function knockFoe(e, dir, push) {
-  if (!e.alive || e.maxHp || e.mini || e.slamming || KNOCK_SKIP.has(e.t)) return;
+  if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return;   /* a horse is not thrown across the road by a sword */
   e.slammed = false;
   const wt = POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
   e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt);
@@ -3278,9 +3285,13 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
   /* THE CLOSED HELM. Full plate, and it is not a damage reduction: it is a NO. Only the window his own
      blow opens - a parry, or a dodge taken through it - lets anything at all reach him. */
-  if (e.t === 'closedhelm' && !(e.open > 0)) { SFX.clank(); sparks(e.x, e.y - 16, Math.sign(e.x - fromX) || 1, 5); number(e.x, e.y - 34, 'TURNED', '#9aa39a'); hitstop(0.03); return; }
+  if (e.t === 'closedhelm' && !(e.open > 0)) { SFX.clank(); SFX.aegis(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 22, e.y - 30, Math.sign(fromX - e.x) || 1, 6); e.wardHit = 0.35; hitstop(0.03);
+    if (!(e.wardSaid > 0)) { e.wardSaid = 0.9; number(e.x, e.y - 72, 'WARDED', '#fff3b0'); ringAt(e.x, e.y - 30, 30, '#fff3b0', 0.3);
+      PROG.palTold = (PROG.palTold || 0) + 1; if (PROG.palTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING GETS THROUGH HIS WARD. MEET HIS SWORD ON THE BEAT AND IT BREAKS.'; } }
+    return; }   /* THE WARD: not a reduction, a NO. Only his own sword, answered on the beat, takes it down */
   if (e.hill && e.mode === 'pinned') { dmg = Math.round(dmg * 2); }   /* under the stone, every blow lands twice */
-  if (e.t === 'closedhelm' && e.open > 0) { dmg = Math.round(dmg * 2.5); }   /* into the gap, not onto the plate */
+  if (e.t === 'closedhelm' && e.open > 0) { dmg = Math.round(dmg * 2); }   /* the ward is down: the blow finds the man */
+  if (e.t === 'lancer') { if (e.mounted && e.mode !== 'blown' && e.mode !== 'rear' && e.mode !== 'reel') dmg = Math.max(1, Math.round(dmg * 0.6)); else if (e.open > 0) dmg = Math.round(dmg * 1.5); }   /* THE BARDING takes some of every cut; in the road he takes all of it */
   /* THE HOUND MASTER's war-hound takes the cut for him while it stands square under him: a third gets through. Reared,
      sprawled, shied or bitten it cannot, and he comes half out of the saddle into the blow. */
   if (e.t === 'master' && e.mode !== 'sleep') { if (e.open > 0) dmg = Math.round(dmg * 1.6); else { dmg = Math.max(1, Math.round(dmg * 0.33)); SFX.clank(); if (!(e.guardSaid > 0)) { e.guardSaid = 1.2; number(e.x, e.y - e.h - 6, 'THE HOUND TAKES IT', '#9aa39a'); } } }
@@ -4644,7 +4655,7 @@ function updatePlayer(dt) {
       if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
       hurtEnemy(e, P.relic === 'crown' ? plungeDmg() : 10, P.x, true); P.vy = keys.jump ? -290 : -220; SFX.pPogo(); squash(0.8, 1.25, 0.1); continue;
     }
-    if (e.t === 'sprig' || e.t === 'shield' || e.t === 'cutlass' || e.t === 'boarder' || e.t === 'marine' || e.t === 'bosun' || e.t === 'lookout' || e.t === 'quarter' || e.t === 'masthead' || e.t === 'sailor' || e.t === 'netter' || e.t === 'angler' || e.t === 'petrel' || e.t === 'reefmaw' || e.t === 'turtle' || e.t === 'eel' || e.t === 'heronfoe' || e.t === 'crab' || e.t === 'scout' || e.t === 'siren' || e.t === 'tideguard' || e.t === 'herald' || e.t === 'dummy' || e.t === 'brute' || e.t === 'chief' || e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk' || e.t === 'king' || e.t === 'bearer' || e.t === 'pike' || e.t === 'master' || e.t === 'thief' || e.t === 'ram' || e.t === 'goat' || e.t === 'harpy' || e.t === 'troll' || e.t === 'greathound' || e.t === 'spider' || e.t === 'owl' || e.t === 'miner' || e.t === 'bat' || e.t === 'propman' || e.t === 'pitwarden' || e.t === 'drownedking' || e.t === 'swornsword' || e.t === 'hedgeknight' || e.t === 'crossbow' || e.t === 'closedhelm' || e.t === 'holdfast' || e.t === 'forgemaster' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'gqueen' || (e.big && e.t !== 'sailer') || (e.t === 'bale' && Math.abs(e.vx) < 40)) continue; // their damage comes from their attacks, not from touching them
+    if (e.t === 'sprig' || e.t === 'shield' || e.t === 'cutlass' || e.t === 'boarder' || e.t === 'marine' || e.t === 'bosun' || e.t === 'lookout' || e.t === 'quarter' || e.t === 'masthead' || e.t === 'sailor' || e.t === 'netter' || e.t === 'angler' || e.t === 'petrel' || e.t === 'reefmaw' || e.t === 'turtle' || e.t === 'eel' || e.t === 'heronfoe' || e.t === 'crab' || e.t === 'scout' || e.t === 'siren' || e.t === 'tideguard' || e.t === 'herald' || e.t === 'dummy' || e.t === 'brute' || e.t === 'chief' || e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk' || e.t === 'king' || e.t === 'bearer' || e.t === 'pike' || e.t === 'master' || e.t === 'thief' || e.t === 'ram' || e.t === 'goat' || e.t === 'harpy' || e.t === 'troll' || e.t === 'greathound' || e.t === 'spider' || e.t === 'owl' || e.t === 'miner' || e.t === 'bat' || e.t === 'propman' || e.t === 'pitwarden' || e.t === 'drownedking' || e.t === 'swornsword' || e.t === 'hedgeknight' || e.t === 'crossbow' || e.t === 'closedhelm' || e.t === 'lancer' || e.t === 'holdfast' || e.t === 'forgemaster' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'gqueen' || (e.big && e.t !== 'sailer') || (e.t === 'bale' && Math.abs(e.vx) < 40)) continue; // their damage comes from their attacks, not from touching them
     const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12));
     if (res === 'blocked') {
       if (e.t === 'sapper' && e.fleeT <= 0) { bombs.push({ x: e.x, y: e.y - 4, vx: -Math.sign(P.x - e.x) * 20, vy: -40, fuse: 0.45 }); e.fleeT = 0; e.stagger = 0.7; e.vx = 0; number(e.x, e.y - 18, 'DROPPED IT', '#ffd36b'); }
@@ -4700,7 +4711,7 @@ const bossTitle = b => {
   return nm;
 };
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
-const MINI_NAME = { propman: 'THE OVERMAN', forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE', suncatcher: 'THE RIMEWRIGHT', golem: 'THE FACET', berserker: 'THE BELLRINGER' };
+const MINI_NAME = { lancer: 'THE SERJEANT', propman: 'THE OVERMAN', forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE', suncatcher: 'THE RIMEWRIGHT', golem: 'THE FACET', berserker: 'THE BELLRINGER' };
 const MINI_DONE = { propman: 'NOTHING HOLDS IT UP NOW', forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS', suncatcher: 'THE RIME COMES OFF THE ROAD', golem: 'THE LIGHT IS LET THROUGH', berserker: 'THE ROPE IS YOURS', assassin: 'THE PARK GATE IS OPEN' };
 const miniName = () => (L.mini && (L.mini.name || MINI_NAME[L.mini.boss])) || 'THE BEAST';   /* a level can name its own: the same berserker is the Bellringer in the village and the Striker in Waymeet */
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
@@ -4724,7 +4735,7 @@ function setWall(col, solid) {
 function bossStart() {
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; setView('zoom'); } if (boss.t === 'closedhelm' || boss.t === 'drownedking' || boss.t === 'pitwarden' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king' || boss.t === 'lance' || boss.t === 'suncatcher' || boss.t === 'roc' || boss.t === 'gqueen' || boss.t === 'grandmother' || boss.t === 'troll' || boss.t === 'masthead') setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true);
-  ({ closedhelm: SFX.forgeHammer, drownedking: SFX.bellow, pitwarden: SFX.bellow, queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow, grandmother: SFX.heard, troll: SFX.snort, master: SFX.whistleCall, masthead: SFX.whistleCall }[boss.t] || SFX.roar)(); shakeCam(6); music.stop(); bossMusicT = 1.1; number(boss.x, boss.y - 30, boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : 'THE GRANDMOTHER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE CLOSED HELM  OPEN' : boss.phase === 2 ? 'THE CLOSED HELM  DONE BEING POLITE' : 'THE CLOSED HELM') : boss.t === 'drownedking' ? (boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'pitwarden' ? (boss.mode === 'reel' ? 'THE PIT WARDEN  OFF HIS FEET' : boss.phase === 2 ? 'THE PIT WARDEN  THE LAMP IS OUT' : 'THE PIT WARDEN') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'master' ? 'THE HOUND MASTER' : 'THE HORNET QUEEN', '#ffd36b'); zoomKick(1.1, 0.4);
+  ({ closedhelm: SFX.judgement, drownedking: SFX.bellow, pitwarden: SFX.bellow, queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow, grandmother: SFX.heard, troll: SFX.snort, master: SFX.whistleCall, masthead: SFX.whistleCall }[boss.t] || SFX.roar)(); shakeCam(6); music.stop(); bossMusicT = 1.1; number(boss.x, boss.y - 30, boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : 'THE GRANDMOTHER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'pitwarden' ? (boss.mode === 'reel' ? 'THE PIT WARDEN  OFF HIS FEET' : boss.phase === 2 ? 'THE PIT WARDEN  THE LAMP IS OUT' : 'THE PIT WARDEN') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'master' ? 'THE HOUND MASTER' : 'THE HORNET QUEEN', '#ffd36b'); zoomKick(1.1, 0.4);
   burst(L.arena.wallL * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6); burst(L.arena.wallR * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6);
 }
 // A SLAM SHAKES THE COMB LOOSE. The section over her head goes; it lodges three rows down as a ledge that
@@ -7243,82 +7254,197 @@ function updateRoadman(e, dt) {
   e.anim = (e.anim || 0) + dt;
 }
 
-// THE CLOSED HELM. Nothing gets through him. Not a light cut, not a heavy one, not a plunge, not fire -
-// every one of them turns, and the game says so. The only thing that opens a man in full plate is his own
-// blow answered: taken on the beat, or gone through. Then he is OPEN for a second and a half and he is
-// worth every point of it. Two of his three attacks cannot be answered that way, so the fight is not a
-// metronome: the stamp has to be jumped and the reach has to be left.
+// THE PALADIN (id closedhelm, kept so the wiring does not churn). A holy WARD stands round him the whole fight and
+// nothing gets through it - not a cut, a plunge, a bolt or fire. Only his own SWORD opens him: the cut and the thrust
+// are single marks, and met ON THE BEAT the ward breaks and he is open for a short breath. The other two things he
+// does are not questions for the shield: THE BASH runs down a red line on the floor and has to be rolled or left, and
+// JUDGEMENT marks the ground you stand on and has to be guarded or stepped off. He is slow and every tell is wide.
+/* WHAT COUNTS AS MEETING HIS SWORD, hero by hero. The ordinary `answered` lets any held guard through for a paladin or a
+   death knight (their guards never set blockT), which would make the ward a wall you lean on. Here it has to be ON THE
+   BEAT for everyone: the knight's perfect guard, the freebooter's parry, the aegis raised in the last breath before
+   the blow, the drain taken up just as it lands, or a roll through the blade for the two who roll. */
+const PAL = { cut: [1.15, 0.95], thrust: [1.0, 0.85], bash: [1.2, 1.0], judge: [1.35, 1.15], gap: [1.3, 0.75], open: 2.0 };
+const palOpened = res => {
+  if (res === 'blocked') {
+    if (hero() === 'knight' || isPirate()) return P.parryT > 0;
+    if (isPaladin()) return !!P.aegis && (P.aegisT || 0) < 0.45;
+    if (isReaper()) return !!P.tolling && (P.tollHeld || 0) < 0.45;
+    return false; }
+  return res === false && P.dodge > 0 && (isPyro() || isReaper());
+};
 function updateClosedHelm(e, dt) {
-  const A = L.arena, floor = A.floor, p2 = e.phase === 2;
+  const A = L.arena, floor = A.floor, p2 = e.phase === 2, ph = p2 ? 1 : 0;
   e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.anim = (e.anim || 0) + dt;
-  e.open = Math.max(0, (e.open || 0) - dt);
+  e.open = Math.max(0, (e.open || 0) - dt); e.wardHit = Math.max(0, (e.wardHit || 0) - dt); e.wardSaid = Math.max(0, (e.wardSaid || 0) - dt);
   e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300;
-  const d = P.x - e.x, ad = Math.abs(d);
-  if (e.mode === 'sleep') return;
-  if (p2 && !e.told2) { e.told2 = 1; number(e.x, e.y - e.h - 14, 'HE STOPS BEING POLITE', '#ff6b6b'); SFX.roar(); shakeCam(6); }
-  const OPEN = (why) => { e.open = 1.6; e.stagger = 1.6; e.mode = 'reel'; e.modeT = 1.6; e.cutT = Math.min(e.cutT, 0.9);
-    number(e.x, e.y - e.h - 14, 'OPEN', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); SFX.clank();
-    hitstop(0.08); zoomKick(1.06, 0.3); shakeCam(4); ringAt(e.x, e.y - 14, 26, '#fff6e0', 0.4); };
+  const d = P.x - e.x, ad = Math.abs(d), dyP = Math.abs(P.y - e.y);
+  if (e.mode === 'sleep') { const r0 = moveBody(e, 0, e.vy * dt, false); if (r0.ground) e.vy = 0; return; }
+  if (p2 && !e.told2) { e.told2 = 1; number(e.x, e.y - e.h - 22, 'HIS OATH IS SWORN', '#fff3b0'); SFX.judgement(); shakeCam(6); ringAt(e.x, e.y - 30, 50, '#fff3b0', 0.5); }
+  const BREAK = () => { e.open = PAL.open; e.mode = 'broken'; e.modeT = PAL.open; e.vx = -e.face * 90; e.opens = (e.opens || 0) + 1;
+    number(e.x, e.y - e.h - 22, 'THE WARD BREAKS', '#8fd160'); SFX.parry(); SFX.golemShatter(); hitstop(0.1); zoomKick(1.07, 0.3); shakeCam(5);
+    ringAt(e.x, e.y - 30, 40, '#fff3b0', 0.45); burst(e.x, e.y - 30, 18, ['#fff3b0', '#f2cc58', '#ffffff'], 130, 0.6); };
+  const tell = (mode, t, mark, col) => { e.mode = mode; e.modeT = t; number(e.x, e.y - e.h - 12, mark, col); SFX.charge(); };
   let want = 0;
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.8; } break;
-    case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; e.stagger = 0; } break;
-    case 'stalk': { e.face = Math.sign(d) || e.face; want = ad > 34 ? e.face * (p2 ? 44 : 32) : 0;
-      for (const k of ['cutT', 'stampT', 'grabT']) e[k] -= dt; e.rushT = (e.rushT === undefined ? 4 : e.rushT) - dt;
+    case 'stalk': { e.face = Math.sign(d) || e.face; want = ad > 48 ? e.face * (p2 ? 34 : 26) : ad < 28 ? -e.face * 22 : 0;
+      for (const k of ['cutT', 'thrustT', 'bashT', 'judgeT']) e[k] -= dt;
       if (e.modeT <= 0 && !P.dead) {
-        if (e.rushT <= 0 && ad > 110 && Math.abs(P.y - e.y) < 30) { e.rushT = p2 ? 6 : 8; e.mode = 'rushTell'; e.modeT = p2 ? 0.6 : 0.75; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
-        else if (e.grabT <= 0 && ad < 52) { e.grabT = p2 ? 7 : 10; e.mode = 'grabTell'; e.modeT = p2 ? 0.6 : 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
-        else if (e.stampT <= 0 && ad < 90) { e.stampT = p2 ? 4.5 : 6.5; e.mode = 'stampTell'; e.modeT = p2 ? 0.42 : 0.55; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
-        else if (e.cutT <= 0 && ad < 56) { e.cutT = p2 ? 1.9 : 2.6; e.mode = 'cutTell'; e.modeT = p2 ? 0.5 : 0.7; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+        /* THE SWORD FIRST (rules E2): the parry is what this fight is about, so the two sword blows are asked for before
+           anything else in reach - and the bash and the judgement, which a close player would starve, fire anyway once late */
+        if (e.cutT <= 0 && ad < 62 && dyP < 40) { e.cutT = p2 ? 1.8 : 2.4; e.mode = 'cutTell'; e.modeT = PAL.cut[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+        else if (e.thrustT <= 0 && ad >= 50 && ad < 112 && dyP < 40) { e.thrustT = p2 ? 2.6 : 3.4; e.mode = 'thrustTell'; e.modeT = PAL.thrust[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+        else if (e.bashT <= 0 && ((ad > 44 && ad < 150) || e.bashT < -4) && dyP < 40) { e.bashT = p2 ? 4.8 : 6.5; e.face = Math.sign(d) || e.face; e.bashX1 = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x + e.face * 170)); e.mode = 'bashTell'; e.modeT = PAL.bash[ph]; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
+        else if (e.judgeT <= 0 && (ad > 70 || e.judgeT < -3)) { e.judgeT = p2 ? 6 : 8.5; e.marks = [P.x]; e.mode = 'judgeTell'; e.modeT = PAL.judge[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
       break; }
-    /* THE CUT: slow, enormous, and the only question he asks you */
-    case 'cutTell': want = 0; e.face = Math.sign(d) || e.face;
-      if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.3; SFX.slash(); SFX.heavy(); shakeCam(4); e.vx = e.face * 80;
-        if (!P.dead && Math.sign(d) === e.face && ad < 54 && Math.abs(P.y - e.y) < 30) {
-          const res = damagePlayer(e.x, DMG.helmCut);
-          if (answered(res)) { OPEN('cut'); break; } } }
+    /* THE CUT: over his head and down, slow, and the question he asks most */
+    case 'cutTell': want = 0; if (e.modeT > 0.35) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.4; SFX.slash(); SFX.heavy(); shakeCam(4); e.vx = e.face * 90;
+        if (!P.dead && Math.sign(d) === e.face && ad < 66 && dyP < 40) { const res = damagePlayer(e.x, DMG.palCut);
+          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'ON THE BEAT', '#9aa39a'); } }
       break;
-    case 'cut': want = 0;
-      if (e.modeT <= 0) { if (p2 && !e.chained) { e.chained = 1; e.mode = 'cutTell'; e.modeT = 0.38; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
-        else { e.chained = 0; e.mode = 'stalk'; e.modeT = 0.55; } }
+    case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
+    /* THE THRUST: from further off, the point first, and he comes with it */
+    case 'thrustTell': want = 0; if (e.modeT > 0.3) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.45; SFX.slash(); e.vx = e.face * 300;
+        if (!P.dead && Math.sign(d) === e.face && ad < 90 && dyP < 40) { const res = damagePlayer(e.x, DMG.palThrust);
+          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'ON THE BEAT', '#9aa39a'); } }
       break;
-    /* THE STAMP: the square jumps. Not a question - get off the ground. */
-    case 'stampTell': want = 0;
-      if (e.modeT <= 0) { e.mode = 'stamp'; e.modeT = 0.45; SFX.heavy(); SFX.stone(); shakeCam(9); zoomKick(1.09, 0.28); dust(e.x - 14, floor, 10); dust(e.x + 14, floor, 10);
-        for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 20, y: floor, dir: dd, life: 1.6, sp: p2 ? 200 : 165 });
-        if (!P.dead && P.ground && ad < 58 && Math.abs(P.y - floor) < 26) damagePlayer(e.x, DMG.helmStamp, { unblockable: true, up: true }); }
+    case 'thrust': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
+    /* THE BASH: down behind the shield, the shield lit, a red line along the floor as far as he will go - and then he goes */
+    case 'bashTell': want = 0; if (Math.random() < dt * 18) dust(e.x - e.face * 12, floor, 2);
+      if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = 0.9; e.bashHit = false; SFX.shoulder(); SFX.heavy(); }
       break;
-    case 'stamp': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
-    /* THE REACH: he is not trying to kill you, he is trying to carry you out, and it hurts either way. */
-    case 'grabTell': want = 0; e.face = Math.sign(d) || e.face;
-      if (Math.random() < dt * 26) parts.push({ x: e.x + e.face * (14 + Math.random() * 14), y: e.y - 14 - Math.random() * 10, vx: e.face * 40, vy: 0, life: 0.35, max: 0.35, col: '#c9d1dc', size: 1, grav: 0 });
-      if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.4; SFX.throwWhoosh();
-        if (!P.dead && Math.sign(d) === e.face && ad < 40 && Math.abs(P.y - e.y) < 28) {
-          const res = damagePlayer(e.x, DMG.helmGrab, { unblockable: true, up: true });
-          if (res === 'hit') { P.vx = -e.face * 300; P.vy = -230; number(P.x, P.y - 30, 'TAKEN UP', '#ff6b6b'); shakeCam(6); } } }
-      break;
-    case 'grab': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.7; } break;
-    /* THE SHOULDER: keep your distance from a man in plate and he closes it for you. Take it on the beat and he is as open
-       as after the cut; let him go past you and the wall of the square does the same. */
-    case 'rushTell': want = 0; e.face = Math.sign(d) || e.face; if (Math.random() < dt * 20) dust(e.x - e.face * 10, floor, 2);
-      if (e.modeT <= 0) { e.mode = 'rush'; e.modeT = 1.2; e.rushHit = false; SFX.shoulder(); SFX.heavy(); }
-      break;
-    case 'rush': { want = e.face * (p2 ? 230 : 200); e.vx = want;
-      if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 22 && Math.abs(P.y - e.y) < 26) { e.rushHit = true;
-        const res = damagePlayer(e.x, DMG.helmRush, { up: true });
-        if (answered(res)) { e.vx = 0; OPEN('rush'); break; }
-        if (res === 'hit') { P.vx = e.face * 280; P.vy = -160; P.ground = false; } }
-      if ((e.face > 0 && e.x >= A.x1 - 22) || (e.face < 0 && e.x <= A.x0 + 22)) { e.vx = 0; e.mode = 'reel'; e.modeT = 1.0; e.stagger = 1.0; e.open = 1.0; e.wallOpens = (e.wallOpens || 0) + 1;
-        SFX.heavy(); SFX.clank(); shakeCam(6); dust(e.x + e.face * 14, floor, 10); number(e.x, e.y - e.h - 14, 'INTO THE WALL', '#8fd160'); }
-      else if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; }
+    case 'bash': { want = e.face * (p2 ? 250 : 220); e.vx = want;
+      if (!e.bashHit && !P.dead && Math.abs(P.x - (e.x + e.face * 10)) < 24 && dyP < 44) { e.bashHit = true;
+        const res = damagePlayer(e.x, DMG.palBash, { unblockable: true, up: true });
+        if (res === 'hit') { P.vx = e.face * 300; P.vy = -220; P.ground = false; number(P.x, P.y - 30, 'BASHED', '#ff6b6b'); shakeCam(6); } }
+      if ((e.face > 0 && e.x >= e.bashX1) || (e.face < 0 && e.x <= e.bashX1) || e.modeT <= 0) { e.vx = 0; e.mode = 'stalk'; e.modeT = PAL.gap[ph] + 0.3; dust(e.x + e.face * 14, floor, 8); SFX.heavy(); }
       break; }
+    /* JUDGEMENT: the sword goes up, the mark follows you for most of the tell and then stops, and the light comes down on it */
+    case 'judgeTell': want = 0;
+      if (e.modeT > (p2 ? 0.45 : 0.55)) { const mx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); e.marks = p2 ? [mx, Math.max(A.x0 + 24, Math.min(A.x1 - 24, mx + (mx < e.x ? 64 : -64)))] : [mx]; }
+      if (Math.random() < dt * 30) motes(e.x + e.face * 3, e.y - 76, 1, 4);
+      if (e.modeT <= 0) { e.mode = 'judge'; e.modeT = 0.55; e.judged = false; SFX.judgement(); }
+      break;
+    case 'judge': want = 0;
+      if (!e.judged) { e.judged = true; shakeCam(7); zoomKick(1.06, 0.2);
+        for (const mx of e.marks || []) { bolts.push({ x: mx, y: floor, life: 0.45, storm: true, holy: true }); ringAt(mx, floor - 2, 22, '#fff6c8', 0.45); motes(mx, floor - 6, 8, 8);
+          if (!P.dead && Math.abs(P.x - mx) < 22 && P.y > floor - 90) { const res = damagePlayer(P.x + P.face, DMG.palJudge, { up: true });
+            if (res === 'blocked') { P.st = Math.max(0, P.st - 18); P.stDelay = ST.delay; number(P.x, P.y - 30, 'THE LIGHT IS HEAVY', '#fff3b0'); } } } }
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; }
+      break;
+    /* BROKEN: the ward is down, the green ring says so, and then it comes back up */
+    case 'broken': want = 0; if (e.modeT <= 0) { e.mode = 'reward'; e.modeT = 0.6; SFX.aegis(); number(e.x, e.y - e.h - 22, 'THE WARD RISES', '#fff3b0'); ringAt(e.x, e.y - 30, 34, '#fff3b0', 0.5); } break;
+    case 'reward': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
+    default: e.mode = 'stalk'; e.modeT = 0.5;
   }
-  if (e.stagger > 0 && e.mode !== 'reel') want = 0;
-  e.vx += (want - e.vx) * Math.min(1, dt * 5);
+  if (e.mode !== 'bash') e.vx += (want - e.vx) * Math.min(1, dt * 5);
+  /* HE STANDS ON THE FLOOR: the body is moved against the tiles, and only the arena's walls are clamped */
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; if (r.hitX && e.mode === 'bash') e.modeT = 0;
+  e.x = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x));
+  { const ph2 = Math.floor(e.anim * 2.4); if (Math.abs(e.vx) > 10 && ph2 !== e.stepPh) { SFX.thump(); shakeCam(1); } e.stepPh = ph2; }
+}
+/* HIS MARKS, drawn where they will land: the ward round him, the red line of the bash, the gold of judgement on the floor,
+   and the green ring while the ward is down. Two states for the ward and never both. */
+function drawPaladinMarks(e, cx, cy) {
+  const ex = Math.round(e.x - cx), ey = Math.round(e.y - cy), fy = Math.round(L.arena.floor - cy);
+  if (!(e.open > 0)) {
+    const k2 = 0.5 + 0.5 * Math.sin(time * 2.6), hit = e.wardHit || 0, rise = e.mode === 'reward' ? Math.min(1, 1 - Math.max(0, e.modeT) / 0.6) : 1;
+    g.globalAlpha = Math.min(1, (0.34 + 0.16 * k2 + hit * 1.8) * rise); g.strokeStyle = hit > 0.1 ? '#ffffff' : '#ffe690'; g.lineWidth = hit > 0.1 ? 2 : 1;
+    g.beginPath(); g.ellipse(ex, ey - 32, Math.max(1, 28 * rise), Math.max(1, 40 * rise), 0, 0, 7); g.stroke();
+    g.globalAlpha = (0.12 + 0.06 * k2 + hit * 0.4) * rise; g.fillStyle = '#fff3b0'; g.beginPath(); g.ellipse(ex, ey - 32, Math.max(1, 27 * rise), Math.max(1, 39 * rise), 0, 0, 7); g.fill();
+    g.globalAlpha = (0.45 + 0.25 * k2) * rise; g.fillStyle = '#fff6c8';
+    for (let i = 0; i < 6; i++) { const a = time * 0.9 + i * 1.047; g.fillRect(Math.round(ex + Math.cos(a) * 28), Math.round(ey - 32 + Math.sin(a) * 40), 2, 2); }
+    g.globalAlpha = 1;
+  } else { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(ex, ey - 2, 30 + k * 3, 7, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+  if ((e.mode === 'bashTell' || e.mode === 'bash') && e.bashX1 !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.setLineDash([5, 4]);
+    g.beginPath(); g.moveTo(ex, fy - 2); g.lineTo(Math.round(e.bashX1 - cx), fy - 2); g.stroke(); g.setLineDash([]);
+    const tx = Math.round(e.bashX1 - cx), f = e.face; g.fillStyle = '#ff6b6b'; g.beginPath(); g.moveTo(tx + f * 5, fy - 2); g.lineTo(tx - f * 2, fy - 7); g.lineTo(tx - f * 2, fy + 3); g.fill(); g.globalAlpha = 1; }
+  if ((e.mode === 'judgeTell' || e.mode === 'judge') && e.marks) for (const m of e.marks) { const mx = Math.round(m - cx);
+    if (e.mode === 'judgeTell') { const t = 1 - Math.max(0, e.modeT) / 1.35, k = 0.5 + 0.5 * Math.sin(time * (10 + 16 * t));
+      g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(mx, fy - 1, 22, 5, 0, 0, 7); g.stroke();
+      g.globalAlpha = 0.06 + 0.2 * t; g.fillStyle = '#fff3b0'; g.fillRect(mx - 10, 0, 20, fy); g.globalAlpha = 1; }
+    else { const t = Math.max(0, e.modeT) / 0.55; g.globalAlpha = 0.7 * t; g.fillStyle = '#fff6c8'; g.fillRect(mx - 14, 0, 28, fy); g.globalAlpha = t; g.fillStyle = '#ffffff'; g.fillRect(mx - 5, 0, 10, fy); g.globalAlpha = 1; } }
+}
+
+// THE SERJEANT. A man-at-arms on a barded horse who rides his beat end to end - a bridge, a tilt-yard - and does not
+// leave it. THE CHARGE is a single mark and a dashed line down his beat: take it on the shield and he goes over the
+// back of his horse, which runs on without him; jump it or roll it and he rides past and has to come round. Too close
+// for a lance, he draws and SWIPES (a single mark, parried like a sworn sword's cut). In the road he fights on foot.
+function lancerLoose(e) {
+  corpses.push({ t: 'lancerHorse', color: null, x: e.x, y: e.y, vx: e.face * 170, vy: 0, rot: 0, spin: 0, face: e.face, life: 1.8, max: 1.8, frame: 0, grav: 0, bounced: false, ground: true, run: true });
+  SFX.bellow(); dust(e.x, e.y, 12);
+}
+function lancerFrame(e) {
+  const m = e.mode;
+  if (e.mounted) { if (e.hurtT > 0) return 14;
+    return m === 'chargeTell' ? 4 : m === 'charge' ? 2 + Math.floor(e.anim * 10) % 2 : (m === 'wheel' || m === 'rear') ? 5 : m === 'swipeTell' ? 6 : m === 'swipe' ? 7 : (m === 'blown' || m === 'reel') ? 8 : Math.abs(e.vx) > 6 ? Math.floor(e.anim * 5) % 2 : 0; }
+  if (e.hurtT > 0) return 15;
+  return m === 'unhorsed' ? 13 : m === 'cutTell' ? 11 : m === 'cut' ? 12 : Math.abs(e.vx) > 6 ? 9 + Math.floor(e.anim * 6) % 2 : 9;
+}
+function updateLancer(e, dt) {
+  const A = e.mini && L.mini ? L.mini : null, lo = A ? A.x0 + 22 : e.hx0, hi = A ? A.x1 - 22 : e.hx1;
+  const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300;
+  e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt); e.hitT = Math.max(0, (e.hitT || 0) - dt); e.open = Math.max(0, (e.open || 0) - dt); e.anim = (e.anim || 0) + dt;
+  if (e.mini && !miniActive) { const r0 = moveBody(e, 0, e.vy * dt, false); if (r0.ground) e.vy = 0; return; }   /* the Serjeant of the Lists waits for the gate to shut */
+  if (e.mini && e.phase === 1 && e.hp < e.hp0 / 2) { e.phase = 2; number(e.x, e.y - 46, 'HE LOWERS HIS VISOR', '#ff6b6b'); SFX.roar(); }
+  const near = ad < 230 && dy < 50 && !P.dead;
+  const unhorse = () => { e.mounted = false; e.mode = 'unhorsed'; e.modeT = 1.3; e.open = 1.3; e.vx = -e.face * 70; e.w = 10; e.h = 16; e.cd = 0.8;
+    number(e.x, e.y - 44, 'UNHORSED', '#8fd160'); SFX.heavy(); SFX.clank(); shakeCam(5); hitstop(0.08); lancerLoose(e); };
+  let want = 0;
+  if (e.mounted) switch (e.mode) {
+    case 'ride': want = e.face * (e.mini ? 55 : 42);
+      if ((e.face > 0 && e.x >= hi) || (e.face < 0 && e.x <= lo)) { e.mode = 'wheel'; e.modeT = 0.5; }
+      else if (near && e.cd <= 0 && e.modeT <= 0) {
+        if (ad < 42 && Math.sign(d) === e.face && dy < 30) { e.mode = 'swipeTell'; e.modeT = 0.55; number(e.x, e.y - 50, '!', '#ffd36b'); SFX.charge(); }
+        else if (ad > 64 && Math.sign(d) === e.face) { e.mode = 'chargeTell'; e.modeT = e.mini ? 0.65 : 0.8; number(e.x, e.y - 50, '!', '#ffd36b'); SFX.charge(); SFX.snort(); }
+        else if (Math.sign(d) !== e.face && ad > 40) { e.mode = 'wheel'; e.modeT = 0.5; } }
+      break;
+    case 'wheel': want = 0; if (e.modeT <= 0) { e.face = (e.x >= hi ? -1 : e.x <= lo ? 1 : Math.sign(d) || -e.face); e.mode = 'ride'; e.modeT = 0.35; } break;
+    case 'chargeTell': want = 0; if (Math.random() < dt * 16) dust(e.x - e.face * 10, e.y, 2);
+      if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 2.4; e.passed = false; SFX.roar(); }
+      break;
+    case 'charge': want = e.face * (e.mini ? (e.phase === 2 ? 235 : 215) : 190);
+      if (Math.random() < dt * 14) dust(e.x - e.face * 12, e.y, 2);
+      if (e.hitT <= 0 && !P.dead && Math.abs(P.x - (e.x + e.face * 12)) < 20 && dy < 30) { e.hitT = 9;
+        const res = damagePlayer(e.x, DMG.lancerCharge, { up: true });
+        if (res === 'blocked') { if (e.mini && e.hp > e.hp0 / 2) { e.mode = 'rear'; e.modeT = 1.5; e.open = 1.5; e.vx = 0; number(e.x, e.y - 50, 'THE HORSE REARS', '#8fd160'); SFX.snort(); shakeCam(4); } else unhorse(); break; }
+        if (res === 'hit') { P.vx = e.face * 280; P.vy = -210; P.ground = false; } }
+      if (!e.passed && Math.sign(P.x - e.x) !== e.face && ad > 34) { e.passed = true; e.modeT = Math.min(e.modeT, 0.5); }
+      if ((e.face > 0 && e.x >= hi) || (e.face < 0 && e.x <= lo) || e.modeT <= 0) { e.mode = 'blown'; e.modeT = 1.1; e.cd = 1.2; want = 0; }
+      break;
+    case 'swipeTell': want = 0;
+      if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; SFX.slash();
+        if (!P.dead && Math.sign(d) === e.face && ad < 48 && dy < 30) { const res = damagePlayer(e.x, DMG.lancerSwipe);
+          if (answered(res)) { e.mode = 'reel'; e.modeT = 1.2; e.stagger = 1.2; number(e.x, e.y - 50, 'OPEN', '#8fd160'); SFX.clank(); } } }
+      break;
+    case 'swipe': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.3; e.cd = 1.3; } break;
+    case 'blown': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.2; } break;
+    case 'rear': want = -e.face * 30; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.3; } break;
+    case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.stagger = 0; } break;
+    default: e.mode = 'ride';
+  } else switch (e.mode) {
+    /* ON FOOT: sat in the road a moment, and then a man with a sword */
+    case 'unhorsed': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; } break;
+    case 'cutTell': want = 0;
+      if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.24; SFX.slash(); e.vx = e.face * 70;
+        if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) { const res = damagePlayer(e.x, DMG.lancerCut);
+          if (answered(res)) { e.mode = 'reel'; e.modeT = 1.2; e.stagger = 1.2; e.cd = 1.4; e.vx = -e.face * 120; number(e.x, e.y - 30, 'OPEN', '#8fd160'); SFX.clank(); } } }
+      break;
+    case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; e.cd = 1.1; } break;
+    case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.stagger = 0; } break;
+    case 'rest': want = 0; if (e.modeT <= 0) e.mode = 'walk'; break;
+    default: e.mode = 'walk';
+      if (near && !(e.stagger > 0)) { e.face = Math.sign(d) || e.face; want = ad > 22 ? e.face * 30 : 0;
+        if (ad < 30 && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = 0.5; number(e.x, e.y - 30, '!', '#ffd36b'); SFX.charge(); } }
+  }
+  if (e.stagger > 0 && e.mode !== 'charge') want = 0;
+  if (e.mode === 'charge') e.vx += (want - e.vx) * Math.min(1, dt * 8); else e.vx += (want - e.vx) * Math.min(1, dt * 6);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
-  e.x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, e.x));
-  if (e.y > floor + 4) { e.y = floor; e.vy = 0; }
-  { const ph = Math.floor(e.anim * 2.4); if (Math.abs(e.vx) > 10 && ph !== e.stepPh) { SFX.thump(); shakeCam(1); } e.stepPh = ph; }
+  if (r.hitX && e.mounted) { if (e.mode === 'charge') { e.mode = 'blown'; e.modeT = 1.4; e.open = 1.4; number(e.x, e.y - 50, 'INTO THE WALL', '#8fd160'); SFX.thud(); shakeCam(4); } else if (e.mode === 'ride') { e.mode = 'wheel'; e.modeT = 0.5; } e.vx = 0; }
+  if (e.mounted) { e.x = Math.max(lo - 4, Math.min(hi + 4, e.x)); if (e.mode === 'charge' || Math.abs(e.vx) > 30) { const ph = Math.floor(e.anim * (e.mode === 'charge' ? 7 : 3)); if (ph !== e.stepPh) SFX.thump(); e.stepPh = ph; } }
 }
 
 function updateDrownedKing(e, dt) {
@@ -8904,6 +9030,7 @@ const TAM_MAP = {
 };
 const NPC_LINES = pr => {
   const n = straysGot.size, need = questOf().n;
+  if (pr.kind === 'barkeep') return ['THE BROKEN LANCE POURS FOR ANYONE WITH A COIN. EVEN YOU.', 'THEY ARE DRINKING TO YOUR HEALTH. THE PURSE SAYS ALIVE.', 'THE ONE AT THE CHAPEL NEVER DRINKS. MEET HIS SWORD AS IT FALLS AND HIS LIGHT GOES OUT.'];
   if (pr.kind === 'keeper') return PROG.storeHint ? ['SOMETHING NEW CAME IN.', 'UP AT THE COUNTER AND HAVE A LOOK.'] : ['WELCOME, KNIGHT. UP AT THE COUNTER TO TRADE.', 'GOLD BUYS STEEL. STEEL BUYS TIME.'];
   if (pr.kind === 'foreman' && curId() === 'quarry') { if (n >= need) return ['ALL THREE, AND SINGING. THE GALLERY IS SAFE TO WORK AGAIN.', 'TAKE MY LAMP. A MAN WHO WALKS THAT GALLERY SHOULD SEE IT.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE BIRDS.', 'THE SUMMIT, THE GANTRY, AND THE ROPE OVER THE SADDLE.'];
     return ['THE TROLL CAME DOWN OFF THE TOP AND MY MEN WENT BACK DOWN THE ROAD WITHOUT ME.', 'THEY LEFT MY CANARIES. THREE CAGES: THE SUMMIT, THE GANTRY, AND THE ROPE OVER THE SADDLE.', 'A TROLL THROWS WHAT IT CAN LIFT. THE CRANES OVER HIS BOWL LIFT MORE THAN HE DOES.']; }
@@ -9812,7 +9939,7 @@ function drawCritters(cx, cy) {
 
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
-const windingUp = e => (e.t === 'roc' && e.mode === 'rakeLine') || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'stampTell' || e.mode === 'grabTell')) || (e.t === 'pitwarden' && (e.mode === 'pickTell' || e.mode === 'chainTell' || e.mode === 'roofTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
+const windingUp = e => (e.t === 'roc' && e.mode === 'rakeLine') || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'pitwarden' && (e.mode === 'pickTell' || e.mode === 'chainTell' || e.mode === 'roofTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -10034,6 +10161,7 @@ function updateEnemies(dt) {
     if (e.t === 'holdfast') { updateHoldfast(e, dt); continue; }
     if (e.t === 'swornsword' || e.t === 'hedgeknight' || e.t === 'runner' || e.t === 'crossbow') { updateRoadman(e, dt); continue; }
     if (e.t === 'closedhelm') { updateClosedHelm(e, dt); continue; }
+    if (e.t === 'lancer') { beastSeen('lancer'); updateLancer(e, dt); continue; }
     if (e.t === 'drownedking') { updateDrownedKing(e, dt); continue; }
     if (e.t === 'propman') { updatePropman(e, dt); continue; }
     if (e.t === 'clinger') { updateClinger(e, dt); continue; }
@@ -10308,6 +10436,7 @@ function updateCorpses(dt) {
     c.life -= dt; c.sq = Math.max(0, (c.sq || 0) - dt);
     if (c.life <= 0 && !c.poofed && c.max > 0.05) { c.poofed = true; smoke(c.x, c.y - 4, 3, 5); }   /* it does not blink out: it goes to smoke */
     if (c.crumple) continue;
+    if (c.run) { c.x += c.vx * dt; c.frame = Math.floor(c.life * 10) % 2; continue; }   /* THE SERJEANT'S HORSE goes on down the road without him */
     const py0 = c.y;
     c.vy += c.grav * dt; c.x += c.vx * dt; c.y += c.vy * dt;
     if (c.wobble) c.x += Math.sin(c.life * 18) * 30 * dt;
@@ -10463,7 +10592,7 @@ function updateEmbers(dt) {
   embers = embers.filter(b => b.life > 0);
 }
 // ---------- talk: signs, folk and the caged squire. One press opens the words; the world waits until they close. ----------
-const NPC_NAME = { hillfolk: 'HILL FOLK', squire: 'TAM', cook: 'THE SCULLION', keeper: 'THE KEEPER', bard: 'THE BARD', oldknight: 'THE OLD KNIGHT', shepherd: 'THE SHEPHERD', ferryman: 'THE FERRYMAN', foreman: 'THE FOREMAN', lamplighter: 'THE LAMPLIGHTER', woodsman: 'THE WOODSMAN', hermit: 'THE HERMIT', miller: 'THE MILLER', elder: 'THE ELDER' };
+const NPC_NAME = { barkeep: 'THE TAPSTER', hillfolk: 'HILL FOLK', squire: 'TAM', cook: 'THE SCULLION', keeper: 'THE KEEPER', bard: 'THE BARD', oldknight: 'THE OLD KNIGHT', shepherd: 'THE SHEPHERD', ferryman: 'THE FERRYMAN', foreman: 'THE FOREMAN', lamplighter: 'THE LAMPLIGHTER', woodsman: 'THE WOODSMAN', hermit: 'THE HERMIT', miller: 'THE MILLER', elder: 'THE ELDER' };
 function talkers() { // everything that can be talked to and is in reach, nearest first
   const out = [];
   for (const sg of signs) if (Math.abs(sg.x - P.x) < 28 && Math.abs(sg.y - P.y) < 48) out.push({ x: sg.x, y: sg.y, lines: [sg.text], who: sg, name: null });
@@ -11211,7 +11340,7 @@ function applyLook() { const t = themeNow(); for (const k of ['text', 'title', '
   if (SET.ink && SET.ink !== 'parchment') { UI.text = inkNow(); UI.title = inkNow(); } }
 let soundNoteT = 0, winT = 0, winStamped = false, hintT = 0, hintMsg = '';
 // WHAT IT SAYS WHEN THE THING IS DEAD. One line for every creature that holds an arena, in its own words.
-const BOSS_FELL = { troll: 'THE HILL LETS YOU THROUGH', masthead: 'THE SAILS COME DOWN', grandmother: 'SHE SLEEPS NOW', queen: 'THE QUEEN FALLS', frog: 'THE KING CROAKS', chief: 'OUT OF THE FIRE',
+const BOSS_FELL = { closedhelm: 'HE KNEELS, AND THE WARD GOES OUT', troll: 'THE HILL LETS YOU THROUGH', masthead: 'THE SAILS COME DOWN', grandmother: 'SHE SLEEPS NOW', queen: 'THE QUEEN FALLS', frog: 'THE KING CROAKS', chief: 'OUT OF THE FIRE',
   mother: 'THE WOOD BREATHES AGAIN', king: 'THE KING IS DOWN', owl: 'THE REEVE FALLS',
   forgemaster: 'THE FORGE COOLS', herald: 'THE TIDE GOES OUT', ram: 'THE RAM LORD IS DOWN',
   golem: 'THE FACET GOES DARK', windcaller: 'THE WIND DROPS', lance: "THE QUEEN'S LANCE BREAKS",
@@ -12346,6 +12475,11 @@ function drawWorld(cx, cy, showPlayer) {
         const face = near ? (P.x < pr.x ? -1 : 1) : (Math.floor(ph / 3.3) % 2 ? 1 : -1);
         const jig = P.dance > 0 && Math.abs(P.x - pr.x) < 110 && talkTo !== pr;   /* AND THE TOWN DANCES WITH YOU: anyone friendly nearby picks up the beat */
         drawSet(set, null, talkTo === pr ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy - (jig ? Math.round(Math.abs(Math.sin(P.dance * 4.2 * Math.PI + pr.x)) * 4) : 0), jig ? (Math.floor(P.dance * 2.1 + (pr.anim || 0)) % 2 ? 1 : -1) : face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
+  /* THE BEER GARDEN. They drink, they sway, they laugh: every one of them on its own clock, and never off its bench */
+  for (const pr of props) if (pr.t === 'guest' && SPR.guests && pr.x > cx - 30 && pr.x < cx + VW + 30) { const set = SPR.guests[pr.v % SPR.guests.length], ph = (time + pr.anim) % 7, fr = ph > 4.2 && ph < 5.1 ? 1 : ph > 5.4 && ph < 6.5 ? 2 : 0;
+    const sway = pr.v >= 3 ? Math.round(Math.sin((time + pr.anim) * 1.6)) : 0;
+    drawSet(set, null, fr, pr.x - cx + sway, pr.y - cy, pr.face, false);
+    if (fr === 2) { drawEmote({ emote: 'laugh', emoteT: 0.5 }, Math.round(pr.x - cx), Math.round(pr.y - cy) - 32); g.globalAlpha = 1; } }
   if (state === 'play' && !P.dead) { const t = talkers()[0]; if (t && !(t.who && t.who.t === 'npc')) text(talkGlyph(), t.x - cx, t.y - 26 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
   // A CHECKPOINT BELONGS TO ITS WOOD: the same grey stone shrine used to stand in a bog, on a ship's deck, a
   // hundred feet under the sea and on a mountain of glass.
@@ -12400,7 +12534,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'gill') { g.drawImage(PROP.gillpod[Math.floor(e.anim * 3) % 2], Math.round(e.x) - 6 - cx, Math.round(e.y) - 8 - cy); if (mother && !mother.gillsOpen && !mother.tipped) { g.globalAlpha = 0.35 + 0.1 * Math.sin(time * 5 + e.x); g.fillStyle = '#c9a0ff'; g.beginPath(); g.ellipse(Math.round(e.x) - cx, Math.round(e.y) - 3 - cy, 10, 8, 0, 0, 7); g.fill(); g.globalAlpha = 1; } if (e.flash > 0) { g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(Math.round(e.x) - 6 - cx, Math.round(e.y) - 8 - cy, 12, 10); } continue; }
     if (e.t !== 'wasp' && e.t !== 'queen' && e.t !== 'drone') g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, Math.round(e.y) - 2 - cy);
     let frame = 0;
-    if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
+    if (e.t === 'lancer') frame = lancerFrame(e);   /* mounted and on foot share one set: his hurt pose depends on which */
+    else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
     else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
@@ -12446,7 +12581,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'hedgeknight') frame = e.mode === 'swingTell' ? 2 : e.mode === 'swing' ? 3 : (e.mode === 'leapTell' || e.mode === 'leap') ? 4 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 5) % 2) : 0;
     else if (e.t === 'runner') frame = e.mode === 'shout' ? 2 : (e.mode === 'stabTell' || e.mode === 'stab') ? 3 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 9) % 2) : 0;
     else if (e.t === 'crossbow') frame = e.mode === 'span' ? 0 : e.mode === 'loose' ? 2 : 1;
-    else if (e.t === 'closedhelm') frame = e.open > 0 ? 5 : (e.mode === 'cutTell' || e.mode === 'rushTell') ? 2 : e.mode === 'cut' ? 3 : (e.mode === 'stampTell' || e.mode === 'stamp') ? 4 : (e.mode === 'grabTell' || e.mode === 'grab') ? 3 : Math.abs(e.vx) > 6 ? 1 : 0;
+    else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
     else if (e.t === 'drownedking') frame = e.phase === 2 ? 4 : (e.mode === 'debtTell' || e.mode === 'debt' || e.mode === 'haulTell' || e.mode === 'haul' || e.mode === 'anchorTell') ? 2 : (e.mode === 'slamTell' || e.mode === 'slam' || e.mode === 'anchor') ? 3 : Math.abs(e.vx) > 6 ? 1 : 0;
     else if (e.t === 'propman') frame = (e.mode === 'setTell' || e.mode === 'set' || e.mode === 'throwTell') ? 2 : e.mode === 'seek' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'clinger') frame = e.mode === 'cling' ? 0 : e.mode === 'hold' ? 3 : 1 + Math.floor(e.anim * 14) % 2;
@@ -12585,7 +12720,10 @@ function drawWorld(cx, cy, showPlayer) {
         g.fillStyle = ART.OUT; g.fillRect(a - 1, fy - 12, b2 - a + 2, 6); g.fillStyle = '#7c5e31'; g.fillRect(a, fy - 11, b2 - a, 4); g.fillStyle = '#c29c5e'; g.fillRect(a, fy - 11, b2 - a, 1); }
       /* FOULED: the opening, ringed the way every opening is */
       if (mastOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(ex, fy - 2, 26 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
-    const sprSet = e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
+    if (e.t === 'closedhelm' && e.alive && e.mode !== 'sleep') drawPaladinMarks(e, cx, cy);
+    if (e.t === 'lancer' && e.alive && e.mounted && e.mode === 'chargeTell') { const k = 0.5 + 0.5 * Math.sin(time * 20), fy = Math.round(e.y - cy) - 2, ex = Math.round(e.x - cx); g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(ex, fy); g.lineTo(Math.round((e.face > 0 ? e.hx1 : e.hx0) - cx), fy); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE LINE HE WILL RIDE, for the length of the tell */
+    if (e.t === 'lancer' && e.alive && !e.mounted && e.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 14 + k * 2, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+    const sprSet = e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
     const bigF = e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
@@ -13993,7 +14131,7 @@ function render() {
     }
     if (state === 'menu' || state === 'win' || state === 'gameover') { /* the plates own the screen: the boss bar waits */ }
     else if (miniActive && !bossActive) { const m = miniOne(); if (m) { text(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), VW / 2, VH - 22, m.phase === 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, VH - 11, 120, 5, Math.max(0, m.hp) / m.maxHp, m.mounted ? '#e0b040' : '#8fd160'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } } }
-    else if (bossActive && boss && boss.alive) { const nm = boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : boss.mode === 'rap' ? 'THE GRANDMOTHER  SHE GAVE HERSELF AWAY' : 'THE GRANDMOTHER') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE CLOSED HELM  OPEN' : boss.phase === 2 ? 'THE CLOSED HELM  DONE BEING POLITE' : 'THE CLOSED HELM') : boss.t === 'drownedking' ? (boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'pitwarden' ? (boss.mode === 'reel' ? 'THE PIT WARDEN  OFF HIS FEET' : boss.phase === 2 ? 'THE PIT WARDEN  THE LAMP IS OUT' : 'THE PIT WARDEN') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'quarter' ? (boss.guard ? 'THE QUARTERMASTER  BEHIND HER GUARD' : boss.mode === 'cut' ? 'THE QUARTERMASTER  CUTTING THE LINE' : boss.phase === 3 ? 'THE QUARTERMASTER  THE POOP' : boss.phase === 2 ? 'THE QUARTERMASTER  THE QUARTERDECK' : 'THE QUARTERMASTER') : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  RIGHT OUT' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'masthead' ? (mastOpen(boss) ? 'THE MASTHEAD  FOULED' : boss.mode === 'sail' ? 'THE MASTHEAD  UNDER SAIL' : 'THE MASTHEAD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
+    else if (bossActive && boss && boss.alive) { const nm = boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : boss.mode === 'rap' ? 'THE GRANDMOTHER  SHE GAVE HERSELF AWAY' : 'THE GRANDMOTHER') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'pitwarden' ? (boss.mode === 'reel' ? 'THE PIT WARDEN  OFF HIS FEET' : boss.phase === 2 ? 'THE PIT WARDEN  THE LAMP IS OUT' : 'THE PIT WARDEN') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'quarter' ? (boss.guard ? 'THE QUARTERMASTER  BEHIND HER GUARD' : boss.mode === 'cut' ? 'THE QUARTERMASTER  CUTTING THE LINE' : boss.phase === 3 ? 'THE QUARTERMASTER  THE POOP' : boss.phase === 2 ? 'THE QUARTERMASTER  THE QUARTERDECK' : 'THE QUARTERMASTER') : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  RIGHT OUT' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'masthead' ? (mastOpen(boss) ? 'THE MASTHEAD  FOULED' : boss.mode === 'sail' ? 'THE MASTHEAD  UNDER SAIL' : 'THE MASTHEAD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
       : boss.mode === 'beach' ? 'THE CAPTAIN  BEACHED'
       : boss.mode === 'call' ? 'THE CAPTAIN  CALLING IT UP'
       : boss.phase === 3 ? 'THE CAPTAIN  HE GOES DOWN WITH HER' : 'THE CAPTAIN')

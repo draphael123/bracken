@@ -4500,10 +4500,10 @@ function theLamplitStreet() {
 //   29  the roofs, and the men on them: a ladder from the street, or two hops off an awning
 //   0-24 the insides. The camera never shows one of them from the street.
 function waymeet() {
-  const W = 560, H = 46, R = 36;
+  const W = 776, H = 46, R = 36;
   const L = painter(W, H);
   const { block, floor, plat, ent, coins, set, spikes } = L;
-  const movers = [], interiors = [], roofs = [], pools = [];
+  const movers = [], interiors = [], roofs = [], pools = [], ladders = [];
   block(0, W - 1, 0, 24);
   const room = (x0, x1, y0, y1, st = 'timber') => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); interiors.push([x0, x1, y0, y1, st]); };
   /* A HOUSE IS ITS ROOF and the street runs on underneath it, because a building that blocks the road is a
@@ -4511,9 +4511,9 @@ function waymeet() {
   const tiles = (x0, x1, y) => { for (let x = x0; x <= x1; x++) { set(x, y, T.SOLID); set(x, y + 1, T.SOLID); set(x, y + 2, T.SOLID); } roofs.push([x0, x1, y]); };
   const awning = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
   const board = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
-  /* EVERY LADDER RUNS TO THE STREET. One that stops under the thing it serves is a ladder into a ceiling. */
-  const ladder = (x, top) => { for (let y = top; y <= R - 1; y++) set(x, y, T.NET); };
-  const stair = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
+  /* EVERY LADDER IS HUNG LAST (rules I): they are written down here and laid after the last thing is dug */
+  const ladder = (x, top) => ladders.push([x, top, R - 1]);
+  const stair = (x, y0, y1) => ladders.push([x, y0, y1]);
   const post = (x) => ent('deco', x, R - 1, { kind: 'lanternPost' });
   const sign = (x, text) => ent('sign', x, R - 1, { text });
 
@@ -4525,7 +4525,6 @@ function waymeet() {
   ent('npc', 16, R - 1, { kind: 'shepherd' }); ent('dog', 20, R - 1); ent('deco', 24, R - 1, { kind: 'fence', v: 1 });
   coins([10, R - 2], [14, R - 2], [18, R - 2], [22, R - 2], [28, R - 2]);
   /* THE GATEHOUSE: a wall with an arch through it. You do not go round a town wall. */
-  /* the arch has to go all the way through: jambs that reach the road are not a gate, they are a wall */
   block(30, 49, 24, R - 1);
   room(30, 49, R - 6, R - 1, 'hall');
   ent('deco', 30, R - 1, { kind: 'gatehouse' });
@@ -4537,7 +4536,7 @@ function waymeet() {
   sign(68, 'RAISE THE SHIELD AS HIS BLOW LANDS, NOT BEFORE, AND HE IS WIDE OPEN.');
   ent('hedgeknight', 80, R - 1, { face: -1 }); ent('swornsword', 66, R - 1, { face: -1 });   /* the first hedge knight, alone on the street: his feint is learned before the market */
   sign(74, 'THE HEDGE KNIGHT FEINTS. A GUARD RAISED ON THE FAKE IS STILL UP WHEN THE REAL ONE LANDS.');
-  ent('pike', 56, R - 1, { face: -1 }); ent('thief', 60, R - 1, { face: 1 });
+  ent('runner', 58, R - 1, { face: -1 }); ent('watch', 61, R - 1, { face: -1 }); ent('swornsword', 76, R - 1, { face: -1 }); ent('crossbow', 83, R - 1, { face: -1 });   /* THE ROAD'S OWN: a squire who runs for the swords, where a goblin cutpurse used to stand */
   coins([34, R - 2], [38, R - 2], [42, R - 2], [58, R - 2], [66, R - 2], [72, R - 2], [80, R - 2]);
 
   // ---------------- 2. THE MARKET CROSS (x 85-206). The square, and the town going about it. -----------
@@ -4551,14 +4550,15 @@ function waymeet() {
   ent('npc', 104, R - 1, { kind: 'bard' }); ent('npc', 130, R - 1, { kind: 'cook' });
   ent('npc', 170, R - 1, { kind: 'keeper' }); ent('dog', 122, R - 1); ent('dog', 180, R - 1);
   sign(88, 'THE MARKET CROSS. NOBODY HERE IS YOUR ENEMY, AND EVERYONE IS IN THE WAY.');
-  /* THE SQUARE. Eleven of them between you and the far side, and three more on the awnings over your
-     head, because a market is a crowd and a crowd is where a purse gets collected. */
+  /* THE SQUARE. A crowd of men-at-arms between you and the far side and three more on the awnings over your
+     head, because a market is a crowd and a crowd is where a purse gets collected. Every one of them sworn to
+     somebody: the goblins that used to work this crowd are gone, and a goblin knight has taken a stall. */
   for (const x of [96, 106, 114, 122, 132, 140, 148, 166, 178, 190, 202]) ent('swornsword', x, R - 1, { face: -1 });
   for (const x of [104, 136, 168]) ent('crossbow', x, R - 4, { face: -1 });
-  for (const x of [112, 160]) ent('thief', x, R - 1, { face: 1 });
+  ent('swornsword', 112, R - 1, { face: 1 }); ent('crossbow', 176, R - 4, { face: -1 });
   for (const x of [152, 194]) ent('runner', x, R - 1, { face: -1 });
   ent('hedgeknight', 128, R - 1, { face: -1 }); ent('hedgeknight', 184, R - 1, { face: -1 });
-  ent('pike', 144, R - 1, { face: -1 }); ent('hound', 176, R - 1, { face: -1 });
+  ent('heavy', 144, R - 1, { face: -1 }); ent('hedgeknight', 164, R - 1, { face: -1 }); ent('watch', 132, R - 1, { face: -1 }); ent('swornsword', 172, R - 1, { face: -1 }); ent('crossbow', 150, R - 7, { face: -1 });
   ent('check', 158, R - 1);
   for (const x of [102, 140, 176]) ent('deco', x, R - 10, { kind: 'bunting', hang: true });   /* left up from the fair */
   ent('deco', 138, R - 1, { kind: 'hayBale', v: 1 });
@@ -4572,7 +4572,7 @@ function waymeet() {
   ent('check', 198, R - 1);
   ent('silver', 152, R - 8);
 
-  // ---------------- 3. THE BROKEN LANCE (x 207-300). The inn, and the common room. -------------------
+  // ---------------- 3. THE BROKEN LANCE (x 207-300). The inn, the common room, and the beer garden. ----------
   floor(207, 300, R);
   tiles(212, 262, R - 7);                                  /* her roof, and the road runs under it */
   ladder(210, R - 8); ladder(264, R - 8);
@@ -4583,12 +4583,25 @@ function waymeet() {
   ent('doorway', 252, R - 1, { id: 'lance-back', to: 'lance-far' });
   ent('deco', 230, R - 1, { kind: 'barrels' }); ent('deco', 246, R - 1, { kind: 'waterButt' });
   ent('npc', 218, R - 1, { kind: 'oldknight' });
-  coins([220, R - 2], [228, R - 2], [240, R - 2], [256, R - 2], [268, R - 2], [280, R - 2], [292, R - 2]);
+  coins([220, R - 2], [228, R - 2], [240, R - 2], [256, R - 2]);
   coins([216, R - 9], [230, R - 9], [244, R - 9], [258, R - 9]);
-  for (const x of [268, 276, 284, 296]) ent('swornsword', x, R - 1, { face: -1 });
-  ent('hedgeknight', 290, R - 1, { face: -1 }); ent('pike', 272, R - 1, { face: 1 });
   for (const x of [220, 234, 248, 260]) ent('swornsword', x, R - 8, { face: -1 });   /* they are on her roof too */
-  ent('crossbow', 240, R - 8, { face: -1 }); ent('hound', 256, R - 1, { face: -1 });
+  ent('crossbow', 240, R - 8, { face: -1 }); ent('crossbow', 226, R - 8, { face: -1 }); ent('hedgeknight', 254, R - 8, { face: -1 }); ent('swornsword', 238, R - 1, { face: -1 }); ent('watch', 250, R - 1, { face: -1 });
+  /* THE BEER GARDEN. Outside her east wall, under the bunting: the one stretch of this town where nobody stands up
+     when you walk in. The town drinks here - a carter, a knight with his helm on the bench beside him, a goodwife,
+     a lad and an old soldier - and the tapster pours for anyone, even the man on the notice. It is the breath
+     between the common room and the lists, so it holds no fight at all. */
+  ent('deco', 267, R - 1, { kind: 'fence', v: 0 }); post(269); post(297);
+  for (const x of [272, 283, 294]) ent('deco', x, R - 7, { kind: 'bunting', hang: true });
+  ent('deco', 276, R - 1, { kind: 'longTable', v: 0 }); ent('deco', 273, R - 1, { kind: 'bench' }); ent('deco', 279, R - 1, { kind: 'bench' });
+  ent('deco', 288, R - 1, { kind: 'longTable', v: 1 }); ent('deco', 285, R - 1, { kind: 'bench' }); ent('deco', 291, R - 1, { kind: 'bench' });
+  ent('deco', 295, R - 1, { kind: 'barrels' }); ent('deco', 299, R - 1, { kind: 'caskRack' });
+  ent('guest', 273, R - 1, { v: 0, face: 1 }); ent('guest', 279, R - 1, { v: 1, face: -1 });
+  ent('guest', 285, R - 1, { v: 2, face: 1 }); ent('guest', 291, R - 1, { v: 1, face: -1 });
+  ent('guest', 282, R - 1, { v: 3, face: 1 }); ent('guest', 270, R - 1, { v: 4, face: 1 });
+  ent('npc', 297, R - 1, { kind: 'barkeep' });
+  sign(266, 'THE BEER GARDEN. THEY DRINK TO YOUR HEALTH HERE: THE PURSE IS FOR YOU ALIVE.');
+  coins([274, R - 2], [286, R - 2], [296, R - 2]);
   /* THE COMMON ROOM. Two doors, so you come out the far end and do not walk the same street twice. */
   /* `floor` fills to the bottom of the WORLD, so a floor laid inside a room on row 21 buries the street
      twenty rows below it. A room cut out of the solid block at the top already has one: rows 21-24. */
@@ -4614,75 +4627,118 @@ function waymeet() {
   ent('heavy', 34, 20, { face: 1 });
   ent('crossbow', 33, 13, { face: 1 }); ent('crossbow', 48, 13, { face: -1 });
   ent('swornsword', 42, 13, { face: -1 });
-  ent('runner', 26, 20, { face: 1 }); ent('thief', 60, 20, { face: -1 });
+  ent('runner', 26, 20, { face: 1 }); ent('swornsword', 60, 20, { face: -1 });
   coins([26, 19], [30, 19], [36, 19], [44, 19], [50, 19], [56, 19], [34, 13], [40, 13], [46, 13]);
   ent('check', 60, 20); ent('silver', 40, 12);
-  ent('stray', 50, 13, { kind: 'cup' });
+  ent('stray', 50, 12, { kind: 'cup' });   /* over the gallery's own boards, so the gallery is the way to it */
 
-  // ---------------- 4. THE SMITHY AND THE BACK LANES (x 301-436). Roofs, and men above you. -----------
-  floor(301, 436, R);
-  ent('deco', 306, R - 1, { kind: 'forge' }); ent('deco', 312, R - 1, { kind: 'anvil' });
-  ent('npc', 324, R - 1, { kind: 'cook' });
-  /* THE STRIKER. The smith's hammer-man, the one who swings the sledge while the smith holds the iron - and he has put the iron down.
-     The yard is the one fight in the middle of the town with a name: the gate shuts behind you and under the roof ahead,
-     and above the roof as well, or the ladder at the back of the yard walks you round him. */
-  sign(298, 'THE STRIKER STOPS WHEN WINDED, NOT WHEN HIT. LET HIM RUN OUT OF BREATH.');
-  ent('berserker', 314, R - 1, { face: -1, mini: true });
-  for (let y = 25; y <= 28; y++) set(320, y, T.PORT); for (let y = R - 4; y <= R - 1; y++) set(320, y, T.PORT);
-  sign(304, 'THE SMITH HAS NOT LOOKED UP ONCE. HE HAS WORK ON.');
-  ent('deco', 322, R - 1, { kind: 'trough' }); ent('deco', 330, R - 1, { kind: 'cart' }); ent('deco', 326, R - 1, { kind: 'hayBale', v: 0 });
-  ent('deco', 324, R - 4, { kind: 'shopSign', v: 0, hang: true }); ent('deco', 372, R - 4, { kind: 'shopSign', v: 1, hang: true });
-  ent('deco', 396, R - 4, { kind: 'shopSign', v: 2, hang: true }); ent('deco', 258, R - 4, { kind: 'shopSign', v: 3, hang: true });   /* a town is how you find a thing without reading */
-  tiles(320, 352, R - 7); ladder(318, R - 8);
-  tiles(368, 400, R - 7); ladder(366, R - 8); ladder(402, R - 8);
-  awning(354, 366, R - 3); awning(404, 420, R - 3);
-  board(336, 344, R - 10); stair(335, R - 10, R - 8);   /* up off the smithy roof, not out of the rock: rows 0-24 are the insides and they are solid */
-  /* THE BACK LANES. Above you the whole way: two roofs of them, and a mill pond at the end of it that
-     is the only thing in the town that is not a man. */
-  for (const x of [326, 338, 350]) ent('swornsword', x, R - 8, { face: -1 });
-  for (const x of [374, 386, 398]) ent('swornsword', x, R - 8, { face: -1 });
-  ent('crossbow', 332, R - 8, { face: -1 }); ent('crossbow', 392, R - 8, { face: -1 });
-  ent('crossbow', 340, R - 11, { face: -1 });
-  for (const x of [344, 328, 346, 362, 380, 396, 414, 432]) ent('swornsword', x, R - 1, { face: -1 });
-  ent('hedgeknight', 334, R - 1, { face: -1 }); ent('hedgeknight', 356, R - 1, { face: -1 });
-  ent('hedgeknight', 404, R - 1, { face: -1 }); ent('heavy', 424, R - 1, { face: -1 });
-  ent('pike', 336, R - 1, { face: 1 }); ent('pike', 388, R - 1, { face: -1 });
-  ent('runner', 360, R - 1, { face: -1 }); ent('runner', 408, R - 1, { face: -1 });
-  ent('hound', 370, R - 1, { face: -1 });
-  sign(356, 'A BOLT GOES THROUGH A SHIELD RAISED EARLY. RAISE IT AS THE BOLT LANDS TO RETURN IT.');
-  ent('deco', 412, R - 1, { kind: 'stall', v: 1 }); ent('deco', 434, R - 1, { kind: 'mill' });
-  /* THE MILL POND. The wheel is still turning because nobody stopped it, and it is the one stretch of
-     this level where the ground is not ground. */
-  for (let y = R; y <= R + 3; y++) for (let x = 438; x <= 456; x++) set(x, y, T.AIR);
-  pools.push({ x0: 438 * TS, x1: 457 * TS, y: R * TS, swim: true, clear: true, bottom: (R + 4) * TS, depth: 4 * TS, wash: 0.4 });
-  post(338); post(390); post(428);
-  coins([324, R - 8], [336, R - 8], [348, R - 8], [372, R - 8], [384, R - 8], [396, R - 8],
-    [358, R - 4], [408, R - 4], [416, R - 4], [338, R - 11], [344, R - 11],
-    [308, R - 2], [328, R - 2], [354, R - 2], [398, R - 2], [432, R - 2]);
-  ent('check', 430, R - 1); ent('silver', 342, R - 11);
-  ent('stray', 340, R - 8, { kind: 'cup' }); ent('stray', 416, R - 4, { kind: 'cup' });
+  // ---------------- 4. THE TILT-YARD (x 301-350). The lists, and the man who keeps them. -----------------
+  /* THE MINI. A yard between two gates with a rail down it and benches either side, and the Serjeant of the Lists
+     on his horse at the far end. The gate shuts behind you. He charges the length of the yard: the benches are two
+     rows up and a horse cannot follow you onto one, and a charge taken on the shield puts his horse up on its hind
+     legs - and, once he is half beaten, puts him in the dirt. */
+  floor(301, 350, R);
+  ent('check', 297, R - 1);
+  sign(300, 'THE LISTS. THE SERJEANT RIDES AT ANYTHING THAT COMES THROUGH THE GATE. THE BENCHES ARE SAFE.');
+  for (const x of [311, 325, 339]) { awning(x, x + 3, R - 2); ent('deco', x + 1, R - 1, { kind: 'fence', v: 1 }); }
+  for (const x of [306, 344]) ent('deco', x, R - 1, { kind: 'lanternPost' });
+  for (const x of [318, 332]) ent('deco', x, R - 1, { kind: 'hayBale', v: x % 2 });   /* straw for the falls, not a goblin's banner: these are the town's own lists */
+  for (const x of [305, 314, 328, 342]) ent('deco', x, R - 10, { kind: 'bunting', hang: true });
+  ent('lancer', 342, R - 1, { face: -1, mini: true, range: 20 });
+  for (let y = 25; y <= R - 1; y++) set(348, y, T.PORT);                   /* the far gate, shut until he is down */
+  coins([312, R - 3], [326, R - 3], [340, R - 3]);
 
-  // ---------------- 5. THE CHAPEL YARD (x 437-559). Under the bell, with the town watching. -----------
-  floor(437, W - 1, R);
-  for (let y = R; y <= R + 3; y++) for (let x = 438; x <= 456; x++) set(x, y, T.AIR);   /* THE POND, CARVED AGAIN: the yard's floor was laid after it and filled it in, so the water sat on top of the ground */
-  ent('deco', 460, R - 1, { kind: 'lychgate' }); ent('deco', 466, R - 1, { kind: 'yew', v: 0 });
-  ent('deco', 472, R - 1, { kind: 'grave', v: 0 }); ent('deco', 478, R - 1, { kind: 'grave', v: 1 });
-  sign(462, 'THE CHAPEL YARD. HE IS NOT HERE TO KILL YOU, BUT TO CARRY YOU OUT.');
-  ent('check', 470, R - 1);
-  sign(474, 'NOTHING GOES THROUGH PLATE. ANSWER HIS BLOW ON THE BEAT, OR ROLL THROUGH IT.');
+  // ---------------- 5. THE DYERS' ROW (x 351-450). The lane is a dye run, so the road is the roofs. ------
+  /* PLATFORMING. Every vat in the row empties into one channel down the middle of the lane, and it is hot and it
+     is purple and it eats you if you swim it. The way along is over the dyers' roofs, their drying awnings and the
+     beams they hang the cloth from, with a sign on a pulley over the widest gap. A ladder climbs out of the
+     channel beside every roof, so a fall costs blood and time, never the run. */
+  floor(351, 356, R); floor(445, 450, R);
+  floor(357, 444, R + 4);
+  pools.push({ x0: 357 * TS, x1: 445 * TS, y: R * TS + 4, bottom: (R + 4) * TS, shallow: false, swim: true, harm: true, clear: true,
+    foulCol: '#7a3a9a', foulColL: '#b07ad0', foulColD: '#3e1a58' });
+  sign(352, "THE DYERS' ROW. THE RUN-OFF IS SCALDING. KEEP TO THE ROOFS.");
+  awning(353, 356, R - 2);
+  tiles(358, 366, R - 4); stair(357, R - 4, R + 3);
+  awning(371, 375, R - 4); stair(370, R - 4, R + 3);
+  tiles(378, 388, R - 6); stair(377, R - 6, R + 3);
+  ent('mover', 390, R - 6, { len: 2, range: 5, speed: 34 });   /* the dyer's sign on its pulley */
+  tiles(399, 410, R - 6); stair(398, R - 6, R + 3);
+  awning(413, 418, R - 3); stair(419, R - 3, R + 3);
+  plat(421, R - 5, 3); plat(426, R - 7, 3);
+  tiles(431, 443, R - 5); stair(430, R - 5, R + 3);
+  ent('crossbow', 384, R - 7, { face: -1 }); ent('crossbow', 407, R - 7, { face: -1 }); ent('swornsword', 437, R - 6, { face: -1 }); ent('crossbow', 364, R - 5, { face: -1 }); ent('swornsword', 402, R - 7, { face: -1 });
+  ent('deco', 362, R - 12, { kind: 'bunting', hang: true });   /* the dyed cloth, strung out to dry */ ent('deco', 404, R - 7, { kind: 'shopSign', v: 2 });
+  coins([354, R - 3], [360, R - 5], [364, R - 5], [373, R - 5], [382, R - 7], [392, R - 8], [402, R - 7], [415, R - 4], [422, R - 6], [427, R - 8], [436, R - 6], [441, R - 6]);
+  ent('silver', 427, R - 9);
+  ent('stray', 405, R - 8, { kind: 'cup' });
+  ent('check', 448, R - 1);
+  coins([362, R + 2], [400, R + 2], [436, R + 2]);   /* in the run-off: something for whoever falls in */
+
+  // ---------------- 6. THE KING'S BRIDGE (x 451-560). The river, and the serjeants who ride the bridge. ------
+  /* THE NEW CREATURE'S HOME. A stone bridge over the river with a tower at each end and a refuge over every pier -
+     the bays people have always stepped into to let a cart by. Two serjeants ride it end to end. A refuge is two
+     rows up and a lance cannot reach it; the charge taken on the shield unhorses the rider. THE MACHINE: the west
+     tower's portcullis hangs on a drum. Strike the drum as a rider goes under it and the gate comes down on him. */
+  floor(451, 560, R);
+  for (let x = 473; x <= 539; x++) { if ((x >= 486 && x <= 487) || (x >= 500 && x <= 501) || (x >= 514 && x <= 515) || (x >= 528 && x <= 529)) continue; for (let y = R + 2; y <= R + 8; y++) set(x, y, T.AIR); }
+  pools.push({ x0: 473 * TS, x1: 540 * TS, y: (R + 4) * TS, bottom: (R + 9) * TS, shallow: false, swim: true, clear: true, wash: 0.45 });
+  sign(456, "THE KING'S BRIDGE. STEP INTO A REFUGE, OR TAKE THE LANCE ON YOUR SHIELD.");
+  ent('deco', 468, R - 1, { kind: 'bridgetower' }); ent('deco', 542, R - 1, { kind: 'bridgetower' });
+  ent('winch', 466, R - 1, { gate: 471, gy0: R - 4, gy1: R - 1, hold: 5, drop: true });
+  sign(462, 'THE PORTCULLIS DRUM. STRIKE IT AND THE GATE DROPS ON WHOEVER IS UNDER IT.');
+  for (const px2 of [486, 500, 514, 528]) { plat(px2 - 1, R - 2, 4); ent('deco', px2, R - 1, { kind: 'bridgepost' }); }
+  ent('lancer', 489, R - 1, { face: 1, range: 17 });
+  ent('lancer', 524, R - 1, { face: -1, range: 15 });
+  ent('crossbow', 548, R - 1, { face: -1 }); ent('swornsword', 453, R - 1, { face: 1 }); ent('watch', 460, R - 1, { face: -1 }); ent('hedgeknight', 552, R - 1, { face: -1 }); ent('swornsword', 544, R - 1, { face: -1 }); ent('heavy', 559, R - 1, { face: -1 });
+  coins([486, R - 3], [500, R - 3], [514, R - 3], [528, R - 3], [478, R - 2], [508, R - 2], [536, R - 2]);
+  post(454); post(546); post(558);
+  ent('check', 556, R - 1);
+
+  // ---------------- 7. THE MASONS' WALL (x 561-650). The chapel close, walled, and the wall half built. ------
+  /* PLATFORMING, UP. The close's only gate is bricked up for the repairs, so the way in is the masons' scaffold:
+     boards and ladders, a hod-hoist that goes up and down on its own, a board missing, then along the top of the
+     wall where the courses are not all laid - a plank on a pulley over the widest break - and down the far side.
+     Every break in the wall has a masons' ladder in it, and something at the bottom for climbing down to it. */
+  floor(561, 650, R);
+  sign(562, "THE MASONS' WALL. THE GATE IS BRICKED UP. GO OVER.");
+  board(566, 573, R - 2); stair(565, R - 2, R - 1);
+  ent('mover', 575, R - 2, { len: 2, vert: true, rise: 2, period: 3.4 });   /* the hod-hoist */
+  board(578, 586, R - 4); board(591, 598, R - 4);
+  for (const x of [579, 585, 592, 597]) ent('deco', x, R - 1, { kind: 'stilt' });   /* rules B9: a board stands on its poles */   /* the last board runs up to the wall's face: the top course is a step from it */
+  stair(589, R - 4, R - 1);                                /* the missing board has a ladder under it */
+  block(600, 612, R - 6, R - 1); block(618, 628, R - 6, R - 1); block(632, 641, R - 6, R - 1);
+  ent('mover', 613, R - 6, { len: 2, range: 2, speed: 30 });   /* a plank on a pulley over the break */
+  stair(613, R - 6, R - 1); stair(617, R - 6, R - 1); stair(629, R - 6, R - 1); stair(631, R - 6, R - 1);
+  coins([615, R - 2], [630, R - 2]);                       /* at the foot of each break */
+  board(642, 646, R - 3); stair(647, R - 3, R - 1);
+  ent('crossbow', 624, R - 7, { face: -1 }); ent('swornsword', 638, R - 7, { face: -1 });
+  ent('hedgeknight', 594, R - 5, { face: -1 }); ent('swornsword', 568, R - 1, { face: -1 }); ent('watch', 580, R - 1, { face: -1 }); ent('crossbow', 583, R - 5, { face: -1 }); ent('swornsword', 606, R - 7, { face: -1 }); ent('hedgeknight', 650, R - 1, { face: -1 }); ent('crossbow', 645, R - 4, { face: -1 });
+  coins([569, R - 3], [582, R - 5], [593, R - 5], [604, R - 7], [610, R - 7], [622, R - 7], [636, R - 7], [644, R - 4]);
+  ent('stray', 626, R - 7, { kind: 'cup' });
+
+  // ---------------- 8. THE CHAPEL YARD (x 651-775). Under the bell, with the town watching. -----------
+  floor(651, W - 1, R);
+  ent('deco', 674, R - 1, { kind: 'lychgate' }); ent('deco', 680, R - 1, { kind: 'yew', v: 0 });
+  ent('deco', 686, R - 1, { kind: 'grave', v: 0 }); ent('deco', 692, R - 1, { kind: 'grave', v: 1 });
+  sign(676, 'THE CHAPEL YARD. HE IS NOT HERE TO KILL YOU, BUT TO CARRY YOU OUT.');
+  ent('check', 684, R - 1);
+  sign(688, 'ONLY HIS OWN SWORD, MET ON THE BEAT, BREAKS HIS WARD. ROLL THE BASH.');
   /* THE YARD ITSELF, because the last room in a level should not be an empty stretch of road: the tower
      at one end, the yews at the other, and the stones he has been standing among all afternoon. */
-  ent('deco', 490, R - 1, { kind: 'bellTower' });
-  for (const [x, v] of [[498, 0], [506, 1], [514, 2], [522, 0], [530, 1], [538, 2]]) ent('deco', x, R - 1, { kind: 'grave', v });
-  ent('deco', 494, R - 1, { kind: 'yew', v: 1 }); ent('deco', 542, R - 1, { kind: 'yew', v: 0 });
-  ent('deco', 534, R - 1, { kind: 'lychgate' }); ent('deco', 510, R - 1, { kind: 'cairn' });
-  post(488); post(540); post(516);
-  ent('swornsword', 482, R - 1, { face: -1 }); ent('swornsword', 476, R - 1, { face: -1 });
-  ent('hedgeknight', 466, R - 1, { face: -1 }); ent('heavy', 486, R - 1, { face: -1 });
-  ent('closedhelm', 524, R - 1, { face: -1 });
-  ent('gate', 556, R - 1);
-  coins([444, R - 2], [454, R - 2], [462, R - 2], [468, R - 2]);
-  /* three in a wood and no more: the fourth was being picked up and never reaching the ledger */
+  ent('deco', 704, R - 1, { kind: 'bellTower' });
+  for (const [x, v] of [[712, 0], [720, 1], [728, 2], [736, 0], [744, 1], [752, 2]]) ent('deco', x, R - 1, { kind: 'grave', v });
+  ent('deco', 708, R - 1, { kind: 'yew', v: 1 }); ent('deco', 756, R - 1, { kind: 'yew', v: 0 });
+  ent('deco', 748, R - 1, { kind: 'lychgate' }); ent('deco', 724, R - 1, { kind: 'cairn' });
+  post(702); post(754); post(730);
+  ent('swornsword', 696, R - 1, { face: -1 }); ent('swornsword', 690, R - 1, { face: -1 }); ent('crossbow', 660, R - 1, { face: -1 }); ent('swornsword', 666, R - 1, { face: -1 }); ent('watch', 672, R - 1, { face: -1 });
+  ent('hedgeknight', 680, R - 1, { face: -1 }); ent('heavy', 700, R - 1, { face: -1 });
+  ent('closedhelm', 738, R - 1, { face: -1 });
+  ent('gate', 770, R - 1);
+  coins([658, R - 2], [668, R - 2], [676, R - 2], [682, R - 2]);
+
+  /* THE LADDERS, LAST: nothing is dug after this line */
+  for (const [x, y0, y1] of ladders) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
   /* EVERY ROOF IS A HOUSE. Three courses of clay tile over the street were three courses of bare rock with a
      forest behind them: a roof needs a front under it - timber, limewash, its windows coming on - and the
@@ -4705,9 +4761,11 @@ function waymeet() {
       canopy: ['#2a3a24', '#3a5230', '#4a6a3c', '#5e8248'] },
     weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'town' }],
-    arena: { x0: 492 * TS, x1: 536 * TS, floor: R * TS, trigger: 498 * TS, wallL: 491, wallR: 537, boss: 'closedhelm',
+    arena: { x0: 706 * TS, x1: 750 * TS, floor: R * TS, trigger: 712 * TS, wallL: 705, wallR: 751, boss: 'closedhelm',
       music: 'boss2', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
-    mini: { x0: 301 * TS, x1: 320 * TS, floor: R * TS, y0: (R - 8) * TS, y1: (R + 1) * TS, trigger: 305 * TS, wallL: 300, gate: 320, boss: 'berserker', name: 'THE STRIKER' },
+    mini: { x0: 303 * TS, x1: 347 * TS, floor: R * TS, y0: (R - 10) * TS, y1: (R + 1) * TS, trigger: 309 * TS, wallL: 302, gate: 348, boss: 'lancer', name: 'THE SERJEANT OF THE LISTS' },
+    /* WHAT THE MASONS LAID is drawn as coursed stone, not the street's earth: the close wall and the King's Bridge with its piers */
+    masonry: [[600, 612, R - 6, R + 2], [618, 628, R - 6, R + 2], [632, 641, R - 6, R + 2], [471, 541, R, R + 1], [486, 487, R + 2, R + 9], [500, 501, R + 2, R + 9], [514, 515, R + 2, R + 9], [528, 529, R + 2, R + 9]],
   };
 }
 
@@ -5491,7 +5549,7 @@ export const LEVELS = [
 const MIX = {
   wood: [['wasp', 'crow', 4], ['sprig', 'lurker', 3], ['spit', 'hopper', 3]],
   moor: [['harpy', 'crow', 3]],
-  waymeet: [['swornsword', 'watch', 4], ['swornsword', 'soldier', 5]],
+  waymeet: [['swornsword', 'watch', 4], ['swornsword', 'heavy', 8]],   /* a KNIGHT'S town: the watch and a goblin knight, never a goblin soldier */
   hunt: [['sprig', 'thief', 2], ['archer', 'javelin', 4]],
   undercrown: [['sprig', 'shardling', 2]],
   deep: [['sailor', 'watch', 4]],
@@ -5803,9 +5861,9 @@ const AMBUSH = {
     { name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
     waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
-    waves: [[['thief', 100], ['thief', 118], ['runner', 110]], [['swornsword', 112], ['crossbow', 119], ['pike', 100], ['watch', 106]]] },
+    waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['watch', 100], ['hedgeknight', 106]]] },
     { name: 'THE HORSE FAIR', row: 35, wallL: 181, wallR: 209, check: [178, 35],
-    waves: [[['thief', 186], ['thief', 204], ['runner', 195], ['hound', 190]], [['swornsword', 198], ['crossbow', 205], ['soldier', 186], ['watch', 192]]] }],
+    waves: [[['swornsword', 186], ['runner', 204], ['swornsword', 195]], [['lancer', 196, 35, { range: 11 }], ['crossbow', 205], ['swornsword', 186], ['heavy', 190]]] }],   /* the fair's own horse, and a serjeant on it */
   hunt: [{ name: 'THE HOLLOW', row: 25, wallL: 323, wallR: 354, check: [320, 25],
     waves: [[['hound', 328], ['hound', 350], ['hound', 338], ['thief', 344]], [['shield', 342], ['archer', 350], ['brute', 328], ['javelin', 334]]] },
     { name: "THE LORD'S RIDE", row: 25, wallL: 436, wallR: 467, check: [433, 25],
