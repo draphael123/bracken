@@ -11013,6 +11013,21 @@ function drawLayer(c, f, baseY, cx, cy) {
   const y = Math.round(baseY + dY * f);
   for (; x < VW; x += w) g.drawImage(c, Math.round(x), y);
 }
+/* THE PILLARS YOU WALK THROUGH. The near layer - the columns and trunks that pass in front of you - was drawn solid over
+   the hero, so a pillar read as a wall you would stop at. It is a little see-through everywhere now, and clear in a soft
+   circle round the hero, so walking behind one plainly shows you walking behind it. */
+let FGC = null;
+function drawFg(cx, cy) {
+  if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }
+  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = (LH * TS - VH) - cy;
+  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);
+  let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);
+  for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);
+  const px = P.x - cx, py = P.y - 12 - cy, gr = f.createRadialGradient(px, py, 8, px, py, 36);
+  gr.addColorStop(0, 'rgba(0,0,0,0.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  f.globalCompositeOperation = 'destination-out'; f.fillStyle = gr; f.fillRect(px - 36, py - 36, 72, 72); f.globalCompositeOperation = 'source-over';
+  g.globalAlpha = 0.72; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;
+}
 function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
   g.fillStyle = ART.OUT; g.fillRect(x - 1, y - 1, w + 2, h + 2);
   g.fillStyle = '#2a2230'; g.fillRect(x, y, w, h); g.fillStyle = '#1a1420'; g.fillRect(x, y, w, 1);   /* a track sunk into the plate */
@@ -12250,7 +12265,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (lightFlash > 0) { g.fillStyle = 'rgba(235,240,255,' + (lightFlash > 0.12 ? 0.75 : lightFlash > 0.06 ? 0.2 : 0.45) + ')'; g.fillRect(0, 0, VW, VH); }
   drawShaftsFront(cx, cy); drawLightCones(cx, cy);
   drawOccluders(cx, cy); drawMotes(cx, cy, true);
-  if (!(L.palette && L.palette.noFg)) drawLayer(BG.fg, 1.25, 0, cx, cy);   /* a level with nothing between you and the sky asks for no foreground */
+  if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);   /* a level with nothing between you and the sky asks for no foreground */
   drawNear(cx);
   if (dk > 0) { g.globalCompositeOperation = 'multiply'; g.globalAlpha = dk * 0.55; const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#8a6aa0'); gr.addColorStop(1, '#ffb070'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   if (L.fog && L.fog.length && state !== 'win') { // a bank you see through only near yourself, the wisps, or (in the drowned city) a lamp
