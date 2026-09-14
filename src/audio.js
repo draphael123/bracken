@@ -43,7 +43,7 @@ export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -378,17 +378,21 @@ function startSynth() { nextT = ac.currentTime + 0.1; step = 0; if (timer) clear
 function stopAmb() { for (const n of ambNodes) { try { n.stop(); } catch {} } ambNodes = []; if (ambShotTimer) { clearInterval(ambShotTimer); ambShotTimer = null; } }
 // EVERY PLACE HAS ITS OWN AIR. The wood had a recording and everything else was filtered noise - and a level
 // with no zone got the wood's birds, so the town, the ships and the mine all had birdsong in them.
-const AMB_FILE = { forest: 'ambForest', town: 'ambTown', shore: 'ambShore', ship: 'ambShip', cave: 'ambCave', deep: 'ambDeep', drip: 'ambDrip' };
+const AMB_FILE = { forest: 'ambForest', town: 'ambTown', shore: 'ambShore', ship: 'ambShip', cave: 'ambCave', deep: 'ambDeep', drip: 'ambDrip', tavern: 'ambTown', hold: 'ambShip', hall: 'ambCave' };
+/* INDOORS IS THE SAME AIR THROUGH A WALL: the town behind the inn's shutters, the sea through a hull, the wood through a trunk */
+const AMB_LP = { tavern: 1300, hold: 600, hall: 800 };
 // AND THE THINGS THAT HAPPEN IN IT: a gull over the shore, the timbers of a ship working, a hammer two streets
 // away and somebody calling, a drip in the dark. [pool, volume, lowpass, one in how many seconds]
 const AMB_SHOTS = { shore: [['amb_gull', 0.22, 0, 5]], ship: [['amb_creak', 0.3, 1800, 3], ['amb_gull', 0.14, 0, 9]],
-  town: [['amb_hammer', 0.12, 1200, 4], ['vo_hum_alert', 0.05, 900, 11]], cave: [['drip', 0, 0, 3]], drip: [['drip', 0, 0, 2]] };
+  town: [['amb_hammer', 0.12, 1200, 4], ['vo_hum_alert', 0.05, 900, 11]], cave: [['drip', 0, 0, 3]], drip: [['drip', 0, 0, 2]],
+  tavern: [['vo_hum_alert', 0.08, 1600, 5], ['sfx:fuse', 0, 0, 3]], hold: [['amb_creak', 0.4, 1200, 2]], hall: [['drip', 0, 0, 4]] };
 let ambShotTimer = null;
 function ambShots(kind) {
   if (ambShotTimer) clearInterval(ambShotTimer); ambShotTimer = null; const list = AMB_SHOTS[kind]; if (!list) return;
   ambShotTimer = setInterval(() => { if (ambKind !== kind || !ac) return;
     for (const [name, v, lp, every] of list) { if (Math.random() > 1 / every) continue;
       if (name === 'drip') { SFX.drip(); continue; }
+      if (name.startsWith('sfx:')) { const f = SFX[name.slice(4)]; if (f) f(); continue; }
       const opts = (clips[name] || []).filter(Boolean); if (!opts.length) continue;
       const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = 0.9 + Math.random() * 0.2;
       const gn = ac.createGain(); gn.gain.value = v * ambVol; let tail = s;
@@ -405,7 +409,9 @@ export const ambient = {
     const start = () => ambGain.gain.setTargetAtTime(ambTarget(kind), ac.currentTime, 0.8);
     const FILE = AMB_FILE[kind];
     if (FILE) {
-      const go = () => { if (ambKind !== kind) return; const s = ac.createBufferSource(); s.buffer = trackBuf[FILE]; s.loop = true; s.connect(ambGain); s.start(); ambNodes.push(s); start(); ambShots(kind); };
+      const go = () => { if (ambKind !== kind) return; const s = ac.createBufferSource(); s.buffer = trackBuf[FILE]; s.loop = true;
+        if (AMB_LP[kind]) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = AMB_LP[kind]; s.connect(f); f.connect(ambGain); } else s.connect(ambGain);
+        s.start(); ambNodes.push(s); start(); ambShots(kind); };
       if (trackBuf[FILE]) go(); else { trackPending[FILE] || fetch(TRACKS[FILE]).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[FILE] = b; go(); }).catch(() => {}); }
       return;
     }
@@ -808,4 +814,4 @@ export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.start
 export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];

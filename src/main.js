@@ -4276,7 +4276,7 @@ const bossTitle = b => {
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
 const MINI_NAME = { propman: 'THE OVERMAN', forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE', suncatcher: 'THE SUNCATCHER', golem: 'THE FACET', berserker: 'THE BELLRINGER' };
 const MINI_DONE = { propman: 'NOTHING HOLDS IT UP NOW', forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS', suncatcher: 'THE QUARRY GOES DARK', golem: 'THE LIGHT IS LET THROUGH', berserker: 'THE ROPE IS YOURS' };
-const miniName = () => (L.mini && MINI_NAME[L.mini.boss]) || 'THE BEAST';
+const miniName = () => (L.mini && (L.mini.name || MINI_NAME[L.mini.boss])) || 'THE BEAST';   /* a level can name its own: the same berserker is the Bellringer in the village and the Striker in Waymeet */
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
@@ -9805,10 +9805,16 @@ function updateWeather(dt) {
   for (const d of decor) { if (d.sway > 0) d.sway = Math.max(0, d.sway - dt); if (d.wob > 0) d.wob = Math.max(0, d.wob - dt); }
   zoomT = Math.max(0, zoomT - dt); if (zoomT <= 0) zoomAmt = 1;
   // ambient bed by zone, and the music ducks while something winds up nearby
-  let amb = 'forest'; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) amb = z.kind; ambient.set(amb);
+  let amb = 'forest'; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) amb = z.kind;
+  /* THE SECOND LAYER: step inside a room and the place goes behind a wall - the inn's common room, a ship's hold, a hollow trunk */
+  { const tx = P.x / TS, ty = P.y / TS, room = !L.colosseum && (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
+    if (room) amb = ({ town: 'tavern', ship: 'hold', shore: 'hold', forest: 'hall', wind: 'hall', rain: 'hall', water: 'hall' })[amb] || amb; }
+  ambient.set(amb);
   /* THE THINGS IN THE WORLD MAKE THEIR OWN NOISE: a forge rings, a mill wheel knocks, a fire talks - from where they are */
-  { const EM = { forge: ['forgeHammer', 1.6], anvil: ['forgeHammer', 2.2], mill: ['thud', 2.4], hearth: ['fuse', 1.4], cookPot: ['fuse', 1.8], campfire: ['fuse', 1.6] };
-    for (const d of deco) { const em = EM[d.kind]; if (!em || !SFX[em[0]]) continue; const dx = d.x + (d.c ? d.c.width / 2 : 0) - P.x; if (Math.abs(dx) > 200 || Math.abs(d.y - P.y) > 140) continue;
+  /* one smith, one hammer: an anvil beside a forge is the same man, so only the forge strikes; and slower, a strike every few seconds, not a metronome */
+  { const EM = { forge: ['forgeHammer', 3.4], anvil: ['forgeHammer', 4.6], mill: ['thud', 3.4], hearth: ['fuse', 2.8], cookPot: ['fuse', 3.2], campfire: ['fuse', 3] };
+    for (const d of deco) { const em = EM[d.kind]; if (!em || !SFX[em[0]]) continue;
+      if (d.kind === 'anvil' && (d.pair ??= deco.some(q => q.kind === 'forge' && Math.abs(q.x - d.x) < 16 * TS))) continue; const dx = d.x + (d.c ? d.c.width / 2 : 0) - P.x; if (Math.abs(dx) > 200 || Math.abs(d.y - P.y) > 140) continue;
       d.emT = (d.emT ?? Math.random() * em[1]) - 1 / 60; if (d.emT > 0) continue; d.emT = em[1] * (0.7 + Math.random() * 0.6);
       const was = emitNow(); emitAt(sndAt(d.x + (d.c ? d.c.width / 2 : 0), d.y, false)); SFX[em[0]](); emitAt(was); } }
   const tense = enemies.some(e => e.alive && Math.abs(e.x - P.x) < 220 && ((e.t === 'thorn' && (e.mode === 'wind' || e.mode === 'charge')) || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && (e.mode === 'crouch' || e.mode === 'tongueTell' || e.mode === 'inhale')) || (e.t === 'chief' && (e.mode === 'crouch' || e.mode === 'aim' || e.mode === 'rainAim' || e.mode === 'whirl')) || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'charge')) || (e.t === 'harpy' && e.mode === 'aim')));

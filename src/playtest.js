@@ -190,6 +190,16 @@ export function makeBot(BK) {
         else if (tick.seekT <= 0) { tick.used = tick.used || new Set(); tick.used.add(tick.seek.id); tick.seek = null; } }
     }
 
+    // A SHUT PORTCULLIS AND NO DOOR TO GO AND FIND: the way on is UP. Kingswood's first hall ends in a gate that
+    // never opens and the way out is the ledges back up the shaft, which a bot that only ever holds right never
+    // turns round for. It walks back under the nearest ledge, climbs while there is a ledge over it, and lets go
+    // at the top. (fy is the row it stands ON: its body is fy-1 and a ledge two rows up is fy-2.)
+    { const portNear = !tick.seek && [1, 2, 3].some(d => at(fx + d, fy - 1) === T.PORT || at(fx - d, fy - 1) === T.PORT);
+      const ledgeOver = x => { for (let y = fy - 2; y >= fy - 4; y--) { const t = at(x, y); if (t === T.ONEWAY || t === T.PLANK) return true; if (t === T.SOLID) return false; } return false; };
+      if (tick.climbX === undefined && portNear) for (let d = 0; d <= 12 && tick.climbX === undefined; d++) for (const sd of [-1, 1]) if (ledgeOver(fx + sd * d)) { tick.climbX = fx + sd * d; break; }
+      if (tick.climbX !== undefined) {
+        if (P.ground && ![-1, 0, 1].some(d => ledgeOver(tick.climbX + d))) tick.climbX = undefined;
+        else { goalX = tick.climbX * TS + 8; if (P.ground && Math.abs(P.x - goalX) < 12) { hold = Math.max(hold, 14); still = 0; }   /* a held jump, pressed where the bot presses all its jumps */ } } }
     const dir = P.x < goalX - 10 ? 1 : P.x > goalX + 10 ? -1 : 0;
     fx = Math.floor(P.x / TS); fy = Math.floor(P.y / TS);
     keys.left = dir < 0; keys.right = dir > 0; keys.down = false;

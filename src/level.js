@@ -403,7 +403,7 @@ function theStockade() {
   ent('brute', 208, 19, { face: -1 }); ent('shield', 223, 19, { face: -1 }); ent('brute', 249, 19, { face: -1 });   /* base coordinates, checked against where the GROUPS put them in the built level: 268 and 300 land inside rock */
 
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
-  block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('silver', 57, 12);
+  block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('coin', 57, 12);
   plat(46, 17, 3); plat(50, 14, 2); plat(59, 16, 2); plat(58, 13, 2); // two ways up
   ent('archer', 55, 12, { face: -1, horn: true });
   ent('check', 45, 19);
@@ -738,7 +738,7 @@ function kingswood() {
   ent('sign', 29, 19, { text: 'THE THIEVES OF THE COURT SNATCH GOLD FROM YOUR PURSE AND RUN. CATCH ONE AND IT PAYS BACK WITH INTEREST.' });
   ent('thief', 34, 19, { face: -1 }); ent('door', 40, 19); ent('folk', 38, 19, { door: 40 });
   // the canopy road over the pasture, and a rope ladder up onto the first hall's roof
-  plat(6, 16, 3); plat(11, 14, 3); plat(16, 12, 4); plat(22, 14, 3); plat(27, 16, 3); plat(33, 14, 3); plat(38, 12, 3); ent('silver', 18, 11);
+  plat(6, 16, 3); plat(11, 14, 3); plat(16, 12, 4); plat(22, 14, 3); plat(27, 16, 3); plat(33, 14, 3); plat(38, 12, 3); ent('coin', 18, 11);   /* the court's silver is the hall's, as its sign says: this one is gold */
   coins([7, 15], [12, 13], [18, 11], [23, 13], [28, 15], [34, 13], [39, 11]); ent('wasp', 25, 11);
   for (let y = 12; y <= 19; y++) set(44, y, T.NET);
   ent('sign', 41, 19, { text: 'ROPES GO UP: JUMP THROUGH THEM. THE ROOF ROAD SKIPS THE HALL AND ITS FIRE. THE HALL HAS THE COURT\'S SILVER.' });
@@ -759,7 +759,7 @@ function kingswood() {
   // THE ROOF ROAD: the hall's fire vents through the roof (jump the puffs), thieves work the ridge, wasps nest in the eaves, an archer watches the ridge
   ent('firevent', 52, 12, { every: 2.6 }); ent('firevent', 63, 12, { every: 3.3 }); ent('firevent', 72, 12, { every: 2.9 });
   ent('thief', 56, 12, { face: -1 }); ent('thief', 69, 12, { face: 1 }); ent('wasp', 60, 9); ent('wasp', 74, 9); ent('archer', 66, 12, { face: -1 });
-  plat(58, 9, 3); plat(64, 8, 3); coins([48, 11], [55, 11], [59, 8], [65, 7], [70, 11], [75, 11]);
+  plat(58, 9, 3); plat(61, 8, 2); plat(64, 8, 3); coins([48, 11], [55, 11], [59, 8], [65, 7], [70, 11], [75, 11]);   /* a step between the two: the far ledge was three across and one up from nothing */
   ent('sign', 46, 12, { text: 'THE ROOF ROAD. THE HALL BREATHES FIRE THROUGH ITS VENTS. JUMP THE PUFFS. THE THIEVES UP HERE HAVE NOWHERE TO RUN.' });
   ent('sign', 73, 19, { text: 'IF THE GATE FALLS: THE ROOF HATCH.' }); ent('torch', 78, 17); coins([77, 15], [78, 13]);   /* 79 was a tile past the ledge and the torch stood in the air */
 
@@ -1013,7 +1013,7 @@ function screePath() {
 
   // ---- 5. The crag wall: ledges up to the plateau, rocks on the way ----
   ent('goat', 266, 18, { face: -1 }); ent('troll', 261, 18, { face: -1 }); wall(270, 18);
-  plat(277, 17, 3); plat(279, 10, 2); ent('silver', 280, 9);
+  plat(277, 17, 3); plat(279, 10, 2); ent('coin', 280, 9);
   block(285, 363, 9, 27);
   block(276, 284, 20, 27); // the foot of the wall: a step down from the bank, no pit
   for (let y = 10; y <= 19; y++) { set(283, y, T.CLIMB); set(284, y, T.CLIMB); } // the crag wall: hold into the rock to cling, jump to kick up it
@@ -3301,7 +3301,7 @@ function longWater() {
   block(128, 139, 27, H - 1); // the ferry dock
   ent('sign', 129, 26, { text: 'THE FERRY. STAND ON THE RAFT AND IT GOES. THE BORE COMES UP THE RIVER ON THE TIDE: ON THE RAFT IT ONLY LIFTS YOU; IN THE WATER GET UP ON A ROCK. THE ROCKS WILL KNOCK YOU OFF THE RAFT: JUMP THEM. AND DO NOT LISTEN TO THE SINGING.' });
   air(132, 138, 30, 32); air(139, 139, 29, 32); // THE SMUGGLERS' CUT: a dry room under the dock, its mouth in the river
-  ent('silver', 134, 32); coins([136, 31], [137, 32], [133, 31]);
+  ent('coin', 134, 32); coins([136, 31], [137, 32], [133, 31]);
   ent('sign', 136, 32, { text: 'SOMEBODY KEPT THIS ROOM DRY UNDER THE DOCK, AND KEPT IT QUIET. THERE IS A ROPE LADDER CUT OFF AT THE TOP AND A CHEST WITH THE HINGES PRISED OFF.' });
   ent('check', 132, 26); ent('deco', 138, 26, { kind: 'seaLantern', v: 1 }); ent('deco', 136, 26, { kind: 'netPoles' }); // (the Ferryman used to stand here: the raft goes without him)
   coins([108, 26], [110, 26], [112, 25], [114, 25], [117, 24], [120, 25], [123, 26], [124, 25], [126, 26], [130, 25], [134, 25], [137, 25]); ent('scout', 124, 27, { face: -1 });
@@ -3336,7 +3336,7 @@ function longWater() {
   pools.push({ x0: 300 * TS, x1: 332 * TS, y: 29 * TS + 2, base: 29 * TS, tideLo: 2, tideHi: -28, tidePeriod: 20, swim: true, shallow: true, depth: 0, bottom: 29 * TS, streetTide: true });
   ent('sign', 300, 25, { text: 'THE LOW STREET. AT HIGH WATER THIS IS A CANAL AND THE JETTY IS THE ONLY DRY ROAD. AT LOW WATER THERE IS SILVER OUT ON THE FLATS.' });
   ent('sluice', 302, 25); ent('sign', 305, 25, { text: 'THE SLUICE. THE TOWN USED IT TO DRAIN THE LOW STREET AFTER A SPRING TIDE. STRIKE THE WHEEL AND YOU HAVE A WHILE ON THE FLATS BEFORE THE SEA COMES BACK.' });
-  ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('silver', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
+  ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('coin', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
   ent('stray', 305, 28, { kind: 'fisher' }); ent('tideguard', 309, 28, { face: -1 });
   ent('crab', 319, 28, { face: -1 }); ent('crab', 325, 28, { face: 1 });
   coins([284, 25], [289, 25], [294, 25], [302, 25], [304, 27], [312, 27], [314, 25], [320, 27], [322, 28], [308, 24], [318, 24], [324, 25], [328, 24]);
@@ -3640,7 +3640,7 @@ function theFlotilla() {
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
   ent('sign', 144, 21, { text: 'THE HOLD IS FULL OF WATER AND SOMEBODY ELSE OWNED IT FIRST. THERE IS A LADDER AT EITHER END.' });
   ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
-  ent('silver', 172, 28); // down in her flooded hold, under the rotten planking
+  ent('coin', 172, 28); // down in her flooded hold, under the rotten planking
   ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 145, 9, { kind: 'crowNest' });
   net(145, 146, 10, 20); plat(144, 10, 3); // her mast is climbable and her top is a place to stand: the lookout up there was standing on nothing
   // THE HULK'S RIG: one mast still standing, her canvas in rags, her shrouds hanging off her
@@ -3923,7 +3923,7 @@ function theHurricane() {
   ent('torch', 430, 26); ent('torch', 460, 26);
   ent('deco', 436, 26, { kind: 'kegStack' }); ent('deco', 452, 26, { kind: 'rumBarrels', v: 1 }); ent('deco', 472, 26, { kind: 'hammock', v: 1 }); ent('deco', 430, 26, { kind: 'plunder', v: 2 });
   ent('deco', 444, 26, { kind: 'hammock', v: 0 }); ent('deco', 468, 26, { kind: 'plunder', v: 1 });
-  ent('stray', 448, 26, { kind: 'lamp' }); ent('silver', 464, 26); ent('deco', 456, 26, { kind: 'plunder', v: 1 }); coins([446, 26], [454, 26], [462, 26], [470, 26]); // (under the water until the pumps run)
+  ent('stray', 448, 26, { kind: 'lamp' }); ent('coin', 464, 26); ent('deco', 456, 26, { kind: 'plunder', v: 1 }); coins([446, 26], [454, 26], [462, 26], [470, 26]); // (under the water until the pumps run)
   ent('netter', 440, 26, { face: 1 }); ent('marine', 470, 26, { face: -1 }); ent('boarder', 456, 26, { face: -1 }); ent('crab', 464, 26, { face: -1 });
   ent('sign', 426, 26, { text: 'THE PUMPS HAVE STOPPED AND NOBODY IS GOING BACK TO THEM. WADING IS SLOW: SHE IS TAKING IT FASTER THAN THAT.' });
   ent('check', 432, 26);
@@ -3950,10 +3950,10 @@ function theHurricane() {
   // only way to walk under the wreck and take what went down with her.
   ent('pump', 508, 23, { pool: 486 });
   ent('sign', 502, 23, { text: 'THE OIL LIES ON THE WATER BETWEEN THEM. WORK THIS BEAM AND IT GOES DOWN INTO HER BILGE WHILE IT RUNS: THERE IS SOMETHING ON THE BOTTOM UNDER HER.' });
-  ent('deco', 500, 33, { kind: 'plunder', v: 0 }); ent('deco', 536, 33, { kind: 'plunder', v: 2 }); ent('silver', 518, 33);
+  ent('deco', 500, 33, { kind: 'plunder', v: 0 }); ent('deco', 536, 33, { kind: 'plunder', v: 2 }); ent('coin', 518, 33);
   coins([496, 33], [508, 33], [524, 33], [532, 33], [544, 33]);
   ent('scout', 516, 23, { face: -1 }); ent('tideguard', 534, 23, { face: -1 }); ent('marine', 500, 14, { face: -1 }); ent('sailor', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
-  ent('silver', 528, 23); ent('deco', 532, 23, { kind: 'plunder', v: 2 });
+  ent('coin', 528, 23); ent('deco', 532, 23, { kind: 'plunder', v: 2 });
   coins([493, 20], [500, 14], [510, 16], [520, 14], [530, 16], [540, 14], [548, 16], [518, 23], [526, 23]);
   ent('check', 560, 19);
 
@@ -3969,7 +3969,7 @@ function theHurricane() {
   air(636, 637, 20, 20); net(636, 637, 20, 26);
   ent('deco', 570, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 650, 19, { kind: 'boardingNet' }); ent('deco', 584, 19, { kind: 'kegStack' }); ent('deco', 616, 19, { kind: 'washing' }); ent('deco', 644, 19, { kind: 'hammock', v: 1 }); ent('deco', 596, 19, { kind: 'boardingNet' });
   ent('deco', 606, 26, { kind: 'kegStack' }); ent('deco', 620, 26, { kind: 'kegStack' }); ent('torch', 614, 26);
-  ent('cutlass', 630, 26, { face: -1 }); ent('silver', 644, 26);
+  ent('cutlass', 630, 26, { face: -1 }); ent('coin', 644, 26);
   // HER POWDER STORE, under the quarterdeck: the reason nobody goes aft with a light
   for (const hx of [664, 700, 730]) { air(hx, hx + 1, 20, 20); net(hx, hx + 1, 20, 26); }
   // THE DARK HOLD: no lamp of hers has burned back here in a year, and the only light is what comes through
@@ -4307,7 +4307,7 @@ function theLamplitStreet() {
   ent('deco', 108, 17, { kind: 'lampWreck', v: 1 }); ent('deco', 146, 17, { kind: 'shellDrift', v: 1 });
   ent('lantern', 145, 17, { city: true, dark: true });     // a lamp up on the market roof, and it is out
   coins([104, 19], [108, 16], [112, 19], [140, 19], [145, 16], [150, 19], [93, 19], [182, 19], [131, 20], [133, 20]);
-  ent('silver', 108, 16);
+  ent('coin', 108, 16);
 
   // 3. the counting house: its vault crowns are five rows over the road, so the way across a vault is the
   // broken arch on either side and the chain down the middle of it - or you drop in and swim, which is where
@@ -4320,7 +4320,7 @@ function theLamplitStreet() {
   // 4. the lamp works: the machine floor is a climb. Beams, the bellows tops, and a chain to the pipe gallery.
   plat(370, 20, 4); plat(378, 18, 4); plat(386, 16, 4);
   plat(398, 20, 5); plat(406, 18, 4); plat(414, 16, 4); chain(392, 12, 21);
-  ent('silver', 387, 15); coins([371, 19], [379, 17], [387, 15], [399, 19], [407, 17], [415, 15], [392, 16]);
+  coins([371, 19], [379, 17], [387, 15], [399, 19], [407, 17], [415, 15], [392, 16]);
   ent('lantern', 415, 15, { city: true, dark: true });     // the gallery lamp: worth the climb
 
   // 5. the procession road: a hoist over each courtyard, because the piers only take you halfway
@@ -4496,7 +4496,13 @@ function waymeet() {
   // ---------------- 4. THE SMITHY AND THE BACK LANES (x 301-436). Roofs, and men above you. -----------
   floor(301, 436, R);
   ent('deco', 306, R - 1, { kind: 'forge' }); ent('deco', 312, R - 1, { kind: 'anvil' });
-  ent('npc', 316, R - 1, { kind: 'cook' });
+  ent('npc', 324, R - 1, { kind: 'cook' });
+  /* THE STRIKER. The smith's hammer-man, the one who swings the sledge while the smith holds the iron - and he has put the iron down.
+     The yard is the one fight in the middle of the town with a name: the gate shuts behind you and under the roof ahead,
+     and above the roof as well, or the ladder at the back of the yard walks you round him. */
+  sign(298, 'THE STRIKER. HE SWINGS THE SLEDGE FOR THE SMITH AND HE HAS SWUNG IT ALL DAY. HE DOES NOT STOP WHEN HE IS HIT - HE STOPS WHEN HE IS OUT OF BREATH. LET HIM RUN OUT OF IT.');
+  ent('berserker', 314, R - 1, { face: -1, awake: true, mini: true });
+  for (let y = 25; y <= 28; y++) set(320, y, T.PORT); for (let y = R - 4; y <= R - 1; y++) set(320, y, T.PORT);
   sign(304, 'THE SMITH HAS NOT LOOKED UP ONCE. THEY HAVE BEEN COMING THROUGH HIS YARD ALL AFTERNOON AND HE HAS WORK ON.');
   ent('deco', 322, R - 1, { kind: 'trough' }); ent('deco', 330, R - 1, { kind: 'cart' }); ent('deco', 326, R - 1, { kind: 'hayBale', v: 0 });
   ent('deco', 324, R - 4, { kind: 'shopSign', v: 0, hang: true }); ent('deco', 372, R - 4, { kind: 'shopSign', v: 1, hang: true });
@@ -4511,8 +4517,8 @@ function waymeet() {
   for (const x of [374, 386, 398]) ent('swornsword', x, R - 8, { face: -1 });
   ent('crossbow', 332, R - 8, { face: -1 }); ent('crossbow', 392, R - 8, { face: -1 });
   ent('crossbow', 340, R - 11, { face: -1 });
-  for (const x of [310, 328, 346, 362, 380, 396, 414, 432]) ent('swornsword', x, R - 1, { face: -1 });
-  ent('hedgeknight', 318, R - 1, { face: -1 }); ent('hedgeknight', 356, R - 1, { face: -1 });
+  for (const x of [344, 328, 346, 362, 380, 396, 414, 432]) ent('swornsword', x, R - 1, { face: -1 });
+  ent('hedgeknight', 334, R - 1, { face: -1 }); ent('hedgeknight', 356, R - 1, { face: -1 });
   ent('hedgeknight', 404, R - 1, { face: -1 }); ent('heavy', 424, R - 1, { face: -1 });
   ent('pike', 336, R - 1, { face: 1 }); ent('pike', 388, R - 1, { face: -1 });
   ent('runner', 360, R - 1, { face: -1 }); ent('runner', 408, R - 1, { face: -1 });
@@ -4521,8 +4527,8 @@ function waymeet() {
   ent('deco', 412, R - 1, { kind: 'stall', v: 1 }); ent('deco', 434, R - 1, { kind: 'mill' });
   /* THE MILL POND. The wheel is still turning because nobody stopped it, and it is the one stretch of
      this level where the ground is not ground. */
-  for (let y = R; y <= R + 3; y++) for (let x = 440; x <= 470; x++) set(x, y, T.AIR);
-  pools.push({ x0: 440 * TS, x1: 471 * TS, y: R * TS, swim: true, clear: true, bottom: (R + 4) * TS, depth: 4 * TS, wash: 0.4 });
+  for (let y = R; y <= R + 3; y++) for (let x = 438; x <= 456; x++) set(x, y, T.AIR);
+  pools.push({ x0: 438 * TS, x1: 457 * TS, y: R * TS, swim: true, clear: true, bottom: (R + 4) * TS, depth: 4 * TS, wash: 0.4 });
   post(338); post(390); post(428);
   coins([324, R - 8], [336, R - 8], [348, R - 8], [372, R - 8], [384, R - 8], [396, R - 8],
     [358, R - 4], [408, R - 4], [416, R - 4], [338, R - 11], [344, R - 11],
@@ -4532,9 +4538,10 @@ function waymeet() {
 
   // ---------------- 5. THE CHAPEL YARD (x 437-559). Under the bell, with the town watching. -----------
   floor(437, W - 1, R);
-  ent('deco', 442, R - 1, { kind: 'lychgate' }); ent('deco', 450, R - 1, { kind: 'yew', v: 0 });
-  ent('deco', 458, R - 1, { kind: 'grave', v: 0 }); ent('deco', 464, R - 1, { kind: 'grave', v: 1 });
-  sign(446, 'THE CHAPEL YARD. HE HAS BEEN STANDING HERE SINCE THE BELL WENT AND HE HAS NOT DRAWN YET. HE IS NOT HERE TO KILL YOU. HE IS HERE TO CARRY YOU OUT, AND HE IS VERY GOOD AT IT.');
+  for (let y = R; y <= R + 3; y++) for (let x = 438; x <= 456; x++) set(x, y, T.AIR);   /* THE POND, CARVED AGAIN: the yard's floor was laid after it and filled it in, so the water sat on top of the ground */
+  ent('deco', 460, R - 1, { kind: 'lychgate' }); ent('deco', 466, R - 1, { kind: 'yew', v: 0 });
+  ent('deco', 472, R - 1, { kind: 'grave', v: 0 }); ent('deco', 478, R - 1, { kind: 'grave', v: 1 });
+  sign(462, 'THE CHAPEL YARD. HE HAS BEEN STANDING HERE SINCE THE BELL WENT AND HE HAS NOT DRAWN YET. HE IS NOT HERE TO KILL YOU. HE IS HERE TO CARRY YOU OUT, AND HE IS VERY GOOD AT IT.');
   ent('check', 470, R - 1);
   sign(474, 'NOTHING GETS THROUGH PLATE. NOT A CUT, NOT A PLUNGE, NOT FIRE - IT ALL TURNS AND THE WORD COMES UP AND NOTHING HAPPENS. THE ONLY THING THAT OPENS A MAN IN FULL PLATE IS HIS OWN BLOW ANSWERED. TAKE IT ON THE BEAT, OR GO THROUGH IT.');
   /* THE YARD ITSELF, because the last room in a level should not be an empty stretch of road: the tower
@@ -4544,7 +4551,7 @@ function waymeet() {
   ent('deco', 494, R - 1, { kind: 'yew', v: 1 }); ent('deco', 542, R - 1, { kind: 'yew', v: 0 });
   ent('deco', 534, R - 1, { kind: 'lychgate' }); ent('deco', 510, R - 1, { kind: 'cairn' });
   post(488); post(540); post(516);
-  ent('swornsword', 456, R - 1, { face: -1 }); ent('swornsword', 476, R - 1, { face: -1 });
+  ent('swornsword', 482, R - 1, { face: -1 }); ent('swornsword', 476, R - 1, { face: -1 });
   ent('hedgeknight', 466, R - 1, { face: -1 }); ent('heavy', 486, R - 1, { face: -1 });
   ent('closedhelm', 524, R - 1, { face: -1 });
   ent('gate', 556, R - 1);
@@ -4572,6 +4579,7 @@ function waymeet() {
     ambient: [{ x0: 0, x1: 99999, kind: 'town' }],
     arena: { x0: 492 * TS, x1: 536 * TS, floor: R * TS, trigger: 498 * TS, wallL: 491, wallR: 537, boss: 'closedhelm',
       music: 'boss2', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
+    mini: { x0: 301 * TS, x1: 320 * TS, floor: R * TS, y0: (R - 8) * TS, y1: (R + 1) * TS, trigger: 305 * TS, wallL: 300, gate: 320, boss: 'berserker', name: 'THE STRIKER' },
   };
 }
 
