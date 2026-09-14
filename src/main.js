@@ -1290,12 +1290,12 @@ function spawnEnt(e) {
         // down, and they were placed on rows with open sky over them, so five of them hung in the middle of
         // the air. Anything hung is pulled up to the rock above it; if there is no rock within four tiles it
         // is not hung at all, and is left out.
-        if (HUNG_DECO.has(e.kind)) { let ty = gy, n = 0;
+        if (HUNG_DECO.has(e.kind) && (e.kind !== 'banner' || e.hang)) { let ty = gy, n = 0;   /* a banner on its own pole STANDS: pulled up to the rock above, it climbed a house front to the eaves and left its pole in the air */
           while (ty > 1 && n++ < 5 && !isSolid(e.x, ty - 1)) ty--;
           if (!isSolid(e.x, ty - 1)) break;                 /* nothing to hang it from: it does not exist */
           gy = ty; }
         if (!e.hang && GROUNDED_DECO.has(e.kind)) { const gnd = (x, y) => { const t = tileAt(x, y); return isSolid(x, y) || (isOneWay(t) && t !== T.NET); }; /* a keg does not sit on a rope */ let n = 0; while (gnd(e.x, gy) && n++ < 4) gy--; n = 0; while (!gnd(e.x, gy + 1) && n++ < 4) gy++; if (!gnd(e.x, gy + 1)) gy = e.y; } const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && tileAt(e.x, gy + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
-        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? e.y * TS : pyg - c.height + (onPlank ? 3 : 0), c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
+        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS : pyg - c.height + (onPlank ? 3 : 0), c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
         if (e.kind === 'lanternDeck' && e.v !== 0) lights.push({ x: px, y: pyg - 18, r: 36, torch: true });
         if (e.kind === 'cookPot') lights.push({ x: px, y: pyg - 8, r: 26, torch: true });
         if (e.kind === 'lanternBuoy' && e.v !== 0) lights.push({ x: px, y: pyg - 20, r: 30, torch: true });

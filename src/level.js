@@ -1986,13 +1986,8 @@ function stormhold() {
   block(428, 429, 20, 45); floor(424, 429, BY);
   ent('deco', 426, BY - 1, { kind: 'gatehouse' });
   ent('gate', 427, BY - 1);
-  // ---- THE BARRICADES: the goblins walled their own bridge, and that is the shape of the fight on it ----
-  // One across each span. They stop a javelin, they break his gale, and a charge that runs into one plants
-  // him where you want him - and takes the barricade with it. Six of them, and then the bridge is bare.
-  for (const bx of [316, 334, 352, 370, 388, 406]) {
-    for (let x = bx; x <= bx + 1; x++) for (let y = BY - 2; y <= BY - 1; y++) set(x, y, T.PALISADE);
-    ent('barricade', bx, BY - 1, { w: 2, h: 2 });
-  }
+  /* (THE BARRICADES WENT. Six palisades across the bridge made the Queen's Lance a fight about walls; the bridge is bare now,
+     and the weights over it are what you bring down on him.) */
   ent('lance', 320, BY - 1);
 
   // ---- (pass two) THE CHIMNEYS: the old sootworks gorge. The span is down; the chimney stacks still stand a hop apart,
