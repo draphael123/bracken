@@ -3932,7 +3932,7 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = (P.ballast ? (P.swim ? 54 : 58) : (P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() ? 0.8 : 1) * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * tal('seaLegs')) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : (P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * tal('seaLegs')) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]); // the Sunspire's ice: slow to get going, slower to stop
   if (move && !groundAtk) {
     const acc = P.swim ? 900 : P.ground ? (onSlick ? 360 : 1000) : 700;
