@@ -4025,7 +4025,7 @@ function theHurricane() {
     duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
     swell: { amp: 3, period: 3.8 }, stormClouds: true,
     // THE WASH: the rule of her open deck. It builds to windward, it tells you, and then it takes the deck.
-    wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 744 * TS, every: 9, tell: 3, speed: 210, dmg: 18 },
+    wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 744 * TS, every: 9, tell: 3, speed: 210, dmg: 12 },   /* (18: a wave nobody jumped cost a fifth of a hero every nine seconds) */
     // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface.
     storm2: { every: 9, tell: 1.2, y: 20 * TS, zones: [[330 * TS, 424 * TS], [486 * TS, 558 * TS], [560 * TS, 744 * TS]] },
     hullZones, darkZones,

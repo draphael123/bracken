@@ -25,7 +25,7 @@ const HERO = {
   pyro: { hp: 88, hitRaw: 10, mul: 0.7, top: Math.round(24 * 0.7) },
   paladin: { hp: 120, hitRaw: 14, mul: 1, top: 14 + 9 + 5 },
   pirate: { hp: 90, hitRaw: 8, mul: 1, top: 8 + 9 + 5 },
-  reaper: { hp: 95, hitRaw: 14, mul: 1, top: 14 + 9 + 5 },
+  reaper: { hp: 95, hitRaw: 16, mul: 1, top: 16 + 9 + 5 },
 };
 const NOT_FOES = new Set(['folk', 'bale', 'heart']);
 const pad = (s, n) => String(s).padEnd(n), rpad = (s, n) => String(s).padStart(n);
