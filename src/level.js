@@ -2275,21 +2275,24 @@ function undercrown() {
 // hull on hull, and none of it was ever going to the goblins.
 // ============================================================================================
 function theDeep() {
-  const L = painter(112, 188);
-  const { block, floor, plat, ent, coins, set, spikes } = L;
-  const movers = [], interiors = [], pools = [], airRooms = [];
-  block(0, 111, 0, 187);
+  // THE SHAPE: down the trench through six places that each look and move differently, out along the cold road at the
+  // bottom of it, and through his castle to his throne. W is wide for the castle; the trench is the left 112 columns.
+  const W = 304, H = 204;
+  const L = painter(W, H);
+  const { block, floor, plat, ent, coins, set } = L;
+  const movers = [], interiors = [], pools = [], airRooms = [], darkZones = [], facades = [];
+  block(0, W - 1, 0, H - 1);
   const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   /* A SHIP HAS A HULL UNDER HER DECK. One row of planking is a three-pixel board, and three pixels at the
      bottom of a dark trench is nothing at all: every creature down here read as standing on open water. */
   const deck = (x0, x1, y) => { for (let x = x0; x <= x1; x++) { set(x, y, T.PLANK); set(x, y + 1, T.SOLID); set(x, y + 2, T.SOLID); } };
   const hull = (x0, x1, y0, y1) => { cut(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, 'ship']);
     airRooms.push([x0, x1, y0, y1]); };   /* HER HOLD IS THE AIR. The deck is the road and the hold under it is the breath; the open trench between two ships is the price */
-  const rib = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
   const rope = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
   const rock = (x0, x1, y0, y1) => block(x0, x1, y0, y1);
-  // THE WATER, in one piece, from the shelf to the floor of the trench. `bottom` is how far down
-  // the swim reaches; under it is rock, and the rock is where a stone puts you.
+  // THE WATER, from the shelf to the floor of the trench, and a second sheet over the castle. `bottom` is how far down
+  // the swim reaches; under it is rock, and the rock is where a stone puts you. The two overlap by two columns: two
+  // pools that only touch leave a dry course between them.
   const sea = (x0, x1, top, bot) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS, swim: true, bottom: bot * TS, depth: (bot - top) * TS, clear: true, wash: 0.34, grad: false });
   /* CLEAR WATER. Every other swim pool in the game says `clear` and this one did not, so drawWater took the
      branch that paints the pool as an OPAQUE rectangle over everything in it - a hundred and fifty rows of
@@ -2297,6 +2300,21 @@ function theDeep() {
      of the level instead, thin, because it has to cover the whole descent. */
   const stone = (x, y, kind) => ent('ballast', x, y, { kind: kind || 'stone' });
   const air = (x, y) => ent('deco', x, y, { kind: 'airBell' });
+  // A TON MORE AIR, AND A PLACE FOR EVERY KIND OF IT (src/deepair.js is where the breath clock and tools/breath.mjs read
+  // it back). Each kind is signposted where it is first met. Everything else the deep draws and runs is in D.
+  const D = { zones: [], vents: [], clams: [], bulbs: [], wrecks: [], pockets: [], jellies: [], kelp: [], fish: [], currents: [], props: [], banners: [], shafts: [], masonry: [], gates: [], rime: [], icicles: [] };
+  /* WHERE THE REEF'S DRESSING DOES NOT GO: it lays coral and boulders on any open floor, which is right for a reef and wrong
+     over the leviathan's bones, on the ice, and in his halls. main.js takes it back out of these at load. */
+  D.noDress = [[38, 103, 186, 198], [104, 303, 140, 203]];
+  const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };   /* air under a roof: the surface of it shines */
+  const vent = (x, y, h, hot, drain) => D.vents.push({ x, y, h, hot: !!hot, drain: !!drain });
+  const clam = (x, y) => D.clams.push({ x, y });
+  const kelp = (x, y, h, bulb) => { D.kelp.push({ x, y, h }); if (bulb) D.bulbs.push({ x, y: y - h }); };
+  const wreck = (x, y) => D.wrecks.push({ x, y });
+  const jelly = (x, y, hue) => D.jellies.push({ x, y, hue: hue || 0 });
+  const prop = (k, x, y, o) => D.props.push(Object.assign({ k, x, y }, o || {}));
+  const zone = (name, x0, x1, y0, y1, col, a) => D.zones.push({ name, x0, x1, y0, y1, col, a });
+  const fish = (x, y, n, col) => D.fish.push({ x, y, n, col });
 
   // ---- 1. THE SHELF (rows 10-28). The last dry deck in the world, and the first stone. ----
   cut(4, 107, 10, 27);
@@ -2310,7 +2328,7 @@ function theDeep() {
   ent('sailor', 24, 27, { face: -1 }); ent('lookout', 34, 27, { face: -1 });
   ent('netter', 14, 27, { face: 1 }); ent('crab', 30, 27, { face: -1 });
   ent('petrel', 48, 22); ent('scout', 20, 27, { face: 1 });
-  ent('sign', 34, 27, { text: 'A HULL KEEPS AIR UNDER ITS DECK. FROM HERE DOWN, THAT IS ALL THE AIR YOU GET.' });
+  ent('sign', 34, 27, { text: 'A HULL KEEPS AIR UNDER ITS DECK. SO DO BELLS, VENTS, CLAMS AND KELP: LOOK FOR THE SHINE.' });
   // the water starts where the deck ends, and the first shelf of rock is what teaches the verb
   sea(41, 107, 20, 35);   /* it has to reach PAST the shelf floor: two pools that only touch leave a dry course between them */
   rock(58, 107, 22, 26); rock(41, 50, 30, 31);
@@ -2318,10 +2336,17 @@ function theDeep() {
   ent('sign', 38, 27, { text: 'THE SHELF OVERHANGS. CARRY A STONE, WALK UNDER, LET GO ON THE FAR SIDE.' });
   air(52, 21); coins([44, 24], [48, 24], [54, 24]);
   rock(41, 107, 32, 33); cut(51, 57, 32, 33);                       /* the only way down is the gap under the shelf */
-  sea(6, 105, 34, 182);                                            /* and from here to the floor of the trench it is all water */
+  sea(6, 105, 34, 199);                                            /* and from here to the floor of the trench it is all water */
   coins([52, 31], [55, 31]);
+  /* THE FIRST POCKET: the overhang was seventeen seconds of water with nothing in it. The sea keeps air under a lip of rock,
+     and you can see it from below: a flat bright line where the water meets it. */
+  pocket(74, 82, 27, 28); pocket(96, 104, 27, 28);
+  ent('sign', 60, 31, { text: 'AIR GATHERS UNDER AN OVERHANG. WHERE THE WATER SHINES FLAT OVER YOU, BREATHE.' });
+  coins([78, 30], [100, 30], [104, 31]); clam(106, 31);
+  zone('THE SHELF', 4, 107, 10, 33, [200, 230, 240], 0.06);
+  D.shafts.push({ x: 60, y0: 10, y1: 33, w: 3, lean: 0.25 }, { x: 88, y0: 10, y1: 21, w: 2, lean: 0.25 });
 
-  // ---- 2. THE UPPER TRENCH (rows 34-72). Ships stacked, and their decks are the road down. ----
+  // ---- 2. THE WRECK STACK (rows 34-72). Ships stacked, and their decks are the road down. ----
   cut(6, 105, 34, 72);
   rock(0, 5, 34, 72); rock(106, 111, 34, 72);
   ent('check', 54, 41); air(54, 38); air(90, 52); air(20, 60);
@@ -2345,13 +2370,22 @@ function theDeep() {
   ent('sign', 70, 47, { text: 'THE SHORTEST WAY BETWEEN TWO DECKS IS A STONE.' });
   ent('deco', 36, 41, { kind: 'wreckBow' }); ent('deco', 86, 47, { kind: 'sternWindows' });
   ent('deco', 22, 55, { kind: 'capstan' }); ent('deco', 80, 63, { kind: 'shipBell' });
+  /* THE LANTERNS STILL LIT ON THEIR DECKS: the stack is the one place down here a man's light is burning */
+  ent('deco', 33, 41, { kind: 'lanternDeck', v: 1 }); ent('deco', 94, 47, { kind: 'lanternDeck', v: 1 }); ent('deco', 17, 55, { kind: 'lanternDeck', v: 1 }); ent('deco', 88, 63, { kind: 'lanternDeck', v: 1 });
   rope(100, 34, 70); rope(8, 40, 70);
   ent('silver', 92, 38);
   ent('stray', 94, 47, { kind: 'coffer' });
+  /* THE FIRST VENT, on a lip of the east wall, and the first bell on her side, over the throat: the stack's two gaps */
+  rock(102, 105, 60, 61); vent(104, 59, 9);
+  ent('sign', 102, 59, { text: 'A CRACK THAT BUBBLES IS BREATHING FOR YOU. SWIM INTO THE COLUMN.' });
+  wreck(69, 72); vent(87, 72, 8);
+  ent('sign', 72, 72, { text: 'A DIVING BELL ON HER SIDE STILL HAS HER AIR. PUT YOUR HEAD IN HER MOUTH.' });
+  vent(10, 72, 12); rock(6, 7, 62, 63); pocket(6, 7, 64, 65); vent(31, 72, 9); clam(37, 72);        /* the west side of the stack: a vent by the rope, and a lip of rock with air under it */
+  zone('THE WRECK STACK', 6, 105, 34, 73, [150, 170, 160], 0.07);
 
-  cut(74, 82, 73, 73);                                             /* the throat into the beds */
+  cut(74, 82, 73, 73);                                             /* the throat into the kelp */
 
-  // ---- 3. THE HOLDFAST BEDS (rows 74-112). Rooted things that will not let you go up. ----
+  // ---- 3. THE KELP FOREST (rows 74-112). Rooted things that will not let you go up, and a forest of them. ----
   cut(6, 105, 74, 112);
   rock(0, 5, 74, 112); rock(106, 111, 74, 112);
   ent('check', 16, 81); air(20, 78); air(88, 92); air(48, 104);   /* clear of the hull under the deck at 88 */
@@ -2380,10 +2414,23 @@ function theDeep() {
   ent('deco', 28, 95, { kind: 'brainCoral' }); ent('deco', 84, 103, { kind: 'kelpTall' });
   rope(10, 76, 110); ent('silver', 30, 78);
   ent('stray', 50, 95, { kind: 'coffer' });
+  /* THE FOREST: strands off every deck and the bed, swaying, and the fish that live in it. The bladders at the tops of
+     some of them are full of air, and a blade opens them. */
+  for (const [x, y, h, b] of [[8, 112, 7], [15, 112, 9], [22, 112, 6], [26, 112, 8, 1], [34, 112, 5], [54, 112, 6], [66, 112, 5], [78, 112, 6], [92, 112, 7], [100, 112, 9, 1],
+    [41, 105, 6, 1], [56, 105, 8, 1], [60, 105, 5], [70, 103, 9, 1], [80, 103, 6], [92, 103, 7], [24, 95, 8], [34, 95, 6], [48, 95, 7],
+    [66, 87, 9], [90, 87, 8, 1], [75, 87, 5], [16, 81, 6], [28, 81, 7], [38, 81, 5]]) kelp(x, y, h, b);
+  clam(58, 105); clam(16, 112); clam(96, 112);
+  pocket(64, 72, 107, 108); pocket(84, 92, 107, 108);               /* and air caught under the hull of the lowest ship */
+  ent('sign', 64, 103, { text: 'KELP BLADDERS HOLD AIR. CUT ONE AND BREATHE WHAT COMES OUT.' });
+  ent('sign', 60, 105, { text: 'A SHUT CLAM KEEPS A BREATH. STRIKE IT OPEN AND SWIM INTO IT.' });
+  vent(25, 112, 10);
+  fish(50, 86, 7, '#ffd36b'); fish(30, 106, 6, '#bfe6f5'); fish(84, 96, 8, '#ff9a5c'); fish(14, 90, 5, '#bfe6f5');
+  zone('THE KELP FOREST', 6, 105, 74, 113, [90, 180, 90], 0.12);
+  darkZones.push({ x0: 6 * TS, x1: 106 * TS, y0: 74 * TS, y1: 113 * TS, dark: 0.32 });   /* under the canopy: the bladders are the lights */
 
-  cut(30, 38, 113, 113);                                           /* and down into the grounds */
+  cut(30, 38, 113, 113);                                           /* and down into the garden */
 
-  // ---- 4. THE PRISE GROUNDS (rows 114-150). One claw, and its whole job is your hands. ----
+  // ---- 4. THE CORAL GARDEN (rows 114-150). One claw, and its whole job is your hands - in the only colour down here. ----
   cut(6, 105, 114, 150);
   rock(0, 5, 114, 150); rock(106, 111, 114, 150);
   ent('check', 86, 121); air(86, 118); air(30, 130); air(76, 144);
@@ -2413,40 +2460,140 @@ function theDeep() {
   ent('deco', 88, 137, { kind: 'anchor' }); ent('deco', 44, 145, { kind: 'seaChest' });
   ent('silver', 92, 118);
   ent('stray', 20, 145, { kind: 'coffer' });
-  rock(10, 96, 151, 157); cut(14, 22, 151, 157);                    /* the last throat, down onto the hoard at the near end of it */
+  rock(10, 96, 151, 157); cut(14, 22, 151, 157);                    /* the last throat, down into the drop */
+  /* THE GARDEN'S COLOUR, and its breath: a lip on each wall with a clam on it, and a vent on the floor by the throat */
+  for (const [x, y, v] of [[60, 121, 0], [80, 121, 2], [96, 121, 1], [16, 129, 1], [50, 129, 0], [58, 137, 2], [92, 137, 0], [18, 145, 2], [52, 145, 1], [30, 150, 0], [60, 150, 1], [86, 150, 2], [44, 150, 2], [74, 150, 0]]) prop('coral', x, y, { v });
+  rock(6, 10, 122, 123); clam(8, 121); rock(100, 105, 142, 143); clam(103, 141); prop('coral', 101, 141, { v: 1 });
+  vent(26, 150, 7); clam(70, 150); vent(96, 150, 12); clam(48, 150);
+  fish(40, 136, 6, '#ff9ad0'); fish(76, 128, 6, '#ffd36b');
+  zone('THE CORAL GARDEN', 6, 105, 114, 157, [240, 120, 170], 0.08);
 
-  // ---- 5. THE HOARD (rows 158-182). All of it, and the man it was going to. ----
-  cut(8, 103, 158, 181);
-  floor(8, 103, 182);
-  ent('check', 14, 181); air(14, 160); air(94, 160);
-  ent('sign', 18, 181, { text: 'THE TRIBUTE HEAP. HE IS TOO HEAVY TO RISE: CARRY A STONE, MEET HIM ON THE FLOOR.' });
-  stone(22, 181, 'chest'); stone(94, 181, 'chest'); stone(58, 181, 'chain');
-  ent('deco', 30, 181, { kind: 'seaChest' }); ent('deco', 74, 181, { kind: 'tributeChest' });
-  ent('deco', 46, 181, { kind: 'anchor' }); ent('deco', 86, 181, { kind: 'capstan' });
-  coins([26, 180], [38, 180], [50, 180], [62, 180], [78, 180], [90, 180], [34, 180], [70, 180]);
-  plat(30, 172, 6); plat(52, 170, 8); plat(76, 172, 6);
-  airRooms.push([10, 101, 158, 181]);   /* AND THE HOARD BREATHES. It is thirty years of hulls and casks in one heap and there is air in all of it - which is the point: the last fight in the game asks how HEAVY you are, and one question at a time is enough. The breath is the descent's clock, not his. */
-  coins([32, 171], [56, 169], [78, 171]);
-  ent('sailor', 20, 181, { face: 1 }); ent('crab', 92, 181, { face: -1 }); ent('urchin', 84, 176);
-  ent('sign', 26, 181, { text: 'CARRY A STONE TO MEET HIM ON THE FLOOR. DROP IT WHEN HIS SLAM COMES.' });
-  ent('wight', 14, 181, { face: 1 }); ent('wight', 98, 181, { face: -1 });
-  ent('boarder', 34, 171, { face: 1 }); ent('boarder', 80, 171, { face: -1 });
-  ent('marine', 56, 169, { face: -1 }); ent('siren', 44, 174); ent('siren', 70, 174);
-  ent('check', 24, 181);
-  ent('drownedking', 56, 181, { face: -1 });
-  ent('gate', 100, 181);
+  // ---- 5. THE GLOWING DROP (rows 158-186). Black water, and the only lights in it are alive. ----
+  cut(8, 103, 158, 198);
+  rock(8, 24, 166, 167); rock(8, 22, 174, 175); rock(8, 16, 182, 183);   /* shelves down the west wall, each one keeping a breath */
+  rock(88, 103, 170, 171); rock(96, 103, 180, 181);
+  pocket(48, 60, 158, 159); pocket(74, 86, 158, 159);               /* the garden's floor is the drop's roof, and it keeps air under it */
+  ent('check', 12, 165);
+  ent('sign', 10, 165, { text: 'THE GLOWING DROP. THE JELLIES ARE THE ONLY LIGHT: STRIKE ONE AND IT BURNS BRIGHT.' });
+  clam(20, 165); wreck(12, 173); vent(21, 173, 6); clam(12, 181); clam(98, 169); vent(100, 179, 8);
+  for (const [x, y, h] of [[40, 164, 0], [60, 170, 0], [76, 161, 0], [28, 179, 1], [50, 183, 0], [84, 176, 1], [66, 186, 1], [94, 163, 0], [34, 170, 0], [20, 188, 1]]) jelly(x, y, h);
+  ent('angler', 30, 172); ent('angler', 70, 176); ent('angler', 56, 162); ent('eel', 44, 178); ent('eel', 84, 166);
+  ent('siren', 62, 182); ent('urchin', 14, 173); ent('urchin', 92, 169);   /* over the rock band, not in it */
+  coins([16, 165], [22, 165], [10, 173], [14, 173], [10, 181], [26, 178], [40, 176], [60, 174], [80, 170], [100, 169], [98, 179]);
+  zone('THE GLOWING DROP', 8, 103, 158, 186, [130, 100, 210], 0.12);
+  darkZones.push({ x0: 8 * TS, x1: 104 * TS, y0: 158 * TS, y1: 187 * TS, dark: 0.6 });
+  for (const [x, y, v] of [[16, 165, 0], [23, 165, 2], [18, 173, 1], [14, 181, 2], [92, 169, 1], [101, 169, 0], [99, 179, 2]]) prop('coral', x, y, { v, glow: true });   /* the shelves grow their own light */
+
+  // ---- 6. THE LEVIATHAN'S BED (rows 187-198). It died on the vents, and they are still going under its ribs. ----
+  rock(8, 30, 194, 198); rock(31, 38, 196, 198);                    /* the west end of the bed banks up */
+  ent('check', 14, 193);
+  ent('sign', 16, 193, { text: 'IT DIED ON THE VENTS. THEIR HEAT THROWS YOU UP; THEIR BUBBLES ARE STILL AIR.' });
+  vent(22, 193, 8); clam(27, 193); wreck(35, 195);
+  for (let x = 42; x <= 86; x += 4) prop('vertebra', x, 198);
+  for (const [x, v] of [[44, 0], [52, 1], [60, 0], [68, 1], [76, 0], [84, 1]]) { prop('rib', x, 198, { v }); set(x + (v ? -1 : 1), 195, T.ONEWAY); }
+  prop('skull', 93, 198); pocket(89, 94, 196, 198);                /* and there is still air in the dome of its head */
+  vent(48, 198, 9, true); vent(64, 198, 10, true); vent(80, 198, 9, true); clam(56, 198); wreck(72, 198); vent(100, 198, 7);
+  ent('crab', 40, 198, { face: 1 }); ent('crab', 88, 198, { face: -1 }); ent('wight', 58, 198, { face: -1 }); ent('eel', 70, 190);
+  ent('check', 60, 198);
+  coins([44, 194], [52, 194], [60, 194], [68, 194], [76, 194], [84, 194], [96, 196], [102, 196]);
+  zone('THE LEVIATHAN\'S BED', 8, 103, 187, 198, [240, 130, 70], 0.12);
+  darkZones.push({ x0: 8 * TS, x1: 104 * TS, y0: 187 * TS, y1: 199 * TS, dark: 0.5 });
+
+  // ---- 7. THE COLD ROAD (x 104-157, rows 188-198). The trench drains east along it, to his wall. ----
+  cut(104, 157, 188, 198);
+  sea(104, 301, 140, 199);
+  for (const x of [112, 123, 134]) { cut(x, x + 3, 185, 187); pocket(x, x + 3, 185, 187); }   /* niches up into the ice, and air in every one */
+  D.currents.push({ x0: 104, x1: 145, y0: 190, y1: 198, fx: 58, fy: 0, kind: 'cold' });   /* the bottom of the road runs; under the ice it is slack */
+  D.rime.push([104, 157, 198]); D.icicles.push([104, 111, 188], [116, 122, 188], [127, 133, 188], [138, 157, 188]);
+  ent('check', 106, 198);
+  ent('sign', 108, 198, { text: 'THE COLD ROAD RUNS TO HIS CASTLE. TO GO BACK AGAINST IT, KEEP UP UNDER THE ICE.' });
+  ent('eel', 118, 193); ent('eel', 140, 192); ent('angler', 128, 195); ent('urchin', 116, 198); ent('urchin', 138, 198);
+  coins([114, 186], [125, 186], [136, 186], [120, 196], [130, 196], [142, 196]);
+  zone('THE COLD ROAD', 104, 157, 184, 198, [140, 200, 245], 0.16);
+  darkZones.push({ x0: 104 * TS, x1: 158 * TS, y0: 184 * TS, y1: 199 * TS, dark: 0.42 });
+
+  // ---- 8. THE DROWNED WARD (x 146-212, rows 156-198). His outer yard, and his face in every corner of it. ----
+  // the gatehouse on the near side of the wall: a stair full of water up to the wall-walk, and the long way in
+  cut(146, 157, 164, 187);
+  for (const [x0, x1, y] of [[146, 150, 184], [153, 157, 180], [146, 150, 176], [153, 157, 172], [146, 150, 168]]) for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY);
+  pocket(146, 157, 164, 165); wreck(148, 175); clam(148, 183);
+  cut(158, 161, 164, 167);                                          /* the breach in the wall-walk */
+  // THE WATER GATE: a portcullis in the curtain, wound up by the wheel beside it. The short way; the stair is always there.
+  cut(158, 161, 192, 198); for (let y = 192; y <= 198; y++) set(160, y, T.PORT);
+  D.gates.push({ wheel: [154, 198], col: 160, y0: 192, y1: 198 });
+  ent('check', 150, 198);
+  ent('sign', 152, 198, { text: 'HIS WATER GATE. STRIKE THE WHEEL THREE TIMES, OR TAKE THE GATEHOUSE STAIR.' });
+  cut(162, 212, 160, 198);
+  rock(162, 172, 160, 163); pocket(158, 172, 164, 165);             /* the roof of the wall-walk, and the air under it */
+  cut(186, 196, 156, 159); pocket(186, 196, 156, 158);              /* a dome over the yard that never let its air go */
+  rock(162, 181, 180, 181); rock(168, 169, 182, 189); rock(174, 175, 182, 189); rock(180, 181, 182, 189);   /* the cloister: spandrels off its roof, and its arches open on to the yard under them */
+  pocket(162, 167, 182, 183); pocket(170, 173, 182, 183); pocket(176, 179, 182, 183);
+  rock(193, 201, 197, 198); vent(197, 196, 10);                     /* his fountain, and it still breathes */
+  rock(200, 212, 176, 177); pocket(201, 212, 178, 179);             /* a gallery off the keep wall, and the air kept under it */
+  ent('wight', 206, 175, { face: -1 }); coins([203, 175], [209, 175]);
+  prop('statue', 188, 198); prop('statue', 206, 198, { v: 1 }); prop('statue', 171, 179);
+  prop('brazier', 164, 179); prop('brazier', 191, 198); prop('brazier', 210, 198);
+  D.banners.push({ x: 178, y: 160 }, { x: 204, y: 160 }, { x: 166, y: 164 });
+  clam(184, 198); clam(209, 198);
+  ent('check', 165, 179); ent('check', 184, 198);
+  ent('sign', 167, 179, { text: 'HIS OWN PEOPLE PUT HIM UP IN EVERY YARD. THE AIR IS UNDER THE CLOISTER ROOF.' });
+  ent('watch', 178, 198, { face: -1 }); ent('watch', 203, 198, { face: -1 }); ent('wight', 165, 198, { face: 1 }); ent('wight', 190, 198, { face: 1 });
+  ent('tideguard', 173, 179, { face: 1 }); ent('siren', 196, 172); ent('angler', 205, 182); ent('eel', 152, 178); ent('watch', 208, 198, { face: -1 });
+  coins([150, 183], [155, 179], [150, 175], [155, 171], [150, 167], [164, 179], [172, 179], [178, 179], [190, 194], [202, 198], [191, 158], [160, 166]);
+  rock(213, 216, 150, 198); cut(213, 216, 192, 198);               /* the keep's wall, and its door */
+  facades.push([162, 212, 150, 198, 'curtain', { sea: true }], [182, 185, 160, 198, 'tower', { sea: true, arch: [192, 198] }], [146, 157, 150, 187, 'tower', { sea: true, lit: false }]);
+  D.masonry.push([140, 303, 140, 203]);
+  zone('THE DROWNED WARD', 146, 212, 150, 198, [120, 175, 150], 0.10);
+  darkZones.push({ x0: 146 * TS, x1: 213 * TS, y0: 150 * TS, y1: 199 * TS, dark: 0.36 });
+
+  // ---- 9. THE GREAT HALL (x 217-250, rows 166-198). Vaulted, and every vault still holding a breath. ----
+  cut(217, 250, 170, 198);
+  for (const [x0, x1] of [[220, 225], [231, 237], [243, 248]]) { cut(x0, x1, 166, 169); pocket(x0, x1, 166, 168); D.shafts.push({ x: (x0 + x1) / 2, y0: 166, y1: 198, w: 3, lean: 0.28 }); }
+  rock(227, 228, 188, 198); rock(239, 240, 184, 198);              /* the columns that are left */
+  vent(223, 198, 8, false, true); vent(235, 198, 8, false, true);   /* the drains in his floor breathe the same as any vent */
+  prop('chandelier', 231, 198); prop('statue', 221, 198); prop('statue', 245, 198, { v: 1 }); prop('brazier', 233, 198); prop('brazier', 243, 198);
+  D.banners.push({ x: 229, y: 170 }, { x: 241, y: 170 }, { x: 226, y: 170 });
+  ent('check', 218, 198);
+  ent('watch', 224, 198, { face: -1 }); ent('watch', 244, 198, { face: -1 }); ent('wight', 236, 198, { face: -1 }); ent('tideguard', 228, 187, { face: 1 }); ent('siren', 236, 176); ent('wight', 219, 198, { face: 1 }); ent('tideguard', 240, 183, { face: -1 });
+  coins([222, 166], [234, 166], [246, 166], [228, 187], [240, 183], [226, 196], [238, 196]);
+  facades.push([217, 250, 166, 198, 'curtain', { sea: true }]);
+  zone('THE GREAT HALL', 217, 250, 166, 198, [210, 175, 110], 0.08);
+  darkZones.push({ x0: 217 * TS, x1: 251 * TS, y0: 166 * TS, y1: 199 * TS, dark: 0.4 });
+  cut(251, 252, 193, 198); vent(250, 198, 7, false, true);          /* his door, and a drain breathing at it */
+  ent('check', 249, 198);
+  ent('sign', 247, 198, { text: 'THE THRONE ROOM. HE SWIMS NOW: PUT A PILLAR BETWEEN YOU AND HIS CHARGE.' });
+
+  // ---- THE THRONE ROOM (x 253-293, rows 164-198). All of it, and the man it was going to. ----
+  // Mostly water, because he swims and so do you; footing on the dais, the pillar stumps and what is left of his galleries;
+  // air in the three vaults and in the bell by his throne, so breath is a pressure and not a sentence.
+  cut(253, 293, 168, 198);
+  for (const [x0, x1] of [[256, 262], [270, 276], [284, 290]]) { cut(x0, x1, 164, 167); pocket(x0, x1, 164, 166); D.shafts.push({ x: (x0 + x1) / 2, y0: 164, y1: 198, w: 4, lean: 0.3 }); }
+  rock(274, 290, 196, 198); rock(277, 287, 194, 195); rock(280, 284, 192, 193);   /* the dais */
+  rock(260, 261, 186, 198); rock(267, 268, 191, 198);              /* broken pillars: his charge stops on them */
+  rock(265, 266, 168, 174);                                         /* and the stump of one hanging from the vault */
+  for (let x = 253; x <= 257; x++) set(x, 181, T.ONEWAY); for (let x = 289; x <= 293; x++) set(x, 178, T.ONEWAY);   /* his galleries, broken off at the wall */
+  prop('throne', 282, 191); air(289, 195);
+  prop('chandelier', 271, 198); prop('statue', 291, 177); prop('brazier', 275, 195);
+  D.banners.push({ x: 268, y: 168 }, { x: 280, y: 168 }, { x: 254, y: 168 });
+  stone(257, 198); stone(292, 198, 'chest'); clam(263, 198); vent(254, 198, 7, false, true);
+  ent('drownedking', 282, 191, { face: -1 });
+  cut(294, 295, 193, 198); cut(296, 300, 193, 198);
+  ent('gate', 299, 198);
+  facades.push([253, 293, 164, 198, 'curtain', { sea: true }], [279, 285, 168, 191, 'tower', { sea: true }]);
+  zone('THE THRONE ROOM', 253, 300, 164, 198, [120, 200, 220], 0.10);
+  darkZones.push({ x0: 253 * TS, x1: 301 * TS, y0: 164 * TS, y1: 199 * TS, dark: 0.12 });
 
   return {
-    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors, airRooms,
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors, airRooms, darkZones, facades, deep: D,
     ballast: true, dark: 0.18,
     duskStart: -1, duskLen: 1, music: 'trench', night: true, glowNight: true, nightA: 0.24,
-    tall: { top: 20 * TS, bottom: 182 * TS, col: '6,16,28', deepest: 0.3 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
+    tall: { top: 20 * TS, bottom: 199 * TS, col: '6,16,28', deepest: 0.26 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
     quest: { n: 3, item: 'coffer', name: 'TRIBUTE COFFERS', npc: 'squire', done: 'THIRTY YEARS OF IT, AND NONE OF IT EVER GOT THERE', reward: 'relic', relic: 'gauntlet' },
     palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)',
       grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
       canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'deep' }],
-    arena: { x0: 30 * TS, x1: 74 * TS, floor: 182 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'drownedking', music: 'boss3', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 158 * TS, y1: 183 * TS },
+    arena: { x0: 252 * TS, x1: 294 * TS, floor: 199 * TS, trigger: 256 * TS, wallL: 252, wallR: 294, boss: 'drownedking', music: 'boss3', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 164 * TS, y1: 199 * TS, throne: [282 * TS + 8, 192 * TS] },
   };
 }
 

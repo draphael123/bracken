@@ -1,4 +1,5 @@
 // chars.js — the knight and the forest's enemies, baked from text grids + drawn sword.
+import { kingFrames, KING_AX, KING_AY } from './king_swim.js';
 import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, flipX, whiten } from './px.js';
 import { OUT } from './art.js';
 
@@ -1411,8 +1412,8 @@ export function bakeDrownedKing() {
   // is 44x30 and built on a silhouette: a barnacled crown, a narrow head with two lamps in it, a mantle of
   // chain and weed spread wider than anything else in the game, a torso INSIDE that spread with the arms
   // clear of it, and greaves gone into the silt. Frames: stand, walk, THE DEBT, THE SLAM, THE UNDERTOW.
-  const DP = Object.assign({}, EP, { p: '#4a7a6e', P: '#2e5248', s: '#8a9a94', S: '#5a6a66', y: '#c9a83a', Y: '#8a7020',
-    i: '#5a6270', I: '#3a3e48', g: '#7ff0e0', k: '#12201e', w: '#9ab0a8', e: '#f6f6ee', v: '#2e6a4a', V: '#1c4430', b: '#b8c0b4' });
+  const DP = Object.assign({}, EP, { p: '#5e9c86', P: '#3a6a5c', s: '#a8b8b2', S: '#6e7e7a', y: '#e0bc44', Y: '#a07e22',   /* lifted a shade to read under the throne room's water, with his swimming frames (king_swim.js) */
+    i: '#7a8494', I: '#4e5664', g: '#7ff0e0', k: '#12201e', w: '#bcd0c8', e: '#f6f6ee', v: '#3e8a60', V: '#2a5a40', b: '#b8c0b4' });
   const d = rows => outline(fromGrid(rows, DP, 1), OUT);
   const over = (base, arms) => base.map((b, i) => b.split('').map((ch, k) => arms[i][k] !== '.' ? arms[i][k] : ch).join(''));
   const crown = ['...............y.y.y.y.y....................', '..............yyyyyyyyyyy...................', '..............yYYYYYYYYYy...................'];
@@ -1426,7 +1427,8 @@ export function bakeDrownedKing() {
   const legsA = ['.........pPPPPPP...PPPPPPp..................', '.........pPPPPPP...PPPPPPp..................', '........iIIIIIIi...iIIIIIIi.................', '........iIIIIIIi...iIIIIIIi.................', '.......sSSSSSSSs...sSSSSSSSs................', '.......sSSSSSSSs...sSSSSSSSs................', '......vvvvvvvvvv...vvvvvvvvvv...............', '.....VVVVVVVVVVVVVVVVVVVVVVVVV..............'];
   const legsB = ['........pPPPPPPPP.PPPPPPPPp.................', '.......pPPPPPPP.....PPPPPPPp................', '.......iIIIIIIi.....iIIIIIIi................', '......iIIIIIIi.......iIIIIIIi...............', '.....sSSSSSSSs.......sSSSSSSSs..............', '.....sSSSSSSSs.......sSSSSSSSs..............', '....vvvvvvvvvv.......vvvvvvvvvv.............', '...VVVVVVVVVVVVVVVVVVVVVVVVVVVVV............'];
   const put = (a, legs) => d([...crown, ...head, ...mantle, ...over(torso, a), ...legs]);
-  return pack([put(down, legsA), put(down, legsB), put(up, legsA), put(slam, legsB), put(wide, legsA)], 23, 31, 30, 32);
+  /* and in the water: the stroke, the glide, the turn, the dive and the rise, every tell and blow of his swimming, and his hurt last (king_swim.js) */
+  return pack(kingFrames([put(down, legsA), put(down, legsB), put(up, legsA), put(slam, legsB), put(wide, legsA)]), KING_AX, KING_AY, 30, 32);
 }
 // Cave bat — 12×6. Frames: hang (wings folded), fly1, fly2.
 export function bakeBat() {

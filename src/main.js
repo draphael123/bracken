@@ -15,6 +15,8 @@ import * as RFT from './reef_tiles.js';
 import * as FLT from './flot_tiles.js';
 import * as CTT from './city_tiles.js';
 import * as CRT from './crown_tiles.js';
+import * as DPP from './deep_props.js';
+import { airBoxes } from './deepair.js';
 import * as TWN from './town_art.js';
 import * as CTP from './city_props.js';
 import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
@@ -1059,7 +1061,7 @@ function loadLevel(i) {
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; bakeAll(L.palette || {});
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
-  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS }));
+  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS })); deepLoad();
   // a mini you have already put down stays down, and the gate it was standing in front of starts open
   miniDone = !!((PROG[LEVELS[i].id] || {}).mini);
   if (miniDone && L.mini && L.mini.gate !== undefined) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
@@ -1222,7 +1224,7 @@ function spawnEnt(e) {
       case 'crossbow': enemies.push({ ...base, t: 'crossbow', w: 10, h: 12, hp: EHP.crossbow, maxHp: EHP.crossbow, speed: 0, mode: 'span', modeT: 1.2, cd: 0, perch: true }); break;
       case 'lancer': enemies.push({ ...base, t: 'lancer', w: 22, h: 30, hp: EHP.lancer * (e.mini ? 2 : 1), mounted: true, mode: 'ride', modeT: 0.6, cd: 1, hitT: 0, hx0: (e.x - (e.range || 12)) * TS + 8, hx1: (e.x + (e.range || 12)) * TS + 8, mini: !!e.mini, miniBig: !!e.mini, phase: 1 }); break;   /* THE SERJEANT rides the length of his beat and no further */
       case 'closedhelm': { const ch = { ...base, t: 'closedhelm', w: 24, h: 50, hp: EHP.closedhelm, maxHp: EHP.closedhelm, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, cutT: 1.2, thrustT: 3, bashT: 5.5, judgeT: 8, open: 0, ward: true }; boss = ch; enemies.push(ch); } break;
-      case 'drownedking': { const dk = { ...base, t: 'drownedking', w: 30, h: 32, hp: EHP.drownedking, maxHp: EHP.drownedking, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, haulT: 6, debtT: 10 }; boss = dk; enemies.push(dk); } break;
+      case 'drownedking': { const dk = { ...base, t: 'drownedking', w: 30, h: 32, hp: Math.round(EHP.drownedking * 1.6), maxHp: Math.round(EHP.drownedking * 1.6), mode: 'sleep',   /* HE SWIMS NOW, and a fight you can take anywhere in the room is a fight that goes quicker: more of him to get through */ modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, haulT: 6, debtT: 10 }; boss = dk; enemies.push(dk); } break;
       case 'propman': enemies.push({ ...base, t: 'propman', w: 12, h: 13, hp: EHP.propman, mode: 'walk', modeT: 1, hitT: 0, swingT: 2, home: px, mini: !!e.mini }); break;
       case 'clinger': enemies.push({ ...base, t: 'clinger', w: 10, h: 11, hp: EHP.clinger, mode: 'cling', modeT: 0, hitT: 0, wallX: px, wallY: py, holdT: 0 }); break;
       /* THE BURIED PRINCE lies in his sarcophagus until the tomb is entered; every attempt finds the tomb as it was built */
@@ -2482,7 +2484,7 @@ const BEASTS = [
   { t: 'crossbow', name: 'CROSSBOWMAN', sub: 'up a stair', desc: 'He does not move and he will not come down. He winds, he levels, and the bolt goes where you were standing when he levelled it. The shield turns it - and sends it back up the stair - so he is the reason your guard is up when somebody walks in with a sword. A bolt goes through a shield held up early: only a guard raised as it lands turns it, and that one goes back up the stair.' },
   { t: 'closedhelm', name: 'THE PALADIN', sub: 'sworn to the chapel', desc: 'A holy ward stands round him and every blade, bolt and flame comes off it. Only his own SWORD opens him: the cut and the thrust are single marks - meet them on the beat (a parry, the ward raised as it lands, the drain or a roll through it) and the ward breaks for a breath. THE BASH is a double mark along a red line: roll through it or be gone. JUDGEMENT marks where you stand: guard it or step off the mark.' },
   { t: 'lancer', name: 'SERJEANT', sub: 'mounted, on the bridge', desc: 'A man-at-arms on a barded horse, riding his beat end to end. The charge is a single mark: take it on the shield and he goes over the back of his horse, or jump or roll it. Close to him he swipes with his sword. Mounted, the barding takes some of every cut; in the road he is a man with a sword and no horse.' },
-  { t: 'drownedking', name: 'THE DROWNED KING', sub: 'the last one he could spare', desc: 'He has been down here the whole time, and the tribute was never going to the goblins. He is too heavy to come up and you are too light to go down, so the fight is the same question the trench has been asking all the way: how heavy are you right now? THE SLAM goes along the floor and only touches what is standing on it. THE UNDERTOW takes anything LIGHT and brings it into his reach. And when he calls THE DEBT in, thirty years of it comes up off the bottom between you. And THE ANCHOR goes round at the height you jump to: the slam wants you off the floor, the anchor wants you on it.' },
+  { t: 'drownedking', name: 'THE DROWNED KING', sub: 'the last one he could spare', desc: 'He has been down here the whole time, and the tribute was never going to the goblins. In his own water he SWIMS: he circles, comes in close, and marks a line before he runs you down it. Be across the line with a pillar at the end of it and he goes into the stone, open. THE FALL marks the floor under you and sticks in it. THE UNDERTOW takes anything LIGHT; a stone in your hands holds. THE ANCHOR goes round at his height and a shield fouls it. Stand on his floor and THE SLAM runs along it.' },
   { t: 'propman', name: 'THE PROPMAN', sub: 'he holds the mine up', desc: 'He does not want to fight you. He wants to get to the nearest set of timber and PROP IT, and while he is standing by one that set will not come down - he puts the blow back in it faster than you can take it out. Kill the propman and then cut the timber; do it the other way round and you have done the work twice. He swings the prop itself, which is slow, wide and heavy. The Overman does not wait to be reached: he throws timber.' },
   { t: 'clinger', name: 'THE CLINGER', sub: 'it waits on the wall', desc: 'Blind, pale, and flat against the rock of a shaft, where it looks like nothing at all. It has no interest in you on the ground. It commits when you are IN THE AIR beside it: it lets go, falls with you, takes hold, and rides you down - and what kills you is the floor, not the thing. Swing while it has you and it lets go.' },
   { t: 'prince', name: 'THE BURIED PRINCE', sub: 'forgotten under the hill', desc: 'A goblin prince they buried under the mine and then forgot, and he has not forgiven it. His ROYAL CUT is long, and a shield turns it: block it and he reels. He sinks into the floor and comes up under where you stood, calls his court up out of the dirt, and throws his crown - bareheaded, he bleeds. Past half he breathes the lamps out, and in the dark he is SHROUDED: light them again. Bring a timber set down on him and he is BURIED AGAIN.' },
@@ -3305,6 +3307,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'prince') { const pd = princeHurt(e, dmg); if (pd === null) return; dmg = pd; }   /* THE TOMB'S MULTIPLIERS: buried, reeling, bareheaded, in the light - or shrouded, or under the floor */
   if (e.t === 'closedhelm' && e.open > 0) { dmg = Math.round(dmg * 2); }   /* the ward is down: the blow finds the man */
   if (e.t === 'lancer') { if (e.mounted && e.mode !== 'blown' && e.mode !== 'rear' && e.mode !== 'reel') dmg = Math.max(1, Math.round(dmg * 0.6)); else if (e.open > 0) dmg = Math.round(dmg * 1.5); }   /* THE BARDING takes some of every cut; in the road he takes all of it */
+  if (e.t === 'drownedking' && e.open > 0) dmg = Math.round(dmg * 1.35);   /* in the stone or in the floor: every blow lands */
   /* THE HOUND MASTER's war-hound takes the cut for him while it stands square under him: a third gets through. Reared,
      sprawled, shied or bitten it cannot, and he comes half out of the saddle into the blow. */
   if (e.t === 'master' && e.mode !== 'sleep') { if (e.open > 0) dmg = Math.round(dmg * 1.6); else { dmg = Math.max(1, Math.round(dmg * 0.33)); SFX.clank(); if (!(e.guardSaid > 0)) { e.guardSaid = 1.2; number(e.x, e.y - e.h - 6, 'THE HOUND TAKES IT', '#9aa39a'); } } }
@@ -6675,6 +6678,7 @@ const lampAir = pr => ({ x: pr.x, y: pr.y - 40 });            // where the bubbl
 function nearAir(x, y) { // a diving bell, or a lamp that is still burning
   for (const r of airRooms) if (x > r.l && x < r.r && y > r.t && y < r.b) return { x, y: r.t + 10 };   /* a whole hold of it, and nothing to see: the room IS the pocket */
   for (const b of airBells) if (Math.abs(b.x - x) < 26 && Math.abs(b.y - y) < 22) return b;
+  { const da = L.deep && deepAir(x, y); if (da) return da; }   /* the Deep's vents, wrecks and the breath a struck clam lets go */
   for (const pr of lamps) if (pr.lit && Math.abs(pr.x - x) < 24 && Math.abs(pr.y - 40 - y) < 34) return lampAir(pr);
   return null;
 }
@@ -8052,70 +8056,156 @@ function updateLancer(e, dt) {
 }
 
 function updateDrownedKing(e, dt) {
+  // HE SWIMS. Thirty years at the bottom of the sea and he moves through it like a man through his own hall: he rises off his
+  // throne, circles you, comes in close, and throws himself at you down a line he marks first. The room answers him - a charge
+  // that meets a pillar, a wall or his own dais leaves him stunned in the stone, and a fall that meets the floor leaves him
+  // mired in it, and in both he is open. He is still the heaviest thing in the world: stand on his floor and he goes down to
+  // it, and his slam goes along it.
   const A = L.arena, floor = A.floor, p2 = e.phase === 2;
-  e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.anim = (e.anim || 0) + dt;
-  e.vy += 900 * dt; if (e.vy > 300) e.vy = 300;
-  const d = P.x - e.x, ad = Math.abs(d);
-  if (e.mode === 'sleep') return;
-  if (p2 && !e.letgo) { e.letgo = 1; number(e.x, e.y - e.h - 14, 'HE LETS GO OF IT', '#7ff0e0'); SFX.stone(); SFX.roar(); shakeCam(8); ringAt(e.x, e.y - 16, 60, '#7ff0e0', 0.5); }
-  let want = 0;
+  const xmin = (A.wallL + 1) * TS + 16, xmax = A.wallR * TS - 16, ymin = (A.y0 !== undefined ? A.y0 : floor - 320) + 4 * TS + e.h;
+  e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.anim = (e.anim || 0) + dt; e.open = Math.max(0, (e.open || 0) - dt); e.turnT = Math.max(0, (e.turnT || 0) - dt);
+  if (e.mode === 'sleep') { e.vx = 0; e.vy = 0; e.swimming = false; e.tilt = 0; return; }
+  if (p2 && !e.letgo) { e.letgo = 1; number(e.x, e.y - e.h - 14, 'HE LETS GO OF THE CHAIN', '#7ff0e0'); SFX.stone(); SFX.roar(); shakeCam(8); ringAt(e.x, e.y - 16, 60, '#7ff0e0', 0.5); }
+  const cy = e.y - 16, d = P.x - e.x, ad = Math.abs(d), dyP = (P.y - 10) - cy, dist = Math.hypot(d, dyP);
+  const onFloor = !P.dead && P.y > floor - 20;
+  let tx = e.x, ty = e.y, sp = 0;   /* where he is swimming to and how fast; 0 is holding still while the water slows him */
   switch (e.mode) {
-    case 'wake': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.9; } break;
-    case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; e.stagger = 0; } break;
-    case 'stalk': { e.face = Math.sign(d) || e.face; want = ad > 40 ? e.face * (p2 ? 58 : 40) : 0;
-      for (const k of ['slamT', 'haulT', 'debtT']) e[k] -= dt; e.anchorT = (e.anchorT === undefined ? 3 : e.anchorT) - dt;
+    /* HE RISES OFF THE THRONE */
+    case 'wake': tx = e.x; ty = e.y - 40; sp = 40; if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.8; } break;
+    case 'swim': {
+      for (const k of ['ramT', 'diveT', 'haulT', 'debtT', 'anchorT', 'slamT']) e[k] = (e[k] === undefined ? 1.2 + Math.random() * 2 : e[k]) - dt;
+      e.pressT = (e.pressT === undefined ? 2.4 : e.pressT) - dt; if (e.pressT < -2) e.pressT = p2 ? 2.4 : 3.4;
+      const close = e.pressT < 0;   /* he circles you, and then he comes in - to the edge of a blade, not on to it */
+      e.orbit = (e.orbit || 0) + dt * (p2 ? 1.1 : 0.8);
+      const R = close ? 34 : (p2 ? 72 : 90);
+      tx = P.x + Math.cos(e.orbit) * R; ty = P.y + (close ? 4 : -26 + Math.sin(e.orbit) * 24);
+      sp = close ? (p2 ? 125 : 105) : (p2 ? 110 : 84);
       if (e.modeT <= 0 && !P.dead) {
-        if (e.haulT <= 0 && ad > 70) { e.haulT = p2 ? 6 : 8.5; e.mode = 'haulTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.75; number(e.x, e.y - e.h - 12, 'THE UNDERTOW', '#7ff0e0'); SFX.gasp(); }
-        else if (e.debtT <= 0) { e.debtT = p2 ? 7 : 11; e.mode = 'debtTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.85; number(e.x, e.y - e.h - 12, 'HE CALLS IT IN', '#ffd36b'); SFX.rattle(1); }
-        else if (e.slamT <= 0 && ad < 76) { e.slamT = p2 ? 2.4 : 3.4; e.mode = 'slamTell'; e.modeT = 0.62; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
-        else if (e.anchorT <= 0 && ad > 30 && ad < 110) { e.anchorT = p2 ? 4.5 : 6.5; e.mode = 'anchorTell'; e.modeT = 0.62; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); number(e.x, e.y - e.h - 12, 'THE ANCHOR', '#7ff0e0'); SFX.rattle(1); }
+        if (e.ramT <= 0 && dist > 70 && dist < 280) { e.ramT = p2 ? 5.5 : 8; e.mode = 'ramTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p2 ? 0.75 : 0.9; e.rdx = undefined; number(e.x, e.y - e.h - 12, 'HE MEANS TO RUN YOU DOWN', '#7ff0e0'); SFX.charge(); }
+        else if (e.diveT <= 0 && dyP > 30) { e.diveT = p2 ? 6 : 8.5; e.mode = 'diveUp'; e.modeT = 1.6; e.dcol = undefined; }
+        else if (e.haulT <= 0 && dist > 70) { e.haulT = p2 ? 6.5 : 9; e.mode = 'haulTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.75; number(e.x, e.y - e.h - 12, 'THE UNDERTOW', '#7ff0e0'); SFX.gasp(); }
+        else if (p2 && e.debtT <= 0) { e.debtT = 8; e.mode = 'debtTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.85; number(e.x, e.y - e.h - 12, 'HE CALLS IT IN', '#ffd36b'); SFX.rattle(1); }
+        else if (e.anchorT <= 0 && dist < 104) { e.anchorT = p2 ? 3.6 : 5; e.mode = 'anchorTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.62; number(e.x, e.y - e.h - 12, 'THE ANCHOR', '#7ff0e0'); SFX.rattle(1); }
+        else if (e.slamT <= 0 && onFloor && ad < 150) { e.slamT = p2 ? 4 : 6; e.mode = 'sink'; e.modeT = 1.6; }
+        else e.modeT = 0.35;
       }
       break; }
-    /* THE SLAM: along the FLOOR, and only what is standing on it feels it. Float and it goes under you. */
-    case 'slamTell': want = 0; e.face = Math.sign(d) || e.face;
-      if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.5; SFX.heavy(); SFX.stone(); shakeCam(9); zoomKick(1.08, 0.28); dust(e.x + e.face * 26, floor, 14);
-        for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 26, y: floor, dir: dd, life: 1.7, sp: p2 ? 210 : 175 });
-        if (!P.dead && P.ground && ad < 60 && Math.abs(P.y - floor) < 26) damagePlayer(e.x, DMG.kingSlamD, { unblockable: true, up: true }); }
+    /* THE SLAM: stand on his floor and he comes down to it, and it goes along it. Only what stands on the floor feels it. */
+    case 'sink': tx = Math.max(xmin, Math.min(xmax, P.x - Math.sign(d || 1) * 30)); ty = floor; sp = 190;
+      if (e.y >= floor - 2 || e.landed) { e.mode = 'slamTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.62; SFX.charge(); }
+      else if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.5; }
       break;
-    case 'slam': want = 0; if (e.modeT <= 0) { if (p2 && e.anchorT <= 1.5 && ad < 110) { e.anchorT = 4.5; e.mode = 'anchorTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.rattle(1); } else { e.mode = 'stalk'; e.modeT = 0.6; } } break;
-    /* THE UNDERTOW: he breathes the trench in. A stone in your hands is the only thing that holds. */
-    case 'haulTell': want = 0; e.face = Math.sign(d) || e.face;
-      if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 90, y: e.y - 10 - Math.random() * 40, vx: (e.x - P.x) * 0.4, vy: 0, life: 0.4, max: 0.4, col: '#7ff0e0', size: 1, grav: 0 });
+    case 'slamTell': e.vx = 0; e.vy = 0; e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.5; SFX.heavy(); SFX.stone(); shakeCam(9); zoomKick(1.08, 0.28); dust(e.x + e.face * 26, e.y, 14);   /* on whatever he came down on: his floor, his dais, a pillar's stump */
+        for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 26, y: e.y, dir: dd, life: 1.7, sp: p2 ? 210 : 175 });
+        if (!P.dead && P.ground && ad < 60 && Math.abs(P.y - e.y) < 26) damagePlayer(e.x, DMG.kingSlamD, { unblockable: true, up: true }); }
+      break;
+    case 'slam': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.7; } break;
+    case 'rise': tx = e.x; ty = floor - 96; sp = 120; if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.4; } break;
+    /* THE CHARGE: the line is marked, and it follows you until the last beat. Then he goes down it into whatever is at its end. */
+    case 'ramTell': sp = 26; e.face = Math.sign(d) || e.face;
+      if (e.modeT > 0.28 || e.rdx === undefined) { const n = Math.max(1, dist); e.rdx = d / n; e.rdy = dyP / n; }
+      tx = e.x - e.rdx * 10; ty = e.y - e.rdy * 10;   /* drawing back along it */
+      if (e.modeT <= 0) { e.mode = 'ram'; e.modeT = 1.3; e.rammed = false; e.vx = e.rdx * (p2 ? 340 : 300); e.vy = e.rdy * (p2 ? 340 : 300); SFX.throwWhoosh(); SFX.bellow(); }
+      break;
+    case 'ram':
+      e.face = Math.sign(e.vx) || e.face;
+      if (!e.rammed && !P.dead && Math.abs(P.x - e.x) < 26 && Math.abs((P.y - 10) - cy) < 24) { e.rammed = true; const res = damagePlayer(e.x, DMG.kingSlamD, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(e.vx || 1) * 260; P.vy = -120; } }
+      if (Math.random() < dt * 30) parts.push({ x: e.x - e.vx * 0.06, y: cy + (Math.random() - 0.5) * 20, vx: -e.vx * 0.2, vy: -e.vy * 0.2, life: 0.3, max: 0.3, col: '#dff4fa', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.5; }
+      break;
+    case 'stunned': e.vy += 50 * dt; if (Math.random() < dt * 6) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y - 40, vx: 0, vy: -20, life: 0.6, max: 0.6, col: '#ffd36b', size: 1, grav: -10 });
+      if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.5; e.open = 0; } break;
+    /* THE FALL OF THE KING: up over you, the place he will land marked on the floor, and down */
+    case 'diveUp': tx = P.x; ty = Math.max(ymin, P.y - 150); sp = 170;
+      if (Math.abs(e.y - ty) < 14 || e.modeT <= 0) { e.mode = 'diveTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p2 ? 0.6 : 0.75; e.dcol = P.x; SFX.charge(); }
+      break;
+    case 'diveTell': tx = e.x + ((e.dcol || e.x) - e.x) * 0.5; ty = e.y; sp = 60; if (e.modeT > 0.3) e.dcol = P.x;
+      if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 1.4; e.dived = false; e.vx = 0; e.vy = 360; SFX.throwWhoosh(); }
+      break;
+    case 'dive':
+      e.vx = ((e.dcol || e.x) - e.x) * 6; e.vy = Math.min(420, e.vy + 600 * dt);
+      if (!e.dived && !P.dead && Math.abs(P.x - e.x) < 24 && P.y > e.y - 40 && P.y < e.y + 30) { e.dived = true; damagePlayer(e.x, DMG.kingSlamD, { unblockable: true, up: true }); }
+      if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; }
+      break;
+    case 'mired': e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.7; e.open = 0; } break;
+    /* THE UNDERTOW: he breathes the room in and you with it. A stone in your hands is the only thing that holds. */
+    case 'haulTell': e.face = Math.sign(d) || e.face;
+      if (Math.random() < dt * 40) { const an = Math.random() * 7, rr = 40 + Math.random() * 80; parts.push({ x: e.x + Math.cos(an) * rr, y: cy + Math.sin(an) * rr, vx: -Math.cos(an) * 70, vy: -Math.sin(an) * 70, life: 0.5, max: 0.5, col: '#7ff0e0', size: 1, grav: 0 }); }
       if (e.modeT <= 0) { e.mode = 'haul'; e.modeT = 1.1; SFX.throwWhoosh(); SFX.bellow(); shakeCam(4); }
       break;
-    case 'haul': { want = 0;
-      if (!P.dead && !P.ballast && ad < 220) { const pull = (p2 ? 300 : 230) * dt; P.x += Math.sign(e.x - P.x) * pull; P.vy = Math.min(P.vy, -20);
-        if (Math.random() < dt * 30) parts.push({ x: P.x, y: P.y - 10, vx: Math.sign(e.x - P.x) * 90, vy: 0, life: 0.3, max: 0.3, col: '#7ff0e0', size: 1, grav: 0 }); }
-      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; if (!P.ballast && ad < 52) { damagePlayer(e.x, DMG.kingHaul, { up: true }); number(P.x, P.y - 30, 'TAKEN', '#ff6b6b'); } }
-      break; }
-    /* THE DEBT: thirty years of it comes up off the bottom, and it comes up between you. */
-    case 'debtTell': want = 0;
+    case 'haul':
+      if (!P.dead && !P.ballast && dist < 240) { const pull = (p2 ? 190 : 150) * dt, n = Math.max(1, dist); moveBody(P, -d / n * pull, -dyP / n * pull, false); P.vy = Math.min(P.vy, 20);
+        if (Math.random() < dt * 30) parts.push({ x: P.x, y: P.y - 10, vx: -d / n * 90, vy: -dyP / n * 90, life: 0.3, max: 0.3, col: '#7ff0e0', size: 1, grav: 0 }); }
+      if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.5; if (!P.ballast && dist < 50) { damagePlayer(e.x, DMG.kingHaul, { up: true }); number(P.x, P.y - 30, 'TAKEN', '#ff6b6b'); } }
+      break;
+    /* THE DEBT: thirty years of it comes up off the floor under you */
+    case 'debtTell':
       if (Math.random() < dt * 30) parts.push({ x: A.x0 + Math.random() * (A.x1 - A.x0), y: floor - 4, vx: 0, vy: -30, life: 0.6, max: 0.6, col: '#ffd36b', size: 1, grav: -20 });
       if (e.modeT <= 0) { e.mode = 'debt'; e.modeT = 1.2; SFX.rattle(1); SFX.stone(); shakeCam(6);
-        const n = p2 ? 5 : 3;
-        for (let k = 0; k < n; k++) { const rx = Math.max(A.x0 + 16, Math.min(A.x1 - 16, P.x + (k - (n - 1) / 2) * 34));
-          seeds.push({ x: rx, y: floor - 4, vx: 0, vy: -(210 + Math.random() * 60), dead: false, life: 2.4, g: 150, slag: true, dmg: DMG.kingDebt }); } }
+        for (let k = 0; k < 5; k++) { const rx = Math.max(xmin, Math.min(xmax, P.x + (k - 2) * 34)); seeds.push({ x: rx, y: floor - 4, vx: 0, vy: -(250 + Math.random() * 70), dead: false, life: 2.4, g: 120, slag: true, dmg: DMG.kingDebt }); } }
       break;
-    case 'debt': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.7; } break;
-    /* THE ANCHOR: the slam asks you to leave the floor, and the anchor goes round at the height you leave it to. Stay down
-       and take it on the shield, or be out of its reach altogether. */
-    case 'anchorTell': want = 0; e.face = Math.sign(d) || e.face;
+    case 'debt': if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.7; } break;
+    /* THE ANCHOR: it goes round him at the height he is swimming, and a shield across it fouls the chain */
+    case 'anchorTell': e.face = Math.sign(d) || e.face;
       if (Math.random() < dt * 24) parts.push({ x: e.x - e.face * 20, y: e.y - 40 - Math.random() * 10, vx: 0, vy: 10, life: 0.3, max: 0.3, col: '#9aa39a', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'anchor'; e.modeT = 0.45; SFX.anchorSwing(); shakeCam(3);
-        for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; parts.push({ x: e.x + Math.cos(a) * 84, y: e.y - 30 + Math.sin(a) * 28, vx: -Math.sin(a) * 70, vy: Math.cos(a) * 20, life: 0.3, max: 0.3, col: '#c9d1dc', size: 2, grav: 0 }); }
-        const air = P.y < floor - 12;
-        if (!P.dead && ((air && ad < 104 && P.y > e.y - 96) || (!air && ad < 46))) { const res = damagePlayer(e.x, DMG.kingAnchor, { up: true });
-          if (res === 'blocked') { e.mode = 'reel'; e.modeT = 1.1; e.stagger = 1.1; number(e.x, e.y - e.h - 14, 'THE CHAIN FOULS', '#8fd160'); SFX.clank(); }
+        for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; parts.push({ x: e.x + Math.cos(a) * 84, y: cy + Math.sin(a) * 40, vx: -Math.sin(a) * 70, vy: Math.cos(a) * 30, life: 0.3, max: 0.3, col: '#c9d1dc', size: 2, grav: 0 }); }
+        if (!P.dead && ad < 100 && Math.abs(dyP) < 48) { const res = damagePlayer(e.x, DMG.kingAnchor, { up: true });
+          if (res === 'blocked') { e.mode = 'reel'; e.modeT = 1.2; e.open = 1.2; number(e.x, e.y - e.h - 14, 'THE CHAIN FOULS', '#8fd160'); SFX.clank(); }
           else if (res === 'hit') { P.vx = (Math.sign(P.x - e.x) || 1) * 260; P.vy = -120; } } }
       break;
-    case 'anchor': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; } break;
+    case 'anchor': if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.6; } break;
+    case 'reel': e.vy += 30 * dt; if (e.modeT <= 0) { e.mode = 'swim'; e.modeT = 0.5; e.open = 0; } break;
   }
-  if (e.stagger > 0 && e.mode !== 'reel') want = 0;
-  e.vx += (want - e.vx) * Math.min(1, dt * 5);
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
-  e.x = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x));
-  if (e.y > floor + 4) { e.y = floor; e.vy = 0; }
-  { const ph = Math.floor(e.anim * 2.6); if (Math.abs(e.vx) > 10 && ph !== e.stepPh) { SFX.thump(); shakeCam(1); } e.stepPh = ph; }
+  // THE WATER: he steers for where he is going and the sea takes the speed off him when he is not; a charge and a fall carry
+  // their own speed. Whatever stone he meets doing either is the opening.
+  if (e.mode !== 'ram' && e.mode !== 'dive') {
+    if (sp > 0) { const ddx = tx - e.x, ddy = ty - e.y, dd = Math.hypot(ddx, ddy) || 1, want = Math.min(sp, dd * 2.5);
+      e.vx += (ddx / dd * want - e.vx) * Math.min(1, dt * 2.4); e.vy += (ddy / dd * want - e.vy) * Math.min(1, dt * 2.4); }
+    else { e.vx -= e.vx * Math.min(1, dt * 3); e.vy -= e.vy * Math.min(1, dt * 3); } }
+  const r = moveBody(e, e.vx * dt, e.vy * dt, true); e.landed = !!r.ground;
+  if (r.hitX) e.vx = 0; if (r.hitY) e.vy = 0;
+  if (e.x < xmin || e.x > xmax) { e.x = Math.max(xmin, Math.min(xmax, e.x)); r.hitX = true; }
+  if (e.y < ymin) { e.y = ymin; e.vy = Math.max(0, e.vy); if (e.mode === 'ram') r.hitY = true; }
+  if (e.y > floor) { e.y = floor; e.vy = 0; r.hitY = true; }
+  if (e.mode === 'ram' && (r.hitX || r.hitY)) { const stone = e.x > xmin + 2 && e.x < xmax - 2 && e.y > ymin + 2 && e.y < floor - 2;   /* a pillar or his dais is the opening; the room's own walls only knock him back */
+    e.mode = 'stunned'; e.modeT = stone ? (p2 ? 1.7 : 2) : 0.8; e.open = e.modeT; e.vx = 0; e.vy = 0; SFX.heavy(); SFX.stone(); shakeCam(stone ? 8 : 4); if (stone) zoomKick(1.06, 0.2); dust(e.x + e.face * 16, e.y - 10, stone ? 14 : 6); number(e.x, e.y - e.h - 14, stone ? 'INTO THE STONE' : 'OFF THE WALL', stone ? '#8fd160' : '#9aa39a'); }
+  if (e.mode === 'dive' && r.hitY) { e.mode = 'mired'; e.modeT = p2 ? 1.2 : 1.6; e.open = e.modeT; SFX.heavy(); SFX.stone(); shakeCam(7); dust(e.x, e.y, 16); number(e.x, e.y - e.h - 14, 'MIRED', '#8fd160');
+    if (e.y >= floor - 2) for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 20, y: floor, dir: dd, life: 1, sp: 150 }); }
+  if (!/Tell$/.test(e.mode) && e.mode !== 'stunned' && e.mode !== 'mired') { const nf = Math.abs(e.vx) > 24 ? Math.sign(e.vx) : (Math.sign(d) || e.face); if (nf !== e.face) { e.face = nf; e.turnT = 0.18; } }
+  e.swimming = !(e.y >= floor - 1 && (e.mode === 'sink' || e.mode === 'slamTell' || e.mode === 'slam' || e.mode === 'mired'));
+  e.tilt = e.swimming && (e.mode === 'swim' || e.mode === 'ram' || e.mode === 'rise' || e.mode === 'diveUp') ? Math.max(-0.35, Math.min(0.35, Math.atan2(e.vy, Math.abs(e.vx) + 40) * 0.6)) : 0;
+}
+
+HAS_HURT.add('drownedking');   /* his last frame is his hurt pose, drawn in king_swim.js */
+/* HIS FRAMES BY WHAT HE IS DOING, and by how he is moving through the water when he is only swimming */
+function kingFrame(e) {
+  const m = e.mode, sw = e.swimming;
+  if (m === 'sleep') return 0;
+  if (m === 'stunned' || m === 'mired' || m === 'reel') return 17;
+  if (m === 'slamTell' || m === 'slam') return 3;
+  if (m === 'ramTell') return 12; if (m === 'ram') return 13;
+  if (m === 'diveTell') return 16; if (m === 'dive' || m === 'sink') return 10;
+  if (m === 'haulTell' || m === 'haul') return sw ? 14 : 2;
+  if (m === 'debtTell' || m === 'debt') return sw ? 11 : 2;
+  if (m === 'anchorTell' || m === 'anchor') return sw ? 15 : 2;
+  if (m === 'wake' || m === 'rise' || m === 'diveUp') return 11;
+  if (!sw) return Math.abs(e.vx) > 6 ? 1 : (e.phase === 2 ? 4 : 0);
+  if (e.turnT > 0) return 9;
+  const spd = Math.hypot(e.vx || 0, e.vy || 0); if (spd < 30) return 8;
+  return 5 + Math.floor(e.anim * (spd > 90 ? 7 : 4.5)) % 3;
+}
+/* HIS TELLS, DRAWN IN THE WATER: the line of his charge, the column of his fall, the pull of his undertow, and the green ring
+   every opening in the game wears */
+function drawKingMarks(e, cx, cy) {
+  const x = Math.round(e.x - cx), y = Math.round(e.y - 16 - cy), k = 0.5 + 0.5 * Math.sin(time * 16);
+  if (e.mode === 'ramTell' && e.rdx !== undefined) { g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.setLineDash([6, 4]); g.beginPath(); g.moveTo(x, y); g.lineTo(Math.round(x + e.rdx * 320), Math.round(y + e.rdy * 320)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+  if ((e.mode === 'diveTell' || e.mode === 'dive') && e.dcol !== undefined) { const fx = Math.round(e.dcol - cx), fy = Math.round(L.arena.floor - cy);
+    if (e.mode === 'diveTell') { g.globalAlpha = 0.14 + 0.16 * k; g.fillStyle = '#ff6b6b'; g.fillRect(fx - 12, y + 18, 24, Math.max(0, fy - y - 18)); }
+    g.globalAlpha = 0.35 + 0.3 * k; g.fillStyle = '#1b1626'; g.beginPath(); g.ellipse(fx, fy - 1, 16 + k * 3, 4, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+  if (e.mode === 'haulTell' || e.mode === 'haul') { g.strokeStyle = '#7ff0e0'; g.lineWidth = 1; for (let i = 0; i < 3; i++) { const rr = (time * 70 + i * 40) % 120; g.globalAlpha = 0.5 * (1 - rr / 120); g.beginPath(); g.ellipse(x, y, 130 - rr, (130 - rr) * 0.6, time * 2, 0, 7); g.stroke(); } g.globalAlpha = 1; }
+  if (e.open > 0) { g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y + 4, 26 + k * 3, 18, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
 }
 function updateForgemaster(e, dt) {
   // Twice the smith he was. His iron turns half of every cut; a cart into him stuns him, and a stunned smith takes it all, doubled.
@@ -10344,6 +10434,209 @@ function updateBallast(dt) {
     if (!P.dead && !P.ballast && !(pr.cd > 0) && Math.abs(pr.x - P.x) < 14 && Math.abs(pr.y - (P.y - 6)) < 16) takeBallast(pr);
   }
 }
+// ============================================================================================
+// THE DEEP'S WATER. Everything the trench does that the rest of the sea does not: vents whose bubbles are air, clams and
+// kelp bladders that let a lungful go when struck, diving bells on their sides, pockets of air under the rock, the cold
+// road's current along its floor and the leviathan's vents throwing you up, the jellies that are the only light in the
+// drop, the kelp and its fish, his castle's stone and its water gate, and a light for every place. L.deep is written by
+// theDeep() in src/level.js; WHERE the air is lives in src/deepair.js, so tools/breath.mjs measures the air you get.
+// ============================================================================================
+let DEEP = null, DEEPART = null;
+function deepArt() {
+  if (DEEPART) return DEEPART;
+  const f = DPP;
+  DEEPART = { clam: [0, 1, 2].map(s => f.bakeClam(s)), bulb: [f.bakeBulb(false), f.bakeBulb(true)], wreck: f.bakeBellWreck(), ventHot: f.bakeVent(true), ventCold: f.bakeVent(false),
+    skull: f.bakeSkull(), rib: [f.bakeRib(0), f.bakeRib(1)], vertebra: f.bakeVertebra(), coral: [0, 1, 2].map(v => f.bakeCoralBright(v)),
+    jelly: [[0, 1, 2].map(k => f.bakeJelly(k, 0)), [0, 1, 2].map(k => f.bakeJelly(k, 1))], rime: [0, 1, 2].map(v => f.bakeRime(v)), icicles: [0, 1, 2].map(v => f.bakeIcicles(v)),
+    statue: [f.bakeKingStatue(0), f.bakeKingStatue(1)], throne: f.bakeThrone(), chandelier: f.bakeChandelier(), banner: [0, 1, 2].map(k => f.bakeBanner(k)),
+    wheel: [f.bakeGateWheel(0), f.bakeGateWheel(1)], brazier: f.bakeGhostBrazier(), ashlar: f.bakeSeaAshlar(), fish: {} };
+  return DEEPART;
+}
+const deepFish = col => { const A = deepArt(); return A.fish[col] || (A.fish[col] = [DPP.bakeFish(0, col), DPP.bakeFish(1, col)].map(c => [c, flipX(c)])); };
+const kelpSway = (k, t) => Math.sin(time * 1.1 + k.ph + t * 9) * 7 * t * t;   /* t: 0 at the holdfast, 1 at the tip */
+const DEEP_AIR_SAY = { vent: 'AIR IN THE BUBBLES', wreck: 'AIR IN HER CROWN', bubble: 'A LUNGFUL' };
+function deepLoad() {
+  DEEP = null; if (!L.deep) return;
+  const D = L.deep, p8 = x => x * TS + 8, feet = y => (y + 1) * TS;
+  /* the reef's dressing is taken back off his halls, the ice and the leviathan's bones - and its broken masts off everything
+     below the garden, where a spar the height of the screen is a black slab across the only light there is */
+  L.ents = L.ents.filter(e => !(e.dressed && ((D.noDress || []).some(([x0, x1, y0, y1]) => e.x >= x0 && e.x <= x1 && e.y >= y0 && e.y <= y1) || (e.kind === 'spar' && e.y > 150))));
+  deepArt();
+  const kelp = D.kelp.map(k => ({ x: p8(k.x), y: feet(k.y), h: k.h * TS, tx: k.x, ty: k.y - k.h, ph: (k.x * 0.71 + k.y * 0.13) % 6 }));
+  DEEP = {
+    boxes: airBoxes({ deep: { vents: D.vents, wrecks: D.wrecks } }),   /* a vent and a wreck are always air; a clam or a bladder only once it is struck */
+    vents: D.vents.map(v => ({ ...v, px: p8(v.x), bed: feet(v.y), top: feet(v.y) - v.h * TS, ph: (v.x * 0.37) % 6 })),
+    clams: D.clams.map(c => ({ x: p8(c.x), y: feet(c.y), state: 0, t: 0 })),
+    bulbs: D.bulbs.map(c => ({ x: p8(c.x), y: feet(c.y), full: true, t: 0, kelp: kelp.find(k => k.tx === c.x && k.ty === c.y) || null })),
+    wrecks: D.wrecks.map(c => ({ x: p8(c.x), y: feet(c.y) })),
+    pockets: D.pockets.map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS })),
+    jellies: D.jellies.map((j, i) => ({ hx: p8(j.x), hy: feet(j.y) - 8, x: p8(j.x), y: feet(j.y) - 8, hue: j.hue, ph: i * 1.7, flare: 0, hitCd: 0 })),
+    kelp,
+    fish: [].concat(...D.fish.map((s, si) => Array.from({ length: s.n }, (_, i) => ({ hx: p8(s.x), hy: feet(s.y) - 20, x: p8(s.x) + (i - s.n / 2) * 6, y: feet(s.y) - 20 + ((i * 7) % 11) - 5, vx: 0, vy: 0, col: s.col, ph: si * 2.1 + i * 0.9, face: 1 })))),
+    currents: D.currents.map(c => ({ l: c.x0 * TS, r: (c.x1 + 1) * TS, t: c.y0 * TS, b: (c.y1 + 1) * TS, fx: c.fx, fy: c.fy, kind: c.kind })),
+    props: D.props.map(p => ({ ...p, px: p8(p.x), py: feet(p.y) })),
+    banners: D.banners.map(b => ({ x: p8(b.x), y: b.y * TS, ph: (b.x * 0.37) % 3 })),
+    shafts: D.shafts || [], masonry: D.masonry || [], zones: D.zones || [], rime: D.rime || [], icicles: D.icicles || [],
+    gates: D.gates.map(gt => ({ ...gt, wx: p8(gt.wheel[0]), wy: feet(gt.wheel[1]), hits: 0, open: false, spin: 0 })),
+    bubbles: [], driftX: 0, driftY: 0, zone: null, seen: new Set(), told: new Set(), inAir: false, lastBreath: 6, gulpCd: 0,
+  };
+  for (const v of DEEP.vents) if (v.hot) DEEP.currents.push({ l: v.px - 14, r: v.px + 14, t: v.top, b: v.bed, fx: 0, fy: -150, kind: 'hot', vent: v });
+}
+function deepAir(x, y) {   /* asked by nearAir at the swimmer's feet less eight */
+  if (!DEEP) return null;
+  for (const b of DEEP.boxes) if (x > b.l && x < b.r && y > b.t && y < b.b) return { x: Math.max(b.l + 6, Math.min(b.r - 6, x)), y: Math.max(b.t + 6, y - 14), deep: b.kind };
+  for (const bb of DEEP.bubbles) if (Math.abs(bb.x - x) < 22 && Math.abs(bb.y - y) < 26) return { x: bb.x, y: bb.y, deep: 'bubble' };
+  return null;
+}
+function deepRelease(x, y, say) {
+  DEEP.bubbles.push({ x, y, life: 6.5, r: 10 });
+  burst(x, y, 16, ['#e8f4f0', '#7ff0e0', '#bfe6f5'], 60, 0.7, -90, 1); SFX.splash(); if (say) number(x, y - 20, say, '#bfe6f5');
+}
+function updateDeep(dt) {
+  if (!DEEP) return;
+  // THE CURRENTS. The cold road runs east along its floor, and the leviathan's vents throw you up. Both carry you whether you
+  // swim or not, in whole pixels with the fraction kept (a sub-pixel push is rounded away by the collision step); a braced
+  // shield holds you better, and a stone in your hands sinks you through a vent's heat.
+  if (P.swim && !P.dead && !P.climb) {
+    for (const c of DEEP.currents) if (P.x > c.l && P.x < c.r && P.y > c.t && P.y <= c.b + 4) {
+      const k = (P.block || P.aegis ? 0.45 : 1) * (c.kind === 'hot' && P.ballast ? 0.25 : 1);
+      DEEP.driftX += c.fx * k * dt; DEEP.driftY += c.fy * k * dt;
+      if (c.kind === 'hot' && P.vy > 30 && !P.ballast) P.vy -= 300 * dt;   /* and the heat takes the fall out of you first */
+      if (Math.random() < dt * 10) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 20, vx: c.fx * 0.8, vy: c.fy * 0.5, life: 0.4, max: 0.4, col: c.kind === 'hot' ? '#ffd8a8' : '#dff4fa', size: 1, grav: 0 });
+    }
+    const sx = Math.trunc(DEEP.driftX), sy = Math.trunc(DEEP.driftY);
+    if (sx || sy) { DEEP.driftX -= sx; DEEP.driftY -= sy; moveBody(P, sx, sy, false); }
+  } else { DEEP.driftX = 0; DEEP.driftY = 0; }
+  // WHAT A BLADE OPENS: a clam, a bladder, a jelly's light, and the wheel of his water gate
+  const hb = P.atk >= 0 && !P.dead ? attackBox() : null;
+  if (hb) {
+    for (const c of DEEP.clams) if (c.state === 0 && !P.hitSet.has(c) && overlap(hb, { l: c.x - 14, r: c.x + 14, t: c.y - 18, b: c.y })) { P.hitSet.add(c); c.state = 1; c.t = 11; SFX.clank(); deepRelease(c.x, c.y - 12, DEEP.told.has('clam') ? null : 'IT LETS ITS BREATH GO'); DEEP.told.add('clam'); }
+    for (const b of DEEP.bulbs) { const bx = b.x + (b.kelp ? kelpSway(b.kelp, 1) : 0); if (b.full && !P.hitSet.has(b) && overlap(hb, { l: bx - 8, r: bx + 8, t: b.y - 18, b: b.y + 2 })) { P.hitSet.add(b); b.full = false; b.t = 12; deepRelease(bx, b.y - 8, DEEP.told.has('bulb') ? null : 'A BLADDER OF AIR'); DEEP.told.add('bulb'); } }
+    for (const j of DEEP.jellies) if (j.hitCd <= 0 && overlap(hb, { l: j.x - 9, r: j.x + 9, t: j.y - 10, b: j.y + 12 })) { j.hitCd = 0.6; if (!(j.flare > 0)) { SFX.lampUp(); number(j.x, j.y - 18, 'IT BURNS', j.hue ? '#ff9ad0' : '#7ff0e0'); } j.flare = 8; ringAt(j.x, j.y, 30, j.hue ? '#ff9ad0' : '#7ff0e0', 0.4); }
+    for (const gt of DEEP.gates) if (!gt.open && !P.hitSet.has(gt) && overlap(hb, { l: gt.wx - 13, r: gt.wx + 13, t: gt.wy - 30, b: gt.wy })) { P.hitSet.add(gt); gt.hits++; gt.spin = 0.5; SFX.clank(); SFX.stone(); sparks(gt.wx, gt.wy - 14, P.face, 4);
+      number(gt.wx, gt.wy - 36, gt.hits >= 3 ? 'THE WATER GATE LIFTS' : (3 - gt.hits) + ' MORE', '#ffd36b'); if (gt.hits >= 3) { gt.open = true; SFX.heavy(); SFX.gateDrop && SFX.gateDrop(); shakeCam(3); } }
+  }
+  for (const gt of DEEP.gates) { gt.spin = Math.max(0, gt.spin - dt);
+    if (gt.open) for (let y = gt.y0; y <= gt.y1; y++) { const i = y * LW + gt.col; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(gt.col * TS + 8, y * TS + 8, 3, ['#8a919c', '#bfe6f5'], 50, 0.5); } } }
+  for (const c of DEEP.clams) if (c.state) { c.t -= dt; if (c.state === 1 && c.t < 8) c.state = 2; if (c.t <= 0) c.state = 0; }
+  for (const b of DEEP.bulbs) if (!b.full) { b.t -= dt; if (b.t <= 0) b.full = true; }
+  for (const b of DEEP.bubbles) { b.life -= dt; const nx = b.x + Math.sin(time * 3 + b.y * 0.05) * 8 * dt, ny = b.y - 20 * dt;
+    if (!isSolid(Math.floor(nx / TS), Math.floor((ny - b.r) / TS))) { b.x = nx; b.y = ny; } }
+  if (DEEP.bubbles.length) DEEP.bubbles = DEEP.bubbles.filter(b => b.life > 0);
+  for (const j of DEEP.jellies) { j.hitCd = Math.max(0, j.hitCd - dt); j.flare = Math.max(0, j.flare - dt);
+    j.x = j.hx + Math.sin(time * 0.31 + j.ph) * 34; j.y = j.hy + Math.sin(time * 0.53 + j.ph * 1.3) * 20; }
+  /* THE FISH keep to their kelp and go the other way from you */
+  for (const f of DEEP.fish) { const t = time * 0.8 + f.ph; let tx = f.hx + Math.cos(t) * 28, ty = f.hy + Math.sin(t * 1.3) * 10;
+    const dx = f.x - P.x, dy = f.y - (P.y - 10); if (dx * dx + dy * dy < 2200) { tx = f.hx + Math.sign(dx || 1) * 56; ty = f.hy + Math.sign(dy || 1) * 20; }
+    f.vx += ((tx - f.x) * 2.4 - f.vx) * Math.min(1, dt * 3); f.vy += ((ty - f.y) * 2.4 - f.vy) * Math.min(1, dt * 3);
+    f.vx = Math.max(-90, Math.min(90, f.vx)); f.vy = Math.max(-50, Math.min(50, f.vy)); f.x += f.vx * dt; f.y += f.vy * dt; if (Math.abs(f.vx) > 6) f.face = Math.sign(f.vx); }
+  // THE BREATH, HEARD. Coming back into air after a held breath says so: a gulp and a spill of bubbles, and the first time a
+  // kind of air gives it you, it says what gave it you.
+  { const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, br = P.breath ?? mx; DEEP.gulpCd = Math.max(0, DEEP.gulpCd - dt);
+    if (P.swim && !P.dead) { const rising = br > DEEP.lastBreath + 0.0005;
+      if (rising && !DEEP.inAir && DEEP.lastBreath < mx - 0.8 && DEEP.gulpCd <= 0) { SFX.breathIn && SFX.breathIn(); burst(P.x, P.y - 20, 8, ['#e8f4f0', '#bfe6f5'], 40, 0.6, -140, 1); DEEP.gulpCd = 0.9;
+        const a = nearAir(P.x, P.y - 8), kind = a && a.deep; if (kind && DEEP_AIR_SAY[kind] && !DEEP.told.has('air:' + kind)) { DEEP.told.add('air:' + kind); number(P.x, P.y - 36, DEEP_AIR_SAY[kind], '#bfe6f5'); } }
+      DEEP.inAir = rising; } else DEEP.inAir = false;
+    DEEP.lastBreath = br; }
+  // AND EACH PLACE NAMES ITSELF the first time you swim into it
+  { const tx = P.x / TS, ty = P.y / TS - 0.5, z = DEEP.zones.find(q => tx >= q.x0 && tx < q.x1 + 1 && ty >= q.y0 && ty < q.y1 + 1);
+    if (z && z !== DEEP.zone) { DEEP.zone = z; if (!DEEP.seen.has(z.name) && !P.dead) { DEEP.seen.add(z.name); number(P.x, P.y - 50, z.name, '#dff4fa'); } } }
+}
+function drawDeepTint(cx, cy) {   /* each place its own light, crossfaded over a dozen tiles at its edges */
+  if (!DEEP) return;
+  const mx = (cx + VW / 2) / TS, my = (cy + VH / 2) / TS;
+  for (const z of DEEP.zones) { const k = Math.max(0, Math.min(1, Math.min(mx - z.x0 + 6, z.x1 - mx + 6, my - z.y0 + 6, z.y1 - my + 6) / 12));
+    if (k > 0.01) { g.fillStyle = 'rgba(' + z.col[0] + ',' + z.col[1] + ',' + z.col[2] + ',' + (z.a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
+}
+function drawDeepBack(cx, cy) {
+  if (!DEEP) return;
+  const A = deepArt(), on = (x, y, w, h) => x + w > cx - 8 && x - w < cx + VW + 8 && y + h > cy - 8 && y - h < cy + VH + 8;
+  // HIS STONE: every solid tile inside what the masons built is drawn as coursed ashlar, with a coping where it is walked
+  { const tx0 = Math.max(0, Math.floor(cx / TS)), tx1 = Math.min(LW - 1, Math.floor((cx + VW) / TS)), ty0 = Math.max(1, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, Math.floor((cy + VH) / TS));
+    for (const [mx0, mx1, my0, my1] of DEEP.masonry) for (let ty = Math.max(ty0, my0); ty <= Math.min(ty1, my1); ty++) for (let tx = Math.max(tx0, mx0); tx <= Math.min(tx1, mx1); tx++) {
+      if (L.grid[ty * LW + tx] !== T.SOLID) continue; const v = (tx * 7 + ty * 3) % 3;
+      g.drawImage(isSolid(tx, ty - 1) ? A.ashlar.fill[v] : A.ashlar.top[v], tx * TS - cx, ty * TS - cy); } }
+  // THE LIGHT THAT GETS DOWN: through the shelf's water, and through his broken vaults
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const s of DEEP.shafts) { const x = s.x * TS + 8 - cx, y0 = s.y0 * TS - cy, y1 = (s.y1 + 1) * TS - cy; if (x + 260 < 0 || x - 60 > VW || y1 < 0 || y0 > VH) continue;
+    const w = s.w * TS, lean = s.lean * (y1 - y0), fl = 0.8 + 0.2 * Math.sin(time * 0.7 + s.x);
+    const gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(170,230,240,' + (0.15 * fl).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(110,190,210,0)');
+    g.fillStyle = gr; g.beginPath(); g.moveTo(x - w / 2, y0); g.lineTo(x + w / 2, y0); g.lineTo(x + w / 2 + lean + w * 0.7, y1); g.lineTo(x - w / 2 + lean - w * 0.3, y1); g.closePath(); g.fill(); }
+  g.restore();
+  // ICE on the cold road: rime along its floor, icicles off its roof
+  for (const [x0, x1, y] of DEEP.rime) for (let tx = Math.max(x0, Math.floor(cx / TS)); tx <= Math.min(x1, Math.floor((cx + VW) / TS)); tx++) if (isSolid(tx, y + 1) && on(tx * TS, y * TS, 16, 16)) g.drawImage(A.rime[tx % 3], tx * TS - cx, (y + 1) * TS - 6 - cy);
+  for (const [x0, x1, y] of DEEP.icicles) for (let tx = Math.max(x0, Math.floor(cx / TS)); tx <= Math.min(x1, Math.floor((cx + VW) / TS)); tx++) if (isSolid(tx, y - 1) && on(tx * TS, y * TS, 16, 16)) g.drawImage(A.icicles[(tx * 5) % 3], tx * TS - cx, y * TS - cy);
+  // THE KELP: a stipe from its holdfast to its tip, swaying more the higher it goes, with a blade every few pixels
+  for (const k of DEEP.kelp) { if (!on(k.x, k.y - k.h / 2, 20, k.h)) continue;
+    const n = Math.max(3, Math.round(k.h / 4)), seg = Math.ceil(k.h / n) + 1;
+    for (let i = 0; i <= n; i++) { const t = i / n, nx = Math.round(k.x + kelpSway(k, t) - cx), ny = Math.round(k.y - k.h * t - cy);
+      g.fillStyle = '#22402e'; g.fillRect(nx - 1, ny - seg, 3, seg); g.fillStyle = '#4e7a3a'; g.fillRect(nx, ny - seg, 1, seg);
+      if (i % 3 === 1 && i < n) { const s = (i >> 1) % 2 ? 1 : -1; g.fillStyle = '#35592a'; g.fillRect(s > 0 ? nx + 1 : nx - 5, ny - 2, 5, 2); g.fillStyle = '#86a648'; g.fillRect(s > 0 ? nx + 5 : nx - 6, ny - 3, 1, 1); } } }
+  // THE THINGS STANDING IN IT: the leviathan, his statues and his throne, his chandelier, his braziers, and the coral
+  for (const p of DEEP.props) { const c = p.k === 'skull' ? A.skull : p.k === 'rib' ? A.rib[p.v ? 1 : 0] : p.k === 'vertebra' ? A.vertebra : p.k === 'statue' ? A.statue[p.v ? 1 : 0] : p.k === 'throne' ? A.throne : p.k === 'chandelier' ? A.chandelier : p.k === 'brazier' ? A.brazier : p.k === 'coral' ? A.coral[(p.v || 0) % 3] : null;
+    if (!c || !on(p.px, p.py - c.height / 2, c.width, c.height)) continue;
+    g.drawImage(c, Math.round(p.px - c.width / 2 - cx), Math.round(p.py - c.height - cy)); }
+  for (const b of DEEP.banners) { const c = A.banner[Math.floor(time * 1.4 + b.ph) % 3]; if (on(b.x, b.y + 23, 18, 46)) g.drawImage(c, Math.round(b.x - 9 - cx), Math.round(b.y - cy)); }
+  // THE AIR, ALL OF IT MEANT TO BE SEEN FROM ACROSS THE WATER
+  for (const pk of DEEP.pockets) { if (!on((pk.l + pk.r) / 2, pk.b, pk.r - pk.l, 40)) continue;   /* a pocket: lighter air, and a flat bright line where the sea meets it */
+    const x0 = Math.round(pk.l - cx), w = Math.round(pk.r - pk.l), yb = Math.round(pk.b - cy);
+    g.globalAlpha = 0.14; g.fillStyle = '#c8f0f8'; g.fillRect(x0, Math.round(pk.t - cy), w, yb - Math.round(pk.t - cy));
+    g.globalAlpha = 0.75; g.fillStyle = '#dff4fa'; for (let x = 0; x < w; x += 2) g.fillRect(x0 + x, yb - 1 + (Math.sin(time * 3 + (pk.l + x) * 0.2) > 0.3 ? 1 : 0), 2, 1);
+    g.globalAlpha = 1; }
+  for (const v of DEEP.vents) { if (!on(v.px, (v.top + v.bed) / 2, 30, v.bed - v.top + 20)) continue;
+    const x = v.px - cx, bed = v.bed - cy, hgt = v.bed - v.top;
+    if (v.drain) { g.fillStyle = '#10181a'; g.fillRect(Math.round(x - 7), Math.round(bed - 2), 14, 2); g.fillStyle = '#5a6270'; for (let k = 0; k < 4; k++) g.fillRect(Math.round(x - 7 + k * 4), Math.round(bed - 3), 2, 3); }
+    else g.drawImage(v.hot ? A.ventHot : A.ventCold, Math.round(x - 9), Math.round(bed - 14));
+    if (v.hot) { g.globalAlpha = 0.09 + 0.04 * Math.sin(time * 6 + v.ph); g.fillStyle = '#ff9a5c'; for (let yy = v.top - cy; yy < bed - 8; yy += 5) g.fillRect(Math.round(x - 10 + Math.sin(yy * 0.2 + time * 5) * 2), Math.round(yy), 20, 3); }
+    const n = Math.max(4, Math.round(hgt / 9));
+    for (let i = 0; i < n; i++) { const k = (time * (v.hot ? 0.9 : 0.55) + i / n + v.ph) % 1, by = bed - 12 - k * (hgt - 12), bx = x + Math.sin(k * 9 + i * 2.3 + v.ph) * (v.hot ? 5 : 3), r = i % 3 === 0 ? 2 : 1;
+      g.globalAlpha = 0.9 * (1 - k * 0.55); g.fillStyle = v.hot ? (i % 2 ? '#ffd8a8' : '#e8f4f0') : (i % 2 ? '#dff4fa' : '#9fd8e8'); g.fillRect(Math.round(bx), Math.round(by), r + 1, r + 1); }
+    g.globalAlpha = 1; }
+  for (const w of DEEP.wrecks) { if (!on(w.x, w.y - 15, 46, 30)) continue; g.drawImage(A.wreck, Math.round(w.x - 23 - cx), Math.round(w.y - 30 - cy));
+    for (let i = 0; i < 3; i++) { const k = (time * 0.6 + i / 3) % 1; g.globalAlpha = 0.8 * (1 - k); g.fillStyle = '#e8f4f0'; g.fillRect(Math.round(w.x - 17 + Math.sin(k * 7 + i) * 2 - cx), Math.round(w.y - 26 - k * 30 - cy), 2, 2); } g.globalAlpha = 1; }
+  for (const c of DEEP.clams) if (on(c.x, c.y - 9, 30, 18)) g.drawImage(A.clam[c.state], Math.round(c.x - 15 - cx), Math.round(c.y - 18 - cy));
+  for (const b of DEEP.bulbs) { const bx = b.x + (b.kelp ? kelpSway(b.kelp, 1) : 0); if (on(bx, b.y - 8, 12, 16)) g.drawImage(A.bulb[b.full ? 0 : 1], Math.round(bx - 6 - cx), Math.round(b.y - 16 - cy)); }
+  for (const gt of DEEP.gates) { if (!on(gt.wx, gt.wy - 40, 60, 90)) continue; g.drawImage(A.wheel[Math.floor(gt.spin * 16) % 2], Math.round(gt.wx - 14 - cx), Math.round(gt.wy - 30 - cy));
+    g.strokeStyle = '#8a919c'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(gt.wx - cx) + 0.5, Math.round(gt.wy - 28 - cy)); g.lineTo(Math.round(gt.col * TS + 8 - cx) + 0.5, Math.round((gt.open ? gt.y0 - 1 : gt.y0) * TS - cy)); g.stroke(); }
+}
+function drawDeepFront(cx, cy) {
+  if (!DEEP) return;
+  const A = deepArt(), on = (x, y, r) => x > cx - r && x < cx + VW + r && y > cy - r && y < cy + VH + r;
+  for (const b of DEEP.bubbles) { if (!on(b.x, b.y, 20)) continue; const x = Math.round(b.x - cx), y = Math.round(b.y - cy), r = Math.max(1, b.r * Math.min(1, b.life / 1.2));
+    g.globalAlpha = 0.3; g.fillStyle = '#bfe6f5'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.globalAlpha = 0.9; g.strokeStyle = '#e8f4f0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke();
+    g.fillStyle = '#ffffff'; g.fillRect(x - Math.round(r * 0.45), y - Math.round(r * 0.5), 2, 2); g.globalAlpha = 1; }
+  for (const f of DEEP.fish) { if (!on(f.x, f.y, 10)) continue; const set = deepFish(f.col)[Math.floor(time * 8 + f.ph) % 2]; g.drawImage(f.face < 0 ? set[1] : set[0], Math.round(f.x - 4 - cx), Math.round(f.y - 2 - cy)); }
+  for (const j of DEEP.jellies) if (on(j.x, j.y, 20)) g.drawImage(A.jelly[j.hue ? 1 : 0][Math.floor(time * 3 + j.ph) % 3], Math.round(j.x - 8 - cx), Math.round(j.y - 10 - cy));
+  for (const c of DEEP.currents) { if (c.kind !== 'cold' || c.r < cx || c.l > cx + VW || c.b < cy || c.t > cy + VH) continue;   /* the road's current, drawn going the way it goes */
+    g.globalAlpha = 0.28; g.fillStyle = '#dff4fa'; const span = c.r - c.l;
+    for (let r = 0; r < 5; r++) { const ry = Math.round(c.t - cy + 8 + r * ((c.b - c.t - 16) / 4));
+      for (let k = 0; k < 10; k++) { const sx = c.l + ((time * c.fx * (0.8 + r * 0.1) + k * span / 10 + r * 37) % span) - cx; if (sx < -12 || sx > VW) continue; const w = 6 + (k % 3) * 3; g.fillRect(Math.round(sx), ry, w, 1); g.fillRect(Math.round(sx + w), ry - 1, 2, 1); } }
+    g.globalAlpha = 1; }
+  g.save(); g.globalCompositeOperation = 'lighter';
+  const glow = (x, y, r, col, a) => { const gr = g.createRadialGradient(x, y, 1, x, y, r); gr.addColorStop(0, 'rgba(' + col + ',' + a.toFixed(3) + ')'); gr.addColorStop(1, 'rgba(' + col + ',0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
+  for (const j of DEEP.jellies) if (on(j.x, j.y, 80)) glow(j.x - cx, j.y - cy, j.flare > 0 ? 64 : 24, j.hue ? '255,130,200' : '110,240,225', j.flare > 0 ? 0.34 : 0.22);
+  for (const v of DEEP.vents) if (v.hot && on(v.px, v.bed, 40)) glow(v.px - cx, v.bed - 12 - cy, 30, '255,140,60', 0.24 + 0.06 * Math.sin(time * 5 + v.ph));
+  for (const c of DEEP.clams) if (c.state === 0 && on(c.x, c.y, 30)) glow(c.x - cx, c.y - 8 - cy, 18, '127,240,224', 0.18 + 0.1 * Math.sin(time * 3 + c.x));
+  for (const b of DEEP.bulbs) if (b.full && on(b.x, b.y, 30)) glow(b.x + (b.kelp ? kelpSway(b.kelp, 1) : 0) - cx, b.y - 10 - cy, 14, '200,235,110', 0.24);
+  for (const w of DEEP.wrecks) if (on(w.x, w.y, 40)) glow(w.x + 1 - cx, w.y - 15 - cy, 24, '255,210,110', 0.2);
+  for (const p of DEEP.props) if (p.k === 'brazier' && on(p.px, p.py, 40)) glow(p.px - cx, p.py - 21 - cy, 28, '110,240,215', 0.26 + 0.07 * Math.sin(time * 7 + p.px));
+  for (const pk of DEEP.pockets) if (on(pk.l, pk.b, 60)) glow((pk.l + pk.r) / 2 - cx, pk.b - 2 - cy, Math.min(46, (pk.r - pk.l) / 2 + 10), '200,240,250', 0.1);
+  g.restore();
+}
+function deepHoles(hole, cx, cy) {   /* in the dark pass: every light down here opens the black round it */
+  if (!DEEP) return;
+  const on = (x, y) => x > cx - 130 && x < cx + VW + 130 && y > cy - 130 && y < cy + VH + 130;
+  for (const j of DEEP.jellies) if (on(j.x, j.y)) hole(j.x - cx, j.y - cy, j.flare > 0 ? 130 : 48);
+  if (boss && boss.t === 'drownedking' && boss.alive && bossActive && on(boss.x, boss.y)) hole(boss.x - cx, boss.y - 20 - cy, 90);   /* the lamps in his eyes light him: you never lose him in his own water */
+  for (const v of DEEP.vents) if (on(v.px, v.bed)) hole(v.px - cx, v.bed - 18 - cy, v.hot ? 62 : 38);
+  for (const w of DEEP.wrecks) if (on(w.x, w.y)) hole(w.x - cx, w.y - 14 - cy, 50);
+  for (const c of DEEP.clams) if (c.state === 0 && on(c.x, c.y)) hole(c.x - cx, c.y - 8 - cy, 28);
+  for (const b of DEEP.bulbs) if (b.full && on(b.x, b.y)) hole(b.x - cx, b.y - 10 - cy, 30);
+  for (const pk of DEEP.pockets) if (on(pk.l, pk.b)) hole((pk.l + pk.r) / 2 - cx, pk.b - cy, Math.min(72, (pk.r - pk.l) * 0.6 + 22));
+  for (const p of DEEP.props) if ((p.k === 'brazier' || p.glow) && on(p.px, p.py)) hole(p.px - cx, p.py - (p.glow ? 12 : 20) - cy, p.glow ? 34 : 66);
+  for (const b of DEEP.bubbles) if (on(b.x, b.y)) hole(b.x - cx, b.y - cy, 30);
+}
+
 function drawBallast(cx, cy) {
   for (const pr of props) { if (pr.t !== 'ballast') continue;
     const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), k = pr.kind;
@@ -10626,7 +10919,7 @@ function drawCritters(cx, cy) {
 
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
-const windingUp = e => (e.t === 'roc' && e.mode === 'rakeLine') || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
+const windingUp = e => (e.t === 'roc' && e.mode === 'rakeLine') || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -10679,6 +10972,7 @@ function poseOf(e, wind) {
     else if (m === 'heave') { o.sy *= 1.04; o.rot = (o.rot || 0) - f * 0.08; }
     else if (m === 'hurlTell') o.rot = (o.rot || 0) - f * 0.1;
     else if (m === 'pinned') { o.sy *= 0.66; o.sx *= 1.22; o.dx += Math.floor(time * 30) % 2 ? 1 : -1; } }
+  if (e.t === 'drownedking' && e.tilt) { const rt = e.tilt * (o.face || 1); o.rot = (o.rot || 0) + rt; o.dx -= 16 * Math.sin(rt); o.dy -= 16 * (1 - Math.cos(rt)); }   /* HE LEANS INTO HIS SWIM, turned about the middle of him and not his feet */
   return o;
 }
 function drawEmote(e, x, y) { // x, y: over its head, on screen
@@ -12042,7 +12336,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -12848,6 +13142,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
+  if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
@@ -13194,6 +13489,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const b of embers) { g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), 4, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 2, 0, 7); g.fill(); }
   for (const b of bombs) if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);
   for (const f of foxes) drawSet(SPR.fox, null, Math.floor(f.t * 10) % 2, f.x - cx, f.y - cy, f.face, false);
+  if (L.deep) drawDeepBack(cx, cy);
   for (const d of deco) if (d.bg && d.x > cx - 140 && d.x < cx + VW + 4) { if (d.moor) drawMoor(d, cx, cy); if (d.kind === 'hiveBg') { g.globalAlpha = 0.5; g.drawImage(d.c, d.x - cx, d.y - cy); g.globalAlpha = 1; } else g.drawImage(d.c, d.x - cx, d.y - cy); } // (the great combs sit back: they are scenery, not somewhere to stand)
   for (const d of decor) if (d.bg && d.x > cx - 44 && d.x < cx + VW + 4) g.drawImage(d.c, d.x - cx, d.y - cy);
   for (const d of decor) if (!d.bg && d.x > cx - 30 && d.x < cx + VW + 4) {
@@ -13313,7 +13609,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'runner') frame = e.mode === 'shout' ? 2 : (e.mode === 'stabTell' || e.mode === 'stab') ? 3 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 9) % 2) : 0;
     else if (e.t === 'crossbow') frame = e.mode === 'span' ? 0 : e.mode === 'loose' ? 2 : 1;
     else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
-    else if (e.t === 'drownedking') frame = e.phase === 2 ? 4 : (e.mode === 'debtTell' || e.mode === 'debt' || e.mode === 'haulTell' || e.mode === 'haul' || e.mode === 'anchorTell') ? 2 : (e.mode === 'slamTell' || e.mode === 'slam' || e.mode === 'anchor') ? 3 : Math.abs(e.vx) > 6 ? 1 : 0;
+    else if (e.t === 'drownedking') frame = kingFrame(e);
     else if (e.t === 'propman') frame = (e.mode === 'setTell' || e.mode === 'set' || e.mode === 'throwTell') ? 2 : e.mode === 'seek' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'clinger') frame = e.mode === 'cling' ? 0 : e.mode === 'hold' ? 3 : 1 + Math.floor(e.anim * 14) % 2;
     else if (e.t === 'prince') frame = princeFrame(e);
@@ -13395,6 +13691,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'forgemaster' && e.alive && e.mode === 'whirl') { const hx = Math.round(e.x - cx) + (e.face || 1) * 8, hy = Math.round(e.y - cy) - (e.whirlHigh ? 30 : 5), a = (e.chainA || 0) * (e.face || 1), ex2 = hx + Math.cos(a) * 104, ey2 = hy + Math.sin(a) * 6;
       g.globalAlpha = 0.25; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(hx, hy, 104, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
       g.fillStyle = '#ffd36b'; for (let q = 1; q <= 12; q++) g.fillRect(Math.round(hx + (ex2 - hx) * q / 12) - 1, Math.round(hy + (ey2 - hy) * q / 12) - 1, 2, 2); g.fillStyle = '#22222c'; g.fillRect(Math.round(ex2) - 3, Math.round(ey2) - 3, 6, 6); }
+    if (e.t === 'drownedking' && e.alive) drawKingMarks(e, cx, cy);
     if (e.t === 'roc' && e.alive && (e.mode === 'diveTell' || e.mode === 'dive') && e.tx !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 16), fy = Math.round(L.arena.floor - cy); g.globalAlpha = 0.25 + 0.25 * k; g.fillStyle = '#1b1626'; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, 16 + k * 3, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     // WHILE SHE IS WARDED SHE WEARS IT: a violet shell round her that turns over slowly and flares white
     // where a blade has just come off it. The moment the gallery pins her it is gone and the green ring says
@@ -13582,7 +13879,7 @@ function drawWorld(cx, cy, showPlayer) {
           g.moveTo(Math.round(P.x - cx), Math.round(P.y - 12 - cy)); g.lineTo(Math.round(h.x - cx), Math.round(h.y - cy)); g.stroke();
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
       drawPortal(cx, cy);
-      drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy);
+      drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); if (L.deep) drawDeepFront(cx, cy);
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
@@ -13664,6 +13961,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (const sd of seeds) if (sd.lantern && !sd.dead) hole(sd.x - cx, sd.y - cy, 40);
     for (const pr of props) if (pr.t === 'gas' && pr.lit > 0) hole(pr.x - cx, pr.y - cy, 50);
     for (const b2 of airBells) hole(b2.x - cx, b2.y - cy, 56); // the diving bells burn down here
+    if (L.deep) deepHoles(hole, cx, cy);
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
     g.drawImage(DARKC, 0, 0);

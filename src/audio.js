@@ -262,6 +262,7 @@ export const SFX = {
   text() { tone('square', 1500, 1500, 0.02, 0.04, 0, uiGain); },
   effort() { file('effort', 0.22, 1.35); },
   gasp() { file('gobHurt', 0.3, 1.5) || tone('sawtooth', 500, 200, 0.2, 0.1); },
+  breathIn() { if (!gate('breathIn', 0.5)) return; tone('sine', 220, 520, 0.12, 0.07); noise(0.18, 0.05, 900, 1.2); for (let i = 0; i < 3; i++) tone('sine', 640 + i * 170, 980 + i * 210, 0.05, 0.035, 0.1 + i * 0.05); },   /* THE DEEP: a lungful taken back after a held breath - a gulp, and the bubbles off it */
   laugh() { file('laugh', 0.3, 1.4); },
   sting() { [659, 784, 988, 1319, 1568].forEach((f, i) => tone('triangle', f, f, 0.35, 0.16, i * 0.07)); },
   thunder() { noise(1.2, 0.5, 120, 0.4); tone('sine', 60, 30, 1.0, 0.35); },
