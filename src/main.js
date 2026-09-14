@@ -4216,7 +4216,12 @@ function updatePlayer(dt) {
     if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6) damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true });
   }
   if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die(); P.dead = 0.6; } }
-  for (const p of (L.pools || [])) if (!P.dead && !p.shallow && !p.swim && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9) {
+  /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
+     killed everyone who walked into the Pit Warden's arena a hundred and ten rows under it. Below the pool's own
+     floor (its bottom, or the first rock under its surface) you are not in it. */
+  const inPool = p => { if (p.bottom !== undefined) return P.y <= p.bottom + 4; if (p.depth !== undefined) return P.y <= p.y + p.depth + 6;
+    let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(P.x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return P.y <= ty * TS + 4; };
+  for (const p of (L.pools || [])) if (!P.dead && !p.shallow && !p.swim && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && inPool(p)) {
     burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5');
     die(); P.dead = 0.8; break;
   }
