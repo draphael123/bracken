@@ -35,6 +35,21 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   for (const e of (L.ents || [])) if (e.t === 'mover') lifts.push(e.vert ? { x0: e.x, x1: e.x + (e.len || 2) - 1, y0: e.y - (e.rise || e.range || 4), y1: e.y } : { x0: e.x, x1: e.x + (e.len || 2) - 1 + (e.range || 0), y0: e.y, y1: e.y });
   for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap') lifts.push({ x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
   const swings = (L.moversExtra || []).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
+  /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a
+     wind column and the great kite's flight. These are why Bracken Wood read 16% reachable and the Marsh 7%. The coin
+     sprinkler in level.js does NOT pass the option, so no gold moves: only the audits see further. */
+  const extraFoot = [], springs = new Set(), groups = []; let flight = null;
+  if (opts.rides) {
+    for (const e of (L.ents || [])) {
+      if (e.t === 'pad') for (const dx of [-1, 0]) extraFoot.push((e.x + dx) + ',' + (e.y - 1));
+      if (e.t === 'wasp') { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }
+    }
+    for (const m of (L.moversExtra || [])) if (m.kind === 'wheel' && m.r) { const cells = [];
+      for (let a = 0; a < 24; a++) { const th = a / 24 * Math.PI * 2; cells.push([Math.floor((m.px + Math.cos(th) * m.r) / TSZ), Math.floor((m.py + Math.sin(th) * m.r) / TSZ) - 1]); }
+      for (const [cx, cy] of cells) extraFoot.push(cx + ',' + cy); groups.push({ cells, set: new Set(cells.map(([cx, cy]) => cx + ',' + cy)) }); }
+    const kite = (L.ents || []).find(e => e.t === 'stormkite');
+    if (L.flight && kite) flight = { x: kite.x, y: kite.y, x1: Math.floor(L.flight.x1 / TSZ) };
+  }
   const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
 
   // every tile you could be standing on
@@ -43,6 +58,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++)
     if (stand(at(x, y)) && !solid(at(x, y - 1)) && at(x, y - 1) !== T.SPIKE) footing.add(key(x, y - 1));
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (climbable(at(x, y))) footing.add(key(x, y));
+  for (const k0 of extraFoot) footing.add(k0);
   // SWIM WATER (the Long Water): every open cell of a swimmable pool is somewhere you can be - you swim to any
   // neighbour, and at the surface you can leap out. A tide pool counts at its high water; a boss's tide does not.
   const water = new Set(), surfRow = new Map();
@@ -64,11 +80,15 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     return true; };
   // everywhere you can get to from one tile (push is handed in, so tools/traps.mjs can run it backwards)
   const expand = (x, y, push) => {
-    const springy = at(x, y + 1) === T.BOUNCER, up = springy ? BOUNCE_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
+    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = springy ? BOUNCE_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
-      for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -3; dx <= 3; dx++) push(v.x + dx, ty); }
+      const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
+      for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }
     for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
     for (const arc of swings) if (arc.some(([ax, ay]) => Math.abs(ax - x) <= 2 && y - ay >= -1 && y - ay <= 3)) for (const [ax, ay] of arc) for (let dy = -3; dy <= 2; dy++) for (let dx = -3; dx <= 3; dx++) push(ax + dx, ay + dy);
+    for (const grp of groups) if (grp.set.has(key(x, y))) for (const [gx, gy] of grp.cells) push(gx, gy);   /* a wheel carries you round to any of its paddles */
+    /* the great kite: take hold of it and the Sky Road lets you down anywhere along it */
+    if (flight && Math.abs(x - flight.x) <= 3 && Math.abs(y - flight.y) <= 3) for (let cx = flight.x; cx <= flight.x1; cx++) { let cy = 0; while (cy < H - 1 && !footing.has(key(cx, cy))) cy++; if (footing.has(key(cx, cy))) push(cx, cy); }
     // stand in a doorway and press talk: you come out at the other one
     for (const dr of doors) if (Math.abs(dr.x - x) <= 1 && dr.y === y) { const to = doorTo.get(dr.to); if (to) { let ty = to.y; while (ty < H - 1 && !footing.has(key(to.x, ty))) ty++; push(to.x, ty); } }
     // swim: any way through the water, and a leap out at the surface (a jump from the top row of the pool)

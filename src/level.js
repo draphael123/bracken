@@ -168,7 +168,7 @@ function brackenWood() {
   G0.block(235, 241, 15, 27);
   G0.ent('sign', 236, 14, { text: 'FOUR STROKES FELL A PINE TO BRIDGE THE GAP. OR POGO ACROSS THE WASPS.' });
   G0.ent('felltree', 241, 14, { len: 14, dir: 1 });
-  G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS });
+  G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS, depth: 3 * TS });
   G0.block(242, 255, 24, 27);
   G0.ent('wasp', 245, 13); G0.ent('wasp', 249, 13); G0.ent('wasp', 253, 13); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
   G0.coins([244, 13], [248, 13], [252, 13]);
@@ -3748,6 +3748,10 @@ function theFlotilla() {
   coins([252, 26], [266, 26], [278, 26], [296, 26]);
   coins([306, 15], [314, 15], [322, 15], [330, 15]);
   coins([342, 10], [350, 10], [358, 10], [366, 10]);
+  /* A WAY UP SHE CANNOT CUT (rule B4). Her two cuts take the lines at 302 and 330; the shrouds at 306 now run all the way down
+     to the main deck, so a player who loses sight of her in the rigging can always follow her onto the second deck.
+     (Laid last: nothing is dug after it.) */
+  for (let y = 16; y <= 21; y++) for (const x of [306, 307]) { const i3 = y * W + x; if (L.grid[i3] === T.AIR || L.grid[i3] === T.ONEWAY) L.grid[i3] = T.NET; }
   ent('quarter', 288, 21);
   ent('gate', 374, 10);
 

@@ -150,7 +150,7 @@ export async function bossLab(BK, opts = {}) {
         /* THE FLOTILLA'S OWN ROUTE UP, because the nearest ledge over her is not a way to it: the main deck climbs by the block
            steps at the companion house (column 292 on), and her second deck to the poop by the nets at 338 */
         if (lvId === 'flotilla' && boss.y < P.y - 30) { const px = P.x / TS, py = P.y / TS;
-          if (py > 20 && px > 292) goalUp = 288 * TS; else if (py > 20) goalUp = boss.x;
+          if (py > 20) goalUp = 306 * TS + 8;   /* the shrouds that run down to the main deck */
           else if (py > 14 && boss.y < 14 * TS) goalUp = 338 * TS + 8; }
         walker(goalUp); }
       else if (goal !== null && !k.block) { const gd = goal - P.x;
@@ -189,7 +189,7 @@ export async function collectLab(BK, opts = {}) {
   const silversOf = () => { const s = BK.silvers; return typeof s === 'function' ? s() : (s || []); };
   for (const id of levels) {
     const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
-    const Lb = lvm.LEVELS[li].build(); const { seen } = RC.floodReach(Lb, lvm.T);
+    const Lb = lvm.LEVELS[li].build(); const { seen } = RC.floodReach(Lb, lvm.T, { rides: true });
     const stands = [...seen].map(k => k.split(',').map(Number));
     BK.setHero(opts.hero || 'knight'); BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(10);
     const P = BK.P, k = BK.keys;
@@ -235,7 +235,7 @@ export async function killLab(BK, opts = {}) {
   if (typeof window !== 'undefined') window.__killLab = out;
   for (const id of levels) {
     const i = lvm.LEVELS.findIndex(l => l.id === id); if (i < 0) continue;
-    const Lb = lvm.LEVELS[i].build(); const { seen } = RC.floodReach(Lb, lvm.T);
+    const Lb = lvm.LEVELS[i].build(); const { seen } = RC.floodReach(Lb, lvm.T, { rides: true });
     BK.setHero('knight'); BK.load(i); BK.state = 'play'; BK.god = false; BK.sim(5);
     const P = BK.P; let n = 0, lvBad = 0;
     for (const key of seen) { if (n++ % every) continue;
