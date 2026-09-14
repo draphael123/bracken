@@ -4691,18 +4691,18 @@ const REVIEW = {
 const DRESS = {
   wood: [['beehive'], ['birdhouse'], ['trunk', 3], ['fence', 2], ['deadTree', 2], ['cairn'], ['stone', 3], ['fern', 3], ['mushroom', 2], ['stump', 2], ['rock', 3], ['flower', 2], ['bushDeco', 3]],   /* the first wood was the thinnest: fences and stones */
   marsh: [['fishTrap', 2], ['lilyLantern'], ['deadTree', 2], ['fence', 2], ['barrels'], ['frogStatue', 1], ['cattail', 2], ['fern', 3], ['mushroom', 2], ['moss', 2], ['stump', 2]],
-  stockade: [['barrels'], ['spearRack'], ['skullPile', 2], ['tent', 2], ['cart'], ['bones', 2], ['banner', 2]],
+  stockade: [['barrels'], ['spearRack'], ['skullPile', 2], ['tent', 2], ['cart'], ['bones', 2], ['banner', 2], ['gobPennant', 3], ['warStandard', 2], ['ragBanner', 3], ['hideBanner', 2], ['skullTotem', 2], ['trophyRack', 2], ['stakeFence', 2], ['lootHeap', 2], ['cookSpit'], ['cauldron'], ['hideRack', 2], ['warnPost', 2], ['boneChime', 2]],   /* the war camp: every flag they have, and the camp's own mess */
   spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['deadTree', 2], ['bones', 2], ['mushroom', 2], ['moss', 2], ['fern', 3], ['stump', 2]],
-  kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3]],
+  kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3], ['gobPennant', 3], ['ragBanner', 3], ['clothStrip', 3], ['skullTotem', 2], ['idol', 2], ['lootHeap', 2], ['trophyRack', 2], ['cauldron'], ['boneChime', 2], ['warnPost', 2]],   /* the court: idols, the king's takings, trophies */
   scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
   hanging: [['lanternPost'], ['barrels'], ['birdhouse'], ['beehive']],
   spire: [['cairn'], ['bones', 2], ['stone', 3]],
   moor: [['stone', 3], ['cairn'], ['fence', 2], ['bones', 2], ['deadTree', 2]],
-  storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2]],
-  crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage']],
+  storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2], ['warStandard', 2], ['hideBanner', 2], ['gobPennant', 3], ['stakeFence', 2], ['hideRack', 2], ['cookSpit'], ['cauldron'], ['trophyRack', 2], ['clothStrip', 3], ['boneChime', 2], ['warnPost', 2]],   /* the hill clans' hold: hides, stakes, standards */
+  crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage'], ['clothStrip', 4], ['warStandard', 2], ['gobPennant', 4], ['lootHeap', 2], ['trophyRack', 2], ['idol', 2], ['cauldron'], ['boneChime', 2]],   /* the Queen's castle: her strips in the halls, the loot of the whole wood */
   lamplit: [['cityWeed', 3], ['shellDrift', 2], ['lampWreck', 2], ['sealDrift', 2], ['drownedCart'], ['column', 2]],
-  underleaf: [['barrels'], ['wares'], ['fence', 2], ['cart'], ['well'], ['lanternPost'], ['beehive']],
-  undercrown: [['barrels'], ['wares'], ['bones', 2], ['cairn'], ['stone', 3], ['cart'], ['spearRack']],
+  underleaf: [['barrels'], ['wares'], ['fence', 2], ['cart'], ['well'], ['lanternPost'], ['beehive'], ['idol', 2], ['hideRack', 2], ['cauldron'], ['cookSpit'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['clothStrip', 3], ['trophyRack', 2]],   /* a village at home: pots on, hides out, the household gods */
+  undercrown: [['barrels'], ['wares'], ['bones', 2], ['cairn'], ['stone', 3], ['cart'], ['spearRack'], ['lootHeap', 2], ['cauldron'], ['boneChime', 2], ['skullTotem', 2], ['warnPost', 2], ['clothStrip', 3], ['ragBanner', 3]],   /* the mine: the dig's takings and its warnings */
   deep: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['shellDrift', 2], ['seaChest']],
   longwater: [['coralTuft', 3], ['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['pierPost'], ['netPoles']],
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
@@ -4833,8 +4833,27 @@ function garrison(L, id) {
   }
   return L;
 }
+/* GOBLIN THINGS PUT DOWN BY HAND, where the sprinkler cannot know to put them: a warning at the way in, a standard
+   and a totem on the boss approach, the takings behind a gate. [kind, x, y, v, hang]. Grounded kinds snap to the floor
+   they are given; a hung one is given the row just under its rock. Checked against signs, doors, checkpoints and the
+   arena by hand, and tools/floaters.mjs checks the floors. */
+const GOBLIN_CAMP = {
+  stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
+  kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 384, 16, 0, true], ['skullTotem', 449, 13, 0], ['warStandard', 458, 13, 1], ['lootHeap', 588, 13, 1], ['idol', 606, 13, 0]],
+  storm: [['warnPost', 86, 33, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['boneChime', 192, 19, 1, true], ['gobPennant', 200, 31, 1], ['cookSpit', 229, 29], ['cauldron', 287, 29]],
+  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 340, 7, 3], ['ragBanner', 372, 7, 2], ['cauldron', 362, 63], ['boneChime', 368, 54, 0, true], ['trophyRack', 366, 51, 1], ['skullTotem', 401, 51, 0], ['clothStrip', 380, 10, 3, true], ['warStandard', 394, 19, 1]],
+  underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 325, 33], ['lootHeap', 376, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
+  undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
+};
+/* WHAT HANGS FROM THE ROCK, and how tall it is. The sprinkler finds floor; one of these wants a roof over that floor
+   with room for its length and a hero under it, or it is not put down. */
+const HUNG_H = { clothStrip: 62, boneChime: 40 };
+/* AND WHAT STANDS TALLER THAN THREE ROWS. The sprinkler asks for three rows of air, which is a barrel's worth: a war
+   standard put under a gallery three rows up ran its skull through the boards. */
+const TALL_ROWS = { warStandard: 5, hideBanner: 4, skullTotem: 4 };
 function dressLevel(L, id) {
   const set = DRESS[id]; if (!set) return L;
+  for (const [kind, x, y, v, hang] of GOBLIN_CAMP[id] || []) L.ents.push(Object.assign({ t: 'deco', x, y, kind, v: v || 0 }, hang ? { hang: true } : {}));
   const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
@@ -4848,8 +4867,13 @@ function dressLevel(L, id) {
     // open ground three tiles wide with three rows of air over it
     let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
     if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
-    const [kind, nv] = set[(rnd() * set.length) | 0];
-    L.ents.push({ t: 'deco', x, y, kind, v: nv ? (rnd() * nv) | 0 : 0, dressed: true }); placed.push([x, y]);
+    const [kind, nv] = set[(rnd() * set.length) | 0], v = nv ? (rnd() * nv) | 0 : 0;
+    if (HUNG_H[kind]) { const need = Math.ceil(HUNG_H[kind] / TS) + 2; let top = 0;
+      for (let k = 3; k <= 10 && y - k >= 1; k++) if (at(x, y - k) !== T.AIR) { if (at(x, y - k) === T.SOLID && k >= need) top = y - k + 1; break; }
+      if (!top || !clear(x, top) || !clear(x, top - 2)) continue;   /* clear where it HANGS too, and over it: the floor under a bell is not the bell */
+      L.ents.push({ t: 'deco', x, y: top, kind, v, hang: true, dressed: true }); placed.push([x, y]); continue; }
+    if (TALL_ROWS[kind]) { let room = true; for (let dy = 3; dy < TALL_ROWS[kind] && room; dy++) if (at(x, y - dy) !== T.AIR) room = false; if (!room) continue; }
+    L.ents.push({ t: 'deco', x, y, kind, v, dressed: true }); placed.push([x, y]);
   }
   // AND THEN TAKE BACK ANYTHING THE LEVEL HAS SINCE BUILT OVER. The sprinkler only lays dressing on open
   // ground, but a level can stack crates or raise a palisade on that ground afterwards, and the skull pile
