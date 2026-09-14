@@ -56,3 +56,18 @@ VOICE KITS (audio/sfx/vo/, all CC0 from OpenGameArt.org; trimmed, levelled and r
 - "80 CC0 creature SFX" and "80 CC0 creature SFX #2" by rubberduck (CC0) - https://opengameart.org/content/80-cc0-creature-sfx ,
   https://opengameart.org/content/80-cc0-creture-sfx-2 - goblins, beasts, bugs, fungi, the tidebound, croaks and snores
 - "Monster Sound Effects Pack" by Ogrebane (CC0) - https://opengameart.org/content/monster-sound-effects-pack - trolls and the big ones
+
+
+AMBIENCE AND THE INN (all CC0, OpenGameArt.org; looped, levelled and re-encoded):
+- waymeet.ogg = "[Chiptune] Medieval: The Old Tower Inn" (loop) by RandomMind - https://opengameart.org/content/chiptune-medieval-the-old-tower-inn
+- marketday.ogg = "Medieval: Market Day" (loop) by RandomMind - https://opengameart.org/content/medieval-market-day
+- ambCave / ambDeep = "Loopable Dungeon Ambience" by JaggedStone - https://opengameart.org/content/loopable-dungeon-ambience
+- ambDrip = "Dripping water loop" by Independent.nu (submitted by qubodup) - https://opengameart.org/content/dripping-water-loop
+- ambShore = "Beach Ocean Waves" by jasinski (submitted by qubodup) - https://opengameart.org/content/beach-ocean-waves
+- amb_gull, vo_gull_* = "Solo Seagull Sound Effects" by Rango Mango - https://opengameart.org/content/solo-seagull-sound-effects
+- ambShip (creaks), amb_creak, amb_hammer = "100 CC0 metal and wood SFX" by rubberduck - https://opengameart.org/content/100-cc0-metal-and-wood-sfx
+- ambShip (water), ambTown (room tone) = "30 CC0 SFX loops" by rubberduck - https://opengameart.org/content/30-cc0-sfx-loops
+- ambTown (crowd) = "Crowd Shouting/Speaking Ambience" by StarNinjas - https://opengameart.org/content/crowd-shoutingspeaking-ambience
+- vo_m5_* = "Voice Clip Pack - Male Adventurer RPG" by wolfwoot (Brandon Song) - https://opengameart.org/content/voice-clip-pack-male-adventurer-rpg
+- vo_m6_*, vo_zom_* = "Zombie / Skeleton / Monster Voice Effects" by ArcadeParty - https://opengameart.org/content/zombie-skeleton-monster-voice-effects
+- vo_ex_die = "Death Sounds" by Exewin - https://opengameart.org/content/death-sounds-0

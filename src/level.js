@@ -332,7 +332,9 @@ function marshWood() {
   G.block(275, 276, 18, 27); G.ent('sign', 275, 17, { text: 'THE DROWNED VILLAGE. THE FROG KING\'S FLOOD TOOK IT IN A NIGHT. THE PLANKS HOLD. THE WATER DOES NOT. THE FISH TRAPS ARE THE FERRYMAN\'S.' });
   G.R.pools.push({ x0: 277 * TS, x1: 322 * TS, y: 19 * TS, shallow: false, depth: 0 });
   plank(278, 282, 16); plank(286, 290, 15); plank(294, 298, 16); plank(302, 307, 15); plank(311, 315, 16); plank(319, 322, 17);
-  G.ent('treehouse', 288, 6); G.ent('treehouse', 304, 6);
+  /* THE HUTS STAND IN THE WATER. They were set ten tiles up with nothing under them, which is a house floating
+     over a lake; the archers' platforms are their roofs, and their stilts go down into the flood. */
+  G.ent('treehouse', 288, 13); G.ent('treehouse', 304, 13);
   // THE DROWNED VILLAGE IS A LILY CROSSING NOW. Four pads across forty tiles of fog was not a crossing, it was
   // four pads: you could not see the next one and there was no rhythm to find. Thirteen of them, spaced so
   // that every jump is reachable and none of them is a rest - and in fog that thick the only way to read the
@@ -801,7 +803,7 @@ function kingswood() {
   plat(228, 9, 2); plat(231, 10, 3); plat(235, 8, 2); plat(250, 10, 2); plat(253, 11, 3); plat(257, 10, 2); // a ledge road under each canopy swing
   coins([212, 10], [217, 8], [223, 6], [231, 6], [239, 6], [245, 7], [254, 6], [262, 8], [267, 10], [272, 10]);   /* the apex of the arc was a course over the top of anybody's jump */
   // roots
-  block(211, 275, 21, 27); ceiling(211, 275, 15);
+  block(211, 275, 21, 27); ceiling(211, 274, 15);   /* the roof stops a column short of the way out: ending ON the exit block left a gap one tile high, and nobody fits through that */
   for (let x = 211; x <= 275; x++) for (let y = 16; y <= 20; y++) set(x, y, 0);
   ent('torch', 214, 20); ent('torch', 230, 20); ent('torch', 246, 20); ent('torch', 262, 20);
   ent('firepit', 216, 20, { period: 3.4, on: 1.5, phase: 0.8 }); ent('brazier', 224, 20); ent('firepit', 265, 20, { period: 3.4, on: 1.5, phase: 2.4 });
@@ -809,6 +811,7 @@ function kingswood() {
   ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
   ent('stray', 250, 20, { kind: 'cup' }); coins([218, 19], [236, 19], [252, 19], [266, 19], [273, 19]);
   block(275, 277, 17, 27); block(278, 281, 15, 27); block(282, 300, 14, 27);
+  block(273, 274, 19, 20);   /* THE STEP OUT OF THE ROOTS: the way up was four tiles from the burrow floor and a jump is three */
   ent('check', 284, 13);
 
   // ---- 6. The processional: townsfolk line a carpet, guards bar the way, banners hang. ----
@@ -903,7 +906,50 @@ function kingswood() {
   F.ent('hound', 225, 24, { face: 1 }); F.ent('hound', 241, 24, { face: -1 }); // their dogs got left down there and they are not friendly now
   F.coins([222, 12], [227, 11], [233, 9], [237, 11], [242, 13], [247, 11], [252, 12], [256, 11], [224, 20], [240, 18], [254, 17]);   /* it was a column short of the ledge it belongs on */
   F.ent('check', 217, 13);
-  return F.done();
+  const R3 = F.done();
+
+  // ---- 4c. THE HANGING ROOTS: past the kennels the wood falls away into a bramble gully, and the only way
+  // over is what hangs across it - root ledges, a branch already cracking, one rope. The storm shamans have
+  // the far side: one down on a stump in the gully throwing the weather up at you, one on the bank waiting.
+  const H = grow({ W: R3.W, H: R3.H, grid: R3.grid, ents: R3.ents }, R3, 191, 42);
+  H.block(191, 194, 14, 27); H.block(229, 232, 14, 27);                     /* the two banks */
+  H.block(195, 228, 24, 27); H.spikes(201, 222, 23);                         /* the gully floor, and the brambles in it */
+  H.block(207, 208, 14, 23);                                                  /* a dead stump standing out of the brambles, level with the banks: a stepping stone with a shaman on it, not a pit */
+  H.ent('sign', 192, 13, { text: 'THE HANGING ROOTS. THE BRAMBLES WILL NOT KILL YOU AND THEY WILL NOT LET GO EITHER. GO ACROSS WHAT HANGS OVER THEM: THE CRACKED BRANCH GIVES, THE ROPE DOES NOT. THE SHAMAN DOWN THERE CAN SEE YOU THE WHOLE WAY.' });
+  H.ent('check', 193, 13); H.ent('torch', 194, 13);
+  H.plat(196, 12, 3); H.plat(201, 10, 2); H.plat(205, 12, 2);
+  for (let i = 0; i < 3; i++) H.set(209 + i, 11, T.SHELF);                  /* the branch that is going */
+  H.plat(209, 13, 3); H.plat(213, 11, 2); H.plat(216, 10, 2);                 /* under the branch, the way that does not break */
+  H.R.moversExtra.push({ kind: 'swing', px: 220 * TS, py: 2 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.1 });
+  H.plat(218, 11, 2); H.plat(222, 12, 3); H.plat(226, 13, 2);                /* the ledge road under the rope: the rope is the fast way, never the only way */
+  for (const y of [22, 20, 18, 16]) { H.plat(196, y, 2); H.plat(225, y, 3); }   /* a fall costs you the crossing, not the run */
+  H.ent('stormshaman', 207, 13, { face: -1 });                               /* on the stump, in your way */
+  H.ent('stormshaman', 231, 13, { face: -1 }); H.ent('soldier', 229, 13, { face: -1 });
+  H.ent('wasp', 216, 6);
+  H.coins([197, 11], [201, 9], [206, 11], [210, 10], [216, 9], [219, 10], [223, 11], [227, 12]);
+  const R4 = H.done();
+
+  // ---- 2b. THE KNIGHTS' ROAD: out of the first hall and into the open, where the King keeps his own. A shield
+  // line on the road, heavy knights behind it, storm shamans up on the old waystones, and a rampart walk of
+  // ledges over all of it for anyone who would rather go over the top than through the middle.
+  const K = grow({ W: R4.W, H: R4.H, grid: R4.grid, ents: R4.ents }, R4, 85, 48);
+  K.block(85, 132, 20, 27);                                                    /* the road */
+  K.block(100, 102, 17, 19); K.block(118, 120, 17, 19);                        /* the waystones */
+  K.ent('sign', 86, 19, { text: "THE KNIGHTS' ROAD. THE KING'S OWN: SHIELDS IN FRONT, PLATE BEHIND, AND SHAMANS ON THE STONES CALLING THE WEATHER DOWN ON WHOEVER IS BUSY WITH THE FIRST TWO. THE WALL WALK ABOVE GOES OVER ALL OF IT - IF YOU CAN STAY ON IT." });
+  K.ent('check', 88, 19); K.ent('torch', 87, 19); K.ent('torch', 112, 19); K.ent('torch', 131, 19);
+  K.ent('deco', 94, 19, { kind: 'banner', v: 0 }); K.ent('deco', 125, 19, { kind: 'banner', v: 1 });
+  K.ent('soldier', 96, 19, { face: -1 }); K.ent('soldier', 106, 19, { face: -1 });
+  K.ent('heavy', 110, 19, { face: -1 }); K.ent('heavy', 126, 19, { face: -1 });
+  K.ent('javelin', 114, 19, { face: -1 });
+  K.ent('stormshaman', 101, 16, { face: -1 }); K.ent('stormshaman', 119, 16, { face: -1 });
+  /* THE WALL WALK: the roof road off the hall, carried across the open to the canopy - no gap over three, no step over two */
+  K.plat(86, 12, 3); K.plat(90, 10, 3); K.plat(95, 12, 3); K.plat(99, 10, 2); K.plat(103, 11, 3);
+  for (let i = 0; i < 3; i++) K.set(107 + i, 10, T.SHELF);
+  K.plat(107, 12, 3);                                                          /* and under it, the way that does not break */
+  K.plat(112, 12, 3); K.plat(116, 10, 3); K.plat(121, 11, 3); K.plat(125, 12, 3); K.plat(129, 12, 4);
+  K.ent('archer', 117, 9, { face: -1 }); K.ent('thief', 104, 10, { face: -1 });
+  K.coins([87, 11], [91, 9], [96, 11], [104, 10], [108, 9], [113, 11], [122, 10], [126, 11], [92, 18], [104, 18], [116, 18], [128, 18]);
+  return K.done();
 }
 
 
@@ -2378,7 +2424,7 @@ function theDeep() {
     palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)',
       grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
       canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
-    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'deep' }],
     arena: { x0: 30 * TS, x1: 74 * TS, floor: 182 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'drownedking', music: 'boss2', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 158 * TS, y1: 183 * TS },
   };
 }
@@ -3320,7 +3366,7 @@ function longWater() {
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE FISHERFOLK ARE SAFE', reward: 'relic', relic: 'tidecharm' },
     palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
       grass: '#7a9a5a', grassL: '#a8c47a', grassD: '#5a7a44', dirt: '#555e68', dirtL: '#6f7a84', dirtD: '#3e454e', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
-    weather: [{ x0: 0, x1: 108 * TS, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    weather: [{ x0: 0, x1: 108 * TS, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
     arena: { x0: 369 * TS, x1: 409 * TS, floor: 30 * TS, trigger: 370 * TS, wallL: 368, wallR: 409, boss: 'herald', music: 'boss2', tint: '#3a8aa0', tintA: 0.08, fx: 'motes' },
   };
   const R1 = ret;
@@ -3494,7 +3540,7 @@ function shipwreckReef() {
     palette: { set: 'reef', sky: 'storm', far: 'reef', mid: 'wrecks', near: 'reef', fg: 'reef', dress: 'reef', haze: 'rgba(180,200,205,0.12)',
       grass: '#5f7a68', grassL: '#88a890', grassD: '#40564a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e3a3a', '#2c4e4a', '#3a6258', '#548070'] },
     weather: [{ x0: 0, x1: 213 * TS, kind: 'rain' }, { x0: 331 * TS, x1: 99999, kind: 'rain' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
     arena: { x0: 425 * TS, x1: 453 * TS, floor: 34 * TS, y0: 24 * TS, trigger: 426 * TS, wallL: 424, wallR: 453, boss: 'reefmaw', music: 'boss2', tint: '#2a5a60', tintA: 0.1, fx: 'motes',
       holes: [429 * TS, 437 * TS, 445 * TS, 451 * TS] },
   };
@@ -3712,7 +3758,7 @@ function theFlotilla() {
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
     palette: { set: 'ship', sky: 'glare', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(240,235,205,0.10)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
     arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, y0: 8 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'boss2', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
       decks: [[22 * TS, 260, 370], [16 * TS, 304, 370], [11 * TS, 338, 368]], cuts: [[302, 303, 11, 21], [330, 331, 6, 16]], fallFrom: 366, fallTo: 304 },
   };
@@ -3992,7 +4038,7 @@ function theHurricane() {
     palette: { set: 'ship', sky: 'storm', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
     arena: { x0: 702 * TS, x1: 744 * TS, floor: 16 * TS, y0: 6 * TS, trigger: 708 * TS, wallL: 701, wallR: 744, boss: 'captain', music: 'drowned', tint: '#2a5a6a', tintA: 0.12, fx: 'motes' },
     // HER MASTS GO ONE AT A TIME. Lightning finds the fore first, then the main, then the mizzen.
     masts: [{ x: 72, at: 104 * TS, fell: false }, { x: 270, at: 316 * TS, fell: false }, { x: 600, at: 640 * TS, fell: false }],
@@ -4304,7 +4350,7 @@ function theLamplitStreet() {
       grass: '#4e7a58', grassL: '#7e9490', grassD: '#24402c', dirt: '#46595c', dirtL: '#58706f', dirtD: '#243036',
       canopy: ['#0d2826', '#113331', '#16403d', '#1b4c48'] },
     weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],
     mini: { x0: 198 * TS, x1: 238 * TS, floor: UP * TS, y0: 13 * TS, y1: 23 * TS, trigger: 204 * TS, wallL: 197, gate: 240, boss: 'lampreeve' },
     arena: { x0: 650 * TS, x1: 694 * TS, floor: UP * TS, y0: 8 * TS, trigger: 658 * TS, wallL: 649, wallR: 694, boss: 'tollmaster', music: 'drowned', tint: '#2a4a5a', tintA: 0.14, fx: 'motes' },
   };
@@ -4523,6 +4569,7 @@ function waymeet() {
       grass: '#6a8a46', grassL: '#8fb060', grassD: '#47612e', dirt: '#7a6248', dirtL: '#8f7458', dirtD: '#54402c',
       canopy: ['#2a3a24', '#3a5230', '#4a6a3c', '#5e8248'] },
     weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'town' }],
     arena: { x0: 492 * TS, x1: 536 * TS, floor: R * TS, trigger: 498 * TS, wallL: 491, wallR: 537, boss: 'closedhelm',
       music: 'boss2', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
   };
@@ -4534,7 +4581,7 @@ export const LEVELS = [
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY SECTION HAS A BELL. CATCH THE SENTRY BEFORE HE REACHES IT.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS PUT YOU TO SLEEP. CLEAR THE AIR BEFORE YOU FIGHT IN IT.', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
-  { id: 'scree', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
+  { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'EIGHT FLOORS ON ONE CLIFF, AND THE WAY UP IS THROUGH THEM.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE SUNSPIRE', sub: 'the mountain of crystal', rule: 'CRYSTAL HOLDS WHATEVER TOUCHES IT. GO UP ANYWAY.', build: theSunspire, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
@@ -4581,7 +4628,7 @@ const REVIEW = {
   spore: L => { rv(L).ent('check', 330, 13);
     L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, 504, [200, 60, 150], 0.16]]; },
   // the court's long runs went a hundred and twenty tiles without a checkpoint
-  kings: L => { const R = rv(L); R.ent('check', 105, 21); R.ent('check', 267, 20); },
+  kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 357, 20); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
   scree: L => { rv(L).ent('check', 330, 18); },
   // the sappers' tunnel was the busiest 38 tiles in the busiest level: the brute and one sapper go, and it is a
   // held breath between the walls instead of another fight

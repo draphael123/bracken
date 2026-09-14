@@ -1,7 +1,8 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg' };
+const TRACKS = { hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
+  ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -34,12 +35,15 @@ export function initAudio() {
 export const ready = () => !!ac;
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (sfxGain) sfxGain.gain.value = vol; }
 export function setSfxFiles(v) { sfxFiles = !!v; }
+/* CHARACTER VOICES OFF: no recorded grunt, shout, cry or laugh from anyone - every one of them has a non-vocal fallback */
+let voicesOn = true; export function setVoices(v) { voicesOn = !!v; }
+const VOCAL = new Set(['gobDie', 'gobHurt', 'laugh', 'effort', 'hurt', 'roar', 'bossHurt', 'croak']);
 export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); }
 export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -63,6 +67,7 @@ const gate = (k, sec) => { if (!ac) return false; const t = ac.currentTime; if (
 // ---------- samples ----------
 function file(name, v = 0.6, rate = 1, dest = null) {
   if (!ac || !sfxFiles) return false;
+  if (!voicesOn && VOCAL.has(name)) return false;
   const arr = clips[name]; if (!arr) return false;
   const opts = arr.filter(Boolean); if (!opts.length) return false;
   const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
@@ -77,7 +82,7 @@ function takeOf(name, n) { let i = (Math.random() * n) | 0; if (n > 1 && i === l
 // A VOICE: a recorded take from a kit, at a pitch for the body it is coming out of, and through a lowpass when
 // that body has a helmet on. Returns false while the clip is still loading, so every caller keeps its synth.
 function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
-  if (!ac || !sfxFiles || !name) return false;
+  if (!ac || !sfxFiles || !voicesOn || !name) return false;
   const opts = (clips[name] || []).filter(Boolean); if (!opts.length) return false;
   const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.95 + Math.random() * 0.1);
   const g = ac.createGain(); g.gain.value = v;
@@ -85,10 +90,10 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
   g.connect(out()); s.start(ac.currentTime + delay); return true;
 }
 // a kit's pool for an act, falling back to the nearest act it does have, then to a kit that is one pool
-const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
+const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm3', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 } };
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 } };
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -134,7 +139,7 @@ const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', 
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
 export const SFX = {
   pJump() { if (heroVoice === 'pyro') { if (Math.random() < 0.35) heroVo('jump', 0.28); noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
-    else { tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
+    else { if (heroVoice === 'knight' && Math.random() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
   pLand(surf) { if (heroVoice === 'pyro') { if (surf === 'water') { SFX.land('water'); return; } noise(0.09, 0.14, 520, 0.5); tone('sine', 150, 60, 0.08, 0.1); if (surf === 'wood' || surf === 'stone') file('land', 0.14, 1.25); return; }
     SFX.land(surf); tone('square', vary(1500), 1050, 0.04, 0.05); noise(0.04, 0.07, 3600, 1.4); },
   pStep(surf) { stepN++; if (heroVoice === 'reaper') { if (surf === 'water') { noise(0.06, 0.07, 800, 0.5); return; } noise(0.05, 0.04, 300, 0.5); return; }
@@ -370,16 +375,38 @@ function schedule() {
 function startSynth() { nextT = ac.currentTime + 0.1; step = 0; if (timer) clearInterval(timer); timer = setInterval(schedule, 100); }
 
 // ---------- ambient beds: forest birds (file), running water, hive drone, rain (synth) ----------
-function stopAmb() { for (const n of ambNodes) { try { n.stop(); } catch {} } ambNodes = []; }
+function stopAmb() { for (const n of ambNodes) { try { n.stop(); } catch {} } ambNodes = []; if (ambShotTimer) { clearInterval(ambShotTimer); ambShotTimer = null; } }
+// EVERY PLACE HAS ITS OWN AIR. The wood had a recording and everything else was filtered noise - and a level
+// with no zone got the wood's birds, so the town, the ships and the mine all had birdsong in them.
+const AMB_FILE = { forest: 'ambForest', town: 'ambTown', shore: 'ambShore', ship: 'ambShip', cave: 'ambCave', deep: 'ambDeep', drip: 'ambDrip' };
+// AND THE THINGS THAT HAPPEN IN IT: a gull over the shore, the timbers of a ship working, a hammer two streets
+// away and somebody calling, a drip in the dark. [pool, volume, lowpass, one in how many seconds]
+const AMB_SHOTS = { shore: [['amb_gull', 0.22, 0, 5]], ship: [['amb_creak', 0.3, 1800, 3], ['amb_gull', 0.14, 0, 9]],
+  town: [['amb_hammer', 0.12, 1200, 4], ['vo_hum_alert', 0.05, 900, 11]], cave: [['drip', 0, 0, 3]], drip: [['drip', 0, 0, 2]] };
+let ambShotTimer = null;
+function ambShots(kind) {
+  if (ambShotTimer) clearInterval(ambShotTimer); ambShotTimer = null; const list = AMB_SHOTS[kind]; if (!list) return;
+  ambShotTimer = setInterval(() => { if (ambKind !== kind || !ac) return;
+    for (const [name, v, lp, every] of list) { if (Math.random() > 1 / every) continue;
+      if (name === 'drip') { SFX.drip(); continue; }
+      const opts = (clips[name] || []).filter(Boolean); if (!opts.length) continue;
+      const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = 0.9 + Math.random() * 0.2;
+      const gn = ac.createGain(); gn.gain.value = v * ambVol; let tail = s;
+      if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; s.connect(f); tail = f; }
+      tail.connect(gn);
+      if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = Math.random() * 1.6 - 0.8; gn.connect(p); p.connect(sfxGain); } else gn.connect(sfxGain);
+      s.start(); } }, 1000);
+}
 export const ambient = {
   set(kind) {
     if (!ac || kind === ambKind) return;
     ambKind = kind; stopAmb();
     if (!kind) { ambGain.gain.setTargetAtTime(0, ac.currentTime, 0.5); return; }
     const start = () => ambGain.gain.setTargetAtTime(ambTarget(kind), ac.currentTime, 0.8);
-    if (kind === 'forest') {
-      const go = () => { if (ambKind !== 'forest') return; const s = ac.createBufferSource(); s.buffer = trackBuf.ambForest; s.loop = true; s.connect(ambGain); s.start(); ambNodes.push(s); start(); };
-      if (trackBuf.ambForest) go(); else { trackPending.ambForest || fetch(TRACKS.ambForest).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf.ambForest = b; go(); }).catch(() => {}); }
+    const FILE = AMB_FILE[kind];
+    if (FILE) {
+      const go = () => { if (ambKind !== kind) return; const s = ac.createBufferSource(); s.buffer = trackBuf[FILE]; s.loop = true; s.connect(ambGain); s.start(); ambNodes.push(s); start(); ambShots(kind); };
+      if (trackBuf[FILE]) go(); else { trackPending[FILE] || fetch(TRACKS[FILE]).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[FILE] = b; go(); }).catch(() => {}); }
       return;
     }
     const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
@@ -743,26 +770,26 @@ SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.
 // over their own, and whatever the body is made of - plate, mail, cloth - is heard under both.
 const CAST = {
   swornsword: { kit: 'm2', rate: 1, mat: 'mail', human: true }, hedgeknight: { kit: 'm4', rate: 0.92, lp: 1600, mat: 'plate', human: true },
-  closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm1', rate: 1.18, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
-  crossbow: { kit: 'm2', rate: 1.08, mat: 'mail', human: true },
-  cutlass: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, boarder: { kit: 'm2', rate: 0.9, mat: 'cloth', human: true }, marine: { kit: 'm1', rate: 1.12, mat: 'cloth', human: true },
-  bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm1', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm2', rate: 1, mat: 'cloth', human: true },
+  closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm6', rate: 1.12, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
+  crossbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true },
+  cutlass: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, boarder: { kit: 'm5', rate: 0.9, mat: 'cloth', human: true }, marine: { kit: 'm6', rate: 1.08, mat: 'cloth', human: true },
+  bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm6', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm5', rate: 1, mat: 'cloth', human: true },
   netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
-  watch: { kit: 'm2', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
+  watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
   troll: { kit: 'ogre', rate: 1 }, pitwarden: { kit: 'ogre', rate: 0.9, mat: 'plate' }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
   forgemaster: { kit: 'ogre', rate: 0.85, mat: 'plate' }, reefmaw: { kit: 'ogre', rate: 0.7 },
   hound: { kit: 'bark', rate: 1.2 }, greathound: { kit: 'bark', rate: 0.8 },
-  harpy: { kit: 'scream', rate: 1.1 }, roc: { kit: 'scream', rate: 0.8 }, petrel: { kit: 'scream', rate: 1.4 }, queen: { kit: 'scream', rate: 1.05 },
+  harpy: { kit: 'scream', rate: 1.1 }, roc: { kit: 'scream', rate: 0.8 }, petrel: { kit: 'gull', rate: 1 }, queen: { kit: 'scream', rate: 1.05 },
   wasp: { kit: 'bug', rate: 1.3 }, spider: { kit: 'bug', rate: 0.8 }, weaver: { kit: 'bug', rate: 1 }, clinger: { kit: 'bug', rate: 0.9 }, bat: { kit: 'bug', rate: 1.6 },
   sporeling: { kit: 'slime', rate: 1.2 }, lurker: { kit: 'slime', rate: 0.8 }, spitcap: { kit: 'slime', rate: 0.9 }, drone: { kit: 'slime', rate: 1.1 }, gill: { kit: 'slime', rate: 1.3 },
   spit: { kit: 'slime', rate: 1.4 }, grub: { kit: 'slime', rate: 0.9 },
-  wight: { kit: 'alien', rate: 0.7, lp: 1800 }, siren: { kit: 'alien', rate: 1.1 }, scout: { kit: 'alien', rate: 1 }, herald: { kit: 'alien', rate: 0.8 },
+  wight: { kit: 'zom', rate: 0.9, lp: 2200 }, drowned: { kit: 'zom', rate: 0.8, lp: 1600 }, siren: { kit: 'alien', rate: 1.1 }, scout: { kit: 'alien', rate: 1 }, herald: { kit: 'alien', rate: 0.8 },
 };
 const vbody = (mat, die) => { if (mat === 'plate') file('clang', die ? 0.26 : 0.14, die ? 0.6 : 0.78); else if (mat === 'mail') chain(die ? 0.04 : 0.025, die ? 5 : 3); else if (mat === 'cloth') noise(0.08, die ? 0.08 : 0.05, 900, 0.5); };
 SFX.dieOf = t => { const c = CAST[t], d = DIE[t]; if (!c) return d || null;
-  return () => { const pool = c.human && c.kit !== 'hd' && Math.random() < 0.35 && clips.vo_dp_die ? 'vo_dp_die' : VOK(c.kit, 'die');
-    const ok = voice(pool, c.human ? 0.6 : 0.48, pool === 'vo_dp_die' ? c.rate * 0.97 : c.rate * (c.human ? 1 : 0.92), c.lp || 0);
+  return () => { const roll = Math.random(), pool = c.human && c.kit !== 'hd' && roll < 0.25 && clips.vo_dp_die ? 'vo_dp_die' : c.human && c.kit !== 'hd' && roll < 0.45 && clips.vo_ex_die ? 'vo_ex_die' : VOK(c.kit, 'die');
+    const ok = voice(pool, c.human ? 0.6 : 0.48, (pool === 'vo_dp_die' || pool === 'vo_ex_die') ? c.rate * 0.97 : c.rate * (c.human ? 1 : 0.92), c.lp || 0);
     if ((!c.human || c.boss || !ok) && d) d(); vbody(c.mat, true); }; };
 SFX.hurtOf = t => { const c = CAST[t], h = HURT[t]; if (!c) return h || null;
   return () => { const ok = gate('vh' + t, 0.09) && voice(VOK(c.kit, 'hurt'), c.human ? 0.48 : 0.38, c.rate, c.lp || 0);
@@ -775,7 +802,10 @@ SFX.foeRelease = (t, mat, big) => { if (!gate('rel', 0.07)) return;
   noise(dur, heavy ? 0.15 : 0.1, f, 0.7); tone('triangle', vary(f * 0.5), f * 0.2, dur, heavy ? 0.05 : 0.03);
   if (mat === 'steel') tone('sine', vary(2500), 1900, 0.14, 0.018, 0.04);
   const c = CAST[t]; if (c && c.human && gate('shout', 0.9) && Math.random() < 0.4) voice(VOK(c.kit, 'attack'), 0.3, c.rate, c.lp || 0); };
+export const castTable = () => CAST;
+export const heroKitTable = () => HERO_KIT;
+export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.startsWith('vo_')).map(k => k.slice(3).split('_')[0]))].sort();
 export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];
+export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip'];

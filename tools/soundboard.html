@@ -64,6 +64,31 @@ function render() {
     cr.appendChild(row);
   }
   const m = document.createElement('div'); m.className = 'meter'; m.textContent = 'recorded clip in the hurt voice: ' + clipH + '/' + foes.length + ' · in the death voice: ' + clipD + '/' + foes.length; cr.prepend(m);
+  // THE CAST REVIEW: every voiced character, the kit it speaks with, its pitch and its helmet. Change anything
+  // and it plays that way at once; the table at the bottom is what to send back so it can be made permanent.
+  if (A.castTable) {
+    const CAST = A.castTable(), HK = A.heroKitTable(), kits = A.kitNames();
+    const rev = section('CAST REVIEW — pick a kit, pitch (rate) and muffle (lowpass Hz, 0 = none); edits apply live and are remembered in this browser');
+    const saved = (() => { try { return JSON.parse(localStorage.getItem('bracken.castReview') || '{}'); } catch { return {}; } })();
+    const store = () => { try { localStorage.setItem('bracken.castReview', JSON.stringify(saved)); } catch {} };
+    const out = document.createElement('textarea'); out.rows = 8; out.style.cssText = 'width:100%;background:#1b1626;color:#e8dcc0;font:11px monospace;margin-top:8px';
+    const dump = () => { out.value = 'CAST edits:\n' + Object.entries(saved).filter(([k]) => !k.startsWith('hero:')).map(([t, c]) => '  ' + t + ': ' + JSON.stringify(c)).join('\n') +
+      '\nHERO edits:\n' + Object.entries(saved).filter(([k]) => k.startsWith('hero:')).map(([t, c]) => '  ' + t.slice(5) + ': ' + JSON.stringify(c)).join('\n'); };
+    const editor = (label, obj, key, play) => {
+      if (saved[key]) Object.assign(obj, saved[key]);
+      const row = document.createElement('div'); row.className = 'row'; const s = document.createElement('span'); s.textContent = label; row.appendChild(s);
+      const sel = document.createElement('select'); for (const k of kits.concat(kits.includes(obj.kit) ? [] : [obj.kit])) { const o = document.createElement('option'); o.textContent = k; if (k === obj.kit) o.selected = true; sel.appendChild(o); }
+      const rate = document.createElement('input'); rate.type = 'number'; rate.step = '0.02'; rate.min = '0.5'; rate.max = '1.6'; rate.value = obj.rate; rate.style.width = '56px';
+      const lp = document.createElement('input'); lp.type = 'number'; lp.step = '100'; lp.min = '0'; lp.value = obj.lp || 0; lp.style.width = '64px';
+      const apply = () => { obj.kit = sel.value; obj.rate = Number(rate.value) || 1; obj.lp = Number(lp.value) || 0; saved[key] = { kit: obj.kit, rate: obj.rate, lp: obj.lp }; store(); dump(); };
+      for (const el of [sel, rate, lp]) el.addEventListener('change', apply);
+      row.append(sel, rate, lp); for (const [n, fn] of play) row.appendChild(btn(n, fn)); rev.appendChild(row);
+    };
+    for (const [h, k] of Object.entries(HK)) editor('HERO ' + h, k, 'hero:' + h, [['hurt', () => { A.setHeroVoice(h); A.SFX.pHurt(); }], ['die', () => { A.setHeroVoice(h); A.SFX.pDie(); }], ['effort', () => { A.setHeroVoice(h); A.SFX.pEffort(); }]]);
+    for (const [t, c] of Object.entries(CAST).filter(([t]) => keep(t))) editor(t, c, t, [['hurt', () => A.SFX.hurtOf(t)()], ['die', () => A.SFX.dieOf(t)()], ['notice', () => A.SFX.foeNotice(t)]]);
+    const clear = btn('reset all edits', () => { for (const k in saved) delete saved[k]; store(); location.reload(); });
+    rev.append(out, clear); dump();
+  }
   // EVERYTHING ELSE
   const all = section('ALL SFX'); all.className = 'grid';
   for (const k of A.SFX_NAMES().filter(keep).sort()) if (!['dieOf', 'hurtOf', 'jet'].includes(k)) all.appendChild(btn(k, () => A.SFX[k]()));

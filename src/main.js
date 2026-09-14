@@ -25,7 +25,7 @@ import { bakeWindcaller, bakeRamLord } from './redraw/callerram.js';
 import { bakeThornback, bakeHopper, bakeHarpy, bakeHound } from './redraw/foes1.js';
 import { bakeGrub, bakeDrone, bakeGreatHound, bakeTroll } from './redraw/foes2.js';
 import { LEVELS, T, TS, CUSTOM } from './level.js';
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -62,23 +62,23 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off' };
+const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off' };
 const TIER = { waymeet: 2.3, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
 // you have not set; from the pause menu it sets the wood you are in.
-const DIFF = { easy: { take: 0.6, ehp: 0.75, bhp: 0.7, label: 'EASY', col: '#8fd160' }, normal: { take: 1, ehp: 1, bhp: 1, label: 'NORMAL', col: '#ffd36b' }, hard: { take: 1.4, ehp: 1.3, bhp: 1.3, label: 'HARD', col: '#ff6b6b' } };
+const DIFF = { easy: { take: 0.6, ehp: 0.75, bhp: 0.7, label: 'EASY', col: '#8fd160' }, normal: { take: 1, ehp: 1, bhp: 1, label: 'NORMAL', col: '#ffd36b' }, hard: { take: 1.4, ehp: 1.45, bhp: 1.5, label: 'HARD', col: '#ff6b6b' }, expert: { take: 1.8, ehp: 1.85, bhp: 2.1, label: 'EXPERT', col: '#c9a0ff' } };   /* EXPERT: they hit nearly twice as hard and take twice the killing */
 const diffOf = id => (PROG.diff && DIFF[PROG.diff[id]] ? PROG.diff[id] : DIFF[SET.difficulty] ? SET.difficulty : 'normal');
 const diffNow = () => DIFF[diffOf(curId())];
-const DIFFS = ['easy', 'normal', 'hard'], SCALES = ['auto', 2, 3, 4];
+const DIFFS = ['easy', 'normal', 'hard', 'expert'], SCALES = ['auto', 2, 3, 4];
 try { Object.assign(SET, JSON.parse(localStorage.getItem('bracken.settings') || '{}')); } catch {}
 // THE WORLD SLOWED DOWN, AND AN OLD SETTINGS FILE MUST NOT HOLD IT BACK. Anyone who has played before has a
 // saved `speed: 1` in their settings, which would silently keep them at the old pace. Take the new default
 // once, and never touch it again - if they turn it back up, that is their choice and it sticks.
 if (!SET.speedV2) { SET.speed = 0.6; SET.speedV2 = 1; try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
-function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
+function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setVoices(SET.voices !== false); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
 // Progress lives in one of three save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
@@ -184,7 +184,7 @@ const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PRO
 const HEROES = [
   { id: 'knight', name: 'THE KNIGHT', price: 15, silver: true, desc: 'sword, shield and the plunge. 100 health' },
   { id: 'pyro', name: 'THE PYROMANCER', price: 15, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else' },
-  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 15, silver: true, desc: "a two-handed sword, and 95 health. THE SLOWEST HERO IN THE GAME and the worst thing to stand in front of. THE SWATHE winds up, commits, and takes a real moment to come back - and it cuts EVERYTHING in a wide arc for a full sword each, and nothing interrupts him halfway round it. HOLD X for THE SEVERANCE: he brings the whole thing down and the cut KEEPS GOING, away along the floor, through everything, to the wall. HOLD C for THE OATH: the point in the ground and he CANNOT MOVE - every blow it turns is BANKED, and when he lets go the lot comes back out of the floor. V is THE WAKE: he does not dodge, he LEAVES HIMSELF BEHIND, and they keep swinging at the shape he left until it goes off. the plunge is THE CULL. tap C to RAISE what is lying there - a SKELETON, an ARCHER or a BURNING SKULL, by what it was. they kill nothing; they stand between you and the blow and come apart doing it" },
+  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 15, silver: true, desc: "a two-handed sword, and 95 health. THE SLOWEST HERO IN THE GAME and the worst thing to stand in front of. THE CLEAVE comes down slow and hard through whatever is in front of him. HOLD the swing and he PLANTS THE BLADE: blood bolts tear out of the ground. Every death fills his BLOOD, and C spends it: raise the dead, hold the toll, or call the blood rite." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 15, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 15, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. the dead take double' },
 ];
@@ -308,14 +308,14 @@ const TREE = [];
   N('paladin', 2, 1, 2, 'farTremor', 'FAR TREMOR', 3, 'the maul waves travel 20% further a point', 'ironLungs');
   N('paladin', 2, 3, 2, 'earthshaker', 'EARTHSHAKER', 1, 'land hard from a height and the ground quakes both ways', 'farTremor');
   // THE DEATH KNIGHT
-  N('reaper', 0, 0, 0, 'longHaft', 'LONG REACH', 3, 'the swathe and the reaping reach a quarter of a tile further a point', null);
-  N('reaper', 0, 0, 1, 'wideSwathe', 'WIDE SWATHE', 3, 'the swathe cuts further BEHIND you as well a point', null);
-  N('reaper', 0, 1, 0, 'keen', 'KEEN', 1, 'the inside of the arc cuts properly: nothing standing on you is safe any more', 'longHaft');
-  N('reaper', 0, 1, 1, 'scytheThrown', 'THE HURLED BLADE', 3, 'F: it goes out until it finds SOMETHING, cuts it, marks it, and comes straight back to his hand. one throw, one creature. +3 damage and a quarter tile of reach a point', null, true);
+  N('reaper', 0, 0, 0, 'longHaft', 'LONG REACH', 3, 'the cleave and the planted blade reach a quarter of a tile further a point', null);
+  N('reaper', 0, 0, 1, 'wideSwathe', 'HIGH GUARD', 3, 'the cleave comes down from higher, taking what is above him too, a point', null);
+  N('reaper', 0, 1, 0, 'keen', 'KEEN EDGE', 1, '+2 greatsword damage on every blow', 'longHaft');
+  N('reaper', 0, 1, 1, 'scytheThrown', 'DEATH COIL', 3, 'F: a knot of blood goes out until it finds SOMETHING, opens it, marks it, and comes back into him as health. +1 health back and a quarter tile of reach a point', null, true);
   N('reaper', 0, 2, 0, 'rend', 'REND', 1, 'anything wearing your mark bleeds when the blade finds it', 'keen');
-  N('reaper', 0, 3, 0, 'fullCircle', 'THE FULL CIRCLE', 1, 'the reaping goes round twice', 'rend');
+  N('reaper', 0, 3, 0, 'fullCircle', 'THE SECOND VOLLEY', 1, 'the planted blade looses a second volley of blood bolts', 'rend');
   N('reaper', 1, 0, 0, 'graveGoods', 'GRAVE GOODS', 3, "your skeletons last four seconds longer, hit one harder and hold together for one more blow a point. they were never meant to kill for you: they stand in the way while you do", null);
-  N('reaper', 1, 0, 1, 'gleaner', 'GLEANER', 3, 'every death near you is worth a fifth more to the harvest a point');
+  N('reaper', 1, 0, 1, 'gleaner', 'GLEANER', 3, 'every death near you is worth a fifth more blood a point');
   N('reaper', 1, 1, 0, 'press', 'THE PRESS', 1, 'a third skeleton can be standing at once', 'graveGoods');
   N('reaper', 1, 1, 1, 'graveTide', 'GRAVE TIDE', 3, 'F: hands come up out of the floor ahead of you, holding and tearing at whatever is standing on it', null, true);
   N('reaper', 1, 2, 0, 'ossuary', 'OSSUARY', 1, 'once every twelve seconds you can raise one out of bare ground, with no body to do it from', 'press');
@@ -324,7 +324,7 @@ const TREE = [];
   N('reaper', 2, 0, 1, 'soulBrand', 'SOUL BRAND', 3, 'your mark lasts two seconds longer a point');
   N('reaper', 2, 1, 0, 'longPassing', 'LONG PASSING', 1, 'the passing goes half again as far, and marks everything it goes through', 'deepToll');
   N('reaper', 2, 1, 1, 'longStride', 'THE LONG STEP', 3, 'the passing carries him a quarter of a tile further and costs 2 less stamina a point', null);
-  N('reaper', 2, 2, 0, 'lastRites', 'LAST RITES', 3, 'the last harvest reaps them from higher up a point, and hurts the rest more', 'longPassing');
+  N('reaper', 2, 2, 0, 'lastRites', 'LAST RITES', 3, 'the blood rite takes them from higher up a point, and hurts the rest more', 'longPassing');
   N('reaper', 2, 3, 0, 'grave', 'THE COLD', 3, '+8 health a point', 'lastRites');
   // THE FREEBOOTER
   N('pirate', 0, 0, 0, 'longBarrel', 'LONG BARREL', 3, 'the pistol reaches most of a tile further a point', null);
@@ -355,8 +355,8 @@ const TREE = [];
   N('paladin', 2, 2, 2, 'sunder', 'SHATTER', 1, 'everything the overhead\'s waves pass is staggered', 'heavy');
   N('pirate', 0, 0, 2, 'heavy', 'THE PISTOL', 3, 'you already have it: HOLD the swing and he levels it. nothing blocks a ball, and then it is EMPTY until gold reaches him. 15% harder and quicker to bring up a point');
   N('pirate', 0, 2, 2, 'sunder', 'HOLED', 1, 'whatever the ball goes through takes the next blow twice as hard', 'heavy');
-  N('reaper', 0, 0, 2, 'heavy', 'THE REAPING', 3, 'you already have it: HOLD the swing and he takes it round in a full circle, both sides, through any guard. whatever it kills is dragged to his feet. 15% harder a point');
-  N('reaper', 0, 2, 2, 'sunder', 'OPENED', 1, 'whatever the reaping lands on takes the next blow twice as hard', 'heavy');
+  N('reaper', 0, 0, 2, 'heavy', 'THE PLANTED BLADE', 3, 'you already have it: HOLD the swing and he drives the greatsword into the ground, and bolts of blood burst out of the earth in a fan, through any guard, marking and bleeding what they find. 10% harder a point');
+  N('reaper', 0, 2, 2, 'sunder', 'OPENED', 1, 'whatever the blood bolts land on takes the next blow twice as hard', 'heavy');
   // THE SECOND KEY: until one of these is learned, a hero carries one skill at a time
   N('knight', 1, 2, 2, 'twinSkill', 'BOTH HANDS', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'plated');
   N('pyro', 1, 2, 2, 'twinSkill', 'TWO FLAMES', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'pilot');
@@ -365,7 +365,7 @@ const TREE = [];
   N('reaper', 1, 2, 2, 'twinSkill', 'BOTH HANDS', 1, 'carry a SECOND skill, on the G key, and use either without putting the other down', 'press');
   // ---- THE DEATH KNIGHT, the rest of him ----
   N('reaper', 0, 2, 1, 'whetScythe', 'WHETTED', 3, '+1 greatsword damage a point', 'wideSwathe');
-  N('reaper', 0, 3, 1, 'harvestMoon', 'HARVEST MOON', 3, 'F: he plants the arc where he stands and leaves it hanging there. anything that walks through it is cut, over and over, for three seconds', 'whetScythe', true);
+  N('reaper', 0, 3, 1, 'harvestMoon', 'BLOOD BOIL', 3, 'F: the ground where he stands boils with blood, and anything that walks through it burns, over and over, for three seconds', 'whetScythe', true);
   N('reaper', 0, 1, 2, 'deathGrip', 'DEATH GRIP', 3, 'F: the rune goes out, takes the nearest thing in front of him and DRAGS IT TO HIS FEET, marked and off balance. a boss will not come, but it wears the mark. +2 damage and a tile and a half of reach a point', 'keen', true);
   N('reaper', 1, 1, 2, 'unholyGround', 'UNHOLY GROUND', 3, 'F: a patch of floor that is his. Anything of theirs standing in it is marked and bleeds; anything of yours standing in it stops running out of time and puts a bone back. a second longer a point', 'graveGoods', true);
   N('reaper', 0, 3, 2, 'winnow', 'WINNOWED', 1, 'a marked foe under a quarter of its health falls to the next thing you do to it, whatever that was', 'sunder');
@@ -416,7 +416,7 @@ function openEquip(from) { storeMode = 'equip'; equipFrom = from; storeTab = 0; 
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
-const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 14 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + Math.floor(heroLevel() / 2) + tal('whetstone') + tal('heavyMaul') + tal('fiveBlades') + tal('whetScythe')) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
+const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 14 + 2 * tal('keen') : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + Math.floor(heroLevel() / 2) + tal('whetstone') + tal('heavyMaul') + tal('fiveBlades') + tal('whetScythe')) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
 const footTal = () => tal('footing') + tal('fleet') + tal('ironLungs') + tal('swash');
 const dodgeCost = () => Math.max(6, ST.dodge - 2 * footTal() - (isReaper() ? 2 * tal('longStride') : 0)), plungeCost = () => Math.max(12, ST.plunge - 2 * footTal());
 const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : !!(PROG[f] && PROG[f].cleared);
@@ -526,7 +526,7 @@ function updateSkillFx(dt) {
         if (Math.hypot(e.x - m.x, (e.y - e.h / 2) - m.y) > m.r) continue;
         hurtEnemy(e, m.dmg, m.x, false); markFoe(e); any = true; }
       if (any) { SFX.slash(); sparks(m.x, m.y, 1, 4); } }
-    if (Math.random() < dt * 26) parts.push({ x: m.x + (Math.random() - 0.5) * m.r * 1.6, y: m.y + (Math.random() - 0.5) * m.r * 0.9, vx: 0, vy: -14, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#8fd160' : '#141a16', size: 1, grav: -8 }); }
+    if (Math.random() < dt * 26) parts.push({ x: m.x + (Math.random() - 0.5) * m.r * 1.6, y: m.y + (Math.random() - 0.5) * m.r * 0.9, vx: 0, vy: -14, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#c0283a' : '#3a0a10', size: 1, grav: -8 }); }
   moons = moons.filter(m => m.t > 0);
 }
 function drawSkillFx(cx, cy) {
@@ -535,10 +535,13 @@ function drawSkillFx(cx, cy) {
   for (const r of fireRings) { g.globalAlpha = Math.max(0, 1 - r.r / 86); g.strokeStyle = '#ff9a5c'; g.lineWidth = 3; g.beginPath(); g.ellipse(Math.round(r.x - cx), Math.round(r.y - cy), r.r, r.r * 0.6, 0, 0, 7); g.stroke(); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.stroke(); g.globalAlpha = 1; }
   for (const b of lanceBeams) { const k = b.t / 0.3, x0 = Math.round(b.x0 - cx), y = Math.round(b.y - cy), x1 = x0 + b.dir * b.len; g.globalAlpha = k; g.fillStyle = '#ffd36b'; g.fillRect(Math.min(x0, x1), y - 3, Math.abs(x1 - x0), 6); g.fillStyle = '#fff6c8'; g.fillRect(Math.min(x0, x1), y - 1, Math.abs(x1 - x0), 2); g.globalAlpha = 1; }
   for (const m of moons) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy), a = time * 2.4, k = Math.min(1, m.t);
-    g.globalAlpha = 0.16 * k; g.fillStyle = '#8fd160'; g.beginPath(); g.ellipse(x, y, m.r, m.r * 0.62, 0, 0, 7); g.fill();
-    g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 8); g.strokeStyle = '#8fd160'; g.lineWidth = 2;
-    g.beginPath(); g.ellipse(x, y, m.r, m.r * 0.62, 0, a, a + 2.4); g.stroke();
-    g.beginPath(); g.ellipse(x, y, m.r, m.r * 0.62, 0, a + Math.PI, a + Math.PI + 2.4); g.stroke(); g.globalAlpha = 1; }
+    /* BLOOD BOIL: a pool of it on the ground where he stood, and it will not stop boiling */
+    const gy = y + 12;
+    g.globalAlpha = 0.5 * k; g.fillStyle = '#5a1018'; g.beginPath(); g.ellipse(x, gy, m.r, 6, 0, 0, 7); g.fill();
+    g.globalAlpha = 0.7 * k; g.fillStyle = '#a01a2a'; g.beginPath(); g.ellipse(x, gy - 1, m.r - 4, 4, 0, 0, 7); g.fill();
+    for (let i = 0; i < 6; i++) { const bx = x + Math.round(Math.sin(i * 2.4 + a) * (m.r - 8)), ph = (time * 3 + i * 0.37) % 1;
+      g.globalAlpha = k * (1 - ph); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.arc(bx, gy - 2 - ph * 10, 1 + ph * 2, 0, 7); g.stroke(); }
+    g.globalAlpha = 1; }
   if (P.divineT > 0 && !P.dead) { const k = 0.6 + 0.4 * Math.sin(time * 10); g.globalAlpha = 0.3 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(P.x - cx), Math.round(P.y - 10 - cy), 16, 0, 7); g.stroke(); g.fillStyle = 'rgba(255,230,160,0.18)'; g.fill(); g.globalAlpha = 1; }
 }
 let hallows = [], hammers = []; // the paladin's consecrated ground, and his blessed hammers in flight
@@ -1033,7 +1036,7 @@ function loadLevel(i) {
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
 }
 function spawnEntities() {
-  shots = []; bodies = []; risen = []; rbolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
+  shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
   washReset(); strikeReset(); tideReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
   for (const e of L.ents) spawnEnt(e);
   spawnEntitiesTail();
@@ -1100,7 +1103,11 @@ function spawnEnt(e) {
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
       case 'crank': props.push({ t: 'crank', x: px, y: py, wall: e.wall, hits: 0, open: false }); break;
       case 'torch': lights.push({ x: px, y: py - 10, r: 46, torch: true }); break;
-      case 'treehouse': props.push({ t: 'treehouse', x: px, y: py, v: e.x % 2 }); break;
+      case 'treehouse': { /* A HOUSE IS HELD UP BY SOMETHING: find what is under it - water, or ground - so its stilts or its trunk can reach it */
+        let gy = e.y + 1; while (gy < L.H && !isSolid(e.x, gy) && tileAt(e.x, gy) !== T.PLANK && tileAt(e.x, gy) !== T.ONEWAY) gy++;
+        const pool = (L.pools || []).find(q => px >= q.x0 && px < q.x1 && q.y >= py && q.y <= gy * TS);
+        const onBoards = tileAt(e.x, gy) === T.PLANK || tileAt(e.x, gy) === T.ONEWAY;   /* a hut on a boardwalk stands on stilts, not on a tree */
+        props.push({ t: 'treehouse', x: px, y: py, v: e.x % 2, footY: pool ? pool.y + 6 : gy * TS, wet: !!pool || onBoards }); break; }
       case 'towertop': props.push({ t: 'towertop', x: px, y: py }); lights.push({ x: px, y: py - 10, r: 40 }); break;
       case 'bridge': bridges.push({ x0: e.x, x1: e.x1, y: e.y, cut: cutBridges.has(e.x), cutT: 0 }); break;
       case 'throne': props.push({ t: 'throne', x: px, y: py }); break;
@@ -1625,7 +1632,7 @@ function updateMap(dt) {
   }
   if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
   // up and down set the difficulty of the wood you are standing at
-  if ((upPress || downPress) && !map.walking) { const nd = NODES[map.node]; if (nd.kind !== 'store' && !nodeLocked(nd)) { const id = LEVELS[nd.level].id; PROG.diff = PROG.diff || {}; PROG.diff[id] = DIFFS[(DIFFS.indexOf(diffOf(id)) + (upPress ? 1 : -1) + 3) % 3]; SFX.ui(); saveProgress(); } }
+  if ((upPress || downPress) && !map.walking) { const nd = NODES[map.node]; if (nd.kind !== 'store' && !nodeLocked(nd)) { const id = LEVELS[nd.level].id; PROG.diff = PROG.diff || {}; PROG.diff[id] = DIFFS[(DIFFS.indexOf(diffOf(id)) + (upPress ? 1 : -1) + DIFFS.length) % DIFFS.length]; SFX.ui(); saveProgress(); } }
   if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === (nd.shop || 'shop')); selectStart(); } else { selI = nd.level; selectStart(); } }
   if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
   if (dodgePress && !map.walking) openEquip('map');
@@ -2312,7 +2319,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
 const PAUSE_ITEMS = ['Resume', 'Talents', 'Equip', 'Hero', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
 const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
@@ -2323,7 +2330,7 @@ const SETTING_TIPS = {
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
-  'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth',
+  'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts, shouts and cries from heroes and foes',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
   'Ground light': 'depth, carved edges and a sun on the ground', 'The air': 'haze, drifting motes and things in the way', 'Font': 'the face everything is written in', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds', 'Hitboxes': 'draw the boxes the game actually tests: what you hit with, what hits you',
   'Brightness': 'lifts or drops the whole picture', 'Screen filter': 'a colour grade over everything', 'Film grain': 'a faint moving grain, like old tape',
@@ -2363,10 +2370,10 @@ function menuAdjust(dir) {
   else if (k === 'Full screen') { try { if (window.bkFullscreen) window.bkFullscreen(); } catch (e) {} menuMsg = document.fullscreenElement ? 'windowed' : 'full screen'; menuMsgT = 2; }
   else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'God mode') { SET.godmode = !SET.godmode; menuMsg = SET.godmode ? 'everything unlocked and free while this is on' : 'back to what you have earned'; menuMsgT = 2; if (!SET.godmode) { for (const tb of STORE_TABS) if (tb.key && tb.owned && PROG[tb.key] && !(PROG[tb.owned] || {})[PROG[tb.key]] && PROG[tb.key] !== 'none') PROG[tb.key] = tb.key === 'hero' ? 'knight' : (tb.items[0] || {}).id; applySkin(); applyUpgrades(); } }
   else if (k === 'Invincible') { SET.invincible = !SET.invincible; menuMsg = SET.invincible ? 'nothing can hurt you (for testing)' : 'you can be hurt again'; menuMsgT = 2; }
-  else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles;
+  else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') SET.shake = !SET.shake; else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles; else if (k === 'Character voices') SET.voices = SET.voices === false;
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
-  else if (k === 'Game speed') { const SP = [1, 0.85, 0.7, 0.6, 0.5]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + SP.length * 2) % SP.length]; menuMsg = SET.speed < 1 ? 'the whole world runs at ' + Math.round(SET.speed * 100) + '%: his legs, their blows, the clock and all' : 'full tilt: the knight crosses the screen in three seconds'; menuMsgT = 3.5; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Hitboxes') { const B = ['off', 'hits', 'all']; SET.boxes = B[(B.indexOf(SET.boxes) + dir + 3) % 3]; menuMsg = SET.boxes === 'off' ? 'no boxes' : SET.boxes === 'hits' ? 'what you hit with, and what hits you' : 'every body, blow and thing in the air'; menuMsgT = 3; } else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
-  else if (k === 'Difficulty') { if (menuFrom === 'play' && L && !L.shop) { PROG.diff = PROG.diff || {}; PROG.diff[curId()] = DIFFS[(DIFFS.indexOf(diffOf(curId())) + dir + 3) % 3]; saveProgress(); } else SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + 3) % 3]; } else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
+  else if (k === 'Game speed') { const SP = [1, 0.85, 0.7, 0.6, 0.5]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + SP.length * 2) % SP.length]; menuMsg = SET.speed < 1 ? 'the whole world runs at ' + Math.round(SET.speed * 100) + '%: his legs, their blows, the clock and all' : 'full tilt: the knight crosses the screen in three seconds'; menuMsgT = 3.5; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Hitboxes') { const B = ['off', 'hits', 'all']; SET.boxes = B[(B.indexOf(SET.boxes) + dir + DIFFS.length) % DIFFS.length]; menuMsg = SET.boxes === 'off' ? 'no boxes' : SET.boxes === 'hits' ? 'what you hit with, and what hits you' : 'every body, blow and thing in the air'; menuMsgT = 3; } else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
+  else if (k === 'Difficulty') { if (menuFrom === 'play' && L && !L.shop) { PROG.diff = PROG.diff || {}; PROG.diff[curId()] = DIFFS[(DIFFS.indexOf(diffOf(curId())) + dir + DIFFS.length) % DIFFS.length]; saveProgress(); } else SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + DIFFS.length) % DIFFS.length]; } else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
 function menuConfirm() {
@@ -3098,6 +3105,7 @@ function updateCharge(dt) {
     if (k >= 1) fireHeavy();
   } else P.chargeFull = false;
 }
+let bloodBolts = [];
 let bodies = [], risen = [], rbolts = [], hands = [], thrownScythe = null, grips = [], unholy = [];
 const TOLL_R = () => 56 + 6 * tal('deathwatch');   // how far THE TOLL reaches, and the circle that is drawn to say so (DEATHWATCH widens it, so it cannot be a fixed number)
 const SHOOTERS = new Set(['archer', 'javelin', 'scout', 'marine', 'boarder', 'spitter', 'thorn', 'harpy', 'lookout', 'sapper', 'siren', 'petrel', 'gull', 'urchin', 'spitcap', 'shardling', 'suncatcher']);
@@ -3179,10 +3187,11 @@ function updateRisen(dt) {
     if (isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) b.life = 0;
   }
   rbolts = rbolts.filter(b => b.life > 0);
+  updateBloodBolts(dt);
   for (const e of enemies) { if (e.mark > 0) e.mark -= dt; if (e.spot > 0) e.spot -= dt; }
   if (thrownScythe) { const s = thrownScythe; s.t += dt;
     const sp = 330; s.x += (s.out ? s.dir : 0) * sp * dt;
-    if (!s.out) { const d = P.x - s.x, dy = (P.y - 12) - s.y; const dl = Math.hypot(d, dy) || 1; s.x += d / dl * sp * dt; s.y += dy / dl * sp * dt; if (dl < 14) thrownScythe = null; }
+    if (!s.out) { const d = P.x - s.x, dy = (P.y - 12) - s.y; const dl = Math.hypot(d, dy) || 1; s.x += d / dl * sp * dt; s.y += dy / dl * sp * dt; if (dl < 14) { thrownScythe = null; if (s.struck) { const hp = 3 + tal('scytheThrown'); P.hp = Math.min(P.maxHp, P.hp + hp); number(P.x, P.y - 24, '+' + hp, '#ff6b6b'); } } }
     else if (Math.abs(s.x - P.x) > s.reach) s.out = false;
     // ONE THROW, ONE CREATURE. It used to cut everything in the line on the way out and everything again on
     // the way back, and because it kept flying it would sit inside a crowd chewing through it. It now finds
@@ -3191,7 +3200,7 @@ function updateRisen(dt) {
     if (thrownScythe && s.out) { for (const e of enemies) { if (!e.alive || e.harmless) continue;
       if (Math.abs(e.x - s.x) < e.w / 2 + 10 && Math.abs((e.y - e.h / 2) - s.y) < 18) {
         hurtEnemy(e, 11 + 3 * tal('scytheThrown'), s.x - s.dir * 20, false); markFoe(e);
-        sparks(e.x, e.y - e.h / 2, s.dir, 8); SFX.clank(); s.out = false; break; } } }
+        burst(e.x, e.y - e.h / 2, 8, ['#c0283a', '#ff6b6b'], 70, 0.4); SFX.squelch(); s.out = false; s.struck = true; if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2); e.bleedN = Math.max(e.bleedN || 0, 1); } break; } } }
     if (s && s.t > 3) thrownScythe = null; }
   for (const h of hands) { h.delay -= dt; if (h.delay > 0) continue; h.life -= dt;
     for (const e of enemies) { if (!e.alive || e.harmless || h.hit.has(e)) continue;
@@ -3200,12 +3209,16 @@ function updateRisen(dt) {
   hands = hands.filter(h => h.life > 0);
 }
 function drawRisen(cx, cy) {
+  drawBloodBolts(cx, cy);
   for (const h of hands) { if (h.delay > 0) continue; const x = Math.round(h.x - cx), y = Math.round(h.y - cy), k = Math.min(1, h.life * 2);
     g.globalAlpha = k; g.fillStyle = '#3a4a30'; g.fillRect(x - 4, y - 10, 2, 10); g.fillRect(x + 2, y - 12, 2, 12);
     g.fillStyle = '#8fd160'; g.fillRect(x - 5, y - 12, 1, 3); g.fillRect(x - 3, y - 13, 1, 4); g.fillRect(x + 1, y - 15, 1, 4); g.fillRect(x + 3, y - 14, 1, 3); g.globalAlpha = 1; }
-  if (thrownScythe) { const s = thrownScythe, x = Math.round(s.x - cx), y = Math.round(s.y - cy), a = s.t * 22;
-    g.save(); g.translate(x, y); g.rotate(a); g.strokeStyle = '#6a5a42'; g.lineWidth = 2; g.beginPath(); g.moveTo(-9, 4); g.lineTo(5, -4); g.stroke();
-    g.strokeStyle = '#eef4fa'; g.lineWidth = 2; g.beginPath(); g.arc(5, -4, 7, 0.6, 2.6); g.stroke(); g.restore(); }
+  if (thrownScythe) { const s = thrownScythe, x = Math.round(s.x - cx), y = Math.round(s.y - cy), a = s.t * 14;   /* DEATH COIL: a knot of blood turning over itself */
+    g.save(); g.translate(x, y); g.rotate(a);
+    g.strokeStyle = '#7a1020'; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, 6, 0, 4.4); g.stroke();
+    g.strokeStyle = s.struck ? '#ff9a9a' : '#c0283a'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 4, 1.4, 5.6); g.stroke();
+    g.fillStyle = '#ff6b6b'; g.fillRect(-1, -1, 3, 3); g.restore();
+    if (Math.random() < 0.6) parts.push({ x: s.x, y: s.y, vx: 0, vy: 10, life: 0.25, max: 0.25, col: '#a01a2a', size: 1, grav: 60 }); }
   for (const b of bodies) { const a = Math.min(1, b.life / 3) * 0.5;   // a body lying there, and a green in it
     g.globalAlpha = a; g.fillStyle = '#2a3a24'; g.fillRect(Math.round(b.x - cx) - 6, Math.round(b.y - cy) - 3, 12, 3);
     g.fillStyle = '#8fd160'; g.fillRect(Math.round(b.x - cx) - 1 + Math.round(Math.sin(time * 2 + b.x) * 2), Math.round(b.y - cy) - 5, 1, 1); g.globalAlpha = 1; }
@@ -3464,15 +3477,15 @@ function throwHook() {
 function lastHarvest() {
   P.harvest = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.5);
   SFX.judgement ? SFX.judgement() : SFX.heavy(); shakeCam(7); zoomKick(1.08, 0.3); killFlash = 0.03;
-  ringAt(P.x, P.y - 12, 54, '#8fd160', 0.45); number(P.x, P.y - 30, 'THE LAST HARVEST', '#8fd160');
+  ringAt(P.x, P.y - 12, 54, '#c0283a', 0.45); number(P.x, P.y - 30, 'THE BLOOD RITE', '#ff6b6b');
   let took = 0;
   for (const e of enemies) { if (!e.alive || e.harmless || !(e.mark > 0)) continue;
     if (Math.abs(e.x - P.x) > 200) continue;
     const low = e.hp <= (e.hp0 || e.maxHp || 20) * (0.34 + 0.08 * tal('lastRites'));
     if (low && !e.maxHp) { const kx = e.x, ky = e.y, kk = bodyKind(e.t); hurtEnemy(e, 9999, P.x, false); if (!e.alive) { took++; riseAt(kx, ky, kk); } }
     else { hurtEnemy(e, 18 + 6 * tal('lastRites'), P.x, false); }
-    burst(e.x, e.y - e.h / 2, 8, ['#8fd160', '#dfffa0'], 70, 0.5); }
-  if (!took) number(P.x, P.y - 42, 'NOTHING RIPE', '#9aa39a');
+    burst(e.x, e.y - e.h / 2, 8, ['#c0283a', '#ff6b6b'], 70, 0.5); }
+  if (!took) number(P.x, P.y - 42, 'NONE LOW ENOUGH', '#9aa39a');
 }
 function blackFlag() {
   P.plunder = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.5);
@@ -3537,8 +3550,7 @@ function fireHeavy() {
   P.vx = P.face * (isPaladin() ? 40 : 110);
   startSwing(); P.combo = 3;            // a heavy blow counts as the end of a run, not the start of one
   P.heavySwing = true; P.swingMul = heavyMul(); // (AFTER startSwing, which sets swingMul itself from the combo)
-  if (isReaper()) { P.reaping = 0.45 * (tal('fullCircle') ? 2 : 1);
-    severAt(P.x + P.face * 16, P.y, P.face, Math.round(swordDmg() * (1.1 + 0.15 * tal('heavy')) * (tal('fullCircle') ? 1.35 : 1))); }
+  if (isReaper()) { P.vx = P.face * 30; P.reaping = 0.8; }   /* he does not lunge: he sets his feet to put the sword in the ground */
   SFX.heavy(); shakeCam(3, P.face * 2); zoomKick(1.03, 0.16);
   streaks(P.x + P.face * 14, P.y - 12, P.face, isPyro() ? '#ff9a5c' : '#dfe8ff');
   if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9) * (1 + 0.2 * tal('farTremor')), sp: 200, hit: new Set(), sunder: !!tal('sunder') }); shakeCam(5); SFX.thud(); SFX.stone(); }
@@ -3558,9 +3570,10 @@ function guardTurned() {
   hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + (SET.swapZX ? 'Z' : 'X') + ' FOR A HEAVY ONE AND IT GOES THROUGH.';
 }
 function attackBox() {
-  if (isReaper() && P.heavy && P.atk >= 0.03 && P.atk < 0.26) {   // THE REAPING: a full circle, both sides of him
-    const r = 40 + 4 * tal('longHaft');
-    return { l: P.x - r, r: P.x + r, t: P.y - 28, b: P.y + 4 };
+  if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
+    if (P.atk < 0.12 || P.atk >= 0.19) return null;
+    const r = 30 + 3 * tal('longHaft');
+    return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 22, b: P.y + 4 } : { l: P.x - r, r: P.x - 2, t: P.y - 22, b: P.y + 4 };
   }
   if (P.heavy && P.atk >= 0.03 && P.atk < 0.22) { // it reaches further and lands lower than a swing
     const r = isPyro() ? 38 : isPaladin() ? 32 : 26;
@@ -3571,9 +3584,9 @@ function attackBox() {
   if (isPaladin() && P.atk >= 0.06 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 26, t: P.y - 24, b: P.y + 1 } : { l: P.x - 26, r: P.x - 2, t: P.y - 24, b: P.y + 1 }; // the maul: over and down, a wide heavy arc
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
-  if (isReaper() && P.atk >= 0.12 && P.atk < 0.28) {
-    const r = 42 + 4 * tal('longHaft'), back = 12 + 3 * tal('wideSwathe');
-    return P.face > 0 ? { l: P.x - back, r: P.x + r, t: P.y - 24, b: P.y + 2 } : { l: P.x - r, r: P.x + back, t: P.y - 24, b: P.y + 2 };
+  if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) {   /* THE CLEAVE: over the shoulder and down through what is in FRONT of him - a sword, not a scythe */
+    const r = 36 + 4 * tal('longHaft'), top = 30 + 3 * tal('wideSwathe');
+    return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - top, b: P.y + 2 } : { l: P.x - r, r: P.x - 2, t: P.y - top, b: P.y + 2 };
   }
   if (isPirate() && P.atk >= 0.03 && P.atk < 0.15) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 19, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 19, b: P.y - 1 };   // a cutlass is long and it is fast
   if (P.atk >= 0.04 && P.atk < 0.16) return P.face > 0 ? { l: P.x + 2, r: P.x + 19, t: P.y - 17, b: P.y - 1 } : { l: P.x - 19, r: P.x - 2, t: P.y - 17, b: P.y - 1 };
@@ -3651,8 +3664,8 @@ function updatePlayer(dt) {
   // ---- THE HARVEST MOON: he plants the arc and walks away from it, and it keeps cutting ----
   if (isReaper() && skillPress('harvestMoon') && cdReady('harvestMoon') && canAct()) { if (spend(20)) { cdSet('harvestMoon');
     moons.push({ x: P.x, y: P.y - 12, r: 32 + 5 * tal('harvestMoon'), t: 3, tick: 0.2, dmg: Math.round(9 * amul('harvestMoon')) });
-    SFX.slash(); SFX.throwWhoosh(); ringAt(P.x, P.y - 12, 32, '#8fd160', 0.4); shakeCam(3); P.atk = -1;
-    number(P.x, P.y - 30, 'HARVEST MOON', '#8fd160'); } else tired(); }
+    SFX.squelch(); SFX.puff(); ringAt(P.x, P.y - 2, 32, '#c0283a', 0.4); shakeCam(3); P.atk = -1;
+    number(P.x, P.y - 30, 'BLOOD BOIL', '#ff6b6b'); } else tired(); }
   // ---- GRAVECALL: he does not wait for a body ----
   if (isReaper() && skillPress('gravecall') && cdReady('gravecall') && canAct()) { if (spend(26)) { cdSet('gravecall');
     for (let i = 0; i < 3; i++) { const rx = P.x + (i - 1) * 24;
@@ -3975,10 +3988,10 @@ function updatePlayer(dt) {
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend(P.relic === 'gauntlet' ? 0 : Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 14 : sword().cost) * (tal('flurry') ? 0.5 : 1)))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk >= 0) {
-    { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? (twice ? 0.84 : 0.42) : 0.3;
+    { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
       const was = P.atk;
-      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? 0.52 : 1) * (P.heavy ? 0.72 : 1);   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
-      if (twice && was < 0.42 && P.atk >= 0.42) { P.hitSet.clear(); SFX.slash(); ringAt(P.x, P.y - 12, 30, '#8fd160', 0.25); }  /* round again */
+      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.5 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1);   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
+      if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { P.atk = -1; P.heavy = false; } }
     if (P.atk >= 0.03 && P.atk < 0.17) {
       const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6;
@@ -8499,6 +8512,38 @@ function drawWakes(cx, cy) {
     g.fillRect(x - 3, y - 22, 2, 2); g.fillRect(x + 1, y - 22, 2, 2);
     g.globalAlpha = 1; }
 }
+/* THE PLANTED BLADE. The Death Knight's heavy blow is not swung at anything: he drives the greatsword into the
+   ground in front of him, and the ground answers it - a fan of blood bolts torn up out of the wound, through
+   any guard, marking and bleeding whatever they find. The second volley is THE SECOND VOLLEY talent. */
+function plantBlade(n) {
+  const x = P.x + P.face * 14, y = P.y;
+  SFX.heavy(); SFX.crack(); SFX.stone(); shakeCam(n > 1 ? 5 : 7, P.face * 2); zoomKick(1.06, 0.25); hitstop(0.06);
+  ringAt(x, y - 2, 22, '#c0283a', 0.35); dust(x, y, 8);
+  for (let i = 0; i < 14; i++) parts.push({ x: x + (Math.random() - 0.5) * 10, y: y - 2, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 140, life: 0.5, max: 0.5, col: Math.random() < 0.6 ? '#a01a2a' : '#3a0a10', size: 2, grav: 520 });
+  const dmg = Math.round(swordDmg() * (0.62 + 0.1 * tal('heavy')) * (n > 1 ? 0.8 : 1));
+  for (const a of [-0.16, -0.48, -0.82, -1.15, -1.5]) { const sp = 250 + Math.random() * 30;
+    bloodBolts.push({ x, y: y - 4, vx: Math.cos(a) * sp * P.face, vy: Math.sin(a) * sp, life: 0.9, dmg, hit: new Set(), trail: [] }); }
+  for (const a of [-0.35, -0.9]) bloodBolts.push({ x, y: y - 4, vx: -Math.cos(a) * 170 * P.face, vy: Math.sin(a) * 170, life: 0.55, dmg: Math.round(dmg * 0.6), hit: new Set(), trail: [] });
+}
+function updateBloodBolts(dt) {
+  for (const b of bloodBolts) { b.life -= dt; b.trail.push([b.x, b.y]); if (b.trail.length > 6) b.trail.shift();
+    b.vy += 260 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+    for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || b.hit.has(e)) continue;
+      if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) {
+        b.hit.add(e); if (e.guardT > 0) e.guardT = 0;
+        hurtEnemy(e, b.dmg, b.x - Math.sign(b.vx) * 10, false); markFoe(e);
+        if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2); e.bleedN = Math.max(e.bleedN || 0, 1); if (tal('sunder')) e.sunder = 2.5; }
+        burst(b.x, b.y, 6, ['#c0283a', '#ff6b6b', '#3a0a10'], 70, 0.4); b.life = Math.min(b.life, 0.02); break; } }
+    if (isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { burst(b.x, b.y, 4, ['#a01a2a', '#3a0a10'], 40, 0.3); b.life = 0; } }
+  bloodBolts = bloodBolts.filter(b => b.life > 0);
+}
+function drawBloodBolts(cx, cy) {
+  for (const b of bloodBolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy);
+    g.strokeStyle = '#7a1020'; g.lineWidth = 2; g.beginPath();
+    b.trail.forEach(([tx, ty], i) => { const X = Math.round(tx - cx), Y = Math.round(ty - cy); if (i) g.lineTo(X, Y); else g.moveTo(X, Y); });
+    g.lineTo(x, y); g.stroke();
+    g.fillStyle = '#c0283a'; g.fillRect(x - 2, y - 2, 4, 4); g.fillStyle = '#ff9a9a'; g.fillRect(x - 1, y - 1, 2, 2); }
+}
 function severAt(x, y, face, dmg) {
   severs.push({ x, y, face, dmg, t: 0, len: 0, hit: new Set() });
   SFX.pSlash(); SFX.crack(); SFX.heavy(); shakeCam(7); zoomKick(1.08, 0.3); hitstop(0.05);
@@ -9124,7 +9169,6 @@ function startSwing() { const quick = time - (P.lastSwingT ?? -9) < 0.75; P.comb
     if ((PROG.thirdSeen || 0) < 2) { PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;
       hintMsg = 'THREE SWINGS IN A RUN AND THE THIRD IS A HEAVY CUT: HALF AS HARD AGAIN, AND IT SHOVES. STOP SWINGING AND THE RUN STARTS OVER.'; } } }
 function swingDmg(e) { if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit');
-  if (isReaper() && !tal('keen') && Math.abs(e.x - P.x) < 13 && !P.heavy) { number(e.x, e.y - e.h - 12, 'TOO CLOSE', '#9aa39a'); return Math.max(1, Math.round(swordDmg() * 0.4)); }
   let extra = 0, mul = 1;
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp) e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); } return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
@@ -10398,11 +10442,13 @@ function drawSwing(cx, cy) {
   g.globalCompositeOperation = 'lighter';
   if (isPyro()) { const len = 30 * Math.min(1, k * 2.5), a = 1 - k;
     for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#ff9a5c'; const w = 2 + i * 2; g.fillRect(f > 0 ? px + 10 : px - 10 - len, py - 1 - i, len, w); } }
-  if (isReaper()) {   // a long flat sweep, and on the heavy it goes all the way round
-    const full = P.heavy, r = full ? 40 : 36, a0 = full ? -Math.PI : -1.5, sweep = (full ? 6.28 : 2.6) * Math.min(1, k * 2.2);
-    for (let i = 0; i < 4; i++) { g.globalAlpha = (1 - k) * (0.55 - i * 0.11); g.strokeStyle = i === 0 ? '#dfffa0' : i === 1 ? '#8fd160' : '#5a8a3a'; g.lineWidth = 3 - i * 0.6; g.beginPath();
-      const tail = 0.5 + i * 0.4, s2 = a0 + Math.max(0, sweep - tail), e2 = a0 + sweep;
-      if (f > 0 || full) g.arc(px, py, r - i, s2, e2); else g.arc(px, py, r - i, Math.PI - e2, Math.PI - s2); g.stroke(); }
+  if (isReaper()) {   /* THE CLEAVE: from over his head down through the front, steel with blood on the edge */
+    if (P.heavy) { g.globalCompositeOperation = 'source-over'; return; }
+    const kk = Math.max(0, Math.min(1, (P.atk - 0.1) / 0.16)); if (kk <= 0) { g.globalCompositeOperation = 'source-over'; return; }
+    const a0 = -2.2, sweep = 3.0 * Math.min(1, kk * 1.8);
+    for (let i = 0; i < 4; i++) { g.globalAlpha = (1 - kk) * (0.6 - i * 0.12); g.strokeStyle = i === 0 ? '#eef4fa' : i === 1 ? '#c0283a' : '#5a1018'; g.lineWidth = 3.4 - i * 0.7; g.beginPath();
+      const tail = 0.6 + i * 0.35, s2 = a0 + Math.max(0, sweep - tail), e2 = a0 + sweep;
+      if (f > 0) g.arc(px, py - 2, 30 - i, s2, e2); else g.arc(px, py - 2, 30 - i, Math.PI - e2, Math.PI - s2); g.stroke(); }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return;
   }
   { const pal = isPaladin(), a0 = -1.25, sweep = 2.25 * Math.min(1, k * 2.2), r = pal ? 25 : 18;
@@ -10623,7 +10669,16 @@ function drawWorld(cx, cy, showPlayer) {
     else { const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); }
   }
   drawRoofs(cx, cy);
-  for (const pr of props) if (pr.t === 'treehouse' && pr.x > cx - 60 && pr.x < cx + VW + 60) g.drawImage(PROP.treehouse[pr.v], Math.round(pr.x) - 20 - cx, Math.round(pr.y) - 30 - cy);
+  for (const pr of props) if (pr.t === 'treehouse' && pr.x > cx - 60 && pr.x < cx + VW + 60) {
+    const hx = Math.round(pr.x) - cx, hy = Math.round(pr.y) - cy, drop = Math.max(0, Math.round((pr.footY || pr.y) - pr.y));
+    if (drop > 2) { if (pr.wet) {   /* STILTS into the flood, cross-braced, darker where the water has had them */
+        for (const sx of [-15, -5, 5, 14]) { g.fillStyle = '#3a2614'; g.fillRect(hx + sx, hy - 2, 2, drop + 2); g.fillStyle = '#24170c'; g.fillRect(hx + sx, hy + drop - 10, 2, 10); }
+        g.fillStyle = '#4a3220'; for (let yy = 8; yy < drop - 6; yy += 22) { g.fillRect(hx - 15, hy + yy, 31, 2); }
+      } else {                         /* A TRUNK: the tree it was built in, and the rope ladder up it */
+        g.fillStyle = '#3a2a1a'; g.fillRect(hx - 5, hy - 4, 10, drop + 4); g.fillStyle = '#4e3a24'; g.fillRect(hx - 5, hy - 4, 3, drop + 4);
+        g.fillStyle = '#2a1c10'; g.fillRect(hx + 3, hy - 4, 2, drop + 4); g.fillRect(hx - 9, hy + drop - 3, 18, 3);
+        g.fillStyle = '#c9b27c'; g.fillRect(hx + 7, hy, 1, drop); g.fillRect(hx + 12, hy, 1, drop); for (let yy = 4; yy < drop; yy += 6) g.fillRect(hx + 7, hy + yy, 6, 1); } }
+    g.drawImage(PROP.treehouse[pr.v], hx - 20, hy - 30); }
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) if (tx >= 0 && ty > 0 && tx < LW && ty < LH && L.grid[ty * LW + tx] === T.PALISADE && L.grid[(ty - 1) * LW + tx] !== T.PALISADE) g.drawImage(TILE.palisadeTop, tx * TS - cx, ty * TS - 6 - cy);
   drawGateFx(cx, cy); drawHoly(cx, cy); drawHealths(cx, cy);
   // SCAFFOLDING: poles from the top deck down to the bottom of the pit, braced in an X between each pair, lashed where
@@ -11147,7 +11202,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
       else if (P.dodge > 0) { key = 'roll'; frame = Math.floor((0.3 - P.dodge) / 0.3 * 4) * (P.face > 0 ? 1 : -1); }
       else if (P.plunge) key = 'plunge';
-      else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < 0.2 ? 1 : 2; }
+      else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2; }
       else if (P.charge > 0) { key = 'heavy'; frame = 0; }
       else if (P.atk >= 0) { key = 'atk'; frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
@@ -11707,7 +11762,7 @@ const YARD_DRILLS = {
   pyro: 'ember, jet and the firedrop',
   paladin: 'maul, aegis, mend, hammerfall',
   pirate: 'cutlass, pistol, the hook, the black flag',
-  reaper: 'the swathe, the severance, the oath, the wake',
+  reaper: 'the cleave, the planted blade, the oath, the wake',
   open: 'straw men, steps, a gap, a wall, two guards',
 };
 // the open yard is not a hero: it is the fourth row, and it takes whoever you are in as you are
@@ -11800,7 +11855,7 @@ function drawMenu() {
     const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
     const vw = vs ? textW(vs, 8) + 8 : 0;
     text(fitText(k, w - 30 - vw, 8), x + 16 + (sel ? 2 : 0), yy, col);
@@ -12313,15 +12368,15 @@ function render() {
         g.fillStyle = vg2; g.fillRect(0, 0, VW, VH); }
     }
     if (isReaper()) { const hy = SET.iron ? 41 : 29, full = (P.harvest || 0) >= 100;
-      bar(16, hy, 70, 4, (P.harvest || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#dfffa0' : '#8fd160') : '#5a8a3a', (P.harvest || 0) / 100);
-      g.fillStyle = '#8fd160'; g.fillRect(7, hy - 4, 2, 9); g.fillRect(4, hy + 2, 8, 1); g.fillRect(7, hy + 5, 2, 2);   /* a little greatsword: blade, cross, grip */
+      bar(16, hy, 70, 4, (P.harvest || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#ff9a9a' : '#c0283a') : '#8a1a28', (P.harvest || 0) / 100);   /* the blood he has taken */
+      g.fillStyle = '#c0283a'; g.fillRect(7, hy - 4, 2, 9); g.fillRect(4, hy + 2, 8, 1); g.fillRect(7, hy + 5, 2, 2);   /* a little greatsword: blade, cross, grip */
       // WHAT C DOES RIGHT NOW. One key does three things - tap to raise, hold for the toll, tap at a full
       // harvest for the last of it - and nothing on the screen ever said which. It says now, and it changes
       // as the bar fills and as a body comes within reach of him.
       { const near = bodies.some(q => q.life > 0 && Math.hypot(q.x - P.x, q.y - P.y) < 96);
         if (state === 'play' || state === 'talk') {   /* the plates own the screen when a menu is up */
-        const lab = P.tolling ? 'THE TOLL' : full ? 'C  THE LAST HARVEST' : near && (P.harvest || 0) >= 20 ? 'C  RAISE IT' : 'HOLD C  THE TOLL';
-        const col = P.tolling ? '#dfffa0' : full ? (Math.floor(time * 4) % 2 ? '#8fd160' : '#dfffa0') : near && (P.harvest || 0) >= 20 ? '#8fd160' : '#6a7a62';
+        const lab = P.tolling ? 'THE TOLL' : full ? 'C  THE BLOOD RITE' : near && (P.harvest || 0) >= 20 ? 'C  RAISE IT' : 'HOLD C  THE TOLL';
+        const col = P.tolling ? '#dfffa0' : full ? (Math.floor(time * 4) % 2 ? '#c0283a' : '#ff9a9a') : near && (P.harvest || 0) >= 20 ? '#8fd160' : '#6a7a62';
         text(fitText(lab, VW - 96, 6), 90, hy - 1, col, 'left', 6); } }
       { const up = risen.filter(r => r.life > 0).length, max = RISEN_MAX();       // and how many are up
         for (let i = 0; i < max; i++) { g.fillStyle = i < up ? '#8fd160' : 'rgba(143,209,96,0.25)'; g.fillRect(90 + i * 5, 15, 3, 6); } } }
