@@ -5556,6 +5556,7 @@ function garrison(L, id) {
   const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor']);
   const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];
+  const squads = set.some(([k]) => k === 'shield' || k === 'soldier'); let squadN = 0;
   const rnd = mulberryL(id.length * 613 + id.charCodeAt(1) * 7 + 11);
   const want = set.reduce((s, [, n]) => s + n, 0);
   // spread them: walk the level in `want` bands and take one spot from each, so a garrison is never a crowd
@@ -5571,6 +5572,10 @@ function garrison(L, id) {
     if (!put) { left.push(list[b]); continue; }
     taken.push(put);
     L.ents.push({ t: list[b], x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
+    /* A SQUAD, NOT A SPRINKLE: in a goblin wood every other bow or spitter gets a shield in front of it, on its own ground */
+    if (squads && ['archer', 'javelin', 'spit', 'scout', 'sapper'].includes(list[b]) && (squadN++ % 2 === 0)) {
+      const sx = put[0] - 2, sy = put[1];
+      if (spots.some(([x2, y2]) => x2 === sx && y2 === sy) && !taken.some(([tx, ty]) => Math.abs(tx - sx) < 2 && Math.abs(ty - sy) < 2)) { taken.push([sx, sy]); L.ents.push({ t: 'shield', x: sx, y: sy, face: 1, garrison: true }); } }
   }
   // whatever the bands could not fit goes anywhere still free: a band with no room used to simply lose its
   // creature, which is how the Sunspire asked for thirty-one and got thirteen
