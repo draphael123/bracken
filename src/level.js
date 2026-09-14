@@ -5880,8 +5880,13 @@ function payDeadEnds(L, id) {
     /* the last floor (or bed) before the wall takes the prop and the heart - when the end is all rope there is none, and the
        gold still goes beside it below */
     const tip = zone.find(([x, y]) => at(x, y + 1) !== T.AIR && at(x, y + 1) !== T.SPIKE) || zone[0];
-    if (tip) { const [tx, ty] = tip, kind = STASH[id], floor = at(tx, ty + 1);
-      if (kind && (floor === T.SOLID || floor === T.PLANK) && at(tx, ty - 1) === T.AIR && !L.ents.some(e => e.t === 'deco' && Math.abs(e.x - tx) <= 1 && Math.abs(e.y - ty) <= 1)) put('deco', tx, ty, { kind, v: (tx + ty) % (STASH_V[kind] || 1) });
+    if (tip) { const [tx, ty] = tip, kind = STASH[id];
+      /* ROOM FOR THE CHEST: a chest or a plunder heap is wider than its tile and taller than a coin, so laid hard against the end wall
+         (or under a deck's low beams) it was drawn through the rock. It takes the first floor back from the end with a clear tile
+         either side and a clear row over all three; no such floor, no prop - the gold and the heart still pay */
+      const roomy = (x, y) => [-1, 0, 1].every(dx => at(x + dx, y) === T.AIR && at(x + dx, y - 1) === T.AIR) && (at(x, y + 1) === T.SOLID || at(x, y + 1) === T.PLANK) && at(x - 1, y + 1) !== T.AIR && at(x + 1, y + 1) !== T.AIR;
+      const spot = kind && zone.find(([x, y]) => roomy(x, y) && !L.ents.some(e => e.t === 'deco' && Math.abs(e.x - x) <= 1 && Math.abs(e.y - y) <= 1));
+      if (spot) put('deco', spot[0], spot[1], { kind, v: (spot[0] + spot[1]) % (STASH_V[kind] || 1) });
       /* THE HEART BESIDE THE CHEST, NOT IN IT: laid on the prop's own tile the chest was drawn over it. The next floor back
          from the end, or the tile over the prop */
       if (heart) { const by = zone.find(([x, y]) => x !== tx && at(x, y + 1) !== T.AIR && at(x, y + 1) !== T.SPIKE);
