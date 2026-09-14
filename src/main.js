@@ -3082,6 +3082,8 @@ function drawPoise(e, cx, cy) {
 /* KNOCKED INTO THE LEVEL. A heavy blow, a dash, the paladin's quake or a ring of fire throws a creature bodily for a moment -
    no legs under it - so the water, the spikes and the drop it lands in do the killing, and the kill still counts. */
 let hurtKnock = false;
+/* the ground a fire can run along: the woods, the marsh, the fungus wood, the moor's grass, the camps and the village - not rock halls, decks or the deep (every level has a grass colour, so the colour cannot say it) */
+const GRASSY = new Set(['wood', 'marsh', 'myc', 'crag', 'camp', 'village']);
 /* THE FINISHER. A creature broken, burning, bleeding, frozen or reeling, and down to its last quarter, is not cut again: it is
    finished, in the hero's own way, and the world stops to watch. EXECUTION reaches further down the bar. */
 const FINISH_SKIP = new Set(['dummy', 'bale', 'heart', 'gill', 'bearer', 'folk', 'sheep']);
@@ -10563,7 +10565,7 @@ function updateProps(dt) {
   bombs = bombs.filter(b => !b.dead);
   for (const f of fires) { if (f.delay > 0) { f.delay -= dt; continue; } f.life -= dt; f.age = (f.age || 0) + dt;
     /* THE GRASS CATCHES: her own fire on open grassy ground runs along it a tile each way, three hops at most - never indoors, never over water */
-    if (f.own && isPyro() && !f.spread && f.age > 0.5 && (f.gen || 0) < 3 && L.palette && L.palette.grass) { f.spread = true;
+    if (f.own && isPyro() && !f.spread && f.age > 0.5 && (f.gen || 0) < 3 && GRASSY.has((L.palette && L.palette.dress) || 'wood')) { f.spread = true;
       for (const d of [-1, 1]) { const nx = f.x + d * TS, tx = Math.floor(nx / TS), gy = Math.floor(f.y / TS);
         if (isSolid(tx, gy) && !isSolid(tx, gy - 1) && !(L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && gy - 1 >= y0 && gy - 1 <= y1) && !(L.pools || []).some(p => nx > p.x0 && nx < p.x1 && f.y > p.y - 4) && !fires.some(q => Math.abs(q.x - nx) < 8 && Math.abs(q.y - f.y) < 8))
           fires.push({ x: nx, y: f.y, life: 2.2, delay: 0.3, own: true, gen: (f.gen || 0) + 1 }); }
