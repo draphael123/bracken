@@ -8528,14 +8528,14 @@ function drainFrom(e, amt) {
   hurtEnemy(e, amt, P.x, false); e.x = x0; e.vx = vx0; if (!e.maxHp) e.stagger = Math.min(e.stagger || 0, 0.12);
   const took = Math.max(0, Math.min(amt, before - Math.max(0, e.hp)));
   P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(took * 0.6))); gainHarvest(2);
-  drainLinks.push({ e, t: 0 });
+  drainLinks.push({ e, t: 0 }); if (SFX.wightTouch) SFX.wightTouch();   /* a cold breath going in */
   for (let i = 0; i < 6; i++) parts.push({ x: e.x, y: e.y - e.h / 2, vx: (P.x - e.x) * (1.6 + Math.random()), vy: ((P.y - 12) - (e.y - e.h / 2)) * (1.6 + Math.random()) - 20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#c0283a' : '#ff6b6b', size: 2, grav: 0 });
 }
 /* BLOOD SURGE: the full bar. Everything near him bleeds into him at once, and everything that is not a boss is
    held where it stands - frozen - while he walks among it. */
 function bloodSurge() {
   P.harvest = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.5);
-  SFX.judgement ? SFX.judgement() : SFX.heavy(); SFX.squelch(); shakeCam(7); zoomKick(1.08, 0.3); killFlash = 0.03;
+  SFX.judgement ? SFX.judgement() : SFX.heavy(); SFX.squelch(); SFX.bellow && SFX.bellow(); SFX.boom && SFX.boom(); shakeCam(7); zoomKick(1.08, 0.3); killFlash = 0.03;
   const R = 120 + 8 * tal('lastRites'); ringAt(P.x, P.y - 12, 60, '#c0283a', 0.5); number(P.x, P.y - 30, 'BLOOD SURGE', '#ff6b6b');
   let took = 0;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
@@ -8551,7 +8551,7 @@ function bloodSurge() {
 }
 function plantBlade(n) {
   const x = P.x + P.face * 14, y = P.y;
-  SFX.heavy(); SFX.crack(); SFX.stone(); shakeCam(n > 1 ? 5 : 7, P.face * 2); zoomKick(1.06, 0.25); hitstop(0.06);
+  SFX.heavy(); SFX.crack(); SFX.stone(); SFX.golemStomp && SFX.golemStomp(); shakeCam(n > 1 ? 5 : 7, P.face * 2); zoomKick(1.06, 0.25); hitstop(0.06);
   ringAt(x, y - 2, 22, '#c0283a', 0.35); dust(x, y, 8);
   for (let i = 0; i < 14; i++) parts.push({ x: x + (Math.random() - 0.5) * 10, y: y - 2, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 140, life: 0.5, max: 0.5, col: Math.random() < 0.6 ? '#a01a2a' : '#3a0a10', size: 2, grav: 520 });
   const dmg = Math.round(swordDmg() * (0.62 + 0.1 * tal('heavy')) * (n > 1 ? 0.8 : 1));
@@ -9806,6 +9806,11 @@ function updateWeather(dt) {
   zoomT = Math.max(0, zoomT - dt); if (zoomT <= 0) zoomAmt = 1;
   // ambient bed by zone, and the music ducks while something winds up nearby
   let amb = 'forest'; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) amb = z.kind; ambient.set(amb);
+  /* THE THINGS IN THE WORLD MAKE THEIR OWN NOISE: a forge rings, a mill wheel knocks, a fire talks - from where they are */
+  { const EM = { forge: ['forgeHammer', 1.6], anvil: ['forgeHammer', 2.2], mill: ['thud', 2.4], hearth: ['fuse', 1.4], cookPot: ['fuse', 1.8], campfire: ['fuse', 1.6] };
+    for (const d of deco) { const em = EM[d.kind]; if (!em || !SFX[em[0]]) continue; const dx = d.x + (d.c ? d.c.width / 2 : 0) - P.x; if (Math.abs(dx) > 200 || Math.abs(d.y - P.y) > 140) continue;
+      d.emT = (d.emT ?? Math.random() * em[1]) - 1 / 60; if (d.emT > 0) continue; d.emT = em[1] * (0.7 + Math.random() * 0.6);
+      const was = emitNow(); emitAt(sndAt(d.x + (d.c ? d.c.width / 2 : 0), d.y, false)); SFX[em[0]](); emitAt(was); } }
   const tense = enemies.some(e => e.alive && Math.abs(e.x - P.x) < 220 && ((e.t === 'thorn' && (e.mode === 'wind' || e.mode === 'charge')) || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && (e.mode === 'crouch' || e.mode === 'tongueTell' || e.mode === 'inhale')) || (e.t === 'chief' && (e.mode === 'crouch' || e.mode === 'aim' || e.mode === 'rainAim' || e.mode === 'whirl')) || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'charge')) || (e.t === 'harpy' && e.mode === 'aim')));
   music.duck(tense);
 }

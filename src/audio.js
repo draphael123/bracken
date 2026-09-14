@@ -142,7 +142,7 @@ export const SFX = {
     else { if (heroVoice === 'knight' && Math.random() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
   pLand(surf) { if (heroVoice === 'pyro') { if (surf === 'water') { SFX.land('water'); return; } noise(0.09, 0.14, 520, 0.5); tone('sine', 150, 60, 0.08, 0.1); if (surf === 'wood' || surf === 'stone') file('land', 0.14, 1.25); return; }
     SFX.land(surf); tone('square', vary(1500), 1050, 0.04, 0.05); noise(0.04, 0.07, 3600, 1.4); },
-  pStep(surf) { stepN++; if (heroVoice === 'reaper') { if (surf === 'water') { noise(0.06, 0.07, 800, 0.5); return; } noise(0.05, 0.04, 300, 0.5); return; }
+  pStep(surf) { stepN++; if (heroVoice === 'reaper') { if (surf === 'water') { noise(0.06, 0.07, 800, 0.5); return; } noise(0.05, 0.05, 300, 0.5); tone('sine', 88, 48, 0.09, 0.12); if (stepN % 2) { tone('square', vary(900), 600, 0.04, 0.03); } return; }   /* the biggest man in the game walks like it */
     if (heroVoice === 'pirate') { if (surf === 'water') { noise(0.06, 0.08, 900, 0.5); return; } noise(0.035, 0.06, 420, 0.6); if (stepN % 2) tone('sine', 120, 80, 0.04, 0.03); return; }
     if (heroVoice === 'pyro') { if (surf === 'water') { noise(0.06, 0.08, 900, 0.5); return; } noise(0.04, 0.05, vary(650), 0.5); if (stepN % 2) file('step', 0.07, 1.3); return; }
     SFX.step(surf); if (stepN % 2 === 0) tone('square', vary(2900), 2400, 0.025, 0.022); },
