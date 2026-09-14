@@ -505,3 +505,50 @@ did not belong on.
 
 A benched boss still has to pass `tools/tells.mjs` while it sits in the code: its marks are audited
 like everyone else's, so it comes back honest.
+
+## Q. AMBUSH ROOMS — ONE OR TWO SHORT LOCKED FIGHTS A LEVEL
+
+A corridor never asks for the combat the game has now (stagger bars, knock-into-hazard, shield walls,
+wall slams, finishers). An ambush room does. Walk into the middle of a room and both ends drop shut;
+dust shows where the first crowd will land; when they are down, a beat, then a second crowd; clear it
+and the gates lift with a heart and ten gold.
+
+**What makes a good one**
+
+1. **A place, not a corridor.** A yard, a clearing, a hold, a deck, a cave chamber: somewhere that
+   already reads as a spot to be jumped. 25 to 45 tiles between the gates; wider and the fight
+   scatters, narrower than the screen (20 tiles) and there is no room to read a tell.
+2. **One or two a level**, never back to back, never in a boss or mini room, never over swimming.
+   The Shipwreck Reef and The Deep have none for that reason.
+3. **Wave one is the crowd; wave two is the lesson.** Two to four foes each from the level's own
+   roster (GARRISON/MIX). Wave two is built so the systems matter: a SHIELD (or sworn sword, tideguard)
+   in front of a COVERED shooter (archer, crossbow, scout, marine, spitcap...) so the shield plants;
+   a POISE_HEAVY body (brute, troll, soldier, pike, boarder, watch) that can be BROKEN; and something
+   light enough to throw into the room's own hazard. Where the room has spikes, a crevasse or water,
+   put the throwable beside it; where it has none, the shut gates are walls to SLAM them into.
+4. **Short.** 20 to 40 seconds for a hero who plays it straight. A wave that runs past 70 seconds
+   slinks off by itself, and anything that leaves the room is out of the fight: a room never keeps you.
+5. **The door is a checkpoint.** A checkpoint stands just outside every room, never inside it (the
+   filler refuses ambush rooms), so a death inside wakes you at the door with the room put back.
+
+**The wiring**
+
+- Data: `AMBUSH[id]` in `src/level.js`, in the level's FINAL coordinates (read them off the built
+  grid, `node tools/map.mjs`): `{ name, row, wallL, wallR, y0?, trigger?, check?, gold?, waves }`,
+  a wave being `[[creature, x, y?, extra?], ...]`. `row` is the row the floor stands on (an entity's
+  y); `check: [x, y]` places the door checkpoint by hand, `false` when one already stands there.
+  A builder can also return `ambushes` itself; `grow()` shifts them (they are in tiles).
+- `ambushRooms()` runs after REVIEW and before the garrison: it empties the room of its own creatures
+  (hazard machinery stays), drops checkpoints inside it and adds the door one. `garrison()` and
+  `checkpoints()` both skip ambush rooms.
+- Runtime: `updateAmbush` in `src/main.js` (from `updateProps`). The gates are PORT tiles laid over
+  AIR by `closeGate` on each wall column's own floor, up to ten high or the ceiling (`ambushWall`); only
+  the tiles the room laid are taken up again, so a winch or key gate sharing a column is left alone.
+  Foes come through `spawnEnt`, dropped in from above where there is air to fall through (not the
+  `AMB_STILL` kinds, which have no legs to fall on). `ambushReset` (from `spawnEntities`) puts an
+  unfinished room back on death; a cleared room stays cleared. `BK.ambushes()` shows the state.
+- `tools/curve.mjs` counts the waves as part of the level, and `levelFoes` counts them in the body count.
+- Prove a new one in the page: it locks, both waves spawn and land, it opens and pays, and a death
+  inside resets it and it locks again; then hold a direction with jump, dodge and drop against both
+  gates and check the hero stays in. The reach model is not the proof: it hops a one-tile-wide wall
+  it should not.

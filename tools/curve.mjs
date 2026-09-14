@@ -27,6 +27,8 @@ for (const lv of LEVELS) {
     if (w === undefined) continue;
     if (w > 0) { foes++; threat += w * (e.mini ? 2 : 1); kinds.add(e.t); }
   }
+  /* AN AMBUSH IS IN THE LEVEL even though it is not in the entity list until the room shuts */
+  for (const A of (R.ambushes || [])) for (const w of A.waves) for (const [t] of w) { const v = THREAT[t]; if (v > 0) { foes++; threat += v; kinds.add(t); } }
   for (let i = 0; i < R.grid.length; i++) if (HAZ.has(R.grid[i])) hazTiles++;
   for (const p of (R.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4);
     else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }   // breath is a hazard with nothing in it

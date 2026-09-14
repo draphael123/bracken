@@ -1071,6 +1071,7 @@ function loadLevel(i) {
 function spawnEntities() {
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
   washReset(); strikeReset(); tideReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
+  ambushReset();
   for (const e of L.ents) spawnEnt(e);
   spawnEntitiesTail();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
@@ -1347,6 +1348,135 @@ function spawnEntitiesTail() {
   if (changed) resolveTiles();
   spawnCritters();
 }
+/* AMBUSH ROOMS. A level names the places it means to jump you in L.ambushes (the table is AMBUSH in src/level.js). Walk into
+   the middle of one and both ends drop shut; dust and falling grit show where each of the first crowd will land, then they
+   land; when they are down, a beat, and a second crowd built so the combat has to be used - a shield planted in front of a
+   bow, a heavy that BREAKS, something light enough to throw into the room's spikes, water or its own gates. Clear it and the
+   gates lift with a heart and a purse. The run's state lives on the level's own ambush objects, so a fresh build is a fresh
+   room; dying inside puts the room back (the gates are PORT tiles laid over air, and they are taken up again), and a room
+   you cleared stays cleared. It never starts during a boss or a mini, and never in the rush. */
+let ambushMsg = '', ambushSub = '', ambushMsgT = 0, ambushCol = '#ff6b6b';
+const AMB = { tell: 0.9, beat: 1.3, maxWave: 70, up: 10, down: 6 };
+const AMB_FLY = new Set(['wasp', 'crow', 'bat', 'harpy', 'kite', 'drone', 'petrel', 'gull']);
+const AMB_STILL = new Set(['lurker', 'spit', 'spitcap', 'urchin', 'watch', 'sentry', 'turret', 'clinger', 'puffball']);   /* no legs to fall on: raised, they would hang in the air where they were put */
+const ambushLive = () => ((L && L.ambushes) || []).find(A => A.st && A.st !== 'done');
+function ambushSay(msg, sub, col, t) { ambushMsg = msg; ambushSub = sub; ambushCol = col; ambushMsgT = t; }
+/* THE GATE STANDS ON ITS OWN COLUMN'S FLOOR: up onto a rock it meets, down to the bottom of a dip, and up until a ceiling or too tall to jump */
+function ambushWall(A, col) {
+  let bot = A.row; while (bot > A.row - 4 && tileAt(col, bot) !== T.AIR) bot--;
+  while (bot < A.row + AMB.down && tileAt(col, bot + 1) === T.AIR) bot++;
+  let top = bot; while (top > bot - AMB.up + 1 && top > 0 && tileAt(col, top - 1) === T.AIR) top--;
+  return [col, top, bot];
+}
+/* A FLOOR YOU CAN DROP THROUGH IS NO SILL: on a rail, boards or a one-way the hero drops a row and rolls out under the gate, so that tile is shut too */
+const AMB_THRU = new Set([T.ONEWAY, T.RAIL, T.PLANK]);
+function ambushShut(A) {
+  A.cols = [ambushWall(A, A.wallL), ambushWall(A, A.wallR)]; A.shut = [];
+  for (const [col, top, bot] of A.cols) {
+    for (const e of enemies) if (e.alive && Math.floor(e.x / TS) === col && e.y > top * TS && e.y <= (bot + 1) * TS + 2) e.x += (col === A.wallL ? 1 : -1) * TS;   /* nothing is left standing inside a gate */
+    for (let ty = top; ty <= bot; ty++) if (L.grid[ty * LW + col] === T.AIR) A.shut.push([ty * LW + col, T.AIR]);
+    const sill = (bot + 1) * LW + col; if (AMB_THRU.has(L.grid[sill])) { A.shut.push([sill, L.grid[sill]]); L.grid[sill] = T.PORT; tileSpr[sill] = TILE.port[(bot + 1 + col) % 2]; }
+    closeGate(col, top, bot); dust(col * TS + 8, (bot + 1) * TS, 8); }
+  resolveTiles();
+}
+/* only the tiles this room laid are taken up, back to what they were: a winch or key gate sharing the column is not this room's to open */
+function ambushLift(A, fx) {
+  const byCol = new Map();
+  for (const [i, t0] of (A.shut || [])) if (L.grid[i] === T.PORT) { L.grid[i] = t0; tileSpr[i] = null; if (t0 !== T.AIR) continue; const col = i % LW; if (!byCol.has(col)) byCol.set(col, []); byCol.get(col).push((i - col) / LW); }
+  const any = (A.shut || []).length; A.shut = []; if (!any) return; resolveTiles();
+  if (fx && byCol.size) { for (const [col, ys] of byCol) gateFx.push({ col, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift(); }
+}
+function ambushReset() {
+  ambushMsgT = 0;
+  for (const A of ((L && L.ambushes) || [])) { if (A.st === 'done') continue;
+    ambushLift(A, false); A.st = null; A.wave = 0; A.t = 0; A.foes = []; A.tells = []; A.cols = null; A.cam = false; }
+}
+function ambushTells(A) { A.tells = A.waves[A.wave].map(([t, x, y]) => ({ x: x * TS + 8, y: ((y === undefined || y === null) ? A.row + 1 : y + 1) * TS, rung: false })); }
+function ambushStart(A) {
+  A.st = 'tell'; A.wave = 0; A.t = AMB.tell + 0.5; A.foes = []; ambushShut(A); ambushTells(A);
+  if (!camLock && (A.wallR - A.wallL + 1) * TS >= VW + 16) { camLock = { x0: A.wallL * TS, x1: (A.wallR + 1) * TS }; A.cam = true; }
+  ambushSay('AMBUSH', A.name || '', '#ff6b6b', 2.4); SFX.hornBlast(); shakeCam(5); zoomKick(1.08, 0.3); hitstop(0.06);
+}
+function ambushSpawn(A) {
+  A.st = 'fight'; A.t = AMB.maxWave; A.foes = [];
+  for (const [t, x, y, o] of A.waves[A.wave]) {
+    const row = (y === undefined || y === null) ? A.row : y, n0 = enemies.length, px = x * TS + 8, py = (row + 1) * TS;
+    spawnEnt(Object.assign({ t, x, y: row, face: px < P.x ? 1 : -1 }, o || {}));
+    /* DROPPED IN from the canopy, the rafters or the rigging, where there is air over the spot to fall through */
+    const drop = !AMB_FLY.has(t) && !AMB_STILL.has(t) && [1, 2, 3].every(k => tileAt(x, row - k) === T.AIR);
+    for (let i = n0; i < enemies.length; i++) { const e = enemies[i]; e.ambush = true; e.woke = 1; e.sleeper = false; e.stagger = Math.max(e.stagger || 0, 0.4);
+      if (drop && e.hy === undefined) { e.y -= 2.5 * TS; e.vy = 60; } A.foes.push(e); }
+    burst(px, py - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(px, py, 8); ringAt(px, py - 8, 16, '#ff6b6b', 0.3);
+  }
+  shakeCam(3); SFX.thud();
+}
+function ambushClear(A) {
+  A.st = 'done'; ambushLift(A, true); if (A.cam) { camLock = null; A.cam = false; }
+  ambushSay('THE WAY IS OPEN', A.name || '', '#8fd160', 2.2); SFX.medal(); shakeCam(3); zoomKick(1.05, 0.25);
+  /* THE PURSE AND A HEART: a room that shuts you in pays for it */
+  const gold = A.gold || 10; PROG.coins = (PROG.coins || 0) + gold; number(P.x, P.y - 34, gold, '#ffd34a');
+  for (let i = 0; i < 4; i++) dropCoinAt(P.x + (Math.random() - 0.5) * 30, P.y - 16);
+  A.heart = { x: P.x + P.face * 14, y: P.y - 24, vy: -160, t: 0 }; healths.push(A.heart); A.paid = gold;   /* kept on the room, so a lab can see it paid */
+}
+/* A RIDE CARRIES ITS RIDER THROUGH A WALL, and a rolling tub SMASHES a portcullis it meets, so while a room is shut no cart
+   comes within half a tile of its gates, in or out */
+function ambushCarts(A) {
+  const l = A.wallL * TS, r = (A.wallR + 1) * TS, gap = TS / 2;
+  for (const m of movers) { if (m.kind !== 'cart' || m.gone) continue;
+    const c = m.x + m.w / 2, stop = x => { m.x = x; m.vx = 0; m.rolling = false; };
+    if (c >= l && c <= r) { if (m.x < l + TS + gap) stop(l + TS + gap); else if (m.x + m.w > r - TS - gap) stop(r - TS - gap - m.w); }
+    else if (c < l && m.x + m.w > l - gap) stop(l - gap - m.w);
+    else if (c > r && m.x < r + gap) stop(r + gap); }
+}
+/* A SHUT GATE STAYS SHUT: a cart run into it, a bomb or a quake can knock a bar out, and the room lays it back the same frame */
+function ambushHold(A) {
+  let n = 0;
+  for (const [i] of (A.shut || [])) if (L.grid[i] !== T.PORT) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[((i / LW | 0) + i % LW) % 2]; destroyed.delete(i); n++; }
+  if (n) resolveTiles();
+}
+function ambushRun(A, dt) {
+  A.t -= dt; ambushCarts(A); ambushHold(A);
+  if (A.st === 'tell') {
+    /* THE TELL: dust kicked up and grit falling where each one will land, long enough to step off the spot */
+    for (const s of A.tells) {
+      if (Math.random() < dt * 14) dust(s.x + (Math.random() - 0.5) * 12, s.y, 1);
+      if (Math.random() < dt * 10) parts.push({ x: s.x + (Math.random() - 0.5) * 10, y: s.y - 44 - Math.random() * 20, vx: 0, vy: 30, life: 0.55, max: 0.55, col: Math.random() < 0.5 ? '#9a8a6a' : '#c9b27c', size: 1, grav: 260 });
+      if (A.t < AMB.tell * 0.5 && !s.rung) { s.rung = true; ringAt(s.x, s.y - 6, 14, '#ff6b6b', 0.35); } }
+    if (A.t <= 0) ambushSpawn(A);
+    return; }
+  if (A.st === 'beat') { if (A.t <= 0) { A.wave++; A.st = 'tell'; A.t = AMB.tell; ambushTells(A); ambushSay('THE SECOND WAVE', '', '#ff9a5c', 1.6); SFX.hornBlast(); shakeCam(3); } return; }
+  const lx = (A.wallL - 1) * TS, rx = (A.wallR + 2) * TS;
+  for (const e of A.foes) if (e.alive && (e.x < lx || e.x > rx || e.y > LH * TS + 8)) e.alive = false;   /* out of the room is out of the fight */
+  if (A.t <= 0) for (const e of A.foes) if (e.alive) { e.alive = false; smoke(e.x, e.y - 8, 3, 8); }   /* a wave that outlasts its time slinks off: a room never keeps you */
+  if (A.foes.some(e => e.alive)) return;
+  if (A.wave + 1 < A.waves.length) { A.st = 'beat'; A.t = AMB.beat; SFX.sting(); return; }
+  ambushClear(A);
+}
+function updateAmbush(dt) {
+  if (ambushMsgT > 0) ambushMsgT = Math.max(0, ambushMsgT - dt);
+  if (!L.ambushes || !L.ambushes.length || rushOn() || P.dead) return;
+  for (const A of L.ambushes) {
+    if (A.st === 'done') continue;
+    if (A.st) { ambushRun(A, dt); continue; }
+    if (bossActive || miniActive || escape || ambushLive() || !P.ground) continue;
+    const tx = P.x / TS, row = P.y / TS - 1, x0 = A.trigger !== undefined ? A.trigger : A.wallL + 3;
+    if (tx >= x0 && tx <= A.wallR - 2 && row >= (A.y0 !== undefined ? A.y0 : A.row - 9) && row <= A.row + 1.5) ambushStart(A);
+  }
+}
+/* THE CARD AND THE COUNT: AMBUSH over the room's name as it shuts, then the wave and a red pip for every one still up */
+function drawAmbushHud() {
+  if (ambushMsgT > 0 && ambushMsg) { const k = Math.min(1, ambushMsgT / 0.35), y = Math.round(VH * 0.26), h = ambushSub ? 30 : 22;
+    g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(0, y - 6, VW, h);
+    g.fillStyle = ambushCol; g.fillRect(0, y - 6, VW, 1); g.fillRect(0, y - 7 + h, VW, 1);
+    text(ambushMsg, VW / 2 + 1, y + 1, '#1a0e10', 'center', 12); text(ambushMsg, VW / 2, y, ambushCol, 'center', 12);
+    if (ambushSub) text(ambushSub, VW / 2, y + 15, '#c9d1dc', 'center', 6);
+    g.globalAlpha = 1; }
+  const A = ambushLive(); if (!A) return;
+  const left = A.st === 'fight' ? A.foes.filter(e => e.alive).length : A.waves[A.wave].length, n = A.waves.length, x = VW / 2, y = 30, w = 58;
+  g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(x - w / 2, y, w, 16); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x - w / 2 + 0.5, y + 0.5, w - 1, 15);
+  text('WAVE ' + Math.min(n, A.wave + (A.st === 'beat' ? 2 : 1)) + '/' + n, x, y + 3, '#ffd0d0', 'center', 6);
+  for (let i = 0; i < left; i++) { g.fillStyle = A.st === 'fight' ? '#ff6b6b' : 'rgba(255,107,107,0.35)'; g.fillRect(Math.round(x - left * 2 + i * 4), y + 11, 2, 3); }
+}
 function respawn() { P.martyrUsed = false; P.airRolled = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
@@ -1508,7 +1638,7 @@ function startGame() {
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
-  respawn(); levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length;
+  respawn(); levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length + (L.ambushes || []).reduce((n, A) => n + A.waves.reduce((m, w) => m + w.length, 0), 0);   /* the ambushers are in the body count before they arrive */
   camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
 }
 let winLevelUp = false, medalPurse = 0;
@@ -10302,7 +10432,7 @@ function updateProps(dt) {
       if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
   }
   for (const p of (L.pools || [])) if (p.draining && !p.frogDry) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updateGrips(dt); updateUnholy(dt); updateSevers(dt); updateWakes(dt); updatePortal(dt);
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateAlarms(dt); updateAmbush(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updateGrips(dt); updateUnholy(dt); updateSevers(dt); updateWakes(dt); updatePortal(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -13671,7 +13801,7 @@ function render() {
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
       g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 46.5, w - 1, 10); text(lab, VW / 2, 49, '#ffd0d0', 'center', 6);
       g.fillStyle = '#ff6b6b'; g.fillRect(VW / 2 - w / 2, 56, Math.round(w * k), 1); }
-    if (state === 'play') drawAlarmHud();
+    if (state === 'play') { drawAlarmHud(); drawAmbushHud(); }
     drawEscapeHUD();
       // THE HEAVY BLOW, WINDING UP: a bar over his head that fills, and goes gold and wide when it is there
       if ((P.charge || 0) > 0 && !P.dead) {
@@ -13870,7 +14000,7 @@ window.BK = { noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* t
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
-  enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),
+  enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [],
   risen: () => risen, bodies: () => bodies,
   get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
