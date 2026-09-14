@@ -115,4 +115,6 @@ BOSSES
 - rimewright.ogg  = "Fields of Ice" by Jonathan So - https://opengameart.org/content/fields-of-ice - the Rimewright (THE FROSTFELL)
 - captain.ogg     = "Most Stereotypical Boss Theme Ever" by Spring Spring - https://opengameart.org/content/most-stereotypical-boss-theme-ever - the Captain (THE HURRICANE DECK)
 - tollmaster.ogg  = "8-bit - Infinite Darkness" by HydroGene - https://opengameart.org/content/8-bit-infinite-darkness - the Tollmaster (THE LAMPLIT STREET)
+- causeway.ogg    = "Solemn Tide" (SolemnTide.WAV) from "Patreon Songs - Castle Boss and Solemn Tide" by madameberry - https://opengameart.org/content/patreon-songs-castle-boss-and-solemn-tide - THE DROWNED CAUSEWAY (trimmed to 147.5 s with a 3 s fade)
+- kraken.ogg      = "Castle Boss" (CastleBoss.WAV) from "Patreon Songs - Castle Boss and Solemn Tide" by madameberry - https://opengameart.org/content/patreon-songs-castle-boss-and-solemn-tide - the Kraken (THE DROWNED CAUSEWAY)
 NOTE: boss4.ogg and king.mp3 are the same recording ("Great Boss"), and musSailor.ogg is longwater.ogg's Sailor Waltz; no level or boss now plays boss4.

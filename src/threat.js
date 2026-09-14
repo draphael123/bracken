@@ -34,6 +34,8 @@ export const THREAT = {
      unblockable overhead at 4, and a hedge knight is 92 with an unblockable leap. And the runner is
      worth more than the hurt he does, because what he costs you is everybody else. */
   swornsword: 3.5, hedgeknight: 4.5, runner: 1.5, crossbow: 3, closedhelm: 0,
+  /* THE DROWNED CAUSEWAY: a feeler is a lash you have to read at your feet; the Kraken is the coast's last word; a bell is furniture */
+  feeler: 2.5, kraken: 6, krakenarm: 0, tidebell: 0, knell: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
