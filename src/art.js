@@ -238,13 +238,20 @@ export function bakeShrineKind(kind, lit) {
     fillPoly(g, [[7, 13], [10, 13], [9, 21], [8, 21]], lit ? '#ffe6a0' : '#8a8a74');
     rect(g, 8, 22, 4, 2, lit ? '#ffd36b' : '#5a5a4a');
     if (lit) px(g, 10, 25, '#fff1c0');
-  } else if (kind === 'reef') {                             // a diving bell on a chain, with a lamp under it
-    for (let y = 0; y < 8; y += 3) rect(g, 9, y, 2, 2, '#6a7078');
-    fillPoly(g, [[4, 8], [16, 8], [14, 22], [6, 22]], '#4a5a62');
-    fillPoly(g, [[5, 9], [9, 9], [8, 21], [7, 21]], '#5e727c');
+  } else if (kind === 'reef') {                             // a diving bell on a davit, with a lamp under it
+    /* A BELL ON A CHAIN TO NOTHING. This was a chain from the top row and a bell under it, and the foot rows were empty,
+       so on the Long Water's dry ground every checkpoint hung in the air over the grass. The shore and the reef both use
+       it, above water and under it: it stands on its own post now, with the chain off the arm. */
+    rect(g, 0, 30, 8, 4, C.stone); rect(g, 0, 30, 8, 1, C.stoneL); rect(g, 0, 33, 8, 1, C.stoneD);
+    rect(g, 2, 2, 2, 28, '#4a3c2c'); rect(g, 2, 2, 1, 28, '#6a5a44');
+    rect(g, 1, 1, 12, 2, '#4a3c2c'); rect(g, 1, 1, 12, 1, '#6a5a44');
+    line(g, 4, 7, 8, 3, '#4a3c2c', 1);
+    for (let y = 3; y < 9; y += 3) rect(g, 9, y, 2, 2, '#6a7078');
+    fillPoly(g, [[5, 9], [15, 9], [14, 22], [6, 22]], '#4a5a62');
+    fillPoly(g, [[6, 10], [9, 10], [8, 21], [7, 21]], '#5e727c');
     rect(g, 6, 22, 8, 2, '#3a464e');
     rect(g, 8, 24, 4, 5, fire); if (lit) { rect(g, 9, 25, 2, 3, fireL); }
-    for (const x of [5, 15]) px(g, x, 20, '#7cc8c8');
+    for (const x of [6, 14]) px(g, x, 20, '#7cc8c8');
   } else if (kind === 'city') {                             // a hooded street lamp, the way the drowned city lights itself
     rect(g, 6, 31, 8, 3, '#3a3e46'); rect(g, 6, 31, 8, 1, '#525862');
     rect(g, 9, 12, 2, 19, '#3a3e46'); rect(g, 9, 12, 1, 19, '#565e68');

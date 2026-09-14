@@ -44,6 +44,11 @@ async function main() {
   let code = 0;
   try {
     if (mode === 'expr') { console.log(JSON.stringify(await evalp('(async () => JSON.parse(JSON.stringify(await (' + arg + '))))()'), null, 1)); }
+    else if (mode === 'floats') {   /* src/floatlab.js: every sprite's pixels against the tiles, and every water creature against its water */
+      const r = await evalp('(async () => { const r = await BK.floatLab(' + (arg ? JSON.stringify({ levels: arg.split(',') }) : '') + '); return { levels: r.levels, sprites: r.sprites, hits: r.hits, water: r.water }; })()');
+      for (const h of r.hits) console.log('  ' + h); for (const h of r.water) console.log('  WATER ' + h);
+      console.log(r.levels + ' levels, ' + r.sprites + ' sprites. ' + (r.hits.length + r.water.length ? (r.hits.length + r.water.length) + ' in the air, through the ground or out of the water.' : 'nothing in the air, through the ground or out of the water.'));
+      if (r.hits.length + r.water.length) code = 1; }
     else {
       const bosses = mode === 'boss' && arg ? arg.split(',') : ['wood', 'kings', 'waymeet', 'undercrown'];
       const heroes = mode === 'boss' ? null : ['knight', 'paladin'];

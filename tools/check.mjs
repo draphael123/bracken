@@ -12,6 +12,9 @@
 //   signs     no sign longer than two lines on the reading panel
 //   killzones no reachable tile kills a hero who stands on it
 //   collectables every silver, key, relic and quest item can be picked up from some ground
+//   spawns    no creature starts inside the rock, no eel, angler or urchin starts out of the water
+//   pixels    (headless) no sprite floats, hangs from nothing or runs through a ledge, by its own pixels; no water
+//             creature leaves its water over a tide (src/floatlab.js)
 // The labs (fight and boss) need the page: run BK.bossLab() in the browser after a combat change.
 import { execSync, spawnSync } from 'child_process';
 import { readdirSync, statSync } from 'fs';
@@ -19,8 +22,8 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));   /* not .pathname: a space in the folder name arrives as %20 */
-const run = (name, cmd, args) => {
-  const t0 = Date.now(), r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8' });
+const run = (name, cmd, args, env) => {
+  const t0 = Date.now(), r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', env: env ? { ...process.env, ...env } : process.env });
   const out = ((r.stdout || '') + (r.stderr || '')).trim().split('\n');
   return { name, ok: r.status === 0, ms: Date.now() - t0, last: out[out.length - 1] || '', out };
 };
@@ -31,7 +34,9 @@ walk('src'); walk('tools');
 const results = [];
 { const bad = files.map(f => [f, spawnSync(process.execPath, ['--check', f], { cwd: ROOT, encoding: 'utf8' })]).filter(([, r]) => r.status !== 0);
   results.push({ name: 'syntax', ok: !bad.length, ms: 0, last: bad.length ? bad.map(([f]) => f).join(', ') : files.length + ' files parse', out: bad.map(([f, r]) => f + ': ' + r.stderr) }); }
-for (const t of ['tells', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'traps', 'signs', 'killzones', 'collectables']) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
+for (const t of ['tells', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'traps', 'signs', 'killzones', 'collectables', 'spawns']) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
+/* THE PIXELS NEED THE PAGE: a headless Chrome on a port of its own, so a dev server left running from another checkout is never the one measured */
+results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(5900 + Math.floor(Math.random() * 90)) }));
 
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }
