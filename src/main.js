@@ -2788,8 +2788,9 @@ function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 // every blow used to hold the frame for the same three hundredths of a second, whatever it was. Weight it:
 // a tap is a tap, a heavy blow leans on it, and the blow that kills something leans hardest of all.
 function blowStop(e, dmg) {
-  let t = 0.026 + Math.min(0.05, (dmg || 0) / 700);
-  if (P.heavy) t += 0.04;
+  let t = 0.03 + Math.min(0.07, (dmg || 0) / 450);   /* HEAVIER HANDS: the stop leans harder on a big number */
+  if (P.heavy) t += 0.05;
+  if (P.combo === 3) t += 0.025; if (P.dash > 0) t += 0.02; if (e && e.broken > 0) t += 0.02;
   t *= isPaladin() || isReaper() ? 1.35 : isPirate() ? 0.8 : 1;   /* the weight of the weapon is in the stop */
   if (e.maxHp) t *= 0.8;          // a boss does not stop the world every time you touch it
   hitstop(t);
@@ -3080,9 +3081,32 @@ function drawPoise(e, cx, cy) {
 /* KNOCKED INTO THE LEVEL. A heavy blow, a dash, the paladin's quake or a ring of fire throws a creature bodily for a moment -
    no legs under it - so the water, the spikes and the drop it lands in do the killing, and the kill still counts. */
 let hurtKnock = false;
+/* THE FINISHER. A creature broken, burning, bleeding, frozen or reeling, and down to its last quarter, is not cut again: it is
+   finished, in the hero's own way, and the world stops to watch. EXECUTION reaches further down the bar. */
+const FINISH_SKIP = new Set(['dummy', 'bale', 'heart', 'gill', 'bearer', 'folk', 'sheep']);
+const canFinish = (e, dmg) => !e.maxHp && !e.mini && e.alive && !P.jetHit && !P.dead && !FINISH_SKIP.has(e.t) && !e.slamming
+  && (P.atk >= 0 || P.heavySwing || P.dash > 0 || P.plunge)
+  && (e.broken > 0 || e.burn > 0 || e.bleed > 0 || e.frozen > 0 || e.stagger > 0.5)
+  && e.hp - dmg > 0 && e.hp - dmg <= fullHp(e) * (0.25 + 0.1 * tal('execute'));
+function finisher(e) {
+  const nm = isPyro() ? 'IMMOLATED' : isPaladin() ? 'SMITTEN' : isPirate() ? 'RUN THROUGH' : isReaper() ? 'REAPED' : 'EXECUTED';
+  const col = isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : isPirate() ? '#ffd34a' : isReaper() ? '#ff6b6b' : '#fff6e0';
+  number(e.x, e.y - e.h - 22, nm, col); hitstop(0.16); zoomKick(1.12, 0.32); shakeCam(6, P.face * 3); killFlash = 0.06;
+  ringAt(e.x, e.y - e.h / 2, 30, col, 0.4); ringAt(e.x, e.y - e.h / 2, 14, '#ffffff', 0.25); sparks(e.x, e.y - e.h / 2, P.face, 14);
+  for (let i = 0; i < 20; i++) parts.push({ x: e.x, y: e.y - e.h / 2, vx: (Math.random() - 0.5) * 260, vy: -60 - Math.random() * 200, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? col : '#fff6e0', size: 2, grav: 420 });
+  P.inv = Math.max(P.inv || 0, 0.35); if (P.hp > 0) P.hp = Math.min(P.maxHp, P.hp + 3); SFX.heavy(); if (SFX.judgement) SFX.judgement();
+  noteVerb('finish'); e.finished = true;
+}
+/* THE WALL SLAM. Thrown into a wall hard enough, a creature hits it, takes it, and comes back off it at you - into the next blow */
+function wallSlam(e) {
+  const dir = Math.sign(e.kvx) || 1; e.slammed = true; e.kvx = -dir * Math.min(200, Math.abs(e.kvx) * 0.55); e.kvy = -130; e.knock = Math.max(e.knock, 0.3); e.knockAir = 0;
+  number(e.x, e.y - e.h - 12, 'SLAM', '#ffd36b'); dust(e.x + dir * 6, e.y - 6, 6); sparks(e.x + dir * 6, e.y - e.h / 2, -dir, 6); shakeCam(3, dir * 2); hitstop(0.05); SFX.thud();
+  e.slamming = true; hurtEnemy(e, Math.max(4, Math.round(swordDmg() * 0.5)), e.x + dir * 20, false); e.slamming = false;
+}
 const KNOCK_SKIP = new Set(['wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker']);
 function knockFoe(e, dir, push) {
-  if (!e.alive || e.maxHp || e.mini || KNOCK_SKIP.has(e.t)) return;
+  if (!e.alive || e.maxHp || e.mini || e.slamming || KNOCK_SKIP.has(e.t)) return;
+  e.slammed = false;
   const wt = POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
   e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt);
 }
@@ -3172,6 +3196,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
+  if (dmg > 0 && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body */
   addPoise(e, dmg, fromX, plunge);
   e.hp -= dmg; e.flash = 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen') e.stagger = P.standT > 0 && !e.maxHp ? 0.8 : 0.35; e.sq = 0.16;   /* THE STAND staggers what it hits */
@@ -3213,7 +3238,8 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
     if (!P.jetHit) { blowStop(e, dmg, false); shakeCam(P.heavy ? 3 : 1.5, dir * (P.heavy ? 3 : 1.5)); }   /* a flame ticking over them does not stop the world ten times a second */
     sparks(e.x - dir * 2, e.y - e.h / 2, dir, P.heavy ? 9 : 5);
     if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
-    e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) ? 0.2 : 0;   /* a big one keeps its tell pose when struck in it */
+    e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) ? 0.2 : 0;
+    if (!P.jetHit && !e.maxHp && !e.big && !e.mini && !POISE_HEAVY.has(e.t)) { flinch(e); e.sq = Math.max(e.sq || 0, 0.22); }   /* A SMALL ONE FLINCHES: a real blow knocks it out of whatever it was winding up */   /* a big one keeps its tell pose when struck in it */
     if (!P.jetHit && e.t !== 'wasp' && e.t !== 'spit' && e.t !== 'queen' && e.t !== 'ram' && e.t !== 'harpy') {   /* (the jet burns, it does not push) */
       // THE PUSH IS THE BLOW'S: a tap nudges, a heavy blow throws, and a heavy blow from below lifts them
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
@@ -9663,7 +9689,9 @@ function updateEnemies(dt) {
     if (e.poise > 0) { e.poiseT = (e.poiseT || 0) - dt; if (e.poiseT <= 0) e.poise = Math.max(0, e.poise - 14 * dt); }
     if (e.broken > 0) { e.broken -= dt; e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) - 4, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); continue; }   /* BROKEN: it stands where the bar ran out */
     if (e.knock > 0 && !e.maxHp) { e.knock -= dt; e.kvy = Math.min(400, e.kvy + 1000 * dt); e.kvx *= Math.pow(0.25, dt);   /* THROWN: no legs under it for a moment */
-      const r = moveBody(e, e.kvx * dt, e.kvy * dt, false); if (r && r.ground && e.kvy > 0) e.kvy = 0; e.vx = e.kvx * 0.3; e.vy = e.kvy;
+      const kx0 = e.x, r = moveBody(e, e.kvx * dt, e.kvy * dt, false); if (r && r.ground && e.kvy > 0) e.kvy = 0;
+      if (!e.slammed && Math.abs(e.kvx) > 110 && Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e);
+      e.vx = e.kvx * 0.3; e.vy = e.kvy; if (!e.alive) continue;
       if (hazardFoe(e)) continue;
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
