@@ -1705,17 +1705,18 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'flotilla', kind: 'level', level: LEVELS.findIndex(l => l.id === 'flotilla'), x: 220, y: 55, name: 'THE FLOTILLA' },
   { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 130, y: 25, name: 'THE HURRICANE DECK' },
   { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 40, y: 45, name: 'THE LAMPLIT STREET' },
-  { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' },
-  { id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 25, y: 140, name: 'WAYMEET' }];   /* off the road on a spur of its own */
-const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [36, 118], [25, 140], [36, 118], [50, 95], [80, 70], [110, 40], [140, 8]];
-const INLAND_NODES = [{ id: 'hunt', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hunt'), x: 70, y: 140, name: 'THE HUNT' },
+  { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' }];
+const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [80, 70], [110, 40], [140, 8]];
+/* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
+const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
+  { id: 'hunt', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hunt'), x: 70, y: 140, name: 'THE HUNT' },
   { id: 'quarry', kind: 'level', level: LEVELS.findIndex(l => l.id === 'quarry'), x: 140, y: 110, name: 'THE QUARRY PASS' },
   { id: 'frost', kind: 'level', level: LEVELS.findIndex(l => l.id === 'frost'), x: 210, y: 82, name: 'THE FROSTFELL' },
   { id: 'skyship', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyship'), x: 275, y: 44, name: 'THE SKY SHIP' }];
-const INLAND_PATH = [[140, 176], [110, 160], [70, 140], [100, 122], [140, 110], [175, 96], [210, 82], [240, 62], [275, 44]];
+const INLAND_PATH = [[140, 176], [95, 172], [40, 162], [95, 172], [110, 158], [70, 140], [100, 122], [140, 110], [175, 96], [210, 82], [240, 62], [275, 44]];
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })));
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]));
-const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 46, 48, 50, 52, 54, 56, 58, 60, 68, 70, 72, 74]; // PATH index of each node: wood 0-5, the crags, the coast, then the road inland
+const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 46, 48, 50, 52, 54, 56, 58, 64, 67, 69, 71, 73]; // PATH index of each node: wood 0-5, the crags, the coast, then the road inland
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'crag', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]]]);
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
@@ -2929,7 +2930,7 @@ function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 function blowStop(e, dmg) {
   let t = 0.03 + Math.min(0.07, (dmg || 0) / 450);   /* HEAVIER HANDS: the stop leans harder on a big number */
   if (P.heavy) t += 0.05;
-  if (P.combo === 3) t += 0.025; if (P.dash > 0) t += 0.02; if (e && e.broken > 0) t += 0.02;
+  if (P.combo === 3) t += 0.025; if (P.dash > 0 || P.dashAtk > 0) t += 0.02; if (e && e.broken > 0) t += 0.02;
   t *= isPaladin() || isReaper() ? 1.35 : isPirate() ? 0.8 : 1;   /* the weight of the weapon is in the stop */
   if (e.maxHp) t *= 0.8;          // a boss does not stop the world every time you touch it
   hitstop(t);
@@ -3208,7 +3209,7 @@ const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : 
 function addPoise(e, dmg, fromX, plunge) {
   const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0 || dmg <= 0) return;
   let n = P.jetHit ? 1.5 : 6 + dmg * 0.25;
-  if (!P.jetHit) { if (P.heavySwing && P.atk >= 0) n += 20; if (plunge) n += 12; if (e.face && Math.sign(fromX - e.x) === -e.face) n += 10; if (P.combo === 3) n += 8; if (P.riposteT > 0) n += 16; if (P.dash > 0) n += 6; }
+  if (!P.jetHit) { if (P.heavySwing && P.atk >= 0) n += 20; if (plunge) n += 12; if (e.face && Math.sign(fromX - e.x) === -e.face) n += 10; if (P.combo === 3) n += 8; if (P.riposteT > 0) n += 16; if (P.dash > 0) n += 6; if (P.dashAtk > 0) n += 14; }
   e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5;
   if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
     number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); shakeCam(4); hitstop(0.08); if (SFX.guardBreak) SFX.guardBreak(); else SFX.clank(); }
@@ -3392,7 +3393,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
       e.vx = dir * push;
       if (P.heavy && !e.maxHp && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
-      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || hurtKnock)) knockFoe(e, dir, push);
+      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock)) knockFoe(e, dir, push);
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
     if (e.t === 'king' && e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.y = L.arena.floor; e.mode = 'rise'; e.modeT = 1.3; e.h = 60; e.throne = { x: e.x, y: L.arena.floor }; number(e.x, e.y - 36, 'THE LITTER BREAKS. HE STANDS', '#ff6b6b'); SFX.heavy(); SFX.crack(); shakeCam(8); zoomKick(1.12, 0.4); burst(e.x, e.y, 16, ['#8b6a2a', '#c9b27c', '#c9463d'], 80, 0.7); }
@@ -4270,6 +4271,8 @@ function updatePlayer(dt) {
           if (isPaladin()) { P.shoulder = Math.max(P.shoulder || 0, 0.16); SFX.clank(); } }
       } P.tapDir = tapped; P.tapT = time; } }
   P.dash = Math.max(0, (P.dash || 0) - dt); P.dashCd = Math.max(0, (P.dashCd || 0) - dt); if (P.ground) P.dashedAir = false;
+  P.dashLate = P.dash > 0 ? 0.16 : Math.max(0, (P.dashLate || 0) - dt);   /* a swing just after the dash still counts as out of it */
+  if (P.dashAtk > 0) { P.dashAtk = Math.max(0, P.dashAtk - dt); P.vx = P.face * (isPaladin() ? 210 : 250) * (0.35 + 0.65 * P.dashAtk / 0.24); if (P.dashAtk > 0.08) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 2 }); }
   if (P.dash > 0) { ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
     /* THE DASH STRIKE. Every hero's dash was distance and nothing else; now it cuts what it goes through, once a dash each, for a little over half a swing */
     P.dashHits = P.dashHits || new Set();
@@ -4395,7 +4398,7 @@ function updatePlayer(dt) {
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
     else if (tal('bash') && keys.block && P.ground && P.plungeRec <= 0) { P.abuf = 0; if (!(P.bashCd > 0) && spend(10)) shieldBash(); }
-    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0 && !P.swim) dashAttack(); else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk >= 0) {
     { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
@@ -10351,6 +10354,12 @@ function gasBlast(x, y) { // the whole chamber goes up: fire along the floor, an
 const inRun = () => time - (P.swingEndT ?? -9) < 0.45 || time - (P.lastSwingT ?? -9) < 0.75;
 /* HEAT FROM EVERY ATTACK. The jet, the ember, the bellows and the firedrop warmed her and the staff and her F skills did not, so half of what she did never filled the bar that pays for THE PYRE */
 function gainHeat(n) { if (!isPyro() || P.full) return; P.heat = Math.min(100, (P.heat || 0) + n * varietyMul()); if (P.heat >= 100) bankHeat(); }
+/* THE DASH ATTACK. A swing out of a dash used to stop the hero dead into an ordinary cut, so the two never added up to
+   anything. Now the dash carries the blade through: the hero keeps going, the cut lands harder and throws what it hits. */
+let dashAtkShown = 0;
+function dashAttack() { P.dashLate = 0; P.dash = 0; P.dashAtk = 0.24; P.swingMul = Math.max(P.swingMul || 1, 1.6); if (!P.ground) P.vy = Math.min(P.vy, 30);
+  streaks(P.x + P.face * 10, P.y - 11, P.face, ['#fff6e0', '#ffd36b'], 170); ringAt(P.x + P.face * 14, P.y - 11, 8, '#ffd36b', 0.18); zoomKick(1.03, 0.12); SFX.heavy();
+  if (dashAtkShown < 3) { dashAtkShown++; number(P.x, P.y - 28, 'DASH ATTACK', '#ffd36b'); } }
 function startSwing() { const quick = inRun(); gainHeat(5);
   if (!P.ground && !P.airHang && !P.swim) { P.airHang = true; P.vy = Math.min(P.vy, 20); }   /* THE AIR SLASH hangs: the first swing in a jump stops the fall for a beat, once a jump */ P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
   SFX.swingUp ? SFX.swingUp(Math.min(3, P.combo - 1)) : null; // the run of them climbs in pitch
