@@ -1402,7 +1402,7 @@ function underleaf() {
       grass: '#3a5a46', grassL: '#4e7a58', grassD: '#263a2e', dirt: '#3a3444', dirtL: '#4a4458', dirtD: '#26222e',
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', music: 'boss', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
+    arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', camBelow: 1, music: 'boss', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
     mini: { x0: 312 * TS, x1: 330 * TS, floor: 21 * TS, y0: 14 * TS, y1: 24 * TS, trigger: 317 * TS, wallL: 312, gate: 330, boss: 'berserker' },   /* (the gate is column 330: opening 325 left the tower shut after he fell) */
   };
 }
