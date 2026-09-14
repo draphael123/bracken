@@ -51,11 +51,17 @@ const LEGS = {
 const W = 34, H = 32, BX = 11, BY = 6; // body drawn at (BX,BY); feet bottom at BY+16 = 22
 export const KNIGHT_ANCHOR = { ax: 16, ay: 22 };
 
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, hy = 0, sho = 0, bits = null }) {
   const [c, g] = canvas(W, H);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
-  draw(body, BX + dx, BY + dy);
+  if (!hy && !sho) draw(body, BX + dx, BY + dy);
+  else { /* A BREATH IS NOT A BOB. The shoulders come up first - the outermost pixel of each torso row lifts one - and the
+       helm has its own offset, so the chest can rise under a head that has not moved yet, and the head can sink after it. */
+    body.slice(6).forEach((r, y) => { const l = r.search(/[^.]/), rr = r.length - 1 - [...r].reverse().findIndex(ch => ch !== '.');
+      for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, BX + dx + x, BY + dy + 6 + y - (y < 4 && (x === l || x === rr) ? sho : 0), KP[k]); } });
+    if (hy < 0) draw([body[5]], BX + dx, BY + dy + 5);   /* a lifted helm stretches the neck rather than leaving a gap under it */
+    draw(body.slice(0, 6), BX + dx, BY + dy + hy); }
   draw(LEGS[legs], BX + dx, BY + 11 + legsDy);
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
   if (sword) {
@@ -150,6 +156,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     rows.forEach((r, yy) => { for (let xx = 0; xx < r.length; xx++) { const k = r[xx]; if (k !== '.') px(g, sx + xx, sy + yy, k === 'S' ? KP.S : k === 'w' ? KP.w : KP.y); } });
     px(g, sx + 1, sy + 1, KP.s); px(g, sx + 2, sy + 1, KP.s); px(g, sx + 1, sy + 2, KP.s);
   }
+  if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
   return c;
 }
@@ -194,17 +201,21 @@ function comboArcs(sh, key, len, extra = {}) {
   ];
   return { B, T, A, I };
 }
+/* THE BREATH, eight beats, for every hero on the knight's rig: [dy, hy, sho, plume]. The shoulders lift, the plume answers
+   a beat late, the helm rises last and sinks last. Whatever rests on the ground - a sword point, a maul head - is given
+   in ground coordinates by the baker, so the hands ride the chest and the weight stays put. */
+const BREATH = [[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 1], [0, -1, 1, 1], [0, 0, 0, 2], [1, 0, 0, 2], [1, 0, 0, 1], [0, 1, 0, 0]];
+const breathLag = i => BREATH[(i + BREATH.length - 1) % BREATH.length][0];   /* cloth hangs where the body was a beat ago */
+/* A FLAP of cloth below the belt: its top rides the belt, its bottom edge lags, so it stretches and gathers as he breathes */
+const flap = (cols, dy, lag, k1, k2) => cols.flatMap(x => { const o = []; for (let y = 11; y <= 12 + lag - dy; y++) o.push([x, y, y === 11 ? k1 : k2]); return o; });
+/* FIDGETS PLAY AT ONE STEP A TENTH: a pose held longer is simply listed more than once */
+const holdFrames = seq => seq.flatMap(([f, n]) => Array(n).fill(f));
 export function bakeKnight(skin = {}) {
   KP = Object.assign({}, KP0, skin);
   const sh = [BX + 8, BY + 7]; // shoulder (front)
   const rest = (d = 0) => [sh[0] + 1, sh[1] + 2 + d, sh[0] + 3, sh[1] + 9 + d];
   const F = {
-    idle: [
-      knightFrame({ sword: rest(), plume: 0 }),
-      knightFrame({ sword: rest(), plume: 1 }),
-      knightFrame({ dy: 1, sword: rest(), plume: 2, legsDy: 0 }),
-      knightFrame({ dy: 1, sword: rest(), plume: 1 }),
-    ],
+    idle: BREATH.map(([dy, hy, sho, plume]) => knightFrame({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 9 - dy] })),   /* the point stays in the turf */
     // run: body bobs, sword arm pumps
     run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, pump], i) =>
       knightFrame({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 8], legsDy: 0 })),
@@ -257,6 +268,16 @@ export function bakeKnight(skin = {}) {
   const tuck = knightFrame({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
   { const arcs = comboArcs(sh, 'sword', 12); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the backhand and the thrust */
+  /* HIS FIDGET: the blade up before his face, the light run down it from hilt to point while he bends to look, a turn of
+     it to see the other edge, and it falls back into the turf with a little weight on the end */
+  { const up = (tx = 0) => ({ arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], sword: [sh[0] + 3, sh[1] - 1, sh[0] + 3 + tx, sh[1] - 11] });
+    const gl = (y, big) => [[11, y, '#ffffff'], [12, y, '#ffffff'], [13, y, '#fff6c8'], ...(big ? [[10, y, '#dfe8ff'], [11, y - 1, '#dfe8ff'], [11, y + 1, '#dfe8ff'], [14, y, '#dfe8ff']] : [])];   /* white on a pale blade is invisible: the light spills off the edge */
+    const lift = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], sword: [sh[0] + 2, sh[1] + 1, sh[0] + 7, sh[1] - 7], plume: 1 });
+    const a = knightFrame({ ...up(), plume: 2 }), b = knightFrame({ ...up(), hy: 1, bits: gl(4), plume: 1 }), c = knightFrame({ ...up(), hy: 1, bits: gl(1), plume: 0 });
+    const d = knightFrame({ ...up(), hy: 1, bits: gl(-2, true), plume: 0 }), turn = knightFrame({ ...up(2), hy: 1, plume: 0 }), back = knightFrame({ ...up(-1), plume: 1 });
+    const drop = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], sword: [sh[0] + 2, sh[1] + 2, sh[0] + 9, sh[1] + 6], plume: 2 });
+    const thud = knightFrame({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 8], plume: 2 });
+    F.fidget = holdFrames([[lift, 2], [a, 2], [b, 2], [c, 2], [d, 3], [turn, 3], [back, 2], [drop, 2], [thud, 2], [F.idle[7], 2]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
@@ -1099,7 +1120,7 @@ const COWL = [
 ];
 function pyroFrame(o = {}) {
   const { lean = 0, dy = 0, trail = 0, hemW = 11, bell = 0, feet = [[11, 18], [15, 18]], arm = null, arm2 = null,
-    staff = null, cowl = 0, flick = 0, sit = 0, flare = null, palm = null } = o;
+    staff = null, cowl = 0, flick = 0, sit = 0, flare = null, palm = null, flame = null, sparks = null } = o;
   const [c, g] = canvas(W, H);
   const put = (x, y, k) => { if (KP[k]) px(g, Math.round(x), Math.round(y), KP[k]); };
   // the staff goes behind her when she carries it, in front when she works it
@@ -1108,6 +1129,13 @@ function pyroFrame(o = {}) {
     const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0);
     // a brass cage at the head with the flame in it
     const hx = x1, hy = y1 + dy;
+    if (flame !== null) { /* THE FLAME AT REST stands straight up out of the cage whatever the lean of the staff, and burns a
+         different shape on every beat: 0-3 the licks, 4 the flare when it is fed */
+      put(hx - 1, hy, 'y'); put(hx + 1, hy, 'y'); put(hx - 1, hy - 1, 'y'); put(hx + 1, hy - 1, 'y'); put(hx, hy, 'r'); put(hx, hy - 1, 'y');
+      const LICK = [[[0, -2, 'r'], [0, -3, 'r']], [[0, -2, 'y'], [1, -2, 'r'], [1, -3, 'r']], [[0, -2, 'r']], [[0, -2, 'y'], [-1, -2, 'r'], [0, -3, 'r']],
+        [[0, -2, 'y'], [-1, -2, 'r'], [1, -2, 'r'], [0, -3, 'y'], [-1, -3, 'r'], [1, -3, 'r'], [0, -4, 'r'], [-2, -1, 'r'], [2, -1, 'r']]];
+      for (const [ox, oy, k] of LICK[flame]) put(hx + ox, hy + oy, k);
+      return; }
     put(hx - uy, hy + ux, 'y'); put(hx + uy, hy - ux, 'y'); put(hx + ux, hy + uy, 'y');
     put(hx, hy, flick ? 'y' : 'r'); put(hx + ux * 2, hy + uy * 2, flick ? 'r' : 'y');
     put(hx + ux * 2 - uy, hy + uy * 2 + ux, 'r'); };
@@ -1139,6 +1167,7 @@ function pyroFrame(o = {}) {
   if (palm) { const [x, y] = palm; put(x, y + dy, 'y'); put(x + 1, y + dy, 'r'); put(x, y - 1 + dy, 'r'); put(x, y + 1 + dy, 'r'); put(x + 2, y + dy, flick ? 'y' : 'r'); }
   if (flare) { const [x, y, big] = flare; const pts = big ? [[0, 0, 'y'], [1, 0, 'y'], [2, 0, 'r'], [1, -1, 'r'], [1, 1, 'r'], [3, 0, 'r'], [2, -2, 'y'], [2, 2, 'y'], [0, -1, 'y'], [0, 1, 'y'], [4, -1, 'r'], [4, 1, 'r']] : [[0, 0, 'y'], [1, 0, 'r'], [0, -1, 'r'], [0, 1, 'r'], [2, 0, 'y']];
     for (const [ddx, ddy, k] of pts) put(x + ddx, y + ddy + dy, k); }
+  if (sparks) for (const [x, y, k] of sparks) put(x, y + dy, k);   /* loose sparks, over everything */
   outline(c, OUT);
   return c;
 }
@@ -1147,7 +1176,10 @@ export function bakePyro(skin = {}) {
   const up = (dx = 0, d = 0) => [17 + dx, 18 + d, 18 + dx, 0 + d]; // the staff stood upright in the front hand, taller than her
   const hand = [16, 11, 17, 12];                                      // the front sleeve down to the staff
   const F = {
-    idle: [0, 1, 2, 3].map(i => pyroFrame({ dy: i >> 1, trail: [0, -1, 0, 1][i], staff: up(0, i >> 1), arm: hand, flick: i % 2, cowl: 0 })),
+    /* HER BREATH: the shoulders and the cowl settle a pixel while the hem and the boots stay where they stand, the robe
+       swings a beat behind them, and the fire in the cage licks a new way on every beat. The staff is planted at a lean
+       so the flame has room under the top of the frame. */
+    idle: [[0, 0], [0, 0], [1, 0], [1, 1], [1, 1], [0, 1], [0, 0], [0, -1]].map(([sit, trail], i) => pyroFrame({ sit, trail, staff: [17, 18, 19, 5], arm: [16, 11 + sit, 17, 11 + sit], flame: [0, 1, 2, 3, 1, 0, 3, 2][i], flick: i === 4 ? 1 : 0, cowl: 0 })),
     // she runs low and quick, the robe streaming behind and the staff carried like a lance
     run: [0, 1, 2, 3, 4, 5].map(i => pyroFrame({ lean: 2, dy: [0, -1, 0, 0, -1, 0][i], trail: 3 + (i % 3 === 1 ? 1 : 0), hemW: 11,
       feet: [[[9, 18], [16, 17]], [[11, 18], [15, 18]], [[13, 17], [12, 18]], [[16, 17], [9, 18]], [[15, 18], [11, 18]], [[12, 18], [13, 17]]][i],
@@ -1211,12 +1243,13 @@ export function bakePyro(skin = {}) {
     pyroFrame({ bell: 2, hemW: 12, feet: [[11, 17], [15, 17]], staff: [12, 15, 19, 2], arm: [16, 10, 18, 9], cowl: 1 }),
     F.jump[1],
   ];
-  F.fidget = [
-    pyroFrame({ staff: [11, 18, 22, 1], arm: [16, 11, 17, 12], cowl: 0 }),
-    pyroFrame({ staff: [5, 12, 26, 10], arm: [16, 11, 17, 12], cowl: 1, flick: 1 }),
-    pyroFrame({ staff: [21, 18, 12, 1], arm: [16, 11, 17, 12], cowl: 2 }),
-    F.idle[0],
-  ];
+  /* HER FIDGET: a spark lit in the free palm, tossed and watched up and caught, tossed again - into the cage, which flares */
+  { const p = (arm2, sparks, flame = 0, o = {}) => pyroFrame({ staff: [17, 18, 19, 5], arm: [16, 11, 17, 11], cowl: 0, arm2, sparks, flame, ...o });
+    const low = [11, 10, 13, 12], hi = [11, 10, 13, 10];
+    F.fidget = holdFrames([
+      [p(low, null, 0, { palm: [14, 11] }), 3], [p(hi, [[14, 7, 'y'], [14, 8, 'r']], 1), 1], [p(low, [[14, 4, 'y']], 2, { flick: 1 }), 2],
+      [p(low, [[15, 2, 'y']], 3, { flick: 1 }), 2], [p(low, [[15, 4, 'y'], [15, 5, 'r']], 1, { flick: 1 }), 1], [p(hi, [[14, 9, 'y']], 0), 2],
+      [p([11, 10, 14, 11], [[16, 7, 'y'], [15, 8, 'r']], 2), 1], [p(low, [[18, 3, 'y']], 3), 1], [p(low, null, 4, { flick: 1 }), 2], [p(low, null, 4), 2], [F.idle[0], 2]]); }
   F.atkC = [
     pyroFrame({ lean: -2, feet: [[10, 18], [16, 18]], staff: [1, 11, 15, 11], arm: [14, 11, 12, 11], arm2: [10, 11, 8, 11], cowl: 0 }),
     pyroFrame({ lean: 3, trail: 3, feet: [[8, 18], [17, 18]], staff: [11, 11, 26, 11], arm: [17, 10, 21, 11], arm2: [13, 10, 16, 11], cowl: 2, flare: [27, 11, false] }),
@@ -1491,7 +1524,9 @@ export function bakeFreebooter(skin = {}) {
   const carry = (d = 0) => [sh[0], sh[1] + 3 + d, sh[0] + 5, sh[1] + 9 + d];         // and down at his side at a run
   const holster = (d = 0) => [sh[0] - 2, sh[1] + 3 + d, sh[0] - 5, sh[1] + 2 + d];   // the pistol through his belt
   const F = {
-    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, cutlass: rest(i >> 1), pistol: holster(i >> 1), plume: i % 3 })),
+    /* HIS BREATH: the hat and the feather ride it, the coat tail hangs a beat behind, and the cutlass point dips after the hand */
+    idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
+      return knightFrame({ dy, hy, sho, plume, cutlass: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 7 + lag - dy], pistol: holster(), bits: flap([1], dy, lag, 'b', 'B') }); }),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, cutlass: carry(), pistol: holster() })),
     jump: [knightFrame({ legs: 'jump', dy: -1, cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 5], pistol: holster(), plume: 1 }), knightFrame({ legs: 'jump2', cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 1 })],
     fall: [knightFrame({ legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], pistol: holster(), plume: 2 })],
@@ -1530,6 +1565,15 @@ export function bakeFreebooter(skin = {}) {
   // the dodge is a roll: he is the only one of them who has ever had to get out of the way for a living
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 2, legs: i % 2 ? 'crouch' : 'wide', cutlass: carry(2), pistol: holster(2) }));
   { const arcs = comboArcs(sh, 'cutlass', 9, { pistol: holster() }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* a cutlass backhand, and a lunge */
+  /* HIS FIDGET: the pistol out of his belt, spun twice round the trigger finger, caught level, and the muzzle put to the
+     brim of his hat to tip it before it goes home */
+  { const hx = sh[0] + 4, hy0 = sh[1] + 1, arm = [sh[0], sh[1], hx, hy0];
+    const SPIN = [[5, 0], [4, 3], [0, 5], [-4, 3], [-5, 0], [-4, -3], [0, -5], [4, -3]];
+    const pf = v => knightFrame({ arm, cutlass: rest(), pistol: [hx, hy0, hx + v[0], hy0 + v[1]], plume: 0 });
+    const spins = SPIN.map(pf), draw = knightFrame({ arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 4], cutlass: rest(), pistol: holster(), plume: 1 });
+    const tip = knightFrame({ hy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], cutlass: rest(), pistol: [sh[0] + 2, sh[1] - 1, sh[0] + 3, sh[1] - 6], plume: 2 });
+    const lower = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], cutlass: rest(), pistol: [sh[0] + 2, sh[1] - 1, sh[0] + 3, sh[1] - 6], plume: 1 });
+    F.fidget = holdFrames([[draw, 1], [spins[0], 2], ...[1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0].map(k => [spins[k], 1]), [tip, 3], [lower, 1], [draw, 1], [F.idle[7], 1]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1570,7 +1614,11 @@ export function bakeReaper(skin = {}) {
   const rest = (d = 0) => [sh[0] - 3, sh[1] + 5 + d, sh[0] + 13, sh[1] + 9 + d];    /* low guard, across the body, point forward and down */
   const carry = (d = 0) => [sh[0] - 4, sh[1] + 6 + d, sh[0] + 12, sh[1] + 11 + d];  /* at a run the point drops further: he is dragging it */
   const F = {
-    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], greatsword: rest(i >> 1), plume: i % 3 })),
+    /* HIS BREATH: the pauldrons lift, the torn surcoat drags a beat behind, the long point sinks after the hands, and once
+       in the cycle the green in the helm goes out and comes back. The point is held a pixel short so it clears the frame. */
+    idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
+      return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], greatsword: [sh[0] - 3, sh[1] + 5, sh[0] + 12, sh[1] + 9 + lag - dy],
+        bits: [...flap([3, 4], dy, lag, 'r', 'r'), ...(i === 6 ? [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] : [])] }); }),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 6], greatsword: carry() })),
     jump: [knightFrame({ legs: 'jump', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 6, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 7, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 4, sh[0] - 7, sh[1] - 4], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, greatsword: [sh[0] + 2, sh[1] + 3, sh[0] - 8, sh[1] - 2], plume: 2 })],
@@ -1610,6 +1658,15 @@ export function bakeReaper(skin = {}) {
   /* THE PASSING: he does not roll. He goes thin and steps through. */
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 1, legs: i % 2 ? 'wide' : 'runC', greatsword: carry(1), plume: i % 3 }));
   { const arcs = comboArcs(sh, 'greatsword', 16); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the long blade rising, and driven through */
+  /* HIS FIDGET: the blade turned point-down and driven a finger into the ground before him, both hands folded on the
+     pommel, and his weight on it for a few slow breaths with the lights in the helm gone dim - then hauled out, back to guard */
+  { const grip = (dy, o = {}) => knightFrame({ dy, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], greatsword: [sh[0] + 3, sh[1] - 1, sh[0] + 4, sh[1] + 15 - dy], ...o });
+    const dim = hy => [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']];
+    const turn = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], greatsword: [sh[0] + 2, sh[1] + 2, sh[0] + 10, sh[1] - 8], plume: 1 });
+    const lift = knightFrame({ arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], greatsword: [sh[0] + 3, sh[1] - 3, sh[0] + 4, sh[1] + 10], plume: 2 });
+    const plant = grip(1, { plume: 2, bits: [[10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38']] });
+    const lean1 = grip(1, { hy: 1, plume: 1 }), lean2 = grip(1, { hy: 1, sho: 1, plume: 0 }), lean3 = grip(1, { hy: 1, plume: 1, bits: dim(1) }), lean4 = grip(1, { hy: 1, sho: 1, plume: 0, bits: dim(1) });
+    F.fidget = holdFrames([[turn, 2], [lift, 2], [plant, 2], [lean1, 3], [lean2, 3], [lean3, 3], [lean4, 3], [lean1, 2], [lift, 2], [turn, 2], [F.idle[7], 1]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1658,7 +1715,9 @@ export function bakePaladin(skin = {}) {
   const rest = (d = 0) => [sh[0] + 2, sh[1] + 1 + d, sh[0] + 5, sh[1] + 9 + d];   // the head grounded in front of him
   const carry = (d = 0) => [sh[0] + 1, sh[1] + 3 + d, sh[0] - 8, sh[1] - 2 + d];  // slung back behind him at a run, clear of the helm
   const F = {
-    idle: [0, 1, 2, 3].map(i => knightFrame({ dy: i >> 1, maul: rest(i >> 1), plume: i % 3 })),
+    /* HIS BREATH: the head of the maul never leaves the ground - only the haft moves, with his hands - and the tabard below
+       his belt gathers and falls a beat behind his chest */
+    idle: BREATH.map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 9 - dy], bits: flap([3, 4], dy, breathLag(i), 'b', 'B') })),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, maul: carry() })),
     jump: [knightFrame({ legs: 'jump', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 7], plume: 2 })],
@@ -1696,6 +1755,16 @@ export function bakePaladin(skin = {}) {
   // the dodge is a heavy step: a lean and a stride, not a tumble
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dx: i < 2 ? i : 3 - i, dy: 1, legs: i % 2 ? 'wide' : 'runC', maul: carry(1) }));
   { const arcs = comboArcs(sh, 'maul', 8); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the maul coming up from below, and a jab with the head */
+  /* HIS FIDGET: the maul up off the ground and across him, a gauntlet wiped over the head of it - once, twice, his helm
+     bent to it - until the steel catches the light, and down again with a thud */
+  { const across = o => knightFrame({ arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 3], maul: [sh[0] + 1, sh[1] + 3, sh[0] + 7, sh[1] - 1], ...o });
+    const hand = (x, y) => [[x, y, 'b'], [x + 1, y, 'b'], [x, y + 1, 'B'], [x + 1, y + 1, 'b'], [x - 1, y + 1, 'S']];   /* a rag of the tabard's blue: a grey gauntlet vanished on grey steel */
+    const lift = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], maul: [sh[0] + 2, sh[1] + 2, sh[0] + 6, sh[1] + 7], plume: 1 });
+    const hold = across({ plume: 2 }), w1 = across({ hy: 1, plume: 1, bits: hand(13, 3) }), w2 = across({ hy: 1, plume: 0, bits: hand(15, 5) }), w3 = across({ hy: 1, plume: 0, bits: hand(17, 7) });
+    const shine = across({ plume: 1, bits: [[15, 5, '#ffffff'], [14, 5, '#e8eef6'], [16, 5, '#e8eef6'], [15, 4, '#e8eef6'], [15, 6, '#e8eef6']] }), shine2 = across({ plume: 0, bits: [[15, 5, '#ffffff']] });
+    const lower = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 8], plume: 2 });
+    const thud = knightFrame({ dy: 1, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 8], plume: 2, bits: flap([3, 4], 1, 0, 'b', 'B') });
+    F.fidget = holdFrames([[lift, 2], [hold, 2], [w1, 2], [w2, 2], [w3, 2], [w1, 1], [w2, 1], [w3, 2], [shine, 2], [shine2, 2], [lower, 2], [thud, 2], [F.idle[7], 1]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
