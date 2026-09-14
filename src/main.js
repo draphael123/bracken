@@ -1735,7 +1735,7 @@ function drawMap() {
   if (map.walking) map.lastDir = map.walking < 0 ? -1 : 1;
   { // the road not yet walked: dotted, past the last node you can enter
     let last = 0; for (let k = 0; k < NODES.length; k++) if (!nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)'; for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
-  drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 3)) % (map.walking ? 6 : 4), px, py + 2, map.lastDir || 1, false);
+  drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 4.5)) % (map.walking ? 6 : K.R.idle.length), px, py + 2, map.lastDir || 1, false);
   // node labels
   // node plates. The name is on a board you can read over the trees, and what you have taken out of that
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
@@ -2213,7 +2213,7 @@ function drawStore() {
         const set = tab.key === 'hero' ? (k.id === 'paladin' ? preview('hero:paladin:' + PROG.skin, () => bakePaladin(PAL_SETS[PROG.skin] || {})) : k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : k.id === 'pirate' ? preview('hero:pirate:' + PROG.skin, () => bakeFreebooter(FREE_SETS[PROG.skin] || {})) : k.id === 'reaper' ? preview('hero:reaper:' + PROG.skin, () => bakeReaper(REAP_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
           : tab.key === 'skin' ? skinPreview(k)
           : weaponPreview(k);
-        const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 3) % 4];
+        const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 4.5) % set.R.idle.length];
         const sc = Math.max(1, Math.min(3, (46 - squeeze) / fr.height)); g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
       } else if (tab.rank) {
         const rr = rankOf(k.id);
@@ -2357,7 +2357,7 @@ function drawSlots() {
     if (!p) { text('empty', x + cw / 2, y + 44, '#6a6a7a', 'center'); text('new game', x + cw / 2, y + 58, sel ? '#8fd160' : '#4a5a4a', 'center'); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0);
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const K2 = p.hero === 'paladin' ? preview('slot:paladin', () => bakePaladin({})) : p.hero === 'pyro' ? preview('slot:pyro:' + (p.skin || 'bracken'), () => bakePyro(PYRO_SETS[p.skin || 'bracken'] || {})) : skin ? preview('slot:' + skin.id + ':' + (p.sword || 'steel'), () => bakeKnight(Object.assign({}, skin.pal, (SWORDS.find(w => w.id === (p.sword || 'steel')) || SWORDS[0]).pal))) : K;
-    drawSet(K2, 'idle', Math.floor(time * 3) % 4, x + cw / 2, y + 44, 1, false);
+    drawSet(K2, 'idle', Math.floor(time * 4.5), x + cw / 2, y + 44, 1, false);
     text(cleared + ' / ' + levels + ' woods', x + cw / 2, y + 52, '#fff6e0', 'center');
     text((p.coins || 0) + ' gold', x + cw / 2, y + 64, '#ffd34a', 'center');
     text(medals + ' medal pts', x + cw / 2, y + 76, '#c9d1dc', 'center');
@@ -4383,6 +4383,14 @@ function updatePlayer(dt) {
   if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); if (L.hush && P.relic !== 'soles') { noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); footMark(); } } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
   P.anim += dt;
+  /* THE FIDGET CLOCK. Stood still, in no danger, with nothing pressed, a hero gets restless: first after a few seconds,
+     then now and then. Any press, any step, a blow, a boss, or a wind-up close by stops it dead and starts the wait over. */
+  { const calm = state === 'play' && P.ground && Math.abs(P.vx) < 10 && !(P.atk >= 0) && !P.block && !P.dead && !(P.dance > 0) && !(P.hurt > 0) && !(P.inv > 0) && !P.climb && !P.charge
+      && !(P.castT > 0) && !(P.blastT > 0) && !anyPress && !keys.left && !keys.right && !keys.down && !keys.up && !keys.jump && !keys.atk && !keys.dodge && !bossActive && !miniActive
+      && !enemies.some(e => e.alive && Math.abs(e.x - P.x) < 160 && Math.abs(e.y - P.y) < 100 && windingUp(e));
+    if (!calm) { P.idleT = 0; P.fidgetT = 0; }
+    else if (P.fidgetT > 0) { P.fidgetT -= dt; if (P.fidgetT <= 0) { P.fidgetT = 0; P.idleT = 0; P.fidgetWait = 7 + Math.random() * 6; } }
+    else if ((P.idleT = (P.idleT || 0) + dt) > (P.fidgetWait || 4) && K.R.fidget) P.fidgetT = K.R.fidget.length * 0.1; }
 
   const pb = box(P);
   for (let ty = Math.floor(pb.t / TS); ty <= Math.floor((pb.b - 1) / TS); ty++) for (let tx = Math.floor(pb.l / TS); tx <= Math.floor((pb.r - 1) / TS); tx++) {
@@ -12374,7 +12382,7 @@ function drawWorld(cx, cy, showPlayer) {
     const vis = P.inv <= 0 || Math.floor(P.inv * 20) % 2 === 0;
     if (vis) {
       if (!P.fly) g.drawImage(PROP.shadow, Math.round(P.x) - 6 - cx, Math.round(P.y) - 2 - cy);
-      let key = 'idle', frame = Math.floor(P.anim * 3) % 4;
+      let key = 'idle', frame = Math.floor(P.anim * 4.5) % K.R.idle.length;
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
@@ -12396,7 +12404,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
       else if (P.skidT > 0 && K.R.skid) key = 'skid';
       else if (P.landT > 0 && Math.abs(P.vx) < 40) { key = 'land'; frame = P.landT > 0.05 ? 0 : 1; }
-      else if (P.idleT > 6 && K.R.fidget && Math.abs(P.vx) <= 10) { const p = (P.idleT - 6) / 1.5; key = 'fidget'; frame = Math.min(K.R.fidget.length - 1, Math.floor(p * K.R.fidget.length)); }   /* left standing, he shoulders the weapon */
+      else if (P.fidgetT > 0 && K.R.fidget && Math.abs(P.vx) <= 10) { key = 'fidget'; frame = Math.max(0, Math.min(K.R.fidget.length - 1, K.R.fidget.length - Math.ceil(P.fidgetT / 0.1))); }   /* left standing, each of them has a small business of their own (the clock is in update) */
       else if (Math.abs(P.vx) > 10) { key = 'run'; frame = Math.floor(P.anim * 13) % 6;
         if (frame !== P.lastRf && (frame === 1 || frame === 4) && SET.parts !== 'low') parts.push({ x: P.x - P.face * 3, y: P.y, vx: -P.face * 14, vy: -10, life: 0.24, max: 0.24, col: '#c9b27c', size: 1, grav: 30 });   /* a scuff off every stride */
         P.lastRf = frame; }
@@ -12404,7 +12412,6 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.lastFace !== undefined && P.face !== P.lastFace && P.ground && Math.abs(P.vx) > 60 && !(P.atk >= 0) && !(P.dodge > 0)) { P.skidT = 0.11; dust(P.x - P.face * 5, P.y, 3); }
       else if (P.lastFace !== undefined && P.face !== P.lastFace && P.ground && !(P.atk >= 0) && !(P.dodge > 0)) P.skidT = Math.max(P.skidT || 0, 0.06);   /* a turn at a walk still pivots on the heel, for a frame */
       if (P.flourishT > 0) P.flourishT -= 1 / 60;
-      P.idleT = P.ground && Math.abs(P.vx) < 10 && !(P.atk >= 0) && !P.block && !keys.left && !keys.right && !keys.down && !(P.dance > 0) && !P.dead ? (P.idleT || 0) + 1 / 60 : 0; if (P.idleT > 7.5) P.idleT = 0.5;
       P.lastFace = P.face; if (P.skidT > 0) P.skidT -= 1 / 60;
       let dFace = P.face, dY = 0;
       if (P.dance > 0) { const DANCE = [['idle', 0, 1], ['crouch', 0, 1], ['jump', 0, 1], ['land', 0, 1], ['block', 0, 1], ['idle', 2, 1],
@@ -12414,7 +12421,7 @@ function drawWorld(cx, cy, showPlayer) {
         if (step[0] === 'jump') dY = -Math.round(Math.sin(ph * Math.PI) * 6);
         else if (step[0] === 'crouch' || step[0] === 'land') dY = 1; }
       const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
-      const br = key === 'idle' ? 1 + 0.018 * Math.sin(P.anim * 2.6) : 1; // at rest, he breathes
+      const br = 1;   /* at rest he breathes in the frames themselves now: a sub-pixel stretch on top of them only shimmered */
       const hs = isReaper() ? 1.22 : 1, shadowed = isReaper() && ((P.passT || 0) > 0 || P.dodge > 0);   /* the Death Knight is the biggest of them, and when he steps he is a shadow */
       drawWarm('rim', K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, P.x, P.y - 10);
       drawSet(K, key, frame, P.x - cx, P.y - cy + dY, dFace, false, sx * (2 - br) * hs, sy * br * hs, shadowed ? 0.55 : 1);
@@ -12944,7 +12951,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
   const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, UI.title, 'center');
-  drawSet(K, 'idle', Math.floor(time * 3) % 4, x + 30, y + 52, 1, false);
+  drawSet(K, 'idle', Math.floor(time * 4.5), x + 30, y + 52, 1, false);
   const nameOfSkill = id => { if (!id) return 'NONE'; const n = TREE.find(q => q.id === id && q.hero === hero()); return n ? n.name : ((ABILITIES.find(a => a.id === id) || {}).name || 'NONE'); };
   const skName = nameOfSkill(skillNow()), sk2Name = tal('twinSkill') ? nameOfSkill(skill2Now()) : 'LOCKED';
   const ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
@@ -13222,7 +13229,7 @@ function drawTitle(cx, cy) {
       g.globalAlpha = (1 - ph) * 0.22; g.fillStyle = '#6a5a58';
       g.fillRect(Math.round(fx + Math.sin(i * 2.1 + time * 0.8 + ph * 3) * (4 + ph * 14)), Math.round(fy - 16 - ph * 62), 2 + Math.round(ph * 3), 2 + Math.round(ph * 2)); }
     g.globalAlpha = 1;
-    drawSet(K, 'idle', Math.floor(time * 3) % 4, fx + 20, fy, -1, false); }
+    drawSet(K, 'idle', Math.floor(time * 4.5), fx + 20, fy, -1, false); }
   drawTitleBracken();
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
@@ -13471,7 +13478,7 @@ function drawEditor() {
   g.strokeStyle = '#c9463d'; g.lineWidth = 1; g.strokeRect(0.5 - cx, 0.5 - cy, LW * TS - 1, LH * TS - 1);
   // where the knight starts
   { const sx = edDoc.start.x * TS + 8 - cx, sy = (edDoc.start.y + 1) * TS - cy;
-    g.globalAlpha = 0.75; drawSet(K, 'idle', Math.floor(time * 3) % 4, sx, sy, 1, false); g.globalAlpha = 1;
+    g.globalAlpha = 0.75; drawSet(K, 'idle', Math.floor(time * 4.5), sx, sy, 1, false); g.globalAlpha = 1;
     g.fillStyle = '#8fd160'; g.fillRect(sx - 9, sy - 30, 18, 7); text('START', sx, sy - 29, '#0f1a0f', 'center', 6); }
   // the cursor
   { const x = edCur.x * TS - cx, y = edCur.y * TS - cy, b = edBrush();
