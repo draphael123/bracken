@@ -597,7 +597,7 @@ const DIE = {
   drownedking() { tone('sine', 90, 36, 1.1, 0.3, 0.02); noise(0.6, 0.5, 240, 0.7, 0.06); SFX.heavy(); for (let i = 0; i < 3; i++) tone('triangle', 500 - i * 90, 200, 0.22, 0.07, 0.3 + i * 0.16); tone('sine', 50, 34, 1.4, 0.16, 0.5); },
   propman() { tone('square', 210, 90, 0.28, 0.16); noise(0.3, 0.2, 260, 0.5, 0.03); tone('sine', 110, 60, 0.3, 0.1, 0.1); },
   clinger() { noise(0.34, 0.3, 900, 0.6); tone('sine', 320, 90, 0.3, 0.12, 0.02); noise(0.2, 0.16, 260, 0.5, 0.16); },
-  pitwarden() { tone('sawtooth', 140, 44, 0.75, 0.24); noise(0.5, 0.4, 220, 0.8, 0.05); SFX.heavy(); for (let i = 0; i < 4; i++) { tone('triangle', 1800 - i * 200, 700, 0.09, 0.05, 0.22 + i * 0.1); noise(0.1, 0.1, 2600, 0.45, 0.24 + i * 0.1); } tone('sine', 70, 32, 0.9, 0.16, 0.34); },
+  prince() { tone('sawtooth', 120, 38, 1.1, 0.2); noise(0.9, 0.3, 180, 0.9, 0.1); SFX.stone(); tone('triangle', 520, 90, 0.9, 0.06, 0.15); for (let i = 0; i < 3; i++) noise(0.12, 0.14, 1200 - i * 250, 0.5, 0.5 + i * 0.16); tone('sine', 60, 28, 1.2, 0.14, 0.4); },   /* a long dry breath going out of him, and the dirt settling */
   berserker() { tone('sawtooth', 190, 60, 0.55, 0.2); noise(0.4, 0.34, 300, 0.7, 0.04); SFX.heavy(); tone('sine', 80, 38, 0.7, 0.14, 0.12); for (let i = 0; i < 2; i++) { tone('triangle', 1400 - i * 260, 500, 0.1, 0.07, 0.24 + i * 0.11); noise(0.12, 0.12, 2200, 0.5, 0.26 + i * 0.11); } },
   grandmother() { tone('sine', 300, 140, 0.5, 0.12); noise(0.22, 0.14, 700, 0.5, 0.05);
     for (let i = 0; i < 4; i++) tone('triangle', 760 - i * 70, 520 - i * 60, 0.09, 0.06, 0.22 + i * 0.1);   /* the stick going over, end over end */
@@ -712,7 +712,7 @@ const HURT = {
   drownedking() { tone('sine', 130, 80, 0.3, 0.2); noise(0.26, 0.3, 300, 0.6); },
   propman() { tone('square', 260, 180, 0.14, 0.12); noise(0.14, 0.2, 400, 0.5); },
   clinger() { noise(0.16, 0.22, 1100, 0.5); tone('sine', 420, 180, 0.14, 0.08); },
-  pitwarden() { tone('sawtooth', 180, 110, 0.24, 0.2); noise(0.22, 0.3, 280, 0.65); tone('sine', 90, 60, 0.28, 0.12, 0.03); },
+  prince() { tone('sawtooth', 150, 90, 0.26, 0.16); noise(0.2, 0.22, 420, 0.7); tone('triangle', 700, 420, 0.12, 0.05, 0.03); },   /* a hiss through a lipless jaw */
   berserker() { tone('sawtooth', 240, 150, 0.2, 0.18); noise(0.18, 0.28, 360, 0.6); tone('sine', 120, 80, 0.24, 0.1, 0.03); },
   grandmother() { tone('sine', 380, 260, 0.16, 0.09); noise(0.12, 0.12, 900, 0.5); tone('triangle', 700, 600, 0.07, 0.05, 0.08); },
   masthead() { gobH(0.7) || tone('square', 300, 170, 0.14, 0.16); noise(0.12, 0.2, 900, 0.5); tone('sine', 140, 90, 0.18, 0.1, 0.04); },   /* a goblin the size of a door taking one, and his canvas slapping */
@@ -820,7 +820,7 @@ const CAST = {
   netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
   watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
-  troll: { kit: 'ogre', rate: 1 }, pitwarden: { kit: 'ogre', rate: 0.9, mat: 'plate' }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
+  troll: { kit: 'ogre', rate: 1 }, prince: { kit: 'zom', rate: 0.62, lp: 1500, mat: 'cloth' }, courtier: { kit: 'zom', rate: 1.3, lp: 2600 }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
   forgemaster: { kit: 'ogre', rate: 0.85, mat: 'plate' }, reefmaw: { kit: 'ogre', rate: 0.7 },
   hound: { kit: 'bark', rate: 1.2 }, greathound: { kit: 'bark', rate: 0.8 },
   harpy: { kit: 'scream', rate: 1.1 }, roc: { kit: 'scream', rate: 0.8 }, petrel: { kit: 'gull', rate: 1 }, queen: { kit: 'scream', rate: 1.05 },
@@ -839,7 +839,7 @@ SFX.hurtOf = t => { const c = CAST[t], h = HURT[t]; if (!c) return h || null;
     if ((!c.human || !ok) && h) h(); vbody(c.mat, false); }; };
 // THE BLOW HAS A SOUND. The instant a wind-up lets go - the same instant its smear is drawn - the air moves: a
 // short whoosh for a blade, a long low one for anything heavy, a ring off steel, and now and then a man shouting.
-const HEAVY_V = new Set(['closedhelm', 'hedgeknight', 'troll', 'heavy', 'brute', 'pitwarden', 'forgemaster', 'berserker', 'greathound', 'ram', 'golem', 'lance', 'chief', 'king', 'captain', 'tollmaster']);
+const HEAVY_V = new Set(['closedhelm', 'hedgeknight', 'troll', 'heavy', 'brute', 'prince', 'forgemaster', 'berserker', 'greathound', 'ram', 'golem', 'lance', 'chief', 'king', 'captain', 'tollmaster']);
 SFX.foeRelease = (t, mat, big) => { if (!gate('rel', 0.07)) return;
   const heavy = big || HEAVY_V.has(t), dur = heavy ? 0.24 : 0.13, f = heavy ? 560 : 1400;
   noise(dur, heavy ? 0.15 : 0.1, f, 0.7); tone('triangle', vary(f * 0.5), f * 0.2, dur, heavy ? 0.05 : 0.03);

@@ -502,6 +502,7 @@ did not belong on.
 | THE MASTHEAD | `t: 'sailer'` mini, `MINI_NAME.sailer` | The flotilla has the Quartermaster and the Captain already | **Came back** as his own boss, `t: 'masthead'` / `updateMasthead`, at the end of THE SKY SHIP (the sheet winches turn the arena's wind on him). The big `sailer` mini stays benched |
 | THE HILL TROLL (big) | `t: 'troll', big: true` (30x36, 3.4x HP) | The scree and moor trolls are regulars; the big one had no room to throw in | A quarry or pass with boulders to answer his |
 | THE SUNCATCHER | `updateSuncatcher` | Removed from the Scree: it did not fit the path and its model is poor | A FROST level, a heavy rework, and a new sprite — not a reskin |
+| THE PIT WARDEN | **RETIRED, code removed** (last in git before the Buried Prince commit: `updatePitWarden`, `breakPitFloor`, `bakePitWarden`) | Too small to read, a poor sprite, and he floated; his floor-breaking pick was a rule nobody could see happen. THE BURIED PRINCE (`t: 'prince'`, `updatePrince`, `src/redraw/prince.js`) holds THE UNDERCROWN's tomb now | Nothing: if a level ever wants a pick that spends its floor, take the idea from git, not the sprite |
 
 A benched boss still has to pass `tools/tells.mjs` while it sits in the code: its marks are audited
 like everyone else's, so it comes back honest.

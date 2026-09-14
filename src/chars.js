@@ -1338,7 +1338,7 @@ export function bakeMiner() {
   return pack([walk1, walk2, dig, swing], 7, 15, 10, 11);
 }
 // ============================================================================================
-// THE UNDERCROWN, three of them.
+// THE UNDERCROWN, two of them (the Pit Warden is retired: THE BURIED PRINCE has his tomb, in src/redraw/prince.js).
 // ============================================================================================
 // THE PROPMAN — 12x12. A goblin whose whole job is to hold the mine up, and who has been doing it so
 // long he is bent to the shape of the timber he carries. He does not want to fight you. He wants to get
@@ -1370,32 +1370,6 @@ export function bakeClinger() {
   /* HOLDING ON: wrapped round whatever it caught */
   const hold = c(['..pppp....', '.pPPPPp...', '.pvrrvp...', 'ppPPPPpp..', 'p.pppp.p..', 'p.pPPp.p..', '.p.pp.p...', '..pppp....', '..p..p....', '.p....p...']);
   return pack([cling, fall1, fall2, hold], 5, 10, 10, 10);
-}
-// THE PIT WARDEN — 26x28, and he is the reason nobody has come up out of the Undercrown in thirty years.
-// An overseer gone to the dark: a lamp where his face should be, a chain over one shoulder and a pick as
-// long as a man. Everything about him is HEAVY, so the silhouette leads with the pick head and the lamp.
-export function bakePitWarden() {
-  const WP = Object.assign({}, EP, { i: '#5a6270', I: '#3a3e48', s: '#8a919c', S: '#5f5a52', y: '#ffd36b', Y: '#e0b040',
-    h: '#4a3e32', H: '#2e261e', c: '#8a5a32', C: '#5c3a1d', k: '#1a1620', g: '#6faa4a', G: '#3f6e2c', r: '#ff6b2c' });
-  const w = rows => outline(fromGrid(rows, WP, 1), OUT);
-  /* the lamp on the helm, the iron collar, and the chain that never comes off */
-  const headRows = (lit) => ['........yy................', '.......yYYy...............',
-    '......iiiiii..............', '.....iIIIIIIi.............',
-    '.....i' + (lit ? 'kggk' : 'kkkk') + 'i.............', '.....iIIIIIIi.............', '......ssssss..............'];
-  const body = ['....hhhhhhhhhh............', '...hHHHHHHHHHHh...........', '...hHHhhhhhhHHh...........',
-    '...hHHHHHHHHHHh...........', '....hhhhhhhhhh............', '....hHHHHHHHHh............', '.....hhhhhhhh.............'];
-  const legs1 = ['.....hh....hh.............', '.....hh....hh.............', '....HHH....HHH............', '...IIII....IIII...........'];
-  const legs2 = ['......hhhhhh..............', '.....hh....hh.............', '....HHH....HHH............', '..IIIII......IIIII........'];
-  /* THE PICK, carried low at a walk and over the head at the tell: it is most of what you see of him */
-  const pickLow = (rows) => rows.map((r, i) => i >= 8 && i <= 13 ? r.slice(0, 15) + 'CCC'.slice(0, 3) + r.slice(18) : r);
-  const stand = w([...headRows(1), ...body, ...legs1]);
-  const walk = w([...headRows(1), ...body, ...legs2]);
-  const raise = w(['...........sss............', '..........sSSSs...........', '.........sSSSSSs..........', '..........CCCC............',
-    ...headRows(1).slice(0, 5), '......ssssss..hCC.........', ...body.slice(0, 5), '....hhhhhhhhhh.CC.........', '.....hhhhhhhh...C.........', ...legs1]);
-  const swing = w([...headRows(1), ...body.slice(0, 4),
-    '....hhhhhhhhhhCCCCCC......', '....hHHHHHHHHhCCsSSSs.....', '.....hhhhhhhh...sSSSs.....', ...legs2]);
-  const dark = w([...headRows(0), ...body, ...legs1]);
-  return pack([stand, walk, raise, swing, dark], 13, 28, 26, 28);
 }
 // ============================================================================================
 // THE DEEP, three of them. Two of the three do not want your blood, they want your WEIGHT.
