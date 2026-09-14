@@ -850,7 +850,10 @@ export function bakeHarpy() {
   const flap = cspr(['................', '......hhhhh.....', '..hhhhhHHhhhhh..', 'hhh.hhheehhh.hhh', '.....hhmhhh.....', '......hhhh......', '.....H....H.....']);
   const dive = cspr(['................', '................', '......hheehh....', '.....hhhmhhhh...', '....hhhhhhhhhh..', '..hhhhhhhhhhhh..', '.hh.........hh..']);
   const down = cspr(['................', '................', '................', 'hhhh..hhhhhh.hhh', 'hhhhhhhheehhhhhh', '.hhhhhhhmhhhhh..', '..H..H....H..H..']);
-  return pack([glide, flap, dive, down], 9, 7, 14, 7);
+  /* THE STOOP: wings thrown up and talons forward, the beat before it drops (4); and hit (5), wings crumpled and tumbling */
+  const aim = cspr(['hh............hh', 'hhh..........hhh', '.hhh..hhhh..hhh.', '...hhhheehhhh...', '.....hhmhhh.....', '......hhhh......', '....HH....HH....']);
+  const hurt = cspr(['................', '...h........h...', '..hhh.hhhh.hhh..', '...hhhheehhhh...', '....hhhmmhhh....', '.....hhhhhh.....', '......H..H......']);
+  return pack([glide, flap, dive, down, aim, hurt], 9, 7, 14, 7);
 }
 // Goat rider — a hill goblin on a shaggy crag goat. 16×13. Frames: run1, run2, buck (goat rearing), riderless goat run.
 export function bakeGoatRider() {
@@ -2550,7 +2553,16 @@ export function bakeSwornSword() {
   const tell = wspr(lay(base, lay(guard, swordUp)));
   const cut = wspr(lay(withLegs(base, legsB), lay(guard, swordOut)));
   const rest = wspr(lay(base, guard));
-  return pack([walk1, walk2, tell, cut, rest], 7, 15, 10, 14);
+  /* A WALK IN FOUR: the two steps between the two he had (5, 6); and HURT, the brim knocked back and the shield flung up (7) */
+  const legsC = ['...vvvvvvvv...', '....vv..vv....', '....vv...vv...', '...VV.....VV..'];
+  const legsD = ['...vvvvvvvv...', '...vv..vv.....', '..vv....vv....', '.VV.....VV....'];
+  const legsHurt = ['...vvvvvvvv...', '...vv....vv...', '..vv......vv..', '.VV........VV.'];
+  const shiftR = rows => rows.map(r => ('.' + r).slice(0, W));
+  const guardUp = pad(['..............', '..............', '..............', '..............', '.ss...........', 'sSSs..........', 'sSszs.........', 'sSSs..........', 'sSSs..........', '.ss...........'], W);
+  const walk3 = wspr(lay(withLegs(base, legsC), lay(guard, swordLow)));
+  const walk4 = wspr(lay(withLegs(base, legsD), lay(guard, swordLow)));
+  const hurt = wspr(lay(withLegs(shiftR(base), legsHurt), guardUp));
+  return pack([walk1, walk2, tell, cut, rest, walk3, walk4, hurt], 7, 15, 10, 14);
 }
 
 // THE HEDGE KNIGHT - a great helm is a BLOCK with one slit in it, and the poleaxe over his shoulder is the

@@ -203,6 +203,7 @@ export function bakeScout() {
     if (pose === 'walk' || pose === 'watch') { harpoon(G, B + 5, 20, B + 5, 1 + dy); arm(G, [B + 2, 11 + dy], [B + 3, 12 + dy], [B + 5, 14 + dy], 's'); }
     if (pose === 'tell') { harpoon(G, B - 11, 12 + dy, B + 8, 4 + dy); arm(G, [B + 1, 11 + dy], [B - 1, 10 + dy], [B - 3, 9 + dy], 's'); }
     if (pose === 'throw') { arm(G, [B + 1, 11 + dy], [B + 4, 11 + dy], [B + 7, 10 + dy], 's'); put(G, B + 8, 10 + dy, 's'); put(G, B + 8, 9 + dy, 's'); }
+    if (pose === 'hurt') { harpoon(G, B - 9, 20, B + 5, 9 + dy); arm(G, [B + 1, 11 + dy], [B - 2, 9 + dy], [B - 4, 8 + dy], 's'); }   /* knocked back, the harpoon gone slack in his hand */
     const c = q(G);
     if (pose === 'throw') smear(c, 1 + B + 1, 1 + 11 + dy, 7, -95, -25);
     return c;
@@ -212,6 +213,7 @@ export function bakeScout() {
     frame({ legs: 'stand', pose: 'watch' }),
     frame({ legs: 'brace', dx: -1, hx: -1, pose: 'tell' }),
     frame({ legs: 'lunge', dx: 1, hx: 1, dy: 1, pose: 'throw' }),
+    frame({ legs: 'brace', dx: -2, hx: -2, dy: 1, pose: 'hurt' }),
   ], X + 1, H + 1, 8, 16);
 }
 

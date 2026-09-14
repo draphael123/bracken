@@ -809,7 +809,7 @@ let impacts = [], rings = [], critters = [], escape = null, stormT = 0, thrown =
 const RELICS = { soles: { name: 'THE FELTED SOLES', desc: 'your feet make no sound, and you land like a cat', col: '#8fd160' }, wick: { name: "THE LAMPLIGHTER'S WICK", desc: 'the fire in your hand stays lit, even when a blow lands', col: '#ffd36b' }, stormline: { name: 'THE STORM LINE', desc: 'a line round your waist: the sea soaks you, but it cannot take you off her', col: '#a8cfc6' }, blackflag: { name: 'THE BLACK FLAG', desc: 'their own colours: whoever you stagger stays down half as long again', col: '#c9b27c' }, diverlamp: { name: "THE DIVER'S LAMP", desc: 'it lights the water around you, and the air lasts longer', col: '#bfe6f5' }, tidecharm: { name: 'TIDE CHARM', desc: 'hold your breath twice as long under the water', col: '#7cc8c8' }, banner: { name: 'THE QUEEN\'S BANNER', desc: 'goblins pull their blows: a fifth less hurt', col: '#c9a0ff' }, sunshard: { name: 'SUNSHARD', desc: 'crystal holds you twice as long', col: '#bfe6f5' }, shoes: { name: 'IRON SHOES', desc: 'the planks do not give under you', col: '#8a919c' }, spurs: { name: 'CLIMBING SPURS', desc: 'cling to rock without sliding', col: '#c9d1dc' }, lamp: { name: "MINER'S LAMP", desc: 'light around you in the dark', col: '#ffd36b' }, fleece: { name: 'GOLDEN FLEECE', desc: 'stamina returns twice as fast', col: '#ffe6a0' }, crown: { name: 'HORNET CROWN', desc: 'stomps strike like plunges', col: '#e0b040' }, charm: { name: "HUNTER'S CHARM", desc: 'gold comes to you', col: '#ffd34a' }, gauntlet: { name: 'IRON GAUNTLET', desc: 'every swing and heavy blow costs half the wind', col: '#c9d1dc' }, lantern: { name: 'GLOW LANTERN', desc: 'spores cannot put you to sleep', col: '#4aa0b0' }, windcloak: { name: 'WINDCLOAK', desc: 'hold jump to glide', col: '#bfe6f5' }, cloak: { name: 'THIEF CLOAK', desc: 'thieves cannot take your gold', col: '#6a3aa0' } };
 function impactAt(x, y, kind = 'hit') { if (SET.impact) impacts.push({ x, y, t: 0, kind }); }
 function ringAt(x, y, r = 18, col = '#fff6e0', life = 0.28) { if (SET.impact) rings.push({ x, y, r, col, t: 0, life }); }
-let hushT = 0, slowT = 0, bossFx = [], lastTellT = -9, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
+let hushT = 0, slowT = 0, bossFx = [], bossBodies = [], lastTellT = -9, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
 const CLOUD = ART.bakeClouds(), MAPSIGN = ART.bakeMapSign(), FISH = ART.bakeFish();
 for (let i = 0; i < 6; i++) clouds.push({ x: Math.random() * 900, y: 8 + Math.random() * 50, k: i % 3, sp: 4 + Math.random() * 5 });
 for (let i = 0; i < 4; i++) mapClouds.push({ x: Math.random() * VW, y: 10 + Math.random() * 120, k: i % 3, sp: 5 + Math.random() * 4 });
@@ -2683,7 +2683,7 @@ function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
 // the creatures that have a recoil frame: it is the LAST frame of their set, and it holds for a fifth of a second
-const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp']);
+const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout']);
 const COLS = { swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   closedhelm: ['#c9d1dc', '#9a3a3a', '#e0b040'],
@@ -2824,6 +2824,7 @@ function openYardRespawn(dt) {   // in the open yard a straw man is back on his 
     if (e.downT > 2) { e.downT = 0; e.alive = true; e.hp = e.hp0 || e.maxHp || EHP[e.t] || 20; e.dying = 0; e.flash = 0; e.stagger = 0; e.mode = e.mode0 || e.mode; burst(e.x, e.y - 8, 8, ['#e0c088', '#c9a040'], 40, 0.4); } }
 }
 function spawnCorpse(e, dir) {
+  if ((e === boss || e.mini) && e.lastSet) { bossBodies.push({ set: e.lastSet, frame: e.lastFrame || 0, x: e.x, y: e.y, face: e.face || 1, big: e.lastBigF || 1, t: 0, dur: 1.4 }); SFX.gobDieLow(); return; }   /* a boss leaves a body, not a tumble */
   if (isPirate() && !P.loaded && !P.dead) reloadPistol('');   /* a kill seats a ball: it used to be any coin, which made the pistol free */
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
   if (HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) c.frame = SPR[e.t].R.length - 1;   /* it dies in the pose it was hit in, not mid-stride */
@@ -5150,7 +5151,7 @@ function updateShore(e, dt) {
     if (e.mode === 'flipped') { if (e.modeT <= 0) { e.mode = 'walk'; e.vy = -120; } }
     else if (e.mode === 'pinchTell') { if (e.modeT <= 0) { e.mode = 'pinch'; e.modeT = 0.25; SFX.clank(); if (!P.dead && ad < 26 && dy < 16) { const res = damagePlayer(e.x, DMG.crab); if (res === 'hit') P.vx = Math.sign(d || 1) * 170; } } }
     else if (e.mode === 'pinch') { if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 1.2; } }
-    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 20 || e.flanking) ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.5; if (ad < 22 && e.cd <= 0) { e.mode = 'pinchTell'; e.modeT = 0.35; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } } else want = e.face * e.speed * 0.4; }
+    else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 20 || e.flanking) ? e.face * e.speed : 0; e.guardCd = Math.max(0, (e.guardCd || 0) - dt); if (ad < 50 && P.atk >= 0 && e.guardCd <= 0) { e.guardT = 0.5; e.guardCd = 1.8; }   /* the claw comes up, then it has to come down: a crab was unkillable except by the flip */ if (ad < 22 && e.cd <= 0) { e.mode = 'pinchTell'; e.modeT = 0.35; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } } else want = e.face * e.speed * 0.4; }
   } else if (e.t === 'scout') { near = ad < 240 && dy < 90 && !P.dead;
     if (e.mode === 'fade') { e.alpha = Math.max(0, e.modeT / 0.4); if (e.modeT <= 0) { e.x = Math.max(e.x - 260, Math.min(e.x + 260, e.x - Math.sign(d || 1) * 110)); e.mode = 'appear'; e.modeT = 0.4; burst(e.x, e.y - 8, 8, ['#a8cfc6', '#7ff0e0'], 40, 0.4); } }
     else if (e.mode === 'appear') { e.alpha = 1 - Math.max(0, e.modeT / 0.4); if (e.modeT <= 0) { e.alpha = 1; e.mode = 'watch'; e.cd = 1.2; e.throws = 0; } }
@@ -9242,6 +9243,8 @@ function pirateSpoils(e) {   // LOOTER and NO QUARTER: what a body is worth to a
 }
 function updateShots(dt) { for (const s of shots) s.life -= dt; shots = shots.filter(s => s.life > 0); }
 function updateCorpses(dt) {
+  for (const b of bossBodies) { b.t += dt; if (b.t >= b.dur && !b.gone) { b.gone = true; smoke(b.x, b.y - 10, 8, 18); burst(b.x, b.y - 8, 16, ['#e8dcc0', '#9a9080', '#5f5a52'], 90, 0.7, 250, 2); } }
+  bossBodies = bossBodies.filter(b => !b.gone);
   for (const f of bossFx) { f.t -= dt; if (f.t <= 0 && !f.done) { f.done = true;
     burst(f.x, f.y, f.big ? 26 : 12, ['#fff6e0', '#ffd36b', '#ff6b2c', '#5f5a52'], f.big ? 150 : 100, f.big ? 0.8 : 0.5, 250, 2); smoke(f.x, f.y, f.big ? 5 : 2, 10);
     ringAt(f.x, f.y, f.big ? 60 : 22, f.big ? '#ffffff' : '#ffd36b', f.big ? 0.55 : 0.3); shakeCam(f.big ? 7 : 3);
@@ -11118,6 +11121,8 @@ function drawWorld(cx, cy, showPlayer) {
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
   for (const s of silvers) if (s.x > cx - 12 && s.x < cx + VW + 12) { if (s.got) { g.globalAlpha = 0.22; g.drawImage(PROP.silver[0], s.x - 4 - cx, Math.round(s.y - 5) - cy); g.globalAlpha = 1; } else { g.globalAlpha = 0.28 + 0.16 * Math.sin(time * 5 + s.ph); g.fillStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(s.x - cx), Math.round(s.y - 2 - cy), 8, 0, 7); g.fill(); g.globalAlpha = 1; g.drawImage(PROP.silver[Math.floor(time * 6 + s.ph) % 4], s.x - 4 - cx, Math.round(s.y - 5 + Math.sin(time * 4 + s.ph) * 1.5) - cy); } }
+  for (const b of bossBodies) { const k = Math.min(1, b.t / b.dur), shake = Math.round((1 - k) * 3 * Math.sin(b.t * 60)), flash = k < 0.6 && Math.floor(b.t * 10) % 2 === 0;
+    drawSet(b.set, null, b.frame, b.x - cx + shake, b.y - cy + Math.round(k * k * 10), b.face, flash, b.big, b.big * (1 - 0.18 * k), 1 - Math.max(0, (k - 0.65) / 0.35), b.face * k * 0.45); }   /* it shudders white, tips over and sinks */
   for (const c of corpses) {
     if (c.x < cx - 40 || c.x > cx + VW + 40) continue;
     const al = Math.min(1, c.life / c.max * 2.5);
@@ -11185,7 +11190,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'holdfast') frame = e.mode === 'hold' ? 2 : e.mode === 'spent' ? 1 : 0;
     /* THE ROAD PEOPLE. Their whole read is the wind-up, so the tell frame has to be on screen for the
        whole tell and not a beat of it - each of these is keyed off the MODE, never off a timer. */
-    else if (e.t === 'swornsword') frame = e.mode === 'cutTell' ? 2 : e.mode === 'cut' ? 3 : (e.mode === 'reel' || e.mode === 'rest') ? 4 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 6) % 2) : 0;
+    else if (e.t === 'swornsword') frame = e.mode === 'cutTell' ? 2 : e.mode === 'cut' ? 3 : (e.mode === 'reel' || e.mode === 'rest') ? 4 : Math.abs(e.vx) > 6 ? [0, 5, 1, 6][Math.floor(e.anim * 8) % 4] : 0;
     else if (e.t === 'hedgeknight') frame = e.mode === 'swingTell' ? 2 : e.mode === 'swing' ? 3 : (e.mode === 'leapTell' || e.mode === 'leap') ? 4 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 5) % 2) : 0;
     else if (e.t === 'runner') frame = e.mode === 'shout' ? 2 : (e.mode === 'stabTell' || e.mode === 'stab') ? 3 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 9) % 2) : 0;
     else if (e.t === 'crossbow') frame = e.mode === 'span' ? 0 : e.mode === 'loose' ? 2 : 1;
@@ -11227,14 +11232,14 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'snuffer') frame = e.mode === 'snuffTell' ? 2 : (e.mode === 'swipeTell' || e.mode === 'swipe') ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 2 : 0;
     else if (e.t === 'sailer') frame = e.mode === 'tumble' ? 2 : e.mode === 'sail' ? 1 : 0;
     else if (e.t === 'troll') frame = e.mode === 'throwTell' || e.mode === 'throw' ? 3 : e.mode === 'swatTell' || e.mode === 'swat' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
-    else if (e.t === 'harpy') frame = e.mode === 'dive' ? 2 : e.mode === 'downed' ? 3 : e.mode === 'aim' ? Math.floor(e.anim * 14) % 2 : Math.floor(e.anim * 6) % 2;
+    else if (e.t === 'harpy') frame = e.mode === 'dive' ? 2 : e.mode === 'downed' ? 3 : e.mode === 'aim' ? 4 : Math.floor(e.anim * 6) % 2;
     else if (e.t === 'goat') frame = !e.rider ? 3 + Math.floor(e.anim * 12) % 2 : e.mode === 'buck' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 14 : 8)) % 2 : 0;
     else if (e.t === 'ram') frame = e.mode === 'lower' || e.mode === 'buttTell' || e.mode === 'leapTell' || e.mode === 'rear' ? 3 : e.mode === 'leap' ? 6 : e.mode === 'land' ? 4 : e.mode === 'crash' ? 4 : e.mode === 'tossTell' || e.mode === 'toss' || e.mode === 'call' ? 5 : e.mode === 'stampTell' || e.mode === 'stamp' || e.mode === 'butt' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * (e.mode === 'charge' ? 16 : 8)) % 2 : 0;
     else if (e.t === 'pike') frame = e.mode === 'thrust' ? 1 : e.mode === 'tell' ? 2 : 0;
     else if (e.t === 'turtle') frame = e.mode === 'hide' ? 3 : e.mode === 'snap' ? 2 : Math.abs(e.vx) > 3 ? Math.floor(e.anim * 4) % 2 : 0;
-    else if (e.t === 'eel') frame = e.mode === 'lunge' ? 2 : e.stagger > 0 ? 3 : Math.floor(e.anim * 4) % 2;
+    else if (e.t === 'eel') frame = e.mode === 'lunge' ? 2 : e.mode === 'lungeTell' ? 6 : e.stagger > 0 ? 3 : [0, 4, 1, 5][Math.floor(e.anim * 8) % 4];
     else if (e.t === 'heronfoe') frame = e.mode === 'strikeTell' ? 2 : e.mode === 'strike' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 4) % 2 : 0;
-    else if (e.t === 'crab') frame = e.mode === 'flipped' ? 3 : (e.guardT > 0 || e.mode === 'pinchTell' || e.mode === 'pinch') ? 2 : Math.floor(e.anim * 6) % 2;
+    else if (e.t === 'crab') frame = e.mode === 'flipped' ? 3 : e.mode === 'pinch' ? 6 : (e.guardT > 0 || e.mode === 'pinchTell') ? 2 : [0, 4, 1, 5][Math.floor(e.anim * 10) % 4];
     else if (e.t === 'scout') frame = e.mode === 'aim' ? 5 : e.mode === 'throw' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 4;
     else if (e.t === 'siren') frame = e.mode === 'dive' ? 3 : e.mode === 'sing' ? 1 + Math.floor(e.anim * 3) % 2 : 0;
     else if (e.t === 'tideguard') frame = e.mode === 'thrustTell' ? 5 : e.mode === 'thrust' ? 6 : (e.stagger > 0 || e.guardT > 0) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
@@ -11314,7 +11319,9 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
     if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald' || e.t === 'grandmother') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
     if (e.t === 'gqueen' && e.mode === 'shadow') g.globalAlpha = 0.12; else if (e.t === 'gqueen' && e.mode === 'shadowTell') g.globalAlpha = 1 - 0.6 * Math.min(1, (0.5 - e.modeT) / 0.5);
-    const ps = poseOf(e, wind), pSX = bigF * (1 + sq * 0.22) * ps.sx, pSY = bigF * (1 - sq * 0.22) * ps.sy, pRot = ps.rot || 0;
+    const roar = e.enrageT > 0 ? 1 + 0.14 * Math.sin(Math.min(1, (0.7 - e.enrageT) / 0.7) * Math.PI) : 1;   /* THE ROAR: the phase change swells the body and lets it settle */
+    const ps = poseOf(e, wind), pSX = bigF * roar * (1 + sq * 0.22) * ps.sx, pSY = bigF * roar * (1 - sq * 0.22) * ps.sy, pRot = ps.rot || 0;
+    e.lastSet = sprSet; e.lastFrame = frame; e.lastBigF = bigF;   /* remembered, for the body it leaves */
     // a bright rim behind the sprite, for anyone who loses foes against the wood
     const inDark = (L.darkZones || []).some(z => e.x > z.x0 && e.x < z.x1 && e.y > z.y0 && e.y < z.y1) || (L.pools || []).some(q => q.swim && !q.dry && e.x > q.x0 && e.x < q.x1 && e.y > q.y);
     if ((SET.rim || inDark) && sprSet && !e.harmless) { // in a dark room or under water a foe gets a rim whatever the setting says: nothing may hurt you invisibly

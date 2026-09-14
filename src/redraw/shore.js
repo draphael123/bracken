@@ -198,7 +198,9 @@ export function bakeEel() {
     layer(G, g => { tube(g, neck); stamp(g, 16, 4, ['.mmaa...', 'ddmmoma.', 'dddddmmm', 'ddrtrt..', 'bbrrrrt.', '.bbbbb..']); });
     return q(G);
   };
-  return pack([swim(0), swim(Math.PI), lunge(), curl()], 14, 11, 20, 8);
+  /* the swim in four (4, 5), and THE COIL before the lunge: bunched up tight with the head drawn back (6) */
+  const coil = () => { const G = blank(W, H); tube(G, path(3, 17, 6, 3.4, 1.2), 0.8); stamp(G, 14, 3, HEAD); return q(G); };
+  return pack([swim(0), swim(Math.PI), lunge(), curl(), swim(Math.PI / 2), swim(Math.PI * 1.5), coil()], 14, 11, 20, 8);
 }
 
 // ---------- HERON ----------
@@ -394,11 +396,11 @@ export function bakeCrab() {
     a: ['rrr......', 'R.rrr....', 'R........', 'R.rrrrr.r', 'R.R.....R', 'd.d.....d'],
     b: ['.rrr.....', '.R.rr....', '.R.......', '.d.rrrr.r', '...R....R', '...d....d'],
   };
-  const walk = (k, up) => {
+  const walk = (k, up, bob = 0) => {
     const G = blank(W, H), K = k === 'a' ? 'b' : 'a';
     stamp(G, 0, 8, LEGS[k]); stamp(G, 14, 8, mir(LEGS[K]));
-    stamp(G, 9, 3, EYES);
-    stamp(G, 5, 6, SHELL);
+    stamp(G, 9, 3 + bob, EYES);
+    stamp(G, 5, 6 + bob, SHELL);
     if (up) layer(G, g => { stamp(g, 1, 0, SMALLUP); stamp(g, 16, 0, BIGUP); });
     else layer(G, g => { stamp(g, 1, 2, SMALL); stamp(g, 16, 2, BIG); });
     return q(G);
@@ -421,5 +423,10 @@ export function bakeCrab() {
     ]);
     return q(G);
   };
-  return pack([walk('a'), walk('b'), walk('a', true), flipped()], 12, 15, 14, 9);
+  /* THE SNAP: claws driven forward and down, shell dropped behind them (6); and HURT: eyes pulled in, claws limp (7) */
+  const snap = () => { const G = blank(W, H); stamp(G, 0, 8, LEGS.a); stamp(G, 14, 8, mir(LEGS.b)); stamp(G, 9, 4, EYES); stamp(G, 5, 7, SHELL);
+    layer(G, g => { stamp(g, 0, 5, SMALL); stamp(g, 16, 5, BIG); }); return q(G); };
+  const hurt = () => { const G = blank(W, H); stamp(G, 0, 8, LEGS.b); stamp(G, 14, 8, mir(LEGS.a)); stamp(G, 5, 7, SHELL); stamp(G, 9, 6, ['R....R']);
+    layer(G, g => { stamp(g, 2, 7, SMALL); stamp(g, 15, 7, BIG); }); return q(G); };
+  return pack([walk('a'), walk('b'), walk('a', true), flipped(), walk('a', false, 1), walk('b', false, 1), snap(), hurt()], 12, 15, 14, 9);
 }

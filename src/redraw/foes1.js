@@ -225,7 +225,12 @@ export function bakeHarpy() {
     'zhHHzHhhhhhhHzHHhz',
     'zz.zztt.mm.ttz.zzz',
   ]);
-  return pack([up, dn, dive, down], 10, 13, 14, 7);
+  /* THE STOOP (4): wings thrown right up and the talons out in front of her - the beat before she drops on you. And HURT (5):
+     knocked down a row, eyes screwed shut, wings dropped. (The game draws these by index: 4 while she aims, the last when struck.) */
+  const aimBody = body.slice(0, 10).concat(['........mm........', '.........mm.......', '..........ttt.....']);
+  const hurtBody = ['..................', ...body.slice(0, 12)].map((r, i) => i === 4 ? '....c.czkzkc.c....' : r);
+  const aim = f(lay(wUpL, mirror(wUpL), aimBody)), hurt = f(lay(wDnL, mirror(wDnL), hurtBody));
+  return pack([up, dn, dive, down, aim, hurt], 10, 13, 14, 7);
 }
 
 // ---------- WAR HOUND ----------
