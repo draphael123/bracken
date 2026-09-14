@@ -140,7 +140,10 @@ export function bakeFacade(kind, tw, th, seed, o = {}) {
     return c;
   }
   // curtain and tower: coursed granite a shade under the laid tiles, so it sits behind them
-  const S = { f: '#46485c', l: '#525470', d: '#393a4d', mor: '#2b2c39', hi: '#62647e', slit: '#100f16', snow: '#dfe5f2', roof: '#3a3048', roofL: '#4e4060' };
+  const S = { f: '#46485c', l: '#525470', d: '#393a4d', mor: '#2b2c39', hi: '#62647e', slit: '#100f16', snow: '#dfe5f2', roof: '#3a3048', roofL: '#4e4060', win: '#ffb84a', winL: '#fff0c0' };
+  /* THE DROWNED KING'S STONE (o.sea): the same courses under thirty years of sea - green-grey, weed where the snow lay, and the
+     windows lit by nothing a man lit */
+  if (o.sea) Object.assign(S, { f: '#2e3e40', l: '#3a4c4c', d: '#243232', mor: '#162022', hi: '#4a605c', slit: '#081012', snow: '#5a8a58', roof: '#26343a', roofL: '#34464a', win: '#3fa89a', winL: '#bff5ea' });
   const roofH = kind === 'tower' && o.roof ? Math.min(Math.round(W * 0.6), Math.round(H * 0.45)) : 0, cren = roofH ? 0 : 8;
   const by = roofH + cren;   /* where the body starts */
   for (let y = by; y < H; y++) { const k = (y - by) & 7; rect(g, 0, y, W, 1, k === 7 ? S.mor : k === 0 ? S.l : S.f);
@@ -156,7 +159,7 @@ export function bakeFacade(kind, tw, th, seed, o = {}) {
     rect(g, W - 2, by, 2, H - by, S.mor);
     const mx = W >> 1;
     for (let y = by + 20; y < H - 24; y += 40) { rect(g, mx - 1, y, 2, 10, S.slit); rect(g, mx - 2, y - 1, 4, 1, S.hi); }   /* the slits up its middle */
-    if (o.lit !== false && H - by > 40) { rect(g, mx - 3, by + 8, 6, 8, '#ffb84a'); rect(g, mx - 1, by + 10, 2, 4, '#fff0c0'); rect(g, mx - 4, by + 7, 8, 1, S.hi); }
+    if (o.lit !== false && H - by > 40) { rect(g, mx - 3, by + 8, 6, 8, S.win); rect(g, mx - 1, by + 10, 2, 4, S.winL); rect(g, mx - 4, by + 7, 8, 1, S.hi); }
   } else for (let x = 20; x < W - 8; x += 48) { const y = by + 14; if (y + 12 < H) { rect(g, x, y, 2, 10, S.slit); rect(g, x - 1, y - 1, 4, 1, S.hi); } }
   if (o.arch) { const ay0 = o.arch[0] * T, ay1 = (o.arch[1] + 1) * T, ax0 = T >> 1, ax1 = W - (T >> 1), r = Math.min(12, (ax1 - ax0) >> 1);
     for (let y = ay0; y < ay1; y++) { const dy = y - ay0; let inset = 0; if (dy < r) inset = Math.round(r - Math.sqrt(r * r - (r - dy) * (r - dy)));
