@@ -2244,7 +2244,7 @@ const BEASTS = [
   { t: 'frog', name: 'BULLFROG KING', sub: 'lord of the marsh', desc: 'Sits on his mud dais and hops the court. Tongue, leap, venom, and a great breath in: block to dig your heels in or be dragged to his teeth. His throat is soft mid-croak; his head takes two stomps before he hops off.' },
   { t: 'sporeling', name: 'SPORELING', sub: 'walking cap', desc: 'Wanders and bites. Kill it and it bursts into a spore cloud that slows and tires you, so finish it at range or step back.' },
   { t: 'spitcap', name: 'SPITCAP', sub: 'rooted lobber', desc: 'Rooted, so it lobs. The bomb is nothing: the sleeping cloud it leaves is everything. It swells before it throws, and while it is swollen it comes apart in one blow.' },
-  { t: 'weaver', name: 'WEAVER', sub: 'pale spider', desc: 'Hangs in its curtain and spits web that holds your feet. Mash out of the web, and cut the curtains: they are what it hides behind. Stand off from it and it casts a line and reels you in, under the drop.' },
+  { t: 'weaver', name: 'WEAVER', sub: 'pale spider', desc: 'Hangs in its curtain and spits web that holds your feet. Mash out of the web, and cut the curtains: they are what it hides behind.' },
   { t: 'lurker', name: 'LURKER', sub: 'hungry mushroom', desc: 'Looks like scenery until you pass, then lunges. Walk, do not run, through mushroom groves, and swing at caps that look too plump.' },
   { t: 'drone', name: 'SPORE DRONE', sub: 'floating puffball', desc: 'Drifts toward you and bursts. Swords bounce off it. Stomp it out of the air or plunge it.' },
   { t: 'shaman', name: 'TOAD SHAMAN', sub: 'walking toadstool', desc: 'Raises sporelings from the ground and vanishes in a puff when struck. Chase it down first.' },
@@ -2252,7 +2252,7 @@ const BEASTS = [
   { t: 'pike', name: 'PIKEMAN', sub: 'holds the line', desc: 'A long pike that turns your blade from the front. Jump over him, get behind, or throw the shield. Block the thrust to parry it.' },
   { t: 'folk', name: 'TOWNSFOLK', sub: 'they live here', desc: 'Harmless. They run for their doors and slam them. The court cheers the King and hides when he stands. Hurting them is beneath you.' },
   { t: 'greathound', name: 'THE GREAT HOUND', sub: 'the kennels\' own', desc: 'A hound the length of a cart. LUNGE: jump it, or block it and it skids past you, open. POUNCE: dodge sideways; it lands stunned. HOWL: two pups come; kill both quickly and it whines, open for a long while. Past half its blood it snaps at anything beside it. The chained kennel hound, freed, bites it too.' },
-  { t: 'spider', name: 'BOUGH SPIDER', sub: 'thread and fang', desc: 'Hangs from the bough above on a thread. Walk under it and it drops, bites, and yanks you sideways off the ledge. It climbs back up slowly: hit it then, or stomp it as it hangs.' },
+  { t: 'spider', name: 'BOUGH SPIDER', sub: 'thread and fang', desc: 'Hangs from the bough above on a thread. Walk under it and it drops, bites, and yanks you sideways off the ledge. It climbs back up slowly: hit it then, or stomp it as it hangs. The big one, the Weaver, casts a line at you when you stand off and reels you in under the drop.' },
   { t: 'squirrel', name: 'SQUIRREL KNIGHT', sub: 'the tree-city\'s cutpurse', desc: 'A red squirrel in a tabard. Snatches your gold on touch and hops up the tree with it. Catch it before it climbs out of reach and the gold comes back with interest.' },
   { t: 'miner', name: 'GOBLIN MINER', sub: 'pick and candle', desc: 'Digs through soft rock toward you and leaves the tunnel behind for you to use. Swings a pick with a slow, heavy tell: block it and he is open. Drops his lamp when he dies, and the lamp stays lit.' },
   { t: 'bat', name: 'CAVE BAT', sub: 'hunter of lamps', desc: 'Hangs in the dark and cannot see you. It sees light: a lamp, a fire, an ember, the lamp you carry. Stand in the dark and it stays put; carry light through its roost and it comes. One hit kills it.' },
@@ -2716,7 +2716,18 @@ function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
 // the creatures that have a recoil frame: it is the LAST frame of their set, and it holds for a fifth of a second
-const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout']);
+/* HURT, FOR THE REST OF THEM. Ten of the most-placed creatures had no hurt pose, so a blow landed on them the way it lands on a
+   wall. Each gets one made from its own first frame: rocked back about the heel and a pixel off the line of the blow, with
+   its flash sheet and its mirror made the same way. It is the LAST frame, like every hand-drawn hurt pose. */
+function addHurtPose(set) { if (!set || !set.R || !set.R.length || set.hurtMade) return;
+  const src = set.R[0], [c, g] = canvas(src.width, src.height); g.imageSmoothingEnabled = false;
+  g.translate(set.ax, set.ay); g.rotate(-0.24); g.translate(-set.ax - 1, -set.ay); g.drawImage(src, 0, 0);
+  set.R.push(c); if (set.L) set.L.push(flipX(c));
+  if (set.white && set.white.R) { const w = whiten(c); set.white.R.push(w); if (set.white.L) set.white.L.push(flipX(w)); }
+  set.hurtMade = true; }
+const MADE_HURT = ['tideguard', 'sailor', 'angler', 'goat', 'hearthgob', 'brute', 'spider', 'thorn', 'heavy', 'soldier'];
+for (const t of MADE_HURT) addHurtPose(SPR[t]);
+const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', ...MADE_HURT]);
 const COLS = { swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   closedhelm: ['#c9d1dc', '#9a3a3a', '#e0b040'],

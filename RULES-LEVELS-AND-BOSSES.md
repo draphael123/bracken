@@ -488,3 +488,20 @@ question, one of them is wrong and nobody knows which.
 A rope is climbed DOWN as well as up, by the way - the model had rungs as footing and a jump
 that could go up them, and no way to step onto one from directly above. That alone stranded
 thirty rows of the mine and everything they led to.
+
+## P. THE BENCH — BOSSES KEPT FOR LEVELS THAT DO NOT EXIST YET
+
+Four fights are still in the code and placed in no level. They are not dead code and they are not
+finished: each is waiting for a level that asks its question. Do not delete them, and do not drop
+one into an existing level to fill a gap — that is how the Suncatcher ended up on a scree path it
+did not belong on.
+
+| Boss | Code | Why it is benched | Before it comes back |
+| --- | --- | --- | --- |
+| THE HOUND MASTER | `t: 'master'`, `updateMaster` (mounted, whistles pups, flank/pincer calls) | Kingswood already has the Great Hound; two kennel fights in one arc | A kennel or hunt level of its own; its CHARGE is now a yellow `!` (blockable) |
+| THE MASTHEAD | `t: 'sailer'` mini, `MINI_NAME.sailer` | The flotilla has the Quartermaster and the Captain already | A rigging/sky-ship level where the wind is the arena |
+| THE HILL TROLL (big) | `t: 'troll', big: true` (30x36, 3.4x HP) | The scree and moor trolls are regulars; the big one had no room to throw in | A quarry or pass with boulders to answer his |
+| THE SUNCATCHER | `updateSuncatcher` | Removed from the Scree: it did not fit the path and its model is poor | A FROST level, a heavy rework, and a new sprite — not a reskin |
+
+A benched boss still has to pass `tools/tells.mjs` while it sits in the code: its marks are audited
+like everyone else's, so it comes back honest.
