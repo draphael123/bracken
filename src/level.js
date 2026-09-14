@@ -5118,6 +5118,211 @@ function theFrostfell() {
   };
 }
 
+// ============================================================================================================
+// THE SKY SHIP. A goblin galleon under sail above the clouds, lashed to a harbour that floats. ONE RULE, said
+// three ways: THE WIND GOES WHERE THE SAILS SAY. The sails fill and swing, the flags stream, the cloud comes past
+// in the gusts - and the sheet winches are yours: strike one and the wind in that part of her comes round.
+// Under all of it is the sky, and the sky catches nobody.
+//   1 THE CLOUD HARBOUR   the quay, the chandler, the mooring mast
+//   2 THE GANGWAYS        pontoons under gasbags, a headwind, the first sheet winch
+//   3 THE FORECASTLE      her bow, her figurehead, a crowd on the open deck under the foremast
+//   4 THE GUN DECK        down the hatch: the Boatswain's room, and her guns
+//   5 THE RIGGING         her waist is holed to the sky: over it on the yard, up to the crow's nest
+//   6 THE WAIST           sail goblins riding the wind down her deck, and the second winch
+//   7 THE CARGO BALLOON   the hatch is open to the cloud: the updraft, the slings, the gondola
+//   8 THE QUARTERDECK     THE MASTHEAD, in his own rigging, with the wind for a floor
+// ============================================================================================================
+function theSkyShip() {
+  const W = 600, H = 44, R = 26;
+  const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  const gusts = [], movers = [], stone = [], interiors = [], nets = [];
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const rock = (x0, x1, y0, y1) => { block(x0, x1, y0, y1); stone.push([x0, x1, y0, y1]); };
+  /* EVERY ROPE IS HUNG LAST (rule I): a cut made after a net takes its rungs out and says nothing */
+  const net = (x0, x1, y0, y1) => nets.push([x0, x1, y0, y1]);
+  const sign = (x, y, text) => ent('sign', x, y, { text });
+  /* A PONTOON IS RIGGED TO SOMETHING: a gasbag over it, and its rope down to the boards */
+  const pontoon = (x0, x1) => { block(x0, x1, R, R + 1); const m = (x0 + x1) >> 1; ent('balloon', m, R - 8, { r: 3 }); net(m, m, R - 4, R - 1); };
+  const gust = (x0, x1, y0, y1, o) => gusts.push(Object.assign({ x0: x0 * TS, x1: x1 * TS, y0: y0 * TS, y1: y1 * TS, dir: 1, period: 5, on: 3, phase: 0, moor: true, k: 1 }, o));
+
+  // ---------------- 1. THE CLOUD HARBOUR (x 0-64). A quay on a rock that floats, the chandler, the mooring mast. ----------------
+  block(0, 64, R, R + 3); block(3, 61, R + 4, R + 5); block(9, 55, R + 6, R + 6);   /* an old hull moored as a quay */
+  ent('balloon', 14, R - 12, { r: 4 }); ent('balloon', 58, R - 13, { r: 4 }); net(14, 14, R - 8, R - 1); net(58, 58, R - 8, R - 1);   /* and the gasbags that hold her up */
+  sign(3, R - 1, 'THE CLOUD HARBOUR. THE SAILS SAY WHERE THE WIND GOES. GO WITH IT, OR TURN IT.');
+  ent('check', 7, R - 1); ent('npc', 11, R - 1, { kind: 'squire' });
+  sign(15, R - 1, 'HER PIGEONS GOT LOOSE WHEN THEY BOARDED HER. THREE OF THEM ARE STILL ON HER.');
+  ent('deco', 19, R - 1, { kind: 'stall', v: 1 }); ent('npc', 23, R - 1, { kind: 'keeper' });
+  sign(27, R - 1, 'THE HARBOUR CHANDLER. WHATEVER THE WIND BLOWS IN, HE SELLS.');
+  ent('deco', 31, R - 1, { kind: 'barrels' });
+  /* THE MOORING MAST: her bow line is made fast at the top of it, and so is the best view in the harbour */
+  plat(39, 9, 8); plat(45, 17, 5); net(42, 43, 10, R - 1);
+  ent('deco', 42, R - 1, { kind: 'mastTall', v: 0 }); ent('deco', 40, 8, { kind: 'pennant', v: 2 });
+  ent('silver', 44, 7);
+  sign(37, R - 1, 'THE MOORING MAST HOLDS HER BOW LINE. CLIMB IT: THE HARBOUR PAYS AT THE TOP.');
+  ent('lookout', 46, 16, { face: -1 });
+  ent('cutlass', 34, R - 1, { face: -1 }); ent('cutlass', 55, R - 1, { face: -1 });
+  ent('thief', 50, R - 1, { face: -1 }); ent('archer', 45, 8, { face: 1 });   /* a cutpurse on the quay, and a bow at the top of the mast */
+  ent('flagpost', 61, R - 1);
+  coins([10, R - 2], [18, R - 2], [30, R - 2], [48, R - 2], [52, R - 2], [41, 8], [46, 8]);
+
+  // ---------------- 2. THE GANGWAYS (x 65-149). Pontoons under gasbags, and the wind across the gaps between them. ----------------
+  pontoon(69, 75); pontoon(80, 87);
+  /* THE FIRST SHEET WINCH. The gap past it is a jump in a lull, a stroll with the wind behind you - and the wind is against you */
+  ent('sheet', 86, R - 1, { id: 'gangway' });
+  sign(81, R - 1, 'A SHEET WINCH. STRIKE IT AND THE SAILS COME ROUND, AND SO DOES THE WIND.');
+  gust(76, 101, 8, R + 2, { dir: -1, period: 6, on: 3.6, k: 1.2, helm: 'gangway' });
+  block(93, 100, R, R + 1); ent('balloon', 96, 12, { r: 3 }); plat(94, 16, 5); net(96, 96, 17, R - 1);   /* a basket under this one: somebody keeps birds */
+  ent('stray', 95, 15, { kind: 'pigeon' }); ent('check', 99, R - 1); ent('flagpost', 94, R - 1);
+  pontoon(106, 112); ent('mover', 114, R - 1, { len: 2, range: 0, bob: true });
+  pontoon(118, 124);
+  /* a rope off a gasbag across the last of it, for anyone who would rather swing than wait */
+  ent('balloon', 128, 7, { r: 4 }); movers.push({ kind: 'swing', px: 128 * TS + 8, py: 11 * TS, arm: 128, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 0.8 });
+  pontoon(130, 136);
+  for (let x = 137; x <= 147; x++) set(x, R, T.PLANK);         /* her gangway, run out to the last pontoon */
+  gust(102, 150, 4, R + 2, { dir: 1, period: 4.4, on: 2.6, alt: true, k: 1.1 });
+  ent('sailer', 111, R - 1, { face: -1 }); ent('kite', 104, 12); ent('kite', 121, 10); ent('kite', 140, 11);
+  ent('cutlass', 120, R - 1, { face: -1 }); ent('sapper', 123, R - 1, { face: -1 }); ent('boarder', 134, R - 1, { face: -1 }); ent('boarder', 144, R - 1, { face: -1 });
+  ent('shield', 141, R - 1, { face: -1 }); ent('shield', 147, R - 1, { face: -1 });   /* THE GANGWAY IS A CHOKE: two shields and a boarder on a plank one man wide */
+  ent('harpy', 90, 14); ent('harpy', 127, 13);                  /* and the harpies work the gaps, because you cannot stop in them */
+  ent('flagpost', 133, R - 1);
+  sign(139, R - 1, 'HER BOARDING NET. SHE IS A GOBLIN SHIP, AND SHE IS NOT TIED UP FOR VISITORS.');
+  coins([72, R - 2], [84, R - 2], [90, R - 5], [104, R - 3], [110, R - 2], [116, R - 3], [122, R - 2], [128, R - 4], [134, R - 2], [142, R - 2]);
+
+  // ---------------- 3. THE FORECASTLE (x 148-214). Her bow, her figurehead, and a crowd on her open deck. ----------------
+  block(150, W - 1, R, R + 7);                                  /* HER HULL, bow to stern: two courses of deck and her sides under them */
+  block(154, W - 5, R + 8, R + 9); block(164, W - 16, R + 10, R + 10);   /* and her keel */
+  block(150, 176, R - 4, R - 1);                                /* the forecastle */
+  net(148, 149, R - 4, R + 5);                                  /* the boarding net over her bow */
+  ent('deco', 149, R + 2, { kind: 'figurehead', hang: true });
+  sign(152, R - 5, 'HER FORECASTLE. A GOBLIN GALLEON UNDER FULL SAIL, AND EVERY HAND ON HER HEARD YOU.');
+  ent('check', 155, R - 5); ent('deco', 159, R - 5, { kind: 'shipBell' }); ent('deco', 173, R - 5, { kind: 'anchor' });
+  ent('lookout', 162, R - 5, { face: -1 }); ent('cutlass', 166, R - 5, { face: -1 }); ent('horn', 172, R - 5, { face: -1 });   /* a hornblower on her forecastle: the first wind here that is a goblin's */
+  net(177, 177, R - 4, R - 1);                                  /* down off her forecastle, and back up it */
+  /* HER FOREMAST: a yard over the crowd, and a shooter on the one above it */
+  plat(189, 15, 15); plat(192, 10, 9); net(196, 197, 9, R - 1);
+  ent('deco', 196, R - 1, { kind: 'mastTall', v: 1 }); ent('deco', 193, 9, { kind: 'pennant', v: 0 });
+  ent('sail', 196, 11, { w: 8, h: 4 }); ent('sail', 196, 16, { w: 14, h: 6 });
+  ent('marine', 199, 9, { face: -1 });
+  sign(180, R - 1, 'A CROWD ON OPEN DECK. PUT YOUR BACK TO THE MAST, OR GET UP ON THE YARD OVER THEM.');
+  for (const x of [185, 192, 204]) ent('cutlass', x, R - 1, { face: -1 });
+  ent('boarder', 200, R - 1, { face: -1 }); ent('boarder', 188, R - 1, { face: -1 }); ent('bosun', 207, R - 1, { face: -1 });
+  ent('keg', 183, R - 1); ent('javelin', 198, R - 1, { face: -1 }); ent('archer', 193, 9, { face: -1 });
+  gust(178, 214, 2, R, { dir: 1, period: 4.6, on: 2.8, alt: true, k: 0.9 });
+  coins([158, R - 6], [166, R - 6], [182, R - 2], [190, 14], [200, 14], [196, 9]);
+  /* THE DECKHOUSE amidships: there is no way along her deck past it, only down through her guns */
+  block(215, 284, R - 8, R - 1);
+  net(215, 284, R - 9, R - 9);                                  /* and her boarding netting stretched over the top of it */
+  for (const x of [226, 250, 274]) ent('deco', x, R - 4, { kind: 'sternWindows' });
+
+  // ---------------- 4. THE GUN DECK (x 213-288). Down her hatch: the Boatswain's room, and her guns. ----------------
+  air(213, 214, R, R + 1); net(213, 214, R, R + 5);
+  air(213, 288, R + 2, R + 5); interiors.push([213, 288, R + 2, R + 5, 'ship']);
+  sign(209, R - 1, 'THE GUN DECK IS DOWN THIS HATCH. THE BOATSWAIN KEEPS IT, AND HE WHISTLES.');
+  ent('check', 211, R - 1);
+  /* THE BOATSWAIN'S ROOM. The hatch shuts behind you and his gate shuts in front of you */
+  for (let y = R + 2; y <= R + 5; y++) set(241, y, T.PORT);
+  ent('bosun', 235, R + 5, { face: -1, mini: true });
+  ent('deco', 222, R + 5, { kind: 'hammock', v: 0 }); ent('deco', 230, R + 5, { kind: 'kegStack' });
+  /* HER GUNS, past his gate: strike a breech and the deck in front of it is cleared */
+  ent('cannon', 246, R + 5, { deck: true }); ent('cannon', 266, R + 5, { deck: true });
+  sign(244, R + 5, 'STRIKE A BREECH AND THE GUN FIRES DOWN HER DECK. THEN IT IS TOO HOT A WHILE.');
+  ent('check', 251, R + 5);
+  ent('sapper', 273, R + 5, { face: -1 }); ent('javelin', 254, R + 5, { face: -1 });   /* a powder monkey with a lit fuse, in a corridor with her guns in it */
+  ent('boarder', 257, R + 5, { face: -1 }); ent('cutlass', 262, R + 5, { face: -1 }); ent('boarder', 274, R + 5, { face: -1 }); ent('cutlass', 279, R + 5, { face: -1 });
+  ent('deco', 283, R + 5, { kind: 'chickenCoop' }); ent('stray', 281, R + 5, { kind: 'pigeon' });
+  for (const x of [220, 236, 256, 270]) ent('deco', x, R + 3, { kind: 'gunport', v: x % 2 });
+  coins([218, R + 5], [226, R + 5], [248, R + 5], [254, R + 5], [270, R + 5], [276, R + 5]);
+  air(286, 287, R, R + 1); net(286, 287, R, R + 5);             /* and up out of it aft of the deckhouse */
+
+  // ---------------- 5. THE RIGGING (x 285-380). Her waist is holed to the sky. Over it on the yard, up to the crow's nest. ----------------
+  air(300, 318, R, R + 10);                                     /* the hole in her: deck, sides and keel, and cloud under it */
+  net(296, 297, 17, R - 1);                                     /* the shrouds up to the spar */
+  plat(296, 16, 46);                                            /* the spar and the main yard, one run over the hole */
+  plat(320, 10, 18); plat(325, 4, 8); net(328, 329, 5, R - 1);  /* the topsail yard, the crow's nest, her mainmast */
+  ent('deco', 328, 3, { kind: 'crowNest' }); ent('deco', 328, R - 1, { kind: 'mastTall', v: 0 });
+  ent('silver', 331, 2);
+  net(350, 351, 17, R - 1);                                     /* down the far shrouds */
+  ent('sail', 329, 11, { w: 16, h: 4 }); ent('sail', 329, 17, { w: 22, h: 6 });
+  gust(286, 380, 0, R, { dir: 1, period: 4, on: 2.6, alt: true, k: 1.1 });
+  sign(290, R - 1, 'HER WAIST IS HOLED TO THE SKY. GO OVER ON THE YARD, WITH THE WIND BEHIND YOU.');
+  ent('check', 293, R - 1);
+  ent('marine', 323, 9, { face: -1 }); ent('marine', 338, 15, { face: -1 }); ent('cutlass', 306, 15, { face: -1 });
+  L.spikes(301, 303, 15); L.spikes(309, 310, 15);                /* THE SPAR IS SPLINTERED where the shot went through her: hop the teeth */
+  ent('archer', 334, 9, { face: -1 }); ent('archer', 314, 15, { face: -1 }); ent('harpy', 342, 2); ent('cutlass', 326, 15, { face: -1 });
+  ent('javelin', 366, R - 1, { face: -1 }); ent('sapper', 378, R - 1, { face: -1 });
+  ent('kite', 312, 7); ent('kite', 346, 5);
+  ent('boarder', 358, R - 1, { face: -1 }); ent('cutlass', 375, R - 1, { face: -1 });
+  ent('check', 356, R - 1); ent('flagpost', 353, R - 1);
+  ent('deco', 312, 17, { kind: 'rigging', v: 0 }); ent('deco', 344, 17, { kind: 'rigging', v: 1 });
+  coins([302, 15], [306, 15], [314, 15], [318, 15], [324, 9], [334, 9], [326, 3], [332, 3], [362, R - 2], [368, R - 2]);
+
+  // ---------------- 6. THE WAIST (x 380-470). Sail goblins riding the wind down her open deck, and the second winch. ----------------
+  ent('sheet', 385, R - 1, { id: 'waist' });
+  sign(380, R - 1, 'SAIL GOBLINS RIDE THE WIND AT YOU. BLOCK ONE AND SHE SPILLS, OR TURN THE WIND ON THEM.');
+  gust(381, 472, 6, R + 1, { dir: -1, period: 6, on: 4, k: 1, helm: 'waist' });
+  air(418, 421, R, R + 10); air(446, 449, R, R + 10);           /* two stove bays, open to the cloud */
+  for (const x of [404, 432, 458, 466]) ent('sailer', x, R - 1, { face: -1 });
+  ent('boarder', 412, R - 1, { face: -1 }); ent('cutlass', 428, R - 1, { face: -1 }); ent('bosun', 442, R - 1, { face: -1 });
+  ent('keg', 425, R - 1); ent('keg', 454, R - 1);
+  ent('horn', 414, R - 1, { face: -1 }); ent('horn', 462, R - 1, { face: -1 }); ent('javelin', 435, R - 1, { face: -1 }); ent('archer', 437, 14, { face: -1 });
+  L.spikes(399, 401, R - 1); L.spikes(407, 408, R - 1);         /* boarding spikes across her deck, to be jumped into the wind */
+  plat(434, 15, 14); net(440, 441, 10, R - 1); ent('sail', 440, 16, { w: 12, h: 5 }); ent('marine', 445, 14, { face: -1 });
+  ent('deco', 440, R - 1, { kind: 'mastTall', v: 1 }); ent('deco', 440, 9, { kind: 'pennant', v: 1 });
+  ent('check', 396, R - 1); ent('check', 452, R - 1);
+  coins([390, R - 2], [400, R - 2], [410, R - 2], [419, R - 3], [424, R - 2], [436, 14], [444, 14], [447, R - 3], [462, R - 2]);
+
+  // ---------------- 7. THE CARGO BALLOON (x 470-547). Her cargo hatch is open to the cloud, and her balloon is over it. ----------------
+  air(478, 531, R, R + 10);
+  sign(467, R - 1, 'HER CARGO HATCH IS OPEN TO THE CLOUD. THE UPDRAFT PUTS YOU IN THE SLING.');
+  ent('check', 470, R - 1);
+  net(474, 475, 7, R - 1); plat(474, 6, 13);                    /* the cargo derrick: a post, and its boom out over the hatch */
+  plat(480, 15, 5); net(482, 482, 7, 14);                       /* and the sling on the boom */
+  ent('vent', 477, R - 1, { period: 100, on: 100, h: 170, wind: true, w: 14, lift: 270 });
+  ent('balloon', 505, 6, { r: 11 });                            /* HER CARGO BALLOON, and the gondola slung under it */
+  plat(492, 17, 26); net(496, 496, 12, 16); net(514, 514, 12, 16);
+  ent('stray', 504, 16, { kind: 'pigeon' }); ent('marine', 511, 16, { face: -1 }); ent('silver', 497, 10);
+  net(537, 538, 9, R - 1); plat(522, 8, 17);                    /* the far derrick */
+  plat(522, 19, 5); net(524, 524, 9, 18);
+  gust(476, 534, 0, R, { dir: 1, period: 5, on: 2.4, alt: true, k: 0.9 });
+  ent('kite', 487, 13); ent('kite', 528, 13); ent('harpy', 500, 22); ent('harpy', 486, 3);
+  ent('stormshaman', 527, 7, { face: -1 });                      /* a shaman out on the far boom, throwing the sky at the gondola */
+  coins([481, 14], [484, 14], [494, 16], [500, 16], [508, 16], [516, 16], [523, 18], [526, 18], [478, 5], [484, 5], [528, 7], [534, 7]);
+
+  // ---------------- 8. THE QUARTERDECK (x 532-599). THE MASTHEAD, in his own rigging, with the wind for a floor. ----------------
+  sign(535, R - 1, 'THE MASTHEAD RIDES HIS SAIL AT YOU ON THE WIND. TURN THE WIND AND HE FOULS IN IT.');
+  ent('check', 543, R - 1);
+  net(570, 571, 12, R - 1); plat(561, 17, 20); plat(565, 12, 12);   /* his mast, his yard, his topsail yard */
+  net(555, 556, 18, R - 1); net(585, 586, 18, R - 1);           /* and the shrouds up to it */
+  ent('sheet', 553, R - 1, { id: 'quarter' });
+  ent('sail', 570, 18, { w: 18, h: 5 }); ent('sail', 570, 13, { w: 10, h: 3 });
+  ent('deco', 570, 11, { kind: 'pennant', v: 1 }); ent('flagpost', 590, R - 1);
+  gust(549, 593, 4, R, { dir: 1, period: 5, on: 3.2, alt: true, k: 0.75, arena: true, helm: 'quarter' });
+  ent('masthead', 583, R - 1);
+  ent('gate', 596, R - 1); block(598, W - 1, 0, R - 1);
+  ent('deco', 597, R - 5, { kind: 'sternWindows' });
+
+  /* HER SIDE, the length of her: gunports down the hull and a rope over it, so she reads as a ship and not a pier */
+  for (let x = 160; x < 596; x += 14) { if ((x >= 298 && x <= 320) || (x >= 416 && x <= 423) || (x >= 444 && x <= 451) || (x >= 476 && x <= 533)) continue;
+    ent('deco', x, R + 4, { kind: 'gunport', v: x % 2 }); }
+
+  /* THE ROPES, LAST: nothing is cut after this line */
+  for (const [x0, x1, y0, y1] of nets) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET);
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools: [], falls: [], moversExtra: movers, gusts, stone, interiors,
+    music: 'musSailor', duskStart: 99999, duskLen: 1, night: false, cloudSea: (R + 4) * TS, noCoin: [[212, 287, 8, R - 9]],
+    quest: { n: 3, item: 'pigeon', name: 'HER PIGEONS', npc: 'squire', done: 'THE PIGEONS ARE HOME', reward: 'relic', relic: 'keelstone' },
+    palette: { set: 'ship', dress: 'ship', sky: [[58, 104, 186], [255, 206, 158]], far: 'crag', mid: 'crag', near: 'crag', noFg: true, haze: 'rgba(255,236,200,0.10)',
+      grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#6a7a9a', '#8a9ab8', '#b0bcd4', '#dfe6f0'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: 549 * TS, x1: 593 * TS, floor: R * TS, y0: 4 * TS, trigger: 553 * TS, wallL: 548, wallR: 594, boss: 'masthead', music: 'boss4', tint: '#e8c89a', tintA: 0.06, fx: 'motes',
+      mast: 571 * TS, yard: 17 * TS },                          /* his mizzen and its yard: where he goes up, and where he comes down from */
+    mini: { x0: 216 * TS, x1: 241 * TS, floor: (R + 6) * TS, y0: (R + 1) * TS, y1: (R + 7) * TS, trigger: 220 * TS, wallL: 215, gate: 241, boss: 'bosun', name: 'THE BOATSWAIN' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -5156,6 +5361,8 @@ export const LEVELS = [
   /* THE ROAD INLAND, UP: after the Hunt, the pass over the hill, and the troll that was benched for want of a hill to throw. */
   { id: 'quarry', name: 'THE QUARRY PASS', sub: 'the road inland, through the hill', rule: 'THE HILL THROWS WHAT IT CAN LIFT.', build: quarryPass, needs: 'hunt' },
   { id: 'frost', name: 'THE FROSTFELL', sub: 'the frozen high fell', rule: 'FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.', build: theFrostfell, needs: 'quarry' },   /* up from the pass onto the fell */
+  /* THE SKY SHIP comes after THE FROSTFELL on the road inland: the wind the moor taught, on a deck with nothing under it */
+  { id: 'skyship', name: 'THE SKY SHIP', sub: 'a goblin galleon above the clouds', rule: 'THE WIND GOES WHERE THE SAILS SAY. TURN THE SAILS.', build: theSkyShip, needs: 'frost' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -5169,6 +5376,7 @@ const MIX = {
   hunt: [['sprig', 'thief', 2], ['archer', 'javelin', 4]],
   undercrown: [['sprig', 'shardling', 2]],
   deep: [['sailor', 'watch', 4]],
+  skyship: [['kite', 'crow', 2]],
 };
 for (const lv of LEVELS) {
   const mix = MIX[lv.id]; if (!mix || !lv.build || lv.build.mixed) continue;
@@ -5242,6 +5450,7 @@ const DRESS = {
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
   frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2]],
+  skyship: [['kegStack'], ['rumBarrels', 2], ['coiledCable', 2], ['washing'], ['hammock', 2], ['lanternDeck', 2], ['plunder', 3], ['waterButt']],
 };
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
 const GARRISON = {
@@ -5259,6 +5468,7 @@ const GARRISON = {
   hurricane: [['cutlass', 6], ['scout', 6], ['tideguard', 5], ['marine', 3], ['boarder', 3]],   // one ship in one storm, and eight creatures on it
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
+  skyship: [['cutlass', 10], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings */
   lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -5322,7 +5532,7 @@ function garrison(L, id) {
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2]);
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const deepUnder = (x, y) => (L.pools || []).some(p => !p.shallow && !p.swim && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
-  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest']);
+  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest', 'sheet']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   // every place a creature could stand, left to right
   const spots = [];
@@ -5377,7 +5587,7 @@ function dressLevel(L, id) {
   const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
-  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade']);
+  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
   const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);

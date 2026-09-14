@@ -22,7 +22,7 @@ export const THREAT = {
   heronfoe: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
   dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
   frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
-  reefmaw: 6, quarter: 6, captain: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
+  reefmaw: 6, quarter: 6, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
   miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3,
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set

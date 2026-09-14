@@ -541,7 +541,7 @@ Object.assign(SFX, {
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
 });
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
-const GOB_V = { sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3 };
+const GOB_V = { sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7 };
 Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
   foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
@@ -630,6 +630,7 @@ const DIE = {
   reefmaw() { tone('sawtooth', 120, 40, 0.7, 0.26); noise(0.7, 0.36, 380, 0.5, 0.05); tone('sine', 60, 28, 1.1, 0.16, 0.2); noise(0.5, 0.24, 1100, 0.4, 0.4); SFX.waveCrash && SFX.waveCrash(); },
   herald() { tone('sine', 300, 90, 0.8, 0.18); pad('sine', 440, 180, 1.2, 0.07, 0.05, 2000); noise(0.8, 0.3, 600, 0.5, 0.1); tone('sine', 55, 26, 1.4, 0.14, 0.3); },
   quarter() { file('gobDie', 0.6, 0.8) || tone('sawtooth', 240, 70, 0.5, 0.22); tone('triangle', 1000, 380, 0.2, 0.1, 0.06); noise(0.5, 0.3, 700, 0.5, 0.08); tone('sine', 70, 32, 0.9, 0.14, 0.2); },
+  masthead() { gob(0.7) || tone('sawtooth', 220, 70, 0.6, 0.22); for (let i = 0; i < 4; i++) noise(0.09, 0.2, 700, 0.6, 0.1 + i * 0.1); tone('sine', 90, 36, 1, 0.14, 0.3); SFX.thud(); },   /* and his sail going down after him */
   captain() { tone('sawtooth', 200, 60, 0.7, 0.24); noise(0.6, 0.32, 520, 0.5, 0.04); tone('sine', 196, 190, 1.4, 0.08, 0.1); /* the ship's bell rings itself */ tone('sine', 60, 28, 1.2, 0.15, 0.25); },
   sprig() { gob(1) || (tone('square', 420, 90, 0.25, 0.2), noise(0.12, 0.2, 800)); },
   archer() { gob(1.18) || tone('square', 520, 110, 0.22, 0.18); tone('triangle', 900, 300, 0.18, 0.12, 0.04); /* the bowstring goes */ },
@@ -710,6 +711,7 @@ const HURT = {
   pitwarden() { tone('sawtooth', 180, 110, 0.24, 0.2); noise(0.22, 0.3, 280, 0.65); tone('sine', 90, 60, 0.28, 0.12, 0.03); },
   berserker() { tone('sawtooth', 240, 150, 0.2, 0.18); noise(0.18, 0.28, 360, 0.6); tone('sine', 120, 80, 0.24, 0.1, 0.03); },
   grandmother() { tone('sine', 380, 260, 0.16, 0.09); noise(0.12, 0.12, 900, 0.5); tone('triangle', 700, 600, 0.07, 0.05, 0.08); },
+  masthead() { gobH(0.7) || tone('square', 300, 170, 0.14, 0.16); noise(0.12, 0.2, 900, 0.5); tone('sine', 140, 90, 0.18, 0.1, 0.04); },   /* a goblin the size of a door taking one, and his canvas slapping */
   captain() { noise(0.16, 0.26, 700, 0.5); tone('sawtooth', 260, 120, 0.18, 0.16); tone('sine', 150, 90, 0.2, 0.1, 0.04); }, // a big man taking one and not liking it
   watch() { SFX.clank(); noise(0.2, 0.2, 420, 0.6); tone('sine', 160, 96, 0.24, 0.1); }, // a helm, and a chest full of water under it
   lampreeve() { noise(0.22, 0.22, 1100, 0.5); tone('sawtooth', 300, 150, 0.2, 0.12); noise(0.14, 0.14, 2600, 0.6, 0.08); tone('sine', 120, 70, 0.3, 0.08, 0.05); }, // something long and thin, complaining
