@@ -3149,7 +3149,7 @@ function sprinkleCoins(L) {
   // nothing in a nine-hundred-column moor, so it is measured against the same SPAN the difficulty curve
   // and the bot score against. The campaign's own typical is about forty a hundred.
   const span = spanOf(W, H);
-  const cap = Math.min(460, Math.max(150, Math.round(span * 0.42) - before)); // a lot more gold: there should always be some in sight
+  const cap = Math.min(345, Math.max(110, Math.round(span * 0.315) - before));   /* a quarter less: a playthrough paid 157% of everything the store sells */ // a lot more gold: there should always be some in sight
   // the ground as you walk it: follow the surface through steps of up to three rows (a jump), and lay a pair
   // every seven tiles or so where there is none near (the rolling woods have almost no flat runs at all)
   const paths = [];

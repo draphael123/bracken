@@ -22,14 +22,16 @@ const diff = DIFF[(process.argv.indexOf('--diff') > 0 && process.argv[process.ar
 // fire is where her damage is (a hot ember is 12, a jet ticks), so her row is the staff and says so
 const HERO = {
   knight: { hp: 100, hitRaw: 10, mul: 1, top: 10 + 9 + 5 },            // (top: the three smith edges and the level-10 growth)
-  pyro: { hp: 80, hitRaw: 10, mul: 0.7, top: Math.round(24 * 0.7) },
-  paladin: { hp: 120, hitRaw: 16, mul: 1, top: 16 + 9 + 5 },
+  pyro: { hp: 88, hitRaw: 10, mul: 0.7, top: Math.round(24 * 0.7) },
+  paladin: { hp: 120, hitRaw: 14, mul: 1, top: 14 + 9 + 5 },
+  pirate: { hp: 90, hitRaw: 8, mul: 1, top: 8 + 9 + 5 },
+  reaper: { hp: 95, hitRaw: 14, mul: 1, top: 14 + 9 + 5 },
 };
 const NOT_FOES = new Set(['folk', 'bale', 'heart']);
 const pad = (s, n) => String(s).padEnd(n), rpad = (s, n) => String(s).padStart(n);
 
-console.log('== 1. FIGHTS  (hits to kill: knight / pyro staff / paladin, start kit -> full kit;  hits to die from a typical blow)');
-console.log(pad('level', 9) + pad('tier', 5) + pad('foes', 5) + pad('toughest regular', 30) + pad('boss', 34) + 'typical blow -> hits to die k/p/pal');
+console.log('== 1. FIGHTS  (hits to kill: knight / pyro staff / paladin / freebooter / death knight, start kit -> full kit;  hits to die from a typical blow)');
+console.log(pad('level', 9) + pad('tier', 5) + pad('foes', 5) + pad('toughest regular', 40) + pad('boss', 44) + 'typical blow -> hits to die k/p/pal/fb/dk');
 let goldSoFar = 0; const goldBy = []; let lvIdx = 0; // the hero's level on arriving: one per wood cleared before this one (+3 health, +1 damage every second)
 for (const lv of LEVELS) {
   if (lv.hidden && !lv.secret) continue;
@@ -39,15 +41,16 @@ for (const lv of LEVELS) {
   const hpOf = t => Math.round(EHP[t] * diff.ehp * (1 + 0.5 * tr));
   const tough = foes.reduce((a, e) => (!a || EHP[e.t] > EHP[a.t]) ? e : a, null);
   const up = Math.floor(lvIdx / 2), hit = hk => Math.max(1, (HERO[hk].hitRaw + up) * HERO[hk].mul);
-  const htk = (hp, h) => h === 'hit' ? `${Math.ceil(hp / hit('knight'))}/${Math.ceil(hp / hit('pyro'))}/${Math.ceil(hp / hit('paladin'))}` : `${Math.ceil(hp / HERO.knight.top)}/${Math.ceil(hp / HERO.pyro.top)}/${Math.ceil(hp / HERO.paladin.top)}`;
+  const H5 = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];   // all five heroes, in the order the header names them
+  const htk = (hp, h) => H5.map(k => Math.ceil(hp / (h === 'hit' ? hit(k) : HERO[k].top))).join('/');
   const toughS = tough ? `${tough.t} ${hpOf(tough.t)}hp ${htk(hpOf(tough.t), 'hit')}->${htk(hpOf(tough.t), 'top')}` : '-';
   const bossS = bossT === 'mother' ? 'mother (breaks, not bled)' : bossT ? (() => { const hp = Math.round(EHP[bossT] * diff.bhp * (1 + 0.25 * tr)); return `${bossT} ${hp}hp ${htk(hp, 'hit')}->${htk(hp, 'top')}`; })() : '-';
   // the typical blow: the median contact damage of what is placed, scaled up the slope
   const dm = foes.map(e => DMG[e.t]).filter(Boolean).sort((a, b) => a - b), med = dm.length ? dm[dm.length >> 1] : 15;
-  const blow = Math.max(1, Math.round(med * diff.take * (1 + 0.4 * tr))), worst = Math.round((dm[dm.length - 1] || 15) * diff.take * (1 + 0.4 * tr));
+  const blow = Math.max(1, Math.round(med * diff.take * (1 + 0.28 * tr))), worst = Math.round((dm[dm.length - 1] || 15) * diff.take * (1 + 0.28 * tr));
   const hpL = hk => HERO[hk].hp + 3 * lvIdx; lvIdx++;
-  const htd = `${Math.ceil(hpL('knight') / blow)}/${Math.ceil(hpL('pyro') / blow)}/${Math.ceil(hpL('paladin') / blow)}`;
-  console.log(pad(lv.id, 9) + pad(tr, 5) + pad(foes.length, 5) + pad(toughS, 30) + pad(bossS, 34) + `${blow} -> ${htd}   worst ${worst}`);
+  const htd = H5.map(k => Math.ceil(hpL(k) / blow)).join('/');
+  console.log(pad(lv.id, 9) + pad(tr, 5) + pad(foes.length, 5) + pad(toughS, 40) + pad(bossS, 44) + `${blow} -> ${htd}   worst ${worst}`);
   const coins = ents.filter(e => e.t === 'coin').length; goldSoFar += coins; goldBy.push([lv.id, coins, goldSoFar, ents.filter(e => e.t === 'silver').length]);
 }
 
