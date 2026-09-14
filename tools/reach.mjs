@@ -17,7 +17,7 @@ for (const lv of LEVELS) {
   if (lv.hidden && !lv.secret) continue;
   if (want && lv.id !== want) continue;
   const L = lv.build(), W = L.W;
-  const { seen, footing, assisted, near, jumpNear } = floodReach(L, T);
+  const { seen, footing, assisted, near, jumpNear } = floodReach(L, T, { rides: true });
 
   // is everything you are meant to touch inside the fill?
   const WANT = { gate: 'THE GATE', check: 'a checkpoint', silver: 'a silver', stray: 'a quest item', relic: 'the relic', key: 'a key', doorway: 'a doorway' };

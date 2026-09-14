@@ -23,7 +23,7 @@ for (const lv of LEVELS) {
   let L; try { L = lv.build(); } catch (e) { console.log('== ' + lv.id + ': build failed ' + e.message); bad++; continue; }
   const W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
-  const { seen } = floodReach(L, T);
+  const { seen } = floodReach(L, T, { rides: true });
   const hits = new Map();
   const note = (why, x, y) => { if (!hits.has(why)) hits.set(why, []); hits.get(why).push(x + ',' + y); };
   const deadly = (L.pools || []).filter(p => !p.shallow && !p.swim && !p.dry);
@@ -32,7 +32,7 @@ for (const lv of LEVELS) {
     const px = x * TS + 8, py = (y + 1) * TS;          /* P.x, P.y as main.js keeps them */
     for (const p of deadly) {
       if (!(px > p.x0 && px < p.x1 && py > p.y + 9)) continue;
-      const floorPx = p.bottom !== undefined ? p.bottom + 4 : p.depth !== undefined ? p.y + p.depth + 6 : null;
+      const floorPx = p.bottom !== undefined ? p.bottom + 4 : p.depth ? p.y + p.depth + 6 : null;
       if (floorPx === null) note('stands under a deadly pool with no bottom or depth set (surface y ' + p.y + ')', x, y);
       /* inside the water (the pool's own bed) is the pool working; below its floor the game no longer kills, and says so here */
     }
