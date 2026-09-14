@@ -1,0 +1,20 @@
+# THE CHECK, ON EVERY PUSH. The same audits `npm run check` runs locally, then a short boss pass and a kill-zone sweep in
+# the Chrome GitHub's runners already carry (tools/headless.mjs drives it over DevTools; nothing is installed).
+name: check
+on:
+  push:
+    branches: [master]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: audits
+        run: npm run check
+      - name: headless boss pass and kill-zone sweep
+        run: node tools/headless.mjs

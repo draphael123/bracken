@@ -78,9 +78,9 @@ export async function fightLab(BK, opts = {}) {
 //   the roc           - stand on the glass so her dive sticks in it, then cut her while she is down
 // Every other boss is cut whenever it is in reach. All of them are defended against on their tells. The hero's health is
 // put back each frame and what the boss took is counted: how long it lasts, and the damage per minute it takes to see it out.
-const OPEN = b => b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'topple') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
+const OPEN = b => b.t === 'master' ? b.open > 0 : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'topple') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
-const HARD_TELLS = new Set(["assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|grabTell","closedhelm|stampTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|pourTell","forgemaster|slamTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","owl|hootTell","pitwarden|pickTell","pitwarden|roofTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
+const HARD_TELLS = new Set(["assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|grabTell","closedhelm|stampTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|pourTell","forgemaster|slamTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","owl|hootTell","pitwarden|pickTell","pitwarden|roofTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 export async function bossLab(BK, opts = {}) {
   const lvm = await import('./level.js'), T = lvm.T, TS = 16, PT = await import('./playtest.js');
   const heroes = opts.heroes || HEROES;
@@ -117,7 +117,7 @@ export async function bossLab(BK, opts = {}) {
       let goal = null, strike = false;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
-      const rushing = boss.mode === 'rush' && ad < 46;
+      const rushing = (boss.mode === 'rush' && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
       const incoming = BK.seeds().find(s => (s.rubble || s.mawSpit || s.timber || s.shot || s.bolt) && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 34 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0);
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's drain guard take a moment to come up, so they hold C from the start of the tell
@@ -150,8 +150,8 @@ export async function bossLab(BK, opts = {}) {
         /* THE FLOTILLA'S OWN ROUTE UP, because the nearest ledge over her is not a way to it: the main deck climbs by the block
            steps at the companion house (column 292 on), and her second deck to the poop by the nets at 338 */
         if (lvId === 'flotilla' && boss.y < P.y - 30) { const px = P.x / TS, py = P.y / TS;
-          if (py > 20 && px > 292) goalUp = 288 * TS; else if (py > 20) goalUp = boss.x;
-          else if (py > 14 && boss.y < 14 * TS) goalUp = 338 * TS + 8; }
+          if (py > 20) goalUp = 306 * TS + 8;   /* the shrouds that run down to the main deck */
+          else if (py > 14 && boss.y < 14 * TS) goalUp = 366 * TS + 8; }   /* the one ladder to the quarterdeck she does not cut */
         walker(goalUp); }
       else if (goal !== null && !k.block) { const gd = goal - P.x;
         /* THE PIT WARDEN'S HOLES are not a way to him: a step that would land on a course his pick took out is not taken */
@@ -189,7 +189,7 @@ export async function collectLab(BK, opts = {}) {
   const silversOf = () => { const s = BK.silvers; return typeof s === 'function' ? s() : (s || []); };
   for (const id of levels) {
     const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
-    const Lb = lvm.LEVELS[li].build(); const { seen } = RC.floodReach(Lb, lvm.T);
+    const Lb = lvm.LEVELS[li].build(); const { seen } = RC.floodReach(Lb, lvm.T, { rides: true });
     const stands = [...seen].map(k => k.split(',').map(Number));
     BK.setHero(opts.hero || 'knight'); BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(10);
     const P = BK.P, k = BK.keys;
@@ -235,7 +235,7 @@ export async function killLab(BK, opts = {}) {
   if (typeof window !== 'undefined') window.__killLab = out;
   for (const id of levels) {
     const i = lvm.LEVELS.findIndex(l => l.id === id); if (i < 0) continue;
-    const Lb = lvm.LEVELS[i].build(); const { seen } = RC.floodReach(Lb, lvm.T);
+    const Lb = lvm.LEVELS[i].build(); const { seen } = RC.floodReach(Lb, lvm.T, { rides: true });
     BK.setHero('knight'); BK.load(i); BK.state = 'play'; BK.god = false; BK.sim(5);
     const P = BK.P; let n = 0, lvBad = 0;
     for (const key of seen) { if (n++ % every) continue;

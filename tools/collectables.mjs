@@ -22,7 +22,7 @@ for (const lv of LEVELS) {
   let L; try { L = lv.build(); } catch (e) { console.log('== ' + lv.id + ': build failed ' + e.message); bad++; continue; }
   const W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB;
-  const { seen, footing: tileFooting, assisted } = floodReach(L, T);
+  const { seen, footing: tileFooting, assisted } = floodReach(L, T, { rides: true });
   /* THE RIDES ARE GROUND TOO. A silver on a swing's arc is got from the swing; one over a mover's run, from the mover. */
   const footing = new Set(tileFooting), rideAt = new Set();
   for (const m of (L.moversExtra || [])) if (m.kind === 'swing') for (let k2 = -8; k2 <= 8; k2++) { const th = 0.95 * k2 / 8, sx = Math.floor((m.px + Math.sin(th) * m.arm) / TS), sy = Math.floor((m.py + Math.cos(th) * m.arm) / TS) - 1; for (const dx of [-1, 0, 1]) { footing.add((sx + dx) + ',' + sy); rideAt.add((sx + dx) + ',' + sy); } }

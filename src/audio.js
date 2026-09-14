@@ -2,7 +2,7 @@
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 const TRACKS = { hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
-  ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
+  ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
   musBeach: './audio/musBeach.ogg', musSailor: './audio/musSailor.ogg', musDungeon: './audio/musDungeon.ogg' };
@@ -409,7 +409,7 @@ function startSynth() { nextT = ac.currentTime + 0.1; step = 0; if (timer) clear
 function stopAmb() { for (const n of ambNodes) { try { n.stop(); } catch {} } ambNodes = []; if (ambShotTimer) { clearInterval(ambShotTimer); ambShotTimer = null; } }
 // EVERY PLACE HAS ITS OWN AIR. The wood had a recording and everything else was filtered noise - and a level
 // with no zone got the wood's birds, so the town, the ships and the mine all had birdsong in them.
-const AMB_FILE = { forest: 'ambForest', town: 'ambTown', shore: 'ambShore', ship: 'ambShip', cave: 'ambCave', deep: 'ambDeep', drip: 'ambDrip', tavern: 'ambTown', hold: 'ambShip', hall: 'ambCave' };
+const AMB_FILE = { forest: 'ambForest', wind: 'ambWind', town: 'ambTown', shore: 'ambShore', ship: 'ambShip', cave: 'ambCave', deep: 'ambDeep', drip: 'ambDrip', tavern: 'ambTown', hold: 'ambShip', hall: 'ambCave' };
 /* INDOORS IS THE SAME AIR THROUGH A WALL: the town behind the inn's shutters, the sea through a hull, the wood through a trunk */
 const AMB_LP = { tavern: 1300, hold: 600, hall: 800 };
 // AND THE THINGS THAT HAPPEN IN IT: a gull over the shore, the timbers of a ship working, a hammer two streets

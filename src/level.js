@@ -168,7 +168,7 @@ function brackenWood() {
   G0.block(235, 241, 15, 27);
   G0.ent('sign', 236, 14, { text: 'FOUR STROKES FELL A PINE TO BRIDGE THE GAP. OR POGO ACROSS THE WASPS.' });
   G0.ent('felltree', 241, 14, { len: 14, dir: 1 });
-  G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS });
+  G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS, depth: 3 * TS });
   G0.block(242, 255, 24, 27);
   G0.ent('wasp', 245, 13); G0.ent('wasp', 249, 13); G0.ent('wasp', 253, 13); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
   G0.coins([244, 13], [248, 13], [252, 13]);
@@ -270,15 +270,15 @@ function marshWood() {
   block(161, 175, 18, 27);
   ent('check', 168, 17); crate(173, 17);
 
-  // ---- 7. The long river: a big raft, frogs leaping aboard, archers overhead ----
+  // ---- 7. The long river: lily pads across it, three strides apart, and a reed bed to rest on every so often ----
+  /* THE PUNT WENT. Walking to one end of a raft to steer it was a chore, not a crossing, and the marsh already has
+     its own verb for water: the pad that sinks under you. Nothing lives on this stretch - the pads are the question. */
   water(176, 259, 19);
-  movers.push({ kind: 'punt', x0: 176 * TS, x1: 259 * TS - 96, x: 176 * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 70, frogs: true, frogMax: 3, frogEvery: 2.4 }); // THE PUNT: it goes where you pole it, and the frogs come aboard
-  ent('sign', 174, 17, { text: 'THE PUNT GOES WHERE YOU WALK. FROGS COME ABOARD. SPITTERS HIT A STANDING MAN.' });
-  reeds(212, 16, 2); ent('spit', 212, 15, { face: -1 }); reeds(244, 16, 2); ent('spit', 244, 15, { face: -1 }); reeds(226, 15, 2); coins([226, 14]);
-  plat(200, 12, 4); plat(236, 12, 4);
-  ent('check', 202, 11); ent('silver', 238, 11);
-  ent('wasp', 190, 15); ent('wasp', 218, 15); ent('wasp', 248, 15);
-  coins([185, 15], [191, 13], [212, 15], [219, 13], [232, 15], [249, 13]);
+  ent('sign', 174, 17, { text: 'LILY PADS SINK UNDER YOU. HOP ON, AND REST ON THE REED BEDS.' });
+  for (const x of [178, 181, 184, 187, 190, 193, 196, 199, 202, 205, 208, 214, 217, 220, 223, 229, 232, 235, 238, 241, 247, 250, 253, 256]) ent('pad', x, 18);
+  reeds(211, 16, 2); reeds(226, 16, 2); reeds(244, 16, 2);
+  ent('check', 211, 15); ent('silver', 244, 13);
+  coins([184, 16], [193, 16], [202, 16], [217, 16], [226, 14], [235, 16], [253, 16]);
   block(260, 274, 18, 27);
   ent('check', 264, 17); crate(270, 17); ent('hopper', 268, 17, { face: -1, color: 'blue' });
 
@@ -318,7 +318,7 @@ function marshWood() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
-    duskStart: undefined, music: 'theme2',
+    duskStart: undefined, music: 'theme2', waterHurts: true,
     quest: { n: 3, item: 'trap', name: 'EEL TRAP', npc: 'ferryman', done: 'THE TRAPS ARE BACK', thanks: "THE FERRYMAN'S THANKS" },
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
@@ -354,7 +354,7 @@ function marshWood() {
   F.ent('sluice', 165, 17, { pool: 167, to: 21 });
   F.ent('npc', 168, 17, { kind: 'ferryman', ride: true });
   F.R.moversExtra.push({ kind: 'raft', x0: 167 * TS, x1: 203 * TS - 64, x: 167 * TS, y: 18 * TS + 8, w: 64, h: 8, speed: 32, ferry: true, toll: 10 });
-  F.R.pools.push({ x0: 167 * TS, x1: 203 * TS, y: 19 * TS, shallow: false, depth: 0 });
+  F.R.pools.push({ x0: 167 * TS, x1: 203 * TS, y: 19 * TS, shallow: false, depth: 0, bottom: 22 * TS });   /* its bed is its floor: a fall in is a splash until the sluice drains it to shallows */
   F.block(167, 202, 22, 27);
   F.plat(181, 12, 3); F.ent('archer', 182, 11, { face: -1 }); F.plat(193, 12, 3); F.ent('archer', 194, 11, { face: -1 });
   F.ent('wasp', 176, 15); F.ent('wasp', 188, 15); F.ent('wasp', 199, 15);
@@ -3748,6 +3748,10 @@ function theFlotilla() {
   coins([252, 26], [266, 26], [278, 26], [296, 26]);
   coins([306, 15], [314, 15], [322, 15], [330, 15]);
   coins([342, 10], [350, 10], [358, 10], [366, 10]);
+  /* A WAY UP SHE CANNOT CUT (rule B4). Her two cuts take the lines at 302 and 330; the shrouds at 306 now run all the way down
+     to the main deck, so a player who loses sight of her in the rigging can always follow her onto the second deck.
+     (Laid last: nothing is dug after it.) */
+  for (let y = 16; y <= 21; y++) for (const x of [306, 307]) { const i3 = y * W + x; if (L.grid[i3] === T.AIR || L.grid[i3] === T.ONEWAY) L.grid[i3] = T.NET; }
   ent('quarter', 288, 21);
   ent('gate', 374, 10);
 
@@ -4587,6 +4591,174 @@ function waymeet() {
   };
 }
 
+// ---------- THE ROAD INLAND: THE HUNT ----------
+// The goblin lord's hunting grounds, an hour's ride out of Waymeet: the meet on the lawn, the kennel yards and their
+// drop gates, the park pale and the man paid to watch it, the deer park and its high seats, the lodge, the drive down
+// to the ford, and the ring where the Hound Master waits. THE RULE: the pack is his weapon, and the whistle is his tell.
+// Said three ways - the whippers-in whistle the kennelled hounds up in every yard, the kennel gates drop on a pack that
+// is under them, and the Master himself calls his dogs with the same purple whistle before he ever swings.
+function theHunt() {
+  const W = 620, H = 34, R = 26;
+  const L = painter(W, H);
+  const { block, floor, plat, ent, coins, set } = L;
+  const movers = [], interiors = [], pools = [], ladders = [];
+  const sign = (x, text, y = R - 1) => ent('sign', x, y, { text });
+  const held = (...xs) => { for (const x of xs) ent('hound', x, R - 1, { held: true, face: -1 }); };
+  const whip = (x, y = R - 1) => ent('horn', x, y, { whistle: true, face: -1 });
+  const carve = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  /* A KENNEL WALL: twelve courses of stone with the road through a tunnel in it, and a drop gate in the middle of the
+     tunnel on a winch the far side. Too high to jump; the gate starts UP; a ladder the far side goes to the top. */
+  const kennelWall = gx => { block(gx - 2, gx + 2, R - 12, R - 1); carve(gx - 2, gx + 2, R - 4, R - 1); interiors.push([gx - 2, gx + 2, R - 4, R - 1, 'hall']);
+    ent('winch', gx + 4, R - 1, { gate: gx, gy0: R - 4, gy1: R - 1, hold: 5, drop: true }); ladders.push([gx + 3, R - 13, R - 1]); };
+  /* A HIGH SEAT: the lord's shooting box, a floor of boards on two ladders that are its legs */
+  const highSeat = (x, top) => { for (let i = 0; i < 5; i++) set(x + i, top, T.PLANK); ladders.push([x, top + 1, R - 1], [x + 4, top + 1, R - 1]); };
+
+  floor(0, W - 1, R);                                        /* the park is one lawn: every section below cuts it or builds on it */
+
+  // ---------------- 1. THE MEET (x 0-84). The lawn before the kennels, where the lord's hunt gathers. ----------------
+  sign(3, 'THE LORD HUNTS TODAY. THE WHISTLE LOOSES THE PACK, SO THE WHISTLE IS THE TELL.');
+  ent('check', 7, R - 1);
+  ent('npc', 12, R - 1, { kind: 'woodsman' });
+  ent('deco', 21, R - 1, { kind: 'tent', v: 0 }); ent('deco', 28, R - 1, { kind: 'banner', v: 0 }); ent('deco', 33, R - 1, { kind: 'cart' });
+  ent('deco', 40, R - 1, { kind: 'hayBale', v: 0 }); ent('deco', 44, R - 1, { kind: 'spearRack' }); ent('deco', 50, R - 1, { kind: 'trough' });
+  ent('sprig', 26, R - 1, { face: -1 }); ent('thief', 37, R - 1, { face: -1 });
+  sign(47, 'A WHIPPER-IN FIGHTS WITH HIS WHISTLE. REACH HIM BEFORE HE BLOWS IT.');
+  whip(63); held(56, 59, 67);                                /* the first pack: three dogs and the man who looses them, alone on the grass */
+  ent('check', 60, R - 1);
+  /* THE STAND: the lord watches the meet from a scaffold of benches, and his bowman watches you from the top of it */
+  plat(70, R - 2, 5); plat(75, R - 4, 5); plat(80, R - 2, 4);
+  ent('archer', 77, R - 5, { face: -1 });
+  ent('deco', 71, R - 1, { kind: 'barrels' }); ent('deco', 16, R - 1, { kind: 'fence', v: 0 }); ent('deco', 55, R - 1, { kind: 'hayBale', v: 1 });
+  coins([10, R - 2], [18, R - 2], [24, R - 2], [30, R - 2], [42, R - 2], [52, R - 2], [72, R - 3], [77, R - 6], [82, R - 3]);
+
+  // ---------------- 2. THE KENNEL YARDS (x 85-190). Three walls, a gate in each, and a pack in every yard. -----------
+  sign(87, 'STRIKE THE WINCH PAST A KENNEL GATE AND THE GATE DROPS, ON ANY DOG UNDER IT.');
+  ent('deco', 90, R - 1, { kind: 'bones', v: 0 });
+  /* YARD ONE: a crowd in the open, and the whipper-in at the back of it */
+  held(96, 99, 102); whip(105); ent('soldier', 92, R - 1, { face: -1 });
+  kennelWall(110);
+  ent('check', 118, R - 1);
+  /* YARD TWO: a kennel shed with its roof over the road, the dogs under it and their man on top */
+  block(122, 136, R - 6, R - 6); interiors.push([122, 136, R - 5, R - 1, 'timber']); ladders.push([121, R - 7, R - 1]);
+  held(126, 130); whip(133, R - 7); ent('pike', 139, R - 1, { face: -1 }); ent('brute', 128, R - 1, { face: -1 });
+  ent('deco', 124, R - 1, { kind: 'trough' }); ent('deco', 135, R - 1, { kind: 'barrels' });
+  ent('stray', 131, R - 1, { kind: 'fox' });
+  coins([114, R - 2], [124, R - 7], [128, R - 7], [132, R - 7], [138, R - 2]);
+  sign(141, 'THE GATE WINDS ITSELF BACK UP. STRIKE THE WINCH AGAIN.');
+  kennelWall(144);
+  /* YARD THREE: bowmen on the wall tops shoot down into the yard you have to cross */
+  held(152, 155, 159, 162); whip(166);
+  ent('archer', 143, R - 13, { face: 1 }); ent('archer', 177, R - 13, { face: -1 });
+  ent('soldier', 170, R - 1, { face: -1 });
+  kennelWall(178);
+  ent('silver', 178, R - 15);                                 /* up the far ladder and along the top of the last wall */
+  coins([150, R - 2], [157, R - 2], [164, R - 2], [176, R - 14], [180, R - 14]);
+
+  // ---------------- 3. THE PARK PALE (x 184-229). The ha-ha, and the man the lord pays to watch the gate. ------------
+  /* THE HA-HA: a sunk fence you do not see until you are on its lip. Down in, and up the far side two rows at a time */
+  carve(186, 195, R, R + 3); block(194, 195, R + 2, R + 3);
+  ent('goat', 190, R + 3, { face: -1 });
+  coins([188, R + 2], [192, R + 2]);
+  ent('check', 198, R - 1);
+  sign(199, 'THE STALKER. RED MARK: HE LUNGES, SO ROLL. YELLOW: THE KNIFE, SO BLOCK.');
+  /* THE KEEPER'S YARD, walled behind you when you walk in; the park wall across its far end, and its gate shut */
+  ent('deco', 206, R - 1, { kind: 'stump', v: 0 }); ent('deco', 212, R - 1, { kind: 'fern', v: 1 });
+  ent('assassin', 216, R - 1, { face: -1, mini: true });
+  block(225, 229, R - 12, R - 1); carve(225, 229, R - 6, R - 1); interiors.push([225, 229, R - 6, R - 1, 'hall']);
+  for (let y = R - 6; y <= R - 1; y++) set(225, y, T.PORT);   /* the park gate: it lifts when he falls */
+
+  // ---------------- 4. THE DEER PARK (x 230-350). Open grass, the high seats, and everything in it runs. ------------
+  sign(232, 'THE DEER PARK. THE LORD SHOOTS FROM THE HIGH SEATS. CLIMB ONE.');
+  block(244, 256, R - 2, R - 1); block(247, 253, R - 4, R - 3);   /* the park rolls, two rows at a time */
+  ent('stray', 250, R - 5, { kind: 'fox' });
+  ent('hare', 240, R - 1); ent('hare', 259, R - 1); ent('crow', 252, R - 8, { face: -1 });
+  ent('check', 252, R - 5);
+  sign(259, 'A HOUND WILL NOT CLIMB A LADDER. A BOWMAN WILL WAIT AT THE TOP OF ONE.');
+  highSeat(262, R - 8); ent('archer', 264, R - 9, { face: -1 });
+  ent('goat', 274, R - 1, { face: -1 }); ent('hare', 282, R - 1);
+  /* THE SECOND SEAT has its whipper-in: the dogs sit round the legs of it, and he looses them from above your head */
+  highSeat(290, R - 8); whip(292, R - 9); held(284, 287, 297, 300);
+  ent('crow', 305, R - 9, { face: -1 });
+  ent('check', 306, R - 1);
+  /* THE LORD'S OWN SEAT: twice the height of the others, and the view from it is worth a silver */
+  highSeat(318, R - 12); ent('archer', 320, R - 13, { face: -1 }); ent('silver', 320, R - 15);
+  ent('goat', 330, R - 1, { face: -1 }); ent('javelin', 338, R - 1, { face: -1 }); ent('hare', 344, R - 1);
+  whip(348); held(334, 341, 345);                                 /* the dogs at the lodge door, and their man in the doorway */
+  ent('deco', 312, R - 1, { kind: 'deadTree', v: 0 }); ent('deco', 237, R - 1, { kind: 'stone', v: 2 }); ent('deco', 278, R - 1, { kind: 'bushDeco', v: 1 }); ent('deco', 326, R - 1, { kind: 'stump', v: 0 });
+  coins([236, R - 2], [248, R - 6], [252, R - 6], [264, R - 10], [276, R - 2], [292, R - 10], [310, R - 2], [320, R - 14], [334, R - 2], [342, R - 2]);
+
+  // ---------------- 5. THE LODGE (x 351-440). His trophies, his table, and a keeper who sells to anybody. ------------
+  block(356, 434, R - 12, R - 1); carve(357, 433, R - 9, R - 1);
+  carve(356, 356, R - 3, R - 1); carve(434, 434, R - 3, R - 1);   /* the two doors */
+  interiors.push([357, 433, R - 9, R - 1, 'hall']);
+  ladders.push([355, R - 13, R - 1], [435, R - 13, R - 1]);       /* up either end onto the roof */
+  sign(352, 'THE LODGE. THE KEEPER SELLS TO ANYBODY, EVEN TODAY.');
+  plat(360, R - 5, 22); plat(404, R - 5, 27);                     /* the galleries, each run to its own ladder */
+  plat(397, R - 2, 3); plat(400, R - 4, 3);                       /* and the steps up to the east one past the counter */
+  sign(402, 'THE TABLE IS LAID FOR AFTER THE KILL. NOBODY HAS SAID WHOSE.');
+  plat(383, R - 7, 14);                                           /* the rafters over the counter */
+  ladders.push([359, R - 4, R - 1], [431, R - 4, R - 1]);
+  ent('deco', 366, R - 1, { kind: 'hearth' }); ent('deco', 369, R - 1, { kind: 'bench' }); ent('deco', 372, R - 1, { kind: 'longTable', v: 0 }); ent('deco', 375, R - 1, { kind: 'bench' });
+  ent('deco', 380, R - 1, { kind: 'caskRack' }); ent('deco', 391, R - 1, { kind: 'counter' }); ent('npc', 392, R - 1, { kind: 'keeper' });
+  ent('deco', 400, R - 1, { kind: 'barrels' }); ent('deco', 407, R - 1, { kind: 'bench' }); ent('deco', 410, R - 1, { kind: 'longTable', v: 1 }); ent('deco', 413, R - 1, { kind: 'bench' });
+  ent('deco', 420, R - 1, { kind: 'skullPile', v: 0 }); ent('deco', 426, R - 1, { kind: 'skullPile', v: 1 });
+  ent('deco', 368, R - 6, { kind: 'banner', v: 0 }); ent('deco', 424, R - 6, { kind: 'banner', v: 1 }); ent('deco', 412, R - 6, { kind: 'spearRack' });
+  ent('deco', 376, R - 9, { kind: 'hallWindow', hang: true }); ent('deco', 416, R - 9, { kind: 'hallWindow', hang: true });
+  ent('check', 385, R - 1);
+  /* THE HALL STANDS UP: a crowd under a gallery with no room over your head, and throwers on the gallery */
+  ent('soldier', 364, R - 1, { face: -1 }); ent('soldier', 378, R - 1, { face: -1 }); ent('pike', 398, R - 1, { face: -1 });
+  ent('soldier', 404, R - 1, { face: -1 }); ent('brute', 418, R - 1, { face: -1 }); ent('heavy', 428, R - 1, { face: -1 });
+  ent('javelin', 372, R - 6, { face: -1 }); ent('javelin', 414, R - 6, { face: -1 }); ent('thief', 395, R - 8, { face: -1 });
+  ent('stray', 424, R - 6, { kind: 'fox' });
+  ent('silver', 390, R - 9);
+  coins([362, R - 2], [370, R - 6], [378, R - 6], [386, R - 8], [394, R - 8], [402, R - 2], [410, R - 6], [420, R - 6], [430, R - 2]);
+
+  // ---------------- 6. THE DRIVE (x 441-548). The beaters' line through the bracken, down to the ford. --------------
+  sign(442, 'THE DRIVE. THEY BEAT THE BRACKEN DOWN TO THE FORD, AND TODAY YOU ARE THE DEER.');
+  ent('check', 446, R - 1);
+  whip(458); held(450, 453, 462, 465);
+  block(468, 480, R - 2, R - 1);                                  /* the beaters' bank */
+  ent('javelin', 472, R - 3, { face: -1 }); ent('javelin', 477, R - 3, { face: -1 });
+  kennelWall(488);                                                /* the drive's last gate, in the hedge-bank */
+  ent('check', 496, R - 1);
+  sign(498, 'THE FORD. SWIM IT, AND COME UP READY: THE FAR BANK IS THEIRS.');
+  /* THE FORD: the one stretch of the park that is not grass */
+  carve(501, 515, R, R + 3);
+  pools.push({ x0: 501 * TS, x1: 516 * TS, y: R * TS, swim: true, clear: true, bottom: (R + 4) * TS, depth: 4 * TS, wash: 0.35 });
+  ent('archer', 522, R - 1, { face: -1 }); ent('goat', 528, R - 1, { face: -1 }); ent('shield', 519, R - 1, { face: -1 }); ent('shield', 525, R - 1, { face: -1 });
+  whip(538); held(531, 534, 542, 545);
+  ent('deco', 518, R - 1, { kind: 'stump', v: 1 }); ent('deco', 548, R - 1, { kind: 'fence', v: 0 });
+  coins([452, R - 2], [460, R - 2], [470, R - 3], [476, R - 3], [494, R - 2], [504, R + 2], [508, R + 2], [512, R + 2], [520, R - 2], [536, R - 2]);
+
+  // ---------------- 7. THE KILL (x 549-619). The Hound Master's ring, and the kennel hound chained in it. ------------
+  sign(551, 'THE HOUND MASTER. HIS HOUND TAKES THE CUT UNTIL IT REARS OR SPRAWLS.');
+  ent('check', 556, R - 1);
+  sign(560, 'CUT THE KENNEL HOUND OFF ITS POST AND IT GOES FOR HIS MOUNT.');
+  ent('deco', 563, R - 1, { kind: 'banner', v: 0 }); ent('deco', 611, R - 1, { kind: 'banner', v: 1 });
+  ent('gate', 614, R - 1);                                        /* the park's far gate, and the road on out of it */
+  ent('chainpost', 604, R - 1);
+  ent('master', 596, R - 1, { face: -1 });
+  block(616, W - 1, R - 14, R - 1);                               /* the park's far pale */
+  coins([553, R - 2], [558, R - 2]);
+
+  /* EVERY LADDER IS HUNG LAST (rules I): nothing is dug or laid after this line */
+  for (const [x, y0, y1] of ladders) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors,
+    music: 'marketday', duskStart: -1, duskLen: 1,
+    quest: { n: 3, item: 'fox', name: 'FOX CUBS', npc: 'woodsman', done: 'THE CUBS ARE BACK IN THE BRACKEN', reward: 'relic', relic: 'fleece' },
+    /* a morning park: a pale gold sky, bracken-green and gold on the ground, and the trees a darker green than any wood before */
+    palette: { sky: [[168, 196, 178], [242, 226, 180]], dress: 'wood', haze: 'rgba(236,222,170,0.14)',
+      grass: '#7a9a3a', grassL: '#a8c050', grassD: '#4e6a28', dirt: '#6a5238', dirtL: '#80664a', dirtD: '#463624',
+      canopy: ['#2e4a26', '#42622e', '#5e7e36', '#86a044'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    arena: { x0: 568 * TS, x1: 608 * TS, floor: R * TS, trigger: 574 * TS, wallL: 567, wallR: 609, boss: 'master', music: 'boss4', tint: '#4a3a1a', tintA: 0.1, fx: 'dust' },
+    mini: { x0: 202 * TS, x1: 225 * TS, floor: R * TS, y0: (R - 8) * TS, y1: (R + 1) * TS, trigger: 206 * TS, wallL: 201, gate: 225, boss: 'assassin', name: 'THE STALKER' },
+  };
+}
+
 // ============================================================================================
 // THE FROSTFELL - the high fell over the road inland, where the ice-cutters worked the tarns.
 // THE RULE: FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK. The cutters left a FIREBOX by every
@@ -4815,6 +4987,8 @@ export const LEVELS = [
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'deep' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
+  /* THE ROAD INLAND goes on through the goblin lord's own hunting grounds, and the Hound Master comes off the bench for it */
+  { id: 'hunt', name: 'THE HUNT', sub: "the goblin lord's hunting grounds", rule: 'THE PACK IS HIS WEAPON, AND THE WHISTLE IS HIS TELL.', build: theHunt, needs: 'waymeet' },
   { id: 'frost', name: 'THE FROSTFELL', sub: 'the frozen high fell', rule: 'FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.', build: theFrostfell, needs: 'hunt' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
@@ -4826,6 +5000,7 @@ const MIX = {
   wood: [['wasp', 'crow', 4], ['sprig', 'lurker', 3], ['spit', 'hopper', 3]],
   moor: [['harpy', 'crow', 3]],
   waymeet: [['swornsword', 'watch', 4], ['swornsword', 'soldier', 5]],
+  hunt: [['sprig', 'thief', 2], ['archer', 'javelin', 4]],
   undercrown: [['sprig', 'shardling', 2]],
   deep: [['sailor', 'watch', 4]],
 };
@@ -4899,6 +5074,7 @@ const DRESS = {
   longwater: [['coralTuft', 3], ['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['pierPost'], ['netPoles']],
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
   frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
+  hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2]],
 };
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
 const GARRISON = {
@@ -4913,6 +5089,7 @@ const GARRISON = {
   longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
   reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
   hurricane: [['cutlass', 6], ['scout', 6], ['tideguard', 5], ['marine', 3], ['boarder', 3]],   // one ship in one storm, and eight creatures on it
+  hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
   lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
@@ -4976,6 +5153,7 @@ function garrison(L, id) {
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2]);
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
+  const deepUnder = (x, y) => (L.pools || []).some(p => !p.shallow && !p.swim && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   // every place a creature could stand, left to right
@@ -4985,7 +5163,8 @@ function garrison(L, id) {
     if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;          // a ledge one tile wider than it stands on: the Sunspire has almost nothing three tiles across
     if (rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     if (keep.some(([kx, ky]) => Math.abs(kx - x) < 4 && Math.abs(ky - y) < 4)) continue;
-    spots.push([x, y]); break;                                                   // one per column: the highest floor
+    if (deepUnder(x, y)) break;   /* the bed of deep water is no floor for anyone: it put a heron, a spitter and a thorn on the Marsh ferry channel's */
+    spots.push([x, y, wet(x, y)]); break;                                                   // one per column: the highest floor
   }
   if (spots.length < 8) return L;
   // HOW FAR APART IS FAR ENOUGH depends on the shape of the level. Eight columns is right for a road; on a

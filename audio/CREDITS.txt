@@ -87,3 +87,4 @@ IMPACTS, SWINGS AND MORE MUSIC (all CC0 / public domain, licence read on each pa
 - "8bit Action Stage Select" by MintoDog (opengameart.org/content/8bit-action-stage-select) - musForest, musCastle, musMountain, musUnder, musBeach
 - "Sailor Waltz with Water Effects C64 Style" by skrjablin (opengameart.org/content/sailor-waltz-with-water-effects-c64-style), CC0 option - musSailor
 - "Spooky Dungeon" by Memoraphile (opengameart.org/content/spooky-dungeon), CC0 option - musDungeon
+- "wind woosh loop" by SketchMan3 (opengameart.org/content/wind-woosh-loop), CC0 - ambWind (every wind level)
