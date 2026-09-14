@@ -23,7 +23,7 @@ for (const lv of LEVELS) {
   let L; try { L = lv.build(); } catch (e) { console.log('== ' + lv.id + ': build failed ' + e.message); bad++; continue; }
   const W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
-  const { seen } = floodReach(L, T);
+  const { seen } = floodReach(L, T, { rides: true });
   const hits = new Map();
   const note = (why, x, y) => { if (!hits.has(why)) hits.set(why, []); hits.get(why).push(x + ',' + y); };
   const deadly = (L.pools || []).filter(p => !p.shallow && !p.swim && !p.dry);

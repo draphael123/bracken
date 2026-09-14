@@ -13078,7 +13078,7 @@ function render() {
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH); }
   if (!audioReady() && state === 'play') {
     const t0 = (soundNoteT += 1 / 60), full = t0 < 10, k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
-    if (full || k > 0) { const lab = 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;
+    if (full || k > 0) { const lab = touchOn ? 'TAP A BUTTON FOR SOUND' : 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;   /* on a phone there is no key: a tap on the pad is what starts the audio */
       g.globalAlpha = 0.9 * (full ? Math.min(1, t0 * 3) : k);
       g.fillStyle = 'rgba(10,8,20,0.82)'; g.beginPath(); g.roundRect(VW / 2 - w / 2, VH - 24, w, 14, 4); g.fill();
       g.strokeStyle = 'rgba(201,178,124,0.55)'; g.lineWidth = 1; g.beginPath(); g.roundRect(VW / 2 - w / 2 + 0.5, VH - 23.5, w - 1, 13, 4); g.stroke();
