@@ -544,7 +544,7 @@ function updateSkillFx(dt) {
       for (const dx of [-12, 12]) fires.push({ x: m.tx + dx, y: m.ty, life: 2, delay: 0, own: true }); } }
   meteors = meteors.filter(m => !m.done);
   for (const r of fireRings) { r.r += 230 * dt; if (Math.random() < dt * 60) { const a = Math.random() * 6.28; parts.push({ x: r.x + Math.cos(a) * r.r, y: r.y + Math.sin(a) * r.r * 0.6, vx: 0, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff6b2c', size: 2, grav: 0, fire: true }); }
-    for (const e of enemies) { if (!e.alive || e.harmless || r.hit.has(e)) continue; const dd = Math.hypot(e.x - r.x, (e.y - e.h / 2) - r.y); if (Math.abs(dd - r.r) < 12) { r.hit.add(e); hurtEnemy(e, Math.round(12 * amul('flameRing')), r.x, false); e.burn = Math.max(e.burn || 0, 1.5); if (!e.maxHp) { e.vx = (Math.sign(e.x - r.x) || 1) * 200; e.vy = -120; flinch(e); } } }
+    for (const e of enemies) { if (!e.alive || e.harmless || r.hit.has(e)) continue; const dd = Math.hypot(e.x - r.x, (e.y - e.h / 2) - r.y); if (Math.abs(dd - r.r) < 12) { r.hit.add(e); hurtEnemy(e, Math.round(12 * amul('flameRing')), r.x, false); e.burn = Math.max(e.burn || 0, 1.5); if (!e.maxHp) { e.vx = (Math.sign(e.x - r.x) || 1) * 200; e.vy = -120; flinch(e); knockFoe(e, Math.sign(e.x - r.x) || 1, 200); } } }
     for (const s2 of seeds) if (!s2.dead && Math.abs(Math.hypot(s2.x - r.x, s2.y - r.y) - r.r) < 12) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } }
   fireRings = fireRings.filter(r => r.r < 86);
   for (const b of lanceBeams) b.t -= dt; lanceBeams = lanceBeams.filter(b => b.t > 0);
@@ -3056,6 +3056,44 @@ function hitSpray(e, dir) {
   else { for (let i = 0; i < 3; i++) { const an = (Math.random() - 0.5) * 1.1; parts.push({ x, y, vx: Math.cos(an) * dir * (260 + Math.random() * 120), vy: Math.sin(an) * 200 - 30, life: 0.12, max: 0.12, col: i ? '#fff6e0' : '#ffffff', size: 1, grav: 0 }); }
     chips(x, y, dir, 2, (COLS[e.t] || ['#ff9a9a']).slice(0, 2), 110, 520, 1); }
 }
+/* STAGGER. The big ones - bosses, minis, the heavy infantry - carry a bar that fills from the blows that matter: a heavy blow,
+   a cut from behind, the third cut of a run, a riposte, a plunge, a dash. Taps barely move it and it drains if you stop
+   pressing. Full, they BREAK: they stop where they stand for a couple of seconds and take half as much again. Things
+   that fly, and the bosses whose whole fight is their own opening, do not carry one. */
+const POISE_HEAVY = new Set(['brute', 'heavy', 'hedgeknight', 'troll', 'shield', 'swornsword', 'pike', 'berserker', 'watch', 'tideguard', 'bosun', 'boarder', 'soldier', 'hound']);
+const POISE_SKIP = new Set(['roc', 'owl', 'windcaller', 'queen', 'mother', 'gill', 'heart', 'king', 'bearer', 'dummy', 'wasp', 'drone', 'kite', 'captain', 'closedhelm', 'gqueen', 'golem']);
+const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : (e.big || e.mini) ? 60 : POISE_HEAVY.has(e.t) ? 40 : 0;
+function addPoise(e, dmg, fromX, plunge) {
+  const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0 || dmg <= 0) return;
+  let n = P.jetHit ? 1.5 : 6 + dmg * 0.25;
+  if (!P.jetHit) { if (P.heavySwing && P.atk >= 0) n += 20; if (plunge) n += 12; if (e.face && Math.sign(fromX - e.x) === -e.face) n += 10; if (P.combo === 3) n += 8; if (P.riposteT > 0) n += 16; if (P.dash > 0) n += 6; }
+  e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5;
+  if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
+    number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); shakeCam(4); hitstop(0.08); if (SFX.guardBreak) SFX.guardBreak(); else SFX.clank(); }
+}
+function drawPoise(e, cx, cy) {
+  const m = poiseMax(e); if (!m) return; const w = Math.max(14, Math.min(40, (e.w || 12) + 6)), x = Math.round(e.x - w / 2 - cx), y = Math.round(e.y - (e.h || 16) - 10 - cy);
+  g.fillStyle = 'rgba(12,10,20,0.8)'; g.fillRect(x - 1, y - 1, w + 2, 4);
+  if (e.broken > 0) { g.fillStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(x, y, w, 2); }
+  else { g.fillStyle = '#c9a040'; g.fillRect(x, y, Math.round(w * Math.min(1, (e.poise || 0) / m)), 2); }
+}
+/* KNOCKED INTO THE LEVEL. A heavy blow, a dash, the paladin's quake or a ring of fire throws a creature bodily for a moment -
+   no legs under it - so the water, the spikes and the drop it lands in do the killing, and the kill still counts. */
+let hurtKnock = false;
+const KNOCK_SKIP = new Set(['wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker']);
+function knockFoe(e, dir, push) {
+  if (!e.alive || e.maxHp || e.mini || KNOCK_SKIP.has(e.t)) return;
+  const wt = POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
+  e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt);
+}
+function hazardFoe(e) {
+  const tx = Math.floor(e.x / TS); let why = null;
+  if (tileAt(tx, Math.floor((e.y + 1) / TS)) === T.SPIKE || tileAt(tx, Math.floor((e.y - 4) / TS)) === T.SPIKE) why = 'IMPALED';
+  else if (e.y > LH * TS + 8) why = 'OVER THE EDGE';
+  else for (const p of (L.pools || [])) if (!p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6) { why = 'DROWNED'; burst(e.x, p.y, 10, ['#eefaff', '#bfe6f5'], 70, 0.5); SFX.splash(); break; }
+  if (!why) return false;
+  number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
+}
 function hurtEnemy(e, dmg, fromX, plunge) { const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { return hurtEnemy0(e, dmg, fromX, plunge); } finally { emitAt(was); } }
 function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'grandmother' && (e.mode === 'vanish' || (e.alpha !== undefined && e.alpha < 0.35))) return;   /* nothing there to hit */
@@ -3134,6 +3172,8 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
+  if (e.broken > 0 && dmg > 0) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body */
+  addPoise(e, dmg, fromX, plunge);
   e.hp -= dmg; e.flash = 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen') e.stagger = P.standT > 0 && !e.maxHp ? 0.8 : 0.35; e.sq = 0.16;   /* THE STAND staggers what it hits */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
@@ -3179,6 +3219,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
       e.vx = dir * push;
       if (P.heavy && !e.maxHp && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
+      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || hurtKnock)) knockFoe(e, dir, push);
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
     if (e.t === 'king' && e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.y = L.arena.floor; e.mode = 'rise'; e.modeT = 1.3; e.h = 60; e.throne = { x: e.x, y: L.arena.floor }; number(e.x, e.y - 36, 'THE LITTER BREAKS. HE STANDS', '#ff6b6b'); SFX.heavy(); SFX.crack(); shakeCam(8); zoomKick(1.12, 0.4); burst(e.x, e.y, 16, ['#8b6a2a', '#c9b27c', '#c9463d'], 80, 0.7); }
@@ -9603,6 +9644,14 @@ function updateEnemies(dt) {
     if (e.frozen > 0) e.frozen -= dt;
     if (e.sunder > 0) e.sunder -= dt;
     if (e.hurtT > 0) e.hurtT -= dt;
+    if (e.poiseCd > 0) e.poiseCd -= dt;
+    if (e.poise > 0) { e.poiseT = (e.poiseT || 0) - dt; if (e.poiseT <= 0) e.poise = Math.max(0, e.poise - 14 * dt); }
+    if (e.broken > 0) { e.broken -= dt; e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) - 4, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); continue; }   /* BROKEN: it stands where the bar ran out */
+    if (e.knock > 0 && !e.maxHp) { e.knock -= dt; e.kvy = Math.min(400, e.kvy + 1000 * dt); e.kvx *= Math.pow(0.25, dt);   /* THROWN: no legs under it for a moment */
+      const r = moveBody(e, e.kvx * dt, e.kvy * dt, false); if (r && r.ground && e.kvy > 0) e.kvy = 0; e.vx = e.kvx * 0.3; e.vy = e.kvy;
+      if (hazardFoe(e)) continue;
+      if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
+      if (e.knock > 0) continue; e.knockAir = 0; }
     if (e.t === 'dummy') { e.vx = 0; e.hp = e.hp0; continue; } // a straw man stands there
     if (e.t === 'queen') { if (bossActive) beastSeen('queen'); if (bossActive || e.mode === 'sleep') updateQueen(e, dt); continue; }
     if (e.t === 'frog') { if (bossActive) beastSeen('frog'); if (bossActive || e.mode === 'sleep') updateFrog(e, dt); continue; }
@@ -10694,7 +10743,7 @@ function updatePwaves(dt) {
     if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty);
     for (const e of enemies) { if (!e.alive || w.hit.has(e) || e.harmless || Math.abs(e.x - w.x) > 11 || Math.abs(e.y - w.y) > 14) continue; w.hit.add(e);
       if (w.sunder && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = w.dir * 140; } // SHATTER: the overhead's waves put them down
-      if (e.t === 'mother' || e.t === 'king' || e.t === 'gill' || e.t === 'heart' || e.t === 'wasp' || e.t === 'drone') continue; hurtEnemy(e, Math.round(15 * (1 + 0.15 * tal('hammerfallDmg'))), w.x - w.dir * 20, false); if (e.t === 'dummy') trialEvent('hammerfall'); e.stagger = Math.max(e.stagger, 0.8); number(e.x, e.y - e.h - 14, 'QUAKED', '#ffd36b'); }
+      if (e.t === 'mother' || e.t === 'king' || e.t === 'gill' || e.t === 'heart' || e.t === 'wasp' || e.t === 'drone') continue; hurtKnock = true; hurtEnemy(e, Math.round(15 * (1 + 0.15 * tal('hammerfallDmg'))), w.x - w.dir * 20, false); hurtKnock = false; if (e.t === 'dummy') trialEvent('hammerfall'); e.stagger = Math.max(e.stagger, 0.8); number(e.x, e.y - e.h - 14, 'QUAKED', '#ffd36b'); }
   }
   pwaves = pwaves.filter(w => w.life > 0);
 }
@@ -11994,6 +12043,7 @@ function drawWorld(cx, cy, showPlayer) {
       drawRot(c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t], c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
   for (const e of enemies) {
+    if (e.alive && (e.poise > 0 || e.broken > 0)) drawPoise(e, cx, cy);   /* the stagger bar over its head */
     if (!e.alive || e.gone > 0 || e.x < cx - 40 || e.x > cx + VW + 40) continue;
     if (e.t === 'mother' || e.t === 'heart') continue;
     if (e.t === 'king') { const fl = L.arena.floor; const litter = (lx, ly) => g.drawImage(PROP.palanquin, Math.round(lx) - 36 - cx, Math.round(ly) - 36 - cy, 72, 45);
