@@ -2076,11 +2076,13 @@ function undercrown() {
   const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
   const boards = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
   const shelf = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); };
-  const water = (x0, x1, yTop, d) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + 4, depth: d || 40 });
+  /* A POOL WITH NO BOTTOM IS PAINTED TO THE FOOT OF THE SCREEN: drawWater has nothing else to stop at, so from the tomb a hundred
+     rows under it the flooded level's one course of water washed half the Prince's fight blue. `bottom` is the rock it lies on. */
+  const water = (x0, x1, yTop, d, bottom) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + 4, depth: d || 40, ...(bottom !== undefined ? { bottom: bottom * TS } : {}) });
   // A SET OF TIMBER. `state` says what it will take: sound wants three blows of your own, cracked wants
   // one (or a heavy landing anywhere under it), going is already failing and drops on its own once you
   // walk under it. deep is how many courses of roof come out when it goes.
-  const timber = (x, fl, x0, x1, row, o = {}) => ent('timber', x, fl - 1, { x0, x1, row, floor: fl - 1, deep: o.deep || 2, state: o.state || 'sound' });
+  const timber = (x, fl, x0, x1, row, o = {}) => ent('timber', x, fl - 1, { x0, x1, row, floor: fl - 1, deep: o.deep || 2, state: o.state || 'sound', ...(o.tomb ? { tomb: true, hp: o.hp, mound: o.mound } : {}) });
 
   // ---- 1. THE ADIT (rows 10-24). In under the castle's own footings, and the first set teaches it. ----
   gallery(2, 46, 24, 4);
@@ -2137,7 +2139,7 @@ function undercrown() {
   gallery(10, 90, 56, 6);
   ent('check', 84, 55);
   for (let x = 20; x <= 52; x++) set(x, 56, T.AIR);
-  block(20, 52, 57, 62); water(20, 52, 56, 60);
+  block(20, 52, 57, 62); water(20, 52, 56, 60, 57);
   ent('sign', 80, 55, { text: 'THE PLANKS ARE THE ONLY DRY WAY, AND THE TIMBER OVER THEM IS ALREADY GOING.' });
   boards(20, 32, 54); boards(38, 52, 54);                          /* the dry way: two courses over the water, and reachable off either bank */
   plat(34, 52, 4);                                                 /* and the step over the gap in the middle of it */
@@ -2208,15 +2210,28 @@ function undercrown() {
 
   cut(4, 98, 144, 166); interiors.push([4, 98, 144, 166, 'earth']);
   floor(4, 98, 167);
+  // THE PRINCE'S TOMB. The vault at the bottom of the mine that they walled a goblin prince into and then forgot. Its roof
+  // is LOW and it stands on three timber sets, and that is the fight: cut a set while he is under it and the roof buries
+  // him again. Four dead men's lamps burn round it; past half he breathes them out, and the dark is his until you light
+  // them. The doorways are exactly the height of the arena's walls, so a shut tomb is shut.
+  block(29, 75, 144, 155);                                          /* the vault roof: eleven courses of room under it */
+  block(29, 29, 156, 160); block(75, 75, 156, 160);                 /* the lintels over its two doors */
   ent('check', 16, 166);
-  ent('sign', 20, 166, { text: 'HIS PICK BREAKS THE FLOOR, AND THE FLOOR RUNS OUT. KEEP HIM OVER GROUND YOU NEED.' });
-  ent('minerlamp', 12, 166, { lit: true }); ent('minerlamp', 50, 166, { lit: true }); ent('minerlamp', 86, 166, { lit: true });
+  ent('sign', 20, 166, { text: 'THE PRINCE\'S TOMB. CUT A SET WHILE HE IS UNDER IT, AND KEEP THE LAMPS LIT.' });
+  ent('minerlamp', 12, 166, { lit: true }); ent('minerlamp', 86, 166, { lit: true });
   ent('deco', 24, 166, { kind: 'barrels' }); ent('deco', 78, 166, { kind: 'wares' }); ent('deco', 8, 166, { kind: 'coffer' });
   ent('sprig', 20, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1 }); ent('miner', 26, 166, { face: 1 });
-  coins([16, 165], [30, 165], [44, 165], [58, 165], [72, 165], [84, 165], [22, 165], [36, 165], [50, 165], [64, 165], [78, 165], [90, 165], [8, 165]);
-  plat(30, 164, 5); plat(46, 164, 6); plat(62, 164, 5);            /* he aims at the FLOOR: these have to be somewhere you can actually get to */
-  coins([32, 163], [48, 163], [64, 163]);
-  ent('pitwarden', 56, 166, { face: -1 });
+  coins([16, 165], [22, 165], [8, 165], [80, 165], [84, 165], [90, 165]);
+  // the tomb itself: the sets, each post just OUTSIDE its span so the hand that cuts it is not under the roof it drops
+  timber(36, 167, 37, 44, 155, { deep: 1, tomb: true, hp: 2, mound: 1 });
+  timber(59, 167, 51, 58, 155, { deep: 1, tomb: true, hp: 2, mound: 1 });
+  timber(64, 167, 65, 72, 155, { deep: 1, tomb: true, hp: 2, mound: 1 });
+  /* two of the four have gone out down the years: lighting them is the first thing the tomb asks of you, and all four lit is when THE LIGHT FINDS HIM */
+  ent('minerlamp', 33, 166, { lit: true }); ent('minerlamp', 46, 166, { lit: false }); ent('minerlamp', 61, 166, { lit: false }); ent('minerlamp', 73, 166, { lit: true });
+  ent('deco', 41, 166, { kind: 'stone' }); ent('deco', 55, 166, { kind: 'stone', v: 1 }); ent('deco', 69, 166, { kind: 'stone' });   /* the grave slabs of whoever went down with him */
+  ent('deco', 39, 166, { kind: 'bones' }); ent('deco', 67, 166, { kind: 'bones', v: 1 }); ent('deco', 71, 166, { kind: 'banner' });   /* and his banner, what is left of it */
+  coins([40, 165], [54, 165], [68, 165]);
+  ent('prince', 49, 166, { face: -1 });                             /* in his sarcophagus, between the first two sets */
   ent('gate', 90, 166);
 
   // EVERY LADDER IS HUNG LAST. A gallery cut after a ladder erases the rungs it runs through and does it
@@ -2235,7 +2250,7 @@ function undercrown() {
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     mini: { x0: 30 * TS, x1: 70 * TS, floor: 112 * TS, trigger: 36 * TS, wallL: 29, gate: 71, boss: 'propman', y0: 96 * TS, y1: 114 * TS },
-    arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'pitwarden', music: 'musDungeon', tint: '#2a2018', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
+    arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'prince', music: 'musDungeon', tint: '#1e2420', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }
 

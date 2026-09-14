@@ -57,7 +57,7 @@ const THROWS_SOMETHING_ELSE = new Set(['updateForgemaster|hurlTell', 'updateForg
   'updateCaptain|shootTell',        // capShoot: a shot seed, unblockable
   'updateCaptain|kegTell',          // the keg: a bomb, and a blast turns on no shield
   'updateTollmaster|tollTell',      // lead on a chain: noBlock
-  'updatePitWarden|roofTell', 'updateForgemaster|anvilTell',   // hammer rocks: no shield turns the roof
+  'updateForgemaster|anvilTell',    // hammer rocks: no shield turns the roof
   'updateForgemaster|breathTell',   // fires: the flame on the floor is unblockable
   'updateGQueen|chandTell',         // the chandelier: a crush
   'updateGrandmother|throwTell',   // her sticks fly noBlock
@@ -68,7 +68,8 @@ const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|dark
   'updateHerald|callTell', 'updateMiner|smashTell', 'updateWindcaller|howlTell', 'updatePropman|setTell',
   'updateForgemaster|leapTell', 'updateGolem|shroudTell', 'updateGQueen|gLeapTell', 'updateRoc|gustTell',
   'updateGrandmother|listenTell', 'updateGrandmother|vanishTell', 'updateLance|galeTell', 'updateSnuffer|snuffTell',
-  'updateMaster|whistleTell', 'updateWhipper|whistleTell']);   // the whistle throws no blow: the dogs it calls bite for themselves
+  'updateMaster|whistleTell', 'updateWhipper|whistleTell',   // the whistle throws no blow: the dogs it calls bite for themselves
+  'updatePrince|callTell']);        // the Buried Prince calls his court: the courtiers rake for themselves, on their own yellow marks
 const unblockable = key => {
   if (THROWS_SOMETHING_ELSE.has(key)) return true;
   const fn = key.split('|')[0];
