@@ -2892,6 +2892,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
       if (tal('vengeance')) { P.venge = Math.min(30, (P.venge || 0) + Math.round(dmg * 0.5)); number(P.x, P.y - 26, 'KEPT ' + P.venge, '#c9d1dc'); } // VENGEANCE
       if (perfect) { // THE PARRY. Six frames, and it turns the blow round on whoever threw it.
         const f = nearFoe(fromX);
+        if (f) { P.parryFoe = f; P.parryFoeUntil = time + 1.5; }
         if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.35 : 1.1); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 160; }
         P.st = Math.min(P.maxSt, P.st + 12 + (tal('parry') ? 10 : 0)); P.riposteT = 1;
         noteVerb('parry'); P.parryT = 0.22; parries++; trialEvent('parry');
@@ -3196,6 +3197,10 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
+  /* HERO COMBOS: each hero's own two moves, used in the right order, land harder than either alone */
+  if (dmg > 0 && hero() === 'knight' && P.heavySwing && P.parryFoe === e && time < (P.parryFoeUntil || 0)) { P.parryFoe = null; dmg = Math.round(dmg * 1.5); number(e.x, e.y - e.h - 26, 'OPENED UP', '#ffd36b'); if (poiseMax(e) && !(e.broken > 0)) { e.poiseCd = 0; e.poise = poiseMax(e); } }   /* KNIGHT: the parry, then the heavy blow into the gap it made */
+  if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
+  if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
   if (dmg > 0 && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body */
   addPoise(e, dmg, fromX, plunge);
@@ -3764,6 +3769,7 @@ function firePistol() {
     if (best.t === 'dummy') trialEvent('heavyblow');
     if (best.guardT > 0) best.guardT = 0;                      // a ball does not care what is raised in front of it
     hurtEnemy(best, dmg, x0 - P.face * 40, false);
+    if (best.alive) { best.powderUntil = time + 2.5; best.powderSaid = false; number(best.x, best.y - best.h - 26, 'MARKED', '#ffd34a'); }   /* the cutlass knows where to go now */
     if (best.alive && !best.maxHp) { best.stagger = Math.max(best.stagger || 0, 0.9); best.vx = P.face * 300; best.vy = Math.min(best.vy || 0, -90); }
     else if (best.alive) best.stagger = Math.max(best.stagger || 0, 0.4);
     impactAt(best.x, best.y - best.h / 2, 'steel'); sparks(best.x, best.y - best.h / 2, P.face, 8);
@@ -4063,6 +4069,10 @@ function updatePlayer(dt) {
         if (!P.tollSaid) { P.tollSaid = 1; number(P.x, P.y - 30, 'drain', '#ff6b6b'); }
         P.drainTick = (P.drainTick || 0) - dt; if (P.drainTick <= 0) { P.drainTick = 0.6; const t = drainTarget(); if (t) drainFrom(t, 3 + tal('deepToll')); }   /* and while he holds it, the nearest of them bleeds into him */
         P.tolling = true; P.vx = 0; P.st = Math.max(0, P.st - 10 * dt); P.stDelay = ST.delay;
+        /* THE TOLL CALLS THEM IN: the living near the blade are dragged a step at a time into its reach, and the dead on the ground drift toward it to be raised */
+        for (const e of enemies) { if (!e.alive || e.maxHp || e.mini || e.harmless || KNOCK_SKIP.has(e.t)) continue; const dx = P.x - e.x; if (Math.abs(dx) > TOLL_R() || Math.abs(dx) < 20 || Math.abs(P.y - e.y) > 30) continue;
+          moveBody(e, Math.sign(dx) * 34 * dt, 0, false); if (Math.random() < dt * 6) parts.push({ x: e.x, y: e.y - 4, vx: Math.sign(dx) * 30, vy: -10, life: 0.4, max: 0.4, col: '#c0283a', size: 1, grav: 0 }); }
+        for (const b of bodies) if (b && typeof b.x === 'number' && Math.abs(P.x - b.x) < TOLL_R() * 1.6 && Math.abs(P.x - b.x) > 16) b.x += Math.sign(P.x - b.x) * 40 * dt;
         P.tollT = (P.tollT || 0) + dt;
         P.tollHeld = (P.tollHeld || 0) + dt;
         P.tollOn = null;
@@ -10502,7 +10512,13 @@ function updateProps(dt) {
   clouds2 = clouds2.filter(c => c.life > 0);
   for (const b of bombs) { b.fuse -= dt; b.vy += 700 * dt; b.x += b.vx * dt; b.y += b.vy * dt; if (isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { b.y = Math.floor(b.y / TS) * TS; b.vy = 0; b.vx *= 0.6; } if (Math.random() < dt * 20) parts.push({ x: b.x, y: b.y - 6, vx: 0, vy: -30, life: 0.25, max: 0.25, col: '#ffd36b', size: 1, grav: 0 }); if (b.fuse <= 0) { b.dead = true; explode(b.x, b.y - 2, 36, DMG.bomb); } }
   bombs = bombs.filter(b => !b.dead);
-  for (const f of fires) { if (f.delay > 0) { f.delay -= dt; continue; } f.life -= dt;
+  for (const f of fires) { if (f.delay > 0) { f.delay -= dt; continue; } f.life -= dt; f.age = (f.age || 0) + dt;
+    /* THE GRASS CATCHES: her own fire on open grassy ground runs along it a tile each way, three hops at most - never indoors, never over water */
+    if (f.own && isPyro() && !f.spread && f.age > 0.5 && (f.gen || 0) < 3 && L.palette && L.palette.grass) { f.spread = true;
+      for (const d of [-1, 1]) { const nx = f.x + d * TS, tx = Math.floor(nx / TS), gy = Math.floor(f.y / TS);
+        if (isSolid(tx, gy) && !isSolid(tx, gy - 1) && !(L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && gy - 1 >= y0 && gy - 1 <= y1) && !(L.pools || []).some(p => nx > p.x0 && nx < p.x1 && f.y > p.y - 4) && !fires.some(q => Math.abs(q.x - nx) < 8 && Math.abs(q.y - f.y) < 8))
+          fires.push({ x: nx, y: f.y, life: 2.2, delay: 0.3, own: true, gen: (f.gen || 0) + 1 }); }
+      if ((f.gen || 0) === 0 && time - (P.grassSaidAt || -9) > 4) { P.grassSaidAt = time; number(f.x, f.y - 24, 'THE GRASS CATCHES', '#ff9a5c'); } }
     if (!f.vent && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 9) flame(f.x, f.y - 7, 1, 5, 45, 3);
     { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - 14 && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, DMG.fire, { up: true, unblockable: true }); } for (const e of enemies) if (e.alive && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, 10, f.x, false); } }
   fires = fires.filter(f => f.life > 0);
@@ -10793,7 +10809,7 @@ function updatePwaves(dt) {
     if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty);
     for (const e of enemies) { if (!e.alive || w.hit.has(e) || e.harmless || Math.abs(e.x - w.x) > 11 || Math.abs(e.y - w.y) > 14) continue; w.hit.add(e);
       if (w.sunder && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = w.dir * 140; } // SHATTER: the overhead's waves put them down
-      if (e.t === 'mother' || e.t === 'king' || e.t === 'gill' || e.t === 'heart' || e.t === 'wasp' || e.t === 'drone') continue; hurtKnock = true; hurtEnemy(e, Math.round(15 * (1 + 0.15 * tal('hammerfallDmg'))), w.x - w.dir * 20, false); hurtKnock = false; if (e.t === 'dummy') trialEvent('hammerfall'); e.stagger = Math.max(e.stagger, 0.8); number(e.x, e.y - e.h - 14, 'QUAKED', '#ffd36b'); }
+      if (e.t === 'mother' || e.t === 'king' || e.t === 'gill' || e.t === 'heart' || e.t === 'wasp' || e.t === 'drone') continue; hurtKnock = true; hurtEnemy(e, Math.round(15 * (1 + 0.15 * tal('hammerfallDmg'))), w.x - w.dir * 20, false); hurtKnock = false; e.quakedUntil = time + 1.5; if (e.t === 'dummy') trialEvent('hammerfall'); e.stagger = Math.max(e.stagger, 0.8); number(e.x, e.y - e.h - 14, 'QUAKED', '#ffd36b'); }
   }
   pwaves = pwaves.filter(w => w.life > 0);
 }
