@@ -326,7 +326,7 @@ function marshWood() {
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
     fog: [{ x0: 131 * TS, x1: 161 * TS, alpha: 0.86 }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
-    arena: { x0: 361 * TS, x1: 403 * TS, floor: 18 * TS, trigger: 367 * TS, wallL: 360, wallR: 404, boss: 'frog', dais: { x0: 386 * TS, x1: 402 * TS, h: 16 }, tint: '#3a8a5a', tintA: 0.1, fx: 'motes' },
+    arena: { x0: 361 * TS, x1: 403 * TS, floor: 18 * TS, trigger: 367 * TS, wallL: 360, wallR: 404, boss: 'frog', dais: { x0: 386 * TS, x1: 402 * TS, h: 16 }, music: 'frogking', tint: '#3a8a5a', tintA: 0.1, fx: 'motes' },
   }
   // ---- 7b. THE DROWNED VILLAGE: stilt huts over deep water. Planks, sinking pads, archers on the roofs, frogs below. ----
   const G = grow(L, ret, 275, 48);
@@ -665,7 +665,7 @@ function sporewood() {
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
     rot: { x0: 44 * TS, x1: 296 * TS }, // the wood sickens the deeper you go: a violet wash that grows with x, and lifts when she dies
     quest: { n: 3, item: 'cap', name: 'CLEAN CAP', npc: 'elder', done: 'THE LIGHT IS GATHERED', thanks: "THE ELDER'S THANKS" },
-    arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother', tint: '#9a5aa8', tintA: 0.1 },
+    arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother', music: 'sporemother', tint: '#9a5aa8', tintA: 0.1 },
   }
   // ---- 6c. THE PUFFBALL BOG: three sinks in the ground with caps at the bottom, lurkers between, drones above, a geyser, a shaman ----
   const G = grow(L, ret, 245, 44);
@@ -1049,7 +1049,7 @@ function screePath() {
     stone, scree, strays: 3, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 312 * TS, x1: 328 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 329, boss: 'ram', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
+    arena: { x0: 312 * TS, x1: 328 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 329, boss: 'ram', music: 'ramlord', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
   }
   // ---- 4b. THE ROPEWAY: the gorge proper. A swing, a rope lift, the old mill's sails, another swing; harpies on the wind, rocks off the cliff, a ladder out of the bottom. ----
   const GA = grow(L, ret, 256, 56);
@@ -1395,7 +1395,7 @@ function underleaf() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 18, hush: true,
-    duskStart: -1, duskLen: 1, music: 'musForest', night: true, glowNight: true, nightA: 0.24,
+    duskStart: -1, duskLen: 1, music: 'sleepers', night: true, glowNight: true, nightA: 0.24,
     // the mill's own din: inside this, nothing you do can be heard over the wheel
     din: [{ x0: 108 * TS, x1: 136 * TS }],
     quest: { n: 3, item: 'lamp', name: 'CANDLES', npc: 'elder', done: 'THE DEAD ARE LIT', reward: 'relic', relic: 'soles' },
@@ -1403,7 +1403,7 @@ function underleaf() {
       grass: '#3a5a46', grassL: '#4e7a58', grassD: '#263a2e', dirt: '#3a3444', dirtL: '#4a4458', dirtD: '#26222e',
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', camBelow: 1, music: 'boss', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
+    arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', camBelow: 1, music: 'grandmother', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
     mini: { x0: 312 * TS, x1: 330 * TS, floor: 21 * TS, y0: 14 * TS, y1: 24 * TS, trigger: 317 * TS, wallL: 312, gate: 330, boss: 'berserker' },   /* (the gate is column 330: opening 325 left the tower shut after he fell) */
   };
 }
@@ -1560,7 +1560,7 @@ function hangingVillage() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
-    arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
+    arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', music: 'owlreeve', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
     mini: { x0: 20 * TS, x1: 75 * TS, floor: 129 * TS, trigger: 30 * TS, wallL: 19, gate: 75, boss: 'spider', y0: 114 * TS, y1: 131 * TS },
   };
 }
@@ -2227,7 +2227,7 @@ function undercrown() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
     timber: true, dark: 0.14, edgeLit: true, underground: true,   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
-    duskStart: -1, duskLen: 1, music: 'musUnder', night: true, glowNight: true, nightA: 0.4,
+    duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.4,
     tall: { top: 10 * TS, bottom: 168 * TS },
     quest: { n: 3, item: 'lamp', name: 'DEAD MEN\'S LAMPS', npc: 'squire', done: 'THEY ARE ALL ACCOUNTED FOR', reward: 'relic', relic: 'soles' },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.34)',   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
@@ -2423,7 +2423,7 @@ function theDeep() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors, airRooms,
     ballast: true, dark: 0.18,
-    duskStart: -1, duskLen: 1, music: 'musDungeon', night: true, glowNight: true, nightA: 0.24,
+    duskStart: -1, duskLen: 1, music: 'trench', night: true, glowNight: true, nightA: 0.24,
     tall: { top: 20 * TS, bottom: 182 * TS, col: '6,16,28', deepest: 0.3 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
     quest: { n: 3, item: 'coffer', name: 'TRIBUTE COFFERS', npc: 'squire', done: 'THIRTY YEARS OF IT, AND NONE OF IT EVER GOT THERE', reward: 'relic', relic: 'gauntlet' },
     palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)',
@@ -3487,7 +3487,7 @@ function longWater() {
     palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
       grass: '#7a9a5a', grassL: '#a8c47a', grassD: '#5a7a44', dirt: '#555e68', dirtL: '#6f7a84', dirtD: '#3e454e', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     weather: [{ x0: 0, x1: 108 * TS, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
-    arena: { x0: 369 * TS, x1: 409 * TS, floor: 30 * TS, trigger: 370 * TS, wallL: 368, wallR: 409, boss: 'herald', music: 'boss2', tint: '#3a8aa0', tintA: 0.08, fx: 'motes' },
+    arena: { x0: 369 * TS, x1: 409 * TS, floor: 30 * TS, trigger: 370 * TS, wallL: 368, wallR: 409, boss: 'herald', music: 'herald', tint: '#3a8aa0', tintA: 0.08, fx: 'motes' },
   };
   const R1 = ret;
   // ---- 5. THE SLUICE STAIR: the old gates, and the piers of them riding up and down on the water ----
@@ -3661,7 +3661,7 @@ function shipwreckReef() {
       grass: '#5f7a68', grassL: '#88a890', grassD: '#40564a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e3a3a', '#2c4e4a', '#3a6258', '#548070'] },
     weather: [{ x0: 0, x1: 213 * TS, kind: 'rain' }, { x0: 331 * TS, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
-    arena: { x0: 425 * TS, x1: 453 * TS, floor: 34 * TS, y0: 24 * TS, trigger: 426 * TS, wallL: 424, wallR: 453, boss: 'reefmaw', music: 'boss2', tint: '#2a5a60', tintA: 0.1, fx: 'motes',
+    arena: { x0: 425 * TS, x1: 453 * TS, floor: 34 * TS, y0: 24 * TS, trigger: 426 * TS, wallL: 424, wallR: 453, boss: 'reefmaw', music: 'reefmaw', tint: '#2a5a60', tintA: 0.1, fx: 'motes',
       holes: [429 * TS, 437 * TS, 445 * TS, 451 * TS] },
   };
   return ret;
@@ -3883,7 +3883,7 @@ function theFlotilla() {
     palette: { set: 'ship', sky: 'glare', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(240,235,205,0.10)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
-    arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, y0: 8 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'boss4', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
+    arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, y0: 8 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'quartermaster', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
       decks: [[22 * TS, 260, 370], [16 * TS, 304, 370], [11 * TS, 338, 368]], cuts: [[302, 303, 11, 21], [330, 331, 6, 16]], fallFrom: 366, fallTo: 304 },
   };
   return ret;
@@ -4163,7 +4163,7 @@ function theHurricane() {
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
-    arena: { x0: 702 * TS, x1: 744 * TS, floor: 16 * TS, y0: 6 * TS, trigger: 708 * TS, wallL: 701, wallR: 744, boss: 'captain', music: 'drowned', tint: '#2a5a6a', tintA: 0.12, fx: 'motes' },
+    arena: { x0: 702 * TS, x1: 744 * TS, floor: 16 * TS, y0: 6 * TS, trigger: 708 * TS, wallL: 701, wallR: 744, boss: 'captain', music: 'captain', tint: '#2a5a6a', tintA: 0.12, fx: 'motes' },
     // HER MASTS GO ONE AT A TIME. Lightning finds the fore first, then the main, then the mizzen.
     masts: [{ x: 72, at: 104 * TS, fell: false }, { x: 270, at: 316 * TS, fell: false }, { x: 600, at: 640 * TS, fell: false }],
   };
@@ -4477,7 +4477,7 @@ function theLamplitStreet() {
     weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],
     mini: { x0: 198 * TS, x1: 238 * TS, floor: UP * TS, y0: 13 * TS, y1: 23 * TS, trigger: 204 * TS, wallL: 197, gate: 240, boss: 'lampreeve' },
-    arena: { x0: 650 * TS, x1: 694 * TS, floor: UP * TS, y0: 8 * TS, trigger: 658 * TS, wallL: 649, wallR: 694, boss: 'tollmaster', music: 'drowned', tint: '#2a4a5a', tintA: 0.14, fx: 'motes' },
+    arena: { x0: 650 * TS, x1: 694 * TS, floor: UP * TS, y0: 8 * TS, trigger: 658 * TS, wallL: 649, wallR: 694, boss: 'tollmaster', music: 'tollmaster', tint: '#2a4a5a', tintA: 0.14, fx: 'motes' },
   };
 }
 
@@ -4706,7 +4706,7 @@ function waymeet() {
     weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'town' }],
     arena: { x0: 492 * TS, x1: 536 * TS, floor: R * TS, trigger: 498 * TS, wallL: 491, wallR: 537, boss: 'closedhelm',
-      music: 'boss2', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
+      music: 'closedhelm', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
     mini: { x0: 301 * TS, x1: 320 * TS, floor: R * TS, y0: (R - 8) * TS, y1: (R + 1) * TS, trigger: 305 * TS, wallL: 300, gate: 320, boss: 'berserker', name: 'THE STRIKER' },
   };
 }
@@ -4874,7 +4874,7 @@ function theHunt() {
       canopy: ['#2e4a26', '#42622e', '#5e7e36', '#86a044'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 568 * TS, x1: 608 * TS, floor: R * TS, trigger: 574 * TS, wallL: 567, wallR: 609, boss: 'master', music: 'boss4', tint: '#4a3a1a', tintA: 0.1, fx: 'dust' },
+    arena: { x0: 568 * TS, x1: 608 * TS, floor: R * TS, trigger: 574 * TS, wallL: 567, wallR: 609, boss: 'master', music: 'houndmaster', tint: '#4a3a1a', tintA: 0.1, fx: 'dust' },
     mini: { x0: 202 * TS, x1: 225 * TS, floor: R * TS, y0: (R - 8) * TS, y1: (R + 1) * TS, trigger: 206 * TS, wallL: 201, gate: 225, boss: 'assassin', name: 'THE STALKER' },
   };
 }
@@ -5029,7 +5029,7 @@ function quarryPass() {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, stone,
-    music: 'musMountain', duskStart: 0.7, duskLen: 0.3,
+    music: 'quarry', duskStart: 0.7, duskLen: 0.3,
     quest: { n: 3, item: 'canary', name: 'CANARIES', npc: 'foreman', done: 'THE CAGES SING AGAIN', reward: 'relic', relic: 'lamp' },
     palette: { sky: [[146, 172, 196], [236, 218, 184]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'staging',
       haze: 'rgba(236,220,180,0.14)', murkCol: '#3a342c',
@@ -5038,7 +5038,7 @@ function quarryPass() {
     weather: [],
     ambient: [{ x0: 0, x1: 350 * TS, kind: 'wind' }, { x0: 350 * TS, x1: 440 * TS, kind: 'cave' }, { x0: 440 * TS, x1: 99999, kind: 'wind' }],
     arena: { x0: 542 * TS, x1: 582 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 546 * TS, wallL: 541, wallR: 583, boss: 'troll',
-      music: 'boss3', tint: '#5a4a30', tintA: 0.1, fx: 'dust' },
+      music: 'hilltroll', tint: '#5a4a30', tintA: 0.1, fx: 'dust' },
     mini: { x0: 186 * TS, x1: 216 * TS, floor: Y * TS, y0: B * TS, y1: (Y + 1) * TS, trigger: 190 * TS, wallL: 185, gate: 216, boss: 'greathound', name: 'THE QUARRY DOG' },
   };
 }
@@ -5232,7 +5232,7 @@ function theFrostfell() {
       canopy: ['#46506a', '#5a6680', '#76849c', '#a6b4c8'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }, { x0: 230 * TS, x1: 330 * TS, kind: 'mist' }, { x0: 410 * TS, x1: 500 * TS, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 500 * TS, kind: 'wind' }, { x0: 500 * TS, x1: 99999, kind: 'cave' }],
-    arena: { x0: 556 * TS, x1: 596 * TS, floor: G * TS, y0: 16 * TS, trigger: 561 * TS, wallL: 555, wallR: 597, boss: 'suncatcher', music: 'boss3', tint: '#bfe6f5', tintA: 0.12, fx: 'motes' },
+    arena: { x0: 556 * TS, x1: 596 * TS, floor: G * TS, y0: 16 * TS, trigger: 561 * TS, wallL: 555, wallR: 597, boss: 'suncatcher', music: 'rimewright', tint: '#bfe6f5', tintA: 0.12, fx: 'motes' },
     mini: { x0: 162 * TS, x1: 196 * TS, floor: G * TS, y0: (G - 14) * TS, y1: (G + 1) * TS, trigger: 166 * TS, wallL: 161, gate: 197, boss: 'troll', name: 'THE QUARRY TROLL' },
   };
 }
@@ -5430,13 +5430,13 @@ function theSkyShip() {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools: [], falls: [], moversExtra: movers, gusts, stone, interiors,
-    music: 'musSailor', duskStart: 99999, duskLen: 1, night: false, cloudSea: (R + 4) * TS, noCoin: [[212, 287, 8, R - 9]],
+    music: 'skysail', duskStart: 99999, duskLen: 1, night: false, cloudSea: (R + 4) * TS, noCoin: [[212, 287, 8, R - 9]],
     quest: { n: 3, item: 'pigeon', name: 'HER PIGEONS', npc: 'squire', done: 'THE PIGEONS ARE HOME', reward: 'relic', relic: 'keelstone' },
     palette: { set: 'ship', dress: 'ship', sky: [[58, 104, 186], [255, 206, 158]], far: 'crag', mid: 'crag', near: 'crag', noFg: true, haze: 'rgba(255,236,200,0.10)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#6a7a9a', '#8a9ab8', '#b0bcd4', '#dfe6f0'] },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 549 * TS, x1: 593 * TS, floor: R * TS, y0: 4 * TS, trigger: 553 * TS, wallL: 548, wallR: 594, boss: 'masthead', music: 'boss4', tint: '#e8c89a', tintA: 0.06, fx: 'motes',
+    arena: { x0: 549 * TS, x1: 593 * TS, floor: R * TS, y0: 4 * TS, trigger: 553 * TS, wallL: 548, wallR: 594, boss: 'masthead', music: 'masthead', tint: '#e8c89a', tintA: 0.06, fx: 'motes',
       mast: 571 * TS, yard: 17 * TS },                          /* his mizzen and its yard: where he goes up, and where he comes down from */
     mini: { x0: 216 * TS, x1: 241 * TS, floor: (R + 6) * TS, y0: (R + 1) * TS, y1: (R + 7) * TS, trigger: 220 * TS, wallL: 215, gate: 241, boss: 'bosun', name: 'THE BOATSWAIN' },
   };
