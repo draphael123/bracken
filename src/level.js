@@ -1818,7 +1818,7 @@ L.ents = L.ents.filter(e => !(e.t === 'deco' && e.kind === 'spire' && e.x === 16
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, hasCryst: true, cloudLine: CLOUD, frost: true, snowLine: 999,
-    slick: [[24, 50, 196], [8, 40, 172], [4, 30, 132], [21, 70, 108], [2, 40, 80], [30, 80, 56]], // ice underfoot on the long floors: slow to start, slow to stop // duskStart -1 means ALWAYS dusk: this one is daylight
+    iceLedges: true, slick: [[24, 50, 196], [8, 40, 172], [4, 30, 132], [21, 70, 108], [2, 40, 80], [30, 80, 56]], // ice underfoot on the long floors: slow to start, slow to stop // duskStart -1 means ALWAYS dusk: this one is daylight
     tall: { top: 26 * TS, bottom: 218 * TS },
     quest: { n: 3, item: 'shard', name: 'SUNSHARD', npc: 'squire', done: 'THE LIGHT IS CARRIED DOWN', reward: 'relic', relic: 'sunshard' },
     palette: { sky: [[126, 176, 214], [214, 232, 240]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag',

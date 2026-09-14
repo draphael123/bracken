@@ -886,11 +886,14 @@ function crackCrystal(i, amount) {
   tileSpr[i] = crystSpr(i);
   if (Math.random() < 0.5) parts.push({ x: tx * TS + Math.random() * 16, y: ty * TS + 4, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#dff2ff', size: 1, grav: 260 });
 }
+/* THE KNOCKING IN THE SUNSPIRE. Its crystal ledges crack, break and grow back on their own all over the tower, and every one of
+   them played its crack and clank wherever it was - so the whole climb knocked. They are only heard near you now. */
+const hearTile = i => Math.abs((i % LW) * TS + 8 - P.x) < 240 && Math.abs(Math.floor(i / LW) * TS - P.y) < 150;
 function breakCrystal(i, chain) {
   if (L.grid[i] !== T.CRYST) return;
   const tx = i % LW, ty = Math.floor(i / LW);
   L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); crackAt[i] = 0; crystT[i] = -(4 + Math.random() * 2);
-  SFX.crack(); if (!chain) SFX.clank();
+  if (hearTile(i)) { SFX.crack(); if (!chain) SFX.clank(); }
   burst(tx * TS + 8, ty * TS + 6, 8, ['#dff2ff', '#8fc8e8', '#ffffff'], 70, 0.5, 260, 2);
   // the pieces fall, and they are not fussy about what is under them
   shards.push({ x: tx * TS + 8, y: ty * TS + 10, vy: 40, life: 2.4, hit: new Set() });
@@ -912,7 +915,7 @@ function updateCrystal(dt) {
       if (L.grid[i] !== T.CRYST) continue;
       crystT[i] = (crystT[i] || 0) + dt * w * crystSpeed(ty);
       const want = crystT[i] > 1.15 ? 2 : crystT[i] > 0.5 ? 1 : 0;
-      if (want > (crackAt[i] || 0)) { crackAt[i] = want; tileSpr[i] = crystSpr(i); if (want === 1) SFX.spark(); else SFX.crack(); }
+      if (want > (crackAt[i] || 0)) { crackAt[i] = want; tileSpr[i] = crystSpr(i); if (hearTile(i)) { if (want === 1) SFX.spark(); else SFX.crack(); } }
       if (crystT[i] > 1.7) breakCrystal(i);
     }
   }
@@ -933,7 +936,7 @@ function updateCrystal(dt) {
     // a live thermal under a falling piece of glass throws it back up (and a piece on its way up is not falling on you)
     for (const pr of props) if (pr.t === 'vent' && pr.active && Math.abs(sh.x - pr.x) < (pr.w || 13) + 4 && sh.y <= pr.y + 2 && sh.y > pr.y - pr.h) { if (!sh.up) { sh.up = true; sh.life = Math.max(sh.life, 2); } sh.vy = Math.min(sh.vy, -300); }
     const ty = Math.floor(sh.y / TS), tx = Math.floor(sh.x / TS);
-    if (isSolid(tx, ty)) { sh.life = 0; burst(sh.x, sh.y, 6, ['#dff2ff', '#8fc8e8'], 50, 0.4); SFX.clank(); continue; }
+    if (isSolid(tx, ty)) { sh.life = 0; burst(sh.x, sh.y, 6, ['#dff2ff', '#8fc8e8'], 50, 0.4); if (Math.abs(sh.x - P.x) < 240 && Math.abs(sh.y - P.y) < 150) SFX.clank(); continue; }
     if (sh.vy < 0) continue;
     if (!P.dead && !sh.hit.has(P) && Math.abs(P.x - sh.x) < 9 && sh.y > P.y - 16 && sh.y < P.y + 4) { sh.hit.add(P); damagePlayer(sh.x, DMG.shardFall, { up: true }); } }
   shards = shards.filter(sh => sh.life > 0);
@@ -4064,15 +4067,15 @@ function updatePlayer(dt) {
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
   const cap = (P.ballast ? (P.swim ? 54 : 58) : (P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * tal('seaLegs')) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
-  const onSlick = P.ground && P.relic !== 'crampons' && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]); // the Sunspire's ice: slow to get going, slower to stop
+  const onSlick = P.ground && P.relic !== 'crampons' && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   if (move && !groundAtk) {
-    const acc = P.swim ? 900 : P.ground ? (onSlick ? 200 : 1000) : 700;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
+    const acc = P.swim ? 900 : P.ground ? (onSlick ? 260 : 1000) : 700;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
     if (Math.abs(P.vx) > cap && Math.sign(P.vx) === move) P.vx = move * Math.max(cap, Math.abs(P.vx) - 400 * dt);
     else { P.vx += move * acc * dt; if (Math.abs(P.vx) > cap) P.vx = move * cap; }
     if (!attacking) P.face = move;
     if (P.ground) P.airHang = false;
   } else if (!dodging) {
-    const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 40 : 1100) : 200;
+    const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 70 : 1100) : 200;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
   } else { P.vx *= Math.pow(0.05, dt); }
   if (P.plunge) {
@@ -10146,7 +10149,7 @@ function updateProps(dt) {
       if (pr.glass && pr.active && L.hasCryst) { pr.glassT = (pr.glassT || 0) + dt;
         const tx0 = Math.floor((pr.x - 12) / TS), tx1 = Math.floor((pr.x + 12) / TS), ty0 = Math.floor((pr.y - pr.h) / TS), ty1 = Math.floor(pr.y / TS) - 1;
         for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.CRYST) continue;
-          if (pr.glassT < 0.5) { if ((crackAt[i] || 0) < 2) { crackAt[i] = 2; tileSpr[i] = crystSpr(i); SFX.crack(); } } else breakCrystal(i); } }
+          if (pr.glassT < 0.5) { if ((crackAt[i] || 0) < 2) { crackAt[i] = 2; tileSpr[i] = crystSpr(i); if (hearTile(i)) SFX.crack(); } } else breakCrystal(i); } }
       else if (pr.glass) pr.glassT = 0;
       if (pr.active) {
         if (Math.random() < dt * 40) parts.push({ x: pr.x + (Math.random() - 0.5) * 16, y: pr.y - 2, vx: (Math.random() - 0.5) * 12, vy: -140 - Math.random() * 80, life: pr.h / 180, max: pr.h / 180, col: pr.heat ? (Math.random() < 0.3 ? '#fff6c8' : Math.random() < 0.6 ? '#ffb040' : '#ff6b2c') : pr.wind ? (Math.random() < 0.5 ? '#eefaff' : '#c8d8e8') : Math.random() < 0.5 ? '#c8bcb0' : '#9a5aa8', size: Math.random() < 0.3 ? 2 : 1, grav: 0 });
