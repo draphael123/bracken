@@ -1754,6 +1754,10 @@ function theSunspire() {
   vent(26, 30, 5, { period: 5, on: 2.4, phase: 0, lift: 220, glass: true }); cryst(24, 4, 27);
   vent(60, 30, 5, { period: 5, on: 2.4, phase: 2.5, lift: 220, glass: true }); cryst(58, 4, 27);
   ent('sign', 16, 29, { text: 'THE ROC LANDS ON HER SHADOW. MAKE IT LAND ON GLASS AND SHE STAYS DOWN.' });
+  // THE CROWN'S FORK: her feathers are glass at the ends, and glass is what a fork shakes. It stands on the rock
+  // between the two middle panes, and she comes over it to sing to the glass - so the answer to her song is here
+  ent('resonance', 56, 29, { r: 1, roc: true });
+  ent('sign', 22, 29, { text: 'STRIKE THE FORK WHEN SHE IS OVER IT: HER GLASS WINGS RING AND SHE FALLS.' });
   ent('roc', 72, 29);
   // the last hop to the gate is over the thorns on two pieces of crystal, which will not wait for you
   plat(79, 29, 5); cryst(85, 3, 27); cryst(89, 3, 27); // a plank over the first of the thorns, then the glass

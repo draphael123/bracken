@@ -2327,22 +2327,29 @@ export function bakeRoc() {
       fold: [[[18, 20], [36, 19], [34, 24], [26, 26], [16, 25]], null],
       forward: [[[30, 22], [50, 4], [57, 8], [54, 16], [46, 22], [36, 27]], [[26, 21], [40, 3], [46, 6], [42, 15], [32, 24]]],
       splay: [[[32, 24], [53, 38], [49, 42], [42, 41], [34, 32]], [[22, 24], [4, 38], [7, 42], [15, 41], [24, 31]]],
+      // THE SHRIEK'S TELL: both wings thrown up into a V over her back, the whole span of glass to the sky
+      crown: [[[31, 23], [42, 16], [50, 9], [52, 14], [45, 20], [36, 26]], [[25, 21], [18, 11], [12, 8], [10, 12], [15, 18], [23, 24]]],
+      // THE SHRIEK: flung out flat and wide, every primary open
+      flare: [[[31, 22], [44, 15], [50, 15], [49, 19], [42, 23], [34, 27]], [[24, 22], [14, 15], [9, 16], [9, 20], [15, 24], [23, 26]]],
+      // THE DIVE'S WINDUP: mantled - hunched up and back over her shoulders before the stoop
+      mantle: [[[31, 22], [25, 13], [16, 9], [19, 14], [25, 19], [31, 25]], [[27, 21], [24, 14], [21, 11], [20, 14], [23, 19], [27, 24]]],
     }[wings];
     if (WINGS[1]) wing(g, WINGS[1], true);
     // tail: three long feathers, glass at the ends
     poly(g, [[19, 25], [5, 21], [4, 25], [6, 29], [19, 29]], 'h'); line(g, 18, 26, 6, 23, C.H, 1); line(g, 18, 28, 6, 28, C.H, 1);
     px(g, 4, 23, C.c); px(g, 4, 26, C.C); px(g, 5, 29, C.c);
     // legs and talons
-    const LEG = { hang: [[26, 32, 25, 38], [31, 32, 31, 38]], plant: [[25, 32, 22, 40], [32, 32, 35, 40]], strike: [[27, 31, 36, 36], [31, 31, 40, 34]], none: [] }[legs];
+    const LEG = { hang: [[26, 32, 25, 38], [31, 32, 31, 38]], plant: [[25, 32, 22, 40], [32, 32, 35, 40]], strike: [[27, 31, 36, 36], [31, 31, 40, 34]], tuck: [[26, 32, 27, 35], [31, 32, 33, 35]], none: [] }[legs];
     for (const [x0, y0, x1, y1] of LEG) { line(g, x0, y0, x1, y1, C.M, 2); px(g, x1 - 1, y1 + 1, C.m); px(g, x1 + 1, y1 + 1, C.m); px(g, x1 + 2, y1, C.m); }
     // body: a heavy grey barrel with a pale breast
     ellipse(g, 27, 26, 11, 7.5, C.h); ellipse(g, 30, 28, 7, 4.5, C.f); line(g, 25, 29, 33, 30, C.F, 1); line(g, 26, 31, 32, 31, C.F, 1);
     // neck and head, a hooked gold beak, a crest of crystal
-    const HEAD = { up: [41, 15], low: [43, 27], screech: [40, 12], thrown: [36, 11] }[head];
+    // (sky: the head thrown up and back for the shriek, the beak already open)
+    const HEAD = { up: [41, 15], low: [43, 27], screech: [40, 12], thrown: [36, 11], sky: [37, 12] }[head];
     const [hx, hy] = HEAD;
     poly(g, [[33, 21], [hx - 3, hy - 2], [hx + 1, hy + 2], [36, 26]], 'h');
     ellipse(g, hx, hy, 5, 4.2, C.h);
-    const open = head === 'screech';
+    const open = head === 'screech' || head === 'sky';
     if (open) { poly(g, [[hx + 3, hy - 3], [hx + 9, hy - 3], [hx + 11, hy - 1], [hx + 4, hy]], 'm'); poly(g, [[hx + 3, hy + 1], [hx + 9, hy + 4], [hx + 3, hy + 3]], 'M'); px(g, hx + 11, hy, C.M); }
     else { poly(g, [[hx + 3, hy - 3], [hx + 9, hy - 2], [hx + 11, hy + 1], [hx + 10, hy + 4], [hx + 8, hy + 1], [hx + 3, hy + 2]], 'm'); px(g, hx + 10, hy + 3, C.M); px(g, hx + 10, hy + 4, C.M); px(g, hx + 9, hy + 2, C.M); }
     px(g, hx + 3, hy - 2, C.f); // the cere
@@ -2367,6 +2374,13 @@ export function bakeRoc() {
     frame({ wings: 'forward', legs: 'hang' }),
     frame({ wings: 'splay', head: 'low', legs: 'plant' }),
     frame({ wings: 'splay', head: 'thrown', legs: 'plant' }),
+    // ROUND TWO. 8 THE SHRIEK'S TELL (wings to the sky, head back, legs drawn up), 9 THE SHRIEK (flung wide, beak open),
+    // 10 THE DIVE'S WINDUP (mantled and rocked back before the stoop: it used to borrow the screech), 11 STUCK (heaving
+    // her wings up against the glass that has her, alternated with 6). The hurt pose stays LAST.
+    frame({ wings: 'crown', head: 'sky', legs: 'tuck' }),
+    frame({ wings: 'flare', head: 'screech', legs: 'hang' }),
+    frame({ wings: 'mantle', head: 'low', legs: 'strike', rot: -0.15, dy: -1 }),
+    frame({ wings: 'crown', head: 'thrown', legs: 'plant' }),
     frame({ wings: 'splay', head: 'low', legs: 'none', rot: 0.25, dy: 3 }),
   ];
   return pack(F, 30, 41, 40, 30);
