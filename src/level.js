@@ -5709,6 +5709,194 @@ function theSkyShip() {
   };
 }
 
+// ============================================================================================================
+// THE DROWNED CAUSEWAY. The old pilgrim road out across the tidal flats to the island chapel, which the sea took a
+// hundred years ago and gives back twice a minute. ONE RULE, said three ways: THE TIDE TAKES THE ROAD. The bells in
+// the towers toll before it comes (three strokes), a line of foam stands up where the water will be, and the gauge
+// at the top of the screen runs down - and every TIDE BELL is yours: strike one and the tide turns on your word.
+// High water carries you up onto the arches and the ship decks; low water gives you the road, the stones across the
+// channels, the chapel crypt and the holds. Out at the end of the road, where it goes into the sea, something waits.
+//   1 THE LANDING         the sea wall, the pilgrims' squire, the first tide bell
+//   2 THE MILE ROAD       the road on its piers, the first dip, the feelers in the flats, the stepping stones
+//   3 THE ARCADE          a roofed gallery that floods to its vaults, and the broken road along its top
+//   4 THE CHAPEL          the drowned chapel on its steps (they lock you in), and the crypt under the road
+//   5 THE WRECK FIELD     hulls on the flats, holds at low water and decks at high, channels with anglers in
+//   6 THE BROKEN SPANS    the road in pieces on its piers, a tower and its bell over the deep water
+//   7 THE LAST MILE       the road into the open sea, the waystones, and the fog
+//   8 THE KRAKEN'S REACH  the end of the road
+// Rows: the road stands on 24, the raised stone on 18, the flats on 30, the bed is 40. HIGH WATER is row 20 (the road
+// is three rows under it); LOW WATER is row 31 (under the flats). The pool is built at LOW water: every tool reads the
+// level as the road you can walk, and the tide in src/main.js (updateCauseTide) moves it.
+// ============================================================================================================
+function theDrownedCauseway() {
+  const W = 612, H = 44, R = 24, RH = 18, FL = 30, HW = 20, LWR = 31;
+  const L = painter(W, H);
+  const { block, plat, ent, coins, set } = L;
+  const nets = [], interiors = [], airRooms = [];
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const net = (x0, x1, y0, y1) => nets.push([x0, x1, y0, y1]);   /* EVERY ROPE IS HUNG LAST (rule I) */
+  const sign = (x, y, text) => ent('sign', x, y, { text });
+  const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
+  /* THE ROAD: three courses of dressed stone on piers, with the sea going through the arches between them */
+  /* (it is built solid to the bed: the arches between the piers were sealed pockets under the road that every tool read as a trap
+     and nobody could see; the sea shows through the broken arches and the channels instead) */
+  const road = (x0, x1, top = R) => block(x0, x1, top, H - 1);
+  const bell = (x, y) => ent('tidebell', x, y);
+  block(0, W - 1, 40, H - 1);   /* the bed of the flats, under everything */
+
+  // ---------------- 1. THE LANDING (x 0-44). The sea wall, the squire who lost his pilgrims, the first tide bell. ----------------
+  block(0, 40, RH, 39);
+  sign(2, RH - 1, 'THE DROWNED CAUSEWAY. THE TIDE TAKES THE ROAD TWICE A MINUTE, AND THE BELLS SAY WHEN.');
+  ent('npc', 6, RH - 1, { kind: 'squire' }); ent('check', 9, RH - 1);
+  sign(12, RH - 1, 'THREE PILGRIMS WENT OUT ON THE ROAD AT LOW WATER. THE TIDE CAME IN BEHIND THEM.');
+  bell(18, RH - 1); sign(15, RH - 1, 'A TIDE BELL. STRIKE IT AND THE TIDE TURNS NOW, NOT WHEN IT LIKES.');
+  deco('wayShrine', 24, RH - 1); deco('fencePosts', 30, RH - 1); deco('drownedTree', 36, RH - 1);
+  coins([5, RH - 2], [21, RH - 2], [27, RH - 2], [33, RH - 2]);
+  block(41, 42, 20, 39); block(43, 44, 22, 39);   /* the steps down off the sea wall */
+  sign(40, RH - 1, 'HIGH WATER LIFTS YOU. LOW WATER GIVES YOU THE ROAD. EITHER WILL GET YOU ACROSS.');
+
+  // ---------------- 2. THE MILE ROAD (x 45-160). The road on its piers, the first dip, the feelers, the stones. ----------------
+  road(45, 78); deco('waystone', 50, R - 1); deco('waystone', 72, R - 1, { v: 1 });
+  sign(76, R - 1, 'THE FLATS HAVE ARMS IN THEM. THE MUD STIRS BEFORE ONE COMES UP.');
+  /* THE FIRST DIP: the road sags into the flats here, and it is the first stretch the sea covers */
+  block(79, 80, 26, H - 1); block(81, 94, 28, H - 1); block(95, 96, 26, H - 1);
+  ent('feeler', 88, 27); ent('crab', 84, 27, { face: -1 });
+  coins([82, 26], [86, 26], [92, 26]);
+  road(97, 120); ent('check', 100, R - 1); deco('waystone', 108, R - 1);
+  ent('sailor', 112, R - 1, { face: -1 }); ent('petrel', 104, 14); ent('scout', 118, R - 1, { face: -1 });
+  /* THE STONES. At low water a line of them across the channel; at high water the channel is a swim */
+  block(121, 122, 26, 39); block(145, 146, 26, 39);
+  for (const x of [125, 129, 133, 137, 141]) block(x, x + 1, 28, 39);
+  net(123, 123, 26, 34); net(143, 143, 26, 34);   /* a jump out of the sea does not clear three courses: rungs up the banks, for a fall at low water */
+  sign(119, R - 1, 'AT LOW WATER THE STONES ARE A ROAD. AT HIGH WATER, SWIM IT, AND WATCH THE URCHINS.');
+  ent('urchin', 127, 36); ent('urchin', 139, 35); ent('eel', 131, 37);
+  coins([126, 27], [130, 27], [134, 27], [138, 27], [142, 27]);
+  ent('stray', 134, 27, { kind: 'fisher' });
+  road(147, 160); ent('feeler', 152, R - 1); ent('crab', 157, R - 1, { face: -1 });
+
+  // ---------------- 3. THE ARCADE (x 160-250). A roofed gallery that floods to its roof, with vaults where the air stays. ----------------
+  road(160, 250);
+  block(165, 244, RH, 21);   /* the gallery roof, and the road along the top of it */
+  /* THE VAULTS: where the roof goes up, the water cannot close: the air stays in them at high water */
+  for (const v of [184, 210, 234]) { air(v, v + 4, RH, 21); block(v - 1, v + 5, 16, 17); }
+  /* THE BROKEN SPAN: the top road is down here, open to the sky, and the gallery under it with it */
+  air(222, 224, RH, 21);
+  interiors.push([165, 244, 22, 23, 'hall']);
+  plat(155, 22, 3); plat(158, 20, 3); plat(246, 20, 3); plat(249, 22, 3);   /* the steps up onto the top of it, both ends */
+  sign(162, R - 1, 'THE ARCADE FLOODS TO ITS ROOF. BREATHE IN THE VAULTS, WHERE THE ROOF GOES UP.');
+  ent('check', 163, R - 1); ent('check', 206, RH - 1);
+  for (const x of [176, 198, 228]) ent('sailor', x, R - 1, { face: -1 });
+  ent('netter', 216, R - 1, { face: -1 }); ent('crab', 240, R - 1, { face: -1 });
+  ent('petrel', 190, 13); ent('petrel', 200, 12); ent('petrel', 232, 11); ent('scout', 243, RH - 1, { face: -1 });
+  ent('silver', 212, 14);
+  coins([170, 23], [180, 23], [192, 23], [204, 23], [220, 23], [236, 23], [170, 17], [178, 17], [196, 17], [218, 17], [230, 17], [242, 17]);
+  deco('brokenArch', 172, RH - 1); deco('wayShrine', 226, R - 1);
+
+  // ---------------- 4. THE CHAPEL (x 250-330). The island chapel on its steps, and the crypt the sea keeps. ----------------
+  road(250, 330);
+  block(259, 262, 22, 23);                        /* the chapel steps */
+  block(263, 300, 20, 23);                        /* its floor, over the high water */
+  block(263, 265, 8, 16); block(297, 300, 8, 16); /* its walls, the doors under them */
+  block(263, 300, 8, 9);                          /* its roof */
+  block(301, 304, 22, 23);
+  interiors.push([266, 296, 10, 19, 'chapel']);
+  sign(257, R - 1, 'THE ISLAND CHAPEL. THE DROWNED STILL COME TO IT, AND THEY SHUT THE DOORS BEHIND YOU.');
+  ent('check', 256, R - 1);
+  bell(281, 19); sign(278, 19, 'THE CHAPEL BELL IS A TIDE BELL TOO. THE CROWD INSIDE WILL NOT WAIT FOR IT.');
+  deco('wayShrine', 272, 19); deco('wayShrine', 290, 19);
+  ent('stray', 294, 19, { kind: 'fisher' });
+  coins([268, 18], [276, 18], [286, 18], [292, 18]);
+  /* THE CRYPT, under the road past the chapel. Always half full; at high water full to the vault, and one bell of air */
+  air(309, 311, R, R + 2); air(306, 326, 27, 37); net(310, 310, R, 34);   /* the ladder down the hole, for the way out at low water */
+  deco('airBell', 322, 37);
+  sign(314, R - 1, 'THE CRYPT. AT HIGH WATER IT FILLS: ONE BELL OF AIR DOWN THERE.');
+  ent('silver', 324, 35); coins([312, 36], [316, 36], [320, 36]); deco('seaChest', 318, 37);
+  ent('eel', 314, 33); ent('urchin', 308, 36);
+  ent('sailor', 268, 19, { face: -1 }); ent('crab', 324, R - 1, { face: -1 }); ent('feeler', 328, R - 1); ent('check', 318, R - 1);
+
+  // ---------------- 5. THE WRECK FIELD (x 331-420). Hulls on the flats: holds at low water, decks at high. ----------------
+  block(331, 332, 26, 39); block(333, 334, 28, 39);
+  block(335, 420, FL, 39);
+  air(352, 358, FL, 39); air(392, 398, FL, 39);   /* the two channels: deep at any tide */
+  for (const x of [353, 357, 393, 397]) block(x, x, 38, 39);
+  ent('check', 336, FL - 1);
+  sign(334, 27, 'THE WRECK FIELD. AT LOW WATER, THE HOLDS. AT HIGH WATER, THE DECKS AND THE RIGGING.');
+  ent('eel', 395, 34); ent('urchin', 354, 37); ent('angler', 437, 35, { face: -1 }); ent('urchin', 454, 38);   /* the channels' own fish, where the sprinkler cannot be trusted with them */
+  /* WRECK ONE: a coaster on her keel, a gash in her side into the hold */
+  block(339, 350, 25, 29); for (let x = 339; x <= 350; x++) set(x, 24, T.PLANK); air(340, 348, 26, 28); air(339, 339, 27, 28);
+  plat(336, 27, 2); plat(337, 25, 2);
+  deco('mastStump', 345, 23); coins([341, 27], [344, 27], [347, 27]); deco('seaChest', 346, 28);
+  /* WRECK TWO: a big merchantman across the flats, her yard and her rigging up over the second channel */
+  block(360, 388, 24, 29); for (let x = 360; x <= 388; x++) set(x, 23, T.PLANK); air(362, 385, 25, 28); air(386, 388, 26, 28);
+  plat(359, 27, 1); plat(358, 25, 2);
+  net(374, 374, 12, 22); plat(366, 12, 17); plat(386, 16, 5);
+  ent('silver', 380, 10); deco('rigging', 368, 22, { v: 0 });
+  ent('stray', 372, 28, { kind: 'fisher' });
+  coins([364, 28], [370, 28], [378, 28], [382, 28], [368, 11], [376, 11], [388, 15]);
+  /* WRECK THREE: her bow, stood up out of the flats */
+  block(400, 401, 28, 29); block(402, 405, 26, 29); block(406, 409, 24, 29); block(410, 413, 22, 29);   /* up her bow in two-row steps */
+  deco('figurehead', 412, 21);
+  ent('crab', 336, FL - 1); ent('crab', 411, 21, { face: -1 }); ent('netter', 366, 22, { face: -1 }); ent('sailor', 344, 23, { face: -1 });
+  ent('sailor', 375, 28, { face: -1 }); ent('tideguard', 382, 22, { face: -1 }); ent('heronfoe', 391, FL - 1);
+  ent('angler', 355, 36, { face: -1 }); ent('angler', 395, 36, { face: -1 }); ent('eel', 356, 33); ent('urchin', 394, 38);
+  ent('feeler', 415, FL - 1); ent('petrel', 380, 6); ent('siren', 390, FL - 1, { face: -1 });   /* on the flats by the second channel */
+  coins([354, 29], [396, 29], [406, 23], [411, 21]);
+
+  // ---------------- 6. THE BROKEN SPANS (x 421-510). The road in pieces on its piers, and a tower over the deep water. ----------------
+  block(417, 418, 28, 39); block(419, 420, 26, 39);   /* up off the flats onto the spans, two rows a step */
+  road(421, 432); road(439, 450); road(458, 470); road(477, 510);
+  for (const [a, b] of [[433, 438], [451, 457], [471, 476]]) { net(a, a, R + 1, 32); net(b, b, R + 1, 32); }   /* rungs up the pier faces, for a fall at low water */
+  ent('check', 424, R - 1);
+  sign(426, R - 1, 'THE SPANS ARE DOWN. JUMP THEM AT LOW WATER, SWIM THEM AT HIGH. THE TOWER BELL TURNS IT.');
+  block(462, 466, RH, 23); bell(464, RH - 1);
+  net(461, 461, RH, 23);
+  ent('petrel', 466, 12); ent('petrel', 446, 12); ent('petrel', 486, 10);
+  ent('feeler', 444, R - 1); ent('feeler', 482, R - 1); ent('crab', 448, R - 1, { face: -1 }); ent('tideguard', 492, R - 1, { face: -1 }); ent('scout', 468, RH - 1, { face: -1 });
+  ent('eel', 454, 36); ent('eel', 474, 36); ent('urchin', 436, 37);
+  ent('check', 489, R - 1);
+  coins([435, 21], [454, 21], [473, 21], [464, 15], [480, 23], [496, 23], [504, 23]);
+  deco('waystone', 500, R - 1, { v: 1 });
+
+  // ---------------- 7. THE LAST MILE (x 511-565). The road into the open sea, and the fog. ----------------
+  road(511, 565);
+  deco('waystone', 518, R - 1); deco('waystone', 536, R - 1); deco('brokenArch', 528, R - 1); deco('wayShrine', 546, R - 1);
+  sign(514, R - 1, 'THE PILGRIMS NEVER SAW THE ISLAND. SOMETHING CAME UP OUT OF THE SEA FIRST.');
+  ent('sailor', 522, R - 1, { face: -1 }); ent('tideguard', 540, R - 1, { face: -1 }); ent('feeler', 531, R - 1); ent('netter', 550, R - 1, { face: -1 });
+  ent('check', 557, R - 1);
+  sign(553, R - 1, 'THE ROAD GOES OUT INTO THE SEA AND STOPS. THE WATER AT THE END OF IT IS BREATHING.');
+  coins([516, 23], [524, 23], [534, 23], [544, 23]);
+
+  // ---------------- 8. THE KRAKEN'S REACH (x 566-609). The end of the road, and what lives off the end of it. ----------------
+  block(566, 609, R, R + 1); for (let x = 567; x < 609; x += 8) block(x, x + 1, R + 2, 39);
+  block(566, 567, 22, 23); block(568, 570, 20, 23); block(571, 572, 22, 23);   /* the old tower's footing, stepped both sides, and its bell */
+  ent('knell', 569, 19);
+  block(584, 584, 22, 23); block(585, 589, 21, 23); block(590, 590, 22, 23);   /* the shrine plinth */
+  ent('knell', 587, 20);   /* and the shrine's own bell: the tower's is thirty strides from where its head comes up */
+  block(597, 598, 23, 23); block(599, 606, 22, 23); for (let x = 599; x <= 606; x++) set(x, 21, T.PLANK);   /* the wreck she came in on */
+  deco('waystone', 583, R - 1); deco('waystone', 597, 22, { v: 1 });   /* on pier columns: the sea takes the road between the piers, never over one */
+  block(610, W - 1, 0, 39);
+  ent('kraken', 604, 20);   /* on the wreck's deck: it is in the sea past the end of the road until it wakes */
+
+  /* THE ROPES, LAST: nothing is cut after this line */
+  for (const [x0, x1, y0, y1] of nets) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET);
+
+  const tideSea = { x0: 4 * TS, x1: 565 * TS, y: LWR * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.42, grad: false, causeTide: true, loY: LWR * TS, hiY: HW * TS };
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: RH - 1 }, falls: [], interiors, airRooms,
+    pools: [tideSea, { x0: 566 * TS, x1: 610 * TS, y: 26 * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.66, arenaTide: true, krakenSea: true }],
+    causeTide: { low: 16, warn: 4, rise: 3, high: 14, ebb: 2, fall: 3.5, first: 12 },
+    leviathan: { arena: 566 * TS },
+    music: 'causeway', duskStart: 99999, duskLen: 1, night: false,
+    quest: { n: 3, item: 'fisher', name: 'THE PILGRIMS', npc: 'squire', done: 'THE PILGRIMS ARE ACROSS', thanks: 'THEY PRAY FOR YOU' },
+    palette: { set: 'shore', sky: 'storm', far: 'causeway', mid: 'causeway', near: 'reef', noFg: true, dress: 'shore', haze: 'rgba(120,150,140,0.14)',
+      grass: '#5f7a68', grassL: '#7e9a86', grassD: '#40564a', dirt: '#4e5856', dirtL: '#66706c', dirtD: '#343c3a', canopy: ['#1e2e2c', '#2c403c', '#3a524c', '#506a62'] },
+    weather: [{ x0: 0, x1: 510 * TS, kind: 'rain' }, { x0: 510 * TS, x1: 99999, kind: 'mist' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
+    arena: { x0: 566 * TS, x1: 610 * TS, floor: R * TS, y0: 4 * TS, trigger: 574 * TS, wallL: 565, wallR: 610, boss: 'kraken', music: 'kraken', tint: '#203a38', tintA: 0.12, fx: 'motes',
+      tower: 569 * TS + 8, plinth: [585 * TS, 590 * TS], stones: [583 * TS + 8, 597 * TS + 8], holes: [[578, 580], [594, 595]], rest: 604 * TS },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -5743,12 +5931,14 @@ export const LEVELS = [
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'deep' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   /* THE ROAD INLAND goes on through the goblin lord's own hunting grounds, and the Hound Master comes off the bench for it */
-  { id: 'hunt', name: 'THE HUNT', sub: "the goblin lord's hunting grounds", rule: 'THE PACK IS HIS WEAPON, AND THE WHISTLE IS HIS TELL.', build: theHunt, needs: 'deep' }   /* WAYMEET IS OFF THE ROAD: an optional town, and the road inland does not wait on it */,
+  { id: 'hunt', name: 'THE HUNT', sub: "the goblin lord's hunting grounds", rule: 'THE PACK IS HIS WEAPON, AND THE WHISTLE IS HIS TELL.', build: theHunt, needs: 'causeway' }   /* WAYMEET IS OFF THE ROAD: an optional town, and the road inland does not wait on it */,
   /* THE ROAD INLAND, UP: after the Hunt, the pass over the hill, and the troll that was benched for want of a hill to throw. */
   { id: 'quarry', name: 'THE QUARRY PASS', sub: 'the road inland, through the hill', rule: 'THE HILL THROWS WHAT IT CAN LIFT.', build: quarryPass, needs: 'hunt' },
   { id: 'frost', name: 'THE FROSTFELL', sub: 'the frozen high fell', rule: 'FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.', build: theFrostfell, needs: 'quarry' },   /* up from the pass onto the fell */
   /* THE SKY SHIP comes after THE FROSTFELL on the road inland: the wind the moor taught, on a deck with nothing under it */
   { id: 'skyship', name: 'THE SKY SHIP', sub: 'a goblin galleon above the clouds', rule: 'THE WIND GOES WHERE THE SAILS SAY. TURN THE SAILS.', build: theSkyShip, needs: 'frost' },
+  /* THE DROWNED CAUSEWAY: the last of the coast, after the Deep and before the road inland. The Kraken is the coast's last word */
+  { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: theDrownedCauseway, needs: 'deep' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -5833,6 +6023,7 @@ const DRESS = {
   quarry: [['stone', 3], ['cairn'], ['bones', 2], ['cart'], ['barrels'], ['wares', 2], ['fence', 2], ['rock', 3], ['warnPost', 2], ['stakeFence', 2], ['cookSpit'], ['lootHeap', 2], ['gobPennant', 2]],   /* the diggers' camp: posts on the ledges, a spit going, what they have dug up */
   deep: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['shellDrift', 2], ['seaChest']],
   longwater: [['coralTuft', 3], ['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['pierPost'], ['netPoles']],
+  causeway: [['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['shellDrift', 2], ['fencePosts'], ['spar', 2], ['pierPost']],   /* the pilgrim road: wrack, shells, weed and what the tide leaves on the stone */
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
   frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
@@ -5854,6 +6045,7 @@ const GARRISON = {
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['stormshaman', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and a storm-caller, not another cutlass */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
+  causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 4], ['sailor', 4], ['crab', 4], ['netter', 3]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
   skyship: [['cutlass', 10], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings */
   lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
@@ -6071,6 +6263,9 @@ const AMBUSH = {
     waves: [[['scout', 297], ['scout', 336], ['crab', 316, 25], ['crab', 324, 25]], [['tideguard', 330, 25], ['scout', 336], ['netter', 298], ['heronfoe', 316, 25]]] }],
   flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
     waves: [[['cutlass', 66], ['cutlass', 88], ['scout', 76], ['crab', 83]], [['boarder', 84], ['marine', 90], ['bosun', 68], ['cutlass', 75]]] }],
+  /* THE DROWNED CHAPEL: the doors are the gates (the door columns under the two walls), its floor is over the high water */
+  causeway: [{ name: 'THE DROWNED CHAPEL', row: 19, wallL: 265, wallR: 297, check: false,
+    waves: [[['sailor', 270], ['sailor', 292], ['crab', 281], ['netter', 276]], [['tideguard', 288], ['scout', 293], ['sailor', 272], ['crab', 284]]] }],
   hurricane: [{ name: 'THE ORLOP', row: 26, wallL: 69, wallR: 111, check: [65, 26],
     waves: [[['sailor', 74], ['cutlass', 106], ['scout', 90]], [['tideguard', 98], ['marine', 106], ['boarder', 78], ['cutlass', 88]]] },
     { name: 'THE WEATHER DECK', row: 18, wallL: 389, wallR: 427, check: false,

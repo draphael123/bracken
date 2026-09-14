@@ -9,7 +9,7 @@ const TRACKS = { hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.o
   /* ONE THEME PER LEVEL, ONE PER BOSS: all CC0 from OpenGameArt, levelled to the rest (audio/CREDITS.txt) */
   sleepers: './audio/sleepers.ogg', trench: './audio/trench.ogg', barrows: './audio/barrows.ogg', quarry: './audio/quarry.ogg', skysail: './audio/skysail.ogg',
   frogking: './audio/frogking.ogg', sporemother: './audio/sporemother.ogg', ramlord: './audio/ramlord.ogg', owlreeve: './audio/owlreeve.ogg', herald: './audio/herald.ogg', reefmaw: './audio/reefmaw.ogg', closedhelm: './audio/closedhelm.ogg',
-  quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg' };
+  quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', causeway: './audio/causeway.ogg', kraken: './audio/kraken.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -620,6 +620,8 @@ const DIE = {
   netter() { file('gobDie', 0.5, 1) || tone('square', 340, 110, 0.24, 0.18); noise(0.3, 0.2, 1600, 0.4, 0.06); /* the net falls in a heap */ },
   // the fish: no voice at all, so all of it is water and body
   eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
+  kraken() { tone('sawtooth', 110, 28, 1.8, 0.3); tone('sine', 70, 24, 2.2, 0.26, 0.2); noise(1.4, 0.4, 380, 0.7); noise(0.9, 0.3, 1400, 0.5, 0.5); /* a bellow that goes down under the water with it */ },
+  feeler() { noise(0.2, 0.26, 900, 0.5); tone('sine', 260, 70, 0.3, 0.12); noise(0.3, 0.2, 500, 0.6, 0.1); /* back down its hole */ },
   urchin() { noise(0.14, 0.26, 3400, 0.3); for (let i = 0; i < 5; i++) tone('triangle', 1600 + i * 200, 900, 0.07, 0.05, i * 0.035); /* the spines go everywhere */ },
   angler() { tone('sawtooth', 200, 70, 0.3, 0.2); noise(0.3, 0.3, 600, 0.5, 0.03); tone('sine', 1200, 300, 0.18, 0.06, 0.06); /* its lamp goes out */ noise(0.24, 0.16, 1400, 0.4, 0.16); },
   petrel() { tone('sawtooth', 1300, 400, 0.16, 0.12); tone('square', 900, 300, 0.12, 0.08, 0.05); noise(0.22, 0.16, 2400, 0.4, 0.08); },
@@ -731,6 +733,9 @@ const HURT = {
   crab() { noise(0.05, 0.26, 2600, 0.35); noise(0.05, 0.2, 1900, 0.4, 0.05); },
   urchin() { noise(0.07, 0.22, 3200, 0.3); tone('sine', 700, 400, 0.08, 0.06); },
   eel() { noise(0.12, 0.26, 900, 0.5); tone('sine', 240, 120, 0.12, 0.12); },
+  kraken() { tone('sawtooth', 140, 60, 0.4, 0.22); noise(0.3, 0.3, 500, 0.6); tone('sine', 80, 50, 0.5, 0.16, 0.05); },   /* something the size of a church taking a cut */
+  krakenarm() { noise(0.12, 0.3, 700, 0.5); tone('sine', 150, 70, 0.16, 0.14); },
+  feeler() { noise(0.1, 0.24, 1000, 0.5); tone('sine', 300, 150, 0.1, 0.1); },
   angler() { noise(0.14, 0.3, 700, 0.5); tone('sawtooth', 180, 80, 0.16, 0.14); },
   reefmaw() { noise(0.3, 0.34, 420, 0.5); tone('sawtooth', 120, 60, 0.3, 0.2); tone('sine', 70, 40, 0.4, 0.14, 0.05); },
   heronfoe() { tone('sawtooth', 900, 1500, 0.1, 0.12); noise(0.08, 0.14, 2400, 0.5, 0.02); },

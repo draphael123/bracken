@@ -36,6 +36,8 @@ export const THREAT = {
   swornsword: 3.5, hedgeknight: 4.5, runner: 1.5, crossbow: 3, closedhelm: 0,
   /* THE SERJEANT: a charge down a bridge you cannot walk round, and a man with a sword when he is off the horse */
   lancer: 5,
+  /* THE DROWNED CAUSEWAY: a feeler is a lash you have to read at your feet; the Kraken is the coast's last word; a bell is furniture */
+  feeler: 2.5, kraken: 6, krakenarm: 0, tidebell: 0, knell: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
