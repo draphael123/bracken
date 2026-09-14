@@ -3041,7 +3041,7 @@ function galeMoor() {
   // TWO HUNDRED AND NINE COLUMNS WITH NO CHECKPOINT IN THEM, the worst run in the game, and it is the last
   // stretch before the Windcaller - so a death out here costs you the whole approach. Three now: fifty-five,
   // forty, forty and seventy-four.
-  ent('check', 704, 12); ent('check', 757, 11); ent('check', 806, 11);   /* checked against the built grid: 710 and 766 are inside rock */
+  /* (the checkpoints at 704, 757 and 806 went: they stood under the Sky Road, where you fly on the kite from 659 to 864 and never touch the ground to take one) */
 
   // ---- 13. THE SKY ROAD: the kite carries you down the wind to the summit - through the teeth of the crags,
   // the crow strings, the needle and the storm. The view does not wait. ----
