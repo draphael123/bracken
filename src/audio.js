@@ -222,14 +222,14 @@ export const SFX = {
   // a halberd driven out: the haft first, then the head arriving
   haft() { noise(0.06, 0.16, 420, 1.6); tone('square', 210, 130, 0.09, 0.09); tone('triangle', 1500, 800, 0.05, 0.05, 0.05); noise(0.07, 0.14, 2600, 0.5, 0.06); },
   // THE NEW QUESTIONS GET THEIR OWN SOUNDS. A move you have to read should be a move you can hear coming.
-  enGarde() { tone('triangle', 1760, 1740, 0.36, 0.06); tone('sine', 2640, 2600, 0.3, 0.035, 0.02); noise(0.1, 0.07, 5200, 2.2); },   /* a blade held out, ringing: she is offering it */
-  riposte() { tone('square', 1900, 2700, 0.04, 0.12); tone('sine', 3300, 2900, 0.22, 0.07, 0.02); noise(0.08, 0.26, 3800, 0.9, 0.05); tone('sawtooth', 720, 170, 0.13, 0.09, 0.06); },   /* the bind, and the point coming through it */
-  shoulder() { noise(0.32, 0.22, 360, 0.5); tone('sawtooth', 96, 58, 0.3, 0.12); tone('square', vary(1300), 900, 0.04, 0.05, 0.07); tone('square', vary(1250), 880, 0.04, 0.05, 0.19); },   /* a man in plate starting to run */
-  anchorSwing() { noise(0.48, 0.24, 250, 0.6); tone('sine', 110, 52, 0.42, 0.15); for (let i = 0; i < 5; i++) tone('square', vary(2200 - i * 180), 1400, 0.03, 0.03, 0.05 + i * 0.06); noise(0.2, 0.15, 900, 0.8, 0.26); },   /* the chain paying out, and the iron going round */
-  rubble() { noise(0.36, 0.3, 680, 0.5); for (let i = 0; i < 4; i++) noise(0.05, 0.12, vary(1800), 2, 0.05 + i * 0.07); tone('sine', 88, 48, 0.22, 0.12); },   /* a shovel of broken floor */
-  pierce() { tone('square', 2400, 800, 0.05, 0.1); noise(0.05, 0.3, 1800, 1.4); tone('sine', 520, 250, 0.12, 0.08, 0.03); noise(0.12, 0.14, 600, 0.7, 0.04); },   /* a bolt through the boards of a shield */
-  feint() { noise(0.1, 0.12, 1200, 0.8); tone('square', 300, 430, 0.06, 0.05); tone('triangle', 1100, 1500, 0.05, 0.03, 0.04); },   /* the haft checked in the hands */
-  grip() { tone('square', 180, 118, 0.1, 0.12); noise(0.14, 0.2, 2600, 1.2); tone('sine', 72, 40, 0.3, 0.18, 0.05); },   /* a gauntlet closing on your shield rim */
+  enGarde() { file('imp_steel', 0.16, 1.45); tone('triangle', 1760, 1740, 0.36, 0.06); tone('sine', 2640, 2600, 0.3, 0.035, 0.02); noise(0.1, 0.07, 5200, 2.2); },   /* a blade held out, ringing: she is offering it */
+  riposte() { file('parry', 0.34, 1.15); file('swish', 0.28, 1.25); tone('square', 1900, 2700, 0.04, 0.12); tone('sine', 3300, 2900, 0.22, 0.07, 0.02); noise(0.08, 0.26, 3800, 0.9, 0.05); tone('sawtooth', 720, 170, 0.13, 0.09, 0.06); },   /* the bind, and the point coming through it */
+  shoulder() { file('stone', 0.2, 0.7); noise(0.32, 0.22, 360, 0.5); tone('sawtooth', 96, 58, 0.3, 0.12); tone('square', vary(1300), 900, 0.04, 0.05, 0.07); tone('square', vary(1250), 880, 0.04, 0.05, 0.19); },   /* a man in plate starting to run */
+  anchorSwing() { file('swish', 0.36, 0.55); file('imp_steelH', 0.18, 0.62); noise(0.48, 0.24, 250, 0.6); tone('sine', 110, 52, 0.42, 0.15); for (let i = 0; i < 5; i++) tone('square', vary(2200 - i * 180), 1400, 0.03, 0.03, 0.05 + i * 0.06); noise(0.2, 0.15, 900, 0.8, 0.26); },   /* the chain paying out, and the iron going round */
+  rubble() { file('imp_stone', 0.34, 0.9); file('stone', 0.22, 1.15); noise(0.36, 0.3, 680, 0.5); for (let i = 0; i < 4; i++) noise(0.05, 0.12, vary(1800), 2, 0.05 + i * 0.07); tone('sine', 88, 48, 0.22, 0.12); },   /* a shovel of broken floor */
+  pierce() { file('imp_wood', 0.36, 1.25); file('imp_steel', 0.16, 1.6); tone('square', 2400, 800, 0.05, 0.1); noise(0.05, 0.3, 1800, 1.4); tone('sine', 520, 250, 0.12, 0.08, 0.03); noise(0.12, 0.14, 600, 0.7, 0.04); },   /* a bolt through the boards of a shield */
+  feint() { file('swish', 0.18, 1.45); noise(0.1, 0.12, 1200, 0.8); tone('square', 300, 430, 0.06, 0.05); tone('triangle', 1100, 1500, 0.05, 0.03, 0.04); },   /* the haft checked in the hands */
+  grip() { file('imp_steelH', 0.3, 0.78); tone('square', 180, 118, 0.1, 0.12); noise(0.14, 0.2, 2600, 1.2); tone('sine', 72, 40, 0.3, 0.18, 0.05); },   /* a gauntlet closing on your shield rim */
   // a long pole swung through water: a low whoosh with the wood ringing in it
   pole() { noise(0.22, 0.2, 320, 1.8); tone('sine', 160, 80, 0.2, 0.08); tone('triangle', 520, 300, 0.12, 0.05, 0.06); noise(0.1, 0.1, 1400, 0.5, 0.1); },
   // the bog wight: cold air where a mouth should be

@@ -78,11 +78,11 @@ export async function fightLab(BK, opts = {}) {
 //   the roc           - stand on the glass so her dive sticks in it, then cut her while she is down
 // Every other boss is cut whenever it is in reach. All of them are defended against on their tells. The hero's health is
 // put back each frame and what the boss took is counted: how long it lasts, and the damage per minute it takes to see it out.
-const OPEN = b => b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'topple') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
+const OPEN = b => b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'topple') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : b.t === 'reefmaw' ? b.mode === 'stuck' : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
 const HARD_TELLS = new Set(["assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|grabTell","closedhelm|stampTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|pourTell","forgemaster|slamTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","owl|hootTell","pitwarden|pickTell","pitwarden|roofTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 export async function bossLab(BK, opts = {}) {
-  const lvm = await import('./level.js'), T = lvm.T, TS = 16;
+  const lvm = await import('./level.js'), T = lvm.T, TS = 16, PT = await import('./playtest.js');
   const heroes = opts.heroes || HEROES;
   const bosses = opts.bosses || ['wood', 'kings', 'spire', 'crown', 'reef', 'flotilla', 'hurricane', 'deep', 'waymeet', 'undercrown'], maxSecs = opts.maxSecs || 120;
   const rows = [], out = { rows, started: Date.now(), progress: 0, total: bosses.length * heroes.length };
@@ -95,6 +95,8 @@ export async function bossLab(BK, opts = {}) {
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
     BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(30);
+    /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
+    const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
     const P = BK.P, k = BK.keys, hp0 = boss.hp, maxF = Math.round(maxSecs * 60 / (BK.SET.speed || 1));
     // the glass in the roc's room, once
     const glass = []; if (boss.t === 'roc') { const fy = Math.floor(A.floor / TS); for (let x = Math.floor(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) for (let y = fy - 3; y <= fy + 2; y++) if (L.grid[y * L.W + x] === T.CRYST) { if (L.grid[(y + 1) * L.W + x] !== T.AIR) glass.push(x * TS + 8); break; } }
@@ -110,7 +112,7 @@ export async function bossLab(BK, opts = {}) {
       if (!open && wasOpen && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.lost = tw.hpAt - boss.hp; }
       if (open && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.minD = Math.min(tw.minD, Math.round(ad)); if (P.atk >= 0) tw.swung++; }
       wasOpen = open;
-      k.left = false; k.right = false; k.block = false;
+      k.left = false; k.right = false; k.block = false; k.up = false; k.down = false; k.jump = false;
       let goal = null, strike = false;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
@@ -118,7 +120,9 @@ export async function bossLab(BK, opts = {}) {
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
       const incoming = BK.seeds().find(s => (s.rubble || s.mawSpit || s.timber || s.shot || s.bolt) && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 34 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0);
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's drain guard take a moment to come up, so they hold C from the start of the tell
-      if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
+      if (boss.t === 'reefmaw' && (boss.mode === 'biteTell' || boss.mode === 'bite')) goal = boss.x - Math.sign(d || 1) * 124;   /* THE BAIT: stand in its reach until it commits, then be out of it, so the bite finds coral */
+      else if (boss.t === 'reefmaw' && !OPEN(boss) && boss.mode !== 'spitTell' && boss.mode !== 'riseTell') goal = boss.x - Math.sign(d || 1) * 84;   /* inside the 90 it rises for, outside the 104 its bite reaches once it commits */
+      else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : 0.14)))) {
         P.face = Math.sign(d) || P.face;
         if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) k.block = true; else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
@@ -135,7 +139,11 @@ export async function bossLab(BK, opts = {}) {
         if (s) { goal = s.x; if (Math.abs(s.x - P.x) < 18) { P.face = Math.sign(s.x - P.x) || P.face; if (P.atk < 0) { BK.press('atk'); swings++; } } } else goal = boss.x - Math.sign(d || 1) * 70; }
       else { goal = boss.x; strike = true; }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
-      if (goal !== null && !k.block) { const gd = goal - P.x; if (Math.abs(gd) > (strike ? Math.max(8, LAB_REACH[h] * 0.6) : 6)) k[gd > 0 ? 'right' : 'left'] = true; }
+      if (walker && Math.abs(boss.y - P.y) > 30 && !k.block) walker(boss.x);   /* she is on another deck: go up after her the way a player would */
+      else if (goal !== null && !k.block) { const gd = goal - P.x;
+        /* THE PIT WARDEN'S HOLES are not a way to him: a step that would land on a course his pick took out is not taken */
+        const nx = Math.floor((P.x + Math.sign(gd) * 10) / TS), hole = boss.t === 'pitwarden' && P.ground && L.grid[Math.floor(A.floor / TS) * L.W + nx] === T.AIR;
+        if (Math.abs(gd) > (strike ? Math.max(8, LAB_REACH[h] * 0.6) : 6) && !hole) k[gd > 0 ? 'right' : 'left'] = true; }
       if (strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) BK.press('jump');   /* a boss standing a tile up (the roc in the glass) is cut from a hop */

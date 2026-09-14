@@ -139,6 +139,7 @@ const SKINS = [
   { id: 'dawn', name: 'DAWN', price: 60, pal: { b: '#e8a0b0', B: '#a0606a', r: '#fff6e0', y: '#ffd36b' } },
   { id: 'emberplate', name: 'EMBER', price: 75, pal: { b: '#3a3030', B: '#1e1818', r: '#ff9a5c', y: '#ffd36b' } },
   { id: 'tide', name: 'TIDE', price: 90, pal: { b: '#2a8a8a', B: '#1a5a5a', r: '#e8ecff', y: '#bfe6f5' } },
+  { id: 'laurel', name: 'LAUREL', price: 40, pal: { b: '#3a6a2a', B: '#244a1a', r: '#ffd34a', y: '#ffd34a' }, feat: 'medals:15', featName: 'win 15 medals' },
   { id: 'silverknight', name: 'THE SILVER KNIGHT', price: 4, silver: true, pal: { b: '#c9d1dc', B: '#7c8797', r: '#dfe8ff', y: '#e8ecff' } },
 ];
 const SWORDS = [
@@ -149,6 +150,7 @@ const SWORDS = [
   { id: 'shadow', name: 'SHADOW EDGE', price: 55, pal: { s: '#5a5468', S: '#2c2736' }, dmg: 8, cost: 7, desc: 'light: swings cost little' },
   { id: 'thorn', name: 'THORN BLADE', price: 60, pal: { s: '#8fd160', S: '#3a6a2a' }, dmg: 10, cost: 12, leech: true, desc: 'each hit mends 2' },
   { id: 'silverleaf', name: 'SILVERLEAF', price: 8, silver: true, pal: { s: '#e8ecff', S: '#9aa8c8' }, dmg: 10, cost: 12, freeze: true, gold: true, desc: 'found silver, not bought: hits hold foes still and kills shake out a coin' },
+  { id: 'laurelBlade', name: 'LAUREL BLADE', price: 70, pal: { s: '#ffe27a', S: '#8a6a1a' }, dmg: 11, cost: 11, desc: 'won, not forged: 11 a swing for 11 stamina', feat: 'medals:30', featName: 'win 30 medals' },
   { id: 'moon', name: 'MOONSILVER', price: 80, pal: { s: '#e8ecff', S: '#8090c8' }, dmg: 15, cost: 16, heavy: true, desc: 'heavy: 15 a swing, shoves hard' },
 ];
 const UPGRADES = [
@@ -168,6 +170,7 @@ const CHARMS = [
   { id: 'feather', name: 'FEATHER CHARM', price: 80, desc: 'jump a little higher' },
   { id: 'heart', name: 'HEART CHARM', price: 100, desc: 'every kill heals 5' },
   { id: 'swift', name: 'SWIFT CHARM', price: 80, desc: 'run a little faster' },
+  { id: 'ribbon', name: "RUNNER'S RIBBON", price: 90, desc: 'the medal clock runs a tenth slower for you', feat: 'medals:45', featName: 'win 45 medals' },
 ];
 const ABILITIES = [
   { id: 'shieldThrow', name: 'SHIELD THROW', price: 80, desc: 'F: hurl the shield. 20 stamina, 2.5s', needs: 'stockade', needsName: 'the Stockade', hero: 'knight' },
@@ -431,7 +434,9 @@ const sword = () => swordById(PROG.sword);
 const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 + 2 * tal('keen') : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + Math.floor(heroLevel() / 2) + tal('whetstone') + tal('heavyMaul') + tal('fiveBlades') + tal('whetScythe')) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
 const footTal = () => tal('footing') + tal('fleet') + tal('ironLungs') + tal('swash');
 const dodgeCost = () => Math.max(6, ST.dodge - 2 * footTal() - (isReaper() ? 2 * tal('longStride') : 0)), plungeCost = () => Math.max(12, ST.plunge - 2 * footTal());
-const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : !!(PROG[f] && PROG[f].cleared);
+/* THE MEDAL ROLL: every medal on every level you can see, bronze 1, silver 2, gold 3 */
+const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
+const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
 let K = bakeKnight();
 // TESTING (for now): GOD MODE owns everything and every wood is open, for as long as it is on - nothing is written into
 // the save, so switching it off puts the game back; INVINCIBLE takes no damage and a fall puts you back on the last checkpoint.
@@ -1474,7 +1479,9 @@ function startGame() {
   respawn(); levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length;
   camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
 }
-let winLevelUp = false;
+let winLevelUp = false, medalPurse = 0;
+const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
+const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
 function winLevel() {
   PROG.done = PROG.done || {};
   winLevelUp = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it levels you like any other */
@@ -1486,7 +1493,8 @@ function winLevel() {
   PROG.coins = (PROG.coins || 0) + got; earned = got;
   if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) heroDone()[id] = 1;
   if (winLevelUp) { applyUpgrades(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
-  PROG[id].medal = Math.max(p.medal || 0, medalFor(id, levelTime)); if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true;
+  { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
+  if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true;
   saveProgress();
 }
 
@@ -2725,9 +2733,9 @@ function addHurtPose(set) { if (!set || !set.R || !set.R.length || set.hurtMade)
   set.R.push(c); if (set.L) set.L.push(flipX(c));
   if (set.white && set.white.R) { const w = whiten(c); set.white.R.push(w); if (set.white.L) set.white.L.push(flipX(w)); }
   set.hurtMade = true; }
-const MADE_HURT = ['sailor', 'angler', 'goat', 'hearthgob', 'spider', 'thorn'];   /* the tideguard, brute, heavy and soldier have theirs drawn in their bakers */
+const MADE_HURT = [];   /* every one of the ten has its hurt pose drawn in its baker now; addHurtPose stays for a creature that has none yet */
 for (const t of MADE_HURT) addHurtPose(SPR[t]);
-const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', 'tideguard', 'brute', 'heavy', 'soldier', ...MADE_HURT]);
+const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', 'tideguard', 'brute', 'heavy', 'soldier', 'sailor', 'angler', 'goat', 'hearthgob', 'spider', 'thorn', ...MADE_HURT]);
 const COLS = { swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   closedhelm: ['#c9d1dc', '#9a3a3a', '#e0b040'],
@@ -11700,7 +11708,10 @@ function drawWorld(cx, cy, showPlayer) {
   }
   drawGrade();
   if (killFlash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
-  for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x - cx), Math.round(n.y - cy), n.col, 'center'); }
+  for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3);
+    if (n.txt === '!!') { const bx = Math.round(n.x - cx), by = Math.round(n.y - cy);   /* THE BADGE: a red !! is a shape as well as a colour, for eyes that cannot split red from yellow */
+      g.fillStyle = '#2a0c12'; g.fillRect(bx - 8, by - 2, 16, 11); g.fillStyle = n.col; g.fillRect(bx - 8, by - 2, 16, 1); g.fillRect(bx - 8, by + 8, 16, 1); g.fillRect(bx - 8, by - 2, 1, 11); g.fillRect(bx + 7, by - 2, 1, 11); }
+    text(String(n.txt), Math.round(n.x - cx), Math.round(n.y - cy), n.col, 'center'); }
   g.globalAlpha = 1; g.__world = false;
 }
 
@@ -12956,8 +12967,8 @@ function render() {
     if (winLevelUp) line(0.15, fitText('LEVEL ' + heroLevel() + '  +3 HP  +5 ST' + (heroLevel() % 2 === 0 ? '  +1 DMG' : '') + '  +2 SKILL', pw - 12, 6), 52, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 6);
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
-    { const id = LEVELS[levelIndex].id, m = medalFor(id, levelTime);
-      const bits = [m ? MEDAL_NAME[m] + ' TIME' : null, got >= total ? 'ALL GOLD' : null, hitsTaken === 0 && deaths === 0 ? 'NO DAMAGE' : null, SET.iron ? 'IRON KNIGHT' : null].filter(Boolean);
+    { const id = LEVELS[levelIndex].id, m = medalFor(id, medalTime());
+      const bits = [m ? MEDAL_NAME[m] + ' TIME' + (medalPurse ? ' +' + medalPurse : '') : null, got >= total ? 'ALL GOLD' : null, hitsTaken === 0 && deaths === 0 ? 'NO DAMAGE' : null, SET.iron ? 'IRON KNIGHT' : null].filter(Boolean);
       if (bits.length) {
         const STAMP = 1.45, k = Math.max(0, Math.min(1, (wt - STAMP) * 9));           // it comes down out of the air and lands
         if (k > 0) {

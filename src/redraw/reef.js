@@ -330,7 +330,11 @@ export function bakeSailor() {
     hook: [[-6, 11], [14, 20]],
     far: [[-3, 11], [-3, 12]], near: [[3, 13], [3, 15]],
     smear: [1 + X + 2, 1 + 13, 17, -112, 26, 26] });
-  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, hook], X + 1, H + 1, 10, 18);
+  /* hurt: knocked back a step, the head lolling back, the boathook slipping over his shoulder */
+  const hurt = frame({ legs: 'tell', dx: -2, dy: 1, hx: -2, side: -1, back: true,
+    hook: [[4, 22], [-12, 3]],
+    far: [[-5, 13], [-8, 10]], near: [[-1, 14], [-4, 17]] });
+  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, hook, hurt], X + 1, H + 1, 10, 18);
 }
 
 // ---------- NETTER ----------
@@ -587,6 +591,7 @@ export function bakeAngler() {
     fish({ ph: 1, gape: 15, ang: -2, bob: [-1, 1] }),
     fish({ ph: 0, gape: 3, ang: -3, bob: [0, -1], blaze: true, bright: true }),
     fish({ ph: 0, gape: 64, ang: -2, bob: [-7, 1], dx: 2 }),
+    fish({ ph: 1, gape: 28, ang: 14, bob: [-6, 4], dx: -2 }),   /* 4 hurt: knocked back, the jaw jarred open and the lure swung wide */
   ], X + 1, H + 1, 20, 14);
 }
 

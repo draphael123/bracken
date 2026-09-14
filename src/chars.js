@@ -984,7 +984,9 @@ export function bakeCragRam() {
     '..GFFFFFFz.z......',
     '..zz.zz...........',
     '..z...z...........']);
-  return pack([run1, run2, rear, run1, run2], 9, 12, 14, 9);
+  /* hurt: the head thrown back and the eye shut, the legs splayed as it takes the blow */
+  const hurt = r([...head.map((row, i) => (i === 5 ? '..ffffffffffnnnnn.' : row).slice(1) + '.'), '.zz...z....z...zz.', 'z.....z....z.....z', 'o.....o....o.....o']);
+  return pack([run1, run2, rear, run1, run2, hurt], 9, 12, 14, 9);
 }
 
 // Hill troll — a hulking mossy brute, taller than a door, that hurls boulders. 18×17. Frames: stand, walk1, walk2, throw (rock up), swat.
@@ -1031,7 +1033,9 @@ export function bakeSpider() {
   const hang2 = s(['.....bb.....', '.l..bbbb..l.', '..lbbbbbbl..', '.lbbrbbrbbl.', 'l.bbbbbbbb.l', '.l.bbbbbb.l.', 'l...bbbb...l', '.l..l..l..l.']);
   const climb1 = s(['l....bb....l', '.l..bbbb..l.', '..lbbbbbbl..', '..bbrbbrbb..', '.lbbbbbbbbl.', 'l..bbbbbb..l', '....bbbb....', '...l....l...']);
   const climb2 = s(['.l...bb...l.', 'l...bbbb...l', '.l.bbbbbb.l.', '..bbrbbrbb..', '..lbbbbbbl..', '.l.bbbbbb.l.', 'l...bbbb...l', '....l..l....']);
-  return pack([hang, drop, hang2, climb1, climb2], 7, 9, 10, 8);
+  /* hurt: legs curled in under it and the red eyes gone dark */
+  const hurt = s(['.....bb.....', '....bbbb....', '..lbbbbbbl..', '.lbbBbbBbbl.', '..bbbbbbbb..', '.l.bbbbbb.l.', '..l.bbbb.l..', '...l....l...']);
+  return pack([hang, drop, hang2, climb1, climb2, hurt], 7, 9, 10, 8);
 }
 // Squirrel knight — a red squirrel in a blue tabard, sword on its back, a plume of a tail. 12×11. Frames: run1, run2, leap.
 export function bakeSquirrel() {
@@ -1974,7 +1978,10 @@ export function bakeHearthGob() {
   const swing = f(withCap([P, ...head, '..cccccc.uu.', '.cggggggcuu.', '.cggggggc...', '..cccccc....', '..GG..GG....', '.GGG..GGG...', P], 1));
   const walkA = f(withCap([P, ...head, ...body.slice(0, 4), '..GG...GG...', '.GG.....GG..'], 1));
   const walkB = f(withCap([P, ...head, ...body.slice(0, 4), '...GGGG.....', '..GG..GG....'], 1));
-  return pack([asleep, waking, raise, swing, walkA, walkB], 6, 17, 10, 13);
+  /* hurt: eyes screwed shut, rocked back off the blow, the nightcap flung forward over his face */
+  const back = r => r.slice(1) + '.';
+  const hurt = f([P, P, '..........rk', P, ...shut.map(back), ...body.slice(0, 4).map(back), '..GG..GG....', '.GGG..GGG...', P].map((r, i) => (i === 3 ? '......rrrr..' : r)));
+  return pack([asleep, waking, raise, swing, walkA, walkB, hurt], 6, 17, 10, 13);
 }
 
 // THE ROPE CUTTER - he is not interested in you. He is interested in the rope. 12x13.

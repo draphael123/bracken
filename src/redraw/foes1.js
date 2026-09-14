@@ -69,7 +69,10 @@ export function bakeThornback() {
     ['.....GGGG.......', '....GG..GG......'],
     ['....GG.GG.......', '...GG....GG.....'],
   ];
-  return pack(legs.map((l, i) => f([...top, arm[i][0], ...lay([l[0]], [arm[i][1]]), l[1]])), 8, 14, 12, 11);
+  /* hurt: the carapace rocked back, the eye shut, the long arm flung up and the feet apart */
+  const hurtTop = top.map((r, i) => (i === 6 ? 'aiiiiiiiIggggGGg' : r).slice(1) + '.');
+  const hurt = f([...hurtTop, '...RrrrrR.....g.', ...lay(['...GG....GG.....'], ['.............gG.']), '..GG......GG....']);
+  return pack([...legs.map((l, i) => f([...top, arm[i][0], ...lay([l[0]], [arm[i][1]]), l[1]])), hurt], 8, 14, 12, 11);
 }
 
 // ---------- HOPPER ----------
