@@ -3942,6 +3942,7 @@ function updatePlayer(dt) {
     if (Math.abs(P.vx) > cap && Math.sign(P.vx) === move) P.vx = move * Math.max(cap, Math.abs(P.vx) - 400 * dt);
     else { P.vx += move * acc * dt; if (Math.abs(P.vx) > cap) P.vx = move * cap; }
     if (!attacking) P.face = move;
+    if (P.ground) P.airHang = false;
   } else if (!dodging) {
     const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 150 : 1100) : 200;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
@@ -3999,7 +4000,8 @@ function updatePlayer(dt) {
       const was = P.atk;
       P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.5 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1);   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }   /* the blade goes into the ground, and the ground answers */
-      if (P.atk > lim) { P.atk = -1; P.heavy = false; P.swingEndT = time; } }
+      if (P.atk > lim) { if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
+        P.atk = -1; P.heavy = false; P.swingEndT = time; } }
     if (P.atk >= 0.03 && P.atk < 0.17) {
       const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6;
       const px0 = P.x + P.face * 2, py0 = P.y - 9;
@@ -9225,7 +9227,8 @@ function gasBlast(x, y) { // the whole chamber goes up: fire along the floor, an
 /* A RUN IS COUNTED FROM THE END OF THE LAST SWING, not its start. Timed from the start, the Death Knight's swing (0.9 s)
    outlasted the whole window, so he could never reach the third cut the rest of the game is built on. */
 const inRun = () => time - (P.swingEndT ?? -9) < 0.45 || time - (P.lastSwingT ?? -9) < 0.75;
-function startSwing() { const quick = inRun(); P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
+function startSwing() { const quick = inRun();
+  if (!P.ground && !P.airHang && !P.swim) { P.airHang = true; P.vy = Math.min(P.vy, 20); }   /* THE AIR SLASH hangs: the first swing in a jump stops the fall for a beat, once a jump */ P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
   SFX.swingUp ? SFX.swingUp(Math.min(3, P.combo - 1)) : null; // the run of them climbs in pitch
   // THE THIRD CUT. Every hero, no talent needed: this is what the attack IS, and the tree only sharpens it.
   if (L.hush) noiseAt(P.x, P.y, P.heavy ? 132 : P.combo % 3 === 0 ? 104 : 82, null);   /* a swing carries, and the third one carries further */
@@ -11311,7 +11314,7 @@ function drawWorld(cx, cy, showPlayer) {
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
       else if (P.charge > 0) { key = 'heavy'; frame = 0; }
-      else if (P.atk >= 0) { { const cm = (P.combo || 1) % 3, ck = cm === 2 ? 'atkB' : cm === 0 ? 'atkC' : 'atk'; key = K.R[ck] ? ck : 'atk'; }   /* first swing, backhand, thrust */
+      else if (P.atk >= 0) { { const cm = (P.combo || 1) % 3, ck = !P.ground && K.R.air ? 'air' : cm === 2 ? 'atkB' : cm === 0 ? 'atkC' : 'atk'; key = K.R[ck] ? ck : 'atk'; }   /* first swing, backhand, thrust */
         frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
       else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
@@ -11320,13 +11323,18 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
       else if (!P.ground) { key = P.vy < 0 ? 'jump' : 'fall'; frame = P.vy < 0 ? (P.vy < -150 ? 0 : 1) : (P.vy > 220 ? 1 : 0); if (Math.abs(P.vy) < 55 && K.R.apex) key = 'apex'; }
       else if (keys.down && Math.abs(P.vx) < 10) key = 'crouch';
+      else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
       else if (P.skidT > 0 && K.R.skid) key = 'skid';
       else if (P.landT > 0 && Math.abs(P.vx) < 40) { key = 'land'; frame = P.landT > 0.05 ? 0 : 1; }
+      else if (P.idleT > 6 && K.R.fidget && Math.abs(P.vx) <= 10) { const p = (P.idleT - 6) / 1.5; key = 'fidget'; frame = Math.min(K.R.fidget.length - 1, Math.floor(p * K.R.fidget.length)); }   /* left standing, he shoulders the weapon */
       else if (Math.abs(P.vx) > 10) { key = 'run'; frame = Math.floor(P.anim * 13) % 6;
         if (frame !== P.lastRf && (frame === 1 || frame === 4) && SET.parts !== 'low') parts.push({ x: P.x - P.face * 3, y: P.y, vx: -P.face * 14, vy: -10, life: 0.24, max: 0.24, col: '#c9b27c', size: 1, grav: 30 });   /* a scuff off every stride */
         P.lastRf = frame; }
       /* THE SKID: turning round at a run, the heels dig in before he goes the other way */
       if (P.lastFace !== undefined && P.face !== P.lastFace && P.ground && Math.abs(P.vx) > 60 && !(P.atk >= 0) && !(P.dodge > 0)) { P.skidT = 0.11; dust(P.x - P.face * 5, P.y, 3); }
+      else if (P.lastFace !== undefined && P.face !== P.lastFace && P.ground && !(P.atk >= 0) && !(P.dodge > 0)) P.skidT = Math.max(P.skidT || 0, 0.06);   /* a turn at a walk still pivots on the heel, for a frame */
+      if (P.flourishT > 0) P.flourishT -= 1 / 60;
+      P.idleT = P.ground && Math.abs(P.vx) < 10 && !(P.atk >= 0) && !P.block && !keys.left && !keys.right && !keys.down && !(P.dance > 0) && !P.dead ? (P.idleT || 0) + 1 / 60 : 0; if (P.idleT > 7.5) P.idleT = 0.5;
       P.lastFace = P.face; if (P.skidT > 0) P.skidT -= 1 / 60;
       let dFace = P.face, dY = 0;
       if (P.dance > 0) { const DANCE = [['idle', 0, 1], ['crouch', 0, 1], ['jump', 0, 1], ['land', 0, 1], ['block', 0, 1], ['idle', 2, 1],

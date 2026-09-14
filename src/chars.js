@@ -179,7 +179,20 @@ function comboArcs(sh, key, len, extra = {}) {
     f({ dx: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], ...wp(5, 1, 5 + s(13), 2), plume: 2 }),
     f({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], ...wp(3, 3, 3 + s(9), 3 + s(5)), plume: 0 }),
   ];
-  return { B, T };
+  /* THE AIR SLASH: legs tucked, the blade taken round the body from behind and low, through the front, and up */
+  const A = [
+    f({ legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 1], ...wp(-3, 1, -3 - s(9), 1 + s(3)), plume: 1 }),
+    f({ legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], ...wp(4, 2, 4 + s(11), 2 + s(4)), plume: 2 }),
+    f({ legs: 'jump', dy: -1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], ...wp(4, -1, 4 + s(12), -1 - s(2)), plume: 2 }),
+    f({ legs: 'jump', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3], ...wp(2, -3, 2 + s(7), -3 - s(8)), plume: 1 }),
+  ];
+  /* THE FIDGET, for standing about: the weapon up onto the shoulder, a roll of the shoulder under it, and down again */
+  const I = [
+    f({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 3], ...wp(1, -3, 1 - s(7), -3 - s(6)), plume: 1 }),
+    f({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 2], ...wp(1, -2, 1 - s(7), -2 - s(6)), plume: 2 }),
+    f({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 3], ...wp(1, -3, 1 - s(7), -3 - s(6)), plume: 0 }),
+  ];
+  return { B, T, A, I };
 }
 export function bakeKnight(skin = {}) {
   KP = Object.assign({}, KP0, skin);
@@ -243,7 +256,7 @@ export function bakeKnight(skin = {}) {
   };
   const tuck = knightFrame({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
-  { const arcs = comboArcs(sh, 'sword', 12); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* the backhand and the thrust */
+  { const arcs = comboArcs(sh, 'sword', 12); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the backhand and the thrust */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
@@ -1162,6 +1175,20 @@ export function bakePyro(skin = {}) {
     pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [11, 16, 17, 2], arm: [16, 10, 18, 9], cowl: 0 }),
     F.atk[4],
   ];
+  /* her air slash, the staff swung flat round her with the hem flying, and her fidget, the staff twirled in one hand */
+  F.air = [
+    pyroFrame({ bell: 2, hemW: 12, feet: [[11, 17], [15, 17]], staff: [2, 15, 16, 12], arm: [15, 11, 13, 13], cowl: 1 }),
+    pyroFrame({ bell: 3, hemW: 12, feet: [[11, 17], [15, 17]], staff: [9, 14, 25, 12], arm: [16, 10, 20, 12], cowl: 2, flare: [26, 12, false] }),
+    pyroFrame({ bell: 3, hemW: 12, feet: [[11, 17], [15, 17]], staff: [10, 12, 25, 7], arm: [16, 10, 20, 9], cowl: 2, flare: [26, 6, true] }),
+    pyroFrame({ bell: 2, hemW: 12, feet: [[11, 17], [15, 17]], staff: [12, 15, 19, 2], arm: [16, 10, 18, 9], cowl: 1 }),
+    F.jump[1],
+  ];
+  F.fidget = [
+    pyroFrame({ staff: [11, 18, 22, 1], arm: [16, 11, 17, 12], cowl: 0 }),
+    pyroFrame({ staff: [5, 12, 26, 10], arm: [16, 11, 17, 12], cowl: 1, flick: 1 }),
+    pyroFrame({ staff: [21, 18, 12, 1], arm: [16, 11, 17, 12], cowl: 2 }),
+    F.idle[0],
+  ];
   F.atkC = [
     pyroFrame({ lean: -2, feet: [[10, 18], [16, 18]], staff: [1, 11, 15, 11], arm: [14, 11, 12, 11], arm2: [10, 11, 8, 11], cowl: 0 }),
     pyroFrame({ lean: 3, trail: 3, feet: [[8, 18], [17, 18]], staff: [11, 11, 26, 11], arm: [17, 10, 21, 11], arm2: [13, 10, 16, 11], cowl: 2, flare: [27, 11, false] }),
@@ -1474,7 +1501,7 @@ export function bakeFreebooter(skin = {}) {
   };
   // the dodge is a roll: he is the only one of them who has ever had to get out of the way for a living
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 2, legs: i % 2 ? 'crouch' : 'wide', cutlass: carry(2), pistol: holster(2) }));
-  { const arcs = comboArcs(sh, 'cutlass', 9, { pistol: holster() }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* a cutlass backhand, and a lunge */
+  { const arcs = comboArcs(sh, 'cutlass', 9, { pistol: holster() }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* a cutlass backhand, and a lunge */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1554,7 +1581,7 @@ export function bakeReaper(skin = {}) {
   };
   /* THE PASSING: he does not roll. He goes thin and steps through. */
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 1, legs: i % 2 ? 'wide' : 'runC', greatsword: carry(1), plume: i % 3 }));
-  { const arcs = comboArcs(sh, 'greatsword', 16); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* the long blade rising, and driven through */
+  { const arcs = comboArcs(sh, 'greatsword', 16); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the long blade rising, and driven through */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1640,7 +1667,7 @@ export function bakePaladin(skin = {}) {
   };
   // the dodge is a heavy step: a lean and a stride, not a tumble
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dx: i < 2 ? i : 3 - i, dy: 1, legs: i % 2 ? 'wide' : 'runC', maul: carry(1) }));
-  { const arcs = comboArcs(sh, 'maul', 8); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* the maul coming up from below, and a jab with the head */
+  { const arcs = comboArcs(sh, 'maul', 8); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the maul coming up from below, and a jab with the head */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
