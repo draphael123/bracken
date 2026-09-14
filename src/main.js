@@ -63,12 +63,12 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off' };
-const TIER = { waymeet: 2.3, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
+const TIER = { waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
 // you have not set; from the pause menu it sets the wood you are in.
-const DIFF = { easy: { take: 0.6, ehp: 0.75, bhp: 0.7, label: 'EASY', col: '#8fd160' }, normal: { take: 1, ehp: 1, bhp: 1, label: 'NORMAL', col: '#ffd36b' }, hard: { take: 1.4, ehp: 1.45, bhp: 1.5, label: 'HARD', col: '#ff6b6b' }, expert: { take: 1.8, ehp: 1.85, bhp: 2.1, label: 'EXPERT', col: '#c9a0ff' } };   /* EXPERT: they hit nearly twice as hard and take twice the killing */
+const DIFF = { easy: { take: 0.6, ehp: 0.75, bhp: 0.7, label: 'EASY', col: '#8fd160' }, normal: { take: 0.8, ehp: 0.9, bhp: 0.9, label: 'NORMAL', col: '#ffd36b' }, hard: { take: 1.4, ehp: 1.45, bhp: 1.5, label: 'HARD', col: '#ff6b6b' }, expert: { take: 1.8, ehp: 1.85, bhp: 2.1, label: 'EXPERT', col: '#c9a0ff' } };   /* EXPERT: they hit nearly twice as hard and take twice the killing */
 const diffOf = id => (PROG.diff && DIFF[PROG.diff[id]] ? PROG.diff[id] : DIFF[SET.difficulty] ? SET.difficulty : 'normal');
 const diffNow = () => DIFF[diffOf(curId())];
 const DIFFS = ['easy', 'normal', 'hard', 'expert'], SCALES = ['auto', 2, 3, 4];
@@ -95,7 +95,8 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
   PROG.ranks = PROG.ranks || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow';
   { const OLD = { vigour: [40, 60, 90, 130, 180], breath: [40, 60, 90, 130, 180], recovery: [60, 100, 160], temper: [50, 80, 120, 170, 230], footing: [60, 100, 160] }; let back = 0; for (const id in OLD) for (let r = 0; r < (PROG.ranks[id] || 0); r++) back += OLD[id][r] || 0; if (back) { PROG.coins += back; PROG.ranks = {}; PROG.refundNote = back; } } // the training went: its gold comes back
   if (!PROG.skillRefund) { const OLD = { shieldThrow: 80, groundSlam: 90, fireWall: 80, cinderStep: 90, risingCut: 100, vent: 100, kindle: 90, wisp: 120 }; let back = 0; for (const id in OLD) if (PROG.items[id]) { back += OLD[id]; delete PROG.items[id]; } PROG.skillRefund = true; if (back) { PROG.coins += back; PROG.refundNote = (PROG.refundNote || 0) + back; } } // the skills left the store for the trees: their gold comes back
-  PROG.talents = PROG.talents || {}; PROG.tonics = PROG.tonics || 0; }
+  PROG.talents = PROG.talents || {}; PROG.tonics = PROG.tonics || 0;
+  try { for (const hh in PROG.talents) { const mm = PROG.talents[hh]; for (const id in mm) { const nd = TREE.find(q => q.hero === hh && q.id === id); if (!nd) delete mm[id]; else if (mm[id] > nd.max) mm[id] = nd.max; } } } catch {}   /* ranks past a trimmed tree come back as points */ }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
 function saveProgress() { try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {} }
@@ -212,8 +213,11 @@ const TREE = [];
   // THE PRICE IS THE SHAPE OF THE NODE, not a fourteenth argument to remember at every call site.
   // An ACTIVE or a stacking bump is one point a rank and always was. A single-rank node is a RULE, and a
   // rule is worth more than a percentage: two points, or three when it sits at the bottom of a chain.
-  const cost = active || max > 1 ? 1 : row >= 3 ? 3 : 2;
-  TREE.push({ id, hero, branch, row, col, name, max, desc, parent: parent || null, active: !!active, cost });
+  /* TRIMMED: a skill is one point; a passive that stacks keeps two ranks on the first row and one below it; a single choice
+     is two points wherever it sits (the capstones were three). Ninety points of tree for forty-two of campaign became about fifty. */
+  const cost = active || max > 1 ? 1 : 2;
+  const tmax = active ? 1 : max > 1 ? (row === 0 ? 2 : 1) : max;
+  TREE.push({ id, hero, branch, row, col, name, max: tmax, desc, parent: parent || null, active: !!active, cost });
 };
   // THE KNIGHT
   N('knight', 0, 0, 0, 'thirdCut', 'THIRD CUT', 3, 'the third cut in a run already lands half as hard again: a quarter harder still a point');
@@ -393,6 +397,11 @@ const TREE = [];
   N('pirate', 2, 3, 1, 'keelhaul', 'KEELHAUL', 3, 'F: the hook goes out, takes whatever is in front of him, and drags it PAST him. it lands on its back behind you', 'handOverHand', true);
   N('pirate', 2, 3, 2, 'runThrough', 'RUN THROUGH', 1, 'the fifth blow of a run goes through a raised guard as though it were not there', 'swash');
 }
+/* THE FILLERS GO: every tree had a run-faster and a jump-higher node, and the death knight two of everything. What grew out
+   of one grows out of its parent now. */
+{ const DROP = new Set(['knight:swiftness', 'knight:spring', 'pyro:lightFeet', 'pyro:leapFlame', 'paladin:sureStride', 'paladin:ascension', 'pirate:seaLegs', 'reaper:mortcloth', 'reaper:soulBrand', 'reaper:wideSwathe']);
+  for (const n of TREE) if (DROP.has(n.hero + ':' + n.id)) for (const c of TREE) if (c.hero === n.hero && c.parent === n.id) c.parent = n.parent;
+  for (let i = TREE.length - 1; i >= 0; i--) if (DROP.has(TREE[i].hero + ':' + TREE[i].id)) TREE.splice(i, 1); }
 const TALENTS = [{ id: 'tree', name: 'THE TALENT TREES', desc: 'three trees of skills for this hero, and the skills on F and G among them. two points for every wood cleared the first time. Z to open' }];
 const heroLevel = h => Object.keys((PROG.done || {})[h || hero()] || {}).length;   /* the woods THIS hero has walked, not the woods the save has */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
@@ -1832,6 +1841,14 @@ const TREE_ICON = {};
 // paladin's LIGHT branch eight identical crosses and the knight's BLADE eight identical swords, which is the
 // same problem in a different colour. The verb wins, and where a name is all theme it is named here.
 const TAL_BY_NAME = {
+  // the new shapes win over the old ones below: stamina is a bolt, a wound is a drop, a mark is an eye, a wait is an hourglass, a mend is a cross
+  reaper: 'bolt', flurry: 'bolt', footing: 'bolt', breath: 'bolt', mercy: 'bolt', ironLungs: 'bolt', fleet: 'bolt', hardTack: 'bolt', steady: 'bolt', stalwart: 'bolt', evasion: 'bolt',
+  bleed: 'drop', rend: 'drop', deepToll: 'drop', gleaner: 'drop', dueRites: 'drop', lastRites: 'drop', deathwatch: 'drop',
+  soulBrand: 'eye', winnow: 'eye', brand: 'eye', sunder: 'eye', searing: 'eye',
+  gravebound: 'hourglass', pilot: 'hourglass', blaze: 'hourglass', longStride: 'hourglass',
+  devotion: 'cross', sanctuary: 'cross', zeal: 'cross', kindle: 'cross', hearth: 'cross', martyr: 'cross',
+  reflect: 'reflect', bulwark: 'reflect', retribution: 'reflect', vengeance: 'reflect', emberSkin: 'reflect',
+  twinSkill: 'twin', twin: 'twin', press: 'twin',
   mercy: 'heart', smite: 'blade', martyr: 'shield', zeal: 'flame', ascension: 'boot', consecrate: 'ring',
   radiance: 'light', devotion: 'light', lightLance: 'blade', divineShield: 'shield', sanctuary: 'ring',
   beacon: 'light', crusade: 'chev', blessedHammer: 'ring', faithHp: 'heart', warCry: 'chev',
@@ -1876,6 +1893,17 @@ function talIcon(id) {
   const kind = TAL_KIND(id);
   if (TAL_ICON[kind]) return TAL_ICON[kind];
   const [c, gg] = canvas(12, 12); const p = (x, y, col) => { gg.fillStyle = col; gg.fillRect(x, y, 1, 1); };
+  const rows = (R, pal) => R.forEach((r, y) => { for (let x = 0; x < r.length; x++) if (r[x] !== '.') p(x, y, pal[r[x]]); });
+  const NEW = {   /* 12x12, drawn as rows */
+    bolt: [['......yy....', '.....yY.....', '....yY......', '...yYYYYy...', '..yyyYYy....', '.....yY.....', '....yY......', '...yY.......', '..yy........', '............'], { y: '#ffd36b', Y: '#fff1a0' }],
+    drop: [['.....r......', '.....r......', '....rrr.....', '....rRr.....', '...rrRrr....', '...rrrrr....', '..rrrrrrr...', '..rrrrrdr...', '..rrrrddr...', '...rrddr....', '....rrr.....', '............'], { r: '#c9463d', R: '#ff9a9a', d: '#7a1e1e' }],
+    eye: [['............', '............', '...wwwwww...', '..w......w..', '.w..ggg...w.', 'w..gkkg...w.', '.w..ggg...w.', '..w......w..', '...wwwwww...', '............'], { w: '#dfe8ff', g: '#8fd160', k: '#0d0f14' }],
+    hourglass: [['..gggggggg..', '...wwwwww...', '...wyyyyw...', '....wyyw....', '.....ww.....', '....w..w....', '...w.yy.w...', '...wyyyyw...', '..gggggggg..', '............'], { g: '#c9a040', w: '#dfe8ff', y: '#ffd36b' }],
+    cross: [['....GGGG....', '....GwwG....', '....GwwG....', 'GGGGGwwGGGGG', 'GwwwwwwwwwwG', 'GwwwwwwwwwwG', 'GGGGGwwGGGGG', '....GwwG....', '....GwwG....', '....GGGG....'], { G: '#3f8a4a', w: '#dfffa0' }],
+    reflect: [['..ssssss....', '.sSSSSSSs...', '.sSs..sSs...', '.sS....Ss..a', '.sS....Ss.aa', '.sSs..sSsaaa', '..sSSSSs..aa', '...ssss....a', '............'], { s: '#8a96a8', S: '#dfe8ff', a: '#ff9a5c' }],
+    twin: [['............', '.bbbbb......', '.bFFFb......', '.bFFFbbbbb..', '.bbbbbGGGb..', '.....bGGGb..', '.....bbbbb..', '............'], { b: '#2a2230', F: '#ffd36b', G: '#8fd160' }],
+  };
+  if (NEW[kind]) { rows(NEW[kind][0], NEW[kind][1]); TAL_ICON[kind] = c; return c; }
   const S = { steel: '#dfe8ff', steelD: '#8a96a8', gold: '#e0b040', goldD: '#a0781c', wood: '#8a5a32', red: '#c9463d',
     fire: '#ff9a5c', fireL: '#ffd36b', holy: '#fff6c8', green: '#8fd160', dark: '#2a2230' };
   if (kind === 'blade') { for (let i = 0; i < 7; i++) { p(4 + i, 7 - i, S.steel); p(5 + i, 7 - i, S.steelD); }
@@ -1914,6 +1942,10 @@ function talIcon(id) {
   TAL_ICON[kind] = c; return c;
 }
 function treeIcon(n) { if (n.active) return skillIcon(n.id); return talIcon(n.id); }
+const TAL_CATS = { attack: { word: 'ATTACK', bg: '#4a2020', col: '#ff9a7a' }, defence: { word: 'DEFENCE', bg: '#1f2c48', col: '#9ac0ff' }, area: { word: 'AREA', bg: '#33264a', col: '#c9a0ff' },
+  movement: { word: 'MOVEMENT', bg: '#1f3a26', col: '#8fd160' }, sustain: { word: 'SUSTAIN', bg: '#3e3418', col: '#ffd36b' }, utility: { word: 'UTILITY', bg: '#2c2c38', col: '#c9d1dc' }, skill: { word: 'SKILL', bg: '#3a2a14', col: '#ffb347' } };
+const talCat = n => { if (n.active) return TAL_CATS.skill; const k = TAL_KIND(n.id);
+  return TAL_CATS[k === 'blade' || k === 'flame' || k === 'scythe' || k === 'shot' || k === 'hook' || k === 'drop' || k === 'eye' ? 'attack' : k === 'shield' || k === 'reflect' ? 'defence' : k === 'ring' ? 'area' : k === 'boot' ? 'movement' : k === 'heart' || k === 'light' || k === 'cross' || k === 'bolt' ? 'sustain' : 'utility']; };
 const BRANCH_PIX = {
   reaper: [['....ss....', '....ss....', '....ss....', '....ss....', '....ss....', '..wwssww..', '....ww....', '....ww....', '....WW....', '..........'],
     ['..........', '...yyy....', '..y...y...', '.y.....y..', '.y.yyy.y..', '.y.....y..', '..y...y...', '...yyy....', '..........', '..........'],
@@ -1977,7 +2009,7 @@ function drawTree() {
     g.moveTo(x0 + 0.5, y0 + NS2); if (x0 !== x1) { g.lineTo(x0 + 0.5, y1 + NS2 / 2); g.lineTo(x1 + 0.5, y1 + NS2 / 2); } g.lineTo(x1 + 0.5, y1); g.stroke(); }
   for (const n of mine) { const [x, y] = pos(n), st = nodeState(n), r = tal(n.id), sel = ns[treeI] === n, lit = r > 0, ready = st === 'open' && any;
     const ly = sel ? y - 1 : y;                                       // the one under the cursor stands a pixel proud
-    g.fillStyle = lit ? '#2f2740' : '#171520'; g.fillRect(x - NS2 / 2, ly, NS2, NS2);
+    { const cat = talCat(n); g.fillStyle = '#12101a'; g.fillRect(x - NS2 / 2, ly, NS2, NS2); g.globalAlpha = lit ? 1 : 0.5; g.fillStyle = cat.bg; g.fillRect(x - NS2 / 2 + 1, ly + 1, NS2 - 2, NS2 - 2); g.globalAlpha = 1; }   /* the colour is the kind of talent */
     if (sel) { const bk = 0.5 + 0.5 * Math.sin(time * 6), r = 2 + Math.round(bk * 1.5);   // A BRACKET THAT BREATHES
       g.fillStyle = 'rgba(255,246,224,' + (0.10 + 0.10 * bk).toFixed(2) + ')'; g.fillRect(x - NS2 / 2 - r, ly - r, NS2 + r * 2, NS2 + r * 2);
       g.strokeStyle = '#fff6e0'; g.lineWidth = 1;
@@ -2014,11 +2046,12 @@ function drawTree() {
     g.strokeStyle = UI.gold; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, fy - 10.5, w2 - 1, 9); text(treeMsg, VW / 2, fy - 9, UI.gold, 'center', 6); }
   if (respec) wrap('forget every skill this hero knows and take all the points back. it costs nothing.', VW - 24, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, dy + 4 + i * 8, UI.dim, 'center', 6));
   else if (cur) { const st = nodeState(cur);
-    text(cur.name + '  ' + tal(cur.id) + '/' + cur.max, 12, dy + 3, UI.title, 'left', 6);
+    text(cur.name + '  ' + tal(cur.id) + '/' + cur.max + '  (' + (cur.cost || 1) + (cur.cost > 1 ? ' POINTS)' : ' POINT)'), 12, dy + 3, UI.title, 'left', 6);
     const need = st === 'level' ? 'OPENS AT LEVEL ' + ROW_LV[cur.row] : st === 'parent' ? 'NEEDS ' + TREE.find(q => q.id === cur.parent && q.hero === cur.hero).name : st === 'branch' ? 'NEEDS ' + ROW_NEED[cur.row] + ' DOWN THIS BRANCH (' + branchPts(hero(), cur.branch) + ')' : st === 'max' ? 'AT ITS PEAK' : any ? 'Z TO LEARN' : 'NO POINTS LEFT';
     text(need, VW - 12, dy + 3, st === 'level' || st === 'parent' || st === 'branch' || (st !== 'max' && !any) ? '#ff9a5c' : UI.sel, 'right', 6);
-    const lines = wrap(cur.desc + (cur.active && cur.max > 1 ? '. every point past the first: a shorter wait and a harder blow' : ''), VW - 28, 6);
-    lines.slice(0, 3).forEach((ln, k) => text(ln, 12, dy + 9 + k * 7, UI.dim, 'left', 6)); }
+    /* THE KIND OF TALENT FIRST, in its own colour, and the words in the bright ink: grey six-point text on a dark panel was the hardest thing in the game to read */
+    const cat = talCat(cur), lines = wrap(cat.word + (cur.active ? ' (F OR G KEY)' : '') + ': ' + cur.desc + (cur.active && cur.max > 1 ? '. a second point: a shorter wait and a harder blow' : ''), VW - 28, 6);
+    lines.slice(0, 3).forEach((ln, k) => text(ln, 12, dy + 9 + k * 7, k === 0 ? cat.col : UI.text, 'left', 6)); }
   { const act = cur && cur.active, on = act && tal(cur.id);
     const line = on ? 'F SETS IT ON F   G SETS IT ON G   Q CLOSE' : act ? 'Z LEARN IT, THEN F OR G FOR THE KEY   Q CLOSE' : 'ARROWS MOVE   Z LEARN   Q CLOSE';   /* the long one was 336px wide in a 320 view */
     text(fitText(line, VW - 12, 6), VW / 2, VH - 9, on ? UI.sel : UI.dim, 'center', 6); }

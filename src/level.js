@@ -86,7 +86,7 @@ function brackenWood() {
 
   // ---- 4. Thorn climb ----
   floor(121, 129, 22);
-  spikes(122, 129, 21);
+  /* (a bed of spikes lay under the zigzag climb here: in the wood that teaches the game, a missed hop costs the climb, not a life) */
   plat(119, 20, 3); plat(123, 18, 3); plat(127, 16, 3); plat(123, 14, 3); plat(127, 12, 3); plat(124, 10, 2); plat(127, 8, 2); ent('silver', 128, 7); coins([125, 9]); // the silver sits above the canopy: up is worth looking
   coins([124, 17], [128, 15], [124, 13]);
 
@@ -1399,7 +1399,7 @@ function underleaf() {
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
     arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', music: 'boss', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
-    mini: { x0: 312 * TS, x1: 330 * TS, floor: 21 * TS, y0: 14 * TS, y1: 24 * TS, trigger: 317 * TS, wallL: 312, gate: 325, boss: 'berserker' },
+    mini: { x0: 312 * TS, x1: 330 * TS, floor: 21 * TS, y0: 14 * TS, y1: 24 * TS, trigger: 317 * TS, wallL: 312, gate: 330, boss: 'berserker' },   /* (the gate is column 330: opening 325 left the tower shut after he fell) */
   };
 }
 
@@ -4562,6 +4562,8 @@ function waymeet() {
     return { x0: x0 + 1, x1: x1 - 1, y0: y + 3, y1: R - 1, door: drs.length ? drs[0] : null, door2: drs.length > 1 ? drs[1] : null, seed: x0, town: true, tiles: true };
   }).filter(h => h.y1 >= h.y0 && h.x1 > h.x0);
 
+  /* THE TOWN IS NOT A WALL: forty-four sworn swords was a street you could not see the end of. Every fourth stands down. */
+  { let n = 0; L.ents = L.ents.filter(e => !(e.t === 'swornsword' && ++n % 4 === 0)); }
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 24,                                 /* rows 0-24 are insides: never shown from the street */
