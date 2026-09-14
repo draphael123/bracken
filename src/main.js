@@ -1675,7 +1675,7 @@ const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.n
 
 // ---------- world map ----------
 // One map, two regions: the Wood on the lower sheet, the Crags above it. The path climbs through the pass once Kingswood falls.
-const MAPW = 320, MAPH = 540, CRAG_H = 180, COAST_Y = 0, CRAG_Y = 180, WOOD_Y = 360; // three regions stacked: the coast, the crags, the wood
+const MAPW = 320, MAPH = 720, CRAG_H = 180, INLAND_Y = 0, COAST_Y = 180, CRAG_Y = 360, WOOD_Y = 540; // three regions stacked: the coast, the crags, the wood
 const WOOD_NODES = [
   { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, name: 'BRACKEN WOOD' },
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 66, name: 'THE STORE' },
@@ -1697,23 +1697,26 @@ const CRAG_NODES = [
   { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 26, y: 66, name: 'THE UNDERCROWN' },   /* straight down out of her cellars: off the road until four in five of her garrison are down */
 ];
 const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [54, 162], [22, 140], [18, 100], [30, 66], [50, 40], [38, 54], [26, 66], [38, 54], [50, 40]];   /* the Undercrown hangs off Highcrown on a spur of its own: out and back, not on the road */
-const COAST_NODES = [{ id: 'longwater', kind: 'level', level: 11, x: 152, y: 104, name: 'THE LONG WATER' },
-  { id: 'reef', kind: 'level', level: 12, x: 96, y: 72, name: 'THE SHIPWRECK REEF' },
-  { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 74, y: 56, name: 'THE CHANDLER' },
-  { id: 'flotilla', kind: 'level', level: 13, x: 50, y: 44, name: 'THE FLOTILLA' },
-  { id: 'hurricane', kind: 'level', level: 14, x: 22, y: 16, name: 'THE HURRICANE DECK' },
-  { id: 'lamplit', kind: 'level', level: 15, x: 18, y: 52, name: 'THE LAMPLIT STREET' },
-  { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 60, y: 86, name: 'THE DEEP' },
-  { id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 30, y: 116, name: 'WAYMEET' },   /* off the road on a spur of its own, like the Underleaf and the Undercrown */
-  { id: 'hunt', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hunt'), x: 150, y: 132, name: 'THE HUNT' },   /* by id, not by number: the road inland is being laid by several hands at once */
-  { id: 'quarry', kind: 'level', level: LEVELS.findIndex(l => l.id === 'quarry'), x: 212, y: 110, name: 'THE QUARRY PASS' },
-  { id: 'frost', kind: 'level', level: LEVELS.findIndex(l => l.id === 'frost'), x: 252, y: 92, name: 'THE FROSTFELL' },
-  { id: 'skyship', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyship'), x: 292, y: 80, name: 'THE SKY SHIP' }]; // straight down off the wreck, then straight down off the world - and then back up out of it, inland, to the first dry town on the road
-const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [74, 56], [62, 52], [50, 44], [38, 30], [22, 16], [16, 32], [18, 52], [34, 68], [60, 86], [44, 102], [30, 116], [44, 102], [60, 86], [84, 104], [108, 118], [130, 126], [150, 132], [176, 126], [196, 118], [212, 110], [232, 104], [252, 92], [272, 86], [292, 80]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
-const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES);
-const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH);
-const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 48, 51, 52, 55, 57, 59, 61, 63, 69, 72, 74, 76]; // PATH index of each node: wood 0-5, the crags, then the coast
-const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172]]]);
+/* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
+   another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
+const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 140, y: 140, name: 'THE LONG WATER' },
+  { id: 'reef', kind: 'level', level: LEVELS.findIndex(l => l.id === 'reef'), x: 240, y: 125, name: 'THE SHIPWRECK REEF' },
+  { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 265, y: 95, name: 'THE CHANDLER' },
+  { id: 'flotilla', kind: 'level', level: LEVELS.findIndex(l => l.id === 'flotilla'), x: 220, y: 55, name: 'THE FLOTILLA' },
+  { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 130, y: 25, name: 'THE HURRICANE DECK' },
+  { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 40, y: 45, name: 'THE LAMPLIT STREET' },
+  { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' },
+  { id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 25, y: 140, name: 'WAYMEET' }];   /* off the road on a spur of its own */
+const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [36, 118], [25, 140], [36, 118], [50, 95], [80, 70], [110, 40], [140, 8]];
+const INLAND_NODES = [{ id: 'hunt', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hunt'), x: 70, y: 140, name: 'THE HUNT' },
+  { id: 'quarry', kind: 'level', level: LEVELS.findIndex(l => l.id === 'quarry'), x: 140, y: 110, name: 'THE QUARRY PASS' },
+  { id: 'frost', kind: 'level', level: LEVELS.findIndex(l => l.id === 'frost'), x: 210, y: 82, name: 'THE FROSTFELL' },
+  { id: 'skyship', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyship'), x: 275, y: 44, name: 'THE SKY SHIP' }];
+const INLAND_PATH = [[140, 176], [110, 160], [70, 140], [100, 122], [140, 110], [175, 96], [210, 82], [240, 62], [275, 44]];
+const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })));
+const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]));
+const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 46, 48, 50, 52, 54, 56, 58, 60, 68, 70, 72, 74]; // PATH index of each node: wood 0-5, the crags, the coast, then the road inland
+const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'crag', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]]]);
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
 const HUT = ART.bakeHut(), FLAG = ART.bakeFlag();
@@ -1910,8 +1913,8 @@ function drawMap() {
   g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
   g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
-  { const region = mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
-  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
+  { const region = mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
+  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
