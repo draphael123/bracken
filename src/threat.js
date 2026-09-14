@@ -34,6 +34,8 @@ export const THREAT = {
      unblockable overhead at 4, and a hedge knight is 92 with an unblockable leap. And the runner is
      worth more than the hurt he does, because what he costs you is everybody else. */
   swornsword: 3.5, hedgeknight: 4.5, runner: 1.5, crossbow: 3, closedhelm: 0,
+  /* THE SERJEANT: a charge down a bridge you cannot walk round, and a man with a sword when he is off the horse */
+  lancer: 5,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

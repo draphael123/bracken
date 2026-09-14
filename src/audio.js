@@ -588,6 +588,7 @@ const DIE = {
   // berserker taking the whole street with him, and the old woman's stick going over on the cobbles.
   assassin() { noise(0.1, 0.16, 3200, 0.7); tone('sine', 420, 180, 0.14, 0.05); noise(0.18, 0.1, 900, 0.4, 0.06); tone('triangle', 900, 700, 0.06, 0.05, 0.16); },
   swornsword() { tone('square', 190, 80, 0.26, 0.15); noise(0.2, 0.18, 700, 0.45, 0.05); SFX.clank && SFX.clank(); },
+  lancer() { tone('square', 180, 70, 0.3, 0.14); noise(0.24, 0.2, 650, 0.5, 0.05); tone('sawtooth', 520, 300, 0.35, 0.06, 0.12); /* the man, and the horse going on without him */ },
   hedgeknight() { tone('square', 150, 60, 0.36, 0.18); noise(0.3, 0.26, 500, 0.55, 0.06); },
   runner() { tone('square', 330, 180, 0.2, 0.12); noise(0.12, 0.14, 900, 0.35, 0.05); },
   crossbow() { tone('square', 230, 110, 0.22, 0.13); noise(0.16, 0.16, 800, 0.4, 0.04); },
@@ -703,6 +704,7 @@ const DIE = {
 const HURT = {
   assassin() { noise(0.08, 0.13, 2800, 0.7); tone('sine', 500, 340, 0.09, 0.05); },
   swornsword() { tone('square', 260, 190, 0.12, 0.1); noise(0.1, 0.12, 1200, 0.4); },
+  lancer() { tone('square', 240, 170, 0.12, 0.1); noise(0.12, 0.14, 1000, 0.45); },
   hedgeknight() { tone('square', 200, 150, 0.14, 0.11); noise(0.14, 0.16, 900, 0.45); },
   runner() { tone('square', 420, 300, 0.1, 0.09); },
   crossbow() { tone('square', 300, 220, 0.11, 0.09); },
@@ -814,7 +816,7 @@ SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.
 const CAST = {
   swornsword: { kit: 'm2', rate: 1, mat: 'mail', human: true }, hedgeknight: { kit: 'm4', rate: 0.92, lp: 1600, mat: 'plate', human: true },
   closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm6', rate: 1.12, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
-  crossbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true },
+  crossbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true }, lancer: { kit: 'm3', rate: 0.95, mat: 'mail', human: true },
   cutlass: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, boarder: { kit: 'm5', rate: 0.9, mat: 'cloth', human: true }, marine: { kit: 'm6', rate: 1.08, mat: 'cloth', human: true },
   bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm6', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm5', rate: 1, mat: 'cloth', human: true },
   netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
