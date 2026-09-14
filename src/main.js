@@ -2971,7 +2971,7 @@ function reflectSeed(s) { s.dead = false; s.reflected = true; s.g = 0; s.life = 
   SFX.parry(); streaks(s.x, s.y, 5, ['#fff6e0', '#c9d1dc'], 120); }
 function phoenixBurst() { SFX.pyreBoom(); shakeCam(8); zoomKick(1.1, 0.3); ringAt(P.x, P.y - 10, 50, '#ff6b2c', 0.5); flame(P.x, P.y - 10, 24, 14, 110, 4); smoke(P.x, P.y - 10, 6, 10);
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 64 && Math.abs(e.y - P.y) < 50) { hurtEnemy(e, 20, P.x, false); e.burn = Math.max(e.burn || 0, 2); } }
-function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false } = {}) {
+function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false } = {}) {
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (P.relic === 'banner') dmg = Math.max(1, Math.round(dmg * 0.8)); // the Queen's banner: they pull their blows
   if (!P.dead && P.dodge > 0 && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; P.st = Math.min(P.maxSt, P.st + 20); P.riposteT = 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
@@ -3069,7 +3069,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   // a blow that lands puts out whatever you were carrying: the fire in your hand is the first thing to go
   if (P.wick > 0 && P.relic !== 'wick') { P.wick = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }
   const dir = Math.sign(P.x - fromX) || -P.face;
-  if (armoured) { P.vx = dir * 60; }                       /* he rocks, he does not fly: the arc has to finish */
+  if (noKnock) { }                                          /* NO BLOW BEHIND IT: running out of air hurts where you are, it does not throw you */
+  else if (armoured) { P.vx = dir * 60; }                       /* he rocks, he does not fly: the arc has to finish */
   else { P.vx = dir * 150; P.vy = up ? -230 : -170; P.ground = false; }
   if (isPirate() && (P.rum || 0) > 0) dmg = Math.round(dmg * 1.25);   // and he feels it more
   hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; SFX.pHurt(); rumble(180, 0.8);
@@ -4442,7 +4443,7 @@ function updatePlayer(dt) {
     else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
       if (P.breath <= 0) { P.breath = 0; P.drownT = (P.drownT || 0) - dt;
         if (Math.random() < dt * 26) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - 14, vx: 0, vy: -50, life: 0.5, max: 0.5, col: '#e8f4f0', size: 1, grav: -40 });
-        if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true }); } } }
+        if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true, noKnock: true }); } } }
     else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
   } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4); P.drownT = 0; }
   snareTick(dt);
