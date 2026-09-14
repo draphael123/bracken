@@ -211,6 +211,15 @@ export async function collectLab(BK, opts = {}) {
     const P = BK.P, k = BK.keys;
     const items = [...silversOf().map(s => ({ kind: 'silver', ref: s, x: s.x, y: s.y })),
       ...BK.props().filter(p => (p.t === 'stray' || p.t === 'relic' || p.t === 'key') && !p.got).map(p => ({ kind: p.t === 'stray' ? 'quest:' + (p.kind || '') : p.t, ref: p, x: p.x, y: p.y }))];
+    /* THE DEAD-END STASHES (opts.stash): the coins and hearts payDeadEnds put at the ends of pockets, gone for like anything
+       else. A stash heart is only taken by a hero who is hurt, so he is kept hurt while he goes for it. */
+    if (opts.stash) {
+      const coinAt = new Set(Lb.ents.filter(e => e.stash && e.t === 'coin').map(e => (e.x * TS + 8) + ',' + ((e.y + 1) * TS - 6)));
+      for (const a of (BK.acorns ? BK.acorns() : [])) if (!a.got && coinAt.has(a.x + ',' + a.y)) items.push({ kind: 'stash:coin', ref: a, x: a.x, y: a.y });
+      /* only THIS level's: loading a level does not clear the hearts list (starting one does), so the last level's are still in it */
+      const mendAt = new Set(Lb.ents.filter(e => e.t === 'mend').map(e => 'mend:' + e.x + ',' + e.y));
+      for (const h of (BK.healths ? BK.healths() : [])) if (h.stay && !h.got && mendAt.has(h.key)) items.push({ kind: 'stash:heart', ref: h, x: h.x, y: h.y, hurt: true });
+    }
     const got = [], missed = [];
     for (const it of items) {
       it.ref.got = false;
@@ -224,6 +233,7 @@ export async function collectLab(BK, opts = {}) {
       const walker = PT.makeBot(BK), budget = Math.round((opts.secsPer || 25) * 60); let f = 0, closest = 1e9;
       for (; f < budget && !it.ref.got; f++) {
         if (P.dead) { BK.sim(1); continue; }
+        if (it.hurt && P.hp >= P.maxHp) P.hp = Math.max(1, P.maxHp - 30);
         walker(it.x);
         /* under it and it is overhead: jump for it */
         if (Math.abs(P.x - it.x) < 14 && it.y < P.y - 20 && P.ground && f % 20 === 0) BK.press('jump');

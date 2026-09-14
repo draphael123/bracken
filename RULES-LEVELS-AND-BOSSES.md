@@ -552,3 +552,43 @@ and the gates lift with a heart and ten gold.
   inside resets it and it locks again; then hold a direction with jump, dodge and drop against both
   gates and check the hero stays in. The reach model is not the proof: it hops a one-tile-wide wall
   it should not.
+
+## R. EVERY DEAD END PAYS
+
+Looking at the flooded tunnel in THE DEEP that runs fifty tiles and stops at a rock wall with nothing
+in it: *"Whenever there's a dead end like this, like in the deep, there needs to be some type of
+collectible."* A walk to a wall and back is a price, and the level has to pay it.
+
+**What a dead end is.** `src/deadends.js` builds the movement graph from the reach fill (rides on)
+and gives every tile a DETOUR: distance from the start + distance to the goal - the best route.
+Walking into a pocket raises it two a tile (in, and back out); a loop, or a ledge that drops you on
+ahead, leaves it flat. A dead end is a peak of detour standing at least FIVE tiles above the junction
+it hangs off: on land, in water (a flooded tunnel, a sunken passage, the water under a hull) or up
+high (a ledge or a branch that leads nowhere). Not dead ends: open water (a swim more than eight tiles
+thick both ways is a room), a boss or mini arena, an ambush room, the tiles behind the start, anything
+past the goal, and a pocket with a doorway, gate, keeper, lever or winch at its end - that is why you
+went.
+
+**What pays.** Within reach of the last six tiles: a silver, a quest stray, a relic, a key, a stash
+heart, or a coin cache of FOUR or more. One coin does not pay. A sign does not pay.
+
+**How it is paid.** `payDeadEnds()` in `src/level.js` runs after `sprinkleCoins` and before
+`dressLevel`, on the built level, so a new level is paid without anyone remembering to:
+- a cache of 5 coins, one more at 12 tiles, 20 and 32, packed against the far end (two high on land,
+  a block under water);
+- a heart that waits until you need it (ent `mend`) when the pocket is 20+ tiles, a 12+ tile swim,
+  has spikes in it, or ends in a current - a current drifts loose coins (and through rock), so no gold
+  is laid in flowing water and the heart, which stays put, pays that pocket; it goes beside the prop,
+  never on its tile, or the prop is drawn over it;
+- the level's own stash prop on the last floor tile (`STASH`): a sea chest on the bed, a loot heap in
+  a goblin place, plunder on a ship, a cairn on the crags, a stump or a mushroom in the woods.
+- Never a silver (a level keeps three: `silverTrim`, and the ledger reads three bits), never a quest
+  stray or a key (those are counted). Never on spikes, in a deadly pool, or on a sign, door or
+  checkpoint.
+
+**The check.** `node tools/deadends.mjs` (`deadends` in `npm run check`) lists every pocket per level -
+where, how many tiles, land/water/air, what is at the end - and fails on any that is unpaid. If the
+pass cannot pay one (no free tile at its end), hand-place something there in the level's REVIEW entry.
+If a pocket is not a dead end at all because the model cannot see the ride out of it, fix the model
+(`src/reachcore.js`), not the check. (The model once let a swimmer leap out of a "surface" under two
+rows of rock, and that alone hid the Deep's tunnel.)

@@ -1,79 +1,30 @@
-// tools/deadends.mjs — where does a walk run into a wall for nothing?
-// A floor that carries on for forty tiles past its last way onward, into a wall, with nothing at
-// the end, is a dead end whatever else is on it. This finds every walkable run, works out which of
-// its columns lead somewhere else (a jump up to another run, a drop, a ladder, a doorway), and
-// reports each wall-ended TAIL past the last of those that is long and has nothing in it.
-// "Nothing" means no coin, silver, quest item, relic, key, sign, checkpoint, NPC or doorway.
-// usage: node tools/deadends.mjs [levelId] [minTail=8]
+// tools/deadends.mjs — EVERY DEAD END PAYS.
+// "Whenever there's a dead end like this, like in the deep, there needs to be some type of collectible." Lists every dead
+// end the movement graph can find (src/deadends.js: on land, in water, up high), how far past its last way on it runs,
+// and what is at the far end - and FAILS on any pocket with nothing there. What pays: a silver, a quest stray, a relic, a
+// key, a stash heart, or a cache of four coins or more within reach of the last six tiles. One coin or a sign does not.
+// The build pass payDeadEnds() in src/level.js pays them; this is the check that it did. Section R of
+// RULES-LEVELS-AND-BOSSES.md is the rule.
+//   node tools/deadends.mjs            every level
+//   node tools/deadends.mjs <id> -v    one level, with what was looked at and skipped (open water, too small, a door)
 import { LEVELS, T } from '../src/level.js';
-import { floodReach } from '../src/reachcore.js';
+import { findDeadEnds } from '../src/deadends.js';
 
-const want = process.argv[2] && isNaN(+process.argv[2]) ? process.argv[2] : null;
-const MIN = +(process.argv.find(a => /^\d+$/.test(a)) || 8);
-
-const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
-const oneway = t => t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.REED || t === T.CRYST || t === T.NET;
-const stand = t => solid(t) || oneway(t) || t === T.BOUNCER;
-// the knight's measured jump: rows up -> tiles across
-const REACH = [4.0, 3.6, 3.2, 2.5];
-const GOOD = new Set(['coin', 'silver', 'stray', 'relic', 'key', 'sign', 'check', 'npc', 'doorway', 'gate', 'shop']);
-const WORTH = { silver: 4, stray: 4, relic: 4, key: 4, npc: 2, doorway: 10, gate: 10, shop: 10 };
-
-let total = 0;
+const want = process.argv[2] && !process.argv[2].startsWith('-') ? process.argv[2] : null, verbose = process.argv.includes('-v');
+let total = 0, unpaid = 0, levels = 0;
 for (const lv of LEVELS) {
   if ((lv.hidden && !lv.secret) || (want && lv.id !== want)) continue;
-  const L = lv.build(), W = L.W, H = L.H, g = L.grid;
-  const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
-  const runs = [];
-  for (let y = 0; y < H - 1; y++) { let x0 = -1;
-    for (let x = 0; x <= W; x++) {
-      const ok = x < W && stand(at(x, y + 1)) && !solid(at(x, y)) && at(x, y) !== T.SPIKE && !solid(at(x, y - 1));
-      if (ok && x0 < 0) x0 = x;
-      if (!ok && x0 >= 0) { runs.push({ y, x0, x1: x - 1 }); x0 = -1; }
-    } }
-  const exitCols = r => { const c = new Set();
-    for (const o of runs) { if (o === r) continue;
-      const dy = r.y - o.y;                                   // positive: o is higher
-      if (dy >= 1 && dy <= 3) { for (let x = r.x0; x <= r.x1; x++) { const d = x < o.x0 ? o.x0 - x : x > o.x1 ? x - o.x1 : 0; if (d <= REACH[dy]) c.add(x); } }
-    }
-    // a floor you can drop through goes down anywhere; a ladder or rock face goes up
-    for (let x = r.x0; x <= r.x1; x++) { if (oneway(at(x, r.y + 1)) && at(x, r.y + 1) !== T.CRYST) c.add(x);
-      if (at(x, r.y) === T.NET || at(x, r.y - 1) === T.NET || at(x - 1, r.y) === T.CLIMB || at(x + 1, r.y) === T.CLIMB) c.add(x); }
-    // an end with no wall is a drop, and a drop goes somewhere
-    // (and a portcullis at the end is a door: a winch or a key or a boss opens it)
-    if (!solid(at(r.x0 - 1, r.y)) || at(r.x0 - 1, r.y) === T.PORT) c.add(r.x0);
-    if (!solid(at(r.x1 + 1, r.y)) || at(r.x1 + 1, r.y) === T.PORT) c.add(r.x1);
-    for (const e of L.ents) if (e.t === 'doorway' && e.y === r.y && e.x >= r.x0 && e.x <= r.x1) c.add(e.x);
-    // a floor under swim water is a riverbed: you swim up off it anywhere
-    for (const p of (L.pools || [])) if (p.swim) for (let x = r.x0; x <= r.x1; x++) if (x * 16 >= p.x0 && x * 16 < p.x1 && r.y * 16 >= (p.streetTide ? p.base + p.tideHi : p.y) - 16) c.add(x);
-    return c; };
-  const out = [];
-  // a boss floor is walled in on purpose: the fight is what is at the end of it
-  const TSZ = 16, rooms = [L.arena, L.mini].filter(Boolean);
-  const inRoom = (x, y) => rooms.some(A => x * TSZ >= A.x0 - TSZ && x * TSZ <= A.x1 + TSZ && (A.y0 === undefined || (y * TSZ >= A.y0 && y * TSZ <= A.y1)) && (A.y0 !== undefined || Math.abs(y * TSZ - (A.floor - TSZ)) <= 4 * TSZ || (A.roof !== undefined && Math.abs(y * TSZ - (A.roof - TSZ)) <= 4 * TSZ)));
-  // a run nobody can get onto is not a dead end, it is a roof (reach.mjs says if anything that matters is up there)
-  const R = floodReach(L, T), gotOnto = r => R.assisted || [...Array(r.x1 - r.x0 + 1)].some((_, k) => R.seen.has((r.x0 + k) + ',' + r.y));
-  for (const r of runs) {
-    if (r.x1 - r.x0 + 1 < MIN) continue;
-    if (inRoom((r.x0 + r.x1) >> 1, r.y) || !gotOnto(r)) continue;
-    const c = [...exitCols(r)].sort((a, b) => a - b);
-    const tails = [];
-    if (!c.length) tails.push([r.x0, r.x1, 'a closed run with no way on at all']);
-    else {
-      if (solid(at(r.x0 - 1, r.y))) tails.push([r.x0, c[0] - 1, 'past the last way on']);
-      if (solid(at(r.x1 + 1, r.y))) tails.push([c[c.length - 1] + 1, r.x1, 'past the last way on']);
-    }
-    for (const [a, b, why] of tails) {
-      const len = b - a + 1; if (len < MIN) continue;
-      // one lonely coin forty tiles out is not a reason to walk forty tiles: a tail has to pay about
-      // one point every ten tiles, where a coin, a sign or a checkpoint is a point and loot is four
-      const stuff = L.ents.filter(e => GOOD.has(e.t) && e.x >= a && e.x <= b && e.y >= r.y - 4 && e.y <= r.y + 3);
-      const score = stuff.reduce((s, e) => s + (WORTH[e.t] || 1), 0);
-      if (score * 10 < len) out.push(`  row ${r.y}  x ${a}-${b}  ${len} tiles ${why}: ${stuff.length ? stuff.map(e => e.t).join(', ') : 'nothing'}`);
-    }
+  const L = lv.build(), r = findDeadEnds(L, T); levels++;
+  const owed = r.pockets.filter(p => !p.paid);
+  total += r.pockets.length; unpaid += owed.length;
+  console.log('== ' + lv.id + ': ' + r.pockets.length + ' dead end' + (r.pockets.length === 1 ? '' : 's') + (owed.length ? ', ' + owed.length + ' WITH NOTHING AT THE END' : '') + (r.why ? ' (' + r.why + ')' : ''));
+  for (const p of r.pockets) {
+    /* what the stash pass put down, and what was there already */
+    const props = L.ents.filter(e => e.t === 'deco' && e.stash && p.inZone(e.x, e.y)).map(e => e.kind);
+    const what = [p.coins ? p.coins + ' coin' + (p.coins === 1 ? '' : 's') : '', ...p.loot.map(t => t === 'mend' ? 'heart' : t), ...props].filter(Boolean).join(', ') || 'nothing';
+    console.log('  ' + (p.paid ? 'paid    ' : 'UNPAID  ') + (p.x + ',' + p.y).padEnd(8) + String(p.len).padStart(3) + ' tiles  ' + p.kind.padEnd(5) + ' ' + (p.wall ? 'wall' : 'edge') + (p.danger ? ' danger' : '       ') + '  ' + what);
   }
-  if (out.length || want) console.log(`== ${lv.id}: ${out.length} dead end${out.length === 1 ? '' : 's'}`);
-  for (const o of out) console.log(o);
-  total += out.length;
+  if (verbose) for (const s of r.skipped) console.log('  skipped ' + (s.x + ',' + s.y).padEnd(8) + String(s.len).padStart(3) + ' tiles  ' + s.why);
 }
-console.log(total ? `\n${total} dead ends.` : '\nno dead ends.');
+console.log(unpaid ? '\n' + unpaid + ' of ' + total + ' dead ends have nothing at the end.' : '\n' + total + ' dead ends in ' + levels + ' levels, and every one pays.');
+process.exitCode = unpaid ? 1 : 0;

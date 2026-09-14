@@ -1,4 +1,5 @@
 import { floodReach } from './reachcore.js';
+import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
@@ -5845,7 +5846,56 @@ function ambushRooms(L, id) {
   }
   return L;
 }
-for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(silverTrim(checkpoints(garrison(ambushRooms(L, id), id)))), id); }; }
+/* ============ EVERY DEAD END PAYS ============
+   "Whenever there's a dead end like this, like in the deep, there needs to be some type of collectible." Every pocket
+   src/deadends.js finds (a walk that runs five tiles or more past its last way on to a wall - on land, under water or up
+   high) with nothing at its far end gets a CACHE there, on the built level, after the gold and before the dressing: coins
+   packed against the end, a heart that waits for you when the pocket is long, wet or spiked, and the level's own stash
+   prop on its last floor. Never a silver (three a level, the ledger reads three bits) and never a quest item (counted).
+   The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
+const STASH = { wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
+  scree: 'cairn', spire: 'cairn', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
+  longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
+const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
+function payDeadEnds(L, id) {
+  const owed = findDeadEnds(L, T).pockets.filter(p => !p.paid); if (!owed.length) return L;
+  const W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
+  /* NOT IN A POOL THAT KILLS, not on or under spikes, and not on top of anything the level put down on purpose */
+  const deadly = (L.pools || []).filter(p => !p.shallow && !p.swim && !p.dry);
+  const drowns = (x, y) => deadly.some(p => x * TS + 8 > p.x0 && x * TS + 8 < p.x1 && (y + 1) * TS > p.y + 9);
+  const HELD = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'winch', 'crank', 'bell', 'ballast']);
+  const held = L.ents.filter(e => HELD.has(e.t));
+  const busy = new Set(L.ents.filter(e => e.t === 'coin' || e.t === 'mend').map(e => e.x + ',' + e.y));
+  const free = (x, y) => at(x, y) === T.AIR && at(x, y - 1) !== T.SPIKE && at(x, y + 1) !== T.SPIKE && !busy.has(x + ',' + y) && !drowns(x, y) && !held.some(e => Math.abs(e.x - x) <= 1 && Math.abs(e.y - y) <= 1);
+  const put = (t, x, y, o) => { L.ents.push(Object.assign({ t, x, y, stash: true }, o || {})); if (t !== 'deco') busy.add(x + ',' + y); };
+  /* A CURRENT TAKES LOOSE GOLD (main.js drifts every coin in a flowing swim pool, and nothing stops it at rock): a cache at
+     the end of a pocket in the Reef's current slid into the wall it was laid against. Gold goes only in still water; a
+     pocket whose end is in a current is paid with the heart, which stays where it is put. */
+  const flowing = (x, y) => (L.pools || []).some(q => q.flow && q.swim && !q.dry && x * TS + 8 > q.x0 && x * TS + 8 < q.x1 && (y + 1) * TS - 6 > q.y);
+  const coinOk = (x, y) => free(x, y) && !flowing(x, y);
+  for (const p of owed) {
+    const zone = p.zone.filter(([x, y]) => free(x, y));
+    /* THE PRICE OF THE WALK: five coins, and one more at twelve tiles, twenty and thirty-two; a heart for a long one, a swim, spikes or a current */
+    const n = 5 + (p.len >= 12) + (p.len >= 20) + (p.len >= 32), heart = p.len >= 20 || p.danger || (p.kind === 'water' && p.len >= 12) || p.zone.some(([x, y]) => flowing(x, y));
+    /* the last floor (or bed) before the wall takes the prop and the heart - when the end is all rope there is none, and the
+       gold still goes beside it below */
+    const tip = zone.find(([x, y]) => at(x, y + 1) !== T.AIR && at(x, y + 1) !== T.SPIKE) || zone[0];
+    if (tip) { const [tx, ty] = tip, kind = STASH[id], floor = at(tx, ty + 1);
+      if (kind && (floor === T.SOLID || floor === T.PLANK) && at(tx, ty - 1) === T.AIR && !L.ents.some(e => e.t === 'deco' && Math.abs(e.x - tx) <= 1 && Math.abs(e.y - ty) <= 1)) put('deco', tx, ty, { kind, v: (tx + ty) % (STASH_V[kind] || 1) });
+      /* THE HEART BESIDE THE CHEST, NOT IN IT: laid on the prop's own tile the chest was drawn over it. The next floor back
+         from the end, or the tile over the prop */
+      if (heart) { const by = zone.find(([x, y]) => x !== tx && at(x, y + 1) !== T.AIR && at(x, y + 1) !== T.SPIKE);
+        if (by) put('mend', by[0], by[1]); else if (free(tx, ty - 1)) put('mend', tx, ty - 1); else put('mend', tx, ty); } }
+    /* packed against the end, nearest the wall first: two high on land, a block under water */
+    let laid = 0;
+    for (const [x, y, wet] of zone) for (const yy of wet ? [y] : [y, y - 1]) if (laid < n && coinOk(x, yy)) { put('coin', x, yy); laid++; }
+    /* AND BESIDE IT, where the end is a rope: a rung is not air, so a chimney or a shaft that ends on its own rope had
+       nowhere to take gold - the air a step to either side is in reach from the rope */
+    for (const [x, y] of p.zone) for (const [dx, dy] of [[1, 0], [-1, 0], [1, -1], [-1, -1]]) if (laid < n && coinOk(x + dx, y + dy)) { put('coin', x + dx, y + dy); laid++; }
+  }
+  return L;
+}
+for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(garrison(ambushRooms(L, id), id)))), id), id); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };
