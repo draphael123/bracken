@@ -90,8 +90,9 @@ export async function bossLab(BK, opts = {}) {
   if (typeof window !== 'undefined') window.__bossLab = out;
   for (const lvId of bosses) for (const h of heroes) {
     BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false; BK.sim(10);
-    const L = BK.L, A = L.arena; out.progress++;
-    if (!A) { rows.push({ lvl: lvId, h, skipped: 'no arena' }); continue; }
+    /* A LEVEL'S MINI, fought the same way: opts.mini puts the bot in L.mini's room against L.mini's boss, not the arena's */
+    const L = BK.L, A = opts.mini ? L.mini : L.arena; out.progress++;
+    if (!A) { rows.push({ lvl: lvId, h, skipped: opts.mini ? 'no mini' : 'no arena' }); continue; }
     const boss = BK.enemies().find(e => e.t === A.boss && e.alive);
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;

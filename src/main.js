@@ -7205,9 +7205,6 @@ function updateForgemaster(e, dt) {
     case 'anvil': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.7; } break;
     case 'breathTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'breath'; e.modeT = 1.4; for (let k = 1; k <= 8; k++) fires.push({ x: e.x + e.face * (24 + k * 14), y: floor, life: 1.6, delay: k * 0.08 }); SFX.roar(); SFX.puff(); shakeCam(3); } break;
     case 'breath': want = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * (24 + Math.random() * 30), y: e.y - 20 + (Math.random() - 0.5) * 12, vx: e.face * 120, vy: (Math.random() - 0.5) * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff6b2c' : '#ffd36b', size: 2, grav: 0 }); if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.9; } break;
-    /* THE BELLOWS. He puts his shoulder into the great bellows and a wall of hot air comes off it.
-       It does not do much, and that is the point: it SHOVES, and the floor of an armoury is laid
-       with hotplates. The blow is what it pushes you onto. */
     /* HAMMER AND TONGS. The hammer goes hot and he comes in with three blows on a beat - flat, down, flat. A shield
        turns every one of them, and the LAST one turned rings his arm: he is stunned, and a stunned smith takes it
        doubled. Every other blow in his kit is run from; this is the one that pays you for standing your ground. */
@@ -7254,6 +7251,9 @@ function updateForgemaster(e, dt) {
         if (!P.dead && Math.abs(P.x - b.x) < 18 && P.y > floor - 26) damagePlayer(b.x, DMG.fmLadle, { unblockable: true, up: true }); }
       if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; e.blobs = null; }
       break;
+    /* THE BELLOWS. He puts his shoulder into the great bellows and a wall of hot air comes off it.
+       It does not do much, and that is the point: it SHOVES, and the floor of an armoury is laid
+       with hotplates. The blow is what it pushes you onto. */
     case 'bellowsTell': e.face = Math.sign(d) || e.face; want = 0;
       if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 16, y: e.y - 22 + (Math.random() - 0.5) * 14, vx: e.face * 40, vy: 0, life: 0.4, max: 0.4, col: '#e8e0d0', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'bellows'; e.modeT = 0.8; SFX.forgeSteam(); SFX.puff(); shakeCam(3);

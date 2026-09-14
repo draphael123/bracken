@@ -2221,7 +2221,7 @@ export function bakeSentry() {
   const alarm = f(spear(['g..SSSS..g', '.gSssssSg.', '.SSSSSSSS.', '.geoggeog.', '.gggoogg..', '..gGGGGg..', ...tab, ...L1]));
   return pack([f(spear([...helm, ...head, ...tab, ...L1])), f(spear([...helm, ...head, ...tab, ...L2])), alarm, f(spear([...helm, ...head, ...tab, ...R1])), f(spear([...helm, ...head, ...tab, ...R2]))], 7, 15, 8, 10);
 }
-/// THE GOBLIN QUEEN - old, huge and clever. An iron crown with red stones, ears like a bat's, a hooked nose
+// THE GOBLIN QUEEN - old, huge and clever. An iron crown with red stones, ears like a bat's, a hooked nose
 // and a grin with two tusks, an ermine collar over a gown of the Queen's purple, a cape the colour of old
 // blood behind it, and an iron sceptre the length of a knight. 96x72, facing right, anchored at her feet.
 // SHE IS FAT, NOT TALL. The owner's word: 'a lot fatter, she's tall enough'. So every height in her is where it
@@ -2235,7 +2235,7 @@ export function bakeSentry() {
 export function bakeGoblinQueen() {
   const C = { g: '#6faa4a', G: '#3f6e2c', d: '#2c4a1e', p: '#5a2a7a', P: '#3a1850', q: '#7a3a9a', y: '#e0b040', Y: '#a0781c', w: '#f2ece0', k: '#1b1626', r: '#7a1c24', R: '#4a0e14',
     i: '#5a6270', I: '#3a3e48', j: '#8a919c', m: '#c9463d', e: '#ffd36b', t: '#f3f0d2', n: '#9a5aa8' };
-  const W = 96, H = 76, CX = 48; /* spare rows under her boots: the outline of a planted foot (or a slam that sinks her) must not sit on the canvas edge */
+  const W = 96, H = 78, CX = 48; /* spare rows under her boots: the outline of a planted foot (or a slam that sinks her) must not sit on the canvas edge */
   const WIDE = x => { const d = x - 28, a = Math.abs(d); return CX + (a <= 12 ? d * 2 : Math.sign(d) * (12 + a)); };
   const mapXs = a => a && a.map((v, i) => i % 2 === 0 && typeof v === 'number' ? WIDE(v) : v);
   const frame = (o) => {
@@ -2327,7 +2327,7 @@ export function bakeGoblinQueen() {
     frame({ arm: [34, 24, 44, 12], rod: [40, 20, 50, -2], flare: 7, feet: [[24, 54], [31, 54]], dy: -3, head: 'shout' }),                       /* 11 leap */
     frame({ arm: [34, 24, 46, 8], arm2: [22, 25, 18, 34], rod: [18, 50, 14, 16, 'back'], head: 'shout' }),                                     /* 12 throw slate */
     frame({ arm: [34, 24, 46, 10], arm2: [22, 24, 10, 10], rod: [14, 52, 50, 48, 'back'], head: 'daze', tilt: -0.3, flare: 5, stars: 2 }),      /* 13 struck */
-    frame({ arm: [34, 26, 46, 48], rod: [10, 50, 52, 48, 'back'], head: 'daze', tilt: 0.9, rot: 0.1, dy: 1, flare: 5 }),                        /* 14 down */
+    frame({ arm: [34, 26, 46, 45], rod: [10, 50, 52, 48, 'back'], head: 'daze', tilt: 0.9, rot: 0.1, dy: 1, flare: 5 }),                        /* 14 down (the fist kept off the canvas's last row: the tip of her sleeve sat on it) */
   ];
   return pack(F, CX, 70, 52, 50);
 }
