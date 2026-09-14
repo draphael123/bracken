@@ -14,6 +14,7 @@ import * as LWT from './lw_tiles.js';
 import * as RFT from './reef_tiles.js';
 import * as FLT from './flot_tiles.js';
 import * as CTT from './city_tiles.js';
+import * as CRT from './crown_tiles.js';
 import * as TWN from './town_art.js';
 import * as CTP from './city_props.js';
 import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
@@ -609,7 +610,7 @@ const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp
 const BIRD = bakeBird();
 const PARTS = bakeSpitterParts();
 const PAL0 = Object.assign({}, ART.C);
-let TILE, PROP, BG, VILL = null, SHORE = null, REEF = null, FLOT = null, CITY = null, RAINART = null;
+let TILE, PROP, BG, VILL = null, SHORE = null, REEF = null, FLOT = null, CITY = null, CROWN = null, RAINART = null;
 function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
   TILE = {
@@ -653,8 +654,8 @@ function bakeAll(pal = {}) {
     hayBale: [0, 1].map(v => TWN.bakeHayBale(v)), bunting: TWN.bakeBunting(96), shopSign: [0, 1, 2, 3].map(v => TWN.bakeShopSign(v)) };
   PROP.relic.fleece = ART.bakeFleeceIcon(); PROP.relic.spurs = ART.bakeSpursIcon(); PROP.relic.shoes = ART.bakeShoesIcon(); PROP.relic.sunshard = ART.bakeSunshardIcon(); PROP.relic.crampons = bakeCramponIcon(); PROP.relic.banner = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#5a6270'; g2.fillRect(1, 0, 1, 12); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 1, 7, 7); g2.fillStyle = '#e0b040'; g2.fillRect(4, 3, 3, 3); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 8, 3, 2); g2.fillRect(6, 8, 3, 2); return c; })(); PROP.sealIcon = (() => { const [c, g2] = canvas(10, 10); g2.fillStyle = '#7a1c24'; g2.beginPath(); g2.arc(5, 5, 4.5, 0, 7); g2.fill(); g2.fillStyle = '#c9463d'; g2.beginPath(); g2.arc(5, 5, 3, 0, 7); g2.fill(); g2.fillStyle = '#e0b040'; g2.fillRect(3, 3, 1, 1); g2.fillRect(6, 3, 1, 1); g2.fillRect(4, 5, 2, 2); g2.fillRect(3, 7, 4, 1); return c; })(); PROP.relic.lamp = PROP.relic.lamp || PROP.lampIcon; PROP.relic.tidecharm = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#c9b27c'; g2.fillRect(4, 0, 2, 3); g2.fillStyle = '#e8f4f0'; g2.beginPath(); g2.moveTo(5, 3); g2.lineTo(9, 7); g2.lineTo(8, 11); g2.lineTo(2, 11); g2.lineTo(1, 7); g2.closePath(); g2.fill(); g2.fillStyle = '#7cc8c8'; for (const x of [3, 5, 7]) g2.fillRect(x, 5, 1, 6); g2.fillStyle = '#4aa0a8'; g2.fillRect(2, 10, 7, 1); return c; })(); /* the Tide Charm: a scallop on a cord */ /* the miner's lamp relic had no icon: the HUD threw every frame once you held it */ PROP.relic.keelstone = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#9f8752'; g.fillRect(3, 0, 4, 1); g.fillRect(2, 1, 1, 3); g.fillRect(7, 1, 1, 3); g.fillStyle = '#3a3228'; g.fillRect(2, 4, 6, 8); g.fillRect(1, 6, 8, 4); g.fillStyle = '#6e6450'; g.fillRect(3, 5, 4, 6); g.fillRect(2, 7, 6, 2); g.fillStyle = '#c9b27c'; g.fillRect(3, 5, 2, 1); g.fillRect(3, 6, 1, 1); return c; })(); /* THE KEEL STONE: ballast off the sky ship, on a cord */ PROP.relic.windcloak = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(5, 0); g.lineTo(9, 3); g.lineTo(9, 11); g.lineTo(5, 9); g.lineTo(1, 11); g.lineTo(1, 3); g.closePath(); g.fill(); g.fillStyle = '#7aa8c8'; g.fillRect(4, 1, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(4, 0, 2, 1); return c; })();
   const sky = (pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
-  VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
-  BG = { sky: pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
+  CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
+  BG = { sky: pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'crown' ? CRT.bakeMidCrown(480, 140, 2) : pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
 }
 bakeAll();
 applySkin();
@@ -705,7 +706,11 @@ function resolveTiles() {
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = L.palette && L.palette.set === 'ship' && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
     const villT = L.palette && L.palette.set === 'village' && VILL;
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : villT ? VILL : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    /* LAID STONE. A level can mark the rectangles the masons built (L.masonry, in tiles): rock in them is drawn as coursed
+       ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
+       being the same grey rock with grass on it. */
+    const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && CROWN;
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : villT ? VILL : crownT ? CROWN : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -4313,7 +4318,8 @@ function updatePlayer(dt) {
   const inPool = p => { if (p.bottom !== undefined) return P.y <= p.bottom + 4; if (p.depth) return P.y <= p.y + p.depth + 6;   /* depth 0 is NOT a floor: it was read as one, so no deep pond in the Marsh could drown anyone */
     let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(P.x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return P.y <= ty * TS + 4; };
   for (const p of (L.pools || [])) if (!P.dead && !p.shallow && !p.swim && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && inPool(p)) {
-    burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5');
+    if (p.fire) { burst(P.x, p.y, 18, ['#fff6c8', '#ffd36b', '#ff6b2c'], 90, 0.6, -160, 2); SFX.puff(); number(P.x, p.y - 14, 'BURNED', '#ff9a5c'); }
+    else { burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
     if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
     else { die(); P.dead = 0.8; }
@@ -4721,7 +4727,7 @@ function updateBalls(dt) {
 // FINS in the foul water: they never come out of it, but they are the reason you cross on the ropes
 function drawFins(cx, cy) {
   if (!PROP.flot) return;
-  for (const p of (L.pools || [])) { if (!p.harm) continue;
+  for (const p of (L.pools || [])) { if (!p.harm || p.fire) continue;   /* nothing swims in a burning ditch */
     const y = Math.round(p.y - cy) - 4;
     if (y < -20 || y > VH + 20) continue;
     for (let k = 0; k < 5; k++) { const span = p.x1 - p.x0, ph = k * 1.7, sx = p.x0 + ((time * (18 + k * 7) + k * span / 5) % span);
@@ -11000,6 +11006,10 @@ function nearFor() {
 function drawNear(cx) {
   if (SET.parallax === 'off' || SET.parts === 'low') return;
   const n = nearFor(); if (!n) return;
+  /* INDOORS THERE IS NO GRASS. The near layer is a ledge over the lens and blades of grass along its foot, and it was
+     drawn over the kitchens, the armoury and the chapel exactly as over the mountain road: a fringe of weeds growing out
+     of a flagged floor six storeys up. In a room it is not drawn. */
+  { const tx = P.x / TS, ty = P.y / TS; if ((L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5)) return; }
   const lay = (c, f, y) => { const w = c.width; let x = ((-cx * f) % w + w) % w; if (x > 0) x -= w;
     for (; x < VW; x += w) g.drawImage(c, Math.round(x), y); };
   g.globalAlpha = 0.9;
@@ -11064,8 +11074,14 @@ function bakePigeonIcon() { return [0, 1].map(f => { const [c, g2] = canvas(16, 
   r(3, 4 + f, 1, 1, '#ff9a5c'); r(1, 4 + f, 1, 1, '#e8dcc0');
   r(6, 11, 1, 2, '#e07a8a'); r(9, 11, 1, 2, '#e07a8a');
   return outline(c, ART.OUT); }); }
+/* HOW FAR THE SKY HAS CLIMBED. Every backdrop is anchored to the bottom of the level and slides down the screen as the
+   camera goes up, which is right for a wood thirty rows tall. On a level a hundred rows tall (Highcrown: the road at the
+   bottom, her roof at the top) the ridges, the sun and the clouds slid clean off the bottom of the frame by the ward,
+   and everything above it was bare gradient - the sun sank INTO the moat. A level that says `bgSpan` squeezes its whole
+   height into that many pixels of slide. Levels that do not say it are drawn exactly as they were. */
+function bgDY(cy) { const d = (LH * TS - VH) - cy; return L && L.bgSpan ? d * L.bgSpan / Math.max(1, LH * TS - VH) : d; }
 function drawLayer(c, f, baseY, cx, cy) {
-  const w = c.width; const dY = (LH * TS - VH) - cy;
+  const w = c.width; const dY = bgDY(cy);
   let x = ((-cx * f) % w + w) % w; if (x > 0) x -= w;
   const y = Math.round(baseY + dY * f);
   for (; x < VW; x += w) g.drawImage(c, Math.round(x), y);
@@ -11076,7 +11092,7 @@ function drawLayer(c, f, baseY, cx, cy) {
 let FGC = null;
 function drawFg(cx, cy) {
   if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }
-  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = (LH * TS - VH) - cy;
+  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = bgDY(cy);
   f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);
   let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);
   for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);
@@ -11125,6 +11141,34 @@ function drawFlow(p, x0, x1, y, h, cx, cy) {
       g.fillRect(Math.round(sx + (dir > 0 ? w : -2)), ry - 1, 2, 1); } }
   g.globalAlpha = 1;
 }
+/* FIRE YOU FALL INTO. A pool that says `fire` is the bed of a burning ditch or a bailey set alight. It kills like water
+   with no bottom, so it has to say so every way at once (C4): the colour, white-gold at the lip down to a red-black bed of
+   coals; the shape, flames standing up off it; the motion, embers going up out of it; and the light it throws on the
+   night (the glow pass). The first pass is the bed, behind everything; `front` is the second, the flames, over whoever
+   has gone into it. */
+function drawFirePool(p, x0, x1, y, h, cx, cy, front) {
+  const wx0 = x0 + cx, wx1 = x1 + cx;
+  if (!front) {
+    const heat = g.createLinearGradient(0, y - 30, 0, y); heat.addColorStop(0, 'rgba(255,120,40,0)'); heat.addColorStop(1, 'rgba(255,140,50,0.34)');
+    g.fillStyle = heat; g.fillRect(x0, y - 30, x1 - x0, 30);
+    const deep = Math.min(72, h), body = g.createLinearGradient(0, y, 0, y + 72);
+    body.addColorStop(0, '#ffb04a'); body.addColorStop(0.12, '#f0702a'); body.addColorStop(0.42, '#9a2c14'); body.addColorStop(1, '#2a0c08');
+    g.fillStyle = body; g.fillRect(x0, y, x1 - x0, deep); if (h > 72) { g.fillStyle = '#2a0c08'; g.fillRect(x0, y + 72, x1 - x0, h - 72); }
+    for (let wy = 4; wy < Math.min(64, h); wy += 5) for (let wx = Math.floor(wx0 / 7) * 7; wx < wx1; wx += 7) {   /* the coals, each on its own clock */
+      const hsh = Math.abs(Math.sin(wx * 12.9898 + wy * 78.233) * 43758.5453) % 1; if (hsh < 0.45) continue;
+      const k = 0.5 + 0.5 * Math.sin(time * (1.5 + hsh * 3) + hsh * 40), sx = Math.round(wx - cx + hsh * 5);
+      if (sx < x0 || sx > x1 - 3) continue;
+      g.globalAlpha = (1 - wy / 64) * (0.35 + 0.5 * k); g.fillStyle = k > 0.7 ? '#ffe9a8' : k > 0.35 ? '#ff9a3c' : '#c9461c'; g.fillRect(sx, y + wy, 3, 2); }
+    g.globalAlpha = 1;
+    g.fillStyle = '#fff1b8'; g.fillRect(x0, y, x1 - x0, 1); g.fillStyle = '#ffc860'; g.fillRect(x0, y + 1, x1 - x0, 2);
+    if (SET.parts !== 'low' && Math.random() < 0.02 * (x1 - x0) / TS) parts.push({ x: wx0 + Math.random() * (wx1 - wx0), y: p.y - 2, vx: (Math.random() - 0.5) * 16, vy: -40 - Math.random() * 60, life: 0.9 + Math.random() * 0.6, max: 1.5, col: Math.random() < 0.5 ? '#ffd36b' : '#ff8a3c', size: 1, grav: -20 });
+    return;
+  }
+  if (!PROP.fire) return;
+  for (let wx = Math.floor(wx0 / 11) * 11; wx < wx1; wx += 11) { const sx = Math.round(wx - cx); if (sx < x0 - 8 || sx > x1 - 8) continue;
+    const hsh = Math.abs(Math.sin(wx * 3.7) * 1e4) % 1, lift = Math.round(Math.abs(Math.sin(time * (3 + hsh * 2) + hsh * 9)) * 5);
+    g.drawImage(PROP.fire[(Math.floor(time * 10 + hsh * 3)) % 3], sx - 2, Math.round(y - 13 - lift), 16, 16 + lift); }
+}
 function drawFoul(p, x0, x1, y, h, cx, cy) {
   const scum = p.foulCol || '#7a8a3a', scumL = p.foulColL || '#a8b85a', dark = p.foulColD || '#3a4a1e';
   g.globalAlpha = 0.42; g.fillStyle = dark; g.fillRect(x0, y + 2, x1 - x0, Math.max(0, h - 2)); g.globalAlpha = 1;
@@ -11168,7 +11212,7 @@ function drawStormClouds(cx, cy) {
   const lit = Math.min(1, (stormLit || 0) / 0.25);
   for (let i = 0; i < 3; i++) { const c = CLOUDS[i], par = 0.10 + i * 0.09, sp = 7 + i * 9;
     // they hang off the top of the sky and come down the screen as the camera climbs, like the fair-weather clouds do
-    const y = Math.round(-10 + i * 16 + ((LH * TS - VH) - cy) * 0.06);
+    const y = Math.round(-10 + i * 16 + bgDY(cy) * 0.06);
     if (y > VH || y + c.height < 0) continue;
     let x = Math.round(-((cx * par + time * sp) % c.width));
     for (; x < VW; x += c.width) g.drawImage(c, x, y);
@@ -11184,6 +11228,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     if (p.dry) continue;
     const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, y = p.y - cy, h = p.shallow ? (p.depth || 22) : p.bottom !== undefined ? Math.max(4, p.bottom - p.y) : VH - y, sea = L.palette && (L.palette.set === 'shore' || L.palette.set === 'reef');
     if (!surfaceOnly) {
+      if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, false); continue; }
       if (p.capped || p.streetTide || p.clear) continue; // rock over it, a tide standing on real ground, or any water you can see the bottom of: it goes OVER what is in it, or it would be a blue rectangle
       if (p.shallow) {
         const d = p.depth || 22;
@@ -11210,6 +11255,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
       for (const r of ripples) if (r.x > p.x0 && r.x < p.x1) { g.globalAlpha = Math.max(0, r.life) * 0.7; g.strokeStyle = '#dff5ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(r.x - cx), Math.round(p.y - cy) + 1, (1 - r.life) * 14 + 2, ((1 - r.life) * 14 + 2) * 0.3, 0, 0, 7); g.stroke(); }
       g.globalAlpha = 1;
     }
+    if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, true); continue; }
     if (p.harm) { drawFoul(p, x0, x1, y, h, cx, cy); continue; } // it hurts, so it does not get the clean blue surface
     if (!p.shallow && !p.swim) { drawDeadWater(p, x0, x1, y, h, cx, cy); continue; } // and neither does water with no bottom to it
     drawFlow(p, x0, x1, y, h, cx, cy);
@@ -11425,7 +11471,7 @@ function drawCastleBack(cx, cy) {
   if (!L.castle) return; const art = PROP.castleRange || (PROP.castleRange = ART.bakeCastleRange(5));
   const k = Math.max(0, Math.min(1, cx / Math.max(1, (LW * TS - VW)))), sc = (0.75 + k * 0.9) * (VH / 180);
   const w = Math.round(art.width * sc), h = Math.round(art.height * sc);
-  const bx = Math.round(VW * 0.62 - w / 2 - cx * 0.04), by = Math.round(VH * 0.30 - 120 * sc + (((LH * TS - VH) - cy) * 0.04));
+  const bx = Math.round(VW * 0.62 - w / 2 - cx * 0.04), by = Math.round(VH * 0.30 - 120 * sc + (bgDY(cy) * 0.04));
   // scaled by a fraction that changes as you walk, nearest-neighbour broke her dithering into crawling checkers and stair-stepped
   // every slope; smoothed, the far range softens into the haze the way distance should
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.globalAlpha = 0.72 + k * 0.2; g.drawImage(art, bx, by, w, h); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
@@ -11558,9 +11604,9 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 0.10; g.fillStyle = '#ffd36b'; for (let i = 0; i < 40; i++) { const x = ((i * 137) % VW), y = ((i * 61) % VH); g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; }
   else g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
   const dk = L.colosseum ? 0 : dusk();
-  if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + ((LH * TS - VH) - cy) * 0.1)); g.globalAlpha = 1; }
+  if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
-  if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + ((LH * TS - VH) - cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
+  if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.dark) { const P0 = L.palette || {};
     g.fillStyle = P0.murk || '#1a1a22'; g.fillRect(0, 0, VW, VH);
     drawMurk(cx);                                                 /* the far wall of a dark room: rooftops, rock or wrecks, anchored to the SCREEN */
@@ -11586,6 +11632,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (let ty = 0; ty < LH; ty++) for (let tx = tx0; tx <= tx1; tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; if ((L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 4 && ty <= y1)) continue; if (L.arena && tx * TS >= L.arena.x0 && tx * TS < L.arena.x1) continue; const ya = ty * TS - cy; for (const rx of [tx * TS + 3, (tx + n) * TS - 4]) { g.moveTo(Math.round(rx - cx) + 0.5, Math.max(-2, ya - 140)); g.lineTo(Math.round(rx - cx) + 0.5, ya + 2); } }
     g.stroke();
   }
+  drawFacades(cx, cy);
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0) continue;
@@ -12375,6 +12422,7 @@ function drawWorld(cx, cy, showPlayer) {
     const glow = (x, y, r, a) => { const gr = g.createRadialGradient(x, y, 2, x, y, r); gr.addColorStop(0, 'rgba(255,170,80,' + a + ')'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
     for (const lt of lights) if (lt.x > cx - 60 && lt.x < cx + VW + 60 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit)) { if (lt.glow) { const gr = g.createRadialGradient(lt.x - cx, lt.y - cy, 2, lt.x - cx, lt.y - cy, lt.r); gr.addColorStop(0, lt.pink ? 'rgba(255,160,200,0.34)' : 'rgba(90,200,210,0.34)'); gr.addColorStop(1, 'rgba(40,120,140,0)'); g.fillStyle = gr; g.fillRect(lt.x - cx - lt.r, lt.y - cy - lt.r, lt.r * 2, lt.r * 2); } else glow(lt.x - cx, lt.y - cy, lt.r + Math.sin(time * 9 + lt.x) * 2, 0.32); }
     for (const f of fires) if (f.delay <= 0 && f.x > cx - 40 && f.x < cx + VW + 40) glow(f.x - cx, f.y - 8 - cy, 30, 0.35);
+    for (const p of (L.pools || [])) if (p.fire && p.y - cy < VH + 30 && p.y - cy > -40) for (let x = Math.max(p.x0, Math.floor(cx / 40) * 40 - 40); x < Math.min(p.x1, cx + VW + 40); x += 40) glow(x + 20 - cx, p.y - 6 - cy, 46, 0.3);   /* a burning ditch lights the night over it */
     for (const pr of props) if (pr.t === 'brazier' && pr.lit) glow(pr.x - cx, pr.y - 12 - cy, 44, 0.3);
     if (!P.dead && L.night) glow(P.x - cx, P.y - 8 - cy, 48, L.glowNight ? 0.1 : 0.16);
     if (mother) { const gr = g.createRadialGradient(mother.x - cx, L.arena.floor - 96 - cy, 10, mother.x - cx, L.arena.floor - 96 - cy, 110); gr.addColorStop(0, 'rgba(180,100,220,0.3)'); gr.addColorStop(1, 'rgba(120,60,160,0)'); g.fillStyle = gr; g.fillRect(mother.x - cx - 110, L.arena.floor - 206 - cy, 220, 220); }
@@ -12761,7 +12809,7 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
 const [reflC, reflG] = canvas(VW, 48);
 function drawReflections(cx, cy) {
   for (const p of (L.pools || [])) {
-    if (p.shallow || p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH || p.y < cy - 48) continue;
+    if (p.shallow || p.fire || p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH || p.y < cy - 48) continue;
     const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, y = p.y - cy, H = Math.min(44, y);
     if (H <= 4 || x1 - x0 <= 2) continue;
     reflG.clearRect(0, 0, VW, 48); reflG.drawImage(buf, x0, y - H, x1 - x0, H, x0, 0, x1 - x0, H);
