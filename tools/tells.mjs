@@ -85,7 +85,7 @@ const unblockable = key => {
 };
 
 // ---- 2. every place a mode is entered with a mark over it ----
-const bad = [], unmarked = [];
+const bad = [], unmarked = [], marks = [];
 let checked = 0;
 for (const f of funcs) {
   const lineStart = src.slice(0, f.at).split('\n').length;
@@ -111,7 +111,7 @@ function check(f, before, word, colRaw, line) {
   if (!GUARD_WORDS.has(word)) return;                  // narration, not a promise about the shield
   const col = colRaw.startsWith("'") ? colRaw.slice(1, -1) : colRaw;
   const hard = unblockable(f.name + '|' + mode);
-  checked++;
+  checked++; marks.push({ f: f.name, mode, word, col });
   // THE TWO LEGAL PAIRS. A yellow ! or a red !! - nothing else is a mark: not a !!! of three, and not a colour
   // held in a constant, which says nothing a reader can check.
   const legal = (word === '!' && col === SOFT) || (word === '!!' && col === HARD) || (word === 'LOW' || word === 'HIGH');
@@ -121,7 +121,7 @@ function check(f, before, word, colRaw, line) {
   else if (hard === false && col === HARD) bad.push({ f: f.name, mode, word, col, line, verdict, why: 'hard mark on a blow you CAN turn' });
 }
 
-if (JSON_OUT) { console.log(JSON.stringify({ bad, unmarked })); process.exit(0); }
+if (JSON_OUT) { console.log(JSON.stringify({ bad, unmarked, marks })); process.exit(0); }
 console.log('== the mark audit ==');
 console.log(checked + ' tells checked across ' + funcs.length + ' creature functions');
 if (!bad.length) console.log('\nevery mark agrees with the blow behind it.');

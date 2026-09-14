@@ -79,6 +79,8 @@ export async function fightLab(BK, opts = {}) {
 // Every other boss is cut whenever it is in reach. All of them are defended against on their tells. The hero's health is
 // put back each frame and what the boss took is counted: how long it lasts, and the damage per minute it takes to see it out.
 const OPEN = b => b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'topple') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
+/* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
+const HARD_TELLS = new Set(["assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|grabTell","closedhelm|stampTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|pourTell","forgemaster|slamTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","owl|hootTell","pitwarden|pickTell","pitwarden|roofTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 export async function bossLab(BK, opts = {}) {
   const lvm = await import('./level.js'), T = lvm.T, TS = 16;
   const heroes = opts.heroes || HEROES;
@@ -98,9 +100,11 @@ export async function bossLab(BK, opts = {}) {
     const glass = []; if (boss.t === 'roc') { const fy = Math.floor(A.floor / TS); for (let x = Math.floor(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) for (let y = fy - 3; y <= fy + 2; y++) if (L.grid[y * L.W + x] === T.CRYST) { if (L.grid[(y + 1) * L.W + x] !== T.AIR) glass.push(x * TS + 8); break; } }
     /* only glass with rock under it (the middle strip is over a shaft), nearest the middle of the room first; the bot hops between three of them so it never stands long enough to crack one */
     { const mid = (A.x0 + A.x1) / 2; glass.sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid)); }
-    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false;
+    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0;
     for (; f < maxF && boss.alive; f++) {
       P.hp = P.maxHp; P.dead = 0; P.st = Math.max(P.st, 40);
+      /* THE DEEP: too light to stand on the bottom without a stone. A player picks one up on the way in; the bot is handed one, and another if his is taken */
+      if (lvId === 'deep' && !P.ballast) { const st = BK.props().filter(p => p.t === 'ballast' && !p.held).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; if (st) { P.ballast = st; st.held = true; st.vy = 0; } }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss);
       if (open && !wasOpen) { opened++; if (opts.trace) { out.trace = out.trace || []; out.trace.push({ h, mode: boss.mode, startD: Math.round(ad), dy: Math.round(boss.y - P.y), minD: 9999, pressed: 0, swung: 0, hpAt: boss.hp }); } }
       if (!open && wasOpen && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.lost = tw.hpAt - boss.hp; }
@@ -112,12 +116,12 @@ export async function bossLab(BK, opts = {}) {
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
       const rushing = boss.mode === 'rush' && ad < 46;
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
-      const incoming = BK.seeds().find(s => !s.dead && !s.reflected && Math.abs(s.x - P.x) < 34 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0);
+      const incoming = BK.seeds().find(s => (s.rubble || s.mawSpit || s.timber || s.shot || s.bolt) && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 34 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0);
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's drain guard take a moment to come up, so they hold C from the start of the tell
       if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : 0.14)))) {
         P.face = Math.sign(d) || P.face;
-        if (SHIELDED(h)) k.block = true; else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
+        if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) k.block = true; else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
       } else if (incoming && SHIELDED(h)) { P.face = Math.sign(incoming.x - P.x) || P.face; k.block = true; }
       else if (open) { goal = boss.x; strike = true; }
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 34;                       // close enough to be swung at
@@ -133,14 +137,16 @@ export async function bossLab(BK, opts = {}) {
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
       if (goal !== null && !k.block) { const gd = goal - P.x; if (Math.abs(gd) > (strike ? Math.max(8, LAB_REACH[h] * 0.6) : 6)) k[gd > 0 ? 'right' : 'left'] = true; }
       if (strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
+      if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) BK.press('jump');   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
-      const was = P.hp; BK.sim(1); if (P.hp < was) taken += was - P.hp;
+      const was = P.hp; BK.sim(1); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp);   /* a fall into a pit is a death and a respawn, not a blow: it is counted as falls, not as damage */
+      if (P.dead) falls++;
       if (f % 600 === 599) await yieldNow();
     }
     k.left = false; k.right = false; k.block = false;
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0 });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls });
     await yieldNow();
   }
   out.done = true; out.ms = Date.now() - out.started;
