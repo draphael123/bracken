@@ -66,7 +66,8 @@ const THROWS_SOMETHING_ELSE = new Set(['updateForgemaster|hurlTell', 'updateForg
 const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|darkTell', 'updateLampreeve|snuffTell',
   'updateHerald|callTell', 'updateMiner|smashTell', 'updateWindcaller|howlTell', 'updatePropman|setTell',
   'updateForgemaster|leapTell', 'updateGolem|shroudTell', 'updateGQueen|gLeapTell', 'updateRoc|gustTell',
-  'updateGrandmother|listenTell', 'updateGrandmother|vanishTell', 'updateLance|galeTell', 'updateSnuffer|snuffTell']);
+  'updateGrandmother|listenTell', 'updateGrandmother|vanishTell', 'updateLance|galeTell', 'updateSnuffer|snuffTell',
+  'updateMaster|whistleTell', 'updateWhipper|whistleTell']);   // the whistle throws no blow: the dogs it calls bite for themselves
 const unblockable = key => {
   if (THROWS_SOMETHING_ELSE.has(key)) return true;
   const fn = key.split('|')[0];
