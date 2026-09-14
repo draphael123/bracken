@@ -1081,7 +1081,7 @@ function spawnEntities() {
   washReset(); strikeReset(); tideReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; miniActive = false; miniDone = false;
   ambushReset();
   for (const e of L.ents) spawnEnt(e);
-  spawnEntitiesTail();
+  spawnEntitiesTail(); seaReset();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
 }
 function spawnEnt(e) {
@@ -1117,11 +1117,11 @@ function spawnEnt(e) {
       case 'tollmaster': boss = { ...base, t: 'tollmaster', w: 20, h: 30, hp: EHP.tollmaster, maxHp: EHP.tollmaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, onFoot: false, open: 0, ring: 0, ledgerT: 1.4, tollT: 3, rodT: 5.5, darkT: 9, flooded: false }; enemies.push(boss); break;
       case 'lampreeve': enemies.push({ ...base, t: 'lampreeve', w: 12, h: 28, hp: EHP.lampreeve, maxHp: EHP.lampreeve, mini: true, mode: 'sleep', modeT: 0, face: -1, phase: 1, snuffT: 2.4, sweepT: 2, douseT: 5, hookT: 7, open: 0, target: null }); break;
       case 'watch': enemies.push({ ...base, t: 'watch', w: 12, h: 22, hp: EHP.watch, speed: 24, mode: 'walk', modeT: 0, cd: 1 + Math.random() * 0.6, guardT: 0, heard: 0 }); break;
-      case 'sailor': enemies.push({ ...base, t: 'sailor', w: 10, h: 18, hp: EHP.sailor, speed: 20, mode: 'walk', modeT: 0, cd: 1 }); break;
+      case 'sailor': { const rs = !!(e.rise || (L.risers && e.garrison && e.y <= 20)); enemies.push({ ...base, t: 'sailor', w: 10, h: 18, hp: EHP.sailor, speed: 20, mode: 'walk', modeT: 0, cd: 1, rise: rs, gone: rs ? 1 : 0 }); break; }   /* on the Hurricane's deck a drowned hand comes up over her rail */
       case 'netter': enemies.push({ ...base, t: 'netter', w: 10, h: 18, hp: EHP.netter, speed: 26, mode: 'walk', modeT: 0, cd: 1 + Math.random(), hasNet: true }); break;
       case 'urchin': { const wh = waterHome(px, py); if (!wh) break; enemies.push({ ...base, x: wh.x, y: wh.y, t: 'urchin', w: 12, h: 12, hp: EHP.urchin, mode: 'drift', modeT: 0, pool: wh.pool, hx: wh.x, hy: wh.y, noGrav: true, spin: Math.random() * 6 }); break; }
       case 'angler': { const wh = waterHome(px, py); if (!wh) break; enemies.push({ ...base, x: wh.x, y: wh.y, t: 'angler', w: 20, h: 14, hp: EHP.angler, mode: 'swim', modeT: 0, cd: 1.4, pool: wh.pool, hx: wh.x, hy: wh.y, noGrav: true }); break; }
-      case 'petrel': enemies.push({ ...base, t: 'petrel', w: 10, h: 8, hp: EHP.petrel, mode: 'hover', modeT: 1 + Math.random() * 2, hx: px, hy: py, noGrav: true, cd: 1 }); break;
+      case 'petrel': { const gl = !!(e.gull || (L.gulls && e.garrison && e.y <= 20)), lift = gl && !e.gull ? 48 : 0; enemies.push({ ...base, y: py - lift, t: 'petrel', w: 10, h: 8, hp: EHP.petrel, mode: 'hover', modeT: 1 + Math.random() * 2, hx: px, hy: py - lift, noGrav: true, cd: 1 + (gl ? Math.random() * 2 : 0), gull: gl }); break; }   /* a gull flock wheels over a deck, never stands on it */
       case 'reefmaw': boss = { ...base, t: 'reefmaw', w: 30, h: 44, hp: EHP.reefmaw, maxHp: EHP.reefmaw, mode: 'sleep', modeT: 0, face: -1, phase: 1, hole: 0, noGrav: true, alpha: 1, rise: 0 }; enemies.push(boss); break;
       case 'turtle': enemies.push({ ...base, t: 'turtle', w: 16, h: 10, hp: EHP.turtle, speed: 14, mode: 'walk', modeT: 0, cd: 0.8 }); break;
       case 'eel': { const wh = waterHome(px, py); if (!wh) break; // an OLD eel is a beast, not a hazard: eight times the eel and it keeps its own health bar
@@ -1241,6 +1241,7 @@ function spawnEnt(e) {
       case 'shardling': enemies.push({ ...base, t: 'shardling', w: 9, h: 11, hp: EHP.shardling, speed: 40, mode: 'walk', modeT: 0 }); break;
       case 'gqueen': boss = { ...base, t: 'gqueen', w: 52, h: 52, /* FAT, NOT TALL: the body is half as wide again, so is the box */ hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
+      case 'cargo': case 'loosegun': case 'cargowall': case 'davit': props.push(seaProp(e, px, py)); break;   /* the Hurricane's loose things: see HER SEA STATE */
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
       case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
       case 'barricade': props.push({ t: 'barricade', x: px, y: py, tx: e.x, ty: e.y, w: e.w || 2, h: e.h || 2, alive: true, shake: 0 }); break;
@@ -1275,7 +1276,7 @@ function spawnEnt(e) {
       case 'sweep': enemies.push({ ...base, t: 'sweep', w: 8, h: 12, hp: EHP.sweep, mode: 'hide', modeT: Math.random(), gone: 1 }); break;
       case 'chimpot': props.push({ t: 'chimpot', x: px, y: py, ph: Math.random() * 3 }); break;
       case 'dummy': enemies.push({ ...base, t: 'dummy', w: 12, h: 22, hp: 9999, hp0: 9999, face: -1 }); break;
-      case 'stormshaman': enemies.push({ ...base, t: 'stormshaman', w: 10, h: 14, hp: EHP.stormshaman, castT: 1.2 + Math.random(), castFlash: 0 }); break;
+      case 'stormshaman': enemies.push({ ...base, t: 'stormshaman', w: 10, h: 14, hp: EHP.stormshaman, castT: 1.2 + Math.random(), castFlash: 0, ...(e.caller || L.callers ? { caller: true, mode: 'watch', modeT: 0, cd: 1.2 + Math.random() } : {}) }); break;
       case 'cutter': enemies.push({ ...base, t: 'cutter', w: 10, h: 13, hp: EHP.cutter, speed: 40, mode: 'work', modeT: 0, bridge: e.bridge, chopT: 1.4 }); break;
       case 'lance': boss = { ...base, t: 'lance', w: 26, h: 30, hp: EHP.lance, maxHp: EHP.lance, mode: 'sleep', modeT: 0, face: -1, phase: 1, chargeT: 2.4, thrustT: 1.6, sweepT: 3, hitT: 0, broke: new Set() }; enemies.push(boss); break;
       case 'snuffer': enemies.push({ ...base, t: 'snuffer', w: 10, h: 14, hp: EHP.snuffer, speed: 46, mode: 'seek', modeT: 0, swipeT: 1.2, target: null }); break;
@@ -1286,7 +1287,7 @@ function spawnEnt(e) {
       case 'harpy': enemies.push({ ...base, t: 'harpy', hx: px, hy: py, w: 12, h: 7, hp: EHP.harpy, mode: 'hover', modeT: 0, face: -1, cd: 0 }); break;
       case 'goat': enemies.push({ ...base, t: 'goat', w: 14, h: 11, hp: EHP.goat, speed: 30, mode: 'patrol', modeT: 0, rider: true, timer: 0, air: false, hitT: 0 }); break;
       case 'ramlord': boss = { ...base, t: 'ram', w: 48, h: 32, hp: EHP.ram, maxHp: EHP.ram, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, n: 0 }; enemies.push(boss); break;
-      case 'npc': props.push({ t: 'npc', x: px, y: py, kind: e.kind, ride: !!e.ride, anim: Math.random() * 6 }); break;
+      case 'npc': props.push({ t: 'npc', x: px, y: py, kind: e.kind, ride: !!e.ride, anim: Math.random() * 6, lines: e.lines, name: e.name }); break;
       case 'exit': props.push({ t: 'exit', x: px, y: py }); break;
       case 'stray': props.push({ t: 'stray', kind: e.kind || 'sheep', x: px, y: py, got: straysGot.has(px), anim: Math.random() * 6 }); if (e.kind === 'folk' && straysGot.has(px)) props.push(camper([...straysGot].indexOf(px))); break;
       case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + (e.x % 3) * 0.5 }); break; /* a steady beat, no dice: learn it and walk it */
@@ -4377,7 +4378,7 @@ function updatePlayer(dt) {
   // jump lets go with a hop, a step sideways lets go, and at the top you step off onto the last rung.
   { const netAt = (x, y) => tileAt(Math.floor(x / TS), Math.floor(y / TS)) === T.NET;
     const here = netAt(P.x, P.y - 8) || netAt(P.x, P.y - 2), below = P.ground && netAt(P.x, P.y + 2);
-    if (!P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && ((keys.up && here) || (keys.down && below && !move))) { P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; SFX.pStep(); }
+    if (!P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && ((keys.up && here) || (keys.down && below && !move && !(P.onMover && P.onMover.kind === 'lifeboat')))) { P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; SFX.pStep(); }
     if (P.climb) {
       const lx = Math.floor(P.x / TS) * TS + 8; P.x += (lx - P.x) * Math.min(1, dt * 14); P.vx = 0; P.abuf = 0;
       const cy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = cy * 74; P.climbA = (P.climbA || 0) + Math.abs(P.vy) * dt;
@@ -4517,6 +4518,7 @@ function updatePlayer(dt) {
   if (!P.ground && P.vy >= 0) for (const m of movers) {
     if (prevY <= m.y + 1 + Math.max(0, m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
   }
+  if (L.felled && !P.onMover) rampFoot(prevY);   /* THE HURRICANE'S FELLED MAST: a slope, walked on its line */
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
@@ -5007,6 +5009,7 @@ function updateWash(dt) {
   const W = L.wash; if (!W) return;
   if (!wash) wash = { t: W.every * 0.55, state: 'wait', x: 0, dir: -1 };
   wash.t -= dt;
+  if (wash.state === 'wait' && (seaCalm() > 0.3 || (roll && (roll.state === 'tell' || roll.state === 'heel')))) wash.t = Math.max(wash.t, W.tell + 0.5);   /* no sea in the eye, and never on top of a roll */
   if (wash.state === 'wait' && wash.t <= W.tell) { wash.state = 'tell'; wash.called = false; wash.dir = wash.dir < 0 ? 1 : -1;
     number(P.x, P.y - 44, 'A SEA TO WINDWARD', '#a8cfc6'); SFX.wave(); shakeCam(3); }
   if (wash.state === 'tell' && wash.t <= 0) { wash.state = 'run';
@@ -5014,7 +5017,7 @@ function updateWash(dt) {
     wash.end = wash.x + wash.dir * 700;                                      // and goes by: a wave is two seconds, not half a minute
     SFX.waveBreak(); shakeCam(6); rumble(300, 0.7); }
   if (wash.state === 'run') {
-    wash.x += wash.dir * W.speed * dt;
+    wash.x += wash.dir * W.speed * stormK('speed') * dt;
     for (let i = 0; i < 3; i++) parts.push({ x: wash.x + (Math.random() - 0.5) * 30, y: W.y1 - Math.random() * (W.y1 - W.y0), vx: wash.dir * 120, vy: -40 - Math.random() * 60, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#dff0f5' : '#a8cfc6', size: 2, grav: 300 });
     const hit = Math.abs(P.x - wash.x) < 26 && P.y > W.y0 && P.y < W.y1 + 12;
     if (hit && !P.dead && !P.washed) { // holding a line, or up in the yards, or below: the deck is the only bad place
@@ -5023,7 +5026,7 @@ function updateWash(dt) {
       P.washed = 0.8;
       if (!held && P.dodge > 0) { number(P.x, P.y - 30, 'UNDER IT', '#8fd160'); SFX.splash(); shakeCam(3); P.vx = wash.dir * 60; return; } // a roll goes under the crest
       if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash(); shakeCam(4); P.vx = wash.dir * 90; }
-      else { damagePlayer(P.x, L.wash.dmg, { unblockable: true, up: true });
+      else { damagePlayer(P.x, Math.round(L.wash.dmg * stormK('dmg')), { unblockable: true, up: true });
         // it throws you down her deck, never straight off her: the rail stops the throw, so there is always
         // one beat on the far side of it to catch a line
         const rail = wash.dir > 0 ? W.x1 - 24 : W.x0 + 24, room = (rail - P.x) * wash.dir;
@@ -5031,7 +5034,7 @@ function updateWash(dt) {
         number(P.x, P.y - 30, 'SHE SHIPS ONE', '#ff6b6b'); SFX.splash(); shakeCam(8); hitstop(0.06); }
     }
     for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - wash.x) < 26 && e.y > W.y0 && e.y < W.y1 + 12) { e.vx = wash.dir * 260; e.vy = -120; e.stagger = Math.max(e.stagger, 0.5); }
-    if ((wash.dir > 0 ? wash.x > wash.end : wash.x < wash.end) || wash.x < W.x0 - 100 || wash.x > W.x1 + 100) { wash.state = 'wait'; wash.t = W.every; }
+    if ((wash.dir > 0 ? wash.x > wash.end : wash.x < wash.end) || wash.x < W.x0 - 100 || wash.x > W.x1 + 100) { wash.state = 'wait'; wash.t = W.every * stormK('wash'); }
   }
   P.washed = Math.max(0, (P.washed || 0) - dt);
 }
@@ -5046,10 +5049,12 @@ function updateStrikes(dt) {
   const S = L.storm2; if (!S) return;
   if (!strike) strike = { t: S.every * 0.6, state: 'wait', x: 0, y: 0 };
   strike.t -= dt;
+  if (strike.state === 'wait' && strike.t <= 0 && seaCalm() > 0.3) strike.t = 1;   /* the eye: the sky is clear */
   if (strike.state === 'wait' && strike.t <= 0) { // it picks somewhere near you and says so
     const z = (S.zones || []).find(zz => P.x >= zz[0] - 60 && P.x <= zz[1] + 60) || (S.zones || [])[0];
     if (!z) { strike.t = S.every; return; }
     strike.x = Math.max(z[0], Math.min(z[1], P.x + (Math.random() - 0.5) * 150));
+    { const bt = P.onMover && P.onMover.kind === 'lifeboat' && P.onMover.state === 'ride' ? P.onMover : null; if (bt) strike.x = Math.max(z[0], Math.min(z[1], bt.x + bt.w / 2 + bt.speed * (S.tell || 1.1) + (Math.random() < 0.5 ? -12 : 12))); }   /* A BOAT ON THE OIL IS THE TALLEST THING THERE: the sky marks where she is going */
     const p = (L.pools || []).find(q => q.swim && strike.x > q.x0 && strike.x < q.x1);
     strike.y = p ? p.y : (S.y !== undefined ? S.y : P.y);
     strike.onWater = !!p; strike.state = 'tell'; strike.t = S.tell || 1.1; SFX.strikeTell();
@@ -5057,7 +5062,7 @@ function updateStrikes(dt) {
   if (strike.state === 'tell') {
     if (Math.random() < dt * 30) parts.push({ x: strike.x + (Math.random() - 0.5) * 16, y: strike.y - Math.random() * 30, vx: 0, vy: -60, life: 0.3, max: 0.3, col: '#dfe8ff', size: 1, grav: -40 });
     if (strike.t <= 0) { // and then it hits
-      strike.state = 'wait'; strike.t = (S.every || 8) * (0.8 + Math.random() * 0.4);
+      strike.state = 'wait'; strike.t = (S.every || 8) * stormK('storm') * (0.8 + Math.random() * 0.4);
       bolts.push({ x: strike.x, y: strike.y, life: 0.3, storm: true });
       SFX.thunder(); flash = Math.max(flash, 0.55); stormLit = 0.25; shakeCam(7); rumble(260, 0.8);
       burst(strike.x, strike.y, 16, ['#dfe8ff', '#9ab8ff', '#ffffff'], 120, 0.6);
@@ -5146,6 +5151,407 @@ function drawWash(cx, cy) {
   for (let i = 0; i < h + 18; i += 5) g.fillRect(x - 3 + Math.round(Math.sin(time * 22 + i) * 4), crest + i, 4, 3);
   for (let k = 0; k < 10; k++) { const fx = x - wash.dir * (6 + k * 7), fy = crest + Math.round(Math.sin(time * 9 + k) * 5);
     g.fillRect(Math.round(fx), fy, 3, 3); }
+}
+// ================= THE HURRICANE DECK: HER SEA STATE =================
+// The wash is her rule. These are the four things she does on top of it, every one of them level data (so no other
+// ship pays for them) and every one of them TOLD before it lands:
+//   L.roll    SHE ROLLS. On a counted beat she heels to one side and her open deck is a slope for a few seconds:
+//             you, her crew, her cargo and her loose gun all go down it. A hand on a line, a bitt at your back or the
+//             sand strewn on her planking holds you. Never in the eye, never in the Captain's fight.
+//   L.felled  THE MAIN COMES DOWN. The sky marks her mainmast, then fells it into a road up into her tops.
+//   L.eye     THE EYE. A stretch of dead calm in the middle of her; everything after it comes back harder.
+//   props     'loosegun' (the gun that breaks its breechings), 'cargo' (casks and crates that slide), 'cargowall' (a
+//             stack only the gun goes through), 'davit' (the winch that lowers her 'lifeboat' mover to the oil).
+Object.assign(DMG, { heelGun: 22, cargo: 10, callerBolt: 18, boatBeam: 14, mastFall: 20 });
+let roll = null, seaMsg = null, eyeWas = 0, gullLast = -9;
+/* WHAT THE SEA DOES NOT DROWN: anything that already lives in it, or is already dead in it */
+const HEEL_SWIMS = new Set(['sailor', 'netter', 'eel', 'angler', 'siren', 'urchin', 'turtle', 'crab', 'petrel', 'gull', 'heronfoe', 'scout', 'tideguard']);
+function seaCue(txt, col, t) { seaMsg = { txt, col, t: t || 2, max: t || 2 }; }
+/* THE EYE: 0 in the weather, 1 in the dead calm, eased over a few tiles at each edge. Nothing is calm in a boss room. */
+function seaCalm() { const E = L && L.eye; if (!E || bossActive || !P) return 0; const tx = P.x / TS; return Math.max(0, Math.min(1, Math.min(tx - E.x0, E.x1 - tx) / 6 + 0.5)); }
+/* AND AFTER IT, HARDER: past the eye every storm number is multiplied by the level's own table (never in the boss room: his phases set their own) */
+function stormK(key) { const E = L && L.eye; return E && E.hard && !bossActive && P && P.x > E.x1 * TS ? (E.hard[key] || 1) : 1; }
+/* HER OPEN DECK: the band of rows you walk her on, minus her deckhouses and whatever the level says is not deck */
+function onDeck(x, y) { const R = L.roll; if (!R) return false;
+  if (y < R.y0 * TS - 2 || y > R.y1 * TS + 2) return false;
+  const tx = x / TS; if (tx < R.x0 || tx > R.x1 || (R.not || []).some(([a, b]) => tx >= a && tx <= b + 1)) return false;
+  return !(L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && y / TS >= y0 && y / TS <= y1 + 1.5); }
+const heeling = () => !!(roll && roll.state === 'heel' && roll.k > 0.5);
+function seaTilt() { if (!roll || !L || !L.roll || SET.reduceMotion) return 0; return roll.dir * (L.roll.heel || 0.05) * roll.k * (1 - seaCalm()); }
+function seaSunk(b) { return (L.pools || []).some(p => p.swim && !p.dry && b.x > p.x0 && b.x < p.x1 && b.y > p.y + 6 && (p.bottom === undefined || b.y < p.bottom + 24)); }
+function seaReset() {
+  roll = null; seaMsg = null; eyeWas = seaCalm();
+  const F = L.felled; if (!F) return;
+  F.decoHidden = false;
+  /* THE MAST ON A RESPAWN. The grid has just been put back (spawnEntitiesTail), so she is standing again. She stays
+     standing if you woke before her trigger, and is laid down again, quietly, if you woke past it. */
+  if (F.state === 'down' && checkpoint.x > F.zone[1] * TS) felledLay(F, false); else F.state = 'up';
+}
+function updateSea(dt, hb) {
+  if (!L.roll && !L.felled && !L.eye) return;
+  if (seaMsg) { seaMsg.t -= dt; if (seaMsg.t <= 0) seaMsg = null; }
+  const calm = seaCalm();
+  if (calm > 0.5 && eyeWas <= 0.5) { seaCue('THE EYE OF THE STORM. SHE IS QUIET, FOR NOW', '#dfe8ff', 3); SFX.seaBell(); }
+  else if (calm <= 0.5 && eyeWas > 0.5 && L.eye && P.x > L.eye.x1 * TS - 4 * TS) { seaCue('AND SHE COMES BACK HARDER', '#ff6b6b', 2.6); SFX.thunder(); flash = Math.max(flash, 0.3); stormLit = 0.3; shakeCam(6); rumble(260, 0.7); }
+  eyeWas = calm;
+  updateRoll(dt); updateFelled(dt); updateSeaProps(dt, hb);
+  for (const e of enemies) if (e.heeled > 0) { e.heeled -= dt; if (e.alive) seaFoe(e); }
+}
+/* A CREATURE THE SHIP THREW INTO THE SEA, THE BILGE OR THE OIL. hazardFoe only knows deep water nobody swims in. */
+function seaFoe(e) {
+  if (HEEL_SWIMS.has(e.t) || !e.alive || e.maxHp || e.mini) return false;
+  if (!seaSunk({ x: e.x, y: e.y - 4 })) return false;
+  const p = (L.pools || []).find(q => q.swim && e.x > q.x0 && e.x < q.x1); if (p) burst(e.x, p.y, 10, ['#eefaff', '#bfe6f5'], 70, 0.5);
+  SFX.splash(); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
+}
+
+// ---- SHE ROLLS ----
+// wait -> tell (the counted warning, the HEEL marker, a lean you can already see) -> heel (the slope) -> back.
+// It never starts while a wave is building or running: one thing to read at a time.
+function updateRoll(dt) {
+  const R = L.roll; if (!R) return;
+  if (!roll) roll = { state: 'wait', t: R.every * 0.6, dir: -1, k: 0 };
+  const tx = P.x / TS, off = bossActive || seaCalm() > 0.3 || tx < R.x0 - 4 || tx > R.x1;
+  roll.t -= dt;
+  if (roll.state === 'wait') { roll.k = Math.max(0, roll.k - dt);
+    if (roll.t <= 0) { if (off || P.dead || (wash && wash.state !== 'wait')) roll.t = 1;
+      else { roll.state = 'tell'; roll.t = R.tell; roll.dir = -roll.dir; SFX.rumble(); SFX.ropeHaul(); shakeCam(2); } } }
+  else if (roll.state === 'tell') { roll.k = Math.min(0.22, roll.k + dt * 0.2);
+    if (roll.t <= 0) { roll.state = 'heel'; roll.t = R.hold; SFX.thud(); SFX.rumble(); shakeCam(5); rumble(300, 0.6); heelStart(); } }
+  else if (roll.state === 'heel') { roll.k = Math.min(1, roll.k + dt * 2.2); if (roll.t <= 0) { roll.state = 'back'; roll.t = 1.2; } }
+  else { roll.k = Math.max(0, roll.k - dt * 1.1); if (roll.k <= 0) { roll.state = 'wait'; roll.t = R.every * stormK('roll') * (0.85 + Math.random() * 0.3); } }
+  if (off && (roll.state === 'tell' || roll.state === 'heel')) { roll.state = 'back'; roll.t = 1.2; }
+  const push = R.push * stormK('push');
+  // THE HERO. A line in your hand (the same rule as the wash), solid at your downhill shoulder, or sand under your boots.
+  P.heelHeld = '';
+  if (heeling() && !P.dead && P.ground && !P.climb && !P.swim && !P.onMover && !P.fly && onDeck(P.x, P.y)) {
+    const dir = roll.dir, move = keys.left ? -1 : keys.right ? 1 : 0;
+    const held = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS)) === T.NET;
+    const braced = isSolid(Math.floor((P.x + dir * (P.w / 2 + 3)) / TS), Math.floor((P.y - 6) / TS));
+    const sand = (R.grip || []).some(([a, b]) => P.x >= a * TS && P.x < (b + 1) * TS);
+    const want = held || braced || sand ? 0 : dir * push * (move === -dir ? 0.45 : 1) * (P.relic === 'stormline' ? 0.5 : 1);
+    P.heelV = (P.heelV || 0) + (want - (P.heelV || 0)) * Math.min(1, dt * (want ? 2.5 : 12));
+    P.heelHeld = held ? 'line' : braced ? 'bitt' : sand ? 'sand' : '';
+    if (Math.abs(P.heelV) > 1) { const r = moveBody(P, P.heelV * dt, 0, false); if (r.hitX) P.heelV = 0; if (Math.random() < dt * 12) dust(P.x - dir * 4, P.y, 1); }
+  } else if (P.heelV) { P.heelV *= Math.pow(0.02, dt); if (Math.abs(P.heelV) < 1) P.heelV = 0; else if (P.ground && !P.dead && !P.climb && !P.onMover) moveBody(P, P.heelV * dt, 0, false); }
+  // HER CREW. They lose their feet and go down her deck, into whatever is at the bottom of it.
+  if (heeling()) for (const e of enemies) {
+    if (!e.alive || e.maxHp || e.mini || e.gone > 0 || e.noGrav || KNOCK_SKIP.has(e.t) || e.knock > 0 || !e.w) continue;
+    if (Math.abs(e.x - P.x) > 420 || !onDeck(e.x, e.y)) continue;
+    const heavy = POISE_HEAVY.has(e.t) || e.big;
+    moveBody(e, roll.dir * push * (heavy ? 0.35 : 0.7) * dt, 0, false); e.heeled = 2.5;
+    if (hazardFoe(e)) continue; seaFoe(e);
+  }
+}
+function heelStart() {
+  for (const e of enemies) { if (!e.alive || e.maxHp || e.mini || e.gone > 0 || e.noGrav || KNOCK_SKIP.has(e.t) || !e.w) continue;
+    if (Math.abs(e.x - P.x) > 300 || !onDeck(e.x, e.y)) continue;
+    if (POISE_HEAVY.has(e.t) || e.big) e.stagger = Math.max(e.stagger || 0, 0.5); else knockFoe(e, roll.dir, 100);
+    e.heeled = 2.5; }
+}
+
+// ---- THE MAIN COMES DOWN ----
+// up -> tell (the sky marks her masthead and the deck she will land on) -> down: her nets gone, her tops piled into a wall
+// across the waist, and her mast lying from the deck up into the main yard: a ramp you walk, one-way tiles under it.
+function rampY(F, px) { const x0 = F.foot[0] * TS, x1 = (F.head[0] + 1) * TS, k = Math.max(0, Math.min(1, (px - x0) / (x1 - x0))); return F.foot[1] * TS + (F.head[1] - F.foot[1]) * TS * k; }
+function felledCells(F) { const out = [];
+  for (let y = 4; y <= 19; y++) for (const x of [F.x, F.x + 1]) { const i = y * LW + x; if (L.grid[i] === T.NET) out.push([i, T.AIR]); }
+  const [wx0, wx1, wy0, wy1] = F.wall;
+  for (let y = wy0; y <= wy1; y++) for (let x = wx0; x <= wx1; x++) { const i = y * LW + x; if (L.grid[i] !== T.SOLID) out.push([i, T.SOLID]); }
+  for (let x = F.foot[0]; x <= F.head[0]; x++) { const i = Math.round(rampY(F, x * TS + 8) / TS) * LW + x; if (L.grid[i] === T.AIR) out.push([i, T.ONEWAY]); }
+  return out; }
+function hideMastDeco(F) { F.decoHidden = true;
+  for (const d of deco) if (['mastTall', 'pennant', 'crowNest', 'sailRag'].includes(d.kind) && d.c && Math.abs(d.x + d.c.width / 2 - (F.x + 1) * TS) < 7 * TS && d.y < 20 * TS) d.x = -99999; }
+function felledLay(F) {
+  for (const [i, t] of felledCells(F)) { L.grid[i] = t; tileSpr[i] = null; }
+  resolveTiles(); F.state = 'down'; hideMastDeco(F);
+  /* and the swing she carried on her main yard goes with her: it swept through her ramp and carried you off it */
+  movers = movers.filter(q => !(q.kind === 'swing' && q.px >= F.band[0] * TS && q.px <= (F.band[1] + 1) * TS)); if (P.onMover && !movers.includes(P.onMover)) P.onMover = null;
+}
+function updateFelled(dt) {
+  const F = L.felled; if (!F) return;
+  if (!F.state) F.state = 'up';
+  if (F.state === 'up') { const tx = P.x / TS;
+    if (!P.dead && !bossActive && tx >= F.zone[0] && tx <= F.zone[1] && P.y <= 20 * TS + 4) { F.state = 'tell'; F.t = F.tell; SFX.strikeTell(); SFX.rumble(); shakeCam(2); seaCue('LIGHTNING ON HER MAIN: STAND CLEAR OF IT', '#ff6b6b', F.tell + 0.4); } }
+  else if (F.state === 'tell') { F.t -= dt;
+    if (Math.random() < dt * 24) parts.push({ x: (F.x + 1) * TS + (Math.random() - 0.5) * 10, y: 5 * TS + Math.random() * 60, vx: (Math.random() - 0.5) * 40, vy: 30, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#c9b27c' : '#dfe8ff', size: 1, grav: 200 });
+    if (F.t <= 0) felledCrash(F); }
+  else if (F.state === 'down' && !F.decoHidden) hideMastDeco(F);
+}
+function felledCrash(F) {
+  felledLay(F);
+  const mx = (F.x + 1) * TS, bx0 = F.band[0] * TS, bx1 = (F.band[1] + 1) * TS;
+  bolts.push({ x: mx, y: 4 * TS, life: 0.55, storm: true });
+  SFX.thunder(); SFX.crumble(); SFX.heavy(); flash = Math.max(flash, 0.5); stormLit = 0.3; shakeCam(11); zoomKick(1.1, 0.45); rumble(420, 1); hitstop(0.08);
+  for (let x = F.foot[0]; x <= F.head[0]; x += 2) dust(x * TS + 8, rampY(F, x * TS + 8), 3);
+  for (let i = 0; i < 40; i++) parts.push({ x: bx0 + Math.random() * (bx1 - bx0), y: 12 * TS + Math.random() * 7 * TS, vx: (Math.random() - 0.5) * 160, vy: -60 - Math.random() * 120, life: 1.2, max: 1.2, col: ['#c9b27c', '#6a5a44', '#efe6d2'][(Math.random() * 3) | 0], size: 2, grav: 420 });
+  for (const e of enemies) if (e.alive && !e.maxHp && e.x > bx0 && e.x < bx1 && e.y > 3 * TS && e.y <= 20 * TS + 2) hurtEnemy(e, Math.max(1, e.hp) + 999, mx, false);
+  if (!P.dead && P.x > bx0 && P.x < bx1 && P.y > 3 * TS && P.y <= 20 * TS + 2) { damagePlayer(mx, DMG.mastFall, { unblockable: true, up: true }); P.vx = -200; P.vy = -160; P.ground = false; }
+  /* and nobody is left standing inside the pile */
+  const [wx0, wx1, wy0, wy1] = F.wall;
+  if (P.x > wx0 * TS - 6 && P.x < (wx1 + 1) * TS + 6 && P.y > wy0 * TS && P.y <= (wy1 + 1) * TS + 2) P.x = P.x < (wx0 + wx1 + 1) / 2 * TS ? wx0 * TS - 7 : (wx1 + 1) * TS + 7;
+  seaCue('THE MAIN IS DOWN. HER MAST IS YOUR ROAD UP', '#ffd36b', 2.6);
+}
+/* WALKING HER MAST: a slope is not a tile, so the hero is put on the line of it (called from updatePlayer after the move) */
+function rampFoot(prevY) {
+  const F = L.felled; P.onRamp = false;
+  if (!F || F.state !== 'down' || P.vy < 0 || P.drop > 0 || P.climb || P.swim || P.dead) return;
+  if (P.x < F.foot[0] * TS || P.x > (F.head[0] + 1) * TS) return;
+  const yl = rampY(F, P.x);
+  if (P.y < yl - 10 || P.y > yl + 10 || prevY > yl + 4) return;
+  P.y = yl; P.vy = 0; P.ground = true; P.groundTile = T.ONEWAY; P.coyote = 0.1; P.onRamp = true;
+}
+
+// ---- HER LOOSE THINGS ----
+function seaProp(e, px, py) {
+  if (e.t === 'cargo') return { t: 'cargo', x: px, y: py, x0: px, y0: py, w: 12, h: 12, vx: 0, vy: 0, kind: e.kind || 'barrel', gone: false, back: 0, hitT: 0, rot: 0 };
+  if (e.t === 'loosegun') return { t: 'loosegun', x: px, y: py, w: 24, h: 12, vx: 0, vy: 0, lashed: true, strain: 0, trigger: (e.trigger !== undefined ? e.trigger : e.x - 8) * TS + 8, hitT: 0, hits: new Map(), rot: 0 };
+  if (e.t === 'cargowall') return { t: 'cargowall', x: px, y: py, span: e.span, open: L.grid[e.span[2] * LW + e.span[0]] === T.AIR };
+  return { t: 'davit', x: px, y: py, spin: 0 };
+}
+function heelBody(b, dt, acc, cap, fric) {
+  if (heeling() && onDeck(b.x, b.y)) { b.vx += roll.dir * acc * stormK('push') * dt; if (Math.abs(b.vx) > cap) b.vx = Math.sign(b.vx) * cap; }
+  else b.vx *= Math.pow(fric, dt);
+  b.vy = Math.min(360, (b.vy || 0) + 900 * dt);
+  const ox = b.x, r = moveBody(b, b.vx * dt, b.vy * dt, false); if (r.ground) b.vy = 0;
+  b.rot = (b.rot || 0) + (b.x - ox) / 6; return r;
+}
+function openCargoWall(w, dir) { w.open = true; const [x0, x1, y0, y1] = w.span;
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * LW + x; if (L.grid[i] === T.AIR) continue;
+    L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i);   /* broken stays broken, like her bulkheads */
+    for (let q = 0; q < 3; q++) parts.push({ x: x * TS + 8, y: y * TS + 8, vx: dir * (60 + Math.random() * 180), vy: -60 - Math.random() * 100, life: 1.1, max: 1.1, col: ['#8a5a32', '#c9b27c', '#5c3a1d'][q], size: 2, grav: 320 }); }
+  resolveTiles(); SFX.crack(); SFX.heavy(); shakeCam(8); zoomKick(1.06, 0.25); rumble(220, 0.8);
+  seaCue('THE GUN GOES THROUGH HER CARGO', '#8fd160', 2.2);
+}
+function updateSeaProps(dt, hb) {
+  for (const pr of props) {
+    if (pr.t === 'cargo') {
+      if (pr.gone) { pr.back -= dt; if (pr.back <= 0 && Math.abs(P.x - pr.x0) > 260) Object.assign(pr, { gone: false, x: pr.x0, y: pr.y0, vx: 0, vy: 0 }); continue; }
+      const sp = Math.abs(pr.vx), r = heelBody(pr, dt, 240, 125, 0.3);
+      if (r.hitX) { if (sp > 60) { SFX.thud(); dust(pr.x + Math.sign(pr.vx) * 6, pr.y, 4); } pr.vx = -pr.vx * 0.25; }
+      pr.hitT = Math.max(0, pr.hitT - dt);
+      if (pr.y > 21 * TS + 4 || seaSunk(pr)) { pr.gone = true; pr.back = 10; SFX.splash(); burst(pr.x, pr.y - 6, 8, ['#8a5a32', '#c9b27c'], 50, 0.4); continue; }
+      const cb = { l: pr.x - 6, r: pr.x + 6, t: pr.y - 12, b: pr.y };
+      if (hb && overlap(hb, cb) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.vx = P.face * (P.heavy ? 210 : 140); SFX.thud(); sparks(pr.x, pr.y - 6, P.face, 3); }
+      if (Math.abs(pr.vx) > 55 && pr.hitT <= 0) { const pb = box(P);
+        if (!P.dead && Math.sign(P.x - pr.x) === Math.sign(pr.vx) && overlap(cb, { l: pb.l + 1, r: pb.r - 1, t: pb.t + 2, b: pb.b })) { pr.hitT = 0.8; const res = damagePlayer(pr.x, DMG.cargo, { unblockable: true }); if (res) { P.vx = Math.sign(pr.vx) * 170; P.vy = -120; P.ground = false; } pr.vx *= 0.4; }
+        else for (const e of enemies) if (e.alive && !e.maxHp && !(e.gone > 0) && !e.harmless && overlap(cb, box(e))) { pr.hitT = 0.4; hurtEnemy(e, 12, pr.x - Math.sign(pr.vx) * 8, false); if (e.alive) { knockFoe(e, Math.sign(pr.vx), Math.abs(pr.vx)); e.heeled = 2.5; } pr.vx *= 0.5; break; } }
+    }
+    else if (pr.t === 'loosegun') {
+      const gb = { l: pr.x - 12, r: pr.x + 12, t: pr.y - 13, b: pr.y };
+      if (pr.lashed) {
+        if (!pr.strain && !P.dead && P.x >= pr.trigger && Math.abs(P.y - pr.y) < 96) { pr.strain = 0.001; SFX.ropeHaul(); seaCue('HER AFT GUN IS WORKING AT ITS LASHINGS', '#ffd36b', 1.8); }
+        if (pr.strain > 0) { pr.strain += dt;
+          if (Math.random() < dt * 16) parts.push({ x: pr.x + (Math.random() - 0.5) * 24, y: pr.y - 10, vx: (Math.random() - 0.5) * 50, vy: -40, life: 0.4, max: 0.4, col: '#c9b27c', size: 1, grav: 200 });
+          if (pr.strain >= 1.5) { pr.lashed = false; SFX.crack(); SFX.clank(); shakeCam(6); zoomKick(1.06, 0.25); burst(pr.x, pr.y - 10, 14, ['#c9b27c', '#8a5a32'], 110, 0.6);
+            seaCue('HER GUN IS LOOSE! WHEN SHE HEELS, IT RUNS', '#ff6b6b', 2.6); if (roll && roll.state === 'wait') roll.t = Math.min(roll.t, 0.8); } }
+        continue; }
+      const sp0 = Math.abs(pr.vx), dir0 = Math.sign(pr.vx) || 1, r = heelBody(pr, dt, 170, 165, 0.62);
+      pr.hitT = Math.max(0, pr.hitT - dt);
+      if (r.hitX) {
+        const ahead = pr.x + dir0 * (pr.w / 2 + 4), w = props.find(q => q.t === 'cargowall' && !q.open && ahead >= q.span[0] * TS - 2 && ahead <= (q.span[1] + 1) * TS + 2 && pr.y - 4 >= q.span[2] * TS && pr.y - 4 <= (q.span[3] + 1) * TS);
+        if (w && sp0 > 60) { openCargoWall(w, dir0); pr.vx = dir0 * sp0 * 0.55; }
+        else { if (sp0 > 45) { SFX.clank(); SFX.thud(); shakeCam(Math.min(6, sp0 / 30)); dust(ahead, pr.y, 6); } pr.vx = -dir0 * sp0 * 0.3; }
+      }
+      if (seaSunk(pr) || pr.y > LH * TS) { pr.t = 'gone'; SFX.splash(); continue; }
+      for (const q of props) if (q.t === 'cargo' && !q.gone && sp0 > 50 && Math.abs(q.x - pr.x) < 16 && Math.abs(q.y - pr.y) < 12) { q.gone = true; q.back = 14; SFX.crack(); burst(q.x, q.y - 6, 12, ['#8a5a32', '#c9b27c', '#5c3a1d'], 90, 0.5); }
+      const pb = box(P);
+      if (!P.dead && overlap(gb, { l: pb.l + 2, r: pb.r - 2, t: pb.t + 2, b: pb.b })) { const side = Math.sign(P.x - pr.x) || 1;
+        if (P.dodge > 0) { if (pr.hitT <= 0) { pr.hitT = 0.35; pr.vx += (Math.sign(P.vx) || P.face) * 130; SFX.thud(); } }   /* a dash puts a shoulder into it */
+        else if (sp0 > 40 && dir0 === side) { if (pr.hitT <= 0) { pr.hitT = 1; const res = damagePlayer(pr.x, DMG.heelGun, { unblockable: true, up: true }); if (res) { P.vx = dir0 * 240; P.vy = -170; P.ground = false; } shakeCam(6); hitstop(0.06); } }
+        else if (P.y > gb.t + 5) moveBody(P, side * Math.max(0, 12 + P.w / 2 - Math.abs(P.x - pr.x)), 0, false);   /* at rest it is a ton of iron in your way */
+      }
+      if (hb && overlap(hb, gb) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.vx = Math.max(-200, Math.min(200, pr.vx + P.face * (P.heavy ? 190 : 110))); SFX.clank(); sparks(pr.x, pr.y - 8, P.face, 6); shakeCam(2); }
+      if (sp0 > 40) for (const e of enemies) { if (!e.alive || e.gone > 0 || e.harmless || !overlap(gb, box(e))) continue;
+        if (time - (pr.hits.get(e) || -9) < 0.6) continue; pr.hits.set(e, time);
+        hurtEnemy(e, e.maxHp ? 30 : 40, pr.x - dir0 * 10, false); if (e.alive) { knockFoe(e, dir0, sp0 + 60); e.heeled = 2.5; }
+        sparks(e.x, e.y - e.h / 2, dir0, 6); SFX.heavy(); shakeCam(4); pr.vx *= 0.8; }
+    }
+    else if (pr.t === 'davit') { pr.spin = Math.max(0, pr.spin - dt); const boat = movers.find(q => q.kind === 'lifeboat');
+      if (hb && boat && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 24, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); SFX.clank(); sparks(pr.x, pr.y - 12, P.face, 4);
+        if (!boat.state || boat.state === 'hung') { boat.state = 'lower'; pr.spin = 2.2; SFX.ropeHaul(); seaCue('THE FALLS RUN: HER BOAT GOES DOWN TO THE OIL', '#bfe6f5', 2.2); } } }
+  }
+}
+
+// ---- HER BOAT ----
+// hung (on her davits, level with the deck) -> lower (the winch) -> afloat (waiting on the oil) -> ride (step aboard
+// and she goes, under the wreck's stove-in bottom, past the beam you duck) -> docked (at the rope ladder up her far
+// side) -> and if you leave her there, she fills and is back on her davits. The planks over the oil stay: the
+// boat is a way, never the way.
+function updateLifeboat(m, dt) {
+  const oy = m.y; if (!m.state) m.state = 'hung'; m.vx = 0;
+  if (!m.pool) { let best = null; for (const p of (L.pools || [])) if (p.swim && m.x + m.w / 2 > p.x0 && m.x + m.w / 2 < p.x1 && (!best || p.x1 - p.x0 < best.x1 - best.x0)) best = p; m.pool = best; }
+  const sea = m.pool ? m.pool.y - 3 + Math.sin(time * 2 * Math.PI / 3.8) * 2 * (1 - seaCalm()) : m.y;
+  const aboard = P.onMover === m;
+  if (m.state === 'hung') { m.x = m.hx0; m.y = m.hy; }
+  else if (m.state === 'lower') { m.y = Math.min(sea, m.y + 80 * dt); if (m.y >= sea) { m.state = 'afloat'; SFX.splash(); burst(m.x + m.w / 2, sea + 4, 14, ['#7a8a3a', '#b8c85a', '#eefaff'], 80, 0.5); } }
+  else if (m.state === 'afloat') { m.y = sea; if (aboard) { m.state = 'ride'; SFX.ropeHaul(); seaCue('CAST OFF. DUCK HER BEAM IN THE WRECK', '#bfe6f5', 2.2); } }
+  else if (m.state === 'ride') { m.y = sea; m.vx = m.speed; m.x += m.speed * dt;
+    if (Math.random() < dt * 12) parts.push({ x: m.x + 2, y: sea + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#b8c85a', size: 2, grav: 0 });
+    m.beamT = Math.max(0, (m.beamT || 0) - dt);
+    if (aboard && !P.dead && !keys.down && Math.abs(P.x - m.beamX) < 10 && !(m.beamT > 0)) { m.beamT = 1; damagePlayer(m.beamX + 20, DMG.boatBeam, { unblockable: true }); P.onMover = null; P.vx = -260; P.vy = -120; P.ground = false; SFX.thud(); sparks(P.x, P.y - 14, -1, 6); shakeCam(4); }
+    if (m.x >= m.dockX) { m.x = m.dockX; m.state = 'docked'; m.idle = 0; SFX.thud(); seaCue('SHE FETCHES UP. THE LADDER IS ON HER SIDE', '#bfe6f5', 2); } }
+  else if (m.state === 'docked') { m.y = sea; m.idle = aboard || Math.abs(P.x - m.x) < 300 ? 0 : (m.idle || 0) + dt; if (m.idle > 6) { m.state = 'sink'; m.t = 0; } }
+  else if (m.state === 'sink') { m.t += dt; m.y = sea + m.t * 20; if (m.t > 1.2) { if (P.onMover === m) P.onMover = null; m.state = 'hung'; m.x = m.hx0; m.y = m.hy; } }
+  m.dy = m.y - oy;
+}
+function drawLifeboat(m, cx, cy) {
+  const x = Math.round(m.x - cx), y = Math.round(m.y - cy), w = m.w;
+  if (x > VW + 20 || x + w < -20) return;
+  if (!m.state || m.state === 'hung' || m.state === 'lower') { const top = Math.round(m.hy - 3 * TS - cy);
+    g.strokeStyle = '#c9b27c'; g.lineWidth = 1; for (const dx of [6, w - 6]) { g.beginPath(); g.moveTo(x + dx + 0.5, top); g.lineTo(x + dx + 0.5, y); g.stroke(); } }
+  g.fillStyle = '#5a3a22'; g.beginPath(); g.moveTo(x, y); g.lineTo(x + w, y); g.lineTo(x + w - 9, y + 10); g.lineTo(x + 9, y + 10); g.closePath(); g.fill();
+  g.fillStyle = '#9a6a40'; g.fillRect(x + 2, y, w - 4, 3); g.fillStyle = '#d8a870'; g.fillRect(x + 2, y, w - 4, 1);
+  g.fillStyle = '#f2ecdc'; g.fillRect(x + 6, y + 5, w - 12, 2);   /* her painted strake */
+  g.fillStyle = '#5a3a24'; for (let k = 12; k < w - 8; k += 16) g.fillRect(x + k, y - 2, 2, 2);   /* thole pins */
+}
+
+// ---- STORM FOES ----
+/* A GOBLIN STORM-CALLER. He marks the planking under you, calls it, and the sky hits the mark. No shield turns
+   lightning, so it is a red !!; the mark stays where you WERE, so the answer is to be somewhere else. A blow on
+   him while he calls breaks the call. */
+function updateStormCaller(e, dt) {
+  e.vy = Math.min(320, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0;
+  e.castFlash = Math.max(0, (e.castFlash || 0) - dt); e.modeT = (e.modeT || 0) - dt; e.cd = Math.max(0, (e.cd || 0) - dt);
+  const d = P.x - e.x, ad = Math.abs(d);
+  switch (e.mode) {
+    case 'callTell': { e.castFlash = 0.2;
+      if (Math.random() < dt * 30) parts.push({ x: e.markX + (Math.random() - 0.5) * 20, y: e.markY - Math.random() * 24, vx: 0, vy: -50, life: 0.3, max: 0.3, col: '#c9a0ff', size: 1, grav: -40 });
+      if (e.stagger > 0) { e.mode = 'watch'; e.cd = 1.4; SFX.buzz(); break; }
+      if (e.modeT <= 0) { e.mode = 'call'; e.modeT = 0.4;
+        bolts.push({ x: e.markX, y: e.markY, life: 0.3, storm: true }); SFX.thunder(); SFX.stormZap(); flash = Math.max(flash, 0.3); stormLit = 0.25; shakeCam(6); burst(e.markX, e.markY, 14, ['#dfe8ff', '#c9a0ff', '#ffffff'], 120, 0.6);
+        if (!P.dead && Math.abs(P.x - e.markX) < 20 && P.y > e.markY - 64 && P.y < e.markY + 10) damagePlayer(e.markX, DMG.callerBolt, { up: true, unblockable: true });
+        for (const o of enemies) if (o !== e && o.alive && !o.maxHp && Math.abs(o.x - e.markX) < 20 && Math.abs(o.y - e.markY) < 30) hurtEnemy(o, 30, e.markX, false); }
+      break; }
+    case 'call': { if (e.modeT <= 0) { e.mode = 'watch'; e.cd = 3.2; } break; }
+    default: { e.mode = 'watch'; e.face = Math.sign(d) || e.face;
+      if (e.cd <= 0 && e.stagger <= 0 && !P.dead && ad < 200 && Math.abs(P.y - e.y) < 110 && seaCalm() < 0.3) { const tx = Math.floor(P.x / TS); let gy = Math.floor((P.y - 4) / TS);
+        for (let k = 0; k < 10 && !isSolid(tx, gy) && !isOneWay(tileAt(tx, gy)); k++) gy++;
+        e.markX = P.x; e.markY = gy * TS; e.mode = 'callTell'; e.modeT = 1.25; number(e.x, e.y - e.h - 10, '!!', '#ff6b6b'); SFX.stormChant(); } }
+  }
+}
+/* A DROWNED HAND COMING BACK ABOARD. He is under her rail until you are close, then he comes up over it out of the sea.
+   While he climbs he is not there to hit and not there to hit you. */
+function sailorRise(e, dt) {
+  if (!e.riseT) { e.gone = 1;
+    if (!P.dead && Math.abs(P.x - e.x) < 110 && Math.abs(P.y - e.y) < 70) { e.riseT = 0.001; SFX.splash(); burst(e.x, e.y - 2, 12, ['#dff0f5', '#7cc8c8', '#4a8a9a'], 80, 0.5); }
+    return; }
+  e.riseT += dt;
+  if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * 10, y: e.y - Math.random() * 16, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#7cc8c8', size: 1, grav: 300 });
+  if (e.riseT >= 0.7) { e.risen = true; e.gone = 0; e.face = Math.sign(P.x - e.x) || e.face; e.stagger = Math.max(e.stagger || 0, 0.25); SFX.foeGasp && SFX.foeGasp('sailor'); }
+}
+/* A GULL IN A FLOCK. They wheel over the deck in the wind and come down one at a time, and the wind carries the dive. */
+function updateGullFlock(e, dt) {
+  e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt); if (e.ph === undefined) e.ph = Math.random() * 6.28;
+  const d = P.x - e.x, ad = Math.abs(d), wind = wash ? wash.dir : 1;
+  switch (e.mode) {
+    case 'diveTell': { e.x += Math.sin(time * 40) * 20 * dt;
+      if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 1.1; e.hit = false; const dd = Math.hypot(d, (P.y - 8) - e.y) || 1; e.dvx = d / dd * 230 + wind * 45; e.dvy = ((P.y - 8) - e.y) / dd * 230; SFX.caw(); }
+      break; }
+    case 'dive': { e.x += e.dvx * dt; e.y += e.dvy * dt; e.face = Math.sign(e.dvx) || e.face;
+      if (!e.hit && !P.dead && Math.abs(P.x - e.x) < 12 && Math.abs((P.y - 8) - e.y) < 12) { e.hit = true; const res = damagePlayer(e.x, DMG.petrelDive); if (res === 'hit') P.vy = -80; }
+      if (e.modeT <= 0 || e.stagger > 0 || isSolid(Math.floor(e.x / TS), Math.floor((e.y + 4) / TS))) { e.mode = 'climb'; e.modeT = 1.2; e.cd = 1.6 + Math.random(); }
+      break; }
+    case 'climb': { const tx = e.hx + Math.cos(time * 1.3 + e.ph) * 24, ty = e.hy + Math.sin(time * 1.9 + e.ph) * 8;
+      e.x += (tx - e.x) * Math.min(1, dt * 2); e.y += (ty - e.y) * Math.min(1, dt * 2.4); if (e.modeT <= 0) e.mode = 'wheel';
+      break; }
+    default: { e.mode = 'wheel'; const tx = e.hx + Math.cos(time * 1.3 + e.ph) * 24 + wind * 6, ty = e.hy + Math.sin(time * 1.9 + e.ph) * 8;
+      e.x += (tx - e.x) * Math.min(1, dt * 3); e.y += (ty - e.y) * Math.min(1, dt * 3); e.face = Math.sign(P.x - e.x) || e.face;
+      if (e.cd <= 0 && e.stagger <= 0 && !P.dead && ad < 180 && P.y > e.y + 12 && time - gullLast > 0.55 && seaCalm() < 0.3) { gullLast = time; e.mode = 'diveTell'; e.modeT = 0.35; number(e.x, e.y - 10, '!', '#ffd36b'); SFX.caw(); } }
+  }
+}
+
+// ---- WHAT YOU SEE OF IT ----
+function drawSea(cx, cy) {
+  const R = L.roll, F = L.felled;
+  if (!R && !F) return;
+  if (R) {
+    for (const [a, b] of (R.grip || [])) for (let tx = a; tx <= b; tx++) { const x = tx * TS - cx; if (x < -16 || x > VW) continue;   /* SAND strewn on her planking */
+      for (let k = 0; k < 7; k++) { g.fillStyle = k % 3 ? '#c9b27c' : '#efe0b0'; g.fillRect(Math.round(x + ((tx * 7 + k * 5) % 15)), Math.round(R.y0 * TS - 1 - (k % 2) - cy), 1 + (k % 2), 1); } }
+    for (const [bx, by] of (R.bitts || [])) { const x = bx * TS - cx, y = by * TS - cy; if (x < -20 || x > VW + 20) continue;   /* HER BITTS: iron you can put your back to */
+      g.fillStyle = '#2a2630'; g.fillRect(x + 3, y + 3, 10, 13); g.fillStyle = '#4a4650'; g.fillRect(x + 4, y + 4, 3, 12); g.fillStyle = '#1b1626'; g.fillRect(x + 1, y, 14, 4); g.fillStyle = '#6a6670'; g.fillRect(x + 2, y, 11, 1); }
+  }
+  if (F && F.state === 'tell') { const k = 1 - Math.max(0, F.t) / F.tell, x = Math.round((F.x + 1) * TS - cx), y1 = Math.round(4 * TS - cy);
+    g.globalAlpha = 0.2 + 0.35 * k; g.fillStyle = '#9ab8ff'; g.fillRect(x - 2 - Math.round(k * 2), 0, 4 + Math.round(k * 4), Math.max(0, y1)); g.globalAlpha = 1;
+    /* and the deck she will land on */
+    const bx0 = F.band[0] * TS - cx, bx1 = (F.band[1] + 1) * TS - cx, by = Math.round(19 * TS - cy);
+    g.globalAlpha = 0.25 + 0.3 * (Math.floor(time * 10) % 2); g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(bx0), by - 2, Math.round(bx1 - bx0), 3); g.globalAlpha = 1;
+    for (let xx = bx0 + 4; xx < bx1; xx += 18) text('!', Math.round(xx), by - 14 - Math.round(k * 3), '#ff6b6b', 'center', 6); }
+  if (F && F.state === 'down') {
+    const xa = F.foot[0] * TS, ya = rampY(F, xa), xb = (F.head[0] + 1) * TS, yb = rampY(F, xb), ang = Math.atan2(yb - ya, xb - xa), len = Math.hypot(xb - xa, yb - ya) + 30;
+    if (xb - cx > -60 && xa - cx < VW + 60) {
+      g.save(); g.translate(Math.round(xa - cx), Math.round(ya - cy)); g.rotate(ang);
+      g.fillStyle = '#3a2a1c'; g.fillRect(-10, 0, len, 8); g.fillStyle = '#6a5a44'; g.fillRect(-10, 0, len, 5); g.fillStyle = '#8a7658'; g.fillRect(-10, 0, len, 1);
+      g.fillStyle = '#2a2630'; for (let k = 14; k < len - 10; k += 34) g.fillRect(k, 0, 3, 8);   /* her iron hoops */
+      g.fillStyle = '#efe6d2'; g.fillRect(len - 22, -10, 3, 18); g.fillRect(len - 36, 4, 22, 3);   /* a broken yard at the head of her */
+      g.restore();
+      const [wx0, wx1, wy0, wy1] = F.wall, hx = wx0 * TS - cx, hy = wy0 * TS - cy, hw = (wx1 + 1 - wx0) * TS, hh = (wy1 + 1 - wy0) * TS;   /* her tops and canvas, in a heap across the waist */
+      g.fillStyle = '#b8ae98'; g.fillRect(hx - 4, hy + 6, hw + 8, hh - 6); g.fillStyle = '#efe6d2'; g.fillRect(hx - 2, hy + 2, hw + 2, 10); g.fillRect(hx + 6, hy + 16, hw - 6, 8);
+      g.fillStyle = '#6a5a44'; g.fillRect(hx - 6, hy + 20, hw + 12, 4); g.fillRect(hx + hw - 10, hy - 4, 4, hh + 4);
+      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(hx - 4, hy + 4); g.lineTo(hx + hw + 6, hy + hh - 4); g.moveTo(hx + hw, hy); g.lineTo(hx, hy + hh); g.stroke();
+      const sx = Math.round(F.x * TS - cx), sy = Math.round(19 * TS - cy);   /* the stump, split */
+      g.fillStyle = '#4a3a2a'; g.fillRect(sx + 4, sy - 18, 24, 18); g.fillStyle = '#8a7658'; g.fillRect(sx + 4, sy - 20, 6, 4); g.fillRect(sx + 14, sy - 24, 5, 8); g.fillRect(sx + 22, sy - 19, 6, 3);
+    }
+  }
+  for (const pr of props) {
+    if (pr.x < cx - 60 || pr.x > cx + VW + 60) continue;
+    if (pr.t === 'cargo' && !pr.gone) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
+      if (pr.kind === 'crate') { g.fillStyle = '#5c3a1d'; g.fillRect(x - 6, y - 12, 12, 12); g.fillStyle = '#8a5a32'; g.fillRect(x - 5, y - 11, 10, 10); g.fillStyle = '#5c3a1d'; g.fillRect(x - 5, y - 7, 10, 2); g.fillRect(x - 1, y - 11, 2, 10); }
+      else if (PROP.barrel) { g.save(); g.translate(x, y - 7); g.rotate(pr.rot); g.drawImage(PROP.barrel, -6, -7); g.restore(); }
+      if (heeling() && onDeck(pr.x, pr.y) && Math.floor(time * 8) % 2) { g.fillStyle = '#ffd36b'; g.fillRect(x + roll.dir * 8, y - 8, 2, 2); } }
+    else if (pr.t === 'loosegun' && PROP.flot) { const c = PROP.flot.cannon[0], jig = pr.strain > 0 && pr.lashed ? Math.round(Math.sin(time * 50) * 1.5) : 0, x = Math.round(pr.x - 15 - cx) + jig, y = Math.round(pr.y - c.height - cy);
+      g.drawImage(c, x, y);
+      if (pr.lashed) { g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 6, y + c.height); g.lineTo(x + 6, y + 4); g.moveTo(x + c.width + 6, y + c.height); g.lineTo(x + c.width - 6, y + 4); g.stroke(); }
+      else { g.fillStyle = '#1b1626'; const wr = Math.round(pr.rot * 3) % 4; for (const wx of [6, 22]) { g.fillRect(x + wx - 1, y + c.height - 4, 3, 3); g.fillStyle = wr % 2 ? '#8a919c' : '#1b1626'; } if (Math.abs(pr.vx) > 40 && Math.floor(time * 10) % 2) text('!!', x + 15, y - 10, '#ff6b6b', 'center', 6); } }
+    else if (pr.t === 'cargowall' && !pr.open) { const [x0, x1, y0, y1] = pr.span;
+      for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) { const x = tx * TS - cx, y = ty * TS - cy; g.fillStyle = '#4a2e18'; g.fillRect(x, y, 16, 16); g.fillStyle = (tx + ty) % 2 ? '#8a5a32' : '#7a4e2a'; g.fillRect(x + 1, y + 1, 14, 14); g.fillStyle = '#4a2e18'; g.fillRect(x + 1, y + 7, 14, 2); g.fillRect(x + 7, y + 1, 2, 14); }
+      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(x0 * TS - cx, y0 * TS - cy + 3); g.lineTo((x1 + 1) * TS - cx, (y1 + 1) * TS - cy - 3); g.stroke(); }
+    else if (pr.t === 'davit') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), boat = movers.find(q => q.kind === 'lifeboat');
+      g.fillStyle = '#2a2630'; g.fillRect(x - 7, y - 12, 14, 12); g.fillStyle = '#6a5a44'; g.fillRect(x - 5, y - 10, 10, 6);   /* the winch and her drum */
+      g.fillStyle = '#c9b27c'; for (let k = 0; k < 3; k++) g.fillRect(x - 5, y - 10 + k * 2 + (pr.spin > 0 ? Math.floor(time * 20) % 2 : 0), 10, 1);
+      const a = pr.spin > 0 ? time * 14 : 0.6; g.fillStyle = '#8a919c'; g.fillRect(x + Math.round(Math.cos(a) * 7) - 1, y - 7 + Math.round(Math.sin(a) * 7) - 1, 3, 3);
+      if (boat) { const hx = Math.round(boat.hx0 - cx), top = Math.round(boat.hy - 3 * TS - cy), dy = Math.round(boat.hy - cy);   /* her davits: two iron arms out over the side */
+        g.strokeStyle = '#3a3a44'; g.lineWidth = 2; g.beginPath(); g.moveTo(hx - 12, dy); g.lineTo(hx - 12, top + 6); g.quadraticCurveTo(hx - 12, top, hx + 6, top); g.moveTo(hx - 6, dy); g.lineTo(hx - 6, top + 10); g.quadraticCurveTo(hx - 6, top - 4, hx + boat.w - 6, top); g.stroke(); g.lineWidth = 1;
+        if ((!boat.state || boat.state === 'hung') && Math.abs(P.x - pr.x) < 60 && !P.dead) text('X', x, y - 24, '#ffd36b', 'center', 6); } }
+  }
+  for (const e of enemies) {
+    if (!e.alive || e.x < cx - 60 || e.x > cx + VW + 60) continue;
+    if (e.t === 'stormshaman' && e.caller && e.mode === 'callTell' && e.markX !== undefined) {   /* where the sky will hit: his colour, and red because no shield turns it */
+      const k = 1 - Math.max(0, e.modeT) / 1.25, x = Math.round(e.markX - cx), y1 = Math.round(e.markY - cy);
+      g.globalAlpha = 0.15 + 0.35 * k; g.fillStyle = '#c9a0ff'; g.fillRect(x - 1 - Math.round(k * 2), 0, 3 + Math.round(k * 4), Math.max(0, y1)); g.globalAlpha = 1;
+      g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#dfe8ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y1 - 1, 18 - Math.round(k * 4), 4, 0, 0, Math.PI * 2); g.stroke();
+      g.globalAlpha = 0.5; g.strokeStyle = '#c9a0ff'; g.beginPath(); g.moveTo(Math.round(e.x - cx), Math.round(e.y - e.h - cy)); g.lineTo(x, y1 - 30); g.stroke(); g.globalAlpha = 1; }
+    if (e.t === 'sailor' && e.rise && !e.risen && e.riseT > 0 && SPR.sailor) { const k = Math.min(1, e.riseT / 0.7), deckY = Math.round(e.y - cy);
+      g.save(); g.beginPath(); g.rect(0, 0, VW, deckY); g.clip(); drawSet(SPR.sailor, null, 0, e.x - cx, e.y - cy + Math.round((1 - k) * 22), e.face, false); g.restore(); }
+  }
+  const boat = movers.find(q => q.kind === 'lifeboat');
+  if (boat && boat.beamX) { const x = Math.round(boat.beamX - cx), y = Math.round(25 * TS - cy);   /* THE BEAM across the wreck's hold */
+    if (x > -20 && x < VW + 20) { g.fillStyle = '#3a2a1c'; g.fillRect(x - 4, y, 8, TS + 7); g.fillStyle = '#6a5a44'; g.fillRect(x - 3, y, 3, TS + 6);
+      if (boat.state === 'ride' && P.onMover === boat && boat.beamX - (P.x) < 150 && boat.beamX > P.x - 4) { const fl = Math.floor(time * 8) % 2; text('DUCK', x, y + TS + 12, fl ? '#ff6b6b' : '#ffd36b', 'center', 7); g.fillStyle = fl ? '#ff6b6b' : '#ffd36b'; for (let i = 0; i < 3; i++) g.fillRect(x - 12 + i * 10, y + TS + 22 + (i % 2), 4, 3); } } }
+}
+/* THE HUD OF IT: the counted roll warning and the HEEL marker (drawn flat, after the tilted world), and the set-piece cues */
+function drawSeaHud() {
+  if (state !== 'play' || !L || (!L.roll && !L.felled && !L.eye)) return;
+  if (seaMsg && seaMsg.t > 0) { g.globalAlpha = Math.max(0, Math.min(1, seaMsg.t * 3, (seaMsg.max - seaMsg.t) * 8 + 0.2));
+    g.fillStyle = 'rgba(10,12,20,0.55)'; g.fillRect(8, 52, VW - 16, 14); text(seaMsg.txt, VW / 2, 55, seaMsg.col, 'center', 7); g.globalAlpha = 1; }
+  if (!roll || !L.roll || P.dead || P.y > 21 * TS + 8 || seaCalm() > 0.3) return;
+  if (roll.state === 'tell') { const n = Math.max(1, Math.ceil(roll.t)), late = roll.t < 0.9;
+    if (Math.floor(time * 8) % 2 === 0 || late) { text(roll.dir > 0 ? 'SHE HEELS >>>' : '<<< SHE HEELS', VW / 2, 72, late ? '#ff6b6b' : '#ffd36b', 'center', 7); text('LINE, BITT OR SAND  ' + '|'.repeat(n), VW / 2, 82, '#a8cfc6', 'center', 6); } }
+  if (roll.state === 'tell' || roll.state === 'heel') {   /* THE HEEL MARKER stands on the HIGH side; chevrons run down the low one */
+    const hx = roll.dir > 0 ? 8 : VW - 8, lx = roll.dir > 0 ? VW - 8 : 8, a = roll.state === 'heel' ? 1 : 0.55 + 0.45 * Math.sin(time * 14), col = roll.state === 'heel' ? '#ff6b6b' : '#ffd36b';
+    g.globalAlpha = a; g.fillStyle = col; g.fillRect(hx - 1, 72, 2, 46); g.fillRect(hx - 3, 70, 6, 2); g.fillRect(hx - 2, 68, 4, 2); g.fillRect(hx - 1, 66, 2, 2);
+    for (let i = 0; i < 4; i++) text('HEEL'[i], hx + (roll.dir > 0 ? 7 : -7), 76 + i * 9, col, 'center', 6);
+    for (let i = 0; i < 3; i++) { const yy = 80 + i * 12 + Math.floor(time * 12) % 4; g.fillRect(lx - 3, yy, 6, 2); g.fillRect(lx - 2, yy + 2, 4, 2); g.fillRect(lx - 1, yy + 4, 2, 2); }
+    g.globalAlpha = 1; }
+  if (roll.state === 'heel') text(P.heelHeld === 'line' ? 'HOLDING THE LINE' : P.heelHeld === 'bitt' ? 'BRACED ON A BITT' : P.heelHeld === 'sand' ? 'SURE ON THE SAND' : 'SHE IS ON HER BEAM ENDS', VW / 2, 72, P.heelHeld ? '#8fd160' : '#ff6b6b', 'center', 6);   /* under the ambush plate, not on it */
+}
+/* THE EYE'S SKY: the cloud goes thin and there are stars behind it */
+function drawEyeSky(k) {
+  g.globalAlpha = k * 0.25; g.fillStyle = '#0a1020'; g.fillRect(0, 0, VW, Math.round(VH * 0.5)); g.globalAlpha = 1;
+  for (let i = 0; i < 90; i++) { const x = (i * 137 + 11) % VW, y = 4 + (i * 61 + 7) % Math.round(VH * 0.42), tw = 0.5 + 0.5 * Math.sin(time * (1 + (i % 5) * 0.4) + i);
+    g.globalAlpha = k * (0.6 + 0.4 * tw); g.fillStyle = i % 9 === 0 ? '#fff6c8' : '#dfe8ff'; g.fillRect(x, y, i % 11 === 0 ? 2 : 1, i % 11 === 0 ? 2 : 1); }
+  g.globalAlpha = k; g.fillStyle = '#e8ecf4'; g.beginPath(); g.arc(Math.round(VW * 0.74), 30, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = '#0a1020'; g.beginPath(); g.arc(Math.round(VW * 0.74) + 3, 28, 6, 0, Math.PI * 2); g.fill();
+  g.globalAlpha = 1;
 }
 function snareTick(dt) {
   if (!(P.snare > 0)) return;
@@ -5560,6 +5966,7 @@ function updateCrew(e, dt) {
   if (r.hitX) { e.vx = 0; if (!chasing) e.face = -e.face; }
 }
 function updateReef(e, dt) {
+  if (e.rise && !e.risen) { sailorRise(e, dt); return; }   /* still under her rail */
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(e.y - P.y);
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt);
   let want = 0, grav = true;
@@ -5600,7 +6007,7 @@ function updateReef(e, dt) {
         e.vx += (Math.sign(tx - e.x) * 40 - e.vx) * Math.min(1, dt * 1.5);
         e.vy += ((mine ? Math.min(bot, Math.max(top, P.y - 10)) : e.hy + Math.sin(e.anim * 1.1) * 8) - e.y) * dt * 1.2; e.face = Math.sign(e.vx) || e.face; } }
     swimMove(e, dt, pl, top, bot, 10); return;
-  } else if (e.t === 'petrel') { grav = false;
+  } else if (e.t === 'petrel') { grav = false; if (e.gull) { updateGullFlock(e, dt); return; }
     if (e.mode === 'dive') { e.x += e.dvx * dt; e.y += e.dvy * dt; e.face = Math.sign(e.dvx) || e.face;
       if (!e.hit && !P.dead && ad < 14 && dy < 14) { e.hit = true; const res = damagePlayer(e.x, DMG.petrelDive); if (res === 'hit') P.vy = -80; }
       const ty = Math.floor((e.y + 4) / TS); if (e.modeT <= 0 || isSolid(Math.floor(e.x / TS), ty)) { e.mode = 'climb'; e.modeT = 1.1; SFX.caw(); } }
@@ -6666,6 +7073,7 @@ function returnBolt(s) { const wc = (s.owner && s.owner.alive) ? s.owner : enemi
 function knockCaller(e) { if (!['cast', 'howlTell', 'howl', 'appear'].includes(e.mode)) return; e.mode = 'fallen'; e.modeT = 3; e.hits = 0; e.fellT = 0; e.grounded = false; burst(e.x, e.y - 12, 16, ['#c9a0ff', '#e8dcc0', '#6faa4a'], 70, 0.5, -20, 1); SFX.callerChant(); shakeCam(5); }
 // the storm shaman: he holds the far end of a span and throws slow bolts at anyone on it. They can be sent back.
 function updateStormShaman(e, dt) {
+  if (e.caller) { updateStormCaller(e, dt); return; }   /* the Hurricane's storm-caller marks a spot instead of throwing a bolt */
   e.vy = Math.min(320, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0;
   e.castFlash = Math.max(0, e.castFlash - dt); const d = P.x - e.x; e.face = Math.sign(d) || e.face;
   if (e.stagger > 0 || P.dead || Math.abs(d) > 220 || Math.abs(P.y - e.y) > 110) return;
@@ -9101,6 +9509,7 @@ const TAM_MAP = {
   storm: ['HER KNIGHT HOLDS THE BRIDGE.', 'HER CASTLE IS ABOVE US.'], crown: ['THE QUEEN. THE LAST OF THEM.', 'IT IS DONE. WE CAN GO HOME.'], longwater: ['THE RIVER RUNS SALT.', 'THE GLAIVE POINTS OUT TO SEA.'], reef: ['THE FLEET IS ON THE REEF.', 'THREE SEALS, AND SOMETHING IN THE HOLE.'], flotilla: ['A TOWN BUILT ON SHIPS.', 'THE OARS ARE EMPTY AND THE FLAG IS OURS.'],
 };
 const NPC_LINES = pr => {
+  if (pr.lines) return pr.lines;   /* a level can give one of its folk their own words */
   const n = straysGot.size, need = questOf().n;
   if (pr.kind === 'keeper') return PROG.storeHint ? ['SOMETHING NEW CAME IN.', 'UP AT THE COUNTER AND HAVE A LOOK.'] : ['WELCOME, KNIGHT. UP AT THE COUNTER TO TRADE.', 'GOLD BUYS STEEL. STEEL BUYS TIME.'];
   if (pr.kind === 'foreman' && curId() === 'quarry') { if (n >= need) return ['ALL THREE, AND SINGING. THE GALLERY IS SAFE TO WORK AGAIN.', 'TAKE MY LAMP. A MAN WHO WALKS THAT GALLERY SHOULD SEE IT.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE BIRDS.', 'THE SUMMIT, THE GANTRY, AND THE ROPE OVER THE SADDLE.'];
@@ -10788,7 +11197,7 @@ function talkers() { // everything that can be talked to and is in reach, neares
   const out = [];
   for (const sg of signs) if (Math.abs(sg.x - P.x) < 28 && Math.abs(sg.y - P.y) < 48) out.push({ x: sg.x, y: sg.y, lines: [sg.text], who: sg, name: null });
   for (const pr of props) {
-    if (pr.t === 'npc' && pr.kind !== 'keeper' && (pr.kind !== 'ferryman' || (movers.find(mv => mv.ferry) || {}).free) && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, lines: NPC_LINES(pr), who: pr, name: NPC_NAME[pr.kind] || null });
+    if (pr.t === 'npc' && pr.kind !== 'keeper' && (pr.kind !== 'ferryman' || (movers.find(mv => mv.ferry) || {}).free) && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, lines: NPC_LINES(pr), who: pr, name: pr.name || NPC_NAME[pr.kind] || null });
     if (pr.t === 'torchbracket' && !pr.taken && Math.abs(P.x - pr.x) < 16 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y - 6, lines: ['TORCH'], who: pr, name: null, take: true });
     if (pr.t === 'cage' && pr.kind === 'squire' && !pr.open && Math.abs(P.x - pr.x) < 28 && Math.abs(P.y - pr.y) < 48) out.push({ x: pr.x, y: pr.y, lines: ['KNIGHT! BREAK THE BARS!', 'THEY TOOK MY KIT. THREE COFFERS, SOMEWHERE IN THE CAMP.'], who: pr, name: 'TAM' });
   }
@@ -10816,7 +11225,7 @@ function updateProps(dt) {
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
-  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateStrikes(dt); updateStreetTide(dt); updateWick(dt); updateRush(dt);
+  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateStrikes(dt); updateStreetTide(dt); updateWick(dt); updateRush(dt);
   { const fp = (L.pools || []).find(p => p.harm && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
       if (Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 14, vx: 0, vy: -20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7a8a4a' : '#4a5a2a', size: 1, grav: -10 });
@@ -11151,6 +11560,7 @@ function updateMovers(dt) {
       else if (m.state === 'up') { m.upT -= dt; if (m.upT <= 0) { m.state = 'wither'; SFX.puff(); } }
       else if (m.state === 'wither') { m.k = Math.max(0, m.k - dt / 0.8); if (m.k <= 0) { m.state = 'bud'; m.cd = 1; } }
       m.y = m.y0 - m.k * m.rise; m.dy = m.y - oldY;
+    } else if (m.kind === 'lifeboat') { updateLifeboat(m, dt);
     } else if (m.kind === 'raft') { // waits at the dock until you board, then poles downstream
       if (P.onMover === m && !m.done && (!m.ferry || m.paid || m.free)) m.moving = true;
       if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const aboard = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length; if (m.frogT <= 0 && aboard < (m.frogMax || 3)) { m.frogT = (m.frogEvery || 3) + Math.random() * 2; const side = Math.random() < 0.5 ? -1 : 1; const fx = m.x + m.w / 2 + side * (m.w / 2 + 20); const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58; const col = ['green', 'green', 'yellow', 'blue'][(Math.random() * 4) | 0]; enemies.push({ t: 'hopper', color: col, x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: HOP[col].hp, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true }); burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } }
@@ -11319,7 +11729,7 @@ function updateWeather(dt) {
       d.emT = (d.emT ?? Math.random() * em[1]) - 1 / 60; if (d.emT > 0) continue; d.emT = em[1] * (0.7 + Math.random() * 0.6);
       const was = emitNow(); emitAt(sndAt(d.x + (d.c ? d.c.width / 2 : 0), d.y, false)); SFX[em[0]](); emitAt(was); } }
   const tense = enemies.some(e => e.alive && Math.abs(e.x - P.x) < 220 && ((e.t === 'thorn' && (e.mode === 'wind' || e.mode === 'charge')) || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && (e.mode === 'crouch' || e.mode === 'tongueTell' || e.mode === 'inhale')) || (e.t === 'chief' && (e.mode === 'crouch' || e.mode === 'aim' || e.mode === 'rainAim' || e.mode === 'whirl')) || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'charge')) || (e.t === 'harpy' && e.mode === 'aim')));
-  music.duck(tense);
+  music.duck(tense || seaCalm() > 0.5);   /* and the band goes quiet in the eye of the storm */
 }
 function updatePwaves(dt) {
   for (const w of pwaves) {
@@ -11885,13 +12295,14 @@ function bakeClouds() {
 function drawStormClouds(cx, cy) {
   if (!L.stormClouds) return;
   if (!CLOUDS) CLOUDS = bakeClouds();
+  const calmA = 1 - 0.88 * seaCalm();   /* THE EYE: the cloud goes thin (the stars come out in drawWorld, over the haze) */
   const lit = Math.min(1, (stormLit || 0) / 0.25);
   for (let i = 0; i < 3; i++) { const c = CLOUDS[i], par = 0.10 + i * 0.09, sp = 7 + i * 9;
     // they hang off the top of the sky and come down the screen as the camera climbs, like the fair-weather clouds do
     const y = Math.round(-10 + i * 16 + bgDY(cy) * 0.06);
     if (y > VH || y + c.height < 0) continue;
     let x = Math.round(-((cx * par + time * sp) % c.width));
-    for (; x < VW; x += c.width) g.drawImage(c, x, y);
+    g.globalAlpha = calmA; for (; x < VW; x += c.width) g.drawImage(c, x, y); g.globalAlpha = 1;
     if (lit > 0) { g.globalAlpha = 0.35 * lit * (1 - i * 0.25); g.globalCompositeOperation = 'lighter';
       let x2 = Math.round(-((cx * par + time * sp) % c.width));
       for (; x2 < VW; x2 += c.width) g.drawImage(c, x2, y + 1);
@@ -12203,7 +12614,7 @@ const SUNS = { wood: [1, '#ffe9b0', 0.16], marsh: [-1, '#cfe0d0', 0.12], stockad
   kings: [1, '#ffe9b0', 0.14], scree: [-1, '#ffc890', 0.16], hanging: [-1, '#ffd0a0', 0.16], spire: [1, '#eaf6ff', 0.2],
   moor: [-1, '#dfe6f0', 0.12], storm: [-1, '#e0e8ff', 0.12], crown: [-1, '#ffc0a0', 0.14],
   longwater: [1, '#ffd9a8', 0.18], reef: [1, '#d8e8e4', 0.12], flotilla: [-1, '#fff4d0', 0.2] };
-const swellY = () => (L.swell ? Math.sin(time * (2 * Math.PI / L.swell.period)) * L.swell.amp : 0);
+const swellY = () => (L.swell ? Math.sin(time * (2 * Math.PI / L.swell.period)) * L.swell.amp * (1 - 0.8 * seaCalm()) : 0);
 function drawGroundLight(cx, cy, tx0, ty0) {
   if (SET.groundLight === false) return;
   const sun = SUNS[curId()] || [1, '#ffe9b0', 0.14], dir = sun[0];
@@ -12305,6 +12716,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }
   else drawCastleBack(cx, cy);
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
+  if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
@@ -12353,6 +12765,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = m.state === 'wither' ? '#3a6a70' : '#2a8a90'; g.beginPath(); g.ellipse(cxm + wob, top + 4, m.w / 2, 6, 0, Math.PI, 0); g.fill(); g.fillRect(x + wob, top + 3, m.w, 3); // the cap
       g.fillStyle = '#bff0f0'; for (const dx of [-9, -2, 6]) g.fillRect(cxm + dx + wob, top + 1 - (dx === -2 ? 2 : 0), 2, 2); g.fillStyle = '#1b1626'; g.fillRect(x + wob, top + 6, m.w, 1);
       if (m.state === 'bud' && !(m.cd > 0) && Math.floor(time * 2) % 2) { g.globalAlpha = 0.5; g.strokeStyle = '#bff0f0'; g.lineWidth = 1; g.beginPath(); g.moveTo(cxm - 3, top - 5); g.lineTo(cxm, top - 9); g.lineTo(cxm + 3, top - 5); g.stroke(); g.globalAlpha = 1; } } // an up-arrow over a bud that is ready
+    else if (m.kind === 'lifeboat') drawLifeboat(m, cx, cy);
     else if (m.kind === 'raft' && m.big && PROP.lw) { const rb = PROP.lw.raftBig, x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.drawImage(rb, x, y); if (rb.rig) g.drawImage(rb.rig, x, y + rb.rigDY); }
     else if (m.kind === 'raft' || m.kind === 'punt') { for (let rx = 0; rx < m.w; rx += 48) g.drawImage(PROP.raft, 0, 0, Math.min(48, m.w - rx), 8, Math.round(m.x) + rx - cx, m.y - cy, Math.min(48, m.w - rx), 8); }
     else if (m.kind === 'drift') { g.save(); g.beginPath(); g.rect(m.x0 - cx, 0, m.x1 + m.w - m.x0, VH); g.clip(); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); g.restore(); }
@@ -13057,7 +13470,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
@@ -14139,10 +14552,13 @@ function render() {
   else if (state === 'tree') { drawTree(); }
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else {
-    const z = (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom);
+    const z = (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt = seaTilt();
+    if (tilt) { g.save(); g.fillStyle = '#1a2230'; g.fillRect(0, 0, VW, VH); g.translate(VW / 2, VH * 0.55); g.rotate(tilt); const ts = 1 + Math.abs(tilt) * 1.4; g.scale(ts, ts); g.translate(-VW / 2, -VH * 0.55); }   /* SHE ROLLS: the horizon goes over with her */
     if (z > 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
     drawWorld(cx, cy, true);
     if (z > 1) g.restore();
+    if (tilt) g.restore();
+    drawSeaHud();
   }
   if (hushT > 0) {                                   /* THE LISTEN: the level's own held breath */
     const k = Math.min(1, hushT * 2), px2 = Math.round(P.x - camX), py2 = Math.round(P.y - 10 - camY);
@@ -14499,6 +14915,7 @@ window.BK = { noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* t
     return out; },
   async floatLab(o) { const m = await import('./floatlab.js'); return m.floatLab(window.BK, o || {}); },
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
+  get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },   /* the Hurricane's sea state, for the harness */
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
   // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
   // the screen's first face. Most menu bugs live on the third tab of something.
