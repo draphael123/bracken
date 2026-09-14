@@ -4909,11 +4909,11 @@ function updateFrog(e, dt) {
       if (e.modeT <= 0) {
         const pool = ['tongue', 'leap', 'spit', 'hopAway', 'inhale']; if (flies < (p2 ? 3 : 2)) pool.push('croak', 'croak'); if (p2) pool.push('leap', 'hopAway', 'inhale');
         let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0]; e.last = pick;
-        if (pick === 'tongue') { e.mode = 'tongueTell'; e.modeT = p2 ? 0.35 : 0.5; SFX.buzz(); }
+        if (pick === 'tongue') { e.mode = 'tongueTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = p2 ? 0.35 : 0.5; SFX.buzz(); }
         else if (pick === 'leap') { e.mode = 'crouch'; e.modeT = p2 ? 0.3 : 0.45; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
         else if (pick === 'spit') { e.mode = 'spit'; e.modeT = 0.6; e.shots = p2 ? 2 : 1; e.shotT = 0.2; }
         else if (pick === 'hopAway') { e.mode = 'hopAway'; e.modeT = 0.15; }
-        else if (pick === 'inhale') { e.mode = 'inhaleTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, 'BREATHES IN', '#ffd36b'); SFX.gasp(); }
+        else if (pick === 'inhale') { e.mode = 'inhaleTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.5; number(e.x, e.y - e.h - 12, 'BREATHES IN', '#ffd36b'); SFX.gasp(); }
         else { e.mode = 'croak'; e.modeT = 1.0; SFX.croak(); number(e.x, e.y - e.h - 12, 'CROAK', '#ffd36b'); }
       }
       break;
@@ -5269,9 +5269,9 @@ function updateTollmaster(e, dt) {
       const sp = e.onFoot ? (p3 ? 46 : 38) : 66;
       want = level && ad > 42 ? e.face * sp : level && ad < 26 ? -e.face * 30 : e.face * sp * 0.5;
       if (e.darkT <= 0 && litLamps()) { e.mode = 'darkTell'; e.modeT = 0.8; e.darkT = p3 ? 9 : 12; number(e.x, e.y - 48, 'THE DARK', '#9a5aa8'); SFX.callerChant(); }
-      else if (level && ad < 56 && e.ledgerT <= 0) { e.mode = 'ledgerTell'; e.modeT = p3 ? 0.38 : 0.5; e.ledgerT = p3 ? 2 : 2.8; number(e.x, e.y - 48, 'THE LEDGER', '#ffd36b'); SFX.charge(); }
-      else if (e.rodT <= 0 && ad > 30) { e.mode = 'rodTell'; e.modeT = 0.54; e.rodT = p3 ? 4.2 : 6; number(e.x, e.y - 48, 'THE ROD: JUMP', '#ff9a5c'); SFX.charge(); }
-      else if (e.tollT <= 0 && ad > 64 && ad < 300) { e.mode = 'tollTell'; e.modeT = 0.62; e.tollT = p3 ? 2.8 : 4.2; e.aimY = P.y - 10; number(e.x, e.y - 48, 'HE NAMES A DUE', '#ff9a5c'); SFX.tollBell(); }
+      else if (level && ad < 56 && e.ledgerT <= 0) { e.mode = 'ledgerTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = p3 ? 0.38 : 0.5; e.ledgerT = p3 ? 2 : 2.8; number(e.x, e.y - 48, 'THE LEDGER', '#ffd36b'); SFX.charge(); }
+      else if (e.rodT <= 0 && ad > 30) { e.mode = 'rodTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.54; e.rodT = p3 ? 4.2 : 6; number(e.x, e.y - 48, 'THE ROD: JUMP', '#ff9a5c'); SFX.charge(); }
+      else if (e.tollT <= 0 && ad > 64 && ad < 300) { e.mode = 'tollTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.62; e.tollT = p3 ? 2.8 : 4.2; e.aimY = P.y - 10; number(e.x, e.y - 48, 'HE NAMES A DUE', '#ff9a5c'); SFX.tollBell(); }
       break; }
     case 'ledgerTell': { want = -e.face * 14;
       if (Math.random() < dt * 16) parts.push({ x: e.x - e.face * 16, y: e.y - 38 - Math.random() * 6, vx: -e.face * 20, vy: -14, life: 0.35, max: 0.35, col: '#cfc6a8', size: 1, grav: 0 });
@@ -5364,9 +5364,9 @@ function updateLampreeve(e, dt) {
         let best = null, bd = 1e9; for (const pr of burning) { const q = Math.abs(pr.x - e.x); if (q < bd) { bd = q; best = pr; } }
         e.target = best; e.mode = 'toLamp'; e.modeT = 4.5; e.snuffT = p2 ? 7 : 9.5;
         number(e.x, e.y - 42, 'HE GOES FOR THE LAMP', '#ff9a5c'); SFX.heard(); }
-      else if (level && ad < 46 && e.sweepT <= 0) { e.mode = 'sweepTell'; e.modeT = p2 ? 0.34 : 0.46; e.sweepT = p2 ? 2 : 2.8; number(e.x, e.y - 42, 'LOW: JUMP IT', '#ffd36b'); SFX.charge(); }
-      else if (e.douseT <= 0 && ad < 150 && ad > 34) { e.mode = 'drawTell'; e.modeT = 0.6; e.douseT = p2 ? 4.6 : 6.4; number(e.x, e.y - 42, 'HE TAKES A BREATH', '#bfe6f5'); SFX.gasp && SFX.gasp(); }
-      else if (e.hookT <= 0 && ad > 70 && ad < 300) { e.mode = 'hookTell'; e.modeT = 0.55; e.hookT = p2 ? 5.4 : 7.5; number(e.x, e.y - 42, 'THE HOOK', '#ff9a5c'); SFX.grapple(); }
+      else if (level && ad < 46 && e.sweepT <= 0) { e.mode = 'sweepTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = p2 ? 0.34 : 0.46; e.sweepT = p2 ? 2 : 2.8; number(e.x, e.y - 42, 'LOW: JUMP IT', '#ffd36b'); SFX.charge(); }
+      else if (e.douseT <= 0 && ad < 150 && ad > 34) { e.mode = 'drawTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.6; e.douseT = p2 ? 4.6 : 6.4; number(e.x, e.y - 42, 'HE TAKES A BREATH', '#bfe6f5'); SFX.gasp && SFX.gasp(); }
+      else if (e.hookT <= 0 && ad > 70 && ad < 300) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p2 ? 5.4 : 7.5; number(e.x, e.y - 42, 'THE HOOK', '#ff9a5c'); SFX.grapple(); }
       break; }
     case 'toLamp': { const t = e.target;
       if (!t || !t.lit || t.gut > 0) { e.mode = 'stalk'; e.modeT = 0.4; break; }
@@ -5480,9 +5480,9 @@ function updateCaptain(e, dt) {
       e.sabreT -= dt; e.shotT -= dt; e.hookT -= dt; e.kegT -= dt; e.callT -= dt;
       want = level && ad > 40 ? e.face * (p3 ? 88 : 70) : level && ad < 28 ? -e.face * 40 : e.face * 40;
       if (level && ad < 52 && e.sabreT <= 0) { e.mode = 'sabreTell'; e.modeT = p3 ? 0.32 : 0.42; e.sabreT = p3 ? 1.7 : 2.5; number(e.x, e.y - 42, '!', '#ffd36b'); SFX.charge(); }
-      else if (e.hookT <= 0 && ad > 54 && ad < 230) { e.mode = 'hookTell'; e.modeT = 0.55; e.hookT = p3 ? 4 : 5.5; number(e.x, e.y - 42, 'THE GRAPNEL', '#ff9a5c'); SFX.grapple(); }
-      else if (p2 && e.kegT <= 0 && ad > 56) { e.mode = 'kegTell'; e.modeT = 0.5; e.kegT = p3 ? 5 : 7.5; number(e.x, e.y - 42, 'A KEG', '#ff6b6b'); SFX.fuse(); } // (the keg is asked for FIRST of the ranged three, or the pistols would never leave it a turn)
-      else if (e.shotT <= 0 && ad > 40) { e.mode = 'shootTell'; e.modeT = p3 ? 0.4 : 0.55; e.shotT = p3 ? 2.4 : 3.4; e.shots = p2 ? 2 : 1; e.aimY = P.y - 9; number(e.x, e.y - 42, 'TAKING AIM', '#ff9a5c'); }
+      else if (e.hookT <= 0 && ad > 54 && ad < 230) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p3 ? 4 : 5.5; number(e.x, e.y - 42, 'THE GRAPNEL', '#ff9a5c'); SFX.grapple(); }
+      else if (p2 && e.kegT <= 0 && ad > 56) { e.mode = 'kegTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.5; e.kegT = p3 ? 5 : 7.5; number(e.x, e.y - 42, 'A KEG', '#ff6b6b'); SFX.fuse(); } // (the keg is asked for FIRST of the ranged three, or the pistols would never leave it a turn)
+      else if (e.shotT <= 0 && ad > 40) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p3 ? 0.4 : 0.55; e.shotT = p3 ? 2.4 : 3.4; e.shots = p2 ? 2 : 1; e.aimY = P.y - 9; number(e.x, e.y - 42, 'TAKING AIM', '#ff9a5c'); }
       else if (e.callT <= 0) { e.mode = 'call'; e.modeT = 1.1; e.callT = p3 ? 9 : 13; SFX.whistleCall(); }
       break; }
     case 'sabreTell': if (e.modeT <= 0) { e.mode = 'sabre1'; e.modeT = 0.26; SFX.foeSlash(); e.vx = e.face * 150;
@@ -5492,7 +5492,7 @@ function updateCaptain(e, dt) {
     case 'shootTell': { e.face = Math.sign(d) || e.face; e.vx = 0;
       if (Math.random() < dt * 26) parts.push({ x: e.x + e.face * 14, y: e.y - 18, vx: 0, vy: -18, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'shoot'; e.modeT = 0.3; capShoot(e); } break; }
-    case 'shoot': if (e.modeT <= 0) { if (e.shots > 0) { e.mode = 'shootTell'; e.modeT = 0.26; } else { e.mode = 'stride'; e.modeT = 0.45; } } break;
+    case 'shoot': if (e.modeT <= 0) { if (e.shots > 0) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.26; } else { e.mode = 'stride'; e.modeT = 0.45; } } break;
     case 'hookTell': { e.face = Math.sign(d) || e.face; e.vx = 0;
       if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.5; SFX.ropeHaul();
         const sx = e.x + e.face * 14, sy = e.y - 20, dd = Math.hypot(P.x - sx, (P.y - 10) - sy) || 1;
@@ -5553,7 +5553,7 @@ function updateQuarter(e, dt) {
       e.slashT -= dt; e.shotT -= dt;
       if (sameDeck && ad < 200) want = ad > 34 ? e.face * (p3 ? 92 : 74) : -e.face * 40; else want = Math.sign((P.x < D.x0 ? D.x0 : P.x > D.x1 ? D.x1 : P.x) - e.x) * 60;
       if (sameDeck && ad < 42 && e.slashT <= 0) { e.mode = 'slashTell'; e.modeT = p3 ? 0.3 : 0.42; e.slashT = p3 ? 1.5 : 2.2; number(e.x, e.y - 34, '!', '#ffd36b'); SFX.charge(); }
-      else if (e.shotT <= 0 && ad < 300 && (ad > 40 || !sameDeck)) { e.mode = 'shootTell'; e.modeT = p3 ? 0.45 : 0.6; e.shotT = p3 ? 2 : 2.8; e.aimY = P.y - 9; number(e.x, e.y - 34, 'TAKING AIM', '#ff9a5c'); }
+      else if (e.shotT <= 0 && ad < 300 && (ad > 40 || !sameDeck)) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p3 ? 0.45 : 0.6; e.shotT = p3 ? 2 : 2.8; e.aimY = P.y - 9; number(e.x, e.y - 34, 'TAKING AIM', '#ff9a5c'); }
       break; }
     case 'slashTell': if (e.modeT <= 0) { e.mode = 'slash'; e.modeT = 0.3; SFX.foeSlash(); e.vx = e.face * 130;
       if (!P.dead && Math.sign(d) === e.face && ad < 46 && Math.abs(P.y - e.y) < 28) { const res = damagePlayer(e.x, DMG.quarterSlash); if (res === 'blocked') { e.mode = 'reel'; e.modeT = 0.9; e.stagger = 0.9; number(e.x, e.y - 34, 'PARRIED', '#8fd160'); } else if (res === 'hit') { P.vx = e.face * 240; P.vy = -120; } } } break;
@@ -5743,12 +5743,12 @@ function updateHerald(e, dt) {
     case 'wake': e.y = standY; if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.8; } break;
     case 'stride': { e.face = Math.sign(d) || e.face; want = ad > 50 ? e.face * (p3 ? 62 : 44) : 0; e.raiseT -= dt; e.sweepT -= dt; e.thrustT -= dt; e.glideT -= dt; e.callT -= dt; e.glaiveT -= dt; e.spearT -= dt; e.maelT -= dt;
       if (e.modeT <= 0 && !P.dead) {
-        if (e.glaiveT <= 0 && p3 && ad > 28 && !e.disarmed) { e.glaiveT = 12; e.mode = 'hurlTell'; e.modeT = 0.6; SFX.charge(); number(e.x, e.y - e.h - 12, 'HE THROWS IT', '#ffd36b'); }
+        if (e.glaiveT <= 0 && p3 && ad > 28 && !e.disarmed) { e.glaiveT = 12; e.mode = 'hurlTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.6; SFX.charge(); number(e.x, e.y - e.h - 12, 'HE THROWS IT', '#ffd36b'); }
         else if (e.raiseT <= 0) { e.raiseT = p3 ? 9 : 11; e.mode = 'raise'; e.modeT = 1.0; SFX.callerChant(); SFX.seaBell(); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
         else if (e.callT <= 0 && p2 && heraldGuard() < (p3 ? 3 : 2)) { e.callT = p3 ? 8 : 12; e.mode = 'callTell'; e.modeT = 0.9; SFX.seaBell(); number(e.x, e.y - e.h - 12, 'HE CALLS HIS GUARD', '#7cc8c8'); }
         else if (p3 && e.glideT <= 0 && ad > 110) { e.glideT = 5; e.mode = 'glide'; e.modeT = 0.8; e.gx = P.x - Math.sign(d) * 40; SFX.throwWhoosh(); }
-        else if (e.spearT <= 0 && ad > 60) { e.spearT = p3 ? 3.4 : 5; e.mode = 'spearTell'; e.modeT = p3 ? 0.55 : 0.75; SFX.charge(); number(e.x, e.y - e.h - 12, 'THE WATER STANDS UP', '#7cc8c8'); }
-        else if (p2 && e.maelT <= 0 && ad < 150) { e.maelT = p3 ? 7 : 10; e.mode = 'maelTell'; e.modeT = 0.8; SFX.callerChant(); number(e.x, e.y - e.h - 12, 'HE TURNS THE SQUARE', '#7cc8c8'); }
+        else if (e.spearT <= 0 && ad > 60) { e.spearT = p3 ? 3.4 : 5; e.mode = 'spearTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = p3 ? 0.55 : 0.75; SFX.charge(); number(e.x, e.y - e.h - 12, 'THE WATER STANDS UP', '#7cc8c8'); }
+        else if (p2 && e.maelT <= 0 && ad < 150) { e.maelT = p3 ? 7 : 10; e.mode = 'maelTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.8; SFX.callerChant(); number(e.x, e.y - e.h - 12, 'HE TURNS THE SQUARE', '#7cc8c8'); }
         else if (e.sweepT <= 0 && ad < 70) { e.sweepT = p2 ? 2.2 : 2.8; e.mode = 'sweepTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'LOW', '#ff6b6b'); SFX.snort(); }
         else if (e.thrustT <= 0 && ad < 118 && ad > 40) { e.thrustT = p2 ? 2.6 : 3.2; e.mode = 'thrustTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); }
       } break; }
@@ -5776,7 +5776,7 @@ function updateHerald(e, dt) {
         for (const q of seeds) if (q.glaive) q.dead = true;
         SFX.clank(); number(e.x, e.y - e.h - 12, 'HE HAS IT BACK', '#9aa39a'); }
       break; }
-    case 'glide': { const dir = Math.sign(e.gx - e.x); want = dir * 300; e.face = dir || e.face; if (Math.random() < dt * 30) parts.push({ x: e.x - dir * 10, y: e.y - 2, vx: -dir * 60, vy: -20, life: 0.4, max: 0.4, col: '#e8f4f0', size: 2, grav: 200 }); if (Math.abs(e.gx - e.x) < 12 || e.modeT <= 0) { e.mode = 'sweepTell'; e.modeT = 0.4; e.face = Math.sign(d) || e.face; } break; }
+    case 'glide': { const dir = Math.sign(e.gx - e.x); want = dir * 300; e.face = dir || e.face; if (Math.random() < dt * 30) parts.push({ x: e.x - dir * 10, y: e.y - 2, vx: -dir * 60, vy: -20, life: 0.4, max: 0.4, col: '#e8f4f0', size: 2, grav: 200 }); if (Math.abs(e.gx - e.x) < 12 || e.modeT <= 0) { e.mode = 'sweepTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.4; e.face = Math.sign(d) || e.face; } break; }
     case 'spearTell': { e.face = Math.sign(d) || e.face; e.aimX = P.x; // SPEARS OF WATER: three columns stand up out of the flood where you were, one after the other
       if (Math.random() < dt * 40) parts.push({ x: e.aimX + (Math.random() - 0.5) * 40, y: floor + 4, vx: 0, vy: -40 - Math.random() * 40, life: 0.4, max: 0.4, col: '#7cc8c8', size: 1, grav: -30 });
       if (e.modeT <= 0) { e.mode = 'spear'; e.modeT = 0.9; e.spearN = 0; e.spearAt = e.aimX - Math.sign(d || 1) * 34; } break; }
@@ -5862,14 +5862,14 @@ function updateChief(e, dt) {
     if (e.leapT <= 0 || (ad > 90 && e.stance !== 'bow' && Math.random() < 0.5)) { e.leapT = p2 ? 2 : 3; e.mode = 'crouch'; e.modeT = p2 ? 0.4 : 0.55; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); return; }
     if (e.stance === 'club') { const pool = ['over', 'sweep', 'grab', 'whirl', 'sweep']; let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0]; e.last = pick;
       dust(e.x - e.face * 6, e.y, 5); shakeCam(1); // the club: a stamp before every swing
-      if (pick === 'over') { e.mode = 'raise'; e.modeT = p2 ? 0.7 : 0.9; number(e.x, e.y - e.h - 12, '!!', CHIEF_COL.club); SFX.charge(); }
-      else if (pick === 'sweep') { e.mode = 'wind'; e.modeT = p2 ? 0.4 : 0.55; number(e.x, e.y - e.h - 12, '!', CHIEF_COL.club); SFX.buzz(); }
-      else if (pick === 'whirl') { e.mode = 'whirlWind'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!!', CHIEF_COL.club); SFX.charge(); }
+      if (pick === 'over') { e.mode = 'raise'; e.modeT = p2 ? 0.7 : 0.9; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
+      else if (pick === 'sweep') { e.mode = 'wind'; e.modeT = p2 ? 0.4 : 0.55; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.buzz(); }
+      else if (pick === 'whirl') { e.mode = 'whirlWind'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
       else { e.mode = 'reach'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '?', CHIEF_COL.club); } }
     else if (e.stance === 'sword') { const pick = Math.random() < 0.6 ? 'slash' : 'bash'; e.last = pick;
       sparks(e.x + e.face * 8, e.y - 12, e.face, 4); SFX.clank(); // the sword: a glint off the shield before every cut
-      if (pick === 'slash') { e.mode = 'slashWind'; e.modeT = p2 ? 0.28 : 0.38; e.combo = 2; number(e.x, e.y - e.h - 12, '!', CHIEF_COL.sword); SFX.buzz(); }
-      else { e.mode = 'bashWind'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, '!!', CHIEF_COL.sword); SFX.charge(); } }
+      if (pick === 'slash') { e.mode = 'slashWind'; e.modeT = p2 ? 0.28 : 0.38; e.combo = 2; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.buzz(); }
+      else { e.mode = 'bashWind'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); } }
     else if (Math.random() < (p2 ? 0.5 : 0.4) && e.last !== 'rain') { e.last = 'rain'; e.mode = 'rainAim'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '^^', CHIEF_COL.bow); SFX.bow(); }
     else { e.last = 'aim'; e.mode = 'aim'; e.modeT = 0.55; e.shots = p2 ? 3 : 2; number(e.x, e.y - e.h - 12, '^', CHIEF_COL.bow); SFX.bow(); }
   };
@@ -6022,8 +6022,8 @@ function updateWindcaller(e, dt) {
       if ((e.hits || 0) >= (p2 ? 1 : 2)) { number(e.x, e.y - 30, 'GONE', '#c9a0ff'); goBlink(); }
       else if (e.modeT <= 0) {
         if (e.howlT <= 0 && !P.dead) { e.howlT = p2 ? 8 : 11; e.mode = 'howlTell'; e.modeT = 1.1; number(e.x, e.y - 30, 'HE CALLS THE WIND', '#bfe6f5'); SFX.callerChant(); SFX.gasp(); }
-        else if (e.stoneT <= 0 && !P.dead) { e.stoneT = p2 ? 5.5 : 8; e.mode = 'stoneTell'; e.modeT = 0.85; number(e.x, e.y - 30, 'HE LIFTS A STONE', '#9aa39a'); SFX.callerChant(); SFX.stone(); }
-        else if (e.wallT <= 0 && p2 && !P.dead) { e.wallT = 9; e.mode = 'wallTell'; e.modeT = 0.9; number(e.x, e.y - 30, 'THE MOOR GOES WHITE', '#e8f0f8'); SFX.gasp(); }
+        else if (e.stoneT <= 0 && !P.dead) { e.stoneT = p2 ? 5.5 : 8; e.mode = 'stoneTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.85; number(e.x, e.y - 30, 'HE LIFTS A STONE', '#9aa39a'); SFX.callerChant(); SFX.stone(); }
+        else if (e.wallT <= 0 && p2 && !P.dead) { e.wallT = 9; e.mode = 'wallTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.9; number(e.x, e.y - 30, 'THE MOOR GOES WHITE', '#e8f0f8'); SFX.gasp(); }
         else goBlink(); }
       break; }
     case 'howlTell': if (e.modeT <= 0) { e.mode = 'howl'; e.modeT = 2.2; e.howlDir = Math.sign(P.x - (A.x0 + A.x1) / 2) || 1; SFX.buzz(); shakeCam(3); } break;
@@ -6179,7 +6179,7 @@ function updateWeaver(e, dt) {
     if (Math.random() < dt * 6) parts.push({ x: e.x, y: e.y - 14, vx: 0, vy: -10, life: 0.3, max: 0.3, col: '#e8dcc0', size: 1, grav: 0 });
     // she does not only drop. From up on the thread she spits web down onto the boards, and the
     // boards she hits are no good to stand on until you cut them clear.
-    if (e.spitT <= 0 && ad > 14 && !P.dead) { e.mode = 'spitTell'; e.modeT = 0.5; e.spitT = e.phase === 2 ? 4.2 : 6.5; number(e.x, e.y - 18, 'SHE SPITS', '#e8dcc0'); SFX.hiss(); }
+    if (e.spitT <= 0 && ad > 14 && !P.dead) { e.mode = 'spitTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.5; e.spitT = e.phase === 2 ? 4.2 : 6.5; number(e.x, e.y - 18, 'SHE SPITS', '#e8dcc0'); SFX.hiss(); }
     else if (e.cd <= 0 && ad < 16 && !P.dead) { e.mode = 'dropTell'; e.modeT = e.phase === 2 ? 0.36 : 0.55; number(e.x, e.y - 18, '!', '#ffd36b'); SFX.hiss(); }
   }
   else if (e.mode === 'spitTell') { e.y = e.restY + Math.sin(e.anim * 14) * 2; if (e.modeT <= 0) {
@@ -6276,9 +6276,9 @@ function updateOwl(e, dt) {
       if (e.hits >= 2) { flush('hit'); break; }
       if (e.modeT <= 0 && !P.dead) { const r = Math.random(); e.n = (e.n || 0) + 1;
         const nSp = enemies.filter(q => q.alive && q.t === 'spider').length;
-        if (Math.abs(P.y - e.y) < 30 && ad < 64 && !(e.hootCd > 0)) { e.hootCd = 3; e.mode = 'hootTell'; e.modeT = 0.45; SFX.owlHoot(); ringAt(e.x, e.y - 8, 20, '#dfe8ff', 0.3); } // you are up on its branch: it hoots you off it
-        else if (e.n % 3 === 0 && nSp < (p2 ? 3 : 2)) { e.mode = 'screechTell'; e.modeT = 0.5; number(e.x, e.y - 24, 'IT DRAWS BREATH', '#ffd36b'); }
-        else if (r < 0.34) { e.mode = 'fanTell'; e.modeT = 0.45; number(e.x, e.y - 24, 'FEATHERS', '#e8dcc0'); SFX.buzz(); }
+        if (Math.abs(P.y - e.y) < 30 && ad < 64 && !(e.hootCd > 0)) { e.hootCd = 3; e.mode = 'hootTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; SFX.owlHoot(); ringAt(e.x, e.y - 8, 20, '#dfe8ff', 0.3); } // you are up on its branch: it hoots you off it
+        else if (e.n % 3 === 0 && nSp < (p2 ? 3 : 2)) { e.mode = 'screechTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.5; number(e.x, e.y - 24, 'IT DRAWS BREATH', '#ffd36b'); }
+        else if (r < 0.34) { e.mode = 'fanTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.45; number(e.x, e.y - 24, 'FEATHERS', '#e8dcc0'); SFX.buzz(); }
         else if (r < 0.66 && r >= 0.5 && Math.abs(P.y - floor) < 30) { e.mode = 'riseUp'; e.modeT = 0.7; SFX.screech(); number(e.x, e.y - 24, '!!', '#ff6b6b'); } // up out of sight, and down on you
         else if (r < 0.5 && Math.abs(P.y - floor) < 30 && ad < 220) { e.mode = 'gust'; e.modeT = 1.4; e.gustDir = P.x - e.x > 0 ? 1 : -1; number(e.x, e.y - 24, 'WING BEAT', '#c9d1dc'); SFX.buzz(); }
         else flush('swoop'); }
@@ -6425,8 +6425,8 @@ function updatePitWarden(e, dt) {
     case 'stalk': { e.face = Math.sign(d) || e.face; want = ad > 40 ? e.face * (p2 ? 62 : 46) : 0;
       for (const k of ['pickT', 'chainT', 'roofT']) e[k] -= dt;
       if (e.modeT <= 0 && !P.dead) {
-        if (e.chainT <= 0 && ad > 90) { e.chainT = p2 ? 6 : 8.5; e.mode = 'chainTell'; e.modeT = 0.72; number(e.x, e.y - e.h - 12, 'THE CHAIN', '#ffd36b'); SFX.rattle(1); }
-        else if (e.roofT <= 0 && ad > 56) { e.roofT = p2 ? 6.5 : 9.5; e.mode = 'roofTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE STRIKES THE PROPS', '#ff6b6b'); SFX.charge(); }
+        if (e.chainT <= 0 && ad > 90) { e.chainT = p2 ? 6 : 8.5; e.mode = 'chainTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.72; number(e.x, e.y - e.h - 12, 'THE CHAIN', '#ffd36b'); SFX.rattle(1); }
+        else if (e.roofT <= 0 && ad > 56) { e.roofT = p2 ? 6.5 : 9.5; e.mode = 'roofTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE STRIKES THE PROPS', '#ff6b6b'); SFX.charge(); }
         else if (e.pickT <= 0 && ad < 62) { e.pickT = p2 ? 2.2 : 3.2; e.mode = 'pickTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
       }
       break; }
@@ -6646,7 +6646,7 @@ function updateRoadman(e, dt) {
         if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face;
           want = ad > 16 ? e.face * e.speed : 0;
           if (!e.fetched && ad < 150 && e.cd <= 0) { e.fetched = 1; e.mode = 'shout'; e.modeT = 0.8; number(e.x, e.y - 20, '!', '#ffd36b'); }
-          else if (ad < 22 && e.cd <= 0) { e.mode = 'stabTell'; e.modeT = 0.28; } }
+          else if (ad < 22 && e.cd <= 0) { e.mode = 'stabTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.28; } }
         else want = e.face * e.speed * 0.25;
     }
   } else {
@@ -6750,8 +6750,8 @@ function updateDrownedKing(e, dt) {
     case 'stalk': { e.face = Math.sign(d) || e.face; want = ad > 40 ? e.face * (p2 ? 58 : 40) : 0;
       for (const k of ['slamT', 'haulT', 'debtT']) e[k] -= dt;
       if (e.modeT <= 0 && !P.dead) {
-        if (e.haulT <= 0 && ad > 70) { e.haulT = p2 ? 6 : 8.5; e.mode = 'haulTell'; e.modeT = 0.75; number(e.x, e.y - e.h - 12, 'THE UNDERTOW', '#7ff0e0'); SFX.gasp(); }
-        else if (e.debtT <= 0) { e.debtT = p2 ? 7 : 11; e.mode = 'debtTell'; e.modeT = 0.85; number(e.x, e.y - e.h - 12, 'HE CALLS IT IN', '#ffd36b'); SFX.rattle(1); }
+        if (e.haulT <= 0 && ad > 70) { e.haulT = p2 ? 6 : 8.5; e.mode = 'haulTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.75; number(e.x, e.y - e.h - 12, 'THE UNDERTOW', '#7ff0e0'); SFX.gasp(); }
+        else if (e.debtT <= 0) { e.debtT = p2 ? 7 : 11; e.mode = 'debtTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.85; number(e.x, e.y - e.h - 12, 'HE CALLS IT IN', '#ffd36b'); SFX.rattle(1); }
         else if (e.slamT <= 0 && ad < 76) { e.slamT = p2 ? 2.4 : 3.4; e.mode = 'slamTell'; e.modeT = 0.62; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
       }
       break; }
@@ -6825,11 +6825,11 @@ function updateForgemaster(e, dt) {
     case 'pace': { e.face = Math.sign(d) || e.face; want = ad > 110 ? e.face * 44 : ad < 50 ? -e.face * 30 : 0; for (const k of ['slamT', 'sprayT', 'dragT', 'anvilT', 'breathT']) e[k] -= dt; e.bellT = (e.bellT || 0) - dt;
       if (e.modeT <= 0 && !P.dead) {
         const cart = nearestCart();
-        if (e.dragT <= 0 && cart) { e.dragT = p2 ? 9 : 12; e.mode = 'dragTell'; e.modeT = 0.7; e.cart = cart; number(e.x, e.y - e.h - 12, 'THE CHAIN', '#ffd36b'); SFX.forgeChain(); }
-        else if (e.anvilT <= 0) { e.anvilT = p2 ? 9 : 13; e.mode = 'anvilTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE RINGS THE ANVIL', '#ffd36b'); SFX.charge(); }
-        else if (p2 && e.breathT <= 0 && ad < 140) { e.breathT = 9; e.mode = 'breathTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'THE FURNACE', '#ff6b2c'); SFX.gasp(); }
-        else if (e.bellT <= 0 && ad > 46 && ad < 170) { e.bellT = p2 ? 6 : 9; e.mode = 'bellowsTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 12, 'THE BELLOWS', '#e8e0d0'); SFX.charge(); }
-        else if (e.sprayT <= 0 && ad < 120) { e.sprayT = p2 ? 6 : 8; e.mode = 'sprayTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, 'STEAM', '#e8e0d0'); SFX.hiss(); }
+        if (e.dragT <= 0 && cart) { e.dragT = p2 ? 9 : 12; e.mode = 'dragTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.7; e.cart = cart; number(e.x, e.y - e.h - 12, 'THE CHAIN', '#ffd36b'); SFX.forgeChain(); }
+        else if (e.anvilT <= 0) { e.anvilT = p2 ? 9 : 13; e.mode = 'anvilTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE RINGS THE ANVIL', '#ffd36b'); SFX.charge(); }
+        else if (p2 && e.breathT <= 0 && ad < 140) { e.breathT = 9; e.mode = 'breathTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'THE FURNACE', '#ff6b2c'); SFX.gasp(); }
+        else if (e.bellT <= 0 && ad > 46 && ad < 170) { e.bellT = p2 ? 6 : 9; e.mode = 'bellowsTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; number(e.x, e.y - e.h - 12, 'THE BELLOWS', '#e8e0d0'); SFX.charge(); }
+        else if (e.sprayT <= 0 && ad < 120) { e.sprayT = p2 ? 6 : 8; e.mode = 'sprayTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.5; number(e.x, e.y - e.h - 12, 'STEAM', '#e8e0d0'); SFX.hiss(); }
         else if (e.slamT <= 0 && ad < 70) { e.slamT = p2 ? 3 : 4; e.mode = 'slamTell'; e.modeT = 0.7; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.forgeSteam(); }
         else if (ad > 60) { e.mode = 'stride'; e.modeT = 0.9; }
       }
@@ -6870,8 +6870,8 @@ function updateForgemaster(e, dt) {
     /* ON THE BEAM: out of reach, and he makes the floor the dangerous place instead. */
     case 'beam': { e.face = Math.sign(d) || e.face; want = ad > 30 ? e.face * 52 : 0;
       e.pourT -= dt; e.downT -= dt;
-      if (e.downT <= 0 || e.y > floor - 30) { e.mode = 'dropTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'HE COMES DOWN', '#ff6b6b'); SFX.charge(); break; }
-      if (e.pourT <= 0) { e.pourT = p2 ? 1.5 : 2.1; e.mode = 'pourTell'; e.modeT = 0.55;
+      if (e.downT <= 0 || e.y > floor - 30) { e.mode = 'dropTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'HE COMES DOWN', '#ff6b6b'); SFX.charge(); break; }
+      if (e.pourT <= 0) { e.pourT = p2 ? 1.5 : 2.1; e.mode = 'pourTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.55;
         number(e.x, e.y - e.h - 12, 'HE POURS', '#ff9a5c'); SFX.hiss(); }
       break; }
     case 'pourTell': want = 0;
@@ -7087,14 +7087,14 @@ function updateGQueen(e, dt) {
       if (e.modeT <= 0 && !P.dead) {
         const ch = (e.chandT = (e.chandT ?? 3) - 0) <= 0 && props.find(pr => pr.t === 'weight' && pr.gq && pr.state === 'hang' && Math.abs(pr.x - P.x) < 34 && Math.abs(pr.x - e.x) > 30);
         const perch = e.phase >= 2 && (e.gLeapT = (e.gLeapT ?? 4) - 0) <= 0 && props.find(pr => pr.t === 'support' && !pr.broken && pr.sx0 !== undefined && Math.abs((pr.sx0 + pr.sx1 + 1) * TS / 2 - e.x) < 150);
-        if (e.phase >= 3 && (e.shadowT ?? 3) <= 0 && ad > 50) { e.shadowT = 7; e.mode = 'shadowTell'; e.modeT = 0.5; SFX.callerChant(); }
+        if (e.phase >= 3 && (e.shadowT ?? 3) <= 0 && ad > 50) { e.shadowT = 7; e.mode = 'shadowTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.5; SFX.callerChant(); }
         else if (perch) { e.gLeapT = 9; e.perch = perch; e.mode = 'gLeapTell'; e.modeT = 0.5; SFX.bellow(); }
-        else if (ch) { e.chandT = 6.5; e.mode = 'chandTell'; e.modeT = 0.7; e.chand = ch; SFX.bellow(); gqSay(e, '!', '#ffd36b'); }
-        else if (e.decreeT <= 0) { e.decreeT = 9; e.mode = 'decreeTell'; e.modeT = 0.9; SFX.callerChant(); ringAt(e.x, e.y - 30, 26, '#c9a0ff', 0.6); }
-        else if (e.throwT2 <= 0 && ad > 70) { e.throwT2 = 6.5; e.mode = 'sceptreTell'; e.modeT = 0.6; SFX.snort(); }
-        else if (e.chargeT <= 0 && ad > 100) { e.chargeT = 5.5; e.mode = 'chargeTell'; e.modeT = 0.8; SFX.bellow(); }
-        else if (e.slamT <= 0 && ad < 96) { e.slamT = 2.6; e.mode = 'slamTell'; e.modeT = 0.7; SFX.charge(); }
-        else if (e.sweepT <= 0 && ad < 54) { e.sweepT = 2.0; e.mode = 'sweepTell'; e.modeT = 0.45; SFX.snort(); }
+        else if (ch) { e.chandT = 6.5; e.mode = 'chandTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.7; e.chand = ch; SFX.bellow(); gqSay(e, '!', '#ffd36b'); }
+        else if (e.decreeT <= 0) { e.decreeT = 9; e.mode = 'decreeTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.9; SFX.callerChant(); ringAt(e.x, e.y - 30, 26, '#c9a0ff', 0.6); }
+        else if (e.throwT2 <= 0 && ad > 70) { e.throwT2 = 6.5; e.mode = 'sceptreTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.6; SFX.snort(); }
+        else if (e.chargeT <= 0 && ad > 100) { e.chargeT = 5.5; e.mode = 'chargeTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.8; SFX.bellow(); }
+        else if (e.slamT <= 0 && ad < 96) { e.slamT = 2.6; e.mode = 'slamTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.7; SFX.charge(); }
+        else if (e.sweepT <= 0 && ad < 54) { e.sweepT = 2.0; e.mode = 'sweepTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; SFX.snort(); }
       } break; }
     // she draws back and hurls the sceptre at the chain: it rings off it and comes back to her hand, and the chandelier shakes
     case 'chandTell': { const c = e.chand; e.face = Math.sign((c ? c.x : P.x) - e.x) || e.face; want = 0;
@@ -7132,13 +7132,13 @@ function updateGQueen(e, dt) {
     // THE GALLERY LEAP: up onto her gallery, a breath, then down on you point first. Break that section's pillar while she is up there.
     case 'gLeapTell': want = 0; { const c = e.perch; e.face = Math.sign(((c.sx0 + c.sx1 + 1) * TS / 2) - e.x) || e.face; if (e.modeT <= 0) { const T0 = 0.7, tx = (c.sx0 + c.sx1 + 1) * TS / 2, ty = A.gallery.row * TS; e.vx = (tx - e.x) / T0; e.vy = (ty - e.y) / T0 - 0.5 * 1000 * T0; e.mode = 'gLeap'; e.modeT = 1.4; e.airT = 0; SFX.leap(); dust(e.x, e.y, 10); } } break;
     case 'gLeap': e.airT += dt; if ((e.onGround && e.airT > 0.2) || e.modeT <= 0) { e.vx = 0; if (e.y < hall - TS) { e.mode = 'gPerch'; e.modeT = 1.1; SFX.heavy(); shakeCam(3); dust(e.x, e.y, 6); } else { e.mode = 'stand'; e.modeT = 0.4; } } break;
-    case 'gPerch': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'gDropTell'; e.modeT = 0.55; e.markX = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); SFX.charge(); } break;
+    case 'gPerch': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'gDropTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.55; e.markX = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); SFX.charge(); } break;
     case 'gDropTell': want = 0; if (e.modeT <= 0) { const T0 = 0.6; e.vx = (e.markX - e.x) / T0; e.vy = -220; e.dropT = 0.7; e.mode = 'gDrop'; e.modeT = 1.4; e.airT = 0; SFX.leap(); } break;
     case 'gDrop': e.airT += dt; if (e.onGround && e.airT > 0.2 && e.y >= hall - 4) { e.vx = 0; e.mode = 'slamRec'; e.modeT = 1.0; SFX.forgeHammer(); SFX.heavy(); shakeCam(9); zoomKick(1.08, 0.25); dust(e.x, e.y, 16); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 24, y: hall, dir: dd, life: 1.3, sp: 175, royal: true }); if (!P.dead && Math.abs(P.x - e.x) < 38 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } else if (e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.4; } break;
     // THE SHADOW STEP: purple smoke where she stands and where she means to be - behind you - and a sweep as she arrives
     case 'shadowTell': want = 0; if (Math.random() < dt * 40) { parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * 50, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#7a4aa0', size: 3, grav: 0 }); const bx = P.x - (P.face || 1) * 34; parts.push({ x: bx + (Math.random() - 0.5) * 16, y: hall - Math.random() * 30, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#c9a0ff', size: 2, grav: 0, glow: true }); }
       if (e.modeT <= 0) { e.mode = 'shadow'; e.modeT = 0.3; e.hideT = 0.3; SFX.throwWhoosh(); burst(e.x, e.y - 26, 14, ['#3a2a4a', '#7a4aa0'], 60, 0.5); } break;
-    case 'shadow': want = 0; e.vx = 0; if (e.modeT <= 0) { e.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x - (P.face || 1) * 34)); e.y = hall; e.vy = 0; e.face = Math.sign(P.x - e.x) || 1; burst(e.x, e.y - 26, 16, ['#3a2a4a', '#c9a0ff'], 70, 0.5); e.mode = 'sweepTell'; e.modeT = 0.32; SFX.snort(); } break;
+    case 'shadow': want = 0; e.vx = 0; if (e.modeT <= 0) { e.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x - (P.face || 1) * 34)); e.y = hall; e.vy = 0; e.face = Math.sign(P.x - e.x) || 1; burst(e.x, e.y - 26, 16, ['#3a2a4a', '#c9a0ff'], 70, 0.5); e.mode = 'sweepTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.32; SFX.snort(); } break;
     // ---- phase three: the roof ----
     case 'ceilTell': want = 0; if (e.modeT <= 0) { e.mode = 'ceil'; e.modeT = 3; gqCeiling(e); } break;
     case 'ceil': { const hx = (A.hole.x0 + A.hole.x1 + 1) * TS / 2; e.x += (hx - e.x) * Math.min(1, dt * 5); e.y -= 360 * dt;
@@ -7146,12 +7146,12 @@ function updateGQueen(e, dt) {
     case 'roofWait': want = 0; e.face = Math.sign(d) || e.face; if (!P.dead && P.y <= roof + 2 && P.ground) { e.mode = 'roof'; e.modeT = 1; SFX.bellow(); } break;
     case 'roof': { e.face = Math.sign(d) || e.face; want = ad > 60 ? e.face * 34 : 0; e.slateT -= dt; e.leapT -= dt;
       if (e.modeT <= 0 && !P.dead) {
-        if (e.slateT <= 0 && ad > 50) { e.slateT = 2.2; e.mode = 'slateTell'; e.modeT = 0.45; }
+        if (e.slateT <= 0 && ad > 50) { e.slateT = 2.2; e.mode = 'slateTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.45; }
         else if (e.leapT <= 0) { e.leapT = 2.4; const rods = props.filter(p => p.t === 'rod'), nearP = rods.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
           // she goes up on the peak nearest you to throw from it - which is the whole idea
           if (nearP && Math.abs(nearP.x - P.x) < 110 && Math.random() < 0.65 && Math.abs(nearP.x - e.x) > 20) { e.tx = nearP.x; e.ty = nearP.y; } else { e.tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, P.x)); e.ty = roof; }
-          e.mode = 'leapTell'; e.modeT = 0.5; }
-        else if (ad < 50 && e.slamT <= 0) { e.slamT = 3.2; e.mode = 'slamTell'; e.modeT = 0.6; SFX.charge(); }
+          e.mode = 'leapTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.5; }
+        else if (ad < 50 && e.slamT <= 0) { e.slamT = 3.2; e.mode = 'slamTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.6; SFX.charge(); }
       } e.slamT -= dt; break; }
     case 'slateTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'slate'; e.modeT = 0.4; SFX.throwWhoosh(); for (let k = 0; k < 3; k++) { const tx = P.x + (k - 1) * 22, tt = 0.8; seeds.push({ x: e.x, y: e.y - 50, vx: (tx - e.x) / tt, vy: -140 + (P.y - e.y) / tt, dead: false, life: 3, g: 480, slate: true }); } } break;
     case 'slate': if (e.modeT <= 0) { e.mode = 'roof'; e.modeT = 0.5; } break;
@@ -7171,7 +7171,7 @@ const rocOpen = e => e.mode === 'stuck' || e.mode === 'skid' || e.mode === 'down
 function updateRoc(e, dt) {
   const A = L.arena, floor = A.floor;
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
-  if (e.phase === 1 && e.hp <= e.maxHp / 2) { e.phase = 2; e.mode = 'shedTell'; e.modeT = 0.8; e.featherT = 0; SFX.queenShriek(); shakeCam(6); zoomKick(1.1, 0.3); }
+  if (e.phase === 1 && e.hp <= e.maxHp / 2) { e.phase = 2; e.mode = 'shedTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.8; e.featherT = 0; SFX.queenShriek(); shakeCam(6); zoomKick(1.1, 0.3); }
   const d = P.x - e.x, ad = Math.abs(d), p2 = e.phase === 2;
   const hoverY = floor - 5.5 * TS + Math.sin(e.anim * 2.2) * 6;
   const fly = (tx, ty, sp) => { const want = Math.sign(tx - e.x) * Math.min(sp, Math.abs(tx - e.x) * 2.5); e.vx += (want - e.vx) * Math.min(1, dt * 3); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - e.vy) * Math.min(1, dt * 3); };
@@ -7185,10 +7185,10 @@ function updateRoc(e, dt) {
       if ((e.sideT = (e.sideT === undefined ? 3 : e.sideT) - dt) <= 0) { e.sideT = 2.2 + Math.random() * 2; e.side = -(e.side || 1); }
       fly(Math.max(A.x0 + 48, Math.min(A.x1 - 48, P.x + (e.side || 1) * 76)), hoverY, p2 ? 130 : 95);
       if (e.modeT > 0) break;
-      if (e.diveT <= 0) { e.diveT = p2 ? 3.1 : 4.2; e.mode = 'diveTell'; e.modeT = 0.85; e.tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, P.x + P.vx * 0.25)); SFX.queenShriek(); }
+      if (e.diveT <= 0) { e.diveT = p2 ? 3.1 : 4.2; e.mode = 'diveTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.85; e.tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, P.x + P.vx * 0.25)); SFX.queenShriek(); }
       else if (e.rakeT <= 0 && Math.abs(P.y - floor) < 30) { e.rakeT = p2 ? 7.5 : 9.5; e.mode = 'rakeGo'; e.modeT = 1.8; e.rakeDir = P.x > (A.x0 + A.x1) / 2 ? 1 : -1; e.rakeX = e.rakeDir > 0 ? A.x0 + 36 : A.x1 - 36; SFX.queenShriek(); } // THE SKY RAKE
       else if (e.gustT <= 0 && ad < 170) { e.gustT = p2 ? 6.5 : 8.5; e.mode = 'gustTell'; e.modeT = 0.6; SFX.puff(); }
-      else if (p2 && e.featherT <= 0) { e.featherT = 3.8; e.mode = 'shedTell'; e.modeT = 0.55; }
+      else if (p2 && e.featherT <= 0) { e.featherT = 3.8; e.mode = 'shedTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.55; }
       break; }
     // the shadow goes down where she means to land, and she goes up a little before she drops
     case 'diveTell': fly(e.x, hoverY - 14, 50); e.face = Math.sign(e.tx - e.x) || e.face;
@@ -7204,7 +7204,7 @@ function updateRoc(e, dt) {
         if (glass) { e.mode = 'stuck'; e.modeT = p2 ? 2.2 : 2.8; SFX.crack(); } else { e.mode = 'skid'; e.modeT = p2 ? 0.8 : 1.1; } }
       break; }
     // THE SKY RAKE: she goes to the far end, drops to a man's height, screams, and comes the length of the crown with her talons down. Jump her.
-    case 'rakeGo': fly(e.rakeX, floor - 14, 170); e.face = e.rakeDir; if ((Math.abs(e.x - e.rakeX) < 10 && Math.abs(e.y - (floor - 14)) < 10) || e.modeT <= 0) { e.mode = 'rakeLine'; e.modeT = p2 ? 0.55 : 0.7; e.vx = 0; e.vy = 0; SFX.queenShriek(); } break;
+    case 'rakeGo': fly(e.rakeX, floor - 14, 170); e.face = e.rakeDir; if ((Math.abs(e.x - e.rakeX) < 10 && Math.abs(e.y - (floor - 14)) < 10) || e.modeT <= 0) { e.mode = 'rakeLine'; e.modeT = p2 ? 0.55 : 0.7; e.vx = 0; e.vy = 0; SFX.queenShriek(); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); } break;
     case 'rakeLine': e.vx *= 0.5; e.vy *= 0.5; e.face = e.rakeDir; if (e.modeT <= 0) { e.mode = 'rake'; e.modeT = 6; e.vx = e.rakeDir * 280; /* long enough to cross the whole crown */ e.vy = 0; e.hitT = 0; SFX.charge(); } break;
     case 'rake': { e.vx = e.rakeDir * 280; e.vy = 0; e.y = floor - 14; if (Math.random() < dt * 30) dust(e.x - e.rakeDir * 10, floor, 2);
       if (!P.dead && e.hitT <= 0 && Math.abs(P.x - e.x) < 22 && P.y > e.y - 6 && P.y < e.y + 26) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.rocRake, { unblockable: true, up: true }); if (res === 'hit') { P.vx = e.rakeDir * 260; P.vy = -150; } }
@@ -7435,7 +7435,7 @@ function updateGrandmother(e, dt) {
       want = 0; e.vx = 0;
       if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 16 - Math.random() * 10, vx: 0, vy: -10, life: 0.5, max: 0.5, col: '#f6f6ee', size: 1, grav: 0 });
       hushT = Math.max(hushT, e.modeT);
-      if (e.caught) { e.mode = 'throwTell'; e.modeT = 0.4; number(e.x, e.y - e.h - 16, 'SHE HEARD THAT', '#ff6b6b'); SFX.snort(); music.duck(false); hushT = 0; shakeCam(3); break; }
+      if (e.caught) { e.mode = 'throwTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.4; number(e.x, e.y - e.h - 16, 'SHE HEARD THAT', '#ff6b6b'); SFX.snort(); music.duck(false); hushT = 0; shakeCam(3); break; }
       if (e.modeT <= 0) { e.mode = 'rap'; e.modeT = 1.9; e.stagger = 1.9; music.duck(false); hushT = 0;
         SFX.stone(); SFX.thud(); shakeCam(6); zoomKick(1.05, 0.25); hitstop(0.05); noiseAt(e.x, e.y, 120, null);
         ringAt(e.x, e.y, 46, '#f6f6ee', 0.5); dust(e.x, e.y, 10);
@@ -7478,7 +7478,7 @@ function updateAssassin(e, dt) {
     case 'lurk': {
       e.fade = Math.min(0.34, (e.fade || 0.34) + dt);          /* he goes back to being a shape in a doorway */
       if (!P.dead && ad < 76 && dy < 40 && e.cd <= 0 && e.stagger <= 0) {
-        e.face = Math.sign(d) || e.face; e.mode = 'markTell'; e.modeT = 0.5; e.cd = 3.4;
+        e.face = Math.sign(d) || e.face; e.mode = 'markTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.5; e.cd = 3.4;
         SFX.heard(); ringAt(e.x, e.y - 8, 14, '#d8e070', 0.5);
         number(e.x, e.y - e.h - 12, '!!', '#ff6b6b');
       } break; }
@@ -7646,10 +7646,10 @@ function updateLance(e, dt) {
       else if (ad < 34 && e.bashT <= 0) { e.bashT = 4.5; e.lastBash = false; e.mode = 'bashTell'; e.modeT = 0.42; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); }
       else if (ad < 96 && ad > 30 && e.thrustT <= 0) { e.thrustT = 3.2; e.mode = 'thrustTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); }
       // a stride or two off: he plants the lance and goes up it, and comes down on you point first
-      else if (ad > 60 && ad < 150 && e.vaultT <= 0) { e.vaultT = 9; e.mode = 'vaultTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 14, 'HE GOES UP', '#ff6b6b'); SFX.snort(); }
+      else if (ad > 60 && ad < 150 && e.vaultT <= 0) { e.vaultT = 9; e.mode = 'vaultTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.6; number(e.x, e.y - e.h - 14, 'HE GOES UP', '#ff6b6b'); SFX.snort(); }
       // keep your distance and he throws: three javelins, and then his hands are empty for a moment
       else if (ad > 110 && (e.galeT ?? 2) <= 0) { e.galeT = 8; e.javT = Math.max(e.javT, 3); e.mode = 'galeTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 14, 'THE STORM', '#bfe6f5'); SFX.stormChant && SFX.stormChant(); SFX.bellow(); }
-      else if (ad > 150 && e.javT <= 0) { e.javT = 9; e.mode = 'javTell'; e.modeT = 0.6; SFX.snort(); }
+      else if (ad > 150 && e.javT <= 0) { e.javT = 9; e.mode = 'javTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.6; SFX.snort(); }
       else if (ad > 70 && e.chargeT <= 0) { e.chargeT = p2 ? 5 : 6.5; e.mode = 'couch'; e.modeT = 0.8; number(e.x, e.y - e.h - 14, 'HE LEVELS IT', '#ff6b6b'); SFX.bellow(); shakeCam(2); }
       break; }
     case 'couch': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 3.2; e.vx = e.face * 250; e.passT = -1; SFX.charge(); shakeCam(3); } break;
@@ -7691,7 +7691,7 @@ function updateLance(e, dt) {
       if (e.modeT <= 0) { e.mode = 'gale'; e.modeT = p2 ? 3 : 2.6; e.gust = { x0: A.x0, x1: A.x1, y0: floor - 2 * TS, y1: floor, dir: -e.face, period: 1e9, on: 1e9, phase: 0, k: 1.15, brace: true, lanceGale: true }; L.gusts = L.gusts || []; L.gusts.push(e.gust); SFX.gust && SFX.gust(); shakeCam(3); } break;
     case 'gale': want = 0; e.face = Math.sign(d) || e.face; if (e.gust) e.gust.dir = -e.face;
       if (!P.dead && P.y > floor - 2 * TS && P.x > A.x0 && P.x < A.x1 && ad > 20) { const pull = (P.block || P.aegis || P.jet) ? 16 : P.ground ? 78 : 40; moveBody(P, -e.face * pull * dt, 0, false); if (Math.random() < dt * 30) parts.push({ x: P.x + e.face * 10, y: P.y - 4 - Math.random() * 10, vx: -e.face * 140, vy: 0, life: 0.3, max: 0.3, col: '#dfe8ff', size: 1, grav: 0 }); } /* the deck drags you in; a braced shield holds, a lookout is out of it */
-      if (e.modeT <= 0) { if (e.gust) L.gusts.splice(L.gusts.indexOf(e.gust), 1); e.gust = null; if (ad < 100 && Math.abs(P.y - e.y) < 30) { e.thrustT = 3.2; e.mode = 'thrustTell'; e.modeT = 0.35; SFX.snort(); } else { e.mode = 'pace'; e.modeT = 0.6; } } break;
+      if (e.modeT <= 0) { if (e.gust) L.gusts.splice(L.gusts.indexOf(e.gust), 1); e.gust = null; if (ad < 100 && Math.abs(P.y - e.y) < 30) { e.thrustT = 3.2; e.mode = 'thrustTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.35; SFX.snort(); } else { e.mode = 'pace'; e.modeT = 0.6; } } break;
     // THE WHIRLWIND: the shield goes round over his head and the air goes with it - stand on him and you are thrown
     case 'whirlTell': want = 0; if (Math.random() < dt * 40) { const a = Math.random() * 6.28; parts.push({ x: e.x + Math.cos(a) * 40, y: e.y - 14 + Math.sin(a) * 18, vx: -Math.cos(a) * 90, vy: -Math.sin(a) * 50 - 20, life: 0.4, max: 0.4, col: '#dfe8ff', size: 1, grav: 0 }); }
       if (e.modeT <= 0) { e.mode = 'whirl'; e.modeT = 0.5; SFX.gust && SFX.gust(); SFX.throwWhoosh(); shakeCam(4); ringAt(e.x, e.y - 14, 56, '#dfe8ff', 0.45);
@@ -7708,7 +7708,7 @@ function updateLance(e, dt) {
       else if (ad < 30 && e.bashT <= 0 && e.sweepT > 0.6) { e.bashT = 3; e.mode = 'bashTell'; e.modeT = 0.36; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); }
       else if (ad < 30 && e.sweepT <= 0) { e.sweepT = 1.9; e.mode = 'guardTell'; e.modeT = 0.38; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
       // back off him and he comes for you behind the shield: block it and he reels, jump it and he stumbles
-      else if (ad > 44 && ad < 130 && e.rushT <= 0) { e.rushT = 3.4; e.mode = 'rushTell'; e.modeT = 0.5; SFX.snort(); }
+      else if (ad > 44 && ad < 130 && e.rushT <= 0) { e.rushT = 3.4; e.mode = 'rushTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.5; SFX.snort(); }
       break; }
     case 'rushTell': e.face = Math.sign(d) || e.face; want = -e.face * 20; if (e.modeT <= 0) { e.mode = 'rush'; e.modeT = 0.55; e.vx = e.face * 230; e.hitT = 0; SFX.charge(); } break;
     case 'rush': {
@@ -7845,7 +7845,7 @@ function updateRam(e, dt) {
   e.vy += 1000 * dt; if (e.vy > 400) e.vy = 400;
   const d = P.x - e.x, ad = Math.abs(d);
   let want = 0;
-  const pick = () => { e.n = (e.n || 0) + 1; const r = Math.random(); for (let k = 0; k < 3; k++) parts.push({ x: e.x + e.face * 18, y: e.y - 8 + k, vx: e.face * (40 + k * 15), vy: -10 - k * 6, life: 0.4, max: 0.4, col: '#e8e0d0', size: 2, grav: -20 }); if (ad < 40 && r < 0.55) { e.mode = 'tossTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, '!!!', '#ff9a5c'); SFX.snort(); } else if (e.n % 3 === 0 && r < 0.6) { e.mode = 'stampTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); } else if (ad < 70 && r < 0.5) { e.mode = 'buttTell'; e.modeT = 0.35; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); } else if (ad > 50 && r < (p2 ? 0.82 : 0.7)) { e.mode = 'leapTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 12, '!!!', '#ff6b6b'); SFX.snort(); SFX.snort(); } else { e.mode = 'lower'; e.modeT = p2 ? 0.5 : 0.7; e.feint = ad > 60 && Math.random() < (p2 ? 0.5 : 0.35); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); } };
+  const pick = () => { e.n = (e.n || 0) + 1; const r = Math.random(); for (let k = 0; k < 3; k++) parts.push({ x: e.x + e.face * 18, y: e.y - 8 + k, vx: e.face * (40 + k * 15), vy: -10 - k * 6, life: 0.4, max: 0.4, col: '#e8e0d0', size: 2, grav: -20 }); if (ad < 40 && r < 0.55) { e.mode = 'tossTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); } else if (e.n % 3 === 0 && r < 0.6) { e.mode = 'stampTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); } else if (ad < 70 && r < 0.5) { e.mode = 'buttTell'; e.modeT = 0.35; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); } else if (ad > 50 && r < (p2 ? 0.82 : 0.7)) { e.mode = 'leapTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); SFX.snort(); } else { e.mode = 'lower'; e.modeT = p2 ? 0.5 : 0.7; e.feint = ad > 60 && Math.random() < (p2 ? 0.5 : 0.35); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); } };
   switch (e.mode) {
     case 'sleep': { const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0; return; }
     case 'wake': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.8; } break;
@@ -8051,7 +8051,7 @@ function updateMaster(e, dt) {
   else if (e.mode === 'leap') { want = e.vx; e.airT += dt; if (e.airT > 0.15 && e.vy >= 0 && e.y >= M.floor - 1) { e.y = M.floor; e.vy = 0; e.vx = 0; shakeCam(5); SFX.thud(); dust(e.x, e.y, 10); e.stagger = 0.7; e.mode = 'landed'; e.modeT = 0.7; number(e.x, e.y - e.h - 10, 'LANDED: HIT HIM', '#8fd160'); if (!P.dead && ad < 22 && Math.abs(P.y - e.y) < 20 && P.ground) { const res = damagePlayer(e.x, DMG.master); if (res === 'hit') P.vx = (Math.sign(P.x - e.x) || 1) * 200; } } }
   else if (e.mode === 'landed') { if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 0.5; e.stagger = 0; } }
   else if (e.mode === 'pincerTell') { if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 1.2; for (const s of [-1, 1]) spawnHound(s < 0 ? M.x0 + 14 : M.x1 - 14, { pincer: true, pincerT: 0.4, speed: 165, packLife: 4.5 }); number(P.x, P.y - 30, 'JUMP', '#ffd36b'); SFX.bark(); } }
-  else if (e.mode === 'flankTell') { if (e.modeT <= 0) { const side = Math.sign(P.x - e.x) || 1, fx = Math.max(M.x0 + 30, Math.min(M.x1 - 30, P.x + side * 64)); for (let i = 0; i < 2; i++) spawnHound(side > 0 ? M.x1 - 14 - i * 12 : M.x0 + 14 + i * 12, { flank: true, holdX: fx + i * 10 * side, holdT: 3, packLife: 6 }); number(P.x, P.y - 30, 'DRIVEN', '#c080ff'); e.mode = 'chargeTell'; e.modeT = 0.7; e.face = side; number(e.x, e.y - e.h - 12, 'CHARGE', '#ff6b6b'); } }
+  else if (e.mode === 'flankTell') { if (e.modeT <= 0) { const side = Math.sign(P.x - e.x) || 1, fx = Math.max(M.x0 + 30, Math.min(M.x1 - 30, P.x + side * 64)); for (let i = 0; i < 2; i++) spawnHound(side > 0 ? M.x1 - 14 - i * 12 : M.x0 + 14 + i * 12, { flank: true, holdX: fx + i * 10 * side, holdT: 3, packLife: 6 }); number(P.x, P.y - 30, 'DRIVEN', '#c080ff'); e.mode = 'chargeTell'; e.modeT = 0.7; e.face = side; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); } }
   else if (e.mode === 'crackTell') { if (e.modeT <= 0) { e.mode = 'crack'; e.modeT = 0.45; SFX.slash(); SFX.heavy(); shakeCam(3); waves.push({ x: e.x + e.face * 16, y: M.floor, dir: e.face, life: 1.8, sp: 170 }); number(e.x, e.y - e.h - 12, 'CRACK', '#ff9a5c'); } }
   else if (e.mode === 'crack') { if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 0.4; } }
   else { // between moves he paces; every move has a tell and a name
@@ -8061,7 +8061,7 @@ function updateMaster(e, dt) {
       else if (e.lashT <= 0 && ad < 56 && Math.abs(P.y - e.y) < 24) { e.lashT = 3.2; tell('!', '#ffd36b', 0.4, 'lashTell'); }
       else if (e.crackT <= 0 && ad > 60 && ad < 220) { e.crackT = 6.5; tell('WHIP', '#ff9a5c', 0.5, 'crackTell'); }
       else if (e.leapT <= 0 && ad < 110) { e.leapT = 7.5; tell('!!', '#ff6b6b', 0.5, 'leapTell'); }
-      else { tell('CHARGE', '#ff6b6b', 0.5, 'chargeTell'); }
+      else { tell('!', '#ffd36b', 0.5, 'chargeTell'); }
     }
     if (e.charging) {
       want = e.face * e.speed;
@@ -8101,7 +8101,7 @@ function updateKing(e, dt) {
     if (e.mode === 'grabTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.3; e.grabT = 6; grab(); } return; }
     if (e.mode === 'grab') { if (e.modeT <= 0) { e.mode = 'carried'; e.modeT = 0.5; } return; }
     e.chargeT = (e.chargeT === undefined ? 5 : e.chargeT - dt); e.grabT -= dt;
-    if (e.mode === 'carried' && e.modeT <= 0 && !P.dead) { if (e.chargeT <= 0 && ad > 40 && Math.abs(P.y - floor) < 40) { e.mode = 'chargeTell'; e.modeT = 0.7; e.chargeT = 7; number(e.x, e.y - 40, '!!', '#ff6b6b'); SFX.kingLaugh(); return; } if (e.grabT <= 0 && ad > 8 && ad < 62 && P.y > e.y - 26 && P.y <= e.y + 4) { e.mode = 'grabTell'; e.modeT = 0.8; SFX.charge(); return; } }
+    if (e.mode === 'carried' && e.modeT <= 0 && !P.dead) { if (e.chargeT <= 0 && ad > 40 && Math.abs(P.y - floor) < 40) { e.mode = 'chargeTell'; e.modeT = 0.7; e.chargeT = 7; number(e.x, e.y - 40, '!!', '#ff6b6b'); SFX.kingLaugh(); return; } if (e.grabT <= 0 && ad > 8 && ad < 62 && P.y > e.y - 26 && P.y <= e.y + 4) { e.mode = 'grabTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.8; SFX.charge(); return; } }
     e.face = Math.sign(d) || e.face; e.x += e.dir * 36 * dt; if (e.x < A.x0 + 60) e.dir = 1; if (e.x > A.x1 - 60) e.dir = -1;
     e.gobletT -= dt; if (e.gobletT <= 0) { e.gobletT = climbing ? 2.2 : 2.6; goblet(); }
     e.summonT -= dt; if (e.summonT <= 0 && enemies.filter(g => g.alive && g.t === 'shield' && g.guard).length < 2) { e.summonT = 12; SFX.roar(); for (const sx of [A.x0 + 20, A.x1 - 20]) enemies.push({ t: 'shield', x: sx, y: floor, vx: 0, vy: -100, w: 12, h: 14, hp: EHP.shield, speed: 24, face: Math.sign(P.x - sx) || 1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.4, guard: true, turnT: 0 }); }
@@ -8112,11 +8112,11 @@ function updateKing(e, dt) {
   if (e.mode === 'rise') { if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.4; e.h = 60; e.throne = e.throne || { x: e.x, y: floor }; e.throneT = 9; } }
   else if (e.mode === 'walk') { e.face = Math.sign(d) || e.face; want = ad > 30 ? e.face * (e.phase === 3 ? 62 : 44) : 0; e.shoutT -= dt; e.grabT -= dt; e.cageT -= dt; e.throneT -= dt; e.gobletT -= dt; if (climbing && e.gobletT <= 0) { e.gobletT = 2.4; goblet(); }
     const wantsThrone = e.phase === 3 && e.throneT <= 0 && e.throne && !e.thrown && !e.throneDone;
-    if (wantsThrone) { const td = e.throne.x - e.x; if (Math.abs(td) > 14) { want = Math.sign(td) * 60; e.face = Math.sign(td); } else { e.mode = 'liftTell'; e.modeT = 1.0; SFX.charge(); want = 0; } }
-    else if (e.modeT <= 0 && ad < 46) { e.mode = 'slamTell'; e.modeT = 0.7; SFX.charge(); }
-    else if (e.grabT <= 0 && ad > 24 && ad < 100 && Math.abs(P.y - e.y) < 30) { e.mode = 'grabTell'; e.modeT = 0.7; SFX.charge(); }
-    else if (e.shoutT <= 0 && ad < 110) { e.mode = 'shoutTell'; e.modeT = 0.9; SFX.charge(); }
-    else if (e.cageT <= 0 && props.some(c => c.t === 'dropcage' && c.boss && !c.dropped && Math.abs(c.x - P.x) < 40)) { e.mode = 'cageTell'; e.modeT = 0.45; } }
+    if (wantsThrone) { const td = e.throne.x - e.x; if (Math.abs(td) > 14) { want = Math.sign(td) * 60; e.face = Math.sign(td); } else { e.mode = 'liftTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 1.0; SFX.charge(); want = 0; } }
+    else if (e.modeT <= 0 && ad < 46) { e.mode = 'slamTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.7; SFX.charge(); }
+    else if (e.grabT <= 0 && ad > 24 && ad < 100 && Math.abs(P.y - e.y) < 30) { e.mode = 'grabTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.7; SFX.charge(); }
+    else if (e.shoutT <= 0 && ad < 110) { e.mode = 'shoutTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.9; SFX.charge(); }
+    else if (e.cageT <= 0 && props.some(c => c.t === 'dropcage' && c.boss && !c.dropped && Math.abs(c.x - P.x) < 40)) { e.mode = 'cageTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; } }
   else if (e.mode === 'grabTell') { if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.3; e.grabT = 4.5; grab(); } }
   else if (e.mode === 'grab' && e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; }
   else if (e.mode === 'shoutTell' && e.modeT <= 0) { e.mode = 'shout'; e.modeT = 0.4; e.shoutT = 7; SFX.roar(); shakeCam(5); ringAt(e.x, e.y - 30, 90, '#ffd36b', 0.4); if (!P.dead && ad < 100 && Math.abs(P.y - e.y) < 60) { damagePlayer(e.x, DMG.shout, { unblockable: true }); P.vx = (Math.sign(P.x - e.x) || 1) * 240; P.vy = -150; } }
@@ -8828,7 +8828,7 @@ function drawCritters(cx, cy) {
 
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
-const windingUp = e => (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'stampTell' || e.mode === 'grabTell')) || (e.t === 'pitwarden' && (e.mode === 'pickTell' || e.mode === 'chainTell' || e.mode === 'roofTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
+const windingUp = e => (e.t === 'roc' && e.mode === 'rakeLine') || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'stampTell' || e.mode === 'grabTell')) || (e.t === 'pitwarden' && (e.mode === 'pickTell' || e.mode === 'chainTell' || e.mode === 'roofTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -9161,7 +9161,7 @@ function updateEnemies(dt) {
       let want = 0;
       if (near && ad < 64 && e.draw <= 0) want = -e.face * e.speed * 1.6; // back off
       else if (near && ad > 170 && e.draw <= 0) want = e.face * e.speed * 0.6;
-      if (near && e.timer <= 0 && e.draw <= 0 && ad > 40) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); }
+      if (near && e.timer <= 0 && e.draw <= 0 && ad > 40) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
       if (e.draw > 0 && e.draw - dt <= 0) { e.loose = 0.16;
         const sx = e.x + e.face * 5, sy = e.y - 7, dx = P.x - sx, Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
         seeds.push({ x: sx, y: sy, vx: Math.max(-(e.bowman ? 320 : 200), Math.min(e.bowman ? 320 : 200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, arrow: true, g: G, owner: e, fire: e.fire });
@@ -9208,7 +9208,7 @@ function updateEnemies(dt) {
     if (e.t === 'thorn') {
       const near = Math.abs(e.x - P.x) < 120 && Math.abs(e.y - P.y) < 30 && !P.dead;
       e.modeT -= dt;
-      if (e.mode === 'walk' && near && e.stagger <= 0) { e.mode = 'wind'; e.modeT = 0.45; e.face = Math.sign(P.x - e.x) || e.face; }
+      if (e.mode === 'walk' && near && e.stagger <= 0) { e.mode = 'wind'; e.modeT = 0.45; e.face = Math.sign(P.x - e.x) || e.face; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
       if (e.mode === 'wind') { want = 0; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 1.1; SFX.charge(); } }
       else if (e.mode === 'charge') { want = e.face * 95; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.8; } }
       else if (e.mode === 'rest') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
