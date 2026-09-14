@@ -92,7 +92,10 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     // stand in a doorway and press talk: you come out at the other one
     for (const dr of doors) if (Math.abs(dr.x - x) <= 1 && dr.y === y) { const to = doorTo.get(dr.to); if (to) { let ty = to.y; while (ty < H - 1 && !footing.has(key(to.x, ty))) ty++; push(to.x, ty); } }
     // swim: any way through the water, and a leap out at the surface (a jump from the top row of the pool)
-    if (water.has(key(x, y))) { for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) push(x + dx, y + dy); const sr = surfRow.get(key(x, y)); if (y <= sr + 1) for (let dy = -JUMP_UP - 1; dy <= 0; dy++) for (let dx = -3; dx <= 3; dx++) push(x + dx, sr + dy); }
+    /* A LEAP NEEDS SKY OVER THE SURFACE. Two pools that overlap by a row gave the lower one a "surface" under two rows of
+       rock, and the leap went up through the rock: the Deep's flooded shelf tunnel read as joined to the trench along its
+       whole floor, which is how the dead-end finder called it no dead end. Leap only from open water, up a clear column. */
+    if (water.has(key(x, y))) { for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) push(x + dx, y + dy); const sr = surfRow.get(key(x, y)); if (y <= sr + 1 && !solid(at(x, sr - 1))) for (let dx = -3; dx <= 3; dx++) for (let dy = 0; dy >= -JUMP_UP - 1; dy--) { if (solid(at(x + dx, sr + dy))) break; push(x + dx, sr + dy); } }
     // walk, and step up or down one
     for (const dx of [-1, 1]) for (const dy of [-1, 0, 1]) push(x + dx, y + dy);
     // climb

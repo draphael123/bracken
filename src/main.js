@@ -1153,6 +1153,9 @@ function spawnEnt(e) {
       case 'bridge': bridges.push({ x0: e.x, x1: e.x1, y: e.y, cut: cutBridges.has(e.x), cutT: 0 }); break;
       case 'throne': props.push({ t: 'throne', x: px, y: py }); break;
       case 'relic': props.push({ t: 'relic', x: px, y: py, kind: e.kind, got: false, ph: Math.random() * 6 }); break;
+      /* A HEART PUT DOWN FOR GOOD: the dead-end stashes (payDeadEnds in src/level.js). It does not fall or fade like a crate's,
+         it waits where it lies until you are hurt enough to take it, and once taken it stays taken until the level restarts */
+      case 'mend': { const key = 'mend:' + e.x + ',' + e.y; if (!healCrates.has(key) && !healths.some(h => h.key === key)) healths.push({ x: px, y: py, vy: 0, t: 0, stay: true, key }); break; }
       case 'well': props.push({ t: 'well', x: px, y: py, pair: (e.pair || 0) * TS + 8, cool: 0, ring: 0 }); break;
       case 'window': props.push({ t: 'window', x: px, y: py - 10, lit: 0, openT: 0, done: false, gob: e.gob || 'sprig', dx: e.dx, dy: e.dy }); break;
       case 'key': props.push({ t: 'key', x: px, y: py - 6, kind: e.kind || 'brass', ph: Math.random() * 6, got: marks.has('key:' + (e.kind || 'brass')) }); break;
@@ -3418,10 +3421,10 @@ function breakCrate(tx, ty) {
   if (!healCrates.has(key) && Math.random() < 0.3) { healCrates.add(key); healths.push({ x: tx * TS + 8, y: ty * TS + 8, vy: -140, t: 0 }); } // a crate sometimes holds a heart
 }
 let healths = []; const healCrates = new Set();
-function updateHealths(dt) { for (const h of healths) { h.t += dt; h.vy = Math.min(300, h.vy + 700 * dt); const ny = h.y + h.vy * dt, tx = Math.floor(h.x / TS), ty = Math.floor(ny / TS);
+function updateHealths(dt) { for (const h of healths) { h.t += dt; if (h.stay && h.t > 20) h.t -= 4 * Math.PI; h.vy = h.stay ? 0 : Math.min(300, h.vy + 700 * dt);   /* a stash heart hangs where it was put, under water too */ const ny = h.y + h.vy * dt, tx = Math.floor(h.x / TS), ty = Math.floor(ny / TS);
     if (h.vy > 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { h.y = ty * TS; h.vy = 0; } else h.y = ny;
-    if (!P.dead && P.hp < P.maxHp && Math.abs(P.x - h.x) < 10 && Math.abs(P.y - 8 - (h.y - 5)) < 14) { h.got = true; P.hp = Math.min(P.maxHp, P.hp + 20); SFX.mend(); number(P.x, P.y - 22, '+20', '#8fd160'); motes(h.x, h.y - 5, 10, 6, ['#ff9a9a', '#ffd0d0', '#fff6e0']); } }
-  healths = healths.filter(h => !h.got && h.t < 25); }
+    if (!P.dead && P.hp < P.maxHp && Math.abs(P.x - h.x) < 10 && Math.abs(P.y - 8 - (h.y - 5)) < 14) { h.got = true; if (h.key) healCrates.add(h.key);P.hp = Math.min(P.maxHp, P.hp + 20); SFX.mend(); number(P.x, P.y - 22, '+20', '#8fd160'); motes(h.x, h.y - 5, 10, 6, ['#ff9a9a', '#ffd0d0', '#fff6e0']); } }
+  healths = healths.filter(h => !h.got && (h.stay || h.t < 25)); }
 function drawHealths(cx, cy) { for (const h of healths) { if (h.t > 21 && Math.floor(h.t * 8) % 2) continue; const x = Math.round(h.x - cx), y = Math.round(h.y - cy - 8 + Math.sin(h.t * 4) * 1.5); bloom(h.x - cx, h.y - cy - 5, 10, 0.3, 'warm'); g.drawImage(PROP.heart, x - Math.floor(PROP.heart.width / 2), y); } }
 
 // ---------- player ----------
@@ -14187,6 +14190,7 @@ window.BK = { noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* t
   async playtest(o) { const m = await import('./playtest.js'); return m.run(window.BK, o || {}); },
   async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); },   /* every hero against the common foes, early to late: window.__lab */
   async bossLab(o) { const m = await import('./lab.js'); return m.bossLab(window.BK, o || {}); }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
+  healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
 };
 // ?playtest=1 runs the whole thing as soon as the art is baked and leaves the report on the page
 if (q.get('playtest') === '1') setTimeout(async () => {

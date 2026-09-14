@@ -13,7 +13,8 @@ import { floodReach } from '../src/reachcore.js';
 
 const TS = 16, want = process.argv[2] && !process.argv[2].startsWith('-') ? process.argv[2] : null, verbose = process.argv.includes('-v');
 /* the pickup boxes as main.js checks them, in pixels from the hero's feet (P.x, P.y), and how high a jump lifts the feet */
-const BOX = { silver: { dx: 13, up: 7 + 15, down: -7 + 15 }, stray: { dx: 15, up: 22, down: 22 }, key: { dx: 15, up: 22 + 6, down: 22 - 6 }, relic: { dx: 15, up: 20 + 2, down: 20 - 2 } };
+const BOX = { silver: { dx: 13, up: 7 + 15, down: -7 + 15 }, stray: { dx: 15, up: 22, down: 22 }, key: { dx: 15, up: 22 + 6, down: 22 - 6 }, relic: { dx: 15, up: 20 + 2, down: 20 - 2 },
+  mend: { dx: 9, up: 16, down: 10 } };   /* a dead-end stash heart (updateHealths: |dx| < 10, |feet - 8 - (y - 5)| < 14) */
 const JUMP_PX = 49;
 let bad = 0; const notes = [];
 for (const lv of LEVELS) {
@@ -31,7 +32,7 @@ for (const lv of LEVELS) {
   for (const m of (L.moversExtra || [])) if (m.kind === 'lift' && m.y0 !== undefined) for (let y = Math.floor(Math.min(m.y0, m.y1) / TS); y <= Math.floor(Math.max(m.y0, m.y1) / TS); y++) for (let x = Math.floor(m.x / TS); x < Math.floor((m.x + (m.w || 32)) / TS); x++) { footing.add(x + ',' + (y - 1)); rideAt.add(x + ',' + (y - 1)); }
   const rows = [];
   for (const e of L.ents) {
-    const kind = e.t === 'silver' ? 'silver' : e.t === 'stray' ? 'stray' : e.t === 'key' ? 'key' : e.t === 'relic' ? 'relic' : null;
+    const kind = e.t === 'silver' ? 'silver' : e.t === 'stray' ? 'stray' : e.t === 'key' ? 'key' : e.t === 'relic' ? 'relic' : e.t === 'mend' ? 'mend' : null;
     if (!kind) continue;
     if (e.kind === 'sheep' || e.kind === 'fisher' || e.kind === 'folk') continue;   /* a creature that walks to you, not a thing lying in the level */
     const B = BOX[kind], ix = e.x * TS + 8, iy = e.y * TS + (kind === 'silver' ? 0 : TS);   /* ents sit on their row: a stray's y is its feet */
