@@ -1,5 +1,5 @@
 import { floodReach } from './reachcore.js';
-import { spanOf } from './threat.js';
+import { spanOf, THREAT } from './threat.js';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
@@ -32,6 +32,7 @@ function grow(L, ret, col, n) {
   if (R.moversExtra) R.moversExtra = R.moversExtra.map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number') o[k] = shp(o[k]); return o; });
   for (const k of ['weather', 'ambient']) if (R[k]) R[k] = R[k].map(z => ({ ...z, x0: shp(z.x0), x1: z.x1 >= 99999 ? z.x1 : shpEnd(z.x1) }));
   for (const k of ['arena', 'mini']) if (R[k]) { const A = { ...R[k] }; for (const f of ['x0', 'x1', 'trigger']) if (typeof A[f] === 'number') A[f] = shp(A[f]); for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = sh(A[f]); if (A.dais) A.dais = { ...A.dais, x0: shp(A.dais.x0), x1: shp(A.dais.x1) }; R[k] = A; }
+  if (R.ambushes) R.ambushes = R.ambushes.map(A => ({ ...A, wallL: sh(A.wallL), wallR: sh(A.wallR), trigger: typeof A.trigger === 'number' ? sh(A.trigger) : A.trigger, check: Array.isArray(A.check) ? [sh(A.check[0]), A.check[1]] : A.check, waves: A.waves.map(w => w.map(([t, x, y, o]) => [t, sh(x), y, o])) }));   /* an ambush is in TILES, like the walls */
   if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1, st]) => [sh(x0), sh(x1), y0, y1, st]); // keep the room's KIND: dropping it made every grown level's interior the default timber
   if (R.stone) R.stone = R.stone.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.scree) R.scree = R.scree.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));
@@ -5601,7 +5602,7 @@ function checkpoints(L) {
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
-  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2]);
+  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2]).concat((L.ambushes || []).map(A => [A.wallL - 1, A.wallR + 1, A.y0 !== undefined ? A.y0 : A.row - 9, A.row + 2]));   /* never a checkpoint inside an ambush room: you would wake up locked in */
   const key = e => tall ? e.y : e.x;
   let ch = (L.ents || []).filter(e => e.t === 'check').sort((a, b) => key(a) - key(b));
   // 1. one of them is enough
@@ -5623,7 +5624,7 @@ function checkpoints(L) {
       // ninety-four column run with no checkpoint in it stood. (The garrison placer learned this on the
       // Sunspire and this one never heard about it.)
       if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;
-      if (wet(x, y) || rooms.some(([a2, b2]) => x >= a2 && x <= b2)) continue;
+      if (wet(x, y) || rooms.some(([a2, b2, c2, d2]) => x >= a2 && x <= b2 && (c2 === undefined || (y >= c2 && y <= d2)))) continue;
       const d = Math.abs((tall ? y : x) - want); if (d < bd) { bd = d; best = [x, y]; }
     }
     return bd < MAXRUN ? best : null;   /* the nearest ground that will hold one, even if it is most of a run away */
@@ -5646,7 +5647,8 @@ function garrison(L, id) {
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
-  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2]);
+  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2])
+    .concat((L.ambushes || []).map(A => [A.wallL - 1, A.wallR + 1, (A.y0 !== undefined ? A.y0 : A.row - 9) - 1, A.row + 2]));   /* an ambush room is empty until it shuts */
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const deepUnder = (x, y) => (L.pools || []).some(p => !p.shallow && !p.swim && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest', 'sheet']);
@@ -5758,7 +5760,81 @@ function dressLevel(L, id) {
   return L;
 }
 const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(silverTrim(checkpoints(garrison(L, id)))), id); }; }
+/* ============ AMBUSH ROOMS ============
+   Where a level means to jump you, in its FINAL coordinates (after every grow and graft - read them off the built grid):
+   the two gate columns, the row the floor stands on, and waves of [creature, x, y?, extra]. Wave one is the crowd; wave
+   two is built so the combat has to be used - a shield planted in front of a bow, a heavy that BREAKS, something light
+   enough to throw into the room's spikes, water or its own gates. The room is emptied of its creatures when it is built,
+   so it reads as a quiet yard until it shuts, and a checkpoint goes at its door: die inside and you wake outside, with
+   the room put back. check: [x, y] places that checkpoint by hand; false when one already stands at the door. The engine
+   is updateAmbush in src/main.js, and section Q of RULES-LEVELS-AND-BOSSES.md says what makes a good one. */
+const AMBUSH = {
+  wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 210, wallR: 247, check: [200, 11],
+    waves: [[['sprig', 216], ['sprig', 243], ['thorn', 230], ['lurker', 222]], [['shield', 238], ['spit', 244], ['thorn', 216], ['crow', 228, 6]]] }],
+  marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
+    waves: [[['hopper', 374], ['hopper', 386, 18], ['turtle', 380, 18]], [['thorn', 374], ['archer', 387], ['heronfoe', 381, 18], ['spit', 373]]] }],
+  stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],
+    waves: [[['sprig', 176], ['sprig', 203], ['hound', 196], ['hound', 182]], [['shield', 198], ['archer', 205], ['brute', 180], ['sapper', 188]]] }],
+  spore: [{ name: 'THE UNDERCAP', row: 19, wallL: 135, wallR: 170, check: [132, 19],
+    waves: [[['sporeling', 142], ['sporeling', 163], ['lurker', 152]], [['shield', 160], ['spitcap', 166], ['weaver', 146], ['sporeling', 140]]] }],
+  kings: [{ name: "THE KING'S ROAD", row: 13, wallL: 277, wallR: 308, check: [274, 12],
+    waves: [[['thief', 282], ['thief', 303], ['sprig', 292], ['hound', 286]], [['shield', 299], ['archer', 305], ['brute', 284], ['soldier', 290]]] }],
+  scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
+    waves: [[['goat', 178], ['goat', 198], ['sprig', 191], ['harpy', 185, 8]], [['shield', 193], ['archer', 199], ['troll', 180], ['rockgoblin', 186]]] }],
+  hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
+    waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['shield', 60], ['archer', 66], ['brute', 47], ['cutter', 55]]] }],
+  spire: [{ name: 'THE CRYSTAL SHELF', row: 171, wallL: 40, wallR: 72, check: false,
+    waves: [[['shardling', 46], ['shardling', 66], ['rockgoblin', 56], ['bat', 52, 166]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 165], ['shardling', 68]]] }],
+  moor: [{ name: 'THE CAIRN RIDGE', row: 13, wallL: 508, wallR: 545,
+    waves: [[['goat', 514], ['goat', 540], ['rockgoblin', 527], ['crow', 524, 7]], [['rockgoblin', 538], ['troll', 516], ['harpy', 528, 8], ['goat', 532]]] }],
+  storm: [{ name: 'THE HEARTH HALL', row: 31, wallL: 98, wallR: 152, check: false,
+    waves: [[['sprig', 104], ['sprig', 146], ['hearthgob', 128], ['cutter', 117]], [['shield', 140], ['archer', 148], ['brute', 108], ['pike', 126]]] }],
+  longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 293, wallR: 339, check: false,
+    waves: [[['scout', 297], ['scout', 336], ['crab', 316, 25], ['crab', 324, 25]], [['tideguard', 330, 25], ['scout', 336], ['netter', 298], ['heronfoe', 316, 25]]] }],
+  flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
+    waves: [[['cutlass', 66], ['cutlass', 88], ['scout', 76], ['crab', 83]], [['boarder', 84], ['marine', 90], ['bosun', 68], ['cutlass', 75]]] }],
+  hurricane: [{ name: 'THE ORLOP', row: 26, wallL: 69, wallR: 111, check: [65, 26],
+    waves: [[['cutlass', 74], ['cutlass', 106], ['scout', 90]], [['tideguard', 98], ['marine', 106], ['boarder', 78], ['cutlass', 88]]] },
+    { name: 'THE WEATHER DECK', row: 18, wallL: 389, wallR: 427, check: false,
+    waves: [[['cutlass', 394], ['cutlass', 422], ['scout', 408]], [['boarder', 414], ['marine', 422], ['bosun', 396], ['lookout', 404]]] }],
+  lamplit: [{ name: 'THE STORM DRAIN', row: 37, wallL: 360, wallR: 400, check: [355, 37],
+    waves: [[['wight', 366], ['wight', 394], ['crab', 380], ['sailor', 372]], [['tideguard', 386], ['scout', 394], ['watch', 368], ['snuffer', 378]]] },
+    { name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
+    waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
+  waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
+    waves: [[['thief', 100], ['thief', 118], ['runner', 110]], [['swornsword', 112], ['crossbow', 119], ['pike', 100], ['watch', 106]]] },
+    { name: 'THE HORSE FAIR', row: 35, wallL: 181, wallR: 209, check: [178, 35],
+    waves: [[['thief', 186], ['thief', 204], ['runner', 195], ['hound', 190]], [['swornsword', 198], ['crossbow', 205], ['soldier', 186], ['watch', 192]]] }],
+  hunt: [{ name: 'THE HOLLOW', row: 25, wallL: 323, wallR: 354, check: [320, 25],
+    waves: [[['hound', 328], ['hound', 350], ['hound', 338], ['thief', 344]], [['shield', 342], ['archer', 350], ['brute', 328], ['javelin', 334]]] },
+    { name: "THE LORD'S RIDE", row: 25, wallL: 436, wallR: 467, check: [433, 25],
+    waves: [[['hound', 440], ['hound', 462], ['crow', 452, 19], ['thief', 456]], [['shield', 454], ['archer', 463], ['pike', 442], ['soldier', 448]]] }],
+  quarry: [{ name: 'THE WEIGHT GALLERY', row: 23, wallL: 276, wallR: 324, check: [273, 23],
+    waves: [[['miner', 282], ['miner', 318], ['rockgoblin', 300], ['sapper', 310]], [['shield', 306], ['archer', 314], ['brute', 290], ['rockgoblin', 298]]] },
+    { name: 'THE LAMP DRIFT', row: 23, wallL: 399, wallR: 428, check: [395, 23],   /* the right gate stops short of the mine cart: a ride carries you through a wall */
+    waves: [[['miner', 404], ['miner', 424], ['bat', 414, 20]], [['shield', 419], ['archer', 425], ['brute', 405], ['sapper', 412]]] }],
+  frost: [{ name: "THE SQUATTERS' CAMP", row: 26, wallL: 53, wallR: 90, check: [50, 24],
+    waves: [[['wight', 58], ['wight', 86], ['rockgoblin', 72], ['goat', 64]], [['hearthgob', 80], ['hearthgob', 86], ['troll', 62], ['harpy', 72, 20]]] },
+    { name: 'THE CREVASSE FIELD', row: 14, wallL: 430, wallR: 475, check: false,
+    waves: [[['shardling', 440], ['wight', 452], ['shardling', 468]], [['troll', 442], ['rockgoblin', 460], ['wight', 452], ['harpy', 466, 8]]] }],
+  skyship: [{ name: 'THE DECKHOUSE ROOF', row: 21, wallL: 150, wallR: 176, check: [147, 25],
+    waves: [[['cutlass', 156], ['cutlass', 172], ['lookout', 164]], [['shield', 167], ['archer', 173], ['boarder', 157], ['sapper', 162]]] },
+    { name: 'THE SHEET DECK', row: 25, wallL: 368, wallR: 403, check: [365, 25],
+    waves: [[['cutlass', 372], ['cutlass', 396], ['sapper', 384], ['crow', 380, 18]], [['shield', 390], ['archer', 397], ['boarder', 374], ['javelin', 382]]] }],
+};
+/* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
+const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);
+function ambushRooms(L, id) {
+  const list = (L.ambushes || []).concat(AMBUSH[id] || []); if (!list.length) return L;
+  L.ambushes = list.map(A => ({ ...A, waves: A.waves.map(w => w.map(f => f.slice())) }));   /* a copy per build: the run's state lives on it */
+  for (const A of L.ambushes) {
+    const y0 = A.y0 !== undefined ? A.y0 : A.row - 9, inRoom = (e, pad) => e.x >= A.wallL - pad && e.x <= A.wallR + pad && e.y >= y0 && e.y <= A.row + 2;
+    L.ents = L.ents.filter(e => !(e.t === 'check' ? inRoom(e, 1) : THREAT[e.t] > 0 && !AMB_KEEP.has(e.t) && !e.boss && !e.mini && inRoom(e, 0)));
+    if (A.check !== false) { const [cx, cy] = A.check || [A.wallL - 3, A.row]; L.ents.push({ t: 'check', x: cx, y: cy }); }
+  }
+  return L;
+}
+for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(sprinkleCoins(silverTrim(checkpoints(garrison(ambushRooms(L, id), id)))), id); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };
