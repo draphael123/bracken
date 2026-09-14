@@ -1874,10 +1874,12 @@ export function bakeRockGoblin() {
   return pack([walk1, walk2, thr, lift, hurt], 7, 14, 10, 11);
 }
 // THE FORGEMASTER, at twice the size: a hulking smith in a steam rig. Boiler pack on his back, a furnace grate for a belly, a hammer arm as long as he is tall. 48×34.
-// Frames: idle, raise, slam, drag, hurl, stun, breath.
+// Frames: 0 idle, 1 raise, 2 slam, 3 drag, 4 hurl, 5 tongs wind-up (the hammer hot), 6 breath, 7-8 walk, 9 tongs (the hammer
+// swung flat), 10 the chain coiled, 11 the chain low, 12 the chain high, 13 the crucible up, 14 the crucible thrown, 15 stun (hurt, LAST).
 export function bakeForgemasterBig() {
   const FP = Object.assign({}, KG, { i: '#8a919c', I: '#5a6270', c: '#6a4a3a', C: '#3a2a24', y: '#ffd36b', s: '#e8e0d0', k: '#3a3a44', K: '#22222c', r: '#ff6b2c', R: '#ffd36b', x: '#c9463d' });
-  const f = rows => outline(fromGrid(rows, FP, 1), OUT);
+  /* A BLANK RING ROUND THE GRID: his helmet is drawn on row 0 and his hammer to the last column, so every frame's outline sat on its canvas edge */
+  const f = rows => outline(fromGrid(['.'.repeat(W + 2), ...rows.map(r => '.' + r + '.'), '.'.repeat(W + 2)], FP, 1), OUT);
   const W = 48, H = 34; const blank = () => Array.from({ length: H }, () => '.'.repeat(W));
   const put = (rows, x, y, str) => { const row = rows[y]; rows[y] = row.slice(0, x) + str + row.slice(x + str.length); };
   const body = (eyes = 'ey', mouth = 'GGG', step = 0) => { const R = blank();
@@ -1906,7 +1908,21 @@ export function bakeForgemasterBig() {
   const stun = f((() => { const R = body('xx', 'ggg'); put(R, 30, 12, 'iii'); put(R, 30, 13, 'iii'); put(R, 31, 14, 'Ii'); put(R, 31, 15, 'Ii'); put(R, 31, 16, 'Ii'); put(R, 31, 17, 'cc'); put(R, 30, 18, 'KKKK'); return R; })());
   const breath = f((() => { const R = body('rr', 'rrr'); put(R, 18, 6, 'grrrrrrrrrg'); put(R, 18, 7, 'grrrRRRrrrg'); put(R, 30, 5, 'rrRRRRrr'); put(R, 33, 6, 'rrRRrr'); put(R, 30, 7, 'rrrrr'); return hammerDown(R); })());
   const walkA = f(hammerDown(body('ey', 'GGG', 1))), walkB = f(hammerDown(body('ey', 'GGG', -1)));
-  return pack([idle, raise, slam, drag, hurl, stun, breath, walkA, walkB], 24, 32, 40, 32);
+  /* THE THREE NEW BLOWS, each a shape none of the others make: the hammer drawn back HOT (the flurry you stand your
+     guard through) and then swung FLAT at your chest; the chain COILED at his knee, then out along the floor or over
+     his head (jump the one, stay down for the other); the crucible UP over his helmet and then THROWN (it lands far,
+     so the answer is to be close). */
+  const hot = R => { put(R, 37, 1, 'rRRRRRRr'); put(R, 8, 3, 'ss'); put(R, 7, 2, 's'); put(R, 9, 1, 's'); return R; };
+  const hammerFlat = R => { put(R, 30, 11, 'iii'); put(R, 33, 11, 'iiiiiiii'); put(R, 33, 12, 'IIIIIIII'); put(R, 41, 11, 'cc'); put(R, 41, 12, 'cc'); for (let y = 6; y <= 17; y++) put(R, 43, y, 'KKKK'); put(R, 44, 7, 'I'); return R; };
+  const coil = R => { put(R, 30, 12, 'iii'); for (let y = 13; y <= 19; y++) put(R, 31, y, 'Iii'); put(R, 31, 20, 'cc'); put(R, 33, 20, 'yyyyyy'); for (let y = 21; y <= 23; y++) put(R, 33, y, 'y....y'); put(R, 33, 24, 'yyyyyy'); put(R, 38, 25, 'KK'); return R; };
+  const chainLow = R => { put(R, 30, 12, 'iii'); put(R, 31, 13, 'Iii'); put(R, 32, 14, 'Iii'); put(R, 33, 15, 'Iii'); put(R, 34, 16, 'Iii'); put(R, 35, 17, 'cc'); put(R, 36, 19, 'y'); put(R, 37, 21, 'y'); put(R, 38, 23, 'y'); put(R, 39, 25, 'y'); put(R, 40, 27, 'y.y.y.y'); put(R, 46, 26, 'K'); put(R, 46, 28, 'K'); return R; };
+  const chainHigh = R => { put(R, 30, 9, 'iii'); put(R, 32, 8, 'Iii'); put(R, 34, 7, 'Iii'); put(R, 36, 6, 'cc'); put(R, 38, 5, 'y'); put(R, 39, 4, 'y.y.y.y'); put(R, 45, 3, 'KK'); put(R, 45, 5, 'K'); return R; };
+  const crucibleUp = R => { put(R, 30, 9, 'iii'); put(R, 31, 8, 'Iii'); put(R, 32, 7, 'Iii'); put(R, 32, 6, 'Iii'); put(R, 33, 5, 'cc'); put(R, 30, 0, '.rRRRRRr.'); put(R, 30, 1, 'KKKKKKKKK'); put(R, 30, 2, 'KIIIIIIIK'); put(R, 31, 3, 'KKKKKKK'); put(R, 33, 4, 'ccc'); return R; };
+  const crucibleOut = R => { put(R, 30, 9, 'iii'); put(R, 32, 8, 'Iii'); put(R, 34, 7, 'Iii'); put(R, 36, 6, 'Iii'); put(R, 38, 5, 'cc'); put(R, 38, 1, 'KKKKKr'); put(R, 38, 2, 'KIIIKrR'); put(R, 38, 3, 'KKKKK'); put(R, 44, 0, 'rR'); put(R, 45, 3, 'r'); put(R, 46, 5, 'R'); return R; };
+  const tongsWind = f(hot(hammerUp(body()))), tongsFlat = f(hammerFlat(body('ey', 'GGG', 1)));
+  const whirlTell = f(coil(body('yy', 'GGG'))), whirlLow = f(chainLow(body('ey', 'ggg', 1))), whirlHigh = f(chainHigh(body('ey', 'ggg', -1)));
+  const ladleTell = f(crucibleUp(body('rr', 'GGG'))), ladle = f(crucibleOut(body('ey', 'GGG', 1)));
+  return pack([idle, raise, slam, drag, hurl, tongsWind, breath, walkA, walkB, tongsFlat, whirlTell, whirlLow, whirlHigh, ladleTell, ladle, stun], 25, 33, 40, 32);
 }
 // The Forgemaster — a goblin engineer strapped into a steam rig: piston arm, boiler pack, goggles. 32×26. Frames: idle, lunge, spray, kick, scalded.
 export function bakeForgemaster() {
@@ -2207,63 +2223,79 @@ export function bakeSentry() {
 }
 // THE GOBLIN QUEEN - old, huge and clever. An iron crown with red stones, ears like a bat's, a hooked nose
 // and a grin with two tusks, an ermine collar over a gown of the Queen's purple, a cape the colour of old
-// blood behind it, and an iron sceptre the length of a knight. 56x72, facing right, anchored at her feet.
+// blood behind it, and an iron sceptre the length of a knight. 96x72, facing right, anchored at her feet.
+// SHE IS FAT, NOT TALL. The owner's word: 'a lot fatter, she's tall enough'. So every height in her is where it
+// was - the crown, the head, the hem, the feet - and everything across is not: shoulders half as wide again, a
+// belly that is the widest thing on her and hangs over the belt, hips the gown has to spread round, arms like
+// hams and a neck that has become a second chin. The frame table below is still written in her old 56-wide
+// numbers; WIDE() maps each of them out, doubling a distance near her middle (that is body) and only adding the
+// extra body to a distance far out (that is reach), so a hand is still a hand's length off the fat.
 // Frames: 0 seated, 1 seated pointing, 2 seated throwing, 3 stand, 4 walk1, 5 walk2, 6 slam raised,
 // 7 slam down, 8 sweep, 9 charge, 10 dazed, 11 leap, 12 throw slate, 13 struck (the storm in her crown), 14 down.
 export function bakeGoblinQueen() {
   const C = { g: '#6faa4a', G: '#3f6e2c', d: '#2c4a1e', p: '#5a2a7a', P: '#3a1850', q: '#7a3a9a', y: '#e0b040', Y: '#a0781c', w: '#f2ece0', k: '#1b1626', r: '#7a1c24', R: '#4a0e14',
     i: '#5a6270', I: '#3a3e48', j: '#8a919c', m: '#c9463d', e: '#ffd36b', t: '#f3f0d2', n: '#9a5aa8' };
-  const W = 56, H = 72;
-  const frame = ({ sit = 0, lean = 0, dy = 0, flare = 0, arm = [34, 26, 42, 30], arm2 = null, rod = null, head = 'grin', tilt = 0, feet = [[24, 58], [31, 58]], stars = 0, rot = 0 }) => {
+  const W = 96, H = 78, CX = 48; /* spare rows under her boots: the outline of a planted foot (or a slam that sinks her) must not sit on the canvas edge */
+  const WIDE = x => { const d = x - 28, a = Math.abs(d); return CX + (a <= 12 ? d * 2 : Math.sign(d) * (12 + a)); };
+  const mapXs = a => a && a.map((v, i) => i % 2 === 0 && typeof v === 'number' ? WIDE(v) : v);
+  const frame = (o) => {
+    const { sit = 0, lean = 0, dy = 0, flare = 0, head = 'grin', tilt = 0, stars = 0, rot = 0 } = o;
+    const arm = mapXs(o.arm || [34, 26, 42, 30]), arm2 = mapXs(o.arm2 || null), rod = mapXs(o.rod || null), feet = (o.feet || [[24, 58], [31, 58]]).map(([x, y]) => [WIDE(x), y]);
+    /* the shoulder is out at the edge of the fat, not in the middle of her chest */
+    arm[0] += 7 * Math.sign(arm[0] - CX); if (arm2) arm2[0] += 7 * Math.sign(arm2[0] - CX);
     const [c, g] = canvas(W, H);
-    g.translate(0, 12); // headroom for the crown's points
-    g.save(); g.translate(28, 58 + dy); g.rotate(rot); g.translate(-28, -58);
-    const poly = (pts, k) => fillPoly(g, pts.map(([x, y]) => [x + (y < 34 ? lean * (34 - y) / 20 : 0), y]), C[k]);
-    const P1 = (x, y, k) => px(g, Math.round(x + (y < 34 ? lean * (34 - y) / 20 : 0)), Math.round(y), C[k]);
-    // the cape behind everything
-    poly([[15, 23], [39, 23], [46 + flare, 56 - sit], [10 - flare, 56 - sit]], 'r'); poly([[13, 29], [19, 29], [12 - flare, 56 - sit], [8 - flare, 56 - sit]], 'R');
+    g.translate(0, 12); /* headroom for the crown's points */
+    g.save(); g.translate(CX, 58 + dy); g.rotate(rot); g.translate(-CX, -58);
+    const sh = y => (y < 34 ? lean * (34 - y) / 20 : 0);
+    const poly = (pts, k) => fillPoly(g, pts.map(([x, y]) => [x + sh(y), y]), C[k]);
+    const P1 = (x, y, k) => px(g, Math.round(x + sh(y)), Math.round(y), C[k]);
+    const E = (x, y, rx, ry, k) => ellipse(g, x + sh(y), y, rx, ry, C[k]);
+    // the cape behind everything, as wide as she is
+    poly([[CX - 22, 22], [CX + 22, 22], [CX + 37 + flare, 56 - sit], [CX - 37 - flare, 56 - sit]], 'r'); poly([[CX - 24, 28], [CX - 16, 28], [CX - 35 - flare, 56 - sit], [CX - 39 - flare, 56 - sit]], 'R');
     // the sceptre when it is carried behind her
     const rodDraw = () => { if (!rod) return; const [x0, y0, x1, y1] = rod; line(g, x0, y0, x1, y1, C.I, 3); line(g, x0, y0, x1, y1, C.i, 1);
-      const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0); circle(g, x1, y1, 4, C.I); circle(g, x1, y1, 3, C.j); px(g, x1, y1, C.n); px(g, x1 + 1, y1 - 1, C.q);
+      circle(g, x1, y1, 4, C.I); circle(g, x1, y1, 3, C.j); px(g, x1, y1, C.n); px(g, x1 + 1, y1 - 1, C.q);
       for (const [a, b] of [[-5, 0], [5, 0], [0, -5], [0, 5]]) px(g, x1 + a, y1 + b, C.I); };
     if (rod && rod[4] === 'back') rodDraw();
-    // the gown: a bell of purple from the waist, gold at the hem and down the front
-    for (const [fx, fy] of feet) { rect(g, fx - 2, fy - 1, 4, 2, C.k); }
-    const hem = 55 - sit, hw = 27 + flare;
-    poly([[13, 34], [43, 34], [28 + hw, hem], [28 - hw, hem]], 'p');
-    poly([[24, 34], [32, 34], [32 + hw * 0.22, hem], [24 - hw * 0.22, hem]], 'P');
-    for (let q = 0; q < 6; q++) { const fx = 28 - hw + 4 + q * ((hw * 2 - 8) / 5); line(g, fx, 36, 28 + (fx - 28) * 1.2, hem - 1, C.P, 1); } // the pleats of it
-    for (let x = Math.round(28 - hw); x <= Math.round(28 + hw); x++) { px(g, x, hem, C.y); px(g, x, hem - 1, x % 3 === 0 ? C.Y : C.y); if (x % 4 === 0) px(g, x, hem - 2, C.Y); }
-    line(g, 28, 36, 28, hem - 1, C.y, 1);
-    if (sit) { poly([[15, 41], [49, 41], [49, 48], [15, 48]], 'q'); line(g, 15, 41, 49, 41, C.y, 1); } // her knees, over the throne's edge
-    // THE BODICE. No waist: she goes out from the shoulder and keeps going. The belly is the widest part of
-    // her and it hangs OVER the belt, which is where the weight of a body actually shows.
-    poly([[15, 19], [41, 19], [42, 25], [43, 31], [41, 35], [15, 35], [13, 31], [14, 25]], 'q');
-    ellipse(g, 28 + lean * 0.2, 31.5, 15, 5.5, C.q);                           // the belly itself, over the belt
-    ellipse(g, 28 + lean * 0.2, 30, 13.5, 3.6, C.n);                           // and the light on the top of it
-    for (const yy of [28.5, 32.5]) { g.globalAlpha = 0.5; ellipse(g, 28 + lean * 0.2, yy, 11 - (yy > 30 ? 2 : 0), 0.9, C.P); g.globalAlpha = 1; }  // the folds of it
-    // the bust: full, sitting high over the belly, with the shadow under
-    ellipse(g, 22 + lean * 0.3, 24, 6.6, 5, C.n); ellipse(g, 34 + lean * 0.3, 24, 6.6, 5, C.n);
-    ellipse(g, 22 + lean * 0.3, 26.4, 6, 2.8, C.q); ellipse(g, 34 + lean * 0.3, 26.4, 6, 2.8, C.q);
-    ellipse(g, 20.5 + lean * 0.3, 22.4, 3.2, 1.8, C.q); ellipse(g, 32.5 + lean * 0.3, 22.4, 3.2, 1.8, C.q);
-    for (let x = 16; x <= 40; x++) { px(g, x, 34, C.y); px(g, x, 35, C.Y); }   // the belt, UNDER her, not round her
-    P1(28, 34, 'm'); P1(25, 35, 'Y'); P1(31, 35, 'Y'); P1(22, 34, 'Y'); P1(34, 34, 'Y');
-    poly([[12, 15], [44, 15], [41, 21], [34, 22], [28, 27], [22, 22], [15, 21]], 'w');   // the ermine, and a deep neckline in it
-    for (const [x, y] of [[17, 18], [22, 20], [34, 20], [39, 18], [19, 20], [37, 19], [28, 17]]) P1(x, y, 'k');
-    for (let q = -3; q <= 3; q++) { const nx = 28 + q * 2, ny = 21 + Math.abs(q); P1(nx, ny, q === 0 ? 'm' : 'y'); if (q === 0) P1(nx, ny + 1, 'r'); } // the stones at her throat
-    // the far arm
-    if (arm2) { const [x0, y0, x1, y1] = arm2; line(g, x0, y0, x1, y1, C.G, 6); circle(g, x1, y1, 3, C.G); }
-    // the head: big, green, bat ears, a hook of a nose, yellow eyes, a grin with two tusks
-    const hx = 28 + lean, hy = 12;
+    for (const [fx, fy] of feet) rect(g, fx - 3, fy - 1, 6, 2, C.k);
+    // THE GOWN: it starts at the hips, and the hips are wide, so it is a tent before it is a bell
+    const hem = 55 - sit, hw = 36 + flare * 0.8;
+    poly([[CX - 27, 38], [CX + 27, 38], [CX + hw, hem], [CX - hw, hem]], 'p');
+    if (!sit) { E(CX - 21, 45, 14, 8, 'p'); E(CX + 21, 45, 14, 8, 'p'); }                     /* the hips under it (seated, her knees are where they were) */
+    poly([[CX - 6, 40], [CX + 6, 40], [CX + hw * 0.2, hem], [CX - hw * 0.2, hem]], 'P');
+    for (let q = 0; q < 8; q++) { const fx = CX - hw + 5 + q * ((hw * 2 - 10) / 7); line(g, CX + (fx - CX) * 0.7, 45, fx, hem - 1, C.P, 1); } /* the pleats of it */
+    for (let x = Math.round(CX - hw); x <= Math.round(CX + hw); x++) { px(g, x, hem, C.y); px(g, x, hem - 1, x % 3 === 0 ? C.Y : C.y); if (x % 4 === 0) px(g, x, hem - 2, C.Y); }
+    line(g, CX, 44, CX, hem - 1, C.y, 1);
+    if (sit) { poly([[CX - 30, 41], [CX + 34, 41], [CX + 34, 48], [CX - 30, 48]], 'q'); line(g, CX - 30, 41, CX + 34, 41, C.y, 1); } /* her knees, over the throne's edge */
+    // THE BODY. No waist anywhere: out from the shoulder and still going at the belt.
+    poly([[CX - 22, 18], [CX + 22, 18], [CX + 27, 24], [CX + 30, 31], [CX + 28, 38], [CX + 22, 42], [CX - 22, 42], [CX - 28, 38], [CX - 30, 31], [CX - 27, 24]], 'q');
+    // the belly: the widest part of her, round, hanging OVER the belt, which is where the weight of a body shows
+    E(CX + lean * 0.2, 33, 27, 10.5, 'q');
+    E(CX - 7 + lean * 0.2, 28.5, 14, 4.5, 'n'); P1(CX - 12, 27, 'n');                            /* the light on the top of it, from the upper left */
+    g.globalAlpha = 0.55; E(CX + 2, 40.5, 19, 1.3, 'P'); E(CX + 25, 33, 2, 6, 'P'); g.globalAlpha = 1; /* ONE fold, under it where it hangs, and its far side turning away: more folds read as a stack of tyres */
+    // the bust: full and heavy, sitting on the belly, with the shadow under
+    E(CX - 10 + lean * 0.3, 23.5, 10, 6.5, 'n'); E(CX + 10 + lean * 0.3, 23.5, 10, 6.5, 'n');
+    E(CX - 10 + lean * 0.3, 27.2, 9, 3, 'q'); E(CX + 10 + lean * 0.3, 27.2, 9, 3, 'q');
+    E(CX - 12 + lean * 0.3, 21.5, 4.5, 2, 'q'); E(CX + 8 + lean * 0.3, 21.5, 4.5, 2, 'q');
+    for (let x = CX - 22; x <= CX + 22; x++) { px(g, x, 42, C.y); px(g, x, 43, C.Y); }         /* the belt, UNDER her, not round her */
+    P1(CX, 42, 'm'); for (const o2 of [-14, -6, 6, 14]) P1(CX + o2, 43, 'Y');
+    poly([[CX - 18, 13], [CX + 18, 13], [CX + 26, 16], [CX + 30, 21], [CX + 22, 23], [CX + 10, 22], [CX, 28], [CX - 10, 22], [CX - 22, 23], [CX - 30, 21], [CX - 26, 16]], 'w'); /* the ermine across shoulders like a yoke, and a deep neckline in it */
+    for (const [x, y] of [[-19, 17], [-12, 19], [12, 19], [19, 17], [-25, 18], [25, 18], [0, 16], [-6, 16], [6, 16]]) P1(CX + x, y, 'k');
+    for (let q = -4; q <= 4; q++) { const nx = CX + q * 2, ny = 21 + Math.abs(q); P1(nx, ny, q === 0 ? 'm' : 'y'); if (q === 0) P1(nx, ny + 1, 'r'); } /* the stones at her throat */
+    // the far arm, as thick as a leg
+    if (arm2) { const [x0, y0, x1, y1] = arm2, wx = x0 + (x1 - x0) * 0.55, wy = y0 + (y1 - y0) * 0.55; circle(g, x0, y0, 6, C.P); line(g, x0, y0, x1, y1, C.P, 11); line(g, wx, wy, x1, y1, C.G, 8); circle(g, x1, y1, 4.5, C.G); }
+    // the head: the same big green head - bat ears, a hook of a nose, yellow eyes, two tusks - on a neck that is all chin
+    const hx = CX + lean, hy = 12;
     poly([[hx - 7, hy - 2], [hx - 16, hy - 6], [hx - 8, hy + 3]], 'g'); poly([[hx + 7, hy - 2], [hx + 16, hy - 6], [hx + 8, hy + 3]], 'g'); P1(hx - 12, hy - 3, 'G'); P1(hx + 12, hy - 3, 'G');
-    poly([[hx - 9, hy - 3], [hx + 9, hy - 3], [hx + 13, hy + 16], [hx - 13, hy + 16]], 'P');   // the veil, behind her head
-    ellipse(g, hx, hy + 1, 8.5, 8, C.g); ellipse(g, hx + 1, hy + 4.5, 6.5, 4, C.G);
-    P1(hx - 11, hy + 1, 'y'); P1(hx - 11, hy + 2, 'Y'); P1(hx + 11, hy + 1, 'y'); P1(hx + 11, hy + 2, 'Y');   // her earrings
+    poly([[hx - 9, hy - 3], [hx + 9, hy - 3], [hx + 17, hy + 16], [hx - 17, hy + 16]], 'P');   /* the veil, behind her head */
+    ellipse(g, hx, hy + 11, 12, 5, C.g); ellipse(g, hx, hy + 13.5, 10, 1.4, C.G);               /* the neck that has become a second chin, and its fold */
+    ellipse(g, hx, hy + 1, 9, 8, C.g); ellipse(g, hx, hy + 5, 9.5, 4.5, C.g); ellipse(g, hx + 1, hy + 4.5, 6.5, 4, C.G);
+    P1(hx - 11, hy + 1, 'y'); P1(hx - 11, hy + 2, 'Y'); P1(hx + 11, hy + 1, 'y'); P1(hx + 11, hy + 2, 'Y');   /* her earrings */
     if (head === 'daze') { P1(hx - 3, hy - 1, 'k'); P1(hx - 2, hy, 'k'); P1(hx - 2, hy - 2, 'k'); P1(hx + 3, hy - 1, 'k'); P1(hx + 4, hy, 'k'); P1(hx + 4, hy - 2, 'k'); }
     else { rect(g, hx - 4, hy - 1, 3, 2, C.e); rect(g, hx + 2, hy - 1, 3, 2, C.e); P1(hx - 2, hy - 1, 'm'); P1(hx + 4, hy - 1, 'm'); line(g, hx - 5, hy - 3, hx - 1, hy - 2, C.d, 1); line(g, hx + 6, hy - 3, hx + 2, hy - 2, C.d, 1); }
-    poly([[hx + 1, hy], [hx + 6, hy + 3], [hx + 2, hy + 4]], 'G'); // the nose
-    ellipse(g, hx, hy + 9, 7.5, 3, C.g); ellipse(g, hx, hy + 10, 6, 1.6, C.G);   // the jowl, and the throat under it
-    for (const [ex, ey] of [[hx - 6, hy + 8], [hx + 6, hy + 8]]) { P1(ex, ey, 'y'); P1(ex, ey + 1, 'Y'); }   // and more of her jewels on it
+    poly([[hx + 1, hy], [hx + 6, hy + 3], [hx + 2, hy + 4]], 'G'); /* the nose */
+    ellipse(g, hx, hy + 9, 9, 3.2, C.g); ellipse(g, hx, hy + 10, 7.5, 1.6, C.G);                /* the jowls, and the throat under them */
+    for (const [ex, ey] of [[hx - 7, hy + 8], [hx + 7, hy + 8]]) { P1(ex, ey, 'y'); P1(ex, ey + 1, 'Y'); }   /* and more of her jewels on it */
     if (head === 'shout') { rect(g, hx - 3, hy + 5, 7, 3, C.k); P1(hx - 2, hy + 5, 't'); P1(hx + 3, hy + 5, 't'); }
     else { line(g, hx - 4, hy + 6, hx + 4, hy + 6, C.k, 1); P1(hx - 3, hy + 5, 't'); P1(hx + 3, hy + 5, 't'); P1(hx - 3, hy + 4, 't'); P1(hx + 3, hy + 4, 't'); }
     P1(hx - 6, hy + 3, 'd'); P1(hx + 5, hy - 4, 'd');
@@ -2273,31 +2305,31 @@ export function bakeGoblinQueen() {
     for (const k of [-8, -4, 0, 4, 8]) { fillPoly(g, [[k - 2, -5], [k + 2, -5], [k, -11 - (k === 0 ? 3 : 0)]], C.i); px(g, k, -7, C.m); }
     g.restore();
     if (stars) for (let i = 0; i < 3; i++) { const a = i * 2.1 + stars; P1(hx + Math.cos(a) * 11, hy - 12 + Math.sin(a) * 3, 'e'); }
-    // the near arm and the sceptre in it
+    // the near arm and the sceptre in it: a sleeve of the gown to the wrist, and a great deal of arm in the sleeve
     if (!rod || rod[4] !== 'back') rodDraw();
-    { const [x0, y0, x1, y1] = arm; line(g, x0, y0, x1, y1, C.q, 8); line(g, x0, y0, x1, y1, C.g, 5); circle(g, x1, y1, 3.5, C.g); } // a sleeve of the gown to the wrist
+    { const [x0, y0, x1, y1] = arm, wx = x0 + (x1 - x0) * 0.55, wy = y0 + (y1 - y0) * 0.55; circle(g, x0, y0, 6.5, C.q); line(g, x0, y0, x1, y1, C.q, 13); line(g, wx, wy, x1, y1, C.g, 8); circle(g, wx, wy, 5, C.n); circle(g, x1, y1, 5, C.g); } /* the sleeve past the elbow, a puffed cuff, then the green forearm and the fist: all-green from the shoulder read as a leaf */
     g.restore();
     outline(c, OUT);
     return c;
   };
   const F = [
-    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 25, 40, 36], rod: [40, 44, 44, 12], flare: 2 }),                                    // 0 seated
-    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 24, 50, 18], rod: [18, 46, 16, 14, 'back'], arm2: [22, 25, 18, 34], head: 'shout', flare: 2 }), // 1 pointing
-    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 24, 44, 6], rod: [18, 46, 16, 14, 'back'], head: 'shout', flare: 2 }),              // 2 throwing
-    frame({ arm: [34, 25, 40, 36], rod: [40, 50, 44, 14] }),                                                                                   // 3 stand
-    frame({ arm: [34, 25, 41, 35], rod: [42, 48, 47, 14], feet: [[21, 58], [34, 58]], lean: 1 }),                                                // 4 walk1
-    frame({ arm: [34, 25, 39, 36], rod: [40, 50, 43, 15], feet: [[26, 58], [30, 58]], dy: -1 }),                                                // 5 walk2
-    frame({ arm: [34, 24, 36, 4], arm2: [22, 24, 32, 4], rod: [34, 6, 12, -2], head: 'shout', lean: -2 }),                                     // 6 slam raised
-    frame({ arm: [34, 26, 48, 44], arm2: [22, 26, 44, 44], rod: [44, 42, 54, 56], head: 'shout', lean: 4, dy: 2, flare: 2 }),                 // 7 slam down
-    frame({ arm: [34, 26, 50, 38], rod: [30, 40, 55, 50], lean: 3, flare: 3, head: 'shout' }),                                                  // 8 sweep
-    frame({ arm: [34, 26, 48, 30], rod: [32, 32, 56, 30], lean: 6, flare: 4, head: 'shout', feet: [[18, 58], [36, 58]] }),                     // 9 charge
-    frame({ arm: [34, 26, 38, 40], rod: [14, 56, 50, 50, 'back'], head: 'daze', tilt: 0.45, stars: 1, lean: -1 }),                             // 10 dazed
-    frame({ arm: [34, 24, 44, 12], rod: [40, 20, 50, -2], flare: 7, feet: [[24, 54], [31, 54]], dy: -3, head: 'shout' }),                       // 11 leap
-    frame({ arm: [34, 24, 46, 8], arm2: [22, 25, 18, 34], rod: [18, 50, 14, 16, 'back'], head: 'shout' }),                                     // 12 throw slate
-    frame({ arm: [34, 24, 46, 10], arm2: [22, 24, 10, 10], rod: [14, 56, 50, 50, 'back'], head: 'daze', tilt: -0.3, flare: 5, stars: 2 }),      // 13 struck
-    frame({ arm: [34, 26, 46, 50], rod: [10, 56, 52, 54, 'back'], head: 'daze', tilt: 0.9, rot: 0.2, dy: 3, flare: 6 }),                        // 14 down
+    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 25, 40, 36], rod: [40, 44, 44, 12], flare: 2 }),                                    /* 0 seated */
+    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 24, 50, 18], rod: [18, 46, 16, 14, 'back'], arm2: [22, 25, 18, 34], head: 'shout', flare: 2 }), /* 1 pointing */
+    frame({ sit: 8, feet: [[22, 50], [34, 50]], arm: [34, 24, 44, 6], rod: [18, 46, 16, 14, 'back'], head: 'shout', flare: 2 }),              /* 2 throwing */
+    frame({ arm: [34, 25, 40, 36], rod: [40, 50, 44, 14] }),                                                                                   /* 3 stand */
+    frame({ arm: [34, 25, 41, 35], rod: [42, 48, 47, 14], feet: [[21, 58], [34, 58]], lean: 1 }),                                                /* 4 walk1 */
+    frame({ arm: [34, 25, 39, 36], rod: [40, 50, 43, 15], feet: [[26, 58], [30, 58]], dy: -1 }),                                                /* 5 walk2 */
+    frame({ arm: [34, 24, 36, 4], arm2: [22, 24, 32, 4], rod: [34, 6, 12, -2], head: 'shout', lean: -2 }),                                     /* 6 slam raised */
+    frame({ arm: [34, 26, 48, 44], arm2: [22, 26, 44, 44], rod: [44, 40, 52, 50], head: 'shout', lean: 4, dy: 2, flare: 2 }),                 /* 7 slam down */
+    frame({ arm: [34, 26, 50, 38], rod: [30, 40, 55, 50], lean: 3, flare: 3, head: 'shout' }),                                                  /* 8 sweep */
+    frame({ arm: [34, 26, 48, 30], rod: [32, 32, 54, 30], lean: 6, flare: 4, head: 'shout', feet: [[18, 58], [36, 58]] }),                     /* 9 charge */
+    frame({ arm: [34, 26, 38, 40], rod: [14, 52, 50, 48, 'back'], head: 'daze', tilt: 0.45, stars: 1, lean: -1 }),                             /* 10 dazed */
+    frame({ arm: [34, 24, 44, 12], rod: [40, 20, 50, -2], flare: 7, feet: [[24, 54], [31, 54]], dy: -3, head: 'shout' }),                       /* 11 leap */
+    frame({ arm: [34, 24, 46, 8], arm2: [22, 25, 18, 34], rod: [18, 50, 14, 16, 'back'], head: 'shout' }),                                     /* 12 throw slate */
+    frame({ arm: [34, 24, 46, 10], arm2: [22, 24, 10, 10], rod: [14, 52, 50, 48, 'back'], head: 'daze', tilt: -0.3, flare: 5, stars: 2 }),      /* 13 struck */
+    frame({ arm: [34, 26, 46, 45], rod: [10, 50, 52, 48, 'back'], head: 'daze', tilt: 0.9, rot: 0.1, dy: 1, flare: 5 }),                        /* 14 down (the fist kept off the canvas's last row: the tip of her sleeve sat on it) */
   ];
-  return pack(F, 28, 70, 30, 50);
+  return pack(F, CX, 70, 52, 50);
 }
 // THE THRONE - black oak and old iron, purple cushions, a skull on each post. 40x46, anchored at its foot.
 export function bakeThrone() {
