@@ -111,7 +111,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.15 * (tal('heavyPlunge') + tal('firedropDmg')))); // (HEAVY PLUNGE, FIREDROP)
-const DMG = { heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
+const DMG = { splash: 20, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
   helmCut: 21, helmStamp: 18, helmGrab: 22,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, wardenPick: 24, wardenChain: 14, wardenFall: 20, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
 const EHP = { swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 620,
@@ -248,7 +248,7 @@ const TREE = [];
   N('pyro', 0, 2, 0, 'stoke', 'STOKE', 3, 'every ember that hits a foe adds 2 heat a point', 'twin');
   N('pyro', 0, 3, 0, 'brand', 'BRAND', 1, 'a burning foe takes half as much again from everything', 'stoke');
   N('pyro', 1, 0, 0, 'longFlame', 'LONG FLAME', 3, 'the jet reaches 11% further a point', null);
-  N('pyro', 1, 1, 0, 'updraft', 'UPDRAFT', 1, 'jetting in the air holds you up: you fall slowly for as long as it burns', 'longFlame');
+  N('pyro', 1, 1, 0, 'updraft', 'UPDRAFT', 1, 'the jet lights in the air too, and holds you up: you fall slowly for as long as it burns', 'longFlame');
   N('pyro', 1, 1, 1, 'fireWall', 'FIRE WALL', 3, 'F: a line of flame ahead of you for three seconds', 'longFlame', true);
   N('pyro', 1, 2, 0, 'searing', 'SEARING', 1, 'what the jet touches burns three times as long', 'updraft');
   N('pyro', 1, 2, 1, 'wisp', 'WISP', 3, 'F: a flame that follows you, lights every lamp it passes and dives at foes', 'fireWall', true);
@@ -423,7 +423,7 @@ const ROW_NEED = [0, 0, 0, 8];   // what the LAST row of a branch costs you in c
 const nodeState = n => { const m = talentsOf(n.hero), r = m[n.id] || 0; if (r >= n.max) return 'max'; if (heroLevel() < ROW_LV[n.row] && !godMode()) return 'level'; if (n.parent && !(m[n.parent] > 0)) return 'parent'; if (branchPts(n.hero, n.branch) < ROW_NEED[n.row] && !godMode()) return 'branch'; return r > 0 ? 'some' : 'open'; };
 const cdOf = k => (CD_MAX[k] || 3) * (1 - 0.15 * Math.max(0, tal(k) - 1)) * (1 - 0.08 * (tal('gravebound') + tal('handOverHand'))); // a skill's wait shortens with every point past the first, and GRAVEBOUND / HAND OVER HAND shorten all of them
 const amul = k => 1 + 0.25 * Math.max(0, tal(k) - 1); // and its blow deepens
-const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'SWORDS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'TALENTS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];
+const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'TALENTS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];
 let storeMode = 'buy', equipFrom = 'map';
 function setEquip(key, id) { PROG[key] = id; if (key === 'charm') { PROG.charmOf = PROG.charmOf || {}; PROG.charmOf[hero()] = id; } }   /* a charm is worn by a hero: the next hero starts bare */
 const EQUIP_TABS = STORE_TABS.filter(t => t.key || t.talent); // (talents can be learned from the map and the pause menu too)
@@ -459,7 +459,10 @@ const REAP_SETS = { black: { b: '#16141e', B: '#0c0b12' }, purple: { b: '#33254a
 const FREE_SETS = { black: { b: '#1e2028', B: '#101218', r: '#8a2a30' }, purple: { b: '#4a2a6a', B: '#2a1840' }, blue: { b: '#23508a', B: '#143056' }, marsh: { b: '#3a5a34', B: '#22381e' }, rose: { b: '#9a4a66', B: '#5e2a3e' }, crimson: { b: '#7a2028', B: '#4a1016' }, verdant: { b: '#2a6a3a', B: '#164024' }, frost: { b: '#4a6a8a', B: '#2a4058', s: '#eef4ff', r: '#7aa8c8' }, shadow: { b: '#2e2640', B: '#171226', r: '#6a4a9a' }, gilded: { b: '#6a5220', B: '#3e2e10', y: '#ffd36b', r: '#c9a040' }, iron: { b: '#3a424e', B: '#222830' }, spore: { b: '#4a4a2e', B: '#2c2c18', r: '#9a5aa8' }, silverknight: { b: '#5a6472', B: '#343c46', s: '#f4f8ff' }, dawn: { b: '#8a5a6a', B: '#503240', r: '#e0a0a8' }, emberplate: { b: '#6a3018', B: '#3e1a0c', r: '#e06a2c' }, tide: { b: '#1e5a5e', B: '#103438', r: '#7cc8c8' } };
 const PAL_SETS = { black: { s: '#6a6a76', S: '#3a3a44', b: '#2a2a34', B: '#15151c', r: '#c9463d', y: '#c9463d' }, purple: { b: '#6a3aa0', B: '#40206a' }, blue: { b: '#2f7fe0', B: '#1f4fa0' }, marsh: { b: '#5a7a3a', B: '#3a4e24', r: '#c9b27c', y: '#c9b27c' }, rose: { b: '#d0648a', B: '#8a3a5a' }, crimson: { b: '#a8323a', B: '#6a1c24' }, verdant: { b: '#3a8a4a', B: '#245a30' }, frost: { s: '#e8f2ff', S: '#9ab8d8', b: '#7a9ab8', B: '#4a6a88', r: '#bfe6f5', y: '#bfe6f5' }, shadow: { s: '#6a6078', S: '#3a3048', b: '#3a2f4a', B: '#1e1828', r: '#8a6ac0', y: '#8a6ac0' }, gilded: { s: '#ffe6a0', S: '#c9a040', b: '#d9a83a', B: '#8f6a1c' }, iron: { s: '#9aa3b0', S: '#5a6270', b: '#4a525e', B: '#2e343c' }, spore: { b: '#8a8a54', B: '#5a5a34', r: '#9a5aa8', y: '#9a5aa8' }, silverknight: { s: '#f4f8ff', S: '#aab6c8', b: '#c9d1dc', B: '#7c8797', r: '#dfe8ff', y: '#dfe8ff' }, dawn: { b: '#e8a0b0', B: '#a0606a' }, emberplate: { s: '#7a7070', S: '#4a4040', b: '#b8541c', B: '#7a3010' }, tide: { b: '#2a8a8a', B: '#1a5a5a', r: '#bfe6f5', y: '#bfe6f5' } };
 function applySkin() { setHeroVoice(hero()); if (PROG.perHero) PROG.charm = (PROG.charmOf || {})[hero()] || null;   /* the charm follows the hero, not the save (and never before the save has been migrated, or an old one loses it) */
-   const sk = skinById(PROG.skin); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(PROG.sword).pal); K = isPyro() ? bakePyro(pal) : isPaladin() ? bakePaladin(PAL_SETS[sk.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[sk.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[sk.id] || {}) : bakeKnight(pal); }
+   K = heroSet(PROG.skin, PROG.sword); }
+/* THE HERO AS HE WILL LOOK in a skin and with a weapon. The game and the store's previews bake him the same way, so the WEAPONS tab shows the hero you play, not always the knight */
+function heroSet(skinId, swordId) { const sk = skinById(skinId); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(swordId).pal);
+  return isPyro() ? bakePyro(pal) : isPaladin() ? bakePaladin(PAL_SETS[sk.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[sk.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[sk.id] || {}) : bakeKnight(pal); }
 function applyUpgrades() { const lv = heroLevel(); P.maxHp = (isPyro() ? 88 : isPaladin() ? 120 : isPirate() ? 90 : isReaper() ? 95 : 100) + (PROG.items.heart ? 25 : 0) + 3 * lv + 8 * tal('ironhide') + 6 * tal('hearth') + 10 * tal('faithHp') + 8 * tal('grave') + 8 * tal('seaChest') + 6 * tal('mortcloth'); P.maxSt = 100 + (PROG.items.wind ? 30 : 0) + 5 * lv; } // the hero's level: +3 health and +5 stamina a wood (more would flatten the slope the tiers build)
 let statFlash = 0; // the HUD plate flashes when a rank lands
 // THE BEAM A ROPE IS TIED TO. 16x6: a squared timber with an iron ring under it and a lashing round the ring.
@@ -1987,9 +1990,9 @@ function drawTree() {
       g.fillStyle = 'rgba(24,21,34,0.92)'; g.fillRect(x, 2, w, 11);
       g.strokeStyle = nm ? col : '#3e3a4c'; g.lineWidth = 1; g.strokeRect(x + 0.5, 2.5, w - 1, 10);
       g.fillStyle = nm ? col : '#3e3a4c'; g.fillRect(x + 1, 3, 9, 9);
-      text(key, x + 5, 5, nm ? '#1b1626' : '#7a7a84', 'center', 6);
+      text(key, x + 5, 5, nm ? '#1b1626' : '#b4b4c0', 'center', 6);
       const short = nm ? (nm.length > 10 ? nm.slice(0, 10) : nm) : (key === 'G' && !tal('twinSkill') ? 'LOCKED' : 'EMPTY');
-      text(short, x + 12, 5, nm ? UI.text : '#7a7a84', 'left', 6); };
+      text(short, x + 12, 5, nm ? UI.text : '#b4b4c0', 'left', 6); };
     cell(VW / 2 - 78, 'F', f, '#ffd36b'); cell(VW / 2 + 2, 'G', g2, '#8fd160'); } // (clear of the hero's name on the left and the points plate on the right)
   { const p = godMode() ? 'ANY' : String(left), w = (p.length + 7) * 6 + 8, x = VW - 8 - w; // the points to spend, in a plate of their own so they are the first thing you see
     g.fillStyle = any ? 'rgba(70,96,50,0.9)' : 'rgba(40,36,54,0.7)'; g.fillRect(x, 2, w, 11);
@@ -2002,7 +2005,7 @@ function drawTree() {
     g.fillStyle = on ? 'rgba(96,84,50,0.95)' : 'rgba(34,30,46,0.85)'; g.fillRect(x, 14, tw, 10);
     g.strokeStyle = on ? '#ffd36b' : '#4a4658'; g.lineWidth = 1; g.strokeRect(x + 0.5, 14.5, tw - 1, 9);
     text(TBR[h][i], x + tw / 2 - (sp ? 6 : 0), 16, on ? UI.title : UI.dim, 'center', 6);
-    if (sp) text(String(sp), x + tw - 4, 16, on ? UI.gold : '#7a7a84', 'right', 6); }
+    if (sp) text(String(sp), x + tw - 4, 16, on ? UI.gold : '#b4b4c0', 'right', 6); }
   { const lk = 0.5 + 0.5 * Math.sin(time * 4);
     g.globalAlpha = b > 0 ? 0.55 + 0.45 * lk : 0.25; text('◀', 4, 16, b > 0 ? UI.gold : UI.dim, 'left', 6);
     g.globalAlpha = b < 2 ? 0.55 + 0.45 * lk : 0.25; text('▶', VW - 4, 16, b < 2 ? UI.gold : UI.dim, 'right', 6); g.globalAlpha = 1;
@@ -2046,23 +2049,27 @@ function drawTree() {
       // IN THE CORNER OF THE NODE, NOT ABOVE IT. At ly-4 it sat in the row above's NAME, which is drawn under
       // its own node - so every skill in the tree had a * lying across the name of the thing over it.
       g.fillRect(x + NS2 / 2 - 7, ly + 1, 7, 6); text(skillNow() === n.id && lit ? 'F' : skill2Now() === n.id && lit ? 'G' : '*', x + NS2 / 2 - 3, ly + 1, lit && (skillNow() === n.id || skill2Now() === n.id) ? '#1b1626' : UI.dim, 'center', 6); }
-    const nm = fitText(n.name, colW - 4, 6);
-    text(nm, x, y + NS2 + 1, sel ? '#fff6e0' : st === 'max' ? UI.gold : lit ? UI.text : '#7a7a84', 'center', 6); }
+    const nm = fitText(n.name, colW - 4, 6), nw = textW(nm, 6) + 4;
+    g.fillStyle = 'rgba(12,10,20,0.92)'; g.fillRect(Math.round(x - nw / 2), y + NS2, nw, 7);   /* A PLATE UNDER THE NAME: a shut row's hatching and the line to the next skill both ran through the letters */
+    text(nm, x, y + NS2 + 1, sel ? '#fff6e0' : st === 'max' ? UI.gold : lit ? UI.text : '#b4b4c0', 'center', 6); }
   // FORGET ALL, and then what the chosen skill does
-  const fy = top + 4 * rowH + 5; g.fillStyle = respec ? 'rgba(120,60,60,0.95)' : 'rgba(40,36,54,0.7)'; g.fillRect(VW / 2 - 34, fy, 68, 9);
+  const fy = top + 4 * rowH + 2; g.fillStyle = respec ? 'rgba(120,60,60,0.95)' : 'rgba(40,36,54,0.7)'; g.fillRect(VW / 2 - 34, fy, 68, 9);
   if (respec) { g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(VW / 2 - 33.5, fy + 0.5, 67, 8); }
   text('FORGET ALL', VW / 2, fy + 2, respec ? UI.title : UI.dim, 'center', 6);
-  const dy = fy + 11; g.fillStyle = 'rgba(20,17,32,0.9)'; g.fillRect(8, dy, VW - 16, VH - dy - 10);
+  const dy = fy + 10; g.fillStyle = 'rgba(20,17,32,0.95)'; g.fillRect(8, dy, VW - 16, VH - dy - 10);
   if (treeMsgT > 0) { const w2 = treeMsg.length * 6 + 10; g.fillStyle = 'rgba(40,36,20,0.95)'; g.fillRect(VW / 2 - w2 / 2, fy - 11, w2, 10);
     g.strokeStyle = UI.gold; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, fy - 10.5, w2 - 1, 9); text(treeMsg, VW / 2, fy - 9, UI.gold, 'center', 6); }
-  if (respec) wrap('forget every skill this hero knows and take all the points back. it costs nothing.', VW - 24, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, dy + 4 + i * 8, UI.dim, 'center', 6));
+  if (respec) wrap('forget every skill this hero knows and take all the points back. it costs nothing.', VW - 24, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, dy + 4 + i * 8, UI.text, 'center', 6));
   else if (cur) { const st = nodeState(cur);
-    text(cur.name + '  ' + tal(cur.id) + '/' + cur.max + '  (' + (cur.cost || 1) + (cur.cost > 1 ? ' POINTS)' : ' POINT)'), 12, dy + 3, UI.title, 'left', 6);
+    text(cur.name + '  ' + tal(cur.id) + '/' + cur.max + '  (' + (cur.cost || 1) + (cur.cost > 1 ? ' POINTS)' : ' POINT)'), 12, dy + 2, UI.title, 'left', 6);
     const need = st === 'level' ? 'OPENS AT LEVEL ' + ROW_LV[cur.row] : st === 'parent' ? 'NEEDS ' + TREE.find(q => q.id === cur.parent && q.hero === cur.hero).name : st === 'branch' ? 'NEEDS ' + ROW_NEED[cur.row] + ' DOWN THIS BRANCH (' + branchPts(hero(), cur.branch) + ')' : st === 'max' ? 'AT ITS PEAK' : any ? 'Z TO LEARN' : 'NO POINTS LEFT';
-    text(need, VW - 12, dy + 3, st === 'level' || st === 'parent' || st === 'branch' || (st !== 'max' && !any) ? '#ff9a5c' : UI.sel, 'right', 6);
+    text(need, VW - 12, dy + 2, st === 'level' || st === 'parent' || st === 'branch' || (st !== 'max' && !any) ? '#ff9a5c' : UI.sel, 'right', 6);
     /* THE KIND OF TALENT FIRST, in its own colour, and the words in the bright ink: grey six-point text on a dark panel was the hardest thing in the game to read */
-    const cat = talCat(cur), lines = wrap(cat.word + (cur.active ? ' (F OR G KEY)' : '') + ': ' + cur.desc + (cur.active && cur.max > 1 ? '. a second point: a shorter wait and a harder blow' : ''), VW - 28, 6);
-    lines.slice(0, 3).forEach((ln, k) => text(ln, 12, dy + 9 + k * 7, k === 0 ? cat.col : UI.text, 'left', 6)); }
+    const cat = talCat(cur), head = cat.word + (cur.active ? ' (F OR G KEY)' : '') + ':', lines = wrap(head + ' ' + cur.desc + (cur.active && cur.max > 1 ? '. a second point: a shorter wait and a harder blow' : ''), VW - 28, 6);
+    /* ONLY THE KIND WEARS ITS COLOUR: a whole first line of orange on the dark was the hard part to read. And a clear pixel between lines - at seven they touched */
+    lines.slice(0, 3).forEach((ln, k) => { const yy = dy + 10 + k * 8;
+      if (k === 0 && ln.startsWith(head)) { text(head, 12, yy, cat.col, 'left', 6); text(ln.slice(head.length), 12 + textW(head, 6), yy, UI.title, 'left', 6); }
+      else text(ln, 12, yy, UI.title, 'left', 6); }); }
   { const act = cur && cur.active, on = act && tal(cur.id);
     const line = on ? 'F SETS IT ON F   G SETS IT ON G   Q CLOSE' : act ? 'Z LEARN IT, THEN F OR G FOR THE KEY   Q CLOSE' : 'ARROWS MOVE   Z LEARN   Q CLOSE';   /* the long one was 336px wide in a 320 view */
     text(fitText(line, VW - 12, 6), VW / 2, VH - 9, on ? UI.sel : UI.dim, 'center', 6); }
@@ -2096,6 +2103,7 @@ const previewCache = {};
 // a skin, shown on the hero you are playing: the pyromancer in its robes, the paladin in its plate and tabard
 const skinPreview = k => preview('skin:' + hero() + ':' + k.id + ':' + PROG.sword, () => isPyro() ? bakePyro(Object.assign({}, PYRO_SETS[k.id] || k.pal, swordById(PROG.sword).pal)) : isPaladin() ? bakePaladin(PAL_SETS[k.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[k.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[k.id] || {}) : bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal)));
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
+const weaponPreview = k => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id, () => heroSet(PROG.skin, k.id));
 function drawStore() {
   if (storeMode === 'equip' && equipFrom !== 'map') { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); } else { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); }
   const x = 12, y = 6, w = VW - 24, h = VH - 12; const tabs = storeTabs();
@@ -2119,7 +2127,7 @@ function drawStore() {
   if (!items.length) text('nothing here yet.', listX + listW / 2, y + 70, UI.dim, 'center');
   const iconOf = k => k.id === 'none' ? null
     : tab.key === 'skin' ? skinPreview(k).R.idle[0]
-    : tab.key === 'sword' ? preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal))).R.atk[1]
+    : tab.key === 'sword' ? weaponPreview(k).R.atk[1]
     : tab.talent ? treeIcon(treeNodes()[0]) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
     : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
@@ -2166,7 +2174,7 @@ function drawStore() {
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
         const set = tab.key === 'hero' ? (k.id === 'paladin' ? preview('hero:paladin:' + PROG.skin, () => bakePaladin(PAL_SETS[PROG.skin] || {})) : k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : k.id === 'pirate' ? preview('hero:pirate:' + PROG.skin, () => bakeFreebooter(FREE_SETS[PROG.skin] || {})) : k.id === 'reaper' ? preview('hero:reaper:' + PROG.skin, () => bakeReaper(REAP_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
           : tab.key === 'skin' ? skinPreview(k)
-          : preview('sword:' + k.id + ':' + PROG.skin, () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, k.pal)));
+          : weaponPreview(k);
         const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 3) % 4];
         const sc = Math.max(1, Math.min(3, (46 - squeeze) / fr.height)); g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
       } else if (tab.rank) {
@@ -3861,15 +3869,17 @@ function updatePlayer(dt) {
   P.jet = false;
   if (isPyro()) { // C tapped = an ember; C held = the jet. A FULL bar banks for a few seconds and the next press of C is THE PYRE.
     P.heat = Math.max(0, Math.min(100, (P.heat || 0))); P.overheat = 0;
-    P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
+    P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt); P.jetRecover = Math.max(0, (P.jetRecover || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     if (P.full && cDown && !stunned && !dodging && !P.plunge && !thrown) castPyre();
     if (keys.block) P.cHeld = (P.cHeld || 0) + dt; else { if (P.cHeld > 0 && P.cHeld < 0.14) castEmber(0); P.cHeld = 0; }
-    P.jet = keys.block && P.cHeld >= 0.14 && !P.full && !stunned && !dodging && !attacking && !P.plunge && !thrown && !(P.blastT > 0);
+    P.jet = keys.block && P.cHeld >= 0.14 && !P.full && !stunned && !dodging && !attacking && !P.plunge && !thrown && !(P.blastT > 0) && !(P.jetRecover > 0) && (P.ground || tal('updraft'));   /* GROUNDED: the jet is lit standing, and she stands still to pour it. UPDRAFT still lights it in the air */
     if (P.jet) { P.heat += 18 * dt; if (P.heat >= 100) { P.heat = 100; P.jet = false; bankHeat(); } }
     else if (P.full && P.fullT > 0) P.fullT -= dt;   // banked: it holds a few seconds before it starts to go
     else P.heat -= (P.asleep > 0 || P.sleepM > 0.2 ? 8 : 16) * (1 - 0.2 * tal('pilot')) * dt; // PILOT LIGHT keeps it in longer
     if (P.full && P.heat < 100) P.full = false;
+    if (P.jetWas && !P.jet && !P.dead) P.jetRecover = 0.22; P.jetWas = P.jet;   /* PUTTING IT OUT TAKES A MOMENT: a beat rooted before she moves, dashes or lights it again */
+    if (P.ground && (P.jet || P.jetRecover > 0)) P.rootT = Math.max(P.rootT || 0, 0.05);
     SFX.jet(P.jet && !P.dead); // the jet roars for as long as it is held
     if (P.full && Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 14, vx: 0, vy: -40 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
   }
@@ -3934,7 +3944,7 @@ function updatePlayer(dt) {
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
     const j = jetBox();
     for (let i = 0; i < 3; i++) if (Math.random() < dt * 70) { const k = Math.random(); parts.push({ fire: true, drag: 1, x: P.x + P.face * (8 + k * jetLen()), y: P.y - 9 + (Math.random() - 0.5) * (4 + k * 14), vx: P.face * (60 + Math.random() * 60), vy: -20 - Math.random() * 30, life: 0.25 + k * 0.2, max: 0.45, col: k < 0.3 ? '#fff6c8' : Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: k < 0.5 ? 1 : 2, grav: -60 }); }
-    P.jetTick = (P.jetTick || 0) - dt; if (P.jetTick <= 0) { P.jetTick = 0.2; for (const e of enemies) if (e.alive && !e.harmless && e.x + e.w / 2 > j.l && e.x - e.w / 2 < j.r && e.y > j.t && e.y - e.h < j.b) { P.jetHit = true; hurtEnemy(e, heatDmg(e.maxHp ? 2 : 3), P.x - P.face * 10, false); P.jetHit = false; e.burn = Math.max(e.burn || 0, tal('searing') ? 2.4 : 0.8); } }
+    P.jetTick = (P.jetTick || 0) - dt; if (P.jetTick <= 0) { P.jetTick = 0.24; for (const e of enemies) if (e.alive && !e.harmless && e.x + e.w / 2 > j.l && e.x - e.w / 2 < j.r && e.y > j.t && e.y - e.h < j.b) { P.jetHit = true; hurtEnemy(e, heatDmg(e.maxHp ? 2 : 3), P.x - P.face * 10, false); P.jetHit = false; e.burn = Math.max(e.burn || 0, tal('searing') ? 2.4 : 0.8); } }
     for (const s of seeds) if (!s.dead && s.x > j.l - 6 && s.x < j.r + 6 && s.y > j.t - 6 && s.y < j.b + 6) { s.dead = true; parries++; burst(s.x, s.y, 4, ['#ff9a5c', '#ffd36b'], 40, 0.3, 0, 1); }
     for (const c of clouds2) if (c.x + c.r > j.l && c.x - c.r < j.r && Math.abs(c.y - (P.y - 8)) < 24) c.life = Math.min(c.life, 0.2);
   }
@@ -3950,7 +3960,7 @@ function updatePlayer(dt) {
   // THE DASH: tap a direction twice and you go, on the ground or in the air, once per landing. It does not
   // dodge anything - it is distance, not safety - and it costs a little wind.
   { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
-    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !dodging && !P.block) {
+    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !dodging && !P.block && !(P.jetRecover > 0)) {
         if (spend(isPaladin() ? 10 : 8)) { P.dash = isPyro() ? 0.2 : isPaladin() ? 0.14 : 0.17; P.dashCd = isPaladin() ? 0.7 : 0.55; if (!P.ground) P.dashedAir = true;
           P.vx = tapped * (isPyro() ? 300 : isPaladin() ? 230 : isPirate() ? 285 : 265); P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
           streaks(P.x, P.y - 9, -tapped, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid();
@@ -4227,12 +4237,16 @@ function updatePlayer(dt) {
   /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
      killed everyone who walked into the Pit Warden's arena a hundred and ten rows under it. Below the pool's own
      floor (its bottom, or the first rock under its surface) you are not in it. */
-  const inPool = p => { if (p.bottom !== undefined) return P.y <= p.bottom + 4; if (p.depth !== undefined) return P.y <= p.y + p.depth + 6;
+  const inPool = p => { if (p.bottom !== undefined) return P.y <= p.bottom + 4; if (p.depth) return P.y <= p.y + p.depth + 6;   /* depth 0 is NOT a floor: it was read as one, so no deep pond in the Marsh could drown anyone */
     let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(P.x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return P.y <= ty * TS + 4; };
   for (const p of (L.pools || [])) if (!P.dead && !p.shallow && !p.swim && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && inPool(p)) {
     burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5');
-    die(); P.dead = 0.8; break;
+    /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
+    if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
+    else { die(); P.dead = 0.8; }
+    break;
   }
+  if (P.ground && !P.onMover && !P.dead && !(L.pools || []).some(p => !p.shallow && P.x > p.x0 - 12 && P.x < p.x1 + 12)) P.safe = { x: P.x, y: P.y, L };   /* the last dry footing, for the water above */
 
   const hb = attackBox();
   if (hb) {

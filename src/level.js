@@ -270,15 +270,15 @@ function marshWood() {
   block(161, 175, 18, 27);
   ent('check', 168, 17); crate(173, 17);
 
-  // ---- 7. The long river: a big raft, frogs leaping aboard, archers overhead ----
+  // ---- 7. The long river: lily pads across it, three strides apart, and a reed bed to rest on every so often ----
+  /* THE PUNT WENT. Walking to one end of a raft to steer it was a chore, not a crossing, and the marsh already has
+     its own verb for water: the pad that sinks under you. Nothing lives on this stretch - the pads are the question. */
   water(176, 259, 19);
-  movers.push({ kind: 'punt', x0: 176 * TS, x1: 259 * TS - 96, x: 176 * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 70, frogs: true, frogMax: 3, frogEvery: 2.4 }); // THE PUNT: it goes where you pole it, and the frogs come aboard
-  ent('sign', 174, 17, { text: 'THE PUNT GOES WHERE YOU WALK. FROGS COME ABOARD. SPITTERS HIT A STANDING MAN.' });
-  reeds(212, 16, 2); ent('spit', 212, 15, { face: -1 }); reeds(244, 16, 2); ent('spit', 244, 15, { face: -1 }); reeds(226, 15, 2); coins([226, 14]);
-  plat(200, 12, 4); plat(236, 12, 4);
-  ent('check', 202, 11); ent('silver', 238, 11);
-  ent('wasp', 190, 15); ent('wasp', 218, 15); ent('wasp', 248, 15);
-  coins([185, 15], [191, 13], [212, 15], [219, 13], [232, 15], [249, 13]);
+  ent('sign', 174, 17, { text: 'LILY PADS SINK UNDER YOU. HOP ON, AND REST ON THE REED BEDS.' });
+  for (const x of [178, 181, 184, 187, 190, 193, 196, 199, 202, 205, 208, 214, 217, 220, 223, 229, 232, 235, 238, 241, 247, 250, 253, 256]) ent('pad', x, 18);
+  reeds(211, 16, 2); reeds(226, 16, 2); reeds(244, 16, 2);
+  ent('check', 211, 15); ent('silver', 244, 13);
+  coins([184, 16], [193, 16], [202, 16], [217, 16], [226, 14], [235, 16], [253, 16]);
   block(260, 274, 18, 27);
   ent('check', 264, 17); crate(270, 17); ent('hopper', 268, 17, { face: -1, color: 'blue' });
 
@@ -318,7 +318,7 @@ function marshWood() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
-    duskStart: undefined, music: 'theme2',
+    duskStart: undefined, music: 'theme2', waterHurts: true,
     quest: { n: 3, item: 'trap', name: 'EEL TRAP', npc: 'ferryman', done: 'THE TRAPS ARE BACK', thanks: "THE FERRYMAN'S THANKS" },
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
@@ -354,7 +354,7 @@ function marshWood() {
   F.ent('sluice', 165, 17, { pool: 167, to: 21 });
   F.ent('npc', 168, 17, { kind: 'ferryman', ride: true });
   F.R.moversExtra.push({ kind: 'raft', x0: 167 * TS, x1: 203 * TS - 64, x: 167 * TS, y: 18 * TS + 8, w: 64, h: 8, speed: 32, ferry: true, toll: 10 });
-  F.R.pools.push({ x0: 167 * TS, x1: 203 * TS, y: 19 * TS, shallow: false, depth: 0 });
+  F.R.pools.push({ x0: 167 * TS, x1: 203 * TS, y: 19 * TS, shallow: false, depth: 0, bottom: 22 * TS });   /* its bed is its floor: a fall in is a splash until the sluice drains it to shallows */
   F.block(167, 202, 22, 27);
   F.plat(181, 12, 3); F.ent('archer', 182, 11, { face: -1 }); F.plat(193, 12, 3); F.ent('archer', 194, 11, { face: -1 });
   F.ent('wasp', 176, 15); F.ent('wasp', 188, 15); F.ent('wasp', 199, 15);
@@ -4782,6 +4782,7 @@ function garrison(L, id) {
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2]);
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
+  const deepUnder = (x, y) => (L.pools || []).some(p => !p.shallow && !p.swim && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   // every place a creature could stand, left to right
@@ -4791,7 +4792,8 @@ function garrison(L, id) {
     if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;          // a ledge one tile wider than it stands on: the Sunspire has almost nothing three tiles across
     if (rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     if (keep.some(([kx, ky]) => Math.abs(kx - x) < 4 && Math.abs(ky - y) < 4)) continue;
-    spots.push([x, y]); break;                                                   // one per column: the highest floor
+    if (deepUnder(x, y)) break;   /* the bed of deep water is no floor for anyone: it put a heron, a spitter and a thorn on the Marsh ferry channel's */
+    spots.push([x, y, wet(x, y)]); break;                                                   // one per column: the highest floor
   }
   if (spots.length < 8) return L;
   // HOW FAR APART IS FAR ENOUGH depends on the shape of the level. Eight columns is right for a road; on a

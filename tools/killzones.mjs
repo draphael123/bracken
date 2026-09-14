@@ -32,7 +32,7 @@ for (const lv of LEVELS) {
     const px = x * TS + 8, py = (y + 1) * TS;          /* P.x, P.y as main.js keeps them */
     for (const p of deadly) {
       if (!(px > p.x0 && px < p.x1 && py > p.y + 9)) continue;
-      const floorPx = p.bottom !== undefined ? p.bottom + 4 : p.depth !== undefined ? p.y + p.depth + 6 : null;
+      const floorPx = p.bottom !== undefined ? p.bottom + 4 : p.depth ? p.y + p.depth + 6 : null;
       if (floorPx === null) note('stands under a deadly pool with no bottom or depth set (surface y ' + p.y + ')', x, y);
       /* inside the water (the pool's own bed) is the pool working; below its floor the game no longer kills, and says so here */
     }
