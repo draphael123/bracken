@@ -117,7 +117,7 @@ const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (
 const DMG = { rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22,
-  priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, wardenPick: 24, wardenChain: 14, wardenFall: 20, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+  priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, wardenPick: 24, wardenChain: 14, wardenFall: 20, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
 const EHP = { masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 620,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, pitwarden: 560, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 430, roc: 360, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 // THE METER PACES THE WRONG HALF OF THE FIGHT. A swing costs 12 and comes off the blade, so eight swings
@@ -1230,7 +1230,7 @@ function spawnEnt(e) {
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
       case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
       case 'barricade': props.push({ t: 'barricade', x: px, y: py, tx: e.x, ty: e.y, w: e.w || 2, h: e.h || 2, alive: true, shake: 0 }); break;
-      case 'resonance': props.push({ t: 'resonance', x: px, y: py, r: (e.r || 5) * TS, cool: 0, ring: 0, said: 0 }); break;
+      case 'resonance': props.push({ t: 'resonance', x: px, y: py, r: (e.r || 5) * TS, cool: 0, ring: 0, said: 0, roc: !!e.roc }); break;
       // AN IRON BULKHEAD. e.span is [x0, x1, y0, y1] in tiles; nothing but a round shot moves it.
       case 'bulkhead': props.push({ t: 'bulkhead', x: px, y: py, span: e.span, open: false, shake: 0, hit: 0 }); break;
       case 'plank': props.push({ t: 'plank', x: px, y: py, span: e.span, row: e.row, down: false }); break;
@@ -1252,7 +1252,7 @@ function spawnEnt(e) {
       case 'scaffold': props.push({ t: 'scaffold', x0: e.x * TS, x1: (e.x1 + 1) * TS, top: e.y * TS, crane: !!e.crane }); break;
       case 'cascade': props.push({ t: 'cascade', x: e.x * TS + 12, y0: e.y * TS, y1: (e.y1 + 1) * TS, ph: Math.random() * 3 }); break;
       case 'stal': props.push({ t: 'stal', x: px, y: e.y * TS, state: 'hang', t0: 0 }); break; // a crystal hanging from the shelf's underside
-      case 'roc': boss = { ...base, t: 'roc', w: 34, h: 26, hp: EHP.roc, maxHp: EHP.roc, mode: 'sleep', modeT: 0, face: -1, phase: 1, diveT: 2.2, gustT: 5.5, featherT: 3, hitT: 0, vy: 0, side: 1, nestX: px, nestY: py }; enemies.push(boss); break;
+      case 'roc': boss = { ...base, t: 'roc', w: 34, h: 26, hp: EHP.roc, maxHp: EHP.roc, mode: 'sleep', modeT: 0, face: -1, phase: 1, diveT: 2.2, gustT: 5.5, featherT: 3, shriekT: 4, hitT: 0, vy: 0, side: 1, nestX: px, nestY: py }; enemies.push(boss); break;
       case 'suncatcher': { if (rimeReset()) resolveTiles(); const sc = { ...base, t: 'suncatcher', mini: !!e.mini, w: 22, h: 40, hp: EHP.suncatcher, maxHp: EHP.suncatcher, mode: 'sleep', modeT: 0, face: -1, phase: 1, frostT: 2.5, spireT: 4, shardT: 1.6, clawT: 1, hailT: 3, spires: [], hitT: 0 }; if (!e.mini) boss = sc; enemies.push(sc); } break;
       case 'grandmother': boss = { ...base, t: 'grandmother', w: 20, h: 40, hp: EHP.grandmother, maxHp: EHP.grandmother, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, ear: px, earT: 0, sweepT: 2.6, listenT: 7, callT: 5, caught: false, teleT: 8, fireT: 4.5, balls: [], alpha: 1 }; enemies.push(boss); break;
       case 'assassin': enemies.push({ ...base, t: 'assassin', w: 9, h: 15, hp: EHP.assassin, speed: 96, mode: 'lurk', modeT: 0, cd: 1.2 + Math.random(), fade: 0.32, quiet: true }); break;
@@ -7332,6 +7332,10 @@ function updateShardling(e, dt) {
 // glass her talons go through it and she is stuck, onto rock she skids), she beats her wings in a GALE
 // that walks you toward the thorns at either end of the crown, and once she is hurt she SHEDS her glass
 // feathers. The thermals are the player's: glass that breaks over a vent goes up, and it knocks her down.
+// THE SHRIEK (round two). Standing on the glass was always right, and nothing she did ever said otherwise. Now
+// she goes to the fork's column, climbs, and sings to it: every pane in the crown rings red and a spike of glass
+// comes up out of each one. Be on the rock, or over it. THE FORK is the room's answer to the song: her feathers
+// are glass at the ends, and a fork shakes glass. Strike it while she is over it and she comes down.
 // THE GOBLIN QUEEN. Three phases, three layers each.
 // 1 THE COURT: she sits her throne. Where she points, her gallery looses; she throws the court's bombs; her
 //   guard keeps two between you and the dais. Break the gallery's supports and it comes down on her.
@@ -7520,6 +7524,12 @@ function updateGQueen(e, dt) {
   e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x));
 }
 const rocOpen = e => e.mode === 'stuck' || e.mode === 'skid' || e.mode === 'downed';
+/* THE CROWN'S PANES: every surface of glass on her floor as it stands NOW - a pane a thermal blew out is not there to sing */
+const rocPanes = () => { const A = L.arena, out = []; if (!A) return out; const fy = Math.floor(A.floor / TS);
+  for (let ty = fy - 3; ty <= fy; ty++) for (let tx = Math.floor(A.x0 / TS); tx <= Math.floor(A.x1 / TS); tx++) { const i = ty * LW + tx; if (L.grid[i] === T.CRYST && L.grid[i - LW] !== T.CRYST) out.push(i); }
+  return out; };
+/* over the crown's fork: in its column and in the air, and not already coming down for some other reason */
+const rocOverFork = (e, pr) => !rocOpen(e) && e.mode !== 'dive' && e.mode !== 'sleep' && e.mode !== 'wake' && !e.mode.startsWith('rake') && Math.abs(e.x - pr.x) < 36 && e.y < pr.y - 24;
 function updateRoc(e, dt) {
   const A = L.arena, floor = A.floor;
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
@@ -7532,12 +7542,13 @@ function updateRoc(e, dt) {
     case 'sleep': return;
     case 'wake': fly(e.x, hoverY, 70); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 1.2; } break;
     case 'hover': {
-      e.face = Math.sign(d) || e.face; e.diveT -= dt; e.gustT -= dt; e.featherT -= dt; e.rakeT = (e.rakeT ?? 6) - dt;
+      e.face = Math.sign(d) || e.face; e.diveT -= dt; e.gustT -= dt; e.featherT -= dt; e.rakeT = (e.rakeT ?? 6) - dt; e.shriekT = (e.shriekT ?? 4) - dt;
       // she keeps station high off your shoulder, and changes shoulders: never straight overhead, never far
       if ((e.sideT = (e.sideT === undefined ? 3 : e.sideT) - dt) <= 0) { e.sideT = 2.2 + Math.random() * 2; e.side = -(e.side || 1); }
       fly(Math.max(A.x0 + 48, Math.min(A.x1 - 48, P.x + (e.side || 1) * 76)), hoverY, p2 ? 130 : 95);
       if (e.modeT > 0) break;
       if (e.diveT <= 0) { e.diveT = p2 ? 2.7 : 3.6; e.mode = 'diveTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.85; e.tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, P.x + P.vx * 0.25)); SFX.queenShriek(); }
+      else if (e.shriekT <= 0 && rocPanes().length) { e.shriekT = p2 ? 4.5 : 6;   /* hover-time: she hovers about a quarter of the fight */ e.mode = 'shriekGo'; e.modeT = 2.2; const fk = props.find(p => p.t === 'resonance' && p.roc); e.perchX = fk ? fk.x : (A.x0 + A.x1) / 2; SFX.screech(); }   /* THE SHRIEK: she goes to sing over the fork */
       else if (e.rakeT <= 0 && Math.abs(P.y - floor) < 30) { e.rakeT = p2 ? 7.5 : 9.5; e.mode = 'rakeGo'; e.modeT = 1.8; e.rakeDir = P.x > (A.x0 + A.x1) / 2 ? 1 : -1; e.rakeX = e.rakeDir > 0 ? A.x0 + 36 : A.x1 - 36; SFX.queenShriek(); } // THE SKY RAKE
       else if (e.gustT <= 0 && ad < 170) { e.gustT = p2 ? 6.5 : 8.5; e.mode = 'gustTell'; e.modeT = 0.6; SFX.puff(); }
       else if (p2 && e.featherT <= 0) { e.featherT = 3.8; e.mode = 'shedTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.55; }
@@ -7567,6 +7578,17 @@ function updateRoc(e, dt) {
       if (e.y >= floor) { e.y = floor; if (e.vy > 60) { shakeCam(7); SFX.heavy(); dust(e.x, floor, 10); } e.vy = 0; }
       if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.7; SFX.queenShriek(); } break;
     case 'rise': fly(e.x, hoverY, 110); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.5; } break;
+    // THE SHRIEK: to the fork's column, up a little, and she sings to the glass. Every pane she sings to rings red through
+    // the tell, then a spike comes up out of each one. It turns on no shield: get onto the rock, or be over it.
+    case 'shriekGo': fly(e.perchX, hoverY - 12, 170); e.face = Math.sign(P.x - e.x) || e.face;
+      if ((Math.abs(e.x - e.perchX) < 16 && Math.abs(e.y - (hoverY - 12)) < 18) || e.modeT <= 0) { e.mode = 'shriekTell'; e.modeT = p2 ? 0.85 : 1.0; e.panes = rocPanes(); SFX.queenShriek(); SFX.golemChime(); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); } break;
+    case 'shriekTell': fly(e.perchX, hoverY - 12, 60); e.face = Math.sign(P.x - e.x) || e.face;
+      if (e.panes.length && Math.random() < dt * 30) { const i = e.panes[(Math.random() * e.panes.length) | 0]; parts.push({ x: (i % LW) * TS + 2 + Math.random() * 12, y: Math.floor(i / LW) * TS, vx: 0, vy: -40, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff6b6b' : '#eefaff', size: 1, grav: 0 }); }
+      if (e.modeT <= 0) { e.mode = 'shriek'; e.modeT = 0.5; e.hitT = 0; SFX.screech(); SFX.golemShatter(); shakeCam(5); zoomKick(1.06, 0.2); rumble(120, 0.5);
+        for (const i of e.panes) burst((i % LW) * TS + 8, Math.floor(i / LW) * TS, 3, ['#eefaff', '#bfe6f5', '#ffffff'], 90, 0.4); } break;
+    case 'shriek': fly(e.perchX, hoverY - 12, 40);
+      if (!P.dead && e.hitT <= 0 && e.panes.some(i => Math.abs(P.x - ((i % LW) * TS + 8)) < 11 && P.y > Math.floor(i / LW) * TS - 24 && P.y < Math.floor(i / LW) * TS + 4)) { e.hitT = 0.9; const res = damagePlayer(e.x, DMG.rocShriek, { unblockable: true, up: true }); if (res === 'hit') { P.vy = -210; number(P.x, P.y - 24, 'ON THE GLASS', '#ff6b6b'); } }
+      if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.7; e.panes = []; } break;
     // the gale: she backs off and beats her wings at you. Walk into it or it walks you onto the thorns.
     case 'gustTell': fly(e.x - (Math.sign(d) || 1) * 40, hoverY, 80); e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'gust'; e.modeT = p2 ? 2.6 : 2.2; } break;
     case 'gust': {
@@ -8951,6 +8973,21 @@ function updateCastleProps(dt, hb) {
       continue; }
     if (pr.t === 'resonance') {
       pr.cool = Math.max(0, (pr.cool || 0) - dt); pr.ring = Math.max(0, (pr.ring || 0) - dt);
+      /* THE CROWN'S FORK. The Roc's feathers are glass at the ends, and glass is what a fork shakes: strike it while she is
+         over it and her own wings ring and she comes down. It shakes nothing else - her floor is the fight, and this fork must
+         never take a pane out from under you. Struck with her not over it, it only hums, and is quiet again sooner. */
+      if (pr.roc) { const b = boss && boss.t === 'roc' && boss.alive && bossActive ? boss : null, over = !!(b && rocOverFork(b, pr)); pr.over = over;
+        if (pr.ring > 0 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y - 18 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#dff2ff' : '#bfe6f5', size: 1, grav: -20 });
+        if (over && pr.cool <= 0 && !pr.told && !(PROG.rocForkTold > 1)) { pr.told = true; PROG.rocForkTold = (PROG.rocForkTold || 0) + 1; hintT = 4; hintMsg = 'HER FEATHERS ARE GLASS AT THE ENDS, AND THE FORK SHAKES GLASS. STRIKE IT WHILE SHE IS OVER IT.'; }
+        const hit = hb && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 26, b: pr.y }) && !P.hitSet.has(pr);
+        if (hit) { P.hitSet.add(pr);
+          if (pr.cool > 0) { SFX.ui(); number(pr.x, pr.y - 30, 'STILL RINGING', '#9aa39a'); }
+          else if (over) { pr.cool = pr.coolMax = 10; pr.ring = 1.4; SFX.sting(); SFX.golemChime(); shakeCam(7); zoomKick(1.1, 0.3); rumble(180, 0.7);
+            ringAt(pr.x, pr.y - 14, 36, '#bfe6f5', 0.5); ringAt(b.x, b.y - 14, 30, '#8fd160', 0.6);
+            hurtEnemy(b, 20, pr.x, true); b.mode = 'downed'; b.modeT = 2.8; b.vx = 0; b.vy = 40; b.panes = []; SFX.queenShriek();
+            burst(b.x, b.y - 14, 22, ['#bfe6f5', '#eefaff', '#8a8478'], 100, 0.6); number(b.x, b.y - b.h - 16, 'HER GLASS RINGS', '#8fd160'); }
+          else { pr.cool = pr.coolMax = 2.5; pr.ring = 0.4; SFX.spark(); number(pr.x, pr.y - 30, 'SHE IS NOT OVER IT', '#9aa39a'); } }
+        continue; }
       if (pr.ring > 0 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y - 18 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#dff2ff' : '#bfe6f5', size: 1, grav: -20 });
       const struck = hb && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 26, b: pr.y }) && !P.hitSet.has(pr);
       if (struck) { P.hitSet.add(pr);
@@ -11714,8 +11751,13 @@ function drawWorld(cx, cy, showPlayer) {
       const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
       if (x < -40 || x > VW + 40) continue;
       const ready = pr.cool <= 0, sh = pr.ring > 0 ? Math.round((Math.random() - 0.5) * 3) : 0;
+      /* the crown's fork reaches UP, not round: two faint lines stand off it to her height, and they go green while she is between them */
+      if (pr.roc && ready && bossActive && boss && boss.t === 'roc' && boss.alive) { const k = 0.5 + 0.5 * Math.sin(time * (pr.over ? 14 : 3)), top = y - 6 * TS;
+        g.globalAlpha = pr.over ? 0.45 + 0.4 * k : 0.14 + 0.08 * k; g.strokeStyle = pr.over ? '#8fd160' : '#bfe6f5'; g.lineWidth = 1; g.setLineDash([3, 4]);
+        for (const s of [-36, 36]) { g.beginPath(); g.moveTo(x + s + 0.5, y - 4); g.lineTo(x + s + 0.5, top); g.stroke(); }
+        g.setLineDash([]); if (pr.over) { g.fillStyle = '#8fd160'; g.globalAlpha = 0.1 + 0.1 * k; g.fillRect(x - 36, top, 72, y - 4 - top); } g.globalAlpha = 1; }
       // how far it reaches, drawn on the ground, so the choice is never a guess
-      if (ready && Math.abs(P.x - pr.x) < pr.r + 60) {
+      if (ready && !pr.roc && Math.abs(P.x - pr.x) < pr.r + 60) {
         const k = 0.35 + 0.25 * Math.sin(time * 3);
         g.globalAlpha = 0.10 + 0.05 * k; g.fillStyle = '#bfe6f5';
         g.beginPath(); g.ellipse(x, y - 8, pr.r, pr.r * 0.42, 0, 0, 7); g.fill();
@@ -11734,7 +11776,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = dim; g.fillRect(x - 4 + sh, y - 15, 9, 3);
       if (ready) { g.globalAlpha = 0.18 + 0.12 * Math.sin(time * 4); g.fillStyle = '#bfe6f5';
         g.beginPath(); g.arc(x + sh, y - 22, 11, 0, 7); g.fill(); g.globalAlpha = 1; }
-      else { const k2 = 1 - pr.cool / 6; g.fillStyle = '#3e4a58'; g.fillRect(x - 5, y - 32, 10, 2);
+      else { const k2 = 1 - pr.cool / (pr.coolMax || 6); g.fillStyle = '#3e4a58'; g.fillRect(x - 5, y - 32, 10, 2);
         g.fillStyle = '#7aa8c8'; g.fillRect(x - 5, y - 32, Math.round(10 * k2), 2); }
       continue; }
     else if (pr.t === 'bulkhead') { if (pr.open) continue;
@@ -12040,7 +12082,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'shardling') frame = e.mode === 'bristle' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'gqueen') frame = GQ_FRAME[e.mode] !== undefined ? (typeof GQ_FRAME[e.mode] === 'function' ? GQ_FRAME[e.mode](e) : GQ_FRAME[e.mode]) : 3;
     else if (e.t === 'sentry') frame = e.mode === 'run' ? 3 + Math.floor(e.anim * 12) % 2 : e.mode === 'spot' || e.ringing ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
-    else if (e.t === 'roc') frame = e.mode === 'dive' || e.mode === 'rake' ? 4 : e.mode === 'rakeLine' ? 3 : (e.mode === 'stuck' || e.mode === 'skid') ? 6 : e.mode === 'downed' ? 7 : (e.mode === 'gust') ? 5 : (e.mode === 'diveTell' || e.mode === 'shedTell' || e.mode === 'wake') ? 3 : e.mode === 'sleep' ? 6 : Math.floor(e.anim * 8) % 4 === 3 ? 1 : Math.floor(e.anim * 8) % 4;
+    else if (e.t === 'roc') frame = e.mode === 'shriekTell' ? 8 : e.mode === 'shriek' ? 9 : e.mode === 'diveTell' ? 10 : e.mode === 'stuck' ? (Math.floor(e.anim * 4) % 2 ? 11 : 6) : e.mode === 'dive' || e.mode === 'rake' ? 4 : e.mode === 'rakeLine' ? 3 : e.mode === 'skid' ? 6 : e.mode === 'downed' ? 7 : (e.mode === 'gust') ? 5 : (e.mode === 'shedTell' || e.mode === 'wake') ? 3 : e.mode === 'sleep' ? 6 : Math.floor(e.anim * 8) % 4 === 3 ? 1 : Math.floor(e.anim * 8) % 4;
     else if (e.t === 'suncatcher') { const rf = RIME_FRAME[e.mode]; frame = rf === undefined ? 0 : typeof rf === 'function' ? rf(e) : rf; if (e.flash > 0 && e.mode === 'still') frame = 13; }
     else if (e.t === 'grandmother') frame = e.mode === 'sleep' ? 0 : e.mode === 'wake' ? 1 : (e.mode === 'fireTell' || e.mode === 'cast') ? 8 : (e.mode === 'vanishTell' || e.mode === 'vanish' || e.mode === 'appear') ? 9 : (e.mode === 'listen' || e.mode === 'listenTell') ? 4 : (e.mode === 'sweep' || e.mode === 'sweepTell') ? 5 : (e.mode === 'thrown' || e.mode === 'throwTell') ? 6 : e.mode === 'rap' ? 7 : (e.mode === 'feel' || e.mode === 'feelTell') ? 5 : (Math.floor(e.anim * 4) % 2 ? 2 : 3);
     else if (e.t === 'assassin') frame = e.mode === 'lurk' ? 0 : e.mode === 'markTell' ? (Math.floor(e.anim * 8) % 2 ? 1 : 2) : e.mode === 'lunge' ? 3 : (e.mode === 'stab' || e.mode === 'stabTell') ? 4 : e.mode === 'fade' ? 5 : 1;
@@ -12137,6 +12179,11 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'lance' && e.alive && lanceOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 24 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'ram' && ramOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 28 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.1; g.fillStyle = q % 2 ? '#8fd160' : '#fff6c8'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 22), Math.round(e.y - e.h * 1.5 - cy) - 8 + Math.round(Math.sin(a * 1.4) * 4), 2, 2); } } // dazed: a green ring under him, green motes over him
     if (e.t === 'roc' && e.mode === 'rakeLine') { const y = Math.round(L.arena.floor - 14 - cy), k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(Math.round(L.arena.x0 - cx), y); g.lineTo(Math.round(L.arena.x1 - cx), y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+    /* THE SHRIEK, told where: every pane she sings to rings red through the tell, and a spike of glass stands out of each when she lets go */
+    if (e.t === 'roc' && e.alive && (e.mode === 'shriekTell' || e.mode === 'shriek') && e.panes) { const k = 0.5 + 0.5 * Math.sin(time * 22), sing = e.mode === 'shriekTell', gr = sing ? 0 : 1 - Math.max(0, e.modeT) / 0.5;
+      for (const i of e.panes) { const px = Math.round((i % LW) * TS - cx), py = Math.round(Math.floor(i / LW) * TS - cy); if (px < -20 || px > VW + 20) continue;
+        if (sing) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(px + 0.5, py + 0.5, TS - 1, 4); g.globalAlpha = 1; }
+        else { const hh = Math.round(22 * Math.min(1, gr * 3) * (1 - Math.max(0, gr - 0.6) / 0.4)); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(px + 3, py); g.lineTo(px + 8, py - hh); g.lineTo(px + 13, py); g.fill(); g.fillStyle = '#eefaff'; g.fillRect(px + 7, py - hh + 3, 1, Math.max(0, hh - 4)); } } }
     if (e.t === 'owl' && (e.mode === 'stalk' || e.mode === 'plunge')) { const k = e.mode === 'plunge' ? 1 : 1 - e.modeT / 1.3, fl = L.arena.floor; g.fillStyle = 'rgba(10,8,20,' + (0.25 + 0.35 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(fl - cy) - 1, 8 + 8 * k, 2 + 2 * k, 0, 0, Math.PI * 2); g.fill(); }
     if (e.t === 'owl' && e.mode === 'skimTell' && e.skimAt) { const y = Math.round(L.arena.floor - 4 - cy), k = 0.5 + 0.5 * Math.sin(time * 20), x0 = Math.round(e.x - cx), x1 = Math.round(Math.max(L.arena.x0, Math.min(L.arena.x1, e.x + e.skimDir * 400)) - cx); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE SKIM'S LINE: where the talons will run, while it mantles */
     if (e.t === 'grandmother' && e.balls) for (const b of e.balls) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy), fl = Math.floor(time * 20) % 2;   /* her fireballs */
