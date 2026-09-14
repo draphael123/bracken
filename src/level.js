@@ -1534,6 +1534,7 @@ function hangingVillage() {
 
   // ---- The crown: THE OWL REEVE. Three perches on the high branches with a dark lantern on each; ledges climb to every one. ----
   ent('sign', 8, 19, { text: 'THE OWL REEVE: LIGHT ALL THREE PERCHES AND IT MUST COME DOWN. DODGE ITS TALONS.' });
+  ent('sign', 16, 19, { text: 'DEAD BOUGHS HANG ON PEGS. CUT A PEG WHEN THE REEVE IS LOW UNDER ITS BOUGH.' });
   ent('check', 12, 19);
   for (const x of [32, 76]) ent('lantern', x, 19); // two lit lanterns on the floor: a swooping owl still crashes into light
   plat(24, 17, 3); plat(84, 17, 3); plat(29, 14, 3); plat(79, 14, 3); plat(34, 11, 3); plat(74, 11, 3); // the climb either side
@@ -1542,6 +1543,9 @@ function hangingVillage() {
   for (const [x, y] of [[42, 8], [54, 11], [65, 8]]) ent('lantern', x, y, { dark: true, perch: true }); // a dark lantern on each perch: light it and the perch is denied
   vine(48, 12, 19); vine(61, 11, 19); // two vines from the floor up to the links
   ent('deco', 38, 19, { kind: 'stone', v: 0 }); ent('deco', 68, 19, { kind: 'cairn' });
+  // THE DEAD BOUGHS: under each outer perch a dead limb hangs on a rope run along the branch to a peg on the floor. Cut the peg while the Reeve
+  // is LOW under the limb (skimming, stuck in the boards, dazed) and it pins it: the one window the player makes. Placed on the row under the branch.
+  ent('deadfall', 41, 10, { peg: 44, pegY: 19, hang: true }); ent('deadfall', 66, 10, { peg: 63, pegY: 19, hang: true });
   coins([25, 16], [30, 13], [35, 10], [85, 16], [80, 13], [75, 10], [47, 10], [61, 9], [71, 10]);
   ent('owl', 54, 11);
   ent('gate', 100, 19);
