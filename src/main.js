@@ -117,7 +117,7 @@ const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (
 const DMG = { rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22,
-  priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, wardenPick: 24, wardenChain: 14, wardenFall: 20, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
+  priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, wardenPick: 24, wardenChain: 14, wardenFall: 20, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, shardBurst: 18, sunShard: 16, rocDive: 22, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20 };
 const EHP = { masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 620,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, pitwarden: 560, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, crow: 6, horn: 22, bale: 12, shardling: 18, suncatcher: 430, roc: 360, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 320, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 6, mother: 9999, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360 };
 // THE METER PACES THE WRONG HALF OF THE FIGHT. A swing costs 12 and comes off the blade, so eight swings
@@ -1211,7 +1211,7 @@ function spawnEnt(e) {
       case 'propman': enemies.push({ ...base, t: 'propman', w: 12, h: 13, hp: EHP.propman, mode: 'walk', modeT: 1, hitT: 0, swingT: 2, home: px, mini: !!e.mini }); break;
       case 'clinger': enemies.push({ ...base, t: 'clinger', w: 10, h: 11, hp: EHP.clinger, mode: 'cling', modeT: 0, hitT: 0, wallX: px, wallY: py, holdT: 0 }); break;
       case 'pitwarden': { const pw = { ...base, t: 'pitwarden', w: 26, h: 30, hp: EHP.pitwarden, maxHp: EHP.pitwarden, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pickT: 2.5, chainT: 6, roofT: 9, hornT: 12, broke: 0 }; boss = pw; enemies.push(pw); } break;
-      case 'forgemaster': { const fm = { ...base, t: 'forgemaster', mini: !!e.mini, w: 40, h: 32, hp: EHP.forgemaster, maxHp: EHP.forgemaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, sprayT: 6, dragT: 7, anvilT: 10, breathT: 5, hammerT: 2.6, cartT: 5, slagT: 6, plateT: 4 }; if (!e.mini) boss = fm; enemies.push(fm); } break;
+      case 'forgemaster': { const fm = { ...base, t: 'forgemaster', mini: !!e.mini, w: 40, h: 32, hp: EHP.forgemaster, maxHp: EHP.forgemaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, sprayT: 6, dragT: 7, anvilT: 10, breathT: 5, tongsT: 4, whirlT: 6, ladleT: 5, hammerT: 2.6, cartT: 5, slagT: 6, plateT: 4 }; if (!e.mini) boss = fm; enemies.push(fm); } break;
       case 'cart': movers.push({ kind: 'cart', x: px - 14, y: py - 10, x0: px - 14, y0: py - 10, w: 28, h: 10, dir: e.dir || 1, vx: 0, vy: 0, rolling: !!e.auto, auto: !!e.auto, gone: false, respawnT: 0, hit: new Set(), speed: e.speed || 140, dx: 0, dy: 0 }); break;
       case 'orelift': movers.push({ kind: 'orelift', x: px - 32, y: (e.y + 1) * TS - 6, y0: (e.y + 1) * TS - 6, y1: e.to * TS - 6, w: 64, h: 6, dx: 0, dy: 0 }); break;
       case 'gas': props.push({ t: 'gas', x: px, y: py, period: e.period || 7, on: 2.2, phase: e.phase || 0, vent: 0, lit: 0, armT: 0 }); break;
@@ -1225,7 +1225,7 @@ function spawnEnt(e) {
       case 'lantern': { const pr = { t: 'lantern', x: px, y: py, lit: !e.dark, hits: 0, perch: !!e.perch, city: !!e.city, gut: 0 }; props.push(pr);
         lights.push(pr.city ? { x: px, y: py - 40, r: 66, lantern: pr } : { x: px, y: py - 30, r: 50, glow: true, lantern: pr }); break; }
       case 'shardling': enemies.push({ ...base, t: 'shardling', w: 9, h: 11, hp: EHP.shardling, speed: 40, mode: 'walk', modeT: 0 }); break;
-      case 'gqueen': boss = { ...base, t: 'gqueen', w: 30, h: 52, hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
+      case 'gqueen': boss = { ...base, t: 'gqueen', w: 52, h: 52, /* FAT, NOT TALL: the body is half as wide again, so is the box */ hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
       case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
@@ -3117,7 +3117,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'crab' && e.mode === 'flipped') dmg = Math.round(dmg * 2);
   if (e.t === 'siren' && e.alive && e.hp - dmg > 0 && e.mode !== 'dive') { e.mode = 'dive'; e.modeT = 6; SFX.splash(); burst(e.x, e.y - 6, 10, ['#e8f4f0', '#7cc8c8'], 60, 0.4); }
   if (e.t === 'gqueen') { if (e.mode !== 'pinned') {
-    SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 40, Math.sign(e.x - fromX) || 1, 4);
+    SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 26, e.y - 40, Math.sign(e.x - fromX) || 1, 4);
     e.wardHit = 0.4;                                            // the shell flares where the blade met it
     if (!(e.armourSaid > 0)) { e.armourSaid = 1.2; ringAt(e.x, e.y - 30, 26, '#c9a0ff', 0.3);
       number(e.x, e.y - 52, 'WARDED', '#c9a0ff');
@@ -7177,13 +7177,16 @@ function updateForgemaster(e, dt) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 1; } break;
     case 'stun': want = 0; if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - e.h - 4, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0 }); if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; e.stagger = 0; number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#9aa39a'); } break;
     case 'scald': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; e.stagger = 0; } break;
-    case 'pace': { e.face = Math.sign(d) || e.face; want = ad > 110 ? e.face * 44 : ad < 50 ? -e.face * 30 : 0; for (const k of ['slamT', 'sprayT', 'dragT', 'anvilT', 'breathT']) e[k] -= dt; e.bellT = (e.bellT || 0) - dt;
+    case 'pace': { e.face = Math.sign(d) || e.face; want = ad > 110 ? e.face * 44 : ad < 50 ? -e.face * 30 : 0; for (const k of ['slamT', 'sprayT', 'dragT', 'anvilT', 'breathT', 'tongsT', 'whirlT', 'ladleT']) e[k] -= dt; e.bellT = (e.bellT || 0) - dt;
       if (e.modeT <= 0 && !P.dead) {
         const cart = nearestCart();
         if (e.dragT <= 0 && cart) { e.dragT = p2 ? 9 : 12; e.mode = 'dragTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.7; e.cart = cart; number(e.x, e.y - e.h - 12, 'THE CHAIN', '#ffd36b'); SFX.forgeChain(); }
         else if (e.anvilT <= 0) { e.anvilT = p2 ? 9 : 13; e.mode = 'anvilTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE RINGS THE ANVIL', '#ffd36b'); SFX.charge(); }
+        else if (e.ladleT <= 0 && ad > 110 && Math.abs(P.y - e.y) < 60) { e.ladleT = p2 ? 8 : 11; e.mode = 'ladleTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'THE CRUCIBLE', '#ff9a5c'); SFX.forgeSteam(); SFX.hiss(); }
         else if (p2 && e.breathT <= 0 && ad < 140) { e.breathT = 9; e.mode = 'breathTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'THE FURNACE', '#ff6b2c'); SFX.gasp(); }
+        else if (e.whirlT <= 0 && ad < 104 && Math.abs(P.y - e.y) < 40) { e.whirlT = p2 ? 7 : 9.5; e.mode = 'whirlTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.75; number(e.x, e.y - e.h - 12, 'THE CHAIN', '#ffd36b'); SFX.forgeChain(); }
         else if (e.bellT <= 0 && ad > 46 && ad < 170) { e.bellT = p2 ? 6 : 9; e.mode = 'bellowsTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; number(e.x, e.y - e.h - 12, 'THE BELLOWS', '#e8e0d0'); SFX.charge(); }
+        else if (e.tongsT <= 0 && ad < 76) { e.tongsT = p2 ? 5.5 : 7.5; e.mode = 'tongsTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'HAMMER AND TONGS', '#ffd36b'); SFX.charge(); }
         else if (e.sprayT <= 0 && ad < 120) { e.sprayT = p2 ? 6 : 8; e.mode = 'sprayTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.5; number(e.x, e.y - e.h - 12, 'STEAM', '#e8e0d0'); SFX.hiss(); }
         else if (e.slamT <= 0 && ad < 70) { e.slamT = p2 ? 3 : 4; e.mode = 'slamTell'; e.modeT = 0.7; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.forgeSteam(); }
         else if (ad > 60) { e.mode = 'stride'; e.modeT = 0.9; }
@@ -7205,6 +7208,52 @@ function updateForgemaster(e, dt) {
     /* THE BELLOWS. He puts his shoulder into the great bellows and a wall of hot air comes off it.
        It does not do much, and that is the point: it SHOVES, and the floor of an armoury is laid
        with hotplates. The blow is what it pushes you onto. */
+    /* HAMMER AND TONGS. The hammer goes hot and he comes in with three blows on a beat - flat, down, flat. A shield
+       turns every one of them, and the LAST one turned rings his arm: he is stunned, and a stunned smith takes it
+       doubled. Every other blow in his kit is run from; this is the one that pays you for standing your ground. */
+    case 'tongsTell': e.face = Math.sign(d) || e.face; want = ad > 40 ? e.face * 40 : 0;
+      if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 30, y: e.y - 32, vx: 0, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff6b2c' : '#ffd36b', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'tongs'; e.modeT = 1.25; e.tongsN = 0; e.tongsC = 0; e.tongsFr = 9; e.lungeT = 0; }
+      break;
+    case 'tongs': { e.tongsC += dt; e.lungeT -= dt; want = e.lungeT > 0 ? e.face * 110 : 0;
+      if (e.tongsN < 3 && e.tongsC >= [0.1, 0.5, 0.9][e.tongsN]) { const n = e.tongsN++; e.face = Math.sign(d) || e.face; e.tongsFr = [9, 2, 9][n]; e.lungeT = 0.12;
+        SFX.slash(); SFX.clank(); shakeCam(n === 2 ? 5 : 3); dust(e.x + e.face * 34, e.y, 4);
+        if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 66 && Math.abs(P.y - e.y) < 30) { const res = damagePlayer(e.x, DMG.fmTongs, { up: n === 2 });
+          if (res === 'hit') P.vx = e.face * (n === 2 ? 260 : 150);
+          else if (res === 'blocked' && n === 2) { e.mode = 'stun'; e.modeT = 1.4; e.stagger = 1.4; e.vx = 0; SFX.forgeHammer(); sparks(e.x + e.face * 30, e.y - 20, -e.face, 10); number(e.x, e.y - e.h - 12, 'TURNED: HIS ARM RINGS', '#8fd160'); break; } } }
+      if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.8; }
+      break; }
+    /* THE CHAIN. He coils the tub chain at his knee and lets it go round him twice: the first pass along the floor
+       (jump it), the second at head height (so do NOT be in the air for it). Nothing turns a chain, and it asks you
+       to read its height - the jump that saved you the first time is what gets you hit the second. */
+    case 'whirlTell': e.face = Math.sign(d) || e.face; want = 0;
+      if (e.modeT <= 0) { e.mode = 'whirl'; e.modeT = 1.5; e.whirlN = 0; e.whirlC = 0; e.chainA = 0; e.whirlHigh = false; SFX.forgeChain(); }
+      break;
+    case 'whirl': { want = 0; e.whirlC += dt; e.chainA += dt * 12; e.whirlHigh = e.whirlN >= 1 && e.whirlC > 0.7;
+      if (e.whirlN < 2 && e.whirlC >= [0.3, 1.15][e.whirlN]) { /* the gap is a whole jump and then some: a late jump over the low pass has come down before the high one */ const high = e.whirlN++ === 1, hy = high ? e.y - 30 : floor - 4; SFX.throwWhoosh(); SFX.clank(); shakeCam(3);
+        for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; parts.push({ x: e.x + Math.cos(a) * 104, y: hy + Math.sin(a) * 5, vx: -Math.sin(a) * 60, vy: 0, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0 }); }
+        if (!high) number(e.x, e.y - e.h - 12, 'AND HIGH', '#ffd36b');
+        const onFloor = P.y > floor - 70 && P.y <= floor + 2, air = P.y < floor - 12;
+        if (!P.dead && onFloor && ad < 112 && (high ? air : !air)) { damagePlayer(e.x, DMG.fmChain, { unblockable: true, up: true }); P.vx = (Math.sign(P.x - e.x) || 1) * 220; number(P.x, P.y - 26, high ? 'CAUGHT IN THE AIR' : 'SWEPT', '#ff6b6b'); } }
+      if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.7; }
+      break; }
+    /* THE CRUCIBLE. He hauls it up over his helmet and heaves it: molten iron comes down in a spread where you are
+       and burns on the floor. He will not pour it on his own boots - nothing lands inside a long stride of him - so
+       the answer is the one none of his other blows ask for: get IN, under the arc, and cut him while he throws. */
+    case 'ladleTell': e.face = Math.sign(d) || e.face; want = 0;
+      if (Math.random() < dt * 25) parts.push({ x: e.x + e.face * 10 + (Math.random() - 0.5) * 10, y: e.y - 34, vx: 0, vy: -25, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff6b2c' : '#ffd36b', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'ladle'; e.modeT = 1.5; SFX.throwWhoosh(); SFX.bellow(); shakeCam(3); e.blobs = [];
+        const n = p2 ? 4 : 3, sx = e.x + e.face * 8, sy = e.y - 38, G = 520;
+        for (let k = 0; k < n; k++) { let tx = P.x + P.vx * 0.35 + (k - (n - 1) / 2) * 38; if (Math.abs(tx - e.x) < 84) tx = e.x + (Math.sign(tx - e.x) || e.face) * 84; tx = Math.max(A.x0 + 16, Math.min(A.x1 - 16, tx));
+          const T0 = 0.85 + k * 0.08; e.blobs.push({ x: tx, t: T0 });
+          parts.push({ x: sx, y: sy, vx: (tx - sx) / T0, vy: ((floor - 4) - sy) / T0 - 0.5 * G * T0, life: T0, max: T0, col: '#ff9a5c', size: 3, grav: G }); } }
+      break;
+    case 'ladle': want = 0;
+      for (const b of (e.blobs || [])) { if (b.t <= 0) continue; b.t -= dt; if (b.t > 0) continue;
+        fires.push({ x: b.x, y: floor, life: 1.6, delay: 0 }); burst(b.x, floor - 2, 10, ['#ff6b2c', '#ffd36b', '#8a919c'], 70, 0.5); SFX.hiss(); shakeCam(2);
+        if (!P.dead && Math.abs(P.x - b.x) < 18 && P.y > floor - 26) damagePlayer(b.x, DMG.fmLadle, { unblockable: true, up: true }); }
+      if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; e.blobs = null; }
+      break;
     case 'bellowsTell': e.face = Math.sign(d) || e.face; want = 0;
       if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 16, y: e.y - 22 + (Math.random() - 0.5) * 14, vx: e.face * 40, vy: 0, life: 0.4, max: 0.4, col: '#e8e0d0', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'bellows'; e.modeT = 0.8; SFX.forgeSteam(); SFX.puff(); shakeCam(3);
@@ -7431,11 +7480,11 @@ function updateGQueen(e, dt) {
     case 'point': e.x = e.throneX; e.y = e.throneY; if (e.modeT <= 0) { e.mode = 'court'; e.modeT = 0.6; SFX.bow();
       if (A.gallery && !L.galleryDown && enemies.some(en => en.alive && en.gallery)) for (let k = 0; k < 5; k++) seeds.push({ x: e.markX + (k - 2) * 13 + (Math.random() - 0.5) * 6, y: A.gallery.row * TS - 4, vx: (Math.random() - 0.5) * 20, vy: 80, dead: false, life: 3, g: 520, arrow: true }); }
       break;
-    case 'throw': e.x = e.throneX; e.y = e.throneY; if (!e.thrown && e.modeT < 0.3) { e.thrown = true; const sx = e.x - 14, sy = e.y - 60; bombs.push({ x: sx, y: sy, vx: (P.x - sx) / 1.1, vy: -250, fuse: 1.4 }); SFX.throwWhoosh(); } if (e.modeT <= 0) { e.mode = 'court'; e.modeT = 0.5; } break;
+    case 'throw': e.x = e.throneX; e.y = e.throneY; if (!e.thrown && e.modeT < 0.3) { e.thrown = true; const sx = e.x - 22, sy = e.y - 60; bombs.push({ x: sx, y: sy, vx: (P.x - sx) / 1.1, vy: -250, fuse: 1.4 }); SFX.throwWhoosh(); } if (e.modeT <= 0) { e.mode = 'court'; e.modeT = 0.5; } break;
     case 'topple': e.x = e.throneX; e.y = e.throneY; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 60, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0 }); if (e.modeT <= 0) { e.phase = 2; e.mode = 'rise'; e.modeT = 1.0; SFX.bellow(); gqSay(e, 'THE QUEEN RISES', '#ff6b6b'); } break;
     case 'rise': want = 0; if (e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.6; } break;
     // ---- phase two: the sceptre ----
-    case 'stand': { if (e.y < hall - TS && e.onGround) e.dropT = 0.3; /* never left up on the gallery */ e.face = Math.sign(d) || e.face; want = ad > 44 ? e.face * 55 : 0; e.slamT -= dt; e.sweepT -= dt; e.chargeT -= dt; e.chandT = (e.chandT ?? 3) - dt; e.decreeT = (e.decreeT ?? 4) - dt; e.throwT2 = (e.throwT2 ?? 2.5) - dt; e.gLeapT = (e.gLeapT ?? 4) - dt; e.shadowT = (e.shadowT ?? 3) - dt; want = ad > 44 ? e.face * (e.phase >= 3 ? 70 : 55) : 0;
+    case 'stand': { if (e.y < hall - TS && e.onGround) e.dropT = 0.3; /* never left up on the gallery */ e.face = Math.sign(d) || e.face; want = ad > 56 ? e.face * 55 : 0; e.slamT -= dt; e.sweepT -= dt; e.chargeT -= dt; e.chandT = (e.chandT ?? 3) - dt; e.decreeT = (e.decreeT ?? 4) - dt; e.throwT2 = (e.throwT2 ?? 2.5) - dt; e.gLeapT = (e.gLeapT ?? 4) - dt; e.shadowT = (e.shadowT ?? 3) - dt; want = ad > 56 ? e.face * (e.phase >= 3 ? 70 : 55) : 0;
       if (e.modeT <= 0 && !P.dead) {
         const ch = (e.chandT = (e.chandT ?? 3) - 0) <= 0 && props.find(pr => pr.t === 'weight' && pr.gq && pr.state === 'hang' && Math.abs(pr.x - P.x) < 34 && Math.abs(pr.x - e.x) > 30);
         const perch = e.phase >= 2 && (e.gLeapT = (e.gLeapT ?? 4) - 0) <= 0 && props.find(pr => pr.t === 'support' && !pr.broken && pr.sx0 !== undefined && Math.abs((pr.sx0 + pr.sx1 + 1) * TS / 2 - e.x) < 150);
@@ -7446,7 +7495,7 @@ function updateGQueen(e, dt) {
         else if (e.throwT2 <= 0 && ad > 70) { e.throwT2 = 6.5; e.mode = 'sceptreTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.6; SFX.snort(); }
         else if (e.chargeT <= 0 && ad > 100) { e.chargeT = 5.5; e.mode = 'chargeTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.8; SFX.bellow(); }
         else if (e.slamT <= 0 && ad < 96) { e.slamT = 2.6; e.mode = 'slamTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.7; SFX.charge(); }
-        else if (e.sweepT <= 0 && ad < 54) { e.sweepT = 2.0; e.mode = 'sweepTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; SFX.snort(); }
+        else if (e.sweepT <= 0 && ad < 66) { e.sweepT = 2.0; e.mode = 'sweepTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; SFX.snort(); }
       } break; }
     // she draws back and hurls the sceptre at the chain: it rings off it and comes back to her hand, and the chandelier shakes
     case 'chandTell': { const c = e.chand; e.face = Math.sign((c ? c.x : P.x) - e.x) || e.face; want = 0;
@@ -7464,17 +7513,17 @@ function updateGQueen(e, dt) {
       if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.9; } break;
     // THE SCEPTRE: thrown the length of the hall, low along the floor going out (jump it), at head height coming back
     // (stay down). While it is out of her hand she has nothing to fight with.
-    case 'sceptreTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sceptreWait'; e.modeT = 3; sceptres.push({ x: e.x + e.face * 22, y: hall - 9, dir: e.face, back: false, t: 0, owner: e, hit: false }); SFX.throwWhoosh(); } break;
+    case 'sceptreTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sceptreWait'; e.modeT = 3; sceptres.push({ x: e.x + e.face * 32, y: hall - 9, dir: e.face, back: false, t: 0, owner: e, hit: false }); SFX.throwWhoosh(); } break;
     case 'sceptreWait': want = 0; if (!sceptres.some(s => s.owner === e) || e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.4; } break;
     case 'slamTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.25; SFX.forgeHammer(); shakeCam(9); zoomKick(1.08, 0.2); dust(e.x + e.face * 26, e.y, 14);
       const fl = e.phase === 3 ? roof : hall; for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 26, y: fl, dir: dd, life: 1.3, sp: 170 });
-      if (!P.dead && ad < 40 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } break;
+      if (!P.dead && ad < 52 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } break; /* every reach below grew by the eleven pixels her body did */
     case 'slam': if (e.modeT <= 0) { e.mode = 'slamRec'; e.modeT = 0.9; } break;
-    case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.25; SFX.slash(); shakeCam(3); if (!P.dead && P.ground && ad < 60 && Math.abs(P.y - e.y) < 22) { const res = damagePlayer(e.x, DMG.gqSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d || 1) * 240; P.vy = -120; } } } break;
+    case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.25; SFX.slash(); shakeCam(3); if (!P.dead && P.ground && ad < 72 && Math.abs(P.y - e.y) < 22) { const res = damagePlayer(e.x, DMG.gqSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d || 1) * 240; P.vy = -120; } } } break;
     case 'sweep': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.5; } break;
     case 'chargeTell': if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 2.6; e.vx = e.face * 240; SFX.charge(); } break;
     case 'charge': { want = e.face * 240; if (Math.random() < dt * 20) dust(e.x - e.face * 12, e.y, 2);
-      if (!P.dead && e.hitT <= 0 && ad < 24 && Math.abs(P.y - e.y) < 34) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.gqCharge, { unblockable: true, up: true }); if (res === 'hit') { P.vx = e.face * 320; P.vy = -170; } }
+      if (!P.dead && e.hitT <= 0 && ad < 34 && Math.abs(P.y - e.y) < 34) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.gqCharge, { unblockable: true, up: true }); if (res === 'hit') { P.vx = e.face * 320; P.vy = -170; } }
       const edge = e.face > 0 ? e.x > A.x1 - 40 : e.x < A.x0 + 40;
       if (edge || e.modeT <= 0) { e.mode = 'dazed'; e.modeT = 2.2; e.vx = 0; SFX.heavy(); SFX.stone(); shakeCam(8); zoomKick(1.1, 0.3); dust(e.x + e.face * 16, e.y, 12); } break; }
     case 'slamRec': case 'rec': case 'dazed': want = 0; if (e.mode === 'dazed' && Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 24, y: e.y - 60, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0 });
@@ -7486,11 +7535,11 @@ function updateGQueen(e, dt) {
     case 'gLeap': e.airT += dt; if ((e.onGround && e.airT > 0.2) || e.modeT <= 0) { e.vx = 0; if (e.y < hall - TS) { e.mode = 'gPerch'; e.modeT = 1.1; SFX.heavy(); shakeCam(3); dust(e.x, e.y, 6); } else { e.mode = 'stand'; e.modeT = 0.4; } } break;
     case 'gPerch': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'gDropTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.55; e.markX = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); SFX.charge(); } break;
     case 'gDropTell': want = 0; if (e.modeT <= 0) { const T0 = 0.6; e.vx = (e.markX - e.x) / T0; e.vy = -220; e.dropT = 0.7; e.mode = 'gDrop'; e.modeT = 1.4; e.airT = 0; SFX.leap(); } break;
-    case 'gDrop': e.airT += dt; if (e.onGround && e.airT > 0.2 && e.y >= hall - 4) { e.vx = 0; e.mode = 'slamRec'; e.modeT = 1.0; SFX.forgeHammer(); SFX.heavy(); shakeCam(9); zoomKick(1.08, 0.25); dust(e.x, e.y, 16); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 24, y: hall, dir: dd, life: 1.3, sp: 175, royal: true }); if (!P.dead && Math.abs(P.x - e.x) < 38 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } else if (e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.4; } break;
+    case 'gDrop': e.airT += dt; if (e.onGround && e.airT > 0.2 && e.y >= hall - 4) { e.vx = 0; e.mode = 'slamRec'; e.modeT = 1.0; SFX.forgeHammer(); SFX.heavy(); shakeCam(9); zoomKick(1.08, 0.25); dust(e.x, e.y, 16); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 24, y: hall, dir: dd, life: 1.3, sp: 175, royal: true }); if (!P.dead && Math.abs(P.x - e.x) < 48 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } else if (e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.4; } break;
     // THE SHADOW STEP: purple smoke where she stands and where she means to be - behind you - and a sweep as she arrives
-    case 'shadowTell': want = 0; if (Math.random() < dt * 40) { parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * 50, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#7a4aa0', size: 3, grav: 0 }); const bx = P.x - (P.face || 1) * 34; parts.push({ x: bx + (Math.random() - 0.5) * 16, y: hall - Math.random() * 30, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#c9a0ff', size: 2, grav: 0, glow: true }); }
+    case 'shadowTell': want = 0; if (Math.random() < dt * 40) { parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * 50, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#7a4aa0', size: 3, grav: 0 }); const bx = P.x - (P.face || 1) * 46; parts.push({ x: bx + (Math.random() - 0.5) * 16, y: hall - Math.random() * 30, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#c9a0ff', size: 2, grav: 0, glow: true }); }
       if (e.modeT <= 0) { e.mode = 'shadow'; e.modeT = 0.3; e.hideT = 0.3; SFX.throwWhoosh(); burst(e.x, e.y - 26, 14, ['#3a2a4a', '#7a4aa0'], 60, 0.5); } break;
-    case 'shadow': want = 0; e.vx = 0; if (e.modeT <= 0) { e.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x - (P.face || 1) * 34)); e.y = hall; e.vy = 0; e.face = Math.sign(P.x - e.x) || 1; burst(e.x, e.y - 26, 16, ['#3a2a4a', '#c9a0ff'], 70, 0.5); e.mode = 'sweepTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.32; SFX.snort(); } break;
+    case 'shadow': want = 0; e.vx = 0; if (e.modeT <= 0) { e.x = Math.max(A.x0 + 30, Math.min(A.x1 - 30, P.x - (P.face || 1) * 46)); e.y = hall; e.vy = 0; e.face = Math.sign(P.x - e.x) || 1; burst(e.x, e.y - 26, 16, ['#3a2a4a', '#c9a0ff'], 70, 0.5); e.mode = 'sweepTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.32; SFX.snort(); } break;
     // ---- phase three: the roof ----
     case 'ceilTell': want = 0; if (e.modeT <= 0) { e.mode = 'ceil'; e.modeT = 3; gqCeiling(e); } break;
     case 'ceil': { const hx = (A.hole.x0 + A.hole.x1 + 1) * TS / 2; e.x += (hx - e.x) * Math.min(1, dt * 5); e.y -= 360 * dt;
@@ -7508,7 +7557,7 @@ function updateGQueen(e, dt) {
     case 'slateTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'slate'; e.modeT = 0.4; SFX.throwWhoosh(); for (let k = 0; k < 3; k++) { const tx = P.x + (k - 1) * 22, tt = 0.8; seeds.push({ x: e.x, y: e.y - 50, vx: (tx - e.x) / tt, vy: -140 + (P.y - e.y) / tt, dead: false, life: 3, g: 480, slate: true }); } } break;
     case 'slate': if (e.modeT <= 0) { e.mode = 'roof'; e.modeT = 0.5; } break;
     case 'leapTell': e.face = Math.sign(e.tx - e.x) || e.face; if (e.modeT <= 0) { const T0 = 0.75; e.vx = (e.tx - e.x) / T0; e.vy = (e.ty - e.y) / T0 - 0.5 * 1000 * T0; e.mode = 'leap'; e.modeT = 1.6; e.airT = 0; SFX.leap(); } break;
-    case 'leap': e.airT += dt; if ((e.onGround && e.airT > 0.15) || e.modeT <= 0) { e.mode = 'land'; e.modeT = 0.45; e.vx = 0; SFX.heavy(); shakeCam(5); dust(e.x, e.y, 10); if (!P.dead && ad < 36 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } break;
+    case 'leap': e.airT += dt; if ((e.onGround && e.airT > 0.15) || e.modeT <= 0) { e.mode = 'land'; e.modeT = 0.45; e.vx = 0; SFX.heavy(); shakeCam(5); dust(e.x, e.y, 10); if (!P.dead && ad < 46 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } break;
     case 'land': want = 0; if (e.modeT <= 0) { e.mode = 'roof'; e.modeT = 0.4; } break;
     case 'struck': want = 0; if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * 24, y: e.y - 40 - Math.random() * 20, vx: 0, vy: -30, life: 0.3, max: 0.3, col: '#dfe8ff', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'roof'; e.modeT = 0.6; } break;
   }
@@ -7517,7 +7566,7 @@ function updateGQueen(e, dt) {
   e.vy += 1000 * dt; if (e.vy > 380) e.vy = 380;
   const r = moveBody(e, e.vx * dt, e.vy * dt, e.dropT > 0); e.onGround = r.ground; if (r.ground) e.vy = 0;
   if (r.hitX && e.mode === 'charge') { e.mode = 'dazed'; e.modeT = 2.2; e.vx = 0; SFX.heavy(); shakeCam(8); }
-  e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x));
+  e.x = Math.max(A.x0 + 28, Math.min(A.x1 - 28, e.x));
 }
 const rocOpen = e => e.mode === 'stuck' || e.mode === 'skid' || e.mode === 'downed';
 function updateRoc(e, dt) {
@@ -12032,7 +12081,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'windcaller') frame = e.mode === 'fallen' ? 2 : e.mode === 'ground' ? 3 : e.mode === 'blink' || e.mode === 'appear' ? 2 : (e.mode === 'howlTell' || e.mode === 'howl') ? 3 : e.castFlash > 0 ? 1 : Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'golem') frame = e.mode === 'stagger' ? 5 : e.mode === 'drink' ? 7 : e.mode === 'counter' ? 8 : (e.mode === 'shroudTell' || e.mode === 'shroud') ? 6 : (e.mode === 'stompTell' || e.mode === 'stomp') ? 3 : e.mode === 'throwTell' || e.mode === 'throw' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
     else if (e.t === 'rockgoblin') frame = e.mode === 'throw' ? 2 : e.liftT > 0 ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
-    else if (e.t === 'forgemaster') frame = e.mode === 'stun' || e.mode === 'scald' ? 5 : e.mode === 'slamTell' || e.mode === 'anvilTell' || e.mode === 'hurlTell' ? 1 : e.mode === 'slam' || e.mode === 'anvil' || e.mode === 'hurl' ? 2 : e.mode === 'drag' || e.mode === 'dragTell' || e.mode === 'spray' || e.mode === 'sprayTell' ? 3 : e.mode === 'breath' || e.mode === 'breathTell' ? 6 : Math.abs(e.vx) > 10 ? [7, 0, 8, 0][Math.floor(e.anim * (Math.abs(e.vx) > 60 ? 4.5 : 3)) % 4] : 0; // he walks now: plant, pass, plant (his anim runs at twice time)
+    else if (e.t === 'forgemaster') frame = e.mode === 'stun' || e.mode === 'scald' ? 15 : e.mode === 'tongsTell' ? 5 : e.mode === 'tongs' ? (e.tongsFr || 9) : e.mode === 'whirlTell' ? 10 : e.mode === 'whirl' ? (e.whirlHigh ? 12 : 11) : e.mode === 'ladleTell' ? 13 : e.mode === 'ladle' ? 14 : e.mode === 'slamTell' || e.mode === 'anvilTell' || e.mode === 'hurlTell' ? 1 : e.mode === 'slam' || e.mode === 'anvil' || e.mode === 'hurl' ? 2 : e.mode === 'drag' || e.mode === 'dragTell' || e.mode === 'spray' || e.mode === 'sprayTell' ? 3 : e.mode === 'breath' || e.mode === 'breathTell' ? 6 : Math.abs(e.vx) > 10 ? [7, 0, 8, 0][Math.floor(e.anim * (Math.abs(e.vx) > 60 ? 4.5 : 3)) % 4] : 0; // he walks now: plant, pass, plant (his anim runs at twice time)
     else if (e.t === 'greathound') frame = e.mode === 'stun' || e.mode === 'skid' || e.mode === 'whine' || e.mode === 'landed' ? 6 : e.mode === 'howlTell' || e.mode === 'howl' ? 5 : e.mode === 'pounce' ? 4 : e.mode === 'lungeTell' || e.mode === 'pounceTell' || e.mode === 'snapTell' ? 3 : Math.abs(e.vx) > 10 ? 1 + Math.floor(e.anim * 14) % 2 : 0;
     else if (e.t === 'spider') frame = (e.mode === 'drop' || e.mode === 'dropTell' || e.mode === 'ground') ? 1 : e.mode === 'climb' ? 3 + Math.floor(e.anim * 10) % 2 : (Math.floor(e.anim * 1.5) % 3 === 0 ? 2 : 0);
     else if (e.squirrel) frame = e.vy !== 0 ? 2 : Math.floor(e.anim * 12) % 2;
@@ -12100,6 +12149,11 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'golem' && e.alive && e.cb) { const x0 = Math.round(e.cb.x0 - cx), y0 = Math.round(e.cb.y0 - cy), x1 = Math.round(e.cb.x1 - cx), y1 = Math.round(e.cb.y1 - cy); g.globalAlpha = 0.3; g.strokeStyle = '#ff7ab8'; g.lineWidth = 9; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.globalAlpha = 0.95; g.strokeStyle = '#fff0f6'; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'golem' && e.alive) { const gx = Math.round(e.x - cx), gy = Math.round(e.y - cy); const NEED = { blue: '#bfe6f5', violet: '#c8a8ff', green: '#a8ffb8', both: '#fff6e0' }; const gems = [[0, -34], [-11, -25], [11, -25], [0, -18]]; gems.forEach(([ox, oy], k) => { const broken = k < (e.facets || 0), isNext = k === (e.facets || 0); const okNow = e.lit && (e.need === 'both' ? (e.litCols && e.litCols.size >= 2) : (e.litCols && e.litCols.has(e.need))); g.fillStyle = broken ? '#2a3a50' : isNext ? (okNow ? (Math.floor(time * 10) % 2 ? '#fff6e0' : NEED[e.need]) : NEED[e.need]) : '#a8306a'; g.fillRect(gx + ox - 2, gy + oy - 2, 4, 4); if (!broken && e.lit) { g.globalAlpha = 0.35; g.fillStyle = '#ff7ab8'; g.beginPath(); g.arc(gx + ox, gy + oy, 7, 0, 7); g.fill(); g.globalAlpha = 1; } }); if (e.lit) { g.globalAlpha = 0.18; g.fillStyle = '#eefaff'; g.fillRect(gx - 18, gy - e.h - 2, 36, e.h + 2); g.globalAlpha = 1; } }
     if (e.t === 'forgemaster' && forgeOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 30 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    /* THE FORGEMASTER'S CHAIN, drawn: its reach marked on the floor while he coils it, then the chain going round him at the height it is at */
+    if (e.t === 'forgemaster' && e.alive && e.mode === 'whirlTell') { const k = 0.5 + 0.5 * Math.sin(time * 18); g.globalAlpha = 0.25 + 0.35 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 110, 6, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+    if (e.t === 'forgemaster' && e.alive && e.mode === 'whirl') { const hx = Math.round(e.x - cx) + (e.face || 1) * 8, hy = Math.round(e.y - cy) - (e.whirlHigh ? 30 : 5), a = (e.chainA || 0) * (e.face || 1), ex2 = hx + Math.cos(a) * 104, ey2 = hy + Math.sin(a) * 6;
+      g.globalAlpha = 0.25; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(hx, hy, 104, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+      g.fillStyle = '#ffd36b'; for (let q = 1; q <= 12; q++) g.fillRect(Math.round(hx + (ex2 - hx) * q / 12) - 1, Math.round(hy + (ey2 - hy) * q / 12) - 1, 2, 2); g.fillStyle = '#22222c'; g.fillRect(Math.round(ex2) - 3, Math.round(ey2) - 3, 6, 6); }
     if (e.t === 'roc' && e.alive && (e.mode === 'diveTell' || e.mode === 'dive') && e.tx !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 16), fy = Math.round(L.arena.floor - cy); g.globalAlpha = 0.25 + 0.25 * k; g.fillStyle = '#1b1626'; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, 16 + k * 3, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     // WHILE SHE IS WARDED SHE WEARS IT: a violet shell round her that turns over slowly and flares white
     // where a blade has just come off it. The moment the gallery pins her it is gone and the green ring says
@@ -12109,16 +12163,16 @@ function drawWorld(cx, cy, showPlayer) {
       e.wardHit = Math.max(0, (e.wardHit || 0) - 1 / 60);
       g.globalAlpha = 0.18 + 0.1 * k2 + (e.wardHit || 0) * 0.9;
       g.strokeStyle = (e.wardHit || 0) > 0.15 ? '#f0e6ff' : '#9a5aa8'; g.lineWidth = (e.wardHit || 0) > 0.15 ? 2 : 1;
-      g.beginPath(); g.ellipse(ex, ey, 26, 34, 0, 0, 7); g.stroke();
+      g.beginPath(); g.ellipse(ex, ey, 40, 34, 0, 0, 7); g.stroke();
       g.globalAlpha = 0.10 + 0.06 * k2; g.fillStyle = '#5a2a7a';
-      g.beginPath(); g.ellipse(ex, ey, 25, 33, 0, 0, 7); g.fill();
+      g.beginPath(); g.ellipse(ex, ey, 39, 33, 0, 0, 7); g.fill();
       /* the plates of it, turning */
       g.globalAlpha = 0.3 + 0.2 * k2; g.strokeStyle = '#c9a0ff'; g.lineWidth = 1;
       for (let i = 0; i < 4; i++) { const a = time * 0.7 + i * 1.57;
-        g.beginPath(); g.ellipse(ex, ey, 26 * Math.abs(Math.cos(a)), 34, 0, 0, 7); g.stroke(); }
+        g.beginPath(); g.ellipse(ex, ey, 40 * Math.abs(Math.cos(a)), 34, 0, 0, 7); g.stroke(); }
       g.globalAlpha = 1;
     }
-    if (e.t === 'gqueen' && e.alive && gqOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 24 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    if (e.t === 'gqueen' && e.alive && gqOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 36 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'gqueen' && e.alive && e.mode === 'point' && e.markX) { const k = 0.5 + 0.5 * Math.sin(time * 18), fy = Math.round(L.arena.floor - cy) - 2, mx = Math.round(e.markX - cx); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(mx - 10, fy - 4); g.lineTo(mx + 10, fy + 2); g.moveTo(mx + 10, fy - 4); g.lineTo(mx - 10, fy + 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'gqueen' && e.alive && e.gather > 0 && e.markX !== undefined && !e.rodTarget) { const k = 1 - e.gather / 0.9, fy = Math.round(L.arena.roof - cy); g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#dfe8ff'; g.lineWidth = 1; for (const mx of (e.marks || [e.markX])) { g.beginPath(); g.ellipse(Math.round(mx - cx), fy - 1, 22 - k * 10, 5 - k * 2, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
     if (e.t === 'roc' && e.alive && rocOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 26 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
