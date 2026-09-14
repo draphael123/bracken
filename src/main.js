@@ -748,6 +748,7 @@ function resolveTiles() {
         else if (dress === 'ship' || dress === 'reef' || dress === 'city') { roll = 1; const r2 = rnd();
           if (r2 < 0.08 && PROP.lw && PROP.lw.shell) decor.push({ k: 'rock', x: x * TS + 3 + ((rnd() * 7) | 0), y: y * TS - 4, c: PROP.lw.shell[(rnd() * 3) | 0] });
           else if (r2 < 0.13 && PROP.lw && PROP.lw.saltCrust) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 4, c: PROP.lw.saltCrust[(rnd() * 2) | 0] }); }
+        else if (L.masonry && dress === 'none') roll = 1;   /* A CASTLE ON A SNOW LINE GROWS NOTHING: 'none' fell through to the wood's ferns, stumps and mushrooms, on her ashlar */
         else { const r2 = rnd(); if (r2 < 0.09) { decor.push({ k: 'fern', x: x * TS + 1, y: y * TS - 10, c: PROP.fern[(rnd() * 3) | 0], sway: 0 }); roll = 1; } else if (r2 < 0.13 && flat2) { decor.push({ k: 'stump', x: x * TS + 1, y: y * TS - 10, c: PROP.stump[(rnd() * 2) | 0] }); roll = 1; } else if (r2 < 0.16 && flat2) { decor.push({ k: 'log', x: x * TS, y: y * TS - 10, c: PROP.fallenLog[(rnd() * 2) | 0] }); roll = 1; } else if (r2 < 0.21) { decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); roll = 1; } else if (r2 < 0.235 && flat2 && dress === 'wood') { decor.push({ k: 'fence', x: x * TS, y: y * TS - 12, c: PROP.fence[(rnd() * 2) | 0], bg: true }); roll = 1; } }
         if (roll < 0.36) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 });
         else if (roll < 0.5) decor.push({ k: 'flower', x: x * TS + 3 + ((rnd() * 8) | 0), y: y * TS - 6, c: PROP.flower[(rnd() * 4) | 0], sway: 0 });
@@ -10987,10 +10988,10 @@ function drawMurk(cx) {
 // THE NEAR LAYER, per level, baked once. A level with its own `palette.fg` (the sea sets and the drowned
 // city) already has one and keeps it; everything else had nothing between the camera and the world.
 // Which silhouette it is comes off the dressing, and the colours off the canopy.
-let NEARL = null, NEAR_ID = null;
+let NEARL = null, NEAR_ID = null; const NEAR_A = { top: 1, bot: 1, cx: -1e9, cy: -1e9 };
 function nearFor() {
   const id = curId(); if (NEAR_ID === id && NEARL !== undefined) return NEARL;
-  NEAR_ID = id; NEARL = null;
+  NEAR_ID = id; NEARL = null; NEAR_A.top = NEAR_A.bot = 1;
   const P0 = L.palette || {};
   if (P0.fg || L.colosseum || L.trial || L.dark) return NEARL;    /* it has its own, or it is a room and not a place - and a level in the dark has THE MURK behind it already, which is the same job from the other side */
   const dress = P0.dress || 'wood', rock = dress === 'crag' || dress === 'none';
@@ -11012,9 +11013,19 @@ function drawNear(cx) {
   { const tx = P.x / TS, ty = P.y / TS; if ((L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5)) return; }
   const lay = (c, f, y) => { const w = c.width; let x = ((-cx * f) % w + w) % w; if (x > 0) x -= w;
     for (; x < VW; x += w) g.drawImage(c, Math.round(x), y); };
-  g.globalAlpha = 0.9;
-  lay(n.top, 1.35, -8);
-  lay(n.bot, 1.5, VH - 22);
+  /* AND IN THE OPEN AIR THERE IS NO LEDGE. The lip of rock over the lens and the blades along the bottom are pinned to
+     the SCREEN, which is right while there is ground in the frame. A level a hundred rows tall puts the camera forty
+     rows over any ground, and there it hung a fringe of grass across the sky and a rock over nothing. Each band is
+     drawn while there is rock along its own edge of the frame, eased so a jump over a pit does not flicker it (and
+     snapped when the camera jumps, so the bot's single frames see what a player would). */
+  let wantTop = 1, wantBot = 1;
+  if (LH * TS > VH * 3) { const tx0 = Math.floor(cx / TS), ty0 = Math.floor(camY / TS), ty1 = Math.floor((camY + VH) / TS); let nt = 0, nb = 0, nn = 0;
+    for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS); tx += 2) { nn++; for (let k = 0; k < 3; k++) if (isSolid(tx, ty0 + k)) { nt++; break; } for (let k = 0; k < 3; k++) if (isSolid(tx, ty1 - k)) { nb++; break; } }
+    wantTop = nt / nn > 0.25 ? 1 : 0; wantBot = nb / nn > 0.25 ? 1 : 0; }
+  const snap = Math.abs(camY - NEAR_A.cy) > VH * 0.5 || Math.abs(cx - NEAR_A.cx) > VW * 0.5, ek = snap ? 1 : 0.12; NEAR_A.cy = camY; NEAR_A.cx = cx;
+  NEAR_A.top += (wantTop - NEAR_A.top) * ek; NEAR_A.bot += (wantBot - NEAR_A.bot) * ek;
+  if (NEAR_A.top > 0.02) { g.globalAlpha = 0.9 * NEAR_A.top; lay(n.top, 1.35, -8); }
+  if (NEAR_A.bot > 0.02) { g.globalAlpha = 0.9 * NEAR_A.bot; lay(n.bot, 1.5, VH - 22); }
   g.globalAlpha = 1;
 }
 
@@ -11598,6 +11609,17 @@ function bakeRoof(h) { const x0 = h.x0 - 1, x1 = h.x1 + 1, w = (x1 - x0 + 1) * T
   for (let sx = 6; sx < w - 6; sx += 10 + ((rnd() * 14) | 0)) { x.fillStyle = '#dfe8ff'; x.fillRect(sx, ht - 2, 1, 2 + ((rnd() * 3) | 0)); } // icicles
   return c; }
 function drawRoofs(cx, cy) { for (const h of (L.houses || [])) { const x = (h.x0 - 1) * TS - 2 - cx, y = (h.y0 - 3) * TS - cy; if (x > VW || x + (h.x1 - h.x0 + 4) * TS < 0) continue; if (!h.roof) h.roof = h.tiles ? TWN.bakeTileRoof(h) : bakeRoof(h); g.drawImage(h.roof, Math.round(x), Math.round(y)); } }
+/* THE CASTLE BEHIND THE PLAY. L.facades: [x0, x1, y0, y1, kind, opts] in tiles, each a wall face baked once
+   (crown_tiles.js bakeFacade) and drawn locked to the world, behind the rooms and the tiles. A burning one breathes. */
+function drawFacades(cx, cy) {
+  for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f;
+    const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
+    if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
+    if (!f.spr) f.spr = CRT.bakeFacade(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, Object.assign({}, o || {}, o && o.arch ? { arch: [o.arch[0] - y0, o.arch[1] - y0] } : {}));
+    g.drawImage(f.spr, sx, sy);
+    if (kind === 'burning') { g.globalAlpha = 0.045 + 0.03 * Math.sin(time * 7 + x0) + 0.015 * Math.sin(time * 17 + y0); g.fillStyle = '#ff8a3c'; g.fillRect(Math.max(0, sx), Math.max(0, sy + (h >> 2)), Math.min(VW, sx + w) - Math.max(0, sx), h - (h >> 2)); g.globalAlpha = 1; }
+  }
+}
 function drawWorld(cx, cy, showPlayer) {
   g.__world = true;   /* a string drawn in here lives in the world and is allowed off the edge: the playtest bot reads this */
   if (L.colosseum) { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#0e0c12'); gr.addColorStop(0.6, '#191620'); gr.addColorStop(1, '#241f28'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
@@ -13769,6 +13791,10 @@ window.BK = {
   telling: e => !!e && windingUp(e),
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
+  /* THE BOT HAS TO BE ABLE TO LOOK AT A PLACE IT IS NOT STANDING. A backdrop fault lives at a height: a band cut off
+     above the fourth storey, a room wall that stops a row short. Walking there to see it takes a minute a frame. This
+     puts the hero and the camera on a tile and draws one frame, nothing updated, so a sweep of a level is a loop. */
+  look(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; camX = P.x - VW / 2; camY = P.y - VH * 0.6; render(); return { cx: Math.round(Math.max(0, Math.min(LW * TS - VW, camX))), cy: Math.round(Math.max(0, Math.min(LH * TS - VH, camY))) }; },
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(),

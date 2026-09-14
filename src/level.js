@@ -2619,6 +2619,9 @@ function shiftCrown(R, col, n) { // what grow() does not know about in the castl
     if (A.hole) A.hole = { ...A.hole, x0: sh(A.hole.x0), x1: sh(A.hole.x1) };
     if (A.rubble) A.rubble = A.rubble.map(([x, y, w]) => [sh(x), y, w]);
     R.arena = A; }
+  if (R.masonry) R.masonry = R.masonry.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);   /* the laid stone and the wall faces behind the play: new to the castle, so grow() cannot know them */
+  if (R.facades) R.facades = R.facades.map(f => { const o = f.slice(); o[0] = sh(f[0]); o[1] = sh(f[1]); return o; });
+  if (R.tints) R.tints = R.tints.map(([x0, x1, c, a]) => [sh(x0), sh(x1), c, a]);
   return R;
 }
 function highcrownWhole() {
@@ -2723,11 +2726,122 @@ function highcrownWhole() {
     ent('soldier', 218, 63, { face: -1 }); ent('archer', 168, 63, { face: 1 });
     ent('brazier', 172, 63); coins([170, 62], [174, 62], [220, 62]);
   }
-  const R = M.done();
+  let R = M.done();
   // the old start by the drawbridge: the squire and her sign moved to the foot of the road
   R.ents = R.ents.filter(e => !((e.t === 'npc' && e.kind === 'squire' && e.x === 141) || (e.t === 'sign' && e.x === 140)));
   R.START = { x: 12, y: 95 };
-  R.weather = [{ x0: 0, x1: 333 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 333 * TS, kind: 'wind' }];
+
+  // ---- A CASTLE IN THE MOUNTAIN, NOT GREY ROCK WITH ROOMS IN IT ----
+  // What the masons LAID is drawn as coursed ashlar (L.masonry, crown_tiles.js) against the crag they built it on, and
+  // the rest of the castle stands behind the play (L.facades): the curtain behind the ward's wall walk, which was a
+  // plank across the sky; the towers the gatehouse and the inner gate hang from, which were slabs floating over their
+  // own portcullises; turrets on the keep; and the far wall of every drop, which was a slot of sunset cut down through
+  // the mountain to the bottom of the world. Written in the castle's columns as they stand HERE: shiftCrown carries
+  // both through the three sections grown in below.
+  const BOT = R.H - 1;
+  R.masonry = [[51, 55, 60, 71], [79, 92, 55, BOT], [93, 96, 72, BOT], [99, 102, 70, BOT], [105, 108, 68, BOT], [110, 111, 66, BOT],
+    [151, 161, 44, 57], [151, 243, 64, 65], [241, 243, 44, 57], [314, 332, 64, 65], [333, 417, 0, 66], [418, R.W - 1, 0, 63]];
+  R.facades = [[3, 40, 74, 95, 'crag'], [65, 78, 73, BOT, 'chasm'], [93, 111, 74, BOT, 'chasm'], [143, 150, 65, BOT, 'chasm'], [248, 301, 65, BOT, 'chasm'],
+    [162, 240, 50, 63, 'curtain'], [151, 161, 38, 63, 'tower', { arch: [58, 63] }], [239, 243, 36, 63, 'tower', { arch: [58, 63], lit: false }],
+    [333, 337, 1, 7, 'tower', { roof: true }], [411, 415, 1, 7, 'tower', { roof: true }]];
+  const deckAt = S => (x0, x1, y) => { for (let x = x0; x <= x1; x++) S.set(x, y, T.PLANK); };
+  const shelfAt = S => (x0, x1, y) => { for (let x = x0; x <= x1; x++) S.set(x, y, T.SHELF); };
+  const rungsAt = S => (x, y0, y1) => { for (let y = y0; y <= y1; y++) S.set(x, y, T.NET); };
+  // (grown right to left, so each section is painted in the columns it opens and the later grows carry it)
+
+  // ---- THE BAKEHOUSE YARD, BURNING (opened at column 314, seventy wide: final 464-533) ----
+  // Between the scaffolds and the keep door. The yard is alight and its floor has gone into the burning cellars, so the
+  // way over is what still stands: a wall stump with a fire pit on it, a joist, the bakehouse chimney throwing gouts, a
+  // scaffold, the hoist beam with its chain, the granary gable. A fall is fire. The chain has joists under it and the
+  // beam over it, so it is never the only way; the joists that give way are only ever under something that does not.
+  { const X = 314, B = grow(R, R, X, 70); shiftCrown(B.R, X, 70);
+    const { block, ent, coins } = B, deck = deckAt(B), shelf = shelfAt(B), rungs = rungsAt(B);
+    block(X, X + 7, 64, BOT); block(X + 64, X + 69, 62, BOT);                 // the two lips of the yard
+    block(X + 10, X + 12, 62, BOT);                                            // a wall stump
+    deck(X + 15, X + 17, 60);                                                  // a joist
+    block(X + 20, X + 24, 58, BOT);                                            // the bakehouse chimney stack
+    deck(X + 27, X + 36, 56); deck(X + 27, X + 33, 62);                        // the scaffold (every rise of two rows is three columns or less: the jump that makes it is not a pixel-perfect one)
+    deck(X + 36, X + 47, 45);                                                  // the hoist beam over the widest of it
+    shelf(X + 39, X + 40, 58); deck(X + 43, X + 45, 58);                       // and the joists under it, one of them burning through
+    block(X + 47, X + 52, 56, BOT);                                            // the granary gable
+    deck(X + 55, X + 57, 58); deck(X + 59, X + 61, 60);
+    B.R.pools = (B.R.pools || []).concat([{ x0: (X + 8) * TS, x1: (X + 64) * TS, y: 66 * TS + 6, fire: true }]);
+    B.R.moversExtra = (B.R.moversExtra || []).concat([{ kind: 'swing', px: (X + 41) * TS + 8, py: 46 * TS, arm: 136, x: 0, y: 0, w: 48, h: 8, period: 3.6, phase: 0.8 }]);
+    for (const [a, b, top] of [[X + 15, X + 17, 60], [X + 27, X + 36, 56], [X + 36, X + 47, 45], [X + 39, X + 40, 58], [X + 43, X + 45, 58], [X + 55, X + 57, 58], [X + 59, X + 61, 60]]) ent('scaffold', a, top, { x1: b });
+    ent('check', X + 1, 63); ent('sign', X + 3, 63, { text: 'THE BAKEHOUSE YARD IS ALIGHT, AND THE CELLARS UNDER IT. KEEP OFF THE FIRE.' });
+    ent('firepit', X + 11, 61, { period: 3.2, on: 1.3, phase: 0 });
+    ent('firevent', X + 22, 57, { every: 2.8 }); ent('firevent', X + 60, 59, { every: 3.1 });
+    ent('hearthgob', X + 31, 55, { face: -1 }); ent('hearthgob', X + 50, 55, { face: -1 }); ent('archer', X + 67, 61, { face: -1, fire: true });
+    ent('brazier', X + 31, 61); ent('torch', X + 5, 63); ent('torch', X + 68, 61); ent('deco', X + 49, 55, { kind: 'cauldron' });
+    coins([X + 9, 60], [X + 14, 58], [X + 18, 57], [X + 25, 54], [X + 38, 44], [X + 41, 44], [X + 44, 44], [X + 44, 57], [X + 54, 55], [X + 58, 57], [X + 63, 59]);
+    B.R.masonry = B.R.masonry.concat([[X + 10, X + 12, 62, 70], [X + 20, X + 24, 58, 70], [X + 47, X + 52, 56, 70]]);
+    B.R.facades = B.R.facades.concat([[X + 8, X + 63, 40, 69, 'burning']]);
+    rungs(X + 36, 46, 55); rungs(X + 33, 57, 61);                              // LADDERS LAST: nothing is dug in the yard after these
+    R = B.done(); }
+
+  // ---- THE CRAG WALK (opened at column 244, seventy wide: final 324-393) ----
+  // Past the ward gate her curtain does not go round the spur of the mountain, it goes UP it: crag in two-row steps, a
+  // tower on each shoulder, the bridge between the first two with its middle broken out, the wall walk to the third with
+  // a breach in it, and a ladder and a hoarding down the last tower's back onto the scaffold bank. Every drop is to the
+  // bottom of the world, and every one has the rock's far wall behind it now.
+  { const X = 244, C = grow(R, R, X, 70); shiftCrown(C.R, X, 70);
+    const { block, plat, ent, coins } = C, deck = deckAt(C), rungs = rungsAt(C);
+    block(X, X + 8, 64, BOT);                                                  // the ward's ground runs on to the foot of the spur
+    block(X + 9, X + 12, 62, BOT); block(X + 13, X + 16, 60, BOT); block(X + 17, X + 20, 58, BOT); block(X + 21, X + 23, 56, BOT);   // the crag
+    block(X + 24, X + 29, 54, BOT);                                            // the first tower
+    deck(X + 30, X + 33, 54); deck(X + 36, X + 38, 54);                        // its bridge, the middle out of it
+    block(X + 39, X + 45, 52, BOT); block(X + 42, X + 45, 48, 51); plat(X + 40, 50, 2);   // the second tower, and the step up its upper stage
+    block(X + 46, X + 52, 48, BOT); block(X + 56, X + 58, 48, BOT);           // the wall walk, and the breach in it
+    block(X + 59, X + 64, 46, BOT);                                            // the third tower
+    block(X + 65, X + 69, 64, BOT); plat(X + 66, 58, 3); plat(X + 66, 54, 3); plat(X + 66, 50, 3);   // its back, and the hoarding down it
+    ent('scaffold', X + 66, 50, { x1: X + 68 });
+    ent('check', X + 2, 63); ent('sign', X + 4, 63, { text: 'THE CRAG WALK. HER WALL GOES UP THE MOUNTAIN, AND THE WAY ON GOES WITH IT.' });
+    ent('goat', X + 14, 59, { face: -1 }); ent('soldier', X + 27, 53, { face: -1 }); ent('harpy', X + 34, 47);
+    ent('check', X + 43, 47); ent('javelin', X + 50, 47, { face: -1 }); ent('soldier', X + 57, 47, { face: -1 }); ent('archer', X + 62, 45, { face: -1 });
+    ent('torch', X + 26, 53); ent('torch', X + 47, 47); ent('deco', X + 60, 45, { kind: 'banner', v: 1 }); ent('deco', X + 19, 57, { kind: 'cairn' });
+    coins([X + 11, 60], [X + 15, 58], [X + 19, 55], [X + 22, 54], [X + 31, 52], [X + 34, 51], [X + 37, 52], [X + 54, 45], [X + 67, 49], [X + 67, 53], [X + 67, 57]);
+    C.R.masonry = C.R.masonry.concat([[X + 24, X + 29, 54, 60], [X + 39, X + 45, 48, 58], [X + 46, X + 58, 48, 55], [X + 59, X + 64, 46, 58]]);
+    C.R.facades = C.R.facades.concat([[X + 30, X + 38, 55, BOT, 'chasm'], [X + 53, X + 55, 49, BOT, 'chasm'], [X + 24, X + 29, 44, 53, 'tower'], [X + 42, X + 45, 36, 47, 'tower', { roof: true }],
+      [X + 46, X + 58, 44, 47, 'curtain'], [X + 59, X + 64, 34, 45, 'tower']]);
+    rungs(X + 65, 46, 63);                                                     // LADDERS LAST: nothing is dug on the spur after this
+    R = C.done(); }
+
+  // ---- THE BURNING SIEGE LINES (opened at column 112, eighty wide: final 112-191) ----
+  // At the foot of her outer bastion lie the works of the last army that came up this road: two siege towers, a ram's
+  // pent-house, mantlets, a catapult on a pier of the old outwork, scaling ledges up the bastion - and the ditch under
+  // all of it burns, fed with pitch off the wall. You cross on the wreck. Every step is timber or stone; nothing is a
+  // rope and nothing is a creature's back.
+  { const X = 112, D = grow(R, R, X, 80); shiftCrown(D.R, X, 80);
+    const { block, plat, ent, coins } = D, deck = deckAt(D), rungs = rungsAt(D);
+    block(X, X + 7, 66, BOT);                                                  // the near bank of the ditch
+    deck(X + 10, X + 15, 60); deck(X + 11, X + 16, 66);                        // the first siege tower: its fighting deck and its foot
+    block(X + 19, X + 23, 64, BOT);                                            // a pier of the old outwork
+    deck(X + 27, X + 29, 63);                                                  // a mantlet
+    deck(X + 33, X + 37, 64);                                                  // the ram's pent-house roof
+    deck(X + 40, X + 45, 62); deck(X + 40, X + 45, 56);                        // the second tower
+    deck(X + 49, X + 51, 62); deck(X + 54, X + 56, 60);                        // two more mantlets
+    block(X + 61, X + 64, 60, BOT);                                            // the outwork's last buttress
+    deck(X + 68, X + 70, 62);
+    block(X + 72, X + 79, 64, BOT); block(X + 73, X + 79, 46, 57);           // the bastion: its foot, and its tower over the arch
+    /* the fire stands two rows under the lowest deck: from anything you stand on in the lines, it is in the frame */
+    D.R.pools = (D.R.pools || []).concat([{ x0: (X + 8) * TS, x1: (X + 72) * TS, y: 68 * TS + 6, fire: true }]);
+    for (const [a, b, top] of [[X + 10, X + 15, 60], [X + 27, X + 29, 63], [X + 33, X + 37, 64], [X + 40, X + 45, 56], [X + 49, X + 51, 62], [X + 54, X + 56, 60], [X + 68, X + 70, 62]]) ent('scaffold', a, top, { x1: b });
+    ent('check', X + 2, 65); ent('sign', X + 4, 65, { text: 'THE OLD SIEGE LINES, STILL BURNING. GO OVER THE WRECK: THE DITCH IS FIRE.' });
+    ent('deco', X + 20, 63, { kind: 'siege' }); ent('firepit', X + 23, 63, { period: 3.2, on: 1.4, phase: 0.6 });
+    ent('firevent', X + 35, 63, { every: 2.9 }); ent('firevent', X + 44, 61, { every: 3.0 }); ent('firevent', X + 63, 59, { every: 3.3 });
+    ent('javelin', X + 12, 59, { face: 1 }); ent('rockgoblin', X + 42, 55, { face: -1 }); ent('soldier', X + 62, 59, { face: -1 }); ent('archer', X + 76, 45, { face: -1, fire: true });
+    ent('torch', X + 6, 65); ent('brazier', X + 75, 63); ent('deco', X + 61, 59, { kind: 'bones', v: 1 });
+    coins([X + 9, 64], [X + 17, 62], [X + 25, 61], [X + 31, 62], [X + 38, 60], [X + 47, 60], [X + 53, 58], [X + 59, 58], [X + 66, 60], [X + 71, 62], [X + 11, 59], [X + 14, 59], [X + 41, 55], [X + 71, 47], [X + 74, 45], [X + 78, 45]);
+    D.R.masonry = D.R.masonry.concat([[X + 72, X + 79, 64, 67], [X + 73, X + 79, 46, 57]]);
+    D.R.facades = D.R.facades.concat([[X + 8, X + 71, 66, BOT, 'chasm'], [X + 44, X + 71, 50, 65, 'curtain'], [X + 72, X + 79, 40, 63, 'tower', { arch: [58, 63] }]]);
+    rungs(X + 15, 61, 65); rungs(X + 45, 57, 61); rungs(X + 72, 46, 63);      // LADDERS LAST: nothing is dug in the ditch after these (the last a scaling ladder up the bastion, to the archer on it)
+    R = D.done(); }
+
+  R.palette = Object.assign({}, R.palette, { mid: 'crown' });   /* her walls climbing the far shoulders, where the crags' bare ridge was */
+  R.bgSpan = 200;                                                /* a hundred rows tall: the ridges ride behind every storey, not only the road at the bottom */
+  R.tints = [[112, 191, [255, 120, 50], 0.10], [464, 533, [255, 110, 40], 0.12]];   /* the light of the two fires on everything near them */
+  // the snow and the wind stop at the bakehouse yard: it is inside the walls, and it is on fire
+  R.weather = [{ x0: 0, x1: 464 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 464 * TS, kind: 'wind' }];
   return R;
 }
 
@@ -5589,7 +5703,7 @@ const GOBLIN_CAMP = {
   stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
   kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 384, 16, 0, true], ['skullTotem', 449, 13, 0], ['warStandard', 458, 13, 1], ['lootHeap', 588, 13, 1], ['idol', 606, 13, 0]],
   storm: [['warnPost', 86, 33, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['boneChime', 192, 19, 1, true], ['gobPennant', 200, 31, 1], ['cookSpit', 229, 29], ['cauldron', 287, 29]],
-  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 340, 7, 3], ['ragBanner', 372, 7, 2], ['cauldron', 362, 63], ['boneChime', 368, 54, 0, true], ['trophyRack', 366, 51, 1], ['skullTotem', 401, 51, 0], ['clothStrip', 380, 10, 3, true], ['warStandard', 394, 19, 1]],
+  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 560, 7, 3], ['ragBanner', 592, 7, 2], ['cauldron', 582, 63], ['boneChime', 588, 54, 0, true], ['trophyRack', 586, 51, 1], ['skullTotem', 621, 51, 0], ['clothStrip', 600, 10, 3, true], ['warStandard', 614, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it */
   underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 325, 33], ['lootHeap', 376, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
