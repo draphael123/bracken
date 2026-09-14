@@ -95,12 +95,17 @@ export async function bossLab(BK, opts = {}) {
     BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(30);
     const P = BK.P, k = BK.keys, hp0 = boss.hp, maxF = Math.round(maxSecs * 60 / (BK.SET.speed || 1));
     // the glass in the roc's room, once
-    const glass = []; if (boss.t === 'roc') { const fy = Math.floor(A.floor / TS); for (let x = Math.floor(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) for (let y = fy - 3; y <= fy + 2; y++) if (L.grid[y * L.W + x] === T.CRYST) { glass.push(x * TS + 8); break; } }
+    const glass = []; if (boss.t === 'roc') { const fy = Math.floor(A.floor / TS); for (let x = Math.floor(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) for (let y = fy - 3; y <= fy + 2; y++) if (L.grid[y * L.W + x] === T.CRYST) { if (L.grid[(y + 1) * L.W + x] !== T.AIR) glass.push(x * TS + 8); break; } }
+    /* only glass with rock under it (the middle strip is over a shaft), nearest the middle of the room first; the bot hops between three of them so it never stands long enough to crack one */
+    { const mid = (A.x0 + A.x1) / 2; glass.sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid)); }
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false;
     for (; f < maxF && boss.alive; f++) {
       P.hp = P.maxHp; P.dead = 0; P.st = Math.max(P.st, 40);
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss);
-      if (open && !wasOpen) opened++; wasOpen = open;
+      if (open && !wasOpen) { opened++; if (opts.trace) { out.trace = out.trace || []; out.trace.push({ h, mode: boss.mode, startD: Math.round(ad), dy: Math.round(boss.y - P.y), minD: 9999, pressed: 0, swung: 0, hpAt: boss.hp }); } }
+      if (!open && wasOpen && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.lost = tw.hpAt - boss.hp; }
+      if (open && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.minD = Math.min(tw.minD, Math.round(ad)); if (P.atk >= 0) tw.swung++; }
+      wasOpen = open;
       k.left = false; k.right = false; k.block = false;
       let goal = null, strike = false;
       const tell = boss.mode && /Tell$/.test(boss.mode) && ad < 90;
@@ -110,7 +115,7 @@ export async function bossLab(BK, opts = {}) {
         if (SHIELDED(h)) k.block = true; else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
       } else if (open) { goal = boss.x; strike = true; }
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 34;                       // close enough to be swung at
-      else if (boss.t === 'roc' && glass.length) goal = glass.reduce((a, x) => Math.abs(x - P.x) < Math.abs(a - P.x) ? x : a, glass[0]);
+      else if (boss.t === 'roc' && glass.length) goal = glass[Math.floor(f / 75) % Math.min(3, glass.length)];   /* one of the three middle panes, a new one every second or so */
       else if (boss.t === 'king') { const cages = BK.props().filter(c => c.t === 'dropcage' && c.boss && !c.dropped);
         const c = cages.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; goal = c ? c.x + (boss.x > c.x ? -22 : 22) : boss.x;
         // his cages drop from pressure plates up on the scaffold, where the bot cannot climb: when he walks under one, it drops it, as a player on that plate would
@@ -119,9 +124,10 @@ export async function bossLab(BK, opts = {}) {
         const s = BK.props().find(p => p.t === 'support' && !p.broken && p.sx0 !== undefined && qx >= p.sx0 && qx <= p.sx1);
         if (s) { goal = s.x; if (Math.abs(s.x - P.x) < 18) { P.face = Math.sign(s.x - P.x) || P.face; if (P.atk < 0) { BK.press('atk'); swings++; } } } else goal = boss.x - Math.sign(d || 1) * 70; }
       else { goal = boss.x; strike = true; }
-      if (goal !== null && !k.block) { const gd = goal - P.x; if (Math.abs(gd) > (strike ? reach - 2 : 6)) k[gd > 0 ? 'right' : 'left'] = true; }
+      // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
+      if (goal !== null && !k.block) { const gd = goal - P.x; if (Math.abs(gd) > (strike ? Math.max(8, LAB_REACH[h] * 0.6) : 6)) k[gd > 0 ? 'right' : 'left'] = true; }
       if (strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
-      if (f % 90 === 0 && boss.y < P.y - 30 && strike) BK.press('jump');
+      if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) BK.press('jump');   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       const was = P.hp; BK.sim(1); if (P.hp < was) taken += was - P.hp;
       if (f % 600 === 599) await yieldNow();
     }
