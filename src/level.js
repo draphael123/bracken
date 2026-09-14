@@ -751,7 +751,7 @@ function kingswood() {
   ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('sprig', 68, 19, { face: -1 });
   ent('brazier', 53, 19); ent('brazier', 66, 19); // oil braziers: tip them onto the line, or get burned
   ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 }); ent('stray', 72, 19, { kind: 'cup' });
-  gate(84, 15, 19);
+  /* (the gate under the bell starts open: the bell drops it, and it lifts again - it was shut from the start, and nothing on the road side opened it) */
   coins([52, 18], [58, 17], [65, 18], [74, 17]);
   // the way around the gate if the bell rings: a two-wide hatch through the roof with ledges up it, onto the high road
   for (let x = 77; x <= 78; x++) for (let y = 13; y <= 16; y++) set(x, y, 0);
@@ -775,6 +775,7 @@ function kingswood() {
   // low road (rows 18-22): the burrow
   block(85, 150, 22, 27); ceiling(85, 150, 16);
   for (let x = 85; x <= 150; x++) for (let y = 17; y <= 21; y++) set(x, y, 0);
+  plat(146, 19, 3);   /* THE WAY OUT OF THE TRUNK: its floor sits four rows under the road outside, one more than a jump */
   ent('torch', 88, 21); ent('torch', 104, 21); ent('torch', 120, 21); ent('torch', 136, 21);
   ent('pike', 96, 21, { face: -1 }); ent('lever', 100, 21, { ram: 106 }); ent('ram', 106, 17, { hang: true }); ent('brute', 110, 21, { face: -1 });
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
@@ -1100,16 +1101,14 @@ function screePath() {
   const Q = grow(RD, RD, 436, 44);
   Q.block(436, 479, 9, 27);
   for (let x = 447; x <= 469; x++) Q.set(x, 9, T.CRYST);      // the seam: his floor, and the half of the room that burns
-  for (let y = 3; y <= 8; y++) Q.set(476, y, T.PORT);         // the quarry gate, shut while he is in here
   Q.ent('check', 438, 8);
-  Q.ent('sign', 442, 8, { text: 'THE GLASS QUARRY. THEY TOOK THE SEAM OUT OF THIS CUT AND SOMETHING GREW BACK IN IT. WHEN IT TAKES THE SUN, EVERY PIECE OF GLASS UNDER YOU LIGHTS: GET ONTO THE ROCK AT EITHER END, OR UP ON THE OLD STAGINGS. IT RAISES SPIRES BESIDE YOU - BREAK THEM WHILE IT IS UNDER THEM.' });
+  Q.ent('sign', 442, 8, { text: 'THE GLASS QUARRY. THEY TOOK THE SEAM OUT OF THIS CUT AND LEFT THE STAGINGS. THE HIGH ROAD GOES OVER THE SEAM; THE LOW ONE GOES THROUGH IT.' });
   // the stagings the quarrymen left: the cold road over his seam, and never more than three tiles a hop
   Q.plat(445, 6, 3); Q.plat(450, 5, 3); Q.plat(455, 4, 3); Q.plat(460, 4, 3); Q.plat(465, 5, 3); Q.plat(470, 6, 3);
   Q.coins([446, 5], [451, 4], [461, 3], [466, 4], [471, 5], [443, 8], [473, 8]);
   Q.ent('deco', 439, 8, { kind: 'stone' }); Q.ent('deco', 474, 8, { kind: 'stone', v: 1 });
   Q.ent('deco', 444, 8, { kind: 'cairn' }); Q.ent('silver', 456, 3);
-  Q.ent('suncatcher', 458, 8, { mini: true });
-  Q.R.mini = { x0: 441 * TS, x1: 475 * TS, floor: 9 * TS, trigger: 446 * TS, wallL: 440, gate: 476, boss: 'suncatcher', y0: 0, y1: 10 * TS };
+  /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
   return Q.done();
 ;
 }
@@ -1306,7 +1305,7 @@ function underleaf() {
   plat(310, 27, 3); plat(330, 27, 3);
   gateCol(330, 19, 20);
   ent('deco', 320, 20, { kind: 'bellTower' });
-  ent('berserker', 320, 20, { face: -1, awake: true, mini: true });
+  ent('berserker', 320, 20, { face: -1, mini: true });   /* asleep by his bell until you come up onto the roof: awake, he wandered down into the street before the fight began */
   ent('bell', 320, 20);
   coins([316, 20], [324, 20], [320, 20], [311, 26], [331, 26]);
   ent('stray', 326, 20, { kind: 'lamp' });
@@ -1374,12 +1373,9 @@ function underleaf() {
 
   // ---- 7. THE GRANDMOTHER. She never was asleep. ----
   floor(470, 519, R);
-  boards(486, 496, R); moss(500, 512, R);           /* half her floor is loud and half is silent: that is the fight */
-  loose(478, 481, R); loose(506, 509, R);
-  ent('sign', 472, R - 1, { text: 'SHE DOES NOT SLEEP AND SHE CANNOT SEE. SHE FINDS YOU BY THE NOISE YOU MAKE - AND A RAISED SHIELD MAKES NONE. STAND STILL ON THE MOSS AND SHE HAS NOTHING TO GO ON.' });
-  ent('deco', 476, R - 1, { kind: 'gardenWall', v: 2 });
-  ent('deco', 482, R - 1, { kind: 'skep' }); ent('deco', 494, R - 1, { kind: 'skep' });
-  ent('deco', 510, R - 1, { kind: 'beanpoles', v: 0 }); ent('deco', 470, R - 1, { kind: 'yew', v: 1 });
+  boards(470, 519, R);   /* HER ROOM IS ONE LONG BRIDGE. It was boards, moss and loose planks, and the loose ones gave way under her own feet. */
+  ent('sign', 472, R - 1, { text: 'SHE DOES NOT SLEEP AND SHE CANNOT SEE. SHE FINDS YOU BY THE NOISE YOU MAKE - AND A RAISED SHIELD MAKES NONE. STAND STILL BEHIND IT AND SHE HAS NOTHING TO GO ON - BUT SHE DOES NOT ONLY LISTEN.' });
+  ent('deco', 470, R - 1, { kind: 'yew', v: 1 });   /* (the garden wall, the skeps and the beanpoles are gone: the bridge is the room) */
   coins([480, R - 2], [492, R - 2], [512, R - 2], [486, R - 2], [500, R - 2], [508, R - 2], [474, R - 2]);
   ent('grandmother', 504, R - 1);
   ent('gate', 518, R - 1);
@@ -4501,7 +4497,7 @@ function waymeet() {
      The yard is the one fight in the middle of the town with a name: the gate shuts behind you and under the roof ahead,
      and above the roof as well, or the ladder at the back of the yard walks you round him. */
   sign(298, 'THE STRIKER. HE SWINGS THE SLEDGE FOR THE SMITH AND HE HAS SWUNG IT ALL DAY. HE DOES NOT STOP WHEN HE IS HIT - HE STOPS WHEN HE IS OUT OF BREATH. LET HIM RUN OUT OF IT.');
-  ent('berserker', 314, R - 1, { face: -1, awake: true, mini: true });
+  ent('berserker', 314, R - 1, { face: -1, mini: true });
   for (let y = 25; y <= 28; y++) set(320, y, T.PORT); for (let y = R - 4; y <= R - 1; y++) set(320, y, T.PORT);
   sign(304, 'THE SMITH HAS NOT LOOKED UP ONCE. THEY HAVE BEEN COMING THROUGH HIS YARD ALL AFTERNOON AND HE HAS WORK ON.');
   ent('deco', 322, R - 1, { kind: 'trough' }); ent('deco', 330, R - 1, { kind: 'cart' }); ent('deco', 326, R - 1, { kind: 'hayBale', v: 0 });
@@ -4816,7 +4812,7 @@ function dressLevel(L, id) {
   for (let y = 2; y < H - 1; y++) for (let x = 2; x < W - 2; x++) {
     // open ground three tiles wide with three rows of air over it
     let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
-    if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
+    if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     const [kind, nv] = set[(rnd() * set.length) | 0];
     L.ents.push({ t: 'deco', x, y, kind, v: nv ? (rnd() * nv) | 0 : 0, dressed: true }); placed.push([x, y]);
   }

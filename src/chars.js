@@ -290,7 +290,10 @@ export function bakeSprig() {
   const look = sprite(ears([head[0], head[1], w2('.gggeogge.'), head[3], head[4], head[5]]).concat(cloth, legs[0]));
   // HURT: the head snaps back, the mouth opens, the knees give - and the ears go down with it
   const hurt = sprite(ears(['..........', '...gggg...', '..gggggg..', '.goggggog.', '.ggg..ggg.', '..gGGGGg..', '..rrrrrr..', '.rrrrrr...', '.GG...GG..', 'GG.....GG.'].map(w2), 1));
-  return pack([...bobbed, look, hurt], 8, 11, 8, 10);
+  /* THE BITE: it drops its head and sits back on its haunches - that is the moment - and then it leaves the ground mouth first */
+  const tell = sprite([blank, ...ears(head.slice(0, 5)), ...cloth, ...['.GGG..GGG.', 'GG......GG'].map(w2)]);
+  const bite = sprite(ears(['....gggg..', '...gggggg.', '..geoggeog', '..gggggg..', '..gg....gg', '...gggg...', '...rrrrrr.', '...rrrrrr.', 'GG....GG..', '.......GG.'].map(w2)));
+  return pack([...bobbed, look, tell, bite, hurt], 8, 11, 8, 10);
 }
 
 // Shieldbearer — helmet, tabard, round wooden shield held out front (right). 14×14, four-frame walk.
@@ -317,6 +320,11 @@ export function bakeShield() {
   frames.push(sprite([...top, ...turnTorso, ...legs[0]]));
   const hurtTop = ['....SSSSS.....', '...SsssssS....', '...SsssssS....', '...gogggog....', '....gg.gg.....'];
   const hurtTorso = ['..bbbbbb..www.', '.Sbbbbbb.wwyww', '.Sbbbbbb.wwwww', '..bbbbbb......', '..rrrrrr......', '.rrrrrr.......'];
+  /* THE SHOVE: he tucks the shield in and sits back on his heels, then drives off the back foot with the shield out in front of him */
+  frames.push(sprite(['..SSSSS.......', '.SsssssS......', '.SsssssS......', '.gggeoggg.....', '..gGGGg.......',
+    '.bbbbbbwwww...', 'Sbbbbbbwwyw...', 'Sbbbbbbwyyw...', '.bbbbbbwwyw...', '.rrrrrrwwww...', '.rrrrrr.......', '.GG...GG......', 'GG.....GG.....', 'GG......GG....']));
+  frames.push(sprite(['....SSSSS.....', '...SsssssS....', '...SsssssS....', '...gggeoggg...', '....gGGGg.....',
+    '...bbbbbb.wwww', '..Sbbbbbb.wwyw', '..Sbbbbbb.wyyw', '...bbbbbb.wwyw', '...rrrrrr.wwww', '..rrrrrr......', '.GGG...GG.....', 'GG.......GG...', 'G..........GG.']));
   frames.push(sprite([...hurtTop, ...hurtTorso, '..GG...GG.....', '.GG.....GG....', 'GG.......GG...']));
   return pack(frames, 7, 15, 10, 14);
 }
@@ -2047,37 +2055,50 @@ export function bakeBerserker() {
 // Frames: 0 sitting, 1 rising, 2/3 walking (feeling ahead with the stick), 4 listening (hand cupped,
 // perfectly still), 5 the sweep, 6 the stick thrown, 7 rapping the floor (her own giveaway).
 export function bakeGrandmother() {
-  const GP = Object.assign({}, EP, { m: '#7aa85a', M: '#47693a', v: '#6a5a7a', V: '#463a52', e: '#f6f6ee', u: '#8a5a32', U: '#5c3a1d', k: '#d8d2c0' });
-  const W = 24, H = 26;
-  const blank = () => Array.from({ length: H }, () => '.'.repeat(W));
-  const put = (R, x, y, s2) => { if (y < 0 || y >= H || x < 0) return; R[y] = R[y].slice(0, x) + s2 + R[y].slice(x + s2.length); };
+  /* THE GRANDMOTHER, at the size of what she is: the oldest thing in Underleaf, bent double under a shawl that pools on
+     the boards round her, the candles of every name in the village burning on her hood, a long goblin ear out of the
+     side of it, two blind white eyes, and a crooked staff with a skull lantern on it. She was a goblin's height with a
+     purple blanket over her, and she read as one more villager. 40 x 46. */
+  const GP = Object.assign({}, EP, { v: '#5e4a78', V: '#3a2c50', w: '#7a64a0', y: '#c9a040', m: '#7aa85a', M: '#47693a', n: '#2a3a26',
+    e: '#f6f6ee', u: '#8a5a32', U: '#5c3a1d', k: '#e8e0d0', K: '#9a9080', c: '#f0e8d0', f: '#ffb347', F: '#fff1a0', g: '#ff9a5c' });
+  const W = 40, H = 46;
   const f = rows => outline(fromGrid(rows, GP, 1), OUT);
-  // the shawl IS the silhouette: a hood of cloth with a small green face in the middle of it and
-  // two blind white eyes that do not track you
-  const head = (R, x, y) => {
-    put(R, x + 1, y, 'vvvvvv'); put(R, x, y + 1, 'vvvvvvvv');
-    put(R, x, y + 2, 'vvmmmmvv'); put(R, x, y + 3, 'vmeMMemv');
-    put(R, x, y + 4, 'vmmmmmmv'); put(R, x + 1, y + 5, 'vmMMmv'); put(R, x + 1, y + 6, 'vvvvvv');
-  };
-  const body = (R, y, lean) => {
-    put(R, 5 + lean, y, 'vvvvvvvvvv'); put(R, 4 + lean, y + 1, 'vvvvvvvvvvvv');
-    put(R, 4 + lean, y + 2, 'vvvVVVVvvvvv'); put(R, 4 + lean, y + 3, 'vvvvvvvvvvvv');
-    put(R, 4 + lean, y + 4, 'vvvVVVVvvvvv'); put(R, 5 + lean, y + 5, 'vvvvvvvvvv');
-    put(R, 6 + lean, y + 6, 'MMM..MMM'); put(R, 5 + lean, y + 7, 'MMM....MMM');
-  };
-  const stick = (R, x, y, len, dx) => { for (let k = 0; k < len; k++) put(R, x + Math.round(k * dx), y + k, 'u'); };
-  const sit = (() => { const R = blank(); head(R, 7, 8); body(R, 15, 0); put(R, 4, 22, 'VVVVVVVVVVVVVV'); stick(R, 18, 12, 9, 0); return f(R); })();
-  const rise = (() => { const R = blank(); head(R, 7, 5); body(R, 12, 0); stick(R, 18, 10, 11, 0); return f(R); })();
-  const walk = k => { const R = blank(); head(R, 7, 3 + (k ? 0 : 1)); body(R, 10 + (k ? 0 : 1), 0);
-    stick(R, 17, 8, 13, k ? 0.15 : -0.05); put(R, 16 + (k ? 2 : 0), 21, 'kk'); return f(R); };
-  const listen = (() => { const R = blank(); head(R, 7, 3); body(R, 10, 0);
-    put(R, 15, 4, 'mm'); put(R, 16, 5, 'mmm'); put(R, 16, 6, 'mm');   /* the cupped hand, up beside the ear */
-    stick(R, 5, 10, 11, 0); return f(R); })();
-  const sweep = (() => { const R = blank(); head(R, 7, 4); body(R, 11, 1);
-    for (let k = 0; k < 16; k++) put(R, 6 + k, 18 - Math.floor(k / 5), 'u'); put(R, 21, 15, 'kk'); return f(R); })();
-  const thrown = (() => { const R = blank(); head(R, 7, 3); body(R, 10, 0); put(R, 16, 9, 'mm'); return f(R); })();
-  const rap = (() => { const R = blank(); head(R, 7, 5); body(R, 12, 0); stick(R, 17, 13, 8, 0); put(R, 16, 21, 'kkkk'); return f(R); })();
-  return pack([sit, rise, walk(0), walk(1), listen, sweep, thrown, rap], 12, 27, 13, 24);
+  const frame = draw => { const R = Array.from({ length: H }, () => Array(W).fill('.')); const put = (x, y, ch) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < W && y < H) R[y][x] = ch; };
+    const ell = (cx, cy, rx, ry, ch) => { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) put(x, y, ch); };
+    const line = (x0, y0, x1, y1, ch, w2 = 1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let k = 0; k <= n; k++) for (let t = 0; t < w2; t++) put(x0 + (x1 - x0) * k / n + t, y0 + (y1 - y0) * k / n, ch); };
+    draw({ put, ell, line }); return f(R.map(r => r.join(''))); };
+  // the pieces, each placed by an offset so every pose is the same woman
+  const shawl = (P, dx, dy, spread = 0) => { for (let y = 20; y <= 45; y++) { const k = (y - 20) / 25, half = 7 + k * (8 + spread), cx = 19 + dx + k * 2;
+      for (let x = Math.round(cx - half); x <= Math.round(cx + half); x++) P.put(x, y + dy, (x + y) % 7 === 0 ? 'V' : 'v'); }
+    for (let x = 4 + dx; x <= 36 + dx; x++) if ((x & 1) === 0) P.put(x, 45 + dy, 'y');                          // the fringe
+    P.line(10 + dx, 26 + dy, 14 + dx, 44 + dy, 'V'); P.line(24 + dx, 27 + dy, 28 + dx, 44 + dy, 'V');           // folds
+    P.line(9 + dx, 22 + dy, 30 + dx, 22 + dy, 'w'); };
+  const hood = (P, dx, dy) => { P.ell(20 + dx, 15 + dy, 10, 9, 'v'); P.ell(19 + dx, 12 + dy, 7, 5, 'w');
+    P.ell(24 + dx, 17 + dy, 6, 5, 'n');                                                                         // the dark of the hood
+    P.ell(25 + dx, 18 + dy, 4, 4, 'm'); P.put(23 + dx, 17 + dy, 'e'); P.put(27 + dx, 17 + dy, 'e'); P.put(23 + dx, 16 + dy, 'e'); P.put(27 + dx, 16 + dy, 'e');   // blind eyes
+    P.line(28 + dx, 19 + dy, 32 + dx, 21 + dy, 'm'); P.put(32 + dx, 22 + dy, 'M');                              // the nose
+    P.line(26 + dx, 21 + dy, 28 + dx, 21 + dy, 'M');
+    P.line(11 + dx, 14 + dy, 3 + dx, 8 + dy, 'm', 2); P.put(2 + dx, 7 + dy, 'M');                              // the ear, out of the side of the hood
+    for (const [cx, cy, h] of [[14, 5, 4], [19, 3, 5], [24, 5, 4]]) { P.line(cx + dx, cy + dy, cx + dx, cy + h + dy, 'c'); P.put(cx + dx, cy - 1 + dy, 'f'); P.put(cx + dx, cy - 2 + dy, 'F'); } };
+  const hand = (P, x, y) => { P.ell(x, y, 2, 1.5, 'm'); P.put(x + 1, y + 1, 'M'); };
+  const staff = (P, x0, y0, x1, y1, lit = false) => { P.line(x0, y0, x1, y1, 'u', 2); P.line(x0 + 1, y0, x1 + 1, y1, 'U');
+    P.ell(x1, y1 - 2, 3, 3, 'k'); P.put(x1 - 1, y1 - 2, 'K'); P.put(x1 + 1, y1 - 2, 'K'); P.put(x1, y1 - 1, lit ? 'F' : 'g'); if (lit) { P.put(x1, y1 - 6, 'F'); P.put(x1 - 1, y1 - 5, 'f'); P.put(x1 + 1, y1 - 5, 'f'); } };
+  const pose = (o) => frame(P => { const dx = o.dx || 0, dy = o.dy || 0;
+    if (o.staffBack) staff(P, ...o.staffBack);
+    shawl(P, dx, dy, o.spread || 0); hood(P, dx + (o.hx || 0), dy + (o.hy || 0));
+    if (o.staff) staff(P, ...o.staff, !!o.lit); for (const hp of (o.hands || [])) hand(P, hp[0], hp[1]); });
+  const sit = pose({ dy: 0, hy: 4, spread: 4, staff: [33, 44, 34, 20], hands: [[32, 30]] });
+  const rise = pose({ hy: 2, staff: [33, 44, 34, 16], hands: [[32, 26]] });
+  const walk = k => pose({ dx: k ? 1 : 0, hy: k ? 0 : 1, staff: [k ? 35 : 33, 44, 34, 14], hands: [[33, 24]] });
+  const listen = pose({ hx: -1, hy: 1, staffBack: [6, 44, 7, 18], hands: [[6, 26], [4, 12]] });                   // a hand cupped up to the ear
+  const sweep = pose({ dx: 2, hy: 3, spread: 2, staff: [18, 38, 39, 42], hands: [[22, 34]] });                   // the stick low across the boards
+  const thrown = pose({ hy: 0, hands: [[34, 18]] });                                                          // the stick gone, the arm still out
+  const rap = pose({ hy: 3, staff: [32, 45, 33, 26], hands: [[32, 30]] });
+  const cast = pose({ hy: -1, staff: [30, 30, 31, 6], lit: true, hands: [[30, 16], [26, 18]] });                  // THE FIRE: the lantern up over her head
+  const vanish = frame(P => { for (let y = 34; y <= 45; y++) { const half = 6 + (y - 34) * 1.3; for (let x = Math.round(19 - half); x <= Math.round(19 + half); x++) P.put(x, y, (x + y) % 5 === 0 ? 'V' : 'v'); }
+    P.ell(20, 34, 7, 5, 'v'); P.ell(23, 35, 3, 2, 'n'); P.put(22, 35, 'e'); P.put(25, 35, 'e');
+    for (const cx of [15, 20, 25]) { P.put(cx, 29, 'c'); P.put(cx, 28, 'f'); } });                             // crumpled into the shawl
+  return pack([sit, rise, walk(0), walk(1), listen, sweep, thrown, rap, cast, vanish], 20, 46, 20, 40);
 }
 
 export function bakeCutter() {
