@@ -214,7 +214,7 @@ function brackenWood() {
   // columns of silence through the hive, the crown and the whole run home. There is no tutorial in this
   // game, there are signs. (G2 is the last grow, so these columns are the final ones.)
   G2.ent('sign', 200, 11, { text: 'THE HIVE IS A CEILING, AND ALL UNDER IT IS ANGRY. DO NOT STAND UNDER A HOLE.' });
-  G2.ent('sign', 248, 11, { text: 'A CROWN IN A WOOD, AND NOBODY LEFT TO WEAR IT. WHAT LIES HERE IS YOURS.' });
+  G2.ent('sign', 249, 11, { text: 'A CROWN IN A WOOD, AND NOBODY LEFT TO WEAR IT. WHAT LIES HERE IS YOURS.' });
   G2.ent('sign', 288, 11, { text: 'THORNS NEVER MOVE: GO OVER THEM. A HELD JUMP IS HIGHER THAN A TAPPED ONE.' });
   return G2.done();
 ;
@@ -276,7 +276,7 @@ function marshWood() {
   /* THE PUNT WENT. Walking to one end of a raft to steer it was a chore, not a crossing, and the marsh already has
      its own verb for water: the pad that sinks under you. Nothing lives on this stretch - the pads are the question. */
   water(176, 259, 19);
-  ent('sign', 174, 17, { text: 'LILY PADS SINK UNDER YOU. HOP ON, AND REST ON THE REED BEDS.' });
+  ent('sign', 175, 17, { text: 'LILY PADS SINK UNDER YOU. HOP ON, AND REST ON THE REED BEDS.' });   /* a step off the crate it was standing half inside */
   for (const x of [178, 181, 184, 187, 190, 193, 196, 199, 202, 205, 208, 214, 217, 220, 223, 229, 232, 235, 238, 241, 247, 250, 253, 256]) ent('pad', x, 18);
   reeds(211, 16, 2); reeds(226, 16, 2); reeds(244, 16, 2);
   ent('check', 211, 15); ent('silver', 244, 13);
@@ -365,7 +365,7 @@ function marshWood() {
   F.plat(200, 20, 2); F.block(203, 208, 18, 27); F.ent('check', 206, 17);
   // AND THE MARSH WENT QUIET FOR A HUNDRED AND THIRTY COLUMNS: the whole pad crossing and the archers
   // after it, which is where both of its rules are actually asked for.
-  F.ent('sign', 286, 11, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });
+  F.ent('sign', 274, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* on the reed bed: at 286 it stood five rows up over the open lake */
   F.ent('sign', 335, 10, { text: 'THE PADS SINK UNDER YOU. THE NEXT IS THREE STRIDES OFF: DO NOT LINGER.' });
   F.ent('sign', 405, 10, { text: 'ARCHERS ACROSS THE WATER. GO WHEN AN ARROW FLIES: THE NEXT IS A MOMENT AWAY.' });
   return F.done();
@@ -1357,7 +1357,7 @@ function underleaf() {
   ent('well', 418, R - 1, { pair: 462 }); ent('well', 462, R - 1, { pair: 418 });
   ent('deco', 430, R - 1, { kind: 'stall' }); ent('deco', 448, R - 1, { kind: 'stall' });
   ent('deco', 424, R - 1, { kind: 'lanternPost' }); ent('deco', 454, R - 1, { kind: 'lanternPost' });
-  ent('deco', 410, R - 1, { kind: 'stocks' }); ent('deco', 468, R - 1, { kind: 'trough' });
+  ent('deco', 410, R - 1, { kind: 'stocks' }); ent('deco', 464, R - 1, { kind: 'trough' });   /* off the lock gate's column */
   for (let x = 436; x <= 442; x++) set(x, R, T.AIR);
   block(436, 442, R + 1, 45); water(436, 442, R);   /* the duck pond, out in the open */
   thatch(420, 430, 28); thatch(452, 462, 28);
@@ -1380,7 +1380,7 @@ function underleaf() {
   floor(470, 519, R);
   boards(470, 519, R);   /* HER ROOM IS ONE LONG BRIDGE. It was boards, moss and loose planks, and the loose ones gave way under her own feet. */
   ent('sign', 472, R - 1, { text: 'SHE HUNTS BY SOUND. A RAISED SHIELD IS SILENT, BUT SHE DOES NOT ONLY LISTEN.' });
-  ent('deco', 470, R - 1, { kind: 'yew', v: 1 });   /* (the garden wall, the skeps and the beanpoles are gone: the bridge is the room) */
+  ent('deco', 476, R - 1, { kind: 'yew', v: 1 });   /* (470 grew through the lock gate beside it) */   /* (the garden wall, the skeps and the beanpoles are gone: the bridge is the room) */
   coins([480, R - 2], [492, R - 2], [512, R - 2], [486, R - 2], [500, R - 2], [508, R - 2], [474, R - 2]);
   ent('grandmother', 504, R - 1);
   ent('gate', 518, R - 1);
@@ -2350,7 +2350,7 @@ function theDeep() {
   ent('holdfast', 40, 95, { face: 1 }); ent('holdfast', 84, 103, { face: -1 });
   ent('holdfast', 56, 105, { face: 1 });
   ent('angler', 56, 92); ent('eel', 42, 100); ent('netter', 90, 87, { face: -1 });
-  ent('urchin', 46, 106); ent('urchin', 54, 106); ent('urchin', 36, 106);
+  ent('urchin', 46, 106); ent('urchin', 54, 105); ent('urchin', 36, 106);   /* (54 was a row down inside the shelf) */
   ent('sailor', 34, 81, { face: -1 }); ent('crab', 70, 87, { face: 1 }); ent('scout', 46, 95, { face: -1 });
   ent('tideguard', 76, 103, { face: -1 }); ent('siren', 24, 90); ent('petrel', 60, 76);
   ent('eel', 84, 96); ent('angler', 18, 100); ent('netter', 50, 103, { face: 1 });
@@ -2383,7 +2383,7 @@ function theDeep() {
   ent('angler', 96, 134); ent('eel', 20, 140); ent('crab', 90, 122, { face: -1 });
   ent('prise', 62, 121, { face: 1 }); ent('prise', 66, 137, { face: -1 });
   ent('sailor', 90, 137, { face: -1 }); ent('scout', 20, 129, { face: 1 }); ent('netter', 50, 145, { face: -1 });
-  ent('tideguard', 30, 145, { face: 1 }); ent('siren', 72, 130); ent('urchin', 58, 152);
+  ent('tideguard', 30, 145, { face: 1 }); ent('siren', 72, 130); ent('urchin', 58, 150);   /* on the shelf, not a row inside it */
   ent('eel', 82, 126); ent('petrel', 36, 116); ent('crab', 24, 145, { face: 1 });
   ent('wight', 34, 129, { face: 1 }); ent('wight', 86, 121, { face: -1 });
   ent('boarder', 70, 121, { face: 1 }); ent('boarder', 26, 145, { face: 1 });
@@ -3558,7 +3558,7 @@ function shipwreckReef() {
   ent('seabell', 100, 23); ent('sign', 98, 23, { text: "STRIKE THE SHIP'S BELL: THE BIRDS GO UP AND THE DROWNED STOP TO LISTEN." });
   ent('scout', 50, 24, { face: -1 }); ent('sailor', 86, 25, { face: -1 }); ent('siren', 106, 23, { face: -1 });
   ent('petrel', 40, 19); ent('petrel', 88, 17);
-  ent('urchin', 36, 31); ent('urchin', 70, 31);
+  ent('urchin', 44, 32); ent('urchin', 76, 32);   /* in the troughs between the backs: they were built inside two of the wrecks */
   ent('sign', 18, 25, { text: 'HOLD UP TO CLIMB THE SHROUDS. WHEN THE WATER RISES THE LOW DECKS GO UNDER.' });
   ent('silver', 51, 15); ent('check', 100, 23);
   coins([18, 25], [24, 25], [33, 26], [38, 26], [50, 24], [55, 24], [66, 26], [72, 26], [80, 25], [90, 25], [100, 23], [110, 23]);
@@ -3645,7 +3645,7 @@ function shipwreckReef() {
   block(430, 433, 31, 33); block(438, 442, 30, 33); block(447, 450, 31, 33); // coral stools: dry ground when the water comes up
   block(453, 456, 30, H - 1); block(457, W - 1, 29, H - 1);
   pools.push({ x0: 425 * TS, x1: 453 * TS, y: 34 * TS + 6, base: 34 * TS, swim: true, shallow: true, depth: 0, bottom: 34 * TS, arenaTide: true });
-  ent('deco', 427, 33, { kind: 'airBell' }); ent('deco', 452, 33, { kind: 'airBell' });
+  ent('deco', 427, 33, { kind: 'airBell' }); ent('deco', 444, 33, { kind: 'airBell' });   /* not in the two-tile slot at 452: the bell is twice that wide and stood in the rock both sides */
   for (const x of [429, 437, 445, 451]) ent('deco', x, 33, { kind: 'bubbleVent' }); // its four holes, each one venting: watch which one is breathing
   ent('reefmaw', 440, 33);
   ent('gate', 458, 28);
@@ -3860,7 +3860,7 @@ function theFlotilla() {
   }
 
   for (const x of [252, 264, 276, 288, 316, 330]) ent('deco', x, 24, { kind: 'gunport', v: x % 2 });
-  ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 296, 21, { kind: 'wheel' });
+  ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 292, 18, { kind: 'wheel' });   /* on the deck: 296,21 was inside the quarterdeck */
   ent('deco', 244, 21, { kind: 'boardingNet' });
   ent('check', 254, 21); ent('check', 304, 15); ent('silver', 300, 26);
 
@@ -3995,9 +3995,9 @@ function theHurricane() {
   ent('cannon', 264, 26, { hole: [268, 271, 22, 25] });
   ent('sign', 224, 26, { text: 'STRIKE A BREECH AND THE GUN FIRES. THE LAST ONE AIMS AT THE MAGAZINE WALL.' });
   ent('deco', 276, 26, { kind: 'kegStack' }); ent('deco', 280, 26, { kind: 'plunder', v: 1 });
-  ent('deco', 284, 26, { kind: 'coiledCable', v: 1 }); coins([273, 25], [278, 25], [282, 25]);
+  ent('deco', 278, 26, { kind: 'coiledCable', v: 1 });   /* 284 is inside the bulkhead: it was pushed out against it */ coins([273, 25], [278, 25], [282, 25]);
   ent('pump', 244, 19, { pool: 424 }); ent('sign', 240, 19, { text: 'WORK THE PUMP BRAKE TO DRAIN THE HOLD. THE ORLOP HIDES SOMETHING WHEN DRY.' });
-  ent('deco', 248, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });
+  ent('deco', 250, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });   /* not on the shroud's foot at 248: a net is no floor, and it sank a row into the rail */
   ent('sign', 226, 19, { text: 'THE WAIST IS THE WORST OF HER: NO RAIL WORTH THE NAME AND NOTHING TO HOLD BUT THE SHROUDS.' });
   air(236, 237, 20, 20); net(236, 237, 20, 26);
   ent('deco', 228, 19, { kind: 'washing' }); ent('deco', 320, 19, { kind: 'boardingNet' }); ent('deco', 246, 19, { kind: 'kegStack' }); ent('deco', 264, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 308, 19, { kind: 'washing' }); ent('deco', 286, 19, { kind: 'hammock', v: 0 });
@@ -4245,7 +4245,7 @@ function theLamplitStreet() {
   ent('snuffer', 120, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
   ent('stray', 128, ST - 1, { kind: 'lamp' });  // the first of his three lamps, down on the stones
   ent('deco', 156, ST - 1, { kind: 'plunder', v: 1 });
-  ent('check', 88, UP - 1); ent('check', 130, 22); ent('check', 180, ST - 1);
+  ent('check', 88, UP - 1); ent('check', 134, 22); ent('check', 180, ST - 1);   /* (at 130 the step over the ledge went through the lamp on it) */
   ent('sign', 148, ST - 1, { text: 'THE TIDE RUNS THIS STREET, THEN TURNS. GO WITH IT AND IT CARRIES YOU TWO LAMPS.' });
   coins([84, 36], [92, 34], [100, 36], [108, 34], [116, 36], [124, 34], [132, 36], [140, 34], [148, 36], [156, 34], [164, 36], [172, 34], [180, 36],
     [88, 21], [96, 21], [104, 21], [120, 21], [150, 21], [164, 21], [178, 21], [131, 19]);
@@ -4299,7 +4299,7 @@ function theLamplitStreet() {
   ent('watch', 276, ST - 1, { face: -1 }); ent('watch', 312, ST - 1, { face: 1 }); ent('watch', 346, ST - 1, { face: -1 });
   ent('wight', 290, UP - 1, { face: -1 }); ent('tideguard', 324, UP - 1, { face: 1 });
   ent('eel', 296, 33); ent('angler', 316, 30); ent('angler', 330, 34); ent('urchin', 300, ST - 1); ent('crab', 320, ST - 1);
-  ent('check', 266, UP - 1); ent('check', 271, 22); ent('check', 348, ST - 1);
+  ent('check', 263, UP - 1); ent('check', 271, 22); ent('check', 348, ST - 1);   /* (at 266 it was under the pocket's lip) */
   coins([258, 36], [266, 34], [274, 36], [282, 34], [290, 36], [298, 34], [306, 36], [314, 34], [322, 36], [338, 34], [346, 36],
     [272, 22], [302, 26], [334, 22], [264, 21], [292, 21], [328, 21], [352, 21]);
   for (const x of [272, 310, 340]) weed(x, ST - 1, x % 3);
@@ -4377,7 +4377,7 @@ function theLamplitStreet() {
   coins([582, 21], [590, 19], [598, 21], [606, 19], [614, 21], [622, 19], [630, 21], [638, 19], [646, 21]);
   // HIS SQUARE: 44 tiles, two rings of lamps, the braziers at the edges, and the pool that fills it
   ent('brazier', 652, UP - 1); ent('brazier', 690, UP - 1);
-  for (const x of [656, 664, 672, 680, 688]) lampUp(x);
+  for (const x of [656, 664, 672, 683, 688]) lampUp(x);   /* 680 stood under the cornice at 678, and its post ran up through the cornice */
   ent('deco', 646, 7, { kind: 'lampMain', v: 0, hang: true }); ent('deco', 670, 7, { kind: 'lampMain', v: 1, hang: true });
   ent('deco', 658, UP - 1, { kind: 'column', v: 0 }); ent('deco', 636, UP - 1, { kind: 'column', v: 1 });
   plat(632, 20, 4); plat(638, 18, 3); plat(678, 20, 4);      // cornices over the square: the dash and the mantle
@@ -5517,7 +5517,7 @@ const rv = L => ({
 });
 const REVIEW = {
   // a checkpoint in the long run between the thorn cut and the high path
-  wood: L => { const R = rv(L); R.ent('check', 119, 21); },
+  wood: L => { const R = rv(L); R.ent('check', 114, 21); },   /* not 119: the log step is right over it there, and the shrine ran up through it */
   // a checkpoint by the old stones, and lily pads over the two long shallows (hop them and you are across
   // before a wader is halfway), with gold on the way
   marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
@@ -5671,6 +5671,16 @@ function garrison(L, id) {
   // WHO CAN BE PUT IN THE WATER. The Long Water is mostly water, so refusing every wet spot left the
   // sprinkler nowhere to work - and an eel belongs in the water anyway.
   const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor']);
+  // AND WHO MUST BE BY IT. SWIMS says who MAY be put in the water; nothing said who must. Anglers and urchins were put on
+  // the paving over the Lamplit Street's floods and hung in the air there all level (thirteen of them), and crabs, herons
+  // and turtles were put down a hundred tiles from any water. A swimmer takes a spot IN a swim pool; a siren and a wader
+  // take one in the water or within three tiles of it, when the level has any.
+  const INWATER = new Set(['eel', 'angler', 'urchin']), BYWATER = new Set(['siren', 'turtle', 'crab', 'heronfoe', 'netter', 'sailor']);
+  const pools = L.pools || [];
+  const swimIn = (x, y) => pools.some(p => p.swim && x * TS >= p.x0 + 12 && (x + 1) * TS <= p.x1 - 12 && (y + 1) * TS > p.y + 12);
+  const byWater = (x, y) => pools.some(p => !p.harm && (x + 1) * TS > p.x0 - 3 * TS && x * TS < p.x1 + 3 * TS && (y + 1) * TS >= p.y - 3 * TS && (y + 1) * TS <= (p.bottom !== undefined ? p.bottom : p.y + 40) + TS);
+  const bySwim = (x, y) => pools.some(p => p.swim && (x + 1) * TS > p.x0 - 3 * TS && x * TS < p.x1 + 3 * TS && (y + 1) * TS >= p.y - 3 * TS && (y + 1) * TS <= (p.bottom !== undefined ? p.bottom : p.y + 60) + TS);   /* a siren sings over water you can drown in, not a wading pool */
+  const fits = (kind, x, y, isWet) => (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
   const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];
   const squads = set.some(([k]) => k === 'shield' || k === 'soldier'); let squadN = 0;
@@ -5684,7 +5694,7 @@ function garrison(L, id) {
     const lo = Math.floor(spots.length * b / list.length), hi = Math.floor(spots.length * (b + 1) / list.length);
     let put = null;
     for (let k = lo; k < hi; k++) { const [x, y, isWet] = spots[(k + ((rnd() * (hi - lo)) | 0)) % Math.max(1, hi - lo) + lo] || spots[k];
-      if (isWet && !SWIMS.has(list[b])) continue;
+      if (!fits(list[b], x, y, isWet)) continue;
       if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
     if (!put) { left.push(list[b]); continue; }
     taken.push(put);
@@ -5699,9 +5709,9 @@ function garrison(L, id) {
   for (const kind of left) {
     let put = null;
     for (let k = 0; k < spots.length; k++) { const [x, y, isWet] = spots[((k * 7 + ((rnd() * spots.length) | 0)) % spots.length)];
-      if (isWet && !SWIMS.has(kind)) continue;
+      if (!fits(kind, x, y, isWet)) continue;
       if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
-    if (!put) break;
+    if (!put) continue;   /* one kind with no water to go in is not a reason to drop every kind after it */
     taken.push(put);
     L.ents.push({ t: kind, x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
   }
