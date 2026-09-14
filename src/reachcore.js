@@ -42,7 +42,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   if (opts.rides) {
     for (const e of (L.ents || [])) {
       if (e.t === 'pad') for (const dx of [-1, 0]) extraFoot.push((e.x + dx) + ',' + (e.y - 1));
-      if (e.t === 'wasp') { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }
+      if (e.t === 'wasp' && !opts.noFoes) { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }
     }
     for (const m of (L.moversExtra || [])) if (m.kind === 'wheel' && m.r) { const cells = [];
       for (let a = 0; a < 24; a++) { const th = a / 24 * Math.PI * 2; cells.push([Math.floor((m.px + Math.cos(th) * m.r) / TSZ), Math.floor((m.py + Math.sin(th) * m.r) / TSZ) - 1]); }

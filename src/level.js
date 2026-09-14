@@ -76,7 +76,8 @@ function brackenWood() {
   ent('check', 82, 21);
 
   // ---- 3. Wasp pit: pogo chain ----
-  ent('wasp', 87, 20); ent('wasp', 90, 20); ent('wasp', 93, 20); ent('wasp', 96, 20);
+  ent('wasp', 87, 18); ent('wasp', 90, 18); ent('wasp', 93, 18); ent('wasp', 96, 18);
+  plat(88, 22, 2); plat(92, 22, 2); plat(96, 22, 2);   /* STUMPS IN THE POND. The wasps were the only way over, so the wood could not be finished by anyone who killed them first. The wasps went up out of the way: a pogo is a shortcut now, not the road */
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
   ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'HOLD C: AEGIS. TAP C: MEND. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
@@ -568,10 +569,10 @@ function sporewood() {
   // ---- 2. The bouncer canyon: up the caps to the high path ----
   floor(45, 61, 26);
   bouncer(48, 25); plat(47, 19, 3); bouncer(49, 18); plat(48, 12, 3); plat(52, 12, 3); plat(56, 12, 3); ent('silver', 57, 11);
-  ent('mover', 52, 17, { len: 2, range: 4, cap: true, speed: 30 });   /* a row lower: from the ledge by the vent it was a tile out of reach, and the vent only ever put you back on that ledge */
-  ent('vent', 58, 25, { period: 4, on: 1.8, h: 100 }); plat(57, 20, 3); ent('roller', 55, 25, { face: -1 });
+  ent('mover', 52, 16, { len: 2, range: 4, cap: true, speed: 30 });
+  ent('vent', 58, 25, { period: 4, on: 1.8, h: 100 }); plat(57, 22, 3);   /* TWO ROWS LOWER. At 20 it sat right where the vent's lift runs out, so the gust set you down on it and you stood there going nowhere; at 22 you stand inside the lift and it carries you */ ent('roller', 55, 25, { face: -1 });
   ent('puffball', 53, 11); ent('drone', 58, 8);
-  coins([50, 16], [54, 10], [58, 10], [58, 22]); ent('glow', 46, 25); ent('glow', 52, 25);
+  coins([50, 16], [54, 10], [58, 10], [58, 20]); ent('glow', 46, 25); ent('glow', 52, 25);
   ent('sign', 46, 25, { text: 'VENTS LIFT YOU. ROLLERS POP WHEN PLUNGED. DRONES DRIFT TOWARD NOISE.' });
   block(60, 100, 12, 27);
 
@@ -1290,7 +1291,7 @@ function underleaf() {
   room(140, 196, 5, 16, 'hall');
   ent('doorway', 144, 16, { id: 'church-in', to: 'church-out', lock: [140, 196], label: 'THE CHURCH' });
   ent('doorway', 193, 16, { id: 'church-back', to: 'church-far', lock: [140, 196], label: 'OUT THROUGH THE VESTRY' });
-  for (const px2 of [152, 166, 180]) { ent('deco', px2, 16, { kind: 'pillar' }); plat(px2 - 2, 13, 3); plat(px2 - 1, 11, 4); }
+  for (const px2 of [152, 166, 180]) { ent('deco', px2, 16, { kind: 'pillar' }); plat(px2 - 2, 14, 3); plat(px2 - 1, 11, 4); }   /* the first step by each pillar was four rows off the floor: something to bounce on was the only way to the rood beam and its key */
   for (let x = 184; x <= 190; x++) set(x, 9, T.PLANK);                                 /* the rood beam */
   ent('key', 188, 8, { kind: 'iron' });
   ent('torch', 148, 16); ent('torch', 186, 16); ent('brazier', 168, 16);
@@ -1493,9 +1494,9 @@ function hangingVillage() {
   hole(36, 40, tops.t3); ent('mover', 36, tops.t3, { len: 2, range: 3, speed: 36 }); hole(70, 74, tops.t3); ent('mover', 70, tops.t3, { len: 2, range: 3, speed: 36 }); // gaps in the bough with sliding boughs across them: the wind wants you off
   pit(52, 53, tops.t3); pit(30, 31, tops.t3); // pits the wind wants to push you into
   ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('snuffer', 34, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
-  plat(70, 62, 3); plat(40, 61, 3); coins([71, 61], [41, 60], [86, 63], [56, 63], [26, 63]);
+  plat(70, 63, 3); plat(40, 61, 3); coins([71, 62],   /* the lamp's ledge was four rows off the floor */ [41, 60], [86, 63], [56, 63], [26, 63]);
   ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' }); ent('lantern', 14, 65); ent('lantern', 64, 65);
-  ent('check', 20, 65); ent('stray', 71, 61, { kind: 'lamp' });
+  ent('check', 20, 65); ent('stray', 71, 62, { kind: 'lamp' });
   // 3 -> 4: snapping branches up the trunk
   band(1, W - 2, tops.t4); hole(2, 9, tops.t4);
   shelf(8, 63, 2); shelf(4, 60, 2); shelf(8, 57, 2); shelf(4, 54, 2); shelf(7, 51, 2);

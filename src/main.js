@@ -3687,7 +3687,7 @@ function guardTurned() {
 function attackBox() {
   if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
     if (P.atk < 0.12 || P.atk >= 0.19) return null;
-    const r = 30 + 3 * tal('longHaft');
+    const r = 38 + 3 * tal('longHaft');
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 22, b: P.y + 4 } : { l: P.x - r, r: P.x - 2, t: P.y - 22, b: P.y + 4 };
   }
   if (P.heavy && P.atk >= 0.03 && P.atk < 0.22) { // it reaches further and lands lower than a swing
@@ -3700,7 +3700,7 @@ function attackBox() {
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
   if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) {   /* THE CLEAVE: over the shoulder and down through what is in FRONT of him - a sword, not a scythe */
-    const r = 36 + 4 * tal('longHaft'), top = 30 + 3 * tal('wideSwathe');
+    const r = 46 + 4 * tal('longHaft'), top = 30 + 3 * tal('wideSwathe');   /* 36 was a short sword's reach on the biggest blade in the game */
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - top, b: P.y + 2 } : { l: P.x - r, r: P.x - 2, t: P.y - top, b: P.y + 2 };
   }
   if (isPirate() && P.atk >= 0.03 && P.atk < 0.15) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 19, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 19, b: P.y - 1 };   // a cutlass is long and it is fast
@@ -4059,13 +4059,13 @@ function updatePlayer(dt) {
   const cap = (P.ballast ? (P.swim ? 54 : 58) : (P.block || P.jet) ? 32 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + 0.04 * tal('seaLegs')) * (1 + 0.04 * (tal('swiftness') + tal('lightFeet') + tal('sureStride'))) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]); // the Sunspire's ice: slow to get going, slower to stop
   if (move && !groundAtk) {
-    const acc = P.swim ? 900 : P.ground ? (onSlick ? 360 : 1000) : 700;
+    const acc = P.swim ? 900 : P.ground ? (onSlick ? 200 : 1000) : 700;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
     if (Math.abs(P.vx) > cap && Math.sign(P.vx) === move) P.vx = move * Math.max(cap, Math.abs(P.vx) - 400 * dt);
     else { P.vx += move * acc * dt; if (Math.abs(P.vx) > cap) P.vx = move * cap; }
     if (!attacking) P.face = move;
     if (P.ground) P.airHang = false;
   } else if (!dodging) {
-    const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 150 : 1100) : 200;
+    const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 40 : 1100) : 200;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
   } else { P.vx *= Math.pow(0.05, dt); }
   if (P.plunge) {
@@ -4119,7 +4119,7 @@ function updatePlayer(dt) {
   if (P.atk >= 0) {
     { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
       const was = P.atk;
-      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.5 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1);   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
+      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.24 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1);   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
         P.atk = -1; P.heavy = false; P.swingEndT = time; } }
@@ -4234,7 +4234,7 @@ function updatePlayer(dt) {
       const ty = Math.floor((P.y + 2) / TS); let broke = false;
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
       if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
-      else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14);
+      else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall();
         if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0) * (1 + 0.2 * tal('farTremor')), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
           if (P.consecrate) { P.consecrate = false; gainLight(14); // THE CONSECRATION: where the maul lands, the ground is holy for a moment
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
@@ -8946,17 +8946,40 @@ function bloodSurge() {
   P.harvest = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.5);
   SFX.judgement ? SFX.judgement() : SFX.heavy(); SFX.squelch(); SFX.bellow && SFX.dkSurge(); SFX.boom && shakeCam(7); zoomKick(1.08, 0.3); killFlash = 0.03;
   const R = 120 + 8 * tal('lastRites'); ringAt(P.x, P.y - 12, 60, '#c0283a', 0.5); number(P.x, P.y - 30, 'BLOOD SURGE', '#ff6b6b');
-  let took = 0;
+  let took = 0; const hit = [];
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
     if (Math.abs(e.x - P.x) > R || Math.abs(e.y - P.y) > 70) continue;
     const boss = !!(e.maxHp || e.mini || e.big), before = e.hp, x0 = e.x;
     hurtEnemy(e, 16 + 6 * tal('lastRites'), P.x, false); e.x = x0;
     took += Math.max(0, before - Math.max(0, e.hp));
     if (e.alive && !boss) { e.frozen = 3 + 0.5 * tal('lastRites'); e.stagger = Math.max(e.stagger || 0, e.frozen); e.vx = 0; }
-    drainLinks.push({ e, t: 0 }); }
+    drainLinks.push({ e, t: 0 }); hit.push(e); }
   if (took > 0) { const heal = Math.round(took * 0.5); P.hp = Math.min(P.maxHp, P.hp + heal); number(P.x, P.y - 42, '+' + heal, '#ff6b6b'); }
   for (let i = 0; i < 30; i++) { const a = Math.random() * 6.28, r = 20 + Math.random() * R;
     parts.push({ x: P.x + Math.cos(a) * r, y: P.y - 12 + Math.sin(a) * r * 0.4, vx: -Math.cos(a) * r * 2.2, vy: -Math.sin(a) * r * 0.9, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#c0283a' : '#ff9a9a', size: 2, grav: 0 }); }
+  /* A SURGE YOU SEE FROM ACROSS THE ROOM. It was one ring and a swirl of dots. Now three rings of blood go out one after
+     another, a crown of blood spikes bursts out of the ground all round him, and a column of it tears out of every
+     creature it drains, toward him. */
+  for (const [r2, a2] of [[R * 0.4, 0.3], [R * 0.7, 0.45], [R, 0.6]]) ringAt(P.x, P.y - 12, r2, '#8a1020', a2);
+  ringAt(P.x, P.y - 12, 28, '#ff6b6b', 0.25);
+  for (let i = 0; i < 24; i++) { const a = (i / 24) * 6.28, d = 22 + (i % 2) * 16, gx = P.x + Math.cos(a) * d;
+    for (let k = 0; k < 5; k++) parts.push({ x: gx, y: P.y - k * 3, vx: Math.cos(a) * 26, vy: -150 - Math.random() * 110 - k * 26, life: 0.5 + k * 0.05, max: 0.6, col: k < 2 ? '#5a0a14' : k < 4 ? '#c0283a' : '#ff6b6b', size: 2, grav: 560 }); }
+  for (const e of hit) for (let k = 0; k < 16; k++) { const f = Math.random();
+    parts.push({ x: e.x + (Math.random() - 0.5) * 10, y: e.y - Math.random() * (e.h || 16), vx: (P.x - e.x) * (0.6 + f), vy: -90 - f * 160, life: 0.55, max: 0.55, col: f < 0.5 ? '#c0283a' : '#ff9a9a', size: 2, grav: 160, glow: true }); }
+  shakeCam(9);
+}
+/* THE GRAVE FALL. His plummet did what everyone's does - a thud - on the heaviest body in the game. Now the blade goes into
+   the ground point first and the ground answers: blood spikes burst out both ways, hurting and staggering what stands in
+   them, and every foe they catch feeds his blood. */
+function graveFall() {
+  const reach = 56, dmg = Math.round(plungeDmg() * 0.6), was = (P.harvest || 0) >= 100; let n = 0;
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
+    if (Math.abs(e.x - P.x) > reach || Math.abs(e.y - P.y) > 20) continue;
+    hurtEnemy(e, dmg, P.x, false); if (e.alive && !(e.maxHp || e.mini || e.big)) e.stagger = Math.max(e.stagger || 0, 0.7); n++; }
+  if (n) { P.harvest = Math.min(100, (P.harvest || 0) + 6 * n); if (!was && P.harvest >= 100) meterReady('#c0283a'); }
+  for (const d of [-1, 1]) for (let k = 1; k <= 6; k++) { const gx = P.x + d * k * 9;
+    for (let j = 0; j < 3; j++) parts.push({ x: gx, y: P.y, vx: d * 10, vy: -120 - (7 - k) * 22 - Math.random() * 40, life: 0.28 + k * 0.03, max: 0.45, col: j === 0 ? '#5a0a14' : j === 1 ? '#c0283a' : '#ff6b6b', size: 2, grav: 700 }); }
+  ringAt(P.x, P.y - 2, reach, '#8a1020', 0.35); shakeCam(5); zoomKick(1.04, 0.16); SFX.squelch();
 }
 function plantBlade(n) {
   const x = P.x + P.face * 14, y = P.y;
