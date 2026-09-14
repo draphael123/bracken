@@ -4519,7 +4519,7 @@ function waymeet() {
   ent('pike', 336, R - 1, { face: 1 }); ent('pike', 388, R - 1, { face: -1 });
   ent('runner', 360, R - 1, { face: -1 }); ent('runner', 408, R - 1, { face: -1 });
   ent('hound', 370, R - 1, { face: -1 });
-  sign(356, 'THEY ARE ABOVE YOU NOW. A BOLT CAN BE TAKEN ON THE SHIELD AND IT GOES BACK UP THE STAIR IT CAME DOWN - WHICH IS WHY YOUR GUARD IS UP WHEN THE MAN WITH THE POLEAXE ARRIVES.');
+  sign(356, 'THEY ARE ABOVE YOU NOW. A BOLT GOES STRAIGHT THROUGH A SHIELD THAT WAS UP BEFORE IT ARRIVED. RAISE IT AS THE BOLT LANDS AND IT GOES BACK UP THE STAIR IT CAME DOWN - WHICH IS WHEN THE MAN WITH THE POLEAXE ARRIVES.');
   ent('deco', 412, R - 1, { kind: 'stall', v: 1 }); ent('deco', 434, R - 1, { kind: 'mill' });
   /* THE MILL POND. The wheel is still turning because nobody stopped it, and it is the one stretch of
      this level where the ground is not ground. */
@@ -4616,6 +4616,28 @@ export const LEVELS = [
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
+
+/* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
+   creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
+   not - and the creatures that only ever lived in one place get a second home. [from, to, every Nth] */
+const MIX = {
+  wood: [['wasp', 'crow', 4], ['sprig', 'lurker', 3], ['spit', 'hopper', 3]],
+  moor: [['harpy', 'crow', 3]],
+  waymeet: [['swornsword', 'watch', 4], ['swornsword', 'soldier', 5]],
+  kings: [['thief', 'assassin', 3]],
+  undercrown: [['sprig', 'shardling', 2]],
+  deep: [['sailor', 'watch', 4]],
+};
+for (const lv of LEVELS) {
+  const mix = MIX[lv.id]; if (!mix || !lv.build || lv.build.mixed) continue;
+  const build = lv.build;
+  lv.build = (...a) => { const out = build(...a);
+    for (const [from, to, every] of mix) { let n = 0;
+      for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0) { e.t = to; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
+    return out; };
+  lv.build.mixed = true;
+}
+
 // THE REVIEW PASS (2026-09-11). Each wood's fixes from the level review, laid on the finished level in its
 // own final coordinates (some woods are grafted from several builders) before the gold and the dressing.
 const rv = L => ({
