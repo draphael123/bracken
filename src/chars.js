@@ -159,6 +159,28 @@ function rotQuarter(c, q) { // rotate a square canvas by q quarter turns
   return o;
 }
 
+/* THE RUN OF THREE. The combo is three swings and it drew one: every blow of a run was the same over-the-shoulder
+   chop. The second is now a BACKHAND - low behind, up through the front and over - and the third, the heavy cut, a
+   THRUST: drawn back level and driven straight through. Weapon ends are offsets from the shoulder, scaled to the
+   length of what the hero carries, and held inside the 34x32 frame. The fifth frame is each hero's own settle. */
+function comboArcs(sh, key, len, extra = {}) {
+  const k = len / 12, s = v => Math.round(v * k);
+  const wp = (x0, y0, x1, y1) => ({ [key]: [sh[0] + x0, sh[1] + y0, Math.max(1, Math.min(W - 2, sh[0] + x1)), Math.max(1, Math.min(H - 2, sh[1] + y1))] });
+  const f = o => knightFrame({ ...extra, ...o });
+  const B = [
+    f({ dx: -1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 4], ...wp(-2, 4, -2 - s(9), 4 + s(4)), plume: 1 }),
+    f({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], ...wp(3, 3, 3 + s(10), 3 + s(3)), plume: 2 }),
+    f({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], ...wp(4, -2, 4 + s(9), -2 - s(7)), plume: 2 }),
+    f({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], ...wp(2, -4, 2 + s(4), -4 - s(10)), plume: 1 }),
+  ];
+  const T = [
+    f({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 1], ...wp(-3, 1, -3 + s(10), 1), plume: 1 }),
+    f({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], ...wp(4, 1, 4 + s(12), 1), plume: 2 }),
+    f({ dx: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], ...wp(5, 1, 5 + s(13), 2), plume: 2 }),
+    f({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], ...wp(3, 3, 3 + s(9), 3 + s(5)), plume: 0 }),
+  ];
+  return { B, T };
+}
 export function bakeKnight(skin = {}) {
   KP = Object.assign({}, KP0, skin);
   const sh = [BX + 8, BY + 7]; // shoulder (front)
@@ -221,6 +243,7 @@ export function bakeKnight(skin = {}) {
   };
   const tuck = knightFrame({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
+  { const arcs = comboArcs(sh, 'sword', 12); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* the backhand and the thrust */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
@@ -276,6 +299,12 @@ export function bakeShield() {
   ];
   const legs = [['..GG..GG......', '..GG..GG......', '.GGG..GGG.....'], ['..GG.GG.......', '...GGGG.......', '..GGG.GG......'], ['...GGGG.......', '..GG..GG......', '.GGG..GGG.....'], ['..GG.GG.......', '..GG..GG......', '.GG...GGG.....']];
   const frames = legs.map((l, i) => sprite([...top, ...torso(i % 2 === 0), ...l]));
+  /* THE TURN: he takes half a second to bring the shield round, and for that half second it is square across his front - and HURT, the shield knocked up and his helm askew */
+  const turnTorso = ['..bwwwwwb.....', '.Swwwywwwb....', '.Swwyyywwb....', '..wwwywwwb....', '..rwwwwwr.....', '..rrrrrr......'];
+  frames.push(sprite([...top, ...turnTorso, ...legs[0]]));
+  const hurtTop = ['....SSSSS.....', '...SsssssS....', '...SsssssS....', '...gogggog....', '....gg.gg.....'];
+  const hurtTorso = ['..bbbbbb..www.', '.Sbbbbbb.wwyww', '.Sbbbbbb.wwwww', '..bbbbbb......', '..rrrrrr......', '.rrrrrr.......'];
+  frames.push(sprite([...hurtTop, ...hurtTorso, '..GG...GG.....', '.GG.....GG....', 'GG.......GG...']));
   return pack(frames, 7, 15, 10, 14);
 }
 
@@ -294,7 +323,8 @@ export function bakeWasp() {
   const a = sprite(['...ll..ll...', '..llll.llll.', '...llllll...', ...body]);
   const b = sprite(['............', '...ll..ll...', '..llllllll..', ...body]);
   const c = sprite(['............', '............', '..ll.ll.ll..', ...body]);
-  return pack([a, b, c], 7, 7, 10, 7);
+  const hurt = sprite(['............', '..l......l..', '...l.ll.l...', '..oyoyoyo...', '.ooyoyoyoo..', '..oyoyoyo.o.', '....ooooo...']);   /* curled up round the sting, wings crumpled */
+  return pack([a, b, c, hurt], 7, 7, 10, 7);
 }
 
 export function bakeSeed() {
@@ -430,9 +460,14 @@ export function bakeArcher() {
   const bow = (rows, drawn) => { const out = ['............', '............', ...rows].map(r => r.split(''));
     const put = (y, x, ch) => { if (out[y] && (out[y][x] === '.' || ch === 'w')) out[y][x] = ch; };
     put(0, 9, 'w'); put(1, 10, 'w'); for (let y = 2; y <= 9; y++) put(y, 11, 'w'); put(10, 10, 'w'); put(11, 9, 'w');
-    for (let y = 1; y <= 10; y++) put(y, drawn && y > 4 && y < 9 ? 8 : 9, 'l');
+    for (let y = 1; y <= 10; y++) put(y, drawn === 2 && y > 3 && y < 10 ? 7 : drawn && y > 4 && y < 9 ? 8 : 9, 'l');   /* drawn 2: the string all the way back */
     return out.map(a => a.join('')); };
-  return pack([spr(bow([...hood, ...bodyIdle])), spr(bow([...hood, ...bodyDraw], true)), spr(bow([...hood, ...walk1])), spr(bow([...hood, ...walk2])), spr(bow([...hoodLook, ...bodyIdle]))], 6, 13, 8, 10);
+  /* THE SHOT IN THREE BEATS: the arrow nocked, the string all the way to his cheek, and the release with the arm thrown forward - and a hurt frame, hood knocked back */
+  const bodyFull = ['..bbbbbb....', '..bbbbbbaaaa', '..rrrrrr....', '.GG...GG....', 'GG.....GG...'];
+  const bodyLoose = ['..bbbbbb....', '..bbbbbbbaa.', '..rrrrrr....', '..GG..GG....', '.GG....GG...'];
+  const hurtRows = ['............', '....HHHH....', '...HHHHHH...', '..HHgoggog..', '..HHgg..gg..', '..bbbbbb....', '.bbbbbb.....', '..rrrrrr....', '.GG...GG....', 'GG.....GG...'];
+  return pack([spr(bow([...hood, ...bodyIdle])), spr(bow([...hood, ...bodyDraw], true)), spr(bow([...hood, ...walk1])), spr(bow([...hood, ...walk2])), spr(bow([...hoodLook, ...bodyIdle])),
+    spr(bow([...hood, ...bodyFull], 2)), spr(bow([...hood, ...bodyLoose])), spr(bow(hurtRows))], 6, 13, 8, 10);
 }
 
 // Bird — scatters from bushes. 6×4, two wing frames.
@@ -1119,6 +1154,21 @@ export function bakePyro(skin = {}) {
   };
   const tuck = pyroFrame({ sit: 4, hemW: 12, bell: 2, staff: [9, 17, 19, 7], arm: [15, 13, 16, 14], cowl: 2 });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
+  /* HER RUN OF THREE: the staff swept up from the ground, and then driven straight out with the fire on the end of it */
+  F.atkB = [
+    pyroFrame({ dy: 1, feet: [[10, 18], [16, 18]], staff: [4, 16, 18, 13], arm: [15, 11, 13, 13], arm2: [11, 11, 9, 13], cowl: 0 }),
+    pyroFrame({ lean: 1, trail: 1, feet: [[9, 18], [17, 18]], staff: [8, 15, 24, 8], arm: [16, 10, 19, 11], arm2: [12, 10, 14, 12], cowl: 1 }),
+    pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [10, 14, 22, 2], arm: [16, 10, 20, 8], arm2: [12, 10, 15, 9], cowl: 1, flare: [22, 2, true] }),
+    pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [11, 16, 17, 2], arm: [16, 10, 18, 9], cowl: 0 }),
+    F.atk[4],
+  ];
+  F.atkC = [
+    pyroFrame({ lean: -2, feet: [[10, 18], [16, 18]], staff: [1, 11, 15, 11], arm: [14, 11, 12, 11], arm2: [10, 11, 8, 11], cowl: 0 }),
+    pyroFrame({ lean: 3, trail: 3, feet: [[8, 18], [17, 18]], staff: [11, 11, 26, 11], arm: [17, 10, 21, 11], arm2: [13, 10, 16, 11], cowl: 2, flare: [27, 11, false] }),
+    pyroFrame({ lean: 3, trail: 3, feet: [[8, 18], [17, 18]], staff: [11, 11, 26, 11], arm: [17, 10, 22, 11], arm2: [13, 10, 17, 11], cowl: 2, flare: [27, 11, true], flick: 1 }),
+    pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [9, 13, 23, 10], arm: [16, 10, 19, 11], cowl: 0 }),
+    F.atk[4],
+  ];
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1424,6 +1474,7 @@ export function bakeFreebooter(skin = {}) {
   };
   // the dodge is a roll: he is the only one of them who has ever had to get out of the way for a living
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 2, legs: i % 2 ? 'crouch' : 'wide', cutlass: carry(2), pistol: holster(2) }));
+  { const arcs = comboArcs(sh, 'cutlass', 9, { pistol: holster() }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* a cutlass backhand, and a lunge */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1503,6 +1554,7 @@ export function bakeReaper(skin = {}) {
   };
   /* THE PASSING: he does not roll. He goes thin and steps through. */
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 1, legs: i % 2 ? 'wide' : 'runC', greatsword: carry(1), plume: i % 3 }));
+  { const arcs = comboArcs(sh, 'greatsword', 16); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* the long blade rising, and driven through */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1588,6 +1640,7 @@ export function bakePaladin(skin = {}) {
   };
   // the dodge is a heavy step: a lean and a stride, not a tumble
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dx: i < 2 ? i : 3 - i, dy: 1, legs: i % 2 ? 'wide' : 'runC', maul: carry(1) }));
+  { const arcs = comboArcs(sh, 'maul', 8); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; }   /* the maul coming up from below, and a jab with the head */
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1760,7 +1813,10 @@ export function bakeRockGoblin() {
   const walk1 = r([...rock, ...head.slice(1), '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '..GG..GG....', '.GG....GG...']);
   const walk2 = r([...rock, ...head.slice(1), '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '...GGGG.....', '...GG.GG....']);
   const thr = r([E, E, E, '...hhhhhh..y', '..hHhhhhHh.l', '..hhhhhhhh.y', '..ggeoggeoxx', '...gggggg.x.', '...gGGGGg...', '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
-  return pack([walk1, walk2, thr], 7, 14, 10, 11);
+  /* THE WIND-UP: the rock taken back over his shoulder and his feet set - the moment you have to move - and the hurt frame, the rock tipping off his head */
+  const lift = r(['.hhhhh......', 'hHhhhHh.....', 'gHHhhHg.....', 'g.hhh.g.....', ...head.slice(1), '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '.GG...GG....', 'GG.....GG...']);
+  const hurt = r(['.....hhhhh..', '....hHhhhHh.', '....hHHhhHh.', '......hhh...', '..hhhhhhhh..', '..ggoggog...', '..gg....gg..', '...gGGGGg...', E, '..xxxxxxx...', '.xxxxxxx....', '..xxxxxx....', '.GG...GG....', 'GG.....GG...']);
+  return pack([walk1, walk2, thr, lift, hurt], 7, 14, 10, 11);
 }
 // THE FORGEMASTER, at twice the size: a hulking smith in a steam rig. Boiler pack on his back, a furnace grate for a belly, a hammer arm as long as he is tall. 48×34.
 // Frames: idle, raise, slam, drag, hurl, stun, breath.

@@ -806,7 +806,7 @@ let impacts = [], rings = [], critters = [], escape = null, stormT = 0, thrown =
 const RELICS = { soles: { name: 'THE FELTED SOLES', desc: 'your feet make no sound, and you land like a cat', col: '#8fd160' }, wick: { name: "THE LAMPLIGHTER'S WICK", desc: 'the fire in your hand stays lit, even when a blow lands', col: '#ffd36b' }, stormline: { name: 'THE STORM LINE', desc: 'a line round your waist: the sea soaks you, but it cannot take you off her', col: '#a8cfc6' }, blackflag: { name: 'THE BLACK FLAG', desc: 'their own colours: whoever you stagger stays down half as long again', col: '#c9b27c' }, diverlamp: { name: "THE DIVER'S LAMP", desc: 'it lights the water around you, and the air lasts longer', col: '#bfe6f5' }, tidecharm: { name: 'TIDE CHARM', desc: 'hold your breath twice as long under the water', col: '#7cc8c8' }, banner: { name: 'THE QUEEN\'S BANNER', desc: 'goblins pull their blows: a fifth less hurt', col: '#c9a0ff' }, sunshard: { name: 'SUNSHARD', desc: 'crystal holds you twice as long', col: '#bfe6f5' }, shoes: { name: 'IRON SHOES', desc: 'the planks do not give under you', col: '#8a919c' }, spurs: { name: 'CLIMBING SPURS', desc: 'cling to rock without sliding', col: '#c9d1dc' }, lamp: { name: "MINER'S LAMP", desc: 'light around you in the dark', col: '#ffd36b' }, fleece: { name: 'GOLDEN FLEECE', desc: 'stamina returns twice as fast', col: '#ffe6a0' }, crown: { name: 'HORNET CROWN', desc: 'stomps strike like plunges', col: '#e0b040' }, charm: { name: "HUNTER'S CHARM", desc: 'gold comes to you', col: '#ffd34a' }, gauntlet: { name: 'IRON GAUNTLET', desc: 'swings cost no stamina', col: '#c9d1dc' }, lantern: { name: 'GLOW LANTERN', desc: 'spores cannot put you to sleep', col: '#4aa0b0' }, windcloak: { name: 'WINDCLOAK', desc: 'hold jump to glide', col: '#bfe6f5' }, cloak: { name: 'THIEF CLOAK', desc: 'thieves cannot take your gold', col: '#6a3aa0' } };
 function impactAt(x, y, kind = 'hit') { if (SET.impact) impacts.push({ x, y, t: 0, kind }); }
 function ringAt(x, y, r = 18, col = '#fff6e0', life = 0.28) { if (SET.impact) rings.push({ x, y, r, col, t: 0, life }); }
-let hushT = 0, slowT = 0, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
+let hushT = 0, slowT = 0, bossFx = [], flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
 const CLOUD = ART.bakeClouds(), MAPSIGN = ART.bakeMapSign(), FISH = ART.bakeFish();
 for (let i = 0; i < 6; i++) clouds.push({ x: Math.random() * 900, y: 8 + Math.random() * 50, k: i % 3, sp: 4 + Math.random() * 5 });
 for (let i = 0; i < 4; i++) mapClouds.push({ x: Math.random() * VW, y: 10 + Math.random() * 120, k: i % 3, sp: 5 + Math.random() * 4 });
@@ -2679,7 +2679,7 @@ function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
 // the creatures that have a recoil frame: it is the LAST frame of their set, and it holds for a fifth of a second
-const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch']);
+const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp']);
 const COLS = { swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   closedhelm: ['#c9d1dc', '#9a3a3a', '#e0b040'],
@@ -2820,6 +2820,7 @@ function openYardRespawn(dt) {   // in the open yard a straw man is back on his 
 }
 function spawnCorpse(e, dir) {
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
+  if (HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) c.frame = SPR[e.t].R.length - 1;   /* it dies in the pose it was hit in, not mid-stride */
   switch (e.t) {
     case 'sprig': case 'archer': case 'soldier': case 'javelin': Object.assign(c, { vx: dir * 90, vy: -190, spin: dir * 14, life: 1.0, max: 1.0 }); SFX.gobDie(); break;
     case 'hopper': Object.assign(c, { vx: dir * 70, vy: -160, spin: dir * 10, life: 0.9, max: 0.9 }); SFX.ribbit(); break;
@@ -3998,7 +3999,7 @@ function updatePlayer(dt) {
       const was = P.atk;
       P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.5 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1);   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }   /* the blade goes into the ground, and the ground answers */
-      if (P.atk > lim) { P.atk = -1; P.heavy = false; } }
+      if (P.atk > lim) { P.atk = -1; P.heavy = false; P.swingEndT = time; } }
     if (P.atk >= 0.03 && P.atk < 0.17) {
       const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6;
       const px0 = P.x + P.face * 2, py0 = P.y - 9;
@@ -4283,6 +4284,7 @@ const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss 
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
   if (!L.mini) return;
+  if (e) for (let i = 0; i < 4; i++) bossFx.push({ t: 0.06 + i * 0.12, x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * (e.h || 20), big: i === 3 });   /* a shorter run for a named fight */
   openGate(L.mini.gate, 0, LH - 1, true);
   setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
   if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].mini = true; saveProgress(); }
@@ -4362,10 +4364,23 @@ function queenDies(who) {
 }
 
 // Each of them goes out in its own way. One shared thud for eight bosses was the cheapest thing in the game.
+/* THE TURN OF A FIGHT. Phase two used to be one word over the boss's head. Now the fight stops for a breath: the world
+   slows, the boss flashes, the ground throws up a ring of dust and a shockwave that shoves you back a step (it does not
+   hurt), and then it comes on. It is caught in the tick every enemy runs, so it fires for every boss, whichever of the
+   many places in the code set its phase. */
+function enrageBeat(e) {
+  const x = e.x, y = e.y, mid = y - (e.h || 20) / 2; e.enrageT = 0.7; slowT = Math.max(slowT, 0.35); hitstop(0.08); shakeCam(6); zoomKick(1.1, 0.35); killFlash = Math.max(killFlash, 0.08);
+  ringAt(x, mid, 44, '#ff6b6b', 0.5); ringAt(x, mid, 26, '#fff6e0', 0.35);
+  burst(x, y - 2, 18, ['#c9b27c', '#8a7a5a', '#e8dcc0'], 110, 0.6, 400, 2); dust(x - 12, y, 5); dust(x + 12, y, 5);
+  if (!P.dead && Math.abs(P.x - x) < 90 && Math.abs(P.y - y) < 60) P.vx = (Math.sign(P.x - x) || 1) * 170;
+  SFX.boom();
+}
 function bossEnd(e) {
   if (!e) return;
   const A = L.arena, floor = A ? A.floor : e.y, x = e.x, y = e.y;
   const say = (t, col) => number(x, y - 40, t, col || '#ffd36b');
+  /* THE LAST BEAT, before its own: the body goes up in a run of blasts across a second, and a white ring on the last */
+  { const hh = e.h || 30, ww = e.w || 24; for (let i = 0; i < 7; i++) bossFx.push({ t: 0.08 + i * 0.13, x: x + (Math.random() - 0.5) * ww * 1.4, y: y - Math.random() * hh, big: i === 6 }); }
   switch (e.t) {
     case 'queen': { // the hive loses its head: the comb spills, the swarm drops out of the air
       shakeCam(9); zoomKick(1.16, 0.6); killFlash = 0.12;
@@ -6024,8 +6039,9 @@ function updateRockGoblin(e, dt) { // keeps its distance and throws lanterns: th
   let want = 0;
   if (e.mode === 'throw') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
   else if (e.stagger > 0) want = 0;
-  else if (near) { e.face = Math.sign(d) || e.face; if (e.throwT <= 0 && ad > 40) { e.mode = 'throw'; e.modeT = 0.5; e.throwT = 3.4; const sx = e.x + e.face * 6, sy = e.y - 12, Tf = 0.8, G = 380, dx = P.x - sx, dy = (P.y - 8) - sy; seeds.push({ x: sx, y: sy, vx: Math.max(-200, Math.min(200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, g: G, lantern: true }); SFX.throwWhoosh(); SFX.rockLaugh(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); } else want = ad < 60 ? -e.face * e.speed : ad > 120 ? e.face * e.speed : 0; }
+  else if (near) { e.face = Math.sign(d) || e.face; if (e.throwT <= 0 && ad > 40 && (e.liftT = (e.liftT || 0) + dt) > 0.35) { e.liftT = 0; e.mode = 'throw'; e.modeT = 0.5; e.throwT = 3.4; const sx = e.x + e.face * 6, sy = e.y - 12, Tf = 0.8, G = 380, dx = P.x - sx, dy = (P.y - 8) - sy; seeds.push({ x: sx, y: sy, vx: Math.max(-200, Math.min(200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, g: G, lantern: true }); SFX.throwWhoosh(); SFX.rockLaugh(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); } else want = ad < 60 ? -e.face * e.speed : ad > 120 ? e.face * e.speed : 0; }
   else { if (e.modeT <= 0) { e.modeT = 1.5 + Math.random() * 2; e.face = Math.random() < 0.5 ? -1 : 1; } want = e.face * 12; }
+  if (!near || e.stagger > 0 || e.mode === 'throw') e.liftT = 0; else if (e.liftT > 0) want = 0;   /* feet set while the rock goes back */
   e.vx += (want - e.vx) * Math.min(1, dt * 6);
   const ftx = Math.floor((e.x + Math.sign(e.vx || e.face) * 7) / TS), fty = Math.floor((e.y + 1) / TS);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
@@ -8795,6 +8811,8 @@ function updateEnemies(dt) {
     { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt);
+    if (e.maxHp && e.alive && e.phase === 2 && !e.enragedFx) { e.enragedFx = true; enrageBeat(e); }
+    if (e.enrageT > 0) { e.enrageT -= dt; if (Math.floor(e.enrageT * 16) % 2 === 0) e.flash = Math.max(e.flash, 0.04); }
     if (e.turnT > 0) e.turnT = Math.max(0, e.turnT - dt);
     if (e.pFace === undefined) e.pFace = e.face; else if (e.face !== e.pFace) { if (Math.abs(e.vx) > 18 || e.lastSpeed > 18) e.turnT = 0.18; e.pFace = e.face; }
     e.lastSpeed = Math.abs(e.vx || 0);
@@ -9058,12 +9076,12 @@ function updateEnemies(dt) {
       if (e.horn && !e.blown && !P.dead && Math.abs(P.x - e.x) < 210 && Math.abs(P.y - e.y) < 120) { e.hornT += dt; if (e.hornT > 1.3) { e.blown = true; hornSquadT = 1.2; number(e.x, e.y - 18, 'THE HORN!', '#ff6b6b'); SFX.roar(); shakeCam(3); } } else if (e.horn && !e.blown) e.hornT = Math.max(0, e.hornT - dt);
       const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead;
       if (near) e.face = Math.sign(d) || e.face;
-      e.timer -= dt; e.draw = Math.max(0, e.draw - dt);
+      e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
       let want = 0;
       if (near && ad < 64 && e.draw <= 0) want = -e.face * e.speed * 1.6; // back off
       else if (near && ad > 170 && e.draw <= 0) want = e.face * e.speed * 0.6;
       if (near && e.timer <= 0 && e.draw <= 0 && ad > 40) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); }
-      if (e.draw > 0 && e.draw - dt <= 0) {
+      if (e.draw > 0 && e.draw - dt <= 0) { e.loose = 0.16;
         const sx = e.x + e.face * 5, sy = e.y - 7, dx = P.x - sx, Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
         seeds.push({ x: sx, y: sy, vx: Math.max(-(e.bowman ? 320 : 200), Math.min(e.bowman ? 320 : 200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, arrow: true, g: G, owner: e, fire: e.fire });
         if (e.fire) number(e.x, e.y - 20, 'FIRE', '#ff9a5c');
@@ -9157,8 +9175,13 @@ function pirateSpoils(e) {   // LOOTER and NO QUARTER: what a body is worth to a
 }
 function updateShots(dt) { for (const s of shots) s.life -= dt; shots = shots.filter(s => s.life > 0); }
 function updateCorpses(dt) {
+  for (const f of bossFx) { f.t -= dt; if (f.t <= 0 && !f.done) { f.done = true;
+    burst(f.x, f.y, f.big ? 26 : 12, ['#fff6e0', '#ffd36b', '#ff6b2c', '#5f5a52'], f.big ? 150 : 100, f.big ? 0.8 : 0.5, 250, 2); smoke(f.x, f.y, f.big ? 5 : 2, 10);
+    ringAt(f.x, f.y, f.big ? 60 : 22, f.big ? '#ffffff' : '#ffd36b', f.big ? 0.55 : 0.3); shakeCam(f.big ? 7 : 3);
+    if (f.big) { killFlash = Math.max(killFlash, 0.1); SFX.boom(); } else SFX.crack(); } }
+  bossFx = bossFx.filter(f => !f.done);
   for (const c of corpses) {
-    c.life -= dt;
+    c.life -= dt; c.sq = Math.max(0, (c.sq || 0) - dt);
     if (c.life <= 0 && !c.poofed && c.max > 0.05) { c.poofed = true; smoke(c.x, c.y - 4, 3, 5); }   /* it does not blink out: it goes to smoke */
     if (c.crumple) continue;
     const py0 = c.y;
@@ -9166,14 +9189,15 @@ function updateCorpses(dt) {
     if (c.wobble) c.x += Math.sin(c.life * 18) * 30 * dt;
     if (c.flip) c.rot += (Math.PI - c.rot) * Math.min(1, dt * 12); else if (c.tip) c.rot += ((-c.face) * Math.PI / 2 - c.rot) * Math.min(1, dt * 7); else c.rot += c.spin * dt;
     if (c.flip && c.ground) c.frame = Math.floor(c.life * 12) % 2;
+    if (c.settled && !c.flip && !c.tip && !c.wobble) { const lie = Math.round(c.rot / (Math.PI / 2)) * (Math.PI / 2); c.rot += (lie - c.rot) * Math.min(1, dt * 10); }   /* down on its side or its back, not balanced on a corner */
     const ty = Math.floor(c.y / TS), ctx = Math.floor(c.x / TS), ct = tileAt(ctx, ty);
     const caught = isOneWay(ct) && ct !== T.NET && ct !== T.CRYST && py0 <= ty * TS + 2;
     if (c.vy > 0 && (isSolid(ctx, ty) || caught)) {
       c.y = ty * TS + (ct === T.PLANK ? 3 : 0); c.ground = true;   // a bridge's board sits a little down its tile
 
       if (c.t === 'wasp' || c.t === 'cap' || c.t === 'queen') { burst(c.x, c.y - 2, 6, COLS[c.t] || COLS.spit, 50, 0.4); if (c.t === 'queen') { shakeCam(6); SFX.heavy(); } c.vy = c.t === 'cap' ? -40 : 0; c.vx *= 0.4; if (c.t === 'wasp') c.life = Math.min(c.life, 0.25); }
-      else if (!c.bounced) { c.vy = -c.vy * 0.35; c.bounced = true; c.vx *= 0.6; dust(c.x, c.y, 3); if (c.t === 'thorn') { SFX.stone(); } }
-      else { c.vy = 0; c.vx *= 0.8; c.spin *= 0.3; }
+      else if (!c.bounced) { c.vy = -c.vy * 0.35; c.bounced = true; c.vx *= 0.6; dust(c.x, c.y, 3); c.sq = 0.16; if (c.t === 'thorn') { SFX.stone(); } }
+      else { c.vy = 0; c.vx *= 0.8; c.spin *= 0.3; if (!c.settled) { c.settled = true; c.sq = 0.12; } }
     }
   }
   corpses = corpses.filter(c => c.life > 0);
@@ -9198,7 +9222,10 @@ function gasBlast(x, y) { // the whole chamber goes up: fire along the floor, an
   for (const e of enemies) if (e.alive && !e.harmless && !e.maxHp && e.x > z.x0 && e.x < z.x1 && Math.abs(e.y - fy) < 40) hurtEnemy(e, 40, x, false);
 }
 // every swing: count the run of them (THIRD CUT, CONCUSSION), and spend a waiting RIPOSTE
-function startSwing() { const quick = time - (P.lastSwingT ?? -9) < 0.75; P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
+/* A RUN IS COUNTED FROM THE END OF THE LAST SWING, not its start. Timed from the start, the Death Knight's swing (0.9 s)
+   outlasted the whole window, so he could never reach the third cut the rest of the game is built on. */
+const inRun = () => time - (P.swingEndT ?? -9) < 0.45 || time - (P.lastSwingT ?? -9) < 0.75;
+function startSwing() { const quick = inRun(); P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
   SFX.swingUp ? SFX.swingUp(Math.min(3, P.combo - 1)) : null; // the run of them climbs in pitch
   // THE THIRD CUT. Every hero, no talent needed: this is what the attack IS, and the tree only sharpens it.
   if (L.hush) noiseAt(P.x, P.y, P.heavy ? 132 : P.combo % 3 === 0 ? 104 : 82, null);   /* a swing carries, and the third one carries further */
@@ -10123,9 +10150,9 @@ function drawWarm(phase, set, key, frame, x, y, face, sx, sy, rot, wx, wy) {
   g.restore(); g.globalAlpha = 1;
 }
 // Rotated draw about the sprite's centre (for corpses).
-function drawRot(set, frame, x, y, face, rot, alpha = 1) {
+function drawRot(set, frame, x, y, face, rot, alpha = 1, sx = 1, sy = 1) {
   const c = pickFrame(set, null, frame, face); const ax = face < 0 ? c.width - set.ax : set.ax;
-  g.save(); g.globalAlpha = alpha; g.translate(Math.round(x), Math.round(y - c.height / 2)); g.rotate(rot); g.drawImage(c, -ax, -(set.ay - c.height / 2)); g.restore();
+  g.save(); g.globalAlpha = alpha; g.translate(Math.round(x), Math.round(y - c.height / 2 * sy)); if (sx !== 1 || sy !== 1) g.scale(sx, sy); g.rotate(rot); g.drawImage(c, -ax, -(set.ay - c.height / 2)); g.restore();
 }
 
 // THE MURK, per level, baked once. Which set it is comes off the palette's `far`, which already says what
@@ -10508,9 +10535,16 @@ function drawSwing(cx, cy) {
       if (f > 0) g.arc(px, py - 2, 30 - i, s2, e2); else g.arc(px, py - 2, 30 - i, Math.PI - e2, Math.PI - s2); g.stroke(); }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return;
   }
-  { const pal = isPaladin(), a0 = -1.25, sweep = 2.25 * Math.min(1, k * 2.2), r = pal ? 25 : 18;
-    for (let i = 0; i < 4; i++) { const tail = 0.5 + i * 0.35; g.globalAlpha = (1 - k) * (0.5 - i * 0.1); g.strokeStyle = pal ? (i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#f0c040') : i === 0 ? '#ffffff' : i === 1 ? '#fff6e0' : '#dfe8ff'; g.lineWidth = 3 - i * 0.6; g.beginPath();
-      const s = a0 + Math.max(0, sweep - tail), e = a0 + sweep; if (f > 0) g.arc(px, py, r - i, s, e); else g.arc(px, py, r - i, Math.PI - e, Math.PI - s); g.stroke(); } }
+  /* the trail follows the swing it belongs to: the first comes over and down, the backhand comes UP from below, and the
+     thrust is not an arc at all but a line straight out through the point */
+  { const pal = isPaladin(), cm = P.heavy ? 1 : (P.combo || 1) % 3, a0 = -1.25, sweep = 2.25 * Math.min(1, k * 2.2), r = pal ? 25 : 18;
+    const col = i => pal ? (i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#f0c040') : i === 0 ? '#ffffff' : i === 1 ? '#fff6e0' : '#dfe8ff';
+    if (cm === 0 && !isPyro()) { const len = (pal ? 22 : 28) * Math.min(1, k * 2.6), a = 1 - k;
+      for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = col(i); const w = 1 + i; g.fillRect(f > 0 ? px + 8 : px - 8 - len, py + 1 - (i >> 1), len, w); } }
+    else for (let i = 0; i < 4; i++) { const tail = 0.5 + i * 0.35; g.globalAlpha = (1 - k) * (0.5 - i * 0.1); g.strokeStyle = col(i); g.lineWidth = 3 - i * 0.6; g.beginPath();
+      const s = a0 + Math.max(0, sweep - tail), e = a0 + sweep;
+      if (cm === 2) { if (f > 0) g.arc(px, py, r - i, -e, -s); else g.arc(px, py, r - i, Math.PI + s, Math.PI + e); }   /* the same arc turned upside down */
+      else if (f > 0) g.arc(px, py, r - i, s, e); else g.arc(px, py, r - i, Math.PI - e, Math.PI - s); g.stroke(); } }
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 // THE CASTLE, on its mountain, far off: it sits between the far crags and the near hills, its mountain runs
@@ -11019,7 +11053,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (c.t === 'cap') drawRot(PARTS.cap, 0, c.x - cx, c.y - cy, c.face, c.rot, al);
     else if (c.t === 'stem') { const k = c.life / c.max; drawSet(PARTS.stem, null, 0, c.x - cx, c.y - cy, c.face, false, 1 + (1 - k) * 0.4, Math.max(0.1, k), al); }
     else if (c.t === 'plank') { g.save(); g.globalAlpha = al; g.translate(Math.round(c.x - cx), Math.round(c.y - cy)); g.rotate(c.rot); g.drawImage(TILE.plank[0], -8, -4); g.restore(); }
-    else if (SPR[c.t] || c.t === 'hopper') drawRot(c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t], c.frame, c.x - cx, c.y - cy, c.face, c.rot, al);
+    else if (SPR[c.t] || c.t === 'hopper') { const q = c.sq > 0 ? c.sq / 0.16 : 0, sink = c.settled ? Math.round((1 - c.life / c.max) * 2) : 0;   /* squash where it lands, sink as it goes */
+      drawRot(c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t], c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
   for (const e of enemies) {
     if (!e.alive || e.gone > 0 || e.x < cx - 40 || e.x > cx + VW + 40) continue;
@@ -11057,6 +11092,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
     else if (e.t === 'brute') frame = e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' ? 9 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
+    else if (e.t === 'shield') frame = e.turnT > 0.12 ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round */
     else if (e.t === 'sprig' || e.t === 'bearer') frame = Math.abs(e.vx) > 4 || e.t === 'bearer' ? Math.floor(e.anim * 10) % 4 : (Math.floor(e.anim * 0.7) % 4 === 1 ? 4 : 0);
     else if (e.t === 'thief') frame = e.loot > 0 || Math.abs(e.vx) > 8 ? Math.floor(e.anim * 12) % 2 : (Math.floor(e.anim * 0.8) % 3 === 1 ? 2 : 0);
     else if (e.t === 'miner') frame = e.mode === 'dig' ? 2 : e.mode === 'swingTell' || e.mode === 'swing' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
@@ -11089,7 +11125,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'wight') frame = Math.floor(e.anim * 6) % 4;
     else if (e.t === 'windcaller') frame = e.mode === 'fallen' ? 2 : e.mode === 'ground' ? 3 : e.mode === 'blink' || e.mode === 'appear' ? 2 : (e.mode === 'howlTell' || e.mode === 'howl') ? 3 : e.castFlash > 0 ? 1 : Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'golem') frame = e.mode === 'stagger' ? 5 : e.mode === 'drink' ? 7 : e.mode === 'counter' ? 8 : (e.mode === 'shroudTell' || e.mode === 'shroud') ? 6 : (e.mode === 'stompTell' || e.mode === 'stomp') ? 3 : e.mode === 'throwTell' || e.mode === 'throw' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
-    else if (e.t === 'rockgoblin') frame = e.mode === 'throw' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
+    else if (e.t === 'rockgoblin') frame = e.mode === 'throw' ? 2 : e.liftT > 0 ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'forgemaster') frame = e.mode === 'stun' || e.mode === 'scald' ? 5 : e.mode === 'slamTell' || e.mode === 'anvilTell' || e.mode === 'hurlTell' ? 1 : e.mode === 'slam' || e.mode === 'anvil' || e.mode === 'hurl' ? 2 : e.mode === 'drag' || e.mode === 'dragTell' || e.mode === 'spray' || e.mode === 'sprayTell' ? 3 : e.mode === 'breath' || e.mode === 'breathTell' ? 6 : Math.abs(e.vx) > 10 ? [7, 0, 8, 0][Math.floor(e.anim * (Math.abs(e.vx) > 60 ? 4.5 : 3)) % 4] : 0; // he walks now: plant, pass, plant (his anim runs at twice time)
     else if (e.t === 'greathound') frame = e.mode === 'stun' || e.mode === 'skid' || e.mode === 'whine' || e.mode === 'landed' ? 6 : e.mode === 'howlTell' || e.mode === 'howl' ? 5 : e.mode === 'pounce' ? 4 : e.mode === 'lungeTell' || e.mode === 'pounceTell' || e.mode === 'snapTell' ? 3 : Math.abs(e.vx) > 10 ? 1 + Math.floor(e.anim * 14) % 2 : 0;
     else if (e.t === 'spider') frame = (e.mode === 'drop' || e.mode === 'dropTell' || e.mode === 'ground') ? 1 : e.mode === 'climb' ? 3 + Math.floor(e.anim * 10) % 2 : (Math.floor(e.anim * 1.5) % 3 === 0 ? 2 : 0);
@@ -11148,7 +11184,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'soldier') frame = e.guardT > 0 ? 4 : e.mode === 'slashTell' ? 5 : e.mode === 'slash' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;
     else if (e.t === 'javelin') frame = e.mode === 'aim' ? 4 : e.mode === 'throw' ? 5 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 4 : 6;
     else if (e.t === 'heavy') frame = e.mode === 'raise' ? 4 : (e.mode === 'slam' || e.mode === 'sweep' || (e.mode === 'rest' && e.modeT > 0.5 && !(e.parried > 0))) ? 5 : (e.mode === 'windUp' || e.parried > 0) ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 5) % 4 : 0;
-    else if (e.t === 'archer') frame = e.draw > 0 ? 1 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
+    else if (e.t === 'archer') frame = e.draw > 0 ? (e.draw > 0.3 ? 1 : 5) : e.loose > 0 ? 6 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
     else frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 22 : 10)) % 4 : 0;
     const wind = windingUp(e);
     const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6) : 0;
@@ -11275,7 +11311,8 @@ function drawWorld(cx, cy, showPlayer) {
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
       else if (P.charge > 0) { key = 'heavy'; frame = 0; }
-      else if (P.atk >= 0) { key = 'atk'; frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
+      else if (P.atk >= 0) { { const cm = (P.combo || 1) % 3, ck = cm === 2 ? 'atkB' : cm === 0 ? 'atkC' : 'atk'; key = K.R[ck] ? ck : 'atk'; }   /* first swing, backhand, thrust */
+        frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
       else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
       else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.castT > 0) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }
@@ -12561,7 +12598,7 @@ function render() {
         g.fillStyle = armed ? '#ffd36b' : '#6a6a7a'; g.fillRect(bx + 12, by - 1, 1, 5);          // past this it lands if you let go
         if (k >= 1) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(bx - 1.5, by - 1.5, 25, 6); }
       }
-      if ((P.combo || 0) > 1 && time - (P.lastSwingT ?? -9) < 0.75 && !P.dead) { // the run of blows, where you can see it
+      if ((P.combo || 0) > 1 && (inRun() || P.atk >= 0) && !P.dead) { // the run of blows, where you can see it
       const n = Math.min(5, P.combo), bx = Math.round(P.x - cx), by = Math.round(P.y - cy) - 34;
       for (let k = 0; k < n; k++) { const on = k < n;
         g.fillStyle = k === 2 ? '#ffd36b' : on ? '#fff6e0' : '#5a5468'; g.globalAlpha = 0.55 + 0.45 * Math.max(0, 1 - (time - P.lastSwingT) / 0.75);
