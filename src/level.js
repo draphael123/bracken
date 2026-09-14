@@ -4874,6 +4874,7 @@ function waymeet() {
   tiles(399, 410, R - 6); stair(398, R - 6, R + 3);
   awning(413, 418, R - 3); stair(419, R - 3, R + 3);
   plat(421, R - 5, 3); plat(426, R - 7, 3);
+  stair(422, R - 4, R + 3); stair(427, R - 6, R + 3);   /* rules B9: the drying beams hang their ladders into the run-off - what holds them up, and a way out for whoever falls */
   tiles(431, 443, R - 5); stair(430, R - 5, R + 3);
   ent('crossbow', 384, R - 7, { face: -1 }); ent('crossbow', 407, R - 7, { face: -1 }); ent('swornsword', 437, R - 6, { face: -1 }); ent('crossbow', 364, R - 5, { face: -1 }); ent('swornsword', 402, R - 7, { face: -1 });
   ent('deco', 362, R - 12, { kind: 'bunting', hang: true });   /* the dyed cloth, strung out to dry */ ent('deco', 404, R - 7, { kind: 'shopSign', v: 2 });

@@ -12409,7 +12409,10 @@ function text(s, x, y, col, align = 'left', size = 8) {
 function textW(s, size = 8) { if (tinyOK(s, size) && SET.font === 'press') return s.length * ART.TINY.adv;
   const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; return g.measureText(s).width; }
 function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); return t; }
-function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; } for (const w of words) { const t = cur ? cur + ' ' + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
+function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; }
+  /* MEASURE WHAT IS DRAWN: small capitals go out in the tiny pixel face at its own advance, and measuring them in the canvas font let a long hint run off both sides of its box */
+  const wide = t => tinyOK(t, size) && SET.font === 'press' ? t.length * ART.TINY.adv - 1 : g.measureText(t).width;
+  for (const w of words) { const t = cur ? cur + ' ' + w : w; if (wide(t) > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
 function pickFrame(set, key, frame, face) {
   const dir = face < 0 ? 'L' : 'R'; let c = key == null ? set[dir] : set[dir][key]; if (Array.isArray(c)) c = c[((frame % c.length) + c.length) % c.length]; return c;
 }
