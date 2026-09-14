@@ -568,7 +568,7 @@ function sporewood() {
   // ---- 2. The bouncer canyon: up the caps to the high path ----
   floor(45, 61, 26);
   bouncer(48, 25); plat(47, 19, 3); bouncer(49, 18); plat(48, 12, 3); plat(52, 12, 3); plat(56, 12, 3); ent('silver', 57, 11);
-  ent('mover', 52, 16, { len: 2, range: 4, cap: true, speed: 30 });
+  ent('mover', 52, 17, { len: 2, range: 4, cap: true, speed: 30 });   /* a row lower: from the ledge by the vent it was a tile out of reach, and the vent only ever put you back on that ledge */
   ent('vent', 58, 25, { period: 4, on: 1.8, h: 100 }); plat(57, 20, 3); ent('roller', 55, 25, { face: -1 });
   ent('puffball', 53, 11); ent('drone', 58, 8);
   coins([50, 16], [54, 10], [58, 10], [58, 22]); ent('glow', 46, 25); ent('glow', 52, 25);
@@ -4759,6 +4759,170 @@ function theHunt() {
   };
 }
 
+// ============================================================================================
+// THE QUARRY PASS - the road inland goes through the hill, and the hill is being cut.
+//
+// THE HILL THROWS WHAT IT CAN LIFT. The face over the spoil heaps lets go of a stone on a beat;
+// the goblins on the benches throw what they dig; and at the top of the pass the Hill Troll
+// throws boulders, the floor, and the crane stones off their chains. The same stones are yours:
+// a stone on a chain is a stone you can drop, and a slab on a hoist is a door you can lift.
+//
+// SEVEN SECTIONS: the road up, the spoil heaps, the cutting (the Quarry Dog in its yard), the
+// crane yard (the mason's lodge), the blasting gallery, the saddle, and the troll's bowl.
+// FIVE LANDMARKS: the rockfall summit, the hoist pallet, the gantry, the slab gates, the saddle.
+// ============================================================================================
+function quarryPass() {
+  const W = 600, H = 40, R = 30, Y = 34, B = 24;       /* R the road, Y the cutting yard, B the upper bench */
+  const L = painter(W, H);
+  const { block, floor, plat, ent, coins, set } = L;
+  const movers = [], interiors = [], pools = [], stone = [];
+  const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const heap = (x0, x1, h) => block(x0, x1, R - h, R - 1);
+  const net = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
+  const beam = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
+  const sign = (x, y, text) => ent('sign', x, y, { text });
+  /* A SLAB ON A HOIST: a column of dressed stone that the winch beside it lifts for a count, and lets down again on
+     whatever is standing in it. The level's machine, three times over. */
+  const slab = (x, y0, y1, wx, wy, hold) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); ent('winch', wx, wy, { gate: x, gy0: y0, gy1: y1, hold }); };
+  /* A STONE ON A CHAIN, hung from a beam: strike the hook and it drops on what is under it, then the crane winds it back up. */
+  const crane = (x, y, len, o = {}) => ent('weight', x, y, { len, crane: true, hang: true, ...o });
+
+  // ---------------- 1. THE ROAD UP (x 0-79). The toll hut, the foreman, and the first goats. ----------------
+  floor(0, 79, R);
+  sign(5, R - 1, 'THE QUARRY PASS. THE ROAD INLAND GOES THROUGH THE HILL, AND THEY ARE CUTTING IT.');
+  ent('check', 8, R - 1);
+  ent('deco', 11, R - 1, { kind: 'tent', v: 0 }); ent('npc', 15, R - 1, { kind: 'foreman' }); ent('brazier', 18, R - 1);
+  ent('deco', 22, R - 1, { kind: 'cart' }); ent('deco', 26, R - 1, { kind: 'barrels' }); ent('deco', 32, R - 1, { kind: 'cairn' });
+  sign(29, R - 1, 'A GOAT COMES DOWN THE ROAD AT A RUN. TAKE IT ON THE SHIELD AND IT REARS.');
+  heap(44, 52, 2); heap(56, 66, 2);
+  ent('sprig', 36, R - 1, { face: -1 }); ent('goat', 48, R - 3, { face: -1 }); ent('rockgoblin', 61, R - 3, { face: -1 });
+  ent('rockgoblin', 70, R - 1, { face: -1 }); ent('goat', 76, R - 1, { face: -1 }); ent('miner', 40, R - 1, { face: -1 });
+  ent('deco', 54, R - 1, { kind: 'fence', v: 0 }); ent('deco', 72, R - 1, { kind: 'stone', v: 1 });
+  coins([12, R - 2], [20, R - 2], [34, R - 2], [48, R - 4], [60, R - 4], [68, R - 2]);
+
+  // ---------------- 2. THE SPOIL HEAPS (x 80-169). Up the tip, under a face that drops what it likes. ----------------
+  floor(80, 169, R);
+  heap(84, 151, 2); heap(90, 145, 4); heap(96, 139, 6); heap(104, 131, 8);   /* every step two rows */
+  block(98, 136, 0, 2); stone.push([98, 136, 0, 2]);                          /* THE BROW: the worked face hanging over the summit */
+  sign(88, R - 3, 'THE FACE OVER THE SUMMIT LETS A STONE GO ON A BEAT. WATCH THE MARK, THEN GO.');
+  ent('rockfall', 110, 3, { every: 2.6 }); ent('rockfall', 119, 3, { every: 3.1 }); ent('rockfall', 127, 3, { every: 2.3 });
+  plat(112, R - 10, 4); plat(117, R - 12, 4);                                 /* the old staging up the face, two rows a board */
+  ent('silver', 119, R - 14);
+  ent('stray', 124, R - 9, { kind: 'canary' });                               /* the first: in its cage on the summit, under the stones */
+  ent('goat', 88, R - 3, { face: -1 }); ent('rockgoblin', 100, R - 7, { face: -1 }); ent('archer', 108, R - 9, { face: -1 });
+  ent('rockgoblin', 130, R - 9, { face: -1 }); ent('goat', 136, R - 7, { face: -1 }); ent('sapper', 144, R - 5, { face: -1 });
+  ent('horn', 150, R - 3, { face: -1 }); ent('miner', 158, R - 1, { face: -1 }); ent('brute', 164, R - 1, { face: -1 });
+  ent('deco', 92, R - 5, { kind: 'bones', v: 0 }); ent('deco', 142, R - 5, { kind: 'stone', v: 2 }); ent('deco', 156, R - 1, { kind: 'cairn' });
+  ent('check', 160, R - 1);
+  coins([86, R - 4], [94, R - 6], [102, R - 8], [114, R - 11], [119, R - 13], [134, R - 8], [148, R - 4]);
+
+  // ---------------- 3. THE CUTTING (x 170-259). Down into the yard, the Quarry Dog, and up the hoist. ----------------
+  floor(170, 177, R + 2); floor(178, 221, Y);
+  floor(222, 259, B); stone.push([222, 259, B, H - 1]);                       /* THE BENCH: cut square out of the hill */
+  sign(172, R + 1, 'THE QUARRY DOG IS LOOSE IN THE YARD. WHEN IT SKIDS, OR LANDS, IT IS YOURS.');
+  ent('miner', 174, R + 1, { face: -1 }); ent('rockgoblin', 181, Y - 1, { face: -1 });
+  ent('deco', 176, R + 1, { kind: 'barrels' }); ent('deco', 183, Y - 1, { kind: 'wares', v: 0 });
+  /* THE YARD: the gate shuts behind you, the far gate is the dog's, and the pallet is behind that */
+  ent('greathound', 208, Y - 1, { face: -1, mini: true });
+  for (let y = Y - 6; y <= Y - 1; y++) set(216, y, T.PORT);
+  ent('check', 218, Y - 1);
+  /* THE HOIST PALLET: a stone on four ropes that goes up the bench and down again, whether or not you are on it */
+  ent('mover', 219, Y - 1, { len: 3, range: 0, vert: true, rise: Y - B - 1, period: 4.6, ph: 0, stone: true });
+  sign(224, B - 1, 'STRIKE THE HOIST AND THE SLAB GOES UP. IT COMES DOWN AGAIN ON WHATEVER IS UNDER IT.');
+  ent('miner', 230, B - 1, { face: -1 }); ent('rockgoblin', 238, B - 1, { face: -1 }); ent('sapper', 242, B - 1, { face: -1 });
+  ent('archer', 234, B - 1, { face: -1 });
+  ent('deco', 227, B - 1, { kind: 'wares', v: 1 }); ent('deco', 244, B - 1, { kind: 'cart' });
+  block(249, 255, 0, B - 7); stone.push([249, 255, 0, B - 7]);               /* the cut the slab hangs in */
+  slab(252, B - 6, B - 1, 247, B - 1, 6);
+  coins([180, Y - 2], [226, B - 2], [236, B - 2], [246, B - 2]);
+
+  // ---------------- 4. THE CRANE YARD (x 256-349). The gantry, its stones, and the mason's lodge. ----------------
+  floor(256, 349, B); stone.push([256, 349, B, H - 1]);
+  ent('check', 260, B - 1);
+  sign(264, B - 1, 'A STONE ON A CHAIN IS A STONE YOU CAN DROP. JUMP AND STRIKE THE HOOK.');
+  beam(270, 330, B - 10);                                                     /* THE GANTRY: a beam you can walk, on two legs you can climb */
+  crane(282, B - 9, 6); crane(300, B - 9, 6); crane(318, B - 9, 6);
+  ent('miner', 282, B - 1, { face: -1 }); ent('rockgoblin', 300, B - 1, { face: -1 }); ent('miner', 318, B - 1, { face: 1 });
+  ent('brute', 290, B - 1, { face: -1 }); ent('sapper', 332, B - 1, { face: -1 }); ent('rockgoblin', 310, B - 1, { face: -1 }); ent('goat', 326, B - 1, { face: -1 });
+  ent('archer', 296, B - 11, { face: -1 }); ent('archer', 312, B - 11, { face: 1 });
+  ent('silver', 306, B - 12);
+  ent('stray', 276, B - 11, { kind: 'canary' });                              /* the second: on the gantry, where the crane man left it */
+  ent('deco', 274, B - 1, { kind: 'barrels' }); ent('deco', 324, B - 1, { kind: 'wares', v: 0 });
+  /* THE MASON'S LODGE: the one roof on the hill, and the one man on it who will sell you anything */
+  sign(334, B - 1, 'THE MASON\'S LODGE. HE SELLS TO ANYONE WHO GETS THIS FAR UP.');
+  ent('deco', 338, B - 1, { kind: 'counter' }); ent('npc', 341, B - 1, { kind: 'keeper' }); ent('deco', 344, B - 1, { kind: 'wares', v: 1 });
+  ent('deco', 347, B - 1, { kind: 'barrels' });
+  ent('check', 342, B - 1);
+  coins([266, B - 2], [286, B - 11], [292, B - 11], [322, B - 11], [328, B - 11], [336, B - 2]);
+
+  // ---------------- 5. THE BLASTING GALLERY (x 350-439). Into the hill on the rails, and a shaft up to the old drift. ----------------
+  floor(350, 439, B); block(350, 439, 0, B - 7); stone.push([350, 439, 0, B - 7]);
+  interiors.push([350, 438, B - 6, B - 1, 'earth']);
+  for (let x = 358; x <= 434; x++) set(x, B, T.RAIL);
+  ent('cart', 432, B - 1, { auto: true, dir: -1, speed: 110 });
+  sign(354, B - 1, 'THE BLASTING GALLERY. THE CARTS RUN ON THEIR OWN NOW. HEAR ONE, JUMP IT.');
+  ent('minerlamp', 362, B - 1, { lit: true }); ent('minerlamp', 390, B - 1, { lit: true }); ent('minerlamp', 418, B - 1, { lit: true });
+  ent('miner', 372, B - 1, { face: -1 }); ent('rockgoblin', 386, B - 1, { face: -1 }); ent('grub', 398, B - 1, { face: -1 });
+  ent('miner', 412, B - 1, { face: -1 }); ent('sapper', 424, B - 1, { face: -1 }); ent('sapper', 378, B - 1, { face: -1 });
+  ent('rockfall', 384, B - 6, { every: 2.8 }); ent('rockfall', 414, B - 6, { every: 2.4 });   /* a blasted roof lets go of what the blast loosened */
+  ent('bat', 380, B - 4); ent('bat', 404, B - 4); ent('gas', 406, B - 1);
+  ent('check', 396, B - 1);
+  /* THE OLD DRIFT: they drove it for the blasting powder and walked away from it */
+  cut(367, 368, B - 12, B - 7); cut(367, 420, B - 16, B - 13); interiors.push([367, 420, B - 16, B - 13, 'earth']);
+  ent('clinger', 367, B - 9, { face: 1 });
+  ent('bat', 392, B - 15); ent('rockgoblin', 400, B - 13, { face: -1 });
+  ent('silver', 416, B - 14); ent('minerlamp', 406, B - 13, { lit: false }); ent('deco', 412, B - 13, { kind: 'barrels' });
+  coins([376, B - 14], [384, B - 14], [396, B - 14], [404, B - 14]);
+  sign(426, B - 1, 'THE BLAST DOOR IS A SLAB ON A HOIST. STRIKE IT, AND DO NOT STAND IN THE DOOR.');
+  slab(437, B - 6, B - 1, 434, B - 1, 5);
+  coins([360, B - 2], [370, B - 2], [382, B - 2], [410, B - 2], [428, B - 2]);
+
+  // ---------------- 6. THE SADDLE (x 440-519). Out on the top of the pass, and across the gap on the pallet. ----------------
+  floor(440, 452, B); floor(469, 490, B); floor(491, 497, B + 2); floor(498, 504, B + 4);
+  ent('check', 444, B - 1);
+  sign(447, B - 1, 'THE SADDLE. THE PALLET STILL RUNS ON ITS ROPE. RIDE IT, AND DO NOT WAIT ON IT.');
+  ent('mover', 453, B, { len: 3, range: 13, stone: true, speed: 30 });
+  ent('stray', 471, B - 1, { kind: 'canary' });                               /* the third: where the rope over the gap comes in */
+  ent('harpy', 462, B - 8); ent('harpy', 480, B - 7); ent('kite', 470, B - 6); ent('kite', 488, B - 5);
+  ent('goat', 478, B - 1, { face: -1 }); ent('rockgoblin', 486, B - 1, { face: -1 }); ent('archer', 494, B + 1, { face: -1 });
+  ent('deco', 472, B - 1, { kind: 'cairn' }); ent('deco', 484, B - 1, { kind: 'stone', v: 0 });
+  coins([442, B - 2], [448, B - 2], [458, B - 3], [466, B - 3], [474, B - 2], [482, B - 2], [494, B], [500, B + 2]);
+
+  // ---------------- 7. THE TROLL'S BOWL (x 505-599). A last checkpoint outside the wall, and him. ----------------
+  floor(505, 599, R); stone.push([541, 583, R, H - 1]);
+  ent('check', 512, R - 1);
+  sign(516, R - 1, 'THE HILL TROLL THROWS WHAT IT CAN LIFT. DROP A CRANE STONE ON IT FIRST.');
+  ent('brute', 522, R - 1, { face: -1 }); ent('rockgoblin', 530, R - 1, { face: -1 });
+  ent('deco', 520, R - 1, { kind: 'bones', v: 1 }); ent('deco', 534, R - 1, { kind: 'cairn' });
+  ent('check', 536, R - 1);
+  sign(538, R - 1, 'A RED MARK IS NO SHIELD\'S BUSINESS. GET OFF THE GROUND, OR OUT OF THE WAY.');
+  beam(549, 575, R - 10);                                                     /* the bowl's gantry, and its three stones */
+  crane(555, R - 9, 6, { arena: true }); crane(562, R - 9, 6, { arena: true }); crane(569, R - 9, 6, { arena: true });
+  ent('troll', 576, R - 1, { big: true, face: -1 });
+  ent('gate', 594, R - 1);
+  coins([510, R - 2], [526, R - 2], [588, R - 2]);
+
+  // EVERY LADDER IS HUNG LAST. Nothing is dug after this line.
+  net(270, B - 10, B - 1); net(330, B - 10, B - 1);                          /* the gantry legs */
+  net(368, B - 13, B - 1);                                                    /* the drift shaft */
+  net(549, R - 10, R - 1); net(575, R - 10, R - 1);                          /* the bowl's gantry legs */
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, stone,
+    music: 'musMountain', duskStart: 0.7, duskLen: 0.3,
+    quest: { n: 3, item: 'canary', name: 'CANARIES', npc: 'foreman', done: 'THE CAGES SING AGAIN', reward: 'relic', relic: 'lamp' },
+    palette: { sky: [[146, 172, 196], [236, 218, 184]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'staging',
+      haze: 'rgba(236,220,180,0.14)', murkCol: '#3a342c',
+      grass: '#8a9446', grassL: '#b0ba62', grassD: '#5a6230', dirt: '#a0947c', dirtL: '#bcb098', dirtD: '#6e6454',
+      canopy: ['#6a6258', '#8a8274', '#a89c88', '#d0c4ac'] },
+    weather: [],
+    ambient: [{ x0: 0, x1: 350 * TS, kind: 'wind' }, { x0: 350 * TS, x1: 440 * TS, kind: 'cave' }, { x0: 440 * TS, x1: 99999, kind: 'wind' }],
+    arena: { x0: 542 * TS, x1: 582 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 546 * TS, wallL: 541, wallR: 583, boss: 'troll',
+      music: 'boss3', tint: '#5a4a30', tintA: 0.1, fx: 'dust' },
+    mini: { x0: 186 * TS, x1: 216 * TS, floor: Y * TS, y0: B * TS, y1: (Y + 1) * TS, trigger: 190 * TS, wallL: 185, gate: 216, boss: 'greathound', name: 'THE QUARRY DOG' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -4794,6 +4958,8 @@ export const LEVELS = [
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   /* THE ROAD INLAND goes on through the goblin lord's own hunting grounds, and the Hound Master comes off the bench for it */
   { id: 'hunt', name: 'THE HUNT', sub: "the goblin lord's hunting grounds", rule: 'THE PACK IS HIS WEAPON, AND THE WHISTLE IS HIS TELL.', build: theHunt, needs: 'waymeet' },
+  /* THE ROAD INLAND, UP: after the Hunt, the pass over the hill, and the troll that was benched for want of a hill to throw. */
+  { id: 'quarry', name: 'THE QUARRY PASS', sub: 'the road inland, through the hill', rule: 'THE HILL THROWS WHAT IT CAN LIFT.', build: quarryPass, needs: 'hunt' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -4874,6 +5040,7 @@ const DRESS = {
   lamplit: [['cityWeed', 3], ['shellDrift', 2], ['lampWreck', 2], ['sealDrift', 2], ['drownedCart'], ['column', 2]],
   underleaf: [['barrels'], ['wares'], ['fence', 2], ['cart'], ['well'], ['lanternPost'], ['beehive']],
   undercrown: [['barrels'], ['wares'], ['bones', 2], ['cairn'], ['stone', 3], ['cart'], ['spearRack']],
+  quarry: [['stone', 3], ['cairn'], ['bones', 2], ['cart'], ['barrels'], ['wares', 2], ['fence', 2], ['rock', 3]],
   deep: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['shellDrift', 2], ['seaChest']],
   longwater: [['coralTuft', 3], ['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['pierPost'], ['netPoles']],
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
@@ -4891,6 +5058,7 @@ const GARRISON = {
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
   longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
   reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
+  quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 6], ['scout', 6], ['tideguard', 5], ['marine', 3], ['boarder', 3]],   // one ship in one storm, and eight creatures on it
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown

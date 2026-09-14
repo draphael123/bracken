@@ -60,7 +60,8 @@ const THROWS_SOMETHING_ELSE = new Set(['updateForgemaster|hurlTell', 'updateForg
   'updatePitWarden|roofTell', 'updateForgemaster|anvilTell',   // hammer rocks: no shield turns the roof
   'updateForgemaster|breathTell',   // fires: the flame on the floor is unblockable
   'updateGQueen|chandTell',         // the chandelier: a crush
-  'updateGrandmother|throwTell']);  // her sticks fly noBlock
+  'updateGrandmother|throwTell',   // her sticks fly noBlock
+  'updateHillTroll|ripTell']);     // a crane stone, rolled along the floor: no shield turns it
 // THE QUIET WINDUPS. A tell that throws NO blow at all - she listens, he calls, the square floods - wears no
 // mark: a mark is a promise about your shield, and there is nothing here for the shield to do.
 const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|darkTell', 'updateLampreeve|snuffTell',
