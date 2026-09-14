@@ -499,7 +499,7 @@ did not belong on.
 | Boss | Code | Why it is benched | Before it comes back |
 | --- | --- | --- | --- |
 | THE HOUND MASTER | `t: 'master'`, `updateMaster` (mounted, whistles pups, flank/pincer calls) | Kingswood already has the Great Hound; two kennel fights in one arc | A kennel or hunt level of its own; its CHARGE is now a yellow `!` (blockable) |
-| THE MASTHEAD | `t: 'sailer'` mini, `MINI_NAME.sailer` | The flotilla has the Quartermaster and the Captain already | A rigging/sky-ship level where the wind is the arena |
+| THE MASTHEAD | `t: 'sailer'` mini, `MINI_NAME.sailer` | The flotilla has the Quartermaster and the Captain already | **Came back** as his own boss, `t: 'masthead'` / `updateMasthead`, at the end of THE SKY SHIP (the sheet winches turn the arena's wind on him). The big `sailer` mini stays benched |
 | THE HILL TROLL (big) | `t: 'troll', big: true` (30x36, 3.4x HP) | The scree and moor trolls are regulars; the big one had no room to throw in | A quarry or pass with boulders to answer his |
 | THE SUNCATCHER | `updateSuncatcher` | Removed from the Scree: it did not fit the path and its model is poor | A FROST level, a heavy rework, and a new sprite — not a reskin |
 
