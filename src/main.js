@@ -2725,9 +2725,9 @@ function addHurtPose(set) { if (!set || !set.R || !set.R.length || set.hurtMade)
   set.R.push(c); if (set.L) set.L.push(flipX(c));
   if (set.white && set.white.R) { const w = whiten(c); set.white.R.push(w); if (set.white.L) set.white.L.push(flipX(w)); }
   set.hurtMade = true; }
-const MADE_HURT = ['tideguard', 'sailor', 'angler', 'goat', 'hearthgob', 'brute', 'spider', 'thorn', 'heavy', 'soldier'];
+const MADE_HURT = ['sailor', 'angler', 'goat', 'hearthgob', 'spider', 'thorn'];   /* the tideguard, brute, heavy and soldier have theirs drawn in their bakers */
 for (const t of MADE_HURT) addHurtPose(SPR[t]);
-const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', ...MADE_HURT]);
+const HAS_HURT = new Set(['sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', 'tideguard', 'brute', 'heavy', 'soldier', ...MADE_HURT]);
 const COLS = { swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   closedhelm: ['#c9d1dc', '#9a3a3a', '#e0b040'],
@@ -2799,7 +2799,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   }
   /* A PIERCING BLOW (the crossbow bolt) goes through a guard that was already up: only a guard raised as it lands - a parry - turns it */
   const pierced = pierce && P.block && front && !unblockable && !(P.standT > 0 || (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11));
-  if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.clank(); }
+  if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
   if (P.block && front && !unblockable && !pierced) {
     const perfect = P.standT > 0 || (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11), bc = perfect ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));   /* in THE STAND every block is a perfect guard */
     gainResolve(perfect ? 20 : 8);
@@ -5010,7 +5010,7 @@ function updateTroop(e, dt) {
     else if (e.mode === 'windUp') { want = 0; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; e.vx = e.face * 110; SFX.slash(); SFX.heavy();
       if (!P.dead && Math.sign(d) === e.face && ad < 50 && dy < 24) { const res = damagePlayer(e.x, DMG.heavySweep); if (res === 'blocked') { e.parried = 1; e.stagger = 1; e.mode = 'rest'; e.modeT = 1.1; P.vx = e.face * 200; number(e.x, e.y - e.h - 10, 'OFF BALANCE', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 240; P.vy = -120; } } } }
     /* THE GRIP: a shield held up in front of a man in plate is a handle. He takes it and throws what is holding it. */
-    else if (e.mode === 'grabTell') { want = 0; if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.35; SFX.throwWhoosh(); SFX.clank();
+    else if (e.mode === 'grabTell') { want = 0; if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.35; SFX.grip();
       if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 24) { const res = damagePlayer(e.x, DMG.heavyGrab, { unblockable: true, up: true });
         if (res === 'hit') { P.vx = -e.face * 240; P.vy = -210; P.ground = false; P.block = false; number(P.x, P.y - 28, 'THROWN', '#ff6b6b'); shakeCam(4); } } } }
     else if (e.mode === 'slam') { want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 1.3; e.cd = 1.2; } }
@@ -5592,7 +5592,7 @@ function updateQuarter(e, dt) {
     case 'stride': { e.face = Math.sign(d) || e.face;
       e.slashT -= dt; e.shotT -= dt; e.stanceT = (e.stanceT === undefined ? 5 : e.stanceT) - dt;
       if (sameDeck && ad < 200) want = ad > 34 ? e.face * (p3 ? 92 : 74) : -e.face * 40; else want = Math.sign((P.x < D.x0 ? D.x0 : P.x > D.x1 ? D.x1 : P.x) - e.x) * 60;
-      if (sameDeck && ad < 56 && e.stanceT <= 0 && !e.guard) { e.stanceT = p3 ? 5 : 7; e.mode = 'stanceTell'; e.modeT = 0.9; e.flash = 0; number(e.x, e.y - 46, '!!', '#ff6b6b'); number(e.x, e.y - 34, 'EN GARDE', '#ff9a5c'); SFX.clank(); }
+      if (sameDeck && ad < 56 && e.stanceT <= 0 && !e.guard) { e.stanceT = p3 ? 5 : 7; e.mode = 'stanceTell'; e.modeT = 0.9; e.flash = 0; number(e.x, e.y - 46, '!!', '#ff6b6b'); number(e.x, e.y - 34, 'EN GARDE', '#ff9a5c'); SFX.enGarde(); }
       else if (sameDeck && ad < 42 && e.slashT <= 0) { e.mode = 'slashTell'; e.modeT = p3 ? 0.3 : 0.42; e.slashT = p3 ? 1.5 : 2.2; number(e.x, e.y - 34, '!', '#ffd36b'); SFX.charge(); }
       else if (e.shotT <= 0 && ad < 300 && (ad > 40 || !sameDeck)) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p3 ? 0.45 : 0.6; e.shotT = p3 ? 2 : 2.8; e.aimY = P.y - 9; number(e.x, e.y - 34, 'TAKING AIM', '#ff9a5c'); }
       break; }
@@ -5602,7 +5602,7 @@ function updateQuarter(e, dt) {
     /* EN GARDE. She stops and offers you the blade. Cut into it and she answers, and nothing turns her answer; wait her out
        and the point drops, and that cut is free. */
     case 'stanceTell': { e.vx = 0; e.face = Math.sign(d) || e.face;
-      if (e.flash > 0.02 && !P.dead) { e.mode = 'riposte'; e.modeT = 0.35; SFX.foeSlash(); SFX.clank(); shakeCam(3); sparks(e.x + e.face * 10, e.y - 16, e.face, 6);
+      if (e.flash > 0.02 && !P.dead) { e.mode = 'riposte'; e.modeT = 0.35; e.ripostes = (e.ripostes || 0) + 1; SFX.riposte(); shakeCam(3); sparks(e.x + e.face * 10, e.y - 16, e.face, 6);
         if (Math.sign(d) === e.face && ad < 58 && Math.abs(P.y - e.y) < 30) { const res = damagePlayer(e.x, DMG.quarterRiposte, { unblockable: true }); if (res === 'hit') { P.vx = e.face * 260; P.vy = -120; number(P.x, P.y - 28, 'RIPOSTE', '#ff6b6b'); } }
         break; }
       if (e.modeT <= 0) { e.mode = 'reel'; e.modeT = 0.7; e.stagger = 0.7; number(e.x, e.y - 34, 'THE POINT DROPS', '#8fd160'); } break; }
@@ -6528,7 +6528,7 @@ function updatePitWarden(e, dt) {
     case 'roof': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.7; } break;
     /* THE RUBBLE. What his pick took out of the floor he shovels back at you: the pit, spent twice. */
     case 'rubbleTell': want = 0; e.face = Math.sign(d) || e.face; if (Math.random() < dt * 20) dust(e.x + e.face * 18, floor, 2);
-      if (e.modeT <= 0) { e.mode = 'rubble'; e.modeT = 0.5; SFX.throwWhoosh(); SFX.stone(); shakeCam(2);
+      if (e.modeT <= 0) { e.mode = 'rubble'; e.modeT = 0.5; SFX.rubble(); shakeCam(2);
         const n = p2 ? 4 : 3;
         for (let k = 0; k < n; k++) { const sx = e.x + e.face * 16, sy = e.y - 20, tt = 0.7 + k * 0.08, tx = P.x + [0, -22, 22, 44][k], G = 520;
           seeds.push({ x: sx, y: sy, vx: (tx - sx) / tt, vy: ((P.y - 10) - sy) / tt - 0.5 * G * tt, g: G, dead: false, life: 3, rubble: true }); } }
@@ -6676,7 +6676,7 @@ function updateRoadman(e, dt) {
     switch (e.mode) {
       case 'swingTell': want = 0;
         /* THE FEINT. He shows you the poleaxe and does not throw it: a guard raised on the first beat is a guard held on the second, and a held guard is not an answer */
-        if (e.modeT <= 0 && e.feint) { e.feint = false; e.modeT = 0.3; e.face = Math.sign(d) || e.face; number(e.x, e.y - e.h - 22, 'A FEINT', '#ff9a5c'); SFX.clank(); break; }
+        if (e.modeT <= 0 && e.feint) { e.feint = false; e.modeT = 0.3; e.face = Math.sign(d) || e.face; number(e.x, e.y - e.h - 22, 'A FEINT', '#ff9a5c'); SFX.feint(); break; }
         if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.28; SFX.slash(); SFX.heavy(); e.vx = e.face * 90;
           if (!P.dead && Math.sign(d) === e.face && ad < 44 && dy < 24) {
             const res = damagePlayer(e.x, DMG.hedgeSwing);
@@ -6810,14 +6810,14 @@ function updateClosedHelm(e, dt) {
     /* THE SHOULDER: keep your distance from a man in plate and he closes it for you. Take it on the beat and he is as open
        as after the cut; let him go past you and the wall of the square does the same. */
     case 'rushTell': want = 0; e.face = Math.sign(d) || e.face; if (Math.random() < dt * 20) dust(e.x - e.face * 10, floor, 2);
-      if (e.modeT <= 0) { e.mode = 'rush'; e.modeT = 1.2; e.rushHit = false; SFX.throwWhoosh(); SFX.heavy(); }
+      if (e.modeT <= 0) { e.mode = 'rush'; e.modeT = 1.2; e.rushHit = false; SFX.shoulder(); SFX.heavy(); }
       break;
     case 'rush': { want = e.face * (p2 ? 230 : 200); e.vx = want;
       if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 22 && Math.abs(P.y - e.y) < 26) { e.rushHit = true;
         const res = damagePlayer(e.x, DMG.helmRush, { up: true });
         if (answered(res)) { e.vx = 0; OPEN('rush'); break; }
         if (res === 'hit') { P.vx = e.face * 280; P.vy = -160; P.ground = false; } }
-      if ((e.face > 0 && e.x >= A.x1 - 22) || (e.face < 0 && e.x <= A.x0 + 22)) { e.vx = 0; e.mode = 'reel'; e.modeT = 1.0; e.stagger = 1.0; e.open = 1.0;
+      if ((e.face > 0 && e.x >= A.x1 - 22) || (e.face < 0 && e.x <= A.x0 + 22)) { e.vx = 0; e.mode = 'reel'; e.modeT = 1.0; e.stagger = 1.0; e.open = 1.0; e.wallOpens = (e.wallOpens || 0) + 1;
         SFX.heavy(); SFX.clank(); shakeCam(6); dust(e.x + e.face * 14, floor, 10); number(e.x, e.y - e.h - 14, 'INTO THE WALL', '#8fd160'); }
       else if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; }
       break; }
@@ -6880,7 +6880,7 @@ function updateDrownedKing(e, dt) {
        and take it on the shield, or be out of its reach altogether. */
     case 'anchorTell': want = 0; e.face = Math.sign(d) || e.face;
       if (Math.random() < dt * 24) parts.push({ x: e.x - e.face * 20, y: e.y - 40 - Math.random() * 10, vx: 0, vy: 10, life: 0.3, max: 0.3, col: '#9aa39a', size: 1, grav: 0 });
-      if (e.modeT <= 0) { e.mode = 'anchor'; e.modeT = 0.45; SFX.throwWhoosh(); SFX.rattle(1); shakeCam(3);
+      if (e.modeT <= 0) { e.mode = 'anchor'; e.modeT = 0.45; SFX.anchorSwing(); shakeCam(3);
         for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; parts.push({ x: e.x + Math.cos(a) * 84, y: e.y - 30 + Math.sin(a) * 28, vx: -Math.sin(a) * 70, vy: Math.cos(a) * 20, life: 0.3, max: 0.3, col: '#c9d1dc', size: 2, grav: 0 }); }
         const air = P.y < floor - 12;
         if (!P.dead && ((air && ad < 104 && P.y > e.y - 96) || (!air && ad < 46))) { const res = damagePlayer(e.x, DMG.kingAnchor, { up: true });

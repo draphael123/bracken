@@ -360,7 +360,10 @@ export function bakeTideguard() {
     arms: { far: [[X - 1, 19], [X + 1, 18]], near: [[X - 3, 19], [X - 6, 18]] }, tri: { b: [X - 20, 18], t: [X + 4, 18] } });
   const thrust = frame({ dx: 2, dy: 1, hx: 1, glare: true, legs: { far: [[X - 3, 23], [X - 6, FL - 1]], near: [[X + 7, 22], [X + 8, FL - 1]] },
     arms: { far: [[X + 2, 17], [X + 4, 15]], near: [[X + 6, 16], [X + 10, 15]] }, tri: { b: [X - 5, 15], t: [X + 20, 15] } });
-  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, thrust], X + 1, H + 1, 10, 20);
+  /* hurt: knocked back a step, the helm thrown back, the trident's head tipped away over his shoulder */
+  const hurt = frame({ dx: -2, dy: 1, hx: -2, legs: { far: [[X - 5, 23], [X - 7, FL - 1]], near: [[X + 1, 23], [X + 2, FL - 1]] },
+    arms: { far: [[X - 6, 17], [X - 8, 15]], near: [[X, 19], [X + 3, 21]] }, tri: { b: [X + 4, 26], t: [X - 8, 3], back: true } });
+  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, thrust, hurt], X + 1, H + 1, 10, 20);
 }
 
 // ---------- TIDE HERALD ----------

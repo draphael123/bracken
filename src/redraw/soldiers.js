@@ -123,14 +123,19 @@ export function bakeSoldier() {
     '.............yss...',
     '...............ss..',
     '.................sl'];
+  /* hurt: knocked back off the line of the blow - the sword arm thrown out behind him, the shield sagging, eyes screwed shut */
+  const ARM_FLUNG = ['..mM', '.mM.', 'gG..'];
+  const SWORD_FLUNG = ['s....', '.s...', '..sy.', '...yW'];
+  const HEAD_HURT = HEAD.map((r, i) => (i === 4 ? 'hgGSSggGoSg..' : r));
   const frame = ({ legs, dx = 0, dy = 0, hx = 0, pose = 'walk', sh = [15, 11] }) => {
     const G = blank(W, H);
     if (pose === 'walk') { stamp(G, 3 + dx, 15 + dy, SWORD_LOW); stamp(G, 7 + dx, 12 + dy, ARM_LOW); }
+    if (pose === 'hurt') { stamp(G, 1 + dx, 13 + dy, SWORD_FLUNG); stamp(G, 5 + dx, 12 + dy, ARM_FLUNG); }
     if (pose === 'tell') stamp(G, 2 + dx, 0, TELL);
     if (pose === 'slash') stamp(G, sh[0], sh[1], SHIELD);
     const L = LEGS[legs]; stamp(G, 8 + dx, H - L.length, L);
     stamp(G, 7 + dx, 12 + dy, TORSO);
-    stamp(G, 6 + dx + hx, 5 + dy, HEAD);
+    stamp(G, 6 + dx + hx, 5 + dy, pose === 'hurt' ? HEAD_HURT : HEAD);
     if (pose !== 'slash') layer(G, g => stamp(g, sh[0], sh[1], SHIELD));
     if (pose === 'slash') layer(G, g => stamp(g, 7 + dx, 12 + dy, SLASH));
     const c = q(G);
@@ -142,6 +147,7 @@ export function bakeSoldier() {
     frame({ legs: 'bent', dy: 1, sh: [14, 8] }),
     frame({ legs: 'bent', dx: -1, hx: -1, pose: 'tell', sh: [13, 12] }),
     frame({ legs: 'lunge', dx: 1, dy: 1, hx: 1, pose: 'slash', sh: [3, 12] }),
+    frame({ legs: 'bent', dx: -1, dy: 1, hx: -2, pose: 'hurt', sh: [14, 13] }),   /* 7 hurt: the LAST frame, like every hurt pose */
   ], 14, 23, 10, 14);
 }
 // ---------- JAVELINEER ----------
@@ -327,5 +333,8 @@ export function bakeHeavyKnight() {
     debris: [[X + 17, 32, ['.d', 'dD']], [X + 22, 33, ['d.', 'Dd']], [X + 19, 30, ['dD']]] });
   const guard = frame({ dy: 1, legs: L(1, [-1, -3, -4], [1, 3, 4]),
     arms: { far: [[X - 2, 28], [X + 10, 28]], near: [[X + 9, 27], [X + 10, 25]] }, sw: { at: [X + 10, 25], deg: -90, len: 15, front: true } });
-  return pack([f0, f1, f2, f3, raise, slam, guard], X + 1, H + 1, 16, 22);
+  /* hurt: rocked back on his heels, the helm snapped back, the greatsword arm flung up and the point off the ground */
+  const hurt = frame({ dx: -2, hx: -3, dy: 1, legs: L(1, [-2, -4, -6], [0, 2, 2]),
+    arms: { far: [[X - 12, 22], [X - 15, 20]], near: [[X + 4, 25], [X + 1, 29]] }, sw: { at: [X - 15, 20], deg: 250, len: 15 } });
+  return pack([f0, f1, f2, f3, raise, slam, guard, hurt], X + 1, H + 1, 16, 22);
 }

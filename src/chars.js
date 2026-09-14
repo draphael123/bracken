@@ -594,7 +594,10 @@ export function bakeBrute() {
   const walk = spr(low([...pad, ...head, ...shldr, ...body, ...legsB]));
   const raise = spr(['.......cccc.......', '......cCCCCc......', '......cCCCCc......', '.......cccc.......', ...head, ...shldr, ...body, ...legsA]);
   const swing = spr([...pad, ...head, ...shldr, body[0], body[1].slice(0, 15) + 'ccc', body[2].slice(0, 14) + 'cCCc', body[3].slice(0, 14) + 'ccc.', ...legsB]);
-  return pack([stand, walk, raise, swing], 10, 21, 14, 18);
+  /* hurt: the head snapped back and the eyes shut, the upper body leaning off the blow, the club flung up behind him */
+  const lean = r => r.slice(1) + '.';
+  const hurt = spr(['cc................', 'cCc...............', '.cCc..............', '..cc..............', ...head.map((r, i) => lean(i === 2 ? '...ggGGggggGGgg...' : r)), ...shldr.map(lean), ...body, ...legsA]);
+  return pack([stand, walk, raise, swing, hurt], 10, 21, 14, 18);
 }
 // War hound — low, fast. 14×7. Frames: run1, run2, leap.
 export function bakeHound(pal = {}) {

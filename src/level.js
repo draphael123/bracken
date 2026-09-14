@@ -942,6 +942,7 @@ function kingswood() {
   K.ent('soldier', 96, 19, { face: -1 }); K.ent('soldier', 106, 19, { face: -1 });
   K.ent('heavy', 110, 19, { face: -1 }); K.ent('heavy', 126, 19, { face: -1 });
   K.ent('javelin', 114, 19, { face: -1 });
+  K.ent('sign', 104, 19, { text: 'THE PLATE. HOLD YOUR SHIELD UP IN FRONT OF A HEAVY KNIGHT AND HE TAKES HOLD OF IT - A DOUBLE MARK, AND THE SHIELD IS NO ANSWER. AND A SPEAR THAT MISSES YOU AND FINDS A WALL STAYS IN IT A WHILE: STAND ON IT.' });
   K.ent('stormshaman', 101, 16, { face: -1 }); K.ent('stormshaman', 119, 16, { face: -1 });
   /* THE WALL WALK: the roof road off the hall, carried across the open to the canopy - no gap over three, no step over two */
   K.plat(86, 12, 3); K.plat(90, 10, 3); K.plat(95, 12, 3); K.plat(99, 10, 2); K.plat(103, 11, 3);
@@ -2456,6 +2457,7 @@ function highcrown() {
   plat(22, 52, 53);
   stair([[30, 62], [34, 60], [38, 58], [42, 56], [46, 54]]);
   ent('archer', 60, 51, { face: -1 }); ent('javelin', 72, 51, { face: -1 });
+  ent('sign', 50, 51, { text: 'THE SKIRMISHERS THROW WHERE YOU STAND. A SPEAR THAT FINDS THE WALL INSTEAD STANDS IN IT FOR A FEW BREATHS, AND A SPEAR IN A WALL IS A STEP UP.' });
   ent('stray', 26, 51, { kind: 'seal' });
   // the gatehouse top, off the wall walk: a silver among the crenels
   plat(22, 50, 3); plat(22, 48, 3); plat(22, 46, 3); coins([13, 43], [16, 43], [19, 43]); // (its silver went to the watchtower on the road up)
@@ -3674,7 +3676,7 @@ function theFlotilla() {
   net(196, 197, 15, 23); net(210, 211, 15, 23); net(224, 225, 15, 23);
   for (let x = 197; x <= 224; x++) set(x, 14, T.ONEWAY);
   coins([200, 13], [210, 13], [220, 13]);
-  ent('sign', 194, 24, { text: 'MARINES IN HER RIGGING: THEY SHOOT DOWN THE DECK, SO DO NOT WALK IT. THE LINES GO UP EITHER SIDE OF THEM.' });
+  ent('sign', 194, 24, { text: 'MARINES IN HER RIGGING: THEY SHOOT DOWN THE DECK, AND A SHOT THAT MISSES SKIPS OFF THE PLANKS AND COMES UP AT YOU AGAIN. DO NOT WALK IT. THE LINES GO UP EITHER SIDE OF THEM.' });
   ent('lookout', 188, 24, { face: 1 });
   ent('check', 186, 24);
   coins([190, 24], [196, 24], [204, 24], [216, 24], [226, 24], [236, 24]);
@@ -4112,6 +4114,7 @@ function theLamplitStreet() {
   lampUp(90); lampUp(132, true); lampUp(172);
   ent('wight', 98, UP - 1, { face: -1 }); ent('tideguard', 154, UP - 1, { face: -1 });
   ent('scout', 114, ST - 1, { face: -1 }); ent('watch', 136, ST - 1, { face: 1 }); ent('wight', 100, ST - 1, { face: -1 });
+  ent('sign', 108, ST - 1, { text: 'THE WATCH. STAND OFF AND HIS SPEAR COMES STRAIGHT AT YOU. GET INSIDE ITS REACH AND HE TAKES YOUR FEET WITH THE BUTT OF IT INSTEAD - JUMP THAT ONE.' });
   ent('eel', 158, 33); ent('eel', 172, 31); ent('urchin', 164, ST - 1); ent('crab', 178, ST - 1); ent('urchin', 186, ST - 1);
   ent('snuffer', 120, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
   ent('stray', 128, ST - 1, { kind: 'lamp' });  // the first of his three lamps, down on the stones
@@ -4428,6 +4431,7 @@ function waymeet() {
   for (const x of [112, 160]) ent('thief', x, R - 1, { face: 1 });
   for (const x of [152, 194]) ent('runner', x, R - 1, { face: -1 });
   ent('hedgeknight', 128, R - 1, { face: -1 }); ent('hedgeknight', 184, R - 1, { face: -1 });
+  sign(120, 'THE HEDGE KNIGHT DOES NOT ALWAYS THROW THE FIRST SWING HE SHOWS YOU. A GUARD RAISED ON THE FEINT IS A GUARD STILL HELD WHEN THE REAL ONE LANDS - AND A HELD GUARD IS NOT AN ANSWER. WAIT FOR THE SECOND BEAT.');
   ent('pike', 144, R - 1, { face: -1 }); ent('hound', 176, R - 1, { face: -1 });
   ent('check', 158, R - 1);
   for (const x of [102, 140, 176]) ent('deco', x, R - 10, { kind: 'bunting', hang: true });   /* left up from the fair */
