@@ -1696,7 +1696,7 @@ const CRAG_NODES = [
   { id: 'crown', kind: 'level', level: 10, x: 50, y: 40, name: 'HIGHCROWN' },
   { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 26, y: 66, name: 'THE UNDERCROWN' },   /* straight down out of her cellars: off the road until four in five of her garrison are down */
 ];
-const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [54, 162], [22, 140], [18, 100], [30, 66], [50, 40], [26, 66]];
+const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [54, 162], [22, 140], [18, 100], [30, 66], [50, 40], [38, 54], [26, 66], [38, 54], [50, 40]];   /* the Undercrown hangs off Highcrown on a spur of its own: out and back, not on the road */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: 11, x: 152, y: 104, name: 'THE LONG WATER' },
   { id: 'reef', kind: 'level', level: 12, x: 96, y: 72, name: 'THE SHIPWRECK REEF' },
   { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 74, y: 56, name: 'THE CHANDLER' },
@@ -1712,7 +1712,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: 11, x: 152, y: 104
 const COAST_PATH = [[48, 172], [74, 160], [108, 150], [134, 132], [152, 104], [136, 92], [118, 84], [96, 72], [78, 62], [74, 56], [62, 52], [50, 44], [38, 30], [22, 16], [16, 32], [18, 52], [34, 68], [60, 86], [44, 102], [30, 116], [44, 102], [60, 86], [84, 104], [108, 118], [130, 126], [150, 132], [176, 126], [196, 118], [212, 110], [232, 104], [252, 92], [272, 86], [292, 80]]; // down off Highcrown's back face to the river, the town, and out over the water to the reef
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES);
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH);
-const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 40, 45, 48, 49, 52, 54, 56, 58, 60, 66, 69, 71, 73]; // PATH index of each node: wood 0-5, the crags, then the coast
+const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 48, 51, 52, 55, 57, 59, 61, 63, 69, 72, 74, 76]; // PATH index of each node: wood 0-5, the crags, then the coast
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172]]]);
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
@@ -1808,7 +1808,7 @@ function secretWants(lv) {
 function mapGo(dir) {
   if (map.walking) return;
   let nx = map.node + dir;
-  while (nx >= 0 && nx < NODES.length && nodeSecret(NODES[nx])) nx += dir;   /* walk straight past what you have not found */
+  while (nx >= 0 && nx < NODES.length && (nodeSecret(NODES[nx]) || (NODES[nx].kind === 'level' && LEVELS[NODES[nx].level].hidden && nodeLocked(NODES[nx])))) nx += dir;   /* walk straight past what you have not found - and past a found secret you have not earned: the road does not wait on it */
   if (nx < 0 || nx >= NODES.length) { SFX.buzz(); return; }
   if (nodeLocked(NODES[nx]) && NODES[nx].kind === 'level') { const lv = LEVELS[NODES[nx].level];
     SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, lv.secret ? 'NOT YET' : 'LOCKED', '#9aa39a'); return; }
@@ -11995,6 +11995,8 @@ function drawWorld(cx, cy, showPlayer) {
     for (let ty = 0; ty < LH; ty++) for (let tx = tx0; tx <= tx1; tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; if ((L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 4 && ty <= y1)) continue; if (L.arena && tx * TS >= L.arena.x0 && tx * TS < L.arena.x1) continue; const ya = ty * TS - cy; for (const rx of [tx * TS + 3, (tx + n) * TS - 4]) { g.moveTo(Math.round(rx - cx) + 0.5, Math.max(-2, ya - 140)); g.lineTo(Math.round(rx - cx) + 0.5, ya + 2); } }
     g.stroke();
   }
+  /* UNDERGROUND: a mine has no sky. The shafts and caverns showed the crags' sunset through the rock; the whole view is its own back wall first */
+  if (L.underground) drawRoom('earth', -(((cx % TS) + TS) % TS), -(((cy % TS) + TS) % TS), VW + TS, VH + TS, Math.floor(cx / TS), Math.floor(cy / TS));
   drawFacades(cx, cy);
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
@@ -12007,6 +12009,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
     const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0));
+    if (L.edgeLit && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = 'rgba(236,214,168,0.5)'; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = 'rgba(236,214,168,0.18)'; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see */
   }
   drawGroundLight(cx, cy, tx0, ty0);
   if (L.colosseum) drawArena(cx, cy);

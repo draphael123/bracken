@@ -2108,6 +2108,7 @@ function undercrown() {
   gallery(40, 86, 34, 4);
   ent('check', 50, 33);
   rail(50, 84, 34); ent('cart', 82, 33, { auto: true, dir: -1, speed: 110 });
+  boards(47, 49, 34);   /* a landing off the ladder: the gallery floor stopped three tiles short of it, over the drop, and every trip down was a jump from a rung */
   ent('minerlamp', 54, 33, { lit: true }); ent('minerlamp', 70, 33, { lit: true }); ent('minerlamp', 84, 33, { lit: true });
   ent('deco', 58, 33, { kind: 'barrels' });
   ent('sign', 52, 33, { text: 'THE PROPMAN KEEPS THE TIMBER UP. KILL THE MAN FIRST, THEN CUT THE WOOD.' });
@@ -2225,7 +2226,7 @@ function undercrown() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
-    timber: true, dark: 0.34,
+    timber: true, dark: 0.14, edgeLit: true, underground: true,   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
     duskStart: -1, duskLen: 1, music: 'musUnder', night: true, glowNight: true, nightA: 0.4,
     tall: { top: 10 * TS, bottom: 168 * TS },
     quest: { n: 3, item: 'lamp', name: 'DEAD MEN\'S LAMPS', npc: 'squire', done: 'THEY ARE ALL ACCOUNTED FOR', reward: 'relic', relic: 'soles' },
