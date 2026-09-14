@@ -1,0 +1,110 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>BRACKEN gallery</title>
+<style>
+  body { background:#14111c; color:#e8dcc0; font:12px monospace; margin:0; padding:12px 16px; }
+  h1 { font-size:14px; color:#ffd36b; margin:0 0 6px; }
+  h2 { color:#ffd36b; font-size:12px; margin:16px 0 4px; }
+  .bar { position:sticky; top:0; background:#14111c; padding:6px 0; z-index:2; display:flex; gap:12px; flex-wrap:wrap; align-items:center; border-bottom:1px solid #3a3448; }
+  .bar label { cursor:pointer; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; }
+  .f { text-align:center; }
+  .f canvas { image-rendering:pixelated; display:block; border:1px solid #3a3448; }
+  .f span { color:#9a8e74; font-size:10px; }
+  table { border-collapse:collapse; margin:6px 0 12px; }
+  td, th { border:1px solid #3a3448; padding:2px 6px; text-align:left; }
+  .bad { color:#ff9a9a; } .warn { color:#ffd36b; }
+  #frame { position:absolute; left:-9999px; width:320px; height:180px; border:0; }
+</style></head><body>
+<!-- THE GALLERY. Every creature the game bakes, every frame of it, at the size it is played at and at four
+     times that, over the three grounds it is most often lost against - and a SILHOUETTE mode, because at
+     this size a creature is its silhouette. It also scores every pair of foes by how much of their outlines
+     overlap when stood on the same spot, so "these two look the same" is a number and not a feeling.
+     Open it from the dev server: /tools/gallery.html  (?sil=1 starts in silhouette mode, ?only=goblin filters) -->
+<h1>BRACKEN — sprite gallery</h1>
+<div class="bar">
+  <label><input type="checkbox" id="sil"> silhouettes</label>
+  <label>ground <select id="bg"><option value="#2f4a2a">wood</option><option value="#3a2a44">dusk</option><option value="#16343a">sea</option><option value="#1a1a22">dark</option></select></label>
+  <label>filter <input id="only" size="12"></label>
+  <span id="status">loading the game…</span>
+</div>
+<div id="pairs"></div>
+<div id="out"></div>
+<iframe id="frame" src="../index.html"></iframe>
+<script type="module">
+import * as C from '../src/chars.js';
+const Q = new URLSearchParams(location.search);
+const $ = id => document.getElementById(id);
+$('sil').checked = Q.get('sil') === '1'; $('only').value = Q.get('only') || '';
+
+/* who is a FOE: people and props who stand about are not in the silhouette contest */
+const NOT_FOES = new Set(['mother', 'seed', 'bomb', 'folk', 'folk2', 'lamplighter', 'keeper', 'bard', 'oldknight', 'cook', 'dummy', 'shepherd',
+  'sheep', 'woodsman', 'ferryman', 'squire', 'elder', 'foreman', 'kite', 'squirrel', 'masterFoot', 'kingUp', 'bearer', 'spit', 'throne']);
+NOT_FOES.add('dog');
+/* the same creature on purpose: a palette, not a design. They are allowed to match. */
+const SAME = new Set(['hound~dog', 'hopper~hopper_blue', 'hopper~hopper_yellow', 'hopper_yellow~hopper_blue', 'weaver~spider']);
+const HEROES = [['knight', C.bakeKnight], ['pyro', C.bakePyro], ['paladin', C.bakePaladin], ['pirate', C.bakeFreebooter], ['reaper', C.bakeReaper]];
+
+function wait() { return new Promise(res => { const t = setInterval(() => { const B = $('frame').contentWindow.BK; if (B && B.SPR) { clearInterval(t); res(B); } }, 200); }); }
+
+/* the mask of one frame, stood on its anchor: a set of "x,y" relative to the feet */
+function maskOf(set, i) {
+  const c = set.R[i]; const g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data; const m = new Set();
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) m.add((x - set.ax) + ',' + (y - set.ay));
+  return m;
+}
+/* THE OVERLAP: intersection over union of two stood-up outlines, best over a few pixels of slide, so two
+   creatures one pixel apart in their anchors still count as the same shape */
+function overlap(a, b) {
+  let best = 0;
+  for (let dx = -2; dx <= 2; dx++) for (let dy = -1; dy <= 1; dy++) {
+    let inter = 0; for (const k of a) { const [x, y] = k.split(',').map(Number); if (b.has((x + dx) + ',' + (y + dy))) inter++; }
+    const u = a.size + b.size - inter; if (u) best = Math.max(best, inter / u);
+  }
+  return best;
+}
+
+function tile(c, scale, sil, bg) {
+  const o = document.createElement('canvas'); o.width = c.width * scale; o.height = c.height * scale;
+  const g = o.getContext('2d'); g.imageSmoothingEnabled = false; g.fillStyle = bg; g.fillRect(0, 0, o.width, o.height);
+  if (sil) { const t = document.createElement('canvas'); t.width = c.width; t.height = c.height; const tg = t.getContext('2d');
+    tg.drawImage(c, 0, 0); tg.globalCompositeOperation = 'source-in'; tg.fillStyle = '#000'; tg.fillRect(0, 0, t.width, t.height); c = t; }
+  g.drawImage(c, 0, 0, o.width, o.height); return o;
+}
+
+let SETS = [];
+function render() {
+  const sil = $('sil').checked, bg = $('bg').value, only = $('only').value.toLowerCase();
+  const out = $('out'); out.innerHTML = '';
+  for (const [name, set] of SETS) {
+    if (only && !only.split(',').some(o => o && (o.startsWith('=') ? name.toLowerCase().replace('hero ', '') === o.slice(1) : name.toLowerCase().indexOf(o) >= 0))) continue;
+    const frames = Array.isArray(set.R) ? set.R.map((c, i) => [i, c]) : Object.entries(set.R).flatMap(([k, v]) => (Array.isArray(v) ? v : [v]).map((c, i) => [k + i, c]));
+    const h = document.createElement('h2'); h.textContent = name + '  — ' + frames.length + ' frames, ' + frames[0][1].width + '×' + frames[0][1].height; out.appendChild(h);
+    const row = document.createElement('div'); row.className = 'row';
+    for (const [label, c] of frames) {
+      const d = document.createElement('div'); d.className = 'f';
+      d.appendChild(tile(c, 1, sil, bg)); d.appendChild(tile(c, 4, sil, bg));
+      const s = document.createElement('span'); s.textContent = label; d.appendChild(s); row.appendChild(d);
+    }
+    out.appendChild(row);
+  }
+}
+
+const B = await wait();
+$('status').textContent = 'measuring outlines…';
+const foes = Object.entries(B.SPR).filter(([k, v]) => v && Array.isArray(v.R) && v.R.length && !NOT_FOES.has(k));
+SETS = HEROES.map(([n, fn]) => ['HERO ' + n, fn()]).concat(Object.entries(B.SPR).filter(([, v]) => v && v.R).sort((a, b) => a[0] < b[0] ? -1 : 1));
+const masks = foes.map(([k, v]) => [k, maskOf(v, 0), v.R[0]]);
+const pairs = [];
+for (let i = 0; i < masks.length; i++) for (let j = i + 1; j < masks.length; j++) {
+  const a = masks[i], b = masks[j]; if (Math.min(a[1].size, b[1].size) / Math.max(a[1].size, b[1].size) < 0.55) continue;   /* a mouse is not a bear */
+  if (SAME.has(a[0] + '~' + b[0]) || SAME.has(b[0] + '~' + a[0])) continue;
+  const o = overlap(a[1], b[1]); if (o >= 0.5) pairs.push([a[0], b[0], o]);
+}
+pairs.sort((a, b) => b[2] - a[2]);
+window.GALLERY = { pairs, count: foes.length };
+$('pairs').innerHTML = '<h2>OUTLINES THAT OVERLAP (frame 0, stood on the anchor) — ' + foes.length + ' foes, ' + pairs.length + ' pairs ≥ 0.50</h2><table><tr><th>foe</th><th>foe</th><th>overlap</th></tr>' +
+  pairs.slice(0, 40).map(([a, b, o]) => '<tr><td>' + a + '</td><td>' + b + '</td><td class="' + (o >= 0.7 ? 'bad' : 'warn') + '">' + o.toFixed(2) + '</td></tr>').join('') + '</table>';
+$('status').textContent = SETS.length + ' sets';
+render();
+for (const id of ['sil', 'bg', 'only']) $(id).addEventListener('input', render);
+</script></body></html>

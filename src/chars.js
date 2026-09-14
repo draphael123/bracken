@@ -181,7 +181,12 @@ export function bakeKnight(skin = {}) {
       knightFrame({ legs: 'fall', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 2 }),
       knightFrame({ legs: 'fall2', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 4, sh[1] - 5], plume: 2 }),
     ],
-    land: knightFrame({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }),
+    // LANDING is two beats: the knees take it, then he stands up out of it
+    land: [knightFrame({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }), knightFrame({ legs: 'stand', dy: 1, sword: rest(1), plume: 1 })],
+    // THE TOP OF THE JUMP: legs tucked, the blade lifted, the plume settling - the one frame where he hangs
+    apex: knightFrame({ legs: 'jump2', dy: -1, sword: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 5], plume: 0 }),
+    // A SKID: turning at a run, heels dug in and leaning back against his own speed, the blade trailing
+    skid: knightFrame({ dx: -2, legs: 'wide', sword: [sh[0] - 1, sh[1] + 3, sh[0] - 6, sh[1] + 8], plume: 2 }),
     climb: [
       knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 0 }),
       knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 1 }),
@@ -205,7 +210,9 @@ export function bakeKnight(skin = {}) {
       knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], sword: [sh[0] + 4, sh[1] - 1, sh[0] + 15, sh[1] + 5], plume: 2 }),
       knightFrame({ dx: 3, legs: 'wide', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], sword: [sh[0] + 3, sh[1] + 4, sh[0] + 11, sh[1] + 15], plume: 0 }),
     ],
-    hurt: knightFrame({ dx: -1, dy: 1, legs: 'fall', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
+    // HURT is two beats too: the blow snaps him back, then he folds over it
+    hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
+      knightFrame({ dx: -2, dy: 2, legs: 'land', sword: [sh[0], sh[1] + 3, sh[0] + 4, sh[1] + 9], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', sword: rest(3) }),
     block: [
       knightFrame({ legs: 'wide', shield: true, sword: [sh[0] - 4, sh[1] + 3, sh[0] - 6, sh[1] + 10] }),
@@ -233,16 +240,21 @@ const shiftDown = (rows, n) => Array(n).fill('.'.repeat(rows[0].length)).concat(
 
 // Sprig — goblin walker. 10×10, four-frame walk with a head bob.
 export function bakeSprig() {
-  const head = ['...gggg...', '..gggggg..', '.geoggeog.', '.gggggggg.', '..gGGGGg..', '...gggg...'];
-  const cloth = ['..rrrrrr..', '..rrrrrr..'];
-  const legs = [['..GG..GG..', '.GG....GG.'], ['..GG.GG...', '..GG..GG..'], ['...GGGG...', '..GG..GG..'], ['..GG.GG...', '.GG....GG.']];
-  const frames = legs.map((l, i) => sprite([...(i & 1 ? shiftDown(head, 0) : head), ...cloth, ...l]));
-  // bob: frames 1 and 3 drop the head a pixel
-  const bobbed = legs.map((l, i) => i & 1 ? sprite(['..........', ...head.slice(0, 5), ...cloth, ...l]) : frames[i]);
-  const look = sprite([head[0], head[1], '.gggeogge.', head[3], head[4], head[5], ...cloth, ...legs[0]]);
-  // HURT: the head snaps back, the mouth opens, the knees give
-  const hurt = sprite(['..........', '...gggg...', '..gggggg..', '.goggggog.', '.ggg..ggg.', '..gGGGGg..', '..rrrrrr..', '.rrrrrr...', '.GG...GG..', 'GG.....GG.']);
-  return pack([...bobbed, look, hurt], 6, 11, 8, 10);
+  /* THE SPRIG is the goblin every other goblin is drawn from, and at ten pixels every one of them was the same
+     green head. So the plain one is the one with the EARS: they stand out past the head on both sides, and
+     every other goblin in the family covers them with whatever its job is. */
+  const w2 = r => '..' + r + '..';
+  const ears = (rows, drop = 0) => rows.map((r, i) => { const a = r.split(''), k = i - drop;
+    if (k === 1) { a[0] = 'G'; a[13] = 'G'; } if (k === 2) { a[1] = 'g'; a[2] = 'g'; a[11] = 'g'; a[12] = 'g'; } return a.join(''); });
+  const head = ['...gggg...', '..gggggg..', '.geoggeog.', '.gggggggg.', '..gGGGGg..', '...gggg...'].map(w2);
+  const cloth = ['..rrrrrr..', '..rrrrrr..'].map(w2);
+  const legs = [['..GG..GG..', '.GG....GG.'], ['..GG.GG...', '..GG..GG..'], ['...GGGG...', '..GG..GG..'], ['..GG.GG...', '.GG....GG.']].map(l => l.map(w2));
+  const blank = '..............';
+  const bobbed = legs.map((l, i) => sprite(i & 1 ? [blank, ...ears(head.slice(0, 5)), ...cloth, ...l] : [...ears(head), ...cloth, ...l]));
+  const look = sprite(ears([head[0], head[1], w2('.gggeogge.'), head[3], head[4], head[5]]).concat(cloth, legs[0]));
+  // HURT: the head snaps back, the mouth opens, the knees give - and the ears go down with it
+  const hurt = sprite(ears(['..........', '...gggg...', '..gggggg..', '.goggggog.', '.ggg..ggg.', '..gGGGGg..', '..rrrrrr..', '.rrrrrr...', '.GG...GG..', 'GG.....GG.'].map(w2), 1));
+  return pack([...bobbed, look, hurt], 8, 11, 8, 10);
 }
 
 // Shieldbearer — helmet, tabard, round wooden shield held out front (right). 14×14, four-frame walk.
@@ -405,15 +417,22 @@ function merge(a, b) { let s = ''; for (let i = 0; i < Math.max(a.length, b.leng
 
 // Goblin archer — hooded sprig with a shortbow. 12×12. Frames: idle, draw (bow bent, arrow nocked), walk1, walk2.
 export function bakeArcher() {
+  /* THE ARCHER is his BOW: a stave as tall as he is, strung and carried upright at his front, so the goblin
+     with a long curve standing off the side of him is the one that shoots. It was three pixels of stick. */
   const hood = ['....HHHH....', '...HHHHHH...', '..HHgeoggeH.', '..HHgggggg..', '...HgGGGg...'];
-  const bodyIdle = ['..bbbbbb.w..', '..bbbbbb.w..', '..rrrrrr.w..', '..GG..GG....', '.GG....GG...'];
-  const bodyDraw = ['..bbbbbbwww.', '..bbbbbbaaaw', '..rrrrrrwww.', '..GG..GG....', '.GG....GG...'];
-  const walk1 = ['..bbbbbb.w..', '..bbbbbb.w..', '..rrrrrr.w..', '..GG.GG.....', '..GG..GG....'];
-  const walk2 = ['..bbbbbb.w..', '..bbbbbb.w..', '..rrrrrr.w..', '...GGGG.....', '..GG..GG....'];
-  const P2 = Object.assign({}, EP, { H: '#3f5a33', b: '#6b4a2a', a: '#e8dcc0' });
+  const bodyIdle = ['..bbbbbb....', '..bbbbbb....', '..rrrrrr....', '..GG..GG....', '.GG....GG...'];
+  const bodyDraw = ['..bbbbbb....', '..bbbbbbaaaa', '..rrrrrr....', '..GG..GG....', '.GG....GG...'];
+  const walk1 = ['..bbbbbb....', '..bbbbbb....', '..rrrrrr....', '..GG.GG.....', '..GG..GG....'];
+  const walk2 = ['..bbbbbb....', '..bbbbbb....', '..rrrrrr....', '...GGGG.....', '..GG..GG....'];
+  const P2 = Object.assign({}, EP, { H: '#3f5a33', b: '#6b4a2a', a: '#e8dcc0', l: '#e8dcc0' });
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
   const hoodLook = [hood[0], hood[1], '..HHggeogge.', hood[3], hood[4]];
-  return pack([spr([...hood, ...bodyIdle]), spr([...hood, ...bodyDraw]), spr([...hood, ...walk1]), spr([...hood, ...walk2]), spr([...hoodLook, ...bodyIdle])], 6, 11, 8, 10);
+  const bow = (rows, drawn) => { const out = ['............', '............', ...rows].map(r => r.split(''));
+    const put = (y, x, ch) => { if (out[y] && (out[y][x] === '.' || ch === 'w')) out[y][x] = ch; };
+    put(0, 9, 'w'); put(1, 10, 'w'); for (let y = 2; y <= 9; y++) put(y, 11, 'w'); put(10, 10, 'w'); put(11, 9, 'w');
+    for (let y = 1; y <= 10; y++) put(y, drawn && y > 4 && y < 9 ? 8 : 9, 'l');
+    return out.map(a => a.join('')); };
+  return pack([spr(bow([...hood, ...bodyIdle])), spr(bow([...hood, ...bodyDraw], true)), spr(bow([...hood, ...walk1])), spr(bow([...hood, ...walk2])), spr(bow([...hoodLook, ...bodyIdle]))], 6, 13, 8, 10);
 }
 
 // Bird — scatters from bushes. 6×4, two wing frames.
@@ -661,11 +680,14 @@ const KG = Object.assign({}, EP, { h: '#5a4a3a', H: '#3a2e22', q: '#5a1a1a', Q: 
 const kspr = rows => outline(fromGrid(rows, KG, 1), OUT);
 // Thief — a goblin with a sack, hunched. 10×11. Frames: run1, run2, look.
 export function bakeThief() {
+  /* THE THIEF has already been somewhere: a SACK over his shoulder bigger than his head, riding up behind
+     him, so the goblin with a hump is the one that takes things. */
   const head = ['...gggg...', '..gggggg..', '.geoggeog.', '.gggggggg.', '..gGGGGg..'];
   const sack = ['.zzz.rrrr.', 'zzzzzrrrr.', 'zzzzzrrrr.', '.zzz.rrrr.'];
+  const hump = rows => ['.zzz......', 'zzzzz.....', 'zzzzzz....'].concat(rows.map((r, i) => { const a = r.split(''); if (i < 2) { if (a[0] === '.') a[0] = 'z'; if (a[1] === '.') a[1] = 'z'; } return a.join(''); }));
   const run1 = ['..GG.GG...', '.GG...GG..'], run2 = ['...GGG....', '..GG.GG...'];
-  const look = kspr([head[0], head[1], '.gggeogge.', head[3], head[4], ...sack, '..GG..GG..', '.GG....GG.']);
-  return pack([kspr([...head, ...sack, ...run1]), kspr([...head, ...sack, ...run2]), look], 6, 12, 8, 11);
+  const look = kspr(hump([head[0], head[1], '.gggeogge.', head[3], head[4], ...sack, '..GG..GG..', '.GG....GG.']));
+  return pack([kspr(hump([...head, ...sack, ...run1])), kspr(hump([...head, ...sack, ...run2])), look], 6, 15, 8, 11);
 }
 // Pikeman — a goblin behind a long pike. 22×12. Frames: guard, thrust.
 export function bakePike() {
@@ -1161,14 +1183,18 @@ export function bakeLamplighter() {
   return pack([idle, talk], 7, 17, 10, 16);
 }
 export function bakeMiner() {
+  /* THE MINER carries his PICK over his shoulder, head up above his cap, so his outline has a hook on top of
+     it that nothing else in the family has. When he digs, the pick is where it always was: in his hands. */
   const MP = Object.assign({}, KG, { c: '#c9b27c', C: '#8a7a5a', y: '#ffd36b', i: '#8a919c', I: '#5a6270' });
   const mspr = rows => outline(fromGrid(rows, MP, 1), OUT);
+  const E = '............';
+  const shoulder = rows => ['.......IIII.', '......I..i..', '.........i..'].concat(rows.map((r, i) => { const a = r.split(''); if (i < 6 && a[9] === '.') a[9] = 'i'; return a.join(''); }));
   const head = ['....y.......', '...cccccc...', '..cCCCCCCc..', '..ggeoggeog.', '...gggggg...', '...gGGGGg...'];
-  const walk1 = mspr([...head, '..xxxxxxx.i.', '.xxxxxxxx.i.', '..xxxxxx..i.', '..GG..GG....', '.GG....GG...']);
-  const walk2 = mspr([...head, '..xxxxxxx.i.', '.xxxxxxxx.i.', '..xxxxxx..i.', '...GGGG.....', '...GG.GG....']);
-  const dig = mspr([...head, '..xxxxxxxxx.', '.xxxxxxxxxxi', '..xxxxxx..II', '..GG..GG..I.', '.GG....GG...']);
-  const swing = mspr(['....y.......', '...cccccc...', '..cCCCCCCcii', '..ggeoggeoII', '...gggggg.I.', '...gGGGGgxI.', '..xxxxxxxxx.', '.xxxxxxxxx..', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
-  return pack([walk1, walk2, dig, swing], 7, 12, 10, 11);
+  const walk1 = mspr(shoulder([...head, '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '..GG..GG....', '.GG....GG...']));
+  const walk2 = mspr(shoulder([...head, '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '...GGGG.....', '...GG.GG....']));
+  const dig = mspr([E, E, E, ...head, '..xxxxxxxxx.', '.xxxxxxxxxxi', '..xxxxxx..II', '..GG..GG..I.', '.GG....GG...']);
+  const swing = mspr([E, E, E, '....y.......', '...cccccc...', '..cCCCCCCcii', '..ggeoggeoII', '...gggggg.I.', '...gGGGGgxI.', '..xxxxxxxxx.', '.xxxxxxxxx..', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
+  return pack([walk1, walk2, dig, swing], 7, 15, 10, 11);
 }
 // ============================================================================================
 // THE UNDERCROWN, three of them.
@@ -1315,12 +1341,17 @@ export function bakeCrow() {
 
 // HORNBLOWER — a goblin with a ram's horn. Frames: idle (horn at the hip), tell (horn raised), blow (horn at the mouth).
 export function bakeHornblower() {
+  /* THE HORNBLOWER carries a horn bigger than his head, slung so it rides in a HOOP over him - a ring above a
+     goblin is a horn before it is anything else. When he lifts it, it stands up off his face like a tusk. */
   const head = ['...gggg.......', '..gggggg......', '.geoggeog.....', '.gggggggg.....', '..gGGGGg......', '...gggg.......'];
   const legs = ['..GG..GG......', '.GG....GG.....'];
-  const idle = sprite([...head, '..rrrrrryy....', '..rrrrrr.yy...', ...legs]);
-  const tell = sprite(['...gggg...yy..', '..gggggg.yy...', '.geoggeogy....', head[3], head[4], head[5], '..rrrrrr......', '..rrrrrr......', ...legs]);
-  const blow = sprite([head[0], head[1], '.geoggeogyyy..', '.gGgggggg.yyyy', '..gGGGGg...yy.', head[5], '..rrrrrr......', '..rrrrrr......', ...legs]);
-  return pack([idle, tell, blow], 6, 11, 8, 10);
+  const hoop = ['..yyyy........', '.y....y.......', 'y......y......'];
+  const slung = rows => rows.map((r, i) => { const a = r.split(''); if (i === 0) { a[0] = 'y'; } if (i === 1) { a[1] = a[1] === '.' ? 'y' : a[1]; } return a.join(''); });
+  const E = '..............';
+  const idle = sprite([...hoop, ...slung(head), '..rrrrrr......', '..rrrrrr......', ...legs]);
+  const tell = sprite(['............y.', '...........yy.', '..........yy..', '...gggg...yy..', '..gggggg.yy...', '.geoggeogy....', head[3], head[4], head[5], '..rrrrrr......', '..rrrrrr......', ...legs]);
+  const blow = sprite([E, E, E, head[0], head[1], '.geoggeogyyy..', '.gGgggggg.yyyy', '..gGGGGg...yy.', head[5], '..rrrrrr......', '..rrrrrr......', ...legs]);
+  return pack([idle, tell, blow], 6, 14, 8, 10);
 }
 // THE FREEBOOTER: what is left of a crew whose ship you took. No plate on him anywhere - a tricorne with a
 // feather in it, a patch over one eye, a dark coat with brass on it and a red sash - and he carries a cutlass
@@ -1710,13 +1741,17 @@ export function bakeGrub() {
 }
 // The rock goblin — a mine goblin in a stone-scale hood who throws lanterns. 12×11. Frames: walk1, walk2, throw.
 export function bakeRockGoblin() {
+  /* THE ROCK GOBLIN walks about with the next one already over his head, both hands under it, so you know
+     what he does before he does it - and his outline is twice as tall as a goblin's. */
   const RG = Object.assign({}, KG, { h: '#8a919c', H: '#5a6270', y: '#ffd36b', l: '#ff9a5c' });
   const r = rows => outline(fromGrid(rows, RG, 1), OUT);
+  const E = '............';
+  const rock = ['...hhhhh....', '..hHhhhHh...', '..gHHhhHg...', '..g.hhh.g...'];
   const head = ['...hhhhhh...', '..hHhhhhHh..', '..hhhhhhhh..', '..ggeoggeo..', '...gggggg...', '...gGGGGg...'];
-  const walk1 = r([...head, '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '..GG..GG....', '.GG....GG...']);
-  const walk2 = r([...head, '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '...GGGG.....', '...GG.GG....']);
-  const thr = r(['...hhhhhh..y', '..hHhhhhHh.l', '..hhhhhhhh.y', '..ggeoggeoxx', '...gggggg.x.', '...gGGGGg...', '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
-  return pack([walk1, walk2, thr], 7, 12, 10, 11);
+  const walk1 = r([...rock, ...head.slice(1), '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '..GG..GG....', '.GG....GG...']);
+  const walk2 = r([...rock, ...head.slice(1), '..xxxxxxx.y.', '.xxxxxxxx.l.', '..xxxxxx..y.', '...GGGG.....', '...GG.GG....']);
+  const thr = r([E, E, E, '...hhhhhh..y', '..hHhhhhHh.l', '..hhhhhhhh.y', '..ggeoggeoxx', '...gggggg.x.', '...gGGGGg...', '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
+  return pack([walk1, walk2, thr], 7, 14, 10, 11);
 }
 // THE FORGEMASTER, at twice the size: a hulking smith in a steam rig. Boiler pack on his back, a furnace grate for a belly, a hammer arm as long as he is tall. 48×34.
 // Frames: idle, raise, slam, drag, hurl, stun, breath.
@@ -1815,20 +1850,25 @@ export function bakeSailer() {
 // THE HEARTH GOBLIN - it lives here. It sleeps by the fire until you are close and then it fights
 // with whatever is to hand: a stool. 12x13. Frames: 0 asleep, 1 waking, 2 raise, 3 swing, 4/5 walk.
 export function bakeHearthGob() {
+  /* THE HEARTH GOBLIN was asleep by the fire when you came in and he is still dressed for it: a NIGHTCAP, long
+     and red and flopping over backwards with a bobble on the end. The one goblin whose head is not a head. */
   const HP = Object.assign({}, EP, { q: '#8a5a32', Q: '#5c3a1d', c: '#c9463d', u: '#6a4a2a' });
   const f = rows => outline(fromGrid(rows, HP, 1), OUT);
+  const P = '............';
+  const cap = ['k...........', '.rrrr.......', '..rrrrrr....'];
+  const over = (a, b) => a.split('').map((ch, k) => (b[k] && b[k] !== '.') ? b[k] : ch).join('');
+  const withCap = (rows, headRow) => { const out = [P, P, P, ...rows]; if (headRow >= 0) for (let k = 0; k < 3; k++) out[headRow + k] = over(out[headRow + k], cap[k]); return out; };
   const head = ['..gggggg....', '.ggeoggeog..', '.gggggggg...', '..gGGGGg....'];
   const shut = ['..gggggg....', '.ggQQggQQg..', '.gggggggg...', '..gGGGGg....'];
   const body = ['..cccccc....', '.cggggggc...', '.cggggggc...', '..cccccc....', '..GG..GG....', '.GGG..GGG...'];
   const stool = ['....uuuu....', '....u..u....'];
-  const P = '............';
-  const asleep = f([P, P, '...zzz......', ...shut, '..cccccc....', '.cggggggc...', '.cggggggc...', '..cccccc....', '..GGGGGG....', '.GG....GG...']);
-  const waking = f([P, ...head, ...body, P]);
-  const raise = f([...stool, ...head, ...body]);
-  const swing = f([P, ...head, '..cccccc.uu.', '.cggggggcuu.', '.cggggggc...', '..cccccc....', '..GG..GG....', '.GGG..GGG...', P]);
-  const walkA = f([P, ...head, ...body.slice(0, 4), '..GG...GG...', '.GG.....GG..']);
-  const walkB = f([P, ...head, ...body.slice(0, 4), '...GGGG.....', '..GG..GG....']);
-  return pack([asleep, waking, raise, swing, walkA, walkB], 6, 14, 10, 13);
+  const asleep = f(withCap(['.......zzz..', P, P, ...shut, '..cccccc....', '.cggggggc...', '.cggggggc...', '..cccccc....', '..GGGGGG....', '.GG....GG...'], 3));
+  const waking = f(withCap([P, ...head, ...body, P], 1));
+  const raise = f(withCap([...stool, ...head, ...body], -1));
+  const swing = f(withCap([P, ...head, '..cccccc.uu.', '.cggggggcuu.', '.cggggggc...', '..cccccc....', '..GG..GG....', '.GGG..GGG...', P], 1));
+  const walkA = f(withCap([P, ...head, ...body.slice(0, 4), '..GG...GG...', '.GG.....GG..'], 1));
+  const walkB = f(withCap([P, ...head, ...body.slice(0, 4), '...GGGG.....', '..GG..GG....'], 1));
+  return pack([asleep, waking, raise, swing, walkA, walkB], 6, 17, 10, 13);
 }
 
 // THE ROPE CUTTER - he is not interested in you. He is interested in the rope. 12x13.
@@ -2018,12 +2058,16 @@ export function bakeShardling() {
 // THE SENTRY - one of the Queen's castle watch: a kettle helm, her purple and gold, and legs that are for
 // running to a bell. 10x10. Frames: walk1, walk2, alarm (arms up, shouting), run1, run2.
 export function bakeSentry() {
+  /* THE SENTRY stands and watches, so he is the one with the SPEAR: a shaft stood upright at his side and a
+     head on it over his helmet - the only goblin whose outline goes up past his own head in a straight line. */
   const QP = Object.assign({}, EP, { b: '#5a2a7a', B: '#3a1850', y: '#e0b040' });
   const f = rows => outline(fromGrid(rows, QP, 1), OUT);
+  const spear = rows => ['..........s.', '.........sSs', '..........S.', '..........w.'].concat(rows.map((r, i) => {
+    const a = ('.' + r + '.').split(''); if (i < rows.length - 2 && a[10] === '.') a[10] = 'w'; return a.join(''); }));
   const helm = ['...SSSS...', '..SssssS..', '.SSSSSSSS.'], head = ['.geoggeog.', '.gggggggg.', '..gGGGGg..'], tab = ['..bbybbb..', '..bBbbBb..'];
   const L1 = ['..GG..GG..', '.GG....GG.'], L2 = ['..GG.GG...', '..GG..GG..'], R1 = ['.GG....GG.', 'GG......GG'], R2 = ['...GGGG...', '..GG..GG..'];
-  const alarm = f(['g..SSSS..g', '.gSssssSg.', '.SSSSSSSS.', '.geoggeog.', '.gggoogg..', '..gGGGGg..', ...tab, ...L1]);
-  return pack([f([...helm, ...head, ...tab, ...L1]), f([...helm, ...head, ...tab, ...L2]), alarm, f([...helm, ...head, ...tab, ...R1]), f([...helm, ...head, ...tab, ...R2])], 6, 11, 8, 10);
+  const alarm = f(spear(['g..SSSS..g', '.gSssssSg.', '.SSSSSSSS.', '.geoggeog.', '.gggoogg..', '..gGGGGg..', ...tab, ...L1]));
+  return pack([f(spear([...helm, ...head, ...tab, ...L1])), f(spear([...helm, ...head, ...tab, ...L2])), alarm, f(spear([...helm, ...head, ...tab, ...R1])), f(spear([...helm, ...head, ...tab, ...R2]))], 7, 15, 8, 10);
 }
 // THE GOBLIN QUEEN - old, huge and clever. An iron crown with red stones, ears like a bat's, a hooked nose
 // and a grin with two tusks, an ermine collar over a gown of the Queen's purple, a cape the colour of old
@@ -2458,7 +2502,12 @@ export function bakeRunner() {
 // has one. He stands in a window or at the head of a stair, and the bolt is the one thing a shield
 // does not turn.
 export function bakeCrossbowman() {
+  /* THE CROSSBOWMAN - the prod held flat across his chest is a horizontal bar, and a PAVISE on his back is a
+     tall painted board no one else in the town carries. Spanning, the bow points at the ground in front of
+     him with his foot in the stirrup; before, that frame had no crossbow in it at all. */
   const W = 16;
+  const pavise = rows => rows.map((r, i) => { if (i > 10) return r; const a = r.split(''); const c0 = i === 0 ? 'd' : i % 3 === 1 ? 'a' : 'q';
+    if (a[0] === '.') a[0] = i === 0 ? 'd' : 'q'; if (a[1] === '.') a[1] = c0; return a.join(''); });
   const base = pad([
     '...ssssss.......',
     '...sSSSSs.......',
@@ -2474,14 +2523,14 @@ export function bakeCrossbowman() {
     '..VV....VV......'], W);
   const spanning = pad([
     '................', '................', '................', '................',
-    '.....mm.........', '....mmmm........', '....mMMm........', '.....mm.........'], W);
+    '.....mm.........', '....mmmm........', '....mMMm.m......', '.....mm..m......', '.........m......', '.........m......', '.......mmmmm....', '................'], W);
   const level = pad([
     '................', '................', '................', '................',
     '.m............m.', '.mmmmmmmmmmmmmm.', '.m..sss.....M...', '................'], W);
   const shot = pad([
     '................', '................', '................', '................',
     '.m............m.', '.mmmmmmmmmm.....', '.m..sss.........', '................'], W);
-  return pack([wspr(lay(base, spanning)), wspr(lay(base, level)), wspr(lay(base, shot))], 6, 13, 10, 12);
+  return pack([wspr(pavise(lay(base, spanning))), wspr(pavise(lay(base, level))), wspr(pavise(lay(base, shot)))], 6, 13, 10, 12);
 }
 
 // THE CLOSED HELM - the biggest man in the game and the only one who never opens. A rounded great helm
@@ -2489,17 +2538,25 @@ export function bakeCrossbowman() {
 // cross. Everything else in this town is a person; he is a shape. Frames: stand, walk, raise, cut, stamp,
 // and OPEN - the one frame where the plate is not between you and him, and the only one worth a swing.
 export function bakeClosedHelm() {
-  const W = 28;
-  const body = pad([
+  const W = 28, E = '.'.repeat(W);
+  const top3 = rows => [E, E, E, ...rows];
+  /* THE CREST, THE DOMES AND THE CAPE. Built as a block with a bar across it he read as the sworn sword drawn
+     twice as big - the pauldron bar was the kettle hat's brim all over again. So his shoulders are two domes
+     with the neck between them, a red crest runs back off the crown of the helm, and a cape hangs off his
+     back: three shapes nobody else in the town has. Frames: stand, walk, raise, cut, stamp, and OPEN. */
+  const crest = ['.......qqqq.................', '.....qqqqqqqqq..............', '....qqQQqqqqqqq.............'];
+  const cape = rows => rows.map((r, i) => { if (i < 12 || i > 25) return r; const a = r.split(''), w = i < 16 ? 2 : i < 21 ? 3 : 4;
+    for (let x = 5 - w + 1; x <= 5; x++) if (x >= 0 && a[x] === '.') a[x] = i % 4 === 0 ? 'q' : 'Q'; return a.join(''); });
+  const body = cape([...crest, ...pad([
     '..........ssssssss..........',
     '.........sSSSSSSSSs.........',
     '.........sSSSSSSSSs.........',
     '.........sjjjjjjjjs.........',      /* the slit */
     '.........sSSSSSSSSs.........',
     '..........SSSSSSSS..........',
-    '....sssssssssssssssssss.....',      /* the pauldrons */
-    '...sSSSSSSSSSSSSSSSSSSSs....',
-    '...sSSddddddddddddddSSSSs...',
+    '...ssssss.dddddddd.ssssss...',      /* the domes of the pauldrons, and the gorget between them */
+    '..sSSSSSSsddddddddsSSSSSSs..',
+    '..sSSddSSSssssssssSSSddSSs..',
     '.....ssssssssssssssss.......',
     '.....sSqqqqqqqqqqqqSs.......',
     '.....sSqqqqzzzzqqqqSs.......',
@@ -2514,13 +2571,11 @@ export function bakeClosedHelm() {
     '.......ss........ss.........',
     '.......sS........Ss.........',
     '.......ss........ss.........',
-    '......dd..........dd........'], W);
+    '......dd..........dd........'], W)]);
   const legsB = ['........ssssssss............', '.......ss........ss.........', '......sS..........Ss........', '.....dd............dd.......'];
   /* the sword, point down, in front of him: a cross */
-  const cross = pad([
-    '............................', '............................', '............................',
-    '............................', '............................', '............................',
-    '............................', '............................',
+  const cross = top3(pad([
+    E, E, E, E, E, E, E, E,
     '.........ssssssssss.........',      /* the crossguard, and it is the widest bright thing on him */
     '..........sSSSSSSs..........',
     '............ssss............',
@@ -2534,24 +2589,23 @@ export function bakeClosedHelm() {
     '............sSSs............',
     '.............ss.............',
     '.............ss.............',
-    '..............s.............'], W)
-  const raised = pad([
+    '..............s.............'], W));
+  const raised = top3(pad([
     '.....................ssss...', '....................ssss....', '...................ssss.....', '..................mm........',
-    '.................mm.........', '................mm..........'], W);
-  const outCut = pad([
-    '............................', '............................', '............................', '............................',
-    '............................', '............................', '............................', '............................',
-    '............................', '............................', '..................ssssssssss', '..................sSSSSSSSSs',
-    '...................mmm......'], W);
+    '.................mm.........', '................mm..........'], W));
+  const outCut = top3(pad([
+    E, E, E, E, E, E, E, E, E, E,
+    '..................ssssssssss', '..................sSSSSSSSSs',
+    '...................mmm......'], W));
   const stampLegs = ['.......ss........ss.........', '......sSS........SSs........', '.....dddd........dddd.......', '.....dddd........dddd.......'];
-  const withLegs = (b, legs) => b.slice(0, 20).concat(legs);
+  const withLegs = (b, legs) => b.slice(0, 23).concat(legs);
   const stand = wspr(lay(body, cross));
   const walk = wspr(lay(withLegs(body, legsB), cross));
   const raise = wspr(lay(body, raised));
   const cut = wspr(lay(withLegs(body, legsB), outCut));
   const stamp = wspr(lay(withLegs(body, stampLegs), cross));
   /* OPEN: the guard is off the line, both arms are wide and the slit has gone bright. */
-  const open = wspr(lay(pad([
+  const openRows = pad([
     'ss......................ss..',
     '.ss....................ss...',
     '..ss..................ss....',
@@ -2576,6 +2630,7 @@ export function bakeClosedHelm() {
     '.......ss........ss.........',
     '.......sS........Ss.........',
     '.......ss........ss.........',
-    '......dd..........dd........'], W), pad([], 0)));
-  return pack([stand, walk, raise, cut, stamp, open], 14, 28, 20, 26);
+    '......dd..........dd........'], W);
+  const open = wspr(top3(lay(openRows, [E, ...crest])));
+  return pack([stand, walk, raise, cut, stamp, open], 14, 31, 20, 26);
 }

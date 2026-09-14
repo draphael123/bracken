@@ -4388,6 +4388,8 @@ function waymeet() {
   ent('hedgeknight', 128, R - 1, { face: -1 }); ent('hedgeknight', 184, R - 1, { face: -1 });
   ent('pike', 144, R - 1, { face: -1 }); ent('hound', 176, R - 1, { face: -1 });
   ent('check', 158, R - 1);
+  for (const x of [102, 140, 176]) ent('deco', x, R - 10, { kind: 'bunting', hang: true });   /* left up from the fair */
+  ent('deco', 138, R - 1, { kind: 'hayBale', v: 1 });
   sign(156, 'THE BOY IS NOT THE PROBLEM. WHAT HE DOES IS GO AND TELL SOMEBODY, AND EVERY SWORD IN THE STREET PUTS ITS DRINK DOWN. SHUT HIM UP, OR DEAL WITH WHAT HE BRINGS.');
   /* the awnings over the stalls: the first thing above the road, and the way past the crowd */
   awning(98, 120, R - 3); awning(130, 146, R - 3); awning(158, 180, R - 3);
@@ -4423,12 +4425,11 @@ function waymeet() {
   ent('doorway', 58, 20, { id: 'lance-far', to: 'lance-back' });
   /* FURNISH IT. A room forty tiles wide with four things in it is a barn; a common room is benches and
      tables and a fire somebody is cooking on, and the men who stand up out of it. */
-  ent('deco', 28, 20, { kind: 'forge' }); ent('deco', 31, 20, { kind: 'cookPot' });
-  ent('deco', 35, 20, { kind: 'oarBench' }); ent('deco', 39, 20, { kind: 'chartTable' });
-  ent('deco', 43, 20, { kind: 'oarBench' }); ent('deco', 47, 20, { kind: 'chartTable' });
-  ent('deco', 51, 20, { kind: 'oarBench' }); ent('deco', 55, 20, { kind: 'rumBarrels', v: 0 });
-  ent('deco', 59, 20, { kind: 'coffer' }); ent('deco', 24, 20, { kind: 'barrels' });
-  ent('deco', 33, 13, { kind: 'washing' }); ent('deco', 52, 13, { kind: 'wares' });
+  ent('deco', 29, 20, { kind: 'hearth' });                                 /* the fire nobody lets out */
+  ent('deco', 35, 20, { kind: 'bench' }); ent('deco', 38, 20, { kind: 'longTable', v: 0 }); ent('deco', 41, 20, { kind: 'bench' });
+  ent('deco', 49, 20, { kind: 'bench' }); ent('deco', 52, 20, { kind: 'longTable', v: 1 }); ent('deco', 55, 20, { kind: 'bench' });
+  ent('deco', 58, 20, { kind: 'caskRack' }); ent('deco', 61, 20, { kind: 'coffer' }); ent('deco', 24, 20, { kind: 'barrels' });
+  ent('deco', 45, 17, { kind: 'mugShelf', hang: true }); ent('deco', 52, 13, { kind: 'wares' }); ent('deco', 36, 13, { kind: 'caskRack' });
   ent('deco', 45, 20, { kind: 'counter' }); ent('npc', 44, 20, { kind: 'keeper' });
   ent('deco', 37, 8, { kind: 'hallWindow', hang: true }); ent('deco', 49, 8, { kind: 'hallWindow', hang: true });
   awning(30, 54, 14);                                      /* the gallery over the common room */
@@ -4451,7 +4452,9 @@ function waymeet() {
   ent('deco', 306, R - 1, { kind: 'forge' }); ent('deco', 312, R - 1, { kind: 'anvil' });
   ent('npc', 316, R - 1, { kind: 'cook' });
   sign(304, 'THE SMITH HAS NOT LOOKED UP ONCE. THEY HAVE BEEN COMING THROUGH HIS YARD ALL AFTERNOON AND HE HAS WORK ON.');
-  ent('deco', 322, R - 1, { kind: 'trough' }); ent('deco', 330, R - 1, { kind: 'cart' });
+  ent('deco', 322, R - 1, { kind: 'trough' }); ent('deco', 330, R - 1, { kind: 'cart' }); ent('deco', 326, R - 1, { kind: 'hayBale', v: 0 });
+  ent('deco', 324, R - 4, { kind: 'shopSign', v: 0, hang: true }); ent('deco', 372, R - 4, { kind: 'shopSign', v: 1, hang: true });
+  ent('deco', 396, R - 4, { kind: 'shopSign', v: 2, hang: true }); ent('deco', 258, R - 4, { kind: 'shopSign', v: 3, hang: true });   /* a town is how you find a thing without reading */
   tiles(320, 352, R - 7); ladder(318, R - 8);
   tiles(368, 400, R - 7); ladder(366, R - 8); ladder(402, R - 8);
   awning(354, 366, R - 3); awning(404, 420, R - 3);
@@ -4502,12 +4505,20 @@ function waymeet() {
   coins([444, R - 2], [454, R - 2], [462, R - 2], [468, R - 2]);
   /* three in a wood and no more: the fourth was being picked up and never reaching the ledger */
 
+  /* EVERY ROOF IS A HOUSE. Three courses of clay tile over the street were three courses of bare rock with a
+     forest behind them: a roof needs a front under it - timber, limewash, its windows coming on - and the
+     street runs on in front of it. */
+  const houses = roofs.map(([x0, x1, y]) => {
+    const drs = L.ents.filter(e => e.t === 'doorway' && e.x > x0 && e.x < x1 && e.y >= y).map(e => e.x);
+    return { x0: x0 + 1, x1: x1 - 1, y0: y + 3, y1: R - 1, door: drs.length ? drs[0] : null, door2: drs.length > 1 ? drs[1] : null, seed: x0, town: true, tiles: true };
+  }).filter(h => h.y1 >= h.y0 && h.x1 > h.x0);
+
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 24,                                 /* rows 0-24 are insides: never shown from the street */
     music: 'waymeet', duskStart: 0.55, duskLen: 0.45,
     quest: { n: 3, item: 'cup', name: 'HIS CUPS', npc: 'keeper', done: 'THE HOUSE IS SQUARE AGAIN', reward: 'relic', relic: 'spurs' },
-    palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk',
+    palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
       haze: 'rgba(210,190,160,0.12)', murkCol: '#2e2a34',
       grass: '#6a8a46', grassL: '#8fb060', grassD: '#47612e', dirt: '#7a6248', dirtL: '#8f7458', dirtD: '#54402c',
       canopy: ['#2a3a24', '#3a5230', '#4a6a3c', '#5e8248'] },
