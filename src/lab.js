@@ -139,7 +139,20 @@ export async function bossLab(BK, opts = {}) {
         if (s) { goal = s.x; if (Math.abs(s.x - P.x) < 18) { P.face = Math.sign(s.x - P.x) || P.face; if (P.atk < 0) { BK.press('atk'); swings++; } } } else goal = boss.x - Math.sign(d || 1) * 70; }
       else { goal = boss.x; strike = true; }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
-      if (walker && Math.abs(boss.y - P.y) > 30 && !k.block) walker(boss.x);   /* she is on another deck: go up after her the way a player would */
+      if (walker && Math.abs(boss.y - P.y) > 30 && !k.block) {
+        /* she is on another deck. Walking at HER x from under her deck only jumps on the spot: go to the nearest way UP -
+           a rope or a ledge over the deck the bot stands on - and let the walker climb it */
+        let goalUp = boss.x;
+        if (boss.y < P.y - 30) { const fr = Math.floor(P.y / TS), px = Math.floor(P.x / TS); let bestX = null, bd = 1e9;
+          for (let x = Math.floor(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) for (let y = fr - 6; y <= fr - 1; y++) { const t = L.grid[y * L.W + x];
+            if (t === T.NET || t === T.ONEWAY || t === T.PLANK) { const dd = Math.abs(x - px) + (t === T.NET ? 0 : 4); if (dd < bd) { bd = dd; bestX = x; } break; } }
+          if (bestX !== null) goalUp = bestX * TS + 8; }
+        /* THE FLOTILLA'S OWN ROUTE UP, because the nearest ledge over her is not a way to it: the main deck climbs by the block
+           steps at the companion house (column 292 on), and her second deck to the poop by the nets at 338 */
+        if (lvId === 'flotilla' && boss.y < P.y - 30) { const px = P.x / TS, py = P.y / TS;
+          if (py > 20 && px > 292) goalUp = 288 * TS; else if (py > 20) goalUp = boss.x;
+          else if (py > 14 && boss.y < 14 * TS) goalUp = 338 * TS + 8; }
+        walker(goalUp); }
       else if (goal !== null && !k.block) { const gd = goal - P.x;
         /* THE PIT WARDEN'S HOLES are not a way to him: a step that would land on a course his pick took out is not taken */
         const nx = Math.floor((P.x + Math.sign(gd) * 10) / TS), hole = boss.t === 'pitwarden' && P.ground && L.grid[Math.floor(A.floor / TS) * L.W + nx] === T.AIR;
@@ -161,42 +174,51 @@ export async function bossLab(BK, opts = {}) {
   return out;
 }
 
-// THE COLLECTION LAB. The reach model cannot ride a lily pad, pogo a wasp or fell a pine, so a third of the wood
-// comes back ASSISTED and its silver in doubt. This does not model the level: it PLAYS it. The playtest walker goes
-// for every silver, key, relic and quest item in a level in order along the way, with god mode on so a fight
-// does not end the walk, and writes down what it picked up and what it could not get to. What it misses is a list
-// to look at by hand - the walker is greedy, not clever - not a verdict.
-//   await BK.collectLab({ levels: ['wood'], secsPer: 45 })   -> window.__collectLab
+// THE COLLECTION LAB. Can every silver, key, relic and quest item actually be PICKED UP? Walking the whole level to each
+// one measures the walker, not the item - the greedy walker cannot pogo a wasp chain, so it stalled at the first pit
+// and called everything after it missed. So the question is split in two: GETTING THERE is the reach model's
+// (node tools/reach.mjs, from the start), and the LAST STRETCH is played here. For each item the hero is put down on
+// the nearest ground the reach fill says you can stand on, within fourteen tiles of it, and the playtest walker goes
+// for it with god mode on. An item with no reachable ground near it at all is reported as NO APPROACH.
+//   await BK.collectLab({ levels: ['wood'], secsPer: 25 })   -> window.__collectLab
 export async function collectLab(BK, opts = {}) {
-  const lvm = await import('./level.js'), PT = await import('./playtest.js'), TS = 16;
+  const lvm = await import('./level.js'), PT = await import('./playtest.js'), RC = await import('./reachcore.js'), TS = 16;
   const levels = opts.levels || lvm.LEVELS.filter(l => !l.hidden && !/^(shop|trial|custom)/.test(l.id)).map(l => l.id);
   const out = { rows: [], started: Date.now(), progress: 0, total: levels.length };
   if (typeof window !== 'undefined') window.__collectLab = out;
   const silversOf = () => { const s = BK.silvers; return typeof s === 'function' ? s() : (s || []); };
   for (const id of levels) {
-    BK.setHero(opts.hero || 'knight'); BK.load(lvm.LEVELS.findIndex(l => l.id === id)); BK.state = 'play'; BK.god = true; BK.sim(10);
+    const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
+    const Lb = lvm.LEVELS[li].build(); const { seen } = RC.floodReach(Lb, lvm.T);
+    const stands = [...seen].map(k => k.split(',').map(Number));
+    BK.setHero(opts.hero || 'knight'); BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(10);
     const P = BK.P, k = BK.keys;
-    for (const sv of silversOf()) sv.got = false;
     const items = [...silversOf().map(s => ({ kind: 'silver', ref: s, x: s.x, y: s.y })),
-      ...BK.props().filter(p => (p.t === 'stray' || p.t === 'relic' || p.t === 'key') && !p.got).map(p => ({ kind: p.t === 'stray' ? 'quest:' + (p.kind || '') : p.t, ref: p, x: p.x, y: p.y }))]
-      .sort((a, b) => a.x - b.x);
-    const walker = PT.makeBot(BK), got = [], missed = [];
+      ...BK.props().filter(p => (p.t === 'stray' || p.t === 'relic' || p.t === 'key') && !p.got).map(p => ({ kind: p.t === 'stray' ? 'quest:' + (p.kind || '') : p.t, ref: p, x: p.x, y: p.y }))];
+    const got = [], missed = [];
     for (const it of items) {
-      if (it.ref.got) { got.push(it); continue; }
-      const budget = Math.round((opts.secsPer || 45) * 60); let f = 0, stuck = 0, bestD = 1e9;
+      it.ref.got = false;
+      const ix = Math.floor(it.x / TS), iy = Math.floor(it.y / TS);
+      /* the nearest standable tile the fill reaches: same column band first, and ground under or level with it before ground above it */
+      let best = null, bs = 1e9;
+      for (const [x, y] of stands) { const dx = Math.abs(x - ix), dy = y - iy; if (dx > 14 || dy < -6 || dy > 14) continue; const sc = dx + (dy < 0 ? 12 - dy : dy * 0.7); if (sc < bs) { bs = sc; best = [x, y]; } }
+      if (!best) { missed.push({ kind: it.kind, tile: ix + ',' + iy, why: 'NO APPROACH: no reachable ground within 14 tiles' }); continue; }
+      for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
+      BK.tp(best[0], best[1]); P.vx = 0; P.vy = 0; BK.sim(8);
+      const walker = PT.makeBot(BK), budget = Math.round((opts.secsPer || 25) * 60); let f = 0, closest = 1e9;
       for (; f < budget && !it.ref.got; f++) {
-        /* a fall is a respawn at the checkpoint, and the game has to be let do it: holding the hero alive every frame kept him falling out of the world forever */
         if (P.dead) { BK.sim(1); continue; }
-        const r = walker(it.x); const dd = Math.hypot(it.x - P.x, it.y - P.y); if (dd < bestD - 4) { bestD = dd; stuck = 0; } else stuck++;
-        if (r === 'stuck' || stuck > 60 * 20) break;
-        BK.sim(1);
+        walker(it.x);
+        /* under it and it is overhead: jump for it */
+        if (Math.abs(P.x - it.x) < 14 && it.y < P.y - 20 && P.ground && f % 20 === 0) BK.press('jump');
+        BK.sim(1); closest = Math.min(closest, Math.round(Math.hypot(it.x - P.x, it.y - (P.y - 8))));
         if (f % 600 === 599) await new Promise(r0 => setTimeout(r0, 0));
       }
       k.left = k.right = k.up = k.down = k.jump = false;
-      (it.ref.got ? got : missed).push({ kind: it.kind, tile: Math.floor(it.x / TS) + ',' + Math.floor(it.y / TS), closest: Math.round(bestD), secs: +(f / 60).toFixed(1) });
+      (it.ref.got ? got : missed).push({ kind: it.kind, tile: ix + ',' + iy, from: best.join(','), closest, secs: +(f / 60).toFixed(1) });
     }
     BK.god = false; out.progress++;
-    out.rows.push({ lvl: id, items: items.length, got: got.length, missed });
+    out.rows.push({ lvl: id, items: items.length, got: got.length, missed: missed.filter(m => !got.includes(m)) });
     await new Promise(r0 => setTimeout(r0, 0));
   }
   out.done = true; out.ms = Date.now() - out.started;
@@ -220,9 +242,16 @@ export async function killLab(BK, opts = {}) {
       const [x, y] = key.split(',').map(Number);
       for (const e of BK.enemies()) e.alive = false;
       BK.tp(x, y); P.hp = P.maxHp; P.dead = 0; P.inv = 0; P.vx = 0; P.vy = 0;
-      let hurt = 0; for (let f = 0; f < 12; f++) { const was = P.hp; BK.sim(1); if (P.hp < was) hurt += was - P.hp; if (P.dead) break; }
+      let hurt = 0, wet = false; for (let f = 0; f < 12; f++) { const was = P.hp; BK.sim(1); if (P.swim) wet = true; if (P.hp < was) hurt += was - P.hp; if (P.dead) break; }
+      /* WATER IS ITS OWN RULE: breath running out, a foul harbour, a bilge that eats you - every one of them is the level
+         doing its job, and the pools already say so (tools/killzones.mjs checks their bottoms). Dry ground is the question. */
+      const inPool = (BK.L.pools || []).some(p => P.x > p.x0 && P.x < p.x1 && P.y > p.y - 2 && (p.bottom === undefined || P.y <= p.bottom + 8));
+      if (wet || inPool) { out.summary.wet = (out.summary.wet || 0) + 1; continue; }
       out.summary.tiles++;
-      if (P.dead || hurt > 0) { lvBad++; if (bad.length < 200) bad.push({ lvl: id, tile: x + ',' + y, dead: !!P.dead, hurt, at: Math.round(P.x / 16) + ',' + Math.round(P.y / 16) }); }
+      if (P.dead || hurt > 0) { lvBad++;
+        const tx = Math.floor(P.x / 16), ty = Math.floor(P.y / 16), g = BK.L.grid, W = BK.L.W;
+        const near = BK.props().filter(p => Math.abs(p.x - P.x) < 40 && Math.abs(p.y - P.y) < 40).map(p => p.t);
+        if (bad.length < 300) bad.push({ lvl: id, tile: x + ',' + y, dead: !!P.dead, hurt, at: tx + ',' + ty, under: g[(ty) * W + tx], body: g[(ty - 1) * W + tx], near: [...new Set(near)].join('/'), fires: (BK.fires() || []).filter(f => Math.abs(f.x - P.x) < 30).length, gas: !!(BK.L.gas && BK.L.gas.length) }); }
       if (n % 400 === 0) await new Promise(r0 => setTimeout(r0, 0));
     }
     out.summary.levels++; out.summary.bad += lvBad;

@@ -2150,7 +2150,7 @@ function undercrown() {
   ent('minerlamp', 62, 55, { lit: true }); ent('minerlamp', 78, 55, { lit: true });
   ent('gas', 44, 55); ent('gas', 30, 55);
   coins([26, 51], [30, 51], [40, 51], [46, 51], [60, 54], [68, 54], [76, 54], [86, 54], [28, 51], [42, 51], [56, 54], [64, 54], [72, 54], [82, 54], [12, 54], [16, 54]);
-  ent('silver', 36, 49);
+  ent('silver', 36, 50);   /* it was set INTO the rock course over the gallery; one row down it hangs over the ledge */
   ent('clinger', 9, 62, { face: 1 });
   shaft(6, 6, 56, 88);
   ent('clinger', 7, 70, { face: 1 }); ent('clinger', 7, 80, { face: 1 });
