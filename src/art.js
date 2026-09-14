@@ -1168,6 +1168,229 @@ export function bakeHangCage() {
   ellipse(g, 8, 24, 3, 3, '#e8dcc0'); px(g, 7, 24, OUT); px(g, 9, 24, OUT); rect(g, 7, 28, 2, 8, '#e8dcc0'); rect(g, 5, 30, 6, 1, '#e8dcc0');
   return outline(c, OUT);
 }
+
+// ---------- GOBLIN SET DRESSING ----------
+/* THE GOBLINS HAD ONE THING OF THEIR OWN, and it was a banner. A camp, a court, a hold and a castle all flew the
+   same red square, so nothing on the ground said WHO lived there but the creatures standing on it. These are the
+   rest of what a goblin leaves about: flags of every size, the things he puts up to warn you off, the things he
+   worships, eats and steals. Every kind is its own SILHOUETTE, not a recolour: at this scale a thing is its outline. */
+const GB = { wd: '#3a2618', wm: '#5c3a1d', wl: '#7a4e28', wh: '#8a5a32', b0: '#e8dcc0', b1: '#c9b998', b2: '#b8a888',
+  h0: '#c9a878', h1: '#a8845a', h2: '#8a6a44', h3: '#6b4a2a', ir: '#8b8378', irL: '#b3aca0', irD: '#5f5a52', rope: '#9a8058',
+  gold: '#e0b040', goldL: '#ffd36b', coin: '#b8862e', red: '#c9463d', redD: '#8f2f28', stone: '#7c8797', stoneD: '#5a6270', pot: '#2c2736' };
+/* THE FOUR CLOTHS A GOBLIN FLIES: the camp's red, the hill clans' ochre, the wood's green, the Queen's purple */
+const GCLOTH = [['#c9463d', '#8f2f28'], ['#c9923a', '#8a6420'], ['#6faa4a', '#3f6e2c'], ['#6a3a8a', '#43205a']];
+function gSkull(g, x, y) { rect(g, x + 1, y, 3, 1, GB.b0); rect(g, x, y + 1, 5, 2, GB.b0); rect(g, x + 1, y + 3, 3, 2, GB.b1); px(g, x + 1, y + 2, OUT); px(g, x + 3, y + 2, OUT); px(g, x + 2, y + 4, OUT); }
+function gSkullBig(g, x, y) { rect(g, x + 1, y, 5, 1, GB.b0); rect(g, x, y + 1, 7, 4, GB.b0); rect(g, x + 1, y + 5, 5, 2, GB.b1); rect(g, x + 1, y + 2, 2, 2, OUT); rect(g, x + 4, y + 2, 2, 2, OUT); px(g, x + 3, y + 4, OUT); px(g, x + 2, y + 6, OUT); px(g, x + 4, y + 6, OUT); px(g, x + 6, y + 1, GB.b2); }
+function gBone(g, x, y, h) { rect(g, x, y + 1, 1, h - 2, GB.b0); rect(g, x - 1, y, 3, 1, GB.b1); rect(g, x - 1, y + h - 1, 3, 1, GB.b1); }
+function gStones(g, x, y, w) { for (let i = 0; i < w; i += 4) { rect(g, x + i, y, 4, 2, i % 8 ? GB.stoneD : GB.stone); px(g, x + i + 1, y, '#9aa3b0'); } }
+/* A PENNANT ON A CROOKED STICK: a scout's marker, the smallest flag, and the only one that moves. 18x30, two frames. */
+export function bakeGobPennant(v) {
+  const rnd = mulberry(560 + v), [cl, cd] = GCLOTH[v % 4], lean = rnd() < 0.5 ? 0 : 1;
+  return [0, 1].map(f => { const [c, g] = canvas(18, 30);
+    rect(g, 3, 2, 2, 14, GB.wm); rect(g, 3 + lean, 16, 2, 12, GB.wm); px(g, 3, 4, GB.wl); px(g, 3 + lean, 20, GB.wl); rect(g, 3, 0, 2, 2, GB.b0);
+    fillPoly(g, f ? [[5, 3], [12, 5], [16, 9], [5, 12]] : [[5, 3], [16, 7], [12, 9], [5, 12]], cl);
+    fillPoly(g, [[5, 9], [f ? 16 : 12, 9], [5, 12]], cd);
+    px(g, 8, 6, GB.goldL); px(g, 9, 7, GB.gold); line(g, 6, 12, 7 + f, 16, cd, 1); rect(g, 2, 8, 1, 2, GB.rope);
+    gStones(g, 0, 28, 8);
+    return outline(c, OUT); });
+}
+/* A WAR STANDARD: a horned skull on a tall pole, a crossbar, and a hide hung from it with the clan's mark daubed on. 32x66. */
+export function bakeWarStandard(v) {
+  const rnd = mulberry(570 + v), cl = GCLOTH[v % 2][0]; const [c, g] = canvas(32, 66);
+  rect(g, 15, 10, 3, 56, GB.wm); rect(g, 15, 10, 1, 56, GB.wl);
+  rect(g, 3, 14, 26, 3, GB.wd); rect(g, 3, 14, 26, 1, GB.wh);
+  line(g, 13, 5, 8, 3, GB.b1, 2); line(g, 8, 3, 6, 0, GB.b2, 1); line(g, 19, 5, 24, 3, GB.b1, 2); line(g, 24, 3, 26, 0, GB.b2, 1);
+  gSkullBig(g, 13, 3);
+  fillPoly(g, [[5, 17], [27, 17], [27, 40], [24, 45], [21, 41], [18, 47], [14, 42], [10, 46], [5, 40]], GB.h2);
+  fillPoly(g, [[7, 17], [25, 17], [25, 39], [22, 42], [18, 44], [14, 40], [10, 43], [7, 39]], GB.h1);
+  for (let i = 0; i < 10; i++) px(g, 8 + ((rnd() * 16) | 0), 19 + ((rnd() * 20) | 0), GB.h0);
+  if (v % 2 === 0) { for (const x of [10, 15, 20]) line(g, x, 22, x + 2, 37, cl, 2); }
+  else { ellipse(g, 16, 29, 7, 6, cl); ellipse(g, 16, 29, 5, 4, OUT); ellipse(g, 16, 29, 2, 2, GB.goldL); }
+  for (const x of [8, 24]) rect(g, x, 16, 1, 3, GB.rope);
+  for (const x of [4, 27]) { rect(g, x, 17, 1, 5, GB.rope); fillPoly(g, [[x - 1, 22], [x + 2, 22], [x, 26]], GB.b0); }
+  rect(g, 14, 52, 5, 2, GB.rope); rect(g, 14, 55, 5, 1, GB.rope);
+  gStones(g, 8, 64, 16);
+  return outline(c, OUT);
+}
+/* A RAG ON A SPEAR: a cloth torn and holed, lashed to a spear stuck in the ground at a lean. 26x48. */
+export function bakeRagBanner(v) {
+  const rnd = mulberry(580 + v), [cl, cd] = GCLOTH[v % 3]; const [c, g] = canvas(26, 48);
+  line(g, 6, 47, 9, 6, GB.wm, 2); line(g, 7, 47, 10, 6, GB.wl, 1);
+  fillPoly(g, [[9, 0], [12, 6], [7, 6]], GB.irL); px(g, 9, 2, '#dfe8ff');
+  rect(g, 8, 8, 15, 2, GB.wd);
+  fillPoly(g, [[10, 10], [23, 10], [24, 22], [21, 28], [19, 23], [17, 33], [14, 26], [11, 31], [10, 22]], cl);
+  fillPoly(g, [[18, 10], [23, 10], [24, 22], [21, 28], [19, 23], [18, 20]], cd);
+  rect(g, 10, 16, 14, 2, cd);
+  g.clearRect(14, 13, 2, 2); g.clearRect(20, 19, 1, 3); g.clearRect(12, 22, 2, 1);
+  for (let i = 0; i < 4; i++) { const x = 11 + ((rnd() * 12) | 0); line(g, x, 25, x + (rnd() < 0.5 ? -1 : 1), 30 + ((rnd() * 5) | 0), cd, 1); }
+  gStones(g, 3, 46, 8);
+  return outline(c, OUT);
+}
+/* A LONG CLOTH STRIP hung from a peg in the rock, marks stacked down it, the foot cut into a swallowtail. HUNG. 16x62. */
+export function bakeClothStrip(v) {
+  const [cl, cd] = [GCLOTH[0], GCLOTH[3], ['#3a3444', '#241f2c'], GCLOTH[1]][v % 4]; const [c, g] = canvas(16, 62);
+  rect(g, 6, 0, 4, 2, GB.irD); rect(g, 7, 2, 2, 3, GB.rope);
+  rect(g, 1, 5, 14, 2, GB.wm); px(g, 1, 5, GB.wh); px(g, 14, 5, GB.wh);
+  rect(g, 3, 7, 10, 42, cl); rect(g, 10, 7, 3, 42, cd);
+  fillPoly(g, [[3, 49], [13, 49], [13, 60], [8, 53], [3, 60]], cl); fillPoly(g, [[10, 49], [13, 49], [13, 60], [10, 57]], cd);
+  gSkull(g, 5, 11);
+  for (let i = 0; i < 4; i++) line(g, 4 + (i % 2) * 6, 22 + i * 3, 10 - (i % 2) * 6, 25 + i * 3, GB.gold, 1);
+  ellipse(g, 8, 41, 3, 2, GB.b0); px(g, 8, 41, OUT);
+  for (let y = 9; y < 48; y += 3) { px(g, 3, y, cd); px(g, 12, y + 1, GB.h3); }
+  return outline(c, OUT);
+}
+/* A BANNER OF HIDES: a whole pelt, legs and all, patched from three skins and stitched, stretched on a T. 36x56. */
+export function bakeHideBanner(v) {
+  const rnd = mulberry(600 + v); const [c, g] = canvas(36, 56);
+  rect(g, 17, 0, 3, 56, GB.wm); rect(g, 17, 0, 1, 56, GB.wl);
+  rect(g, 2, 5, 32, 2, GB.wd); rect(g, 2, 5, 32, 1, GB.wh);
+  fillPoly(g, [[4, 8], [10, 10], [26, 10], [32, 8], [30, 16], [29, 32], [33, 42], [25, 39], [18, 46], [11, 39], [3, 42], [7, 32], [6, 16]], GB.h2);
+  fillPoly(g, [[7, 11], [18, 11], [18, 26], [8, 28]], GB.h1);
+  fillPoly(g, [[18, 11], [29, 11], [28, 30], [18, 26]], GB.h0);
+  fillPoly(g, [[8, 28], [18, 26], [28, 30], [27, 37], [18, 43], [10, 37]], GB.h3);
+  for (let i = 0; i < 14; i++) px(g, 8 + ((rnd() * 20) | 0), 12 + ((rnd() * 26) | 0), rnd() < 0.5 ? GB.h3 : GB.h0);
+  for (let y = 12; y < 26; y += 3) { px(g, 18, y, OUT); px(g, 17, y + 1, GB.b2); }
+  for (let x = 9; x < 28; x += 3) { const y = x < 18 ? 28 - ((x - 8) * 0.2) : 26 + (x - 18) * 0.4; px(g, x, y | 0, OUT); px(g, x + 1, (y | 0) + 1, GB.b2); }
+  if (v % 2 === 0) { line(g, 10, 15, 18, 21, GB.red, 2); line(g, 18, 21, 26, 15, GB.red, 2); line(g, 11, 20, 18, 25, GB.redD, 1); line(g, 18, 25, 25, 20, GB.redD, 1); }
+  else { gSkullBig(g, 15, 14); line(g, 11, 30, 25, 36, GB.b0, 1); line(g, 25, 30, 11, 36, GB.b0, 1); }
+  for (const [x, y] of [[4, 6], [31, 6], [10, 8], [26, 8]]) rect(g, x, y, 1, 3, GB.rope);
+  gStones(g, 12, 54, 12);
+  return outline(c, OUT);
+}
+/* A SKULL TOTEM: skulls down a pole with bone crossbars, a ram's skull or a crown of feathers on top. 20x52. */
+export function bakeSkullTotem(v) {
+  const [c, g] = canvas(20, 52); const n = v % 2 ? 3 : 2;
+  rect(g, 8, 6, 4, 46, GB.wm); rect(g, 8, 6, 1, 46, GB.wl); rect(g, 11, 6, 1, 46, GB.wd);
+  for (let i = 0; i < n; i++) { const y = 8 + i * 11; gSkullBig(g, 7, y); rect(g, 3, y + 8, 14, 2, GB.b1); rect(g, 2, y + 8, 1, 2, GB.b0); rect(g, 17, y + 8, 1, 2, GB.b0);
+    line(g, 3, y + 10, 2, y + 15, i % 2 ? OUT : GB.red, 1); line(g, 16, y + 10, 17, y + 14, i % 2 ? GB.red : OUT, 1); }
+  if (v % 2 === 0) { line(g, 7, 3, 3, 1, GB.b1, 2); line(g, 3, 1, 2, 5, GB.b2, 1); line(g, 13, 3, 17, 1, GB.b1, 2); line(g, 17, 1, 18, 5, GB.b2, 1); gSkullBig(g, 7, 0); }
+  else for (const [x, col] of [[5, GB.red], [8, OUT], [12, GB.red], [15, GB.pot]]) line(g, 10, 7, x, 1, col, 1);
+  fillPoly(g, [[3, 51], [7, 46], [13, 46], [17, 51]], GB.wd); line(g, 5, 51, 9, 45, GB.wl, 1); line(g, 15, 51, 11, 45, GB.wl, 1);
+  gStones(g, 2, 50, 16);
+  return outline(c, OUT);
+}
+/* A TROPHY RACK: two A-frames and a bar, a stag's skull and antlers nailed on top, bones and teeth hung under. 40x36. */
+export function bakeTrophyRack(v) {
+  const rnd = mulberry(620 + v); const [c, g] = canvas(40, 36); const bar = 11;
+  for (const x of [5, 34]) { line(g, x - 3, 35, x, bar, GB.wm, 2); line(g, x + 3, 35, x, bar, GB.wd, 2); }
+  rect(g, 1, bar, 38, 2, GB.wm); rect(g, 1, bar, 38, 1, GB.wh);
+  for (const s of [-1, 1]) { line(g, 20 + s * 2, bar - 2, 20 + s * 9, 1, GB.b1, 1); line(g, 20 + s * 5, bar - 5, 20 + s * 3, 2, GB.b1, 1); line(g, 20 + s * 7, bar - 7, 20 + s * 12, bar - 6, GB.b1, 1); }
+  rect(g, 17, bar - 3, 7, 4, GB.b0); rect(g, 18, bar + 1, 5, 6, GB.b1); rect(g, 18, bar - 2, 2, 2, OUT); rect(g, 21, bar - 2, 2, 2, OUT); rect(g, 19, bar + 5, 3, 2, GB.b2); px(g, 19, bar + 6, OUT); px(g, 21, bar + 6, OUT);
+  const hangs = [[10, 0], [14, 1], [26, 2], [30, 0]]; if (v % 2) hangs.reverse();
+  hangs.forEach(([x, k], i) => { const len = 3 + ((rnd() * 6) | 0), y = bar + 2 + len; rect(g, x, bar + 2, 1, len, GB.rope);
+    if (k === 0) gBone(g, x, y, 7); else if (k === 1) gSkull(g, x - 2, y); else fillPoly(g, [[x - 2, y], [x + 3, y], [x + 2, y + 3], [x - 1, y + 7]], GB.b0); });
+  return outline(c, OUT);
+}
+/* A CARVED IDOL: a squat wooden goblin, all head and ears and teeth, on a slab, with a bowl of coins and a candle. 28x38. */
+export function bakeIdol(v) {
+  const paint = v % 2 ? '#6faa4a' : GB.red; const [c, g] = canvas(28, 38);
+  rect(g, 3, 33, 22, 5, GB.stoneD); rect(g, 3, 33, 22, 1, GB.stone);
+  rect(g, 7, 17, 14, 16, GB.wm); rect(g, 7, 17, 3, 16, GB.wl); rect(g, 18, 17, 3, 16, GB.wd);
+  ellipse(g, 14, 26, 5, 4, GB.wl); ellipse(g, 14, 26, 3, 2, GB.wm); px(g, 14, 26, GB.wd);
+  line(g, 8, 19, 12, 24, GB.wd, 1); line(g, 19, 19, 16, 24, GB.wd, 1); rect(g, 8, 30, 12, 1, paint);
+  fillPoly(g, [[6, 6], [1, 2], [5, 12]], GB.wl); fillPoly(g, [[21, 6], [26, 2], [22, 12]], GB.wm);
+  rect(g, 5, 3, 18, 14, GB.wm); rect(g, 5, 3, 18, 2, GB.wh); rect(g, 5, 5, 2, 12, GB.wl); rect(g, 12, 1, 4, 2, paint);
+  ellipse(g, 10, 9, 3, 3, GB.goldL); ellipse(g, 18, 9, 3, 3, GB.goldL); rect(g, 9, 8, 2, 2, OUT); rect(g, 17, 8, 2, 2, OUT);
+  rect(g, 8, 13, 12, 3, OUT); for (let x = 9; x < 19; x += 2) px(g, x, 13, GB.b0); px(g, 9, 15, GB.b0); px(g, 18, 15, GB.b0);
+  rect(g, 5, 11, 2, 1, paint); rect(g, 21, 11, 1, 1, paint);
+  ellipse(g, 4, 32, 3, 1.5, GB.h3); px(g, 3, 31, GB.goldL); px(g, 5, 31, GB.gold);
+  rect(g, 23, 29, 2, 4, GB.b0); px(g, 23, 28, GB.goldL); px(g, 23, 27, '#ff9a5c');
+  return outline(c, OUT);
+}
+/* A FENCE OF STAKES: sharpened poles leaning out at you, lashed together, one of them wearing a skull. 50x28. */
+export function bakeStakeFence(v) {
+  const rnd = mulberry(640 + v); const [c, g] = canvas(50, 28); const tips = [];
+  fillPoly(g, [[0, 28], [6, 24], [44, 24], [50, 28]], '#5e3b21');
+  for (let i = 0; i < 7; i++) { const x = 4 + i * 6, top = 3 + ((rnd() * 6) | 0), lean = i < 3 ? -2 : i > 3 ? 2 : 0;
+    fillPoly(g, [[x, 26], [x + 4, 26], [x + 4 + lean, top + 4], [x + 2 + lean, top], [x + lean, top + 4]], i % 2 ? GB.wm : GB.wl);
+    line(g, x + 1, 25, x + 1 + lean, top + 5, i % 2 ? GB.wl : GB.wh, 1);
+    fillPoly(g, [[x + 0.5 + lean, top + 3], [x + 2 + lean, top], [x + 3.5 + lean, top + 3]], GB.h0);
+    tips.push([x + 2 + lean, top]); }
+  for (let x = 2; x < 48; x += 2) px(g, x, 15 + ((x >> 3) & 1), GB.rope);
+  const [sx, sy] = tips[v % 2 ? 5 : 1]; gSkull(g, sx - 2, sy + 1);
+  return outline(c, OUT);
+}
+/* A LOOT HEAP: two tied sacks, somebody's chest with the lid thrown back, a goblet, a sword, and coins under all of it. 44x26. */
+export function bakeLootHeap(v) {
+  const rnd = mulberry(650 + v); const [c, g] = canvas(44, 26);
+  line(g, 40, 22, 42, 7, GB.irL, 1); rect(g, 39, 10, 5, 1, GB.gold); px(g, 42, 6, GB.wm);
+  ellipse(g, 22, 22, 20, 3.5, GB.coin); ellipse(g, 22, 21, 17, 2.5, GB.gold);
+  for (const [x, h, col] of [[8, 12, GB.h2], [15, 9, GB.h1]]) { ellipse(g, x, 22 - h / 2, 5, h / 2, col); rect(g, x - 1, 22 - h - 2, 3, 2, col); rect(g, x - 2, 22 - h, 5, 1, GB.rope); px(g, x - 2, 22 - h / 2, GB.h0); }
+  fillPoly(g, [[24, 13], [39, 13], [42, 5], [27, 5]], GB.wd); line(g, 27, 5, 41, 5, GB.wh, 1); line(g, 25, 10, 40, 10, GB.ir, 1);
+  rect(g, 24, 13, 15, 9, GB.wm); rect(g, 24, 13, 15, 1, GB.wh); rect(g, 24, 16, 15, 1, GB.ir); rect(g, 24, 20, 15, 1, GB.ir); rect(g, 30, 15, 3, 3, GB.gold); px(g, 31, 16, OUT);
+  ellipse(g, 31, 13, 6, 2, GB.goldL); px(g, 29, 12, '#fff1c0'); px(g, 34, 12, GB.gold);
+  if (v % 2 === 0) { rect(g, 19, 12, 3, 3, GB.irL); rect(g, 20, 15, 1, 3, GB.irL); rect(g, 19, 18, 3, 1, GB.irL); px(g, 20, 13, GB.red); }
+  else { ellipse(g, 20, 17, 4, 3, GB.ir); rect(g, 16, 17, 9, 1, GB.irD); line(g, 16, 16, 14, 11, GB.b0, 1); line(g, 24, 16, 26, 11, GB.b0, 1); }
+  for (let i = 0; i < 10; i++) px(g, 3 + ((rnd() * 38) | 0), 19 + ((rnd() * 5) | 0), rnd() < 0.5 ? GB.goldL : GB.coin);
+  return outline(c, OUT);
+}
+/* A COOKING SPIT: two forked sticks, a boar on the rod over the fire. Three frames of flame. 36x28. */
+export function bakeCookSpit() {
+  return [0, 1, 2].map(f => { const [c, g] = canvas(36, 28);
+    for (const x of [4, 31]) { rect(g, x, 9, 2, 17, GB.wm); line(g, x, 9, x - 2, 5, GB.wm, 1); line(g, x + 1, 9, x + 3, 5, GB.wm, 1); }
+    rect(g, 2, 7, 33, 1, GB.irD); rect(g, 1, 7, 1, 4, GB.irD);
+    const h = [5, 8, 6][f]; rect(g, 11, 24, 14, 2, GB.wd); rect(g, 13, 25, 10, 1, GB.wm);
+    fillPoly(g, [[12, 24], [18, 24 - h], [24, 24]], '#ff9a5c'); fillPoly(g, [[15, 24], [18 + (f - 1), 24 - h + 3], [21, 24]], GB.goldL);
+    ellipse(g, 18, 9, 8, 4, '#8a4a20'); ellipse(g, 17, 8 + (f === 1 ? 1 : 0), 6, 1.5, '#b8683a'); rect(g, 25, 8, 3, 3, '#8a4a20'); px(g, 27, 9, OUT); px(g, 23, 5, '#6b3a18'); px(g, 10, 8, '#6b3a18');
+    line(g, 13, 12, 11, 15, '#6b3a18', 1); line(g, 22, 12, 24, 15, '#6b3a18', 1); px(g, 16 + f, 14 + f * 2, GB.goldL);
+    gStones(g, 8, 26, 20);
+    return outline(c, OUT); });
+}
+/* A CAULDRON of goblin stew on three stones over a fire, a bone standing up out of it. Three frames. 26x26. */
+export function bakeCauldron() {
+  return [0, 1, 2].map(f => { const [c, g] = canvas(26, 26);
+    const h = [3, 5, 4][f]; fillPoly(g, [[7, 24], [13, 24 - h - 2], [19, 24]], '#ff9a5c'); fillPoly(g, [[10, 24], [13, 24 - h], [16, 24]], GB.goldL);
+    rect(g, 5, 17, 2, 7, GB.pot); rect(g, 19, 17, 2, 7, GB.pot);
+    ellipse(g, 13, 13, 10, 6, GB.pot); ellipse(g, 10, 12, 5, 3, '#3a3444'); px(g, 6, 11, '#5a5460');
+    rect(g, 3, 6, 20, 2, '#5a5460'); rect(g, 3, 6, 20, 1, GB.stone);
+    ellipse(g, 13, 6, 8, 1.5, '#7a8a3a');
+    for (const [x, y, k] of [[8, 5, 0], [13, 5, 1], [17, 6, 2]]) if (k !== f) { px(g, x, y, '#c9d86a'); px(g, x, y - 1, '#a8b84a'); }
+    line(g, 15, 6, 20, 2, GB.b0, 2); rect(g, 19, 1, 3, 2, GB.b1);
+    gStones(g, 3, 24, 20);
+    return outline(c, OUT); });
+}
+/* A BONE CHIME: a stick on a cord from the rock, bones, teeth and a little skull on strings under it. HUNG, sways. 24x40. */
+export function bakeBoneChime(v) {
+  const rnd = mulberry(660 + v);
+  const strings = [[5, 10, 0], [10, 16, 1], [14, 12, 2], [19, 8, 0]].map(([x, len, k]) => [x, len + ((rnd() * 4) | 0), v % 2 && k ? 3 - k : k]);
+  const frames = [-1, 0, 1].map(s => { const [c, g] = canvas(24, 40);
+    rect(g, 10, 0, 4, 2, GB.irD); rect(g, 11, 2, 2, 4, GB.rope);
+    line(g, 2, 7 + s, 21, 7 - s, GB.wm, 2);
+    for (const [x, len, k] of strings) { const ty = Math.round(7 + s - (2 * s * (x - 2)) / 19) + 2, bx = x + s, by = ty + len;
+      line(g, x, ty, bx, by, GB.rope, 1);
+      if (k === 0) gBone(g, bx, by, 6); else if (k === 1) gSkull(g, bx - 2, by); else fillPoly(g, [[bx - 2, by], [bx + 2, by], [bx, by + 5]], GB.b0); }
+    return outline(c, OUT); });
+  return [frames[0], frames[1], frames[2], frames[1]];
+}
+/* A DRYING RACK: hides thrown over a pole on two A-frames, and a small pelt laced into a hoop leaning on it. 40x34. */
+export function bakeHideRack(v) {
+  const rnd = mulberry(670 + v); const [c, g] = canvas(40, 34);
+  for (const x of [5, 34]) { line(g, x - 4, 33, x, 5, GB.wm, 2); line(g, x + 4, 33, x, 5, GB.wd, 2); }
+  rect(g, 1, 4, 38, 2, GB.wm); rect(g, 1, 4, 38, 1, GB.wh);
+  const hides = v % 2 ? [[8, 11, 20, GB.h1], [20, 12, 14, GB.h2]] : [[7, 10, 17, GB.h2], [18, 9, 23, GB.h0], [28, 6, 13, GB.h3]];
+  for (const [x, w, h, col] of hides) { fillPoly(g, [[x, 4], [x + w, 4], [x + w + 1, 3 + h], [x + w - 2, 6 + h], [x + w / 2, 4 + h], [x + 2, 7 + h], [x - 1, 2 + h]], col); rect(g, x, 3, w, 2, col); rect(g, x, 6, w, 1, GB.h3);
+    for (let i = 0; i < 6; i++) px(g, x + 1 + ((rnd() * (w - 2)) | 0), 8 + ((rnd() * (h - 5)) | 0), rnd() < 0.5 ? GB.h3 : GB.h0); }
+  const hx = v % 2 ? 9 : 31; circle(g, hx, 26, 7, GB.wm); circle(g, hx, 26, 5, GB.h0);
+  for (let a = 0; a < 6.28; a += 0.8) px(g, hx + Math.round(Math.cos(a) * 5), 26 + Math.round(Math.sin(a) * 5), GB.rope);
+  px(g, hx - 1, 25, GB.h2); px(g, hx + 1, 27, GB.h2);
+  return outline(c, OUT);
+}
+/* A WARNING POST: skulls up on iron spikes, and a board nailed on crooked with a red X or a red hand. 28x46. */
+export function bakeWarnPost(v) {
+  const [c, g] = canvas(28, 46);
+  rect(g, 12, 6, 4, 40, GB.wm); rect(g, 12, 6, 1, 40, GB.wl);
+  rect(g, 3, 8, 22, 2, GB.wd); rect(g, 3, 8, 22, 1, GB.wh);
+  for (const x of [4, 14, 23]) line(g, x, 8, x, 1, GB.irL, 1);
+  gSkull(g, 2, 3); gSkull(g, 21, 3); px(g, 14, 4, GB.red); px(g, 15, 5, GB.redD);
+  line(g, 5, 10, 4, 14, GB.redD, 1); line(g, 22, 10, 23, 13, GB.redD, 1);
+  fillPoly(g, [[3, 15], [25, 13], [25, 25], [3, 27]], GB.h1); fillPoly(g, [[3, 15], [25, 13], [25, 14.5], [3, 16.5]], GB.h0);
+  for (const [x, y] of [[5, 16], [23, 14], [5, 25], [23, 23]]) px(g, x, y, GB.irD);
+  if (v % 2 === 0) { line(g, 7, 17, 21, 23, GB.red, 2); line(g, 21, 16, 7, 23, GB.red, 2); }
+  else { ellipse(g, 14, 22, 3, 2.5, GB.red); for (const [x, y] of [[10, 17], [12, 16], [15, 16], [17, 17]]) rect(g, x, y, 1, 4, GB.red); rect(g, 18, 20, 2, 1, GB.red); }
+  rect(g, 4, 43, 7, 1, GB.b0); px(g, 3, 42, GB.b1); px(g, 3, 44, GB.b1); px(g, 11, 42, GB.b1); px(g, 11, 44, GB.b1); gSkull(g, 18, 40);
+  gStones(g, 8, 44, 12);
+  return outline(c, OUT);
+}
 // The hollow: roots across the floor, glowing spore pods, and the bones of what she ate.
 export function bakeRootDecor(seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(44, 10);
