@@ -151,7 +151,7 @@ export async function bossLab(BK, opts = {}) {
            steps at the companion house (column 292 on), and her second deck to the poop by the nets at 338 */
         if (lvId === 'flotilla' && boss.y < P.y - 30) { const px = P.x / TS, py = P.y / TS;
           if (py > 20) goalUp = 306 * TS + 8;   /* the shrouds that run down to the main deck */
-          else if (py > 14 && boss.y < 14 * TS) goalUp = 338 * TS + 8; }
+          else if (py > 14 && boss.y < 14 * TS) goalUp = 366 * TS + 8; }   /* the one ladder to the quarterdeck she does not cut */
         walker(goalUp); }
       else if (goal !== null && !k.block) { const gd = goal - P.x;
         /* THE PIT WARDEN'S HOLES are not a way to him: a step that would land on a course his pick took out is not taken */
