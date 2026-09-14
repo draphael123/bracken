@@ -1405,6 +1405,16 @@ export function bakeChainPost() { const [c, g] = canvas(12, 28); rect(g, 4, 2, 4
 // A floor grate for a fire pit. 16×6.
 export function bakeGrate() { const [c, g] = canvas(16, 6); rect(g, 0, 2, 16, 4, '#3a3a44'); for (let x = 1; x < 16; x += 3) rect(g, x, 1, 1, 5, '#6a707c'); rect(g, 0, 1, 16, 1, '#8b8378'); return c; }
 
+// THE BIG SILVER, for the world: a silver is the rarest thing lying in a level and it was the size of a gold coin, so
+// it read as one. Ten across with a struck boss and a bright rim; the small one stays for the HUD and the map.
+export function bakeSilverBig() {
+  const pal = { y: '#c9d1dc', Y: '#ffffff', d: '#7c8797', D: '#4a5260' };
+  const f = rows => outline(fromGrid(rows, pal, 1), OUT);
+  const face = ['..yyyyyy..', '.yYYYYyyy.', 'yYYyyyyyyd', 'yYyddddyyd', 'yYydYYdyyd', 'yyydYydyyd', 'yyyddddyyd', 'yyyyyyyydd', '.dyyyyyyd.', '..dddddd..'];
+  const turn = ['...yyyy...', '..YYyyyd..', '.YYyyyyyd.', '.Yyddddyd.', '.YydYydyd.', '.yydyydyd.', '.yyddddyd.', '.yyyyyydd.', '..dyyyyd..', '...dddd...'];
+  const edge = ['....yy....', '....Yd....', '....Yd....', '....Yd....', '....yd....', '....yd....', '....yd....', '....yd....', '....yd....', '....dd....'];
+  return [f(face), f(turn), f(edge), f(turn)];
+}
 // Silver coin: three hide in every wood. Four spin frames like the gold one.
 export function bakeSilver() {
   const pal = { y: '#c9d1dc', Y: '#ffffff', d: '#7c8797', D: '#4a5260' };

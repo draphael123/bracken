@@ -6,6 +6,13 @@ Music (CC0 / public domain, from OpenGameArt.org):
   https://opengameart.org/content/5-chiptunes-action
 - boss.ogg = "3. Boss Fight" and select.ogg = "4. Stage Select" from the same pack (CC0)
 
+- boss3.ogg = "battle_music_01-loop.ogg" from "Chiptune Battle Music" by pmiller (CC0)
+  https://opengameart.org/content/chiptune-battle-music
+- boss4.ogg = "Great Boss.ogg" from "Great Boss" by Spring Spring (CC0)
+  https://opengameart.org/content/great-boss
+- snow.ogg = "snow_stage_bpm162.ogg" from "Snow Stage" by MintoDog (CC0)
+  https://opengameart.org/content/snow-stage
+
 Sound effects (all CC0, see audio/manifest.json for the name -> file map):
 - "RPG Sound Pack" by artisticdude - https://opengameart.org/content/rpg-sound-pack (swings, clangs, interface)
 - "Goblins Sound Pack" by artisticdude - https://opengameart.org/content/goblins-sound-pack (goblin voices)

@@ -29,6 +29,11 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
   // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
   const lifts = (L.moversExtra || []).filter(m => m.kind === 'lift' || m.kind === 'growcap').map(m => ({ x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
+  /* THE OTHER RIDES. A platform mover (ent 'mover': a run of `range` tiles, or a rise of `rise` tiles when vertical) and
+     a ferry raft (x0..x1 along one row) are a band of footing: step on anywhere along the run, step off anywhere along it.
+     They were why a third of the rivers and decks came back ASSISTED with their silver in doubt. */
+  for (const e of (L.ents || [])) if (e.t === 'mover') lifts.push(e.vert ? { x0: e.x, x1: e.x + (e.len || 2) - 1, y0: e.y - (e.rise || e.range || 4), y1: e.y } : { x0: e.x, x1: e.x + (e.len || 2) - 1 + (e.range || 0), y0: e.y, y1: e.y });
+  for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap') lifts.push({ x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
   const swings = (L.moversExtra || []).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
   const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
 

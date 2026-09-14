@@ -10,6 +10,7 @@
 //   talents   every talent node is read somewhere
 //   traps     you can always get back out
 //   signs     no sign longer than two lines on the reading panel
+//   killzones no reachable tile kills a hero who stands on it
 // The labs (fight and boss) need the page: run BK.bossLab() in the browser after a combat change.
 import { execSync, spawnSync } from 'child_process';
 import { readdirSync, statSync } from 'fs';
@@ -29,7 +30,7 @@ walk('src'); walk('tools');
 const results = [];
 { const bad = files.map(f => [f, spawnSync(process.execPath, ['--check', f], { cwd: ROOT, encoding: 'utf8' })]).filter(([, r]) => r.status !== 0);
   results.push({ name: 'syntax', ok: !bad.length, ms: 0, last: bad.length ? bad.map(([f]) => f).join(', ') : files.length + ' files parse', out: bad.map(([f, r]) => f + ': ' + r.stderr) }); }
-for (const t of ['tells', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'traps', 'signs']) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
+for (const t of ['tells', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'traps', 'signs', 'killzones']) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
 
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }

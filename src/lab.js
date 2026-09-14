@@ -102,7 +102,7 @@ export async function bossLab(BK, opts = {}) {
     const glass = []; if (boss.t === 'roc') { const fy = Math.floor(A.floor / TS); for (let x = Math.floor(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) for (let y = fy - 3; y <= fy + 2; y++) if (L.grid[y * L.W + x] === T.CRYST) { if (L.grid[(y + 1) * L.W + x] !== T.AIR) glass.push(x * TS + 8); break; } }
     /* only glass with rock under it (the middle strip is over a shaft), nearest the middle of the room first; the bot hops between three of them so it never stands long enough to crack one */
     { const mid = (A.x0 + A.x1) / 2; glass.sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid)); }
-    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0;
+    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     for (; f < maxF && boss.alive; f++) {
       P.hp = P.maxHp; P.dead = 0; P.st = Math.max(P.st, 40);
       /* THE DEEP: too light to stand on the bottom without a stone. A player picks one up on the way in; the bot is handed one, and another if his is taken */
@@ -113,6 +113,7 @@ export async function bossLab(BK, opts = {}) {
       if (open && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.minD = Math.min(tw.minD, Math.round(ad)); if (P.atk >= 0) tw.swung++; }
       wasOpen = open;
       k.left = false; k.right = false; k.block = false; k.up = false; k.down = false; k.jump = false;
+      if (h === 'paladin' && f < holdC) k.block = true;
       let goal = null, strike = false;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
@@ -124,7 +125,7 @@ export async function bossLab(BK, opts = {}) {
       if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : 0.14)))) {
         P.face = Math.sign(d) || P.face;
-        if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) k.block = true; else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
+        if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40; } else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
       } else if (incoming && SHIELDED(h)) { P.face = Math.sign(incoming.x - P.x) || P.face; k.block = true; }
       else if (open) { goal = boss.x; strike = true; }
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 34;                       // close enough to be swung at
@@ -157,5 +158,76 @@ export async function bossLab(BK, opts = {}) {
     await yieldNow();
   }
   out.done = true; out.ms = Date.now() - out.started;
+  return out;
+}
+
+// THE COLLECTION LAB. The reach model cannot ride a lily pad, pogo a wasp or fell a pine, so a third of the wood
+// comes back ASSISTED and its silver in doubt. This does not model the level: it PLAYS it. The playtest walker goes
+// for every silver, key, relic and quest item in a level in order along the way, with god mode on so a fight
+// does not end the walk, and writes down what it picked up and what it could not get to. What it misses is a list
+// to look at by hand - the walker is greedy, not clever - not a verdict.
+//   await BK.collectLab({ levels: ['wood'], secsPer: 45 })   -> window.__collectLab
+export async function collectLab(BK, opts = {}) {
+  const lvm = await import('./level.js'), PT = await import('./playtest.js'), TS = 16;
+  const levels = opts.levels || lvm.LEVELS.filter(l => !l.hidden && !/^(shop|trial|custom)/.test(l.id)).map(l => l.id);
+  const out = { rows: [], started: Date.now(), progress: 0, total: levels.length };
+  if (typeof window !== 'undefined') window.__collectLab = out;
+  const silversOf = () => { const s = BK.silvers; return typeof s === 'function' ? s() : (s || []); };
+  for (const id of levels) {
+    BK.setHero(opts.hero || 'knight'); BK.load(lvm.LEVELS.findIndex(l => l.id === id)); BK.state = 'play'; BK.god = true; BK.sim(10);
+    const P = BK.P, k = BK.keys;
+    for (const sv of silversOf()) sv.got = false;
+    const items = [...silversOf().map(s => ({ kind: 'silver', ref: s, x: s.x, y: s.y })),
+      ...BK.props().filter(p => (p.t === 'stray' || p.t === 'relic' || p.t === 'key') && !p.got).map(p => ({ kind: p.t === 'stray' ? 'quest:' + (p.kind || '') : p.t, ref: p, x: p.x, y: p.y }))]
+      .sort((a, b) => a.x - b.x);
+    const walker = PT.makeBot(BK), got = [], missed = [];
+    for (const it of items) {
+      if (it.ref.got) { got.push(it); continue; }
+      const budget = Math.round((opts.secsPer || 45) * 60); let f = 0, stuck = 0, bestD = 1e9;
+      for (; f < budget && !it.ref.got; f++) {
+        /* a fall is a respawn at the checkpoint, and the game has to be let do it: holding the hero alive every frame kept him falling out of the world forever */
+        if (P.dead) { BK.sim(1); continue; }
+        const r = walker(it.x); const dd = Math.hypot(it.x - P.x, it.y - P.y); if (dd < bestD - 4) { bestD = dd; stuck = 0; } else stuck++;
+        if (r === 'stuck' || stuck > 60 * 20) break;
+        BK.sim(1);
+        if (f % 600 === 599) await new Promise(r0 => setTimeout(r0, 0));
+      }
+      k.left = k.right = k.up = k.down = k.jump = false;
+      (it.ref.got ? got : missed).push({ kind: it.kind, tile: Math.floor(it.x / TS) + ',' + Math.floor(it.y / TS), closest: Math.round(bestD), secs: +(f / 60).toFixed(1) });
+    }
+    BK.god = false; out.progress++;
+    out.rows.push({ lvl: id, items: items.length, got: got.length, missed });
+    await new Promise(r0 => setTimeout(r0, 0));
+  }
+  out.done = true; out.ms = Date.now() - out.started;
+  return out;
+}
+
+// THE KILL-ZONE SWEEP, with the real loop: every Nth tile the reach fill says you can stand on, a hero is put down on
+// it with no creature in the level and left there for a fifth of a second. Anything that hurts or kills him is written
+// down. tools/killzones.mjs asks the level data the same question; this asks the running game.
+export async function killLab(BK, opts = {}) {
+  const lvm = await import('./level.js'), RC = await import('./reachcore.js');
+  const levels = opts.levels || lvm.LEVELS.filter(l => !l.hidden && !/^(shop|trial|custom)/.test(l.id)).map(l => l.id);
+  const every = opts.every || 5, bad = [], out = { summary: { levels: 0, tiles: 0, bad: 0 }, bad };
+  if (typeof window !== 'undefined') window.__killLab = out;
+  for (const id of levels) {
+    const i = lvm.LEVELS.findIndex(l => l.id === id); if (i < 0) continue;
+    const Lb = lvm.LEVELS[i].build(); const { seen } = RC.floodReach(Lb, lvm.T);
+    BK.setHero('knight'); BK.load(i); BK.state = 'play'; BK.god = false; BK.sim(5);
+    const P = BK.P; let n = 0, lvBad = 0;
+    for (const key of seen) { if (n++ % every) continue;
+      const [x, y] = key.split(',').map(Number);
+      for (const e of BK.enemies()) e.alive = false;
+      BK.tp(x, y); P.hp = P.maxHp; P.dead = 0; P.inv = 0; P.vx = 0; P.vy = 0;
+      let hurt = 0; for (let f = 0; f < 12; f++) { const was = P.hp; BK.sim(1); if (P.hp < was) hurt += was - P.hp; if (P.dead) break; }
+      out.summary.tiles++;
+      if (P.dead || hurt > 0) { lvBad++; if (bad.length < 200) bad.push({ lvl: id, tile: x + ',' + y, dead: !!P.dead, hurt, at: Math.round(P.x / 16) + ',' + Math.round(P.y / 16) }); }
+      if (n % 400 === 0) await new Promise(r0 => setTimeout(r0, 0));
+    }
+    out.summary.levels++; out.summary.bad += lvBad;
+    await new Promise(r0 => setTimeout(r0, 0));
+  }
+  out.done = true; out.bad = bad.length ? bad : 0;
   return out;
 }
