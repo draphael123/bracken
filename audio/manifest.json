@@ -51,17 +51,29 @@
  ],
  "gobDie": [
   "audio/sfx/gobDie_0.ogg",
-  "audio/sfx/gobDie_1.ogg"
+  "audio/sfx/gobDie_1.ogg",
+  "audio/sfx/vo/gobDie_x_0.ogg",
+  "audio/sfx/vo/gobDie_x_1.ogg",
+  "audio/sfx/vo/gobDie_x_2.ogg",
+  "audio/sfx/vo/gobDie_x_3.ogg"
  ],
  "gobHurt": [
   "audio/sfx/gobHurt_0.ogg",
   "audio/sfx/gobHurt_1.ogg",
-  "audio/sfx/gobHurt_2.ogg"
+  "audio/sfx/gobHurt_2.ogg",
+  "audio/sfx/vo/gobHurt_x_0.ogg",
+  "audio/sfx/vo/gobHurt_x_1.ogg",
+  "audio/sfx/vo/gobHurt_x_2.ogg",
+  "audio/sfx/vo/gobHurt_x_3.ogg",
+  "audio/sfx/vo/gobHurt_x_4.ogg"
  ],
  "roar": [
   "audio/sfx/roar_0.ogg",
   "audio/sfx/roar_1.ogg",
-  "audio/sfx/roar_2.ogg"
+  "audio/sfx/roar_2.ogg",
+  "audio/sfx/vo/roar_x_0.ogg",
+  "audio/sfx/vo/roar_x_1.ogg",
+  "audio/sfx/vo/roar_x_2.ogg"
  ],
  "bossHurt": [
   "audio/sfx/bossHurt_0.ogg",
@@ -86,5 +98,199 @@
   "audio/sfx/gobChatter_0.ogg",
   "audio/sfx/gobChatter_3.ogg",
   "audio/sfx/gobChatter_5.ogg"
+ ],
+ "vo_m1_attack": [
+  "audio/sfx/vo/m1_attack_0.ogg",
+  "audio/sfx/vo/m1_attack_1.ogg",
+  "audio/sfx/vo/m1_attack_2.ogg",
+  "audio/sfx/vo/m1_attack_3.ogg"
+ ],
+ "vo_m1_hurt": [
+  "audio/sfx/vo/m1_hurt_0.ogg",
+  "audio/sfx/vo/m1_hurt_1.ogg",
+  "audio/sfx/vo/m1_hurt_2.ogg",
+  "audio/sfx/vo/m1_hurt_3.ogg"
+ ],
+ "vo_m1_die": [
+  "audio/sfx/vo/m1_die_0.ogg",
+  "audio/sfx/vo/m1_die_1.ogg",
+  "audio/sfx/vo/m1_die_2.ogg"
+ ],
+ "vo_m1_alert": [
+  "audio/sfx/vo/m1_alert_0.ogg",
+  "audio/sfx/vo/m1_alert_1.ogg",
+  "audio/sfx/vo/m1_alert_2.ogg"
+ ],
+ "vo_m2_attack": [
+  "audio/sfx/vo/m2_attack_0.ogg",
+  "audio/sfx/vo/m2_attack_1.ogg"
+ ],
+ "vo_m2_hurt": [
+  "audio/sfx/vo/m2_hurt_0.ogg",
+  "audio/sfx/vo/m2_hurt_1.ogg",
+  "audio/sfx/vo/m2_hurt_2.ogg"
+ ],
+ "vo_m2_die": [
+  "audio/sfx/vo/m2_die_0.ogg",
+  "audio/sfx/vo/m2_die_1.ogg",
+  "audio/sfx/vo/m2_die_2.ogg"
+ ],
+ "vo_m3_effort": [
+  "audio/sfx/vo/m3_effort_0.ogg",
+  "audio/sfx/vo/m3_effort_1.ogg",
+  "audio/sfx/vo/m3_effort_2.ogg"
+ ],
+ "vo_m3_attack": [
+  "audio/sfx/vo/m3_attack_0.ogg",
+  "audio/sfx/vo/m3_attack_1.ogg",
+  "audio/sfx/vo/m3_attack_2.ogg"
+ ],
+ "vo_m3_hurt": [
+  "audio/sfx/vo/m3_hurt_0.ogg",
+  "audio/sfx/vo/m3_hurt_1.ogg",
+  "audio/sfx/vo/m3_hurt_2.ogg",
+  "audio/sfx/vo/m3_hurt_3.ogg"
+ ],
+ "vo_m3_die": [
+  "audio/sfx/vo/m3_die_0.ogg",
+  "audio/sfx/vo/m3_die_1.ogg",
+  "audio/sfx/vo/m3_die_2.ogg"
+ ],
+ "vo_m4_attack": [
+  "audio/sfx/vo/m4_attack_0.ogg",
+  "audio/sfx/vo/m4_attack_1.ogg"
+ ],
+ "vo_m4_hurt": [
+  "audio/sfx/vo/m4_hurt_0.ogg",
+  "audio/sfx/vo/m4_hurt_1.ogg"
+ ],
+ "vo_m4_die": [
+  "audio/sfx/vo/m4_die_0.ogg",
+  "audio/sfx/vo/m4_die_1.ogg",
+  "audio/sfx/vo/m4_die_2.ogg"
+ ],
+ "vo_m4_alert": [
+  "audio/sfx/vo/m4_alert_0.ogg",
+  "audio/sfx/vo/m4_alert_1.ogg"
+ ],
+ "vo_f3_attack": [
+  "audio/sfx/vo/f3_attack_0.ogg",
+  "audio/sfx/vo/f3_attack_1.ogg",
+  "audio/sfx/vo/f3_attack_2.ogg"
+ ],
+ "vo_f3_hurt": [
+  "audio/sfx/vo/f3_hurt_0.ogg",
+  "audio/sfx/vo/f3_hurt_1.ogg",
+  "audio/sfx/vo/f3_hurt_2.ogg"
+ ],
+ "vo_f3_jump": [
+  "audio/sfx/vo/f3_jump_0.ogg",
+  "audio/sfx/vo/f3_jump_1.ogg",
+  "audio/sfx/vo/f3_jump_2.ogg"
+ ],
+ "vo_f3_die": [
+  "audio/sfx/vo/f3_die_0.ogg",
+  "audio/sfx/vo/f3_die_1.ogg"
+ ],
+ "vo_dp_die": [
+  "audio/sfx/vo/dp_die_0.ogg",
+  "audio/sfx/vo/dp_die_1.ogg",
+  "audio/sfx/vo/dp_die_2.ogg",
+  "audio/sfx/vo/dp_die_3.ogg",
+  "audio/sfx/vo/dp_die_4.ogg",
+  "audio/sfx/vo/dp_die_5.ogg"
+ ],
+ "vo_hd_hurt": [
+  "audio/sfx/vo/hd_hurt_0.ogg",
+  "audio/sfx/vo/hd_hurt_1.ogg",
+  "audio/sfx/vo/hd_hurt_2.ogg",
+  "audio/sfx/vo/hd_hurt_3.ogg"
+ ],
+ "vo_hd_die": [
+  "audio/sfx/vo/hd_die_0.ogg",
+  "audio/sfx/vo/hd_die_1.ogg",
+  "audio/sfx/vo/hd_die_2.ogg",
+  "audio/sfx/vo/hd_die_3.ogg"
+ ],
+ "vo_hum_alert": [
+  "audio/sfx/vo/hum_alert_0.ogg",
+  "audio/sfx/vo/hum_alert_1.ogg",
+  "audio/sfx/vo/hum_alert_2.ogg",
+  "audio/sfx/vo/hum_alert_3.ogg",
+  "audio/sfx/vo/hum_alert_4.ogg",
+  "audio/sfx/vo/hum_alert_5.ogg",
+  "audio/sfx/vo/hum_alert_6.ogg",
+  "audio/sfx/vo/hum_alert_7.ogg"
+ ],
+ "vo_gobbig_hurt": [
+  "audio/sfx/vo/gobbig_hurt_0.ogg",
+  "audio/sfx/vo/gobbig_hurt_1.ogg",
+  "audio/sfx/vo/gobbig_hurt_2.ogg"
+ ],
+ "vo_gobbig_die": [
+  "audio/sfx/vo/gobbig_die_0.ogg",
+  "audio/sfx/vo/gobbig_die_1.ogg",
+  "audio/sfx/vo/gobbig_die_2.ogg"
+ ],
+ "vo_ogre_hurt": [
+  "audio/sfx/vo/ogre_hurt_0.ogg",
+  "audio/sfx/vo/ogre_hurt_1.ogg",
+  "audio/sfx/vo/ogre_hurt_2.ogg"
+ ],
+ "vo_ogre_die": [
+  "audio/sfx/vo/ogre_die_0.ogg",
+  "audio/sfx/vo/ogre_die_1.ogg",
+  "audio/sfx/vo/ogre_die_2.ogg"
+ ],
+ "vo_ogre_alert": [
+  "audio/sfx/vo/ogre_alert_0.ogg",
+  "audio/sfx/vo/ogre_alert_1.ogg",
+  "audio/sfx/vo/ogre_alert_2.ogg"
+ ],
+ "vo_bark": [
+  "audio/sfx/vo/bark_0.ogg",
+  "audio/sfx/vo/bark_1.ogg",
+  "audio/sfx/vo/bark_2.ogg"
+ ],
+ "vo_scream": [
+  "audio/sfx/vo/scream_0.ogg",
+  "audio/sfx/vo/scream_1.ogg",
+  "audio/sfx/vo/scream_2.ogg"
+ ],
+ "vo_bug": [
+  "audio/sfx/vo/bug_0.ogg",
+  "audio/sfx/vo/bug_1.ogg",
+  "audio/sfx/vo/bug_2.ogg",
+  "audio/sfx/vo/bug_3.ogg",
+  "audio/sfx/vo/bug_4.ogg",
+  "audio/sfx/vo/bug_5.ogg",
+  "audio/sfx/vo/bug_6.ogg",
+  "audio/sfx/vo/bug_7.ogg"
+ ],
+ "vo_slime": [
+  "audio/sfx/vo/slime_0.ogg",
+  "audio/sfx/vo/slime_1.ogg",
+  "audio/sfx/vo/slime_2.ogg",
+  "audio/sfx/vo/slime_3.ogg",
+  "audio/sfx/vo/slime_4.ogg",
+  "audio/sfx/vo/slime_5.ogg",
+  "audio/sfx/vo/slime_6.ogg",
+  "audio/sfx/vo/slime_7.ogg"
+ ],
+ "vo_alien": [
+  "audio/sfx/vo/alien_0.ogg",
+  "audio/sfx/vo/alien_1.ogg",
+  "audio/sfx/vo/alien_2.ogg",
+  "audio/sfx/vo/alien_3.ogg"
+ ],
+ "vo_snore": [
+  "audio/sfx/vo/snore_0.ogg",
+  "audio/sfx/vo/snore_1.ogg"
+ ],
+ "croak": [
+  "audio/sfx/vo/croak_x_0.ogg",
+  "audio/sfx/vo/croak_x_1.ogg",
+  "audio/sfx/vo/croak_x_2.ogg",
+  "audio/sfx/vo/croak_x_3.ogg"
  ]
 }

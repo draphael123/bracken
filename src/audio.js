@@ -65,10 +65,31 @@ function file(name, v = 0.6, rate = 1, dest = null) {
   if (!ac || !sfxFiles) return false;
   const arr = clips[name]; if (!arr) return false;
   const opts = arr.filter(Boolean); if (!opts.length) return false;
-  const s = ac.createBufferSource(); s.buffer = opts[(Math.random() * opts.length) | 0]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
+  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
   const g = ac.createGain(); g.gain.value = v; s.connect(g); g.connect(dest || out()); s.start();
   return true;
 }
+
+// THE SAME TAKE TWICE IN A ROW IS WHAT MAKES A CROWD SOUND LIKE ONE MAN. Every pool remembers the take it
+// played last and never plays it again next.
+const lastTake = {};
+function takeOf(name, n) { let i = (Math.random() * n) | 0; if (n > 1 && i === lastTake[name]) i = (i + 1 + ((Math.random() * (n - 1)) | 0)) % n; lastTake[name] = i; return i; }
+// A VOICE: a recorded take from a kit, at a pitch for the body it is coming out of, and through a lowpass when
+// that body has a helmet on. Returns false while the clip is still loading, so every caller keeps its synth.
+function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
+  if (!ac || !sfxFiles || !name) return false;
+  const opts = (clips[name] || []).filter(Boolean); if (!opts.length) return false;
+  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.95 + Math.random() * 0.1);
+  const g = ac.createGain(); g.gain.value = v;
+  if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; f.Q.value = 0.8; s.connect(f); f.connect(g); } else s.connect(g);
+  g.connect(out()); s.start(ac.currentTime + delay); return true;
+}
+// a kit's pool for an act, falling back to the nearest act it does have, then to a kit that is one pool
+const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
+  for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
+// THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
+const HERO_KIT = { knight: { kit: 'm3', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 } };
+function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
 function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = null) {
@@ -112,7 +133,7 @@ const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
 export const SFX = {
-  pJump() { if (heroVoice === 'pyro') { noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
+  pJump() { if (heroVoice === 'pyro') { if (Math.random() < 0.35) heroVo('jump', 0.28); noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
     else { tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
   pLand(surf) { if (heroVoice === 'pyro') { if (surf === 'water') { SFX.land('water'); return; } noise(0.09, 0.14, 520, 0.5); tone('sine', 150, 60, 0.08, 0.1); if (surf === 'wood' || surf === 'stone') file('land', 0.14, 1.25); return; }
     SFX.land(surf); tone('square', vary(1500), 1050, 0.04, 0.05); noise(0.04, 0.07, 3600, 1.4); },
@@ -120,23 +141,23 @@ export const SFX = {
     if (heroVoice === 'pirate') { if (surf === 'water') { noise(0.06, 0.08, 900, 0.5); return; } noise(0.035, 0.06, 420, 0.6); if (stepN % 2) tone('sine', 120, 80, 0.04, 0.03); return; }
     if (heroVoice === 'pyro') { if (surf === 'water') { noise(0.06, 0.08, 900, 0.5); return; } noise(0.04, 0.05, vary(650), 0.5); if (stepN % 2) file('step', 0.07, 1.3); return; }
     SFX.step(surf); if (stepN % 2 === 0) tone('square', vary(2900), 2400, 0.025, 0.022); },
-  pSlash() { if (heroVoice === 'reaper') { noise(0.26, 0.13, 900, 0.35, 0.02); tone('sine', vary(180), 70, 0.22, 0.09); tone('triangle', vary(1400), 700, 0.12, 0.03, 0.03); return; }
+  pSlash() { if (gate('heroShout', 1.1) && Math.random() < 0.3) heroVo('attack', 0.3); if (heroVoice === 'reaper') { noise(0.26, 0.13, 900, 0.35, 0.02); tone('sine', vary(180), 70, 0.22, 0.09); tone('triangle', vary(1400), 700, 0.12, 0.03, 0.03); return; }
     if (heroVoice === 'pirate') { noise(0.09, 0.2, 3400, 0.75, 0.01); tone('triangle', vary(2600), 1500, 0.09, 0.045); tone('sine', vary(700), 420, 0.07, 0.03, 0.02); return; }
     if (heroVoice === 'pyro') { file('swing', 0.26, 0.72); noise(0.2, 0.16, 1300, 0.5, 0.02); tone('sine', vary(300), 100, 0.16, 0.08); crackle(4, 0.03); return; }
     file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); tone('triangle', vary(2300), 1900, 0.1, 0.025, 0.03); },
-  pHurt() { if (heroVoice === 'reaper') { tone('sawtooth', 150, 50, 0.34, 0.2); noise(0.3, 0.12, 500, 0.4); tone('sine', 90, 40, 0.4, 0.12, 0.04); return; }
-    if (heroVoice === 'pirate') { file('hurt', 0.5, 0.86) || tone('sawtooth', 210, 70, 0.3, 0.24); noise(0.16, 0.16, 900, 0.5); return; }
-    if (heroVoice === 'pyro') { file('hurt', 0.55, 1.3) || tone('sawtooth', 340, 90, 0.28, 0.22); noise(0.22, 0.1, 3000, 0.8, 0.03); return; }
-    file('hurt', 0.6) || (tone('sawtooth', 240, 60, 0.32, 0.25), noise(0.15, 0.2, 400)); tone('square', 900, 600, 0.06, 0.07); chain(0.02, 2); },
-  pDie() { if (heroVoice === 'pyro') { file('hurt', 0.6, 1.1); noise(0.9, 0.22, 1800, 0.4); tone('sine', 420, 60, 0.9, 0.18); crackle(6, 0.1); return; }
-    SFX.die(); for (let i = 0; i < 5; i++) tone('square', vary(1300 - i * 120), 500, 0.05, 0.06, 0.15 + i * 0.07); },
+  pHurt() { if (heroVoice === 'reaper') { heroVo('hurt', 0.5); tone('sawtooth', 150, 50, 0.34, 0.12); noise(0.3, 0.12, 500, 0.4); tone('sine', 90, 40, 0.4, 0.12, 0.04); return; }
+    if (heroVoice === 'pirate') { heroVo('hurt', 0.55) || file('hurt', 0.5, 0.86) || tone('sawtooth', 210, 70, 0.3, 0.24); noise(0.16, 0.16, 900, 0.5); return; }
+    if (heroVoice === 'pyro') { heroVo('hurt', 0.5) || file('hurt', 0.55, 1.3) || tone('sawtooth', 340, 90, 0.28, 0.22); noise(0.22, 0.1, 3000, 0.8, 0.03); return; }
+    heroVo('hurt', 0.55) || file('hurt', 0.6) || (tone('sawtooth', 240, 60, 0.32, 0.25), noise(0.15, 0.2, 400)); tone('square', 900, 600, 0.06, 0.07); chain(0.02, 2); },
+  pDie() { if (heroVoice === 'pyro') { heroVo('die', 0.65) || file('hurt', 0.6, 1.1); noise(0.9, 0.22, 1800, 0.4); tone('sine', 420, 60, 0.9, 0.18); crackle(6, 0.1); return; }
+    if (!heroVo('die', 0.7)) SFX.die(); else tone('sawtooth', 320, 40, 0.7, 0.1); for (let i = 0; i < 5; i++) tone('square', vary(1300 - i * 120), 500, 0.05, 0.06, 0.15 + i * 0.07); },
   pDodge() { if (heroVoice === 'reaper') { noise(0.3, 0.14, 400, 0.3); tone('sine', 220, 80, 0.24, 0.06); return; }
     if (heroVoice === 'pirate') { noise(0.16, 0.2, 1100, 0.45); tone('triangle', 300, 160, 0.1, 0.05); return; }
     if (heroVoice === 'pyro') { noise(0.2, 0.2, 700, 0.4); tone('triangle', 260, 520, 0.12, 0.05); crackle(2, 0.05); return; }
     SFX.dodge(); chain(0.025, 3); tone('sine', 110, 60, 0.1, 0.12, 0.12); },
   pPogo() { if (heroVoice === 'pyro') { noise(0.08, 0.22, 1800, 0.8); tone('triangle', vary(480), vary(920), 0.11, 0.12); crackle(2); return; }
     tone('square', vary(480), vary(980), 0.12, 0.15); tone('sine', vary(1900), 2500, 0.08, 0.06); },
-  pEffort() { file('effort', 0.22, heroVoice === 'pyro' ? 1.75 : 1.35); },
+  pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, heroVoice === 'pyro' ? 1.75 : 1.35); },
   // the pyromancer's own fire
   ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
   heatFull() { tone('triangle', 880, 880, 0.14, 0.08); tone('triangle', 1320, 1320, 0.2, 0.08, 0.07); noise(0.3, 0.12, 1200, 0.4); },
@@ -223,12 +244,12 @@ const PAL = {
   pJump() { tone('square', vary(200), vary(410), 0.11, 0.07); plate(0.04); noise(0.08, 0.06, 500, 0.6); },
   pLand(surf) { SFX.land(surf); tone('sine', 120, 48, 0.14, 0.2); plate(0.05); },
   pStep(surf) { stepN++; SFX.step(surf); tone('sine', vary(130), 70, 0.05, 0.07); if (stepN % 2) plate(0.02); },
-  pSlash() { file('swing', 0.5, 0.7) || noise(0.16, 0.24, 900, 0.5); noise(0.18, 0.12, 380, 0.5, 0.02); tone('sine', vary(170), 60, 0.2, 0.09, 0.06); },
-  pHurt() { file('hurt', 0.6, 0.82) || (tone('sawtooth', 200, 55, 0.34, 0.25), noise(0.15, 0.2, 400)); plate(0.07); },
-  pDie() { SFX.die(); for (let i = 0; i < 4; i++) { plate(0.05); tone('sine', 110 - i * 12, 50, 0.12, 0.12, 0.15 + i * 0.1); } bell(523, 1.6, 0.07, 0.55); },
+  pSlash() { if (gate('heroShout', 1.1) && Math.random() < 0.3) heroVo('attack', 0.3); file('swing', 0.5, 0.7) || noise(0.16, 0.24, 900, 0.5); noise(0.18, 0.12, 380, 0.5, 0.02); tone('sine', vary(170), 60, 0.2, 0.09, 0.06); },
+  pHurt() { heroVo('hurt', 0.55) || file('hurt', 0.6, 0.82) || (tone('sawtooth', 200, 55, 0.34, 0.25), noise(0.15, 0.2, 400)); plate(0.07); },
+  pDie() { if (!heroVo('die', 0.7)) SFX.die(); for (let i = 0; i < 4; i++) { plate(0.05); tone('sine', 110 - i * 12, 50, 0.12, 0.12, 0.15 + i * 0.1); } bell(523, 1.6, 0.07, 0.55); },
   pDodge() { noise(0.12, 0.22, 320, 0.6); tone('sine', 95, 40, 0.16, 0.22); plate(0.05); },
   pPogo() { tone('square', vary(380), vary(760), 0.12, 0.13); bell(1046, 0.35, 0.05, 0.02); },
-  pEffort() { file('effort', 0.22, 1.1); },
+  pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, 1.1); },
 };
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
 
@@ -459,7 +480,7 @@ Object.assign(SFX, {
 const GOB_V = { sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3 };
 Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
-  foeNotice(t) { if (!gate('notice', 0.3)) return; const r = GOB_V[t];
+  foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
     if (r) { file('gobHurt', 0.3, r * 1.2) || tone('square', 500 * r, 800 * r, 0.08, 0.08); tone('square', 700 * r, 1150 * r, 0.06, 0.04, 0.03); return; }
     const B = { hound: SFX.bark, greathound: SFX.bark, goat: SFX.bleat, harpy: SFX.screech, spider: SFX.hiss, bat: SFX.chitter, wasp: SFX.buzz, hopper: SFX.ribbit, sporeling: SFX.squelch, wight: SFX.wightMoan, hare: SFX.hareSqueak, crow: SFX.caw, troll: SFX.bellow, grub: SFX.squelch, shardling: SFX.shardBristle, lurker: SFX.squelch }[t]; if (B) B(); },
   // it hit you, or you fell: the goblins laugh
@@ -492,8 +513,8 @@ Object.assign(SFX, {
 });
 export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind });
 // ---------- every creature dies in its own voice, and is hurt in its own voice ----------
-const gob = (rate, v = 0.5) => file('gobDie', v, rate);
-const gobH = (rate, v = 0.4) => file('gobHurt', v, rate);
+const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
+const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
 const DIE = {
   // UNDERLEAF. Everything here dies the way it lived: the assassin without a sound worth the name, the
   // berserker taking the whole street with him, and the old woman's stick going over on the cobbles.
@@ -715,10 +736,46 @@ const HURT = {
   windcaller() { tone('square', 700, 420, 0.1, 0.14); tone('sine', 1300, 1700, 0.08, 0.08, 0.04); },
 };
 // UNDERLEAF. A goblin asleep, and a candle being struck in a window across the street.
-SFX.snore = () => { if (!gate('snore', 0.4)) return; tone('sawtooth', 90, 58, 0.5, 0.05); noise(0.45, 0.05, 240, 0.8, 0.02); tone('sine', 150, 110, 0.3, 0.03, 0.35); };
+SFX.snore = () => { if (!gate('snore', 0.4)) return; if (voice('vo_snore', 0.2, 0.9)) return; tone('sawtooth', 90, 58, 0.5, 0.05); noise(0.45, 0.05, 240, 0.8, 0.02); tone('sine', 150, 110, 0.3, 0.03, 0.35); };
 SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.08, 0.05, 0.02); tone('sine', 620, 740, 0.22, 0.04, 0.06); };
-SFX.dieOf = t => DIE[t] || null;
-SFX.hurtOf = t => HURT[t] || null;
+// THE CAST. A man in this game died on a square wave or on a goblin slowed down. Now: people REPLACE their synth
+// with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice
+// over their own, and whatever the body is made of - plate, mail, cloth - is heard under both.
+const CAST = {
+  swornsword: { kit: 'm2', rate: 1, mat: 'mail', human: true }, hedgeknight: { kit: 'm4', rate: 0.92, lp: 1600, mat: 'plate', human: true },
+  closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm1', rate: 1.18, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
+  crossbow: { kit: 'm2', rate: 1.08, mat: 'mail', human: true },
+  cutlass: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, boarder: { kit: 'm2', rate: 0.9, mat: 'cloth', human: true }, marine: { kit: 'm1', rate: 1.12, mat: 'cloth', human: true },
+  bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm1', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm2', rate: 1, mat: 'cloth', human: true },
+  netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
+  watch: { kit: 'm2', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
+  folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
+  troll: { kit: 'ogre', rate: 1 }, pitwarden: { kit: 'ogre', rate: 0.9, mat: 'plate' }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
+  forgemaster: { kit: 'ogre', rate: 0.85, mat: 'plate' }, reefmaw: { kit: 'ogre', rate: 0.7 },
+  hound: { kit: 'bark', rate: 1.2 }, greathound: { kit: 'bark', rate: 0.8 },
+  harpy: { kit: 'scream', rate: 1.1 }, roc: { kit: 'scream', rate: 0.8 }, petrel: { kit: 'scream', rate: 1.4 }, queen: { kit: 'scream', rate: 1.05 },
+  wasp: { kit: 'bug', rate: 1.3 }, spider: { kit: 'bug', rate: 0.8 }, weaver: { kit: 'bug', rate: 1 }, clinger: { kit: 'bug', rate: 0.9 }, bat: { kit: 'bug', rate: 1.6 },
+  sporeling: { kit: 'slime', rate: 1.2 }, lurker: { kit: 'slime', rate: 0.8 }, spitcap: { kit: 'slime', rate: 0.9 }, drone: { kit: 'slime', rate: 1.1 }, gill: { kit: 'slime', rate: 1.3 },
+  spit: { kit: 'slime', rate: 1.4 }, grub: { kit: 'slime', rate: 0.9 },
+  wight: { kit: 'alien', rate: 0.7, lp: 1800 }, siren: { kit: 'alien', rate: 1.1 }, scout: { kit: 'alien', rate: 1 }, herald: { kit: 'alien', rate: 0.8 },
+};
+const vbody = (mat, die) => { if (mat === 'plate') file('clang', die ? 0.26 : 0.14, die ? 0.6 : 0.78); else if (mat === 'mail') chain(die ? 0.04 : 0.025, die ? 5 : 3); else if (mat === 'cloth') noise(0.08, die ? 0.08 : 0.05, 900, 0.5); };
+SFX.dieOf = t => { const c = CAST[t], d = DIE[t]; if (!c) return d || null;
+  return () => { const pool = c.human && c.kit !== 'hd' && Math.random() < 0.35 && clips.vo_dp_die ? 'vo_dp_die' : VOK(c.kit, 'die');
+    const ok = voice(pool, c.human ? 0.6 : 0.48, pool === 'vo_dp_die' ? c.rate * 0.97 : c.rate * (c.human ? 1 : 0.92), c.lp || 0);
+    if ((!c.human || c.boss || !ok) && d) d(); vbody(c.mat, true); }; };
+SFX.hurtOf = t => { const c = CAST[t], h = HURT[t]; if (!c) return h || null;
+  return () => { const ok = gate('vh' + t, 0.09) && voice(VOK(c.kit, 'hurt'), c.human ? 0.48 : 0.38, c.rate, c.lp || 0);
+    if ((!c.human || !ok) && h) h(); vbody(c.mat, false); }; };
+// THE BLOW HAS A SOUND. The instant a wind-up lets go - the same instant its smear is drawn - the air moves: a
+// short whoosh for a blade, a long low one for anything heavy, a ring off steel, and now and then a man shouting.
+const HEAVY_V = new Set(['closedhelm', 'hedgeknight', 'troll', 'heavy', 'brute', 'pitwarden', 'forgemaster', 'berserker', 'greathound', 'ram', 'golem', 'lance', 'chief', 'king', 'captain', 'tollmaster']);
+SFX.foeRelease = (t, mat, big) => { if (!gate('rel', 0.07)) return;
+  const heavy = big || HEAVY_V.has(t), dur = heavy ? 0.24 : 0.13, f = heavy ? 560 : 1400;
+  noise(dur, heavy ? 0.15 : 0.1, f, 0.7); tone('triangle', vary(f * 0.5), f * 0.2, dur, heavy ? 0.05 : 0.03);
+  if (mat === 'steel') tone('sine', vary(2500), 1900, 0.14, 0.018, 0.04);
+  const c = CAST[t]; if (c && c.human && gate('shout', 0.9) && Math.random() < 0.4) voice(VOK(c.kit, 'attack'), 0.3, c.rate, c.lp || 0); };
+export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind'];

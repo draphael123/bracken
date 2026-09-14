@@ -45,3 +45,14 @@ gasp thin, the drowned crew groan waterlogged, the pirates are six pitches of th
 
 - hurricane.ogg = "WoWChapter3" from "War on Water: Tracks" by yd, CC0 - https://opengameart.org/content/war-on-water-tracks - THE HURRICANE DECK (lowpassed at 9 kHz, -7 dB to sit with the rest).
 - drowned.ogg = "esa.ogg" from "Enemy Ship Approaching" by yd, CC0 - https://opengameart.org/content/enemy-ship-approaching - the Drowned Bosun's own theme (lowpassed at 9 kHz, -13 dB). Built with the Sonatina Symphonic Orchestra soundfont and CC0 ocean waves from Freesound.
+
+
+VOICE KITS (audio/sfx/vo/, all CC0 from OpenGameArt.org; trimmed, levelled and re-encoded):
+- "Male Grunt/Yelling sounds" by HaelDB (CC0 / OGA-BY 3.0, used under CC0) - https://opengameart.org/content/male-gruntyelling-sounds
+  the four men: the heroes, the town's men-at-arms, the crews and the drowned city's officers
+- "Female RPG Voice Starter Pack" by cicifyre (CC0) - https://opengameart.org/content/female-rpg-voice-starter-pack - the Pyromancer
+- "grunts of male death and pain" by thebardofblasphemy (CC0) - https://opengameart.org/content/grunts-male-death-and-pain - sliced into deaths
+- "Hurt / Death sound effect for character" by Badre-Eddine (CC0) - https://opengameart.org/content/hurt-death-sound-effect-for-character - the townsfolk
+- "80 CC0 creature SFX" and "80 CC0 creature SFX #2" by rubberduck (CC0) - https://opengameart.org/content/80-cc0-creature-sfx ,
+  https://opengameart.org/content/80-cc0-creture-sfx-2 - goblins, beasts, bugs, fungi, the tidebound, croaks and snores
+- "Monster Sound Effects Pack" by Ogrebane (CC0) - https://opengameart.org/content/monster-sound-effects-pack - trolls and the big ones

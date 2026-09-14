@@ -8707,7 +8707,7 @@ function updateEnemies(dt) {
   for (const e of enemies) {
     if (!e.alive) continue;
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
-    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) e.relT = 0.18; e.wuWas = wu; }
+    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt);
     if (e.turnT > 0) e.turnT = Math.max(0, e.turnT - dt);
