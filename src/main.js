@@ -3466,8 +3466,14 @@ function addPoise(e, dmg, fromX, plunge) {
   if (!P.jetHit) { if (P.heavySwing && P.atk >= 0) n += 20; if (plunge) n += 12; if (e.face && Math.sign(fromX - e.x) === -e.face) n += 10; if (P.combo === 3) n += 8; if (P.riposteT > 0) n += 16; if (P.dash > 0) n += 6; if (P.dashAtk > 0) n += 14; }
   e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5;
   if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
-    number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); shakeCam(4); hitstop(0.08); if (SFX.guardBreak) SFX.guardBreak(); else SFX.clank(); }
+    number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); breakBeat(e); }
 }
+/* THE BREAK, SEEN AND HEARD. A poise break stood a creature still with a flickering bar over it, which at this size is the same picture
+   as a creature standing still. Now the moment the bar runs out its whole silhouette flares white for a few frames (a thick white outline,
+   drawn in drawEnemies - a different picture from the thin hit flash, and off with the Flashes option), the BROKEN word goes up, a
+   half-frame stop, and its own snap of a sound (SFX.poiseBreak; not the hurt sound, not the player's guard break). The camera only
+   shakes when motion is not reduced. A trip (the sweep) is the same state and gets the same beat. */
+function breakBeat(e) { e.breakFlash = 0.07; hitstop(0.08); if (!SET.reduceMotion) shakeCam(4); if (SFX.poiseBreak) SFX.poiseBreak(!!(e.maxHp || e.big)); else SFX.clank(); }
 function drawPoise(e, cx, cy) {
   const m = poiseMax(e); if (!m) return; const w = Math.max(14, Math.min(40, (e.w || 12) + 6)), x = Math.round(e.x - w / 2 - cx), y = Math.round(e.y - (e.h || 16) - 10 - cy);
   g.fillStyle = 'rgba(12,10,20,0.8)'; g.fillRect(x - 1, y - 1, w + 2, 4);
@@ -3506,7 +3512,7 @@ function knockFoe(e, dir, push) {
   if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return;   /* a horse is not thrown across the road by a sword */
   e.slammed = false;
   const wt = POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
-  e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt);
+  e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt); e.bounced = false;   /* (bounced: it comes up off the floor once when it lands) */
 }
 function hazardFoe(e) {
   const tx = Math.floor(e.x / TS); let why = null;
@@ -12425,7 +12431,7 @@ function updateEnemies(dt) {
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
     { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
-    e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt);
+    e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt); if (e.breakFlash > 0) e.breakFlash -= dt;
     if (e.maxHp && e.alive && e.phase === 2 && !e.enragedFx) { e.enragedFx = true; enrageBeat(e); }
     if (e.enrageT > 0) { e.enrageT -= dt; if (Math.floor(e.enrageT * 16) % 2 === 0) e.flash = Math.max(e.flash, 0.04); }
     /* ONE WIND-UP AT A TIME: two foes near you starting their tells together land together, and that is not readable. The second waits a beat */
@@ -12447,7 +12453,15 @@ function updateEnemies(dt) {
     if (e.poise > 0) { e.poiseT = (e.poiseT || 0) - dt; if (e.poiseT <= 0) e.poise = Math.max(0, e.poise - 14 * dt); }
     if (e.broken > 0) { e.broken -= dt; e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) - 4, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); continue; }   /* BROKEN: it stands where the bar ran out */
     if (e.knock > 0 && !e.maxHp) { e.knock -= dt; e.kvy = Math.min(400, e.kvy + 1000 * dt); e.kvx *= Math.pow(0.25, dt);   /* THROWN: no legs under it for a moment */
-      const kx0 = e.x, r = moveBody(e, e.kvx * dt, e.kvy * dt, false); if (r && r.ground && e.kvy > 0) e.kvy = 0;
+      const kx0 = e.x, kvy0 = e.kvy, r = moveBody(e, e.kvx * dt, e.kvy * dt, false);
+      /* IT COMES DOWN. A thrown body landed by stopping, which is nothing to look at; now the first time it meets the ground it
+         squashes, skids a puff of dust off along the way it was going, and comes up off the floor a little before it settles - the
+         heavy ones with a thud, and a nudge of the camera unless motion is reduced. Once: the second landing is the settle. */
+      if (r && r.ground && e.kvy > 0) { e.kvy = 0;
+        if (!e.bounced && kvy0 > 120) { e.bounced = true; const heavy = POISE_HEAVY.has(e.t) || !!e.big, dir = Math.sign(e.kvx) || e.face || 1;
+          e.kvy = -Math.min(heavy ? 70 : 110, kvy0 * 0.3); e.sq = 0.16; dust(e.x, e.y, heavy ? 8 : 5);
+          for (let i = 0; i < 4; i++) parts.push({ x: e.x + dir * (4 + i * 5), y: e.y - 1, vx: dir * (30 + i * 20), vy: -10 - i * 4, life: 0.28, max: 0.28, col: '#c9b27c', size: i < 2 ? 2 : 1, grav: 90 });
+          if (heavy) { SFX.thud(); if (!SET.reduceMotion) shakeCam(1.5); } } }
       if (!e.slammed && Math.abs(e.kvx) > 110 && Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e);
       e.vx = e.kvx * 0.3; e.vy = e.kvy; if (!e.alive) continue;
       if (hazardFoe(e)) continue;
@@ -12941,11 +12955,11 @@ function swingKindHit(e) {
   if (e.t === 'dummy') { number(e.x, e.y - e.h - 14, P.swingKind === 'rise' ? 'LAUNCHED' : 'TRIPPED', '#ffd36b'); trialEvent(P.swingKind); return; }
   const can = !e.maxHp && !e.mini && !KNOCK_SKIP.has(e.t);
   if (P.swingKind === 'rise') {
-    if (can && !(e.liftImm > time)) { const wt = POISE_HEAVY.has(e.t) || e.big ? 0.5 : 1; e.slammed = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = -(isPaladin() ? 340 : 300) * wt; e.launchedT = time + 1.2; e.liftImm = time + 2; hitstop(0.05); number(e.x, e.y - e.h - 8, 'LAUNCHED', '#ffd36b'); trialEvent('rise'); if (!L.trial && (PROG.launchSeen || 0) < 2) { PROG.launchSeen = (PROG.launchSeen || 0) + 1; hintT = 4; hintMsg = 'LAUNCHED. WHILE IT HANGS IN THE AIR, EVERY BLOW ON IT LANDS A THIRD HARDER.'; } }
+    if (can && !(e.liftImm > time)) { const wt = POISE_HEAVY.has(e.t) || e.big ? 0.5 : 1; e.slammed = false; e.bounced = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = -(isPaladin() ? 340 : 300) * wt; e.launchedT = time + 1.2; e.liftImm = time + 2; hitstop(0.05); number(e.x, e.y - e.h - 8, 'LAUNCHED', '#ffd36b'); trialEvent('rise'); if (!L.trial && (PROG.launchSeen || 0) < 2) { PROG.launchSeen = (PROG.launchSeen || 0) + 1; hintT = 4; hintMsg = 'LAUNCHED. WHILE IT HANGS IN THE AIR, EVERY BLOW ON IT LANDS A THIRD HARDER.'; } }
     else e.stagger = Math.max(e.stagger || 0, 0.25);
     burst(e.x, e.y - e.h / 2, 8, specialCol(), 90, 0.35, -60, 1);
   } else if (P.swingKind === 'sweep') {
-    if (can && !(e.tripImm > time)) { e.broken = Math.max(e.broken || 0, 1.1); e.tripImm = time + 3.2; e.vx = 0; hitstop(0.04); dust(e.x, e.y, 5); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); trialEvent('sweep'); if (!L.trial && (PROG.tripSeen || 0) < 2) { PROG.tripSeen = (PROG.tripSeen || 0) + 1; hintT = 4; hintMsg = 'TRIPPED. HE IS DOWN A MOMENT, AND EVERY BLOW ON HIM LANDS HALF AS HARD AGAIN.'; } }   /* a second trip waits: it is an opening, not a lock */
+    if (can && !(e.tripImm > time)) { e.broken = Math.max(e.broken || 0, 1.1); e.tripImm = time + 3.2; e.vx = 0; dust(e.x, e.y, 5); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); breakBeat(e); trialEvent('sweep'); if (!L.trial && (PROG.tripSeen || 0) < 2) { PROG.tripSeen = (PROG.tripSeen || 0) + 1; hintT = 4; hintMsg = 'TRIPPED. HE IS DOWN A MOMENT, AND EVERY BLOW ON HIM LANDS HALF AS HARD AGAIN.'; } }   /* a second trip waits: it is an opening, not a lock */
     else e.stagger = Math.max(e.stagger || 0, 0.3);
   } }
 function swingKindTrail(k, px0) { const c = specialCol()[0];
@@ -14464,7 +14478,7 @@ function drawBoxes(cx, cy) {
     if (x > VW || x + w < 0) return;
     if (fill) { g.globalAlpha = 0.16; g.fillStyle = col; g.fillRect(x, y, w, h); g.globalAlpha = 1; }
     g.strokeStyle = col; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); };
-  for (const e of enemies) { if (!e.alive) continue; R(box(e), e.harmless ? '#8fd160' : '#ffd34a', windingUp(e)); }
+  for (const e of enemies) { if (!e.alive) continue; R(box(e), e.harmless ? '#8fd160' : e.broken > 0 ? '#fff6c8' : e.knock > 0 ? '#ff9a5c' : '#ffd34a', windingUp(e)); }   /* a broken body is white, a thrown one orange: the state reads in this view too */
   for (const s of seeds) R({ l: s.x - 4, r: s.x + 4, t: s.y - 4, b: s.y + 4 }, '#ff9a5c', true);
   if (all) { for (const b of bombs) R({ l: b.x - 5, r: b.x + 5, t: b.y - 5, b: b.y + 5 }, '#ff9a5c', true);
     for (const w of waves) R({ l: w.x - 10, r: w.x + 10, t: w.y - 18, b: w.y }, '#ff6b6b', true);
@@ -15324,7 +15338,10 @@ function drawWorld(cx, cy, showPlayer) {
     { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, dy0 = e.y - cy + bob + ps.dy;
       if (wind && sprSet.white && !e.harmless) drawTellRim(sprSet, frame, dx0, dy0, ps.face, pSX, pSY, pRot, 0.55 + 0.45 * Math.sin(e.anim * 22));
       if (!(e.flash > 0)) drawWarm('rim', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
-      drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0, pSX, pSY, 1, pRot);
+      /* THE BREAK FLARE: for a few frames after its poise breaks the whole silhouette goes white and two pixels fat - a different picture
+         from the thin white of a hit - unless the Flashes option is off (Reduce motion turns it off with the rest) */
+      if (e.breakFlash > 0 && SET.flashes && sprSet.white) for (const [ox, oy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]]) drawSet(sprSet, null, frame, dx0 + ox, dy0 + oy, ps.face, true, pSX, pSY, 1, pRot);
+      drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
       if (!(e.flash > 0)) drawWarm('tint', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
       if (e.alive && e.frozen > 0) drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, '#bfe6f5', 0.45 + 0.1 * Math.sin(time * 6));   /* held: pale, and still */
       if (e.alive && e.relT > 0 && !e.harmless && !FLYERS.has(e.t)) drawFoeSmear(e, bigF, cx, cy);

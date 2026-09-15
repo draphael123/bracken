@@ -252,6 +252,9 @@ export const SFX = {
   win() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone('triangle', f, f, 0.3, 0.2, i * 0.12)); },
   block() { tone('square', 520, 380, 0.07, 0.2); noise(0.09, 0.26, 900, 0.5); tone('sine', 260, 170, 0.12, 0.12, 0.01); }, // a dull wooden-backed shield taking it
   guardBreak() { file('stagger', 0.6) || (tone('sawtooth', 500, 90, 0.35, 0.3), noise(0.2, 0.3, 900)); },
+  /* A CREATURE'S POISE BREAKS: not the hurt sound and not the player's guard going (guardBreak) - a dry snap high up, the body going
+     slack under it, and two loose knocks as it settles. The big ones snap lower and settle heavier. */
+  poiseBreak(big) { const r = big ? 0.72 : 1; noise(0.07, 0.34, 3400 * r, 0.6); tone('square', 2300 * r, 1300 * r, 0.06, 0.16); tone('sawtooth', 300 * r, 52, 0.3, 0.2, 0.03); tone('sine', 96 * r, 38, big ? 0.42 : 0.28, big ? 0.3 : 0.2, 0.05); for (let i = 0; i < 2; i++) tone('triangle', vary(820 - i * 260) * r, 360 * r, 0.05, 0.08, 0.12 + i * 0.07); },
   dodge() { noise(0.14, 0.18, 1200, 0.4); tone('triangle', 300, 700, 0.1, 0.06); },
   heavy() { file('slam', 0.55) || (tone('square', 140, 40, 0.22, 0.32), noise(0.16, 0.35, 400), tone('triangle', 900, 1500, 0.1, 0.12, 0.02)); },
   charge() { noise(0.22, 0.1, 700, 0.8); tone('sawtooth', 150, 300, 0.22, 0.08); tone('square', 300, 520, 0.1, 0.05, 0.1); }, // a breath drawn and a weapon coming back, not a lion
