@@ -58,7 +58,7 @@ function brackenWood() {
   ent('sign', 284, 8, { text: 'THE HIVE. THE QUEEN DIVES TO STING: JUMP IT, THEN CUT HER WHILE SHE PULLS FREE.' });
   ent('deco', 10, 21, { kind: 'cabin' }); ent('npc', 16, 21, { kind: 'woodsman' }); // the woodsman's cabin: he wants his honey back
   coins([12, 20], [13, 19], [14, 20]);
-  ent('sprig', 22, 21, { face: -1 });
+  ent('sprig', 22, 21, { face: -1 }); ent('sign', 26, 21, { text: 'TAP A WAY TWICE TO DASH: IT CLEARS A GAP. SWING OUT OF A DASH FOR A DASH ATTACK.' });   /* the gap, and a sprig past the crates */
   floor(34, 49, 22);
   coins([31, 19], [32, 18], [33, 19]);
   crate(40, 21); crate(44, 21); crate(44, 20);
@@ -71,7 +71,7 @@ function brackenWood() {
   ent('spit', 58, 19, { face: -1 });
   ent('coin', 62, 19);
   block(66, 75, 20, 21);
-  ent('shield', 71, 19, { face: -1 });
+  ent('shield', 71, 19, { face: -1 }); ent('sign', 56, 21, { text: 'A RAISED SHIELD TURNS A CUT. DOWN+X ON THE GROUND SWEEPS UNDER IT AND TRIPS HIM.' });   /* on the floor before the spitter's ledge: the shield is on the step past it */
   plat(64, 18, 6);
   coins([66, 17], [68, 17]);
   ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND ON A FOE TO BOUNCE; HOLD JUMP TO BOUNCE HIGHER.', pyro: 'DOWN+X IN THE AIR: FIREDROP. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.' });
@@ -85,7 +85,7 @@ function brackenWood() {
   ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'HOLD C: AEGIS. TAP C: MEND. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
   ent('thorn', 109, 21, { face: -1 });
   crate(111, 21); crate(112, 21); crate(112, 20);
-  ent('sprig', 116, 21, { face: -1 });
+  ent('sprig', 116, 21, { face: -1 }); ent('sign', 114, 21, { text: 'UP+X: THE RISING CUT THROWS A SPRIG UP. CUT IT AGAIN BEFORE IT LANDS: IT HITS HARDER.' });
 
   // ---- 4. Thorn climb ----
   floor(121, 129, 22);
@@ -3025,7 +3025,7 @@ function openYard() {
   ent('torch', 8, 21); ent('torch', 112, 21);
   // ---- the straw men: one on the floor, one on a table, one over the pit ----
   for (const x of [16, 22, 28]) ent('dummy', x, 21);
-  ent('sign', 14, 21, { text: 'STRAW MEN DO NOT FIGHT OR STAY DOWN. SWING, RUN A COMBO, TIME A HEAVY BLOW.' });
+  ent('sign', 14, 21, { text: 'STRAW MEN STAND FOR ANYTHING. X X X IS A THIRD CUT; A DASH, THEN X, IS A DASH ATTACK.' });
   // ---- the steps: every height worth jumping, in a row you can read ----
   plat(36, 19, 4); plat(43, 17, 4); plat(50, 15, 4); plat(57, 13, 4);
   ent('sign', 34, 21, { text: 'THE STEPS GO UP TWO ROWS AT A TIME. DOWN+JUMP ON A LEDGE TO DROP THROUGH.' });
@@ -3044,7 +3044,7 @@ function openYard() {
   coins([81, 7], [84, 7]);
   // ---- and two guards, which is the only thing in here you cannot simply hit ----
   ent('shield', 102, 21, { face: -1 }); ent('soldier', 108, 21, { face: -1 });
-  ent('sign', 98, 21, { text: 'A LIGHT BLOW TURNS ON A RAISED GUARD. HOLD THE SWING: A HEAVY BLOW GOES THROUGH.' });
+  ent('sign', 98, 21, { text: 'A GUARD TURNS A LIGHT BLOW. HOLD X, OR DOWN+X UNDER IT. UP+X THROWS HIM UP.' });
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 6, y: 21 }, pools: [], falls: [], moversExtra: [], interiors: [],
     trial: [], openYard: true, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
@@ -3056,49 +3056,89 @@ function openYard() {
 // to do it to, and a gate that lifts when it is done. Nothing in a trial can hurt you. The gate at the far end
 // is the way out. (L.trial: the stations - where each starts, its gate, what counts, how many.)
 function trialYard(hero) {
+  /* THE DEATH KNIGHT'S C, IN ONE PLACE. His C is being reworked into THE BLOOD WARD: these two steps are the only lines
+     of his yard that speak of it, so the rework changes his words (and what counts) here and nowhere else. */
+  const REAPER_C = {
+    ward: ['ward', 3, 'THE BLOOD WARD: HOLD C TO WARD, RELEASE TO NOVA. TAKE THREE OF THE ARCHER\'S ARROWS ON IT.', [['archer', 22]], 'HOLD LB, THEN LET GO'],
+    meter: ['meter', 1, 'BLOOD SURGE: HIS BAR FILLS WITH WHAT HE TAKES. FULL, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+  };
+  /* THE NEW CUTS, THE SAME FOR EVERY HERO: what the controls page promises, a gate each. The goblins in these yards are straw
+     inside (see e.trainer in main.js): they can be thrown, tripped and cut all day, they never go down, and they keep to their yard. */
+  const DASH = ['dashatk', 2, 'TAP A WAY TWICE TO DASH, THEN X: THE DASH ATTACK CARRIES YOU THROUGH. LAND IT TWICE.', [['dummy', 15], ['dummy', 21]], 'TAP THE STICK TWICE, THEN X'];
+  const RISE = ['rise', 2, 'UP+X: THE RISING CUT LAUNCHES A SMALL FOE. CUT IT AGAIN WHILE IT HANGS. LAUNCH TWO.', [['sprig', 14], ['sprig', 19]], 'UP+X'];
+  const SWEEP = ['sweep', 2, 'DOWN+X: THE LOW SWEEP GOES UNDER A RAISED SHIELD AND TRIPS HIM. TRIP THEM TWICE.', [['shield', 14], ['shield', 20]], 'DOWN+X'];
+  const SKILL = ['skill', 2, 'F AND G: SKILLS FROM THE TALENT TREE (Q). ANY NOT YET LEARNED ARE LENT HERE. USE BOTH.', [['dummy', 14], ['sprig', 20]], 'Y, THEN RT', ['skillF', 'skillG']];
+  const MARKS = ['tellY', 'tellR'];   /* the marks step wants one of each */
   const ST = {
     knight: [
-      ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]]],
-      ['block', 3, 'THE SHIELD. HOLD C TO RAISE IT, AND FACE THE ARCHER. TURN THREE OF HIS ARROWS.', [['archer', 22]]],
-      ['pogo', 3, 'THE PLUNGE: JUMP, THEN DOWN+X. BOUNCE OFF THE STRAW MEN THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]]],
-      ['heavyblow', 2, 'HOLD X FOR THE HEAVY BLOW: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]]],
-      ['dodge', 2, 'THE DODGE. V ROLLS YOU THROUGH A BLOW. ROLL TWICE.', []]],
+      ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]], 'X'],
+      ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['block', 3, 'THE SHIELD. HOLD C TO RAISE IT, AND FACE THE ARCHER. TURN THREE OF HIS ARROWS.', [['archer', 22]], 'HOLD LB'],
+      ['flash', 2, 'THE BEAT: RAISE C AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TURN HIS CUT TWICE.', [['swornsword', 18]], 'LB AS THE SWORD FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE SHIELD TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'LB FOR !    B OR A FOR !!', MARKS],
+      ['pogo', 3, 'THE PLUNGE: JUMP, THEN DOWN+X. BOUNCE OFF THE STRAW MEN THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
+      ['heavyblow', 2, 'HOLD X FOR THE HEAVY BLOW: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
+      ['dodge', 2, 'THE DODGE. V ROLLS YOU THROUGH A BLOW. ROLL TWICE.', [], 'B'],
+      DASH, RISE, SWEEP,
+      ['meter', 1, 'RESOLVE FILLS AS THE SHIELD TAKES BLOWS. FULL, TAP C: THE STAND. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH A FULL BAR'],
+      SKILL],
     pyro: [
-      ['ember', 3, 'THE EMBER. TAP C AND ONE FLIES. SET THE STRAW MAN ALIGHT THREE TIMES.', [['dummy', 18]]],
-      ['heat', 1, 'THE JET: HOLD C. BURNING FILLS YOUR HEAT. BURN THE STRAW MAN TO A FULL BAR.', [['dummy', 14], ['dummy', 18]]],
-      ['firedrop', 2, 'THE FIREDROP: JUMP, THEN DOWN+X. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]]],
-      ['heavyblow', 2, 'HOLD X FOR THE BELLOWS: A CONE THAT THROWS DOWN AND BURNS. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]]],
-      ['dodge', 2, 'NO SHIELD. YOU DODGE: V. ROLL TWICE. YOUR OWN FIRE NEVER BURNS YOU.', []]],
+      ['ember', 3, 'THE EMBER. TAP C AND ONE FLIES. SET THE STRAW MAN ALIGHT THREE TIMES.', [['dummy', 18]], 'TAP LB'],
+      ['third', 2, 'THE STAFF: X THREE TIMES IN A RUN. THE THIRD BLOW LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['meter', 1, 'HOLD C: THE JET FILLS YOUR HEAT. FULL, PRESS C AGAIN: THE PYRE. THROW IT AT THE STRAW.', [['dummy', 14], ['dummy', 18]], 'HOLD LB, THEN LB AGAIN'],
+      ['firedrop', 2, 'THE FIREDROP: JUMP, THEN DOWN+X. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]], 'A, THEN DOWN+X'],
+      ['heavyblow', 2, 'HOLD X FOR THE BELLOWS: A CONE THAT THROWS DOWN AND BURNS. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
+      ['dodge', 2, 'NO SHIELD. YOU DODGE: V. ROLL TWICE. YOUR OWN FIRE NEVER BURNS YOU.', [], 'B'],
+      ['flash', 2, 'THE BEAT: NO SHIELD. ROLL THROUGH HIS CUT WITH V AS THE SWORD FLASHES WHITE. TWICE.', [['swornsword', 18]], 'B AS THE SWORD FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! OR TWO RED !! - WITH NO SHIELD, ROLL THROUGH OR GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
+      DASH, RISE, SWEEP, SKILL],
     reaper: [
-      ['hit', 3, 'THE SWATHE: X CUTS ALL IN FRONT, BUT NOT UP CLOSE. KEEP A STEP OF ROOM. HIT THREE.', [['dummy', 16], ['dummy', 20]]],
-      ['heavyblow', 2, 'HOLD X: THE REAPING CUTS A FULL CIRCLE THROUGH ANY GUARD. LAND IT TWICE.', [['dummy', 13], ['dummy', 21]]],
+      ['hit', 3, 'THE SWATHE: X CUTS ALL IN FRONT, BUT NOT UP CLOSE. KEEP A STEP OF ROOM. HIT THREE.', [['dummy', 16], ['dummy', 20]], 'X'],
+      ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN, SLOW AS IT IS. THE THIRD LANDS HEAVY. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['heavyblow', 2, 'HOLD X: THE REAPING CUTS A FULL CIRCLE THROUGH ANY GUARD. LAND IT TWICE.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
       ['ward', 2, 'HOLD C: THE BLOOD WARD STOPS HIS ARROWS. LET GO AND IT BURSTS OUT. DO IT TWICE.', [['archer', 22]]],
-      ['pogo', 2, 'THE CULL: JUMP, THEN DOWN+X. A SHADE TEARS OUT AND FIGHTS FOR HIM. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]]],
-      ['dodge', 2, 'V: THE PASSING. HE GOES THIN AND NOTHING TOUCHES HIM. ROLL TWICE.', []]],
+      ['pogo', 2, 'THE CULL: JUMP, THEN DOWN+X. A SHADE TEARS OUT AND FIGHTS FOR HIM. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
+      REAPER_C.ward,
+      ['dodge', 2, 'V: THE PASSING. HE GOES THIN AND NOTHING TOUCHES HIM. ROLL TWICE.', [], 'B'],
+      ['flash', 2, 'THE BEAT: ROLL THROUGH HIS CUT WITH V AS THE SWORD FLASHES WHITE, AND HE REELS. TWICE.', [['swornsword', 18]], 'B AS THE SWORD FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! CAN BE TURNED OR ROLLED. TWO RED !! CANNOT BE TURNED: GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
+      DASH, RISE, SWEEP, REAPER_C.meter, SKILL],
     pirate: [
-      ['hit', 3, 'THE CUTLASS: X AND KEEP GOING, A RUN OF FIVE. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]]],
-      ['parry', 3, 'NO SHIELD: TAP C TO PARRY. IT TURNS ANY BLOW AND LOADS THE PISTOL. TURN THREE.', [['archer', 22]]],
-      ['heavyblow', 2, 'HOLD X: THE PISTOL GOES THROUGH ANY GUARD, THEN RELOADS. FIRE IT TWICE.', [['dummy', 14], ['dummy', 20]]],
-      ['hook', 2, 'HOLD C: THE HOOK HAULS YOU TO RIGGING, OR A MAN TO YOU. THROW IT TWICE.', [['dummy', 20]]],
-      ['dodge', 2, 'V ROLLS. HE HAS GOT OUT OF THE WAY FOR A LIVING. ROLL TWICE.', []]],
+      ['hit', 3, 'THE CUTLASS: X AND KEEP GOING, A RUN OF FIVE. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'X'],
+      ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['parry', 3, 'NO SHIELD: TAP C TO PARRY. IT TURNS ANY BLOW AND LOADS THE PISTOL. TURN THREE.', [['archer', 22]], 'TAP LB'],
+      ['flash', 2, 'THE BEAT: TAP C AS HIS SWORD FLASHES WHITE. THE PARRY LEAVES HIM OPEN. TURN IT TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : A PARRY TURNS IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['heavyblow', 2, 'HOLD X: THE PISTOL GOES THROUGH ANY GUARD, THEN RELOADS. FIRE IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
+      ['hook', 2, 'HOLD C: THE HOOK HAULS YOU TO RIGGING, OR A MAN TO YOU. THROW IT TWICE.', [['dummy', 20]], 'HOLD LB'],
+      ['dodge', 2, 'V ROLLS. HE HAS GOT OUT OF THE WAY FOR A LIVING. ROLL TWICE.', [], 'B'],
+      DASH, RISE, SWEEP,
+      ['meter', 1, 'PLUNDER FILLS AS YOU FIGHT. FULL, TAP C: THE BLACK FLAG. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+      SKILL],
     paladin: [
-      ['hit', 3, 'THE MAUL: EVERY THIRD BLOW STAGGERS, EVERY BLOW FILLS THE LIGHT. HIT THREE TIMES.', [['dummy', 18]]],
-      ['aegis', 3, 'THE AEGIS: HOLD C FOR A WARD THAT LASTS A BREATH AND A HALF. TURN THREE ARROWS.', [['archer', 22]]],
-      ['mend', 1, 'MEND: TAP C TO SPEND HALF THE LIGHT ON HEALING. IT ROOTS YOU A MOMENT.', []],
-      ['hammerfall', 2, 'HAMMERFALL: JUMP, THEN DOWN+X. THE GROUND CARRIES IT BOTH WAYS. CATCH TWO.', [['dummy', 12], ['dummy', 22]]],
-      ['heavyblow', 2, 'HOLD X FOR THE OVERHEAD: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]]],
-      ['judgement', 1, 'JUDGEMENT: WITH A FULL LIGHT, PRESS C AGAIN. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]]]],
+      ['third', 2, 'THE MAUL: X, THREE IN A RUN. EVERY THIRD BLOW STAGGERS AND EVERY BLOW FILLS THE LIGHT.', [['dummy', 18]], 'X, X, X'],
+      ['aegis', 3, 'THE AEGIS: HOLD C FOR A WARD THAT LASTS A BREATH AND A HALF. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],
+      ['flash', 2, 'THE BEAT: HOLD C FOR THE AEGIS AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TWICE.', [['swornsword', 18]], 'HOLD LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE AEGIS TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
+      ['mend', 1, 'MEND: TAP C TO SPEND HALF THE LIGHT ON HEALING. IT ROOTS YOU A MOMENT.', [], 'TAP LB'],
+      ['hammerfall', 2, 'HAMMERFALL: JUMP, THEN DOWN+X. THE GROUND CARRIES IT BOTH WAYS. CATCH TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
+      ['heavyblow', 2, 'HOLD X FOR THE OVERHEAD: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
+      ['dodge', 2, 'V: THE HEAVY STEP. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS. STEP TWICE.', [], 'B'],
+      DASH, RISE, SWEEP,
+      ['judgement', 1, 'JUDGEMENT: WITH A FULL LIGHT, PRESS C AGAIN. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH A FULL BAR'],
+      SKILL],
   }[hero];
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
   const { block, ent, set } = L;
   block(0, W - 1, 20, H - 1); block(0, 1, 0, 19); block(W - 2, W - 1, 0, 19);
   const trial = [];
-  ST.forEach(([kind, n, text, things], i) => { const x0 = 4 + i * SW, gate = x0 + SW - 2;
+  ST.forEach(([kind, n, text, things, pad, kinds], i) => { const x0 = 4 + i * SW, gate = x0 + SW - 2;
     if (kind === 'heavyblow' && hero === 'pirate') L.coins([x0 + 8, 18], [x0 + 11, 18], [x0 + 16, 18], [x0 + 19, 18]);   // his powder, lying about
     ent('sign', x0 + 2, 19, { text }); ent('torch', x0 + 6, 19);
-    for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 17, 19); ent('archer', x0 + dx, 16, { face: -1 }); } else ent('dummy', x0 + dx, 19); }
+    for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 17, 19); ent('archer', x0 + dx, 16, { face: -1, lx0: x0 + 1, lx1: gate - 1 }); } else if (t === 'dummy') ent('dummy', x0 + dx, 19);
+      else ent(t, x0 + dx, 19, { face: -1, trainer: t === 'swornsword' || t === 'hedgeknight' ? 'drill' : 'still', lx0: x0 + 1, lx1: gate - 1 }); }   /* a drill fights you (it cannot hurt you here); a still one stands and takes it */
     for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
-    trial.push({ x0, gate, kind, n, fill: kind === 'mend' ? 60 : kind === 'judgement' ? 100 : 0 }); });
+    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
   const xe = 4 + ST.length * SW;
   ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD RETURNS YOU TO THE MAP.' });
   ent('gate', xe + 14, 19);

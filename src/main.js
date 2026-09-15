@@ -426,8 +426,8 @@ const TALENTS = [{ id: 'tree', name: 'THE TALENT TREES', desc: 'three trees for 
 const heroLevel = h => Object.keys((PROG.done || {})[h || hero()] || {}).length;   /* the woods THIS hero has walked, not the woods the save has */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
-let trialVerbs = false;   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
-const tal = id => { const m = PROG.talents && PROG.talents[hero()]; const v = m ? m[id] : 0; const n = v === true ? 1 : (v || 0);
+let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's trial lends him for its F and G step (lendSkills) */   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
+const tal = id => { const m = PROG.talents && PROG.talents[hero()]; const v = m ? m[id] : 0; const n = v === true ? 1 : (v || 0); if (!n && trialLend && trialLend.has(id)) return 1;
   return id === 'heavy' ? 1 + n : n; };   /* every hero holds the swing from the first minute: a point in it is a rank past that */
 const ptsSpent = h => { const m = talentsOf(h); return TREE.filter(n => n.hero === h).reduce((s, n) => s + Math.min(n.max, m[n.id] || 0) * (n.cost || 1), 0); };
 const ptsTotal = h => godMode() ? 99 : Math.min(PTS_CAP, heroLevel(h));   /* ONE TREE'S WORTH: a point a wood, and never more than thirty */
@@ -455,7 +455,7 @@ window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, 
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
   treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips() };   /* for the labs and the harnesses */
 /* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
-const PRACTICE = [{ id: 'practiceYard', name: 'THE PRACTICE YARD', price: 0, practice: true, desc: 'step through the portal into a yard of straw men and plain platforms. nothing there can kill you. pause to leave.' }];
+const PRACTICE = [{ id: 'heroTrial', name: "THE HERO'S TRIAL", price: 0, practice: 'trial', desc: 'the guided yard for the hero you are, a gate a verb: the dash attack, rising cut and low sweep too.' }, { id: 'practiceYard', name: 'THE PRACTICE YARD', price: 0, practice: true, desc: 'step through the portal into a yard of straw men and plain platforms. nothing there can kill you. pause to leave.' }];
 const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'TALENTS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }, { name: 'PRACTICE', items: PRACTICE, key: null, owned: 'items' }];
 let storeMode = 'buy', equipFrom = 'map';
 function setEquip(key, id) { PROG[key] = id; if (key === 'charm') { PROG.charmOf = PROG.charmOf || {}; PROG.charmOf[hero()] = id; } }   /* a charm is worn by a hero: the next hero starts bare */
@@ -621,7 +621,7 @@ const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a
 const CD_MAX = { deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 12, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
 const GOLD_CD = 15, goldReady = k => isPirate() && tal('paidInGold') && (PROG.coins || 0) >= GOLD_CD && skillCd(k) > 0;   /* PAID IN GOLD: a wait bought off */
-const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
+const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
 const skillsOwned = () => TREE.filter(n => n.hero === hero() && n.active && tal(n.id));
 const skill2Now = () => { const mine = skillsOwned(); if (isReaper()) return (mine.find(n => n.id === PROG.skill2) || mine[0] || {}).id || null;   /* his one tree skill key: the one he chose, or the first he owns */
   if (mine.length < 2) return null; const f = skillNow(), k = PROG.skill2;   /* THE SECOND KEY IS FREE: own two skills and G carries the other */
@@ -1068,9 +1068,32 @@ function drawGateHints(cx, cy) {
     const dx = k.x - P.x, dy = k.y - P.y, d = Math.hypot(dx, dy) || 1, ax = Math.round(P.x - cx + dx / d * 22), ay = Math.round(P.y - 30 - cy + dy / d * 10), an = Math.atan2(dy, dx), pulse = 0.5 + 0.5 * Math.sin(time * 6);
     g.globalAlpha = 0.6 + 0.4 * pulse; g.fillStyle = '#e0b040'; g.beginPath(); g.moveTo(ax + Math.cos(an) * 6, ay + Math.sin(an) * 6); g.lineTo(ax + Math.cos(an + 2.5) * 5, ay + Math.sin(an + 2.5) * 5); g.lineTo(ax + Math.cos(an - 2.5) * 5, ay + Math.sin(an - 2.5) * 5); g.closePath(); g.fill(); g.globalAlpha = 1; } // the key is that way
 }
-function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(q => !q.done && P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st || st.kind !== kind) return;
-  st.got = (st.got || 0) + 1; SFX.coin(); if (st.got >= st.n) { st.done = true; openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); } }
-function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; P.light = Math.max(P.light || 0, st.fill); motes(P.x, P.y - 12, 12, 10); } }
+function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(q => !q.done && P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st || !(st.kinds ? st.kinds.includes(kind) : st.kind === kind)) return;
+  if (st.kinds) { st.have = st.have || {}; if (st.have[kind]) return; st.have[kind] = 1; }   /* a step of two kinds (the marks, the two skill keys) wants one of each */
+  st.got = (st.got || 0) + 1; SFX.coin(); trialSay(TRIAL_SAY[kind] || trialName(st.kind), '#8fd160', st);
+  if (st.got >= st.n) { st.done = true; openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
+function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; fillMeter(st.fill); motes(P.x, P.y - 12, 12, 10); } }
+/* WHAT A TRIAL CALLS A STEP WHEN IT IS DONE, and the hero's own meter, filled for the step that spends it */
+const TRIAL_NAME = { hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hammerfall: 'HAMMERFALL', judgement: 'JUDGEMENT', ward: 'THE WARD' };
+/* WHAT THE PANEL SAYS AS IT COUNTS ONE. Words never float over a fight (see number()), so a yard's confirmation is written on its step panel */
+const TRIAL_SAY = { hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hammerfall: 'QUAKED', judgement: 'JUDGEMENT', ward: 'WARDED' };
+function trialSay(msg, col, st) { st = st || ((L && L.trial) || []).find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st) return; st.said = msg; st.saidCol = col || '#8fd160'; st.saidT = time + 1.5; }
+function trialName(k) { if (k === 'meter') return hero() === 'knight' ? 'THE STAND' : isPyro() ? 'THE PYRE' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'BLOOD SURGE' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
+function fillMeter(n) { if (isPaladin()) P.light = Math.max(P.light || 0, n); else if (hero() === 'knight') P.resolve = Math.max(P.resolve || 0, n); else if (isPirate()) P.plunder = Math.max(P.plunder || 0, n); else if (isReaper()) P.harvest = Math.max(P.harvest || 0, n); }
+/* THE SKILLS A TRIAL LENDS. The F and G step cannot ask for keys a hero has nothing on, so a trial lends him skills out of his own
+   tree until he has two, one from each of two branches where it can. Left out: the tree's RISING CUT (UP+X is the rising cut people mean) and VENT, which is nothing with no heat in her */
+function lendSkills() { trialLend = null; const mine = TREE.filter(n => n.hero === hero() && n.active && tal(n.id)), out = new Set(), br = new Set(mine.map(n => n.branch));
+  const pool = TREE.filter(n => n.hero === hero() && n.active && !tal(n.id) && n.id !== 'risingCut' && n.id !== 'vent').sort((a, b) => a.row - b.row || a.branch - b.branch);
+  for (const n of pool) { if (mine.length + out.size >= 2) break; if (!br.has(n.branch)) { out.add(n.id); br.add(n.branch); } }
+  for (const n of pool) { if (mine.length + out.size >= 2) break; out.add(n.id); } return out.size ? out : null; }
+/* THE STEP YOU ARE ON. A sign has to be walked up to and opened; a guided yard says what it wants the whole time you are in
+   it: the words on its sign, the pad's buttons under them, and how many it has had. Green when the gate is up. */
+function drawTrialStep() { const st = L.trial.find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st || !st.text) return;
+  const w = VW - 16, lines = wrap(st.text, w - 12, 6).slice(0, 3), x = 8, h = lines.length * 8 + 15, y = VH - h - 4, col = st.done ? '#8fd160' : '#c9b27c';
+  g.fillStyle = 'rgba(10,8,20,0.84)'; g.beginPath(); g.roundRect(x, y, w, h, 3); g.fill(); g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.roundRect(x + 0.5, y + 0.5, w - 1, h - 1, 3); g.stroke();
+  lines.forEach((ln, i) => text(ln, x + 6, y + 4 + i * 8, st.done ? '#bfe8a0' : '#fff6e0', 'left', 6));
+  const yy = y + 5 + lines.length * 8, saying = st.saidT > time; text(saying ? st.said : st.done ? 'DONE. THE GATE AHEAD IS UP.' : 'PAD  ' + (st.pad || ''), x + 6, yy, saying ? st.saidCol : st.done ? '#8fd160' : '#9fc6e8', 'left', 6);   /* for a breath after each one: what it was */
+  text((st.got || 0) + ' OF ' + st.n, x + w - 6, yy, col, 'right', 6); }
 function drawGateFx(cx, cy) { for (const f of gateFx) { const top = Math.min(...f.ys), bot = Math.max(...f.ys), h = (bot - top + 1) * TS, x = f.col * TS - cx;
     if (x < -TS || x > VW) continue; const k = Math.min(1, f.t / f.dur), off = f.closing ? -h * (1 - k * k) : -h * (k * k * (3 - 2 * k));
     g.save(); g.beginPath(); g.rect(x, top * TS - cy, TS, h); g.clip();
@@ -1092,7 +1115,7 @@ function drainPool(pr) { const p = (L.pools || []).find(p => p.x0 === pr.pool); 
 
 function loadLevel(i) {
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; bakeAll(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); bakeAll(L.palette || {});
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
   airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS })); deepLoad();
@@ -1398,6 +1421,7 @@ function spawnEnt(e) {
   }
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
   const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
+  if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
 }
 function spawnEntitiesTail() {
   if (L.strays && straysGot.size >= L.strays && strayLast) props.push({ t: 'relic', x: strayLast.x, y: strayLast.y, kind: 'fleece', got: false, ph: 0 });
@@ -2334,6 +2358,7 @@ function updateStore(dt) {
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
   if (confirmPress && items.length) {
     const k = items[storeI], owned = tab.talent || k.consumable ? false : (k.id === 'none' || owns(tab, k.id));
+    if (k.practice === 'trial') { startTrial(hero()); return; }   /* THE GUIDED YARD, from the store as well as the pause menu */
     if (k.practice) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); } return; }
     if (tab.talent) learnTalent(k);
     else if (k.consumable) { const n = PROG.tonics || 0; if (n >= k.max) { SFX.ui(); storeMsg = 'you carry all you can'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.price) { if (!godMode()) PROG.coins -= k.price; PROG.tonics = n + 1; saveProgress(); SFX.coin(); storeMsg = k.name + ' ' + (n + 1) + ' of ' + k.max; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; } }
@@ -3089,7 +3114,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* BLOOD WARD. The greatsword is in the ground and a crimson ward stands up in front of it: a blow on its face does not
      land, it goes INTO the ward, and what the ward holds comes back out of him as the nova when he lets go. A blow from
      behind finds the man. And a ward LET GO JUST AS A BLOW LANDS is not there to take it: the blow is thrown back. */
-  if (isReaper() && !unblockable && frontA) {
+  if (isReaper() && !unblockable && frontA) { trialEvent('ward');   /* (his trial's C step: REAPER_C in trialYard) */
     const f = wardFoe(fromX), beat = f && f.t === 'closedhelm' ? WARD_BEAT_PAL : WARD_BEAT;
     if (!P.warding && !P.wardRetDone && (P.wardSince ?? 9) < beat) { wardReturn(f, dmg); return 'blocked'; }
     if (P.warding) { wardStop(dmg, fromX); return 'blocked'; }
@@ -3454,10 +3479,10 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
   if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
   if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && e.knock > 0 && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
-  if (dmg > 0 && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
+  if (dmg > 0 && !e.trainer && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body */
   addPoise(e, dmg, fromX, plunge);
-  e.hp -= dmg; e.flash = 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen') e.stagger = P.standT > 0 && !e.maxHp ? 0.8 : 0.35; e.sq = 0.16;   /* THE STAND staggers what it hits */
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen') e.stagger = P.standT > 0 && !e.maxHp ? 0.8 : 0.35; e.sq = 0.16;   /* THE STAND staggers what it hits */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -3582,7 +3607,7 @@ function gainPlunder(n) { if (!isPirate()) return; const was = (P.plunder || 0) 
 /* THE KNIGHT'S METER. RESOLVE fills where he is the only hero who can stand: a blow taken on the shield, a perfect
    guard most of all, and a third cut landing. Full, a tap of C is THE STAND. */
 function gainResolve(n) { if (hero() !== 'knight' || P.standT > 0) return; const was = (P.resolve || 0) >= 100; P.resolve = Math.min(100, (P.resolve || 0) + n * varietyMul()); if (!was && P.resolve >= 100) meterReady('#ffd36b'); }
-function theStand() { P.resolve = 0; P.standT = 5; P.st = P.maxSt; SFX.judgement ? SFX.judgement() : SFX.heavy(); shakeCam(4); zoomKick(1.06, 0.3); ringAt(P.x, P.y - 10, 34, '#ffd36b', 0.45); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); number(P.x, P.y - 34, 'THE STAND', '#ffd36b'); }
+function theStand() { trialEvent('meter'); P.resolve = 0; P.standT = 5; P.st = P.maxSt; SFX.judgement ? SFX.judgement() : SFX.heavy(); shakeCam(4); zoomKick(1.06, 0.3); ringAt(P.x, P.y - 10, 34, '#ffd36b', 0.45); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); number(P.x, P.y - 34, 'THE STAND', '#ffd36b'); }
 function updateCharge(dt) {
   if (!tal('heavy') || P.dead || state !== 'play') { P.atkHeld = 0; P.charge = 0; return; }
   if (isPirate() && !P.loaded) { if (keys.atk && !(P.emptySaid > 0)) { P.emptySaid = 1.2; SFX.clank(); number(P.x, P.y - 26, 'EMPTY', '#9aa39a'); } P.atkHeld = 0; P.charge = 0; return; }
@@ -4001,7 +4026,7 @@ function lastHarvest() {
     burst(e.x, e.y - e.h / 2, 8, ['#c0283a', '#ff6b6b'], 70, 0.5); }
   if (!took) number(P.x, P.y - 42, 'NONE LOW ENOUGH', '#9aa39a');
 }
-function blackFlag() {
+function blackFlag() { trialEvent('meter');
   P.plunder = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.5);
   SFX.coin(); SFX.sting(); shakeCam(5); zoomKick(1.06, 0.25); ringAt(P.x, P.y - 12, 46, '#ffd34a', 0.4);
   number(P.x, P.y - 30, 'THE BLACK FLAG', '#ffd34a');
@@ -4075,10 +4100,10 @@ function fireHeavy() { noteVerb('heavy');
 }
 // A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
 function guardTurned() {
-  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING KEY INSTEAD: A HEAVY BLOW GOES THROUGH A GUARD.'; return; }   /* its own call: the line under it used to overwrite it at once */
+  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; return; }   /* its own call: the line under it used to overwrite it at once */
   if ((PROG.guardHeavy || 0) >= 4) return;
   PROG.guardHeavy = (PROG.guardHeavy || 0) + 1; hintT = 4;
-  hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + (SET.swapZX ? 'Z' : 'X') + ' FOR A HEAVY ONE AND IT GOES THROUGH.';
+  hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + (SET.swapZX ? 'Z' : 'X') + ' TO GO THROUGH IT, OR DOWN+' + (SET.swapZX ? 'Z' : 'X') + ' TO SWEEP UNDER IT.';
 }
 function attackBox() {
   if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
@@ -8428,19 +8453,22 @@ function updateRoadman(e, dt) {
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt);
   let want = 0;
   const near = ad < 200 && dy < 44 && !P.dead;
-  const faceHim = () => { const wf = Math.sign(d) || e.face; if (wf !== e.face) { e.turnT = (e.turnT || 0) + dt; if (e.turnT > 0.3) { e.face = wf; e.turnT = 0; } } else e.turnT = 0; return wf; };
+  const faceHim = () => { const wf = Math.sign(d) || e.face; if (wf !== e.face) { e.turnT = (e.turnT || 0) + dt * (e.trainer ? 2 : 1);   /* (a trial's man pays back the dt the turn animation takes off turnT every frame in updateEnemies, or he could never turn round to you) */ if (e.turnT > 0.3) { e.face = wf; e.turnT = 0; } } else e.turnT = 0; return wf; };
 
   if (e.t === 'swornsword') {
     // THE PARRY LESSON. One blow, a long tell, and he is wide open for a second and a half if you take it
     // on the beat - which is the only way this town teaches it, because nothing here explains anything.
     switch (e.mode) {
       case 'cutTell': want = 0;
+        if (L.trial && !e.glint && e.modeT <= PAL_BEAT) { e.glint = 1; ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
         if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.22; SFX.slash(); e.vx = e.face * 70;
           if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) {
             const res = damagePlayer(e.x, DMG.swornCut);
-            if (answered(res)) { e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.cd = 1.6; e.vx = -e.face * 120;
+            const beat = L.trial && palOpened(res); if (beat) trialEvent('flash'); else if (L.trial && res === 'blocked') trialSay('TOO EARLY: RAISE IT AS IT FLASHES', '#ff9a5c');
+            if (answered(res) || beat) { e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.cd = 1.6; e.vx = -e.face * 120;
               number(e.x, e.y - e.h - 12, 'OPEN', '#8fd160'); SFX.clank(); }
-            else if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.1; e.vx = -e.face * 40; } } }
+            else if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.1; e.vx = -e.face * 40; } }
+          else if (L.trial && (isPyro() || isReaper()) && P.dodge > 0 && ad < 64 && dy < 22) { trialEvent('flash'); e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.cd = 1.6; } }   /* rolled clean through it on the beat */
         break;
       case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; e.cd = 1.2; } break;
       case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.stagger = 0; } break;
@@ -8448,7 +8476,7 @@ function updateRoadman(e, dt) {
       default: e.mode = 'walk';
         if (near && e.stagger <= 0) { const wf = faceHim();
           want = wf === e.face && ad > 22 ? e.face * e.speed : 0;
-          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = L.trial ? 0.9 : 0.55; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
         else want = e.face * e.speed * 0.35;
     }
   } else if (e.t === 'hedgeknight') {
@@ -8460,26 +8488,28 @@ function updateRoadman(e, dt) {
         if (e.modeT <= 0 && e.feint) { e.feint = false; e.modeT = 0.3; e.face = Math.sign(d) || e.face; number(e.x, e.y - e.h - 22, 'A FEINT', '#ff9a5c'); SFX.feint(); break; }
         if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.28; SFX.slash(); SFX.heavy(); e.vx = e.face * 90;
           if (!P.dead && Math.sign(d) === e.face && ad < 44 && dy < 24) {
-            const res = damagePlayer(e.x, DMG.hedgeSwing);
+            const res = damagePlayer(e.x, DMG.hedgeSwing); if (L.trial && (res === 'blocked' || (res === false && P.dodge > 0))) trialEvent('tellY');
             if (answered(res)) { e.mode = 'reel'; e.modeT = 1.3; e.stagger = 1.3; e.cd = 1.8; e.vx = -e.face * 140;
               number(e.x, e.y - e.h - 12, 'OPEN', '#8fd160'); SFX.clank(); shakeCam(3); }
-            else if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.8; e.cd = 1.3; } } }
+            else if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.8; e.cd = 1.3; } }
+          else if (L.trial && P.dodge > 0 && ad < 70 && dy < 24) trialEvent('tellY'); }   /* rolled out from under the yellow one */
         break;
       case 'swing': want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.5; } break;
       case 'leapTell': want = 0; e.face = Math.sign(d) || e.face;
         if (e.modeT <= 0) { e.mode = 'leap'; e.modeT = 1.1; e.vy = -430; e.vx = Math.sign(d) * 150; SFX.pJump(); }
         break;
       case 'leap': want = e.vx;
-        if (e.vy >= 0 && e.ground) { e.mode = 'rest'; e.modeT = 0.9; e.cd = 1.4; e.leapT = 5 + Math.random() * 3; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 10);
-          if (!P.dead && ad < 26 && dy < 24 && P.ground) damagePlayer(e.x, DMG.hedgeLeap, { unblockable: true, up: true }); }
+        if (e.vy >= 0 && e.ground) { e.mode = 'rest'; e.modeT = 0.9; e.cd = 1.4; e.leapT = L.trial ? 2 + Math.random() : 5 + Math.random() * 3; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 10);
+          if (!P.dead && ad < 26 && dy < 24 && P.ground) { const res = damagePlayer(e.x, DMG.hedgeLeap, { unblockable: true, up: true }); if (L.trial && res === false && P.dodge > 0) trialEvent('tellR'); }
+          else if (L.trial && !P.dead && ad < 110 && (Math.abs(P.x - (e.leapPX ?? P.x)) > 18 || !P.ground || P.dodge > 0)) trialEvent('tellR'); }   /* the red one, and you moved out from under it */
         break;
       case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.stagger = 0; } break;
       case 'rest': want = 0; if (e.modeT <= 0) e.mode = 'walk'; break;
       default: e.mode = 'walk'; e.leapT -= dt;
         if (near && e.stagger <= 0) { const wf = faceHim();
           want = wf === e.face && ad > 26 ? e.face * e.speed : 0;
-          if (e.leapT <= 0 && ad > 54 && ad < 130 && e.ground) { e.mode = 'leapTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
-          else if (ad < 40 && wf === e.face && e.cd <= 0) { e.mode = 'swingTell'; e.modeT = 0.5; e.feint = Math.random() < 0.3; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+          if (e.leapT <= 0 && ad > 54 && ad < 130 && e.ground) { e.mode = 'leapTell'; e.modeT = 0.6; e.leapPX = P.x; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
+          else if (ad < 40 && wf === e.face && e.cd <= 0) { e.mode = 'swingTell'; e.modeT = 0.5; e.feint = !L.trial && Math.random() < 0.3; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
         else want = e.face * e.speed * 0.3;
     }
   } else if (e.t === 'runner') {
@@ -11454,7 +11484,7 @@ function drawRaisePips(hy) { const { cost, total, can } = raisePips();
   g.globalAlpha = 1; }
 /* BLOOD SURGE: the full bar. Everything near him bleeds into him at once, and everything that is not a boss is
    held where it stands - frozen - while he walks among it. */
-function bloodSurge() {
+function bloodSurge() { trialEvent('meter');   /* his full bar, in his trial (REAPER_C in trialYard) */
   P.harvest = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.5);
   SFX.judgement ? SFX.judgement() : SFX.heavy(); SFX.squelch(); SFX.bellow && SFX.dkSurge(); SFX.boom && shakeCam(7); zoomKick(1.08, 0.3); killFlash = 0.03;
   const R = 120 + 8 * tal('lastRites'); ringAt(P.x, P.y - 12, 60, '#c0283a', 0.5); number(P.x, P.y - 30, 'BLOOD SURGE', '#ff6b6b');
@@ -11777,6 +11807,7 @@ function updateEnemies(dt) {
       if (hazardFoe(e)) continue;
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
+    if (e.trainer) { if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x)); if (e.trainer === 'still' || (e.trialSt && e.trialSt.done)) { if (e.trainer !== 'still') { e.mode = 'walk'; e.modeT = 0; } e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); const r0 = moveBody(e, 0, e.vy * dt, false); if (r0 && r0.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; continue; } }   /* THE TRIAL'S STILL MEN face you and take it; the drills fight on below */
     if (e.t === 'dummy') { e.vx = 0; e.hp = e.hp0; continue; } // a straw man stands there
     if (e.t === 'queen') { if (bossActive) beastSeen('queen'); if (bossActive || e.mode === 'sleep') updateQueen(e, dt); continue; }
     if (e.t === 'frog') { if (bossActive) beastSeen('frog'); if (bossActive || e.mode === 'sleep') updateFrog(e, dt); continue; }
@@ -12046,7 +12077,7 @@ function updateEnemies(dt) {
     }
     if (e.t === 'archer') {
       if (e.horn && !e.blown && !P.dead && Math.abs(P.x - e.x) < 210 && Math.abs(P.y - e.y) < 120) { e.hornT += dt; if (e.hornT > 1.3) { e.blown = true; hornSquadT = 1.2; number(e.x, e.y - 18, 'THE HORN!', '#ff6b6b'); SFX.roar(); shakeCam(3); } } else if (e.horn && !e.blown) e.hornT = Math.max(0, e.hornT - dt);
-      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead;
+      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead && !(e.trialSt && e.trialSt.done);   /* a trial's archer puts the bow down when his gate is up */
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
       let want = 0;
@@ -12254,14 +12285,14 @@ function lowSweep() { if (!spend(4)) { P.vx = P.face * 75; return; } P.swingKind
   else if (isPaladin()) { shakeCam(2); SFX.thud(); }   /* the maul dragged through their ankles */
   SFX.skid(); }
 function swingKindHit(e) {
-  if (e.t === 'dummy') { number(e.x, e.y - e.h - 14, P.swingKind === 'rise' ? 'LAUNCHED' : 'TRIPPED', '#ffd36b'); return; }
+  if (e.t === 'dummy') { number(e.x, e.y - e.h - 14, P.swingKind === 'rise' ? 'LAUNCHED' : 'TRIPPED', '#ffd36b'); trialEvent(P.swingKind); return; }
   const can = !e.maxHp && !e.mini && !KNOCK_SKIP.has(e.t);
   if (P.swingKind === 'rise') {
-    if (can && !(e.liftImm > time)) { const wt = POISE_HEAVY.has(e.t) || e.big ? 0.5 : 1; e.slammed = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = -(isPaladin() ? 340 : 300) * wt; e.launchedT = time + 1.2; e.liftImm = time + 2; hitstop(0.05); number(e.x, e.y - e.h - 8, 'LAUNCHED', '#ffd36b'); }
+    if (can && !(e.liftImm > time)) { const wt = POISE_HEAVY.has(e.t) || e.big ? 0.5 : 1; e.slammed = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = -(isPaladin() ? 340 : 300) * wt; e.launchedT = time + 1.2; e.liftImm = time + 2; hitstop(0.05); number(e.x, e.y - e.h - 8, 'LAUNCHED', '#ffd36b'); trialEvent('rise'); if (!L.trial && (PROG.launchSeen || 0) < 2) { PROG.launchSeen = (PROG.launchSeen || 0) + 1; hintT = 4; hintMsg = 'LAUNCHED. WHILE IT HANGS IN THE AIR, EVERY BLOW ON IT LANDS A THIRD HARDER.'; } }
     else e.stagger = Math.max(e.stagger || 0, 0.25);
     burst(e.x, e.y - e.h / 2, 8, specialCol(), 90, 0.35, -60, 1);
   } else if (P.swingKind === 'sweep') {
-    if (can && !(e.tripImm > time)) { e.broken = Math.max(e.broken || 0, 1.1); e.tripImm = time + 3.2; e.vx = 0; hitstop(0.04); dust(e.x, e.y, 5); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); }   /* a second trip waits: it is an opening, not a lock */
+    if (can && !(e.tripImm > time)) { e.broken = Math.max(e.broken || 0, 1.1); e.tripImm = time + 3.2; e.vx = 0; hitstop(0.04); dust(e.x, e.y, 5); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); trialEvent('sweep'); if (!L.trial && (PROG.tripSeen || 0) < 2) { PROG.tripSeen = (PROG.tripSeen || 0) + 1; hintT = 4; hintMsg = 'TRIPPED. HE IS DOWN A MOMENT, AND EVERY BLOW ON HIM LANDS HALF AS HARD AGAIN.'; } }   /* a second trip waits: it is an opening, not a lock */
     else e.stagger = Math.max(e.stagger || 0, 0.3);
   } }
 function swingKindTrail(k, px0) { const c = specialCol()[0];
@@ -12273,8 +12304,8 @@ function swingKindTrail(k, px0) { const c = specialCol()[0];
 let dashAtkShown = 0;
 function dashAttack() { P.dashLate = 0; P.dash = 0; P.dashAtk = 0.24; P.swingMul = Math.max(P.swingMul || 1, 1.6); if (!P.ground) P.vy = Math.min(P.vy, 30);
   streaks(P.x + P.face * 10, P.y - 11, P.face, ['#fff6e0', '#ffd36b'], 170); ringAt(P.x + P.face * 14, P.y - 11, 8, '#ffd36b', 0.18); zoomKick(1.03, 0.12); SFX.heavy();
-  if (dashAtkShown < 3) { dashAtkShown++; number(P.x, P.y - 28, 'DASH ATTACK', '#ffd36b'); } }
-function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null;
+  P.dashCut = true; if (dashAtkShown < 3) { dashAtkShown++; number(P.x, P.y - 28, 'DASH ATTACK', '#ffd36b'); } }
+function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null; P.dashCut = false;
   if (!P.ground && (!P.airHang || tal('hangCut')) && !P.swim) { P.airHang = true; P.vy = Math.min(P.vy, 20); }   /* THE AIR SLASH hangs: the first swing in a jump stops the fall for a beat, once a jump */ P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
   SFX.swingUp ? SFX.swingUp(Math.min(3, P.combo - 1)) : null; // the run of them climbs in pitch
   // THE THIRD CUT. Every hero, no talent needed: this is what the attack IS, and the tree only sharpens it.
@@ -12291,7 +12322,8 @@ function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null;
 function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gainResolve(8); P.lastStruck = e;
   if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
-  if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit');
+  if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
+  else if (P.dashCut && e.t !== 'dummy' && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = 'A DASH ATTACK: THE DASH CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
   let extra = 0, mul = 1;
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp) e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); } return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
@@ -12333,7 +12365,7 @@ function judgementFall() { SFX.judgement(); shakeCam(9); zoomKick(1.12, 0.35); k
 function bankHeat() { if (P.full || P.infernoT > 0) return; meterReady('#ff9a5c'); trialEvent('heat'); if (tal('backdraft')) { fireRings.push({ x: P.x, y: P.y - 8, r: 6, hit: new Set() }); SFX.puff(); shakeCam(3); } // BACKDRAFT
   if (tal('inferno')) { P.infernoT = 6; P.heat = 100; number(P.x, P.y - 34, 'INFERNO', '#ff9a5c'); SFX.heatFull(); shakeCam(4); ringAt(P.x, P.y - 10, 30, '#ff6b2c', 0.45); return; }   /* INFERNO: no pyre to bank - six seconds of fire instead */
   P.full = true; P.fullT = tal('blaze') ? 10 : 5; SFX.heatFull(); ringAt(P.x, P.y - 10, 18, '#ffd36b', 0.3); burst(P.x, P.y - 10, 10, ['#ffd36b', '#fff6c8'], 50, 0.4, -40, 1); }
-function castPyre() {
+function castPyre() { trialEvent('meter');
   P.full = false; P.heat = 0; P.fullT = 0; P.cHeld = -99; P.blastT = 0.34; P.atk = -1; P.jet = false;
   pyres.push({ x: P.x + P.face * 12, y: P.y - 11, vx: P.face * 250, dir: P.face, life: 1.5, t: 0, hit: new Set() });
   P.vx -= P.face * 90; shakeCam(4, -P.face * 2); zoomKick(1.08, 0.2); hitstop(0.05); SFX.pyre();
@@ -15218,11 +15250,11 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
 }
 let practiceI = 0;
 const YARD_DRILLS = {
-  knight: 'sword, shield and the plunge',
-  pyro: 'ember, jet and the firedrop',
-  paladin: 'maul, aegis, mend, hammerfall',
-  pirate: 'cutlass, pistol, the hook, the black flag',
-  reaper: 'the cleave, the planted blade, the blood ward, the shadow step',
+  knight: 'shield, the beat, dash attack, rise and sweep',
+  pyro: 'ember, the pyre, dash attack, rise and sweep',
+  paladin: 'aegis, judgement, dash attack, rise and sweep',
+  pirate: 'parry, black flag, dash attack, rise and sweep',
+  reaper: 'ward, blood surge, dash attack, rise and sweep',
   open: 'straw men, steps, a gap, a wall, two guards',
 };
 // the open yard is not a hero: it is the fourth row, and it takes whoever you are in as you are
@@ -15926,7 +15958,7 @@ function render() {
       g.strokeStyle = 'rgba(143,209,96,0.85)'; g.lineWidth = 1; g.beginPath(); g.roundRect(4.5, by + 0.5, w - 1, 10, 3); g.stroke();
       g.fillStyle = '#8fd160'; for (let i = 0; i < 3; i++) g.fillRect(w - 3, by + 3 + i, 1 + i * 2, 1);   // the little chevron of a thing waiting to be spent
       text(lab, 8, by + 3, '#eaffd8', 'left', 6); }
-    if (hintT > 0 && state === 'play' && introCardUp()) { /* THE CARD FIRST: a hint that starts under the boss's name waits for it to go */ }
+    if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && introCardUp()) { /* THE CARD FIRST: a hint that starts under the boss's name waits for it to go */ }
     else if (hintT > 0 && state === 'play') { hintT -= 1 / 60; const k = Math.min(1, hintT * 2);
       const lines = wrap(hintMsg, VW - 60, 6), bw = Math.min(VW - 24, Math.max(...lines.map(l => l.length * 6)) + 16), bh = lines.length * 9 + 7;
       g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.86)'; g.beginPath(); g.roundRect(VW / 2 - bw / 2, 44, bw, bh, 4); g.fill();
