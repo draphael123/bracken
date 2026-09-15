@@ -16,7 +16,7 @@
 // the HUD with every meter full, and every boss and mini name card as the fight starts.
 //   node tools/textfit.mjs                  everything (report mode: prints, writes textfit.json, exits 0)
 //   node tools/textfit.mjs hints,talk       only those screens (hints talk bestiary store tree menu hud boss)
-//   node tools/textfit.mjs --strict         exit 1 when anything overflows, runs off screen or is clipped
+//   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { openPage, ROOT } from './cdp.mjs';
@@ -70,9 +70,12 @@ async function pageTextFit(input) {
          of its box). A scroll arrow's square or a slider's knob under the start of a word is not the box the word is in. */
       const inside = r => { const ix = Math.min(t.x0 + t.w, r.x0 + r.w) - Math.max(t.x0, r.x0), iy = Math.min(t.y0 + t.h, r.y0 + r.h) - Math.max(t.y0, r.y0); return ix > 0 && iy > 0 ? ix * iy / Math.max(1, t.w * t.h) : 0; };
       /* (a board() is a box on purpose, so any overlap makes it the plate; a bare rectangle must hold a third of the text and its full height) */
-      const cands = rec.filter(r => r.kind === 'rect' && r.i < t.i && ax >= r.x0 && ax <= r.x0 + r.w && ay >= r.y0 && ay <= r.y0 + r.h && r.h >= t.h && r.w >= 20 && !(r.w >= VW - 2 && r.h >= VH - 2)
+      /* (and nothing laid down UNDER a later board: a world rectangle or a HUD plate beneath the talk box or the pause menu is not the box its words are in) */
+      const under = rec.filter(r => r.kind === 'rect' && r.i < t.i && ((r.m === 'board' && ax >= r.x0 && ax <= r.x0 + r.w && ay >= r.y0 && ay <= r.y0 + r.h)
+        || (r.w < VW - 2 && t.x0 >= r.x0 && t.x0 + t.w <= r.x0 + r.w && t.y0 >= r.y0 && t.y0 + t.h <= r.y0 + r.h))).pop(), floor = under ? under.i : -1;   /* (or any plate that holds the whole string) */
+      const cands = rec.filter(r => r.kind === 'rect' && r.i < t.i && r.i >= floor && ax >= r.x0 && ax <= r.x0 + r.w && ay >= r.y0 && ay <= r.y0 + r.h && r.h >= t.h && r.w >= 20 && !(r.w >= VW - 2 && r.h >= VH - 2)
         && (r.m === 'board' ? inside(r) > 0 : inside(r) >= 0.35 && t.y0 >= r.y0 - 1 && t.y0 + t.h <= r.y0 + r.h + 1));
-      if (cands.length) { const p = cands.reduce((a, b) => a.w * a.h <= b.w * b.h ? a : b);
+      if (cands.length && t.style !== 'outline') { const p = cands.reduce(   /* (outlined text is drawn over the world on purpose, with no plate: a tell, a prompt over a gate) */(a, b) => a.w * a.h <= b.w * b.h ? a : b);
         const over = Math.max(p.x0 - t.x0, t.x0 + t.w - (p.x0 + p.w), p.y0 - t.y0, t.y0 + t.h - (p.y0 + p.h));
         if (over > 2) report('OVERFLOW', screen, t, { by: Math.round(over), plate: [Math.round(p.x0), Math.round(p.y0), Math.round(p.w), Math.round(p.h)], text: [t.x0, t.y0, t.w, t.h] }); }
     }
@@ -81,7 +84,8 @@ async function pageTextFit(input) {
       const ix = Math.min(A.x0 + A.w, B.x0 + B.w) - Math.max(A.x0, B.x0), iy = Math.min(A.y0 + A.h, B.y0 + B.h) - Math.max(A.y0, B.y0);
       if (ix > 1 && iy > 1) report('COLLIDE', screen, A, { other: B.s, otherAt: B.at }); }
     for (const c of rec.filter(r => r.kind === 'cut')) report('TRUNCATED', screen, c, { out: c.out, maxW: c.maxW });
-    if (!opts.paged) for (const w of rec.filter(r => r.kind === 'wrap')) { const later = texts.filter(t => t.i > w.i).map(t => t.s.trim());
+    const pagedS = new Set(rec.filter(r => r.kind === 'paged').map(r => r.s));   /* a description with a page key reaches its every line */
+    if (!opts.paged) for (const w of rec.filter(r => r.kind === 'wrap' && !pagedS.has(r.s))) { const later = texts.filter(t => t.i > w.i).map(t => t.s.trim());
       const drawn = w.lines.filter(l => later.some(s => s === l.trim() || l.trim().startsWith(s) || l.trim().endsWith(s))).length;
       if (drawn > 0 && drawn < w.lines.length) report('CLIPPED', screen, w, { lines: w.lines.length, drawn }); }
     if (opts.cover) { const v = BK.view, P = BK.P, hx = P.x - Math.max(0, Math.min(BK.L.W * 16 - v.VW, v.x)), hy = P.y - Math.max(0, Math.min(BK.L.H * 16 - v.VH, v.y));
@@ -106,8 +110,10 @@ async function pageTextFit(input) {
   const P = BK.P, PROG = BK.PROG || null;
 
   if (want('hints')) { toPlay(0, 'knight');
-    for (const h of input.hints) { frame('hint ' + h.at, () => { BK.state = 'play'; TL.hint(h.s); }, { cover: t => t.size === 6 && h.s.includes(t.s.trim()) });
-      const last = issues[issues.length - 1]; if (last && !last.hintAt && last.screen === 'hint ' + h.at) last.hintAt = h.at; }
+    for (const h of input.hints) { const rec = frame('hint ' + h.at, () => { BK.state = 'play'; TL.hint(h.s); }, { cover: t => t.size === 6 && h.s.includes(t.s.trim()) });
+      const last = issues[issues.length - 1]; if (last && !last.hintAt && last.screen === 'hint ' + h.at) last.hintAt = h.at;
+      /* A HINT IS TWO LINES: a longer one covers the middle of the play space (soft: new hints from other work land here first) */
+      const wr = rec.find(r => r.kind === 'wrap' && r.s === h.s); if (wr && wr.lines.length > 2) report('LONGHINT', 'hint ' + h.at, { s: h.s, at: h.at }, { lines: wr.lines.length }); }
     await yieldNow(); }
 
   if (want('talk')) { const done = new Set();
@@ -147,8 +153,8 @@ async function pageTextFit(input) {
       for (const [nm, A] of [['arena', Lb.arena], ['mini', Lb.mini]]) { if (!A) continue;
         const boss = BK.enemies().find(e => e.t === A.boss && e.alive);
         const names = nm === 'mini' ? [TL.miniName()] : boss ? [TL.bossTitle(boss), TL.bossTitle(Object.assign({}, boss, { phase: 3 })), TL.bossTitle(Object.assign({}, boss, { need: 'violet' }))] : [];
-        for (const s of new Set(names)) { meas.font = '12px "Press Start 2P", monospace'; const w = Math.ceil(meas.measureText(s).width);
-          if (w > 320 - 8) report('OVERFLOW', 'boss card ' + l.id + ' ' + nm, { s, at: 'main.js boss intro card (size 12, centred on a 320px screen)' }, { by: w - 312, text: [160 - w / 2, 0, w, 12] }); }
+        for (const s of new Set(names)) { let w; if (TL.cardFit) w = TL.cardFit(s)[1]; else { meas.font = '12px "Press Start 2P", monospace'; w = Math.ceil(meas.measureText(s).width); }   /* the size the card really draws it at */
+          if (w > 320 - 8) report('OVERFLOW', 'boss card ' + l.id + ' ' + nm, { s, at: 'main.js boss intro card (centred on a 320px screen)' }, { by: w - 312, text: [160 - w / 2, 0, w, 12] }); }
         if (!boss) continue;
         for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
         BK.tp(Math.round((A.trigger || (A.x0 + A.x1) / 2) / 16) + 1, Math.round(A.floor / 16) - 1);
@@ -169,7 +175,7 @@ async function main() {
   const t0 = Date.now();
   const r = await pg.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify(input) + ')');
   const by = {}; for (const it of r.issues) (by[it.type] = by[it.type] || []).push(it);
-  const ORDER = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'SMUDGE', 'ERROR'];
+  const ORDER = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'LONGHINT', 'SMUDGE', 'ERROR'];
   for (const ty of ORDER) { const list = by[ty] || []; if (!list.length) continue;
     console.log('\n== ' + ty + ' (' + list.length + ')');
     for (const it of list.slice(0, 60)) console.log('  ' + (it.at || '').padEnd(15) + ' ' + it.screen.slice(0, 60).padEnd(60) + ' ' + JSON.stringify(String(it.s).slice(0, 70)) +
@@ -186,7 +192,7 @@ async function main() {
   console.log(r.shots.length + ' pictures in ' + SHOTS);
   if (pg.errors.length) console.log('page errors:\n  ' + [...new Set(pg.errors)].slice(0, 8).join('\n  '));
   pg.close();
-  const hard = (by.OVERFLOW || []).length + (by.OFFSCREEN || []).length + (by.CLIPPED || []).length;
+  const hard = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'SMUDGE'].reduce((n, ty) => n + (by[ty] || []).length, 0);   /* LONGHINT is reported, not failed */
   process.exit(strict && hard ? 1 : 0);
 }
 main().catch(e => { console.error(e.message); process.exit(1); });
