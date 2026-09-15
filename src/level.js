@@ -248,7 +248,7 @@ function brackenWood() {
   const LA = grow(RB, RB, 53, 26);    // a. THE HEAVY BLOW: a lone shield goblin on the flat, and a held swing goes through what he turns
   LA.floor(53, 78, 22);
   LA.ent('check', 55, 21); LA.ent('deco', 57, 21, { kind: 'stump', v: 0 });
-  LA.ent('sign', 59, 21, { text: 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.' });
+  LA.ent('sign', 59, 21, { text: 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
   LA.coins([62, 20], [64, 19], [66, 20]);
   LA.ent('shield', 68, 21, { face: -1 });
   LA.ent('deco', 73, 21, { kind: 'fern', v: 1 }); LA.coins([74, 20], [77, 20]);

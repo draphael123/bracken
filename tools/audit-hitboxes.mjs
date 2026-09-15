@@ -164,7 +164,7 @@ async function SHEET(r) {
 async function HERO(o) {
   const A = window.__AUD, BK = window.BK, P = BK.P, out = {}, lvm = await import('/src/level.js');
   const wood = lvm.LEVELS.findIndex(l => l.id === 'wood');
-  for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper']) for (const sw of (h === 'knight' ? BK.SWORDS.map(s => s.id) : ['default'])) {
+  for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper']) for (const sw of (h === 'knight' ? BK.SWORDS.map(s => s.id) : ['default'])) {
     BK.setHero(h); if (h === 'knight') { BK.PROG.sword = sw; BK.PROG.swords = BK.PROG.swords || {}; BK.PROG.swords[sw] = true; BK.applySkin(); BK.applyUpgrades(); }
     A.settings(); BK.load(wood); BK.state = 'play'; BK.god = false; BK.sim(3); for (const q of BK.enemies()) q.alive = false; A.clearKeys(); BK.sim(30); BK.reset();
     const K = BK.heroSet, hs = h === 'reaper' ? 1.22 : 1, x0 = P.x, y0 = P.y;

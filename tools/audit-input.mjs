@@ -15,7 +15,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { openAudit, SCRATCH } from './audit-lib.mjs';
 
-const heroes = (process.argv[2] || 'knight,pyro,paladin,pirate,reaper').split(',');
+const heroes = (process.argv[2] || 'knight,warden,pyro,paladin,pirate,reaper').split(',');
 mkdirSync(SCRATCH, { recursive: true });
 
 async function INPUT(o) {

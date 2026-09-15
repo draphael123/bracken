@@ -25,7 +25,7 @@ import { openPage } from './cdp.mjs';
 
 const OUT = process.env.OUT || 'audits/animation';
 const SECS = +(process.env.SECS || 40), EVERY = +(process.env.EVERY || 10);
-const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];
+const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 const arg = process.argv[2] || '';
 
 // ---- the audit, run inside the page (no closures over this file: it is sent as source) ----
