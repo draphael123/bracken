@@ -6387,6 +6387,306 @@ function theHexedFields() {
   };
 }
 
+// ============================================================================================
+// THE MAGE'S FOLLY - the Archmage's tower and its walled grounds on the hill over THE HEXED FIELDS.
+//
+// DRINK, AND BE SOMETHING ELSE. Every glowing font is one colour and one shape, and it is the same shape for every
+// hero: BLUE is the MOUSE (tiny: under doors, through cracks, along ledges nothing else can use; one bite knocks it
+// back to you), VIOLET is the BAT (a short flight on a bar that drains, and it hangs from any ceiling), AMBER is the
+// STONE GOLEM (slow and heavy: it breaks a cracked floor, holds a plate down, shrugs off small blows and cannot jump).
+// The form wears a ring that drains, and a RUNE ARCH ends it early. Each form is INTRODUCED, DEVELOPED, TWISTED by
+// mixing two in one room, and TESTED all three together under the dome before the Archmage himself.
+// SIX SECTIONS: the overgrown grounds (the hedge maze and the first font), the library (the runes that slide the
+// stacks, the flying books, the bat taught from the rafters; the Homunculus at the end of it), the alchemy lab (vats
+// and spitters, the golem through the floor into the wine cellar, out again as a mouse, the plate and the grating),
+// the orrery (up the turning planets, and the bat over the drop), the upside-down floor (the glyphs turn the room
+// over), and the observatory (all three, then the boss).
+// EVERY MOUSEHOLE AND CRACK IS OPEN IN THE BUILT GRID (the tools see the way the potion makes) and the game seals it
+// at load; a runeshelf is built in its SLID position for the same reason; a LANE is footing for the reach model only,
+// where a bat glides or a turned-over hero walks the ceiling. The ceiling turrets are hung by the game (mage.hung).
+// ============================================================================================
+function theMagesFolly() {
+  const W = 712, H = 48, G = 40, F = 16;                        /* G: the ground floor row; F: the floor of the upper tower */
+  const L = painter(W, H);
+  const { block, plat, ent, coins, set, spikes } = L;
+  const moversExtra = [], interiors = [], nets = [], pools = [], holes = [], cracks = [], shelves = [], skins = [], hedges = [], chains = [];
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const net = (x, y0, y1) => nets.push([x, y0, y1]);   /* EVERY LADDER IS HUNG LAST (rule I) */
+  const sign = (x, y, text) => ent('sign', x, y, { text });
+  const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
+  const ground = (x0, x1, top = G) => block(x0, x1, top, H - 1);
+  const font = (kind, x, y, o) => ent('font', x, y, Object.assign({ kind }, o || {}));   /* a potion font: kind is the form it gives */
+  const arch = (x, y) => ent('runearch', x, y);                                             /* a rune arch: walk through it and the form ends */
+  /* A MOUSEHOLE: a passage open in the grid (the tools walk it) and sealed at load unless a mouse is at it */
+  const hole = (x0, x1, y0, y1) => { air(x0, x1, y0, y1); holes.push([x0, x1, y0, y1]); };
+  /* A CRACKED FLOOR: solid in the grid, and the golem's weight breaks it */
+  const crack = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); cracks.push([x0, x1, y]); };
+  /* A RUNESHELF: a stack that slides UP into its recess when its rune is struck. Built slid (open); at load the stack is
+     down (yDown: the row its top is at when down; yUp: when up; h rows tall) */
+  const runeshelf = (x0, x1, yDown, yUp, h) => { for (let y = yUp; y < yUp + h; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); for (let y = yDown; y < yDown + h; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); shelves.push({ x0, x1, yDown, yUp, h }); ent('rune', x0, yDown + h - 1, { shelf: shelves.length - 1 }); };
+  /* A FLYING BOOK: a platform that patrols between x0 and x1 at row y */
+  const book = (x0, x1, y, o) => moversExtra.push(Object.assign({ kind: 'book', mage: true, x0: x0 * TS, x1: x1 * TS, x: x0 * TS, y: y * TS, w: 26, h: 6, speed: 44, dir: 1, ph: 0 }, o || {}));
+  /* A LANE THE MODEL FLIES OR HANGS ALONG: no body in the game, only the reach fill's footing where a bat glides or a flipped
+     hero walks the ceiling. (m.x0/x1/y is what src/reachcore.js reads as a ride band.) */
+  const lane = (x0, x1, y, what) => moversExtra.push({ kind: 'lane', mage: true, what, x0: x0 * TS, x1: x1 * TS, x: x0 * TS, y: y * TS, w: 16, h: 2 });
+  const planet = (px, py, r, period, n) => { for (let i = 0; i < n; i++) moversExtra.push({ kind: 'wheel', planet: true, mage: true, first: i === 0, px: px * TS + 8, py: py * TS, r, phase: i * Math.PI * 2 / n, period, x: 0, y: 0, w: 22, h: 6, world: (px * 7 + i) % 4 }); };
+  const chain = (x, top, bot) => chains.push([x, top, bot]);   /* a chain from the ceiling to a hung shelf: drawn, not solid */
+  const hedge = (x0, x1, y0, y1) => { block(x0, x1, y0, y1); hedges.push([x0, x1, y0, y1]); };
+  const wall = (x0, x1, y0, y1, kind) => { block(x0, x1, y0, y1); skins.push([x0, x1, y0, y1, kind]); };
+
+  // ---------------- 1. THE OVERGROWN GROUNDS (x 0-117). Night on the hill: the hedge maze, the topiary, and the gate. ----------------
+  ground(0, 700);
+  sign(2, G - 1, 'THE MAGE\'S FOLLY. HIS SPILLS RUINED THE FARMS BELOW. WHAT GOT LOOSE UP HERE IS WORSE.');
+  ent('check', 6, G - 1);
+  ent('npc', 10, G - 1, { kind: 'apprentice', name: 'THE APPRENTICE', lines: ['I RAN. HE TURNED THE BUTLER INTO A CHAIR AND THE CHAIR INTO A DOG.', 'THREE LENSES CAME OUT OF THE GREAT TELESCOPE WHEN THE ROOM WENT OVER. ONE IN THE HEDGES, ONE IN THE STACKS, ONE UP THE ORRERY.', 'BRING THEM AND HIS CLOAK IS YOURS. HE WILL NOT WANT IT WHERE HE IS GOING.'] });
+  sign(14, G - 1, 'DRINK AT A FONT AND YOU ARE SOMETHING ELSE FOR A WHILE. THE RING SAYS HOW LONG.');
+  /* THE HEDGE MAZE: low hedges to walk the tops of, tall ones to go under, and the topiary standing in the lanes */
+  hedge(18, 19, G - 2, G - 1);
+  hedge(22, 30, G - 4, G - 1); air(25, 26, G - 2, G - 1);           /* the first tall hedge: an arch cut through it at the foot */
+  deco('topiaryUrn', 20, G - 1); ent('topiary', 31, G - 1, { face: -1 });
+  hedge(34, 35, G - 2, G - 1); hedge(38, 39, G - 2, G - 1); hedge(42, 43, G - 2, G - 1);
+  coins([34, G - 4], [38, G - 4], [42, G - 4]);
+  ent('topiary', 40, G - 1, { face: -1 }); ent('imp', 44, G - 6, { face: -1 }); ent('imp', 60, G - 6, { face: -1 });   /* a beast between the low hedges, and an imp that got as far as the garden */
+  ent('broom', 37, G - 1, { face: -1 });
+  sign(45, G - 1, 'THE TOPIARY ONLY LOOKS LIKE A HEDGE. IT SHIVERS BEFORE IT MOVES: THAT IS YOUR WARNING.');
+  /* THE TOPIARY LAWN: a crowd in the open, told before they wake */
+  ent('check', 47, G - 1);
+  ent('topiary', 52, G - 1, { face: -1 }); ent('topiary', 57, G - 1, { face: -1 }); ent('topiary', 62, G - 1, { face: 1 });
+  deco('sundial', 55, G - 1); deco('topiaryUrn', 60, G - 1);
+  coins([50, G - 2], [54, G - 3], [59, G - 2]);
+  /* THE WALL HEDGE: over it by two steps, along its top where a beast waits with no room to swing, and down the far side */
+  hedge(66, 66, G - 2, G - 1); hedge(67, 76, G - 4, G - 1);
+  ent('topiary', 74, G - 5, { face: -1 });
+  coins([69, G - 6], [71, G - 6], [75, G - 6]);
+  ent('stray', 76, G - 5, { kind: 'lens' });                       /* the lens in the hedges: on the far end of the wall hedge, past the beast */
+  ent('check', 79, G - 1);
+  /* THE GATEKEEPER'S STALL: a shop before the gate, because the tower sells nothing */
+  deco('stall', 84, G - 1); ent('npc', 86, G - 1, { kind: 'keeper' }); sign(82, G - 1, 'THE GATEKEEPER\'S STALL. HE LEFT WHEN THE HEDGES STARTED WALKING. THE COUNTER IS OPEN.');
+  ent('broom', 92, G - 1, { face: -1 }); ent('broom', 95, G - 1, { face: -1 });
+  /* THE FIRST FONT: the gate is shut and the wall is too high; the mouse goes under it */
+  sign(96, G - 1, 'THE GATE IS BARRED. THE BLUE FONT IS THE MOUSE: SMALL ENOUGH FOR THE CRACK UNDER IT.');
+  font('mouse', 99, G - 1);
+  wall(102, 108, G - 16, G - 1, 'gate');                             /* the gatehouse: sixteen rows of wall */
+  hole(102, 108, G - 2, G - 1);                                      /* THE CRACK UNDER THE GATE */
+  arch(111, G - 1);
+  ent('check', 114, G - 1);
+  coins([104, G - 2], [106, G - 2]);
+  deco('ivyWall', 100, G - 1); deco('lamppost', 116, G - 1);
+
+  // ---------------- 2. THE LIBRARY (x 118-262). The runes slide the stacks, the books fly, and the bat is taught from the rafters. ----------------
+  wall(118, 262, 6, G - 1, 'tower');
+  air(120, 261, 14, G - 1); air(118, 119, 36, G - 1);              /* the hall, and the front door */
+  interiors.push([120, 261, 14, G - 1, 'library']);
+  ent('check', 123, G - 1); deco('lectern', 125, G - 1);
+  sign(121, G - 1, 'THE LIBRARY. STRIKE THE RUNE ON A STACK AND THE STACK SLIDES. THE BOOKS FLY: RIDE THEM.');
+  /* THE STACKS: two runeshelves in the way, built slid (the recess above holds them in the grid), down at load */
+  block(127, 128, G - 2, G - 1); block(131, 132, G - 4, G - 1);     /* shelves to climb, two rows a step */
+  coins([128, G - 4], [132, G - 6]);
+  runeshelf(134, 135, G - 6, G - 12, 6);                             /* the first: six rows of books across the floor; the rune lifts them into the recess */
+  ent('armour', 140, G - 1, { face: -1 }); ent('broom', 128, G - 5, { face: -1 });
+  deco('bookpile', 138, G - 1); deco('candelabra', 143, G - 1);
+  /* THE ARCHIVE SHAFT: the floor is gone, the books cross it, and the familiar's nest is at the bottom of it */
+  air(146, 156, G, G + 6);
+  book(145, 156, G - 4); book(147, 156, G - 2, { ph: 3, dir: -1 });
+  lane(145, 157, G - 1, 'book');
+  ent('imp', 151, G + 6, { face: -1 }); deco('nest', 149, G + 6); ent('mend', 148, G + 5); ent('spider', 154, G + 6);   /* THE FAMILIAR'S NEST: the heart it left, and what has moved in since */
+  ent('bat', 140, 20); ent('bat', 152, 19); ent('bat', 165, 21);   /* the rafters */
+  runeshelf(159, 160, G - 6, G - 12, 6);                             /* the second stack, on the far side of the shaft */
+  ent('check', 163, G - 1);
+  /* THE GALLERY: up the shelves to the reading gallery, and the violet font on it */
+  block(166, 167, G - 2, G - 1); block(168, 169, G - 4, G - 1); block(170, 172, G - 6, G - 1); plat(174, G - 8, 3);
+  plat(178, G - 10, 10); block(178, 187, G - 9, G - 9);              /* the gallery: a shelf of stone under the boards */
+  chain(179, 14, G - 10); chain(186, 14, G - 10);
+  sign(179, G - 11, 'THE VIOLET FONT IS THE BAT. HOLD JUMP TO FLY, UP UNDER A CEILING TO HANG, DOWN TO LET GO.');
+  font('bat', 182, G - 11);
+  ent('check', 185, G - 11);
+  /* THE GLIDE: from the gallery's end across the hall to the far gallery; the floor under it is a long way down and full of armour */
+  lane(187, 206, G - 10, 'bat');
+  plat(206, G - 10, 8); block(206, 213, G - 9, G - 9); chain(207, 14, G - 10); chain(212, 14, G - 10);
+  arch(209, G - 11); coins([211, G - 12], [212, G - 12], [213, G - 12]);
+  ent('stray', 190, 16, { kind: 'lens' }); plat(189, 17, 3);        /* the lens in the stacks: on a rafter ledge, up a rope from the gallery's end (or a bat that lets go of the roof) */
+  ent('armour', 192, G - 1, { face: -1 }); ent('armour', 200, G - 1, { face: 1 }); ent('broom', 196, G - 1, { face: -1 }); ent('haunt', 205, G - 6, { face: -1 }); ent('bat', 196, 18); ent('imp', 198, G - 6, { face: 1 }); ent('imp', 168, G - 9, { face: 1 });
+  deco('bookpile', 189, G - 1); deco('globe', 204, G - 1); deco('candelabra', 198, G - 1);
+  coins([176, G - 10], [180, G - 12], [184, G - 12], [193, G - 2], [201, G - 2], [208, G - 12]);
+  /* THE READING ROOM (the ambush): a quiet room of tables until it shuts */
+  ent('check', 216, G - 1); deco('longTable', 222, G - 1); deco('longTable', 230, G - 1, { v: 1 }); deco('candelabra', 226, G - 1);
+  /* THE HOMUNCULUS'S CELL: the mini, behind a stone wall, and the gate into the lab lifts when he falls */
+  ent('check', 237, G - 1);
+  sign(235, G - 1, 'THE THING NEXT DOOR WEARS WHAT YOU LAST DRANK. IT PANTS AFTER A TRICK: CUT IT THEN.');
+  ent('homunculus', 254, G - 1, { face: -1, mini: true });
+  for (let y = G - 6; y <= G - 1; y++) set(262, y, T.PORT);         /* the lab door: it lifts when he falls */
+  coins([244, G - 2], [258, G - 2]);
+
+  // ---------------- 3. THE ALCHEMY LAB (x 263-380). Vats, spitters, the golem through the floor, and out again as a mouse. ----------------
+  wall(263, 380, 10, G - 1, 'tower');
+  air(263, 379, 22, G - 1);
+  interiors.push([263, 379, 22, G - 1, 'lab']);
+  ent('check', 266, G - 1); deco('cauldron', 269, G - 1);
+  sign(268, G - 1, 'THE ALCHEMY LAB. THE VATS BURN. A SPITTER BUBBLES FIRST: THE SHIELD TURNS ITS GOB.');
+  /* THE VATS: acid set into the floor, and a spitter on the rim of each */
+  air(273, 276, G, G + 3); pools.push({ x0: 273 * TS, x1: 277 * TS, y: G * TS + 6, bottom: (G + 3) * TS, swim: true, clear: true, harm: true, foulCol: '#4a1e6a', wash: 0.5, acid: true });
+  ent('vatspit', 278, G - 1);
+  air(283, 290, G, G + 3); pools.push({ x0: 283 * TS, x1: 291 * TS, y: G * TS + 6, bottom: (G + 3) * TS, swim: true, clear: true, harm: true, foulCol: '#4a1e6a', wash: 0.5, acid: true });
+  plat(286, G - 3, 2); chain(286, 22, G - 3); chain(287, 22, G - 3); /* a retort shelf hung over the second vat */
+  ent('vatspit', 281, G - 1); ent('vatspit', 292, G - 1);
+  coins([274, G - 3], [286, G - 5], [289, G - 3]);
+  /* THE BENCH: jars, and the imps that were in them */
+  ent('check', 295, G - 1);
+  deco('bench', 299, G - 1); deco('jars', 304, G - 1); deco('retorts', 310, G - 1);
+  ent('imp', 301, G - 1, { face: -1 }); ent('mimic', 307, G - 1); ent('imp', 313, G - 1, { face: -1 }); ent('armour', 317, G - 1, { face: -1 }); ent('haunt', 296, G - 6, { face: -1 }); ent('bat', 310, 24); ent('broom', 304, G - 4, { face: -1 }); ent('imp', 280, G - 6, { face: -1 }); ent('broom', 290, G - 5, { face: -1 });   /* a cleaver nobody is holding, and what roosts in the pipes */
+  /* THE GOLEM ROOM: the amber font, and a floor that will not hold a stone man */
+  sign(319, G - 1, 'THE AMBER FONT IS THE GOLEM. HEAVY, SLOW, AND THE CRACKED FLOOR WILL NOT HOLD IT.');
+  font('golem', 322, G - 1);
+  ent('check', 325, G - 1);
+  crack(328, 331, G);
+  /* THE WINE CELLAR, under the cracked floor: racks, a silver, the brass key, and the way out of it is small */
+  air(306, 334, G + 2, G + 6);
+  deco('wineRack', 310, G + 6); deco('wineRack', 318, G + 6, { v: 1 }); deco('wineRack', 326, G + 6);
+  ent('silver', 308, G + 5); ent('key', 331, G + 6, { kind: 'brass' });
+  ent('mimic', 322, G + 6); ent('spider', 314, G + 6); ent('bat', 330, G + 3);
+  sign(330, G + 6, 'THE CRACK IN THE CELLAR WALL IS A MOUSE\'S SIZE. THE BLUE FONT IS BESIDE IT.');
+  font('mouse', 333, G + 6);
+  hole(335, 335, G + 4, G + 5); hole(336, 336, G + 3, G + 4); hole(337, 337, G + 2, G + 3); hole(338, 338, G + 1, G + 2); hole(339, 339, G, G + 1);   /* the crack climbs the wall a step a column */
+  hole(340, 340, G - 1, G);
+  arch(343, G - 1);
+  coins([312, G + 4], [316, G + 4], [320, G + 4], [324, G + 4], [328, G + 4]);
+  /* THE STILL ROOM: the plate that opens the grating, and only a stone man is heavy enough to hold it */
+  ent('check', 346, G - 1);
+  sign(348, G - 1, 'THE PLATE LIFTS THE GRATING, AND A LITTLE AFTER. ONLY A STONE MAN IS HEAVY ENOUGH.');
+  font('golem', 351, G - 1);
+  ent('gplate', 356, G - 1, { gate: 363 });
+  for (let y = G - 4; y <= G - 1; y++) set(363, y, T.PORT);         /* the grating */
+  deco('still', 359, G - 1);
+  arch(367, G - 1); ent('check', 370, G - 1);
+  ent('turret', 375, G - 3); block(374, 376, G - 2, G - 1);          /* a turret on a plinth, covering the lab door */
+  deco('jars', 372, G - 1, { v: 1 });
+  air(378, 380, 36, G - 1);                                        /* the door into the orrery */
+  coins([353, G - 2], [365, G - 2], [369, G - 2]);
+
+  // ---------------- 4. THE ORRERY (x 381-500). A brass sky turns under the dome; ride the planets up, and the bat over the drop. ----------------
+  wall(381, 500, 0, G - 1, 'tower');
+  air(383, 498, 6, G - 1); air(381, 382, 36, G - 1);               /* the chamber, and its door from the lab */
+  interiors.push([383, 498, 6, G - 1, 'orrery']);
+  ent('check', 386, G - 1); deco('orreryBase', 420, G - 1);
+  sign(388, G - 1, 'THE ORRERY. THE PLANETS TURN ON THEIR ARMS. RIDE THEM UP: THE DOOR OUT IS AT THE TOP.');
+  /* THE FLOOR: the base of the great model, and what guards it */
+  ent('imp', 396, G - 1, { face: -1 }); ent('armour', 408, G - 1, { face: -1 }); ent('imp', 428, G - 1, { face: -1 }); ent('armour', 432, G - 1, { face: -1 }); ent('haunt', 416, G - 7, { face: -1 }); ent('broom', 412, G - 4, { face: 1 }); ent('armour', 418, G - 1, { face: -1 }); ent('armour', 404, G - 1, { face: -1 }); ent('imp', 424, G - 6, { face: -1 }); ent('bat', 452, 10); ent('bat', 440, 12);
+  plat(400, G - 6, 3); chain(400, 6, G - 6); chain(402, 6, G - 6); ent('turret', 401, G - 7);   /* a turret on a hung brass ring */
+  coins([394, G - 2], [404, G - 8], [412, G - 2], [424, G - 2]);
+  /* THE PLANETS: three hubs, each carrying two worlds round; a step up to the first, and a brass ledge under each hub's low point */
+  block(440, 441, G - 2, G - 1);
+  spikes(442, 468, G - 1);                                         /* THE GLASS: the floor under the planets is broken glass. Ride, or bleed */
+  planet(444, 33, 52, 10, 2);
+  plat(447, 28, 5); ent('check', 449, 27);
+  planet(454, 24, 60, 12, 2);
+  plat(458, 19, 5); ent('check', 460, 18);
+  planet(465, 15, 56, 10, 2);
+  plat(469, 11, 6); block(469, 474, 12, 12);                         /* the balcony */
+  ent('check', 471, 10);
+  ent('stray', 466, 8, { kind: 'lens' }); plat(465, 9, 3);         /* the lens up the orrery: on a bracket over the far planet's arc */
+  ent('broom', 450, 14, { face: -1 }); ent('broom', 462, 24, { face: 1 });
+  coins([445, 26], [448, 27], [456, 17], [460, 18], [466, 5], [472, 10]);
+  /* THE DROP: the balcony ends, the pit under it is spiked, and the violet font is the way across */
+  sign(470, 10, 'THE ARMS DO NOT REACH THE DOOR. DRINK, AND FLY THE GAP. A BAT CAN HANG FROM THE ROOF TO REST.');
+  font('bat', 473, 10);
+  air(475, 488, 12, 44); spikes(475, 488, 44); block(475, 488, 45, H - 1);
+  lane(474, 492, 11, 'bat');
+  plat(489, 11, 8); block(489, 496, 12, 12);
+  arch(491, 10); ent('check', 493, 10);
+  air(497, 500, 8, 11);                                            /* the door out at the top */
+  /* THE LOCKED STUDY: at the foot of the drop's far side, under a slab; the brass key from the cellar opens it, and a rope brings you back up */
+  block(489, 493, 33, 33); block(494, 494, 33, 35); for (let y = G - 4; y <= G - 1; y++) set(494, y, T.PORT); ent('lockgate', 494, G - 1, { needs: 'brass', h: 4 });
+  deco('desk', 490, G - 1); deco('bookpile', 492, G - 1, { v: 1 }); ent('silver', 491, G - 4); ent('mimic', 497, G - 1); coins([490, G - 3], [492, G - 3]);
+  net(498, 12, G - 1);
+
+  // ---------------- 5. THE UPSIDE-DOWN FLOOR (x 501-590). A spell gone wrong: the glyphs turn the room over, and the ceiling is a floor. ----------------
+  wall(501, 590, 0, H - 1, 'tower');
+  air(501, 590, 6, F - 1);                                          /* the corridor: floor F, ceiling row 5 */
+  interiors.push([501, 590, 6, F - 1, 'flip']);
+  ent('check', 503, F - 1);
+  sign(505, F - 1, 'THE ROOM WENT OVER. STEP ON A GLYPH AND YOU GO WITH IT: THE CEILING IS YOUR FLOOR.');
+  ent('glyph', 511, F - 1);
+  /* taught: the floor drops away, the ceiling carries you over it, and a hung block is a step */
+  air(516, 530, F, 44); spikes(516, 530, 44);
+  block(521, 523, 6, 6);                                           /* a block hanging from the ceiling: a step, upside down */
+  lane(509, 548, F - 1, 'flip');
+  ent('glyph', 546, 6, { ceiling: true });
+  coins([514, 7], [519, 7], [526, 7], [533, 7], [540, 7]);
+  ent('check', 549, F - 1);
+  /* tested: over again, a turret on the ceiling, a gap in the ceiling to jump, and back */
+  sign(551, F - 1, 'AGAIN, AND LONGER. MIND THE TURRET: IT IS THE RIGHT WAY UP FOR ONCE.');
+  ent('glyph', 555, F - 1);
+  air(560, 580, F, 44); spikes(560, 580, 44);
+  air(565, 569, 4, 5);                                             /* a notch in the ceiling: a flipped hero jumps it, or falls up into it and jumps out (two rows: never a trap) */
+  lane(553, 586, F - 1, 'flip');
+  ent('glyph', 584, 6, { ceiling: true });
+  coins([558, 7], [563, 7], [571, 7], [578, 7]);
+  ent('check', 587, F - 1);
+  /* THE ROOF LEADS: a rope from the corridor up through the ceiling onto the leads outside, where the wind is and a silver was left */
+  air(500, 506, 0, 4); air(507, 526, 0, 3); block(507, 526, 4, 5);
+  ent('silver', 524, 3); deco('chimneypot', 512, 3); deco('chimneypot', 519, 3, { v: 1 }); ent('crow', 510, 1, { face: -1 }); ent('crow', 517, 0, { face: -1 });   /* the roof's own crows */
+  coins([509, 2], [514, 2], [521, 2]);
+
+  // ---------------- 6. THE OBSERVATORY (x 591-655). All three at once under the dome, and the Archmage past the last door. ----------------
+  wall(591, W - 1, 0, H - 1, 'tower');
+  air(593, 700, 2, F - 1); air(590, 592, 12, F - 1);              /* the dome, and the way in from the corridor */
+  interiors.push([593, 700, 2, F - 1, 'dome']);
+  ent('check', 595, F - 1); deco('telescope', 604, F - 1);
+  sign(597, F - 1, 'THE OBSERVATORY. HIS DOOR IS AT THE END: A MOUSE, A BAT AND A STONE MAN, IN ORDER.');
+  /* the mouse: a grating across the floor with a crack at its foot */
+  font('mouse', 600, F - 1);
+  block(607, 608, 9, F - 1); hole(607, 608, F - 2, F - 1);
+  arch(611, F - 1);
+  /* the bat: the floor is gone under the great telescope's pit */
+  font('bat', 614, F - 1); ent('check', 613, F - 1);
+  air(617, 630, F, 24); spikes(617, 630, 24);
+  lane(615, 632, F - 1, 'bat');
+  arch(633, F - 1);
+  /* the golem: the last door is a grating on a plate, and the stone man holds it */
+  font('golem', 637, F - 1); ent('check', 636, F - 1);
+  ent('gplate', 642, F - 1, { gate: 649 });
+  for (let y = F - 4; y <= F - 1; y++) set(649, y, T.PORT);
+  arch(652, F - 1);
+  ent('check', 654, F - 1);
+  ent('imp', 645, F - 1, { face: -1 }); ent('broom', 598, F - 4, { face: -1 }); ent('bat', 630, 3);
+  coins([602, F - 2], [609, F - 2], [621, F - 3], [627, F - 3], [644, F - 2], [651, F - 2]);
+  deco('starChart', 620, 2, { hang: true }); deco('candelabra', 640, F - 1);
+
+  // ---------------- THE ARCHMAGE'S STUDY (x 656-700). The top of the tower: his dais, his islands, and the room he rewrites. ----------------
+  block(686, 694, F - 1, F - 1);                                     /* his dais: one step up, so a stone man can climb it */
+  deco('orreryBase', 678, F - 1, { arena: true });
+  ent('archmage', 690, F - 2, { face: -1 });
+  /* the flood, built dry: it fills in his second stage (tools/newlevel.mjs and killzones ignore a pool that starts dry) */
+  pools.push({ x0: 665 * TS, x1: 686 * TS, y: F * TS, base: F * TS, bottom: F * TS, dry: true, depth: 0, arenaTide: true, swim: true, clear: true, harm: true, foulCol: '#4a1e6a', wash: 0.5, acid: true, magePool: true });
+  /* his ceiling cage, for the room turned over: two bars hung from the dome, and the gaps at their roots are a mouse's */
+  block(687, 687, 2, 4); block(695, 695, 2, 4);
+  hole(687, 687, 2, 2); hole(695, 695, 2, 2);                        /* the mouse's gap at each root: sealed at load, open while a mouse is at it */
+  block(701, W - 1, 0, H - 1);
+
+  /* THE LADDERS, LAST: nothing is dug or laid after this line */
+  net(157, G, G + 6);                                              /* down the archive shaft to the nest and back */
+  net(213, G - 9, G - 1);                                          /* off the far gallery, down to the floor */
+  net(188, 17, G - 11);                                            /* up from the gallery's end to the rafter ledge */
+  net(503, 5, F - 2);                                              /* up through the corridor's ceiling onto the roof leads */
+  for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
+
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts: [],
+    music: 'musUnder', night: true, nightA: 0.14, edgeLit: true, duskStart: 99999, duskLen: 1,
+    mage: { holes, cracks, shelves, skins, hedges, chains, dais: [686, 694], flood: [665, 686], cage: [[687, 2], [695, 2]], hung: [[574, 6], [624, 2]], outside: 118 },
+    quest: { n: 3, item: 'lens', name: 'THE LOST LENSES', npc: 'apprentice', done: 'THE LENSES ARE FOUND', reward: 'relic', relic: 'windcloak' },
+    palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(120,90,180,0.10)',
+      grass: '#4e6a52', grassL: '#6c8c70', grassD: '#34483a', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },
+    weather: [{ x0: 0, x1: 118 * TS, kind: 'leaves' }],
+    ambient: [{ x0: 0, x1: 118 * TS, kind: 'wind' }, { x0: 118 * TS, x1: 501 * TS, kind: 'hall' }, { x0: 501 * TS, x1: 99999, kind: 'wind' }],
+    mini: { x0: 238 * TS, x1: 262 * TS, floor: G * TS, y0: (G - 12) * TS, y1: (G + 1) * TS, trigger: 242 * TS, wallL: 237, gate: 262, boss: 'homunculus', name: 'THE HOMUNCULUS' },
+    ambushes: [{ name: 'THE READING ROOM', row: G - 1, wallL: 218, wallR: 234, check: false, waves: [[['broom', 222], ['broom', 231], ['armour', 226]], [['armour', 221], ['imp', 230, G - 6], ['broom', 226], ['broom', 232]]] }],
+    noCoin: [[118, 262, 0, 13], [263, 380, 0, 21], [102, 108, 0, 23], [381, 500, 0, 5]],   /* the tower's roofs and the gatehouse top: the sprinkler treats an assisted level as all reachable */
+    calm: [[0, 18, 0, 47], [20, 32, 0, 47], [66, 77, 30, 38], [96, 124, 0, 47], [144, 158, 0, 47], [176, 190, 26, 47], [205, 214, 26, 47], [233, 264, 0, 47], [318, 346, 0, 47], [362, 372, 0, 47], [436, 502, 0, 47], [501, 590, 0, 47], [591, 656, 0, 47]],   /* no garrison on the fonts, the lanes, the flipped floor or the test room */
+    arena: { x0: 657 * TS, x1: 700 * TS, floor: F * TS, y0: 0, trigger: 662 * TS, wallL: 656, wallR: 700, boss: 'archmage', music: 'boss4', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -6424,6 +6724,8 @@ export const LEVELS = [
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'causeway' },
+  /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. Drink at a font and be a mouse, a bat or a stone man for a while */
+  { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'DRINK AT A FONT AND BE SOMETHING ELSE. THE RUNE ARCH MAKES YOU YOU AGAIN.', build: theMagesFolly, needs: 'fields' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -6514,6 +6816,7 @@ const DRESS = {
   causeway: [['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['shellDrift', 2], ['fencePosts'], ['spar', 2], ['pierPost']],   /* the pilgrim road: wrack, shells, weed and what the tide leaves on the stone */
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
   frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
+  mage: [['candelabra'], ['bookpile', 2], ['jars', 2], ['topiaryUrn'], ['lamppost'], ['ivyWall'], ['stone', 3]],   /* the tower: candles, books and jars; the grounds: urns, lamps and ivy */
   fields: [['deadCorn', 3], ['crookedFence', 2], ['hayStack', 2], ['pumpkinPatch'], ['farmLantern'], ['milkChurn'], ['plough'], ['brokenCart'], ['waterPump'], ['fieldGrave', 3], ['stone', 3], ['deadTree', 2]],   /* the farm, gone wrong: dead corn, crooked fences, the lanterns they left in the fields */
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
   skyship: [['kegStack'], ['rumBarrels', 2], ['coiledCable', 2], ['washing'], ['hammock', 2], ['lanternDeck', 2], ['plunder', 3], ['waterButt'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['ragBanner', 2]],   /* a pirate crew's: pennants, plunder and bones on a line */
@@ -6532,6 +6835,7 @@ const GARRISON = {
   reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['stormshaman', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and a storm-caller, not another cutlass */
+  mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3]],   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
   fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
@@ -6812,7 +7116,7 @@ function ambushRooms(L, id) {
    packed against the end, a heart that waits for you when the pocket is long, wet or spiked, and the level's own stash
    prop on its last floor. Never a silver (three a level, the ledger reads three bits) and never a quest item (counted).
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
-const STASH = { fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
+const STASH = { mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
   scree: 'cairn', spire: 'cairn', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
   longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
