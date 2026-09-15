@@ -11253,7 +11253,7 @@ function updateRoc(e, dt) {
       else if (e.shriekT <= 0 && rocPanes().length) { e.shriekT = p2 ? 4.5 : 6;   /* hover-time: she hovers about a quarter of the fight */ e.mode = 'shriekGo'; e.modeT = 2.2; const fk = props.find(p => p.t === 'resonance' && p.roc); e.perchX = fk ? fk.x : (A.x0 + A.x1) / 2; SFX.screech(); }   /* THE SHRIEK: she goes to sing over the fork */
       else if (e.rakeT <= 0 && Math.abs(P.y - floor) < 30) { e.rakeT = p2 ? 7.5 : 9.5; e.mode = 'rakeGo'; e.modeT = 1.8; e.rakeDir = P.x > (A.x0 + A.x1) / 2 ? 1 : -1; e.rakeX = e.rakeDir > 0 ? A.x0 + 36 : A.x1 - 36; SFX.queenShriek(); } // THE SKY RAKE
       else if (e.gustT <= 0 && ad < 170) { e.gustT = p2 ? 6.5 : 8.5; e.mode = 'gustTell'; e.modeT = 0.6; SFX.puff(); }
-      else if (p2 && e.featherT <= 0) { e.featherT = 3.8; e.mode = 'shedTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.55; }
+      else if (p2 && e.featherT <= 0) { e.featherT = 3.8; e.mode = 'shedTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.55; SFX.shardBristle(); }   /* THE SHED HAS A VOICE OF ITS OWN, as her other windups do. It was leaning on the shared tell, which is not played past 420 px, and her feathers reach you from anywhere in the arena: 1 shed in 6 came in silent */
       break; }
     // the shadow goes down where she means to land, and she goes up a little before she drops
     case 'diveTell': fly(e.x, hoverY - 14, 50); e.face = Math.sign(e.tx - e.x) || e.face;
