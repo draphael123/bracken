@@ -184,7 +184,7 @@ for (const lv of LEVELS) {
   }
 
   // 15. A LEVEL WANTS A FIGHT IN THE MIDDLE OF IT, NOT ONLY AT THE END
-  if (L.W > 420 && L.arena && L.arena.boss && !(L.mini && L.mini.boss) && !L.ents.some(e => e.big || e.mini)) {
+  if (L.W > 420 && L.arena && L.arena.boss && !(L.mini && L.mini.boss) && !L.ents.some(e => e.big || e.mini || e.elite)) {   /* an elite is a named fight */
     note(id, 'nothing is named in the middle of it: a level this long wants one fight before the last one');
   }
 

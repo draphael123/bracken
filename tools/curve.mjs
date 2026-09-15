@@ -25,7 +25,7 @@ for (const lv of LEVELS) {
     if (e.t === 'check') { checks++; continue; }
     const w = THREAT[e.t];
     if (w === undefined) continue;
-    if (w > 0) { foes++; threat += w * (e.mini ? 2 : 1); kinds.add(e.t); }
+    if (w > 0) { foes++; threat += w * (e.mini ? 2 : e.elite ? 3 : 1);   /* an elite is three of its kind */ kinds.add(e.t); }
   }
   /* AN AMBUSH IS IN THE LEVEL even though it is not in the entity list until the room shuts */
   for (const A of (R.ambushes || [])) for (const w of A.waves) for (const [t] of w) { const v = THREAT[t]; if (v > 0) { foes++; threat += v; kinds.add(t); } }

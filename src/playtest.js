@@ -485,7 +485,7 @@ export async function run(BK, opts = {}) {
     { let foes = 0, threat = 0, checks = 0; const kinds = new Set();
       for (const e of (built.ents || [])) { if (e.t === 'check') { checks++; continue; }
         const w = THREAT[e.t]; if (w === undefined) { if (!NOT_A_FOE.test(e.t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + e.t + '"'); continue; }
-        if (w > 0) { foes++; threat += w * (e.mini ? 2 : 1); kinds.add(e.t); } }
+        if (w > 0) { foes++; threat += w * (e.mini ? 2 : e.elite ? 3 : 1); kinds.add(e.t); } }
       const span = spanOf(W, H);
       let hazTiles = 0;
       for (let i = 0; i < built.grid.length; i++) if (built.grid[i] === T.SPIKE) hazTiles++;

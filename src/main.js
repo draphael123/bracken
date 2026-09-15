@@ -39,7 +39,7 @@ import { bakeGrub, bakeDrone, bakeGreatHound, bakeTroll } from './redraw/foes2.j
 import { bakeHoundMaster } from './redraw/hunt.js';
 import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_F } from './redraw/prince.js';
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
-import { LEVELS, T, TS, CUSTOM } from './level.js';
+import { LEVELS, T, TS, CUSTOM, eliteGate } from './level.js';
 import { floodReach } from './reachcore.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
@@ -1106,6 +1106,8 @@ function drawGateHints(cx, cy) {
     for (const e of enemies) { if (!e.alive || e.garrison !== sec.id) continue; const ex = Math.round(e.x - cx), ey = Math.round(e.y - e.h - cy) - 7 + bob; // a red mark over every guard the bell turned out
       if (ex >= 6 && ex <= VW - 6 && ey >= 6 && ey <= VH - 6) { g.fillStyle = '#1b1626'; g.fillRect(ex - 3, ey - 4, 7, 4); g.fillStyle = '#ff6b6b'; g.fillRect(ex - 2, ey - 3, 5, 2); g.fillRect(ex - 1, ey - 1, 3, 1); g.fillRect(ex, ey, 1, 1); }
       else { const axp = Math.max(6, Math.min(VW - 6, ex)), ayp = Math.max(38, Math.min(VH - 6, ey)), an = Math.atan2(ey - ayp, ex - axp) || (ex < 0 ? Math.PI : 0); g.fillStyle = '#ff6b6b'; g.beginPath(); g.moveTo(axp + Math.cos(an) * 5, ayp + Math.sin(an) * 5); g.lineTo(axp + Math.cos(an + 2.4) * 4, ayp + Math.sin(an + 2.4) * 4); g.lineTo(axp + Math.cos(an - 2.4) * 4, ayp + Math.sin(an - 2.4) * 4); g.closePath(); g.fill(); } } }
+  for (const e of enemies) if (e.elite && e.alive && e.G && e.shut && e.shut.length) { const top = gateTop(e.G.col); if (top < 0) continue; const gx = e.G.col * TS + 8 - cx, gy = Math.max(44, top * TS - cy - 16) + bob; if (gx < -40 || gx > VW + 40 || (e.G.bot + 1) * TS - cy < 50) continue;   /* a gate taller than the view keeps its plate on the screen, under the HUD */
+    plate(gx, gy, '#e0b040'); g.fillStyle = '#e0b040'; g.fillRect(gx - 5, gy + 1, 11, 3); g.fillRect(gx - 5, gy - 3, 2, 4); g.fillRect(gx - 1, gy - 4, 3, 5); g.fillRect(gx + 4, gy - 3, 2, 4); g.fillStyle = '#fff1a0'; g.fillRect(gx, gy - 3, 1, 1); } // the crown: one of THEM holds this gate
   if (L.mini && !miniDone) { const top = gateTop(L.mini.gate); if (top >= 0) { const gx = L.mini.gate * TS + 8 - cx, gy = top * TS - cy - 16 + bob; if (gx > -40 && gx < VW + 40) { plate(gx, gy, '#ff9a5c'); g.fillStyle = '#8a919c'; g.fillRect(gx - 5, gy - 5, 10, 5); g.fillStyle = '#5c3a1d'; g.fillRect(gx - 1, gy, 2, 6); } } } // the smith's hammer: he holds this door
   for (const st of (L.trial || [])) if (!st.done) { const gx = st.gate * TS + 8 - cx, gy = 14 * TS - cy - 14 + bob; if (gx < -40 || gx > VW + 40) continue; plate(gx, gy, '#8fd160'); for (let i = 0; i < st.n; i++) { g.fillStyle = i < (st.got || 0) ? '#8fd160' : '#3a3a44'; g.fillRect(gx - st.n * 3 + i * 6 + 1, gy - 2, 4, 4); } } // a trial's gate: a pip for each time it wants
   /* A KEY INDOORS IS FOUND FROM THE STREET. A house's inside is a room drawn somewhere else on the map, so the arrow at a barred gate
@@ -1374,11 +1376,12 @@ function loadLevel(i) {
   if (SET.wayOn && !L.trial) { try { wayRoute = wayBuild(); } catch (err) { wayRoute = null; } }
 }
 function spawnEntities() {
+  eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
-  washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
+  washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
   ambushReset();
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) enemies[i].xpKey = k + '.' + (i - n0); });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
-  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset();
+  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); eliteGates();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
 }
 function spawnEnt(e) {
@@ -1386,6 +1389,7 @@ function spawnEnt(e) {
   // THE MINI OF A LEVEL IS KILLED ONCE. Where a level places several of his kind (eleven spiders in the
   // village), only the one marked as the mini is left lying.
   if (miniDone && !rushOn() && L.mini && e.t === L.mini.boss && (e.mini || !L.ents.some(q => q.t === e.t && q.mini))) return;
+  if (e.elite && marks.has('elite:' + e.x + ',' + e.y)) return;   /* AN ELITE PUT DOWN STAYS DOWN for the attempt, and its gate stays up */
   const n0 = enemies.length;
   {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
@@ -1688,6 +1692,7 @@ function spawnEnt(e) {
     { const made = enemies[enemies.length - 1];
       if (made && made.x === px && made.y === py) { if (e.sleeper) made.sleeper = true; if (e.mini) { made.mini = true; if (!made.maxHp) { made.hp = Math.round(made.hp * 1.8); made.miniBig = true; } }   /* the Bellringer was a berserker like the two in the gaol: same size, same health */ if (e.awake) made.woke = 1; } }
   }
+  if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
   const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
   if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
@@ -1830,6 +1835,133 @@ function drawAmbushHud() {
   g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(x - w / 2, y, w, 16); hudRects.push([x - w / 2, y, w, 16]); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x - w / 2 + 0.5, y + 0.5, w - 1, 15);
   text('WAVE ' + Math.min(n, A.wave + (A.st === 'beat' ? 2 : 1)) + '/' + n, x, y + 3, '#ffd0d0', 'center', 6);
   for (let i = 0; i < left; i++) { g.fillStyle = A.st === 'fight' ? '#ff6b6b' : 'rgba(255,107,107,0.35)'; g.fillRect(Math.round(x - left * 2 + i * 4), y + 11, 2, 3); }
+}
+/* THE ELITES. An ordinary creature of the level's own roster made a fight of its own (ELITES in src/level.js stands them):
+   three times the health, a heavier stagger bar, a gold trim baked once per frame it is drawn in, a crown over it, its name
+   and a bar while you are near - and ONE rule of its own, told the way everything is told. It is NOT a mini: no maxHp, no
+   locked room, no card, and a heavy blow still throws it (heavily) into whatever is behind it. It may HOLD A GATE (e.gate, a
+   column): down from the moment the level is laid out, and eliteWatch asks nothing but whether it is still standing - a
+   blade, a drop and a spike all open it. Put down, it stays down for the attempt (marks), pays a purse and a heart, and its
+   gate stays up. It keeps to its post: carried or knocked far off it, it is back at it a moment later.
+   The rules, one to a kind, each small and each on its own tell (one windup at a time, like everything):
+     rally  a war cry: every foe near it strikes faster for four seconds - a red pip over each one
+     wall   shields up: every foe near it takes half a blow from the front for five seconds - a grey pip
+     call   once, at half health: two more of the level's own drop in beside it
+     slam   a red !!: it comes down on the floor and the shock runs both ways along it. Jump it; no shield turns it
+     lunge  a yellow !: a long rush with the blade out. Take it on the shield and it is left open */
+/* hp: how many of its kind's health it stands up with, where three is wrong for the kind. Measured with BK.fightLab({ elite: true,
+   keepAlive: true }) against a fight of twenty to forty-five seconds: a heavy knight or a hedge knight is already a long fight and
+   three of one ran past a minute; a goat, a thorn or a cook goes down (or off a ledge) in a few seconds at three */
+const ELITE = {
+  shield: { name: 'THE SHIELD CAPTAIN', rule: 'wall' }, pike: { name: 'THE PIKE SERJEANT', rule: 'wall' }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall', hp: 2.2 },
+  brute: { name: 'THE GOBLIN CAPTAIN', rule: 'rally', hp: 2.5 }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
+  thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig', hp: 4 }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat', hp: 5 }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight', hp: 1.8 }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
+  hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', rule: 'slam' }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
+  boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
+};
+const EL = { hp: 3, poise: 80, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.2, col: '#c9962a' };
+const eliteDmg = n => Math.round(n * (1 + 0.25 * tierOf(curId())));
+/* EVERY ELITE OF THE ATTEMPT, kept apart from the creature list: a dead foe is swept out of that list before the next frame looks
+   at it, and an elite that is gone must still be seen to be dead, or its gate never lifts */
+let eliteList = [];
+function eliteMake(m, e) {
+  if (!ELITE[m.t]) return;
+  Object.assign(m, { elite: true, hp: Math.round(m.hp * (ELITE[m.t].hp || EL.hp)), home: { x: m.x, y: m.y }, elT: EL.first, gate: e.gate, calls: e.calls || ELITE[m.t].calls, key: 'elite:' + e.x + ',' + e.y, woke: 1 });
+  eliteList.push(m);
+}
+/* THE GATE GOES DOWN AS THE LEVEL IS LAID OUT, over air only, after the grid has been put back (spawnEntitiesTail): the tiles it
+   laid are kept on the elite, so lifting it takes up exactly those and nothing a winch or a key owns */
+function eliteGates() {
+  if (rushOn()) return; let laid = false;
+  for (const e of enemies) { if (!e.elite || !e.alive || e.gate === undefined || e.shut) continue;
+    const G = eliteGate(L, e.gate, Math.round(e.home.y / TS) - 1); e.G = G; e.shut = [];
+    for (const q of enemies) if (q.alive && q !== e && Math.floor(q.x / TS) === G.col && q.y > G.top * TS && q.y <= (G.bot + 1) * TS + 2) q.x += (Math.sign(q.x - e.x) || 1) * TS;   /* nothing is left standing inside a gate */
+    for (let ty = G.top; ty <= G.bot; ty++) { const i = ty * LW + G.col; if (L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = null; e.shut.push([i, T.AIR]); } }
+    if (G.sill >= 0) { const i = G.sill * LW + G.col; e.shut.push([i, L.grid[i]]); L.grid[i] = T.PORT; tileSpr[i] = null; }
+    laid = true; }
+  if (laid) resolveTiles();
+}
+function eliteWatch() {
+  for (const e of eliteList) { if (e.alive || e.paid) continue;
+    e.paid = true; if (!rushOn()) marks.add(e.key);
+    if (e.shut && e.shut.length) { const cols = new Map();
+      for (const [i, t0] of e.shut) if (L.grid[i] === T.PORT) { L.grid[i] = t0; tileSpr[i] = null; if (t0 === T.AIR) { const c = i % LW; if (!cols.has(c)) cols.set(c, []); cols.get(c).push((i - c) / LW); } }
+      e.shut = []; resolveTiles(); for (const [col, ys] of cols) gateFx.push({ col, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift();
+      ambushSay('THE WAY IS OPEN', ELITE[e.t].name, '#8fd160', 2.2); }
+    /* THE PURSE AND A HEART, for one that was put down (not one a lab swept off the board) */
+    if (e.hp <= 0) { PROG.coins = (PROG.coins || 0) + EL.gold; number(e.x, e.y - e.h - 14, EL.gold, '#ffd34a'); for (let i = 0; i < 5; i++) dropCoinAt(e.x + (Math.random() - 0.5) * 24, e.y - 16);
+      healths.push({ x: e.x, y: e.y - 20, vy: -160, t: 0 }); SFX.medal(); ringAt(e.x, e.y - 12, 30, '#ffd36b', 0.4); e.paidGold = EL.gold; }
+  }
+}
+function eliteDone(e) { if (e.elBack) { e.mode = e.elBack[0]; e.modeT = e.elBack[1]; } e.elBack = null; e.elT = EL.every; e.vx = 0; }
+/* WHO IS NEAR ENOUGH TO HEAR IT: its own side, not a boss, not a mini, on its level - and not itself. A war cry and a shield wall
+   are for the men around it: a Tide Captain behind its own wall took a quarter of a blow from the front and outlasted every hero */
+const eliteNear = (e, r) => enemies.filter(q => q !== e && q.alive && !q.maxHp && !q.mini && !q.harmless && Math.abs(q.x - e.x) < r && Math.abs(q.y - e.y) < 60);
+function eliteCall(e) {
+  const kind = e.calls || 'sprig', row = Math.round(e.home.y / TS) - 1, tx = Math.floor(e.x / TS); let n = 0;
+  for (const dx of [3, -3, 5, -5, 2, -2]) { if (n >= 2) break; const x = tx + dx;
+    if (tileAt(x, row) !== T.AIR || tileAt(x, row - 1) !== T.AIR || !isSolid(x, row + 1) || (e.G && Math.abs(x - e.G.col) < 2)) continue;
+    const n0 = enemies.length; spawnEnt({ t: kind, x, y: row, face: Math.sign(e.x - (x * TS + 8)) || 1 });
+    const drop = !AMB_FLY.has(kind) && !AMB_STILL.has(kind) && [1, 2, 3].every(k => tileAt(x, row - k) === T.AIR);
+    for (let i = n0; i < enemies.length; i++) { const q = enemies[i]; q.woke = 1; q.summoned = true; q.stagger = Math.max(q.stagger || 0, 0.4); if (drop && q.hy === undefined) { q.y -= 2.5 * TS; q.vy = 60; } }
+    burst(x * TS + 8, (row + 1) * TS - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(x * TS + 8, (row + 1) * TS, 8); n++; }
+}
+/* THE ELITE'S OWN RULE. It asks for the body only while its rule is being told or thrown, and gives it straight back to the
+   creature's own update (in the mode it left) when it is done; true while it has it */
+function updateElite(e, dt) {
+  const R = ELITE[e.t]; if (!R) return false;
+  if (!e.elBack && e.home && (Math.abs(e.x - e.home.x) > EL.leash * TS || e.y > e.home.y + 5 * TS) && !(e.knock > 0)) { e.leashT = (e.leashT || 0) + dt;
+    if (e.leashT > 1.5) { smoke(e.x, e.y - 8, 3, 8); e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.leashT = 0; smoke(e.x, e.y - 8, 3, 8); } } else e.leashT = 0;
+  const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  if (!e.elBack) {
+    e.elT -= dt;
+    if (e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.frozen > 0 || P.dead || ad > EL.reach || dy > 40 || windingUp(e) || time - lastTellT < 0.5 || !isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS))) return false;
+    if (R.rule === 'call' && (e.called || e.hp > e.hp0 / 2)) return false;
+    if (R.rule === 'lunge' && (ad < 30 || ad > 96 || dy > 16)) return false;
+    if (R.rule === 'slam' && ad > 72) return false;   /* (a troll keeps his stone's throw off you: the shock reaches that far) */
+    e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.sign(d) || e.face; lastTellT = time;
+    if (R.rule === 'slam') { e.mode = 'eliteSlamTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
+    else if (R.rule === 'lunge') { e.mode = 'eliteLungeTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+    else if (R.rule === 'rally') { e.mode = 'rallyTell'; e.modeT = 0.7; SFX.hornBlast(); }
+    else if (R.rule === 'wall') { e.mode = 'wallTell'; e.modeT = 0.6; SFX.shieldSlam(); }
+    else { e.mode = 'callTell'; e.modeT = 0.8; SFX.roar(); }
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt);
+  switch (e.mode) {
+    case 'eliteSlamTell': e.vx = 0; if (Math.random() < dt * 12) dust(e.x + (Math.random() - 0.5) * 40, e.y, 1); if (e.modeT <= 0) { e.mode = 'eliteSlam'; e.modeT = 0.3; e.elHit = false; } break;
+    case 'eliteSlam': e.vx = 0;
+      if (!e.elHit) { e.elHit = true; shakeCam(5); hitstop(0.05); dust(e.x - 24, e.y, 8); dust(e.x + 24, e.y, 8); ringAt(e.x, e.y - 2, 88, '#ff6b6b', 0.35); SFX.heavy();
+        if (P.ground && Math.abs(P.x - e.x) < 88 && Math.abs(P.y - e.y) < 20) damagePlayer(e.x, eliteDmg(EL.slam), { unblockable: true, who: e, blow: 'slam' }); }
+      if (e.modeT <= 0) eliteDone(e); break;
+    case 'eliteLungeTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'eliteLunge'; e.modeT = 0.5; e.elHit = false; } break;
+    case 'eliteLunge': e.vx = e.face * 280;
+      if (!e.elHit && Math.abs(P.x - e.x) < e.w / 2 + 14 && Math.abs(P.y - e.y) < 22) { e.elHit = true; const r = damagePlayer(e.x, eliteDmg(EL.lunge), { who: e, blow: 'lunge' });
+        if (r === 'blocked') { eliteDone(e); e.stagger = 0.9; e.elT = EL.every + 1; return true; } }
+      if (e.modeT <= 0) eliteDone(e); break;
+    case 'rallyTell': e.vx = 0; if (e.modeT <= 0) { for (const q of eliteNear(e, 140)) q.rallyT = EL.rally; ringAt(e.x, e.y - e.h / 2, 40, '#ff6b6b', 0.4); shakeCam(2); eliteDone(e); } break;
+    case 'wallTell': e.vx = 0; if (e.modeT <= 0) { for (const q of eliteNear(e, 120)) q.wallT = EL.wall; ringAt(e.x, e.y - e.h / 2, 34, '#c9d1dc', 0.4); SFX.clank(); eliteDone(e); } break;
+    case 'callTell': e.vx = 0; if (e.modeT <= 0) { e.called = true; eliteCall(e); shakeCam(3); eliteDone(e); } break;
+    default: e.elBack = null; e.elT = EL.every; return false;   /* something else took the body (a flinch, a throw): the rule is lost, not stuck */
+  }
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r && r.ground) e.vy = 0;
+  if (r && r.hitX && e.mode === 'eliteLunge') eliteDone(e);
+  return true;
+}
+/* THE MARK OF ONE: a gold trim round its own silhouette (baked once per frame, kept on the canvas it came from, like the tell's
+   rim - and drawn UNDER the tell's amber, which always wins), a crown, and while you are near its name and its bar */
+function drawEliteTrim(set, frame, x, y, face, sx, sy, rot) {
+  const c0 = pickFrame(set.white, null, frame, face); if (!c0) return; const c = tintOf(c0, EL.col), ax = face < 0 ? c.width - set.ax : set.ax;
+  g.save(); g.translate(Math.round(x), Math.round(y)); if (rot) g.rotate(rot); g.scale(sx, sy);
+  for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.drawImage(c, -ax + ox, -set.ay + oy);
+  g.restore();
+}
+function drawElitePlate(e, cx, cy, bigF) {
+  const x = Math.round(e.x - cx), top = Math.round(e.y - e.h * bigF - cy), nearP = Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110;
+  const crown = (px, py) => { g.fillStyle = ART.OUT; g.fillRect(px - 4, py - 3, 9, 5); g.fillStyle = '#e0b040'; g.fillRect(px - 3, py, 7, 1); g.fillRect(px - 3, py - 2, 1, 2); g.fillRect(px, py - 2, 1, 2); g.fillRect(px + 3, py - 2, 1, 2); g.fillStyle = '#fff1a0'; g.fillRect(px, py - 2, 1, 1); };
+  if (!nearP) { crown(x, top - 16); return; }
+  const w = 28, bx = x - w / 2, by = top - 16, k = Math.max(0, e.hp / (e.hp0 || e.hp));
+  g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, w, 2); g.fillStyle = k > 0.34 ? '#e0b040' : '#ff6b6b'; g.fillRect(bx, by, Math.round(w * k), 2);
+  crown(bx - 7, by + 1); text(ELITE[e.t].name, x, by - 9, '#ffd36b', 'center', 6);
 }
 function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
@@ -3828,7 +3960,7 @@ function hitSpray(e, dir) {
    that fly, and the bosses whose whole fight is their own opening, do not carry one. */
 const POISE_HEAVY = new Set(['lancer', 'brute', 'heavy', 'hedgeknight', 'troll', 'shield', 'swornsword', 'pike', 'berserker', 'watch', 'tideguard', 'bosun', 'boarder', 'soldier', 'hound']);
 const POISE_SKIP = new Set(['archmage', 'turret', 'broom', 'imp', 'piece', 'strawking', 'rook', 'marshlight', 'haunt', 'kraken', 'krakenarm', 'roc', 'owl', 'windcaller', 'queen', 'mother', 'gill', 'heart', 'king', 'bearer', 'dummy', 'wasp', 'drone', 'kite', 'captain', 'closedhelm', 'gqueen', 'golem']);
-const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : (e.big || e.mini) ? 60 : POISE_HEAVY.has(e.t) ? 40 : 0;
+const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : e.elite ? EL.poise : (e.big || e.mini) ? 60 : POISE_HEAVY.has(e.t) ? 40 : 0;   /* an elite carries a bar whatever its kind: even the bullfrog can be broken */
 function addPoise(e, dmg, fromX, plunge) {
   const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0 || dmg <= 0) return;
   let n = P.jetHit ? 1.5 : 6 + dmg * 0.25;
@@ -3857,7 +3989,7 @@ const GRASSY = new Set(['wood', 'marsh', 'myc', 'crag', 'camp', 'village']);
 /* THE FINISHER. A creature broken, burning, bleeding, frozen or reeling, and down to its last quarter, is not cut again: it is
    finished, in the hero's own way, and the world stops to watch. EXECUTION reaches further down the bar. */
 const FINISH_SKIP = new Set(['dummy', 'bale', 'heart', 'gill', 'bearer', 'folk', 'sheep']);
-const canFinish = (e, dmg) => !e.maxHp && !e.mini && e.alive && !P.jetHit && !P.dead && !FINISH_SKIP.has(e.t) && !e.slamming
+const canFinish = (e, dmg) => !e.maxHp && !e.mini && !e.elite && e.alive && !P.jetHit && !P.dead && !FINISH_SKIP.has(e.t) && !e.slamming
   && (P.atk >= 0 || P.heavySwing || P.dash > 0 || P.plunge)
   && (e.broken > 0 || e.burn > 0 || e.bleed > 0 || e.frozen > 0 || e.stagger > 0.5)
   && e.hp - dmg > 0 && e.hp - dmg <= fullHp(e) * (0.25 + 0.1 * tal('execute'));
@@ -3946,7 +4078,8 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (dmg > 0 && !isPyro() && !isPaladin() && tal('execute') && P.heavySwing && !e.maxHp && e.alive && e.hp - dmg <= fullHp(e) * 0.25 && e.hp - dmg > 0) { dmg = e.hp; number(e.x, e.y - e.h - 16, 'EXECUTION', '#ffd36b'); SFX.heavy(); } // EXECUTION
   if (isPaladin() && e.t === 'wight') dmg *= 2; // the light is hard on the dead
   if (e.t === 'bale') { if (e.gone > 0) return; e.gone = 3; e.vx = 0; burst(e.x, e.y - 6, 14, COLS.bale, 70, 0.6); SFX.baleBurst(); return; } // a bale bursts, and another comes tumbling after
-  if (ONE_HIT.has(e.t) && !e.maxHp && !e.big && !e.mini) dmg = Math.max(dmg, e.hp);
+  if (ONE_HIT.has(e.t) && !e.maxHp && !e.big && !e.mini && !e.elite) dmg = Math.max(dmg, e.hp);
+  if (e.wallT > 0 && dmg > 0 && Math.sign(fromX - e.x) === (e.face || 1)) { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (e.face || 1) * 6, e.y - e.h / 2, -(e.face || 1), 3); }   /* THE SHIELD WALL an elite raised: half a blow from the front */
   if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 20, e.y - 30, Math.sign(e.x - fromX) || 1, 5); return; } // his crown turns every blade: only a cage brings his head down
   if (e.t === 'bearer') { SFX.clank(); return; }
   if (e.t === 'gill' && mother && !mother.gillsOpen) { SFX.clank(); sparks(e.x, e.y - 6, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 18, 'SHE HOLDS HER BREATH', '#9aa39a'); P.grace = Math.max(P.grace, 0.3); return; }
@@ -4032,7 +4165,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
     sparks(e.x - dir * 2, e.y - e.h / 2, dir, P.heavy ? 9 : 5);
     if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
     e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) && !(e.t === 'prince' && (windingUp(e) || e.mode === 'buried' || e.mode === 'rise' || e.mode === 'cut')) ? 0.2 : 0;
-    if (!P.jetHit && !e.maxHp && !e.big && !e.mini && !POISE_HEAVY.has(e.t)) { flinch(e); e.sq = Math.max(e.sq || 0, 0.22); }   /* A SMALL ONE FLINCHES: a real blow knocks it out of whatever it was winding up */   /* a big one keeps its tell pose when struck in it */
+    if (!P.jetHit && !e.maxHp && !e.big && !e.mini && !e.elite && !POISE_HEAVY.has(e.t)) { flinch(e); e.sq = Math.max(e.sq || 0, 0.22); }   /* A SMALL ONE FLINCHES: a real blow knocks it out of whatever it was winding up */   /* a big one keeps its tell pose when struck in it */
     if (!P.jetHit && e.t !== 'wasp' && e.t !== 'spit' && e.t !== 'queen' && e.t !== 'ram' && e.t !== 'harpy') {   /* (the jet burns, it does not push) */
       // THE PUSH IS THE BLOW'S: a tap nudges, a heavy blow throws, and a heavy blow from below lifts them
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
@@ -14011,7 +14144,7 @@ function drawEmote(e, x, y) { // x, y: over its head, on screen
   g.globalAlpha = 1;
 }
 function updateEnemies(dt) {
-  updatePack(dt);
+  updatePack(dt); eliteWatch();
   for (const e of enemies) {
     if (!e.alive) continue;
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
@@ -14054,6 +14187,9 @@ function updateEnemies(dt) {
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
     if (e.trainer) { if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x)); if (e.trainer === 'still' || (e.trialSt && e.trialSt.done)) { if (e.trainer !== 'still') { e.mode = 'walk'; e.modeT = 0; } e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); const r0 = moveBody(e, 0, e.vy * dt, false); if (r0 && r0.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; continue; } }   /* THE TRIAL'S STILL MEN face you and take it; the drills fight on below */
+    if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
+    if (e.wallT > 0) e.wallT -= dt;
+    if (e.elite && updateElite(e, dt)) continue;
     if (e.t === 'dummy') { e.vx = 0; e.hp = e.hp0; continue; } // a straw man stands there
     if (e.t === 'queen') { if (bossActive) beastSeen('queen'); if (bossActive || e.mode === 'sleep') updateQueen(e, dt); continue; }
     if (e.t === 'frog') { if (bossActive) beastSeen('frog'); if (bossActive || e.mode === 'sleep') updateFrog(e, dt); continue; }
@@ -17007,7 +17143,7 @@ function drawWorld(cx, cy, showPlayer) {
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
     const sprSet = e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.stage === 3 ? SPR.familiar : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
-    const bigF = e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
+    const bigF = e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
     if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald' || e.t === 'grandmother' || e.t === 'farmhand') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
     if (e.t === 'gqueen' && e.mode === 'shadow') g.globalAlpha = 0.12; else if (e.t === 'gqueen' && e.mode === 'shadowTell') g.globalAlpha = 1 - 0.6 * Math.min(1, (0.5 - e.modeT) / 0.5);
@@ -17025,6 +17161,7 @@ function drawWorld(cx, cy, showPlayer) {
       /* REMEMBERED FOR THE PASSES THAT COME AFTER THE WATER AND THE DARK (drawSwimmers, drawDarkRims): a creature in the water is
          painted over by the water, and one in the dark by the dark, and both used to vanish into what was over them */
       if (sprSet && e.alive && !e.harmless && (inWater || inGloom)) { const q = { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot, white: e.flash > 0, a: g.globalAlpha }; if (inWater) swimQ.push(q); if (inGloom) darkQ.push(q); }
+      if (e.elite && e.alive && sprSet.white) drawEliteTrim(sprSet, frame, dx0, dy0, ps.face, pSX, pSY, pRot);
       if (wind && sprSet.white && !e.harmless) drawTellRim(sprSet, frame, dx0, dy0, ps.face, pSX, pSY, pRot, 0.55 + 0.45 * Math.sin(e.anim * 22));
       if (!(e.flash > 0)) drawWarm('rim', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
       /* THE BREAK FLARE: for a few frames after its poise breaks the whole silhouette goes white and two pixels fat - a different picture
@@ -17043,7 +17180,11 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
       g.fillRect(mx - 3, my, 7, 1); g.fillRect(mx, my - 3, 1, 7); g.fillRect(mx - 2, my - 2, 1, 1); g.fillRect(mx + 2, my - 2, 1, 1); g.fillRect(mx - 2, my + 2, 1, 1); g.fillRect(mx + 2, my + 2, 1, 1); g.globalAlpha = 1; }
-    if (SET.foeBars && e.hp0 && e.hp < e.hp0 && e.hp > 0 && !e.maxHp && !e.harmless) { const bx = Math.round(e.x - cx) - 6, by = Math.round(e.y - e.h - cy) - 5; g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, 14, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, 12, 2); g.fillStyle = e.hp / e.hp0 > 0.5 ? '#8fd160' : '#ff6b6b'; g.fillRect(bx, by, Math.round(12 * e.hp / e.hp0), 2); }
+    if (e.alive && e.elite) drawElitePlate(e, cx, cy, bigF);
+    if (e.alive && (e.rallyT > 0 || e.wallT > 0)) { const px2 = Math.round(e.x - cx - (e.w || 12) / 2) - 4, py2 = Math.round(e.y - e.h * bigF - cy) + 2;   /* RALLIED (a red chevron) or BEHIND THE WALL (a grey shield), beside its head, clear of the marks */
+      g.fillStyle = ART.OUT; g.fillRect(px2 - 2, py2 - 1, 5, 5); g.fillStyle = e.rallyT > 0 ? '#ff6b6b' : '#c9d1dc';
+      if (e.rallyT > 0) { g.fillRect(px2, py2, 1, 1); g.fillRect(px2 - 1, py2 + 1, 3, 1); g.fillRect(px2 - 1, py2 + 2, 1, 1); g.fillRect(px2 + 1, py2 + 2, 1, 1); } else { g.fillRect(px2 - 1, py2, 3, 2); g.fillRect(px2, py2 + 2, 1, 1); } }
+    if (SET.foeBars && e.hp0 && e.hp < e.hp0 && e.hp > 0 && !e.maxHp && !e.harmless && !e.elite) { const bx = Math.round(e.x - cx) - 6, by = Math.round(e.y - e.h - cy) - 5; g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, 14, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, 12, 2); g.fillStyle = e.hp / e.hp0 > 0.5 ? '#8fd160' : '#ff6b6b'; g.fillRect(bx, by, Math.round(12 * e.hp / e.hp0), 2); }
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
@@ -18680,7 +18821,7 @@ window.BK = { xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(
   look(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; camX = P.x - VW / 2; camY = P.y - VH * 0.6; render(); return { cx: Math.round(Math.max(0, Math.min(LW * TS - VW, camX))), cy: Math.round(Math.max(0, Math.min(LH * TS - VH, camY))) }; },
   reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
-  enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [],
+  enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
   risen: () => risen, bodies: () => bodies,
   get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
