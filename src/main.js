@@ -1362,6 +1362,9 @@ function loadLevel(i) {
   spawnEntities();
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
   fogReset(); wayRoute = null; wayTgt = null; wayMe = 0;   /* the map remembers this level from the save; the arrow's route is built again */
+  /* ...and built HERE when the arrow is on: the fill with its rides takes a quarter of a second on the Deep, and on the arrow's first ask in
+     play that was fifteen frames of hitch. Inside a load nobody sees it. (Off by default, so the labs and tools never pay for it.) */
+  if (SET.wayOn && !L.trial) { try { wayRoute = wayBuild(); } catch (err) { wayRoute = null; } }
 }
 function spawnEntities() {
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
