@@ -1277,7 +1277,10 @@ export function bakePyro(skin = {}) {
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0);
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  /* HER FEET ARE TWO ROWS HIGHER IN HER FRAME than the knight's are in his (pyroFrame stands her boots on row 18, the staff's
+     butt a row under them), so on the knight's anchor she stood two pixels off every floor. Her own foot line puts the boots on
+     the ground and the butt of the staff a pixel into it. */
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay - 2 };
 }
 
 // The keeper — an old badger merchant: spectacles, striped snout, a leather apron with a coin pouch, sleeves rolled. 14×16. Frames: idle, talk (a paw raised over the counter).
