@@ -2106,7 +2106,7 @@ function undercrown() {
   block(0, 103, 0, 195);                             // it is all rock until something is dug out of it
   const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   // A GALLERY: a level driven into the rock, timbered, with a roof course over it that can be brought down.
-  const gallery = (x0, x1, fl, h = 4) => { cut(x0, x1, fl - h, fl - 1); interiors.push([x0, x1, fl - h, fl - 1, 'earth']); };
+  const gallery = (x0, x1, fl, h = 4) => { cut(x0, x1, fl - h, fl - 1); interiors.push([x0, x1, fl - h, fl - 1, 'mine']);   /* 'mine', not the burrows' 'earth': the mine's wall is lit enough to stand a walkway off (drawRoom) */ };
   const shaft = (x, w, y0, y1) => { cut(x, x + w - 1, y0, y1); };
   const ladder = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
   const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
@@ -2137,7 +2137,7 @@ function undercrown() {
   ent('deco', 26, 23, { kind: 'barrels' }); ent('deco', 38, 23, { kind: 'wares' }); ent('deco', 12, 23, { kind: 'coffer' });
   ent('stray', 16, 23, { kind: 'lamp' });                          /* the first lamp: somebody put it down and did not pick it up */
   ent('check', 22, 23);
-  cut(24, 36, 15, 18); interiors.push([24, 36, 15, 18, 'earth']);   /* the working above it, and row 19 between them is the roof the set holds */
+  cut(24, 36, 15, 18); interiors.push([24, 36, 15, 18, 'mine']);   /* the working above it, and row 19 between them is the roof the set holds */
   coins([26, 17], [30, 17], [34, 17], [28, 17], [32, 17]); ent('silver', 30, 17);
   ent('minerlamp', 26, 18, { lit: false }); ent('deco', 34, 18, { kind: 'barrels' });
 
@@ -2161,7 +2161,7 @@ function undercrown() {
   ent('check', 68, 33);
   ent('sign', 74, 33, { text: 'THE SENTRY\'S BELL AT THE SHAFT HEAD CARRIES TO EVERYTHING BELOW.' });
   coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32], [84, 32], [42, 32], [46, 32], [50, 32], [57, 32], [63, 32], [69, 32], [75, 32], [81, 32]);
-  cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'earth']);   /* row 29 is the roof over the gallery below */
+  cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'mine']);   /* row 29 is the roof over the gallery below */
   coins([58, 27], [64, 27], [70, 27], [76, 27], [82, 27], [61, 27], [67, 27], [73, 27], [79, 27]);
   ent('stray', 66, 28, { kind: 'lamp' });                          /* the second: up in the old working, where nobody goes */
   ent('deco', 57, 28, { kind: 'barrels' }); ent('minerlamp', 72, 28, { lit: false });
@@ -2200,7 +2200,7 @@ function undercrown() {
   ent('clinger', 7, 70, { face: 1 }); ent('clinger', 7, 80, { face: 1 });
 
   // ---- 4. THE GREAT STOPE (rows 84-124). One void, crossed on the timber itself. ----
-  cut(6, 96, 88, 122); interiors.push([6, 96, 88, 122, 'earth']);
+  cut(6, 96, 88, 122); interiors.push([6, 96, 88, 122, 'mine']);
   block(0, 103, 123, 128);
   floor(6, 30, 122); floor(80, 96, 122);
   ent('check', 12, 121);
@@ -2234,7 +2234,7 @@ function undercrown() {
   //         cross going right - so the shaft does not drop you into his pit. It drops you into a low drift
   //         over it, and you walk the length of that drift to the ladder at the far end before you meet him.
   shaft(84, 8, 122, 136);
-  cut(10, 92, 137, 140); interiors.push([10, 92, 137, 140, 'earth']);
+  cut(10, 92, 137, 140); interiors.push([10, 92, 137, 140, 'mine']);
   ent('check', 86, 140);
   ent('sign', 82, 140, { text: 'THE LAST DRIFT. THE LADDER DOWN IS AT THE FAR END.' });
   ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
@@ -2244,7 +2244,7 @@ function undercrown() {
   coins([78, 139], [70, 139], [62, 139], [54, 139], [46, 139], [38, 139], [30, 139], [22, 139], [16, 139]);
   shaft(10, 6, 141, 166);
 
-  cut(4, 98, 144, 166); interiors.push([4, 98, 144, 166, 'earth']);
+  cut(4, 98, 144, 166); interiors.push([4, 98, 144, 166, 'mine']);
   floor(4, 98, 167);
   // THE PRINCE'S TOMB. The vault at the bottom of the mine that they walled a goblin prince into and then forgot. Its roof
   // is LOW and it stands on three timber sets, and that is the fight: cut a set while he is under it and the roof buries
@@ -2278,10 +2278,10 @@ function undercrown() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
     timber: true, dark: 0.14, edgeLit: true, underground: true,   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
-    duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.4,
-    tall: { top: 10 * TS, bottom: 168 * TS },
+    duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,   /* the readability pass: under the night wash, the tall gloom and the murk the open air measured L* 6-9 (a walkway needs 20 to read): the washes thinner, the far wall a lit brown, and the gloom a mine's grey, not the canopy's green */
+    tall: { top: 10 * TS, bottom: 168 * TS, col: '18,16,22', deepest: 0.12 },
     quest: { n: 3, item: 'lamp', name: 'DEAD MEN\'S LAMPS', npc: 'squire', done: 'THEY ARE ALL ACCOUNTED FOR', reward: 'relic', relic: 'soles' },
-    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.34)',   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34',   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
@@ -2461,7 +2461,7 @@ function theDeep() {
   vent(25, 112, 10);
   fish(50, 86, 7, '#ffd36b'); fish(30, 106, 6, '#bfe6f5'); fish(84, 96, 8, '#ff9a5c'); fish(14, 90, 5, '#bfe6f5');
   zone('THE KELP FOREST', 6, 105, 74, 113, [90, 180, 90], 0.12);
-  darkZones.push({ x0: 6 * TS, x1: 106 * TS, y0: 74 * TS, y1: 113 * TS, dark: 0.32 });   /* under the canopy: the bladders are the lights */
+  darkZones.push({ x0: 6 * TS, x1: 106 * TS, y0: 74 * TS, y1: 113 * TS, dark: 0.14 });   /* under the canopy: the bladders are the lights */
 
   cut(30, 38, 113, 113);                                           /* and down into the garden */
 
@@ -2516,7 +2516,7 @@ function theDeep() {
   ent('siren', 62, 182); ent('urchin', 14, 173); ent('urchin', 92, 169);   /* over the rock band, not in it */
   coins([16, 165], [22, 165], [10, 173], [14, 173], [10, 181], [26, 178], [40, 176], [60, 174], [80, 170], [100, 169], [98, 179]);
   zone('THE GLOWING DROP', 8, 103, 158, 186, [130, 100, 210], 0.12);
-  darkZones.push({ x0: 8 * TS, x1: 104 * TS, y0: 158 * TS, y1: 187 * TS, dark: 0.6 });
+  darkZones.push({ x0: 8 * TS, x1: 104 * TS, y0: 158 * TS, y1: 187 * TS, dark: 0.22 });
   for (const [x, y, v] of [[16, 165, 0], [23, 165, 2], [18, 173, 1], [14, 181, 2], [92, 169, 1], [101, 169, 0], [99, 179, 2]]) prop('coral', x, y, { v, glow: true });   /* the shelves grow their own light */
 
   // ---- 6. THE LEVIATHAN'S BED (rows 187-198). It died on the vents, and they are still going under its ribs. ----
@@ -2532,7 +2532,7 @@ function theDeep() {
   ent('check', 60, 198);
   coins([44, 194], [52, 194], [60, 194], [68, 194], [76, 194], [84, 194], [96, 196], [102, 196]);
   zone('THE LEVIATHAN\'S BED', 8, 103, 187, 198, [240, 130, 70], 0.12);
-  darkZones.push({ x0: 8 * TS, x1: 104 * TS, y0: 187 * TS, y1: 199 * TS, dark: 0.5 });
+  darkZones.push({ x0: 8 * TS, x1: 104 * TS, y0: 187 * TS, y1: 199 * TS, dark: 0.2 });
 
   // ---- 7. THE COLD ROAD (x 104-157, rows 188-198). The trench drains east along it, to his wall. ----
   cut(104, 157, 188, 198);
@@ -2545,7 +2545,7 @@ function theDeep() {
   ent('eel', 118, 193); ent('eel', 140, 192); ent('angler', 128, 195); ent('urchin', 116, 198); ent('urchin', 138, 198);
   coins([114, 186], [125, 186], [136, 186], [120, 196], [130, 196], [142, 196]);
   zone('THE COLD ROAD', 104, 157, 184, 198, [140, 200, 245], 0.16);
-  darkZones.push({ x0: 104 * TS, x1: 158 * TS, y0: 184 * TS, y1: 199 * TS, dark: 0.42 });
+  darkZones.push({ x0: 104 * TS, x1: 158 * TS, y0: 184 * TS, y1: 199 * TS, dark: 0.24 });
 
   // ---- 8. THE DROWNED WARD (x 146-212, rows 156-198). His outer yard, and his face in every corner of it. ----
   // the gatehouse on the near side of the wall: a stair full of water up to the wall-walk, and the long way in
@@ -2579,7 +2579,7 @@ function theDeep() {
   facades.push([162, 212, 150, 198, 'curtain', { sea: true }], [182, 185, 160, 198, 'tower', { sea: true, arch: [192, 198] }], [146, 157, 150, 187, 'tower', { sea: true, lit: false }]);
   D.masonry.push([140, 303, 140, 203]);
   zone('THE DROWNED WARD', 146, 212, 150, 198, [120, 175, 150], 0.10);
-  darkZones.push({ x0: 146 * TS, x1: 213 * TS, y0: 150 * TS, y1: 199 * TS, dark: 0.36 });
+  darkZones.push({ x0: 146 * TS, x1: 213 * TS, y0: 150 * TS, y1: 199 * TS, dark: 0.22 });
 
   // ---- 9. THE GREAT HALL (x 217-250, rows 166-198). Vaulted, and every vault still holding a breath. ----
   cut(217, 250, 170, 198);
@@ -2593,7 +2593,7 @@ function theDeep() {
   coins([222, 166], [234, 166], [246, 166], [228, 187], [240, 183], [226, 196], [238, 196]);
   facades.push([217, 250, 166, 198, 'curtain', { sea: true }]);
   zone('THE GREAT HALL', 217, 250, 166, 198, [210, 175, 110], 0.08);
-  darkZones.push({ x0: 217 * TS, x1: 251 * TS, y0: 166 * TS, y1: 199 * TS, dark: 0.4 });
+  darkZones.push({ x0: 217 * TS, x1: 251 * TS, y0: 166 * TS, y1: 199 * TS, dark: 0.22 });
   cut(251, 252, 193, 198); vent(250, 198, 7, false, true);          /* his door, and a drain breathing at it */
   ent('check', 249, 198);
   ent('sign', 247, 198, { text: 'THE THRONE ROOM. HE SWIMS NOW: PUT A PILLAR BETWEEN YOU AND HIS CHARGE.' });
@@ -2620,11 +2620,11 @@ function theDeep() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors, airRooms, darkZones, facades, deep: D,
-    ballast: true, dark: 0.18,
-    duskStart: -1, duskLen: 1, music: 'trench', night: true, glowNight: true, nightA: 0.24,
-    tall: { top: 20 * TS, bottom: 199 * TS, col: '6,16,28', deepest: 0.26 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
+    ballast: true, dark: 0.08, edgeLit: 'rgba(200,236,240,0.6)',   /* the readability pass: the open water sat under the 20 L* a walkway needs to read, so less black in the zones, and a cold lit lip on every edge you can stand on */
+    duskStart: -1, duskLen: 1, music: 'trench', night: true, glowNight: true, nightA: 0.1,
+    tall: { top: 20 * TS, bottom: 199 * TS, col: '6,16,28', deepest: 0.18 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
     quest: { n: 3, item: 'coffer', name: 'TRIBUTE COFFERS', npc: 'squire', done: 'THIRTY YEARS OF IT, AND NONE OF IT EVER GOT THERE', reward: 'relic', relic: 'gauntlet' },
-    palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)',
+    palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)', murkCol: '#265260', murkLit: '#4a949c',   /* (the readability pass: the wrecks behind the water are the open water's own colour, and at '#183440' they measured L* 19 under the washes) */
       grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
       canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'deep' }],
@@ -3842,7 +3842,7 @@ function shipwreckReef() {
   // coral pillars, and the way through weaves: over the first, through the window in the second, over the third, under the fourth
   block(262, 280, 34, 36); block(296, 308, 33, 36);
   deep(210, 330, 13, 37, { reef: true, capped: true, flow: -26 }); // rock all the way over it: there is no surface to breathe at, and the sea under it sets you back the way you came
-  darkZones.push({ x0: 262 * TS, x1: 331 * TS, y0: 12 * TS, y1: 38 * TS, dark: 0.72 }); // the deep half of the shelf: the anglers are the only lights in it
+  darkZones.push({ x0: 262 * TS, x1: 331 * TS, y0: 12 * TS, y1: 38 * TS, dark: 0.42 }); // the deep half of the shelf: the anglers are the only lights in it (0.72 put the footing under the 20 L* it needs to read)
   current(236, 256, 14, 36, 1); current(290, 308, 14, 32, -1); // one carries you on, one stands in your way
   ent('check', 270, 33); ent('check', 302, 32);
   ent('sign', 264, 33, { text: 'THE LIGHTS IN THE DEEP ARE NOT LANTERNS. THEY ARE ON STALKS, ON SOMETHING.' }); // the two coral humps you can stand on, down here
@@ -3897,7 +3897,7 @@ function shipwreckReef() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones,
     duskStart: 99999, duskLen: 1, music: 'reef', night: false,
     interiors: [[34, 93, 26, 29, 'ship'], [116, 177, 22, 29, 'ship'], [247, 300, 24, 26, 'ship'], [302, 371, 17, 21, 'ship']], // ONLY the enclosed spaces: a backdrop that reaches above a deck hangs a stone wall in the sky
-    wetZone: [0, 119], storm: true, dark: 0.01,
+    wetZone: [0, 119], storm: true, dark: 0.01, edgeLit: 'rgba(210,244,244,0.7)',   /* the readability pass: at high tide her decks were teal under teal; a cold lit lip on every edge you can stand on reads through the water */
     hullZones: [[16, 26, 26, 30], [30, 42, 27, 31], [46, 58, 25, 29], [62, 74, 27, 31], [78, 92, 26, 30], [96, 118, 24, 28], [119, 212, 6, 34], [378, 400, 15, 25]], // her timbers; below them the reef takes over again
     quest: { n: 3, item: 'seal', name: 'ROYAL SEALS', npc: 'squire', done: 'THE SEALS ARE FOUND', reward: 'relic', relic: 'diverlamp' },
     palette: { set: 'reef', sky: 'storm', far: 'reef', mid: 'wrecks', near: 'reef', fg: 'reef', dress: 'reef', haze: 'rgba(180,200,205,0.12)',
@@ -4517,7 +4517,7 @@ function theLamplitStreet() {
   // ================= 2. THE FISH MARKET: two roads, and the tide down the middle of one =================
   mass(80, 128); mass(136, 186);                // with a courtyard open to the water line between them
   flood(150, 190);                              // and the market's far end, where the main under it has gone
-  darkZones.push({ x0: 78 * TS, x1: 190 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.52 });
+  darkZones.push({ x0: 78 * TS, x1: 190 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.4 });
   plat(130, 23, 5); plat(130, 21, 4);          // the courtyard: a ledge on the water, and a step across it
   air(94, 95, UP, 27); net(94, 95, UP, ST - 1); air(168, 169, UP, 27); net(168, 169, UP, ST - 1);
   ent('sign', 82, UP - 1, { text: "THE FISH MARKET. THE BEST TAKINGS ARE DOWN ON THE STREET, WITH THE WATCH." });
@@ -4549,7 +4549,7 @@ function theLamplitStreet() {
   air(241, 242, 18, 21);                        // and the passage OUT behind the gate, or the hall is a box
   port(240, 16, 21);                            // the gate itself, shut until he is down
   interiors.push([196, 239, 14, 21, 'drowned']);
-  darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.8 });
+  darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.66 });
   ent('sign', 190, UP - 1, { text: 'SOMETHING IN THE MARKET HALL IS PUTTING THE LAMPS OUT, ONE AT A TIME.' });
   ent('check', 190, UP - 1);                    // the one outside his wall
   for (const x of [200, 210, 220, 230, 237]) lampUp(x);
@@ -4566,7 +4566,7 @@ function theLamplitStreet() {
   // the key is on the clerk who was locking it.
   mass(254, 356);
   flood(288, 340);                              // the counting house: its vaults are the flooded part of it
-  darkZones.push({ x0: 254 * TS, x1: 356 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.52 });
+  darkZones.push({ x0: 254 * TS, x1: 356 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.4 });
   ent('sign', 256, UP - 1, { text: 'THE COUNTING HOUSE. AIR STANDS UNDER THE VAULTS: GO FROM CROWN TO CROWN.' });
   for (const [vx, lip] of [[268, true], [300, false], [330, true]]) {   // three vaults, three pockets
     block(vx - 3, vx + 13, 16, 17); air(vx, vx + 10, 18, 27);
@@ -4620,7 +4620,7 @@ function theLamplitStreet() {
   // the one stretch THE LAMP WORKS answers: while the beam is working its surface drops to wading depth and
   // its dead lamps come up, and when the beam stops it fills again
   pools.push({ x0: 468 * TS, x1: 524 * TS, y: WL, bottom: ST * TS, shallow: false, swim: true, clear: true, runTide: true, pumpRoad: true, roadHi: WL, roadLo: 37 * TS });
-  darkZones.push({ x0: 428 * TS, x1: 572 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.58 });
+  darkZones.push({ x0: 428 * TS, x1: 572 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.44 });
   for (const [a, b] of [[470, 480], [520, 530]]) { plat(a + 1, 23, b - a - 2); plat(a + 2, 20, 3); } // two courtyards open on the water
   air(444, 445, UP, 27); net(444, 445, UP, ST - 1); air(556, 557, UP, ST - 1); net(556, 557, UP, ST - 1);
   ent('sign', 432, UP - 1, { text: 'THE PROCESSION ROAD. THE LAMPS ALONG IT ARE MOSTLY DEAD.' });
@@ -4651,7 +4651,7 @@ function theLamplitStreet() {
   block(574, 575, 6, 21); block(696, 698, 6, 21); block(576, 695, 6, 7);
   air(574, 575, 18, 21);
   interiors.push([576, 695, 8, 21, 'drowned']);
-  darkZones.push({ x0: 576 * TS, x1: 698 * TS, y0: 7 * TS, y1: 23 * TS, dark: 0.8 });
+  darkZones.push({ x0: 576 * TS, x1: 698 * TS, y0: 7 * TS, y1: 23 * TS, dark: 0.66 });
   ent('sign', 572, UP - 1, { text: 'THE TOLLMASTER DOUSES LAMPS. PARRY THE BOOK, JUMP THE ROD, NEVER BLOCK THE WEIGHT.' });
   ent('check', 578, UP - 1);                     // the one outside his walls
   ent('deco', 584, UP - 1, { kind: 'tollPost' }); ent('deco', 596, UP - 1, { kind: 'magistrate' });
@@ -4745,7 +4745,7 @@ function theLamplitStreet() {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 10, y: 9 }, pools, falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'drowned', night: false, glowNight: true, dark: 0.5, darkZones,
+    duskStart: 99999, duskLen: 1, music: 'drowned', night: false, glowNight: true, dark: 0.32, darkZones, edgeLit: 'rgba(190,236,232,0.75)',   /* the readability pass: the flooded street was teal on teal (its walkways at a third of the contrast they need) under dark 0.5, so less of it, and a cold lit lip on every edge you can stand on */
     lampAir: true,                               // THE RULE: a lit lamp is a lungful of air
     // the cold of the place, as banks over the dry street: only a lamp opens a hole in it
     fog: [{ x0: 44 * TS, x1: 152 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.5 },
