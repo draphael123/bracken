@@ -1940,10 +1940,14 @@ function theMonastery() {
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
   for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'cairn', v });
   ent('sign', 30, 29, { text: 'THE NEST. EVERYTHING ON THIS ROOF CAME UP THE MOUNTAIN THE WAY YOU DID.' });
+  // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
+  // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
+  masonry.push([1, 40, 218, 221], [1, 94, 172, 174], [1, 94, 152, 154], [1, 94, 132, 134], [40, 74, 100, 102], [29, 51, 56, 58]);
+  interiors.push([1, 94, 135, 151, 'monkScript']);
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 40,
+    duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 28,   /* snow only on the stones over the roof: on the roof it hid the boards */
     monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
     tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
     quest: { n: 3, item: 'bead', name: 'PRAYER BEADS', npc: 'squire', done: 'THE BEADS ARE RESTRUNG', reward: 'relic', relic: 'sunshard' },
