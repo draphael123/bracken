@@ -15437,19 +15437,23 @@ function drawFg(cx, cy) {
 // (a soft ring outside it at three quarters, the rest of the sheet whole), eased over 0.15 s and eased back when he is clear.
 // It used to be two hacks in two places (the posts thinned within 26 px, the strip punched a hole) and nothing at all for
 // the near layer, which stood in front of the fight in the Stockade and the Underleaf like a wall.
-let FRONTC = null, frontFade = 0, frontT = -1, frontCovered = false;
+let FRONTC = null, frontFade = 0, frontT = -1, frontCovered = false, frontReadN = 0;
 let heroHidden = false, frontOff = false;   /* the readability pass's two switches (BK.hideHero, BK.frontOff): a frame without the hero, and the foreground as it was before this rule */
 function drawFront(cx, cy) {
   if (!FRONTC || FRONTC.width !== VW || FRONTC.height !== VH) { FRONTC = document.createElement('canvas'); FRONTC.width = VW; FRONTC.height = VH; }
-  const fc = FRONTC.getContext('2d'); fc.globalAlpha = 1; fc.globalCompositeOperation = 'source-over'; fc.clearRect(0, 0, VW, VH);
+  /* READ BACK CHEAPLY. The test below reads this sheet's pixels, and reading a GPU canvas back every frame stalls the graphics card - the
+     castle levels, all posts and wall faces in front of the play, hitched with it. The sheet lives on the CPU side (willReadFrequently)
+     and is read a few times a second in play; a tool stepping single frames still gets a fresh read every frame. */
+  const fc = FRONTC.getContext('2d', { willReadFrequently: true }); fc.globalAlpha = 1; fc.globalCompositeOperation = 'source-over'; fc.clearRect(0, 0, VW, VH);
   const g1 = g; g = fc;
   try { drawOccluders(cx, cy); drawMotes(cx, cy, true); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy); drawNear(cx); }
   finally { g = g1; }
   if (frontOff) { g.drawImage(FRONTC, 0, 0); return; }
   /* THE TEST IS THE PIXELS: the hero's box on the sheet, and whether enough of it has ink over it to matter */
   const hx = Math.round(P.x - cx), hy = Math.round(P.y - cy), bx0 = Math.max(0, hx - 8), by0 = Math.max(0, hy - 30), bx1 = Math.min(VW, hx + 8), by1 = Math.min(VH, hy);
-  frontCovered = false;
-  if (!P.dead && bx1 > bx0 && by1 > by0) { const d = fc.getImageData(bx0, by0, bx1 - bx0, by1 - by0).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n++; frontCovered = n > (bx1 - bx0) * (by1 - by0) * 0.08; }
+  frontReadN = (frontReadN + 1) % 4;
+  if (P.dead || !(bx1 > bx0 && by1 > by0)) frontCovered = false;
+  else if (frontReadN === 0 || frontT < 0 || time - frontT > 0.05) { const d = fc.getImageData(bx0, by0, bx1 - bx0, by1 - by0).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n++; frontCovered = n > (bx1 - bx0) * (by1 - by0) * 0.08; }   /* (between reads the last answer stands: the fade eases over 0.15 s anyway) */
   /* eased on the game's own clock; a long gap (a load, a teleport, the bot's single frames) snaps it, the way the dark snaps */
   const dtF = frontT < 0 ? 1 : Math.min(0.5, Math.max(0, time - frontT)); frontT = time;
   const want = frontCovered ? 1 : 0, rate = dtF / 0.15; frontFade += Math.max(-rate, Math.min(rate, want - frontFade)); frontFade = Math.max(0, Math.min(1, frontFade));
