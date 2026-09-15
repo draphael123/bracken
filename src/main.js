@@ -108,6 +108,11 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     if (PROG.charm) PROG.charmOf[h] = PROG.charm; }
   /* a secret wood cleared before secret woods counted: credit it to the hero carrying the save, once */
   for (const lv of LEVELS) if (lv.secret && PROG[lv.id] && PROG[lv.id].cleared && !Object.values(PROG.done || {}).some(dd => dd && dd[lv.id])) { const hh = PROG.hero || 'knight'; PROG.done[hh] = PROG.done[hh] || {}; PROG.done[hh][lv.id] = 1; }
+  /* THE LEVEL CAME TO BE XP (xpVersion 1). A hero's level was the woods he had walked; it is his XP now (src/xp.js). Every hero keeps
+     the level his woods gave him, as the XP floor of that level, so nobody loses a level or a talent point, and what he earns from
+     here goes on top. The woods he has walked do not pay their share again. */
+  PROG.xp = PROG.xp || {}; PROG.xpGot = PROG.xpGot || {};
+  if ((PROG.xpVersion || 0) < 1) { for (const hh in PROG.done) { const n = Object.keys(PROG.done[hh] || {}).length; if (n) PROG.xp[hh] = Math.max(PROG.xp[hh] || 0, xpFloor(n)); } PROG.xpVersion = 1; }
   PROG.ranks = PROG.ranks || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow';
   { const OLD = { vigour: [40, 60, 90, 130, 180], breath: [40, 60, 90, 130, 180], recovery: [60, 100, 160], temper: [50, 80, 120, 170, 230], footing: [60, 100, 160] }; let back = 0; for (const id in OLD) for (let r = 0; r < (PROG.ranks[id] || 0); r++) back += OLD[id][r] || 0; if (back) { PROG.coins += back; PROG.ranks = {}; PROG.refundNote = back; } } // the training went: its gold comes back
   /* THE MEDAL PURSE, PAID BACK: medals won before medals paid gold are paid once, in full, when the save is next opened */
