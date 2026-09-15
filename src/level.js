@@ -5927,18 +5927,11 @@ export const LEVELS = [
   { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: theDeep, needs: 'lamplit' },
   /* THE SECOND ROAD. The sea arc closes in the trench; this opens the one that goes inland, which is
      why it is allowed to be quieter than the boss before it - see the arc rule in tools/curve.mjs. */
+  /* THE DROWNED CAUSEWAY: the last of the coast, after the Deep and before the road inland. The Kraken is the coast's last word */
+  { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: theDrownedCauseway, needs: 'deep' },
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'deep' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
-  /* THE ROAD INLAND goes on through the goblin lord's own hunting grounds, and the Hound Master comes off the bench for it */
-  { id: 'hunt', name: 'THE HUNT', sub: "the goblin lord's hunting grounds", rule: 'THE PACK IS HIS WEAPON, AND THE WHISTLE IS HIS TELL.', build: theHunt, needs: 'causeway' }   /* WAYMEET IS OFF THE ROAD: an optional town, and the road inland does not wait on it */,
-  /* THE ROAD INLAND, UP: after the Hunt, the pass over the hill, and the troll that was benched for want of a hill to throw. */
-  { id: 'quarry', name: 'THE QUARRY PASS', sub: 'the road inland, through the hill', rule: 'THE HILL THROWS WHAT IT CAN LIFT.', build: quarryPass, needs: 'hunt' },
-  { id: 'frost', name: 'THE FROSTFELL', sub: 'the frozen high fell', rule: 'FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.', build: theFrostfell, needs: 'quarry' },   /* up from the pass onto the fell */
-  /* THE SKY SHIP comes after THE FROSTFELL on the road inland: the wind the moor taught, on a deck with nothing under it */
-  { id: 'skyship', name: 'THE SKY SHIP', sub: 'a goblin galleon above the clouds', rule: 'THE WIND GOES WHERE THE SAILS SAY. TURN THE SAILS.', build: theSkyShip, needs: 'frost' },
-  /* THE DROWNED CAUSEWAY: the last of the coast, after the Deep and before the road inland. The Kraken is the coast's last word */
-  { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: theDrownedCauseway, needs: 'deep' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 

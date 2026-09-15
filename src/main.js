@@ -1742,15 +1742,11 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' }];   /* the pilgrim road the sea took: the coast's last water, and the Kraken at the end of it */
 const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [160, 100], [125, 45], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
-const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
-  { id: 'hunt', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hunt'), x: 70, y: 140, name: 'THE HUNT' },
-  { id: 'quarry', kind: 'level', level: LEVELS.findIndex(l => l.id === 'quarry'), x: 140, y: 110, name: 'THE QUARRY PASS' },
-  { id: 'frost', kind: 'level', level: LEVELS.findIndex(l => l.id === 'frost'), x: 210, y: 82, name: 'THE FROSTFELL' },
-  { id: 'skyship', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyship'), x: 275, y: 44, name: 'THE SKY SHIP' }];
-const INLAND_PATH = [[140, 176], [95, 172], [40, 162], [95, 172], [110, 158], [70, 140], [100, 122], [140, 110], [175, 96], [210, 82], [240, 62], [275, 44]];
+const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' }];   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
+const INLAND_PATH = [[140, 176], [95, 172], [40, 162]];
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })));
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]));
-const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 46, 48, 50, 52, 54, 56, 58, 59, 64, 67, 69, 71, 73]; // PATH index of each node: wood 0-5, the crags, the coast, then the road inland
+const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 46, 48, 50, 52, 54, 56, 58, 59, 64]; // PATH index of each node: wood 0-5, the crags, the coast, then the road inland
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'crag', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]]]);
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
