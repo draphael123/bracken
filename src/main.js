@@ -1182,11 +1182,14 @@ function spawnEnt(e) {
   {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     const base = { x: px, y: py, vx: 0, vy: 0, face: e.face || 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0 };
+    /* THE RIVER EEL (eel, leap: true) lives in water nobody swims, so it cannot take a swim eel's home: it takes the deep pool
+       its column is in, and lies under it (updateRiverEel). Its count starts from its column, so two in one river are out of step. */
+    if (e.t === 'eel' && e.leap) { const lp = (L.pools || []).find(q => !q.swim && !q.shallow && px > q.x0 && px < q.x1); if (lp) enemies.push({ ...base, t: 'eel', leap: true, w: 12, h: 8, hp: EHP.eel, y: lp.y + 10, hx: px, pool: lp, noGrav: true, mode: 'lurk', modeT: 0.6 + (e.x % 4) * 0.45, every: e.every || 2, gone: 1, cd: 0 }); } else   /* two seconds under, three and a half round: the tell and the leap are the bad part of that, and a small pad takes two to sink, so you can always wait one out */
     switch (e.t) {
       case 'sprig': enemies.push({ ...base, t: 'sprig', w: e.fat ? 12 : 8, h: e.fat ? 15 : 10, hp: e.fat ? EHP.sprig * 4 : EHP.sprig, speed: e.fat ? 14 : 28, big: !!e.fat, fat: !!e.fat, cutter: !!e.cutter, ringer: !!e.ringer, bell: e.bell ? e.bell * TS + 8 : 0 }); break;   /* THE OLD FAT SPRIG (fat: true, Bracken Wood's third-cut lesson): drawn big, four times the health, half the pace and a bite that barely hurts, so a run of three is FELT on something before it is needed */
       case 'shield': enemies.push({ ...base, t: 'shield', w: 10, h: 14, hp: EHP.shield, speed: 26, turnT: 0, behindT: 0 }); break;
       case 'spit': enemies.push({ ...base, t: 'spit', w: 12, h: 12, hp: EHP.spit, timer: 1 + Math.random(), mouth: 0 }); break;
-      case 'wasp': enemies.push({ ...base, t: 'wasp', hx: px, hy: py, w: 8, h: 6, hp: EHP.wasp, face: -1 }); break;
+      case 'wasp': enemies.push({ ...base, t: 'wasp', hx: px, hy: py, w: 8, h: 6, hp: EHP.wasp, face: -1, ...(e.sting ? { sting: true, mode: 'hover', modeT: 0, cd: 1 } : {}) }); break;   /* sting: true darts at you from its post, on a yellow ! (the river wasps) */
       case 'thorn': enemies.push({ ...base, t: 'thorn', w: 12, h: 11, hp: EHP.thorn, speed: 22, mode: 'walk', modeT: 0 }); break;
       case 'queen': boss = { ...base, t: 'queen', w: 40, h: 20, hp: EHP.queen, maxHp: EHP.queen, mode: 'sleep', modeT: 0, face: -1, tx: px, ty: py, dive: null, phase: 1 }; enemies.push(boss); break;
       case 'frog': boss = { ...base, t: 'frog', w: 40, h: 30, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
@@ -6424,6 +6427,26 @@ function updateReef(e, dt) {
   if (r.hitX) { e.vx = 0; if (!chasing) e.face = -e.face; }
 }
 const reefHome = e => e.pool || (L.pools || []).find(q => q.swim && e.x > q.x0 && e.x < q.x1) || null;
+// THE RIVER EEL (eel, leap: true). The swim eel only ever hunts a swimmer, and nobody swims the marsh's river: it kills.
+// This one lives under a lily crossing and comes UP. On its own count it boils the water over its gap and shows a yellow !,
+// then leaps straight up out of it, as high as your hop between two pads, and drops back in. It never leaves its column,
+// and it lives in a gap between pads, never under one: the question it asks is WHEN to hop, never where. It is out of
+// reach under the water (gone), a shield turns it, and its back on the way down is a pogo.
+function updateRiverEel(e, dt) {
+  const surf = e.pool.y, near = !P.dead && Math.abs(P.x - e.x) < 160 && Math.abs(P.y - surf) < 120;
+  e.x = e.hx; e.vx = 0;
+  if (e.mode === 'leapTell') { e.gone = 1; e.y = surf + 10;
+    if (Math.random() < dt * 24) parts.push({ x: e.x + (Math.random() - 0.5) * 12, y: surf + 1, vx: 0, vy: -30 - Math.random() * 30, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#eefaff' : '#bfe6f5', size: 1, grav: 60 });
+    if (Math.random() < dt * 5) ripples.push({ x: e.x, life: 1 });
+    if (e.modeT <= 0) { e.mode = 'leap'; e.gone = 0; e.hit = false; e.w = 14; e.h = 10; e.y = surf + 6; e.vy = -370; e.face = Math.sign(P.x - e.x) || e.face; SFX.splash(); burst(e.x, surf, 10, ['#eefaff', '#bfe6f5'], 70, 0.45); } }
+  else if (e.mode === 'leap') { e.vy += 1000 * dt; e.y += e.vy * dt;
+    /* IT BITES WHAT IT COMES UP INTO. At -330 its head topped out two pixels over the soles of a paladin's hop and a mistimed
+       hop never once got bitten; it clears the hop now. A hero coming DOWN onto it is the stomp's business (a pogo), not this. */
+    if (!e.hit && !P.dead && Math.abs(P.x - e.x) < 11 && P.y > e.y - e.h - 2 && P.y - 16 < e.y && !(P.vy > 40 && P.y <= e.y - e.h + 7)) { e.hit = true; const res = damagePlayer(e.x, DMG.eel, { who: e }); if (res === 'hit') { P.vx = Math.sign(P.x - e.x || 1) * 140; P.vy = Math.min(P.vy, -120); } }
+    if (e.vy > 0 && e.y >= surf + 6) { e.mode = 'lurk'; e.modeT = e.every; e.gone = 1; e.vy = 0; e.y = surf + 10; SFX.splash(); burst(e.x, surf, 6, ['#eefaff', '#bfe6f5'], 50, 0.35); ripples.push({ x: e.x, life: 1 }); } }
+  else { e.mode = 'lurk'; e.gone = 1; e.y = surf + 10;
+    if (e.modeT <= 0) { if (near && e.stagger <= 0) { e.mode = 'leapTell'; e.modeT = 0.75; number(e.x, surf - 14, '!', '#ffd36b'); } else e.modeT = 0.25; } }
+}
 function updateShore(e, dt) {
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(e.y - P.y);
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt);
@@ -6434,6 +6457,7 @@ function updateShore(e, dt) {
     else if (e.mode === 'snap') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.4; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 22 || e.flanking) ? e.face * e.speed : 0; if (ad < 30 && e.cd <= 0) { e.mode = 'snapTell'; e.modeT = 0.4; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); SFX.snort(); } } else want = e.face * e.speed * 0.5; }
+  } else if (e.t === 'eel' && e.leap) { updateRiverEel(e, dt); return;
   } else if (e.t === 'eel') { grav = false; const pl = e.pool = shoreHome(e); if (pl && pl.dry) e.vy = Math.max(e.vy, 60);   /* drained, it goes down onto the bed (swimMove): it used to sink on forever, through the floor */
     const inMine = P.swim && pl && P.x > pl.x0 && P.x < pl.x1 && P.y > pl.y;
     const top = pl ? pl.y + 10 : e.y, bot = pl ? (pl.bottom || pl.y + 60) - 2 : e.y;
@@ -12956,7 +12980,7 @@ function updateEnemies(dt) {
     if (e.t === 'lampreeve') { if (miniActive || e.mode !== 'sleep') updateLampreeve(e, dt); continue; }
     /* A SLEEPING FISH STILL GOES DOWN WITH ITS WATER. Nothing past 420 pixels is updated, and a tide went out from under the
        anglers and urchins out there and left them hanging where the sea had been, for whoever came round the corner. */
-    if ((e.t === 'eel' || e.t === 'angler' || e.t === 'urchin') && e.pool) { const p = e.pool, bot = (p.bottom !== undefined ? p.bottom : p.y + 60) - 4; e.y = Math.min(bot, Math.max(p.y + 10, e.y));
+    if ((e.t === 'eel' || e.t === 'angler' || e.t === 'urchin') && e.pool && !e.leap) {   /* (a river eel leaves its water on purpose: updateRiverEel keeps it in its column) */ const p = e.pool, bot = (p.bottom !== undefined ? p.bottom : p.y + 60) - 4; e.y = Math.min(bot, Math.max(p.y + 10, e.y));
       if (isSolid(Math.floor(e.x / TS), Math.floor((e.y - (e.h || 8) / 2) / TS))) sendHome(e, p.y + 10, bot); }   /* and not down into the wreck it was over */
     if (Math.abs(e.x - P.x) > 420) continue; // (bosses above never sleep at range: the Ram Lord used to freeze mid-charge when the fold was wide)
     { const bt = e.squirrel ? 'squirrel' : e.t; if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[bt] && PROG.beasts[bt].seen)) beastSeen(bt); }
@@ -12968,6 +12992,14 @@ function updateEnemies(dt) {
         e.hx += (Math.max(L.arena ? L.arena.x0 + 20 : 0, Math.min(L.arena ? L.arena.x1 - 20 : 99999, e.x)) - e.hx) * Math.min(1, dt * 2); e.hy += ((L.arena ? L.arena.floor - 42 : e.hy) - e.hy) * Math.min(1, dt * 1.5);
         e.x += (e.hx + Math.sin(e.anim * 1.3) * 5 - e.x) * Math.min(1, dt * 3); e.y += (e.hy + Math.sin(e.anim * 2.4) * 5 - e.y) * Math.min(1, dt * 3); e.face = Math.sign(P.x - e.x) || e.face; continue;
       }
+      /* THE RIVER WASP (sting: true) keeps a post over the lily pads and stings what comes near it: a yellow ! and a buzz
+         in place for half a second, a short straight dart at where you were, and back to its post. A shield turns it, and
+         it does not go for you while you stand on a pad below it, only when your hop brings you up to it. */
+      if (e.sting && !P.dead) { e.modeT -= dt; e.cd -= dt; const sdx = P.x - e.x, sdy = (P.y - 8) - e.y, sd = Math.hypot(sdx, sdy) || 1;
+        if (e.mode === 'stingTell') { e.x = e.hx + Math.sin(time * 70) * 1.5; e.y = e.hy - 2; e.face = Math.sign(sdx) || e.face; if (e.modeT <= 0) { e.mode = 'sting'; e.modeT = 0.45; e.dvx = sdx / sd * 220; e.dvy = sdy / sd * 220; SFX.buzz(); } continue; }   /* a hundred pixels of dart: at 68 it fell short of the next pad and never once landed */
+        if (e.mode === 'sting') { e.x += e.dvx * dt; e.y += e.dvy * dt; e.face = Math.sign(e.dvx) || e.face; if (e.modeT <= 0) e.mode = 'back'; continue; }
+        if (e.mode === 'back') { e.x += (e.hx - e.x) * Math.min(1, dt * 4); e.y += (e.hy - e.y) * Math.min(1, dt * 4); if (Math.hypot(e.hx - e.x, e.hy - e.y) < 3) { e.mode = 'hover'; e.cd = 1.8; } continue; }
+        if (e.cd <= 0 && sd < 76) { e.mode = 'stingTell'; e.modeT = 0.55; number(e.x, e.y - 10, '!', '#ffd36b'); continue; } }
       e.x = e.hx + Math.sin(e.anim * 1.3) * 5; e.y = e.hy + Math.sin(e.anim * 2.4) * 5; e.face = Math.sign(Math.cos(e.anim * 1.3)) || 1; continue;
     }
     if (e.t === 'spit') {
@@ -15747,7 +15779,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'ram') frame = e.mode === 'lower' || e.mode === 'buttTell' || e.mode === 'leapTell' || e.mode === 'rear' ? 3 : e.mode === 'leap' ? 6 : e.mode === 'land' ? 4 : e.mode === 'crash' ? 4 : e.mode === 'tossTell' || e.mode === 'toss' || e.mode === 'callTell' || e.mode === 'call' ? 5 : e.mode === 'stampTell' || e.mode === 'stamp' || e.mode === 'butt' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * (e.mode === 'charge' ? 16 : 8)) % 2 : 0;
     else if (e.t === 'pike') frame = e.mode === 'thrust' ? 1 : e.mode === 'tell' ? 2 : 0;
     else if (e.t === 'turtle') frame = e.mode === 'hide' ? 3 : e.mode === 'snap' ? 2 : Math.abs(e.vx) > 3 ? Math.floor(e.anim * 4) % 2 : 0;
-    else if (e.t === 'eel') frame = e.mode === 'lunge' ? 2 : e.mode === 'lungeTell' ? 6 : e.stagger > 0 ? 3 : [0, 4, 1, 5][Math.floor(e.anim * 8) % 4];
+    else if (e.t === 'eel') frame = e.mode === 'lunge' || e.mode === 'leap' ? 2 : e.mode === 'lungeTell' ? 6 : e.stagger > 0 ? 3 : [0, 4, 1, 5][Math.floor(e.anim * 8) % 4];
     else if (e.t === 'heronfoe') frame = e.mode === 'strikeTell' ? 2 : e.mode === 'strike' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 4) % 2 : 0;
     else if (e.t === 'crab') frame = e.mode === 'flipped' ? 3 : e.mode === 'pinch' ? 6 : (e.guardT > 0 || e.mode === 'pinchTell') ? 2 : [0, 4, 1, 5][Math.floor(e.anim * 10) % 4];
     else if (e.t === 'scout') frame = e.mode === 'aim' ? 5 : e.mode === 'throw' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 4;
@@ -16043,6 +16075,11 @@ function drawWorld(cx, cy, showPlayer) {
       if (z.y0 !== undefined && (P.y < z.y0 - 40 || P.y > z.y1 + 40)) continue;   /* the fog is in the street, not over the roofs */ any = true; const x0 = Math.max(0, Math.round(z.x0 - cx)), x1 = Math.min(VW, Math.round(z.x1 - cx)); const gr = fg.createLinearGradient(x0, 0, x0 + 24, 0); fg.fillStyle = 'rgba(' + (L.fogCol || '196,212,204') + ',' + a.toFixed(3) + ')'; fg.fillRect(x0 + 12, 0, Math.max(0, x1 - x0 - 24), VH); const ge = fg.createLinearGradient(x0, 0, x0 + 12, 0); ge.addColorStop(0, 'rgba(196,212,204,0)'); ge.addColorStop(1, 'rgba(' + (L.fogCol || '196,212,204') + ',' + a.toFixed(3) + ')'); fg.fillStyle = ge; fg.fillRect(x0, 0, 12, VH); const ge2 = fg.createLinearGradient(x1 - 12, 0, x1, 0); ge2.addColorStop(0, 'rgba(' + (L.fogCol || '196,212,204') + ',' + a.toFixed(3) + ')'); ge2.addColorStop(1, 'rgba(196,212,204,0)'); fg.fillStyle = ge2; fg.fillRect(x1 - 12, 0, 12, VH); }
     if (any) { fg.globalCompositeOperation = 'destination-out'; const hole = (x, y, r) => { const gr = fg.createRadialGradient(x, y, r * 0.3, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); fg.fillStyle = gr; fg.fillRect(x - r, y - r, r * 2, r * 2); }; if (!P.dead) hole(P.x - cx, P.y - 8 - cy, L.fogLamps ? 54 : 46);
       for (const pr of props) if (pr.t === 'wisp' && !pr.cut) hole(pr.x - cx, pr.y - 4 - cy, 30);
+      /* AND WHAT CAN HURT YOU SHOWS THROUGH IT (C1). The drowned village's fog hid its spitters, its turtle and its frogs from
+         anybody more than a stride away: a hazard you cannot see before it hits you is a memory test. Each creature carries a
+         little clearing of its own, the way a wisp does - the planks and the pads stay yours to find. (Not in a fog that
+         opens for lamps and nothing else: there the dark is the point.) */
+      if (!L.fogLamps) for (const e of enemies) if (e.alive && !(e.gone > 0) && !e.harmless && e.x > cx - 20 && e.x < cx + VW + 20) hole(e.x - cx, e.y - (e.h || 10) / 2 - cy, Math.max(18, (e.w || 10) + 10));
       /* WHAT YOU HAVE LIT IS WHAT YOU CAN SEE: in the drowned city the fog opens for a lamp and nothing else */
       if (L.fogLamps) { for (const pr of lamps) if (pr.lit) hole(pr.x - cx, pr.y - 40 - cy, pr.gut > 0 ? 40 : 88);
         for (const f of fires) if (f.delay <= 0) hole(f.x - cx, f.y - 8 - cy, 58);
