@@ -7428,7 +7428,10 @@ function drawFieldsTiles(cx, cy) {
   for (const [x0, x1, y0, y1, kind] of (L.fields.skins || [])) { if (x1 < tx0 || x0 > tx1) continue;
     for (let ty = Math.max(y0, Math.floor(cy / TS)); ty <= Math.min(y1, Math.floor((cy + VH) / TS)); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.SOLID || FLD.shrinkCells.has(i)) continue;
       g.drawImage(A.skin[kind][(tx * 7 + ty * 3) % 3], tx * TS - cx, ty * TS - cy);
-      if (ty > 0 && L.grid[i - LW] === T.AIR) { g.fillStyle = 'rgba(236,214,168,0.55)'; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = 'rgba(236,214,168,0.2)'; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } } }
+      if (ty > 0 && L.grid[i - LW] === T.AIR) { g.fillStyle = 'rgba(236,214,168,0.55)'; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = 'rgba(236,214,168,0.2)'; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
+    /* EACH BALE ITS OWN EDGE. Painted tile by tile, a half bale set against the lane's bank was more bank; with an edge
+       round every rect it is a smaller bale in front of a bigger one, and that is a step */
+    if (kind === 'bale') { g.strokeStyle = '#3a2e16'; g.lineWidth = 1; g.strokeRect(x0 * TS - cx + 0.5, y0 * TS - cy + 0.5, (x1 - x0 + 1) * TS - 1, (y1 - y0 + 1) * TS - 1); } }
   if (L.fields.crypt && A.cryptFront) { const [x, y] = L.fields.crypt; g.drawImage(A.cryptFront, x * TS - cx, y * TS - cy); }
 }
 function drawHexVine(m, cx, cy) {

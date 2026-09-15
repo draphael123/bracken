@@ -6130,10 +6130,14 @@ function theHexedFields() {
   air(34, 37, G, G + 2); spikes(34, 37, G + 2);                    /* the second: brambles in the bottom */
   deco('scarePost', 42, G - 1);                                    /* the scarecrow that was on it is not on it */
   sign(45, G - 1, 'A SCARECROW ONLY MOVES WHILE YOUR BACK IS TO IT. KEEP YOUR EYES ON IT.');
-  /* THE FIRST VINE: a hedge bank across the lane too tall to jump, and a trough of runoff beside it */
+  /* THE FIRST VINE: a hedge bank of bales across the lane too tall to jump, and a trough of runoff beside it. The vine is
+     the way the lane teaches, but its leaf stands fifty-six pixels over the lane against a fifty-one pixel jump, and it
+     does not carry a hero up: struck from the bud, it shoots up past him (measured, all five heroes stayed on the lane).
+     So a half bale against the bank's face is the way for everyone: two rows up onto it, two rows up onto the bank, and
+     a stair you can see from the sign. (The owner's playtest: most heroes stopped here.) */
   sign(49, G - 1, 'STRIKE THE TROUGH. THE RUNOFF GROWS A VINE, AND A VINE DOES NOT STAY UP LONG.');
-  spill('trough', 52, G - 1, 'lane'); vine(54, G, 3, 'lane');
-  block(57, 59, G - 4, G - 1);
+  spill('trough', 51, G - 1, 'lane'); vine(53, G, 3, 'lane');
+  block(57, 59, G - 4, G - 1); block(55, 56, G - 2, G - 1);
   coins([57, G - 6], [58, G - 6], [59, G - 6]);
   ent('check', 66, G - 1); ent('thief', 79, G - 1, { face: -1 }); ent('archer', 92, G - 2, { face: -1 }); ent('shield', 88, G - 1, { face: -1 }); ent('wight', 30, G - 1); ent('rook', 47, G - 1, { face: -1 });   /* scavengers off the hill, picking over the dead farm, and their bowman on the bank */
   ent('scarecrow', 74, G - 1, { face: -1 });
@@ -6157,8 +6161,10 @@ function theHexedFields() {
   trunk(124, 25, O - 1); trunk(133, 24, O + 1); trunk(141, 25, O + 1); trunk(149, 24, O + 1);
   ent('rockfall', 137, 14, { every: 2.4, apple: true }); ent('rockfall', 145, 15, { every: 2.8, apple: true });
   sign(122, 23, 'THE APPLES FALL ON A BEAT. COUNT IT, THEN CROSS.');
-  /* the high bough: a bucket on the limb, and the vine it grows is the only way up to it */
-  spill('bucket', 131, 22, 'bough'); vine(134, 23, 4, 'bough');
+  /* the high bough: a bucket on the limb, and the vine it grows is the only way up to it. Two rows, not four: a leaf four
+     rows up could only be ridden from the bud, and the bucket is three tiles from the bud, so nobody but a long reach
+     ever rode it. Two rows up is a jump onto the leaf from the limb and a jump off it onto the silver's bough */
+  spill('bucket', 131, 22, 'bough'); vine(134, 23, 2, 'bough');
   plat(137, 18, 4); trunk(139, 19, 23); ent('silver', 138, 17);
   ent('stray', 150, 22, { kind: 'sheep' });
   coins([122, 22], [126, 22], [132, 21], [141, 23], [148, 22]);
@@ -6325,7 +6331,7 @@ function theHexedFields() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts,
     music: 'fields', duskStart: 99999, duskLen: 1, night: true, nightA: 0.16, edgeLit: true,
     fields: { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, phantoms, shrinks, trunks, dusk: [30, 150], crypt: [659, 28],
-      skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 33, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale']] },
+      skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 33, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale'], [55, 56, 32, 33, 'bale']] },
     quest: { n: 3, item: 'sheep', name: 'THE LOST EWES', npc: 'shepherd', done: 'THE EWES ARE HOME', reward: 'relic', relic: 'lamp' },
     palette: { sky: [[40, 48, 96], [104, 120, 164]], far: 'fields', mid: 'fields', near: 'fields', dress: 'village', haze: 'rgba(130,150,210,0.10)',
       grass: '#7a946e', grassL: '#a4bc8e', grassD: '#4a6048', dirt: '#5e5444', dirtL: '#7a6c54', dirtD: '#3c3428', canopy: ['#161a2a', '#1e2436', '#262e44', '#303a52'] },
