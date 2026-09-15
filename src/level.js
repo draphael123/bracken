@@ -7138,6 +7138,13 @@ const ELITES = {
   hanging: [['shield', 85, 107]],
   moor: [['goat', 168, 21, { gate: 200 }], ['troll', 384, 13]],
   storm: [['pike', 250, 29, { gate: 257 }]],
+  longwater: [['tideguard', 419, 26, { gate: 427 }]],
+  reef: [['tideguard', 355, 25, { gate: 361 }]],   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
+  flotilla: [['boarder', 162, 21, { gate: 175 }]],
+  hurricane: [['boarder', 38, 19, { gate: 46 }], ['cutlass', 456, 18]],   /* the only column on the ship a gate holds is the passage out of the cabin: everything past it has three ways round */
+  lamplit: [['watch', 595, 21]],
+  deep: [['watch', 30, 27, { gate: 41 }]],
+  causeway: [['tideguard', 66, 23, { gate: 79 }]],
 };
 /* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
    near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,
