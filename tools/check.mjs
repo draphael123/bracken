@@ -17,6 +17,7 @@
 //   pixels    (headless) no sprite floats, hangs from nothing or runs through a ledge, by its own pixels; no water
 //             creature leaves its water over a tide (src/floatlab.js)
 //   deadends  every dead end pays: loot, a heart or a coin cache at the far end of every pocket (land, water, up high)
+//   textfit   (headless) no text runs past its plate or off the screen, is cut, clipped, smeared, overprinted or laid over the hero
 // The labs (fight and boss) need the page: run BK.bossLab() in the browser after a combat change.
 import { execSync, spawnSync } from 'child_process';
 import { readdirSync, statSync } from 'fs';
@@ -39,6 +40,9 @@ const results = [];
 for (const t of ['tells', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'traps', 'signs', 'killzones', 'collectables', 'keys', 'spawns', 'deadends']) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
 /* THE PIXELS NEED THE PAGE: a headless Chrome on a port of its own, so a dev server left running from another checkout is never the one measured */
 results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(5900 + Math.floor(Math.random() * 90)) }));
+/* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
+   the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
+results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud', '--strict'], { PORT: String(5800 + Math.floor(Math.random() * 90)) }));
 
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }

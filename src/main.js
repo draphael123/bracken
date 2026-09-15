@@ -1009,7 +1009,7 @@ function updateGateFx(dt) { for (const f of gateFx) { f.t += dt;
 // time until the gate lifts anyway; each of them wears a red mark, and any that are off-screen get an arrow at the edge.
 function drawAlarmHud() {
   const sec = (L.alarms || []).find(a => a.on && !a.done); if (!sec) return;
-  const left = enemies.filter(e => e.alive && e.garrison === sec.id).length, x = VW / 2, y = 16, k = 0.5 + 0.5 * Math.sin(time * 6);
+  const left = enemies.filter(e => e.alive && e.garrison === sec.id).length, x = Math.round(topMid(48)), y = 16, k = 0.5 + 0.5 * Math.sin(time * 6);
   g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(x - 24, y, 48, 17); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x - 23.5, y + 0.5, 47, 16);
   const bx = x - 15, by = y + 4 + Math.round(Math.sin(time * 14) * (left ? 1 : 0)); g.fillStyle = '#e0b040'; g.fillRect(bx - 3, by, 6, 5); g.fillRect(bx - 4, by + 5, 8, 1); g.fillStyle = '#fff1a0'; g.fillRect(bx - 2, by, 2, 2); g.fillStyle = '#e0b040'; g.fillRect(bx - 1, by + 6, 2, 2); // the bell, swinging while any are up
   text(String(left), x - 4, y + 4, left ? '#ff6b6b' : '#8fd160', 'left'); for (let i = 0; i < Math.min(left, 4); i++) { g.globalAlpha = 0.6 + 0.4 * k; g.fillStyle = '#ff6b6b'; g.fillRect(x + 8 + i * 4, y + 6, 2, 4); } g.globalAlpha = 1;
@@ -1512,8 +1512,8 @@ function drawAmbushHud() {
     if (ambushSub) text(ambushSub, VW / 2, y + 15, '#c9d1dc', 'center', 6);
     g.globalAlpha = 1; }
   const A = ambushLive(); if (!A) return;
-  const left = A.st === 'fight' ? A.foes.filter(e => e.alive).length : A.waves[A.wave].length, n = A.waves.length, x = VW / 2, y = 30, w = 58;
-  g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(x - w / 2, y, w, 16); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x - w / 2 + 0.5, y + 0.5, w - 1, 15);
+  const left = A.st === 'fight' ? A.foes.filter(e => e.alive).length : A.waves[A.wave].length, n = A.waves.length, w = 58, x = Math.round(topMid(w)), y = 16;   /* under the clock, clear of the HUD plate on the left and the quest label on the right */
+  g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(x - w / 2, y, w, 16); hudRects.push([x - w / 2, y, w, 16]); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x - w / 2 + 0.5, y + 0.5, w - 1, 15);
   text('WAVE ' + Math.min(n, A.wave + (A.st === 'beat' ? 2 : 1)) + '/' + n, x, y + 3, '#ffd0d0', 'center', 6);
   for (let i = 0; i < left; i++) { g.fillStyle = A.st === 'fight' ? '#ff6b6b' : 'rgba(255,107,107,0.35)'; g.fillRect(Math.round(x - left * 2 + i * 4), y + 11, 2, 3); }
 }
@@ -2015,6 +2015,7 @@ let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
 const treeNodes = () => TREE.filter(n => n.hero === hero());
 function updateTree(dt) {
   treeMsgT = Math.max(0, treeMsgT - dt); treeResetT = Math.max(0, treeResetT - dt);
+  if (morePress() && treePages > 1) { treePage = (treePage + 1) % treePages; SFX.ui(); }   /* the next page of a long talent */
   const ns = treeNodes(), cur = ns[treeI] || null, respec = treeI >= ns.length, was = treeI;
   if (cur) treeBranch = cur.branch;
   // ONE TREE AT A TIME: up and down walk the rows of the open tree, left and right step its columns
@@ -2199,7 +2200,8 @@ function drawTree() {
   const h = hero(), ns = treeNodes(), respec = treeI >= ns.length, cur = ns[treeI] || null;
   const b = respec ? treeBranch : cur.branch, left = ptsLeft(h), any = godMode() || left > 0, myCap = capOf(h);
   panel(3, 2, VW - 6, VH - 4);
-  text(fitText(((HEROES.find(k => k.id === h) || {}).name || '').replace('THE ', '') + '  L' + heroLevel(), 74, 6), 9, 7, UI.title, 'left', 6);
+  if (treeKeyLast !== h + ':' + treeI) { treeKeyLast = h + ':' + treeI; treePage = 0; }
+  text(fitName(((HEROES.find(k => k.id === h) || {}).name || '').replace('THE ', ''), 72, 6), 9, 5, UI.title, 'left', 6);   /* the level is on the points plate: beside the name it cut PYROMANCER to nothing */
   // WHAT IS ON YOUR KEYS, always, wherever you are in the tree
   { const nameOf = id => { const n = TREE.find(q => q.id === id && q.hero === h); return n ? n.name : null; };
     const f = nameOf(skillNow()), g2 = nameOf(skill2Now());
@@ -2212,7 +2214,7 @@ function drawTree() {
       text(short, x + 12, 5, nm ? UI.text : '#b4b4c0', 'left', 6); };
     cell(VW / 2 - 78, 'F', f, '#ffd36b'); cell(VW / 2 + 2, 'G', g2, '#8fd160'); }
   // POINTS, SPENT OF TOTAL, in a plate of their own: it glows while there are points to spend
-  { const p = godMode() ? 'ANY PTS' : ptsSpent(h) + '/' + ptsTotal(h) + ' PTS', w = textW(p, 6) + 8, x = VW - 8 - w;
+  { const p0 = 'L' + heroLevel() + '  ' + (godMode() ? 'ANY PTS' : ptsSpent(h) + '/' + ptsTotal(h) + ' PTS'), p = inkW(p0, 6) + 8 <= VW - 10 - (VW / 2 + 76) ? p0 : p0.replace(' PTS', ''), w = inkW(p, 6) + 8, x = VW - 8 - w;
     g.fillStyle = any ? 'rgba(70,96,50,0.9)' : 'rgba(40,36,54,0.7)'; g.fillRect(x, 2, w, 11);
     if (any) { g.globalAlpha = 0.18 + 0.16 * Math.sin(time * 5); g.fillStyle = '#8fd160'; g.fillRect(x, 2, w, 11); g.globalAlpha = 1; }
     text(p, x + w / 2, 5, any ? UI.gold : UI.title, 'center', 6); }
@@ -2223,14 +2225,15 @@ function drawTree() {
     g.fillStyle = on ? 'rgba(96,84,50,0.95)' : 'rgba(34,30,46,0.85)'; g.fillRect(x, 14, tw, 10);
     g.strokeStyle = on ? '#ffd36b' : '#4a4658'; g.lineWidth = 1; g.strokeRect(x + 0.5, 14.5, tw - 1, 9);
     if (myCap && myCap.branch === i) { g.fillStyle = '#ffd36b'; g.fillRect(x + 1, 15, 3, 3); g.fillRect(x + 1, 18, 1, 1); g.fillRect(x + 4, 15, 1, 1); }
-    const nm = fitText(TBR[h][i], tw - (sp ? 22 : 8), 6);
+    const nm = fitName(TBR[h][i], tw - (sp ? 22 : 8), 6);
     text(nm, x + tw / 2 - (sp ? 6 : 0), 16, on ? UI.title : '#b4b4c0', 'center', 6);
     if (sp) text(String(sp), x + tw - 4, 16, on ? UI.gold : '#b4b4c0', 'right', 6); }
   { const lk = 0.5 + 0.5 * Math.sin(time * 4);
     g.globalAlpha = 0.55 + 0.45 * lk; text('◀', 4, 16, UI.gold, 'left', 6); text('▶', VW - 4, 16, UI.gold, 'right', 6); g.globalAlpha = 1; }
   // WHAT THIS TREE IS, in a line, and RESET POINTS beside it (up off the top row)
-  text(fitText(TREE_WHO[h][b], VW - 104, 6), 10, 26, '#e0cf9c', 'left', 6);
-  { const lab = respec && treeResetT > 0 ? 'Z AGAIN: RESET' : 'RESET POINTS', w = textW(lab, 6) + 10, x = VW - 9 - w;
+  const resetLab = respec ? (treeResetT > 0 ? 'Z AGAIN' : 'Z: RESET') : 'RESET', resetW = inkW(resetLab, 6) + 10;   /* short, so the line about the tree has its room (what a reset does is in the panel below) */
+  text(fitName(TREE_WHO[h][b], VW - 9 - resetW - 14, 6), 10, 26, '#e0cf9c', 'left', 6);
+  { const lab = resetLab, w = resetW, x = VW - 9 - w;
     g.fillStyle = respec ? (treeResetT > 0 ? 'rgba(150,50,40,0.95)' : 'rgba(120,60,60,0.95)') : 'rgba(40,36,54,0.8)'; g.fillRect(x, 24, w, 9);
     if (respec) { g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(x + 0.5, 24.5, w - 1, 8); }
     text(lab, x + w / 2, 26, respec ? UI.title : '#b4b4c0', 'center', 6); }
@@ -2280,7 +2283,7 @@ function drawTree() {
     plates.push({ x, y: y + NS2 + (n.cap ? 3 : 0), nm: fitText(n.name, colW + 20, 6), col: sel ? '#fff6e0' : st === 'max' || n.cap ? UI.gold : lit ? UI.text : '#b4b4c0' }); }
   for (const pl of plates) { const nw = textW(pl.nm, 6) + 4; g.fillStyle = 'rgba(12,10,20,0.92)'; g.fillRect(Math.round(pl.x - nw / 2), pl.y, nw, 7); text(pl.nm, pl.x, pl.y + 1, pl.col, 'center', 6); }   /* THE NAMES LAST, each on its plate: a capstone's frame or the cursor's bracket must not lie across the name above it */
   // WHAT THE CHOSEN NODE DOES
-  const dy = top + 3 * rowH + 26;   /* under the capstone's own name plate */ g.fillStyle = 'rgba(20,17,32,0.95)'; g.fillRect(8, dy, VW - 16, VH - dy - 10);
+  const dy = top + 3 * rowH + 26;   /* under the capstone's own name plate */ g.fillStyle = 'rgba(20,17,32,0.95)'; g.fillRect(8, dy, VW - 16, VH - dy - 10); treePages = 1;
   if (respec) wrap('reset every point this hero has spent, in all three trees, and take them all back. it costs nothing. Z, and Z again to be sure.', VW - 28, 6).slice(0, 3).forEach((ln, i) => text(ln, 12, dy + 2 + i * 8, UI.title, 'left', 6));
   else if (cur) { const st = nodeState(cur), bp = branchPts(h, cur.branch), rk = tal(cur.id) - (cur.id === 'heavy' ? 1 : 0);
     const need = st === 'level' ? 'OPENS AT LEVEL ' + ROW_LV[cur.row] : st === 'parent' ? 'NEEDS ' + TREE.find(q => q.id === cur.parent && q.hero === cur.hero).name
@@ -2292,16 +2295,21 @@ function drawTree() {
     let yy = dy + 10;
     if (cur.cap) { const a = 'NEEDS ' + CAP_NEED + ' IN THIS TREE', c = 'ONE CAPSTONE ONLY', aw = textW(a, 6);   /* (the tiny font has no middle dot: it is drawn) */
       text(a, 12, yy, '#ffd36b', 'left', 6); g.fillStyle = '#ffd36b'; g.fillRect(12 + aw + 3, yy + 2, 2, 2); text(c, 12 + aw + 9, yy, '#ffd36b', 'left', 6); yy += 8; }
-    const cat = talCat(cur), head = (cur.cap ? 'CAPSTONE' : cat.word + (cur.active ? ' (F OR G KEY)' : '')) + ':', lines = wrap(head + ' ' + cur.desc, VW - 28, 6);
-    lines.slice(0, cur.cap ? 3 : 4).forEach((ln, k) => {
-      if (k === 0 && ln.startsWith(head)) { text(head, 12, yy, cur.cap ? '#ffd36b' : cat.col, 'left', 6); text(ln.slice(head.length), 12 + textW(head, 6), yy, UI.title, 'left', 6); }
-      else text(ln, 12, yy, UI.title, 'left', 6); yy += 8; }); }
+    /* THE WHOLE OF IT, A PAGE AT A TIME: twelve talents ran past the three lines this panel has and their last line was never seen */
+    const cat = talCat(cur), head = (cur.cap ? 'CAPSTONE' : cat.word + (cur.active ? ' (F OR G KEY)' : '')) + ':', full = head + ' ' + cur.desc, lines = wrap(full, VW - 28, 6);
+    const per = Math.max(1, Math.floor((VH - 10 - yy) / BODY_LH)), pages = Math.max(1, Math.ceil(lines.length / per)), pg = treePage % pages; treePages = pages;
+    if (pages > 1 && window.__textRec) textRec('paged', { s: full, pages });
+    lines.slice(pg * per, pg * per + per).forEach((ln, k) => {
+      if (pg === 0 && k === 0 && ln.startsWith(head)) { text(head, 12, yy, cur.cap ? '#ffd36b' : cat.col, 'left', 6); text(ln.slice(head.length), 12 + textW(head, 6), yy, UI.title, 'left', 6); }
+      else text(ln, 12, yy, UI.title, 'left', 6); yy += BODY_LH; }); }
   { const act = cur && cur.active, on = act && tal(cur.id);
     const line = respec ? 'Z RESET   DOWN BACK TO THE TREE   Q CLOSE' : on ? 'F SETS IT ON F   G SETS IT ON G   Q CLOSE' : act ? 'Z LEARN IT, THEN F OR G FOR THE KEY   Q CLOSE' : 'ARROWS MOVE   Z LEARN   UP TOP: RESET   Q CLOSE';
     if (treeMsgT > 0) { const m2 = fitText(treeMsg, VW - 20, 6), w2 = textW(m2, 6) + 10; g.fillStyle = 'rgba(40,36,20,0.97)'; g.fillRect(VW / 2 - w2 / 2, VH - 12, w2, 10); g.strokeStyle = UI.gold; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, VH - 11.5, w2 - 1, 9); text(m2, VW / 2, VH - 10, UI.gold, 'center', 6); }   /* what just happened goes where the help line was: over the tree it hid the bottom row's names */
-    else text(fitText(line, VW - 12, 6), VW / 2, VH - 9, on ? UI.sel : '#b4b4c0', 'center', 6); }
+    else if (treePages > 1) text(moreKey() + ' MORE ' + (treePage % treePages + 1) + '/' + treePages + '   ARROWS MOVE   Z LEARN   Q CLOSE', VW / 2, VH - 9, UI.gold, 'center', 6);
+    else text(fitName(line, VW - 12, 6), VW / 2, VH - 9, on ? UI.sel : '#b4b4c0', 'center', 6); }
 }
 function updateStore(dt) {
+  if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold back: training and skills are learned in the talent trees now'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
   storeMsgT = Math.max(0, storeMsgT - dt);
   const tabs = storeTabs(), tab = tabs[storeTab], items = storeItems(tab);
@@ -2328,6 +2336,11 @@ function updateStore(dt) {
   if (pausePress) { if (storeMode === 'equip') { storeMode = 'buy'; state = equipFrom === 'map' ? 'map' : 'menu'; SFX.ui(); } else if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
 }
 const previewCache = {};
+/* A LONG DESCRIPTION IS PAGED, NOT CUT: X (or V with Z and X swapped, so it is never the key that buys) turns the page */
+let storePage = 0, storePages = 1, storeKeyLast = '', treePage = 0, treePages = 1, treeKeyLast = '';
+const morePress = () => SET.swapZX ? dodgePress : atkPress, moreKey = () => SET.swapZX ? 'V' : 'X';
+/* A NAME TOO LONG FOR ITS ROOM loses its THE first, and is only cut if it still will not go */
+function fitName(s, maxW, size = 6) { if (inkW(s, size) <= maxW) return s; const t = String(s).replace(/^THE /, ''); if (inkW(t, size) <= maxW) return t; return fitText(t, maxW, size); }
 /* the portal on the practice card: a stone arch with the yard's light in it */
 const PORTAL_ICON = (() => { const [c, g2] = canvas(12, 14);
   g2.fillStyle = '#3a3448'; g2.fillRect(2, 0, 8, 13); g2.fillRect(0, 3, 12, 10);
@@ -2345,7 +2358,8 @@ function drawStore() {
   panel(x, y, w, h);
   text(storeMode === 'equip' ? 'EQUIP' : 'THE STORE', x + 8, y + 6, UI.title);
   { const gold = String(PROG.coins), silv = String(silverAvail());
-    const gx = x + w - 10 - gold.length * 8, sx0 = gx - 22 - silv.length * 8;
+    const gx = x + w - 10 - textW(gold, 8), sx0 = gx - 22 - textW(silv, 8);
+    if (storeKeyLast !== storeMode + ':' + storeTab + ':' + storeI) { storeKeyLast = storeMode + ':' + storeTab + ':' + storeI; storePage = 0; }
     g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], sx0 - 11, y + 5); text(silv, sx0, y + 6, UI.silver, 'left');
     g.drawImage(PROP.coin[Math.floor(time * 8) % 4], gx - 11, y + 5); text(gold, gx, y + 6, UI.gold, 'left'); }
   // two rows of tabs, four across
@@ -2379,7 +2393,7 @@ function drawStore() {
     // the badge goes on first and the name takes what is left of the row: they used to be laid out from
     // opposite ends with nothing measuring the gap, and on a long name they met in the middle
     const nameOf = () => (tab.talent && k.tier > 1 ? '  '.repeat(k.tier - 1) : '') + k.name;
-    const rowName = (badge) => text(fitText(nameOf(), listW - 26 - (badge ? textW(badge, 6) + 6 : 0), 6), listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
+    const rowName = (badge, extra = 0) => text(fitName(nameOf(), listW - 26 - (badge ? inkW(badge, 6) + 6 : 0) - extra, 6), listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
     if (tab.talent) { const bg = ptsLeft(hero()) > 0 ? ptsLeft(hero()) + ' TO SPEND' : 'Z OPEN';
       rowName(bg); text(bg, listX + listW - 4, yy, ptsLeft(hero()) > 0 ? UI.gold : UI.sel, 'right', 6); return; }
     if (k.consumable) { const bg = (PROG.tonics || 0) + '/' + k.max + '  ' + k.price + ' GOLD';
@@ -2392,9 +2406,12 @@ function drawStore() {
     // THE BADGE THE ROW ACTUALLY DRAWS, not an approximation of it. It was measured against `k.price` while
     // the thing drawn was "60 GOLD", so the name was cut to leave room for two characters and then ran into
     // seven - which is how THE ADVENTURE BEGINS ended up lying across its own price.
-    const bg = k.practice ? 'ENTER' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
-    rowName(bg);
-    text(bg, listX + listW - 4, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
+    /* A PRICE IS A NUMBER AND ITS COIN: the words GOLD and SILVER took seven letters off every name in the row */
+    const priced = !k.practice && !eq && !owned && !locked && k.price > 0, ic = priced ? (k.silver ? PROP.silver[0] : PROP.coin[0]) : null, icw = ic ? ic.width + 2 : 0;
+    const bg = k.practice ? 'ENTER' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : String(k.price);
+    rowName(bg, icw);
+    if (ic) g.drawImage(ic, listX + listW - 3 - ic.width, yy + 2 - (ic.height >> 1));
+    text(bg, listX + listW - 4 - icw, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? silverAvail() : PROG.coins) >= k.price ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
   });
   // ---- the panel: what it looks like on you, what it costs, and the whole of what it does ----
   g.fillStyle = 'rgba(20,16,30,0.6)'; g.fillRect(pvX, pvY, pvW, pvH);
@@ -2404,7 +2421,7 @@ function drawStore() {
       // the art sits in the top 46px, feet on that line - unless the words need the room: then the art shrinks and
       // the words move up (the WISP's line ran off the bottom of the box)
       const lk0 = lockedOf(k), body0 = lk0 ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
-      const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + 7 * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
+      const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + BODY_LH * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
       const squeeze = Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
         const set = tab.key === 'hero' ? (k.id === 'paladin' ? preview('hero:paladin:' + PROG.skin, () => bakePaladin(PAL_SETS[PROG.skin] || {})) : k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : k.id === 'pirate' ? preview('hero:pirate:' + PROG.skin, () => bakeFreebooter(FREE_SETS[PROG.skin] || {})) : k.id === 'reaper' ? preview('hero:reaper:' + PROG.skin, () => bakeReaper(REAP_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
@@ -2433,8 +2450,12 @@ function drawStore() {
         : k.practice ? 'Z TO STEP THROUGH' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
       text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
       const body = locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
-      for (const ln of wrap(body, pvW - 10, 6)) { if (ty > pvY + pvH - 10) break; text(ln, pvX + 5, ty, locked ? '#ff9a5c' : UI.dim, 'left', 6); ty += 7; }
-    } }
+      /* THE WHOLE OF WHAT IT DOES, A PAGE AT A TIME: a hero's description ran to thirty lines and the panel showed the first eight */
+      const bl = wrap(body, pvW - 10, 6), per = Math.max(1, Math.floor((pvY + pvH - 12 - ty) / BODY_LH)), pages = Math.max(1, Math.ceil(bl.length / per)), pg = storePage % pages; storePages = pages;
+      if (pages > 1 && window.__textRec) textRec('paged', { s: body, pages });
+      bl.slice(pg * per, pg * per + per).forEach((ln, i) => text(ln, pvX + 5, ty + i * BODY_LH, locked ? '#ff9a5c' : UI.text, 'left', 6));
+      if (pages > 1) text(moreKey() + ' MORE ' + (pg + 1) + '/' + pages, pvX + pvW - 5, pvY + pvH - 10, UI.sel, 'right', 6);
+    } else storePages = 1; }
   text(storeMsgT > 0 ? storeMsg : storeMode === 'equip' ? 'LEFT/RIGHT tabs   Z equip   ESC back' : 'LEFT/RIGHT tabs   Z buy or equip   ESC back', VW / 2, y + h - 10, storeMsgT > 0 ? UI.title : UI.dim, 'center', 6);
 }
 
@@ -2571,13 +2592,13 @@ function drawBestiary() {
   text('BESTIARY', VW / 2, 4, UI.title, 'center');
   text((bestTab === 0 ? '>' : ' ') + 'FOES', 8, 16, bestTab === 0 ? '#8fd160' : '#6a7a6a', 'left', 6); text((bestTab === 1 ? '>' : ' ') + 'BOSSES', 50, 16, bestTab === 1 ? '#8fd160' : '#6a7a6a', 'left', 6);
   const list = beastList(), lx = 8, ly = 30, ROWS = 11, off = Math.max(0, Math.min(list.length - ROWS, bestI - ROWS + 2));
-  const LW2 = 86; // the width the names have before the card starts: anything longer is drawn small
+  const LW2 = 96; // the width the names have before the card starts: anything longer is drawn small, and then loses its THE
   list.forEach((b, i) => { if (i < off || i >= off + ROWS) return; const r = PROG.beasts && PROG.beasts[b.t]; const sel = i === bestI; const yy = ly + (i - off) * 12;
-    if (sel) text('>', lx, yy, '#8fd160');
+    if (sel) text('>', lx - 2, yy, '#8fd160');
     const nm = r && r.seen ? (BEAST_SHORT[b.t] || b.name) : '? ? ?';
-    const sz = textW(nm, 8) > LW2 ? 6 : 8, fit = fitText(nm, LW2, sz);
-    text(fit, lx + 10, yy + (sz === 6 ? 1 : 0), sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#6a6a6a'), 'left', sz); });
-  if (off > 0) text('^', 64, ly - 8, UI.dim, 'center'); if (off + ROWS < list.length) text('v', 64, ly + ROWS * 12, UI.dim, 'center');
+    const sz = inkW(nm, 8) <= LW2 ? 8 : 6, fit = fitName(nm, LW2, sz);
+    text(fit, lx + 8, yy + (sz === 6 ? 1 : 0), sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#8a8a8a'), 'left', sz); });
+  if (off > 0) text('^', 104, ly - 7, UI.dim, 'center', 6); if (off + ROWS < list.length) text('v', 104, ly + ROWS * 12, UI.dim, 'center', 6);   /* clear of the FOES and BOSSES tabs */
   const b = list[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
   const px = 112, pw = VW - px - 6, py = 18, ph = VH - 32;
   g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(px, py, pw, ph); g.strokeStyle = '#8fd160'; g.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
@@ -2585,13 +2606,15 @@ function drawBestiary() {
   if (!seen) g.globalAlpha = 0.25;
   { const nF = set.R.length, fr = seen ? Math.floor(time * (nF > 6 ? 4 : 7)) % nF : 0; const pace = seen ? Math.sin(time * 1.1) * 8 : 0, face = !seen ? 1 : (Math.cos(time * 1.1) >= 0 ? 1 : -1); const bob = seen && (b.t === 'wasp' || b.t === 'drone' || b.t === 'harpy' || b.t === 'queen') ? Math.round(Math.sin(time * 5) * 2) : 0; drawSet(set, null, fr, cxp + pace - (c.width / 2 - set.ax) * sc, cyp + bob + (set.ay - c.height / 2) * sc, face, !seen, sc, sc); }
   g.globalAlpha = 1;
-  const fit = t => t.length * 8 > pw - 66 ? 6 : 8;
-  text(seen ? b.name : 'UNKNOWN', px + 62, py + 10, '#ffd36b', 'left', fit(seen ? b.name : 'UNKNOWN'));
-  text(seen ? b.sub : 'not yet met', px + 62, py + 22, '#9aa39a', 'left', fit(seen ? b.sub : 'not yet met'));
-  if (seen) { text('slain ' + (r.slain || 0), px + 62, py + 34, '#c9d1dc');
+  /* THE NAME drops a size before it is cut; THE LINE UNDER IT wraps onto a second line instead of running off the card */
+  const nmB = seen ? b.name : 'UNKNOWN', nz = fitSize(nmB, pw - 68, [8, 6]);
+  text(fitName(nmB, pw - 68, nz), px + 62, py + 8 + (nz < 8 ? 1 : 0), '#ffd36b', 'left', nz);
+  const subL = wrap(seen ? b.sub : 'not yet met', pw - 68, 6);
+  subL.forEach((ln, i) => text(ln, px + 62, py + 20 + i * BODY_LH, '#b8c0b8', 'left', 6));
+  if (seen) { text('slain ' + (r.slain || 0), px + 62, py + 21 + subL.length * BODY_LH, '#c9d1dc', 'left', 6);
     let lines = wrap(b.desc, pw - 12), sz = 8, lh = 9;
-    if (lines.length > 8) { lines = wrap(b.desc, pw - 12, 6); sz = 6; lh = 7; }
-    const top2 = py + 46, per = Math.max(4, Math.floor((ph - (top2 - py) - 6) / lh));
+    if (lines.length > 8) { lines = wrap(b.desc, pw - 12, 6); sz = 6; lh = BODY_LH; }
+    const top2 = py + 46, per = Math.max(4, Math.floor((ph - (top2 - py) - 13) / lh));   /* (the bottom row is the page tag's) */
     bestPages = Math.max(1, Math.ceil(lines.length / per));
     if (bestPage >= bestPages) bestPage = 0;
     lines.slice(bestPage * per, bestPage * per + per).forEach((l, i) => text(l, px + 6, top2 + i * lh, '#fff6e0', 'left', sz));
@@ -2980,7 +3003,77 @@ function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Ma
 const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width) return c; let b = m.get(c);
   if (!b) { b = document.createElement('canvas'); b.width = c.width * 2; b.height = c.height * 2; const x = b.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(c, 0, 0, b.width, b.height); m.set(c, b); }
   return b; }; })();
-function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */ nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
+function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */
+  if (typeof txt === 'number') { /* ONE NUMBER FOR ONE TARGET: a blow that lands while the last number off it is still rising adds to that number */
+    const m = nums.find(n => typeof n.txt === 'number' && n.col === col && n.life > 0.3 && Math.abs(n.x - x) < 14 && Math.abs(n.y - y) < 18);
+    if (m) { m.txt = Math.round((m.txt + txt) * 10) / 10; m.life = 0.75; m.vy = -38; return; } }
+  nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }
+// THE TELL KEEPS ITS SPACE. The yellow ! and the red !! went on the same list as the damage numbers, were drawn in the
+// order they were pushed, and in a crowd a number lay across the one mark that says what is about to hit you (the Waymeet
+// ambush: a tell covered in 700 frames of a minute and a half). Now every frame a number that has drifted onto a tell is
+// moved off it sideways, one mark on one spot is one mark, numbers stack instead of overprinting, no more than six float
+// at once, and the tells are drawn after everything else in play - the numbers, the HUD plates and the boss bar - kept on
+// the screen and clear of the plates (drawTells).
+const isTell = n => n.txt === '!' || n.txt === '!!';
+const numBox = n => { const s = String(n.txt); if (s === '!!') return [n.x - 8, n.y - 2, 16, 11]; const w = s.length * 8; return [n.x - w / 2, n.y, w, 8]; };   /* (the box tools/popclutter.mjs measures) */
+const boxHit = (a, b) => Math.min(a[0] + a[2], b[0] + b[2]) - Math.max(a[0], b[0]) > 0 && Math.min(a[1] + a[3], b[1] + b[3]) - Math.max(a[1], b[1]) > 0;
+function settleNums() {
+  const tells = nums.filter(n => isTell(n) && n.life > 0);
+  for (let a = 0; a < tells.length; a++) for (let b = a + 1; b < tells.length; b++) { const A = tells[a], B = tells[b]; if (A.life <= 0 || B.life <= 0 || !boxHit(numBox(A), numBox(B))) continue;
+    const N = A.life >= B.life ? A : B, O = N === A ? B : A;
+    if (A.txt === B.txt) { O.life = 0; continue; }
+    N.x = O.x + (N.x >= O.x ? 1 : -1) * ((numBox(O)[2] + numBox(N)[2]) / 2 + 2); }
+  const plain = nums.filter(n => !isTell(n) && n.life > 0).sort((a, b) => a.life - b.life);
+  if (plain.length > 6) plain.splice(0, plain.length - 6).forEach(n => { n.life = 0; });
+  for (let a = 0; a < plain.length; a++) for (let b = a + 1; b < plain.length; b++) { const O = plain[a], N = plain[b]; if (boxHit(numBox(O), numBox(N))) N.y = O.y - 9; }
+  const live = tells.filter(t => t.life > 0);
+  for (const m of plain) for (let pass = 0; pass < 2; pass++) for (const t of live) { const bt = numBox(t), bm = numBox(m); if (!boxHit(bt, bm)) continue;
+    m.x = m.x >= t.x ? bt[0] + bt[2] + bm[2] / 2 + 1 : bt[0] - bm[2] / 2 - 1; }
+}
+const tellQ = []; let hudRects = [], talkOverHud = false;
+/* THE MIDDLE OF THE TOP, clear of the HUD plate: a plate wide enough for BLOOD SURGE: C reaches past the middle, so the clock and the counts step right of it */
+const topMid = w => Math.max(VW / 2, (hudRects[0] ? hudRects[0][0] + hudRects[0][2] : 0) + 3 + w / 2);
+function drawTells() {
+  if (state !== 'play' && state !== 'talk') { tellQ.length = 0; return; }
+  const drawn = [];
+  const tbox = (x, y, s) => s === '!!' ? [x - 8, y - 2, 16, 11] : [x - 4, y - 1, 8, 10];
+  for (const t of tellQ) { const w = t.txt === '!!' ? 16 : 8;
+    let x = Math.round(Math.max(w / 2 + 2, Math.min(VW - w / 2 - 2, t.x))), y = Math.round(Math.max(4, Math.min(VH - 14, t.y)));
+    for (let pass = 0; pass < 3; pass++) for (const r of hudRects) if (boxHit(tbox(x, y, t.txt), r)) y = r[1] + r[3] + 3;   /* off every plate at the top: the HUD, the clock, the counts, the quest */
+    if (drawn.some(d => d.txt === t.txt && Math.abs(d.x - x) < w && boxHit(tbox(x, y, t.txt), tbox(d.x, d.y, d.txt)))) continue;   /* the ! off the wind-up and the ! the foe called are one mark */
+    const clash = drawn.find(d => boxHit(tbox(x, y, t.txt), tbox(d.x, d.y, d.txt))); if (clash) x = clash.x + (x >= clash.x ? 1 : -1) * ((w + clash.w) / 2 + 2);
+    g.globalAlpha = t.a;
+    if (t.txt === '!!') { g.fillStyle = '#2a0c12'; g.fillRect(x - 8, y - 2, 16, 11); g.fillStyle = t.col; g.fillRect(x - 8, y - 2, 16, 1); g.fillRect(x - 8, y + 8, 16, 1); g.fillRect(x - 8, y - 2, 1, 11); g.fillRect(x + 7, y - 2, 1, 11); }   /* THE BADGE: a red !! is a shape as well as a colour */
+    text(t.txt, x, y, t.col, 'center', TYPE.popup, 'outline'); drawn.push({ txt: t.txt, x, y, w }); }
+  g.globalAlpha = 1; tellQ.length = 0;
+}
+/* THE BOSS BAR'S NAME, on its plate: the plate is as wide as the name, and a name too long for the screen drops a size before it is ever cut */
+function bossPlate(nm, col) { const z = fitSize(nm, VW - 20, [8, 6]), w = Math.max(152, inkW(nm, z) + 16), x0 = Math.round(VW / 2 - w / 2);
+  g.fillStyle = 'rgba(10,8,20,0.62)'; g.beginPath(); g.roundRect(x0, VH - 28, w, 26, 4); g.fill(); if (window.__textRec) textRec('rect', { m: 'board', x0, y0: VH - 28, w, h: 26 });
+  text(nm, VW / 2, VH - 22 + (z < 8 ? 1 : 0), col, 'center', z); }
+const coinPlateW = lab => Math.max(52, textW(lab, 8) + 16);
+/* WHAT C DOES, ON THE PLATE: every hero's meter prompt, measured before the plate is laid so the plate is wide enough for it */
+function hudMeterLabel() {
+  const blink = Math.floor(time * 4) % 2;
+  if (hero() === 'knight') { if (P.standT > 0) return { s: 'THE STAND ' + P.standT.toFixed(1), col: '#ffd36b' }; return (P.resolve || 0) >= 100 ? { s: 'THE STAND: C', col: blink ? '#ffd36b' : '#fff6c8' } : null; }
+  if (isPyro()) return P.full ? { s: 'PYRE: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
+  if (isPaladin()) return (P.light || 0) >= 100 ? { s: 'JUDGEMENT: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
+  if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
+  if (isReaper()) { if (state !== 'play' && state !== 'talk') return null;   /* the plates own the screen when a menu is up */
+    // WHAT C DOES RIGHT NOW. One key does three things - tap to raise, hold for the toll, tap at a full
+    // harvest for the last of it - and nothing on the screen ever said which. It says now, and it changes
+    // as the bar fills and as a body comes within reach of him.
+    const full = (P.harvest || 0) >= 100, near = bodies.some(q => q.life > 0 && Math.hypot(q.x - P.x, q.y - P.y) < 96), raise = near && (P.harvest || 0) >= 20;
+    return { s: P.tolling ? 'DRAIN' : full ? 'BLOOD SURGE: C' : raise ? 'C  RAISE IT' : 'HOLD C  DRAIN', col: P.tolling ? '#dfffa0' : full ? (blink ? '#c0283a' : '#ff9a9a') : raise ? '#8fd160' : '#9aa890' }; }
+  return null;
+}
+let hintHoldT = 0;
+/* A HINT WAITS for the boss's name card, the level's banner, the AMBUSH card, a sea about to break over the deck and any tell on
+   the screen, and it does not spend its time while it waits. A tell holds it for a breath after, so it does not flicker between two. */
+function hintWaits() {
+  if (tellQ.length || nums.some(n => isTell(n) && n.life > 0)) hintHoldT = 0.4; else hintHoldT = Math.max(0, hintHoldT - 1 / 60);
+  return introCardUp() || bannerT > 0 || ambushMsgT > 0 || hintHoldT > 0 || !!(L && L.wash && wash && wash.state === 'tell');
+}
 /* THE PARRY GOES OFF: a star of light off the edge of the shield, a second ring twice the size, and a breath of white */
 function parryBurst() { const x = P.x + P.face * 10, y = P.y - 9;
   streaks(x, y, 12, ['#ffffff', '#fff6e0', '#ffd36b'], 240); ringAt(x, y, 34, '#ffd36b', 0.42);
@@ -3361,7 +3454,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
      blow opens - a parry, or a dodge taken through it - lets anything at all reach him. */
   if (e.t === 'closedhelm' && !(e.open > 0)) { SFX.clank(); SFX.aegis(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 22, e.y - 30, Math.sign(fromX - e.x) || 1, 6); e.wardHit = 0.35; hitstop(0.03);
     if (!(e.wardSaid > 0)) { e.wardSaid = 0.9; number(e.x, e.y - 72, 'WARDED', '#fff3b0'); ringAt(e.x, e.y - 30, 30, '#fff3b0', 0.3);
-      PROG.palTold = (PROG.palTold || 0) + 1; if (PROG.palTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING GETS THROUGH HIS WARD. GUARD AS HIS SWORD FLASHES, OR ROLL THROUGH IT, AND THE WARD BREAKS.'; } }
+      PROG.palTold = (PROG.palTold || 0) + 1; if (PROG.palTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING GETS THROUGH HIS WARD. GUARD OR ROLL AS HIS SWORD FLASHES AND THE WARD BREAKS.'; } }
     return; }   /* THE WARD: not a reduction, a NO. Only his own sword, answered on the beat, takes it down */
   if (e.hill && e.mode === 'pinned') { dmg = Math.round(dmg * 2); }   /* under the stone, every blow lands twice */
   if (e.t === 'prince') { const pd = princeHurt(e, dmg); if (pd === null) return; dmg = pd; }   /* THE TOMB'S MULTIPLIERS: buried, reeling, bareheaded, in the light - or shrouded, or under the floor */
@@ -3414,7 +3507,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
     if (!(e.armourSaid > 0)) { e.armourSaid = 1.2; ringAt(e.x, e.y - 30, 26, '#c9a0ff', 0.3);
       number(e.x, e.y - 52, 'WARDED', '#c9a0ff');
       PROG.gqTold = (PROG.gqTold || 0) + 1;
-      if (PROG.gqTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING CUTS HER WHILE THE COURT HOLDS HER PLATE. BREAK A SUPPORT AND BRING HER OWN GALLERY DOWN ON HER.'; } }
+      if (PROG.gqTold <= 3) { hintT = 4.5; hintMsg = 'HER COURT HOLDS HER PLATE: NOTHING CUTS HER. BREAK A SUPPORT TO DROP HER GALLERY ON HER.'; } }
     return; } } // her court's plate turns every blade: only the gallery coming down on her gets through
   if (e.t === 'roc') { if (rocOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.5)); if (Math.random() < 0.5) { sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 3); } } } // in the air she is quick and hard to hurt; down, she is not
   if (e.t === 'kite' && e.mode !== 'fall') { e.mode = 'fall'; e.vy = -40; e.vx = (Math.sign(e.x - fromX) || 1) * 60; number(e.x, e.y - 40, 'THE STRING', '#ffd36b'); SFX.crack(); }
@@ -4039,7 +4132,7 @@ function fireHeavy() { noteVerb('heavy');
 }
 // A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
 function guardTurned() {
-  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING KEY INSTEAD: A HEAVY BLOW GOES THROUGH A GUARD.'; return; }   /* its own call: the line under it used to overwrite it at once */
+  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING KEY: A HEAVY BLOW GOES THROUGH A GUARD.'; return; }   /* its own call: the line under it used to overwrite it at once */
   if ((PROG.guardHeavy || 0) >= 4) return;
   PROG.guardHeavy = (PROG.guardHeavy || 0) + 1; hintT = 4;
   hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + (SET.swapZX ? 'Z' : 'X') + ' FOR A HEAVY ONE AND IT GOES THROUGH.';
@@ -4876,7 +4969,7 @@ function smashBarricade(pr, e) {
   const left = props.filter(p => p.t === 'barricade' && p.alive).length;
   number(pr.x, pr.y - 30, left ? 'HE GOES THROUGH IT  ' + left + ' LEFT' : 'THE BRIDGE IS BARE', left ? '#ff9a5c' : '#ff6b6b');
   if (!(PROG.barTold > 1)) { PROG.barTold = (PROG.barTold || 0) + 1; hintT = 4;
-    hintMsg = 'THE BARRICADES ARE THE ONLY THING ON THE BRIDGE THAT WILL STOP A CHARGE WHERE YOU WANT IT. THEY STOP HIS JAVELINS AND BREAK HIS WIND AS WELL - AND EACH ONE HE RUNS THROUGH IS GONE.'; }
+    hintMsg = 'A BARRICADE STOPS HIS CHARGE, HIS JAVELINS AND HIS WIND - BUT ONE HE RUNS THROUGH IS GONE.'; }
 }
 const barricadeAt = (wx, wy) => { const tx = Math.floor(wx / TS), ty = Math.floor(wy / TS);
   return props.find(p => p.t === 'barricade' && p.alive && tx >= p.tx && tx < p.tx + p.w && ty > p.ty - p.h && ty <= p.ty); };
@@ -5178,7 +5271,7 @@ function drawStrike(cx, cy) {
       g.globalAlpha = 0.18 + 0.3 * k; g.fillStyle = '#9ab8ff'; g.fillRect(x - 1 - Math.round(k * 2), y0, 3 + Math.round(k * 4), Math.max(0, y1 - y0)); g.globalAlpha = 1;
       g.fillStyle = Math.floor(time * 14) % 2 ? '#eef4ff' : '#9ab8ff';
       for (let r = 0; r < 3; r++) { const rr = 5 + r * 4 + Math.round(k * 6); g.fillRect(x - rr, y1 - 1, 2, 2); g.fillRect(x + rr - 2, y1 - 1, 2, 2); }
-      if (k > 0.55) text('!', x, y1 - 26 - Math.round(k * 6), '#dfe8ff', 'center', 8);
+      if (k > 0.55) tellQ.push({ txt: '!', x, y: y1 - 26 - Math.round(k * 6), col: '#dfe8ff', a: 1 });   /* on the screen, over everything: drawTells() */
     }
   }
   for (const q of surge) { const x = Math.round(q.x - cx), y = Math.round(q.y - cy), a = Math.min(1, q.t / 0.9);
@@ -5222,8 +5315,10 @@ function drawWash(cx, cy) {
     // and the warning, counted down, across the top of the screen
     const n = Math.max(1, Math.ceil(Math.max(0, wash.t)));
     if (Math.floor(time * 8) % 2 === 0 || k > 0.72) {
-      text((wash.dir > 0 ? '>>> ' : '') + 'SEA TO ' + (wash.dir > 0 ? 'PORT' : 'STARBOARD') + (wash.dir > 0 ? '' : ' <<<'), VW / 2, 14, k > 0.72 ? '#ff6b6b' : '#dff0f5', 'center', 7);
-      text('HOLD ON  ' + '|'.repeat(n), VW / 2, 24, '#a8cfc6', 'center', 6);
+      const l1 = (wash.dir > 0 ? '>>> ' : '') + 'SEA TO ' + (wash.dir > 0 ? 'PORT' : 'STARBOARD') + (wash.dir > 0 ? '' : ' <<<'), l2 = 'HOLD ON  ' + '|'.repeat(n), ww2 = Math.max(inkW(l1, 6), inkW(l2, 6)) + 14, wy = seaMsg && seaMsg.t > 0 ? 70 : 50;
+      if (!introCardUp()) {   /* on a plate of its own, under the HUD plates and off the clock, below the sea's own message when there is one; the boss's name card goes first */
+        g.fillStyle = 'rgba(10,12,20,0.72)'; g.fillRect(Math.round(VW / 2 - ww2 / 2), wy, ww2, 21);
+        text(l1, VW / 2, wy + 3, k > 0.72 ? '#ff6b6b' : '#dff0f5', 'center', 6); text(l2, VW / 2, wy + 12, '#a8cfc6', 'center', 6); }
     }
     // an arrow at your feet to the nearest line, because the answer is always a line
     if (!P.dead) { let best = null, bd = 1e9;
@@ -5232,7 +5327,7 @@ function drawWash(cx, cy) {
       if (best !== null && bd > 12) { const dir = Math.sign(best - P.x), ax = Math.round(P.x - cx), ay = Math.round(P.y - cy) - 30;
         g.fillStyle = Math.floor(time * 10) % 2 ? '#8fd160' : '#dff0f5';
         for (let i = 0; i < 3; i++) g.fillRect(ax + dir * (6 + i * 5), ay + (i % 2), 3, 3);
-        text('LINE', ax + dir * 26, ay - 4, '#8fd160', dir > 0 ? 'left' : 'right', 6); }
+        const lw2 = inkW('LINE', 6), lx2 = Math.max(3, Math.min(VW - 3 - lw2, dir > 0 ? ax + 26 : ax - 26 - lw2)); const wy2 = seaMsg && seaMsg.t > 0 ? 70 : 50, ly0 = Math.max(3, ay - 4), ly2 = ly0 + 6 > wy2 && ly0 < wy2 + 21 ? wy2 + 23 : ly0; text('LINE', lx2, ly2, '#8fd160', 'left', 6, 'outline'); }   /* (never on the SEA TO plate) */
     }
   }
   if (wash.state !== 'run') return;
@@ -5761,7 +5856,7 @@ function frogDrain(e) {
   const pl = frogPool(L.arena); if (pl) { pl.draining = true; pl.frogDry = true; pl.rise = 0; }
   SFX.croak(); shakeCam(8); zoomKick(1.14, 0.5); killFlash = 0.08;
   number(e.x, e.y - e.h - 26, 'HE PULLS THE COURT OUT', '#bfe6f5');
-  hintT = 4.5; hintMsg = 'HE HAS LET HIS OWN POND OUT. THE BED OF IT IS A DROP NOW, NOT A WADE - AND EVERY TIME HE GOES FOR THE WATER HE IS STUCK IN THE MUD OF IT.';
+  hintT = 4.5; hintMsg = 'HIS POND IS DRAINED AND ITS BED IS A DROP NOW. WHEN HE GOES FOR WATER HE STICKS IN THE MUD.';
 }
 // and the bed under it: a row out of the middle of the court, so the hall is two banks and a pit
 function frogPit(A) {
@@ -6632,7 +6727,7 @@ function updateCauseTide(dt) {
   for (const p of L.pools) if (p.causeTide) { poolLevel(p, p.loY + (p.hiY - p.loY) * CT.k); p.flow = CT.ph === 'rise' ? -24 : CT.ph === 'fall' ? 24 : 0; }   /* it runs in toward the land and out toward the sea */
 }
 function causeTurn(ph) {
-  if (ph === 'warn') { if (!(PROG.tideTold > 1) && !bossActive && !(L.arena && P.x > L.arena.x0 - 200)) { PROG.tideTold = (PROG.tideTold || 0) + 1; hintT = 4.5; hintMsg = 'THE BELLS ARE TOLLING: THE TIDE IS COMING IN. GET UP ON THE STONE, OR BE READY TO SWIM. STRIKE A TIDE BELL TO TURN IT YOURSELF.'; } }
+  if (ph === 'warn') { if (!(PROG.tideTold > 1) && !bossActive && !(L.arena && P.x > L.arena.x0 - 200)) { PROG.tideTold = (PROG.tideTold || 0) + 1; hintT = 4.5; hintMsg = 'THE BELLS TOLL: THE TIDE IS COMING IN. GET UP ON THE STONE OR SWIM. A TIDE BELL TURNS IT.'; } }
   else if (ph === 'rise') { SFX.waveCrash(); shakeCam(3); }
   else if (ph === 'ebb') { SFX.seaBell(); for (const pr of props) if (pr.t === 'tidebell') pr.swing = 0.6; }
   else if (ph === 'fall') SFX.wave();
@@ -8245,7 +8340,7 @@ function updateHoldfast(e, dt) {
         SFX.squelch ? SFX.squelch() : SFX.hiss(); number(e.x, e.y - 20, 'IT HAS YOU', '#ff6b6b'); shakeCam(3);
         damagePlayer(e.x, DMG.holdfastGrip, { unblockable: true });
         if (!(PROG.holdTold > 1)) { PROG.holdTold = (PROG.holdTold || 0) + 1; hintT = 4.5;
-          hintMsg = 'IT WILL NOT LET YOU RISE WHILE IT HAS YOU AND NO STONE CHANGES THAT. CUT IT OFF YOU.'; }
+          hintMsg = 'WHILE IT HOLDS YOU, YOU CANNOT RISE, STONE OR NO STONE. CUT IT OFF YOU.'; }
       }
       break;
     case 'hold': {
@@ -8934,7 +9029,7 @@ function updateGolem(e, dt) {
       burst(cr.x, cr.y - 8, 14, ['#3a3448', '#5a5468', '#eefaff'], 70, 0.6);
       number(cr.x, cr.y - 24, 'DRUNK', '#ff7ab8'); }
     if (took) { SFX.crack(); if (!(PROG.facetTold > 1)) { PROG.facetTold = (PROG.facetTold || 0) + 1; hintT = 4.5;
-      hintMsg = 'IT DRANK THE SOURCE. THAT COLOUR IS GONE UNTIL THE GLASS RELIGHTS: GET THE LIGHT OFF IT ONCE YOU HAVE HAD YOUR WINDOW.'; } } }
+      hintMsg = 'IT DRANK THE SOURCE: THAT COLOUR IS GONE TILL THE GLASS RELIGHTS. HIT, THEN STRIP IT.'; } } }
   if (facet > e.facets) { e.facets = facet; e.mode = 'stagger'; e.modeT = 1.6; e.stagger = 1.6; e.vx = 0; burst(e.x, e.y - 20, 20, COLS.golem, 90, 0.8); shakeCam(6); zoomKick(1.1, 0.3); SFX.golemShatter(); number(e.x, e.y - e.h - 14, 'A FACET SHATTERS', '#ff7ab8'); if (facet >= 2) e.phase = 2; }
   let want = 0;
   switch (e.mode) {
@@ -10673,7 +10768,7 @@ function updateCastleProps(dt, hb) {
           // ...and it comes up out of the other one, wherever that is. Every ear in the village turns.
           setTimeout(() => { try { noiseAt(pr.pair, pr.y, 150, null); number(pr.pair, pr.y - 30, 'AND OUT OVER THERE', '#bfe6f5'); SFX.splash(); } catch (err) { } }, 520);
           if (!(PROG.wellTold > 1)) { PROG.wellTold = (PROG.wellTold || 0) + 1; hintT = 4;
-            hintMsg = 'THE TWO WELLS RUN INTO ONE ANOTHER. WHATEVER YOU PUT DOWN THIS ONE IS HEARD COMING OUT OF THAT ONE, AND EVERYTHING THAT WAKES GOES THERE.'; } } }
+            hintMsg = 'THE WELLS JOIN: A NOISE DOWN ONE COMES OUT OF THE OTHER, AND WHAT WAKES GOES THERE.'; } } }
       continue; }
     if (pr.t === 'resonance') {
       pr.cool = Math.max(0, (pr.cool || 0) - dt); pr.ring = Math.max(0, (pr.ring || 0) - dt);
@@ -10682,7 +10777,7 @@ function updateCastleProps(dt, hb) {
          never take a pane out from under you. Struck with her not over it, it only hums, and is quiet again sooner. */
       if (pr.roc) { const b = boss && boss.t === 'roc' && boss.alive && bossActive ? boss : null, over = !!(b && rocOverFork(b, pr)); pr.over = over;
         if (pr.ring > 0 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y - 18 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#dff2ff' : '#bfe6f5', size: 1, grav: -20 });
-        if (over && pr.cool <= 0 && !pr.told && !(PROG.rocForkTold > 1)) { pr.told = true; PROG.rocForkTold = (PROG.rocForkTold || 0) + 1; hintT = 4; hintMsg = 'HER FEATHERS ARE GLASS AT THE ENDS, AND THE FORK SHAKES GLASS. STRIKE IT WHILE SHE IS OVER IT.'; }
+        if (over && pr.cool <= 0 && !pr.told && !(PROG.rocForkTold > 1)) { pr.told = true; PROG.rocForkTold = (PROG.rocForkTold || 0) + 1; hintT = 4; hintMsg = 'HER FEATHERS END IN GLASS AND THE FORK SHAKES GLASS: STRIKE IT WHILE SHE IS OVER IT.'; }
         const hit = hb && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 26, b: pr.y }) && !P.hitSet.has(pr);
         if (hit) { P.hitSet.add(pr);
           if (pr.cool > 0) { SFX.ui(); number(pr.x, pr.y - 30, 'STILL RINGING', '#9aa39a'); }
@@ -10712,7 +10807,7 @@ function updateCastleProps(dt, hb) {
           resolveTiles();
           number(pr.x, pr.y - 34, n ? 'IT ALL LETS GO' : 'NOTHING TO SHAKE', n ? '#bfe6f5' : '#9aa39a');
           if (!(PROG.forkTold > 2)) { PROG.forkTold = (PROG.forkTold || 0) + 1; hintT = 4;
-            hintMsg = 'THE FORK SHAKES EVERY CRYSTAL WITHIN ITS RING AT ONCE - THE ONE YOU ARE STANDING ON AS WELL. IT WILL NOT SOUND AGAIN UNTIL IT HAS STOPPED RINGING.'; }
+            hintMsg = 'THE FORK SHAKES EVERY CRYSTAL IN ITS RING, EVEN YOURS. IT WAITS UNTIL IT IS STILL.'; }
         } }
       continue;
     }
@@ -10720,7 +10815,7 @@ function updateCastleProps(dt, hb) {
       if (!pr.open && hb && overlap(hb, { l: pr.span[0] * TS - 4, r: (pr.span[1] + 1) * TS + 4, t: pr.span[2] * TS, b: (pr.span[3] + 1) * TS }) && !P.hitSet.has(pr)) {
         P.hitSet.add(pr); pr.shake = 0.22; pr.hit = 0.7; SFX.clank(); sparks(P.x + P.face * 10, P.y - 10, P.face, 5);
         if (!(pr.said > 0)) { pr.said = 4; number(pr.x, pr.y - 26, 'IRON', '#9aa39a');
-          hintT = 4; hintMsg = 'NO BLADE TOUCHES HER BULKHEADS. PUT A ROUND SHOT THROUGH ONE: STAND BEYOND A DECK GUN SO IT FIRES THE WAY YOU WANT, AND STRIKE THE BREECH.'; } }
+          hintT = 4; hintMsg = 'NO BLADE TOUCHES HER BULKHEADS. STAND PAST A DECK GUN AIMED AT ONE AND STRIKE ITS BREECH.'; } }
       pr.said = Math.max(0, (pr.said || 0) - dt); }
     if (pr.t === 'cannon' && pr.smoke > 0) pr.smoke -= dt;
     if (pr.t === 'plank' && !pr.down) { // THEIR BOARDING PLANK, stowed against the rail
@@ -10882,7 +10977,7 @@ function dropTimber(pr) {
   shakeCam(10); zoomKick(1.1, 0.4); hitstop(0.05); rumble(220, 0.8);
   number(mid * TS, row * TS - 10, 'IT COMES DOWN', '#ff9a5c');
   if (!(PROG.timberTold > 1)) { PROG.timberTold = (PROG.timberTold || 0) + 1; hintT = 5;
-    hintMsg = 'NOTHING DOWN HERE IS HOLDING ITSELF UP. A SET OF TIMBER HOLDS THAT SPAN OF ROOF: CUT IT AND THE ROOF KILLS WHATEVER IS UNDER IT, OPENS A HOLE WHERE IT WAS, AND LEAVES A MOUND YOU CAN CLIMB - OR CANNOT GET PAST.'; }
+    hintMsg = 'CUT A TIMBER SET AND THE ROOF FALLS: IT KILLS WHAT IS UNDER, OPENS A HOLE, LEAVES A MOUND.'; }
 }
 // THE DEAD SET IT AGAIN. A tomb set that came down is put back while the prince still stands - roof, rubble and post -
 // so the fight is never out of openings and the rubble never piles into a wall. It never waits for you: what comes back is
@@ -10946,7 +11041,7 @@ function takeBallast(pr) {
   SFX.clank(); SFX.thud(); number(P.x, P.y - 30, BALLAST_NAME[pr.kind] || 'BALLAST', '#bfe6f5');
   burst(pr.x, pr.y, 6, ['#8a919c', '#bfe6f5'], 40, 0.4);
   if (!(PROG.ballastTold > 1)) { PROG.ballastTold = (PROG.ballastTold || 0) + 1; hintT = 5;
-    hintMsg = 'YOU ARE TOO LIGHT TO BE DOWN HERE. CARRYING IT YOU SINK AND YOU WALK THE BOTTOM; PRESS JUMP TO LET IT GO AND YOU COME UP. THERE ARE ONLY SO MANY OF THEM IN A ROOM.'; }
+    hintMsg = 'CARRY A STONE TO SINK AND WALK THE BOTTOM. JUMP DROPS IT AND YOU RISE. EACH ROOM HAS FEW.'; }
 }
 function dropBallast(kick) {
   const pr = P.ballast; if (!pr) return;
@@ -12066,7 +12161,7 @@ function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null;
   if (rip) { P.riposteT = 0; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140);
     if ((PROG.thirdSeen || 0) < 2) { PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;
-      hintMsg = 'THREE SWINGS IN A RUN AND THE THIRD IS A HEAVY CUT: HALF AS HARD AGAIN, AND IT SHOVES. STOP SWINGING AND THE RUN STARTS OVER.'; } } }
+      hintMsg = 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
 function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gainResolve(8); P.lastStruck = e;
   if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
@@ -12751,7 +12846,7 @@ function updateParticles(dt) {
   for (const p of parts) { p.life -= dt; p.vy += p.grav * dt; if (p.drag) { const k = 1 - p.drag * dt; p.vx *= k; p.vy *= k; } if (p.fire) p.vx += (Math.random() - 0.5) * 90 * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
   parts = parts.filter(p => p.life > 0);
   for (const n of nums) { n.life -= dt; n.y += n.vy * dt; n.vy *= Math.pow(0.05, dt); }
-  nums = nums.filter(n => n.life > 0);
+  settleNums(); nums = nums.filter(n => n.life > 0);
   for (const gh of ghosts) gh.life -= dt; ghosts = ghosts.filter(gh => gh.life > 0);
   for (const t of trail) t.life -= dt; trail = trail.filter(t => t.life > 0);
   killFlash = Math.max(0, killFlash - dt);
@@ -12911,9 +13006,10 @@ function update(dt) {
 // ---------- render ----------
 // THE LOOK: three faces to read in, a colour for the ink, and a colour for the frames and the
 // highlights. All of it is one setting each, and every menu, plate and talk box follows.
+/* (TERMINAL is retired: VT323 has one-pixel strokes on a sixteen-pixel em and nothing at this scale draws it without a
+   smear. A save that chose it reads in PIXEL, which is what fontNow() gives any id it does not know.) */
 const FONTS = [{ id: 'press', name: 'PIXEL', fam: '"Press Start 2P", monospace', sc: 1 },
-  { id: 'silk', name: 'SILKSCREEN', fam: '"Silkscreen", "Press Start 2P", monospace', sc: 1.15 },
-  { id: 'vt', name: 'TERMINAL', fam: '"VT323", monospace', sc: 1.7 }];
+  { id: 'silk', name: 'SILKSCREEN', fam: '"Silkscreen", "Press Start 2P", monospace', sc: 1 }];
 const INKS = [{ id: 'parchment', name: 'PARCHMENT', c: '#fff6e0' }, { id: 'white', name: 'WHITE', c: '#ffffff' }, { id: 'amber', name: 'AMBER', c: '#ffd36b' },
   { id: 'green', name: 'GREEN', c: '#b8f0a0' }, { id: 'cyan', name: 'CYAN', c: '#bfe6f5' }, { id: 'rose', name: 'ROSE', c: '#ffc0d0' }];
 // each theme: the body, the heading, the quiet text, the frame, the highlight, gold, silver, and the plate behind it all
@@ -12943,47 +13039,102 @@ function spk(x, y, col) {   // a speaker with a bar through it: eight pixels tha
   g.fillStyle = '#e04848'; for (let i = 0; i < 7; i++) g.fillRect(x - 1 + i, y + i, 1, 1);
 }
 
-// THE SMALLEST TEXT IN THE GAME IS THE MOST OF IT: every HUD label, every count, every sign. Press Start
-// 2P is drawn on an eight-pixel cell, and asked for six the browser resamples it - B, D, 8 and 0 all come
-// out the same grey smudge. ART's tiny caps are 5x5 on a SIX pixel advance, which is exactly what Press
-// Start 2P measures at 6px, so nothing moves; they are baked white and tinted per ink colour and cached.
-// A string with a lower-case letter in it is being murmured, not shouted, and keeps the soft font.
-let TINYF = null; const TINY_TINT = new Map();
-const tinyOK = (s2, size) => size <= 6 && typeof s2 === 'string' && !/[a-z]/.test(s2);
-function tinyTint(col) {
-  let c = TINY_TINT.get(col); if (c) return c;
-  if (!TINYF) TINYF = ART.bakeTinyFont();
-  c = document.createElement('canvas'); c.width = TINYF.width; c.height = TINYF.height;
-  const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
-  x.drawImage(TINYF, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, c.width, c.height);
-  TINY_TINT.set(col, c); return c;
+// ONE TYPE SYSTEM, AND ALL OF IT ON THE PIXEL GRID. The canvas draws every font it is handed anti-aliased: measured,
+// eight pixels of Press Start 2P came out 85% half-lit pixels and six of it 91%, and lower case at six pixels was
+// a grey smear. So no string reaches the screen through fillText any more. There are two faces, both baked white
+// once and tinted per colour: THE SMALL HAND (ART.TINY, 5px caps with lower case and descenders, a 6px advance)
+// and THE EIGHT (Press Start 2P or Silkscreen, rendered at 8px once per character, snapped to whole pixels by a
+// threshold at the offset that lands the face on the grid). Bigger text is one of them at a whole multiple.
+// Every string is drawn at a whole-pixel position with a dark shadow (on a plate) or a full outline (over the world).
+/* THE TYPE TABLE: a size for each job. Anything not in it snaps to the nearest face:
+     up to 7  the small hand x1     8 to 11  the eight x1     12 to 15  the small hand x2     16 to 23  the eight x2     24 up  the eight x3 */
+const TYPE = { title: 12, head: 8, body: 6, label: 6, hint: 6, popup: 8, big: 16, logo: 24 };
+const BODY_LH = 8;   /* a line of the small hand: 7 rows of glyph and one of air */
+let TINYF = null;
+const tinyOK = (s2, size) => size <= 7;   /* the small hand takes every string at this size now, in either case */
+const faceOf = size => size <= 7 ? { f: 'small', k: 1 } : size < 12 ? { f: 'eight', k: 1 } : size < 16 ? { f: 'small', k: 2 } : size < 24 ? { f: 'eight', k: 2 } : { f: 'eight', k: 3 };
+const EIGHT = new Map();   /* font id -> { ready, dx, dy, glyphs: Map(ch -> { c, adv }) } */
+function eightFace() {
+  const fnt = fontNow(); let F = EIGHT.get(fnt.id); if (F) return F;
+  const fam = fnt.fam.split(',')[0].trim(), ready = !document.fonts || document.fonts.check('8px ' + fam);
+  if (!ready) return { ready: false };
+  F = { ready: true, glyphs: new Map(), px: 5, py: 5 };
+  /* THE GRID: both faces are drawn on eight design pixels to the em, so at 80px every design pixel is ten real ones. The phase
+     of the 10x10 sampling grid is the one whose centres land clear of every edge (fewest samples half in, half out). */
+  { const Z = 10, c = document.createElement('canvas'); c.width = 12 * 8 * Z; c.height = 12 * Z; const x = c.getContext('2d');
+    x.font = 8 * Z + 'px ' + fnt.fam; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText('HBgQ08aw', Z, Z);
+    const d = x.getImageData(0, 0, c.width, c.height).data; let best = 1e9;
+    for (let py = 0; py < Z; py++) for (let px = 0; px < Z; px++) { let bad = 0;
+      for (let j = 0; j < 11; j++) for (let i = 0; i < 12 * 8; i++) { const a = d[((j * Z + py) * c.width + i * Z + px) * 4 + 3]; if (a > 40 && a < 215) bad++; }
+      if (bad < best) { best = bad; F.px = px; F.py = py; } } }
+  EIGHT.set(fnt.id, F); return F;
 }
-function drawTiny(str, x, y, col) {
-  const f = tinyTint(col), A = ART.TINY;
-  for (let i = 0; i < str.length; i++) { const k = A.order.indexOf(str[i]); if (k < 0) continue;
-    g.drawImage(f, k * A.adv, 0, A.w, A.h, x + i * A.adv, y, A.w, A.h); }
+function eightGlyph(F, ch) {
+  let q = F.glyphs.get(ch); if (q) return q;
+  const fnt = fontNow(), Z = 10, big = document.createElement('canvas'); big.width = 12 * Z; big.height = 12 * Z; const bx = big.getContext('2d');
+  bx.font = 8 * Z + 'px ' + fnt.fam; bx.textBaseline = 'top'; bx.fillStyle = '#fff'; bx.fillText(ch, Z, Z);
+  const d = bx.getImageData(0, 0, big.width, big.height).data, c = document.createElement('canvas'); c.width = 10; c.height = 10; const x = c.getContext('2d'); x.fillStyle = '#fff';
+  for (let j = 0; j < 10; j++) for (let i = 0; i < 10; i++) if (d[((j * Z + F.py) * big.width + i * Z + F.px) * 4 + 3] >= 128) x.fillRect(i, j, 1, 1);
+  q = { c, adv: Math.max(1, Math.round(bx.measureText(ch).width / Z)) }; F.glyphs.set(ch, q); return q;
+}
+/* THE ADVANCE of one character in a face, at x1 */
+function advOf(face, ch) {
+  if (face.f === 'small') return ART.TINY.adv;
+  const F = eightFace(); return F.ready ? eightGlyph(F, ch).adv : 8;
+}
+/* A STRING, WHITE, AT x1: [canvas, ink width, ink height] */
+function whiteLine(s, face) {
+  const A = ART.TINY;
+  if (face.f === 'small') { if (!TINYF) TINYF = ART.bakeTinyFont();
+    const c = document.createElement('canvas'); c.width = Math.max(1, s.length * A.adv); c.height = A.h; const x = c.getContext('2d');
+    for (let i = 0; i < s.length; i++) { let k = A.order.indexOf(s[i]); if (k < 0) k = A.order.indexOf(s[i].toUpperCase()); if (k < 0) continue; x.drawImage(TINYF, k * A.adv, 0, A.w, A.h, i * A.adv, 0, A.w, A.h); }
+    return [c, Math.max(0, s.length * A.adv - 1), [...s].some(ch => A.desc.includes(ch)) ? A.h : A.cap]; }
+  const F = eightFace(); let w = 0; for (const ch of s) w += F.ready ? eightGlyph(F, ch).adv : 8;
+  const c = document.createElement('canvas'); c.width = Math.max(1, w + 2); c.height = 10; const x = c.getContext('2d');
+  if (!F.ready) { const fnt = fontNow(); x.font = '8px ' + fnt.fam; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(s, 0, 0); }   /* (only until the web font has arrived) */
+  else { let px = 0; for (const ch of s) { const q = eightGlyph(F, ch); x.drawImage(q.c, px - 1, -1); px += q.adv; } }
+  return [c, Math.max(0, w - 1), 8];
+}
+const TEXT_CACHE = new Map();
+/* A STRING READY TO STAMP: tinted, scaled by whole pixels, with its shadow or outline baked into it */
+function stampOf(s, size, col, style) {
+  const face = faceOf(size), F = face.f === 'eight' ? eightFace() : null, key = face.f + face.k + (F ? fontNow().id + F.ready : '') + '|' + style + '|' + col + '|' + s;
+  let st = TEXT_CACHE.get(key); if (st) { TEXT_CACHE.delete(key); TEXT_CACHE.set(key, st); return st; }
+  const [line, iw, ih] = whiteLine(s, face), k = face.k, W = line.width * k, H = line.height * k, pad = style === 'none' ? 0 : 1;
+  const tint = c0 => { const t = document.createElement('canvas'); t.width = W; t.height = H; const x = t.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(line, 0, 0, W, H); x.globalCompositeOperation = 'source-in'; x.fillStyle = c0; x.fillRect(0, 0, W, H); return t; };
+  const c = document.createElement('canvas'); c.width = W + pad * 2 + 1; c.height = H + pad * 2 + 1; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  if (style === 'outline') { const d = tint(ART.OUT); for (const [ox, oy] of [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]]) x.drawImage(d, pad + ox, pad + oy); }
+  else if (style === 'shadow') x.drawImage(tint(ART.OUT), pad + 1, pad + 1);
+  x.drawImage(tint(col), pad, pad);
+  st = { c, pad, w: iw * k, h: ih * k }; TEXT_CACHE.set(key, st);
+  if (TEXT_CACHE.size > 900) TEXT_CACHE.delete(TEXT_CACHE.keys().next().value);
+  return st;
 }
 
 /* THE TEXT RECORDER, for tools/textfit.mjs: while window.__textRec is an array every text(), fitText() cut and wrap() lands in it with its call site */
 const textRec = (kind, o) => { const r = window.__textRec; if (!r || r.length > 20000) return; const st = (new Error().stack || '').split('\n').slice(3, 6).map(l => (l.match(/\/src\/(\w+\.js):(\d+)/) || []).slice(1).join(':')).filter(Boolean); r.push(Object.assign({ kind, at: st[0] || '', via: st.slice(1).join(' < '), VW, VH }, o)); };
-function text(s, x, y, col, align = 'left', size = 8) {
-  if (window.__textRec) { const tiny = tinyOK(s, size) && SET.font === 'press', w = textW(String(s), size) - (tiny ? 1 : 0), x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x; textRec('text', { s: String(s), x0: Math.round(x0), y0: Math.round(y), w: Math.round(w), h: tiny ? 5 : Math.round(size * fontNow().sc), size, tiny, align, alpha: g.globalAlpha }); }
+/* text(s, x, y, colour, align, size, style): style is 'shadow' (on a plate, the default), 'outline' (over the world) or 'none' */
+function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
+  s = String(s); if (!s) return;
   if (col === undefined) col = SET.ink === 'parchment' ? '#fff6e0' : inkNow();
-  if (tinyOK(s, size) && SET.font === 'press') {
-    const w = s.length * ART.TINY.adv - 1, px0 = Math.round(align === 'center' ? x - w / 2 : align === 'right' ? x - w : x), py0 = Math.round(y);
-    drawTiny(s, px0 + 1, py0 + 1, ART.OUT); drawTiny(s, px0, py0, col); return;
-  }
-  const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; g.textAlign = align; g.textBaseline = 'top';
-  g.fillStyle = ART.OUT; g.fillText(s, x + 1, y + 1); g.fillStyle = col; g.fillText(s, x, y);
+  const st = stampOf(s, size, col, style), x0 = Math.round(align === 'center' ? x - st.w / 2 : align === 'right' ? x - st.w : x), y0 = Math.round(y);
+  if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style });
+  g.drawImage(st.c, x0 - st.pad, y0 - st.pad);
 }
-function textW(s, size = 8) { if (tinyOK(s, size) && SET.font === 'press') return s.length * ART.TINY.adv;
-  const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; return g.measureText(s).width; }
+/* THE WIDTH A STRING TAKES ON THE LINE (its advances, the trailing gap included) */
+function textW(s, size = 8) { s = String(s); const face = faceOf(size); let w = 0; for (const ch of s) w += advOf(face, ch); return w * face.k; }
+/* ITS INK: what is actually lit, left edge to right edge */
+function inkW(s, size = 8) { s = String(s); if (!s) return 0; const face = faceOf(size); return textW(s, size) - (face.f === 'small' ? 1 : 1) * face.k; }
 function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); if (window.__textRec) textRec('cut', { s, out: t, maxW, size }); return t; }
-function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; }
-  /* MEASURE WHAT IS DRAWN: small capitals go out in the tiny pixel face at its own advance, and measuring them in the canvas font let a long hint run off both sides of its box */
-  const wide = t => tinyOK(t, size) && SET.font === 'press' ? t.length * ART.TINY.adv - 1 : g.measureText(t).width;
-  for (const w of words) { const t = cur ? cur + ' ' + w : w; if (wide(t) > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur);
+/* MEASURED WITH THE FACE IT IS DRAWN IN, so a wrapped line is never wider than the box it was wrapped for. A word too long for the
+   line on its own is broken, not left hanging out of the box. */
+function wrap(s, maxW, size = 8) { const words = String(s).split(' '), lines = []; let cur = '';
+  const wide = t => inkW(t, size);
+  for (let w of words) { while (!cur && wide(w) > maxW && w.length > 1) { let n = w.length - 1; while (n > 1 && wide(w.slice(0, n)) > maxW) n--; lines.push(w.slice(0, n)); w = w.slice(n); }
+    const t = cur ? cur + ' ' + w : w; if (wide(t) > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur);
   if (window.__textRec) textRec('wrap', { s, maxW, size, lines: lines.slice(), widest: Math.max(0, ...lines.map(wide)) }); return lines; }
+/* THE BIGGEST SIZE (from a list, largest first) at which a string fits a width: a long boss name drops a face before it is ever cut */
+function fitSize(s, maxW, sizes) { for (const z of sizes) if (inkW(s, z) <= maxW) return z; return sizes[sizes.length - 1]; }
 function pickFrame(set, key, frame, face) {
   const dir = face < 0 ? 'L' : 'R'; let c = key == null ? set[dir] : set[dir][key]; if (Array.isArray(c)) c = c[((frame % c.length) + c.length) % c.length]; return c;
 }
@@ -13824,7 +13975,7 @@ function drawWorld(cx, cy, showPlayer) {
       { const ic = big2(PROP.keyIcon[pr.kind] || PROP.keyIcon.brass); g.drawImage(ic, xx - (ic.width >> 1), yy - 4 - (ic.height >> 1)); } }
     else if (pr.t === 'lockgate') { const xx = Math.round(pr.x - cx), yy = Math.round(pr.y - cy);
       if (!pr.open) { g.drawImage(PROP.lockPlate, xx - 6, yy - pr.h * TS / 2 - 6);
-        if (Math.abs(P.x - pr.x) < 44) { const k = hasKey(pr.needs); text(k ? 'IT TURNS' : 'LOCKED', xx, yy - pr.h * TS / 2 - 20, k ? '#8fd160' : '#ff9a5c', 'center', 6); } } }
+        if (Math.abs(P.x - pr.x) < 44) { const k = hasKey(pr.needs); text(k ? 'IT TURNS' : 'LOCKED', Math.max(26, Math.min(VW - 26, xx)), Math.max(3, Math.min(VH - 10, yy - pr.h * TS / 2 - 20)), k ? '#8fd160' : '#ff9a5c', 'center', 6, 'outline'); } } }
     else if (pr.t === 'doorway') { const xx = Math.round(pr.x - cx), yy = Math.round(pr.y - cy);
       g.drawImage(PROP.doorway[pr.needs && !hasKey(pr.needs) ? 1 : 0], xx - 10, yy - 26);
       if (!P.dead && Math.abs(P.x - pr.x) < 16 && Math.abs(P.y - pr.y) < 20 && !warp) {
@@ -14358,7 +14509,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.alive && (HEAVY.has(e.t) || e.t === 'closedhelm' || e.t === 'hedgeknight' || e.t === 'golem' || e.t === 'forgemaster') && Math.abs(e.vx) > 6) { if (e.lastF !== undefined && frame !== e.lastF && Math.random() < 0.8) dust(e.x - (e.face || 1) * 4, e.y, e.maxHp ? 3 : 2); e.lastF = frame; } }
     g.globalAlpha = 1;
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
-    if (wind) text('!', e.x - cx, e.y - e.h - 12 - cy, '#ffd36b', 'center');
+    if (wind) tellQ.push({ txt: '!', x: e.x - cx, y: e.y - e.h - 12 - cy, col: '#ffd36b', a: 1 });   /* drawn last of all: drawTells() */
     else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF - cy + ps.dy) - 5);
     if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
@@ -14571,10 +14722,9 @@ function drawWorld(cx, cy, showPlayer) {
   }
   drawGrade();
   if (killFlash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
-  for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3);
-    if (n.txt === '!!') { const bx = Math.round(n.x - cx), by = Math.round(n.y - cy);   /* THE BADGE: a red !! is a shape as well as a colour, for eyes that cannot split red from yellow */
-      g.fillStyle = '#2a0c12'; g.fillRect(bx - 8, by - 2, 16, 11); g.fillStyle = n.col; g.fillRect(bx - 8, by - 2, 16, 1); g.fillRect(bx - 8, by + 8, 16, 1); g.fillRect(bx - 8, by - 2, 1, 11); g.fillRect(bx + 7, by - 2, 1, 11); }
-    text(String(n.txt), Math.round(n.x - cx), Math.round(n.y - cy), n.col, 'center'); }
+  for (const n of nums) { if (isTell(n)) { tellQ.push({ txt: n.txt, x: n.x - cx, y: n.y - cy, col: n.col, a: Math.min(1, n.life * 3) }); continue; }   /* the tells go on after everything: drawTells() */
+    const nx = n.x - cx, ny = n.y - cy, nw = inkW(String(n.txt), TYPE.popup); if (nx + nw / 2 < 0 || nx - nw / 2 > VW || ny + 8 < 0 || ny > VH) continue;   /* a number off a target off the screen is not shown; one half on is kept on */
+    g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, nx))), Math.round(Math.max(1, Math.min(VH - 9, ny))), n.col, 'center', TYPE.popup, 'outline'); }
   g.globalAlpha = 1; g.__world = false;
 }
 
@@ -15044,16 +15194,16 @@ function drawPractice() {
 }
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
-  const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
-  text('CONTROLS', VW / 2, y + 6, UI.title, 'center');
+  const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
+  text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
   const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
-  text('keyboard', x + 80, y + 17, '#9aa39a', 'left', 6); text('pad', x + w - 10, y + 17, '#9aa39a', 'right', 6);
-  rows.forEach(([a, b, c], i) => { const yy = y + 23 + i * 8;
+  text('keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text('pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
+  rows.forEach(([a, b, c], i) => { const yy = y + 24 + i * 8;
     text(a, x + 8, yy, UI.text, 'left', 6); text(b, x + 80, yy, '#c9d1dc', 'left', 6);
     const btn = { A: '#8fd160', B: '#ff6b6b', X: '#5aa0e0', Y: '#ffd36b' }[c];
     if (btn) { g.fillStyle = btn; g.beginPath(); g.arc(x + w - 12, yy + 3, 4, 0, 7); g.fill(); text(c, x + w - 12, yy + 1, '#1b1626', 'center', 6); }
     else text(c, x + w - 8, yy, '#c9d1dc', 'right', 6); });
-  text('ESC back', x + 8, y + 17, UI.dim, 'left', 6);   /* up in the header: at the foot it sat on the last row */
+  text('ESC back', x + 8, y + 15, UI.dim, 'left', 6);   /* up in the header: at the foot it sat on the last row */
 }
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -15587,21 +15737,26 @@ function render() {
   }
   if (flash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page
-    const big = !!SET.bigText; const sz = big ? 10 : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 14 : 10; const bh = 14 + lines.length * lh + (talk.name ? 10 : 0); const by = VH - bh - 8;
+    const big = !!SET.bigText; const sz = big ? TYPE.big : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 18 : 10, nh = talk.name ? lh : 0; const bh = 14 + lines.length * lh + nh + 8;   /* (+8: the page count and the next glyph have a row of their own, off the last line) */
+    /* NEVER OVER HIM: a page tall enough to reach his head goes up under the plates instead */
+    const heroY = P.y - cy, textH = 7 + nh + lines.length * lh, cover = y0 => heroY > y0 + 3 && heroY - 28 < y0 + textH + 4;
+    const low = VH - bh - 8, high = SET.iron ? 52 : 40, by = !cover(low) ? low : !cover(high) ? high : !cover(2) ? 2 : heroY - 14 > VH / 2 ? high : low;   /* whichever leaves his head clear: over the HUD plates if it has to (they wait) */
+    talkOverHud = by < high;
     const dress = (L && L.palette && L.palette.dress) || 'wood'; const bc = L && L.dark ? '#7aa8c8' : dress === 'crag' ? '#8a919c' : dress === 'marsh' ? '#4a9a6e' : dress === 'camp' ? '#8b6a2a' : (L && L.palette && L.palette.myc) ? '#9a5aa8' : '#8b6a2a';
     board(bx, by, bw, bh, bc, 'rgba(14,10,22,0.92)');
-    let ty = by + 7; if (talk.name) { text(talk.name, bx + 8, ty, UI.title, 'left', sz); ty += 10; }
+    let ty = by + 7; if (talk.name) { text(talk.name, bx + 8, ty, UI.title, 'left', sz); ty += nh; }
     lines.forEach((ln, k) => text(ln, bx + 8, ty + k * lh, '#fff6e0', 'left', sz));
-    if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 6, by + bh - 9, '#8fd160', 'right', 6);
-    if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 6, by + bh - 9, '#9aa39a', 'left', 6);
+    if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
+    if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
-  if (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play')) {
+  if (state === 'play' || (state === 'talk' && !talkOverHud) || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play')) {
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { text(nm, VW / 2 + 1, VH / 2 - 5, '#3a2214', 'center', 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', 12); } }
-    board(1, 1, 116, (SET.iron ? 38 : 26) + 10, UI.border, 'rgba(10,8,20,0.5)', true);
-    { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = Math.max(52, lab.length * 6 + 22);
-      board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); }
+    if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, VW - 16, [TYPE.title, 8]); g.fillStyle = 'rgba(10,8,16,0.66)'; g.fillRect(0, VH / 2 - 12, VW, (z >= 12 ? 10 : 8) + 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', z, 'outline'); } }   /* on a band of its own, and a name too wide for the card drops a size */
+    const hudMeter = hudMeterLabel(), hudPW = Math.max(116, hudMeter ? 92 + inkW(hudMeter.s, 6) + 5 : 116), hudPH = (SET.iron ? 38 : 26) + 10;   /* the plate is as wide as what C does */
+    board(1, 1, hudPW, hudPH, UI.border, 'rgba(10,8,20,0.5)', true);
+    { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab);
+      board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); hudRects = [[0, 0, hudPW + 2, hudPH + 2], [VW - 8 - pw, 0, pw + 4, 32]]; }
     g.drawImage(PROP.heart, 5, 5);
     if (SET.iron) { for (let i = 0; i < 3; i++) { g.globalAlpha = i < lives ? 1 : 0.25; g.drawImage(K.R.idle[0], 0, 0, 12, 12, 6 + i * 11, 23, 12, 12); } g.globalAlpha = 1; text('IRON', 42, 26, '#c9d1dc'); }
     if (P.torch > 0 && state !== 'win') { const tx = 112, ty = 6; g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(tx - 4, ty - 2, 30, 16, 4); g.fill(); g.fillStyle = '#5c3a1d'; g.fillRect(tx, ty + 5, 2, 7); const f = Math.floor(time * 12) % 3; g.fillStyle = '#ff9a5c'; g.fillRect(tx - 1, ty - (f === 1 ? 1 : 0), 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(tx, ty + 1, 2, 3); bar(tx + 6, ty + 4, 16, 3, Math.min(1, P.torch / 30), P.torch < 6 && Math.floor(time * 6) % 2 ? '#ff6b6b' : '#ffd36b'); }
@@ -15618,9 +15773,9 @@ function render() {
     if (hero() === 'knight') { const hy = SET.iron ? 41 : 29, full = (P.resolve || 0) >= 100, on = P.standT > 0;   /* RESOLVE: a shield for the icon; while THE STAND holds, the bar is its clock */
       bar(16, hy, 70, 4, on ? P.standT / 5 : (P.resolve || 0) / 100, on || full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#c9d1dc', on ? P.standT / 5 : (P.resolve || 0) / 100);
       g.fillStyle = '#c9d1dc'; g.fillRect(5, hy - 3, 8, 6); g.fillRect(6, hy + 3, 6, 2); g.fillRect(8, hy + 5, 2, 1); g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 2, 2, 5);
-      if (on) text('THE STAND ' + P.standT.toFixed(1), 90, hy - 1, '#ffd36b', 'left', 6); else if (full) text('THE STAND: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8'); }
-    if (isPyro()) { const hy = SET.iron ? 41 : 29; bar(16, hy, 70, 4, (P.heat || 0) / 100, P.full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (P.full) text('PYRE: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8'); }
-    if (isPaladin()) { const hy = SET.iron ? 41 : 29, full = (P.light || 0) >= 100; bar(16, hy, 70, 4, (P.light || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#f0c040', (P.light || 0) / 100); g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 3, 2, 9); g.fillRect(5, hy, 8, 2); if (full) text('JUDGEMENT: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8'); }
+      if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6); }
+    if (isPyro()) { const hy = SET.iron ? 41 : 29; bar(16, hy, 70, 4, (P.heat || 0) / 100, P.full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6); }
+    if (isPaladin()) { const hy = SET.iron ? 41 : 29, full = (P.light || 0) >= 100; bar(16, hy, 70, 4, (P.light || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#f0c040', (P.light || 0) / 100); g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 3, 2, 9); g.fillRect(5, hy, 8, 2); if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6); }
     // BREATH BELONGS ON THE PLATE. It was six pale pips floating over his head - and the half of the Shipwreck
     // Reef that has no surface to breathe at is also the half that is dark, so the pips were invisible and the
     // four damage every one and a third seconds arrived from nowhere. It is a bar now, with the other bars,
@@ -15628,8 +15783,8 @@ function render() {
     if ((state === 'play' || state === 'talk') && P.swim && !P.dead) {
       const mx2 = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b2 = Math.max(0, P.breath ?? mx2), k2 = b2 / mx2;
       const by = (SET.iron ? 41 : 29) + 10;
-      g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(2, by - 4, 104, 13, 3); g.fill();
       const low = k2 < 0.34, fl = low && Math.floor(time * 8) % 2;
+      g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(2, by - 4, low ? 92 + inkW(k2 <= 0 ? 'NO AIR' : 'BREATH', 6) + 4 : 104, 13, 3); g.fill(); hudRects.push([2, by - 4, low ? 128 : 104, 13]);   /* wide enough for the word it says */
       bar(16, by, 70, 4, k2, k2 <= 0 ? '#ff6b6b' : low ? (fl ? '#ffd0d0' : '#ff6b6b') : '#7cc8c8', k2);
       g.fillStyle = low ? (fl ? '#ffd0d0' : '#ff6b6b') : '#bfe6f5';                       // a bubble for the icon
       g.beginPath(); g.arc(9, by + 2, 3.5, 0, 7); g.fill();
@@ -15643,20 +15798,13 @@ function render() {
     if (isReaper()) { const hy = SET.iron ? 41 : 29, full = (P.harvest || 0) >= 100;
       bar(16, hy, 70, 4, (P.harvest || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#ff9a9a' : '#c0283a') : '#8a1a28', (P.harvest || 0) / 100);   /* the blood he has taken */
       g.fillStyle = '#c0283a'; g.fillRect(7, hy - 4, 2, 9); g.fillRect(4, hy + 2, 8, 1); g.fillRect(7, hy + 5, 2, 2);   /* a little greatsword: blade, cross, grip */
-      // WHAT C DOES RIGHT NOW. One key does three things - tap to raise, hold for the toll, tap at a full
-      // harvest for the last of it - and nothing on the screen ever said which. It says now, and it changes
-      // as the bar fills and as a body comes within reach of him.
-      { const near = bodies.some(q => q.life > 0 && Math.hypot(q.x - P.x, q.y - P.y) < 96);
-        if (state === 'play' || state === 'talk') {   /* the plates own the screen when a menu is up */
-        const lab = P.tolling ? 'DRAIN' : full ? 'BLOOD SURGE: C' : near && (P.harvest || 0) >= 20 ? 'C  RAISE IT' : 'HOLD C  DRAIN';
-        const col = P.tolling ? '#dfffa0' : full ? (Math.floor(time * 4) % 2 ? '#c0283a' : '#ff9a9a') : near && (P.harvest || 0) >= 20 ? '#8fd160' : '#6a7a62';
-        text(fitText(lab, VW - 96, 6), 90, hy - 1, col, 'left', 6); } }
+      if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6);   /* what C does right now: hudMeterLabel() */
       { const up = risen.filter(r => r.life > 0).length, max = RISEN_MAX();       // and how many are up
         for (let i = 0; i < max; i++) { g.fillStyle = i < up ? '#8fd160' : 'rgba(143,209,96,0.25)'; g.fillRect(90 + i * 5, 15, 3, 6); } } }
     if (isPirate()) { const hy = SET.iron ? 41 : 29, full = (P.plunder || 0) >= 100;
       bar(16, hy, 70, 4, (P.plunder || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd34a') : '#c9a040', (P.plunder || 0) / 100);
       g.fillStyle = '#ffd34a'; g.beginPath(); g.arc(9, hy + 2, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(8, hy + 1, 2, 2);   // the purse
-      if (full) text('BLACK FLAG: C', 90, hy - 1, Math.floor(time * 4) % 2 ? '#ffd34a' : '#fff6c8');
+      if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6);
       // THE PISTOL: loaded is a ball in it; empty is the fuse burning down, and gold cuts that short
       const px2 = 90, py2 = 14;
       if (P.loaded) { g.fillStyle = '#c9a85a'; g.fillRect(px2, py2 + 3, 9, 2); g.fillStyle = '#6a4428'; g.fillRect(px2, py2 + 5, 3, 4);
@@ -15681,19 +15829,19 @@ function render() {
       slot(skillNow(), 74, 'F', '#c9d1dc'); slot(skill2Now(), 92, 'G', '#8fd160'); }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
-    { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = Math.max(52, lab.length * 6 + 22), px0 = VW - 6 - pw;
+    { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab), px0 = VW - 6 - pw;
       for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (px0 + 4 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }
       g.drawImage(PROP.coin[0], px0 + 4, 5); text(lab, VW - 10, 7, '#ffd34a', 'right');
       for (let i = 0; i < silvers.length; i++) { g.fillStyle = silvers[i].got ? '#dfe8ff' : 'rgba(223,232,255,0.28)'; g.beginPath(); g.arc(px0 + 6 + i * 7, 22, 2.5, 0, 7); g.fill(); } }
     { const Q = questOf(); if (Q.item !== 'none') { const n = straysGot.size, done = n >= Q.n, lab = Q.name + ' ' + n + '/' + Q.n, lw = lab.length * 6;
       const ic = Q.item === 'fisher' ? SPR.fisherIcon : Q.item === 'seal' && PROP.reef ? PROP.reef.sealIcon : null;
-      g.fillStyle = 'rgba(10,8,20,0.38)'; g.beginPath(); g.roundRect(VW - 10 - lw - (ic ? 13 : 4), 32, lw + (ic ? 17 : 8), 11, 3); g.fill();
+      g.fillStyle = 'rgba(10,8,20,0.38)'; g.beginPath(); g.roundRect(VW - 10 - lw - (ic ? 13 : 4), 32, lw + (ic ? 17 : 8), 11, 3); g.fill(); hudRects.push([VW - 10 - lw - (ic ? 13 : 4), 32, lw + (ic ? 17 : 8), 11]);
       text(lab, VW - 10, 34, done ? '#ffd36b' : '#c9b27c', 'right', 6);
       if (ic) g.drawImage(ic, VW - 12 - lw - 10, 31); } }
     if (P.hp > 0 && P.hp <= 30 && state === 'play') { const k = 0.5 + 0.5 * Math.sin(time * (P.hp <= 15 ? 11 : 7)); const vg = g.createRadialGradient(VW / 2, VH / 2, 70, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(180,20,20,0)'); vg.addColorStop(1, 'rgba(180,20,20,' + (0.18 + 0.22 * k) + ')'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (state === 'play' && SET.timer && !(L && L.shop)) { const ts = fmt(levelTime), tw = ts.length * 6 + 12;
-      g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(VW / 2 - tw / 2, 2, tw, 13, 3); g.fill();
-      text(ts, VW / 2, 5, 'rgba(224,216,196,0.82)', 'center'); }
+    if (state === 'play' && SET.timer && !(L && L.shop)) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
+      g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); hudRects.push([tx - tw / 2, 2, tw, 13]);
+      text(ts, tx, 5, 'rgba(224,216,196,0.82)', 'center'); }
     // POINTS WAITING: a badge under the bars, so nobody finishes the game with ten points unspent
     if (state === 'play' && !godMode() && ptsLeft(hero()) > 0 && !(L && L.shop)) { const n = ptsLeft(hero()), lab = 'Q  ' + n, w = lab.length * 6 + 12, k = 0.5 + 0.5 * Math.sin(time * 2.4), by = (isPyro() || isPaladin() ? 44 : 34);
       g.fillStyle = 'rgba(24,36,18,0.88)'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill();
@@ -15701,12 +15849,14 @@ function render() {
       g.strokeStyle = 'rgba(143,209,96,0.85)'; g.lineWidth = 1; g.beginPath(); g.roundRect(4.5, by + 0.5, w - 1, 10, 3); g.stroke();
       g.fillStyle = '#8fd160'; for (let i = 0; i < 3; i++) g.fillRect(w - 3, by + 3 + i, 1 + i * 2, 1);   // the little chevron of a thing waiting to be spent
       text(lab, 8, by + 3, '#eaffd8', 'left', 6); }
-    if (hintT > 0 && state === 'play' && introCardUp()) { /* THE CARD FIRST: a hint that starts under the boss's name waits for it to go */ }
+    if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }
     else if (hintT > 0 && state === 'play') { hintT -= 1 / 60; const k = Math.min(1, hintT * 2);
-      const lines = wrap(hintMsg, VW - 60, 6), bw = Math.min(VW - 24, Math.max(...lines.map(l => l.length * 6)) + 16), bh = lines.length * 9 + 7;
-      g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.86)'; g.beginPath(); g.roundRect(VW / 2 - bw / 2, 44, bw, bh, 4); g.fill();
-      g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(VW / 2 - bw / 2 + 0.5, 44.5, bw - 1, bh - 1, 4); g.stroke();
-      lines.forEach((ln, i) => text(ln, VW / 2, 48 + i * 9, '#ffd36b', 'center', 6)); g.globalAlpha = 1; }
+      /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
+      const lines = wrap(hintMsg, VW - 40, 6), bw = Math.min(VW - 16, Math.max(...lines.map(l => inkW(l, 6))) + 16), bh = lines.length * BODY_LH + 6;
+      const heroY = P.y - cy, top = 48, foot = VH - bh - (bossActive || miniActive ? 32 : 6), hby = heroY > top - 8 && heroY - 28 < top + bh + 4 ? foot : top, hbx = Math.round(VW / 2 - bw / 2);
+      g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
+      g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
+      lines.forEach((ln, i) => text(ln, VW / 2, hby + 4 + i * BODY_LH, '#ffd36b', 'center', 6)); g.globalAlpha = 1; }
     else if (state !== 'play') hintT = 0;
     if (state === 'play' && L.alarmT > 0) { const k = Math.min(1, L.alarmT / 14), lab = 'THE WATCH IS UP', w = lab.length * 6 + 10;
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
@@ -15747,7 +15897,7 @@ function render() {
       g.globalAlpha = 1; }
     }
     if (state === 'menu' || state === 'win' || state === 'gameover') { /* the plates own the screen: the boss bar waits */ }
-    else if (miniActive && !bossActive) { const m = miniOne(); if (m) { text(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), VW / 2, VH - 22, m.phase === 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, VH - 11, 120, 5, Math.max(0, m.hp) / fullHp(m), m.mounted ? '#e0b040' : '#8fd160');   /* the Stalker, the Overman, the Boatswain, the Serjeant and the Bellringer carry no maxHp - that is the boss flag, and giving it them changes how every blow treats them - so their bars drew NaN, empty. What it stood up with is hp0. */ for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } } }
+    else if (miniActive && !bossActive) { const m = miniOne(); if (m) { bossPlate(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), m.phase === 2 ? '#ff6b6b' : '#ffd36b'); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, VH - 11, 120, 5, Math.max(0, m.hp) / fullHp(m), m.mounted ? '#e0b040' : '#8fd160');   /* the Stalker, the Overman, the Boatswain, the Serjeant and the Bellringer carry no maxHp - that is the boss flag, and giving it them changes how every blow treats them - so their bars drew NaN, empty. What it stood up with is hp0. */ for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } } }
     else if (bossActive && boss && boss.alive) { const nm = boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : boss.mode === 'rap' ? 'THE GRANDMOTHER  SHE GAVE HERSELF AWAY' : 'THE GRANDMOTHER') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'quarter' ? (boss.guard ? 'THE QUARTERMASTER  BEHIND HER GUARD' : boss.mode === 'cut' ? 'THE QUARTERMASTER  CUTTING THE LINE' : boss.phase === 3 ? 'THE QUARTERMASTER  THE POOP' : boss.phase === 2 ? 'THE QUARTERMASTER  THE QUARTERDECK' : 'THE QUARTERMASTER') : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  RIGHT OUT' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'kraken' ? krakenBarName(boss) : boss.t === 'masthead' ? (mastOpen(boss) ? 'THE MASTHEAD  FOULED' : boss.mode === 'sail' ? 'THE MASTHEAD  UNDER SAIL' : 'THE MASTHEAD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
       : boss.mode === 'beach' ? 'THE CAPTAIN  BEACHED'
       : boss.mode === 'call' ? 'THE CAPTAIN  CALLING IT UP'
@@ -15758,7 +15908,7 @@ function render() {
       : boss.onFoot ? 'THE TOLLMASTER  ON HIS OWN FEET' : 'THE TOLLMASTER  CARRIED')
    : boss.t === 'master' ? (boss.open > 0 ? 'THE HOUND MASTER  OUT OF THE SADDLE' : boss.phase === 2 ? 'THE HOUND MASTER  THE WHOLE PACK' : 'THE HOUND MASTER')
    : boss.t === 'troll' ? (boss.mode === 'pinned' ? 'THE HILL TROLL  PINNED' : 'THE HILL TROLL')
-   : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); text(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, VW / 2, VH - 22, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b', 'center'); g.fillStyle = 'rgba(10,8,20,0.5)'; g.beginPath(); g.roundRect(VW / 2 - 76, VH - 28, 152, 26, 4); g.fill(); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart * 0.3 : 0.3 + gl / 4 * 0.7, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
+   : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); bossPlate(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b'); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart * 0.3 : 0.3 + gl / 4 * 0.7, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
   }
   if (state === 'title') {
     const since = time - titleSince, e = easeOutBack(Math.min(1, since / 0.7)), ly = Math.round(10 - (1 - e) * 70);
@@ -15793,6 +15943,7 @@ function render() {
   if (talentsBackT > 0 && (state === 'map' || state === 'play')) { talentsBackT -= 1 / 60; const k = Math.min(1, talentsBackT * 2), lab = 'THE TREES HAVE CHANGED: YOUR POINTS ARE BACK', sub = 'Q OPENS THE TALENT TREES', w = textW(lab, 6) + 16;
     g.globalAlpha = k; g.fillStyle = 'rgba(24,18,8,0.94)'; g.fillRect(VW / 2 - w / 2, 58, w, 21); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 58.5, w - 1, 20);
     text(lab, VW / 2, 62, '#ffd36b', 'center', 6); text(sub, VW / 2, 71, '#e0cf9c', 'center', 6); g.globalAlpha = 1; }
+  drawTells();   /* the ! and the !!, over the numbers, the plates and the boss bar */
   drawWarp(); // the door closing, over everything
   if (state === 'menu') drawMenu();
   if (state === 'soundtest') drawSoundTest();
@@ -15940,10 +16091,11 @@ window.BK = { krak: () => krakenAdvice(), get tide() { return CT; }, noteVerb: v
   async floatLab(o) { const m = await import('./floatlab.js'); return m.floatLab(window.BK, o || {}); },
   async lookPass(o) { const m = await import('./lookpass.js'); return m.lookPass(window.BK, o || {}); },   /* readability by the pixels: tools/lookpass.mjs */
   /* THE TEXT LAB, for tools/textfit.mjs and the popup count: the words the player is handed, and a way to put each one on screen */
-  textLab: { nums: () => nums, hint(m, t) { hintT = t === undefined ? 4.5 : t; hintMsg = m; }, talk(lines, name) { openTalk({ lines, name: name || null, who: null }); }, get talking() { return talk; },
+  textLab: { draw: (...a) => text(...a), width: (s, z) => textW(s, z), TYPE, nums: () => nums, hint(m, t) { hintT = t === undefined ? 4.5 : t; hintMsg = m; }, talk(lines, name) { openTalk({ lines, name: name || null, who: null }); }, get talking() { return talk; },
     talkers: () => [...signs.map(s => ({ kind: 'sign', x: Math.floor(s.x / TS), y: Math.floor(s.y / TS), lines: [s.text], name: null })),
       ...props.filter(p => p.t === 'npc').map(p => { let lines = []; try { lines = NPC_LINES(p); } catch (e) { lines = ['(NPC_LINES threw: ' + e.message + ')']; } return { kind: 'npc:' + p.kind, x: Math.floor(p.x / TS), y: Math.floor(p.y / TS), lines, name: p.name || NPC_NAME[p.kind] || null }; })],
-    bossTitle: b => bossTitle(b), miniName: () => miniName(), beasts: () => BEASTS },
+    bossTitle: b => bossTitle(b), miniName: () => miniName(), beasts: () => BEASTS,
+    cardFit: s => { const z = fitSize(s, VW - 16, [TYPE.title, 8]); return [z, inkW(s, z)]; } },   /* the size the boss's name card draws a name at, and how wide it comes out */
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },   /* the Hurricane's sea state, for the harness */
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
