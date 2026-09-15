@@ -5,12 +5,18 @@
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 
 // each hero's real reach (attackBox in main.js), so the bot swings from where the blow actually lands
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29 };
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40 };   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 export const LAB_FOES = ['sprig', 'shield', 'swornsword', 'archer', 'hedgeknight', 'cutlass', 'harpy', 'crab', 'tideguard', 'scout'];
-const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];
+const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 const threatOf = e => e.alive && ((e.mode && /Tell|tell|wind|aim|draw|charge|lunge|raise/.test(e.mode)) || e.draw > 0 || e.liftT > 0);
 const yieldNow = () => new Promise(r => setTimeout(r, 0));
 const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper';   // C holds a guard; the others roll
+/* THE WARDEN'S C IS NOT A GUARD. It is a planted spear, and it answers exactly one thing: a charge the marks say can
+   be stopped. Everything else she gives ground from - and her dodge goes BACKWARD by itself, so the bot never has to
+   aim it. (main.js BRACE_STOPS is the authority for what the point stops; this is the bot's list of who can ever be
+   on it, so a bot that braced at everything would measure a hero who does not exist.) */
+const BRACE_ABLE = new Set(['lancer', 'goat', 'ram', 'master', 'lance', 'greathound']);
+const braceNow = (e, P) => BRACE_ABLE.has(e.t) && Math.abs(e.vx || 0) > 70 && (e.x - P.x) * (e.vx || 0) < 0;
 /* THE KNIGHT SPENDS HIS BAR. A full RESOLVE is THE LAST CHARGE on a tap of C with his feet under him - so the bot taps it (C not
    already held, or it is not a tap) when the foe is in front of him, inside a charge's run and on his level. A bot that never
    spent it would measure a knight who never charges. */
@@ -49,6 +55,7 @@ export async function fightLab(BK, opts = {}) {
           defends++;
           if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
           else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
+          else if (h === 'warden') { if (braceNow(e, P)) k.block = true; else if (f % 14 === 0) BK.press('dodge'); }   /* plant it for a charge, hop back off anything else */
           else k.block = true;
         } else if (ad > reach - 2) k[d > 0 ? 'right' : 'left'] = true;
         else if (P.atk < 0 && P.st >= 8 && Math.abs(e.y - P.y) < 26) { BK.press('atk'); swings++; }
@@ -192,7 +199,7 @@ export async function bossLab(BK, opts = {}) {
         if (m === 'bash') { if (ad < 60 && (boss.x - P.x) * boss.vx < 0 && f % 4 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
         else if (m === 'bashTell') { if (ad > 150) goal = null; }
         else if (m === 'judgeTell') { const mk = (boss.marks || [])[0]; if (mk !== undefined && Math.abs(P.x - mk) < 44) goal = mk + (P.x < mk ? -64 : 64); }
-        else if (ad > (m === 'thrustTell' ? 86 : 62)) goal = boss.x - Math.sign(d || 1) * 40;
+        else if (ad > (m === 'thrustTell' ? 86 : 62)) goal = boss.x - Math.sign(d || 1) * (h === 'warden' ? 30 : 40);   /* she must be INSIDE his sword for it to test her, whatever her own reach would rather do */
         else if (h === 'knight') { if (t < 0.08) k.block = true; }
         else if (h === 'pirate') { if (t < 0.16 && t > 0.08) k.block = true; }
         else if (h === 'paladin') { if (t < 0.4) k.block = true; }
@@ -232,7 +239,8 @@ export async function bossLab(BK, opts = {}) {
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : 0.14)))) {
         P.face = Math.sign(d) || P.face;
-        if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
+        if (h === 'warden' && braceNow(boss, P)) { k.block = true; }   /* THE BRACE, against a boss's charge the marks allow her to stop */
+        else if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
           if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
               if (boss.modeT < dkRel.at) { k.block = false; dkHold = 0; } } } } else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
