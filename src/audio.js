@@ -169,6 +169,13 @@ export const SFX = {
     SFX.dodge(); chain(0.025, 3); tone('sine', 110, 60, 0.1, 0.12, 0.12); },
   pPogo() { if (heroVoice === 'pyro') { noise(0.08, 0.22, 1800, 0.8); tone('triangle', vary(480), vary(920), 0.11, 0.12); crackle(2); return; }
     tone('square', vary(480), vary(980), 0.12, 0.15); tone('sine', vary(1900), 2500, 0.08, 0.06); },
+  // THE PLUNGE, as it starts. The pyromancer's fireball always went down with a puff; the rest of them dropped
+  // in silence and were only heard when they landed. Each now goes over in its own voice: the knight's chain,
+  // the pirate's coat and a cutlass catching the light, the Death Knight's weight going down like a door shutting.
+  pPlunge() { if (heroVoice === 'pyro') { SFX.puff(); return; }
+    if (heroVoice === 'reaper') { noise(0.24, 0.14, 380, 0.4); tone('sine', vary(240), 70, 0.22, 0.1); tone('square', vary(900), 600, 0.04, 0.03, 0.03); return; }
+    if (heroVoice === 'pirate') { noise(0.14, 0.16, 1300, 0.5); tone('triangle', vary(900), 380, 0.1, 0.05); tone('triangle', vary(2400), 1400, 0.06, 0.03, 0.02); return; }
+    tone('square', vary(540), vary(200), 0.14, 0.07); chain(0.03, 3); noise(0.16, 0.12, 700, 0.5, 0.02); },
   pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, heroVoice === 'pyro' ? 1.75 : 1.35); },
   // the pyromancer's own fire
   ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
@@ -299,6 +306,7 @@ const PAL = {
   pDie() { if (!heroVo('die', 0.7)) SFX.die(); for (let i = 0; i < 4; i++) { plate(0.05); tone('sine', 110 - i * 12, 50, 0.12, 0.12, 0.15 + i * 0.1); } bell(523, 1.6, 0.07, 0.55); },
   pDodge() { noise(0.12, 0.22, 320, 0.6); tone('sine', 95, 40, 0.16, 0.22); plate(0.05); },
   pPogo() { tone('square', vary(380), vary(760), 0.12, 0.13); bell(1046, 0.35, 0.05, 0.02); },
+  pPlunge() { tone('square', vary(420), vary(160), 0.14, 0.07); plate(0.05); noise(0.18, 0.12, 420, 0.5, 0.02); bell(784, 0.3, 0.035, 0.04); },   /* plate going over, and the bell: the consecration goes down with him */
   pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, 1.1); },
 };
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }

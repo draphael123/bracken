@@ -4862,11 +4862,11 @@ function updatePlayer(dt) {
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !rushing()) {
-    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear();
+    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
         embers.push({ x: P.x, y: P.y - 4, vx: 0, vy: 300, life: 1.1, hit: new Set(), plunge: true });
-        gainHeat(10); SFX.puff();
+        gainHeat(10);
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0 && !P.swim) dashAttack(); else if (!P.swim && keys.up && !keys.down && (P.ground || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started */ else if (P.ground && !P.swim && keys.down) lowSweep(); else if (P.ground) P.vx = P.face * 75; } }
