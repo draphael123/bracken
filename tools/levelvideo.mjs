@@ -150,8 +150,10 @@ async function record(B, lv, route, arena) {
   /* ffmpeg: squeeze the run into SECS seconds at no less than real speed, 30fps out, doubled in size with hard pixels */
   const fps = Math.max(60 / EVERY, n / SECS), mp4 = join(OUT, lv.id + '.mp4'), sheet = join(OUT, lv.id + '-sheet.png');
   const ff = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', fps.toFixed(3), '-i', join(dir, '%06d.jpg'), '-vf', 'scale=640:360:flags=neighbor', '-r', '30', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '30', '-preset', 'veryfast', mp4], { encoding: 'utf8' });
-  const every = Math.max(1, Math.floor(n / 12));
-  spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', join(dir, '%06d.jpg'), '-vf', `select='not(mod(n\\,${every}))',scale=320:180:flags=neighbor,tile=4x3`, '-frames:v', '1', sheet], { encoding: 'utf8' });
+  /* the sheet comes from the finished video: a boss room zooms the buffer to 640x360 mid-run, and the image2 reader stops at
+     the first frame of a new size, so a sheet built from the frames kept only the arena */
+  const vsecs = n / fps;
+  spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', mp4, '-vf', `fps=12/${vsecs.toFixed(2)},scale=320:180:flags=neighbor,tile=4x3`, '-frames:v', '1', sheet], { encoding: 'utf8' });
   rmSync(dir, { recursive: true, force: true });
   /* hits by place: which eight-column stretches cost the most */
   const byPlace = {}; for (const [x, y, d] of sum.hits) { const k = Math.floor(x / 8) * 8 + ',' + Math.floor(y / 8) * 8; byPlace[k] = (byPlace[k] || 0) + d; }
