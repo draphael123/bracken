@@ -307,6 +307,7 @@ function marshWood() {
   coins([138, 16], [147, 16], [156, 16]);
   block(161, 175, 18, 27);
   ent('check', 168, 17); crate(173, 17);
+  ent('sign', 171, 17, { text: 'A BUD PAD SPRINGS. LAND ON IT.' });   // taught once, on the bank, before the first bud at 191
 
   // ---- 7. The long river: lily pads across it, three strides apart, and a reed bed to rest on every so often ----
   /* THE PUNT WENT. Walking to one end of a raft to steer it was a chore, not a crossing, and the marsh already has
@@ -317,8 +318,16 @@ function marshWood() {
      on the first play. The big pads are the rests and the landings (two tiles, a slower sink, a flower on every one); the
      small ones between are the quick hops. A small-to-big hop is four strides centre to centre and a small-to-small is
      three: the paladin, the shortest jump in the game, carries 58 px level to level against 64 and 48. */
-  const BIG = new Set([178, 188, 198, 208, 215, 224, 230, 239, 248, 257]);
-  for (const x of [178, 181, 184, 188, 191, 194, 198, 201, 204, 208, 215, 218, 221, 224, 230, 233, 236, 239, 242, 248, 251, 254, 257]) ent('pad', x, 18, { big: BIG.has(x) });
+  const BIG = new Set([178, 188, 198, 208, 215, 224, 230, 239, 248, 254]);
+  /* AND THREE OF THEM ARE BUDS. A bud pad throws you a tier up the moment you land on it: at 191 and 233 onto the old
+     eel-men's stages over the water (coins up there, and the pads go on underneath, so it is a choice you make in the air),
+     and at 258, the last pad, because the far bank stands four rows over the water there and a jump will not make it
+     (hard by the bank: two columns of drift on the way up is what the reach fill allows a rise of four, and it is right). */
+  const BUD = new Set([191, 233, 258]);
+  for (const x of [178, 181, 184, 188, 191, 194, 198, 201, 204, 208, 215, 218, 221, 224, 230, 233, 236, 239, 242, 248, 251, 254, 258]) ent('pad', x, 18, { big: BIG.has(x), spring: BUD.has(x) });
+  plat(193, 14, 7); plat(203, 14, 6); plat(235, 14, 7);   // the stages: one row of boards a tier over the pads, each one a drop onto the next reed bed at its far end
+  coins([195, 13], [197, 13], [201, 12], [205, 13], [207, 13], [237, 13], [239, 13], [241, 13]);
+  block(260, 263, 14, 17);   // the far bank's lip, four rows over the water: the last bud is the way up it
   reeds(211, 16, 2); reeds(226, 16, 2); reeds(244, 16, 2);
   ent('check', 211, 15); ent('silver', 244, 13);
   coins([184, 16], [193, 16], [202, 16], [217, 16], [226, 14], [235, 16], [253, 16]);
@@ -367,6 +376,10 @@ function marshWood() {
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
     fog: [{ x0: 131 * TS, x1: 161 * TS, alpha: 0.86 }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
+    /* THE STAGES STAND ON POLES. A row of boards over open water with nothing under it is a floor hanging in the air
+       (B9): each stage is driven into the river on two poles, with a rope rail between them, the way the drowned
+       village's huts stand on stilts. Every pole is put in a gap between pads, never through one. */
+    ropes: [[193, 199, 3091, 3197], [203, 208, 3251, 3304], [235, 241, 3761, 3852]].map(([a, b, p0, p1]) => ({ x0: a * TS, y0: 14 * TS - 11, x1: (b + 1) * TS, y1: 14 * TS - 11, posts: [[p0, 14 * TS - 9, 19 * TS + 3], [p1, 14 * TS - 9, 19 * TS + 3]] })),
     arena: { x0: 361 * TS, x1: 403 * TS, floor: 18 * TS, trigger: 367 * TS, wallL: 360, wallR: 404, boss: 'frog', dais: { x0: 386 * TS, x1: 402 * TS, h: 16 }, music: 'frogking', tint: '#3a8a5a', tintA: 0.1, fx: 'motes' },
   }
   // ---- 7b. THE DROWNED VILLAGE: stilt huts over deep water. Planks, sinking pads, archers on the roofs, frogs below. ----
@@ -409,6 +422,9 @@ function marshWood() {
   F.ent('sign', 274, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* on the reed bed: at 286 it stood five rows up over the open lake */
   F.ent('sign', 335, 10, { text: 'THE PADS SINK UNDER YOU. THE NEXT IS THREE STRIDES OFF: DO NOT LINGER.' });
   F.ent('sign', 405, 10, { text: 'ARCHERS ACROSS THE WATER. GO WHEN AN ARROW FLIES: THE NEXT IS A MOMENT AWAY.' });
+  // A BUD LANDS YOU ON THE STAGES AND THE BANK'S LIP, and the garrison read all three as fresh floor and stood a spitter and
+  // two thorns where you come down. They are landings: kept calm (in final columns, after both grows).
+  F.R.calm = (F.R.calm || []).concat([[240, 257, 9, 14], [282, 290, 9, 14], [305, 312, 9, 14]]);
   return F.done();
 ;
 }

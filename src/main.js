@@ -682,7 +682,7 @@ function bakeAll(pal = {}) {
     shrineOf: Object.fromEntries(['wood', 'marsh', 'crag', 'myc', 'hall', 'ship', 'reef', 'city'].map(k => [k, [ART.bakeShrineKind(k, false), ART.bakeShrineKind(k, true)]])), gate: ART.bakeGate(), sign: ART.bakeSign(),
     tuft: [0, 1, 2, 3].map(i => ART.bakeTuft(200 + i)), flower: [0, 1, 2, 3].map(i => ART.bakeFlower(210 + i)),
     mushroom: [0, 1].map(i => ART.bakeMushroom(220 + i)), bush: [0, 1, 2].map(i => ART.bakeBush(230 + i)),
-    shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), padBig: ART.bakeLilyPad(32), lilyFlowerBig: ART.bakeLilyFlowerBig(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
+    shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), padBig: ART.bakeLilyPad(32), lilyFlowerBig: ART.bakeLilyFlowerBig(), padSpring: ART.bakeSpringPad(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
     motherCap: ART.bakeMotherCap(), impact: ART.bakeImpact(), impactSteel: ART.bakeImpact('#c9d1dc'), impactRed: ART.bakeImpact('#ff6b6b'),
     fern: [0, 1, 2].map(i => ART.bakeFern(400 + i)), stump: [0, 1].map(i => ART.bakeStump(410 + i)), rock: [0, 1, 2].map(i => ART.bakeRock(420 + i)), cattail: [0, 1, 2].map(i => ART.bakeCattail(430 + i)), lilyFlower: ART.bakeLilyFlower(), skullPost: ART.bakeSkullPost(), tent: [0, 1].map(i => ART.bakeTent(440 + i)), campfire: ART.bakeCampfire(), tinyCap: [ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)], moss: [0, 1, 2].map(i => ART.bakeMoss(460 + i)), butterfly: [ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')], dragonfly: ART.bakeDragonfly(), crow: ART.bakeCrow(),
     hiveBg: ART.bakeHiveBg(500), honeyDrip: ART.bakeHoneyDrip(), frogStatue: [0, 1].map(i => ART.bakeFrogStatue(510 + i)), lilyLantern: ART.bakeLilyLantern(), banner: [0, 1].map(i => ART.bakeWarBanner(520 + i)), bannerHung: [0, 1].map(i => ART.bakeWarBanner(520 + i, true)), gibbet: ART.bakeGibbet(), eyrie: ART.bakeEyrie(), siege: ART.bakeSiege(), boneThrone: ART.bakeBoneThrone(), skullPile: [0, 1].map(i => ART.bakeSkullPile(530 + i)), hangCage: ART.bakeHangCage(), rootDecor: [0, 1, 2].map(i => ART.bakeRootDecor(540 + i)), sporePod: ART.bakeSporePod(),
@@ -1192,7 +1192,7 @@ function spawnEnt(e) {
       case 'frog': boss = { ...base, t: 'frog', w: 40, h: 30, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
       case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire }); break;
       case 'hopper': { const col = e.color || 'green'; enemies.push({ ...base, t: 'hopper', color: col, w: 8, h: 6, hp: HOP[col].hp, timer: 0.5 + Math.random(), air: false }); break; }
-      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big }); break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing */
+      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0 }); break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
       case 'sapper': enemies.push({ ...base, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); break;
       case 'brute': enemies.push({ ...base, t: 'brute', w: 12, h: 16, hp: EHP.brute, speed: 20, mode: 'walk', modeT: 0 }); break;
       case 'cutlass': enemies.push({ ...base, t: 'cutlass', w: 10, h: 18, hp: EHP.cutlass, speed: 42, mode: 'walk', modeT: 0, cd: 0.8 }); break;
@@ -4881,6 +4881,18 @@ function updatePlayer(dt) {
   if (!P.ground && wasGround) P.coyote = SET.assist ? 0.2 : 0.1; // (a mover counts: walking off a raft used to give no grace at all)
   if (!P.ground && P.vy >= 0) for (const m of movers) {
     if (prevY <= m.y + 1 + Math.max(0, m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
+  }
+  /* THE BUD PAD throws you. Landing is the trigger, not a press: the sign says LAND ON IT, and a pad that wanted a button
+     would be a jump with extra steps. -420 rises 89 px, where the jump rises 51: enough for the stages a tier over the
+     water and the taller bank, with a margin, and never enough for the tier above that. The release does not cut it
+     (canCut off), and the buffered jump and the coyote time are spent, or a jump pressed on landing would overwrite the
+     throw with a smaller one. And it throws you straight UP: the hop's run is spent in the stalk, or a knight who landed
+     on it at a run and let go of the keys sailed off the far side of it into the river (and a pyro landing on its lip
+     still did at a third of her pace). Let go and you come down on the bud; steer, and the air carries you to the stage. */
+  if (P.ground && !wasGround && P.onMover && P.onMover.spring && !(P.onMover.cd > 0) && !P.dead) {
+    const m = P.onMover; P.onMover = null; P.ground = false; P.coyote = 0; P.jbuf = 0; P.plunge = false; P.canCut = false; P.vy = -420; P.vx = 0;
+    m.cd = 1; m.fired = 0.35; squash(0.7, 1.35, 0.14); SFX.budSpring(); ringAt(m.x + m.w / 2, m.y0 + 3, 22, '#dff7c8', 0.35);
+    burst(m.x + m.w / 2, m.y0, 10, ['#ffd0dc', '#dff7c8', '#eefaff'], 70, 0.4); dust(P.x, P.y, 3);
   }
   if (L.felled && !P.onMover) rampFoot(prevY);   /* THE HURRICANE'S FELLED MAST: a slope, walked on its line */
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
@@ -13892,7 +13904,8 @@ function updateMovers(dt) {
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
     const oldX = m.x, oldY = m.y; m.dy = 0;
     if (m.kind === 'pad') { // sinks while stood on, floats back up when left
-      const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt));   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */ m.y = m.y0 + m.sink * 16; m.dy = m.y - oldY;
+      const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt));   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
+      if (m.cd > 0) m.cd -= dt; if (m.fired > 0) m.fired -= dt;   /* a bud that has just thrown you is a plain pad for a second: land back on it and it sinks like any other */ m.y = m.y0 + m.sink * 16; m.dy = m.y - oldY;
       if (on && m.sink > 0.15 && Math.random() < dt * 6) parts.push({ x: m.x + Math.random() * m.w, y: m.y0 + 2, vx: 0, vy: -20, life: 0.3, max: 0.3, col: '#bfe6f5', size: 1, grav: 0 });
     } else if (m.kind === 'drift') { // rides the current against you and wraps around
       m.x -= m.speed * dt; if (m.x + m.w * 0.5 < m.x0) { m.x = m.x1; if (P.onMover === m) P.onMover = null; m.dx = 0; continue; }
@@ -15244,7 +15257,10 @@ function drawWorld(cx, cy, showPlayer) {
   drawWater(cx, cy, false);
   for (const m of movers) {
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
-    if (m.kind === 'pad' && m.big) { g.drawImage(PROP.padBig[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - 1 - cy); if (m.sink < 0.55) g.drawImage(PROP.lilyFlowerBig, Math.round(m.x) + 4 - cx, Math.round(m.y) - 7 - cy); }   /* every big pad is in flower: the bloom says REST before you are on it */
+    if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;
+      if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
+      g.drawImage(PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], x, Math.round(m.y) - 5 - cy); }
+    else if (m.kind === 'pad' && m.big) { g.drawImage(PROP.padBig[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - 1 - cy); if (m.sink < 0.55) g.drawImage(PROP.lilyFlowerBig, Math.round(m.x) + 4 - cx, Math.round(m.y) - 7 - cy); }   /* every big pad is in flower: the bloom says REST before you are on it */
     else if (m.kind === 'pad') { g.drawImage(PROP.pad[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - cy); if (Math.round(m.x0 / TS) % 3 === 0 && m.sink < 0.55) g.drawImage(PROP.lilyFlower, Math.round(m.x) + 4 - cx, Math.round(m.y) - 5 - cy); }
     else if (m.kind === 'cart') { if (!m.gone) g.drawImage(PROP.mineCart[Math.abs(m.vx) > 20 ? Math.floor(time * 12) % 2 : 0], Math.round(m.x) - 1 - cx, Math.round(m.y) - 4 - cy); }
     else if (m.kind === 'orelift') { g.fillStyle = '#8b8378'; g.fillRect(Math.round(m.x) + 2 - cx, 0, 2, Math.round(m.y) - cy); g.fillRect(Math.round(m.x) + 60 - cx, 0, 2, Math.round(m.y) - cy); g.drawImage(PROP.orePan, Math.round(m.x) - cx, Math.round(m.y) - 3 - cy); }

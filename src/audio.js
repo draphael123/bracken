@@ -275,6 +275,7 @@ export const SFX = {
   croak() { tone('sawtooth', 70, 110, 0.35, 0.28); tone('square', 140, 90, 0.3, 0.1, 0.05); },
   tongue() { noise(0.12, 0.25, 2500, 0.5); tone('sine', 900, 300, 0.15, 0.15); },
   leap() { tone('sine', 120, 400, 0.25, 0.2); noise(0.1, 0.15, 600); },
+  budSpring() { noise(0.08, 0.24, 1700, 1.1); tone('sine', 150, 640, 0.2, 0.22); tone('triangle', 720, 1500, 0.12, 0.08, 0.05); noise(0.2, 0.1, 480, 0.6, 0.06); },   /* a wet pop out of the bud, the stalk going boing under you, and the water it slapped */
   bow() { tone('triangle', 700, 200, 0.12, 0.14); noise(0.08, 0.15, 3000); },
   bird() { tone('sine', 1800, 2600, 0.08, 0.06); tone('sine', 2400, 1900, 0.1, 0.05, 0.1); },
   splash() { noise(0.3, 0.4, 700, 0.5); tone('sine', 300, 120, 0.2, 0.15); },

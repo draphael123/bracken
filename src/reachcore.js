@@ -10,6 +10,7 @@ const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
 const JUMP_ACROSS = 6;                                        // with a run-up, about six tiles of float
 const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws you much higher
+const BUD_UP = Math.floor((420 * 420) / (2 * G) / TSZ);       // a bud pad throws you a tier: five rows (floor, not ceil: 89 px is not six rows)
 
 export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones)
   const W = L.W, H = L.H, g = L.grid.slice(); // a copy: the things the PLAYER can open are opened in it first
@@ -38,10 +39,11 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a
      wind column and the great kite's flight. These are why Bracken Wood read 16% reachable and the Marsh 7%. The coin
      sprinkler in level.js does NOT pass the option, so no gold moves: only the audits see further. */
-  const extraFoot = [], springs = new Set(), groups = []; let flight = null;
+  const extraFoot = [], springs = new Set(), buds = new Set(), groups = []; let flight = null;
   if (opts.rides) {
     for (const e of (L.ents || [])) {
       if (e.t === 'pad') for (const dx of (e.big ? [-1, 0, 1] : [-1, 0])) extraFoot.push((e.x + dx) + ',' + (e.y - 1));   /* a big pad is two tiles wide, centred on its column: it reaches half into both neighbours */
+      if (e.t === 'pad' && e.spring && !e.big) for (const dx of [-1, 0]) buds.add((e.x + dx) + ',' + (e.y - 1));
       if (e.t === 'wasp' && !opts.noFoes) { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }
     }
     for (const m of (L.moversExtra || [])) if (m.kind === 'wheel' && m.r) { const cells = [];
@@ -80,7 +82,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     return true; };
   // everywhere you can get to from one tile (push is handed in, so tools/traps.mjs can run it backwards)
   const expand = (x, y, push) => {
-    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = springy ? BOUNCE_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
+    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }
