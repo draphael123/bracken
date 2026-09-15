@@ -17441,6 +17441,30 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
   // kitchens were one continuous throne room and you could not tell which floor you were on. Four rooms, four
   // walls: the guardroom is cold and hung with arms, the kitchens are black with soot and lit from the hearth,
   // the armoury is iron and coal, and the chapel is tall, pale and full of coloured light.
+  /* HER THRONE GALLERY, on the floor that was the armoury: dark oak panelling, a gilt rail, and between purple hangings the queens
+     before her in their frames - green faces, iron crowns - looking down the room at whoever has come to see the one who is left. */
+  if (st === 'gallery') {
+    const fl = sy + h;
+    g.fillStyle = '#34241f'; g.fillRect(sx, sy, w, h);   /* (a shade lighter than oak would be: at '#231816' the lookpass measured her gallery as dark as the kitchens' soot) */
+    for (let xx = sx - ((tx0 * TS) % 24); xx < sx + w; xx += 24) { g.fillStyle = '#44302a'; g.fillRect(xx + 3, sy, 18, h); g.fillStyle = '#1e1512'; g.fillRect(xx + 21, sy, 1, h); }   // the panels
+    const glow = 0.5 + 0.5 * Math.sin(time * 1.7);
+    g.globalAlpha = 0.08 + 0.03 * glow; g.fillStyle = '#ffb45c'; g.fillRect(sx, fl - 44, w, 44); g.globalAlpha = 1;   // the candle light, low along the walls
+    g.fillStyle = '#7a5a1c'; g.fillRect(sx, fl - 16, w, 2); g.fillStyle = '#c9a040'; g.fillRect(sx, fl - 16, w, 1);                                                       // the dado rail
+    g.fillStyle = '#1a1210'; g.fillRect(sx, fl - 14, w, 14);
+    for (let xx = sx - ((tx0 * TS) % 96); xx < sx + w; xx += 96) {
+      for (const hx of [xx + 4, xx + 58]) { if (hx + 10 < sx || hx > sx + w) continue;                                                                                    // a hanging either side
+        for (let i = 0; i < 10; i++) { const px2 = hx + i; if (px2 < sx || px2 >= sx + w) continue; g.fillStyle = i % 4 < 2 ? '#4a2258' : '#34183e'; g.fillRect(px2, fl - 88, 1, 60 - (i % 3) * 2); } }
+      const fx = xx + 26, fy = fl - 84; if (fx + 24 < sx || fx > sx + w) continue;
+      const seed = Math.abs(Math.round((xx + tx0 * TS) / 96)) % 3;
+      g.fillStyle = '#c9a040'; g.fillRect(fx, fy, 24, 30); g.fillStyle = '#7a5a1c'; g.fillRect(fx + 1, fy + 1, 22, 28);                                                  // the frame
+      g.fillStyle = ['#3a2a3a', '#2a2a3e', '#3a2e22'][seed]; g.fillRect(fx + 3, fy + 3, 18, 24);                                                                           // the ground of the picture
+      g.fillStyle = ['#5a7a3a', '#6a8a42', '#4e6a36'][seed]; g.fillRect(fx + 8, fy + 10, 8, 8); g.fillRect(fx + 5, fy + 12, 3, 2); g.fillRect(fx + 16, fy + 12, 3, 2);   // her face and her ears
+      g.fillStyle = ['#5e1822', '#2e215a', '#173e26'][seed]; g.fillRect(fx + 6, fy + 18, 12, 9);                                                                          // her robe
+      g.fillStyle = '#8a919c'; g.fillRect(fx + 8, fy + 7, 8, 3); g.fillRect(fx + 8, fy + 5, 1, 2); g.fillRect(fx + 11, fy + 5, 2, 2); g.fillRect(fx + 15, fy + 5, 1, 2);   // her crown
+      g.fillStyle = '#ffd36b'; g.fillRect(fx + 10, fy + 13, 1, 1); g.fillRect(fx + 13, fy + 13, 1, 1);
+    }
+    return;
+  }
   if (st === 'guard') {
     const fl = sy + h;                                                                      // the floor of the room: the camera never leaves it
     g.fillStyle = '#23252e'; g.fillRect(sx, sy, w, h);

@@ -79,12 +79,16 @@ export async function lookPass(BK, o = {}) {
     const id = LEVELS[li].id;
     try { BK.load(li); } catch (e) { frames.push({ id, error: 'will not load: ' + e.message }); continue; }
     BK.state = 'play'; BK.god = true; BK.sim(180);   /* past the level's title card and the iris */
-    const L = BK.L, { out: pts, seen } = points(L, o);
+    let L = BK.L; const { out: pts, seen } = points(L, o);
     let pi = 0;
     for (const pt of pts) {
-      const P = BK.P; BK.reset();
+      let P = BK.P; BK.reset();
       const boss = pt.kind === 'arena' || pt.kind === 'mini';
       BK.look(pt.tx, pt.ty); BK.sim(boss ? (o.bossFrames || 300) : (o.settle || 45));
+      /* A FIGHT WOKEN AT AN EARLIER POINT HOLDS THE HERO. A mini's walls and its camera lock stay shut through BK.reset, and the points go
+         left to right, so once Highcrown's armoury moved to the middle of the level every point past it - the bakehouse, the keep, her
+         apartments, her own arena - was taken inside the armoury with the hero pinned at its gate. Held away from the point, load afresh. */
+      if (Math.abs(P.x / TS - pt.tx) > 4 || Math.abs(P.y / TS - pt.ty) > 6) { BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(180); L = BK.L; P = BK.P; BK.reset(); BK.look(pt.tx, pt.ty); BK.sim(boss ? (o.bossFrames || 300) : (o.settle || 45)); }
       /* A HERO WHO DIED IN THE SETTLE (a kill zone, the dark's own teeth) is put back and the frame taken at once */
       if (P.dead || P.hp <= 0) { BK.reset(); BK.look(pt.tx, pt.ty); BK.sim(1); BK.reset(); }
       /* A NAME CARD IS A MOMENT, NOT THE LEVEL: a route point that wakes a mini or a boss gets its intro (black bars, the world dimmed
