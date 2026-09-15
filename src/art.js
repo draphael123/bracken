@@ -612,9 +612,31 @@ export function bakeCoin() {
 
 // ---------- Marsh Wood props ----------
 // Lily pad: a green disc with a notch, 24×6. Frame 2 is the sunk, darker version.
-export function bakeLilyPad() {
-  const mk = (col, colD, colL) => { const [c, g] = canvas(24, 7); ellipse(g, 12, 3.5, 11.5, 3, col, colD); ellipse(g, 10, 2.5, 6, 1.5, colL, col); line(g, 12, 3, 22, 1, colD, 1); px(g, 22, 0, 'rgba(0,0,0,0)'); return outline(c, OUT); };
+// THE BIG PAD (w 32) is the same leaf grown old: two tiles across, a second vein, and it sits a pixel deeper in the
+// water, so the rests of a crossing read as rests from a screen away and the quick hops read as quick.
+export function bakeLilyPad(w = 24) {
+  const big = w > 24, h = big ? 9 : 7;
+  const mk = (col, colD, colL) => { const [c, g] = canvas(w, h); ellipse(g, w / 2, h / 2, w / 2 - 0.5, h / 2 - 0.5, col, colD); ellipse(g, w / 2 - 2, h / 2 - 1, w / 4, big ? 2 : 1.5, colL, col); line(g, w / 2, h / 2 - 0.5, w - 2, 1, colD, 1); px(g, w - 2, 0, 'rgba(0,0,0,0)'); if (big) line(g, w / 2 - 2, h / 2, 5, h - 3, colD, 1); return outline(c, OUT); };
   return [mk('#4f9a58', '#2f6e3a', '#8fd160'), mk('#3a7a48', '#264a2f', '#4f9a58')];
+}
+// THE BUD PAD: a paler, yellower leaf with a fat closed bud standing up out of the middle of it, 24×12 (the leaf is
+// the bottom seven rows, drawn five up from the pad's top). It has to read as NOT a pad before you land on it, so it
+// differs in three ways at once: colour, a shape sticking up, and (in the draw) a ring going out across the water.
+// Frames: shut and ready; burst open (it has just thrown you); sunk.
+export function bakeSpringPad() {
+  const mk = (col, colD, colL, bud) => { const [c, g] = canvas(24, 12);
+    ellipse(g, 12, 8.5, 11.5, 3, col, colD); ellipse(g, 10, 7.5, 6, 1.5, colL, col); line(g, 12, 8, 22, 6, colD, 1); px(g, 22, 5, 'rgba(0,0,0,0)');
+    if (bud === 'shut') { rect(g, 11, 6, 2, 2, '#3a7a48'); ellipse(g, 12, 3.5, 3, 3.5, '#f4f0d0', '#d8b8c8'); rect(g, 11, 1, 2, 4, '#ffffff'); px(g, 12, 0, '#ff9ab0'); px(g, 10, 4, '#ff9ab0'); px(g, 14, 4, '#ff9ab0'); }
+    else if (bud === 'open') { for (const [x, y] of [[6, 5], [7, 4], [8, 4], [16, 4], [17, 4], [18, 5], [9, 3], [15, 3], [10, 2], [14, 2]]) px(g, x, y, '#ffd0dc'); for (const [x, y] of [[8, 5], [16, 5], [11, 3], [13, 3]]) px(g, x, y, '#ff9ab0'); rect(g, 11, 4, 3, 2, '#ffd36b'); }
+    else { ellipse(g, 12, 6, 2, 2, '#b8a8a0', '#8a7a78'); }
+    return outline(c, OUT); };
+  return [mk('#8fc860', '#4f8a3a', '#d8f09a', 'shut'), mk('#8fc860', '#4f8a3a', '#d8f09a', 'open'), mk('#5a8a48', '#34603a', '#8fc860', 'sunk')];
+}
+// A big pad's flower: a whole water lily, not a bud, so the pads that hold you longer are the ones in bloom.
+export function bakeLilyFlowerBig() {
+  const [c, g] = canvas(12, 9); ellipse(g, 6, 7, 5.5, 1.5, '#4f9a58', '#2f6e3a');
+  for (const [x, y, k] of [[2, 5, 0], [9, 5, 0], [3, 4, 0], [8, 4, 0], [4, 2, 1], [7, 2, 1], [5, 1, 1], [6, 1, 1], [4, 3, 0], [7, 3, 0]]) px(g, x, y, k ? '#ffd0dc' : '#ff9ab0');
+  rect(g, 5, 4, 2, 2, '#ffd36b'); return outline(c, OUT);
 }
 // Reed mat: a floating peat slab (its top is the platform) with reeds growing out of it. 16×16, draw 8px up.
 export function bakeReeds(seed) {

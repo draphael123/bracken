@@ -73,9 +73,9 @@ export async function floatLab(BK, o = {}) {
         const k = Math.floor(f / 60) % 8; P.hp = P.maxHp; if (k === 0) { const e0 = foes()[(f / 60 / 8) % Math.max(1, foes().length) | 0]; if (e0) { P.x = e0.x + 40; P.y = e0.y; P.vx = P.vy = 0; } }   /* stand by one of them, so it has someone to chase */
         BK.sim(60);
         for (const e of foes()) {
-          const pl = (L.pools || []).find(p => { const bot = p.bottom !== undefined ? p.bottom : p.y + 60; return p.swim && e.x >= p.x0 - 1 && e.x <= p.x1 + 1 && e.y >= Math.min(p.y, bot - 6) - 2 && e.y <= bot + 2; });   /* on the bed of water that has gone out is in it */
+          const pl = (L.pools || []).find(p => { const bot = p.bottom !== undefined ? p.bottom : p.y + 60; return (p.swim || (e.leap && !p.shallow)) && e.x >= p.x0 - 1 && e.x <= p.x1 + 1 && e.y >= Math.min(p.y, bot - 6) - 2 && e.y <= bot + 2; });   /* on the bed of water that has gone out is in it; a river eel (leap) lives under deep water nobody swims */
           let why = null;
-          if (INWATER.has(e.t)) { if (!pl) why = 'out of the water (y ' + Math.round(e.y) + ', its water ' + (e.pool ? Math.round(e.pool.y) + '..' + Math.round(e.pool.bottom !== undefined ? e.pool.bottom : e.pool.y + 60) + ' x ' + Math.round(e.pool.x0) + '..' + Math.round(e.pool.x1) : 'none') + ', ' + e.mode + ')'; else if (solid(Math.floor(e.x / TS), Math.floor((e.y - (e.h || 8) / 2) / TS))) why = 'inside the rock'; }
+          if (INWATER.has(e.t) && !(e.leap && e.mode === 'leap')) { if (!pl) why = 'out of the water (y ' + Math.round(e.y) + ', its water ' + (e.pool ? Math.round(e.pool.y) + '..' + Math.round(e.pool.bottom !== undefined ? e.pool.bottom : e.pool.y + 60) + ' x ' + Math.round(e.pool.x0) + '..' + Math.round(e.pool.x1) : 'none') + ', ' + e.mode + ')'; else if (solid(Math.floor(e.x / TS), Math.floor((e.y - (e.h || 8) / 2) / TS))) why = 'inside the rock'; }
           else if (e.shore && (e.x < e.shore.x0 - TS * 2 || e.x > e.shore.x1 + TS * 2) && !e.homing) why = 'off on dry land and not going back';
           const key = e.t + why + Math.round(e.hx || 0);
           if (why && !seen.has(key)) { seen.add(key); water.push(id + ': ' + e.t + '@' + Math.round(e.x / TS) + ',' + Math.round(e.y / TS) + ' ' + why + ' at ' + (f / 60 + 1) + 's'); }

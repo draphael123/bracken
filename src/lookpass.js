@@ -22,7 +22,7 @@ const STAND = new Set([T.SOLID, T.ONEWAY, T.PLANK, T.SHELF, T.RAIL, T.CRATE]);
 const SOLIDISH = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.ICE, T.CRYST]);   /* not play space when it fills a pixel's tile */
 /* THE ONES THAT ARE MEANT TO BE INVISIBLE: a feeler under the mud and a sweep in its hole are hidden by design, and the mud stirring
    is their tell. A creature in one of these modes is not judged (the playtest keeps the same kind of list, INROCK_FOE) */
-const HIDDEN = { feeler: new Set(['hide', 'sink']), sweep: new Set(['hide']), lurker: new Set(['hide']) };
+const HIDDEN = { feeler: new Set(['hide', 'sink']), sweep: new Set(['hide']), lurker: new Set(['hide']), eel: new Set(['lurk', 'leapTell']) };   /* a river eel under its water is not drawn at all: its boil of bubbles and its mark are the tell */
 export const LOOK = { hud: 46, footLow: 14, footFrac: 0.4, footMin: 5, creatureVisE: 20, creatureP75: 12, creatureMin: 24, darkP90: 20, darkMean: 9, heroMin: 60, tellRatio: 3 };   /* calibrated by eye: the Deep's lit floor (open p90 31) reads; the Undercrown's unlit tunnels (p90 6) do not. heroMin: a standing knight is ~220 pixels; under 60 of them clearing 12 dE is a hero behind something. tellRatio: WCAG 3:1, the least a mark's ink or line must stand off what it sits over */
 
 const LIN = new Float32Array(256); for (let i = 0; i < 256; i++) { const c = i / 255; LIN[i] = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }

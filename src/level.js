@@ -272,7 +272,7 @@ function marshWood() {
 
   // ---- 2. Lily pond: pads that sink ----
   water(25, 43, 23);
-  for (const x of [27, 30, 33, 36, 39, 42]) ent('pad', x, 22);
+  for (const x of [27, 30, 33, 36, 39, 42]) ent('pad', x, 22, { big: x === 27 || x === 36 });   // the first pad of the game is a big one: you learn the sink on the leaf that forgives it
   coins([30, 20], [36, 20], [42, 20]);
   floor(44, 55, 22);
   ent('check', 47, 21);
@@ -307,13 +307,37 @@ function marshWood() {
   coins([138, 16], [147, 16], [156, 16]);
   block(161, 175, 18, 27);
   ent('check', 168, 17); crate(173, 17);
+  ent('sign', 171, 17, { text: 'A BUD PAD SPRINGS. LAND ON IT.' });   // taught once, on the bank, before the first bud at 191
 
   // ---- 7. The long river: lily pads across it, three strides apart, and a reed bed to rest on every so often ----
   /* THE PUNT WENT. Walking to one end of a raft to steer it was a chore, not a crossing, and the marsh already has
      its own verb for water: the pad that sinks under you. Nothing lives on this stretch - the pads are the question. */
   water(176, 259, 19);
   ent('sign', 175, 17, { text: 'LILY PADS SINK UNDER YOU. HOP ON, AND REST ON THE REED BEDS.' });   /* a step off the crate it was standing half inside */
-  for (const x of [178, 181, 184, 187, 190, 193, 196, 199, 202, 205, 208, 214, 217, 220, 223, 229, 232, 235, 238, 241, 247, 250, 253, 256]) ent('pad', x, 18);
+  /* BIG, SMALL, SMALL, BIG. Twenty-four identical hops three strides apart was a metronome, and the owner called it boring
+     on the first play. The big pads are the rests and the landings (two tiles, a slower sink, a flower on every one); the
+     small ones between are the quick hops. A small-to-big hop is four strides centre to centre and a small-to-small is
+     three: the paladin, the shortest jump in the game, carries 58 px level to level against 64 and 48. */
+  const BIG = new Set([178, 188, 198, 208, 215, 224, 230, 239, 248, 254]);
+  /* AND THREE OF THEM ARE BUDS. A bud pad throws you a tier up the moment you land on it: at 191 and 233 onto the old
+     eel-men's stages over the water (coins up there, and the pads go on underneath, so it is a choice you make in the air),
+     and at 258, the last pad, because the far bank stands four rows over the water there and a jump will not make it
+     (hard by the bank: two columns of drift on the way up is what the reach fill allows a rise of four, and it is right). */
+  const BUD = new Set([191, 233, 258]);
+  for (const x of [178, 181, 184, 188, 191, 194, 198, 201, 204, 208, 215, 218, 221, 224, 230, 233, 236, 239, 242, 248, 251, 254, 258]) ent('pad', x, 18, { big: BIG.has(x), spring: BUD.has(x) });
+  plat(193, 14, 7); plat(203, 14, 6); plat(235, 14, 7);   // the stages: one row of boards a tier over the pads, each one a drop onto the next reed bed at its far end
+  coins([195, 13], [197, 13], [201, 10], [205, 13], [207, 13], [237, 13], [239, 13], [241, 13]);
+  /* AND THINGS LIVE IN THE RIVER NOW ("so it's not so boring"). Every one is told, and none is on a pad or a stage:
+     - three river eels, each in a gap between two pads (186, 237, 252): a boil and a yellow ! and it leaps as high as
+       your hop, so you wait on the pad and go after it drops. 237 is under the second stage: the low road has the eel,
+       the high road has the coins;
+     - a wasp posted over the 218-221 gap, above the arc of the hop, that stings when the hop brings you up to it: block
+       it, cut it, or come down on it, which is a pogo.
+     (A plain wasp hung between the stages as a pogo step too, and it cost the level a point of difficulty it did not
+     earn: the river eels are a new kind here, and a kind is worth three. The index stays within six of where it was.) */
+  for (const x of [186, 237, 252]) ent('eel', x, 20, { leap: true });
+  ent('wasp', 219, 12, { sting: true, pogo: true });
+  block(260, 263, 14, 17);   // the far bank's lip, four rows over the water: the last bud is the way up it
   reeds(211, 16, 2); reeds(226, 16, 2); reeds(244, 16, 2);
   ent('check', 211, 15); ent('silver', 244, 13);
   coins([184, 16], [193, 16], [202, 16], [217, 16], [226, 14], [235, 16], [253, 16]);
@@ -339,9 +363,10 @@ function marshWood() {
 
   // ---- 9. Mud flats, short ----
   block(345, 358, 18, 27);
-  ent('thorn', 348, 17, { face: -1 });
+  // (a thorn stood at 348, two strides from where the flats are landed on, and a blue frog in the puddle four strides on:
+  // a fight at a landing, the last thing before the King's court. Both went - the flats are a breath before the boss now -
+  // and what they carried paid for the river's eels; the landing is kept calm at the end of this builder.)
   for (let x = 351; x <= 355; x++) L.set(x, 18, 0); water(351, 355, 18, true);
-  ent('hopper', 353, 18, { face: -1, color: 'blue' });
   reeds(356, 15, 2); coins([357, 14], [352, 15]); ent('stray', 356, 14, { kind: 'trap' });
 
   // ---- 10. The Croaking Court: a shallow pond, reed perches, and the King on his mud dais ----
@@ -356,12 +381,16 @@ function marshWood() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
-    duskStart: undefined, music: 'theme2', waterHurts: true,
+    duskStart: undefined, music: 'theme2', waterHurts: true, noStack: true,   /* the garrison steps past a tile a creature already holds (see garrison) */
     quest: { n: 3, item: 'trap', name: 'EEL TRAP', npc: 'ferryman', done: 'THE TRAPS ARE BACK', thanks: "THE FERRYMAN'S THANKS" },
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
     fog: [{ x0: 131 * TS, x1: 161 * TS, alpha: 0.86 }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
+    /* THE STAGES STAND ON POLES. A row of boards over open water with nothing under it is a floor hanging in the air
+       (B9): each stage is driven into the river on two poles, with a rope rail between them, the way the drowned
+       village's huts stand on stilts. Every pole is put in a gap between pads, never through one. */
+    ropes: [[193, 199, 3091, 3197], [203, 208, 3251, 3304], [235, 241, 3761, 3852]].map(([a, b, p0, p1]) => ({ x0: a * TS, y0: 14 * TS - 11, x1: (b + 1) * TS, y1: 14 * TS - 11, posts: [[p0, 14 * TS - 9, 19 * TS + 3], [p1, 14 * TS - 9, 19 * TS + 3]] })),
     arena: { x0: 361 * TS, x1: 403 * TS, floor: 18 * TS, trigger: 367 * TS, wallL: 360, wallR: 404, boss: 'frog', dais: { x0: 386 * TS, x1: 402 * TS, h: 16 }, music: 'frogking', tint: '#3a8a5a', tintA: 0.1, fx: 'motes' },
   }
   // ---- 7b. THE DROWNED VILLAGE: stilt huts over deep water. Planks, sinking pads, archers on the roofs, frogs below. ----
@@ -377,10 +406,15 @@ function marshWood() {
   // four pads: you could not see the next one and there was no rhythm to find. Thirteen of them, spaced so
   // that every jump is reachable and none of them is a rest - and in fog that thick the only way to read the
   // run is to keep moving and trust the one you can just see.
-  for (const x of [281, 285, 289, 293, 297, 300, 304, 308, 312, 315, 318, 321]) G.ent('pad', x, 18);
+  for (const x of [281, 285, 289, 293, 297, 300, 304, 308, 312, 315, 318, 321]) G.ent('pad', x, 18, { big: x === 293 || x === 308 });   // the two pads with four strides on both sides of them are the big ones
   G.plat(303, 11, 3); G.ent('archer', 304, 10, { face: -1 }); G.plat(287, 11, 3); G.ent('archer', 288, 10, { face: -1 }); G.ent('silver', 306, 10);
-  G.ent('wasp', 292, 13); G.ent('wasp', 310, 13);
-  G.R.fog = (G.R.fog || []).concat([{ x0: 278 * TS, x1: 322 * TS, alpha: 0.86 }]); G.ent('wisp', 291, 12); G.ent('wisp', 306, 13); G.ent('wisp', 318, 12); // the village drowns in fog too; three wisps light it
+  G.ent('wasp', 292, 13); G.ent('wasp', 310, 13);   // (these two are the pogo steps up to the archers' roofs and the silver: they stay)
+  // THE WATER UNDER THE VILLAGE BITES NOW: two river eels, in the only pad gaps with no planks over them. Told, on a count.
+  G.ent('eel', 291, 20, { leap: true }); G.ent('eel', 310, 20, { leap: true });
+  /* (0.58, not the stream's 0.86: at 0.86 the next plank stood six points off the fog, at 0.66 two in five of them still
+     did not read, and a pad crossing is asked of you here where the stream only asks you to stand on a raft. It is still a
+     bank you see through only near yourself, and the wisps still clear it.) */
+  G.R.fog = (G.R.fog || []).concat([{ x0: 278 * TS, x1: 322 * TS, alpha: 0.58 }]); G.ent('wisp', 291, 12); G.ent('wisp', 306, 13); G.ent('wisp', 318, 12); // the village drowns in fog too; three wisps light it
   G.reeds(283, 15, 2); G.reeds(299, 14, 2); G.reeds(316, 15, 2);
   G.coins([280, 14], [288, 13], [296, 14], [304, 13], [313, 14], [320, 15], [284, 16], [309, 16]);
   G.ent('check', 321, 16); G.ent('stray', 296, 15, { kind: 'trap' });
@@ -404,6 +438,13 @@ function marshWood() {
   F.ent('sign', 274, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* on the reed bed: at 286 it stood five rows up over the open lake */
   F.ent('sign', 335, 10, { text: 'THE PADS SINK UNDER YOU. THE NEXT IS THREE STRIDES OFF: DO NOT LINGER.' });
   F.ent('sign', 405, 10, { text: 'ARCHERS ACROSS THE WATER. GO WHEN AN ARROW FLIES: THE NEXT IS A MOMENT AWAY.' });
+  // A BUD LANDS YOU ON THE STAGES AND THE BANK'S LIP, and the garrison read all three as fresh floor and stood a spitter and
+  // two thorns where you come down. They are landings: kept calm (in final columns, after both grows).
+  F.R.calm = (F.R.calm || []).concat([[240, 257, 9, 14], [282, 290, 9, 14], [305, 312, 9, 14]]);
+  // AND THE OTHER LANDINGS IT STOOD THINGS ON: the drowned village's planks (a turtle and a frog were two strides from where
+  // the pads put you down, and its spitters stood in the fog) and the mud flats' first step. Its eels, wasps and archers are
+  // the village's fight now.
+  F.R.calm = F.R.calm.concat([[326, 371, 12, 17], [440, 452, 14, 18]]);
   return F.done();
 ;
 }
@@ -6560,6 +6601,11 @@ function garrison(L, id) {
   const deepUnder = (x, y) => (L.pools || []).some(p => !p.shallow && !p.swim && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest', 'sheet']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
+  /* NOT ON TOP OF ONE ALREADY THERE (L.noStack). The sprinkler never looked at the creatures a builder put down by hand, so
+     a spot it took could be the very tile an archer stands on: after the Marsh's crossings were calmed, four of its
+     garrison came down on four of its own foes. A level that says noStack has the sprinkler step past a held tile. (A
+     flag, not a rule for everyone: seven other levels stack a pair today, and turning it on there reshuffles them.) */
+  const held = L.noStack ? new Set(L.ents.filter(e => !KEEP.has(e.t) && e.t !== 'coin' && e.t !== 'deco' && e.t !== 'pad').map(e => e.x + ',' + e.y)) : null;
   // every place a creature could stand, left to right
   const spots = [];
   for (let x = 6; x < W - 6; x++) for (let y = 2; y < H - 1; y++) {
@@ -6600,6 +6646,7 @@ function garrison(L, id) {
     const lo = Math.floor(spots.length * b / list.length), hi = Math.floor(spots.length * (b + 1) / list.length);
     let put = null;
     for (let k = lo; k < hi; k++) { const [x, y, isWet] = spots[(k + ((rnd() * (hi - lo)) | 0)) % Math.max(1, hi - lo) + lo] || spots[k];
+      if (held && held.has(x + ',' + y)) continue;
       if (!fits(list[b], x, y, isWet)) continue;
       if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
     if (!put) { left.push(list[b]); continue; }
@@ -6615,6 +6662,7 @@ function garrison(L, id) {
   for (const kind of left) {
     let put = null;
     for (let k = 0; k < spots.length; k++) { const [x, y, isWet] = spots[((k * 7 + ((rnd() * spots.length) | 0)) % spots.length)];
+      if (held && held.has(x + ',' + y)) continue;
       if (!fits(kind, x, y, isWet)) continue;
       if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
     if (!put) continue;   /* one kind with no water to go in is not a reason to drop every kind after it */
