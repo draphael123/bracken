@@ -141,7 +141,10 @@ async function pageTextFit(input) {
     await yieldNow(); }
 
   if (want('menu')) { toPlay(0, 'knight'); BK.state = 'menu'; const n = BK.ui.menuCount();
-    for (let i = 0; i < n; i++) frame('menu #' + i, () => { BK.state = 'menu'; BK.ui.menuI = i; }, { settle: 40 }); }
+    for (let i = 0; i < n; i++) frame('menu #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 });
+    /* THE PAUSE MAP: its title, its legend and its controls line, on a wood with every kind of mark (Stormhold: gates, keys, doors) */
+    for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
+    BK.ui.menuKind = 'pause'; }
 
   if (want('hud')) for (const h of HEROES) { toPlay(campaign.findIndex(([l]) => l.id === 'waymeet') >= 0 ? campaign.find(([l]) => l.id === 'waymeet')[1] : 0, h);
     frame('hud [' + h + '] meters full', () => { BK.state = 'play'; Object.assign(P, { resolve: 100, heat: 100, full: true, light: 100, harvest: 100, plunder: 100, loaded: true }); window.BK.PROG.tonics = 3; });

@@ -1104,9 +1104,7 @@ function drawGateHints(cx, cy) {
      pointed at the key's room - up into the sky - and a player tried the house beside the gate, which had nothing in it (Stormhold's
      iron gate). The arrow now points at the street door of the house the key is in, unless he is already in that room, and every
      street door of a house still holding a key carries a key plate over it. */
-  const roomOf = (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor((y - 1) / TS); return (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 1 && ty <= y1 + 1) || null; };
-  const keyDoors = k => { const room = roomOf(k.x, k.y); if (!room) return [];
-    return props.filter(q => q.t === 'doorway' && q.lock && q.lock[0] <= room[1] && q.lock[1] >= room[0]).map(q => props.find(o => o.t === 'doorway' && o.id === q.to && !o.lock)).filter(Boolean); };
+  /* (roomOf and keyDoors live under this function now: the pause map asks them the same thing) */
   for (const k of props) if (k.t === 'key' && !k.got) for (const dr of keyDoors(k)) { const gx = Math.round(dr.x - cx), gy = Math.round(dr.y - cy) - 50 + bob; if (gx < -40 || gx > VW + 40) continue;
     plate(gx, gy, '#e0b040'); g.fillStyle = '#e0b040'; g.fillRect(gx - 6, gy - 2, 4, 4); g.fillRect(gx - 2, gy - 1, 8, 2); g.fillRect(gx + 3, gy + 1, 1, 2); g.fillRect(gx + 5, gy + 1, 1, 2);
     g.fillStyle = '#1b1626'; g.fillRect(gx - 5, gy - 1, 2, 2); }   // the key's bow, its shank and two teeth
@@ -1116,6 +1114,127 @@ function drawGateHints(cx, cy) {
     const dx = k.x - P.x, dy = k.y - P.y, d = Math.hypot(dx, dy) || 1, ax = Math.round(P.x - cx + dx / d * 22), ay = Math.round(P.y - 30 - cy + dy / d * 10), an = Math.atan2(dy, dx), pulse = 0.5 + 0.5 * Math.sin(time * 6);
     g.globalAlpha = 0.6 + 0.4 * pulse; g.fillStyle = '#e0b040'; g.beginPath(); g.moveTo(ax + Math.cos(an) * 6, ay + Math.sin(an) * 6); g.lineTo(ax + Math.cos(an + 2.5) * 5, ay + Math.sin(an + 2.5) * 5); g.lineTo(ax + Math.cos(an - 2.5) * 5, ay + Math.sin(an - 2.5) * 5); g.closePath(); g.fill(); g.globalAlpha = 1; } // the key is that way
 }
+/* the room a place is in (a house's inside, drawn somewhere else on the map), and the street doors of the house a key is in */
+function roomOf(x, y) { const tx = Math.floor(x / TS), ty = Math.floor((y - 1) / TS); return (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 1 && ty <= y1 + 1) || null; }
+function keyDoors(k) { const room = roomOf(k.x, k.y); if (!room) return [];
+  return props.filter(q => q.t === 'doorway' && q.lock && q.lock[0] <= room[1] && q.lock[1] >= room[0]).map(q => props.find(o => o.t === 'doorway' && o.id === q.to && !o.lock)).filter(Boolean); }
+
+/* THE MAP. "Sometimes it can be hard to figure out where to go." A page of the pause menu (or TAB in a wood): the level's own
+   tiles at a pixel or more a tile, only what the camera has shown you, and a mark on every thing a player goes looking for.
+   Not a HUD minimap: the HUD is full, and the woods are six hundred tiles long or two hundred tall.
+   THE FOG is a cell of FOG x FOG tiles, marked from the camera's view every frame of play. It is kept in the save, per level
+   (PROG.fog, a bit a cell), so a wood you come back to remembers what you found in it. A rush, a trial and the store keep none. */
+const FOG = 4;
+let fog = null, fogW = 0, fogH = 0, fogDirty = false, fogSaveT = 5, mapFrom = 'pause', mapBase = null, mapPX = 0, mapPY = 0;
+const fogKeep = () => !!L && !rushOn() && !L.shop && !L.trial && !edTesting;
+function fogReset() {
+  fogW = Math.ceil(LW / FOG); fogH = Math.ceil(LH / FOG); fog = new Uint8Array(fogW * fogH); fogDirty = false; fogSaveT = 5; mapBase = null;
+  const s = fogKeep() && PROG.fog && PROG.fog[LEVELS[levelIndex].id];
+  if (s) try { const b = atob(s); if (b.length === Math.ceil(fog.length / 8)) for (let i = 0; i < fog.length; i++) if (b.charCodeAt(i >> 3) & (1 << (i & 7))) fog[i] = 1; } catch {}   /* a level that changed size since starts dark again */
+}
+function fogSave() {
+  fogSaveT = 5; if (!fog || !fogDirty || !fogKeep()) return; fogDirty = false;
+  let s = ''; for (let j = 0; j < Math.ceil(fog.length / 8); j++) { let b = 0; for (let k = 0; k < 8; k++) if (fog[j * 8 + k]) b |= 1 << k; s += String.fromCharCode(b); }
+  PROG.fog = PROG.fog || {}; PROG.fog[LEVELS[levelIndex].id] = btoa(s); saveProgress();
+}
+function fogMark(dt) {
+  if (!fog) return;
+  const c = TS * FOG, x0 = Math.max(0, Math.floor(camX / c)), x1 = Math.min(fogW - 1, Math.floor((camX + VW - 1) / c)), y0 = Math.max(0, Math.floor(camY / c)), y1 = Math.min(fogH - 1, Math.floor((camY + VH - 1) / c));
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * fogW + x; if (!fog[i]) { fog[i] = 1; fogDirty = true; } }
+  if (fogDirty && (fogSaveT -= dt) <= 0) fogSave();   /* written every five seconds of finding something, and when the menu opens */
+}
+const fogSeen = (x, y) => { if (!fog) return false; const c = TS * FOG, fx = Math.floor(x / c), fy = Math.floor((y - 1) / c); return fx >= 0 && fy >= 0 && fx < fogW && fy < fogH && !!fog[fy * fogW + fx]; };
+const MAP_ROCK = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT || t === T.ICE || t === T.WEB;
+const MAP_INK = { dark: [12, 10, 18], spike: [214, 92, 92], wet: [null, [40, 112, 214], [96, 160, 214], [132, 214, 64]] };
+/* TWO TONES FROM THE LEVEL'S OWN ROCK: the average of its baked solid tiles, lifted until it reads against the dark, and a
+   near-black of the same hue for the open air. The reef's map is the reef's colour, the crag's is grey. */
+function mapTones() {
+  const [c, cg] = canvas(TS, TS); let r = 0, gr = 0, b = 0, n = 0;
+  for (let i = 0, got = 0; i < LW * LH && got < 48; i += 7) { if (L.grid[i] !== T.SOLID || !tileSpr[i]) continue; got++;
+    cg.clearRect(0, 0, TS, TS); try { cg.drawImage(tileSpr[i], 0, 0); } catch { continue; }
+    const d = cg.getImageData(0, 0, TS, TS).data; for (let k = 0; k < d.length; k += 4) if (d[k + 3] > 128) { r += d[k]; gr += d[k + 1]; b += d[k + 2]; n++; } }
+  let rock = n ? [r / n, gr / n, b / n] : [120, 108, 96];
+  const lum = 0.3 * rock[0] + 0.59 * rock[1] + 0.11 * rock[2]; if (lum < 128) { const k = (128 - lum) / (255 - lum); rock = rock.map(v => v + (255 - v) * k); }
+  /* the open air is a dark of the rock's hue, and the fog darker again: air you have seen and dark you have not are two different blacks */
+  return { rock, ledge: rock.map(v => Math.min(255, v * 1.3 + 36)), open: rock.map(v => v * 0.3 + 22) };
+}
+/* the whole level, a pixel a tile, fog and all: built when the page opens (nothing moves while it is open) */
+function mapBuild() {
+  const tn = mapTones(), [c, mg] = canvas(LW, LH), img = mg.createImageData(LW, LH), d = img.data, wet = new Uint8Array(LW * LH);
+  for (const p of (L.pools || [])) { const k = p.poison ? 3 : p.shallow ? 2 : 1, r0 = Math.max(0, Math.floor(p.y / TS));
+    const r1 = Math.min(LH - 1, p.bottom !== undefined ? Math.ceil(p.bottom / TS) - 1 : p.depth ? Math.ceil((p.y + p.depth) / TS) - 1 : LH - 1);
+    for (let x = Math.max(0, Math.floor(p.x0 / TS)); x < Math.min(LW, Math.ceil(p.x1 / TS)); x++) for (let y = r0; y <= r1; y++) { const i = y * LW + x; if (MAP_ROCK(L.grid[i])) break; wet[i] = k; } }
+  for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) { const i = y * LW + x, o = i * 4, t = L.grid[i];
+    const col = !fog[Math.floor(y / FOG) * fogW + Math.floor(x / FOG)] ? MAP_INK.dark : MAP_ROCK(t) ? (y > 0 && !MAP_ROCK(L.grid[i - LW]) ? tn.ledge : tn.rock)
+      : t === T.SPIKE ? MAP_INK.spike : wet[i] ? MAP_INK.wet[wet[i]] : t !== T.AIR ? tn.ledge : tn.open;   /* a top, a ledge, a plank or a net is the light tone: what you stand on */
+    d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255; }
+  mg.putImageData(img, 0, 0); return c;
+}
+function mapGeom() {
+  const x = 4, y = 2, w = VW - 8, h = VH - 4, ax = x + 6, ay = y + 17, aw = w - 12, ah = h - 17 - 24;
+  /* the whole level as big as it fits, up to four pixels a tile; a level that does not fit at one (Bracken Wood is 528 tiles long, the Sunspire
+     two hundred tall) is drawn at two pixels a tile or as near as its short side allows, and pans along its long one */
+  const fit = Math.floor(Math.min(aw / LW, ah / LH)), s = fit >= 1 ? Math.min(4, fit) : Math.max(1, Math.min(2, Math.floor(Math.max(aw / LW, ah / LH))));
+  const vw = Math.min(LW, Math.floor(aw / s)), vh = Math.min(LH, Math.floor(ah / s));
+  return { x, y, w, h, ax, ay, aw, ah, s, vw, vh, ox: ax + Math.floor((aw - vw * s) / 2), oy: ay + Math.floor((ah - vh * s) / 2) };
+}
+function mapClamp(G) { mapPX = Math.max(0, Math.min(LW - G.vw, mapPX)); mapPY = Math.max(0, Math.min(LH - G.vh, mapPY)); }
+function mapOpen(from) { if (!L || !fog) return; mapFrom = from; menuKind = 'map'; mapBase = null; const G = mapGeom(); mapPX = P.x / TS - G.vw / 2; mapPY = P.y / TS - G.vh / 2; mapClamp(G); }
+function updatePauseMap(dt) {
+  const G = mapGeom(), v = 110 / G.s * dt;   /* a hundred and ten map pixels a second, whatever the scale */
+  if (keys.left) mapPX -= v; if (keys.right) mapPX += v; if (keys.up) mapPY -= v; if (keys.down) mapPY += v; mapClamp(G);
+  if (pausePress || menuTake()) { if (mapFrom === 'play') { state = menuFrom; SFX.menuClose(); } else { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Map'); SFX.ui(); } }
+}
+/* A MARK IS A SHAPE AS WELL AS A COLOUR, on a dark pad of its own so it stands off rock and air alike */
+function mapMark(mx, my, col, shape) {
+  g.fillStyle = 'rgba(10,8,16,0.85)';
+  if (shape === 'bar') { g.fillRect(mx - 2, my - 4, 4, 9); g.fillStyle = col; g.fillRect(mx - 1, my - 3, 2, 7); return; }
+  g.fillRect(mx - 3, my - 3, 7, 7); g.fillStyle = col;
+  if (shape === 'key') { g.fillRect(mx - 2, my - 1, 2, 3); g.fillRect(mx, my, 3, 1); g.fillRect(mx + 2, my + 1, 1, 1); }
+  else if (shape === 'door') { g.fillRect(mx - 2, my - 2, 5, 1); g.fillRect(mx - 2, my + 2, 5, 1); g.fillRect(mx - 2, my - 2, 1, 5); g.fillRect(mx + 2, my - 2, 1, 5); }
+  else if (shape === 'shrine') { g.fillRect(mx - 1, my - 1, 3, 3); g.fillRect(mx, my - 2, 1, 5); g.fillRect(mx - 2, my, 5, 1); }
+  else if (shape === 'exit') { g.fillRect(mx - 2, my - 2, 5, 1); g.fillRect(mx - 2, my - 2, 1, 5); g.fillRect(mx + 2, my - 2, 1, 5); }
+  else if (shape === 'boss') { g.fillRect(mx - 2, my - 2, 5, 3); g.fillRect(mx - 1, my + 1, 3, 1); g.fillStyle = '#0a0810'; g.fillRect(mx - 1, my - 1, 1, 1); g.fillRect(mx + 1, my - 1, 1, 1); }
+  else if (shape === 'you') { g.fillRect(mx - 2, my - 2, 5, 5); g.fillStyle = '#5aa8ff'; g.fillRect(mx - 1, my - 1, 3, 3); }
+  else g.fillRect(mx - 1, my - 1, 3, 3);
+}
+function drawPauseMap() {
+  if (!fog || !L) return;
+  const G = mapGeom(), { x, y, w, h, s, vw, vh, ox, oy } = G; mapClamp(G);
+  if (!mapBase) mapBase = mapBuild();
+  g.fillStyle = 'rgba(10,14,12,0.85)'; g.fillRect(0, 0, VW, VH);
+  panel(x, y, w, h);
+  g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x + 4, y + 3, w - 8, 12);
+  text('MAP', x + 10, y + 5, UI.title); text(fitText(LEVELS[levelIndex].name, w - 70, 8), x + w - 10, y + 5, UI.dim, 'right');
+  const px0 = Math.round(mapPX), py0 = Math.round(mapPY);
+  g.fillStyle = '#0a0810'; g.fillRect(G.ax - 1, G.ay - 1, G.aw + 2, G.ah + 2);
+  g.drawImage(mapBase, px0, py0, vw, vh, ox, oy, vw * s, vh * s);
+  /* a gold edge on a side the map goes on past */
+  g.fillStyle = 'rgba(255,211,107,0.7)';
+  if (px0 > 0) g.fillRect(ox - 1, oy, 1, vh * s); if (px0 + vw < LW) g.fillRect(ox + vw * s, oy, 1, vh * s);
+  if (py0 > 0) g.fillRect(ox, oy - 1, vw * s, 1); if (py0 + vh < LH) g.fillRect(ox, oy + vh * s, vw * s, 1);
+  const at = (wx, wy) => [Math.round(ox + (wx / TS - px0) * s), Math.round(oy + (wy / TS - py0) * s)];
+  const mark = (wx, wy, col, shape, seen = fogSeen(wx, wy)) => { if (!seen) return; const [mx, my] = at(wx, wy); if (mx < ox || mx >= ox + vw * s || my < oy || my >= oy + vh * s) return; mapMark(mx, my, col, shape); };
+  const has = {};
+  for (const pr of props) if (pr.t === 'lockgate') { has.gate = 1; mark(pr.x, pr.y - pr.h * TS / 2, pr.open ? '#6a8a5a' : '#ff6b6b', 'bar'); }
+  for (const k of props) if (k.t === 'key' && !k.got) { has.key = 1; mark(k.x, k.y, '#ffd34a', 'key'); for (const dr of keyDoors(k)) { has.door = 1; mark(dr.x, dr.y - 12, '#e0b040', 'door'); } }
+  for (const sv of silvers) if (!sv.got) { has.silver = 1; mark(sv.x, sv.y, '#eaf0ff', 'dot'); }
+  for (const st of props) if (st.t === 'stray' && !st.got) { has.silver = 1; mark(st.x, st.y - 8, '#eaf0ff', 'dot'); }   /* the quest's strays are things to find too */
+  for (const sh of shrines) { has.shrine = 1; mark(sh.x, sh.y - 8, sh.lit ? '#ffd36b' : '#8a8a9a', 'shrine'); }
+  if (L.arena && boss && boss.alive) { const A = L.arena; let seen = false; for (let ax = A.x0; ax <= A.x1 && !seen; ax += TS * 2) seen = fogSeen(ax, A.floor - 8);   /* any of its floor seen is the arena seen */
+    has.boss = 1; mark((A.x0 + A.x1) / 2, A.floor - 16, '#ff9a5c', 'boss', seen); }
+  if (gate) { has.exit = 1; mark(gate.x, gate.y - 12, '#8fd160', 'exit'); }
+  { const [mx, my] = at(P.x, P.y - 10), hx = Math.max(ox + 2, Math.min(ox + vw * s - 3, mx)), hy = Math.max(oy + 2, Math.min(oy + vh * s - 3, my));   /* YOU ARE HERE: always, and blinking */
+    if (Math.floor(time * 4) % 4 !== 3) mapMark(hx, hy, '#fff6e0', 'you'); }
+  /* the legend: only what this level has, in the pixel type */
+  const fy = y + h - 22; g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x + 4, fy - 3, w - 8, 21);
+  let leg = [['YOU', '#fff6e0', 'you', 1], ['SHRINE', '#ffd36b', 'shrine', has.shrine], ['GATE', '#ff6b6b', 'bar', has.gate], ['KEY', '#ffd34a', 'key', has.key], ['DOOR', '#e0b040', 'door', has.door], ['FIND', '#eaf0ff', 'dot', has.silver], ['EXIT', '#8fd160', 'exit', has.exit], ['BOSS', '#ff9a5c', 'boss', has.boss]].filter(e => e[3]);
+  const wid = e => textW(e[0], 6) + 14; while (leg.length > 1 && leg.reduce((a, e) => a + wid(e), 0) > w - 16) leg.pop();
+  let lx = Math.round(VW / 2 - leg.reduce((a, e) => a + wid(e), 0) / 2 + 4);
+  for (const e of leg) { mapMark(lx + 3, fy + 3, e[1], e[2]); text(e[0], lx + 9, fy, UI.text, 'left', 6); lx += wid(e); }
+  text(vw < LW || vh < LH ? 'ARROWS LOOK AROUND     ESC BACK' : 'ESC BACK', VW / 2, fy + 10, UI.dim, 'center', 6);
+}
+
 function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(q => !q.done && P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st || !(st.kinds ? st.kinds.includes(kind) : st.kind === kind)) return;
   if (st.kinds) { st.have = st.have || {}; if (st.have[kind]) return; st.have[kind] = 1; }   /* a step of two kinds (the marks, the two skill keys) wants one of each */
   st.got = (st.got || 0) + 1; SFX.coin(); trialSay((kind === 'heavyblow' && hero() === 'knight' ? 'BASHED' : kind === 'tellY' && P.dodge > 0 ? 'YELLOW ! ROLLED' : TRIAL_SAY[kind]) || trialName(st.kind), '#8fd160', st);
@@ -1184,6 +1303,7 @@ function loadLevel(i) {
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
   spawnEntities();
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
+  fogReset();   /* the map remembers this level from the save */
 }
 function spawnEntities() {
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
@@ -1811,6 +1931,7 @@ let winLevelUp = false, medalPurse = 0;
 const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
 function winLevel() {
+  fogSave();
   PROG.done = PROG.done || {};
   winLevelUp = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it levels you like any other */
   state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
@@ -2790,7 +2911,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Talents', 'Equip', 'Hero', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+const PAUSE_ITEMS = ['Resume', 'Map', 'Talents', 'Equip', 'Hero', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
 const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
@@ -2801,6 +2922,7 @@ const SETTING_TIPS = {
   'Talents': 'the three trees of skills for this hero (Q)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
+  'Map': 'where you have been, and what is still to find (TAB)',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts, shouts and cries from heroes and foes',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
@@ -2814,14 +2936,14 @@ const SETTING_TIPS = {
   'Ambient life': 'birds, fish, critters and idle folk', 'Scanlines': 'CRT lines over the picture', 'Pixel scale': 'how the picture fits your screen',
   'Erase this save': 'erases this save', 'Sound test': 'listen to every track and cry',
 };
-const menuItems = () => menuKind === 'pause' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
+const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
 const isHeader = k => k[0] === '-';
 const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
 const BOSS_T = ['archmage', 'strawking', 'kraken', 'closedhelm', 'drownedking', 'prince', 'queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter', 'master', 'masthead'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
 const BEAST_SHORT = { homunculus: 'HOMUNCULUS', archmage: 'THE ARCHMAGE', armour: 'ARMOUR', topiary: 'TOPIARY', broom: 'BROOM', mimic: 'MIMIC', turret: 'TURRET', piece: 'PIECE', ploughman: 'THE PLOUGHMAN', kraken: 'THE KRAKEN', swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', drunk: 'THE DRUNK', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', prince: 'BURIED PRINCE', courtier: 'COURTIER', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', tideguard: 'TIDEGUARD', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
-function openMenu(from) { menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
+function openMenu(from) { if (from === 'play') fogSave(); menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
   if (isHeader(k)) return;
@@ -2851,6 +2973,7 @@ function menuAdjust(dir) {
 function menuConfirm() {
   const k = menuItems()[menuI];
   if (k === 'Resume') { state = menuFrom; SFX.menuClose(); }
+  else if (k === 'Map') { if (menuFrom !== 'play' || !fog) { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { mapOpen('pause'); SFX.uiSel(); } }
   else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
   else if (k === 'Talents') { treeFrom = 'menu'; treeI = 0; state = 'tree'; SFX.menuOpen(); }
@@ -2950,14 +3073,14 @@ function selectStart() {
 // ---------- input ----------
 const keys = {};
 let throwPress = false, skill2Press = false, talkPress = false, padLast = false; // padLast: the last press came from a gamepad (prompts show pad glyphs)
-let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false;
+let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false, mapPress = false;
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
 // A LIST TAKES A CHOICE FROM A KEY THAT IS NOT A DIRECTION. Z, ENTER, SPACE or X: never up, which moves it.
 const menuTake = () => confirmPress || atkPress;
 const KEYS = {
   jump: ['z', 'Z', ' ', 'Space', 'ArrowUp', 'w', 'W', 'k', 'K'], atk: ['x', 'X', 'j', 'J', 'Enter'], block: ['c', 'C', 'l', 'L'], dodge: ['v', 'V', 'Shift'],
   throw: ['f', 'F', 'b', 'B'], skill2: ['g', 'G', 'n', 'N'], talk: ['e', 'E', 't', 'T'],
-  left: ['ArrowLeft', 'a', 'A'], right: ['ArrowRight', 'd', 'D'], down: ['ArrowDown', 's', 'S'], up: ['ArrowUp', 'w', 'W'], pause: ['Escape', 'p', 'P'], talents: ['q', 'Q'], dance: ['h', 'H'],
+  left: ['ArrowLeft', 'a', 'A'], right: ['ArrowRight', 'd', 'D'], down: ['ArrowDown', 's', 'S'], up: ['ArrowUp', 'w', 'W'], pause: ['Escape', 'p', 'P'], talents: ['q', 'Q'], dance: ['h', 'H'], map: ['Tab'],
 };
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
@@ -2987,6 +3110,7 @@ addEventListener('keydown', e => {
   if (isKey(e, ['z', 'Z', 'Enter', ' ', 'Space'])) confirmPress = true;
   if (isKey(e, KEYS.pause)) pausePress = true;
   if (isKey(e, KEYS.talents)) talentsPress = true;
+  if (isKey(e, KEYS.map)) mapPress = true;
   if (isKey(e, KEYS.dance)) keys.dance = true;
   if (isKey(e, ['m', 'M'])) { SET.music = !SET.music; applySettings(); saveSettings(); }
   if (isKey(e, ['r', 'R']) && state === 'play') returnToShrine();
@@ -3063,7 +3187,7 @@ function drawTouch() {
   dg.font = Math.round(touchZones[0].w * 0.45) + 'px "Press Start 2P", monospace'; dg.textAlign = 'center'; dg.textBaseline = 'middle';
   for (const z of touchZones) { if (!zoneOn(z)) continue; const held = [...touches.values()].includes(z.k); dg.fillStyle = held ? 'rgba(143,209,96,0.55)' : 'rgba(20,16,30,0.42)'; dg.beginPath(); dg.roundRect(z.x, z.y, z.w, z.h, z.w * 0.25); dg.fill(); dg.strokeStyle = 'rgba(255,246,224,0.6)'; dg.lineWidth = 2; dg.stroke(); dg.fillStyle = 'rgba(255,246,224,0.85)'; dg.fillText(z.label, z.x + z.w / 2, z.y + z.h / 2); }
 }
-function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = talkPress = talentsPress = false; }
+function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = talkPress = talentsPress = mapPress = false; }
 
 // ---------- collision ----------
 const isSolid = (tx, ty) => { const t = tileAt(tx, ty); return t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT || t === T.ICE || t === T.WEB; };
@@ -15067,6 +15191,7 @@ function update(dt) {
   }
   if (state === 'menu') {
     menuMsgT = Math.max(0, menuMsgT - dt);
+    if (menuKind === 'map') { if (mapPress && mapFrom === 'play') pausePress = true; updatePauseMap(dt); return; }
     { const M = menuItems(); if (upPress) { do { menuI = (menuI + M.length - 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); }
     if (downPress) { do { menuI = (menuI + 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); } }
     if (leftPress) menuAdjust(-1); if (rightPress) menuAdjust(1);
@@ -15088,6 +15213,7 @@ function update(dt) {
   if (!updateWarp(dt)) { clearPresses(); return; }
   if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
   if (pausePress) { openMenu('play'); return; }
+  if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
   if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
   updateCharge(STEP);
   if (stop > 0) { stop -= dt; return; }
@@ -15097,7 +15223,7 @@ function update(dt) {
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
   updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
-  updatePolish(dt);
+  updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
 
@@ -17426,7 +17552,7 @@ function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
   text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
-  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['shield charge', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
+  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['shield charge', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P   (MAP: TAB)', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
   text('keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text('pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
   if (isReaper()) rows.forEach((r, i) => { const o = DK_KEYS.controls[r[0]]; if (o) rows[i] = o; });   /* THE DEATH KNIGHT'S KEYS (DK_KEYS): C is his ward, F raises the dead, G is his chosen skill */
   rows.forEach(([a, b, c], i) => { const yy = y + 24 + i * 8;
@@ -17485,6 +17611,7 @@ function panel(x, y, w, h, col = UI.border) { board(x, y, w, h, col); }
 function swordCursor(x, y, col = UI.sel) { g.fillStyle = '#0a0810'; g.fillRect(x - 1, y + 1, 9, 3); g.fillStyle = '#dfe8ff'; g.fillRect(x + 2, y + 2, 6, 1); g.fillStyle = '#fff'; g.fillRect(x + 7, y + 2, 1, 1);
   g.fillStyle = col; g.fillRect(x + 1, y, 1, 5); g.fillStyle = '#8a5a32'; g.fillRect(x - 1, y + 2, 2, 1); }
 function drawMenu() {
+  if (menuKind === 'map') { drawPauseMap(); return; }
   const open = Math.min(1, (time - menuSince) / 0.22), eo = 1 - Math.pow(1 - open, 3);
   g.fillStyle = 'rgba(10,14,12,' + (0.7 * eo).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
   const x = 54, y = 6 + Math.round((1 - eo) * -14), w = VW - 108, h = 168;
@@ -17980,7 +18107,7 @@ function render() {
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
     if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
-  if (state === 'play' || (state === 'talk' && !talkOverHud) || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play')) {
+  if (state === 'play' || (state === 'talk' && !talkOverHud) || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, VW - 16, [TYPE.title, 8]); g.fillStyle = 'rgba(10,8,16,0.66)'; g.fillRect(0, VH / 2 - 12, VW, (z >= 12 ? 10 : 8) + 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', z, 'outline'); } }   /* on a band of its own, and a name too wide for the card drops a size */
@@ -18353,6 +18480,7 @@ window.BK = { mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice()
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
     get titleI() { return titleI; }, set titleI(v) { titleI = v; },
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
+    get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
     tabs: () => storeTabs().length, items: () => storeItems(storeTabs()[storeTab]).length, menuCount: () => menuItems().length,
     treeRows: () => TREE.length, beasts: () => beastList().length,
   },
