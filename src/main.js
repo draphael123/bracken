@@ -1002,7 +1002,11 @@ function drawShards(cx, cy) { for (const sh of shards) { const x = Math.round(sh
 let webs = []; // web the Weaver spat onto the floor: { x, y, t } - it holds your feet until you cut it
 let destroyed = new Set(), cutBridges = new Set(); // tiles the player broke this attempt: they stay broken
 let embers = []; // the pyromancer's fireballs: { x, y, vx, vy, life, hit }
-let FOGC = null, DARKC = null, darkNow = 0.5;
+let FOGC = null, DARKC = null, darkNow = 0.5; const DARK_A = { cx: -1e9, cy: -1e9, id: '' };   /* where the dark was last drawn: a jump snaps it */
+/* WHO IS IN THE WATER, AND WHO IS IN THE DARK, this frame: the creature loop remembers how it drew each of them (set, frame, place,
+   scale) so the two passes that paint over them - the water's wash and the darkness - can bring them back up through it.
+   Filled in drawWorld, emptied by drawSwimmers and drawDarkRims. */
+const swimQ = [], darkQ = [];
 let silvers = []; // the three silver coins of the level: { x, y, i, got }
 let marks = new Set(); // world changes that persist through death: 'tree:x' felled, 'pool:x0' drained, 'cat:x' wrecked, 'ferry:x0' paid, 'cage:x' opened
 function resetPools() { for (const p of (L.pools || [])) if (p.y0 !== undefined) { p.y = p.y0; p.shallow = p.shallow0; p.depth = p.depth0; p.draining = false; p.dry = false; p.frogDry = false; } } /* a pond the King drained is full again on the retry */
@@ -8761,7 +8765,9 @@ function updatePrince(e, dt) {
   if (e.mode === 'sleep') { e.x = e.tombX; e.y = e.tombY; return; }
   const d = P.x - e.x, ad = Math.abs(d);
   /* THE LIGHT, every frame: the tomb is as dark as its lamps leave it, and he is as hard to hurt as it is dark */
-  { const lit = princeLit(), base = L.darkBase || 0; L.dark = base + (1 - lit) * 0.46;
+  /* (the tomb's dark is the TOMB's: a hero outside its walls - the readability pass teleports him about the mine with the Prince
+     awake - gets the mine's own dark, not the lamps' shroud over every gallery) */
+  { const lit = princeLit(), base = L.darkBase || 0, inTomb = P.x > A.x0 - 48 && P.x < A.x1 + 48 && P.y > (A.y0 !== undefined ? A.y0 : floor - 200) - 48 && P.y < floor + 48; L.dark = inTomb ? base + (1 - lit) * 0.46 : base;
     const light = princeLight(e), shroud = princeShrouded(e);
     if (light && !e.lightWas && e.mode !== 'wake') { e.n = e.n || {}; e.n.light = (e.n.light || 0) + 1; number(e.x, e.y - e.h - 22, 'THE LIGHT FINDS HIM', '#8fd160'); ringAt(e.x, e.y - e.h / 2, 30, '#8fd160', 0.4); SFX.lampOn(); }
     if (shroud && !e.shroudWas) { number(e.x, e.y - e.h - 22, 'SHROUDED', '#9aa39a'); SFX.hiss();
@@ -14254,6 +14260,36 @@ function drawStormClouds(cx, cy) {
       g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   }
 }
+/* THE SWIMMER RULE. The water's wash (drawWater's second pass) goes over everyone in it at half strength, and at half strength a
+   pale eel in pale water is a rumour: the readability pass measured the Deep's anglers, the Drowned King and the Long Water's
+   sirens at a quarter of the contrast a creature needs. So after the wash, everyone the creature loop found in a swim pool is put
+   back on top of it: a one-pixel line of the outline ink round the body first, then the body itself at about two thirds - enough
+   that it is plainly IN the water and not standing on it, and enough that it reads. The hero gets the same when he swims, without
+   the line (he is never the thing you are looking for). One rule, for every set, in one place. */
+function drawSwimmers() {
+  /* HOW DARK THE WATER IS HERE decides the line: a dark line round a body in bright water, a pale one round a body in the black
+     of the trench (where a dark line is the water), and in the dark a cold sheen over the body too - the thing catching what
+     light there is - because the Deep's anglers and its King were measured within a few L* of the water round them */
+  const gloom = Math.min(1, Math.max((L.dark || 0) >= 0.1 ? 1 : 0, (darkNow - 0.1) / 0.25)), line = gloom > 0.5 ? '#bfe6f5' : ART.OUT, lineA = gloom > 0.5 ? 0.6 : 0.8;
+  for (const q of swimQ) {
+    if (!q.hero) for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawTinted(q.set, q.key || null, q.frame, q.x + ox, q.y + oy, q.face, q.sx, q.sy, q.rot, line, lineA * q.a);
+    drawSet(q.set, q.key || null, q.frame, q.x, q.y, q.face, q.white, q.sx, q.sy, (q.hero ? 0.5 : 0.62) * q.a, q.rot);
+    if (gloom > 0.02 && !q.hero) drawTinted(q.set, q.key || null, q.frame, q.x, q.y, q.face, q.sx, q.sy, q.rot, '#9fd0d8', 0.26 * gloom * q.a);
+  }
+  swimQ.length = 0;
+}
+/* THE DARK RULE. The darkness is painted last and it takes the creatures down with it: a black goblin in a black tunnel is found by
+   being hit. After the dark has gone down, every creature the loop found in the gloom gets a thin cold rim and a breath of itself
+   back - the eye adapting to the thing that moves, not a lamp hung on it - scaled by how dark it is here, so a lit room adds
+   nothing and a lamp you carry into the black still makes the difference it made. */
+function drawDarkRims() {
+  const k = Math.min(1, Math.max(0, (darkNow - 0.1) / 0.4));
+  if (k > 0.02) for (const q of darkQ) {
+    for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawTinted(q.set, q.key || null, q.frame, q.x + ox, q.y + oy, q.face, q.sx, q.sy, q.rot, '#b8c8d8', 0.34 * k * q.a);
+    drawSet(q.set, q.key || null, q.frame, q.x, q.y, q.face, q.white, q.sx, q.sy, 0.3 * k * q.a, q.rot);
+  }
+  darkQ.length = 0;
+}
 function drawWater(cx, cy, surfaceOnly = false) {
   for (const p of (L.pools || [])) {
     if (p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH) continue;
@@ -14643,6 +14679,7 @@ function drawFacades(cx, cy) {
 }
 function drawWorld(cx, cy, showPlayer) {
   g.__world = true;   /* a string drawn in here lives in the world and is allowed off the edge: the playtest bot reads this */
+  swimQ.length = 0; darkQ.length = 0;   /* (a frame with no water pass or no dark pass must not carry last frame's swimmers into this one) */
   if (L.colosseum) { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#0e0c12'); gr.addColorStop(0.6, '#191620'); gr.addColorStop(1, '#241f28'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10; g.fillStyle = '#ffd36b'; for (let i = 0; i < 40; i++) { const x = ((i * 137) % VW), y = ((i * 61) % VH); g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; }
   else g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
@@ -14681,7 +14718,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.stroke();
   }
   /* UNDERGROUND: a mine has no sky. The shafts and caverns showed the crags' sunset through the rock; the whole view is its own back wall first */
-  if (L.underground) drawRoom('earth', -(((cx % TS) + TS) % TS), -(((cy % TS) + TS) % TS), VW + TS, VH + TS, Math.floor(cx / TS), Math.floor(cy / TS));
+  if (L.underground) drawRoom('mine', -(((cx % TS) + TS) % TS), -(((cy % TS) + TS) % TS), VW + TS, VH + TS, Math.floor(cx / TS), Math.floor(cy / TS));
   drawFacades(cx, cy);
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
@@ -14692,10 +14729,13 @@ function drawWorld(cx, cy, showPlayer) {
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
+  /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
+     lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
+  const lip = L.edgeLit ? (typeof L.edgeLit === 'string' ? L.edgeLit : 'rgba(236,214,168,0.5)') : null, lip2 = lip && lip.replace(/[\d.]+\)$/, '0.18)');
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
     const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0));
-    if (L.edgeLit && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = 'rgba(236,214,168,0.5)'; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = 'rgba(236,214,168,0.18)'; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see */
+    if (lip && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = lip; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = lip2; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
   }
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   drawGroundLight(cx, cy, tx0, ty0);
@@ -15301,12 +15341,16 @@ function drawWorld(cx, cy, showPlayer) {
     const ps = poseOf(e, wind), pSX = bigF * roar * (1 + sq * 0.22) * ps.sx, pSY = bigF * roar * (1 - sq * 0.22) * ps.sy, pRot = ps.rot || 0;
     e.lastSet = sprSet; e.lastFrame = frame; e.lastBigF = bigF;   /* remembered, for the body it leaves */
     // a bright rim behind the sprite, for anyone who loses foes against the wood
-    const inDark = (L.darkZones || []).some(z => e.x > z.x0 && e.x < z.x1 && e.y > z.y0 && e.y < z.y1) || (L.pools || []).some(q => q.swim && !q.dry && e.x > q.x0 && e.x < q.x1 && e.y > q.y);
+    const inWater = (L.pools || []).some(q => q.swim && !q.dry && e.x > q.x0 && e.x < q.x1 && e.y > q.y);
+    const inGloom = (L.darkZones || []).some(z => e.x > z.x0 && e.x < z.x1 && e.y > z.y0 && e.y < z.y1) || (darkNow > 0.2 && !!L.dark), inDark = inWater || inGloom;
     if ((SET.rim || inDark) && sprSet && !e.harmless) { // in a dark room or under water a foe gets a rim whatever the setting says: nothing may hurt you invisibly
  const rx = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, ry = e.y - cy + bob + ps.dy; g.globalAlpha = 0.5;
       for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, ps.face, true, pSX, pSY, 1, pRot);
       g.globalAlpha = 1; }
     { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, dy0 = e.y - cy + bob + ps.dy;
+      /* REMEMBERED FOR THE PASSES THAT COME AFTER THE WATER AND THE DARK (drawSwimmers, drawDarkRims): a creature in the water is
+         painted over by the water, and one in the dark by the dark, and both used to vanish into what was over them */
+      if (sprSet && e.alive && !e.harmless && (inWater || inGloom)) { const q = { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot, white: e.flash > 0, a: g.globalAlpha }; if (inWater) swimQ.push(q); if (inGloom) darkQ.push(q); }
       if (wind && sprSet.white && !e.harmless) drawTellRim(sprSet, frame, dx0, dy0, ps.face, pSX, pSY, pRot, 0.55 + 0.45 * Math.sin(e.anim * 22));
       if (!(e.flash > 0)) drawWarm('rim', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
       drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0, pSX, pSY, 1, pRot);
@@ -15410,6 +15454,7 @@ function drawWorld(cx, cy, showPlayer) {
       const hs = isReaper() ? 1.22 : 1, shadowed = isReaper() && ((P.passT || 0) > 0 || P.dodge > 0);   /* the Death Knight is the biggest of them, and when he steps he is a shadow */
       drawWarm('rim', K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, P.x, P.y - 10);
       drawSet(K, key, frame, P.x - cx, P.y - cy + dY, dFace, false, sx * (2 - br) * hs, sy * br * hs, shadowed ? 0.55 : 1);
+      if (P.swim && !shadowed) swimQ.push({ set: K, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: 0, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it (drawSwimmers) */
       if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, '#140a1c', 0.75);
       if (P.dance > 0) { for (let i = 0; i < 2; i++) { const t2 = (P.dance * 0.8 + i * 0.5) % 1, nx = Math.round(P.x - cx) + (i ? 10 : -12) + Math.round(Math.sin(t2 * 6) * 3), ny = Math.round(P.y - cy) - 30 - Math.round(t2 * 16);
         g.globalAlpha = 1 - t2; g.fillStyle = i ? '#ffd36b' : '#ff9ad0'; g.fillRect(nx, ny, 2, 2); g.fillRect(nx + 1, ny - 5, 1, 5); g.fillRect(nx + 2, ny - 5, 2, 1); } g.globalAlpha = 1; }   /* music notes off whoever is dancing */
@@ -15445,7 +15490,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
@@ -15491,7 +15536,15 @@ function drawWorld(cx, cy, showPlayer) {
   drawBloom(cx, cy); drawWindFx(); drawSpiderSigns(cx, cy); drawSlick(cx, cy); drawSkillFx(cx, cy); if (L.hush) drawHush(cx, cy);
   if (L.dark && (L.dark > 0.05 || (L.darkZones || []).some(z => P.x > z.x0 - 200 && P.x < z.x1 + 200 && P.y > z.y0 - 100 && P.y < z.y1 + 100) || darkNow > 0.05)) { // the mine: black, with holes for every lamp, fire and the light you carry
     if (!DARKC || DARKC.width !== VW || DARKC.height !== VH) { DARKC = document.createElement('canvas'); DARKC.width = VW; DARKC.height = VH; }
-    const dg = DARKC.getContext('2d'); dg.globalCompositeOperation = 'source-over'; dg.clearRect(0, 0, VW, VH); { let dk = L.dark; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) dk = z.dark; darkNow += (dk - darkNow) * 0.08; } dg.fillStyle = 'rgba(4,4,10,' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH); dg.globalCompositeOperation = 'destination-out';
+    const dg = DARKC.getContext('2d'); dg.globalCompositeOperation = 'source-over'; dg.clearRect(0, 0, VW, VH);
+    /* THE DARK EASES between zones as you walk, and SNAPS when the camera jumps - a level load, a respawn, a warp, the bot's
+       teleport - the way the near layer does. It only ever eased, from wherever the last level left it (0.5 at the start of the
+       game), and it eases in the DRAW, so the first half-second of every dark level wore the last one's dark, and the readability
+       pass - which draws a frame or two per place - measured the Undercrown at 0.44 when its dark is 0.14. */
+    { let dk = L.dark; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) dk = z.dark;
+      const jump = Math.abs(cx - DARK_A.cx) > VW / 2 || Math.abs(cy - DARK_A.cy) > VH / 2 || DARK_A.id !== curId(); DARK_A.cx = cx; DARK_A.cy = cy; DARK_A.id = curId();
+      darkNow += (dk - darkNow) * (jump ? 1 : 0.08); }
+    dg.fillStyle = 'rgba(4,4,10,' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH); dg.globalCompositeOperation = 'destination-out';
     const hole = (x, y, r, a = 1) => { const gr = dg.createRadialGradient(x, y, r * 0.15, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,' + a + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); dg.fillStyle = gr; dg.fillRect(x - r, y - r, r * 2, r * 2); };
     for (const lt of lights) { if (lt.ref && lt.ref.t === 'grub') { if (!lt.ref.alive) continue; lt.x = lt.ref.x; lt.y = lt.ref.y - 4; } if (lt.plate && !(lt.plate.hot > 0 || lt.plate.glow > 0)) continue; if (lt.r > 0 && lt.x > cx - 120 && lt.x < cx + VW + 120 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit) && !(lt.bracket && lt.bracket.taken)) hole(lt.x - cx, lt.y - cy, lt.r * 1.3); }
     for (const m of movers) if (m.kind === 'cart' && !m.gone && (m.ridden || Math.abs(m.vx) > 30)) hole(m.x + m.w / 2 - cx, m.y - cy, 66); // a cart on the move carries its own lamp
@@ -15506,7 +15559,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (L.deep) deepHoles(hole, cx, cy);
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
-    g.drawImage(DARKC, 0, 0);
+    g.drawImage(DARKC, 0, 0); drawDarkRims();
     { const gx0 = Math.floor(cx / TS), gy0 = Math.floor(cy / TS); const ORE = ['#ffd36b', '#e07a4a', '#dfe8f0', '#ffd36b']; // veins of ore glint in the rock
       for (let ty = gy0; ty <= gy0 + Math.ceil(VH / TS); ty++) for (let tx = gx0; tx <= gx0 + Math.ceil(VW / TS); tx++) { if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1 || L.grid[ty * LW + tx] !== T.SOLID) continue; const hsh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0; if ((hsh % 100) >= 7) continue; if (tileAt(tx - 1, ty) !== T.AIR && tileAt(tx + 1, ty) !== T.AIR && tileAt(tx, ty - 1) !== T.AIR && tileAt(tx, ty + 1) !== T.AIR) continue;
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }
@@ -15624,9 +15677,13 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
     for (let i = 0; i < w * h / 500; i++) { const rx = sx + ((i * 131 + 7) % w), ry = sy + ((i * 71 + 3) % h); const tw = 0.5 + 0.5 * Math.sin(time * 3 + i * 1.7);
       if (tw > 0.75) { g.fillStyle = tw > 0.92 ? '#eefaff' : '#7aa8c8'; g.fillRect(rx, ry, 1, 1); } }
     return; }
-  if (st === 'earth') { g.fillStyle = '#2c1e14'; g.fillRect(sx, sy, w, h);
-    g.fillStyle = '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); }
-    g.fillStyle = '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2);
+  /* THE EARTH: a burrow's wall in the woods, and - as 'mine' - the Undercrown's own back wall, the whole view of it. The mine had
+     the burrow's '#2c1e14' (L* 13), and by the time the night wash, the tall gloom and the dark had been over it the open air of
+     the mine measured L* 6-9; the readability pass wants 20 for a walkway to stand off it. So the mine's is a lit brown with its
+     grit paler than its ground, still plainly a mine, and the burrows keep their dark. */
+  if (st === 'earth' || st === 'mine') { const M = st === 'mine'; g.fillStyle = M ? '#5c4634' : '#2c1e14'; g.fillRect(sx, sy, w, h);
+    g.fillStyle = M ? '#70563c' : '#3a2a1c'; for (let i = 0; i < w * h / 90; i++) { const rx = sx + ((i * 37) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 2, 1); }
+    g.fillStyle = M ? '#7e6244' : '#4a3626'; for (let xx = sx + 12; xx < sx + w; xx += 28) g.fillRect(xx, sy, 1, 6 + (xx % 5) * 2);
     return; }
   // ---------- THE QUEEN'S HALLS ----------
   if (st === 'royal') {
@@ -16891,7 +16948,7 @@ window.BK = { straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvi
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [],
   risen: () => risen, bodies: () => bodies,
-  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */

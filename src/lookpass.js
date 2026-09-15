@@ -82,6 +82,9 @@ export async function lookPass(BK, o = {}) {
       BK.look(pt.tx, pt.ty); BK.sim(boss ? (o.bossFrames || 300) : (o.settle || 45));
       /* A HERO WHO DIED IN THE SETTLE (a kill zone, the dark's own teeth) is put back and the frame taken at once */
       if (P.dead || P.hp <= 0) { BK.reset(); BK.look(pt.tx, pt.ty); BK.sim(1); BK.reset(); }
+      /* A NAME CARD IS A MOMENT, NOT THE LEVEL: a route point that wakes a mini or a boss gets its intro (black bars, the world dimmed
+         behind the name) and the Undercrown's galleries measured as black as the Overman's card. Wait it out, and the level's banner too. */
+      for (let k = 0; k < 4 && (BK.bannerT > 0 || (BK.miniIntroT || 0) > 0 || (BK.boss && BK.boss.alive && BK.boss.mode === 'wake')); k++) BK.sim(60);
       /* THE BOSS IN THE PICTURE: a boss that swims or flies is often out of frame when the hero stands mid-room; go stand by it */
       let bossInfo = null;
       if (boss) { const A = pt.kind === 'arena' ? L.arena : L.mini, b = A && BK.enemies().find(e => e.t === A.boss && e.alive);
@@ -132,13 +135,33 @@ export async function lookPass(BK, o = {}) {
           BK.step(0);
           const dA = imgA.data, dB = imgB.data;
           for (const e of on) {
-            const hw = Math.max(20, (e.w || 12) * 1.6), hh = Math.max(36, (e.h || 12) * 2.4);
-            const x0 = Math.max(0, Math.floor(e.x - cx - hw)), x1 = Math.min(VW - 1, Math.ceil(e.x - cx + hw)), y0 = Math.max(0, Math.floor(e.y - cy - hh)), y1 = Math.min(VH - 1, Math.ceil(e.y - cy + 6));
-            let n = 0, vis = 0, sumA = 0, sumB = 0, bx0 = 1e9, by0 = 1e9, bx1 = -1, by1 = -1; const ds = [];
+            /* THE BOX IS THE BODY. It was a generous box round the creature's hitbox, and a creature that carries a light (an angler,
+               the Drowned King, whose eyes open the dark for ninety pixels round him) had the whole soft edge of that light counted
+               as itself: seven thousand pixels that changed a little, and a p75 that could never clear 12 whatever his body did.
+               The draw loop remembers the set and frame it drew (e.lastSet, e.lastFrame, e.lastBigF), so the box is the sprite's own
+               footprint, three pixels either side, and the creature is measured by its body; the old box is kept for anything drawn
+               some other way. */
+            let x0, x1, y0, y1;
+            const S = e.lastSet; let c0 = S && (e.face < 0 ? S.L : S.R);   /* a foe's set is an array of frames a side (a hero's is keyed by pose, and has no width: the old box) */
+            if (Array.isArray(c0)) c0 = c0[(((e.lastFrame || 0) % c0.length) + c0.length) % c0.length];
+            if (c0 && c0.width && S.ax !== undefined) { const k = e.lastBigF || 1, ax = e.face < 0 ? c0.width - S.ax : S.ax;
+              x0 = Math.max(0, Math.floor(e.x - ax * k - cx) - 3); x1 = Math.min(VW - 1, Math.ceil(e.x - ax * k + c0.width * k - cx) + 3); y0 = Math.max(0, Math.floor(e.y - S.ay * k - cy) - 3); y1 = Math.min(VH - 1, Math.ceil(e.y - S.ay * k + c0.height * k - cy) + 3); }
+            else { const hw = Math.max(20, (e.w || 12) * 1.6), hh = Math.max(36, (e.h || 12) * 2.4);
+              x0 = Math.max(0, Math.floor(e.x - cx - hw)); x1 = Math.min(VW - 1, Math.ceil(e.x - cx + hw)); y0 = Math.max(0, Math.floor(e.y - cy - hh)); y1 = Math.min(VH - 1, Math.ceil(e.y - cy + 6)); }
+            /* THE BODY, NOT ITS LIGHT. A pixel that changed at all (more than 6 across the three channels) used to be the creature; a
+               creature that carries a light - the anglers, the Drowned King's eyes - changes every pixel under the soft edge of it
+               by a little, and those thousands of barely-changed pixels were three quarters of "the creature", so its p75 could
+               never clear 12 whatever its body did. Now a pixel is the body when it changed by more than 24; the faint set is kept
+               only for a creature with no solid body at all (fewer than creatureMin such pixels), which is then measured as the ghost
+               it is, not skipped. */
+            let n = 0, vis = 0, sumA = 0, sumB = 0, bx0 = 1e9, by0 = 1e9, bx1 = -1, by1 = -1; const ds = [], faint = [];
             for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * VW + x, j = i * 4;
-              if (Math.abs(dA[j] - dB[j]) + Math.abs(dA[j + 1] - dB[j + 1]) + Math.abs(dA[j + 2] - dB[j + 2]) <= 6) continue;
+              const ch = Math.abs(dA[j] - dB[j]) + Math.abs(dA[j + 1] - dB[j + 1]) + Math.abs(dA[j + 2] - dB[j + 2]); if (ch <= 6) continue;
+              if (ch <= 24) { faint.push(i); continue; }
               n++; const d = dE(A, i, Bl, i); ds.push(d); if (d >= LOOK.creatureVisE) vis++; sumA += A.L[i]; sumB += Bl.L[i];
               if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y; }
+            if (n < LOOK.creatureMin) for (const i of faint) { n++; const d = dE(A, i, Bl, i); ds.push(d); if (d >= LOOK.creatureVisE) vis++; sumA += A.L[i]; sumB += Bl.L[i];
+              const x = i % VW, y = (i / VW) | 0; if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y; }
             if (n < 6) continue;
             ds.sort((a, b) => a - b);
             /* p75: how hard the most visible quarter of the creature stands off what is behind it. A ghost drawn at half alpha

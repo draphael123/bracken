@@ -44,11 +44,14 @@ async function main() {
     const darkBad = ok.filter(f => f.dark.bad).length, footBad = ok.filter(f => f.foot.bad).length;
     const cre = ok.flatMap(f => f.creatures), creBad = cre.filter(c => c.bad);
     const med = a => a.length ? a.slice().sort((x, y) => x - y)[a.length >> 1] : null;
-    const row = { id, frames: n, darkBad, footBad, creatures: cre.length, creBad: creBad.length, meanL: med(ok.map(f => f.dark.mean)), p90L: med(ok.map(f => f.dark.p90)),
+    /* THE SCORE, out of ten, so a level can be called done or not: ten less five for the share of frames too dark, five for the share with unreadable
+       footing, and eight for the share of creatures lost in their background. Under 8 is not done. */
+    const score = +Math.max(0, 10 - 5 * darkBad / Math.max(1, n) - 5 * footBad / Math.max(1, n) - 8 * (cre.length ? creBad.length / cre.length : 0)).toFixed(1);
+    const row = { id, score, frames: n, darkBad, footBad, creatures: cre.length, creBad: creBad.length, meanL: med(ok.map(f => f.dark.mean)), p90L: med(ok.map(f => f.dark.p90)),
       footE: med(ok.map(f => f.foot.median).filter(x => x !== null)), lowFoot: +(ok.reduce((s, f) => s + f.foot.low, 0) / Math.max(1, ok.reduce((s, f) => s + f.foot.n, 0))).toFixed(2),
       worstCreatures: [...new Set(creBad.map(c => c.t))].join(' '), secs: Math.round((Date.now() - t0) / 1000) };
     rows.push(row);
-    console.log(id.padEnd(11), String(n).padStart(3) + ' frames', ' dark ' + String(darkBad).padStart(2), ' footing ' + String(footBad).padStart(2), ' creatures ' + creBad.length + '/' + cre.length,
+    console.log(id.padEnd(11), String(score.toFixed(1)).padStart(4), String(n).padStart(3) + ' frames', ' dark ' + String(darkBad).padStart(2), ' footing ' + String(footBad).padStart(2), ' creatures ' + creBad.length + '/' + cre.length,
       ' L* ' + row.meanL + '/' + row.p90L, ' footE ' + row.footE, ' lowfoot ' + row.lowFoot, row.worstCreatures ? ' [' + row.worstCreatures + ']' : '', ' ' + row.secs + 's');
   }
   const jsonOut = join(OUT, AT ? 'lookpass-at.json' : 'lookpass.json');
