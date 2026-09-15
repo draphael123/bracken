@@ -13,6 +13,17 @@ const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws
 
 export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones)
   const W = L.W, H = L.H, g = L.grid.slice(); // a copy: the things the PLAYER can open are opened in it first
+  /* opts.noAssist: THE PLAIN MODEL. Nothing that moves and nothing that is only there sometimes - no hex vine, no
+     grown cap, no ghost furniture, no cart, no wheel, no swing, no lily pad, and the fields' phantom planks are air
+     while its shrinking bales are rock. What this fill reaches is what the slowest hero reaches with nothing but his
+     legs; the difference between it and the full fill is the list of climbs a level owes a second route to
+     (tools/reach.mjs --plain). Earned: a bale bank on the lane out of the Hexed Fields that only a vine could put
+     you on, and only if you were already riding it up. */
+  const plain = !!opts.noAssist;
+  if (plain && L.fields) {
+    for (const [x0, x1, y] of (L.fields.phantoms || [])) for (let x = x0; x <= x1; x++) if (g[y * W + x] === T.PLANK) g[y * W + x] = T.AIR;
+    for (const s of (L.fields.shrinks || [])) for (let y = s.y0; y <= s.y1; y++) for (let x = s.x0; x <= s.x1; x++) g[y * W + x] = T.SOLID;
+  }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
   // model treats them as already done rather than calling the far side unreachable
   for (const e of (L.ents || [])) {
@@ -28,18 +39,18 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const vents = (L.ents || []).filter(e => e.t === 'vent');
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
   // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
-  const lifts = (L.moversExtra || []).filter(m => m.kind === 'lift' || m.kind === 'growcap' || m.kind === 'hexvine').map(m => ({ x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
+  const lifts = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'lift' || m.kind === 'growcap' || (m.kind === 'hexvine' && !opts.fairVines)).map(m => ({ kind: m.kind + (m.group ? ' ' + m.group : ''), x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
   /* THE OTHER RIDES. A platform mover (ent 'mover': a run of `range` tiles, or a rise of `rise` tiles when vertical) and
      a ferry raft (x0..x1 along one row) are a band of footing: step on anywhere along the run, step off anywhere along it.
      They were why a third of the rivers and decks came back ASSISTED with their silver in doubt. */
-  for (const e of (L.ents || [])) if (e.t === 'mover') lifts.push(e.vert ? { x0: e.x, x1: e.x + (e.len || 2) - 1, y0: e.y - (e.rise || e.range || 4), y1: e.y } : { x0: e.x, x1: e.x + (e.len || 2) - 1 + (e.range || 0), y0: e.y, y1: e.y });
-  for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap' && m.kind !== 'hexvine') lifts.push({ x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
-  const swings = (L.moversExtra || []).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
+  if (!plain) for (const e of (L.ents || [])) if (e.t === 'mover') lifts.push(e.vert ? { kind: 'mover ' + (e.ghost || ''), x0: e.x, x1: e.x + (e.len || 2) - 1, y0: e.y - (e.rise || e.range || 4), y1: e.y } : { kind: 'mover ' + (e.ghost || ''), x0: e.x, x1: e.x + (e.len || 2) - 1 + (e.range || 0), y0: e.y, y1: e.y });
+  if (!plain) for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap' && m.kind !== 'hexvine') lifts.push({ kind: m.kind, x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
+  const swings = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
   /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a
      wind column and the great kite's flight. These are why Bracken Wood read 16% reachable and the Marsh 7%. The coin
      sprinkler in level.js does NOT pass the option, so no gold moves: only the audits see further. */
   const extraFoot = [], springs = new Set(), groups = []; let flight = null;
-  if (opts.rides) {
+  if (opts.rides && !plain) {
     for (const e of (L.ents || [])) {
       if (e.t === 'pad') for (const dx of [-1, 0]) extraFoot.push((e.x + dx) + ',' + (e.y - 1));
       if (e.t === 'wasp' && !opts.noFoes) { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }
@@ -50,6 +61,25 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     const kite = (L.ents || []).find(e => e.t === 'stormkite');
     if (L.flight && kite) flight = { x: kite.x, y: kite.y, x1: Math.floor(L.flight.x1 / TSZ) };
   }
+  /* opts.fairVines: A VINE IS ITS LEAF. The full fill rides a hex vine up from its bud like a lift, and only a hero who is
+     standing on the bud when he strikes the spill can do that - a long reach does it, a maul does not. Fair, a vine is
+     the ledge its grown leaf makes and nothing else, and the fill has to JUMP onto it. The leaf stands eight pixels over
+     a tile line, and it is counted as the whole row higher, so a leaf only just out of a jump reads as out of it: the
+     lane's leaf was fifty-six pixels over the lane against a fifty-one pixel jump. */
+  if (opts.fairVines && !plain) for (const m of (L.moversExtra || [])) if (m.kind === 'hexvine') {
+    const r = Math.floor(Math.min(m.y0, m.y1) / TSZ) - 1;
+    for (let x = Math.floor(m.x / TSZ); x <= Math.floor((m.x + m.w - 1) / TSZ); x++) extraFoot.push(x + ',' + r); }
+  /* EVERY ASSIST AS A BAND (kind, x0..x1, y0..y1 in tiles): the lifts, the swings' arcs, the wheels, the pads, and the
+     fields' phantom planks and shrinking bales. tools/reach.mjs --plain boards them one at a time from what the plain
+     fill can reach, so its report is a list of climbs and not one wall followed by everything behind it. */
+  const assists = lifts.map(lf => ({ ...lf }));
+  for (const arc of swings) { const xs = arc.map(p => p[0]), ys = arc.map(p => p[1]); assists.push({ kind: 'swing', x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }); }
+  for (const grp of groups) { const xs = grp.cells.map(p => p[0]), ys = grp.cells.map(p => p[1]); assists.push({ kind: 'wheel', x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }); }
+  if (!plain) for (const e of (L.ents || [])) if (e.t === 'pad') assists.push({ kind: 'pad', x0: e.x - 1, x1: e.x, y0: e.y - 1, y1: e.y - 1 });
+  if (!plain && L.fields) { for (const [x0, x1, y] of (L.fields.phantoms || [])) assists.push({ kind: 'phantom planks', x0, x1, y0: y - 1, y1: y - 1 });
+    for (const sh of (L.fields.shrinks || [])) assists.push({ kind: 'shrinking bales ' + sh.group, x0: sh.x0, x1: sh.x1, y0: sh.y0 - 1, y1: sh.y1 }); }
+  /* one band per ride: a wheel's four paddles are one wheel, and were being written down as four climbs */
+  { const had = new Set(); for (let i = assists.length - 1; i >= 0; i--) { const a = assists[i], k = [a.kind, a.x0, a.x1, a.y0, a.y1].join(); if (had.has(k)) assists.splice(i, 1); else had.add(k); } }
   const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
 
   // every tile you could be standing on
@@ -69,6 +99,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const push = (x, y) => { const k = key(x, y); if (footing.has(k) && !seen.has(k)) { seen.add(k); q.push([x, y]); } };
   // start where the knight starts, and fall to whatever is under it
   { let sy = L.START.y; while (sy < H - 1 && !footing.has(key(L.START.x, sy))) sy++; push(L.START.x, sy); }
+  for (const [sx, sy] of (opts.seeds || [])) push(sx, sy);   /* (only where there is footing: a seed on a vine's leaf is nothing to a fill with no vine) */
 
   // can a body (14px: one tile) get across the columns between x and x+dx at some height from row rTop down to
   // rBot? A jump is not a teleport: the stacks between two chimney shafts stop it (the model used to jump
@@ -140,5 +171,5 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   // - with open air between you and it: a coin on a roof is not got from the room under the roof
   const clearCol = (x, y0, y1) => { for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) if (solid(at(x, y)) && !climbable(at(x, y))) return false; return true; }; // (a rock face you cling to is not in the way)
   const jumpNear = (x, y) => { for (let dy = -2; dy <= 4; dy++) for (let dx = -2; dx <= 2; dx++) if (seen.has(key(x + dx, y + dy)) && clearCol(x + dx, y, y + dy) && clearCol(x, y, y + dy)) return true; return inVent(x, y); };
-  return { seen, footing, assisted, key, near, jumpNear, expand };
+  return { seen, footing, assisted, assists, key, near, jumpNear, expand };
 }
