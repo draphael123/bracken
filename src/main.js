@@ -3114,6 +3114,22 @@ function settleNums() {
 const tellQ = []; let hudRects = [], talkOverHud = false;
 /* THE MIDDLE OF THE TOP, clear of the HUD plate: a plate wide enough for BLOOD SURGE: C reaches past the middle, so the clock and the counts step right of it */
 const topMid = w => Math.max(VW / 2, (hudRects[0] ? hudRects[0][0] + hudRects[0][2] : 0) + 3 + w / 2);
+/* THE MARKS, BAKED ONCE. The yellow ! and the red !! are the whole defence language, and as the popup face's thin glyph with a
+   one-pixel line they sank into a bright sky (the fields at dusk, the reef's glare, the flotilla at noon). Each mark is its own
+   pixel glyph now - a bar three wide and six tall over a dot, bold enough to read at 320x180 - with the outline ink round it and
+   a deeper drop shadow one down and one right of the whole shape, so the ink reads against the dark and the outline against the
+   light. The colours are the game's own (the colour-safe setting remaps red to blue before it gets here); the line and the shadow
+   are the same for every palette. Cached by mark and colour. */
+const MARKS = new Map(), MARK_OFFS = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
+function markStamp(txt, col) {
+  const key = txt + '|' + col; let st = MARKS.get(key); if (st) return st;
+  const n = txt.length, W = n * 5 + 1, H = 12, [c, x] = canvas(W, H);
+  const ink = (dx, dy, colr) => { x.fillStyle = colr; for (let k = 0; k < n; k++) { const bx = 1 + k * 5 + dx, by = 1 + dy; x.fillRect(bx, by, 3, 6); x.fillRect(bx, by + 7, 3, 2); } };
+  for (const [ox, oy] of MARK_OFFS) ink(ox + 1, oy + 1, '#08060c'); ink(1, 1, '#08060c');   /* the shadow: the whole shape, one down and one right */
+  for (const [ox, oy] of MARK_OFFS) ink(ox, oy, ART.OUT);                                       /* the line */
+  ink(0, 0, col);                                                                                /* the ink */
+  st = { c, cx: 1 + Math.floor((n * 5 - 2) / 2), w: n * 5 - 2, h: 9 }; MARKS.set(key, st); return st;
+}
 function drawTells() {
   if (state !== 'play' && state !== 'talk') { tellQ.length = 0; return; }
   const drawn = [];
@@ -3123,9 +3139,15 @@ function drawTells() {
     for (let pass = 0; pass < 3; pass++) for (const r of hudRects) if (boxHit(tbox(x, y, t.txt), r)) y = r[1] + r[3] + 3;   /* off every plate at the top: the HUD, the clock, the counts, the quest */
     if (drawn.some(d => d.txt === t.txt && Math.abs(d.x - x) < w && boxHit(tbox(x, y, t.txt), tbox(d.x, d.y, d.txt)))) continue;   /* the ! off the wind-up and the ! the foe called are one mark */
     const clash = drawn.find(d => boxHit(tbox(x, y, t.txt), tbox(d.x, d.y, d.txt))); if (clash) x = clash.x + (x >= clash.x ? 1 : -1) * ((w + clash.w) / 2 + 2);
-    g.globalAlpha = t.a;
-    if (t.txt === '!!') { g.fillStyle = '#2a0c12'; g.fillRect(x - 8, y - 2, 16, 11); g.fillStyle = t.col; g.fillRect(x - 8, y - 2, 16, 1); g.fillRect(x - 8, y + 8, 16, 1); g.fillRect(x - 8, y - 2, 1, 11); g.fillRect(x + 7, y - 2, 1, 11); }   /* THE BADGE: a red !! is a shape as well as a colour */
-    text(t.txt, x, y, t.col, 'center', TYPE.popup, 'outline'); drawn.push({ txt: t.txt, x, y, w }); }
+    g.globalAlpha = t.a; const col = SET.colorSafe && t.col === '#ff6b6b' ? '#5aa8ff' : t.col;   /* (a mark pushed straight from a wind-up has not been through number()'s remap) */
+    if (t.txt === '!!') {   /* THE BADGE: a red !! is a shape as well as a colour. Its ink sits on its own dark plate (6.5:1 whatever is behind), and the
+                               plate has a pale rim and a black shadow so the badge itself stands off any ground: the rim on the mid-dark ground where
+                               neither red nor a dark line reaches 3:1 (the readability pass found it there, on every level), the shadow on the sky */
+      g.fillStyle = '#08060c'; g.fillRect(x - 8, y - 2, 18, 13); g.fillStyle = '#f4e6e0'; g.fillRect(x - 9, y - 3, 18, 13);
+      g.fillStyle = '#2a0c12'; g.fillRect(x - 8, y - 2, 16, 11); g.fillStyle = col; g.fillRect(x - 8, y - 2, 16, 1); g.fillRect(x - 8, y + 8, 16, 1); g.fillRect(x - 8, y - 2, 1, 11); g.fillRect(x + 7, y - 2, 1, 11); }
+    { const st = markStamp(t.txt, col); g.drawImage(st.c, x - st.cx, y - 1);
+      if (window.__textRec) textRec('text', { s: t.txt, x0: x - st.cx + 1, y0: y, w: st.w, h: st.h, size: TYPE.popup, tiny: true, align: 'center', alpha: g.globalAlpha, style: 'mark' }); }   /* (the clutter tool reads the marks as strings) */
+    drawn.push({ txt: t.txt, x, y, w }); }
   g.globalAlpha = 1; tellQ.length = 0;
 }
 /* THE BOSS BAR'S NAME, on its plate: the plate is as wide as the name, and a name too long for the screen drops a size before it is ever cut */

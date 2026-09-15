@@ -3,7 +3,7 @@
 // The floating-prop lab asks the tiles whether a sprite touches ground. This asks the PICTURE whether a player can read
 // it. It stands the hero at every checkpoint, along the route the flood fill says is reachable (src/reachcore.js), and in
 // the boss room (next to the boss, if it swims or flies out of frame), lets the camera and the dark settle, draws the
-// frame the player gets, and measures three things:
+// frame the player gets, and measures five things:
 //   FOOTING    every reachable standable tile top on screen: how far the tile's top band (six rows) stands off the air
 //              just above it (CIE76 delta E, best row per column, median over the tile's columns). A walkway you cannot
 //              see is a low number here.
@@ -11,14 +11,16 @@
 //              change ARE the creature as drawn, and each is compared with what was behind it. p75 is how hard the most
 //              visible quarter of the creature stands off its background: under 12 is a creature you find by being hit.
 //   DARKNESS   the luminance of the open play space (pixels over air tiles, the HUD band left out): mean, median, p90 L*.
+//   THE HERO   the frame drawn once without him: how many of his pixels stand off what is over and behind him (the foreground).
+//   THE TELLS  where a ! would sit over every creature: the contrast of the mark's ink, or its line, against the pixels under it.
 // Frames that fail come back with an annotated PNG (red: footing that does not read; magenta: a creature that does not;
-// yellow frame: too dark). A first-time hint is cleared before each picture. tools/lookpass.mjs drives it headless.
+// yellow frame: too dark; cyan: the hero behind the foreground; orange: a mark that would sink). A first-time hint is cleared before each picture. tools/lookpass.mjs drives it headless.
 import { LEVELS, T, TS } from './level.js';
 import { floodReach } from './reachcore.js';
 
 const STAND = new Set([T.SOLID, T.ONEWAY, T.PLANK, T.SHELF, T.RAIL, T.CRATE]);
 const SOLIDISH = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.ICE, T.CRYST]);   /* not play space when it fills a pixel's tile */
-export const LOOK = { hud: 46, footLow: 14, footFrac: 0.4, footMin: 5, creatureVisE: 20, creatureP75: 12, creatureMin: 24, darkP90: 20, darkMean: 9, heroMin: 60 };   /* heroMin: a standing knight is ~220 pixels; under 60 of them clearing 12 dE is a hero behind something */   /* calibrated by eye: the Deep's lit floor (open p90 31) reads; the Undercrown's unlit tunnels (p90 6) do not */
+export const LOOK = { hud: 46, footLow: 14, footFrac: 0.4, footMin: 5, creatureVisE: 20, creatureP75: 12, creatureMin: 24, darkP90: 20, darkMean: 9, heroMin: 60, tellRatio: 3 };   /* calibrated by eye: the Deep's lit floor (open p90 31) reads; the Undercrown's unlit tunnels (p90 6) do not. heroMin: a standing knight is ~220 pixels; under 60 of them clearing 12 dE is a hero behind something. tellRatio: WCAG 3:1, the least a mark's ink or line must stand off what it sits over */
 
 const LIN = new Float32Array(256); for (let i = 0; i < 256; i++) { const c = i / 255; LIN[i] = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
 const fLab = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
@@ -130,7 +132,7 @@ export async function lookPass(BK, o = {}) {
         fr.creatures = [];
         if (on.length) {
           const saved = on.map(e => [e, e.x]); for (const e of on) e.x += 100000;
-          BK.step(0); const imgB = g.getImageData(0, 0, VW, VH), Bl = labOf(imgB.data, VW * VH);
+          BK.step(0); const imgB = g.getImageData(0, 0, VW, VH), Bl = labOf(imgB.data, VW * VH); fr._imgB = imgB;   /* (kept for the tells: the pixels a mark would sit over, with no creature under it) */
           for (const [e, x] of saved) e.x = x;
           BK.step(0);
           const dA = imgA.data, dB = imgB.data;
@@ -185,7 +187,30 @@ export async function lookPass(BK, o = {}) {
         const onScreen = hx >= 0 && hx < VW && hy >= LOOK.hud && hy < VH;
         fr.hero = { n, strong, p75: n ? +ds[Math.floor(n * 0.75)].toFixed(1) : 0, front: BK.front ? { fade: +BK.front.fade.toFixed(2), covered: BK.front.covered } : null, onScreen, box: [x0, y0, x1, y1] };
         fr.hero.bad = onScreen && !fr.warped && !P.dead && strong < LOOK.heroMin; }
-      fr.bad = fr.dark.bad || fr.foot.bad || fr.creatures.some(c => c.bad) || fr.hero.bad;
+      // THE TELLS: where a mark would sit over every creature on screen (the wind-up's own place: e.y - e.h - 12, clamped the way
+      // drawTells clamps), the pixels it would sit over are read from the frame with the creatures off it, and the mark's contrast
+      // is the WCAG ratio of its ink against them - or of its outline against them, whichever is higher, because that is the edge
+      // the eye finds: the yellow reads on the dark, the black line reads on the sky. Every ink the game uses (yellow, red, and
+      // the blue the colour-safe setting turns red into); under 3:1 is a mark that sinks.
+      { const YOF = c => { const ch = [c.slice(1, 3), c.slice(3, 5), c.slice(5, 7)].map(h => parseInt(h, 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2]; };
+        const INKS = { yellow: '#ffd36b', red: '#ff6b6b', blue: '#5aa8ff' }, LINE = '#1b1626', SHADOW = '#08060c', PLATE = '#2a0c12', RIM = '#f4e6e0';
+        const YL = YOF(LINE), YS = YOF(SHADOW), YP = YOF(PLATE), YR = YOF(RIM), YI = {}; for (const k in INKS) YI[k] = YOF(INKS[k]);
+        const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        /* the yellow ! is ink, line and shadow straight on the ground: the best of the three edges. The red !! (blue, colour-safe) is a BADGE:
+           its ink sits on its own dark plate (that ratio never changes), and the badge stands off the ground by its pale rim, its plate or its
+           shadow, whichever is the stronger edge; the mark reads only if both the ink on the plate and the badge on the ground do */
+        const markRatio = (k, bg) => k === 'yellow' ? Math.max(ratio(YI[k], bg), ratio(YL, bg), ratio(YS, bg)) : Math.min(ratio(YI[k], YP), Math.max(ratio(YR, bg), ratio(YP, bg), ratio(YS, bg)));
+        const src = fr.warped ? null : (fr._imgB || imgA);
+        fr.tells = [];
+        if (src) for (const e of BK.enemies()) { if (!e.alive || e.harmless) continue;
+          const w = 8, x = Math.round(Math.max(w / 2 + 2, Math.min(VW - w / 2 - 2, e.x - cx))), y = Math.round(Math.max(4, Math.min(VH - 14, e.y - e.h - 12 - cy)));
+          if (e.x - cx < -8 || e.x - cx > VW + 8 || y < LOOK.hud) continue;   /* a mark in the HUD band is pushed off the plates by drawTells; not what is measured here */
+          const d = src.data; let sy = 0, n = 0;
+          for (let yy = y - 1; yy < y + 11; yy++) for (let xx = x - 4; xx < x + 4; xx++) { if (xx < 0 || yy < 0 || xx >= VW || yy >= VH) continue; const j = (yy * VW + xx) * 4; sy += 0.2126 * LIN[d[j]] + 0.7152 * LIN[d[j + 1]] + 0.0722 * LIN[d[j + 2]]; n++; }
+          if (!n) continue; const bg = sy / n, line = ratio(YL, bg), out = { t: e.t, x, y, bgY: +bg.toFixed(3), line: +line.toFixed(2) };
+          for (const k in INKS) out[k] = +markRatio(k, bg).toFixed(2);
+          out.min = Math.min(out.yellow, out.red, out.blue); out.bad = out.min < LOOK.tellRatio; fr.tells.push(out); } }
+      fr.bad = fr.dark.bad || fr.foot.bad || fr.creatures.some(c => c.bad) || fr.hero.bad || fr.tells.some(t => t.bad);
       fr._img = imgA;
       frames.push(fr);
       await new Promise(r => setTimeout(r, 0));
@@ -193,7 +218,7 @@ export async function lookPass(BK, o = {}) {
     // ONE PICTURE PER LEVEL, clean or not: the route point nearest the middle of the level
     const mine = frames.filter(f => f.id === id && !f.error);
     if (mine.length) { const mid = L.W / 2; const rep = mine.filter(f => f.kind === 'route').sort((a, b) => Math.abs(a.tx - mid) - Math.abs(b.tx - mid))[0] || mine[0]; rep.rep = true; }
-    for (const f of mine) { if (shots && (f.bad || f.rep || f.boss || f.kind === 'at')) f.png = annotate(f); delete f._img; delete f._low; }
+    for (const f of mine) { if (shots && (f.bad || f.rep || f.boss || f.kind === 'at')) f.png = annotate(f); delete f._img; delete f._low; delete f._imgB; }
   }
   BK.SET.shake = shake0; BK.god = false;
   const out = { frames, look: LOOK };
@@ -214,7 +239,8 @@ function annotate(f) {
     g.fillStyle = bad ? '#ff40ff' : '#40ff80'; g.fillText(cr.t + ' p75 dE ' + cr.p75, cr.box[0] * S, cr.box[1] * S - 6); }
   if (f.dark.bad) { g.strokeStyle = '#ffd000'; g.lineWidth = 4; g.strokeRect(2, 2, c.width - 4, c.height - 4); }
   if (f.hero && f.hero.bad) { const b = f.hero.box; g.strokeStyle = '#40c0ff'; g.lineWidth = 2; g.strokeRect(b[0] * S - 3, b[1] * S - 3, (b[2] - b[0] + 1) * S + 6, (b[3] - b[1] + 1) * S + 6); g.fillStyle = '#40c0ff'; g.fillText('hero ' + f.hero.strong + ' px', b[0] * S, b[1] * S - 6); }   /* cyan: a hero behind the foreground */
-  const lab = f.id + ' ' + f.kind + ' @' + f.tx + ',' + f.ty + '  open L* mean ' + f.dark.mean + ' p90 ' + f.dark.p90 + '  footing ' + f.foot.low + '/' + f.foot.n + ' low' + (f.creatures.length ? '  creatures ' + f.creatures.filter(q => q.bad).length + '/' + f.creatures.length + ' low' : '') + (f.hero ? '  hero ' + f.hero.strong + 'px' + (f.hero.front && f.hero.front.fade > 0.05 ? ' fade ' + f.hero.front.fade : '') : '') + (f.boss ? '  boss ' + f.boss.t + ' (' + f.boss.mode + ')' : '');
+  for (const t of (f.tells || [])) if (t.bad) { g.strokeStyle = '#ff9a20'; g.lineWidth = 2; g.strokeRect((t.x - 4) * S - 2, (t.y - 1) * S - 2, 8 * S + 4, 12 * S + 4); g.fillStyle = '#ff9a20'; g.fillText('tell ' + t.min + ':1', (t.x - 4) * S, (t.y - 1) * S - 6); }   /* orange: a mark that would sink here */
+  const lab = f.id + ' ' + f.kind + ' @' + f.tx + ',' + f.ty + '  open L* mean ' + f.dark.mean + ' p90 ' + f.dark.p90 + '  footing ' + f.foot.low + '/' + f.foot.n + ' low' + (f.creatures.length ? '  creatures ' + f.creatures.filter(q => q.bad).length + '/' + f.creatures.length + ' low' : '') + (f.hero ? '  hero ' + f.hero.strong + 'px' + (f.hero.front && f.hero.front.fade > 0.05 ? ' fade ' + f.hero.front.fade : '') : '') + (f.tells && f.tells.length ? '  tells min ' + Math.min(...f.tells.map(t => t.min)).toFixed(1) + ':1' : '') + (f.boss ? '  boss ' + f.boss.t + ' (' + f.boss.mode + ')' : '');
   g.fillStyle = 'rgba(0,0,0,0.7)'; g.fillRect(0, c.height - 18, c.width, 18); g.fillStyle = '#fff'; g.fillText(lab, 6, c.height - 5);
   return c.toDataURL('image/png');
 }
