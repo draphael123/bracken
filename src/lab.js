@@ -124,9 +124,9 @@ export async function bossLab(BK, opts = {}) {
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
     const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
     const P = BK.P, k = BK.keys, hp0 = boss.hp, maxF = Math.round(maxSecs * 60 / (BK.SET.speed || 1));
-    // the glass in the roc's room, once
-    const glass = []; if (boss.t === 'roc') { const fy = Math.floor(A.floor / TS); for (let x = Math.floor(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) for (let y = fy - 3; y <= fy + 2; y++) if (L.grid[y * L.W + x] === T.CRYST) { if (L.grid[(y + 1) * L.W + x] !== T.AIR) glass.push(x * TS + 8); break; } }
-    /* only glass with rock under it (the middle strip is over a shaft), nearest the middle of the room first; the bot hops between three of them so it never stands long enough to crack one */
+    // the old roof boards in the roc's nest, once: her dive sticks in them
+    const glass = []; if (boss.t === 'roc') for (const [x0, x1] of ((L.monk && L.monk.boards) || [])) for (let x = x0; x <= x1; x++) glass.push(x * TS + 8);
+    /* nearest the middle of the room first; the bot moves between three of them so it is always standing on one when she comes down */
     { const mid = (A.x0 + A.x1) / 2; glass.sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid)); }
     /* THE MODE LEDGER (opts.modes): how often the boss ENTERED each mode, and how much of the hero's health was lost while it was in each - which attacks fired at all, and which ones did the damage */
     const modeN = {}, hitBy = {}; let lastMode = null;
@@ -235,12 +235,12 @@ export async function bossLab(BK, opts = {}) {
         if (Math.abs(princeT.x - P.x) < 8 && P.atk < 0) { P.face = Math.sign(princeT.at - P.x) || P.face; BK.press('atk'); swings++; } }
       else if (open) { goal = boss.x; strike = true; }
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 42;                       // close enough to be swung at
-      /* THE SHRIEK is answered from the room: to the crown's fork, struck as she comes over it; with no fork near, off the glass */
-      else if (boss.t === 'roc' && (boss.mode === 'shriekGo' || boss.mode === 'shriekTell')) { const fk = BK.props().find(p => p.t === 'resonance' && p.roc);
-        /* (a pane that crazed under it leaves a hole a tile deep, and walking does not get out of a hole: hop it) */
+      /* THE SHRIEK is answered from the room: to the nest bell, struck as she comes over it; with no bell near, off the boards */
+      else if (boss.t === 'roc' && (boss.mode === 'shriekGo' || boss.mode === 'shriekTell')) { const fk = BK.props().find(p => p.t === 'tbell' && p.roc);
+        /* (a bell on its frame stands a little proud of the floor: a hop is how you get round its posts) */
         if (fk && Math.abs(fk.x - P.x) < 200) { goal = fk.x - 12; if (P.ground && Math.abs(P.vx) < 5 && Math.abs(goal - P.x) > 10 && f % 12 === 0) BK.press('jump'); if (Math.abs(fk.x - P.x) < 22 && fk.cool <= 0 && fk.over && P.atk < 0) { P.face = Math.sign(fk.x - P.x) || P.face; BK.press('atk'); swings++; } }
         else { const fy = Math.floor(A.floor / TS), tx = Math.floor(P.x / TS); for (let r = 0; r < 12; r++) { const s = [tx + r, tx - r].find(x => L.grid[fy * L.W + x] === T.SOLID); if (s !== undefined) { goal = s * TS + 8; break; } } } }
-      else if (boss.t === 'roc' && glass.length) goal = glass[Math.floor(f / 75) % Math.min(3, glass.length)];   /* one of the three middle panes, a new one every second or so */
+      else if (boss.t === 'roc' && glass.length) goal = glass[Math.floor(f / 75) % Math.min(3, glass.length)];   /* one of the three middle boards, a new one every second or so */
       else if (boss.t === 'troll') { goal = boss.x; strike = true;
         /* THE HILL TROLL: his stones drop from a hook a player jumps to strike - when he walks under one, the bot drops it, as a player at that hook would */
         const st = BK.props().find(q => q.t === 'weight' && q.crane && q.state === 'hang' && Math.abs(q.x - boss.x) < 12); if (st) { st.state = 'fall'; st.fy = st.y + st.len; st.vy = 0; } }
