@@ -7134,6 +7134,10 @@ const ELITES = {
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['thorn', 412, 13, { gate: 430, calls: 'sporeling' }]],
   kings: [['brute', 385, 20]],
+  scree: [['troll', 403, 18, { gate: 414 }]],
+  hanging: [['shield', 85, 107]],
+  moor: [['goat', 168, 21, { gate: 200 }], ['troll', 384, 13]],
+  storm: [['pike', 250, 29, { gate: 257 }]],
 };
 /* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
    near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,
