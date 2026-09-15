@@ -307,7 +307,17 @@ for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'pa
 function loadTrack(name) {
   if (!ac || !TRACKS[name] || trackBuf[name] || trackPending[name]) return;
   trackPending[name] = true;
-  fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
+  fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; trackEnd[name] = audibleEnd(b); if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
+}
+// A LOOP ENDS WHERE THE MUSIC DOES, NOT WHERE THE FILE DOES. Copies are played back to back, so a silent tail
+// on a file is a hole in the music every time it comes round: the Hurricane's ran 1.77 s of nothing. A tail
+// longer than half a second is cut at the last sample you can hear. A shorter one is left alone, because a
+// loop cut to the bar (musMountain is 32.00 s to the millisecond) only keeps its beat if it keeps its last rest.
+const trackEnd = {};
+function audibleEnd(b) {
+  const n = b.length; let last = 0;
+  for (let c = 0; c < b.numberOfChannels; c++) { const d = b.getChannelData(c); let i = n - 1; while (i > last && Math.abs(d[i]) < 0.001) i--; last = Math.max(last, i); }
+  return (n - 1 - last) / b.sampleRate > 0.5 ? (last + 1) / b.sampleRate : b.duration;
 }
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
 const TRACK_GAIN = { hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
@@ -317,13 +327,13 @@ function playFile(name) {
   if (trackG && musicSrcs.length) { const og = trackG, olds = musicSrcs; og.gain.setTargetAtTime(0, ac.currentTime, 0.22); setTimeout(() => { for (const s of olds) { try { s.stop(); } catch {} } try { og.disconnect(); } catch {} }, 1000); if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicSrcs = []; musicGen++; } else stopMusic(); // the old track fades under the new one
   currentTrack = name;
   const tg = ac.createGain(); tg.gain.value = 0.001; tg.connect(musicGain); trackG = tg; tg.gain.setTargetAtTime(TRACK_GAIN[name] || 1, ac.currentTime + 0.02, 0.28);
-  const gen = musicGen, b = trackBuf[name]; let at = ac.currentTime + 0.03;
+  const gen = musicGen, b = trackBuf[name], len = trackEnd[name] || b.duration; let at = ac.currentTime + 0.03;
   const chain = () => {
     if (gen !== musicGen || currentTrack !== name) return;
-    const s = ac.createBufferSource(); s.buffer = b; s.connect(tg); s.start(at); musicSrcs.push(s); musicSrc = s;
+    const s = ac.createBufferSource(); s.buffer = b; s.connect(tg); s.start(at, 0, len); musicSrcs.push(s); musicSrc = s;
     s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
-    const startAt = at; at += b.duration;
-    musicTimer = setTimeout(chain, Math.max(50, (startAt + b.duration * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
+    const startAt = at; at += len;
+    musicTimer = setTimeout(chain, Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
   };
   chain();
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
@@ -589,7 +599,7 @@ Object.assign(SFX, {
   rumble() { tone('sine', 60, 30, 0.7, 0.3); noise(0.6, 0.3, 180, 0.5); tone('sawtooth', 48, 34, 0.5, 0.1, 0.1); },
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
 });
-export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind });
+export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind, trackEnd, trackBuf });
 // ---------- every creature dies in its own voice, and is hurt in its own voice ----------
 const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
