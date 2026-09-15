@@ -3355,7 +3355,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
      blow opens - a parry, or a dodge taken through it - lets anything at all reach him. */
   if (e.t === 'closedhelm' && !(e.open > 0)) { SFX.clank(); SFX.aegis(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 22, e.y - 30, Math.sign(fromX - e.x) || 1, 6); e.wardHit = 0.35; hitstop(0.03);
     if (!(e.wardSaid > 0)) { e.wardSaid = 0.9; number(e.x, e.y - 72, 'WARDED', '#fff3b0'); ringAt(e.x, e.y - 30, 30, '#fff3b0', 0.3);
-      PROG.palTold = (PROG.palTold || 0) + 1; if (PROG.palTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING GETS THROUGH HIS WARD. MEET HIS SWORD ON THE BEAT AND IT BREAKS.'; } }
+      PROG.palTold = (PROG.palTold || 0) + 1; if (PROG.palTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING GETS THROUGH HIS WARD. GUARD AS HIS SWORD FLASHES, OR ROLL THROUGH IT, AND THE WARD BREAKS.'; } }
     return; }   /* THE WARD: not a reduction, a NO. Only his own sword, answered on the beat, takes it down */
   if (e.hill && e.mode === 'pinned') { dmg = Math.round(dmg * 2); }   /* under the stone, every blow lands twice */
   if (e.t === 'prince') { const pd = princeHurt(e, dmg); if (pd === null) return; dmg = pd; }   /* THE TOMB'S MULTIPLIERS: buried, reeling, bareheaded, in the light - or shrouded, or under the floor */
@@ -8395,11 +8395,17 @@ function updateRoadman(e, dt) {
    BEAT for everyone: the knight's perfect guard, the freebooter's parry, the aegis raised in the last breath before
    the blow, the drain taken up just as it lands, or a roll through the blade for the two who roll. */
 const PAL = { cut: [1.15, 0.95], thrust: [1.0, 0.85], bash: [1.2, 1.0], judge: [1.35, 1.15], gap: [1.3, 0.75], open: 2.0 };
+/* THE BEAT IS A PERSON'S BEAT. The knight's perfect guard is a tenth of a second, and against him that was the only
+   answer: a bot could do it, a player could not, and so he could not be beaten. Now any guard RAISED as his sword
+   flashes (the last PAL_BEAT seconds of the swing) meets it; a guard held up from the start of the tell still only
+   turns it. The flash is drawn and sounded, so the beat can be learnt. */
+const PAL_BEAT = 0.45;
 const palOpened = res => {
   if (res === 'blocked') {
-    if (hero() === 'knight' || isPirate()) return P.parryT > 0;
-    if (isPaladin()) return !!P.aegis && (P.aegisT || 0) < 0.45;
-    if (isReaper()) return !!P.tolling && (P.tollHeld || 0) < 0.45;
+    if (hero() === 'knight') return P.parryT > 0 || (P.blockT || 0) < PAL_BEAT;
+    if (isPirate()) return true;   /* the freebooter has no shield to lean on: a blow he turns at all was turned on the beat */
+    if (isPaladin()) return !!P.aegis && (P.aegisT || 0) < PAL_BEAT;
+    if (isReaper()) return !!P.tolling && (P.tollHeld || 0) < PAL_BEAT;
     return false; }
   return res === false && P.dodge > 0 && (isPyro() || isReaper());
 };
@@ -8414,7 +8420,9 @@ function updateClosedHelm(e, dt) {
   const BREAK = () => { e.open = PAL.open; e.mode = 'broken'; e.modeT = PAL.open; e.vx = -e.face * 90; e.opens = (e.opens || 0) + 1;
     number(e.x, e.y - e.h - 22, 'THE WARD BREAKS', '#8fd160'); SFX.parry(); SFX.golemShatter(); hitstop(0.1); zoomKick(1.07, 0.3); shakeCam(5);
     ringAt(e.x, e.y - 30, 40, '#fff3b0', 0.45); burst(e.x, e.y - 30, 18, ['#fff3b0', '#f2cc58', '#ffffff'], 130, 0.6); };
-  const tell = (mode, t, mark, col) => { e.mode = mode; e.modeT = t; number(e.x, e.y - e.h - 12, mark, col); SFX.charge(); };
+  const tell = (mode, t, mark, col) => { e.mode = mode; e.modeT = t; e.glint = 0; number(e.x, e.y - e.h - 12, mark, col); SFX.charge(); };
+  /* THE FLASH: the moment to raise the guard, drawn on the blade and heard */
+  const glint = () => { if (e.glint || e.modeT > PAL_BEAT) return; e.glint = 1; ringAt(e.x + e.face * 20, e.y - e.h + 10, 10, '#ffffff', 0.3); burst(e.x + e.face * 20, e.y - e.h + 10, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); };
   let want = 0;
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.8; } break;
@@ -8429,17 +8437,17 @@ function updateClosedHelm(e, dt) {
         else if (e.judgeT <= 0 && (ad > 70 || e.judgeT < -3)) { e.judgeT = p2 ? 6 : 8.5; e.marks = [P.x]; e.mode = 'judgeTell'; e.modeT = PAL.judge[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
       break; }
     /* THE CUT: over his head and down, slow, and the question he asks most */
-    case 'cutTell': want = 0; if (e.modeT > 0.35) e.face = Math.sign(d) || e.face;
+    case 'cutTell': want = 0; glint(); if (e.modeT > 0.35) e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.4; SFX.slash(); SFX.heavy(); shakeCam(4); e.vx = e.face * 90;
         if (!P.dead && Math.sign(d) === e.face && ad < 66 && dyP < 40) { const res = damagePlayer(e.x, DMG.palCut);
-          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'ON THE BEAT', '#9aa39a'); } }
+          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); } }
       break;
     case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
     /* THE THRUST: from further off, the point first, and he comes with it */
-    case 'thrustTell': want = 0; if (e.modeT > 0.3) e.face = Math.sign(d) || e.face;
+    case 'thrustTell': want = 0; glint(); if (e.modeT > 0.3) e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.45; SFX.slash(); e.vx = e.face * 300;
         if (!P.dead && Math.sign(d) === e.face && ad < 90 && dyP < 40) { const res = damagePlayer(e.x, DMG.palThrust);
-          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'ON THE BEAT', '#9aa39a'); } }
+          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); } }
       break;
     case 'thrust': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
     /* THE BASH: down behind the shield, the shield lit, a red line along the floor as far as he will go - and then he goes */
