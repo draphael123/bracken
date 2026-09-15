@@ -43,7 +43,7 @@ import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxF
 let VW = 320, VH = 180;
 const disp = document.getElementById('c');
 const dg = disp.getContext('2d');
-const [buf, g] = canvas(VW, VH);
+const [buf, g0] = canvas(VW, VH); let g = g0;   /* `g` is the sheet being drawn on: the frame, except while drawFront paints the foreground onto its own sheet */
 // The view is 320x180, or a zoomed-out size picked from the display so the pixel scale stays an integer and the game never shrinks on screen:
 // the zoom drops the scale by a third and fills the display with it, capped at 640x360 (twice the world).
 let viewMode = 'normal';
@@ -13533,7 +13533,7 @@ function drawOccluders(cx, cy) {
     if (h < 0.45) continue;
     const x = Math.round(i * step + (h - 0.5) * 90 - px), w = 9 + Math.round(h * 8);
     if (x < -60 || x > VW + 60) continue;
-    const pxs = P.x - cx; g.globalAlpha = (0.5 + h * 0.16) * (Math.abs(pxs - x) < 26 && !P.dead ? 0.42 : 1); // it fades off you rather than hiding the fight
+    g.globalAlpha = 0.5 + h * 0.16;   /* (it used to thin itself within 26px of the hero; drawFront fades everything in front of him now, in one place) */
     if (dress === 'crag' || dress === 'reef' || dress === 'shore') { // a shoulder of rock leaning into the frame
       g.fillStyle = '#181c22'; g.beginPath(); g.moveTo(x - w, VH); g.lineTo(x - w + 3, VH - 60 - h * 40); g.lineTo(x + w, VH - 40 - h * 30); g.lineTo(x + w + 5, VH); g.closePath(); g.fill();
       g.globalAlpha *= 0.5; g.fillStyle = tint; g.fillRect(x - w + 2, VH - 58 - h * 40, 2, 58 + h * 40);
@@ -14133,10 +14133,39 @@ function drawFg(cx, cy) {
   f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);
   let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);
   for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);
-  const px = P.x - cx, py = P.y - 12 - cy, gr = f.createRadialGradient(px, py, 8, px, py, 36);
-  gr.addColorStop(0, 'rgba(0,0,0,0.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-  f.globalCompositeOperation = 'destination-out'; f.fillStyle = gr; f.fillRect(px - 36, py - 36, 72, 72); f.globalCompositeOperation = 'source-over';
+  /* (it used to punch a soft hole round the hero here; drawFront fades whatever is over him now, this strip included) */
   g.globalAlpha = 0.72; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;
+}
+// ANYTHING IN FRONT OF THE HERO FADES. One rule, in one place. Everything drawn between the world and the lens - the occluding
+// posts and rock shoulders, the near motes, the fg parallax strip, the near ledge and blades - goes onto its own sheet first,
+// and the sheet is read where the hero stands: if its ink covers his box, the window round him is laid down at half strength
+// (a soft ring outside it at three quarters, the rest of the sheet whole), eased over 0.15 s and eased back when he is clear.
+// It used to be two hacks in two places (the posts thinned within 26 px, the strip punched a hole) and nothing at all for
+// the near layer, which stood in front of the fight in the Stockade and the Underleaf like a wall.
+let FRONTC = null, frontFade = 0, frontT = -1, frontCovered = false;
+let heroHidden = false, frontOff = false;   /* the readability pass's two switches (BK.hideHero, BK.frontOff): a frame without the hero, and the foreground as it was before this rule */
+function drawFront(cx, cy) {
+  if (!FRONTC || FRONTC.width !== VW || FRONTC.height !== VH) { FRONTC = document.createElement('canvas'); FRONTC.width = VW; FRONTC.height = VH; }
+  const fc = FRONTC.getContext('2d'); fc.globalAlpha = 1; fc.globalCompositeOperation = 'source-over'; fc.clearRect(0, 0, VW, VH);
+  const g1 = g; g = fc;
+  try { drawOccluders(cx, cy); drawMotes(cx, cy, true); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy); drawNear(cx); }
+  finally { g = g1; }
+  if (frontOff) { g.drawImage(FRONTC, 0, 0); return; }
+  /* THE TEST IS THE PIXELS: the hero's box on the sheet, and whether enough of it has ink over it to matter */
+  const hx = Math.round(P.x - cx), hy = Math.round(P.y - cy), bx0 = Math.max(0, hx - 8), by0 = Math.max(0, hy - 30), bx1 = Math.min(VW, hx + 8), by1 = Math.min(VH, hy);
+  frontCovered = false;
+  if (!P.dead && bx1 > bx0 && by1 > by0) { const d = fc.getImageData(bx0, by0, bx1 - bx0, by1 - by0).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n++; frontCovered = n > (bx1 - bx0) * (by1 - by0) * 0.08; }
+  /* eased on the game's own clock; a long gap (a load, a teleport, the bot's single frames) snaps it, the way the dark snaps */
+  const dtF = frontT < 0 ? 1 : Math.min(0.5, Math.max(0, time - frontT)); frontT = time;
+  const want = frontCovered ? 1 : 0, rate = dtF / 0.15; frontFade += Math.max(-rate, Math.min(rate, want - frontFade)); frontFade = Math.max(0, Math.min(1, frontFade));
+  if (frontFade < 0.01) { g.drawImage(FRONTC, 0, 0); return; }
+  const part = (x0, y0, x1, y1, a) => { x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(VW, x1); y1 = Math.min(VH, y1); if (x1 <= x0 || y1 <= y0) return; g.globalAlpha = a; g.drawImage(FRONTC, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0); };
+  const ox0 = hx - 48, oy0 = hy - 64, ox1 = hx + 48, oy1 = hy + 20, ix0 = hx - 32, iy0 = hy - 48, ix1 = hx + 32, iy1 = hy + 12;
+  part(0, 0, VW, oy0, 1); part(0, oy1, VW, VH, 1); part(0, oy0, ox0, oy1, 1); part(ox1, oy0, VW, oy1, 1);                     /* the sheet, whole, outside the ring */
+  const ra = 1 - 0.25 * frontFade, wa = 1 - 0.5 * frontFade;
+  part(ox0, oy0, ox1, iy0, ra); part(ox0, iy1, ox1, oy1, ra); part(ox0, iy0, ix0, iy1, ra); part(ix1, iy0, ox1, iy1, ra);   /* the ring */
+  part(ix0, iy0, ix1, iy1, wa);                                                                                              /* the window */
+  g.globalAlpha = 1;
 }
 function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
   g.fillStyle = ART.OUT; g.fillRect(x - 1, y - 1, w + 2, h + 2);
@@ -15513,9 +15542,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const d of drops) g.drawImage(PROP.drop, Math.round(d.x - cx), Math.round(d.y - cy));
   if (lightFlash > 0) { g.fillStyle = 'rgba(235,240,255,' + (lightFlash > 0.12 ? 0.75 : lightFlash > 0.06 ? 0.2 : 0.45) + ')'; g.fillRect(0, 0, VW, VH); }
   drawShaftsFront(cx, cy); drawLightCones(cx, cy);
-  drawOccluders(cx, cy); drawMotes(cx, cy, true);
-  if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);   /* a level with nothing between you and the sky asks for no foreground */
-  drawNear(cx);
+  drawFront(cx, cy);   /* the occluders, the near motes, the fg strip (a level with nothing between you and the sky asks for none: palette.noFg) and the near layer, faded where they cover the hero */
   if (L.causeTide || (L.arena && L.arena.boss === 'kraken')) drawCauseOverlay(cx, cy);
   if (L.fields) drawFieldsOverlay(cx, cy);   /* THE HEXED FIELDS: the cloud's shadow, the moon gauge, the marks and the fire */   /* THE DROWNED CAUSEWAY: its storm, its ink, the tide's foam line and gauge, and the Kraken's marks */
   if (dk > 0) { g.globalCompositeOperation = 'multiply'; g.globalAlpha = dk * 0.55; const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#8a6aa0'); gr.addColorStop(1, '#ffb070'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
@@ -16591,7 +16618,7 @@ function render() {
     const z = (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt = seaTilt();
     if (tilt) { g.save(); g.fillStyle = '#1a2230'; g.fillRect(0, 0, VW, VH); g.translate(VW / 2, VH * 0.55); g.rotate(tilt); const ts = 1 + Math.abs(tilt) * 1.4; g.scale(ts, ts); g.translate(-VW / 2, -VH * 0.55); }   /* SHE ROLLS: the horizon goes over with her */
     if (z > 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
-    drawWorld(cx, cy, true);
+    drawWorld(cx, cy, !heroHidden);   /* (the readability pass draws the frame once without him, to know which pixels are him) */
     if (z > 1) g.restore();
     if (tilt) g.restore();
     drawSeaHud();
@@ -16948,7 +16975,7 @@ window.BK = { straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvi
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [],
   risen: () => risen, bodies: () => bodies,
-  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */

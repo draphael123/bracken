@@ -18,7 +18,7 @@ import { floodReach } from './reachcore.js';
 
 const STAND = new Set([T.SOLID, T.ONEWAY, T.PLANK, T.SHELF, T.RAIL, T.CRATE]);
 const SOLIDISH = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.ICE, T.CRYST]);   /* not play space when it fills a pixel's tile */
-export const LOOK = { hud: 46, footLow: 14, footFrac: 0.4, footMin: 5, creatureVisE: 20, creatureP75: 12, creatureMin: 24, darkP90: 20, darkMean: 9 };   /* calibrated by eye: the Deep's lit floor (open p90 31) reads; the Undercrown's unlit tunnels (p90 6) do not */
+export const LOOK = { hud: 46, footLow: 14, footFrac: 0.4, footMin: 5, creatureVisE: 20, creatureP75: 12, creatureMin: 24, darkP90: 20, darkMean: 9, heroMin: 60 };   /* heroMin: a standing knight is ~220 pixels; under 60 of them clearing 12 dE is a hero behind something */   /* calibrated by eye: the Deep's lit floor (open p90 31) reads; the Undercrown's unlit tunnels (p90 6) do not */
 
 const LIN = new Float32Array(256); for (let i = 0; i < 256; i++) { const c = i / 255; LIN[i] = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
 const fLab = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
@@ -171,7 +171,21 @@ export async function lookPass(BK, o = {}) {
             fr.creatures.push(c);
           }
         } }
-      fr.bad = fr.dark.bad || fr.foot.bad || fr.creatures.some(c => c.bad);
+      // THE HERO: the frame again without him (BK.hideHero), so the pixels that change are him as drawn, and how many of them stand
+      // off what is in front of and behind him. A post or a strip laid over him at full strength changes nothing there, and a hero
+      // you cannot see is worse than a creature you cannot: `strong` is the count of his pixels that clear the creature threshold.
+      { BK.hideHero = true; BK.step(0); const imgH = g.getImageData(0, 0, VW, VH), Hl = labOf(imgH.data, VW * VH); BK.hideHero = false; BK.step(0);
+        const dA = imgA.data, dH = imgH.data, hx = Math.round(P.x - cx), hy = Math.round(P.y - cy);
+        const x0 = Math.max(0, hx - 14), x1 = Math.min(VW - 1, hx + 14), y0 = Math.max(0, hy - 36), y1 = Math.min(VH - 1, hy + 2);
+        let n = 0, strong = 0; const ds = [];
+        for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * VW + x, j = i * 4;
+          if (Math.abs(dA[j] - dH[j]) + Math.abs(dA[j + 1] - dH[j + 1]) + Math.abs(dA[j + 2] - dH[j + 2]) <= 6) continue;
+          n++; const d = dE(A, i, Hl, i); ds.push(d); if (d >= LOOK.creatureP75) strong++; }
+        ds.sort((a, b) => a - b);
+        const onScreen = hx >= 0 && hx < VW && hy >= LOOK.hud && hy < VH;
+        fr.hero = { n, strong, p75: n ? +ds[Math.floor(n * 0.75)].toFixed(1) : 0, front: BK.front ? { fade: +BK.front.fade.toFixed(2), covered: BK.front.covered } : null, onScreen, box: [x0, y0, x1, y1] };
+        fr.hero.bad = onScreen && !fr.warped && !P.dead && strong < LOOK.heroMin; }
+      fr.bad = fr.dark.bad || fr.foot.bad || fr.creatures.some(c => c.bad) || fr.hero.bad;
       fr._img = imgA;
       frames.push(fr);
       await new Promise(r => setTimeout(r, 0));
@@ -199,7 +213,8 @@ function annotate(f) {
     g.strokeStyle = bad ? '#ff40ff' : '#40ff80'; g.strokeRect(cr.box[0] * S - 3, cr.box[1] * S - 3, (cr.box[2] - cr.box[0] + 1) * S + 6, (cr.box[3] - cr.box[1] + 1) * S + 6);
     g.fillStyle = bad ? '#ff40ff' : '#40ff80'; g.fillText(cr.t + ' p75 dE ' + cr.p75, cr.box[0] * S, cr.box[1] * S - 6); }
   if (f.dark.bad) { g.strokeStyle = '#ffd000'; g.lineWidth = 4; g.strokeRect(2, 2, c.width - 4, c.height - 4); }
-  const lab = f.id + ' ' + f.kind + ' @' + f.tx + ',' + f.ty + '  open L* mean ' + f.dark.mean + ' p90 ' + f.dark.p90 + '  footing ' + f.foot.low + '/' + f.foot.n + ' low' + (f.creatures.length ? '  creatures ' + f.creatures.filter(q => q.bad).length + '/' + f.creatures.length + ' low' : '') + (f.boss ? '  boss ' + f.boss.t + ' (' + f.boss.mode + ')' : '');
+  if (f.hero && f.hero.bad) { const b = f.hero.box; g.strokeStyle = '#40c0ff'; g.lineWidth = 2; g.strokeRect(b[0] * S - 3, b[1] * S - 3, (b[2] - b[0] + 1) * S + 6, (b[3] - b[1] + 1) * S + 6); g.fillStyle = '#40c0ff'; g.fillText('hero ' + f.hero.strong + ' px', b[0] * S, b[1] * S - 6); }   /* cyan: a hero behind the foreground */
+  const lab = f.id + ' ' + f.kind + ' @' + f.tx + ',' + f.ty + '  open L* mean ' + f.dark.mean + ' p90 ' + f.dark.p90 + '  footing ' + f.foot.low + '/' + f.foot.n + ' low' + (f.creatures.length ? '  creatures ' + f.creatures.filter(q => q.bad).length + '/' + f.creatures.length + ' low' : '') + (f.hero ? '  hero ' + f.hero.strong + 'px' + (f.hero.front && f.hero.front.fade > 0.05 ? ' fade ' + f.hero.front.fade : '') : '') + (f.boss ? '  boss ' + f.boss.t + ' (' + f.boss.mode + ')' : '');
   g.fillStyle = 'rgba(0,0,0,0.7)'; g.fillRect(0, c.height - 18, c.width, 18); g.fillStyle = '#fff'; g.fillText(lab, 6, c.height - 5);
   return c.toDataURL('image/png');
 }
