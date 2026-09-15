@@ -56,8 +56,13 @@ export const KNIGHT_ANCHOR = { ax: 16, ay: 22 };
    cross as the raised one, small enough that the sword arm crosses in front of it and the helm still reads above it. */
 const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..S..'];
 
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, hy = 0, sho = 0, bits = null, kite = null }) {
-  const [c, g] = canvas(W, H);
+/* A WIDER FRAME FOR A LONGER WEAPON. The Warden's point lands forty-four pixels out and the knight's sword only
+   twenty-six, which is already drawn to the edge of a 34-wide frame. `wide` adds canvas ON THE RIGHT ONLY, so her
+   body centre stays at BX+8 and the set's single anchor still reads: drawSet mirrors with `c.width - set.ax`, which
+   is measured off each frame's own canvas, so a 52-wide thrust flips to the right place beside a 34-wide idle.
+   The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null }) {
+  const [c, g] = canvas(W + wide, H);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
   if (kite && kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* slung on his back (the ladder): drawn first, so the body covers all but its rim */
@@ -96,6 +101,25 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     for (let t = -1; t <= 1; t++) across(t, 2.5, t === -1 ? '#6e7a8c' : t === 1 ? '#e8eef6' : '#aab6c6');
     across(-3, 1.6, KP.y);                                                                // the langet, gold on the haft
   }
+  if (spear) { // THE WARDEN'S SPEAR: an ash haft, a bronze collar, a long leaf head, and an iron spike at the heel.
+    // A sword is read by its blade and a spear by its LENGTH and its POINT, so the haft is one clean pixel the whole
+    // way out and every bright pixel is saved for the last four. At sixteen pixels that point is the entire hero.
+    const [x0, y0, x1, y1] = spear.map((v, i) => v + (i & 1 ? dy : dx));
+    const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
+    const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
+    line(g, ...at(-4), ...at(len - 5), '#8a6a42', 1);                    // the haft, heel to collar
+    px(g, ...at(-3, 1), '#6a5030');                                      // a bound grip where her back hand sits
+    px(g, ...at(-5), '#7c8797'); px(g, ...at(-6), '#c9d1dc');            // the butt-spike: she fights with both ends
+    px(g, ...at(len - 5), KP.y);                                         // the collar the head is socketed into
+    for (let t = 4; t >= 1; t--) {                                       // the head: a leaf, widest at its base
+      px(g, ...at(len - t), t > 2 ? '#8a939f' : '#e8eef6');
+      if (t === 3 || t === 2) px(g, ...at(len - t, 1), '#7c8797');
+    }
+    px(g, ...at(len), '#ffffff');                                        // the point, the brightest pixel she owns
+  }
+  /* (the head is inked from len-4 to len and the outline puts a dark ring a pixel past that, so a spear given a point
+     at x lands its last lit pixel at x and its outline at x+1: the callers pull their endpoints back to suit, and the
+     measured extent - not the number in the call - is what the attack box is matched to) */
   if (cutlass) { // A CURVED BLADE: a basket of brass at the hand, then a back that bends away and a bright edge
     const [x0, y0, x1, y1] = cutlass.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
@@ -1663,6 +1687,144 @@ export function bakeReaper(skin = {}) {
     const plant = grip(1, { plume: 2, bits: [[10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38']] });
     const lean1 = grip(1, { hy: 1, plume: 1 }), lean2 = grip(1, { hy: 1, sho: 1, plume: 0 }), lean3 = grip(1, { hy: 1, plume: 1, bits: dim(1) }), lean4 = grip(1, { hy: 1, sho: 1, plume: 0, bits: dim(1) });
     F.fidget = holdFrames([[turn, 2], [lift, 2], [plant, 2], [lean1, 3], [lean2, 3], [lean3, 3], [lean4, 3], [lean1, 2], [lift, 2], [turn, 2], [F.idle[7], 1]]); }
+  const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
+  const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
+  const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
+  KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+}
+// THE WARDEN — the knight's rig in green wool and worn leather, under a hood instead of a helm, and a spear.
+// She keeps everything at the end of it, so every pose is built round WHERE THE POINT IS: stood upright at her
+// side at rest, levelled at a run, driven out past the frame the other heroes live in when she thrusts (`wide`).
+// Her silhouette at sixteen pixels is a small dark body with one long bright line through it - that line is the hero.
+const WARD_BODY = [
+  '..SSSS....',
+  '.rssssrS..',
+  'rSsssssS..',
+  '.SsvvvvS..',
+  '.SssssSS..',
+  '..SSSS....',
+  '.BbbbbB...',
+  'SBbyybBS..',
+  'SBbbbbBS..',
+  '.BbbbbB...',
+  '.wwwwww...',
+];
+// the hood's tail, lifting and falling behind her
+const WARD_PLUME = [
+  ['..SSSS....', '.rssssrS..', 'rSsssssS..'],
+  ['..SSSS....', '.rssssrS..', '.SsssssS..'],
+  ['.rSSSS....', 'rrssssrS..', 'rSsssssS..'],
+];
+const WARD_PAL = { s: '#b8c2cc', S: '#6a737e', b: '#3f6e4a', B: '#24422c', r: '#c9b27c', k: '#f1c9a0', w: '#6a4a2a', W: '#402a16', y: '#e0b040', v: '#2a2f3d' };
+export function bakeWarden(skin = {}) {
+  KP = Object.assign({}, KP0, WARD_PAL, skin); BODY_REF = WARD_BODY; PLUME_REF = WARD_PLUME;
+  const sh = [BX + 8, BY + 7];
+  const WIDE = 30;                                                   // the canvas her forty-four pixels of reach needs
+  /* AT REST IT IS PLANTED. The grip is given a pixel higher than her hand so the heel finishes on the ground line and
+     not under it, and the idle passes it back UP by dy so the spear stands still while she breathes against it. */
+  const rest = (d = 0) => [sh[0] + 2, sh[1] + 2 + d, sh[0] + 3, sh[1] - 12 + d];
+  const carry = (d = 0) => [sh[0] - 4, sh[1] + 3 + d, sh[0] + 12, sh[1] - 2 + d];   // at a run: levelled, point leading
+  const back = (d = 0) => [sh[0] + 5, sh[1] + 5 + d, sh[0] - 9, sh[1] - 5 + d];     // slung across her back on a ladder
+  /* THE THRUST, in four beats and a settle: drawn back to the hip, driven, at full stretch, hauled home. Only the two
+     middle frames carry the point out past the body, and those are the two frames the blow is live on. */
+  const thrust = (gx, gy, tx, ty, o = {}) => knightFrame({ wide: WIDE, spear: [gx, gy, tx, ty], ...o });
+  const F = {
+    idle: BREATH.map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume,
+      arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1 - Math.max(0, dy)],
+      spear: rest(-dy), bits: flap([3, 4], dy, breathLag(i), 'b', 'B') })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) =>
+      knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], spear: carry() })),
+    jump: [knightFrame({ legs: 'jump', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 4, sh[0] + 11, sh[1] - 6], plume: 1 }),
+      knightFrame({ legs: 'jump2', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 3, sh[0] + 11, sh[1] - 7], plume: 1 })],
+    fall: [knightFrame({ legs: 'fall', arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: [sh[0] - 6, sh[1] + 1, sh[0] + 10, sh[1] - 9], plume: 2 }),
+      knightFrame({ legs: 'fall2', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: [sh[0] - 6, sh[1], sh[0] + 10, sh[1] - 10], plume: 2 })],
+    land: [knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], spear: rest(2), plume: 0 }),
+      knightFrame({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: rest(1), plume: 1 })],
+    apex: knightFrame({ legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 2, sh[0] + 11, sh[1] - 8], plume: 0 }),
+    skid: knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 2], spear: [sh[0] + 3, sh[1] - 1, sh[0] - 11, sh[1] + 7], plume: 2 }),
+    climb: [knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], spear: back(), plume: 0 }),
+      knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], spear: back(1), plume: 1 })],
+    /* THE LONG THRUST */
+    atk: [
+      thrust(sh[0] - 6, sh[1] + 1, sh[0] + 8, sh[1] + 1, { dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 1], plume: 1 }),
+      thrust(sh[0] + 2, sh[1], 45, sh[1], { dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1]], plume: 2 }),
+      thrust(sh[0] + 5, sh[1], 57, sh[1], { dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 6, sh[1]], plume: 2 }),
+      thrust(sh[0] + 2, sh[1] + 2, 39, sh[1] + 2, { dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], plume: 0 }),
+      knightFrame({ legs: 'stand', spear: rest(), plume: 0 }),
+    ],
+    /* THE PLUNGE: she goes down behind the point, both hands high on the haft */
+    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0], sh[1] + 4], spear: [sh[0], sh[1] - 6, sh[0], sh[1] + 15], plume: 1 }),
+    hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], spear: [sh[0] + 2, sh[1] + 6, sh[0] - 10, sh[1] - 2], plume: 2 }),
+      knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 4], spear: [sh[0] + 1, sh[1] + 7, sh[0] - 11, sh[1] + 1], plume: 1 })],
+    crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: rest(3) }),
+    /* THE BRACE (C): the heel driven into the turf behind her, the point levelled at chest height, her weight down
+       behind it and both hands on the haft. This is the pose a charge runs onto, so it is the pose that must read. */
+    block: [0, 1].map(i => knightFrame({ wide: WIDE, dx: -1, dy: i, legs: 'wide',
+      arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1 + i],
+      spear: [sh[0] - 4, sh[1] + 6 + i, 46, sh[1] - 1 + i] })),
+  };
+  /* THE SPINNING SHAFT (her held heavy): she takes it round her at arm's length - behind, level through the front,
+     and on round low - so it comes at everything on both sides of her, and it is the haft doing the work, not the point. */
+  F.heavy = [
+    knightFrame({ wide: WIDE, dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 1], spear: [sh[0] + 4, sh[1] + 4, sh[0] - 14, sh[1] - 4], plume: 2 }),
+    knightFrame({ wide: WIDE, dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 2], spear: [sh[0] - 10, sh[1] - 3, 44, sh[1] - 3], plume: 1 }),
+    knightFrame({ wide: WIDE, dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], spear: [sh[0] - 8, sh[1] + 8, 40, sh[1] + 2], plume: 0 }),
+  ];
+  F.brace = F.heavy[0];                                   /* the wind-up of the spin, which the draw asks for by that name */
+  /* THE POLE VAULT: the heel planted behind her, the haft raked back and dead straight, and her whole body swung up
+     the outside of it. The shaft is the read here - it runs from under her boots down and back to the ground she
+     left - so it is given its full length, not tucked against her where it measured four pixels wide and said nothing. */
+  F.vault = [
+    knightFrame({ dx: 2, dy: -4, legs: 'jump', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 3], spear: [sh[0] - 4, sh[1] + 5, sh[0] - 15, sh[1] + 17], plume: 1 }),
+    knightFrame({ dx: 4, dy: -8, legs: 'jump2', arm: [sh[0], sh[1], sh[0] - 5, sh[1] + 5], spear: [sh[0] - 6, sh[1] + 8, sh[0] - 17, sh[1] + 22], plume: 2 }),
+  ];
+  /* HER DODGE IS A HOP BACKWARD, not a tumble: she gives ground with the point still up, so a foe she left behind
+     is at the end of the spear again by the time she lands. Four beats of one small backward leap. */
+  F.roll = [
+    knightFrame({ dx: -2, dy: -2, legs: 'jump', arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: carry(-1), plume: 1 }),
+    knightFrame({ dx: -4, dy: -3, legs: 'jump2', arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: carry(-1), plume: 2 }),
+    knightFrame({ dx: -5, dy: -1, legs: 'fall', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], spear: carry(), plume: 2 }),
+    knightFrame({ dx: -3, dy: 1, legs: 'land', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: carry(1), plume: 0 }),
+  ];
+  /* THE SECOND AND THIRD OF HER RUN. The second is short and off the hip; the third is the one that goes all the way
+     out, so the run of three ends where her reach really is. Her air thrust is the same blow with her legs tucked. */
+  F.atkB = [
+    thrust(sh[0] - 4, sh[1] + 3, sh[0] + 9, sh[1] + 3, { dx: -1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], plume: 1 }),
+    thrust(sh[0] + 2, sh[1] + 2, 42, sh[1] + 2, { dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], plume: 2 }),
+    thrust(sh[0] + 4, sh[1] + 2, 52, sh[1] + 2, { dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 2], plume: 2 }),
+    thrust(sh[0] + 2, sh[1] + 3, 38, sh[1] + 3, { dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 3], plume: 0 }),
+    F.atk[4],
+  ];
+  F.atkC = [
+    thrust(sh[0] - 7, sh[1] - 1, sh[0] + 7, sh[1] - 1, { dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 5, sh[1] - 1], plume: 1 }),
+    thrust(sh[0] + 3, sh[1] - 1, 49, sh[1] - 1, { dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 1], plume: 2 }),
+    thrust(sh[0] + 6, sh[1] - 1, 57, sh[1] - 1, { dx: 3, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 7, sh[1] - 1], plume: 2 }),
+    thrust(sh[0] + 3, sh[1] + 1, 41, sh[1] + 1, { dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], plume: 0 }),
+    F.atk[4],
+  ];
+  F.air = [
+    thrust(sh[0] - 5, sh[1] + 1, sh[0] + 9, sh[1] + 1, { legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 1], plume: 1 }),
+    thrust(sh[0] + 2, sh[1], 43, sh[1], { legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0] + 4, sh[1]], plume: 2 }),
+    thrust(sh[0] + 5, sh[1], 55, sh[1], { legs: 'jump', dy: -1, arm: [sh[0], sh[1], sh[0] + 6, sh[1]], plume: 2 }),
+    thrust(sh[0] + 2, sh[1] + 2, 37, sh[1] + 2, { legs: 'jump', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], plume: 1 }),
+    F.jump[1],
+  ];
+  /* THE STRAIGHT-UP THRUST, for whatever is over her: she is the one hero the flyers cannot sit above */
+  F.cast = [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4],
+    spear: [sh[0] + 2, sh[1] + 4, sh[0] + 3, sh[1] - 16 + i] }));
+  /* VIGIL SPENT: the spear levelled in both hands and held there, and the thrusts that follow go through a whole line */
+  F.blast = [knightFrame({ wide: WIDE, legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 2], spear: [sh[0] - 6, sh[1] - 2, 47, sh[1] - 2], glow: [sh[0] + 2, sh[1] - 4] }),
+    knightFrame({ wide: WIDE, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 1], spear: [sh[0] - 2, sh[1] - 1, 57, sh[1] - 1], glow: [sh[0] + 6, sh[1] - 3] })];
+  /* HER FIDGET: the spear taken off the ground, turned once in her hands to look down the haft, the point sighted
+     along at arm's length, and set back in the turf. A woman checking a shaft she has carried a long way. */
+  { const lift = knightFrame({ arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], spear: [sh[0] + 3, sh[1] - 1, sh[0] + 4, sh[1] - 15], plume: 1 });
+    const turn = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], spear: [sh[0] - 4, sh[1] + 5, sh[0] + 12, sh[1] - 5], plume: 1 });
+    const sight = knightFrame({ hy: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], spear: [sh[0] - 3, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 0 });
+    const sight2 = knightFrame({ hy: 1, sho: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], spear: [sh[0] - 3, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 2 });
+    const setDown = knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: rest(1), plume: 2 });
+    F.fidget = holdFrames([[lift, 2], [turn, 3], [sight, 3], [sight2, 3], [sight, 2], [turn, 2], [setDown, 2], [F.idle[7], 2]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);

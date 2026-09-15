@@ -42,7 +42,7 @@ const NOT_FOES = new Set(['mother', 'seed', 'bomb', 'folk', 'folk2', 'lamplighte
 NOT_FOES.add('dog');
 /* the same creature on purpose: a palette, not a design. They are allowed to match. */
 const SAME = new Set(['hound~dog', 'hopper~hopper_blue', 'hopper~hopper_yellow', 'hopper_yellow~hopper_blue', 'weaver~spider']);
-const HEROES = [['knight', C.bakeKnight], ['pyro', C.bakePyro], ['paladin', C.bakePaladin], ['pirate', C.bakeFreebooter], ['reaper', C.bakeReaper]];
+const HEROES = [['knight', C.bakeKnight], ['pyro', C.bakePyro], ['paladin', C.bakePaladin], ['pirate', C.bakeFreebooter], ['reaper', C.bakeReaper], ['warden', C.bakeWarden]];
 
 function wait() { return new Promise(res => { const t = setInterval(() => { const B = $('frame').contentWindow.BK; if (B && B.SPR) { clearInterval(t); res(B); } }, 200); }); }
 
