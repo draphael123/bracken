@@ -17164,8 +17164,10 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
      before her in their frames - green faces, iron crowns - looking down the room at whoever has come to see the one who is left. */
   if (st === 'gallery') {
     const fl = sy + h;
-    g.fillStyle = '#231816'; g.fillRect(sx, sy, w, h);
-    for (let xx = sx - ((tx0 * TS) % 24); xx < sx + w; xx += 24) { g.fillStyle = '#2e201c'; g.fillRect(xx + 3, sy, 18, h); g.fillStyle = '#16100e'; g.fillRect(xx + 21, sy, 1, h); }   // the panels
+    g.fillStyle = '#34241f'; g.fillRect(sx, sy, w, h);   /* (a shade lighter than oak would be: at '#231816' the lookpass measured her gallery as dark as the kitchens' soot) */
+    for (let xx = sx - ((tx0 * TS) % 24); xx < sx + w; xx += 24) { g.fillStyle = '#44302a'; g.fillRect(xx + 3, sy, 18, h); g.fillStyle = '#1e1512'; g.fillRect(xx + 21, sy, 1, h); }   // the panels
+    const glow = 0.5 + 0.5 * Math.sin(time * 1.7);
+    g.globalAlpha = 0.08 + 0.03 * glow; g.fillStyle = '#ffb45c'; g.fillRect(sx, fl - 44, w, 44); g.globalAlpha = 1;   // the candle light, low along the walls
     g.fillStyle = '#7a5a1c'; g.fillRect(sx, fl - 16, w, 2); g.fillStyle = '#c9a040'; g.fillRect(sx, fl - 16, w, 1);                                                       // the dado rail
     g.fillStyle = '#1a1210'; g.fillRect(sx, fl - 14, w, 14);
     for (let xx = sx - ((tx0 * TS) % 96); xx < sx + w; xx += 96) {
