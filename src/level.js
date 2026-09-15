@@ -7118,6 +7118,41 @@ function ambushRooms(L, id) {
   }
   return L;
 }
+/* ============ THE ELITES ============
+   "Maybe add some elite enemies in levels that you need to kill to progress?" An elite is an ordinary creature of the
+   level's own roster stood somewhere with room to fight it: three times the health, a heavier bar, a gold trim, a name
+   and ONE rule of its own (the ELITE table in src/main.js). [creature, x, y, { gate }] in the level's FINAL columns. An
+   ent already of that kind within three tiles on the same row is made the elite (it keeps its place in the crowd); none
+   there and one is put down. `gate` is a column the elite HOLDS: a portcullis across the route that is down until it
+   dies, by any means - a blade, a drop, a spike. Every level with no mini has one. Never in a boss or mini room or an
+   ambush room, never at a landing. tools/elites.mjs checks that the elite can be reached with its gate shut, that the
+   gate actually holds the route, and that nothing counted stands in the gate.
+   THE SUNSPIRE AND HIGHCROWN are being rebuilt, and get theirs after they land. */
+const ELITES = {
+  wood: [['shield', 147, 21, { gate: 157 }]],
+  marsh: [['thorn', 65, 15, { gate: 72 }]],
+  stockade: [['brute', 302, 19, { gate: 317 }]],
+  spore: [['thorn', 412, 13, { gate: 430, calls: 'sporeling' }]],
+  kings: [['brute', 385, 20]],
+};
+/* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
+   near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,
+   read by the game when it lays the gate and by tools/elites.mjs when it checks it. */
+export function eliteGate(L, col, row) {
+  const at = (x, y) => (x < 0 || x >= L.W) ? T.SOLID : (y < 0 || y >= L.H) ? T.AIR : L.grid[y * L.W + x];
+  let bot = row; while (bot > row - 4 && at(col, bot) !== T.AIR) bot--;
+  while (bot < row + 6 && at(col, bot + 1) === T.AIR) bot++;
+  let top = bot; while (top > bot - 9 && top > 0 && at(col, top - 1) === T.AIR) top--;
+  const sill = [T.ONEWAY, T.RAIL, T.PLANK].includes(at(col, bot + 1)) ? bot + 1 : -1;
+  return { col, top, bot, sill };
+}
+function elites(L, id) {
+  for (const [t, x, y, o] of ELITES[id] || []) {
+    const was = L.ents.find(e => e.t === t && e.y === y && Math.abs(e.x - x) <= 3 && !e.mini && !e.boss && !e.elite);
+    if (was) Object.assign(was, { x, elite: true }, o || {}); else L.ents.push(Object.assign({ t, x, y, face: -1, elite: true }, o || {}));
+  }
+  return L;
+}
 /* ============ EVERY DEAD END PAYS ============
    "Whenever there's a dead end like this, like in the deep, there needs to be some type of collectible." Every pocket
    src/deadends.js finds (a walk that runs five tiles or more past its last way on to a wall - on land, under water or up
@@ -7172,7 +7207,7 @@ function payDeadEnds(L, id) {
   }
   return L;
 }
-for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(garrison(ambushRooms(L, id), id)))), id), id); }; }
+for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(elites(garrison(ambushRooms(L, id), id), id)))), id), id); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };

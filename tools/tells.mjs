@@ -78,7 +78,8 @@ const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|dark
   'updateRam|callTell',
   'updateStrawKing|callTell',      // the Scarecrow King calls the rooks: each marks its own dive
   'updateStrawKing|lightTell',   // he lights the field: the fire is on the floor, and it throws no blow
-  'updateArchmage|blinkTell', 'updateArchmage|wardTell', 'updateArchmage|openTell']);   // THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow           // the Ram Lord calls the flock: the goats run for themselves
+  'updateArchmage|blinkTell', 'updateArchmage|wardTell', 'updateArchmage|openTell',
+  'updateElite|rallyTell', 'updateElite|wallTell', 'updateElite|callTell']);   /* AN ELITE'S war cry, shield wall and call: the foes it rallies, covers or calls strike on their own marks */   // THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow           // the Ram Lord calls the flock: the goats run for themselves
 const unblockable = key => {
   if (THROWS_SOMETHING_ELSE.has(key)) return true;
   const fn = key.split('|')[0];

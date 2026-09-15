@@ -31,7 +31,8 @@ export async function fightLab(BK, opts = {}) {
       BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false;
       for (const e of BK.enemies()) e.alive = false; BK.sim(20);
       const P = BK.P, k = BK.keys; P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0;
-      const before = BK.enemies().length; BK.spawnEnt({ t, x: Math.round(P.x / 16) + 5, y: Math.round(P.y / 16) - 1 });
+      /* opts.elite: the same foe as its ELITE (main.js), rule and all */
+      const before = BK.enemies().length; BK.spawnEnt(Object.assign({ t, x: Math.round(P.x / 16) + 5, y: Math.round(P.y / 16) - 1 }, opts.elite ? { elite: true } : {}));
       const e = BK.enemies()[BK.enemies().length - 1];
       if (BK.enemies().length === before || !e) { fights.push({ skipped: true }); continue; }
       let f = 0, taken = 0, swings = 0, defends = 0, died = false, last = P.hp; const ehp = e.hp;
@@ -62,7 +63,7 @@ export async function fightLab(BK, opts = {}) {
     out.progress++;
     if (!ok.length) { rows.push({ lvl: lvId, h, t, skipped: true }); continue; }
     rows.push({ lvl: lvId, h, t, ehp: ok[0].ehp, kills: ks.length + '/' + ok.length, deaths: ok.filter(x => x.died).length,
-      ttk: ks.length ? +avg(ks, x => x.secs).toFixed(2) : null, taken: +avg(ok, x => x.taken).toFixed(1),
+      ttk: ks.length ? +avg(ks, x => x.secs).toFixed(2) : null, taken: +avg(ok, x => x.taken).toFixed(1), perMin: Math.round(avg(ok, x => x.taken / Math.max(1, x.secs) * 60)),
       takenPct: +(100 * avg(ok, x => x.taken / x.maxHp)).toFixed(1), swings: +avg(ok, x => x.swings).toFixed(1), defends: Math.round(avg(ok, x => x.defends)) });
   }
   const acc = {};
