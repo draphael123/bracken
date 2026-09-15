@@ -10837,7 +10837,7 @@ function updateForgemaster(e, dt) {
     const wantUp = (third < 0.66 && !(e.went66)) || (third < 0.33 && !(e.went33)) || (p2 && e.upCd <= 0 && e.mode === 'pace' && e.modeT <= 0);
     if (wantUp && (e.mode === 'pace' || e.mode === 'stride')) {
       if (third < 0.33) e.went33 = 1; else if (third < 0.66) e.went66 = 1;
-      e.upCd = 13; e.beamX = Math.max(A.x0 + 40, Math.min(A.x1 - 40, P.x));
+      e.upCd = 13; e.beamX = Math.max(A.beamL === undefined ? A.x0 + 40 : A.beamL, Math.min(A.beamR === undefined ? A.x1 - 40 : A.beamR, P.x));   /* he leaps for the beam, so aim inside the beam, not anywhere in the room */
       e.mode = 'leapTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'HE TAKES THE BEAM', '#ffd36b'); SFX.charge();
     }
   }
@@ -10974,7 +10974,16 @@ function updateForgemaster(e, dt) {
   }
   if (e.stagger > 0 && e.mode !== 'stun') want = 0;
   e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'leap' || e.mode === 'drop' ? 2 : 6));
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+  /* NEVER LEFT UP ON A LEDGE. The armoury's west wall has boards stepping up it, and a stride or a landing could stand him on them:
+     nothing in his kit ever brought him back down, so he fought the rest of the fight two tiles over his own floor. Standing above the
+     floor out of his beam modes for half a second, he steps off (through the boards, as he does when he drops from the beam). */
+  e.strandT = e.ground && e.y < floor - 12 && (e.mode === 'pace' || e.mode === 'stride' || e.mode === 'landed' || e.mode === 'hurl' || e.mode === 'slam') ? (e.strandT || 0) + dt : 0;
+  if (e.strandT > 0.5) { e.dropThru = 0.35; e.strandT = 0; }
+  /* A STUN OR A SCALD IS THE OPENING, AND AN OPENING IS ON THE FLOOR. Scalded by the boiler or stunned by a cart while up on his beam, he
+     used to stand there through all of it, five tiles over anyone who could hit him: he comes down at once instead. */
+  if ((e.mode === 'stun' || e.mode === 'scald') && e.ground && e.y < floor - 12) { e.dropThru = 0.35; e.up = 0; }
+  e.dropThru = Math.max(0, (e.dropThru || 0) - dt);
+  const r = moveBody(e, e.vx * dt, e.vy * dt, e.mode === 'drop' || e.dropThru > 0); if (r.ground) e.vy = 0;
   e.ground = !!r.ground;
   // THE BEAM IS A FLOOR WHEN HE IS ON IT. moveBody will not stand him on a rail, so while he is up the
   // beam's course is held for him; the moment he drops he is back on the armoury floor like everything else.

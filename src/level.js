@@ -2865,6 +2865,9 @@ function shiftCrown(R, col, n) { // what grow() does not know about in the castl
   const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p;
   if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: a.garrison.map(gd => ({ ...gd, x: sh(gd.x) })) }));
   if (R.mini && R.mini.slag) R.mini = { ...R.mini, slag: R.mini.slag.map(shp) };
+  /* AND HIS BEAM. beamL/beamR were never shifted, so once the castle grew round him they still said columns 142-182 while his armoury
+     stood at 556-628: every time he took the beam he was clamped four hundred columns away, hanging at beam height outside his room. */
+  if (R.mini && R.mini.beamL !== undefined) R.mini = { ...R.mini, beamL: shp(R.mini.beamL), beamR: shp(R.mini.beamR) };
   if (R.arena) { const A = { ...R.arena };
     if (A.gallery) A.gallery = { ...A.gallery, x0: sh(A.gallery.x0), x1: sh(A.gallery.x1) };
     if (A.hole) A.hole = { ...A.hole, x0: sh(A.hole.x0), x1: sh(A.hole.x1) };
