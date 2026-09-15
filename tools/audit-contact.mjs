@@ -58,7 +58,9 @@ const PAGE = async function (o) {
 
   function sample(f, landed) {
     if (BK.textLab && BK.textLab.hint) BK.textLab.hint('', 0);   /* a first-time hint is an opaque plate over the hero: not the picture measured */
-    const [cx, cy] = cam(); if ((v.z || 1) !== 1 || v.tilt) return;   /* a zoomed or rolled frame: the tiles are not where the numbers say */
+    /* a zoomed or rolled frame: the tiles are not where the numbers say. BK.view is a getter that returns a fresh object, so the
+       zoom is read NOW - the `v` taken at the start kept z at 1 forever, and a boss's intro zoom was measured as a 9 px sink */
+    const [cx, cy] = cam(), vNow = BK.view; if ((vNow.z || 1) !== 1 || vNow.tilt) return;
     const who = [];
     for (const e of BK.enemies()) { if (!e.alive || e.gone > 0 || e.harmless) continue; if (e.x < cx - 20 || e.x > cx + VW + 20 || e.y < cy - 10 || e.y > cy + VH + 30) continue; if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'mother' || e.t === 'heart' || e.t === 'gill') continue; who.push(e); }
     /* THE HERO ONLY WHEN HE IS CALM: a swing's trail, a roll's ghost, a ward's ring, the harvest's smoke and a squash are all drawn with him
