@@ -7197,7 +7197,7 @@ function ambushRooms(L, id) {
    dies, by any means - a blade, a drop, a spike. Every level with no mini has one. Never in a boss or mini room or an
    ambush room, never at a landing. tools/elites.mjs checks that the elite can be reached with its gate shut, that the
    gate actually holds the route, and that nothing counted stands in the gate.
-   THE SUNSPIRE AND HIGHCROWN are being rebuilt, and get theirs after they land. */
+   THE SUNSPIRE is being rebuilt, and gets its elites after it lands. */
 const ELITES = {
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
@@ -7208,6 +7208,9 @@ const ELITES = {
   hanging: [['shield', 85, 107]],
   moor: [['goat', 168, 21, { gate: 200 }], ['troll', 384, 13]],
   storm: [['pike', 250, 29, { gate: 257 }]],
+  /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
+     its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */
+  crown: [['heavy', 208, 63], ['hearthgob', 670, 51]],
   longwater: [['tideguard', 419, 26, { gate: 427 }]],
   reef: [['tideguard', 355, 25, { gate: 361 }]],   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
   flotilla: [['boarder', 162, 21, { gate: 175 }]],
