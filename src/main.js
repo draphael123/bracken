@@ -3889,7 +3889,10 @@ function gainResolve(n) { if (hero() !== 'knight' || lcOn()) return; const was =
    at the lip of a drop. However it stops, it ends in a shield slam that rocks everything near. The shield is square in front of
    him the whole way, so a yellow blow from the front is turned for nothing (damagePlayer0's lcUp) - but a red blow or one from
    behind lands, and a blow that lands knocks him out of it with no slam. It is not the LUNGE: nothing about it is untouchable. */
-const LC_BRACE = 0.25, LC_SPEED = 360, LC_DIST = 13 * TS, LC_THROUGH = 2.5, LC_BOSS = 4, LC_RING = 40;   /* s, px/s, px (a screen is twenty tiles, and the camera leads him), sword blows, px */
+const LC_BRACE = 0.25, LC_SPEED = 360, LC_DIST = 13 * TS, LC_THROUGH = 2.5, LC_BOSS = 3, LC_RING = 40;   /* s, px/s, px (a screen is twenty tiles, and the camera leads him), sword blows, px */
+/* (LC_BOSS was 4. The boss lab took THE CLOSED HELM from 66 s to 45: the charge lands in the window his own parry opens, where the
+   ward is down (x2) and the knight's parry-then-heavy combo is live (x1.5), and his perfect guards refill the bar in five blows.
+   Three is still the biggest single blow the knight has.) */
 const lcOn = () => P.lcBrace > 0 || P.lcLeft > 0;
 /* WHAT STOPS IT is a boss or a mini, asked the way the spawn asks it when it scales their health - not maxHp: the sworn sword and the
    hedge knight carry a maxHp for their bars and are ordinary foes, and the charge goes through them like anyone else */
