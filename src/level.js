@@ -4756,34 +4756,60 @@ function waymeet() {
   floor(85, 206, R);
   ent('deco', 92, R - 1, { kind: 'well' }); ent('deco', 100, R - 1, { kind: 'stall', v: 0 });
   ent('deco', 110, R - 1, { kind: 'stall', v: 1 }); ent('deco', 118, R - 1, { kind: 'wares' });
-  ent('deco', 126, R - 1, { kind: 'barrels' }); ent('deco', 134, R - 1, { kind: 'cart' });
-  ent('deco', 148, R - 1, { kind: 'column' }); ent('deco', 162, R - 1, { kind: 'stall', v: 0 });
-  ent('deco', 174, R - 1, { kind: 'dovecote' }); ent('deco', 188, R - 1, { kind: 'waterButt' });
-  post(96); post(142); post(186);
-  ent('npc', 104, R - 1, { kind: 'bard' }); ent('npc', 130, R - 1, { kind: 'cook' });
-  ent('npc', 170, R - 1, { kind: 'keeper' }); ent('dog', 122, R - 1); ent('dog', 180, R - 1);
+  ent('deco', 188, R - 1, { kind: 'waterButt' }); ent('deco', 196, R - 1, { kind: 'dovecote' });
+  post(96); post(186);
+  ent('npc', 104, R - 1, { kind: 'bard' }); ent('dog', 122, R - 1); ent('dog', 200, R - 1);
   sign(88, 'THE MARKET CROSS. NOBODY HERE IS YOUR ENEMY, AND EVERYONE IS IN THE WAY.');
-  /* THE SQUARE. A crowd of men-at-arms between you and the far side and three more on the awnings over your
-     head, because a market is a crowd and a crowd is where a purse gets collected. Every one of them sworn to
-     somebody: the goblins that used to work this crowd are gone, and a goblin knight has taken a stall. */
-  for (const x of [96, 106, 114, 122, 132, 140, 148, 166, 178, 190, 202]) ent('swornsword', x, R - 1, { face: -1 });
-  for (const x of [104, 136, 168]) ent('crossbow', x, R - 4, { face: -1 });
-  ent('swornsword', 112, R - 1, { face: 1 }); ent('crossbow', 176, R - 4, { face: -1 });
-  for (const x of [152, 194]) ent('runner', x, R - 1, { face: -1 });
-  ent('hedgeknight', 128, R - 1, { face: -1 }); ent('hedgeknight', 184, R - 1, { face: -1 });
-  ent('heavy', 144, R - 1, { face: -1 }); ent('hedgeknight', 164, R - 1, { face: -1 }); ent('watch', 132, R - 1, { face: -1 }); ent('swornsword', 172, R - 1, { face: -1 }); ent('crossbow', 150, R - 7, { face: -1 });
-  ent('check', 158, R - 1);
-  for (const x of [102, 140, 176]) ent('deco', x, R - 10, { kind: 'bunting', hang: true });   /* left up from the fair */
-  ent('deco', 138, R - 1, { kind: 'hayBale', v: 1 });
-  sign(156, 'THE BOY RUNS TO FETCH THE SWORDS. SHUT HIM UP, OR DEAL WITH WHAT HE BRINGS.');
-  /* the awnings over the stalls: the first thing above the road, and the way past the crowd */
-  awning(98, 120, R - 3); awning(130, 146, R - 3); awning(158, 180, R - 3);
-  awning(124, 128, R - 6); awning(150, 156, R - 6);
-  coins([102, R - 4], [110, R - 4], [118, R - 4], [134, R - 4], [142, R - 4], [164, R - 4], [172, R - 4]);
-  coins([126, R - 7], [152, R - 7]);
-  coins([90, R - 2], [124, R - 2], [158, R - 2], [192, R - 2], [200, R - 2]);
+  /* THE MARKET HALL (x 95-123) and THE HORSE FAIR (x 181-209) are the square's two crowds, locked in by AMBUSH; the
+     men placed in them here stand down when the rooms fill. */
+  for (const x of [96, 106, 114, 122, 190, 202]) ent('swornsword', x, R - 1, { face: -1 });
+  ent('crossbow', 104, R - 4, { face: -1 }); ent('runner', 194, R - 1, { face: -1 }); ent('hedgeknight', 184, R - 1, { face: -1 });
+  ent('deco', 102, R - 10, { kind: 'bunting', hang: true });   /* left up from the fair */
+  sign(192, 'THE BOY RUNS TO FETCH THE SWORDS. SHUT HIM UP, OR DEAL WITH WHAT HE BRINGS.');
+  awning(98, 120, R - 3);                                   /* the awnings over the stalls: the first thing above the road */
+  coins([102, R - 4], [110, R - 4], [118, R - 4], [90, R - 2], [192, R - 2], [200, R - 2]);
   ent('check', 198, R - 1);
-  ent('silver', 152, R - 8);
+
+  // ---------------- 2b. THE STOCKS & MARKET SQUARE (x 124-180). Fair day, and the pens are railed. --------------
+  /* PLATFORMING, AND THE NEW CREATURE'S HOME. Between the market hall and the horse fair the square is given over to the
+     beasts: iron-railed pens down the middle of the road, and the only way across them is what the fair left standing -
+     the steps of the market cross, the stocks, and a shop sign swung out on its pulley. The Broken Lance has been
+     emptying into the square since noon, and its regulars have found the high places.
+       INTRODUCE  one drunk on the market cross steps, throwing at a man on flat road: see the ring, step off it.
+       DEVELOP    two short pens with the stocks for a step between, under a drunk on a house roof you can climb to.
+       TWIST      the long pen, crossed only on the swinging sign, while a second drunk throws bottles.
+       TEST       the long pen again with both of them in reach of it, the balcony behind you and the bottle ahead. */
+  ent('npc', 125, R - 1, { kind: 'keeper' }); ent('check', 127, R - 1);
+  sign(129, 'FAIR DAY, AND THE DRUNKS ARE OUT. THE RING ON THE ROAD IS WHERE IT LANDS.');
+  ent('npc', 130, R - 1, { kind: 'cook' });
+  /* THE CARTER'S WAGON, left standing in the road with a drinker up on its bed: over your head, one jump from the road
+     for whoever wants to put him on his back, and on nobody's landing */
+  board(132, 136, R - 4); ent('deco', 134, R - 1, { kind: 'cart' });   /* the tilt on its poles, a hay wagon's height */
+  for (const x of [132, 136]) ent('deco', x, R - 1, { kind: 'stilt' });
+  block(131, 131, R - 1, R - 1);                             /* the mounting block under the end of it: the step up to him (clear of the sign's post) */
+  ent('drunk', 134, R - 5, { face: -1, range: 1 });
+  ent('deco', 138, R - 1, { kind: 'column' });              /* the market cross itself */
+  coins([133, R - 6], [135, R - 6], [137, R - 2], [139, R - 2]);
+  spikes(140, 142, R); block(143, 144, R - 1, R - 1); spikes(145, 147, R);   /* the first pen, and the stocks standing in it */
+  ent('deco', 143, R - 2, { kind: 'stocks' });
+  coins([141, R - 3], [146, R - 3]);
+  tiles(150, 155, R - 9);                                    /* a house with the road under it, and a drunk at the eaves (its roof starts past the landing: nobody jumps into its gutter) */
+  ent('drunk', 153, R - 10, { face: -1, range: 1 });
+  ent('silver', 151, R - 11); coins([152, R - 11], [155, R - 11]);
+  ladder(149, R - 10);                                       /* up to her eaves, beside the house and clear of the jumps */
+  ent('deco', 153, R - 1, { kind: 'hayBale', v: 1 });
+  block(156, 157, R - 2, R - 1);                             /* the mounting block, level with the sign */
+  spikes(158, 165, R);                                       /* the long pen: eight tiles of railing and nothing standing in it */
+  ent('mover', 158, R - 2, { len: 2, range: 5, speed: 30 });   /* the ironmonger's sign, swung out on its pulley */
+  awning(166, 168, R - 2); ent('deco', 167, R - 1, { kind: 'stall', v: 0 });   /* and a stall's canopy to come down on */
+  ent('deco', 161, R - 9, { kind: 'bunting', hang: true });
+  coins([159, R - 4], [162, R - 4], [165, R - 4]);
+  tiles(170, 176, R - 9);                                    /* and a second house, with the one who has found the bottles */
+  ent('drunk', 173, R - 10, { face: -1, range: 2 });
+  ent('deco', 174, R - 1, { kind: 'wares', v: 1 });
+  coins([168, R - 2], [172, R - 2], [176, R - 2]);
+  /* AND THEN A FIGHT, under the second house where the bottles cannot follow: the square alternates, crossing then crowd */
+  ent('hedgeknight', 176, R - 1, { face: -1 }); ent('swornsword', 174, R - 1, { face: -1 });
 
   // ---------------- 3. THE BROKEN LANCE (x 207-300). The inn, the common room, and the beer garden. ----------
   floor(207, 300, R);
@@ -4933,11 +4959,51 @@ function waymeet() {
 
   // ---------------- 8. THE CHAPEL YARD (x 651-775). Under the bell, with the town watching. -----------
   floor(651, W - 1, R);
-  ent('deco', 674, R - 1, { kind: 'lychgate' }); ent('deco', 680, R - 1, { kind: 'yew', v: 0 });
-  ent('deco', 686, R - 1, { kind: 'grave', v: 0 }); ent('deco', 692, R - 1, { kind: 'grave', v: 1 });
-  sign(676, 'THE CHAPEL YARD. HE IS NOT HERE TO KILL YOU, BUT TO CARRY YOU OUT.');
-  ent('check', 684, R - 1);
-  sign(688, 'ONLY HIS OWN SWORD, MET ON THE BEAT, BREAKS HIS WARD. ROLL THE BASH.');
+  // ---------------- 8a. THE CHURCH ALE (x 651-704). The parish brews for the chapel, and the parish has drunk it. ------
+  /* PLATFORMING BEFORE THE BELL. A church ale on the green inside the lychgate: trestles, kegs on a dray, and the town
+     too far gone to go home. The yard between you and the Paladin is railed, one grave is freshly dug, and the drinkers
+     have climbed everything that will hold them.
+       INTRODUCE  a drunk up on the ale-stake's kegs, over a flat green: the ring again, somewhere new.
+       DEVELOP    the open grave, glass in the bottom of it and two chest tombs for steps, a ladder at each end.
+       TWIST      the brewer's dray: a drunk ON the way for once - over him, under him, or put him on his back.
+       TEST       the churchyard railing, on the bell-rope plank, with the dray behind and a bottle from the church house. */
+  ent('check', 652, R - 1);
+  sign(654, 'THE CHURCH ALE. THE PARISH BREWED FOR THE CHAPEL, AND HAS DRUNK IT.');
+  ent('deco', 656, R - 1, { kind: 'longTable', v: 0 }); ent('deco', 653, R - 1, { kind: 'bench' });
+  ent('guest', 655, R - 1, { v: 2, face: 1 }); ent('guest', 657, R - 1, { v: 0, face: -1 });
+  /* THE CHAPEL'S OWN keep the ale: a fight on the green first, then the crossing, where the parish is too drunk to fight */
+  ent('swornsword', 656, R - 1, { face: -1 }); ent('watch', 658, R - 1, { face: -1 });
+  block(659, 661, R - 2, R - 1);                            /* the ale-stake: kegs racked two high, a step up to the lychgate */
+  ent('deco', 660, R - 3, { kind: 'kegStack' });
+  /* THE ALE BOOTH over the green, and the first drinker up at its eaves: the chapel's men are under his roof where he
+     cannot throw, and the moment you step out from under it onto the kegs, he can */
+  tiles(651, 657, R - 9);
+  ent('drunk', 655, R - 10, { face: -1, range: 1 });
+  ent('deco', 664, R - 1, { kind: 'lychgate' }); ent('deco', 666, R - 1, { kind: 'yew', v: 0 });
+  coins([658, R - 2], [663, R - 2], [666, R - 2]);
+  /* THE NEW GRAVE: two courses deep, the broken glass of the afternoon in the bottom of it, a sexton's ladder at each end,
+     and three chest tombs standing up out of it to cross on */
+  for (let x = 668; x <= 682; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R + 2, x === 668 || x === 682 ? T.AIR : T.SPIKE); }
+  block(671, 672, R - 1, R + 2); block(675, 676, R - 1, R + 2); block(679, 680, R - 1, R + 2);
+  stair(668, R, R + 2); stair(682, R, R + 2);
+  ent('deco', 671, R - 2, { kind: 'grave', v: 0 }); ent('deco', 676, R - 2, { kind: 'grave', v: 1 }); ent('deco', 680, R - 2, { kind: 'grave', v: 2 });
+  coins([673, R - 3], [677, R - 3], [681, R - 3]);
+  /* THE BREWER'S DRAY: boards on a cart, kegs on the boards, a drinker on the kegs - and the road goes under it too */
+  board(684, 688, R - 4); ent('deco', 686, R - 1, { kind: 'cart' });   /* the dray's tilt on its poles */
+  for (const x of [684, 688]) ent('deco', x, R - 1, { kind: 'stilt' });
+  ent('drunk', 686, R - 5, { face: -1, range: 1 });
+  coins([685, R - 6], [687, R - 6]);
+  /* THE CHURCHYARD RAILING, and the bell-rope's plank run out over it */
+  /* a keg on its side at each end, level with the plank: whoever falls among the railings climbs out on one of them in a
+     two-row step, never a pixel-perfect jump (rules E4) */
+  block(689, 689, R - 1, R - 1); block(698, 698, R - 1, R - 1);
+  spikes(690, 697, R);
+  ent('mover', 691, R - 1, { len: 2, range: 4, speed: 32 });
+  coins([692, R - 4], [695, R - 4]);
+  tiles(699, 703, R - 9);                                    /* the church house, and the last of them on its roof with the bottles */
+  ent('drunk', 701, R - 10, { face: -1, range: 1 });
+  ent('check', 700, R - 1);
+  sign(702, 'ONLY HIS OWN SWORD, MET ON THE BEAT, BREAKS HIS WARD. ROLL THE BASH.');
   /* THE YARD ITSELF, because the last room in a level should not be an empty stretch of road: the tower
      at one end, the yews at the other, and the stones he has been standing among all afternoon. */
   ent('deco', 704, R - 1, { kind: 'bellTower' });
@@ -4945,11 +5011,8 @@ function waymeet() {
   ent('deco', 708, R - 1, { kind: 'yew', v: 1 }); ent('deco', 756, R - 1, { kind: 'yew', v: 0 });
   ent('deco', 748, R - 1, { kind: 'lychgate' }); ent('deco', 724, R - 1, { kind: 'cairn' });
   post(702); post(754); post(730);
-  ent('swornsword', 696, R - 1, { face: -1 }); ent('swornsword', 690, R - 1, { face: -1 }); ent('crossbow', 660, R - 1, { face: -1 }); ent('swornsword', 666, R - 1, { face: -1 }); ent('watch', 672, R - 1, { face: -1 });
-  ent('hedgeknight', 680, R - 1, { face: -1 }); ent('heavy', 700, R - 1, { face: -1 });
   ent('closedhelm', 738, R - 1, { face: -1 });
   ent('gate', 770, R - 1);
-  coins([658, R - 2], [668, R - 2], [676, R - 2], [682, R - 2]);
 
   /* THE LADDERS, LAST: nothing is dug after this line */
   for (const [x, y0, y1] of ladders) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
@@ -4979,7 +5042,7 @@ function waymeet() {
       music: 'closedhelm', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
     mini: { x0: 303 * TS, x1: 347 * TS, floor: R * TS, y0: (R - 10) * TS, y1: (R + 1) * TS, trigger: 309 * TS, wallL: 302, gate: 348, boss: 'lancer', name: 'THE SERJEANT OF THE LISTS' },
     /* WHAT THE MASONS LAID is drawn as coursed stone, not the street's earth: the close wall and the King's Bridge with its piers */
-    masonry: [[600, 612, R - 6, R + 2], [618, 628, R - 6, R + 2], [632, 641, R - 6, R + 2], [471, 541, R, R + 1], [486, 487, R + 2, R + 9], [500, 501, R + 2, R + 9], [514, 515, R + 2, R + 9], [528, 529, R + 2, R + 9]],
+    masonry: [[671, 672, R - 1, R + 3], [675, 676, R - 1, R + 3], [679, 680, R - 1, R + 3],   /* the chest tombs in the new grave */ [600, 612, R - 6, R + 2], [618, 628, R - 6, R + 2], [632, 641, R - 6, R + 2], [471, 541, R, R + 1], [486, 487, R + 2, R + 9], [500, 501, R + 2, R + 9], [514, 515, R + 2, R + 9], [528, 529, R + 2, R + 9]],
   };
 }
 
