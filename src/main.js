@@ -744,7 +744,10 @@ function resolveTiles() {
         let roll = rnd();
         if ((L.interiors || []).some(([ix0, ix1, iy0]) => x >= ix0 && x <= ix1 && y >= iy0 - 4 && y < iy0)) roll = 1; // a roof over a hall: no ferns, stumps or fences up there
         if (L.snowLine !== undefined && y <= L.snowLine && rnd() < 0.85) decor.push({ k: 'snow', x: x * TS, y: y * TS - 3, c: PROP.snowCap });
-        if (dress === 'myc') { roll = 1; if (rnd() < 0.42) decor.push({ k: 'tiny', x: x * TS + ((rnd() * 10) | 0), y: y * TS - 6, c: PROP.tinyCap[(rnd() * 4) | 0], ph: rnd() * 6 }); if (rnd() < 0.08) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); }
+        /* NOTHING GROWS THROUGH A DECK. A top with boards laid over it (the wreck's deck on the flats, the lamp gallery round the
+           light) is under a floor, and the shore's rocks and rushes came up between the planks. Boards over it: it gets nothing */
+        if (tileAt(x, y - 1) === T.PLANK) roll = 1;
+        else if (dress === 'myc') { roll = 1; if (rnd() < 0.42) decor.push({ k: 'tiny', x: x * TS + ((rnd() * 10) | 0), y: y * TS - 6, c: PROP.tinyCap[(rnd() * 4) | 0], ph: rnd() * 6 }); if (rnd() < 0.08) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); }
         else if (dress === 'none') { roll = 1; }
         else if (dress === 'crag') { roll = 1; if (!inZone) { const r2 = rnd(); if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 6) | 0), y: y * TS - 7, c: PROP.heather[(rnd() * 3) | 0], sway: 0 }); else if (r2 < 0.21 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 12, c: PROP.gorse[(rnd() * 2) | 0], birds: false }); else if (r2 < 0.26) decor.push({ k: 'fern', x: x * TS + 4, y: y * TS - 14, c: PROP.thistle[(rnd() * 2) | 0], sway: 0 }); else if (r2 < 0.32) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); } }
         else if (dress === 'camp') { roll = 1; const r2 = rnd(); if (r2 < 0.03 && flat2) decor.push({ k: 'cart', x: x * TS, y: y * TS - 16, c: PROP.cart, bg: true }); else if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 }); else if (r2 < 0.21) { decor.push({ k: 'skull', x: x * TS + 3, y: y * TS - 24, c: PROP.skullPost, crow: rnd() < 0.5 }); } else if (r2 < 0.25 && flat2) decor.push({ k: 'tent', x: x * TS - 4, y: y * TS - 22, c: PROP.tent[(rnd() * 2) | 0], bg: true }); else if (r2 < 0.28) { decor.push({ k: 'fire', x: x * TS + 1, y: y * TS - 14, c: PROP.campfire[0], fire: true }); lights.push({ x: x * TS + 8, y: y * TS - 6, r: 38 }); } else if (r2 < 0.34) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); }
@@ -811,7 +814,10 @@ function resolveTiles() {
     else if (t === T.PORT) s = TILE.port[(x + y) % 2];
     else if (t === T.SHELF) s = (L.palette && L.palette.set === 'ship' && FLOT) ? FLOT.rotTop[(rnd() * 3) | 0] : TILE.shelf[(rnd() * 2) | 0];
     else if (t === T.CRYST) s = TILE.cryst[litRow(y) ? 1 : 0][Math.max(0, Math.min(2, crackAt[y * LW + x] || 0))];
-    else if (t === T.PLANK) { const l = tileAt(x - 1, y) === T.PLANK, r = tileAt(x + 1, y) === T.PLANK; s = !l ? TILE.plankL : !r ? TILE.plankR : TILE.plank[(rnd() * 2) | 0]; }
+    else if (t === T.PLANK) { const l = tileAt(x - 1, y) === T.PLANK, r = tileAt(x + 1, y) === T.PLANK; s = !l ? TILE.plankL : !r ? TILE.plankR : TILE.plank[(rnd() * 2) | 0];
+      /* A DECK THE TIDE COVERS is bleached and salt-crusted, and the pale crust is what you see of it under the water: the bridge
+         plank's one light line went to nothing under the flood (the look pass read the wreck's deck at 12 of 15 tiles lost) */
+      if ((L.pools || []).some(p => p.causeTide && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.hiY)) s = krkArt().deck[(rnd() * 2) | 0]; }
     else if (t === T.NET) { const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET;
       // A ROPE IS TIED TO SOMETHING. Where a run of rungs starts in open air - hung from a beam the tile map
       // does not know about, or from a yard that is only decor - it read as a chain floating in the void. The
@@ -6604,7 +6610,7 @@ function updateMasthead(e, dt) {
    THE DROWNED CAUSEWAY: THE TIDE, THE TIDE BELLS, THE FEELER, AND THE KRAKEN.
    ============================================================================================================ */
 var KRKP = null;   /* its art is baked once: none of it hangs on the level's palette (var: bakeAll can run before this line has) */
-const krkArt = () => KRKP || (KRKP = { head: KRA.bakeKrakenHead(), arm: KRA.bakeKrakenArms(), lev: [KRA.bakeLeviathan(0), KRA.bakeLeviathan(1)], far: KRA.bakeKrakenFar(), cargo: KRA.bakeCargo(), boat: { 2: KRA.bakeTideBoat(2), 3: KRA.bakeTideBoat(3) }, seal: KRA.bakeSeal(), lamp: KRA.bakeLampRoom(true), bell: [KRA.bakeTideBell(0), KRA.bakeTideBell(-1), KRA.bakeTideBell(1)],
+const krkArt = () => KRKP || (KRKP = { head: KRA.bakeKrakenHead(), arm: KRA.bakeKrakenArms(), lev: [KRA.bakeLeviathan(0), KRA.bakeLeviathan(1)], far: KRA.bakeKrakenFar(), cargo: KRA.bakeCargo(), boat: { 2: KRA.bakeTideBoat(2), 3: KRA.bakeTideBoat(3) }, seal: KRA.bakeSeal(), lamp: KRA.bakeLampRoom(true), deck: [KRA.bakeDeckBoard(0), KRA.bakeDeckBoard(1)], breaker: KRA.bakeBreaker(), bell: [KRA.bakeTideBell(0), KRA.bakeTideBell(-1), KRA.bakeTideBell(1)],
   waystone: [KRA.bakeWaystone(0), KRA.bakeWaystone(1)], wayShrine: KRA.bakeWayShrine(), brokenArch: KRA.bakeBrokenArch(), drownedTree: KRA.bakeDrownedTree(), fencePosts: KRA.bakeFencePosts() });
 // THE TIDE. Low water, then the bells toll three strokes and a line of foam stands up where the sea will be, then it comes in
 // over three seconds; it stands, turns with one stroke, and goes out. It says so three ways (rule C4): the bells, the foam
@@ -6668,9 +6674,10 @@ function causeDrawLife(cx, cy) {
       const sx = Math.round(x - cx), sy = Math.round(row * TS - cy), leg = Math.floor(time * 12 + i) % 2;
       g.fillStyle = '#7a2e1c'; g.fillRect(sx - 3, sy - 3, 6, 3); g.fillStyle = '#d0643a'; g.fillRect(sx - 2, sy - 3, 4, 2); g.fillStyle = '#e8845a'; g.fillRect(sx - 4, sy - 4 + leg, 1, 1); g.fillRect(sx + 3, sy - 4 + (1 - leg), 1, 1); g.fillStyle = '#141014'; g.fillRect(sx - 1, sy - 4, 1, 1); g.fillRect(sx + 1, sy - 4, 1, 1); } }
   for (const [x0, x1, row] of LF.seals || []) { const cxm = (x0 + x1 + 1) / 2 * TS; if (!on(cxm)) continue; const wet = p && p.y < row * TS + 2;
-    for (let i = 0; i < 3; i++) { const x = x0 * TS + 4 + i * Math.round(((x1 - x0 + 1) * TS - 20) / 2), face = i % 2 ? -1 : 1;
-      if (!wet) { const fr = Math.floor(time * 0.6 + i * 1.3) % 3 === 0 ? 1 : 0, c = art.seal[fr]; g.save(); g.translate(Math.round(x - cx) + 10, Math.round(row * TS - cy) - c.height); g.scale(face, 1); g.drawImage(c, -10, 0); g.restore(); }
-      else if (p) { const sx = Math.round(x - cx + Math.sin(time * 0.7 + i) * 8), sy = Math.round(p.y - cy); g.fillStyle = '#5a5c62'; g.fillRect(sx - 2, sy - 3, 5, 3); g.fillStyle = '#9a9ca4'; g.fillRect(sx - 1, sy - 3, 3, 1); g.fillStyle = '#141418'; g.fillRect(sx + face, sy - 2, 1, 1); } } }   /* a head in the water, watching */
+    const sw = art.seal[0].width, step = Math.round(((x1 - x0 + 1) * TS - sw) / 2);   /* three of them along the rock, sized by the sprite, so a bigger seal is not three seals on top of each other */
+    for (let i = 0; i < 3; i++) { const x = x0 * TS + i * step, face = i % 2 ? -1 : 1;
+      if (!wet) { const fr = Math.floor(time * 0.6 + i * 1.3) % 3 === 0 ? 1 : 0, c = art.seal[fr]; g.save(); g.translate(Math.round(x - cx) + (c.width >> 1), Math.round(row * TS - cy) - c.height); g.scale(face, 1); g.drawImage(c, -(c.width >> 1), 0); g.restore(); }
+      else if (p) { const sx = Math.round(x + (sw >> 1) - cx + Math.sin(time * 0.7 + i) * 8), sy = Math.round(p.y - cy); g.fillStyle = '#787068'; g.fillRect(sx - 3, sy - 4, 7, 4); g.fillStyle = '#c8c0b0'; g.fillRect(sx - 2, sy - 4, 5, 1); g.fillRect(sx + face * 3, sy - 2, 1, 1); g.fillStyle = '#141418'; g.fillRect(sx + face, sy - 3, 1, 1); } } }   /* a head in the water, watching: the pale crown and muzzle of it over the surface */
   if (p && PROP.lw && PROP.lw.buoy) for (const x of LF.buoys || []) { const wx = x * TS + 8; if (!on(wx) || isSolid(x, Math.floor((p.y + 2) / TS))) continue; const c = PROP.lw.buoy; g.drawImage(c, Math.round(wx - c.width / 2 - cx), Math.round(p.y - c.height + 5 + Math.sin(time * 1.4 + x) * 1.5 - cy)); }
   for (const [x, y] of LF.gulls || []) { const hx = x * TS, hy = y * TS; if (!on(hx, 120)) continue; const scare = Math.hypot(P.x - hx, P.y - hy) < 70 ? 1 : 0;
     for (let i = 0; i < 3; i++) { const t = time * (0.55 + scare * 0.6) + i * 2.1, gx = hx + Math.cos(t) * (26 + i * 8), gy = hy + Math.sin(t) * 7 - scare * 26 - i * 3; drawSet(BIRD, null, Math.floor(time * 8 + i) % 2, Math.round(gx - cx), Math.round(gy - cy), -Math.sign(Math.sin(t)) || 1, false, 1.1, 1.1); } }
@@ -6691,10 +6698,9 @@ function causeDrawSea(cx, cy) {
       for (let c = Math.floor(Math.max(x0, cx) / TS); c <= Math.floor(Math.min(x1, cx + VW) / TS); c++) if (isSolid(c, Math.floor((wy - 4) / TS)) && !isSolid(c - 1, Math.floor((wy - 4) / TS))) g.fillRect(Math.round((c - 2) * TS - cx), sy - 1, 2 * TS, 1);
       g.globalAlpha = 1; }
     if (b.x === null && b.t < 1.2) { const k = 1 - b.t / 1.2, sx = Math.round(x1 - cx); if (sx > -10 && sx < VW + 10) { g.globalAlpha = 0.4 + 0.5 * k; g.fillStyle = '#eefaff'; g.fillRect(Math.max(0, Math.min(VW - 4, sx - 4)), sy - 4 - Math.round(k * 16), 4, 4 + Math.round(k * 16)); g.globalAlpha = 1; } }
-    if (b.x !== null) { const x = Math.round(b.x - cx), top = sy - 22; if (x > -50 && x < VW + 50) {   /* THE WAVE: a curl of white running landward */
-      const gr = g.createLinearGradient(x, 0, x + 44, 0); gr.addColorStop(0, '#eefaff'); gr.addColorStop(0.25, '#9ad8d8'); gr.addColorStop(1, 'rgba(60,120,130,0)');
-      g.fillStyle = gr; g.beginPath(); g.moveTo(x - 4, sy + 2); g.quadraticCurveTo(x - 10, top + 6, x + 6, top); g.quadraticCurveTo(x + 24, top + 4, x + 44, sy + 2); g.closePath(); g.fill();
-      g.fillStyle = '#ffffff'; for (let k = 0; k < 7; k++) g.fillRect(x - 6 + ((k * 5 + Math.floor(time * 30)) % 12), top + k * 3, 3, 1); } } }
+    if (b.x !== null) { const x = Math.round(b.x - cx); if (x > -60 && x < VW + 60) {   /* THE WAVE: a curl of white running landward, its crest on b.x (bakeBreaker: pixels, like the rest of the sea, not a gradient blob laid over it) */
+      const c = krkArt().breaker[Math.floor(time * 10) % 3]; g.drawImage(c, x - 10, sy - c.height + 3);
+      g.fillStyle = '#ffffff'; for (let k = 0; k < 5; k++) g.fillRect(x - 9 + ((k * 5 + Math.floor(time * 30)) % 12), sy - 19 + k * 3, 2, 1); } } }
   const FG = L.causeFog; if (FG) { const fx0 = FG.x0 * TS - cx, fx1 = FG.x1 * TS - cx;
     if (fx1 > 0 && fx0 < VW) { const mid = cx + VW / 2, k = Math.max(0, Math.min(1, (mid - FG.x0 * TS + 160) / 240, (FG.x1 * TS - mid + 200) / 200));
       if (!CFOG || CFOG.width !== VW || CFOG.height !== VH) { CFOG = document.createElement('canvas'); CFOG.width = VW; CFOG.height = VH; }
@@ -6707,7 +6713,7 @@ function causeDrawSea(cx, cy) {
       g.fillStyle = 'rgba(255,240,190,' + (0.35 * k).toFixed(3) + ')'; g.beginPath(); g.arc(lx, ly, 7, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over'; } }
 }
 function causeTurn(ph) {
-  if (ph === 'warn') { if (!(PROG.tideTold > 1) && !bossActive && !(L.arena && P.x > L.arena.x0 - 200)) { PROG.tideTold = (PROG.tideTold || 0) + 1; hintT = 4.5; hintMsg = 'THE BELLS ARE TOLLING: THE TIDE IS COMING IN. GET UP ON THE STONE, OR BE READY TO SWIM. STRIKE A TIDE BELL TO TURN IT YOURSELF.'; } }
+  if (ph === 'warn') { if (!(PROG.tideTold > 1) && !bossActive && !(L.arena && P.x > L.arena.x0 - 200)) { PROG.tideTold = (PROG.tideTold || 0) + 1; hintT = 4.5; hintMsg = 'THE BELLS ARE TOLLING: THE TIDE IS COMING IN. GET UP ON THE STONE OR SWIM. STRIKE A TIDE BELL TO TURN IT.'; } }   /* three lines on the hint plate: four covered the gauge (tools/textfit.mjs) */
   else if (ph === 'rise') { SFX.waveCrash(); shakeCam(3); }
   else if (ph === 'ebb') { SFX.seaBell(); for (const pr of props) if (pr.t === 'tidebell') pr.swing = 0.6; }
   else if (ph === 'fall') SFX.wave();

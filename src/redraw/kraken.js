@@ -330,16 +330,58 @@ export function bakeTideBoat(len) {
   for (let x = Math.round(W * 0.35); x < Math.round(W * 0.65); x++) B.set(x, H - 1, '#1a120c');
   return outline(toCanvas(B, false), OUT);
 }
-// A GREY SEAL on its rock: 18x9, frame 0 head up, frame 1 head down, frame 2 sliding (stretched, for the water)
+// A SEAL on its rock, 26x13, facing RIGHT (the draw flips it): frame 0 head up and looking, frame 1 head down on the stone,
+// frame 2 stretched for the slide into the water. A pale mottled coat with dark spots, so it stands off the grey of the rock: the
+// first was 20 by 10 in the rock's own greys, and read as three lumps on the stone. At this size a creature is its silhouette, so
+// the head is a round head on a neck, with a muzzle, and the tail flippers are a fan
 export function bakeSeal() {
-  const f = (head, slide) => { const B = buf(20, 10), cols = ['#3a3a40', '#5a5c62', '#7a7c84', '#9a9ca4', '#c4c6cc'];
-    for (let y = 0; y < 10; y++) for (let x = 0; x < 20; x++) { const u = (x - 9) / (slide ? 9.5 : 8), v = (y - 6.5) / 3.2; if (u * u + v * v > 1) continue; const k = 0.5 - v * 0.35 - u * 0.1; B.set(x, y, cols[Math.max(0, Math.min(4, Math.round(k * 4)))]); }
-    for (let x = 4; x < 14; x += 3) B.set(x, 5, '#4a4c52');   /* its spots */
-    const hx = head ? 16 : 17, hy = head ? 3 : 6; for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) if (x * x + y * y <= 5) B.set(hx + x, hy + y, y < 0 ? '#9a9ca4' : '#7a7c84');
-    B.set(hx + 1, hy - 1, '#141418'); B.set(hx + 3, hy, '#2a2a30'); B.set(hx + 2, hy + 1, '#c4c6cc');
-    B.set(2, 8, '#3a3a40'); B.set(1, 9, '#3a3a40'); B.set(3, 9, '#3a3a40');   /* the tail flippers */
+  const f = (head, slide) => { const W = 26, H = 13, B = buf(W, H), cols = ['#5a544c', '#787068', '#a8a094', '#c8c0b0', '#e0d8c8'];
+    const rx = slide ? 12.5 : 11, ry = 4.6, cx0 = 11.5, cy0 = 8.2;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const u = (x + 0.5 - cx0) / rx, v = (y + 0.5 - cy0) / ry; if (u * u + v * v > 1) continue;
+      const k = 0.55 - v * 0.5 - u * 0.08 + ((x + y) & 1 ? 0.06 : 0); B.set(x, y, cols[Math.max(0, Math.min(4, Math.round(k * 4)))]); }
+    for (const [sx, sy] of [[5, 6], [9, 5], [13, 7], [16, 5], [8, 9], [12, 9]]) { B.set(sx, sy, cols[0]); B.set(sx + 1, sy, cols[1]); }   /* the spots */
+    const hx = head ? 20 : 21, hy = head ? 4 : 8;
+    for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) { const q = x * x / 12 + y * y / 9; if (q > 1) continue; B.set(hx + x, hy + y, y < -1 ? cols[3] : y > 1 ? cols[1] : cols[2]); }
+    B.set(hx + 3, hy, cols[3]); B.set(hx + 4, hy, cols[3]); B.set(hx + 4, hy + 1, cols[2]);   /* the muzzle */
+    B.set(hx + 5, hy, '#2a2a30'); B.set(hx + 1, hy - 1, '#141418'); B.set(hx + 2, hy - 2, '#ffffff');   /* the nose, the eye, the wet glint on it */
+    if (head) for (let y = hy + 3; y < cy0; y++) { B.set(hx - 2, y, cols[2]); B.set(hx - 1, y, cols[3]); B.set(hx, y, cols[2]); }   /* the neck, up */
+    B.set(1, 10, cols[1]); B.set(0, 11, cols[1]); B.set(2, 11, cols[1]); B.set(1, 11, cols[0]); B.set(0, 12, cols[0]); B.set(2, 12, cols[0]);   /* the tail flippers */
+    for (let x = 12; x < 16; x++) B.set(x, 11, cols[1]); B.set(14, 12, cols[0]); B.set(15, 12, cols[0]);   /* a fore flipper on the rock */
     return outline(toCanvas(B, false), OUT); };
   return [f(true, false), f(false, false), f(false, true)];
+}
+// A BOARD OF A DECK THE TIDE COVERS, 16x16: the board at rows 0-5, where the bridge plank's is, so a hero stands on it at the same
+// height. Bleached grey wood with a crust of salt and barnacle white along its top face: under the flood that pale crust is what
+// you see of the deck. (The bridge plank has one light line, and under the water it went to nothing.) v 0 a barnacle, v 1 weed
+export function bakeDeckBoard(v) {
+  const B = buf(16, 16), wd = ['#4a3a2a', '#6e5e48', '#8a7a60', '#a89878'];
+  /* (the crust is nearly white on purpose: the tide's water maps every colour to a third of itself over teal, and by the pixels only
+     a top this pale still stands 14 dE off the water above it - a barnacle-white top read at 13, the bridge plank's line at 10) */
+  for (let x = 0; x < 16; x++) { B.set(x, 0, '#f4f0e4'); B.set(x, 1, (x + v * 2) % 5 === 2 ? '#f4f0e4' : '#e0dcc8'); B.set(x, 2, ST.barn); B.set(x, 3, wd[3]); B.set(x, 4, wd[1]); B.set(x, 5, wd[0]); }
+  const seam = 7 + v * 3; B.set(seam, 2, wd[2]); B.set(seam, 3, wd[0]); B.set(seam, 4, wd[0]);   /* the seam between two boards */
+  B.set(3 + v, 3, '#5a5458'); B.set(12 - v, 3, '#5a5458');   /* the nails */
+  if (v) { B.set(2, 1, ST.weed); B.set(3, 1, ST.weedD); B.set(3, 2, ST.weed); } else { B.set(11, 2, ST.barnD); B.set(12, 1, ST.barnD); }
+  return toCanvas(B, false);
+}
+// THE BREAKER: the wave that comes over the last mile, a curl of white running landward (to the LEFT). 44x26, the crest at x 10
+// (the draw puts that on the wave's x, where it takes your feet) and the water line along the bottom row. Three frames: the
+// crest standing, curling over, breaking into spray. In the sea's own colours, so it is pixels like everything else on the road
+export function bakeBreaker() {
+  const W = 44, H = 26, CX = 10, frames = [], sea = ['#2f5f68', '#3f7a82', '#5a9aa0', '#8ccaca', '#c8ecec', '#eefaff'];
+  for (let f = 0; f < 3; f++) { const B = buf(W, H), Hc = 17 + f, cy = H - 3 - Hc;
+    /* the body: a steep face on the landward side of the crest, a long back sloping down to the sea, paler toward the top */
+    for (let x = 0; x < W; x++) { const u = x < CX ? Math.pow(x / CX, 0.45) : Math.pow((W - 1 - x) / (W - 1 - CX), 0.9), top = H - 3 - Math.round(Hc * u);
+      for (let y = Math.max(0, top); y < H; y++) { const d = (y - top) / Math.max(1, H - top); B.set(x, y, sea[Math.max(0, Math.min(3, Math.round(3 - d * 3)))]); } }
+    /* foam along the top of it, heavier over the face, and streaks of it run down the back */
+    for (let x = 0; x < W; x++) { let y0 = 0; while (y0 < H && !B.get(x, y0)) y0++; if (y0 >= H) continue;
+      B.set(x, y0, x < CX + 8 ? sea[5] : sea[4]); if ((x + f) % 4 === 0) B.set(x, y0 + 1, sea[4]); if ((x * 7 + f * 3) % 9 === 0) for (let y = y0 + 2; y < Math.min(H, y0 + 6); y++) B.set(x, y, sea[3]); }
+    /* the curl: a lip of white hanging off the crest, over the face, further round each frame */
+    { const n = 6 + f * 3, R = 7 + f * 2; for (let k = 0; k <= n; k++) { const a = k / n * Math.PI * (0.55 + f * 0.2), x = Math.round(CX - Math.sin(a) * R), y = Math.round(cy + (1 - Math.cos(a)) * R * 0.8);
+      B.set(x, y, sea[5]); B.set(x + 1, y, sea[5]); B.set(x + 2, y, sea[4]); B.set(x + 1, y + 1, sea[3]); } }
+    if (f === 2) for (const [dx, dy] of [[-8, -4], [-12, 0], [-6, -7], [-14, -5], [-10, 3], [-3, -6]]) B.set(CX + dx, cy + dy, sea[5]);   /* spray */
+    for (let x = 0; x < 14; x++) if ((x + f) % 3) { B.set(x, H - 1, sea[5]); B.set(x, H - 2, sea[4]); }   /* white water at the foot, where it has already broken */
+    frames.push(toCanvas(B, false)); }
+  return frames;
 }
 // THE LAMP ROOM of the light: a stone gallery cap, iron glazing bars round a lamp, a copper dome and its vane. 32x30, base row 29
 export function bakeLampRoom(lit) {

@@ -5926,6 +5926,7 @@ function theDrownedCauseway() {
     causeCurrents: [{ x0: 79, x1: 96, y0: 19, y1: 28, rise: -40 }, { x0: 122, x1: 145, y0: 20, y1: 39, high: 45, ebb: 45 }, { x0: 433, x1: 457, y0: 31, y1: 37, fall: 120, ebb: 70 }],
     causeBreakers: { x0: 511, x1: 565, every: 4.4, row: R },
     causeFog: { x0: 505, x1: 566, lamp: [541.5, 5] },
+    noDress: [[535, 548, 2, 8]],   /* the lamp gallery round the top of the light: the dress took its boards for a quay and stood a mooring post on it */
     /* WHAT LIVES ON THE ROAD: gulls wheeling over the hamlet, the wrecks, the fire and the light; the smokehouse chimney; the seals on
        their rock; crabs on the flats at low water; buoys riding the tide in the open water; the hamlet's stilts */
     causeLife: { gulls: [[88, 11], [150, 13], [372, 7], [498, 12], [541, 2]], smoke: [[106, 19]], seals: [[472, 475, 30]], crabs: [[81, 94, 28], [335, 338, 30], [389, 391, 30], [414, 420, 30]],
@@ -6253,7 +6254,8 @@ function dressLevel(L, id) {
   for (let y = 2; y < H - 1; y++) for (let x = 2; x < W - 2; x++) {
     // open ground three tiles wide with three rows of air over it
     let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
-    if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
+    /* L.noDress: boxes [x0, x1, y0, y1] in tiles that get nothing (a lamp gallery is a floor by the tile rule, and it grew a mooring post) */
+    if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d) || (L.noDress || []).some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     const [kind, nv] = set[(rnd() * set.length) | 0], v = nv ? (rnd() * nv) | 0 : 0;
     if (HUNG_H[kind]) { const need = Math.ceil(HUNG_H[kind] / TS) + 2; let top = 0;
       for (let k = 3; k <= 10 && y - k >= 1; k++) if (at(x, y - k) !== T.AIR) { if (at(x, y - k) === T.SOLID && k >= need) top = y - k + 1; break; }
