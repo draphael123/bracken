@@ -1099,7 +1099,7 @@ function drawGateHints(cx, cy) {
     for (const e of enemies) { if (!e.alive || e.garrison !== sec.id) continue; const ex = Math.round(e.x - cx), ey = Math.round(e.y - e.h - cy) - 7 + bob; // a red mark over every guard the bell turned out
       if (ex >= 6 && ex <= VW - 6 && ey >= 6 && ey <= VH - 6) { g.fillStyle = '#1b1626'; g.fillRect(ex - 3, ey - 4, 7, 4); g.fillStyle = '#ff6b6b'; g.fillRect(ex - 2, ey - 3, 5, 2); g.fillRect(ex - 1, ey - 1, 3, 1); g.fillRect(ex, ey, 1, 1); }
       else { const axp = Math.max(6, Math.min(VW - 6, ex)), ayp = Math.max(38, Math.min(VH - 6, ey)), an = Math.atan2(ey - ayp, ex - axp) || (ex < 0 ? Math.PI : 0); g.fillStyle = '#ff6b6b'; g.beginPath(); g.moveTo(axp + Math.cos(an) * 5, ayp + Math.sin(an) * 5); g.lineTo(axp + Math.cos(an + 2.4) * 4, ayp + Math.sin(an + 2.4) * 4); g.lineTo(axp + Math.cos(an - 2.4) * 4, ayp + Math.sin(an - 2.4) * 4); g.closePath(); g.fill(); } } }
-  for (const e of enemies) if (e.elite && e.alive && e.G && e.shut && e.shut.length) { const top = gateTop(e.G.col); if (top < 0) continue; const gx = e.G.col * TS + 8 - cx, gy = top * TS - cy - 16 + bob; if (gx < -40 || gx > VW + 40) continue;
+  for (const e of enemies) if (e.elite && e.alive && e.G && e.shut && e.shut.length) { const top = gateTop(e.G.col); if (top < 0) continue; const gx = e.G.col * TS + 8 - cx, gy = Math.max(44, top * TS - cy - 16) + bob; if (gx < -40 || gx > VW + 40 || (e.G.bot + 1) * TS - cy < 50) continue;   /* a gate taller than the view keeps its plate on the screen, under the HUD */
     plate(gx, gy, '#e0b040'); g.fillStyle = '#e0b040'; g.fillRect(gx - 5, gy + 1, 11, 3); g.fillRect(gx - 5, gy - 3, 2, 4); g.fillRect(gx - 1, gy - 4, 3, 5); g.fillRect(gx + 4, gy - 3, 2, 4); g.fillStyle = '#fff1a0'; g.fillRect(gx, gy - 3, 1, 1); } // the crown: one of THEM holds this gate
   if (L.mini && !miniDone) { const top = gateTop(L.mini.gate); if (top >= 0) { const gx = L.mini.gate * TS + 8 - cx, gy = top * TS - cy - 16 + bob; if (gx > -40 && gx < VW + 40) { plate(gx, gy, '#ff9a5c'); g.fillStyle = '#8a919c'; g.fillRect(gx - 5, gy - 5, 10, 5); g.fillStyle = '#5c3a1d'; g.fillRect(gx - 1, gy, 2, 6); } } } // the smith's hammer: he holds this door
   for (const st of (L.trial || [])) if (!st.done) { const gx = st.gate * TS + 8 - cx, gy = 14 * TS - cy - 14 + bob; if (gx < -40 || gx > VW + 40) continue; plate(gx, gy, '#8fd160'); for (let i = 0; i < st.n; i++) { g.fillStyle = i < (st.got || 0) ? '#8fd160' : '#3a3a44'; g.fillRect(gx - st.n * 3 + i * 6 + 1, gy - 2, 4, 4); } } // a trial's gate: a pip for each time it wants
@@ -1838,16 +1838,19 @@ function drawAmbushHud() {
    gate stays up. It keeps to its post: carried or knocked far off it, it is back at it a moment later.
    The rules, one to a kind, each small and each on its own tell (one windup at a time, like everything):
      rally  a war cry: every foe near it strikes faster for four seconds - a red pip over each one
-     wall   shields up: it and every foe near it take half a blow from the front for five seconds - a grey pip
+     wall   shields up: every foe near it takes half a blow from the front for five seconds - a grey pip
      call   once, at half health: two more of the level's own drop in beside it
      slam   a red !!: it comes down on the floor and the shock runs both ways along it. Jump it; no shield turns it
      lunge  a yellow !: a long rush with the blade out. Take it on the shield and it is left open */
+/* hp: how many of its kind's health it stands up with, where three is wrong for the kind. Measured with BK.fightLab({ elite: true,
+   keepAlive: true }) against a fight of twenty to forty-five seconds: a heavy knight or a hedge knight is already a long fight and
+   three of one ran past a minute; a goat, a thorn or a cook goes down (or off a ledge) in a few seconds at three */
 const ELITE = {
-  shield: { name: 'THE SHIELD CAPTAIN', rule: 'wall' }, pike: { name: 'THE PIKE SERJEANT', rule: 'wall' }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall' },
-  brute: { name: 'THE GOBLIN CAPTAIN', rule: 'rally' }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally' }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
-  thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig' }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat' }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight' }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
+  shield: { name: 'THE SHIELD CAPTAIN', rule: 'wall' }, pike: { name: 'THE PIKE SERJEANT', rule: 'wall' }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall', hp: 2.2 },
+  brute: { name: 'THE GOBLIN CAPTAIN', rule: 'rally', hp: 2.5 }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
+  thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig', hp: 4 }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat', hp: 5 }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight', hp: 1.8 }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', rule: 'slam' }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
-  boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge' }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge' },
+  boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
 const EL = { hp: 3, poise: 80, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.2, col: '#c9962a' };
 const eliteDmg = n => Math.round(n * (1 + 0.25 * tierOf(curId())));
@@ -1856,7 +1859,7 @@ const eliteDmg = n => Math.round(n * (1 + 0.25 * tierOf(curId())));
 let eliteList = [];
 function eliteMake(m, e) {
   if (!ELITE[m.t]) return;
-  Object.assign(m, { elite: true, hp: Math.round(m.hp * EL.hp), home: { x: m.x, y: m.y }, elT: EL.first, gate: e.gate, calls: e.calls || ELITE[m.t].calls, key: 'elite:' + e.x + ',' + e.y, woke: 1 });
+  Object.assign(m, { elite: true, hp: Math.round(m.hp * (ELITE[m.t].hp || EL.hp)), home: { x: m.x, y: m.y }, elT: EL.first, gate: e.gate, calls: e.calls || ELITE[m.t].calls, key: 'elite:' + e.x + ',' + e.y, woke: 1 });
   eliteList.push(m);
 }
 /* THE GATE GOES DOWN AS THE LEVEL IS LAID OUT, over air only, after the grid has been put back (spawnEntitiesTail): the tiles it
@@ -1884,8 +1887,9 @@ function eliteWatch() {
   }
 }
 function eliteDone(e) { if (e.elBack) { e.mode = e.elBack[0]; e.modeT = e.elBack[1]; } e.elBack = null; e.elT = EL.every; e.vx = 0; }
-/* WHO IS NEAR ENOUGH TO HEAR IT: its own side, not a boss, not a mini, on its level */
-const eliteNear = (e, r) => enemies.filter(q => q.alive && !q.maxHp && !q.mini && !q.harmless && Math.abs(q.x - e.x) < r && Math.abs(q.y - e.y) < 60);
+/* WHO IS NEAR ENOUGH TO HEAR IT: its own side, not a boss, not a mini, on its level - and not itself. A war cry and a shield wall
+   are for the men around it: a Tide Captain behind its own wall took a quarter of a blow from the front and outlasted every hero */
+const eliteNear = (e, r) => enemies.filter(q => q !== e && q.alive && !q.maxHp && !q.mini && !q.harmless && Math.abs(q.x - e.x) < r && Math.abs(q.y - e.y) < 60);
 function eliteCall(e) {
   const kind = e.calls || 'sprig', row = Math.round(e.home.y / TS) - 1, tx = Math.floor(e.x / TS); let n = 0;
   for (const dx of [3, -3, 5, -5, 2, -2]) { if (n >= 2) break; const x = tx + dx;

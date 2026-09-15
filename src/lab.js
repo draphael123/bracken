@@ -37,6 +37,9 @@ export async function fightLab(BK, opts = {}) {
       if (BK.enemies().length === before || !e) { fights.push({ skipped: true }); continue; }
       let f = 0, taken = 0, swings = 0, defends = 0, died = false, last = P.hp; const ehp = e.hp;
       for (; f < maxF && e.alive; f++) {
+        /* opts.keepAlive: the hero's health is put back each frame and what the foe took off him is counted, as the boss lab does -
+           a long fight (an elite) is measured to its end instead of to the first time the bot runs out of health */
+        if (opts.keepAlive) { if (P.hp < last) taken += Math.min(60, last - P.hp); P.hp = P.maxHp; last = P.hp; }
         if (P.dead) { died = true; break; }
         const d = e.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + e.w / 2; P.face = Math.sign(d) || P.face;
         const threat = threatOf(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
