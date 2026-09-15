@@ -4742,12 +4742,10 @@ function updatePlayer(dt) {
   P.dash = Math.max(0, (P.dash || 0) - dt); P.dashCd = Math.max(0, (P.dashCd || 0) - dt); if (P.ground) { P.dashedAir = false; P.airDashN = 0; P.airJump = 0; }
   P.dashLate = P.dash > 0 ? 0.16 : Math.max(0, (P.dashLate || 0) - dt);   /* a swing just after the dash still counts as out of it */
   if (P.dashAtk > 0) { P.dashAtk = Math.max(0, P.dashAtk - dt); P.vx = P.face * (isPaladin() ? 210 : 250) * (0.35 + 0.65 * P.dashAtk / 0.24); if (P.dashAtk > 0.08) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 2 }); }
-  if (P.dash > 0) { ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
-    /* THE DASH STRIKE. Every hero's dash was distance and nothing else; now it cuts what it goes through, once a dash each, for a little over half a swing */
-    P.dashHits = P.dashHits || new Set();
-    for (const e of enemies) { if (!e.alive || e.harmless || P.dashHits.has(e)) continue; const ew = (e.w || 12) / 2, eh = e.h || 16;
-      if (e.x + ew > P.x - 12 && e.x - ew < P.x + 12 && e.y > P.y - 22 && e.y - eh < P.y) { P.dashHits.add(e); hurtEnemy(e, Math.round(swordDmg() * 0.6), P.x - P.face * 10, false); sparks(e.x, e.y - eh / 2, P.face, 5); } } }
-  else if (P.dashHits) P.dashHits = null;
+  /* THE DASH IS DISTANCE, AND THE SWING MAKES IT A BLOW. It used to cut whatever it passed through by itself (the dash strike), so a dash
+     through a foe was a free hit and the dash attack went unnoticed. The owner's rule: the dash does no damage; press attack during it (or
+     just after: P.dashLate) and dashAttack() carries the cut through. */
+  if (P.dash > 0) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
   /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
   if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0 && !rushing()) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
