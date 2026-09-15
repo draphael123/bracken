@@ -3080,7 +3080,15 @@ function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Ma
 const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width) return c; let b = m.get(c);
   if (!b) { b = document.createElement('canvas'); b.width = c.width * 2; b.height = c.height * 2; const x = b.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(c, 0, 0, b.width, b.height); m.set(c, b); }
   return b; }; })();
-function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return; if (typeof txt === 'string' && /[A-Z]/.test(txt)) return; /* words never float in play: they belong on signs and with the folk */
+/* THE MOVE WORDS. Words never float in play - they belong on signs and with the folk - with one exception: the NAME OF A MOVE, the
+   moment it lands. Launch something, trip it, parry, break its poise, and the word goes up off it in the game's own colours and the
+   same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
+   is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
+   for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH']);
+const MOVE_WORD_GAP = 0.6, moveWordAt = {};
+function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
+  if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
   if (typeof txt === 'number') { /* ONE NUMBER FOR ONE TARGET: a blow that lands while the last number off it is still rising adds to that number */
     const m = nums.find(n => typeof n.txt === 'number' && n.col === col && n.life > 0.3 && Math.abs(n.x - x) < 14 && Math.abs(n.y - y) < 18);
     if (m) { m.txt = Math.round((m.txt + txt) * 10) / 10; m.life = 0.75; m.vy = -38; return; } }
