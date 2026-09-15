@@ -36,6 +36,8 @@ export const THREAT = {
   swornsword: 3.5, hedgeknight: 4.5, runner: 1.5, crossbow: 3, closedhelm: 0,
   /* THE SERJEANT: a charge down a bridge you cannot walk round, and a man with a sword when he is off the horse */
   lancer: 5,
+  /* THE DRUNK: 22 health and a lob you can see the ring of - but he is always above the thing you are crossing */
+  drunk: 2.5,
   /* THE DROWNED CAUSEWAY: a feeler is a lash you have to read at your feet; the Kraken is the coast's last word; a bell is furniture */
   feeler: 2.5, kraken: 6, krakenarm: 0, tidebell: 0, knell: 0,
 };

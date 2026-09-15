@@ -294,6 +294,99 @@ export function bakeGuests() {
   }
   return sets;
 }
+// bakeDrunk()  THE DRUNK — a regular of the Broken Lance who has had the afternoon of his life: a patched green jerkin
+//   straining over a belly, a red nose, a stubbled jaw, hose fallen down one leg, and whatever is to hand to throw.
+//   frames: 0 idle A (sway left)  1 idle B (sway right)  2 stagger A  3 stagger B  4 wind-up (reared back, the thing
+//           over his shoulder)  5 throw (arm flung out, leaning into it)  6 bottle wind-up (both hands, overhead)
+//           7 down (flat on his back, the cup rolled away)  8 getting up (on one knee)  9 hurt (LAST: rocked back)
+//   canvas 48x44   anchor ax 22, ay 42
+export function bakeDrunk() {
+  const W = 48, H = 44, CX = 22, G = 42;
+  const C = { jer: '#5e7a3a', jerD: '#3e5426', jerL: '#7e9a52', belly: '#c9b08a', shirt: '#e6d8b8', hose: '#7a4a3a', hoseD: '#54302a',
+    skin: '#e0a882', skinD: '#b87a5a', nose: '#d0503e', hair: '#6a4a2e', stub: '#8a6a50', boot: '#3a2a20', belt: '#4a3222', buckle: '#c9a040',
+    mug: '#c9a040', mugD: '#8a6a2a', foam: '#f7f2e4', glass: '#5aa05a', glassL: '#b8e0a0' };
+  const P = (g, pts, k) => fillPoly(g, pts, C[k]);
+  /* HIM, standing: lean tips his top half, sway rolls his hips, feet are [back, front] x offsets, arm is the throwing hand's
+     place against the shoulder, held says what is in it. */
+  const man = (o) => {
+    const { lean = 0, sway = 0, feet = [-4, 4], lift = [0, 0], arm = [7, 8], arm2 = [-6, 9], held = 'mug', dy = 0, head = 0, mouth = false } = o;
+    const [c, g] = canvas(W, H);
+    const hipX = CX + sway, hipY = G - 11 + dy, shX = hipX + lean, shY = hipY - 11;
+    // the legs: the back one darker, the hose fallen round the front one's ankle
+    [0, 1].forEach(k => { const fx = CX + feet[k], fy = G - 1 - lift[k], [kx, ky] = ik(hipX + (k ? 2 : -2), hipY, fx, fy - 2, 6, 6, 1);
+      limb(g, hipX + (k ? 2 : -2), hipY, kx, ky, 5, 4, C[k ? 'hose' : 'hoseD']); limb(g, kx, ky, fx, fy - 2, 4, 3, C[k ? 'hose' : 'hoseD']);
+      if (k) rect(g, fx - 2, fy - 5, 4, 2, C.hoseD);
+      rect(g, fx - 2, fy - 1, 5, 2, C.boot); });
+    // the far arm, behind him
+    { const hx = shX + arm2[0], hy = shY + arm2[1], [ex, ey] = ik(shX - 4, shY + 2, hx, hy, 5, 5, 1); limb(g, shX - 4, shY + 2, ex, ey, 4, 3, C.jerD); limb(g, ex, ey, hx, hy, 3, 3, C.skinD); }
+    if (held === 'overhead') { rect(g, shX - 3, shY - 14, 4, 9, C.glass); rect(g, shX - 2, shY - 17, 2, 3, C.glass); px(g, shX - 2, shY - 12, C.glassL); px(g, shX - 2, shY - 10, C.glassL); }   /* the bottle, over his head in both hands */
+    // the body: the jerkin, the belly out of the bottom of it, the belt he has let out
+    P(g, [[shX - 6, shY], [shX + 5, shY], [hipX + 8, hipY - 3], [hipX + 7, hipY + 1], [hipX - 6, hipY + 1], [hipX - 7, hipY - 4]], 'jer');
+    P(g, [[shX - 6, shY], [shX - 3, shY], [hipX - 4, hipY + 1], [hipX - 6, hipY + 1], [hipX - 7, hipY - 4]], 'jerD');
+    ellipse(g, hipX + 3 + lean * 0.3, hipY - 4, 5, 4, C.jerL); ellipse(g, hipX + 4 + lean * 0.3, hipY - 3, 3, 3, C.belly);   /* the belly, and the shirt riding up off it */
+    rect(g, hipX - 6, hipY - 1, 13, 2, C.belt); px(g, hipX + 2, hipY - 1, C.buckle);
+    line(g, shX - 1, shY + 1, shX + 1, shY + 6, C.shirt);                                                                    /* the laces, undone */
+    // the head: round, red in the nose, hair stuck up, a stubble jaw; the mouth open when he shouts
+    const hx = shX + 1 + head, hy = shY - 5;
+    circle(g, hx, hy, 4.2, C.skin); rect(g, hx - 3, hy + 1, 7, 3, C.stub); rect(g, hx - 2, hy + 1, 5, 1, C.skin);
+    P(g, [[hx - 4, hy - 2], [hx - 3, hy - 6], [hx, hy - 4], [hx + 2, hy - 7], [hx + 3, hy - 4], [hx + 4, hy - 3], [hx - 1, hy - 3]], 'hair');
+    rect(g, hx + 3, hy - 1, 3, 3, C.nose); px(g, hx + 2, hy - 2, OUT);
+    if (mouth) rect(g, hx + 1, hy + 2, 3, 2, '#5a1a1a');
+    // the near arm and what is in it
+    const ax = shX + arm[0], ay = shY + arm[1], [ex, ey] = ik(shX + 3, shY + 2, ax, ay, 5, 6, -1);
+    limb(g, shX + 3, shY + 2, ex, ey, 4, 3, C.jer); limb(g, ex, ey, ax, ay, 3, 3, C.skin);
+    if (held === 'mug') { rect(g, ax - 1, ay - 4, 5, 6, C.mug); rect(g, ax - 1, ay - 5, 5, 1, C.foam); rect(g, ax + 4, ay - 3, 1, 3, C.mugD); }
+    if (held === 'mugBack') { rect(g, ax - 3, ay - 4, 5, 6, C.mug); rect(g, ax - 3, ay - 5, 5, 1, C.foam); rect(g, ax - 4, ay - 3, 1, 3, C.mugD); }
+    return c;
+  };
+  /* HIM, DOWN: on his back in the road with his boots up, and then on one knee getting his breath back */
+  const down = () => { const [c, g] = canvas(W, H);
+    limb(g, CX - 6, G - 5, CX + 8, G - 5, 8, 7, C.jer); ellipse(g, CX + 1, G - 8, 5, 3, C.belly);
+    limb(g, CX + 8, G - 4, CX + 13, G - 9, 4, 3, C.hose); limb(g, CX + 6, G - 3, CX + 12, G - 3, 4, 3, C.hoseD); rect(g, CX + 12, G - 11, 3, 3, C.boot); rect(g, CX + 12, G - 4, 3, 2, C.boot);
+    circle(g, CX - 9, G - 5, 4, C.skin); rect(g, CX - 11, G - 3, 5, 2, C.stub); rect(g, CX - 10, G - 10, 3, 2, C.nose); rect(g, CX - 13, G - 7, 2, 4, C.hair);
+    limb(g, CX - 4, G - 5, CX - 9, G - 10, 3, 3, C.skin);
+    rect(g, CX - 2, G - 12, 2, 1, '#fff6c8'); rect(g, CX + 1, G - 14, 1, 2, '#fff6c8');   /* stars, a little */
+    return c; };
+  const kneel = () => { const [c, g] = canvas(W, H), hipX = CX - 1, hipY = G - 8, shX = hipX + 3, shY = hipY - 10;
+    limb(g, hipX, hipY, hipX + 6, hipY + 1, 5, 4, C.hose); limb(g, hipX + 6, hipY + 1, hipX + 6, G - 2, 4, 3, C.hose); rect(g, hipX + 5, G - 2, 5, 2, C.boot);
+    limb(g, hipX - 1, hipY, hipX - 5, G - 2, 5, 4, C.hoseD); rect(g, hipX - 8, G - 2, 5, 2, C.boot);
+    P(g, [[shX - 6, shY], [shX + 5, shY], [hipX + 7, hipY - 2], [hipX - 6, hipY + 1]], 'jer'); ellipse(g, hipX + 3, hipY - 3, 4, 3, C.belly);
+    const hx = shX + 2, hy = shY - 4; circle(g, hx, hy, 4.2, C.skin); rect(g, hx - 3, hy + 1, 7, 3, C.stub); rect(g, hx + 3, hy - 1, 3, 3, C.nose);
+    P(g, [[hx - 4, hy - 2], [hx - 3, hy - 6], [hx, hy - 4], [hx + 2, hy - 7], [hx + 4, hy - 3]], 'hair');
+    limb(g, shX + 3, shY + 2, hipX + 8, hipY - 1, 4, 3, C.skin);                                               /* a hand on his knee */
+    return c; };
+  const F = [
+    /* 0 */ man({ sway: -1, lean: -2, head: -1 }),
+    /* 1 */ man({ sway: 1, lean: 2, head: 1, arm: [8, 6] }),
+    /* 2 STAGGER: all his weight going the wrong way */ man({ sway: 2, lean: 4, feet: [-6, 6], lift: [0, 2], head: 2, arm: [9, 4], arm2: [-9, 5] }),
+    /* 3 */ man({ sway: -2, lean: -3, feet: [-2, 3], lift: [2, 0], head: -1, arm: [6, 10], arm2: [-8, 3] }),
+    /* 4 THE WIND-UP: reared back, the thing over his shoulder and his mouth open */ man({ lean: -5, sway: -1, feet: [-6, 5], arm: [-9, -6], arm2: [5, 4], held: 'mugBack', mouth: true, head: -2 }),
+    /* 5 THE THROW: flung out and falling after it */ man({ lean: 5, sway: 1, feet: [-7, 6], lift: [2, 0], arm: [12, -1], arm2: [-8, 8], held: 'none', head: 2, mouth: true }),
+    /* 6 THE BOTTLE: both hands over his head */ man({ lean: -3, feet: [-5, 5], arm: [-1, -12], arm2: [-5, -12], held: 'overhead', mouth: true, head: -1 }),
+    /* 7 */ down(),
+    /* 8 */ kneel(),
+    /* 9 HURT, LAST */ man({ lean: -6, sway: -2, feet: [-5, 3], lift: [0, 1], arm: [4, -4], arm2: [-10, 0], held: 'none', head: -3, mouth: true }),
+  ];
+  return pack(finish(F, 'drunk'), CX, G, 10, 22);
+}
+/* THE TOWN'S SPIKES. The wood's thorns were laid under every set in the game, so a knight's market town had a bramble
+   patch growing out of its cobbles. Here they are what a town puts where it does not want you: an iron railing with its
+   points up, gilded at the tips, and broken glass on the ground between the uprights - dark iron against pale stone and
+   red at the very tips, so it reads as NOT HERE from across the street. 16x16, four variants. */
+export function bakeTownSpikes() {
+  const out = [];
+  for (let v = 0; v < 4; v++) {
+    const [c, g] = canvas(16, 16);
+    rect(g, 0, 13, 16, 3, '#3a3440'); rect(g, 0, 13, 16, 1, '#5a5262');                          /* the kerb the railing is leaded into */
+    for (const [gx, gy, col] of [[2 + v, 12, '#8ad0a0'], [9 - v % 2, 12, '#e8f4ff'], [13, 11 + v % 2, '#6ab080'], [6, 12, '#cfe8f0']]) { px(g, gx, gy, col); px(g, gx + 1, gy, OUT); }   /* the glass */
+    rect(g, 0, 8, 16, 1, '#1b1820'); rect(g, 0, 9, 16, 1, '#4a4452');                            /* the rail */
+    for (const bx of [1, 6, 11]) { const x = bx + (v === 3 && bx === 6 ? 1 : 0), top = v === 2 && bx === 11 ? 3 : 2;
+      rect(g, x, top + 2, 2, 11 - top, '#2a2630'); rect(g, x, top + 2, 1, 11 - top, '#5a5262');
+      fillPoly(g, [[x - 1, top + 3], [x + 1, top - 1], [x + 3, top + 3]], '#c9a040'); px(g, x + 1, top - 1, '#ff6b6b'); px(g, x, top + 1, '#f2d27a'); }
+    out.push(outline(c, OUT));
+  }
+  return out;
+}
 export function bakeBarkeep() {
   const W = 26, H = 36, CX = 12, G = 34;
   const frames = [0, 1].map(pose => {

@@ -815,6 +815,9 @@ const HURT = {
 };
 // UNDERLEAF. A goblin asleep, and a candle being struck in a window across the street.
 SFX.snore = () => { if (!gate('snore', 0.4)) return; if (voice('vo_snore', 0.2, 0.9)) return; tone('sawtooth', 90, 58, 0.5, 0.05); noise(0.45, 0.05, 240, 0.8, 0.02); tone('sine', 150, 110, 0.3, 0.03, 0.35); };
+/* THE DRUNK. A hiccup: a gulp of air stopped short in the throat. And the slur: a man's shout dragged down and muffled. */
+SFX.hic = () => { if (!gate('hic', 0.35)) return; tone('square', 520, 880, 0.05, 0.07); noise(0.04, 0.06, 1400, 0.5, 0.01); tone('sine', 300, 180, 0.06, 0.04, 0.04); };
+SFX.slur = () => { if (!gate('slur', 0.7)) return; if (voice(VOK('m3', 'alert'), 0.34, 0.66, 1300)) return; tone('sawtooth', 210, 120, 0.32, 0.08); tone('sine', 160, 110, 0.3, 0.05, 0.08); };
 SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.08, 0.05, 0.02); tone('sine', 620, 740, 0.22, 0.04, 0.06); };
 // THE CAST. A man in this game died on a square wave or on a goblin slowed down. Now: people REPLACE their synth
 // with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice
@@ -823,6 +826,7 @@ const CAST = {
   swornsword: { kit: 'm2', rate: 1, mat: 'mail', human: true }, hedgeknight: { kit: 'm4', rate: 0.92, lp: 1600, mat: 'plate', human: true },
   closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm6', rate: 1.12, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
   crossbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true }, lancer: { kit: 'm3', rate: 0.95, mat: 'mail', human: true },
+  drunk: { kit: 'm3', rate: 0.8, lp: 1700, mat: 'cloth', human: true },   /* THE DRUNK: the serjeant's voice, slowed and blurred */
   cutlass: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, boarder: { kit: 'm5', rate: 0.9, mat: 'cloth', human: true }, marine: { kit: 'm6', rate: 1.08, mat: 'cloth', human: true },
   bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm6', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm5', rate: 1, mat: 'cloth', human: true },
   netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
