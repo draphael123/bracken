@@ -27,7 +27,7 @@ export const XP_AGAIN = 0.2;               /* a foe he has already put down once
 export const XP_ELITE = { default: 5 };
 export const XP_KILL_NORMAL = 0.8;         /* what the sim takes a straight run to kill of what a wood holds */
 
-export const XP_C = 325, XP_P = 1.45;      /* the XP floor of level n is XP_C * n^XP_P, to the nearest ten (node tools/xp.mjs --fit) */
+export const XP_C = 325, XP_P = 1.455;     /* the XP floor of level n is XP_C * n^XP_P, to the nearest ten (node tools/xp.mjs --fit). Refitted from 1.45 when Highcrown grew by a quarter: the longer castle put a full clear four levels ahead; at 1.455 every stage is exact and a full clear ends three ahead */
 export const LV_TOP = 99;                  /* the loop's stop, not a cap: talent points stop at thirty and growth at twenty-four, as before */
 
 export const eliteMul = el => el ? (XP_ELITE[el] !== undefined ? XP_ELITE[el] : XP_ELITE.default) : 1;
