@@ -1160,7 +1160,7 @@ function spawnEnt(e) {
     const base = { x: px, y: py, vx: 0, vy: 0, face: e.face || 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0 };
     switch (e.t) {
       case 'sprig': enemies.push({ ...base, t: 'sprig', w: 8, h: 10, hp: EHP.sprig, speed: 28, cutter: !!e.cutter, ringer: !!e.ringer, bell: e.bell ? e.bell * TS + 8 : 0 }); break;
-      case 'shield': enemies.push({ ...base, t: 'shield', w: 10, h: 14, hp: EHP.shield, speed: 26, turnT: 0 }); break;
+      case 'shield': enemies.push({ ...base, t: 'shield', w: 10, h: 14, hp: EHP.shield, speed: 26, turnT: 0, behindT: 0 }); break;
       case 'spit': enemies.push({ ...base, t: 'spit', w: 12, h: 12, hp: EHP.spit, timer: 1 + Math.random(), mouth: 0 }); break;
       case 'wasp': enemies.push({ ...base, t: 'wasp', hx: px, hy: py, w: 8, h: 6, hp: EHP.wasp, face: -1 }); break;
       case 'thorn': enemies.push({ ...base, t: 'thorn', w: 12, h: 11, hp: EHP.thorn, speed: 22, mode: 'walk', modeT: 0 }); break;
@@ -1213,7 +1213,7 @@ function spawnEnt(e) {
       case 'siren': enemies.push({ ...base, t: 'siren', w: 12, h: 16, hp: EHP.siren, mode: 'idle', modeT: 1 + Math.random() * 2, homeY: py, alpha: 1 }); break;
       case 'tideguard': enemies.push({ ...base, t: 'tideguard', w: 10, h: 20, hp: EHP.tideguard, speed: 22, mode: 'walk', modeT: 0, cd: 0.8 }); break;
       case 'herald': boss = { ...base, t: 'herald', glaiveT: 6, callT: 5, disarmed: false, spearT: 3, maelT: 8, w: 18, h: 36, hp: EHP.herald, maxHp: EHP.herald, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, raiseT: 6, sweepT: 1.2, thrustT: 2, spearT: 4, maelT: 8, glideT: 4 }; enemies.push(boss); break;
-      case 'soldier': enemies.push({ ...base, t: 'soldier', w: 10, h: 14, hp: EHP.soldier, speed: 30, mode: 'walk', modeT: 0, turnT: 0, cd: 0.6 }); break;
+      case 'soldier': enemies.push({ ...base, t: 'soldier', w: 10, h: 14, hp: EHP.soldier, speed: 30, mode: 'walk', modeT: 0, turnT: 0, behindT: 0, cd: 0.6 }); break;
       case 'javelin': enemies.push({ ...base, t: 'javelin', w: 8, h: 12, hp: EHP.javelin, speed: 34, mode: 'walk', modeT: 0, cd: 1 + Math.random() }); break;
       case 'heavy': enemies.push({ ...base, t: 'heavy', w: 16, h: 22, hp: EHP.heavy, speed: 16, mode: 'walk', modeT: 0, cd: 0.6 }); break;
       case 'hound': enemies.push({ ...base, t: 'hound', w: 12, h: 7, hp: EHP.hound, speed: 105, timer: 0, air: false, held: !!e.held }); break;
@@ -1295,8 +1295,8 @@ function spawnEnt(e) {
       case 'hotplate': props.push({ t: 'hotplate', x: px, y: py, glow: 0, hot: 0 }); lights.push({ x: px, y: py - 4, r: 40, glow: true, warm: true, plate: props[props.length - 1] }); break;
       case 'prise': enemies.push({ ...base, t: 'prise', w: 14, h: 10, hp: EHP.prise, mode: 'walk', modeT: 1, hitT: 0, snapT: 1.6, home: px }); break;
       case 'holdfast': enemies.push({ ...base, t: 'holdfast', w: 12, h: 14, hp: EHP.holdfast, mode: 'wait', modeT: 0, hitT: 0, rooted: true, holdT: 0 }); break;
-      case 'swornsword': enemies.push({ ...base, t: 'swornsword', w: 10, h: 14, hp: EHP.swornsword, maxHp: EHP.swornsword, speed: 26, mode: 'walk', modeT: 0, turnT: 0, cd: 0.6 + Math.random() * 0.6, guardT: 0 }); break;
-      case 'hedgeknight': enemies.push({ ...base, t: 'hedgeknight', w: 12, h: 16, hp: EHP.hedgeknight, maxHp: EHP.hedgeknight, speed: 22, mode: 'walk', modeT: 0, turnT: 0, cd: 1.2, leapT: 4 + Math.random() * 2 }); break;
+      case 'swornsword': enemies.push({ ...base, t: 'swornsword', w: 10, h: 14, hp: EHP.swornsword, maxHp: EHP.swornsword, speed: 26, mode: 'walk', modeT: 0, turnT: 0, behindT: 0, cd: 0.6 + Math.random() * 0.6, guardT: 0 }); break;
+      case 'hedgeknight': enemies.push({ ...base, t: 'hedgeknight', w: 12, h: 16, hp: EHP.hedgeknight, maxHp: EHP.hedgeknight, speed: 22, mode: 'walk', modeT: 0, turnT: 0, behindT: 0, cd: 1.2, leapT: 4 + Math.random() * 2 }); break;
       case 'runner': enemies.push({ ...base, t: 'runner', w: 8, h: 12, hp: EHP.runner, maxHp: EHP.runner, speed: 62, mode: 'walk', modeT: 0, cd: 0.9, fetched: 0 }); break;
       case 'crossbow': enemies.push({ ...base, t: 'crossbow', w: 10, h: 12, hp: EHP.crossbow, maxHp: EHP.crossbow, speed: 0, mode: 'span', modeT: 1.2, cd: 0, perch: true }); break;
       case 'lancer': enemies.push({ ...base, t: 'lancer', w: 22, h: 30, hp: EHP.lancer * (e.mini ? 2 : 1), mounted: true, mode: 'ride', modeT: 0.6, cd: 1, hitT: 0, hx0: (e.x - (e.range || 12)) * TS + 8, hx1: (e.x + (e.range || 12)) * TS + 8, mini: !!e.mini, miniBig: !!e.mini, phase: 1 }); break;   /* THE SERJEANT rides the length of his beat and no further */
@@ -6058,7 +6058,7 @@ function updateTroop(e, dt) {
     else if (e.mode === 'slash') { want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.45; e.cd = 1.1; } }
     else if (e.mode === 'rest') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk';
-      if (near && e.stagger <= 0) { const wf = Math.sign(d) || e.face; if (wf !== e.face) { e.turnT += dt; if (e.turnT > 0.38) { e.face = wf; e.turnT = 0; } } else e.turnT = 0;
+      if (near && e.stagger <= 0) { const wf = Math.sign(d) || e.face; if (wf !== e.face) { e.behindT = (e.behindT || 0) + dt; if (e.behindT > 0.38) { e.face = wf; e.behindT = 0; } } else e.behindT = 0;   /* (behindT, not turnT: turnT is the skid, and updateEnemies runs it down) */
         want = wf === e.face && ad > 20 ? e.face * e.speed : 0;
         if (ad < 28 && wf === e.face && e.cd <= 0) { e.mode = 'slashTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.charge(); } }
       else want = e.face * e.speed * 0.4; }
@@ -9088,7 +9088,7 @@ function updateRoadman(e, dt) {
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt);
   let want = 0;
   const near = ad < 200 && dy < 44 && !P.dead;
-  const faceHim = () => { const wf = Math.sign(d) || e.face; if (wf !== e.face) { e.turnT = (e.turnT || 0) + dt * (e.trainer ? 2 : 1);   /* (a trial's man pays back the dt the turn animation takes off turnT every frame in updateEnemies, or he could never turn round to you) */ if (e.turnT > 0.3) { e.face = wf; e.turnT = 0; } } else e.turnT = 0; return wf; };
+  const faceHim = () => { const wf = Math.sign(d) || e.face; if (wf !== e.face) { e.behindT = (e.behindT || 0) + dt; if (e.behindT > 0.3) { e.face = wf; e.behindT = 0; } } else e.behindT = 0; return wf; };   /* he turns round to you in a third of a second (behindT is his own; turnT is the skid updateEnemies runs down) */
 
   if (e.t === 'swornsword') {
     // THE PARRY LESSON. One blow, a long tell, and he is wide open for a second and a half if you take it
@@ -12423,6 +12423,10 @@ function updateEnemies(dt) {
     if (e.enrageT > 0) { e.enrageT -= dt; if (Math.floor(e.enrageT * 16) % 2 === 0) e.flash = Math.max(e.flash, 0.04); }
     /* ONE WIND-UP AT A TIME: two foes near you starting their tells together land together, and that is not readable. The second waits a beat */
     { const w = !e.maxHp && windingUp(e); if (w && !e.windWas && Math.abs(e.x - P.x) < 150) { if (time - lastTellT < 0.3 && e.modeT > 0) e.modeT += 0.35; else lastTellT = time; } e.windWas = w; }
+    /* turnT IS THE SKID, AND ONLY THE SKID: set here when a face flips at speed, run down here, drawn by poseOf. The slow
+       turners (the shield, the soldier, the sworn sword, the hedge knight, the pike) keep how long you have been BEHIND them
+       in e.behindT, which nothing here touches. They used to add their dt to turnT and this line took it off again every
+       frame, so none of them ever reached the threshold: get behind one and it faced the wrong way for good. */
     if (e.turnT > 0) e.turnT = Math.max(0, e.turnT - dt);
     if (e.pFace === undefined) e.pFace = e.face; else if (e.face !== e.pFace) { if (Math.abs(e.vx) > 18 || e.lastSpeed > 18) e.turnT = 0.18; e.pFace = e.face; }
     e.lastSpeed = Math.abs(e.vx || 0);
@@ -12542,7 +12546,7 @@ function updateEnemies(dt) {
     }
     if (e.t === 'pike') { // holds a line: thrusts when you come within reach, turns slowly, parried if you block it
       const d = P.x - e.x, ad = Math.abs(d), near = ad < 100 && Math.abs(e.y - P.y) < 24 && !P.dead; e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270; e.modeT -= dt;
-      if (e.mode === 'guard') { if (near && Math.sign(d) !== e.face) { e.turnT = (e.turnT || 0) + dt; if (e.turnT > 0.6) { e.face = Math.sign(d); e.turnT = 0; } } else e.turnT = 0; if (near && Math.sign(d) === e.face && ad < 46 && e.stagger <= 0) { e.mode = 'tell'; e.modeT = 0.4; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } }
+      if (e.mode === 'guard') { if (near && Math.sign(d) !== e.face) { e.behindT = (e.behindT || 0) + dt; if (e.behindT > 0.6) { e.face = Math.sign(d); e.behindT = 0; } } else e.behindT = 0; if (near && Math.sign(d) === e.face && ad < 46 && e.stagger <= 0) { e.mode = 'tell'; e.modeT = 0.4; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } }
       else if (e.mode === 'tell' && e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.25; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 42 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.pike); if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 8, 'PARRIED', '#8fd160'); } } }
       else if (e.mode === 'thrust' && e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.5; }
       const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0; continue;
@@ -12754,7 +12758,11 @@ function updateEnemies(dt) {
     if (e.t === 'shield') {
       const near = Math.abs(e.x - P.x) < 130 && Math.abs(e.y - P.y) < 40 && !P.dead;
       const wantFace = near ? (Math.sign(P.x - e.x) || e.face) : e.face;
-      if (wantFace !== e.face && e.stagger <= 0) { e.turnT += dt; if (e.turnT > 0.5) { e.face = wantFace; e.turnT = 0; } } else e.turnT = 0;
+      /* IT TURNS SLOWLY - that is the whole lesson of the shieldgob (cross behind it and strike) - and once it never turned at all. It
+         brings the shield round in 0.8 s now (its own clock, behindT: turnT is the skid), and then it sets its feet before it can
+         shove: with the shove allowed the frame it came round, a knight or a paladin caught mid-swing in the fight lab ate a shove
+         off every turn and the shieldgob cost them three times what any other common foe did */
+      if (wantFace !== e.face && e.stagger <= 0) { e.behindT = (e.behindT || 0) + dt; if (e.behindT > 0.8) { e.face = wantFace; e.behindT = 0; e.shoveCd = Math.max(e.shoveCd || 0, 0.5); } } else e.behindT = 0;
       want = (near && Math.abs(e.x - P.x) > 14 && wantFace === e.face) ? e.face * e.speed : 0;
       /* SHIELD WALL. With a bow or a spitter at its back it stops chasing and plants itself between you and them, so the shooter
          has to be flanked, jumped, or the shield broken first */
@@ -15120,7 +15128,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
     else if (e.t === 'brute') frame = e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' ? 9 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
-    else if (e.t === 'shield') frame = e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : e.turnT > 0.12 ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round */
+    else if (e.t === 'shield') frame = e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
     else if (e.t === 'sprig' && (e.mode === 'biteTell' || e.mode === 'bite')) frame = e.mode === 'biteTell' ? 5 : 6;   /* the crouch, and the leap */
     else if (e.t === 'sprig' || e.t === 'bearer') frame = Math.abs(e.vx) > 4 || e.t === 'bearer' ? Math.floor(e.anim * 10) % 4 : (Math.floor(e.anim * 0.7) % 4 === 1 ? 4 : 0);
     else if (e.t === 'thief') frame = e.loot > 0 || Math.abs(e.vx) > 8 ? Math.floor(e.anim * 12) % 2 : (Math.floor(e.anim * 0.8) % 3 === 1 ? 2 : 0);
