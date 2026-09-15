@@ -1,5 +1,6 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
+import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { bakeFrog } from './redraw/frogking.js';
 import * as LWP from './lw_props.js';
@@ -107,6 +108,11 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     if (PROG.charm) PROG.charmOf[h] = PROG.charm; }
   /* a secret wood cleared before secret woods counted: credit it to the hero carrying the save, once */
   for (const lv of LEVELS) if (lv.secret && PROG[lv.id] && PROG[lv.id].cleared && !Object.values(PROG.done || {}).some(dd => dd && dd[lv.id])) { const hh = PROG.hero || 'knight'; PROG.done[hh] = PROG.done[hh] || {}; PROG.done[hh][lv.id] = 1; }
+  /* THE LEVEL CAME TO BE XP (xpVersion 1). A hero's level was the woods he had walked; it is his XP now (src/xp.js). Every hero keeps
+     the level his woods gave him, as the XP floor of that level, so nobody loses a level or a talent point, and what he earns from
+     here goes on top. The woods he has walked do not pay their share again. */
+  PROG.xp = PROG.xp || {}; PROG.xpGot = PROG.xpGot || {};
+  if ((PROG.xpVersion || 0) < 1) { for (const hh in PROG.done) { const n = Object.keys(PROG.done[hh] || {}).length; if (n) PROG.xp[hh] = Math.max(PROG.xp[hh] || 0, xpFloor(n)); } PROG.xpVersion = 1; }
   PROG.ranks = PROG.ranks || {}; if (!PROG.skill && PROG.items.shieldThrow) PROG.skill = 'shieldThrow';
   { const OLD = { vigour: [40, 60, 90, 130, 180], breath: [40, 60, 90, 130, 180], recovery: [60, 100, 160], temper: [50, 80, 120, 170, 230], footing: [60, 100, 160] }; let back = 0; for (const id in OLD) for (let r = 0; r < (PROG.ranks[id] || 0); r++) back += OLD[id][r] || 0; if (back) { PROG.coins += back; PROG.ranks = {}; PROG.refundNote = back; } } // the training went: its gold comes back
   /* THE MEDAL PURSE, PAID BACK: medals won before medals paid gold are paid once, in full, when the save is next opened */
@@ -448,7 +454,8 @@ const TREE = [];
   N('reaper', 2, 3, 1, 'overflow', 'OVERFLOW', 1, 'a FULL ward bursts twice: a second nova goes out a beat after the first', 'deathGrip', 'cap');
 }
 const TALENTS = [{ id: 'tree', name: 'THE TALENT TREES', desc: 'three trees for this hero, and the skills on F and G grow in them. a point for every wood cleared the first time, up to thirty: enough for ONE tree. its capstone wants 18 spent in it, and a hero carries one capstone. resetting is free. Z to open' }];
-const heroLevel = h => Object.keys((PROG.done || {})[h || hero()] || {}).length;   /* the woods THIS hero has walked, not the woods the save has */
+const heroXp = h => ((PROG.xp || {})[h || hero()] || 0);   /* THIS hero's XP, not the save's: every hero carries his own */
+const heroLevel = h => levelOfXp(heroXp(h));   /* THE LEVEL IS XP (src/xp.js): the fights pay it and a wood's first finish pays a share. It was the woods walked, and a straight run still lands within one of that */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
 let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's trial lends him for its F and G step (lendSkills) */   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
@@ -1332,7 +1339,7 @@ function applyWorld() { let ch = false;
 const questOf = () => L.quest || (L.strays ? { n: L.strays, item: 'sheep', name: 'EWE', done: 'THE FLOCK IS WHOLE', reward: 'fleece' } : { n: 3, item: 'none', name: 'ITEM', done: 'DONE' });
 function questDone(x, y) {
   const Q = questOf(); number(x, y - 30, Q.done, '#ffd36b'); SFX.medal(); slowT = 0.4;
-  { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].quest = true; saveProgress(); }
+  { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].quest = true; if (xpWood()) { const gq = xpGot(id); if (!gq.q) { gq.q = 1; gainXp(XP_QUEST * levelXp); } } saveProgress(); }   /* a quest pays its XP once a hero */
   if (Q.reward === 'fleece') props.push({ t: 'relic', x, y, kind: 'fleece', got: false, ph: 0 });
   else if (Q.reward === 'relic') props.push({ t: 'relic', x, y, kind: Q.relic, got: false, ph: 0 });
   else { P.hp = P.maxHp; number(P.x, P.y - 42, Q.thanks || 'THANKS', '#8fd160'); number(P.x, P.y - 52, 'HEALED', '#8fd160'); burst(P.x, P.y - 8, 14, ['#8fd160', '#fff6e0'], 50, 0.7, -20, 1); }
@@ -1373,9 +1380,9 @@ function spawnEntities() {
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; }
   washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
   ambushReset();
-  for (const e of L.ents) spawnEnt(e);
+  L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) enemies[i].xpKey = k + '.' + (i - n0); });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
   spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); eliteGates();
-  lamps =props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
+  lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
 }
 function spawnEnt(e) {
   if (e.ifDrained !== undefined && !marks.has('pool:' + e.ifDrained * TS)) return; // lives on the channel floor: only once the water is gone
@@ -1687,7 +1694,7 @@ function spawnEnt(e) {
   }
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
-  const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
+  const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
   if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
 }
 function spawnEntitiesTail() {
@@ -1756,7 +1763,7 @@ function ambushSpawn(A) {
     spawnEnt(Object.assign({ t, x, y: row, face: px < P.x ? 1 : -1 }, o || {}));
     /* DROPPED IN from the canopy, the rafters or the rigging, where there is air over the spot to fall through */
     const drop = !AMB_FLY.has(t) && !AMB_STILL.has(t) && [1, 2, 3].every(k => tileAt(x, row - k) === T.AIR);
-    for (let i = n0; i < enemies.length; i++) { const e = enemies[i]; e.ambush = true; e.woke = 1; e.sleeper = false; e.stagger = Math.max(e.stagger || 0, 0.4);
+    for (let i = n0; i < enemies.length; i++) { const e = enemies[i]; e.ambush = true; e.woke = 1; e.xpKey = 'a' + L.ambushes.indexOf(A) + '.' + A.wave + '.' + t + x + '.' + (i - n0); e.sleeper = false; e.stagger = Math.max(e.stagger || 0, 0.4);
       if (drop && e.hy === undefined) { e.y -= 2.5 * TS; e.vy = 60; } A.foes.push(e); }
     burst(px, py - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(px, py, 8); ringAt(px, py - 8, 16, '#ff6b6b', 0.3);
   }
@@ -2118,22 +2125,64 @@ function startGame() {
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
   respawn(); levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length + (L.ambushes || []).reduce((n, A) => n + A.waves.reduce((m, w) => m + w.length, 0), 0);   /* the ambushers are in the body count before they arrive */
-  camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
+  xpStart(); camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
 }
+/* ---------- XP (src/xp.js) ----------
+   A kill pays by its weight, the first finish of a wood pays a share of what the wood holds, and a quest pays once. Only the campaign's
+   woods pay, the secret ones with them: the rush, the trials, the practice yard, the store and the editor pay nothing. */
+let levelXp = 0, xpRun = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0;
+const xpWood = () => !!L && !rushOn() && !L.trial && !L.shop && !edTesting && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
+function xpGot(id) { const h = hero(); PROG.xpGot = PROG.xpGot || {}; const m = (PROG.xpGot[h] = PROG.xpGot[h] || {}); return (m[id] = m[id] || {}); }
+/* WHAT THE WOOD HOLDS: every placed foe that is not its mini or its boss, and every ambusher. The share and the quest are fractions of it */
+function woodXp() { const tier = tierOf(curId());
+  return enemies.reduce((s, e) => s + (e.xpKey && !e.harmless && !e.xpRole ? xpFoe(e.t, '', tier) : 0), 0) + (L.ambushes || []).reduce((s, A) => s + A.waves.reduce((m, w) => m + w.reduce((k, q) => k + xpFoe(q[0], '', tier), 0), 0), 0); }
+function xpStart() { levelXp = woodXp(); xpRun = 0; lvAtStart = heroLevel(); lvUpT = 0; }
+function gainXp(n) { n = Math.round(n); if (!(n > 0)) return; const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; xpRun += n; const now = heroLevel(h); if (now > was) levelUp(now); }
+/* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
+   on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
+function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
+  const id = curId(), base = xpFoe(e.t, e.xpRole, tierOf(id), e.elite); if (!base) return;
+  const done = !!heroDone()[id], got = done ? null : xpGot(id), seen = done || (got.k || []).includes(e.xpKey);
+  if (!seen) (got.k = got.k || []).push(e.xpKey);
+  gainXp(Math.max(1, base * (seen ? XP_AGAIN : 1))); }
+/* THE LEVEL-UP. A ring and a chime on him, LEVEL UP off him as a move word (kept off the tells like every other), and the plate's bar turns
+   gold and says LEVEL n; the new health comes with it. The first time, a line says there is a point to spend. Never over a tell: the rings
+   are not text, the word is settled off the marks, and the line is a hint, which waits for them (hintWaits). */
+function levelUp(n) { lvUpN = n; if (state !== 'play') return;
+  lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
+  SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
+  if (!PROG.lvTold && n <= PTS_CAP && !godMode()) { PROG.lvTold = 1; hintT = 4.5; hintMsg = 'LEVEL UP: +1 TALENT POINT. SPEND IT IN THE TALENT TREE.'; }
+  saveProgress(); }
+/* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
+   xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
+   takes everything and every quest as well. old is the level the count of woods gave. */
+function xpSim() { const keep = levelIndex, rows = []; let run = 0, full = 0, stage = 0, secrets = 0;
+  const order = LEVELS.map((lv, i) => [lv, i]).filter(([lv]) => !lv.hidden);
+  for (const [lv, i] of LEVELS.map((q, j) => [q, j]).filter(([q]) => q.hidden && q.secret)) { const at = (lv.needsTime || lv.needsKills || {}).id || lv.needs; const k = order.findIndex(([q]) => q.id === at); order.splice(k < 0 ? order.length : k + 1, 0, [lv, i]); }
+  for (const [lv, i] of order) { loadLevel(i);
+    const tier = tierOf(lv.id), foeXp = woodXp(), bossXp = enemies.reduce((s, e) => s + (e.xpKey && !e.harmless && e.xpRole ? xpFoe(e.t, e.xpRole, tier) : 0), 0);
+    const foes = enemies.filter(e => e.xpKey && !e.harmless && !e.xpRole && xpFoe(e.t, '', tier) > 0).length + (L.ambushes || []).reduce((s, A) => s + A.waves.reduce((m, w) => m + w.length, 0), 0);
+    const clear = Math.round(XP_CLEAR * foeXp), quest = (L.quest || L.strays) ? Math.round(XP_QUEST * foeXp) : 0;
+    full += foeXp + bossXp + clear + quest; if (lv.secret) secrets++; else { stage++; run += Math.round(XP_KILL_NORMAL * foeXp) + bossXp + clear; }
+    rows.push({ id: lv.id, secret: !!lv.secret, stage: lv.secret ? null : stage, foes, foeXp, bossXp, clear, quest, run, level: levelOfXp(run), old: stage, full, fullLevel: levelOfXp(full), oldFull: stage + secrets }); }
+  loadLevel(keep); return rows; }
 let winLevelUp = false, medalPurse = 0;
 const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
 function winLevel() {
   fogSave();
   PROG.done = PROG.done || {};
-  winLevelUp = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it levels you like any other */
+  const firstWalk = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it pays its share like any other */
   state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
   const ofAll = levelFoes || enemies.filter(e => !e.harmless).length;
   PROG[id] = { relic: p.relic, quest: p.quest, silver: p.silver, cleared: true, best: p.best ? Math.min(p.best, levelTime) : levelTime, gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths),
     slain: Math.max(p.slain || 0, kills), slainOf: Math.max(p.slainOf || 0, ofAll) };
   PROG.coins = (PROG.coins || 0) + got; earned = got;
-  if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) heroDone()[id] = 1;
+  /* THE WOOD'S SHARE (XP_CLEAR in src/xp.js). The first finish of a wood was a level; it is XP now, and the fights paid the rest on the way */
+  if (firstWalk && xpWood()) gainXp(XP_CLEAR * levelXp);
+  winLevelUp = heroLevel() > lvAtStart;
+  if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) { heroDone()[id] = 1; const gw = (PROG.xpGot[hero()] || {})[id]; if (gw) delete gw.k; }   /* a finished wood pays a fifth for everything in it, so its list of the fallen can go */
   if (winLevelUp) { applyUpgrades(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
   { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
   if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true;
@@ -3481,7 +3530,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH']);
+const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP']);
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -4085,7 +4134,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (dmg > 0 && e.alive && tal('bleed') && !isPyro() && !isPaladin()) { e.bleed = 3; e.bleedN = tal('bleed'); } // OPEN WOUND
   if (dmg > 0 && e.alive && isReaper() && tal('rend') && (e.mark || 0) > 0) { e.bleed = Math.max(e.bleed || 0, 3); e.bleedN = Math.max(e.bleedN || 0, 2); } // REND: the mark is a wound waiting for the blade
   if (e.hp <= 0) {
-    e.alive = false; kills++; startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && tal('conflagration') && e.burn > 0) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < 46 && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
+    e.alive = false; kills++; xpKill(e); startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && tal('conflagration') && e.burn > 0) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < 46 && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
     if (!P.ground && !P.plunge && !P.dead && !e.maxHp) { P.vy = -210; P.canCut = true; squash(0.88, 1.18, 0.1); } // KILLED IT IN THE AIR: up you go
     if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(e.t); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
     { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
@@ -4101,7 +4150,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
     if (e.t === 'marshlight') fieldsWispLit(e); if (e.light) e.light.r = 0;   /* THE HEXED FIELDS: a struck wisp lights the way; a ghost's lantern goes out with it */
     if (e.t === 'drone') clouds2.push({ x: e.x, y: e.y - 3, r: 18, life: 2.5 });
     if (e.t === 'gill' && mother) { number(e.x, e.y - 18, 'GILL SNAPS', '#e0b0f0'); { const tx = Math.floor(e.x / TS), ty = Math.floor(L.arena.floor / TS) - 1, i = ty * LW + tx; if (L.grid[i] === T.AIR) { L.grid[i] = T.BOUNCER; tileSpr[i] = null; resolveTiles(); number(e.x, L.arena.floor - 26, 'A CAP FALLS: A SPRING', '#8fd160'); burst(e.x, L.arena.floor - 8, 14, ['#e8e0d0', '#9a5aa8'], 70, 0.7); shakeCam(3); } } for (let i = 0; i < 2; i++) enemies.push({ t: 'sporeling', x: e.x + (i ? 14 : -14), y: e.y - 20, vx: 0, vy: -60, w: 8, h: 10, hp: EHP.sporeling, speed: 30, face: i ? 1 : -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.3 }); const left = enemies.filter(g => g.alive && g.t === 'gill').length; mother.rootT = Math.min(mother.rootT, 0.8); if (left === 0) { mother.mode = 'tip'; mother.modeT = 1.6; L.violet = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 999; number(mother.x, mother.y - 110, 'SHE TIPS', '#ff7a9a'); SFX.roar(); SFX.dieOf('mother')(); shakeCam(8); zoomKick(1.1, 0.5); } }
-    if (e.t === 'heart' && mother) { mother.alive = false; kills++; queenDies(mother); L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; number(mother.x, mother.y - 130, 'THE WOOD BREATHES AGAIN', '#8fd160'); burst(mother.x, mother.y - 60, 40, COLS.mother, 120, 1.2); }
+    if (e.t === 'heart' && mother) { mother.alive = false; kills++; xpKill(mother); queenDies(mother); L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; number(mother.x, mother.y - 130, 'THE WOOD BREATHES AGAIN', '#8fd160'); burst(mother.x, mother.y - 60, 40, COLS.mother, 120, 1.2); }
     if (e.t === 'prince') princeDies(e);   /* his court goes back into the floor and the tomb's lamps come back */
     if (e.t === 'chief') chiefDies(); else if (!e.mini && (e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
     if (e.t === 'thief' && e.loot > 0) { for (let i = 0; i < e.loot + 3; i++) acorns.push({ x: e.x + (i - e.loot / 2) * 6, y: e.y - 10, got: false, ph: Math.random() * 6, crate: 'thief' + e.x + i, vy: -110 - Math.random() * 60 }); number(e.x, e.y - 24, 'WITH INTEREST', '#ffd34a'); SFX.coin(); }
@@ -10032,7 +10081,7 @@ function updateBat(e, dt) {
   const lightHere = (x, y) => { let best = null, bd = 150; const try1 = (lx, ly, lr, who) => { const dd = Math.hypot(lx - x, ly - y); if (dd < bd && lr > 20) { bd = dd; best = { x: lx, y: ly, who }; } }; for (const lt of lights) if (!(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit)) try1(lt.x, lt.y, lt.r, null); for (const f of fires) if (f.delay <= 0) try1(f.x, f.y - 6, 40, null); if (!P.dead && (playerLight() > 40 || Math.hypot(P.x - x, P.y - 8 - y) < 90)) try1(P.x, P.y - 8, Math.max(playerLight(), 60), 'P'); return best; }; // a bat goes for the nearest light, or for you if you are close enough to hear
   if (e.mode === 'hang') { e.x = e.hx; e.y = e.hy + Math.sin(e.anim * 2) * 0.5; if (e.cd <= 0) { const tgt = lightHere(e.x, e.y); if (tgt) { e.mode = 'fly'; e.tgt = tgt; SFX.chitter(); } } }
   else if (e.mode === 'fly') { const tgt = e.tgt.who === 'P' ? { x: P.x, y: P.y - 8 } : e.tgt; const dx = tgt.x - e.x, dy = tgt.y - e.y, dd = Math.hypot(dx, dy) || 1; e.x += dx / dd * 95 * dt; e.y += dy / dd * 80 * dt + Math.sin(e.anim * 9) * 10 * dt; e.face = Math.sign(dx) || e.face;
-    if (!P.dead && Math.abs(P.x - e.x) < 10 && Math.abs((P.y - 8) - e.y) < 10) { const res = damagePlayer(e.x, DMG.bat); if (res === 'blocked') { e.alive = false; burst(e.x, e.y, 6, COLS.bat, 50, 0.4); kills++; number(e.x, e.y - 10, 'SWATTED', '#8fd160'); return; } e.mode = 'back'; e.cd = 2; SFX.chitter(); }
+    if (!P.dead && Math.abs(P.x - e.x) < 10 && Math.abs((P.y - 8) - e.y) < 10) { const res = damagePlayer(e.x, DMG.bat); if (res === 'blocked') { e.alive = false; burst(e.x, e.y, 6, COLS.bat, 50, 0.4); kills++; xpKill(e); number(e.x, e.y - 10, 'SWATTED', '#8fd160'); return; } e.mode = 'back'; e.cd = 2; SFX.chitter(); }
     else if (dd < 8 || e.modeT < -6) { e.mode = 'back'; e.cd = 1.5; } }
   else { const dx = e.hx - e.x, dy = e.hy - e.y, dd = Math.hypot(dx, dy) || 1; e.x += dx / dd * 110 * dt; e.y += dy / dd * 110 * dt; e.face = Math.sign(dx) || e.face; if (dd < 4) { e.mode = 'hang'; e.modeT = 0; } }
 }
@@ -17818,7 +17867,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
   rows.forEach(([a, b], i) => { const yy = rowY + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
-  { const tr = 'level ' + heroLevel() + '   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
+  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
     text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
     text('T  TALENTS AND WHAT IS ON F AND G', VW / 2, y + h - 24, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
@@ -18435,7 +18484,7 @@ function render() {
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, VW - 16, [TYPE.title, 8]); g.fillStyle = 'rgba(10,8,16,0.66)'; g.fillRect(0, VH / 2 - 12, VW, (z >= 12 ? 10 : 8) + 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', z, 'outline'); } }   /* on a band of its own, and a name too wide for the card drops a size */
-    const hudMeter = hudMeterLabel(), hudPW = Math.max(116, hudMeter ? (isReaper() ? 112 : 92) + inkW(hudMeter.s, 6) + 5 : 116), hudPH = (SET.iron ? 38 : 26) + 10;   /* the plate is as wide as what C does */
+    const hudMeter = hudMeterLabel(), hudPW = Math.max(116, hudMeter ? (isReaper() ? 112 : 92) + inkW(hudMeter.s, 6) + 5 : 116), xpRow = xpWood() ? 8 : 0, hudPH = (SET.iron ? 38 : 26) + 10 + xpRow;   /* (xpRow: the XP bar's line) */   /* the plate is as wide as what C does */
     board(1, 1, hudPW, hudPH, UI.border, 'rgba(10,8,20,0.5)', true);
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab);
       board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); hudRects = [[0, 0, hudPW + 2, hudPH + 2], [VW - 8 - pw, 0, pw + 4, 32]]; }
@@ -18449,7 +18498,7 @@ function render() {
     for (let i = 0; i < (PROG.tonics || 0); i++) g.drawImage(TONIC_ICON, 90 + i * 7, 14); // the tonics you carry
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
-    if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + 10;
+    if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + 10 + xpRow;
       text((SET.invincible ? 'INVINCIBLE ' : '') + (SET.godmode ? 'GOD MODE' : ''), 6, 2 + ph + 3, '#ff9a5c', 'left', 6); }
     g.drawImage(PROP.bolt, 6, 15);
     if (hero() === 'knight') { const hy = SET.iron ? 41 : 29, full = (P.resolve || 0) >= 100, on = lcOn(), fill = on ? (P.lcBrace > 0 ? 1 : Math.max(0, P.lcLeft / LC_DIST)) : (P.resolve || 0) / 100;   /* RESOLVE: a shield for the icon; while THE LAST CHARGE runs, the bar is the road left in it */
@@ -18464,7 +18513,7 @@ function render() {
     // and it goes red and flashes before it starts costing you.
     if ((state === 'play' || state === 'talk') && P.swim && !P.dead) {
       const mx2 = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b2 = Math.max(0, P.breath ?? mx2), k2 = b2 / mx2;
-      const by = (SET.iron ? 41 : 29) + 10;
+      const by = (SET.iron ? 41 : 29) + 10 + xpRow;
       const low = k2 < 0.34, fl = low && Math.floor(time * 8) % 2;
       g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(2, by - 4, low ? 92 + inkW(k2 <= 0 ? 'NO AIR' : 'BREATH', 6) + 4 : 104, 13, 3); g.fill(); hudRects.push([2, by - 4, low ? 128 : 104, 13]);   /* wide enough for the word it says */
       bar(16, by, 70, 4, k2, k2 <= 0 ? '#ff6b6b' : low ? (fl ? '#ffd0d0' : '#ff6b6b') : '#7cc8c8', k2);
@@ -18499,6 +18548,12 @@ function render() {
       else { g.fillStyle = '#5a5460'; g.fillRect(px2, py2 + 3, 9, 2); g.fillRect(px2, py2 + 5, 3, 4);
         g.fillStyle = '#3a3040'; g.fillRect(px2, py2 + 11, 12, 1);
         g.fillStyle = '#ff9a5c'; g.fillRect(px2, py2 + 11, Math.round(12 * (1 - (P.reloadT || 0) / PISTOL_RELOAD)), 1); } }
+    /* THE XP BAR: a thin line under the meters, inside the plate, with the level beside it. A level-up turns it gold and it says LEVEL n */
+    if (xpRow) { const yy = (SET.iron ? 41 : 29) + 8, n = heroLevel(), lo = xpFloor(n), k = Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
+      if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
+      const lab = (up ? 'LEVEL ' : 'LV ') + n, bx = 6 + inkW(lab, 6) + 4;
+      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : '#c9b27c', 'left', 6);
+      bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 92, 14); }
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], P.relic ? 104 : 92, 14); g.globalAlpha = 1; }
@@ -18530,8 +18585,8 @@ function render() {
       g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); hudRects.push([tx - tw / 2, 2, tw, 13]);
       text(ts, tx, 5, 'rgba(224,216,196,0.82)', 'center'); }
     // POINTS WAITING: a badge under the bars, so nobody finishes the game with ten points unspent
-    if (state === 'play' && !godMode() && ptsLeft(hero()) > 0 && !(L && L.shop)) { const n = ptsLeft(hero()), lab = 'Q  ' + n, w = lab.length * 6 + 12, k = 0.5 + 0.5 * Math.sin(time * 2.4), by = (isPyro() || isPaladin() ? 44 : 34);
-      g.fillStyle = 'rgba(24,36,18,0.88)'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill();
+    if (state === 'play' && !godMode() && ptsLeft(hero()) > 0 && !(L && L.shop)) { const n = ptsLeft(hero()), lab = 'Q  ' + n, w = lab.length * 6 + 12, k = 0.5 + 0.5 * Math.sin(time * 2.4), by = (isPyro() || isPaladin() ? 44 : 34) + xpRow;
+      g.fillStyle = 'rgba(24,36,18,0.88)'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill(); hudRects.push([4, by, w, 11]);   /* a plate too: the tells keep off it (a hero levels in a fight now, so the badge can be up in one) */
       g.globalAlpha = 0.12 + 0.16 * k; g.fillStyle = '#8fd160'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill(); g.globalAlpha = 1;
       g.strokeStyle = 'rgba(143,209,96,0.85)'; g.lineWidth = 1; g.beginPath(); g.roundRect(4.5, by + 0.5, w - 1, 10, 3); g.stroke();
       g.fillStyle = '#8fd160'; for (let i = 0; i < 3; i++) g.fillRect(w - 3, by + 3 + i, 1 + i * 2, 1);   // the little chevron of a thing waiting to be spent
@@ -18540,7 +18595,7 @@ function render() {
     else if (hintT > 0 && state === 'play') { hintT -= 1 / 60; const k = Math.min(1, hintT * 2);
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
       const lines = wrap(hintMsg, VW - 40, 6), bw = Math.min(VW - 16, Math.max(...lines.map(l => inkW(l, 6))) + 16), bh = lines.length * BODY_LH + 6;
-      const heroY = P.y - cy, top = 48, foot = VH - bh - (bossActive || miniActive ? 32 : 6), hby = heroY > top - 8 && heroY - 28 < top + bh + 4 ? foot : top, hbx = Math.round(VW / 2 - bw / 2);
+      const heroY = P.y - cy, top = 48 + xpRow, foot = VH - bh - (bossActive || miniActive ? 32 : 6), hby = heroY > top - 8 && heroY - 28 < top + bh + 4 ? foot : top, hbx = Math.round(VW / 2 - bw / 2);
       g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
       g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
       lines.forEach((ln, i) => text(ln, VW / 2, hby + 4 + i * BODY_LH, '#ffd36b', 'center', 6)); g.globalAlpha = 1; }
@@ -18682,7 +18737,8 @@ function render() {
     line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
     line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
     line(1.20, 'deaths   ' + deaths, 116, '#fff6e0');
-    if (winLevelUp) line(0.15, fitText('LEVEL ' + heroLevel() + '  +3 HP  +5 ST' + (heroLevel() % 2 === 0 ? '  +1 DMG' : '') + '  +2 SKILL', pw - 12, 6), 52, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 6);
+    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' : xpRun > 0 ? '+' + xpRun + ' XP   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
+      if (s) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     { const id = LEVELS[levelIndex].id, m = medalFor(id, medalTime());
@@ -18750,7 +18806,7 @@ function frame(now) { rafQueued = false; tick(now); if (!rafQueued) { rafQueued 
 setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now()); }, 125);
 loadLevel(0);
 document.getElementById('boot').remove();
-window.BK = { mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
+window.BK = { xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   P, god: false, keys, SET, PROG, SPR, get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   tileSpr: () => tileSpr, resolve: () => resolveTiles(),
