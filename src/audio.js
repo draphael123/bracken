@@ -560,7 +560,7 @@ Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
   foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
     if (r) { file('gobHurt', 0.3, r * 1.2) || tone('square', 500 * r, 800 * r, 0.08, 0.08); tone('square', 700 * r, 1150 * r, 0.06, 0.04, 0.03); return; }
-    const B = { hound: SFX.bark, greathound: SFX.bark, goat: SFX.bleat, harpy: SFX.screech, spider: SFX.hiss, bat: SFX.chitter, wasp: SFX.buzz, hopper: SFX.ribbit, sporeling: SFX.squelch, wight: SFX.wightMoan, hare: SFX.hareSqueak, crow: SFX.caw, troll: SFX.bellow, grub: SFX.squelch, shardling: SFX.shardBristle, lurker: SFX.squelch }[t]; if (B) B(); },
+    const B = { hound: SFX.bark, greathound: SFX.bark, goat: SFX.bleat, harpy: SFX.screech, spider: SFX.hiss, bat: SFX.chitter, wasp: SFX.buzz, hopper: SFX.ribbit, sporeling: SFX.squelch, wight: SFX.wightMoan, hare: SFX.hareSqueak, crow: SFX.caw, troll: SFX.bellow, grub: SFX.squelch, shardling: SFX.shardBristle, fledgling: SFX.caw, lurker: SFX.squelch }[t]; if (B) B(); },
   // it hit you, or you fell: the goblins laugh
   foeJeer(t) { if (!gate('jeer', 0.6)) return; const r = GOB_V[t] || 1; file('laugh', 0.28, r * 1.1) || [0, 1, 2].forEach(i => tone('square', 420 * r, 340 * r, 0.07, 0.07, i * 0.11)); },
   // goblin gibberish, muttered to itself while it waits
@@ -705,6 +705,7 @@ const DIE = {
   crow() { tone('sawtooth', 900, 300, 0.25, 0.12); noise(0.3, 0.15, 2400, 0.4, 0.08); for (let i = 0; i < 3; i++) noise(0.04, 0.08, 3200, 1, 0.12 + i * 0.06); /* a caw cut short, and feathers */ },
   horn() { gob(0.8) || tone('square', 320, 80, 0.3, 0.18); pad('sawtooth', 150, 88, 0.8, 0.09, 0.12, 700); /* the horn sighs out of him */ },
   shardling() { noise(0.3, 0.3, 3600, 0.7); [2637, 2093, 1568, 1175].forEach((f, i) => bell(f, 0.35, 0.05, i * 0.05)); tone('sawtooth', 160, 60, 0.25, 0.1); },
+  fledgling() { tone('sawtooth', 1400, 500, 0.18, 0.1); noise(0.2, 0.16, 2600, 0.5, 0.05); for (let i = 0; i < 3; i++) noise(0.04, 0.08, 3600, 1, 0.1 + i * 0.05); /* a cheep cut short, and down */ },
   sentry() { gob(1.05) || tone('square', 500, 110, 0.22, 0.16); bell(988, 0.8, 0.07, 0.12); SFX.clatter(); /* his bell hits the floor */ },
   hearthgob() { gob(0.7, 0.65) || tone('sawtooth', 240, 60, 0.4, 0.22); noise(0.6, 0.18, 2400, 0.5, 0.12); tone('sine', 90, 40, 0.3, 0.25, 0.1); /* the fire goes out with him */ },
   sweep() { gob(1.25) || tone('square', 560, 120, 0.22, 0.16); noise(0.45, 0.24, 520, 0.4, 0.05); SFX.clatter(); /* a cloud of soot and the brush */ },
@@ -836,6 +837,7 @@ const HURT = {
   crow() { tone('sawtooth', 1000, 700, 0.07, 0.1); noise(0.08, 0.1, 3000, 0.8); },
   horn() { gobH(0.8) || tone('square', 380, 240, 0.09, 0.12); },
   shardling() { bell(2637, 0.2, 0.05); noise(0.05, 0.12, 5000, 0.8); },
+  fledgling() { tone('square', 1600, 1100, 0.08, 0.08); },
   sentry() { gobH(1.05) || tone('square', 560, 340, 0.08, 0.12); bell(988, 0.25, 0.04, 0.02); },
   hearthgob() { gobH(0.7, 0.5) || tone('sawtooth', 240, 140, 0.14, 0.16); noise(0.12, 0.1, 2400, 0.6); },
   sweep() { gobH(1.3) || tone('square', 640, 400, 0.08, 0.12); noise(0.14, 0.1, 600, 0.5, 0.03); /* a cough of soot */ },

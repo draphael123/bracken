@@ -1755,6 +1755,8 @@ function theMonastery() {
   ent('fledgling', 42, 217, { face: -1 });
   ent('sign', 62, 217, { text: 'A TRAPDOOR IN THE FLAGS. PRESS DOWN TO DROP IN, JUMP UP THROUGH IT TO COME OUT.' });
   cellar(66, 74, 218); coins([70, 217], [67, 220], [69, 220], [71, 220], [73, 220]);
+  ent('grub', 68, 220, { face: 1 });                                // the undercroft has had nobody to sweep it for years
+  ent('sprig', 54, 217, { face: -1 }); ent('sprig', 78, 217, { face: -1 });   // looters in the gate yard, going through the pilgrims' packs
   ent('deco', 84, 217, { kind: 'tent' }); ent('deco', 89, 217, { kind: 'lanternPost' });
   ent('deco', 92, 217, { kind: 'bones', v: 1 }); coins([80, 217], [87, 217]);
 
@@ -1763,6 +1765,7 @@ function theMonastery() {
   ent('sign', 6, 195, { text: 'THE LOWER TERRACES. THE MONKS GREW BEANS HERE. THE GOBLINS DIG FOR THEIR SILVER.' });
   ent('check', 8, 195); coins([21, 194], [75, 194]);
   cellar(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
+  ent('grub', 20, 198, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // the root cellar's grub, and a looter in the bean rows
   for (const [x, k, v] of [[26, 'beanpoles', 0], [35, 'gardenWall', 1], [40, 'skep', 0], [54, 'beanpoles', 1], [58, 'gardenWall', 2]]) ent('deco', x, 195, { kind: k, v });
   ent('deco', 91, 195, { kind: 'bones' }); coins([88, 195], [92, 195]);
   ent('sign', 48, 195, { text: 'THE INCENSE STILL BURNS. STAND IN THE SMOKE AS IT RISES, AND STEER OFF AT THE TOP.' });
@@ -1818,7 +1821,7 @@ function theMonastery() {
   brazier(86, 110, 10, { phase: 1.6 });
   coins([90, 112], [86, 104], [87, 116]);
   ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE ROC CAME.' });
-  ent('check', 13, 117); ent('check', 4, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
+  ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
   ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 });
   for (const [x, k, v] of [[52, 'lootHeap', 0], [63, 'tent', 1], [81, 'bones', 0]]) ent('deco', x, 131, { kind: k, v });
@@ -1936,7 +1939,7 @@ function theMonastery() {
   for (const [x, v] of [[20, 0], [34, 1], [58, 0], [72, 1]]) ent('deco', x, 29, { kind: 'bones', v });
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
   for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'cairn', v });
-  ent('sign', 30, 29, { text: 'THE NEST. SHE HAS ROOSTED ON THIS ROOF SINCE THE MONKS LEFT, AND EVERYTHING ON IT CAME UP THE WAY YOU DID.' });
+  ent('sign', 30, 29, { text: 'THE NEST. EVERYTHING ON THIS ROOF CAME UP THE MOUNTAIN THE WAY YOU DID.' });
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
