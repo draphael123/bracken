@@ -633,7 +633,7 @@ function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
   TILE = {
     dirt: [0, 1, 2, 3, 4, 5].map(i => ART.bakeDirt(10 + i)), deep: [0, 1, 2].map(b => [0, 1, 2, 3, 4, 5, 6, 7].map(i => ART.bakeDirtDeep(140 + b * 17 + i, b))), top: {}, edge: {},   /* eight ways to be a foot of earth instead of four: the deep fill is the biggest mass on the screen */
-    log: [0, 1, 2, 3, 4].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true), comb: [0, 1, 2].map(i => ART.bakeCombPlat(560 + i)), combL: ART.bakeCombPlat(563, 'L'), combR: ART.bakeCombPlat(564, 'R'), ropeNet: [0, 1].map(i => ART.bakeRopeNet(i)), vine: [0, 1].map(i => ART.bakeVine(i)), rail: [0, 1].map(i => ART.bakeRail(i)), soft: [0, 1, 2].map(i => ART.bakeSoftRock(930 + i)), ladder: { S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }, ledge: [0, 1, 2].map(i => ART.bakeLedge(570 + i, null)), ledgeL: ART.bakeLedge(573, 'L'), ledgeR: ART.bakeLedge(574, 'R'),
+    log: [0, 1, 2, 3, 4].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true), comb: [0, 1, 2].map(i => ART.bakeCombPlat(560 + i)), combL: ART.bakeCombPlat(563, 'L'), combR: ART.bakeCombPlat(564, 'R'), ropeNet: [0, 1].map(i => ART.bakeRopeNet(i)), climbVine: [0, 1].map(i => ART.bakeVine(i)), rail: [0, 1].map(i => ART.bakeRail(i)), soft: [0, 1, 2].map(i => ART.bakeSoftRock(930 + i)), ladder: { S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }, ledge: [0, 1, 2].map(i => ART.bakeLedge(570 + i, null)), ledgeL: ART.bakeLedge(573, 'L'), ledgeR: ART.bakeLedge(574, 'R'),
     beam: [0, 1, 2].map(i => ART.bakeBeam(700 + i, null)), beamL: ART.bakeBeam(703, 'L'), beamR: ART.bakeBeam(704, 'R'),
     staging: [0, 1, 2].map(i => ART.bakeStaging(710 + i, null)), stagingL: ART.bakeStaging(713, 'L'), stagingR: ART.bakeStaging(714, 'R'),
     lashed: [0, 1, 2].map(i => ART.bakeLashed(720 + i, null)), lashedL: ART.bakeLashed(723, 'L'), lashedR: ART.bakeLashed(724, 'R'), duck: [0, 1, 2].map(i => ART.bakeDuckboard(580 + i, null)), duckL: ART.bakeDuckboard(583, 'L'), duckR: ART.bakeDuckboard(584, 'R'), capLedge: [0, 1, 2].map(i => ART.bakeCapLedge(590 + i, null)), capLedgeL: ART.bakeCapLedge(593, 'L'), capLedgeR: ART.bakeCapLedge(594, 'R'), climb: [ART.bakeClimbFace(0), ART.bakeClimbFace(1)],
@@ -817,7 +817,7 @@ function resolveTiles() {
       // does not know about, or from a yard that is only decor - it read as a chain floating in the void. The
       // head of every run now gets the thing it is tied to drawn across it: a beam, and a ring on the beam.
       if (!n(0, -1) && !n(-1, 0) && !n(1, 0) && !isSolid(x, y - 1))
-        decor.push({ k: 'rock', bg: true, x: x * TS, y: y * TS - 5, c: PROP.ropeBeam || (PROP.ropeBeam = bakeRopeBeam()) }); let vr = 1, hr = 1; for (let k = 1; n(0, -k); k++) vr++; for (let k = 1; n(0, k); k++) vr++; for (let k = 1; n(-k, 0); k++) hr++; for (let k = 1; n(k, 0); k++) hr++; s = cityT ? CITY.chain[(x + y) % 2] : hr > vr ? TILE.ropeNet[(x + y) % 2] : (L.vines && L.vines.includes(x)) ? TILE.vine[y % 2] : TILE.ladder[n(1, 0) && !n(-1, 0) ? 'L' : n(-1, 0) && !n(1, 0) ? 'R' : 'S'][y % 2]; }
+        decor.push({ k: 'rock', bg: true, x: x * TS, y: y * TS - 5, c: PROP.ropeBeam || (PROP.ropeBeam = bakeRopeBeam()) }); let vr = 1, hr = 1; for (let k = 1; n(0, -k); k++) vr++; for (let k = 1; n(0, k); k++) vr++; for (let k = 1; n(-k, 0); k++) hr++; for (let k = 1; n(k, 0); k++) hr++; s = cityT ? CITY.chain[(x + y) % 2] : hr > vr ? TILE.ropeNet[(x + y) % 2] : (L.vines && L.vines.includes(x)) ? TILE.climbVine[y % 2] : TILE.ladder[n(1, 0) && !n(-1, 0) ? 'L' : n(-1, 0) && !n(1, 0) ? 'R' : 'S'][y % 2]; }
     else if (t === T.CLIMB) s = TILE.climb[(x + y) % 2];
     else if (t === T.ICE) s = TILE.ice || (TILE.ice = bakeIceTile());
     else if (t === T.WEB) s = TILE.web || (TILE.web = bakeWebTile());
@@ -1275,7 +1275,9 @@ function spawnEnt(e) {
       case 'seabell': props.push({ t: 'seabell', x: px, y: py, swing: 0, cd: 0 }); break;
       case 'capstan': props.push({ t: 'capstan', x: px, y: py, spin: 0, turns: 0, link: e.link, done: false }); break;
       case 'pump': props.push({ t: 'pump', x: px, y: py, spin: 0, turns: 0, run: 0, pool: e.pool !== undefined ? e.pool * TS : undefined }); break;
-      case 'sluice': props.push({ t: 'sluice', x: px, y: py, spin: 0, held: 0 }); break;
+      /* TWO SLUICES, ONE CASE. The marsh's gate (pool, to) drains its channel for good on the third stroke; the Long Water's wheel drains
+         the street a while. They were two case 'sluice' lines in this one switch, so the first took both and the marsh's gate never drained */
+      case 'sluice': if (e.pool !== undefined) props.push({ t: 'sluice', x: px, y: py, pool: e.pool * TS, to: e.to, hits: 0, open: marks.has('pool:' + e.pool * TS) }); else props.push({ t: 'sluice', x: px, y: py, spin: 0, held: 0 }); break;
       case 'firebox': { props.push({ t: 'firebox', x: px, y: py, x0: e.x0, x1: e.x1, y0: e.y0, y1: e.y1, burnT: 0, coolT: 0, cells: [], pending: [] });
         /* a fresh attempt finds the ice where the cutters left it */
         if (e.x0 !== undefined && grid0 && tileSpr) { let ch = false; for (let ty = e.y0; ty <= e.y1; ty++) for (let tx = e.x0; tx <= e.x1; tx++) { const i = ty * LW + tx; if (grid0[i] === T.ICE && L.grid[i] !== T.ICE) { L.grid[i] = T.ICE; tileSpr[i] = null; ch = true; } } if (ch) resolveTiles(); } } break;
@@ -1359,7 +1361,6 @@ function spawnEnt(e) {
       case 'gill': enemies.push({ ...base, t: 'gill', w: 16, h: 14, hp: EHP.gill, y: py }); break;
       case 'mother': boss = { ...base, t: 'mother', w: 28, h: 96, hp: EHP.mother, maxHp: 4, mode: 'sleep', modeT: 0, rootT: 2.5, belchT: 6, rainT: 6, tipped: false, phase: 1, gillsOpen: false, openT: 0, broodT: 0 }; mother = boss; enemies.push(boss); break;
       case 'puffball': props.push({ t: 'puffball', x: px, y: py, popped: false }); break;
-      case 'sluice': props.push({ t: 'sluice', x: px, y: py, pool: e.pool * TS, to: e.to, hits: 0, open: marks.has('pool:' + e.pool * TS) }); break;
       case 'felltree': { const f = marks.has('tree:' + e.x); props.push({ t: 'felltree', x: px, y: py, hp: 4, len: e.len || 12, dir: e.dir || 1, fall: f ? 1 : 0, felled: f, tx: e.x, ty: e.y, shake: 0 }); break; }
       case 'catapult': props.push({ t: 'catapult', x: px, y: py, hp: 5, every: e.every || 2.6, timer: 1.4, fired: 0, wrecked: marks.has('cat:' + e.x), tx: e.x }); break;
       case 'nest': props.push({ t: 'nest', x: px, y: py, every: e.every || 2.4, dir: e.dir || -1, timer: 1, puff: 0 }); break;
@@ -2067,14 +2068,6 @@ const TREE_ICON = {};
 // paladin's LIGHT branch eight identical crosses and the knight's BLADE eight identical swords, which is the
 // same problem in a different colour. The verb wins, and where a name is all theme it is named here.
 const TAL_BY_NAME = {
-  // the new shapes win over the old ones below: stamina is a bolt, a wound is a drop, a mark is an eye, a wait is an hourglass, a mend is a cross
-  reaper: 'bolt', flurry: 'bolt', footing: 'bolt', breath: 'bolt', mercy: 'bolt', ironLungs: 'bolt', fleet: 'bolt', hardTack: 'bolt', steady: 'bolt', stalwart: 'bolt', evasion: 'bolt',
-  bleed: 'drop', rend: 'drop', deepToll: 'drop', gleaner: 'drop', dueRites: 'drop', lastRites: 'drop', deathwatch: 'drop',
-  soulBrand: 'eye', winnow: 'eye', brand: 'eye', sunder: 'eye', searing: 'eye',
-  gravebound: 'hourglass', pilot: 'hourglass', blaze: 'hourglass', longStride: 'hourglass',
-  devotion: 'cross', sanctuary: 'cross', zeal: 'cross', kindle: 'cross', hearth: 'cross', martyr: 'cross',
-  reflect: 'reflect', bulwark: 'reflect', retribution: 'reflect', vengeance: 'reflect', emberSkin: 'reflect',
-  twinSkill: 'twin', twin: 'twin', press: 'twin',
   mercy: 'heart', smite: 'blade', martyr: 'shield', zeal: 'flame', ascension: 'boot', consecrate: 'ring',
   radiance: 'light', devotion: 'light', lightLance: 'blade', divineShield: 'shield', sanctuary: 'ring',
   beacon: 'light', crusade: 'chev', blessedHammer: 'ring', faithHp: 'heart', warCry: 'chev',
@@ -2095,6 +2088,14 @@ const TAL_BY_NAME = {
   execute: 'blade', plated: 'shield', vengeance: 'heart', momentum: 'boot', evasion: 'boot',
   scatter: 'chev', conflagration: 'flame', pilot: 'light', backdraft: 'flame', ashCloak: 'shield',
   emberHeart: 'heart', warded: 'shield', farTremor: 'ring', earthshaker: 'ring', heavy: 'blade',
+  /* the new shapes win over the old ones above them (in an object the LAST key wins: written first, the old ones won every clash): stamina is a bolt, a wound is a drop, a mark is an eye, a wait is an hourglass, a mend is a cross */
+  reaper: 'bolt', flurry: 'bolt', footing: 'bolt', breath: 'bolt', mercy: 'bolt', ironLungs: 'bolt', fleet: 'bolt', hardTack: 'bolt', steady: 'bolt', stalwart: 'bolt', evasion: 'bolt',
+  bleed: 'drop', rend: 'drop', deepToll: 'drop', gleaner: 'drop', dueRites: 'drop', lastRites: 'drop', deathwatch: 'drop',
+  soulBrand: 'eye', winnow: 'eye', brand: 'eye', sunder: 'eye', searing: 'eye',
+  gravebound: 'hourglass', pilot: 'hourglass', blaze: 'hourglass', longStride: 'hourglass',
+  devotion: 'cross', sanctuary: 'cross', zeal: 'cross', kindle: 'cross', hearth: 'cross', martyr: 'cross',
+  reflect: 'reflect', bulwark: 'reflect', retribution: 'reflect', vengeance: 'reflect', emberSkin: 'reflect',
+  twinSkill: 'twin', twin: 'twin', press: 'twin',
   sunder: 'blade',
   unbroken: 'blade', holdLine: 'shield', counterstroke: 'reflect', lightStep: 'boot', hangCut: 'boot', airDash: 'boot', endlessSky: 'boot', thirdCut: 'blade',
   wildfire: 'flame', jetWalk: 'flame', inferno: 'flame', smoulder: 'flame', phoenixTrail: 'flame', stoke: 'bolt',
@@ -2688,7 +2689,7 @@ function menuConfirm() {
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else if (k === 'Hero trial') { state = 'play'; startTrial(hero()); }
-  else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; if (!P.dead) die(); SFX.uiSel(); } }
+  else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; returnToShrine(); SFX.uiSel(); } }
   else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadLevel(levelIndex); startGame(); SFX.uiSel(); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
   else menuAdjust(1);
 }
@@ -2811,7 +2812,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.talents)) talentsPress = true;
   if (isKey(e, KEYS.dance)) keys.dance = true;
   if (isKey(e, ['m', 'M'])) { SET.music = !SET.music; applySettings(); saveSettings(); }
-  if (isKey(e, ['r', 'R']) && state === 'play') die();
+  if (isKey(e, ['r', 'R']) && state === 'play') returnToShrine();
   e.preventDefault();
 });
 addEventListener('keyup', e => {
@@ -3148,6 +3149,15 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (P.hp > 0) crowdJeer(false);
   if (P.hp <= 0) die();
   return 'hit';
+}
+/* BACK TO THE SHRINE (R, and the pause menu): the hero is put back at the last shrine as a respawn puts him - full health,
+   the room as it was, and out of wherever he was stuck - but it is not a death. Both used to call die(): a death on the
+   count, the no-damage medal gone, a life off an Iron Knight, the relic dropped. The rush has no shrines, so it does nothing there. */
+function returnToShrine() {
+  if (P.dead || rushOn()) return false;
+  const relic = P.relic; P.relic = null; respawn(); P.relic = relic;
+  burst(P.x, P.y - 12, 12, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.6); number(P.x, P.y - 34, 'BACK TO THE SHRINE', '#ffd36b');
+  return true;
 }
 function die() {
   if (P.dead) return;
@@ -4029,7 +4039,7 @@ function fireHeavy() { noteVerb('heavy');
 }
 // A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
 function guardTurned() {
-  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING KEY INSTEAD: A HEAVY BLOW GOES THROUGH A GUARD.'; }
+  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING KEY INSTEAD: A HEAVY BLOW GOES THROUGH A GUARD.'; return; }   /* its own call: the line under it used to overwrite it at once */
   if ((PROG.guardHeavy || 0) >= 4) return;
   PROG.guardHeavy = (PROG.guardHeavy || 0) + 1; hintT = 4;
   hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + (SET.swapZX ? 'Z' : 'X') + ' FOR A HEAVY ONE AND IT GOES THROUGH.';
@@ -10778,7 +10788,7 @@ function updateCastleProps(dt, hb) {
           for (const m of movers) if (m.link === pr.link) { m.locked = false; burst(m.x + m.w / 2, m.y, 10, ['#c9b27c', '#e8dcc0'], 50, 0.5); } }
         else number(pr.x, pr.y - 24, pr.turns + ' OF 3', '#c9b27c'); }
     }
-    if (pr.t === 'sluice') { // THE SLUICE: open it and the low street drains, for as long as the gate holds
+    if (pr.t === 'sluice' && pr.pool === undefined) { // THE SLUICE: open it and the low street drains, for as long as the gate holds
       pr.spin = Math.max(0, pr.spin - dt);
       const struck = hb && overlap(hb, { l: pr.x - 8, r: pr.x + 8, t: pr.y - 20, b: pr.y }) && !P.hitSet.has(pr);
       if (struck) { P.hitSet.add(pr); pr.spin = 0.6; SFX.clank();
@@ -12241,7 +12251,7 @@ function updateProps(dt) {
       else if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 60, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.crack(); sparks(pr.x, pr.y - 20, P.face, 5); burst(pr.x, pr.y - 24, 6, ['#c9b27c', '#8a5a32'], 60, 0.5); pr.shake = 0.25; number(pr.x, pr.y - 70, pr.hp > 0 ? pr.hp + ' MORE' : 'TIMBER', '#ffd36b'); if (pr.hp <= 0) { pr.fall = 0.001; SFX.crack(); } }
       if (pr.shake > 0) pr.shake -= dt;
     }
-    if (pr.t === 'sluice' && !pr.open && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hits++; SFX.stone(); sparks(pr.x, pr.y - 12, P.face, 4); number(pr.x, pr.y - 28, pr.hits >= 3 ? 'THE GATE GIVES' : (3 - pr.hits) + ' MORE', '#ffd36b'); if (pr.hits >= 3) drainPool(pr); }
+    if (pr.t === 'sluice' && pr.pool !== undefined && !pr.open && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hits++; SFX.stone(); sparks(pr.x, pr.y - 12, P.face, 4); number(pr.x, pr.y - 28, pr.hits >= 3 ? 'THE GATE GIVES' : (3 - pr.hits) + ' MORE', '#ffd36b'); if (pr.hits >= 3) drainPool(pr); }
     if (pr.t === 'catapult' && !pr.wrecked) { // lobs barrels at where you are heading while you are in front of it; five hits wreck it
       if (pr.fired > 0) pr.fired -= dt;
       const d = pr.x - P.x;
@@ -12414,7 +12424,7 @@ function updateProps(dt) {
     if (pr.t === 'glowbud') { if (pr.lit > 0) pr.lit -= dt; pr.light.r = pr.lit > 0 ? (pr.lit < 2 ? 18 + 58 * (pr.lit / 2) : 76) : 18; if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.lit = 14; SFX.sting(); burst(pr.x, pr.y - 8, 10, ['#4aa0b0', '#bff0f0', '#ffffff'], 60, 0.5); } }
     if (pr.t === 'glow') { if (pr.dark > 0) pr.dark -= dt; else if (hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.dark = 8; SFX.ui(); burst(pr.x, pr.y - 8, 6, ['#4aa0b0', '#bff0f0'], 40, 0.4); } }
   }
-  for (const k in shelfT) { if (shelfT[k] < 0) { shelfT[k] += dt; if (shelfT[k] >= 0) { const i = +k; if (L.grid[i] === T.AIR && grid0[i] === T.SHELF && !(Math.abs(P.x - ((i % LW) * TS + 8)) < 14 && Math.abs(P.y - Math.floor(i / LW) * TS) < 20)) { L.grid[i] = T.SHELF; tileSpr[i] = TILE.shelf[i % 2]; shelfT[k] = 0; burst((i % LW) * TS + 8, Math.floor(i / LW) * TS + 4, 4, ['#f0d090'], 30, 0.3); } else shelfT[k] = -0.5; } } }
+  for (const k in shelfT) { if (shelfT[k] < 0) { shelfT[k] += dt; if (shelfT[k] >= 0) { const i = +k; if (L.grid[i] === T.AIR && grid0[i] === T.SHELF && !(Math.abs(P.x - ((i % LW) * TS + 8)) < 14 && Math.abs(P.y - Math.floor(i / LW) * TS) < 20)) { L.grid[i] = T.SHELF; tileSpr[i] = (L.palette && L.palette.set === 'ship' && FLOT) ? FLOT.rotTop[i % 3] : TILE.shelf[i % 2]; shelfT[k] = 0; burst((i % LW) * TS + 8, Math.floor(i / LW) * TS + 4, 4, ['#f0d090'], 30, 0.3); } else shelfT[k] = -0.5; } } }
   if (L.storm && !P.dead && P.x > L.storm.x0 - 240 && P.x < L.storm.x1 + 60) { stormT -= dt; if (stormT <= 0) { stormT = 1.4; clouds2.push({ x: L.storm.x1 - 20, y: L.storm.y - 12 - Math.random() * 10, r: 17, life: 14, sleep: true, vx: -36, storm: true }); } }
   for (const c of clouds2) { c.life -= dt; if (c.vx) { c.x += c.vx * dt; if (c.arena && L.arena && (c.x < L.arena.x0 + 10 || c.x > L.arena.x1 - 10)) c.life = 0; if (c.storm && c.x < L.storm.x0 - 20) c.life = 0; }
  if (Math.random() < dt * 12) parts.push({ x: c.x + (Math.random() - 0.5) * c.r * 1.6, y: c.y + (Math.random() - 0.5) * c.r, vx: (Math.random() - 0.5) * 10, vy: -8, life: 0.8, max: 0.8, col: c.sleep ? '#c9a0ff' : '#d8d0c8', size: 1, grav: 0 }); }
@@ -13913,7 +13923,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'capstan') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
       g.save(); g.translate(x, y - 10); g.rotate(pr.turns * 0.5 + (pr.spin > 0 ? Math.sin(time * 20) * 0.12 : 0)); g.drawImage(PROP.reef.capstan, -13, -10); g.restore();
       if (!pr.done) { g.fillStyle = '#c9b27c'; for (let k = 0; k < 3; k++) { g.globalAlpha = k < pr.turns ? 1 : 0.3; g.fillRect(x - 5 + k * 4, y - 24, 3, 3); } g.globalAlpha = 1; } }
-    else if (pr.t === 'sluice') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), pool = (L.pools || []).find(q => q.streetTide), open = pool && pool.drainT > 0;
+    else if (pr.t === 'sluice' && pr.pool === undefined) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), pool = (L.pools || []).find(q => q.streetTide), open = pool && pool.drainT > 0;
       g.fillStyle = '#4a5058'; g.fillRect(x - 7, y - 18, 14, 18); g.fillStyle = '#6f7a84'; g.fillRect(x - 7, y - 18, 14, 2);
       g.fillStyle = open ? '#8fd160' : '#c9463d'; g.fillRect(x - 4, y - 15 + (open ? 6 : 0), 8, 6);
       g.strokeStyle = '#8a6a3a'; g.lineWidth = 2; g.beginPath(); const a = pr.spin > 0 ? time * 18 : 0; g.moveTo(x - 6 * Math.cos(a), y - 20 - 6 * Math.sin(a)); g.lineTo(x + 6 * Math.cos(a), y - 20 + 6 * Math.sin(a)); g.stroke(); }
@@ -15036,14 +15046,14 @@ function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
   text('CONTROLS', VW / 2, y + 6, UI.title, 'center');
-  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN ON A LEDGE', 'DOWN'], ['shrine', 'R (RETURN)', '']];
+  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
   text('keyboard', x + 80, y + 17, '#9aa39a', 'left', 6); text('pad', x + w - 10, y + 17, '#9aa39a', 'right', 6);
-  rows.forEach(([a, b, c], i) => { const yy = y + 26 + i * 9;
+  rows.forEach(([a, b, c], i) => { const yy = y + 23 + i * 8;
     text(a, x + 8, yy, UI.text, 'left', 6); text(b, x + 80, yy, '#c9d1dc', 'left', 6);
     const btn = { A: '#8fd160', B: '#ff6b6b', X: '#5aa0e0', Y: '#ffd36b' }[c];
     if (btn) { g.fillStyle = btn; g.beginPath(); g.arc(x + w - 12, yy + 3, 4, 0, 7); g.fill(); text(c, x + w - 12, yy + 1, '#1b1626', 'center', 6); }
     else text(c, x + w - 8, yy, '#c9d1dc', 'right', 6); });
-  text('ESC back', VW / 2, y + h - 9, UI.dim, 'center', 6);
+  text('ESC back', x + 8, y + 17, UI.dim, 'left', 6);   /* up in the header: at the foot it sat on the last row */
 }
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
