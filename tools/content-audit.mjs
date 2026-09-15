@@ -61,7 +61,7 @@ for (const t of creatures) {
   if (miss.length) say(`${t}: no ${miss.join(', ')}`);
 }
 // the wight is not placed: the bog raises it. The Buried Prince's courtiers are not placed either: he calls them up.
-const SPAWNED_BY_THE_WORLD = new Set(['wight', 'courtier']);
+const SPAWNED_BY_THE_WORLD = new Set(['wight', 'courtier', 'piece']);   /* and a piece of armour is what the armour leaves */
 console.log('== bestiary rows for creatures no level places (they can never be filled in) ==');
 for (const t of beasts) if (!used.ent.has(t) && !SPAWNED_BY_THE_WORLD.has(t)) say(`${t}`);
 
