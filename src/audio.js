@@ -258,6 +258,8 @@ export const SFX = {
   dodge() { noise(0.14, 0.18, 1200, 0.4); tone('triangle', 300, 700, 0.1, 0.06); },
   heavy() { file('slam', 0.55) || (tone('square', 140, 40, 0.22, 0.32), noise(0.16, 0.35, 400), tone('triangle', 900, 1500, 0.1, 0.12, 0.02)); },
   charge() { noise(0.22, 0.1, 700, 0.8); tone('sawtooth', 150, 300, 0.22, 0.08); tone('square', 300, 520, 0.1, 0.05, 0.1); }, // a breath drawn and a weapon coming back, not a lion
+  shieldScrape() { noise(0.26, 0.16, 1300, 0.7); noise(0.2, 0.08, 480, 0.6, 0.04); tone('sawtooth', 95, 70, 0.24, 0.05); }, // the knight's charge: iron feet and a shield rim dragged over the ground as he goes
+  shieldSlam() { tone('sine', 120, 48, 0.2, 0.34); noise(0.1, 0.3, 360, 0.6); tone('triangle', 240, 130, 0.1, 0.14); tone('square', 1300, 820, 0.05, 0.12, 0.012); noise(0.06, 0.14, 3000, 1.1, 0.012); }, // oak driven into a body, and the iron rim ringing after it
   thud() { tone('sine', 110, 46, 0.18, 0.32); tone('triangle', 220, 120, 0.1, 0.12); noise(0.08, 0.18, 320, 0.6); }, // something wooden and heavy meeting the ground
   stone() { file('stone', 0.4); },
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },

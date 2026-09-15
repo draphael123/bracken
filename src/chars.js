@@ -51,11 +51,16 @@ const LEGS = {
 };
 const W = 34, H = 32, BX = 11, BY = 6; // body drawn at (BX,BY); feet bottom at BY+16 = 22
 export const KNIGHT_ANCHOR = { ax: 16, ay: 22 };
+/* THE KITE AT HIS SIDE. The knight's shield only existed in the two frames where he raised it, so the one hero who
+   carries a shield looked like he had none. Lowered it is this: five by eight, the same steel rim, oak face and gold
+   cross as the raised one, small enough that the sword arm crosses in front of it and the helm still reads above it. */
+const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..S..'];
 
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, hy = 0, sho = 0, bits = null }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, hy = 0, sho = 0, bits = null, kite = null }) {
   const [c, g] = canvas(W, H);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
+  if (kite && kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* slung on his back (the ladder): drawn first, so the body covers all but its rim */
   if (!hy && !sho) draw(body, BX + dx, BY + dy);
   else { /* A BREATH IS NOT A BOB. The shoulders come up first - the outermost pixel of each torso row lifts one - and the
        helm has its own offset, so the chest can rise under a head that has not moved yet, and the head can sink after it. */
@@ -64,6 +69,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     if (hy < 0) draw([body[5]], BX + dx, BY + dy + 5);   /* a lifted helm stretches the neck rather than leaving a gap under it */
     draw(body.slice(0, 6), BX + dx, BY + dy + hy); }
   draw(LEGS[legs], BX + dx, BY + 11 + legsDy);
+  if (kite && !kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* on the off arm across his front: under the sword arm, over the tabard */
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
   if (sword) {
     const [x0, y0, x1, y1] = sword.map((v, i) => v + (i & 1 ? dy : dx));
@@ -211,80 +217,88 @@ const breathLag = i => BREATH[(i + BREATH.length - 1) % BREATH.length][0];   /* 
 const flap = (cols, dy, lag, k1, k2) => cols.flatMap(x => { const o = []; for (let y = 11; y <= 12 + lag - dy; y++) o.push([x, y, y === 11 ? k1 : k2]); return o; });
 /* FIDGETS PLAY AT ONE STEP A TENTH: a pose held longer is simply listed more than once */
 const holdFrames = seq => seq.flatMap(([f, n]) => Array(n).fill(f));
-export function bakeKnight(skin = {}) {
+export function bakeKnight(skin = {}, bare = false) {
   KP = Object.assign({}, KP0, skin);
   const sh = [BX + 8, BY + 7]; // shoulder (front)
+  /* EVERY FRAME CARRIES THE SHIELD: lowered on the off arm (KITE), square across his front where a frame raises it, and
+     none at all in the BARE set - drawn while SHIELD THROW has it out of his hand, which is how you see it is gone */
+  const SIDE = { x: 4, y: 6 }, BACK = { x: -3, y: 4, back: true };
+  const KF = o => knightFrame({ ...o, shield: !!o.shield && !bare, kite: bare || o.shield ? null : (o.kite || SIDE) });
   const rest = (d = 0) => [sh[0] + 1, sh[1] + 2 + d, sh[0] + 3, sh[1] + 9 + d];
   const F = {
-    idle: BREATH.map(([dy, hy, sho, plume]) => knightFrame({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 9 - dy] })),   /* the point stays in the turf */
+    idle: BREATH.map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 9 - dy] })),   /* the point stays in the turf */
     // run: body bobs, sword arm pumps
     run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, pump], i) =>
-      knightFrame({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 8], legsDy: 0 })),
+      KF({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 8], legsDy: 0 })),
     jump: [
-      knightFrame({ legs: 'jump', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 1 }),
-      knightFrame({ legs: 'jump2', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 3], plume: 1 }),
+      KF({ legs: 'jump', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 1 }),
+      KF({ legs: 'jump2', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 3], plume: 1 }),
     ],
     fall: [
-      knightFrame({ legs: 'fall', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 2 }),
-      knightFrame({ legs: 'fall2', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 4, sh[1] - 5], plume: 2 }),
+      KF({ legs: 'fall', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 2 }),
+      KF({ legs: 'fall2', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 4, sh[1] - 5], plume: 2 }),
     ],
     // LANDING is two beats: the knees take it, then he stands up out of it
-    land: [knightFrame({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }), knightFrame({ legs: 'stand', dy: 1, sword: rest(1), plume: 1 })],
+    land: [KF({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }), KF({ legs: 'stand', dy: 1, sword: rest(1), plume: 1 })],
     // THE TOP OF THE JUMP: legs tucked, the blade lifted, the plume settling - the one frame where he hangs
-    apex: knightFrame({ legs: 'jump2', dy: -1, sword: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 5], plume: 0 }),
+    apex: KF({ legs: 'jump2', dy: -1, sword: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 5], plume: 0 }),
     // A SKID: turning at a run, heels dug in and leaning back against his own speed, the blade trailing
-    skid: knightFrame({ dx: -2, legs: 'wide', sword: [sh[0] - 1, sh[1] + 3, sh[0] - 6, sh[1] + 8], plume: 2 }),
+    skid: KF({ dx: -2, legs: 'wide', sword: [sh[0] - 1, sh[1] + 3, sh[0] - 6, sh[1] + 8], plume: 2 }),
     climb: [
-      knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 0 }),
-      knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 1 }),
+      KF({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 0, kite: BACK }),
+      KF({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 1, kite: BACK }),
     ],
     atk: [
       // 0 anticipation: sword drawn back over the shoulder, body leans away
-      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], sword: [sh[0] - 1, sh[1] - 4, sh[0] - 7, sh[1] - 10], plume: 1 }),
+      KF({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], sword: [sh[0] - 1, sh[1] - 4, sh[0] - 7, sh[1] - 10], plume: 1 }),
       // 1 swing: blade straight out, body lunges
-      knightFrame({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 2 }),
+      KF({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 2 }),
       // 2 extended: blade angled down-forward, weight forward
-      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], sword: [sh[0] + 3, sh[1] + 3, sh[0] + 11, sh[1] + 8], plume: 2 }),
+      KF({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], sword: [sh[0] + 3, sh[1] + 3, sh[0] + 11, sh[1] + 8], plume: 2 }),
       // 3 recover: blade low
-      knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], sword: [sh[0] + 2, sh[1] + 4, sh[0] + 6, sh[1] + 11], plume: 0 }),
+      KF({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], sword: [sh[0] + 2, sh[1] + 4, sh[0] + 6, sh[1] + 11], plume: 0 }),
       // 4 settle
-      knightFrame({ legs: 'stand', sword: rest(), plume: 0 }),
+      KF({ legs: 'stand', sword: rest(), plume: 0 }),
     ],
-    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], sword: [sh[0] - 1, sh[1] + 5, sh[0] - 1, sh[1] + 17], plume: 1 }),
-    // HOLD THE SWING: it goes up over his head, and then it comes down through whatever is in front of him
-    heavy: [
-      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 5], sword: [sh[0] - 2, sh[1] - 5, sh[0] + 1, sh[1] - 19], plume: 2 }),
-      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], sword: [sh[0] + 4, sh[1] - 1, sh[0] + 15, sh[1] + 5], plume: 2 }),
-      knightFrame({ dx: 3, legs: 'wide', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], sword: [sh[0] + 3, sh[1] + 4, sh[0] + 11, sh[1] + 15], plume: 0 }),
-    ],
+    plunge: KF({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], sword: [sh[0] - 1, sh[1] + 5, sh[0] - 1, sh[1] + 17], plume: 1 }),
+    // THE SHIELD CHARGE (his held swing): braced square behind the shield while it winds, heels down and the blade kept back;
+    // driven in behind it, leaning, the sword trailing; the slam, a white edge where the oak meets the body; and the shield let down
+    brace: KF({ dx: -1, dy: 1, legs: 'wide', shield: true, sword: [sh[0] - 5, sh[1] + 2, sh[0] - 11, sh[1] + 6], plume: 2 }),
+    rush: [KF({ dx: 2, legs: 'run1', shield: true, sword: [sh[0] - 3, sh[1] + 3, sh[0] - 9, sh[1] + 7], plume: 2 }),
+      KF({ dx: 2, dy: -1, legs: 'run4', shield: true, sword: [sh[0] - 3, sh[1] + 2, sh[0] - 9, sh[1] + 6], plume: 1 })],
+    bash: KF({ dx: 4, legs: 'wide', shield: true, sword: [sh[0] - 2, sh[1] + 3, sh[0] - 8, sh[1] + 8], plume: 2, bits: [[17, 3, '#fff6e0'], [17, 6, '#ffffff'], [17, 9, '#fff6e0'], [18, 6, '#fff6e0']] }),
+    recover: KF({ dx: 1, dy: 1, legs: 'stand', sword: rest(1), plume: 0 }),
     // HURT is two beats too: the blow snaps him back, then he folds over it
-    hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
-      knightFrame({ dx: -2, dy: 2, legs: 'land', sword: [sh[0], sh[1] + 3, sh[0] + 4, sh[1] + 9], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', sword: rest(3) }),
+    hurt: [KF({ dx: -1, dy: 1, legs: 'fall', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
+      KF({ dx: -2, dy: 2, legs: 'land', sword: [sh[0], sh[1] + 3, sh[0] + 4, sh[1] + 9], plume: 1 })],
+    crouch: KF({ dy: 3, legs: 'crouch', sword: rest(3) }),
     block: [
-      knightFrame({ legs: 'wide', shield: true, sword: [sh[0] - 4, sh[1] + 3, sh[0] - 6, sh[1] + 10] }),
-      knightFrame({ legs: 'wide', dy: 1, shield: true, sword: [sh[0] - 4, sh[1] + 4, sh[0] - 6, sh[1] + 11] }),
+      KF({ legs: 'wide', shield: true, sword: [sh[0] - 4, sh[1] + 3, sh[0] - 6, sh[1] + 10] }),
+      KF({ legs: 'wide', dy: 1, shield: true, sword: [sh[0] - 4, sh[1] + 4, sh[0] - 6, sh[1] + 11] }),
     ],
   };
-  const tuck = knightFrame({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
+  F.heavy = [F.brace, F.bash, F.recover];   /* (the name the draw and the other heroes use for a held swing) */
+  const tuck = KF({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
-  { const arcs = comboArcs(sh, 'sword', 12); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the backhand and the thrust */
+  { const arcs = comboArcs(sh, 'sword', 12, bare ? {} : { kite: SIDE }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the backhand and the thrust */
   /* HIS FIDGET: the blade up before his face, the light run down it from hilt to point while he bends to look, a turn of
      it to see the other edge, and it falls back into the turf with a little weight on the end */
   { const up = (tx = 0) => ({ arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], sword: [sh[0] + 3, sh[1] - 1, sh[0] + 3 + tx, sh[1] - 11] });
     const gl = (y, big) => [[11, y, '#ffffff'], [12, y, '#ffffff'], [13, y, '#fff6c8'], ...(big ? [[10, y, '#dfe8ff'], [11, y - 1, '#dfe8ff'], [11, y + 1, '#dfe8ff'], [14, y, '#dfe8ff']] : [])];   /* white on a pale blade is invisible: the light spills off the edge */
-    const lift = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], sword: [sh[0] + 2, sh[1] + 1, sh[0] + 7, sh[1] - 7], plume: 1 });
-    const a = knightFrame({ ...up(), plume: 2 }), b = knightFrame({ ...up(), hy: 1, bits: gl(4), plume: 1 }), c = knightFrame({ ...up(), hy: 1, bits: gl(1), plume: 0 });
-    const d = knightFrame({ ...up(), hy: 1, bits: gl(-2, true), plume: 0 }), turn = knightFrame({ ...up(2), hy: 1, plume: 0 }), back = knightFrame({ ...up(-1), plume: 1 });
-    const drop = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], sword: [sh[0] + 2, sh[1] + 2, sh[0] + 9, sh[1] + 6], plume: 2 });
-    const thud = knightFrame({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 8], plume: 2 });
+    const lift = KF({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], sword: [sh[0] + 2, sh[1] + 1, sh[0] + 7, sh[1] - 7], plume: 1 });
+    const a = KF({ ...up(), plume: 2 }), b = KF({ ...up(), hy: 1, bits: gl(4), plume: 1 }), c = KF({ ...up(), hy: 1, bits: gl(1), plume: 0 });
+    const d = KF({ ...up(), hy: 1, bits: gl(-2, true), plume: 0 }), turn = KF({ ...up(2), hy: 1, plume: 0 }), back = KF({ ...up(-1), plume: 1 });
+    const drop = KF({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], sword: [sh[0] + 2, sh[1] + 2, sh[0] + 9, sh[1] + 6], plume: 2 });
+    const thud = KF({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 8], plume: 2 });
     F.fidget = holdFrames([[lift, 2], [a, 2], [b, 2], [c, 2], [d, 3], [turn, 3], [back, 2], [drop, 2], [thud, 2], [F.idle[7], 2]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  if (!bare) set.bare = bakeKnight(skin, true);   /* (the recursion sets KP from the same skin, so both sets wear it) */
+  return set;
 }
 
 // ---------- enemies ----------
