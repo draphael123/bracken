@@ -319,6 +319,19 @@ function audibleEnd(b) {
   for (let c = 0; c < b.numberOfChannels; c++) { const d = b.getChannelData(c); let i = n - 1; while (i > last && Math.abs(d[i]) < 0.001) i--; last = Math.max(last, i); }
   return (n - 1 - last) / b.sampleRate > 0.5 ? (last + 1) / b.sampleRate : b.duration;
 }
+// THE SEAM. Copies butted end to start click wherever a file's last sample and its first do not meet (theme3
+// jumped 0.38 of full scale, and five more tracks the same). So every copy fades out over its last LOOP_XF, the
+// next starts that much early and fades in under it: an equal-power crossfade, one mechanism for every track.
+// Each pass comes round 30 ms sooner than the file's length, which no ear can place.
+export const LOOP_XF = 0.03;
+const XF_IN = Float32Array.from({ length: 16 }, (_, i) => Math.sin(i / 15 * Math.PI / 2)), XF_OUT = XF_IN.slice().reverse();
+export function loopCopy(ctx, b, len, dest, at, first) {
+  const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; s.connect(g); g.connect(dest);
+  if (!first) g.gain.setValueCurveAtTime(XF_IN, at, LOOP_XF);   // the first copy comes in on the track's own fade
+  g.gain.setValueCurveAtTime(XF_OUT, at + len - LOOP_XF, LOOP_XF);
+  s.start(at, 0, len); s.addEventListener('ended', () => { try { g.disconnect(); } catch {} });
+  return s;
+}
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
 const TRACK_GAIN = { hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
@@ -328,14 +341,14 @@ function playFile(name) {
   currentTrack = name;
   const tg = ac.createGain(); tg.gain.value = 0.001; tg.connect(musicGain); trackG = tg; tg.gain.setTargetAtTime(TRACK_GAIN[name] || 1, ac.currentTime + 0.02, 0.28);
   const gen = musicGen, b = trackBuf[name], len = trackEnd[name] || b.duration; let at = ac.currentTime + 0.03;
-  const chain = () => {
+  const chain = first => {
     if (gen !== musicGen || currentTrack !== name) return;
-    const s = ac.createBufferSource(); s.buffer = b; s.connect(tg); s.start(at, 0, len); musicSrcs.push(s); musicSrc = s;
+    const s = loopCopy(ac, b, len, tg, at, first); musicSrcs.push(s); musicSrc = s;
     s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
-    const startAt = at; at += len;
-    musicTimer = setTimeout(chain, Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
+    const startAt = at; at += len - LOOP_XF;   // the next copy comes in under the last LOOP_XF of this one
+    musicTimer = setTimeout(() => chain(false), Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
   };
-  chain();
+  chain(true);
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
 export const music = {
