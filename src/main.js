@@ -12397,7 +12397,10 @@ function drawTiny(str, x, y, col) {
     g.drawImage(f, k * A.adv, 0, A.w, A.h, x + i * A.adv, y, A.w, A.h); }
 }
 
+/* THE TEXT RECORDER, for tools/textfit.mjs: while window.__textRec is an array every text(), fitText() cut and wrap() lands in it with its call site */
+const textRec = (kind, o) => { const r = window.__textRec; if (!r || r.length > 20000) return; const st = (new Error().stack || '').split('\n').slice(3, 6).map(l => (l.match(/\/src\/(\w+\.js):(\d+)/) || []).slice(1).join(':')).filter(Boolean); r.push(Object.assign({ kind, at: st[0] || '', via: st.slice(1).join(' < '), VW, VH }, o)); };
 function text(s, x, y, col, align = 'left', size = 8) {
+  if (window.__textRec) { const tiny = tinyOK(s, size) && SET.font === 'press', w = textW(String(s), size) - (tiny ? 1 : 0), x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x; textRec('text', { s: String(s), x0: Math.round(x0), y0: Math.round(y), w: Math.round(w), h: tiny ? 5 : Math.round(size * fontNow().sc), size, tiny, align, alpha: g.globalAlpha }); }
   if (col === undefined) col = SET.ink === 'parchment' ? '#fff6e0' : inkNow();
   if (tinyOK(s, size) && SET.font === 'press') {
     const w = s.length * ART.TINY.adv - 1, px0 = Math.round(align === 'center' ? x - w / 2 : align === 'right' ? x - w : x), py0 = Math.round(y);
@@ -12408,11 +12411,12 @@ function text(s, x, y, col, align = 'left', size = 8) {
 }
 function textW(s, size = 8) { if (tinyOK(s, size) && SET.font === 'press') return s.length * ART.TINY.adv;
   const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; return g.measureText(s).width; }
-function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); return t; }
+function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); if (window.__textRec) textRec('cut', { s, out: t, maxW, size }); return t; }
 function wrap(s, maxW, size = 8) { const words = s.split(' '), lines = []; let cur = ''; { const f = fontNow(); g.font = Math.round(size * f.sc) + 'px ' + f.fam; }
   /* MEASURE WHAT IS DRAWN: small capitals go out in the tiny pixel face at its own advance, and measuring them in the canvas font let a long hint run off both sides of its box */
   const wide = t => tinyOK(t, size) && SET.font === 'press' ? t.length * ART.TINY.adv - 1 : g.measureText(t).width;
-  for (const w of words) { const t = cur ? cur + ' ' + w : w; if (wide(t) > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
+  for (const w of words) { const t = cur ? cur + ' ' + w : w; if (wide(t) > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur);
+  if (window.__textRec) textRec('wrap', { s, maxW, size, lines: lines.slice(), widest: Math.max(0, ...lines.map(wide)) }); return lines; }
 function pickFrame(set, key, frame, face) {
   const dir = face < 0 ? 'L' : 'R'; let c = key == null ? set[dir] : set[dir][key]; if (Array.isArray(c)) c = c[((frame % c.length) + c.length) % c.length]; return c;
 }
@@ -14515,6 +14519,7 @@ function bakeBoard(w, h, col, plate, light) {
   return c;
 }
 function board(x, y, w, h, col = UI.border, plate = UI.plate || 'rgba(20,16,30,0.92)', light = false) {
+  if (window.__textRec) textRec('rect', { m: 'board', x0: x, y0: y, w, h });   /* a board is a plate too, whatever it is drawn with */
   w = Math.max(12, Math.round(w)); h = Math.max(12, Math.round(h));
   const k = w + 'x' + h + col + plate + light; let c = BOARDS.get(k);
   if (!c) { if (BOARDS.size > 64) BOARDS.clear(); c = bakeBoard(w, h, col, plate, light); BOARDS.set(k, c); }
@@ -15321,7 +15326,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 loadLevel(0);
 document.getElementById('boot').remove();
 window.BK = { noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
-  P, god: false, keys, SET, PROG, SPR, get view() { return { x: camX, y: camY, buf, VW, VH }; }, /* the camera and the unscaled frame, for crops in tests */
+  P, god: false, keys, SET, PROG, SPR, get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   tileSpr: () => tileSpr, resolve: () => resolveTiles(),
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
@@ -15353,6 +15358,12 @@ window.BK = { noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* t
       else if (pr.t === 'seabell') out.push({ what: 'seabell', c: PROP.reef.shipBell, x: x - 8, y: y - 18, stand: true }); }
     return out; },
   async floatLab(o) { const m = await import('./floatlab.js'); return m.floatLab(window.BK, o || {}); },
+  async lookPass(o) { const m = await import('./lookpass.js'); return m.lookPass(window.BK, o || {}); },   /* readability by the pixels: tools/lookpass.mjs */
+  /* THE TEXT LAB, for tools/textfit.mjs and the popup count: the words the player is handed, and a way to put each one on screen */
+  textLab: { nums: () => nums, hint(m, t) { hintT = t === undefined ? 4.5 : t; hintMsg = m; }, talk(lines, name) { openTalk({ lines, name: name || null, who: null }); }, get talking() { return talk; },
+    talkers: () => [...signs.map(s => ({ kind: 'sign', x: Math.floor(s.x / TS), y: Math.floor(s.y / TS), lines: [s.text], name: null })),
+      ...props.filter(p => p.t === 'npc').map(p => { let lines = []; try { lines = NPC_LINES(p); } catch (e) { lines = ['(NPC_LINES threw: ' + e.message + ')']; } return { kind: 'npc:' + p.kind, x: Math.floor(p.x / TS), y: Math.floor(p.y / TS), lines, name: p.name || NPC_NAME[p.kind] || null }; })],
+    bossTitle: b => bossTitle(b), miniName: () => miniName(), beasts: () => BEASTS },
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },   /* the Hurricane's sea state, for the harness */
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
