@@ -4612,7 +4612,7 @@ function updatePlayer(dt) {
     if (was > 0 && P.cds[k] <= 0) { P.skReady = P.skReady || {}; P.skReady[k] = 1; SFX.ui && SFX.ui(); } } // a skill coming back says so
   if (P.skReady) for (const k in P.skReady) P.skReady[k] = Math.max(0, P.skReady[k] - dt * 1.6);
   hushT = Math.max(0, hushT - dt);
-  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'coyote', 'jbuf', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
+  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
@@ -4859,6 +4859,11 @@ function updatePlayer(dt) {
       if (P.onMover && P.onMover.dx) { const carry = P.onMover.dx * 60; P.vx += Math.max(-190, Math.min(190, carry)); if (Math.abs(carry) > 60) streaks(P.x, P.y - 10, -Math.sign(carry), ['#fff6e0', '#c9d1dc'], 80); }
       P.onMover = null; P.canCut = true; P.jumpT = time; SFX.pJump(); dust(P.x, P.y, 3); squash(0.8, 1.2, 0.1); }
   }
+  /* THE GRACE IS COUNTED AFTER IT IS ASKED FOR. Coyote time and the jump buffer used to tick down with every other timer at the
+     top of this function, before the jump above had read them, so each lost a frame: the 0.12 s buffer held six frames, not
+     seven, and the coyote step only reached its sixth frame on a remainder of 1e-17. They are read, then spent; a remainder
+     under a thousandth of a frame is nothing, not one more frame (tools/audit-input.mjs: coyote 6, buffer 7). */
+  for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !rushing()) {
