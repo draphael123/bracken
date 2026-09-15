@@ -3210,7 +3210,7 @@ function reflectSeed(s) { s.dead = false; s.reflected = true; s.g = 0; s.life = 
   SFX.parry(); streaks(s.x, s.y, 5, ['#fff6e0', '#c9d1dc'], 120); }
 function phoenixBurst() { SFX.pyreBoom(); shakeCam(8); zoomKick(1.1, 0.3); ringAt(P.x, P.y - 10, 50, '#ff6b2c', 0.5); flame(P.x, P.y - 10, 24, 14, 110, 4); smoke(P.x, P.y - 10, 6, 10);
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 64 && Math.abs(e.y - P.y) < 50) { hurtEnemy(e, 20, P.x, false); e.burn = Math.max(e.burn || 0, 2); } }
-function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false } = {}) {
+function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null } = {}) {   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (P.relic === 'banner') dmg = Math.max(1, Math.round(dmg * 0.8)); // the Queen's banner: they pull their blows
   if (!P.dead && P.dodge > 0 && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; P.st = Math.min(P.maxSt, P.st + 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
@@ -3321,7 +3321,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (P.hp < P.maxHp * 0.25 && (PROG.tonics || 0) > 0) { PROG.tonics--; P.hp = Math.min(P.maxHp, Math.max(0, P.hp) + 45); SFX.mend(); motes(P.x, P.y - 10, 12, 8, ['#ff9a9a', '#ffd0d0', '#fff6e0']); ringAt(P.x, P.y - 10, 16, '#ff9a9a', 0.35); saveProgress(); } // a RED TONIC, drunk at once
   if (isPaladin() && tal('martyr') && !P.martyrUsed && P.hp > 0 && P.hp < P.maxHp * 0.25) { P.martyrUsed = true; P.light = 99; gainLight(1); motes(P.x, P.y - 12, 14, 10); }
   if (P.hp > 0) crowdJeer(false);
-  if (P.hp <= 0) die();
+  if (P.hp <= 0) die(killerOf(fromX, { unblockable, pierce, who, blow, name }));   /* written down at the blow, while the thing that threw it is still there to be named */
   return 'hit';
 }
 /* BACK TO THE SHRINE (R, and the pause menu): the hero is put back at the last shrine as a respawn puts him - full health,
@@ -3333,8 +3333,29 @@ function returnToShrine() {
   burst(P.x, P.y - 12, 12, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.6); number(P.x, P.y - 34, 'BACK TO THE SHRINE', '#ffd36b');
   return true;
 }
-function die() {
+/* WHAT JUST HAPPENED. A death used to be a fade and a respawn, and the question every playtester asked was "what hit me?". The blow
+   is written down at the damage site (die(killer), from damagePlayer0 and the fall, the water and the fire): the creature's bestiary
+   name, the name of the blow where it has one, and the mark's colour with its rule - the same promise as the ! and the !! over its
+   head (tools/tells.mjs): yellow, the shield turns it; red, no shield does; a piercing bolt, only a parry. The line is drawn under the
+   dimmed screen while the hero lies there (drawHud), and on the Iron Knight's plate. It is never blank: with nothing to name the blow it
+   falls back to the creature's name alone, and with no creature in reach to A TRAP. */
+const NOT_A_BLOW = new Set(['walk', 'rest', 'guard', 'idle', 'sleep', 'wake', 'stalk', 'swim', 'fly', 'hover', 'flee', 'hide', 'stunned', 'mired', 'reel', 'downed', 'rise', 'dead', 'ride', 'dying', 'held', 'wait', 'watch', 'patrol', 'circle', 'perch', 'land', 'sit', 'stand', 'turn', 'back', 'retreat', 'approach', 'chase', 'run', 'jump', 'fall', 'hop', 'climb', 'float', 'drift', 'sink', 'open', 'closed', 'tell', 'wind', 'raise', 'aim', 'draw', 'crouch', 'seek', 'go', 'toRack', 'swap', 'winded', 'dazed', 'stuck', 'tangled', 'fouled', 'beach', 'lurk', 'buried', 'vanish', 'appear', 'blink', 'listen', 'shadow', 'gone', 'thaw', 'crack', 'stagger', 'counter', 'drink', 'still', 'hopAway', 'up', 'down', 'off', 'on', 'none']);
+function blowWord(e) { const m = e && e.mode; if (typeof m !== 'string' || !m) return null; const w = m.replace(/Tell$/, '').replace(/[0-9]+$/, ''); if (w.length < 3 || NOT_A_BLOW.has(w)) return null; return 'THE ' + w.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase(); }
+function beastName(e) { if (!e) return null; if (BEAST_SHORT[e.t]) return BEAST_SHORT[e.t]; const row = BEASTS.find(q => q.t === e.t); return row ? row.name : String(e.t || 'beast').toUpperCase(); }
+function killerOf(fromX, o = {}) {
+  if (o.name) return { name: o.name, red: false, rule: '' };   /* a hazard names itself, and has no mark */
+  let e = o.who && o.who.alive ? o.who : nearFoe(fromX);
+  if (!e) { let bd = 260; for (const q of enemies) if (q.alive && !q.harmless) { const d = Math.abs(q.x - fromX) + Math.abs(q.y - P.y) * 0.5; if (d < bd) { bd = d; e = q; } } }   /* a shooter is not near the arrow */
+  if (!e) return { name: 'A TRAP', red: false, rule: '' };
+  const blow = o.blow || blowWord(e), red = !!o.unblockable;
+  return { name: beastName(e) + (blow ? '   ' + blow : ''), red, rule: red ? 'DODGE IT' : o.pierce ? 'PARRY IT' : 'THE SHIELD TURNS IT' };
+}
+/* THE LINE ITSELF, sized to the screen: the whole thing at 6px if it fits, else without the blow's name, else the name alone */
+function killerLine(k) { const mark = !k.rule ? '' : '   ' + (k.red ? (SET.colorSafe ? 'BLUE' : 'RED') : 'YELLOW') + ': ' + k.rule;
+  for (const s of [k.name + mark, k.name.split('   ')[0] + mark, k.name.split('   ')[0]]) if (inkW(s, 6) <= VW - 8) return s; return k.name.split('   ')[0]; }
+function die(killer) {
   if (P.dead) return;
+  P.killer = killer || null;
   P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9);
 }
@@ -4740,7 +4761,7 @@ function updatePlayer(dt) {
     else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
       if (P.breath <= 0) { P.breath = 0; P.drownT = (P.drownT || 0) - dt;
         if (Math.random() < dt * 26) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - 14, vx: 0, vy: -50, life: 0.5, max: 0.5, col: '#e8f4f0', size: 1, grav: -40 });
-        if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true, noKnock: true }); } } }
+        if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true, noKnock: true, name: 'DROWNED' }); } } }
     else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
   } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4); P.drownT = 0; }
   snareTick(dt);
@@ -4844,9 +4865,9 @@ function updatePlayer(dt) {
 
   const pb = box(P);
   for (let ty = Math.floor(pb.t / TS); ty <= Math.floor((pb.b - 1) / TS); ty++) for (let tx = Math.floor(pb.l / TS); tx <= Math.floor((pb.r - 1) / TS); tx++) {
-    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6) damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true });
+    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6) damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true, name: 'THE SPIKES' });
   }
-  if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die(); P.dead = 0.6; } }
+  if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die({ name: 'THE FALL', red: false, rule: '' }); P.dead = 0.6; } }
   /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
      killed everyone who walked into the Pit Warden's arena a hundred and ten rows under it. Below the pool's own
      floor (its bottom, or the first rock under its surface) you are not in it. */
@@ -4857,7 +4878,7 @@ function updatePlayer(dt) {
     else { burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
     if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
-    else { die(); P.dead = 0.8; }
+    else { die({ name: p.fire ? 'THE FIRE' : 'DROWNED', red: false, rule: '' }); P.dead = 0.8; }
     break;
   }
   if (P.ground && !P.onMover && !P.dead && !(L.pools || []).some(p => !p.shallow && P.x > p.x0 - 12 && P.x < p.x1 + 12)) P.safe = { x: P.x, y: P.y, L };   /* the last dry footing, for the water above */
@@ -4943,7 +4964,7 @@ function updatePlayer(dt) {
       hurtEnemy(e, P.relic === 'crown' ? plungeDmg() : 10, P.x, true); P.vy = keys.jump ? -290 : -220; SFX.pPogo(); squash(0.8, 1.25, 0.1); continue;
     }
     if (e.t === 'sprig' || e.t === 'shield' || e.t === 'cutlass' || e.t === 'boarder' || e.t === 'marine' || e.t === 'bosun' || e.t === 'lookout' || e.t === 'quarter' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler' || e.t === 'sailor' || e.t === 'netter' || e.t === 'angler' || e.t === 'petrel' || e.t === 'reefmaw' || e.t === 'turtle' || e.t === 'eel' || e.t === 'heronfoe' || e.t === 'crab' || e.t === 'scout' || e.t === 'siren' || e.t === 'tideguard' || e.t === 'herald' || e.t === 'dummy' || e.t === 'brute' || e.t === 'chief' || e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk' || e.t === 'king' || e.t === 'bearer' || e.t === 'pike' || e.t === 'master' || e.t === 'thief' || e.t === 'ram' || e.t === 'goat' || e.t === 'harpy' || e.t === 'troll' || e.t === 'greathound' || e.t === 'spider' || e.t === 'owl' || e.t === 'miner' || e.t === 'bat' || e.t === 'propman' || e.t === 'prince' || e.t === 'courtier' || e.t === 'drownedking' || e.t === 'swornsword' || e.t === 'hedgeknight' || e.t === 'crossbow' || e.t === 'closedhelm' || e.t === 'lancer' || e.t === 'drunk' || e.t === 'holdfast' || e.t === 'forgemaster' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'gqueen' || e.t === 'scarecrow' || e.t === 'farmhand' || e.t === 'pumpkin' || e.t === 'haunt' || e.t === 'ploughman' || e.t === 'strawking' || (e.big && e.t !== 'sailer') || (e.t === 'bale' && Math.abs(e.vx) < 40)) continue; // their damage comes from their attacks, not from touching them
-    const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12));
+    const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12), { who: e });
     if (res === 'blocked') {
       if (e.t === 'sapper' && e.fleeT <= 0) { bombs.push({ x: e.x, y: e.y - 4, vx: -Math.sign(P.x - e.x) * 20, vy: -40, fuse: 0.45 }); e.fleeT = 0; e.stagger = 0.7; e.vx = 0; number(e.x, e.y - 18, 'DROPPED IT', '#ffd36b'); }
       if (e.t === 'queen') { if (e.mode === 'dive' || e.mode === 'sweep') queenWinded(e, true); }
@@ -4956,7 +4977,7 @@ function updatePlayer(dt) {
     else { const res = damagePlayer(s.x, s.boot ? DMG.capHook : s.reel ? DMG.weaverReel : s.flail ? DMG.strikerChain : DMG.drownChain);
       if (res !== 'blocked' && s.from && s.from.alive) { P.vx = Math.sign(s.from.x - P.x) * 380; P.vy = -60; P.ground = false; number(P.x, P.y - 30, 'HAULED IN', '#ff6b6b'); SFX.ropeHaul();
         if (s.boot) { P.hauled = { who: s.from, t: 0.45 }; } } } }
-  for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 })) { s.dead = true; if (s.net) { const res = damagePlayer(s.x, DMG.netterNet); if (res !== 'blocked') { P.snare = Math.max(P.snare || 0, 1.6); number(P.x, P.y - 26, 'NETTED', '#c9b27c'); burst(s.x, s.y, 10, ['#c9b27c', '#8a7a54'], 50, 0.6, 40, 2); SFX.thud(); } continue; } if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } const sres = damagePlayer(s.x - s.vx * 0.1, s.drunkLob ? s.dmg : s.rubble ? DMG.wardenRubble : s.mawSpit ? DMG.mawSpit : s.timber ? DMG.propTimber : s.weight ? DMG.tollWeight : s.shot ? (s.dmg || DMG.quarterShot) : s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? DMG.bolt : s.jav ? DMG.lanceJav : s.granStick ? DMG.granStick : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.soot ? DMG.sweep : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed, { unblockable: !!(s.noBlock || s.unblockable), pierce: !!s.pierce });   /* a pistol ball marked unblockable is: the Captain's and the Quartermaster's !! shots were being turned on the shield */ if (sres === 'blocked' && s.bolt) returnBolt(s); else if (sres === 'blocked' && ((P.block && tal('bulwark')) || (P.aegis && tal('reflect')))) reflectSeed(s); }
+  for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 })) { s.dead = true; if (s.net) { const res = damagePlayer(s.x, DMG.netterNet); if (res !== 'blocked') { P.snare = Math.max(P.snare || 0, 1.6); number(P.x, P.y - 26, 'NETTED', '#c9b27c'); burst(s.x, s.y, 10, ['#c9b27c', '#8a7a54'], 50, 0.6, 40, 2); SFX.thud(); } continue; } if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } const sres = damagePlayer(s.x - s.vx * 0.1, s.drunkLob ? s.dmg : s.rubble ? DMG.wardenRubble : s.mawSpit ? DMG.mawSpit : s.timber ? DMG.propTimber : s.weight ? DMG.tollWeight : s.shot ? (s.dmg || DMG.quarterShot) : s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? DMG.bolt : s.jav ? DMG.lanceJav : s.granStick ? DMG.granStick : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.soot ? DMG.sweep : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed, { unblockable: !!(s.noBlock || s.unblockable), pierce: !!s.pierce, who: s.owner || s.from || null, blow: s.arrow ? 'THE ARROW' : s.jav ? 'THE JAVELIN' : s.bolt ? 'THE BOLT' : s.shot ? 'THE SHOT' : s.skull ? 'THE SKULL' : s.lantern ? 'THE LANTERN' : s.goblet ? 'THE GOBLET' : null });   /* a pistol ball marked unblockable is: the Captain's and the Quartermaster's !! shots were being turned on the shield */ if (sres === 'blocked' && s.bolt) returnBolt(s); else if (sres === 'blocked' && ((P.block && tal('bulwark')) || (P.aegis && tal('reflect')))) reflectSeed(s); }
   if (tongue && tongue.active && !P.dead && Math.abs(P.y - 8 - tongue.y) < 9 && ((tongue.dir > 0 && P.x > tongue.x0 && P.x < tongue.x0 + tongue.len) || (tongue.dir < 0 && P.x < tongue.x0 && P.x > tongue.x0 - tongue.len))) { const res = damagePlayer(tongue.x0, DMG.tongue); if (res === 'blocked') { tongue.active = false; boss.mode = 'dazed'; boss.modeT = 1.3; number(boss.x, boss.y - 24, 'BITTEN TONGUE', '#8fd160'); SFX.tongue(); } else if (res === 'hit') { P.vx = tongue.dir * -160; tongue.active = false; } }
   if ((P.relic === 'charm' || PROG.charm === 'lucky') && !P.dead) for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 70 && Math.abs(a.y - P.y) < 50) { a.x += (P.x - a.x) * Math.min(1, dt * 6); a.y += ((P.y - 8) - a.y) * Math.min(1, dt * 6); }
   for (const p of (L.pools || [])) if (p.flow && p.swim && !p.dry) { // the current takes whatever is loose in it
@@ -9148,7 +9169,7 @@ function updateRoadman(e, dt) {
         break;
       case 'leap': want = e.vx;
         if (e.vy >= 0 && e.ground) { e.mode = 'rest'; e.modeT = 0.9; e.cd = 1.4; e.leapT = L.trial ? 2 + Math.random() : 5 + Math.random() * 3; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 10);
-          if (!P.dead && ad < 26 && dy < 24 && P.ground) { const res = damagePlayer(e.x, DMG.hedgeLeap, { unblockable: true, up: true }); if (L.trial && res === false && P.dodge > 0) trialEvent('tellR'); }
+          if (!P.dead && ad < 26 && dy < 24 && P.ground) { const res = damagePlayer(e.x, DMG.hedgeLeap, { unblockable: true, up: true, blow: 'THE LEAP' }); if (L.trial && res === false && P.dodge > 0) trialEvent('tellR'); }   /* (blow: he has already landed in 'rest' when it hits, so the line names it by hand) */
           else if (L.trial && !P.dead && ad < 110 && (Math.abs(P.x - (e.leapPX ?? P.x)) > 18 || !P.ground || P.dodge > 0)) trialEvent('tellR'); }   /* the red one, and you moved out from under it */
         break;
       case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.stagger = 0; } break;
@@ -11023,7 +11044,7 @@ function updateRocks(dt) {
   for (const r of rocks) { r.vy = Math.min(420, r.vy + 700 * dt); r.y += r.vy * dt; r.x += (r.vx || 0) * dt; r.t += dt;
     const tx = Math.floor(r.x / TS), ty = Math.floor((r.y + 1) / TS), t = tileAt(tx, ty);
     if (t === T.SOLID || (isOneWay(t) && r.vy > 0 && (r.y % TS) < 7) || r.y > LH * TS) { r.dead = true; shatterRock(r); continue; }
-    if (!P.dead && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock }); shatterRock(r); continue; }
+    if (!P.dead && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock, name: r.hammerRock ? 'THE HAMMER' : 'THE ROCKFALL' }); shatterRock(r); continue; }
     for (const e of enemies) if (e.alive && e.t !== 'ram' && e.t !== 'harpy' && !(e.t === 'troll' && r.thrown) && !e.harmless && Math.abs(e.x - r.x) < 9 && e.y > r.y - 4 && e.y - e.h < r.y + 6) { r.dead = true; hurtEnemy(e, 15, r.x, false); shatterRock(r); break; }
   }
   rocks = rocks.filter(r => !r.dead);
@@ -11650,7 +11671,7 @@ function updateCastleProps(dt, hb) {
           if (e.t === 'lance' && e.alive) { e.mode = 'reel'; e.modeT = 2.6; e.stagger = 2.6; e.vx = 0; number(e.x, e.y - e.h - 16, 'THE CAGE COMES DOWN ON HIM', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // knocked flat first, so his plate is no use to him
           if (e.hill && pr.crane) { e.mode = 'pinned'; e.modeT = e.phase === 2 ? 2.6 : 3.2; e.stagger = e.modeT; e.vx = 0; e.stone = null; e.pins = (e.pins || 0) + 1; SFX.golemShatter(); shakeCam(8); zoomKick(1.1, 0.3); ringAt(e.x, e.y - 16, 30, '#8fd160', 0.4); }   /* THE HILL TROLL, PINNED */
           hurtEnemy(e, e.maxHp ? (pr.lamp ? (e.t === 'lance' ? 60 : 36) : 30) : 999, pr.x, true); }
-        if (!P.dead && Math.abs(P.x - pr.x) < 10 && pr.fy > P.y - 16 && pr.fy < P.y + 2 && !pr.hitP) { pr.hitP = true; damagePlayer(pr.x, DMG.crush, { up: true, unblockable: true }); }
+        if (!P.dead && Math.abs(P.x - pr.x) < 10 && pr.fy > P.y - 16 && pr.fy < P.y + 2 && !pr.hitP) { pr.hitP = true; damagePlayer(pr.x, DMG.crush, { up: true, unblockable: true, name: 'CRUSHED' }); }
         if (pr.gq && !isSolid(tx, ty) && isOneWay(tileAt(tx, ty)) && L.arena && L.arena.gallery && ty === L.arena.gallery.row) { const A = L.arena; A.taken = A.taken || new Map();
           for (let bx = tx - 1; bx <= tx + 1; bx++) { const i = ty * LW + bx; if (isOneWay(L.grid[i])) { if (!A.taken.has(i)) A.taken.set(i, L.grid[i]); L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
           burst(pr.x, pr.fy, 14, ['#8a5a32', '#c9b27c', '#ffd36b'], 90, 0.6, 200, 2); SFX.crack(); shakeCam(4); pr.fy += 2; } // through the gallery, not onto it
@@ -13264,7 +13285,7 @@ function updateProps(dt) {
       if (pr.st === 'up') { pr.timer -= dt; if (pr.timer <= 0) { pr.st = 'tell'; pr.timer = 0.5; SFX.rattle(0.6); } if (pr.timer < 0.5 && pr.timer > 0 && Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 24, y: pr.y - pr.D + 2, vx: 0, vy: 40 + Math.random() * 40, life: 0.5, max: 0.5, col: '#8a919c', size: 1, grav: 300 }); }
       else if (pr.st === 'tell') { pr.timer -= dt; if (Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 28, y: pr.y - pr.D + 4, vx: 0, vy: 60, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 400 }); if (pr.timer <= 0) { pr.st = 'drop'; SFX.rumble(); } }
       else if (pr.st === 'drop') { pr.h = Math.min(pr.D, pr.h + 900 * dt); if (pr.h >= pr.D) { pr.st = 'down'; pr.timer = 0.7; shakeCam(5); SFX.heavy(); SFX.stone(); dust(pr.x - 12, pr.y, 6); dust(pr.x + 12, pr.y, 6);
-        if (!P.dead && Math.abs(P.x - pr.x) < 18 && P.y > pr.y - 22 && P.y <= pr.y + 2 && !invulnerable()) { damagePlayer(pr.x, DMG.crush, { unblockable: true }); P.vx = (Math.sign(P.x - pr.x) || 1) * 200; P.vy = -120; P.ground = false; if (P.onMover) P.onMover = null; number(P.x, P.y - 24, 'CRUSHED', '#ff6b6b'); hitstop(0.08); }
+        if (!P.dead && Math.abs(P.x - pr.x) < 18 && P.y > pr.y - 22 && P.y <= pr.y + 2 && !invulnerable()) { damagePlayer(pr.x, DMG.crush, { unblockable: true, name: 'CRUSHED' }); P.vx = (Math.sign(P.x - pr.x) || 1) * 200; P.vy = -120; P.ground = false; if (P.onMover) P.onMover = null; number(P.x, P.y - 24, 'CRUSHED', '#ff6b6b'); hitstop(0.08); }
         for (const e of enemies) if (e.alive && !e.harmless && !e.maxHp && Math.abs(e.x - pr.x) < 18 && Math.abs(e.y - pr.y) < 8) { hurtEnemy(e, 40, pr.x, false); number(e.x, e.y - e.h - 12, 'PRESSED', '#8fd160'); } } }
       else if (pr.st === 'down') { pr.timer -= dt; if (pr.timer <= 0) pr.st = 'rise'; }
       else if (pr.st === 'rise') { pr.h = Math.max(0, pr.h - 70 * dt); if (pr.h <= 0) { pr.st = 'up'; pr.timer = pr.every; } }
@@ -13302,7 +13323,7 @@ function updateProps(dt) {
     if (pr.t === 'ram' && pr.active > 0) { pr.active -= dt; pr.tm += dt; pr.th = Math.sin(pr.tm * 4.2) * 1.35 * Math.min(1, pr.active / 1.2); const pts = [30, 44, 58, 72].map(r => [pr.x + Math.sin(pr.th) * r, pr.y + Math.cos(pr.th) * r]); const nearSeg = (x, y) => pts.some(([qx, qy]) => Math.hypot(x - qx, y - qy) < 14); if (Math.abs(pr.th) > 0.12) { if (!P.dead && nearSeg(P.x, P.y - 8)) damagePlayer(pr.x, DMG.ram, { up: true, unblockable: true }); for (const e of enemies) if (e.alive && !pr.hit.has(e) && nearSeg(e.x, e.y - e.h / 2)) { pr.hit.add(e); hurtEnemy(e, 30, pr.x, false); } } if (pr.active <= 0) pr.th = 0; }
     if (pr.t === 'plate' && !pr.down) { const on = (!P.dead && P.ground && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 4) || enemies.some(e => e.alive && Math.abs(e.x - pr.x) < 10 && Math.abs(e.y - pr.y) < 4); if (on) { pr.down = true; SFX.stone(); const cg = props.find(c => c.t === 'dropcage' && Math.floor(c.x / TS) === pr.cage); if (cg && !cg.dropped) { cg.dropped = true; cg.landed = 0; cg.hit.clear(); if (cg.boss) cg.resetT = 5; number(cg.x, cg.y - 20, 'THE CAGE FALLS', '#ffd36b'); SFX.crack(); shakeCam(2); } } }
     if (pr.t === 'dropcage' && pr.boss && pr.dropped && pr.landed > 0) { pr.resetT -= dt; if (pr.resetT <= 0) { pr.dropped = false; pr.landed = 0; pr.y = pr.y0; pr.hit.clear(); SFX.stone(); for (const pl of props) if (pl.t === 'plate' && pl.cage === Math.floor(pr.x / TS)) pl.down = false; } }
-    if (pr.t === 'dropcage' && pr.dropped) { if (pr.landed <= 0) { pr.y += 320 * dt; const ty = Math.floor((pr.y + 1) / TS); if (isSolid(Math.floor(pr.x / TS), ty)) { pr.y = ty * TS; pr.landed = 1; shakeCam(4); SFX.heavy(); dust(pr.x, pr.y, 8); if (!P.dead && Math.abs(P.x - pr.x) < 9 && Math.abs(P.y - pr.y) < 6) { damagePlayer(pr.x, DMG.cage, { up: true, unblockable: true }); P.caged = 1.4; number(P.x, P.y - 24, 'CAUGHT', '#ff6b6b'); } let caught = false; for (const e of enemies) if (e.alive && e.t !== 'bearer' && Math.abs(e.x - pr.x) < (e.t === 'king' ? 30 : 10) && Math.abs(e.y - pr.y) < (e.t === 'king' ? 16 : 8)) { if (e.t === 'king') { caught = true; e.mode = 'held'; e.modeT = 3.2; e.stagger = 3.2; e.vx = 0; e.open = 0; e.thrown = e.thrown || null; SFX.bellow(); hitstop(0.12); zoomKick(1.1, 0.3); } hurtEnemy(e, e.t === 'king' ? 40 : 30, pr.x, false); number(e.x, e.y - e.h - 12, 'CAUGHT', '#8fd160'); }
+    if (pr.t === 'dropcage' && pr.dropped) { if (pr.landed <= 0) { pr.y += 320 * dt; const ty = Math.floor((pr.y + 1) / TS); if (isSolid(Math.floor(pr.x / TS), ty)) { pr.y = ty * TS; pr.landed = 1; shakeCam(4); SFX.heavy(); dust(pr.x, pr.y, 8); if (!P.dead && Math.abs(P.x - pr.x) < 9 && Math.abs(P.y - pr.y) < 6) { damagePlayer(pr.x, DMG.cage, { up: true, unblockable: true, name: 'THE CAGE' }); P.caged = 1.4; number(P.x, P.y - 24, 'CAUGHT', '#ff6b6b'); } let caught = false; for (const e of enemies) if (e.alive && e.t !== 'bearer' && Math.abs(e.x - pr.x) < (e.t === 'king' ? 30 : 10) && Math.abs(e.y - pr.y) < (e.t === 'king' ? 16 : 8)) { if (e.t === 'king') { caught = true; e.mode = 'held'; e.modeT = 3.2; e.stagger = 3.2; e.vx = 0; e.open = 0; e.thrown = e.thrown || null; SFX.bellow(); hitstop(0.12); zoomKick(1.1, 0.3); } hurtEnemy(e, e.t === 'king' ? 40 : 30, pr.x, false); number(e.x, e.y - e.h - 12, 'CAUGHT', '#8fd160'); }
       if (pr.boss && !caught && bossActive && !P.dead) { enemies.push({ t: 'hound', x: pr.x, y: pr.y, vx: 0, vy: -120, w: 12, h: 7, hp: EHP.hound, speed: 105, face: Math.sign(P.x - pr.x) || 1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0.3 }); number(pr.x, pr.y - 26, 'IT WAS NOT EMPTY', '#ff6b6b'); SFX.bark(); } /* the King keeps hounds in his cages */ } } }
     if (pr.t === 'vent') { // an updraft of spores on a timer: ride it up
       const wasOn = pr.active;
@@ -13359,7 +13380,7 @@ function updateProps(dt) {
           fires.push({ x: nx, y: f.y, life: 2.2, delay: 0.3, own: true, gen: (f.gen || 0) + 1 }); }
       if ((f.gen || 0) === 0 && time - (P.grassSaidAt || -9) > 4) { P.grassSaidAt = time; number(f.x, f.y - 24, 'THE GRASS CATCHES', '#ff9a5c'); } }
     if (!f.vent && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 9) flame(f.x, f.y - 7, 1, 5, 45, 3);
-    { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - 14 && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, DMG.fire, { up: true, unblockable: true }); } for (const e of enemies) if (e.alive && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, 10, f.x, false); } }
+    { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - 14 && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, DMG.fire, { up: true, unblockable: true, name: 'THE FIRE' }); } for (const e of enemies) if (e.alive && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, 10, f.x, false); } }
   fires = fires.filter(f => f.life > 0);
   for (const e of enemies) if (e.fireT > 0) e.fireT -= dt;
   // rope bridges: the cutter at the far end saws through once you're out over the drop
@@ -16819,6 +16840,7 @@ function render() {
     g.fillStyle = 'rgba(30,8,10,0.94)'; g.fillRect(40, 40, VW - 80, 100); g.strokeStyle = '#ff6b6b'; g.strokeRect(40.5, 40.5, VW - 81, 99);
     g.strokeStyle = 'rgba(255,255,255,0.10)'; g.strokeRect(42.5, 42.5, VW - 85, 95);
     text('THE KNIGHT FALLS', VW / 2, 52, '#ff6b6b', 'center', 12);
+    if (P.killer) text(killerLine(P.killer), VW / 2, 66, P.killer.rule ? (P.killer.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#c9d1dc', 'center', 6);   /* and what did it (killerOf) */
     text('no lives left', VW / 2, 76, '#fff6e0', 'center');
     text('time ' + fmt(levelTime) + '   foes ' + kills, VW / 2, 92, '#c9d1dc', 'center');
     text('the wood keeps its gold', VW / 2, 106, UI.dim, 'center');
@@ -16859,7 +16881,9 @@ function render() {
       } else winStamped = true; }
     if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text('Z  continue', VW / 2, 140, '#8fd160', 'center');
   } else { winT = 0; winStamped = false; }
-  if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH); }
+  if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH);
+    /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
+    if (P.killer && P.dead < 0.95) { const k = P.killer; g.globalAlpha = Math.min(1, (0.95 - P.dead) * 5); text(killerLine(k), VW / 2, VH / 2 + 22, k.rule ? (k.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#fff6e0', 'center', 6, 'outline'); g.globalAlpha = 1; } }
   if (!audioReady() && state === 'play') {
     const t0 = (soundNoteT += 1 / 60), full = t0 < 10, k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
     if (full || k > 0) { const lab = touchOn ? 'TAP A BUTTON FOR SOUND' : 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;   /* on a phone there is no key: a tap on the pad is what starts the audio */
