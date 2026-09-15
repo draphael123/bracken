@@ -16444,6 +16444,10 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t !== 'wasp' && e.t !== 'queen' && e.t !== 'drone') g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, Math.round(e.y) - 2 - cy);
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);   /* mounted and on foot share one set: his hurt pose depends on which */
+    /* THE ARCHMAGE'S LAST FRAME IS HIS BODY, not his hurt: his set ends hurt, dead, so every blow laid him out across the floor for a
+       moment while his hurt box stood 34 px tall over him, and a swing over the fallen robe still cut him. And the familiar's set
+       has one frame fewer than his, so the same index ran past the end of it */
+    else if (e.hurtT > 0 && e.t === 'archmage') frame = e.stage === 3 ? MF.FAMILIAR_F.hurt : MF.ARCHMAGE_F.hurt;
     else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
