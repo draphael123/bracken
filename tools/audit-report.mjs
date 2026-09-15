@@ -61,6 +61,10 @@ if (C) {
     if (x.air && x.air.px > 2) findings.combat1.push({ sev: x.air.px, kind: 'bug', who: x.key, text: `${x.key} (${x.lvl}): hurt box ${x.w}x${x.h} reaches ${r1(x.air.px)} px past the drawn body on frame ${x.air.i} (air left/right ${x.air.lr.map(r1).join('/')}, top ${r1(x.air.top)}): blows land on empty air` });
     for (const b of x.blows) { if (b.never) continue;
       if (b.short !== null && b.short > 3) findings.combat1.push({ sev: b.short, kind: 'bug', who: x.key, text: `${x.key} ${b.m}: drawn to ${r1(b.front)} px on its live frames (${b.live.join(',')}) but lands only to ${r1(b.reach)} px: ${r1(b.short)} px of weapon that does not connect (main.js:${b.line})` });
+      /* A THROWN OR RANGED BLOW (a shot, a spit, a shockwave, a thrown hook) lands wherever its missile goes: past 1.8x the drawn front, or at
+         the edge of the 64 px grid, it is not a hitbox and is listed apart, never as reach with nothing drawn */
+      b.ranged = b.reach !== null && b.front !== null && (b.reach >= 58 || b.reach > Math.max(8, b.front) * 1.8);
+      if (b.ranged) continue;
       if (b.short !== null && b.short < -3) findings.combat1.push({ sev: -b.short + 2, kind: 'bug', who: x.key, text: `${x.key} ${b.m}: lands ${r1(b.reach)} px out but its live frames (${b.live.join(',')}) are drawn only to ${r1(b.front)} px: ${r1(-b.short)} px of reach with nothing drawn (main.js:${b.line})` });
       if (b.behind) findings.combat1.push({ sev: 4, kind: 'design', who: x.key, text: `${x.key} ${b.m}: also lands on a hero standing BEHIND it (main.js:${b.line})` });
       if (b.lean > 3) findings.combat1.push({ sev: 1 + b.lean / 4, kind: 'bug', who: x.key, text: `${x.key} ${b.m}: its live frames lean ${r1(b.lean)} px off the anchor; the hurt box stays centred on it` }); }
@@ -94,8 +98,10 @@ if (C) {
       const stop = Math.min(runEnd(F0), (tellEntries.find(q => q[0] > F0 && q[1] !== m) || [1e9])[0], F0 + 240);
       const hs = hits.filter(h => h[0] >= F0 && h[0] < stop).map(h => h[0]); if (!hs.length) continue;
       let end = hs[0]; for (const h of hs) { if (h - end <= 8) end = h; else break; }
-      const markOn = marks.filter(q => q[1] === 1 && q[0] <= hs[0] && q[0] >= F0 - 3).map(q => q[0]);
-      const markF = markOn.length ? Math.max(...markOn) : null;
+      /* THE MARK'S FIRST SHOWING for this windup: on at entry (its last change before entry turned it on) counts from entry; otherwise its first turn-on before the blow */
+      const before = marks.filter(q => q[0] <= F0).pop(), onAtEntry = before && before[1] === 1;
+      const markOn = marks.filter(q => q[1] === 1 && q[0] <= hs[0] && q[0] >= F0).map(q => q[0]);
+      const markF = onAtEntry ? F0 : markOn.length ? Math.min(...markOn) : null;
       const nextMark = marks.find(q => q[1] === 1 && q[0] > end); const nextHit = hits.find(h => h[0] > end + 8);
       const nxt = Math.min(nextMark ? nextMark[0] : 1e9, nextHit ? nextHit[0] : 1e9, runEnd(F0));
       (per[m] = per[m] || []).push({ windup: hs[0] - F0, lead: markF === null ? null : hs[0] - markF, active: end - hs[0] + 1, rec: nxt >= 1e9 || nxt === runEnd(F0) ? null : nxt - end, hitMode: (hits.find(h => h[0] === hs[0]) || [])[4] });
@@ -133,7 +139,9 @@ if (FEEL) { const rows = FEEL.rows.filter(q => q.hit);
     FEEL.rows.map(q => q.hit ? [q.hero, q.blow, q.boss ? 'boss' : 'foe', q.hit.dmg, q.hit.stop, q.hit.shake, q.hit.kick, q.hit.poise, q.hit.vx, q.knock20, q.swingSounds.filter(s => !/^(jet|step|pStep|foeStep|impact|hurtOf|yelp)/.test(s)).join('/'), q.hitSounds.filter(s => !/^(jet|step|pStep|foeStep)/.test(s)).join('/')] : [q.hero, q.blow, q.boss ? 'boss' : 'foe', 'no hit', '', '', '', '', '', '', '', '']));
   const by = {}; for (const q of rows) by[q.hero + '|' + q.blow + '|' + (q.boss ? 1 : 0)] = q;
   for (const q of rows) { const k = q.hero + '|' + q.blow;
-    if (!q.boss && by[k + '|1']) { const b = by[k + '|1'], ratio = b.hit.stop / q.hit.stop; if (Math.abs(ratio - 0.8) > 0.06) findings.combat3.push({ sev: Math.abs(ratio - 0.8) * 10, kind: 'design', who: q.hero, text: `${q.hero} ${q.blow}: boss hitstop is ${r1(ratio * 100)}% of the foe's (${b.hit.stop} vs ${q.hit.stop}), not the intended 80%` }); }
+    /* like for like only: a trip (poiseBreak) or a first-hit extra on the foe row adds stop the boss row cannot get, and that is not the 0.8 */
+    const plain = x => !x.hitSounds.includes('poiseBreak') && !x.hitSounds.includes('yelp');
+    if (!q.boss && by[k + '|1'] && plain(q) && plain(by[k + '|1']) && q.hit.shake === by[k + '|1'].hit.shake) { const b = by[k + '|1'], ratio = b.hit.stop / q.hit.stop; if (Math.abs(ratio - 0.8) > 0.06) findings.combat3.push({ sev: Math.abs(ratio - 0.8) * 10, kind: 'design', who: q.hero, text: `${q.hero} ${q.blow}: boss hitstop is ${r1(ratio * 100)}% of the foe's (${b.hit.stop} vs ${q.hit.stop}), not the intended 80%` }); }
     if (!q.boss && /heavy/.test(q.blow) && by[q.hero + '|light 1|0'] && q.hit.stop < by[q.hero + '|light 1|0'].hit.stop) findings.combat3.push({ sev: 6, kind: 'design', who: q.hero, text: `${q.hero} heavy stops the frame less (${q.hit.stop}) than a light tap (${by[q.hero + '|light 1|0'].hit.stop})` });
     if (/^skill/.test(q.blow) && !(q.hit.stop > 0)) findings.combat3.push({ sev: 5, kind: 'design', who: q.hero, text: `${q.hero} ${q.blow}: no hitstop at all` }); }
   for (const hero of [...new Set(rows.map(q => q.hero))]) { const mine = rows.filter(q => q.hero === hero && !q.boss); const sig = q => [q.hit.dmg, q.hit.stop, q.hit.shake, q.knock20].join('/'); const groups = {};
@@ -172,6 +180,15 @@ if (CON) {
   for (const [k, b] of Object.entries(by)) { const m = med(b.gaps), share = (b.sunk + b.hover) / b.n;
     if (b.n >= 8 && share >= 0.25) findings.anim1.push({ sev: share * 10 + Math.abs(m || 0), kind: 'bug', who: k, text: `${k}: ${Math.round(share * 100)}% of ${b.n} standing samples off the floor (median gap ${m} px; sunk ${b.sunk}, hover ${b.hover}) in ${[...b.lv].join(', ')}${b.worst ? '; worst ' + b.worst.gap + ' px at ' + b.worst.level + ' ' + b.worst.tx + ',' + b.worst.ty + ' in ' + b.worst.mode : ''}` });
     if (b.tip >= 3) findings.anim1.push({ sev: 3, kind: 'design', who: k, text: `${k}: stood with under 4 px of its width on the platform ${b.tip} times (${[...b.lv].join(', ')})` }); }
+  /* THE STATIC PROOF: how far each body's baked standing frame reaches below its own feet line (the anchor), with no level involved.
+     A body whose frames reach below its anchor is sunk by construction everywhere it walks; one that stops short of it hovers everywhere. */
+  if (C) { const rows = [];
+    if (C.heroes) for (const [hk, H] of Object.entries(C.heroes)) { if (hk.includes(':') && !hk.endsWith(':' + (Object.keys(C.heroes).find(k => k.startsWith('knight:')) || '').split(':')[1])) continue;
+      for (const key of ['idle', 'run', 'land', 'block']) { const fr = (H.frames[key] || []).filter(Boolean); if (!fr.length) continue; const bs = fr.map(b => b.b); rows.push([hk.split(':')[0], key, Math.min(...bs), Math.max(...bs)]);
+        if (key === 'idle' && Math.abs(med(bs)) >= 2) findings.anim1.push({ sev: 6 + Math.abs(med(bs)), kind: 'bug', who: hk, text: `hero ${hk.split(':')[0]}: the baked ${key} frames reach ${med(bs) > 0 ? med(bs) + ' px BELOW' : -med(bs) + ' px short of'} the feet line (anchor) on every frame: ${med(bs) > 0 ? 'sunk' : 'hovering'} by construction on every level` }); } }
+    const cre = Object.values(C.creatures).filter(r => !r.skipped && r.boxes[0] && !r.boxes[0].empty);
+    for (const r of cre) { const b = r.boxes[0].b; if (Math.abs(b) >= 2 && !(C.habitats[r.key] && /fly|bat|harpy|kite|crow|wasp|imp|broom|haunt|marshlight|rook|drone|petrel|sailer/.test(r.key))) rows.push([r.key, 'frame 0', r1(b), r1(b)]); }
+    am.push('### Drawn bottom against the feet line, from the baked frames (px below the anchor; 1 is the one-pixel overlap, 0 stands exactly on it)', ''); table(am, ['body', 'frames', 'min', 'max'], rows); }
   const air = s.filter(q => q.airShadow), ab = {}; for (const q of air) ab[q.t] = (ab[q.t] || 0) + 1;
   for (const [k, n] of Object.entries(ab)) if (n >= 3) findings.anim1.push({ sev: 1 + n / 20, kind: 'design', who: k, text: `${k}: its shadow blob is drawn at its feet in the air (${n} samples more than 6 px off the floor): the shadow does not stay on the ground under it` });
   const dust = CON.samples.filter(q => q.dustVsFoot !== undefined); if (dust.length) { const d = med(dust.map(q => q.dustVsFoot)); am.push(`Landing dust: ${dust.length} landings sampled, the dust's top row sits a median ${d} px from the hero's foot row (negative = above).`, ''); if (d < -2) findings.anim1.push({ sev: 3, kind: 'bug', who: 'hero', text: `landing dust spawns a median ${-d} px above the feet` }); }
@@ -183,7 +200,9 @@ if (C) { const cre = Object.values(C.creatures).filter(r => !r.skipped);
   const rows = []; const counts = { OWN: 0, SHARED: 0, NONE: 0 };
   for (const r of cre) {
     const hashesOf = pred => new Set(Object.entries(r.frames).filter(([m]) => pred(m)).flatMap(([, v]) => Object.keys(v)));
-    const idle = hashesOf(m => m === r.base || IDLE.test(m)), walk = hashesOf(m => WALK.test(m) && !/Tell$/.test(m));
+    /* IDLE is the creature's resting modes; the mode it happened to be in when stood up counts only when it is neither a windup nor a blow */
+    const atkNames = new Set(Object.values(r.sweeps).map(s => s.best && s.best.first && s.best.first.mode).filter(Boolean));
+    const idle = hashesOf(m => IDLE.test(m) || (m === r.base && !/Tell$/.test(m) && !atkNames.has(m) && !WALK.test(m))), walk = hashesOf(m => WALK.test(m) && !/Tell$/.test(m));
     const cell = (hs, others) => { if (!hs || !hs.size) return 'NONE'; for (const [name, o] of others) if (o.size && [...hs].every(h => o.has(h))) return 'SHARED-' + name; return 'OWN'; };
     const st = {}; st.idle = idle.size ? 'OWN' : 'NONE'; st.walk = cell(walk, [['idle', idle]]);
     const tells = Object.keys(r.sweeps); const wind = tells.map(m => [m, cell(new Set(Object.keys(r.frames[m] || {})), [['idle', idle], ['walk', walk]])]);
@@ -229,6 +248,7 @@ if (C) { const cre = Object.values(C.creatures).filter(r => !r.skipped && r.boxe
   const pairs = [];
   for (const [lv, ts] of Object.entries(levelOf)) { const here = cre.filter(r => ts.has(r.key));
     for (let i = 0; i < here.length; i++) for (let j = i + 1; j < here.length; j++) { const a = here[i].boxes[0], b = here[j].boxes[0]; const c = corr(a.grid, b.grid), sz = Math.max(a.bw / b.bw, b.bw / a.bw, a.bh / b.bh, b.bh / a.bh), col = Math.hypot(a.col[0] - b.col[0], a.col[1] - b.col[1], a.col[2] - b.col[2]);
+      if (a.hash === b.hash) { am.push(`- ${lv}: ${here[i].key} and ${here[j].key} are drawn with the very same standing frame (one sprite set under two names).`); continue; }   /* not a confusable pair: the same art */
       if (c > 0.8 && sz < 1.25 && col < 70) pairs.push([lv, here[i].key, here[j].key, r1(c * 100) / 100, r1(sz), Math.round(col)]); } }
   for (const p of pairs) findings.anim3.push({ sev: 5 + p[3], kind: 'design', who: p[1] + '/' + p[2], text: `${p[0]}: ${p[1]} and ${p[2]} are confusable - silhouettes correlate ${p[3]}, sizes within ${p[4]}x, mean colours ${p[5]} apart` });
   am.push('## 3. Silhouette and sprite readability', '', 'Contrast is WCAG contrast of every outline pixel against the ground pixel just outside it, read off the real canvas where the creature stands in its first level (one place per creature: the cheap version of the brief\'s three places per level). Asymmetry = share of the standing frame\'s opaque pixels that change under a mirror.', '');

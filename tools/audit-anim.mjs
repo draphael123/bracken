@@ -19,7 +19,8 @@ async function HEROANIM(o) {
   const BK = window.BK, P = BK.P, A = window.__AUD, lvm = await import('/src/level.js');
   const wood = lvm.LEVELS.findIndex(l => l.id === 'wood'), h = o.hero;
   BK.setHero(h); A.settings(); BK.load(wood); BK.state = 'play'; BK.god = true; BK.sim(3); for (const q of BK.enemies()) q.alive = false; A.clearKeys(); BK.sim(20); BK.reset();
-  const K0 = BK.heroSet, K = { R: Object.fromEntries(Object.entries(K0.R).filter(([, v]) => Array.isArray(v))), ax: K0.ax, ay: K0.ay }, hashes = {};   /* (a set carries a few non-frame fields beside its frame lists) */
+  /* a key is a list of frames, or ONE canvas (pickFrame hands a lone canvas back whatever the frame number: crouch, plunge, skid, apex, brace) */
+  const K0 = BK.heroSet, K = { R: Object.fromEntries(Object.entries(K0.R).map(([k, v]) => [k, Array.isArray(v) ? v : v && v.width ? [v] : null]).filter(([, v]) => v)), ax: K0.ax, ay: K0.ay }, hashes = {};
   for (const key of Object.keys(K.R)) hashes[key] = K.R[key].map(c => A.hashCanvas(c));
   const base = { vx: 0, vy: 0, ground: true, atk: -1, heavy: false, combo: 0, swingKind: null, dodge: 0, dash: 0, dashAtk: 0, block: false, parryT: 0, climb: false, swim: false, plunge: false, hurt: 0, riseT: 0, charge: 0, castT: 0, blastT: 0, landT: 0, skidT: 0, flourishT: 0, fidgetT: 0, dance: 0, jet: false, aegis: false, warding: false, anim: 0, inv: 0, face: 1, lastFace: 1, rush: 0 };
   const saved = { x: P.x, y: P.y };

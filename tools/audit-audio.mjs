@@ -326,11 +326,13 @@ async function pageLib(CFG) {
       window.__auditClipsReady = true; const loaded = count();
       const rows = [];
       for (const it of items) { const peaks = [], rmss = [], durs = []; let err = null;
-        for (let rep = 0; rep < 2; rep++) {
+        for (let rep = 0; rep < 1; rep++) {   /* one render a voice: the synth has no randomness worth a second, and a thousand renders was the cost */
           try { const ctx = new OfflineAudioContext(1, Math.round(sr * 2.6), sr); window.__auditCtx = ctx; const M = await mod(); M.initAudio(); M.music.stop(); if (it.hero) M.setHeroVoice(it.hero);
             if (it.n.startsWith('hurtOf:') || it.n.startsWith('dieOf:')) { const [k, t] = it.n.split(':'); const f = M.SFX[k](t); if (!f) { err = 'no voice: ' + it.n; break; } f(); }
             else M.SFX[it.n](...(it.args || []));
-            const b = await ctx.startRendering(); const d = b.getChannelData(0); let peak = 0, first = -1, lastI = -1; const th = 0.003;
+            /* A RENDER THAT NEVER RETURNS is written down and skipped, not waited for */
+            const b = await Promise.race([ctx.startRendering(), new Promise((_, rej) => setTimeout(() => rej(new Error('render timed out (8 s)')), 8000))]);
+            window.__voicesDone = (window.__voicesDone || 0) + 1; const d = b.getChannelData(0); let peak = 0, first = -1, lastI = -1; const th = 0.003;
             for (let i = 0; i < d.length; i++) { const v = Math.abs(d[i]); if (v > peak) peak = v; if (v > th) { if (first < 0) first = i; lastI = i; } }
             let sq = 0; if (first >= 0) for (let i = first; i <= lastI; i++) sq += d[i] * d[i];
             peaks.push(peak); rmss.push(first >= 0 ? Math.sqrt(sq / (lastI - first + 1)) : 0); durs.push(first >= 0 ? (lastI - first) / sr : 0); }
@@ -351,7 +353,8 @@ const t0 = Date.now(); const say = s => console.log('[' + Math.round((Date.now()
 try {
   const info = await pg.evalp('(' + pageLib.toString() + ')({})');
   out.page = info;
-  const ex = async (expr) => { const r = await pg.evalp(expr); return r; };
+  /* EVERY PASS IS KEPT: the JSON is written before each pass starts, so a pass that hangs never costs the ones already finished */
+  const ex = async (expr) => { try { const d = process.env.SCRATCH || join(ROOT, 'audits', 'audio'); mkdirSync(d, { recursive: true }); writeFileSync(join(d, 'audio-audit.json'), JSON.stringify(out)); } catch {} return await pg.evalp(expr); };
   if (want('foes')) { say('foes: ' + foeList.length + ' creatures'); out.passes.foes = await ex('__aud.foes(' + JSON.stringify(foeList) + ', ' + JSON.stringify(homeOf) + ', ' + JSON.stringify({ maxF: FAST ? 500 : 1500 }) + ')'); say('foes done: ' + out.passes.foes.rows.length + ' rows, ' + out.passes.foes.log.length + ' sounds'); }
   if (want('bosses')) { const list = only.bosses || levelInfo.filter(l => l.boss).map(l => l.id); say('bosses: ' + list.join(' ')); out.passes.bosses = await ex('__aud.bosses(' + JSON.stringify(list) + ', ' + JSON.stringify({ maxSecs: FAST ? 30 : 100 }) + ')'); say('bosses done: ' + out.passes.bosses.log.length + ' sounds'); }
   if (want('minis')) { const list = only.minis || levelInfo.filter(l => l.mini).map(l => l.id); say('minis: ' + list.join(' ')); out.passes.minis = await ex('__aud.bosses(' + JSON.stringify(list) + ', ' + JSON.stringify({ maxSecs: FAST ? 30 : 80, mini: true }) + ')'); say('minis done'); }
@@ -384,6 +387,6 @@ writeFileSync(jsonPath, JSON.stringify(out));
 say('wrote ' + jsonPath + (out.pageErrors.length ? ' (page errors: ' + out.pageErrors.length + ')' : ''));
 const report = typeof buildReport === 'function' ? buildReport : () => '# (report not built yet)\n';
 const md = report(out);
-writeFileSync(join(ROOT, 'audits', 'audio-audit.md'), md);
+writeFileSync(join(OUTDIR, 'audio-summary.md'), md);   /* audits/audio-audit.md is the written report, built from the JSON: never overwritten by a run */
 say('wrote audits/audio-audit.md');
 process.exit(out.error ? 1 : 0);

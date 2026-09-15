@@ -55,11 +55,13 @@ export function pageLib() {
       A.ar = { x0: Ar.x0, x1: Ar.x1, floor: Ar.floor, trigger: Ar.trigger };
     } else { const d = hab.ent; for (const q of BK.enemies()) q.alive = false;
       BK.tp(d.x - 4, d.y); BK.sim(2); const n0 = BK.enemies().length;
-      BK.spawnEnt(Object.assign({}, d, { face: -1 })); e = BK.enemies().length > n0 ? BK.enemies()[BK.enemies().length - 1] : null; A.ar = null;
+      /* THE CREATURE ITSELF: a placement can bring company (a lantern bearer, a rider, a pack), so the new body is picked by its type, and it is
+         spawned from its type and place alone, not the placement's other fields */
+      BK.spawnEnt({ t: d.t, x: d.x, y: d.y, big: d.big, face: -1 }); const fresh = BK.enemies().slice(n0); e = fresh.find(q => q.t === t) || null; A.ar = null;
       if (e) BK.sim(20); }
     if (!e) return null;
     /* THE CAMERA ON IT: the follow camera eases from wherever the level started, and a creature off the frame is never drawn */
-    { const v = BK.view, tx = Math.floor(P.x / TS), ty = Math.floor(P.y / TS) - 1, px = P.x, py = P.y; BK.look(tx, ty); P.x = px; P.y = py; }
+    { const tx = Math.floor(e.x / TS), ty = Math.floor(e.y / TS) - 1, px = P.x, py = P.y; BK.look(tx, ty); P.x = px; P.y = py; }   /* on the creature, not the hero: a boss stands across a forty-tile arena from the door */
     A.e = e; BK.log = []; A.pin(P.x, P.y, 1); BK.step(1); A.snap = Object.assign({}, e); A.t = t; A.hab = hab;
     return { t: e.t, w: e.w, h: e.h, x: Math.round(e.x), y: Math.round(e.y), mode: e.mode, maxHp: e.maxHp || 0, big: !!e.big, mini: !!e.mini, harmless: !!e.harmless };
   };
