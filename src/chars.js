@@ -226,10 +226,10 @@ export function bakeKnight(skin = {}, bare = false) {
   const KF = o => knightFrame({ ...o, shield: !!o.shield && !bare, kite: bare || o.shield ? null : (o.kite || SIDE) });
   const rest = (d = 0) => [sh[0] + 1, sh[1] + 2 + d, sh[0] + 3, sh[1] + 9 + d];
   const F = {
-    idle: BREATH.map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 9 - dy] })),   /* the point stays in the turf */
+    idle: BREATH.map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 7 - dy] })),   /* the point stays in the turf - by one pixel: at +9 it was three under the ground line */
     // run: body bobs, sword arm pumps
     run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, pump], i) =>
-      KF({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 8], legsDy: 0 })),
+      KF({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 7 - Math.max(0, dy)], legsDy: 0 })),   /* the point skims the ground: it rides the bob up, never down into the turf */
     jump: [
       KF({ legs: 'jump', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 1 }),
       KF({ legs: 'jump2', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 3], plume: 1 }),
@@ -289,7 +289,7 @@ export function bakeKnight(skin = {}, bare = false) {
     const a = KF({ ...up(), plume: 2 }), b = KF({ ...up(), hy: 1, bits: gl(4), plume: 1 }), c = KF({ ...up(), hy: 1, bits: gl(1), plume: 0 });
     const d = KF({ ...up(), hy: 1, bits: gl(-2, true), plume: 0 }), turn = KF({ ...up(2), hy: 1, plume: 0 }), back = KF({ ...up(-1), plume: 1 });
     const drop = KF({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], sword: [sh[0] + 2, sh[1] + 2, sh[0] + 9, sh[1] + 6], plume: 2 });
-    const thud = KF({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 8], plume: 2 });
+    const thud = KF({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 6], plume: 2 });   /* back in the turf as the idle has it: one pixel, not three */
     F.fidget = holdFrames([[lift, 2], [a, 2], [b, 2], [c, 2], [d, 3], [turn, 3], [back, 2], [drop, 2], [thud, 2], [F.idle[7], 2]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
@@ -720,7 +720,7 @@ export function bakeLurker() {
   const a = sspr([...bell, '....kkkk....', '....kkkk....', '....kkkk....', '....kkkk....', '...kkkkkk...']);
   const b = sspr([...bell, '....kkkk....', '...keokok...', '..kRRRRRRk..', '..kRrrrrRk..', '...kkkkkk...']);
   const half = sspr([...bell, '....kkkk....', '...keokok...', '...kkkkkk...', '..kRRRRRRk..', '...kkkkkk...']);
-  return pack([a, b, half], 6, 13, 10, 12);
+  return pack([a, b, half], 6, 14, 10, 12);   /* the stalk's foot a row into the ground like every walker's: at 13 it stood two rows in */
 }
 
 // SPITCAP — a tall rooted mushroom with a bladder for a cap. It swells, then lobs a spore bomb over your head.
@@ -993,7 +993,9 @@ export function bakeCragRam() {
   // as a sheep going sideways. A crag ram is a heavy curl of horn over a dark face, a barrel of fleece
   // with the light on top of it and the shadow slung under, a beard, and four black legs. 18x12.
   const RP = Object.assign({}, CP, { f: '#d8d0c0', F: '#a8a090', G: '#7e786c', m: '#c9a83a', M: '#8a6a1a', n: '#8a7f70', z: '#3a2e22', o: '#1b1626' });
-  const r = rows => outline(fromGrid(rows, RP, 1), OUT);
+  /* EVERY FRAME THIRTEEN ROWS: the rear is a row taller than the walk, and on one anchor a taller frame stands lower, so it bucked
+     a row deeper into the scree than it walked. The short frames get an empty row on top, and the anchor is the hooves' row. */
+  const r = rows => outline(fromGrid(rows.length < 13 ? ['..................', ...rows] : rows, RP, 1), OUT);
   const head = [
     '.............mmM..',
     '............mMmMm.',
@@ -1022,7 +1024,7 @@ export function bakeCragRam() {
     '..z...z...........']);
   /* hurt: the head thrown back and the eye shut, the legs splayed as it takes the blow */
   const hurt = r([...head.map((row, i) => (i === 5 ? '..ffffffffffnnnnn.' : row).slice(1) + '.'), '.zz...z....z...zz.', 'z.....z....z.....z', 'o.....o....o.....o']);
-  return pack([run1, run2, rear, run1, run2, hurt], 9, 12, 14, 9);
+  return pack([run1, run2, rear, run1, run2, hurt], 9, 14, 14, 9);
 }
 
 // Hill troll — a hulking mossy brute, taller than a door, that hurls boulders. 18×17. Frames: stand, walk1, walk2, throw (rock up), swat.
@@ -1277,7 +1279,10 @@ export function bakePyro(skin = {}) {
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0);
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  /* HER FEET ARE TWO ROWS HIGHER IN HER FRAME than the knight's are in his (pyroFrame stands her boots on row 18, the staff's
+     butt a row under them), so on the knight's anchor she stood two pixels off every floor. Her own foot line puts the boots on
+     the ground and the butt of the staff a pixel into it. */
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay - 2 };
 }
 
 // The keeper — an old badger merchant: spectacles, striped snout, a leather apron with a coin pouch, sleeves rolled. 14×16. Frames: idle, talk (a paw raised over the counter).
@@ -1517,7 +1522,7 @@ export function bakeFreebooter(skin = {}) {
     /* HIS BREATH: the hat and the feather ride it, the coat tail hangs a beat behind, and the cutlass point dips after the hand */
     idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
       return knightFrame({ dy, hy, sho, plume, cutlass: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 7 + lag - dy], pistol: holster(), bits: flap([1], dy, lag, 'b', 'B') }); }),
-    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, cutlass: carry(), pistol: holster() })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, cutlass: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8 - Math.max(0, dy)], pistol: holster() })),   /* carried down at his side, the point clear of the deck: carry()'s point went two and three pixels into it on the stride */
     jump: [knightFrame({ legs: 'jump', dy: -1, cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 5], pistol: holster(), plume: 1 }), knightFrame({ legs: 'jump2', cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 1 })],
     fall: [knightFrame({ legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], pistol: holster(), plume: 2 })],
     land: [knightFrame({ legs: 'land', dy: 2, cutlass: rest(2), pistol: holster(2) }), knightFrame({ legs: 'stand', dy: 1, cutlass: rest(1), pistol: holster(1), plume: 1 })],
@@ -1607,9 +1612,10 @@ export function bakeReaper(skin = {}) {
     /* HIS BREATH: the pauldrons lift, the torn surcoat drags a beat behind, the long point sinks after the hands, and once
        in the cycle the green in the helm goes out and comes back. The point is held a pixel short so it clears the frame. */
     idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
-      return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], greatsword: [sh[0] - 3, sh[1] + 5, sh[0] + 12, sh[1] + 9 + lag - dy],
+      /* the hands at his hip, not his knee: the cross hangs four rows under the grip, and from +5 it and the point both went into the ground */
+      return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 3 - Math.max(0, dy)], greatsword: [sh[0] - 3, sh[1] + 3 - Math.max(0, dy), sh[0] + 12, sh[1] + 6 + lag - dy],
         bits: [...flap([3, 4], dy, lag, 'r', 'r'), ...(i === 6 ? [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] : [])] }); }),
-    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 6], greatsword: carry() })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 2], greatsword: [sh[0] - 4, sh[1] + 2, sh[0] + 12, sh[1] + 6 - Math.max(0, dy)] })),   /* dragged, not buried: carry() had the cross and the point four to six pixels under the ground */
     jump: [knightFrame({ legs: 'jump', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 6, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 7, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 4, sh[0] - 7, sh[1] - 4], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, greatsword: [sh[0] + 2, sh[1] + 3, sh[0] - 8, sh[1] - 2], plume: 2 })],
     land: [knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 7], greatsword: rest(2) }), knightFrame({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 6], greatsword: rest(1), plume: 1 })],
@@ -1893,7 +1899,7 @@ export function bakeHare() {
   const run1 = q(['......hh.hh..', '.....hh.hh...', '.....hhhhhh..', '...hhhhhhhhh.', '.HhhhhhhhhhHe', 'whhhhhhhhhhh.', '.HhhhhhhhhH..', 'hh..hh..hh...', 'h....h....h..']);
   const run2 = q(['......hh.hh..', '.....hh.hh...', '.....hhhhhh..', '...hhhhhhhhh.', '.HhhhhhhhhhHe', 'whhhhhhhhhhh.', '.HhhhhhhhhH..', '..hhhh.hhh...', '..h..h..h....']);
   const sit = q(['.......h.h...', '.......h.h...', '.......hhh...', '....hhhhhhh..', '...hhhhhhhHe.', '.wHhhhhhhhh..', '..hhhhhhhh...', '..hhhhhhhh...', '...hh...hh...']);
-  return pack([run1, run2, sit], 6, 9, 10, 7);
+  return pack([run1, run2, sit], 6, 10, 10, 7);   /* the paws a row into the ground like every walker's: at 9 it sat two rows into the moor */
 }
 
 // The peat wight — a pale hand of bog-mist that rises where you stand too long. 10×14. Frames: rise1, rise2.
@@ -2741,11 +2747,13 @@ export function bakeRunner() {
     '...hhhhh....', '..hHhhhHh...', '.mhHhhhHh...', '.m.hhhhh....', '...vv.vv....', '..vv...vv...', '.VV.....V...'], W));
   const run2 = wspr(pad([...head,
     '...hhhhh....', '..hHhhhHh...', '.mhHhhhHh...', '.m.hhhhh....', '....vvvv....', '...vv..vv...', '...V....VV..'], W));
-  const shout = wspr(pad(['.a........a.', '..a......a..', '...a....a...', ...head,
+  /* the shout's lines drawn beside the head, not stacked over it: three rows of them made the frame two rows taller than the
+     walk, and on the same anchor that stood him two rows into the ground */
+  const shout = wspr(pad(['.a........a.', '..a.zz...a..', '...aaaa.a...', ...head.slice(2),
     '...hhhhh....', '..hHhhhHh...', '..hHhhhHh...', '...hhhhh....', '...vv.vv....', '..vv...vv...'], W));
   const stab = wspr(pad([...head,
     '...hhhhh....', '..hHhhhHh...', '..hHhhhHhmmm', '...hhhhh.ss.', '...vv.vv....', '..vv...vv...', '.VV.....V...'], W));
-  return pack([run1, run2, shout, stab], 6, 13, 8, 12);
+  return pack([run1, run2, shout, stab], 6, 14, 8, 12);   /* his feet a row into the ground like every walker's (at 13 they were two rows in) */
 }
 
 // THE CROSSBOWMAN - the prod held flat across his chest is a horizontal bar and nothing else in the town
