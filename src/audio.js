@@ -100,7 +100,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 } };
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 } };   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -140,7 +140,7 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' ? h : 'knight'; }
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' ? h : 'knight'; }
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
@@ -177,6 +177,18 @@ export const SFX = {
     if (heroVoice === 'pirate') { noise(0.14, 0.16, 1300, 0.5); tone('triangle', vary(900), 380, 0.1, 0.05); tone('triangle', vary(2400), 1400, 0.06, 0.03, 0.02); return; }
     tone('square', vary(540), vary(200), 0.14, 0.07); chain(0.03, 3); noise(0.16, 0.12, 700, 0.5, 0.02); },
   pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, heroVoice === 'pyro' ? 1.75 : 1.35); },
+  /* ---------- THE WARDEN'S SPEAR ---------- */
+  /* THE TIP RANG. Her one rule is WHERE along the shaft it landed, and this is how that is heard: a small struck
+     bell over a hard tick of steel, the same note every time. The ear learns the good hit before the eye does, and
+     a floating word could not say it - the game hides those in play. */
+  tipRing() { bell(1568, 0.26, 0.075); tone('triangle', vary(2600), 1900, 0.05, 0.05); noise(0.035, 0.09, 5200, 1.6); },
+  /* AND THE HAFT DID NOT. A dull knock of wood on armour: it must not be mistaken for the bell, because the whole
+     lesson is the difference between the two. */
+  haftKnock() { tone('sine', vary(175), 105, 0.08, 0.1); noise(0.05, 0.07, 700, 0.7); },
+  /* the heel going into the turf as she plants it, and a charge dying on the point */
+  braceSet() { tone('square', vary(300), 180, 0.07, 0.05); noise(0.07, 0.1, 900, 0.8); tone('sine', 120, 70, 0.11, 0.09, 0.02); },
+  braceStop() { noise(0.18, 0.28, 560, 0.5); tone('sine', 88, 38, 0.32, 0.3); bell(1046, 0.5, 0.085); tone('triangle', vary(2200), 1400, 0.07, 0.05); },
+  vigilFull() { bell(1568, 0.5, 0.08); bell(2093, 0.4, 0.05, 0.08); noise(0.3, 0.1, 3000, 0.5); },
   // the pyromancer's own fire
   ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
   heatFull() { tone('triangle', 880, 880, 0.14, 0.08); tone('triangle', 1320, 1320, 0.2, 0.08, 0.07); noise(0.3, 0.12, 1200, 0.4); },
