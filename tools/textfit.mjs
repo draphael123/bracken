@@ -48,7 +48,7 @@ function hints() {
 async function pageTextFit(input) {
   const BK = window.BK, TL = BK.textLab, lvm = await import('/src/level.js'), G = BK.g;
   const issues = [], stats = { frames: 0, texts: 0, screens: {} }, seenIssue = new Set();
-  const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];
+  const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
   const campaign = lvm.LEVELS.map((l, i) => [l, i]).filter(([l]) => (!l.hidden || l.secret) && l.id !== 'custom');
   const want = s => !input.only.length || input.only.includes(s);
   const yieldNow = () => new Promise(r => setTimeout(r, 0));

@@ -41,7 +41,7 @@ for (const lv of LEVELS) {
   const hpOf = t => Math.round(EHP[t] * diff.ehp * (1 + 0.5 * tr));
   const tough = foes.reduce((a, e) => (!a || EHP[e.t] > EHP[a.t]) ? e : a, null);
   const up = Math.floor(lvIdx / 2), hit = hk => Math.max(1, (HERO[hk].hitRaw + up) * HERO[hk].mul);
-  const H5 = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];   // all five heroes, in the order the header names them
+  const H5 = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];   // every hero, in the order the header names them
   const htk = (hp, h) => H5.map(k => Math.ceil(hp / (h === 'hit' ? hit(k) : HERO[k].top))).join('/');
   const toughS = tough ? `${tough.t} ${hpOf(tough.t)}hp ${htk(hpOf(tough.t), 'hit')}->${htk(hpOf(tough.t), 'top')}` : '-';
   const bossS = bossT === 'mother' ? 'mother (breaks, not bled)' : bossT ? (() => { const hp = Math.round(EHP[bossT] * diff.bhp * (1 + 0.25 * tr)); return `${bossT} ${hp}hp ${htk(hp, 'hit')}->${htk(hp, 'top')}`; })() : '-';

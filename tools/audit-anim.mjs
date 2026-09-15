@@ -54,7 +54,7 @@ async function HEROANIM(o) {
 async function main() {
   const pg = await openAudit(); const out = [];
   try {
-    for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper']) { const r = await pg.evalp('(' + HEROANIM.toString() + ')(' + JSON.stringify({ hero: h }) + ')');
+    for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper']) { const r = await pg.evalp('(' + HEROANIM.toString() + ')(' + JSON.stringify({ hero: h }) + ')');
       savePng(r.png, join(OUTA, 'heroes-' + h + '.png')); delete r.png; out.push(r);
       console.log('== ' + h + ' keys ' + JSON.stringify(r.keys));
       for (const [s, seen] of Object.entries(r.rows)) console.log('  ' + s.padEnd(12) + [...new Set(seen.map(q => q.key + ':' + q.frame))].join(' '));

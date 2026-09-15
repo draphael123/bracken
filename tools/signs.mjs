@@ -7,7 +7,7 @@
 //   node tools/signs.mjs --all      every sign and its line count
 import { LEVELS } from '../src/level.js';
 
-const PER_LINE = 46, MAX_LINES = 2, HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];
+const PER_LINE = 46, MAX_LINES = 2, HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 const linesOf = s => { let n = 1, cur = 0;
   for (const w of String(s).split(' ')) { const add = (cur ? 1 : 0) + w.length; if (cur && cur + add > PER_LINE) { n++; cur = w.length; } else cur += add; }
   return n; };

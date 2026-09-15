@@ -26,8 +26,15 @@ const reads = id => {
 const dead = [], bad = [];
 console.log('== the talent audit ==\n');
 console.log('hero      tree            nodes  cost  skills  numbers  capstone');
+/* A HERO WHOSE TREES ARE NOT BUILT YET IS NOT A HERO WITH BROKEN TREES. A new hero is playable long before she is
+   given a tree - she ships with her kit first so the owner can decide whether she is worth a tree at all - and her
+   three branch names exist from the start because the tree screen reads TBR[hero] to draw its tabs. Nothing to
+   measure is not the same as measured and wrong, so a hero with NO nodes at all is skipped here. The moment she is
+   given her first node, every rule below applies to her in full and this stops skipping her. */
+const unbuilt = h => !TREE.some(n => n.hero === h);
 for (const h of Object.keys(TBR)) for (let b = 0; b < 3; b++) {
   const ns = TREE.filter(n => n.hero === h && n.branch === b);
+  if (unbuilt(h)) { if (b === 0) console.log('  ' + h.padEnd(8) + '(no tree yet: her kit ships first)'); continue; }
   const cost = ns.reduce((s, n) => s + n.max * n.cost, 0), caps = ns.filter(n => n.cap), skills = ns.filter(n => n.active), nums = ns.filter(n => n.max > 1);
   console.log('  ' + h.padEnd(8) + TBR[h][b].padEnd(16) + String(ns.length).padStart(5) + String(cost).padStart(6) + String(skills.length).padStart(8) + String(nums.length).padStart(9) + '  ' + (caps.map(c => c.name).join(', ') || '-'));
   if (cost < 22 || cost > 26) bad.push(h + ' ' + TBR[h][b] + ': the tree costs ' + cost + ', not about 24');
