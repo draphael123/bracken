@@ -6473,7 +6473,8 @@ function updateReef(e, dt) {
   let want = 0, grav = true;
   if (e.t === 'sailor') { const near = ad < 150 && dy < 40 && !P.dead;
     if (e.mode === 'hookTell') { if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.32; SFX.slash(); e.vx = e.face * 60;
-      if (!P.dead && Math.sign(d) === e.face && ad < 44 && P.y > e.y - 16) { const res = damagePlayer(e.x, DMG.sailorHook); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.1; e.stagger = 1; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -110; } } } }
+      /* the hook lands as far as it is drawn (20 px, and the 5 of you in front of your middle): it caught you 14 px past its point */
+      if (!P.dead && Math.sign(d) === e.face && ad < 25 && P.y > e.y - 16) { const res = damagePlayer(e.x, DMG.sailorHook); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.1; e.stagger = 1; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -110; } } } }
     else if (e.mode === 'hook') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.5; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 30 || e.flanking) ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.4;
@@ -6569,7 +6570,7 @@ function updateShore(e, dt) {
       else { const tx = inMine ? P.x - Math.sign(d || 1) * 40 : e.hx + Math.sin(e.anim * 0.6) * 40; e.vx += (Math.sign(tx - e.x) * 50 - e.vx) * Math.min(1, dt * 2); e.vy += ((inMine ? Math.min(bot, Math.max(top, P.y - 8)) : e.hy + Math.sin(e.anim * 1.3) * 6) - e.y) * dt * 1.5; e.face = Math.sign(e.vx) || e.face; } }
     swimMove(e, dt, pl, top, bot, 8); return;
   } else if (e.t === 'heronfoe') { near = ad < 96 && dy < 44 && !P.dead;
-    if (e.mode === 'strikeTell') { if (e.modeT <= 0) { e.mode = 'strike'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(d) === e.face && ad < 36 && dy < 26) { const res = damagePlayer(e.x, DMG.heronfoe); if (res === 'hit') P.vx = e.face * 150; } } }
+    if (e.mode === 'strikeTell') { if (e.modeT <= 0) { e.mode = 'strike'; e.modeT = 0.3; SFX.slash(); /* as far as the bill is drawn (16 px): it struck 11 px past it */ if (!P.dead && Math.sign(d) === e.face && ad < 21 && dy < 26) { const res = damagePlayer(e.x, DMG.heronfoe); if (res === 'hit') P.vx = e.face * 150; } } }
     else if (e.mode === 'strike') { if (e.modeT <= 0) { e.mode = 'stand'; e.cd = 1.6; } }
     else { e.mode = 'stand'; if (near && e.cd <= 0) { e.face = Math.sign(d) || e.face; if (ad < 40) { e.mode = 'strikeTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 6, '!', '#ffd36b'); } else { want = e.face * 30; e.stepT = (e.stepT || 0) + dt; } } }
   } else if (e.t === 'crab') { near = ad < 140 && dy < 30 && !P.dead;
@@ -6590,7 +6591,8 @@ function updateShore(e, dt) {
     else { e.mode = 'idle'; if (e.modeT <= 0 && !P.dead && ad < 200 && dy < 100) { e.mode = 'sing'; e.modeT = 3; SFX.sirenSong(); } }
   } else if (e.t === 'tideguard') { near = ad < 170 && dy < 40 && !P.dead;
     if (e.mode === 'thrustTell') { if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.3; SFX.slash(); e.vx = e.face * 70;
-      if (!P.dead && Math.sign(d) === e.face && ad < 48 && dy < 20) { const res = damagePlayer(e.x, DMG.tideguard); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.0; e.stagger = 1.0; e.vx = -e.face * 50; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -80; } } } }
+      /* as far as the spear is drawn (22 px): it thrust 12 px past its point */
+      if (!P.dead && Math.sign(d) === e.face && ad < 27 && dy < 20) { const res = damagePlayer(e.x, DMG.tideguard); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.0; e.stagger = 1.0; e.vx = -e.face * 50; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -80; } } } }
     else if (e.mode === 'thrust') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.6; e.cd = 1.3; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 36 || e.flanking) ? e.face * e.speed : 0; if (ad < 46 && e.cd <= 0) { e.mode = 'thrustTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.charge(); } } else want = 0; }
@@ -6670,7 +6672,9 @@ function updateTollmaster(e, dt) {
     case 'ledgerTell': { want = -e.face * 14;
       if (Math.random() < dt * 16) parts.push({ x: e.x - e.face * 16, y: e.y - 38 - Math.random() * 6, vx: -e.face * 20, vy: -14, life: 0.35, max: 0.35, col: '#cfc6a8', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'ledger'; e.modeT = 0.34; e.vx = e.face * 110; SFX.heavy();
-        if (!P.dead && Math.sign(d) === e.face && ad < 62 && Math.abs(P.y - e.y) < 34) {
+        // THE BOOK HITS WHERE IT IS DRAWN: 37.5 px at his scale on the striking frame, and the 5 of you in front of your middle.
+        // It used to land 17.5 px past the end of it
+        if (!P.dead && Math.sign(d) === e.face && ad < 43 && Math.abs(P.y - e.y) < 34) {
           const res = damagePlayer(e.x, DMG.tollLedger);
           // a parry on the ledger is the showcase: it knocks the book out of his swing and opens him
           if (res === 'blocked') { e.stagger = Math.max(e.stagger || 0, 1.2); e.open = Math.max(e.open, 1.2); e.mode = 'reel'; e.modeT = 1.2; number(e.x, e.y - 48, 'THE BOOK TURNS: CUT HIM', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); }
@@ -11907,7 +11911,8 @@ function updateLance(e, dt) {
     // a swing that finds nothing leaves him over his front foot: that is the answer for anyone who will not stand and block
     case 'recover': if (e.modeT <= 0) { e.mode = p2 ? 'guard' : 'pace'; e.modeT = 0.4; } break;
     case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; SFX.slash(); shakeCam(3);
-      if (!P.dead && ad < 52 && Math.abs(P.y - e.y) < 18 && P.ground) { const res = damagePlayer(e.x, DMG.lanceSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d) * 260; P.vy = -120; } } } break;
+      /* the sweep reaches as far as the lance is drawn along the boards (30 px at his scale): it reached 13 px past it */
+      if (!P.dead && ad < 35 && Math.abs(P.y - e.y) < 18 && P.ground) { const res = damagePlayer(e.x, DMG.lanceSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d) * 260; P.vy = -120; } } } break;
     case 'sweep': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; } break;
     // THE BASH: the shield comes round and puts you on your back. Blocking does not stop a shield: get out from in front of it.
     case 'bashTell': e.face = Math.sign(d) || e.face; want = -e.face * 16; if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = 0.26; e.vx = e.face * 140; SFX.clank(); SFX.heavy(); shakeCam(3);
