@@ -720,7 +720,7 @@ export function bakeLurker() {
   const a = sspr([...bell, '....kkkk....', '....kkkk....', '....kkkk....', '....kkkk....', '...kkkkkk...']);
   const b = sspr([...bell, '....kkkk....', '...keokok...', '..kRRRRRRk..', '..kRrrrrRk..', '...kkkkkk...']);
   const half = sspr([...bell, '....kkkk....', '...keokok...', '...kkkkkk...', '..kRRRRRRk..', '...kkkkkk...']);
-  return pack([a, b, half], 6, 13, 10, 12);
+  return pack([a, b, half], 6, 14, 10, 12);   /* the stalk's foot a row into the ground like every walker's: at 13 it stood two rows in */
 }
 
 // SPITCAP — a tall rooted mushroom with a bladder for a cap. It swells, then lobs a spore bomb over your head.
@@ -993,7 +993,9 @@ export function bakeCragRam() {
   // as a sheep going sideways. A crag ram is a heavy curl of horn over a dark face, a barrel of fleece
   // with the light on top of it and the shadow slung under, a beard, and four black legs. 18x12.
   const RP = Object.assign({}, CP, { f: '#d8d0c0', F: '#a8a090', G: '#7e786c', m: '#c9a83a', M: '#8a6a1a', n: '#8a7f70', z: '#3a2e22', o: '#1b1626' });
-  const r = rows => outline(fromGrid(rows, RP, 1), OUT);
+  /* EVERY FRAME THIRTEEN ROWS: the rear is a row taller than the walk, and on one anchor a taller frame stands lower, so it bucked
+     a row deeper into the scree than it walked. The short frames get an empty row on top, and the anchor is the hooves' row. */
+  const r = rows => outline(fromGrid(rows.length < 13 ? ['..................', ...rows] : rows, RP, 1), OUT);
   const head = [
     '.............mmM..',
     '............mMmMm.',
@@ -1022,7 +1024,7 @@ export function bakeCragRam() {
     '..z...z...........']);
   /* hurt: the head thrown back and the eye shut, the legs splayed as it takes the blow */
   const hurt = r([...head.map((row, i) => (i === 5 ? '..ffffffffffnnnnn.' : row).slice(1) + '.'), '.zz...z....z...zz.', 'z.....z....z.....z', 'o.....o....o.....o']);
-  return pack([run1, run2, rear, run1, run2, hurt], 9, 12, 14, 9);
+  return pack([run1, run2, rear, run1, run2, hurt], 9, 14, 14, 9);
 }
 
 // Hill troll — a hulking mossy brute, taller than a door, that hurls boulders. 18×17. Frames: stand, walk1, walk2, throw (rock up), swat.
@@ -1897,7 +1899,7 @@ export function bakeHare() {
   const run1 = q(['......hh.hh..', '.....hh.hh...', '.....hhhhhh..', '...hhhhhhhhh.', '.HhhhhhhhhhHe', 'whhhhhhhhhhh.', '.HhhhhhhhhH..', 'hh..hh..hh...', 'h....h....h..']);
   const run2 = q(['......hh.hh..', '.....hh.hh...', '.....hhhhhh..', '...hhhhhhhhh.', '.HhhhhhhhhhHe', 'whhhhhhhhhhh.', '.HhhhhhhhhH..', '..hhhh.hhh...', '..h..h..h....']);
   const sit = q(['.......h.h...', '.......h.h...', '.......hhh...', '....hhhhhhh..', '...hhhhhhhHe.', '.wHhhhhhhhh..', '..hhhhhhhh...', '..hhhhhhhh...', '...hh...hh...']);
-  return pack([run1, run2, sit], 6, 9, 10, 7);
+  return pack([run1, run2, sit], 6, 10, 10, 7);   /* the paws a row into the ground like every walker's: at 9 it sat two rows into the moor */
 }
 
 // The peat wight — a pale hand of bog-mist that rises where you stand too long. 10×14. Frames: rise1, rise2.
@@ -2745,11 +2747,13 @@ export function bakeRunner() {
     '...hhhhh....', '..hHhhhHh...', '.mhHhhhHh...', '.m.hhhhh....', '...vv.vv....', '..vv...vv...', '.VV.....V...'], W));
   const run2 = wspr(pad([...head,
     '...hhhhh....', '..hHhhhHh...', '.mhHhhhHh...', '.m.hhhhh....', '....vvvv....', '...vv..vv...', '...V....VV..'], W));
-  const shout = wspr(pad(['.a........a.', '..a......a..', '...a....a...', ...head,
+  /* the shout's lines drawn beside the head, not stacked over it: three rows of them made the frame two rows taller than the
+     walk, and on the same anchor that stood him two rows into the ground */
+  const shout = wspr(pad(['.a........a.', '..a.zz...a..', '...aaaa.a...', ...head.slice(2),
     '...hhhhh....', '..hHhhhHh...', '..hHhhhHh...', '...hhhhh....', '...vv.vv....', '..vv...vv...'], W));
   const stab = wspr(pad([...head,
     '...hhhhh....', '..hHhhhHh...', '..hHhhhHhmmm', '...hhhhh.ss.', '...vv.vv....', '..vv...vv...', '.VV.....V...'], W));
-  return pack([run1, run2, shout, stab], 6, 13, 8, 12);
+  return pack([run1, run2, shout, stab], 6, 14, 8, 12);   /* his feet a row into the ground like every walker's (at 13 they were two rows in) */
 }
 
 // THE CROSSBOWMAN - the prod held flat across his chest is a horizontal bar and nothing else in the town
