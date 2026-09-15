@@ -28,6 +28,8 @@ const table = (out, head, rows) => { out.push('| ' + head.join(' | ') + ' |', '|
 const CONTACT_LINE = C && C.creatures ? null : null;
 
 if (C) {
+  /* THE TOUCH LINE, read from the source when an older sweep did not write it down: a body's contact damage is not a blow's frame data */
+  if (!C.contactLine) C.contactLine = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').split('\n').findIndex(l => /damagePlayer\(e\.x, e\.t === 'hopper'/.test(l)) + 1;
   const cre = Object.values(C.creatures).filter(r => !r.skipped);
   const skipped = Object.values(C.creatures).filter(r => r.skipped);
   /* ---------- 1. HITBOXES ---------- */
@@ -60,11 +62,18 @@ if (C) {
   for (const x of hb) {
     if (x.air && x.air.px > 2) findings.combat1.push({ sev: x.air.px, kind: 'bug', who: x.key, text: `${x.key} (${x.lvl}): hurt box ${x.w}x${x.h} reaches ${r1(x.air.px)} px past the drawn body on frame ${x.air.i} (air left/right ${x.air.lr.map(r1).join('/')}, top ${r1(x.air.top)}): blows land on empty air` });
     for (const b of x.blows) { if (b.never) continue;
+      { const g0 = (C.creatures[x.key].sweeps[b.m] || { grid: [] }).grid.filter(q => q.n && q.first);   /* charges, lunges and missiles are not compared with their frames (see below) */
+        if (g0.some(q => Math.abs(q.first.move) > 4) || (b.reach !== null && b.front !== null && (b.reach >= 58 || b.reach > Math.max(8, b.front) * 1.8))) { b.skipCompare = true; } }
+      if (b.skipCompare) { if (b.behind) findings.combat1.push({ sev: 4, kind: 'design', who: x.key, text: `${x.key} ${b.m}: also lands on a hero standing BEHIND it (main.js:${b.line})` }); continue; }
       if (b.short !== null && b.short > 3) findings.combat1.push({ sev: b.short, kind: 'bug', who: x.key, text: `${x.key} ${b.m}: drawn to ${r1(b.front)} px on its live frames (${b.live.join(',')}) but lands only to ${r1(b.reach)} px: ${r1(b.short)} px of weapon that does not connect (main.js:${b.line})` });
       /* A THROWN OR RANGED BLOW (a shot, a spit, a shockwave, a thrown hook) lands wherever its missile goes: past 1.8x the drawn front, or at
          the edge of the 64 px grid, it is not a hitbox and is listed apart, never as reach with nothing drawn */
       b.ranged = b.reach !== null && b.front !== null && (b.reach >= 58 || b.reach > Math.max(8, b.front) * 1.8);
-      if (b.ranged) continue;
+      /* A CHARGE OR A LUNGE lands on contact after the body has travelled into (or past) the hero, so its offset at impact says nothing
+         about the drawn weapon: only blows thrown from where the creature stands are compared with their frames */
+      const land0 = s0 => s0 ? s0.grid.filter(q => q.n && q.first) : []; b.moving = land0(C.creatures[x.key].sweeps[b.m]).some(q => Math.abs(q.first.move) > 4);
+      if (b.moving && !b.ranged) (x.charges = x.charges || []).push(b.m);
+      if (b.ranged || b.moving) continue;
       if (b.short !== null && b.short < -3) findings.combat1.push({ sev: -b.short + 2, kind: 'bug', who: x.key, text: `${x.key} ${b.m}: lands ${r1(b.reach)} px out but its live frames (${b.live.join(',')}) are drawn only to ${r1(b.front)} px: ${r1(-b.short)} px of reach with nothing drawn (main.js:${b.line})` });
       if (b.behind) findings.combat1.push({ sev: 4, kind: 'design', who: x.key, text: `${x.key} ${b.m}: also lands on a hero standing BEHIND it (main.js:${b.line})` });
       if (b.lean > 3) findings.combat1.push({ sev: 1 + b.lean / 4, kind: 'bug', who: x.key, text: `${x.key} ${b.m}: its live frames lean ${r1(b.lean)} px off the anchor; the hurt box stays centred on it` }); }
@@ -115,7 +124,9 @@ if (C) {
       fd.push(row); }
   }
   const leads = fd.filter(q => q.lead !== null && q.lead !== undefined).map(q => q.lead), NORM = med(leads);
-  for (const q of fd) { if (q.windup === undefined) continue;
+  /* FLAGS COME FROM WATCHED USES ONLY: a forced mode starts with whatever timer and target fields the harness gave it, so its mark and lead
+     are in the table as a reading, never ranked as a finding (a forced lampreeve showed no mark that every natural use of it showed) */
+  for (const q of fd) { if (q.windup === undefined || !String(q.src).startsWith('watched')) continue;
     if (q.noMark) findings.combat2.push({ sev: 8, kind: 'bug', who: q.key, text: `${q.key} ${q.m}: the blow landed with NO ! or !! shown before it (${q.src})` });
     if (q.lead !== null && q.lead < 15) findings.combat2.push({ sev: 9 - q.lead / 3, kind: 'design', who: q.key, text: `${q.key} ${q.m}: lands ${q.lead} frames (${r1(q.lead / 60 * 100) / 100} s) after the mark appears, under the 0.25 s floor (${q.src})` });
     else if (q.lead !== null && Math.abs(q.lead - NORM) > 6 && q.lead > NORM * 2.5) findings.combat2.push({ sev: 1, kind: 'design', who: q.key, text: `${q.key} ${q.m}: lead ${q.lead} frames against the game's median ${NORM}` });
@@ -185,7 +196,7 @@ if (CON) {
   if (C) { const rows = [];
     if (C.heroes) for (const [hk, H] of Object.entries(C.heroes)) { if (hk.includes(':') && !hk.endsWith(':' + (Object.keys(C.heroes).find(k => k.startsWith('knight:')) || '').split(':')[1])) continue;
       for (const key of ['idle', 'run', 'land', 'block']) { const fr = (H.frames[key] || []).filter(Boolean); if (!fr.length) continue; const bs = fr.map(b => b.b); rows.push([hk.split(':')[0], key, Math.min(...bs), Math.max(...bs)]);
-        if (key === 'idle' && Math.abs(med(bs)) >= 2) findings.anim1.push({ sev: 6 + Math.abs(med(bs)), kind: 'bug', who: hk, text: `hero ${hk.split(':')[0]}: the baked ${key} frames reach ${med(bs) > 0 ? med(bs) + ' px BELOW' : -med(bs) + ' px short of'} the feet line (anchor) on every frame: ${med(bs) > 0 ? 'sunk' : 'hovering'} by construction on every level` }); } }
+        /* (no finding from this: a hero's lowest opaque pixel is often the tip of a weapon held low, not a foot - the table says so) */ } }
     const cre = Object.values(C.creatures).filter(r => !r.skipped && r.boxes[0] && !r.boxes[0].empty);
     for (const r of cre) { const b = r.boxes[0].b; if (Math.abs(b) >= 2 && !(C.habitats[r.key] && /fly|bat|harpy|kite|crow|wasp|imp|broom|haunt|marshlight|rook|drone|petrel|sailer/.test(r.key))) rows.push([r.key, 'frame 0', r1(b), r1(b)]); }
     am.push('### Drawn bottom against the feet line, from the baked frames (px below the anchor; 1 is the one-pixel overlap, 0 stands exactly on it)', ''); table(am, ['body', 'frames', 'min', 'max'], rows); }

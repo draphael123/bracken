@@ -205,7 +205,7 @@ async function main() {
     const { byType, sites, contactLine } = sourceTells();
     const jsonPath = join(SCRATCH, 'creatures.json');
     const results = existsSync(jsonPath) && (only || HERO_ONLY) ? JSON.parse(readFileSync(jsonPath, 'utf8')) : { creatures: {}, heroes: null };
-    results.tellSites = sites; results.srcTells = byType; results.habitats = hab;
+    results.tellSites = sites; results.srcTells = byType; results.habitats = hab; results.contactLine = contactLine;   /* the report separates a body's touch from its blows by this line */
     if (!HERO_ONLY) {
       const keys = only || Object.keys(hab).filter(k => !NOT_A_FOE.has(k.split(':')[0])).sort();
       say(keys.length + ' creatures');
