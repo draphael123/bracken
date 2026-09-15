@@ -365,6 +365,12 @@ export async function killLab(BK, opts = {}) {
          doing its job, and the pools already say so (tools/killzones.mjs checks their bottoms). Dry ground is the question. */
       const inPool = (BK.L.pools || []).some(p => P.x > p.x0 && P.x < p.x1 && P.y > p.y - 2 && (p.bottom === undefined || P.y <= p.bottom + 8));
       if (wet || inPool) { out.summary.wet = (out.summary.wet || 0) + 1; continue; }
+      /* AND SO IS FIRE: a firepit burns in gouts on its own tile (since the timed prop is the one that spawns, the pits of Kingswood
+         actually burn), and a hero put down on a lit one is burnt by the level doing its job, not by a bug. Only a fire ON the tile
+         he was put on is excused; a burn from anywhere else is still reported, with the fires count in the row to say so. */
+      const tileX = x * 16 + 8, tileY = (y + 1) * 16;
+      const onFire = (BK.fires() || []).some(f => !(f.delay > 0) && Math.abs(f.x - tileX) < 14 && Math.abs(f.y - tileY) < 10);
+      if (onFire && !P.dead) { out.summary.fire = (out.summary.fire || 0) + 1; continue; }
       out.summary.tiles++;
       if (P.dead || hurt > 0) { lvBad++;
         const tx = Math.floor(P.x / 16), ty = Math.floor(P.y / 16), g = BK.L.grid, W = BK.L.W;
