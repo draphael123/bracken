@@ -36,6 +36,7 @@ export async function fightLab(BK, opts = {}) {
         const d = e.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + e.w / 2; P.face = Math.sign(d) || P.face;
         const threat = threatOf(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
         k.left = false; k.right = false; k.block = false;
+        if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
         if (threat && P.atk < 0) {
           defends++;
           if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
@@ -128,7 +129,11 @@ export async function bossLab(BK, opts = {}) {
     /* THE MODE LEDGER (opts.modes): how often the boss ENTERED each mode, and how much of the hero's health was lost while it was in each - which attacks fired at all, and which ones did the damage */
     const modeN = {}, hitBy = {}; let lastMode = null;
     const ledger = (m0, lost) => { if (!opts.modes) return; if (boss.mode !== lastMode) { lastMode = boss.mode; modeN[lastMode] = (modeN[lastMode] || 0) + 1; } if (lost > 0) hitBy[m0] = (hitBy[m0] || 0) + lost; };
-    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
+    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0;
+    /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
+       once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
+       time behind it, so it is RETURNED. One release in ten is early. dkHold keeps the ward up a little past the end of a tell. */
+    const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     for (; f < maxF && boss.alive; f++) {
       P.hp = P.maxHp; P.dead = 0; P.st = Math.max(P.st, 40);
       /* THE DEEP: THE KING SWIMS. No stone - a stone is a man standing on the floor, and he is not there. The bot swims at him, up
@@ -156,16 +161,20 @@ export async function bossLab(BK, opts = {}) {
       wasOpen = open;
       k.left = false; k.right = false; k.block = false; k.up = false; k.down = false; k.jump = false;
       if (h === 'paladin' && f < holdC) k.block = true;
+      if (h === 'reaper' && f < dkHold) k.block = true;
+      if (h === 'reaper') { k.throw = false;   /* F: RAISE DEAD off a body in reach when there is room and blood for it; with a full bar and the boss close, HOLD F for the surge */
+        if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); }
+        else if (f % 20 === 0 && P.harvest >= 20 && BK.risen().filter(r => r.life > 0).length < 2 && BK.bodies().some(q => q.life > 0 && Math.hypot(q.x - P.x, q.y - P.y) < 90)) BK.press('throw'); }
       let goal = null, strike = false, princeT = null;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
       const rushing = ((boss.mode === 'rush' || (boss.t === 'masthead' && boss.mode === 'sail')) && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */   /* THE RAM is answered as it arrives, like the shoulder */
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
       const incoming = BK.seeds().find(s => (s.rubble || s.mawSpit || s.timber || s.shot || s.bolt) && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 34 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0);
-      // THE ANSWER, on the beat. The paladin's aegis and the death knight's drain guard take a moment to come up, so they hold C from the start of the tell
+      // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* (the Reefmaw bait was tried and reverted: holding outside its bite lost every opening the bot had; it needs a player's read of the holes) */
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
-         freebooter's tap just before it lands, the aegis and the drain raised in the last half second, a roll through for the
+         freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
          pyromancer. The bash is rolled through as it arrives; the judgement is walked off its mark. */
       const KA = boss.t === 'kraken' && BK.krak ? BK.krak() : null;
       if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
@@ -175,7 +184,9 @@ export async function bossLab(BK, opts = {}) {
         else if (ad > (m === 'thrustTell' ? 86 : 62)) goal = boss.x - Math.sign(d || 1) * 40;
         else if (h === 'knight') { if (t < 0.08) k.block = true; }
         else if (h === 'pirate') { if (t < 0.16 && t > 0.08) k.block = true; }
-        else if (h === 'paladin' || h === 'reaper') { if (t < 0.4) k.block = true; }
+        else if (h === 'paladin') { if (t < 0.4) k.block = true; }
+        else if (h === 'reaper') { if (dkRel.mode !== m || t > dkRel.t0 + 0.05) dkRel = { mode: m, t0: t, at: 0.45 - (0.12 + Math.random() * 0.22 + (Math.random() < 0.1 ? 0.3 : 0)) }; dkRel.t0 = t;
+          if (t > dkRel.at) k.block = true; dkHold = 0; }   /* the ward up through his windup and LET GO at the flash, a reaction time late: one in ten is too late, and only turns it */
         else if (t < 0.1 && f % 3 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
       else /* THE KRAKEN is read from the arena, not from where its body is: BK.krak() says what is coming and what is open (the same
          things its marks are drawn from) - cut the arms where they lie, get up out of the surge, ring the bell while it looks,
@@ -188,7 +199,10 @@ export async function bossLab(BK, opts = {}) {
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : 0.14)))) {
         P.face = Math.sign(d) || P.face;
-        if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40; } else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
+        if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
+          if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
+            if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
+              if (boss.modeT < dkRel.at) { k.block = false; dkHold = 0; } } } } else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
       } else if (incoming && SHIELDED(h)) { P.face = Math.sign(incoming.x - P.x) || P.face; k.block = true; }
       /* THE BURIED PRINCE, played the way his tomb teaches it: off the red mark while he is under the floor; in the dark, light
          a lamp; with him standing under a timber set, cut its post from outside the span it holds */
@@ -240,6 +254,10 @@ export async function bossLab(BK, opts = {}) {
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) BK.press('jump');   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       const was = P.hp, m0 = boss.mode; BK[opts.draw ? 'step' : 'sim'](1); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
+      if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
+        /* the ward took something: learn how late that tell's blow came, and let go now - the nova */
+        if ((P.wardG || 0) > dkG + 0.5 && !(P.parryT > 0)) { if (dkEndM && f - dkEndF <= dkF(0.8)) dkLag[dkEndM] = Math.min(dkLag[dkEndM] ?? 9, (f - dkEndF) * (BK.SET.speed || 1) / 60); dkHold = 0; }
+        dkG = P.wardG || 0; }
       if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open });   /* THE CAMERA HOOK (opts.draw renders each frame; opts.onFrame may take it) */   /* a fall into a pit is a death and a respawn, not a blow: it is counted as falls, not as damage */
       if (P.dead) falls++;
       if (f % 600 === 599) await yieldNow();
@@ -247,7 +265,7 @@ export async function bossLab(BK, opts = {}) {
     k.left = false; k.right = false; k.block = false;
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
     await yieldNow();
   }
   out.done = true; out.ms = Date.now() - out.started;

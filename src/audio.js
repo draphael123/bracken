@@ -199,7 +199,10 @@ export const SFX = {
     else if (mat === 'bone') { noise(0.05, 0.22, 2400, 2); noise(0.05, 0.16, 1200, 2, 0.03); }
     else { noise(0.07, 0.16, 400, 0.7); tone('sine', 140, 80, 0.08, 0.12); } },
   // THE DEATH KNIGHT'S OWN. He was borrowing a wight's touch, a ram's bellow, a keg going up and a golem's foot.
-  dkDrain() { if (!gate('dkDrain', 0.25)) return; pad('sawtooth', 220, 70, 0.55, 0.06, 0, 700, 0.02); noise(0.45, 0.09, 380, 1.4); tone('sine', 62, 48, 0.14, 0.2, 0.05); tone('sine', 58, 44, 0.16, 0.16, 0.26); },   /* a breath pulled in, and a heartbeat that is not his */
+  dkWard() { if (!gate('dkWard', 0.2)) return; noise(0.12, 0.14, 2200, 2.5); tone('sawtooth', 90, 140, 0.25, 0.07, 0.02); pad('sine', 180, 240, 0.5, 0.05, 0.04, 900, 0.08); },   /* the point goes in, and the ward hums up out of it */
+  dkWardHit(k = 0.5) { if (!gate('dkWardHit', 0.06)) return; tone('sine', 110 - 30 * k, 60, 0.22, 0.24); noise(0.1, 0.18, 700, 1.2); tone('triangle', 330 + 220 * k, 300 + 200 * k, 0.12, 0.06, 0.01); },   /* a wet thud into it, and a note that climbs as it fills */
+  dkNova(k = 0.6) { noise(0.35 + 0.25 * k, 0.16 + 0.12 * k, 260 + 200 * k, 0.8); tone('sine', 90, 34, 0.45 + 0.3 * k, 0.22 + 0.14 * k); pad('sawtooth', 70, 160 + 120 * k, 0.4, 0.05 + 0.05 * k, 0, 800 + 600 * k, 0.01); if (k > 0.8) tone('sine', 55, 30, 0.6, 0.2, 0.12); },   /* the blood going out of him all at once, bigger as the ward was fuller */
+  dkReturn() { bell(1320, 0.5, 0.1); bell(660, 0.7, 0.08, 0.02); noise(0.08, 0.3, 3200, 2); tone('square', 1800, 900, 0.1, 0.08); tone('sine', 80, 40, 0.3, 0.26, 0.03); },   /* a bright ring off the ward, and the blow going back down the arm that threw it */
   dkSurge() { pad('sawtooth', 55, 110, 0.7, 0.12, 0, 900, 0.5); pad('square', 110, 220, 0.7, 0.05, 0, 1400, 0.55); noise(0.6, 0.12, 300, 0.9, 0.1);
     for (const [d, v] of [[0.72, 0.34], [0.96, 0.28], [1.4, 0.22]]) tone('sine', 70, 38, 0.22, v, d); tone('sawtooth', 180, 60, 0.5, 0.08, 0.72); },   /* the blood swells toward him, then three beats of it arriving */
   dkPlant() { noise(0.18, 0.2, 2600, 3); tone('sawtooth', 420, 90, 0.2, 0.08); tone('sine', 60, 30, 0.5, 0.36, 0.08); noise(0.5, 0.26, 180, 0.6, 0.08); file('imp_stone', 0.36, 0.7);

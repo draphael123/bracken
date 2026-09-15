@@ -3069,6 +3069,7 @@ function trialYard(hero) {
     reaper: [
       ['hit', 3, 'THE SWATHE: X CUTS ALL IN FRONT, BUT NOT UP CLOSE. KEEP A STEP OF ROOM. HIT THREE.', [['dummy', 16], ['dummy', 20]]],
       ['heavyblow', 2, 'HOLD X: THE REAPING CUTS A FULL CIRCLE THROUGH ANY GUARD. LAND IT TWICE.', [['dummy', 13], ['dummy', 21]]],
+      ['ward', 2, 'HOLD C: THE BLOOD WARD STOPS HIS ARROWS. LET GO AND IT BURSTS OUT. DO IT TWICE.', [['archer', 22]]],
       ['pogo', 2, 'THE CULL: JUMP, THEN DOWN+X. A SHADE TEARS OUT AND FIGHTS FOR HIM. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]]],
       ['dodge', 2, 'V: THE PASSING. HE GOES THIN AND NOTHING TOUCHES HIM. ROLL TWICE.', []]],
     pirate: [
