@@ -594,6 +594,16 @@ export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, cu
 const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
 const DIE = {
+  /* THE MAGE'S FOLLY: a hedge falling to bits, a suit coming apart, a bucket over, a chest breaking, a jar's worth of squeal, glass, and the tower's two */
+  topiary() { noise(0.3, 0.24, 1600, 0.4); noise(0.2, 0.16, 700, 0.5, 0.1); tone('square', 200, 90, 0.16, 0.06, 0.05); },
+  armour() { file('clang', 0.3, 0.55) || tone('sine', 500, 300, 0.2, 0.14); for (let i = 0; i < 4; i++) { tone('square', 1400 - i * 200, 900 - i * 150, 0.14, 0.08, 0.15 + i * 0.12); noise(0.06, 0.2, 2000, 0.5, 0.15 + i * 0.12); } },
+  piece() { file('clang', 0.12, 1.4) || tone('sine', 1600, 900, 0.1, 0.06); noise(0.06, 0.1, 2400, 0.5, 0.04); },
+  broom() { noise(0.14, 0.22, 800, 0.5); tone('square', 260, 120, 0.16, 0.08); noise(0.24, 0.18, 350, 0.4, 0.1); },
+  mimic() { tone('sawtooth', 140, 60, 0.3, 0.14); noise(0.2, 0.26, 600, 0.5, 0.05); for (let i = 0; i < 3; i++) noise(0.05, 0.16, 1500, 0.5, 0.2 + i * 0.1); },
+  imp() { tone('sawtooth', 1300, 400, 0.22, 0.1); noise(0.12, 0.14, 2200, 0.5, 0.06); noise(0.3, 0.12, 500, 0.3, 0.14); },
+  turret() { tone('triangle', 2200, 600, 0.3, 0.1); noise(0.2, 0.2, 3000, 0.5); for (let i = 0; i < 5; i++) tone('triangle', 3000 - i * 300, 2500 - i * 300, 0.1, 0.05, 0.1 + i * 0.06); },
+  homunculus() { tone('sine', 700, 200, 0.5, 0.12); tone('triangle', 1600, 300, 0.4, 0.05, 0.05); noise(0.3, 0.16, 2400, 0.4, 0.3); },
+  archmage() { tone('sine', 300, 90, 0.9, 0.16); noise(0.5, 0.2, 800, 0.5, 0.05); for (let i = 0; i < 6; i++) tone('triangle', 2600 - i * 300, 2200 - i * 300, 0.2, 0.06, 0.3 + i * 0.12); tone('sine', 70, 40, 1, 0.12, 0.6); },
   // UNDERLEAF. Everything here dies the way it lived: the assassin without a sound worth the name, the
   // berserker taking the whole street with him, and the old woman's stick going over on the cobbles.
   assassin() { noise(0.1, 0.16, 3200, 0.7); tone('sine', 420, 180, 0.14, 0.05); noise(0.18, 0.1, 900, 0.4, 0.06); tone('triangle', 900, 700, 0.06, 0.05, 0.16); },
@@ -722,6 +732,16 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  /* THE MAGE'S FOLLY: leaves, plate, a slopped bucket, a wooden jaw, a thing out of a jar, brass, and the two at the top */
+  topiary() { noise(0.12, 0.2, 1800, 0.4); noise(0.08, 0.14, 900, 0.5, 0.05); tone('square', 260, 180, 0.06, 0.04, 0.02); },
+  armour() { file('clang', 0.2, 0.7) || tone('sine', 700, 500, 0.12, 0.1); noise(0.08, 0.14, 1400, 0.5); },
+  piece() { file('clang', 0.1, 1.3) || tone('sine', 1400, 1100, 0.06, 0.06); },
+  broom() { noise(0.06, 0.2, 900, 0.5); tone('square', 320, 200, 0.08, 0.06); noise(0.1, 0.1, 400, 0.4, 0.05); },
+  mimic() { noise(0.1, 0.22, 700, 0.5); tone('sawtooth', 160, 90, 0.14, 0.1); tone('square', 900, 400, 0.05, 0.04, 0.06); },
+  imp() { tone('sawtooth', 1100, 700, 0.1, 0.09); noise(0.05, 0.12, 2600, 0.5); },
+  turret() { tone('triangle', 1900, 1300, 0.1, 0.08); tone('sine', 2800, 2600, 0.12, 0.03, 0.02); noise(0.04, 0.1, 3000, 0.6); },
+  homunculus() { tone('sine', 620, 380, 0.16, 0.1); tone('triangle', 1400, 1100, 0.08, 0.04, 0.03); noise(0.08, 0.12, 1100, 0.4); },
+  archmage() { tone('sine', 280, 160, 0.22, 0.12); noise(0.14, 0.16, 900, 0.5); tone('triangle', 1700, 1500, 0.14, 0.04, 0.05); },
   assassin() { noise(0.08, 0.13, 2800, 0.7); tone('sine', 500, 340, 0.09, 0.05); },
   swornsword() { tone('square', 260, 190, 0.12, 0.1); noise(0.1, 0.12, 1200, 0.4); },
   lancer() { tone('square', 240, 170, 0.12, 0.1); noise(0.12, 0.14, 1000, 0.45); },
