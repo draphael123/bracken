@@ -1935,7 +1935,7 @@ function theMonastery() {
   // ---- THE NEST ITSELF. The summit was one more ledge on the way up until it had a nest on it: the thing has been
   // living here a long time and the roof says so - bones it did not finish, the shells of what it hatched, and
   // the wall of the nest heaped round the rim out of the monks' own rafters.
-  for (const x of [6, 12, 84, 90]) ent('deco', x, 29, { kind: 'eyrie' });
+  for (const x of [6, 12, 77, 90]) ent('deco', x, 29, { kind: 'eyrie' });   /* not 84: it ran through the plank laid over the thorns */
   for (const [x, v] of [[20, 0], [34, 1], [58, 0], [72, 1]]) ent('deco', x, 29, { kind: 'bones', v });
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
   for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'cairn', v });
