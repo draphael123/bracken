@@ -3398,7 +3398,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH']);
+const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP']);
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -17702,7 +17702,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
   rows.forEach(([a, b], i) => { const yy = rowY + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
-  { const tr = 'level ' + heroLevel() + '   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
+  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
     text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
     text('T  TALENTS AND WHAT IS ON F AND G', VW / 2, y + h - 24, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
@@ -18319,7 +18319,7 @@ function render() {
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, VW - 16, [TYPE.title, 8]); g.fillStyle = 'rgba(10,8,16,0.66)'; g.fillRect(0, VH / 2 - 12, VW, (z >= 12 ? 10 : 8) + 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', z, 'outline'); } }   /* on a band of its own, and a name too wide for the card drops a size */
-    const hudMeter = hudMeterLabel(), hudPW = Math.max(116, hudMeter ? (isReaper() ? 112 : 92) + inkW(hudMeter.s, 6) + 5 : 116), hudPH = (SET.iron ? 38 : 26) + 10;   /* the plate is as wide as what C does */
+    const hudMeter = hudMeterLabel(), hudPW = Math.max(116, hudMeter ? (isReaper() ? 112 : 92) + inkW(hudMeter.s, 6) + 5 : 116), xpRow = xpWood() ? 8 : 0, hudPH = (SET.iron ? 38 : 26) + 10 + xpRow;   /* (xpRow: the XP bar's line) */   /* the plate is as wide as what C does */
     board(1, 1, hudPW, hudPH, UI.border, 'rgba(10,8,20,0.5)', true);
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab);
       board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); hudRects = [[0, 0, hudPW + 2, hudPH + 2], [VW - 8 - pw, 0, pw + 4, 32]]; }
@@ -18333,7 +18333,7 @@ function render() {
     for (let i = 0; i < (PROG.tonics || 0); i++) g.drawImage(TONIC_ICON, 90 + i * 7, 14); // the tonics you carry
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
-    if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + 10;
+    if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + 10 + xpRow;
       text((SET.invincible ? 'INVINCIBLE ' : '') + (SET.godmode ? 'GOD MODE' : ''), 6, 2 + ph + 3, '#ff9a5c', 'left', 6); }
     g.drawImage(PROP.bolt, 6, 15);
     if (hero() === 'knight') { const hy = SET.iron ? 41 : 29, full = (P.resolve || 0) >= 100, on = lcOn(), fill = on ? (P.lcBrace > 0 ? 1 : Math.max(0, P.lcLeft / LC_DIST)) : (P.resolve || 0) / 100;   /* RESOLVE: a shield for the icon; while THE LAST CHARGE runs, the bar is the road left in it */
@@ -18348,7 +18348,7 @@ function render() {
     // and it goes red and flashes before it starts costing you.
     if ((state === 'play' || state === 'talk') && P.swim && !P.dead) {
       const mx2 = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b2 = Math.max(0, P.breath ?? mx2), k2 = b2 / mx2;
-      const by = (SET.iron ? 41 : 29) + 10;
+      const by = (SET.iron ? 41 : 29) + 10 + xpRow;
       const low = k2 < 0.34, fl = low && Math.floor(time * 8) % 2;
       g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(2, by - 4, low ? 92 + inkW(k2 <= 0 ? 'NO AIR' : 'BREATH', 6) + 4 : 104, 13, 3); g.fill(); hudRects.push([2, by - 4, low ? 128 : 104, 13]);   /* wide enough for the word it says */
       bar(16, by, 70, 4, k2, k2 <= 0 ? '#ff6b6b' : low ? (fl ? '#ffd0d0' : '#ff6b6b') : '#7cc8c8', k2);
@@ -18383,6 +18383,12 @@ function render() {
       else { g.fillStyle = '#5a5460'; g.fillRect(px2, py2 + 3, 9, 2); g.fillRect(px2, py2 + 5, 3, 4);
         g.fillStyle = '#3a3040'; g.fillRect(px2, py2 + 11, 12, 1);
         g.fillStyle = '#ff9a5c'; g.fillRect(px2, py2 + 11, Math.round(12 * (1 - (P.reloadT || 0) / PISTOL_RELOAD)), 1); } }
+    /* THE XP BAR: a thin line under the meters, inside the plate, with the level beside it. A level-up turns it gold and it says LEVEL n */
+    if (xpRow) { const yy = (SET.iron ? 41 : 29) + 8, n = heroLevel(), lo = xpFloor(n), k = Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
+      if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
+      const lab = (up ? 'LEVEL ' : 'LV ') + n, bx = 6 + inkW(lab, 6) + 4;
+      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : '#c9b27c', 'left', 6);
+      bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 92, 14); }
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], P.relic ? 104 : 92, 14); g.globalAlpha = 1; }
@@ -18414,8 +18420,8 @@ function render() {
       g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); hudRects.push([tx - tw / 2, 2, tw, 13]);
       text(ts, tx, 5, 'rgba(224,216,196,0.82)', 'center'); }
     // POINTS WAITING: a badge under the bars, so nobody finishes the game with ten points unspent
-    if (state === 'play' && !godMode() && ptsLeft(hero()) > 0 && !(L && L.shop)) { const n = ptsLeft(hero()), lab = 'Q  ' + n, w = lab.length * 6 + 12, k = 0.5 + 0.5 * Math.sin(time * 2.4), by = (isPyro() || isPaladin() ? 44 : 34);
-      g.fillStyle = 'rgba(24,36,18,0.88)'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill();
+    if (state === 'play' && !godMode() && ptsLeft(hero()) > 0 && !(L && L.shop)) { const n = ptsLeft(hero()), lab = 'Q  ' + n, w = lab.length * 6 + 12, k = 0.5 + 0.5 * Math.sin(time * 2.4), by = (isPyro() || isPaladin() ? 44 : 34) + xpRow;
+      g.fillStyle = 'rgba(24,36,18,0.88)'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill(); hudRects.push([4, by, w, 11]);   /* a plate too: the tells keep off it (a hero levels in a fight now, so the badge can be up in one) */
       g.globalAlpha = 0.12 + 0.16 * k; g.fillStyle = '#8fd160'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill(); g.globalAlpha = 1;
       g.strokeStyle = 'rgba(143,209,96,0.85)'; g.lineWidth = 1; g.beginPath(); g.roundRect(4.5, by + 0.5, w - 1, 10, 3); g.stroke();
       g.fillStyle = '#8fd160'; for (let i = 0; i < 3; i++) g.fillRect(w - 3, by + 3 + i, 1 + i * 2, 1);   // the little chevron of a thing waiting to be spent
@@ -18424,7 +18430,7 @@ function render() {
     else if (hintT > 0 && state === 'play') { hintT -= 1 / 60; const k = Math.min(1, hintT * 2);
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
       const lines = wrap(hintMsg, VW - 40, 6), bw = Math.min(VW - 16, Math.max(...lines.map(l => inkW(l, 6))) + 16), bh = lines.length * BODY_LH + 6;
-      const heroY = P.y - cy, top = 48, foot = VH - bh - (bossActive || miniActive ? 32 : 6), hby = heroY > top - 8 && heroY - 28 < top + bh + 4 ? foot : top, hbx = Math.round(VW / 2 - bw / 2);
+      const heroY = P.y - cy, top = 48 + xpRow, foot = VH - bh - (bossActive || miniActive ? 32 : 6), hby = heroY > top - 8 && heroY - 28 < top + bh + 4 ? foot : top, hbx = Math.round(VW / 2 - bw / 2);
       g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
       g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
       lines.forEach((ln, i) => text(ln, VW / 2, hby + 4 + i * BODY_LH, '#ffd36b', 'center', 6)); g.globalAlpha = 1; }
@@ -18566,7 +18572,8 @@ function render() {
     line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
     line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
     line(1.20, 'deaths   ' + deaths, 116, '#fff6e0');
-    if (winLevelUp) line(0.15, fitText('LEVEL ' + heroLevel() + '  +3 HP  +5 ST' + (heroLevel() % 2 === 0 ? '  +1 DMG' : '') + '  +2 SKILL', pw - 12, 6), 52, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 6);
+    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' : xpRun > 0 ? '+' + xpRun + ' XP   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
+      if (s) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     { const id = LEVELS[levelIndex].id, m = medalFor(id, medalTime());
