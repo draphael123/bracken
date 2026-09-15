@@ -78,7 +78,7 @@ function brackenWood() {
   ent('check', 82, 21);
 
   // ---- 3. Wasp pit: pogo chain ----
-  ent('wasp', 87, 18); ent('wasp', 90, 18); ent('wasp', 93, 18); ent('wasp', 96, 18);
+  ent('wasp', 87, 18, { pogo: true }); ent('wasp', 90, 18, { pogo: true }); ent('wasp', 93, 18, { pogo: true }); ent('wasp', 96, 18, { pogo: true });   /* a pogo chain: THE MIX leaves these wasps */
   plat(88, 22, 2); plat(92, 22, 2); plat(96, 22, 2);   /* STUMPS IN THE POND. The wasps were the only way over, so the wood could not be finished by anyone who killed them first. The wasps went up out of the way: a pogo is a shortcut now, not the road */
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
@@ -173,7 +173,7 @@ function brackenWood() {
   G0.ent('felltree', 241, 14, { len: 14, dir: 1 });
   G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS, depth: 3 * TS });
   G0.block(242, 255, 24, 27);
-  G0.ent('wasp', 245, 13); G0.ent('wasp', 249, 13); G0.ent('wasp', 253, 13); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
+  G0.ent('wasp', 245, 13, { pogo: true }); G0.ent('wasp', 249, 13, { pogo: true }); G0.ent('wasp', 253, 13, { pogo: true }); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
   G0.coins([244, 13], [248, 13], [252, 13]);
   G0.block(256, 270, 15, 27);
   G0.ent('check', 259, 14); G0.ent('sprig', 265, 14, { face: -1 }); G0.coins([262, 13], [268, 13]);
@@ -660,7 +660,7 @@ function sporewood() {
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
     duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: true,
-    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: false, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
+    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
@@ -2878,11 +2878,14 @@ function highcrownWhole() {
     port(242, 58, 63); ent('lockgate', 242, 63, { needs: 'brass', h: 6 });
     port(392, 54, 63); ent('lockgate', 392, 63, { needs: 'iron', h: 10 });
     port(370, 10, 19); ent('lockgate', 370, 19, { needs: 'bone', h: 10 });
-    ent('key', 228, 63, { kind: 'brass' }); ent('key', 380, 63, { kind: 'iron' }); ent('key', 358, 19, { kind: 'bone' });
+    ent('key', 228, 63, { kind: 'brass' }); ent('key', 380, 63, { kind: 'iron' }); ent('key', 384, 19, { kind: 'bone' });
     ent('sign', 232, 63, { text: 'THE WARD GATE IS BARRED AND THE KEY IS ON ONE OF THEM. THEY ARE NOT CARRYING IT WELL.' });
     ent('heavy', 236, 63, { face: -1 }); ent('soldier', 230, 63, { face: 1 }); ent('javelin', 224, 63, { face: -1 });
     ent('soldier', 384, 63, { face: -1 }); ent('javelin', 376, 63, { face: 1 }); ent('soldier', 388, 63, { face: -1 });
-    ent('soldier', 362, 19, { face: -1 }); ent('heavy', 354, 19, { face: 1 }); ent('javelin', 366, 19, { face: -1 });
+    /* THE BONE KEY IS EAST OF ITS GATE. The chapel is entered from the armoury shaft at its east end, so the room before the
+       bone gate is the chapel's east half. The key and the three carrying it stood west of the gate they open, with the altar's
+       key and the choir loft's seal: none of the three could ever be had (tools/keys.mjs floods it) */
+    ent('javelin', 378, 19, { face: 1 }); ent('soldier', 382, 19, { face: 1 }); ent('heavy', 392, 19, { face: 1 });
 
     // ---- THE ROAD UP: it was a long empty walk, and it is her road, so it is watched ----
     ent('deco', 186, 63, { kind: 'tent' }); ent('deco', 191, 63, { kind: 'tent' }); ent('brazier', 183, 63);
@@ -3025,7 +3028,7 @@ function openYard() {
   ent('sign', 14, 21, { text: 'STRAW MEN DO NOT FIGHT OR STAY DOWN. SWING, RUN A COMBO, TIME A HEAVY BLOW.' });
   // ---- the steps: every height worth jumping, in a row you can read ----
   plat(36, 19, 4); plat(43, 17, 4); plat(50, 15, 4); plat(57, 13, 4);
-  ent('sign', 34, 21, { text: 'THE STEPS GO UP TWO ROWS AT A TIME. PRESS DOWN ON A LEDGE TO DROP THROUGH.' });
+  ent('sign', 34, 21, { text: 'THE STEPS GO UP TWO ROWS AT A TIME. DOWN+JUMP ON A LEDGE TO DROP THROUGH.' });
   coins([37, 18], [44, 16], [51, 14], [58, 12]);
   ent('dummy', 52, 14);
   // ---- the gap: wide enough that a walk will not do it ----
@@ -3622,6 +3625,7 @@ function longWater() {
   ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('coin', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
   ent('stray', 305, 28, { kind: 'fisher' }); ent('tideguard', 309, 28, { face: -1 });
   ent('crab', 319, 28, { face: -1 }); ent('crab', 325, 28, { face: 1 });
+  ent('urchin', 313, 28, { stays: true }); ent('urchin', 316, 28, { stays: true }); ent('urchin', 322, 28, { stays: true }); ent('urchin', 329, 28, { stays: true });   /* on the flats: at high water they are in the canal with you, at low water they are the floor you walk. By hand (the garrison's water test fails where the street's surface sits on it), and they STAY when the Sluice Bridge room is emptied for its ambush: they are the flats, not the ambushers */
   coins([284, 25], [289, 25], [294, 25], [302, 25], [304, 27], [312, 27], [314, 25], [320, 27], [322, 28], [308, 24], [318, 24], [324, 25], [328, 24]);
   block(332, 367, 27, H - 1);
   for (const [x, v] of [[336, 0], [344, 1], [352, 0], [360, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
@@ -5909,7 +5913,7 @@ export const LEVELS = [
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'moor' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },
-  { id: 'longwater', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
+  { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE WASH COMES FROM WINDWARD. THE RIGGING IS THE LEVEL.', build: theHurricane, needs: 'flotilla' },
@@ -5944,7 +5948,9 @@ export const LEVELS = [
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
-   not - and the creatures that only ever lived in one place get a second home. [from, to, every Nth] */
+   not - and the creatures that only ever lived in one place get a second home. [from, to, every Nth]
+   A creature marked pogo is part of a POGO CHAIN and is never swapped: the tarn's first wasp became a crow, and a crow
+   flying off is a gap in the chain. It still counts, so nothing else in the crowd changes. */
 const MIX = {
   wood: [['wasp', 'crow', 4], ['sprig', 'lurker', 3], ['spit', 'hopper', 3]],
   moor: [['harpy', 'crow', 3]],
@@ -5959,7 +5965,7 @@ for (const lv of LEVELS) {
   const build = lv.build;
   lv.build = (...a) => { const out = build(...a);
     for (const [from, to, every] of mix) { let n = 0;
-      for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0) { e.t = to; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
+      for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0 && !e.pogo) { e.t = to; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
     return out; };
   lv.build.mixed = true;
 }
@@ -6302,7 +6308,7 @@ function ambushRooms(L, id) {
   L.ambushes = list.map(A => ({ ...A, waves: A.waves.map(w => w.map(f => f.slice())) }));   /* a copy per build: the run's state lives on it */
   for (const A of L.ambushes) {
     const y0 = A.y0 !== undefined ? A.y0 : A.row - 9, inRoom = (e, pad) => e.x >= A.wallL - pad && e.x <= A.wallR + pad && e.y >= y0 && e.y <= A.row + 2;
-    L.ents = L.ents.filter(e => !(e.t === 'check' ? inRoom(e, 1) : THREAT[e.t] > 0 && !AMB_KEEP.has(e.t) && !e.boss && !e.mini && inRoom(e, 0)));
+    L.ents = L.ents.filter(e => !(e.t === 'check' ? inRoom(e, 1) : THREAT[e.t] > 0 && !AMB_KEEP.has(e.t) && !e.boss && !e.mini && !e.stays && inRoom(e, 0)));   /* stays: a creature that belongs to the room's ground, not to its ambush */
     if (A.check !== false) { const [cx, cy] = A.check || [A.wallL - 3, A.row]; L.ents.push({ t: 'check', x: cx, y: cy }); }
   }
   return L;
