@@ -1100,7 +1100,19 @@ function drawGateHints(cx, cy) {
       else { const axp = Math.max(6, Math.min(VW - 6, ex)), ayp = Math.max(38, Math.min(VH - 6, ey)), an = Math.atan2(ey - ayp, ex - axp) || (ex < 0 ? Math.PI : 0); g.fillStyle = '#ff6b6b'; g.beginPath(); g.moveTo(axp + Math.cos(an) * 5, ayp + Math.sin(an) * 5); g.lineTo(axp + Math.cos(an + 2.4) * 4, ayp + Math.sin(an + 2.4) * 4); g.lineTo(axp + Math.cos(an - 2.4) * 4, ayp + Math.sin(an - 2.4) * 4); g.closePath(); g.fill(); } } }
   if (L.mini && !miniDone) { const top = gateTop(L.mini.gate); if (top >= 0) { const gx = L.mini.gate * TS + 8 - cx, gy = top * TS - cy - 16 + bob; if (gx > -40 && gx < VW + 40) { plate(gx, gy, '#ff9a5c'); g.fillStyle = '#8a919c'; g.fillRect(gx - 5, gy - 5, 10, 5); g.fillStyle = '#5c3a1d'; g.fillRect(gx - 1, gy, 2, 6); } } } // the smith's hammer: he holds this door
   for (const st of (L.trial || [])) if (!st.done) { const gx = st.gate * TS + 8 - cx, gy = 14 * TS - cy - 14 + bob; if (gx < -40 || gx > VW + 40) continue; plate(gx, gy, '#8fd160'); for (let i = 0; i < st.n; i++) { g.fillStyle = i < (st.got || 0) ? '#8fd160' : '#3a3a44'; g.fillRect(gx - st.n * 3 + i * 6 + 1, gy - 2, 4, 4); } } // a trial's gate: a pip for each time it wants
-  for (const pr of props) if (pr.t === 'lockgate' && !pr.open && !hasKey(pr.needs) && Math.abs(P.x - pr.x) < 80 && Math.abs(P.y - pr.y) < 60) { const k = props.find(q => q.t === 'key' && q.kind === pr.needs && !q.got); if (!k) continue;
+  /* A KEY INDOORS IS FOUND FROM THE STREET. A house's inside is a room drawn somewhere else on the map, so the arrow at a barred gate
+     pointed at the key's room - up into the sky - and a player tried the house beside the gate, which had nothing in it (Stormhold's
+     iron gate). The arrow now points at the street door of the house the key is in, unless he is already in that room, and every
+     street door of a house still holding a key carries a key plate over it. */
+  const roomOf = (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor((y - 1) / TS); return (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 - 1 && ty <= y1 + 1) || null; };
+  const keyDoors = k => { const room = roomOf(k.x, k.y); if (!room) return [];
+    return props.filter(q => q.t === 'doorway' && q.lock && q.lock[0] <= room[1] && q.lock[1] >= room[0]).map(q => props.find(o => o.t === 'doorway' && o.id === q.to && !o.lock)).filter(Boolean); };
+  for (const k of props) if (k.t === 'key' && !k.got) for (const dr of keyDoors(k)) { const gx = Math.round(dr.x - cx), gy = Math.round(dr.y - cy) - 50 + bob; if (gx < -40 || gx > VW + 40) continue;
+    plate(gx, gy, '#e0b040'); g.fillStyle = '#e0b040'; g.fillRect(gx - 6, gy - 2, 4, 4); g.fillRect(gx - 2, gy - 1, 8, 2); g.fillRect(gx + 3, gy + 1, 1, 2); g.fillRect(gx + 5, gy + 1, 1, 2);
+    g.fillStyle = '#1b1626'; g.fillRect(gx - 5, gy - 1, 2, 2); }   // the key's bow, its shank and two teeth
+  for (const pr of props) if (pr.t === 'lockgate' && !pr.open && !hasKey(pr.needs) && Math.abs(P.x - pr.x) < 80 && Math.abs(P.y - pr.y) < 60) { const key = props.find(q => q.t === 'key' && q.kind === pr.needs && !q.got); if (!key) continue;
+    const room = roomOf(key.x, key.y), inRoom = room && roomOf(P.x, P.y) === room, doors = room && !inRoom ? keyDoors(key).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x)) : [];
+    const k = doors[0] || key;
     const dx = k.x - P.x, dy = k.y - P.y, d = Math.hypot(dx, dy) || 1, ax = Math.round(P.x - cx + dx / d * 22), ay = Math.round(P.y - 30 - cy + dy / d * 10), an = Math.atan2(dy, dx), pulse = 0.5 + 0.5 * Math.sin(time * 6);
     g.globalAlpha = 0.6 + 0.4 * pulse; g.fillStyle = '#e0b040'; g.beginPath(); g.moveTo(ax + Math.cos(an) * 6, ay + Math.sin(an) * 6); g.lineTo(ax + Math.cos(an + 2.5) * 5, ay + Math.sin(an + 2.5) * 5); g.lineTo(ax + Math.cos(an - 2.5) * 5, ay + Math.sin(an - 2.5) * 5); g.closePath(); g.fill(); g.globalAlpha = 1; } // the key is that way
 }
@@ -5476,7 +5488,7 @@ function updateBalls(dt) {
 // FINS in the foul water: they never come out of it, but they are the reason you cross on the ropes
 function drawFins(cx, cy) {
   if (!PROP.flot) return;
-  for (const p of (L.pools || [])) { if (!p.harm || p.fire) continue;   /* nothing swims in a burning ditch */
+  for (const p of (L.pools || [])) { if (!p.harm || p.fire || p.poison) continue;   /* nothing swims in a burning ditch, or in the Undercrown's poison */
     const y = Math.round(p.y - cy) - 4;
     if (y < -20 || y > VH + 20) continue;
     for (let k = 0; k < 5; k++) { const span = p.x1 - p.x0, ph = k * 1.7, sx = p.x0 + ((time * (18 + k * 7) + k * span / 5) % span);
@@ -15507,9 +15519,14 @@ function drawFoul(p, x0, x1, y, h, cx, cy) {
     if (sx < x0 - 8 || sx > x1) continue;
     g.fillStyle = ((x / 12) | 0) % 2 ? scumL : scum; g.fillRect(Math.round(sx), y + 1 + (Math.sin(time * 1.7 + x) > 0 ? 0 : 1), w, 2);
   }
-  g.fillStyle = 'rgba(180,210,110,0.75)';                                  // gas coming up out of it
-  for (let k = 0; k < 7; k++) { const t = (time * 0.5 + k * 0.31) % 1, bx = p.x0 + 10 + ((k * 97) % Math.max(1, p.x1 - p.x0 - 20)) - cx, by = y + 26 - t * 24;
+  g.fillStyle = p.poison ? 'rgba(170,255,90,0.85)' : 'rgba(180,210,110,0.75)';   // gas coming up out of it
+  for (let k = 0; k < (p.poison ? 11 : 7); k++) { const t = (time * 0.5 + k * 0.31) % 1, bx = p.x0 + 10 + ((k * 97) % Math.max(1, p.x1 - p.x0 - 20)) - cx, by = y + 26 - t * 24;
     if (bx > x0 && bx < x1 && by > y + 3) g.fillRect(bx, by, 2, 2); }
+  /* POISON (the Undercrown's standing water, which kills): no wrecks in it, but bubbles that break on the surface and a sickly glow
+     over it, so a pool that is death reads as death before anyone steps in */
+  if (p.poison) { for (let k = 0; k < 5; k++) { const t = (time * 0.8 + k * 0.23) % 1, bx = Math.round(p.x0 + 6 + ((k * 61 + 17) % Math.max(1, p.x1 - p.x0 - 12)) - cx);
+      if (bx < x0 || bx > x1 || t < 0.7) continue; g.fillStyle = scumL; g.fillRect(bx - 1, y - 1, 3, 1); g.fillRect(bx, y - 2, 1, 1); }
+    g.globalAlpha = 0.18 + 0.06 * Math.sin(time * 2); g.fillStyle = scumL; g.fillRect(x0, y - 6, x1 - x0, 6); g.globalAlpha = 1; return; }
   // the teeth: broken spars and ribs of the wrecks standing out of it, sun on one side, wet dark on the other
   for (let x = Math.ceil(p.x0 / 46) * 46; x < p.x1; x += 46) {
     const sx = Math.round(x - cx + Math.sin(x * 0.31) * 6); if (sx < x0 - 6 || sx > x1 + 6) continue;
@@ -15596,7 +15613,8 @@ function drawWater(cx, cy, surfaceOnly = false) {
         for (let x = p.x0 + 4; x < p.x1; x += 9) { const sx = x + Math.round(Math.sin(time * 1.6 + x * 0.21) * 3) - cx; if (sx > x0 && sx < x1 - 2) { g.fillRect(sx, y + 6 + Math.round(Math.sin(time * 2 + x) * 2), 2, 1); g.fillRect(sx + 3, y + 14 + Math.round(Math.cos(time * 1.7 + x) * 2), 3, 1); } }
       }
       else {
-        const gr = g.createLinearGradient(0, y, 0, y + Math.max(40, h)); if (sea) { gr.addColorStop(0, '#4aa0a8'); gr.addColorStop(0.35, '#2e7a88'); gr.addColorStop(1, '#1f5a6a'); } else { gr.addColorStop(0, '#5aa6c9'); gr.addColorStop(0.35, '#3b7fae'); gr.addColorStop(1, '#22456e'); }
+        const gr = g.createLinearGradient(0, y, 0, y + Math.max(40, h)); if (p.poison) { gr.addColorStop(0, '#4e7a22'); gr.addColorStop(0.35, '#2c4a18'); gr.addColorStop(1, '#14220c'); }   /* poison: green going black, never the blue that says swim */
+        else if (sea) { gr.addColorStop(0, '#4aa0a8'); gr.addColorStop(0.35, '#2e7a88'); gr.addColorStop(1, '#1f5a6a'); } else { gr.addColorStop(0, '#5aa6c9'); gr.addColorStop(0.35, '#3b7fae'); gr.addColorStop(1, '#22456e'); }
         g.fillStyle = gr; g.fillRect(x0, y, x1 - x0, h);
         g.fillStyle = 'rgba(160,215,240,0.18)';
         for (let x = p.x0; x < p.x1; x += 14) { const sx = x + Math.round(Math.sin(time * 0.8 + x * 0.05) * 3) - cx; if (sx > x0 && sx < x1 - 3) g.fillRect(sx, y + 6, 3, h); }

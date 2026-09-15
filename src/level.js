@@ -1980,14 +1980,16 @@ function stormhold() {
   plat(103, 30, 3); plat(106, 28, 3);
   plat(126, 26, 4); ent('archer', 127, 25, { face: -1 }); coins([102, 30], [110, 29], [118, 30], [127, 25], [132, 29], [136, 30], [144, 29], [146, 30]);
   ent('silver', 128, 25);
-  // the smithy: the iron key, and the smith
+  // the smithy: the smith, his shelf, and the first captive (the iron key was up his shelf, two houses back from the gate it opens;
+  // a player at that gate went into the tannery beside it and found no key. It lives in the tannery now: every key in Stormhold is
+  // in the house nearest its gate)
   ent('doorway', 113, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
   ent('doorway', 122, 31, { id: 'smithy-far', to: 'smithy-back', kind: 'goblin' });
   room(38, 66, 6, 14, 'stone');
   ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
   ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
   ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
-  plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); ent('key', 64, 14, { kind: 'iron' }); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13]); // steps to the shelf: it was five rows off the floor
+  plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13], [63, 13], [64, 13]); // steps to the shelf: it was five rows off the floor (the coins at the end of it are where the iron key lay)
   ent('stray', 56, 9, { kind: 'folk' });
   ent('doorway', 65, 14, { id: 'smithy-back', to: 'smithy-far', lock: [38, 66], label: 'OUT THE SLACK-TUB DOOR' });
   ent('sign', 39, 14, { text: 'THE SMITHY. THE BACK DOOR IS PAST THE SHELF.' });
@@ -2000,12 +2002,13 @@ function stormhold() {
   ent('deco', 152, 31, { kind: 'lanternPost' }); ent('deco', 179, 31, { kind: 'lanternPost' }); // a lamp on each bank of the chimneys (they stood in the air over the old span)
   floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
   coins([184, 31], [194, 30], [204, 31]);
-  // the tannery: a house you go through, not into, and the second captive
+  // the tannery: a house you go through, not into, the second captive, and the iron key for the gate just past its far door
   roof(186, 198, 28); ent('doorway', 188, 31, { id: 'tan-out', to: 'tan-in', kind: 'goblin' });
   ent('doorway', 196, 31, { id: 'tan-far', to: 'tan-back', kind: 'goblin' });
   room(74, 98, 6, 13, 'earth');
   ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
   ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
+  ent('key', 93, 13, { kind: 'iron' });   /* under the spider's thread: you take it past the goblin and the drop */
   ent('stray', 95, 13, { kind: 'folk' }); coins([80, 12], [84, 12], [88, 12], [90, 12]);
   ent('doorway', 97, 13, { id: 'tan-back', to: 'tan-far', lock: [74, 98], label: 'OUT PAST THE PITS' });
   ent('lockgate', 208, 31, { needs: 'iron', h: 6 }); gateCol(208, 26, 31);
@@ -2155,7 +2158,10 @@ function undercrown() {
   const shelf = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); };
   /* A POOL WITH NO BOTTOM IS PAINTED TO THE FOOT OF THE SCREEN: drawWater has nothing else to stop at, so from the tomb a hundred
      rows under it the flooded level's one course of water washed half the Prince's fight blue. `bottom` is the rock it lies on. */
-  const water = (x0, x1, yTop, d, bottom) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + 4, depth: d || 40, ...(bottom !== undefined ? { bottom: bottom * TS } : {}) });
+  /* AND IT IS POISON. This water is not swum: it kills whoever goes in, and it was drawn as clean blue water, which says "swim".
+     `harm` + `poison` give it drawFoul's scum and gas in a sick green, with no wrecks and no fins in it (a look only: harm hurts a
+     swimmer, and nobody swims here). */
+  const water = (x0, x1, yTop, d, bottom) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + 4, depth: d || 40, harm: true, poison: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212', ...(bottom !== undefined ? { bottom: bottom * TS } : {}) });
   // A SET OF TIMBER. `state` says what it will take: sound wants three blows of your own, cracked wants
   // one (or a heavy landing anywhere under it), going is already failing and drops on its own once you
   // walk under it. deep is how many courses of roof come out when it goes.
