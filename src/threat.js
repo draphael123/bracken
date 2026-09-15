@@ -40,6 +40,8 @@ export const THREAT = {
   drunk: 2.5,
   /* THE DROWNED CAUSEWAY: a feeler is a lash you have to read at your feet; the Kraken is the coast's last word; a bell is furniture */
   feeler: 2.5, kraken: 6, krakenarm: 0, tidebell: 0, knell: 0,
+  /* THE HEXED FIELDS: a scarecrow is a read (where are you looking), a rook a step as much as a threat, the wisp worth more to you dead */
+  scarecrow: 3, rook: 1.5, farmhand: 3, pumpkin: 2.5, marshlight: 1.5, haunt: 2.5, ploughman: 5, strawking: 6, hexspill: 0, croppole: 0, thresher: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

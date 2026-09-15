@@ -9,7 +9,7 @@ const TRACKS = { hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.o
   /* ONE THEME PER LEVEL, ONE PER BOSS: all CC0 from OpenGameArt, levelled to the rest (audio/CREDITS.txt) */
   sleepers: './audio/sleepers.ogg', trench: './audio/trench.ogg', barrows: './audio/barrows.ogg', quarry: './audio/quarry.ogg', skysail: './audio/skysail.ogg',
   frogking: './audio/frogking.ogg', sporemother: './audio/sporemother.ogg', ramlord: './audio/ramlord.ogg', owlreeve: './audio/owlreeve.ogg', herald: './audio/herald.ogg', reefmaw: './audio/reefmaw.ogg', closedhelm: './audio/closedhelm.ogg',
-  quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', causeway: './audio/causeway.ogg', kraken: './audio/kraken.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg' };
+  quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', causeway: './audio/causeway.ogg', kraken: './audio/kraken.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg', fields: './audio/fields.ogg', scarecrowking: './audio/scarecrowking.ogg' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -623,6 +623,14 @@ const DIE = {
   netter() { file('gobDie', 0.5, 1) || tone('square', 340, 110, 0.24, 0.18); noise(0.3, 0.2, 1600, 0.4, 0.06); /* the net falls in a heap */ },
   // the fish: no voice at all, so all of it is water and body
   eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
+  scarecrow() { noise(0.4, 0.26, 1200, 0.4); noise(0.3, 0.16, 600, 0.5, 0.1); },   /* it comes apart into what it was stuffed with */
+  rook() { tone('sawtooth', 1000, 500, 0.18, 0.12); noise(0.2, 0.12, 3000, 0.8, 0.04); },
+  farmhand() { tone('sine', 360, 90, 0.8, 0.12); pad('sine', 540, 200, 0.9, 0.03, 0.02, 2000); },   /* he goes home at last */
+  pumpkin() { noise(0.25, 0.3, 500, 0.5); tone('sine', 180, 60, 0.3, 0.14); },
+  marshlight() { tone('triangle', 800, 2400, 0.3, 0.08); noise(0.2, 0.1, 5000, 0.6, 0.05); },
+  haunt() { SFX.clank(); tone('sine', 900, 300, 0.3, 0.06, 0.05); },
+  ploughman() { tone('sawtooth', 120, 40, 1.2, 0.22); noise(0.8, 0.3, 400, 0.6); },   /* the share goes into the furrow for good */
+  strawking() { noise(1.4, 0.36, 900, 0.5); tone('sawtooth', 120, 30, 1.6, 0.24); tone('sine', 70, 30, 2, 0.2, 0.2); },   /* the field burning down with him in it */
   kraken() { tone('sawtooth', 110, 28, 1.8, 0.3); tone('sine', 70, 24, 2.2, 0.26, 0.2); noise(1.4, 0.4, 380, 0.7); noise(0.9, 0.3, 1400, 0.5, 0.5); /* a bellow that goes down under the water with it */ },
   feeler() { noise(0.2, 0.26, 900, 0.5); tone('sine', 260, 70, 0.3, 0.12); noise(0.3, 0.2, 500, 0.6, 0.1); /* back down its hole */ },
   urchin() { noise(0.14, 0.26, 3400, 0.3); for (let i = 0; i < 5; i++) tone('triangle', 1600 + i * 200, 900, 0.07, 0.05, i * 0.035); /* the spines go everywhere */ },
@@ -736,6 +744,14 @@ const HURT = {
   crab() { noise(0.05, 0.26, 2600, 0.35); noise(0.05, 0.2, 1900, 0.4, 0.05); },
   urchin() { noise(0.07, 0.22, 3200, 0.3); tone('sine', 700, 400, 0.08, 0.06); },
   eel() { noise(0.12, 0.26, 900, 0.5); tone('sine', 240, 120, 0.12, 0.12); },
+  scarecrow() { noise(0.14, 0.22, 1400, 0.4); noise(0.08, 0.14, 700, 0.5, 0.04); tone('square', 320, 220, 0.08, 0.05, 0.02); },   /* dry straw and something inside it */
+  rook() { tone('sawtooth', 900, 620, 0.08, 0.1); noise(0.06, 0.1, 2800, 0.8); },
+  farmhand() { tone('sine', 300, 180, 0.3, 0.12); pad('sine', 450, 300, 0.4, 0.03, 0.02, 2200); },   /* a sigh from a long way off */
+  pumpkin() { noise(0.1, 0.3, 600, 0.5); tone('sine', 220, 110, 0.12, 0.12); },
+  marshlight() { tone('triangle', 1600, 900, 0.1, 0.08); noise(0.05, 0.1, 4000, 0.6); },
+  haunt() { SFX.clank(); tone('sine', 1200, 1100, 0.15, 0.04, 0.02); },
+  ploughman() { tone('sawtooth', 150, 96, 0.22, 0.16); noise(0.18, 0.24, 500, 0.6); },
+  strawking() { noise(0.2, 0.3, 1100, 0.4); tone('sawtooth', 130, 80, 0.3, 0.18); tone('sine', 90, 60, 0.3, 0.1, 0.05); },   /* a barn's worth of straw taking a blade, and a laugh under it */
   kraken() { tone('sawtooth', 140, 60, 0.4, 0.22); noise(0.3, 0.3, 500, 0.6); tone('sine', 80, 50, 0.5, 0.16, 0.05); },   /* something the size of a church taking a cut */
   krakenarm() { noise(0.12, 0.3, 700, 0.5); tone('sine', 150, 70, 0.16, 0.14); },
   feeler() { noise(0.1, 0.24, 1000, 0.5); tone('sine', 300, 150, 0.1, 0.1); },

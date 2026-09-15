@@ -6005,6 +6005,259 @@ function theDrownedCauseway() {
   };
 }
 
+// ============================================================================================
+// THE HEXED FIELDS - the farms under the Archmage's hill, on the road inland between the Causeway and the Hunt.
+//
+// IF IT GLOWS GREEN, YOU CAN USE IT. His runoff drains down the hill into their ditches, and the farm has gone
+// wrong: the crops are dead, the furniture floats, the scarecrows walk and the family is still at home. Three
+// things, each INTRODUCED, DEVELOPED, TWISTED and TESTED, and every one of them glows the same green:
+//   HEX VINES       strike a trough, a bucket or a sluice and the runoff shoots a vine up out of the dirt. It holds,
+//                   it droops and flashes, and it goes back into the ground (the lane; the orchard; the barn's
+//                   bucket SHRINKS the bales out of your way instead; the crypt wall).
+//   PHANTOM PLANKS  moonlight is a floor. A cloud comes over the moon on a beat you can read, its shadow sweeps
+//                   across the land toward you, and then the planks are not there (the pasture; the wisps that
+//                   light the way; the open graves).
+//   POLTERGEISTS    the farm's own things float on slow loops and carry you (the farmhouse; the barn's bale; the hay
+//                   cart the ghost horse pulls downhill; the headstones), and one of them throws itself at you.
+// EIGHT SECTIONS: the lane, the dead orchard, the moonlit pasture (the Ploughman in the furrows), the farmhouse,
+// the windmill, the threshing barn, the hay cart ride, the family plot - and the burning cornfield at the end.
+// ============================================================================================
+function theHexedFields() {
+  const W = 712, H = 44, G = 34, O = 32;
+  const L = painter(W, H);
+  const { block, plat, ent, coins, set, spikes } = L;
+  const moversExtra = [], interiors = [], nets = [], phantoms = [], shrinks = [], pools = [], gusts = [], trunks = [];
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const net = (x, y0, y1) => nets.push([x, y0, y1]);   /* EVERY LADDER IS HUNG LAST (rule I) */
+  const sign = (x, y, text) => ent('sign', x, y, { text });
+  const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
+  const ground = (x0, x1, top = G) => block(x0, x1, top, H - 1);
+  /* A HEX VINE: a bud in the dirt on floor row `row`, `w` tiles wide, that shoots `rise` tiles up when its group's runoff is spilled */
+  const vine = (x, row, rise, group, w = 2) => moversExtra.push({ kind: 'hexvine', group, x: x * TS, y: row * TS - 8, y0: row * TS - 8, y1: (row - rise) * TS - 8, w: w * TS, h: 8, rise: rise * TS, state: 'bud', k: 0 });
+  const spill = (kind, x, y, group, o) => ent('hexspill', x, y, Object.assign({ kind, group }, o || {}));
+  const phantom = (x0, x1, row) => { for (let x = x0; x <= x1; x++) set(x, row, T.PLANK); phantoms.push([x0, x1, row]); };
+  const ghost = (art, x, row, len, o) => ent('mover', x, row, Object.assign({ len, ghost: art }, o || {}));
+  const trunk = (x, top, bottom) => trunks.push([x, top, bottom]);   /* a dead bough or a timber post under a ledge: drawn, not solid */
+
+  // ---------------- 1. THE LANE OUT OF TOWN (x 0-93). Dusk. The farmers going home, the ditches, and the first vine. ----------------
+  ground(0, 93);
+  sign(2, G - 1, 'THE HEXED FIELDS. THE ARCHMAGE\'S RUNOFF IS IN THE DITCHES, AND THE FARMS HAVE GONE WRONG.');
+  ent('check', 6, G - 1);
+  ent('npc', 10, G - 1, { kind: 'shepherd', name: 'THE FARMER', lines: ['THREE OF MY EWES BOLTED INTO THE FIELDS WHEN THE SCARECROWS GOT UP.', 'ONE IN THE DEAD ORCHARD, ONE IN THE HOLLIS HOUSE, AND ONE WENT UP THE MILL.', 'BRING THEM HOME AND MY OLD LAMP IS YOURS. YOU WILL WANT A LIGHT OUT THERE.'] });
+  ent('npc', 16, G - 1, { kind: 'hillfolk', name: 'A FARMHAND', lines: ['NOT ME. I AM GOING HOME, AND I AM BOLTING THE DOOR.', 'THE CLOUD COMES OVER THE MOON AND THE PLANKS OVER THE BOG ARE NOT THERE. I SAW IT.'] });
+  sign(20, G - 1, 'IF IT GLOWS GREEN, YOU CAN USE IT. MOST OF THE REST OUT HERE WANTS YOU DEAD.');
+  air(24, 26, G, G + 1); spikes(24, 26, G + 1);                    /* the first ditch: a hop, and the brambles in it */
+  air(34, 37, G, G + 2); spikes(34, 37, G + 2);                    /* the second: brambles in the bottom */
+  deco('scarePost', 42, G - 1);                                    /* the scarecrow that was on it is not on it */
+  sign(45, G - 1, 'A SCARECROW ONLY MOVES WHILE YOUR BACK IS TO IT. KEEP YOUR EYES ON IT.');
+  /* THE FIRST VINE: a hedge bank across the lane too tall to jump, and a trough of runoff beside it */
+  sign(49, G - 1, 'STRIKE THE TROUGH. THE RUNOFF GROWS A VINE, AND A VINE DOES NOT STAY UP LONG.');
+  spill('trough', 52, G - 1, 'lane'); vine(54, G, 3, 'lane');
+  block(57, 59, G - 4, G - 1);
+  coins([57, G - 6], [58, G - 6], [59, G - 6]);
+  ent('check', 66, G - 1); ent('thief', 79, G - 1, { face: -1 }); ent('archer', 92, G - 2, { face: -1 }); ent('shield', 88, G - 1, { face: -1 }); ent('wight', 30, G - 1); ent('rook', 47, G - 1, { face: -1 });   /* scavengers off the hill, picking over the dead farm, and their bowman on the bank */
+  ent('scarecrow', 74, G - 1, { face: -1 });
+  ent('rook', 82, G - 1, { face: -1 }); ent('rook', 86, G - 1, { face: -1 });
+  deco('crookedFence', 84, G - 1);
+  block(90, 93, G - 1, G - 1);                                     /* a bank up onto the orchard, a row at a time */
+  coins([28, G - 2], [40, G - 2], [63, G - 2], [70, G - 2], [78, G - 2]);
+  deco('deadCorn', 29, G - 1, { v: 1 }); deco('farmLantern', 39, G - 1); deco('leaningBarn', 72, G - 1); deco('crookedFence', 69, G - 1, { v: 1 }); deco('hayStack', 77, G - 1);
+
+  // ---------------- 2. THE DEAD ORCHARD (x 94-195). Brambles on the floor, and the way over them is up the vines into the boughs. ----------------
+  ground(94, 195, O);
+  ent('check', 99, O - 1); deco('deadCorn', 96, O - 1, { v: 2 }); deco('brokenCart', 160, O - 1);
+  sign(101, O - 1, 'THE DEAD ORCHARD. BRAMBLES ON THE FLOOR, SO GO UP: STRIKE THE SLUICE AND CLIMB THE VINES.');
+  spill('sluice', 106, O - 1, 'orch');
+  vine(110, O, 2, 'orch'); vine(113, O, 4, 'orch'); vine(116, O, 6, 'orch'); vine(119, O, 8, 'orch');
+  spikes(112, 112, O - 1); spikes(115, 115, O - 1); spikes(118, 118, O - 1); spikes(122, 124, O - 1);   /* a staircase of four, two rows a step */
+  /* THE BRAMBLE DITCH: twenty-three tiles of thorns across the orchard floor */
+  air(128, 150, O, O + 2); spikes(128, 150, O + 2);
+  /* THE BOUGHS over it: dead limbs a few tiles apart, and the apples still coming down off them on a beat */
+  plat(121, 24, 7); plat(131, 23, 5); plat(139, 24, 5); plat(147, 23, 5);
+  trunk(124, 25, O - 1); trunk(133, 24, O + 1); trunk(141, 25, O + 1); trunk(149, 24, O + 1);
+  ent('rockfall', 137, 14, { every: 2.4, apple: true }); ent('rockfall', 145, 15, { every: 2.8, apple: true });
+  sign(122, 23, 'THE APPLES FALL ON A BEAT. COUNT IT, THEN CROSS.');
+  /* the high bough: a bucket on the limb, and the vine it grows is the only way up to it */
+  spill('bucket', 131, 22, 'bough'); vine(134, 23, 4, 'bough');
+  plat(137, 18, 4); trunk(139, 19, 23); ent('silver', 138, 17);
+  ent('stray', 150, 22, { kind: 'sheep' });
+  coins([122, 22], [126, 22], [132, 21], [141, 23], [148, 22]);
+  ent('check', 156, O - 1);
+  ent('scarecrow', 183, O - 1, { face: -1 }); spikes(165, 166, O - 1);   /* brambles through the floor of the supper: something light thrown into them stays there */ ent('haunt', 190, O - 4, { face: -1 }); ent('crow', 135, 19, { face: -1 }); ent('crow', 151, 18, { face: -1 });
+  /* THE ROOT CELLAR: a hatch in the orchard floor, and a ladder back up the far end of it */
+  air(188, 189, O, O + 1); air(180, 194, O + 2, O + 6); air(181, 181, O, O + 1); net(181, O, O + 6);
+  deco('pumpkinPatch', 186, O - 1); ent('spider', 185, O + 3);
+  coins([183, O + 6], [185, O + 6], [187, O + 6], [190, O + 6], [192, O + 6]);
+  coins([158, O - 2], [184, O - 2], [193, O - 2]);
+
+  // ---------------- 3. THE MOONLIT PASTURE (x 196-290). Phantom planks over the sunken bog, and the cloud comes over the moon. ----------------
+  ground(196, 207);
+  ent('check', 200, G - 1); deco('crookedFence', 205, G - 1);
+  sign(202, G - 1, 'MOONLIGHT HOLDS THE PHANTOM PLANKS. WHEN THE CLOUD\'S SHADOW COMES ACROSS, BE ON THE GRASS.');
+  block(208, 282, 39, H - 1);                                      /* the bog's bed */
+  /* THE TUSSOCKS: grass to wait out the dark on, every sixteen tiles, each with a ladder down its face out of the bog */
+  for (const x of [220, 236, 252, 268]) block(x + 1, x + 2, G, 38);
+  phantom(208, 220, G); phantom(223, 236, G); phantom(239, 252, G); phantom(255, 268, G); phantom(271, 282, G);
+  sign(222, G - 1, 'STRIKE A WISP AND ITS LIGHT HOLDS THE PLANKS, EVEN UNDER THE CLOUD.');
+  ent('marshlight', 229, 30); ent('marshlight', 246, 29); ent('marshlight', 262, 30); ent('marshlight', 214, 30); ent('marshlight', 274, 29);
+  ent('crow', 232, 25, { face: -1 }); ent('crow', 236, 26, { face: -1 }); ent('crow', 258, 25, { face: -1 }); ent('crow', 262, 24, { face: -1 });   /* crows down the wind over the bog: a step, if you pogo them */
+  ent('silver', 245, 37);
+  ent('check', 253, G - 1);
+  ent('farmhand', 277, G - 2, { face: -1 });
+  ground(283, 334);
+  deco('ghostCow', 292, G - 1); ent('rook', 286, G - 1, { face: -1 }); ent('heronfoe', 289, G - 1, { face: -1 });   /* the bog's own heron, on the far bank */
+  coins([212, G - 2], [216, G - 2], [227, G - 2], [232, G - 2], [243, G - 2], [248, G - 2], [259, G - 2], [264, G - 2], [275, G - 2], [279, G - 2]);
+
+  // ---------------- THE FURROWS (x 291-331). The Headless Ploughman, and the hedge-bank gate he stands in front of. ----------------
+  ent('check', 291, G - 1);
+  sign(293, G - 1, 'THE PLOUGHMAN. RED: JUMP HIS PLOUGH. AT THE END OF THE FURROW IT STICKS: CUT HIM THEN.');
+  ent('ploughman', 320, G - 1, { face: -1, mini: true });
+  block(327, 331, G - 12, G - 1); air(327, 331, G - 6, G - 1); interiors.push([327, 331, G - 6, G - 1, 'earth']);
+  for (let y = G - 6; y <= G - 1; y++) set(327, y, T.PORT);       /* the hedge gate: it lifts when he falls */
+
+  // ---------------- 4. THE FARMHOUSE (x 332-401). Up through the house on its own floating furniture, and out of the chimney. ----------------
+  ground(332, 462);
+  deco('farmLantern', 334, G - 1); ent('check', 337, G - 1); deco('milkChurn', 339, G - 1);
+  sign(335, G - 1, 'THE HOLLIS FARM. SOMETHING IN THERE MOVES THE FURNITURE. STAND ON IT AND IT CARRIES YOU UP.');
+  block(340, 400, 11, G - 1);
+  air(341, 399, 27, 33); air(341, 399, 20, 25); air(341, 399, 13, 18);   /* the kitchen, the bedrooms, the attic */
+  air(340, 340, 30, 33);                                                  /* the front door */
+  interiors.push([341, 399, 27, 33, 'kitchen'], [341, 399, 20, 25, 'hall'], [341, 399, 13, 18, 'hall']);
+  /* THE KITCHEN: the family at home, and the table that goes up through the ceiling */
+  deco('hearth', 346, G - 1); ent('check', 343, G - 1);
+  ent('npc', 351, G - 1, { kind: 'ghostfarmer', name: 'OLD HOLLIS', lines: ['YOU CAN SEE ME. THEN YOU CAN SEE WHAT HIS WATER DID TO US.', 'THE TABLE WILL TAKE YOU UP. IT TAKES EVERYONE UP, THESE DAYS.'] });
+  deco('portrait', 348, 27, { hang: true }); deco('portrait', 353, 27, { hang: true }); deco('candle', 363, G - 1); ent('haunt', 361, 30, { face: -1 });
+  air(356, 359, 26, 26); ghost('table', 357, 33, 2, { vert: true, rise: 7, period: 5, ph: 0 });
+  /* THE BEDROOMS: the floor fallen through, and the bed that goes back and forth over the hole */
+  air(366, 376, 26, 26); ghost('bed', 364, 26, 3, { range: 10, speed: 30 });
+  ent('farmhand', 346, 24, { face: 1 }); ent('wight', 368, G - 1); ent('bat', 349, 14); ent('bat', 372, 20);
+  ent('npc', 393, 25, { kind: 'ghostwife', name: 'MISTRESS HOLLIS', lines: ['MIND THE CHAIRS. THEY MEAN NO HARM. THE FORK IN THE ATTIC DOES.', 'THE MOON COMES AND GOES OUT IN THE PASTURE. SO DO WE.'] });
+  air(386, 389, 19, 19); ghost('chair', 387, 25, 2, { vert: true, rise: 6, period: 5.5, ph: 0.5 });
+  /* THE ATTIC: a hole in the boards, two chairs bobbing over it, and a fork that knows you are there */
+  air(361, 371, 19, 19); ghost('chair', 362, 18, 2, { range: 8, speed: 24 }); ghost('table', 366, 15, 2, { bob: true, ph: 1.4 });
+  ent('haunt', 378, 16, { face: -1 });
+  ent('npc', 350, 18, { kind: 'ghostchild', name: 'LITTLE HOLLIS', lines: ['MY EWE CAME UP HERE. SHE IS FRIGHTENED OF THE FORK.', 'DADDY SAYS NOT TO GO UP THE CHIMNEY. EVERYBODY GOES UP THE CHIMNEY.'] });
+  ent('stray', 382, 18, { kind: 'sheep' });
+  deco('portrait', 385, 13, { hang: true });
+  /* THE CHIMNEY: up the flue on its rungs, out over the roof, and down the ladder on the gable end */
+  block(391, 394, 6, 10); air(392, 393, 6, 12); net(392, 6, 18);
+  net(401, 11, 33);
+  coins([349, 32], [361, 32], [370, 25], [379, 25], [396, 25], [356, 18], [375, 17], [396, 17], [396, 10], [398, 10]);
+
+  // ---------------- 5. THE WINDMILL (x 402-462). The miller's store at its foot, the gears inside, and the sails outside. ----------------
+  ent('check', 405, G - 1);
+  ent('npc', 410, G - 1, { kind: 'keeper' }); sign(407, G - 1, 'THE MILLER\'S STORE. HE SELLS TO THE LIVING, AND HE IS NOT PARTICULAR.');
+  block(416, 428, 14, G - 1); air(417, 427, 15, 33); air(416, 416, 30, 33);
+  interiors.push([417, 427, 15, 33, 'stone']);
+  sign(413, G - 1, 'UP THROUGH THE GEARS AND OUT ON THE SAILS. THE WIND AT THE TOP IS NOT YOUR FRIEND.');
+  plat(420, 32, 4); plat(424, 30, 3); plat(418, 28, 4);
+  for (let i = 0; i < 4; i++) moversExtra.push({ kind: 'wheel', gear: true, px: 422 * TS + 8, py: 24 * TS, r: 26, phase: i * Math.PI / 2, period: 9, x: 0, y: 0, w: 18, h: 6 });
+  plat(424, 21, 4); plat(418, 19, 3);
+  air(421, 421, 14, 14);
+  ent('stray', 418, 13, { kind: 'sheep' }); ent('rook', 426, 13, { face: -1 });
+  /* THE SAILS: four torn arms turning slowly round a hub over the roof, from the roof to the top of the sky */
+  for (let i = 0; i < 4; i++) moversExtra.push({ kind: 'wheel', torn: true, first: i === 0, px: 422 * TS + 8, py: 9 * TS, r: 56, phase: i * Math.PI / 2, period: 16, x: 0, y: 0, w: 22, h: 6 });
+  gusts.push({ x0: 410 * TS, x1: 440 * TS, y0: 2 * TS, y1: 13 * TS, dir: 1, period: 6, on: 1.5, phase: 0, k: 0.5 });
+  /* THE MILL STEPS: off the top of the sails and down the scaffold on the far side */
+  plat(429, 8, 4); plat(435, 11, 4); plat(440, 14, 4); plat(445, 17, 4); plat(441, 20, 3); plat(446, 23, 4); plat(451, 26, 4); plat(455, 29, 4);
+  for (const [x, r] of [[431, 8], [437, 11], [442, 14], [447, 17], [442, 20], [448, 23], [453, 26], [457, 29]]) trunk(x, r + 1, G - 1);
+  ent('crow', 438, 5, { face: -1 }); ent('crow', 443, 6, { face: -1 }); ent('crow', 448, 5, { face: -1 });
+  spikes(431, 453, G - 1); ent('goat', 455, G - 1, { face: -1 });                                         /* a thorn bed under the steps: a fall off them is a fall into it */
+  ent('bat', 420, 16); ent('bat', 425, 18);                        /* the mill's rafters */
+  /* THE HIDDEN HAYLOFT: a line of ledges off the steps, to a hatch in the thickness of the barn's wall */
+  plat(447, 13, 2); plat(451, 11, 3); plat(456, 10, 3); plat(460, 12, 3); trunk(452, 12, 16); trunk(457, 11, 16);
+  coins([431, 7], [436, 10], [441, 13], [446, 16], [447, 22], [452, 25], [456, 28], [452, 10], [457, 9]);
+
+  // ---------------- 6. THE THRESHING BARN (x 464-538). The machine wakes when you come in: climb, and keep going right. ----------------
+  ent('check', 460, G - 1);
+  sign(462, G - 1, 'THE THRESHING BARN. THE MACHINE IN THERE WAKES WHEN YOU COME IN. CLIMB, AND KEEP GOING RIGHT.');
+  ground(463, 538); block(464, 538, 4, G - 1); air(468, 535, 9, 33); air(464, 467, 29, 33);
+  air(464, 466, 10, 11); ent('silver', 465, 11);                  /* the hidden hayloft, in the thickness of the wall */
+  interiors.push([468, 535, 9, 33, 'timber']);
+  ent('thresher', 471, G - 1, { x1: 529, trigger: 474 });
+  block(474, 475, 32, 33);                                         /* a bale to step up from */
+  plat(478, 30, 4); plat(484, 28, 4); plat(490, 26, 4); plat(496, 24, 4);
+  deco('hayStack', 484, G - 1); deco('plough', 496, G - 1); deco('hayStack', 507, G - 1, { v: 1 }); deco('milkChurn', 512, G - 1);
+  ghost('bale', 501, 23, 2, { vert: true, rise: 5, period: 4.5 }); ent('check', 506, 17);
+  plat(504, 18, 17);
+  /* THE TWIST: a stack of bales across the top loft, and a bucket of runoff that shrinks them out of the way */
+  spill('bucket', 507, 17, 'barn', { shrink: true }); shrinks.push({ x0: 512, x1: 514, y0: 14, y1: 17, group: 'barn' });
+  sign(505, 17, 'THE RUNOFF SHRINKS WHAT IT DOES NOT GROW. KICK THE BUCKET AT THE BALES.');
+  ent('haunt', 509, 12, { face: -1 });
+  plat(522, 22, 4); plat(527, 26, 3); plat(530, 29, 4);
+  for (const [x, r] of [[480, 30], [486, 28], [492, 26], [498, 24], [507, 18], [518, 18], [524, 22], [528, 26], [532, 29]]) trunk(x, r + 1, G - 1);
+ ent('bat', 486, 10); ent('bat', 514, 10); ent('bat', 528, 11); ent('pumpkin', 518, G - 1); ent('pumpkin', 524, G - 1); ent('wight', 500, G - 1); ent('haunt', 492, 22, { face: -1 });   /* the barn's rafters */
+  air(536, 538, 24, 27);                                           /* the hayloft door out onto the hill road */
+  coins([479, 29], [485, 27], [491, 25], [497, 23], [506, 17], [510, 17], [517, 17], [523, 21], [531, 28]);
+
+  // ---------------- 7. THE HAY CART RIDE (x 539-634). A ghost horse pulls the cart down the hill road; it drives through the fences. ----------------
+  ground(539, 546, 28);
+  ent('check', 541, 27);
+  sign(543, 27, 'THE HAY CART GOES WHEN YOU GET ON. IT DRIVES THROUGH THE FENCES. YOU DO NOT: JUMP THEM.');
+  block(547, 619, 39, H - 1);                                      /* the valley under the road */
+  spikes(548, 557, 38); spikes(559, 570, 38); spikes(572, 583, 38); spikes(585, 593, 38); spikes(608, 608, 38); spikes(611, 612, 38); spikes(615, 616, 38); spikes(619, 619, 38);
+  moversExtra.push({ kind: 'haycart', x0: 544 * TS, x1: 594 * TS, x: 544 * TS, y: 28 * TS, w: 48, h: 8, speed: 62, state: 'dock', t: 0 });
+  for (const x of [558, 571, 584]) block(x, x, 27, 38);            /* the fence posts: a row over the cart's bed */
+  ent('rook', 571, 26, { face: -1 });
+  ground(595, 606, 28);
+  ent('haunt', 600, 24, { face: -1 }); ent('thief', 633, 31, { face: -1 }); ent('archer', 629, 29, { face: -1 });
+  /* THE BROKEN ROAD: the bank has gone into the valley, and a bucket of runoff grows the way across */
+  sign(598, 27, 'THE ROAD HAS GONE INTO THE VALLEY. KICK THE BUCKET AND WALK THE VINES OVER.');
+  ent('check', 599, 27); spill('bucket', 603, 27, 'road'); vine(609, 39, 11, 'road'); vine(613, 39, 11, 'road'); vine(617, 39, 11, 'road');
+  ground(620, 626, 28); ground(627, 630, 30); ground(631, 634, 32); deco('deadCorn', 621, 27);
+  coins([549, 26], [555, 26], [562, 26], [575, 26], [588, 26], [609, 26], [613, 26], [617, 26]);
+
+  // ---------------- 8. THE FAMILY PLOT (x 635-668). Everything at once: open graves under phantom planks, vines up the crypt, floating headstones. ----------------
+  ground(635, 711);
+  deco('farmLantern', 635, G - 1); ent('check', 637, G - 1);
+  sign(638, G - 1, 'THE HOLLIS PLOT. THE ROAD TO THE TOWER GOES THROUGH THE FAMILY.');
+  air(640, 644, G, G + 2); spikes(640, 644, G + 2); phantom(640, 644, G);
+  air(647, 651, G, G + 2); spikes(647, 651, G + 2); phantom(647, 651, G);
+  ent('marshlight', 646, 30); ent('farmhand', 632, 30, { face: 1 }); ent('pumpkin', 645, G - 1, { face: -1 });
+  spill('sluice', 652, G - 1, 'crypt'); vine(653, G, 2, 'crypt'); vine(655, G, 4, 'crypt'); vine(657, G, 6, 'crypt');
+  block(659, 664, 28, G - 1);                                      /* the family crypt */
+  block(666, 667, 24, G - 1);                                      /* the iron railing, too tall to jump */
+  ghost('headstone', 663, 27, 2, { vert: true, rise: 4, period: 4.2 });
+  plat(668, 29, 1);
+  ent('check', 668, G - 1);
+  coins([642, G - 2], [649, G - 2], [660, 27], [662, 27]);
+
+  // ---------------- THE BURNING CORNFIELD (x 669-711). The Scarecrow King, on his bales, his poles and his scaffold. ----------------
+  block(679, 680, 32, 33); block(690, 691, 32, 33); block(702, 703, 32, 33);   /* the bale stacks */
+  plat(681, 30, 3); plat(677, 28, 3); plat(692, 30, 3); plat(688, 28, 3); plat(695, 28, 4); plat(691, 26, 4); plat(698, 24, 4); plat(699, 31, 3); plat(682, 26, 3);   /* the cornfield scaffold */
+  for (const [x, r] of [[682, 30], [678, 28], [693, 30], [689, 28], [697, 28], [692, 26], [700, 24], [700, 30], [683, 26]]) trunk(x, r + 1, G - 1);
+  for (const x of [675, 686, 707]) ent('croppole', x, G - 1);
+  spill('trough', 672, G - 1, 'kingL', { arena: true }); vine(684, G, 3, 'kingL');
+  spill('trough', 709, G - 1, 'kingR', { arena: true }); vine(697, G, 3, 'kingR');
+  ent('strawking', 694, G - 1, { face: -1 });
+  block(711, W - 1, 0, G - 1);
+
+  /* THE LADDERS, LAST: nothing is dug or laid after this line */
+  net(421, 14, 18);                                                /* the windmill's roof hatch */
+  for (const x of [220, 236, 252, 268]) net(x, G + 1, 38);        /* up out of the bog at every tussock */
+  net(208, G + 1, 38); net(282, G + 1, 38);
+  net(547, 30, 38); net(607, 30, 38);                              /* up out of the valley at both ends of the ride */
+  net(665, 28, 33);                                                /* BEHIND THE FAMILY CRYPT: the slot between it and the railing */
+  for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
+
+  pools.push({ x0: 208 * TS, x1: 283 * TS, y: 36 * TS + 8, bottom: 39 * TS, swim: true, clear: true, harm: true, foulCol: '#2e3a30', wash: 0.55, bog: true });
+  return {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts,
+    music: 'fields', duskStart: 99999, duskLen: 1, night: true, nightA: 0.16, edgeLit: true,
+    fields: { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, phantoms, shrinks, trunks, dusk: [30, 150], crypt: [659, 28],
+      skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 33, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale']] },
+    quest: { n: 3, item: 'sheep', name: 'THE LOST EWES', npc: 'shepherd', done: 'THE EWES ARE HOME', reward: 'relic', relic: 'lamp' },
+    palette: { sky: [[40, 48, 96], [104, 120, 164]], far: 'fields', mid: 'fields', near: 'fields', dress: 'village', haze: 'rgba(130,150,210,0.10)',
+      grass: '#7a946e', grassL: '#a4bc8e', grassD: '#4a6048', dirt: '#5e5444', dirtL: '#7a6c54', dirtD: '#3c3428', canopy: ['#161a2a', '#1e2436', '#262e44', '#303a52'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
+    ambient: [{ x0: 0, x1: 340 * TS, kind: 'wind' }, { x0: 340 * TS, x1: 402 * TS, kind: 'hall' }, { x0: 402 * TS, x1: 464 * TS, kind: 'wind' }, { x0: 464 * TS, x1: 539 * TS, kind: 'hold' }, { x0: 539 * TS, x1: 99999, kind: 'wind' }],
+    mini: { x0: 296 * TS, x1: 327 * TS, floor: G * TS, y0: (G - 10) * TS, y1: (G + 1) * TS, trigger: 300 * TS, wallL: 295, gate: 327, boss: 'ploughman', name: 'THE HEADLESS PLOUGHMAN' },
+    ambushes: [{ name: 'THE PICKERS\' SUPPER', row: O - 1, wallL: 152, wallR: 178, check: [151, O - 1], waves: [[['scarecrow', 158], ['scarecrow', 174], ['pumpkin', 163], ['pumpkin', 170]], [['farmhand', 160, O - 3], ['hound', 167], ['hound', 176], ['wight', 171]]] }],
+    calm: [[0, 22, 0, 43], [52, 68, 24, 43], [104, 156, 12, 33], [186, 198, 26, 43], [206, 285, 26, 43], [336, 404, 0, 43], [410, 460, 0, 43], [462, 540, 0, 33], [539, 634, 18, 43], [636, 668, 20, 43]],   /* no garrison on the lane's first steps, the planks, the roofs, the ride, or the graves */
+    arena: { x0: 670 * TS, x1: 710 * TS, floor: G * TS, y0: 8 * TS, trigger: 675 * TS, wallL: 669, wallR: 710, boss: 'strawking', music: 'scarecrowking', tint: '#3a1a10', tintA: 0.1, fx: 'embers', poles: [675, 686, 707] },
+  };
+}
+
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -6040,6 +6293,8 @@ export const LEVELS = [
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'deep' },
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
+  /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
+  { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'causeway' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -6129,6 +6384,7 @@ const DRESS = {
   causeway: [['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['shellDrift', 2], ['fencePosts'], ['spar', 2], ['pierPost']],   /* the pilgrim road: wrack, shells, weed and what the tide leaves on the stone */
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
   frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
+  fields: [['deadCorn', 3], ['crookedFence', 2], ['hayStack', 2], ['pumpkinPatch'], ['farmLantern'], ['milkChurn'], ['plough'], ['brokenCart'], ['waterPump'], ['fieldGrave', 3], ['stone', 3], ['deadTree', 2]],   /* the farm, gone wrong: dead corn, crooked fences, the lanterns they left in the fields */
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
   skyship: [['kegStack'], ['rumBarrels', 2], ['coiledCable', 2], ['washing'], ['hammock', 2], ['lanternDeck', 2], ['plunder', 3], ['waterButt'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['ragBanner', 2]],   /* a pirate crew's: pennants, plunder and bones on a line */
 };
@@ -6146,6 +6402,7 @@ const GARRISON = {
   reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['stormshaman', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and a storm-caller, not another cutlass */
+  fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['goat', 6], ['hound', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, the farm's beasts gone feral, and what floats */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
   causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 4], ['sailor', 4], ['crab', 4], ['netter', 3]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
@@ -6417,7 +6674,7 @@ function ambushRooms(L, id) {
    packed against the end, a heart that waits for you when the pocket is long, wet or spiked, and the level's own stash
    prop on its last floor. Never a silver (three a level, the ledger reads three bits) and never a quest item (counted).
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
-const STASH = { wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
+const STASH = { fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
   scree: 'cairn', spire: 'cairn', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
   longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
