@@ -1075,7 +1075,7 @@ function drawGateHints(cx, cy) {
 function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(q => !q.done && P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st || !(st.kinds ? st.kinds.includes(kind) : st.kind === kind)) return;
   if (st.kinds) { st.have = st.have || {}; if (st.have[kind]) return; st.have[kind] = 1; }   /* a step of two kinds (the marks, the two skill keys) wants one of each */
   st.got = (st.got || 0) + 1; SFX.coin(); trialSay(TRIAL_SAY[kind] || trialName(st.kind), '#8fd160', st);
-  if (st.got >= st.n) { st.done = true; openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
+  if (st.got >= st.n) { st.done = true; PROG.taught = PROG.taught || {}; PROG.taught[st.kind] = 1;   /* the yard TAUGHT this (lessonHint reads it: the wood does not say again what the yard already said) */ openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
 function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; fillMeter(st.fill); motes(P.x, P.y - 12, 12, 10); } }
 /* WHAT A TRIAL CALLS A STEP WHEN IT IS DONE, and the hero's own meter, filled for the step that spends it */
 const TRIAL_NAME = { hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hammerfall: 'HAMMERFALL', judgement: 'JUDGEMENT', ward: 'THE WARD' };
@@ -1159,7 +1159,7 @@ function spawnEnt(e) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     const base = { x: px, y: py, vx: 0, vy: 0, face: e.face || 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0 };
     switch (e.t) {
-      case 'sprig': enemies.push({ ...base, t: 'sprig', w: 8, h: 10, hp: EHP.sprig, speed: 28, cutter: !!e.cutter, ringer: !!e.ringer, bell: e.bell ? e.bell * TS + 8 : 0 }); break;
+      case 'sprig': enemies.push({ ...base, t: 'sprig', w: e.fat ? 12 : 8, h: e.fat ? 15 : 10, hp: e.fat ? EHP.sprig * 4 : EHP.sprig, speed: e.fat ? 14 : 28, big: !!e.fat, fat: !!e.fat, cutter: !!e.cutter, ringer: !!e.ringer, bell: e.bell ? e.bell * TS + 8 : 0 }); break;   /* THE OLD FAT SPRIG (fat: true, Bracken Wood's third-cut lesson): drawn big, four times the health, half the pace and a bite that barely hurts, so a run of three is FELT on something before it is needed */
       case 'shield': enemies.push({ ...base, t: 'shield', w: 10, h: 14, hp: EHP.shield, speed: 26, turnT: 0 }); break;
       case 'spit': enemies.push({ ...base, t: 'spit', w: 12, h: 12, hp: EHP.spit, timer: 1 + Math.random(), mouth: 0 }); break;
       case 'wasp': enemies.push({ ...base, t: 'wasp', hx: px, hy: py, w: 8, h: 6, hp: EHP.wasp, face: -1 }); break;
@@ -4221,8 +4221,25 @@ function fireHeavy() { noteVerb('heavy');
     SFX.jet();
   }
 }
+/* THE WOOD'S LESSONS. Bracken Wood grows three teaching moments (L.lessons, in tiles: see THE THREE LESSONS in level.js) -
+   a lone guard for the heavy blow, a lone guard for the low sweep, an old fat sprig for the third cut - and each says its
+   line ONCE a save (PROG.lessons), the first time the thing happens in its stretch: the guard turning a blow for the first
+   two, the first blow that lands on the fat one for the third. Never when the yard has already taught that step
+   (PROG.taught, written by trialEvent) or the whole yard is cleared: the trial stays optional and the wood does not nag. */
+const lessonAt = kind => { if (!L || !L.lessons || L.trial || !P) return null; const c = P.x / TS; return L.lessons.find(z => (!kind || z.kind === kind) && c >= z.x0 && c <= z.x1) || null; };
+const trialTaught = kind => !!((PROG.taught && PROG.taught[kind]) || (PROG['trial_' + hero()] && PROG['trial_' + hero()].cleared));
+function lessonHint(kind) {
+  if (!lessonAt(kind)) return false;
+  PROG.lessons = PROG.lessons || {}; if (PROG.lessons[kind] || trialTaught(kind)) return false;
+  PROG.lessons[kind] = 1; saveProgress(); hintT = 5;
+  if (kind === 'heavyblow') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.';   /* guardTurned's own words */
+  else if (kind === 'sweep') hintMsg = 'HIS SHIELD TURNED IT. DOWN+SWING: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.';
+  else hintMsg = 'THREE SWINGS IN A RUN: THE THIRD IS A HEAVY CUT THAT SHOVES. STOP, AND IT STARTS OVER.';
+  return true;
+}
 // A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
 function guardTurned() {
+  if (lessonHint('heavyblow') || lessonHint('sweep')) return;   /* in one of the wood's lesson stretches the moment has its own line, said once */
   if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; return; }   /* its own call: the line under it used to overwrite it at once */
   if ((PROG.guardHeavy || 0) >= 4) return;
   PROG.guardHeavy = (PROG.guardHeavy || 0) + 1; hintT = 4;
@@ -12748,7 +12765,7 @@ function updateEnemies(dt) {
       if (e.stagger > 0 && (e.mode === 'biteTell' || e.mode === 'bite')) e.mode = 'walk';
       if ((!e.mode || e.mode === 'walk') && near && e.biteCd <= 0 && e.stagger <= 0) { e.mode = 'biteTell'; e.modeT = 0.4; e.face = Math.sign(dx) || e.face; e.bitHit = false; number(e.x, e.y - 16, '!', '#ffd36b'); SFX.tell(false); }
       if (e.mode === 'biteTell') { want = 0; if (e.modeT <= 0) { e.mode = 'bite'; e.modeT = 0.34; e.vy = -150; e.vx = e.face * 110; } }
-      else if (e.mode === 'bite') { want = e.face * 110; if (!e.bitHit && !P.dead && overlap(box(e), box(P))) { e.bitHit = true; damagePlayer(e.x, DMG.sprig || 15); } if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.55; e.biteCd = 1.4; } }
+      else if (e.mode === 'bite') { want = e.face * 110; if (!e.bitHit && !P.dead && overlap(box(e), box(P))) { e.bitHit = true; damagePlayer(e.x, e.fat ? 4 : DMG.sprig || 15); }   /* (the old fat one gums you) */ if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.55; e.biteCd = 1.4; } }
       else if (e.mode === 'rest') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
     }
     if (e.t === 'shield') {
@@ -12955,13 +12972,13 @@ function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null; 
   P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip ? 2 : 1);
   if (rip) { P.riposteT = 0; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140);
-    if ((PROG.thirdSeen || 0) < 2) { PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;
+    if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third')) { PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
       hintMsg = 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
-function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gainResolve(8); P.lastStruck = e;
+function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gainResolve(8); P.lastStruck = e; const lesson = !!e.fat && lessonHint('third');   /* the wood's third-cut lesson, on the first blow that lands on the old fat sprig (and the dash-attack line below waits its turn) */
   if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
   if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
-  else if (P.dashCut && e.t !== 'dummy' && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = 'A DASH ATTACK: THE DASH CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
+  else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = 'A DASH ATTACK: THE DASH CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
   let extra = 0, mul = 1;
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp) e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); } return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
