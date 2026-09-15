@@ -41,7 +41,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const extraFoot = [], springs = new Set(), groups = []; let flight = null;
   if (opts.rides) {
     for (const e of (L.ents || [])) {
-      if (e.t === 'pad') for (const dx of [-1, 0]) extraFoot.push((e.x + dx) + ',' + (e.y - 1));
+      if (e.t === 'pad') for (const dx of (e.big ? [-1, 0, 1] : [-1, 0])) extraFoot.push((e.x + dx) + ',' + (e.y - 1));   /* a big pad is two tiles wide, centred on its column: it reaches half into both neighbours */
       if (e.t === 'wasp' && !opts.noFoes) { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }
     }
     for (const m of (L.moversExtra || [])) if (m.kind === 'wheel' && m.r) { const cells = [];

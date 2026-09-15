@@ -272,7 +272,7 @@ function marshWood() {
 
   // ---- 2. Lily pond: pads that sink ----
   water(25, 43, 23);
-  for (const x of [27, 30, 33, 36, 39, 42]) ent('pad', x, 22);
+  for (const x of [27, 30, 33, 36, 39, 42]) ent('pad', x, 22, { big: x === 27 || x === 36 });   // the first pad of the game is a big one: you learn the sink on the leaf that forgives it
   coins([30, 20], [36, 20], [42, 20]);
   floor(44, 55, 22);
   ent('check', 47, 21);
@@ -313,7 +313,12 @@ function marshWood() {
      its own verb for water: the pad that sinks under you. Nothing lives on this stretch - the pads are the question. */
   water(176, 259, 19);
   ent('sign', 175, 17, { text: 'LILY PADS SINK UNDER YOU. HOP ON, AND REST ON THE REED BEDS.' });   /* a step off the crate it was standing half inside */
-  for (const x of [178, 181, 184, 187, 190, 193, 196, 199, 202, 205, 208, 214, 217, 220, 223, 229, 232, 235, 238, 241, 247, 250, 253, 256]) ent('pad', x, 18);
+  /* BIG, SMALL, SMALL, BIG. Twenty-four identical hops three strides apart was a metronome, and the owner called it boring
+     on the first play. The big pads are the rests and the landings (two tiles, a slower sink, a flower on every one); the
+     small ones between are the quick hops. A small-to-big hop is four strides centre to centre and a small-to-small is
+     three: the paladin, the shortest jump in the game, carries 58 px level to level against 64 and 48. */
+  const BIG = new Set([178, 188, 198, 208, 215, 224, 230, 239, 248, 257]);
+  for (const x of [178, 181, 184, 188, 191, 194, 198, 201, 204, 208, 215, 218, 221, 224, 230, 233, 236, 239, 242, 248, 251, 254, 257]) ent('pad', x, 18, { big: BIG.has(x) });
   reeds(211, 16, 2); reeds(226, 16, 2); reeds(244, 16, 2);
   ent('check', 211, 15); ent('silver', 244, 13);
   coins([184, 16], [193, 16], [202, 16], [217, 16], [226, 14], [235, 16], [253, 16]);
@@ -377,7 +382,7 @@ function marshWood() {
   // four pads: you could not see the next one and there was no rhythm to find. Thirteen of them, spaced so
   // that every jump is reachable and none of them is a rest - and in fog that thick the only way to read the
   // run is to keep moving and trust the one you can just see.
-  for (const x of [281, 285, 289, 293, 297, 300, 304, 308, 312, 315, 318, 321]) G.ent('pad', x, 18);
+  for (const x of [281, 285, 289, 293, 297, 300, 304, 308, 312, 315, 318, 321]) G.ent('pad', x, 18, { big: x === 293 || x === 308 });   // the two pads with four strides on both sides of them are the big ones
   G.plat(303, 11, 3); G.ent('archer', 304, 10, { face: -1 }); G.plat(287, 11, 3); G.ent('archer', 288, 10, { face: -1 }); G.ent('silver', 306, 10);
   G.ent('wasp', 292, 13); G.ent('wasp', 310, 13);
   G.R.fog = (G.R.fog || []).concat([{ x0: 278 * TS, x1: 322 * TS, alpha: 0.86 }]); G.ent('wisp', 291, 12); G.ent('wisp', 306, 13); G.ent('wisp', 318, 12); // the village drowns in fog too; three wisps light it
