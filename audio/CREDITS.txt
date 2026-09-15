@@ -119,4 +119,7 @@ BOSSES
 - causeway.ogg    = "Solemn Tide" (SolemnTide.WAV) from "Patreon Songs - Castle Boss and Solemn Tide" by madameberry - https://opengameart.org/content/patreon-songs-castle-boss-and-solemn-tide - THE DROWNED CAUSEWAY (trimmed to 147.5 s with a 3 s fade)
 - kraken.ogg      = "Castle Boss" (CastleBoss.WAV) from "Patreon Songs - Castle Boss and Solemn Tide" by madameberry - https://opengameart.org/content/patreon-songs-castle-boss-and-solemn-tide - the Kraken (THE DROWNED CAUSEWAY)
 - scarecrowking.ogg = "Evil4 - Witch's Lair" from "JRPG Music Pack #3 [Evil]" by Juhani Junkala (SubspaceAudio) - https://opengameart.org/content/jrpg-pack-3-evil - the Scarecrow King (THE HEXED FIELDS)
+THE MAGE'S FOLLY (2026-09-15) plays two files already in the set, both CC0 and credited above, because no new download was made:
+- musUnder.ogg  = MintoDog's "8bit Action Stage Select" (under) - THE MAGE'S FOLLY's theme (no other level plays it)
+- boss4.ogg     = "Great Boss" by Spring Spring - the Archmage (THE MAGE'S FOLLY); it is the same recording as king.mp3, so a fresh CC0 boss track from OpenGameArt is owed here
 NOTE: boss4.ogg and king.mp3 are the same recording ("Great Boss"), and musSailor.ogg is longwater.ogg's Sailor Waltz; no level or boss now plays boss4.

@@ -64,7 +64,9 @@ const THROWS_SOMETHING_ELSE = new Set(['updateForgemaster|hurlTell', 'updateForg
   'updateHillTroll|ripTell',       // a crane stone, rolled along the floor: no shield turns it
   'updateHerald|raise',
   'updateStrawKing|baleTell',      // THE SCARECROW KING'S BALE rolls along the floor on its own, unblockable
-  'updateStrawKing|lanternTell']); // his lantern, thrown: fire on landing, unblockable          // THE TIDE HERALD'S WAVE: heraldWave crosses the square on its own, unblockable
+  'updateStrawKing|lanternTell', // his lantern, thrown: fire on landing, unblockable
+  'updateHomunculus|golemTell',   // THE HOMUNCULUS'S SLAM: a wave along the floor each way, unblockable
+  'updateArchmage|slamTell']);    // THE FAMILIAR'S SLAM: the same wave, the size of the room          // THE TIDE HERALD'S WAVE: heraldWave crosses the square on its own, unblockable
 // THE QUIET WINDUPS. A tell that throws NO blow at all - she listens, he calls, the square floods - wears no
 // mark: a mark is a promise about your shield, and there is nothing here for the shield to do.
 const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|darkTell', 'updateLampreeve|snuffTell',
@@ -75,7 +77,8 @@ const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|dark
   'updatePrince|callTell',          // the Buried Prince calls his court: the courtiers rake for themselves, on their own yellow marks
   'updateRam|callTell',
   'updateStrawKing|callTell',      // the Scarecrow King calls the rooks: each marks its own dive
-  'updateStrawKing|lightTell']);   // he lights the field: the fire is on the floor, and it throws no blow           // the Ram Lord calls the flock: the goats run for themselves
+  'updateStrawKing|lightTell',   // he lights the field: the fire is on the floor, and it throws no blow
+  'updateArchmage|blinkTell', 'updateArchmage|wardTell', 'updateArchmage|openTell']);   // THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow           // the Ram Lord calls the flock: the goats run for themselves
 const unblockable = key => {
   if (THROWS_SOMETHING_ELSE.has(key)) return true;
   const fn = key.split('|')[0];
