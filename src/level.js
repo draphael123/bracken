@@ -3168,7 +3168,7 @@ function trialYard(hero) {
       ['pogo', 3, 'THE PLUNGE: JUMP, THEN DOWN+X. BOUNCE OFF THE STRAW MEN THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'THE SHIELD CHARGE: HOLD X TO BRACE, LET GO TO RUSH. THE BASH BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
       DASH, RISE, SWEEP,
-      ['meter', 1, 'RESOLVE FILLS AS THE SHIELD TAKES BLOWS. FULL, TAP C: THE STAND. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH A FULL BAR'],
+      ['meter', 1, 'BLOCKS FILL RESOLVE. FULL, TAP C: THE LAST CHARGE. RUN IT THROUGH ALL THREE STRAW MEN.', [['dummy', 9], ['dummy', 12], ['dummy', 15]], 'LB WITH A FULL BAR'],   /* a line of straw men inside one charge's run (13 tiles), so the step is the thing itself: it carries through */
       SKILL],
     pyro: [
       ['ember', 3, 'THE EMBER. TAP C AND ONE FLIES. SET THE STRAW MAN ALIGHT THREE TIMES.', [['dummy', 18]], 'TAP LB'],

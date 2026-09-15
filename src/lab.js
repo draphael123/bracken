@@ -11,6 +11,10 @@ const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];
 const threatOf = e => e.alive && ((e.mode && /Tell|tell|wind|aim|draw|charge|lunge|raise/.test(e.mode)) || e.draw > 0 || e.liftT > 0);
 const yieldNow = () => new Promise(r => setTimeout(r, 0));
 const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper';   // C holds a guard; the others roll
+/* THE KNIGHT SPENDS HIS BAR. A full RESOLVE is THE LAST CHARGE on a tap of C with his feet under him - so the bot taps it (C not
+   already held, or it is not a tap) when the foe is in front of him, inside a charge's run and on his level. A bot that never
+   spent it would measure a knight who never charges. */
+const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
 // Every hero against the common foes, one at a time, in an early, a middle and a late level (so the tier scaling of
 // hp and damage is in it). The bot closes to its reach and swings; when the foe winds up it defends the way its hero
@@ -44,6 +48,7 @@ export async function fightLab(BK, opts = {}) {
           else k.block = true;
         } else if (ad > reach - 2) k[d > 0 ? 'right' : 'left'] = true;
         else if (P.atk < 0 && P.st >= 8 && Math.abs(e.y - P.y) < 26) { BK.press('atk'); swings++; }
+        if (h === 'knight' && !threat && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
         BK.sim(1);
         if (P.hp < last) taken += last - P.hp; last = P.hp;
       }
@@ -277,6 +282,8 @@ export async function bossLab(BK, opts = {}) {
       if (strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) BK.press('jump');   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
+      /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
+      if (h === 'knight' && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
       const was = P.hp, m0 = boss.mode; BK[opts.draw ? 'step' : 'sim'](1); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
         /* the ward took something: learn how late that tell's blow came, and let go now - the nova */

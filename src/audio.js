@@ -267,6 +267,12 @@ export const SFX = {
   charge() { noise(0.22, 0.1, 700, 0.8); tone('sawtooth', 150, 300, 0.22, 0.08); tone('square', 300, 520, 0.1, 0.05, 0.1); }, // a breath drawn and a weapon coming back, not a lion
   shieldScrape() { noise(0.26, 0.16, 1300, 0.7); noise(0.2, 0.08, 480, 0.6, 0.04); tone('sawtooth', 95, 70, 0.24, 0.05); }, // the knight's charge: iron feet and a shield rim dragged over the ground as he goes
   shieldSlam() { tone('sine', 120, 48, 0.2, 0.34); noise(0.1, 0.3, 360, 0.6); tone('triangle', 240, 130, 0.1, 0.14); tone('square', 1300, 820, 0.05, 0.12, 0.012); noise(0.06, 0.14, 3000, 1.1, 0.012); }, // oak driven into a body, and the iron rim ringing after it
+  /* THE LAST CHARGE has its own three: the war cry as he braces (a shout rising out of the chest, the shield coming up under it),
+     the rolling thunder of iron feet under the rush, and the great iron slam it ends in (the body of the blow, the rim ringing on
+     after it, and the ground answering). None of them is the shield charge's: a bar spent should not sound like a shove. */
+  lcCry() { noise(0.34, 0.2, 700, 0.9); tone('sawtooth', 150, 230, 0.3, 0.12); tone('square', 230, 300, 0.2, 0.06, 0.08); tone('sawtooth', 300, 170, 0.24, 0.08, 0.26); pad('sawtooth', 110, 150, 0.45, 0.06, 0.02, 900, 0.05); tone('square', 1300, 900, 0.05, 0.08, 0.2); },
+  lcRoll() { noise(0.72, 0.24, 160, 0.5); noise(0.6, 0.12, 420, 0.7, 0.05); tone('sine', 58, 40, 0.7, 0.26); for (let i = 0; i < 6; i++) noise(0.05, 0.14, vary(260), 1.2, 0.04 + i * 0.1); },
+  lcSlam() { file('slam', 0.5, 0.8); tone('sine', 90, 30, 0.5, 0.4); noise(0.3, 0.36, 300, 0.5); tone('square', 1100, 640, 0.08, 0.14, 0.02); tone('sine', 2200, 2150, 0.6, 0.06, 0.02); noise(0.5, 0.14, 120, 0.4, 0.08); },
   thud() { tone('sine', 110, 46, 0.18, 0.32); tone('triangle', 220, 120, 0.1, 0.12); noise(0.08, 0.18, 320, 0.6); }, // something wooden and heavy meeting the ground
   stone() { file('stone', 0.4); },
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },

@@ -221,7 +221,7 @@ const MENU_MUSIC = [
 ];
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
 const HEROES = [
-  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C for THE STAND - five seconds where every block is perfect, nothing costs wind and every blow staggers' },
+  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam' },
   { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else' },
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: blows on its face are stopped and fill it. LET GO for a BLOOD NOVA that hurts, marks and heals by what it held; let go AS a blow lands and he RETURNS it. Every death fills his blood: F RAISES THE DEAD from a body near him for a share of it, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. G carries the skill he chooses." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
@@ -293,7 +293,7 @@ const TREE = [];
   N('knight', 1, 1, 0, 'parry', 'PERFECT GUARD', 1, 'the perfect guard opens twice as long: raise the shield as a blow lands and it costs nothing, and whoever swung reels', 'steady');
   N('knight', 1, 1, 1, 'shieldThrow', 'SHIELD THROW', 1, 'F: hurl the shield. it comes back', 'steady', 'skill');
   N('knight', 1, 1, 2, 'vengeance', 'VENGEANCE', 1, 'what the shield turns is kept, and your next swing carries it (up to 30)', 'plated');
-  N('knight', 1, 2, 0, 'bash', 'BULL RUSH', 1, 'the shield charge runs a tile further, knocks back what flies at you as it goes, and its bash staggers twice as long', 'parry');
+  N('knight', 1, 2, 0, 'bash', 'BULL RUSH', 1, 'the shield charge runs a tile further and its bash staggers twice as long. both charges knock back what flies at you', 'parry');
   N('knight', 1, 2, 1, 'warCry', 'WAR CRY', 1, 'F: a shout that throws back and staggers what is near, gives back 30 stamina, and for four seconds every blow on you lands a quarter lighter', 'shieldThrow', 'skill');
   N('knight', 1, 2, 2, 'bulwark', 'BULWARK', 1, 'arrows, seeds and spells that hit your shield fly back where they came from', 'vengeance');
   N('knight', 1, 3, 0, 'holdLine', 'HOLD THE LINE', 1, 'holding the shield up costs no wind: only what lands on it does', 'bash');
@@ -1126,7 +1126,7 @@ const TRIAL_NAME = { hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIEL
 /* WHAT THE PANEL SAYS AS IT COUNTS ONE. Words never float over a fight (see number()), so a yard's confirmation is written on its step panel */
 const TRIAL_SAY = { hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hammerfall: 'QUAKED', judgement: 'JUDGEMENT', ward: 'WARDED' };
 function trialSay(msg, col, st) { st = st || ((L && L.trial) || []).find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st) return; st.said = msg; st.saidCol = col || '#8fd160'; st.saidT = time + 1.5; }
-function trialName(k) { if (k === 'heavyblow' && hero() === 'knight') return 'THE SHIELD CHARGE'; if (k === 'meter') return hero() === 'knight' ? 'THE STAND' : isPyro() ? 'THE PYRE' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'BLOOD SURGE' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
+function trialName(k) { if (k === 'heavyblow' && hero() === 'knight') return 'THE SHIELD CHARGE'; if (k === 'meter') return hero() === 'knight' ? 'THE LAST CHARGE' : isPyro() ? 'THE PYRE' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'BLOOD SURGE' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
 function fillMeter(n) { if (isPaladin()) P.light = Math.max(P.light || 0, n); else if (hero() === 'knight') P.resolve = Math.max(P.resolve || 0, n); else if (isPirate()) P.plunder = Math.max(P.plunder || 0, n); else if (isReaper()) P.harvest = Math.max(P.harvest || 0, n); }
 /* THE SKILLS A TRIAL LENDS. The F and G step cannot ask for keys a hero has nothing on, so a trial lends him skills out of his own
    tree until he has two, one from each of two branches where it can. Left out: the tree's RISING CUT (UP+X is the rising cut people mean) and VENT, which is nothing with no heat in her */
@@ -1648,7 +1648,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null;
-  mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.standT = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
+  mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && m.free && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.bored = false; } // the Ferryman poles back up for you
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
 }
@@ -3240,7 +3240,7 @@ const coinPlateW = lab => Math.max(52, textW(lab, 8) + 16);
 /* WHAT C DOES, ON THE PLATE: every hero's meter prompt, measured before the plate is laid so the plate is wide enough for it */
 function hudMeterLabel() {
   const blink = Math.floor(time * 4) % 2;
-  if (hero() === 'knight') { if (P.standT > 0) return { s: 'THE STAND ' + P.standT.toFixed(1), col: '#ffd36b' }; return (P.resolve || 0) >= 100 ? { s: 'THE STAND: C', col: blink ? '#ffd36b' : '#fff6c8' } : null; }
+  if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.resolve || 0) >= 100 ? { s: 'LAST CHARGE: C', col: blink ? '#ffd36b' : '#fff6c8' } : null; }
   if (isPyro()) return P.full ? { s: 'PYRE: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
   if (isPaladin()) return (P.light || 0) >= 100 ? { s: 'JUDGEMENT: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
   if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
@@ -3367,12 +3367,16 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* A PIERCING BLOW (the crossbow bolt) goes through a guard that was already up: only a guard raised as it lands - a parry - turns it */
   /* THE SHIELD CHARGE carries the shield square in front of him: what a raised shield turns it turns, at a raised shield's price - but never
      a red blow, never one from behind, and never as a perfect guard (that is a shield RAISED on the beat, not one run into a blow) */
-  const rushUp = hero() === 'knight' && P.rush > 0 && front;
-  const perfectUp = !rushUp && (P.standT > 0 || (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11));
+  /* THE LAST CHARGE carries it square in front the whole way too, brace and rush, and what it turns there costs him nothing: the bar
+     paid for it. The same NOs hold - a red blow, a blow from behind, a bolt through the boards - so the charge is never untouchable */
+  const lcUp = hero() === 'knight' && lcOn() && front;
+  const rushUp = hero() === 'knight' && (P.rush > 0 || lcUp) && front;
+  const perfectUp = !rushUp && (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11);
   const pierced = pierce && (P.block || rushUp) && (front || tal('plated')) && !unblockable && !perfectUp;
   if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
   if (((P.block && (front || tal('plated'))) || rushUp) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
-    const perfect = perfectUp, bc = perfect ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));   /* in THE STAND every block is a perfect guard */
+    const perfect = perfectUp, bc = perfect || lcUp ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));
+    if (lcUp) number(P.x, P.y - 28, 'TURNED', '#ffd36b');
     gainResolve(perfect ? 20 : 8);
     if (P.st >= bc) {
       P.st -= bc; P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) P.riposteT = 1;
@@ -3751,7 +3755,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
   if (dmg > 0 && !e.trainer && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body */
   addPoise(e, dmg, fromX, plunge);
-  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen') e.stagger = P.standT > 0 && !e.maxHp ? 0.8 : 0.35; e.sq = 0.16;   /* THE STAND staggers what it hits */
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen') e.stagger = 0.35; e.sq = 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -3876,9 +3880,90 @@ function varietyMul() {
 }
 function gainPlunder(n) { if (!isPirate()) return; const was = (P.plunder || 0) >= 100; P.plunder = Math.min(100, (P.plunder || 0) + n * varietyMul() * (1 + 0.33 * tal('deepPockets'))); if (!was && P.plunder >= 100) meterReady('#ffd34a'); }
 /* THE KNIGHT'S METER. RESOLVE fills where he is the only hero who can stand: a blow taken on the shield, a perfect
-   guard most of all, and a third cut landing. Full, a tap of C is THE STAND. */
-function gainResolve(n) { if (hero() !== 'knight' || P.standT > 0) return; const was = (P.resolve || 0) >= 100; P.resolve = Math.min(100, (P.resolve || 0) + n * varietyMul()); if (!was && P.resolve >= 100) meterReady('#ffd36b'); }
-function theStand() { trialEvent('meter'); P.resolve = 0; P.standT = 5; P.st = P.maxSt; SFX.judgement ? SFX.judgement() : SFX.heavy(); shakeCam(4); zoomKick(1.06, 0.3); ringAt(P.x, P.y - 10, 34, '#ffd36b', 0.45); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); number(P.x, P.y - 34, 'THE STAND', '#ffd36b'); }
+   guard most of all, and a third cut landing. Full, a tap of C on the ground is THE LAST CHARGE: he blocks to build it and
+   charges to spend it. Nothing fills it while the charge is running. */
+function gainResolve(n) { if (hero() !== 'knight' || lcOn()) return; const was = (P.resolve || 0) >= 100; P.resolve = Math.min(100, (P.resolve || 0) + n * varietyMul()); if (!was && P.resolve >= 100) meterReady('#ffd36b'); }
+/* THE LAST CHARGE. The shield charge (his held swing) is a shove; this is the whole bar spent at once. A told brace - shield up, a
+   gold ring, a war cry - and then he goes, fast and about a screen, behind the shield: THROUGH every ordinary foe in the way, each
+   one taking a heavy blow and knocked down, until a boss or a mini stops him dead, a wall stops him with a clank, or he pulls up
+   at the lip of a drop. However it stops, it ends in a shield slam that rocks everything near. The shield is square in front of
+   him the whole way, so a yellow blow from the front is turned for nothing (damagePlayer0's lcUp) - but a red blow or one from
+   behind lands, and a blow that lands knocks him out of it with no slam. It is not the LUNGE: nothing about it is untouchable. */
+const LC_BRACE = 0.25, LC_SPEED = 360, LC_DIST = 13 * TS, LC_THROUGH = 2.5, LC_BOSS = 3, LC_RING = 40;   /* s, px/s, px (a screen is twenty tiles, and the camera leads him), sword blows, px */
+/* (LC_BOSS was 4. The boss lab took THE CLOSED HELM from 66 s to 45: the charge lands in the window his own parry opens, where the
+   ward is down (x2) and the knight's parry-then-heavy combo is live (x1.5), and his perfect guards refill the bar in five blows.
+   Three is still the biggest single blow the knight has.) */
+const lcOn = () => P.lcBrace > 0 || P.lcLeft > 0;
+/* WHAT STOPS IT is a boss or a mini, asked the way the spawn asks it when it scales their health - not maxHp: the sworn sword and the
+   hedge knight carry a maxHp for their bars and are ordinary foes, and the charge goes through them like anyone else */
+const lcBig = e => e === boss || !!e.mini || !!(L.arena && L.arena.boss === e.t) || !!(L.mini && L.mini.boss === e.t && (e.mini || !(L.ents || []).some(q => q.t === e.t && q.mini)));
+function lastCharge() {
+  trialEvent('meter'); P.resolve = 0; P.lcBrace = LC_BRACE; P.lcLeft = 0; P.lcDir = P.face; P.lcHit = new Set();
+  P.block = false; P.atk = -1; P.heavy = false; P.heavySwing = false; P.bashing = false; P.charge = 0; P.atkHeld = 0; P.chargeFull = false; P.rush = 0; P.rushRec = 0; P.vx = 0;
+  SFX.lcCry(); zoomKick(1.05, 0.3); shakeCam(2); ringAt(P.x, P.y - 10, 30, '#ffd36b', LC_BRACE + 0.15); ringAt(P.x + P.face * 8, P.y - 10, 12, '#fff6c8', 0.3);
+  number(P.x, P.y - 34, 'THE LAST CHARGE', '#ffd36b'); }
+function updateLastCharge(dt, stunned) {
+  if (!lcOn()) return;
+  const dir = P.lcDir;
+  if (P.dead || stunned || P.swim || P.climb || !P.ground || hero() !== 'knight') { P.lcBrace = 0; P.lcLeft = 0; return; }   /* knocked out of it, or off his feet: the bar is gone and there is no slam */
+  P.face = dir; P.abuf = 0; P.jbuf = 0; P.dbuf = 0;
+  if (P.lcBrace > 0) { P.vx = 0; P.lcBrace -= dt;   /* THE BRACE: the tell. He stands behind the shield and the light gathers on it */
+    if (Math.random() < dt * 40) parts.push({ x: P.x + dir * (7 + Math.random() * 4), y: P.y - 4 - Math.random() * 14, vx: -dir * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
+    if (P.lcBrace <= 0) { P.lcBrace = 0; P.lcLeft = LC_DIST; P.vx = dir * LC_SPEED; SFX.lcRoll(); SFX.shieldScrape(); shakeCam(6, dir * 4); zoomKick(1.08, 0.25); dust(P.x - dir * 4, P.y, 6); streaks(P.x - dir * 4, P.y - 10, 8, ['#ffd36b', '#fff6c8'], 160); }
+    return; }
+  P.lcLeft -= LC_SPEED * dt; P.vx = dir * LC_SPEED;
+  /* THE TRAIL: a gold afterimage of him every other frame or so, and gold streaks thrown off behind */
+  if (Math.random() < dt * 34) ghosts.push({ x: P.x, y: P.y, face: dir, life: 0.16, frame: Math.floor(time * 18) % 2, gold: true });
+  for (let i = 0; i < 2; i++) if (Math.random() < dt * 40) parts.push({ x: P.x - dir * (4 + Math.random() * 6), y: P.y - 3 - Math.random() * 16, vx: -dir * (60 + Math.random() * 80), vy: 0, life: 0.2, max: 0.2, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0, streak: true });
+  if (Math.random() < dt * 30) dust(P.x - dir * 5, P.y, 1);
+  const lead = P.x + dir * (P.w / 2 + 2), lx = Math.floor(lead / TS);
+  if (isSolid(lx, Math.floor((P.y - 4) / TS)) || isSolid(lx, Math.floor((P.y - P.h + 2) / TS))) { SFX.clank(); sparks(lead, P.y - 10, -dir, 9); impactAt(lead, P.y - 10, 'steel'); lcSlam(dir, false); return; }   /* A WALL: iron on stone, and the slam is into it */
+  const fx = Math.floor((P.x + dir * (P.w / 2 + 1)) / TS), fy = Math.floor((P.y + 2) / TS);
+  if (!P.onMover && !isSolid(fx, fy) && !isOneWay(tileAt(fx, fy))) { dust(P.x + dir * 5, P.y, 4); lcSlam(dir, false); return; }   /* A DROP: he pulls up at the lip, as the shield charge does */
+  const hb = dir > 0 ? { l: P.x - 2, r: P.x + 14, t: P.y - 22, b: P.y } : { l: P.x - 14, r: P.x + 2, t: P.y - 22, b: P.y };
+  if (tal('bash')) for (const s of seeds) if (!s.dead && !s.reflected && overlap(hb, { l: s.x - 4, r: s.x + 4, t: s.y - 4, b: s.y + 4 })) reflectSeed(s);   /* BULL RUSH: what flies at him goes back the way it came, in this charge too */
+  for (const e of enemies) {
+    if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || e.t === 'drone' || e.t === 'mother' || P.lcHit.has(e) || !overlap(hb, box(e))) continue;   /* (a puffball and the Mother's hide are not struck by a blade either) */
+    P.lcHit.add(e);
+    if (lcBig(e)) { lcStrike(e, LC_BOSS, dir); if (!P.dead) lcSlam(dir, true); return; }   /* A BOSS OR A MINI is not gone through: he stops on it, and the slam is the stop */
+    lcStrike(e, LC_THROUGH, dir);
+  }
+  if (P.lcLeft <= 0) lcSlam(dir, false);   /* the road run out: he plants and slams */
+}
+/* ONE BLOW OF IT. Struck through hurtEnemy with the hero set up as a heavy swing for the length of the call, so everything that asks
+   whether a blow was heavy hears yes - SUNDER, EXECUTION, the parry's OPENED UP, the stagger bar, the knock into the level - and put
+   back straight after, so the swing pass never sees a swing. No guard check stands in front of it: a raised shield is broken, not met. */
+function lcStrike(e, mul, dir) {
+  const was = { heavy: P.heavy, hs: P.heavySwing, atk: P.atk, bash: P.bashing }, hp0 = e.hp, big = lcBig(e), from = P.x - dir * 10;
+  P.heavy = true; P.heavySwing = true; P.atk = 0.05; P.bashing = true;
+  try { hurtEnemy(e, Math.round(swordDmg() * mul), from, false); } finally { P.heavy = was.heavy; P.heavySwing = was.hs; P.atk = was.atk; P.bashing = was.bash; }
+  SFX.shieldSlam(); sparks(e.x - dir * 4, e.y - e.h / 2, dir, big ? 14 : 8); impactAt(e.x - dir * 4, e.y - e.h / 2, 'steel'); streaks(e.x - dir * 4, e.y - e.h / 2, 6, ['#ffd36b', '#fff6c8'], 150);
+  if (!e.alive) return;
+  if (big) {   /* rocked where it stands, and a great bite out of its stagger bar */
+    e.stagger = Math.max(e.stagger || 0, 0.45); const m = poiseMax(e);
+    if (m && e.hp < hp0 && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * 0.4); if (e.poise >= m) addPoise(e, 1, from, false); }
+    hitstop(0.1); shakeCam(8, dir * 4); zoomKick(1.1, 0.3); }
+  else { e.stagger = Math.max(e.stagger || 0, 0.9); if (e.guardT > 0) e.guardT = 0;   /* down, and the guard with it */
+    if (e.maxHp && !(e.knock > 0)) { const mh = e.maxHp; e.maxHp = 0; try { knockFoe(e, dir, 240); } finally { e.maxHp = mh; } }   /* (a duelist's bar is not a boss's footing: knockFoe reads maxHp as the boss flag, so it is lifted for this one call) */
+    if (tal('sunder')) { e.sunder = 2.5; number(e.x, e.y - e.h - 18, 'SUNDERED', '#ffd36b'); }
+    hitstop(0.04); shakeCam(4, dir * 3); }
+}
+/* THE SLAM IT ENDS IN: the shield driven into the ground in front of him. A ring of forty pixels that rocks and shoves whatever is
+   near and hurts it only a little - it is the full stop, not the sentence. What the charge already struck is not struck again. */
+function lcSlam(dir, big) {
+  P.lcBrace = 0; P.lcLeft = 0; P.vx = big ? -dir * 60 : 0; P.rushRec = 0.3;
+  const x = P.x + dir * 10, y = P.y - 10, dmg = Math.max(2, Math.round(swordDmg() * 0.4));
+  SFX.lcSlam(); shakeCam(big ? 10 : 7, dir * 4); zoomKick(big ? 1.12 : 1.08, 0.3); hitstop(big ? 0.14 : 0.08); rumble(160, 0.7);
+  ringAt(x, y, LC_RING, '#ffd36b', 0.45); ringAt(x, y, LC_RING / 2, '#fff6c8', 0.3); dust(x, P.y, 12); impactAt(x, y, 'steel'); streaks(x, y, 12, ['#ffd36b', '#fff6c8'], 200);
+  for (const e of enemies) {
+    if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || Math.abs(e.x - x) > LC_RING || Math.abs((e.y - (e.h || 16) / 2) - y) > LC_RING * 0.75) continue;
+    const d = Math.sign(e.x - x) || dir;
+    if (!P.lcHit.has(e)) hurtEnemy(e, dmg, x - d * 12, false);
+    if (!e.alive) continue;
+    if (lcBig(e)) e.stagger = Math.max(e.stagger || 0, 0.25);
+    else { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = d * 160; e.vy = Math.min(e.vy || 0, -60); }
+  }
+}
 function updateCharge(dt) {
   if (!tal('heavy') || P.dead || state !== 'play') { P.atkHeld = 0; P.charge = 0; return; }
   if (isPirate() && !P.loaded) { if (keys.atk && !(P.emptySaid > 0)) { P.emptySaid = 1.2; SFX.clank(); number(P.x, P.y - 26, 'EMPTY', '#9aa39a'); } P.atkHeld = 0; P.charge = 0; return; }
@@ -4379,7 +4464,7 @@ function fireHeavy() { noteVerb('heavy');
    clank, and he pulls up at the lip of a drop he did not jump. It is slower to wind than the LUNGE and stops on the first body. */
 const RUSH_SPEED = 230;
 const rushDist = k => 22 + 34 * Math.max(0, Math.min(1, (k - 0.55) / 0.45)) + (tal('bash') ? TS : 0);   /* px. BULL RUSH: a tile further */
-const rushing = () => P.rush > 0 || P.rushRec > 0;
+const rushing = () => P.rush > 0 || P.rushRec > 0 || lcOn();   /* (THE LAST CHARGE locks him into it the same way: no swing, jump, dash, roll or guard until it is over) */
 function shieldCharge(k) { P.rush = rushDist(k) / RUSH_SPEED; P.rushDir = P.face; P.rushRec = 0; P.block = false; P.vx = P.face * RUSH_SPEED;
   SFX.shieldScrape(); dust(P.x - P.face * 4, P.y, 4); streaks(P.x, P.y - 10, -P.face, ['#fff6e0', '#c9d1dc'], 90); squash(1.12, 0.9, 0.1); }
 function updateShieldCharge(dt, stunned) {
@@ -4460,7 +4545,7 @@ function attackBox() {
   if (P.atk >= 0.04 && P.atk < 0.16) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 17, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 17, b: P.y - 1 };
   return null;
 }
-function spend(cost) { if (P.standT > 0) cost = 0;   /* THE STAND: nothing costs him wind */
+function spend(cost) {
   if (P.st < cost) { P.stFlash = 0.35; return false; }
   P.st -= cost; P.stDelay = ST.delay; return true;
 }
@@ -4719,11 +4804,13 @@ function updatePlayer(dt) {
     else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.2 && free && !(P.hookCd > 0) && !P.hookT) throwHook(); }
     else { if (P.cHeld > 0 && P.cHeld < 0.2 && free && !(P.parryCd > 0)) { P.parryW = 0.2; P.parryCd = 0.55; SFX.pSlash(); } P.cHeld = 0; }
   }
-  if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C is THE STAND.
-    P.resolve = Math.max(0, Math.min(100, P.resolve || 0)); P.standT = Math.max(0, (P.standT || 0) - dt);
+  if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C on the ground is THE LAST CHARGE.
+    P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
-    if (cDown && P.resolve >= 100 && !stunned && !dodging && !P.plunge) theStand();
-    if (P.standT > 0 && Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - 2 - Math.random() * 18, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -10 });
+    if (cDown && P.resolve >= 100 && !stunned && !dodging && !P.plunge && !rushing() && !thrown) {
+      if (P.ground && !P.swim && !P.climb) lastCharge();
+      else if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintT = 4.5; hintMsg = 'THE LAST CHARGE NEEDS FOOTING: TAP C ON THE GROUND. THE BAR IS KEPT.'; }   /* said once a save; the bar is not spent */
+    }
   }
   P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !rushing() && hero() === 'knight';
   P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); if (P.ground) P.airRolled = false;
@@ -4737,7 +4824,7 @@ function updatePlayer(dt) {
   }
   if (keys.block && thrown && !P.saidNoShield) { P.saidNoShield = true; number(P.x, P.y - 22, 'NO SHIELD', '#9aa39a'); } if (!thrown) P.saidNoShield = false;
   if (P.block) {
-    if (!(P.standT > 0) && !tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* HOLD THE LINE */
+    if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* HOLD THE LINE */
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && P.ground) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
@@ -4960,6 +5047,7 @@ function updatePlayer(dt) {
   }
 
   updateShieldCharge(dt, stunned);   /* THE SHIELD CHARGE: after the legs have had their say, so nothing else sets his speed under it */
+  updateLastCharge(dt, stunned);     /* and THE LAST CHARGE, for the same reason */
   const wasGround = P.ground, prevY = P.y;
   P.ground = false;
   const prevVy = P.vy;
@@ -16756,7 +16844,8 @@ function drawWorld(cx, cy, showPlayer) {
     // A ROLL leaves a WHITE silhouette of him, which is right for a roll. THE PASSING must not: a white
     // knight-shaped blob at low alpha reads as a missing texture, not as a man going thin. His own colours,
     // fading, with the green of the harvest on them.
-    for (const gh of ghosts) { if (gh.pass && isReaper()) { drawTinted(K, 'run', gh.frame, gh.x - cx + Math.round(Math.sin(time * 40 + gh.x)), gh.y - cy, gh.face, 1.22, 1.22, 0, '#1a0c24', Math.min(0.7, gh.life * 2.6)); continue; }
+    for (const gh of ghosts) { if (gh.gold) { drawTinted(K, K.R.rush ? 'rush' : 'run', gh.frame, gh.x - cx, gh.y - cy, gh.face, 1, 1, 0, '#ffd36b', Math.min(0.55, gh.life * 3.4)); continue; }   /* THE LAST CHARGE's afterimage: the rush frame, in gold */
+      if (gh.pass && isReaper()) { drawTinted(K, 'run', gh.frame, gh.x - cx + Math.round(Math.sin(time * 40 + gh.x)), gh.y - cy, gh.face, 1.22, 1.22, 0, '#1a0c24', Math.min(0.7, gh.life * 2.6)); continue; }
       drawSet(K, gh.pass ? 'run' : 'roll', gh.frame, gh.x - cx, gh.y - cy, gh.face, !gh.pass, 1, 1, gh.life * (gh.pass ? 0.9 : 2));
       if (gh.pass) { g.globalAlpha = Math.min(0.35, gh.life * 1.1); g.fillStyle = '#8fd160';
         g.fillRect(Math.round(gh.x - cx) - 4, Math.round(gh.y - cy) - 20, 8, 1); g.globalAlpha = 1; } }
@@ -16771,7 +16860,8 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.dodge > 0) { key = 'roll'; frame = Math.floor((0.3 - P.dodge) / 0.3 * 4) * (P.face > 0 ? 1 : -1); }
       else if (P.plunge) key = 'plunge';
       else if (P.bashing && P.atk >= 0 && K.R.bash) key = P.atk < 0.2 ? 'bash' : 'recover';   /* THE SHIELD CHARGE: the slam, then the shield let down */
-      else if (P.rush > 0 && K.R.rush) { key = 'rush'; frame = Math.floor(time * 14) % 2; }
+      else if (P.lcBrace > 0) { key = K.R.brace ? 'brace' : 'block'; frame = 0; }   /* THE LAST CHARGE's tell: braced square behind the shield */
+      else if ((P.rush > 0 || P.lcLeft > 0) && K.R.rush) { key = 'rush'; frame = Math.floor(time * (P.lcLeft > 0 ? 18 : 14)) % 2; }
       else if (P.rushRec > 0 && K.R.recover) key = 'recover';
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
@@ -16815,6 +16905,9 @@ function drawWorld(cx, cy, showPlayer) {
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1);
       if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: 0, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it (drawSwimmers) */
       if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, '#140a1c', 0.75);
+      if (hero() === 'knight' && lcOn()) {   /* THE LAST CHARGE: a gold light on the face of the shield, pulsing, brace and rush */
+        const lx = Math.round(P.x - cx) + P.face * 7, ly = Math.round(P.y - cy) - 12, pu = 0.6 + 0.4 * Math.sin(time * 38);
+        g.globalAlpha = 0.35 * pu; g.fillStyle = '#ffd36b'; g.fillRect(lx - 4, ly - 7, 8, 14); g.globalAlpha = 0.85 * pu; g.fillStyle = '#fff6c8'; g.fillRect(lx - 1, ly - 4, 2, 8); g.globalAlpha = 1; }
       if (P.dance > 0) { for (let i = 0; i < 2; i++) { const t2 = (P.dance * 0.8 + i * 0.5) % 1, nx = Math.round(P.x - cx) + (i ? 10 : -12) + Math.round(Math.sin(t2 * 6) * 3), ny = Math.round(P.y - cy) - 30 - Math.round(t2 * 16);
         g.globalAlpha = 1 - t2; g.fillStyle = i ? '#ffd36b' : '#ff9ad0'; g.fillRect(nx, ny, 2, 2); g.fillRect(nx + 1, ny - 5, 1, 5); g.fillRect(nx + 2, ny - 5, 2, 1); } g.globalAlpha = 1; }   /* music notes off whoever is dancing */
       drawWarm('tint', K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, P.x, P.y - 10);
@@ -18005,8 +18098,8 @@ function render() {
     if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + 10;
       text((SET.invincible ? 'INVINCIBLE ' : '') + (SET.godmode ? 'GOD MODE' : ''), 6, 2 + ph + 3, '#ff9a5c', 'left', 6); }
     g.drawImage(PROP.bolt, 6, 15);
-    if (hero() === 'knight') { const hy = SET.iron ? 41 : 29, full = (P.resolve || 0) >= 100, on = P.standT > 0;   /* RESOLVE: a shield for the icon; while THE STAND holds, the bar is its clock */
-      bar(16, hy, 70, 4, on ? P.standT / 5 : (P.resolve || 0) / 100, on || full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#c9d1dc', on ? P.standT / 5 : (P.resolve || 0) / 100);
+    if (hero() === 'knight') { const hy = SET.iron ? 41 : 29, full = (P.resolve || 0) >= 100, on = lcOn(), fill = on ? (P.lcBrace > 0 ? 1 : Math.max(0, P.lcLeft / LC_DIST)) : (P.resolve || 0) / 100;   /* RESOLVE: a shield for the icon; while THE LAST CHARGE runs, the bar is the road left in it */
+      bar(16, hy, 70, 4, fill, on || full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#c9d1dc', fill);
       g.fillStyle = '#c9d1dc'; g.fillRect(5, hy - 3, 8, 6); g.fillRect(6, hy + 3, 6, 2); g.fillRect(8, hy + 5, 2, 1); g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 2, 2, 5);
       if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6); }
     if (isPyro()) { const hy = SET.iron ? 41 : 29; bar(16, hy, 70, 4, (P.heat || 0) / 100, P.full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6); }
