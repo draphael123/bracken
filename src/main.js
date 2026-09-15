@@ -7454,7 +7454,10 @@ function drawFieldsTiles(cx, cy) {
   for (const [x0, x1, y0, y1, kind] of (L.fields.skins || [])) { if (x1 < tx0 || x0 > tx1) continue;
     for (let ty = Math.max(y0, Math.floor(cy / TS)); ty <= Math.min(y1, Math.floor((cy + VH) / TS)); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.SOLID || FLD.shrinkCells.has(i)) continue;
       g.drawImage(A.skin[kind][(tx * 7 + ty * 3) % 3], tx * TS - cx, ty * TS - cy);
-      if (ty > 0 && L.grid[i - LW] === T.AIR) { g.fillStyle = 'rgba(236,214,168,0.55)'; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = 'rgba(236,214,168,0.2)'; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } } }
+      if (ty > 0 && L.grid[i - LW] === T.AIR) { g.fillStyle = 'rgba(236,214,168,0.55)'; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = 'rgba(236,214,168,0.2)'; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
+    /* EACH BALE ITS OWN EDGE. Painted tile by tile, a half bale set against the lane's bank was more bank; with an edge
+       round every rect it is a smaller bale in front of a bigger one, and that is a step */
+    if (kind === 'bale') { g.strokeStyle = '#3a2e16'; g.lineWidth = 1; g.strokeRect(x0 * TS - cx + 0.5, y0 * TS - cy + 0.5, (x1 - x0 + 1) * TS - 1, (y1 - y0 + 1) * TS - 1); } }
   if (L.fields.crypt && A.cryptFront) { const [x, y] = L.fields.crypt; g.drawImage(A.cryptFront, x * TS - cx, y * TS - cy); }
 }
 function drawHexVine(m, cx, cy) {
@@ -15830,7 +15833,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'closedhelm' && e.alive && e.mode !== 'sleep') drawPaladinMarks(e, cx, cy);
     if (e.t === 'lancer' && e.alive && e.mounted && e.mode === 'chargeTell') { const k = 0.5 + 0.5 * Math.sin(time * 20), fy = Math.round(e.y - cy) - 2, ex = Math.round(e.x - cx); g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(ex, fy); g.lineTo(Math.round((e.face > 0 ? e.hx1 : e.hx0) - cx), fy); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE LINE HE WILL RIDE, for the length of the tell */
     if (e.t === 'lancer' && e.alive && !e.mounted && e.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 14 + k * 2, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
-    const sprSet = e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
+    /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
+    const sprSet = e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
     const bigF = e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);

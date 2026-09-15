@@ -49,6 +49,26 @@ import { canvas, px, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
 function pack(frames, ax, ay, w, h) { const R = frames, L = frames.map(flipX), white = frames.map(c => whiten(c)), whiteL = white.map(flipX); return { R, L, white: { R: white, L: whiteL }, ax, ay, w, h }; }
+/* A HAUNTED BEAST, out of another level's sprite set. The fields' ghosts are pale moon-blue, so a creature that lives here
+   and somewhere else too (the cave bat in the Hollis rafters) is laid onto the ghost ramp GH by how bright each of its pixels
+   is AMONG ITS OWN - its darkest tone to GH[1], its brightest to GH[3] - so a near-black bat comes out pale and still has
+   its shading. The outline stays the outline and the eye keeps its colour (`keep`), which is what makes it a bat that
+   died in the barn and not a cave bat that flew in. The white hit-flash frames are the same silhouettes and are shared. */
+export function hauntedSet(set, keep = ['#ff4a3a']) {
+  const lum = (r, g2, b) => 0.3 * r + 0.59 * g2 + 0.11 * b;
+  const hexRGB = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const out = hexRGB(OUT), ramp = GH.map(hexRGB), kept = keep.map(hexRGB), same = (a, r, g2, b) => a[0] === r && a[1] === g2 && a[2] === b;
+  const R = set.R.map(src => {
+    const [c, q] = canvas(src.width, src.height); q.drawImage(src, 0, 0);
+    const img = q.getImageData(0, 0, c.width, c.height), d = img.data;
+    let lo = 255, hi = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] && !same(out, d[i], d[i + 1], d[i + 2]) && !kept.some(k => same(k, d[i], d[i + 1], d[i + 2]))) { const l = lum(d[i], d[i + 1], d[i + 2]); lo = Math.min(lo, l); hi = Math.max(hi, l); }
+    for (let i = 0; i < d.length; i += 4) { if (!d[i + 3] || same(out, d[i], d[i + 1], d[i + 2]) || kept.some(k => same(k, d[i], d[i + 1], d[i + 2]))) continue;
+      const t = hi > lo ? (lum(d[i], d[i + 1], d[i + 2]) - lo) / (hi - lo) : 0, [r, g2, b] = ramp[1 + Math.round(t * 2)];
+      d[i] = r; d[i + 1] = g2; d[i + 2] = b; }
+    q.putImageData(img, 0, 0); return c; });
+  return Object.assign({}, set, { R, L: R.map(flipX) });
+}
 
 // ---------- a colour buffer ----------
 function buf(w, h) {

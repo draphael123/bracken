@@ -6130,14 +6130,18 @@ function theHexedFields() {
   air(34, 37, G, G + 2); spikes(34, 37, G + 2);                    /* the second: brambles in the bottom */
   deco('scarePost', 42, G - 1);                                    /* the scarecrow that was on it is not on it */
   sign(45, G - 1, 'A SCARECROW ONLY MOVES WHILE YOUR BACK IS TO IT. KEEP YOUR EYES ON IT.');
-  /* THE FIRST VINE: a hedge bank across the lane too tall to jump, and a trough of runoff beside it */
+  /* THE FIRST VINE: a hedge bank of bales across the lane too tall to jump, and a trough of runoff beside it. The vine is
+     the way the lane teaches, but its leaf stands fifty-six pixels over the lane against a fifty-one pixel jump, and it
+     does not carry a hero up: struck from the bud, it shoots up past him (measured, all five heroes stayed on the lane).
+     So a half bale against the bank's face is the way for everyone: two rows up onto it, two rows up onto the bank, and
+     a stair you can see from the sign. (The owner's playtest: most heroes stopped here.) */
   sign(49, G - 1, 'STRIKE THE TROUGH. THE RUNOFF GROWS A VINE, AND A VINE DOES NOT STAY UP LONG.');
-  spill('trough', 52, G - 1, 'lane'); vine(54, G, 3, 'lane');
-  block(57, 59, G - 4, G - 1);
+  spill('trough', 51, G - 1, 'lane'); vine(53, G, 3, 'lane');
+  block(57, 59, G - 4, G - 1); block(55, 56, G - 2, G - 1);
   coins([57, G - 6], [58, G - 6], [59, G - 6]);
-  ent('check', 66, G - 1); ent('thief', 79, G - 1, { face: -1 }); ent('archer', 92, G - 2, { face: -1 }); ent('shield', 88, G - 1, { face: -1 }); ent('wight', 30, G - 1); ent('rook', 47, G - 1, { face: -1 });   /* scavengers off the hill, picking over the dead farm, and their bowman on the bank */
+  ent('check', 66, G - 1); ent('pumpkin', 79, G - 1, { face: -1 }); ent('crossbow', 92, G - 2, { face: -1 }); ent('hedgeknight', 88, G - 1, { face: -1 }); ent('wight', 30, G - 1); ent('rook', 47, G - 1, { face: -1 });   /* a patrol off the road inland, come out to see what walks the farms: a hedge knight where a goblin shield stood, and their crossbowman up on the bank where the goblins' bowman knelt - the same fight, a blade in front of a shooter up a step. And a lurker in the pumpkins by the stack, where a cutpurse was. The owner: "they should be knights, or haunted things". Nothing goblin is left in the fields */
   ent('scarecrow', 74, G - 1, { face: -1 });
-  ent('rook', 82, G - 1, { face: -1 }); ent('rook', 86, G - 1, { face: -1 });
+  ent('rook', 82, G - 1, { face: -1 }); ent('runner', 86, G - 1, { face: -1 });   /* the hedge knight's squire: his shout fetches the sworn sword the garrison stands by the stack */
   deco('crookedFence', 84, G - 1);
   block(90, 93, G - 1, G - 1);                                     /* a bank up onto the orchard, a row at a time */
   coins([28, G - 2], [40, G - 2], [63, G - 2], [70, G - 2], [78, G - 2]);
@@ -6157,8 +6161,10 @@ function theHexedFields() {
   trunk(124, 25, O - 1); trunk(133, 24, O + 1); trunk(141, 25, O + 1); trunk(149, 24, O + 1);
   ent('rockfall', 137, 14, { every: 2.4, apple: true }); ent('rockfall', 145, 15, { every: 2.8, apple: true });
   sign(122, 23, 'THE APPLES FALL ON A BEAT. COUNT IT, THEN CROSS.');
-  /* the high bough: a bucket on the limb, and the vine it grows is the only way up to it */
-  spill('bucket', 131, 22, 'bough'); vine(134, 23, 4, 'bough');
+  /* the high bough: a bucket on the limb, and the vine it grows is the only way up to it. Two rows, not four: a leaf four
+     rows up could only be ridden from the bud, and the bucket is three tiles from the bud, so nobody but a long reach
+     ever rode it. Two rows up is a jump onto the leaf from the limb and a jump off it onto the silver's bough */
+  spill('bucket', 131, 22, 'bough'); vine(134, 23, 2, 'bough');
   plat(137, 18, 4); trunk(139, 19, 23); ent('silver', 138, 17);
   ent('stray', 150, 22, { kind: 'sheep' });
   coins([122, 22], [126, 22], [132, 21], [141, 23], [148, 22]);
@@ -6166,7 +6172,7 @@ function theHexedFields() {
   ent('scarecrow', 183, O - 1, { face: -1 }); spikes(165, 166, O - 1);   /* brambles through the floor of the supper: something light thrown into them stays there */ ent('haunt', 190, O - 4, { face: -1 }); ent('crow', 135, 19, { face: -1 }); ent('crow', 151, 18, { face: -1 });
   /* THE ROOT CELLAR: a hatch in the orchard floor, and a ladder back up the far end of it */
   air(188, 189, O, O + 1); air(180, 194, O + 2, O + 6); air(181, 181, O, O + 1); net(181, O, O + 6);
-  deco('pumpkinPatch', 186, O - 1); ent('spider', 185, O + 3);
+  deco('pumpkinPatch', 186, O - 1); ent('haunt', 185, O + 3, { face: -1 });   /* a fork in the cellar's rafters: the farm's own haunt where a wood's spider hung */
   coins([183, O + 6], [185, O + 6], [187, O + 6], [190, O + 6], [192, O + 6]);
   coins([158, O - 2], [184, O - 2], [193, O - 2]);
 
@@ -6185,7 +6191,7 @@ function theHexedFields() {
   ent('check', 253, G - 1);
   ent('farmhand', 277, G - 2, { face: -1 });
   ground(283, 334);
-  deco('ghostCow', 292, G - 1); ent('rook', 286, G - 1, { face: -1 }); ent('heronfoe', 289, G - 1, { face: -1 });   /* the bog's own heron, on the far bank */
+  deco('ghostCow', 292, G - 1); ent('rook', 286, G - 1, { face: -1 }); ent('pumpkin', 289, G - 1, { face: -1 });   /* a lurker in the pumpkins at the edge of the Ploughman's furrows, on the far bank (it was a heron: a marsh bird, not a haunted field's). A pumpkin and not a scarecrow: the stretch before the mini stays a breath (tools/pacing.mjs) */
   coins([212, G - 2], [216, G - 2], [227, G - 2], [232, G - 2], [243, G - 2], [248, G - 2], [259, G - 2], [264, G - 2], [275, G - 2], [279, G - 2]);
 
   // ---------------- THE FURROWS (x 291-331). The Headless Ploughman, and the hedge-bank gate he stands in front of. ----------------
@@ -6242,8 +6248,8 @@ function theHexedFields() {
   plat(429, 8, 4); plat(435, 11, 4); plat(440, 14, 4); plat(445, 17, 4); plat(441, 20, 3); plat(446, 23, 4); plat(451, 26, 4); plat(455, 29, 4);
   for (const [x, r] of [[431, 8], [437, 11], [442, 14], [447, 17], [442, 20], [448, 23], [453, 26], [457, 29]]) trunk(x, r + 1, G - 1);
   ent('crow', 438, 5, { face: -1 }); ent('crow', 443, 6, { face: -1 }); ent('crow', 448, 5, { face: -1 });
-  spikes(431, 453, G - 1); ent('goat', 455, G - 1, { face: -1 });                                         /* a thorn bed under the steps: a fall off them is a fall into it */
-  ent('bat', 420, 16); ent('bat', 425, 18);                        /* the mill's rafters */
+  spikes(431, 453, G - 1); ent('pumpkin', 455, G - 1, { face: -1 });                                      /* a thorn bed under the steps: a fall off them is a fall into it. And a lurker in the pumpkins at their foot, where a feral goat stood */
+  ent('bat', 420, 16); ent('bat', 425, 18);                        /* the mill's rafters. The fields' bats are the farm's dead ones: drawn pale, moon-blue and red-eyed (hauntedSet in src/redraw/fields_foes.js) */
   /* THE HIDDEN HAYLOFT: a line of ledges off the steps, to a hatch in the thickness of the barn's wall */
   plat(447, 13, 2); plat(451, 11, 3); plat(456, 10, 3); plat(460, 12, 3); trunk(452, 12, 16); trunk(457, 11, 16);
   coins([431, 7], [436, 10], [441, 13], [446, 16], [447, 22], [452, 25], [456, 28], [452, 10], [457, 9]);
@@ -6280,7 +6286,7 @@ function theHexedFields() {
   for (const x of [558, 571, 584]) block(x, x, 27, 38);            /* the fence posts: a row over the cart's bed */
   ent('rook', 571, 26, { face: -1 });
   ground(595, 606, 28);
-  ent('haunt', 600, 24, { face: -1 }); ent('thief', 633, 31, { face: -1 }); ent('archer', 629, 29, { face: -1 });
+  ent('haunt', 600, 24, { face: -1 }); ent('hedgeknight', 633, 31, { face: -1 }); ent('crossbow', 629, 29, { face: -1 });   /* the road's patrol at the foot of the hill road: a hedge knight, and their crossbowman on the bank over him, where a goblin cutpurse and a goblin bowman stood. The same fight - a blade in front of a shooter up a step - with the road's own men */
   /* THE BROKEN ROAD: the bank has gone into the valley, and a bucket of runoff grows the way across */
   sign(598, 27, 'THE ROAD HAS GONE INTO THE VALLEY. KICK THE BUCKET AND WALK THE VINES OVER.');
   ent('check', 599, 27); spill('bucket', 603, 27, 'road'); vine(609, 39, 11, 'road'); vine(613, 39, 11, 'road'); vine(617, 39, 11, 'road');
@@ -6325,14 +6331,14 @@ function theHexedFields() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts,
     music: 'fields', duskStart: 99999, duskLen: 1, night: true, nightA: 0.16, edgeLit: true,
     fields: { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, phantoms, shrinks, trunks, dusk: [30, 150], crypt: [659, 28],
-      skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 33, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale']] },
+      skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 33, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale'], [55, 56, 32, 33, 'bale']] },
     quest: { n: 3, item: 'sheep', name: 'THE LOST EWES', npc: 'shepherd', done: 'THE EWES ARE HOME', reward: 'relic', relic: 'lamp' },
     palette: { sky: [[40, 48, 96], [104, 120, 164]], far: 'fields', mid: 'fields', near: 'fields', dress: 'village', haze: 'rgba(130,150,210,0.10)',
       grass: '#7a946e', grassL: '#a4bc8e', grassD: '#4a6048', dirt: '#5e5444', dirtL: '#7a6c54', dirtD: '#3c3428', canopy: ['#161a2a', '#1e2436', '#262e44', '#303a52'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 340 * TS, kind: 'wind' }, { x0: 340 * TS, x1: 402 * TS, kind: 'hall' }, { x0: 402 * TS, x1: 464 * TS, kind: 'wind' }, { x0: 464 * TS, x1: 539 * TS, kind: 'hold' }, { x0: 539 * TS, x1: 99999, kind: 'wind' }],
     mini: { x0: 296 * TS, x1: 327 * TS, floor: G * TS, y0: (G - 10) * TS, y1: (G + 1) * TS, trigger: 300 * TS, wallL: 295, gate: 327, boss: 'ploughman', name: 'THE HEADLESS PLOUGHMAN' },
-    ambushes: [{ name: 'THE PICKERS\' SUPPER', row: O - 1, wallL: 152, wallR: 178, check: [151, O - 1], waves: [[['scarecrow', 158], ['scarecrow', 174], ['pumpkin', 163], ['pumpkin', 170]], [['farmhand', 160, O - 3], ['hound', 167], ['hound', 176], ['wight', 171]]] }],
+    ambushes: [{ name: 'THE PICKERS\' SUPPER', row: O - 1, wallL: 152, wallR: 178, check: [151, O - 1], waves: [[['scarecrow', 158], ['scarecrow', 174], ['pumpkin', 163], ['pumpkin', 170]], [['farmhand', 160, O - 3], ['swornsword', 167], ['pumpkin', 176], ['hedgeknight', 171]]] }],   /* wave two, the road's patrol walking in on the supper: a sworn sword that plants, a hedge knight to BREAK (poise-heavy, where the hounds were), a pumpkin light enough to throw into the brambles, and the ghost through the wall */
     calm: [[0, 22, 0, 43], [52, 68, 24, 43], [104, 156, 12, 33], [186, 198, 26, 43], [206, 285, 26, 43], [336, 404, 0, 43], [410, 460, 0, 43], [462, 540, 0, 33], [539, 634, 18, 43], [636, 668, 20, 43]],   /* no garrison on the lane's first steps, the planks, the roofs, the ride, or the graves */
     arena: { x0: 670 * TS, x1: 710 * TS, floor: G * TS, y0: 8 * TS, trigger: 675 * TS, wallL: 669, wallR: 710, boss: 'strawking', music: 'scarecrowking', tint: '#3a1a10', tintA: 0.1, fx: 'embers', poles: [675, 686, 707] },
   };
@@ -6483,7 +6489,7 @@ const GARRISON = {
   reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['stormshaman', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and a storm-caller, not another cutlass */
-  fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['goat', 6], ['hound', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, the farm's beasts gone feral, and what floats */
+  fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
   causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 4], ['sailor', 4], ['crab', 4], ['netter', 3]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
