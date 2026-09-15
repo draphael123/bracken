@@ -18,6 +18,9 @@ import { floodReach } from './reachcore.js';
 
 const STAND = new Set([T.SOLID, T.ONEWAY, T.PLANK, T.SHELF, T.RAIL, T.CRATE]);
 const SOLIDISH = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.ICE, T.CRYST]);   /* not play space when it fills a pixel's tile */
+/* THE ONES THAT ARE MEANT TO BE INVISIBLE: a feeler under the mud and a sweep in its hole are hidden by design, and the mud stirring
+   is their tell. A creature in one of these modes is not judged (the playtest keeps the same kind of list, INROCK_FOE) */
+const HIDDEN = { feeler: new Set(['hide', 'sink']), sweep: new Set(['hide']), lurker: new Set(['hide']) };
 export const LOOK = { hud: 46, footLow: 14, footFrac: 0.4, footMin: 5, creatureVisE: 20, creatureP75: 12, creatureMin: 24, darkP90: 20, darkMean: 9 };   /* calibrated by eye: the Deep's lit floor (open p90 31) reads; the Undercrown's unlit tunnels (p90 6) do not */
 
 const LIN = new Float32Array(256); for (let i = 0; i < 256; i++) { const c = i / 255; LIN[i] = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
@@ -132,14 +135,18 @@ export async function lookPass(BK, o = {}) {
           BK.step(0);
           const dA = imgA.data, dB = imgB.data;
           for (const e of on) {
+            if (HIDDEN[e.t] && HIDDEN[e.t].has(e.mode)) continue;
             const hw = Math.max(20, (e.w || 12) * 1.6), hh = Math.max(36, (e.h || 12) * 2.4);
-            const x0 = Math.max(0, Math.floor(e.x - cx - hw)), x1 = Math.min(VW - 1, Math.ceil(e.x - cx + hw)), y0 = Math.max(0, Math.floor(e.y - cy - hh)), y1 = Math.min(VH - 1, Math.ceil(e.y - cy + 6));
+            /* only the play space is judged: under the HUD band the plates are opaque, and what shows between them is a sliver
+               of a creature nobody is looking at (a scout behind the health bar, a petrel behind the tide gauge, both flagged) */
+            const x0 = Math.max(0, Math.floor(e.x - cx - hw)), x1 = Math.min(VW - 1, Math.ceil(e.x - cx + hw)), y0 = Math.max(LOOK.hud, Math.floor(e.y - cy - hh)), y1 = Math.min(VH - 1, Math.ceil(e.y - cy + 6));
             let n = 0, vis = 0, sumA = 0, sumB = 0, bx0 = 1e9, by0 = 1e9, bx1 = -1, by1 = -1; const ds = [];
             for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * VW + x, j = i * 4;
               if (Math.abs(dA[j] - dB[j]) + Math.abs(dA[j + 1] - dB[j + 1]) + Math.abs(dA[j + 2] - dB[j + 2]) <= 6) continue;
               n++; const d = dE(A, i, Bl, i); ds.push(d); if (d >= LOOK.creatureVisE) vis++; sumA += A.L[i]; sumB += Bl.L[i];
               if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y; }
             if (n < 6) continue;
+            if (bx0 <= 0 || bx1 >= VW - 1) continue;   /* cut by the edge of the screen: two columns of a tideguard walking off it are not a creature */
             ds.sort((a, b) => a - b);
             /* p75: how hard the most visible quarter of the creature stands off what is behind it. A ghost drawn at half alpha
                with a bright crown reads; a black goblin in a black tunnel does not, whatever fraction of it changed a little. */
