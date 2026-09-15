@@ -120,6 +120,11 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     if (mm) for (const id of ['deepToll', 'deathwatch', 'longPassing', 'scytheThrown', 'drainWalk', 'longStride', 'deathGrip', 'lastRites', 'gripAll', 'hunger']) if (mm[id]) { had = true; delete mm[id]; }
     if (had) for (const k of ['skill', 'skill2']) if (PROG[k] === 'scytheThrown' || PROG[k] === 'deathGrip') PROG[k] = 'none';
     PROG.talentVersion = 3; if (had) PROG.talentsBackHero = 'reaper'; }
+  /* THE SHIELD BASH BECAME BULL RUSH (v4): the knight's held swing is the SHIELD CHARGE now, and the node that bashed with the raised
+     shield upgrades the charge instead. A point bought for the old bash (and HOLD THE LINE, which hangs under it) comes back to him, once. */
+  if ((PROG.talentVersion || 1) < 4) { const mm = PROG.talents.knight; let had = false;
+    if (mm) for (const id of ['bash', 'holdLine']) if (mm[id]) { had = true; delete mm[id]; }
+    PROG.talentVersion = 4; if (had) PROG.talentsBackHero = 'knight'; }
   try { for (const hh in PROG.talents) { const mm = PROG.talents[hh]; for (const id in mm) { const nd = TREE.find(q => q.hero === hh && q.id === id); if (!nd) delete mm[id]; else if (mm[id] > nd.max) mm[id] = nd.max; } } } catch {}   /* ranks past a trimmed tree come back as points */ }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
@@ -214,7 +219,7 @@ const MENU_MUSIC = [
 ];
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
 const HEROES = [
-  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. blocks and third cuts fill RESOLVE: full, tap C for THE STAND - five seconds where every block is perfect, nothing costs wind and every blow staggers' },
+  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C for THE STAND - five seconds where every block is perfect, nothing costs wind and every blow staggers' },
   { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else' },
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: blows on its face are stopped and fill it. LET GO for a BLOOD NOVA that hurts, marks and heals by what it held; let go AS a blow lands and he RETURNS it. Every death fills his blood: F RAISES THE DEAD from a body near him for a share of it, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. G carries the skill he chooses." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
@@ -270,14 +275,14 @@ const TREE = [];
 };
   // ---- THE KNIGHT ----
   // BLADEMASTER: the run of cuts
-  N('knight', 0, 0, 0, 'thirdCut', 'THIRD CUT', 1, 'the third cut of a run throws what it hits bodily, like a heavy blow: into the wall, the water or the spikes');
-  N('knight', 0, 0, 2, 'heavy', 'HEAVY BLOW', 2, 'you already have it: HOLD the swing for an overhead that breaks a guard. 15% harder and quicker to wind up a point');
+  N('knight', 0, 0, 0, 'thirdCut', 'THIRD CUT', 1, 'the third cut of a run throws what it hits bodily, like the charge\'s bash: into the wall, the water or the spikes');
+  N('knight', 0, 0, 2, 'heavy', 'SHIELD CHARGE', 2, 'you already have it: HOLD the swing to brace, let go to rush behind the shield and bash through a guard. 15% harder and quicker to wind up a point');
   N('knight', 0, 1, 0, 'riposte', 'RIPOSTE', 1, 'turn a blow on the shield and your next swing, within a breath, cuts twice as hard', 'thirdCut');
   N('knight', 0, 1, 1, 'risingCut', 'RISING CUT', 1, 'F: an uppercut that launches you and the foe. plunge after it', 'thirdCut', 'skill');
-  N('knight', 0, 1, 2, 'sunder', 'SUNDER', 1, 'whatever a heavy blow lands on takes the next blow twice as hard', 'heavy');
+  N('knight', 0, 1, 2, 'sunder', 'SUNDER', 1, 'whatever the charge bashes takes the next blow twice as hard', 'heavy');
   N('knight', 0, 2, 0, 'bleed', 'OPEN WOUND', 1, 'a cut leaves a wound that bleeds: a point every half second, for three seconds', 'riposte');
   N('knight', 0, 2, 1, 'lunge', 'LUNGE', 1, 'F: a dashing thrust through everything in front of you. nothing touches you while you go', 'risingCut', 'skill');
-  N('knight', 0, 2, 2, 'execute', 'EXECUTION', 1, 'a heavy cut finishes any foe already under a quarter of its health', 'sunder');
+  N('knight', 0, 2, 2, 'execute', 'EXECUTION', 1, 'the charge\'s bash or a third cut finishes any foe already under a quarter of its health', 'sunder');
   N('knight', 0, 3, 0, 'flurry', 'FLURRY', 1, 'swings cost half the stamina', 'bleed');
   N('knight', 0, 3, 1, 'unbroken', 'UNBROKEN', 1, 'a run of cuts never starts over while your blows keep landing. every third cut of it is a third cut', 'lunge', 'cap');
   // SENTINEL: the shield
@@ -286,7 +291,7 @@ const TREE = [];
   N('knight', 1, 1, 0, 'parry', 'PERFECT GUARD', 1, 'the perfect guard opens twice as long: raise the shield as a blow lands and it costs nothing, and whoever swung reels', 'steady');
   N('knight', 1, 1, 1, 'shieldThrow', 'SHIELD THROW', 1, 'F: hurl the shield. it comes back', 'steady', 'skill');
   N('knight', 1, 1, 2, 'vengeance', 'VENGEANCE', 1, 'what the shield turns is kept, and your next swing carries it (up to 30)', 'plated');
-  N('knight', 1, 2, 0, 'bash', 'SHIELD BASH', 1, 'swing while the shield is up and you bash with it: it shoves and staggers what is in front, and knocks back what flies at you', 'parry');
+  N('knight', 1, 2, 0, 'bash', 'BULL RUSH', 1, 'the shield charge runs a tile further, knocks back what flies at you as it goes, and its bash staggers twice as long', 'parry');
   N('knight', 1, 2, 1, 'warCry', 'WAR CRY', 1, 'F: a shout that throws back and staggers what is near, gives back 30 stamina, and for four seconds every blow on you lands a quarter lighter', 'shieldThrow', 'skill');
   N('knight', 1, 2, 2, 'bulwark', 'BULWARK', 1, 'arrows, seeds and spells that hit your shield fly back where they came from', 'vengeance');
   N('knight', 1, 3, 0, 'holdLine', 'HOLD THE LINE', 1, 'holding the shield up costs no wind: only what lands on it does', 'bash');
@@ -1098,7 +1103,7 @@ function drawGateHints(cx, cy) {
 }
 function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(q => !q.done && P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st || !(st.kinds ? st.kinds.includes(kind) : st.kind === kind)) return;
   if (st.kinds) { st.have = st.have || {}; if (st.have[kind]) return; st.have[kind] = 1; }   /* a step of two kinds (the marks, the two skill keys) wants one of each */
-  st.got = (st.got || 0) + 1; SFX.coin(); trialSay(TRIAL_SAY[kind] || trialName(st.kind), '#8fd160', st);
+  st.got = (st.got || 0) + 1; SFX.coin(); trialSay((kind === 'heavyblow' && hero() === 'knight' ? 'BASHED' : TRIAL_SAY[kind]) || trialName(st.kind), '#8fd160', st);
   if (st.got >= st.n) { st.done = true; PROG.taught = PROG.taught || {}; PROG.taught[st.kind] = 1;   /* the yard TAUGHT this (lessonHint reads it: the wood does not say again what the yard already said) */ openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
 function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; fillMeter(st.fill); motes(P.x, P.y - 12, 12, 10); } }
 /* WHAT A TRIAL CALLS A STEP WHEN IT IS DONE, and the hero's own meter, filled for the step that spends it */
@@ -1106,7 +1111,7 @@ const TRIAL_NAME = { hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIEL
 /* WHAT THE PANEL SAYS AS IT COUNTS ONE. Words never float over a fight (see number()), so a yard's confirmation is written on its step panel */
 const TRIAL_SAY = { hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hammerfall: 'QUAKED', judgement: 'JUDGEMENT', ward: 'WARDED' };
 function trialSay(msg, col, st) { st = st || ((L && L.trial) || []).find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st) return; st.said = msg; st.saidCol = col || '#8fd160'; st.saidT = time + 1.5; }
-function trialName(k) { if (k === 'meter') return hero() === 'knight' ? 'THE STAND' : isPyro() ? 'THE PYRE' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'BLOOD SURGE' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
+function trialName(k) { if (k === 'heavyblow' && hero() === 'knight') return 'THE SHIELD CHARGE'; if (k === 'meter') return hero() === 'knight' ? 'THE STAND' : isPyro() ? 'THE PYRE' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'BLOOD SURGE' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
 function fillMeter(n) { if (isPaladin()) P.light = Math.max(P.light || 0, n); else if (hero() === 'knight') P.resolve = Math.max(P.resolve || 0, n); else if (isPirate()) P.plunder = Math.max(P.plunder || 0, n); else if (isReaper()) P.harvest = Math.max(P.harvest || 0, n); }
 /* THE SKILLS A TRIAL LENDS. The F and G step cannot ask for keys a hero has nothing on, so a trial lends him skills out of his own
    tree until he has two, one from each of two branches where it can. Left out: the tree's RISING CUT (UP+X is the rising cut people mean) and VENT, which is nothing with no heat in her */
@@ -3309,10 +3314,14 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     return 'blocked';
   }
   /* A PIERCING BLOW (the crossbow bolt) goes through a guard that was already up: only a guard raised as it lands - a parry - turns it */
-  const pierced = pierce && P.block && (front || tal('plated')) && !unblockable && !(P.standT > 0 || (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11));
+  /* THE SHIELD CHARGE carries the shield square in front of him: what a raised shield turns it turns, at a raised shield's price - but never
+     a red blow, never one from behind, and never as a perfect guard (that is a shield RAISED on the beat, not one run into a blow) */
+  const rushUp = hero() === 'knight' && P.rush > 0 && front;
+  const perfectUp = !rushUp && (P.standT > 0 || (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11));
+  const pierced = pierce && (P.block || rushUp) && (front || tal('plated')) && !unblockable && !perfectUp;
   if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
-  if (P.block && (front || tal('plated')) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
-    const perfect = P.standT > 0 || (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11), bc = perfect ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));   /* in THE STAND every block is a perfect guard */
+  if (((P.block && (front || tal('plated'))) || rushUp) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
+    const perfect = perfectUp, bc = perfect ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));   /* in THE STAND every block is a perfect guard */
     gainResolve(perfect ? 20 : 8);
     if (P.st >= bc) {
       P.st -= bc; P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) P.riposteT = 1;
@@ -3328,11 +3337,11 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
         ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6e0', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6e0'); parryBurst();
         sparks(P.x + P.face * 10, P.y - 9, P.face, 10);
         return 'blocked'; }
-      P.vx = -P.face * 90; hitstop(0.05); shakeCam(1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
+      if (!rushUp) P.vx = -P.face * 90; hitstop(0.05); shakeCam(1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
       sparks(P.x + P.face * 9, P.y - 8, P.face, 7);
       return 'blocked';
     }
-    P.st = 0; P.stFlash = 0.5; P.block = false; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1);
+    P.st = 0; P.stFlash = 0.5; P.block = false; P.rush = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1);
     dmg = Math.ceil(dmg / 2); P.hurt = 0.55;
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
@@ -3733,7 +3742,7 @@ function hurtEnemy0(e, dmg, fromX, plunge) {
       // THE PUSH IS THE BLOW'S: a tap nudges, a heavy blow throws, and a heavy blow from below lifts them
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
       e.vx = dir * push;
-      if (P.heavy && !e.maxHp && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
+      if (P.heavy && !e.maxHp && !(P.bashing && e.mini) && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
       if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || (P.heavySwing && P.atk >= 0 && hero() === 'knight' && tal('thirdCut')))) knockFoe(e, dir, push);   /* THIRD CUT: the end of a run throws them */
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
@@ -3817,7 +3826,7 @@ function theStand() { trialEvent('meter'); P.resolve = 0; P.standT = 5; P.st = P
 function updateCharge(dt) {
   if (!tal('heavy') || P.dead || state !== 'play') { P.atkHeld = 0; P.charge = 0; return; }
   if (isPirate() && !P.loaded) { if (keys.atk && !(P.emptySaid > 0)) { P.emptySaid = 1.2; SFX.clank(); number(P.x, P.y - 26, 'EMPTY', '#9aa39a'); } P.atkHeld = 0; P.charge = 0; return; }
-  const quick = isPirate() && tal('quickHands'), can = (P.ground || quick) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy;   /* QUICK HANDS: from the air, and out of a roll */
+  const quick = isPirate() && tal('quickHands'), can = (P.ground || quick) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy && !(hero() === 'knight' && (thrown || rushing()));   /* QUICK HANDS: from the air, and out of a roll */   /* (the knight braces behind a shield: not while it is thrown, nor while he is still charging) */
   if (!keys.atk || !can) { // let go (or lost the footing for it): if it was wound up, it lands
     if (P.charge > heavyWind() * 0.55 && can) fireHeavy();
     else if (P.charge > 0) { SFX.ui(); }
@@ -4286,8 +4295,10 @@ function reloadPistol(why) {
 }
 function fireHeavy() { noteVerb('heavy');
   if (isPirate()) { P.atkHeld = 0; P.charge = 0; P.chargeFull = false; firePistol(); return; }
+  const wound = Math.min(1, (P.charge || 0) / heavyWind());   /* how far it was wound when it was let go: the length of the knight's charge */
   P.atkHeld = 0; P.charge = 0; P.chargeFull = false;
   if (!spend((P.relic === 'gauntlet' ? 0.5 : 1) * (heavyCost()))) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); return; }
+  if (hero() === 'knight') { shieldCharge(wound); return; }
   P.atk = 0; P.hitSet.clear(); P.heavy = true;
   P.vx = P.face * (isPaladin() ? 40 : 110);
   startSwing(); P.combo = 3;            // a heavy blow counts as the end of a run, not the start of one
@@ -4304,6 +4315,41 @@ function fireHeavy() { noteVerb('heavy');
     SFX.jet();
   }
 }
+/* THE SHIELD CHARGE, the knight's held swing. While it winds he braces square behind the shield; let go and he drives in behind
+   it - a short shove from the least wind-up that lands, three and a half tiles from a full one. The shield stays square in front of
+   him the whole way: it turns what a raised shield turns, at a raised shield's price, and never a red blow or one from behind, so it
+   is never a free answer. The first body he meets takes THE BASH, which is the old overhead's blow in a new shape: through a guard,
+   a heavy blow to everything that asks for one (SUNDER, EXECUTION, a straw man's lesson, the stagger bar). A wall stops him with a
+   clank, and he pulls up at the lip of a drop he did not jump. It is slower to wind than the LUNGE and stops on the first body. */
+const RUSH_SPEED = 230;
+const rushDist = k => 22 + 34 * Math.max(0, Math.min(1, (k - 0.55) / 0.45)) + (tal('bash') ? TS : 0);   /* px. BULL RUSH: a tile further */
+const rushing = () => P.rush > 0 || P.rushRec > 0;
+function shieldCharge(k) { P.rush = rushDist(k) / RUSH_SPEED; P.rushDir = P.face; P.rushRec = 0; P.block = false; P.vx = P.face * RUSH_SPEED;
+  SFX.shieldScrape(); dust(P.x - P.face * 4, P.y, 4); streaks(P.x, P.y - 10, -P.face, ['#fff6e0', '#c9d1dc'], 90); squash(1.12, 0.9, 0.1); }
+function updateShieldCharge(dt, stunned) {
+  if (P.rushRec > 0) P.rushRec = Math.max(0, P.rushRec - dt);
+  if (!(P.rush > 0)) return;
+  const dir = P.rushDir;
+  if (P.dead || stunned || !P.ground || P.swim || P.climb || hero() !== 'knight') { P.rush = 0; return; }   /* knocked off it, or off his feet: it is over */
+  P.rush -= dt; P.face = dir; P.abuf = 0; P.jbuf = 0; P.dbuf = 0; P.vx = dir * RUSH_SPEED;
+  if (Math.random() < dt * 30) dust(P.x - dir * 5, P.y, 1);
+  const lead = P.x + dir * (P.w / 2 + 2), lx = Math.floor(lead / TS);
+  if (isSolid(lx, Math.floor((P.y - 4) / TS)) || isSolid(lx, Math.floor((P.y - P.h + 2) / TS))) {   /* A WALL: iron on stone, and he stops */
+    P.rush = 0; P.vx = 0; P.rushRec = 0.22; SFX.clank(); SFX.thud(); shakeCam(3, dir * 2); hitstop(0.05); sparks(lead, P.y - 10, -dir, 7); impactAt(lead, P.y - 10, 'steel'); return; }
+  const fx = Math.floor((P.x + dir * (P.w / 2 + 1)) / TS), fy = Math.floor((P.y + 2) / TS);
+  if (!P.onMover && !isSolid(fx, fy) && !isOneWay(tileAt(fx, fy))) { P.rush = 0; P.vx = 0; P.rushRec = 0.18; dust(P.x + dir * 5, P.y, 3); return; }   /* A DROP: he pulls up at the lip */
+  const hb = dir > 0 ? { l: P.x, r: P.x + 16, t: P.y - 20, b: P.y } : { l: P.x - 16, r: P.x, t: P.y - 20, b: P.y };
+  if (tal('bash')) for (const s of seeds) if (!s.dead && !s.reflected && overlap(hb, { l: s.x - 4, r: s.x + 4, t: s.y - 4, b: s.y + 4 })) reflectSeed(s);   /* BULL RUSH: what flies at him goes back the way it came */
+  const e = enemies.find(q => q.alive && !q.harmless && !(q.gone > 0) && !q.turncoat && overlap(hb, box(q)));
+  if (e) { shieldBash(dir); return; }
+  if (P.rush <= 0) { P.rush = 0; P.rushRec = 0.2; P.vx = dir * 40; }   /* spent with nothing met: he pulls up behind the shield */
+}
+/* THE BASH: the charge's heavy blow, struck through the swing's own hit pass (attackBox, the guard checks, swingDmg) so everything a
+   heavy blow does, this does. P.bashing tells that pass it is the shield: a boss or a mini is rocked and its poise taken, never thrown. */
+function shieldBash(dir) { P.rush = 0; P.vx = dir * 20; P.bashing = true;
+  P.atk = 0.03; P.hitSet.clear(); P.heavy = true;
+  startSwing(); P.combo = 3; P.heavySwing = true; P.swingMul = heavyMul();   /* (after startSwing, which sets both from the run) */
+  SFX.shieldSlam(); shakeCam(4, dir * 3); zoomKick(1.03, 0.16); streaks(P.x + dir * 14, P.y - 12, dir, ['#fff6e0', '#c9d1dc'], 140); }
 /* THE WOOD'S LESSONS. Bracken Wood grows three teaching moments (L.lessons, in tiles: see THE THREE LESSONS in level.js) -
    a lone guard for the heavy blow, a lone guard for the low sweep, an old fat sprig for the third cut - and each says its
    line ONCE a save (PROG.lessons), the first time the thing happens in its stretch: the guard turning a blow for the first
@@ -4315,7 +4361,7 @@ function lessonHint(kind) {
   if (!lessonAt(kind)) return false;
   PROG.lessons = PROG.lessons || {}; if (PROG.lessons[kind] || trialTaught(kind)) return false;
   PROG.lessons[kind] = 1; saveProgress(); hintT = 5;
-  if (kind === 'heavyblow') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.';   /* guardTurned's own words */
+  if (kind === 'heavyblow') { if (hero() === 'knight') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING, LET GO: CHARGE THROUGH. DOWN+SWING: UNDER.'; else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; }   /* guardTurned's own words (the knight's held swing is a charge, not a cut) */
   else if (kind === 'sweep') hintMsg = 'HIS SHIELD TURNED IT. DOWN+SWING: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.';
   else hintMsg = 'THREE SWINGS IN A RUN: THE THIRD IS A HEAVY CUT THAT SHOVES. STOP, AND IT STARTS OVER.';
   return true;
@@ -4323,10 +4369,12 @@ function lessonHint(kind) {
 // A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
 function guardTurned() {
   if (lessonHint('heavyblow') || lessonHint('sweep')) return;   /* in one of the wood's lesson stretches the moment has its own line, said once */
-  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; return; }   /* its own call: the line under it used to overwrite it at once */
+  if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; if (hero() === 'knight') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING, LET GO: CHARGE THROUGH. DOWN+SWING: UNDER.'; else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; return; }   /* its own call: the line under it used to overwrite it at once */
   if ((PROG.guardHeavy || 0) >= 4) return;
   PROG.guardHeavy = (PROG.guardHeavy || 0) + 1; hintT = 4;
-  hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + (SET.swapZX ? 'Z' : 'X') + ' TO GO THROUGH IT, OR DOWN+' + (SET.swapZX ? 'Z' : 'X') + ' TO SWEEP UNDER IT.';
+  const kx = SET.swapZX ? 'Z' : 'X';
+  if (hero() === 'knight') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + kx + ', LET GO: CHARGE THROUGH IT. DOWN+' + kx + ' SWEEPS UNDER IT.';
+  else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + kx + ' TO GO THROUGH IT, OR DOWN+' + kx + ' TO SWEEP UNDER IT.';
 }
 function attackBox() {
   if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
@@ -4617,8 +4665,8 @@ function updatePlayer(dt) {
     if (cDown && P.resolve >= 100 && !stunned && !dodging && !P.plunge) theStand();
     if (P.standT > 0 && Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - 2 - Math.random() * 18, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -10 });
   }
-  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && hero() === 'knight';
-  P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); P.bashCd = Math.max(0, (P.bashCd || 0) - dt); if (P.ground) P.airRolled = false;
+  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !rushing() && hero() === 'knight';
+  P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); if (P.ground) P.airRolled = false;
   if (isPyro() && P.jet && !P.ground && tal('updraft')) P.vy = Math.min(P.vy, 45); // UPDRAFT: the jet holds her up
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
     const j = jetBox();
@@ -4639,7 +4687,7 @@ function updatePlayer(dt) {
   // THE DASH: tap a direction twice and you go, on the ground or in the air, once per landing. It does not
   // dodge anything - it is distance, not safety - and it costs a little wind.
   { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
-    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !dodging && !P.block && !(P.jetRecover > 0)) {
+    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !dodging && !P.block && !(P.jetRecover > 0) && !rushing()) {
         if (spend(isPaladin() ? 10 : 8)) { noteVerb('dash'); P.dash = isPyro() ? 0.2 : isPaladin() ? 0.14 : 0.17; P.dashCd = isPaladin() ? 0.7 : 0.55; if (!P.ground) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); }
           P.vx = tapped * (isPyro() ? 300 : isPaladin() ? 230 : isPirate() ? 285 : 265); P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
           streaks(P.x, P.y - 9, -tapped, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid();
@@ -4656,7 +4704,7 @@ function updatePlayer(dt) {
       if (e.x + ew > P.x - 12 && e.x - ew < P.x + 12 && e.y > P.y - 22 && e.y - eh < P.y) { P.dashHits.add(e); hurtEnemy(e, Math.round(swordDmg() * 0.6), P.x - P.face * 10, false); sparks(e.x, e.y - eh / 2, P.face, 5); } } }
   else if (P.dashHits) P.dashHits = null;
   /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
-  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0) {
+  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0 && !rushing()) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
     if (spend(dodgeCost())) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
@@ -4759,7 +4807,7 @@ function updatePlayer(dt) {
   // buffer before the water ever saw it.
   if (P.jbuf > 0 && P.ballast && P.swim) { P.jbuf = 0; dropBallast(true); }
   else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !stunned && !P.plunge && !dodging && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
-  else if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block && !P.aegis) {
+  else if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block && !P.aegis && !rushing()) {
     if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
     else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0;
       // WHAT THE ROPE GAVE YOU, YOU KEEP: leaving a swing or a raft at speed used to drop you to a walking pace
@@ -4768,7 +4816,7 @@ function updatePlayer(dt) {
   }
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
-  if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding) {
+  if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !rushing()) {
     if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear();
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
@@ -4776,10 +4824,10 @@ function updatePlayer(dt) {
         gainHeat(10); SFX.puff();
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (tal('bash') && keys.block && P.ground && P.plungeRec <= 0) { P.abuf = 0; if (!(P.bashCd > 0) && spend(10)) shieldBash(); }
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0 && !P.swim) dashAttack(); else if (!P.swim && keys.up && !keys.down && (P.ground || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started */ else if (P.ground && !P.swim && keys.down) lowSweep(); else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
+  if (P.atk < 0) P.bashing = false;
   if (P.atk >= 0) {
     { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
       const was = P.atk;
@@ -4848,6 +4896,7 @@ function updatePlayer(dt) {
     else P.cling = false;
   }
 
+  updateShieldCharge(dt, stunned);   /* THE SHIELD CHARGE: after the legs have had their say, so nothing else sets his speed under it */
   const wasGround = P.ground, prevY = P.y;
   P.ground = false;
   const prevVy = P.vy;
@@ -5002,8 +5051,9 @@ function updatePlayer(dt) {
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
       } else { hurtEnemy(e, swingDmg(e), P.x, false); swordEffect(e); if (P.swingKind && e.alive) swingKindHit(e);
         if (P.heavy && e.alive) { // a heavy blow moves whatever it lands on, and SUNDER leaves it open
-          if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.6); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
-          else e.stagger = Math.max(e.stagger || 0, 0.2);
+          const ram = P.bashing && tal('bash') ? 2 : 1;   /* BULL RUSH: the charge's bash staggers twice as long */
+          if (!e.maxHp && !(P.bashing && e.mini)) { e.stagger = Math.max(e.stagger || 0, 0.6 * ram); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
+          else e.stagger = Math.max(e.stagger || 0, (e.maxHp ? 0.2 : 0.35) * ram);   /* a boss, or a mini under the knight's bash: rocked and its poise taken, never thrown */
           if (isReaper()) markFoe(e);
           if (tal('sunder')) { e.sunder = 2.5; number(e.x, e.y - e.h - 18, 'SUNDERED', '#ffd36b'); }
           burst(e.x, e.y - e.h / 2, 10, ['#dfe8ff', '#fff6e0'], 90, 0.4); shakeCam(3, P.face * 2); hitstop(0.05); } if (isPaladin()) { gainLight(5); if (P.combo % 3 === 0 && !e.maxHp && e.alive) { e.stagger = Math.max(e.stagger || 0, 0.5); e.vx = P.face * 120; } shakeCam(2, P.face * 2); } /* only the third blow of a run staggers */ }
@@ -13438,12 +13488,7 @@ function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gai
   else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = 'A DASH ATTACK: THE DASH CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
   let extra = 0, mul = 1;
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
-  if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp) e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); } return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
-// SHIELD BASH: the shield itself, driven into whatever is in front
-function shieldBash() { P.bashCd = 0.45; P.vx = P.face * 140; P.bashT = 0.2; SFX.clank(); SFX.heavy(); shakeCam(2.5, P.face * 2); streaks(P.x + P.face * 10, P.y - 10, 6, ['#fff6e0', '#c9d1dc'], 130); dust(P.x, P.y, 4);
-  const hb = { l: P.x + (P.face > 0 ? 2 : -24), r: P.x + (P.face > 0 ? 24 : -2), t: P.y - 20, b: P.y };
-  for (const e of enemies) if (e.alive && !e.harmless && overlap(hb, box(e))) { hurtEnemy(e, 6, P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.9); e.vx = P.face * 220; } sparks(e.x, e.y - e.h / 2, P.face, 6); }
-  for (const s of seeds) if (!s.dead && !s.reflected && overlap(hb, { l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 })) reflectSeed(s); }
+  if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp && !(P.bashing && e.mini)) e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); } return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
 /* COUNTERSTROKE (the knight's perfect guard) and RIPOSTE (the freebooter's turned blow): the blade answers by itself, a beat after, at full
    swing damage - late enough that whatever the parry opened is open */
 function counterCut(e, name) { P.counter = { e, t: 0.08, name }; }
@@ -15919,10 +15964,13 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
       else if (P.dodge > 0) { key = 'roll'; frame = Math.floor((0.3 - P.dodge) / 0.3 * 4) * (P.face > 0 ? 1 : -1); }
       else if (P.plunge) key = 'plunge';
+      else if (P.bashing && P.atk >= 0 && K.R.bash) key = P.atk < 0.2 ? 'bash' : 'recover';   /* THE SHIELD CHARGE: the slam, then the shield let down */
+      else if (P.rush > 0 && K.R.rush) { key = 'rush'; frame = Math.floor(time * 14) % 2; }
+      else if (P.rushRec > 0 && K.R.recover) key = 'recover';
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
-      else if (P.charge > 0) { key = 'heavy'; frame = 0; }
+      else if (P.charge > 0) { key = K.R.brace ? 'brace' : 'heavy'; frame = 0; }
       else if (P.atk >= 0) { { const cm = (P.combo || 1) % 3, ck = !P.ground && K.R.air ? 'air' : cm === 2 ? 'atkB' : cm === 0 ? 'atkC' : 'atk'; key = K.R[ck] ? ck : 'atk'; }   /* first swing, backhand, thrust */
         frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
@@ -16567,7 +16615,7 @@ function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
   text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
-  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
+  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['shield charge', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
   text('keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text('pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
   if (isReaper()) rows.forEach((r, i) => { const o = DK_KEYS.controls[r[0]]; if (o) rows[i] = o; });   /* THE DEATH KNIGHT'S KEYS (DK_KEYS): C is his ward, F raises the dead, G is his chosen skill */
   rows.forEach(([a, b, c], i) => { const yy = y + 24 + i * 8;
@@ -17319,7 +17367,7 @@ function render() {
   /* THE TREES HAVE CHANGED: a save bought in the old trees has its points back, and is told so once, on the map or in a wood */
   if (PROG.talentsBack && (state === 'map' || state === 'play')) { talentsBackT = 7; talentsBackWho = ''; PROG.talentsBack = 0; saveProgress(); }
   if (PROG.talentsBackHero && PROG.talentsBackHero === hero() && (state === 'map' || state === 'play')) { talentsBackT = 7; talentsBackWho = PROG.talentsBackHero; PROG.talentsBackHero = 0; saveProgress(); }   /* THE WARD TREE: told to the Death Knight, and to nobody else */
-  if (talentsBackT > 0 && (state === 'map' || state === 'play')) { talentsBackT -= 1 / 60; const k = Math.min(1, talentsBackT * 2), lab = talentsBackWho === 'reaper' ? 'THE WARD TREE IS NEW: HIS POINTS ARE BACK' : 'THE TREES HAVE CHANGED: YOUR POINTS ARE BACK', sub = 'Q OPENS THE TALENT TREES', w = textW(lab, 6) + 16;
+  if (talentsBackT > 0 && (state === 'map' || state === 'play')) { talentsBackT -= 1 / 60; const k = Math.min(1, talentsBackT * 2), lab = talentsBackWho === 'reaper' ? 'THE WARD TREE IS NEW: HIS POINTS ARE BACK' : talentsBackWho === 'knight' ? 'THE SHIELD TREE CHANGED: HIS POINTS ARE BACK' : 'THE TREES HAVE CHANGED: YOUR POINTS ARE BACK', sub = 'Q OPENS THE TALENT TREES', w = textW(lab, 6) + 16;
     g.globalAlpha = k; g.fillStyle = 'rgba(24,18,8,0.94)'; g.fillRect(VW / 2 - w / 2, 58, w, 21); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 58.5, w - 1, 20);
     text(lab, VW / 2, 62, '#ffd36b', 'center', 6); text(sub, VW / 2, 71, '#e0cf9c', 'center', 6); g.globalAlpha = 1; }
   drawTells();   /* the ! and the !!, over the numbers, the plates and the boss bar */

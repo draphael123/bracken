@@ -261,12 +261,13 @@ export function bakeKnight(skin = {}, bare = false) {
       KF({ legs: 'stand', sword: rest(), plume: 0 }),
     ],
     plunge: KF({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], sword: [sh[0] - 1, sh[1] + 5, sh[0] - 1, sh[1] + 17], plume: 1 }),
-    // HOLD THE SWING: it goes up over his head, and then it comes down through whatever is in front of him
-    heavy: [
-      KF({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 5], sword: [sh[0] - 2, sh[1] - 5, sh[0] + 1, sh[1] - 19], plume: 2 }),
-      KF({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], sword: [sh[0] + 4, sh[1] - 1, sh[0] + 15, sh[1] + 5], plume: 2 }),
-      KF({ dx: 3, legs: 'wide', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], sword: [sh[0] + 3, sh[1] + 4, sh[0] + 11, sh[1] + 15], plume: 0 }),
-    ],
+    // THE SHIELD CHARGE (his held swing): braced square behind the shield while it winds, heels down and the blade kept back;
+    // driven in behind it, leaning, the sword trailing; the slam, a white edge where the oak meets the body; and the shield let down
+    brace: KF({ dx: -1, dy: 1, legs: 'wide', shield: true, sword: [sh[0] - 5, sh[1] + 2, sh[0] - 11, sh[1] + 6], plume: 2 }),
+    rush: [KF({ dx: 2, legs: 'run1', shield: true, sword: [sh[0] - 3, sh[1] + 3, sh[0] - 9, sh[1] + 7], plume: 2 }),
+      KF({ dx: 2, dy: -1, legs: 'run4', shield: true, sword: [sh[0] - 3, sh[1] + 2, sh[0] - 9, sh[1] + 6], plume: 1 })],
+    bash: KF({ dx: 4, legs: 'wide', shield: true, sword: [sh[0] - 2, sh[1] + 3, sh[0] - 8, sh[1] + 8], plume: 2, bits: [[17, 3, '#fff6e0'], [17, 6, '#ffffff'], [17, 9, '#fff6e0'], [18, 6, '#fff6e0']] }),
+    recover: KF({ dx: 1, dy: 1, legs: 'stand', sword: rest(1), plume: 0 }),
     // HURT is two beats too: the blow snaps him back, then he folds over it
     hurt: [KF({ dx: -1, dy: 1, legs: 'fall', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
       KF({ dx: -2, dy: 2, legs: 'land', sword: [sh[0], sh[1] + 3, sh[0] + 4, sh[1] + 9], plume: 1 })],
@@ -276,6 +277,7 @@ export function bakeKnight(skin = {}, bare = false) {
       KF({ legs: 'wide', dy: 1, shield: true, sword: [sh[0] - 4, sh[1] + 4, sh[0] - 6, sh[1] + 11] }),
     ],
   };
+  F.heavy = [F.brace, F.bash, F.recover];   /* (the name the draw and the other heroes use for a held swing) */
   const tuck = KF({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
   { const arcs = comboArcs(sh, 'sword', 12, bare ? {} : { kite: SIDE }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the backhand and the thrust */
