@@ -7240,8 +7240,7 @@ function ambushRooms(L, id) {
    there and one is put down. `gate` is a column the elite HOLDS: a portcullis across the route that is down until it
    dies, by any means - a blade, a drop, a spike. Every level with no mini has one. Never in a boss or mini room or an
    ambush room, never at a landing. tools/elites.mjs checks that the elite can be reached with its gate shut, that the
-   gate actually holds the route, and that nothing counted stands in the gate.
-   THE SUNSPIRE is being rebuilt, and gets its elites after it lands. */
+   gate actually holds the route, and that nothing counted stands in the gate. */
 const ELITES = {
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
@@ -7250,6 +7249,11 @@ const ELITES = {
   kings: [['brute', 385, 20]],
   scree: [['troll', 403, 18, { gate: 414 }]],
   hanging: [['shield', 85, 107]],
+  /* THE MONASTERY keeps the Temple Guardian in its hall, so neither of its two holds a gate. Both stand on a floor the
+     level walks the LENGTH of, and neither stands at the trapdoor either end of it: a crag troll loose in the
+     scriptorium, on the long walk from the trapdoor at 73-77 to the prayer wheel at 47, and the herd billy out on the
+     shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
+  spire: [['troll', 61, 171], ['goat', 62, 79]],
   moor: [['goat', 168, 21, { gate: 200 }], ['troll', 384, 13]],
   storm: [['pike', 250, 29, { gate: 257 }]],
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of

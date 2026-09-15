@@ -8,11 +8,11 @@
 //   node tools/elites.mjs wood,marsh   only those
 // FAILS when an elite stands in a boss, mini or ambush room, on nothing, out of reach, too near its own gate; when a
 // gate cannot be reached, can be walked round, or covers a checkpoint, sign, door, key or collectable; or when a level
-// with no mini has no gated elite (the two levels being rebuilt are listed as pending, not failed).
+// with no mini has no gated elite (a level still being rebuilt is listed as pending, not failed).
 import { LEVELS, T, eliteGate } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 
-const PENDING = new Set(['spire', 'crown']);   /* rebuilt by other hands right now: their elites go in after they land */
+const PENDING = new Set([]);   /* a level being rebuilt goes in here, and comes out of it when its elites land */
 const want = (process.argv[2] || '').split(',').filter(Boolean);
 const TS = 16;
 let bad = 0, n = 0;
