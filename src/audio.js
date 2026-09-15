@@ -169,6 +169,13 @@ export const SFX = {
     SFX.dodge(); chain(0.025, 3); tone('sine', 110, 60, 0.1, 0.12, 0.12); },
   pPogo() { if (heroVoice === 'pyro') { noise(0.08, 0.22, 1800, 0.8); tone('triangle', vary(480), vary(920), 0.11, 0.12); crackle(2); return; }
     tone('square', vary(480), vary(980), 0.12, 0.15); tone('sine', vary(1900), 2500, 0.08, 0.06); },
+  // THE PLUNGE, as it starts. The pyromancer's fireball always went down with a puff; the rest of them dropped
+  // in silence and were only heard when they landed. Each now goes over in its own voice: the knight's chain,
+  // the pirate's coat and a cutlass catching the light, the Death Knight's weight going down like a door shutting.
+  pPlunge() { if (heroVoice === 'pyro') { SFX.puff(); return; }
+    if (heroVoice === 'reaper') { noise(0.24, 0.14, 380, 0.4); tone('sine', vary(240), 70, 0.22, 0.1); tone('square', vary(900), 600, 0.04, 0.03, 0.03); return; }
+    if (heroVoice === 'pirate') { noise(0.14, 0.16, 1300, 0.5); tone('triangle', vary(900), 380, 0.1, 0.05); tone('triangle', vary(2400), 1400, 0.06, 0.03, 0.02); return; }
+    tone('square', vary(540), vary(200), 0.14, 0.07); chain(0.03, 3); noise(0.16, 0.12, 700, 0.5, 0.02); },
   pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, heroVoice === 'pyro' ? 1.75 : 1.35); },
   // the pyromancer's own fire
   ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
@@ -299,6 +306,7 @@ const PAL = {
   pDie() { if (!heroVo('die', 0.7)) SFX.die(); for (let i = 0; i < 4; i++) { plate(0.05); tone('sine', 110 - i * 12, 50, 0.12, 0.12, 0.15 + i * 0.1); } bell(523, 1.6, 0.07, 0.55); },
   pDodge() { noise(0.12, 0.22, 320, 0.6); tone('sine', 95, 40, 0.16, 0.22); plate(0.05); },
   pPogo() { tone('square', vary(380), vary(760), 0.12, 0.13); bell(1046, 0.35, 0.05, 0.02); },
+  pPlunge() { tone('square', vary(420), vary(160), 0.14, 0.07); plate(0.05); noise(0.18, 0.12, 420, 0.5, 0.02); bell(784, 0.3, 0.035, 0.04); },   /* plate going over, and the bell: the consecration goes down with him */
   pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, 1.1); },
 };
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
@@ -307,7 +315,30 @@ for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'pa
 function loadTrack(name) {
   if (!ac || !TRACKS[name] || trackBuf[name] || trackPending[name]) return;
   trackPending[name] = true;
-  fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
+  fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; trackEnd[name] = audibleEnd(b); if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
+}
+// A LOOP ENDS WHERE THE MUSIC DOES, NOT WHERE THE FILE DOES. Copies are played back to back, so a silent tail
+// on a file is a hole in the music every time it comes round: the Hurricane's ran 1.77 s of nothing. A tail
+// longer than half a second is cut at the last sample you can hear. A shorter one is left alone, because a
+// loop cut to the bar (musMountain is 32.00 s to the millisecond) only keeps its beat if it keeps its last rest.
+const trackEnd = {};
+function audibleEnd(b) {
+  const n = b.length; let last = 0;
+  for (let c = 0; c < b.numberOfChannels; c++) { const d = b.getChannelData(c); let i = n - 1; while (i > last && Math.abs(d[i]) < 0.001) i--; last = Math.max(last, i); }
+  return (n - 1 - last) / b.sampleRate > 0.5 ? (last + 1) / b.sampleRate : b.duration;
+}
+// THE SEAM. Copies butted end to start click wherever a file's last sample and its first do not meet (theme3
+// jumped 0.38 of full scale, and five more tracks the same). So every copy fades out over its last LOOP_XF, the
+// next starts that much early and fades in under it: an equal-power crossfade, one mechanism for every track.
+// Each pass comes round 30 ms sooner than the file's length, which no ear can place.
+export const LOOP_XF = 0.03;
+const XF_IN = Float32Array.from({ length: 16 }, (_, i) => Math.sin(i / 15 * Math.PI / 2)), XF_OUT = XF_IN.slice().reverse();
+export function loopCopy(ctx, b, len, dest, at, first) {
+  const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; s.connect(g); g.connect(dest);
+  if (!first) g.gain.setValueCurveAtTime(XF_IN, at, LOOP_XF);   // the first copy comes in on the track's own fade
+  g.gain.setValueCurveAtTime(XF_OUT, at + len - LOOP_XF, LOOP_XF);
+  s.start(at, 0, len); s.addEventListener('ended', () => { try { g.disconnect(); } catch {} });
+  return s;
 }
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
 const TRACK_GAIN = { hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
@@ -317,15 +348,15 @@ function playFile(name) {
   if (trackG && musicSrcs.length) { const og = trackG, olds = musicSrcs; og.gain.setTargetAtTime(0, ac.currentTime, 0.22); setTimeout(() => { for (const s of olds) { try { s.stop(); } catch {} } try { og.disconnect(); } catch {} }, 1000); if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicSrcs = []; musicGen++; } else stopMusic(); // the old track fades under the new one
   currentTrack = name;
   const tg = ac.createGain(); tg.gain.value = 0.001; tg.connect(musicGain); trackG = tg; tg.gain.setTargetAtTime(TRACK_GAIN[name] || 1, ac.currentTime + 0.02, 0.28);
-  const gen = musicGen, b = trackBuf[name]; let at = ac.currentTime + 0.03;
-  const chain = () => {
+  const gen = musicGen, b = trackBuf[name], len = trackEnd[name] || b.duration; let at = ac.currentTime + 0.03;
+  const chain = first => {
     if (gen !== musicGen || currentTrack !== name) return;
-    const s = ac.createBufferSource(); s.buffer = b; s.connect(tg); s.start(at); musicSrcs.push(s); musicSrc = s;
+    const s = loopCopy(ac, b, len, tg, at, first); musicSrcs.push(s); musicSrc = s;
     s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
-    const startAt = at; at += b.duration;
-    musicTimer = setTimeout(chain, Math.max(50, (startAt + b.duration * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
+    const startAt = at; at += len - LOOP_XF;   // the next copy comes in under the last LOOP_XF of this one
+    musicTimer = setTimeout(() => chain(false), Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
   };
-  chain();
+  chain(true);
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
 export const music = {
@@ -589,7 +620,7 @@ Object.assign(SFX, {
   rumble() { tone('sine', 60, 30, 0.7, 0.3); noise(0.6, 0.3, 180, 0.5); tone('sawtooth', 48, 34, 0.5, 0.1, 0.1); },
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
 });
-export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind });
+export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind, trackEnd, trackBuf });
 // ---------- every creature dies in its own voice, and is hurt in its own voice ----------
 const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);

@@ -4872,11 +4872,11 @@ function updatePlayer(dt) {
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !rushing()) {
-    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear();
+    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
         embers.push({ x: P.x, y: P.y - 4, vx: 0, vy: 300, life: 1.1, hit: new Set(), plunge: true });
-        gainHeat(10); SFX.puff();
+        gainHeat(10);
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0 && !P.swim) dashAttack(); else if (!P.swim && keys.up && !keys.down && (P.ground || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started */ else if (P.ground && !P.swim && keys.down) lowSweep(); else if (P.ground) P.vx = P.face * 75; } }
@@ -11263,7 +11263,7 @@ function updateRoc(e, dt) {
       else if (e.shriekT <= 0 && rocPanes().length) { e.shriekT = p2 ? 4.5 : 6;   /* hover-time: she hovers about a quarter of the fight */ e.mode = 'shriekGo'; e.modeT = 2.2; const fk = props.find(p => p.t === 'resonance' && p.roc); e.perchX = fk ? fk.x : (A.x0 + A.x1) / 2; SFX.screech(); }   /* THE SHRIEK: she goes to sing over the fork */
       else if (e.rakeT <= 0 && Math.abs(P.y - floor) < 30) { e.rakeT = p2 ? 7.5 : 9.5; e.mode = 'rakeGo'; e.modeT = 1.8; e.rakeDir = P.x > (A.x0 + A.x1) / 2 ? 1 : -1; e.rakeX = e.rakeDir > 0 ? A.x0 + 36 : A.x1 - 36; SFX.queenShriek(); } // THE SKY RAKE
       else if (e.gustT <= 0 && ad < 170) { e.gustT = p2 ? 6.5 : 8.5; e.mode = 'gustTell'; e.modeT = 0.6; SFX.puff(); }
-      else if (p2 && e.featherT <= 0) { e.featherT = 3.8; e.mode = 'shedTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.55; }
+      else if (p2 && e.featherT <= 0) { e.featherT = 3.8; e.mode = 'shedTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.55; SFX.shardBristle(); }   /* THE SHED HAS A VOICE OF ITS OWN, as her other windups do. It was leaning on the shared tell, which is not played past 420 px, and her feathers reach you from anywhere in the arena: 1 shed in 6 came in silent */
       break; }
     // the shadow goes down where she means to land, and she goes up a little before she drops
     case 'diveTell': fly(e.x, hoverY - 14, 50); e.face = Math.sign(e.tx - e.x) || e.face;
