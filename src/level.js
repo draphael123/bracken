@@ -1645,56 +1645,58 @@ function hangingVillage() {
 // ---------- LEVEL 8: THE MINEWORKS ----------
 // Under the Hanging Village. Three galleries step down through the rock on rails and an ore lift, to the forge at the bottom.
 // ============================================================================================
-// LEVEL 8 - THE SUNSPIRE. A mountain of crystal between the tree-city and the high moor.
-// You climb it, and it comes apart while you do. A crystal ledge rings under a standing weight,
-// then crazes, then goes, and it takes the crystals touching it with it and drops the pieces on
-// whatever is below - which you can use, if you are the one choosing when it happens.
-// Halfway up you break out of the cloud into the sun, and the sun makes all of it faster.
+// LEVEL 8 - THE MONASTERY ON THE CLIFF. Between the tree-city and the high moor, an old house of monks
+// built up the face of the mountain: a gatehouse at the foot, terraces, a scriptorium dug into the rock,
+// bell towers joined by bridges, a cloister on the ledge where the cloud ends, shrines, and a broken roof
+// at the top where the Roc nests. She drove the monks out. What they built still answers a blow: strike a
+// prayer wheel and its stair turns, strike a bell and its bridge comes down, stand in a basket and the
+// other one comes up past you. The incense they left still burns, and its smoke still carries you.
+// Halfway up you come out of the grey into the sun.
 // ============================================================================================
-function theSunspire() {
+function theMonastery() {
   const W = 96, H = 222; const L = painter(W, H);
   const { block, plat, ent, coins, set, spikes } = L;
-  const movers = [];
-  const CLOUD = 100; // above this row the sun is on the rock
-  const cryst = (x, n, y) => { for (let i = 0; i < n; i++) set(x + i, y, T.CRYST); };
-  const spires = (y, up, ...xs) => xs.forEach((x, i) => ent('deco', x, y, { kind: 'spire', v: (x + i) % 2, hang: up }));
+  const movers = [], facades = [], masonry = [], interiors = [], flags = [], hangers = [];
+  const CLOUD = 100; // above this row the sun is on the stone
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const boards = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.ONEWAY); };
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1);
 
   // THE JUMP ENVELOPE, off the knight's own numbers. He rises 3.2 tiles, and the higher he lands the
   // less of the arc is left: +0 rows buys 4 tiles across, +1 buys 3.6, +2 buys 3.2, +3 buys 2.5.
-  // Nothing on this mountain is placed by eye. A SHELF is a rock band with a crystal gap in it, and a
-  // STAIR always finishes three rows under that gap, where the jump up through it is legal.
-  // Build the stair FIRST and put the shelf's gap wherever the stair actually arrived.
-  const climb = (fromTop, top, x0, x1, startX, gw) => {
+  // Nothing on this mountain is placed by eye. A FLOOR is a band of rock with a trapdoor of boards in it,
+  // and a STAIR always finishes three rows under that trapdoor, where the jump up through it is legal.
+  // Build the stair FIRST and put the trapdoor wherever the stair actually arrived.
+  const stair = (fromTop, top, x0, x1, startX, gw) => {
     const land = top + 3;
     let y = fromTop - 3, x = startX, dir = 1, n = 0;
     while (y > land) {
       x = Math.max(x0, Math.min(x1 - 4, x));
-      cryst(x, 4, y);
+      boards(x, y, 4);
       if (n % 4 === 1) coins([x + 1, y - 1]);
       const nx = x + dir * 3; if (nx > x1 - 4 || nx < x0) dir = -dir;
       x += dir * 3; y -= 2; n++;
     }
     x = Math.max(x0, Math.min(x1 - 4, x));
-    cryst(x, 4, land);
+    boards(x, land, 4);
     const gx = Math.max(2, Math.min(W - 2 - gw, x - ((gw - 4) >> 1)));
     block(1, gx - 1, top, top + 2); block(gx + gw, W - 2, top, top + 2);
-    cryst(gx, gw, top);
+    boards(gx, top, gw);
     return { top, gx, gw, mid: gx + (gw >> 1) };
   };
-  // THE THERMALS - the mountain breathes. A glowing crack in the rock lets go a column of hot air every
-  // few seconds, and the column carries you straight up while you stay in it. A vent lifts you `rise`
-  // rows and two more, so you come out over the ledge beside it with time to steer onto it. Every
-  // ledge in a chain sits one tile clear of the column below it, never over it.
-  const vent = (x, row, rise, o = {}) => ent('vent', x, row - 1, { heat: true, h: (rise + 2) * TS, period: o.period || 4.2, on: o.on || 2.2, phase: o.phase || 0, lift: o.lift || 190, w: 12, glass: !!o.glass });
-  const shelf = (top, gx, gw) => { block(1, gx - 1, top, top + 2); block(gx + gw, W - 2, top, top + 2); cryst(gx, gw, top); return { top, gx, gw }; };
-  // a GEODE: a hollow under a flush crystal lid. Stand on the lid, drop in, jump out once it regrows.
-  const geode = (x0, x1, top) => {
+  // THE INCENSE. The monks' braziers still burn, and every few seconds one of them lets go a column of
+  // hot smoke that carries you straight up while you stay in it. A brazier lifts you `rise` rows and two
+  // more, so you come out over the ledge beside it with time to steer onto it. Every ledge in a chain
+  // sits one tile clear of the column below it, never over it.
+  const brazier = (x, row, rise, o = {}) => ent('vent', x, row - 1, { heat: true, incense: true, h: (rise + 2) * TS, period: o.period || 4.2, on: o.on || 2.2, phase: o.phase || 0, lift: o.lift || 190, w: 12, ember: !!o.ember });
+  const band = (top, gx, gw) => { block(1, gx - 1, top, top + 2); block(gx + gw, W - 2, top, top + 2); boards(gx, top, gw); return { top, gx, gw }; };
+  // a CELLAR: a hollow under a trapdoor in the flags. Press down to drop in; jump up through the boards to come out.
+  const cellar = (x0, x1, top) => {
     block(x0 - 1, x1 + 1, top + 3, top + 3);
-    for (let y = top + 1; y <= top + 2; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR);
-    cryst(x0 + 1, x1 - x0 - 1, top);
+    air(x0, x1, top + 1, top + 2);
+    boards(x0 + 1, top, x1 - x0 - 1);
   };
-  // a CHIMNEY: two rock faces two apart up the right wall, kicked up. Slow, and it does not break.
+  // a CHIMNEY: two rock faces two apart up a wall, kicked up. Slow, and nothing about it moves.
   const chimney = (floorRow, topBand) => {
     for (let y = topBand; y <= floorRow; y++) set(W - 2, y, T.CLIMB);
     for (let y = topBand; y <= floorRow - 5; y++) set(W - 5, y, T.CLIMB);
@@ -1702,217 +1704,259 @@ function theSunspire() {
     plat(W - 4, topBand, 2);
     coins([W - 4, floorRow - 4], [W - 3, floorRow - 9], [W - 4, floorRow - 14]);
   };
+  const chimneyL = (floorRow, topBand) => {
+    for (let y = topBand; y <= floorRow; y++) set(1, y, T.CLIMB);
+    for (let y = topBand; y <= floorRow - 5; y++) set(4, y, T.CLIMB);
+    for (let y = topBand; y <= topBand + 2; y++) { set(2, y, T.AIR); set(3, y, T.AIR); }
+    plat(2, topBand, 2);
+    coins([3, floorRow - 4], [2, floorRow - 9], [3, floorRow - 14]);
+  };
+  // A PRAYER WHEEL. Its stair is a line of boards off one pivot board, each two up and two across from the
+  // last, and one blow on the wheel turns the whole line a quarter turn about the pivot: a stair that rose to
+  // the right now rises to the left. The pivot board never moves, the wheel stands on the floor under it, and
+  // a hero who is left on the wrong side walks back to the wheel and strikes it again.
+  const wheel = (floorRow, px, py, n, start) => {
+    const arm = s => { const out = []; for (let k = 1; k <= n; k++) out.push([px + s * 2 * k, py - 2 * k, 3]); return out; };
+    const a = arm(1), b = arm(-1);
+    boards(px, py, 3);
+    for (const [x, y, w] of (start === 'b' ? b : a)) boards(x, y, w);
+    ent('pwheel', px + 1, floorRow, { a, b, st: start === 'b' ? 1 : 0, pivot: [px, py] });
+  };
+  // A COUNTERWEIGHT: two baskets on one rope over a wheel. Stand in one and it sinks, and the other comes up past
+  // you; step out and they settle back level. The rising one is the way up: jump across as it passes, and off it
+  // before it takes your weight down. The reach model sees the pair as one ride, from the top of the rising
+  // basket's run to the foot of the sinking one's (cwBand).
+  let pairN = 0;
+  const pair = (ax, bx, rest, R, hubRow) => { const id = 'cw' + (pairN++), x0 = Math.min(ax, bx), x1 = Math.max(ax, bx) + 1;
+    const band = { x0, x1, y0: rest - R, y1: rest + R }, hubX = (Math.min(ax, bx) + 2) * TS;
+    for (const [role, x] of [['a', ax], ['b', bx]]) movers.push({ kind: 'lift', cw: id, role, x: x * TS, y: rest * TS, y0: rest * TS, y1: (rest + R) * TS, yUp: (rest - R) * TS, w: 32, h: 8, speed: 36, top: hubRow * TS, hubX, cwBand: band });
+  };
+  // A BELL TOWER: two walls of laid stone, a door through the foot of each, a stair of timber landings up the
+  // inside (two rows apart, turn and turn about), and a belfry floor with a hatch over the last landing.
+  const tower = (x0, top, floor) => { const x1 = x0 + 7;
+    block(x0, x0, top, floor); block(x1, x1, top, floor); air(x0, x0, floor - 2, floor); air(x1, x1, floor - 2, floor);
+    for (let x = x0; x <= x1; x++) set(x, top, T.SOLID);
+    let r = floor - 1, left = true; while (r > top + 1) { plat(left ? x0 + 1 : x0 + 4, r, 3); r -= 2; left = !left; }
+    boards(!left ? x0 + 1 : x0 + 4, top, 3);
+    masonry.push([x0, x0, top, floor], [x1, x1, top, floor], [x0, x1, top, top]);
+    interiors.push([x0 + 1, x1 - 1, top + 1, floor, 'monkTower']);
+    facades.push([x0 - 1, x1 + 1, top - 7, top - 1, 'monkBelfry']);
+  };
 
-  // ---- Tier 0. THE FOOT, with a camp where somebody gave up and the first geode ----
+  // ---- 1. THE GATEHOUSE: the pilgrims' door, the gate that fell, and the stair the pilgrims climbed ----
   block(0, W - 1, 218, H - 1);
+  facades.push([1, 13, 203, 217, 'monkTower', { arch: [211, 217], roof: true }]);
+  facades.push([14, 27, 209, 217, 'monkCurtain']);
   ent('npc', 8, 217, { kind: 'squire' });
-  ent('sign', 4, 217, { text: 'THE CRYSTAL HOLDS YOU, BUT NOT LONG: IT RINGS, CRAZES AND GOES. KEEP MOVING.' });
-  ent('deco', 16, 217, { kind: 'cairn' }); ent('sprig', 30, 217, { face: -1 });
-  spires(217, false, 22, 38, 52); spires(218, true, 28, 46);
-  ent('check', 20, 217); coins([12, 216], [26, 216], [44, 216]);
-  ent('sign', 62, 217, { text: 'FLAT GLASS IN THE ROCK HAS ROOM UNDER IT. IT GROWS BACK; JUMP UP THROUGH IT.' });
-  geode(66, 74, 218); coins([70, 217], [67, 220], [69, 220], [71, 220], [73, 220]);
+  ent('sign', 4, 217, { text: 'THE MONASTERY. THE ROC DROVE THE MONKS OUT. WHAT THEY BUILT STILL ANSWERS A BLOW.' });
+  ent('deco', 17, 217, { kind: 'portcullis' }); ent('deco', 25, 217, { kind: 'cairn' });
+  ent('check', 21, 217); coins([12, 216], [28, 216], [44, 216]);
+  stair(218, 196, 30, 70, 34, 15);
+  ent('fledgling', 42, 217, { face: -1 });
+  ent('sign', 62, 217, { text: 'A TRAPDOOR IN THE FLAGS. PRESS DOWN TO DROP IN, JUMP UP THROUGH IT TO COME OUT.' });
+  cellar(66, 74, 218); coins([70, 217], [67, 220], [69, 220], [71, 220], [73, 220]);
+  ent('grub', 68, 220, { face: 1 });                                // the undercroft has had nobody to sweep it for years
+  ent('sprig', 54, 217, { face: -1 }); ent('sprig', 78, 217, { face: -1 });   // looters in the gate yard, going through the pilgrims' packs
   ent('deco', 84, 217, { kind: 'tent' }); ent('deco', 89, 217, { kind: 'lanternPost' });
   ent('deco', 92, 217, { kind: 'bones', v: 1 }); coins([80, 217], [87, 217]);
 
-  // ---- Tier 1. THE LOWER FACE: the first crystal climb ----
-  climb(218, 196, 30, 70, 34, 15);
-  ent('rockgoblin', 20, 195, { face: 1 }); ent('rockgoblin', 74, 195, { face: -1 }); ent('grub', 50, 195, { face: -1 });
-  ent('sign', 6, 195, { text: 'THE LOWER FACE. THE CRYSTAL RUNS ARE THE QUICK WAY. THE HARPIES KNOW YOU CANNOT STOP ON THEM.' });
+  // ---- 2. THE LOWER TERRACES: bean rows gone to seed, and the incense that still burns for nobody ----
+  ent('rockgoblin', 20, 195, { face: 1 }); ent('rockgoblin', 86, 195, { face: -1 }); ent('fledgling', 30, 195, { face: 1 });
+  ent('sign', 6, 195, { text: 'THE LOWER TERRACES. THE MONKS GREW BEANS HERE. THE GOBLINS DIG FOR THEIR SILVER.' });
   ent('check', 8, 195); coins([21, 194], [75, 194]);
-  ent('sign', 78, 195, { text: 'A STRUCK CRYSTAL BREAKS WHEN YOU SAY, AND FALLS ON WHATEVER IS BELOW.' });
-  geode(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
-  ent('deco', 90, 195, { kind: 'bones' }); coins([86, 195], [91, 195]);
-
-  // ---- Tier 2. THE BREATHING ROCK: the thermals, taught on rock where a miss only drops you back ----
-  ent('sign', 48, 195, { text: 'GLOWING CRACKS BREATHE. STAND IN THE BREATH TO RISE, THEN STEER OFF AT THE TOP.' });
-  vent(74, 196, 10, { phase: 0 }); plat(76, 186, 5);
-  vent(79, 186, 8, { phase: 1.4 }); plat(73, 178, 5);
-  vent(75, 178, 6, { phase: 2.8 });
-  shelf(172, 73, 5);
+  cellar(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
+  ent('grub', 20, 198, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // the root cellar's grub, and a looter in the bean rows
+  for (const [x, k, v] of [[26, 'beanpoles', 0], [35, 'gardenWall', 1], [40, 'skep', 0], [54, 'beanpoles', 1], [58, 'gardenWall', 2]]) ent('deco', x, 195, { kind: k, v });
+  ent('deco', 91, 195, { kind: 'bones' }); coins([88, 195], [92, 195]);
+  ent('sign', 48, 195, { text: 'THE INCENSE STILL BURNS. STAND IN THE SMOKE AS IT RISES, AND STEER OFF AT THE TOP.' });
+  brazier(74, 196, 10, { phase: 0 }); plat(76, 186, 5);
+  brazier(79, 186, 8, { phase: 1.4 }); plat(73, 178, 5);
+  brazier(75, 178, 6, { phase: 2.8 });
+  band(172, 73, 5);
   coins([74, 190], [74, 186], [79, 181], [75, 175]);
   ent('harpy', 50, 184); ent('bat', 84, 182); ent('bat', 62, 178);
   ent('check', 60, 195);
 
-  // ---- Tier 3. THE ORGAN: it grows in ranks and they all ring the same note ----
-  climb(172, 152, 12, 84, 20, 13);
-  spires(152, true, 44, 62, 78); spires(151, false, 8, 88);
-  ent('harpy', 34, 166); ent('harpy', 62, 162); ent('bat', 44, 164);
-  ent('shardling', 40, 151, { face: 1 }); ent('shardling', 66, 151, { face: -1 });
-  ent('bat', 30, 146); ent('grub', 56, 151, { face: 1 });
-  ent('sign', 6, 151, { text: 'THE ORGAN. IF ONE OF THEM GOES THEY ALL GO. CROSS IT LIKE YOU MEAN IT.' });
-  coins([26, 151], [70, 151]);
-  geode(8, 16, 152); coins([12, 151], [9, 154], [11, 154], [13, 154], [15, 154]);
-  // the first chimney, from the organ's far end up to the long shelf's
+  // ---- 3. THE SCRIPTORIUM: a gallery dug into the cliff, its shelves, and the first prayer wheel ----
+  interiors.push([2, 93, 153, 171, 'monkScript']);
+  band(152, 57, 8);
+  air(31, 37, 153, 154); boards(31, 152, 7);                       // the reading loft's trapdoor
+  wheel(171, 47, 169, 7, 'b');                                      // it is turned to the loft: strike it to face the way on
+  ent('sign', 40, 171, { text: 'A PRAYER WHEEL. STRIKE IT AND ITS STAIR TURNS. STRIKE IT AGAIN AND IT TURNS BACK.' });
   chimney(171, 152);
   ent('sign', 88, 171, { text: 'A CHIMNEY: HOLD INTO THE ROCK TO CLING, JUMP TO KICK OFF. SLOW, BUT IT STAYS.' });
-  ent('silver', 86, 151); ent('deco', 80, 151, { kind: 'bones' }); coins([76, 151], [83, 151], [80, 171], [84, 171]);
-  ent('deco', 4, 171, { kind: 'cairn' }); coins([8, 171], [13, 171]);
+  ent('fledgling', 24, 171, { face: 1 }); ent('fledgling', 64, 171, { face: -1 }); ent('bat', 44, 162); ent('rockgoblin', 84, 171, { face: -1 });
+  for (const [x, k, v] of [[10, 'bookshelf', 0], [15, 'bookshelf', 1], [19, 'lectern', 0], [30, 'bookpile', 0], [34, 'bookshelf', 0], [56, 'candelabra', 0], [70, 'bookpile', 1], [80, 'bookshelf', 1]]) ent('deco', x, 171, { kind: k, v });
+  coins([26, 171], [70, 171], [8, 171], [13, 171]);
+  // THE READING LOFT: over the gallery's roof, where the wheel's other stair goes
+  block(26, 26, 145, 151); block(41, 41, 145, 151); block(26, 41, 144, 144);
+  masonry.push([26, 41, 144, 151]); interiors.push([27, 40, 145, 151, 'monkScript']);
+  ent('silver', 29, 151); coins([33, 151], [35, 151], [37, 151], [39, 151]); ent('deco', 38, 151, { kind: 'lectern' });
 
-  // ---- Tier 4. THE LONG SHELF ----
-  climb(152, 132, 20, 76, 30, 35);
-  ent('harpy', 40, 126); ent('rockgoblin', 66, 131, { face: -1 }); ent('shardling', 30, 131, { face: 1 });
-  ent('sign', 62, 131, { text: 'THE LONG SHELF. THIRTY-FIVE ACROSS AND NOTHING UNDER IT. RUN.' });
-  ent('check', 74, 131); coins([32, 131], [44, 131], [56, 131]);
-  ent('stray', 12, 131, { kind: 'shard' }); coins([18, 131], [24, 131]);
-  geode(82, 92, 132); ent('silver', 87, 134); coins([83, 134], [85, 134], [89, 134], [91, 134]);
+  // ---- 3b. THE STACKS: a hanging walkway over the shelves, and the book hoist up through the floor above ----
+  for (const [x, y] of [[66, 150], [69, 148], [66, 146], [69, 144], [66, 142], [63, 140], [60, 138]]) plat(x, y, 3);
+  boards(26, 137, 32);                                              // the walkway
+  hangers.push([30, 138, 143], [44, 138, 151], [54, 138, 151]);    // on posts down to the loft's roof and the gallery floor
+  pair(23, 20, 135, 3, 127);                                        // the book hoist: board the right basket, jump to the left as it passes
+  block(1, W - 2, 132, 134);                                        // the floor of the bell yards
+  air(19, 40, 132, 134);                                            // broken through where the hoist rises
+  chimneyL(151, 132);                                               // and the slow way up, that nothing can take away
+  ent('sign', 52, 136, { text: 'STAND IN A BASKET AND IT SINKS, AND THE OTHER COMES UP PAST YOU. JUMP ACROSS AS IT GOES BY.' });
+  ent('miner', 12, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140); ent('harpy', 50, 146);
+  ent('check', 72, 151); coins([32, 136], [40, 136], [48, 136], [8, 151], [16, 151]);
+  for (const [x, k, v] of [[48, 'bookshelf', 0], [52, 'bookshelf', 1], [84, 'bookpile', 0]]) ent('deco', x, 151, { kind: k, v });
 
-  // ---- Tier 5. THE FLUE: every thermal goes up through a crystal lid, and the lid gives under you ----
-  ent('sign', 93, 131, { text: 'GLASS THAT BREAKS OVER A LIVE BREATH GOES UP, NOT DOWN. REMEMBER IT FOR WINGS.' });
-  vent(78, 132, 8, { phase: 0 }); cryst(76, 5, 124);
-  plat(68, 124, 5); vent(70, 124, 8, { phase: 1.4 }); cryst(68, 5, 116);
-  plat(76, 116, 5); vent(78, 116, 8, { phase: 2.8 });
-  shelf(108, 76, 5);
-  coins([78, 128], [70, 120], [78, 112], [70, 123], [78, 115]);
-  ent('harpy', 58, 118); ent('harpy', 86, 114);
-  coins([20, 107], [40, 107], [60, 107], [82, 107], [86, 107], [91, 107]);
-  geode(10, 20, 108); coins([15, 107], [11, 110], [13, 110], [15, 110], [17, 110], [19, 110]);
+  // ---- 4. THE BELL TOWERS: three towers and a flue, a bell in each belfry, and the bridges between them ----
+  tower(8, 118, 131);
+  tower(41, 118, 131);
+  tower(70, 118, 131);
+  ent('tbell', 11, 117, { span: [16, 40, 118] });                   // the first bell: the drawbridge over the broken floor
+  ent('sign', 9, 117, { text: 'A BELL. STRIKE IT AND WHAT HANGS FROM ITS TOWER COMES DOWN.' });
+  for (let x = 49; x <= 69; x++) set(x, 118, T.PLANK);              // the rope bridge the Roc left standing
+  ent('tbell', 73, 117, { span: [78, 83, 118] });                   // the second: over to the flue
+  // THE FLUE: the old kitchens' chimney, with its hearth at the bridges' height and the braziers that still breathe in it
+  block(84, 84, 101, 114); block(84, 94, 118, 131);
+  masonry.push([84, 84, 101, 131], [84, 94, 118, 131]); interiors.push([85, 94, 103, 117, 'monkFlue']);
+  brazier(90, 118, 8, { phase: 0 }); plat(85, 110, 4);
+  brazier(86, 110, 10, { phase: 1.6 });
+  coins([90, 112], [86, 104], [87, 116]);
+  ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE ROC CAME.' });
+  ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
+  // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
+  ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 });
+  for (const [x, k, v] of [[52, 'lootHeap', 0], [63, 'tent', 1], [81, 'bones', 0]]) ent('deco', x, 131, { kind: k, v });
+  ent('harpy', 30, 110); ent('kite', 58, 110); ent('harpy', 80, 106);
 
-  // ---- Tier 6. THE CLOUD LINE. You come out of the grey into the sun ----
-  climb(108, CLOUD, 26, 70, 66, 15); // the stair starts where the flue lets you out, not forty tiles away
-  ent('sign', 8, CLOUD - 1, { text: 'ABOVE THE CLOUD THE GLASS BREAKS FASTER, AND GLOWS FIRST. THE BREATHS GO HIGHER.' });
-  spires(CLOUD, true, 14, 24, 52, 62); spires(CLOUD - 1, false, 6, 88);
-  ent('check', 10, CLOUD - 1); coins([16, CLOUD - 1], [80, CLOUD - 1]); ent('harpy', 58, 94);
-  ent('sign', 84, CLOUD - 1, { text: 'THE CLOUD IS UNDER YOU NOW. SO IS EVERYTHING ELSE.' });
-
-  // ---- Tier 7. THE GLARE, and the eyrie up a goat path off the glass ----
-  climb(CLOUD, 80, 20, 76, 28, 15);
-  ent('shardling', 30, 79, { face: 1 }); ent('shardling', 48, 79, { face: -1 }); ent('harpy', 62, 74);
-  coins([28, 79], [60, 79], [16, 79], [21, 79]); ent('check', 10, 79); ent('deco', 4, 79, { kind: 'cairn' });
-  ent('sign', 6, 79, { text: 'THE GLARE. THE ROCK LEDGES ARE THE ONLY REST UP HERE AND THERE ARE NOT MANY.' });
+  // ---- 5. THE CLOUD CLOISTER. You come out of the grey into the sun, onto the monks' cloister ----
+  band(100, 85, 5);
+  facades.push([40, 74, 91, 99, 'monkCloister']);
+  wheel(99, 20, 97, 7, 'a');                                        // the second wheel: its stair goes up to the shrines, or round to the alcove
+  set(18, 99, T.SOLID); set(19, 99, T.SOLID); masonry.push([18, 19, 99, 99]);   // a step up to the pivot board
+  ent('check', 30, 99); ent('check', 80, 99);
+  ent('sign', 84, 99, { text: 'THE CLOUD IS UNDER YOU NOW. SO IS EVERYTHING ELSE.' });
+  // the goat path up the far wall, to a shrine with a string of beads on it
   for (let y = 86; y <= CLOUD - 1; y++) set(W - 2, y, T.CLIMB);
-  plat(84, 97, 3); plat(89, 95, 3); plat(84, 93, 3); plat(89, 91, 3); plat(80, 89, 14);
-  coins([90, 94], [85, 92], [90, 90]);
-  ent('stray', 88, 88, { kind: 'shard' }); ent('deco', 83, 88, { kind: 'bones' }); ent('harpy', 78, 84);
+  for (const [x, y] of [[91, 98], [88, 96], [91, 94], [88, 92]]) plat(x, y, 3);
+  plat(78, 90, 13); coins([92, 97], [89, 95], [92, 93]);
+  ent('stray', 82, 89, { kind: 'bead' }); ent('deco', 86, 89, { kind: 'shrine', v: 0 }); ent('harpy', 72, 84);
 
-  // ---- Tier 8. THE BELLOWS: hot, tall breaths in the glare, glass that goes in a second, and the harpies ride them ----
-  ent('sign', 20, 79, { text: 'THE BELLOWS THROW YOU HIGH. THE GLASS AT THE TOP IS LIT: KEEP GOING.' });
-  vent(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
-  // the glass sits three rows under the shelf, not one: with no headroom there was no hop off it at all
-  vent(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 }); cryst(17, 5, 62);
-  plat(23, 62, 5); vent(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
-  shelf(56, 23, 5);
+  // ---- 6. THE UPPER SHRINES: prayer flags on every line, shrines on the ledges, and the bellows ----
+  const s7gap = [31, 37];
+  block(1, s7gap[0] - 1, 80, 82); block(s7gap[1] + 1, W - 2, 80, 82); boards(s7gap[0], 80, s7gap[1] - s7gap[0] + 1);
+  // THE ALCOVE, where the second wheel's other stair goes: a shrine walled in on the ledge
+  air(4, 9, 81, 82); boards(4, 80, 6);
+  block(12, 12, 74, 79); block(1, 12, 73, 73); masonry.push([1, 12, 73, 73], [12, 12, 74, 79]); interiors.push([1, 11, 74, 79, 'monkShrine']);
+  ent('deco', 6, 79, { kind: 'shrine', v: 1 }); coins([3, 79], [5, 79], [8, 79], [10, 79]); ent('mend', 10, 79);
+  ent('sign', 26, 79, { text: 'THE UPPER SHRINES. PRAYER FLAGS ON EVERY LINE, AND NOBODY LEFT TO READ THEM.' });
+  ent('check', 22, 79); coins([28, 79], [60, 79], [44, 79]);
+  ent('fledgling', 50, 79, { face: -1 }); ent('fledgling', 68, 79, { face: -1 }); ent('harpy', 62, 72);
+  ent('sign', 16, 79, { text: 'THE BELLOWS THROW YOU HIGH. KEEP GOING AT THE TOP.' });
+  brazier(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
+  brazier(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 });
+  plat(23, 62, 5); brazier(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
+  band(56, 23, 5);
   coins([14, 74], [19, 65], [25, 59], [14, 70], [19, 67]);
   ent('harpy', 40, 70); ent('harpy', 30, 64);
-  geode(80, 90, 80); coins([81, 82], [83, 82], [85, 82], [87, 82], [89, 82], [70, 79], [76, 79]);
+  cellar(80, 90, 80); coins([81, 82], [83, 82], [85, 82], [87, 82], [89, 82], [70, 79], [76, 79]);
+  // THE SCAFFOLD the monks left up the east face, with a shrine at the top of it
+  for (const [x, y] of [[44, 78], [49, 76], [54, 74], [59, 72], [64, 70], [69, 68], [74, 66], [78, 64]]) plat(x, y, 4);
+  coins([45, 77], [55, 73], [65, 69], [75, 65], [79, 63]); ent('silver', 81, 63); ent('deco', 80, 63, { kind: 'shrine', v: 0 });
+  flags.push([2, 60, 22, 57], [30, 66, 76, 60], [8, 86, 36, 84], [50, 44, 90, 40], [4, 42, 30, 46]);
 
-
-  // ---- Tier 8b. THE GEODE OF THE GLARE: a hollow in the shelf with three coloured seams in its roof,
-  // and the thing that grew under them. Light is the only thing that opens it: a curtain burns whatever
-  // stands in that one column, and a mirror at the foot of a curtain lays the colour FLAT along the floor,
-  // which is the whole width of the room. Its stomp turns your mirrors back. ----
-  block(32, 48, 49, 50);                                    // the roof of the hollow
-  for (let y = 50; y <= 55; y++) set(51, y, T.PORT);         // the way on, shut while it stands
+  // ---- 6b. THE TEMPLE HALL: the guardian the monks set over their relics, still standing its watch ----
+  // Stone does not bleed. A bell does what a blade cannot: its note goes into the stone and cracks it for a
+  // few seconds, and the hall has two, hung low enough to strike from a jump. It is only cracked if it is
+  // standing under the bell when the bell is struck.
+  block(29, 50, 48, 49);                                            // the hall's roof
+  for (let y = 50; y <= 55; y++) set(51, y, T.PORT);                // the way on, shut while it stands
+  masonry.push([29, 51, 48, 49]); interiors.push([30, 50, 50, 55, 'monkHall']);
   ent('check', 24, 55);
-  ent('sign', 27, 55, { text: 'IT BLEEDS ONLY IN THE COLOUR IT SHOWS. STRIKE THAT COLOUR\'S MIRROR TO FLOOD IT.' });
-  ent('crystal', 35, 51, { dir: [0, 1], col: 'blue', hang: true });
-  ent('crystal', 40, 51, { dir: [0, 1], col: 'violet', hang: true });
-  ent('crystal', 45, 51, { dir: [0, 1], col: 'green', hang: true });
-  // TWO of the three seams have a mirror at the foot, and the third has none. Blue and violet can be laid
-  // FLAT along the floor and along its shoulders, so they reach wherever it walks; GREEN stays a column,
-  // and the only way to put green on it is to make it stand in that one place. Which is why the last facet
-  // takes two colours at once: green where it falls, and a line you laid to meet it there.
-  // (Both mirrors are inside a jumping strike from the floor: a room you fight in wants no ledges in it.)
-  ent('mirror', 35, 55); ent('mirror', 40, 54);
+  ent('sign', 27, 55, { text: 'STONE DOES NOT BLEED. STRIKE A BELL WHILE IT STANDS UNDER IT, AND THE NOTE CRACKS IT.' });
+  ent('tbell', 36, 51, { guard: true, hang: true }); ent('tbell', 45, 51, { guard: true, hang: true });
   ent('golem', 43, 55, { mini: true });
-  coins([33, 55], [37, 55], [47, 55], [49, 55]);
-  ent('deco', 31, 55, { kind: 'cairn' });
+  coins([33, 55], [38, 55], [47, 55], [49, 55]);
+  ent('deco', 31, 55, { kind: 'statue', v: 0 });
 
-  // ---- Tier 9. THE UPPER GLARE, and the second chimney: the only way up it that is not glass ----
-  climb(56, 36, 52, 84, 78, 15); // the stair to the crown starts at the FAR end of the shelf now: the geode is on the road, not beside it
-  ent('shardling', 60, 35, { face: -1 });
+  // ---- 6c. THE LAST CLIMB, and the second chimney: the way up it that nothing turns ----
+  stair(56, 36, 52, 84, 78, 15); // the stair to the nest starts at the FAR end of the ledge: the hall is on the road, not beside it
+  ent('fledgling', 60, 35, { face: -1 });
   ent('check', 12, 35); coins([32, 35], [66, 35]);
   chimney(55, 36);
   coins([70, 55], [78, 55], [84, 55], [40, 55], [50, 55], [6, 55], [12, 55], [18, 55]); ent('deco', 3, 55, { kind: 'bones', v: 1 });
+  ent('deco', 64, 55, { kind: 'shrine', v: 1 }); ent('deco', 10, 55, { kind: 'flagPost', v: 0 }); ent('deco', 88, 35, { kind: 'flagPost', v: 1 });
 
-  // ---- Tier 10. THE CROWN: the Roc's nest. Glass set in the rock where she dives, and two breaths ----
-  const s10 = climb(36, 30, 30, 62, 38, 11);
-  block(1, s10.gx - 1, 31, 34); block(s10.gx + s10.gw, W - 2, 31, 34); // the crown's body, either side of the way up
+  // ---- 7. THE NEST: the monastery's broken summit roof, and what nests on it ----
+  const s10 = stair(36, 30, 30, 62, 38, 11);
+  block(1, s10.gx - 1, 31, 34); block(s10.gx + s10.gw, W - 2, 31, 34); // the roof's body, either side of the way up
   spikes(4, 12, 29); spikes(80, 90, 29);
-  spires(30, true, 8, 20, 74, 86); spires(29, false, 16, 78);
-  // glass set flush in the crown's rock: where her dive puts her talons through it and holds her
-  cryst(14, 6, 30); cryst(49, 6, 30); cryst(66, 6, 30);
-  // two breaths with a knuckle of glass over each: stand on the glass while she is over it and the breath is coming
-  // the crown's breaths blow the glass out themselves, half a second in: be where she hovers over one when it goes
-  vent(26, 30, 5, { period: 5, on: 2.4, phase: 0, lift: 220, glass: true }); cryst(24, 4, 27);
-  vent(60, 30, 5, { period: 5, on: 2.4, phase: 2.5, lift: 220, glass: true }); cryst(58, 4, 27);
-  ent('sign', 16, 29, { text: 'THE ROC LANDS ON HER SHADOW. MAKE IT LAND ON GLASS AND SHE STAYS DOWN.' });
-  // THE CROWN'S FORK: her feathers are glass at the ends, and glass is what a fork shakes. It stands on the rock
-  // between the two middle panes, and she comes over it to sing to the glass - so the answer to her song is here
-  ent('resonance', 56, 29, { r: 1, roc: true });
-  ent('sign', 22, 29, { text: 'STRIKE THE FORK WHEN SHE IS OVER IT: HER GLASS WINGS RING AND SHE FALLS.' });
+  masonry.push([1, W - 2, 30, 34]);
+  // the old roof boards still lie in the stone where her dive puts her talons through them and holds her
+  const roofBoards = [[14, 19, 30], [49, 54, 30], [66, 71, 30]];
+  // two braziers in the roof: when one breathes it throws its coals up, and a bird over it comes down
+  brazier(26, 30, 5, { period: 5, on: 2.4, phase: 0, lift: 220, ember: true });
+  brazier(60, 30, 5, { period: 5, on: 2.4, phase: 2.5, lift: 220, ember: true });
+  ent('sign', 16, 29, { text: 'THE ROC LANDS ON HER SHADOW. BRING HER DOWN ON THE OLD BOARDS AND HER TALONS STICK.' });
+  // THE NEST BELL: it hangs on its frame between the two middle boards. She comes over it to scream at the roof,
+  // and a bell struck under her goes through her like a blow - so the answer to her scream is here
+  ent('tbell', 56, 29, { roc: true });
+  ent('sign', 22, 29, { text: 'STRIKE THE NEST BELL WHEN SHE IS OVER IT: THE NOTE GOES THROUGH HER AND SHE FALLS.' });
   ent('roc', 72, 29);
-  // the last hop to the gate is over the thorns on two pieces of crystal, which will not wait for you
-  plat(79, 29, 5); cryst(85, 3, 27); cryst(89, 3, 27); // a plank over the first of the thorns, then the glass
+  // the last hop to the gate is over the thorns on two stones set on a pillar
+  plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29);
   ent('check', 18, 29); ent('gate', 92, 29);
   ent('silver', 90, 26);
-  ent('stray', 25, 26, { kind: 'shard' });
-  // the crawl under the crown ends in a hollow either side, and the second chimney comes up into the right one
+  ent('stray', 38, 29, { kind: 'bead' });
+  // the crawl under the roof ends in a hollow either side, and the second chimney comes up into the right one
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
   ent('deco', 6, 35, { kind: 'cairn' }); coins([4, 35], [9, 35], [15, 35]);
 
-
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
-  // SIDE ROUTES: a goat path of stone up the side the crystal stair does not use, through a small lid of
-  // glass in the shelf above - slower, and it does not break, and it means neither end of a floor is a wall.
+  // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
+  // the floor above - slower, and it means neither end of a floor is a wall.
   const sideRoute = (floorRow, shelfTop, xa, xb) => {
     for (let yy = shelfTop + 1; yy <= shelfTop + 2; yy++) for (let x = xa; x <= xa + 2; x++) set(x, yy, T.AIR); // cut the gap first
-    cryst(xa, 3, shelfTop);
+    boards(xa, shelfTop, 3);
     let y = floorRow - 2, k = 0;
     while (y > shelfTop + 6) { const x = k % 2 ? xb : xa; plat(x, y, 3); if (k % 2) coins([x + 1, y - 1]); y -= 2; k++; }
     // the last three stack straight up under the gap: the far ledges are under the rock, and a jump from there bangs its head
     plat(xa, shelfTop + 6, 3); plat(xa, shelfTop + 4, 3); plat(xa, shelfTop + 2, 3); coins([xa + 1, shelfTop + 1]);
   };
-  sideRoute(218, 196, 86, 90);     // the lower face, up the far wall past the camp
-  sideRoute(196, 172, 4, 8);       // the breathing rock's near end, up to the organ
+  sideRoute(218, 196, 86, 90);     // the gatehouse, up the far wall past the pilgrims' shelter
+  sideRoute(196, 172, 4, 8);       // the terraces' near end, up into the scriptorium
   sideRoute(80, 56, 84, 88);       // the bellows' far side, up to the chimney's foot
-  // STALACTITES: glass hanging under the shelves, each one over a step you have to stand on - the tops of the
-  // stairs, the side routes, the long walk under the cloud shelf. Pass under one and it shivers, then drops.
-  const stal = (x, y) => { if (L.grid[(y - 1) * W + x] === T.SOLID && L.grid[y * W + x] === T.AIR) ent('stal', x, y); };
-  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [33, 155], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32]]) stal(x, y);
-  // ISLANDS: in the two emptiest chambers, glass hung in the air, a shardling on it, and gold at the top
-  for (const [x, y, n] of [[40, 78, 4], [45, 76, 4], [50, 74, 4], [55, 72, 4], [60, 70, 4], [65, 68, 4], [70, 66, 4], [75, 64, 4]]) cryst(x, n, y);
-  coins([41, 77], [51, 73], [61, 69], [71, 65], [76, 63], [77, 63], [78, 63]); ent('shardling', 56, 71, { face: 1 }); ent('harpy', 66, 60);
-  for (const [x, y] of [[2, 129], [6, 127], [2, 125], [6, 123], [2, 121], [6, 119], [2, 117], [6, 115]]) cryst(x, 3, y);
-  plat(2, 113, 6); coins([2, 112], [3, 112], [4, 112], [5, 112], [6, 112], [3, 126], [7, 118]); ent('deco', 5, 112, { kind: 'bones' }); ent('shardling', 7, 122, { face: -1 });
-  // and more of the mountain's own: bats in the shade below the cloud, harpies and shardlings above it
-  ent('bat', 60, 205); ent('bat', 24, 186); ent('shardling', 40, 171, { face: 1 }); ent('harpy', 20, 142); ent('bat', 70, 140);
-  ent('harpy', 40, 44); ent('shardling', 62, 55, { face: -1 }); ent('harpy', 70, 104); /* he used to stand where the geode is now */
+  // LOOSE MASONRY: a stone in the vault over a step you have to stand on shivers when you pass under, and drops.
+  const stal = (x, y) => { if (L.grid[(y - 1) * W + x] === T.SOLID && L.grid[y * W + x] === T.AIR) ent('stal', x, y, { stone: true }); };
+  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32]]) stal(x, y);
+  // and more of the mountain's own: bats in the shade below the cloud, harpies and fledglings above it
+  ent('bat', 60, 205); ent('bat', 24, 186); ent('harpy', 20, 142);
+  ent('harpy', 40, 44); ent('fledgling', 62, 55, { face: -1 });
 
-  // (pass two) the frost: some who came up for the glass are still here, and the slab over the crown's thorns stands on a glass stem
-  ent('deco', 30, 195, { kind: 'frozen', v: 0 }); ent('deco', 20, 131, { kind: 'frozen', v: 1 }); ent('deco', 12, 79, { kind: 'frozen', v: 0 }); ent('deco', 44, 55, { kind: 'frozen', v: 1 });
-  set(87, 28, T.CRYST); set(87, 29, T.CRYST);
-    // ---- THE RESONANCE FORKS: the mountain's own rule, with a handle on it ----
-  // The Sunspire had ONE machine in two hundred and twenty-two rows, and its whole rule is that crystal holds
-  // whatever touches it and then lets go. A fork of the same crystal, driven into the rock: strike it and
-  // EVERYTHING of its kind within five tiles lets go at once. It opens a face you could not climb, it drops a
-  // shelf you could not reach past - and it takes the ledge under your own feet if you were standing on
-  // crystal, which is the whole of the choice. Six seconds before it will sound again.
-  for (const [x, y] of [[56, 200], [48, 136], [67, 104], [48, 79], [45, 35]]) ent('resonance', x, y);
-  ent('sign', 57, 200, { text: 'STRIKE THE GLASS FORK AND EVERY CRYSTAL IN THE RING BREAKS, YOURS TOO.' });
-L.ents = L.ents.filter(e => !(e.t === 'deco' && e.kind === 'spire' && e.x === 16 && e.y === 29)); // it stood on the sign
-  // ---- THE EYRIE. The summit was the same ice and crag as the ninety rows of climb under it, so the last
-  // room of the level looked like one more ledge on the way up. It is a NEST now: the thing has been living
-  // here a long time and the floor says so - bones it did not finish, the shells of what it hatched, feathers
-  // trodden into the ice, and the wall of the nest itself heaped round the rim.
-  for (const x of [6, 12, 84, 90]) ent('deco', x, 29, { kind: 'eyrie' });
+  // ---- THE NEST ITSELF. The summit was one more ledge on the way up until it had a nest on it: the thing has been
+  // living here a long time and the roof says so - bones it did not finish, the shells of what it hatched, and
+  // the wall of the nest heaped round the rim out of the monks' own rafters.
+  for (const x of [6, 12, 77, 90]) ent('deco', x, 29, { kind: 'eyrie' });   /* not 84: it ran through the plank laid over the thorns */
   for (const [x, v] of [[20, 0], [34, 1], [58, 0], [72, 1]]) ent('deco', x, 29, { kind: 'bones', v });
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
-  for (const [x, v] of [[16, 0], [44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'cairn', v });
-  ent('sign', 30, 29, { text: 'THE EYRIE. IT HAS BEEN NESTING ON THIS ROCK SINCE BEFORE THE WOOD HAD A NAME, AND EVERYTHING ON THE FLOOR OF IT CAME UP HERE THE SAME WAY YOU DID.' });
+  for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'cairn', v });
+  ent('sign', 30, 29, { text: 'THE NEST. EVERYTHING ON THIS ROOF CAME UP THE MOUNTAIN THE WAY YOU DID.' });
+  // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
+  // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
+  masonry.push([1, 40, 218, 221], [1, 94, 172, 174], [1, 94, 152, 154], [1, 94, 132, 134], [40, 74, 100, 102], [29, 51, 56, 58]);
+  interiors.push([1, 94, 135, 151, 'monkScript']);
+  // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, hasCryst: true, cloudLine: CLOUD, frost: true, snowLine: 999,
-    iceLedges: true, slick: [[24, 50, 196], [8, 40, 172], [4, 30, 132], [21, 70, 108], [2, 40, 80], [30, 80, 56]], // ice underfoot on the long floors: slow to start, slow to stop // duskStart -1 means ALWAYS dusk: this one is daylight
-    tall: { top: 26 * TS, bottom: 218 * TS },
-    quest: { n: 3, item: 'shard', name: 'SUNSHARD', npc: 'squire', done: 'THE LIGHT IS CARRIED DOWN', reward: 'relic', relic: 'sunshard' },
-    palette: { sky: [[126, 176, 214], [214, 232, 240]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag',
-      haze: 'rgba(200,222,240,0.16)', grass: '#bcd4e4', grassL: '#e8f2fa', grassD: '#8ea8bc',
-      dirt: '#5a6478', dirtL: '#727e94', dirtD: '#3c4456', canopy: ['#5a6478', '#6e7a90', '#8494ac', '#a8bcd0'] },
+    duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 28,   /* snow only on the stones over the roof: on the roof it hid the boards */
+    monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
+    tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
+    quest: { n: 3, item: 'bead', name: 'PRAYER BEADS', npc: 'squire', done: 'THE BEADS ARE RESTRUNG', reward: 'relic', relic: 'sunshard' },
+    palette: { sky: [[146, 156, 172], [230, 216, 196]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
+      haze: 'rgba(222,208,190,0.14)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
+      dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'roc', music: 'roc', tint: '#cfe8ff', tintA: 0.14, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest */
-    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS },   /* it used to wake a quarter of the way across the summit, before you had seen the nest */
+    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'roc', music: 'roc', tint: '#ffe0b0', tintA: 0.12, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest */
+    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS },
   };
 }
 
@@ -6774,7 +6818,7 @@ export const LEVELS = [
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'EIGHT FLOORS ON ONE CLIFF, AND THE WAY UP IS THROUGH THEM.', build: hangingVillage, needs: 'scree' },
-  { id: 'spire', name: 'THE SUNSPIRE', sub: 'the mountain of crystal', rule: 'CRYSTAL HOLDS WHATEVER TOUCHES IT. GO UP ANYWAY.', build: theSunspire, needs: 'hanging' },
+  { id: 'spire', name: 'THE MONASTERY', sub: 'on the cliff the roc took', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'moor' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },
@@ -6860,11 +6904,11 @@ const REVIEW = {
   storm: L => { rv(L).plat(282, 28, 3); },
   // one spider in four goes: a fall off a climb should not land you in three more of them
   hanging: L => { let n = 0; for (let i = L.ents.length - 1; i >= 0; i--) { const e = L.ents[i]; if (e.t === 'spider' && !e.big && !e.mini && (n++ % 4) === 3) L.ents.splice(i, 1); } },
-  // THE CLOUD CAMP: a foreman's tent and fire at the cloud line, and someone to tell you about the sun; and
-  // goblins who break the glass, who see you on crystal and smash it out from under you
-  spire: L => { const R = rv(L); R.ent('deco', 12, 99, { kind: 'tent', v: 0 }); R.ent('npc', 15, 99, { kind: 'foreman' }); R.ent('brazier', 17, 99);
-    R.ent('sign', 20, 99, { text: 'THE CLOUD LINE. ABOVE IT THE GLASS CRACKS SOONER AND THE BREATHS COME QUICKER.' });
-    R.ent('miner', 32, 195, { glass: true, face: -1 }); R.ent('miner', 24, 151, { glass: true, face: 1 }); },
+  // THE CLOUD CAMP: a foreman's tent and fire in the cloister's corner, and someone to tell you about the sun; and
+  // the looters, digging in the terraces and under the stacks for whatever the monks buried
+  spire: L => { const R = rv(L); R.ent('deco', 4, 99, { kind: 'tent', v: 0 }); R.ent('npc', 8, 99, { kind: 'foreman' }); R.ent('brazier', 11, 99);
+    R.ent('sign', 14, 99, { text: 'THE CLOUD CLOISTER. ABOVE THE CLOUD THE SMOKE GOES HIGHER AND THE BIRDS GET BOLDER.' });
+    R.ent('miner', 32, 195, { face: -1 }); R.ent('miner', 20, 151, { face: 1 }); },
   // the castle had the fewest foes of anywhere: a watch in the ward, a hall guard, the kitchens staffed. And THE
   // LEADS: from the choir loft up through a hatch onto the keep roof, a run along it with the whole mountain
   // below, and a second hatch down at the far end of the chapel
@@ -6882,7 +6926,7 @@ const DRESS = {
   kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3], ['gobPennant', 3], ['ragBanner', 3], ['clothStrip', 3], ['skullTotem', 2], ['idol', 2], ['lootHeap', 2], ['trophyRack', 2], ['cauldron'], ['boneChime', 2], ['warnPost', 2]],   /* the court: idols, the king's takings, trophies */
   scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
   hanging: [['lanternPost'], ['barrels'], ['birdhouse'], ['beehive']],
-  spire: [['cairn'], ['bones', 2], ['stone', 3]],
+  spire: [['cairn'], ['bones', 2], ['stone', 3], ['shrine', 2], ['flagPost', 2]],
   moor: [['stone', 3], ['cairn'], ['fence', 2], ['bones', 2], ['deadTree', 2]],
   storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2], ['warStandard', 2], ['hideBanner', 2], ['gobPennant', 3], ['stakeFence', 2], ['hideRack', 2], ['cookSpit'], ['cauldron'], ['trophyRack', 2], ['clothStrip', 3], ['boneChime', 2], ['warnPost', 2]],   /* the hill clans' hold: hides, stakes, standards */
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage'], ['clothStrip', 4], ['warStandard', 2], ['gobPennant', 4], ['lootHeap', 2], ['trophyRack', 2], ['idol', 2], ['cauldron'], ['boneChime', 2]],   /* the Queen's castle: her strips in the halls, the loot of the whole wood */
@@ -6907,7 +6951,7 @@ const GARRISON = {
   moor: [['goat', 5], ['rockgoblin', 5], ['harpy', 4], ['kite', 4], ['troll', 2], ['sailer', 3]],   // seven kinds over NINE HUNDRED columns, and twenty-three of them crows
   scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],
   hanging: [['snuffer', 3], ['cutter', 2], ['rockgoblin', 2]],   // thirty-four creatures over eight floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood
-  spire: [['shardling', 13], ['harpy', 10], ['bat', 7], ['sentry', 8], ['rockgoblin', 7], ['crow', 5], ['goat', 4], ['troll', 4], ['kite', 4], ['spider', 3], ['snuffer', 2]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
+  spire: [['fledgling', 13], ['harpy', 10], ['bat', 7], ['sentry', 8], ['rockgoblin', 7], ['crow', 5], ['goat', 4], ['troll', 4], ['kite', 4], ['spider', 3], ['snuffer', 2]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
   storm: [['hearthgob', 5], ['cutter', 5], ['sentry', 2], ['pike', 1]],
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
   longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
@@ -7134,8 +7178,8 @@ const AMBUSH = {
     waves: [[['goat', 178], ['goat', 198], ['sprig', 191], ['harpy', 185, 8]], [['shield', 193], ['archer', 199], ['troll', 180], ['rockgoblin', 186]]] }],
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
     waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['shield', 60], ['archer', 66], ['brute', 47], ['cutter', 55]]] }],
-  spire: [{ name: 'THE CRYSTAL SHELF', row: 171, wallL: 40, wallR: 72, check: false,
-    waves: [[['shardling', 46], ['shardling', 66], ['rockgoblin', 56], ['bat', 52, 166]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 165], ['shardling', 68]]] }],
+  spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
+    waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
   moor: [{ name: 'THE CAIRN RIDGE', row: 13, wallL: 508, wallR: 545,
     waves: [[['goat', 514], ['goat', 540], ['rockgoblin', 527], ['crow', 524, 7]], [['rockgoblin', 538], ['troll', 516], ['harpy', 528, 8], ['goat', 532]]] }],
   storm: [{ name: 'THE HEARTH HALL', row: 31, wallL: 98, wallR: 152, check: false,

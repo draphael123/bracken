@@ -30,7 +30,8 @@ const STEP = 8, RX = 8, RY = 6, EMPTY_RUN = 40;
 const HAZARD_FOE = new Set(['rockfall', 'skybolt', 'catapult', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'towertop']);
 const SETPIECE = new Set(['lever', 'crank', 'winch', 'sluice', 'capstan', 'pump', 'firebox', 'sheet', 'cannon', 'bell', 'seabell', 'lockgate',
   'key', 'felltree', 'deadfall', 'ram', 'cart', 'plank', 'keg', 'loosegun', 'cargowall', 'bulkhead', 'davit', 'stormkite', 'resonance', 'mirror',
-  'weight', 'support', 'rod', 'boiler', 'roller', 'nest', 'cage', 'plate', 'timber', 'throne', 'sail', 'bridge', 'gas']);
+  'weight', 'support', 'rod', 'boiler', 'roller', 'nest', 'cage', 'plate', 'timber', 'throne', 'sail', 'bridge', 'gas',
+  'tbell', 'pwheel']);   /* THE MONASTERY: a bell that brings a bridge down, a prayer wheel that turns a stair */
 const PLATFORM = new Set(['mover', 'pad', 'vent', 'balloon', 'stal']);
 const REST = new Set(['check', 'npc', 'guest', 'shrine', 'shop']);
 const LOOT = new Set(['silver', 'relic', 'stray', 'mend']);

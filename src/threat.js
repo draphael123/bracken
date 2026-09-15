@@ -15,7 +15,7 @@ export const THREAT = {
   brute: 3.5, sapper: 3, hound: 2.5, pike: 3, soldier: 3, javelin: 2.5, heavy: 4, crow: 1, bat: 1,
   sporeling: 1.5, lurker: 2.5, spitcap: 2, weaver: 3, shaman: 3, thief: 1, folk: 0, squirrel: 0,
   goat: 2, ram: 1.5, harpy: 2.5, troll: 4, spider: 3, sailer: 2, snuffer: 2.5, cutter: 3, hearthgob: 3,
-  shardling: 2, suncatcher: 3, sentry: 2, lookout: 1.5, bosun: 3, cutlass: 2.5, boarder: 3, marine: 2.5,
+  shardling: 2, fledgling: 2, suncatcher: 3, sentry: 2, lookout: 1.5, bosun: 3, cutlass: 2.5, boarder: 3, marine: 2.5,
   eel: 2, urchin: 1, angler: 2.5, siren: 3, crab: 1.5, scout: 2, tideguard: 3, petrel: 1.5, gull: 1,
   watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
   assassin: 3.5, berserker: 5, grandmother: 6,
@@ -40,6 +40,8 @@ export const THREAT = {
   drunk: 2.5,
   /* THE DROWNED CAUSEWAY: a feeler is a lash you have to read at your feet; the Kraken is the coast's last word; a bell is furniture */
   feeler: 2.5, kraken: 6, krakenarm: 0, tidebell: 0, knell: 0,
+  /* THE MONASTERY: a bell and a prayer wheel are furniture */
+  tbell: 0, pwheel: 0,
   /* THE HEXED FIELDS: a scarecrow is a read (where are you looking), a rook a step as much as a threat, the wisp worth more to you dead */
   /* THE MAGE'S FOLLY: a topiary is a read (it shivers first), the armour a slow wall, a piece and a broom nearly nothing, a mimic a trap, an imp a shooter that moves, a turret one that does not */
   topiary: 3, armour: 3.5, piece: 0.5, broom: 1.5, mimic: 2.5, imp: 2.5, turret: 2, homunculus: 5, archmage: 6, font: 0, runearch: 0, glyph: 0, gplate: 0, vatspit: 0, rune: 0,

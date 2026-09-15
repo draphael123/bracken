@@ -2408,11 +2408,11 @@ export function bakeThrone() {
 }
 
 export function bakeRoc() {
-  const C = { h: '#8a8478', H: '#5a5448', d: '#3a3630', f: '#e8e0d0', F: '#b8b0a0', m: '#c9a83a', M: '#8a6a1a', c: '#bfe6f5', C: '#eefaff', q: '#7aa8c8', e: '#ff4a3a' };
+  const C = { h: '#8a8478', H: '#5a5448', d: '#3a3630', f: '#e8e0d0', F: '#b8b0a0', m: '#c9a83a', M: '#8a6a1a', c: '#d8c8a8', C: '#f2e8d4', q: '#9a8468', e: '#ff4a3a' };
   const W = 60, H = 44;
   const poly = (g, pts, k) => fillPoly(g, pts, C[k]);
   // a wing: shoulder, then the leading edge out to the tip, then back along the trailing edge. The last
-  // few points of the trailing edge get glass tips.
+  // few points of the trailing edge get pale barred tips, bleached by the sun over the cloud.
   const wing = (g, pts, far) => {
     poly(g, pts, far ? 'H' : 'h');
     const n = pts.length; for (let i = 2; i < n - 1; i++) { const [x, y] = pts[i]; px(g, x, y, C[i % 2 ? 'c' : 'C']); px(g, x + 1, y, C.q); }
