@@ -1221,7 +1221,6 @@ function spawnEnt(e) {
       case 'cage': { const op = marks.has('cage:' + e.x); props.push({ t: 'cage', x: px, y: py, kind: e.kind || 'bird', open: op, hp: 2, tx: e.x }); if (op && e.kind === 'squire') props.push({ t: 'npc', x: px, y: py, kind: 'squire', anim: 0 }); break; }
       case 'barrel': props.push({ t: 'barrel', x: px, y: py, x0: px, y0: py, vx: 0, rolling: false, fuse: 0, gone: false, respawnT: 0 }); break;
       case 'brazier': props.push({ t: 'brazier', x: px, y: py, lit: true, tipped: false }); break;
-      case 'firepit': for (const dx of [-8, 8]) if (!fires.some(f => f.life > 9000 && Math.abs(f.x - (px + dx)) < 4)) fires.push({ x: px + dx, y: py + TS, life: 99999, delay: 0 }); lights.push({ x: px, y: py, r: 46, glow: true, warm: true }); break;
       case 'rack': props.push({ t: 'rack', x: px, y: py, kind: e.kind || 'club', hp: 3, broken: false }); break;
       case 'wisp': props.push({ t: 'wisp', x: px, y: py, y0: py, cut: false, ph: Math.random() * 6 }); break;
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
