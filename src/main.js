@@ -4435,7 +4435,7 @@ function guardTurned() {
 function attackBox() {
   if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
     if (P.atk < 0.12 || P.atk >= 0.19) return null;
-    const r = 38 + 12 * tal('longHaft');
+    const r = 20 + 12 * tal('longHaft');   /* the point is drawn to 19-20 px on its two live frames; 38 cut the air beyond it */
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 22, b: P.y + 4 } : { l: P.x - r, r: P.x - 2, t: P.y - 22, b: P.y + 4 };
   }
   if (P.heavy && P.atk >= 0.03 && P.atk < 0.22) { // it reaches further and lands lower than a swing
@@ -4450,7 +4450,10 @@ function attackBox() {
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
   if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) {   /* THE CLEAVE: over the shoulder and down through what is in FRONT of him - a sword, not a scythe */
-    const r = 46 + 14 * tal('longHaft'), top = 30;   /* 36 was a short sword's reach on the biggest blade in the game */
+    /* AS FAR AS IT IS DRAWN, read off the canvas frame by frame: while the blade is still coming over his shoulder it reaches 22 px,
+       and from 0.15 the arc drawSwing lays through the front of him is out to 31. The 46 it was (after 36, a short sword's reach)
+       landed a tile past both, on air the art never touched */
+    const r = (P.atk < 0.15 ? 22 : 31) + 14 * tal('longHaft'), top = 30;
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - top, b: P.y + 2 } : { l: P.x - r, r: P.x - 2, t: P.y - top, b: P.y + 2 };
   }
   if (isPirate() && P.atk >= 0.03 && P.atk < 0.15) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 19, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 19, b: P.y - 1 };   // a cutlass is long and it is fast
@@ -4624,7 +4627,7 @@ function updatePlayer(dt) {
     if (was > 0 && P.cds[k] <= 0) { P.skReady = P.skReady || {}; P.skReady[k] = 1; SFX.ui && SFX.ui(); } } // a skill coming back says so
   if (P.skReady) for (const k in P.skReady) P.skReady[k] = Math.max(0, P.skReady[k] - dt * 1.6);
   hushT = Math.max(0, hushT - dt);
-  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'coyote', 'jbuf', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
+  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
@@ -4869,6 +4872,11 @@ function updatePlayer(dt) {
       if (P.onMover && P.onMover.dx) { const carry = P.onMover.dx * 60; P.vx += Math.max(-190, Math.min(190, carry)); if (Math.abs(carry) > 60) streaks(P.x, P.y - 10, -Math.sign(carry), ['#fff6e0', '#c9d1dc'], 80); }
       P.onMover = null; P.canCut = true; P.jumpT = time; SFX.pJump(); dust(P.x, P.y, 3); squash(0.8, 1.2, 0.1); }
   }
+  /* THE GRACE IS COUNTED AFTER IT IS ASKED FOR. Coyote time and the jump buffer used to tick down with every other timer at the
+     top of this function, before the jump above had read them, so each lost a frame: the 0.12 s buffer held six frames, not
+     seven, and the coyote step only reached its sixth frame on a remainder of 1e-17. They are read, then spent; a remainder
+     under a thousandth of a frame is nothing, not one more frame (tools/audit-input.mjs: coyote 6, buffer 7). */
+  for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !rushing()) {
@@ -6478,7 +6486,8 @@ function updateReef(e, dt) {
   let want = 0, grav = true;
   if (e.t === 'sailor') { const near = ad < 150 && dy < 40 && !P.dead;
     if (e.mode === 'hookTell') { if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.32; SFX.slash(); e.vx = e.face * 60;
-      if (!P.dead && Math.sign(d) === e.face && ad < 44 && P.y > e.y - 16) { const res = damagePlayer(e.x, DMG.sailorHook); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.1; e.stagger = 1; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -110; } } } }
+      /* the hook lands as far as it is drawn (20 px, and the 5 of you in front of your middle): it caught you 14 px past its point */
+      if (!P.dead && Math.sign(d) === e.face && ad < 25 && P.y > e.y - 16) { const res = damagePlayer(e.x, DMG.sailorHook); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.1; e.stagger = 1; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -110; } } } }
     else if (e.mode === 'hook') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.5; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 30 || e.flanking) ? e.face * e.speed : 0; if (ad < 50 && P.atk >= 0) e.guardT = 0.4;
@@ -6574,7 +6583,7 @@ function updateShore(e, dt) {
       else { const tx = inMine ? P.x - Math.sign(d || 1) * 40 : e.hx + Math.sin(e.anim * 0.6) * 40; e.vx += (Math.sign(tx - e.x) * 50 - e.vx) * Math.min(1, dt * 2); e.vy += ((inMine ? Math.min(bot, Math.max(top, P.y - 8)) : e.hy + Math.sin(e.anim * 1.3) * 6) - e.y) * dt * 1.5; e.face = Math.sign(e.vx) || e.face; } }
     swimMove(e, dt, pl, top, bot, 8); return;
   } else if (e.t === 'heronfoe') { near = ad < 96 && dy < 44 && !P.dead;
-    if (e.mode === 'strikeTell') { if (e.modeT <= 0) { e.mode = 'strike'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(d) === e.face && ad < 36 && dy < 26) { const res = damagePlayer(e.x, DMG.heronfoe); if (res === 'hit') P.vx = e.face * 150; } } }
+    if (e.mode === 'strikeTell') { if (e.modeT <= 0) { e.mode = 'strike'; e.modeT = 0.3; SFX.slash(); /* as far as the bill is drawn (16 px): it struck 11 px past it */ if (!P.dead && Math.sign(d) === e.face && ad < 21 && dy < 26) { const res = damagePlayer(e.x, DMG.heronfoe); if (res === 'hit') P.vx = e.face * 150; } } }
     else if (e.mode === 'strike') { if (e.modeT <= 0) { e.mode = 'stand'; e.cd = 1.6; } }
     else { e.mode = 'stand'; if (near && e.cd <= 0) { e.face = Math.sign(d) || e.face; if (ad < 40) { e.mode = 'strikeTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 6, '!', '#ffd36b'); } else { want = e.face * 30; e.stepT = (e.stepT || 0) + dt; } } }
   } else if (e.t === 'crab') { near = ad < 140 && dy < 30 && !P.dead;
@@ -6595,7 +6604,8 @@ function updateShore(e, dt) {
     else { e.mode = 'idle'; if (e.modeT <= 0 && !P.dead && ad < 200 && dy < 100) { e.mode = 'sing'; e.modeT = 3; SFX.sirenSong(); } }
   } else if (e.t === 'tideguard') { near = ad < 170 && dy < 40 && !P.dead;
     if (e.mode === 'thrustTell') { if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.3; SFX.slash(); e.vx = e.face * 70;
-      if (!P.dead && Math.sign(d) === e.face && ad < 48 && dy < 20) { const res = damagePlayer(e.x, DMG.tideguard); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.0; e.stagger = 1.0; e.vx = -e.face * 50; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -80; } } } }
+      /* as far as the spear is drawn (22 px): it thrust 12 px past its point */
+      if (!P.dead && Math.sign(d) === e.face && ad < 27 && dy < 20) { const res = damagePlayer(e.x, DMG.tideguard); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 1.0; e.stagger = 1.0; e.vx = -e.face * 50; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 200; P.vy = -80; } } } }
     else if (e.mode === 'thrust') { if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.6; e.cd = 1.3; } }
     else if (e.mode === 'rest') { if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 36 || e.flanking) ? e.face * e.speed : 0; if (ad < 46 && e.cd <= 0) { e.mode = 'thrustTell'; e.modeT = 0.55; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.charge(); } } else want = 0; }
@@ -6675,7 +6685,9 @@ function updateTollmaster(e, dt) {
     case 'ledgerTell': { want = -e.face * 14;
       if (Math.random() < dt * 16) parts.push({ x: e.x - e.face * 16, y: e.y - 38 - Math.random() * 6, vx: -e.face * 20, vy: -14, life: 0.35, max: 0.35, col: '#cfc6a8', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'ledger'; e.modeT = 0.34; e.vx = e.face * 110; SFX.heavy();
-        if (!P.dead && Math.sign(d) === e.face && ad < 62 && Math.abs(P.y - e.y) < 34) {
+        // THE BOOK HITS WHERE IT IS DRAWN: 37.5 px at his scale on the striking frame, and the 5 of you in front of your middle.
+        // It used to land 17.5 px past the end of it
+        if (!P.dead && Math.sign(d) === e.face && ad < 43 && Math.abs(P.y - e.y) < 34) {
           const res = damagePlayer(e.x, DMG.tollLedger);
           // a parry on the ledger is the showcase: it knocks the book out of his swing and opens him
           if (res === 'blocked') { e.stagger = Math.max(e.stagger || 0, 1.2); e.open = Math.max(e.open, 1.2); e.mode = 'reel'; e.modeT = 1.2; number(e.x, e.y - 48, 'THE BOOK TURNS: CUT HIM', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); }
@@ -11912,7 +11924,8 @@ function updateLance(e, dt) {
     // a swing that finds nothing leaves him over his front foot: that is the answer for anyone who will not stand and block
     case 'recover': if (e.modeT <= 0) { e.mode = p2 ? 'guard' : 'pace'; e.modeT = 0.4; } break;
     case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; SFX.slash(); shakeCam(3);
-      if (!P.dead && ad < 52 && Math.abs(P.y - e.y) < 18 && P.ground) { const res = damagePlayer(e.x, DMG.lanceSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d) * 260; P.vy = -120; } } } break;
+      /* the sweep reaches as far as the lance is drawn along the boards (30 px at his scale): it reached 13 px past it */
+      if (!P.dead && ad < 35 && Math.abs(P.y - e.y) < 18 && P.ground) { const res = damagePlayer(e.x, DMG.lanceSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d) * 260; P.vy = -120; } } } break;
     case 'sweep': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.6; } break;
     // THE BASH: the shield comes round and puts you on your back. Blocking does not stop a shield: get out from in front of it.
     case 'bashTell': e.face = Math.sign(d) || e.face; want = -e.face * 16; if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = 0.26; e.vx = e.face * 140; SFX.clank(); SFX.heavy(); shakeCam(3);
@@ -16455,6 +16468,10 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t !== 'wasp' && e.t !== 'queen' && e.t !== 'drone') g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, Math.round(e.y) - 2 - cy);
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);   /* mounted and on foot share one set: his hurt pose depends on which */
+    /* THE ARCHMAGE'S LAST FRAME IS HIS BODY, not his hurt: his set ends hurt, dead, so every blow laid him out across the floor for a
+       moment while his hurt box stood 34 px tall over him, and a swing over the fallen robe still cut him. And the familiar's set
+       has one frame fewer than his, so the same index ran past the end of it */
+    else if (e.hurtT > 0 && e.t === 'archmage') frame = e.stage === 3 ? MF.FAMILIAR_F.hurt : MF.ARCHMAGE_F.hurt;
     else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
