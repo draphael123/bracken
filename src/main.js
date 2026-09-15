@@ -1103,7 +1103,7 @@ function drawGateHints(cx, cy) {
 }
 function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(q => !q.done && P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st || !(st.kinds ? st.kinds.includes(kind) : st.kind === kind)) return;
   if (st.kinds) { st.have = st.have || {}; if (st.have[kind]) return; st.have[kind] = 1; }   /* a step of two kinds (the marks, the two skill keys) wants one of each */
-  st.got = (st.got || 0) + 1; SFX.coin(); trialSay((kind === 'heavyblow' && hero() === 'knight' ? 'BASHED' : TRIAL_SAY[kind]) || trialName(st.kind), '#8fd160', st);
+  st.got = (st.got || 0) + 1; SFX.coin(); trialSay((kind === 'heavyblow' && hero() === 'knight' ? 'BASHED' : kind === 'tellY' && P.dodge > 0 ? 'YELLOW ! ROLLED' : TRIAL_SAY[kind]) || trialName(st.kind), '#8fd160', st);
   if (st.got >= st.n) { st.done = true; PROG.taught = PROG.taught || {}; PROG.taught[st.kind] = 1;   /* the yard TAUGHT this (lessonHint reads it: the wood does not say again what the yard already said) */ openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
 function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; fillMeter(st.fill); motes(P.x, P.y - 12, 12, 10); } }
 /* WHAT A TRIAL CALLS A STEP WHEN IT IS DONE, and the hero's own meter, filled for the step that spends it */
@@ -3295,10 +3295,10 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* BLOOD WARD. The greatsword is in the ground and a crimson ward stands up in front of it: a blow on its face does not
      land, it goes INTO the ward, and what the ward holds comes back out of him as the nova when he lets go. A blow from
      behind finds the man. And a ward LET GO JUST AS A BLOW LANDS is not there to take it: the blow is thrown back. */
-  if (isReaper() && !unblockable && frontA) { trialEvent('ward');   /* (his trial's C step: REAPER_C in trialYard) */
+  if (isReaper() && !unblockable && frontA) {
     const f = wardFoe(fromX), beat = f && f.t === 'closedhelm' ? WARD_BEAT_PAL : WARD_BEAT;
     if (!P.warding && !P.wardRetDone && (P.wardSince ?? 9) < beat) { wardReturn(f, dmg); return 'blocked'; }
-    if (P.warding) { wardStop(dmg, fromX); return 'blocked'; }
+    if (P.warding) { trialEvent('ward'); wardStop(dmg, fromX); return 'blocked'; }   /* (his trial's C step, REAPER_C in trialYard: a blow taken ON the ward, not any blow that finds him) */
   }
   const front = Math.sign(fromX - P.x) === P.face || fromX === P.x;
   if (isPirate() && P.parryW > 0 && front && !unblockable) {
@@ -9607,7 +9607,7 @@ function updateRoadman(e, dt) {
         if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.22; SFX.slash(); e.vx = e.face * 70;
           if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) {
             const res = damagePlayer(e.x, DMG.swornCut);
-            const beat = L.trial && palOpened(res); if (beat) trialEvent('flash'); else if (L.trial && res === 'blocked') trialSay('TOO EARLY: RAISE IT AS IT FLASHES', '#ff9a5c');
+            const beat = L.trial && palOpened(res); if (beat) trialEvent('flash'); else if (L.trial && res === 'blocked') trialSay(isReaper() ? 'ONLY WARDED: ROLL AS IT FLASHES' : 'TOO EARLY: RAISE IT AS IT FLASHES', '#ff9a5c');   /* the Death Knight's beat is his roll: a ward only stops it */
             if (answered(res) || beat) { e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.cd = 1.6; e.vx = -e.face * 120;
               number(e.x, e.y - e.h - 12, 'OPEN', '#8fd160'); SFX.clank(); }
             else if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.1; e.vx = -e.face * 40; } }
