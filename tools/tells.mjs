@@ -62,7 +62,9 @@ const THROWS_SOMETHING_ELSE = new Set(['updateForgemaster|hurlTell', 'updateForg
   'updateGQueen|chandTell',         // the chandelier: a crush
   'updateGrandmother|throwTell',   // her sticks fly noBlock
   'updateHillTroll|ripTell',       // a crane stone, rolled along the floor: no shield turns it
-  'updateHerald|raise']);          // THE TIDE HERALD'S WAVE: heraldWave crosses the square on its own, unblockable
+  'updateHerald|raise',
+  'updateStrawKing|baleTell',      // THE SCARECROW KING'S BALE rolls along the floor on its own, unblockable
+  'updateStrawKing|lanternTell']); // his lantern, thrown: fire on landing, unblockable          // THE TIDE HERALD'S WAVE: heraldWave crosses the square on its own, unblockable
 // THE QUIET WINDUPS. A tell that throws NO blow at all - she listens, he calls, the square floods - wears no
 // mark: a mark is a promise about your shield, and there is nothing here for the shield to do.
 const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|darkTell', 'updateLampreeve|snuffTell',
@@ -71,7 +73,9 @@ const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|dark
   'updateGrandmother|listenTell', 'updateGrandmother|vanishTell', 'updateLance|galeTell', 'updateSnuffer|snuffTell',
   'updateMaster|whistleTell', 'updateWhipper|whistleTell',   // the whistle throws no blow: the dogs it calls bite for themselves
   'updatePrince|callTell',          // the Buried Prince calls his court: the courtiers rake for themselves, on their own yellow marks
-  'updateRam|callTell']);           // the Ram Lord calls the flock: the goats run for themselves
+  'updateRam|callTell',
+  'updateStrawKing|callTell',      // the Scarecrow King calls the rooks: each marks its own dive
+  'updateStrawKing|lightTell']);   // he lights the field: the fire is on the floor, and it throws no blow           // the Ram Lord calls the flock: the goats run for themselves
 const unblockable = key => {
   if (THROWS_SOMETHING_ELSE.has(key)) return true;
   const fn = key.split('|')[0];
