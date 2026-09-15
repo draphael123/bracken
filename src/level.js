@@ -2682,8 +2682,8 @@ function theDeep() {
 // ============================================================================================
 // LEVEL 11 - HIGHCROWN, the Goblin Queen's castle.
 // Stormhold's long bridge ends at her drawbridge. Everything the goblins have left is in here: the
-// Outer Ward under the walls, the Keep climbed floor by floor - the entrance hall, the kitchens, the
-// armoury where her smith works, the chapel - and at the top her hall, her throne, and her roof.
+// Outer Ward under the walls, her smith's armoury out in the bailey, the Keep climbed floor by floor - the entrance
+// hall, the kitchens, her throne gallery, the chapel - and at the top her apartments, her hall, her throne, and her roof.
 // THE ALARM: every section has a sentry and a bell. Seen, he runs for it; rung, the gates of that hall
 // drop and the garrison turns out, and they lift only when the garrison is down. Catch him first.
 // THE WINCHES: a struck winch holds its portcullis up for a few seconds; a cut counterweight falls.
@@ -2728,7 +2728,7 @@ function highcrown() {
   ent('check', 106, 63);
   // the keep door: a second winch
   port(121, 58, 63); ent('winch', 116, 63, { gate: 121, gy0: 58, gy1: 63, hold: 5 });
-  ent('sign', 110, 63, { text: 'THE KEEP: HALL, KITCHENS, ARMOURY, CHAPEL, AND HER HALL AT THE TOP.' });
+  ent('sign', 110, 63, { text: 'THE KEEP: HALL, KITCHENS, HER GALLERY, CHAPEL, AND HER ROOMS AT THE TOP.' });
   ent('archer', 108, 43, { face: -1 }); plat(106, 44, 6);
   coins([40, 60], [44, 60], [52, 63], [88, 63], [98, 60], [112, 63]);
 
@@ -2754,30 +2754,32 @@ function highcrown() {
   ent('folk', 180, 51, { door: 206 }); ent('folk', 156, 51, { door: 124, alt: true });
   ent('brute', 160, 51, { face: 1 }); plat(157, 43, 6); ent('weight', 160, 43, { len: 6 }); // the meat hook's counterweight, over the cook's brute
   stair([[184, 50, 3], [180, 48, 3], [175, 46, 4]]); ent('stray', 176, 45, { kind: 'seal' }); // the larder's high shelf
-  air(125, 128, 40, 41); lid(125, 128, 40);    // the stair up to the armoury
+  air(125, 128, 40, 41); lid(125, 128, 40);    // the stair up to her gallery
   stair([[138, 50], [134, 48], [130, 46], [126, 44], [125, 42]]);
   ent('check', 142, 51);
   ent('deco', 128, 51, { kind: 'barrels' }); coins([126, 51], [129, 51], [132, 51]); // the cold larder in the corner
-  ent('sign', 144, 51, { text: 'THE SMITH\'S IRON TURNS HALF A CUT. ROLL A TUB INTO HIM AND HE TAKES IT ALL.' });
+  ent('sign', 144, 51, { text: 'UP THE STAIR IS HER GALLERY. HER KNIGHTS HOLD THE FLOOR, HER BOWS THE BALCONIES.' });
 
-  // F2. THE ARMOURY (floor 40) - THE FORGEMASTER. Rails on the floor, a beam rail over it, the gantry, the anvil, the hammer, the boiler.
-  for (let x = 129; x <= 196; x++) set(x, 40, T.RAIL);
-  ent('cart', 196, 39, { auto: true, dir: -1, speed: 120 }); ent('cart', 132, 39);
-  for (let x = 140; x <= 184; x++) set(x, 35, T.RAIL); ent('cart', 184, 34, { auto: true, dir: -1, speed: 110 });
-  stair([[132, 37, 3], [136, 32, 3], [142, 30, 3], [148, 28, 4], [156, 30, 3], [162, 32, 3], [168, 37, 3]]);
-  ent('silver', 149, 27);
-  ent('hammer', 150, 39); ent('anvil', 158, 39); ent('boiler', 176, 39); ent('hotplate', 144, 39); ent('hotplate', 166, 39); ent('hotplate', 186, 39);
-  for (const x of [130, 150, 172, 194]) ent('torch', x, 39);
-  ent('deco', 138, 39, { kind: 'barrels' });
-  ent('forgemaster', 172, 39, { mini: true });
-  port(199, 26, 39);                            // the armoury door, shut until the smith is down
+  // F2. HER THRONE GALLERY (floor 40). Where her court waited on her: the chair of state on its dais, a balcony at each end for
+  // her bows over a floor her knights hold, and the queens before her on the walls. (This floor was the armoury. The smith and
+  // everything he fights with went out into the bailey, halfway up the castle - see THE ARMOURY in highcrownWhole.)
+  stair([[131, 38, 3], [135, 36, 3]]); plat(139, 34, 20);           // the west balcony, up from the stair head
+  plat(172, 34, 13); stair([[186, 36, 3], [190, 38, 3]]);           // the east balcony, and its steps down to the shaft
+  block(163, 168, 38, 39); ent('deco', 165, 37, { kind: 'throne' }); // her chair of state, between the two
+  ent('deco', 160, 39, { kind: 'idol', v: 0 }); ent('deco', 171, 39, { kind: 'idol', v: 1 });
+  ent('soldier', 146, 39, { face: -1 }); ent('heavy', 156, 39, { face: -1 }); ent('heavy', 176, 39, { face: -1 }); ent('pike', 184, 39, { face: -1 });
+  ent('javelin', 150, 33, { face: -1 }); ent('archer', 178, 33, { face: -1 });
+  for (const x of [130, 152, 174, 196]) ent('torch', x, 39);
+  for (const x of [148, 181]) ent('deco', x, 29, { kind: 'hallWindow' });
+  ent('deco', 142, 39, { kind: 'banner', v: 1 }); ent('deco', 192, 39, { kind: 'banner', v: 0 });
+  coins([142, 33], [146, 33], [176, 33], [180, 33]);
   air(200, 205, 21, 25); lid(200, 205, 20);    // up through the thick floor to the chapel (cut the shaft BEFORE the steps go in it)
   stair([[200, 38, 3], [203, 36, 3], [200, 34, 3], [203, 32, 3], [200, 30, 3], [203, 28, 3], [200, 26, 3], [203, 24, 3], [200, 22, 3]]);
 
   // F3. THE CHAPEL (floor 20) - the bell tower's own bell, two of the watch, the key on the altar
   ent('check', 202, 19);
   port(206, 14, 19); ent('lockgate', 206, 19, { needs: 'brass', h: 6 });
-  ent('sign', 198, 19, { text: 'THE CHAPEL. THE KEY TO HER HALL IS ON THE ALTAR. THIS BELL IS THE LOUDEST.' });
+  ent('sign', 198, 19, { text: 'THE CHAPEL. THE KEY TO HER ROOMS IS ON THE ALTAR. THIS BELL IS THE LOUDEST.' });
   ent('sentry', 186, 19, { section: 'chapel', range: 10, face: -1 }); ent('sentry', 166, 19, { section: 'chapel', range: 6, face: 1 });
   ent('bell', 176, 19, { section: 'chapel' });
   for (const x of [134, 154, 178, 196]) ent('torch', x, 19);
@@ -2812,29 +2814,24 @@ function highcrown() {
 
   // FOUR FLOORS, FOUR ROOMS. The whole keep was drawn with her throne room's wall, so you came up out of the
   // armoury into what looked like her hall and the Queen seemed to be standing right behind the smith. Each
-  // floor wears its own room now, and hers is the only royal one in the castle.
-  const interiors = [[124, 206, 54, 63, 'guard'], [124, 206, 42, 53, 'kitchen'], [124, 206, 26, 41, 'forge'],
+  // floor wears its own room now. (The armoury's iron went out to the bailey with him; this floor hangs her queens.)
+  const interiors = [[124, 206, 54, 63, 'guard'], [124, 206, 42, 53, 'kitchen'], [124, 206, 26, 41, 'gallery'],
     [124, 206, 8, 25, 'chapel'], [208, 251, 8, 19, 'royal']];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 1, y: 63 }, pools: [], falls: [], moversExtra: [], interiors,
     reachExact: true, // the carts are the Forgemaster's props, not a way around the castle
-    duskStart: -1, duskLen: 1, music: 'highcrown', night: true, glowNight: true, nightA: 0.3,
+    duskStart: -1, duskLen: 1, music: 'highcrown', night: true, glowNight: true, nightA: 0.3,   /* (L.mini is laid with his armoury, in highcrownWhole) */
     quest: { n: 3, item: 'seal', name: 'ROYAL SEALS', npc: 'squire', done: 'HER ORDERS MEAN NOTHING NOW', reward: 'relic', relic: 'banner' },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'beam', haze: 'rgba(150,140,190,0.14)',   /* three hundred ledges inside a castle, and every one of them was a log off the forest floor */
       grass: '#8a8a98', grassL: '#a8a8b8', grassD: '#5a5a66', dirt: '#4a4a58', dirtL: '#5e5e6c', dirtD: '#32323c',
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
-
-    /* THE BEAM RAIL over the armoury floor is his second storey: he leaps to it, pours off it, and drops
-       off it. Without these three numbers the whole upper half of the fight is simply off. */
-    mini: { x0: 126 * TS, x1: 198 * TS, floor: 40 * TS, trigger: 134 * TS, wallL: 125, gate: 199, boss: 'forgemaster', y0: 26 * TS, y1: 41 * TS, slag: [140 * TS + 8, 158 * TS + 8, 180 * TS + 8],
-      beam: 35 * TS, beamL: 142 * TS, beamR: 182 * TS },
     arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
       roof: 8 * TS, gallery: { row: 14, x0: 213, x1: 236 }, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
   };
 }
 
-// the castle's own second pass (a watch in the ward, THE LEADS over the keep, the armoury gantry's ledges), written
+// the castle's own second pass (a watch in the ward, the walk over the keep roof, the far corners paid), written
 // against the castle before it grew: it runs first, then the Scaffolds and the mountain road are opened around it
 const crownReview = L => { const R = rv(L); R.ent('check', 62, 63);
     for (const [t, x, y, f] of [['soldier', 40, 63, -1], ['javelin', 76, 63, 1], ['heavy', 110, 63, -1], ['soldier', 140, 63, 1], ['javelin', 166, 63, -1], ['soldier', 190, 63, -1], ['hearthgob', 150, 51, 1], ['hearthgob', 186, 51, -1], ['javelin', 150, 19, 1]]) R.ent(t, x, y, { face: f });
@@ -2843,8 +2840,7 @@ const crownReview = L => { const R = rv(L); R.ent('check', 62, 63);
     for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
     R.ent('sign', 156, 7, { text: 'THE LEADS. THE HATCH AT THE FAR END DROPS YOU INTO THE CHAPEL: DOWN AND JUMP.' });
     R.ent('deco', 170, 7, { kind: 'banner', v: 1 }); R.ent('deco', 182, 7, { kind: 'barrels' });
-    // the armoury gantry's silver had no way up to it: ledges from the floor to the gantry, two rows at a time
-    R.plat(129, 38, 3); R.plat(132, 36, 3); R.plat(134, 34, 2); R.plat(139, 31, 2); R.plat(146, 29, 2);
+    // (the armoury gantry's ledges went out to the bailey with the armoury: they are laid in THE ARMOURY, below)
     // the far corner of the entrance hall past the stair, and the leads past the second hatch: something at the end of each
     R.coin(200, 63); R.coin(204, 63); R.ent('deco', 202, 63, { kind: 'spearRack' }); R.coin(200, 7); R.coin(203, 7); R.coin(205, 7); };
 
@@ -3094,11 +3090,85 @@ function highcrownWhole() {
     rungs(X + 15, 61, 65); rungs(X + 45, 57, 61); rungs(X + 72, 46, 63);      // LADDERS LAST: nothing is dug in the ditch after these (the last a scaling ladder up the bastion, to the archer on it)
     R = D.done(); }
 
+  // ---- HER APARTMENTS: THE BANQUET HALL AND THE LEADS (opened at column 638, eighty wide: final 722-801) ----
+  // The keep's top door used to open straight into her Great Hall, so the Queen stood one room past the smith. Between them now: her
+  // banquet hall, three steps down from the chapel door, a vault sixteen rows high with the tables laid and the chandeliers on long
+  // chains (the castle's rule: cut one down on whoever is under it); then out of its far door onto THE LEADS - a chimney stack up a
+  // ladder, a gutter, the bell turret with its sentry, and down onto the terrace at her doors. The bell on the turret is a real one:
+  // rung, it drops a gate off the turret and turns out the watch, and the gate lifts when they are down.
+  { const X = 638, Q = grow(R, R, X, 80); shiftCrown(Q.R, X, 80);
+    const { block, plat, ent, coins } = Q, rungs = rungsAt(Q);
+    block(X, X + 79, 26, BOT);                                                 // the castle's mass under all of it
+    block(X, X + 1, 20, 25); block(X + 2, X + 3, 22, 25); block(X + 4, X + 5, 24, 25);   // the chapel door's landing, and three steps down into the hall
+    block(X, X + 43, 8, 9); block(X + 42, X + 43, 10, 19);                   // the hall's roof, and its east wall over the door to the leads
+    block(X + 32, X + 39, 24, 25);                                             // the high table's dais
+    ent('sign', X + 1, 19, { text: 'HER BANQUET HALL. CUT A CHANDELIER DOWN ON WHOEVER IS UNDER IT.' });
+    ent('deco', X + 12, 25, { kind: 'longTable', v: 0 }); ent('deco', X + 23, 25, { kind: 'longTable', v: 1 });
+    ent('deco', X + 34, 23, { kind: 'candelabra' }); ent('deco', X + 38, 23, { kind: 'candelabra' }); ent('deco', X + 8, 25, { kind: 'caskRack' });
+    for (const x of [X + 14, X + 25]) ent('weight', x, 10, { len: 12, lamp: true, hang: true });   /* hung to a jump's cut over the floor (row 22): a lamp on the dais would be at the head of anyone stood on it */
+    ent('soldier', X + 14, 25, { face: -1 }); ent('hearthgob', X + 19, 25, { face: -1 }); ent('heavy', X + 25, 25, { face: -1 }); ent('javelin', X + 38, 23, { face: -1 });
+    ent('torch', X + 7, 25); ent('torch', X + 30, 25); ent('torch', X + 41, 25);
+    coins([X + 33, 23], [X + 37, 23], [X + 39, 23]);
+    // THE LEADS, out in the wind
+    block(X + 50, X + 53, 16, 25);                                             // a chimney stack, with a ladder up its face
+    plat(X + 56, 14, 3);                                                       // a lead gutter
+    block(X + 61, X + 69, 12, 25);                                             // the bell turret
+    block(X + 70, X + 72, 16, 25); block(X + 73, X + 79, 20, 25);             // a buttress down off it, and the terrace at her doors
+    block(X + 78, X + 79, 2, 13);                                              // the door-tower over the Great Hall's doors (her arena's west wall shuts in them)
+    ent('sign', X + 45, 25, { text: 'THE LEADS. A SENTRY WATCHES FROM THE BELL TURRET: GET TO HIM BEFORE HE RINGS.' });
+    ent('sentry', X + 69, 11, { section: 'leads', range: 1, face: -1 }); ent('bell', X + 68, 11, { section: 'leads' });   /* at the turret's far end, three tiles past anywhere a jump puts you down on it: seen, he has a step to run, not a whole roof */
+    ent('check', X + 74, 19); ent('torch', X + 76, 19);
+    ent('deco', X + 62, 11, { kind: 'gobPennant', v: 1 }); ent('deco', X + 71, 15, { kind: 'warStandard', v: 0 });
+    coins([X + 49, 13], [X + 57, 12], [X + 59, 11], [X + 64, 10]);
+    Q.R.alarms = (Q.R.alarms || []).concat([{ id: 'leads', gates: [[X + 70, 10, 15]], garrison: [{ t: 'soldier', x: X + 63, y: 11 }, { t: 'heavy', x: X + 67, y: 11 }, { t: 'javelin', x: X + 51, y: 15 }] }]);
+    Q.R.arena = { ...Q.R.arena, wallL: X + 79 };                               /* grow() leaves a wall column left of the cut where it was: her west wall is the door-tower now, not the keep's */
+    Q.R.interiors = Q.R.interiors.concat([[X, X + 41, 10, 25, 'royal']]);
+    Q.R.masonry = Q.R.masonry.concat([[X, X + 79, 0, 63]]);
+    Q.R.facades = Q.R.facades.concat([[X + 61, X + 69, 3, 11, 'tower', { roof: true }], [X + 78, X + 79, 0, 19, 'tower', { arch: [14, 19], lit: false }]]);
+    /* the lead flat between the stack and the turret is a pit if you miss the gutter: a second ladder takes you back up the stack to try it again */
+    rungs(X + 49, 16, 25); rungs(X + 54, 16, 25);                              // LADDERS LAST: nothing is dug on the leads after these
+    R = Q.done(); }
+
+  // ---- THE ARMOURY (opened at column 464, eighty-four wide: final 464-547) ----
+  // THE FORGEMASTER was the last room of the keep, one door from the Queen, and the level's two big fights stood back to back in its
+  // last tenth. His armoury is out in the bailey now, halfway up: past the scaffold bank a stone forge-house stands on the ward's own
+  // ground, and the gate he holds lets you out into the bakehouse yard. Inside it is the room he had on the keep's second floor,
+  // column for column - rails, beam rail, gantry, hammer, anvil, boiler, plates and the slag spots - twenty-four rows lower.
+  { const X = 464, F = grow(R, R, X, 84); shiftCrown(F.R, X, 84);
+    const { block, plat, ent, set } = F;
+    const c = x => X - 120 + x;                                                /* c(): a column of the keep's old armoury (its wall 125 to its door 199) in this room */
+    block(X, X + 83, 64, BOT);                                                 // the bailey's ground, under the forge-house and either side of it
+    block(X + 4, X + 81, 46, 49); block(X + 4, X + 5, 50, 57); block(X + 80, X + 81, 50, 57);   // its roof, and its end walls over the two doors
+    block(X + 54, X + 57, 40, 45);                                             // the forge chimney
+    for (let x = c(129); x <= c(196); x++) set(x, 64, T.RAIL);
+    ent('cart', c(196), 63, { auto: true, dir: -1, speed: 120 }); ent('cart', c(132), 63);
+    for (let x = c(140); x <= c(184); x++) set(x, 59, T.RAIL); ent('cart', c(184), 58, { auto: true, dir: -1, speed: 110 });
+    for (const [x, y, n] of [[132, 61, 3], [136, 56, 3], [142, 54, 3], [148, 52, 4], [156, 54, 3], [162, 56, 3], [168, 61, 3]]) plat(c(x), y, n);
+    for (const [x, y, n] of [[129, 62, 3], [132, 60, 3], [134, 58, 2], [139, 55, 2], [146, 53, 2]]) plat(c(x), y, n);   // the gantry's silver had no way up to it: ledges from the floor, two rows at a time
+    ent('silver', c(149), 51);
+    ent('hammer', c(150), 63); ent('anvil', c(158), 63); ent('boiler', c(176), 63); for (const x of [144, 166, 186]) ent('hotplate', c(x), 63);
+    for (const x of [130, 150, 172, 194]) ent('torch', c(x), 63);
+    ent('deco', c(138), 63, { kind: 'barrels' });
+    ent('forgemaster', c(172), 63, { mini: true });
+    for (let y = 50; y <= 63; y++) set(c(199), y, T.PORT);                    // his gate onto the bakehouse yard, shut until the smith is down
+    ent('check', X + 1, 63); ent('sign', X + 2, 63, { text: 'THE ARMOURY. THE SMITH\'S IRON TURNS HALF A CUT. ROLL A TUB INTO HIM AND HE TAKES IT ALL.' });
+    ent('torch', X + 82, 63);
+    /* THE BEAM RAIL over the armoury floor is his second storey: he leaps to it, pours off it, and drops off it. Written here, in the
+       columns he fights in, and laid last of all the grows, so nothing after it has to carry beamL/beamR or the slag across a cut. */
+    F.R.mini = { x0: c(126) * TS, x1: c(198) * TS, floor: 64 * TS, trigger: c(134) * TS, wallL: c(125), gate: c(199), boss: 'forgemaster', y0: 50 * TS, y1: 65 * TS,
+      slag: [c(140) * TS + 8, c(158) * TS + 8, c(180) * TS + 8], beam: 59 * TS, beamL: c(142) * TS, beamR: c(182) * TS };
+    F.R.interiors = F.R.interiors.concat([[X + 6, X + 79, 50, 65, 'forge']]);
+    F.R.masonry = F.R.masonry.concat([[X + 4, X + 81, 46, 49], [X + 4, X + 5, 50, 57], [X + 80, X + 81, 50, 57], [X + 54, X + 57, 40, 45]]);
+    R = F.done(); }
+
   R.palette = Object.assign({}, R.palette, { mid: 'crown' });   /* her walls climbing the far shoulders, where the crags' bare ridge was */
   R.bgSpan = 200;                                                /* a hundred rows tall: the ridges ride behind every storey, not only the road at the bottom */
-  R.tints = [[112, 191, [255, 120, 50], 0.10], [464, 533, [255, 110, 40], 0.12]];   /* the light of the two fires on everything near them */
-  // the snow and the wind stop at the bakehouse yard: it is inside the walls, and it is on fire
-  R.weather = [{ x0: 0, x1: 464 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 464 * TS, kind: 'wind' }];
+  R.tints = [[112, 191, [255, 120, 50], 0.10], [548, 617, [255, 110, 40], 0.12], [722, 763, [255, 190, 120], 0.06], [766, 801, [150, 170, 230], 0.08]];   /* the light of the two fires on everything near them; the candles in her banquet hall, and the cold on the leads */
+  /* NOBODY ON A ROOF NOBODY CAN CLIMB. The garrison sprinkler takes the highest floor in a column, and the forge-house roof and the
+     banquet hall's are the highest floors there are: it stood a soldier and a pike up on the armoury's slates, out of everyone's reach. */
+  R.calm = (R.calm || []).concat([[468, 545, 36, 49], [722, 765, 0, 9], [783, 791, 8, 12]]);   /* (and the bell turret's top is the sentry's alone: you land on it) */
+  // the snow and the wind stop at the forge-house wall: past it is inside the walls, and on fire. They come back on the leads.
+  R.weather = [{ x0: 0, x1: 468 * TS, kind: 'snow' }, { x0: 766 * TS, x1: 802 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 468 * TS, kind: 'wind' }, { x0: 766 * TS, x1: 802 * TS, kind: 'wind' }];
   return R;
 }
 
@@ -6994,7 +7064,7 @@ const GOBLIN_CAMP = {
   stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
   kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 384, 16, 0, true], ['skullTotem', 449, 13, 0], ['warStandard', 458, 13, 1], ['lootHeap', 588, 13, 1], ['idol', 606, 13, 0]],
   storm: [['warnPost', 86, 33, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['boneChime', 192, 19, 1, true], ['gobPennant', 200, 31, 1], ['cookSpit', 229, 29], ['cauldron', 287, 29]],
-  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 560, 7, 3], ['ragBanner', 592, 7, 2], ['cauldron', 582, 63], ['boneChime', 588, 54, 0, true], ['trophyRack', 586, 51, 1], ['skullTotem', 621, 51, 0], ['clothStrip', 600, 10, 3, true], ['warStandard', 614, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it */
+  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 644, 7, 3], ['ragBanner', 676, 7, 2], ['cauldron', 666, 63], ['boneChime', 672, 54, 0, true], ['trophyRack', 670, 51, 1], ['skullTotem', 705, 51, 0], ['clothStrip', 684, 10, 3, true], ['warStandard', 698, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
   underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 325, 33], ['lootHeap', 376, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
