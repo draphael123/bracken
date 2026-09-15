@@ -7145,6 +7145,9 @@ const ELITES = {
   lamplit: [['watch', 595, 21]],
   deep: [['watch', 30, 27, { gate: 41 }]],
   causeway: [['tideguard', 66, 23, { gate: 79 }]],
+  waymeet: [['hedgeknight', 465, 35], ['heavy', 548, 35]],
+  fields: [['scarecrow', 230, 33]],
+  mage: [['armour', 408, 39]],
 };
 /* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
    near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,
