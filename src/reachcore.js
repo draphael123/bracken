@@ -30,6 +30,11 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   for (const e of (L.ents || [])) {
     if (e.t === 'cannon' && e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; }
     if (e.t === 'plank' && e.span) { for (let x = e.span[0]; x <= e.span[1]; x++) { const i = e.row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
+    /* THE MONASTERY'S BELLS: one blow brings a tower's bridge down, and it stays down - a bell is a plank that rings */
+    if (e.t === 'tbell' && e.span) { const [x0, x1, row] = e.span; for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; } }
+    /* ITS PRAYER WHEELS: struck from their own floor, a wheel's stair stands either way, so the full fill has both at once. The
+       plain fill has the stair as it was built and nothing else: a climb that needs it turned is a climb on the --plain list */
+    if (e.t === 'pwheel' && !plain) for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
   }
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
@@ -40,7 +45,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const vents = (L.ents || []).filter(e => e.t === 'vent');
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
   // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
-  const lifts = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'lift' || m.kind === 'growcap' || (m.kind === 'hexvine' && !opts.fairVines)).map(m => ({ kind: m.kind + (m.group ? ' ' + m.group : ''), x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
+  const lifts = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'lift' || m.kind === 'growcap' || (m.kind === 'hexvine' && !opts.fairVines)).map(m => m.cwBand ? { kind: 'counterweight', ...m.cwBand }   /* A COUNTERWEIGHT PAIR is one ride: board either basket, get off the other anywhere from the top of its rise to the foot of its fall */
+    : ({ kind: m.kind + (m.group ? ' ' + m.group : ''), x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
   /* THE OTHER RIDES. A platform mover (ent 'mover': a run of `range` tiles, or a rise of `rise` tiles when vertical) and
      a ferry raft (x0..x1 along one row) are a band of footing: step on anywhere along the run, step off anywhere along it.
      They were why a third of the rivers and decks came back ASSISTED with their silver in doubt. */
