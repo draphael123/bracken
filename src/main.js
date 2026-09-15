@@ -220,6 +220,20 @@ const HEROES = [
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. the dead take double' },
 ];
+/* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
+   not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
+   guard (the shield raised as the blow lands) opens the foe, and a doubled RIPOSTE on the next swing is a talent; the
+   pyromancer's heat is her FIRE's damage (heatDmg) and not the staff's, and a full bar BANKS into THE PYRE (it stopped
+   overheating her); the paladin's aegis roots him until MOVING FORTRESS is taken, so it is a wall he plants; the pistol
+   is reloaded by gold picked up (reloadPistol); the ward and the nova are DK_KEYS in fewer words. Two lines of forty-five
+   at size 6: that is the hero card's plate (270 px, six a character), and the pick screen is wider. */
+const HERO_LOOP = {
+  knight: 'THE SHIELD TURNS YELLOW BLOWS; A PERFECT TURN OPENS HIM. THREE CUTS, THE THIRD HARDEST.',
+  pyro: 'HEAT IS HER FIRE: THE HOTTER SHE RUNS, THE HARDER IT BURNS. A FULL BAR IS THE PYRE.',
+  paladin: 'A BLOW GIVEN OR TURNED IS LIGHT; JUDGEMENT SPENDS IT. THE AEGIS IS A PLANTED WALL.',
+  pirate: 'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\'S GOLD IS HIS POWDER.',
+  reaper: 'THE WARD STOPS BLOWS AND FILLS; LET GO OF IT AND THE NOVA IS AS BIG AS WHAT IT HELD.',
+};
 const TRAINING = [
   { id: 'vigour', name: 'VIGOUR', per: '+10 health a rank', max: 5, prices: [40, 60, 90, 130, 180] },
   { id: 'breath', name: 'BREATH', per: '+10 stamina a rank', max: 5, prices: [40, 60, 90, 130, 180] },
@@ -2854,10 +2868,13 @@ function drawHeroPick() {
     g.globalAlpha = 1;
     text({ knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT' }[h] || H.name, x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6);
   });
-  // and the words, for the one you are looking at, where there is room for them
-  { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 16;
+  // and the words, for the one you are looking at, where there is room for them: the name, THE LOOP under it (HERO_LOOP,
+  // the one sentence that is how this hero is played, where a player looks first), then the stats under that. A row of
+  // the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
+  { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 13;
     text(H.name, VW / 2, y0, UI.title, 'center');
-    LINES[h].forEach((ln, i) => text(ln, VW / 2, y0 + 12 + i * 9, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6)); }
+    const loop = wrap(HERO_LOOP[h], VW - 24, 6); loop.forEach((ln, i) => text(ln, VW / 2, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
+    LINES[h].forEach((ln, i) => text(ln, VW / 2, y0 + 12 + (loop.length + i) * BODY_LH, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6)); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('the other four are 15 silver each, later', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
@@ -15957,18 +15974,21 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
   const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, UI.title, 'center');
+  text('ESC back', x + 8, y + 6, UI.dim, 'left', 6);   /* up in the header: the loop under the name took the foot's tenth row */
+  /* THE LOOP (HERO_LOOP) under the name, two lines of the small hand; the rows start under it */
+  const loop = wrap(HERO_LOOP[hero()] || '', w - 10, 6); loop.forEach((ln, i) => text(ln, VW / 2, y + 15 + i * BODY_LH, UI.text, 'center', 6));
+  const rowY = y + 15 + loop.length * BODY_LH + 1;
   drawSet(K, 'idle', Math.floor(time * 4.5), x + 30, y + 52, 1, false);
   const nameOfSkill = id => { if (!id) return 'NONE'; if (id === 'raiseDead') return 'RAISE DEAD'; const n = TREE.find(q => q.id === id && q.hero === hero()); return n ? n.name : ((ABILITIES.find(a => a.id === id) || {}).name || 'NONE'); };
   const skName = nameOfSkill(skillNow()), sk2Name = skillsOwned().length > (isReaper() ? 0 : 1) ? nameOfSkill(skill2Now()) : 'LOCKED';
   const ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
-  const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold', String(PROG.coins)], ['silver', silverAvail() + ' spare']];
-  rows.forEach(([a, b], i) => { const yy = y + 18 + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
+  const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
+  rows.forEach(([a, b], i) => { const yy = rowY + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
   { const tr = 'level ' + heroLevel() + '   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
-    text(tr, VW / 2, y + h - 40, '#8fd160', 'center', 6);
-    text('T  TALENTS AND WHAT IS ON F AND G', VW / 2, y + h - 30, UI.gold, 'center', 6);
-    text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 20, UI.sel, 'center', 6); }
-  text('ESC back', VW / 2, y + h - 10, UI.dim, 'center', 6);
+    text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
+    text('T  TALENTS AND WHAT IS ON F AND G', VW / 2, y + h - 24, UI.gold, 'center', 6);
+    text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
 }
 let practiceI = 0;
 const YARD_DRILLS = {
