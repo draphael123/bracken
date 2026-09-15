@@ -5760,9 +5760,18 @@ function theDrownedCauseway() {
   sign(76, R - 1, 'THE FLATS HAVE ARMS IN THEM. THE MUD STIRS BEFORE ONE COMES UP.');
   /* THE FIRST DIP: the road sags into the flats here, and it is the first stretch the sea covers */
   block(79, 80, 26, H - 1); block(81, 94, 28, H - 1); block(95, 96, 26, H - 1);
-  ent('feeler', 88, 27); ent('crab', 84, 27, { face: -1 });
-  coins([82, 26], [86, 26], [92, 26]);
-  road(97, 120); ent('check', 100, R - 1); deco('waystone', 108, R - 1);
+  /* THE FISHERS' HAMLET, on stilts over the dip: a boardwalk over the high water, ladders down the stilts to the flats, a boat moored
+     between the stilts that the flood lifts to the boards, and the fishwife who has watched the tide come in for forty years */
+  for (let x = 83; x <= 92; x++) set(x, 18, T.PLANK);
+  net(82, 82, 18, 27); net(93, 93, 18, 27);
+  ent('mover', 86, 28, { len: 3, vert: true, rise: 8, tide: true });   /* THE BOAT: on the mud at low water, up at the boards at high */
+  deco('fishCottage', 89, 17); deco('netPoles', 84, 17); deco('fishTrap', 92, 17, { v: 1 });
+  ent('npc', 86, 17, { kind: 'shepherd', name: 'THE FISHWIFE', lines: ['THREE BELLS, THEN THE FOAM, THEN THE SEA. TWICE A MINUTE ON THIS ROAD, AND THE SAME WAY EVERY TIME.',
+    'MY BOAT SITS IN THE MUD AT LOW WATER AND RIDES UP TO MY DOOR AT HIGH. ANYTHING MOORED ON THIS ROAD DOES THE SAME. USE THEM.',
+    'PAST THE WRECKS THE SEA RUNS OUT UNDER THE OLD ARCH WHEN IT FALLS. IT WILL CARRY A SWIMMER THROUGH, IF THE SWIMMER LETS IT.'] });
+  ent('feeler', 90, 27); coins([83, 26], [92, 26], [86, 15], [90, 15]);
+  road(97, 120); ent('check', 100, R - 1); deco('waystone', 110, R - 1);
+  deco('fishCottage', 104, R - 1, { v: 1 }); deco('barrels', 98, R - 1);   /* the smokehouse on the road end of the hamlet: its chimney smokes (causeLife) */
   ent('sailor', 112, R - 1, { face: -1 }); ent('petrel', 104, 14); ent('scout', 118, R - 1, { face: -1 });
   /* THE STONES. At low water a line of them across the channel; at high water the channel is a swim */
   block(121, 122, 26, 39); block(145, 146, 26, 39);
@@ -5770,6 +5779,7 @@ function theDrownedCauseway() {
   net(123, 123, 26, 34); net(143, 143, 26, 34);   /* a jump out of the sea does not clear three courses: rungs up the banks, for a fall at low water */
   sign(119, R - 1, 'AT LOW WATER THE STONES ARE A ROAD. AT HIGH WATER, SWIM IT, AND WATCH THE URCHINS.');
   ent('urchin', 127, 36); ent('urchin', 139, 35); ent('eel', 131, 37);
+  ent('mover', 129, 28, { len: 2, vert: true, rise: 8, tide: true });   /* A RAFT moored on the second stone: a dry deck over the urchins at high water (not on the pilgrim's stone) */
   coins([126, 27], [130, 27], [134, 27], [138, 27], [142, 27]);
   ent('stray', 134, 27, { kind: 'fisher' });
   road(147, 160); ent('feeler', 152, R - 1); ent('crab', 157, R - 1, { face: -1 });
@@ -5846,25 +5856,49 @@ function theDrownedCauseway() {
   block(417, 418, 28, 39); block(419, 420, 26, 39);   /* up off the flats onto the spans, two rows a step */
   road(421, 432); road(439, 450); road(458, 470); road(477, 510);
   for (const [a, b] of [[433, 438], [451, 457], [471, 476]]) { net(a, a, R + 1, 32); net(b, b, R + 1, 32); }   /* rungs up the pier faces, for a fall at low water */
+  /* THE SEA ARCH: the span between the first two breaks is hollow under the water, and when the tide falls the sea runs out through it to
+     the open water (causeCurrents). A grotto in its roof keeps a bell of air and what the sea washed into it */
+  air(439, 450, 32, 36); air(443, 447, 27, 30); air(444, 445, 31, 31); deco('airBell', 446, 30); ent('mend', 444, 29);   /* (a sea chest would not fit under the grotto's roof: the pixels check saw it run into the rock) */
+  /* THE SEAL ROCK in the last break: dry at low water, where the seals lie; under ten rows of sea at high */
+  block(472, 475, 30, 39);
   ent('check', 424, R - 1);
   sign(426, R - 1, 'THE SPANS ARE DOWN. JUMP THEM AT LOW WATER, SWIM THEM AT HIGH. THE TOWER BELL TURNS IT.');
   block(462, 466, RH, 23); bell(464, RH - 1);
   net(461, 461, RH, 23);
   ent('petrel', 466, 12); ent('petrel', 446, 12); ent('petrel', 486, 10);
-  ent('feeler', 444, R - 1); ent('feeler', 482, R - 1); ent('crab', 448, R - 1, { face: -1 }); ent('tideguard', 492, R - 1, { face: -1 }); ent('scout', 468, RH - 1, { face: -1 });
-  ent('eel', 454, 36); ent('eel', 474, 36); ent('urchin', 436, 37);
-  ent('check', 489, R - 1);
-  coins([435, 21], [454, 21], [473, 21], [464, 15], [480, 23], [496, 23], [504, 23]);
-  deco('waystone', 500, R - 1, { v: 1 });
+  ent('feeler', 444, R - 1); ent('feeler', 482, R - 1); ent('crab', 448, R - 1, { face: -1 }); ent('tideguard', 485, R - 1, { face: -1 }); ent('scout', 468, RH - 1, { face: -1 });
+  ent('eel', 454, 36); ent('eel', 436, 34); ent('urchin', 455, 38);
+  /* THE PILGRIMS' WAYSTATION: a holm of old stone in the road that the high water never covers, a driftwood fire, and the three who
+     reached it when the bells rang, waiting for the ones who did not */
+  block(487, 488, 22, 23); block(489, 490, 20, 23); block(491, 505, 19, 23); block(506, 507, 21, 23);
+  deco('tent', 493, 18); ent('brazier', 498, 18); deco('lanternPost', 504, 18); deco('waystone', 501, 18, { v: 1 });
+  ent('check', 499, 18);
+  ent('npc', 495, 18, { kind: 'oldknight', name: 'A PILGRIM', lines: ['WE CAME OUT AT LOW WATER, SIX OF US. THE BELLS RANG AND WE RAN FOR THE HIGH STONE. THREE OF US DID NOT RUN FAST ENOUGH.', 'IF YOU FIND THEM ON THE ROAD, SEND THEM BACK TO THE BOY AT THE SEA WALL. HE CAME ALL THIS WAY FOR US.'] });
+  ent('npc', 502, 18, { kind: 'ferryman', name: 'A PILGRIM', lines: ['THE FIRE IS DRIFTWOOD AND THE DRIFTWOOD IS WRECK. WE DO NOT ASK WHOSE.', 'THE LIGHT PAST HERE IS STILL KEPT. BEYOND THE LIGHT THE SEA STANDS UP AT THE END OF THE ROAD. WE PRAY HERE, AND WE GO NO FURTHER.'] });
+  coins([435, 21], [454, 21], [473, 21], [464, 15], [480, 23], [492, 17], [505, 17]);
 
   // ---------------- 7. THE LAST MILE (x 511-565). The road into the open sea, and the fog. ----------------
   road(511, 565);
-  deco('waystone', 518, R - 1); deco('waystone', 536, R - 1); deco('brokenArch', 528, R - 1); deco('wayShrine', 546, R - 1);
-  sign(514, R - 1, 'THE PILGRIMS NEVER SAW THE ISLAND. SOMETHING CAME UP OUT OF THE SEA FIRST.');
-  ent('sailor', 522, R - 1, { face: -1 }); ent('tideguard', 540, R - 1, { face: -1 }); ent('feeler', 531, R - 1); ent('netter', 550, R - 1, { face: -1 });
-  ent('check', 557, R - 1);
-  sign(553, R - 1, 'THE ROAD GOES OUT INTO THE SEA AND STOPS. THE WATER AT THE END OF IT IS BREATHING.');
-  coins([516, 23], [524, 23], [534, 23], [544, 23]);
+  /* THE BREAKERS: the sea comes over this mile from the end of the road in waves (causeBreakers). The old parapet stones stand along it,
+     and the lee of a stone is where a wave cannot take your feet: the lesson the Kraken's jets ask for at the end of the mile */
+  for (const x of [515, 523, 533, 549, 558]) block(x, x, R - 1, R - 1);
+  deco('waystone', 519, R - 1); deco('brokenArch', 527, R - 1); deco('wayShrine', 553, R - 1);
+  sign(512, R - 1, 'THE SEA BREAKS OVER THE LAST MILE. THE LEE OF A STONE KEEPS YOUR FEET.');
+  /* THE LIGHT: a lighthouse over the road with the road through its foot. Its keeper at the door, its beam turning through the fog, its
+     tender moored to the tower that the flood lifts to the stair door, and the lamp gallery at the top */
+  block(540, 543, 7, 23); air(540, 543, 21, 23);
+  for (let x = 537; x <= 546; x++) set(x, 7, T.PLANK);   /* the lamp gallery round the top */
+  for (let x = 544; x <= 545; x++) set(x, 18, T.PLANK);   /* the stair door, on the sea side, over the high water */
+  net(544, 544, 8, 17);
+  ent('mover', 546, R, { len: 2, vert: true, rise: 4, tide: true });   /* THE TENDER: it lies on the road at low water and floats up to the stair door at high */
+  ent('npc', 537, R - 1, { kind: 'lamplighter', name: 'THE KEEPER OF THE LIGHT', lines: ['THE LIGHT IS FOR SHIPS. THERE HAVE BEEN NO SHIPS IN TEN YEARS. I KEEP IT FOR WHATEVER IS OUT THERE, SO I SEE IT COMING.',
+    'THE SEA BREAKS OVER THIS MILE FROM THE END OF THE ROAD. A WAVE CANNOT TOUCH WHAT STANDS IN THE LEE OF A STONE. REMEMBER THAT AT THE END.',
+    'MY TENDER RIDES UP TO THE STAIR DOOR AT HIGH WATER, AND THE STAIR GOES UP TO THE LAMP. THE VIEW FROM THE TOP IS NOT ONE I RECOMMEND.'] });
+  coins([538, 6], [545, 6], [546, 6]);
+  ent('sailor', 521, R - 1, { face: -1 }); ent('tideguard', 530, R - 1, { face: -1 }); ent('feeler', 536, R - 1); ent('netter', 555, R - 1, { face: -1 });
+  ent('check', 561, R - 1);
+  sign(551, R - 1, 'THE ROAD GOES OUT INTO THE SEA AND STOPS. THE WATER AT THE END OF IT IS BREATHING.');
+  coins([517, 23], [525, 23], [547, 23], [556, 23]);
 
   // ---------------- 8. THE KRAKEN'S REACH (x 566-609). The end of the road, and what lives off the end of it. ----------------
   block(566, 609, R, R + 1); for (let x = 567; x < 609; x += 8) block(x, x + 1, R + 2, 39);
@@ -5886,6 +5920,16 @@ function theDrownedCauseway() {
     pools: [tideSea, { x0: 566 * TS, x1: 610 * TS, y: 26 * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.66, arenaTide: true, krakenSea: true }],
     causeTide: { low: 16, warn: 4, rise: 3, high: 14, ebb: 2, fall: 3.5, first: 12 },
     leviathan: { arena: 566 * TS },
+    /* THE SEA AS A TOOLBOX (src/main.js, the causeway block). In tiles. CURRENTS run in a box of water by the phase of the tide (px/s,
+       + is seaward): the flood across the dip, the ebb over the stones, and the fall out through the sea arch. The BREAKERS come over
+       the last mile from the end of the road and a stone's lee turns them. The FOG of the last mile, and the light's lamp that cuts it */
+    causeCurrents: [{ x0: 79, x1: 96, y0: 19, y1: 28, rise: -40 }, { x0: 122, x1: 145, y0: 20, y1: 39, high: 45, ebb: 45 }, { x0: 433, x1: 457, y0: 31, y1: 37, fall: 120, ebb: 70 }],
+    causeBreakers: { x0: 511, x1: 565, every: 4.4, row: R },
+    causeFog: { x0: 505, x1: 566, lamp: [541.5, 5] },
+    /* WHAT LIVES ON THE ROAD: gulls wheeling over the hamlet, the wrecks, the fire and the light; the smokehouse chimney; the seals on
+       their rock; crabs on the flats at low water; buoys riding the tide in the open water; the hamlet's stilts */
+    causeLife: { gulls: [[88, 11], [150, 13], [372, 7], [498, 12], [541, 2]], smoke: [[106, 19]], seals: [[472, 475, 30]], crabs: [[81, 94, 28], [335, 338, 30], [389, 391, 30], [414, 420, 30]],
+      buoys: [127, 135, 355, 395, 436, 453], stilts: [[85, 18, 28], [90, 18, 28]] },
     music: 'causeway', duskStart: 99999, duskLen: 1, night: false,
     quest: { n: 3, item: 'fisher', name: 'THE PILGRIMS', npc: 'squire', done: 'THE PILGRIMS ARE ACROSS', thanks: 'THEY PRAY FOR YOU' },
     palette: { set: 'shore', sky: 'storm', far: 'causeway', mid: 'causeway', near: 'reef', noFg: true, dress: 'shore', haze: 'rgba(120,150,140,0.14)',

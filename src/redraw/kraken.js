@@ -114,15 +114,18 @@ function headInto(B, X, Y, s, o) {
   // the arm roots under the head, thick and curling out into the water
   if (!o.noRoots) for (const [a, b, c2, d, side] of [[[-26, 6], [-44, 14], [-50, 2], [-58, -8], -1], [[-8, 12], [-14, 26], [-30, 30], [-40, 22], -1], [[16, 12], [22, 26], [40, 28], [50, 18], 1], [[30, 4], [50, 8], [58, -4], [62, -16], 1]])
     tube(B, bez([X + a[0] * s, Y + a[1] * s + dy], [X + b[0] * s, Y + b[1] * s + dy], [X + c2[0] * s, Y + c2[1] * s + dy], [X + d[0] * s, Y + d[1] * s + dy], Math.round(14 * s), 9 * s, 2.2 * s), { side });
-  // THE MANTLE: a dome that leans back from the face, wider at the bottom, ridged
-  blob(B, X - 6 * s + lean * s, Y - 40 * s + dy, 34 * s, 42 * s, { tilt: -0.42 + lean * 0.02, pear: 0.22, fn: sk });
-  // the brow over the eye, and the cheek the beak comes out of
-  blob(B, X + 22 * s, Y - 14 * s + dy, 22 * s, 17 * s, { tilt: 0.2, fn: sk, bias: 0.04 });
-  blob(B, X + 24 * s, Y - 30 * s + dy, 14 * s, 8 * s, { tilt: 0.3, bias: -0.05 });
+  // THE MANTLE: a dome that leans back from the face, wider at the bottom, ridged. (It was 34 by 42 and stood over the eye
+  // like a hood: the report said the dome was the face. It is smaller now, further back, and the face is the bigger mass.)
+  blob(B, X - 18 * s + lean * s, Y - 32 * s + dy, 26 * s, 30 * s, { tilt: -0.62 + lean * 0.02, pear: 0.18, fn: sk });
+  // the cheek the beak comes out of, the heavy brow over the eye, and the fold of lid under it
+  blob(B, X + 20 * s, Y - 14 * s + dy, 26 * s, 20 * s, { tilt: 0.16, fn: sk, bias: 0.06 });
+  blob(B, X + 26 * s, Y - 35 * s + dy, 17 * s, 7 * s, { tilt: 0.24, bias: -0.14 });
+  blob(B, X + 26 * s, Y - 12 * s + dy, 14 * s, 5 * s, { tilt: 0.1, bias: -0.1 });
   if (o.ink) blob(B, X - 26 * s, Y - 8 * s + dy, 11 * s, 9 * s, { bias: 0.1 });   /* the siphon, swollen with it */
   /* THE FACE HAS TO READ UNDER THAT DOME: an eye the size of a cartwheel and a beak like a ship's prow */
-  eye(B, Math.round(X + 24 * s), Math.round(Y - 24 * s + dy), Math.max(2, Math.round(12 * s)), o.eye || 'open');
-  beak(B, X + 32 * s + (o.thrust || 0) * s, Y - 2 * s + dy, s * 1.45, o.open || 0);
+  eye(B, Math.round(X + 24 * s), Math.round(Y - 24 * s + dy), Math.max(2, Math.round(13 * s)), o.eye || 'open');
+  beak(B, X + 32 * s + (o.thrust || 0) * s, Y - 2 * s + dy, s * 1.55, o.open || 0);
+  if (o.gasp) for (const [gx, gy] of [[-30, -10], [-34, -4], [-28, 2]]) { const x = Math.round(X + gx * s), y = Math.round(Y + gy * s + dy); B.set(x, y, KP.d0); B.set(x + 1, y, KP.d0); B.set(x, y + 1, KP.m0); }   /* THE BREATH: the gill slits under the mantle, open */
   if (o.stars) for (const [sx, sy] of [[8, -70], [26, -76], [40, -64]]) { const x = Math.round(X + sx * s), y = Math.round(Y + sy * s + dy); B.set(x, y, '#fff6c8'); for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) B.set(x + ox, y + oy, '#e6b94a'); }
   if (o.water) for (let x = 0; x < B.w; x++) for (let y = Math.round(Y - 16 * s); y < B.h; y++) B.a[y * B.w + x] = null;   /* EMERGE: only what is over the water (canvas row 80 is the sea), and the eye just clear of it */
 }
@@ -130,7 +133,8 @@ export function bakeKrakenHead() {
   const W = 124, H = 100, X = 58, Y = 96;
   const f = o => { const B = buf(W, H); headInto(B, X, Y, 1, o); return toCanvas(B); };
   const frames = [f({}), f({ eye: 'blink' }), f({ open: 1, eye: 'rage', lean: -3 }), f({ open: 0.5, thrust: 8, eye: 'narrow', lean: 4 }), f({ open: 0.2, thrust: 10, eye: 'wide', stars: true, dy: 6 }),
-    f({ eye: 'shut', open: 0.3, lean: -4 }), f({ eye: 'rolled', dy: 10, stars: true }), f({ ink: true, eye: 'narrow', lean: -2 }), f({ water: true, dy: 0, noRoots: true }), f({ eye: 'glazed', open: 0.6, dy: 8 })];
+    f({ eye: 'shut', open: 0.3, lean: -4 }), f({ eye: 'rolled', dy: 10, stars: true }), f({ ink: true, eye: 'narrow', lean: -2 }), f({ water: true, dy: 0, noRoots: true }), f({ eye: 'glazed', open: 0.6, dy: 8 }),
+    f({ ink: true, gasp: true, open: 0.45, eye: 'wide', lean: -3, dy: 2 })];   /* 10 THE BREATH: up for air, siphon swollen, gills and beak open */
   return pack(frames, X, Y, 60, 60);
 }
 // THE ARMS. A disc a radius: the draw lays them tip-first so the thick end sits over the thin
@@ -244,6 +248,109 @@ export function bakeLeviathan(v = 0) {
     for (let yy = -Math.ceil(r); yy <= Math.ceil(r); yy++) for (let xx = -Math.ceil(r); xx <= Math.ceil(r); xx++) if (xx * xx + yy * yy <= r * r) px(g, Math.round(x + xx), Math.round(y + yy), dark);
     if (i % 3 === 0) px(g, Math.round(x - r), Math.round(y), rim); px0 = x; py0 = y; }
   return c;
+}
+
+// THE KRAKEN OUT AT SEA. Its second stage is fought from the far water: the body goes down off the end of the road and comes
+// up again half a mile out, as big as a hill, and shoots the sea at the causeway. A SILHOUETTE: storm-dark, a rim of wet light
+// on the edges that face the sky, the eye sockets left black for the draw to light. It faces the road (left), three quarters on,
+// so both eyes show. 180x112, water line row 106. Frames: 0 rest, 1 CHARGE (reared back, beak open, cheeks full), 2 FIRE (thrust at
+// the road, beak wide), 3 REAR (arms flung up, the volley), 4 STUNG (flinched, eyes shut, arms thrown wide).
+//   returns { frames, eyes: per frame [[x, y, r], [x, y, r]], mouth: per frame [x, y], wl }
+const SIL = ['#0c1414', '#111c1b', '#172321', '#1d2a28', '#243330', '#2c3d39', '#3a4c46'];
+export function bakeKrakenFar() {
+  const W = 180, H = 112, WL = 106, frames = [], eyes = [], mouth = [];
+  const pose = [
+    { hx: 0, hy: 0, lean: 0, open: 0.1, arms: 0, shut: false },
+    { hx: 6, hy: -6, lean: -0.1, open: 0.8, arms: 0.2, shut: false },
+    { hx: -10, hy: 4, lean: 0.12, open: 1, arms: -0.2, shut: false },
+    { hx: 3, hy: -8, lean: -0.16, open: 0.5, arms: 1, shut: false },
+    { hx: 10, hy: 2, lean: 0.05, open: 0.3, arms: 0.6, shut: true }];
+  for (const p of pose) { const B = buf(W, H), cx = 92 + p.hx, cy = 62 + p.hy;
+    /* the arms first, behind: four of them up out of the sea round it, curling */
+    const up = p.arms;
+    for (const [bx, top, dir, r0] of [[30, 20, -1, 7], [52, 8, -1, 8], [134, 10, 1, 8], [158, 26, 1, 7]]) {
+      const tx = bx + dir * (10 + up * 14), ty = top - up * 16;
+      tube(B, bez([bx, WL + 4], [bx - dir * 14, WL - 40], [tx + dir * 24, ty + 30], [tx, ty], 22, r0, 1.4), { ramp: SIL, suckers: false });
+      tube(B, bez([tx, ty], [tx + dir * 8, ty - 8], [tx + dir * 14, ty + 2], [tx + dir * 8, ty + 8], 6, 1.6, 1), { ramp: SIL, suckers: false }); }
+    /* the mantle, leaning back from the face, and the face turned at the road */
+    blob(B, cx - 14, cy - 12, 34, 40, { tilt: -0.4 + p.lean, pear: 0.2, ramp: SIL });
+    blob(B, cx + 12, cy + 16, 30, 22, { tilt: 0.1, ramp: SIL, bias: 0.05 });
+    blob(B, cx + 14, cy + 2, 22, 7, { tilt: 0.12, ramp: SIL, bias: -0.15 });   /* the brow over both eyes */
+    /* the beak, down at the water: open wide, and a dark mouth behind it */
+    const bxm = cx + 30, bym = cy + 30, op = p.open;
+    if (op > 0.2) blob(B, bxm - 2, bym + 2 + op * 3, 9, 4 + op * 5, { ramp: ['#060909', '#0a0f0f', '#0e1414'] });
+    poly(B, [[bxm - 10, bym - 5], [bxm + 4, bym - 7], [bxm + 12, bym - 1], [bxm + 8, bym + 4], [bxm - 6, bym + 1]], () => '#080c0c');
+    poly(B, [[bxm - 8, bym + 3 + op * 7], [bxm + 6, bym + 4 + op * 8], [bxm + 2, bym + 8 + op * 8], [bxm - 6, bym + 6 + op * 6]], () => '#0a1010');
+    /* the sockets, black: the draw lights them */
+    const e1 = [cx + 22, cy + 10, 6], e2 = [cx + 2, cy + 8, 4];
+    for (const [ex, ey, er] of [e1, e2]) for (let y = -er; y <= er; y++) for (let x = -er - 1; x <= er + 1; x++) if ((x * x) / ((er + 1) * (er + 1)) + (y * y) / (er * er * (p.shut ? 0.12 : 0.7)) <= 1) B.set(ex + x, ey + y, '#040606');
+    /* the water line: nothing under it */
+    for (let y = WL; y < H; y++) for (let x = 0; x < W; x++) B.a[y * W + x] = null;
+    /* THE WET RIM: every edge that faces the sky catches the light off the storm */
+    const rim = [];
+    for (let y = 1; y < WL; y++) for (let x = 1; x < W - 1; x++) { const k = B.get(x, y); if (!k || k === '#040606') continue; if (!B.get(x, y - 1) || !B.get(x - 1, y)) rim.push([x, y, !B.get(x, y - 2) && !B.get(x - 1, y - 1)]); }
+    for (const [x, y, hard] of rim) B.set(x, y, hard ? '#6f8a82' : '#4c625b');
+    /* the sea running off it in sheets: pale streaks down the dome */
+    for (let k = 0; k < 14; k++) { const sx = 40 + ((hsh(k, 3, 9) * 110) | 0); let y0 = 0; while (y0 < WL && !B.get(sx, y0)) y0++; const len = 6 + ((hsh(k, 5, 2) * 16) | 0);
+      for (let y = y0 + 2; y < Math.min(WL, y0 + len); y++) if (B.get(sx, y) && (y + k) % 3) B.set(sx, y, '#3f5751'); }
+    frames.push(toCanvas(B, false)); eyes.push([e1, e2]); mouth.push([bxm + 4, bym + 2 + op * 4]); }
+  return { frames, eyes, mouth, wl: WL, w: W, h: H };
+}
+// WHAT IT THROWS OUT OF THE WRECK FIELD. A cargo crate (16x16: planks, iron corners, weed on it, the merchant's mark) and a
+// section of mast (64x20: the spar, its bands, a coil of line and the rag of a sail) that lands across a break in the road.
+export function bakeCargo() {
+  const CB = buf(16, 16), wd = ['#3a2616', '#5a3a22', '#7a5232', '#9a6e44'];
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const edge = x === 0 || y === 0 || x === 15 || y === 15, seam = y % 5 === 0;
+    CB.set(x, y, edge ? wd[0] : seam ? wd[1] : (x + ((y / 5) | 0) * 3) % 7 === 0 ? wd[1] : y % 5 === 1 ? wd[3] : wd[2]); }
+  for (let i = 1; i < 15; i++) { CB.set(i, i, wd[1]); }   /* the brace */
+  for (const [x, y] of [[1, 1], [14, 1], [1, 14], [14, 14]]) for (const [dx, dy] of [[0, 0], [1, 0], [0, 1]]) CB.set(x + (x > 7 ? -dx : dx), y + (y > 7 ? -dy : dy), '#6a6266');
+  for (const [x, y] of [[6, 7], [7, 7], [8, 7], [6, 9], [8, 9], [7, 8]]) CB.set(x, y, '#d8c89a');   /* the mark */
+  for (let x = 2; x < 14; x += 3) { CB.set(x, 14, '#4a6a3a'); CB.set(x + 1, 13, '#34502a'); } CB.set(11, 3, '#d8d2bc'); CB.set(12, 3, '#d8d2bc');
+  const crate = outline(toCanvas(CB, false), OUT);
+  const MB = buf(64, 20), sp = ['#3a2a1c', '#5e4630', '#806246', '#a08060'];
+  for (let x = 1; x < 63; x++) for (let y = 3; y < 9; y++) MB.set(x, y, y === 3 ? sp[3] : y === 8 ? sp[0] : y < 6 ? sp[2] : sp[1]);
+  for (const bx of [8, 30, 52]) for (let y = 3; y < 9; y++) { MB.set(bx, y, '#5a5458'); MB.set(bx + 1, y, '#8a8286'); }
+  for (let x = 60; x < 64; x++) for (let y = 2; y < 10; y++) MB.set(x, y, (x + y) % 2 ? '#6e5a44' : '#4a3a2a');   /* the broken end, splintered */
+  for (let i = 0; i < 9; i++) { const x = 18 + i * 2 + (i % 2), y = 9 + Math.round(Math.sin(i) * 1.5 + i * 0.9); MB.set(x, y, '#c8bca0'); MB.set(x, y + 1, '#a89c80'); MB.set(x + 1, y + 1, '#c8bca0'); }   /* the sail's rag */
+  for (let k = 0; k < 7; k++) { MB.set(40 + k, 9 + (k % 2), '#9a8a66'); MB.set(40 + k, 10 + (k % 2), '#7a6a4a'); }   /* a coil of line */
+  const mast = outline(toCanvas(MB, false), OUT);
+  return { crate, crateW: whiten(crate), mast };
+}
+
+// ---------- THE LIFE OF THE ROAD ----------
+// A BOAT THAT RIDES THE TIDE: clinker planks, a tarred keel line, a ring for the mooring. Its top row is the deck the player stands on.
+// len tiles wide, 14 tall; the draw puts row 2 on the mover's y.
+export function bakeTideBoat(len) {
+  const W = len * 16, H = 14, B = buf(W, H), wd = ['#2e2014', '#4a3420', '#6a4c30', '#8a6844', '#a8845a'];
+  for (let x = 0; x < W; x++) { const t = x / (W - 1), sag = Math.round(Math.pow(Math.abs(t - 0.5) * 2, 3) * 3);
+    for (let y = sag; y < H - Math.round(Math.abs(t - 0.5) * 2 * 5); y++) { const strake = ((y - sag) / 3) | 0;
+      B.set(x, y, y === sag ? wd[4] : y === sag + 1 ? wd[3] : (y - sag) % 3 === 0 ? wd[0] : strake % 2 ? wd[1] : wd[2]); } }
+  for (let x = 3; x < W - 3; x += 7) B.set(x, 5, '#2a2420');   /* the rivets */
+  B.set(1, 3, '#8a8286'); B.set(2, 3, '#5a5458'); B.set(1, 4, '#5a5458');   /* the ring */
+  for (let x = Math.round(W * 0.35); x < Math.round(W * 0.65); x++) B.set(x, H - 1, '#1a120c');
+  return outline(toCanvas(B, false), OUT);
+}
+// A GREY SEAL on its rock: 18x9, frame 0 head up, frame 1 head down, frame 2 sliding (stretched, for the water)
+export function bakeSeal() {
+  const f = (head, slide) => { const B = buf(20, 10), cols = ['#3a3a40', '#5a5c62', '#7a7c84', '#9a9ca4', '#c4c6cc'];
+    for (let y = 0; y < 10; y++) for (let x = 0; x < 20; x++) { const u = (x - 9) / (slide ? 9.5 : 8), v = (y - 6.5) / 3.2; if (u * u + v * v > 1) continue; const k = 0.5 - v * 0.35 - u * 0.1; B.set(x, y, cols[Math.max(0, Math.min(4, Math.round(k * 4)))]); }
+    for (let x = 4; x < 14; x += 3) B.set(x, 5, '#4a4c52');   /* its spots */
+    const hx = head ? 16 : 17, hy = head ? 3 : 6; for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) if (x * x + y * y <= 5) B.set(hx + x, hy + y, y < 0 ? '#9a9ca4' : '#7a7c84');
+    B.set(hx + 1, hy - 1, '#141418'); B.set(hx + 3, hy, '#2a2a30'); B.set(hx + 2, hy + 1, '#c4c6cc');
+    B.set(2, 8, '#3a3a40'); B.set(1, 9, '#3a3a40'); B.set(3, 9, '#3a3a40');   /* the tail flippers */
+    return outline(toCanvas(B, false), OUT); };
+  return [f(true, false), f(false, false), f(false, true)];
+}
+// THE LAMP ROOM of the light: a stone gallery cap, iron glazing bars round a lamp, a copper dome and its vane. 32x30, base row 29
+export function bakeLampRoom(lit) {
+  const W = 32, H = 30, B = buf(W, H);
+  for (let y = 10; y < 26; y++) for (let x = 6; x < 26; x++) B.set(x, y, (x - 6) % 5 === 0 || y === 10 || y === 25 ? '#2a2830' : lit ? (Math.abs(x - 16) < 4 && y > 13 && y < 23 ? '#fff6c8' : '#e8c060') : '#3a4a52');
+  if (lit) for (let y = 15; y < 22; y++) for (let x = 13; x < 19; x++) B.set(x, y, (x + y) % 3 ? '#ffffff' : '#fff0a0');
+  for (let y = 3; y < 10; y++) { const r = Math.round(10 - (9 - y) * 1.2); for (let x = 16 - r; x <= 16 + r; x++) B.set(x, y, x < 16 - r / 2 ? '#5a9a80' : x > 16 + r / 2 ? '#2f6a58' : '#4a8a70'); }
+  B.set(16, 0, '#2a2830'); B.set(16, 1, '#2a2830'); B.set(16, 2, '#2a2830'); B.set(15, 1, '#2a2830'); B.set(17, 1, '#2a2830');
+  for (let x = 3; x < 29; x++) { B.set(x, 26, ST.l); B.set(x, 27, ST.m); B.set(x, 28, ST.m); B.set(x, 29, ST.d); }
+  for (let x = 4; x < 28; x += 3) B.set(x, 25, '#2a2830');   /* the gallery rail */
+  return outline(toCanvas(B, false), OUT);
 }
 
 // ---------- THE STONES OF THE ROAD ----------
