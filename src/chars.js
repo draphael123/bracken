@@ -226,10 +226,10 @@ export function bakeKnight(skin = {}, bare = false) {
   const KF = o => knightFrame({ ...o, shield: !!o.shield && !bare, kite: bare || o.shield ? null : (o.kite || SIDE) });
   const rest = (d = 0) => [sh[0] + 1, sh[1] + 2 + d, sh[0] + 3, sh[1] + 9 + d];
   const F = {
-    idle: BREATH.map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 9 - dy] })),   /* the point stays in the turf */
+    idle: BREATH.map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 7 - dy] })),   /* the point stays in the turf - by one pixel: at +9 it was three under the ground line */
     // run: body bobs, sword arm pumps
     run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, pump], i) =>
-      KF({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 8], legsDy: 0 })),
+      KF({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 7 - Math.max(0, dy)], legsDy: 0 })),   /* the point skims the ground: it rides the bob up, never down into the turf */
     jump: [
       KF({ legs: 'jump', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 1 }),
       KF({ legs: 'jump2', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 3], plume: 1 }),
@@ -289,7 +289,7 @@ export function bakeKnight(skin = {}, bare = false) {
     const a = KF({ ...up(), plume: 2 }), b = KF({ ...up(), hy: 1, bits: gl(4), plume: 1 }), c = KF({ ...up(), hy: 1, bits: gl(1), plume: 0 });
     const d = KF({ ...up(), hy: 1, bits: gl(-2, true), plume: 0 }), turn = KF({ ...up(2), hy: 1, plume: 0 }), back = KF({ ...up(-1), plume: 1 });
     const drop = KF({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], sword: [sh[0] + 2, sh[1] + 2, sh[0] + 9, sh[1] + 6], plume: 2 });
-    const thud = KF({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 8], plume: 2 });
+    const thud = KF({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 6], plume: 2 });   /* back in the turf as the idle has it: one pixel, not three */
     F.fidget = holdFrames([[lift, 2], [a, 2], [b, 2], [c, 2], [d, 3], [turn, 3], [back, 2], [drop, 2], [thud, 2], [F.idle[7], 2]]); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
@@ -1520,7 +1520,7 @@ export function bakeFreebooter(skin = {}) {
     /* HIS BREATH: the hat and the feather ride it, the coat tail hangs a beat behind, and the cutlass point dips after the hand */
     idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
       return knightFrame({ dy, hy, sho, plume, cutlass: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 7 + lag - dy], pistol: holster(), bits: flap([1], dy, lag, 'b', 'B') }); }),
-    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, cutlass: carry(), pistol: holster() })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, cutlass: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8 - Math.max(0, dy)], pistol: holster() })),   /* carried down at his side, the point clear of the deck: carry()'s point went two and three pixels into it on the stride */
     jump: [knightFrame({ legs: 'jump', dy: -1, cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 5], pistol: holster(), plume: 1 }), knightFrame({ legs: 'jump2', cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 1 })],
     fall: [knightFrame({ legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], pistol: holster(), plume: 2 })],
     land: [knightFrame({ legs: 'land', dy: 2, cutlass: rest(2), pistol: holster(2) }), knightFrame({ legs: 'stand', dy: 1, cutlass: rest(1), pistol: holster(1), plume: 1 })],
@@ -1610,9 +1610,10 @@ export function bakeReaper(skin = {}) {
     /* HIS BREATH: the pauldrons lift, the torn surcoat drags a beat behind, the long point sinks after the hands, and once
        in the cycle the green in the helm goes out and comes back. The point is held a pixel short so it clears the frame. */
     idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
-      return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], greatsword: [sh[0] - 3, sh[1] + 5, sh[0] + 12, sh[1] + 9 + lag - dy],
+      /* the hands at his hip, not his knee: the cross hangs four rows under the grip, and from +5 it and the point both went into the ground */
+      return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 3 - Math.max(0, dy)], greatsword: [sh[0] - 3, sh[1] + 3 - Math.max(0, dy), sh[0] + 12, sh[1] + 6 + lag - dy],
         bits: [...flap([3, 4], dy, lag, 'r', 'r'), ...(i === 6 ? [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] : [])] }); }),
-    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 6], greatsword: carry() })),
+    run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 2], greatsword: [sh[0] - 4, sh[1] + 2, sh[0] + 12, sh[1] + 6 - Math.max(0, dy)] })),   /* dragged, not buried: carry() had the cross and the point four to six pixels under the ground */
     jump: [knightFrame({ legs: 'jump', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 6, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 7, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 4, sh[0] - 7, sh[1] - 4], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, greatsword: [sh[0] + 2, sh[1] + 3, sh[0] - 8, sh[1] - 2], plume: 2 })],
     land: [knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 7], greatsword: rest(2) }), knightFrame({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 6], greatsword: rest(1), plume: 1 })],
