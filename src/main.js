@@ -15954,9 +15954,10 @@ function drawWorld(cx, cy, showPlayer) {
       const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
       const br = 1;   /* at rest he breathes in the frames themselves now: a sub-pixel stretch on top of them only shimmered */
       const hs = isReaper() ? 1.22 : 1, shadowed = isReaper() && ((P.passT || 0) > 0 || P.dodge > 0);   /* the Death Knight is the biggest of them, and when he steps he is a shadow */
-      drawWarm('rim', K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, P.x, P.y - 10);
-      drawSet(K, key, frame, P.x - cx, P.y - cy + dY, dFace, false, sx * (2 - br) * hs, sy * br * hs, shadowed ? 0.55 : 1);
-      if (P.swim && !shadowed) swimQ.push({ set: K, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: 0, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it (drawSwimmers) */
+      const KD = hero() === 'knight' && thrown && K.bare ? K.bare : K;   /* SHIELD THROW: while it is out of his hand he is drawn without it - the cue that it is gone */
+      drawWarm('rim', KD, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, P.x, P.y - 10);
+      drawSet(KD, key, frame, P.x - cx, P.y - cy + dY, dFace, false, sx * (2 - br) * hs, sy * br * hs, shadowed ? 0.55 : 1);
+      if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: 0, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it (drawSwimmers) */
       if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, '#140a1c', 0.75);
       if (P.dance > 0) { for (let i = 0; i < 2; i++) { const t2 = (P.dance * 0.8 + i * 0.5) % 1, nx = Math.round(P.x - cx) + (i ? 10 : -12) + Math.round(Math.sin(t2 * 6) * 3), ny = Math.round(P.y - cy) - 30 - Math.round(t2 * 16);
         g.globalAlpha = 1 - t2; g.fillStyle = i ? '#ffd36b' : '#ff9ad0'; g.fillRect(nx, ny, 2, 2); g.fillRect(nx + 1, ny - 5, 1, 5); g.fillRect(nx + 2, ny - 5, 2, 1); } g.globalAlpha = 1; }   /* music notes off whoever is dancing */
