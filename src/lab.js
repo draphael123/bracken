@@ -5,7 +5,7 @@
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 
 // each hero's real reach (attackBox in main.js), so the bot swings from where the blow actually lands
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 34 };
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29 };
 export const LAB_FOES = ['sprig', 'shield', 'swornsword', 'archer', 'hedgeknight', 'cutlass', 'harpy', 'crab', 'tideguard', 'scout'];
 const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper'];
 const threatOf = e => e.alive && ((e.mode && /Tell|tell|wind|aim|draw|charge|lunge|raise/.test(e.mode)) || e.draw > 0 || e.liftT > 0);

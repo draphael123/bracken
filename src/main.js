@@ -4423,7 +4423,7 @@ function guardTurned() {
 function attackBox() {
   if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
     if (P.atk < 0.12 || P.atk >= 0.19) return null;
-    const r = 38 + 12 * tal('longHaft');
+    const r = 20 + 12 * tal('longHaft');   /* the point is drawn to 19-20 px on its two live frames; 38 cut the air beyond it */
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 22, b: P.y + 4 } : { l: P.x - r, r: P.x - 2, t: P.y - 22, b: P.y + 4 };
   }
   if (P.heavy && P.atk >= 0.03 && P.atk < 0.22) { // it reaches further and lands lower than a swing
@@ -4438,7 +4438,10 @@ function attackBox() {
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
   if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) {   /* THE CLEAVE: over the shoulder and down through what is in FRONT of him - a sword, not a scythe */
-    const r = 46 + 14 * tal('longHaft'), top = 30;   /* 36 was a short sword's reach on the biggest blade in the game */
+    /* AS FAR AS IT IS DRAWN, read off the canvas frame by frame: while the blade is still coming over his shoulder it reaches 22 px,
+       and from 0.15 the arc drawSwing lays through the front of him is out to 31. The 46 it was (after 36, a short sword's reach)
+       landed a tile past both, on air the art never touched */
+    const r = (P.atk < 0.15 ? 22 : 31) + 14 * tal('longHaft'), top = 30;
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - top, b: P.y + 2 } : { l: P.x - r, r: P.x - 2, t: P.y - top, b: P.y + 2 };
   }
   if (isPirate() && P.atk >= 0.03 && P.atk < 0.15) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 19, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 19, b: P.y - 1 };   // a cutlass is long and it is fast
