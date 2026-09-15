@@ -44,6 +44,7 @@ function grow(L, ret, col, n) {
   if (typeof R.escapeGate === 'number') R.escapeGate = sh(R.escapeGate);
   if (R.storm) R.storm = { ...R.storm, x0: shp(R.storm.x0), x1: shpEnd(R.storm.x1) };
   if (R.rot) R.rot = { x0: shp(R.rot.x0), x1: shpEnd(R.rot.x1) };
+  if (R.lessons) R.lessons = R.lessons.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));   /* the wood's teaching moments are in TILES, like the walls */
   P.R = R; P.done = () => Object.assign(R, { grid: P.grid, ents: L.ents.concat(P.ents) });
   return P;
 }
@@ -71,7 +72,7 @@ function brackenWood() {
   ent('spit', 58, 19, { face: -1 });
   ent('coin', 62, 19);
   block(66, 75, 20, 21);
-  ent('shield', 71, 19, { face: -1 }); ent('sign', 56, 21, { text: 'A RAISED SHIELD TURNS A CUT. DOWN+X ON THE GROUND SWEEPS UNDER IT AND TRIPS HIM.' });   /* on the floor before the spitter's ledge: the shield is on the step past it */
+  ent('shield', 71, 19, { face: -1 }); ent('sign', 56, 21, { text: 'A SHIELD ON A STEP: GET UP LEVEL WITH HIM, AND HOLD X. A PLAIN CUT ONLY RINGS OFF IT.' });   /* on the floor before the spitter's ledge: the shield is on the step past it. The heavy blow's second beat: the first is the lone guard on the flat before this (THE THREE LESSONS, at the end of this function) */
   plat(64, 18, 6);
   coins([66, 17], [68, 17]);
   ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND ON A FOE TO BOUNCE; HOLD JUMP TO BOUNCE HIGHER.', pyro: 'DOWN+X IN THE AIR: FIREDROP. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.' });
@@ -213,12 +214,46 @@ function brackenWood() {
   G2.ent('check', 162, 21); G2.coins([160, 20], [163, 20]);
   // THE LEVEL THAT TEACHES THE GAME HAD THE LEAST TO SAY IN IT: eight signs, and a hundred and fifty-one
   // columns of silence through the hive, the crown and the whole run home. There is no tutorial in this
-  // game, there are signs. (G2 is the last grow, so these columns are the final ones.)
+  // game, there are signs. (These columns were final when G2 was the last grow; the three lesson grows below
+  // come after and slide them, like every entity, by 78.)
   G2.ent('sign', 200, 11, { text: 'THE HIVE IS A CEILING, AND ALL UNDER IT IS ANGRY. DO NOT STAND UNDER A HOLE.' });
   G2.ent('sign', 249, 11, { text: 'A CROWN IN A WOOD, AND NOBODY LEFT TO WEAR IT. WHAT LIES HERE IS YOURS.' });
   G2.ent('sign', 288, 11, { text: 'THORNS NEVER MOVE: GO OVER THEM. A HELD JUMP IS HIGHER THAN A TAPPED ONE.' });
-  return G2.done();
-;
+  const R2 = G2.done();
+  // ---- THE THREE LESSONS. The yard (THE HERO'S TRIAL) is optional, and the wood threw a new player into real fights
+  // without the three things that matter most: the heavy blow through a guard, the low sweep under one, and the third
+  // cut. Each is a moment of its own on the road: a checkpoint, a sign, one foe alone on flat ground with nothing else
+  // in reach, and a hint the first time it happens (lessonHint in main.js, once a save, never if the trial taught it).
+  // Grown LAST and in DESCENDING column order, so every number below is a column of the level as G2 left it:
+  // the third cut at 121 (between the rising-cut sprig and the sett fork), the sweep at 98 (the far bank of the
+  // wasp pond), the heavy blow at 53 (past the second dash gap, before the spitter's ledge). 26 columns each. ----
+  const LC = grow(R2, R2, 121, 26);   // c. THE THIRD CUT: an old fat sprig (four times the health, a bite that barely hurts, half the pace) so a run of three is felt
+  LC.floor(121, 146, 22);
+  LC.ent('check', 123, 21); LC.ent('deco', 125, 21, { kind: 'stump', v: 0 });
+  LC.ent('sign', 127, 21, { text: 'AN OLD FAT SPRIG. X, X, X: THE THIRD CUT IN A RUN LANDS HEAVY AND SHOVES.' });
+  LC.coins([130, 20], [132, 19], [134, 20]);
+  LC.ent('sprig', 136, 21, { face: -1, fat: true });
+  LC.ent('deco', 141, 21, { kind: 'fern', v: 1 }); LC.coins([142, 20], [145, 20]);
+  LC.R.lessons = (LC.R.lessons || []).concat([{ kind: 'third', x0: 122, x1: 146 }]);
+  const RC = LC.done();
+  const LB = grow(RC, RC, 98, 26);    // b. THE LOW SWEEP: a lone shield goblin; the sweep goes under the shield he turns a cut with
+  LB.floor(98, 123, 22);
+  LB.ent('check', 100, 21); LB.ent('deco', 102, 21, { kind: 'fern', v: 0 });
+  LB.ent('sign', 104, 21, { text: 'HIS SHIELD IS UP. DOWN+X ON THE GROUND: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.' });
+  LB.coins([107, 20], [109, 19], [111, 20]);
+  LB.ent('shield', 113, 21, { face: -1 });
+  LB.ent('deco', 118, 21, { kind: 'stump', v: 1 }); LB.coins([119, 20], [122, 20]);
+  LB.R.lessons = (LB.R.lessons || []).concat([{ kind: 'sweep', x0: 99, x1: 123 }]);
+  const RB = LB.done();
+  const LA = grow(RB, RB, 53, 26);    // a. THE HEAVY BLOW: a lone shield goblin on the flat, and a held swing goes through what he turns
+  LA.floor(53, 78, 22);
+  LA.ent('check', 55, 21); LA.ent('deco', 57, 21, { kind: 'stump', v: 0 });
+  LA.ent('sign', 59, 21, { text: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE HEAVY BLOW GOES THROUGH IT.', pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE REAPING GOES THROUGH ANY GUARD.' });
+  LA.coins([62, 20], [64, 19], [66, 20]);
+  LA.ent('shield', 68, 21, { face: -1 });
+  LA.ent('deco', 73, 21, { kind: 'fern', v: 1 }); LA.coins([74, 20], [77, 20]);
+  LA.R.lessons = (LA.R.lessons || []).concat([{ kind: 'heavyblow', x0: 54, x1: 78 }]);
+  return LA.done();
 }
 
 function marshWood() {
@@ -6347,7 +6382,8 @@ export const LEVELS = [
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
    not - and the creatures that only ever lived in one place get a second home. [from, to, every Nth]
    A creature marked pogo is part of a POGO CHAIN and is never swapped: the tarn's first wasp became a crow, and a crow
-   flying off is a gap in the chain. It still counts, so nothing else in the crowd changes. */
+   flying off is a gap in the chain. It still counts, so nothing else in the crowd changes. A creature marked fat is a
+   LESSON (the wood's old fat sprig, placed by hand for the third cut) and is left alone the same way. */
 const MIX = {
   wood: [['wasp', 'crow', 4], ['sprig', 'lurker', 3], ['spit', 'hopper', 3]],
   moor: [['harpy', 'crow', 3]],
@@ -6362,7 +6398,7 @@ for (const lv of LEVELS) {
   const build = lv.build;
   lv.build = (...a) => { const out = build(...a);
     for (const [from, to, every] of mix) { let n = 0;
-      for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0 && !e.pogo) { e.t = to; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
+      for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0 && !e.pogo && !e.fat) { e.t = to; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
     return out; };
   lv.build.mixed = true;
 }
@@ -6377,7 +6413,7 @@ const rv = L => ({
 });
 const REVIEW = {
   // a checkpoint in the long run between the thorn cut and the high path
-  wood: L => { const R = rv(L); R.ent('check', 114, 21); },   /* not 119: the log step is right over it there, and the shrine ran up through it */
+  wood: L => { const R = rv(L); R.ent('check', 166, 21); },   /* not 171: the log step is right over it there, and the shrine ran up through it. (114 before THE THREE LESSONS grew the wood by 78 columns ahead of it) */
   // a checkpoint by the old stones, and lily pads over the two long shallows (hop them and you are across
   // before a wader is halfway), with gold on the way
   marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
@@ -6645,8 +6681,8 @@ const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul
    the room put back. check: [x, y] places that checkpoint by hand; false when one already stands at the door. The engine
    is updateAmbush in src/main.js, and section Q of RULES-LEVELS-AND-BOSSES.md says what makes a good one. */
 const AMBUSH = {
-  wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 210, wallR: 247, check: [200, 11],
-    waves: [[['sprig', 216], ['sprig', 243], ['thorn', 230], ['lurker', 222]], [['shield', 238], ['spit', 244], ['thorn', 216], ['crow', 228, 6]]] }],
+  wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 288, wallR: 325, check: [278, 11],   /* (every column here is 78 past what it was: THE THREE LESSONS grew the wood ahead of the giant) */
+    waves: [[['sprig', 294], ['sprig', 321], ['thorn', 308], ['lurker', 300]], [['shield', 316], ['spit', 322], ['thorn', 294], ['crow', 306, 6]]] }],
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
     waves: [[['hopper', 374], ['hopper', 386, 18], ['turtle', 380, 18]], [['thorn', 374], ['archer', 387], ['heronfoe', 381, 18], ['spit', 373]]] }],
   stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],
