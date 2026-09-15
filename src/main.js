@@ -3290,7 +3290,10 @@ function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.
 function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH / 2), d = Math.hypot(dx, dy * 1.3), near = VW * 0.55;
   return { pan: Math.max(-0.7, Math.min(0.7, dx / (VW * 0.75))), v: d <= near ? 1 : Math.max(big ? 0.6 : 0.18, 1 - (d - near) / (VW * 0.9)) }; }
 // the player's own sounds are never placed: whatever hurts them, the cry is theirs
-function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { return damagePlayer0(fromX, dmg, o); } finally { emitAt(was); } }
+function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const r = damagePlayer0(fromX, dmg, o);
+  /* THE AUDITS' EAR (tools/audit-*.mjs): when a tool has set BK.log to an array, every blow on the hero is written down with the line it came from. Off (null) in play; it changes nothing. */
+  if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgP', fromX, dmg, res: r, t: time, who: o && o.who ? o.who.t : null, blow: o && o.blow || null, unblockable: !!(o && o.unblockable), stack: new Error().stack });
+  return r; } finally { emitAt(was); } }
 // whoever is near the blow that just landed (for the talents that answer it)
 const nearFoe = x => { let b = null, bd = 60; for (const e of enemies) if (e.alive && !e.harmless) { const d = Math.abs(e.x - x) + Math.abs(e.y - P.y) * 0.5; if (d < bd && Math.abs(e.x - P.x) < 70) { bd = d; b = e; } } return b; };
 function reflectSeed(s) { s.dead = false; s.reflected = true; s.g = 0; s.life = 2;
@@ -3637,7 +3640,9 @@ function hazardFoe(e) {
   if (!why) return false;
   number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
 }
-function hurtEnemy(e, dmg, fromX, plunge) { const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { return hurtEnemy0(e, dmg, fromX, plunge); } finally { emitAt(was); } }
+function hurtEnemy(e, dmg, fromX, plunge) { const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, r = hurtEnemy0(e, dmg, fromX, plunge);
+  if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgE', t: e.t, e, dmg, fromX, plunge: !!plunge, hp0, hp: e.hp, alive: e.alive, poise0: po0, poise: e.poise || 0, broken: e.broken || 0, atk: P.atk, heavy: !!P.heavy, combo: P.combo, swingKind: P.swingKind || null, stop, shake, kick, time, stack: new Error().stack });   /* (the audits' ear: see damagePlayer) */
+  return r; } finally { emitAt(was); } }
 function hurtEnemy0(e, dmg, fromX, plunge) {
   if (e.t === 'grandmother' && (e.mode === 'vanish' || (e.alpha !== undefined && e.alpha < 0.35))) return;   /* nothing there to hit */
   if (e === boss && !bossActive && e.mode === 'sleep' && L.arena && e.alive) { bossStart(); SFX.clank(); return; } // a sleeping boss is not a free kill: the blow wakes the fight
@@ -16759,6 +16764,7 @@ function drawWorld(cx, cy, showPlayer) {
       const hs = isReaper() ? 1.22 : 1, shadowed = isReaper() && ((P.passT || 0) > 0 || P.dodge > 0);   /* the Death Knight is the biggest of them, and when he steps he is a shadow */
       const fy = P.flip ? P.y - P.h : P.y, fs = P.flip ? -1 : 1;   /* THE MAGE'S FOLLY: the room turned over draws him feet to the ceiling */
       const KD = hero() === 'knight' && thrown && K.bare ? K.bare : K;   /* SHIELD THROW: while it is out of his hand he is drawn without it - the cue that it is gone */
+      P.lastKey = key; P.lastFrame = frame;   /* remembered for the audits (tools/audit-hitboxes.mjs), as e.lastFrame is for a creature */
       drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, 0, P.x, P.y - 10);
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1);
       if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: 0, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it (drawSwimmers) */
@@ -18315,6 +18321,10 @@ window.BK = { mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice()
   async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); },   /* every hero against the common foes, early to late: window.__lab */
   async bossLab(o) { const m = await import('./lab.js'); return m.bossLab(window.BK, o || {}); }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
+  /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
+     tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */
+  log: null, get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; },
+  parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 Object.defineProperty(window.BK, 'hint', { get: () => ({ t: hintT, msg: hintMsg, card: introCardUp() }) });   /* the tutorial hint, for the labs: how long it has left and what it says */
 // ?playtest=1 runs the whole thing as soon as the art is baked and leaves the report on the page
