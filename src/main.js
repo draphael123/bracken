@@ -11075,12 +11075,15 @@ const PAL = { cut: [1.15, 0.95], thrust: [1.0, 0.85], bash: [1.2, 1.0], judge: [
    turns it. The flash is drawn and sounded, so the beat can be learnt. */
 const PAL_BEAT = 0.45;
 const palOpened = res => {
-  if (res === 'blocked') {
-    if (hero() === 'knight') return P.parryT > 0 || (P.blockT || 0) < PAL_BEAT;
-    if (isPirate()) return true;   /* the freebooter has no shield to lean on: a blow he turns at all was turned on the beat */
-    if (isPaladin()) return !!P.aegis && (P.aegisT || 0) < PAL_BEAT;
-    if (isReaper()) return (P.retSince ?? 9) < 0.02;   /* BLOOD WARD: only a release that RETURNED this very blow - let go inside PAL_BEAT (WARD_BEAT_PAL) before it lands */
-    return false; }
+  /* IT ASKS WHAT YOU DID, NOT WHO YOU ARE. This was a branch a hero: the knight's guard, the freebooter's parry, the paladin's aegis,
+     the Death Knight's returned ward - and anyone unlisted fell through to false. THE WARDEN was added to the game and was simply
+     unbeatable here, not hard: two and a half minutes in front of him, twice, for nought swings. The rule is one line now, on the
+     clocks every hero's own answer sets, so a hero made next year has a way in on the day he is made:
+       a guard that went UP inside the beat (P.blockT counts how long it has been held: a guard held from the start of the tell
+       still only turns the blow), a PARRY inside it (P.parryT - the freebooter's, and the Death Knight's ward return), an AEGIS
+       raised inside it (P.aegisT), or a ward RELEASED that returned this very blow (P.retSince). */
+  if (res === 'blocked') return (P.parryT || 0) > 0 || (P.blockT || 0) < PAL_BEAT
+    || (!!P.aegis && (P.aegisT ?? 9) < PAL_BEAT) || (P.retSince ?? 9) < 0.02;
   /* A HERO WITH NO GUARD ANSWERS THE FLASH BY NOT BEING THERE. The pyromancer and the Death Knight roll through it,
      and THE WARDEN carries no shield either - her answer is the backward hop. It is the harder version of the same
      thing, because the hop takes her AWAY: she has to leave it late and stay close, or she is simply outside the
