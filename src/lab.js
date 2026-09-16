@@ -104,7 +104,7 @@ export const HARD_TELLS = new Set(["troll|slamTell","troll|ripTell","assassin|ma
 HARD_TELLS.add('owl|skimTell');
 HARD_TELLS.add('gobmage|runeTell');   /* THE GOBLIN MAGE'S RUNE: stepped off, never guarded */
 for (const m of ['sweepTell', 'baleTell', 'lanternTell', 'leapTell']) HARD_TELLS.add('strawking|' + m); HARD_TELLS.add('ploughman|chargeTell');   /* THE HEXED FIELDS' red marks */
-for (const m of ['mouseTell', 'golemTell']) HARD_TELLS.add('homunculus|' + m); for (const m of ['rendTell', 'slamTell']) HARD_TELLS.add('archmage|' + m);   /* THE MAGE'S FOLLY's red marks */
+for (const m of ['scuttleTell', 'poundTell', 'flaskTell']) HARD_TELLS.add('homunculus|' + m); for (const m of ['rendTell', 'slamTell']) HARD_TELLS.add('archmage|' + m);   /* THE MAGE'S FOLLY's red marks */
 HARD_TELLS.add('herald|glideTell');   /* THE TIDE HERALD'S GLIDE ends in his low sweep: gone from, never guarded */
 HARD_TELLS.add('drownedking|ramTell'); HARD_TELLS.add('drownedking|diveTell');   /* THE DROWNED KING'S CHARGE AND FALL: gone across, never guarded */
 for (const m of ['grabTell', 'sweepTell', 'rakeTell', 'hurlTell', 'jetTell', 'geyserTell', 'lungeTell', 'roarTell', 'rollTell']) HARD_TELLS.add('kraken|' + m);   /* THE RAKE is HIGH in red: an arm that size turns on no shield either */   /* THE KRAKEN's red marks */   /* THE OWL REEVE'S SKIM: talons at ankle height, dodged or jumped, never guarded */
@@ -219,18 +219,17 @@ export async function bossLab(BK, opts = {}) {
         if (KA.dodge && f % 6 === 0) { k.left = KA.dodgeDir < 0; k.right = KA.dodgeDir > 0; BK.press('dodge'); }   /* a blow that has chosen you is rolled through */ if (KA.jump && (P.ground || (P.swim && f % 10 === 0))) { BK.press('jump'); k.jump = true; } else if (KA.hold && P.vy < 0) k.jump = true;   /* a climb the Kraken's advice asks for is held while it rises: let go and it is a hop */ if (KA.mash && f % 3 === 0) BK.press(f % 6 ? 'atk' : 'jump');
         if (KA.climb && P.ground && Math.abs(P.vx) < 8 && goal !== null && Math.abs(goal - P.x) > 6 && f % 8 === 0) BK.press('jump');
         if (KA.strike !== null && Math.abs(KA.strike - P.x) <= LAB_REACH[h] + 12 && P.atk < 0) { P.face = Math.sign(KA.strike - P.x) || P.face; BK.press('atk'); swings++; } }
-      else /* THE ARCHMAGE is read from the room (BK.mage): drink what the room put out, fly or walk the form to his dais and the arch
-         there, cut the runes as they come round, and cut the familiar's eye only when the head is down */
+      else /* THE ARCHMAGE is read from the room (BK.mage): cross what the room has become to wherever he is, cut the runes as
+         they come round, and cut the familiar's eye only when the head is down */
       if (MA) { goal = MA.goal;
-        if (MA.drink !== null) { goal = MA.drink; }
-        else if (P.form === 'bat' && MA.fly) { goal = MA.fly.x; k.jump = P.y > MA.fly.y || (P.vy > 40 && !P.ground); if (P.hang) { k.down = true; } }
-        else if (P.form === 'mouse' || P.form === 'golem') { goal = MA.goal; if (P.form === 'golem' && P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 20 === 0) BK.press('jump'); }
+        if (MA.climb) { goal = MA.goal; if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 20 === 0) BK.press('jump'); }
         else { if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
           else if (tell && HARD_TELLS.has(boss.t + '|' + boss.mode) && boss.modeT < 0.3 && f % 6 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); goal = null; }
           const wave = BK.mg && BK.mg() && BK.mg().shots.some(s => s.wave && Math.abs(s.x - P.x) < 40 && (s.x - P.x) * s.vx < 0); if (wave && P.ground) { BK.press('jump'); P.labJump = 12; }
           if (!k.block && MA.strike !== null && Math.abs(MA.strike - P.x) <= LAB_REACH[h] + 14 && P.atk < 0) { P.face = Math.sign(MA.strike - P.x) || P.face; BK.press('atk'); swings++; }
           if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0 && !P.flip) { BK.press('jump'); P.labJump = 10; }
           if (P.swim && f % 20 === 0) { BK.press('jump'); P.labJump = 10; } }   /* in the acid: leap out of it, and keep leaping */
+        if (MA.jump && P.ground) { BK.press('jump'); P.labJump = 16; }   /* the flood's stacks: a held jump off the edge of this footing onto the next */
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       else /* THE SCARECROW KING is read from the field (BK.straw): cut the pole he hangs on, strike the trough by the vine he stands at,
          knock his lantern with the third blow of a run (a heavy one), and jump his low scythe and his bales */

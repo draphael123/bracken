@@ -27,8 +27,9 @@
 // bakeTurret()      THE ARCANE TURRET (regular, still) — a brass eye on a tripod that spits slow orbs.
 //   frames: 0 idle  1 CHARGE TELL (the eye brightens)  2 fire (recoiled)  3 hurt   canvas 24x24   anchor ax 12, ay 22   pack w/h 12x14
 // bakeHomunculus()  THE HOMUNCULUS (mini) — a pale little man grown in a jar, still wearing its glass bell like a hat.
-//   frames: 0 idle  1 walk A  2 walk B  3 SWIPE TELL  4 swipe  5 MOUSE TELL (down on all fours, ears out)  6 scurry
-//           7 BAT TELL (wings out, up on its toes)  8 dive  9 GOLEM TELL (stone-armed, arms up)  10 slam  11 spent (OPENING: on its knees, panting)  12 hurt
+//   frames: 0 idle  1 walk A  2 walk B  3 SWIPE TELL  4 swipe  5 SCUTTLE TELL (down on all fours, hands flat, head low)  6 scurry
+//           7 POUNCE TELL (crouched on its heels, arms flung back)  8 dive (arms out ahead)  9 POUND TELL (fists joined over the jar)  10 pound  11 spent (OPENING: on its knees, panting)  12 hurt
+//           13 FLASK TELL (a flask held up and back)  14 lob (the arm thrown forward)
 //   canvas 48x40   anchor ax 24, ay 38   pack w/h 14x22
 // bakeArchmage()    THE ARCHMAGE (boss, stages I and II) — tall, gaunt, a violet robe, a brass staff, a beard.
 //   frames: 0 idle  1 drift  2 BLINK (robes swirling into smoke)  3 BOLT TELL (staff high, the circle drawn)  4 bolt
@@ -40,10 +41,6 @@
 //   frames: 0 idle  1 SWIPE TELL (a paw raised)  2 swipe  3 SLAM TELL (reared)  4 slam  5 SPIT TELL (cheeks full)  6 spit
 //           7 OPEN (head down on the floor, the eye wide)  8 dead   canvas 112x96   anchor ax 56, ay 94   pack w/h 56x60
 // bakeApprentice()  THE APPRENTICE (npc) — a boy in a violet robe too big for him.   2 frames   canvas 20x28   ax 10, ay 26
-// bakeForms()       { mouse, bat, golem } — the hero as each form.
-//   mouse: 0 idle 1 run A 2 run B 3 hurt   canvas 14x10   ax 7, ay 8    pack 6x6
-//   bat:   0 flap A 1 flap B 2 hang 3 glide 4 hurt   canvas 20x14   ax 10, ay 12   pack 8x8
-//   golem: 0 idle 1 walk A 2 walk B 3 swing 4 hurt   canvas 28x26   ax 14, ay 24   pack 14x18
 import { canvas, px, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -343,48 +340,65 @@ export function bakeTurret() {
 
 // =====================================================================================================================
 // THE HOMUNCULUS. A pale, big-headed little man grown in a jar, the glass bell still on its head like a hat, a stitched
-// smile, black button eyes. Each trick borrows a form's silhouette: ears and a tail; wings; stone fists.
+// smile, black button eyes. Each trick has its own silhouette, and every one is its own body now nothing in the tower is
+// drunk: flat on its hands with its head down for the scuttle; crouched on its heels with its arms flung back for the pounce,
+// and stretched out after them in the dive; both fists joined up over the jar for the pound; a flask held up off the shelf
+// for the throw.
 export function bakeHomunculus() {
   const W = 48, H = 40, X = 24, F = 37;
   const GLASS = ['#4a6a8a', '#8ab0c8', '#c8e8f0', '#ffffff'];
   const frame = (pose) => {
     const B = buf(W, H);
-    const step = pose === 'walkA' ? 2 : pose === 'walkB' ? -2 : 0, low = pose === 'mouseTell' || pose === 'scurry' || pose === 'spent' ? 6 : 0, big = pose === 'golemTell' || pose === 'slam' ? 1 : 0;
-    const bx = X + (pose === 'scurry' ? 3 : 0), by = F - 12 + low;
+    const step = pose === 'walkA' ? 2 : pose === 'walkB' ? -2 : 0, low = pose === 'scuttleTell' || pose === 'scurry' || pose === 'spent' ? 6 : 0, big = pose === 'poundTell' || pose === 'pound' ? 1 : 0;
+    const crouch = pose === 'pounceTell' ? 3 : pose === 'dive' ? -2 : 0;   /* down on its heels for the pounce, and up off the floor in the dive */
+    const bx = X + (pose === 'scurry' ? 3 : 0), by = F - 12 + low + crouch;
+    const lean = pose === 'scuttleTell' || pose === 'scurry' ? 3 : pose === 'dive' ? 2 : 0;   /* how far the head is pushed out ahead of the body */
     /* legs */
-    if (low && pose !== 'spent') { limb(B, [bx - 4, by + 4], [bx - 8, by + 8], 3, SKIN); limb(B, [bx + 4, by + 4], [bx + 8, by + 8], 3, SKIN); }
+    if (pose === 'pounceTell') { limb(B, [bx - 3, by + 4], [bx - 8, by + 6], 3, SKIN); limb(B, [bx - 8, by + 6], [bx - 4, by + 9], 3, SKIN); limb(B, [bx + 3, by + 4], [bx + 7, by + 6], 3, SKIN); limb(B, [bx + 7, by + 6], [bx + 4, by + 9], 3, SKIN); }   /* knees up, heels under it */
+    else if (pose === 'dive') { limb(B, [bx - 3, by + 3], [bx - 11, by + 6], 3, SKIN); limb(B, [bx - 2, by + 4], [bx - 10, by + 10], 3, SKIN); }   /* the legs trail */
+    else if (low && pose !== 'spent') { limb(B, [bx - 4, by + 4], [bx - 8, by + 8], 3, SKIN); limb(B, [bx + 4, by + 4], [bx + 8, by + 8], 3, SKIN); }
     else if (pose === 'spent') { limb(B, [bx - 3, by + 3], [bx - 7, by + 8], 3, SKIN); limb(B, [bx + 3, by + 3], [bx + 7, by + 8], 3, SKIN); }
     else { limb(B, [bx - 3, by + 4], [bx - 4 - step, by + 10], 3, SKIN); limb(B, [bx + 3, by + 4], [bx + 4 + step, by + 10], 3, SKIN); }
     /* body */
     ball(B, bx, by, 5 + big, 6 - low * 0.3, SKIN, { bias: 0.04 });
     for (let i = 0; i < 3; i++) dot(B, bx - 1 + i, by + 2, '#8a5a6a');   /* the stitches */
     /* arms: by pose */
-    const ARM = big ? ['#3a3430', '#6a6058', '#9a9088', '#c8c0b8'] : SKIN;
+    const ARM = SKIN;
     if (pose === 'swipeTell') { limb(B, [bx + 4, by - 2], [bx + 2, by - 12], 3, ARM); limb(B, [bx - 4, by - 1], [bx - 7, by + 3], 3, ARM); }
     else if (pose === 'swipe') { limb(B, [bx + 4, by - 2], [bx + 14, by + 2], 3, ARM); limb(B, [bx - 4, by - 1], [bx - 7, by + 3], 3, ARM); }
-    else if (pose === 'golemTell') { limb(B, [bx + 5, by - 2], [bx + 9, by - 12], 4, ARM); limb(B, [bx - 5, by - 2], [bx - 9, by - 12], 4, ARM); ball(B, bx + 9, by - 13, 3, 3, ARM); ball(B, bx - 9, by - 13, 3, 3, ARM); }
-    else if (pose === 'slam') { limb(B, [bx + 5, by - 1], [bx + 10, by + 8], 4, ARM); limb(B, [bx - 5, by - 1], [bx - 10, by + 8], 4, ARM); ball(B, bx + 10, by + 8, 3, 2.5, ARM); ball(B, bx - 10, by + 8, 3, 2.5, ARM); }
-    else if (pose === 'batTell' || pose === 'dive') { const wu = pose === 'batTell' ? -12 : 4; poly(B, [[bx - 3, by - 3], [bx - 16, by + wu], [bx - 12, by + 3]], VIOLET[0]); poly(B, [[bx + 3, by - 3], [bx + 16, by + wu], [bx + 12, by + 3]], VIOLET[0]); limb(B, [bx + 4, by - 1], [bx + 6, by + 4], 3, SKIN); limb(B, [bx - 4, by - 1], [bx - 6, by + 4], 3, SKIN); }
+    /* THE POUND: both fists joined high over the jar, then brought down together on the floor in front of it */
+    else if (pose === 'poundTell') { limb(B, [bx + 5, by - 2], [bx + 10, by - 13], 3, ARM); limb(B, [bx - 5, by - 2], [bx - 10, by - 13], 3, ARM); limb(B, [bx + 10, by - 13], [bx + 3, by - 22], 3, ARM); limb(B, [bx - 10, by - 13], [bx - 3, by - 22], 3, ARM); ball(B, bx - 2, by - 23, 2.5, 2.5, ARM); ball(B, bx + 2, by - 23, 2.5, 2.5, ARM); }
+    else if (pose === 'pound') { limb(B, [bx + 5, by - 1], [bx + 11, by + 6], 3, ARM); limb(B, [bx + 2, by], [bx + 9, by + 8], 3, ARM); ball(B, bx + 11, by + 9, 4, 3, ARM); }
+    /* THE FLASK: one arm up and back with a green flask in it, then thrown forward */
+    else if (pose === 'flaskTell') { limb(B, [bx - 4, by - 2], [bx - 8, by - 12], 3, SKIN); limb(B, [bx + 4, by - 1], [bx + 7, by + 3], 3, SKIN); ball(B, bx - 9, by - 16, 2.5, 3, ['#2a5a2a', '#4a8a3a', '#8fd160', '#e0ffc0']); dot(B, bx - 9, by - 20, '#9a6a34'); }
+    else if (pose === 'lob') { limb(B, [bx + 4, by - 2], [bx + 13, by - 6], 3, SKIN); limb(B, [bx - 4, by - 1], [bx - 7, by + 3], 3, SKIN); }
+    /* THE POUNCE: both arms flung back behind it on its heels, then thrown out ahead of it in the dive */
+    else if (pose === 'pounceTell') { limb(B, [bx - 4, by - 2], [bx - 12, by - 4], 3, SKIN); limb(B, [bx - 3, by - 1], [bx - 12, by + 1], 3, SKIN); }
+    else if (pose === 'dive') { limb(B, [bx + 4, by - 2], [bx + 15, by - 1], 3, SKIN); limb(B, [bx + 3, by], [bx + 14, by + 4], 3, SKIN); }
+    /* THE SCUTTLE: hands flat on the floor out in front, the head down between them */
+    else if (pose === 'scuttleTell' || pose === 'scurry') { const r = pose === 'scurry' ? 4 : 0; limb(B, [bx + 4, by], [bx + 10 + r, by + 6], 3, SKIN); limb(B, [bx + 2, by + 1], [bx + 6 + r, by + 7], 3, SKIN); }
     else if (low) { limb(B, [bx + 4, by], [bx + 8, by + 6], 3, SKIN); limb(B, [bx - 4, by], [bx - 8, by + 6], 3, SKIN); }
     else { limb(B, [bx + 4, by - 1], [bx + 6 + step, by + 5], 3, SKIN); limb(B, [bx - 4, by - 1], [bx - 6 - step, by + 5], 3, SKIN); }
     /* the head, and the bell jar on it */
-    const hy = by - 10 + (low ? 3 : 0) + (pose === 'spent' ? 2 : 0);
-    layer(B, T => { ball(T, bx, hy, 6, 5.5, SKIN, { bias: 0.08 }); });
-    dot(B, bx + 1, hy - 1, '#1b1626'); dot(B, bx + 4, hy - 1, '#1b1626'); for (let i = 0; i < 4; i++) dot(B, bx + i, hy + 2, i % 2 ? '#8a5a6a' : '#5a3040');
-    if (pose === 'mouseTell' || pose === 'scurry') { limb(B, [bx - 3, hy - 5], [bx - 5, hy - 9], 2, SKIN); limb(B, [bx + 3, hy - 5], [bx + 5, hy - 9], 2, SKIN); seg(B, bx - 5, by + 2, bx - 12, by - 2, SKIN[1]); }
-    layer(B, T => { for (let y = hy - 9; y <= hy - 5; y++) for (let x = bx - 5; x <= bx + 5; x++) if ((x - bx) * (x - bx) / 30 + (y - hy + 7) * (y - hy + 7) / 6 <= 1) T.set(x, y, y === hy - 9 ? GLASS[3] : x === bx - 5 || x === bx + 5 ? GLASS[0] : GLASS[1]); seg(T, bx - 5, hy - 5, bx + 5, hy - 5, GLASS[2]); });
+    const hy = by - 10 + (low ? 3 : 0) + (pose === 'spent' ? 2 : 0) + (lean ? 2 : 0), hx = bx + lean;
+    layer(B, T => { ball(T, hx, hy, 6, 5.5, SKIN, { bias: 0.08 }); });
+    dot(B, hx + 1, hy - 1, '#1b1626'); dot(B, hx + 4, hy - 1, '#1b1626'); for (let i = 0; i < 4; i++) dot(B, hx + i, hy + 2, i % 2 ? '#8a5a6a' : '#5a3040');
+    layer(B, T => { for (let y = hy - 9; y <= hy - 5; y++) for (let x = hx - 5; x <= hx + 5; x++) if ((x - hx) * (x - hx) / 30 + (y - hy + 7) * (y - hy + 7) / 6 <= 1) T.set(x, y, y === hy - 9 ? GLASS[3] : x === hx - 5 || x === hx + 5 ? GLASS[0] : GLASS[1]); seg(T, hx - 5, hy - 5, hx + 5, hy - 5, GLASS[2]); });
     if (pose === 'hurt') { B.del(bx - 1, by); B.del(bx + 2, by + 1); }
     floorCut(B, F);
     const c = toCanvas(B);
     if (pose === 'swipe') smear(c, bx + 4, by - 2, 14, -50, 30, [SKIN[3], SKIN[2]]);
-    if (pose === 'slam') afterDots(c, [[bx - 14, by + 6, '#c8c0b8'], [bx + 14, by + 6, '#c8c0b8'], [bx - 15, by + 3, '#9a9088'], [bx + 15, by + 3, '#9a9088']]);
+    if (pose === 'lob') afterDots(c, [[bx + 16, by - 8, '#8fd160'], [bx + 18, by - 10, '#e0ffc0']]);
+    if (pose === 'pound') afterDots(c, [[bx + 16, by + 9, '#c8c0b8'], [bx + 6, by + 9, '#c8c0b8'], [bx + 18, by + 7, '#9a9088'], [bx + 4, by + 7, '#9a9088']]);   /* the floor it hit, kicking up both ways */
+    if (pose === 'scurry') afterDots(c, [[bx - 10, F - 1, '#9a9088'], [bx - 13, F - 3, '#c8c0b8'], [bx - 16, F - 2, '#9a9088']]);   /* dust off its heels */
+    if (pose === 'dive') afterDots(c, [[bx - 12, by - 4, SKIN[2]], [bx - 15, by - 6, SKIN[1]]]);
     if (pose === 'spent') afterDots(c, [[bx + 8, hy - 4, GLASS[2]], [bx + 10, hy - 7, GLASS[3]], [bx + 9, hy - 10, GLASS[2]]]);
     if (pose === 'hurt') afterDots(c, [[bx - 9, hy - 6, SKIN[3]], [bx + 9, hy - 8, SKIN[2]]]);
     return c;
   };
-  return pack(['idle', 'walkA', 'walkB', 'swipeTell', 'swipe', 'mouseTell', 'scurry', 'batTell', 'dive', 'golemTell', 'slam', 'spent', 'hurt'].map(frame), X, F + 1, 14, 22);
+  return pack(['idle', 'walkA', 'walkB', 'swipeTell', 'swipe', 'scuttleTell', 'scurry', 'pounceTell', 'dive', 'poundTell', 'pound', 'spent', 'hurt', 'flaskTell', 'lob'].map(frame), X, F + 1, 14, 22);
 }
-export const HOMUNCULUS_F = { idle: 0, walk: [1, 2], swipeTell: 3, swipe: 4, mouseTell: 5, scurry: 6, batTell: 7, dive: 8, golemTell: 9, slam: 10, spent: 11, hurt: 12 };
+export const HOMUNCULUS_F = { idle: 0, walk: [1, 2], swipeTell: 3, swipe: 4, scuttleTell: 5, scurry: 6, pounceTell: 7, dive: 8, poundTell: 9, pound: 10, spent: 11, hurt: 12, flaskTell: 13, lob: 14 };
 
 // =====================================================================================================================
 // THE ARCHMAGE. Tall and thin in a violet robe that does not quite reach the floor, a pointed hat gone soft, a long
@@ -494,37 +508,3 @@ export function bakeApprentice() {
   return pack([frame(0), frame(1)], X, F + 1, 10, 22);
 }
 
-// =====================================================================================================================
-// THE THREE FORMS. Small, and each one wears its font's colour so it can never be mistaken for a creature of the tower.
-export function bakeForms() {
-  const M = FORM_COL.mouse, Bc = FORM_COL.bat, Gc = FORM_COL.golem;
-  const mouse = (() => { const W = 14, H = 10, X = 7, F = 7;
-    const frame = (pose) => { const B = buf(W, H), k = pose === 'runA' ? 1 : pose === 'runB' ? -1 : 0;
-      ball(B, X, F - 3, 5, 3, M, { bias: 0.05 }); ball(B, X + 4, F - 4, 2.5, 2, M, { bias: 0.1 }); dot(B, X + 6, F - 4, '#1b1626'); dot(B, X + 3, F - 6, M[2]); dot(B, X + 5, F - 7, M[2]);
-      seg(B, X - 5, F - 3, X - 9 + k, F - 6 - k, M[1]); for (let i = 0; i < 3; i++) dot(B, X - 3 + i * 3 + k, F - 1, M[0]);
-      if (pose === 'hurt') B.del(X, F - 3);
-      floorCut(B, F); return toCanvas(B); };
-    return pack(['idle', 'runA', 'runB', 'hurt'].map(frame), X, F + 1, 6, 6); })();
-  const bat = (() => { const W = 20, H = 14, X = 10, F = 11;
-    const frame = (pose) => { const B = buf(W, H), up = pose === 'flapA' ? -4 : pose === 'flapB' ? 3 : pose === 'glide' ? 0 : pose === 'hang' ? 6 : 0;
-      const by = pose === 'hang' ? F - 5 : F - 6;
-      if (pose === 'hang') { poly(B, [[X - 2, by - 4], [X - 7, by + 6], [X - 3, by + 4]], Bc[0]); poly(B, [[X + 2, by - 4], [X + 7, by + 6], [X + 3, by + 4]], Bc[0]); }
-      else { poly(B, [[X - 2, by], [X - 10, by + up], [X - 6, by + 4]], Bc[0]); poly(B, [[X + 2, by], [X + 10, by + up], [X + 6, by + 4]], Bc[0]); seg(B, X - 2, by, X - 9, by + up, Bc[2]); seg(B, X + 2, by, X + 9, by + up, Bc[2]); }
-      ball(B, X, by + 1, 3, 3.5, Bc, { bias: 0.05 }); dot(B, X - 1, by, '#ffe080'); dot(B, X + 1, by, '#ffe080'); dot(B, X - 2, by - 3, Bc[2]); dot(B, X + 2, by - 3, Bc[2]);
-      if (pose === 'hurt') B.del(X, by + 2);
-      floorCut(B, F); return toCanvas(B); };
-    return pack(['flapA', 'flapB', 'hang', 'glide', 'hurt'].map(frame), X, F + 1, 8, 8); })();
-  const golem = (() => { const W = 28, H = 26, X = 14, F = 23;
-    const STONE = ['#4a3420', '#8a6234', '#c0904c', '#f0c070'];
-    const frame = (pose) => { const B = buf(W, H), step = pose === 'walkA' ? 2 : pose === 'walkB' ? -2 : 0;
-      limb(B, [X - 4, F - 8], [X - 5 - step, F - 1], 5, STONE); limb(B, [X + 4, F - 8], [X + 5 + step, F - 1], 5, STONE);
-      ball(B, X, F - 13, 8, 7, STONE, { bias: 0.02 }); seg(B, X - 4, F - 12, X + 2, F - 10, STONE[0]); dot(B, X + 3, F - 15, STONE[3]);
-      if (pose === 'swing') { limb(B, [X + 6, F - 15], [X + 13, F - 8], 5, STONE); ball(B, X + 13, F - 7, 3, 3, STONE); }
-      else { limb(B, [X + 6, F - 15], [X + 9 + step, F - 6], 5, STONE); ball(B, X + 9 + step, F - 5, 3, 3, STONE); }
-      limb(B, [X - 6, F - 15], [X - 9 - step, F - 6], 5, STONE); ball(B, X - 9 - step, F - 5, 3, 3, STONE);
-      layer(B, T => { ball(T, X + 1, F - 20, 4, 3.5, STONE, { bias: 0.08 }); }); dot(B, X + 1, F - 20, Gc[2]); dot(B, X + 3, F - 20, Gc[2]);
-      if (pose === 'hurt') { B.del(X - 2, F - 13); B.del(X + 1, F - 11); }
-      floorCut(B, F); const c = toCanvas(B); if (pose === 'swing') smear(c, X + 6, F - 14, 12, -30, 60, [Gc[3], Gc[2]]); return c; };
-    return pack(['idle', 'walkA', 'walkB', 'swing', 'hurt'].map(frame), X, F + 1, 14, 18); })();
-  return { mouse, bat, golem };
-}

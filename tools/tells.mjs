@@ -65,7 +65,8 @@ const THROWS_SOMETHING_ELSE = new Set(['updateForgemaster|hurlTell', 'updateForg
   'updateHerald|raise',
   'updateStrawKing|baleTell',      // THE SCARECROW KING'S BALE rolls along the floor on its own, unblockable
   'updateStrawKing|lanternTell', // his lantern, thrown: fire on landing, unblockable
-  'updateHomunculus|golemTell',   // THE HOMUNCULUS'S SLAM: a wave along the floor each way, unblockable
+  'updateHomunculus|poundTell',   // THE HOMUNCULUS'S POUND: a wave along the floor each way, unblockable
+  'updateHomunculus|flaskTell',   // THE HOMUNCULUS'S FLASK: the glass breaks where the ring was and leaves acid, unblockable
   'updateArchmage|slamTell']);    // THE FAMILIAR'S SLAM: the same wave, the size of the room          // THE TIDE HERALD'S WAVE: heraldWave crosses the square on its own, unblockable
 // THE QUIET WINDUPS. A tell that throws NO blow at all - she listens, he calls, the square floods - wears no
 // mark: a mark is a promise about your shield, and there is nothing here for the shield to do.
