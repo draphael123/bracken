@@ -9417,7 +9417,7 @@ function updateArchmageRoom(dt, hb) {
     const hit = MG.cageIce.some(c => overlap(hb, { l: c[0] * TS, r: c[0] * TS + TS, t: c[1] * TS, b: c[1] * TS + TS }));
     if (hit) { for (const c of MG.cageIce) { cellSet(c[0], c[1], T.AIR); burst(c[0] * TS + 8, c[1] * TS + 8, 8, ['#c8ecff', '#9ad0e8', '#e8f8ff'], 90, 0.6); } MG.cageIce = []; resolveTiles(); SFX.crack(); SFX.golemShatter && SFX.golemShatter(); shakeCam(5); number(P.x, P.y - 30, 'THE ICE GOES', '#c8ecff'); } }
 }
-/* THE LAB'S READ OF THE ROOM (BK.mage): what to drink, where to fly or walk, and when he can be cut */
+/* THE LAB'S READ OF THE ROOM (BK.mage): what stands between the hero and him, where to walk or climb, and when he can be cut */
 function mageAdvice() {
   const e = boss; if (!e || e.t !== 'archmage' || !e.alive || !L.arena || !MG) return null;
   const A = L.arena, R = MG.A || { sub: 0, runes: [] }, out = { goal: e.x, strike: e.x, climb: false, jump: false, sub: R.sub, stage: e.stage };
