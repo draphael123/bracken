@@ -272,8 +272,8 @@ export async function bossLab(BK, opts = {}) {
           if (t > dkRel.at) k.block = true; dkHold = 0; }   /* the ward up through his windup and LET GO at the flash, a reaction time late: one in ten is too late, and only turns it */
         else if (t < 0.1 && f % 3 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
       else /* THE KRAKEN is read from the arena, not from where its body is: BK.krak() says what is coming and what is open (the same
-         things its marks are drawn from) - cut the arms where they lie, get up out of the surge, ring the bell while it looks,
-         and stand behind a waystone for the beak */
+         things its marks are drawn from) - cut the arms where they lie, get up out of the surge, ring the bell while it breathes,
+         and stand behind a waystone for the spear */
       if (KA) { goal = KA.goal; if (KA.up) k.up = true;
         if (KA.block && SHIELDED(h)) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face; k.block = true; if (h === 'paladin') holdC = f + 30; }   /* the snap the shield turns: a shielded hero takes it on the shield */
         if (KA.dodge && f % 6 === 0) { k.left = KA.dodgeDir < 0; k.right = KA.dodgeDir > 0; BK.press('dodge'); }   /* a blow that has chosen you is rolled through */ if (KA.jump && (P.ground || (P.swim && f % 10 === 0))) { BK.press('jump'); k.jump = true; } else if (KA.hold && P.vy < 0) k.jump = true;   /* a climb the Kraken's advice asks for is held while it rises: let go and it is a hop */ if (KA.mash && f % 3 === 0) BK.press(f % 6 ? 'atk' : 'jump');
