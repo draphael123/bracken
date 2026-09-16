@@ -8,18 +8,17 @@
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40 };   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 export const LAB_FOES = ['sprig', 'shield', 'swornsword', 'archer', 'hedgeknight', 'cutlass', 'harpy', 'crab', 'tideguard', 'scout'];
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
-/* THE CO-OP ALLY IS THIS BOT. main.js imports threatOf, SHIELDED, braceNow and HARD_TELLS below and plays a hero
+/* THE CO-OP ALLY IS THIS BOT. main.js imports threatOf, SHIELDED and HARD_TELLS below and plays a hero
    with them, so the ally and the labs answer a wind-up by ONE set of rules. When two files answer the same question
    one of them is wrong and nobody knows which - so there is one, and it lives here with the bot that earned it. */
 export const threatOf = e => e.alive && ((e.mode && /Tell|tell|wind|aim|draw|charge|lunge|raise/.test(e.mode)) || e.draw > 0 || e.liftT > 0);
 const yieldNow = () => new Promise(r => setTimeout(r, 0));
 export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper';   // C holds a guard; the others roll
-/* THE WARDEN'S C IS NOT A GUARD. It is a planted spear, and it answers exactly one thing: a charge the marks say can
-   be stopped. Everything else she gives ground from - and her dodge goes BACKWARD by itself, so the bot never has to
-   aim it. (main.js BRACE_STOPS is the authority for what the point stops; this is the bot's list of who can ever be
-   on it, so a bot that braced at everything would measure a hero who does not exist.) */
-export const BRACE_ABLE = new Set(['lancer', 'goat', 'ram', 'master', 'lance', 'greathound']);
-export const braceNow = (e, P) => BRACE_ABLE.has(e.t) && Math.abs(e.vx || 0) > 70 && (e.x - P.x) * (e.vx || 0) < 0;
+/* THE WARDEN'S C IS NOT A GUARD EITHER. It is a TAP - a sweep of the shaft that turns any yellow blow met on the beat
+   and swats what flies at her - so the bot answers anything the marks do not call red with it, and gives ground from
+   the rest. It is edge-triggered, so the bot must let the key UP again between sweeps: DEFLECT_TAP is that beat.
+   (Her dodge goes BACKWARD by itself, so the bot never has to aim it.) */
+export const DEFLECT_TAP = f => f % 8 < 2;
 /* THE KNIGHT SPENDS HIS BAR. A full RESOLVE is THE LAST CHARGE on a tap of C with his feet under him - so the bot taps it (C not
    already held, or it is not a tap) when the foe is in front of him, inside a charge's run and on his level. A bot that never
    spent it would measure a knight who never charges. */
@@ -58,7 +57,7 @@ export async function fightLab(BK, opts = {}) {
           defends++;
           if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
           else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
-          else if (h === 'warden') { if (braceNow(e, P)) k.block = true; else if (f % 14 === 0) BK.press('dodge'); }   /* plant it for a charge, hop back off anything else */
+          else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = DEFLECT_TAP(f); }   /* sweep at a yellow blow, step back off a red one */
           else k.block = true;
         } else if (ad > reach - 2) k[d > 0 ? 'right' : 'left'] = true;
         else if (P.atk < 0 && P.st >= 8 && Math.abs(e.y - P.y) < 26) { BK.press('atk'); swings++; }
@@ -205,6 +204,8 @@ export async function bossLab(BK, opts = {}) {
         else if (ad > (m === 'thrustTell' ? 86 : 62)) goal = boss.x - Math.sign(d || 1) * (h === 'warden' ? 30 : 40);   /* she must be INSIDE his sword for it to test her, whatever her own reach would rather do */
         else if (h === 'knight') { if (t < 0.08) k.block = true; }
         else if (h === 'pirate') { if (t < 0.16 && t > 0.08) k.block = true; }
+        /* THE WARDEN sweeps LATE: the shaft is live 0.18 s, so a tap at a tenth of a second left is still out when his sword arrives */
+        else if (h === 'warden') { if (t < 0.12) k.block = true; }
         else if (h === 'paladin') { if (t < 0.4) k.block = true; }
         else if (h === 'reaper') { if (dkRel.mode !== m || t > dkRel.t0 + 0.05) dkRel = { mode: m, t0: t, at: 0.45 - (0.12 + Math.random() * 0.22 + (Math.random() < 0.1 ? 0.3 : 0)) }; dkRel.t0 = t;
           if (t > dkRel.at) k.block = true; dkHold = 0; }   /* the ward up through his windup and LET GO at the flash, a reaction time late: one in ten is too late, and only turns it */
@@ -242,7 +243,7 @@ export async function bossLab(BK, opts = {}) {
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : 0.14)))) {
         P.face = Math.sign(d) || P.face;
-        if (h === 'warden' && braceNow(boss, P)) { k.block = true; }   /* THE BRACE, against a boss's charge the marks allow her to stop */
+        if (h === 'warden' && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = DEFLECT_TAP(f); }   /* THE DEFLECT, at any blow of his the marks do not call red */
         else if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
           if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;

@@ -185,6 +185,9 @@ export const SFX = {
   /* AND THE HAFT DID NOT. A dull knock of wood on armour: it must not be mistaken for the bell, because the whole
      lesson is the difference between the two. */
   haftKnock() { tone('sine', vary(175), 105, 0.08, 0.1); noise(0.05, 0.07, 700, 0.7); },
+  /* THE SHAFT SWEPT ACROSS HER: ash on steel, a woody crack with a bright tick riding over it. It must not be the
+     TIP'S BELL - that note means the good hit and nothing else - and it must not be the knight's iron block either. */
+  shaftTurn() { tone('square', vary(520), 300, 0.06, 0.05); noise(0.05, 0.08, 1600, 1.1); tone('triangle', vary(2400), 1700, 0.05, 0.04, 0.02); },
   /* the heel going into the turf as she plants it, and a charge dying on the point */
   braceSet() { tone('square', vary(300), 180, 0.07, 0.05); noise(0.07, 0.1, 900, 0.8); tone('sine', 120, 70, 0.11, 0.09, 0.02); },
   braceStop() { noise(0.18, 0.28, 560, 0.5); tone('sine', 88, 38, 0.32, 0.3); bell(1046, 0.5, 0.085); tone('triangle', vary(2200), 1400, 0.07, 0.05); },

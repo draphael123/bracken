@@ -142,6 +142,14 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
   if ((PROG.talentVersion || 1) < 4) { const mm = PROG.talents.knight; let had = false;
     if (mm) for (const id of ['bash', 'holdLine']) if (mm[id]) { had = true; delete mm[id]; }
     PROG.talentVersion = 4; if (had) PROG.talentsBackHero = 'knight'; }
+  /* THE BRACE WENT AND THE DEFLECT CAME (v5): the Warden's middle tree was built on a move that no longer exists - the
+     held brace - so every point she had in it comes back to her, once, and she is told. Nobody else's tree changed.
+     (SET THE SPEARS and A WIDER ROW keep their ids and their meaning, but they are refunded with the rest: a tree is
+     bought as a shape, and half a refund would leave her holding nodes whose parents she never paid for.) */
+  if ((PROG.talentVersion || 1) < 5) { const mm = PROG.talents.warden; let had = false;
+    if (mm) for (const id of ['deepHeel', 'wardline', 'standFast', 'setSpears', 'unyielding', 'braceCharge', 'widerRow', 'theWatch', 'everReady', 'holdTheLine']) if (mm[id]) { had = true; delete mm[id]; }
+    if (had) for (const k of ['skill', 'skill2']) if (PROG[k] === 'setSpears') PROG[k] = 'none';
+    PROG.talentVersion = 5; if (had) PROG.talentsBackHero = 'warden'; }
   try { for (const hh in PROG.talents) { const mm = PROG.talents[hh]; for (const id in mm) { const nd = TREE.find(q => q.hero === hh && q.id === id); if (!nd) delete mm[id]; else if (mm[id] > nd.max) mm[id] = nd.max; } } } catch {}   /* ranks past a trimmed tree come back as points */ }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
@@ -245,7 +253,7 @@ const HEROES = [
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: blows on its face are stopped and fill it. LET GO for a BLOOD NOVA that hurts, marks and heals by what it held; let go AS a blow lands and he RETURNS it. Every death fills his blood: F RAISES THE DEAD from a body near him for a share of it, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. G carries the skill he chooses." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. the dead take double' },
-  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 90 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE BRACE: plant the point and a YELLOW charge is stopped dead on it - a red one is not, and never will be. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it' },
+  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 90 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
    not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
@@ -283,21 +291,22 @@ const DK_KEYS = { ward: 'HOLD C: THE BLOOD WARD. BLOWS ON ITS FACE ARE STOPPED A
   controls: { block: ['blood ward', 'HOLD C, LET GO: NOVA', 'LB RB'], skill: ['raise dead', 'F / B  (HOLD, FULL: SURGE)', 'Y'], 'skill two': ['his skill', 'G / N (CHOSEN)', 'RT'] } };
 /* ==== THE WARDEN'S KEYS, IN WORDS. One place: her HUD prompts and the controls card read these, and her wood lesson
    should too when it is written. C is the one that has to be unlearned from the knight - it is not a shield. ==== */
-const WARDEN_KEYS = { brace: 'HOLD C: THE BRACE. THE POINT IS PLANTED, AND A YELLOW CHARGE DIES ON IT',
-  red: 'A RED CHARGE IS NEVER STOPPED, BY HER OR BY ANYONE: GET OUT OF ITS WAY',
+const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES AT HER',
+  impale: 'NO BUTTON: A YELLOW CHARGE THAT RUNS ONTO HER OUT-FRONT POINT DIES ON IT',
+  red: 'A RED BLOW IS NEVER TURNED, BY HER OR BY ANYONE: GET OUT OF ITS WAY',
   vigil: 'TIP HITS AND STOPPED CHARGES FILL VIGIL. FULL, TAP C ON THE GROUND: THE PHALANX',
   phalanx: 'A ROW OF SPEARS OUT OF THE GROUND, ACROSS THE ROOM, PINNING WHAT IT CATCHES',
   runThrough: 'HOLD X AND LET GO: THE RUN-THROUGH, A LUNGE THAT SKEWERS A WHOLE LINE OF THEM',
   pin: 'DOWN+X IN THE AIR PINS WHAT YOU LAND ON: X TO STAB IT, Z TO PULL FREE',
   vault: 'JUMP OUT OF A DASH AND SHE PLANTS THE SPEAR AND VAULTS',
-  controls: { block: ['the brace', 'HOLD C  (FULL: TAP C)', 'LB RB'], dodge: ['hop back', 'V / SHIFT', 'B'] } };
-const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE BRACE', 'SKIRMISHER'] };
+  controls: { block: ['the deflect', 'TAP C  (FULL: PHALANX)', 'LB RB'], dodge: ['back-step', 'V / SHIFT, TWICE', 'B'] } };
+const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'] };
 const TREE_WHO = { knight: ['COMBOS, BLEEDS AND FINISHERS', 'THE SHIELD: TURN IT, THEN ANSWER', 'THE AIR AND THE RUN: KEEP MOVING'],
   pyro: ['THROWN EMBERS: SKIP, SPLIT AND SPREAD', 'THE JET AND THE HEAT', 'FIGHT IN THE FIRE AND WALK OUT'],
   paladin: ['THE LIGHT, AND WHAT IT JUDGES', 'THE AEGIS: A WALL THAT WALKS', 'THE MAUL AND THE GROUND IT SHAKES'],
   pirate: ['THE PISTOL: ONE BALL, MADE TO COUNT', 'GOLD: THE PURSE IS A WEAPON', 'CUTLASS AND HOOK: CLOSE, AND CLOSER'],
   reaper: ['THE GREATSWORD, THE MARK, THE WOUND', 'RAISE DEAD (F): MORE, AND CHEAPER', 'THE WARD STOPS, THE NOVA PAYS'],
-  warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE BRACE, AND WHAT RUNS ONTO IT', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'] };
+  warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE SHAFT: TURN IT, AND HOLD THE LINE', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'] };
 const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
@@ -492,16 +501,16 @@ const TREE = [];
   N('warden', 0, 2, 2, 'exact', 'EXACTNESS', 1, 'a tip hit on something winding up takes the blow off it', 'openPoint');
   N('warden', 0, 3, 0, 'deepSet', 'DEEP SET', 1, 'the further out the point lands, the harder it bites: up to a fifth more at full stretch', 'ringing');
   N('warden', 0, 3, 1, 'spearhead', 'SPEARHEAD', 1, 'every third thrust of a run IS a run-through, with no winding up at all', 'driveHome', 'cap');
-  // THE BRACE: the planted spear, and what runs onto it
-  N('warden', 1, 0, 0, 'deepHeel', 'DEEP HEEL', 2, 'the brace drains 20% less wind a point');
-  N('warden', 1, 0, 2, 'wardline', 'WARD LINE', 1, 'the braced point covers higher and lower: a charge no longer has to be exactly on her level');
-  N('warden', 1, 1, 0, 'standFast', 'STAND FAST', 1, 'a charge stopped on the point pays double VIGIL and stays broken half again as long', 'deepHeel');
-  N('warden', 1, 1, 1, 'setSpears', 'SET THE SPEARS', 1, 'F: plant three spears in the ground right in front of her, and they pin', 'deepHeel', 'skill');
-  N('warden', 1, 1, 2, 'unyielding', 'UNYIELDING', 1, 'the brace holds when the wind runs out: she is tired, not broken', 'wardline');
-  N('warden', 1, 2, 0, 'braceCharge', 'COUNTERPOISE', 1, 'the blow that stops a charge counts as a heavy blow, so everything that answers one answers it', 'standFast');
+  // THE DEFLECT: the shaft swept across her, what it turns, and the line she holds with the point
+  N('warden', 1, 0, 0, 'quickShaft', 'QUICK SHAFT', 2, 'the sweep costs a fifth less wind a point, and she is out of it a fifth sooner');
+  N('warden', 1, 0, 2, 'wideGuard', 'WIDE GUARD', 1, 'the sweep covers higher and reaches further out, and the point catches a charge coming in off her level');
+  N('warden', 1, 1, 0, 'standFast', 'STAND FAST', 1, 'a blow turned on the shaft pays double VIGIL, and what threw it is left reeling twice as long', 'quickShaft');
+  N('warden', 1, 1, 1, 'setSpears', 'SET THE SPEARS', 1, 'F: plant three spears in the ground right in front of her, and they pin', 'quickShaft', 'skill');
+  N('warden', 1, 1, 2, 'sendBack', 'SEND IT BACK', 1, 'an arrow or a thrown thing swatted out of the air goes back the way it came, at whoever threw it', 'wideGuard');
+  N('warden', 1, 2, 0, 'counterpoise', 'COUNTERPOISE', 1, 'the blow she turns leaves the one that threw it OPENED: the next blow on it lands twice as hard', 'standFast');
   N('warden', 1, 2, 1, 'widerRow', 'A WIDER ROW', 1, 'the phalanx sets its spears closer together and carries them further across the room', 'setSpears');
-  N('warden', 1, 2, 2, 'theWatch', 'THE WATCH', 1, 'the bar fills by itself while the point is planted: standing still is doing something', 'unyielding');
-  N('warden', 1, 3, 0, 'everReady', 'EVER READY', 1, 'the phalanx leaves one spear standing where she planted it, long after the rest go down', 'braceCharge');
+  N('warden', 1, 2, 2, 'everReady', 'EVER READY', 1, 'a sweep that TURNS something is back in her hands at once: no recovery on it at all', 'sendBack');
+  N('warden', 1, 3, 0, 'spitted', 'SPITTED', 1, 'a charge that runs onto her point is HELD on it as well as broken, the way her plunge holds one', 'counterpoise');
   N('warden', 1, 3, 1, 'holdTheLine', 'HOLD THE LINE', 1, 'the phalanx STAYS UP: a standing wall of spears for three seconds, and what walks into it is pinned again', 'widerRow', 'cap');
   // SKIRMISHER: the vault, the hop back, and the pin
   N('warden', 2, 0, 0, 'lightFoot', 'LIGHT FOOT', 2, 'the hop back carries her 15% further a point');
@@ -564,6 +573,13 @@ const sword = () => swordById(PROG.sword);
 const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + Math.floor(heroLevel() / 2) + Math.floor(LV_GROW() * (isReaper() ? 1.5 : 1))) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
 const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal())), plungeCost = () => Math.max(12, ST.plunge - Math.round(2 * footTal()));
+/* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
+   less wind, and she may take a SECOND one straight away - it is for the constant small adjustments of range her
+   tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
+   GRACE IS SHORT: STEP_INV, a good deal less than the old roll's whole length, or she would simply step through
+   everything in the game instead of spacing it. ==== */
+const STEP_INV = 0.09, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
+const stepCost = () => Math.max(4, dodgeCost() - 7);
 /* THE MEDAL ROLL: every medal on every level you can see, bronze 1, silver 2, gold 3 */
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
@@ -1054,7 +1070,7 @@ function coopRegroup() {
    at once, the pair of them wake at the last shrine and each is charged a death. */
 function goDown(killer) {
   P.down = DOWN_T; P.reviveT = 0; P.hp = 0; P.killer = killer || null;
-  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.bracing = false;
+  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.deflectT = 0; P.deflectRec = 0;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
@@ -1290,7 +1306,10 @@ function allyTick() {
   /* THREE. THE TELL, answered by this hero's own rule out of the lab's one list. */
   if (foe && windingUp(foe) && fdist < 90) {
     p.face = Math.sign(foe.x - p.x) || p.face;
-    if (h === 'warden' && LABMOD.braceNow(foe, p)) { keys.block = true; return; }
+    /* THE WARDEN TAPS C. Her deflect answers any blow the marks do not call red, so the ally sweeps at those and gives ground from the rest */
+    if (h === 'warden') { if (!LABMOD.HARD_TELLS.has(foe.t + '|' + foe.mode)) keys.block = p.aiT % 8 < 2;
+      else if (p.aiT % 12 === 0) { keys[foe.x > p.x ? 'left' : 'right'] = true; apress('dodge'); }
+      return; }
     if (LABMOD.SHIELDED(h) && !LABMOD.HARD_TELLS.has(foe.t + '|' + foe.mode)) { keys.block = true; return; }
     if (p.aiT % 12 === 0) { keys[foe.x > p.x ? 'left' : 'right'] = true; apress('dodge'); }   /* no shield turns it: go from it */
     return;
@@ -2402,7 +2421,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
-  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, runThrough: false, onMover: null, face: 1, block: false, dodge: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
+  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, runThrough: false, onMover: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
   mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && m.free && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.bored = false; } // the Ferryman poles back up for you
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
@@ -3043,8 +3062,8 @@ const TAL_BY_NAME = {
   /* THE WARDEN. The point is a blade, the brace is a shield, the footwork is a boot - and the ones that are really a
      rule about time or blood take the glyph of the thing they do, not of the tree they grow in. */
   keenPoint: 'blade', throughAndThrough: 'blade', openPoint: 'eye', ringing: 'bolt', driveHome: 'chev', exact: 'eye',
-  deepSet: 'blade', spearhead: 'blade', deepHeel: 'bolt', wardline: 'shield', standFast: 'shield', unyielding: 'shield',
-  braceCharge: 'blade', widerRow: 'ring', theWatch: 'hourglass', everReady: 'ring', holdTheLine: 'shield',
+  deepSet: 'blade', spearhead: 'blade', quickShaft: 'bolt', wideGuard: 'shield', standFast: 'shield', sendBack: 'reflect',
+  counterpoise: 'eye', widerRow: 'ring', everReady: 'bolt', spitted: 'blade', holdTheLine: 'shield',
   lightFoot: 'boot', vaulter: 'boot', giveGround: 'boot', longVault: 'boot', pinTwist: 'drop', freeHand: 'bolt',
   airPoint: 'boot', holdThem: 'hourglass', skirmisher: 'boot',
 };
@@ -4123,7 +4142,8 @@ function hudMeterLabel() {
   if (isWarden()) { if (state !== 'play' && state !== 'talk') return null;
     if (P.pinning) return { s: 'X STAB   Z FREE', col: blink ? '#dff0d8' : '#8fd160' };   /* on the spear: the two ways off it */
     if ((P.vigil || 0) >= 100) return { s: 'PHALANX: C', col: blink ? '#8fd160' : '#dff0d8' };
-    return P.bracing ? { s: 'BRACED', col: '#8fd160' } : { s: 'HOLD C  BRACE', col: '#6a7a62' }; }
+    if ((P.deflectT || 0) > 0) return { s: 'TURNING', col: '#8fd160' };
+    return { s: (P.deflectRec || 0) > 0 ? 'RECOVER' : 'TAP C  DEFLECT', col: '#6a7a62' }; }
   if (isReaper()) { if (state !== 'play' && state !== 'talk') return null;   /* the plates own the screen when a menu is up */
     // WHAT HIS KEYS DO RIGHT NOW: hold C for the ward, and with a full blood HOLD F for the surge - and it says
     // which. While the ward is up it says what letting go will be (DK_KEYS.hud).
@@ -4157,7 +4177,10 @@ function blowStop(e, dmg) {
 function shakeCam(n, k = 0) { const a = SET.shakeAmt === undefined ? (SET.shake ? 1 : 0) : SET.shakeAmt; if (a > 0) { shake = Math.max(shake, n * a); kick += k * a; } }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
-const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
+/* A DODGE IS UNTOUCHABLE FOR AS LONG AS ITS OWN GRACE LASTS, not for as long as it lasts. P.dodgeInv is set at the
+   start of every one of them (the roll's whole length for everybody else, STEP_INV for the Warden's back-step), so a
+   cheap repeatable step cannot be a cheap repeatable invulnerability. */
+const invulnerable = () => P.inv > 0 || P.grace > 0 || (P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0)) || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
 // the creatures that have a recoil frame: it is the LAST frame of their set, and it holds for a fifth of a second
 /* HURT, FOR THE REST OF THEM. Ten of the most-placed creatures had no hurt pose, so a blow landed on them the way it lands on a
    wall. Each gets one made from its own first frame: rocked back about the heel and a pixel off the line of the blow, with
@@ -4243,6 +4266,16 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     SFX.parry(); hitstop(0.1); zoomKick(1.05, 0.2); shakeCam(3, -P.face * 2);
     ringAt(P.x + P.face * 9, P.y - 9, 18, '#ffd36b', 0.3); number(P.x, P.y - 28, 'TURNED IT', '#ffd36b'); parryBurst();
     sparks(P.x + P.face * 10, P.y - 9, P.face, 10);
+    return 'blocked';
+  }
+  /* THE WARDEN'S DEFLECT: the shaft swept across her body on the beat. It turns ANY yellow blow from the front, the
+     same as every other hero's answer, and never a red one - `unblockable` is the whole test, and it is not hers to bend. */
+  if (isWarden() && (P.deflectT || 0) > 0 && front && !unblockable) {
+    const f = nearFoe(fromX);
+    if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.4 : 1.1 * (tal('standFast') ? 2 : 1)); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 150;
+      if (tal('counterpoise')) { f.sunder = 2.5; number(f.x, f.y - (f.h || 16) - 22, 'OPENED UP', '#8fd160'); } }   /* COUNTERPOISE */
+    deflectPays(P.x + P.face * 12, P.y - 10);
+    sparks(P.x + P.face * 12, P.y - 10, P.face, 9); number(P.x, P.y - 28, 'TURNED IT', '#ffd36b'); parryBurst();
     return 'blocked';
   }
   /* A PIERCING BLOW (the crossbow bolt) goes through a guard that was already up: only a guard raised as it lands - a parry - turns it */
@@ -4491,7 +4524,7 @@ function addPoise(e, dmg, fromX, plunge) {
    half-frame stop, and its own snap of a sound (SFX.poiseBreak; not the hurt sound, not the player's guard break). The camera only
    shakes when motion is not reduced. A trip (the sweep) is the same state and gets the same beat. */
 function breakBeat(e) { e.breakFlash = 0.07; hitstop(0.08); if (!SET.reduceMotion) shakeCam(4); if (SFX.poiseBreak) SFX.poiseBreak(!!(e.maxHp || e.big)); else SFX.clank(); }
-/* ==== WHAT THE BRACED POINT STOPS, AND WHAT IT DOES NOT. THE RULE IS ABSOLUTE: a YELLOW charge is stopped, a RED one
+/* ==== WHAT RUNS ONTO THE POINT AND DIES THERE, AND WHAT DOES NOT. THE RULE IS ABSOLUTE: a YELLOW charge is stopped, a RED one
    runs straight through her. So this is a default-DENY list - a charge she can stop has to be NAMED here - and a red
    charge can therefore never be stopped by an oversight, only by somebody deliberately writing it in.
    The names are `type|mode` of the RUNNING charge (not its windup), read off `node tools/tells.mjs --json`, which
@@ -4502,34 +4535,86 @@ const BRACE_STOPS = new Set(['lancer|charge', 'goat|charge', 'ram|charge', 'ram|
    mark for updateGreatHound at all, so there is nothing saying that blow is yellow, and unproven means NOT STOPPED.
    That is what default-deny is for. If its charge is ever given a yellow !, it can be added - with the mark as the
    evidence, never without.) */
-/* The planted spear is a line, not a swing, so it is asked every frame the brace is up: is something coming AT her,
-   fast, on her level, and has it reached the point? */
-function braceWatch() {
+/* ==== AND NOBODY HOLDS A BUTTON FOR IT. The held brace is gone: she does not stand there predicting a charge, she
+   simply has the spear OUT IN FRONT OF HER - her thrust, her run-through - and whatever runs onto the point is spitted
+   on it. The point is a line, not a swing, so this is asked every frame that line is out: is something coming AT her,
+   fast, on her level, and has it reached the point? ==== */
+function impaleWatch() {
   for (const e of enemies) {
-    if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || (e.braceHit > 0)) continue;
+    if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || (e.pointHit > 0)) continue;
     if (Math.sign(e.x - P.x) !== P.face) continue;
     const d = tipReach(e);
     if (d > TIP_AT + 10 || d < SHAFT_AT) continue;                                   /* it must have REACHED the point */
-    if (Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > (tal('wardline') ? 44 : 26)) continue;   /* and be on her level - WARD LINE covers higher and lower */
+    if (Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > (tal('wideGuard') ? 44 : 26)) continue;   /* and be on her level - WIDE GUARD covers higher and lower */
     if (!((e.x - P.x) * (e.vx || 0) < 0 && Math.abs(e.vx || 0) > 70)) continue;      /* and be coming, fast */
     if (!BRACE_STOPS.has(e.t + '|' + (e.mode || ''))) continue;                      /* a red charge is not on the list */
-    braceStop(e);
+    impale(e);
   }
 }
-function braceStop(e) {
-  e.braceHit = 1.2;
+function impale(e) {
+  e.pointHit = 1.2;
   const fast = tal('standFast') ? 1.5 : 1;   /* STAND FAST: it stays broken half again as long, and pays double */
   e.broken = Math.max(e.broken || 0, (e.maxHp && !e.mini ? 1.4 : 2.2) * fast); e.poise = 0; e.poiseCd = e.broken + 3;
   e.vx = 0; e.vy = Math.min(e.vy || 0, -60); e.stagger = Math.max(e.stagger || 0, e.broken);
-  /* COUNTERPOISE: the blow that stops a charge is a HEAVY blow, so SUNDER, EXECUTION, the stagger bar and the
-     straw man's lesson all hear about it - set up for the length of the call and put straight back, as lcStrike does. */
-  { const was = { h: P.heavy, hs: P.heavySwing }; if (tal('braceCharge')) { P.heavy = true; P.heavySwing = true; }
+  { const was = { h: P.heavy, hs: P.heavySwing };
     try { hurtEnemy(e, Math.round(swordDmg() * 1.3), P.x, false); } finally { P.heavy = was.h; P.heavySwing = was.hs; } }
   gainVigil(30 * (tal('standFast') ? 2 : 1));
+  /* SPITTED: it does not just stop on the point, it is HELD there - the same pin her plunge and her phalanx put a body in */
+  if (tal('spitted') && e.alive) pinFoe(e, 1.2);
   breakBeat(e); SFX.braceStop(); SFX.tipRing();
   ringAt(e.x, e.y - (e.h || 16) / 2, 24, '#8fd160', 0.4); sparks(e.x, e.y - (e.h || 16) / 2, -P.face, 10);
   shakeCam(5, -P.face * 3); zoomKick(1.05, 0.2); hitstop(0.09);
   number(e.x, e.y - (e.h || 16) - 20, 'BROKEN', '#ffd36b');
+}
+/* ==== THE DEFLECT (C). Every other hero's C answers a BLOW - the knight blocks, the freebooter parries, the aegis and
+   the blood ward absorb, the pyromancer rolls - and hers answered a CHARGE, and only a yellow one, so most of the time
+   it did nothing and the rest of the time it rooted her, which fights the footwork she is built on.
+   This is a SWEEP OF THE SHAFT across her body instead: it TURNS ANY YELLOW BLOW met on the beat, and it SWATS arrows,
+   thrown things and other small missiles out of the air at the far end of the spear rather than at her chest. A RED
+   blow is never turned - that rule bends for nobody, and `unblockable` is the whole of the test.
+   It does NOT root her: nothing here touches her feet, so she may walk straight out of it. It is short and cheap, and
+   a sweep that met nothing leaves her with DEF_REC of recovery she can neither sweep nor swing in, so mistiming costs.
+   IT SETS P.parryT - one of the clocks palOpened already reads. That is how the Paladin's ward opens to her: by the
+   one rule on the clocks an answer sets, with no hero named in a branch of it. ==== */
+const DEF_LIVE = 0.18, DEF_REC = 0.26, DEF_COST = 7, DEF_REACH = 44;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
+function deflect() {
+  if (!spend(Math.max(3, Math.round(DEF_COST * (1 - 0.2 * tal('quickShaft')))))) { SFX.buzz(); P.stFlash = 0.3; return; }
+  P.deflectT = DEF_LIVE; P.deflectRec = DEF_REC * (1 - 0.2 * tal('quickShaft'));   /* QUICK SHAFT: cheaper, and back in her hands sooner */
+  noteVerb('parry'); SFX.shaftTurn();
+  streaks(P.x + P.face * 14, P.y - 11, P.face, ['#dff0d8', '#c9b27c'], 150);
+  dust(P.x + P.face * 9, P.y, 2);
+}
+/* WHAT IT SWATS OUT OF THE AIR, AND FROM HOW FAR: anything flying at her inside the shaft's own reach - the point's
+   forty-four pixels in front, and a hand's width behind her grip - and never something the mark calls unblockable,
+   which is the same NO a shield gets. SEND IT BACK returns it to whoever loosed it. */
+function deflectSwat() {
+  const r = DEF_REACH + (tal('wideGuard') ? 10 : 0), up = tal('wideGuard') ? 30 : 24;
+  const hb = P.face > 0 ? { l: P.x - 4, r: P.x + r, t: P.y - up, b: P.y + 4 } : { l: P.x - r, r: P.x + 4, t: P.y - up, b: P.y + 4 };
+  for (const s of seeds) {
+    if (s.dead || s.reflected || s.noBlock || s.unblockable) continue;
+    if (!overlap(hb, { l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 })) continue;
+    deflectPays(s.x, s.y);
+    if (tal('sendBack') && (s.owner || s.from)) { s.owner = s.owner || s.from; reflectSeed(s); }   /* SEND IT BACK */
+    else if (s.bolt && returnBolt(s)) { /* a bolt goes home to the shaman, as a parry sends it */ }
+    else s.dead = true;
+    sparks(s.x, s.y, -P.face, 6); number(s.x, s.y - 8, 'PARRY', '#8fd160');
+  }
+}
+/* WHAT A TURN PAYS, wherever along the shaft it was turned: the bar, the beat, and the clock every answer sets. */
+function deflectPays(x, y) {
+  parries++; blocks++; trialEvent('parry');
+  P.parryT = 0.22; P.inv = Math.max(P.inv || 0, 0.1);   /* a breath of grace, so one sweep is not beaten by two blows in the same frame */
+  gainVigil(12 * (tal('standFast') ? 2 : 1));   /* STAND FAST: a turned blow pays the bar double */
+  if (tal('everReady')) P.deflectRec = 0;   /* EVER READY: a sweep that TURNED something is back in her hands at once */
+  SFX.parry(); SFX.shaftTurn(); hitstop(0.07); zoomKick(1.03, 0.16); shakeCam(2, -P.face * 2);
+  ringAt(x, y, 14, '#dff0d8', 0.26);
+  deflectLesson();
+}
+/* SAID IN WORDS TWICE AND THEN LEFT ALONE, as the tip's lesson is */
+function deflectLesson() {
+  if (!L || L.trial || (PROG.turnSeen || 0) >= 2) return;
+  PROG.turnSeen = (PROG.turnSeen || 0) + 1; saveProgress(); hintT = 4.5;
+  hintMsg = 'TAP C ON THE BEAT: THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES AT HER. NEVER A RED ONE.';
 }
 function drawPoise(e, cx, cy) {
   const m = poiseMax(e); if (!m) return; const w = Math.max(14, Math.min(40, (e.w || 12) + 6)), x = Math.round(e.x - w / 2 - cx), y = Math.round(e.y - (e.h || 16) - 10 - cy);
@@ -4843,8 +4928,7 @@ function spendVigil() {
     const ty0 = Math.floor(P.y / TS); let gy = null;
     for (let k = 0; k <= 3 && ty0 + k < LH; k++) if (isSolid(tx, ty0 + k)) { gy = (ty0 + k) * TS; break; }
     if (gy === null) continue;                                              /* a hole in the floor has no ground to come out of */
-    /* EVER READY: the first one she plants is left standing long after the rest have gone back down */
-    phalanx.push({ x, y: gy, t: 0, delay: n * 0.045, hit, done: false, stay: (n === 0 && tal('everReady')) ? PHX_LIFE * 6 : PHX_LIFE });
+    phalanx.push({ x, y: gy, t: 0, delay: n * 0.045, hit, done: false, stay: PHX_LIFE });
     n++;
   }
 }
@@ -5506,7 +5590,7 @@ function fireHeavy() { noteVerb('heavy');
   /* THE WARDEN LUNGES. She is the one hero whose held blow TRAVELS: the coil puts her weight over the back foot and the
      drive carries her a tile and a half behind the point, so the line she clears is deeper than the box on any one frame.
      P.runThrough is what the box, the haft's shove and the drive all read to know this is the lunge and not a swing. */
-  if (isWarden()) { P.runThrough = true; P.vx = P.face * 40; P.rtHit = null; }
+  if (isWarden()) { P.runThrough = true; P.rtWound = wound; P.vx = P.face * 40; P.rtHit = null; }   /* rtWound: how far it was wound is how far it carries her */
   SFX.heavy(); shakeCam(3, P.face * 2); zoomKick(1.03, 0.16);
   streaks(P.x + P.face * 14, P.y - 12, P.face, isPyro() ? '#ff9a5c' : '#dfe8ff');
   if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9), sp: 200, hit: new Set(), sunder: !!tal('sunder') }); shakeCam(5); SFX.thud(); SFX.stone(); }
@@ -5929,12 +6013,11 @@ function updatePlayer(dt) {
     else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.2 && free && !(P.hookCd > 0) && !P.hookT) throwHook(); }
     else { if (P.cHeld > 0 && P.cHeld < 0.2 && free && !(P.parryCd > 0)) { P.parryW = 0.2; P.parryCd = 0.55; SFX.pSlash(); } P.cHeld = 0; }
   }
-  /* ==== THE WARDEN'S C: THE BRACE. She drops the heel of the spear into the turf and levels the point, and holds it
-     while the wind lasts. Anything that RUNS OR CHARGES onto the point is stopped dead on it: it takes the tip's
-     damage, it is BROKEN exactly the way a poise break breaks it - e.broken, which updateEnemies acts on ABOVE every
-     creature's own update, so the charge really does stop instead of being driven on again next frame - and the bar
-     pays her for having read it. ==== */
-  P.bracing = false;
+  /* ==== THE WARDEN'S POINT, WITH NO BUTTON ON IT. Anything that RUNS OR CHARGES onto her out-front spear is stopped
+     dead on it: it takes the tip's damage, it is BROKEN exactly the way a poise break breaks it - e.broken, which
+     updateEnemies acts on ABOVE every creature's own update, so the charge really does stop instead of being driven on
+     again next frame - and the bar pays her for it. She used to have to hold C and guess; now she only has to be
+     thrusting, which is what she was doing anyway. ==== */
   /* ON THE SPEAR: she is stood over something she has pinned, and nothing else she owns runs while she is. */
   if (P.pinning) {
     const pn = P.pinning, pe = pn.e;
@@ -5954,19 +6037,18 @@ function updatePlayer(dt) {
   if (isWarden()) {
     P.vigil = Math.max(0, Math.min(100, P.vigil || 0)); P.castT = Math.max(0, (P.castT || 0) - dt);
     P.blastT = Math.max(0, (P.blastT || 0) - dt);
+    /* HER CLOCKS. deflectT is the sweep while it is live, deflectRec the price of one that met nothing, and parryT the
+       clock every hero's answer sets - palOpened reads it, so hers is counted down honestly and never left standing. */
+    for (const k of ['deflectT', 'deflectRec', 'parryT']) P[k] = Math.max(0, (P[k] || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !P.pinning && !(P.blastT > 0);
     if (cDown && free && (P.vigil || 0) >= 100) spendVigil();
-    else if (keys.block && free && P.ground && (P.st > 0 || tal('unyielding'))) {
-      P.bracing = true; P.vx = 0;
-      if (!P.braceWas) { SFX.braceSet(); dust(P.x - P.face * 6, P.y, 4); ringAt(P.x + P.face * 22, P.y - 10, 10, '#8fd160', 0.22); }
-      P.st = Math.max(0, P.st - 9 * (1 - 0.2 * tal('deepHeel')) * dt); P.stDelay = ST.delay;   /* DEEP HEEL: cheaper to stand there */
-      if (tal('theWatch')) gainVigil(7 * dt);   /* THE WATCH: the bar fills while the point is planted - standing still is doing something */
-      /* UNYIELDING: out of wind is tired, not broken. She keeps the point up; she simply has nothing left to spend. */
-      if (P.st <= 0 && !tal('unyielding')) { P.bracing = false; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
-    }
-    if (P.bracing) braceWatch();
-    P.braceWas = P.bracing;
+    else if (cDown && free && P.deflectRec <= 0 && P.deflectT <= 0) deflect();   /* THE DEFLECT: a tap, never a hold */
+    if (P.deflectT > 0) deflectSwat();
+    /* THE POINT IS OUT: her thrust and her run-through carry it in front of her, and a charge that runs onto it is
+       spitted with no button held. The rising cut goes over her head and the low sweep along the floor - neither is a
+       line in front of her, so neither spits anything. */
+    if (P.atk >= 0 && P.swingKind !== 'rise' && P.swingKind !== 'sweep') impaleWatch();
   }
   if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C on the ground is THE LAST CHARGE.
     P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
@@ -5992,7 +6074,7 @@ function updatePlayer(dt) {
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && P.ground) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
-  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.bracing || P.pinning || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* the heel is in the ground: a braced spear does not walk, and neither does a pinning one */
+  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
   // THE DASH: tap a direction twice and you go, on the ground or in the air, once per landing. It does not
@@ -6017,13 +6099,19 @@ function updatePlayer(dt) {
   /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
   if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0 && !rushing()) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
-    if (spend(dodgeCost())) {
+    if (spend(isWarden() ? stepCost() : dodgeCost())) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
       else if (!P.ground) { P.airRolled = true; P.vy = Math.min(P.vy, -80); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); } /* AIR ROLL */
-      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : 0.3; P.dodgeCd = 0.5;
-      /* THE WARDEN HOPS BACKWARD. She does not roll through a blow, she gives ground with the point still up - so
-         whatever she just left is back at the end of the spear by the time she lands. The sign does the whole job. */
-      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? (230 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 205 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? -235 * (1 + 0.15 * tal('lightFoot')) : 215); P.block = false; dodges++;   /* LIGHT FOOT: the hop back carries further */
+      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : 0.3; P.dodgeCd = 0.5;
+      P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;   /* the grace is the whole of it, unless the hero says otherwise */
+      /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
+      if (isWarden()) { const quick = time - (P.stepAt || -9) < STEP_PAIR && (P.stepN || 0) < 2;
+        P.stepN = quick ? (P.stepN || 0) + 1 : 1; P.stepAt = time;
+        P.dodgeCd = P.stepN >= 2 ? STEP_CD : STEP_GAP; P.dodgeInv = STEP_INV; }
+      /* THE WARDEN STEPS BACKWARD. She does not roll through a blow, she gives ground with the point still up - so
+         whatever she just left is back at the end of the spear by the time she lands. The sign does the whole job,
+         and the number is half what the roll's was: this is a step, and she is expected to take two of them. */
+      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? (230 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 205 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? -175 * (1 + 0.15 * tal('lightFoot')) : 215); P.block = false; dodges++;   /* LIGHT FOOT: the step back carries further */
       /* GIVE GROUND: whatever had got inside the spear is left reeling as she leaves - the hop buys the distance AND the beat */
       if (isWarden() && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
         if (Math.abs(e.x - P.x) > SHAFT_AT || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue;
@@ -6047,7 +6135,7 @@ function updatePlayer(dt) {
   }
   if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
   if (dodging && isPirate() && tal('rollCut')) P.dashLate = 0.2;   /* TUMBLING CUT: a swing out of the roll is a dash attack */
-  if (dodging) { P.dodge -= dt; if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2 }); }
+  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2 }); }
   // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
   if (P.alight > 0) { P.alight -= dt;
     if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 10, y: P.y - 4 - Math.random() * 14, vx: -P.vx * 0.12, vy: -20 - Math.random() * 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -30, fire: true });
@@ -6127,7 +6215,7 @@ function updatePlayer(dt) {
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
      never from the air, and it wants ground under the plant. It is a RIDE and not a jump: the reach model must never
      count it as ordinary footing, or levels read as reachable when they are not (tools/reach.mjs). */
-  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0 || tal('vaulter')) && !stunned && !P.plunge && !dodging && !P.bracing && (P.st >= 10 || tal('vaulter'))) {
+  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0 || tal('vaulter')) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: no dash to set it up and no wind to pay for it */
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
     P.inv = Math.max(P.inv, 0.2);   /* she is up on the shaft and over it: a foe under her is gone past, not run into */
@@ -6148,7 +6236,7 @@ function updatePlayer(dt) {
   for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
-  if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !rushing()) {
+  if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !(P.deflectRec > 0) && !rushing()) {   /* (a sweep that met nothing is a beat she cannot swing in) */
     if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
@@ -6159,7 +6247,7 @@ function updatePlayer(dt) {
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0 && !P.swim) dashAttack(); else if (!P.swim && keys.up && !keys.down && (P.ground || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started */ else if (P.ground && !P.swim && keys.down) lowSweep(); else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
-  if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; }   /* the lunge is over when the blow is */
+  if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
   if (P.atk >= 0) {
     { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
       const was = P.atk;
@@ -6167,6 +6255,17 @@ function updatePlayer(dt) {
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
         P.atk = -1; P.heavy = false; P.swingEndT = time; } }
+    /* ==== AND THE RUN-THROUGH TRAVELS. It did not: measured in the page, holding the swing and letting it go moved her
+       NOUGHT pixels across the whole thing, because a ground swing's friction (1600 a second) eats the shove fireHeavy
+       hands her inside a single frame. A lunge that does not move is a thrust with a deeper box, which is exactly what
+       the owner saw when he said he could see the old attacks. So the drive is applied HERE, every frame of it - after
+       the friction has had its say and before she is moved - as a short coil back over the heel, then the whole body
+       behind the point, then a stop. How far it carries her is how far it was wound, which is what winding is FOR. ==== */
+    if (isWarden() && P.runThrough && !P.pinning && !stunned) {
+      const w = 0.55 + 0.65 * Math.max(0, Math.min(1, P.rtWound ?? 1));
+      const v = P.atk < 0.05 ? -25 : P.atk < 0.26 ? 130 * w : P.atk < 0.32 ? 55 : 0;
+      if (v) P.vx = P.face * v * (P.ground ? 1 : 0.7);
+    }
     if (P.atk >= 0.03 && P.atk < 0.17) {
       const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6;
       const px0 = P.x + P.face * 2, py0 = P.y - 9;
@@ -15224,7 +15323,7 @@ function updateEnemies(dt) {
     if (e.bleed > 0) { e.bleed -= dt; e.bleedT = (e.bleedT || 0) - dt; if (e.bleedT <= 0) { e.bleedT = 0.5; if (e.alive) { e.hp -= (e.bleedN || 1); e.flash = 0.05; number(e.x, e.y - e.h - 8, e.bleedN || 1, '#c9463d'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } }
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - e.h / 2, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#8f2f28', size: 1, grav: 120 }); }
     if (e.frozen > 0) e.frozen -= dt;
-    if (e.braceHit > 0) e.braceHit -= dt;   /* it has already been stopped on the point once: it does not pay her twice for the same run */
+    if (e.pointHit > 0) e.pointHit -= dt;   /* it has already been spitted on the point once: it does not pay her twice for the same run */
     if (e.sunder > 0) e.sunder -= dt;
     if (e.hurtT > 0) e.hurtT -= dt;
     if (e.poiseCd > 0) e.poiseCd -= dt;
@@ -15781,7 +15880,7 @@ function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null; 
   P.heavySwing = P.combo % 3 === 0; const rip = tal('riposte') && P.riposteT > 0;
   /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
      flag goes on with it, so the deep box, the drive and everything that reads the lunge all see the same blow. */
-  if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.vx = P.face * 40; SFX.heavy(); }
+  if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
   if (P.heavySwing && P.ground && isPaladin() && tal('aftershock') && !P.heavy) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: tal('shockwave') ? 1.5 : 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.stone(); number(P.x, P.y - 30, 'AFTERSHOCK', '#ffe6a0'); }   /* AFTERSHOCK */
   if (P.heavySwing && P.combo >= 6 && hero() === 'knight' && tal('unbroken')) number(P.x, P.y - 32, 'UNBROKEN ' + P.combo, '#fff6e0');
   P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip ? 2 : 1);
@@ -18393,7 +18492,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
-      else if (P.dodge > 0) { key = 'roll'; frame = Math.floor((0.3 - P.dodge) / 0.3 * 4) * (P.face > 0 ? 1 : -1); }
+      else if (P.dodge > 0) { const dm = P.dodgeMax || 0.3; key = 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (P.face > 0 ? 1 : -1); }   /* (its own length, so a short back-step plays all four beats of it and not the first one twice) */
       else if (P.pinning && K.R.pin) key = 'pin';   /* THE PIN: down on the spear, both hands on it, holding the thing under the point */
       else if (P.plunge) key = 'plunge';
       else if (P.bashing && P.atk >= 0 && K.R.bash) key = P.atk < 0.2 ? 'bash' : 'recover';   /* THE SHIELD CHARGE: the slam, then the shield let down */
@@ -18403,7 +18502,8 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
-      else if (P.charge > 0) { key = K.R.brace ? 'brace' : 'heavy'; frame = 0; }
+      else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
+        key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0) { { const cm = (P.combo || 1) % 3, ck = !P.ground && K.R.air ? 'air' : cm === 2 ? 'atkB' : cm === 0 ? 'atkC' : 'atk'; key = K.R[ck] ? ck : 'atk'; }   /* first swing, backhand, thrust */
         frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
@@ -18411,7 +18511,8 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && P.swingKind === 'rise' && P.atk >= 0) { key = 'cast'; frame = P.atk < 0.09 ? 0 : 1; }   /* the thrust straight up has its own pose: the spear over her head, not across her */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.castT > 0) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
-      else if (P.block || P.jet || P.aegis || P.warding || P.bracing) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
+      else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
+      else if (P.block || P.jet || P.aegis || P.warding) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
       else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
       else if (!P.ground) { key = P.vy < 0 ? 'jump' : 'fall'; frame = P.vy < 0 ? (P.vy < -150 ? 0 : 1) : (P.vy > 220 ? 1 : 0); if (Math.abs(P.vy) < 55 && K.R.apex) key = 'apex'; }
       else if (keys.down && Math.abs(P.vx) < 10) key = 'crouch';
