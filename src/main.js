@@ -2357,6 +2357,7 @@ const ELITE = {
   brute: { name: 'THE GOBLIN CAPTAIN', rule: 'rally', hp: 2.5 }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
   thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig', hp: 4 }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat', hp: 5 }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight', hp: 1.8 }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', rule: 'slam' }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
+  archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },   /* own: moves of its own (updateEliteArcher), no shared rule */
   boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
 /* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
@@ -2418,7 +2419,73 @@ function updateElite(e, dt) {
   const R = ELITE[e.t]; if (!R) return false;
   if (!e.elBack && e.home && (Math.abs(e.x - e.home.x) > EL.leash * TS || e.y > e.home.y + 5 * TS) && !(e.knock > 0)) { e.leashT = (e.leashT || 0) + dt;
     if (e.leashT > 1.5) { smoke(e.x, e.y - 8, 3, 8); e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.leashT = 0; smoke(e.x, e.y - 8, 3, 8); } } else e.leashT = 0;
+  if (e.t === 'archer') return updateEliteArcher(e, dt);
   return updateEliteRule(e, dt);
+}
+/* IT LOSES THE BODY: thrown, frozen or broken in the middle of a move, the move is gone, not stuck */
+const eliteLost = e => e.knock > 0 || e.frozen > 0 || e.broken > 0;
+function eliteDrop(e, every) { e.vol = null; e.elBack = null; e.elT = Math.max(e.elT || 0, every); }
+/* THE ARCHER CAPTAIN. "A goblin archer can have a rain of arrows and a dodge roll." Two moves, built from the bow he already has:
+     THE RAIN   a red !!: he leans back and draws at the sky, and the patch of floor you were standing on is marked in red. A second
+                later it is full of arrows. They come down, not across - no shield turns them. Step off the mark. Then he stands
+                with the bow still up while he gets his breath: the opening, a second, to get in on a man who never lets you near.
+     THE ROLL   come within a sword's length of him and he is not there: a roll back out of reach, and a moment on one knee as he
+                comes up out of it (the opening: follow him). Not a blow, so no mark, and it waits for nobody's windup. It needs
+                floor behind him - put him against a wall or a shut gate and he has nowhere to roll.
+   Between the two he is still an archer, backing off and loosing his yellow-marked arrows. */
+const EL_ARCH = { reach: 230, near: 56, tell: 0.85, half: 28, fall: 0.45, hitAt: 0.22, rest: 1.0, dmg: 16, every: 4.5, roll: 0.36, rollV: 250, rollUp: 0.45, rollCd: 4, rollNear: 36 };
+function updateEliteArcher(e, dt) {
+  const A = EL_ARCH, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  e.rollCd = Math.max(0, (e.rollCd || 0) - dt);
+  /* the floor he rolls onto: clear at his height and something under it, k pixels behind him */
+  const clear = (dir, k) => { const tx = Math.floor((e.x + dir * k) / TS); return !isSolid(tx, Math.floor((e.y - 6) / TS)) && isSolid(tx, Math.floor((e.y + 2) / TS)); };
+  if (!e.elBack) {
+    e.elT -= dt;
+    const away = -Math.sign(d) || -e.face;
+    if (e.rollCd <= 0 && ad < A.rollNear && dy < 20 && !P.dead && !(e.stagger > 0) && !eliteLost(e) && !(e.mode && String(e.mode).endsWith('Tell')) && clear(away, e.w / 2 + 4) && clear(away, 48) && clear(away, 80)) {
+      e.elBack = [e.mode, e.modeT]; e.mode = 'elRoll'; e.modeT = A.roll; e.rollDir = away; e.rollCd = A.rollCd; e.draw = 0; e.face = Math.sign(d) || e.face; SFX.dodge(); dust(e.x, e.y, 5); }
+    else if (eliteMay(e, A.reach) && ad >= A.near) {
+      /* THE MARK GOES ON THE FLOOR UNDER YOU, where you stand as he draws: in the air, the floor you will come down on */
+      let fy = Math.floor(P.y / TS); for (let k = 0; k < 8 && !isSolid(Math.floor(P.x / TS), fy); k++) fy++;
+      eliteTake(e); e.vol = { x: P.x, y: fy * TS, t: 0 }; e.draw = 0;
+      e.mode = 'elVolleyTell'; e.modeT = A.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.bow(); SFX.charge(); }
+    else return false;
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); if (e.vol) e.vol.t += dt;
+  if (eliteLost(e)) { eliteDrop(e, A.every); return false; }
+  switch (e.mode) {
+    case 'elVolleyTell': e.vx = 0; e.face = Math.sign(e.vol.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'elVolley'; e.modeT = A.fall; e.elHit = false; SFX.bow(); } break;
+    case 'elVolley': e.vx = 0;
+      if (!e.elHit && e.modeT <= A.fall - A.hitAt) { e.elHit = true; SFX.thud(); dust(e.vol.x - 14, e.vol.y, 4); dust(e.vol.x + 14, e.vol.y, 4);
+        if (!P.dead && Math.abs(P.x - e.vol.x) < A.half + 4 && P.y > e.vol.y - 40 && P.y <= e.vol.y + 6) damagePlayer(e.vol.x, eliteDmg(A.dmg), { unblockable: true, who: e, blow: 'rain of arrows' }); }
+      if (e.modeT <= 0) { e.mode = 'elVolleyRest'; e.modeT = A.rest; } break;
+    case 'elVolleyRest': e.vx = 0; if (e.modeT <= 0) { eliteDone(e); e.vol = null; e.elT = A.every; } break;   /* THE OPENING: the bow still up, his breath still coming */
+    case 'elRoll': e.vx = e.rollDir * A.rollV; if (e.modeT <= 0 || !clear(e.rollDir, e.w / 2 + 4)) { e.mode = 'elRollUp'; e.modeT = A.rollUp; e.vx = 0; } break;
+    case 'elRollUp': e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { eliteDone(e); e.elT = Math.max(0.8, e.elT); } break;   /* up off one knee: the opening after a roll */
+    default: eliteDrop(e, A.every); return false;
+  }
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r && r.ground) e.vy = 0;
+  if (r && r.hitX && e.mode === 'elRoll') { e.mode = 'elRollUp'; e.modeT = A.rollUp; e.vx = 0; }
+  return true;
+}
+/* THE RAIN, DRAWN: the patch of floor marked in red while he draws (brighter as it comes), then the arrows coming down into it and
+   standing in the floor a moment after */
+function drawEliteVolley(e, cx, cy) {
+  const V = e.vol, A = EL_ARCH, x0 = Math.round(V.x - A.half - cx), x1 = Math.round(V.x + A.half - cx), fy = Math.round(V.y - cy);
+  if (e.mode === 'elVolleyTell') { const k = Math.min(1, V.t / A.tell), p = 0.5 + 0.5 * Math.sin(time * (10 + k * 14));
+    g.globalAlpha = 0.16 + 0.2 * k; g.fillStyle = '#ff6b6b'; g.fillRect(x0, fy - 22, x1 - x0, 22);
+    g.globalAlpha = 0.7 + 0.3 * p; g.fillStyle = ART.OUT; g.fillRect(x0 - 1, fy - 2, x1 - x0 + 2, 3);
+    g.fillStyle = '#ff6b6b'; for (let x = x0; x < x1; x += 5) g.fillRect(x, fy - 1, 3, 1);
+    for (const [bx, s] of [[x0, 1], [x1 - 1, -1]]) { g.fillStyle = ART.OUT; g.fillRect(bx - 1, fy - 12, 3, 12); g.fillRect(bx, fy - 12, s * 4 + (s < 0 ? 1 : 0), 3); g.fillStyle = '#ff6b6b'; g.fillRect(bx, fy - 11, 1, 10); g.fillRect(s > 0 ? bx : bx - 2, fy - 11, 3, 1); }
+    /* and the arrows' shadows gathering on it as the moment comes */
+    if (k > 0.45) { g.globalAlpha = (k - 0.45) * 1.4; g.fillStyle = '#1a0e10'; for (let i = 0; i < 9; i++) { const ax = x0 + 3 + ((i * 37) % (x1 - x0 - 6)); g.fillRect(ax - 1, fy - 3, 3, 1); } }
+    g.globalAlpha = 1; return; }
+  const t = e.mode === 'elVolley' ? A.fall - Math.max(0, e.modeT) : A.fall + (A.rest - Math.max(0, e.modeT));
+  for (let i = 0; i < 9; i++) { const ax = x0 + 3 + ((i * 37) % (x1 - x0 - 6)), lag = (i % 4) * 0.05, k = Math.min(1, Math.max(0, (t - lag) / A.hitAt));
+    if (k <= 0) continue; const ay = fy - Math.round((1 - k) * 110) - (k >= 1 ? 3 : 0);
+    g.globalAlpha = k >= 1 ? Math.max(0, 1 - (t - A.fall) / A.rest) : 1; if (g.globalAlpha <= 0) continue;
+    g.fillStyle = ART.OUT; g.fillRect(ax - 1, ay - 8, 3, 8); g.fillStyle = '#8b6a2a'; g.fillRect(ax, ay - 7, 1, 6); g.fillStyle = '#e8e2cc'; g.fillRect(ax, ay - 1 + (k >= 1 ? 1 : 0), 1, 1); g.fillStyle = '#c9463d'; g.fillRect(ax - 1, ay - 8, 1, 2); g.fillRect(ax + 1, ay - 8, 1, 2); }
+  g.globalAlpha = 1;
 }
 /* MAY IT TAKE THE BODY: off cooldown, on its feet, not thrown, not already winding something up, and no other windup begun in the
    last half second anywhere in the fight - one windup at a time. reach: how far off you it will start a move */
@@ -2477,7 +2544,7 @@ function drawElitePlate(e, cx, cy, bigF) {
   if (!nearP) { crown(x, top - 16); return; }
   const w = 28, bx = x - w / 2, by = top - 16, k = Math.max(0, e.hp / (e.hp0 || e.hp));
   g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, w, 2); g.fillStyle = k > 0.34 ? '#e0b040' : '#ff6b6b'; g.fillRect(bx, by, Math.round(w * k), 2);
-  crown(bx - 7, by + 1); text(ELITE[e.t].name, x, by - 9, '#ffd36b', 'center', 6);
+  { const nw = textW(ELITE[e.t].name, 6); crown(bx - 7, by + 1); text(ELITE[e.t].name, Math.max(nw / 2 + 2, Math.min(VW - nw / 2 - 2, x)), by - 9, '#ffd36b', 'center', 6); }   /* the name kept on the screen: a captain at the edge of the view was THE SHIELD CAPTAI */
 }
 function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
@@ -15661,6 +15728,11 @@ function poseOf(e, wind) {
     else if (m === 'heave') { o.sy *= 1.04; o.rot = (o.rot || 0) - f * 0.08; }
     else if (m === 'hurlTell') o.rot = (o.rot || 0) - f * 0.1;
     else if (m === 'pinned') { o.sy *= 0.66; o.sx *= 1.22; o.dx += Math.floor(time * 30) % 2 ? 1 : -1; } }
+  /* THE ARCHER CAPTAIN leans back to draw at the sky; rolls head over heels about his middle; comes up low on one knee */
+  if (e.elite && e.t === 'archer') { const m = e.mode, f = e.face || 1;
+    if (m === 'elVolleyTell' || m === 'elVolley') { o.rot = (o.rot || 0) - f * 0.32; o.dx -= f * 2; }
+    else if (m === 'elRoll') { const k = 1 - Math.max(0, e.modeT) / EL_ARCH.roll, rt = (e.rollDir || -f) * k * Math.PI * 2, r = e.h * 0.4; o.rot = (o.rot || 0) + rt; o.dx -= r * Math.sin(rt); o.dy -= r * (1 - Math.cos(rt)); o.sy *= 0.85; }
+    else if (m === 'elRollUp') { o.sy *= 0.8; o.sx *= 1.1; } }
   if (e.t === 'drownedking' && e.tilt) { const rt = e.tilt * (o.face || 1); o.rot = (o.rot || 0) + rt; o.dx -= 16 * Math.sin(rt); o.dy -= 16 * (1 - Math.cos(rt)); }   /* HE LEANS INTO HIS SWIM, turned about the middle of him and not his feet */
   return o;
 }
@@ -18700,7 +18772,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'soldier') frame = e.guardT > 0 ? 4 : e.mode === 'slashTell' ? 5 : e.mode === 'slash' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;
     else if (e.t === 'javelin') frame = e.mode === 'aim' ? 4 : e.mode === 'throw' ? 5 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 4 : 6;
     else if (e.t === 'heavy') frame = (e.mode === 'raise' || e.mode === 'grabTell') ? 4 : (e.mode === 'slam' || e.mode === 'sweep' || (e.mode === 'rest' && e.modeT > 0.5 && !(e.parried > 0))) ? 5 : (e.mode === 'windUp' || e.parried > 0) ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 5) % 4 : 0;
-    else if (e.t === 'archer') frame = e.draw > 0 ? (e.draw > 0.3 ? 1 : 5) : e.loose > 0 ? 6 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
+    else if (e.t === 'archer') frame = e.mode === 'elVolleyTell' ? 1 : e.mode === 'elVolley' ? 6 : e.mode === 'elVolleyRest' ? 5 : e.mode === 'elRoll' || e.mode === 'elRollUp' ? 4 : e.draw > 0 ? (e.draw > 0.3 ? 1 : 5) : e.loose > 0 ? 6 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
     else frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 22 : 10)) % 4 : 0;
     const wind = windingUp(e);
     const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6) : 0;
@@ -18820,6 +18892,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
       g.fillRect(mx - 3, my, 7, 1); g.fillRect(mx, my - 3, 1, 7); g.fillRect(mx - 2, my - 2, 1, 1); g.fillRect(mx + 2, my - 2, 1, 1); g.fillRect(mx - 2, my + 2, 1, 1); g.fillRect(mx + 2, my + 2, 1, 1); g.globalAlpha = 1; }
     if (e.alive && e.elite) drawElitePlate(e, cx, cy, bigF);
+    if (e.alive && e.vol) drawEliteVolley(e, cx, cy);
     if (e.alive && (e.rallyT > 0 || e.wallT > 0)) { const px2 = Math.round(e.x - cx - (e.w || 12) / 2) - 4, py2 = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) + 2;   /* RALLIED (a red chevron) or BEHIND THE WALL (a grey shield), beside its head, clear of the marks */
       g.fillStyle = ART.OUT; g.fillRect(px2 - 2, py2 - 1, 5, 5); g.fillStyle = e.rallyT > 0 ? '#ff6b6b' : '#c9d1dc';
       if (e.rallyT > 0) { g.fillRect(px2, py2, 1, 1); g.fillRect(px2 - 1, py2 + 1, 3, 1); g.fillRect(px2 - 1, py2 + 2, 1, 1); g.fillRect(px2 + 1, py2 + 2, 1, 1); } else { g.fillRect(px2 - 1, py2, 3, 2); g.fillRect(px2, py2 + 2, 1, 1); } }

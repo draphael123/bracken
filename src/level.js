@@ -7286,7 +7286,7 @@ const AMBUSH = {
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
     waves: [[['hopper', 374], ['hopper', 386, 18], ['turtle', 380, 18]], [['thorn', 374], ['archer', 387], ['heronfoe', 381, 18], ['spit', 373]]] }],
   stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],
-    waves: [[['sprig', 176], ['sprig', 203], ['hound', 196], ['hound', 182]], [['shield', 198], ['archer', 205], ['brute', 180], ['sapper', 188]]] }],
+    waves: [[['sprig', 176], ['sprig', 203], ['hound', 196], ['hound', 182]], [['shield', 195], ['archer', 201, null, { elite: true }], ['sapper', 184]]] }],
   spore: [{ name: 'THE UNDERCAP', row: 19, wallL: 135, wallR: 170, check: [132, 19],
     waves: [[['sporeling', 142], ['sporeling', 163], ['lurker', 152]], [['shield', 160], ['spitcap', 166], ['weaver', 146], ['sporeling', 140]]] }],
   kings: [{ name: "THE KING'S ROAD", row: 13, wallL: 277, wallR: 308, check: [274, 12],

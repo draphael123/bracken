@@ -61,21 +61,32 @@ export async function ambushLab(BK, opts = {}) {
     const P = BK.P, k = BK.keys, x0 = A.trigger !== undefined ? A.trigger : A.wallL + 3, mid = (A.wallL + A.wallR) / 2 * 16 + 8;
     for (const e of BK.enemies()) if (Math.abs(e.x - mid) < (A.wallR - A.wallL + 30) * 8 && !e.maxHp) e.alive = false;   /* the level's own creatures by the door are not the room's */
     BK.tp(x0 + 1, A.row); P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0;
-    let f = 0, taken = 0, last = P.hp, elite = null, eliteSecs = null, shutAt = null;
+    let f = 0, taken = 0, last = P.hp, elite = null, eliteSecs = null, eliteFrom = null, shutAt = null, waveAt = 0, slow = null;
+    const spd = BK.SET.speed || 1;
     for (; f < maxF && A.st !== 'done'; f++) {
       if (P.hp < last) taken += Math.min(60, last - P.hp); P.hp = P.maxHp; last = P.hp; if (P.dead) break;
       if (A.st && shutAt === null) shutAt = f;
       const foes = (A.foes || []).filter(e => e.alive);
-      if (!elite) elite = foes.find(e => e.elite) || null;
-      if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - shutAt) / 60).toFixed(1);
+      if (A.st !== 'fight') waveAt = f;
+      else if (!slow && (f - waveAt) * spd / 60 > 40) slow = 'wave ' + (A.wave + 1) + ' still up at 40 s: ' + foes.map(e => e.t + (e.elite ? '*' : '')).join(', ');   /* what a room that runs long is waiting on */
+      if (!elite) { elite = foes.find(e => e.elite) || null; if (elite) eliteFrom = f; }
+      if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - eliteFrom) * spd / 60).toFixed(1);
       const e = A.st === 'fight' && foes.length ? foes.reduce((b, q) => Math.abs(q.x - P.x) + Math.abs(q.y - P.y) < Math.abs(b.x - P.x) + Math.abs(b.y - P.y) ? q : b) : null;
       if (e) labBotFrame(BK, h, e, f);
       else { k.block = false; k.left = P.x > mid + 20; k.right = P.x < mid - 20; }   /* between waves: to the middle of the room */
+      /* A PLAYER JUMPS THE ROOM'S OWN PIT. The fight lab's bot fights on a flat floor and walked straight into THE CLIFF HALL's
+         spikes after a sprig, and sat in them: it hops a gap or a spike a tile ahead of it, and hops out of one it is in */
+      { const dir = k.right ? 1 : k.left ? -1 : 0, G = BK.L, at = (tx, ty) => G.grid[ty * G.W + tx], ty = Math.floor((P.y + 2) / 16);
+        const bad = tx => at(tx, ty) === lvm.T.AIR || at(tx, ty) === lvm.T.SPIKE || at(tx, ty - 1) === lvm.T.SPIKE;
+        const inPit = [-5, 0, 5].some(ox => at(Math.floor((P.x + ox) / 16), Math.floor((P.y - 4) / 16)) === lvm.T.SPIKE || at(Math.floor((P.x + ox) / 16), Math.floor((P.y + 2) / 16)) === lvm.T.SPIKE);
+        if (inPit) { const out = at(Math.floor((P.x - 24) / 16), ty - 1) === lvm.T.SOLID ? 1 : -1; k.left = out < 0; k.right = out > 0; k.block = false; k.jump = true; if (f % 6 === 0) BK.press('jump'); }
+        else if (dir && P.ground && bad(Math.floor((P.x + dir * 12) / 16))) { k.jump = true; BK.press('jump'); } else k.jump = false; }
       BK.sim(1);
     }
-    k.left = false; k.right = false; k.block = false;
-    const secs = shutAt === null ? null : +((f - shutAt) / 60).toFixed(1);
-    rows.push({ lvl: lvId, room: A.name, h, opened: A.st === 'done', secs, leader: elite ? elite.t : null, eliteSecs, taken: Math.round(taken), takenPct: +(100 * taken / P.maxHp).toFixed(0) });
+    k.left = false; k.right = false; k.block = false; k.jump = false;
+    if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - eliteFrom) * spd / 60).toFixed(1);
+    const secs = shutAt === null ? null : +((f - shutAt) * spd / 60).toFixed(1);
+    rows.push({ lvl: lvId, room: A.name, h, opened: A.st === 'done', secs, leader: elite ? elite.t : null, eliteSecs, taken: Math.round(taken), takenPct: +(100 * taken / P.maxHp).toFixed(0), slow });
     await yieldNow();
   }
   out.done = true; out.ms = Date.now() - out.started;
