@@ -1,5 +1,6 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
+import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -2294,6 +2295,10 @@ function ambushRun(A, dt) {
   for (const e of A.foes) if (e.alive && (AMB_FLY.has(e.t) || e.noGrav)) ambushPen(A, e);   /* the room holds its flyers inside it, and in reach of the floor the fight is on */
   const lx = (A.wallL - 1) * TS, rx = (A.wallR + 2) * TS;
   for (const e of A.foes) if (e.alive && (e.x < lx || e.x > rx || e.y > LH * TS + 8)) e.alive = false;   /* out of the room is out of the fight */
+  /* AND ONE THAT GOES INTO THE ROOM'S OWN SPIKES STAYS THERE. Only a THROWN foe was ever impaled, so a sprig that walked into
+     THE CLIFF HALL's pit after you, or a cutter that fell in, stood on the spikes for the rest of the wave where no blade could
+     reach it, and the room sat shut until the wave slunk off at seventy seconds */
+  for (const e of A.foes) if (e.alive && !(e.knock > 0) && !AMB_FLY.has(e.t) && !e.noGrav && [-3, 3].some(ox => tileAt(Math.floor((e.x + ox) / TS), Math.floor((e.y - 4) / TS)) === T.SPIKE)) hazardFoe(e);
   if (A.t <= 0) for (const e of A.foes) if (e.alive) { e.alive = false; smoke(e.x, e.y - 8, 3, 8); }   /* a wave that outlasts its time slinks off: a room never keeps you */
   if (A.foes.some(e => e.alive)) return;
   if (A.wave + 1 < A.waves.length) { A.st = 'beat'; A.t = AMB.beat; SFX.sting(); return; }
@@ -2336,25 +2341,38 @@ function drawAmbushHud() {
      wall   shields up: every foe near it takes half a blow from the front for five seconds - a grey pip
      call   once, at half health: two more of the level's own drop in beside it
      slam   a red !!: it comes down on the floor and the shock runs both ways along it. Jump it; no shield turns it
-     lunge  a yellow !: a long rush with the blade out. Take it on the shield and it is left open */
+     lunge  a yellow !: a long rush with the blade out. Take it on the shield and it is left open
+   THOSE FIVE WERE SHARED, and fifteen kinds fought with five moves between them. "Can we make the elites use regular models,
+   just be bigger sprites, and have one or two unique attacks?" So an elite is its own creature half as big again (EL.big, the
+   body as well as the sprite), and a kind can have MOVES OF ITS OWN: a function updateElite<Kind>(e, dt), one line for it in
+   updateElite, built from what that creature already is. A kind with none yet keeps its old rule (updateEliteRule) until its
+   batch comes. Either way it asks for the body only while a move is told or thrown, one windup at a time across the whole fight
+   (lastTellT), and gives the body back to the creature's own update in the mode it left.
+   AN AMBUSH CAN BE LED BY ONE: a wave entry [kind, x, y, { elite: true }]. The room's walls are its gate, so it holds none, and
+   the room pays the heart and the ten gold, so it pays nothing of its own and is never marked down for the attempt - die in the
+   room and the room, and its captain, are put back. */
 /* hp: how many of its kind's health it stands up with, where three is wrong for the kind. Measured with BK.fightLab({ elite: true,
    keepAlive: true }) against a fight of twenty to forty-five seconds: a heavy knight or a hedge knight is already a long fight and
    three of one ran past a minute; a goat, a thorn or a cook goes down (or off a ledge) in a few seconds at three */
 const ELITE = {
-  shield: { name: 'THE SHIELD CAPTAIN', rule: 'wall' }, pike: { name: 'THE PIKE SERJEANT', rule: 'wall' }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall', hp: 2.2 },
-  brute: { name: 'THE GOBLIN CAPTAIN', rule: 'rally', hp: 2.5 }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
+  shield: { name: 'THE SHIELD CAPTAIN', own: true }, pike: { name: 'THE PIKE SERJEANT', rule: 'wall' }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall', hp: 2.2 },
+  brute: { name: 'THE GOBLIN CAPTAIN', hp: 2.5, own: true }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
   thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig', hp: 4 }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat', hp: 5 }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight', hp: 1.8 }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', rule: 'slam' }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
+  archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },   /* own: moves of its own (updateEliteArcher), no shared rule */
   boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
-const EL = { hp: 3, poise: 80, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.2, col: '#c9962a' };
+/* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
+   The hit box grows with the sprite (eliteMake), so what you see is what you hit and what the room has to fit */
+const EL = { hp: 3, poise: 80, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.5, col: '#c9962a' };
 const eliteDmg = n => Math.round(n * (1 + 0.25 * tierOf(curId())));
 /* EVERY ELITE OF THE ATTEMPT, kept apart from the creature list: a dead foe is swept out of that list before the next frame looks
    at it, and an elite that is gone must still be seen to be dead, or its gate never lifts */
 let eliteList = [];
 function eliteMake(m, e) {
   if (!ELITE[m.t]) return;
-  Object.assign(m, { elite: true, hp: Math.round(m.hp * (ELITE[m.t].hp || EL.hp)), home: { x: m.x, y: m.y }, elT: EL.first, gate: e.gate, calls: e.calls || ELITE[m.t].calls, key: 'elite:' + e.x + ',' + e.y, woke: 1 });
+  Object.assign(m, { elite: true, hp: Math.round(m.hp * (ELITE[m.t].hp || EL.hp)), home: { x: m.x, y: m.y }, elT: EL.first, gate: e.gate, calls: e.calls || ELITE[m.t].calls, key: 'elite:' + e.x + ',' + e.y, woke: 1,
+    bodyK: EL.big, w: Math.round((m.w || 10) * EL.big), h: Math.round((m.h || 12) * EL.big) });   /* the body grows with the sprite: drawn at EL.big, struck at EL.big */
   eliteList.push(m);
 }
 /* THE GATE GOES DOWN AS THE LEVEL IS LAID OUT, over air only, after the grid has been put back (spawnEntitiesTail): the tiles it
@@ -2371,7 +2389,8 @@ function eliteGates() {
 }
 function eliteWatch() {
   for (const e of eliteList) { if (e.alive || e.paid) continue;
-    e.paid = true; if (!rushOn()) marks.add(e.key);
+    e.paid = true; if (e.ambush) continue;   /* AN AMBUSH'S CAPTAIN: the room is its gate and the room pays, and the room is put back whole on a death */
+    if (!rushOn()) marks.add(e.key);
     if (e.shut && e.shut.length) { const cols = new Map();
       for (const [i, t0] of e.shut) if (L.grid[i] === T.PORT) { L.grid[i] = t0; tileSpr[i] = null; if (t0 === T.AIR) { const c = i % LW; if (!cols.has(c)) cols.set(c, []); cols.get(c).push((i - c) / LW); } }
       e.shut = []; resolveTiles(); for (const [col, ys] of cols) gateFx.push({ col, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift();
@@ -2394,20 +2413,184 @@ function eliteCall(e) {
     for (let i = n0; i < enemies.length; i++) { const q = enemies[i]; q.woke = 1; q.summoned = true; q.stagger = Math.max(q.stagger || 0, 0.4); if (drop && q.hy === undefined) { q.y -= 2.5 * TS; q.vy = 60; } }
     burst(x * TS + 8, (row + 1) * TS - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(x * TS + 8, (row + 1) * TS, 8); n++; }
 }
-/* THE ELITE'S OWN RULE. It asks for the body only while its rule is being told or thrown, and gives it straight back to the
-   creature's own update (in the mode it left) when it is done; true while it has it */
+/* THE ELITE. Its leash, then its moves: a kind's own where it has them, else its old shared rule. It asks for the body only while a
+   move is being told or thrown, and gives it straight back to the creature's own update (in the mode it left) when it is done;
+   true while it has it. ONE LINE A KIND below, `if (e.t === ...) return updateElite<Kind>(e, dt)`: tools/tells.mjs reads which
+   creature runs which function off that line, and the marks over its moves come from it */
 function updateElite(e, dt) {
   const R = ELITE[e.t]; if (!R) return false;
   if (!e.elBack && e.home && (Math.abs(e.x - e.home.x) > EL.leash * TS || e.y > e.home.y + 5 * TS) && !(e.knock > 0)) { e.leashT = (e.leashT || 0) + dt;
     if (e.leashT > 1.5) { smoke(e.x, e.y - 8, 3, 8); e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.leashT = 0; smoke(e.x, e.y - 8, 3, 8); } } else e.leashT = 0;
+  if (e.t === 'archer') return updateEliteArcher(e, dt);
+  if (e.t === 'shield') return updateEliteShield(e, dt);
+  if (e.t === 'brute') return updateEliteBrute(e, dt);
+  return updateEliteRule(e, dt);
+}
+/* IT LOSES THE BODY: thrown, frozen or broken in the middle of a move, the move is gone, not stuck */
+const eliteLost = e => e.knock > 0 || e.frozen > 0 || e.broken > 0;
+function eliteDrop(e, every) { e.vol = null; e.elBack = null; e.elT = Math.max(e.elT || 0, every); }
+/* THE ARCHER CAPTAIN. "A goblin archer can have a rain of arrows and a dodge roll." Two moves, built from the bow he already has:
+     THE RAIN   a red !!: he leans back and draws at the sky, and the patch of floor you were standing on is marked in red. A second
+                later it is full of arrows. They come down, not across - no shield turns them. Step off the mark. Then he stands
+                with the bow still up while he gets his breath: the opening, a second, to get in on a man who never lets you near.
+     THE ROLL   come within a sword's length of him and he is not there: a roll back out of reach, and a moment on one knee as he
+                comes up out of it (the opening: follow him). Not a blow, so no mark, and it waits for nobody's windup. It needs
+                floor behind him - put him against a wall or a shut gate and he has nowhere to roll.
+   Between the two he is still an archer, backing off and loosing his yellow-marked arrows. */
+const EL_ARCH = { reach: 230, near: 56, tell: 0.85, half: 28, fall: 0.45, hitAt: 0.22, rest: 1.0, dmg: 16, every: 4.5, roll: 0.36, rollV: 250, rollUp: 0.45, rollCd: 4, rollNear: 36 };
+function updateEliteArcher(e, dt) {
+  const A = EL_ARCH, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  e.rollCd = Math.max(0, (e.rollCd || 0) - dt);
+  /* the floor he rolls onto: clear at his height and something under it, k pixels behind him */
+  const clear = (dir, k) => { const tx = Math.floor((e.x + dir * k) / TS); return !isSolid(tx, Math.floor((e.y - 6) / TS)) && isSolid(tx, Math.floor((e.y + 2) / TS)); };
+  if (!e.elBack) {
+    e.elT -= dt;
+    const away = -Math.sign(d) || -e.face;
+    if (e.rollCd <= 0 && ad < A.rollNear && dy < 20 && !P.dead && !(e.stagger > 0) && !eliteLost(e) && !(e.mode && String(e.mode).endsWith('Tell')) && clear(away, e.w / 2 + 4) && clear(away, 48) && clear(away, 80)) {
+      e.elBack = [e.mode, e.modeT]; e.mode = 'elRoll'; e.modeT = A.roll; e.rollDir = away; e.rollCd = A.rollCd; e.draw = 0; e.face = Math.sign(d) || e.face; SFX.dodge(); dust(e.x, e.y, 5); }
+    else if (eliteMay(e, A.reach) && ad >= A.near) {
+      /* THE MARK GOES ON THE FLOOR UNDER YOU, where you stand as he draws: in the air, the floor you will come down on */
+      let fy = Math.floor(P.y / TS); for (let k = 0; k < 8 && !isSolid(Math.floor(P.x / TS), fy); k++) fy++;
+      eliteTake(e); e.vol = { x: P.x, y: fy * TS, t: 0 }; e.draw = 0;
+      e.mode = 'elVolleyTell'; e.modeT = A.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.bow(); SFX.charge(); }
+    else return false;
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); if (e.vol) e.vol.t += dt;
+  if (eliteLost(e)) { eliteDrop(e, A.every); return false; }
+  switch (e.mode) {
+    case 'elVolleyTell': e.vx = 0; e.face = Math.sign(e.vol.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'elVolley'; e.modeT = A.fall; e.elHit = false; SFX.bow(); } break;
+    case 'elVolley': e.vx = 0;
+      if (!e.elHit && e.modeT <= A.fall - A.hitAt) { e.elHit = true; SFX.thud(); dust(e.vol.x - 14, e.vol.y, 4); dust(e.vol.x + 14, e.vol.y, 4);
+        if (!P.dead && Math.abs(P.x - e.vol.x) < A.half + 4 && P.y > e.vol.y - 40 && P.y <= e.vol.y + 6) damagePlayer(e.vol.x, eliteDmg(A.dmg), { unblockable: true, who: e, blow: 'rain of arrows' }); }
+      if (e.modeT <= 0) { e.mode = 'elVolleyRest'; e.modeT = A.rest; } break;
+    case 'elVolleyRest': e.vx = 0; if (e.modeT <= 0) { eliteDone(e); e.vol = null; e.elT = A.every; } break;   /* THE OPENING: the bow still up, his breath still coming */
+    case 'elRoll': e.vx = e.rollDir * A.rollV; if (e.modeT <= 0 || !clear(e.rollDir, e.w / 2 + 4)) { e.mode = 'elRollUp'; e.modeT = A.rollUp; e.vx = 0; } break;
+    case 'elRollUp': e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { eliteDone(e); e.elT = Math.max(0.8, e.elT); } break;   /* up off one knee: the opening after a roll */
+    default: eliteDrop(e, A.every); return false;
+  }
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r && r.ground) e.vy = 0;
+  if (r && r.hitX && e.mode === 'elRoll') { e.mode = 'elRollUp'; e.modeT = A.rollUp; e.vx = 0; }
+  return true;
+}
+/* THE SHIELD CAPTAIN. A shieldgob is a wall that turns slowly and shoves; its captain puts the wall behind a run:
+     THE CHARGE  a yellow !: he sets his feet behind the shield and comes the length of the room at you. Take it on your own shield
+                 and it is TURNED - he rebounds off you with his shield flung wide, and for most of a second nothing covers him.
+                 Jump it or roll it and he runs on into whatever is behind you: into a wall or a shut gate he goes, and he stands
+                 there dazed with the shield down (the long opening). Let it land and it hurts - and with a wall a couple of tiles
+                 behind you it PINS you to it and hurts a great deal more. He only charges the way his shield faces: behind
+                 him there is no charge, and he still turns as slowly as any of them.
+     THE WALL    (quiet, no mark) the old captain's order: shields up, and every goblin near him takes half a blow from the front
+                 for five seconds - a grey pip over each. It is for the crowd; it throws nothing. */
+const EL_SHLD = { reach: 170, tell: 0.55, v: 235, run: 0.95, dmg: 12, pin: 22, pinGap: 40, dazed: 1.5, rebound: 1.0, end: 0.6, every: 3.5, wallCd: 10 };
+function updateEliteShield(e, dt) {
+  const A = EL_SHLD, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  const floorAhead = () => { const tx = Math.floor((e.x + e.face * (e.w / 2 + 6)) / TS); return isSolid(tx, Math.floor((e.y + 2) / TS)); };
+  e.wallCd = Math.max(0, (e.wallCd || 0) - dt);
+  if (!e.elBack && e.elT < 1.2) e.shoveCd = Math.max(e.shoveCd || 0, 0.5);   /* HE SAVES HIMSELF FOR THE RUN: no little shove in the moment before the charge is ready, so the shove never takes the windup the charge wants */
+  if (!e.elBack) {
+    e.elT -= dt;
+    if (!eliteMay(e, A.reach)) return false;
+    if (dy < 14 && Math.sign(d) === e.face && !(e.behindT > 0.1) && floorAhead()) {   /* from across the room or from under your nose: close in, the run is short and the shield is in your face all the same */
+      eliteTake(e); e.mode = 'elChargeTell'; e.modeT = A.tell; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.shieldSlam(); }
+    else if (e.wallCd <= 0 && ad > 90 && eliteNear(e, 120).length) { eliteTake(e); e.mode = 'elWallTell'; e.modeT = 0.6; SFX.shieldSlam(); }
+    else return false;
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt);
+  if (eliteLost(e)) { eliteDrop(e, A.every); return false; }
+  switch (e.mode) {
+    case 'elChargeTell': e.vx = 0; if (Math.random() < dt * 12) dust(e.x - e.face * 6, e.y, 1); if (e.modeT <= 0) { e.mode = 'elCharge'; e.modeT = A.run; e.elHit = false; SFX.charge(); } break;
+    case 'elCharge': e.vx = e.face * A.v; if (Math.random() < dt * 24) dust(e.x - e.face * 8, e.y, 1);
+      if (!e.elHit && !P.dead && Math.abs(P.x - e.x) < e.w / 2 + 8 && Math.abs(P.y - e.y) < 20) {
+        let wall = 0; for (let k = 8; k <= A.pinGap; k += 8) if (isSolid(Math.floor((P.x + e.face * k) / TS), Math.floor((P.y - 8) / TS))) { wall = k; break; }   /* a wall close behind you: he pins you to it */
+        const res = damagePlayer(e.x, eliteDmg(wall ? A.pin : A.dmg), { who: e, blow: wall ? 'pinned to the wall' : 'shield charge' });
+        if (res) e.elHit = true;
+        if (res === 'blocked') { e.mode = 'elDazed'; e.modeT = A.rebound; e.vx = -e.face * 90; P.vx = e.face * 180; number(e.x, e.y - e.h - 8, 'TURNED', '#8fd160'); SFX.clank(); shakeCam(3); sparks(e.x + e.face * 8, e.y - 10, -e.face, 7); }
+        else if (res === 'hit') { if (wall) { moveBody(P, e.face * (wall - 6), 0, false); P.vx = 0; number(P.x, P.y - 30, 'PINNED', '#ff6b6b'); shakeCam(6); hitstop(0.08); } e.mode = 'elChargeEnd'; e.modeT = A.end; } }
+      if (e.mode === 'elCharge' && (e.modeT <= 0 || !floorAhead())) { e.mode = 'elChargeEnd'; e.modeT = A.end; } break;
+    case 'elDazed': e.vx *= Math.pow(0.02, dt); if (e.modeT <= 0) { eliteDone(e); e.elT = A.every; } break;   /* THE OPENING: the shield flung wide */
+    case 'elChargeEnd': e.vx *= Math.pow(0.02, dt); if (e.modeT <= 0) { eliteDone(e); e.elT = A.every; } break;
+    case 'elWallTell': e.vx = 0; if (e.modeT <= 0) { for (const q of eliteNear(e, 120)) q.wallT = EL.wall; ringAt(e.x, e.y - e.h / 2, 34, '#c9d1dc', 0.4); SFX.clank(); eliteDone(e); e.wallCd = A.wallCd; e.elT = 1.2; } break;
+    default: eliteDrop(e, A.every); return false;
+  }
+  const mv = moveBody(e, e.vx * dt, e.vy * dt, false); if (mv && mv.ground) e.vy = 0;
+  if (mv && mv.hitX && e.mode === 'elCharge') { e.mode = 'elDazed'; e.modeT = A.dazed; e.vx = 0; SFX.thud(); shakeCam(4); dust(e.x + e.face * 8, e.y - 6, 8); number(e.x, e.y - e.h - 8, 'INTO THE WALL', '#8fd160'); }
+  return true;
+}
+/* THE GOBLIN CAPTAIN. A brute has an overhead you roll and a sweep you block; its captain strings them together:
+     THE THREE CUTS  two quick cuts, each a yellow ! - hold the shield - and then the cleaver goes up over his head for the third,
+                     a red !! - get out from under it. Block all three and the third comes through the shield; roll the first
+                     and you are rolling into the second. It is one windup held from the first cut to the last (nothing else
+                     in the room starts one while he has it). The cleaver goes into the floor on the third, and it stays there
+                     while he hauls on it: the opening, more than a second, and he is facing the wrong way to cover himself.
+     THE WAR CRY     (quiet, no mark) a horn-blast of a shout: every goblin near him strikes faster for four seconds - a red pip
+                     over each. It throws nothing, so there is nothing to block; it is why you go for him first. */
+const EL_BRUTE = { reach: 150, near: 40, cut1: 0.5, cut2: 0.36, over: 0.62, strike: 0.2, cutReach: 36, overReach: 42, cutDmg: 12, overDmg: 22, stuck: 1.3, lunge: 70, every: 3.2, cryCd: 11 };
+function updateEliteBrute(e, dt) {
+  const A = EL_BRUTE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  e.cryCd = Math.max(0, (e.cryCd || 0) - dt);
+  /* one cut: a step in behind it, and the blade across the front of him */
+  const cuts = () => { e.vx = Math.abs(P.x - e.x) < e.w / 2 + 8 || !isSolid(Math.floor((e.x + e.face * (e.w / 2 + 6)) / TS), Math.floor((e.y + 2) / TS)) ? 0 : e.face * A.lunge;   /* no step in off an edge */ if (e.elHit || P.dead || Math.sign(P.x - e.x) !== e.face || Math.abs(P.x - e.x) >= A.cutReach + e.w / 2 || Math.abs(P.y - e.y) >= 22) return false; return (e.elHit = true); };   /* (the blow itself is written in each case, where tools/tells.mjs can see what it is) */
+  if (!e.elBack) {
+    e.elT -= dt;
+    if (!eliteMay(e, A.reach)) return false;
+    if (ad < A.near + e.w / 2 && dy < 18) { eliteTake(e); e.mode = 'elCut1Tell'; e.modeT = A.cut1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+    else if (e.cryCd <= 0 && ad > 70 && eliteNear(e, 140).length) { eliteTake(e); e.mode = 'elCryTell'; e.modeT = 0.7; SFX.hornBlast(); }
+    else return false;
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt);
+  if (eliteLost(e)) { eliteDrop(e, A.every); return false; }
+  switch (e.mode) {
+    case 'elCut1Tell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'elCut1'; e.modeT = A.strike; e.elHit = false; SFX.slash(); } break;
+    case 'elCut1': if (cuts()) damagePlayer(e.x, eliteDmg(A.cutDmg), { who: e, blow: 'the first cut' }); if (e.modeT <= 0) { e.vx = 0; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'elCut2Tell'; e.modeT = A.cut2; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); } break;
+    case 'elCut2Tell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'elCut2'; e.modeT = A.strike; e.elHit = false; SFX.slash(); } break;
+    case 'elCut2': if (cuts()) damagePlayer(e.x, eliteDmg(A.cutDmg), { who: e, blow: 'the second cut' }); if (e.modeT <= 0) { e.vx = 0; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'elOverTell'; e.modeT = A.over; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); } break;
+    case 'elOverTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'elOver'; e.modeT = A.strike; e.elHit = false; } break;
+    case 'elOver': e.vx = 0;
+      if (!e.elHit) { e.elHit = true; SFX.heavy(); shakeCam(4); dust(e.x + e.face * 16, e.y, 8);
+        if (!P.dead && Math.sign(P.x - e.x) === e.face && Math.abs(P.x - e.x) < A.overReach + e.w / 2 && Math.abs(P.y - e.y) < 24) damagePlayer(e.x, eliteDmg(A.overDmg), { unblockable: true, who: e, blow: 'the cleaver' }); }
+      if (e.modeT <= 0) { e.mode = 'elStuck'; e.modeT = A.stuck; number(e.x + e.face * 14, e.y - 16, 'STUCK', '#8fd160'); } break;
+    case 'elStuck': e.vx = 0; if (Math.random() < dt * 6) dust(e.x + e.face * 16, e.y, 1); if (e.modeT <= 0) { eliteDone(e); e.elT = A.every; } break;   /* THE OPENING: the cleaver in the floor */
+    case 'elCryTell': e.vx = 0; if (e.modeT <= 0) { for (const q of eliteNear(e, 140)) q.rallyT = EL.rally; ringAt(e.x, e.y - e.h / 2, 40, '#ff6b6b', 0.4); shakeCam(2); eliteDone(e); e.cryCd = A.cryCd; e.elT = 1.5; } break;
+    default: eliteDrop(e, A.every); return false;
+  }
+  const mv = moveBody(e, e.vx * dt, e.vy * dt, false); if (mv && mv.ground) e.vy = 0;
+  return true;
+}
+/* THE RAIN, DRAWN: the patch of floor marked in red while he draws (brighter as it comes), then the arrows coming down into it and
+   standing in the floor a moment after */
+function drawEliteVolley(e, cx, cy) {
+  const V = e.vol, A = EL_ARCH, x0 = Math.round(V.x - A.half - cx), x1 = Math.round(V.x + A.half - cx), fy = Math.round(V.y - cy);
+  if (e.mode === 'elVolleyTell') { const k = Math.min(1, V.t / A.tell), p = 0.5 + 0.5 * Math.sin(time * (10 + k * 14));
+    g.globalAlpha = 0.16 + 0.2 * k; g.fillStyle = '#ff6b6b'; g.fillRect(x0, fy - 22, x1 - x0, 22);
+    g.globalAlpha = 0.7 + 0.3 * p; g.fillStyle = ART.OUT; g.fillRect(x0 - 1, fy - 2, x1 - x0 + 2, 3);
+    g.fillStyle = '#ff6b6b'; for (let x = x0; x < x1; x += 5) g.fillRect(x, fy - 1, 3, 1);
+    for (const [bx, s] of [[x0, 1], [x1 - 1, -1]]) { g.fillStyle = ART.OUT; g.fillRect(bx - 1, fy - 12, 3, 12); g.fillRect(bx, fy - 12, s * 4 + (s < 0 ? 1 : 0), 3); g.fillStyle = '#ff6b6b'; g.fillRect(bx, fy - 11, 1, 10); g.fillRect(s > 0 ? bx : bx - 2, fy - 11, 3, 1); }
+    /* and the arrows' shadows gathering on it as the moment comes */
+    if (k > 0.45) { g.globalAlpha = (k - 0.45) * 1.4; g.fillStyle = '#1a0e10'; for (let i = 0; i < 9; i++) { const ax = x0 + 3 + ((i * 37) % (x1 - x0 - 6)); g.fillRect(ax - 1, fy - 3, 3, 1); } }
+    g.globalAlpha = 1; return; }
+  const t = e.mode === 'elVolley' ? A.fall - Math.max(0, e.modeT) : A.fall + (A.rest - Math.max(0, e.modeT));
+  for (let i = 0; i < 9; i++) { const ax = x0 + 3 + ((i * 37) % (x1 - x0 - 6)), lag = (i % 4) * 0.05, k = Math.min(1, Math.max(0, (t - lag) / A.hitAt));
+    if (k <= 0) continue; const ay = fy - Math.round((1 - k) * 110) - (k >= 1 ? 3 : 0);
+    g.globalAlpha = k >= 1 ? Math.max(0, 1 - (t - A.fall) / A.rest) : 1; if (g.globalAlpha <= 0) continue;
+    g.fillStyle = ART.OUT; g.fillRect(ax - 1, ay - 8, 3, 8); g.fillStyle = '#8b6a2a'; g.fillRect(ax, ay - 7, 1, 6); g.fillStyle = '#e8e2cc'; g.fillRect(ax, ay - 1 + (k >= 1 ? 1 : 0), 1, 1); g.fillStyle = '#c9463d'; g.fillRect(ax - 1, ay - 8, 1, 2); g.fillRect(ax + 1, ay - 8, 1, 2); }
+  g.globalAlpha = 1;
+}
+/* MAY IT TAKE THE BODY: off cooldown, on its feet, not thrown, not already winding something up, and no other windup begun in the
+   last half second anywhere in the fight - one windup at a time. reach: how far off you it will start a move */
+const eliteMay = (e, reach) => !(e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.frozen > 0 || P.dead || Math.abs(P.x - e.x) > reach || Math.abs(P.y - e.y) > 40 || windingUp(e) || time - lastTellT < 0.5 || !isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)));
+/* IT TAKES THE BODY: remembers what it was doing, turns to you, and holds the token */
+function eliteTake(e) { e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; lastTellT = time; }
+/* THE OLD SHARED RULES (wall, rally, call, slam, lunge), for every kind that has no moves of its own yet */
+function updateEliteRule(e, dt) {
+  const R = ELITE[e.t];
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) {
     e.elT -= dt;
-    if (e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.frozen > 0 || P.dead || ad > EL.reach || dy > 40 || windingUp(e) || time - lastTellT < 0.5 || !isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS))) return false;
+    if (!eliteMay(e, EL.reach)) return false;
     if (R.rule === 'call' && (e.called || e.hp > e.hp0 / 2)) return false;
     if (R.rule === 'lunge' && (ad < 30 || ad > 96 || dy > 16)) return false;
     if (R.rule === 'slam' && ad > 72) return false;   /* (a troll keeps his stone's throw off you: the shock reaches that far) */
-    e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.sign(d) || e.face; lastTellT = time;
+    eliteTake(e);
     if (R.rule === 'slam') { e.mode = 'eliteSlamTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
     else if (R.rule === 'lunge') { e.mode = 'eliteLungeTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else if (R.rule === 'rally') { e.mode = 'rallyTell'; e.modeT = 0.7; SFX.hornBlast(); }
@@ -2444,12 +2627,12 @@ function drawEliteTrim(set, frame, x, y, face, sx, sy, rot) {
   g.restore();
 }
 function drawElitePlate(e, cx, cy, bigF) {
-  const x = Math.round(e.x - cx), top = Math.round(e.y - e.h * bigF - cy), nearP = Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110;
+  const x = Math.round(e.x - cx), top = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy), nearP = Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110;
   const crown = (px, py) => { g.fillStyle = ART.OUT; g.fillRect(px - 4, py - 3, 9, 5); g.fillStyle = '#e0b040'; g.fillRect(px - 3, py, 7, 1); g.fillRect(px - 3, py - 2, 1, 2); g.fillRect(px, py - 2, 1, 2); g.fillRect(px + 3, py - 2, 1, 2); g.fillStyle = '#fff1a0'; g.fillRect(px, py - 2, 1, 1); };
   if (!nearP) { crown(x, top - 16); return; }
   const w = 28, bx = x - w / 2, by = top - 16, k = Math.max(0, e.hp / (e.hp0 || e.hp));
   g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, w, 2); g.fillStyle = k > 0.34 ? '#e0b040' : '#ff6b6b'; g.fillRect(bx, by, Math.round(w * k), 2);
-  crown(bx - 7, by + 1); text(ELITE[e.t].name, x, by - 9, '#ffd36b', 'center', 6);
+  { const nw = textW(ELITE[e.t].name, 6); crown(bx - 7, by + 1); text(ELITE[e.t].name, Math.max(nw / 2 + 2, Math.min(VW - nw / 2 - 2, x)), by - 9, '#ffd36b', 'center', 6); }   /* the name kept on the screen: a captain at the edge of the view was THE SHIELD CAPTAI */
 }
 function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
@@ -6580,7 +6763,7 @@ function updatePlayer(dt) {
       if (e.t === 'soldier' && front && !throughGuard() && e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
       if (e.t === 'heavy' && !throughGuard() && e.mode !== 'rest' && !(e.parried > 0)) { guardTurned(); SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
       if (e.t === 'watch' && front && !throughGuard() && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
-      if (e.t === 'shield' && front && !throughGuard()) {
+      if (e.t === 'shield' && front && !throughGuard() && !(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide) */
         guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
       } else { hurtEnemy(e, swingDmg(e), P.x, false); swordEffect(e); if (P.swingKind && e.alive) swingKindHit(e);
@@ -15625,6 +15808,19 @@ function poseOf(e, wind) {
     else if (m === 'heave') { o.sy *= 1.04; o.rot = (o.rot || 0) - f * 0.08; }
     else if (m === 'hurlTell') o.rot = (o.rot || 0) - f * 0.1;
     else if (m === 'pinned') { o.sy *= 0.66; o.sx *= 1.22; o.dx += Math.floor(time * 30) % 2 ? 1 : -1; } }
+  /* THE ARCHER CAPTAIN leans back to draw at the sky; rolls head over heels about his middle; comes up low on one knee */
+  if (e.elite && e.t === 'archer') { const m = e.mode, f = e.face || 1;
+    if (m === 'elVolleyTell' || m === 'elVolley') { o.rot = (o.rot || 0) - f * 0.32; o.dx -= f * 2; }
+    else if (m === 'elRoll') { const k = 1 - Math.max(0, e.modeT) / EL_ARCH.roll, rt = (e.rollDir || -f) * k * Math.PI * 2, r = e.h * 0.4; o.rot = (o.rot || 0) + rt; o.dx -= r * Math.sin(rt); o.dy -= r * (1 - Math.cos(rt)); o.sy *= 0.85; }
+    else if (m === 'elRollUp') { o.sy *= 0.8; o.sx *= 1.1; } }
+  /* THE GOBLIN CAPTAIN draws each cut back across himself, rears up tall for the cleaver, and bends over it where it sticks */
+  if (e.elite && e.t === 'brute') { const m = e.mode, f = e.face || 1;
+    if (m === 'elCut1Tell' || m === 'elCut2Tell') { o.rot = (o.rot || 0) - f * 0.14; o.dx -= f * 2; }
+    else if (m === 'elCut1' || m === 'elCut2') { o.rot = (o.rot || 0) + f * 0.12; o.dx += f * 2; }
+    else if (m === 'elOverTell') { o.sy *= 1.1; o.sx *= 0.93; o.dy -= 2; o.rot = (o.rot || 0) - f * 0.1; }
+    else if (m === 'elOver') { o.sy *= 0.8; o.sx *= 1.16; }
+    else if (m === 'elStuck') { o.sy *= 0.86; o.rot = (o.rot || 0) + f * 0.2; o.dx += f * 3 + (Math.floor(time * 20) % 2 ? 1 : 0); }
+    else if (m === 'elCryTell') { o.sy *= 1.08; o.dy -= Math.round(Math.abs(Math.sin(time * 30)) * 2); } }
   if (e.t === 'drownedking' && e.tilt) { const rt = e.tilt * (o.face || 1); o.rot = (o.rot || 0) + rt; o.dx -= 16 * Math.sin(rt); o.dy -= 16 * (1 - Math.cos(rt)); }   /* HE LEANS INTO HIS SWIM, turned about the middle of him and not his feet */
   return o;
 }
@@ -17877,7 +18073,7 @@ function drawBoxes(cx, cy) {
    a blade, pale off a claw. */
 function drawFoeSmear(e, bigF, cx, cy) {
   if (SET.impact === false) return;
-  const k = Math.min(1, e.relT / 0.1), f = e.face || 1, h = e.h * bigF, r = Math.max(10, Math.min(46, h * 0.75 + e.w * 0.2));
+  const k = Math.min(1, e.relT / 0.1), f = e.face || 1, h = e.h * bigF / (e.bodyK || 1), r = Math.max(10, Math.min(46, h * 0.75 + e.w * 0.2));
   const px2 = Math.round(e.x - cx + f * e.w * 0.25), py2 = Math.round(e.y - cy - h * 0.55), steel = MAT[e.t] === 'steel';
   const sweep = 2.2 * (1 - k * 0.5), a0 = -1.35;
   g.globalCompositeOperation = 'lighter';
@@ -18563,9 +18759,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'drone') frame = Math.floor(e.anim * 1.1) % 6 === 0 && (e.anim * 1.1) % 1 < 0.15 ? 2 : [0, 3, 1, 3][Math.floor(e.anim * 5) % 4];
     else if (e.t === 'shaman') frame = e.cast > 0 ? (Math.floor(e.anim * 10) % 2 ? 4 : 1) : Math.abs(e.vx || 0) > 4 ? 2 + Math.floor(e.anim * 6) % 2 : 0;
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
-    else if (e.t === 'brute') frame = e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
+    else if (e.t === 'brute') frame = e.mode === 'elCut1Tell' || e.mode === 'elCut2Tell' || e.mode === 'elOverTell' || e.mode === 'elCryTell' ? 2 : e.mode === 'elCut1' || e.mode === 'elCut2' || e.mode === 'elOver' || e.mode === 'elStuck' ? 3 : e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' ? 9 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
-    else if (e.t === 'shield') frame = e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
+    else if (e.t === 'shield') frame = e.mode === 'elChargeTell' || e.mode === 'elWallTell' ? 5 : e.mode === 'elCharge' ? 6 : e.mode === 'elDazed' || e.mode === 'elChargeEnd' ? 4 : e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
     else if (e.t === 'sprig' && (e.mode === 'biteTell' || e.mode === 'bite')) frame = e.mode === 'biteTell' ? 5 : 6;   /* the crouch, and the leap */
     else if (e.t === 'sprig' || e.t === 'bearer') frame = Math.abs(e.vx) > 4 || e.t === 'bearer' ? Math.floor(e.anim * 10) % 4 : (Math.floor(e.anim * 0.7) % 4 === 1 ? 4 : 0);
     else if (e.t === 'thief') frame = e.loot > 0 || Math.abs(e.vx) > 8 ? Math.floor(e.anim * 12) % 2 : (Math.floor(e.anim * 0.8) % 3 === 1 ? 2 : 0);
@@ -18664,7 +18860,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'soldier') frame = e.guardT > 0 ? 4 : e.mode === 'slashTell' ? 5 : e.mode === 'slash' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;
     else if (e.t === 'javelin') frame = e.mode === 'aim' ? 4 : e.mode === 'throw' ? 5 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 4 : 6;
     else if (e.t === 'heavy') frame = (e.mode === 'raise' || e.mode === 'grabTell') ? 4 : (e.mode === 'slam' || e.mode === 'sweep' || (e.mode === 'rest' && e.modeT > 0.5 && !(e.parried > 0))) ? 5 : (e.mode === 'windUp' || e.parried > 0) ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 5) % 4 : 0;
-    else if (e.t === 'archer') frame = e.draw > 0 ? (e.draw > 0.3 ? 1 : 5) : e.loose > 0 ? 6 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
+    else if (e.t === 'archer') frame = e.mode === 'elVolleyTell' ? 1 : e.mode === 'elVolley' ? 6 : e.mode === 'elVolleyRest' ? 5 : e.mode === 'elRoll' || e.mode === 'elRollUp' ? 4 : e.draw > 0 ? (e.draw > 0.3 ? 1 : 5) : e.loose > 0 ? 6 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
     else frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 22 : 10)) % 4 : 0;
     const wind = windingUp(e);
     const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6) : 0;
@@ -18777,16 +18973,18 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.alive && (HEAVY.has(e.t) || e.t === 'closedhelm' || e.t === 'hedgeknight' || e.t === 'golem' || e.t === 'forgemaster') && Math.abs(e.vx) > 6) { if (e.lastF !== undefined && frame !== e.lastF && Math.random() < 0.8) dust(e.x - (e.face || 1) * 4, e.y, e.maxHp ? 3 : 2); e.lastF = frame; } }
     g.globalAlpha = 1;
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
-    if (wind && !(e.t === 'gobpriest' && e.mode === 'riteTell') && !(e.t === 'gobmage' && e.mode === 'runeTell')) tellQ.push({ txt: '!', x: e.x - cx, y: e.y - e.h - 12 - cy, col: '#ffd36b', a: 1 });   /* drawn last of all: drawTells(). (Not over a priest's rite: it strikes nobody, and a yellow ! promises a blow the shield turns. Not under a mage's red !! either: its rune turns on no shield) */
-    else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF - cy + ps.dy) - 5);
-    if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
+    const windMark = wind ? markOf(e) : '';
+    if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - e.h - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1 });   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
+    else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy + ps.dy) - 5);
+    if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
       g.fillRect(mx - 3, my, 7, 1); g.fillRect(mx, my - 3, 1, 7); g.fillRect(mx - 2, my - 2, 1, 1); g.fillRect(mx + 2, my - 2, 1, 1); g.fillRect(mx - 2, my + 2, 1, 1); g.fillRect(mx + 2, my + 2, 1, 1); g.globalAlpha = 1; }
     if (e.alive && e.elite) drawElitePlate(e, cx, cy, bigF);
-    if (e.alive && (e.rallyT > 0 || e.wallT > 0)) { const px2 = Math.round(e.x - cx - (e.w || 12) / 2) - 4, py2 = Math.round(e.y - e.h * bigF - cy) + 2;   /* RALLIED (a red chevron) or BEHIND THE WALL (a grey shield), beside its head, clear of the marks */
+    if (e.alive && e.vol) drawEliteVolley(e, cx, cy);
+    if (e.alive && (e.rallyT > 0 || e.wallT > 0)) { const px2 = Math.round(e.x - cx - (e.w || 12) / 2) - 4, py2 = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) + 2;   /* RALLIED (a red chevron) or BEHIND THE WALL (a grey shield), beside its head, clear of the marks */
       g.fillStyle = ART.OUT; g.fillRect(px2 - 2, py2 - 1, 5, 5); g.fillStyle = e.rallyT > 0 ? '#ff6b6b' : '#c9d1dc';
       if (e.rallyT > 0) { g.fillRect(px2, py2, 1, 1); g.fillRect(px2 - 1, py2 + 1, 3, 1); g.fillRect(px2 - 1, py2 + 2, 1, 1); g.fillRect(px2 + 1, py2 + 2, 1, 1); } else { g.fillRect(px2 - 1, py2, 3, 2); g.fillRect(px2, py2 + 2, 1, 1); } }
-    if (e.alive && e.blessT > 0) { const px3 = Math.round(e.x - cx + (e.w || 12) / 2) + 4, py3 = Math.round(e.y - e.h * bigF - cy) + 2;   /* BLESSED (a saffron flame, the priest's), on the other side of its head from a rally or a wall */
+    if (e.alive && e.blessT > 0) { const px3 = Math.round(e.x - cx + (e.w || 12) / 2) + 4, py3 = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) + 2;   /* BLESSED (a saffron flame, the priest's), on the other side of its head from a rally or a wall */
       g.fillStyle = ART.OUT; g.fillRect(px3 - 2, py3 - 2, 5, 6); g.fillStyle = e.blessT < 1.5 && Math.floor(time * 8) % 2 ? '#a8681c' : '#e8a83a'; g.fillRect(px3 - 1, py3, 3, 3); g.fillRect(px3, py3 - 1, 1, 1); g.fillStyle = '#ffe08a'; g.fillRect(px3, py3 + 1, 1, 1); }
     if (SET.foeBars && e.hp0 && e.hp < e.hp0 && e.hp > 0 && !e.maxHp && !e.harmless && !e.elite) { const bx = Math.round(e.x - cx) - 6, by = Math.round(e.y - e.h - cy) - 5; g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, 14, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, 12, 2); g.fillStyle = e.hp / e.hp0 > 0.5 ? '#8fd160' : '#ff6b6b'; g.fillRect(bx, by, Math.round(12 * e.hp / e.hp0), 2); }
   }
@@ -20453,7 +20651,7 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
   tileSpr: () => tileSpr, resolve: () => resolveTiles(),
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
-  telling: e => !!e && windingUp(e),
+  telling: e => !!e && windingUp(e), markOf: e => markOf(e), marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
   /* THE BOT HAS TO BE ABLE TO LOOK AT A PLACE IT IS NOT STANDING. A backdrop fault lives at a height: a band cut off
@@ -20515,7 +20713,7 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
   //   await BK.playtest()                                   every level, both passes
   //   await BK.playtest({ levels: ['reef'], mode: 'play' })  one level, one pass
   async playtest(o) { const m = await import('./playtest.js'); return m.run(window.BK, o || {}); },
-  async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); },   /* every hero against the common foes, early to late: window.__lab */
+  async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); }, async ambushLab(o) { const m = await import('./lab.js'); return m.ambushLab(window.BK, o || {}); },   /* each hero through a level's ambush room: window.__ambushLab */   /* every hero against the common foes, early to late: window.__lab */
   async bossLab(o) { const m = await import('./lab.js'); return m.bossLab(window.BK, o || {}); }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a

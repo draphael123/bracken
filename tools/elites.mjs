@@ -11,6 +11,7 @@
 // with no mini has no gated elite (a level still being rebuilt is listed as pending, not failed).
 import { LEVELS, T, eliteGate } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
+import { readFileSync } from 'fs';
 
 const PENDING = new Set([]);   /* a level being rebuilt goes in here, and comes out of it when its elites land */
 const want = (process.argv[2] || '').split(',').filter(Boolean);
@@ -51,5 +52,31 @@ for (const lv of LEVELS) {
   if (out.length) bad++;
   console.log((out.length ? 'FAIL ' : ' ok  ') + lv.id.padEnd(11) + els.map(e => e.t + '@' + e.x + ',' + e.y + (e.gate !== undefined ? ' gate ' + e.gate : '')).join('; ') + (out.length ? '\n       ' + out.join('\n       ') : ''));
 }
+// ---- THE AMBUSH ROOMS AND WHO LEADS THEM (section Q rules 2 and 3) ----
+// One room a level at most. A wave's elite must be a kind the ELITE table knows (or it spawns as a plain creature and the room
+// has no leader), holds no gate (the room is its gate), and no two neighbouring levels' rooms are led by the same kind - its moves
+// are the room's lesson. A room with no leader yet is listed, not failed, while the batches are being built.
+const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+const eliteKinds = new Set([...(mainSrc.match(/\nconst ELITE = \{([\s\S]*?)\n\};/) || ['', ''])[1].matchAll(/(?:^|[\s,{])([a-z]+): \{ name:/g)].map(m => m[1]));
+console.log('\n== the ambush rooms ==');
+let ambBad = 0, prevLead = null, prevId = null; const unled = [];
+for (const lv of LEVELS) {
+  if ((lv.hidden && !lv.secret) || lv.id === 'custom' || (want.length && !want.includes(lv.id))) continue;
+  const L = lv.build(), rooms = L.ambushes || [], out = [];
+  if (!rooms.length) { continue; }
+  if (rooms.length > 1) out.push(rooms.length + ' ambush rooms: one a level at most (' + rooms.map(A => A.name).join(', ') + ')');
+  const leads = [];
+  for (const A of rooms) for (const [w, wave] of A.waves.entries()) for (const [t, , , o] of wave) { if (!o || !o.elite) continue;
+    if (!eliteKinds.has(t)) out.push(A.name + ' wave ' + (w + 1) + ': ' + t + ' is marked elite but the ELITE table has no ' + t);
+    if (o.gate !== undefined) out.push(A.name + ': its ' + t + ' holds a gate - the room is its gate');
+    leads.push(t); }
+  if (!leads.length) unled.push(lv.id);
+  if (leads.length && prevLead && leads.includes(prevLead)) out.push('led by ' + prevLead + ' like ' + prevId + ' before it: neighbouring rooms teach different moves');
+  if (leads.length) { prevLead = leads[0]; prevId = lv.id; } else { prevLead = null; prevId = null; }
+  if (out.length) ambBad++;
+  console.log((out.length ? 'FAIL ' : ' ok  ') + lv.id.padEnd(11) + rooms.map(A => A.name).join(', ') + (leads.length ? '  led by ' + leads.join(', ') : '  (no leader yet)') + (out.length ? '\n       ' + out.join('\n       ') : ''));
+}
+if (unled.length) console.log('\nnot yet led by an elite: ' + unled.join(', '));
+if (ambBad) bad += ambBad;
 console.log('\n' + n + ' elites. ' + (bad ? bad + ' level(s) fail.' : 'every elite can be fought and every gate it holds opens onto the route.'));
 process.exitCode = bad ? 1 : 0;
