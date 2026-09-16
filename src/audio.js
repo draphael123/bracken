@@ -610,12 +610,19 @@ Object.assign(SFX, {
   priestRite() { pad('sawtooth', 247, 247, 1.3, 0.05, 0, 900); pad('sawtooth', 330, 330, 1.1, 0.035, 0.25, 900); for (let i = 0; i < 3; i++) { bell(2093, 0.25, 0.03, 0.1 + i * 0.45); noise(0.05, 0.05, 4200, 2, 0.3 + i * 0.45); } },
   priestBless() { bell(1568, 0.7, 0.06); bell(2093, 0.6, 0.04, 0.06); pad('sine', 392, 523, 0.6, 0.05, 0, 2200); },
   priestBreak() { tone('sine', 2093, 1500, 0.2, 0.06); SFX.clatter(); noise(0.3, 0.12, 700, 0.5, 0.05); },
+  /* THE GOBLIN MAGE reads out of a book it cannot read: pages riffled and a goblin's shout pitched up into something it thinks
+     is a word. The bolt leaves the page with a papery crack; the rune is written low (a scratch along the flags and a
+     sawtooth growl rising under it) and goes off with a thump and a shriek of torn paper */
+  mageBoltTell() { for (let i = 0; i < 4; i++) noise(0.03, 0.08, 5200, 1.6, i * 0.035); tone('square', 520, 880, 0.18, 0.06, 0.12); },
+  mageBolt() { noise(0.06, 0.18, 3600, 1.2); tone('triangle', 1400, 500, 0.2, 0.08); tone('sine', 660, 330, 0.25, 0.06, 0.03); },
+  mageRuneTell() { for (let i = 0; i < 6; i++) noise(0.05, 0.06, 1800 + i * 300, 2, i * 0.08); pad('sawtooth', 110, 220, 0.9, 0.06, 0.05, 700); tone('square', 400, 700, 0.25, 0.05, 0.1); },
+  mageRune() { tone('sine', 160, 50, 0.35, 0.22); noise(0.25, 0.22, 700, 0.6); noise(0.2, 0.12, 4200, 1.4, 0.03); },
   shardBristle() { if (!gate('bristle', 0.3)) return; [1568, 2093, 2637].forEach((f, i) => bell(f, 0.3, 0.035, i * 0.04)); noise(0.1, 0.05, 5200, 1.2); },
   // ---- the telegraph: every enemy that winds up says so, a glint for the small ones, a low bell for the big ----
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
 });
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
-const GOB_V = { sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05 };
+const GOB_V = { sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
 Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
   foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
@@ -767,6 +774,7 @@ const DIE = {
   shardling() { noise(0.3, 0.3, 3600, 0.7); [2637, 2093, 1568, 1175].forEach((f, i) => bell(f, 0.35, 0.05, i * 0.05)); tone('sawtooth', 160, 60, 0.25, 0.1); },
   fledgling() { tone('sawtooth', 1400, 500, 0.18, 0.1); noise(0.2, 0.16, 2600, 0.5, 0.05); for (let i = 0; i < 3; i++) noise(0.04, 0.08, 3600, 1, 0.1 + i * 0.05); /* a cheep cut short, and down */ },
   gobpriest() { gob(1.05) || tone('sawtooth', 300, 90, 0.4, 0.16); pad('sawtooth', 247, 150, 0.6, 0.04, 0.05, 800); tone('sine', 2093, 1200, 0.5, 0.05, 0.15); SFX.clatter(); /* the chant goes out of its nose, and the bell and the censer hit the flags */ },
+  gobmage() { gob(1.15) || tone('square', 560, 120, 0.3, 0.16); for (let i = 0; i < 5; i++) noise(0.04, 0.1, 4800, 1.4, 0.1 + i * 0.05); tone('sine', 900, 200, 0.4, 0.05, 0.1); SFX.thud(); /* the pages go everywhere, and the book lands */ },
   sentry() { gob(1.05) || tone('square', 500, 110, 0.22, 0.16); bell(988, 0.8, 0.07, 0.12); SFX.clatter(); /* his bell hits the floor */ },
   hearthgob() { gob(0.7, 0.65) || tone('sawtooth', 240, 60, 0.4, 0.22); noise(0.6, 0.18, 2400, 0.5, 0.12); tone('sine', 90, 40, 0.3, 0.25, 0.1); /* the fire goes out with him */ },
   sweep() { gob(1.25) || tone('square', 560, 120, 0.22, 0.16); noise(0.45, 0.24, 520, 0.4, 0.05); SFX.clatter(); /* a cloud of soot and the brush */ },
@@ -901,6 +909,7 @@ const HURT = {
   shardling() { bell(2637, 0.2, 0.05); noise(0.05, 0.12, 5000, 0.8); },
   fledgling() { tone('square', 1600, 1100, 0.08, 0.08); },
   gobpriest() { gobH(1.05) || tone('square', 480, 300, 0.08, 0.13); bell(2093, 0.12, 0.025, 0.02); /* and the bell on its belt */ },
+  gobmage() { gobH(1.15) || tone('square', 620, 380, 0.08, 0.13); noise(0.05, 0.08, 5000, 1.5, 0.02); /* and a page tears */ },
   sentry() { gobH(1.05) || tone('square', 560, 340, 0.08, 0.12); bell(988, 0.25, 0.04, 0.02); },
   hearthgob() { gobH(0.7, 0.5) || tone('sawtooth', 240, 140, 0.14, 0.16); noise(0.12, 0.1, 2400, 0.6); },
   sweep() { gobH(1.3) || tone('square', 640, 400, 0.08, 0.12); noise(0.14, 0.1, 600, 0.5, 0.03); /* a cough of soot */ },

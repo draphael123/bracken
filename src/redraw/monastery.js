@@ -9,7 +9,7 @@
 //   bakeMonkProps()        the furniture: bells, a bell frame, the prayer wheel, basket, hoist wheel, brazier, loose
 //                          stone, rubble, shelves, shrines, flag posts, a guardian statue, the fallen portcullis, beads
 //   bakeFledgling()        the Roc's chicks, a sprite set   bakeGuardian()   the temple guardian, a sprite set (9 frames)
-//   bakeGoblinPriest()     the goblin in the monks' robe, a sprite set (6)
+//   bakeGoblinPriest()     the goblin in the monks' robe, a sprite set (6)   bakeGoblinMage()   the goblin with the book (7)
 import { canvas, px, rect, fillPoly, line, circle, outline, mulberry, flipX, whiten, fromGrid } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -393,4 +393,39 @@ export function bakeGoblinPriest() {
     while (rows.length < 22) rows.push(''); rows.length = 22; rows.push(feet[pose === 1 ? 1 : pose === 2 ? 2 : 0]);
     return outline(fromGrid(rows.map(r => (r || '').padEnd(16, '.').slice(0, 16)), P, 1), OUT); };
   return pack([0, 1, 2, 3, 4, 5].map(frame), 8, 23, 10, 16);
+}
+
+// ---------- THE GOBLIN MAGE ----------
+// The one that went into the scriptorium instead of the kitchens and came out with a book it cannot read and a
+// scholar's hat three sizes too big, the point of it bent over backward. It has worked out that if it holds the book
+// open and shouts at it, things happen. A blue robe with the monks' gilt on the hem and collar, and a red-bound book
+// whose white pages are the brightest thing on it. At sixteen pixels it is A CROOKED HAT AND A WHITE PAGE: taller than
+// any goblin on the mountain, and the only one with a point that leans.
+// 16x21 grid on an 18x23 canvas, facing RIGHT. Frames: 0 idle, 1 walk A, 2 walk B, 3 bolt tell (the book open and held
+// out), 4 bolt (thrust, the pages lit), 5 rune tell (the book up over its head), 6 hurt (last). Anchor ax 8, ay 21; hit box w 10, h 16.
+export function bakeGoblinMage() {
+  const P = { g: '#6faa4a', G: '#3f6e2c', e: '#f3f0d2', o: OUT, n: '#34467a', N: '#1c2448', l: '#5a6ea8', t: BR[3], T: BR[1],
+    p: '#f6f0dc', P: '#b8ac90', r: '#8a2a2a', v: '#c9a0ff', V: '#f0e4ff' };
+  const put = putRow;
+  const hat = ['.N', '.Nn', '..Nnn', '...Nnnn', '....Nnnnn', '....Nnnlnn', '....Ntttttt', '..NNnnnnnnnNN'];
+  const hatHurt = ['', '', '', '.......nnN', '......nnnnN', '.....nlnnnN', '....ttttttN', '..NNnnnnnnnNN'];
+  const head = ['....ggggggg', '....ggeogeo', '.....gGGGg'];
+  const body = ['...nnttttnnn', '..nnlnnnnnnn', '..nlnnnnnnnn', '..nlnnnnnnnn', '.nnlnnnnnnnnn', '.nnlnnnnnnnnn', '.NtTtTtTtTtTN'];
+  const feet = ['...GG...GG', '....GG.GG', '...GG....GG'];
+  const frame = pose => {
+    const rows = [...(pose === 6 ? hatHurt : hat), ...head, ...body];
+    if (pose === 6) {   /* HURT: the hat knocked over the other way, eyes shut, the book gone out of its hands */
+      put(rows, 9, 4, 'gGGgGGg'); put(rows, 13, 13, 'rpr'); put(rows, 14, 14, 'rp'); }
+    else if (pose === 3 || pose === 4) {   /* the book OPEN and held out at the thing it means: two white pages, lit on the throw */
+      const x = pose === 4 ? 12 : 11;
+      put(rows, 12, 10, 'g'); put(rows, 11, x, 'rppr'); put(rows, 12, x, pose === 4 ? 'rVVr' : 'rpPr'); put(rows, 13, x, 'rrrr');
+      if (pose === 4) { put(rows, 10, x + 1, 'vv'); put(rows, 12, x + 4, 'v'); } }
+    else if (pose === 5) {   /* THE RUNE: the book up over the hat at arm's length, open to the floor it is about to write on */
+      put(rows, 1, 9, 'rrrrrrr'); put(rows, 2, 9, 'rpppPpr'); put(rows, 3, 9, 'rrrrrrr'); put(rows, 4, 12, 'g');
+      put(rows, 5, 12, 'n'); put(rows, 6, 12, 'n'); put(rows, 8, 12, 'n'); put(rows, 9, 12, 'n'); put(rows, 10, 11, 'nn'); }
+    else {   /* the book shut under its arm */
+      put(rows, 12, 11, 'rrr'); put(rows, 13, 11, 'rppr'); put(rows, 14, 11, 'rrr'); }
+    while (rows.length < 20) rows.push(''); rows.length = 20; rows.push(feet[pose === 1 ? 1 : pose === 2 ? 2 : 0]);
+    return outline(fromGrid(rows.map(r => (r || '').padEnd(16, '.').slice(0, 16)), P, 1), OUT); };
+  return pack([0, 1, 2, 3, 4, 5, 6].map(frame), 8, 21, 10, 16);
 }
