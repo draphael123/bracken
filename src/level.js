@@ -5096,8 +5096,8 @@ function waymeet() {
   post(96); post(186);
   ent('npc', 104, R - 1, { kind: 'bard' }); ent('dog', 122, R - 1); ent('dog', 200, R - 1);
   sign(88, 'THE MARKET CROSS. NOBODY HERE IS YOUR ENEMY, AND EVERYONE IS IN THE WAY.');
-  /* THE MARKET HALL (x 95-123) and THE HORSE FAIR (x 181-209) are the square's two crowds, locked in by AMBUSH; the
-     men placed in them here stand down when the rooms fill. */
+  /* THE MARKET HALL (x 95-123) is the square's crowd, locked in by AMBUSH; the men placed in it here stand down when the room
+     fills. THE HORSE FAIR (x 181-209) was a second room and is ground again: its men are the fair's own crowd. */
   for (const x of [96, 106, 114, 122, 190, 202]) ent('swornsword', x, R - 1, { face: -1 });
   ent('crossbow', 104, R - 4, { face: -1 }); ent('runner', 194, R - 1, { face: -1 }); ent('hedgeknight', 184, R - 1, { face: -1 });
   ent('deco', 102, R - 10, { kind: 'bunting', hang: true });   /* left up from the fair */
@@ -7275,8 +7275,8 @@ const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul
 /* ============ AMBUSH ROOMS ============
    Where a level means to jump you, in its FINAL coordinates (after every grow and graft - read them off the built grid):
    the two gate columns, the row the floor stands on, and waves of [creature, x, y?, extra]. Wave one is the crowd; wave
-   two is built so the combat has to be used - a shield planted in front of a bow, a heavy that BREAKS, something light
-   enough to throw into the room's spikes, water or its own gates. The room is emptied of its creatures when it is built,
+   two is LED BY AN ELITE of the level's own roster ([kind, x, y, { elite: true }]: bigger, with moves of its own), and
+   its moves are the lesson - with fewer bodies beside it, so the room still clears in twenty to forty seconds. The room is emptied of its creatures when it is built,
    so it reads as a quiet yard until it shuts, and a checkpoint goes at its door: die inside and you wake outside, with
    the room put back. check: [x, y] places that checkpoint by hand; false when one already stands at the door. The engine
    is updateAmbush in src/main.js, and section Q of RULES-LEVELS-AND-BOSSES.md says what makes a good one. */
@@ -7308,34 +7308,18 @@ const AMBUSH = {
   /* THE DROWNED CHAPEL: the doors are the gates (the door columns under the two walls), its floor is over the high water */
   causeway: [{ name: 'THE DROWNED CHAPEL', row: 19, wallL: 265, wallR: 297, check: false,
     waves: [[['sailor', 270], ['sailor', 292], ['crab', 281], ['netter', 276]], [['tideguard', 288], ['scout', 293], ['sailor', 272], ['crab', 284]]] }],
-  hurricane: [{ name: 'THE ORLOP', row: 26, wallL: 69, wallR: 111, check: [65, 26],
-    waves: [[['sailor', 74], ['cutlass', 106], ['scout', 90]], [['tideguard', 98], ['marine', 106], ['boarder', 78], ['cutlass', 88]]] },
-    { name: 'THE WEATHER DECK', row: 18, wallL: 389, wallR: 427, check: false,
+  /* ONE ROOM A LEVEL. Three levels had two, and the second was the same lesson again a few minutes on. Kept: THE WEATHER DECK
+     (the Hurricane's middle, out in the level's own storm with the rail and the sea to throw them over; THE ORLOP was a flat hold
+     at the start, twenty tiles past the Boarding Master's gate - back to back with a fight). THE LAMP ISLAND (a quay under a
+     lamp with the river under it; THE STORM DRAIN was a dark tunnel, a corridor where the tells are hardest to read). THE
+     MARKET HALL (a hall with a gallery over it; THE HORSE FAIR sent a mounted lancer in a hundred tiles before the level's own
+     mini, THE LANCER). The cut rooms are ground again: the creatures the level placed in them stand where they were put. */
+  hurricane: [{ name: 'THE WEATHER DECK', row: 18, wallL: 389, wallR: 427, check: false,
     waves: [[['sailor', 394], ['cutlass', 422], ['scout', 408]], [['boarder', 414], ['marine', 422], ['bosun', 396], ['lookout', 404]]] }],
-  lamplit: [{ name: 'THE STORM DRAIN', row: 37, wallL: 360, wallR: 400, check: [355, 37],
-    waves: [[['wight', 366], ['wight', 394], ['crab', 380], ['sailor', 372]], [['tideguard', 386], ['scout', 394], ['watch', 368], ['snuffer', 378]]] },
-    { name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
+  lamplit: [{ name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
     waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
-    waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['watch', 100], ['hedgeknight', 106]]] },
-    { name: 'THE HORSE FAIR', row: 35, wallL: 181, wallR: 209, check: [178, 35],
-    waves: [[['swornsword', 186], ['runner', 204], ['swornsword', 195]], [['lancer', 196, 35, { range: 11 }], ['crossbow', 205], ['swornsword', 186], ['heavy', 190]]] }],   /* the fair's own horse, and a serjeant on it */
-  hunt: [{ name: 'THE HOLLOW', row: 25, wallL: 323, wallR: 354, check: [320, 25],
-    waves: [[['hound', 328], ['hound', 350], ['hound', 338], ['thief', 344]], [['shield', 342], ['archer', 350], ['brute', 328], ['javelin', 334]]] },
-    { name: "THE LORD'S RIDE", row: 25, wallL: 436, wallR: 467, check: [433, 25],
-    waves: [[['hound', 440], ['hound', 462], ['crow', 452, 19], ['thief', 456]], [['shield', 454], ['archer', 463], ['pike', 442], ['soldier', 448]]] }],
-  quarry: [{ name: 'THE WEIGHT GALLERY', row: 23, wallL: 276, wallR: 324, check: [273, 23],
-    waves: [[['miner', 282], ['miner', 318], ['rockgoblin', 300], ['sapper', 310]], [['shield', 306], ['archer', 314], ['brute', 290], ['rockgoblin', 298]]] },
-    { name: 'THE LAMP DRIFT', row: 23, wallL: 399, wallR: 428, check: [395, 23],   /* the right gate stops short of the mine cart: a ride carries you through a wall */
-    waves: [[['miner', 404], ['miner', 424], ['bat', 414, 20]], [['shield', 419], ['archer', 425], ['brute', 405], ['sapper', 412]]] }],
-  frost: [{ name: "THE SQUATTERS' CAMP", row: 26, wallL: 53, wallR: 90, check: [50, 24],
-    waves: [[['wight', 58], ['wight', 86], ['rockgoblin', 72], ['goat', 64]], [['hearthgob', 80], ['hearthgob', 86], ['troll', 62], ['harpy', 72, 20]]] },
-    { name: 'THE CREVASSE FIELD', row: 14, wallL: 430, wallR: 475, check: false,
-    waves: [[['shardling', 440], ['wight', 452], ['shardling', 468]], [['troll', 442], ['rockgoblin', 460], ['wight', 452], ['harpy', 466, 8]]] }],
-  skyship: [{ name: 'THE DECKHOUSE ROOF', row: 21, wallL: 150, wallR: 176, check: [147, 25],
-    waves: [[['cutlass', 156], ['cutlass', 172], ['lookout', 164]], [['shield', 167], ['archer', 173], ['boarder', 157], ['sapper', 162]]] },
-    { name: 'THE SHEET DECK', row: 25, wallL: 368, wallR: 403, check: [365, 25],
-    waves: [[['cutlass', 372], ['cutlass', 396], ['sapper', 384], ['crow', 380, 18]], [['shield', 390], ['archer', 397], ['boarder', 374], ['javelin', 382]]] }],
+    waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['watch', 100], ['hedgeknight', 106]]] }],
 };
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);

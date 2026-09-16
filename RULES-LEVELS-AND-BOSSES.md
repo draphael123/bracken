@@ -507,7 +507,7 @@ did not belong on.
 A benched boss still has to pass `tools/tells.mjs` while it sits in the code: its marks are audited
 like everyone else's, so it comes back honest.
 
-## Q. AMBUSH ROOMS — ONE OR TWO SHORT LOCKED FIGHTS A LEVEL
+## Q. AMBUSH ROOMS — ONE SHORT LOCKED FIGHT A LEVEL, LED BY AN ELITE
 
 A corridor never asks for the combat the game has now (stagger bars, knock-into-hazard, shield walls,
 wall slams, finishers). An ambush room does. Walk into the middle of a room and both ends drop shut;
@@ -519,14 +519,24 @@ and the gates lift with a heart and ten gold.
 1. **A place, not a corridor.** A yard, a clearing, a hold, a deck, a cave chamber: somewhere that
    already reads as a spot to be jumped. 25 to 45 tiles between the gates; wider and the fight
    scatters, narrower than the screen (20 tiles) and there is no room to read a tell.
-2. **One or two a level**, never back to back, never in a boss or mini room, never over swimming.
-   The Shipwreck Reef and The Deep have none for that reason.
-3. **Wave one is the crowd; wave two is the lesson.** Two to four foes each from the level's own
-   roster (GARRISON/MIX). Wave two is built so the systems matter: a SHIELD (or sworn sword, tideguard)
-   in front of a COVERED shooter (archer, crossbow, scout, marine, spitcap...) so the shield plants;
-   a POISE_HEAVY body (brute, troll, soldier, pike, boarder, watch) that can be BROKEN; and something
-   light enough to throw into the room's own hazard. Where the room has spikes, a crevasse or water,
-   put the throwable beside it; where it has none, the shut gates are walls to SLAM them into.
+2. **One a level, at most**, never back to back with a mini or an elite, never in a boss or mini room,
+   never over swimming. The Shipwreck Reef and The Deep have none for that reason. *Earned:* the
+   Hurricane, the Lamplit Quarter and Waymeet each had two, and the second was the same lesson again a
+   few minutes on (THE ORLOP, THE STORM DRAIN and THE HORSE FAIR are ground again).
+3. **Wave one is the crowd; wave two is LED BY AN ELITE, and the elite's moves are the lesson.** Two
+   to four foes each from the level's own roster (GARRISON/MIX). Seventeen rooms had the same wave two
+   - a shield in front of a shooter, a heavy to break, one more - renamed per level; it taught one thing
+   seventeen times. Now wave two is `[kind, x, y, { elite: true }]` plus the crowd it leads: a kind of
+   the level's own, half as big again, with one or two MOVES OF ITS OWN built from what that creature is
+   (THE ARCHER CAPTAIN puts a rain of arrows on the floor you stand on and rolls away when you close in).
+   Its moves set the puzzle, so no two neighbouring levels are led by the same kind. Every move obeys
+   section A and rule H: one windup at a time, an honest mark, a tell you can read, an opening after.
+   The crowd beside it still uses the systems - something that plants, something that BREAKS, something
+   light enough to throw into the room's own hazard or SLAM into its shut gates - but there are fewer of
+   them, because the elite is most of the length (rule 4). A room's elite holds no gate (the room's walls
+   are its gate) and pays nothing of its own (the room pays the heart and the ten gold); it is put back
+   with the room on a death. Measure the leader with `BK.fightLab({ foes: [kind], elite: true,
+   keepAlive: true })` and the whole room with `BK.ambushLab({ levels: [id] })`, six heroes.
 4. **Short.** 20 to 40 seconds for a hero who plays it straight. A wave that runs past 70 seconds
    slinks off by itself, and anything that leaves the room is out of the fight: a room never keeps you.
 5. **The door is a checkpoint.** A checkpoint stands just outside every room, never inside it (the

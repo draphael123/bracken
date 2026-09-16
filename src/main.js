@@ -2339,7 +2339,16 @@ function drawAmbushHud() {
      wall   shields up: every foe near it takes half a blow from the front for five seconds - a grey pip
      call   once, at half health: two more of the level's own drop in beside it
      slam   a red !!: it comes down on the floor and the shock runs both ways along it. Jump it; no shield turns it
-     lunge  a yellow !: a long rush with the blade out. Take it on the shield and it is left open */
+     lunge  a yellow !: a long rush with the blade out. Take it on the shield and it is left open
+   THOSE FIVE WERE SHARED, and fifteen kinds fought with five moves between them. "Can we make the elites use regular models,
+   just be bigger sprites, and have one or two unique attacks?" So an elite is its own creature half as big again (EL.big, the
+   body as well as the sprite), and a kind can have MOVES OF ITS OWN: a function updateElite<Kind>(e, dt), one line for it in
+   updateElite, built from what that creature already is. A kind with none yet keeps its old rule (updateEliteRule) until its
+   batch comes. Either way it asks for the body only while a move is told or thrown, one windup at a time across the whole fight
+   (lastTellT), and gives the body back to the creature's own update in the mode it left.
+   AN AMBUSH CAN BE LED BY ONE: a wave entry [kind, x, y, { elite: true }]. The room's walls are its gate, so it holds none, and
+   the room pays the heart and the ten gold, so it pays nothing of its own and is never marked down for the attempt - die in the
+   room and the room, and its captain, are put back. */
 /* hp: how many of its kind's health it stands up with, where three is wrong for the kind. Measured with BK.fightLab({ elite: true,
    keepAlive: true }) against a fight of twenty to forty-five seconds: a heavy knight or a hedge knight is already a long fight and
    three of one ran past a minute; a goat, a thorn or a cook goes down (or off a ledge) in a few seconds at three */
@@ -2350,14 +2359,17 @@ const ELITE = {
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', rule: 'slam' }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
   boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
-const EL = { hp: 3, poise: 80, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.2, col: '#c9962a' };
+/* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
+   The hit box grows with the sprite (eliteMake), so what you see is what you hit and what the room has to fit */
+const EL = { hp: 3, poise: 80, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.5, col: '#c9962a' };
 const eliteDmg = n => Math.round(n * (1 + 0.25 * tierOf(curId())));
 /* EVERY ELITE OF THE ATTEMPT, kept apart from the creature list: a dead foe is swept out of that list before the next frame looks
    at it, and an elite that is gone must still be seen to be dead, or its gate never lifts */
 let eliteList = [];
 function eliteMake(m, e) {
   if (!ELITE[m.t]) return;
-  Object.assign(m, { elite: true, hp: Math.round(m.hp * (ELITE[m.t].hp || EL.hp)), home: { x: m.x, y: m.y }, elT: EL.first, gate: e.gate, calls: e.calls || ELITE[m.t].calls, key: 'elite:' + e.x + ',' + e.y, woke: 1 });
+  Object.assign(m, { elite: true, hp: Math.round(m.hp * (ELITE[m.t].hp || EL.hp)), home: { x: m.x, y: m.y }, elT: EL.first, gate: e.gate, calls: e.calls || ELITE[m.t].calls, key: 'elite:' + e.x + ',' + e.y, woke: 1,
+    bodyK: EL.big, w: Math.round((m.w || 10) * EL.big), h: Math.round((m.h || 12) * EL.big) });   /* the body grows with the sprite: drawn at EL.big, struck at EL.big */
   eliteList.push(m);
 }
 /* THE GATE GOES DOWN AS THE LEVEL IS LAID OUT, over air only, after the grid has been put back (spawnEntitiesTail): the tiles it
@@ -2374,7 +2386,8 @@ function eliteGates() {
 }
 function eliteWatch() {
   for (const e of eliteList) { if (e.alive || e.paid) continue;
-    e.paid = true; if (!rushOn()) marks.add(e.key);
+    e.paid = true; if (e.ambush) continue;   /* AN AMBUSH'S CAPTAIN: the room is its gate and the room pays, and the room is put back whole on a death */
+    if (!rushOn()) marks.add(e.key);
     if (e.shut && e.shut.length) { const cols = new Map();
       for (const [i, t0] of e.shut) if (L.grid[i] === T.PORT) { L.grid[i] = t0; tileSpr[i] = null; if (t0 === T.AIR) { const c = i % LW; if (!cols.has(c)) cols.set(c, []); cols.get(c).push((i - c) / LW); } }
       e.shut = []; resolveTiles(); for (const [col, ys] of cols) gateFx.push({ col, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift();
@@ -2397,20 +2410,32 @@ function eliteCall(e) {
     for (let i = n0; i < enemies.length; i++) { const q = enemies[i]; q.woke = 1; q.summoned = true; q.stagger = Math.max(q.stagger || 0, 0.4); if (drop && q.hy === undefined) { q.y -= 2.5 * TS; q.vy = 60; } }
     burst(x * TS + 8, (row + 1) * TS - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(x * TS + 8, (row + 1) * TS, 8); n++; }
 }
-/* THE ELITE'S OWN RULE. It asks for the body only while its rule is being told or thrown, and gives it straight back to the
-   creature's own update (in the mode it left) when it is done; true while it has it */
+/* THE ELITE. Its leash, then its moves: a kind's own where it has them, else its old shared rule. It asks for the body only while a
+   move is being told or thrown, and gives it straight back to the creature's own update (in the mode it left) when it is done;
+   true while it has it. ONE LINE A KIND below, `if (e.t === ...) return updateElite<Kind>(e, dt)`: tools/tells.mjs reads which
+   creature runs which function off that line, and the marks over its moves come from it */
 function updateElite(e, dt) {
   const R = ELITE[e.t]; if (!R) return false;
   if (!e.elBack && e.home && (Math.abs(e.x - e.home.x) > EL.leash * TS || e.y > e.home.y + 5 * TS) && !(e.knock > 0)) { e.leashT = (e.leashT || 0) + dt;
     if (e.leashT > 1.5) { smoke(e.x, e.y - 8, 3, 8); e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.leashT = 0; smoke(e.x, e.y - 8, 3, 8); } } else e.leashT = 0;
+  return updateEliteRule(e, dt);
+}
+/* MAY IT TAKE THE BODY: off cooldown, on its feet, not thrown, not already winding something up, and no other windup begun in the
+   last half second anywhere in the fight - one windup at a time. reach: how far off you it will start a move */
+const eliteMay = (e, reach) => !(e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.frozen > 0 || P.dead || Math.abs(P.x - e.x) > reach || Math.abs(P.y - e.y) > 40 || windingUp(e) || time - lastTellT < 0.5 || !isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)));
+/* IT TAKES THE BODY: remembers what it was doing, turns to you, and holds the token */
+function eliteTake(e) { e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; lastTellT = time; }
+/* THE OLD SHARED RULES (wall, rally, call, slam, lunge), for every kind that has no moves of its own yet */
+function updateEliteRule(e, dt) {
+  const R = ELITE[e.t];
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) {
     e.elT -= dt;
-    if (e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.frozen > 0 || P.dead || ad > EL.reach || dy > 40 || windingUp(e) || time - lastTellT < 0.5 || !isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS))) return false;
+    if (!eliteMay(e, EL.reach)) return false;
     if (R.rule === 'call' && (e.called || e.hp > e.hp0 / 2)) return false;
     if (R.rule === 'lunge' && (ad < 30 || ad > 96 || dy > 16)) return false;
     if (R.rule === 'slam' && ad > 72) return false;   /* (a troll keeps his stone's throw off you: the shock reaches that far) */
-    e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.sign(d) || e.face; lastTellT = time;
+    eliteTake(e);
     if (R.rule === 'slam') { e.mode = 'eliteSlamTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
     else if (R.rule === 'lunge') { e.mode = 'eliteLungeTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else if (R.rule === 'rally') { e.mode = 'rallyTell'; e.modeT = 0.7; SFX.hornBlast(); }
@@ -2447,7 +2472,7 @@ function drawEliteTrim(set, frame, x, y, face, sx, sy, rot) {
   g.restore();
 }
 function drawElitePlate(e, cx, cy, bigF) {
-  const x = Math.round(e.x - cx), top = Math.round(e.y - e.h * bigF - cy), nearP = Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110;
+  const x = Math.round(e.x - cx), top = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy), nearP = Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110;
   const crown = (px, py) => { g.fillStyle = ART.OUT; g.fillRect(px - 4, py - 3, 9, 5); g.fillStyle = '#e0b040'; g.fillRect(px - 3, py, 7, 1); g.fillRect(px - 3, py - 2, 1, 2); g.fillRect(px, py - 2, 1, 2); g.fillRect(px + 3, py - 2, 1, 2); g.fillStyle = '#fff1a0'; g.fillRect(px, py - 2, 1, 1); };
   if (!nearP) { crown(x, top - 16); return; }
   const w = 28, bx = x - w / 2, by = top - 16, k = Math.max(0, e.hp / (e.hp0 || e.hp));
@@ -17888,7 +17913,7 @@ function drawBoxes(cx, cy) {
    a blade, pale off a claw. */
 function drawFoeSmear(e, bigF, cx, cy) {
   if (SET.impact === false) return;
-  const k = Math.min(1, e.relT / 0.1), f = e.face || 1, h = e.h * bigF, r = Math.max(10, Math.min(46, h * 0.75 + e.w * 0.2));
+  const k = Math.min(1, e.relT / 0.1), f = e.face || 1, h = e.h * bigF / (e.bodyK || 1), r = Math.max(10, Math.min(46, h * 0.75 + e.w * 0.2));
   const px2 = Math.round(e.x - cx + f * e.w * 0.25), py2 = Math.round(e.y - cy - h * 0.55), steel = MAT[e.t] === 'steel';
   const sweep = 2.2 * (1 - k * 0.5), a0 = -1.35;
   g.globalCompositeOperation = 'lighter';
@@ -18790,15 +18815,15 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
     const windMark = wind ? markOf(e) : '';
     if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - e.h - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1 });   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
-    else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF - cy + ps.dy) - 5);
-    if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
+    else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy + ps.dy) - 5);
+    if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
       g.fillRect(mx - 3, my, 7, 1); g.fillRect(mx, my - 3, 1, 7); g.fillRect(mx - 2, my - 2, 1, 1); g.fillRect(mx + 2, my - 2, 1, 1); g.fillRect(mx - 2, my + 2, 1, 1); g.fillRect(mx + 2, my + 2, 1, 1); g.globalAlpha = 1; }
     if (e.alive && e.elite) drawElitePlate(e, cx, cy, bigF);
-    if (e.alive && (e.rallyT > 0 || e.wallT > 0)) { const px2 = Math.round(e.x - cx - (e.w || 12) / 2) - 4, py2 = Math.round(e.y - e.h * bigF - cy) + 2;   /* RALLIED (a red chevron) or BEHIND THE WALL (a grey shield), beside its head, clear of the marks */
+    if (e.alive && (e.rallyT > 0 || e.wallT > 0)) { const px2 = Math.round(e.x - cx - (e.w || 12) / 2) - 4, py2 = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) + 2;   /* RALLIED (a red chevron) or BEHIND THE WALL (a grey shield), beside its head, clear of the marks */
       g.fillStyle = ART.OUT; g.fillRect(px2 - 2, py2 - 1, 5, 5); g.fillStyle = e.rallyT > 0 ? '#ff6b6b' : '#c9d1dc';
       if (e.rallyT > 0) { g.fillRect(px2, py2, 1, 1); g.fillRect(px2 - 1, py2 + 1, 3, 1); g.fillRect(px2 - 1, py2 + 2, 1, 1); g.fillRect(px2 + 1, py2 + 2, 1, 1); } else { g.fillRect(px2 - 1, py2, 3, 2); g.fillRect(px2, py2 + 2, 1, 1); } }
-    if (e.alive && e.blessT > 0) { const px3 = Math.round(e.x - cx + (e.w || 12) / 2) + 4, py3 = Math.round(e.y - e.h * bigF - cy) + 2;   /* BLESSED (a saffron flame, the priest's), on the other side of its head from a rally or a wall */
+    if (e.alive && e.blessT > 0) { const px3 = Math.round(e.x - cx + (e.w || 12) / 2) + 4, py3 = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) + 2;   /* BLESSED (a saffron flame, the priest's), on the other side of its head from a rally or a wall */
       g.fillStyle = ART.OUT; g.fillRect(px3 - 2, py3 - 2, 5, 6); g.fillStyle = e.blessT < 1.5 && Math.floor(time * 8) % 2 ? '#a8681c' : '#e8a83a'; g.fillRect(px3 - 1, py3, 3, 3); g.fillRect(px3, py3 - 1, 1, 1); g.fillStyle = '#ffe08a'; g.fillRect(px3, py3 + 1, 1, 1); }
     if (SET.foeBars && e.hp0 && e.hp < e.hp0 && e.hp > 0 && !e.maxHp && !e.harmless && !e.elite) { const bx = Math.round(e.x - cx) - 6, by = Math.round(e.y - e.h - cy) - 5; g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, 14, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, 12, 2); g.fillStyle = e.hp / e.hp0 > 0.5 ? '#8fd160' : '#ff6b6b'; g.fillRect(bx, by, Math.round(12 * e.hp / e.hp0), 2); }
   }
@@ -20528,7 +20553,7 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
   //   await BK.playtest()                                   every level, both passes
   //   await BK.playtest({ levels: ['reef'], mode: 'play' })  one level, one pass
   async playtest(o) { const m = await import('./playtest.js'); return m.run(window.BK, o || {}); },
-  async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); },   /* every hero against the common foes, early to late: window.__lab */
+  async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); }, async ambushLab(o) { const m = await import('./lab.js'); return m.ambushLab(window.BK, o || {}); },   /* each hero through a level's ambush room: window.__ambushLab */   /* every hero against the common foes, early to late: window.__lab */
   async bossLab(o) { const m = await import('./lab.js'); return m.bossLab(window.BK, o || {}); }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a

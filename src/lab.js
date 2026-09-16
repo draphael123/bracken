@@ -25,6 +25,63 @@ export const DEFLECT_TAP = f => f % 8 < 2;
    spent it would measure a knight who never charges. */
 export const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
+/* ONE FRAME OF THE LAB BOT against one foe: close to reach and swing; on a windup, defend the way the hero does. The fight lab and
+   the ambush lab both play with it, so a room and a single foe are measured by the same hands */
+function labBotFrame(BK, h, e, f) {
+  const P = BK.P, k = BK.keys; let defend = 0, swing = 0;
+  const d = e.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + e.w / 2; P.face = Math.sign(d) || P.face;
+  const threat = threatOf(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
+  k.left = false; k.right = false; k.block = false;
+  if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
+  if (threat && P.atk < 0) {
+    defend = 1;
+    if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
+    else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
+    else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = DEFLECT_TAP(f); }   /* sweep at a yellow blow, step back off a red one */
+    else k.block = true;
+  } else if (ad > reach - 2) k[d > 0 ? 'right' : 'left'] = true;
+  else if (P.atk < 0 && P.st >= 8 && Math.abs(e.y - P.y) < 26) { BK.press('atk'); swing = 1; }
+  if (h === 'knight' && !threat && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
+  return { defend, swing };
+}
+
+// THE AMBUSH LAB. Each hero into each level's ambush room, played straight: walk in, fight whatever of the room is nearest (its
+// elite when nothing else is closer), defend on its tells. The hero's health is put back each frame and what the room took is
+// counted. It reports how long the room took to open (section Q rule 4: 20 to 40 seconds), how long its elite stood, and
+// whether it opened at all (a wave that runs 70 seconds slinks off, and that is not a clear).
+//   await BK.ambushLab({ levels: ['stockade'], heroes: [...], reps: 1 })   -> window.__ambushLab
+export async function ambushLab(BK, opts = {}) {
+  const lvm = await import('./level.js');
+  const heroes = opts.heroes || HEROES, levels = opts.levels || ['stockade'], reps = opts.reps || 1, maxF = (opts.maxSecs || 150) * 60;
+  const rows = [], out = { rows, started: Date.now() };
+  if (typeof window !== 'undefined') window.__ambushLab = out;
+  for (const lvId of levels) for (const h of heroes) for (let rep = 0; rep < reps; rep++) {
+    BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false; BK.sim(20);
+    const A = BK.ambushes()[opts.room || 0]; if (!A) { rows.push({ lvl: lvId, h, skipped: 'no ambush room' }); continue; }
+    const P = BK.P, k = BK.keys, x0 = A.trigger !== undefined ? A.trigger : A.wallL + 3, mid = (A.wallL + A.wallR) / 2 * 16 + 8;
+    for (const e of BK.enemies()) if (Math.abs(e.x - mid) < (A.wallR - A.wallL + 30) * 8 && !e.maxHp) e.alive = false;   /* the level's own creatures by the door are not the room's */
+    BK.tp(x0 + 1, A.row); P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0;
+    let f = 0, taken = 0, last = P.hp, elite = null, eliteSecs = null, shutAt = null;
+    for (; f < maxF && A.st !== 'done'; f++) {
+      if (P.hp < last) taken += Math.min(60, last - P.hp); P.hp = P.maxHp; last = P.hp; if (P.dead) break;
+      if (A.st && shutAt === null) shutAt = f;
+      const foes = (A.foes || []).filter(e => e.alive);
+      if (!elite) elite = foes.find(e => e.elite) || null;
+      if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - shutAt) / 60).toFixed(1);
+      const e = A.st === 'fight' && foes.length ? foes.reduce((b, q) => Math.abs(q.x - P.x) + Math.abs(q.y - P.y) < Math.abs(b.x - P.x) + Math.abs(b.y - P.y) ? q : b) : null;
+      if (e) labBotFrame(BK, h, e, f);
+      else { k.block = false; k.left = P.x > mid + 20; k.right = P.x < mid - 20; }   /* between waves: to the middle of the room */
+      BK.sim(1);
+    }
+    k.left = false; k.right = false; k.block = false;
+    const secs = shutAt === null ? null : +((f - shutAt) / 60).toFixed(1);
+    rows.push({ lvl: lvId, room: A.name, h, opened: A.st === 'done', secs, leader: elite ? elite.t : null, eliteSecs, taken: Math.round(taken), takenPct: +(100 * taken / P.maxHp).toFixed(0) });
+    await yieldNow();
+  }
+  out.done = true; out.ms = Date.now() - out.started;
+  return out;
+}
+
 // Every hero against the common foes, one at a time, in an early, a middle and a late level (so the tier scaling of
 // hp and damage is in it). The bot closes to its reach and swings; when the foe winds up it defends the way its hero
 // does: the knight, the paladin and the death knight hold C, the freebooter taps it to parry, the pyromancer rolls.
@@ -50,19 +107,7 @@ export async function fightLab(BK, opts = {}) {
            a long fight (an elite) is measured to its end instead of to the first time the bot runs out of health */
         if (opts.keepAlive) { if (P.hp < last) taken += Math.min(60, last - P.hp); P.hp = P.maxHp; last = P.hp; }
         if (P.dead) { died = true; break; }
-        const d = e.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + e.w / 2; P.face = Math.sign(d) || P.face;
-        const threat = threatOf(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
-        k.left = false; k.right = false; k.block = false;
-        if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
-        if (threat && P.atk < 0) {
-          defends++;
-          if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
-          else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
-          else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = DEFLECT_TAP(f); }   /* sweep at a yellow blow, step back off a red one */
-          else k.block = true;
-        } else if (ad > reach - 2) k[d > 0 ? 'right' : 'left'] = true;
-        else if (P.atk < 0 && P.st >= 8 && Math.abs(e.y - P.y) < 26) { BK.press('atk'); swings++; }
-        if (h === 'knight' && !threat && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
+        const s = labBotFrame(BK, h, e, f); defends += s.defend; swings += s.swing;
         BK.sim(1);
         if (P.hp < last) taken += last - P.hp; last = P.hp;
       }

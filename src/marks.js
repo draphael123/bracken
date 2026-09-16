@@ -44,7 +44,7 @@ export const QUIET = new Set(['updateTollmaster|floodTell', 'updateTollmaster|da
   'updateArchmage|blinkTell', 'updateArchmage|wardTell', 'updateArchmage|openTell',   // THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow
   'updateKraken|wellTell',          // THE KRAKEN'S DRAIN: the water in the grate stands up and he comes through it. An OPENING, not a blow - it wears 'THE DRAIN' in green
   'updateHorn|tell',                // THE HORN is a gust, not a blow: it shoves you, it cuts nobody, and a shield does nothing about wind
-  'updateElite|rallyTell', 'updateElite|wallTell', 'updateElite|callTell',   // AN ELITE'S war cry, shield wall and call: the foes it rallies, covers or calls strike on their own marks
+  'updateEliteRule|rallyTell', 'updateEliteRule|wallTell', 'updateEliteRule|callTell',   // AN ELITE'S war cry, shield wall and call: the foes it rallies, covers or calls strike on their own marks
   'updateGobPriest|riteTell']);     // THE GOBLIN PRIEST'S RITE mends and blesses its own side and touches nobody: it says THE RITE, not a mark
 
 // BY HAND: THE CREATURES WRITTEN INLINE IN updateEnemies. Their windups are if-chains, not a switch, so the audit
