@@ -268,7 +268,7 @@ const HERO_LOOP = {
   paladin: 'A BLOW GIVEN OR TURNED IS LIGHT; JUDGEMENT SPENDS IT. THE AEGIS IS A PLANTED WALL.',
   pirate: 'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\'S GOLD IS HIS POWDER.',
   reaper: 'THE WARD STOPS BLOWS AND FILLS; LET GO OF IT AND THE NOVA IS AS BIG AS WHAT IT HELD.',
-  warden: 'THE POINT PAYS AND THE HAFT DOES NOT: KEEP THEM OUT THERE. C PLANTS IT AND A CHARGE DIES ON IT.',
+  warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C AND THE SHAFT TURNS A BLOW.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
 };
 const TRAINING = [
   { id: 'vigour', name: 'VIGOUR', per: '+10 health a rank', max: 5, prices: [40, 60, 90, 130, 180] },
@@ -1007,7 +1007,12 @@ let checkpoint = { x: 0, y: 0 };
 const DOWN_T = 20;         /* how long a fallen hero lies there before the pair are sent back to the shrine */
 const REVIVE_D = 12;       /* how close his partner has to stand, in pixels */
 const REVIVE_T = 1.5;      /* and for how long, in seconds */
-const COOP_EDGE = 10;      /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
+const COOP_RULES = [
+  'DOWN, NOT DEAD: STAND BY HIM ' + REVIVE_T + 's TO LIFT HIM',
+  'LEAVE HIM ' + DOWN_T + 's AND YOU BOTH GO BACK TO THE SHRINE',
+  'SCORED: KILLS, COINS, AND ABOVE ALL REVIVES',
+];
+const COOP_EDGE = 10;     /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
 const HERO_SHORT = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN' };
 /* THE SCORE COUNTS ALL FOUR: what you killed and how hard, what you picked up, what you did FOR the other one,
    and a death against you. It is a friendly tally and nothing in the game reads it back - nobody loses a run on it. */
@@ -3828,6 +3833,10 @@ function drawCoopPick() {
     text(fitText(HERO_SHORT[h] || h.toUpperCase(), cw, 6), x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6); });
   { const h = list[coopPick.i] || 'knight';
     wrap(HERO_LOOP[h] || '', VW - 24, 6).forEach((ln, i) => text(ln, VW / 2, top + ch + 13 + i * BODY_LH, UI.text, 'center', 6)); }
+  /* HOW CO-OP WORKS, which this screen never said: a fallen hero is DOWN, NOT DEAD (REVIVE_D / REVIVE_T lift him), the stake is
+     DOWN_T - leave him and the PAIR go back to the shrine - and the run is scored with a revive worth five kills. Every line was
+     measured with textW at size 6 against VW - 8: fitText trims silently, so these are written to fit, not trusted to it. */
+  COOP_RULES.forEach((ln, i) => text(ln, VW / 2, top + ch + 31 + i * BODY_LH, i === 1 ? '#e8c860' : UI.dim, 'center', 6));
   text('EVERY CREATURE AND BOSS: TWICE THE HEALTH AND HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);   /* the old wording ran off both edges at 320 wide, and fitText would not trim it: the line itself is shorter now */
   text('LEFT/RIGHT choose   Z take   X ally   ESC back', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('then start any wood from the map', VW / 2, VH - 10, UI.dim, 'center', 6);
