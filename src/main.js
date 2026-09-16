@@ -565,6 +565,13 @@ const sword = () => swordById(PROG.sword);
 const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + Math.floor(heroLevel() / 2) + Math.floor(LV_GROW() * (isReaper() ? 1.5 : 1))) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
 const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal())), plungeCost = () => Math.max(12, ST.plunge - Math.round(2 * footTal()));
+/* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
+   less wind, and she may take a SECOND one straight away - it is for the constant small adjustments of range her
+   tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
+   GRACE IS SHORT: STEP_INV, a good deal less than the old roll's whole length, or she would simply step through
+   everything in the game instead of spacing it. ==== */
+const STEP_INV = 0.09, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
+const stepCost = () => Math.max(4, dodgeCost() - 7);
 /* THE MEDAL ROLL: every medal on every level you can see, bronze 1, silver 2, gold 3 */
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
@@ -4135,7 +4142,10 @@ function blowStop(e, dmg) {
 function shakeCam(n, k = 0) { const a = SET.shakeAmt === undefined ? (SET.shake ? 1 : 0) : SET.shakeAmt; if (a > 0) { shake = Math.max(shake, n * a); kick += k * a; } }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
-const invulnerable = () => P.inv > 0 || P.grace > 0 || P.dodge > 0 || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
+/* A DODGE IS UNTOUCHABLE FOR AS LONG AS ITS OWN GRACE LASTS, not for as long as it lasts. P.dodgeInv is set at the
+   start of every one of them (the roll's whole length for everybody else, STEP_INV for the Warden's back-step), so a
+   cheap repeatable step cannot be a cheap repeatable invulnerability. */
+const invulnerable = () => P.inv > 0 || P.grace > 0 || (P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0)) || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
 // the creatures that have a recoil frame: it is the LAST frame of their set, and it holds for a fifth of a second
 /* HURT, FOR THE REST OF THEM. Ten of the most-placed creatures had no hurt pose, so a blow landed on them the way it lands on a
    wall. Each gets one made from its own first frame: rocked back about the heel and a pixel off the line of the blow, with
@@ -6055,13 +6065,19 @@ function updatePlayer(dt) {
   /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
   if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0 && !rushing()) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
-    if (spend(dodgeCost())) {
+    if (spend(isWarden() ? stepCost() : dodgeCost())) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
       else if (!P.ground) { P.airRolled = true; P.vy = Math.min(P.vy, -80); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); } /* AIR ROLL */
-      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : 0.3; P.dodgeCd = 0.5;
-      /* THE WARDEN HOPS BACKWARD. She does not roll through a blow, she gives ground with the point still up - so
-         whatever she just left is back at the end of the spear by the time she lands. The sign does the whole job. */
-      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? (230 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 205 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? -235 * (1 + 0.15 * tal('lightFoot')) : 215); P.block = false; dodges++;   /* LIGHT FOOT: the hop back carries further */
+      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : 0.3; P.dodgeCd = 0.5;
+      P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;   /* the grace is the whole of it, unless the hero says otherwise */
+      /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
+      if (isWarden()) { const quick = time - (P.stepAt || -9) < STEP_PAIR && (P.stepN || 0) < 2;
+        P.stepN = quick ? (P.stepN || 0) + 1 : 1; P.stepAt = time;
+        P.dodgeCd = P.stepN >= 2 ? STEP_CD : STEP_GAP; P.dodgeInv = STEP_INV; }
+      /* THE WARDEN STEPS BACKWARD. She does not roll through a blow, she gives ground with the point still up - so
+         whatever she just left is back at the end of the spear by the time she lands. The sign does the whole job,
+         and the number is half what the roll's was: this is a step, and she is expected to take two of them. */
+      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? (230 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 205 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? -175 * (1 + 0.15 * tal('lightFoot')) : 215); P.block = false; dodges++;   /* LIGHT FOOT: the step back carries further */
       /* GIVE GROUND: whatever had got inside the spear is left reeling as she leaves - the hop buys the distance AND the beat */
       if (isWarden() && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
         if (Math.abs(e.x - P.x) > SHAFT_AT || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue;
@@ -6085,7 +6101,7 @@ function updatePlayer(dt) {
   }
   if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
   if (dodging && isPirate() && tal('rollCut')) P.dashLate = 0.2;   /* TUMBLING CUT: a swing out of the roll is a dash attack */
-  if (dodging) { P.dodge -= dt; if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2 }); }
+  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2 }); }
   // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
   if (P.alight > 0) { P.alight -= dt;
     if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 10, y: P.y - 4 - Math.random() * 14, vx: -P.vx * 0.12, vy: -20 - Math.random() * 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -30, fire: true });
@@ -18308,7 +18324,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
-      else if (P.dodge > 0) { key = 'roll'; frame = Math.floor((0.3 - P.dodge) / 0.3 * 4) * (P.face > 0 ? 1 : -1); }
+      else if (P.dodge > 0) { const dm = P.dodgeMax || 0.3; key = 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (P.face > 0 ? 1 : -1); }   /* (its own length, so a short back-step plays all four beats of it and not the first one twice) */
       else if (P.pinning && K.R.pin) key = 'pin';   /* THE PIN: down on the spear, both hands on it, holding the thing under the point */
       else if (P.plunge) key = 'plunge';
       else if (P.bashing && P.atk >= 0 && K.R.bash) key = P.atk < 0.2 ? 'bash' : 'recover';   /* THE SHIELD CHARGE: the slam, then the shield let down */
