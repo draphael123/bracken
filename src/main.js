@@ -9827,6 +9827,10 @@ const KRK_CRATE_MAX = 4;       /* and never more than four standing: past four t
 const KRK_WELL_EVERY = 17;
 const KRK_WELL_OPEN = 1.4;     /* up, and gone again */
 const KRK_WELL_TAKE = 0.035;   /* the most one surfacing can cost him, as a share of him: a good cut or two, and he is gone */
+/* WHAT THE PAIR CAME TO, measured with the drain capped (six heroes, two reps, the lab's bot): WORKING THE CARGO knight 122/105, warden
+   116/115, pyro 116/136, paladin 97/107, pirate 109/97, reaper 112/107 - all inside 90-150. WALKING PAST IT knight 131/132, warden 160/160,
+   pyro 157/156, paladin 148/132, pirate 131/121, reaper 141/141. The cargo is worth 18 to 45 seconds a hero; the window binds the fight
+   as it is played, and the walk-past run is only the thing it has to beat (the warden and the pyro go past 150 ignoring the crates) */
 let KRK_CARGO = true;          /* BK.krakCargo(false) makes the LAB'S BOT walk past the cargo - the run the crate route has to beat. It changes nothing a player can do */
 /* IT COMES IN ON THE FLOOD, not out of his arm: three to eight stones off the hero, never on his own stone, never on the drain, in a
    break, on a bell or on a waystone (krakenFreeCol). It throws no blow and wears no mark - it thumps down, and then it is footing */
