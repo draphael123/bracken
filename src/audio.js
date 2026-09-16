@@ -599,6 +599,8 @@ Object.assign(SFX, {
   gust() { noise(0.9, 0.09, 420, 0.4); noise(0.6, 0.05, 900, 0.6); }, // a gale coming down the bridge
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
+  /* THE SEA WITCH's call: not the shaman's rattle and chant. A held note over the hiss of a sea running, and her lantern ringing on its crook */
+  witchCall() { pad('sine', 262, 330, 0.5, 0.06, 0, 1200); pad('sine', 784, 1046, 0.45, 0.035, 0.06, 3000); noise(0.35, 0.05, 420, 0.5); bell(1568, 0.3, 0.03, 0.12); },
   shardBristle() { if (!gate('bristle', 0.3)) return; [1568, 2093, 2637].forEach((f, i) => bell(f, 0.3, 0.035, i * 0.04)); noise(0.1, 0.05, 5200, 1.2); },
   // ---- the telegraph: every enemy that winds up says so, a glint for the small ones, a low bell for the big ----
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
@@ -759,6 +761,7 @@ const DIE = {
   hearthgob() { gob(0.7, 0.65) || tone('sawtooth', 240, 60, 0.4, 0.22); noise(0.6, 0.18, 2400, 0.5, 0.12); tone('sine', 90, 40, 0.3, 0.25, 0.1); /* the fire goes out with him */ },
   sweep() { gob(1.25) || tone('square', 560, 120, 0.22, 0.16); noise(0.45, 0.24, 520, 0.4, 0.05); SFX.clatter(); /* a cloud of soot and the brush */ },
   stormshaman() { noise(0.5, 0.28, 900, 0.4); tone('triangle', 900, 200, 0.4, 0.13); SFX.stormZap(); pad('sine', 1200, 300, 0.8, 0.05, 0.2, 2500); },
+  seawitch() { tone('sine', 660, 170, 0.5, 0.12); noise(0.5, 0.22, 640, 0.35); SFX.stormZap(); bell(1568, 0.5, 0.05, 0.12); pad('sine', 990, 240, 0.9, 0.045, 0.2, 2400); },   /* the note falls out of her, her lantern breaks, and the weather goes with it */
   cutter() { gob(0.95) || tone('square', 420, 90, 0.25, 0.18); tone('square', 1300, 1200, 0.12, 0.1, 0.1); noise(0.06, 0.2, 2200, 0.5, 0.1); /* the axe drops */ },
   snuffer() { gob(0.9) || tone('square', 380, 90, 0.25, 0.18); tone('triangle', 1700, 1600, 0.1, 0.08, 0.1); SFX.puff(); },
   sailer() { gob(1.1) || tone('square', 520, 110, 0.22, 0.16); for (let i = 0; i < 3; i++) noise(0.07, 0.18, 800, 0.6, 0.08 + i * 0.09); SFX.thud(); /* the sail flaps down */ },
@@ -891,6 +894,7 @@ const HURT = {
   hearthgob() { gobH(0.7, 0.5) || tone('sawtooth', 240, 140, 0.14, 0.16); noise(0.12, 0.1, 2400, 0.6); },
   sweep() { gobH(1.3) || tone('square', 640, 400, 0.08, 0.12); noise(0.14, 0.1, 600, 0.5, 0.03); /* a cough of soot */ },
   stormshaman() { tone('triangle', 900, 500, 0.1, 0.12); noise(0.06, 0.14, 3000, 0.8); },
+  seawitch() { tone('sine', 740, 460, 0.1, 0.11); noise(0.06, 0.12, 2200, 0.7); bell(1568, 0.12, 0.02, 0.02); },
   cutter() { gobH(0.95) || tone('square', 460, 280, 0.08, 0.14); },
   snuffer() { gobH(0.9) || tone('square', 420, 260, 0.09, 0.14); },
   sailer() { gobH(1.1) || tone('square', 560, 340, 0.08, 0.14); noise(0.06, 0.12, 800, 0.6); },
@@ -925,6 +929,7 @@ const CAST = {
   drunk: { kit: 'm3', rate: 0.8, lp: 1700, mat: 'cloth', human: true },   /* THE DRUNK: the serjeant's voice, slowed and blurred */
   cutlass: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, boarder: { kit: 'm5', rate: 0.9, mat: 'cloth', human: true }, marine: { kit: 'm6', rate: 1.08, mat: 'cloth', human: true },
   bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm6', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm5', rate: 1, mat: 'cloth', human: true },
+  seawitch: { kit: 'f3', rate: 1.04, mat: 'cloth', human: true },   /* the only woman in the crew with a voice, and she is not a goblin: no gibberish, no gob laugh */
   netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
   watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
