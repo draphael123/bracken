@@ -87,8 +87,12 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, time) {
     g.fillStyle = '#2a2236'; g.fillRect(sx, sy, w, h);
     const cols = ['#5a2a3a', '#2a4a3a', '#3a2a5a', '#5a4a2a', '#2a3a5a', '#4a2a2a'];
     for (let yy = sy + 6; yy < sy + h; yy += 12) { g.fillStyle = '#4a3624'; g.fillRect(sx, yy + 9, w, 2);
-      for (let xx = sx; xx < sx + w; xx += 3) { const k = hsh(xx, yy); if (k < 0.12) continue; g.fillStyle = cols[Math.floor(k * cols.length)]; const bh = 6 + Math.floor(k * 3); g.fillRect(xx, yy + 9 - bh, 2, bh); if (k > 0.8) { g.fillStyle = '#a88a48'; g.fillRect(xx, yy + 9 - bh + 2, 2, 1); } } }
-    g.fillStyle = '#1e1828'; for (let xx = sx + 40; xx < sx + w; xx += 96) g.fillRect(xx, sy, 4, h);
+      /* THE SPINES BELONG TO THE WALL, NOT TO THE SCREEN: hashing the screen x re-rolled every book as the camera moved (the monastery's
+         scriptorium had the same crawl). The world x is the region's tile origin plus how far into the region the spine stands. */
+      for (let xx = sx; xx < sx + w; xx += 3) { const k = hsh(tx0 * 16 + (xx - sx), yy - sy); if (k < 0.12) continue; g.fillStyle = cols[Math.floor(k * cols.length)]; const bh = 6 + Math.floor(k * 3); g.fillRect(xx, yy + 9- bh, 2, bh); if (k > 0.8) { g.fillStyle = '#a88a48'; g.fillRect(xx, yy + 9 - bh + 2, 2, 1); } } }
+    /* the pilasters between the stacks belong to the wall too, but a room is drawn with no clip round it: take the PHASE from the world
+       and still start at sx, or the first pilaster paints over whatever stands to the left of the room */
+    g.fillStyle = '#1e1828'; { const ph = (((tx0 * 16) % 96) + 96) % 96; for (let xx = sx + ((40 - ph) % 96 + 96) % 96; xx < sx + w; xx += 96) g.fillRect(xx, sy, 4, h); }
     return true; }
   if (st === 'lab') {   /* white tiles gone yellow, pipes across the top, stains */
     g.fillStyle = '#4a4a52'; g.fillRect(sx, sy, w, h);

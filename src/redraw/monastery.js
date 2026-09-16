@@ -139,14 +139,23 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
     /* THE SCRIPTORIUM: lime plaster gone brown with lamp smoke, timber uprights, and shelves of books between them */
     g.fillStyle = '#4a3c30'; g.fillRect(sx, sy, w, h);
     g.fillStyle = '#54453a'; for (let yy = sy + 6; yy < sy + h; yy += 11) g.fillRect(sx, yy, w, 5);
-    const bay = 56;
-    for (let xx = sx; xx < sx + w; xx += bay) { const k = Math.round((xx - sx) / bay);
+    /* AND THE BAYS THEMSELVES ARE ON THE WALL. Locking the books to the world was half of it: the timber uprights and their shelf boards
+       still stepped from the SCREEN origin, so the whole joinery slid along as the camera moved and the wall crawled anyway. The bay
+       line takes its PHASE from the world (tx0), while the loop still starts at sx: a room is drawn with no clip round it, so a bay
+       begun left of sx would paint over whatever stands beside the room. */
+    const bay = 56, phase = (((tx0 * 16) % bay) + bay) % bay;
+    for (let xx = sx; xx < sx + w; xx += bay) { const k = Math.round((xx - sx + phase) / bay);
       g.fillStyle = WD[1]; g.fillRect(xx, sy, 4, h); g.fillStyle = WD[2]; g.fillRect(xx, sy, 1, h);
       for (let s = 0; s * 22 + 10 < h - 12; s++) { const shy = sy + 10 + s * 22;
         g.fillStyle = WD[0]; g.fillRect(xx + 4, shy + 13, bay - 4, 3); g.fillStyle = WD[2]; g.fillRect(xx + 4, shy + 13, bay - 4, 1);
-        let bx = xx + 6; while (bx < xx + bay - 6) { const bw = 2 + ((hsh(k * 5 + bx, s) * 3) | 0), bh = 8 + ((hsh(bx, s + k) * 5) | 0);
-          if (hsh(bx + 1, s * 7 + k) < 0.12) { bx += 5; continue; }
-          g.fillStyle = SPINE[(hsh(bx, s * 3 + k) * SPINE.length) | 0]; g.fillRect(bx, shy + 13 - bh, bw, bh); g.fillStyle = '#c9a44a'; g.fillRect(bx, shy + 13 - bh + 2, bw, 1); bx += bw + 1; } } }
+        /* THE BOOKS ARE ON THE WALL, NOT ON THE SCREEN. Every spine's width, height, colour and whether it is there at all came out of
+           a hash of its SCREEN x - so the whole shelf re-rolled itself every time the camera moved a pixel, and the wall crawled as
+           you walked past it. The hash takes the WORLD x instead (the region's own tile origin plus how far into the region we are),
+           so a book is the same book from wherever it is seen. */
+        let bx = xx + 6; while (bx < xx + bay - 6) { const wx = tx0 * 16 + (bx - sx);
+          const bw = 2 + ((hsh(k * 5 + wx, s) * 3) | 0), bh = 8 + ((hsh(wx, s + k) * 5) | 0);
+          if (hsh(wx + 1, s * 7 + k) < 0.12) { bx += 5; continue; }
+          g.fillStyle = SPINE[(hsh(wx, s * 3 + k) * SPINE.length) | 0]; g.fillRect(bx, shy + 13 - bh, bw, bh); g.fillStyle = '#c9a44a'; g.fillRect(bx, shy + 13 - bh + 2, bw, 1); bx += bw + 1; } } }
     /* and in its own shadow: the shelves are a back wall, and the boards over them have to stand off it (the look pass read them low) */
     g.globalAlpha = 0.42; g.fillStyle = '#1a120c'; g.fillRect(sx, sy, w, h);
     g.globalAlpha = 0.05 + 0.02 * Math.sin(time * 2 + tx0); g.fillStyle = '#ffb84a'; g.fillRect(sx, sy, w, h); g.globalAlpha = 1;
