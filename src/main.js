@@ -283,7 +283,7 @@ const DK_KEYS = { ward: 'HOLD C: THE BLOOD WARD. BLOWS ON ITS FACE ARE STOPPED A
   controls: { block: ['blood ward', 'HOLD C, LET GO: NOVA', 'LB RB'], skill: ['raise dead', 'F / B  (HOLD, FULL: SURGE)', 'Y'], 'skill two': ['his skill', 'G / N (CHOSEN)', 'RT'] } };
 /* ==== THE WARDEN'S KEYS, IN WORDS. One place: her HUD prompts and the controls card read these, and her wood lesson
    should too when it is written. C is the one that has to be unlearned from the knight - it is not a shield. ==== */
-const WARDEN_KEYS = { brace: 'HOLD C: THE BRACE. THE POINT IS PLANTED, AND A YELLOW CHARGE DIES ON IT',
+const WARDEN_KEYS = { brace: 'NO BUTTON: A YELLOW CHARGE THAT RUNS ONTO HER OUT-FRONT POINT DIES ON IT',
   red: 'A RED CHARGE IS NEVER STOPPED, BY HER OR BY ANYONE: GET OUT OF ITS WAY',
   vigil: 'TIP HITS AND STOPPED CHARGES FILL VIGIL. FULL, TAP C ON THE GROUND: THE PHALANX',
   phalanx: 'A ROW OF SPEARS OUT OF THE GROUND, ACROSS THE ROOM, PINNING WHAT IT CATCHES',
@@ -1054,7 +1054,7 @@ function coopRegroup() {
    at once, the pair of them wake at the last shrine and each is charged a death. */
 function goDown(killer) {
   P.down = DOWN_T; P.reviveT = 0; P.hp = 0; P.killer = killer || null;
-  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.bracing = false;
+  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
@@ -4096,7 +4096,7 @@ function hudMeterLabel() {
   if (isWarden()) { if (state !== 'play' && state !== 'talk') return null;
     if (P.pinning) return { s: 'X STAB   Z FREE', col: blink ? '#dff0d8' : '#8fd160' };   /* on the spear: the two ways off it */
     if ((P.vigil || 0) >= 100) return { s: 'PHALANX: C', col: blink ? '#8fd160' : '#dff0d8' };
-    return P.bracing ? { s: 'BRACED', col: '#8fd160' } : { s: 'HOLD C  BRACE', col: '#6a7a62' }; }
+    return { s: 'THE POINT HOLDS', col: '#6a7a62' }; }
   if (isReaper()) { if (state !== 'play' && state !== 'talk') return null;   /* the plates own the screen when a menu is up */
     // WHAT HIS KEYS DO RIGHT NOW: hold C for the ward, and with a full blood HOLD F for the surge - and it says
     // which. While the ward is up it says what letting go will be (DK_KEYS.hud).
@@ -4464,7 +4464,7 @@ function addPoise(e, dmg, fromX, plunge) {
    half-frame stop, and its own snap of a sound (SFX.poiseBreak; not the hurt sound, not the player's guard break). The camera only
    shakes when motion is not reduced. A trip (the sweep) is the same state and gets the same beat. */
 function breakBeat(e) { e.breakFlash = 0.07; hitstop(0.08); if (!SET.reduceMotion) shakeCam(4); if (SFX.poiseBreak) SFX.poiseBreak(!!(e.maxHp || e.big)); else SFX.clank(); }
-/* ==== WHAT THE BRACED POINT STOPS, AND WHAT IT DOES NOT. THE RULE IS ABSOLUTE: a YELLOW charge is stopped, a RED one
+/* ==== WHAT RUNS ONTO THE POINT AND DIES THERE, AND WHAT DOES NOT. THE RULE IS ABSOLUTE: a YELLOW charge is stopped, a RED one
    runs straight through her. So this is a default-DENY list - a charge she can stop has to be NAMED here - and a red
    charge can therefore never be stopped by an oversight, only by somebody deliberately writing it in.
    The names are `type|mode` of the RUNNING charge (not its windup), read off `node tools/tells.mjs --json`, which
@@ -4475,30 +4475,32 @@ const BRACE_STOPS = new Set(['lancer|charge', 'goat|charge', 'ram|charge', 'ram|
    mark for updateGreatHound at all, so there is nothing saying that blow is yellow, and unproven means NOT STOPPED.
    That is what default-deny is for. If its charge is ever given a yellow !, it can be added - with the mark as the
    evidence, never without.) */
-/* The planted spear is a line, not a swing, so it is asked every frame the brace is up: is something coming AT her,
-   fast, on her level, and has it reached the point? */
-function braceWatch() {
+/* ==== AND NOBODY HOLDS A BUTTON FOR IT. The held brace is gone: she does not stand there predicting a charge, she
+   simply has the spear OUT IN FRONT OF HER - her thrust, her run-through - and whatever runs onto the point is spitted
+   on it. The point is a line, not a swing, so this is asked every frame that line is out: is something coming AT her,
+   fast, on her level, and has it reached the point? ==== */
+function impaleWatch() {
   for (const e of enemies) {
-    if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || (e.braceHit > 0)) continue;
+    if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || (e.pointHit > 0)) continue;
     if (Math.sign(e.x - P.x) !== P.face) continue;
     const d = tipReach(e);
     if (d > TIP_AT + 10 || d < SHAFT_AT) continue;                                   /* it must have REACHED the point */
-    if (Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > (tal('wardline') ? 44 : 26)) continue;   /* and be on her level - WARD LINE covers higher and lower */
+    if (Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > (tal('wideGuard') ? 44 : 26)) continue;   /* and be on her level - WIDE GUARD covers higher and lower */
     if (!((e.x - P.x) * (e.vx || 0) < 0 && Math.abs(e.vx || 0) > 70)) continue;      /* and be coming, fast */
     if (!BRACE_STOPS.has(e.t + '|' + (e.mode || ''))) continue;                      /* a red charge is not on the list */
-    braceStop(e);
+    impale(e);
   }
 }
-function braceStop(e) {
-  e.braceHit = 1.2;
+function impale(e) {
+  e.pointHit = 1.2;
   const fast = tal('standFast') ? 1.5 : 1;   /* STAND FAST: it stays broken half again as long, and pays double */
   e.broken = Math.max(e.broken || 0, (e.maxHp && !e.mini ? 1.4 : 2.2) * fast); e.poise = 0; e.poiseCd = e.broken + 3;
   e.vx = 0; e.vy = Math.min(e.vy || 0, -60); e.stagger = Math.max(e.stagger || 0, e.broken);
-  /* COUNTERPOISE: the blow that stops a charge is a HEAVY blow, so SUNDER, EXECUTION, the stagger bar and the
-     straw man's lesson all hear about it - set up for the length of the call and put straight back, as lcStrike does. */
-  { const was = { h: P.heavy, hs: P.heavySwing }; if (tal('braceCharge')) { P.heavy = true; P.heavySwing = true; }
+  { const was = { h: P.heavy, hs: P.heavySwing };
     try { hurtEnemy(e, Math.round(swordDmg() * 1.3), P.x, false); } finally { P.heavy = was.h; P.heavySwing = was.hs; } }
   gainVigil(30 * (tal('standFast') ? 2 : 1));
+  /* SPITTED: it does not just stop on the point, it is HELD there - the same pin her plunge and her phalanx put a body in */
+  if (tal('spitted') && e.alive) pinFoe(e, 1.2);
   breakBeat(e); SFX.braceStop(); SFX.tipRing();
   ringAt(e.x, e.y - (e.h || 16) / 2, 24, '#8fd160', 0.4); sparks(e.x, e.y - (e.h || 16) / 2, -P.face, 10);
   shakeCam(5, -P.face * 3); zoomKick(1.05, 0.2); hitstop(0.09);
@@ -5902,12 +5904,11 @@ function updatePlayer(dt) {
     else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.2 && free && !(P.hookCd > 0) && !P.hookT) throwHook(); }
     else { if (P.cHeld > 0 && P.cHeld < 0.2 && free && !(P.parryCd > 0)) { P.parryW = 0.2; P.parryCd = 0.55; SFX.pSlash(); } P.cHeld = 0; }
   }
-  /* ==== THE WARDEN'S C: THE BRACE. She drops the heel of the spear into the turf and levels the point, and holds it
-     while the wind lasts. Anything that RUNS OR CHARGES onto the point is stopped dead on it: it takes the tip's
-     damage, it is BROKEN exactly the way a poise break breaks it - e.broken, which updateEnemies acts on ABOVE every
-     creature's own update, so the charge really does stop instead of being driven on again next frame - and the bar
-     pays her for having read it. ==== */
-  P.bracing = false;
+  /* ==== THE WARDEN'S POINT, WITH NO BUTTON ON IT. Anything that RUNS OR CHARGES onto her out-front spear is stopped
+     dead on it: it takes the tip's damage, it is BROKEN exactly the way a poise break breaks it - e.broken, which
+     updateEnemies acts on ABOVE every creature's own update, so the charge really does stop instead of being driven on
+     again next frame - and the bar pays her for it. She used to have to hold C and guess; now she only has to be
+     thrusting, which is what she was doing anyway. ==== */
   /* ON THE SPEAR: she is stood over something she has pinned, and nothing else she owns runs while she is. */
   if (P.pinning) {
     const pn = P.pinning, pe = pn.e;
@@ -5930,16 +5931,10 @@ function updatePlayer(dt) {
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !P.pinning && !(P.blastT > 0);
     if (cDown && free && (P.vigil || 0) >= 100) spendVigil();
-    else if (keys.block && free && P.ground && (P.st > 0 || tal('unyielding'))) {
-      P.bracing = true; P.vx = 0;
-      if (!P.braceWas) { SFX.braceSet(); dust(P.x - P.face * 6, P.y, 4); ringAt(P.x + P.face * 22, P.y - 10, 10, '#8fd160', 0.22); }
-      P.st = Math.max(0, P.st - 9 * (1 - 0.2 * tal('deepHeel')) * dt); P.stDelay = ST.delay;   /* DEEP HEEL: cheaper to stand there */
-      if (tal('theWatch')) gainVigil(7 * dt);   /* THE WATCH: the bar fills while the point is planted - standing still is doing something */
-      /* UNYIELDING: out of wind is tired, not broken. She keeps the point up; she simply has nothing left to spend. */
-      if (P.st <= 0 && !tal('unyielding')) { P.bracing = false; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
-    }
-    if (P.bracing) braceWatch();
-    P.braceWas = P.bracing;
+    /* THE POINT IS OUT: her thrust and her run-through carry it in front of her, and a charge that runs onto it is
+       spitted with no button held. The rising cut goes over her head and the low sweep along the floor - neither is a
+       line in front of her, so neither spits anything. */
+    if (P.atk >= 0 && P.swingKind !== 'rise' && P.swingKind !== 'sweep') impaleWatch();
   }
   if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C on the ground is THE LAST CHARGE.
     P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
@@ -5965,7 +5960,7 @@ function updatePlayer(dt) {
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && P.ground) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
-  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.bracing || P.pinning || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* the heel is in the ground: a braced spear does not walk, and neither does a pinning one */
+  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
   // THE DASH: tap a direction twice and you go, on the ground or in the air, once per landing. It does not
@@ -6100,7 +6095,7 @@ function updatePlayer(dt) {
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
      never from the air, and it wants ground under the plant. It is a RIDE and not a jump: the reach model must never
      count it as ordinary footing, or levels read as reachable when they are not (tools/reach.mjs). */
-  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0 || tal('vaulter')) && !stunned && !P.plunge && !dodging && !P.bracing && (P.st >= 10 || tal('vaulter'))) {
+  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0 || tal('vaulter')) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: no dash to set it up and no wind to pay for it */
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
     P.inv = Math.max(P.inv, 0.2);   /* she is up on the shaft and over it: a foe under her is gone past, not run into */
@@ -15087,7 +15082,7 @@ function updateEnemies(dt) {
     if (e.bleed > 0) { e.bleed -= dt; e.bleedT = (e.bleedT || 0) - dt; if (e.bleedT <= 0) { e.bleedT = 0.5; if (e.alive) { e.hp -= (e.bleedN || 1); e.flash = 0.05; number(e.x, e.y - e.h - 8, e.bleedN || 1, '#c9463d'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } }
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - e.h / 2, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#8f2f28', size: 1, grav: 120 }); }
     if (e.frozen > 0) e.frozen -= dt;
-    if (e.braceHit > 0) e.braceHit -= dt;   /* it has already been stopped on the point once: it does not pay her twice for the same run */
+    if (e.pointHit > 0) e.pointHit -= dt;   /* it has already been spitted on the point once: it does not pay her twice for the same run */
     if (e.sunder > 0) e.sunder -= dt;
     if (e.hurtT > 0) e.hurtT -= dt;
     if (e.poiseCd > 0) e.poiseCd -= dt;
@@ -18261,7 +18256,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && P.swingKind === 'rise' && P.atk >= 0) { key = 'cast'; frame = P.atk < 0.09 ? 0 : 1; }   /* the thrust straight up has its own pose: the spear over her head, not across her */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.castT > 0) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
-      else if (P.block || P.jet || P.aegis || P.warding || P.bracing) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
+      else if (P.block || P.jet || P.aegis || P.warding) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
       else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
       else if (!P.ground) { key = P.vy < 0 ? 'jump' : 'fall'; frame = P.vy < 0 ? (P.vy < -150 ? 0 : 1) : (P.vy > 220 ? 1 : 0); if (Math.abs(P.vy) < 55 && K.R.apex) key = 'apex'; }
       else if (keys.down && Math.abs(P.vx) < 10) key = 'crouch';
