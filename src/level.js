@@ -4313,8 +4313,14 @@ function theHurricane() {
   const rot = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); }; // planking that gives under a standing weight
   const shroud = x => net(x, x + 1, 13, 19);   // a hand on any of these and the wave only soaks you
   const bob = (x, y, len = 2) => ent('mover', x, y, { len, range: 0, bob: true }); // wreckage riding the swell
-  const pools = [], movers = [], hullZones = [], darkZones = [];
+  const pools = [], movers = [], hullZones = [], darkZones = [], airRooms = [];
   const FOUL = { foulCol: '#7a8a3a', foulColL: '#b8c85a', foulColD: '#3a4a1e' };
+  /* WHERE THE AIR IS, in the one list the breath clock and tools/breath.mjs both read (src/deepair.js) */
+  const D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
+  const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };
+  const vent = (x, y, h) => D.vents.push({ x, y, h });
+  const clam = (x, y) => D.clams.push({ x, y });
+  const wreck = (x, y) => D.wrecks.push({ x, y });
 
   // THE SEA. Swimmable, and the worst place to be in a storm: the lightning runs along it.
   pools.push({ x0: 0, x1: W * TS, y: 28 * TS, bottom: 42 * TS, shallow: false, swim: true, clear: true, sea: true });
@@ -4595,6 +4601,25 @@ function theHurricane() {
   for (const [x, y] of BITTS) set(x, y, T.SOLID);
   for (let y = 16; y <= 18; y++) for (let x = 614; x <= 615; x++) set(x, y, T.SOLID);
 
+  // ================= THE AIR UNDER HER (nothing is dug after this: it reads the finished grid) =================
+  // Seven hundred tiles of sea ran under her keel with three bells in it, and those three sat a row too high to give a
+  // swimmer anything at all: the worst coin down there was fifty-three seconds from a breath against a six second lung.
+  // Air does not want placing by hand along a hull - it goes wherever her bottom planking still holds. So this walks her
+  // length and asks the grid the question the fiction asks: is her bottom whole over this spot, with open water under it?
+  // Where it is, there is air trapped against the underside of her. Where she is opened to the sea - the rent amidships
+  // at 336, the gap between the two hulls at 486 - there is none, because it went up years ago. One rule, both jobs.
+  { const gat = (x, y) => L.grid[y * W + x];
+    const held = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 27) === T.SOLID && gat(x + q, 28) === T.AIR && gat(x + q, 29) === T.AIR)) return false; return true; };
+    const bed = x => gat(x, 40) === T.AIR && gat(x, 41) === T.AIR && gat(x, 42) === T.SOLID;
+    for (let x = 20; x <= 734; x += 20) if (held(x, 6)) pocket(x, x + 5, 28, 29);
+    // AND HER BOTTOM BREATHES TOO. Thirteen rows below her keel a pocket up against her planking is too far to reach on
+    // one lung, so the storm-turned bed vents between them, half a pocket out of step: a column of bubbles off the sand.
+    for (let x = 30; x <= 734; x += 20) if (bed(x)) vent(x, 41, 7);
+    // and things to steer by down there, where what was on her deck went down with her
+    for (const x of [188, 452, 664]) if (bed(x)) wreck(x, 41);
+    for (const x of [96, 276, 560, 700]) if (bed(x)) clam(x, 41);
+  }
+
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 24, y: 19 }, pools, falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
@@ -4603,7 +4628,7 @@ function theHurricane() {
     wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 744 * TS, every: 9, tell: 3, speed: 210, dmg: 12 },   /* (18: a wave nobody jumped cost a fifth of a hero every nine seconds) */
     // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface.
     storm2: { every: 9, tell: 1.2, y: 20 * TS, zones: [[330 * TS, 424 * TS], [486 * TS, 558 * TS], [560 * TS, 744 * TS]] },
-    hullZones, darkZones,
+    hullZones, darkZones, airRooms, deep: D,
     interiors: [[20, 740, 21, 26, 'ship'], [186, 214, 17, 19, 'ship'], [504, 540, 25, 26, 'ship'], [662, 742, 17, 19, 'ship']],
     quest: { n: 3, item: 'lamp', name: 'HER LANTERNS', npc: 'squire', done: 'SHE HAS HER LIGHTS BACK', reward: 'relic', relic: 'stormline' },
     palette: { set: 'ship', sky: 'storm', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',
