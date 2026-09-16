@@ -142,6 +142,14 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
   if ((PROG.talentVersion || 1) < 4) { const mm = PROG.talents.knight; let had = false;
     if (mm) for (const id of ['bash', 'holdLine']) if (mm[id]) { had = true; delete mm[id]; }
     PROG.talentVersion = 4; if (had) PROG.talentsBackHero = 'knight'; }
+  /* THE BRACE WENT AND THE DEFLECT CAME (v5): the Warden's middle tree was built on a move that no longer exists - the
+     held brace - so every point she had in it comes back to her, once, and she is told. Nobody else's tree changed.
+     (SET THE SPEARS and A WIDER ROW keep their ids and their meaning, but they are refunded with the rest: a tree is
+     bought as a shape, and half a refund would leave her holding nodes whose parents she never paid for.) */
+  if ((PROG.talentVersion || 1) < 5) { const mm = PROG.talents.warden; let had = false;
+    if (mm) for (const id of ['deepHeel', 'wardline', 'standFast', 'setSpears', 'unyielding', 'braceCharge', 'widerRow', 'theWatch', 'everReady', 'holdTheLine']) if (mm[id]) { had = true; delete mm[id]; }
+    if (had) for (const k of ['skill', 'skill2']) if (PROG[k] === 'setSpears') PROG[k] = 'none';
+    PROG.talentVersion = 5; if (had) PROG.talentsBackHero = 'warden'; }
   try { for (const hh in PROG.talents) { const mm = PROG.talents[hh]; for (const id in mm) { const nd = TREE.find(q => q.hero === hh && q.id === id); if (!nd) delete mm[id]; else if (mm[id] > nd.max) mm[id] = nd.max; } } } catch {}   /* ranks past a trimmed tree come back as points */ }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
@@ -292,13 +300,13 @@ const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLO
   pin: 'DOWN+X IN THE AIR PINS WHAT YOU LAND ON: X TO STAB IT, Z TO PULL FREE',
   vault: 'JUMP OUT OF A DASH AND SHE PLANTS THE SPEAR AND VAULTS',
   controls: { block: ['the deflect', 'TAP C  (FULL: PHALANX)', 'LB RB'], dodge: ['back-step', 'V / SHIFT, TWICE', 'B'] } };
-const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE BRACE', 'SKIRMISHER'] };
+const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'] };
 const TREE_WHO = { knight: ['COMBOS, BLEEDS AND FINISHERS', 'THE SHIELD: TURN IT, THEN ANSWER', 'THE AIR AND THE RUN: KEEP MOVING'],
   pyro: ['THROWN EMBERS: SKIP, SPLIT AND SPREAD', 'THE JET AND THE HEAT', 'FIGHT IN THE FIRE AND WALK OUT'],
   paladin: ['THE LIGHT, AND WHAT IT JUDGES', 'THE AEGIS: A WALL THAT WALKS', 'THE MAUL AND THE GROUND IT SHAKES'],
   pirate: ['THE PISTOL: ONE BALL, MADE TO COUNT', 'GOLD: THE PURSE IS A WEAPON', 'CUTLASS AND HOOK: CLOSE, AND CLOSER'],
   reaper: ['THE GREATSWORD, THE MARK, THE WOUND', 'RAISE DEAD (F): MORE, AND CHEAPER', 'THE WARD STOPS, THE NOVA PAYS'],
-  warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE BRACE, AND WHAT RUNS ONTO IT', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'] };
+  warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE SHAFT: TURN IT, AND HOLD THE LINE', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'] };
 const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
@@ -493,16 +501,16 @@ const TREE = [];
   N('warden', 0, 2, 2, 'exact', 'EXACTNESS', 1, 'a tip hit on something winding up takes the blow off it', 'openPoint');
   N('warden', 0, 3, 0, 'deepSet', 'DEEP SET', 1, 'the further out the point lands, the harder it bites: up to a fifth more at full stretch', 'ringing');
   N('warden', 0, 3, 1, 'spearhead', 'SPEARHEAD', 1, 'every third thrust of a run IS a run-through, with no winding up at all', 'driveHome', 'cap');
-  // THE BRACE: the planted spear, and what runs onto it
-  N('warden', 1, 0, 0, 'deepHeel', 'DEEP HEEL', 2, 'the brace drains 20% less wind a point');
-  N('warden', 1, 0, 2, 'wardline', 'WARD LINE', 1, 'the braced point covers higher and lower: a charge no longer has to be exactly on her level');
-  N('warden', 1, 1, 0, 'standFast', 'STAND FAST', 1, 'a charge stopped on the point pays double VIGIL and stays broken half again as long', 'deepHeel');
-  N('warden', 1, 1, 1, 'setSpears', 'SET THE SPEARS', 1, 'F: plant three spears in the ground right in front of her, and they pin', 'deepHeel', 'skill');
-  N('warden', 1, 1, 2, 'unyielding', 'UNYIELDING', 1, 'the brace holds when the wind runs out: she is tired, not broken', 'wardline');
-  N('warden', 1, 2, 0, 'braceCharge', 'COUNTERPOISE', 1, 'the blow that stops a charge counts as a heavy blow, so everything that answers one answers it', 'standFast');
+  // THE DEFLECT: the shaft swept across her, what it turns, and the line she holds with the point
+  N('warden', 1, 0, 0, 'quickShaft', 'QUICK SHAFT', 2, 'the sweep costs a fifth less wind a point, and she is out of it a fifth sooner');
+  N('warden', 1, 0, 2, 'wideGuard', 'WIDE GUARD', 1, 'the sweep covers higher and reaches further out, and the point catches a charge coming in off her level');
+  N('warden', 1, 1, 0, 'standFast', 'STAND FAST', 1, 'a blow turned on the shaft pays double VIGIL, and what threw it is left reeling twice as long', 'quickShaft');
+  N('warden', 1, 1, 1, 'setSpears', 'SET THE SPEARS', 1, 'F: plant three spears in the ground right in front of her, and they pin', 'quickShaft', 'skill');
+  N('warden', 1, 1, 2, 'sendBack', 'SEND IT BACK', 1, 'an arrow or a thrown thing swatted out of the air goes back the way it came, at whoever threw it', 'wideGuard');
+  N('warden', 1, 2, 0, 'counterpoise', 'COUNTERPOISE', 1, 'the blow she turns leaves the one that threw it OPENED: the next blow on it lands twice as hard', 'standFast');
   N('warden', 1, 2, 1, 'widerRow', 'A WIDER ROW', 1, 'the phalanx sets its spears closer together and carries them further across the room', 'setSpears');
-  N('warden', 1, 2, 2, 'theWatch', 'THE WATCH', 1, 'the bar fills by itself while the point is planted: standing still is doing something', 'unyielding');
-  N('warden', 1, 3, 0, 'everReady', 'EVER READY', 1, 'the phalanx leaves one spear standing where she planted it, long after the rest go down', 'braceCharge');
+  N('warden', 1, 2, 2, 'everReady', 'EVER READY', 1, 'a sweep that TURNS something is back in her hands at once: no recovery on it at all', 'sendBack');
+  N('warden', 1, 3, 0, 'spitted', 'SPITTED', 1, 'a charge that runs onto her point is HELD on it as well as broken, the way her plunge holds one', 'counterpoise');
   N('warden', 1, 3, 1, 'holdTheLine', 'HOLD THE LINE', 1, 'the phalanx STAYS UP: a standing wall of spears for three seconds, and what walks into it is pinned again', 'widerRow', 'cap');
   // SKIRMISHER: the vault, the hop back, and the pin
   N('warden', 2, 0, 0, 'lightFoot', 'LIGHT FOOT', 2, 'the hop back carries her 15% further a point');
@@ -3028,8 +3036,8 @@ const TAL_BY_NAME = {
   /* THE WARDEN. The point is a blade, the brace is a shield, the footwork is a boot - and the ones that are really a
      rule about time or blood take the glyph of the thing they do, not of the tree they grow in. */
   keenPoint: 'blade', throughAndThrough: 'blade', openPoint: 'eye', ringing: 'bolt', driveHome: 'chev', exact: 'eye',
-  deepSet: 'blade', spearhead: 'blade', deepHeel: 'bolt', wardline: 'shield', standFast: 'shield', unyielding: 'shield',
-  braceCharge: 'blade', widerRow: 'ring', theWatch: 'hourglass', everReady: 'ring', holdTheLine: 'shield',
+  deepSet: 'blade', spearhead: 'blade', quickShaft: 'bolt', wideGuard: 'shield', standFast: 'shield', sendBack: 'reflect',
+  counterpoise: 'eye', widerRow: 'ring', everReady: 'bolt', spitted: 'blade', holdTheLine: 'shield',
   lightFoot: 'boot', vaulter: 'boot', giveGround: 'boot', longVault: 'boot', pinTwist: 'drop', freeHand: 'bolt',
   airPoint: 'boot', holdThem: 'hourglass', skirmisher: 'boot',
 };
@@ -4893,8 +4901,7 @@ function spendVigil() {
     const ty0 = Math.floor(P.y / TS); let gy = null;
     for (let k = 0; k <= 3 && ty0 + k < LH; k++) if (isSolid(tx, ty0 + k)) { gy = (ty0 + k) * TS; break; }
     if (gy === null) continue;                                              /* a hole in the floor has no ground to come out of */
-    /* EVER READY: the first one she plants is left standing long after the rest have gone back down */
-    phalanx.push({ x, y: gy, t: 0, delay: n * 0.045, hit, done: false, stay: (n === 0 && tal('everReady')) ? PHX_LIFE * 6 : PHX_LIFE });
+    phalanx.push({ x, y: gy, t: 0, delay: n * 0.045, hit, done: false, stay: PHX_LIFE });
     n++;
   }
 }
