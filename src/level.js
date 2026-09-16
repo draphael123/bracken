@@ -7290,7 +7290,7 @@ const AMBUSH = {
   spore: [{ name: 'THE UNDERCAP', row: 19, wallL: 135, wallR: 170, check: [132, 19],
     waves: [[['sporeling', 142], ['sporeling', 163], ['lurker', 152]], [['shield', 160], ['spitcap', 166], ['weaver', 146], ['sporeling', 140]]] }],
   kings: [{ name: "THE KING'S ROAD", row: 13, wallL: 277, wallR: 308, check: [274, 12],
-    waves: [[['thief', 282], ['thief', 303], ['sprig', 292], ['hound', 286]], [['shield', 299], ['archer', 305], ['brute', 284], ['soldier', 290]]] }],
+    waves: [[['thief', 282], ['thief', 303], ['sprig', 292], ['hound', 286]], [['shield', 296, null, { elite: true }], ['archer', 305], ['hound', 286]]] }],
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
     waves: [[['goat', 178], ['goat', 198], ['sprig', 191], ['harpy', 185, 8]], [['shield', 193], ['archer', 199], ['troll', 180], ['rockgoblin', 186]]] }],
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
