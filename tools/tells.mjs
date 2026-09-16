@@ -81,7 +81,8 @@ const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|dark
   'updateArchmage|blinkTell', 'updateArchmage|wardTell', 'updateArchmage|openTell',
   'updateKraken|wellTell',          // THE KRAKEN'S DRAIN: the water in the grate stands up and he comes through it. It is an OPENING, not a blow - it wears 'THE DRAIN' in green, and there is nothing here for a shield to do
 
-  'updateElite|rallyTell', 'updateElite|wallTell', 'updateElite|callTell']);   /* AN ELITE'S war cry, shield wall and call: the foes it rallies, covers or calls strike on their own marks */   // THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow           // the Ram Lord calls the flock: the goats run for themselves
+  'updateElite|rallyTell', 'updateElite|wallTell', 'updateElite|callTell',
+  'updateGobPriest|riteTell']);   /* THE GOBLIN PRIEST'S RITE mends and blesses its own side and touches nobody: it says THE RITE, not a mark */   /* AN ELITE'S war cry, shield wall and call: the foes it rallies, covers or calls strike on their own marks */   // THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow           // the Ram Lord calls the flock: the goats run for themselves
 const unblockable = key => {
   if (THROWS_SOMETHING_ELSE.has(key)) return true;
   const fn = key.split('|')[0];
