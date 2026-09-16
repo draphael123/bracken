@@ -830,6 +830,23 @@ function resolveTiles() {
     LEDGE_SETS.staging = { ledge: TILE.staging, ledgeL: TILE.stagingL, ledgeR: TILE.stagingR };
     LEDGE_SETS.lashed = { ledge: TILE.lashed, ledgeL: TILE.lashedL, ledgeR: TILE.lashedR }; }
   if (!tileDeep || tileDeep.length !== LW * LH) tileDeep = new Uint8Array(LW * LH);
+  /* THE HULL WHERE IT STANDS IN AIR. A wreck under the sea is one murky value and belongs that way; the same timbers out
+     in the storm light were a flat dark slab with no lit lip, no silhouette and no shadow under them, where the reef's
+     own rock has carried all three since it was drawn. A hull, deck or timber tile that MEETS OPEN AIR is drawn from the
+     weathered set (hullAir/hullAirTop in src/reef_tiles.js), chosen by its neighbours; one that is under the sea even at
+     low water keeps exactly the picture it always had. A tidal pool's lowest water is its base plus tideLo, both of which
+     run UPWARD from the base, and a pool's floor is below its `bottom`, so there is no depth test here: anything at or
+     under the low-water line in that pool's columns is drowned. */
+  const lowWater = p => (p.base !== undefined ? p.base + (p.tideLo || 0) : p.y);
+  const drowned = (tx, ty) => (L.pools || []).some(p => tx * TS >= p.x0 && tx * TS < p.x1 && ty * TS >= lowWater(p));
+  const openAir = (tx, ty) => { const q = tileAt(tx, ty); return (q === T.AIR || isOneWay(q) || q === T.SPIKE) && !drowned(tx, ty); };
+  const hullSpr = (deck, x, y, eL, eR, i) => {
+    const plain = deck ? REEF.hullTop : REEF.hull;
+    if (drowned(x, y)) return plain[i];
+    const set = deck ? REEF.hullAirTop : REEF.hullAir;
+    const k = '' + (eL && openAir(x - 1, y) ? 1 : 0) + (eR && openAir(x + 1, y) ? 1 : 0) + (openAir(x, y + 1) ? 1 : 0);
+    return set[k] ? set[k][i] : plain[i];
+  };
   const rnd = mulberry(7);
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
@@ -851,7 +868,7 @@ function resolveTiles() {
       const eL = l === T.AIR || isOneWay(l) || l === T.SPIKE ? 1 : 0, eR = r === T.AIR || isOneWay(r) || r === T.SPIKE ? 1 : 0;
       if (up !== T.SOLID && up !== T.CRATE) {
         const villDrain = villT && linesDrain(x, y);
-        s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? REEF.hullTop[(rnd() * 4) | 0] : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
+        s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
         const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood');
         const flat2 = tileAt(x + 1, y - 1) === T.AIR && tileAt(x + 1, y) === T.SOLID && tileAt(x + 2, y - 1) === T.AIR && tileAt(x + 2, y) === T.SOLID;
         let roll = rnd();
@@ -895,7 +912,7 @@ function resolveTiles() {
            and what landed under the spikes is taken back. */
         if (up === T.SPIKE) decor.length = dressFrom;
       } else if (shipT) s = deckZ ? FLOT.deck[(rnd() * 4) | 0] : FLOT.hull[(rnd() * 4) | 0];
-      else if (timber) s = REEF.hull[(rnd() * 4) | 0];
+      else if (timber) s = hullSpr(false, x, y, eL, eR, (rnd() * 4) | 0);
       else if (eL || eR) s = SET2 ? SET2.edge[eL + '' + eR][(rnd() * 2) | 0] : TILE.edge[eL + '' + eR][(rnd() * 2) | 0];
       else if (villT) s = linesDrain(x, y) ? VILL.silt[(rnd() * 3) | 0] : VILL.fill[(rnd() * 4) | 0];
       else if (SET2) s = SET2.fill[(rnd() * 4) | 0];
