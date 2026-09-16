@@ -5020,7 +5020,7 @@ function waymeet() {
        DEVELOP    two short pens with the stocks for a step between, under a drunk on a house roof you can climb to.
        TWIST      the long pen, crossed only on the swinging sign, while a second drunk throws bottles.
        TEST       the long pen again with both of them in reach of it, the balcony behind you and the bottle ahead. */
-  ent('npc', 125, R - 1, { kind: 'keeper' }); ent('check', 127, R - 1);
+  ent('check', 127, R - 1);
   sign(129, 'FAIR DAY, AND THE DRUNKS ARE OUT. THE RING ON THE ROAD IS WHERE IT LANDS.');
   ent('npc', 130, R - 1, { kind: 'cook' });
   /* THE CARTER'S WAGON, left standing in the road with a drinker up on its bed: over your head, one jump from the road
@@ -5095,7 +5095,7 @@ function waymeet() {
   ent('deco', 49, 20, { kind: 'bench' }); ent('deco', 52, 20, { kind: 'longTable', v: 1 }); ent('deco', 55, 20, { kind: 'bench' });
   ent('deco', 58, 20, { kind: 'caskRack' }); ent('deco', 61, 20, { kind: 'coffer' }); ent('deco', 24, 20, { kind: 'barrels' });
   ent('deco', 45, 17, { kind: 'mugShelf', hang: true }); ent('deco', 52, 13, { kind: 'wares' }); ent('deco', 36, 13, { kind: 'caskRack' });
-  ent('deco', 45, 20, { kind: 'counter' }); ent('npc', 44, 20, { kind: 'keeper' });
+  ent('deco', 45, 20, { kind: 'counter' });
   ent('deco', 37, 8, { kind: 'hallWindow', hang: true }); ent('deco', 49, 8, { kind: 'hallWindow', hang: true });
   awning(30, 54, 14);                                      /* the gallery over the common room */
   stair(27, 14, 20); stair(56, 14, 20);
@@ -5272,7 +5272,7 @@ function waymeet() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 24,                                 /* rows 0-24 are insides: never shown from the street */
     music: 'waymeet', duskStart: 0.55, duskLen: 0.45,
-    quest: { n: 3, item: 'cup', name: 'HIS CUPS', npc: 'keeper', done: 'THE HOUSE IS SQUARE AGAIN', reward: 'relic', relic: 'spurs' },
+    quest: { n: 3, item: 'cup', name: 'HIS CUPS', done: 'THE HOUSE IS SQUARE AGAIN', reward: 'relic', relic: 'spurs' },
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
       haze: 'rgba(210,190,160,0.12)', murkCol: '#2e2a34',
       grass: '#6a8a46', grassL: '#8fb060', grassD: '#47612e', dirt: '#7a6248', dirtL: '#8f7458', dirtD: '#54402c',
@@ -5383,19 +5383,19 @@ function theHunt() {
   ent('deco', 312, R - 1, { kind: 'deadTree', v: 0 }); ent('deco', 237, R - 1, { kind: 'stone', v: 2 }); ent('deco', 278, R - 1, { kind: 'bushDeco', v: 1 }); ent('deco', 326, R - 1, { kind: 'stump', v: 0 });
   coins([236, R - 2], [248, R - 6], [252, R - 6], [264, R - 10], [276, R - 2], [292, R - 10], [310, R - 2], [320, R - 14], [334, R - 2], [342, R - 2]);
 
-  // ---------------- 5. THE LODGE (x 351-440). His trophies, his table, and a keeper who sells to anybody. ------------
+  // ---------------- 5. THE LODGE (x 351-440). His trophies, his table, and a counter with nobody behind it. ------------
   block(356, 434, R - 12, R - 1); carve(357, 433, R - 9, R - 1);
   carve(356, 356, R - 3, R - 1); carve(434, 434, R - 3, R - 1);   /* the two doors */
   interiors.push([357, 433, R - 9, R - 1, 'hall']);
   ladders.push([355, R - 13, R - 1], [435, R - 13, R - 1]);       /* up either end onto the roof */
-  sign(352, 'THE LODGE. THE KEEPER SELLS TO ANYBODY, EVEN TODAY.');
+  sign(352, 'THE LODGE. THE TABLE IS SET AND THE COUNTER IS SHUT.');
   plat(360, R - 5, 22); plat(404, R - 5, 27);                     /* the galleries, each run to its own ladder */
   plat(397, R - 2, 3); plat(400, R - 4, 3);                       /* and the steps up to the east one past the counter */
   sign(402, 'THE TABLE IS LAID FOR AFTER THE KILL. NOBODY HAS SAID WHOSE.');
   plat(383, R - 7, 14);                                           /* the rafters over the counter */
   ladders.push([359, R - 4, R - 1], [431, R - 4, R - 1]);
   ent('deco', 366, R - 1, { kind: 'hearth' }); ent('deco', 369, R - 1, { kind: 'bench' }); ent('deco', 372, R - 1, { kind: 'longTable', v: 0 }); ent('deco', 375, R - 1, { kind: 'bench' });
-  ent('deco', 380, R - 1, { kind: 'caskRack' }); ent('deco', 391, R - 1, { kind: 'counter' }); ent('npc', 392, R - 1, { kind: 'keeper' });
+  ent('deco', 380, R - 1, { kind: 'caskRack' }); ent('deco', 391, R - 1, { kind: 'counter' });
   ent('deco', 400, R - 1, { kind: 'barrels' }); ent('deco', 407, R - 1, { kind: 'bench' }); ent('deco', 410, R - 1, { kind: 'longTable', v: 1 }); ent('deco', 413, R - 1, { kind: 'bench' });
   ent('deco', 420, R - 1, { kind: 'skullPile', v: 0 }); ent('deco', 426, R - 1, { kind: 'skullPile', v: 1 });
   ent('deco', 368, R - 6, { kind: 'banner', v: 0 }); ent('deco', 424, R - 6, { kind: 'banner', v: 1 }); ent('deco', 412, R - 6, { kind: 'spearRack' });
@@ -5544,9 +5544,9 @@ function quarryPass() {
   ent('silver', 306, B - 12);
   ent('stray', 276, B - 11, { kind: 'canary' });                              /* the second: on the gantry, where the crane man left it */
   ent('deco', 274, B - 1, { kind: 'barrels' }); ent('deco', 324, B - 1, { kind: 'wares', v: 0 });
-  /* THE MASON'S LODGE: the one roof on the hill, and the one man on it who will sell you anything */
-  sign(334, B - 1, 'THE MASON\'S LODGE. HE SELLS TO ANYONE WHO GETS THIS FAR UP.');
-  ent('deco', 338, B - 1, { kind: 'counter' }); ent('npc', 341, B - 1, { kind: 'keeper' }); ent('deco', 344, B - 1, { kind: 'wares', v: 1 });
+  /* THE MASON'S LODGE: the one roof on the hill, and the counter the masons left standing under it */
+  sign(334, B - 1, 'THE MASON\'S LODGE. THE COUNTER IS BARE AND NOBODY CAME BACK UP FOR IT.');
+  ent('deco', 338, B - 1, { kind: 'counter' }); ent('deco', 344, B - 1, { kind: 'wares', v: 1 });
   ent('deco', 347, B - 1, { kind: 'barrels' });
   ent('check', 342, B - 1);
   coins([266, B - 2], [286, B - 11], [292, B - 11], [322, B - 11], [328, B - 11], [336, B - 2]);
@@ -5686,9 +5686,9 @@ function theFrostfell() {
   /* the smoke hole in the roof: the slow way in, for whoever will not wait on a fire */
   for (const x of [125, 126]) { set(x, G - 6, T.ONEWAY); set(x, G - 5, T.AIR); }
   ent('rockgoblin', 129, G - 7, { face: -1 }); ent('kite', 146, G - 9);
-  /* THE PEDLAR: he came up for the cutters' custom and the weather kept him */
-  ent('deco', 151, G - 1, { kind: 'tent', v: 0 }); ent('npc', 149, G - 1, { kind: 'keeper' });
-  sign(147, G - 1, "A PEDLAR SITS OUT THE WEATHER IN THE CUTTERS' TENT. HE WILL TRADE.");
+  /* THE CUTTERS' TENT: a pedlar came up for their custom, and the weather sent him back down without it */
+  ent('deco', 151, G - 1, { kind: 'tent', v: 0 });
+  sign(147, G - 1, "THE CUTTERS' TENT. THE PEDLAR WHO PITCHED IT WENT DOWN THE HILL AND LEFT IT STANDING.");
   ent('rockgoblin', 140, G - 1, { face: -1 }); ent('wight', 154, G - 1, { face: -1 });
   /* the squatters: goblins came up for what the cutters left and sleep by the laid fires */
   ent('hearthgob', 94, G - 1, { face: 1 }); ent('hearthgob', 102, G - 1, { face: -1 }); ent('hearthgob', 138, G - 1, { face: 1 });
@@ -5847,8 +5847,8 @@ function theSkyShip() {
   sign(3, R - 1, 'THE CLOUD HARBOUR. THE SAILS SAY WHERE THE WIND GOES. GO WITH IT, OR TURN IT.');
   ent('check', 7, R - 1); ent('npc', 11, R - 1, { kind: 'squire' });
   sign(15, R - 1, 'HER PIGEONS GOT LOOSE WHEN THEY BOARDED HER. THREE OF THEM ARE STILL ON HER.');
-  ent('deco', 19, R - 1, { kind: 'stall', v: 1 }); ent('npc', 23, R - 1, { kind: 'keeper' });
-  sign(27, R - 1, 'THE HARBOUR CHANDLER. WHATEVER THE WIND BLOWS IN, HE SELLS.');
+  ent('deco', 19, R - 1, { kind: 'stall', v: 1 });
+  sign(27, R - 1, 'THE HARBOUR CHANDLER. HIS STALL IS UP AND HIS SHUTTERS ARE DOWN.');
   ent('deco', 31, R - 1, { kind: 'barrels' });
   /* THE MOORING MAST: her bow line is made fast at the top of it, and so is the best view in the harbour */
   plat(39, 9, 8); plat(45, 17, 5); net(42, 43, 10, R - 1);
@@ -6398,7 +6398,7 @@ function theHexedFields() {
 
   // ---------------- 5. THE WINDMILL (x 402-462). The miller's store at its foot, the gears inside, and the sails outside. ----------------
   ent('check', 405, G - 1);
-  ent('npc', 410, G - 1, { kind: 'keeper' }); sign(407, G - 1, 'THE MILLER\'S STORE. HE SELLS TO THE LIVING, AND HE IS NOT PARTICULAR.');
+  sign(407, G - 1, 'THE MILLER\'S STORE. HE SOLD TO THE LIVING, AND HE IS NOT ONE OF THEM NOW.');
   block(416, 428, 14, G - 1); air(417, 427, 15, 33); air(416, 416, 30, 33);
   interiors.push([417, 427, 15, 33, 'stone']);
   sign(413, G - 1, 'UP THROUGH THE GEARS AND OUT ON THE SAILS. THE WIND AT THE TOP IS NOT YOUR FRIEND.');
@@ -6583,8 +6583,8 @@ function theMagesFolly() {
   coins([69, G - 6], [71, G - 6], [75, G - 6]);
   ent('stray', 76, G - 5, { kind: 'lens' });                       /* the lens in the hedges: on the far end of the wall hedge, past the beast */
   ent('check', 79, G - 1);
-  /* THE GATEKEEPER'S STALL: a shop before the gate, because the tower sells nothing */
-  deco('stall', 84, G - 1); ent('npc', 86, G - 1, { kind: 'keeper' }); sign(82, G - 1, 'THE GATEKEEPER\'S STALL. HE LEFT WHEN THE HEDGES STARTED WALKING. THE COUNTER IS OPEN.');
+  /* THE GATEKEEPER'S STALL: the last built thing before the gate, and it is as empty as the tower */
+  deco('stall', 84, G - 1); sign(82, G - 1, 'THE GATEKEEPER\'S STALL. HE LEFT WHEN THE HEDGES STARTED WALKING, AND TOOK THE TILL WITH HIM.');
   ent('broom', 92, G - 1, { face: -1 }); ent('broom', 95, G - 1, { face: -1 });
   /* THE FIRST FONT: the gate is shut and the wall is too high; the mouse goes under it */
   sign(96, G - 1, 'THE GATE IS BARRED. THE BLUE FONT IS THE MOUSE: SMALL ENOUGH FOR THE CRACK UNDER IT.');

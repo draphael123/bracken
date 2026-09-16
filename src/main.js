@@ -13622,7 +13622,6 @@ const NPC_LINES = pr => {
   if (pr.lines) return pr.lines;   /* a level can give one of its folk their own words */
   const n = straysGot.size, need = questOf().n;
   if (pr.kind === 'barkeep') return ['THE BROKEN LANCE POURS FOR ANYONE WITH A COIN. EVEN YOU.', 'THEY ARE DRINKING TO YOUR HEALTH. THE PURSE SAYS ALIVE.', 'THE ONE AT THE CHAPEL NEVER DRINKS. MEET HIS SWORD AS IT FALLS AND HIS LIGHT GOES OUT.'];
-  if (pr.kind === 'keeper') return PROG.storeHint ? ['SOMETHING NEW CAME IN.', 'UP AT THE COUNTER AND HAVE A LOOK.'] : ['WELCOME, KNIGHT. UP AT THE COUNTER TO TRADE.', 'GOLD BUYS STEEL. STEEL BUYS TIME.'];
   if (pr.kind === 'foreman' && curId() === 'quarry') { if (n >= need) return ['ALL THREE, AND SINGING. THE GALLERY IS SAFE TO WORK AGAIN.', 'TAKE MY LAMP. A MAN WHO WALKS THAT GALLERY SHOULD SEE IT.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE BIRDS.', 'THE SUMMIT, THE GANTRY, AND THE ROPE OVER THE SADDLE.'];
     return ['THE TROLL CAME DOWN OFF THE TOP AND MY MEN WENT BACK DOWN THE ROAD WITHOUT ME.', 'THEY LEFT MY CANARIES. THREE CAGES: THE SUMMIT, THE GANTRY, AND THE ROPE OVER THE SADDLE.', 'A TROLL THROWS WHAT IT CAN LIFT. THE CRANES OVER HIS BOWL LIFT MORE THAN HE DOES.']; }
   if (pr.kind === 'foreman' && curId() === 'spire') return ['WE CAME UP FOR THE GLASS AND THE GLASS CAME UP FOR US. SIT BY THE FIRE A MINUTE.', 'ABOVE THE CLOUD THE SUN IS ON IT ALL DAY. A LEDGE THAT HOLDS YOU FOR A BREATH DOWN HERE HOLDS YOU FOR HALF OF ONE UP THERE, AND THE VENTS BREATHE TWICE AS OFTEN.', 'SOME OF MY MEN WENT OVER TO THE GOBLINS. THEY SMASH THE GLASS UNDER ANYONE STANDING ON IT. DO NOT STAND ON IT NEAR THEM.'];
@@ -15810,7 +15809,8 @@ function updateEmbers(dt) {
   embers = embers.filter(b => b.life > 0);
 }
 // ---------- talk: signs, folk and the caged squire. One press opens the words; the world waits until they close. ----------
-const NPC_NAME = { barkeep: 'THE TAPSTER', hillfolk: 'HILL FOLK', squire: 'TAM', cook: 'THE SCULLION', keeper: 'THE KEEPER', bard: 'THE BARD', oldknight: 'THE OLD KNIGHT', shepherd: 'THE SHEPHERD', ferryman: 'THE FERRYMAN', foreman: 'THE FOREMAN', lamplighter: 'THE LAMPLIGHTER', woodsman: 'THE WOODSMAN', hermit: 'THE HERMIT', miller: 'THE MILLER', elder: 'THE ELDER' };
+/* No `keeper` here: he stands in the three store rooms only, where UP at his counter opens the shop instead of talking. */
+const NPC_NAME = { barkeep: 'THE TAPSTER', hillfolk: 'HILL FOLK', squire: 'TAM', cook: 'THE SCULLION', bard: 'THE BARD', oldknight: 'THE OLD KNIGHT', shepherd: 'THE SHEPHERD', ferryman: 'THE FERRYMAN', foreman: 'THE FOREMAN', lamplighter: 'THE LAMPLIGHTER', woodsman: 'THE WOODSMAN', hermit: 'THE HERMIT', miller: 'THE MILLER', elder: 'THE ELDER' };
 function talkers() { // everything that can be talked to and is in reach, nearest first
   const out = [];
   for (const sg of signs) if (Math.abs(sg.x - P.x) < 28 && Math.abs(sg.y - P.y) < 48) out.push({ x: sg.x, y: sg.y, lines: [sg.text], who: sg, name: null });
@@ -16001,7 +16001,12 @@ function updateProps(dt) {
       if (pr.on > 0 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 8, y: pr.y - 12 - Math.random() * 16, vx: (Math.random() - 0.5) * 10, vy: -60, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: 0 });
     }
     if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt; if (pr.timer < 0.8 && Math.random() < dt * 45) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
-    if (pr.t === 'npc' && pr.kind === 'keeper' && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) { storeMode = 'buy'; state = 'store'; storeI = 0; SFX.uiSel(); SFX.menuOpen && SFX.menuOpen(); }
+    /* THE COUNTER BELONGS TO THE STORE, AND TO NOTHING ELSE. This fired on any keeper anywhere, and eight of them stood
+       about in real levels selling to passers-by: press UP at the miller in the Hexed Fields and the run you were in the
+       middle of was left standing while the shop menu came up over it. The keepers are gone from every level now, and the
+       branch asks the room as well - only the three rooms that ARE the store (`shop: true`) can open it. The store is
+       reached from its own node on the map, as it always was. */
+    if (pr.t === 'npc' && pr.kind === 'keeper' && L && L.shop && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) { storeMode = 'buy'; state = 'store'; storeI = 0; SFX.uiSel(); SFX.menuOpen && SFX.menuOpen(); }
     if (pr.t === 'exit' && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 14) { state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.kind === 'store' && (n.shop || 'shop') === LEVELS[levelIndex].id)); map.seg = NODE_AT[map.node]; map.t = 0; setView('normal'); SFX.uiSel(); music.play(menuTrack()); }
     if (pr.t === 'npc' && pr.ride) { const fm = movers.find(mv => mv.ferry); if (fm) { pr.x = fm.x + 16; pr.y = fm.y; } }
     if (pr.t === 'npc' && pr.kind === 'ferryman' && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 30 && Math.abs(P.y - pr.y) < 24) { const fm = movers.find(mv => mv.ferry); if (fm && !fm.paid && !fm.free && fm.toll) { if (PROG.coins >= fm.toll) { PROG.coins -= fm.toll; saveProgress(); fm.paid = true; marks.add('ferry:' + fm.x0); SFX.coin(); SFX.uiSel(); number(pr.x, pr.y - 28, 'PAID ' + fm.toll + ' GOLD', '#ffd34a'); number(pr.x, pr.y - 38, 'STEP ABOARD', '#bfe6f5'); } else { SFX.clank(); number(pr.x, pr.y - 28, 'NOT ENOUGH GOLD', '#ff6b6b'); } } }
