@@ -1070,7 +1070,7 @@ function coopRegroup() {
    at once, the pair of them wake at the last shrine and each is charged a death. */
 function goDown(killer) {
   P.down = DOWN_T; P.reviveT = 0; P.hp = 0; P.killer = killer || null;
-  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.deflectT = 0; P.deflectRec = 0;
+  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.deflectT = 0; P.deflectRec = 0; P.perch = 0;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
@@ -2421,7 +2421,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
-  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, runThrough: false, onMover: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
+  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
   mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && m.free && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.bored = false; } // the Ferryman poles back up for you
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
@@ -4592,7 +4592,7 @@ function impale(e) {
    a sweep that met nothing leaves her with DEF_REC of recovery she can neither sweep nor swing in, so mistiming costs.
    IT SETS P.parryT - one of the clocks palOpened already reads. That is how the Paladin's ward opens to her: by the
    one rule on the clocks an answer sets, with no hero named in a branch of it. ==== */
-const DEF_LIVE = 0.18, DEF_REC = 0.26, DEF_COST = 7, DEF_REACH = 44;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
+const DEF_LIVE = 0.26, DEF_REC = 0.26, DEF_COST = 7, DEF_REACH = 44;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
 function deflect() {
   if (!spend(Math.max(3, Math.round(DEF_COST * (1 - 0.2 * tal('quickShaft')))))) { SFX.buzz(); P.stFlash = 0.3; return; }
   P.deflectT = DEF_LIVE; P.deflectRec = DEF_REC * (1 - 0.2 * tal('quickShaft'));   /* QUICK SHAFT: cheaper, and back in her hands sooner */
@@ -5018,9 +5018,24 @@ function endPin(pulled) {
       knockFoe(e, dir, 340); e.stagger = Math.max(e.stagger || 0, 0.8);
       if (best) { best.stagger = Math.max(best.stagger || 0, 0.8); knockFoe(best, dir, 180); }
       SFX.throwWhoosh(); shakeCam(4); number(e.x, e.y - (e.h || 16) - 22, 'SHAKEN LOOSE', '#8fd160'); } }
-  else { P.vy = POGO * 0.8; SFX.pPogo(); squash(0.86, 1.18, 0.1); }
+  else { P.vy = -60; SFX.pStep(surface()); squash(0.9, 1.12, 0.08); }   /* the hold ran out: she steps down off it, she is not thrown off it */
   /* AIR POINT: she leaves the spear with her jump and her dash back in hand, so a pin is a place to go FROM */
   if (tal('airPoint')) { P.airJump = 1; P.airRolled = false; P.dashedAir = false; P.airDashN = 0; }
+}
+/* ==== AND SHE NEVER BOUNCES. The knight's plunge is a POGO: whatever he lands on throws him back up off it, and three
+   in a row is a CHAIN. That rebound is his, and she was borrowing it. A POINT THAT GOES IN DOES NOT SPRING BACK OUT.
+   What is small enough to hold she PINS (above). What is not - a boss, a mini, a crate, a crowned head - the spear
+   BITES instead, and she is left stood up on the haft with her feet off the floor and the thing under the point,
+   held there for PERCH_WIN with nothing falling. Press jump or dodge in that window and she kicks off the shaft
+   higher than his rebound ever carried him (PERCH_KICK, against POGO's 330); let it run out and she slides down off
+   the point and lands. Same button, same drop, opposite verb: he is thrown off it, she stays on it and decides. ==== */
+const PERCH_WIN = 0.34, PERCH_KICK = -430;
+function wardenPerch(e, x, y) {
+  P.plunge = false; P.canCut = false; P.hitSet.clear();
+  P.vx = 0; P.vy = 0; P.ground = false; P.perch = PERCH_WIN; P.vaultT = 0.42;   /* the vault pose IS up-on-the-shaft: it is hers already */
+  SFX.tipRing(); hitstop(0.06); shakeCam(3); sparks(x, y, P.face, 6); ringAt(x, y, 16, '#dff0d8', 0.26); dust(P.x, P.y, 4);
+  if (e) e.stagger = Math.max(e.stagger || 0, 0.5);
+  number(x, y - 18, 'PLANTED', '#8fd160'); pogoCount++;
 }
 /* ==== THE DRIVE. What makes the run-through a LINE and not just a long box: the one she has on the point is knocked
    back down the line, and whatever it arrives against is taken off its feet with it. The ones behind are already
@@ -6050,6 +6065,15 @@ function updatePlayer(dt) {
       else if (pn.t >= PIN_HOLD * (tal('holdThem') ? 1.5 : 1)) endPin(false);   /* HOLD THEM DOWN: it is held half again as long */
     }
   }
+  /* ON THE POINT: the spear is in something too big to hold and she is stood on the haft. Nothing falls while she is,
+     and the first jump or step she buffers is spent kicking off it rather than on the move it usually buys. */
+  if (P.perch > 0) {
+    P.perch -= dt; P.vx = 0; P.vy = 0; P.ground = false;
+    if (P.jbuf > 0 || P.dbuf > 0) { P.jbuf = 0; P.dbuf = 0; P.perch = 0; P.vy = PERCH_KICK; P.vx = -P.face * 60; P.canCut = true;
+      P.airJump = 0; P.airRolled = false; P.dashedAir = false; P.airDashN = 0;   /* she leaves the shaft with her air back */
+      SFX.pJump(); dust(P.x, P.y, 5); squash(0.78, 1.28, 0.12); number(P.x, P.y - 30, 'OFF THE SHAFT', '#8fd160'); }
+    else if (P.perch <= 0) { P.perch = 0; P.canCut = true; P.vy = 60; }   /* she slides down off the point */
+  }
   if (isWarden()) {
     P.vigil = Math.max(0, Math.min(100, P.vigil || 0)); P.castT = Math.max(0, (P.castT || 0) - dt);
     P.blastT = Math.max(0, (P.blastT || 0) - dt);
@@ -6057,7 +6081,7 @@ function updatePlayer(dt) {
        clock every hero's answer sets - palOpened reads it, so hers is counted down honestly and never left standing. */
     for (const k of ['deflectT', 'deflectRec', 'parryT']) P[k] = Math.max(0, (P[k] || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
-    const free = !stunned && !dodging && !P.plunge && !attacking && !P.pinning && !(P.blastT > 0);
+    const free = !stunned && !dodging && !P.plunge && !attacking && !P.pinning && !(P.perch > 0) && !(P.blastT > 0);
     if (cDown && free && (P.vigil || 0) >= 100) spendVigil();
     else if (cDown && free && P.deflectRec <= 0 && P.deflectT <= 0) deflect();   /* THE DEFLECT: a tap, never a hold */
     if (P.deflectT > 0) deflectSwat();
@@ -6113,7 +6137,7 @@ function updatePlayer(dt) {
      just after: P.dashLate) and dashAttack() carries the cut through. */
   if (P.dash > 0) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
   /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
-  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0 && !rushing()) {
+  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && !(P.perch > 0) && P.dodgeCd <= 0 && !rushing()) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
     if (spend(isWarden() ? stepCost() : dodgeCost())) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
@@ -6151,7 +6175,7 @@ function updatePlayer(dt) {
   }
   if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
   if (dodging && isPirate() && tal('rollCut')) P.dashLate = 0.2;   /* TUMBLING CUT: a swing out of the roll is a dash attack */
-  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2 }); }
+  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
   // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
   if (P.alight > 0) { P.alight -= dt;
     if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 10, y: P.y - 4 - Math.random() * 14, vx: -P.vx * 0.12, vy: -20 - Math.random() * 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -30, fire: true });
@@ -6409,7 +6433,8 @@ function updatePlayer(dt) {
     if (P.plunge) {
       const ty = Math.floor((P.y + 2) / TS); let broke = false;
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
-      if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
+      if (broke && isWarden()) { P.plunge = false; P.plungeRec = 0.12; P.canCut = false; P.hitSet.clear(); SFX.thud(); dust(P.x, P.y, 8); squash(1.35, 0.65, 0.12); }   /* the crate splits under the point and she stays on the floor */
+      else if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall();
         if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
           if (P.consecrate) { P.consecrate = false; gainLight(14); // THE CONSECRATION: where the maul lands, the ground is holy for a moment
@@ -6466,13 +6491,13 @@ function updatePlayer(dt) {
       if (!overlap(hb, box(e))) continue;
       P.hitSet.add(e);
       if (P.plunge) {
-        if (e.t === 'master' && e.mounted) { if (e.stagger > 0 || e.open > 0) { hurtEnemy(e, 30, P.x, true); e.stagger = Math.max(e.stagger, 0.9); e.mode = 'stagger'; e.modeT = Math.max(e.modeT, 0.9); number(e.x, e.y - 24, 'STUNNED', '#8fd160'); SFX.gobHurtLow(); SFX.thud(); burst(e.x, e.y - 8, 12, COLS.master, 80, 0.6); } else { SFX.clank(); number(e.x, e.y - e.h - 6, 'THE HOUND GUARDS HIM', '#9aa39a'); } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); continue; }
-        if (e.t === 'ram') { if (e.mode === 'crash') { hurtEnemy(e, plungeDmg() * 2, P.x, true); number(e.x, e.y - 30, 'BETWEEN THE HORNS', '#ffd36b'); } else { SFX.clank(); number(e.x, e.y - 24, 'HE SHRUGS IT OFF', '#9aa39a'); } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); continue; }
-        if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x, e.y - 40, P.face, 5); P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; continue; }
+        if (e.t === 'master' && e.mounted) { if (e.stagger > 0 || e.open > 0) { hurtEnemy(e, 30, P.x, true); e.stagger = Math.max(e.stagger, 0.9); e.mode = 'stagger'; e.modeT = Math.max(e.modeT, 0.9); number(e.x, e.y - 24, 'STUNNED', '#8fd160'); SFX.gobHurtLow(); SFX.thud(); burst(e.x, e.y - 8, 12, COLS.master, 80, 0.6); } else { SFX.clank(); number(e.x, e.y - e.h - 6, 'THE HOUND GUARDS HIM', '#9aa39a'); } if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); continue; }
+        if (e.t === 'ram') { if (e.mode === 'crash') { hurtEnemy(e, plungeDmg() * 2, P.x, true); number(e.x, e.y - 30, 'BETWEEN THE HORNS', '#ffd36b'); } else { SFX.clank(); number(e.x, e.y - 24, 'HE SHRUGS IT OFF', '#9aa39a'); } if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); continue; }
+        if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x, e.y - 40, P.face, 5); if (isWarden()) { wardenPerch(e, e.x, e.y - 40); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; continue; }
         if (e.t === 'chief') { e.plungeN = (e.plungeN || 0) + 1; e.plungeT = 2.5; if (e.plungeN >= 2) { e.plungeN = 0; e.plungeT = 0; P.vx = (Math.sign(P.x - e.x) || -e.face) * 280; P.vy = -230; P.inv = Math.max(P.inv, 0.5); P.plunge = false; P.canCut = false; P.ground = false; P.hitSet.clear(); number(e.x, e.y - e.h - 12, 'SHAKEN OFF', '#ff6b6b'); SFX.roar(); SFX.clank(); shakeCam(4); e.stagger = 0; continue; } }
         if (e.t === 'mother' && e.tipped) continue;
         if (e.t === 'mother') { P.plunge = false; P.vy = -200; P.ground = false; P.canCut = false; SFX.clank(); number(e.x, P.y - 10, 'ARMOURED', '#9aa39a'); continue; }
-        if (e.t === 'heart') { hurtEnemy(e, 1, P.x, true); P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; squash(0.8, 1.25, 0.1); continue; }
+        if (e.t === 'heart') { hurtEnemy(e, 1, P.x, true); if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; squash(0.8, 1.25, 0.1); continue; }
         if (e.t === 'thorn') {
       if (e.mode === 'charge' && Math.random() < dt * 9) SFX.clatter();
           P.plunge = false; P.ground = false; P.canCut = false; P.hitSet.clear();
@@ -6496,7 +6521,8 @@ function updatePlayer(dt) {
             SFX.tipRing(); hitstop(0.1); shakeCam(4); dust(e.x, e.y, 6); ringAt(e.x, e.y - (e.h || 16) / 2, 18, '#8fd160', 0.3);
             number(e.x, e.y - (e.h || 16) - 20, 'PINNED', '#8fd160'); pogoCount++; continue;
           }
-          P.vy = POGO * (isWarden() ? 1.28 : 1); P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); } squash(0.8, 1.25, 0.1); continue;   /* SHE COMES OFF IT HIGHEST: a spear-first drop bounces her further than anyone's */
+          if (isWarden()) { wardenPerch(e, e.x, e.y - (e.h || 16) / 2); continue; }   /* SHE NEVER BOUNCES: too big to pin, so the point bites and she is stood on the shaft */
+          P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); } squash(0.8, 1.25, 0.1); continue;
       }
       const front = P.swingKind !== 'sweep' && Math.sign(P.x - e.x) === e.face;   /* the sweep goes under every guard held in front */
       if (e.t === 'mother' && e.tipped) continue;
@@ -18497,6 +18523,12 @@ function drawWorld(cx, cy, showPlayer) {
     // fading, with the green of the harvest on them.
     for (const gh of ghosts) { if (gh.gold) { drawTinted(K, K.R.rush ? 'rush' : 'run', gh.frame, gh.x - cx, gh.y - cy, gh.face, 1, 1, 0, '#ffd36b', Math.min(0.55, gh.life * 3.4)); continue; }   /* THE LAST CHARGE's afterimage: the rush frame, in gold */
       if (gh.pass && isReaper()) { drawTinted(K, 'run', gh.frame, gh.x - cx + Math.round(Math.sin(time * 40 + gh.x)), gh.y - cy, gh.face, 1.22, 1.22, 0, '#1a0c24', Math.min(0.7, gh.life * 2.6)); continue; }
+      /* THE BACK-STEP, NOT A ROLL. Everyone else's dodge leaves a white tumbling silhouette; hers must read as ground
+         GIVEN with the point still up, so it is her own colours going green, and the shaft's line drawn out in front
+         of each after-image - the thing she keeps between herself and them while she leaves. */
+      if (gh.step) { drawTinted(K, 'roll', gh.frame, gh.x - cx, gh.y - cy, gh.face, 1, 1, 0, '#8fd160', Math.min(0.5, gh.life * 2.2));
+        g.globalAlpha = Math.min(0.5, gh.life * 2); g.fillStyle = '#dff0d8';
+        g.fillRect(Math.round(gh.x - cx) + (gh.face > 0 ? 2 : -18), Math.round(gh.y - cy) - 11, 16, 1); g.globalAlpha = 1; continue; }
       drawSet(K, gh.pass ? 'run' : 'roll', gh.frame, gh.x - cx, gh.y - cy, gh.face, !gh.pass, 1, 1, gh.life * (gh.pass ? 0.9 : 2));
       if (gh.pass) { g.globalAlpha = Math.min(0.35, gh.life * 1.1); g.fillStyle = '#8fd160';
         g.fillRect(Math.round(gh.x - cx) - 4, Math.round(gh.y - cy) - 20, 8, 1); g.globalAlpha = 1; } }
