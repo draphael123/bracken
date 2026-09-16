@@ -3787,7 +3787,10 @@ function drawHeroPick() {
    should never be turned away for something the save has not bought yet. X arms AN ALLY instead, which is the same
    pick with the game playing him. The run itself starts from the map, the way every run in this game starts. */
 let coopPick = { i: 0, ally: false };
-const coopPickList = () => PICK.filter(h => h !== hero() && (PROG.heroes[h] || h === 'knight' || h === 'warden' || godMode()));
+/* WHOEVER YOU ARE IS STILL ON THE LIST. This filtered out player one's own hero, so a player who had taken THE WARDEN found her missing
+   from player two's choices and read it as her not being selectable at all. The owner's rule: two of the same hero is allowed - two
+   knights, or two Wardens, side by side. Both starters are always here, and everything the save owns with them. */
+const coopPickList = () => PICK.filter(h => PROG.heroes[h] || h === 'knight' || h === 'warden' || godMode());
 function updateCoopPick() {
   const list = coopPickList();
   if (!list.length) { state = 'title'; SFX.buzz(); return; }
@@ -3809,10 +3812,23 @@ function drawCoopPick() {
     g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
     heroBanner(h, x, top, cw, ch, sel);
     if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, cw - 1, ch - 1); }
+    /* AND THE HERO HIMSELF, in front of his banner. This screen drew the banner and stopped, so co-op offered six coloured cloths and no
+       faces - "the character sprites don't appear". The hero pick screen has always baked a preview a hero and stood him on the card;
+       the same previews are used here (one bake, cached by key), a little smaller because this card is eight pixels shorter. */
+    { const set = h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken))
+        : h === 'paladin' ? preview('pick:paladin', () => bakePaladin({}))
+        : h === 'pirate' ? preview('pick:pirate', () => bakeFreebooter({}))
+        : h === 'reaper' ? preview('pick:reaper', () => bakeReaper({}))
+        : h === 'warden' ? preview('pick:warden', () => bakeWarden({}))
+        : preview('pick:knight', () => bakeKnight({}));
+      const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 1.75 : 1.25;
+      g.globalAlpha = sel ? 1 : 0.7;
+      g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 6 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
+      g.globalAlpha = 1; }
     text(fitText(HERO_SHORT[h] || h.toUpperCase(), cw, 6), x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6); });
   { const h = list[coopPick.i] || 'knight';
     wrap(HERO_LOOP[h] || '', VW - 24, 6).forEach((ln, i) => text(ln, VW / 2, top + ch + 13 + i * BODY_LH, UI.text, 'center', 6)); }
-  text('EVERY CREATURE AND BOSS: TWICE THE HEALTH, TWICE THE HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);
+  text('EVERY CREATURE AND BOSS: TWICE THE HEALTH AND HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);   /* the old wording ran off both edges at 320 wide, and fitText would not trim it: the line itself is shorter now */
   text('LEFT/RIGHT choose   Z take   X ally   ESC back', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('then start any wood from the map', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
