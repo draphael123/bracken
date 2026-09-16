@@ -6361,10 +6361,7 @@ function theDrownedCauseway() {
     weather: [{ x0: 0, x1: 510 * TS, kind: 'rain' }, { x0: 510 * TS, x1: 99999, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
     arena: { x0: 566 * TS, x1: 610 * TS, floor: R * TS, y0: 4 * TS, trigger: 574 * TS, wallL: 565, wallR: 610, boss: 'kraken', music: 'kraken', tint: '#203a38', tintA: 0.12, fx: 'motes',
-      tower: 569 * TS + 8, plinth: [585 * TS, 590 * TS], stones: [583 * TS + 8, 597 * TS + 8], holes: [[578, 580], [594, 595]], rest: 604 * TS,
-      /* THE DRAIN: the old storm shaft through the road at the foot of the tower, on whole stone between the footing (ends 572) and
-         the first break (578). One place, always the same place, and he comes up through it - so it is somewhere to watch, never a surprise */
-      drain: 576 * TS + 8 },
+      tower: 569 * TS + 8, plinth: [585 * TS, 590 * TS], stones: [583 * TS + 8, 597 * TS + 8], holes: [[578, 580], [594, 595]], rest: 604 * TS },   /* rest: where he is, out in the sea past the last stone - never a body on the road */
   };
 }
 
