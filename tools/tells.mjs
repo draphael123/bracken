@@ -9,7 +9,8 @@
 // It also finds the marks the first version could not see (a colour held in a constant, a !!! of three) and
 // every windup ('...Tell') entered with NO mark at all.
 // Run it after touching any creature: node tools/tells.mjs      (--json prints the findings for a fixer script)
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
+import { THROWN as THROWS_SOMETHING_ELSE, QUIET as NOT_A_BLOW, BY_HAND, MARK } from '../src/marks.js';   // THE HONESTY LIST, THE QUIET WINDUPS and the table the screen reads: src/marks.js
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const JSON_OUT = process.argv.includes('--json');
@@ -51,38 +52,6 @@ for (const f of funcs) {
 // A WINDUP IS A CHAIN, and the blow is at the end of it: riseUp hands to stalk hands to plunge, and only
 // the plunge hits you. Follow it while each link is FORCED - a block that sets exactly one next mode is a
 // windup; one that sets several is a decision, and the chain stops there.
-// THE HONESTY LIST. A windup whose blow is not thrown by the creature at all - the Forgemaster does not
-// strike you, he HURLS A CART, and the cart is a mover that does its own unblockable damage somewhere else.
-const THROWS_SOMETHING_ELSE = new Set(['updateForgemaster|hurlTell', 'updateForgemaster|dragTell',
-  'updateCaptain|shootTell',        // capShoot: a shot seed, unblockable
-  'updateCaptain|kegTell',          // the keg: a bomb, and a blast turns on no shield
-  'updateTollmaster|tollTell',      // lead on a chain: noBlock
-  'updateForgemaster|anvilTell',    // hammer rocks: no shield turns the roof
-  'updateForgemaster|breathTell',   // fires: the flame on the floor is unblockable
-  'updateGQueen|chandTell',         // the chandelier: a crush
-  'updateGrandmother|throwTell',   // her sticks fly noBlock
-  'updateHillTroll|ripTell',       // a crane stone, rolled along the floor: no shield turns it
-  'updateHerald|raise',
-  'updateStrawKing|baleTell',      // THE SCARECROW KING'S BALE rolls along the floor on its own, unblockable
-  'updateStrawKing|lanternTell', // his lantern, thrown: fire on landing, unblockable
-  'updateHomunculus|golemTell',   // THE HOMUNCULUS'S SLAM: a wave along the floor each way, unblockable
-  'updateArchmage|slamTell']);    // THE FAMILIAR'S SLAM: the same wave, the size of the room          // THE TIDE HERALD'S WAVE: heraldWave crosses the square on its own, unblockable
-// THE QUIET WINDUPS. A tell that throws NO blow at all - she listens, he calls, the square floods - wears no
-// mark: a mark is a promise about your shield, and there is nothing here for the shield to do.
-const NOT_A_BLOW = new Set(['updateTollmaster|floodTell', 'updateTollmaster|darkTell', 'updateLampreeve|snuffTell',
-  'updateHerald|callTell', 'updateMiner|smashTell', 'updateWindcaller|howlTell', 'updatePropman|setTell',
-  'updateForgemaster|leapTell', 'updateGolem|shroudTell', 'updateGQueen|gLeapTell', 'updateRoc|gustTell',
-  'updateGrandmother|listenTell', 'updateGrandmother|vanishTell', 'updateLance|galeTell', 'updateSnuffer|snuffTell',
-  'updateMaster|whistleTell', 'updateWhipper|whistleTell',   // the whistle throws no blow: the dogs it calls bite for themselves
-  'updatePrince|callTell',          // the Buried Prince calls his court: the courtiers rake for themselves, on their own yellow marks
-  'updateRam|callTell',
-  'updateStrawKing|callTell',      // the Scarecrow King calls the rooks: each marks its own dive
-  'updateStrawKing|lightTell',   // he lights the field: the fire is on the floor, and it throws no blow
-  'updateArchmage|blinkTell', 'updateArchmage|wardTell', 'updateArchmage|openTell',
-  'updateKraken|wellTell',          // THE KRAKEN'S DRAIN: the water in the grate stands up and he comes through it. It is an OPENING, not a blow - it wears 'THE DRAIN' in green, and there is nothing here for a shield to do
-
-  'updateElite|rallyTell', 'updateElite|wallTell', 'updateElite|callTell',
-  'updateGobPriest|riteTell']);   /* THE GOBLIN PRIEST'S RITE mends and blesses its own side and touches nobody: it says THE RITE, not a mark */   /* AN ELITE'S war cry, shield wall and call: the foes it rallies, covers or calls strike on their own marks */   // THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow           // the Ram Lord calls the flock: the goats run for themselves
 const unblockable = key => {
   if (THROWS_SOMETHING_ELSE.has(key)) return true;
   const fn = key.split('|')[0];
@@ -137,7 +106,77 @@ function check(f, before, word, colRaw, line) {
   else if (hard === false && col === HARD) bad.push({ f: f.name, mode, word, col, line, verdict, why: 'hard mark on a blow you CAN turn' });
 }
 
-if (JSON_OUT) { console.log(JSON.stringify({ bad, unmarked, marks })); process.exit(0); }
+// ---- 4. THE TABLE THE SCREEN READS (src/marks.js MARK) ----
+// The mark that stays over a windup is drawn from MARK, keyed by creature and mode. It is written from exactly what
+// this audit has just established - the mark each tell calls (checked above), or where it calls none the blow at the
+// end of its chain - so the screen can only show a mark this tool agrees with. Who owns which update function is read
+// off the dispatch: every `updateX(e, dt)` call and the `e.t === '...'` tests in front of it on its line.
+const tableProblems = [];
+const owners = new Map(), inherit = [];
+{
+  const re = /\b(update[A-Z][A-Za-z]*)\(e, dt\)/g; let m;
+  while ((m = re.exec(src))) {
+    if (src.slice(Math.max(0, m.index - 9), m.index) === 'function ') continue;
+    const fn = m[1], lineAt = src.lastIndexOf('\n', m.index) + 1;
+    let seg = src.slice(lineAt, m.index); const cut = Math.max(seg.lastIndexOf('continue;'), seg.lastIndexOf('return;')); if (cut >= 0) seg = seg.slice(cut);
+    if (!owners.has(fn)) owners.set(fn, new Set());
+    if (fn === 'updateElite') { owners.get(fn).add('*'); continue; }   /* any creature can be an elite: its own moves are '*|mode' */
+    const ts = [...seg.matchAll(/e\.t === '(\w+)'/g)].map(x => x[1]);
+    if (ts.length) ts.forEach(t => owners.get(fn).add(t));
+    else { const host = funcs.find(f => m.index > f.at && m.index < f.at + f.body.length); if (host) inherit.push([fn, host.name]); }
+  }
+  for (let pass = 0; pass < 4; pass++) for (const [fn, host] of inherit) for (const t of owners.get(host) || []) owners.get(fn).add(t);
+}
+// the windups windingUp() names by hand that are not '...Tell' (a brute's 'raise', a crossbow's 'aim')
+const wuLine = src.split('\n').find(l => l.startsWith('const windingUp =')) || '';
+const namedWindups = [];
+for (const part of wuLine.split(/\(\(?e\.t === '/).slice(1)) {
+  const ts = [part.match(/^(\w+)'/)[1], ...[...part.split(') &&')[0].matchAll(/e\.t === '(\w+)'/g)].map(x => x[1])];
+  const ms = [...part.matchAll(/(?<!typeof )e\.mode === '(\w+)'/g)].map(x => x[1]).filter(x => !x.endsWith('Tell'));
+  if (/e\.t === 'archer' && e\.draw > /.test('(e.t === \'' + part)) ms.push('draw');
+  for (const mode of ms) namedWindups.push({ ts, mode });   /* one clause can name two creatures (a brute's and a chief's windups): a row for either answers it */
+}
+const markFor = (fn, mode) => {
+  const key = fn + '|' + mode;
+  if (NOT_A_BLOW.has(key)) return '';
+  const called = marks.filter(x => x.f === fn && x.mode === mode);
+  if (called.length) { const hard = called.some(x => x.col === HARD), soft = called.some(x => x.col === SOFT);
+    if (hard && soft) { tableProblems.push(key + ' calls both a yellow and a red mark: the table cannot say which stays over it'); return undefined; }
+    return hard ? '!!' : '!'; }
+  const u = unblockable(key); return u === null ? undefined : u ? '!!' : '!';
+};
+const TABLE = {};
+const put = (k, v, why) => { if (v === undefined) return; if (k in TABLE && TABLE[k] !== v) tableProblems.push(k + ' is ' + JSON.stringify(TABLE[k]) + ' in one owner and ' + JSON.stringify(v) + ' in ' + why); else TABLE[k] = v; };
+for (const f of funcs) {
+  const ts = owners.get(f.name);
+  if ((!ts || !ts.size) && f.name !== 'updateEnemies' && marks.some(x => x.f === f.name)) tableProblems.push(f.name + ' calls marks but no dispatch line says which creature it runs: its windups have no rows');
+  if (!ts || !ts.size) continue;
+  const modes = new Set([...f.body.matchAll(/e\.mode = '([A-Za-z0-9]+Tell)'/g)].map(x => x[1]));
+  for (const x of marks) if (x.f === f.name) modes.add(x.mode);
+  for (const w of namedWindups) if (w.ts.some(t => ts.has(t)) && f.body.includes("e.mode = '" + w.mode + "'")) modes.add(w.mode);
+  for (const mode of modes) { const v = markFor(f.name, mode); if (v === undefined) continue; for (const t of ts) put(t + '|' + mode, v, f.name); }
+}
+// the inline creatures, by hand - and checked against the mark each one calls, where the mode is unambiguous
+for (const [k, v] of Object.entries(BY_HAND)) {
+  const mode = k.split('|')[1], called = marks.filter(x => x.f === 'updateEnemies' && x.mode === mode);
+  if (called.length && called.every(x => x.col === called[0].col) && (called[0].col === HARD ? '!!' : '!') !== v) tableProblems.push(k + ' is ' + JSON.stringify(v) + ' by hand but the creature calls ' + called[0].word + ' ' + called[0].col);
+  if (k in TABLE && TABLE[k] !== v) tableProblems.push(k + ' is ' + JSON.stringify(v) + ' by hand and ' + JSON.stringify(TABLE[k]) + ' traced'); else TABLE[k] = v;
+}
+// every windup the predicate names by hand must have a row, and so must every '...Tell' written inline in updateEnemies
+const ue = funcs.find(f => f.name === 'updateEnemies');
+for (const w of namedWindups) if (!w.ts.some(t => (t + '|' + w.mode) in TABLE)) tableProblems.push(w.ts.join('/') + '|' + w.mode + ' is a windup in windingUp() with no row in the table: trace it or add it to BY_HAND');
+if (ue) for (const mode of new Set([...ue.body.matchAll(/e\.mode = '([A-Za-z0-9]+Tell)'/g)].map(x => x[1]))) if (!Object.keys(TABLE).some(k => k.endsWith('|' + mode))) tableProblems.push('updateEnemies enters ' + mode + ' inline and no row covers it: add it to BY_HAND');
+const sorted = Object.fromEntries(Object.entries(TABLE).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+const stale = JSON.stringify(sorted) !== JSON.stringify(Object.fromEntries(Object.entries(MARK).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)));
+if (process.argv.includes('--write')) {
+  const url = new URL('../src/marks.js', import.meta.url), text = readFileSync(url, 'utf8');
+  const rows = Object.entries(sorted), body = [];
+  for (let i = 0; i < rows.length; i += 6) body.push('  ' + rows.slice(i, i + 6).map(([k, v]) => JSON.stringify(k).replace(/"/g, "'") + ': ' + JSON.stringify(v).replace(/"/g, "'")).join(', ') + ',');
+  const out = text.replace(/\/\* MARK:BEGIN \*\/[\s\S]*?\/\* MARK:END \*\//, '/* MARK:BEGIN */\nexport const MARK = {\n' + body.join('\n') + '\n};\n/* MARK:END */');
+  writeFileSync(url, out); console.log('src/marks.js: ' + rows.length + ' rows written');
+} else if (stale) tableProblems.push('src/marks.js MARK is not the table this audit writes: run node tools/tells.mjs --write');
+
+if (JSON_OUT) { console.log(JSON.stringify({ bad, unmarked, marks, table: sorted, tableProblems })); process.exit(0); }
 console.log('== the mark audit ==');
 console.log(checked + ' tells checked across ' + funcs.length + ' creature functions');
 if (!bad.length) console.log('\nevery mark agrees with the blow behind it.');
@@ -151,4 +190,6 @@ if (unmarked.length) {
   console.log('\n' + unmarked.length + ' windup(s) entered with no mark at all:');
   for (const u of unmarked) console.log('  ' + (u.f + ' ' + u.mode).padEnd(34), 'line ' + String(u.line).padEnd(6), u.verdict ? (u.verdict === 'hard' ? 'wants !! (red)' : 'wants ! (yellow)') : 'blow not traced: mark by hand');
 }
-process.exitCode = bad.length ? 1 : 0;
+if (tableProblems.length) { console.log('\nthe table the screen reads (src/marks.js), ' + Object.keys(sorted).length + ' rows, ' + tableProblems.length + ' problem(s):'); for (const p of tableProblems) console.log('  ' + p); }
+else console.log('\nthe mark over every windup on the screen comes from this table (src/marks.js, ' + Object.keys(sorted).length + ' rows).');
+process.exitCode = bad.length || tableProblems.length ? 1 : 0;

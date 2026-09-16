@@ -1,5 +1,6 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
+import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -18787,7 +18788,8 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.alive && (HEAVY.has(e.t) || e.t === 'closedhelm' || e.t === 'hedgeknight' || e.t === 'golem' || e.t === 'forgemaster') && Math.abs(e.vx) > 6) { if (e.lastF !== undefined && frame !== e.lastF && Math.random() < 0.8) dust(e.x - (e.face || 1) * 4, e.y, e.maxHp ? 3 : 2); e.lastF = frame; } }
     g.globalAlpha = 1;
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
-    if (wind && !(e.t === 'gobpriest' && e.mode === 'riteTell') && !(e.t === 'gobmage' && e.mode === 'runeTell')) tellQ.push({ txt: '!', x: e.x - cx, y: e.y - e.h - 12 - cy, col: '#ffd36b', a: 1 });   /* drawn last of all: drawTells(). (Not over a priest's rite: it strikes nobody, and a yellow ! promises a blow the shield turns. Not under a mage's red !! either: its rune turns on no shield) */
+    const windMark = wind ? markOf(e) : '';
+    if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - e.h - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1 });   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
     else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF - cy + ps.dy) - 5);
     if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
@@ -20464,7 +20466,7 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
   tileSpr: () => tileSpr, resolve: () => resolveTiles(),
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
-  telling: e => !!e && windingUp(e),
+  telling: e => !!e && windingUp(e), markOf: e => markOf(e), marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
   /* THE BOT HAS TO BE ABLE TO LOOK AT A PLACE IT IS NOT STANDING. A backdrop fault lives at a height: a band cut off

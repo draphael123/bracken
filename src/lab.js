@@ -3,6 +3,7 @@
 // kill, and how much of your health it costs. Both yield between fights, so a page can be polled while they run.
 //   await BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], foes: [...], reps: 2 })   -> window.__lab
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
+import { MARK } from './marks.js';   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // each hero's real reach (attackBox in main.js), so the bot swings from where the blow actually lands
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40 };   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
@@ -108,6 +109,9 @@ for (const m of ['mouseTell', 'golemTell']) HARD_TELLS.add('homunculus|' + m); f
 HARD_TELLS.add('herald|glideTell');   /* THE TIDE HERALD'S GLIDE ends in his low sweep: gone from, never guarded */
 HARD_TELLS.add('drownedking|ramTell'); HARD_TELLS.add('drownedking|diveTell');   /* THE DROWNED KING'S CHARGE AND FALL: gone across, never guarded */
 for (const m of ['grabTell', 'sweepTell', 'rakeTell', 'hurlTell', 'jetTell', 'geyserTell', 'lungeTell', 'roarTell', 'rollTell']) HARD_TELLS.add('kraken|' + m);   /* THE RAKE is HIGH in red: an arm that size turns on no shield either */   /* THE KRAKEN's red marks */   /* THE OWL REEVE'S SKIM: talons at ankle height, dodged or jumped, never guarded */
+/* AND EVERY RED MARK IN src/marks.js, the table the screen draws from: the hand list above predates it and stays as it was. An elite's own moves are '*|mode', and answer for whatever creature is the elite */
+for (const [k, v] of Object.entries(MARK)) if (v === '!!') HARD_TELLS.add(k);
+{ const has = HARD_TELLS.has.bind(HARD_TELLS); HARD_TELLS.has = k => has(k) || has('*|' + String(k).slice(String(k).indexOf('|') + 1)); }
 // WHAT THE BOT GOES TO IN THE PRINCE'S TOMB, or null to fight him: a cold lamp while the tomb is mostly dark (or any cold lamp
 // while he is far off), else the post of the intact set he is standing under. { x: where to stand, at: what to strike }
 function princeTarget(BK, boss, A, P) {
