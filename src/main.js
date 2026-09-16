@@ -14587,26 +14587,36 @@ function drawDeepBack(cx, cy) {
 // Drawn in the FRONT pass, over the water's own wash - under it, the pale of a mouth went the colour of the sea.
 // ============================================================================================
 const inWater = (x, y) => (L.pools || []).some(p => p.swim && !p.dry && x > p.x0 && x < p.x1 && y > p.y + 8 && (p.bottom === undefined || y <= p.bottom + 4));
-/* a trickle off a mouth of air: n bubbles rising h pixels, wobbling as they go up and thinning out at the top of it */
+/* a trickle off a mouth of air: n bubbles rising h pixels, wobbling as they go up and thinning out at the top of it.
+   EVERY BUBBLE IS A RING ROUND A WHITE CORE. Pale-on-pale was the whole trouble: a one-pixel dot at half alpha reads
+   beautifully in the trench and disappears completely on the reef shelf, which is bright teal and is the level whose own
+   sign says the only air is in the bells. A cold ring under a white middle reads on the dark water AND on the bright. */
 function airPlume(x, ybase, cx, cy, n, h, ph, spread) {
   const sx = Math.round(x - cx);
   for (let i = 0; i < n; i++) {
-    const k = (time * 0.5 + i / n + ph) % 1, r = i % 3 === 0 ? 2 : 1;
-    g.globalAlpha = 0.85 * (1 - k * 0.65);
-    g.fillStyle = i % 2 ? '#dff4fa' : '#e8f4f0';
-    g.fillRect(Math.round(sx + Math.sin(k * 7 + i * 2.1 + ph) * (spread === undefined ? 3 : spread)), Math.round(ybase - cy - k * h), r, r);
+    const k = (time * 0.5 + i / n + ph) % 1, r = i % 3 === 0 ? 3 : 2;
+    const bx = Math.round(sx + Math.sin(k * 7 + i * 2.1 + ph) * (spread === undefined ? 3 : spread)), by = Math.round(ybase - cy - k * h);
+    g.globalAlpha = 0.92 * (1 - k * 0.5);
+    g.fillStyle = '#2e6a72'; g.fillRect(bx - 1, by - 1, r + 2, r + 2);
+    g.fillStyle = i % 2 ? '#e8f4f0' : '#ffffff'; g.fillRect(bx, by, r, r);
   }
   g.globalAlpha = 1;
 }
 function drawAirSigns(cx, cy) {
   const on = (x, y, r) => x > cx - r && x < cx + VW + r && y > cy - r && y < cy + VH + r;
-  // A BELL keeps her air under her rim, and it leaks round it the whole time she stands there
+  // A BELL keeps her air under her rim, and it leaks round it the whole time she stands there. She carries a lamp and a
+  // light of her own, which is why she reads from across the trench - and why she did NOT read on the reef shelf, a level
+  // lit at dark 0.01 where her glow adds nothing and she is brass and verdigris against teal. So she gets a cold wash
+  // standing off her that does not need the level to be dark, and three plumes off her rim that go up past her crown.
   for (const b of airBells) {
-    if (!on(b.x, b.y, 70) || !inWater(b.x, b.y)) continue;
-    const ph = (b.x * 0.013) % 1;
-    airPlume(b.x - 10, b.y + 10, cx, cy, 4, 44, ph, 3);
-    airPlume(b.x + 10, b.y + 8, cx, cy, 3, 36, ph + 0.37, 3);
-    airPlume(b.x, b.y + 12, cx, cy, 3, 54, ph + 0.71, 4);
+    if (!on(b.x, b.y, 90) || !inWater(b.x, b.y)) continue;
+    const ph = (b.x * 0.013) % 1, rim = b.y + 24;
+    g.globalAlpha = 0.14; g.fillStyle = '#dff4fa';
+    g.beginPath(); g.ellipse(Math.round(b.x - cx), Math.round(b.y + 6 - cy), 23, 27, 0, 0, 7); g.fill();
+    g.globalAlpha = 1;
+    airPlume(b.x - 11, rim, cx, cy, 5, 60, ph, 3);
+    airPlume(b.x + 11, rim, cx, cy, 4, 50, ph + 0.37, 3);
+    airPlume(b.x, rim - 4, cx, cy, 4, 68, ph + 0.71, 4);
   }
   // A ROOM - a hold, a pocket under a lip of rock, the air caught up against a hull - gets a MOUTH wherever its floor is
   // open water: the kept air pale above the line, a bright shifting water line along it, and bubbles coming up into it. That
