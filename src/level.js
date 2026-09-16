@@ -6584,7 +6584,7 @@ function theMagesFolly() {
   ent('stray', 76, G - 5, { kind: 'lens' });                       /* the lens in the hedges: on the far end of the wall hedge, past the beast */
   ent('check', 79, G - 1);
   /* THE GATEKEEPER'S STALL: the last built thing before the gate, and it is as empty as the tower */
-  deco('stall', 84, G - 1); sign(82, G - 1, 'THE GATEKEEPER\'S STALL. HE LEFT WHEN THE HEDGES STARTED WALKING, AND TOOK THE TILL WITH HIM.');
+  deco('stall', 84, G - 1); sign(82, G - 1, 'THE GATEKEEPER\'S STALL. HE LEFT WHEN THE HEDGES STARTED WALKING.');
   ent('broom', 92, G - 1, { face: -1 }); ent('broom', 95, G - 1, { face: -1 });
   /* THE FIRST FONT: the gate is shut and the wall is too high; the mouse goes under it */
   sign(96, G - 1, 'THE GATE IS BARRED. THE BLUE FONT IS THE MOUSE: SMALL ENOUGH FOR THE CRACK UNDER IT.');
