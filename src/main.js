@@ -166,7 +166,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.075 * LV_GROW())); // (HEAVY PLUNGE and FIREDROP were two ranks of this: the level brings it now)
-const DMG = { topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 7, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
+const DMG = { topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, gobmage: 0, gobBolt: 12, gobRune: 16 };
@@ -9936,7 +9936,15 @@ function krakenHurt(e, dmg, fromX, plunge) {
        the spear the same. While he LOOKS, a cut goes through at a third again, up to KRK_LOOK_TAKE of him */
     const knell = K.mode === 'knelled', pin = a.spear && K.mode === 'stuck', look = K.mode === 'look' && a.two;
     let d = Math.max(1, Math.round(dmg * (knell || pin ? 2.5 : look ? 1.35 : a.spear && K.mode === 'recover' ? 1.25 : a.st === 'down' || a.st === 'stun' ? 1.5 : 1)));
-    if (look) { const left = Math.max(0, Math.round(K.maxHp * KRK_LOOK_TAKE) - (K.lookTaken || 0)); if (left <= 0) d = Math.max(1, Math.round(dmg)); else { d = Math.min(d, Math.max(left, Math.round(dmg))); K.lookTaken = (K.lookTaken || 0) + d; } }
+    /* EVERY OPENING IN HIS ARMS HAS A PRICE, and when it is paid he pulls them back: KRK_LOOK_TAKE of him while he looks, KRK_KNELL_TAKE
+       knelled (on top of the bell's own blow), KRK_PIN_TAKE pinned. Without it the opening paid by the weight of the blade and not by the
+       read: the first cut of the limp arms had one bell take 140 to 210 of him - the whole of the second stage - and a pinned spear 250 */
+    if (knell || pin || look) { const cap = Math.round(K.maxHp * (knell ? KRK_KNELL_TAKE : pin ? KRK_PIN_TAKE : KRK_LOOK_TAKE)), left = cap - (K.openTaken || 0);
+      if (left <= 0) { SFX.clank(); return false; }
+      d = Math.min(d, left); K.openTaken = (K.openTaken || 0) + d;
+      if (K.openTaken >= cap) { if (pin || look) K.modeT = Math.min(K.modeT, 0.2);
+        for (const q of K.arms) if ((pin ? q.spear : q.two) && q.low && !krkLost(q) && q.st !== 'hold') { if (q.spear) { q.st = 'retreat'; q.t = 0.8; } else { q.st = 'drag'; q.t = 0.5; } q.low = false; }
+        SFX.bellow(); } }
     const through = knell || pin || a.spear;
     const take = through ? d : Math.min(d, a.hp); if (!through) a.hp -= d; e.hp = Math.max(0, a.hp); e.flash = 0.12; a.flash = 0.12;
     /* THE LAST CUT is a blow on him, so it goes through hurtEnemy and he dies the way every boss does */
@@ -9960,7 +9968,7 @@ const krkLost = a => !a || a.st === 'gone' || a.st === 'retreat' || a.st === 'hi
 /* KNELLED: the bell (or the chest) goes through his skull while he breathes. That blow is a twentieth of him and more on its own, and
    then he slumps in the sea behind the road, and BOTH ARMS COME DOWN LIMP ACROSS THE STONES for four seconds: every cut on them goes
    through to him two and a half times (krakenHurt). The eye he used to lay on the road is out of reach now; the arms are not */
-function krakenKnell(e) { const A = L.arena, fl = A.floor, chunk = Math.round(e.maxHp * 0.06); e.knellHit = false; e.mode = 'knelled'; e.modeT = 4.2; e.stagger = 4.2;
+function krakenKnell(e) { const A = L.arena, fl = A.floor, chunk = Math.round(e.maxHp * 0.06); e.knellHit = false; e.openTaken = 0; e.mode = 'knelled'; e.modeT = 4.2; e.stagger = 4.2;
   krakenLedger(e, 'bell', Math.min(chunk, e.hp - e.stageFloor)); e.hp = Math.max(e.stageFloor, e.hp - chunk); e.flash = 0.3; e.recoil = 1; const eye = krakenEyeAt(e); number(eye.x, eye.y - 16, chunk, '#ffd36b');
   krakenArmsLimp(e, 4.2);
   SFX.bellow(); SFX.seaBell(); shakeCam(9); zoomKick(1.08, 0.3); }
@@ -10015,7 +10023,7 @@ function krakenBrine(x, y) { for (let i = 0; i < 16; i++) parts.push({ x: x + (M
 /* A CRATE OFF THE FLOOD EVERY THREE AND A HALF SECONDS, so there is always one within a stride. The rate and DMG.krakCrate were
    set together against the lab, not chosen: at 16 every 2.6s the six heroes came in at 59-83s against 90-150, and at 11 every 3.2s
    at 71-133. What the pair is really setting is how much of the stage the cargo is worth - about a third of it off the clock. */
-const KRK_CRATE_EVERY = 3.6;
+const KRK_CRATE_EVERY = 4;
 const KRK_CRATE_MAX = 4;       /* and never more than four standing: past four the road is a warehouse and there is nowhere left to fight */
 /* AND HE COMES UP TO LOOK ABOUT ONCE A BEAT - often enough to learn the place, and BRIEF. (It replaced the drain he used to come up
    through, and kept its price: the drain's first cut was two and a half seconds wide open at two and a half times, and a knight took
@@ -10023,6 +10031,8 @@ const KRK_CRATE_MAX = 4;       /* and never more than four standing: past four t
 const KRK_LOOK_EVERY = 17;
 const KRK_LOOK_OPEN = 1.8;     /* up close, and gone again */
 const KRK_LOOK_TAKE = 0.035;   /* the most the arms lying still can cost him in one look, as a share of him: a good cut or two */
+const KRK_KNELL_TAKE = 0.05;   /* knelled, the arms limp across the road: on top of the bell's own six percent */
+const KRK_PIN_TAKE = 0.065;    /* the spear pinned in a waystone: the maw's one opening, so the biggest */
 /* WHAT THE PAIR CAME TO, measured with the drain capped (six heroes, two reps, the lab's bot): WORKING THE CARGO knight 122/105, warden
    116/115, pyro 116/136, paladin 97/107, pirate 109/97, reaper 112/107 - all inside 90-150. WALKING PAST IT knight 131/132, warden 160/160,
    pyro 157/156, paladin 148/132, pirate 131/121, reaper 141/141. The cargo is worth 18 to 45 seconds a hero; the window binds the fight
@@ -10274,7 +10284,7 @@ function updateKraken(e, dt) {
       if (e.T.beat <= 0) { e.mode = 'dive'; e.modeT = 1.3; for (const a of e.arms) if (a.two && !krkLost(a)) { a.st = 'retreat'; a.t = 1.1; a.low = false; if (a.ae) a.ae.alive = false; } SFX.bellow(); SFX.waveCrash(); shakeCam(5); break; }
       /* AND THE LOOK NEXT, ahead of the cargo and the arms. An opening must not be starved by a nearer attack winning the turn every
          time - rule E2, read the other way round: what the fight is FOR goes near the top */
-      if (e.T.look <= 0) { e.T.look = KRK_LOOK_EVERY; e.mode = 'lookTell'; e.modeT = 1; e.lurkWant = 0; e.lookTaken = 0; SFX.gutter(); SFX.hiss(); rumble(70, 0.6); break; }
+      if (e.T.look <= 0) { e.T.look = KRK_LOOK_EVERY; e.mode = 'lookTell'; e.modeT = 1; e.lurkWant = 0; e.openTaken = 0; SFX.gutter(); SFX.hiss(); rumble(70, 0.6); break; }
       if (e.T.hurl <= 0) { e.T.hurl = 5.2; krakenCargoPick(e); const hx = e.hurlXs[0]; e.mode = 'hurlTell'; e.modeT = 0.8; number(hx, fl - 52, '!!', '#ff6b6b'); SFX.ropeHaul(); SFX.anchorSwing(); }
       /* THE ARMS TAKE TURNS: slam, sweep, slam, snatch, a beat and a half apart (a timer each let the slam win every turn) */
       else if (e.T.arm <= 0 && two.length) { const mv = ['slam', 'sweep', 'slam', 'rake', 'slam', 'grab'][(e.armMove = (e.armMove || 0) + 1) % 6]; e.T.arm = 1.5;
@@ -10377,7 +10387,7 @@ function updateKraken(e, dt) {
       if (a) { a.st = 'spear'; a.tx = beak; a.ty = fl - 14; }
       if (!e.beakHit && !P.dead && P.x > beak - 12 && P.x < beak + 40 && P.y > fl - 34) { e.beakHit = true; const res = damagePlayer(beak, DMG.krakBeak, { unblockable: true }); if (res === 'hit') { P.vx = -300; P.vy = -180; P.ground = false; } }
       if (e.modeT <= 0) { if (e.lungeStuck) { if (a) a.tx = e.lungeStop - 18;   /* THROUGH THE STONE: its point comes out on your side of it, in reach */
-        e.mode = 'stuck'; e.modeT = desp ? 2.4 : 2.9; e.stagger = e.modeT; e.recoil = 1; e.flash = 0.2; shakeCam(11); SFX.crack(); SFX.boom(); SFX.bellow(); zoomKick(1.1, 0.3); dust(beak, fl - 10, 16); ringAt(beak, fl - 20, 40, '#8fd160', 0.5); }
+        e.mode = 'stuck'; e.openTaken = 0; e.modeT = desp ? 2.4 : 2.9; e.stagger = e.modeT; e.recoil = 1; e.flash = 0.2; shakeCam(11); SFX.crack(); SFX.boom(); SFX.bellow(); zoomKick(1.1, 0.3); dust(beak, fl - 10, 16); ringAt(beak, fl - 20, 40, '#8fd160', 0.5); }
         else { e.mode = 'recover'; e.modeT = 0.9; shakeCam(5); dust(beak, fl, 10); } } break; }
     case 'stuck': if (e.modeT <= 0) { e.mode = 'retract'; e.modeT = 0.9; SFX.bellow(); } break;
     case 'recover': if (e.modeT <= 0) { e.mode = 'retract'; e.modeT = 0.8; } break;
