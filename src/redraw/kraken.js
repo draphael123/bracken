@@ -410,6 +410,22 @@ export function bakeWaystone(v = 0) {
   if (v) for (let k = 0; k < 6; k++) B.set(12 - k, 5 + k * 2, ST.o);   /* cracked, where the beak found it */
   weedFoot(B, 1, 16, 31); return toCanvas(B);
 }
+// THE DRAIN. The causeway was built to shed a tide: a shaft down through the road under an iron grate, at the foot of the old
+// tower where the stones are whole. 26x12, and its BOTTOM row is the road's surface - the kerb stands a hand proud of the stones
+// so it is a place you can see from across the arena, and the shaft is under it. v 0 still, dark water lying in it; v 1 BOILING -
+// the water stands up white between the bars and the rust runs: he is on his way up through it.
+export function bakeDrain(boil) {
+  const W = 26, H = 12, B = buf(W, H), cx = 13, cy = 8, rx = 11, ry = 4.6;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const u = (x + 0.5 - cx) / rx, v = (y + 0.5 - cy) / ry, q = u * u + v * v;
+    if (q > 1.6) continue;
+    if (q > 1) { B.set(x, y, v < -0.2 ? ST.l : v > 0.5 ? ST.o : ST.d); continue; }   /* the kerb round the mouth, lit from above */
+    B.set(x, y, boil ? (hsh(x, y, 3) < 0.36 ? '#eefaff' : hsh(x, y, 5) < 0.5 ? '#9ad8d8' : '#4a9aa0') : v < -0.25 ? '#1e2a28' : '#0a100e'); }
+  for (const bx of [-7, -3, 1, 5]) for (let y = cy - 5; y <= cy + 5; y++) { const u = bx / rx, v = (y + 0.5 - cy) / ry; if (u * u + v * v > 1) continue;
+    B.set(cx + bx, y, ST.iron); B.set(cx + bx + 1, y, boil ? ST.rust : ST.ironL); }   /* the bars, four of them across the shaft */
+  for (let x = 1; x < W - 1; x++) if (hsh(x, 1, 7) < 0.34) { B.set(x, H - 1, ST.weedD); B.set(x, H - 2, ST.weed); }   /* the weed the tide leaves on its lip */
+  if (boil) for (const [bx, by] of [[-8, 1], [7, 2], [0, 0], [4, 1], [-4, 2]]) { B.set(cx + bx, by, '#eefaff'); B.set(cx + bx, by + 1, '#9ad8d8'); }   /* it is already coming over the kerb */
+  return outline(toCanvas(B, false), OUT);
+}
 // A WAYSIDE SHRINE: a stone box with a pitched cap and a niche, the kind a pilgrim leaves a shell in
 export function bakeWayShrine() {
   const W = 22, H = 30, B = buf(W, H);
