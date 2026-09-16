@@ -952,7 +952,22 @@ const REVIVE_D = 12;       /* how close his partner has to stand, in pixels */
 const REVIVE_T = 1.5;      /* and for how long, in seconds */
 const COOP_EDGE = 10;      /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
 const HERO_SHORT = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN' };
+/* THE SCORE COUNTS ALL FOUR: what you killed and how hard, what you picked up, what you did FOR the other one,
+   and a death against you. It is a friendly tally and nothing in the game reads it back - nobody loses a run on it. */
 const freshScore = () => ({ kills: 0, dmg: 0, coins: 0, revives: 0, turns: 0, deaths: 0 });
+const addScore = (a, b) => { for (const k in b) a[k] = (a[k] || 0) + b[k]; return a; };
+/* the one number the card sorts on: a kill and a revive are worth something, a death costs */
+const scoreOf = s => !s ? 0 : Math.round(s.kills * 10 + s.dmg * 0.5 + s.coins * 2 + s.revives * 50 + s.turns * 5 - s.deaths * 40);
+/* A BLOW TURNED FOR YOUR PARTNER. The honest test for "it would have hit them" is who it was aimed AT: if the other
+   hero was nearer the blow's origin than the one who stopped it, the one who stopped it stepped in front of it. A
+   DOWNED partner always counts - nothing else was going to stop it - and a partner across the wood never does. */
+function creditTurn(fromX) {
+  if (!coop() || !P.score) return;
+  const other = players.find(q => q !== P); if (!other) return;
+  if (Math.abs(other.x - P.x) > 110) return;
+  if (!(other.down > 0) && Math.abs(other.x - fromX) >= Math.abs(P.x - fromX)) return;
+  P.score.turns++;
+}
 players = [P]; P.n = 1; P.hero = PROG.hero || 'knight'; P.press = {}; P.score = freshScore();
 let coopFall = false;      /* a down clock ran out: read once, after the passes */
 const upright = p => !p.dead && !(p.down > 0);
@@ -976,9 +991,9 @@ function nearestHero(e) { let b = null, bd = 1e9;
 /* THE SECOND HERO JOINS, out of the same body the first one is made of, dressed in his own hero's baked frames
    and lent player one's level (heroLevel) with his own talents where the save has them. */
 function coopStart(h2, ally) {
-  players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = freshScore();
+  players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = freshScore(); players[0].total = players[0].total || freshScore();
   const p = freshBody();
-  Object.assign(p, { hero: h2, n: 2, keys: {}, press: {}, score: freshScore(), ai: !!ally, down: 0, reviveT: 0, cds: {} });
+  Object.assign(p, { hero: h2, n: 2, keys: {}, press: {}, score: freshScore(), total: freshScore(), ai: !!ally, down: 0, reviveT: 0, cds: {} });
   players = [players[0], p];
   { const wasH = PROG.hero; PROG.hero = h2; p.set = heroSet(PROG.skin, PROG.sword); PROG.hero = wasH; }
   asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; });
@@ -1090,6 +1105,65 @@ function drawCoopHud() {
   else { bar(x0 + 27, y0 + 5, 38, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
     text(String(Math.max(0, Math.ceil(p.hp))), x0 + 68, y0 + 4, '#fff6e0', 'left', 6); }
   text(fitText(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), w - 10, 6), x0 + 5, y0 + 12, UI.dim, 'left', 6);
+}
+/* THE END OF THE ROAD. Nothing after THE MAGE'S FOLLY needs anything, so the archmage's tower is the campaign's
+   last wood, and winning it in co-op is what the VICTORY card answers. */
+const CAMPAIGN_END = 'mage';
+const campaignDone = () => !!LEVELS[levelIndex] && LEVELS[levelIndex].id === CAMPAIGN_END;
+const scoreRows = s => [['foes', s.kills], ['hurt', s.dmg], ['gold', s.coins], ['revives', s.revives], ['turned', s.turns], ['deaths', s.deaths]];
+const coopName = p => (p.ai ? 'ALLY ' : p.n === 1 ? 'P1 ' : 'P2 ') + (HERO_SHORT[p.hero] || String(p.hero).toUpperCase());
+/* WHO CAME OUT AHEAD, in words. The ally is tallied but never wins: it is not a player, and losing to the
+   computer on a card you asked for company on is nobody's idea of a good evening. */
+function coopWinner(key) {
+  const a = players[0], b = players[1]; if (!b) return '';
+  const sa = scoreOf(a[key]), sb = scoreOf(b[key]);
+  if (b.ai) return 'P1 ' + (HERO_SHORT[a.hero] || a.hero) + '   ' + sa;
+  if (sa === sb) return 'A DEAD HEAT   ' + sa + ' EACH';
+  return (sa > sb ? 'P1 ' + (HERO_SHORT[a.hero] || a.hero) : 'P2 ' + (HERO_SHORT[b.hero] || b.hero)) + ' WINS   ' + Math.max(sa, sb) + ' TO ' + Math.min(sa, sb);
+}
+/* THE TWO-COLUMN TALLY on the level's win card: the same six figures for each of them, side by side, counting
+   themselves up the way the single-player card's do, with the winner named under them. */
+function coopTally(px0, pw, at, cnt) {
+  const a = players[0], b = players[1]; if (!b) return;
+  const L0 = px0 + 8, R0 = px0 + pw - 8, MID = px0 + pw / 2;
+  { const k = at(0.2); if (k > 0) { g.globalAlpha = k;
+    text(fitText(coopName(a), pw / 2 - 16, 6), L0, 60, '#8fd160', 'left', 6);
+    text(fitText(coopName(b), pw / 2 - 16, 6), R0, 60, b.ai ? '#c9a0ff' : '#8fd160', 'right', 6);
+    g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 68, pw - 12, 1); g.globalAlpha = 1; } }
+  scoreRows(a.score).forEach(([lab, av], i) => { const bv = scoreRows(b.score)[i][1], t0 = 0.3 + i * 0.12, k = at(t0); if (k <= 0) return;
+    const col = lab === 'deaths' ? '#ff6b6b' : lab === 'gold' ? '#ffd34a' : '#fff6e0';
+    g.globalAlpha = k;
+    text(lab, MID, 71 + i * 8, UI.dim, 'center', 6);
+    text(String(Math.round(cnt(t0, av))), L0, 71 + i * 8, col, 'left', 6);
+    text(String(Math.round(cnt(t0, bv))), R0, 71 + i * 8, col, 'right', 6);
+    g.globalAlpha = 1; });
+  { const k = at(1.15); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
+}
+/* THE VICTORY CARD, at the end of the campaign: the whole run's table, both columns, and the winner named. */
+function drawVictory() {
+  g.fillStyle = 'rgba(8,6,14,0.9)'; g.fillRect(0, 0, VW, VH);
+  const pw = Math.min(VW - 16, 268), px0 = Math.round((VW - pw) / 2);
+  panel(px0, 6, pw, VH - 16);
+  const a = players[0], b = players[1];
+  text('VICTORY', VW / 2, 14, UI.gold, 'center', 12);
+  text('THE ARCHMAGE IS DOWN', VW / 2, 30, UI.text, 'center', 6);   /* short on purpose: a line this card cannot fit is a line it would CUT, and the flavour has the foot of the card */
+  if (!b) { text('Z  back to the map', VW / 2, VH - 20, UI.sel, 'center', 6); return; }
+  const L0 = px0 + 8, R0 = px0 + pw - 8, MID = px0 + pw / 2;
+  text(fitText(coopName(a), pw / 2 - 16, 6), L0, 44, '#8fd160', 'left', 6);
+  text(fitText(coopName(b), pw / 2 - 16, 6), R0, 44, b.ai ? '#c9a0ff' : '#8fd160', 'right', 6);
+  g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 52, pw - 12, 1);
+  scoreRows(a.total || freshScore()).forEach(([lab, av], i) => { const bv = scoreRows(b.total || freshScore())[i][1];
+    const col = lab === 'deaths' ? '#ff6b6b' : lab === 'gold' ? '#ffd34a' : '#fff6e0', y = 56 + i * 9;
+    text(lab, MID, y, UI.dim, 'center', 6);
+    text(String(av), L0, y, col, 'left', 6);
+    text(String(bv), R0, y, col, 'right', 6); });
+  g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 111, pw - 12, 1);
+  text('score', MID, 114, UI.dim, 'center', 6);
+  text(String(scoreOf(a.total)), L0, 114, UI.gold, 'left', 6);
+  text(String(scoreOf(b.total)), R0, 114, UI.gold, 'right', 6);
+  { const s = coopWinner('total'); text(s, VW / 2, 128, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', fitSize(s, pw - 12, [12, 8, 6])); }   /* DEATH KNIGHT is a long name: the line drops a size rather than losing its end */
+  text('the wood is quieter for the two of you', VW / 2, 148, UI.dim, 'center', 6);
+  if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, VH - 18, UI.sel, 'center', 6);
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
@@ -2319,6 +2393,7 @@ function startGame() {
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
      Nothing is ever armed in single player, so players stays one long and this line is the only thing that happened. */
   if (coopWant && L && !L.trial && !L.shop && !rushOn()) coopStart(coopWant.hero, coopWant.ally); else if (coop()) coopEnd();
+  for (const p of players) p.score = freshScore();   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
   state = 'play'; levelTime = 0; deaths = 0; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
@@ -2371,6 +2446,7 @@ let winLevelUp = false, medalPurse = 0;
 const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
 function winLevel() {
+  for (const p of players) p.total = addScore(p.total || freshScore(), p.score);   /* this wood goes onto the run's running total, for the victory card */
   fogSave();
   PROG.done = PROG.done || {};
   const firstWalk = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it pays its share like any other */
@@ -3932,6 +4008,7 @@ function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH 
   return { pan: Math.max(-0.7, Math.min(0.7, dx / (VW * 0.75))), v: d <= near ? 1 : Math.max(big ? 0.6 : 0.18, 1 - (d - near) / (VW * 0.9)) }; }
 // the player's own sounds are never placed: whatever hurts them, the cry is theirs
 function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const r = damagePlayer0(fromX, dmg, o);
+  if (r === 'blocked') creditTurn(fromX);   /* and whether that was a blow turned for the PARTNER (the co-op block) */
   /* THE AUDITS' EAR (tools/audit-*.mjs): when a tool has set BK.log to an array, every blow on the hero is written down with the line it came from. Off (null) in play; it changes nothing. */
   if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgP', fromX, dmg, res: r, t: time, who: o && o.who ? o.who.t : null, blow: o && o.blow || null, unblockable: !!(o && o.unblockable), stack: new Error().stack });
   return r; } finally { emitAt(was); } }
@@ -4323,7 +4400,11 @@ function hazardFoe(e) {
   if (!why) return false;
   number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
 }
-function hurtEnemy(e, dmg, fromX, plunge) { const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, r = hurtEnemy0(e, dmg, fromX, plunge);
+function hurtEnemy(e, dmg, fromX, plunge) { const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, alive0 = e.alive, r = hurtEnemy0(e, dmg, fromX, plunge);
+  /* WHOSE BLOW IT WAS. During a hero's pass P is that hero, so the damage and the kill go on HIS tally; outside a
+     pass there is only ever one hero to mean. A burn or a bleed is booked to whoever lit it, which is right, and a
+     creature killed by the room while a hero stands near it pays him the compliment, which is a friendly tally. */
+  if (P.score) { P.score.dmg += Math.max(0, hp0 - e.hp); if (alive0 && !e.alive) P.score.kills++; }
   if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgE', t: e.t, e, dmg, fromX, plunge: !!plunge, hp0, hp: e.hp, alive: e.alive, poise0: po0, poise: e.poise || 0, broken: e.broken || 0, atk: P.atk, heavy: !!P.heavy, combo: P.combo, swingKind: P.swingKind || null, stop, shake, kick, time, stack: new Error().stack });   /* (the audits' ear: see damagePlayer) */
   return r; } finally { emitAt(was); } }
 function hurtEnemy0(e, dmg, fromX, plunge) {
@@ -6009,7 +6090,7 @@ function updatePlayer(dt) {
   for (const a of acorns) {
     if (a.got) continue;
     if (a.vy !== undefined) { a.vy += 400 * dt; a.y += a.vy * dt; const ty = Math.floor((a.y + 3) / TS); if (isSolid(Math.floor(a.x / TS), ty)) { a.y = ty * TS - 3; a.vy = 0; } }
-    if (Math.abs(a.x - P.x) < 10 && Math.abs(a.y - (P.y - 7)) < 12) { a.got = true; got++;
+    if (Math.abs(a.x - P.x) < 10 && Math.abs(a.y - (P.y - 7)) < 12) { a.got = true; got++; if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) { gainPlunder(4); if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) P.st = Math.min(P.maxSt, P.st + 6); if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   for (const s of shrines) if (!s.lit && Math.abs(s.x - P.x) < 12 && Math.abs(s.y - P.y) < 20) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
@@ -13417,7 +13498,7 @@ function updateSentry(e, dt) {
 // the shaman. (The sword is no use up here: both hands are on the kite. The roll is a dart.)
 let flight = null;
 const freeAt = (x, y) => { for (let ty = Math.floor((y - 13) / TS); ty <= Math.floor((y - 1) / TS); ty++) for (let tx = Math.floor((x - 5) / TS); tx <= Math.floor((x + 5) / TS); tx++) if (isSolid(tx, ty)) return false; return true; };
-function collectAcorn(a) { a.got = true; got++; if (tal('pieces') && got % 8 === 0) { got += 9; number(a.x, a.y - 14, 'PIECES OF EIGHT', '#ffd36b'); SFX.coinUp(10); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
+function collectAcorn(a) { a.got = true; got++; if (P.score) P.score.coins++; if (tal('pieces') && got % 8 === 0) { got += 9; number(a.x, a.y - 14, 'PIECES OF EIGHT', '#ffd36b'); SFX.coinUp(10); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
 function startFlight(pr) {
   const F = L.flight; if (!F || flight) return;
   flight = { cx: camX, cy: camY, lift: 1.3, F }; P.fly = true;
@@ -16091,7 +16172,9 @@ function update(dt) {
     updateParticles(dt);
     return;
   }
-  if (state === 'win') { if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (coop() && campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play(menuTrack()); } else { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
+  if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
   if (!updateWarp(dt)) { clearPresses(); return; }
   if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
@@ -19280,6 +19363,7 @@ function render() {
   if (state === 'herocard') drawHeroCard();
   if (state === 'heropick') drawHeroPick();
   if (state === 'coop') drawCoopPick();
+  if (state === 'victory') drawVictory();
   if (state === 'rushover' || state === 'rushwin') {
     const won = state === 'rushwin', col = won ? '#ffd36b' : '#ff6b6b';
     g.fillStyle = won ? 'rgba(24,20,8,0.8)' : 'rgba(30,8,10,0.78)'; g.fillRect(32, 34, VW - 64, 112);
@@ -19313,15 +19397,20 @@ function render() {
     const cnt = (t0, v) => v * Math.max(0, Math.min(1, (wt - t0) * 2.4));
     const line = (t0, str, y, col, size = 8) => { const k = at(t0); if (k <= 0) return; g.globalAlpha = k; text(str, VW / 2, y + Math.round((1 - k) * 5), col, 'center', size); g.globalAlpha = 1; };
     const pw = Math.min(VW - 16, 264), px0 = Math.round((VW - pw) / 2);
-    panel(px0, 26, pw, 130);
-    line(0, fitText(L.trial ? 'THE TRIAL IS DONE' : L.arena ? (BOSS_FELL[L.arena.boss] || 'THE ROAD IS CLEAR') : 'THE GATE OPENS', pw - 12, 12), 38, UI.title, 12);
-    line(0.30, 'time     ' + fmt(cnt(0.30, levelTime)), 64, '#fff6e0');
+    panel(px0, coop() ? 24 : 26, pw, coop() ? 132 : 130);
+    line(0, fitText(L.trial ? 'THE TRIAL IS DONE' : L.arena ? (BOSS_FELL[L.arena.boss] || 'THE ROAD IS CLEAR') : 'THE GATE OPENS', pw - 12, 12), coop() ? 34 : 38, UI.title, 12);
+    /* IN CO-OP THE MIDDLE OF THE CARD IS A TWO-COLUMN TALLY (coopTally): the run's figures for each of them, and
+       the winner under it. The gold line goes with it, because the purse is the save's and the tally says who
+       bent down for each coin, which is a different question and the only one worth two columns. */
+    line(0.30, 'time     ' + fmt(cnt(0.30, levelTime)), coop() ? 50 : 64, '#fff6e0');
+    if (coop()) coopTally(px0, pw, at, cnt);
+    else {
     line(0.55, 'gold     ' + Math.round(cnt(0.55, got)) + ' / ' + total + '   +' + Math.round(cnt(0.55, earned)) + ' purse', 77, '#ffd34a');
     line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
     line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
-    line(1.20, 'deaths   ' + deaths, 116, '#fff6e0');
+    line(1.20, 'deaths   ' + deaths, 116, '#fff6e0'); }
     { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' : xpRun > 0 ? '+' + xpRun + ' XP   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
-      if (s) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }
+      if (s && !coop()) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     { const id = LEVELS[levelIndex].id, m = medalFor(id, medalTime());
