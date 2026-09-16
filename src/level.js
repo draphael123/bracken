@@ -6756,13 +6756,16 @@ function theMagesFolly() {
   interiors.push([263, 379, 22, G - 1, 'lab']);
   ent('check', 266, G - 1); deco('cauldron', 269, G - 1);
   sign(268, G - 1, 'THE ALCHEMY LAB. THE VATS BURN. A SPITTER BUBBLES FIRST: THE SHIELD TURNS ITS GOB.');
-  /* THE VATS: acid set into the floor, and a spitter on the rim of each */
+  /* THE VATS: acid set into the floor, and a spitter on the rim of each. Every vat is crossed on something standing in it,
+     never on a jump the slowest legs in the game only just make (the paladin's running jump is 3.6 tiles, the Warden's 4) */
   air(273, 276, G, G + 3); pools.push({ x0: 273 * TS, x1: 277 * TS, y: G * TS + 6, bottom: (G + 3) * TS, swim: true, clear: true, harm: true, foulCol: '#4a1e6a', wash: 0.5, acid: true });
+  block(274, 275, G - 2, G + 3);   /* THE STILL'S FIREBOX, standing up out of the first vat: a one-tile hop up onto it, two rows, and one off */
   ent('vatspit', 278, G - 1);
   air(283, 290, G, G + 3); pools.push({ x0: 283 * TS, x1: 291 * TS, y: G * TS + 6, bottom: (G + 3) * TS, swim: true, clear: true, harm: true, foulCol: '#4a1e6a', wash: 0.5, acid: true });
-  plat(286, G - 3, 2); chain(286, 22, G - 3); chain(287, 22, G - 3); /* a retort shelf hung over the second vat */
+  block(284, 285, G - 2, G + 3);   /* the second vat's firebox, a tile out from the rim */
+  plat(288, G - 2, 2); chain(288, 22, G - 2); chain(289, 22, G - 2); /* a retort shelf hung over the far half of the vat, level with the firebox: two tiles across to it, one tile off it onto the floor */
   ent('vatspit', 281, G - 1); ent('vatspit', 292, G - 1);
-  coins([274, G - 3], [286, G - 5], [289, G - 3]);
+  coins([274, G - 4], [287, G - 4], [289, G - 3]);
   /* THE BENCH: jars, and the imps that were in them */
   ent('check', 295, G - 1);
   deco('bench', 299, G - 1); deco('jars', 304, G - 1); deco('retorts', 310, G - 1);
