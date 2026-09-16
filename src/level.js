@@ -6699,6 +6699,7 @@ function theMagesFolly() {
   air(102, 108, G - 9, G - 7);                                       /* THE BREACH, at the wall walk's height: three rows, walked straight through */
   block(96, 97, G - 2, G - 1); block(98, 99, G - 4, G - 1); block(100, 101, G - 6, G - 1);   /* the fallen buttress: two rows a step (rule E4) */
   ent('check', 114, G - 1);
+  ent('imp', 112, G - 5, { face: -1 }); ent('topiary', 117, G - 1, { face: -1 });   /* an imp over the lamp, waiting for whoever comes down the rope, and the last hedge beast at the tower door */
   coins([97, G - 3], [99, G - 5], [104, G - 8], [106, G - 8]);
   deco('ivyWall', 100, G - 1); deco('lamppost', 116, G - 1);
 
@@ -6738,7 +6739,9 @@ function theMagesFolly() {
   plat(206, G - 10, 8); block(206, 213, G - 9, G - 9); chain(207, 14, G - 10); chain(212, 14, G - 10);
   coins([191, G - 13], [197, G - 14], [203, G - 13], [211, G - 12], [212, G - 12], [213, G - 12]);
   ent('stray', 190, 16, { kind: 'lens' }); plat(189, 17, 3);        /* the lens in the stacks: on a rafter ledge, up a rope from the gallery's end (or a bat that lets go of the roof) */
-  ent('armour', 192, G - 1, { face: -1 }); ent('armour', 200, G - 1, { face: 1 }); ent('broom', 196, G - 1, { face: -1 }); ent('haunt', 205, G - 6, { face: -1 }); ent('bat', 196, 18); ent('imp', 198, G - 6, { face: 1 }); ent('imp', 168, G - 9, { face: 1 });
+  /* THE FLOOR UNDER IT: one armour and its broom, and a haunt at the far gallery's foot. It had two armours, a broom, a haunt and
+     an imp over them, with the roof's turret and bat in the same twenty columns: a fall off a shelf landed in nine */
+  ent('armour', 196, G - 1, { face: -1 }); ent('broom', 201, G - 1, { face: 1 }); ent('haunt', 205, G - 6, { face: -1 }); ent('bat', 196, 18); ent('imp', 168, G - 9, { face: 1 });
   deco('bookpile', 189, G - 1); deco('globe', 204, G - 1); deco('candelabra', 198, G - 1);
   coins([176, G - 10], [180, G - 12], [184, G - 12], [193, G - 2], [201, G - 2], [208, G - 12]);
   /* THE READING ROOM (the ambush): a quiet room of tables until it shuts */
@@ -6769,7 +6772,7 @@ function theMagesFolly() {
   /* THE BENCH: jars, and the imps that were in them */
   ent('check', 295, G - 1);
   deco('bench', 299, G - 1); deco('jars', 304, G - 1); deco('retorts', 310, G - 1);
-  ent('imp', 301, G - 1, { face: -1 }); ent('mimic', 307, G - 1); ent('imp', 313, G - 1, { face: -1 }); ent('armour', 317, G - 1, { face: -1 }); ent('haunt', 296, G - 6, { face: -1 }); ent('bat', 310, 24); ent('broom', 304, G - 4, { face: -1 }); ent('imp', 280, G - 6, { face: -1 }); ent('broom', 290, G - 5, { face: -1 });   /* a cleaver nobody is holding, and what roosts in the pipes */
+  ent('imp', 301, G - 1, { face: -1 }); ent('mimic', 307, G - 1); ent('armour', 317, G - 1, { face: -1 }); ent('haunt', 296, G - 6, { face: -1 }); ent('bat', 310, 24); ent('imp', 280, G - 6, { face: -1 });   /* a cleaver nobody is holding, and what roosts in the pipes. One imp out of the jars, not two, and no brooms: the bench is the mimic's, and the vats behind it are enough to be going on with */
   /* THE ROTTEN BOARDS: the floor over the cellar gave way years ago and was never mended. Press down and go through */
   sign(319, G - 1, 'THE BOARDS OVER THE WINE CELLAR ARE ROTTEN. PRESS DOWN ON THEM AND GO THROUGH.');
   ent('check', 325, G - 1);
@@ -6782,10 +6785,12 @@ function theMagesFolly() {
   sign(330, G + 6, 'THE WAY BACK UP IS THE CELLAR ROPE, AT THE FAR END PAST THE RACKS.');
   air(333, 334, G, G + 1);                                           /* the cellar's shaft up into the still room's floor: the rope is hung in it last */
   coins([312, G + 4], [316, G + 4], [320, G + 4], [324, G + 4], [328, G + 4]);
-  /* THE STILL ROOM: the plate that opens the grating, and only a stone man is heavy enough to hold it */
+  /* THE STILL ROOM: the counterweight that opens the grating, struck and then run for */
   ent('check', 346, G - 1);
   sign(348, G - 1, 'STRIKE THE COUNTERWEIGHT AND THE GRATING RUNS UP. IT STAYS UP A LITTLE AFTER: RUN.');
   weight(356, G - 1, 363);
+  ent('armour', 351, G - 1, { face: 1 });   /* one of the orrery floor's armours, moved down to stand at the counterweight: the run to the grating stays clear */
+  ent('haunt', 360, G - 6, { face: -1 }); ent('broom', 342, G - 4, { face: 1 });   /* a haunt in the still's steam over the grating's side, and a broom at the still room's door */
   for (let y = G - 4; y <= G - 1; y++) set(363, y, T.PORT);         /* the grating */
   deco('still', 359, G - 1);
   ent('check', 370, G - 1);
@@ -6799,9 +6804,13 @@ function theMagesFolly() {
   air(383, 498, 6, G - 1); air(381, 382, 36, G - 1);               /* the chamber, and its door from the lab */
   interiors.push([383, 498, 6, G - 1, 'orrery']);
   ent('check', 386, G - 1); deco('orreryBase', 420, G - 1);
+  ent('broom', 390, G - 4, { face: 1 });                             /* one of the three brooms the elite's floor had, sweeping the door instead */
   sign(388, G - 1, 'THE ORRERY. THE PLANETS TURN ON THEIR ARMS. RIDE THEM UP: THE DOOR OUT IS AT THE TOP.');
   /* THE FLOOR: the base of the great model, and what guards it */
-  ent('imp', 396, G - 1, { face: -1 }); ent('armour', 408, G - 1, { face: -1 }); ent('imp', 428, G - 1, { face: -1 }); ent('armour', 432, G - 1, { face: -1 }); ent('haunt', 416, G - 7, { face: -1 }); ent('broom', 412, G - 4, { face: 1 }); ent('armour', 418, G - 1, { face: -1 }); ent('armour', 404, G - 1, { face: -1 }); ent('imp', 424, G - 6, { face: -1 }); ent('bat', 452, 10); ent('bat', 440, 12);
+  /* THE GILDED ARMOUR HAS THE FLOOR TO ITSELF. It stood shoulder to shoulder with three more armours, three brooms and a turret
+     in one screen (882 health): the elite is a fight, and a fight needs the room to back off in. An imp at the door, the
+     turret on its ring, a haunt, and the plain armour at the far end where the planets start */
+  ent('imp', 394, G - 1, { face: -1 }); ent('armour', 408, G - 1, { face: -1 }); ent('armour', 434, G - 1, { face: -1 }); ent('haunt', 420, G - 7, { face: -1 }); ent('bat', 452, 10); ent('bat', 440, 12);
   plat(400, G - 6, 3); chain(400, 6, G - 6); chain(402, 6, G - 6); ent('turret', 401, G - 7);   /* a turret on a hung brass ring */
   coins([394, G - 2], [404, G - 8], [412, G - 2], [424, G - 2]);
   /* THE PLANETS: three hubs, each carrying two worlds round; a step up to the first, and a brass ledge under each hub's low point */
@@ -6814,6 +6823,7 @@ function theMagesFolly() {
   planet(465, 15, 56, 10, 2);
   plat(469, 11, 6); block(469, 474, 12, 12);                         /* the balcony */
   ent('check', 471, 10);
+  ent('haunt', 474, 8, { face: -1 });                                /* a haunt under the dome at the balcony's end, over the brackets */
   ent('stray', 466, 8, { kind: 'lens' }); plat(465, 9, 3);         /* the lens up the orrery: on a bracket over the far planet's arc */
   ent('broom', 450, 14, { face: -1 }); ent('broom', 462, 24, { face: 1 });
   coins([445, 26], [448, 27], [456, 17], [460, 18], [466, 5], [472, 10]);
@@ -6865,6 +6875,7 @@ function theMagesFolly() {
   air(593, 700, 2, F - 1); air(590, 592, 12, F - 1);              /* the dome, and the way in from the corridor */
   interiors.push([593, 700, 2, F - 1, 'dome']);
   ent('check', 595, F - 1); deco('telescope', 604, F - 1);
+  ent('imp', 603, F - 6, { face: -1 }); ent('armour', 600, F - 1, { face: -1 });   /* one of the bench's imps, got as far as the telescope, and an armour set to watch it */
   sign(597, F - 1, 'THE OBSERVATORY. HIS DOOR IS AT THE END, PAST A CLIMB, A CROSSING AND THE LAST WEIGHT.');
   /* THE CLIMB: the stacks he shifted to get at the telescope make a stair over the standing grating */
   block(605, 606, F - 2, F - 1); block(607, 608, F - 4, F - 1); block(609, 610, F - 6, F - 1);
@@ -6879,8 +6890,9 @@ function theMagesFolly() {
   ent('check', 636, F - 1);
   weight(642, F - 1, 649);
   for (let y = F - 4; y <= F - 1; y++) set(649, y, T.PORT);
-  ent('check', 654, F - 1);
+  ent('check', 654, F - 1); ent('broom', 634, F - 4, { face: -1 });   /* a broom off the crossing's last bracket, clear of the grating run */
   ent('imp', 645, F - 1, { face: -1 }); ent('broom', 598, F - 4, { face: -1 }); ent('bat', 630, 3);
+  ent('haunt', 601, F - 9, { face: -1 }); ent('armour', 639, F - 1, { face: 1 });   /* a haunt up in the telescope's dome, and an armour at the last weight, the way the still room has one at the first */
   coins([602, F - 2], [621, F - 3], [627, F - 3], [644, F - 2], [651, F - 2]);   /* (609 is inside the stair now: its gold is on the steps above) */
   deco('starChart', 620, 2, { hang: true }); deco('candelabra', 640, F - 1);
 
@@ -6917,7 +6929,7 @@ function theMagesFolly() {
     mini: { x0: 238 * TS, x1: 262 * TS, floor: G * TS, y0: (G - 12) * TS, y1: (G + 1) * TS, trigger: 242 * TS, wallL: 237, gate: 262, boss: 'homunculus', name: 'THE HOMUNCULUS' },
     ambushes: [{ name: 'THE READING ROOM', row: G - 1, wallL: 218, wallR: 234, check: false, waves: [[['broom', 222], ['broom', 231], ['armour', 226]], [['armour', 221], ['imp', 230, G - 6], ['broom', 226], ['broom', 232]]] }],
     noCoin: [[118, 262, 0, 13], [263, 380, 0, 21], [102, 108, 0, 23], [381, 500, 0, 5]],   /* the tower's roofs and the gatehouse top: the sprinkler treats an assisted level as all reachable */
-    calm: [[0, 18, 0, 47], [20, 32, 0, 47], [66, 77, 30, 38], [96, 124, 0, 47], [144, 158, 0, 47], [176, 190, 26, 47], [205, 214, 26, 47], [233, 264, 0, 47], [318, 346, 0, 47], [362, 372, 0, 47], [436, 502, 0, 47], [501, 590, 0, 47], [591, 656, 0, 47]],   /* no garrison on the fonts, the lanes, the flipped floor or the test room */
+    calm: [[0, 18, 0, 47], [20, 32, 0, 47], [66, 77, 30, 38], [96, 124, 0, 47], [144, 158, 0, 47], [176, 214, 26, 47], [233, 264, 0, 47], [290, 318, 22, 47], [318, 346, 0, 47], [362, 372, 0, 47], [386, 436, 30, 47], [436, 502, 0, 47], [501, 590, 0, 47], [591, 656, 0, 47]],   /* no garrison on the lanes, the flipped floor or the test room, nor on the three floors thinned by hand (the stacks' crossing, the bench, the gilded armour's) */
     arena: { x0: 657 * TS, x1: 700 * TS, floor: F * TS, y0: 0, trigger: 662 * TS, wallL: 656, wallR: 700, boss: 'archmage', music: 'boss4', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
   };
 }
