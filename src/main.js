@@ -9758,6 +9758,11 @@ function krakenHurt(e, dmg, fromX, plunge) {
   else { SFX.clank(); sparks(fromX, e.y - 10, Math.sign(e.x - fromX) || 1, 3); return false; }   /* nothing of it is out of the water to cut */
   let d = Math.max(1, Math.round(dmg * mul));
   if (e.stage < 3) d = Math.max(0, Math.min(d, e.hp - e.stageFloor));
+  /* AND HE ONLY COMES UP TO LOOK. The drain is worth one good cut, KRK_WELL_TAKE of him, and once he has taken it he flinches back
+     down the shaft whatever is left of the second. Without this the drain paid by the weight of the blade, not by the read: the
+     paladin's two-handed swings took 135 out of three surfacings against the knight's 76, and her whole second stage fell to the grate */
+  if (m === 'well') { const left = Math.max(0, Math.round(e.maxHp * KRK_WELL_TAKE) - (e.wellTaken || 0)); d = Math.min(d, left); e.wellTaken = (e.wellTaken || 0) + d;
+    if (d > 0 && e.wellTaken >= Math.round(e.maxHp * KRK_WELL_TAKE)) { e.modeT = Math.min(e.modeT, 0.2); e.wellWant = 0; } if (d <= 0) { SFX.clank(); return false; } }
   return d;
 }
 const A0y = K => L.arena ? L.arena.floor : K.y;
@@ -9821,6 +9826,7 @@ const KRK_CRATE_MAX = 4;       /* and never more than four standing: past four t
    second stage fell to the drain alone, 95s to 43s, with the cargo untouched. An opening is a punctuation mark (rule A5). */
 const KRK_WELL_EVERY = 17;
 const KRK_WELL_OPEN = 1.4;     /* up, and gone again */
+const KRK_WELL_TAKE = 0.035;   /* the most one surfacing can cost him, as a share of him: a good cut or two, and he is gone */
 let KRK_CARGO = true;          /* BK.krakCargo(false) makes the LAB'S BOT walk past the cargo - the run the crate route has to beat. It changes nothing a player can do */
 /* IT COMES IN ON THE FLOOD, not out of his arm: three to eight stones off the hero, never on his own stone, never on the drain, in a
    break, on a bell or on a waystone (krakenFreeCol). It throws no blow and wears no mark - it thumps down, and then it is footing */
@@ -10116,7 +10122,7 @@ function updateKraken(e, dt) {
        then the mantle and the eye come up through the bars - out of the water, open to the blade - and go back down. */
     case 'wellTell': { e.wellWant = 0;
       if (Math.random() < dt * 50) parts.push({ x: A.drain + (Math.random() - 0.5) * 22, y: fl - 2, vx: (Math.random() - 0.5) * 30, vy: -50 - Math.random() * 70, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#eefaff' : '#9ad8d8', size: 1, grav: 150 });
-      if (e.modeT <= 0) { e.mode = 'well'; e.modeT = KRK_WELL_OPEN; e.wellWant = 1; krakenSplash(A.drain, fl, 22); SFX.boreRoar(); SFX.splash(); shakeCam(9); zoomKick(1.06, 0.3);
+      if (e.modeT <= 0) { e.mode = 'well'; e.modeT = KRK_WELL_OPEN; e.wellWant = 1; e.wellTaken = 0; krakenSplash(A.drain, fl, 22); SFX.boreRoar(); SFX.splash(); shakeCam(9); zoomKick(1.06, 0.3);
         /* AND WHOEVER IS STANDING ON THE GRATE IS SHOVED CLEAR OF IT: it comes up where the grate is, and it never comes up through a hero */
         if (!P.dead && Math.abs(P.x - A.drain) < 18 && P.y > fl - 22) { P.vy = -220; P.vx = (Math.sign(P.x - A.drain) || -1) * 190; P.ground = false; SFX.splash(); } } break; }
     case 'well': e.wellWant = e.modeT > 0.4 ? 1 : 0;
