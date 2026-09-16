@@ -1694,30 +1694,45 @@ export function bakeReaper(skin = {}) {
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
   return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
 }
-// THE WARDEN — the knight's rig in green wool and worn leather, under a hood instead of a helm, and a spear.
-// She keeps everything at the end of it, so every pose is built round WHERE THE POINT IS: stood upright at her
-// side at rest, levelled at a run, driven out past the frame the other heroes live in when she thrusts (`wide`).
-// Her silhouette at sixteen pixels is a small dark body with one long bright line through it - that line is the hero.
+// THE WARDEN — THE CLOAKED WARDEN. A long cloak and a wide-brimmed hat, and a spear.
+// SHE WAS THE KNIGHT WITH A LONGER STICK. Drawn on his rig under a hood, at sixteen pixels she was his
+// silhouette exactly - the same square helm, the same square body - and the only thing telling the two of
+// them apart was the line of the spear, which is the ONE part of her a crowded screen paints over. So the
+// read is moved off the weapon and onto the body: a BRIM wider than her shoulders, a CROWN standing over it,
+// and a CLOAK that falls past her knees and hides the legs every other hero in this game runs on. Nothing
+// else in the cast is a bell with a bar across the top of it, and that shape arrives before the spear does.
+// Every pose is still built round WHERE THE POINT IS - stood upright at her side at rest, levelled at a run,
+// driven out past the frame the others live in when she thrusts (`wide`) - but the point no longer has to
+// carry the introduction on its own.
 const WARD_BODY = [
-  '..SSSS....',
-  '.rssssrS..',
-  'rSsssssS..',
-  '.SsvvvvS..',
-  '.SssssSS..',
-  '..SSSS....',
-  '.BbbbbB...',
-  'SBbyybBS..',
-  'SBbbbbBS..',
-  '.BbbbbB...',
-  '.wwwwww...',
+  '...BBBB...',     /* 0  the crown of the hat */
+  '..BBBBBB..',     /* 1 */
+  '.rrrrrrrr.',     /* 2  the cord round it */
+  'BBBBBBBBBBBB',   /* 3  THE BRIM, twelve across where her shoulders are ten, and carried forward: a hat pulled down over the eyes */
+  '..vvvvvv..',     /* 4  her face, in the brim's shadow: she is a hat and a jaw */
+  '...kkk....',     /* 5  the jaw, the one lit part of her */
+  '.BbbbbB...',     /* 6  the cloak, off the shoulders */
+  'BBbbbbbBB.',     /* 7 */
+  'BBbbbbbBB.',     /* 8 */
+  'BBbbbbbBB.',     /* 9 */
+  /* AND ON PAST THE BELT. These three rows land on the same courses as the legs and are drawn BEFORE them, so the
+     boots walk over the top of the cloth and the hem only shows where they are not - which is what a long cloak
+     does. It is also why the hem is drawn WIDER than any stride: the flare either side of the legs is the whole
+     silhouette at sixteen pixels, and a hem no wider than the boots would have been a pair of trousers. */
+  'BBbbbbbBB.',     /* 11 */
+  'BBbbbbbBB.',     /* 12 */
+  '.BBBBBBB..',     /* 13  the weighted edge of it */
 ];
-// the hood's tail, lifting and falling behind her
+/* the crown and the cord, breathing: the hat leans, and the cord's end lifts behind her */
 const WARD_PLUME = [
-  ['..SSSS....', '.rssssrS..', 'rSsssssS..'],
-  ['..SSSS....', '.rssssrS..', '.SsssssS..'],
-  ['.rSSSS....', 'rrssssrS..', 'rSsssssS..'],
+  ['...BBBB...', '..BBBBBB..', '.rrrrrrrr.'],
+  ['...BBBB...', '..BBBBBB..', '.rrrrrrrrr'],
+  ['..BBBB....', '.BBBBBB...', '.rrrrrrrr.'],
 ];
-const WARD_PAL = { s: '#b8c2cc', S: '#6a737e', b: '#3f6e4a', B: '#24422c', r: '#c9b27c', k: '#f1c9a0', w: '#6a4a2a', W: '#402a16', y: '#e0b040', v: '#2a2f3d' };
+/* THE CLOAK AND THE HAT ARE THE SAME CLOTH, so both are keyed `b`/`B` - the two keys every one of her skins
+   sets (WARD_SETS in main.js). Keying them to anything of their own would have left eighteen skins recolouring
+   a spear and a pair of boots while the whole of the rest of her stayed green. */
+const WARD_PAL = { s: '#b8c2cc', S: '#6a737e', b: '#3f6e4a', B: '#1d3524', r: '#c9b27c', k: '#d8ac82', w: '#6a4a2a', W: '#402a16', y: '#e0b040', v: '#221c28' };
 export function bakeWarden(skin = {}) {
   KP = Object.assign({}, KP0, WARD_PAL, skin); BODY_REF = WARD_BODY; PLUME_REF = WARD_PLUME;
   const sh = [BX + 8, BY + 7];
@@ -1765,20 +1780,33 @@ export function bakeWarden(skin = {}) {
       arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1 + i],
       spear: [sh[0] - 4, sh[1] + 6 + i, 46, sh[1] - 1 + i] })),
   };
-  /* THE SPINNING SHAFT (her held heavy): she takes it round her at arm's length - behind, level through the front,
-     and on round low - so it comes at everything on both sides of her, and it is the haft doing the work, not the point. */
+  /* THE RUN-THROUGH (her held heavy). The spinning shaft is gone - the owner did not like it, and it was the haft
+     doing the work on a hero whose whole rule is the point. This is a WOUND-UP LUNGING THRUST instead: she coils
+     over the back foot, then drives the whole body behind the spear and puts it through everything standing in a
+     line. Three beats - the coil, the drive, the full stretch - and the point on the last of them is at SIXTY-FOUR
+     on the canvas, which is forty-eight pixels of world: three tiles, and the number the attack box is cut to.
+     It needs a wider frame than the rest of her (WIDE_H), because at full stretch she is longer than she is tall. */
+  const WIDE_H = 38;
   F.heavy = [
-    knightFrame({ wide: WIDE, dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 1], spear: [sh[0] + 4, sh[1] + 4, sh[0] - 14, sh[1] - 4], plume: 2 }),
-    knightFrame({ wide: WIDE, dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 2], spear: [sh[0] - 10, sh[1] - 3, 44, sh[1] - 3], plume: 1 }),
-    knightFrame({ wide: WIDE, dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], spear: [sh[0] - 8, sh[1] + 8, 40, sh[1] + 2], plume: 0 }),
+    knightFrame({ wide: WIDE_H, dx: -3, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 2], spear: [sh[0] - 6, sh[1] + 3, sh[0] + 6, sh[1] - 1], plume: 2 }),
+    knightFrame({ wide: WIDE_H, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], spear: [sh[0] + 1, sh[1] + 1, 52, sh[1] + 1], plume: 1 }),
+    knightFrame({ wide: WIDE_H, dx: 4, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 7, sh[1] + 1], spear: [sh[0] + 5, sh[1] + 1, 64, sh[1] + 1], plume: 0 }),
   ];
-  F.brace = F.heavy[0];                                   /* the wind-up of the spin, which the draw asks for by that name */
+  /* THE BRACE is its own pose now and not the spin's wind-up: the heel down, the point levelled, her weight behind it. */
+  F.brace = knightFrame({ wide: WIDE, dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], spear: [sh[0] - 4, sh[1] + 6, 46, sh[1] - 1] });
   /* THE POLE VAULT: the heel planted behind her, the haft raked back and dead straight, and her whole body swung up
      the outside of it. The shaft is the read here - it runs from under her boots down and back to the ground she
      left - so it is given its full length, not tucked against her where it measured four pixels wide and said nothing. */
   F.vault = [
     knightFrame({ dx: 2, dy: -4, legs: 'jump', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 3], spear: [sh[0] - 4, sh[1] + 5, sh[0] - 15, sh[1] + 17], plume: 1 }),
     knightFrame({ dx: 4, dy: -8, legs: 'jump2', arm: [sh[0], sh[1], sh[0] - 5, sh[1] + 5], spear: [sh[0] - 6, sh[1] + 8, sh[0] - 17, sh[1] + 22], plume: 2 }),
+  ];
+  /* THE PIN. The plunge does not bounce her off any more: the point goes THROUGH the thing and holds it on the floor,
+     and she stays down over the haft with both hands on it while she decides. Two beats, because standing on the end of
+     a spear is a choice she is making and not a frame she is passing through: the drive home, and the weight leant on it. */
+  F.pin = [
+    knightFrame({ dy: 2, legs: 'crouch', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] + 16], plume: 1 }),
+    knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 6], spear: [sh[0] + 3, sh[1] - 2, sh[0] + 4, sh[1] + 17], plume: 0 }),
   ];
   /* HER DODGE IS A HOP BACKWARD, not a tumble: she gives ground with the point still up, so a foe she left behind
      is at the end of the spear again by the time she lands. Four beats of one small backward leap. */
@@ -1814,9 +1842,12 @@ export function bakeWarden(skin = {}) {
   /* THE STRAIGHT-UP THRUST, for whatever is over her: she is the one hero the flyers cannot sit above */
   F.cast = [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4],
     spear: [sh[0] + 2, sh[1] + 4, sh[0] + 3, sh[1] - 16 + i] }));
-  /* VIGIL SPENT: the spear levelled in both hands and held there, and the thrusts that follow go through a whole line */
-  F.blast = [knightFrame({ wide: WIDE, legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 2], spear: [sh[0] - 6, sh[1] - 2, 47, sh[1] - 2], glow: [sh[0] + 2, sh[1] - 4] }),
-    knightFrame({ wide: WIDE, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 1], spear: [sh[0] - 2, sh[1] - 1, 57, sh[1] - 1], glow: [sh[0] + 6, sh[1] - 3] })];
+  /* THE PHALANX (a full VIGIL, spent). She does not level the spear any more - the old pierce buff was four and a half
+     seconds of a number nobody could see. She PLANTS it: up in both hands, then driven straight down through the turf at
+     her feet, and the row of spears comes up out of the ground away from her. The pose is the cause, and what the player
+     watches is the line of points erupting across the room, which is drawn in the world and not on her. */
+  F.blast = [knightFrame({ wide: WIDE, dy: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 5], spear: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] - 18], glow: [sh[0] + 2, sh[1] - 6] }),
+    knightFrame({ wide: WIDE, dy: 2, legs: 'crouch', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 6], spear: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 6], glow: [sh[0] + 3, sh[1] + 9] })];
   /* HER FIDGET: the spear taken off the ground, turned once in her hands to look down the haft, the point sighted
      along at arm's length, and set back in the turf. A woman checking a shaft she has carried a long way. */
   { const lift = knightFrame({ arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], spear: [sh[0] + 3, sh[1] - 1, sh[0] + 4, sh[1] - 15], plume: 1 });
