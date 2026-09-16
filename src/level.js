@@ -4365,15 +4365,15 @@ function theHurricane() {
   ent('check', 96, 19);
   coins([64, 18], [76, 18], [90, 18], [104, 18], [66, 10], [82, 10], [106, 11], [58, 18], [70, 18], [84, 18], [98, 18], [112, 18], [74, 10], [94, 25], [78, 25], [110, 25]);
 
-  // ================= 3. THE BREACH: she is open to the sea amidships, and what is in her eats you =================
-  // Her waist is stove clean through. The bilge stands in her, green and thick, and the only way over it is
-  // what is floating in it and the two spars they lashed across.
+  // ================= 3. THE BREACH: she is open to the sea amidships, and the sea has come in =================
+  // Her waist is stove clean through and her hold is full to the deckhead. It is the same sea that is outside
+  // her, so it is swum, not survived: over it on the spars and her own wreckage, or down into it and across.
   air(126, 174, 20, 26);
-  pools.push({ x0: 126 * TS, x1: 175 * TS, y: 20 * TS + 2, bottom: 27 * TS, shallow: false, swim: true, harm: true, clear: true, ...FOUL });
-  ent('sign', 121, 19, { text: 'SHE IS OPEN TO THE SEA AND THE BILGE WATER KILLS: GO OVER IT.' });
+  pools.push({ x0: 126 * TS, x1: 175 * TS, y: 20 * TS + 2, bottom: 27 * TS, shallow: false, swim: true, clear: true });   /* PLAIN SEAWATER. It was bilge - harm and a foul green - and the flooded hold is better without the poison: the room, the route and everything in it are as they were, and the water is the sea */
+  ent('sign', 121, 19, { text: 'SHE IS OPEN TO THE SEA AMIDSHIPS AND HER HOLD IS FULL OF IT. SWIM IT, OR GO OVER.' });
   plat(129, 17, 4); plat(137, 15, 4); plat(146, 17, 4); plat(155, 15, 4); plat(164, 17, 4);
   bob(133, 19); bob(142, 19); bob(151, 19); bob(160, 19); bob(169, 19); // her own wreckage, riding what is in her
-  for (const x of [134, 143, 152, 161, 170]) net(x, x + 1, 14, 26);      // and a net hanging into the bilge at every bay of it
+  for (const x of [134, 143, 152, 161, 170]) net(x, x + 1, 14, 26);      // and a net hanging into the water at every bay of it: a swim is never a room with no door
   net(124, 125, 14, 19); net(175, 176, 14, 19);
   movers.push({ kind: 'swing', px: 150 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.6 });
   ent('marine', 140, 14, { face: -1 }); ent('stormshaman', 165, 16, { caller: true, face: -1 }); ent('lookout', 138, 14, { face: 1 }); ent('cutlass', 131, 16, { face: 1 }); // on her spars: the deck is gone under them
