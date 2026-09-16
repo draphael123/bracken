@@ -9346,7 +9346,7 @@ function updateArchmage(e, dt) {
       if (!R.runes.length) { e.mode = 'open'; e.modeT = 4.6; e.open = 4.6; SFX.gasp && SFX.gasp(); number(e.x, e.y - 50, 'OPEN', '#8fd160'); }
       else if (e.modeT <= 0) { clearRunes(e); e.mode = 'idle'; e.T.ward = 8; }
       else if (e.T.bolt <= 0 && ad > 40) { e.mode = 'boltTell'; e.modeT = 0.8; mark(P.x, fl, '#ffd36b'); number(e.x, e.y - 50, '!', '#ffd36b'); SFX.charge(); e.wardBack = true; } break;
-    case 'open': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.open = 0; e.T.ward = 9; e.T.blink = 0.5;
+    case 'open': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.open = 0; e.T.ward = e.stage === 1 ? 6 : 9; e.T.blink = 0.5;   /* (in the duel the next ward comes round sooner: a hero whose blows are light needs a second opening before the line, and waited half a minute for it) */
         /* THE ROOM TAKES HIM BACK: off the floor and onto his arm again, or the hero who reached him is thrown back to the island to cross it again */
         if (e.stage === 2 && R.sub === 2) { burst(e.x, e.y - 18, 14, [MVIO[1], MVIO[2]], 80, 0.5); R.ride = true; archRide(e); ringAt(e.x, e.y - 18, 30, MVIO[3], 0.4); SFX.zap(); R.reopen = 1.5; }
         else if (e.stage === 2 && (R.sub === 1 || R.sub === 3) && archReached(R.sub)) { archThrow(); R.reopen = 1.5; }
