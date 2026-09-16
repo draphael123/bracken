@@ -315,6 +315,28 @@ export function bakeKnight(skin = {}, bare = false) {
     const drop = KF({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], sword: [sh[0] + 2, sh[1] + 2, sh[0] + 9, sh[1] + 6], plume: 2 });
     const thud = KF({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 6], plume: 2 });   /* back in the turf as the idle has it: one pixel, not three */
     F.fidget = holdFrames([[lift, 2], [a, 2], [b, 2], [c, 2], [d, 3], [turn, 3], [back, 2], [drop, 2], [thud, 2], [F.idle[7], 2]]); }
+  /* HIS DANCE, for the victory card. He is the one hero in the wood carrying a BOARD, so his jig is a beat on it: the
+     blade swung up over the shoulder and rung off the top rim of the kite, twice, a stamp under each stroke and the
+     sparks coming off the steel. Nobody else has anything to hit, which is the whole reason this one is his. */
+  { const up = o => KF({ shield: true, ...o });
+    const spark = extra => [[14, 3, '#ffffff'], [13, 2, '#fff6c8'], [15, 2, '#fff6c8'], [15, 4, '#fff6c8'], ...(extra ? [[16, 1, '#fff6c8'], [12, 5, '#dfe8ff']] : [])];
+    const hiA = up({ dx: -1, legs: 'run1', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], sword: [sh[0] - 2, sh[1] - 4, sh[0] - 8, sh[1] - 10], plume: 1 });
+    const hiB = up({ dx: -1, legs: 'run5', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 5], sword: [sh[0] - 1, sh[1] - 5, sh[0] - 6, sh[1] - 11], plume: 2 });
+    /* the stroke lands ON the rim: the shield is painted after the sword, so the last inch of the blade goes behind
+       the oak and the spark - which is painted after everything - is what says the two of them met */
+    const ring = o => up({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 5], sword: [sh[0] + 2, sh[1] - 5, sh[0] + 7, sh[1] - 2], ...o });
+    const ring1 = ring({ legs: 'runC', plume: 2, bits: spark(false) });
+    const ring2 = ring({ legs: 'wide', plume: 0, bits: spark(true) });
+    const lift = up({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 2], sword: [sh[0] + 1, sh[1] - 2, sh[0] - 3, sh[1] - 8], plume: 1 });
+    F.dance = holdFrames([[hiA, 2], [ring1, 2], [lift, 1], [hiB, 2], [ring2, 2], [lift, 1]]); }
+  /* HIS SLUMP. Not the hurt frame: nothing has hit him. The helm sinks into the shoulders, the shoulders themselves
+     sag (sho below zero drops the outer pixels instead of lifting them), the kite hangs off a slack arm down by his
+     knee, and the sword is not held so much as leant on, its point out in the turf in front of his boots. */
+  { const down = d => KF({ dy: 2 + d, hy: 3, sho: -1, legs: 'stand', plume: 0, kite: { x: 3, y: 8 },
+      arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 2], sword: [sh[0] - 2, sh[1] + 2, sh[0] + 1, sh[1] + 7 - d] });
+    /* the blade hangs STEEP - a sword out at forty-five degrees is what his hurt frames do, and the two must not be
+       the same picture - and his feet stay together under him, where being knocked about puts them apart */
+    F.slump = [down(0), down(1)]; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
@@ -1291,6 +1313,24 @@ export function bakePyro(skin = {}) {
       [p(low, null, 0, { palm: [14, 11] }), 3], [p(hi, [[14, 7, 'y'], [14, 8, 'r']], 1), 1], [p(low, [[14, 4, 'y']], 2, { flick: 1 }), 2],
       [p(low, [[15, 2, 'y']], 3, { flick: 1 }), 2], [p(low, [[15, 4, 'y'], [15, 5, 'r']], 1, { flick: 1 }), 1], [p(hi, [[14, 9, 'y']], 0), 2],
       [p([11, 10, 14, 11], [[16, 7, 'y'], [15, 8, 'r']], 2), 1], [p(low, [[18, 3, 'y']], 3), 1], [p(low, null, 4, { flick: 1 }), 2], [p(low, null, 4), 2], [F.idle[0], 2]]); }
+  /* HER DANCE, for the victory card: she stands the staff in the turf and goes round it. Her body is a ROBE, so the
+     dance is danced with the hem - it swings out on the step and gathers on the drop - and her free hand throws
+     sparks that climb while the cage licks a different way on every beat. The fidget is one spark, stood still; this
+     is her feet, her hem and a fire she is feeding. */
+  { /* the staff is STOOD IN THE GROUND, so on the beats where she leaves the floor its ends are given back whatever
+       the hop took off them - a planted staff that hops with her is a stick she is holding, not one she is round */
+    const jig = (o = {}) => { const d = o.dy || 0; return pyroFrame({ staff: [17, 18 - d, 18, 2 - d], arm: [16, 11, 17, 12], cowl: 0, ...o }); };
+    const a = jig({ lean: -2, bell: 1, feet: [[10, 17], [15, 18]], arm2: [11, 10, 8, 7], palm: [7, 6], flame: 1, sparks: [[6, 3, 'y'], [8, 4, 'r']] });
+    const b = jig({ lean: -1, bell: 2, dy: -1, hemW: 12, feet: [[11, 17], [16, 16]], arm2: [11, 10, 9, 4], palm: [8, 3], flame: 2, flick: 1, sparks: [[7, 0, 'y'], [9, 1, 'r'], [5, 1, 'r']] });
+    const c = jig({ lean: 1, trail: 2, bell: 1, feet: [[12, 18], [16, 16]], arm2: [11, 10, 10, 6], palm: [9, 5], flame: 3, sparks: [[8, 2, 'r'], [10, 3, 'y']] });
+    const d = jig({ lean: 2, trail: 3, sit: 1, hemW: 13, feet: [[12, 17], [15, 18]], arm2: [11, 11, 12, 13], flame: 4, flick: 1 });
+    const e = jig({ bell: 2, dy: -1, hemW: 12, feet: [[11, 17], [15, 16]], arm2: [11, 10, 9, 6], palm: [8, 5], flame: 0, sparks: [[7, 2, 'y']] });
+    F.dance = holdFrames([[a, 2], [b, 2], [c, 2], [d, 2], [e, 1]]); }
+  /* HER SLUMP: the staff turned over. She holds it by the foot with the cage down by her boots, so the one bright
+     thing she owns is guttering in the dirt - the flame stands up out of the cage wherever the cage is - and she is
+     sunk into her own robe (sit drops the shoulders and the cowl while the hem stays on the ground). */
+  { const low = (s, flame) => pyroFrame({ sit: s, hemW: 12, staff: [17, 10, 24, 20], arm: [16, 11, 17, 11], arm2: [11, 12, 9, 15], cowl: 0, flame });
+    F.slump = [low(3, 2), low(4, 0)]; }
   F.atkC = [
     pyroFrame({ lean: -2, feet: [[10, 18], [16, 18]], staff: [1, 11, 15, 11], arm: [14, 11, 12, 11], arm2: [10, 11, 8, 11], cowl: 0 }),
     pyroFrame({ lean: 3, trail: 3, feet: [[8, 18], [17, 18]], staff: [11, 11, 26, 11], arm: [17, 10, 21, 11], arm2: [13, 10, 16, 11], cowl: 2, flare: [27, 11, false] }),
@@ -1593,6 +1633,23 @@ export function bakeFreebooter(skin = {}) {
     const tip = knightFrame({ hy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], cutlass: rest(), pistol: [sh[0] + 2, sh[1] - 1, sh[0] + 3, sh[1] - 6], plume: 2 });
     const lower = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], cutlass: rest(), pistol: [sh[0] + 2, sh[1] - 1, sh[0] + 3, sh[1] - 6], plume: 1 });
     F.fidget = holdFrames([[draw, 1], [spins[0], 2], ...[1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0].map(k => [spins[k], 1]), [tip, 3], [lower, 1], [draw, 1], [F.idle[7], 1]]); }
+  /* HIS DANCE, for the victory card: a HORNPIPE. He is the only hero holding something in each hand, so both go up -
+     the cutlass one side and the pistol the other, a V over the tricorne that nobody else in the wood can make - and
+     the work is all in the feet, a stride each way and a hop off the deck between them. */
+  { const hp = (legs, dy, cut, pis, plume) => knightFrame({ legs, dy, plume, cutlass: cut, pistol: pis });
+    const A = hp('run1', 0, [sh[0] + 2, sh[1] - 4, sh[0] + 8, sh[1] - 9], [sh[0] - 2, sh[1] - 4, sh[0] - 7, sh[1] - 7], 1);
+    const B = hp('run5', 1, [sh[0] + 2, sh[1] - 3, sh[0] + 7, sh[1] - 7], [sh[0] - 2, sh[1] - 3, sh[0] - 6, sh[1] - 5], 2);
+    const C = hp('runC', 0, [sh[0] + 3, sh[1] - 5, sh[0] + 9, sh[1] - 10], [sh[0] - 3, sh[1] - 5, sh[0] - 8, sh[1] - 8], 0);
+    const D = hp('wide', 1, [sh[0] + 2, sh[1] - 2, sh[0] + 8, sh[1] - 6], [sh[0] - 2, sh[1] - 2, sh[0] - 7, sh[1] - 4], 2);
+    const hop = hp('jump2', -2, [sh[0] + 2, sh[1] - 5, sh[0] + 8, sh[1] - 11], [sh[0] - 2, sh[1] - 5, sh[0] - 7, sh[1] - 9], 1);
+    F.dance = holdFrames([[A, 2], [B, 2], [hop, 1], [C, 2], [D, 2], [hop, 1]]); }
+  /* HIS SLUMP: he sits down on the boards. The cutlass is not held at all - it is stuck in the planking beside him,
+     which is where a man puts a sword he has finished with - the pistol hangs off the other hand, and the brim of
+     the tricorne is down over his face. */
+  { const sat = (d, hy) => knightFrame({ dy: 4 + d, hy, legs: 'crouch', plume: 0,
+      arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], cutlass: [sh[0] + 4, sh[1] - 3 - d, sh[0] + 4, sh[1] + 5 - d],
+      pistol: [sh[0] - 3, sh[1] + 3, sh[0] - 6, sh[1] + 5] });
+    F.slump = [sat(0, 1), sat(1, 2)]; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1687,6 +1744,25 @@ export function bakeReaper(skin = {}) {
     const plant = grip(1, { plume: 2, bits: [[10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38']] });
     const lean1 = grip(1, { hy: 1, plume: 1 }), lean2 = grip(1, { hy: 1, sho: 1, plume: 0 }), lean3 = grip(1, { hy: 1, plume: 1, bits: dim(1) }), lean4 = grip(1, { hy: 1, sho: 1, plume: 0, bits: dim(1) });
     F.fidget = holdFrames([[turn, 2], [lift, 2], [plant, 2], [lean1, 3], [lean2, 3], [lean3, 3], [lean4, 3], [lean1, 2], [lift, 2], [turn, 2], [F.idle[7], 1]]); }
+  /* HIS DANCE, for the victory card. The biggest and slowest of them does not jig: he HOISTS the two-hander over
+     his head on straight arms and stamps, and the whole frame goes up and down with him. Two beats where everyone
+     else has four, and the green in the helm comes up bright on each of them - the same two lights his fidget puts
+     OUT. A bar of steel as long as he is, held level above the horns, is a silhouette only he owns. */
+  { const st = (x0, y0, x1, y1, legs, dy, plume, lit) => knightFrame({ legs, dy, plume,
+      arm: [sh[0], sh[1], sh[0], sh[1] - 6], greatsword: [x0, y0, x1, y1],
+      bits: lit ? [[4, 3, '#dfffc0'], [5, 3, '#dfffc0']] : null });
+    const hoist = st(sh[0] - 6, sh[1] - 8, sh[0] + 8, sh[1] - 8, 'wide', -1, 1, true);
+    const dropL = st(sh[0] - 6, sh[1] - 5, sh[0] + 7, sh[1] - 9, 'runC', 1, 2, false);
+    const hoist2 = st(sh[0] - 6, sh[1] - 8, sh[0] + 8, sh[1] - 8, 'run3', -1, 2, true);
+    const dropR = st(sh[0] - 6, sh[1] - 9, sh[0] + 7, sh[1] - 5, 'wide', 1, 0, false);
+    F.dance = holdFrames([[hoist, 3], [dropL, 3], [hoist2, 3], [dropR, 3]]); }
+  /* HIS SLUMP: the greatsword is neither planted nor carried - it is DRAGGED, hanging off one hand with the point
+     out in the dirt behind him, and both lights in the helm are gone out. His fidget leans on the blade standing
+     up in front of him; this is the same blade given up on, lying the other way. */
+  { const drag = (d, hy) => knightFrame({ dy: 2 + d, hy, sho: -1, legs: 'stand', plume: 0,
+      arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], greatsword: [sh[0] - 2, sh[1] + 3, sh[0] - 14, sh[1] + 7 - d],
+      bits: [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] });
+    F.slump = [drag(0, 1), drag(1, 2)]; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1856,6 +1932,21 @@ export function bakeWarden(skin = {}) {
     const sight2 = knightFrame({ hy: 1, sho: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], spear: [sh[0] - 3, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 2 });
     const setDown = knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: rest(1), plume: 2 });
     F.fidget = holdFrames([[lift, 2], [turn, 3], [sight, 3], [sight2, 3], [sight, 2], [turn, 2], [setDown, 2], [F.idle[7], 2]]); }
+  /* HER DANCE, for the victory card: THE TWIRL. Her whole rule is the point, so the point is what dances - the haft
+     goes right round her hand in a flat wheel in front of her, eight beats to the turn, her feet crossing under it.
+     A straight bar two-thirds as long as she is tall, going round, is not a thing any other hero here can draw.
+     (Her fidget turns the spear ONCE to look down it and sets it back in the turf; this never stops.) */
+  { const hx = sh[0] + 2, hy0 = sh[1] - 1;
+    const TW = [0, 1, 2, 3, 4, 5, 6, 7].map(k => { const th = k * Math.PI / 4;
+      return knightFrame({ legs: k % 4 === 0 ? 'stand' : k % 2 ? 'runC' : 'wide', dy: k % 4 === 2 ? 1 : 0, plume: k % 3,
+        arm: [sh[0], sh[1], hx, hy0], spear: [hx, hy0, Math.round(hx + 11 * Math.cos(th)), Math.round(hy0 - 9 * Math.sin(th))] }); });
+    F.dance = holdFrames(TW.map(f => [f, 1])); }
+  /* HER SLUMP: she puts it DOWN. The spear is laid out on the ground at her boots and her hands are empty, which is
+     the one thing in this game she never does - the brim goes down, the shoulders sag, and the longest line on the
+     card is lying flat. */
+  { const set = (d, hy) => knightFrame({ dy: 1 + d, hy, sho: -1, legs: 'stand', plume: 0,
+      arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 5], spear: [sh[0] - 8, sh[1] + 8 - d, sh[0] + 12, sh[1] + 8 - d] });
+    F.slump = [set(0, 2), set(1, 3)]; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1954,6 +2045,24 @@ export function bakePaladin(skin = {}) {
     const lower = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 8], plume: 2 });
     const thud = knightFrame({ dy: 1, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 8], plume: 2, bits: flap([3, 4], 1, 0, 'b', 'B') });
     F.fidget = holdFrames([[lift, 2], [hold, 2], [w1, 2], [w2, 2], [w3, 2], [w1, 1], [w2, 1], [w3, 2], [shine, 2], [shine2, 2], [lower, 2], [thud, 2], [F.idle[7], 1]]); }
+  /* HIS DANCE, for the victory card: he SWINGS THE MAUL. It goes up over the winged helm and over again, side to
+     side on a long arc, and the light he spends on MEND and JUDGEMENT comes on at the top of every swing. The head
+     of a maul is a block of steel seven pixels across - it is the biggest thing any hero swings through the air
+     here, and following it round is the whole read. His fidget only ever polishes it standing still. */
+  { const hx = sh[0] + 1, hy0 = sh[1] - 2;
+    const sw = (mx, my, legs, dy, plume, glow) => knightFrame({ legs, dy, plume, glow,
+      arm: [sh[0], sh[1], hx, hy0], maul: [hx, hy0, mx, my] });
+    const outL = sw(sh[0] - 6, sh[1] - 7, 'wide', 0, 1, null);
+    const overA = sw(sh[0] + 1, sh[1] - 10, 'runC', -1, 2, [sh[0] + 1, sh[1] - 14]);
+    const outR = sw(sh[0] + 8, sh[1] - 7, 'wide', 0, 2, null);
+    const overB = sw(sh[0] + 1, sh[1] - 10, 'run5', -1, 0, [sh[0] + 1, sh[1] - 14]);
+    F.dance = holdFrames([[outL, 2], [overA, 2], [outR, 2], [overB, 2]]); }
+  /* HIS SLUMP: he goes down on his knees over the maul, both gauntlets on the haft and the head of it in the
+     ground, helm bowed to it - a man at a grave, not a man in a fight. There is no glow anywhere on him: the light
+     is the one thing this hero always has, and the card is where he has not got it. */
+  { const kneel = (d, hy) => knightFrame({ dy: 5 + d, hy, legs: 'crouch', plume: 0,
+      arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], maul: [sh[0] + 2, sh[1] - 2, sh[0] + 4, sh[1] + 4 - d] });
+    F.slump = [kneel(0, 1), kneel(1, 2)]; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
