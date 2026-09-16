@@ -10032,11 +10032,13 @@ const KRK_LOOK_EVERY = 17;
 const KRK_LOOK_OPEN = 1.8;     /* up close, and gone again */
 const KRK_LOOK_TAKE = 0.035;   /* the most the arms lying still can cost him in one look, as a share of him: a good cut or two */
 const KRK_KNELL_TAKE = 0.05;   /* knelled, the arms limp across the road: on top of the bell's own six percent */
-const KRK_PIN_TAKE = 0.065;    /* the spear pinned in a waystone: the maw's one opening, so the biggest */
-/* WHAT THE PAIR CAME TO, measured with the drain capped (six heroes, two reps, the lab's bot): WORKING THE CARGO knight 122/105, warden
-   116/115, pyro 116/136, paladin 97/107, pirate 109/97, reaper 112/107 - all inside 90-150. WALKING PAST IT knight 131/132, warden 160/160,
-   pyro 157/156, paladin 148/132, pirate 131/121, reaper 141/141. The cargo is worth 18 to 45 seconds a hero; the window binds the fight
-   as it is played, and the walk-past run is only the thing it has to beat (the warden and the pyro go past 150 ignoring the crates) */
+const KRK_PIN_TAKE = 0.06;    /* the spear pinned in a waystone: the maw's one opening, so the biggest (was 0.065; the paladin's cargo run
+   sat under the 90s floor at that price, and this is the smaller of the two knobs that fixed it - the crate rate was left alone) */
+/* WHAT THE PAIR CAME TO, body in the background, causeway, six heroes, two reps (BK.krakCargo): WORKING THE CARGO knight 107.8/109.6,
+   warden 116.1/111.9, pyro 131.4/131.8, paladin 99.2/98.6, pirate 99.2/99.2, reaper 109.4/119.3 - all inside 90-150. WALKING PAST IT
+   knight 122.9/122.9, warden 132.6/132.6, pyro 151.9/156.6, paladin 123.5/140.3, pirate 119.5/119, reaper 141.7/133.3 - slower than the
+   cargo run for every hero (the pyro's walk-past clears 150 either way, same as round one; only the played, cargo-working route has to
+   sit in the window). The cargo is worth roughly 15 to 41 seconds a hero; the walk-past run is only the thing it has to beat. */
 let KRK_CARGO = true;          /* BK.krakCargo(false) makes the LAB'S BOT walk past the cargo - the run the crate route has to beat. It changes nothing a player can do */
 /* IT COMES IN ON THE FLOOD, not out of his arm: three to eight stones off the hero, never on his own stone, never on the drain, in a
    break, on a bell or on a waystone (krakenFreeCol). It throws no blow and wears no mark - it thumps down, and then it is footing */
