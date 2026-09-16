@@ -99,6 +99,13 @@ function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); mus
 applySettings();
 // Progress lives in one of three save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
+/* LOCAL CO-OP is built further down (the players list, the pass, the shared camera, downed and revive). These four
+   lines are up HERE because the hero's level and the save both have to ask about it, and both are written above it. */
+let players = null, coopWant = null, passOn = null;   /* passOn: whose pass is running, or null between them */
+const coop = () => !!players && players.length > 1;
+/* A BORROWED HERO. Player two plays a hero the save owns but has never levelled, so he is LENT player one's level
+   (his own talents still come from the save, where it has any). Nothing is written back: see gainXp and saveProgress. */
+const coopLent = h => coop() && h !== players[0].hero && players.some(p => p !== players[0] && p.hero === h);
 try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slot') || 0))); } catch {}
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
@@ -138,7 +145,11 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
   try { for (const hh in PROG.talents) { const mm = PROG.talents[hh]; for (const id in mm) { const nd = TREE.find(q => q.hero === hh && q.id === id); if (!nd) delete mm[id]; else if (mm[id] > nd.max) mm[id] = nd.max; } } } catch {}   /* ranks past a trimmed tree come back as points */ }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
-function saveProgress() { try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {} }
+/* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
+   coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
+function saveProgress() { const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
+  try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {}
+  PROG.hero = was; }
 loadSlot(slot);
 
 // ---------- tuning ----------
@@ -466,7 +477,7 @@ const TREE = [];
 }
 const TALENTS = [{ id: 'tree', name: 'THE TALENT TREES', desc: 'three trees for this hero, and the skills on F and G grow in them. a point for every wood cleared the first time, up to thirty: enough for ONE tree. its capstone wants 18 spent in it, and a hero carries one capstone. resetting is free. Z to open' }];
 const heroXp = h => ((PROG.xp || {})[h || hero()] || 0);   /* THIS hero's XP, not the save's: every hero carries his own */
-const heroLevel = h => levelOfXp(heroXp(h));   /* THE LEVEL IS XP (src/xp.js): the fights pay it and a wood's first finish pays a share. It was the woods walked, and a straight run still lands within one of that */
+const heroLevel = h => levelOfXp(heroXp(coopLent(h || PROG.hero || 'knight') ? players[0].hero : h));   /* THE LEVEL IS XP (src/xp.js): the fights pay it and a wood's first finish pays a share. It was the woods walked, and a straight run still lands within one of that */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
 let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's trial lends him for its F and G step (lendSkills) */   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
@@ -913,11 +924,174 @@ function resolveTiles() {
 }
 
 // ---------- world state ----------
-const P = { x: 0, y: 0, vx: 0, vy: 0, w: 10, h: 14, face: 1, ground: false, groundTile: 0, coyote: 0, jbuf: 0, abuf: 0, dbuf: 0, atk: -1, plunge: false, plungeRec: 0, canCut: false,
-  hp: 100, maxHp: 100, hpShown: 100, st: 100, maxSt: 100, stDelay: 0, stFlash: 0, block: false, dodge: 0, dodgeCd: 0, inv: 0, grace: 0, hurt: 0, anim: 0, dead: 0, onMover: null, hitSet: new Set(), drop: 0, dust: 0, sqX: 1, sqY: 1, sqT: 0, landT: 0, guardTired: 0 };
+/* ONE TABLE FOR A HERO'S BODY. It was written straight into P; it is a maker now, because co-op builds a second
+   body out of exactly the same fields and two lists of them would drift apart the first time one was added to. */
+const freshBody = () => ({ x: 0, y: 0, vx: 0, vy: 0, w: 10, h: 14, face: 1, ground: false, groundTile: 0, coyote: 0, jbuf: 0, abuf: 0, dbuf: 0, atk: -1, plunge: false, plungeRec: 0, canCut: false,
+  hp: 100, maxHp: 100, hpShown: 100, st: 100, maxSt: 100, stDelay: 0, stFlash: 0, block: false, dodge: 0, dodgeCd: 0, inv: 0, grace: 0, hurt: 0, anim: 0, dead: 0, onMover: null, hitSet: new Set(), drop: 0, dust: 0, sqX: 1, sqY: 1, sqT: 0, landT: 0, guardTired: 0 });
+/* P IS A LIVE ALIAS NOW, not a fixed object: "the hero this code means". In single player it never once changes,
+   and the thousands of lines that name it are the same lines they were. See the CO-OP block below. */
+let P = freshBody();
 let enemies = [], seeds = [], movers = [], parts = [], leaves = [], nums = [], ghosts = [], corpses = [], trail = [], fireflies = [], waves = [];
 let acorns = [], signs = [], shrines = [], gate = null;
 let checkpoint = { x: 0, y: 0 };
+
+/* ==================== LOCAL CO-OP: TWO HEROES, ONE SCREEN ====================
+   BRACKEN has ONE hero object and it is named in thousands of places - every creature's AI, every prop, the
+   camera, the draw, the labs, the tools. So co-op does not add a second name. It adds a LIST, and P becomes
+   the live alias of "the hero this code means":
+     - the update and the draw run a PASS for each hero in the list, with P (and the hero he is, his baked
+       frames, and the keys in his hand) set for the length of it;
+     - a creature's own pass sets P to whichever of them is nearest and still on his feet, so every creature
+       and every boss in the game answers to whoever walked into it without a branch of its own.
+   ONE HERO IS STILL ONE HERO. With one in the list asPlayer() calls straight through and touches nothing, so
+   single player walks the same line of code it always did and every lab, tool and check measures the same game.
+   PLAYER ONE IS THE GAME'S OWN STATE: his keys ARE the keyboard's keys and his hero IS the save's, so his pass
+   is the plain call. Only player two is ever swapped in. */
+const DOWN_T = 20;         /* how long a fallen hero lies there before the pair are sent back to the shrine */
+const REVIVE_D = 12;       /* how close his partner has to stand, in pixels */
+const REVIVE_T = 1.5;      /* and for how long, in seconds */
+const COOP_EDGE = 10;      /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
+const HERO_SHORT = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN' };
+const freshScore = () => ({ kills: 0, dmg: 0, coins: 0, revives: 0, turns: 0, deaths: 0 });
+players = [P]; P.n = 1; P.hero = PROG.hero || 'knight'; P.press = {}; P.score = freshScore();
+let coopFall = false;      /* a down clock ran out: read once, after the passes */
+const upright = p => !p.dead && !(p.down > 0);
+/* the held keys and the one-shot presses, read and written as a set: these are the hands, and a pass swaps them */
+const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; return o; };
+const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
+const pressRead = () => ({ jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, talk: talkPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
+const pressWrite = o => { jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+function asPlayer(p, fn) {
+  if (!coop()) return fn();                                        /* the single-player call, unchanged */
+  if (p === players[0]) { const wP = P, wPass = passOn; P = p; passOn = p; try { return fn(); } finally { P = wP; passOn = wPass; } }
+  const wP = P, wH = PROG.hero, wK = K, wKeys = keysRead(), wPress = pressRead(), wPass = passOn;
+  P = p; PROG.hero = p.hero; if (p.set) K = p.set; passOn = p;
+  keysWrite(p.keys); pressWrite(p.press);
+  try { return fn(); }
+  finally { p.keys = keysRead(); p.press = pressRead(); P = wP; PROG.hero = wH; K = wK; passOn = wPass; keysWrite(wKeys); pressWrite(wPress); }
+}
+function nearestHero(e) { let b = null, bd = 1e9;
+  for (const p of players) { if (!upright(p)) continue; const d = Math.abs(p.x - e.x) + Math.abs(p.y - e.y) * 0.5; if (d < bd) { bd = d; b = p; } }
+  return b || players[0]; }
+/* THE SECOND HERO JOINS, out of the same body the first one is made of, dressed in his own hero's baked frames
+   and lent player one's level (heroLevel) with his own talents where the save has them. */
+function coopStart(h2, ally) {
+  players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = freshScore();
+  const p = freshBody();
+  Object.assign(p, { hero: h2, n: 2, keys: {}, press: {}, score: freshScore(), ai: !!ally, down: 0, reviveT: 0, cds: {} });
+  players = [players[0], p];
+  { const wasH = PROG.hero; PROG.hero = h2; p.set = heroSet(PROG.skin, PROG.sword); PROG.hero = wasH; }
+  asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; });
+}
+function coopEnd() { players = [players[0]]; coopFall = false; }
+/* WHEREVER ONE OF THEM WAKES, THEY ALL DO. A respawn puts the whole room back, so leaving the other lying where
+   the old room used to be would leave him in a wood that no longer exists. */
+function coopRegroup() {
+  if (!coop()) return;
+  for (const p of players) { if (p === P) continue;
+    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + (P.n === 2 ? 14 : -14), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0 }); P.hitSet.clear(); }); }
+}
+/* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
+   clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
+   third of his health with a moment of grace. If the clock runs out with nobody there, or both of them are down
+   at once, the pair of them wake at the last shrine and each is charged a death. */
+function goDown(killer) {
+  P.down = DOWN_T; P.reviveT = 0; P.hp = 0; P.killer = killer || null;
+  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.bracing = false;
+  P.inv = 0.6; P.vx = 0; P.hitSet.clear();
+  SFX.gasp(); SFX.thud(); shakeCam(5); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
+  burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
+}
+function downedPlayer(dt) {
+  P.down -= dt; if (P.down <= 0) coopFall = true;
+  P.inv = Math.max(0, P.inv - dt); P.hurt = Math.max(0, P.hurt - dt);
+  P.hpShown += (0 - P.hpShown) * Math.min(1, dt * 6);
+  const want = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);          /* THE CRAWL: a third of a walk, along the floor and nowhere else */
+  P.vx = want * 26; if (want) P.face = want;
+  P.vy = Math.min(400, P.vy + GRAV * dt);
+  const r = moveBody(P, P.vx * dt, P.vy * dt, false);
+  P.ground = !!(r && r.ground); if (P.ground) P.vy = 0;
+  if (P.y > LH * TS + 30) { P.x = checkpoint.x; P.y = checkpoint.y; P.vy = 0; }   /* crawling off the edge is not a second death: he is put back on the floor */
+  const helper = players.find(q => q !== P && upright(q) && Math.abs(q.x - P.x) < REVIVE_D && Math.abs(q.y - P.y) < 24);
+  if (helper) { P.reviveT = Math.min(REVIVE_T, P.reviveT + dt); if (P.reviveT >= REVIVE_T) reviveBy(helper); }
+  else P.reviveT = Math.max(0, P.reviveT - dt * 0.7);
+  P.anim += dt;
+}
+function reviveBy(helper) {
+  P.down = 0; P.reviveT = 0; P.dead = 0; P.hp = Math.max(1, Math.round(P.maxHp / 3)); P.hpShown = P.hp;
+  P.st = P.maxSt; P.inv = 2; P.killer = null;
+  helper.score.revives++;
+  SFX.mend(); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); motes(P.x, P.y - 10, 12, 10);
+  number(P.x, P.y - 32, 'UP', '#8fd160');
+}
+function coopWatch() {
+  if (!coop()) return;
+  if (!coopFall && players.some(upright)) return;
+  coopFall = false;
+  for (const p of players) p.score.deaths++;
+  deaths++;                                                          /* the run's own count: one fall, however many of them went down in it */
+  number(players[0].x, players[0].y - 40, 'BACK TO THE SHRINE', '#ff6b6b');
+  for (const p of players) { p.down = 0; p.reviveT = 0; p.dead = 0; }
+  asPlayer(players[0], () => respawn());
+}
+/* THE EXIT NEEDS BOTH OF THEM: one hero standing in the gate with the other forty tiles back is not a wood finished */
+const atGate = () => !coop() || players.every(p => upright(p) && gate && Math.abs(gate.x - p.x) < 22 && Math.abs(gate.y - p.y) < 36);
+/* THE SHARED SCREEN. One camera for the pair and NO ZOOM - the buffer is a fixed 320x180, so there is nothing to
+   zoom. It follows the MIDPOINT, and then the frame is a wall: a hero who reaches the edge stops there. Nobody is
+   teleported and nobody is dragged, so when they pull apart at a long gap the one in front simply stands at the
+   edge of the picture until the other catches up. THAT is the answer to the gap. (The stop is on x only: a
+   platformer separates them up and down every time one of them jumps, and a wall there would eat the jump.) */
+function coopCamTarget() { let x = 0, y = 0, n = 0;
+  const any = players.some(upright);
+  for (const p of players) { if (any && !upright(p)) continue; x += p.x; y += p.y; n++; }
+  return n ? [x / n, y / n] : [P.x, P.y]; }
+function coopSoftStop() {
+  /* A TELEPORT IS NOT A WALK. A shrine, a doorway or a harness can put them somewhere the camera has not reached,
+     and holding them at the old frame's edge would be the soft stop quietly eating a respawn - both heroes sliding
+     back across the wood they just woke in. When one of them is a long way outside the picture the CAMERA moves. */
+  if (players.some(p => p.x < camX - VW / 2 || p.x > camX + VW * 1.5)) {
+    const [mx, my] = coopCamTarget();
+    camX = Math.max(0, Math.min(LW * TS - VW, mx - VW / 2));
+    camY = Math.max(0, Math.min(LH * TS - VH, my - VH * 0.58));
+  }
+  const lo = camX + COOP_EDGE, hi = camX + VW - COOP_EDGE;
+  for (const p of players) {
+    if (p.x < lo) { p.x = lo; if (p.vx < 0) p.vx = 0; }
+    else if (p.x > hi) { p.x = hi; if (p.vx > 0) p.vx = 0; }
+  }
+}
+/* A HERO ON THE FLOOR, told so it reads from across the room: his own frames gone over on his side, a red ring of
+   the clock he has left, and a green one inside it that fills while his partner stands on him. */
+function drawDowned(cx, cy) {
+  const x = Math.round(P.x - cx), y = Math.round(P.y - cy);
+  g.drawImage(PROP.shadow, x - 6, y - 2);
+  const key = K.R.crouch ? 'crouch' : K.R.hurt ? 'hurt' : 'idle';
+  drawSet(K, key, 0, P.x - cx, P.y - cy + 1, P.face, false, 1, 1, 0.9, -P.face * Math.PI / 2 * 0.8);
+  const k = Math.max(0, Math.min(1, P.down / DOWN_T));
+  g.strokeStyle = P.down < 5 && Math.floor(time * 6) % 2 ? '#ffd0d0' : '#ff6b6b'; g.lineWidth = 1;
+  g.beginPath(); g.arc(x, y - 16, 11, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); g.stroke();
+  if (P.reviveT > 0) { g.strokeStyle = '#8fd160'; g.beginPath(); g.arc(x, y - 16, 8, -Math.PI / 2, -Math.PI / 2 + (P.reviveT / REVIVE_T) * Math.PI * 2); g.stroke(); }
+  text('P' + P.n, x, y - 34, '#ff6b6b', 'center', 6);
+}
+/* PLAYER TWO'S PLATE, small and out of the way between player one's and the purse: who he is, what is left of him,
+   and the clock instead while he is down. */
+function drawCoopHud() {
+  const p = players[1]; if (!p) return;
+  /* UNDER THE PURSE, not over the clock. The top middle is the level timer and the garrison and ambush counters
+     under it, the bottom middle is the boss bar, and the left is player one's - so player two's plate sits on the
+     right, below the purse and the quest line. It goes in hudRects like the others, so the tells keep off it. */
+  const x0 = VW - 91, y0 = 45, w = 84, h = 20;
+  board(x0, y0, w, h, UI.border, 'rgba(10,8,20,0.5)', true);
+  if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([x0, y0, w + 2, h + 2]);
+  text(p.ai ? 'ALLY' : 'P2', x0 + 5, y0 + 4, p.ai ? '#c9a0ff' : '#8fd160', 'left', 6);
+  if (p.down > 0) { const k = p.down / DOWN_T;
+    bar(x0 + 27, y0 + 5, 38, 4, k, Math.floor(time * 6) % 2 ? '#ffd0d0' : '#ff6b6b', k);
+    text('DOWN', x0 + 68, y0 + 4, '#ff6b6b', 'left', 6); }
+  else { bar(x0 + 27, y0 + 5, 38, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
+    text(String(Math.max(0, Math.ceil(p.hp))), x0 + 68, y0 + 4, '#fff6e0', 'left', 6); }
+  text(fitText(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), w - 10, 6), x0 + 5, y0 + 12, UI.dim, 'left', 6);
+}
+/* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
 const MEDALS = { mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
@@ -1714,7 +1888,7 @@ function spawnEnt(e) {
   }
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
-  const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }
+  const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr) * (coop() ? 2 : 1)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
   if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
 }
 function spawnEntitiesTail() {
@@ -1991,6 +2165,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && m.free && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.bored = false; } // the Ferryman poles back up for you
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
+  coopRegroup();   /* the room is back: whoever else is in the party is stood up at the same shrine, not left in the old one */
 }
 // the order is not the story order: a rush wants a ramp with a pulse in it, and the minis are the breathers
 // THE ORDER THEY ARE MET IN. The rush used to run in the order they happened to be written down, which put
@@ -2140,6 +2315,10 @@ function updateRush(dt) {
 }
 let levelFoes = 0;
 function startGame() {
+  /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
+     shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
+     Nothing is ever armed in single player, so players stays one long and this line is the only thing that happened. */
+  if (coopWant && L && !L.trial && !L.shop && !rushOn()) coopStart(coopWant.hero, coopWant.ally); else if (coop()) coopEnd();
   state = 'play'; levelTime = 0; deaths = 0; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
@@ -2157,7 +2336,9 @@ function xpGot(id) { const h = hero(); PROG.xpGot = PROG.xpGot || {}; const m = 
 function woodXp() { const tier = tierOf(curId());
   return enemies.reduce((s, e) => s + (e.xpKey && !e.harmless && !e.xpRole ? xpFoe(e.t, '', tier) : 0), 0) + (L.ambushes || []).reduce((s, A) => s + A.waves.reduce((m, w) => m + w.reduce((k, q) => k + xpFoe(q[0], '', tier), 0), 0), 0); }
 function xpStart() { levelXp = woodXp(); xpRun = 0; lvAtStart = heroLevel(); lvUpT = 0; }
-function gainXp(n) { n = Math.round(n); if (!(n > 0)) return; const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; xpRun += n; const now = heroLevel(h); if (now > was) levelUp(now); }
+function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
+  if (passOn && players && passOn !== players[0]) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
+  const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; xpRun += n; const now = heroLevel(h); if (now > was) levelUp(now); }
 /* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
@@ -3331,6 +3512,40 @@ function drawHeroPick() {
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('the other four are 15 silver each, later', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
+/* THE CO-OP PICK. Player one keeps the save's hero, his level and his talents; player two takes any hero the save
+   owns that player one is not already holding - and both starters are always there, because a friend on the sofa
+   should never be turned away for something the save has not bought yet. X arms AN ALLY instead, which is the same
+   pick with the game playing him. The run itself starts from the map, the way every run in this game starts. */
+let coopPick = { i: 0, ally: false };
+const coopPickList = () => PICK.filter(h => h !== hero() && (PROG.heroes[h] || h === 'knight' || h === 'warden' || godMode()));
+function updateCoopPick() {
+  const list = coopPickList();
+  if (!list.length) { state = 'title'; SFX.buzz(); return; }
+  if (coopPick.i >= list.length) coopPick.i = 0;
+  if (leftPress) { coopPick.i = (coopPick.i + list.length - 1) % list.length; SFX.ui(); }
+  if (rightPress) { coopPick.i = (coopPick.i + 1) % list.length; SFX.ui(); }
+  if (atkPress) { coopPick.ally = !coopPick.ally; SFX.ui(); }
+  if (confirmPress) { coopWant = { hero: list[coopPick.i], ally: coopPick.ally }; state = 'map'; SFX.equip(); SFX.sting(); }
+  if (pausePress) { coopWant = null; if (coop()) coopEnd(); state = 'title'; SFX.ui(); }
+}
+function drawCoopPick() {
+  const list = coopPickList();
+  g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
+  text('LOCAL CO-OP', VW / 2, 6, UI.title, 'center', 12);
+  text('PLAYER ONE   ' + (HERO_SHORT[hero()] || hero().toUpperCase()) + '   KEYBOARD', VW / 2, 22, UI.text, 'center', 6);
+  text(coopPick.ally ? 'AND AN ALLY THE GAME PLAYS' : 'PLAYER TWO   A GAMEPAD', VW / 2, 31, coopPick.ally ? '#c9a0ff' : '#8fd160', 'center', 6);
+  const n = Math.max(1, list.length), cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 42, ch = 54;
+  list.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === coopPick.i;
+    g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
+    heroBanner(h, x, top, cw, ch, sel);
+    if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, cw - 1, ch - 1); }
+    text(fitText(HERO_SHORT[h] || h.toUpperCase(), cw, 6), x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6); });
+  { const h = list[coopPick.i] || 'knight';
+    wrap(HERO_LOOP[h] || '', VW - 24, 6).forEach((ln, i) => text(ln, VW / 2, top + ch + 13 + i * BODY_LH, UI.text, 'center', 6)); }
+  text('EVERY CREATURE AND BOSS: TWICE THE HEALTH, TWICE THE HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);
+  text('LEFT/RIGHT choose   Z take   X ally   ESC back', VW / 2, VH - 19, UI.sel, 'center', 6);
+  text('then start any wood from the map', VW / 2, VH - 10, UI.dim, 'center', 6);
+}
 function selectStart() {
   const lv = LEVELS[selI];
   if (levelLocked(lv)) { SFX.buzz(); return; }
@@ -3412,13 +3627,29 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; edPaint 
     SFX.ui(); ev.preventDefault(); }, { passive: false });
 }
 // Gamepad: A jump, X swing, B dodge, RB/LB block, Start pause, d-pad or left stick to move.
-const pad = { prev: {} };
+/* AND IN CO-OP THERE ARE TWO PAIRS OF HANDS ON IT. Player one keeps the keyboard and the FIRST pad is player two's;
+   when a second pad turns up it takes player one, so two people with two pads can both sit back. The pause and the
+   menus are player one's alone, from either of his - a game paused by the man who is not reading the menu is a bad
+   joke to play on him. */
+const pad = { prev: {} }, pad2 = { prev: {} };
+const padsNow = () => { const out = [], gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const p of gps) if (p && p.connected) out.push(p); return out; };
+const padState = gp => { const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
+  return { jump: b(0), atk: b(2), dodge: b(1), throw: b(3), skill2: b(7), talk: b(12) || b(6), block: b(4) || b(5), pause: b(9), left: b(14) || ax < -0.5, right: b(15) || ax > 0.5, up: b(12) || ay < -0.5, down: b(13) || ay > 0.5 }; };
+/* a pad into a player's OWN hands: his held keys and his one-shot presses, never the globals, which are player one's */
+function padIntoPlayer(gp, st, p) {
+  const now = padState(gp), rose = k => now[k] && !st.prev[k];
+  if (Object.values(now).some(Boolean)) initAudio();
+  const pr = p.press;
+  for (const k of ['jump', 'atk', 'dodge', 'throw', 'skill2', 'talk', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
+  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }
+  st.prev = now;
+}
 function pollGamepad() {
-  const gps = navigator.getGamepads ? navigator.getGamepads() : []; let gp = null; for (const p of gps) if (p && p.connected) { gp = p; break; }
+  const gps = padsNow();
+  if (coop() && players[1] && !players[1].ai && gps.length) padIntoPlayer(gps[0], pad2, players[1]);
+  const gp = coop() ? gps[1] : gps[0];
   if (!gp) return;
-  const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed);
-  const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
-  const now = { jump: b(0), atk: b(2), dodge: b(1), throw: b(3), skill2: b(7), talk: b(12) || b(6), block: b(4) || b(5), pause: b(9), left: b(14) || ax < -0.5, right: b(15) || ax > 0.5, up: b(12) || ay < -0.5, down: b(13) || ay > 0.5 };
+  const now = padState(gp);
   const rose = k => now[k] && !pad.prev[k];
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
   if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true;
@@ -3456,7 +3687,8 @@ function drawTouch() {
   dg.font = Math.round(touchZones[0].w * 0.45) + 'px "Press Start 2P", monospace'; dg.textAlign = 'center'; dg.textBaseline = 'middle';
   for (const z of touchZones) { if (!zoneOn(z)) continue; const held = [...touches.values()].includes(z.k); dg.fillStyle = held ? 'rgba(143,209,96,0.55)' : 'rgba(20,16,30,0.42)'; dg.beginPath(); dg.roundRect(z.x, z.y, z.w, z.h, z.w * 0.25); dg.fill(); dg.strokeStyle = 'rgba(255,246,224,0.6)'; dg.lineWidth = 2; dg.stroke(); dg.fillStyle = 'rgba(255,246,224,0.85)'; dg.fillText(z.label, z.x + z.w / 2, z.y + z.h / 2); }
 }
-function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = talkPress = talentsPress = mapPress = false; }
+function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = talkPress = talentsPress = mapPress = false;
+  if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
 const isSolid = (tx, ty) => { const t = tileAt(tx, ty); return t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT || t === T.ICE || t === T.WEB; };
@@ -3798,7 +4030,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
-  dmg = Math.max(1, Math.round(dmg * diffNow().take * (1 + 0.28 * tierOf(curId()))));
+  dmg = Math.max(1, Math.round(dmg * diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1)));   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
   dmg = Math.max(1, Math.round(dmg * (PROG.items.mail ? 0.9 : 1) * (PROG.items.plate ? 0.9 : 1) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
@@ -3865,6 +4097,8 @@ function killerLine(k) { const mark = !k.rule ? '' : '   ' + (k.red ? (SET.color
   for (const s of [k.name + mark, k.name.split('   ')[0] + mark, k.name.split('   ')[0]]) if (inkW(s, 6) <= VW - 8) return s; return k.name.split('   ')[0]; }
 function die(killer) {
   if (P.dead) return;
+  /* IN CO-OP HE GOES DOWN, NOT OUT - as long as somebody is still standing to come and get him (goDown) */
+  if (coop() && !(P.down > 0) && players.some(q => q !== P && upright(q))) { goDown(killer); return; }
   P.killer = killer || null;
   P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9);
@@ -5023,6 +5257,7 @@ function spend(cost) {
   P.st -= cost; P.stDelay = ST.delay; return true;
 }
 function updatePlayer(dt) {
+  if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
   if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
   if (MG && (P.form || P.flip) && magePlayer(dt)) return;   /* THE MAGE'S FOLLY: a mouse, a bat, a stone man, or a hero walking the ceiling */
@@ -5652,7 +5887,7 @@ function updatePlayer(dt) {
   for (let ty = Math.floor(pb.t / TS); ty <= Math.floor((pb.b - 1) / TS); ty++) for (let tx = Math.floor(pb.l / TS); tx <= Math.floor((pb.r - 1) / TS); tx++) {
     if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6) damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true, name: 'THE SPIKES' });
   }
-  if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die({ name: 'THE FALL', red: false, rule: '' }); P.dead = 0.6; } }
+  if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die({ name: 'THE FALL', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; } }   /* (in co-op the fall put him DOWN, and a downed hero is not also a dead one) */
   /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
      killed everyone who walked into the Pit Warden's arena a hundred and ten rows under it. Below the pool's own
      floor (its bottom, or the first rock under its surface) you are not in it. */
@@ -5663,7 +5898,7 @@ function updatePlayer(dt) {
     else { burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
     if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
-    else { die({ name: p.fire ? 'THE FIRE' : 'DROWNED', red: false, rule: '' }); P.dead = 0.8; }
+    else { die({ name: p.fire ? 'THE FIRE' : 'DROWNED', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.8; }
     break;
   }
   if (P.ground && !P.onMover && !P.dead && !(L.pools || []).some(p => !p.shallow && P.x > p.x0 - 12 && P.x < p.x1 + 12)) P.safe = { x: P.x, y: P.y, L };   /* the last dry footing, for the water above */
@@ -5778,7 +6013,7 @@ function updatePlayer(dt) {
       if (isPirate()) { gainPlunder(4); if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) P.st = Math.min(P.maxSt, P.st + 6); if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   for (const s of shrines) if (!s.lit && Math.abs(s.x - P.x) < 12 && Math.abs(s.y - P.y) < 20) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
-  if (gate && (!L.arena || escape) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play') { escape = null; winLevel(); }
+  if (gate && (!L.arena || escape) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
@@ -5792,7 +6027,7 @@ function updatePlayer(dt) {
 let titleI = 0, titleBarY = null;
 const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {}).cleared);
 const titleItems = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(rushUnlocked() ? ['BOSS RUSH'] : [], ['PRACTICE', 'THE EDITOR', 'SETTINGS', 'CONTROLS']); };
+  return base.concat(['LOCAL CO-OP'], rushUnlocked() ? ['BOSS RUSH'] : [], ['PRACTICE', 'THE EDITOR', 'SETTINGS', 'CONTROLS']); };
 let miniActive = false, miniDone = false, miniIntroT = 0;
 // THE NAME ON THE CARD. The intro banner used to carry its own chain of boss names and it had never been
 // extended past the crags, so THE CAPTAIN, THE QUARTERMASTER, THE REEFMAW and the TIDE HERALD all announced
@@ -14405,6 +14640,10 @@ function updateEnemies(dt) {
   updatePack(dt); eliteWatch();
   for (const e of enemies) {
     if (!e.alive) continue;
+    /* WHO THIS ONE MEANS BY "the player": the nearest hero still on his feet. One line, and every creature and every
+       boss in the game answers to whichever of them walked into it, with no branch of its own. (P is put back to
+       player one at the call site the moment the sweep is over.) */
+    if (coop()) P = nearestHero(e);
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
     { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
@@ -15724,7 +15963,10 @@ function updateCamera(dt) {
   if (P.fly && flight) { camX = Math.max(0, Math.min(LW * TS - VW, flight.cx)); camY = Math.max(0, Math.min(LH * TS - VH, flight.cy)); shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt); return; }
   const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   // the camera leads your speed as well as your shoulders, so a hard turn does not snap
-  const tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
+  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
+  /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
+     is a lead that pushes the other one off the edge of the picture. */
+  if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * 0.58 + lookDown; }
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
   const x0 = camLock ? camLock.x0 - 8 : 0, x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW;
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
@@ -15750,6 +15992,7 @@ function updateCamera(dt) {
       camY += (Math.max(0, Math.min(LH * TS - VH, bty)) - camY) * w;
       bossZoom = deep * w;
     } else bossZoom = Math.max(0, bossZoom - dt * 2.5); }
+  if (coop()) coopSoftStop();   /* and then the frame is a wall (see the co-op block): last, so it answers the camera wherever the boss intro left it */
   shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt);
 }
 
@@ -15777,6 +16020,7 @@ function update(dt) {
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
+        else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPick = { i: 0, ally: false }; state = 'coop'; }
         else if (k === 'THE EDITOR') edEnter();
         else if (k === 'SETTINGS') openMenu('title');
         else if (k === 'CONTROLS') state = 'controls';
@@ -15795,6 +16039,7 @@ function update(dt) {
   if (state === 'practice') { updatePractice(); return; }
   if (state === 'controls') { if (pausePress || confirmPress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'heropick') { updateHeroPick(); return; }
+  if (state === 'coop') { updateCoopPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'soundtest') {
     const cats = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES]; const list = cats[soundCat];
@@ -15852,15 +16097,18 @@ function update(dt) {
   if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
-  if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
-  updateCharge(STEP);
+  /* EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
+     this is the two lines it always was, in the order it always ran them. */
+  for (const pp of players) asPlayer(pp, () => {
+    if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; } if (dodgePress) P.dbuf = 0.12;
+    updateCharge(STEP); });
   if (stop > 0) { stop -= dt; return; }
   slowT = Math.max(0, slowT - dt); const wdt = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
   // THE CLOCK RUNS ON WORLD TIME, NOT WALL TIME. Every medal in the game was set against a world running at
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); updatePlayer(wdt); updateEnemies(wdt); emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -17524,13 +17772,17 @@ function drawWorld(cx, cy, showPlayer) {
   /* THE FALL. He used to be gone the frame he died - one moment a knight, the next a puff - so a death read as a
      glitch. Now there is a body for the second and a bit before the respawn: the blow snaps him back, he goes to
      one knee, he goes over, and he fades where he fell. Every hero has hurt and crouch, so every hero falls. */
+  /* EACH HERO IN HIS OWN PASS. The hundred lines below are the same hundred lines, with P, the hero he is and his
+     baked frames set to whoever is being painted. One in the list and asPlayer calls straight through. */
+  for (const pDraw of players) asPlayer(pDraw, () => {
+  if (showPlayer && P.down > 0 && K && K.R) drawDowned(cx, cy);   /* on the floor, with his clock and his partner's ring */
   if (showPlayer && P.dead > 0 && K && K.R) { const k = 1.2 - P.dead, hs = isReaper() ? 1.22 : 1;
     let key = K.R.hurt ? 'hurt' : 'idle', frame = 0, rot = 0, dy = 0, al = 1;
     if (k < 0.12) frame = 0; else if (k < 0.3) frame = 1;
     else if (k < 0.52) { key = K.R.crouch ? 'crouch' : key; dy = 1; }
     else { key = K.R.crouch ? 'crouch' : key; const t2 = Math.min(1, (k - 0.52) / 0.12); rot = -P.face * Math.PI / 2 * t2; dy = 1 - Math.round(4 * t2); al = Math.max(0, Math.min(1, P.dead / 0.4)); }
     drawSet(K, key, frame, P.x - cx, P.y - cy + dy, P.face, false, hs, hs, al, rot); }
-  if (showPlayer && !P.dead) {
+  if (showPlayer && !P.dead && !(P.down > 0)) {
     // A ROLL leaves a WHITE silhouette of him, which is right for a roll. THE PASSING must not: a white
     // knight-shaped blob at low alpha reads as a missing texture, not as a man going thin. His own colours,
     // fading, with the green of the harvest on them.
@@ -17607,8 +17859,9 @@ function drawWorld(cx, cy, showPlayer) {
         else { const h = P.hookT; g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath();
           g.moveTo(Math.round(P.x - cx), Math.round(P.y - 12 - cy)); g.lineTo(Math.round(h.x - cx), Math.round(h.y - cy)); g.stroke();
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
+      if (!coop() || P === players[0]) {   /* these are the LEVEL'S own lists, not this hero's: drawn once, or a second pass doubles their alpha */
       drawPortal(cx, cy);
-      drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); if (L.deep) drawDeepFront(cx, cy);
+      drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
@@ -17620,6 +17873,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if ((P.sleepM || 0) > 0.2) { g.fillStyle = '#c9a0ff'; g.fillRect(Math.round(P.x - cx) - 8, Math.round(P.y - cy) - 24, Math.round(16 * Math.min(1, P.sleepM / 1.3)), 2); }
     }
   }
+  });
   drawBoxes(cx, cy);
   drawSlide(cx, cy); drawBeams(cx, cy);
   if (wisp) { const x = Math.round(wisp.x - cx), y = Math.round(wisp.y - cy), f = Math.floor(time * 12) % 3; g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#ff9a5c'; g.fillRect(x - 2, y - 2 - f, 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1 - f, 2, 3); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y + 1 - f, 2, 1); }
@@ -18243,7 +18497,8 @@ function drawControls() {
   const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
   text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
   const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['shield charge', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P   (MAP: TAB)', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
-  text('keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text('pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
+  /* IN CO-OP THE TWO COLUMNS ARE TWO PEOPLE: player one on the keys, player two on the first pad */
+  text(coop() ? 'keyboard  P1' : 'keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text(coop() ? 'pad  P2' : 'pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
   if (isReaper()) rows.forEach((r, i) => { const o = DK_KEYS.controls[r[0]]; if (o) rows[i] = o; });
   /* THE WARDEN'S KEYS: C is not a shield, it is a planted spear, and her dodge goes backward */
   if (isWarden()) rows.forEach((r, i) => { const o = WARDEN_KEYS.controls[r[0]]; if (o) rows[i] = o; });   /* THE DEATH KNIGHT'S KEYS (DK_KEYS): C is his ward, F raises the dead, G is his chosen skill */
@@ -18815,6 +19070,7 @@ function render() {
     g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 6, Math.round(70 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(16 + Math.round(70 * i / 4), 6, 1, 6); }
     text(String(Math.max(0, Math.ceil(P.hp))), 90, 6, '#fff6e0');
     for (let i = 0; i < (PROG.tonics || 0); i++) g.drawImage(TONIC_ICON, 90 + i * 7, 14); // the tonics you carry
+    if (coop()) drawCoopHud();   // and player two's small plate beside his
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
     if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + 10 + xpRow;
@@ -19023,6 +19279,7 @@ function render() {
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
   if (state === 'heropick') drawHeroPick();
+  if (state === 'coop') drawCoopPick();
   if (state === 'rushover' || state === 'rushwin') {
     const won = state === 'rushwin', col = won ? '#ffd36b' : '#ff6b6b';
     g.fillStyle = won ? 'rgba(24,20,8,0.8)' : 'rgba(30,8,10,0.78)'; g.fillRect(32, 34, VW - 64, 112);
@@ -19151,6 +19408,10 @@ window.BK = { xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(
   risen: () => risen, bodies: () => bodies,
   get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
+  /* LOCAL CO-OP, for a harness driving the page: the list, whether it is on, and a way to arm and start it */
+  players: () => players, get coop() { return coop(); }, coopArm(h, ally) { coopWant = h ? { hero: h, ally: !!ally } : null; return coopWant; },
+  coopStart: (h, ally) => { coopStart(h, ally); return players.map(p => p.hero); }, coopEnd: () => { coopWant = null; coopEnd(); return players.length; },
+  coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */
   drawables() { const out = [], sh = (PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
