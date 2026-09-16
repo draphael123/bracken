@@ -3790,6 +3790,12 @@ function longWater() {
   const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, clear: true, bottom: bottom * TS }, extra || {}));
   const fall = (lipX, y0, y1) => falls.push({ x0: (lipX + 1) * TS - 6, x1: (lipX + 1) * TS + 20, y0: y0 * TS + 1, y1: y1 * TS + 6 }); // pours off the lip at lipX into the next terrace, out of the channel above it
   const plunge = (x0, x1, top, depth) => { air(x0, x1, top, top + depth - 1); deep(x0, x1, top, top + depth); };
+  /* WHERE THE AIR IS, in the one list the breath clock and tools/breath.mjs both read (src/deepair.js). Every bit of it
+     below is written LEFT of the grow at column 350, so it needs no remapping whether grow() carries these fields or not. */
+  const airRooms = [], D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
+  const vent = (x, y, h) => D.vents.push({ x, y, h });
+  const clam = (x, y) => D.clams.push({ x, y });
+  const wreck = (x, y) => D.wrecks.push({ x, y });
 
   // ---- 1. THE MELTFALLS: Highcrown's back face, five terraces and a fall off every lip ----
   block(0, 13, 8, H - 1);
@@ -3888,8 +3894,20 @@ function longWater() {
   ent('sign', 366, 26, { text: 'THE HERALD WALKS ON WATER. WHEN THE TIDE LEAVES HIM IN THE MUD, HURT HIM.' });
   ent('gate', 414, 26);
 
+  // ================= THE AIR IN THE RIVER =================
+  // The ferry run is a hundred and forty tiles of moving water with two bells in the whole of it, and the river is
+  // pushing you off them the entire time. It is not a hard swim - the worst of it measures a second - but two bells
+  // under a river is not enough to SEE, and the sign on the dock promises AIR UNDER THE ROCKS DOWNSTREAM. So there is
+  // some, and it says so the way every other mouth of air in the game says so: it bubbles.
+  { const gat = (x, y) => L.grid[y * W + x];
+    const bed = x => gat(x, 32) === T.AIR && gat(x, 33) === T.AIR && gat(x, 34) === T.SOLID;
+    for (let x = 148; x <= 272; x += 16) if (bed(x)) vent(x, 33, 5);
+    for (const x of [172, 204, 240, 264]) if (bed(x)) clam(x, 33);
+    for (const x of [188, 252]) if (bed(x)) wreck(x, 33);   /* what went into the river with the cart, and never came up */
+  }
+
   const ret = {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 7 }, pools, falls, moversExtra: movers,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 7 }, pools, falls, moversExtra: movers, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'longwater', night: false,
     wetZone: [0, 107], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE FISHERFOLK ARE SAFE', reward: 'relic', relic: 'tidecharm' },
@@ -3948,6 +3966,11 @@ function shipwreckReef() {
   const pools = [], movers = [], gusts = [], darkZones = [];
   const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, clear: true, bottom: bottom * TS }, extra || {}));
   const current = (x0, x1, y0, y1, dir) => gusts.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y0: y0 * TS, y1: y1 * TS, dir, period: 1e9, on: 1e9, phase: 0, k: 1, current: true });
+  /* WHERE THE AIR IS, in the one list the breath clock and tools/breath.mjs both read (src/deepair.js) */
+  const airRooms = [], D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
+  const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };
+  const vent = (x, y, h) => D.vents.push({ x, y, h });
+  const clam = (x, y) => D.clams.push({ x, y });
 
   // ---- 1. THE TIDEWAY: the backs of the wrecks, and the sea coming and going over them ----
   block(0, 12, 28, H - 1);
@@ -4059,8 +4082,29 @@ function shipwreckReef() {
   ent('reefmaw', 440, 33);
   ent('gate', 458, 28);
 
+  // ================= THE AIR ON THE SHELF (nothing is dug after this: it reads the finished grid) =================
+  // Her own sign says THE ONLY AIR IS IN THE DIVING BELLS, and there were six of them strung through a hundred and
+  // twenty tiles of water with rock laid over the whole of it, so there is no surface anywhere to come up to. The
+  // deepest corner of it measured 5.05s against a six second lung. Six bells is a tightrope; it is also one idea said
+  // once. The shelf keeps its air three ways now, and a swimmer can see the next one from the last:
+  //   UNDER THE ROOF  the rock over the shelf is not flat, and air has gathered in the hollows of it
+  //   OFF THE BED     cracks in the reef floor, each with its column of gas standing over it
+  //   IN THE CLAMS    shut on a lungful until something strikes them
+  // Every placement asks the grid first, so none of it lands inside a coral pillar or a hump of the bed.
+  { const gat = (x, y) => L.grid[y * W + x];
+    const bed = x => gat(x, 35) === T.AIR && gat(x, 36) === T.AIR && gat(x, 37) === T.SOLID;
+    const roof = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 12) === T.SOLID && gat(x + q, 13) === T.AIR && gat(x + q, 14) === T.AIR)) return false; return true; };
+    for (let x = 216; x <= 320; x += 18) if (roof(x, 6)) pocket(x, x + 5, 13, 14);
+    for (let x = 218; x <= 326; x += 12) if (bed(x)) vent(x, 36, 8);
+    for (const x of [228, 246, 290, 318]) if (bed(x)) clam(x, 36);
+    /* THE ALCOVE the adverse current guards. The last royal seal is in it and there was not one breath of air in the
+       room: seven tiles of water walled in on all four sides. Now the pocket the seal was left in has air in it. */
+    { let ok = true; for (let x = 321; x <= 327; x++) if (gat(x, 17) !== T.AIR || gat(x, 18) !== T.AIR) ok = false;
+      if (ok) pocket(321, 327, 17, 18); }
+  }
+
   const ret = {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'reef', night: false,
     interiors: [[34, 93, 26, 29, 'ship'], [116, 177, 22, 29, 'ship'], [247, 300, 24, 26, 'ship'], [302, 371, 17, 21, 'ship']], // ONLY the enclosed spaces: a backdrop that reaches above a deck hangs a stone wall in the sky
     wetZone: [0, 119], storm: true, dark: 0.01, edgeLit: 'rgba(210,244,244,0.7)',   /* the readability pass: at high tide her decks were teal under teal; a cold lit lip on every edge you can stand on reads through the water */
@@ -4089,7 +4133,12 @@ function theFlotilla() {
   const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
   const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
   const rot = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); }; // planking that goes through under a standing weight
-  const pools = [], movers = [], hullZones = [];
+  const pools = [], movers = [], hullZones = [], airRooms = [];
+  /* WHERE THE AIR IS, in the one list the breath clock and tools/breath.mjs both read (src/deepair.js) */
+  const D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
+  const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };
+  const vent = (x, y, h) => D.vents.push({ x, y, h });
+  const clam = (x, y) => D.clams.push({ x, y });
 
   // the sea the whole town floats on: fall in and you swim, and the nets down every side are how you get back up
   block(0, W - 1, 38, H - 1); block(377, W - 1, 11, 37); // past her stern the level ends: no water, nowhere to fall
@@ -4284,8 +4333,23 @@ function theFlotilla() {
   ent('quarter', 288, 21);
   ent('gate', 374, 10);
 
+  // ================= THE AIR IN THE HULK (nothing is dug after this: it reads the finished grid) =================
+  // The flotilla had NO air in it at all - not one box in the whole level - and the one place you actually go under is
+  // the prize's flooded hold, which you cross twice. Her harbour is tar and bilge and kills whatever swims in it, so
+  // there is deliberately none out there: air in the foul water would be a promise the level does not keep. In her hold
+  // there is air where a hold keeps it - trapped up under her deck beams, leaking off the bed of her, and in the clams
+  // that have grown on her since she was taken.
+  { const gat = (x, y) => L.grid[y * W + x];
+    const hold = x => gat(x, 28) === T.AIR && gat(x, 29) === T.AIR && gat(x, 30) === T.SOLID;
+    const roofed = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 23) === T.SOLID && gat(x + q, 24) === T.AIR && gat(x + q, 26) === T.AIR)) return false; return true; };
+    for (const x of [122, 150]) if (roofed(x, 6)) pocket(x, x + 5, 24, 26);   /* up under her deck beams, over the flood */
+    for (const x of [126, 140, 154, 166]) if (hold(x)) vent(x, 29, 4);
+    for (const x of [132, 160]) if (hold(x)) clam(x, 29);
+    for (const x of [130, 162]) if (hold(x)) ent('deco', x, 29, { kind: 'airBell' });   /* what they went down in to strip her */
+  }
+
   const ret = {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'flotilla', night: false, swell: { amp: 2, period: 4.6 },
     interiors: [[34, 93, 26, 30, 'ship'], [116, 173, 24, 30, 'ship'], [248, 340, 24, 27, 'ship'], [340, 372, 12, 15, 'ship']],
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
@@ -6067,6 +6131,11 @@ function theDrownedCauseway() {
   const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const nets = [], interiors = [], airRooms = [];
+  /* WHERE THE AIR IS, in the one list the breath clock and tools/breath.mjs both read (src/deepair.js) */
+  const D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
+  const vent = (x, y, h) => D.vents.push({ x, y, h });
+  const clam = (x, y) => D.clams.push({ x, y });
+  const wreck = (x, y) => D.wrecks.push({ x, y });
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const net = (x0, x1, y0, y1) => nets.push([x0, x1, y0, y1]);   /* EVERY ROPE IS HUNG LAST (rule I) */
   const sign = (x, y, text) => ent('sign', x, y, { text });
@@ -6248,9 +6317,23 @@ function theDrownedCauseway() {
   /* THE ROPES, LAST: nothing is cut after this line */
   for (const [x0, x1, y0, y1] of nets) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET);
 
+  // ================= THE AIR ON THE FLATS, AND IN HIS REACH =================
+  // Two bells on six hundred tiles of road - one in the crypt, one in the grotto of the sea arch - and the KRAKEN'S own
+  // water had none at all: four hundred and sixteen tiles of it, the whole of the arena at the end of the road, with no
+  // air anywhere a swimmer could reach. The flats vent where the sea has worked its way under the road, and his reach
+  // vents between the piers, so the last fight is not also a breath-holding contest. (After the ropes: nothing is cut
+  // below this line, so the grid it reads is the finished one.)
+  { const gat = (x, y) => L.grid[y * W + x];
+    const bed = x => gat(x, 38) === T.AIR && gat(x, 39) === T.AIR && gat(x, 40) === T.SOLID;
+    for (let x = 100; x <= 560; x += 20) if (bed(x)) vent(x, 39, 6);
+    for (let x = 570; x <= 608; x += 6) if (bed(x)) vent(x, 39, 8);   /* his reach, between the piers */
+    for (const x of [130, 356, 396, 454]) if (bed(x)) clam(x, 39);
+    for (const x of [344, 470]) if (bed(x)) wreck(x, 39);
+  }
+
   const tideSea = { x0: 4 * TS, x1: 565 * TS, y: LWR * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.42, grad: false, causeTide: true, loY: LWR * TS, hiY: HW * TS };
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: RH - 1 }, falls: [], interiors, airRooms,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: RH - 1 }, falls: [], interiors, airRooms, deep: D,
     pools: [tideSea, { x0: 566 * TS, x1: 610 * TS, y: 26 * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.66, arenaTide: true, krakenSea: true }],
     causeTide: { low: 16, warn: 4, rise: 3, high: 14, ebb: 2, fall: 3.5, first: 12 },
     leviathan: { arena: 566 * TS },
