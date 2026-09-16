@@ -332,6 +332,62 @@ function hullTopTile(seed) {
   return c;
 }
 
+// ---------- the hull where it stands out of the water ----------
+
+// THE WRECK IN AIR. Under the sea every value closes up and a slab of tarred planking belongs in the murk; out in the
+// storm light the same slab is a flat black shape, with nothing to say where her timber stops and the weather starts.
+// The reef's own rock has had the answer since it was drawn (reefTop's worn shoulder, coralFace's lit shelves): the
+// light is overcast and comes straight down, so a face that meets the air carries a PALE LIP along the top of it, a
+// HARD OUTLINE down its open side with the cut ends of the strakes lit behind it, and a SHADOW along its belly. The
+// outline is for her against the sky and the lit rim is for her against the sea, and she needs both to read either way.
+// These go onto a COPY of a tile that is already baked, and nothing under the waterline is ever sent here, so the
+// drowned timbers are the very picture they always were.
+const HA = { lip: '#9a8f76', lipHi: '#c2b79a', rim: '#6e6553', shade: '#241e19', edge: '#0b0908', belly: '#151110' };
+
+function hullInAir(src, seed, eL, eR, eD, deck) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  g.drawImage(src, 0, 0);
+  // THE DECK IS A LIT PLANE. The weather bleaches the boards nearest it, and the shadow under the covering board is what
+  // gives the plate its thickness: without it her deck and the hull under it are one unbroken dark.
+  if (deck) for (let x = 0; x < T; x++) {
+    px(g, x, (x & 1) ? 2 : 1, (x & 1) ? HA.rim : HA.lip);
+    px(g, x, 5, (x & 1) ? HA.belly : TIM.caulk);
+    if ((x & 3) === 1) px(g, x, 6, HA.belly);
+  }
+  // her open side: the outline hard against the air, and the cut ends of the strakes behind it — lit where each course
+  // turns over, in shade under it, tar in the seam
+  const side = (x0, dir) => {
+    const inner = x0 + dir;
+    for (let y = 0; y < T; y++) {
+      if (deck && y < 5) {
+        px(g, x0, y, y === 4 ? HA.edge : y === 3 ? HA.shade : y === 0 ? HA.lipHi : HA.lip);
+        px(g, inner, y, y === 4 ? TIM.caulk : y === 3 ? DECK[2] : y === 0 ? DECK[0] : DECK[1]);
+        continue;
+      }
+      const k = y & 3;
+      px(g, x0, y, HA.edge);
+      px(g, inner, y, k === 3 ? TIM.caulk : k === 0 ? HA.lip : k === 1 ? HA.rim : HA.shade);
+    }
+    // the last frame is bolted through her end post, and the sea has left its crust where the water runs off it
+    const by = 5 + 4 * ((rnd() * 2) | 0);
+    px(g, inner, by, IRON.l); px(g, inner, by + 1, IRON.d);
+    if (rnd() < 0.5) px(g, inner + dir, by + 1, IRON.rust);
+    if (rnd() < 0.6) barnacles(g, rnd, inner + dir, 6 + ((rnd() * 6) | 0), 1);
+  };
+  if (eL) side(0, 1);
+  if (eR) side(T - 1, -1);
+  // her belly: nothing holds the light under a hull, so it goes to shadow and the outline is all you see of it
+  if (eD) {
+    for (let x = 0; x < T; x++) {
+      px(g, x, T - 1, HA.edge);
+      px(g, x, T - 2, (x & 1) ? HA.belly : TIM.caulk);
+      if ((x & 3) === 2) px(g, x, T - 3, HA.belly);
+    }
+    if (rnd() < 0.7) barnacles(g, rnd, 2 + ((rnd() * 10) | 0), T - 4, 2);
+  }
+  return c;
+}
+
 // A one-way platform: a broken spar, or a plank off a deck, with a rope run along under it. Five rows of board
 // you can stand on and daylight below. The rope is pinned to row 8 at both tile edges and sags between, so a run
 // of them reads as one rope; `end` 'L'/'R' are the broken ends, where the rope is whipped off round the timber.
@@ -393,14 +449,23 @@ export function bakeReefTiles() {
     top[k] = [0, 1, 2, 3].map(i => reefTop(3100 + i + eL * 7 + eR * 13, eL, eR));
     if (eL || eR) edge[k] = [0, 1].map(i => reefEdge(3200 + i + eL * 3 + eR * 5, eL, eR));
   }
+  const hull = [0, 1, 2, 3].map(i => hullTile(3700 + i)), hullTop = [0, 1, 2, 3].map(i => hullTopTile(3800 + i));
+  // The same timbers with the weather on them, keyed by which sides meet the air: left, right, and the belly. A deck
+  // always has the sky over it, so it keeps a set for no open side at all; a hull tile with nothing open to it is never
+  // asked for, and gets the drowned picture above.
+  const hullAir = {}, hullAirTop = {};
+  for (const eL of [0, 1]) for (const eR of [0, 1]) for (const eD of [0, 1]) {
+    const k = '' + eL + eR + eD, sd = eL * 3 + eR * 5 + eD * 11;
+    hullAirTop[k] = hullTop.map((s, i) => hullInAir(s, 3900 + i * 7 + sd, eL, eR, eD, true));
+    if (eL || eR || eD) hullAir[k] = hull.map((s, i) => hullInAir(s, 3960 + i * 7 + sd, eL, eR, eD, false));
+  }
   return {
     top, edge,
     fill: [0, 1, 2, 3].map(i => reefFill(3300 + i)),
     silt: [0, 1, 2].map(i => reefSilt(3400 + i)),
     ledge: [0, 1, 2].map(i => sparLedge(3500 + i, null, i)), ledgeL: sparLedge(3510, 'L'), ledgeR: sparLedge(3511, 'R'),
     wet: [0, 1, 2].map(i => reefWet(3600 + i)),
-    hull: [0, 1, 2, 3].map(i => hullTile(3700 + i)),
-    hullTop: [0, 1, 2, 3].map(i => hullTopTile(3800 + i)),
+    hull, hullTop, hullAir, hullAirTop,
   };
 }
 
