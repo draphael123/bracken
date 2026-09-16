@@ -997,6 +997,7 @@ function coopStart(h2, ally) {
   players = [players[0], p];
   { const wasH = PROG.hero; PROG.hero = h2; p.set = heroSet(PROG.skin, PROG.sword); PROG.hero = wasH; }
   asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; });
+  if (ally) { allyWalk = null; allyLoad(); }   /* a fresh walker for a fresh wood, and the bot's two modules on their way */
 }
 function coopEnd() { players = [players[0]]; coopFall = false; }
 /* WHEREVER ONE OF THEM WAKES, THEY ALL DO. A respawn puts the whole room back, so leaving the other lying where
@@ -1164,6 +1165,85 @@ function drawVictory() {
   { const s = coopWinner('total'); text(s, VW / 2, 128, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', fitSize(s, pw - 12, [12, 8, 6])); }   /* DEATH KNIGHT is a long name: the line drops a size rather than losing its end */
   text('the wood is quieter for the two of you', VW / 2, 148, UI.dim, 'center', 6);
   if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, VH - 18, UI.sel, 'center', 6);
+}
+/* ==================== THE ALLY, for a player with no friend ====================
+   It is THE LAB BOT. src/lab.js drives a hero with real key presses, and its rules are the ones the boss lab
+   measures every hero against - so the ally answers a wind-up exactly the way the harness says THAT HERO answers
+   it, and there is ONE written list of what no shield turns (lab.js HARD_TELLS), not two that can drift apart.
+   The walking is the playtest walker (src/playtest.js makeBot), which jumps, rides, swims, climbs and pogos.
+   It runs inside the ally's own pass, so every key it presses is the ally's hand and never player one's.
+   WHAT IT WILL NOT DO:
+     - take the last hit on a boss that is OPEN while player one can reach it: that beat is his, not a bot's;
+     - stand in player one's way, on spikes, or over a pool the level marked as one that eats you;
+     - anything at all while he is down except come and pick him up. */
+/* THE BOT IS LOADED WHEN IT IS ASKED FOR, like the labs and the walker already are: nobody who plays alone pays to
+   download it. ONE promise, and it is handed back - because a dynamic import resolves on the microtask queue, and a
+   harness driving the game through a synchronous run of BK.sim() never unwinds the stack for it to resolve ON. That
+   is not a hypothetical: the ally read as completely inert in its first test, and it was this. BK.allyReady() awaits
+   it, so the labs and the tools can have the ally on its feet before the first frame they measure. */
+let LABMOD = null, PTMOD = null, allyWalk = null, allyLoading = null;
+function allyLoad() {
+  if (LABMOD && PTMOD) return Promise.resolve(true);
+  if (!allyLoading) allyLoading = Promise.all([import('./lab.js'), import('./playtest.js')])
+    .then(([a, b]) => { LABMOD = a; PTMOD = b; return true; }).catch(() => { allyLoading = null; return false; });
+  return allyLoading;
+}
+const apress = k => { if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; };
+/* NEVER STAND IN A HAZARD: spikes on the tile it would stand on, or a pool the level marked harm */
+function allySafeGoal(gx) {
+  const tx = Math.floor(gx / TS), ty = Math.floor(P.y / TS);
+  if (tileAt(tx, ty) === T.SPIKE || tileAt(tx, ty + 1) === T.SPIKE) return P.x;
+  if ((L.pools || []).some(q => q.harm && gx > q.x0 - 8 && gx < q.x1 + 8 && P.y > q.y - 12)) return P.x;
+  return gx;
+}
+function allyTick() {
+  const p = P, one = players[0];
+  if (!LABMOD || !PTMOD) { allyLoad(); return; }
+  if (!allyWalk) allyWalk = PTMOD.makeBot(window.BK);
+  for (const k in keys) keys[k] = false;
+  if (p.down > 0 || p.dead) return;
+  p.aiT = (p.aiT || 0) + 1;
+  const h = p.hero, reach = LABMOD.LAB_REACH[h] || 22;
+  /* ONE. HE COMES FIRST. A downed partner is the whole list; nothing else on it matters until he is up. */
+  if (one.down > 0) {
+    /* AND IT WALKS THERE ITSELF. The playtest walker is a fine traveller but it has a fight of its own in it, and a
+       bot that stops to trade blows with a goblin four tiles from the man bleeding out is no kind of ally - measured:
+       it never once closed the last seventy pixels. Straight at him, near enough to be standing ON him (the revive
+       wants 12 px, so this stops at 7), and a hop when a lip has it. */
+    const d = one.x - p.x;
+    if (Math.abs(d) > 7) { keys[d > 0 ? 'right' : 'left'] = true; if (p.ground && Math.abs(p.vx) < 6 && p.aiT % 18 === 0) apress('jump'); }
+    keys.block = false; return;
+  }
+  /* TWO. WHAT IS ON US - and WHAT HE IS FIGHTING, which counts for more than what is merely near us. */
+  let foe = null, best = 1e9;
+  for (const e of enemies) {
+    if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
+    if (Math.abs(e.y - p.y) > 40) continue;
+    const d = Math.abs(e.x - p.x); if (d > 150) continue;
+    /* HIS FIGHT counts for more than whatever is merely nearest us - and A BOSS STANDING OPEN outranks them both,
+       or the ally spends the one beat that matters swatting a goblin while the opening it owes him closes. */
+    const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0);
+    if (s < best) { best = s; foe = e; }
+  }
+  const fdist = foe ? Math.abs(foe.x - p.x) : 1e9;
+  /* THREE. THE TELL, answered by this hero's own rule out of the lab's one list. */
+  if (foe && windingUp(foe) && fdist < 90) {
+    p.face = Math.sign(foe.x - p.x) || p.face;
+    if (h === 'warden' && LABMOD.braceNow(foe, p)) { keys.block = true; return; }
+    if (LABMOD.SHIELDED(h) && !LABMOD.HARD_TELLS.has(foe.t + '|' + foe.mode)) { keys.block = true; return; }
+    if (p.aiT % 12 === 0) { keys[foe.x > p.x ? 'left' : 'right'] = true; apress('dodge'); }   /* no shield turns it: go from it */
+    return;
+  }
+  /* FOUR. THE LAST HIT ON AN OPENING IS HIS. A boss standing open with little left and player one in reach of it
+     is the beat the whole fight was built around, and a bot stealing it is the meanest thing an ally can do. */
+  const holdOff = !!foe && !!foe.maxHp && foe.open > 0 && Math.abs(one.x - foe.x) < 120 && foe.hp <= swordDmg() * 2;
+  /* FIVE. OTHERWISE: keep near him, a step behind his shoulder, so it is never in front of his swing. */
+  let goal = one.x + (one.face > 0 ? -22 : 22);
+  if (foe && Math.abs(p.x - one.x) < 130) goal = foe.x - (Math.sign(foe.x - p.x) || 1) * (reach - 4);
+  if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
+  allyWalk(allySafeGoal(goal));
+  if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; return; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
+  if (foe && fdist < reach + (foe.w || 12) / 2 && Math.abs(foe.y - p.y) < 28 && p.atk < 0 && p.st >= 12) { p.face = Math.sign(foe.x - p.x) || p.face; apress('atk'); }
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
@@ -16180,6 +16260,8 @@ function update(dt) {
   if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
+  /* THE ALLY PUTS ITS HANDS ON THE KEYS FIRST, inside its own pass, so what follows reads them like anybody else's */
+  for (const pp of players) if (pp.ai) asPlayer(pp, () => allyTick());
   /* EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
      this is the two lines it always was, in the order it always ran them. */
   for (const pp of players) asPlayer(pp, () => {
@@ -19501,6 +19583,7 @@ window.BK = { xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(
   players: () => players, get coop() { return coop(); }, coopArm(h, ally) { coopWant = h ? { hero: h, ally: !!ally } : null; return coopWant; },
   coopStart: (h, ally) => { coopStart(h, ally); return players.map(p => p.hero); }, coopEnd: () => { coopWant = null; coopEnd(); return players.length; },
   coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
+  allyReady: () => allyLoad(),   /* AWAIT THIS BEFORE MEASURING AN ALLY: a synchronous run of sim() never lets its import resolve */
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */
   drawables() { const out = [], sh = (PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
