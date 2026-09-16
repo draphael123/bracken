@@ -1785,7 +1785,8 @@ function theMonastery() {
   ent('sign', 40, 171, { text: 'A PRAYER WHEEL. STRIKE IT AND ITS STAIR TURNS. STRIKE IT AGAIN AND IT TURNS BACK.' });
   chimney(171, 152);
   ent('sign', 88, 171, { text: 'A CHIMNEY: HOLD INTO THE ROCK TO CLING, JUMP TO KICK OFF. SLOW, BUT IT STAYS.' });
-  ent('fledgling', 24, 171, { face: 1 }); ent('fledgling', 64, 171, { face: -1 }); ent('bat', 44, 162); ent('rockgoblin', 84, 171, { face: -1 });
+  ent('fledgling', 64, 171, { face: -1 }); ent('rockgoblin', 84, 171, { face: -1 });
+  ent('gobmage', 34, 171, { face: 1 });   // THE GOBLIN MAGE at home among the shelves, under the prayer wheel's stair: it reads at you from the wheel all the way up the stair, and to stop it you go back down. (It holds the far end the chick at 24 and the bat at 44 did: the gallery is no harder for having a reader in it)
   for (const [x, k, v] of [[10, 'bookshelf', 0], [15, 'bookshelf', 1], [19, 'lectern', 0], [30, 'bookpile', 0], [34, 'bookshelf', 0], [56, 'candelabra', 0], [70, 'bookpile', 1], [80, 'bookshelf', 1]]) ent('deco', x, 171, { kind: k, v });
   coins([26, 171], [70, 171], [8, 171], [13, 171]);
   // THE READING LOFT: over the gallery's roof, where the wheel's other stair goes
@@ -1802,7 +1803,8 @@ function theMonastery() {
   air(19, 40, 132, 134);                                            // broken through where the hoist rises
   chimneyL(151, 132);                                               // and the slow way up, that nothing can take away
   ent('sign', 52, 136, { text: 'STAND IN A BASKET AND IT SINKS, AND THE OTHER COMES UP PAST YOU. JUMP ACROSS AS IT GOES BY.' });
-  ent('miner', 12, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140); ent('harpy', 50, 146);
+  ent('miner', 12, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140);
+  ent('gobmage', 40, 136, { face: 1 });   // and a second one out on the hanging walkway, reading over the stacks where the harpy was: it has the steps up from the check below it, and nowhere to walk off to but the walkway's end
   ent('check', 72, 151); coins([32, 136], [40, 136], [48, 136], [8, 151], [16, 151]);
   for (const [x, k, v] of [[48, 'bookshelf', 0], [52, 'bookshelf', 1], [84, 'bookpile', 0]]) ent('deco', x, 151, { kind: k, v });
 
@@ -1849,14 +1851,18 @@ function theMonastery() {
   ent('deco', 6, 79, { kind: 'shrine', v: 1 }); coins([3, 79], [5, 79], [8, 79], [10, 79]); ent('mend', 10, 79);
   ent('sign', 26, 79, { text: 'THE UPPER SHRINES. PRAYER FLAGS ON EVERY LINE, AND NOBODY LEFT TO READ THEM.' });
   ent('check', 22, 79); coins([28, 79], [60, 79], [44, 79]);
-  ent('fledgling', 50, 79, { face: -1 }); ent('fledgling', 68, 79, { face: -1 }); ent('harpy', 62, 72);
+  ent('fledgling', 50, 79, { face: -1 }); ent('fledgling', 68, 79, { face: -1 });   /* (the harpy over them at 62,72 made way for the priests) */
+  // THE GOBLIN PRIESTS at the shrines: one among the chicks and the herd billy on the ledge, where a blessed billy is the
+  // reason to go for the robe first, and one by the foot of the scaffold, behind the goat that grazes up it. Both clear
+  // of the way up through the boards at 31-37 and the cellar's trapdoor at 81-89
+  ent('gobpriest', 57, 79, { face: -1 }); ent('gobpriest', 41, 79, { face: 1 });
   ent('sign', 16, 79, { text: 'THE BELLOWS THROW YOU HIGH. KEEP GOING AT THE TOP.' });
   brazier(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
   brazier(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 });
   plat(23, 62, 5); brazier(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
   band(56, 23, 5);
   coins([14, 74], [19, 65], [25, 59], [14, 70], [19, 67]);
-  ent('harpy', 40, 70); ent('harpy', 30, 64);
+  ent('harpy', 30, 64);   /* (not a second at 40,70 over the priest by the scaffold: a bird and a blessing on the same few tiles is a crowd) */
   cellar(80, 90, 80); coins([81, 82], [83, 82], [85, 82], [87, 82], [89, 82], [70, 79], [76, 79]);
   // THE SCAFFOLD the monks left up the east face, with a shrine at the top of it
   for (const [x, y] of [[44, 78], [49, 76], [54, 74], [59, 72], [64, 70], [69, 68], [74, 66], [78, 64]]) plat(x, y, 4);
