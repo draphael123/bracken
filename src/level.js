@@ -7294,7 +7294,7 @@ const AMBUSH = {
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
     waves: [[['goat', 178], ['goat', 198], ['sprig', 191], ['harpy', 185, 8]], [['shield', 193], ['archer', 199], ['troll', 180], ['rockgoblin', 186]]] }],
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
-    waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['shield', 60], ['archer', 66], ['brute', 47], ['cutter', 55]]] }],
+    waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['archer', 66], ['cutter', 49]]] }],
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
   moor: [{ name: 'THE CAIRN RIDGE', row: 13, wallL: 508, wallR: 545,

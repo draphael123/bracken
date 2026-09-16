@@ -2297,6 +2297,10 @@ function ambushRun(A, dt) {
   for (const e of A.foes) if (e.alive && (AMB_FLY.has(e.t) || e.noGrav)) ambushPen(A, e);   /* the room holds its flyers inside it, and in reach of the floor the fight is on */
   const lx = (A.wallL - 1) * TS, rx = (A.wallR + 2) * TS;
   for (const e of A.foes) if (e.alive && (e.x < lx || e.x > rx || e.y > LH * TS + 8)) e.alive = false;   /* out of the room is out of the fight */
+  /* AND ONE THAT GOES INTO THE ROOM'S OWN SPIKES STAYS THERE. Only a THROWN foe was ever impaled, so a sprig that walked into
+     THE CLIFF HALL's pit after you, or a cutter that fell in, stood on the spikes for the rest of the wave where no blade could
+     reach it, and the room sat shut until the wave slunk off at seventy seconds */
+  for (const e of A.foes) if (e.alive && !(e.knock > 0) && !AMB_FLY.has(e.t) && !e.noGrav && [-3, 3].some(ox => tileAt(Math.floor((e.x + ox) / TS), Math.floor((e.y - 4) / TS)) === T.SPIKE)) hazardFoe(e);
   if (A.t <= 0) for (const e of A.foes) if (e.alive) { e.alive = false; smoke(e.x, e.y - 8, 3, 8); }   /* a wave that outlasts its time slinks off: a room never keeps you */
   if (A.foes.some(e => e.alive)) return;
   if (A.wave + 1 < A.waves.length) { A.st = 'beat'; A.t = AMB.beat; SFX.sting(); return; }
@@ -2354,7 +2358,7 @@ function drawAmbushHud() {
    three of one ran past a minute; a goat, a thorn or a cook goes down (or off a ledge) in a few seconds at three */
 const ELITE = {
   shield: { name: 'THE SHIELD CAPTAIN', own: true }, pike: { name: 'THE PIKE SERJEANT', rule: 'wall' }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall', hp: 2.2 },
-  brute: { name: 'THE GOBLIN CAPTAIN', rule: 'rally', hp: 2.5 }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
+  brute: { name: 'THE GOBLIN CAPTAIN', hp: 2.5, own: true }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
   thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig', hp: 4 }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat', hp: 5 }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight', hp: 1.8 }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', rule: 'slam' }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
   archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },   /* own: moves of its own (updateEliteArcher), no shared rule */
@@ -2421,6 +2425,7 @@ function updateElite(e, dt) {
     if (e.leashT > 1.5) { smoke(e.x, e.y - 8, 3, 8); e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.leashT = 0; smoke(e.x, e.y - 8, 3, 8); } } else e.leashT = 0;
   if (e.t === 'archer') return updateEliteArcher(e, dt);
   if (e.t === 'shield') return updateEliteShield(e, dt);
+  if (e.t === 'brute') return updateEliteBrute(e, dt);
   return updateEliteRule(e, dt);
 }
 /* IT LOSES THE BODY: thrown, frozen or broken in the middle of a move, the move is gone, not stuck */
@@ -2511,6 +2516,46 @@ function updateEliteShield(e, dt) {
   }
   const mv = moveBody(e, e.vx * dt, e.vy * dt, false); if (mv && mv.ground) e.vy = 0;
   if (mv && mv.hitX && e.mode === 'elCharge') { e.mode = 'elDazed'; e.modeT = A.dazed; e.vx = 0; SFX.thud(); shakeCam(4); dust(e.x + e.face * 8, e.y - 6, 8); number(e.x, e.y - e.h - 8, 'INTO THE WALL', '#8fd160'); }
+  return true;
+}
+/* THE GOBLIN CAPTAIN. A brute has an overhead you roll and a sweep you block; its captain strings them together:
+     THE THREE CUTS  two quick cuts, each a yellow ! - hold the shield - and then the cleaver goes up over his head for the third,
+                     a red !! - get out from under it. Block all three and the third comes through the shield; roll the first
+                     and you are rolling into the second. It is one windup held from the first cut to the last (nothing else
+                     in the room starts one while he has it). The cleaver goes into the floor on the third, and it stays there
+                     while he hauls on it: the opening, more than a second, and he is facing the wrong way to cover himself.
+     THE WAR CRY     (quiet, no mark) a horn-blast of a shout: every goblin near him strikes faster for four seconds - a red pip
+                     over each. It throws nothing, so there is nothing to block; it is why you go for him first. */
+const EL_BRUTE = { reach: 150, near: 40, cut1: 0.5, cut2: 0.36, over: 0.62, strike: 0.2, cutReach: 36, overReach: 42, cutDmg: 12, overDmg: 22, stuck: 1.3, lunge: 70, every: 3.2, cryCd: 11 };
+function updateEliteBrute(e, dt) {
+  const A = EL_BRUTE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  e.cryCd = Math.max(0, (e.cryCd || 0) - dt);
+  /* one cut: a step in behind it, and the blade across the front of him */
+  const cuts = () => { e.vx = Math.abs(P.x - e.x) < e.w / 2 + 8 || !isSolid(Math.floor((e.x + e.face * (e.w / 2 + 6)) / TS), Math.floor((e.y + 2) / TS)) ? 0 : e.face * A.lunge;   /* no step in off an edge */ if (e.elHit || P.dead || Math.sign(P.x - e.x) !== e.face || Math.abs(P.x - e.x) >= A.cutReach + e.w / 2 || Math.abs(P.y - e.y) >= 22) return false; return (e.elHit = true); };   /* (the blow itself is written in each case, where tools/tells.mjs can see what it is) */
+  if (!e.elBack) {
+    e.elT -= dt;
+    if (!eliteMay(e, A.reach)) return false;
+    if (ad < A.near + e.w / 2 && dy < 18) { eliteTake(e); e.mode = 'elCut1Tell'; e.modeT = A.cut1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+    else if (e.cryCd <= 0 && ad > 70 && eliteNear(e, 140).length) { eliteTake(e); e.mode = 'elCryTell'; e.modeT = 0.7; SFX.hornBlast(); }
+    else return false;
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt);
+  if (eliteLost(e)) { eliteDrop(e, A.every); return false; }
+  switch (e.mode) {
+    case 'elCut1Tell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'elCut1'; e.modeT = A.strike; e.elHit = false; SFX.slash(); } break;
+    case 'elCut1': if (cuts()) damagePlayer(e.x, eliteDmg(A.cutDmg), { who: e, blow: 'the first cut' }); if (e.modeT <= 0) { e.vx = 0; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'elCut2Tell'; e.modeT = A.cut2; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); } break;
+    case 'elCut2Tell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'elCut2'; e.modeT = A.strike; e.elHit = false; SFX.slash(); } break;
+    case 'elCut2': if (cuts()) damagePlayer(e.x, eliteDmg(A.cutDmg), { who: e, blow: 'the second cut' }); if (e.modeT <= 0) { e.vx = 0; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'elOverTell'; e.modeT = A.over; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); } break;
+    case 'elOverTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'elOver'; e.modeT = A.strike; e.elHit = false; } break;
+    case 'elOver': e.vx = 0;
+      if (!e.elHit) { e.elHit = true; SFX.heavy(); shakeCam(4); dust(e.x + e.face * 16, e.y, 8);
+        if (!P.dead && Math.sign(P.x - e.x) === e.face && Math.abs(P.x - e.x) < A.overReach + e.w / 2 && Math.abs(P.y - e.y) < 24) damagePlayer(e.x, eliteDmg(A.overDmg), { unblockable: true, who: e, blow: 'the cleaver' }); }
+      if (e.modeT <= 0) { e.mode = 'elStuck'; e.modeT = A.stuck; number(e.x + e.face * 14, e.y - 16, 'STUCK', '#8fd160'); } break;
+    case 'elStuck': e.vx = 0; if (Math.random() < dt * 6) dust(e.x + e.face * 16, e.y, 1); if (e.modeT <= 0) { eliteDone(e); e.elT = A.every; } break;   /* THE OPENING: the cleaver in the floor */
+    case 'elCryTell': e.vx = 0; if (e.modeT <= 0) { for (const q of eliteNear(e, 140)) q.rallyT = EL.rally; ringAt(e.x, e.y - e.h / 2, 40, '#ff6b6b', 0.4); shakeCam(2); eliteDone(e); e.cryCd = A.cryCd; e.elT = 1.5; } break;
+    default: eliteDrop(e, A.every); return false;
+  }
+  const mv = moveBody(e, e.vx * dt, e.vy * dt, false); if (mv && mv.ground) e.vy = 0;
   return true;
 }
 /* THE RAIN, DRAWN: the patch of floor marked in red while he draws (brighter as it comes), then the arrows coming down into it and
@@ -15778,6 +15823,14 @@ function poseOf(e, wind) {
     if (m === 'elVolleyTell' || m === 'elVolley') { o.rot = (o.rot || 0) - f * 0.32; o.dx -= f * 2; }
     else if (m === 'elRoll') { const k = 1 - Math.max(0, e.modeT) / EL_ARCH.roll, rt = (e.rollDir || -f) * k * Math.PI * 2, r = e.h * 0.4; o.rot = (o.rot || 0) + rt; o.dx -= r * Math.sin(rt); o.dy -= r * (1 - Math.cos(rt)); o.sy *= 0.85; }
     else if (m === 'elRollUp') { o.sy *= 0.8; o.sx *= 1.1; } }
+  /* THE GOBLIN CAPTAIN draws each cut back across himself, rears up tall for the cleaver, and bends over it where it sticks */
+  if (e.elite && e.t === 'brute') { const m = e.mode, f = e.face || 1;
+    if (m === 'elCut1Tell' || m === 'elCut2Tell') { o.rot = (o.rot || 0) - f * 0.14; o.dx -= f * 2; }
+    else if (m === 'elCut1' || m === 'elCut2') { o.rot = (o.rot || 0) + f * 0.12; o.dx += f * 2; }
+    else if (m === 'elOverTell') { o.sy *= 1.1; o.sx *= 0.93; o.dy -= 2; o.rot = (o.rot || 0) - f * 0.1; }
+    else if (m === 'elOver') { o.sy *= 0.8; o.sx *= 1.16; }
+    else if (m === 'elStuck') { o.sy *= 0.86; o.rot = (o.rot || 0) + f * 0.2; o.dx += f * 3 + (Math.floor(time * 20) % 2 ? 1 : 0); }
+    else if (m === 'elCryTell') { o.sy *= 1.08; o.dy -= Math.round(Math.abs(Math.sin(time * 30)) * 2); } }
   if (e.t === 'drownedking' && e.tilt) { const rt = e.tilt * (o.face || 1); o.rot = (o.rot || 0) + rt; o.dx -= 16 * Math.sin(rt); o.dy -= 16 * (1 - Math.cos(rt)); }   /* HE LEANS INTO HIS SWIM, turned about the middle of him and not his feet */
   return o;
 }
@@ -18716,7 +18769,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'drone') frame = Math.floor(e.anim * 1.1) % 6 === 0 && (e.anim * 1.1) % 1 < 0.15 ? 2 : [0, 3, 1, 3][Math.floor(e.anim * 5) % 4];
     else if (e.t === 'shaman') frame = e.cast > 0 ? (Math.floor(e.anim * 10) % 2 ? 4 : 1) : Math.abs(e.vx || 0) > 4 ? 2 + Math.floor(e.anim * 6) % 2 : 0;
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
-    else if (e.t === 'brute') frame = e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
+    else if (e.t === 'brute') frame = e.mode === 'elCut1Tell' || e.mode === 'elCut2Tell' || e.mode === 'elOverTell' || e.mode === 'elCryTell' ? 2 : e.mode === 'elCut1' || e.mode === 'elCut2' || e.mode === 'elOver' || e.mode === 'elStuck' ? 3 : e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' ? 9 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
     else if (e.t === 'shield') frame = e.mode === 'elChargeTell' || e.mode === 'elWallTell' ? 5 : e.mode === 'elCharge' ? 6 : e.mode === 'elDazed' || e.mode === 'elChargeEnd' ? 4 : e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
     else if (e.t === 'sprig' && (e.mode === 'biteTell' || e.mode === 'bite')) frame = e.mode === 'biteTell' ? 5 : 6;   /* the crouch, and the leap */
