@@ -6745,12 +6745,12 @@ function theMagesFolly() {
   ent('check', 216, G - 1); deco('longTable', 222, G - 1); deco('longTable', 230, G - 1, { v: 1 }); deco('candelabra', 226, G - 1);
   /* THE HOMUNCULUS'S CELL: the mini, behind a stone wall, and the gate into the lab lifts when he falls */
   ent('check', 237, G - 1);
-  sign(235, G - 1, 'THE THING NEXT DOOR WEARS WHAT YOU LAST DRANK. IT PANTS AFTER A TRICK: CUT IT THEN.');
+  sign(235, G - 1, 'THE THING NEXT DOOR THROWS WHAT IS ON ITS SHELVES. IT PANTS AFTER A TRICK: CUT IT THEN.');
   ent('homunculus', 254, G - 1, { face: -1, mini: true });
   for (let y = G - 6; y <= G - 1; y++) set(262, y, T.PORT);         /* the lab door: it lifts when he falls */
   coins([244, G - 2], [258, G - 2]);
 
-  // ---------------- 3. THE ALCHEMY LAB (x 263-380). Vats, spitters, the golem through the floor, and out again as a mouse. ----------------
+  // ---------------- 3. THE ALCHEMY LAB (x 263-380). Vats, spitters, down through the rotten boards to the cellar, and back up its rope. ----------------
   wall(263, 380, 10, G - 1, 'tower');
   air(263, 379, 22, G - 1);
   interiors.push([263, 379, 22, G - 1, 'lab']);
