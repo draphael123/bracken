@@ -4435,18 +4435,18 @@ function theHurricane() {
   ent('check', 96, 19);
   coins([64, 18], [76, 18], [90, 18], [104, 18], [66, 10], [82, 10], [106, 11], [58, 18], [70, 18], [84, 18], [98, 18], [112, 18], [74, 10], [94, 25], [78, 25], [110, 25]);
 
-  // ================= 3. THE BREACH: she is open to the sea amidships, and what is in her eats you =================
-  // Her waist is stove clean through. The bilge stands in her, green and thick, and the only way over it is
-  // what is floating in it and the two spars they lashed across.
+  // ================= 3. THE BREACH: she is open to the sea amidships, and the sea has come in =================
+  // Her waist is stove clean through and her hold is full to the deckhead. It is the same sea that is outside
+  // her, so it is swum, not survived: over it on the spars and her own wreckage, or down into it and across.
   air(126, 174, 20, 26);
-  pools.push({ x0: 126 * TS, x1: 175 * TS, y: 20 * TS + 2, bottom: 27 * TS, shallow: false, swim: true, harm: true, clear: true, ...FOUL });
-  ent('sign', 121, 19, { text: 'SHE IS OPEN TO THE SEA AND THE BILGE WATER KILLS: GO OVER IT.' });
+  pools.push({ x0: 126 * TS, x1: 175 * TS, y: 20 * TS + 2, bottom: 27 * TS, shallow: false, swim: true, clear: true });   /* PLAIN SEAWATER. It was bilge - harm and a foul green - and the flooded hold is better without the poison: the room, the route and everything in it are as they were, and the water is the sea */
+  ent('sign', 121, 19, { text: 'SHE IS OPEN TO THE SEA AMIDSHIPS AND HER HOLD IS FULL OF IT. SWIM IT, OR GO OVER.' });
   plat(129, 17, 4); plat(137, 15, 4); plat(146, 17, 4); plat(155, 15, 4); plat(164, 17, 4);
   bob(133, 19); bob(142, 19); bob(151, 19); bob(160, 19); bob(169, 19); // her own wreckage, riding what is in her
-  for (const x of [134, 143, 152, 161, 170]) net(x, x + 1, 14, 26);      // and a net hanging into the bilge at every bay of it
+  for (const x of [134, 143, 152, 161, 170]) net(x, x + 1, 14, 26);      // and a net hanging into the water at every bay of it: a swim is never a room with no door
   net(124, 125, 14, 19); net(175, 176, 14, 19);
   movers.push({ kind: 'swing', px: 150 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.6 });
-  ent('marine', 140, 14, { face: -1 }); ent('stormshaman', 165, 16, { caller: true, face: -1 }); ent('lookout', 138, 14, { face: 1 }); ent('cutlass', 131, 16, { face: 1 }); // on her spars: the deck is gone under them
+  ent('marine', 140, 14, { face: -1 }); ent('seawitch', 165, 16, { caller: true, face: -1 }); ent('lookout', 138, 14, { face: 1 }); ent('cutlass', 131, 16, { face: 1 }); // on her spars: the deck is gone under them
   coins([133, 18], [142, 18], [151, 18], [160, 18], [169, 18], [138, 14], [156, 14]);
   ent('deco', 122, 19, { kind: 'boardingNet' }); ent('deco', 118, 19, { kind: 'kegStack' }); ent('deco', 178, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 172, 19, { kind: 'boardingNet' });
 
@@ -4467,7 +4467,7 @@ function theHurricane() {
   for (const [x0, x1, y] of [[272, 288, 11], [250, 262, 12], [292, 306, 12], [232, 246, 11]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); }
   ent('scout', 280, 10, { face: -1 }); ent('lookout', 270, 4, { face: -1 });
   ent('sailor', 232, 19, { rise: true, face: -1 }); ent('sailor', 241, 19, { rise: true, face: -1 }); ent('cutlass', 300, 19, { face: -1 }); ent('boarder', 312, 19, { face: -1 });
-  ent('cutlass', 232, 26, { face: 1 }); ent('bosun', 260, 26, { face: -1 }); ent('stormshaman', 300, 11, { caller: true, face: -1 });
+  ent('cutlass', 232, 26, { face: 1 }); ent('bosun', 260, 26, { face: -1 }); ent('seawitch', 300, 11, { caller: true, face: -1 });
   // HER PUMPS, amidships, where there was nothing but deck: three strikes on the brake and the water in her
   // hold goes down for twenty seconds - which is the only way to walk her orlop dry and get what is down there.
   // HER GUN DECK: four laid guns on the orlop, and the last one trained on the magazine's bulkhead
@@ -4581,7 +4581,7 @@ function theHurricane() {
   ent('sign', 502, 23, { text: 'WORK THIS BEAM TO SINK THE OIL A WHILE. SOMETHING LIES ON THE BOTTOM.' });
   ent('deco', 500, 33, { kind: 'plunder', v: 0 }); ent('deco', 536, 33, { kind: 'plunder', v: 2 }); ent('coin', 518, 33);
   coins([496, 33], [508, 33], [524, 33], [532, 33], [544, 33]);
-  ent('scout', 516, 23, { face: -1 }); ent('tideguard', 534, 23, { face: -1 }); ent('stormshaman', 499, 14, { caller: true, face: -1 }); ent('sailor', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
+  ent('scout', 516, 23, { face: -1 }); ent('tideguard', 534, 23, { face: -1 }); ent('seawitch', 499, 14, { caller: true, face: -1 }); ent('sailor', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
   ent('coin', 528, 23); ent('deco', 532, 23, { kind: 'plunder', v: 2 });
   coins([493, 20], [500, 14], [510, 16], [520, 14], [530, 16], [540, 14], [548, 16], [518, 23], [526, 23]);
   ent('check', 560, 19);
@@ -4593,7 +4593,7 @@ function theHurricane() {
   for (const [x0, x1, y] of [[602, 616, 11], [580, 594, 12], [620, 634, 12]]) { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); }
   ent('boarder', 578, 19, { face: -1 }); ent('sailor', 592, 19, { rise: true, face: -1 }); ent('bosun', 624, 19, { face: -1 });
   ent('scout', 610, 10, { face: -1 }); ent('sailor', 640, 19, { rise: true, face: -1 }); ent('lookout', 600, 5, { face: -1 });
-  ent('cutlass', 566, 19, { face: 1 }); ent('boarder', 601, 19, { face: -1 }); ent('stormshaman', 628, 11, { caller: true, face: -1 });
+  ent('cutlass', 566, 19, { face: 1 }); ent('boarder', 601, 19, { face: -1 }); ent('seawitch', 628, 11, { caller: true, face: -1 });
   for (const [gx, gy] of [[644, 8], [648, 7], [652, 8]]) ent('petrel', gx, gy, { gull: true, face: -1 });
   // THE LOOSE GUN. Walk aft of her checkpoint and her aft gun works at its lashings and parts them. From then on
   // every heel runs it down her deck between two bitts (561 and 627): it crushes you, it crushes her crew, and it
@@ -7065,7 +7065,7 @@ const GARRISON = {
   longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
   reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
-  hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['stormshaman', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and a storm-caller, not another cutlass */
+  hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['seawitch', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and her own sea witch, not another cutlass */
   mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3]],   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
   fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting

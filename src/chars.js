@@ -2929,6 +2929,79 @@ export function bakeGoblinShaman() {
   return pack([idle, cast, blink, howl, walk1, walk2], 8, 17, 12, 16);
 }
 
+// THE SEA WITCH - the Hurricane Deck's own caster. The storm shaman was standing her posts: a green hand with a
+// bone staff, on a pirate ship, which is the one thing aboard that never signed the articles. This one did. She
+// is built to the shaman's canvas and anchor so she takes his place exactly, and every pixel of her is the
+// crew's instead of the camp's. The first draft put her in a hood and she came out GREEN-HEADED - the one thing
+// she must not read as - so the head is a RED KERCHIEF over black hair, which is what the cutlasses wear and
+// nothing in the goblin family has. Under it: a tanned face, a salt-green shawl across the shoulders only, a
+// deep red sea-coat, a brass sash, and the shape that names her from across a deck - A CROOK WITH A STORM
+// LANTERN ON IT, dull brass while she watches, white and violet the moment she calls. Three frames for three
+// states and no walk: she watches, she casts, and she throws both arms up and brings the sky down.
+const SW = Object.assign({}, EP, { r: '#8a2f3a', R: '#55202a', k: '#c9463d', s: '#4a9a8a', d: '#2a2333',
+  f: '#f3d2a8', u: '#8a5a32', m: '#ffffff', v: '#c9a0ff', y: '#e0b040' });
+export function bakeSeaWitch() {
+  const r = rows => outline(fromGrid(rows, SW, 1), OUT);
+  const idle = r([
+    '............yy..',
+    '...........ymmy.',
+    '...........ymmy.',
+    '...........yyyy.',
+    '.....kkkk...u...',
+    '....kkkkkk..u...',
+    '....ddffdd..u...',
+    '....dfoofd..u...',
+    '.....ffff...u...',
+    '....ssssss..u...',
+    '...srrrrrrsfu...',
+    '...rrryyyrr.u...',
+    '...rRRyyyRR.u...',
+    '...rRRRRRRRru...',
+    '....RRRRRRR.....',
+    '....RR...RR.....',
+    '...RRR...RRR....',
+    '................']);
+  const cast = r([
+    '...........vvvv.',
+    '..........vmmmmv',
+    '..........vmmmmv',
+    '...........vvvv.',
+    '.....kkkk...u...',
+    '..f.kkkkkk..u...',
+    '..f.ddffdd..u...',
+    '...fdfoofd..u...',
+    '.....ffff...u...',
+    '....ssssss..u...',
+    '...srrrrrrsfu...',
+    '...rrryyyrr.u...',
+    '...rRRyyyRR.u...',
+    '...rRRRRRRRru...',
+    '....RRRRRRR.....',
+    '....RR...RR.....',
+    '...RRR...RRR....',
+    '................']);
+  const call = r([
+    '..m........vvvv.',
+    '..f.......vmmmmv',
+    '...f.kkkkvmmmmmv',
+    '....kkkkkkvvvvv.',
+    '....kkkkkk..u...',
+    '....ddffdd..u...',
+    '....dfoofd..u...',
+    '.....ffff...u...',
+    '....ssssss..u...',
+    '...srrrrrrsfu...',
+    '..srrryyyrrsu...',
+    '..rrRRyyyRRru...',
+    '..rRRRRRRRRru...',
+    '...rRRRRRRRru...',
+    '....RRRRRRR.....',
+    '...RR.....RR....',
+    '..RRR.....RRR...',
+    '................']);
+  return pack([idle, cast, call], 8, 17, 12, 16);
+}
+
 
 // ---------- WAYMEET ----------
 // THE ROAD PEOPLE. Every soldier in BRACKEN until now has been the goblin queen's - purple livery, green

@@ -24,7 +24,7 @@ export const THREAT = {
   frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
   reefmaw: 6, quarter: 6, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
-  miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3,
+  miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3, seawitch: 3,   /* the Hurricane's own caster does the shaman's job, so she is worth what he was */
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
   propman: 2.5, clinger: 2, prince: 0, courtier: 0, minerlamp: 0, timber: 0, gas: 0,
