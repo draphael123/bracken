@@ -9,7 +9,8 @@
 //   bakeMonkProps()        the furniture: bells, a bell frame, the prayer wheel, basket, hoist wheel, brazier, loose
 //                          stone, rubble, shelves, shrines, flag posts, a guardian statue, the fallen portcullis, beads
 //   bakeFledgling()        the Roc's chicks, a sprite set   bakeGuardian()   the temple guardian, a sprite set (9 frames)
-import { canvas, px, rect, fillPoly, line, circle, outline, mulberry, flipX, whiten } from '../px.js';
+//   bakeGoblinPriest()     the goblin in the monks' robe, a sprite set (6)
+import { canvas, px, rect, fillPoly, line, circle, outline, mulberry, flipX, whiten, fromGrid } from '../px.js';
 import { OUT } from '../art.js';
 
 const T = 16;
@@ -356,4 +357,40 @@ export function bakeGuardian() {
     if (pose === 5) { line(g, 15, 13, 22, 22, S.k); line(g, 22, 22, 18, 29, S.k); line(g, 24, 4, 21, 9, S.k); px(g, 19, 7, S.E); }
     return outline(c, OUT); };
   return pack([0, 1, 2, 3, 4, 5, 6, 7, 8].map(frame), 20, 36, 30, 34);
+}
+
+// ---------- THE GOBLIN PRIEST ----------
+// A goblin who came up the mountain after the monks left and put on what they left hanging: the maroon robe over its
+// own mail, the saffron stole, the hood pulled up to a point, and a censer on a chain it swings over the others the way
+// it saw it done. It cannot fight. It can make them harder to kill. At sixteen pixels it is A PEAK AND A BELL - the only
+// goblin on the mountain whose outline comes to a point over its head and spreads to the floor - with a brass pot
+// hanging off one hand, where the rock goblin is a rock and the looter is two ears.
+// 16x23 grid on an 18x25 canvas, facing RIGHT. Frames: 0 idle, 1 walk A, 2 walk B, 3 the rite (censer up, bell out),
+// 4 the rite's swing, 5 hurt (last). Anchor: ax 8, ay 23 (the feet); hit box w 10, h 16.
+const putRow = (rows, y, x, str) => { while (rows.length <= y) rows.push(''); rows[y] = rows[y].padEnd(x, '.'); rows[y] = rows[y].slice(0, x) + str + rows[y].slice(x + str.length); };
+export function bakeGoblinPriest() {
+  const P = { g: '#6faa4a', G: '#3f6e2c', e: '#f3f0d2', o: OUT, m: '#8e3a32', M: '#5a1e1e', h: '#b8584a', y: '#e8a83a', Y: '#a8681c',
+    s: '#9aa3ae', S: '#5a6270', b: BR[3], B: BR[1], k: BR[4], c: '#6a5a48', r: '#ff9a3c', R: '#ffe08a' };
+  const put = putRow;
+  const hood = ['......MM', '.....MmmM', '....MmhmmM', '...MmhmmmmM', '...MggggggM', '...MgeogeoM', '...MgGGGggM'];
+  const robe = arm => ['..MmyymmyymM', '..mmmymmymmm' + (arm ? 'mg' : ''), '..hmmmyymmmm', '.hmmmmyymmmm', '.hmmmmyymmmm', 'hhmmmmyymmmm', 'hmmmmmyymmmm', 'hmmmmmmmmmmm', 'MMMmmmmmmmMMM', '..sSsSsSsSs'];
+  const censer = (rows, x, y, lit) => { put(rows, y, x - 1, 'BbB'); put(rows, y + 1, x - 1, lit ? 'bRb' : 'brb'); put(rows, y + 2, x - 1, 'BbB'); };
+  const feet = ['..GG....GG', '...GG..GG', '..GG...GG'];
+  const frame = pose => {
+    const rows = ['', '', '', '', ''];   /* five rows over the hood, for the censer when it goes up */
+    for (const r of hood) rows.push(pose === 5 ? '.' + r : r);
+    for (const r of robe(pose < 3)) rows.push(r);
+    if (pose === 5) {   /* HURT: the hood knocked back, the pot flung out on its chain */
+      put(rows, 12, 12, 'mm'); put(rows, 11, 14, 'c'); censer(rows, 15, 8, false); }
+    else if (pose === 3 || pose === 4) {   /* THE RITE: the censer held up over the hood on a short chain, the bell rung out to the side */
+      const sw = pose === 4 ? 1 : 0;
+      put(rows, 11, 12, 'm'); put(rows, 10, 12, 'm'); put(rows, 9, 12, 'm'); put(rows, 8, 12, 'm'); put(rows, 7, 12, 'g'); put(rows, 6, 12 + sw, 'c'); put(rows, 5, 12 + sw, 'c');
+      censer(rows, 12 + sw * 2, 2, true);
+      put(rows, 11, 0, 'mmm'); put(rows, 12, 0, 'g'); put(rows, 13, 0, 'c'); put(rows, 14, sw, 'kb'); put(rows, 15, sw, 'bB'); }
+    else {   /* the pot swings as it walks */
+      const sw = pose === 1 ? -1 : pose === 2 ? 1 : 0;
+      put(rows, 14, 13, 'c'); put(rows, 15, 13 + sw, 'c'); censer(rows, 13 + sw, 16, false); }
+    while (rows.length < 22) rows.push(''); rows.length = 22; rows.push(feet[pose === 1 ? 1 : pose === 2 ? 2 : 0]);
+    return outline(fromGrid(rows.map(r => (r || '').padEnd(16, '.').slice(0, 16)), P, 1), OUT); };
+  return pack([0, 1, 2, 3, 4, 5].map(frame), 8, 23, 10, 16);
 }
