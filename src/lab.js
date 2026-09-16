@@ -221,8 +221,7 @@ export async function bossLab(BK, opts = {}) {
          there, cut the runes as they come round, and cut the familiar's eye only when the head is down */
       if (MA) { goal = MA.goal;
         if (MA.drink !== null) { goal = MA.drink; }
-        else if (P.form === 'bat' && MA.fly) { goal = MA.fly.x; k.jump = P.y > MA.fly.y || (P.vy > 40 && !P.ground); if (P.hang) { k.down = true; } }
-        else if (P.form === 'mouse' || P.form === 'golem') { goal = MA.goal; if (P.form === 'golem' && P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 20 === 0) BK.press('jump'); }
+        else if (MA.climb) { goal = MA.goal; if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 20 === 0) BK.press('jump'); }
         else { if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
           else if (tell && HARD_TELLS.has(boss.t + '|' + boss.mode) && boss.modeT < 0.3 && f % 6 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); goal = null; }
           const wave = BK.mg && BK.mg() && BK.mg().shots.some(s => s.wave && Math.abs(s.x - P.x) < 40 && (s.x - P.x) * s.vx < 0); if (wave && P.ground) { BK.press('jump'); P.labJump = 12; }

@@ -44,7 +44,7 @@ export const THREAT = {
   tbell: 0, pwheel: 0,
   /* THE HEXED FIELDS: a scarecrow is a read (where are you looking), a rook a step as much as a threat, the wisp worth more to you dead */
   /* THE MAGE'S FOLLY: a topiary is a read (it shivers first), the armour a slow wall, a piece and a broom nearly nothing, a mimic a trap, an imp a shooter that moves, a turret one that does not */
-  topiary: 3, armour: 3.5, piece: 0.5, broom: 1.5, mimic: 2.5, imp: 2.5, turret: 2, homunculus: 5, archmage: 6, font: 0, runearch: 0, glyph: 0, gplate: 0, vatspit: 0, rune: 0,
+  topiary: 3, armour: 3.5, piece: 0.5, broom: 1.5, mimic: 2.5, imp: 2.5, turret: 2, homunculus: 5, archmage: 6, glyph: 0, gplate: 0, vatspit: 0, rune: 0,
   scarecrow: 3, rook: 1.5, farmhand: 3, pumpkin: 2.5, marshlight: 1.5, haunt: 2.5, ploughman: 5, strawking: 6, hexspill: 0, croppole: 0, thresher: 0,
 };
 

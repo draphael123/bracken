@@ -11,10 +11,8 @@
 // SKINS (16x16, three variants each)   bakeTowerSkins() -> { tower, gate, hedge, hedgeTop, ice, crack, hole }
 // ROOM PAINTS   paintRoom(g, st, sx, sy, w, h, tx0) draws a room's back wall: 'library', 'lab', 'orrery', 'flip', 'dome'
 // PROPS (bottom row = ground unless said)
-//   bakeFont(kind, spent)   20x24   a glass vessel on a brass foot, the potion lit inside it (spent: dark, a drop left)
-//   bakeRuneArch()          36x40   a brass arch with a rune keystone; the hero walks through the middle of it
-//   bakeGlyph()             28x8    a rune circle on the floor (drawn flipped on a ceiling)
-//   bakePlate()             [up, down] 22x6
+//   bakeGlyph()             28x8    a rune circle on the floor (drawn flipped on a ceiling): it turns the room over
+//   bakePlate()             [up, down] 22x6   the counterweight, struck: up on its chain, then dropped
 //   bakeVatSpit()           [rest, bubble, spit] 18x16   a brass tap on the vat's rim
 //   bakeRunePlate()         [dark, lit] 10x10   the rune on a stack's face
 //   bakeBook()              [open A, open B] 28x10   a flying book seen from the side, the platform is its spine
@@ -122,27 +120,7 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, time) {
   return false;
 }
 
-// ---------- the potion machinery ----------
-export function bakeFont(kind, spent) {
-  const [c, g] = canvas(20, 24), C = FORM_COL[kind];
-  /* the brass foot and stem */
-  rect(g, 4, 21, 12, 3, BRASS[1]); rect(g, 4, 21, 12, 1, BRASS[2]); rect(g, 8, 17, 4, 4, BRASS[1]); rect(g, 6, 16, 8, 2, BRASS[2]);
-  /* the glass vessel: a bulb */
-  fillPoly(g, [[3, 6], [17, 6], [15, 16], [5, 16]], GLASS[0]); rect(g, 3, 6, 14, 1, GLASS[2]); rect(g, 4, 7, 1, 8, GLASS[2]); rect(g, 14, 7, 1, 8, GLASS[1]);
-  if (!spent) { fillPoly(g, [[5, 8], [15, 8], [14, 15], [6, 15]], C[1]); rect(g, 6, 8, 8, 1, C[2]); rect(g, 7, 9, 2, 1, C[3]); rect(g, 6, 13, 8, 2, C[0]); }
-  else { rect(g, 7, 13, 6, 2, C[0]); rect(g, 8, 13, 2, 1, C[1]); }
-  /* the rim and the stopper */
-  rect(g, 6, 4, 8, 2, BRASS[1]); rect(g, 7, 2, 6, 2, BRASS[2]); rect(g, 8, 1, 4, 1, BRASS[3]);
-  return outline(c, OUT);
-}
-export function bakeRuneArch() {
-  const [c, g] = canvas(36, 40);
-  for (const x of [2, 30]) { rect(g, x, 12, 4, 28, BRASS[1]); rect(g, x, 12, 1, 28, BRASS[2]); rect(g, x + 3, 12, 1, 28, BRASS[0]); rect(g, x - 1, 37, 6, 3, BRASS[0]); }
-  /* the arch: a ring of brass with a rune stone at the top */
-  for (let a = 0; a <= 180; a += 4) { const r = 15, x = 18 + Math.cos(a * Math.PI / 180) * r, y = 14 - Math.sin(a * Math.PI / 180) * 12; g.fillStyle = a < 60 ? BRASS[2] : BRASS[1]; g.fillRect(Math.round(x) - 2, Math.round(y) - 1, 4, 3); }
-  rect(g, 14, 0, 8, 6, STONE[3]); rect(g, 15, 1, 6, 4, VIOLET[2]); rect(g, 17, 1, 2, 4, VIOLET[3]); rect(g, 15, 3, 6, 1, VIOLET[3]);
-  return outline(c, OUT);
-}
+// ---------- the tower's machinery ----------
 export function bakeGlyph() {
   const [c, g] = canvas(28, 8);
   for (let x = 0; x < 28; x++) { const d = Math.abs(x - 13.5) / 14, y = 3 + Math.round(Math.sqrt(1 - d * d) * 3); g.fillStyle = VIOLET[2]; g.fillRect(x, 3 - (y - 3), 1, 1); g.fillRect(x, y, 1, 1); }

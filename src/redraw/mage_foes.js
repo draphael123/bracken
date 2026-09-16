@@ -40,10 +40,6 @@
 //   frames: 0 idle  1 SWIPE TELL (a paw raised)  2 swipe  3 SLAM TELL (reared)  4 slam  5 SPIT TELL (cheeks full)  6 spit
 //           7 OPEN (head down on the floor, the eye wide)  8 dead   canvas 112x96   anchor ax 56, ay 94   pack w/h 56x60
 // bakeApprentice()  THE APPRENTICE (npc) — a boy in a violet robe too big for him.   2 frames   canvas 20x28   ax 10, ay 26
-// bakeForms()       { mouse, bat, golem } — the hero as each form.
-//   mouse: 0 idle 1 run A 2 run B 3 hurt   canvas 14x10   ax 7, ay 8    pack 6x6
-//   bat:   0 flap A 1 flap B 2 hang 3 glide 4 hurt   canvas 20x14   ax 10, ay 12   pack 8x8
-//   golem: 0 idle 1 walk A 2 walk B 3 swing 4 hurt   canvas 28x26   ax 14, ay 24   pack 14x18
 import { canvas, px, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -494,37 +490,3 @@ export function bakeApprentice() {
   return pack([frame(0), frame(1)], X, F + 1, 10, 22);
 }
 
-// =====================================================================================================================
-// THE THREE FORMS. Small, and each one wears its font's colour so it can never be mistaken for a creature of the tower.
-export function bakeForms() {
-  const M = FORM_COL.mouse, Bc = FORM_COL.bat, Gc = FORM_COL.golem;
-  const mouse = (() => { const W = 14, H = 10, X = 7, F = 7;
-    const frame = (pose) => { const B = buf(W, H), k = pose === 'runA' ? 1 : pose === 'runB' ? -1 : 0;
-      ball(B, X, F - 3, 5, 3, M, { bias: 0.05 }); ball(B, X + 4, F - 4, 2.5, 2, M, { bias: 0.1 }); dot(B, X + 6, F - 4, '#1b1626'); dot(B, X + 3, F - 6, M[2]); dot(B, X + 5, F - 7, M[2]);
-      seg(B, X - 5, F - 3, X - 9 + k, F - 6 - k, M[1]); for (let i = 0; i < 3; i++) dot(B, X - 3 + i * 3 + k, F - 1, M[0]);
-      if (pose === 'hurt') B.del(X, F - 3);
-      floorCut(B, F); return toCanvas(B); };
-    return pack(['idle', 'runA', 'runB', 'hurt'].map(frame), X, F + 1, 6, 6); })();
-  const bat = (() => { const W = 20, H = 14, X = 10, F = 11;
-    const frame = (pose) => { const B = buf(W, H), up = pose === 'flapA' ? -4 : pose === 'flapB' ? 3 : pose === 'glide' ? 0 : pose === 'hang' ? 6 : 0;
-      const by = pose === 'hang' ? F - 5 : F - 6;
-      if (pose === 'hang') { poly(B, [[X - 2, by - 4], [X - 7, by + 6], [X - 3, by + 4]], Bc[0]); poly(B, [[X + 2, by - 4], [X + 7, by + 6], [X + 3, by + 4]], Bc[0]); }
-      else { poly(B, [[X - 2, by], [X - 10, by + up], [X - 6, by + 4]], Bc[0]); poly(B, [[X + 2, by], [X + 10, by + up], [X + 6, by + 4]], Bc[0]); seg(B, X - 2, by, X - 9, by + up, Bc[2]); seg(B, X + 2, by, X + 9, by + up, Bc[2]); }
-      ball(B, X, by + 1, 3, 3.5, Bc, { bias: 0.05 }); dot(B, X - 1, by, '#ffe080'); dot(B, X + 1, by, '#ffe080'); dot(B, X - 2, by - 3, Bc[2]); dot(B, X + 2, by - 3, Bc[2]);
-      if (pose === 'hurt') B.del(X, by + 2);
-      floorCut(B, F); return toCanvas(B); };
-    return pack(['flapA', 'flapB', 'hang', 'glide', 'hurt'].map(frame), X, F + 1, 8, 8); })();
-  const golem = (() => { const W = 28, H = 26, X = 14, F = 23;
-    const STONE = ['#4a3420', '#8a6234', '#c0904c', '#f0c070'];
-    const frame = (pose) => { const B = buf(W, H), step = pose === 'walkA' ? 2 : pose === 'walkB' ? -2 : 0;
-      limb(B, [X - 4, F - 8], [X - 5 - step, F - 1], 5, STONE); limb(B, [X + 4, F - 8], [X + 5 + step, F - 1], 5, STONE);
-      ball(B, X, F - 13, 8, 7, STONE, { bias: 0.02 }); seg(B, X - 4, F - 12, X + 2, F - 10, STONE[0]); dot(B, X + 3, F - 15, STONE[3]);
-      if (pose === 'swing') { limb(B, [X + 6, F - 15], [X + 13, F - 8], 5, STONE); ball(B, X + 13, F - 7, 3, 3, STONE); }
-      else { limb(B, [X + 6, F - 15], [X + 9 + step, F - 6], 5, STONE); ball(B, X + 9 + step, F - 5, 3, 3, STONE); }
-      limb(B, [X - 6, F - 15], [X - 9 - step, F - 6], 5, STONE); ball(B, X - 9 - step, F - 5, 3, 3, STONE);
-      layer(B, T => { ball(T, X + 1, F - 20, 4, 3.5, STONE, { bias: 0.08 }); }); dot(B, X + 1, F - 20, Gc[2]); dot(B, X + 3, F - 20, Gc[2]);
-      if (pose === 'hurt') { B.del(X - 2, F - 13); B.del(X + 1, F - 11); }
-      floorCut(B, F); const c = toCanvas(B); if (pose === 'swing') smear(c, X + 6, F - 14, 12, -30, 60, [Gc[3], Gc[2]]); return c; };
-    return pack(['idle', 'walkA', 'walkB', 'swing', 'hurt'].map(frame), X, F + 1, 14, 18); })();
-  return { mouse, bat, golem };
-}
