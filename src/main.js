@@ -2124,9 +2124,29 @@ function spawnEntitiesTail() {
    room; dying inside puts the room back (the gates are PORT tiles laid over air, and they are taken up again), and a room
    you cleared stays cleared. It never starts during a boss or a mini, and never in the rush. */
 let ambushMsg = '', ambushSub = '', ambushMsgT = 0, ambushCol = '#ff6b6b';
-const AMB = { tell: 0.9, beat: 1.3, maxWave: 70, up: 10, down: 6 };
+const AMB = { tell: 0.9, beat: 1.3, maxWave: 70, up: 10, down: 6, fly: 4 };   /* fly: how many rows over its own floor a shut room lets a flyer keep (ambushPen) */
 const AMB_FLY = new Set(['wasp', 'crow', 'bat', 'harpy', 'kite', 'drone', 'petrel', 'gull']);
 const AMB_STILL = new Set(['lancer', 'lurker', 'spit', 'spitcap', 'urchin', 'watch', 'sentry', 'turret', 'clinger', 'puffball']);   /* no legs to fall on: raised, they would hang in the air where they were put */
+/* A FLYER BELONGS TO THE ROOM, AND THE ROOM IS AS HIGH AS ITS FLOOR CAN REACH. THE CLOISTER was given a bat on
+   row 94, five over its floor, and the bat went looking for somewhere to hang: spawnEnt walks a bat up to fourteen
+   rows for a ceiling, and that room has one SIXTEEN rows over the floor. It roosted there and sat out the whole
+   fight - and a wave only clears when everything it spawned is dead, so the doors never lifted and the room could
+   not be beaten. The answer is not a different spawn row, it is a ceiling: a jump rises 51 px and the swing that
+   goes with it tops out 17 px over the head, so anything more than FOUR rows over the floor cannot be touched from
+   it by anybody. A room gives its flyers four rows and keeps the rest of the air for itself. The row in the table
+   is held to the same line, so the dust that tells you where they land tells the truth. */
+const ambushRoofY = A => (A.row + 1 - AMB.fly) * TS;
+const ambushRow = (A, t, y) => { const row = (y === undefined || y === null) ? A.row : y; return AMB_FLY.has(t) ? Math.max(row, A.row - AMB.fly) : row; };
+function ambushPen(A, e) {
+  const roof = ambushRoofY(A), rest = roof + (e.amp || 0);   /* a crow rides a bob: its middle hangs a bob under the roof, so the TOP of the bob is the roof */
+  if (e.hy !== undefined && e.hy < rest) e.hy = rest;
+  if (e.y < roof) { e.y = roof; if (e.vy < 0) e.vy = 0; }
+  if (e.roost) e.roost = false;   /* it hangs where the room lets it hang, not off a ceiling nothing can reach */
+  /* AND INSIDE THE WALLS. The gates are ten rows tall and a room can be taller, so a hoverer that drifts over one
+     is out of a fight that has not opened. A crow is not held: coming down the wind and going is the whole of a crow. */
+  if (e.hx !== undefined && e.t !== 'crow') { const l = (A.wallL + 1) * TS + 8, r = (A.wallR - 1) * TS + 8;
+    e.hx = Math.max(l, Math.min(r, e.hx)); e.x = Math.max(l, Math.min(r, e.x)); }
+}
 const ambushLive = () => ((L && L.ambushes) || []).find(A => A.st && A.st !== 'done');
 function ambushSay(msg, sub, col, t) { ambushMsg = msg; ambushSub = sub; ambushCol = col; ambushMsgT = t; }
 /* THE GATE STANDS ON ITS OWN COLUMN'S FLOOR: up onto a rock it meets, down to the bottom of a dip, and up until a ceiling or too tall to jump */
@@ -2159,7 +2179,7 @@ function ambushReset() {
   for (const A of ((L && L.ambushes) || [])) { if (A.st === 'done') continue;
     ambushLift(A, false); A.st = null; A.wave = 0; A.t = 0; A.foes = []; A.tells = []; A.cols = null; A.cam = false; }
 }
-function ambushTells(A) { A.tells = A.waves[A.wave].map(([t, x, y]) => ({ x: x * TS + 8, y: ((y === undefined || y === null) ? A.row + 1 : y + 1) * TS, rung: false })); }
+function ambushTells(A) { A.tells = A.waves[A.wave].map(([t, x, y]) => ({ x: x * TS + 8, y: (ambushRow(A, t, y) + 1) * TS, rung: false })); }
 function ambushStart(A) {
   A.st = 'tell'; A.wave = 0; A.t = AMB.tell + 0.5; A.foes = []; ambushShut(A); ambushTells(A);
   if (!camLock && (A.wallR - A.wallL + 1) * TS >= VW + 16) { camLock = { x0: A.wallL * TS, x1: (A.wallR + 1) * TS }; A.cam = true; }
@@ -2168,12 +2188,14 @@ function ambushStart(A) {
 function ambushSpawn(A) {
   A.st = 'fight'; A.t = AMB.maxWave; A.foes = [];
   for (const [t, x, y, o] of A.waves[A.wave]) {
-    const row = (y === undefined || y === null) ? A.row : y, n0 = enemies.length, px = x * TS + 8, py = (row + 1) * TS;
+    const row = ambushRow(A, t, y), n0 = enemies.length, px = x * TS + 8, py = (row + 1) * TS;
     spawnEnt(Object.assign({ t, x, y: row, face: px < P.x ? 1 : -1 }, o || {}));
     /* DROPPED IN from the canopy, the rafters or the rigging, where there is air over the spot to fall through */
     const drop = !AMB_FLY.has(t) && !AMB_STILL.has(t) && [1, 2, 3].every(k => tileAt(x, row - k) === T.AIR);
     for (let i = n0; i < enemies.length; i++) { const e = enemies[i]; e.ambush = true; e.woke = 1; e.xpKey = 'a' + L.ambushes.indexOf(A) + '.' + A.wave + '.' + t + x + '.' + (i - n0); e.sleeper = false; e.stagger = Math.max(e.stagger || 0, 0.4);
-      if (drop && e.hy === undefined) { e.y -= 2.5 * TS; e.vy = 60; } A.foes.push(e); }
+      if (drop && e.hy === undefined) { e.y -= 2.5 * TS; e.vy = 60; }
+      if (AMB_FLY.has(t) || e.noGrav) ambushPen(A, e);   /* it comes in under the room's own ceiling, whatever it went looking for */
+      A.foes.push(e); }
     burst(px, py - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(px, py, 8); ringAt(px, py - 8, 16, '#ff6b6b', 0.3);
   }
   shakeCam(3); SFX.thud();
@@ -2213,6 +2235,7 @@ function ambushRun(A, dt) {
     if (A.t <= 0) ambushSpawn(A);
     return; }
   if (A.st === 'beat') { if (A.t <= 0) { A.wave++; A.st = 'tell'; A.t = AMB.tell; ambushTells(A); ambushSay('THE SECOND WAVE', '', '#ff9a5c', 1.6); SFX.hornBlast(); shakeCam(3); } return; }
+  for (const e of A.foes) if (e.alive && (AMB_FLY.has(e.t) || e.noGrav)) ambushPen(A, e);   /* the room holds its flyers inside it, and in reach of the floor the fight is on */
   const lx = (A.wallL - 1) * TS, rx = (A.wallR + 2) * TS;
   for (const e of A.foes) if (e.alive && (e.x < lx || e.x > rx || e.y > LH * TS + 8)) e.alive = false;   /* out of the room is out of the fight */
   if (A.t <= 0) for (const e of A.foes) if (e.alive) { e.alive = false; smoke(e.x, e.y - 8, 3, 8); }   /* a wave that outlasts its time slinks off: a room never keeps you */
