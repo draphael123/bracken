@@ -1737,7 +1737,9 @@ function loadLevel(i) {
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); bakeAll(L.palette || {});
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
-  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS })); deepLoad();
+  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS }));
+  BREATHCUE = { gulpCd: 0, inAir: false, last: 99, told: new Set() };   /* a new level is told its air again */
+  deepLoad();
   // a mini you have already put down stays down, and the gate it was standing in front of starts open
   miniDone = !!((PROG[LEVELS[i].id] || {}).mini);
   if (miniDone && L.mini && L.mini.gate !== undefined) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
@@ -10391,15 +10393,18 @@ function heraldPool() { return (L.pools || []).find(p => p.arenaTide); }
 const heraldGuard = () => enemies.filter(q => q.alive && q.called).length;
 function heraldGround(x) { const tx = Math.floor(x / TS); for (let ty = Math.floor(L.arena.floor / TS) - 5; ty <= Math.floor(L.arena.floor / TS); ty++) if (isSolid(tx, ty)) return ty * TS; return L.arena.floor; }
 let heraldWave = null, airBells = [], airRooms = [], spouts = [];
+/* THE CATCH, kept for every level and not only the Deep's: the gulp, its bubbles, and what each kind of air is called the
+   first time it gives you one. `told` is by KIND, so a hold says its piece once however many holds a ship has. */
+let BREATHCUE = { gulpCd: 0, inAir: false, last: 99, told: new Set() };
 // THE LAMPLIT STREET: the lamps of the drowned city, and the fire you carry between them.
 // A lit lamp is three things at once and that is the whole level: a light in the dark, a lungful of air under
 // its hood, and a thing that can be taken away from you. `lamps` is the city's lamps only, gathered once on
 // load so the breath clock is not filtering the prop list sixty times a second.
 let lamps = [];
 const lampAir = pr => ({ x: pr.x, y: pr.y - 40 });            // where the bubble sits: up under the iron hood
-function nearAir(x, y) { // a diving bell, or a lamp that is still burning
-  for (const r of airRooms) if (x > r.l && x < r.r && y > r.t && y < r.b) return { x, y: r.t + 10 };   /* a whole hold of it, and nothing to see: the room IS the pocket */
-  for (const b of airBells) if (Math.abs(b.x - x) < 26 && Math.abs(b.y - y) < 22) return b;
+function nearAir(x, y) { // a hold, a diving bell, a vent, or a lamp that is still burning
+  for (const r of airRooms) if (x > r.l && x < r.r && y > r.t && y < r.b) return { x, y: r.t + 10, deep: 'room' };   /* the room IS the pocket - and drawAirSigns hangs a mouth on the water line of it, so it can be read from outside before anybody swims in */
+  for (const b of airBells) if (Math.abs(b.x - x) < 26 && Math.abs(b.y - y) < 22) return { x: b.x, y: b.y, deep: 'bell' };
   { const da = L.deep && deepAir(x, y); if (da) return da; }   /* the Deep's vents, wrecks and the breath a struck clam lets go */
   for (const pr of lamps) if (pr.lit && Math.abs(pr.x - x) < 24 && Math.abs(pr.y - 40 - y) < 34) return lampAir(pr);
   return null;
@@ -14429,7 +14434,10 @@ function deepArt() {
 }
 const deepFish = col => { const A = deepArt(); return A.fish[col] || (A.fish[col] = [DPP.bakeFish(0, col), DPP.bakeFish(1, col)].map(c => [c, flipX(c)])); };
 const kelpSway = (k, t) => Math.sin(time * 1.1 + k.ph + t * 9) * 7 * t * t;   /* t: 0 at the holdfast, 1 at the tip */
-const DEEP_AIR_SAY = { vent: 'AIR IN THE BUBBLES', wreck: 'AIR IN HER CROWN', bubble: 'A LUNGFUL' };
+/* WHAT GAVE YOU THAT BREATH, said once for each kind the first time it does. Every kind is in here now: before this, a
+   hold and a bell - the two the sea levels are built out of - took your breath back without a word. */
+const DEEP_AIR_SAY = { vent: 'AIR IN THE BUBBLES', wreck: 'AIR IN HER CROWN', bubble: 'A LUNGFUL',
+  room: 'AIR CAUGHT UNDER HERE', bell: 'AIR UNDER HER RIM', clam: 'IT LETS ITS BREATH GO', bulb: 'A BLADDER OF AIR' };
 function deepLoad() {
   DEEP = null; if (!L.deep) return;
   const D = L.deep, p8 = x => x * TS + 8, feet = y => (y + 1) * TS;
@@ -14437,22 +14445,25 @@ function deepLoad() {
      below the garden, where a spar the height of the screen is a black slab across the only light there is */
   L.ents = L.ents.filter(e => !(e.dressed && ((D.noDress || []).some(([x0, x1, y0, y1]) => e.x >= x0 && e.x <= x1 && e.y >= y0 && e.y <= y1) || (e.kind === 'spar' && e.y > 150))));
   deepArt();
-  const kelp = D.kelp.map(k => ({ x: p8(k.x), y: feet(k.y), h: k.h * TS, tx: k.x, ty: k.y - k.h, ph: (k.x * 0.71 + k.y * 0.13) % 6 }));
+  /* EVERY FIELD IS OPTIONAL NOW. This was written for the Deep, which fills in all of them, and it read them bare - so a
+     level that wanted nothing but a few vents under her keel threw on the first `.map` of a list it had no reason to carry.
+     The reef, the long water, the causeway, the flotilla and the hurricane each bring a handful of air and nothing else. */
+  const kelp = (D.kelp || []).map(k => ({ x: p8(k.x), y: feet(k.y), h: k.h * TS, tx: k.x, ty: k.y - k.h, ph: (k.x * 0.71 + k.y * 0.13) % 6 }));
   DEEP = {
     boxes: airBoxes({ deep: { vents: D.vents, wrecks: D.wrecks } }),   /* a vent and a wreck are always air; a clam or a bladder only once it is struck */
-    vents: D.vents.map(v => ({ ...v, px: p8(v.x), bed: feet(v.y), top: feet(v.y) - v.h * TS, ph: (v.x * 0.37) % 6 })),
-    clams: D.clams.map(c => ({ x: p8(c.x), y: feet(c.y), state: 0, t: 0 })),
-    bulbs: D.bulbs.map(c => ({ x: p8(c.x), y: feet(c.y), full: true, t: 0, kelp: kelp.find(k => k.tx === c.x && k.ty === c.y) || null })),
-    wrecks: D.wrecks.map(c => ({ x: p8(c.x), y: feet(c.y) })),
-    pockets: D.pockets.map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS })),
-    jellies: D.jellies.map((j, i) => ({ hx: p8(j.x), hy: feet(j.y) - 8, x: p8(j.x), y: feet(j.y) - 8, hue: j.hue, ph: i * 1.7, flare: 0, hitCd: 0 })),
+    vents: (D.vents || []).map(v => ({ ...v, px: p8(v.x), bed: feet(v.y), top: feet(v.y) - v.h * TS, ph: (v.x * 0.37) % 6 })),
+    clams: (D.clams || []).map(c => ({ x: p8(c.x), y: feet(c.y), state: 0, t: 0 })),
+    bulbs: (D.bulbs || []).map(c => ({ x: p8(c.x), y: feet(c.y), full: true, t: 0, kelp: kelp.find(k => k.tx === c.x && k.ty === c.y) || null })),
+    wrecks: (D.wrecks || []).map(c => ({ x: p8(c.x), y: feet(c.y) })),
+    pockets: (D.pockets || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS })),
+    jellies: (D.jellies || []).map((j, i) => ({ hx: p8(j.x), hy: feet(j.y) - 8, x: p8(j.x), y: feet(j.y) - 8, hue: j.hue, ph: i * 1.7, flare: 0, hitCd: 0 })),
     kelp,
-    fish: [].concat(...D.fish.map((s, si) => Array.from({ length: s.n }, (_, i) => ({ hx: p8(s.x), hy: feet(s.y) - 20, x: p8(s.x) + (i - s.n / 2) * 6, y: feet(s.y) - 20 + ((i * 7) % 11) - 5, vx: 0, vy: 0, col: s.col, ph: si * 2.1 + i * 0.9, face: 1 })))),
-    currents: D.currents.map(c => ({ l: c.x0 * TS, r: (c.x1 + 1) * TS, t: c.y0 * TS, b: (c.y1 + 1) * TS, fx: c.fx, fy: c.fy, kind: c.kind })),
-    props: D.props.map(p => ({ ...p, px: p8(p.x), py: feet(p.y) })),
-    banners: D.banners.map(b => ({ x: p8(b.x), y: b.y * TS, ph: (b.x * 0.37) % 3 })),
+    fish: [].concat(...(D.fish || []).map((s, si) => Array.from({ length: s.n }, (_, i) => ({ hx: p8(s.x), hy: feet(s.y) - 20, x: p8(s.x) + (i - s.n / 2) * 6, y: feet(s.y) - 20 + ((i * 7) % 11) - 5, vx: 0, vy: 0, col: s.col, ph: si * 2.1 + i * 0.9, face: 1 })))),
+    currents: (D.currents || []).map(c => ({ l: c.x0 * TS, r: (c.x1 + 1) * TS, t: c.y0 * TS, b: (c.y1 + 1) * TS, fx: c.fx, fy: c.fy, kind: c.kind })),
+    props: (D.props || []).map(p => ({ ...p, px: p8(p.x), py: feet(p.y) })),
+    banners: (D.banners || []).map(b => ({ x: p8(b.x), y: b.y * TS, ph: (b.x * 0.37) % 3 })),
     shafts: D.shafts || [], masonry: D.masonry || [], zones: D.zones || [], rime: D.rime || [], icicles: D.icicles || [],
-    gates: D.gates.map(gt => ({ ...gt, wx: p8(gt.wheel[0]), wy: feet(gt.wheel[1]), hits: 0, open: false, spin: 0 })),
+    gates: (D.gates || []).map(gt => ({ ...gt, wx: p8(gt.wheel[0]), wy: feet(gt.wheel[1]), hits: 0, open: false, spin: 0 })),
     bubbles: [], driftX: 0, driftY: 0, zone: null, seen: new Set(), told: new Set(), inAir: false, lastBreath: 6, gulpCd: 0,
   };
   for (const v of DEEP.vents) if (v.hot) DEEP.currents.push({ l: v.px - 14, r: v.px + 14, t: v.top, b: v.bed, fx: 0, fy: -150, kind: 'hot', vent: v });
@@ -14505,14 +14516,7 @@ function updateDeep(dt) {
     const dx = f.x - P.x, dy = f.y - (P.y - 10); if (dx * dx + dy * dy < 2200) { tx = f.hx + Math.sign(dx || 1) * 56; ty = f.hy + Math.sign(dy || 1) * 20; }
     f.vx += ((tx - f.x) * 2.4 - f.vx) * Math.min(1, dt * 3); f.vy += ((ty - f.y) * 2.4 - f.vy) * Math.min(1, dt * 3);
     f.vx = Math.max(-90, Math.min(90, f.vx)); f.vy = Math.max(-50, Math.min(50, f.vy)); f.x += f.vx * dt; f.y += f.vy * dt; if (Math.abs(f.vx) > 6) f.face = Math.sign(f.vx); }
-  // THE BREATH, HEARD. Coming back into air after a held breath says so: a gulp and a spill of bubbles, and the first time a
-  // kind of air gives it you, it says what gave it you.
-  { const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, br = P.breath ?? mx; DEEP.gulpCd = Math.max(0, DEEP.gulpCd - dt);
-    if (P.swim && !P.dead) { const rising = br > DEEP.lastBreath + 0.0005;
-      if (rising && !DEEP.inAir && DEEP.lastBreath < mx - 0.8 && DEEP.gulpCd <= 0) { SFX.breathIn && SFX.breathIn(); burst(P.x, P.y - 20, 8, ['#e8f4f0', '#bfe6f5'], 40, 0.6, -140, 1); DEEP.gulpCd = 0.9;
-        const a = nearAir(P.x, P.y - 8), kind = a && a.deep; if (kind && DEEP_AIR_SAY[kind] && !DEEP.told.has('air:' + kind)) { DEEP.told.add('air:' + kind); number(P.x, P.y - 36, DEEP_AIR_SAY[kind], '#bfe6f5'); } }
-      DEEP.inAir = rising; } else DEEP.inAir = false;
-    DEEP.lastBreath = br; }
+  // THE BREATH, HEARD: updateBreathCue does it, for every level with air in it and not only this one.
   // AND EACH PLACE NAMES ITSELF the first time you swim into it
   { const tx = P.x / TS, ty = P.y / TS - 0.5, z = DEEP.zones.find(q => tx >= q.x0 && tx < q.x1 + 1 && ty >= q.y0 && ty < q.y1 + 1);
     if (z && z !== DEEP.zone) { DEEP.zone = z; if (!DEEP.seen.has(z.name) && !P.dead) { DEEP.seen.add(z.name); number(P.x, P.y - 50, z.name, '#dff4fa'); } } }
@@ -14553,11 +14557,8 @@ function drawDeepBack(cx, cy) {
     g.drawImage(c, Math.round(p.px - c.width / 2 - cx), Math.round(p.py - c.height - cy)); }
   for (const b of DEEP.banners) { const c = A.banner[Math.floor(time * 1.4 + b.ph) % 3]; if (on(b.x, b.y + 23, 18, 46)) g.drawImage(c, Math.round(b.x - 9 - cx), Math.round(b.y - cy)); }
   // THE AIR, ALL OF IT MEANT TO BE SEEN FROM ACROSS THE WATER
-  for (const pk of DEEP.pockets) { if (!on((pk.l + pk.r) / 2, pk.b, pk.r - pk.l, 40)) continue;   /* a pocket: lighter air, and a flat bright line where the sea meets it */
-    const x0 = Math.round(pk.l - cx), w = Math.round(pk.r - pk.l), yb = Math.round(pk.b - cy);
-    g.globalAlpha = 0.14; g.fillStyle = '#c8f0f8'; g.fillRect(x0, Math.round(pk.t - cy), w, yb - Math.round(pk.t - cy));
-    g.globalAlpha = 0.75; g.fillStyle = '#dff4fa'; for (let x = 0; x < w; x += 2) g.fillRect(x0 + x, yb - 1 + (Math.sin(time * 3 + (pk.l + x) * 0.2) > 0.3 ? 1 : 0), 2, 1);
-    g.globalAlpha = 1; }
+  /* A POCKET IS AN AIR ROOM (pocket() writes it to both lists), and drawAirSigns gives every room in the game the same
+     mouth - the pale band, the shifting water line and the bubbles going up into it - so it is not drawn twice here. */
   for (const v of DEEP.vents) { if (!on(v.px, (v.top + v.bed) / 2, 30, v.bed - v.top + 20)) continue;
     const x = v.px - cx, bed = v.bed - cy, hgt = v.bed - v.top;
     if (v.drain) { g.fillStyle = '#10181a'; g.fillRect(Math.round(x - 7), Math.round(bed - 2), 14, 2); g.fillStyle = '#5a6270'; for (let k = 0; k < 4; k++) g.fillRect(Math.round(x - 7 + k * 4), Math.round(bed - 3), 2, 3); }
@@ -14567,12 +14568,78 @@ function drawDeepBack(cx, cy) {
     for (let i = 0; i < n; i++) { const k = (time * (v.hot ? 0.9 : 0.55) + i / n + v.ph) % 1, by = bed - 12 - k * (hgt - 12), bx = x + Math.sin(k * 9 + i * 2.3 + v.ph) * (v.hot ? 5 : 3), r = i % 3 === 0 ? 2 : 1;
       g.globalAlpha = 0.9 * (1 - k * 0.55); g.fillStyle = v.hot ? (i % 2 ? '#ffd8a8' : '#e8f4f0') : (i % 2 ? '#dff4fa' : '#9fd8e8'); g.fillRect(Math.round(bx), Math.round(by), r + 1, r + 1); }
     g.globalAlpha = 1; }
+  /* AND EVERY ONE OF THEM TRICKLES. A wreck still full of air, a clam holding its breath and a bladder on its stalk each
+     get the same plume a vent has, so all four read as the one thing from across the water. */
   for (const w of DEEP.wrecks) { if (!on(w.x, w.y - 15, 46, 30)) continue; g.drawImage(A.wreck, Math.round(w.x - 23 - cx), Math.round(w.y - 30 - cy));
-    for (let i = 0; i < 3; i++) { const k = (time * 0.6 + i / 3) % 1; g.globalAlpha = 0.8 * (1 - k); g.fillStyle = '#e8f4f0'; g.fillRect(Math.round(w.x - 17 + Math.sin(k * 7 + i) * 2 - cx), Math.round(w.y - 26 - k * 30 - cy), 2, 2); } g.globalAlpha = 1; }
-  for (const c of DEEP.clams) if (on(c.x, c.y - 9, 30, 18)) g.drawImage(A.clam[c.state], Math.round(c.x - 15 - cx), Math.round(c.y - 18 - cy));
-  for (const b of DEEP.bulbs) { const bx = b.x + (b.kelp ? kelpSway(b.kelp, 1) : 0); if (on(bx, b.y - 8, 12, 16)) g.drawImage(A.bulb[b.full ? 0 : 1], Math.round(bx - 6 - cx), Math.round(b.y - 16 - cy)); }
+    airPlume(w.x - 16, w.y - 24, cx, cy, 4, 40, (w.x * 0.011) % 1, 3); }
+  for (const c of DEEP.clams) { if (!on(c.x, c.y - 9, 30, 18)) continue; g.drawImage(A.clam[c.state], Math.round(c.x - 15 - cx), Math.round(c.y - 18 - cy));
+    if (c.state === 0) airPlume(c.x, c.y - 10, cx, cy, 3, 26, (c.x * 0.019) % 1, 2); }
+  for (const b of DEEP.bulbs) { const bx = b.x + (b.kelp ? kelpSway(b.kelp, 1) : 0); if (!on(bx, b.y - 8, 12, 16)) continue; g.drawImage(A.bulb[b.full ? 0 : 1], Math.round(bx - 6 - cx), Math.round(b.y - 16 - cy));
+    if (b.full) airPlume(bx, b.y - 16, cx, cy, 3, 22, (b.x * 0.023) % 1, 2); }
   for (const gt of DEEP.gates) { if (!on(gt.wx, gt.wy - 40, 60, 90)) continue; g.drawImage(A.wheel[Math.floor(gt.spin * 16) % 2], Math.round(gt.wx - 14 - cx), Math.round(gt.wy - 30 - cy));
     g.strokeStyle = '#8a919c'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(gt.wx - cx) + 0.5, Math.round(gt.wy - 28 - cy)); g.lineTo(Math.round(gt.col * TS + 8 - cx) + 0.5, Math.round((gt.open ? gt.y0 - 1 : gt.y0) * TS - cy)); g.stroke(); }
+}
+// ============================================================================================
+// THE AIR, AND WHETHER YOU CAN SEE IT. Every source of air in the game now says the same thing the same way: a steady
+// trickle of BUBBLES going up off its mouth. Learn it once - bubbles are a breath - and it is true at a bell's rim, under
+// a hull, at a vent, a clam and a bladder for the whole of the sea arc. Before this an air ROOM was written down as "a
+// whole hold of it, and nothing to see", and a bell was a lit prop: the owner could not find the air he had been given.
+// Drawn in the FRONT pass, over the water's own wash - under it, the pale of a mouth went the colour of the sea.
+// ============================================================================================
+const inWater = (x, y) => (L.pools || []).some(p => p.swim && !p.dry && x > p.x0 && x < p.x1 && y > p.y + 8 && (p.bottom === undefined || y <= p.bottom + 4));
+/* a trickle off a mouth of air: n bubbles rising h pixels, wobbling as they go up and thinning out at the top of it */
+function airPlume(x, ybase, cx, cy, n, h, ph, spread) {
+  const sx = Math.round(x - cx);
+  for (let i = 0; i < n; i++) {
+    const k = (time * 0.5 + i / n + ph) % 1, r = i % 3 === 0 ? 2 : 1;
+    g.globalAlpha = 0.85 * (1 - k * 0.65);
+    g.fillStyle = i % 2 ? '#dff4fa' : '#e8f4f0';
+    g.fillRect(Math.round(sx + Math.sin(k * 7 + i * 2.1 + ph) * (spread === undefined ? 3 : spread)), Math.round(ybase - cy - k * h), r, r);
+  }
+  g.globalAlpha = 1;
+}
+function drawAirSigns(cx, cy) {
+  const on = (x, y, r) => x > cx - r && x < cx + VW + r && y > cy - r && y < cy + VH + r;
+  // A BELL keeps her air under her rim, and it leaks round it the whole time she stands there
+  for (const b of airBells) {
+    if (!on(b.x, b.y, 70) || !inWater(b.x, b.y)) continue;
+    const ph = (b.x * 0.013) % 1;
+    airPlume(b.x - 10, b.y + 10, cx, cy, 4, 44, ph, 3);
+    airPlume(b.x + 10, b.y + 8, cx, cy, 3, 36, ph + 0.37, 3);
+    airPlume(b.x, b.y + 12, cx, cy, 3, 54, ph + 0.71, 4);
+  }
+  // A ROOM - a hold, a pocket under a lip of rock, the air caught up against a hull - gets a MOUTH wherever its floor is
+  // open water: the kept air pale above the line, a bright shifting water line along it, and bubbles coming up into it. That
+  // is what lets a swimmer read it as AIR from outside and spend a breath on the swim in.
+  for (const r of airRooms) {
+    const w = r.r - r.l, mx = (r.l + r.r) / 2;
+    if (!on(mx, r.b, w / 2 + 70)) continue;
+    const below = r.b + 6;
+    if (!(inWater(mx, below) && tileAt(Math.floor(mx / TS), Math.floor(below / TS)) === T.AIR)) continue;   /* a ship's hold whose floor is her own deck is not a mouth */
+    const x0 = Math.round(r.l - cx), wr = Math.round(w), yb = Math.round(r.b - cy), top = Math.max(Math.round(r.t - cy), yb - 26);
+    g.globalAlpha = 0.16; g.fillStyle = '#c8f0f8'; g.fillRect(x0, top, wr, yb - top);
+    g.globalAlpha = 0.8; g.fillStyle = '#dff4fa';
+    for (let x = 0; x < wr; x += 2) g.fillRect(x0 + x, yb - 1 + (Math.sin(time * 3 + (r.l + x) * 0.2) > 0.3 ? 1 : 0), 2, 1);
+    g.globalAlpha = 1;
+    for (let x = 8; x < wr; x += 26) airPlume(r.l + x, r.b + 12, cx, cy, 3, 24, ((r.l + x) * 0.017) % 1, 2);
+  }
+}
+/* THE CATCH. Coming back into air after a held breath is a gulp you hear, a spill of bubbles you see and a bar that fills,
+   and the first time a kind of air gives you one it says what gave it you. This used to sit inside updateDeep, so on the
+   reef, the flotilla and the hurricane - three levels whose whole rule is the breath - taking one did nothing at all. */
+function updateBreathCue(dt) {
+  const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, br = P.breath ?? mx;
+  BREATHCUE.gulpCd = Math.max(0, BREATHCUE.gulpCd - dt);
+  if (P.swim && !P.dead) {
+    const rising = br > BREATHCUE.last + 0.0005;
+    if (rising && !BREATHCUE.inAir && BREATHCUE.last < mx - 0.8 && BREATHCUE.gulpCd <= 0) {
+      SFX.breathIn && SFX.breathIn(); burst(P.x, P.y - 20, 8, ['#e8f4f0', '#bfe6f5'], 40, 0.6, -140, 1); BREATHCUE.gulpCd = 0.9;
+      const a = nearAir(P.x, P.y - 8), kind = a && a.deep;
+      if (kind && DEEP_AIR_SAY[kind] && !BREATHCUE.told.has(kind)) { BREATHCUE.told.add(kind); number(P.x, P.y - 36, DEEP_AIR_SAY[kind], '#bfe6f5'); }
+    }
+    BREATHCUE.inAir = rising;
+  } else BREATHCUE.inAir = false;
+  BREATHCUE.last = br;
 }
 function drawDeepFront(cx, cy) {
   if (!DEEP) return;
@@ -16105,7 +16172,12 @@ function drawAirHint(cx, cy) { // when the air is going, the nearest diving bell
   g.fillStyle = '#fff6c8'; g.fillRect(-3, -1, 4, 2); g.restore(); g.globalAlpha = 1;
   if (b < mx * 0.22) { g.globalAlpha = 0.10 + 0.10 * Math.sin(time * 9); g.fillStyle = '#c9463d'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
 }
-function drawBreath(cx, cy) { if (!P.swim || P.dead) return; const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b = P.breath ?? mx; if (b >= mx - 0.05) return; const n = Math.ceil(b / (mx / 6)); for (let k = 0; k < 6; k++) { const x = Math.round(P.x - cx) - 15 + k * 5, y = Math.round(P.y - cy) - 28; g.fillStyle = k < n ? '#e8f4f0' : 'rgba(232,244,240,0.25)'; g.fillRect(x, y, 3, 3); if (k < n) { g.fillStyle = '#7cc8c8'; g.fillRect(x + 2, y + 2, 1, 1); } } }
+/* THE BAR FILLS WHERE YOU CAN SEE IT. It used to vanish the moment the breath was full, so the one frame that says "you
+   got it" was the one frame it was not drawn: for a third of a second after a lungful it is drawn FULL and white instead. */
+function drawBreath(cx, cy) { if (!P.swim || P.dead) return; const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b = P.breath ?? mx;
+  const caught = BREATHCUE.gulpCd > 0.55; if (b >= mx - 0.05 && !caught) return;
+  const n = caught ? 6 : Math.ceil(b / (mx / 6));
+  for (let k = 0; k < 6; k++) { const x = Math.round(P.x - cx) - 15 + k * 5, y = Math.round(P.y - cy) - 28; g.fillStyle = k < n ? (caught ? '#ffffff' : '#e8f4f0') : 'rgba(232,244,240,0.25)'; g.fillRect(x, y, 3, 3); if (k < n) { g.fillStyle = caught ? '#bfe6f5' : '#7cc8c8'; g.fillRect(x + 2, y + 2, 1, 1); } } }
 function poolLevel(p, y) { p.y = y; const d = p.base - y; p.dry = d <= 1; p.depth = Math.max(0, d); p.shallow = d < 18; }
 // THE BORE: a wall of seawater comes UP the river on the tide. On the raft it only lifts you; in the water or on a low
 // bank it knocks you back; a rock in the stream stands over it. A roar and a white line down the river give you warning.
@@ -16532,7 +16604,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -18286,7 +18358,7 @@ function drawWorld(cx, cy, showPlayer) {
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
       if (!coop() || P === players[0]) {   /* these are the LEVEL'S own lists, not this hero's: drawn once, or a second pass doubles their alpha */
       drawPortal(cx, cy);
-      drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
+      drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); drawAirSigns(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
