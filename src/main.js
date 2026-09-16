@@ -5556,7 +5556,7 @@ function fireHeavy() { noteVerb('heavy');
   /* THE WARDEN LUNGES. She is the one hero whose held blow TRAVELS: the coil puts her weight over the back foot and the
      drive carries her a tile and a half behind the point, so the line she clears is deeper than the box on any one frame.
      P.runThrough is what the box, the haft's shove and the drive all read to know this is the lunge and not a swing. */
-  if (isWarden()) { P.runThrough = true; P.vx = P.face * 40; P.rtHit = null; }
+  if (isWarden()) { P.runThrough = true; P.rtWound = wound; P.vx = P.face * 40; P.rtHit = null; }   /* rtWound: how far it was wound is how far it carries her */
   SFX.heavy(); shakeCam(3, P.face * 2); zoomKick(1.03, 0.16);
   streaks(P.x + P.face * 14, P.y - 12, P.face, isPyro() ? '#ff9a5c' : '#dfe8ff');
   if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9), sp: 200, hit: new Set(), sunder: !!tal('sunder') }); shakeCam(5); SFX.thud(); SFX.stone(); }
@@ -6213,7 +6213,7 @@ function updatePlayer(dt) {
     else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0 && !P.swim) dashAttack(); else if (!P.swim && keys.up && !keys.down && (P.ground || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started */ else if (P.ground && !P.swim && keys.down) lowSweep(); else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
-  if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; }   /* the lunge is over when the blow is */
+  if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
   if (P.atk >= 0) {
     { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
       const was = P.atk;
@@ -6221,6 +6221,17 @@ function updatePlayer(dt) {
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
         P.atk = -1; P.heavy = false; P.swingEndT = time; } }
+    /* ==== AND THE RUN-THROUGH TRAVELS. It did not: measured in the page, holding the swing and letting it go moved her
+       NOUGHT pixels across the whole thing, because a ground swing's friction (1600 a second) eats the shove fireHeavy
+       hands her inside a single frame. A lunge that does not move is a thrust with a deeper box, which is exactly what
+       the owner saw when he said he could see the old attacks. So the drive is applied HERE, every frame of it - after
+       the friction has had its say and before she is moved - as a short coil back over the heel, then the whole body
+       behind the point, then a stop. How far it carries her is how far it was wound, which is what winding is FOR. ==== */
+    if (isWarden() && P.runThrough && !P.pinning && !stunned) {
+      const w = 0.55 + 0.65 * Math.max(0, Math.min(1, P.rtWound ?? 1));
+      const v = P.atk < 0.05 ? -25 : P.atk < 0.26 ? 130 * w : P.atk < 0.32 ? 55 : 0;
+      if (v) P.vx = P.face * v * (P.ground ? 1 : 0.7);
+    }
     if (P.atk >= 0.03 && P.atk < 0.17) {
       const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6;
       const px0 = P.x + P.face * 2, py0 = P.y - 9;
@@ -15724,7 +15735,7 @@ function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null; 
   P.heavySwing = P.combo % 3 === 0; const rip = tal('riposte') && P.riposteT > 0;
   /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
      flag goes on with it, so the deep box, the drive and everything that reads the lunge all see the same blow. */
-  if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.vx = P.face * 40; SFX.heavy(); }
+  if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
   if (P.heavySwing && P.ground && isPaladin() && tal('aftershock') && !P.heavy) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: tal('shockwave') ? 1.5 : 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.stone(); number(P.x, P.y - 30, 'AFTERSHOCK', '#ffe6a0'); }   /* AFTERSHOCK */
   if (P.heavySwing && P.combo >= 6 && hero() === 'knight' && tal('unbroken')) number(P.x, P.y - 32, 'UNBROKEN ' + P.combo, '#fff6e0');
   P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip ? 2 : 1);
@@ -18334,7 +18345,8 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
-      else if (P.charge > 0) { key = K.R.brace ? 'brace' : 'heavy'; frame = 0; }
+      else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
+        key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0) { { const cm = (P.combo || 1) % 3, ck = !P.ground && K.R.air ? 'air' : cm === 2 ? 'atkB' : cm === 0 ? 'atkC' : 'atk'; key = K.R[ck] ? ck : 'atk'; }   /* first swing, backhand, thrust */
         frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }

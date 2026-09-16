@@ -1868,6 +1868,16 @@ export function bakeWarden(skin = {}) {
     knightFrame({ wide: WIDE_H, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], spear: [sh[0] + 1, sh[1] + 1, 52, sh[1] + 1], plume: 1 }),
     knightFrame({ wide: WIDE_H, dx: 4, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 7, sh[1] + 1], spear: [sh[0] + 5, sh[1] + 1, 64, sh[1] + 1], plume: 0 }),
   ];
+  /* THE WIND-UP OF THE RUN-THROUGH, with frames of its own at last. While the swing was held she was drawn in the
+     BRACE pose - the very move that has been taken off her - so winding the lunge looked exactly like planting the
+     spear, and the owner was right to say he could see the old attacks. Three beats of LOADING it instead: the point
+     comes back past her shoulder, the weight goes over the back heel, and the whole of her coils under it. The head
+     stays level the whole way, so the read is a spear being DRAWN, never a spear being set in the ground. */
+  F.windup = [
+    knightFrame({ wide: WIDE, dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 1], spear: [sh[0] - 6, sh[1] + 4, sh[0] + 14, sh[1] - 1], plume: 1 }),
+    knightFrame({ wide: WIDE, dx: -2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 2], spear: [sh[0] - 9, sh[1] + 5, sh[0] + 9, sh[1]], plume: 2 }),
+    knightFrame({ wide: WIDE, dx: -3, dy: 2, legs: 'crouch', sho: 1, arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 3], spear: [sh[0] - 12, sh[1] + 6, sh[0] + 5, sh[1] + 1], plume: 2 }),
+  ];
   /* THE DEFLECT (C): the shaft swept up across her body and out. The read at sixteen pixels is the BAR laid over the
      bell of her - the one pose where the spear crosses the silhouette instead of running out of it - and then the point
      carried out and up on the follow through, which is where it meets an arrow. Two beats, and neither plants a heel. */
