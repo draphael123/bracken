@@ -1181,6 +1181,25 @@ function coopTally(px0, pw, at, cnt) {
     g.globalAlpha = 1; });
   { const k = at(1.15); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
 }
+/* THE TWO OF THEM ON THE CARD. The one who came out ahead DANCES under his own name and the other stands there and
+   looks at the floor, each drawn out of that player's own baked set (`p.set`), so the card shows two different heroes
+   at once the way the pick screen shows six.
+   WHERE THEY STAND. The card is full and nothing on it moves for them, so the figures go in the one column that was
+   always empty: between the run of numbers down the outside and the labels down the middle, under each name and
+   flanking the table, with their boots on a line four pixels clear of the lower rule. A figure is about twenty-four
+   pixels of hero, drawn at one to one - no scaling, or the pixels stop being pixels.
+   A DEAD HEAT SLUMPS BOTH OF THEM: the card says A DEAD HEAT and nobody won it. THE ALLY dances whatever the numbers
+   say, because the card refuses to let a machine win or lose - it is not a rival, it is company, and it is glad. */
+function drawVictoryFigures(a, b, px0, pw) {
+  const sa = scoreOf(a.total), sb = scoreOf(b.total);
+  const glad = b.ai ? [true, true] : sa === sb ? [false, false] : [sa > sb, sb > sa];
+  const step = Math.floor(time * 10), breath = Math.floor(time * 1.4);   /* the jig at a step a tenth, the way every fidget plays; the slump only breathes */
+  [[a, px0 + 70, 1], [b, px0 + pw - 70, -1]].forEach(([p, fx, face], i) => {
+    const set = p.set || K; if (!set || !set.R) return;
+    const key = glad[i] ? 'dance' : 'slump'; if (!set.R[key]) return;   /* no fallback: a set without the poses is one nobody has drawn them for yet */
+    drawSet(set, key, glad[i] ? step : breath, fx, 106, face);
+  });
+}
 /* THE VICTORY CARD, at the end of the campaign: the whole run's table, both columns, and the winner named. */
 function drawVictory() {
   g.fillStyle = 'rgba(8,6,14,0.9)'; g.fillRect(0, 0, VW, VH);
@@ -1194,6 +1213,7 @@ function drawVictory() {
   text(fitText(coopName(a), pw / 2 - 16, 6), L0, 44, '#8fd160', 'left', 6);
   text(fitText(coopName(b), pw / 2 - 16, 6), R0, 44, b.ai ? '#c9a0ff' : '#8fd160', 'right', 6);
   g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 52, pw - 12, 1);
+  drawVictoryFigures(a, b, px0, pw);
   scoreRows(a.total || freshScore()).forEach(([lab, av], i) => { const bv = scoreRows(b.total || freshScore())[i][1];
     const col = lab === 'deaths' ? '#ff6b6b' : lab === 'gold' ? '#ffd34a' : '#fff6e0', y = 56 + i * 9;
     text(lab, MID, y, UI.dim, 'center', 6);
