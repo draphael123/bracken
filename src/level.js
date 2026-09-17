@@ -6568,7 +6568,12 @@ function theHexedFields() {
   sign(543, 27, 'THE HAY CART GOES WHEN YOU GET ON. IT DRIVES THROUGH THE FENCES. YOU DO NOT: JUMP THEM.');
   block(547, 619, 39, H - 1);                                      /* the valley under the road */
   spikes(548, 557, 38); spikes(559, 570, 38); spikes(572, 583, 38); spikes(585, 593, 38); spikes(608, 608, 38); spikes(611, 612, 38); spikes(615, 616, 38); spikes(619, 619, 38);
-  moversExtra.push({ kind: 'haycart', x0: 544 * TS, x1: 594 * TS, x: 544 * TS, y: 28 * TS, w: 48, h: 8, speed: 62, state: 'dock', t: 0 });
+  /* THE DOCK IS SOLID GROUND THROUGH COLUMN 546; THE CART DOCKS AT 547, THE FIRST COLUMN OF THE OPEN PIT.
+     Docked three tiles further back (544, inside the solid block above) its wheels drew into the dirt the
+     dock is made of and the ground itself always won the landing check, so P.onMover was never set and it
+     never left the dock. Flush with the pit's edge, stepping off the dock's last solid tile is a landing
+     onto the mover, the way every other boarding in this level works. */
+  moversExtra.push({ kind: 'haycart', x0: 547 * TS, x1: 594 * TS, x: 547 * TS, y: 28 * TS, w: 48, h: 8, speed: 62, state: 'dock', t: 0 });
   for (const x of [558, 571, 584]) block(x, x, 27, 38);            /* the fence posts: a row over the cart's bed */
   ent('rook', 571, 26, { face: -1 });
   ground(595, 606, 28);
