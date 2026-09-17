@@ -5073,7 +5073,7 @@ function waymeet() {
   floor(0, 84, R);
   sign(4, 'WAYMEET. THREE ROADS MEET, SO THE INN IS FULL OF MEN WITH NOTHING TO DO.');
   ent('check', 8, R - 1);
-  ent('deco', 12, R - 1, { kind: 'cairn' }); ent('deco', 6, R - 1, { kind: 'fence', v: 0 });
+  ent('deco', 6, R - 1, { kind: 'fence', v: 0 });   /* a cairn stood here: a stepped stone pile reads as a beach sandcastle in this dusty road light, so it is gone, not reskinned */
   ent('npc', 16, R - 1, { kind: 'shepherd' }); ent('dog', 20, R - 1); ent('deco', 24, R - 1, { kind: 'fence', v: 1 });
   coins([10, R - 2], [14, R - 2], [18, R - 2], [22, R - 2], [28, R - 2]);
   /* THE GATEHOUSE: a wall with an arch through it. You do not go round a town wall. */
@@ -5088,7 +5088,7 @@ function waymeet() {
   sign(68, 'RAISE THE SHIELD AS HIS BLOW LANDS, NOT BEFORE, AND HE IS WIDE OPEN.');
   ent('hedgeknight', 80, R - 1, { face: -1 }); ent('swornsword', 66, R - 1, { face: -1 });   /* the first hedge knight, alone on the street: his feint is learned before the market */
   sign(74, 'THE HEDGE KNIGHT FEINTS. A GUARD RAISED ON THE FAKE IS STILL UP WHEN THE REAL ONE LANDS.');
-  ent('runner', 58, R - 1, { face: -1 }); ent('watch', 61, R - 1, { face: -1 }); ent('swornsword', 76, R - 1, { face: -1 }); ent('crossbow', 83, R - 1, { face: -1 });   /* THE ROAD'S OWN: a squire who runs for the swords, where a goblin cutpurse used to stand */
+  ent('runner', 58, R - 1, { face: -1 }); ent('swornsword', 61, R - 1, { face: -1 }); ent('swornsword', 76, R - 1, { face: -1 }); ent('crossbow', 83, R - 1, { face: -1 });   /* THE ROAD'S OWN: a squire who runs for the swords, where a goblin cutpurse used to stand */
   coins([34, R - 2], [38, R - 2], [42, R - 2], [58, R - 2], [66, R - 2], [72, R - 2], [80, R - 2]);
 
   // ---------------- 2. THE MARKET CROSS (x 85-206). The square, and the town going about it. -----------
@@ -5164,7 +5164,7 @@ function waymeet() {
   coins([220, R - 2], [228, R - 2], [240, R - 2], [256, R - 2]);
   coins([216, R - 9], [230, R - 9], [244, R - 9], [258, R - 9]);
   for (const x of [220, 234, 248, 260]) ent('swornsword', x, R - 8, { face: -1 });   /* they are on her roof too */
-  ent('crossbow', 240, R - 8, { face: -1 }); ent('crossbow', 226, R - 8, { face: -1 }); ent('hedgeknight', 254, R - 8, { face: -1 }); ent('swornsword', 238, R - 1, { face: -1 }); ent('watch', 250, R - 1, { face: -1 });
+  ent('crossbow', 240, R - 8, { face: -1 }); ent('crossbow', 226, R - 8, { face: -1 }); ent('hedgeknight', 254, R - 8, { face: -1 }); ent('swornsword', 238, R - 1, { face: -1 }); ent('swornsword', 250, R - 1, { face: -1 });
   /* THE BEER GARDEN. Outside her east wall, under the bunting: the one stretch of this town where nobody stands up
      when you walk in. The town drinks here - a carter, a knight with his helm on the bench beside him, a goodwife,
      a lad and an old soldier - and the tapster pours for anyone, even the man on the notice. It is the breath
@@ -5269,7 +5269,7 @@ function waymeet() {
   for (const px2 of [486, 500, 514, 528]) { plat(px2 - 1, R - 2, 4); ent('deco', px2, R - 1, { kind: 'bridgepost' }); }
   ent('lancer', 489, R - 1, { face: 1, range: 17 });
   ent('lancer', 524, R - 1, { face: -1, range: 15 });
-  ent('crossbow', 548, R - 1, { face: -1 }); ent('swornsword', 453, R - 1, { face: 1 }); ent('watch', 460, R - 1, { face: -1 }); ent('hedgeknight', 552, R - 1, { face: -1 }); ent('swornsword', 544, R - 1, { face: -1 }); ent('heavy', 559, R - 1, { face: -1 });
+  ent('crossbow', 548, R - 1, { face: -1 }); ent('swornsword', 453, R - 1, { face: 1 }); ent('hedgeknight', 460, R - 1, { face: -1 }); ent('hedgeknight', 552, R - 1, { face: -1 }); ent('swornsword', 544, R - 1, { face: -1 }); ent('heavy', 559, R - 1, { face: -1 });
   coins([486, R - 3], [500, R - 3], [514, R - 3], [528, R - 3], [478, R - 2], [508, R - 2], [536, R - 2]);
   post(454); post(546); post(558);
   ent('check', 556, R - 1);
@@ -5292,7 +5292,7 @@ function waymeet() {
   coins([615, R - 2], [630, R - 2]);                       /* at the foot of each break */
   board(642, 646, R - 3); stair(647, R - 3, R - 1);
   ent('crossbow', 624, R - 7, { face: -1 }); ent('swornsword', 638, R - 7, { face: -1 });
-  ent('hedgeknight', 594, R - 5, { face: -1 }); ent('swornsword', 568, R - 1, { face: -1 }); ent('watch', 580, R - 1, { face: -1 }); ent('crossbow', 583, R - 5, { face: -1 }); ent('swornsword', 606, R - 7, { face: -1 }); ent('hedgeknight', 650, R - 1, { face: -1 }); ent('crossbow', 645, R - 4, { face: -1 });
+  ent('hedgeknight', 594, R - 5, { face: -1 }); ent('swornsword', 568, R - 1, { face: -1 }); ent('swornsword', 580, R - 1, { face: -1 }); ent('crossbow', 583, R - 5, { face: -1 }); ent('swornsword', 606, R - 7, { face: -1 }); ent('hedgeknight', 650, R - 1, { face: -1 }); ent('crossbow', 645, R - 4, { face: -1 });
   coins([569, R - 3], [582, R - 5], [593, R - 5], [604, R - 7], [610, R - 7], [622, R - 7], [636, R - 7], [644, R - 4]);
   ent('stray', 626, R - 7, { kind: 'cup' });
 
@@ -5311,7 +5311,7 @@ function waymeet() {
   ent('deco', 656, R - 1, { kind: 'longTable', v: 0 }); ent('deco', 653, R - 1, { kind: 'bench' });
   ent('guest', 655, R - 1, { v: 2, face: 1 }); ent('guest', 657, R - 1, { v: 0, face: -1 });
   /* THE CHAPEL'S OWN keep the ale: a fight on the green first, then the crossing, where the parish is too drunk to fight */
-  ent('swornsword', 656, R - 1, { face: -1 }); ent('watch', 658, R - 1, { face: -1 });
+  ent('swornsword', 656, R - 1, { face: -1 }); ent('hedgeknight', 658, R - 1, { face: -1 });
   block(659, 661, R - 2, R - 1);                            /* the ale-stake: kegs racked two high, a step up to the lychgate */
   ent('deco', 660, R - 3, { kind: 'kegStack' });
   /* THE ALE BOOTH over the green, and the first drinker up at its eaves: the chapel's men are under his roof where he
@@ -5348,7 +5348,7 @@ function waymeet() {
   ent('deco', 704, R - 1, { kind: 'bellTower' });
   for (const [x, v] of [[712, 0], [720, 1], [728, 2], [736, 0], [744, 1], [752, 2]]) ent('deco', x, R - 1, { kind: 'grave', v });
   ent('deco', 708, R - 1, { kind: 'yew', v: 1 }); ent('deco', 756, R - 1, { kind: 'yew', v: 0 });
-  ent('deco', 748, R - 1, { kind: 'lychgate' }); ent('deco', 724, R - 1, { kind: 'cairn' });
+  ent('deco', 748, R - 1, { kind: 'lychgate' }); ent('deco', 724, R - 1, { kind: 'grave', v: 0 });   /* a cairn stood here too: the same stepped stone pile that reads as a sandcastle, swapped for one more headstone in the row it already keeps */
   post(702); post(754); post(730);
   ent('closedhelm', 738, R - 1, { face: -1 });
   ent('gate', 770, R - 1);
@@ -6994,7 +6994,7 @@ export const LEVELS = [
 const MIX = {
   wood: [['wasp', 'crow', 4], ['sprig', 'lurker', 3], ['spit', 'hopper', 3]],
   moor: [['harpy', 'crow', 3]],
-  waymeet: [['swornsword', 'watch', 4], ['swornsword', 'heavy', 8]],   /* a KNIGHT'S town: the watch and a goblin knight, never a goblin soldier */
+  waymeet: [['swornsword', 'hedgeknight', 4], ['swornsword', 'heavy', 8]],   /* a KNIGHT'S town: the hedge knight and the heavy, never the drowned watch or a goblin soldier */
   hunt: [['sprig', 'thief', 2], ['archer', 'javelin', 4]],
   undercrown: [['sprig', 'shardling', 2]],
   deep: [['sailor', 'watch', 4]],
@@ -7335,7 +7335,7 @@ const AMBUSH = {
   lamplit: [{ name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
     waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
-    waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['watch', 100], ['hedgeknight', 106]]] }],
+    waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['swornsword', 100], ['hedgeknight', 106]]] }],
 };
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);
