@@ -2505,7 +2505,7 @@ function theDeep() {
   ent('sailor', 48, 41, { face: -1 }); ent('netter', 84, 47, { face: -1 }); ent('angler', 24, 50);
   ent('scout', 34, 55, { face: 1 }); ent('eel', 96, 58); ent('crab', 68, 63, { face: 1 });
   ent('sailor', 74, 47, { face: 1 }); ent('crab', 38, 41, { face: -1 }); ent('netter', 22, 55, { face: 1 });
-  ent('scout', 86, 63, { face: -1 }); ent('urchin', 52, 46); ent('urchin', 44, 60);
+  ent('scout', 86, 63, { face: -1 }); ent('puffer', 52, 46); ent('urchin', 44, 60);
   ent('petrel', 66, 36); ent('angler', 88, 56); ent('eel', 30, 46);
   ent('siren', 60, 52); ent('tideguard', 92, 47, { face: -1 });
   ent('boarder', 42, 41, { face: 1 }); ent('boarder', 80, 63, { face: -1 });
@@ -2545,13 +2545,13 @@ function theDeep() {
   ent('holdfast', 40, 95, { face: 1 }); ent('holdfast', 84, 103, { face: -1 });
   ent('holdfast', 56, 105, { face: 1 });
   ent('angler', 56, 92); ent('eel', 42, 100); ent('netter', 90, 87, { face: -1 });
-  ent('urchin', 46, 106); ent('urchin', 54, 105); ent('urchin', 36, 106);   /* (54 was a row down inside the shelf) */
+  ent('urchin', 46, 106); ent('jelly', 54, 105); ent('urchin', 36, 106);   /* (54 was a row down inside the shelf) */
   ent('sailor', 34, 81, { face: -1 }); ent('crab', 70, 87, { face: 1 }); ent('scout', 46, 95, { face: -1 });
   ent('tideguard', 76, 103, { face: -1 }); ent('siren', 24, 90); ent('petrel', 60, 76);
   ent('eel', 84, 96); ent('angler', 18, 100); ent('netter', 50, 103, { face: 1 });
   ent('boarder', 24, 81, { face: 1 }); ent('boarder', 88, 87, { face: -1 });
   ent('wight', 44, 95, { face: -1 }); ent('wight', 68, 103, { face: 1 });
-  ent('angler', 72, 92); ent('angler', 30, 108); ent('siren', 88, 98);
+  ent('lamprey', 72, 92); ent('angler', 30, 108); ent('siren', 88, 98);
   ent('check', 76, 87); ent('check', 66, 103);
   ent('sign', 66, 87, { text: 'THE BEDS NEVER MOVE. THEY ONLY HAVE TO BE WHERE YOU WERE GOING.' });
   coins([16, 81], [26, 81], [34, 81], [68, 87], [76, 87], [86, 87], [24, 95], [32, 95], [44, 95], [64, 103], [78, 103], [90, 103]);
@@ -2591,7 +2591,7 @@ function theDeep() {
   ent('angler', 96, 134); ent('eel', 20, 140); ent('crab', 90, 122, { face: -1 });
   ent('prise', 62, 121, { face: 1 }); ent('prise', 66, 137, { face: -1 });
   ent('sailor', 90, 137, { face: -1 }); ent('scout', 20, 129, { face: 1 }); ent('netter', 50, 145, { face: -1 });
-  ent('tideguard', 30, 145, { face: 1 }); ent('siren', 72, 130); ent('urchin', 58, 150);   /* on the shelf, not a row inside it */
+  ent('tideguard', 30, 145, { face: 1 }); ent('siren', 72, 130); ent('puffer', 58, 150);   /* on the shelf, not a row inside it */
   ent('eel', 82, 126); ent('petrel', 36, 116); ent('crab', 24, 145, { face: 1 });
   ent('wight', 34, 129, { face: 1 }); ent('wight', 86, 121, { face: -1 });
   ent('boarder', 70, 121, { face: 1 }); ent('boarder', 26, 145, { face: 1 });
@@ -2622,8 +2622,8 @@ function theDeep() {
   ent('sign', 10, 165, { text: 'THE GLOWING DROP. THE JELLIES ARE THE ONLY LIGHT: STRIKE ONE AND IT BURNS BRIGHT.' });
   clam(20, 165); wreck(12, 173); vent(21, 173, 6); clam(12, 181); clam(98, 169); vent(100, 179, 8);
   for (const [x, y, h] of [[40, 164, 0], [60, 170, 0], [76, 161, 0], [28, 179, 1], [50, 183, 0], [84, 176, 1], [66, 186, 1], [94, 163, 0], [34, 170, 0], [20, 188, 1]]) jelly(x, y, h);
-  ent('angler', 30, 172); ent('angler', 70, 176); ent('angler', 56, 162); ent('eel', 44, 178); ent('eel', 84, 166);
-  ent('siren', 62, 182); ent('urchin', 14, 173); ent('urchin', 92, 169);   /* over the rock band, not in it */
+  ent('angler', 30, 172); ent('angler', 70, 176); ent('angler', 56, 162); ent('lamprey', 44, 178); ent('eel', 84, 166);
+  ent('siren', 62, 182); ent('jelly', 14, 173); ent('urchin', 92, 169);   /* over the rock band, not in it */
   coins([16, 165], [22, 165], [10, 173], [14, 173], [10, 181], [26, 178], [40, 176], [60, 174], [80, 170], [100, 169], [98, 179]);
   zone('THE GLOWING DROP', 8, 103, 158, 186, [130, 100, 210], 0.12);
   darkZones.push({ x0: 8 * TS, x1: 104 * TS, y0: 158 * TS, y1: 187 * TS, dark: 0.22 });
@@ -2652,7 +2652,7 @@ function theDeep() {
   D.rime.push([104, 157, 198]); D.icicles.push([104, 111, 188], [116, 122, 188], [127, 133, 188], [138, 157, 188]);
   ent('check', 106, 198);
   ent('sign', 108, 198, { text: 'THE COLD ROAD RUNS TO HIS CASTLE. TO GO BACK AGAINST IT, KEEP UP UNDER THE ICE.' });
-  ent('eel', 118, 193); ent('eel', 140, 192); ent('angler', 128, 195); ent('urchin', 116, 198); ent('urchin', 138, 198);
+  ent('eel', 118, 193); ent('eel', 140, 192); ent('angler', 128, 195); ent('urchin', 116, 198); ent('jelly', 138, 198);
   coins([114, 186], [125, 186], [136, 186], [120, 196], [130, 196], [142, 196]);
   zone('THE COLD ROAD', 104, 157, 184, 198, [140, 200, 245], 0.16);
   darkZones.push({ x0: 104 * TS, x1: 158 * TS, y0: 184 * TS, y1: 199 * TS, dark: 0.24 });
@@ -4219,6 +4219,7 @@ function theFlotilla() {
   ent('mover', 109, 22, { len: 2, range: 0, bob: true });
   net(110, 111, 18, 36);
   coins([98, 21], [104, 17], [109, 21]);
+  ent('manta', 104, 29);   /* skims the harbour under the swinging ropes and dives at whoever lands on the Galley or the Hulk */
 
   // ---- 2. THE HULK: a prize they never finished stripping ----
   block(113, 176, 22, 37); hullZones.push([113, 176, 22, 37]);
@@ -4256,6 +4257,7 @@ function theFlotilla() {
   ent('sign', 173, 21, { text: 'KNOCK THE PLANK DOWN TO REACH THE POWDER HOY, OR SWIM AND CLIMB HER NET.' });
   net(181, 182, 24, 36); net(183, 184, 24, 29);
   ent('mover', 179, 22, { len: 2, range: 0, bob: true }); coins([179, 21]); // a hatch cover riding the swell, for anyone who will not drop the plank
+  ent('manta', 181, 28);   /* the same harbour, under the plank crossing */
 
   // ---- 3. THE POWDER HOY: what they blast wrecks open with ----
   block(183, 240, 25, 37); hullZones.push([183, 240, 25, 37]);
@@ -4604,6 +4606,7 @@ function theHurricane() {
   ent('deco', 500, 33, { kind: 'plunder', v: 0 }); ent('deco', 536, 33, { kind: 'plunder', v: 2 }); ent('coin', 518, 33);
   coins([496, 33], [508, 33], [524, 33], [532, 33], [544, 33]);
   ent('scout', 516, 23, { face: -1 }); ent('tideguard', 534, 23, { face: -1 }); ent('seawitch', 499, 14, { caller: true, face: -1 }); ent('sailor', 490, 16, { face: 1 }); ent('lookout', 512, 13, { face: -1 }); ent('cutlass', 552, 16, { face: -1 });
+  ent('manta', 495, 20); ent('manta', 545, 20);   /* the gap between the two hulls is open air down to the oil: she skims it and dives at the wreck's deck or the ropes either side */
   ent('coin', 528, 23); ent('deco', 532, 23, { kind: 'plunder', v: 2 });
   coins([493, 20], [500, 14], [510, 16], [520, 14], [530, 16], [540, 14], [548, 16], [518, 23], [526, 23]);
   ent('check', 560, 19);
@@ -7125,17 +7128,17 @@ const GARRISON = {
   spire: [['fledgling', 13], ['harpy', 10], ['bat', 7], ['sentry', 8], ['rockgoblin', 7], ['crow', 5], ['goat', 4], ['troll', 4], ['kite', 4], ['spider', 3], ['snuffer', 2]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
   storm: [['hearthgob', 5], ['cutter', 5], ['sentry', 2], ['pike', 1]],
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
-  longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
-  reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
+  longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 4], ['eel', 3], ['netter', 5], ['angler', 3], ['turtle', 4], ['heronfoe', 3], ['lamprey', 2], ['puffer', 1], ['jelly', 1]],   // replacing weight, not piling on: three of the eel/angler/siren's slots go to the new wildlife
+  reef: [['angler', 9], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 4], ['urchin', 2], ['lookout', 3], ['puffer', 2], ['lamprey', 2], ['jelly', 1]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['seawitch', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and her own sea witch, not another cutlass */
   mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3]],   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
   fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
-  causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 4], ['sailor', 4], ['crab', 4], ['netter', 3]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
+  causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 3], ['sailor', 3], ['crab', 4], ['netter', 2], ['jelly', 1], ['puffer', 1], ['lamprey', 1]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
   skyship: [['cutlass', 10], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings */
-  lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
+  lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
 // Measured across the campaign and they are bunched and then absent: Highcrown had ELEVEN of them and SEVEN
