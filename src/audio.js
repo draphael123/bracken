@@ -750,6 +750,10 @@ const DIE = {
   urchin() { noise(0.14, 0.26, 3400, 0.3); for (let i = 0; i < 5; i++) tone('triangle', 1600 + i * 200, 900, 0.07, 0.05, i * 0.035); /* the spines go everywhere */ },
   angler() { tone('sawtooth', 200, 70, 0.3, 0.2); noise(0.3, 0.3, 600, 0.5, 0.03); tone('sine', 1200, 300, 0.18, 0.06, 0.06); /* its lamp goes out */ noise(0.24, 0.16, 1400, 0.4, 0.16); },
   petrel() { tone('sawtooth', 1300, 400, 0.16, 0.12); tone('square', 900, 300, 0.12, 0.08, 0.05); noise(0.22, 0.16, 2400, 0.4, 0.08); },
+  puffer() { noise(0.1, 0.3, 2600, 0.4); tone('sine', 500, 900, 0.06, 0.07); noise(0.16, 0.14, 800, 0.4, 0.05); /* the last of the air going out of it, all at once */ },
+  jelly() { pad('sine', 340, 180, 0.6, 0.04, 0, 1600); noise(0.3, 0.16, 900, 0.4, 0.08); /* it comes apart into the water it was mostly made of */ },
+  lamprey() { noise(0.2, 0.3, 500, 0.5); tone('sawtooth', 140, 50, 0.3, 0.16); noise(0.14, 0.14, 1600, 0.4, 0.1); /* a wet mouth losing its hold */ },
+  manta() { noise(0.4, 0.36, 500, 0.6); tone('sine', 90, 40, 0.5, 0.14, 0.05); SFX.splash && SFX.splash(); /* a big flat body going down into her own water */ },
   crab() { noise(0.12, 0.3, 2800, 0.35); for (let i = 0; i < 4; i++) noise(0.05, 0.2, 2200 - i * 300, 0.5, 0.06 + i * 0.05); /* the shell comes apart in pieces */ },
   turtle() { noise(0.2, 0.3, 1200, 0.4); tone('square', 260, 90, 0.2, 0.14); tone('sine', 80, 40, 0.4, 0.12, 0.08); },
   heronfoe() { tone('sawtooth', 1000, 300, 0.2, 0.14); tone('square', 1400, 500, 0.14, 0.1, 0.04); noise(0.26, 0.2, 2000, 0.4, 0.1); },
@@ -872,6 +876,10 @@ const HURT = {
   crab() { noise(0.05, 0.26, 2600, 0.35); noise(0.05, 0.2, 1900, 0.4, 0.05); },
   urchin() { noise(0.07, 0.22, 3200, 0.3); tone('sine', 700, 400, 0.08, 0.06); },
   eel() { noise(0.12, 0.26, 900, 0.5); tone('sine', 240, 120, 0.12, 0.12); },
+  puffer() { noise(0.05, 0.2, 2400, 0.3); tone('sine', 600, 800, 0.05, 0.05); },
+  jelly() { noise(0.14, 0.14, 800, 0.35); tone('sine', 400, 260, 0.1, 0.05); },
+  lamprey() { noise(0.1, 0.2, 500, 0.4); tone('sawtooth', 160, 100, 0.08, 0.08); },
+  manta() { noise(0.16, 0.24, 450, 0.4); tone('sine', 110, 70, 0.14, 0.08); },
   scarecrow() { noise(0.14, 0.22, 1400, 0.4); noise(0.08, 0.14, 700, 0.5, 0.04); tone('square', 320, 220, 0.08, 0.05, 0.02); },   /* dry straw and something inside it */
   rook() { tone('sawtooth', 900, 620, 0.08, 0.1); noise(0.06, 0.1, 2800, 0.8); },
   farmhand() { tone('sine', 300, 180, 0.3, 0.12); pad('sine', 450, 300, 0.4, 0.03, 0.02, 2200); },   /* a sigh from a long way off */
