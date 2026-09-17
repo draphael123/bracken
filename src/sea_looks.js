@@ -312,6 +312,87 @@ function reefWet(g, cx, cy, VW, VH, time) {
 }
 
 // ============================================================================================
+// THE LAMPLIT STREET — A DROWNED CITY. Behind the street there is more of the city than the street: its bell tower standing
+// up out of the far roofs with the light still in its belfry, the sea-lamps of streets you will never walk burning cold along
+// the far roofline, its people's statues standing in the squares behind, and the banners of the guilds hanging off every
+// underside, moving in the water. None of it darker: the lights in it are what lift the roof road off black.
+// ============================================================================================
+const CC = { st: '#2e4452', stL: '#43606c', stD: '#1f3040', stone: '#586c70', stoneL: '#7c9290', stoneD: '#3a4a50', lamp: '176,236,214', warm: '#e8c870', ban: ['#8a3a48', '#3a5a8a', '#2e6a58'], gold: '#b89a4a' };
+/* THE BELL TOWER, 90x230: a square shaft of courses, buttressed, the belfry open with the bell hung in it, a spire broken off
+   above it, and weed hanging off every ledge */
+function bakeBellTower() {
+  const W = 90, H = 230; const [c, g] = canvas(W, H);
+  rect(g, 22, 80, 46, 150, CC.st); rect(g, 22, 80, 3, 150, CC.stL); rect(g, 65, 80, 3, 150, CC.stD);
+  for (let y = 84; y < H; y += 9) rect(g, 25, y, 40, 1, CC.stD);
+  fillPoly(g, [[14, 230], [22, 150], [22, 230]], CC.stD); fillPoly(g, [[76, 230], [68, 150], [68, 230]], CC.stD);   /* buttresses */
+  rect(g, 18, 74, 54, 8, CC.stL); rect(g, 18, 36, 54, 6, CC.stL);   /* the belfry's sill and its cornice */
+  rect(g, 24, 42, 42, 32, CC.stD); for (const x of [24, 42, 60]) rect(g, x, 42, 6, 32, CC.st);   /* the open arches */
+  fillPoly(g, [[34, 46], [40, 44], [46, 46], [48, 62], [32, 62]], '#8a7a4a'); rect(g, 31, 62, 18, 2, '#a8904a');   /* the bell */
+  fillPoly(g, [[22, 36], [45, 4], [60, 22], [52, 24], [68, 36]], CC.st); line(g, 45, 4, 22, 36, CC.stL);   /* what is left of the spire */
+  for (let k = 0; k < 6; k++) { rect(g, 20 + k * 9, 82, 1, 6 + (k * 7) % 9, '#2e5040'); rect(g, 26 + k * 7, 43, 1, 4 + (k * 5) % 6, '#2e5040'); }
+  for (const [x, y] of [[36, 100], [50, 130], [36, 160], [50, 190]]) { rect(g, x, y, 5, 9, '#141e26'); }   /* the stair windows */
+  return c;
+}
+/* A STATUE ON ITS PLINTH, 26x60: a robed figure, one arm up with a lamp in it (it is that sort of city), weed on its shoulders */
+function bakeCityStatue(v) {
+  const W = 26, H = 60; const [c, g] = canvas(W, H);
+  rect(g, 3, 48, 20, 12, CC.stoneD); rect(g, 1, 46, 24, 3, CC.stone); rect(g, 3, 56, 20, 1, CC.stoneL);
+  fillPoly(g, [[7, 46], [9, 22], [13, 18], [17, 22], [19, 46]], CC.stone); line(g, 9, 24, 9, 46, CC.stoneL);
+  ellipse(g, 13, 14, 3, 4, CC.stone); px(g, 12, 13, CC.stoneD);
+  if (v % 2) { line(g, 17, 24, 22, 8, CC.stone, 2); rect(g, 20, 3, 5, 5, CC.stoneD); px(g, 22, 5, CC.warm); } else { line(g, 9, 25, 4, 36, CC.stone, 2); rect(g, 2, 36, 6, 4, CC.stoneD); }
+  for (let k = 0; k < 4; k++) rect(g, 8 + k * 3, 20 + (k % 2), 1, 5 + k, '#3e6a4a');
+  return c;
+}
+/* A GUILD'S BANNER, 12 wide and 36 long, three frames of it moving in the water: torn at the foot, a device on it */
+function bakeCityBanner(v) {
+  const col = CC.ban[v % 3], dark = shadeHex(col, -0.35), lit = shadeHex(col, 0.3);
+  return [0, 1, 2].map(f => { const [c, g] = canvas(16, 32);
+    for (let y = 3; y < 30; y++) { const off = Math.round(Math.sin(y * 0.2 + f * 2.1) * (y / 30) * 3), w = 8 - (y > 22 ? Math.min(4, (y - 22) >> 1) : 0), rag = y > 20 && (y * 7 + v * 3 + f) % 5 === 0;
+      if (rag) continue; rect(g, 4 + off, y, w, 1, (y + f) % 6 === 0 ? dark : col); px(g, 4 + off, y, lit); px(g, 4 + off + w - 1, y, dark); }
+    rect(g, 1, 0, 14, 2, '#3a2e22'); px(g, 1, 2, '#3a2e22'); px(g, 14, 2, '#3a2e22'); rect(g, 4, 2, 8, 1, CC.gold);   /* the pole, and the fringe */
+    rect(g, 6, 9, 4, 4, CC.gold); px(g, 7, 10, dark); px(g, 8, 11, dark);   /* the guild's device */
+    return c; });
+}
+function lampLook() {
+  const S0 = { id: 'lamplit', far: lampFar, over: lampOver, tower: bakeBellTower(), statue: [bakeCityStatue(0), bakeCityStatue(1)], banner: [0, 1, 2].map(bakeCityBanner), banners: [], statues: [] };
+  // BANNERS off the underside of anything with open street under it: the roof road's vaults and the upper city's slabs
+  for (let tx = 2; tx < L.W - 2; tx++) for (let ty = 2; ty < L.H - 4; ty++) {
+    if (!SOLIDT.has(tileAt(tx, ty - 1)) || tileAt(tx, ty) !== 0 || tileAt(tx, ty + 1) !== 0 || tileAt(tx, ty + 2) !== 0) continue;
+    if (tx % 7 !== 3 || hsh(tx, ty, 101) > 0.55) continue;
+    S0.banners.push({ x: tx * TS + 2, y: ty * TS, v: Math.floor(hsh(tx, ty, 102) * 3), ph: hsh(tx, ty, 103) * 6 });
+  }
+  // STATUES in the squares behind: a world position every so often, stood on the far roofline
+  for (let i = 0; i < L.W / 18; i++) if (hsh(i, 7, 104) < 0.6) S0.statues.push({ x: i * 18 * TS + Math.floor(hsh(i, 8, 105) * 120), v: i % 2 });
+  return S0;
+}
+function lampFar(g, cx, cy, VW, VH, time) {
+  // THE BELL TOWER, a long way off: a fifth of the world's speed, so it stands over a third of the street; the bell's light pulses
+  { const f = 0.2, span = 900, tw = S.tower; for (let n = Math.floor((cx * f - 60) / span); n <= Math.floor((cx * f + VW) / span); n++) {
+      const sx = Math.round(n * span + 180 - cx * f), sy = Math.round(VH - tw.height + 30 - (cy - (L.H * TS - VH)) * 0.12);
+      if (sx > VW || sx + tw.width < 0) continue;
+      g.globalAlpha = 0.5; g.drawImage(tw, sx, sy); g.globalAlpha = 1;
+      g.save(); g.globalCompositeOperation = 'lighter'; const a = 0.35 + 0.15 * Math.sin(time * 0.8 + n);
+      g.globalAlpha = a; g.drawImage(glowOf('232,200,112', 26), sx + 40 - 26, sy + 56 - 26); g.restore(); S.lit.push([sx + 40, sy + 56, 60, 0.55]); } }
+  // THE FAR ROOFLINE'S SEA-LAMPS at a third of the world's speed, and the STATUES in the squares at a half: cold glass, not his lamps
+  { const f = 0.34, cell = 70, baseY = VH * 0.62 - (cy - 244) * 0.3;   /* (244: the camera on the roof road) */
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (let i = Math.floor(cx * f / cell) - 1; i <= Math.floor((cx * f + VW) / cell) + 1; i++) { if (hsh(i, 1, 106) > 0.7) continue;
+      const sx = Math.round(i * cell + hsh(i, 2, 107) * cell - cx * f), sy = Math.round(baseY - hsh(i, 3, 108) * 50), a = 0.4 + 0.2 * Math.sin(time * 1.3 + i * 2.7);
+      if (sx < -20 || sx > VW + 20 || sy < -20 || sy > VH + 20) continue;
+      g.globalAlpha = a; g.drawImage(glowOf(CC.lamp, 24), sx - 24, sy - 24); g.globalAlpha = Math.min(1, a * 2); g.fillStyle = '#dffff0'; g.fillRect(sx, sy, 2, 2); S.lit.push([sx, sy, 34, 0.5]); }
+    g.restore(); g.globalAlpha = 1; }
+  { const f = 0.5, baseY = VH * 0.8 - (cy - 244) * 0.5;
+    for (const s of S.statues) { const sx = Math.round(s.x * f / 1 - cx * f + 40), c = S.statue[s.v]; if (sx < -30 || sx > VW) continue;
+      g.globalAlpha = 0.85; g.drawImage(c, sx, Math.round(baseY - c.height)); g.globalAlpha = 1;
+      if (s.v % 2) { g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.45 + 0.15 * Math.sin(time * 1.1 + s.x); g.drawImage(glowOf('232,200,112', 14), sx + 22 - 14, Math.round(baseY - c.height) + 5 - 14); g.restore(); g.globalAlpha = 1; S.lit.push([sx + 22, Math.round(baseY - c.height) + 5, 22, 0.45]); } } }
+}
+function lampOver(g, cx, cy, VW, VH, time) {
+  // THE BANNERS, moving with the water
+  for (const b of S.banners) { if (b.x < cx - 16 || b.x > cx + VW || b.y < cy - 40 || b.y > cy + VH) continue;
+    g.drawImage(S.banner[b.v][Math.floor(time * 1.2 + b.ph) % 3], Math.round(b.x - cx), Math.round(b.y - cy)); }
+}
+
+// ============================================================================================
 // THE LIVING WATER. Built once, configured per level (LIFE below): schools of fish that scatter when you swim through them and
 // come back together behind you, crabs going about their business on the ledges, kelp that leans out of your way, jellyfish
 // drifting in the far water, strings of bubbles going up a long way off, and now and then something very big going past
@@ -464,15 +545,17 @@ function lifeBack(g, cx, cy, VW, VH, time, hero) {
 // ============================================================================================
 // THE HOOKS main.js calls
 // ============================================================================================
-const LOOKS = { deep: deepLook, reef: reefLook };
+const LOOKS = { deep: deepLook, reef: reefLook, lamplit: lampLook };
 /* at load: what this level looks like, and anything main.js has to swap for it (a parallax layer or, in a dark level, the murk) */
 export function seaLoad(id, lv) {
   L = lv; S = LOOKS[id] ? LOOKS[id]() : LIFE[id] ? { id } : null;
   if (S) S.life = lifeLoad(id);
   return S ? { mid: S.mid || null, murk: S.murk || null } : null;
 }
-export function seaFar(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea) return; if (S.far) S.far(g, cx, cy, VW, VH, time); if (S.life) lifeFar(g, cx, cy, VW, VH, time); }
+export function seaFar(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea) return; S.lit = []; if (S.far) S.far(g, cx, cy, VW, VH, time); if (S.life) lifeFar(g, cx, cy, VW, VH, time); }
 export function seaBack(g, cx, cy, VW, VH, time, hero) { if (!S || globalThis.__noSea) return; if (S.back) S.back(g, cx, cy, VW, VH, time); if (S.life) lifeBack(g, cx, cy, VW, VH, time, hero); }
+/* IN THE DARK PASS: every light the far water drew this frame opens the black round it a little (hole(x, y, r, strength)) */
+export function seaHoles(hole) { if (!S || globalThis.__noSea || !S.lit) return; for (const [x, y, r, a] of S.lit) hole(x, y, r, a); }
 export function seaOver(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea) return; S.cam = [cx, cy, VW, VH, time]; if (S.over) S.over(g, cx, cy, VW, VH, time); }
 /* AFTER THE WATER'S WASH (drawSwimmers calls it first): what has to read through the water, put back over it, in this frame's camera */
 export function seaWet(g) { if (!S || globalThis.__noSea || !S.cam || !S.wet) return; const [cx, cy, VW, VH, time] = S.cam; S.wet(g, cx, cy, VW, VH, time); S.cam = null; }

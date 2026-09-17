@@ -19278,6 +19278,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (const pr of props) if (pr.t === 'gas' && pr.lit > 0) hole(pr.x - cx, pr.y - cy, 50);
     for (const b2 of airBells) hole(b2.x - cx, b2.y - cy, 56); // the diving bells burn down here
     if (L.deep) deepHoles(hole, cx, cy);
+    SEA.seaHoles(hole);   /* and a sea level's own lights, where its far water drew them this frame */
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
     g.drawImage(DARKC, 0, 0); drawDarkRims();
