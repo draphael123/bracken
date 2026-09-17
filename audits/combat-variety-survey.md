@@ -369,6 +369,24 @@ exists (front guard) a zero-cost alternative (flanking) removes the pressure to 
 
 ---
 
+## #10 VERIFIED (PHASE 2A, against master 95b6479)
+
+The four custom gates this survey marked GUESS, read line by line and then watched in `BK.bossLab` (knight and Death
+Knight, 150 s cap, every blow on the boss logged as damage asked against health taken, bucketed by mode). All four
+were killed by both heroes. What the code does, and what the lab saw:
+
+| gate | code (main.js) | lab ratio taken/asked | where the survey was wrong |
+|---|---|---|---|
+| `archHurt` (archmage) | **nothing** in `change`/`swallow`/`blink`/`wake`, while any rune stands, or on the orrery's arm in stage 2 (the counterweight is the only way down); **open ×2** (stage 1-2) or **×3.2** (stage 3, the eye), each opening capped at 18% / 8% of max health, then HE RECOVERS; stage 3 closed **×0.3** (the hide); stage 1-2 closed and unwarded **×1**; and `archGate` floors his health at 66% / 55-44-33% so no blow skips a stage | ward/change/swallow 0.00; open s1 1.9-2.0, s2 1.6-1.8 (the cap), s3 3.2; s3 hide 0.28 | "three-stage" is right; it is not a plain multiplier but a cap per opening plus a health floor per stage |
+| `strawHurt` (strawking) | **nothing** in `rebuild`/`lightTell`/`poleLeap`; stage 3 with his lantern, not open, and `P.heavySwing \|\| P.dashAtk \|\| plunge` sets him **ablaze ×2.2** (5 s open); **open ×2**; otherwise **×0.45** | rebuild 0.00; walk/sweep 0.44-0.50; tangled/ablaze 2.0 | `P.heavySwing` is also true on **every third cut of a run**, so the lantern does not need the held heavy blow: any hero's third cut, a dash attack or a plunge knocks it |
+| `homHurt` (homunculus, mini) | **open ×2**, otherwise **×0.55** (min 1) - one line, no per-trick state | pant (`spent`, open) 2.3-2.7 (its 70-point poise break adds ×1.5 on top); every trick 0.53-0.55 | it does not "gate damage while mid-trick": it takes 55% at all times outside the pant, trick or not |
+| `princeHurt` (buried prince) | **nothing** while `sunk`; buried **×2**, reel **×1.5**, bareheaded **×1.5** (stacks), shrouded (tomb dark) **×0.35** else in lamplight **×1.25** | stalk 1.0, buried 2.4-2.6, reel 1.8, bare 1.5, lit snuff 1.3 | nothing wrong; the lab bot lights lamps first, so the ×0.35 shroud never came up in these runs (read from code only) |
+
+None of these reads any hero verb except the Scarecrow King's lantern (heavySwing/dashAtk/plunge), so the family
+table Phase 2A adds (trash only: no `maxHp`, `mini`, `elite` or `big`) cannot reach them.
+
+---
+
 ## A DISCREPANCY WORTH FLAGGING
 
 The task that launched this survey described this worktree as cut from `master a046a60`, and stated that master

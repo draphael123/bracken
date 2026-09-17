@@ -271,6 +271,10 @@ export const SFX = {
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
+  /* THE GLANCE: the wrong tool for that body (main.js, the family table). Not the clank of a guard ringing and not a cut going in: the
+     edge skating off something it could not bite - a dry scrape sliding DOWN, a dull knock under it, and no ring left after. Every
+     wrong-verb hit in the game makes this one sound, so it is learned once. */
+  glance() { noise(0.12, 0.2, 2600, 0.45); tone('sawtooth', vary(880), 340, 0.1, 0.07); tone('triangle', 210, 120, 0.07, 0.12, 0.01); noise(0.05, 0.1, 600, 0.8, 0.02); },
   spit() { tone('sine', 420, 180, 0.13, 0.2); },
   crack() { file('crack', 0.5) || (noise(0.16, 0.3, 900, 0.5), tone('square', 160, 60, 0.12, 0.18)); },
   die() { file('hurt', 0.7, 0.7); tone('sawtooth', 320, 40, 0.7, 0.28); tone('square', 200, 50, 0.5, 0.15, 0.1); },
