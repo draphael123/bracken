@@ -440,6 +440,7 @@ export function bakeFarmhand() {
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const h = ((x * 73856093) ^ (y * 19349663)) >>> 0; if (B.get(x, y) && (((y % 3) === 1 && (x + y) % 2) || (h % 7 === 0))) B.del(x, y); }
     }
     const c = toCanvas(B);
+    haloGlow(c, false);   /* the same pale rim the haunt wears: translucent blue on warm dirt used to read as a faded villager, not a ghost */
     if (o.dissolve) afterDots(c, [[X - 7, F - 20, GH[2]], [X + 8, F - 25, GH[3]], [X - 9, F - 9, GH[1]], [X + 9, F - 12, GH[2]], [X - 4, F - 28, GH[3]], [X + 6, F - 4, GH[1]]], true);
     if (o.smear) smear(c, ...o.smear, ['#eef6ff', '#9ab8e0', '#4a5a80']);
     if (o.glowDots) afterDots(c, o.glowDots, true);
@@ -641,6 +642,10 @@ export function bakeHaunt() {
     haloGlow(c, !!o.bright);
     const rc = [f.mid[0] + f.d[0] * 2, f.mid[1] + f.d[1] * 2];
     hauntRing(c, rc[0], rc[1], f.d, o.bright ? 7 : 6, 1.5, o.bright, o.phase || 0);
+    /* A FACE IN THE HAUNTING, not a body on it: two hollow eyes and a mouth held in the swirl round the fork's
+       neck, so what used to read as a loose blue smear now reads as something LOOKING at you - the same hollow
+       dark the fields' other ghosts use, small enough that the fork is still the thing nobody is holding */
+    afterDots(c, [[rc[0] - 2, rc[1] - 0.5, '#141824'], [rc[0] + 2, rc[1] - 0.5, '#141824'], [rc[0], rc[1] + 2, '#141824']], false);
     if (o.shake) afterDots(c, o.shake, true);
     return c;
   };
@@ -656,6 +661,43 @@ export function bakeHaunt() {
   return pack(frames, X, ay, 8, 22);
 }
 export const HAUNT_F = { hover: [0, 1], throwTell: 2, thrown: 3, hurt: 4 };
+
+// ======================================================================================================================
+// THE BOO (a Mario boo, dropped into the Hexed Fields) — a round, floating thing that only moves while your back is
+// turned. Faced, it stops dead and covers its eyes with both paws: harmless, and it does not move at all. Violet-white,
+// never blue like the haunt or green-grey like the wight, and round where they are a tool and a block - the one shape
+// in the family with no legs, no tool and no cap, just a body and a wisp of a tail.
+// ======================================================================================================================
+const BOOP = { skin: ['#463a72', '#8478c0', '#cfc8f4', '#f8f4ff'], hollow: '#120f22', paw: ['#382c5c', '#6a5aa8', '#c0b4ec'] };
+function booPaw(T, x, y, o = {}) { ball(T, x, y, 3, 3.2, BOOP.paw, { bias: 0.16, tilt: o.tilt || 0 }); }
+export function bakeBoo() {
+  const W = 26, H = 30, X = 13, F = 27, cx = X, cy = F - 14, r = 9;
+  const frame = o => {
+    const B = buf(W, H);
+    layer(B, T => wisp(T, [cx, cy + 7], F, o.swirl || 1, 1.15), BOOP.skin[0]);   /* the tail: wider than the farmhand's, no legs at all */
+    layer(B, T => ball(T, cx, cy, r, r * 1.05, BOOP.skin, { bias: 0.14 }));      /* the round body: the whole silhouette, not a head on a torso */
+    if (!o.cover) layer(B, T => { ball(T, cx - r + 2, cy + 5, 2.6, 2.6, BOOP.skin, { bias: 0.08 }); ball(T, cx + r - 2, cy + 5, 2.6, 2.6, BOOP.skin, { bias: 0.08 }); }, BOOP.skin[0]);   /* stubby arms at rest */
+    else layer(B, T => { booPaw(T, cx - 3.5, cy - 2 + (o.shiver || 0), { tilt: -0.3 }); booPaw(T, cx + 3.5, cy - 2 - (o.shiver || 0), { tilt: 0.3 }); }, BOOP.paw[0]);   /* BOTH PAWS OVER THE FACE: the whole tell, no text needed */
+    const c = toCanvas(B);
+    haloGlow(c, !!o.bright);
+    if (!o.cover) {
+      afterDots(c, [[cx - 3, cy - 1, BOOP.hollow], [cx + 3, cy - 1, BOOP.hollow]], false);   /* hollow eyes, watching for your back to turn */
+      afterDots(c, [[cx - 2, cy + 3, BOOP.hollow], [cx - 1, cy + 4, BOOP.hollow], [cx, cy + 4, BOOP.hollow], [cx + 1, cy + 4, BOOP.hollow], [cx + 2, cy + 3, BOOP.hollow]], false);   /* a jagged little grin */
+    }
+    if (o.hurt) afterDots(c, [[cx - 5, cy - 6, BOOP.paw[2]], [cx + 6, cy - 5, '#f8f4ff'], [cx - 6, cy + 2, BOOP.paw[1]], [cx + 5, cy + 7, BOOP.paw[2]]], true);
+    return c;
+  };
+  const driftA = { swirl: 1 };
+  const driftB = { swirl: -1 };
+  const freezeA = { cover: true, bright: true };
+  const freezeB = { cover: true, bright: true, shiver: 1 };
+  const hurt = { swirl: -1, hurt: true };
+  const frames = [driftA, driftB, freezeA, freezeB, hurt].map(frame);
+  let ay = 0; const g = frames[0].getContext('2d'), d = g.getImageData(0, 0, W, H).data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3]) ay = y;
+  return pack(frames, X, ay, 14, 20);
+}
+export const BOO_F = { drift: [0, 1], freeze: [2, 3], hurt: 4 };
 
 // ======================================================================================================================
 // THE FAMILY'S GHOSTS (friendly)

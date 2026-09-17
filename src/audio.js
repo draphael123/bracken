@@ -681,6 +681,10 @@ Object.assign(SFX, {
   rattle(v = 1) { noise(0.05, 0.16 * v, 1400, 0.9); tone('square', 180 + Math.random() * 60, 120, 0.05, 0.05 * v, 0.01); },
   rumble() { tone('sine', 60, 30, 0.7, 0.3); noise(0.6, 0.3, 180, 0.5); tone('sawtooth', 48, 34, 0.5, 0.1, 0.1); },
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
+  // THE BOO. A small, close, breathy whimper while it drifts (not the wight's long moan - this one is shy, not
+  // hungry); and a short muffled catch of breath the instant it covers its eyes and stops.
+  booDrift() { tone('sine', 260, 205, 0.45, 0.06); tone('sine', 264, 210, 0.45, 0.04, 0.05); noise(0.35, 0.045, 1300, 0.4); },
+  booFreeze() { noise(0.07, 0.12, 2400, 0.6); tone('sine', 480, 200, 0.1, 0.08); },
 });
 export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, currentTrack, wantTrack, ambKind, trackEnd, trackBuf });
 // ---------- every creature dies in its own voice, and is hurt in its own voice ----------
@@ -738,6 +742,7 @@ const DIE = {
   pumpkin() { noise(0.25, 0.3, 500, 0.5); tone('sine', 180, 60, 0.3, 0.14); },
   marshlight() { tone('triangle', 800, 2400, 0.3, 0.08); noise(0.2, 0.1, 5000, 0.6, 0.05); },
   haunt() { SFX.clank(); tone('sine', 900, 300, 0.3, 0.06, 0.05); },
+  boo() { tone('sine', 300, 150, 0.4, 0.1); tone('sine', 305, 155, 0.4, 0.07, 0.05); noise(0.35, 0.1, 1600, 0.4); },   /* a small breath let go, and it is gone */
   ploughman() { tone('sawtooth', 120, 40, 1.2, 0.22); noise(0.8, 0.3, 400, 0.6); },   /* the share goes into the furrow for good */
   strawking() { noise(1.4, 0.36, 900, 0.5); tone('sawtooth', 120, 30, 1.6, 0.24); tone('sine', 70, 30, 2, 0.2, 0.2); },   /* the field burning down with him in it */
   kraken() { tone('sawtooth', 110, 28, 1.8, 0.3); tone('sine', 70, 24, 2.2, 0.26, 0.2); noise(1.4, 0.4, 380, 0.7); noise(0.9, 0.3, 1400, 0.5, 0.5); /* a bellow that goes down under the water with it */ },
@@ -873,6 +878,7 @@ const HURT = {
   pumpkin() { noise(0.1, 0.3, 600, 0.5); tone('sine', 220, 110, 0.12, 0.12); },
   marshlight() { tone('triangle', 1600, 900, 0.1, 0.08); noise(0.05, 0.1, 4000, 0.6); },
   haunt() { SFX.clank(); tone('sine', 1200, 1100, 0.15, 0.04, 0.02); },
+  boo() { tone('sine', 340, 220, 0.14, 0.1); noise(0.1, 0.1, 1400, 0.4); },
   ploughman() { tone('sawtooth', 150, 96, 0.22, 0.16); noise(0.18, 0.24, 500, 0.6); },
   strawking() { noise(0.2, 0.3, 1100, 0.4); tone('sawtooth', 130, 80, 0.3, 0.18); tone('sine', 90, 60, 0.3, 0.1, 0.05); },   /* a barn's worth of straw taking a blade, and a laugh under it */
   kraken() { tone('sawtooth', 140, 60, 0.4, 0.22); noise(0.3, 0.3, 500, 0.6); tone('sine', 80, 50, 0.5, 0.16, 0.05); },   /* something the size of a church taking a cut */

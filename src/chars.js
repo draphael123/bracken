@@ -2285,13 +2285,21 @@ export function bakeHare() {
 }
 
 // The peat wight — a pale hand of bog-mist that rises where you stand too long. 10×14. Frames: rise1, rise2.
+/* REDRAWN (2026-09-17): it used to read as a sandcastle - a crenellated top of three separate points, then a
+   pinched waist that made a second, boxier shape under it, and a "vent" nobody could see. A GHOST IS A DOME,
+   NOT A TURRET: the top is now one continuous rounded crown, the taper from shoulder to tail is a single
+   unbroken curve (no waist), and the tail keeps the three-lobed wave it always had - that part already read
+   right. The two hollow sockets are darker now, and a small hollow mouth sits under them: the same shape
+   language as the fields' own ghosts (fields_foes.js), on a wight who was never one of them but reads as
+   kin now. Same 10x14 canvas, same pack(5,14,8,13): the hitbox has not moved. */
 export function bakeWight() {
-  const WP2 = Object.assign({}, EP, { m: '#c8d8c8', M: '#8aa08a', k: '#3a3a2a' });
+  const WP2 = Object.assign({}, EP, { m: '#c8d8c8', M: '#8aa08a', k: '#161a28' });
   const q = rows => outline(fromGrid(rows, WP2, 1), OUT);
-  const rise1 = q(['..m..m..m.', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '...mmmm...', '..mmMMmm..', '..mmmmmm..', '.mm.mm.mm.', 'm...m...m.']);
-  const rise2 = q(['.m..m..m..', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '..mmmmmm..', '..mmMMmm..', '.mmmmmmmm.', '.mm.mm.mm.', '.m...m...m']);
-  const rise3 = q(['m...m...m.', '.m..m..m..', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '...mmmm...', '..mmMMmm..', '.mmmmmmm..', '.m.mm.mm..', '..m...m..m']);
-  const rise4 = q(['...m..m..m', '..m..m..m.', '.mmmmmmmm.', '.mMmmmmMm.', '.mmkmmkmm.', '.mmmmmmmm.', '..mmmmmm..', '..mMmmMm..', '...mmmm...', '..mmmmmm..', '..mmMMmm..', '..mmmmmmm.', '..mm.mm.m.', 'm...m...m.']);
+  const dome = ['..mmmmmm..', '.mmmmmmmm.', 'mmmmmmmmmm', 'mMmmmmmmMm', 'mmmkmmkmmm', 'mmmmkkmmmm', 'mmmmmmmmmm', '.mmmmmmmm.', '.mmmmmmmm.', '.mMmmmmMm.', '..mmmmmm..', '..mmmmmm..'];
+  const rise1 = q([...dome, '.mm.mm.mm.', 'm...m...m.']);
+  const rise2 = q([...dome, 'mm.mm.mm..', '...m...m.m']);
+  const rise3 = q([...dome, 'm.mm.mm..m', '..m...m.m.']);
+  const rise4 = q([...dome, '.mm.mm..mm', '.m...m.m..']);
   return pack([rise1, rise2, rise3, rise4], 5, 14, 8, 13);
 }
 // The glow grub — a fat cave larva that lights its own way and spits acid. 16×8. Frames: crawl1, crawl2, spit.
