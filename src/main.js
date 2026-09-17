@@ -16761,8 +16761,15 @@ const DOWN_STRIKE = {
   warden: { trail: ['#dff0d8', '#c9b27c'], hitStop: 0.05, hitShake: 3, wave: 40, waveUp: 10, waveDmg: 0.5, waveStagger: 0.6, push: 0, ahead: true, whiff: 0.3, caught: 0.1 },
 };
 function plungeTrail(D) { if (SET.parts === 'few' && Math.random() < 0.5) return;
-  if (!isWarden()) { for (let i = 0; i < 2; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 3, y: P.y - 14 - Math.random() * 12, vx: 0, vy: -40, life: 0.16, max: 0.16, col: D.trail[i], size: 1, grav: 0 }); return; }   /* a white stripe straight up off the blade */
+  if (!isWarden()) return;   /* THE KNIGHT'S POKE leaves nothing in the air behind him - a stripe up off the blade ran over his helm and read as a swing's smear. His streak is drawn at the point, going DOWN (drawPokeStreak) */
   for (let i = 0; i < 2; i++) { const k = Math.random() * 14; parts.push({ x: P.x - P.face * (2 + k * 0.5), y: P.y - 8 - k, vx: -P.face * 20, vy: -40, life: 0.16, max: 0.16, col: D.trail[i], size: 1, grav: 0 }); } }   /* a slant back along the haft */
+/* THE POKE'S STREAK: the knight's down attack is a thrust, not an arc, so its only mark is a short white line driven on
+   ahead of the point - under his boots, where the blade is going. The blade in the frame is a column one pixel either
+   side of the anchor (flipped with him), its point eight under his feet; the streak runs on from there, flickering. */
+function drawPokeStreak(cx, cy, D) {
+  const bx = Math.round(P.x - cx) + (P.face > 0 ? 1 : -2), by = Math.round(P.y - cy) + 10, len = 3 + (Math.floor(time * 30) % 3) * 2;
+  g.globalAlpha = 0.9; g.fillStyle = D.trail[0]; g.fillRect(bx, by, 1, len);
+  g.globalAlpha = 0.5; g.fillStyle = D.trail[1]; g.fillRect(bx + (P.face > 0 ? 1 : -1), by, 1, Math.max(2, len - 2)); g.globalAlpha = 1; }
 function plungeHitBeat(e) { const D = DOWN_STRIKE[hero()]; if (!D) return;
   hitstop(D.hitStop); shakeCam(D.hitShake); SFX.pPlungeHit(); burst(e.x, e.y - (e.h || 16) / 2, 6, D.trail, 80, 0.25, 0, 1); }
 function plungeWave(D) { let caught = 0;
@@ -19504,6 +19511,7 @@ function drawWorld(cx, cy, showPlayer) {
       P.lastKey = key; P.lastFrame = frame;   /* remembered for the audits (tools/audit-hitboxes.mjs), as e.lastFrame is for a creature */
       drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, 0, P.x, P.y - 10);
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1);
+      if (key === 'plunge' && hero() === 'knight' && !P.swim && !P.flip && DOWN_STRIKE.knight) drawPokeStreak(cx, cy, DOWN_STRIKE.knight);
       if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: 0, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it (drawSwimmers) */
       if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, '#140a1c', 0.75);
       if (hero() === 'knight' && lcOn()) {   /* THE LAST CHARGE: a gold light on the face of the shield, pulsing, brace and rush */

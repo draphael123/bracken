@@ -44,6 +44,8 @@ const LEGS = {
   fall2: ['SS....SS..', 'SS....SS..', 'ww....ww..', 'ww....ww..', 'WW....WW..'],
   crouch:['SS.SS.SS..', 'WWW.ww.WWW', '..........', '..........', '..........'],
   land:  ['.SS..SS...', 'SS....SS..', 'ww....ww..', 'WWW..WWW..', '..........'],
+  // THE POKE's tuck: both thighs drawn up level in front of the belt, the shins hanging from the knees, the boots under them
+  tuck:  ['..SSSSSSSs..', '..wwwwwwwss.', '........ww..', '........www.', '.......WWWW.'],
   wide:  ['SS.....SS.', 'SS.....SS.', 'ww.....ww.', 'ww.....ww.', 'WWW...WWW.'],
   // on a ladder: one knee up on the higher rung, the other leg straight down to the lower one, then the other way
   climbA:['.SS.SSS...', '.SS..SW...', '.ww.WWW...', '.ww.......', 'WWW.......'],
@@ -301,9 +303,14 @@ export function bakeKnight(skin = {}, bare = false) {
       // 4 settle
       KF({ legs: 'stand', sword: rest(), plume: 0 }),
     ],
-    /* THE POGO: knees tucked up and the whole of him riding the blade, both fists on the grip and the point a long way under his boots.
-       Straight down - his rebound is straight up off it. (The warden's goes in on the slant: at a glance, a sword under him or a spear ahead of her.) */
-    plunge: KF({ legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] + 5], sword: [sh[0], sh[1] + 4, sh[0], sh[1] + 18], plume: 2 }),
+    /* THE POKE: he tucks into a ball - helm sunk, knees drawn up level in front of him, the shield slung round onto his back - with both
+       fists on the grip (gold pommel over the gauntlets, the guard under them) and the blade driven straight down past his boots, point
+       first. No arc and no smear: a compact body on a long bright spike, where every swing is an upright man with the steel out ahead.
+       The frame is 32 high, so the point stops eight under his feet; drawPokeStreak (main.js) carries the line on. (The warden's goes
+       in on the slant: at a glance, a sword under him or a spear ahead of her.) */
+    plunge: KF({ legs: 'tuck', hy: 1, kite: BACK, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 1], sword: [sh[0] - 2, sh[1] + 3, sh[0] - 2, sh[1] + 17], plume: 2,
+      bits: [[6, 5, 'y'], [6, 6, 'W'], [5, 7, 'v'], [6, 7, 'v'], [7, 7, 'v'], [5, 8, 'v'], [6, 8, 'v'], [7, 8, 'v'], [6, 9, 'W'], [4, 10, 'y'], [5, 10, 'y'], [6, 10, 'y'], [7, 10, 'y'], [8, 10, 'y'],
+        ...[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(r => [7, r, 's']), [6, 22, '#ffffff'], [6, 23, '#ffffff'], [6, 24, '#ffffff']] }),
     /* THE DASH ATTACK: his shoulder in behind the shield, square across his front, and the blade driven out past its rim - then the
        full stretch of it, and a stumble to a stop that is the price of it (the third frame is the end-lag) */
     dashAtk: [KF({ wide: 4, dx: 2, dy: 1, legs: 'runC', shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], sword: [sh[0] + 3, sh[1] + 2, sh[0] + 15, sh[1] + 1], plume: 2 }),
