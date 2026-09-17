@@ -2395,10 +2395,10 @@ function drawAmbushHud() {
    keepAlive: true }) against a fight of twenty to forty-five seconds: a heavy knight or a hedge knight is already a long fight and
    three of one ran past a minute; a goat, a thorn or a cook goes down (or off a ledge) in a few seconds at three */
 const ELITE = {
-  shield: { name: 'THE SHIELD CAPTAIN', own: true }, pike: { name: 'THE PIKE SERJEANT', rule: 'wall' }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall', hp: 2.2 },
+  shield: { name: 'THE SHIELD CAPTAIN', own: true }, pike: { name: 'THE PIKE SERJEANT', own: true }, tideguard: { name: 'THE TIDE CAPTAIN', rule: 'wall', hp: 2.2 },
   brute: { name: 'THE GOBLIN CAPTAIN', hp: 2.5, own: true }, hearthgob: { name: 'THE HEARTH BOSS', rule: 'rally', hp: 4 }, cutlass: { name: 'THE FIRST MATE', rule: 'rally' },
   thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig', hp: 4 }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat', hp: 5 }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight', hp: 1.8 }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
-  hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', rule: 'slam' }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
+  hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', own: true }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
   archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },   /* own: moves of its own (updateEliteArcher), no shared rule */
   boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
@@ -2464,6 +2464,8 @@ function updateElite(e, dt) {
   if (e.t === 'archer') return updateEliteArcher(e, dt);
   if (e.t === 'shield') return updateEliteShield(e, dt);
   if (e.t === 'brute') return updateEliteBrute(e, dt);
+  if (e.t === 'troll') return updateEliteTroll(e, dt);
+  if (e.t === 'pike') return updateElitePike(e, dt);
   return updateEliteRule(e, dt);
 }
 /* IT LOSES THE BODY: thrown, frozen or broken in the middle of a move, the move is gone, not stuck */
@@ -2594,6 +2596,61 @@ function updateEliteBrute(e, dt) {
     default: eliteDrop(e, A.every); return false;
   }
   const mv = moveBody(e, e.vx * dt, e.vy * dt, false); if (mv && mv.ground) e.vy = 0;
+  return true;
+}
+/* THE CRAG TROLL. "Pull up a boulder and throw it" - he already does, at range, blockable, from what a plain troll is
+   (updateTroll's own throwTell/swatTell run him between windups, unchanged). What he lacks up close is a reason not to
+   just stand under his chin: THE SLAM, a red !! - both fists into the ground, no shield turns it, and the ring reaches
+   past the reach of his ordinary swat. Jump it. The mode names (slamTell/slam) are the Hill Troll's own, so the same
+   frames that already draw HIS slam draw this one - a crag troll's slam looks like a troll's slam because it is one. */
+const EL_TROLL = { reach: 92, near: 92, dy: 26, tell: 0.75, strike: 0.32, end: 0.65, dmg: 22, ring: 92, every: 5.5 };
+function updateEliteTroll(e, dt) {
+  const A = EL_TROLL, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  if (!e.elBack) {
+    e.elT -= dt;
+    if (!eliteMay(e, A.reach) || ad > A.near || dy > A.dy) return false;
+    eliteTake(e); e.mode = 'slamTell'; e.modeT = A.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); SFX.charge();
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt);
+  if (eliteLost(e)) { eliteDrop(e, A.every); return false; }
+  switch (e.mode) {
+    case 'slamTell': e.vx = 0; if (Math.random() < dt * 12) dust(e.x + (Math.random() - 0.5) * 30, e.y, 1);
+      if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = A.strike; e.elHit = false; SFX.heavy(); SFX.stone(); shakeCam(6); dust(e.x - 20, e.y, 10); dust(e.x + 20, e.y, 10); } break;
+    case 'slam': e.vx = 0;
+      if (!e.elHit) { e.elHit = true; ringAt(e.x, e.y - 4, A.ring, '#ff6b6b', 0.35);
+        if (!P.dead && P.ground && Math.abs(P.x - e.x) < A.ring && Math.abs(P.y - e.y) < 24) damagePlayer(e.x, eliteDmg(A.dmg), { unblockable: true, up: true, who: e, blow: 'the slam' }); }
+      if (e.modeT <= 0) { e.mode = 'slamEnd'; e.modeT = A.end; } break;
+    case 'slamEnd': e.vx = 0; if (Math.random() < dt * 6) dust(e.x, e.y, 1); if (e.modeT <= 0) { eliteDone(e); e.elT = A.every; } break;   /* THE OPENING: both fists still down in the rock */
+    default: eliteDrop(e, A.every); return false;
+  }
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r && r.ground) e.vy = 0;
+  return true;
+}
+/* THE PIKE SERJEANT. "A long sweep that trips" - the crowd's pikeman only ever thrusts, straight and blockable; his
+   serjeant plants the butt and takes your feet with the whole length of the shaft, the way THE WATCH already does with
+   a halberd (updateWatch's sweepTell), just longer. A yellow !: block it and he is TURNED (staggered); take it standing
+   and you go up and down, off your feet - jump it instead and it passes under you. */
+const EL_PIKE = { reach: 220, near: 60, dy: 22, tell: 0.5, strike: 0.3, end: 0.6, dmg: 15, every: 4.5 };
+function updateElitePike(e, dt) {
+  const A = EL_PIKE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
+  if (!e.elBack) {
+    e.elT -= dt;
+    if (!eliteMay(e, A.reach) || ad > A.near || dy > A.dy) return false;
+    eliteTake(e); e.mode = 'elSweepTell'; e.modeT = A.tell; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge();
+  }
+  e.modeT -= dt; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt);
+  if (eliteLost(e)) { eliteDrop(e, A.every); return false; }
+  switch (e.mode) {
+    case 'elSweepTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (Math.random() < dt * 14) dust(e.x + e.face * 10, e.y, 1);
+      if (e.modeT <= 0) { e.mode = 'elSweep'; e.modeT = A.strike; SFX.haft(); dust(e.x + e.face * 16, e.y, 6);
+        if (!P.dead && P.ground && ad < A.near && dy < A.dy) { const res = damagePlayer(e.x, eliteDmg(A.dmg), { up: true, who: e, blow: 'the sweep' });
+          if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 8, 'TURNED', '#8fd160'); }
+          else if (res === 'hit') { P.vx = e.face * 180; P.vy = -170; P.ground = false; number(P.x, P.y - 30, 'SWEPT', '#ff6b6b'); } } } break;
+    case 'elSweep': e.vx = 0; if (e.modeT <= 0) { e.mode = 'elSweepEnd'; e.modeT = A.end; } break;
+    case 'elSweepEnd': e.vx = 0; if (e.modeT <= 0) { eliteDone(e); e.elT = A.every; } break;   /* THE OPENING: the butt still down where it landed */
+    default: eliteDrop(e, A.every); return false;
+  }
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r && r.ground) e.vy = 0;
   return true;
 }
 /* THE RAIN, DRAWN: the patch of floor marked in red while he draws (brighter as it comes), then the arrows coming down into it and
@@ -7014,7 +7071,7 @@ function updatePlayer(dt) {
       if (e.t === 'mother' && e.tipped) continue;
       if (e.t === 'drone' || e.t === 'mother') { SFX.clank(); sparks(e.x, e.y - e.h / 2, P.face, 4); number(e.x, e.y - e.h - 6, e.t === 'mother' ? 'ARMOURED' : 'PUFF', '#9aa39a'); continue; }
       if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 14, e.y - 8, P.face, 5); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'HORNS', '#c9a83a'); continue; }
-      if (e.t === 'pike' && front && !throughGuard(e) && !(e.broken > 0) && e.stagger <= 0) { glanceSay(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }
+      if (e.t === 'pike' && front && !throughGuard(e) && !(e.broken > 0) && e.stagger <= 0 && !(e.elite && (e.mode === 'elSweepTell' || e.mode === 'elSweep' || e.mode === 'elSweepEnd'))) { glanceSay(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }   /* (THE PIKE SERJEANT'S SWEEP: both hands down on the butt, and there is no line left to hold) */
       if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + P.face * -20, e.y - 30, P.face, 5); continue; }
       if (e.turncoat) continue;
       /* (the Hound Master's guard lives in hurtEnemy0 now: a blade, an ember and a ball all meet the same hound) */
@@ -19278,7 +19335,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'harpy') frame = e.mode === 'dive' ? 2 : e.mode === 'downed' ? 3 : e.mode === 'aim' ? 4 : Math.floor(e.anim * 6) % 2;
     else if (e.t === 'goat') frame = !e.rider ? 3 + Math.floor(e.anim * 12) % 2 : e.mode === 'buck' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 14 : 8)) % 2 : 0;
     else if (e.t === 'ram') frame = e.mode === 'lower' || e.mode === 'buttTell' || e.mode === 'leapTell' || e.mode === 'rear' ? 3 : e.mode === 'leap' ? 6 : e.mode === 'land' ? 4 : e.mode === 'crash' ? 4 : e.mode === 'tossTell' || e.mode === 'toss' || e.mode === 'callTell' || e.mode === 'call' ? 5 : e.mode === 'stampTell' || e.mode === 'stamp' || e.mode === 'butt' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * (e.mode === 'charge' ? 16 : 8)) % 2 : 0;
-    else if (e.t === 'pike') frame = e.mode === 'thrust' ? 1 : e.mode === 'tell' ? 2 : 0;
+    else if (e.t === 'pike') frame = e.mode === 'thrust' || e.mode === 'elSweep' ? 1 : e.mode === 'tell' || e.mode === 'elSweepTell' || e.mode === 'elSweepEnd' ? 2 : 0;
     else if (e.t === 'turtle') frame = e.mode === 'hide' ? 3 : e.mode === 'snap' ? 2 : Math.abs(e.vx) > 3 ? Math.floor(e.anim * 4) % 2 : 0;
     else if (e.t === 'eel') frame = e.mode === 'lunge' || e.mode === 'leap' ? 2 : e.mode === 'lungeTell' ? 6 : e.stagger > 0 ? 3 : [0, 4, 1, 5][Math.floor(e.anim * 8) % 4];
     else if (e.t === 'heronfoe') frame = e.mode === 'strikeTell' ? 2 : e.mode === 'strike' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 4) % 2 : 0;
