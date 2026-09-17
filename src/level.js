@@ -4358,8 +4358,11 @@ function theFlotilla() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'flotilla', night: false, swell: { amp: 2, period: 4.6 },
     interiors: [[34, 93, 26, 30, 'ship'], [116, 173, 24, 30, 'ship'], [248, 340, 24, 27, 'ship'], [340, 372, 12, 15, 'ship']],
+    // ROOMS OF THEIR OWN (dressing only: [x0, x1, top row, floor row, kind]): the first hull's galley, the second's flooded brig,
+    // the powder room under the Quartermaster's deck, and her own cabin up under her poop with the charts on the table
+    cabins: [[36, 70, 26, 30, 'galley'], [118, 172, 26, 30, 'brig'], [288, 338, 24, 27, 'magazine'], [341, 371, 12, 16, 'cabin']],
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
-    palette: { set: 'ship', sky: 'glare', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(240,235,205,0.10)',
+    palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(255,196,140,0.08)',   /* a town of ships at the end of the day (src/redraw/harbour.js) */
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
     arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, y0: 8 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'quartermaster', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
@@ -4700,8 +4703,11 @@ function theHurricane() {
     storm2: { every: 9, tell: 1.2, y: 20 * TS, zones: [[330 * TS, 424 * TS], [486 * TS, 558 * TS], [560 * TS, 744 * TS]] },
     hullZones, darkZones, airRooms, deep: D,
     interiors: [[20, 740, 21, 26, 'ship'], [186, 214, 17, 19, 'ship'], [504, 540, 25, 26, 'ship'], [662, 742, 17, 19, 'ship']],
+    // ROOMS OF THEIR OWN in her hold and her deckhouses (dressing only: [x0, x1, top row, floor row, kind]): the galley forward,
+    // the brig, the powder room aft of the mainmast, the chart room in the first deckhouse and the Captain's cabin under his deck
+    cabins: [[22, 64, 21, 27, 'galley'], [70, 124, 21, 27, 'brig'], [184, 216, 17, 20, 'chart'], [292, 366, 21, 27, 'magazine'], [664, 700, 17, 20, 'cabin']],
     quest: { n: 3, item: 'lamp', name: 'HER LANTERNS', npc: 'squire', done: 'SHE HAS HER LIGHTS BACK', reward: 'relic', relic: 'stormline' },
-    palette: { set: 'ship', sky: 'storm', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',
+    palette: { set: 'ship', sky: 'storm', far: 'stormsea', mid: 'swells', near: 'none', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',   /* one ship and the sea (src/redraw/storm.js) */
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
     weather: [{ x0: 0, x1: 431 * TS, kind: 'rain' }, { x0: 477 * TS, x1: 99999, kind: 'rain' }],   /* and none in the eye */
     ambient: [{ x0: 0, x1: 431 * TS, kind: 'ship' }, { x0: 431 * TS, x1: 477 * TS, kind: 'shore' }, { x0: 477 * TS, x1: 99999, kind: 'ship' }],
