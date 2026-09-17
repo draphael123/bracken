@@ -4789,12 +4789,20 @@ const foeOpen = e => e.openPreT === time ? e.openPre : foeOpen0(e);
    that fly, and the bosses whose whole fight is their own opening, do not carry one. */
 const POISE_HEAVY = new Set(['lancer', 'brute', 'heavy', 'hedgeknight', 'troll', 'shield', 'swornsword', 'pike', 'berserker', 'watch', 'tideguard', 'bosun', 'boarder', 'soldier', 'hound']);
 const POISE_SKIP = new Set(['archmage', 'turret', 'broom', 'imp', 'piece', 'strawking', 'rook', 'marshlight', 'haunt', 'kraken', 'krakenarm', 'roc', 'owl', 'windcaller', 'queen', 'mother', 'gill', 'heart', 'king', 'bearer', 'dummy', 'wasp', 'drone', 'kite', 'captain', 'closedhelm', 'gqueen', 'golem']);
-const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : e.elite ? EL.poise : (e.big || e.mini) ? 60 : POISE_HEAVY.has(e.t) ? 40 : 0;   /* an elite carries a bar whatever its kind: even the bullfrog can be broken */
+/* THE SMALL ONES CARRY A BAR TOO. Everything in the family table without one of its own gets a short one (POISE_LIGHT) that a tap
+   never moves: only a blow with weight in it fills it - the held heavy blow breaks it outright, and a plunge, the right tool, a
+   riposte, a dash attack or a third cut lean on it - so a heavy blow visibly ROCKS a goblin instead of shoving it like a cut does.
+   (Not the things one blow of anything brings down, and not POISE_SKIP: those were left out on purpose.) */
+const POISE_LIGHT = 24;
+const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : e.elite ? EL.poise : (e.big || e.mini) ? 60 : POISE_HEAVY.has(e.t) ? 40 : (FAMILY_OF[e.t] && !ONE_HIT.has(e.t) && !e.harmless) ? POISE_LIGHT : 0;   /* an elite carries a bar whatever its kind: even the bullfrog can be broken */
 function addPoise(e, dmg, fromX, plunge) {
   const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0 || dmg <= 0) return;
   let n = P.jetHit ? 1.5 : 6 + dmg * 0.25;
   if (!P.jetHit) { if (P.heavySwing && P.atk >= 0) n += 20; if (plunge) n += 12; if (e.face && Math.sign(fromX - e.x) === -e.face) n += 10; if (P.combo === 3) n += 8; if (P.riposteT > 0) n += 16; if (P.dash > 0) n += 6; if (P.dashAtk > 0) n += 14; }
   if (e.keyHit === time) n += 12;   /* THE RIGHT TOOL leans on the bar too (the family table) */
+  if (m === POISE_LIGHT) {   /* the small tier: weight only (see POISE_LIGHT) */
+    n = P.jetHit ? 0 : (blowHas(e.blowNow, 'heavy') ? 30 : 0) + (plunge ? 12 : 0) + (e.keyHit === time ? 12 : 0) + (P.riposteT > 0 ? 16 : 0) + (P.dashAtk > 0 ? 14 : 0) + (P.combo === 3 && P.atk >= 0 ? 8 : 0);
+    if (!n) return; }
   e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5;
   if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
     number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); breakBeat(e); }
@@ -5059,7 +5067,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
-  let glance = false, wheel = false, mixed = false;
+  let glance = false, wheel = false, mixed = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
   { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
     if (fam) { const keyed = fam.key.some(v => blowHas(blow, v));
       if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time; }
