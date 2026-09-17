@@ -281,10 +281,10 @@ const MENU_MUSIC = [
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
 const HEROES = [
   { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dash: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
-  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else' },
-  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. His GRAVELORD tree puts SUMMON SKELETON on F. G carries the skill he chooses." },
-  { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
-  { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. the dead take double' },
+  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dash: THE FLAMING SLIDE, through small foes, and a guard is thrown wide' },
+  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. His GRAVELORD tree puts SUMMON SKELETON on F. G carries the skill he chooses. the plunge drives the blade down into a GRAVE BURST. X early in a dash: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
+  { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dash: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
+  { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dash: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
   { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 90 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dash: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
@@ -4841,8 +4841,8 @@ function hitSpray(e, dir) {
    wall slam, a burn ticking, a meter's big moment) is none of them and is judged by nothing.
    Bosses, minis, elites and the big ones are NOT in it: every one of them already has its own gate, and their windows stay theirs.
    The GUARD family's wrong verb is the light cut from the front, and the shield turning it in the swing pass says so already.
-   THE DASH ATTACK HAS A PLACE IN IT TOO, written here and nowhere else (the knight's and the warden's are a move of their own now,
-   DASH_STRIKE below; the other heroes' cut out of a dash is the same verb):
+   THE DASH ATTACK HAS A PLACE IN IT TOO, written here and nowhere else (every hero's is now its own move, DASH_STRIKE
+   below - round two gave the pyromancer, the paladin, the freebooter and the Death Knight theirs, on the same table):
      guard   - KEY, and the head-on answer: a guard met at a run is knocked OFF BALANCE (unbalance), where going round it costs a wheel;
      plate, shell - it GLANCES: a shoulder into steel is a shoulder into a wall, and a run onto a shell is a run onto its spines;
      small, wing  - it goes THROUGH them (through): too slight to stop a hero at full tilt, so the run carries on to the next;
@@ -16725,10 +16725,24 @@ let dashAtkShown = 0;
    on, plate and shells it glances off), not this one's.
    knight - THE SHOULDER CHARGE: in behind the shield with the blade out past it. Short, wide, heavy.
    warden - THE LUNGE ALONG THE SHAFT: long and low, a line to the point (near/reach), so her tip rule still pays at the end of it -
-            which is why her dmg is under his (at 1.5 the tip, the key and MIXED UP took a wood shieldbearer in one blow of 48). ==== */
+            which is why her dmg is under his (at 1.5 the tip, the key and MIXED UP took a wood shieldbearer in one blow of 48).
+   ROUND TWO adds the other four. None of them carries a second multiplier the way the warden's tip does (swingDmg only
+   reaches for tipPay() on isWarden()), so dmg here is the whole of what the move buys and did not need trimming for it:
+   pyro - THE FLAMING SLIDE: low, quick, and the lightest blow in the wood stays lightest here too (swordDmg is already
+          x0.7 for her) - dmg is pushed up to compensate, not because the move hits harder than it should.
+   paladin - THE SHIELDLESS CHARGE: a maul held level like a ram. Slowest hero, so the longest wind (t) and the longest
+          rec of the six - a heavy answer that costs the most to throw.
+   pirate - THE BOARDING LUNGE: the cutlass thrust out flat and running, fastest wind and shortest rec of the six - the
+          one hero whose whole kit is speed, so his dash attack has to be the quickest one to press.
+   reaper - THE GREATSWORD RUSH: the biggest blade in the wood held out in front at a dead run - slow to wind, slow to
+          recover, and it hits like the rest of him does. ==== */
 const DASH_STRIKE = {
   knight: { win: 0.6, t: 0.26, speed: 290, dmg: 1.8, st: 10, rec: 0.24, near: -2, reach: 26, top: 18, hitStop: 0.07, passStop: 0.03, shake: 4, cols: ['#fff6e0', '#c9d1dc'] },
   warden: { win: 0.6, t: 0.24, speed: 300, dmg: 1.3, st: 10, rec: 0.28, near: 2, reach: 46, top: 14, hitStop: 0.06, passStop: 0.025, shake: 3, cols: ['#dff0d8', '#c9b27c'] },
+  pyro: { win: 0.6, t: 0.22, speed: 320, dmg: 2.0, st: 10, rec: 0.22, near: 0, reach: 34, top: 12, hitStop: 0.05, passStop: 0.02, shake: 3, cols: ['#ffd36b', '#ff6b2c'] },
+  paladin: { win: 0.6, t: 0.32, speed: 250, dmg: 1.6, st: 10, rec: 0.34, near: -2, reach: 30, top: 20, hitStop: 0.09, passStop: 0.04, shake: 5, cols: ['#ffe6a0', '#ffd36b'] },
+  pirate: { win: 0.6, t: 0.2, speed: 310, dmg: 2.2, st: 10, rec: 0.2, near: 2, reach: 34, top: 16, hitStop: 0.05, passStop: 0.02, shake: 3, cols: ['#fff6e0', '#bfe6f5'] },
+  reaper: { win: 0.6, t: 0.34, speed: 260, dmg: 1.6, st: 10, rec: 0.36, near: -2, reach: 32, top: 24, hitStop: 0.09, passStop: 0.035, shake: 5, cols: ['#c9d1dc', '#6b1620'] },
 };
 const dashStriking = () => P.dashAtk > 0 && P.dashCut && !!DASH_STRIKE[hero()];
 /* EARLY IN THE DASH, with the wind for it. (For the other heroes the old rule stands: any swing in or just after the dash.) */
@@ -16756,13 +16770,33 @@ function endDashStrike(stopped) { const D = DASH_STRIKE[hero()]; if (!D) return;
        swing if it caught nothing, caught seconds if it did. His rings out BOTH ways off the blade; hers is the point driven in, and the
        crack runs forward along the floor AHEAD of her (ahead), the one way her spear faces.
    The wave is not a verb in the family table (a shockwave is not a hand), and it leaves bosses, minis, elites and the big ones alone. ==== */
+/* ROUND TWO: THE OTHER FOUR. Same rule as above - each pays and costs by what it lands on - but two of them already
+   owned their own ground shockwave before this table existed (the paladin's HAMMERFALL, the Death Knight's grave burst
+   in graveFall()), so `wave: null` says "this hero's AoE is not this one, do not lay a second explosion on top of the
+   first": plungeWave still runs for the hitStop/trail/recovery timing, it just skips the ring, the hurtEnemy loop and
+   its own SFX. The pyromancer's is the opposite problem - her body still does no damage (18b5d38) - so `burn: true`
+   makes her landing IGNITE instead of hit: no hurtEnemy call at all, only the mark that keeps burning after she is
+   gone, which is the fire doing the work her boots never do. */
 const DOWN_STRIKE = {
   knight: { trail: ['#fff6e0', '#c9d1dc'], hitStop: 0.06, hitShake: 4, wave: 30, waveUp: 12, waveDmg: 0.4, waveStagger: 0.45, push: 150, ahead: false, whiff: 0.26, caught: 0.1 },
   warden: { trail: ['#dff0d8', '#c9b27c'], hitStop: 0.05, hitShake: 3, wave: 40, waveUp: 10, waveDmg: 0.5, waveStagger: 0.6, push: 0, ahead: true, whiff: 0.3, caught: 0.1 },
+  // THE FIRE STOMP: her boots still do nothing on the way down. Landing rings the ground with flame and IGNITES what stands in it - no
+  // blunt hurtEnemy call, only a burn that keeps paying after she has already moved on, same as her ember and her jet.
+  pyro: { trail: ['#ffd36b', '#ff6b2c'], hitStop: 0.05, hitShake: 3, wave: 34, waveUp: 14, waveDmg: 0, waveStagger: 0.4, push: 60, ahead: false, whiff: 0.22, caught: 0.12, burn: 1.6 },
+  // THE MAUL SLAM: HAMMERFALL (main.js, the isPaladin() block right after this call) is already his radiant crack both ways - wave: null
+  // so it is not doubled - and it fires on every landing, not on a catch, so whiff and caught are the same number.
+  paladin: { trail: ['#ffe6a0', '#fff6e0'], hitStop: 0.08, hitShake: 4, wave: null, waveUp: 0, waveDmg: 0, waveStagger: 0, push: 0, ahead: false, whiff: 0.18, caught: 0.18 },
+  // THE BOARDING STOMP: boot-first, cutlass trailing - a modest, quick ring, in keeping with the lightest blow in the wood.
+  pirate: { trail: ['#fff6e0', '#bfe6f5'], hitStop: 0.05, hitShake: 3, wave: 26, waveUp: 10, waveDmg: 0.35, waveStagger: 0.4, push: 130, ahead: false, whiff: 0.22, caught: 0.1 },
+  // THE GRAVE BURST: graveFall() (already his, main.js) is the bone-and-blood ring - wave: null for the same reason as the paladin's.
+  reaper: { trail: ['#c9d1dc', '#6b1620'], hitStop: 0.08, hitShake: 5, wave: null, waveUp: 0, waveDmg: 0, waveStagger: 0, push: 0, ahead: false, whiff: 0.3, caught: 0.3 },
 };
 function plungeTrail(D) { if (SET.parts === 'few' && Math.random() < 0.5) return;
-  if (!isWarden()) return;   /* THE KNIGHT'S POKE leaves nothing in the air behind him - a stripe up off the blade ran over his helm and read as a swing's smear. His streak is drawn at the point, going DOWN (drawPokeStreak) */
-  for (let i = 0; i < 2; i++) { const k = Math.random() * 14; parts.push({ x: P.x - P.face * (2 + k * 0.5), y: P.y - 8 - k, vx: -P.face * 20, vy: -40, life: 0.16, max: 0.16, col: D.trail[i], size: 1, grav: 0 }); } }   /* a slant back along the haft */
+  if (hero() === 'knight') return;   /* THE KNIGHT'S POKE leaves nothing in the air behind him - a stripe up off the blade ran over his helm and read as a swing's smear. His streak is drawn at the point, going DOWN (drawPokeStreak) */
+  if (isWarden()) { for (let i = 0; i < 2; i++) { const k = Math.random() * 14; parts.push({ x: P.x - P.face * (2 + k * 0.5), y: P.y - 8 - k, vx: -P.face * 20, vy: -40, life: 0.16, max: 0.16, col: D.trail[i], size: 1, grav: 0 }); } return; }   /* a slant back along the haft */
+  // THE OTHER FOUR fall with something behind them: a straight drip of the down attack's own two colours off the
+  // body, read at a glance (before the landing effect even fires) as which hero is coming down.
+  for (let i = 0; i < 2; i++) { const k = Math.random() * 10; parts.push({ x: P.x + (Math.random() - 0.5) * 5, y: P.y - 6 - k, vx: (Math.random() - 0.5) * 10, vy: 40 + k * 3, life: 0.14, max: 0.14, col: D.trail[i], size: 1, grav: 40 }); } }
 /* THE POKE'S STREAK: the knight's down attack is a thrust, not an arc, so its only mark is a short white line driven on
    ahead of the point - under his boots, where the blade is going. The blade in the frame is a column one pixel either
    side of the anchor (flipped with him), its point eight under his feet; the streak runs on from there, flickering. */
@@ -16773,17 +16807,28 @@ function drawPokeStreak(cx, cy, D) {
 function plungeHitBeat(e) { const D = DOWN_STRIKE[hero()]; if (!D) return;
   hitstop(D.hitStop); shakeCam(D.hitShake); SFX.pPlungeHit(); burst(e.x, e.y - (e.h || 16) / 2, 6, D.trail, 80, 0.25, 0, 1); }
 function plungeWave(D) { let caught = 0;
-  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || e === boss || e.mini || e.big || e.elite || e.trainer) continue;
-    const dx = (e.x - P.x) * (D.ahead ? P.face : 1);
-    if (D.ahead ? (dx < -8 || dx > D.wave) : Math.abs(dx) > D.wave) continue;
-    if (Math.abs(e.y - P.y) > D.waveUp) continue;   /* on the floor it landed on, not over it */
-    hurtEnemy(e, Math.max(1, Math.round(plungeDmg() * D.waveDmg)), P.x, false);
-    if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, D.waveStagger); if (D.push && !KNOCK_SKIP.has(e.t)) e.vx = (Math.sign(e.x - P.x) || P.face) * D.push; }
-    caught++; }
-  if (D.ahead) { for (let i = 0; i < 8; i++) { const x = P.x + P.face * (4 + i * D.wave / 8); parts.push({ x, y: P.y - 1, vx: 0, vy: -30 - Math.random() * 50, life: 0.25 + i * 0.02, max: 0.35, col: D.trail[i % 2], size: 1, grav: 300 }); } dust(P.x + P.face * D.wave * 0.6, P.y, 4); }
-  else { ringAt(P.x, P.y - 2, D.wave, D.trail[0], 0.3); for (const d of [-1, 1]) { dust(P.x + d * D.wave * 0.6, P.y, 3); streaks(P.x + d * 8, P.y - 2, 3, D.trail, 120); } }
-  SFX.pPlungeGround(); if (caught) hitstop(0.04);
+  /* D.wave === null: THE PALADIN AND THE DEATH KNIGHT ALREADY OWN THIS EXPLOSION (HAMMERFALL, graveFall) - it is fired
+     from the same landing a few lines below in updatePlayer, so laying a second ring, a second hurtEnemy loop and a
+     second SFX.pPlungeGround() on top of it would be two shockwaves reading as one, louder and wronger than either.
+     Skip straight to the recovery timing they still need (whiff below, since neither of them can truly whiff). */
+  if (D.wave != null) {
+    for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || e === boss || e.mini || e.big || e.elite || e.trainer) continue;
+      const dx = (e.x - P.x) * (D.ahead ? P.face : 1);
+      if (D.ahead ? (dx < -8 || dx > D.wave) : Math.abs(dx) > D.wave) continue;
+      if (Math.abs(e.y - P.y) > D.waveUp) continue;   /* on the floor it landed on, not over it */
+      // D.burn: THE PYROMANCER'S RING LIGHTS, IT DOES NOT HIT - her body does no damage even here (18b5d38), only
+      // the fire the ring leaves behind does, on the same burn clock as her ember and her jet.
+      if (D.burn) { e.burn = Math.max(e.burn || 0, D.burn); gainHeat(4); } else hurtEnemy(e, Math.max(1, Math.round(plungeDmg() * D.waveDmg)), P.x, false);
+      if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, D.waveStagger); if (D.push && !KNOCK_SKIP.has(e.t)) e.vx = (Math.sign(e.x - P.x) || P.face) * D.push; }
+      caught++; }
+    if (D.ahead) { for (let i = 0; i < 8; i++) { const x = P.x + P.face * (4 + i * D.wave / 8); parts.push({ x, y: P.y - 1, vx: 0, vy: -30 - Math.random() * 50, life: 0.25 + i * 0.02, max: 0.35, col: D.trail[i % 2], size: 1, grav: 300 }); } dust(P.x + P.face * D.wave * 0.6, P.y, 4); }
+    else { ringAt(P.x, P.y - 2, D.wave, D.trail[0], 0.3); for (const d of [-1, 1]) { dust(P.x + d * D.wave * 0.6, P.y, 3); streaks(P.x + d * 8, P.y - 2, 3, D.trail, 120); } }
+    SFX.pPlungeGround(); if (caught) hitstop(0.04);
+  }
   P.plungeRec = caught ? D.caught : D.whiff; P.rootT = Math.max(P.rootT || 0, P.plungeRec); P.landT = Math.max(P.landT || 0, Math.min(0.16, P.plungeRec)); }
+/* WITH ALL SIX HEROES CARRYING A DASH_STRIKE OF THEIR OWN NOW, the plain cut-out-of-a-dash below is a fallback with
+   nobody left to fall back to - kept, not deleted, so a hero added later without a table row still gets a dash
+   attack instead of nothing. */
 function dashAttack() { if (DASH_STRIKE[hero()]) return dashStrike(DASH_STRIKE[hero()]); P.dashLate = 0; P.dash = 0; P.dashAtk = 0.24; P.swingMul = Math.max(P.swingMul || 1, 1.6); if (!P.ground) P.vy = Math.min(P.vy, 30);
   streaks(P.x + P.face * 10, P.y - 11, P.face, ['#fff6e0', '#ffd36b'], 170); ringAt(P.x + P.face * 14, P.y - 11, 8, '#ffd36b', 0.18); zoomKick(1.03, 0.12); SFX.heavy();
   P.dashCut = true; if (dashAtkShown < 3) { dashAtkShown++; number(P.x, P.y - 28, 'DASH ATTACK', '#ffd36b'); } }

@@ -1311,7 +1311,18 @@ export function bakePyro(skin = {}) {
       pyroFrame({ lean: 3, hemW: 11, staff: [15, 13, 27, 11], arm: [17, 11, 20, 11], cowl: 1, flick: 0, trail: 3 }),
       pyroFrame({ lean: 2, dy: 1, hemW: 11, staff: [16, 14, 26, 14], arm: [17, 12, 20, 13], cowl: 0, flick: 1, trail: 1 }),
     ],
-    plunge: pyroFrame({ bell: 4, hemW: 12, feet: [[11, 17], [15, 17]], staff: [13, 6, 13, 26], arm: [15, 10, 14, 13], arm2: [11, 10, 12, 13], cowl: 2, flick: 1 }),
+    // THE FIRE STOMP: unchanged from the robe's own committed dive - bell wide, the staff already a fire poker driven
+    // straight down the whole height of the frame - but the point now carries its own flare, so the picture says
+    // meteor before the landing ring (main.js, plungeWave) ever gets to say it in particles.
+    plunge: pyroFrame({ bell: 4, hemW: 12, feet: [[11, 17], [15, 17]], staff: [13, 6, 13, 26], arm: [15, 10, 14, 13], arm2: [11, 10, 12, 13], cowl: 2, flick: 1, flare: [13, 26, true] }),
+    /* THE FLAMING SLIDE: low and quick, the way she runs - sit drops her a beat into the frame, the hem trails hard
+       behind the staff's own smear, and the fire never leaves the tip. No arc: the staff stays roughly level with the
+       ground the whole way through, which is the one shape none of her ground attacks make (they lift the tip). */
+    dashAtk: [
+      pyroFrame({ lean: -1, sit: 1, trail: 1, hemW: 11, feet: [[10, 18], [16, 18]], staff: [6, 15, 17, 12], arm: [15, 11, 13, 13], arm2: [11, 11, 9, 13], cowl: 1 }),
+      pyroFrame({ lean: 3, sit: 2, trail: 3, hemW: 13, feet: [[8, 18], [17, 18]], staff: [9, 15, 27, 10], arm: [16, 10, 21, 11], arm2: [12, 10, 16, 12], cowl: 2, flare: [28, 10, true], flick: 1 }),
+      pyroFrame({ lean: 1, sit: 1, dy: 1, hemW: 12, feet: [[10, 18], [16, 18]], staff: [10, 16, 18, 6], arm: [16, 11, 18, 10], cowl: 0 }),
+    ],
     hurt: [pyroFrame({ lean: -2, trail: -1, dy: 1, feet: [[10, 18], [15, 18]], staff: [5, 17, 13, 3, 'back'], arm: [15, 9, 18, 6], arm2: [10, 9, 7, 6], cowl: 2 }),
       pyroFrame({ lean: -3, trail: -2, dy: 2, feet: [[10, 18], [15, 18]], staff: [5, 18, 13, 4, 'back'], arm: [15, 10, 18, 8], arm2: [10, 10, 7, 8], cowl: 2 })],
     crouch: pyroFrame({ sit: 3, hemW: 13, staff: up(0, 3), arm: [16, 14, 17, 15], cowl: 0 }),
@@ -1653,7 +1664,17 @@ export function bakeFreebooter(skin = {}) {
       knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], cutlass: [sh[0] + 4, sh[1] + 2, sh[0] + 10, sh[1] + 7], pistol: holster(1), plume: 0 }),
       knightFrame({ cutlass: rest(), pistol: holster(), plume: 0 }),
     ],
-    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 4], cutlass: [sh[0] - 1, sh[1] + 4, sh[0] - 1, sh[1] + 13], pistol: holster(), plume: 1 }),
+    /* THE BOARDING STOMP: boot-first, the same tuck the knight's poke uses (both knees drawn up level, the legs
+       gone from under him) so he reads as a man dropping onto a deck, not a man still falling - the cutlass trails
+       point-down past his boots, one hand only, the pistol kept through the belt for when he lands. */
+    plunge: knightFrame({ legs: 'tuck', hy: 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 2], cutlass: [sh[0] - 2, sh[1] + 3, sh[0] - 2, sh[1] + 15], pistol: holster(), plume: 2 }),
+    /* THE BOARDING LUNGE: the cutlass thrust out flat, level with the shoulder - no arc, no overhead, just the point
+       going where the run was already taking him - and the coat streams the way it does at a full run, not a swing. */
+    dashAtk: [
+      knightFrame({ wide: 3, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 2], cutlass: [sh[0] + 3, sh[1] - 2, sh[0] + 14, sh[1] - 3], pistol: holster(), plume: 2 }),
+      knightFrame({ wide: 5, dx: 4, legs: 'run1', arm: [sh[0], sh[1], sh[0] + 6, sh[1] - 3], cutlass: [sh[0] + 6, sh[1] - 3, sh[0] + 20, sh[1] - 4], pistol: holster(), plume: 2 }),
+      knightFrame({ dx: 1, dy: 1, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], cutlass: [sh[0] + 3, sh[1] - 1, sh[0] + 9, sh[1] + 2], pistol: holster(1), plume: 0 }),
+    ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 3, sh[0] + 6, sh[1] + 6], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', cutlass: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], pistol: holster(2), plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', cutlass: rest(3), pistol: holster(3) }),
     // THE PARRY: the blade up across him, both hands, and no shield anywhere
@@ -1769,7 +1790,19 @@ export function bakeReaper(skin = {}) {
       knightFrame({ dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 }),
       knightFrame({ greatsword: rest(), plume: 0 }),
     ],
-    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0], sh[1] + 3], greatsword: [sh[0], sh[1] - 3, sh[0], sh[1] + 13], plume: 1 }),
+    /* THE GRAVE DRIVE: the same tuck the knight's poke uses - both hands stay on the grip, knees drawn up out from
+       under him, and the whole length of the greatsword goes down past his boots ahead of the ground it is about
+       to open (graveFall, main.js). Nothing here reads as his slow overhead swathe: the blade is a straight column,
+       not an arc, and there is no wind-up left in the frame to confuse it with one. */
+    plunge: knightFrame({ legs: 'tuck', hy: 1, arm: [sh[0], sh[1], sh[0], sh[1] + 1], greatsword: [sh[0], sh[1] - 5, sh[0], sh[1] + 19], plume: 2 }),
+    /* THE GREATSWORD RUSH: the whole blade held out level in front at a dead run, both hands on the grip - the
+       biggest weapon in the wood turned into a lance for the length of the dash, and nowhere in the frame does it
+       lift off that line the way the swathe does. */
+    dashAtk: [
+      knightFrame({ wide: 4, dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], greatsword: [sh[0] + 2, sh[1] + 2, sh[0] + 18, sh[1] + 1], plume: 2 }),
+      knightFrame({ wide: 6, dx: 4, dy: 1, legs: 'run1', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], greatsword: [sh[0] + 4, sh[1] + 2, sh[0] + 22, sh[1] + 1], plume: 2 }),
+      knightFrame({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], greatsword: [sh[0] + 3, sh[1] + 4, sh[0] + 10, sh[1] + 9], plume: 0 }),
+    ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 5, sh[0] - 6, sh[1] - 1], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', greatsword: [sh[0] + 2, sh[1] + 6, sh[0] - 6, sh[1] + 2], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 8], greatsword: rest(3) }),
     /* THE TOLL: the point driven into the ground in both hands, head down, taking it out of them */
@@ -2104,7 +2137,18 @@ export function bakePaladin(skin = {}) {
       knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9], plume: 0 }), // the head in the ground
       knightFrame({ maul: rest(), plume: 0 }),
     ],
-    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 4], maul: [sh[0] - 1, sh[1] + 4, sh[0] - 1, sh[1] + 15], plume: 1 }),
+    /* THE MAUL SLAM: the knight's tuck again - both knees drawn up, nothing left under him - with the maul driven
+       straight down past his boots on the way to HAMMERFALL (main.js). His overhead swing still winds through an
+       arc (atk, heavy); this is a plumb line, and that is the whole of the difference at a glance. */
+    plunge: knightFrame({ legs: 'tuck', hy: 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 2], maul: [sh[0] - 1, sh[1] + 2, sh[0] - 1, sh[1] + 16], plume: 2 }),
+    /* THE SHIELDLESS CHARGE: the maul carried level like a ram instead of over the shoulder - he has no shield to
+       get in behind, so the whole of him leans into the head of it. Slowest hero in the wood, so the widest stance
+       and the longest reach into the charge, not the fastest one. */
+    dashAtk: [
+      knightFrame({ wide: 3, dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], maul: [sh[0] + 3, sh[1] + 3, sh[0] + 12, sh[1] + 6], plume: 2 }),
+      knightFrame({ wide: 4, dx: 4, dy: 1, legs: 'run1', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 4], maul: [sh[0] + 5, sh[1] + 4, sh[0] + 16, sh[1] + 6], plume: 2 }),
+      knightFrame({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 5], maul: [sh[0] + 3, sh[1] + 5, sh[0] + 8, sh[1] + 10], plume: 0 }),
+    ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', maul: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', maul: rest(3) }),
     // AEGIS: the maul planted upright before him, both hands on the haft
