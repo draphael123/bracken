@@ -280,12 +280,12 @@ const MENU_MUSIC = [
 ];
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
 const HEROES = [
-  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam' },
+  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dash: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
   { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else' },
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. His GRAVELORD tree puts SUMMON SKELETON on F. G carries the skill he chooses." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. the dead take double' },
-  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 90 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it' },
+  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 90 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dash: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
    not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
@@ -1034,7 +1034,7 @@ function resolveTiles() {
 // ---------- world state ----------
 /* ONE TABLE FOR A HERO'S BODY. It was written straight into P; it is a maker now, because co-op builds a second
    body out of exactly the same fields and two lists of them would drift apart the first time one was added to. */
-const freshBody = () => ({ x: 0, y: 0, vx: 0, vy: 0, w: 10, h: 14, face: 1, ground: false, groundTile: 0, coyote: 0, jbuf: 0, abuf: 0, dbuf: 0, atk: -1, plunge: false, plungeRec: 0, canCut: false,
+const freshBody = () => ({ x: 0, y: 0, vx: 0, vy: 0, w: 10, h: 14, face: 1, ground: false, groundTile: 0, coyote: 0, jbuf: 0, abuf: 0, dbuf: 0, atk: -1, plunge: false, plungeRec: 0, dashRec: 0, canCut: false,
   hp: 100, maxHp: 100, hpShown: 100, st: 100, maxSt: 100, stDelay: 0, stFlash: 0, block: false, dodge: 0, dodgeCd: 0, inv: 0, grace: 0, hurt: 0, anim: 0, dead: 0, onMover: null, hitSet: new Set(), drop: 0, dust: 0, sqX: 1, sqY: 1, sqT: 0, landT: 0, guardTired: 0 });
 /* P IS A LIVE ALIAS NOW, not a fixed object: "the hero this code means". In single player it never once changes,
    and the thousands of lines that name it are the same lines they were. See the CO-OP block below. */
@@ -4382,7 +4382,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES']);   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES']);   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -4656,7 +4656,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); }
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
   P.hp -= dmg; P.inv = armoured ? 0.55 : 0.8; P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
-  if (!armoured) { P.atk = -1; P.plunge = false; } P.block = false; impactAt(P.x, P.y - 9, 'red');
+  if (!armoured) { P.atk = -1; P.plunge = false; if (dashStriking()) endDashStrike(false); } P.block = false; impactAt(P.x, P.y - 9, 'red');
   // a blow that lands puts out whatever you were carrying: the fire in your hand is the first thing to go
   if (P.wick > 0 && P.relic !== 'wick') { P.wick = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }
   const dir = Math.sign(P.x - fromX) || -P.face;
@@ -4840,15 +4840,22 @@ function hitSpray(e, dir) {
    shot or flung: embers, the pyre, the wisp, a thrown shield or scythe, grapeshot). A blow the table does not know (a hazard, a
    wall slam, a burn ticking, a meter's big moment) is none of them and is judged by nothing.
    Bosses, minis, elites and the big ones are NOT in it: every one of them already has its own gate, and their windows stay theirs.
-   The GUARD family's wrong verb is the light cut from the front, and the shield turning it in the swing pass says so already. ==== */
-const VERB_KEY_MUL = 1.5, GLANCE_TAKE = 0.35;
+   The GUARD family's wrong verb is the light cut from the front, and the shield turning it in the swing pass says so already.
+   THE DASH ATTACK HAS A PLACE IN IT TOO, written here and nowhere else (the knight's and the warden's are a move of their own now,
+   DASH_STRIKE below; the other heroes' cut out of a dash is the same verb):
+     guard   - KEY, and the head-on answer: a guard met at a run is knocked OFF BALANCE (unbalance), where going round it costs a wheel;
+     plate, shell - it GLANCES: a shoulder into steel is a shoulder into a wall, and a run onto a shell is a run onto its spines;
+     small, wing  - it goes THROUGH them (through): too slight to stop a hero at full tilt, so the run carries on to the next;
+     shooter, crew - KEY, as before: the distance they keep is the thing a dash closes;
+     beast   - neither: heavy enough to stop the run dead, and nothing about a lunge is wrong for it or right. ==== */
+const VERB_KEY_MUL = 1.5, GLANCE_TAKE = 0.35, OFF_BALANCE = 1.2;   /* s a guard stays thrown wide (a trip holds 1.1) */
 const FAMILY = {
-  guard:   { key: ['heavy', 'sweep'], glance: null,     kinds: ['shield', 'soldier', 'heavy', 'watch', 'pike', 'turtle', 'crab', 'tideguard'] },   /* a shield or a haft in front: go through it or under it */
-  plate:   { key: ['heavy', 'plunge'], glance: 'light', kinds: ['swornsword', 'hedgeknight', 'armour', 'sentry', 'boarder', 'bosun'] },   /* (not the lancer: his barding is his own gate, above) */   /* steel all round: dent it, or come down on the helm */
-  shell:   { key: ['heavy', 'shot'], glance: 'light',   kinds: ['urchin', 'prise', 'holdfast', 'clinger', 'mimic'] },   /* a shell or a lid: crack it, or hit it from where the spines are not */
+  guard:   { key: ['heavy', 'sweep', 'dash'], glance: null, unbalance: ['dash'], kinds: ['shield', 'soldier', 'heavy', 'watch', 'pike', 'turtle', 'crab', 'tideguard'] },   /* a shield or a haft in front: go through it or under it */
+  plate:   { key: ['heavy', 'plunge'], glance: ['light', 'dash'], kinds: ['swornsword', 'hedgeknight', 'armour', 'sentry', 'boarder', 'bosun'] },   /* (not the lancer: his barding is his own gate, above) */   /* steel all round: dent it, or come down on the helm */
+  shell:   { key: ['heavy', 'shot'], glance: ['light', 'dash'], kinds: ['urchin', 'prise', 'holdfast', 'clinger', 'mimic'] },   /* a shell or a lid: crack it, or hit it from where the spines are not */
   beast:   { key: ['heavy'], glance: 'sweep',           kinds: ['brute', 'troll', 'berserker', 'goat', 'hearthgob', 'scarecrow', 'farmhand', 'topiary', 'propman', 'miner', 'fledgling', 'thorn'] },   /* weight: rock it; it stands on a low sweep */
-  small:   { key: ['sweep', 'plunge'], glance: 'rise',  kinds: ['sprig', 'hopper', 'sporeling', 'broom', 'piece', 'grub', 'rockgoblin', 'pumpkin', 'lurker', 'thief', 'runner', 'shardling', 'hound', 'spider', 'hare', 'lookout', 'wight', 'cutter'] },   /* low: go low, or come down on it; a rising cut goes over its head */
-  wing:    { key: ['rise', 'shot'], glance: 'sweep',    kinds: ['petrel', 'haunt', 'marshlight', 'imp', 'siren', 'eel', 'angler', 'heronfoe', 'rook', 'wasp', 'harpy', 'bat', 'kite', 'drone', 'crow'] },   /* off the floor, in the air or the water: reach up, or throw; a sweep goes under it */
+  small:   { key: ['sweep', 'plunge'], glance: 'rise', through: true, kinds: ['sprig', 'hopper', 'sporeling', 'broom', 'piece', 'grub', 'rockgoblin', 'pumpkin', 'lurker', 'thief', 'runner', 'shardling', 'hound', 'spider', 'hare', 'lookout', 'wight', 'cutter'] },   /* low: go low, or come down on it; a rising cut goes over its head */
+  wing:    { key: ['rise', 'shot'], glance: 'sweep', through: true, kinds: ['petrel', 'haunt', 'marshlight', 'imp', 'siren', 'eel', 'angler', 'heronfoe', 'rook', 'wasp', 'harpy', 'bat', 'kite', 'drone', 'crow'] },   /* off the floor, in the air or the water: reach up, or throw; a sweep goes under it */
   shooter: { key: ['dash', 'shot'], glance: 'plunge',   kinds: ['archer', 'spit', 'sapper', 'javelin', 'crossbow', 'scout', 'marine', 'stormshaman', 'gobmage', 'turret', 'spitcap', 'netter', 'horn', 'drunk', 'gobpriest', 'shaman', 'sailer', 'weaver'] },   /* it keeps its distance: close it, or send something back; it sees a fall coming and steps out from under */
   crew:    { key: ['dash', 'shot'], glance: 'sweep',    kinds: ['cutlass', 'sailor', 'assassin', 'snuffer', 'sweep', 'seawitch'] },   /* a blade and quick feet: go through his guard at speed, or shoot him; he steps over a low sweep */
 };
@@ -4857,6 +4864,7 @@ const FAMILY_OF = {}; for (const f in FAMILY) for (const t of FAMILY[f].kinds) F
    once, so a blow that sets off another (a shardling's burst, a slam) passes nothing on. */
 let BLOW = null;
 const blowHas = (b, v) => !!b && (b === v || (Array.isArray(b) && b.includes(v)));
+const famHas = (list, blow) => !!list && [].concat(list).some(v => blowHas(blow, v));   /* a family's key, glance or unbalance: one verb or a list of them */
 function hurtAs(blow, e, dmg, fromX, plunge) { BLOW = blow; return hurtEnemy(e, dmg, fromX, plunge); }
 const meleeBlow = plunge => plunge || P.plunge ? 'plunge' : P.heavy ? 'heavy' : P.swingKind === 'sweep' ? 'sweep' : P.swingKind === 'rise' ? 'rise' : P.dashCut ? 'dash' : 'light';
 const familyOf = e => (e.xpRole || e.mini || e.elite || e.big || e.trainer || e.turncoat || e === boss) ? null : FAMILY[FAMILY_OF[e.t]] || null;   /* (not maxHp: Waymeet's sworn swords and hedge knights carry one, and are the common roster all the same) */
@@ -5155,8 +5163,11 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   let glance = false, wheel = false, mixed = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
   { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
     if (fam) { const keyed = fam.key.some(v => blowHas(blow, v));
-      if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time; }
-      else if (fam.glance && blowHas(blow, fam.glance) && !foeOpen(e)) { glance = true; e.glancedAt = time; dmg = Math.max(1, Math.round(dmg * GLANCE_TAKE)); glanceBeat(e, fromX); }
+      if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time;
+        /* OFF BALANCE: the family's head-on answer (a guard met by a dash) does not just bite, it throws the guard wide - open, as a
+           trip or a break is, for OFF_BALANCE seconds. Judged on what the blow found, so it never re-opens what is already open */
+        if (famHas(fam.unbalance, blow) && !foeOpen(e)) { e.broken = Math.max(e.broken || 0, OFF_BALANCE); e.offBalAt = time; e.vx = 0; e.guardT = 0; number(e.x, e.y - (e.h || 16) - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); } }
+      else if (famHas(fam.glance, blow) && !foeOpen(e)) { glance = true; e.glancedAt = time; dmg = Math.max(1, Math.round(dmg * GLANCE_TAKE)); glanceBeat(e, fromX); }
       /* THE WHEEL. A guard cut from behind used to be a guard that never turned: every cut staggered it, and a staggered shield
          does not come round, so walking behind one was a free kill and the heavy blow was never needed. Now a plain cut from behind
          LANDS - and it wheels on you, guard up, and shoulders you off. Going round buys one cut; going through (a heavy blow, or a
@@ -5169,7 +5180,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
   if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && e.knock > 0 && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
-  if (e.broken > 0 && dmg > 0) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body */
+  if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : 0.35; e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
@@ -5486,7 +5497,7 @@ function runThroughDrive(e) {
   }
 }
 /* A guard is not an answer to a held blow: the point goes through it. (VIGIL used to buy this too, invisibly.) */
-const throughGuard = () => P.heavy;
+const throughGuard = e => P.heavy || (!!e && P.dashCut && P.atk >= 0 && famHas((familyOf(e) || {}).unbalance, 'dash'));   /* and a DASH ATTACK goes through the guard the table says it unbalances (FAMILY.guard) */
 function gainResolve(n) { if (hero() !== 'knight' || lcOn()) return; const was = (P.resolve || 0) >= 100; P.resolve = Math.min(100, (P.resolve || 0) + n * varietyMul()); if (!was && P.resolve >= 100) meterReady('#ffd36b'); }
 /* THE LAST CHARGE. The shield charge (his held swing) is a shove; this is the whole bar spent at once. A told brace - shield up, a
    gold ring, a war cry - and then he goes, fast and about a screen, behind the shield: THROUGH every ordinary foe in the way, each
@@ -6123,6 +6134,7 @@ function lessonHint(kind) {
 }
 // A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
 function guardTurned(e) {
+  if (dashStriking()) endDashStrike(true);   /* a guard the table does not let a dash through stops it dead */
   if (e) glanceSay(e);   /* a guard turning a light cut is a wrong-verb hit too: the same sound and word as a glance */
   if (lessonHint('heavyblow') || lessonHint('sweep')) return;   /* in one of the wood's lesson stretches the moment has its own line, said once */
   if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintT = 4.5; if (hero() === 'knight') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING, LET GO: CHARGE THROUGH. DOWN+SWING: UNDER.'; else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; return; }   /* its own call: the line under it used to overwrite it at once */
@@ -6133,6 +6145,10 @@ function guardTurned(e) {
   else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + kx + ' TO GO THROUGH IT, OR DOWN+' + kx + ' TO SWEEP UNDER IT.';
 }
 function attackBox() {
+  if (dashStriking()) { const D = DASH_STRIKE[hero()];   /* THE DASH ATTACK: the blade (or the point) out in front the whole of the run, cut to the art (chars.js dashAtk) */
+    if (P.dashAtk < D.t * 0.15) return null;
+    return P.face > 0 ? { l: P.x + D.near, r: P.x + D.reach, t: P.y - D.top, b: P.y + 1 } : { l: P.x - D.reach, r: P.x - D.near, t: P.y - D.top, b: P.y + 1 };
+  }
   if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
     if (P.atk < 0.12 || P.atk >= 0.19) return null;
     const r = 20 + 12 * tal('longHaft');   /* the point is drawn to 19-20 px on its two live frames; 38 cut the air beyond it */
@@ -6392,7 +6408,7 @@ function updatePlayer(dt) {
     if (was > 0 && P.cds[k] <= 0) { P.skReady = P.skReady || {}; P.skReady[k] = 1; SFX.ui && SFX.ui(); } } // a skill coming back says so
   if (P.skReady) for (const k in P.skReady) P.skReady[k] = Math.max(0, P.skReady[k] - dt * 1.6);
   hushT = Math.max(0, hushT - dt);
-  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
+  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'dashRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
@@ -6560,10 +6576,11 @@ function updatePlayer(dt) {
   // THE DASH: tap a direction twice and you go, on the ground or in the air, once per landing. It does not
   // dodge anything - it is distance, not safety - and it costs a little wind.
   { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
-    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !dodging && !P.block && !(P.jetRecover > 0) && !rushing()) {
+    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !(P.dashRec > 0) && !dashStriking() && !dodging && !P.block && !(P.jetRecover > 0) && !rushing()) {
         if (spend(isPaladin() ? 10 : 8)) { noteVerb('dash'); P.dash = isPyro() ? 0.2 : isPaladin() ? 0.14 : 0.17; P.dashCd = isPaladin() ? 0.7 : 0.55; if (!P.ground) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); }
           P.vx = tapped * (isPyro() ? 300 : isPaladin() ? 230 : isPirate() ? 285 : 265); P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
-      if (isWarden() && tal('vaulter')) { P.dash = Math.max(P.dash, 0.2); P.dashLate = 0.2; }   /* VAULTER: the plant is always there to be taken */
+      if (isWarden() && tal('vaulter')) { P.dash = Math.max(P.dash, 0.2); P.dashLate = 0.2; }
+      P.dashDur = P.dash;   /* how long this dash is, so a swing can be judged EARLY or LATE in it (DASH_STRIKE.win) */   /* VAULTER: the plant is always there to be taken */
           streaks(P.x, P.y - 9, -tapped, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid();
           if (isPyro()) { P.alight = Math.max(P.alight || 0, 0.24); flame(P.x, P.y - 8, 4, 4, 40, 2); }   // even her dash leaves a scorch
           if (isPaladin()) { P.shoulder = Math.max(P.shoulder || 0, 0.16); SFX.clank(); if (tal('heavyTread') && P.ground) { pwaves.push({ x: P.x + tapped * 10, y: P.y, dir: tapped, life: 0.8, sp: 240, hit: new Set() }); shakeCam(2); } } }
@@ -6571,13 +6588,18 @@ function updatePlayer(dt) {
   P.vaultT = Math.max(0, (P.vaultT || 0) - dt);
   P.dash = Math.max(0, (P.dash || 0) - dt); P.dashCd = Math.max(0, (P.dashCd || 0) - dt); if (P.ground) { P.dashedAir = false; P.airDashN = 0; P.airJump = 0; }
   P.dashLate = P.dash > 0 ? 0.16 : Math.max(0, (P.dashLate || 0) - dt);   /* a swing just after the dash still counts as out of it */
-  if (P.dashAtk > 0) { P.dashAtk = Math.max(0, P.dashAtk - dt); P.vx = P.face * (isPaladin() ? 210 : 250) * (0.35 + 0.65 * P.dashAtk / 0.24); if (P.dashAtk > 0.08) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 2 }); }
+  if (dashStriking()) { const D = DASH_STRIKE[hero()]; P.dashAtk = Math.max(0, P.dashAtk - dt); const k = P.dashAtk / D.t;
+    P.vx = P.face * D.speed * (0.3 + 0.7 * k);   /* it CARRIES the dash: full pace out of it, bleeding off to a stop */
+    if (k > 0.3) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 2 }); if (P.ground && Math.random() < 0.5) dust(P.x - P.face * 5, P.y, 1);
+    if (P.dashAtk <= 0) endDashStrike(false); }
+  else if (P.dashAtk > 0) { P.dashAtk = Math.max(0, P.dashAtk - dt); P.vx = P.face * (isPaladin() ? 210 : 250) * (0.35 + 0.65 * P.dashAtk / 0.24); if (P.dashAtk > 0.08) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 2 }); }
   /* THE DASH IS DISTANCE, AND THE SWING MAKES IT A BLOW. It used to cut whatever it passed through by itself (the dash strike), so a dash
      through a foe was a free hit and the dash attack went unnoticed. The owner's rule: the dash does no damage; press attack during it (or
      just after: P.dashLate) and dashAttack() carries the cut through. */
   if (P.dash > 0) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
+  if (P.plunge && !P.swim && DOWN_STRIKE[hero()]) plungeTrail(DOWN_STRIKE[hero()]);
   /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
-  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && !(P.perch > 0) && P.dodgeCd <= 0 && !rushing()) {
+  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no roll out of it, nor out of its end-lag) */
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
     if (spend(isWarden() ? stepCost() : dodgeCost())) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
@@ -6735,7 +6757,7 @@ function updatePlayer(dt) {
         gainHeat(10);
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0) dashAttack(); else if (keys.up && !keys.down && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && keys.down) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && P.plungeRec <= 0 && !(P.dashRec > 0)) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (keys.up && !keys.down && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && keys.down) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
   if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
@@ -6886,7 +6908,7 @@ function updatePlayer(dt) {
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
       if (broke && isWarden()) { P.plunge = false; P.plungeRec = 0.12; P.canCut = false; P.hitSet.clear(); SFX.thud(); dust(P.x, P.y, 8); squash(1.35, 0.65, 0.12); }   /* the crate splits under the point and she stays on the floor */
       else if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
-      else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall();
+      else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall(); if (DOWN_STRIKE[hero()] && !P.swim) plungeWave(DOWN_STRIKE[hero()]);
         if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
           if (P.consecrate) { P.consecrate = false; gainLight(14); // THE CONSECRATION: where the maul lands, the ground is holy for a moment
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
@@ -6965,6 +6987,7 @@ function updatePlayer(dt) {
           if (e.t === 'dummy') trialEvent('pogo');
         } else {
         hurtAs('plunge', e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true); if (tal('bounding')) P.st = Math.min(P.maxSt, P.st + 8); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
+          plungeHitBeat(e);   /* heavier than any ground swing, whatever comes after it (DOWN_STRIKE) */
           /* THE PIN, before the bounce: the point goes through it and stays there. A boss or a mini is too big to hold,
              so pinFoe says no, it keeps the blow and the stagger, and she rides up off it exactly as she always did. */
           if (isWarden() && !P.dead && !footUnder(e)) { wardenVault(e); continue; }   /* OVER A DROP: nothing to pin it to, so she vaults off it */
@@ -6981,22 +7004,22 @@ function updatePlayer(dt) {
       if (e.t === 'mother' && e.tipped) continue;
       if (e.t === 'drone' || e.t === 'mother') { SFX.clank(); sparks(e.x, e.y - e.h / 2, P.face, 4); number(e.x, e.y - e.h - 6, e.t === 'mother' ? 'ARMOURED' : 'PUFF', '#9aa39a'); continue; }
       if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 14, e.y - 8, P.face, 5); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'HORNS', '#c9a83a'); continue; }
-      if (e.t === 'pike' && front && !throughGuard() && !(e.broken > 0) && e.stagger <= 0) { glanceSay(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }
+      if (e.t === 'pike' && front && !throughGuard(e) && !(e.broken > 0) && e.stagger <= 0) { glanceSay(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }
       if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + P.face * -20, e.y - 30, P.face, 5); continue; }
       if (e.turncoat) continue;
       /* (the Hound Master's guard lives in hurtEnemy0 now: a blade, an ember and a ball all meet the same hound) */
-      if (chiefShielded(e) && front && !throughGuard()) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - 10, P.face, 6); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'SHIELD', '#c9d1dc'); continue; }
+      if (chiefShielded(e) && front && !throughGuard(e)) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - 10, P.face, 6); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'SHIELD', '#c9d1dc'); continue; }
       if (e.t === 'brute' && e.mode === 'raise') { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); continue; }
-      if (e.t === 'turtle' && front && !throughGuard() && !(e.broken > 0) && e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
-      if (e.t === 'crab' && front && !throughGuard() && !(e.broken > 0) && e.guardT > 0 && e.mode !== 'flipped') { guardTurned(e); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 6, e.y - 5, e.face, 5); continue; } // claws up
+      if (e.t === 'turtle' && front && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
+      if (e.t === 'crab' && front && !throughGuard(e) && !(e.broken > 0) && e.guardT > 0 && e.mode !== 'flipped') { guardTurned(e); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 6, e.y - 5, e.face, 5); continue; } // claws up
       if (e.t === 'siren' && e.mode === 'dive') continue; // under the water
-      if (e.t === 'soldier' && front && !throughGuard() && !(e.broken > 0) && e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
-      if (e.t === 'heavy' && !throughGuard() && !(e.broken > 0) && e.mode !== 'rest' && !(e.parried > 0)) { guardTurned(e); SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
-      if (e.t === 'watch' && front && !throughGuard() && !(e.broken > 0) && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
-      if (e.t === 'shield' && front && !throughGuard() && !(e.broken > 0) &&!(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide) */
+      if (e.t === 'soldier' && front && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
+      if (e.t === 'heavy' && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'rest' && !(e.parried > 0)) { guardTurned(e); SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
+      if (e.t === 'watch' && front && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
+      if (e.t === 'shield' && front && !throughGuard(e) && !(e.broken > 0) &&!(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide) */
         guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
-      } else { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
+      } else { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); if (dashStriking()) dashStrikeHit(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
         if (P.heavy && e.alive) { // a heavy blow moves whatever it lands on, and SUNDER leaves it open
           const ram = P.bashing && tal('bash') ? 2 : 1;   /* BULL RUSH: the charge's bash staggers twice as long */
           if (!e.maxHp && !(P.bashing && e.mini)) { e.stagger = Math.max(e.stagger || 0, 0.6 * ram); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
@@ -16690,7 +16713,71 @@ function swingKindTrail(k, px0) { const c = specialCol()[0];
 /* THE DASH ATTACK. A swing out of a dash used to stop the hero dead into an ordinary cut, so the two never added up to
    anything. Now the dash carries the blade through: the hero keeps going, the cut lands harder and throws what it hits. */
 let dashAtkShown = 0;
-function dashAttack() { P.dashLate = 0; P.dash = 0; P.dashAtk = 0.24; P.swingMul = Math.max(P.swingMul || 1, 1.6); if (!P.ground) P.vy = Math.min(P.vy, 30);
+/* ==== THE DASH ATTACK AS A MOVE OF ITS OWN (the knight and the warden). "Make the dash attacks actual attacks, not just regular attacks
+   while dashing." For these two it is no longer a cut that happens to be moving: it is a lunge with its own pose, its own sound and
+   its own rules, and it is only there EARLY in the dash - a swing in the first win of it. Late in the dash, or just after, is the
+   plain swing, so the player chooses which one he meant by when he pressed.
+     it CARRIES the dash (speed, bleeding off over t), lands ONE heavy blow (dmg x the swing) on each thing it meets,
+     goes THROUGH what the family table calls slight (FAMILY through) and is stopped dead by anything else,
+     and it COSTS: st more wind than the swing, and rec seconds rooted with nothing to press at the end of it - so a string of
+     cuts still beats it on anything that stands still for them.
+   What it is the RIGHT tool for is the family table's business (FAMILY: a guard it throws wide, a shooter or a crewman it closes
+   on, plate and shells it glances off), not this one's.
+   knight - THE SHOULDER CHARGE: in behind the shield with the blade out past it. Short, wide, heavy.
+   warden - THE LUNGE ALONG THE SHAFT: long and low, a line to the point (near/reach), so her tip rule still pays at the end of it -
+            which is why her dmg is under his (at 1.5 the tip, the key and MIXED UP took a wood shieldbearer in one blow of 48). ==== */
+const DASH_STRIKE = {
+  knight: { win: 0.6, t: 0.26, speed: 290, dmg: 1.8, st: 10, rec: 0.24, near: -2, reach: 26, top: 18, hitStop: 0.07, passStop: 0.03, shake: 4, cols: ['#fff6e0', '#c9d1dc'] },
+  warden: { win: 0.6, t: 0.24, speed: 300, dmg: 1.3, st: 10, rec: 0.28, near: 2, reach: 46, top: 14, hitStop: 0.06, passStop: 0.025, shake: 3, cols: ['#dff0d8', '#c9b27c'] },
+};
+const dashStriking = () => P.dashAtk > 0 && P.dashCut && !!DASH_STRIKE[hero()];
+/* EARLY IN THE DASH, with the wind for it. (For the other heroes the old rule stands: any swing in or just after the dash.) */
+function dashCutNow() { const D = DASH_STRIKE[hero()]; if (!D) return P.dashLate > 0;
+  if (!(P.dash > 0) || P.swim) return false; const dur = P.dashDur || P.dash; return dur - P.dash <= D.win * dur && P.st >= D.st; }
+function dashStrike(D) { spend(D.st); P.dashLate = 0; P.dash = 0; P.dashDur = 0; P.dashAtk = D.t; P.dashCut = true;
+  if (P.heavySwing) { P.heavySwing = false; P.heavy = false; P.runThrough = false; } P.combo = 0; P.swingMul = D.dmg;   /* its own blow, not a step in a run of cuts */
+  P.vx = P.face * D.speed; if (!P.ground) P.vy = Math.min(P.vy, 20);
+  SFX.pDashStrike(); streaks(P.x + P.face * 8, P.y - 10, 6, D.cols, 190); dust(P.x - P.face * 6, P.y, 4); zoomKick(1.04, 0.14); squash(1.25, 0.8, 0.12);
+  if (dashAtkShown < 3) { dashAtkShown++; number(P.x, P.y - 28, 'DASH ATTACK', '#ffd36b'); } }
+/* WHAT IT MEETS: slight things are gone through with a small stop; anything else stops the run dead on a heavier one */
+function dashStrikeHit(e) { const D = DASH_STRIKE[hero()], fam = familyOf(e), through = !e.alive || ONE_HIT.has(e.t) || !!(fam && fam.through);
+  sparks(e.x, e.y - (e.h || 16) / 2, P.face, through ? 5 : 9); SFX.pDashHit(!through);
+  if (through) { hitstop(D.passStop); shakeCam(2, P.face); return; }
+  hitstop(D.hitStop); shakeCam(D.shake, P.face * 2); ringAt(e.x - P.face * 4, e.y - (e.h || 16) / 2, 14, D.cols[0], 0.22); endDashStrike(true); }
+/* AND THE PRICE: rooted for rec, nothing pressed, and the blade's box shut (a stopped lunge must not become a swing at what is beside it) */
+function endDashStrike(stopped) { const D = DASH_STRIKE[hero()]; if (!D) return;
+  P.dashAtk = 0; P.dashRec = D.rec; P.rootT = Math.max(P.rootT || 0, D.rec); if (P.atk >= 0) P.atk = Math.max(P.atk, 0.2); if (stopped) P.vx = -P.face * 30; }
+/* ==== THE DOWN ATTACK, MADE A COMMITMENT (the knight's pogo and the warden's plunge). It was the same fall for both with a thud at the
+   bottom. Now each has its own pose (chars.js plunge), its own whoosh (SFX.pPlunge) and a trail while it falls (trail), and it pays and
+   costs by what it lands on:
+     ON A BODY - a heavier hit than any ground swing (hitStop, hitShake, SFX.pPlungeHit), and the rebound stays exactly as it was: his pogo,
+       her pin, perch or vault. (Nothing here touches either: the pits the knight pogos and the drops she vaults are crossed as before.)
+     ON THE GROUND - a small shockwave (wave px, waveDmg of the plunge, waveStagger), and a landing recovery: whiff seconds rooted with no
+       swing if it caught nothing, caught seconds if it did. His rings out BOTH ways off the blade; hers is the point driven in, and the
+       crack runs forward along the floor AHEAD of her (ahead), the one way her spear faces.
+   The wave is not a verb in the family table (a shockwave is not a hand), and it leaves bosses, minis, elites and the big ones alone. ==== */
+const DOWN_STRIKE = {
+  knight: { trail: ['#fff6e0', '#c9d1dc'], hitStop: 0.06, hitShake: 4, wave: 30, waveUp: 12, waveDmg: 0.4, waveStagger: 0.45, push: 150, ahead: false, whiff: 0.26, caught: 0.1 },
+  warden: { trail: ['#dff0d8', '#c9b27c'], hitStop: 0.05, hitShake: 3, wave: 40, waveUp: 10, waveDmg: 0.5, waveStagger: 0.6, push: 0, ahead: true, whiff: 0.3, caught: 0.1 },
+};
+function plungeTrail(D) { if (SET.parts === 'few' && Math.random() < 0.5) return;
+  if (!isWarden()) { for (let i = 0; i < 2; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 3, y: P.y - 14 - Math.random() * 12, vx: 0, vy: -40, life: 0.16, max: 0.16, col: D.trail[i], size: 1, grav: 0 }); return; }   /* a white stripe straight up off the blade */
+  for (let i = 0; i < 2; i++) { const k = Math.random() * 14; parts.push({ x: P.x - P.face * (2 + k * 0.5), y: P.y - 8 - k, vx: -P.face * 20, vy: -40, life: 0.16, max: 0.16, col: D.trail[i], size: 1, grav: 0 }); } }   /* a slant back along the haft */
+function plungeHitBeat(e) { const D = DOWN_STRIKE[hero()]; if (!D) return;
+  hitstop(D.hitStop); shakeCam(D.hitShake); SFX.pPlungeHit(); burst(e.x, e.y - (e.h || 16) / 2, 6, D.trail, 80, 0.25, 0, 1); }
+function plungeWave(D) { let caught = 0;
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || e === boss || e.mini || e.big || e.elite || e.trainer) continue;
+    const dx = (e.x - P.x) * (D.ahead ? P.face : 1);
+    if (D.ahead ? (dx < -8 || dx > D.wave) : Math.abs(dx) > D.wave) continue;
+    if (Math.abs(e.y - P.y) > D.waveUp) continue;   /* on the floor it landed on, not over it */
+    hurtEnemy(e, Math.max(1, Math.round(plungeDmg() * D.waveDmg)), P.x, false);
+    if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, D.waveStagger); if (D.push && !KNOCK_SKIP.has(e.t)) e.vx = (Math.sign(e.x - P.x) || P.face) * D.push; }
+    caught++; }
+  if (D.ahead) { for (let i = 0; i < 8; i++) { const x = P.x + P.face * (4 + i * D.wave / 8); parts.push({ x, y: P.y - 1, vx: 0, vy: -30 - Math.random() * 50, life: 0.25 + i * 0.02, max: 0.35, col: D.trail[i % 2], size: 1, grav: 300 }); } dust(P.x + P.face * D.wave * 0.6, P.y, 4); }
+  else { ringAt(P.x, P.y - 2, D.wave, D.trail[0], 0.3); for (const d of [-1, 1]) { dust(P.x + d * D.wave * 0.6, P.y, 3); streaks(P.x + d * 8, P.y - 2, 3, D.trail, 120); } }
+  SFX.pPlungeGround(); if (caught) hitstop(0.04);
+  P.plungeRec = caught ? D.caught : D.whiff; P.rootT = Math.max(P.rootT || 0, P.plungeRec); P.landT = Math.max(P.landT || 0, Math.min(0.16, P.plungeRec)); }
+function dashAttack() { if (DASH_STRIKE[hero()]) return dashStrike(DASH_STRIKE[hero()]); P.dashLate = 0; P.dash = 0; P.dashAtk = 0.24; P.swingMul = Math.max(P.swingMul || 1, 1.6); if (!P.ground) P.vy = Math.min(P.vy, 30);
   streaks(P.x + P.face * 10, P.y - 11, P.face, ['#fff6e0', '#ffd36b'], 170); ringAt(P.x + P.face * 14, P.y - 11, 8, '#ffd36b', 0.18); zoomKick(1.03, 0.12); SFX.heavy();
   P.dashCut = true; if (dashAtkShown < 3) { dashAtkShown++; number(P.x, P.y - 28, 'DASH ATTACK', '#ffd36b'); } }
 function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null; P.dashCut = false;
@@ -16760,7 +16847,7 @@ function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gai
   if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
   if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
-  else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = 'A DASH ATTACK: THE DASH CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
+  else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = DASH_STRIKE[hero()] ? 'DASH ATTACK: SWING EARLY IN A DASH. IT RUNS THROUGH THE SMALL AND OPENS A GUARD.' : 'A DASH ATTACK: THE DASH CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
   let extra = 0, mul = 1;
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp && !(P.bashing && e.mini)) e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); }
@@ -19367,6 +19454,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.dodge > 0) { const dm = P.dodgeMax || 0.3; key = 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (P.face > 0 ? 1 : -1); }   /* (its own length, so a short back-step plays all four beats of it and not the first one twice) */
       else if (P.pinning && K.R.pin) key = 'pin';   /* THE PIN: down on the spear, both hands on it, holding the thing under the point */
       else if (P.plunge) key = 'plunge';
+      else if (K.R.dashAtk && P.dashCut && (P.dashAtk > 0 || P.dashRec > 0) && DASH_STRIKE[hero()]) { key = 'dashAtk'; frame = P.dashAtk > 0 ? (P.dashAtk > DASH_STRIKE[hero()].t * 0.6 ? 0 : 1) : 2; }   /* the lunge, its full stretch, and the stumble that is its price */
       else if (P.bashing && P.atk >= 0 && K.R.bash) key = P.atk < 0.2 ? 'bash' : 'recover';   /* THE SHIELD CHARGE: the slam, then the shield let down */
       else if (P.lcBrace > 0) { key = K.R.brace ? 'brace' : 'block'; frame = 0; }   /* THE LAST CHARGE's tell: braced square behind the shield */
       else if ((P.rush > 0 || P.lcLeft > 0) && K.R.rush) { key = 'rush'; frame = Math.floor(time * (P.lcLeft > 0 ? 18 : 14)) % 2; }

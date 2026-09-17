@@ -301,7 +301,14 @@ export function bakeKnight(skin = {}, bare = false) {
       // 4 settle
       KF({ legs: 'stand', sword: rest(), plume: 0 }),
     ],
-    plunge: KF({ legs: 'jump', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 5], sword: [sh[0] - 1, sh[1] + 5, sh[0] - 1, sh[1] + 17], plume: 1 }),
+    /* THE POGO: knees tucked up and the whole of him riding the blade, both fists on the grip and the point a long way under his boots.
+       Straight down - his rebound is straight up off it. (The warden's goes in on the slant: at a glance, a sword under him or a spear ahead of her.) */
+    plunge: KF({ legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] + 5], sword: [sh[0], sh[1] + 4, sh[0], sh[1] + 18], plume: 2 }),
+    /* THE DASH ATTACK: his shoulder in behind the shield, square across his front, and the blade driven out past its rim - then the
+       full stretch of it, and a stumble to a stop that is the price of it (the third frame is the end-lag) */
+    dashAtk: [KF({ wide: 4, dx: 2, dy: 1, legs: 'runC', shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], sword: [sh[0] + 3, sh[1] + 2, sh[0] + 15, sh[1] + 1], plume: 2 }),
+      KF({ wide: 4, dx: 4, dy: 1, legs: 'run1', shield: true, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], sword: [sh[0] + 5, sh[1] + 1, sh[0] + 18, sh[1] + 1], plume: 2 }),
+      KF({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], sword: [sh[0] + 3, sh[1] + 3, sh[0] + 10, sh[1] + 8], plume: 0 })],
     // THE SHIELD CHARGE (his held swing): braced square behind the shield while it winds, heels down and the blade kept back;
     // driven in behind it, leaning, the sword trailing; the slam, a white edge where the oak meets the body; and the shield let down
     brace: KF({ dx: -1, dy: 1, legs: 'wide', shield: true, sword: [sh[0] - 5, sh[1] + 2, sh[0] - 11, sh[1] + 6], plume: 2 }),
@@ -1885,7 +1892,9 @@ export function bakeWarden(skin = {}) {
       knightFrame({ legs: 'stand', spear: rest(), plume: 0 }),
     ],
     /* THE PLUNGE: she goes down behind the point, both hands high on the haft */
-    plunge: knightFrame({ legs: 'jump', arm: [sh[0], sh[1], sh[0], sh[1] + 4], spear: [sh[0], sh[1] - 6, sh[0], sh[1] + 15], plume: 1 }),
+    /* ON THE SLANT: the haft laid down her front from over her shoulder to a point ahead of her boots, her weight behind it - a lance
+       going in, not a sword stood on (his is straight down) */
+    plunge: knightFrame({ wide: WIDE, dx: -2, legs: 'fall2', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], spear: [sh[0] - 7, sh[1] - 8, sh[0] + 4, sh[1] + 16], plume: 2 }),
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], spear: [sh[0] + 2, sh[1] + 6, sh[0] - 10, sh[1] - 2], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 4], spear: [sh[0] + 1, sh[1] + 7, sh[0] - 11, sh[1] + 1], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: rest(3) }),
@@ -1906,6 +1915,14 @@ export function bakeWarden(skin = {}) {
     knightFrame({ wide: WIDE_H, dx: -3, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 2], spear: [sh[0] - 6, sh[1] + 3, sh[0] + 6, sh[1] - 1], plume: 2 }),
     knightFrame({ wide: WIDE_H, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], spear: [sh[0] + 1, sh[1] + 1, 52, sh[1] + 1], plume: 1 }),
     knightFrame({ wide: WIDE_H, dx: 4, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 7, sh[1] + 1], spear: [sh[0] + 5, sh[1] + 1, 64, sh[1] + 1], plume: 0 }),
+  ];
+  /* THE DASH ATTACK: LONG AND LOW ALONG THE SHAFT. Not the run-through (that is upright, coiled and level): out of a dash she drops her
+     weight under it and the point goes in at knee height, so the whole of her is one line from the heel to the leaf. Then the point
+     dips into the turf as she pulls up (the end-lag). */
+  F.dashAtk = [
+    knightFrame({ wide: WIDE_H, dx: 3, dy: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 6, sh[1] + 3], spear: [sh[0] - 4, sh[1] + 4, 56, sh[1] + 2], plume: 2 }),
+    knightFrame({ wide: WIDE_H, dx: 5, dy: 3, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 7, sh[1] + 3], spear: [sh[0], sh[1] + 4, 62, sh[1] + 3], plume: 2 }),
+    knightFrame({ wide: WIDE, dx: 2, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 4], spear: [sh[0] - 2, sh[1] + 5, 44, sh[1] + 8], plume: 0 }),
   ];
   /* THE WIND-UP OF THE RUN-THROUGH, with frames of its own at last. While the swing was held she was drawn in the
      BRACE pose - the very move that has been taken off her - so winding the lunge looked exactly like planting the
