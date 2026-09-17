@@ -2719,6 +2719,12 @@ function theDeep() {
   rock(265, 266, 168, 174);                                         /* and the stump of one hanging from the vault */
   for (let x = 253; x <= 257; x++) set(x, 181, T.ONEWAY); for (let x = 289; x <= 293; x++) set(x, 178, T.ONEWAY);   /* his galleries, broken off at the wall */
   prop('throne', 282, 191); air(289, 195);
+  /* THE AIR IN HIS HALL. Three vaults over your head and a bell at his elbow was air in the CORNERS: you left the fight to breathe and
+     came back to it. So the room breathes where the fight is - a column off the floor between his two pillars, a crack in the stump of
+     the left one, a bell wreck on the step of his dais and another on the broken gallery. Every one of them is somewhere he can reach
+     you: the floor column stands in his SLAM, the stump is where his charge ends, the dais step is his own ground. Breathing is a
+     position now and not a corner - and he can take them away (DROWNED BREATH, updateDrownedKing). */
+  vent(264, 198, 12); vent(260, 185, 8); wreck(276, 195); wreck(290, 177);
   prop('chandelier', 271, 198); prop('statue', 291, 177); prop('brazier', 275, 195);
   D.banners.push({ x: 268, y: 168 }, { x: 280, y: 168 }, { x: 254, y: 168 });
   stone(257, 198); stone(292, 198, 'chest'); clam(263, 198); vent(254, 198, 7, false, true);
