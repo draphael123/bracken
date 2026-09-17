@@ -23,6 +23,7 @@ import * as RFT from './reef_tiles.js';
 import * as FLT from './flot_tiles.js';
 import * as CTT from './city_tiles.js';
 import * as HB from './redraw/harbour.js';   /* THE FLOTILLA in harbour light: the port, the moored hulls, the market, and everything on them that moves */
+import * as SM from './redraw/storm.js';   /* THE HURRICANE DECK: one ship in a storm - the open sea, the swells, the rain, the rags, the spray and the lightning */
 import * as CRT from './crown_tiles.js';
 import * as DPP from './deep_props.js';
 import { airBoxes } from './deepair.js';
@@ -816,7 +817,8 @@ function bakeAll(pal = {}) {
   PROP.relic.fleece = ART.bakeFleeceIcon(); PROP.relic.spurs = ART.bakeSpursIcon(); PROP.relic.shoes = ART.bakeShoesIcon(); PROP.relic.sunshard = MON.bakeBeadIcon(); PROP.relic.crampons = bakeCramponIcon(); PROP.relic.banner = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#5a6270'; g2.fillRect(1, 0, 1, 12); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 1, 7, 7); g2.fillStyle = '#e0b040'; g2.fillRect(4, 3, 3, 3); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 8, 3, 2); g2.fillRect(6, 8, 3, 2); return c; })(); PROP.sealIcon = (() => { const [c, g2] = canvas(10, 10); g2.fillStyle = '#7a1c24'; g2.beginPath(); g2.arc(5, 5, 4.5, 0, 7); g2.fill(); g2.fillStyle = '#c9463d'; g2.beginPath(); g2.arc(5, 5, 3, 0, 7); g2.fill(); g2.fillStyle = '#e0b040'; g2.fillRect(3, 3, 1, 1); g2.fillRect(6, 3, 1, 1); g2.fillRect(4, 5, 2, 2); g2.fillRect(3, 7, 4, 1); return c; })(); PROP.relic.lamp = PROP.relic.lamp || PROP.lampIcon; PROP.relic.tidecharm = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#c9b27c'; g2.fillRect(4, 0, 2, 3); g2.fillStyle = '#e8f4f0'; g2.beginPath(); g2.moveTo(5, 3); g2.lineTo(9, 7); g2.lineTo(8, 11); g2.lineTo(2, 11); g2.lineTo(1, 7); g2.closePath(); g2.fill(); g2.fillStyle = '#7cc8c8'; for (const x of [3, 5, 7]) g2.fillRect(x, 5, 1, 6); g2.fillStyle = '#4aa0a8'; g2.fillRect(2, 10, 7, 1); return c; })(); /* the Tide Charm: a scallop on a cord */ /* the miner's lamp relic had no icon: the HUD threw every frame once you held it */ PROP.relic.keelstone = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#9f8752'; g.fillRect(3, 0, 4, 1); g.fillRect(2, 1, 1, 3); g.fillRect(7, 1, 1, 3); g.fillStyle = '#3a3228'; g.fillRect(2, 4, 6, 8); g.fillRect(1, 6, 8, 4); g.fillStyle = '#6e6450'; g.fillRect(3, 5, 4, 6); g.fillRect(2, 7, 6, 2); g.fillStyle = '#c9b27c'; g.fillRect(3, 5, 2, 1); g.fillRect(3, 6, 1, 1); return c; })(); /* THE KEEL STONE: ballast off the sky ship, on a cord */ PROP.relic.windcloak = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(5, 0); g.lineTo(9, 3); g.lineTo(9, 11); g.lineTo(5, 9); g.lineTo(1, 11); g.lineTo(1, 3); g.closePath(); g.fill(); g.fillStyle = '#7aa8c8'; g.fillRect(4, 1, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(4, 0, 2, 1); return c; })();
   const sky = (pal.sky === 'mage' || pal.sky === 'fields' || pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
   CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
-  BG = { sky: pal.sky === 'mage' && MW.bakeSkyMage ? MW.bakeSkyMage(VH) : pal.sky === 'fields' && FW.bakeSkyFields ? FW.bakeSkyFields(VH) : pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'harbour' ? HB.bakeSkyHarbour(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'mage' && MW.bakeFarMage ? MW.bakeFarMage(320, 90, 1) : pal.far === 'fields' && FW.bakeFarFields ? FW.bakeFarFields(320, 90, 1) : pal.far === 'causeway' ? KRA.bakeFarCauseway(320, 90, 1) : pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'harbour' ? HB.bakeFarHarbour() : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'mage' && MW.bakeMidMage ? MW.bakeMidMage(480, 140, 2) : pal.mid === 'fields' && FW.bakeMidFields ? FW.bakeMidFields(480, 140, 2) : pal.mid === 'causeway' ? KRA.bakeMidCauseway(480, 140, 2) : pal.mid === 'crown' ? CRT.bakeMidCrown(480, 140, 2) : pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'harbour' ? HB.bakeMidHarbour() : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'mage' && MW.bakeNearMage ? MW.bakeNearMage(640, 300, 3) : pal.near === 'fields' && FW.bakeNearFields ? FW.bakeNearFields(640, 300, 3) : pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'harbour' ? HB.bakeNearHarbour() : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
+  BG = { sky: pal.sky === 'mage' && MW.bakeSkyMage ? MW.bakeSkyMage(VH) : pal.sky === 'fields' && FW.bakeSkyFields ? FW.bakeSkyFields(VH) : pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'harbour' ? HB.bakeSkyHarbour(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'mage' && MW.bakeFarMage ? MW.bakeFarMage(320, 90, 1) : pal.far === 'fields' && FW.bakeFarFields ? FW.bakeFarFields(320, 90, 1) : pal.far === 'causeway' ? KRA.bakeFarCauseway(320, 90, 1) : pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'harbour' ? HB.bakeFarHarbour() : pal.far === 'stormsea' ? SM.bakeStormSea() : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'mage' && MW.bakeMidMage ? MW.bakeMidMage(480, 140, 2) : pal.mid === 'fields' && FW.bakeMidFields ? FW.bakeMidFields(480, 140, 2) : pal.mid === 'causeway' ? KRA.bakeMidCauseway(480, 140, 2) : pal.mid === 'crown' ? CRT.bakeMidCrown(480, 140, 2) : pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'harbour' ? HB.bakeMidHarbour() : pal.mid === 'swells' ? SM.bakeSwells() : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'mage' && MW.bakeNearMage ? MW.bakeNearMage(640, 300, 3) : pal.near === 'fields' && FW.bakeNearFields ? FW.bakeNearFields(640, 300, 3) : pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'harbour' ? HB.bakeNearHarbour() : pal.near === 'none' ? canvas(VW, 1)[0] : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
+  if (pal.far === 'stormsea') BG.storm = { far: BG.far, mid: BG.mid, rain: SM.bakeRainSheets(), farS: SM.silhouette(BG.far), midS: SM.silhouette(BG.mid, '#10161c') };
 }
 bakeAll();
 applySkin();
@@ -7335,6 +7337,19 @@ function onDeck(x, y) { const R = L.roll; if (!R) return false;
   return !(L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && y / TS >= y0 && y / TS <= y1 + 1.5); }
 const heeling = () => !!(roll && roll.state === 'heel' && roll.k > 0.5);
 function seaTilt() { if (!roll || !L || !L.roll || SET.reduceMotion) return 0; return roll.dir * (L.roll.heel || 0.05) * roll.k * (1 - seaCalm()); }
+/* THE HORIZON GOES OVER WITH HER. The frame already rolls with her heel; the far sea rolls half as far again, and rocks a little with
+   every swell under her the rest of the time, so the horizon is never a ruled line on a storm deck. */
+function stormHorizon() { if (SET.reduceMotion || !L) return 0; const per = (L.swell && L.swell.period) || 3.8; return seaTilt() * 0.5 + Math.sin(time * Math.PI * 2 / per) * 0.014 * (1 - seaCalm()); }
+/* THE BACKDROP'S LIGHTNING: 0.34 s of it - the flash, a gap, the second stroke, and the fade */
+let boltBack = { t: 0, x: 0, i: 0 };
+function boltFlash() { if (!(boltBack.t > 0) || SET.flashes === false) return 0; const e = 0.34 - boltBack.t; return e < 0.06 ? 1 : e < 0.1 ? 0.25 : e < 0.16 ? 0.9 : Math.max(0, 0.9 * (1 - (e - 0.16) / 0.18)); }
+/* NOTHING FLASHES OVER A TELL: a windup on the screen, the wash building or running, a strike being marked, a roll being called */
+function stormQuiet() { if ((wash && wash.state !== 'wait') || (strike && strike.state === 'tell') || (roll && roll.state === 'tell')) return true;
+  for (const e of enemies) if (e.alive && Math.abs(e.x - (camX + VW / 2)) < VW && windingUp(e)) return true; return false; }
+/* where the sea can come over her rail: the first rail tile in every run of twenty columns of her, found once */
+function stormRails() { if (L._rails) return L._rails; const out = [];
+  for (let x0 = 0; x0 < LW; x0 += 20) for (let x = x0; x < Math.min(LW, x0 + 20); x++) { let hit = -1; for (let y = 1; y < LH; y++) if (L.grid[y * LW + x] === T.RAIL) { hit = y; break; } if (hit >= 0) { out.push([x, hit]); break; } }
+  return (L._rails = out); }
 function seaSunk(b) { return (L.pools || []).some(p => p.swim && !p.dry && b.x > p.x0 && b.x < p.x1 && b.y > p.y + 6 && (p.bottom === undefined || b.y < p.bottom + 24)); }
 function seaReset() {
   roll = null; seaMsg = null; eyeWas = seaCalm();
@@ -17140,8 +17155,14 @@ function updateWeather(dt) {
   const w = weatherAt();
   if (SET.ambient && SET.weather && w.includes('rain')) {
     for (let i = 0; i < 3 * area; i++) if (drops.length < 90 * area) drops.push({ x: camX - 20 + Math.random() * (VW + 60), y: camY - 10, vx: -50, vy: 300 + Math.random() * 60, life: 1.2 });
-    lightT -= dt; if (lightT <= 0) { lightT = 7 + Math.random() * 9; lightFlash = 0.18; thunderT = 0.5 + Math.random() * 0.6; }
+    lightT -= dt;
+    /* THE HURRICANE'S LIGHTNING IS THE BACKDROP'S: it goes white behind the sea and leaves the sea black against it, and the play is
+       not touched. It waits (half a second at a time) while anything on the screen is winding up, the wash is building, the sky is
+       marking a strike or she is about to roll, so a flash never lands on a tell. Everywhere else it is the old white frame. */
+    if (lightT <= 0 && BG.storm) { if (stormQuiet()) lightT = 0.5; else { lightT = 9 + Math.random() * 10; boltBack = { t: 0.34, x: camX * 0.15 + 40 + Math.random() * (VW - 80), i: (Math.random() * 3) | 0 }; thunderT = 0.5 + Math.random() * 0.6; } }
+    else if (lightT <= 0) { lightT = 7 + Math.random() * 9; lightFlash = 0.18; thunderT = 0.5 + Math.random() * 0.6; }
   }
+  if (boltBack.t > 0) boltBack.t = Math.max(0, boltBack.t - dt);
   for (const d of drops) { d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; if (d.y > camY + VH + 4) d.life = 0;
     /* what it lands on: rock, a roof, a deck, or the top of the water */
     const tx = Math.floor(d.x / TS), ty = Math.floor((d.y + 4) / TS), t = tileAt(tx, ty);
@@ -17731,7 +17752,9 @@ function drawFront(cx, cy) {
      and is read a few times a second in play; a tool stepping single frames still gets a fresh read every frame. */
   const fc = FRONTC.getContext('2d', { willReadFrequently: true }); fc.globalAlpha = 1; fc.globalCompositeOperation = 'source-over'; fc.clearRect(0, 0, VW, VH);
   const g1 = g; g = fc;
-  try { drawOccluders(cx, cy); drawMotes(cx, cy, true); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy); drawNear(cx); }
+  try { drawOccluders(cx, cy); drawMotes(cx, cy, true); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
+    if (BG.storm && SET.ambient !== false) SM.drawStormFront(g, BG.storm, { cx, cy, time, VW, VH, TS, rails: stormRails(), quiet: stormQuiet(), calm: seaCalm() });   /* her rags, a block on its fall, the sea over her rail: on this sheet, so they fade off the hero */
+    drawNear(cx); }
   finally { g = g1; }
   if (frontOff) { g.drawImage(FRONTC, 0, 0); return; }
   /* THE TEST IS THE PIXELS: the hero's box on the sheet, and whether enough of it has ink over it to matter */
@@ -18308,9 +18331,12 @@ function drawWorld(cx, cy, showPlayer) {
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.dark) { const P0 = L.palette || {};
-    g.fillStyle = P0.murk || '#1a1a22'; g.fillRect(0, 0, VW, VH);
+    /* THE HURRICANE is dark, but it is not a room: her murk was a wall of wrecks, which is a fleet. Her own sky goes down under a
+       storm-dark wash and the sea is drawn over it, so the dark is weather and not a back wall */
+    if (BG.storm) { g.fillStyle = 'rgba(18,22,28,0.55)'; g.fillRect(0, 0, VW, VH); if (SET.parallax !== 'off') SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() }); g.fillStyle = 'rgba(18,22,28,0.3)'; g.fillRect(0, 0, VW, VH); }
+    else { g.fillStyle = P0.murk || '#1a1a22'; g.fillRect(0, 0, VW, VH);
     drawMurk(cx);                                                 /* the far wall of a dark room: rooftops, rock or wrecks, anchored to the SCREEN */
-    g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8);
+    g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8); }
     { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
       g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }                 /* and the dark closes over the top of it */
   } // under the mountain there is only more mountain
@@ -18320,6 +18346,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.palette && L.palette.far === 'harbour') { const dY = bgDY(cy);
     if (SET.parallax === 'full') HB.drawHarbourLayer(g, 'far', BG.far, 0.15, VH - 186, cx, dY, time, VW, VH);
     HB.drawHarbourLayer(g, 'mid', BG.mid, 0.3, VH - 215, cx, dY, time, VW, VH); }
+  else if (BG.storm) SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() });   /* THE HURRICANE: only her and the sea */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);
@@ -18334,7 +18361,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawShafts(cx, cy);
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
-  else if (!L.castle && !L.colosseum) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
+  else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy);   /* the sky ship: her cloud, her gasbags, her sails */
   if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
     g.strokeStyle = 'rgba(160,120,70,0.75)'; g.lineWidth = 1; g.beginPath();
@@ -20740,7 +20767,8 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
     bossTitle: b => bossTitle(b), miniName: () => miniName(), beasts: () => BEASTS,
     cardFit: s => { const z = fitSize(s, VW - 16, [TYPE.title, 8]); return [z, inkW(s, z)]; } },   /* the size the boss's name card draws a name at, and how wide it comes out */
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
-  get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },   /* the Hurricane's sea state, for the harness */
+  get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },
+  stormBolt(t = 0.34) { boltBack = { t, x: camX * 0.15 + VW / 2, i: 0 }; return { quiet: stormQuiet(), flash: boltFlash() }; },   /* the backdrop's lightning, now, for a picture of it (t: how much of it is left) */   /* the Hurricane's sea state, for the harness */
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
   // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
   // the screen's first face. Most menu bugs live on the third tab of something.

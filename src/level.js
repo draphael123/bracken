@@ -4701,7 +4701,7 @@ function theHurricane() {
     hullZones, darkZones, airRooms, deep: D,
     interiors: [[20, 740, 21, 26, 'ship'], [186, 214, 17, 19, 'ship'], [504, 540, 25, 26, 'ship'], [662, 742, 17, 19, 'ship']],
     quest: { n: 3, item: 'lamp', name: 'HER LANTERNS', npc: 'squire', done: 'SHE HAS HER LIGHTS BACK', reward: 'relic', relic: 'stormline' },
-    palette: { set: 'ship', sky: 'storm', far: 'fleet', mid: 'ships', near: 'hulls', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',
+    palette: { set: 'ship', sky: 'storm', far: 'stormsea', mid: 'swells', near: 'none', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',   /* one ship and the sea (src/redraw/storm.js) */
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
     weather: [{ x0: 0, x1: 431 * TS, kind: 'rain' }, { x0: 477 * TS, x1: 99999, kind: 'rain' }],   /* and none in the eye */
     ambient: [{ x0: 0, x1: 431 * TS, kind: 'ship' }, { x0: 431 * TS, x1: 477 * TS, kind: 'shore' }, { x0: 477 * TS, x1: 99999, kind: 'ship' }],
