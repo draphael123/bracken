@@ -3850,7 +3850,7 @@ const BEASTS = [
   { t: 'sweep', name: 'CHIMNEY SWEEP', sub: 'up the flue', desc: 'He lives in the stacks. Walk past and he comes up out of one with a handful of soot, throws it, and stays up a moment to watch it land: that moment is the only time you can reach him. Then he is back down the flue.' },
   { t: 'stormshaman', name: 'STORM SHAMAN', sub: 'the weather is his', desc: 'A goblin with a staff who stands at the far end of a span and throws the storm at whoever is crossing it. His bolts are slow: strike one, or take it on a shield, and it goes back at him.' },
   { t: 'seawitch', name: 'THE SEA WITCH', sub: 'she signed the articles too', desc: "The ship's conjuror, in the crew's own coat, with a storm lantern on her crook. She marks a spot on the deck and the sky finds it a second later: no shield turns lightning, so move. Out of the weather she throws it by hand instead, slow enough to strike out of the air or send back off a shield." },
-  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door, and every blade turns on it except when he is committed. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. His thrust can be parried; the low sweep cannot, so jump it. His charges take the deck out behind him. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
+  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door, and every blade turns on it except when he is committed. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. Or MAKE the opening: a DASH ATTACK into his guard takes his feet out and he reels - it draws no blood itself, and he sets his feet against the next one for a while. Not while he is coming at you. His thrust can be parried; the low sweep cannot, so jump it. His charges take the deck out behind him. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
   { t: 'snuffer', name: 'THE SNUFFER', sub: 'lamp-killer', desc: 'It is not hunting you. It walks the boughs putting the village out, one lantern at a time, and the Reeve is glad of it. It swings the pole if you crowd it. Light what it snuffs, or cut it and the lamps stay lit.' },
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
@@ -5240,6 +5240,17 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'golem' && !(e.crackT > 0) && e.mode !== 'stagger') { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); if (!(e.stoneSaid > 0)) { e.stoneSaid = 2; number(e.x, e.y - e.h - 12, 'STONE', '#c8bca8'); } return; }   /* STONE DOES NOT BLEED: only while a bell's note is in it, or while a face of it has just broken away */
   if (e.t === 'golem' && e.mode === 'stagger') dmg *= 1.5;
   if (e.t === 'suncatcher') { if (rimeOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.6)); if (Math.random() < 0.4) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 24, Math.sign(e.x - fromX) || 1, 3); } if (!(e.rimeSaid > 0)) { e.rimeSaid = 5; number(e.x, e.y - e.h - 8, 'THE RIME TURNS PART OF IT', '#9aa39a'); } } }   /* rimed it takes a little over half; thawed or cracked it takes half as much again */
+  /* THE SECOND WAY IN (and the same rule the shield family keeps): a DASH ATTACK into his guard knocks him OFF BALANCE
+     and his plate is no use to him lying down, so every hero has a way to MAKE an opening as well as wait for one.
+     It is a rule about what you did, not about who you are. Not while he is coming at you or bringing the shield round
+     (LANCE_BRACED): a man at a run is not knocked wide by a run. And not twice on the trot - he sets his feet for
+     braceT seconds after, so it opens the fight up without becoming the whole of it. */
+  if (e.t === 'lance' && !lanceOpen(e) && blowHas(blow, 'dash') && !LANCE_BRACED.has(e.mode)) {
+    if (e.braceT > time) { SFX.clank(); number(e.x, e.y - e.h - 20, 'HE HAS SET HIS FEET', '#9aa39a'); return; }
+    /* the run takes his FEET, not his blood: the plate turns this blow like any other, and what it buys is the
+       second and a bit after it, where every cut lands */
+    e.mode = 'reel'; e.modeT = OFF_BALANCE; e.stagger = OFF_BALANCE; e.vx = -e.face * 70; e.braceT = time + 7;
+    number(e.x, e.y - e.h - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); lessonHint('dashatk'); return; }
   if (e.t === 'lance') { if (lanceOpen(e)) { if (e.mode === 'planted') dmg = Math.round(dmg * 1.6); } else { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - e.h - 8, 'HIS PLATE TURNS IT', '#9aa39a'); return; } }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
@@ -14558,6 +14569,9 @@ function updateLance(e, dt) {
   if (r.hitX && e.mode === 'charge') { e.mode = 'planted'; e.modeT = 2.8; e.stagger = 2.8; e.vx = 0; SFX.heavy(); shakeCam(7); }
 }
 const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
+/* WHEN A RUN AT HIM IS A RUN AT A WALL: coming at you, or with the shield already coming round. Everything else he
+   is standing on his feet for, and a dash attack takes them out from under him (hurtEnemy0) */
+const LANCE_BRACED = new Set(['sleep', 'wake', 'couch', 'charge', 'rushTell', 'rush', 'bashTell', 'bash', 'vaultTell', 'vault', 'whirlTell', 'whirl']);
 
 // THE SNUFFER - it is not hunting you. It is putting the village out, one lamp at a time, and the Reeve likes that.
 function updateSnuffer(e, dt) {
@@ -21509,7 +21523,11 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
   async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); }, async ambushLab(o) { const m = await import('./lab.js'); return m.ambushLab(window.BK, o || {}); },   /* each hero through a level's ambush room: window.__ambushLab */   /* every hero against the common foes, early to late: window.__lab */
   async bossLab(o) { const m = await import('./lab.js'); return m.bossLab(window.BK, o || {}); }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
   /* THE FAMILY KEY, for the hands that are not a player's: the lab bot and the co-op ally read which verb a body wants from the one table (null: not in it, or one blow of anything brings it down) */
-  keyOf(e) { const f = e && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null; return f ? { family: FAMILY_OF[e.t], key: f.key, glance: f.glance, open: foeOpen0(e), tripped: (e.tripImm || 0) > time } : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost),
+  keyOf(e) { const f = e && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null; return f ? { family: FAMILY_OF[e.t], key: f.key, glance: f.glance, open: foeOpen0(e), tripped: (e.tripImm || 0) > time } : null; },
+  /* WHETHER A BOSS'S OWN GATE IS OPEN, asked by the boss lab so the bot is not chipping at a plate that turns everything.
+     One answer, here, where the gate itself lives (hurtEnemy0): a second copy in the lab would drift the way the threat
+     table did. null means "this one has no gate of its own", and the lab treats it as always open, as it always did. */
+  bossOpen(e) { return e && e.t === 'lance' ? lanceOpen(e) : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost),
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */

@@ -235,7 +235,10 @@ export async function fightLab(BK, opts = {}) {
 //   the buried prince - in the dark, light a lamp; with him under a timber set, cut its post; off the red mark when he is under the floor
 // Every other boss is cut whenever it is in reach. All of them are defended against on their tells. The hero's health is
 // put back each frame and what the boss took is counted: how long it lasts, and the damage per minute it takes to see it out.
-const OPEN = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'topple') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
+/* AND THE ONES WHOSE GATE LIVES IN main.js ASK IT (BK.bossOpen): the Queen's Lance turns every blade until he is
+   committed, so a bot that treated him as open swung at his plate for the whole fight. */
+const OPEN = (b, BK) => { const g = BK && BK.bossOpen ? BK.bossOpen(b) : null; return g === null || g === undefined ? OPEN0(b) : g; };
+const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'topple') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
 export const HARD_TELLS = new Set(["troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 HARD_TELLS.add('owl|skimTell');
@@ -260,6 +263,22 @@ function princeTarget(BK, boss, A, P) {
   const set = BK.props().find(p => p.t === 'timber' && p.tomb && !p.broken && boss.x > p.x0 * 16 && boss.x < (p.x1 + 1) * 16 && Math.abs(boss.y - A.floor) < 8);
   if (set) { const side = Math.sign((set.x0 + set.x1 + 1) * 8 - set.x) || 1; return { x: set.x - side * 14, at: set.x }; }
   return null;
+}
+/* THE BOSSES A RUN OPENS. One so far: the Queen's Lance, whose plate turns every blade until he is committed - and whose
+   own gate now says a DASH ATTACK into his guard puts him off balance. The hands for it are the dash branch of strike()
+   with the family table taken out of it, because a boss is in no family: double-tap toward him from a dash's length out,
+   swing while it carries, and leave the cutting to the OPEN branch above. */
+const DASH_IN = new Set(['lance']);
+function dashIn(BK, h, e, f) {
+  const P = BK.P, k = BK.keys, d = e.x - P.x, ad = Math.abs(d), dir = Math.sign(d) || P.face;
+  const reach = LAB_REACH[h] + (e.w || 12) / 2, cost = BK.stepCost ? BK.stepCost() : 12;
+  const S = P.dashBot || (P.dashBot = { tap: -99 }); if (f < S.tap) S.tap = -99;   /* (a new fight counts its frames from nought) */
+  if (Math.abs(e.y - P.y) > 30 || P.atk >= 0 || P.plunge) return 0;
+  const go = () => { S.tap = f; P.face = dir; BK.press(dir > 0 ? 'right' : 'left'); k[dir > 0 ? 'right' : 'left'] = true; k[dir > 0 ? 'left' : 'right'] = false; };
+  if ((P.dash > 0 || P.dashLate > 0) && P.st >= cost) { P.face = dir; BK.press('atk'); return 1; }   /* the swing that makes it a dash ATTACK */
+  if (f - S.tap === 2 && P.ground) { go(); return 1; }                                               /* the second tap */
+  if (P.ground && !(P.dashCd > 0) && !(P.dashRec > 0) && ad < reach + 52 && P.st >= cost + 22 && f - S.tap > 18) { go(); return 1; }
+  return 0;
 }
 export async function bossLab(BK, opts = {}) {
   const lvm = await import('./level.js'), T = lvm.T, TS = 16, PT = await import('./playtest.js');
@@ -303,7 +322,7 @@ export async function bossLab(BK, opts = {}) {
       if (lvId === 'deep') { if (P.ballast) { P.ballast.held = false; P.ballast = null; }
         k.left = k.right = k.up = k.down = k.jump = k.block = false;
         const by = boss.y - 16, dx = boss.x - P.x, dy = by - (P.y - 10), adx = Math.abs(dx), reach2 = LAB_REACH[h] + (boss.w || 20) / 2;
-        if (OPEN(boss) && boss.open > 0 && !wasOpen) opened++; wasOpen = boss.open > 0;
+        if (OPEN(boss, BK) && boss.open > 0 && !wasOpen) opened++; wasOpen = boss.open > 0;
         if (boss.mode === 'ramTell' || (boss.mode === 'ram' && Math.hypot(dx, dy) < 120)) { const nx = -(boss.rdy || 0), ny = boss.rdx || 1, s = ((P.x - boss.x) * nx + ((P.y - 10) - by) * ny) >= 0 ? 1 : -1;
           if (Math.abs(nx) > 0.35) k[nx * s > 0 ? 'right' : 'left'] = true; k[ny * s > 0 ? 'down' : 'up'] = true; }
         else if (boss.mode === 'diveTell' || boss.mode === 'dive') k[P.x < (boss.dcol !== undefined ? boss.dcol : boss.x) ? 'left' : 'right'] = true;
@@ -315,7 +334,7 @@ export async function bossLab(BK, opts = {}) {
         if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open: boss.open > 0 });   /* THE CAMERA HOOK: with opts.draw the frame was rendered, and a recorder can take it */
         if (f % 600 === 599) await yieldNow();
         continue; }
-      const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss);
+      const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
       if (open && !wasOpen) { opened++; if (opts.trace) { out.trace = out.trace || []; out.trace.push({ h, mode: boss.mode, startD: Math.round(ad), dy: Math.round(boss.y - P.y), minD: 9999, pressed: 0, swung: 0, hpAt: boss.hp }); } }
       if (!open && wasOpen && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.lost = tw.hpAt - boss.hp; }
       if (open && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.minD = Math.min(tw.minD, Math.round(ad)); if (P.atk >= 0) tw.swung++; }
@@ -395,6 +414,12 @@ export async function bossLab(BK, opts = {}) {
       else if (boss.t === 'prince' && (princeT = princeTarget(BK, boss, A, P))) { goal = princeT.x;
         if (Math.abs(princeT.x - P.x) < 8 && P.atk < 0) { P.face = Math.sign(princeT.at - P.x) || P.face; BK.press('atk'); swings++; } }
       else if (open) { goal = boss.x; strike = true; }
+      /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
+         opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
+         dash attack knocks him OFF BALANCE, and the cut after it lands. (A bot that only pressed attack measured a boss
+         nobody could finish: the freebooter swung 1822 times at his plate for no damage at all.) */
+      else if (DASH_IN.has(boss.t)) { const r = dashIn(BK, h, boss, f);
+        goal = r ? null : boss.x - Math.sign(d || 1) * (reach + 24); }
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 42;                       // close enough to be swung at
       /* THE SHRIEK is answered from the room: to the nest bell, struck as she comes over it; with no bell near, off the boards */
       else if (boss.t === 'roc' && (boss.mode === 'shriekGo' || boss.mode === 'shriekTell')) { const fk = BK.props().find(p => p.t === 'tbell' && p.roc);
