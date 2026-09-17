@@ -6500,6 +6500,7 @@ function theHexedFields() {
   /* THE BEDROOMS: the floor fallen through, and the bed that goes back and forth over the hole */
   air(366, 376, 26, 26); ghost('bed', 364, 26, 3, { range: 10, speed: 30 });
   ent('farmhand', 346, 24, { face: 1 }); ent('wight', 368, G - 1); ent('bat', 349, 14); ent('bat', 372, 20);
+  ent('boo', 390, 23, { face: -1 });   /* THE HALLWAY TO THE CHIMNEY: walked along, back to it, the whole length of the bedroom hall */
   ent('npc', 393, 25, { kind: 'ghostwife', name: 'MISTRESS HOLLIS', lines: ['MIND THE CHAIRS. THEY MEAN NO HARM. THE FORK IN THE ATTIC DOES.', 'THE MOON COMES AND GOES OUT IN THE PASTURE. SO DO WE.'] });
   air(386, 389, 19, 19); ghost('chair', 387, 25, 2, { vert: true, rise: 6, period: 5.5, ph: 0.5 });
   /* THE ATTIC: a hole in the boards, two chairs bobbing over it, and a fork that knows you are there */
@@ -6524,6 +6525,7 @@ function theHexedFields() {
   plat(424, 21, 4); plat(418, 19, 3);
   air(421, 421, 14, 14);
   ent('stray', 418, 13, { kind: 'sheep' }); ent('rook', 426, 13, { face: -1 });
+  ent('boo', 423, 25, { face: 1 });   /* THE GEAR CLIMB: turn your back on it going up the mill's stairs and it closes the gap */
   /* THE SAILS: four torn arms turning slowly round a hub over the roof, from the roof to the top of the sky */
   for (let i = 0; i < 4; i++) moversExtra.push({ kind: 'wheel', torn: true, first: i === 0, px: 422 * TS + 8, py: 9 * TS, r: 56, phase: i * Math.PI / 2, period: 16, x: 0, y: 0, w: 22, h: 6 });
   gusts.push({ x0: 410 * TS, x1: 440 * TS, y0: 2 * TS, y1: 13 * TS, dir: 1, period: 6, on: 1.5, phase: 0, k: 0.5 });
@@ -6556,6 +6558,7 @@ function theHexedFields() {
   plat(522, 22, 4); plat(527, 26, 3); plat(530, 29, 4);
   for (const [x, r] of [[480, 30], [486, 28], [492, 26], [498, 24], [507, 18], [518, 18], [524, 22], [528, 26], [532, 29]]) trunk(x, r + 1, G - 1);
  ent('bat', 486, 10); ent('bat', 514, 10); ent('bat', 528, 11); ent('pumpkin', 518, G - 1); ent('pumpkin', 524, G - 1); ent('wight', 500, G - 1); ent('haunt', 492, 22, { face: -1 });   /* the barn's rafters */
+  ent('boo', 500, 20, { face: -1 });   /* THE BARN: over the loft's climb, where the thresher already has your eyes on the floor */
   air(536, 538, 24, 27);                                           /* the hayloft door out onto the hill road */
   coins([479, 29], [485, 27], [491, 25], [497, 23], [506, 17], [510, 17], [517, 17], [523, 21], [531, 28]);
 
@@ -6565,7 +6568,12 @@ function theHexedFields() {
   sign(543, 27, 'THE HAY CART GOES WHEN YOU GET ON. IT DRIVES THROUGH THE FENCES. YOU DO NOT: JUMP THEM.');
   block(547, 619, 39, H - 1);                                      /* the valley under the road */
   spikes(548, 557, 38); spikes(559, 570, 38); spikes(572, 583, 38); spikes(585, 593, 38); spikes(608, 608, 38); spikes(611, 612, 38); spikes(615, 616, 38); spikes(619, 619, 38);
-  moversExtra.push({ kind: 'haycart', x0: 544 * TS, x1: 594 * TS, x: 544 * TS, y: 28 * TS, w: 48, h: 8, speed: 62, state: 'dock', t: 0 });
+  /* THE DOCK IS SOLID GROUND THROUGH COLUMN 546; THE CART DOCKS AT 547, THE FIRST COLUMN OF THE OPEN PIT.
+     Docked three tiles further back (544, inside the solid block above) its wheels drew into the dirt the
+     dock is made of and the ground itself always won the landing check, so P.onMover was never set and it
+     never left the dock. Flush with the pit's edge, stepping off the dock's last solid tile is a landing
+     onto the mover, the way every other boarding in this level works. */
+  moversExtra.push({ kind: 'haycart', x0: 547 * TS, x1: 594 * TS, x: 547 * TS, y: 28 * TS, w: 48, h: 8, speed: 62, state: 'dock', t: 0 });
   for (const x of [558, 571, 584]) block(x, x, 27, 38);            /* the fence posts: a row over the cart's bed */
   ent('rook', 571, 26, { face: -1 });
   ground(595, 606, 28);
@@ -6583,6 +6591,7 @@ function theHexedFields() {
   air(640, 644, G, G + 2); spikes(640, 644, G + 2); phantom(640, 644, G);
   air(647, 651, G, G + 2); spikes(647, 651, G + 2); phantom(647, 651, G);
   ent('marshlight', 646, 30); ent('farmhand', 632, 30, { face: 1 }); ent('pumpkin', 645, G - 1, { face: -1 });
+  ent('boo', 650, 26, { face: 1 });   /* THE FAMILY PLOT: between the two graves, where a player's eyes go down to the phantom planks */
   spill('sluice', 652, G - 1, 'crypt'); vine(653, G, 2, 'crypt'); vine(655, G, 4, 'crypt'); vine(657, G, 6, 'crypt');
   block(659, 664, 28, G - 1);                                      /* the family crypt */
   block(666, 667, 24, G - 1);                                      /* the iron railing, too tall to jump */

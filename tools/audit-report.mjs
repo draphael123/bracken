@@ -198,7 +198,7 @@ if (CON) {
       for (const key of ['idle', 'run', 'land', 'block']) { const fr = (H.frames[key] || []).filter(Boolean); if (!fr.length) continue; const bs = fr.map(b => b.b); rows.push([hk.split(':')[0], key, Math.min(...bs), Math.max(...bs)]);
         /* (no finding from this: a hero's lowest opaque pixel is often the tip of a weapon held low, not a foot - the table says so) */ } }
     const cre = Object.values(C.creatures).filter(r => !r.skipped && r.boxes[0] && !r.boxes[0].empty);
-    for (const r of cre) { const b = r.boxes[0].b; if (Math.abs(b) >= 2 && !(C.habitats[r.key] && /fly|bat|harpy|kite|crow|wasp|imp|broom|haunt|marshlight|rook|drone|petrel|sailer/.test(r.key))) rows.push([r.key, 'frame 0', r1(b), r1(b)]); }
+    for (const r of cre) { const b = r.boxes[0].b; if (Math.abs(b) >= 2 && !(C.habitats[r.key] && /fly|bat|harpy|kite|crow|wasp|imp|broom|haunt|boo|marshlight|rook|drone|petrel|sailer/.test(r.key))) rows.push([r.key, 'frame 0', r1(b), r1(b)]); }
     am.push('### Drawn bottom against the feet line, from the baked frames (px below the anchor; 1 is the one-pixel overlap, 0 stands exactly on it)', ''); table(am, ['body', 'frames', 'min', 'max'], rows); }
   const air = s.filter(q => q.airShadow), ab = {}; for (const q of air) ab[q.t] = (ab[q.t] || 0) + 1;
   for (const [k, n] of Object.entries(ab)) if (n >= 3) findings.anim1.push({ sev: 1 + n / 20, kind: 'design', who: k, text: `${k}: its shadow blob is drawn at its feet in the air (${n} samples more than 6 px off the floor): the shadow does not stay on the ground under it` });
