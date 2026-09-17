@@ -4301,7 +4301,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER']);   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP']);   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -5059,7 +5059,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
-  let glance = false, wheel = false;
+  let glance = false, wheel = false, mixed = false;
   { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
     if (fam) { const keyed = fam.key.some(v => blowHas(blow, v));
       if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time; }
@@ -5069,6 +5069,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
          LANDS - and it wheels on you, guard up, and shoulders you off. Going round buys one cut; going through (a heavy blow, or a
          sweep under it, until its bar breaks) buys all of them. */
       if (fam === FAMILY.guard && !keyed && blowHas(blow, 'light') && e.t !== 'heavy' && e.face && Math.sign(fromX - e.x) === -e.face && !foeOpen(e) && !windingUp(e)) wheel = true; } }   /* (never mid-windup: turning a blow already coming would aim it at you) */
+  if (P.mixedT > time && blow && dmg > 0 && !glance && e.alive && !e.harmless && !(e.xpRole || e.mini || e === boss) && e.t !== 'dummy') { dmg = Math.round(dmg * 1.5); mixedUp(e); mixed = true; }   /* MIXED UP: three verbs, and the next one that lands puts it down */
   /* HERO COMBOS: each hero's own two moves, used in the right order, land harder than either alone */
   if (dmg > 0 && hero() === 'knight' && P.heavySwing && P.parryFoe === e && time < (P.parryFoeUntil || 0)) { P.parryFoe = null; dmg = Math.round(dmg * 1.5); number(e.x, e.y - e.h - 26, 'OPENED UP', '#ffd36b'); if (poiseMax(e) && !(e.broken > 0)) { e.poiseCd = 0; e.poise = poiseMax(e); } }   /* KNIGHT: the parry, then the heavy blow into the gap it made */
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
@@ -5077,7 +5078,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
-  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance) e.stagger = 0.35; e.sq = glance ? 0.06 : 0.16;
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : 0.35; e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -5198,7 +5199,19 @@ const verbs = [];
 function noteVerb(v) {
   verbs.push({ v, t: time }); while (verbs.length > 8) verbs.shift();
   const kinds = new Set(verbs.filter(q => time - q.t < 4).map(q => q.v));
-  if (kinds.size >= 3 && time - (P.varietyAt || -9) > 3) { P.varietyAt = time; number(P.x, P.y - 36, 'MIXED UP', '#8fd160'); }
+  if (kinds.size >= 3 && time - (P.varietyAt || -9) > 3) { P.varietyAt = time; P.mixedT = time + 2.5; ringAt(P.x, P.y - 10, 12, '#8fd160', 0.22); }   /* ARMED: the next blow that lands says it (mixedUp) */
+}
+/* MIXED UP, ON THE FOE. It was a meter multiplier and a word over the hero that the word filter never let show, so three different
+   verbs in four seconds changed nothing anybody could see. Now the NEXT BLOW THAT LANDS on an ordinary creature or an elite (never a
+   boss or a mini: their windows are their own) after the third verb lands half as hard again and puts it down - its bar broken if it
+   carries one, a long stagger and a lost windup if it does not - under MIXED UP. A glancing blow does not spend it. */
+function mixedUp(e) {
+  P.mixedT = 0;
+  const m = poiseMax(e);
+  if (m && !(e.broken > 0)) { e.broken =e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken); breakBeat(e); }
+  else { flinch(e); e.vx = 0; }   /* (the long stagger is laid on after the blow's own, in hurtEnemy0) */
+  number(e.x, e.y - (e.h || 16) - 26, 'MIXED UP', '#8fd160'); ringAt(e.x, e.y - (e.h || 16) / 2, 24, '#8fd160', 0.4); ringAt(e.x, e.y - (e.h || 16) / 2, 12, '#dfffa0', 0.25);
+  burst(e.x, e.y - (e.h || 16) / 2, 12, ['#8fd160', '#dfffa0', '#fff6e0'], 90, 0.45, -40, 1); SFX.riposte(); hitstop(0.06); zoomKick(1.04, 0.16);
 }
 function varietyMul() {
   const recent = verbs.filter(q => time - q.t < 4); if (recent.length < 2) return 1;
