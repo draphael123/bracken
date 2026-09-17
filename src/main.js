@@ -6908,7 +6908,7 @@ function updatePlayer(dt) {
       for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) if (tileAt(tx, ty) === T.CRATE) { breakCrate(tx, ty); broke = true; }
       if (broke && isWarden()) { P.plunge = false; P.plungeRec = 0.12; P.canCut = false; P.hitSet.clear(); SFX.thud(); dust(P.x, P.y, 8); squash(1.35, 0.65, 0.12); }   /* the crate splits under the point and she stays on the floor */
       else if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
-      else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall(); if (DOWN_STRIKE[hero()] && !P.swim) plungeWave(DOWN_STRIKE[hero()]);
+      else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall(); if (DOWN_STRIKE[hero()] && !P.swim && !P.onMover) plungeWave(DOWN_STRIKE[hero()]);   /* (not onto a raft, a pad or a lift: that is a ride, and the marsh roofs' crossing from the east rides one - rooted on it, the knight never made it) */
         if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
           if (P.consecrate) { P.consecrate = false; gainLight(14); // THE CONSECRATION: where the maul lands, the ground is holy for a moment
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
