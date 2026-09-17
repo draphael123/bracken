@@ -17904,6 +17904,7 @@ function drawStormClouds(cx, cy) {
 function drawRing(q, col, a) { const c0 = pickFrame(q.set, q.key || null, q.frame, q.face); if (!c0) return; const c = SEA.seaRing(c0, col), ax = q.face < 0 ? c.width - q.set.ax : q.set.ax;
   g.save(); g.globalAlpha = a; g.translate(Math.round(q.x), Math.round(q.y)); if (q.rot) g.rotate(q.rot); g.scale(q.sx, q.sy); g.drawImage(c, -ax, -q.set.ay); g.restore(); g.globalAlpha = 1; }
 function drawSwimmers() {
+  SEA.seaWet(g);   /* a sea level's things that must read through the water's wash: put back on top of it first, under the swimmers */
   /* HOW DARK THE WATER IS HERE decides the line: a dark line round a body in bright water, a pale one round a body in the black
      of the trench (where a dark line is the water), and in the dark a cold sheen over the body too - the thing catching what
      light there is - because the Deep's anglers and its King were measured within a few L* of the water round them */
@@ -18384,6 +18385,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) drawMageTiles(cx, cy);   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice */
   drawGroundLight(cx, cy, tx0, ty0);
+  SEA.seaOver(g, cx, cy, VW, VH, time);   /* a sea level's light on its own floors (under the creatures) */
   if (L.colosseum) drawArena(cx, cy);
   for (const z of (L.stone || [])) { if (!z.spr) z.spr = bakeMenhir(z); const x = z[0] * TS - 6 - cx, y = z[2] * TS - 8 - cy; if (x < VW && y < VH && x > -z.spr.width && y > -z.spr.height) g.drawImage(z.spr, Math.round(x), Math.round(y)); }
   for (const r of (L.ropes || [])) { g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(r.x0 - cx) + 0.5, Math.round(r.y0 - cy) + 0.5); g.lineTo(Math.round(r.x1 - cx) + 0.5, Math.round(r.y1 - cy) + 0.5); g.stroke(); for (const [px, py, gy] of (r.posts || [])) { const x = Math.round(px - cx); g.fillStyle = '#4a3020'; g.fillRect(x - 2, Math.round(py - cy) - 4, 4, gy - py + 4); g.fillStyle = '#6a4a30'; g.fillRect(x - 1, Math.round(py - cy) - 4, 1, gy - py + 4); g.fillStyle = '#8b8378'; g.fillRect(x - 4, Math.round(py - cy) - 6, 8, 3); } }

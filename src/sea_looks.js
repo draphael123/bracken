@@ -140,7 +140,7 @@ const DECO_ART = {};
 export function seaDeco(kind, v) { const n = kind === 'glowCoral' ? 3 : 2; const k = kind + ((v || 0) % n); return DECO_ART[k] || (DECO_ART[k] = DECO[kind]((v || 0) % n)); }
 
 function deepLook() {
-  return { id: 'deep', wall: bakeTrenchWall(), whale: bakeWhale(), hoard: bakeHoard(), murk: { back: canvas(320, 1)[0], front: canvas(320, 1)[0] },
+  return { id: 'deep', far: deepFar, back: deepBack, wall: bakeTrenchWall(), whale: bakeWhale(), hoard: bakeHoard(), murk: { back: canvas(320, 1)[0], front: canvas(320, 1)[0] },
     whaleAt: { x: 58 * TS, y: 172 * TS } };
 }
 function deepFar(g, cx, cy, VW, VH, time) {
@@ -201,6 +201,117 @@ function deepBack(g, cx, cy, VW, VH, time) {
 }
 
 // ============================================================================================
+// THE REEF — THE SHALLOWS WITH THE SUN IN THEM. The storm is over the top of it, but under the water the light still comes down
+// in shafts from wherever the surface is (the tide's line, or the hollows in the shelf's roof where the air has gathered), it
+// runs in bright ripples over every floor the water covers, the coral is the colour coral is, and behind the whole of the
+// shelf a GALLEON lies on her side, the biggest ship that ever came to the reef: you swim the length of her.
+// ============================================================================================
+const RC = { hull: '#4a4232', hullL: '#62583f', hullD: '#2e2a22', rib: '#3a3428', gun: '#1c1a16', gild: '#a88a3a', sail: '#8a8a7a', sailD: '#6a6a5c', cor: ['#ff7a8a', '#ffb050', '#e070d0', '#ffd860', '#70d0c0'] };
+/* THE GALLEON, 620x200, lying heeled over to the right on the reef: three decks of gunports, her stern castle with its windows at
+   the left, her broken foremast lying out to the right, the bottom of her stove in so her ribs show, weed and coral all over */
+function bakeGalleon() {
+  const W = 620, H = 200; const [c, g] = canvas(W, H);
+  const keel = x => 150 + Math.sin(x / W * Math.PI) * -26 + x * 0.04;   /* the line of her lower hull */
+  const rail = x => 38 + Math.sin(x / W * Math.PI) * -6 + x * 0.1;
+  for (let x = 20; x < W - 30; x++) { const top = Math.round(rail(x) + (x < 150 ? -(150 - x) * 0.32 : 0)), bot = Math.round(keel(x));
+    rect(g, x, top, 1, bot - top, (Math.floor((x + 3) / 9) % 2) ? RC.hull : RC.hullD);
+    for (let y = top + 4; y < bot; y += 11) px(g, x, y, RC.hullD);   /* the strakes */
+    px(g, x, top, RC.hullL); px(g, x, top + 1, RC.hullL); }
+  // the stern castle, its gallery windows lit by nothing, and the gilding still on it
+  fillPoly(g, [[18, 20], [70, 8], [150, 26], [150, 60], [20, 60]], RC.hull);
+  for (let k = 0; k < 4; k++) { rect(g, 34 + k * 24, 26 - k * 3, 12, 14, RC.gun); rect(g, 34 + k * 24, 26 - k * 3, 12, 2, RC.gild); }
+  rect(g, 20, 58, 130, 3, RC.gild);
+  // three rows of gunports, some with their lids hanging
+  for (let row = 0; row < 3; row++) for (let x = 170 + row * 14; x < W - 70; x += 34) { const y = Math.round(rail(x) + 24 + row * 30);
+    rect(g, x, y, 10, 8, RC.gun); if ((x + row) % 3 === 0) { rect(g, x - 1, y + 8, 12, 3, RC.hullL); } }
+  // her bottom stove in: the ribs through the hole
+  fillPoly(g, [[300, 150], [360, 118], [430, 126], [470, 156], [380, 172]], '#141c1c');
+  for (let x = 316; x < 462; x += 12) line(g, x, 170 - Math.abs(x - 385) * 0.2, x + 6, 124 + Math.abs(x - 390) * 0.12, RC.rib, 3);
+  // the foremast, broken and lying out along the reef, a rag of sail on it
+  line(g, 440, 46, 612, 176, RC.hullD, 5); line(g, 440, 44, 612, 174, RC.hullL, 1);
+  fillPoly(g, [[500, 96], [540, 112], [520, 150], [494, 128]], RC.sail); fillPoly(g, [[510, 132], [520, 150], [498, 136]], RC.sailD);
+  line(g, 250, 36, 196, -40, RC.hullD, 4);   /* the mainmast stump, standing out of her at the angle she lies */
+  // weed and coral all over her
+  for (let i = 0; i < 90; i++) { const x = 24 + Math.floor(hsh(i, 1, 71) * (W - 60)), y = Math.round(rail(x) + hsh(i, 2, 72) * (keel(x) - rail(x)));
+    if (hsh(i, 3, 73) < 0.5) { rect(g, x, y, 2, 2, RC.cor[i % 5]); px(g, x + 1, y - 1, RC.cor[(i + 2) % 5]); } else { px(g, x, y, '#4e7a3a'); px(g, x, y - 1, '#4e7a3a'); px(g, x + 1, y - 2, '#6e9a48'); } }
+  return c;
+}
+/* THE CAUSTICS: a strip of rippling light 64 wide, four frames, laid on the top of every floor the water covers */
+function bakeCaustics() {
+  return [0, 1, 2, 3].map(f => { const [c, g] = canvas(64, 6);
+    for (let x = 0; x < 64; x++) { const v = Math.sin(x * 0.4 + f * 1.57) + Math.sin(x * 0.23 - f * 1.1 + 1) + Math.sin(x * 0.71 + f * 0.8 + 2);
+      if (v > 1.2) { px(g, x, 0, '#dffaf0'); px(g, x, 1, '#9fe0d8'); } else if (v > 0.6) px(g, x, 1, '#7fc8c0');
+      if (Math.sin(x * 0.3 + f * 1.57 + 3) + Math.sin(x * 0.53 - f) > 1.3) px(g, x, 3, '#6fb8b0'); }
+    return c; });
+}
+/* A SHAFT OF SUN, as a column of fading light baked once and stretched and leaned where it falls */
+function bakeShaft() { const [c, g] = canvas(8, 128); const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, 'rgba(236,250,220,0.9)'); gr.addColorStop(0.5, 'rgba(190,236,220,0.35)'); gr.addColorStop(1, 'rgba(160,220,210,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 8, 128); const e = g.createLinearGradient(0, 0, 8, 0); e.addColorStop(0, 'rgba(0,0,0,1)'); e.addColorStop(0.3, 'rgba(0,0,0,0)'); e.addColorStop(0.7, 'rgba(0,0,0,0)'); e.addColorStop(1, 'rgba(0,0,0,1)');
+  g.globalCompositeOperation = 'destination-out'; g.fillStyle = e; g.fillRect(0, 0, 8, 128); return c; }
+/* CORAL IN ITS COLOURS: a branching head, a fan, a tube sponge, an anemone; stood on the floors under the water */
+function bakeReefCoral(v) {
+  const [c, g] = canvas(14, 14); const col = RC.cor[v % 5], dark = shadeHex(col, -0.4), lit = shadeHex(col, 0.4), k = v % 4;
+  if (k === 0) { for (const [x0, a] of [[7, -1.57], [6, -2.2], [8, -0.9], [5, -2.6], [9, -0.5]]) { let x = x0, y = 13; for (let i = 0; i < 5; i++) { px(g, Math.round(x), Math.round(y), i < 2 ? dark : col); x += Math.cos(a) * 1.3; y += Math.sin(a) * 1.8; } px(g, Math.round(x), Math.round(y), lit); } }
+  else if (k === 1) { fillPoly(g, [[7, 13], [1, 5], [3, 2], [7, 1], [11, 2], [13, 5]], col); for (let x = 3; x < 12; x += 2) line(g, 7, 13, x, 3, dark); px(g, 7, 1, lit); }
+  else if (k === 2) { for (const [x, h] of [[4, 9], [7, 12], [10, 7]]) { rect(g, x, 14 - h, 3, h, col); rect(g, x, 14 - h, 1, h, lit); rect(g, x + 1, 14 - h, 1, 1, dark); } }
+  else { ellipse(g, 7, 12, 4, 2, dark); for (let i = 0; i < 7; i++) line(g, 7, 11, 2 + i * 1.7, 5 + (i % 2) * 2, i % 2 ? col : lit); }
+  return c;
+}
+function reefLook() {
+  const S0 = { id: 'reef', far: reefFar, back: reefBack, wet: reefWet, galleon: bakeGalleon(), caus: bakeCaustics(), shaft: bakeShaft(), coral: [0, 1, 2, 3, 4, 5, 6, 7].map(bakeReefCoral), galleonAt: { x: 272 * TS, y: 37 * TS }, corals: [], shafts: [] };
+  // coral on the floors under the water: one in five of them, hashed off the tile
+  for (let tx = 13; tx < L.W - 1; tx++) for (let ty = 2; ty < L.H - 1; ty++) {
+    if (tileAt(tx, ty) !== 0 || !SOLIDT.has(tileAt(tx, ty + 1)) || !inSwim(tx * TS + 8, ty * TS + 12)) continue;
+    const onBed = ty >= 30 || (tx > 212 && tx < 331);   /* the reef bed and the shelf, not a deck of the carrack that the tide covers */
+    if (onBed && hsh(tx, ty, 81) < 0.34) S0.corals.push({ x: tx * TS + 1 + Math.floor(hsh(tx, ty, 82) * 4), y: (ty + 1) * TS - 14, v: Math.floor(hsh(tx, ty, 83) * 8), ph: hsh(tx, ty, 84) * 6 });
+    if (onBed && hsh(tx, ty, 85) < 0.2) S0.corals.push({ x: tx * TS + 8 + Math.floor(hsh(tx, ty, 86) * 5), y: (ty + 1) * TS - 14, v: Math.floor(hsh(tx, ty, 87) * 8), ph: hsh(tx, ty, 88) * 6 });
+  }
+  // shafts: every so often along the tideway and the carrack, down from wherever the water's top is; and on the shelf from the hollows in its roof
+  for (let tx = 14; tx < 210; tx += 5) if (hsh(tx, 1, 89) < 0.5) S0.shafts.push({ x: tx * TS + Math.floor(hsh(tx, 2, 90) * 60), w: 10 + Math.floor(hsh(tx, 3, 91) * 16), ph: hsh(tx, 4, 92) * 6, roof: null });
+  for (const [x0, x1, y0] of (L.deep && L.deep.pockets) || []) if (x0 > 212 && x0 < 331) S0.shafts.push({ x: (x0 + x1 + 1) / 2 * TS, w: 26, ph: x0 * 0.3, roof: (y0 + 2) * TS });
+  return S0;
+}
+function reefFar(g, cx, cy, VW, VH, time) {
+  const gl = S.galleon, f = 0.9, ax = S.galleonAt.x, ay = S.galleonAt.y;
+  const sx = Math.round(ax - gl.width / 2 - cx * f - ax * (1 - f) + (VW / 2) * (1 - f)), sy = Math.round(ay - gl.height - cy * f - ay * (1 - f) + (VH / 2) * (1 - f));
+  if (sx < VW && sx + gl.width > 0 && sy < VH && sy + gl.height > 0) { g.globalAlpha = 0.75; g.drawImage(gl, sx, sy); g.globalAlpha = 1; }
+}
+function reefBack(g, cx, cy, VW, VH, time) {
+  // THE SHAFTS: a column of sun from the top of the water down, leaning with the light and breathing with the swell
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const s of S.shafts) {
+    if (s.x < cx - 120 || s.x > cx + VW + 60) continue;
+    let top = s.roof, bot = null;
+    if (top === null) { const p = (L.pools || []).find(q => q.swim && s.x > q.x0 && s.x < q.x1); if (!p) continue; top = p.y + 2; bot = p.bottom; }
+    else { const p = (L.pools || []).find(q => q.swim && s.x > q.x0 && s.x < q.x1); bot = p ? p.bottom : top + 20 * TS; }
+    const h = Math.max(0, (bot || top + 200) - top); if (h < 24 || top > cy + VH || top + h < cy) continue;
+    const a = (0.22 + 0.08 * Math.sin(time * 0.6 + s.ph)) * (s.roof !== null ? 0.8 : 1), lean = 0.28;
+    g.globalAlpha = a; g.setTransform(s.w / 8, 0, lean, h / 128, Math.round(s.x - cx - s.w / 2 + Math.sin(time * 0.3 + s.ph) * 4), Math.round(top - cy));
+    g.drawImage(S.shaft, 0, 0); g.setTransform(1, 0, 0, 1, 0, 0);
+  }
+  g.restore();
+  // THE CORAL, and it moves a little with the water
+  for (const k of S.corals) { if (k.x < cx - 16 || k.x > cx + VW || k.y < cy - 16 || k.y > cy + VH) continue;
+    if (!inSwim(k.x + 6, k.y + 6)) { g.globalAlpha = 0.8; g.drawImage(S.coral[k.v], Math.round(k.x - cx), Math.round(k.y - cy)); g.globalAlpha = 1; continue; }
+    const sway = Math.sin(time * 1.3 + k.ph) > 0.6 ? 1 : 0; g.drawImage(S.coral[k.v], Math.round(k.x - cx) + sway, Math.round(k.y - cy)); }
+}
+function reefWet(g, cx, cy, VW, VH, time) {
+  // THE CORAL, BACK THROUGH THE WASH at two thirds, the way a swimmer is: the water is over it, and its colours still come through
+  for (const k of S.corals) { if (k.x < cx - 16 || k.x > cx + VW || k.y < cy - 16 || k.y > cy + VH || !inSwim(k.x + 6, k.y + 6)) continue;
+    g.globalAlpha = 0.62; g.drawImage(S.coral[k.v], Math.round(k.x - cx) + (Math.sin(time * 1.3 + k.ph) > 0.6 ? 1 : 0), Math.round(k.y - cy)); }
+  g.globalAlpha = 1;
+  // THE LIGHT ON THE FLOOR: bright ripples along the top of everything the water covers, moving
+  const fr = S.caus[Math.floor(time * 5) % 4], tx0 = Math.max(0, Math.floor(cx / TS)), tx1 = Math.min(L.W - 1, Math.floor((cx + VW) / TS)), ty0 = Math.max(1, Math.floor(cy / TS)), ty1 = Math.min(L.H - 1, Math.floor((cy + VH) / TS));
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
+    if (!SOLIDT.has(tileAt(tx, ty)) || tileAt(tx, ty - 1) !== 0 || !inSwim(tx * TS + 8, ty * TS - 6)) continue;
+    const u = ((Math.floor(tx * TS + time * 7) % 64) + 64) % 64, dark = tx > 261 && tx < 331 ? 0.5 : 1;
+    g.globalAlpha = 0.5 * dark; const w = Math.min(TS, 64 - u); g.drawImage(fr, u, 0, w, 6, tx * TS - cx, ty * TS - cy + 2, w, 6); if (w < TS) g.drawImage(fr, 0, 0, TS - w, 6, tx * TS - cx + w, ty * TS - cy + 2, TS - w, 6);
+  }
+  g.restore();
+}
+
+// ============================================================================================
 // THE LIVING WATER. Built once, configured per level (LIFE below): schools of fish that scatter when you swim through them and
 // come back together behind you, crabs going about their business on the ledges, kelp that leans out of your way, jellyfish
 // drifting in the far water, strings of bubbles going up a long way off, and now and then something very big going past
@@ -211,7 +322,7 @@ function deepBack(g, cx, cy, VW, VH, time) {
 const LIFE = {
   reef:      { fish: ['#ffd36b', '#8fd8ec', '#ff9a5c', '#e8f0e0'], schools: 1, kelp: ['#2e5a36', '#5e8a48'], kelpP: 0.16, crab: '#b8583a', crabP: 0.035, jelly: '255,214,236', jellyP: 0.3, shadow: 'whale', bubbles: 1 },
   deep:      { fish: ['#9fe8e0', '#c8a8ff', '#dff4fa'], schools: 0.45, kelp: ['#1e3a34', '#3e6a52'], kelpP: 0.05, crab: '#8a8e9e', crabP: 0.03, jelly: '190,160,255', jellyP: 0.22, shadow: 'leviathan', bubbles: 0.6 },
-  lamplit:   { fish: ['#9ac0a0', '#d0c890', '#b8c8c0'], schools: 0.9, kelp: ['#24463a', '#4e7a58'], kelpP: 0.12, crab: '#6e7e74', crabP: 0.03, jelly: null, shadow: null, bubbles: 0.5 },
+  lamplit:   { fish: ['#5e8a70', '#8a8a5e', '#6a8a88'], schools: 0.9, kelp: ['#24463a', '#4e7a58'], kelpP: 0.12, crab: '#6e7e74', crabP: 0.03, jelly: null, shadow: null, bubbles: 0.5 },
   longwater: { fish: ['#a8a870', '#c8b890', '#90a880'], schools: 1, kelp: ['#3e5a24', '#6e8a3a'], kelpP: 0.14, crab: '#b86a3a', crabP: 0.03, jelly: '230,236,255', jellyP: 0.18, jellyFromX: 330, shadow: null, bubbles: 0.5 },
   causeway:  { fish: ['#b8c0b0', '#8aa8a8', '#d8d0b0'], schools: 0.8, kelp: ['#4e4a26', '#7a7038'], kelpP: 0.12, crab: '#9a5a3a', crabP: 0.035, jelly: '220,230,236', jellyP: 0.2, shadow: 'whale', bubbles: 0.7 },
 };
@@ -353,15 +464,18 @@ function lifeBack(g, cx, cy, VW, VH, time, hero) {
 // ============================================================================================
 // THE HOOKS main.js calls
 // ============================================================================================
-const LOOKS = { deep: deepLook };
+const LOOKS = { deep: deepLook, reef: reefLook };
 /* at load: what this level looks like, and anything main.js has to swap for it (a parallax layer or, in a dark level, the murk) */
 export function seaLoad(id, lv) {
   L = lv; S = LOOKS[id] ? LOOKS[id]() : LIFE[id] ? { id } : null;
   if (S) S.life = lifeLoad(id);
   return S ? { mid: S.mid || null, murk: S.murk || null } : null;
 }
-export function seaFar(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea) return; if (S.id === 'deep') deepFar(g, cx, cy, VW, VH, time); if (S.life) lifeFar(g, cx, cy, VW, VH, time); }
-export function seaBack(g, cx, cy, VW, VH, time, hero) { if (!S || globalThis.__noSea) return; if (S.life) lifeBack(g, cx, cy, VW, VH, time, hero); if (S.id === 'deep') deepBack(g, cx, cy, VW, VH, time); }
+export function seaFar(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea) return; if (S.far) S.far(g, cx, cy, VW, VH, time); if (S.life) lifeFar(g, cx, cy, VW, VH, time); }
+export function seaBack(g, cx, cy, VW, VH, time, hero) { if (!S || globalThis.__noSea) return; if (S.back) S.back(g, cx, cy, VW, VH, time); if (S.life) lifeBack(g, cx, cy, VW, VH, time, hero); }
+export function seaOver(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea) return; S.cam = [cx, cy, VW, VH, time]; if (S.over) S.over(g, cx, cy, VW, VH, time); }
+/* AFTER THE WATER'S WASH (drawSwimmers calls it first): what has to read through the water, put back over it, in this frame's camera */
+export function seaWet(g) { if (!S || globalThis.__noSea || !S.cam || !S.wet) return; const [cx, cy, VW, VH, time] = S.cam; S.wet(g, cx, cy, VW, VH, time); S.cam = null; }
 /* what the living water has in it, for a harness (seaLife(true) is all of it). globalThis.__noSea = true draws a frame without any of this, for a before-and-after by the pixels */
 export function seaLife(all) { return S && S.life ? (all ? S.life : S.life.counts) : null; }
 /* THE RING round a swimmer: the silhouette grown by a pixel each way, in one colour, with the body cut back out of it, so a lit
