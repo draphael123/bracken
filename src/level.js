@@ -876,7 +876,8 @@ function kingswood() {
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS WORK ON THEM: THE LEVER SWINGS THE RAM, THE PLATE DROPS THE CAGE.' });
-  ent('sprig', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
+  ent('sprig', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); ent('gobmage', 137, 21, { face: -1 });   /* a composed pair: the reader keeps its distance behind the brute at 132, so closing on one means passing the other */
+  coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
   // the roads rejoin at 150: a slope of ledges from the burrow up to the yard
   block(150, 152, 18, 27); block(153, 158, 16, 27); block(159, 164, 14, 27); block(165, 190, 14, 27);
   ent('check', 167, 13);
@@ -893,7 +894,7 @@ function kingswood() {
   // canopy
   plat(211, 11, 3); plat(216, 9, 3); plat(221, 7, 4);
   movers.push({ kind: 'swing', px: 231 * TS, py: 1 * TS, arm: 90, x: 0, y: 0, w: 48, h: 8, period: 3.0, phase: 0.8 });
-  plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1, fire: true });
+  plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1, fire: true }); ent('shield', 243, 8, { face: -1 });   /* a composed pair, not another lone bow: the shield stands on the near edge of the same perch, between the walkway and her fire arrows */
   movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
   plat(261, 9, 3); plat(266, 11, 3); plat(271, 11, 4);
   plat(228, 9, 2); plat(231, 10, 3); plat(235, 8, 2); plat(250, 10, 2); plat(253, 11, 3); plat(257, 10, 2); // a ledge road under each canopy swing
@@ -2081,7 +2082,7 @@ function stormhold() {
   floor(209, 250, 30);
   ent('sign', 211, 29, { text: 'THE HALLS UNDER THE CRAG. THE LAST KEY IS IN THE LONGHOUSE, AND IT IS FULL.' });
   ent('deco', 218, 29, { kind: 'banner', v: 0 }); ent('deco', 240, 29, { kind: 'banner', v: 1 });
-  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true }); ent('check', 240, 29);
+  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true }); ent('check', 240, 29); ent('shield', 249, 29, { face: -1 });   /* a composed pair: the shield stands past her fire arrows, on the same hall floor - go round the guard and into the flames, or through the guard first */
   roof(214, 232, 26); roof(236, 248, 26); ent('torch', 216, 29); ent('torch', 244, 29);
   coins([214, 28], [220, 27], [228, 28], [232, 27], [238, 28], [244, 27], [248, 28]);
   // the longhouse: the deepest room, the bone key at the back of it
@@ -2816,6 +2817,7 @@ function highcrown() {
   ent('hearthgob', 190, 51, { face: -1 }); ent('hearthgob', 168, 51, { face: -1 }); ent('hearthgob', 146, 51, { face: 1 });
   ent('folk', 180, 51, { door: 206 }); ent('folk', 156, 51, { door: 124, alt: true });
   ent('brute', 160, 51, { face: 1 }); plat(157, 43, 6); ent('weight', 160, 43, { len: 6 }); // the meat hook's counterweight, over the cook's brute
+  ent('gobmage', 152, 51, { face: -1 });   /* a composed pair: the reader keeps to the larder side of the cook's brute, so closing on one crosses the other's ground */
   stair([[184, 50, 3], [180, 48, 3], [175, 46, 4]]); ent('stray', 176, 45, { kind: 'seal' }); // the larder's high shelf
   air(125, 128, 40, 41); lid(125, 128, 40);    // the stair up to her gallery
   stair([[138, 50], [134, 48], [130, 46], [126, 44], [125, 42]]);
@@ -5656,7 +5658,7 @@ function quarryPass() {
   beam(270, 330, B - 10);                                                     /* THE GANTRY: a beam you can walk, on two legs you can climb */
   crane(282, B - 9, 6); crane(300, B - 9, 6); crane(318, B - 9, 6);
   ent('miner', 282, B - 1, { face: -1 }); ent('rockgoblin', 300, B - 1, { face: -1 }); ent('miner', 318, B - 1, { face: 1 });
-  ent('brute', 290, B - 1, { face: -1 }); ent('sapper', 332, B - 1, { face: -1 }); ent('rockgoblin', 310, B - 1, { face: -1 }); ent('goat', 326, B - 1, { face: -1 });
+  ent('brute', 290, B - 1, { face: -1 }); ent('sapper', 332, B - 1, { face: -1 }); ent('rockgoblin', 310, B - 1, { face: -1 }); ent('goat', 326, B - 1, { face: -1 }); ent('gobmage', 285, B - 1, { face: -1 });   /* a composed pair on the gantry floor: the reader holds behind the brute, so the fast way to it runs past him first */
   ent('archer', 296, B - 11, { face: -1 }); ent('archer', 312, B - 11, { face: 1 });
   ent('silver', 306, B - 12);
   ent('stray', 276, B - 11, { kind: 'canary' });                              /* the second: on the gantry, where the crane man left it */
@@ -7137,7 +7139,7 @@ const GARRISON = {
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
   causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 3], ['sailor', 3], ['crab', 4], ['netter', 2], ['jelly', 1], ['puffer', 1], ['lamprey', 1]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
-  skyship: [['cutlass', 10], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings */
+  skyship: [['cutlass', 8], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2], ['shield', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings - and now a shield in her roster too, so the squads rule (0.4) actually screens her bow, spear and sapper the way it already does in Kingswood's Knights' Road: two cutlass hands stood down to pay for it, the count unchanged */
   lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============

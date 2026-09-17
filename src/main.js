@@ -4946,6 +4946,14 @@ const FAMILY = {
   crew:    { key: ['dash', 'shot'], glance: 'sweep',    kinds: ['cutlass', 'sailor', 'assassin', 'snuffer', 'sweep', 'seawitch'] },   /* a blade and quick feet: go through his guard at speed, or shoot him; he steps over a low sweep */
 };
 const FAMILY_OF = {}; for (const f in FAMILY) for (const t of FAMILY[f].kinds) FAMILY_OF[t] = f;
+/* ONE RANGE FOR THE WHOLE PARRY-RETURN QUARTET. Archer, javelin, scout and crossbow each wrote their own point-blank
+   range (40, 44, 40, 26) and their own panic speed, so "close the distance" meant something slightly different for
+   each of them, and the crossbow - who cannot even back away - never got the rule at all, only a number nobody could
+   feel. SHOT_CLOSE is the one range none of the four will loose an arrow, a javelin, a bolt or a harpoon from: a bow
+   will not draw, a spear will not leave the hand, a bolt will not span, and a scout that has just landed two throws
+   will not fade away either - it stands and takes what the dash (their own family key) came to give it. SHOT_FAR is
+   where the ones that can walk start closing the gap again. */
+const SHOT_CLOSE = 50, SHOT_FAR = 180;
 /* WHAT THE HAND DID, for the one blow being struck. Set just before a hero's blow goes into hurtEnemy (hurtAs) and taken by it at
    once, so a blow that sets off another (a shardling's burst, a slam) passes nothing on. */
 let BLOW = null;
@@ -8296,8 +8304,8 @@ function updateTroop(e, dt) {
       const sx = e.x + e.face * 9, sy = e.y - 8, Tf = Math.max(0.6, Math.min(1.1, ad / 240)), G = 420, tx = P.x, ty = P.y - 6;
       seeds.push({ x: sx, y: sy, vx: (tx - sx) / Tf, vy: (ty - sy) / Tf - 0.5 * G * Tf, g: G, dead: false, life: 3, arrow: true, jav: true, owner: e }); } }
     else if (e.mode === 'throw') { want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 2.4 + Math.random() * 0.8; } }
-    else { e.mode = 'walk'; if (near && e.stagger <= 0) { if (ad < 72) want = -e.face * e.speed * 1.5; else if (ad > 190) want = e.face * e.speed * 0.7;
-      if (e.cd <= 0 && ad > 44) { e.mode = 'aim'; e.modeT = 0.6; if (SFX.effort) SFX.effort(); } } }
+    else { e.mode = 'walk'; if (near && e.stagger <= 0) { if (ad < SHOT_CLOSE) want = -e.face * e.speed * 1.5; else if (ad > SHOT_FAR) want = e.face * e.speed * 0.7;
+      if (e.cd <= 0 && ad > SHOT_CLOSE) { e.mode = 'aim'; e.modeT = 0.6; if (SFX.effort) SFX.effort(); } } }
   } else { // heavy: plate does not flinch (only a parried sweep rocks him); the overhead is a double mark, the sweep a single
     near = ad < 170 && dy < 40 && !P.dead;
     e.parried = Math.max(0, (e.parried || 0) - dt); if (!(e.parried > 0)) e.stagger = 0;
@@ -8674,8 +8682,8 @@ function updateShore(e, dt) {
     if (e.mode === 'fade') { e.alpha = Math.max(0, e.modeT / 0.4); if (e.modeT <= 0) { e.x = Math.max(e.x - 260, Math.min(e.x + 260, e.x - Math.sign(d || 1) * 110)); e.mode = 'appear'; e.modeT = 0.4; burst(e.x, e.y - 8, 8, ['#a8cfc6', '#7ff0e0'], 40, 0.4); } }
     else if (e.mode === 'appear') { e.alpha = 1 - Math.max(0, e.modeT / 0.4); if (e.modeT <= 0) { e.alpha = 1; e.mode = 'watch'; e.cd = 1.2; e.throws = 0; } }
     else if (e.mode === 'aim') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.35; SFX.throwWhoosh(); const sx = e.x + e.face * 6, sy = e.y - 10, Tf = Math.max(0.6, Math.min(1.1, ad / 240)), G = 420; seeds.push({ x: sx, y: sy, vx: (P.x - sx) / Tf, vy: ((P.y - 6) - sy) / Tf - 0.5 * G * Tf, g: G, dead: false, life: 3, arrow: true, jav: true, owner: e }); e.throws++; } }
-    else if (e.mode === 'throw') { if (e.modeT <= 0) { if (e.throws >= 2) { e.mode = 'fade'; e.modeT = 0.4; } else { e.mode = 'watch'; e.cd = 1.4; } } }
-    else { e.mode = near ? 'walk' : 'watch'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; if (ad < 70) want = -e.face * e.speed * 1.4; else if (ad > 180) want = e.face * e.speed * 0.6; if (e.cd <= 0 && ad > 40) { e.mode = 'aim'; e.modeT = 0.6; } } }
+    else if (e.mode === 'throw') { if (e.modeT <= 0) { if (e.throws >= 2 && ad >= SHOT_CLOSE) { e.mode = 'fade'; e.modeT = 0.4; } else { e.mode = 'watch'; e.cd = 1.4; } } }   /* closed all the way in, it does not fade away either: the dash caught it before it could */
+    else { e.mode = near ? 'walk' : 'watch'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; if (ad < SHOT_CLOSE) want = -e.face * e.speed * 1.4; else if (ad > SHOT_FAR) want = e.face * e.speed * 0.6; if (e.cd <= 0 && ad > SHOT_CLOSE) { e.mode = 'aim'; e.modeT = 0.6; } } }
   } else if (e.t === 'siren') { e.face = Math.sign(d) || e.face;
     if (e.mode === 'dive') { grav = false; e.y = Math.min(e.homeY + 50, e.y + 90 * dt); e.alpha = Math.max(0, e.alpha - dt * 2); if (e.modeT <= 0) { e.mode = 'surface'; e.modeT = 0.8; e.y = e.homeY; } }
     else if (e.mode === 'surface') { e.alpha = Math.min(1, e.alpha + dt * 1.5); if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 1.5; } }
@@ -12891,7 +12899,7 @@ function updateRoadman(e, dt) {
     want = 0; e.face = Math.sign(d) || e.face;
     switch (e.mode) {
       case 'span': if (e.modeT <= 0) { e.mode = 'ready'; e.modeT = 0.3 + Math.random() * 0.6; } break;
-      case 'ready': if (e.modeT <= 0 && near && ad > 26) { e.mode = 'aim'; e.modeT = 0.7; e.aimY = P.y - 8; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } break;
+      case 'ready': if (e.modeT <= 0 && near && ad > SHOT_CLOSE) { e.mode = 'aim'; e.modeT = 0.7; e.aimY = P.y - 8; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } break;   /* he cannot back away, so SHOT_CLOSE is the whole rule for him: get under it and he never spans again */
       case 'aim':
         if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 10, y: e.aimY, vx: 0, vy: 0, life: 0.3, max: 0.3, col: '#ff6b6b', size: 1, grav: 0 });
         if (e.modeT <= 0) { e.mode = 'loose'; e.modeT = 0.25; SFX.bow();
@@ -16802,9 +16810,9 @@ function updateEnemies(dt) {
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
       let want = 0;
-      if (near && ad < 64 && e.draw <= 0) want = -e.face * e.speed * 1.6; // back off
-      else if (near && ad > 170 && e.draw <= 0) want = e.face * e.speed * 0.6;
-      if (near && e.timer <= 0 && e.draw <= 0 && ad > 40) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
+      if (near && ad < SHOT_CLOSE && e.draw <= 0) want = -e.face * e.speed * 1.6; // back off: point-blank, the bow comes down
+      else if (near && ad > SHOT_FAR && e.draw <= 0) want = e.face * e.speed * 0.6;
+      if (near && e.timer <= 0 && e.draw <= 0 && ad > SHOT_CLOSE) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
       if (e.draw > 0 && e.draw - dt <= 0) { e.loose = 0.16;
         const sx = e.x + e.face * 5, sy = e.y - 7, dx = P.x - sx, Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
         seeds.push({ x: sx, y: sy, vx: Math.max(-(e.bowman ? 320 : 200), Math.min(e.bowman ? 320 : 200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, arrow: true, g: G, owner: e, fire: e.fire });
