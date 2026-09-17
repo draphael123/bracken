@@ -4807,6 +4807,18 @@ function addPoise(e, dmg, fromX, plunge) {
 /* THE GLANCE, SEEN AND HEARD: the wrong tool for that body. A dull scrape and a grey spark off the near side of it. */
 function glanceBeat(e, fromX) { const d = Math.sign(fromX - e.x) || 1;
   SFX.clank(); hitstop(0.02); sparks(e.x + d * ((e.w || 12) / 2), e.y - (e.h || 16) / 2, d, 4); }
+/* THE WHEEL (the family table): a guard cut from behind comes round at once, its guard up, and shoulders off a hero standing in
+   its back. No damage and no mark - it is not a blow, it is a guard being put back where it belongs. */
+function guardWheel(e, fromX) {
+  if (!e.alive || e.wheelT > time) return;
+  const f = Math.sign(fromX - e.x) || -e.face; e.face = f; e.behindT = 0; e.stagger = 0; e.wheelT = time + 0.5;
+  if (e.t === 'soldier' || e.t === 'watch' || e.t === 'crab') e.guardT = Math.max(e.guardT || 0, 0.5);
+  if (e.t === 'turtle') { e.mode = 'hide'; e.modeT = 1.2; }
+  if (e.t === 'shield') e.shoveCd = Math.max(e.shoveCd || 0, 0.5);   /* it came round: it sets its feet before it shoves, as when it turns by itself */
+  if (!P.dead && Math.abs(P.x - e.x) < 30 && Math.abs(P.y - e.y) < 26) { P.vx = f * 150; }
+  SFX.shieldScrape(); SFX.clank(); dust(e.x, e.y, 4); sparks(e.x + f * 7, e.y - (e.h || 14) / 2, f, 5);
+  if (!L.trial && (PROG.wheelSeen || 0) < 2) { PROG.wheelSeen = (PROG.wheelSeen || 0) + 1; hintT = 4.5; hintMsg = 'CUT FROM BEHIND, A GUARD WHEELS ROUND. A HEAVY BLOW OR A LOW SWEEP BREAKS IT OPEN.'; }
+}
 function breakBeat(e) { e.breakFlash = 0.07; hitstop(0.08); if (!SET.reduceMotion) shakeCam(4); if (SFX.poiseBreak) SFX.poiseBreak(!!(e.maxHp || e.big)); else SFX.clank(); }
 /* ==== WHAT RUNS ONTO THE POINT AND DIES THERE, AND WHAT DOES NOT. THE RULE IS ABSOLUTE: a YELLOW charge is stopped, a RED one
    runs straight through her. So this is a default-DENY list - a charge she can stop has to be NAMED here - and a red
@@ -5047,11 +5059,16 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
-  let glance = false;
+  let glance = false, wheel = false;
   { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
     if (fam) { const keyed = fam.key.some(v => blowHas(blow, v));
       if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time; }
-      else if (fam.glance && blowHas(blow, fam.glance) && !foeOpen(e)) { glance = true; e.glancedAt = time; dmg = Math.max(1, Math.round(dmg * GLANCE_TAKE)); glanceBeat(e, fromX); } } }
+      else if (fam.glance && blowHas(blow, fam.glance) && !foeOpen(e)) { glance = true; e.glancedAt = time; dmg = Math.max(1, Math.round(dmg * GLANCE_TAKE)); glanceBeat(e, fromX); }
+      /* THE WHEEL. A guard cut from behind used to be a guard that never turned: every cut staggered it, and a staggered shield
+         does not come round, so walking behind one was a free kill and the heavy blow was never needed. Now a plain cut from behind
+         LANDS - and it wheels on you, guard up, and shoulders you off. Going round buys one cut; going through (a heavy blow, or a
+         sweep under it, until its bar breaks) buys all of them. */
+      if (fam === FAMILY.guard && !keyed && blowHas(blow, 'light') && e.t !== 'heavy' && e.face && Math.sign(fromX - e.x) === -e.face && !foeOpen(e) && !windingUp(e)) wheel = true; } }   /* (never mid-windup: turning a blow already coming would aim it at you) */
   /* HERO COMBOS: each hero's own two moves, used in the right order, land harder than either alone */
   if (dmg > 0 && hero() === 'knight' && P.heavySwing && P.parryFoe === e && time < (P.parryFoeUntil || 0)) { P.parryFoe = null; dmg = Math.round(dmg * 1.5); number(e.x, e.y - e.h - 26, 'OPENED UP', '#ffd36b'); if (poiseMax(e) && !(e.broken > 0)) { e.poiseCd = 0; e.poise = poiseMax(e); } }   /* KNIGHT: the parry, then the heavy blow into the gap it made */
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
@@ -5114,6 +5131,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
       if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || (P.heavySwing && P.atk >= 0 && hero() === 'knight' && tal('thirdCut')))) knockFoe(e, dir, push);   /* THIRD CUT: the end of a run throws them */
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
+    if (wheel) guardWheel(e, fromX);
     if (e.t === 'king' && e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.y = L.arena.floor; e.mode = 'rise'; e.modeT = 1.3; e.h = 60; e.throne = { x: e.x, y: L.arena.floor }; number(e.x, e.y - 36, 'THE LITTER BREAKS. HE STANDS', '#ff6b6b'); SFX.heavy(); SFX.crack(); shakeCam(8); zoomKick(1.12, 0.4); burst(e.x, e.y, 16, ['#8b6a2a', '#c9b27c', '#c9463d'], 80, 0.7); }
     if (e.t === 'king' && e.phase === 2 && e.hp <= e.maxHp * 0.4) { e.phase = 3; e.throneT = 5; number(e.x, e.y - 70, 'THE KING RAGES', '#ff6b6b'); SFX.roar(); shakeCam(6); zoomKick(1.1, 0.3); for (const f of enemies) if (f.alive && f.t === 'folk' && f.court) f.cower = true; }
     if (e.t === 'lance' && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; e.mode = 'rise'; e.modeT = 1.1; e.stagger = 1.1; e.sweepT = 1;
@@ -6816,22 +6834,23 @@ function updatePlayer(dt) {
           P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); } squash(0.8, 1.25, 0.1); continue;
       }
       const front = P.swingKind !== 'sweep' && Math.sign(P.x - e.x) === e.face;   /* the sweep goes under every guard held in front */
+      /* (and a guard that is BROKEN is not held up at all: the heavy blow or the sweep that emptied its bar opened it for every cut after, which is what makes going through it worth more than going round) */
       if (e.t === 'mother' && e.tipped) continue;
       if (e.t === 'drone' || e.t === 'mother') { SFX.clank(); sparks(e.x, e.y - e.h / 2, P.face, 4); number(e.x, e.y - e.h - 6, e.t === 'mother' ? 'ARMOURED' : 'PUFF', '#9aa39a'); continue; }
       if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 14, e.y - 8, P.face, 5); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'HORNS', '#c9a83a'); continue; }
-      if (e.t === 'pike' && front && !throughGuard() && e.stagger <= 0) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }
+      if (e.t === 'pike' && front && !throughGuard() && !(e.broken > 0) &&e.stagger <= 0) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }
       if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + P.face * -20, e.y - 30, P.face, 5); continue; }
       if (e.turncoat) continue;
       /* (the Hound Master's guard lives in hurtEnemy0 now: a blade, an ember and a ball all meet the same hound) */
       if (chiefShielded(e) && front && !throughGuard()) { guardTurned(); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - 10, P.face, 6); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'SHIELD', '#c9d1dc'); continue; }
       if (e.t === 'brute' && e.mode === 'raise') { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); continue; }
-      if (e.t === 'turtle' && front && !throughGuard() && e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
-      if (e.t === 'crab' && front && !throughGuard() && e.guardT > 0 && e.mode !== 'flipped') { guardTurned(); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 6, e.y - 5, e.face, 5); continue; } // claws up
+      if (e.t === 'turtle' && front && !throughGuard() && !(e.broken > 0) &&e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
+      if (e.t === 'crab' && front && !throughGuard() && !(e.broken > 0) &&e.guardT > 0 && e.mode !== 'flipped') { guardTurned(); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 6, e.y - 5, e.face, 5); continue; } // claws up
       if (e.t === 'siren' && e.mode === 'dive') continue; // under the water
-      if (e.t === 'soldier' && front && !throughGuard() && e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
-      if (e.t === 'heavy' && !throughGuard() && e.mode !== 'rest' && !(e.parried > 0)) { guardTurned(); SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
-      if (e.t === 'watch' && front && !throughGuard() && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
-      if (e.t === 'shield' && front && !throughGuard() && !(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide) */
+      if (e.t === 'soldier' && front && !throughGuard() && !(e.broken > 0) &&e.mode !== 'slashTell' && e.mode !== 'slash' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 150; sparks(e.x + e.face * 8, e.y - 8, e.face, 6); e.guardT = 0.4; shakeCam(2, e.face * 2); continue; } // the shield takes it
+      if (e.t === 'heavy' && !throughGuard() && !(e.broken > 0) &&e.mode !== 'rest' && !(e.parried > 0)) { guardTurned(); SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
+      if (e.t === 'watch' && front && !throughGuard() && !(e.broken > 0) &&e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
+      if (e.t === 'shield' && front && !throughGuard() && !(e.broken > 0) &&!(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide) */
         guardTurned(); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
       } else { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
