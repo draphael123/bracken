@@ -7343,7 +7343,7 @@ function seaTilt() { if (!roll || !L || !L.roll || SET.reduceMotion) return 0; r
 function stormHorizon() { if (SET.reduceMotion || !L) return 0; const per = (L.swell && L.swell.period) || 3.8; return seaTilt() * 0.5 + Math.sin(time * Math.PI * 2 / per) * 0.014 * (1 - seaCalm()); }
 /* THE BACKDROP'S LIGHTNING: 0.34 s of it - the flash, a gap, the second stroke, and the fade */
 let boltBack = { t: 0, x: 0, i: 0 };
-function boltFlash() { if (!(boltBack.t > 0) || SET.flashes === false) return 0; const e = 0.34 - boltBack.t; return e < 0.06 ? 1 : e < 0.1 ? 0.25 : e < 0.16 ? 0.9 : Math.max(0, 0.9 * (1 - (e - 0.16) / 0.18)); }
+function boltFlash() { if (!(boltBack.t > 0) || !SET.flashes) return 0; const e = 0.34 - boltBack.t; return e < 0.06 ? 1 : e < 0.1 ? 0.25 : e < 0.16 ? 0.9 : Math.max(0, 0.9 * (1 - (e - 0.16) / 0.18)); }
 /* NOTHING FLASHES OVER A TELL: a windup on the screen, the wash building or running, a strike being marked, a roll being called */
 function stormQuiet() { if ((wash && wash.state !== 'wait') || (strike && strike.state === 'tell') || (roll && roll.state === 'tell')) return true;
   for (const e of enemies) if (e.alive && Math.abs(e.x - (camX + VW / 2)) < VW && windingUp(e)) return true; return false; }
