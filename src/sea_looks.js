@@ -453,11 +453,14 @@ function lwBack(g, cx, cy, VW, VH, time) {
 function lwWet(g, cx, cy, VW, VH, time) {
   // THE WATER'S COLOUR, from river to sea: its hue laid over the water in bands, not its light
   g.save(); g.globalCompositeOperation = 'color';
-  for (const p of (L.pools || [])) { if (p.dry || p.fire || p.x1 < cx || p.x0 > cx + VW) continue;
+  /* ONE FILL A POOL: a gradient in world x from the river's colour to nothing at the turn and on to the sea's (a band a tile, with
+     this blend, was three milliseconds a frame in a software canvas) */
+  const gr = g.createLinearGradient(LW_FRESH * TS - cx, 0, LW_SALT * TS - cx, 0);
+  gr.addColorStop(0, 'rgba(138,138,46,0.42)'); gr.addColorStop(0.5, 'rgba(138,138,46,0)'); gr.addColorStop(0.5, 'rgba(42,106,184,0)'); gr.addColorStop(1, 'rgba(42,106,184,0.3)');
+  g.fillStyle = gr;
+  for (const p of (L.pools || [])) { if (!p.swim || p.dry || p.fire || p.x1 < cx || p.x0 > cx + VW) continue;   /* swim water only: what is in it is put back over the tint (drawSwimmers), and a wader in a shallow pool is not */
     const top = Math.max(0, Math.round(p.y - cy)), bot = Math.min(VH, Math.round((p.bottom !== undefined && p.bottom !== null ? p.bottom : p.y + (p.depth || 0)) - cy)); if (bot <= top) continue;
-    for (let x = Math.max(p.x0, cx); x < Math.min(p.x1, cx + VW); x += 16) { const t = saltAt(x + 8), w = Math.min(16, Math.min(p.x1, cx + VW) - x);
-      g.globalAlpha = t < 0.5 ? 0.42 * (1 - t * 2) : 0.3 * (t * 2 - 1); if (g.globalAlpha < 0.01) continue;
-      g.fillStyle = t < 0.5 ? LWC.fresh : LWC.salt; g.fillRect(Math.round(x - cx), top, Math.ceil(w), bot - top); } }
+    const x0 = Math.round(Math.max(p.x0, cx) - cx), x1 = Math.round(Math.min(p.x1, cx + VW) - cx); if (x1 > x0) g.fillRect(x0, top, x1 - x0, bot - top); }
   g.restore();
 }
 function lwOver(g, cx, cy, VW, VH, time) {
