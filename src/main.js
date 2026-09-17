@@ -4965,7 +4965,7 @@ function impale(e) {
    a sweep that met nothing leaves her with DEF_REC of recovery she can neither sweep nor swing in, so mistiming costs.
    IT SETS P.parryT - one of the clocks palOpened already reads. That is how the Paladin's ward opens to her: by the
    one rule on the clocks an answer sets, with no hero named in a branch of it. ==== */
-const DEF_LIVE = 0.26, DEF_REC = 0.26, DEF_COST = 7, DEF_REACH = 44;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
+const DEF_LIVE = 0.5, DEF_REC = 0.26, DEF_COST = 7, DEF_REACH = 44;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
 function deflect() {
   if (!spend(Math.max(3, Math.round(DEF_COST * (1 - 0.2 * tal('quickShaft')))))) { SFX.buzz(); P.stFlash = 0.3; return; }
   P.deflectT = DEF_LIVE; P.deflectRec = DEF_REC * (1 - 0.2 * tal('quickShaft'));   /* QUICK SHAFT: cheaper, and back in her hands sooner */
