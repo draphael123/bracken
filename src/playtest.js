@@ -23,6 +23,7 @@
 import { LEVELS, T, TS } from './level.js';
 import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap } from './threat.js';
 import { floodReach } from './reachcore.js';
+import { checkDrawables } from './floatlab.js';
 
 const SEV = { bug: 3, odd: 2, note: 1 };
 const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
@@ -551,6 +552,77 @@ export async function run(BK, opts = {}) {
         const gateE = (built.ents || []).find(e => e.t === 'gate');
         const goal = gateE ? gateE.x * TS : (W - 3) * TS;
         let bot = makeBot(BK);
+        // RUNTIME FLOATERS. tools/floaters.mjs and floatLab() only ever look at a level at rest, the instant it
+        // loads: neither one is running, so a floor that crumbles under the bot, a raft that leaves a chest
+        // behind, or a coin spilled onto a ledge and gone through it never shows up until something has actually
+        // happened. Every half second while the bot is genuinely playing, ask the same question checkDrawables()
+        // asks at load, plus the things drawables() does not carry at all: coins and drops, NPCs and quest
+        // strays, and every grounded (non-flying, non-swimming) enemy. A single frame with nothing under it is
+        // normal (a hop, a knock-back); two samples running (a full second) is not, so a finding is only raised
+        // once a streak crosses that line, and its message is kept live for as long as the streak lasts.
+        const FLYERS = BK.flyers ? BK.flyers() : new Set();
+        const WATERKIN = BK.waterKin ? BK.waterKin() : new Set();   /* "what the sea does not drown" (main.js): scout, turtle, crab, heronfoe and the rest live IN or BY the water, not on a floor tile */
+        const HOPPERS = new Set(['topiary']);   /* updateTopiary's 'lurch' mode is a real jump (vy -170): it is meant to be in the air partway through it */
+        const nearMover = (px, py) => { for (const m of BK.movers()) { if (m.gone || m.sink > 0.55) continue;
+          const top = m.y + (m.kind === 'pad' ? 2 : 0);
+          if (px >= m.x - 4 && px <= m.x + (m.w || 16) + 4 && top >= py - 10 && top <= py + TS + 8) return true; }
+          return false; };
+        // A CREATURE IS WIDER THAN ONE TILE COLUMN, and a single column at its own x can land on a seam between
+        // two tiles while the body it belongs to is squarely over the one beside it - the first pass of this
+        // check flagged a plain walking swornsword and a shardling this way. Ask every column its own width
+        // actually covers (the same thing checkDrawables() already does with a sprite's foot pixels), and give
+        // the row a couple of pixels of slack for a walk-bob or a sub-pixel landing.
+        const grounded = (x, y, w) => { const half = Math.max(3, (w || 12) / 2 - 2);
+          for (let dx = -half; dx <= half; dx += TS / 2) { const fx = Math.floor((x + dx) / TS);
+            for (let dy = -2; dy <= 3; dy++) if (standT(at(fx, Math.floor((y + dy) / TS)))) return true; }
+          return nearMover(x, y); };
+        const rfStreaks = new Map(); let rfShots = 0;
+        const sampleRuntimeFloat = () => {
+          const seenNow = new Set();
+          const mark = (what, x, y, key) => {
+            seenNow.add(key);
+            const st = rfStreaks.get(key) || { count: 0 };
+            st.count++; rfStreaks.set(key, st);
+            if (st.count === 2) {
+              st.f = F('RUNTIMEFLOAT', SEV.odd, what + ' floating', Math.round(x / TS) + ',' + Math.round(y / TS));
+              if (rfShots < 2) { try { BK.step(0); st.f.shot = BK.buf.toDataURL('image/png'); rfShots++; } catch {} }   /* step(0): no sim, just a fresh draw of what is on screen right now, not a stale frame from up to 40 steps ago */
+            } else if (st.count > 2 && st.f) st.f.msg = what + ' floating ' + (st.count * 0.5).toFixed(1) + 's';
+          };
+          for (const b of checkDrawables(BK, at)) mark(b.what, b.x, b.y, 'd:' + b.what + '@' + Math.round(b.x / TS / 3));
+          // COINS ARE NOT CHECKED HERE. A placed coin (no `vy`) hangs in the air on purpose - a trail over a
+          // pit, an arc along a jump - exactly like a silver, and checking it flooded the report with the
+          // level's own coin trails. A SPILLED coin (thief loot, a broken crate, a cracked cargo hold) carries
+          // `vy` and is physical, but the bug in it is that main.js only lands it on `isSolid`, never a ledge,
+          // so it falls straight through a one-way platform instead of resting on it - which reads as the coin
+          // SINKING out of sight, not floating, and is a different check for a different day.
+          // NPCs ONLY, NOT STRAYS. A stray (the quest cup, the caged bird, the sheep) is a collectable like a
+          // coin or a silver - the Underleaf's own cup sits "over the gallery's own boards" on purpose - so it
+          // is exempt from a floor check for exactly the reason coins are, above.
+          for (const pr of BK.props()) { if (pr.t !== 'npc') continue;
+            if (!grounded(pr.x, pr.y, 12)) mark(pr.t + (pr.kind ? ':' + pr.kind : ''), pr.x, pr.y, pr.t + ':' + (pr.kind || '') + '@' + Math.round(pr.x / TS / 3)); }
+          // GROUNDED ENEMIES ONLY. Besides the flyers (FLYERS, read off main.js so there is one list, not two),
+          // `noGrav` is the game's own flag for anything that does not fall - a hovering gull, a drifting ghost,
+          // a fixed turret - and INROCK_FOE (already read by the checks above in this file) is every creature
+          // that lives IN the rock, the web or the water rather than on top of anything. `wallX` marks a wall
+          // clinger the same way. HOPPERS is small on purpose: the topiary beast's own move is a real lurch
+          // (updateTopiary's 'lurch' mode: vy -170, same shape as the player's own jump) and it is meant to be
+          // in the air partway through it. What is left is genuinely supposed to be standing.
+          for (const e of BK.enemies()) { if (!e.alive || e.dying > 0 || FLYERS.has(e.t) || WATERKIN.has(e.t) || HOPPERS.has(e.t) || e === BK.boss) continue;
+            if (e.noGrav || e.perch || e.wallX !== undefined || INROCK_FOE.has(e.t)) continue;
+            // HIT AND FLYING IS NOT FLOATING. The new down attacks (2026-09-17) land a real hit with real
+            // knockback, and a creature mid-stagger is legitimately airborne on the way down, sometimes for
+            // longer than a second against a hero swinging for it repeatedly. `stagger`/`hitT` are the fields
+            // the creatures themselves already use to know they are in a hit reaction (shardling's own walk
+            // gates on `stagger <= 0` above); skip them here for the same reason.
+            if ((e.stagger || 0) > 0 || (e.hitT || 0) > 0) continue;
+            // FALLING IS NOT FLOATING EITHER. A goblin that has just cut the very bridge it was standing on
+            // (updateCutter/dropBridge) drops through the hole it made, and the Hanging Village is eight floors
+            // tall - that is a long, genuine fall, not a bug. `floating` means resting with no support UNDER a
+            // small vertical speed; a body actively picking up speed downward is doing exactly what gravity says.
+            if (Math.abs(e.vy || 0) > 60) continue;
+            if (!grounded(e.x, e.y, e.w)) mark(e.t, e.x, e.y, 'e:' + e.t + '@' + Math.floor(e.x / TS)); }
+          for (const key of rfStreaks.keys()) if (!seenNow.has(key)) rfStreaks.delete(key);
+        };
         let maxX = BK.P.x, deaths0 = BK.stats().deaths, k0 = BK.stats().kills, hurt0 = BK.hitsTaken;
         // WHERE A PLAIN PLAYER CANNOT GET THROUGH. One hard corner used to end the run and the rest of the
         // level went unwalked. It notes the corner, lifts itself over it, and carries on: the report ends up
@@ -572,6 +644,7 @@ export async function run(BK, opts = {}) {
           if (BK.P.hp < wasHp) { blows++; } wasHp = BK.P.hp;
           BK.sim(1);
           if (s % 40 === 0) BK.step(0);            /* look at it now and then, so the draw is exercised too */
+          if (s % 30 === 0) sampleRuntimeFloat();   /* every half second: is anything that should stand still standing? */
           maxX = Math.max(maxX, BK.P.x);
           // THREE DEATHS IN THE SAME PLACE IS A PLACE, not bad luck. Note it, lift the bot over it, carry on:
           // the report should end with every corner a plain run cannot get past, not only the first one.

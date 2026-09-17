@@ -19,7 +19,7 @@ const INWATER = new Set(['eel', 'angler', 'urchin']), BYWATER = new Set(['turtle
 const HOLDS_UP = new Set(['stilt', 'bridgepost', 'bridgetower', 'pierPost', 'column', 'mastTall', 'mastStump']);
 
 const shapes = new WeakMap();
-function shape(c) {   /* the opaque pixels of a baked sprite, once */
+export function shape(c) {   /* the opaque pixels of a baked sprite, once */
   if (shapes.has(c)) return shapes.get(c);
   const w = c.width, h = c.height, d = c.getContext('2d').getImageData(0, 0, w, h).data, px = [];
   let top = h, bot = -1;
@@ -27,6 +27,40 @@ function shape(c) {   /* the opaque pixels of a baked sprite, once */
   const s = { w, h, px, top, bot, foot: [], head: [] };
   for (let i = 0; i < px.length; i += 2) { if (px[i + 1] >= bot - 1) s.foot.push(px[i]); if (px[i + 1] <= top + 1) s.head.push(px[i]); }
   shapes.set(c, s); return s;
+}
+
+// THE SAME QUESTION, ASKED MORE THAN ONCE. floatLab() below asks it the instant a level loads; src/playtest.js's
+// runtime floater sample (the play pass, every half second) asks it again while the bot is actually playing, so a
+// floor that crumbles or a raft that leaves something behind is caught after the fact, not just at frame zero.
+// One rule, read by both: `tileAt(tx, ty)` is the caller's own tile lookup (a level just built answers differently
+// off its own edges than a level already loaded into BK.L).
+export function checkDrawables(BK, tileAt) {
+  const solid = (tx, ty) => SOLID.has(tileAt(tx, ty)), ledge = (tx, ty) => LEDGE.has(tileAt(tx, ty));
+  const bad = [];
+  for (const d of BK.drawables()) {
+    if (!d.c || !d.c.width || (!d.stand && !d.hang)) continue;
+    const s = shape(d.c); if (s.bot < 0) continue;
+    if (d.stand) {
+      const fy = d.y + s.bot + 1, ty = Math.round(fy / TS), gap = ty * TS - fy;
+      const cols = [...new Set(s.foot.map(x => Math.floor((d.x + x) / TS)))];
+      const at = Math.round(d.x / TS) + ',' + Math.round((d.y + s.bot) / TS);
+      const onFloor = Math.abs(gap) <= 3 && cols.some(tx => (solid(tx, ty) || ledge(tx, ty)) && !solid(tx, ty - 1));
+      if (!onFloor) { bad.push({ what: d.what, x: d.x, y: d.y, w: s.w, h: s.h, kind: gap > 3 ? 'floats' : gap < -3 ? 'sunk' : 'nofloor', at, msg: d.what + '@' + at + (gap > 3 ? ' floats ' + gap + 'px' : gap < -3 ? ' sunk ' + -gap + 'px' : ' has no floor') }); continue; }
+      if (HOLDS_UP.has(d.what)) continue;
+      let n = 0; const narrow = s.w <= 24;
+      for (let k = 0; k < s.px.length; k += 2) { const wx = d.x + s.px[k], wy = d.y + s.px[k + 1]; if (wy >= fy - 3) continue;
+        const tx = Math.floor(wx / TS), ty2 = Math.floor(wy / TS);
+        if ((!d.bg && solid(tx, ty2)) || ((!d.bg || narrow) && ledge(tx, ty2) && wy - ty2 * TS < 5)) n++; }
+      if (n > 4) bad.push({ what: d.what, x: d.x, y: d.y, w: s.w, h: s.h, kind: 'pierce', at, msg: d.what + '@' + at + ' runs through the ground (' + n + 'px)' });
+    } else {
+      const hy = d.y + s.top, ty = Math.round(hy / TS);
+      const cols = [...new Set(s.head.map(x => Math.floor((d.x + x) / TS)))];
+      const at = Math.round(d.x / TS) + ',' + Math.round(hy / TS);
+      const held = cols.some(tx => solid(tx, Math.floor(hy / TS)) || (Math.abs(hy - ty * TS) <= 3 && (solid(tx, ty - 1) || ledge(tx, ty - 1))));
+      if (!held) bad.push({ what: d.what, x: d.x, y: d.y, w: s.w, h: s.h, kind: 'unhung', at, msg: d.what + '@' + at + ' hangs from nothing' });
+    }
+  }
+  return bad;
 }
 
 export async function floatLab(BK, o = {}) {
@@ -38,32 +72,12 @@ export async function floatLab(BK, o = {}) {
     try { BK.load(i); } catch (e) { hits.push(id + ': will not load: ' + e.message); continue; }
     const L = BK.L, W = L.W, H = L.H;
     const tile = (tx, ty) => (tx < 0 || tx >= W) ? T.SOLID : (ty < 0 || ty >= H) ? T.AIR : L.grid[ty * W + tx];
-    const solid = (tx, ty) => SOLID.has(tile(tx, ty)), ledge = (tx, ty) => LEDGE.has(tile(tx, ty));
-    const bad = [];
-    for (const d of BK.drawables()) {
-      if (!d.c || !d.c.width || (!d.stand && !d.hang)) continue;
-      const s = shape(d.c); if (s.bot < 0) continue; sprites++;
-      const at = Math.round(d.x / TS) + ',' + Math.round((d.y + s.bot) / TS);
-      if (d.stand) {
-        const fy = d.y + s.bot + 1, ty = Math.round(fy / TS), gap = ty * TS - fy;
-        const cols = [...new Set(s.foot.map(x => Math.floor((d.x + x) / TS)))];
-        const onFloor = Math.abs(gap) <= 3 && cols.some(tx => (solid(tx, ty) || ledge(tx, ty)) && !solid(tx, ty - 1));
-        if (!onFloor) { bad.push(d.what + '@' + at + (gap > 3 ? ' floats ' + gap + 'px' : gap < -3 ? ' sunk ' + -gap + 'px' : ' has no floor')); spots.push({ id, i, x: d.x, y: d.y, w: s.w, h: s.h }); continue; }
-        if (HOLDS_UP.has(d.what)) continue;
-        // A POST THROUGH A LEDGE: an opaque pixel above its own foot inside a solid tile, or in a ledge's boards
-        let n = 0; const narrow = s.w <= 24;
-        for (let k = 0; k < s.px.length; k += 2) { const wx = d.x + s.px[k], wy = d.y + s.px[k + 1]; if (wy >= fy - 3) continue;
-          const tx = Math.floor(wx / TS), ty2 = Math.floor(wy / TS);
-          if ((!d.bg && solid(tx, ty2)) || ((!d.bg || narrow) && ledge(tx, ty2) && wy - ty2 * TS < 5)) n++; }
-        if (n > 4) { bad.push(d.what + '@' + at + ' runs through the ground (' + n + 'px)'); spots.push({ id, i, x: d.x, y: d.y, w: s.w, h: s.h }); }
-      } else {
-        const hy = d.y + s.top, ty = Math.round(hy / TS);
-        const cols = [...new Set(s.head.map(x => Math.floor((d.x + x) / TS)))];
-        const held = cols.some(tx => solid(tx, Math.floor(hy / TS)) || (Math.abs(hy - ty * TS) <= 3 && (solid(tx, ty - 1) || ledge(tx, ty - 1))));
-        if (!held) { bad.push(d.what + '@' + Math.round(d.x / TS) + ',' + Math.round(hy / TS) + ' hangs from nothing'); spots.push({ id, i, x: d.x, y: d.y, w: s.w, h: s.h }); }
-      }
+    const solid = (tx, ty) => SOLID.has(tile(tx, ty));   /* the water check below still needs it */
+    for (const d of BK.drawables()) if (d.c && d.c.width && (d.stand || d.hang) && shape(d.c).bot >= 0) sprites++;
+    for (const b of checkDrawables(BK, tile)) {
+      hits.push(id + ': ' + b.msg);
+      spots.push({ id, i, x: b.x, y: b.y, w: b.w, h: b.h });
     }
-    for (const b of bad) hits.push(id + ': ' + b);
     // THE WATER: run it, and look every second whether the swimmers are in it and the waders are by it
     const foes = () => BK.enemies().filter(e => e.alive && (INWATER.has(e.t) || BYWATER.has(e.t)));
     if (o.water !== false && foes().length && (L.pools || []).length) {

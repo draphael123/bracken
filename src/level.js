@@ -625,7 +625,10 @@ function theStockade() {
   W2.R.interiors = (W2.R.interiors || []).concat([[192, 223, 18, 21, 'earth']]);
   W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });   /* the wall walk is its archers */
   W2.ent('stray', 212, 13, { kind: 'coffer' }); W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
-  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('hound', 203, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 214, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
+  // THE DITCH'S BRAMBLES ARE A THROW TARGET: the hound and the brute stand two tiles off either edge of the spike
+  // bed, close enough that a heavy blow or a dash sends either one into it (combat-variety-brief #8) - they used
+  // to stand five tiles off, which asked for a blow harder than most heroes throw at 203/214 range.
+  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('hound', 206, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 211, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
   W2.ent('stray', 222, 21, { kind: 'coffer' }); W2.coins([200, 20], [206, 20], [212, 20], [218, 20]);
   W2.block(224, 229, 20, 27); W2.ent('check', 227, 19); W2.coins([225, 18]);
   const R2 = W2.done();
@@ -876,7 +879,8 @@ function kingswood() {
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS WORK ON THEM: THE LEVER SWINGS THE RAM, THE PLATE DROPS THE CAGE.' });
-  ent('sprig', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
+  ent('sprig', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); ent('gobmage', 137, 21, { face: -1 });   /* a composed pair: the reader keeps its distance behind the brute at 132, so closing on one means passing the other */
+  coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
   // the roads rejoin at 150: a slope of ledges from the burrow up to the yard
   block(150, 152, 18, 27); block(153, 158, 16, 27); block(159, 164, 14, 27); block(165, 190, 14, 27);
   ent('check', 167, 13);
@@ -893,7 +897,7 @@ function kingswood() {
   // canopy
   plat(211, 11, 3); plat(216, 9, 3); plat(221, 7, 4);
   movers.push({ kind: 'swing', px: 231 * TS, py: 1 * TS, arm: 90, x: 0, y: 0, w: 48, h: 8, period: 3.0, phase: 0.8 });
-  plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1, fire: true });
+  plat(238, 7, 3); ent('thief', 239, 6, { face: -1 }); plat(243, 9, 4); ent('wasp', 248, 6); ent('archer', 245, 8, { face: -1, fire: true }); ent('shield', 243, 8, { face: -1 });   /* a composed pair, not another lone bow: the shield stands on the near edge of the same perch, between the walkway and her fire arrows */
   movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
   plat(261, 9, 3); plat(266, 11, 3); plat(271, 11, 4);
   plat(228, 9, 2); plat(231, 10, 3); plat(235, 8, 2); plat(250, 10, 2); plat(253, 11, 3); plat(257, 10, 2); // a ledge road under each canopy swing
@@ -2081,7 +2085,7 @@ function stormhold() {
   floor(209, 250, 30);
   ent('sign', 211, 29, { text: 'THE HALLS UNDER THE CRAG. THE LAST KEY IS IN THE LONGHOUSE, AND IT IS FULL.' });
   ent('deco', 218, 29, { kind: 'banner', v: 0 }); ent('deco', 240, 29, { kind: 'banner', v: 1 });
-  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true }); ent('check', 240, 29);
+  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true }); ent('check', 240, 29); ent('shield', 249, 29, { face: -1 });   /* a composed pair: the shield stands past her fire arrows, on the same hall floor - go round the guard and into the flames, or through the guard first */
   roof(214, 232, 26); roof(236, 248, 26); ent('torch', 216, 29); ent('torch', 244, 29);
   coins([214, 28], [220, 27], [228, 28], [232, 27], [238, 28], [244, 27], [248, 28]);
   // the longhouse: the deepest room, the bone key at the back of it
@@ -2718,6 +2722,12 @@ function theDeep() {
   rock(265, 266, 168, 174);                                         /* and the stump of one hanging from the vault */
   for (let x = 253; x <= 257; x++) set(x, 181, T.ONEWAY); for (let x = 289; x <= 293; x++) set(x, 178, T.ONEWAY);   /* his galleries, broken off at the wall */
   prop('throne', 282, 191); air(289, 195);
+  /* THE AIR IN HIS HALL. Three vaults over your head and a bell at his elbow was air in the CORNERS: you left the fight to breathe and
+     came back to it. So the room breathes where the fight is - a column off the floor between his two pillars, a crack in the stump of
+     the left one, a bell wreck on the step of his dais and another on the broken gallery. Every one of them is somewhere he can reach
+     you: the floor column stands in his SLAM, the stump is where his charge ends, the dais step is his own ground. Breathing is a
+     position now and not a corner - and he can take them away (DROWNED BREATH, updateDrownedKing). */
+  vent(264, 198, 12); vent(260, 185, 8); wreck(276, 195); wreck(290, 177);
   prop('chandelier', 271, 198); prop('statue', 291, 177); prop('brazier', 275, 195);
   D.banners.push({ x: 268, y: 168 }, { x: 280, y: 168 }, { x: 254, y: 168 });
   stone(257, 198); stone(292, 198, 'chest'); clam(263, 198); vent(254, 198, 7, false, true);
@@ -2816,6 +2826,7 @@ function highcrown() {
   ent('hearthgob', 190, 51, { face: -1 }); ent('hearthgob', 168, 51, { face: -1 }); ent('hearthgob', 146, 51, { face: 1 });
   ent('folk', 180, 51, { door: 206 }); ent('folk', 156, 51, { door: 124, alt: true });
   ent('brute', 160, 51, { face: 1 }); plat(157, 43, 6); ent('weight', 160, 43, { len: 6 }); // the meat hook's counterweight, over the cook's brute
+  ent('gobmage', 152, 51, { face: -1 });   /* a composed pair: the reader keeps to the larder side of the cook's brute, so closing on one crosses the other's ground */
   stair([[184, 50, 3], [180, 48, 3], [175, 46, 4]]); ent('stray', 176, 45, { kind: 'seal' }); // the larder's high shelf
   air(125, 128, 40, 41); lid(125, 128, 40);    // the stair up to her gallery
   stair([[138, 50], [134, 48], [130, 46], [126, 44], [125, 42]]);
@@ -5656,7 +5667,7 @@ function quarryPass() {
   beam(270, 330, B - 10);                                                     /* THE GANTRY: a beam you can walk, on two legs you can climb */
   crane(282, B - 9, 6); crane(300, B - 9, 6); crane(318, B - 9, 6);
   ent('miner', 282, B - 1, { face: -1 }); ent('rockgoblin', 300, B - 1, { face: -1 }); ent('miner', 318, B - 1, { face: 1 });
-  ent('brute', 290, B - 1, { face: -1 }); ent('sapper', 332, B - 1, { face: -1 }); ent('rockgoblin', 310, B - 1, { face: -1 }); ent('goat', 326, B - 1, { face: -1 });
+  ent('brute', 290, B - 1, { face: -1 }); ent('sapper', 332, B - 1, { face: -1 }); ent('rockgoblin', 310, B - 1, { face: -1 }); ent('goat', 326, B - 1, { face: -1 }); ent('gobmage', 285, B - 1, { face: -1 });   /* a composed pair on the gantry floor: the reader holds behind the brute, so the fast way to it runs past him first */
   ent('archer', 296, B - 11, { face: -1 }); ent('archer', 312, B - 11, { face: 1 });
   ent('silver', 306, B - 12);
   ent('stray', 276, B - 11, { kind: 'canary' });                              /* the second: on the gantry, where the crane man left it */
@@ -7137,7 +7148,7 @@ const GARRISON = {
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
   causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 3], ['sailor', 3], ['crab', 4], ['netter', 2], ['jelly', 1], ['puffer', 1], ['lamprey', 1]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
-  skyship: [['cutlass', 10], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings */
+  skyship: [['cutlass', 8], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2], ['shield', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings - and now a shield in her roster too, so the squads rule (0.4) actually screens her bow, spear and sapper the way it already does in Kingswood's Knights' Road: two cutlass hands stood down to pay for it, the count unchanged */
   lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -7225,17 +7236,20 @@ function garrison(L, id) {
   // got fourteen. A tall level spaces by HEIGHT instead.
   // WHO CAN BE PUT IN THE WATER. The Long Water is mostly water, so refusing every wet spot left the
   // sprinkler nowhere to work - and an eel belongs in the water anyway.
-  const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor']);
+  const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor', 'puffer', 'jelly', 'lamprey', 'manta']);   /* the new wildlife swims too: without this the sprinkler could only put a jellyfish on dry ground */
   // AND WHO MUST BE BY IT. SWIMS says who MAY be put in the water; nothing said who must. Anglers and urchins were put on
   // the paving over the Lamplit Street's floods and hung in the air there all level (thirteen of them), and crabs, herons
   // and turtles were put down a hundred tiles from any water. A swimmer takes a spot IN a swim pool; a siren and a wader
   // take one in the water or within three tiles of it, when the level has any.
-  const INWATER = new Set(['eel', 'angler', 'urchin']), BYWATER = new Set(['siren', 'turtle', 'crab', 'heronfoe', 'netter', 'sailor']);
+  const INWATER = new Set(['eel', 'angler', 'urchin', 'puffer', 'jelly', 'lamprey']), BYWATER = new Set(['siren', 'turtle', 'crab', 'heronfoe', 'netter', 'sailor']);
   const pools = L.pools || [];
   const swimIn = (x, y) => pools.some(p => p.swim && x * TS >= p.x0 + 12 && (x + 1) * TS <= p.x1 - 12 && (y + 1) * TS > p.y + 12);
   const byWater = (x, y) => pools.some(p => !p.harm && (x + 1) * TS > p.x0 - 3 * TS && x * TS < p.x1 + 3 * TS && (y + 1) * TS >= p.y - 3 * TS && (y + 1) * TS <= (p.bottom !== undefined ? p.bottom : p.y + 40) + TS);
   const bySwim = (x, y) => pools.some(p => p.swim && (x + 1) * TS > p.x0 - 3 * TS && x * TS < p.x1 + 3 * TS && (y + 1) * TS >= p.y - 3 * TS && (y + 1) * TS <= (p.bottom !== undefined ? p.bottom : p.y + 60) + TS);   /* a siren sings over water you can drown in, not a wading pool */
-  const fits = (kind, x, y, isWet) => (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
+  /* AND WATER IS NOT ROOM: a swim pool's spot can still have rock in it, and the Long Water put an eel a tile inside the bank
+     the moment the new wildlife shifted the draw. A swimmer needs its own tile and the one over it clear. */
+  const clearHere = (x, y) => !solid(L.grid[y * L.W + x]) && !solid(L.grid[Math.max(0, y - 1) * L.W + x]);
+  const fits = (kind, x, y, isWet) => (!SWIMS.has(kind) || clearHere(x, y)) && (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
   const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];
   const squads = set.some(([k]) => k === 'shield' || k === 'soldier'); let squadN = 0;
