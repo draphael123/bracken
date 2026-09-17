@@ -155,6 +155,11 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     if (mm) for (const id of ['deepHeel', 'wardline', 'standFast', 'setSpears', 'unyielding', 'braceCharge', 'widerRow', 'theWatch', 'everReady', 'holdTheLine']) if (mm[id]) { had = true; delete mm[id]; }
     if (had) for (const k of ['skill', 'skill2']) if (PROG[k] === 'setSpears') PROG[k] = 'none';
     PROG.talentVersion = 5; if (had) PROG.talentsBackHero = 'warden'; }
+  /* THE WARD PAYS IN BLOOD AND THE DEAD ARE SUMMONED (v6): the Death Knight's ward costs him blood now and can break, RAISE DEAD
+     left his F, and his GRAVELORD tree grows from SUMMON SKELETON. Every point he had comes back to him, once, and he is told. */
+  if ((PROG.talentVersion || 1) < 6) { const mm = PROG.talents.reaper, had = !!mm && Object.values(mm).some(v => v);
+    if (had) { for (const k of ['skill', 'skill2']) if (['harvestMoon', 'graveTide', 'unholyGround', 'gravecall', 'scytheThrown', 'deathGrip'].includes(PROG[k])) PROG[k] = 'none'; PROG.talents.reaper = {}; }
+    PROG.talentVersion = 6; if (had) PROG.talentsBackHero = 'reaper'; }
   try { for (const hh in PROG.talents) { const mm = PROG.talents[hh]; for (const id in mm) { const nd = TREE.find(q => q.hero === hh && q.id === id); if (!nd) delete mm[id]; else if (mm[id] > nd.max) mm[id] = nd.max; } } } catch {}   /* ranks past a trimmed tree come back as points */ }
 function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
@@ -267,7 +272,7 @@ const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PRO
 const HEROES = [
   { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam' },
   { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else' },
-  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: blows on its face are stopped and fill it. LET GO for a BLOOD NOVA that hurts, marks and heals by what it held; let go AS a blow lands and he RETURNS it. Every death fills his blood: F RAISES THE DEAD from a body near him for a share of it, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. G carries the skill he chooses." },
+  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. His GRAVELORD tree puts SUMMON SKELETON on F. G carries the skill he chooses." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. the dead take double' },
   { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 90 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it' },
@@ -284,7 +289,7 @@ const HERO_LOOP = {
   pyro: 'HEAT IS HER FIRE: THE HOTTER SHE RUNS, THE HARDER IT BURNS. A FULL BAR IS THE PYRE.',
   paladin: 'A BLOW GIVEN OR TURNED IS LIGHT; JUDGEMENT SPENDS IT. THE AEGIS IS A PLANTED WALL.',
   pirate: 'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\'S GOLD IS HIS POWDER.',
-  reaper: 'THE WARD STOPS BLOWS AND FILLS; LET GO OF IT AND THE NOVA IS AS BIG AS WHAT IT HELD.',
+  reaper: 'THE WARD TAKES BLOWS FOR BLOOD; LET GO BEFORE IT BREAKS AND THE NOVA PAYS IT BACK.',
   warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C AND THE SHAFT TURNS A BLOW.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
 };
 const TRAINING = [
@@ -302,10 +307,10 @@ const rankOf = id => (PROG.ranks && PROG.ranks[id]) || 0; // (TRAINING is gone f
 // they grow with the hero's level (see LV_GROW). What is left in a tree changes a move, a meter or a skill. Forgetting
 // everything is free.
 /* ==== THE DEATH KNIGHT'S KEYS, IN WORDS. One place: his HUD prompts and the controls card read these, and a tutorial step for him should too. ==== */
-const DK_KEYS = { ward: 'HOLD C: THE BLOOD WARD. BLOWS ON ITS FACE ARE STOPPED AND FILL IT', nova: 'LET GO OF C: A BLOOD NOVA AS BIG AS WHAT THE WARD HELD', ret: 'LET GO AS A BLOW LANDS AND IT IS RETURNED',
-  raise: 'F: RAISE DEAD FROM A BODY NEAR HIM, FOR BLOOD', surge: 'HOLD F WITH A FULL BAR: BLOOD SURGE', skill: 'G: THE SKILL HE HAS CHOSEN FROM HIS TREES',
+const DK_KEYS = { ward: 'HOLD C: THE BLOOD WARD. A BLOW ON ITS FACE COSTS A THIRD IN BLOOD, AND THE BLOOD FILLS IT', nova: 'LET GO OF C: A BLOOD NOVA THAT HEALS THE BLOOD BACK. A FULL WARD STRUCK AGAIN BREAKS', ret: 'LET GO AS A BLOW LANDS AND IT IS RETURNED, FOR NO BLOOD',
+  summon: 'F: SUMMON SKELETON, ONCE HIS GRAVELORD TREE HAS IT', surge: 'HOLD F WITH A FULL BAR: BLOOD SURGE', skill: 'G: THE SKILL HE HAS CHOSEN FROM HIS TREES',
   hud: { ward: 'HOLD C  WARD', nova: 'LET GO: NOVA', full: 'FULL: LET GO', surge: 'HOLD F  SURGE' },   /* short: the timer plate sits right of this row's plate, and the coins are past that */
-  controls: { block: ['blood ward', 'HOLD C, LET GO: NOVA', 'LB RB'], skill: ['raise dead', 'F / B  (HOLD, FULL: SURGE)', 'Y'], 'skill two': ['his skill', 'G / N (CHOSEN)', 'RT'] } };
+  controls: { block: ['blood ward', 'HOLD C, LET GO: NOVA', 'LB RB'], skill: ['summon', 'F / B  (HOLD, FULL: SURGE)', 'Y'], 'skill two': ['his skill', 'G / N (CHOSEN)', 'RT'] } };
 /* ==== THE WARDEN'S KEYS, IN WORDS. One place: her HUD prompts and the controls card read these, and her wood lesson
    should too when it is written. C is the one that has to be unlearned from the knight - it is not a shield. ==== */
 const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES AT HER',
@@ -322,7 +327,7 @@ const TREE_WHO = { knight: ['COMBOS, BLEEDS AND FINISHERS', 'THE SHIELD: TURN IT
   pyro: ['THROWN EMBERS: SKIP, SPLIT AND SPREAD', 'THE JET AND THE HEAT', 'FIGHT IN THE FIRE AND WALK OUT'],
   paladin: ['THE LIGHT, AND WHAT IT JUDGES', 'THE AEGIS: A WALL THAT WALKS', 'THE MAUL AND THE GROUND IT SHAKES'],
   pirate: ['THE PISTOL: ONE BALL, MADE TO COUNT', 'GOLD: THE PURSE IS A WEAPON', 'CUTLASS AND HOOK: CLOSE, AND CLOSER'],
-  reaper: ['THE GREATSWORD, THE MARK, THE WOUND', 'RAISE DEAD (F): MORE, AND CHEAPER', 'THE WARD STOPS, THE NOVA PAYS'],
+  reaper: ['THE GREATSWORD, THE MARK, THE WOUND', 'SUMMON SKELETON (F): THE DEAD ON CALL', 'THE WARD STOPS, THE NOVA PAYS'],
   warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE SHAFT: TURN IT, AND HOLD THE LINE', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'] };
 const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
@@ -479,25 +484,26 @@ const TREE = [];
   N('reaper', 0, 2, 0, 'fullCircle', 'THE SECOND VOLLEY', 1, 'the planted blade looses a second volley of blood bolts', 'sunder');
   N('reaper', 0, 2, 1, 'graveTide', 'GRAVE TIDE', 1, 'G: hands come up out of the floor ahead of you, holding and tearing at whatever is standing on it', 'harvestMoon', 'skill');
   N('reaper', 0, 2, 2, 'rend', 'REND', 1, 'anything wearing your mark bleeds when the blade finds it', 'bloodMark');
-  N('reaper', 0, 3, 2, 'coldComfort', 'COLD COMFORT', 1, 'while no skeleton of yours is standing, the greatsword cuts half as hard again', 'rend');
+  N('reaper', 0, 3, 2, 'coldComfort', 'COLD COMFORT', 1, 'while SUMMON SKELETON is waiting and no skeleton of yours is standing, the greatsword cuts half as hard again', 'rend');
   N('reaper', 0, 3, 1, 'winnow', 'WINNOWED', 1, 'a marked foe under a quarter of its health dies to the next thing you do to it, whatever that is', 'graveTide', 'cap');
-  // GRAVELORD: the raised dead
-  N('reaper', 1, 0, 0, 'graveGoods', 'GRAVE GOODS', 2, 'RAISE DEAD: your skeletons last four seconds longer, hit one harder and hold together for one more blow a point');
-  N('reaper', 1, 0, 2, 'gleaner', 'GLEANER', 1, 'RAISE DEAD costs half as much blood: ten, not twenty');
-  N('reaper', 1, 1, 0, 'press', 'THE PRESS', 1, 'RAISE DEAD can keep a third skeleton standing', 'graveGoods');
+  // GRAVELORD: the summoned dead. SUMMON SKELETON is the root: it puts the dead on his F, and everything under it is about them
+  N('reaper', 1, 0, 1, 'summonSkeleton', 'SUMMON SKELETON', 1, 'F: a skeleton stands up beside him - a warrior, an archer or a mage, at random - and fights for ten seconds. one at a time, and eighteen seconds between');
+  N('reaper', 1, 0, 0, 'graveGoods', 'GRAVE GOODS', 2, 'your skeletons last three seconds longer, hit two harder and hold together for one more blow a point', 'summonSkeleton');
+  N('reaper', 1, 0, 2, 'gleaner', 'GLEANER', 1, 'SUMMON SKELETON waits a third less: twelve seconds, not eighteen', 'summonSkeleton');
+  N('reaper', 1, 1, 0, 'press', 'THE PRESS', 1, 'SUMMON SKELETON stands up two at once, of two kinds, and two can be standing', 'graveGoods');
   N('reaper', 1, 1, 1, 'unholyGround', 'UNHOLY GROUND', 1, 'G: a patch of floor that is his. theirs standing in it are marked and bleed; yours stop running out of time and put a bone back', 'graveGoods', 'skill');
-  N('reaper', 1, 1, 2, 'bidden', 'BIDDEN', 1, 'what RAISE DEAD stands up goes for whatever you struck last', 'gleaner');
-  N('reaper', 1, 2, 0, 'ossuary', 'OSSUARY', 1, 'once every twelve seconds RAISE DEAD needs no body: one stands up out of bare ground', 'press');
-  N('reaper', 1, 2, 1, 'gravecall', 'GRAVECALL', 1, 'G: he does not wait for a body. three skeletons stand up around him at once, out of bare ground, and they cost no blood', 'unholyGround', 'skill');
+  N('reaper', 1, 1, 2, 'bidden', 'BIDDEN', 1, 'what you summon goes for whatever you struck last', 'gleaner');
+  N('reaper', 1, 2, 0, 'ossuary', 'OSSUARY', 1, 'a skeleton of yours that comes apart, broken or out of time, takes four seconds off SUMMON SKELETON\'s wait', 'press');
+  N('reaper', 1, 2, 1, 'gravecall', 'GRAVECALL', 1, 'G: one of each kind stands up round him at once - a warrior, an archer and a mage - for five seconds. they do not count against SUMMON SKELETON\'s one', 'unholyGround', 'skill');
   N('reaper', 1, 2, 2, 'dueRites', 'DUE RITES', 1, 'a kill inside the reach of a full nova leaves a heart behind', 'bidden');
   N('reaper', 1, 3, 0, 'secondDeath', 'SECOND DEATH', 1, 'a skeleton that comes apart - broken or out of time - takes what is near it with it', 'ossuary');
-  N('reaper', 1, 3, 1, 'graveProvides', 'THE GRAVE PROVIDES', 1, 'every kill is a free RAISE DEAD: a skeleton stands up where the body fell', 'gravecall', 'cap');
+  N('reaper', 1, 3, 1, 'graveProvides', 'THE GRAVE PROVIDES', 1, 'a kill, while you have room for a skeleton, is a free summon: one stands up where the body fell, the kind the body was', 'gravecall', 'cap');
   // WARD: the blood ward, and what comes back out of it
-  N('reaper', 2, 0, 0, 'deathwatch', 'WIDE WARD', 2, 'the ward holds a fifth more blood a point, so a full nova reaches further and hits harder');
+  N('reaper', 2, 0, 0, 'deathwatch', 'WIDE WARD', 2, 'the ward holds a fifth more a point before it breaks, so a full nova reaches further and hits harder');
   N('reaper', 2, 0, 2, 'drainWalk', 'WARD WALK', 1, 'you can walk while the ward is up, slowly: the blade comes with you');
   N('reaper', 2, 1, 0, 'longPassing', 'LONG PASSING', 1, 'the passing goes half again as far, and marks everything it goes through', 'deathwatch');
   N('reaper', 2, 1, 1, 'scytheThrown', 'DEATH COIL', 1, 'G: a knot of blood goes out until it finds something, opens it, marks it, and comes back into him as health', 'deathwatch', 'skill');
-  N('reaper', 2, 1, 2, 'wardPull', 'THE PULL', 1, 'the nova drags what it catches a step toward him, and the dead on the ground come with it', 'drainWalk');
+  N('reaper', 2, 1, 2, 'wardPull', 'THE PULL', 1, 'the nova drags what it catches a step toward him', 'drainWalk');
   N('reaper', 2, 2, 0, 'lastRites', 'LAST RITES', 1, 'blood surge takes six more from each of them, reaches further and holds them half a second longer', 'longPassing');
   N('reaper', 2, 2, 1, 'deathGrip', 'DEATH GRIP', 1, 'G: the rune goes out, takes the nearest thing in front of him and DRAGS IT TO HIS FEET, marked and off balance. a boss will not come, but it wears the mark', 'scytheThrown', 'skill');
   N('reaper', 2, 2, 2, 'deepRed', 'DEEP RED', 1, 'the nova heals half again as much, and four more for every marked foe it catches', 'wardPull');
@@ -567,7 +573,7 @@ function resetTalents(h) { PROG.talents = PROG.talents || {}; PROG.talents[h] = 
    now, a rank at twelve and the second at twenty-four. (The +3 health, +5 stamina and +1 damage every second level were already
    there and are not this.) */
 const LV_GROW = h => Math.min(heroLevel(h), 24) / 12;
-const cdOf = k => (CD_MAX[k] || 3) * (1 - 0.15 * Math.max(0, tal(k) - 1)) * (1 - 0.04 * LV_GROW()); // a skill's wait shortens a little with the hero's level
+const cdOf = k => (k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3) * (1 - 0.15 * Math.max(0, tal(k) - 1)) * (1 - 0.04 * LV_GROW()); // a skill's wait shortens a little with the hero's level
 const amul = k => 1 + 0.25 * Math.max(0, tal(k) - 1); // and its blow deepens
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
@@ -673,7 +679,7 @@ const PAL_ICONS = {
   holyCharge: pixIcon(['..........', '.ssssss...', 'sssyysss..', 'ssyyyyss..', 'ssyyyyss.y', '.ssyyss.yy', '.ssssss.y.', '..ssss....', '...ss.....', '..........', '..........', '..........']),
   blessedHammer: pixIcon(['.y......y.', '..wwwww...', '.ywwwwwy..', '..wwwww...', '....b.....', '....b...y.', '....b.....', '.y..b.....', '....b.....', '..........', '..........', '..........']) };
 const MORE_ICONS = {
-  raiseDead: pixIcon(['..........', '...wwww...', '..wwwwww..', '..wdwwdw..', '..wwwwww..', '...wsws...', '....ss....', '.y..ss..y.', 'y.y.ss.y.y', 'ssssssssss', 'bbbbbbbbbb', '..........']),   /* RAISE DEAD: a skull coming up out of the ground */
+  summonSkeleton: pixIcon(['..........', '...wwww...', '..wwwwww..', '..wdwwdw..', '..wwwwww..', '...wsws...', '....ss....', '.y..ss..y.', 'y.y.ss.y.y', 'ssssssssss', 'bbbbbbbbbb', '..........']),   /* SUMMON SKELETON: a skull coming up out of the ground */
   deathGrip: pixIcon(['..........', '..y.......', '.y.y......', '..y.y.....', '...y.y....', '....y.y...', '.....yyy..', '....yy.yy.', '....y...y.', '..........', '..........', '..........']),
   unholyGround: pixIcon(['..........', '....y.....', '..y.y.y...', '.y..y..y..', '..y.y.y...', '....y.....', '.yyyyyyyy.', 'y.y....y.y', '..........', '..........', '..........', '..........']),
   scytheThrown: pixIcon(['.......ss.', '......ss..', '.....ss...', '....ss....', '...wss....', '..ww......', '.ww...y...', 'ww...y.y..', '......y...', '..........', '..........', '..........']),
@@ -748,7 +754,7 @@ function drawHoly(cx, cy) {
   for (const m of hammers) { g.save(); g.translate(Math.round(m.x - cx), Math.round(m.y - cy)); g.rotate(m.t * 14); g.fillStyle = '#c9a040'; g.fillRect(-1, -1, 2, 7); g.fillStyle = '#fff6c8'; g.fillRect(-4, -5, 8, 4); g.fillStyle = '#ffd36b'; g.fillRect(-4, -5, 8, 1); g.restore(); bloom(m.x - cx, m.y - cy, 10, 0.4, 'gold'); }
 }
 const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
-const CD_MAX = { deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 12, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5, skewer: 4, setSpears: 8, harrier: 5 };
+const CD_MAX = { summonSkeleton: 18, deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 16, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5, skewer: 4, setSpears: 8, harrier: 5 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
 const GOLD_CD = 15, goldReady = k => isPirate() && tal('paidInGold') && (PROG.coins || 0) >= GOLD_CD && skillCd(k) > 0;   /* PAID IN GOLD: a wait bought off */
 const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
@@ -757,7 +763,7 @@ const skill2Now = () => { const mine = skillsOwned(); if (isReaper()) return (mi
   if (mine.length < 2) return null; const f = skillNow(), k = PROG.skill2;   /* THE SECOND KEY IS FREE: own two skills and G carries the other */
   return k && k !== 'none' && k !== f && mine.some(n => n.id === k) ? k : ((mine.find(n => n.id !== f) || {}).id || null); };
 const skillPress = k => (throwPress && skillNow() === k) || (skill2Press && skill2Now() === k);
-const skillNow = () => { if (isReaper()) return 'raiseDead';   /* THE DEATH KNIGHT: F is always RAISE DEAD, and the skills his trees grow go on G */
+const skillNow = () => { if (isReaper()) return tal('summonSkeleton') ? 'summonSkeleton' : null;   /* THE DEATH KNIGHT: F is SUMMON SKELETON once his GRAVELORD root has it, and EMPTY until then; the skills his trees grow go on G */
   const mine = TREE.filter(n => n.hero === hero() && n.active && tal(n.id)); if (!mine.length) return null; const k = PROG.skill; return mine.some(n => n.id === k) ? k : mine[0].id; };
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
@@ -3244,7 +3250,7 @@ function updateTree(dt) {
         if (cur.active && isReaper()) { if (!own(PROG.skill2) || PROG.skill2 === cur.id) PROG.skill2 = cur.id; }   /* the Death Knight's first tree skill finds G */
         else if (cur.active && (!PROG.skill || PROG.skill === 'none' || !own(PROG.skill))) PROG.skill = cur.id;   /* a first skill goes on F, and the second finds G by itself */
         applyUpgrades(); saveProgress(); statFlash = 0.8; say(cur.name + (cur.max > 1 ? ' ' + m[cur.id] + ' of ' + cur.max : ' learned'), SFX.rankUp); burst(camX + VW / 2, camY + 30, 12, ['#fff6c8', '#ffd36b'], 50, 0.5, -20, 1); } } }
-  if (isReaper() && (throwPress || skill2Press) && cur && cur.active) { if (tal(cur.id)) { PROG.skill2 = cur.id; saveProgress(); say(cur.name + ' is on G', SFX.equip); } else say('learn it first', SFX.buzz); }   /* his F is RAISE DEAD: either key puts a tree skill on G */
+  if (isReaper() && (throwPress || skill2Press) && cur && cur.active) { if (tal(cur.id)) { PROG.skill2 = cur.id; saveProgress(); say(cur.name + ' is on G', SFX.equip); } else say('learn it first', SFX.buzz); }   /* his F is SUMMON SKELETON (a rule node, not a tree skill): either key puts a tree skill on G */
   else if (throwPress && cur && cur.active) { if (tal(cur.id)) { if (PROG.skill2 === cur.id) PROG.skill2 = PROG.skill || 'none'; PROG.skill = cur.id; saveProgress(); say(cur.name + ' is on F', SFX.equip); } else say('learn it first', SFX.buzz); }
   if (!isReaper() && skill2Press && cur && cur.active) { if (!tal(cur.id)) say('learn it first', SFX.buzz); else if (skillsOwned().length < 2) say('learn a second skill and G carries it', SFX.buzz);
     else { if (skillNow() === cur.id) PROG.skill = (skillsOwned().find(n => n.id !== cur.id) || {}).id || 'none'; PROG.skill2 = cur.id; saveProgress(); say(cur.name + ' is on G', SFX.equip); } }
@@ -3290,7 +3296,7 @@ const TAL_BY_NAME = {
   wildfire: 'flame', jetWalk: 'flame', inferno: 'flame', smoulder: 'flame', phoenixTrail: 'flame', stoke: 'bolt',
   litany: 'cross', doubleJudge: 'light', unwavering: 'shield', fortress: 'reflect', heavyTread: 'ring', aftershock: 'ring',
   hotBarrel: 'shot', longBarrel: 'shot', quickHands: 'shot', greased: 'coin', paidInGold: 'coin', noQuarter: 'coin', haulCut: 'hook', rollCut: 'hook', parryCut: 'reflect', swash: 'boot',
-  bloodMark: 'eye', bidden: 'skull', graveProvides: 'skull', gleaner: 'skull', drainWalk: 'boot', wardPull: 'hook', deepRed: 'heart', overflow: 'ring',
+  bloodMark: 'eye', bidden: 'skull', graveProvides: 'skull', summonSkeleton: 'skull', gleaner: 'skull', drainWalk: 'boot', wardPull: 'hook', deepRed: 'heart', overflow: 'ring',
   /* THE WARDEN. The point is a blade, the brace is a shield, the footwork is a boot - and the ones that are really a
      rule about time or blood take the glyph of the thing they do, not of the tree they grow in. */
   keenPoint: 'blade', throughAndThrough: 'blade', openPoint: 'eye', ringing: 'bolt', driveHome: 'chev', exact: 'eye',
@@ -3399,7 +3405,7 @@ function drawTree() {
   text(fitName(((HEROES.find(k => k.id === h) || {}).name || '').replace('THE ', ''), 72, 6), 9, 5, UI.title, 'left', 6);   /* the level is on the points plate: beside the name it cut PYROMANCER to nothing */
   // WHAT IS ON YOUR KEYS, always, wherever you are in the tree
   { const nameOf = id => { const n = TREE.find(q => q.id === id && q.hero === h); return n ? n.name : null; };
-    const f = isReaper() ? 'RAISE DEAD' : nameOf(skillNow()), g2 = nameOf(skill2Now());
+    const f = isReaper() ? (tal('summonSkeleton') ? 'SUMMON' : null) : nameOf(skillNow()), g2 = nameOf(skill2Now());
     const cell = (x, key, nm, col) => { const w = 74;
       g.fillStyle = 'rgba(24,21,34,0.92)'; g.fillRect(x, 2, w, 11);
       g.strokeStyle = nm ? col : '#3e3a4c'; g.lineWidth = 1; g.strokeRect(x + 0.5, 2.5, w - 1, 10);
@@ -4506,7 +4512,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (isReaper() && !unblockable && frontA) {
     const f = wardFoe(fromX), beat = f && f.t === 'closedhelm' ? WARD_BEAT_PAL : WARD_BEAT;
     if (!P.warding && !P.wardRetDone && (P.wardSince ?? 9) < beat) { wardReturn(f, dmg); return 'blocked'; }
-    if (P.warding) { trialEvent('ward'); wardStop(dmg, fromX); return 'blocked'; }   /* (his trial's C step, REAPER_C in trialYard: a blow taken ON the ward, not any blow that finds him) */
+    if (P.warding) { trialEvent('ward'); const w = wardStop(dmg, fromX); if (w === 'held') return 'blocked';
+      dmg = w === 'broken' ? Math.ceil(dmg / 2) : Math.max(1, Math.ceil(dmg * WARD_PRICE)); }   /* BROKEN: half the blow finds him, as a knight's guard break. And blood he has not got goes through as the blow that kills him */   /* (his trial's C step, REAPER_C in trialYard: a blow taken ON the ward, not any blow that finds him) */
   }
   const front = Math.sign(fromX - P.x) === P.face || fromX === P.x;
   if (isPirate() && P.parryW > 0 && front && !unblockable) {
@@ -5034,7 +5041,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && isPirate() && tal('cutthroat') && P.combo % 5 === 0) { dmg = dmg * 2; number(e.x, e.y - e.h - 16, 'CUTTHROAT', '#ffd36b'); }
   if (isPirate() && tal('runThrough') && P.combo % 5 === 0 && e.guardT > 0) { e.guardT = 0; number(e.x, e.y - e.h - 22, 'RUN THROUGH', '#ffd36b'); SFX.clank(); }
   if (dmg > 0 && isReaper() && tal('winnow') && (e.mark || 0) > 0 && e.alive && !e.maxHp && (e.hp <= fullHp(e) * 0.25 || e.hp - dmg <= fullHp(e) * 0.25) && e.hp - dmg > 0) { dmg = e.hp; number(e.x, e.y - e.h - 16, 'WINNOWED', '#8fd160'); SFX.heavy(); }
-  if (dmg > 0 && isReaper() && tal('coldComfort') && !risen.some(r => r.life > 0)) dmg = Math.round(dmg * 1.5);
+  if (dmg > 0 && isReaper() && tal('coldComfort') && skillCd('summonSkeleton') > 0 && !risen.some(r => r.life > 0)) dmg = Math.round(dmg * 1.5);   /* COLD COMFORT: the summon spent and nothing of his standing */
   if (dmg > 0 && isPirate() && (e.spot || 0) > 0) dmg = Math.round(dmg * 1.33);
   if (dmg > 0 && isPirate() && tal('turncoat') && P.riposteT > 0) { dmg = dmg * 2; P.riposteT = 0; number(e.x, e.y - e.h - 16, 'TURNCOAT', '#ffd36b'); }
   if (dmg > 0 && isPyro() && tal('brand') && e.burn > 0) dmg = Math.round(dmg * 1.5); // BRAND
@@ -5526,9 +5533,14 @@ let novas = [];   /* the BLOOD NOVA's rings, going out */
 /* BLOOD WARD, IN NUMBERS. C held a twelfth of a second stands the ward up (the blade going in); standing it up costs six wind
    and holding it twelve a second; a blow on its face costs five and fills it by 8 + 0.9 of the blow. The NOVA's power is what
    it held over a base full ward of 60: 28 px and 5 damage empty, 72 px and 32 full (the damage in step with his sword), and he
-   heals half of what it stopped. Let go inside the BEAT before a blow lands and the blow is RETURNED - against the Paladin's
+   heals the blood the ward cost him (THE BLOOD PRICE, below). Let go inside the BEAT before a blow lands and the blow is RETURNED - against the Paladin's
    sword the beat is the one every hero gets from him (PAL_BEAT, 0.45 s). */
 const WARD_UP = 0.08, WARD_HOLD = 12, WARD_RAISE = 6, WARD_HIT = 5, WARD_BASE = 60, WARD_BEAT = 0.22, WARD_BEAT_PAL = 0.45, NOVA_CD = 0.6, SURGE_HOLD = 0.3;
+/* THE BLOOD PRICE (2026-09-17: "Deathknights block ability is op"). The ward was free and paid out in damage and health, so holding it
+   through everything was the best play. Now a blow on its face still costs him WARD_PRICE of itself in health - that BLOOD is what the
+   nova heals back (NOVA_HEAL of it: a release repays the blood, DEEP RED turns a profit) - and a FULL ward struck again BREAKS: half the
+   blow lands, he reels, what it held is lost and the ward will not stand up for WARD_BROKEN. The RETURN costs no blood. */
+const WARD_PRICE = 0.35, NOVA_HEAL = 1, WARD_BROKEN = 1.2;
 const wardCap = () => WARD_BASE * (1 + 0.2 * tal('deathwatch'));   /* WIDE WARD */
 const novaPow = gv => Math.min(gv, wardCap()) / WARD_BASE;
 const novaR = k => Math.round(28 + 44 * k);
@@ -5541,8 +5553,8 @@ const bodyKind = t => CASTERS.has(t) ? 'wisp' : SHOOTERS.has(t) ? 'shade' : 'wig
 function leaveBody(e) {   // THE REAPING drags what it kills to his feet; anything else lies where it fell
   if (!isReaper() || !e || e.harmless) return;
   const drag = !!P.reaping;
-  if (tal('graveProvides') && !e.maxHp && !e.mini && e.t !== 'dummy') { const up = risen.filter(r => r.life > 0); if (up.length >= RISEN_MAX()) up.sort((a, b) => a.life - b.life)[0].life = 0;   /* THE GRAVE PROVIDES: no body lies there, it is already up (and the oldest makes room) */
-    riseAt(e.x, e.y, bodyKind(e.t)); number(e.x, e.y - 30, 'THE GRAVE PROVIDES', '#8fd160'); gainHarvest(e.mark > 0 ? 16 : 7); return; }
+  if (tal('graveProvides') && tal('summonSkeleton') && !e.maxHp && !e.mini && e.t !== 'dummy' && summoned().length < RISEN_MAX()) {   /* THE GRAVE PROVIDES: no body lies there, it is already up - while there is room for it, so it is still one at a time */
+    riseAt(e.x, e.y, bodyKind(e.t)); gainHarvest(e.mark > 0 ? 16 : 7); return; }
   bodies.push({ x: drag ? P.x + P.face * 10 : e.x, y: drag ? P.y - 4 : e.y, kind: bodyKind(e.t), life: 24, t: e.t });
   if (bodies.length > 14) bodies.shift();
   gainHarvest(e.mark > 0 ? 16 : 7);
@@ -5554,30 +5566,33 @@ function markFoe(e, why) {
   const was = (e.mark || 0) > 0; e.mark = 6;
   if (!was) { motes(e.x, e.y - e.h / 2, 4, 6); if (why) SFX.ui(); }
 }
-const RISEN_MAX = () => 2 + tal('press');
-const RAISE_COST = () => tal('gleaner') ? 10 : 20;   /* RAISE DEAD's price in blood: GLEANER halves it */
-/* THE CUE: can F raise right now, and off which body - the one that glows, while the F slot lights */
-function raiseCue() { let b = null, bd = 1e9; for (const q of bodies) { if (q.life <= 0) continue; const d = Math.hypot(q.x - P.x, q.y - P.y); if (d < 96 && d < bd) { bd = d; b = q; } }
-  const afford = (P.harvest || 0) >= RAISE_COST(), room = risen.filter(r => r.life > 0).length < RISEN_MAX(), bare = !b && !!tal('ossuary') && !(P.ossuaryCd > 0);
-  return { ok: isReaper() && afford && room && (!!b || bare), body: isReaper() && afford && room ? b : null, afford, room, bare }; }
-/* THE METER SHOWS RAISE DEAD: a notch in the blood at every raise's worth, and a skull under the bar for each one he can pay for */
-function raisePips() { const cost = RAISE_COST(); return { cost, total: Math.floor(100 / cost), can: Math.floor((P.harvest || 0) / cost) }; }
-function raiseBody() {
-  const raiseCost = RAISE_COST();   /* GLEANER */
-  if ((P.harvest || 0) < raiseCost) { SFX.buzz(); number(P.x, P.y - 26, 'NOT ENOUGH', '#9aa39a'); return; }
-  if (risen.filter(r => r.life > 0).length >= RISEN_MAX()) { SFX.buzz(); number(P.x, P.y - 26, 'TOO MANY UP', '#9aa39a'); return; }
-  let b = null, bd = 1e9;
-  for (const q of bodies) { if (q.life <= 0) continue; const d = Math.hypot(q.x - P.x, q.y - P.y); if (d < 96 && d < bd) { bd = d; b = q; } }
-  if (!b && tal('ossuary') && !(P.ossuaryCd > 0)) { P.ossuaryCd = 12; b = { x: P.x + P.face * 14, y: P.y, kind: 'wight', life: 1 }; }
-  if (!b) { SFX.buzz(); number(P.x, P.y - 26, 'NOTHING LYING HERE', '#9aa39a'); return; }
-  P.harvest -= raiseCost; b.life = 0; P.castT = 0.3;
-  riseAt(b.x, b.y, b.kind);
+/* SUMMON SKELETON (2026-09-17: "randomly summons a random for 10 seconds. Can either be a mage, archer, or warrior that does 5-10 damage per
+   attack, but goes away pretty quickly"). RAISE DEAD left his F with it: no body, no blood, only the wait. ONE AT A TIME - THE PRESS makes
+   it two - and a summon while they still stand makes them come apart for the new ones. GRAVECALL's three are its own and are not counted. */
+const RISEN_MAX = () => 1 + tal('press');
+const SUMMON_KINDS = ['wight', 'shade', 'wisp'];   /* the WARRIOR (a rusted sword), the ARCHER (a bow), the MAGE (a burning skull that throws a slow bolt) */
+const SUMMON_LIFE = 10, CALL_LIFE = 5;
+const boneDmg = () => 5 + Math.floor(Math.random() * 6) + 2 * tal('graveGoods');   /* 5-10 a blow, GRAVE GOODS on top */
+const summoned = () => risen.filter(r => r.life > 0 && r.src !== 'call');
+/* where one stands up beside him: out in front, or at his feet if the wall is there */
+const boneSpot = dx => { const x = P.x + dx; return isSolid(Math.floor(x / TS), Math.floor((P.y - 8) / TS)) ? P.x : x; };
+function summonSkeleton() {
+  for (const r of summoned()) { r.life = 0; r.dismissed = true; }   /* one at a time: the last ones come apart for the new */
+  const n = RISEN_MAX(), kinds = SUMMON_KINDS.slice().sort(() => Math.random() - 0.5);
+  for (let i = 0; i < n; i++) { const kind = kinds[i % 3], x = boneSpot(P.face * (14 + 16 * i));
+    riseAt(x, kind === 'wisp' ? P.y - 20 : P.y, kind); }
+  P.castT = 0.3; shakeCam(2); ringAt(P.x + P.face * 14, P.y - 8, 22, '#8fd160', 0.35);
 }
+/* F, FOR HIM: SUMMON SKELETON when his tree has it and the wait is over. With nothing on F the key does nothing (its HOLD is still the surge) */
+function summonPress() { if (skillNow() !== 'summonSkeleton') return;
+  if (!cdReady('summonSkeleton')) { SFX.buzz(); return; }
+  if (P.dead || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || P.plunge) return;   /* (canAct, which lives inside the player's update) */
+  cdSet('summonSkeleton'); summonSkeleton(); }
 // WHAT HE RAISES IS A DISTRACTION, NOT AN ARMY. A wight was hitting for twelve every three quarters of a
 // second - twenty-four a second, against the reaper's own swing of fourteen - and three of them up meant the
 // player could stand and watch. They chip now, and what they are worth is that nothing is looking at you.
-function riseAt(x, y, kind) {
-  risen.push({ x, y, vx: 0, vy: 0, kind, face: Math.sign(P.x - x) || P.face, life: 9 + 4 * tal('graveGoods'), cd: 0.6, anim: Math.random() * 3, ground: false,
+function riseAt(x, y, kind, src) {
+  risen.push({ x, y, vx: 0, vy: 0, kind, src: src || 'summon', face: Math.sign(x - P.x) || P.face, life: (src === 'call' ? CALL_LIFE : SUMMON_LIFE) + 3 * tal('graveGoods'), cd: 0.6, anim: Math.random() * 3, ground: false,
     hp: 3 + tal('graveGoods'), flash: 0, rise: 0.35 });
   SFX.gasp ? SFX.gasp() : SFX.ui(); ringAt(x, y - 8, 14, '#8fd160', 0.3); motes(x, y - 8, 10, 9);
   for (let i = 0; i < 10; i++) parts.push({ x: x + (Math.random() - 0.5) * 12, y, vx: (Math.random() - 0.5) * 40, vy: -50 - Math.random() * 60, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#8fd160' : '#dfffa0', size: 2, grav: 40 });
@@ -5594,20 +5609,21 @@ function updateRisen(dt) {
       const ax = (P.x - r.x - P.face * 18), ay = (P.y - 24 - r.y);
       r.vx += Math.sign(ax) * Math.min(120, Math.abs(ax)) * dt * 2.4; r.vy += Math.sign(ay) * Math.min(90, Math.abs(ay)) * dt * 2.4;
       r.vx *= Math.pow(0.06, dt); r.vy *= Math.pow(0.06, dt); r.x += r.vx * dt; r.y += r.vy * dt;
-      if (tgt && r.cd <= 0) { r.cd = 1.5; const d = Math.hypot(tgt.x - r.x, tgt.y - r.y - 8) || 1;
-        rbolts.push({ x: r.x, y: r.y, vx: (tgt.x - r.x) / d * 150, vy: (tgt.y - 8 - r.y) / d * 150, life: 2.2, home: true, dmg: 2 + tal('graveGoods') }); SFX.puff ? SFX.puff() : SFX.ui(); }
+      if (tgt && r.cd <= 0) { r.cd = 1.5; const d = Math.hypot(tgt.x - r.x, tgt.y - r.y - 8) || 1;   /* THE MAGE: a slow bolt that finds its way */
+        rbolts.push({ x: r.x, y: r.y, vx: (tgt.x - r.x) / d * 110, vy: (tgt.y - 8 - r.y) / d * 110, life: 2.8, home: true, sp: 150, dmg: boneDmg() }); SFX.puff ? SFX.puff() : SFX.ui(); }
     } else {
       r.vy += 900 * dt; r.y += r.vy * dt;
       const ty = Math.floor((r.y + 1) / TS);
       if (isSolid(Math.floor(r.x / TS), ty) || isOneWay(tileAt(Math.floor(r.x / TS), ty)) && r.vy > 0) { r.y = ty * TS; r.vy = 0; r.ground = true; } else r.ground = false;
       if (r.kind === 'shade') {                                // it stands where it rose and looses
         if (tgt && r.cd <= 0) { r.cd = 1.1; r.face = Math.sign(tgt.x - r.x) || r.face; const d = Math.hypot(tgt.x - r.x, tgt.y - 8 - r.y) || 1;
-          rbolts.push({ x: r.x, y: r.y - 10, vx: (tgt.x - r.x) / d * 260, vy: (tgt.y - 8 - r.y) / d * 260, life: 1.6, dmg: 2 + tal('graveGoods') }); SFX.bow ? SFX.bow() : SFX.ui(); }
+          rbolts.push({ x: r.x, y: r.y - 10, vx: (tgt.x - r.x) / d * 260, vy: (tgt.y - 8 - r.y) / d * 260, life: 1.6, dmg: boneDmg() }); SFX.bow ? SFX.bow() : SFX.ui(); }
       } else {                                                  // THE WIGHT walks at it and swings
         if (tgt) { r.face = Math.sign(tgt.x - r.x) || r.face; if (Math.abs(tgt.x - r.x) > 14) r.x += r.face * 56 * dt;
-          else if (r.cd <= 0) { r.cd = 0.75; hurtEnemy(tgt, 2 + tal('graveGoods'), r.x, false); sparks(tgt.x, tgt.y - tgt.h / 2, r.face, 5); SFX.foeSlash ? SFX.foeSlash() : SFX.slash(); } }
+          else if (r.cd <= 0) { r.cd = 0.9; hurtEnemy(tgt, boneDmg(), r.x, false); sparks(tgt.x, tgt.y - tgt.h / 2, r.face, 5); SFX.foeSlash ? SFX.foeSlash() : SFX.slash(); } }
       }
     }
+    if (r.life <= 0 && tal('ossuary') && !r.dismissed && P.cds && P.cds.summonSkeleton > 0) P.cds.summonSkeleton = Math.max(0, P.cds.summonSkeleton - 4);   /* OSSUARY: what comes apart hurries the next */
     if (r.life <= 0 && tal('secondDeath')) {                    // SECOND DEATH: it comes apart where it stands
       for (const e of enemies) if (e.alive && !e.harmless && Math.hypot(e.x - r.x, e.y - e.h / 2 - r.y) < 34) { hurtEnemy(e, 6, r.x, false); markFoe(e); }
       burst(r.x, r.y - 8, 12, ['#8fd160', '#dfffa0'], 80, 0.6); SFX.crack();
@@ -5618,7 +5634,7 @@ function updateRisen(dt) {
     b.life -= dt;
     if (b.home) { let t = null, td = 1e9;
       for (const e of enemies) { if (!e.alive || e.harmless) continue; const d = Math.hypot(e.x - b.x, e.y - 8 - b.y); if (d < td) { td = d; t = e; } }
-      if (t) { const d = Math.hypot(t.x - b.x, t.y - 8 - b.y) || 1; b.vx += ((t.x - b.x) / d * 260 - b.vx) * dt * 2.2; b.vy += ((t.y - 8 - b.y) / d * 260 - b.vy) * dt * 2.2; } }
+      if (t) { const d = Math.hypot(t.x - b.x, t.y - 8 - b.y) || 1, sp = b.sp || 260; b.vx += ((t.x - b.x) / d * sp - b.vx) * dt * 2.2; b.vy += ((t.y - 8 - b.y) / d * sp - b.vy) * dt * 2.2; } }
     b.x += b.vx * dt; b.y += b.vy * dt;
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
       if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 4 && b.y < e.y + 4) { hurtEnemy(e, b.dmg, b.x, false); burst(b.x, b.y, 6, ['#8fd160', '#dfffa0'], 60, 0.4); b.life = 0; break; } }
@@ -5657,13 +5673,7 @@ function drawRisen(cx, cy) {
     g.strokeStyle = s.struck ? '#ff9a9a' : '#c0283a'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 4, 1.4, 5.6); g.stroke();
     g.fillStyle = '#ff6b6b'; g.fillRect(-1, -1, 3, 3); g.restore();
     if (Math.random() < 0.6) parts.push({ x: s.x, y: s.y, vx: 0, vy: 10, life: 0.25, max: 0.25, col: '#a01a2a', size: 1, grav: 60 }); }
-  const cueB = isReaper() ? raiseCue().body : null;   /* THE CUE: the body RAISE DEAD would take glows, while he can pay for it */
   for (const b of bodies) { const a = Math.min(1, b.life / 3) * 0.5;   /* a body lying there, and a green in it */
-    if (b === cueB) { const p = 0.5 + 0.5 * Math.sin(time * 5), bx = Math.round(b.x - cx), by = Math.round(b.y - cy);   /* a green on green grass is no cue: it is LIT, ringed pale, and his skull hangs over it */
-      g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35 + 0.3 * p; g.fillStyle = '#8fd160'; g.beginPath(); g.ellipse(bx, by - 2, 13, 5, 0, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over';
-      g.globalAlpha = 0.9; g.strokeStyle = '#dfffa0'; g.lineWidth = 1; g.beginPath(); g.ellipse(bx + 0.5, by - 2.5, 13, 5, 0, 0, 7); g.stroke();
-      g.globalAlpha = 0.6 + 0.4 * p; g.drawImage(skillIcon('raiseDead'), bx - 6, by - 24 - Math.round(p * 2)); g.globalAlpha = 1;
-      if (Math.random() < 0.15) parts.push({ x: b.x + (Math.random() - 0.5) * 12, y: b.y - 4, vx: 0, vy: -18, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: -6, glow: true }); }
     g.globalAlpha = a; g.fillStyle = '#2a3a24'; g.fillRect(Math.round(b.x - cx) - 6, Math.round(b.y - cy) - 3, 12, 3);
     g.fillStyle = '#8fd160'; g.fillRect(Math.round(b.x - cx) - 1 + Math.round(Math.sin(time * 2 + b.x) * 2), Math.round(b.y - cy) - 5, 1, 1); g.globalAlpha = 1; }
   for (const r of risen) {
@@ -6203,9 +6213,8 @@ function updatePlayer(dt) {
     number(P.x, P.y - 30, 'BLOOD BOIL', '#ff6b6b'); } else tired(); }
   // ---- GRAVECALL: he does not wait for a body ----
   if (isReaper() && skillPress('gravecall') && cdReady('gravecall') && canAct()) { if (spend(26)) { cdSet('gravecall');
-    for (let i = 0; i < 3; i++) { const rx = P.x + (i - 1) * 24;
-      risen.push({ x: rx, y: P.y, vx: 0, vy: 0, kind: 'wight', face: Math.sign(P.x - rx) || P.face, life: (9 + 4 * tal('graveGoods')) * (1 + 0.15 * (tal('gravecall') - 1)), cd: 0.6, anim: Math.random() * 3, ground: false });
-      motes(rx, P.y - 10, 5, 7); burst(rx, P.y, 8, ['#8fd160', '#141a16'], 60, 0.5); }
+    SUMMON_KINDS.forEach((kind, i) => { const rx = boneSpot((i - 1) * 24);   /* one of each: the warrior, the archer and the mage, for CALL_LIFE */
+      riseAt(rx, kind === 'wisp' ? P.y - 20 : P.y, kind, 'call'); burst(rx, P.y, 8, ['#8fd160', '#141a16'], 60, 0.5); });
     SFX.gobDie(); SFX.heavy(); shakeCam(5); zoomKick(1.06, 0.25); ringAt(P.x, P.y - 10, 44, '#8fd160', 0.45);
     number(P.x, P.y - 32, 'GRAVECALL', '#8fd160'); } else tired(); }
   // ---- BROADSIDE: everything he has, down the deck, in one line ----
@@ -6380,12 +6389,12 @@ function updatePlayer(dt) {
   if (P.rooted && (!P.rooted.alive || P.rooted.mode !== 'hold')) P.rooted = null;
   if (isReaper()) {
     P.harvest = Math.max(0, Math.min(100, P.harvest || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
-    P.ossuaryCd = Math.max(0, (P.ossuaryCd || 0) - dt); P.reaping = Math.max(0, (P.reaping || 0) - dt);
+    P.reaping = Math.max(0, (P.reaping || 0) - dt);
     P.wardFlash = Math.max(0, (P.wardFlash || 0) - dt); P.novaCd = Math.max(0, (P.novaCd || 0) - dt); P.returnT = Math.max(0, (P.returnT || 0) - dt); P.wardSince = (P.wardSince ?? 9) + dt; P.retSince = (P.retSince ?? 9) + dt; P.parryT = Math.max(0, (P.parryT || 0) - dt);
     const free = !stunned && !dodging && !P.plunge && !(P.blastT > 0);
-    /* F: RAISE DEAD, on the press. Only with a full bar does the press wait to see whether it is a HOLD: held, it is BLOOD SURGE; let go, still a raise */
-    if (throwPress && skillNow() === 'raiseDead') { if (P.harvest >= 100) P.fHeld = 0.001; else if (free) raiseBody(); }
-    if (P.fHeld > 0) { if (keys.throw && P.harvest >= 100) { P.fHeld += dt; if (P.fHeld >= SURGE_HOLD) { P.fHeld = 0; if (free) bloodSurge(); } } else { P.fHeld = 0; if (free) raiseBody(); } }
+    /* F: SUMMON SKELETON, on the press. Only with a full bar does the press wait to see whether it is a HOLD: held, it is BLOOD SURGE; let go, still a summon */
+    if (throwPress) { if (P.harvest >= 100) P.fHeld = 0.001; else if (free) summonPress(); }
+    if (P.fHeld > 0) { if (keys.throw && P.harvest >= 100) { P.fHeld += dt; if (P.fHeld >= SURGE_HOLD) { P.fHeld = 0; if (free) bloodSurge(); } } else { P.fHeld = 0; if (free) summonPress(); } }
     if (keys.block) { P.cHeld = (P.cHeld || 0) + dt;
       if (P.cHeld >= WARD_UP && free && !attacking && (P.ground || P.swim) && P.st > 0 && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
         if (!(P.wardHeld > 0)) { P.wardHeld = 0.001; P.st = Math.max(0, P.st - WARD_RAISE); P.wardFull = (P.wardG || 0) >= wardCap() - 0.5; SFX.dkWard(); ringAt(P.x + P.face * 12, P.y - 18, 14, '#ff4a5a', 0.3); }
@@ -6396,11 +6405,11 @@ function updatePlayer(dt) {
         if (P.st <= 0) { P.warding = false; P.cHeld = -99; P.wardHeld = 0; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); bloodNova(); P.wardRetDone = true; }
       } }
     /* AND HE LETS GO: everything the ward stopped comes back out of him at once. A tap too short to stand the ward up does nothing.
-       (C used to RAISE THE DEAD on a tap: that is unbound here, and raiseBody() is kept whole for wherever raising goes next) */
+       (C used to RAISE THE DEAD on a tap; RAISE DEAD itself is gone now, and SUMMON SKELETON is on F) */
     else { if (P.wardHeld > 0 && !P.dead) bloodNova();
       P.cHeld = 0; P.wardHeld = 0; }
     /* what a RETURN gave back is kept three seconds, then it bleeds away */
-    if (!P.warding && (P.wardG || 0) > 0) { P.wardKeepT = Math.max(0, (P.wardKeepT || 0) - dt); if (P.wardKeepT <= 0) { P.wardG = Math.max(0, P.wardG - 20 * dt); P.wardDmg = Math.max(0, (P.wardDmg || 0) - 20 * dt); } }
+    if (!P.warding && (P.wardG || 0) > 0) { P.wardKeepT = Math.max(0, (P.wardKeepT || 0) - dt); if (P.wardKeepT <= 0) P.wardG = Math.max(0, P.wardG - 20 * dt); }
     if (P.novaT > 0) { P.novaT -= dt; if (P.novaT <= 0 && !P.dead) bloodNova(P.novaK, true); }   /* OVERFLOW: the second burst */
   }
   if (isPirate()) {
@@ -15655,16 +15664,31 @@ function wardFoe(fromX) { const f = nearFoe(fromX); if (f) return f;
   const sd = Math.sign(fromX - P.x) || P.face; let b = null, bd = 220;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || (Math.sign(e.x - P.x) || sd) !== sd) continue; const d = Math.abs(e.x - P.x) + Math.abs(e.y - P.y); if (d < bd) { bd = d; b = e; } }
   return b; }
+/* 'held' - the ward took it, and he paid its BLOOD; 'broken' - it was FULL, and it breaks; 'bled' - the blood was more than he has, so it goes through */
 function wardStop(dmg, fromX) {
-  const cap = wardCap(); P.wardG = Math.min(cap, (P.wardG || 0) + 8 + dmg * 0.9); P.wardDmg = Math.min(cap, (P.wardDmg || 0) + dmg);
+  const cap = wardCap();
+  if ((P.wardG || 0) >= cap - 0.5) { wardBreak(fromX); return 'broken'; }
+  const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1)));   /* a trial never hurts */
+  if (blood >= P.hp) return 'bled';
+  P.hp -= blood; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood, '#c0283a');
+  P.wardG = Math.min(cap, (P.wardG || 0) + 8 + dmg * 0.9);
   P.st = Math.max(0, P.st - WARD_HIT); P.stDelay = ST.delay; P.inv = Math.max(P.inv, 0.22); P.hurt = 0; P.wardFlash = 0.2; blocks++; gainHarvest(2);
   const k = P.wardG / cap, sd = Math.sign(fromX - P.x) || P.face, x = P.x + sd * 13, y = P.y - 18;
   SFX.dkWardHit(k); hitstop(0.04); shakeCam(2, -sd); ringAt(x, y, 12 + 8 * k, '#ff4a5a', 0.26); streaks(x, y, 7, ['#ffd0d0', '#ff4a5a', '#7a1020'], 130);
-  if (k >= 1 && !P.wardFull) { P.wardFull = true; ringAt(P.x, P.y - 18, 30, '#ffd0d0', 0.45); SFX.lightFull(); } }   /* FULL: it says so, once */
+  if (k >= 1 && !P.wardFull) { P.wardFull = true; ringAt(P.x, P.y - 18, 30, '#ffd0d0', 0.45); SFX.lightFull(); }   /* FULL: it says so, once - and the next blow breaks it */
+  return 'held'; }
+/* THE WARD BREAKS: a full ward struck again. It comes apart in shards with its own sound, what it held is gone (no nova, no healing), he
+   reels, and it will not stand up again for WARD_BROKEN. The blow itself goes on into damagePlayer at half. */
+function wardBreak(fromX) {
+  const sd = Math.sign(fromX - P.x) || P.face, x = P.x + sd * 12, y = P.y - 18;
+  P.warding = false; P.cHeld = -99; P.wardHeld = 0; P.wardRetDone = true; P.novaCd = WARD_BROKEN; P.wardG = 0; P.wardDmg = 0; P.wardFull = false; P.hurt = 0.6; P.stFlash = 0.5;
+  SFX.dkWardBreak(); hitstop(0.12); shakeCam(6, -sd * 3); zoomKick(1.05, 0.25); ringAt(x, y, 30, '#ff4a5a', 0.4);
+  for (let i = 0; i < 18; i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.6 - sd * 0.6; parts.push({ x: x + (Math.random() - 0.5) * 6, y: y + (Math.random() - 0.5) * 30, vx: -sd * (40 + Math.random() * 120) + Math.cos(a) * 30, vy: Math.sin(a) * (80 + Math.random() * 90), life: 0.6, max: 0.6, col: i % 3 === 0 ? '#ffd0d0' : i % 3 === 1 ? '#ff4a5a' : '#5a0a18', size: 2, grav: 420 }); }
+  number(P.x, P.y - 30, 'BROKEN', '#ff9a9a'); }
 /* THE RETURN: let go as a blow lands and the ward is not there to take it - the blow goes back down the arm that threw it */
 function wardReturn(f, dmg) {
   P.wardRetDone = true; P.retSince = 0; P.inv = Math.max(P.inv, 0.3); P.hurt = 0; P.parryT = 0.22; P.returnT = 0.3; parries++; noteVerb('parry'); trialEvent('parry');
-  P.wardG = P.wardRefG || 0; P.wardDmg = P.wardRefD || 0; P.wardKeepT = 3; P.st = Math.min(P.maxSt, P.st + 10);   /* and what the ward held comes back: the nova it paid for has already gone out */
+  P.wardG = P.wardRefG || 0; P.wardDmg = 0; P.wardKeepT = 3; P.st = Math.min(P.maxSt, P.st + 10);   /* and what the ward held comes back as POWER: the nova it paid for has already gone out, and so has its healing - the blood was paid back once */
   if (f) { const big = !!(f.maxHp || f.mini || f.big);
     if (!(f.t === 'closedhelm' && !(f.open > 0))) { hurtEnemy(f, Math.max(1, Math.round(dmg * 0.6)), P.x, false); markFoe(f); }   /* (the Paladin's ward takes nothing: his sword met on the beat is what breaks it) */
     f.stagger = Math.max(f.stagger || 0, big ? 0.6 : 1.4); f.flash = 0.2; P.parryFoe = f; P.parryFoeUntil = time + 1.5;   /* the reel comes after the blow, or the blow's own flinch would cut it short */
@@ -15674,11 +15698,11 @@ function wardReturn(f, dmg) {
   for (let i = 0; i < 12; i++) { const a = i / 12 * 6.28; parts.push({ x, y, vx: Math.cos(a) * 160, vy: Math.sin(a) * 160, life: 0.3, max: 0.3, col: i % 2 ? '#ffffff' : '#ff6b6b', size: 2, grav: 0, glow: true }); }
   if (SET.flashes) killFlash = Math.max(killFlash, 0.04);
   number(P.x, P.y - 30, 'RETURNED', '#ffd0d0'); }
-/* THE NOVA. A ring out of him as wide and as hard as what the ward held: it hurts and MARKS what it catches, he heals half of
-   what the ward stopped, and it opens the beat in which a blow that lands is RETURNED. OVERFLOW: a full ward goes twice. */
+/* THE NOVA. A ring out of him as wide and as hard as what the ward held: it hurts and MARKS what it catches, he heals the blood
+   the ward cost him, and it opens the beat in which a blow that lands is RETURNED. OVERFLOW: a full ward goes twice. */
 function bloodNova(k0, second) {
   const cap = wardCap(), gv = P.wardG || 0, k = second ? k0 : novaPow(gv), R = novaR(k), dmg = novaDmg(k);
-  if (!second) { P.wardRefG = gv; P.wardRefD = P.wardDmg || 0; P.wardSince = 0; P.wardRetDone = false; P.novaCd = NOVA_CD; }
+  if (!second) { P.wardRefG = gv; P.wardSince = 0; P.wardRetDone = false; P.novaCd = NOVA_CD; }
   let hit = 0, marked = 0;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
     const dx = e.x - P.x, dy = (e.y - (e.h || 16) / 2) - (P.y - 12); if (Math.abs(dx) > R + (e.w || 16) / 2 || Math.abs(dy) > R * 0.6 + (e.h || 16) / 2) continue;
@@ -15687,10 +15711,9 @@ function bloodNova(k0, second) {
     if (!e.alive || big) continue;
     e.stagger = Math.max(e.stagger || 0, 0.3 + 0.3 * Math.min(1, k));
     if (tal('wardPull') && !KNOCK_SKIP.has(e.t)) { e.x = x0; e.vx = 0; e.knock = 0; e.kvx = 0; if (Math.abs(dx) > 18) moveBody(e, -Math.sign(dx) * Math.min(Math.abs(dx) - 16, 20 + 10 * k), 0, false); } }   /* THE PULL: a step toward him, not away */
-  if (tal('wardPull')) for (const b of bodies) if (b && b.life > 0 && Math.abs(b.x - P.x) < R * 1.6 && Math.abs(b.x - P.x) > 16) b.x += Math.sign(P.x - b.x) * Math.min(Math.abs(b.x - P.x) - 14, 30);   /* and the dead come with it, to be raised */
   if (hit) gainHarvest(3 * hit);
   if (!second) {
-    const heal = Math.round((P.wardDmg || 0) * 0.5 * (tal('deepRed') ? 1.5 : 1) + (tal('deepRed') ? 4 * marked : 0));   /* DEEP RED */
+    const heal = Math.round((P.wardDmg || 0) * NOVA_HEAL * (tal('deepRed') ? 1.5 : 1) + (tal('deepRed') ? 4 * marked : 0));   /* THE BLOOD PRICE, paid back. DEEP RED */
     if (heal > 0) { P.hp = Math.min(P.maxHp, P.hp + heal); number(P.x, P.y - 40, '+' + heal, '#ff6b6b'); motes(P.x, P.y - 14, 6, 8, ['#ff6b6b', '#ffd0d0']); }
     if ((P.wardDmg || 0) > 0) trialEvent('ward');
     if (gv >= cap - 0.5 && tal('overflow')) { P.novaT = 0.35; P.novaK = k; }   /* OVERFLOW */
@@ -15720,21 +15743,6 @@ function drawWard(cx, cy) {
     g.fillStyle = '#ff4a5a'; g.fillRect(x - Math.round(r * 0.6), y - 1, Math.round(r * 1.2) + 1, 3); g.fillRect(x - 1, y - Math.round(r * 0.6), 3, Math.round(r * 1.2) + 1); g.globalAlpha = 1; }
   if (P.fHeld > 0 && (P.harvest || 0) >= 100) { const k = Math.min(1, P.fHeld / SURGE_HOLD); g.globalAlpha = 0.85; g.strokeStyle = '#ff9a9a'; g.lineWidth = 2; g.beginPath(); g.arc(px, py - 16, 22, -Math.PI / 2, -Math.PI / 2 + 6.283 * k); g.stroke(); g.globalAlpha = 1; }   /* HOLD F: the surge winding up */
 }
-/* THE F SLOT, FOR HIM: RAISE DEAD's skull, lit and ringed green while it would work, with its price in blood and how many are up */
-function drawRaiseSlot(x) { const c = raiseCue(), cost = RAISE_COST(), lit = c.ok, pulse = 0.5 + 0.5 * Math.sin(time * 6);
-  g.fillStyle = 'rgba(16,14,24,0.8)'; g.fillRect(x, 11, 14, 16);
-  g.globalAlpha = lit ? 1 : 0.4; g.drawImage(skillIcon('raiseDead'), x + 2, 12); g.globalAlpha = 1;
-  if (lit) { g.globalAlpha = 0.35 + 0.45 * pulse; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(x - 0.5, 10.5, 15, 17); g.globalAlpha = 1; }
-  g.strokeStyle = lit ? '#8fd160' : '#4a4658'; g.lineWidth = 1; g.strokeRect(x + 0.5, 11.5, 13, 15);
-  const up = risen.filter(r => r.life > 0).length, max = RISEN_MAX(); for (let i = 0; i < max; i++) { g.fillStyle = i < up ? '#e8e2cc' : 'rgba(232,226,204,0.25)'; g.fillRect(x + 2 + i * 4, 24, 2, 2); }
-  g.fillStyle = 'rgba(16,14,24,0.8)'; g.fillRect(x - 3, 27, 20, 7); text('F' + cost, x + 7, 27, lit ? '#8fd160' : '#7a7a84', 'center', 6); }   /* the key and the price, on a plate as wide as them */
-const SKULL_PIP = ['.###.', '#.#.#', '.#.#.'];
-function drawRaisePips(hy) { const { cost, total, can } = raisePips();
-  g.fillStyle = '#1a0306'; for (let v = cost; v < 100; v += cost) g.fillRect(16 + Math.round(70 * v / 100), hy, 1, 4);
-  if (P.swim) return;   /* the breath plate has the row under the bar while he is in the water */
-  for (let i = 0; i < total; i++) { const sx = 16 + Math.round((i + 0.5) * 70 / total) - 2, on = i < can; g.globalAlpha = on ? 1 : 0.25; g.fillStyle = on ? '#e8e2cc' : '#9a927c';
-    SKULL_PIP.forEach((row, yy) => { for (let xx = 0; xx < 5; xx++) if (row[xx] === '#') g.fillRect(sx + xx, hy + 5 + yy, 1, 1); }); }
-  g.globalAlpha = 1; }
 /* BLOOD SURGE: the full bar. Everything near him bleeds into him at once, and everything that is not a boss is
    held where it stands - frozen - while he walks among it. */
 function bloodSurge() { trialEvent('meter');   /* his full bar, in his trial (REAPER_C in trialYard) */
@@ -19928,7 +19936,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const loop = wrap(HERO_LOOP[hero()] || '', w - 10, 6); loop.forEach((ln, i) => text(ln, VW / 2, y + 15 + i * BODY_LH, UI.text, 'center', 6));
   const rowY = y + 15 + loop.length * BODY_LH + 1;
   drawSet(K, 'idle', Math.floor(time * 4.5), x + 30, y + 52, 1, false);
-  const nameOfSkill = id => { if (!id) return 'NONE'; if (id === 'raiseDead') return 'RAISE DEAD'; const n = TREE.find(q => q.id === id && q.hero === hero()); return n ? n.name : ((ABILITIES.find(a => a.id === id) || {}).name || 'NONE'); };
+  const nameOfSkill = id => { if (!id) return 'NONE'; const n = TREE.find(q => q.id === id && q.hero === hero()); return n ? n.name : ((ABILITIES.find(a => a.id === id) || {}).name || 'NONE'); };
   const skName = nameOfSkill(skillNow()), sk2Name = skillsOwned().length > (isReaper() ? 0 : 1) ? nameOfSkill(skill2Now()) : 'LOCKED';
   const ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
@@ -20607,7 +20615,6 @@ function render() {
       if (hudMeter) text(hudMeter.s, 90, hy - 1, hudMeter.col, 'left', 6); }
     if (isReaper()) { const hy = SET.iron ? 41 : 29, full = (P.harvest || 0) >= 100;
       bar(16, hy, 70, 4, (P.harvest || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#ff9a9a' : '#c0283a') : '#8a1a28', (P.harvest || 0) / 100);   /* the blood he has taken */
-      drawRaisePips(hy);
       g.fillStyle = '#c0283a'; g.fillRect(7, hy - 4, 2, 9); g.fillRect(4, hy + 2, 8, 1); g.fillRect(7, hy + 5, 2, 2);   /* a little greatsword: blade, cross, grip */
       // WHAT HIS KEYS DO RIGHT NOW: hudMeterLabel() says it - hold C for the ward, and with a full blood HOLD F
       // for the surge. While the ward is up it says what letting go will be, and the thin bar under the words
@@ -20615,7 +20622,7 @@ function render() {
       { const wk = Math.min(1, (P.wardG || 0) / wardCap());
         if (hudMeter) text(fitText(hudMeter.s, VW - 116, 6), 110, hy - 1, hudMeter.col, 'left', 6);
         if ((state === 'play' || state === 'talk') && (P.warding || wk > 0)) bar(110, hy + 7, 48, 2, wk, wk >= 1 ? '#ff4a5a' : '#c0283a', wk); }
-      /* (how many are up is drawn in his F slot now, with RAISE DEAD: drawRaisePips) */ }
+      /* (his F is SUMMON SKELETON's slot, drawn like any skill's, with its wait) */ }
     if (isPirate()) { const hy = SET.iron ? 41 : 29, full = (P.plunder || 0) >= 100;
       bar(16, hy, 70, 4, (P.plunder || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd34a') : '#c9a040', (P.plunder || 0) / 100);
       g.fillStyle = '#ffd34a'; g.beginPath(); g.arc(9, hy + 2, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(8, hy + 1, 2, 2);   // the purse
@@ -20638,7 +20645,7 @@ function render() {
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], P.relic ? 104 : 92, 14); g.globalAlpha = 1; }
     // THE SKILL SLOTS: the icon, the key it is on, and the wait drawn down over it, so a skill on cooldown is obvious
     { const slot = (sk, x, key, col) => { if (!sk) return;
-        const cd = skillCd(sk), max = CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0, k = busy ? (cd > 0 ? cd / max : 1) : 0;
+        const cd = skillCd(sk), max = sk === 'summonSkeleton' ? cdOf(sk) : CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0, k = busy ? (cd > 0 ? cd / max : 1) : 0;
         g.fillStyle = 'rgba(16,14,24,0.8)'; g.fillRect(x, 11, 14, 16);
         g.globalAlpha = busy ? 0.4 : 1; g.drawImage(skillIcon(sk), x + 2, 12); g.globalAlpha = 1;
         if (busy) { const h = Math.round(12 * k); g.fillStyle = 'rgba(10,10,18,0.72)'; g.fillRect(x + 1, 12 + (12 - h), 12, h);
@@ -20647,7 +20654,7 @@ function render() {
         else { const ready = P.skReady && P.skReady[sk]; if (ready > 0) { g.globalAlpha = ready; g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(x - 0.5, 10.5, 15, 17); g.globalAlpha = 1; } }
         g.strokeStyle = busy ? '#4a4658' : col; g.lineWidth = 1; g.strokeRect(x + 0.5, 11.5, 13, 15);
         text(key, x + 7, 27, busy ? '#7a7a84' : col, 'center', 6); };
-      if (isReaper()) drawRaiseSlot(74); else slot(skillNow(), 74, 'F', '#c9d1dc'); slot(skill2Now(), 92, 'G', '#8fd160'); }
+      slot(skillNow(), 74, 'F', '#c9d1dc'); slot(skill2Now(), 92, 'G', '#8fd160'); }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab), px0 = VW - 6 - pw;
@@ -20764,7 +20771,7 @@ function render() {
   /* THE TREES HAVE CHANGED: a save bought in the old trees has its points back, and is told so once, on the map or in a wood */
   if (PROG.talentsBack && (state === 'map' || state === 'play')) { talentsBackT = 7; talentsBackWho = ''; PROG.talentsBack = 0; saveProgress(); }
   if (PROG.talentsBackHero && PROG.talentsBackHero === hero() && (state === 'map' || state === 'play')) { talentsBackT = 7; talentsBackWho = PROG.talentsBackHero; PROG.talentsBackHero = 0; saveProgress(); }   /* THE WARD TREE: told to the Death Knight, and to nobody else */
-  if (talentsBackT > 0 && (state === 'map' || state === 'play')) { talentsBackT -= 1 / 60; const k = Math.min(1, talentsBackT * 2), lab = talentsBackWho === 'reaper' ? 'THE WARD TREE IS NEW: HIS POINTS ARE BACK' : talentsBackWho === 'knight' ? 'THE SHIELD TREE CHANGED: HIS POINTS ARE BACK' : 'THE TREES HAVE CHANGED: YOUR POINTS ARE BACK', sub = 'Q OPENS THE TALENT TREES', w = textW(lab, 6) + 16;
+  if (talentsBackT > 0 && (state === 'map' || state === 'play')) { talentsBackT -= 1 / 60; const k = Math.min(1, talentsBackT * 2), lab = talentsBackWho === 'reaper' ? 'HIS WARD AND HIS DEAD CHANGED: POINTS BACK' : talentsBackWho === 'knight' ? 'THE SHIELD TREE CHANGED: HIS POINTS ARE BACK' : 'THE TREES HAVE CHANGED: YOUR POINTS ARE BACK', sub = 'Q OPENS THE TALENT TREES', w = textW(lab, 6) + 16;
     g.globalAlpha = k; g.fillStyle = 'rgba(24,18,8,0.94)'; g.fillRect(VW / 2 - w / 2, 58, w, 21); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 58.5, w - 1, 20);
     text(lab, VW / 2, 62, '#ffd36b', 'center', 6); text(sub, VW / 2, 71, '#e0cf9c', 'center', 6); g.globalAlpha = 1; }
   drawWayOn(cx, cy);   /* the way-on arrow, under the tells it keeps clear of */
