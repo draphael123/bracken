@@ -625,7 +625,10 @@ function theStockade() {
   W2.R.interiors = (W2.R.interiors || []).concat([[192, 223, 18, 21, 'earth']]);
   W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });   /* the wall walk is its archers */
   W2.ent('stray', 212, 13, { kind: 'coffer' }); W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
-  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('hound', 203, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 214, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
+  // THE DITCH'S BRAMBLES ARE A THROW TARGET: the hound and the brute stand two tiles off either edge of the spike
+  // bed, close enough that a heavy blow or a dash sends either one into it (combat-variety-brief #8) - they used
+  // to stand five tiles off, which asked for a blow harder than most heroes throw at 203/214 range.
+  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('hound', 206, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 211, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
   W2.ent('stray', 222, 21, { kind: 'coffer' }); W2.coins([200, 20], [206, 20], [212, 20], [218, 20]);
   W2.block(224, 229, 20, 27); W2.ent('check', 227, 19); W2.coins([225, 18]);
   const R2 = W2.done();
