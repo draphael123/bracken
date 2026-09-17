@@ -3118,19 +3118,29 @@ export function bakeSwornSword() {
     '...vv....vv...',
     '...vv....vv...',
     '..VV......VV..'], W);
+  /* ONE PIXEL AT A TIME, so an added sleeve or glove never shifts a row's width the way retyping a whole
+     string can. He used to be a shield and a sword with nobody holding them; a sleeve (u) and a glove (f)
+     now bridge the shoulder to the grip on every layer that carries one, so no frame reads as a shield
+     that walks by itself. A red feather (q) off the back of the dome gives the kettle hat a little pride. */
+  const set = (r, i, c) => r.slice(0, i) + c + r.slice(i + 1);
+  base[0] = set(base[0], 9, 'q'); base[1] = set(base[1], 11, 'q');   /* the feather */
   /* the shield on his near arm, and the sword low behind him */
   const guard = pad([
     '..............', '..............', '..............', '..............', '..............', '..............',
     '.ss...........', 'sSSs..........', 'sSszs.........', 'sSSs..........', 'sSSs..........', '.ss...........'], W);
+  guard[5] = set(guard[5], 4, 'u'); guard[6] = set(guard[6], 3, 'f'); guard[7] = set(guard[7], 4, 'u'); guard[9] = set(guard[9], 4, 'u');   /* the shield arm: sleeve at the shoulder, a glove on the grip */
   const swordLow = pad([
     '..............', '..............', '..............', '..............', '..............', '..............',
     '..............', '..........mss.', '...........mm.', '...........m..'], W);
+  swordLow[7] = set(swordLow[7], 9, 'f');   /* the sword hand, held low */
   const swordUp = pad([
     '...........ss.', '..........ss..', '.........mm...', '..............', '..............', '..............',
     '..............', '..........m...'], W);
+  swordUp[2] = set(swordUp[2], 8, 'f'); swordUp[3] = set(swordUp[3], 9, 'u'); swordUp[4] = set(swordUp[4], 9, 'u'); swordUp[5] = set(swordUp[5], 9, 'u'); swordUp[6] = set(swordUp[6], 9, 'u');   /* the arm raised beside his own head for the windup */
   const swordOut = pad([
     '..............', '..............', '..............', '..............', '..............', '..............',
     '..............', '..........mmmm', '..........sss.'], W);
+  swordOut[7] = set(swordOut[7], 9, 'f'); swordOut[8] = set(swordOut[8], 9, 'u');   /* the arm thrown out with the cut */
   const stepB = pad([], 0);
   const legsB = ['....vvvvvv....', '...vv....vv...', '...vv.....vv..', '..VV.......VV.'];
   const withLegs = (b, legs) => b.slice(0, 11).concat(legs);
@@ -3145,6 +3155,7 @@ export function bakeSwornSword() {
   const legsHurt = ['...vvvvvvvv...', '...vv....vv...', '..vv......vv..', '.VV........VV.'];
   const shiftR = rows => rows.map(r => ('.' + r).slice(0, W));
   const guardUp = pad(['..............', '..............', '..............', '..............', '.ss...........', 'sSSs..........', 'sSszs.........', 'sSSs..........', 'sSSs..........', '.ss...........'], W);
+  guardUp[3] = set(guardUp[3], 4, 'u'); guardUp[4] = set(guardUp[4], 3, 'f'); guardUp[5] = set(guardUp[5], 4, 'u'); guardUp[7] = set(guardUp[7], 4, 'u');   /* the shield arm, knocked up with the rest of him */
   const walk3 = wspr(lay(withLegs(base, legsC), lay(guard, swordLow)));
   const walk4 = wspr(lay(withLegs(base, legsD), lay(guard, swordLow)));
   const hurt = wspr(lay(withLegs(shiftR(base), legsHurt), guardUp));
