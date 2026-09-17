@@ -42,6 +42,7 @@ const footOf = kind => {
   at(/line\(g, (-?\d+), (-?\d+), (-?\d+), (-?\d+)/g, ([, y0, , y1]) => Math.max(y0, y1));
   at(/\[(-?\d+), (-?\d+), (-?\d+), (-?\d+)\]/g, ([, y, , h]) => y + h - 1);   /* a rect laid out as a table */
   at(/\[(-?\d+), (-?\d+)\]/g, ([, y]) => y);                                   /* a polygon's corners */
+  at(/\[(-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+), '#/g, ([, cy, , ry]) => Math.floor(cy + ry));   /* a cairnStones stone: [cx, cy, rx, ry, colour] - its bottom is cy + ry */
   return foot;
 };
 const FOOT_ROW = 31;   /* within two pixels of the bottom of the 34-row marker is standing on its foot */
