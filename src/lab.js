@@ -315,9 +315,9 @@ export async function bossLab(BK, opts = {}) {
       k.left = false; k.right = false; k.block = false; k.up = false; k.down = false; k.jump = false;
       if (h === 'paladin' && f < holdC) k.block = true;
       if (h === 'reaper' && f < dkHold) k.block = true;
-      if (h === 'reaper') { k.throw = false;   /* F: RAISE DEAD off a body in reach when there is room and blood for it; with a full bar and the boss close, HOLD F for the surge */
+      if (h === 'reaper') { k.throw = false;   /* F: SUMMON SKELETON (when his tree has it) near the boss with none of his up; with a full bar and the boss close, HOLD F for the surge */
         if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); }
-        else if (f % 20 === 0 && P.harvest >= 20 && BK.risen().filter(r => r.life > 0).length < 2 && BK.bodies().some(q => q.life > 0 && Math.hypot(q.x - P.x, q.y - P.y) < 90)) BK.press('throw'); }
+        else if (f % 20 === 0 && ad < 110 && BK.skillNow() === 'summonSkeleton' && !(P.cds && P.cds.summonSkeleton > 0) && !BK.risen().some(r => r.life > 0)) BK.press('throw'); }
       let goal = null, strike = false, princeT = null;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
