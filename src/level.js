@@ -59,7 +59,7 @@ function brackenWood() {
   ent('sign', 284, 8, { text: 'THE HIVE. THE QUEEN DIVES TO STING: JUMP IT, THEN CUT HER WHILE SHE PULLS FREE.' });
   ent('deco', 10, 21, { kind: 'cabin' }); ent('npc', 16, 21, { kind: 'woodsman' }); // the woodsman's cabin: he wants his honey back
   coins([12, 20], [13, 19], [14, 20]);
-  ent('sprig', 22, 21, { face: -1 }); ent('sign', 26, 21, { text: 'TAP A WAY TWICE TO DASH: IT CLEARS A GAP. SWING OUT OF A DASH FOR A DASH ATTACK.' });   /* the gap, and a sprig past the crates */
+  ent('sprig', 22, 21, { face: -1 }); ent('sign', 26, 21, { text: 'TAP A WAY TWICE TO DASH: IT CLEARS A GAP.' });   /* the gap, and a sprig past the crates. (The dash ATTACK is the Stockade's lesson now: the first wood teaches two keys, the heavy and the down attack) */
   floor(34, 49, 22);
   coins([31, 19], [32, 18], [33, 19]);
   crate(40, 21); crate(44, 21); crate(44, 20);
@@ -72,7 +72,7 @@ function brackenWood() {
   ent('spit', 58, 19, { face: -1 });
   ent('coin', 62, 19);
   block(66, 75, 20, 21);
-  ent('shield', 71, 19, { face: -1 }); ent('sign', 56, 21, { text: 'A SHIELD ON A STEP: GET UP LEVEL WITH HIM, AND HOLD X. A PLAIN CUT ONLY RINGS OFF IT.' });   /* on the floor before the spitter's ledge: the shield is on the step past it. The heavy blow's second beat: the first is the lone guard on the flat before this (THE THREE LESSONS, at the end of this function) */
+  ent('shield', 71, 19, { face: -1 });   /* the heavy blow's second beat, and its exam: the lone guard on the flat before this taught it (THE LESSONS, at the end of this function), so this one has no sign of its own */
   plat(64, 18, 6);
   coins([66, 17], [68, 17]);
   ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND ON A FOE TO BOUNCE; HOLD JUMP TO BOUNCE HIGHER.', pyro: 'DOWN+X IN THE AIR: FIREDROP. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', warden: 'DOWN+X IN THE AIR: PLUNGE. PIN A FOE ON THE GROUND; OVER A DROP, VAULT OFF IT.' });
@@ -86,7 +86,7 @@ function brackenWood() {
   ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'HOLD C: AEGIS. TAP C: MEND. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
   ent('thorn', 109, 21, { face: -1 });
   crate(111, 21); crate(112, 21); crate(112, 20);
-  ent('sprig', 116, 21, { face: -1 }); ent('sign', 114, 21, { text: 'UP+X: THE RISING CUT THROWS A SPRIG UP. CUT IT AGAIN BEFORE IT LANDS: IT HITS HARDER.' });
+  ent('sprig', 116, 21, { face: -1 });   /* (the rising cut's sign stood here: a first wood seven lessons deep teaches none of them, so it teaches two) */
 
   // ---- 4. Thorn climb ----
   floor(121, 129, 22);
@@ -220,30 +220,33 @@ function brackenWood() {
   G2.ent('sign', 249, 11, { text: 'A CROWN IN A WOOD, AND NOBODY LEFT TO WEAR IT. WHAT LIES HERE IS YOURS.' });
   G2.ent('sign', 288, 11, { text: 'THORNS NEVER MOVE: GO OVER THEM. A HELD JUMP IS HIGHER THAN A TAPPED ONE.' });
   const R2 = G2.done();
-  // ---- THE THREE LESSONS. The yard (THE HERO'S TRIAL) is optional, and the wood threw a new player into real fights
-  // without the three things that matter most: the heavy blow through a guard, the low sweep under one, and the third
-  // cut. Each is a moment of its own on the road: a checkpoint, a sign, one foe alone on flat ground with nothing else
-  // in reach, and a hint the first time it happens (lessonHint in main.js, once a save, never if the trial taught it).
+  // ---- THE LESSONS. The yard (THE HERO'S TRIAL) is optional, and the wood threw a new player into real fights without
+  // the things that matter most. It taught seven (dash, shield, pogo, heavy, sweep, third cut, dash attack), and a first
+  // wood seven lessons deep teaches none of them, so it teaches TWO KEYS: the heavy blow through a guard, and the down
+  // attack - the pogo off a body, then the same blow onto the ground among a crowd. Each is a moment of its own on the
+  // road: a checkpoint, a sign, the foe on flat ground with nothing else in reach, and a hint the first time it happens
+  // (lessonHint in main.js, once a save, never if the trial taught it). The third stretch is not a key: it is where the
+  // wood's own charging foe, the badger, is met alone, before the sett it comes out of. (The sweep and the third cut
+  // are still hinted where a guard turns a blow; the dash attack is the Stockade's lesson.)
   // Grown LAST and in DESCENDING column order, so every number below is a column of the level as G2 left it:
-  // the third cut at 121 (between the rising-cut sprig and the sett fork), the sweep at 98 (the far bank of the
-  // wasp pond), the heavy blow at 53 (past the second dash gap, before the spitter's ledge). 26 columns each. ----
-  const LC = grow(R2, R2, 121, 26);   // c. THE THIRD CUT: an old fat sprig (four times the health, a bite that barely hurts, half the pace) so a run of three is felt
+  // the badger at 121 (between the crate sprig and the sett fork), the down attack at 98 (the far bank of the wasp pond,
+  // straight after the pogo chain), the heavy blow at 53 (past the second dash gap, before the spitter's ledge). 26 each. ----
+  const LC = grow(R2, R2, 121, 26);   // c. THE BADGER: out of a scrape in the bank, on flat ground, alone
   LC.floor(121, 146, 22);
   LC.ent('check', 123, 21); LC.ent('deco', 125, 21, { kind: 'stump', v: 0 });
-  LC.ent('sign', 127, 21, { text: 'AN OLD FAT SPRIG. X, X, X: THE THIRD CUT IN A RUN LANDS HEAVY AND SHOVES.' });
+  LC.ent('sign', 127, 21, { text: 'A BADGER OUT OF ITS SETT. ON ITS ! IT CHARGES: JUMP IT, THEN COME DOWN ON ITS BACK.' });
   LC.coins([130, 20], [132, 19], [134, 20]);
-  LC.ent('sprig', 136, 21, { face: -1, fat: true });
-  LC.ent('deco', 141, 21, { kind: 'fern', v: 1 }); LC.coins([142, 20], [145, 20]);
-  LC.R.lessons = (LC.R.lessons || []).concat([{ kind: 'third', x0: 122, x1: 146 }]);
+  LC.ent('badger', 139, 21, { face: -1 });
+  LC.coins([142, 18], [145, 20]);
   const RC = LC.done();
-  const LB = grow(RC, RC, 98, 26);    // b. THE LOW SWEEP: a lone shield goblin; the sweep goes under the shield he turns a cut with
+  const LB = grow(RC, RC, 98, 26);    // b. THE DOWN ATTACK: three sprigs bunched on the flat - come down among them and the ground throws them
   LB.floor(98, 123, 22);
   LB.ent('check', 100, 21); LB.ent('deco', 102, 21, { kind: 'fern', v: 0 });
-  LB.ent('sign', 104, 21, { text: 'HIS SHIELD IS UP. DOWN+X ON THE GROUND: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.' });
-  LB.coins([107, 20], [109, 19], [111, 20]);
-  LB.ent('shield', 113, 21, { face: -1 });
-  LB.ent('deco', 118, 21, { kind: 'stump', v: 1 }); LB.coins([119, 20], [122, 20]);
-  LB.R.lessons = (LB.R.lessons || []).concat([{ kind: 'sweep', x0: 99, x1: 123 }]);
+  LB.ent('sign', 104, 21, { text: 'DOWN+X IN THE AIR, ONTO THE GROUND: IT KNOCKS WHAT STANDS BESIDE YOU OFF ITS FEET.', warden: 'DOWN+X IN THE AIR, ONTO THE GROUND: THE CRACK RUNS AHEAD AND TRIPS WHAT IT MEETS.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. THE GROUND CARRIES IT BOTH WAYS UNDER THEIR FEET.', pyro: 'DOWN+X IN THE AIR: FIREDROP. THE FIRE GOES DOWN AHEAD OF YOU: LAND AMONG THEM.', pirate: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.', reaper: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.' });
+  LB.coins([107, 18], [109, 17], [111, 18]);
+  LB.ent('sprig', 113, 21, { face: -1 }); LB.ent('sprig', 115, 21, { face: -1 }); LB.ent('sprig', 117, 21, { face: -1 });
+  LB.ent('deco', 121, 21, { kind: 'stump', v: 1 }); LB.coins([122, 20]);
+  LB.R.lessons = (LB.R.lessons || []).concat([{ kind: 'down', x0: 99, x1: 123 }]);
   const RB = LB.done();
   const LA = grow(RB, RB, 53, 26);    // a. THE HEAVY BLOW: a lone shield goblin on the flat, and a held swing goes through what he turns
   LA.floor(53, 78, 22);
@@ -300,11 +303,16 @@ function marshWood() {
   coins([115, 15], [121, 15], [127, 15]);
   reeds(120, 14, 2); reeds(124, 11, 2); coins([124, 9], [125, 9], [121, 12]); ent('relic', 125, 10, { kind: 'charm' }); // the reed cache
 
-  // ---- 6. Drift stream: logs ride the current, against you ----
-  water(131, 160, 19);
-  ent('wisp', 138, 15); ent('wisp', 152, 14); ent('sign', 130, 17, { text: 'THE RAFT CARRIES YOU OVER THE FOGGY STREAM. CUT A WISP AND THE FOG THINS.' });
-  movers.push({ kind: 'raft', x0: 131 * TS, x1: 161 * TS - 96, x: 131 * TS, y: 18 * TS, w: 96, h: 8, speed: 34 }); // (six drifting logs in the fog were luck: a raft waits at the bank and carries you over)
-  coins([138, 16], [147, 16], [156, 16]);
+  // ---- 6. THE GAR HOLE. A raft over a foggy stream stood here, and the ferry's raft came straight after it: two rides back
+  // to back, and six water crossings in the marsh that read alike. The stream is a bank now, with one deep hole in it
+  // three strides wide, and in the hole the marsh's own fish: the gar. Met here alone, on solid ground, where you can
+  // stand back and watch it throw itself out onto the bank and lie there - and learn that a fish on the grass is low,
+  // so the low sweep and the plunge are what it answers to. (The wisps and the fog live on in the drowned village.) ----
+  block(131, 160, 18, 27); for (let x = 144; x <= 146; x++) for (let y = 18; y <= 23; y++) L.set(x, y, 0);
+  pools.push({ x0: 144 * TS, x1: 147 * TS, y: 19 * TS, shallow: false, depth: 0, bottom: 24 * TS });
+  ent('sign', 132, 17, { text: 'A GAR LIES IN THE DARK WATER. IT THROWS ITSELF ON THE BANK: SWEEP IT, OR PLUNGE IT THERE.' });
+  ent('gar', 145, 20, { face: -1 });
+  coins([138, 15], [145, 14], [152, 15], [157, 16]);
   block(161, 175, 18, 27);
   ent('check', 168, 17); crate(173, 17);
   ent('sign', 171, 17, { text: 'A BUD PAD SPRINGS. LAND ON IT.' });   // taught once, on the bank, before the first bud at 191
@@ -351,13 +359,15 @@ function marshWood() {
   reeds(294, 15, 3); coins([295, 14], [282, 15], [288, 15]);
   ent('check', 296, 17);
   for (let x = 297; x <= 334; x++) for (let y = 18; y <= 27; y++) L.set(x, y, 0);
-  water(297, 334, 19);
+  water(297, 328, 19);
   movers.push({ kind: 'raft', x0: 297 * TS, x1: 329 * TS - 144, x: 297 * TS, y: 18 * TS + 8, w: 144, h: 8, speed: 26, frogs: true, frogMax: 3, frogEvery: 2.8 });
   plat(309, 11, 3); ent('archer', 310, 10, { face: -1 }); plat(323, 11, 3); ent('archer', 324, 10, { face: -1 });
   ent('wasp', 313, 15); ent('wasp', 326, 15);
-  coins([303, 15], [308, 10], [316, 15], [322, 10], [329, 15]);
-  for (const x of [330, 332, 334]) ent('pad', x, 18); // finish the crossing on sinking pads while the frogs leap after you
-  block(335, 344, 18, 27);
+  coins([303, 15], [308, 10], [316, 15], [322, 10], [331, 15]);
+  /* THE RAFT DOCKS AT A BANK. The crossing used to finish on three sinking pads with both archers still loosing at you: a
+     sinking-pad run is a thing you do with your whole attention, and nothing ranged covers one now. The archers shoot over
+     the raft, which holds; the pads are the long river's and the pond's */
+  block(329, 344, 18, 27);
   ent('thorn', 338, 17, { face: -1 }); crate(340, 17); ent('hopper', 342, 17, { face: -1, color: 'yellow' });
   ent('check', 344, 17);
 
@@ -385,7 +395,7 @@ function marshWood() {
     quest: { n: 3, item: 'trap', name: 'EEL TRAP', npc: 'ferryman', done: 'THE TRAPS ARE BACK', thanks: "THE FERRYMAN'S THANKS" },
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
-    fog: [{ x0: 131 * TS, x1: 161 * TS, alpha: 0.86 }],
+    fog: [],   /* (the foggy stream is the gar hole now: the fog is the drowned village's) */
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
     /* THE STAGES STAND ON POLES. A row of boards over open water with nothing under it is a floor hanging in the air
        (B9): each stage is driven into the river on two poles, with a rope rail between them, the way the drowned
@@ -396,21 +406,21 @@ function marshWood() {
   // ---- 7b. THE DROWNED VILLAGE: stilt huts over deep water. Planks, sinking pads, archers on the roofs, frogs below. ----
   const G = grow(L, ret, 275, 48);
   const plank = (x0, x1, y) => { for (let x = x0; x <= x1; x++) G.set(x, y, T.PLANK); };
-  G.block(275, 276, 18, 27); G.ent('sign', 275, 17, { text: 'THE DROWNED VILLAGE. THE PLANKS HOLD. THE WATER DOES NOT.' });
+  G.block(275, 276, 18, 27); G.ent('sign', 275, 17, { text: 'THE DROWNED VILLAGE. THE PLANKS HOLD, THE FOG DOES NOT: CUT A WISP AND IT THINS.' });
   G.R.pools.push({ x0: 277 * TS, x1: 322 * TS, y: 19 * TS, shallow: false, depth: 0 });
-  plank(278, 282, 16); plank(286, 290, 15); plank(294, 298, 16); plank(302, 307, 15); plank(311, 315, 16); plank(319, 322, 17);
+  plank(278, 282, 16); plank(286, 291, 15); plank(294, 298, 16); plank(302, 308, 15); plank(311, 315, 16); plank(319, 322, 17);   /* 291 and 308 reach one board further: the two gaps the pads used to fill are two strides now */
   /* THE HUTS STAND IN THE WATER. They were set ten tiles up with nothing under them, which is a house floating
      over a lake; the archers' platforms are their roofs, and their stilts go down into the flood. */
   G.ent('treehouse', 288, 13); G.ent('treehouse', 304, 13);
-  // THE DROWNED VILLAGE IS A LILY CROSSING NOW. Four pads across forty tiles of fog was not a crossing, it was
-  // four pads: you could not see the next one and there was no rhythm to find. Thirteen of them, spaced so
-  // that every jump is reachable and none of them is a rest - and in fog that thick the only way to read the
-  // run is to keep moving and trust the one you can just see.
-  for (const x of [281, 285, 289, 293, 297, 300, 304, 308, 312, 315, 318, 321]) G.ent('pad', x, 18, { big: x === 293 || x === 308 });   // the two pads with four strides on both sides of them are the big ones
+  // THE DROWNED VILLAGE IS A PLANK CROSSING IN FOG. It was a lily crossing too - thirteen sinking pads under two archers on
+  // the roofs - and the marsh had six crossings that read alike, three of them pads, one of them under fire. The river is
+  // the pad crossing; this one is the village's own: boards and reed tufts that HOLD, hut to hut, in a fog you read one
+  // plank at a time, with the archers loosing at you on footing that does not sink and the water under it biting.
   G.plat(303, 11, 3); G.ent('archer', 304, 10, { face: -1 }); G.plat(287, 11, 3); G.ent('archer', 288, 10, { face: -1 }); G.ent('silver', 306, 10);
-  G.ent('wasp', 292, 13); G.ent('wasp', 310, 13);   // (these two are the pogo steps up to the archers' roofs and the silver: they stay)
-  // THE WATER UNDER THE VILLAGE BITES NOW: two river eels, in the only pad gaps with no planks over them. Told, on a count.
-  G.ent('eel', 291, 20, { leap: true }); G.ent('eel', 310, 20, { leap: true });
+  G.ent('wasp', 293, 11); G.ent('wasp', 310, 11);   // (a row higher than they were: the boards reach a stride further now and the wasps hung over their ends. These two are the pogo steps up to the archers' roofs and the silver: they stay)
+  // THE WATER UNDER THE VILLAGE BITES: a river eel in one gap, told on a count, and a GAR in the other, which throws itself up
+  // onto the boards beside the gap (met alone at the gar hole first) and lies there to be swept off them.
+  G.ent('gar', 292, 20, { face: -1 }); G.ent('eel', 309, 20, { leap: true });
   /* (0.58, not the stream's 0.86: at 0.86 the next plank stood six points off the fog, at 0.66 two in five of them still
      did not read, and a pad crossing is asked of you here where the stream only asks you to stand on a raft. It is still a
      bank you see through only near yourself, and the wisps still clear it.) */
@@ -419,7 +429,7 @@ function marshWood() {
   G.coins([280, 14], [288, 13], [296, 14], [304, 13], [313, 14], [320, 15], [284, 16], [309, 16]);
   G.ent('check', 321, 16); G.ent('stray', 296, 15, { kind: 'trap' });
   const R1 = G.done();
-  // ---- 6b. THE FERRY: a deep channel. Pay the ferryman and ride his punt under the archers, or break the sluice, drain the channel to shallows, and wade it with the frogs. ----
+  // ---- 6b. THE FERRY: a deep channel. Pay the ferryman and ride his raft under the archers, or break the sluice, drain the channel to shallows, and wade it with the frogs. ----
   const F = grow(R1, R1, 161, 48);
   F.block(161, 166, 18, 27);
   F.ent('sign', 162, 17, { text: 'PAY THE FERRY TO RIDE DRY, OR BREAK THE SLUICE AND WADE THE DRAINED CHANNEL.' });
@@ -436,7 +446,7 @@ function marshWood() {
   // AND THE MARSH WENT QUIET FOR A HUNDRED AND THIRTY COLUMNS: the whole pad crossing and the archers
   // after it, which is where both of its rules are actually asked for.
   F.ent('sign', 274, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* on the reed bed: at 286 it stood five rows up over the open lake */
-  F.ent('sign', 335, 10, { text: 'THE PADS SINK UNDER YOU. THE NEXT IS THREE STRIDES OFF: DO NOT LINGER.' });
+  F.ent('sign', 335, 10, { text: 'THE BOARDS HOLD. THE WATER UNDER THEM BITES, AND A GAR WILL COME UP ONTO THEM.' });
   F.ent('sign', 405, 10, { text: 'ARCHERS ACROSS THE WATER. GO WHEN AN ARROW FLIES: THE NEXT IS A MOMENT AWAY.' });
   // A BUD LANDS YOU ON THE STAGES AND THE BANK'S LIP, and the garrison read all three as fresh floor and stood a spitter and
   // two thorns where you come down. They are landings: kept calm (in final columns, after both grows).
@@ -445,6 +455,9 @@ function marshWood() {
   // the pads put you down, and its spitters stood in the fog) and the mud flats' first step. Its eels, wasps and archers are
   // the village's fight now.
   F.R.calm = F.R.calm.concat([[326, 371, 12, 17], [440, 452, 14, 18]]);
+  // AND NOTHING THAT SHOOTS OVER THE FIRST PADS: the garrison stood an archer on the bank at 14, in range of the whole lily
+  // pond, and a turtle at its edge. The pond is where the sink is learnt.
+  F.R.calm = F.R.calm.concat([[8, 46, 14, 22]]);
   return F.done();
 ;
 }
@@ -462,8 +475,13 @@ function theStockade() {
   floor(0, 70, 20);
   ent('sign', 4, 19, { text: 'THE GOBLINS BUILT HERE. BREAK IT.' });
   ent('sign', 324, 19, { text: 'CHIEFTAIN: RED IS THE CLUB, BLUE THE SWORD, GREEN THE BOW. BREAK A RACK TO END ONE.' }); ent('sign', 9, 19, { text: 'TAM WENT AHEAD TO COUNT GOBLINS. HIS TRACKS STOP AT THE GATE. A CAGE HANGS PAST IT.' });
-  ent('sprig', 14, 19, { face: -1 }); ent('sprig', 22, 19, { face: -1 });
-  coins([9, 18], [18, 17], [26, 18]);
+  /* THE DASH ATTACK, taught (the wood teaches the heavy and the down attack; this is the third key). One guard alone on the flat
+     road with room to run at him: a light cut rings off his shield, a dash with a swing out of it knocks him OFF BALANCE
+     (the guard family's unbalance in main.js), and the hint says so once (lessonHint 'dashatk'). The shield at the siege
+     engine is its exam. (Two sprigs stood here: the camp's first word was two things walking at you.) */
+  ent('sign', 13, 19, { text: 'HIS SHIELD IS UP. DOUBLE-TAP TOWARD HIM AND SWING: THE DASH ATTACK THROWS HIM OFF BALANCE.' });
+  ent('shield', 25, 19, { face: -1 });
+  coins([9, 18], [18, 17], [21, 18]);
   ent('cage', 31, 19, { kind: 'bird' });
   ent('torch', 36, 19); ent('treehouse', 40, 8);
   // ---- THE GANTRY. Forty tiles of flat camp road with nothing to do on it but hold right. They have built a
@@ -473,21 +491,19 @@ function theStockade() {
   { for (let y = 13; y <= 19; y++) { set(44, y, T.NET); set(45, y, T.NET); }   // the ladder up to it
     plat(46, 12, 5); plat(54, 10, 5); plat(62, 12, 5);                        // up, over, and down again
     for (let y = 13; y <= 19; y++) { set(66, y, T.NET); set(67, y, T.NET); }  // and the rope down the far end
-    ent('sign', 42, 19, { text: 'THE GANTRY. THEY KEEP WHAT THEY TAKE UP THERE, AND SOMETHING BIG GUARDS IT.' });
-    ent('pike', 56, 9, { face: -1 });                                         /* their best spear, not one of HER knights: a heavy at level three is the castle's creature four levels early */
-    ent('archer', 63, 11, { face: -1 });
+    /* (a pike and an archer stood up here, over the horn tower: two ideas on one stretch, and the level's rule is the horn. The
+       gantry is the climb to the silver now, and the tower is the only thing watching the road) */
     ent('silver', 55, 9);
     coins([47, 11], [50, 11], [56, 9], [59, 9], [63, 11], [65, 11]); }
-  // and two more of their knights further up the camp, now that you have met one
-  ent('brute', 208, 19, { face: -1 }); ent('shield', 223, 19, { face: -1 }); ent('brute', 249, 19, { face: -1 });   /* base coordinates, checked against where the GROUPS put them in the built level: 268 and 300 land inside rock */
+  // one guard at the armoury gate with its elite (the brute at 292 and the one at the tunnel mouth went: THE STOCKADE was level three and one of the densest levels in the game)
+  ent('shield', 223, 19, { face: -1 });   /* base coordinates: 307 in the built level */
 
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
   block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('coin', 57, 12);
   plat(46, 17, 3); plat(50, 14, 2); plat(59, 16, 2); plat(58, 13, 2); // two ways up
   ent('archer', 55, 12, { face: -1, horn: true });
   ent('check', 45, 19);
-  ent('sign', 44, 19, { text: 'THE WATCHTOWER. SILENCE THE HORN BLOWER ON TOP OR THE WHOLE CAMP WAKES.' });
-  ent('sprig', 60, 19, { face: -1 }); ent('sapper', 66, 19, { face: -1 });
+  ent('sign', 44, 19, { text: 'HE PUTS DOWN HIS BOW TO BLOW THE HORN. SILENCE HIM BEFORE IT SOUNDS, OR THE CAMP COMES.' });   /* THE RULE, said at the first tower: the horn's wind-up is drawn over him now (drawHornTell in main.js) */
   coins([47, 15], [51, 12], [64, 18]);
 
   // ---- 3. Rope bridge over the ravine, with a goblin at the far end holding a knife ----
@@ -503,19 +519,19 @@ function theStockade() {
   // ---- 4. The palisade gate: crank it open, or roll a barrel into it ----
   ent('barrel', 96, 19); ent('crank', 98, 19, { wall: 101 });
   pal(101, 15, 19);
-  ent('sapper', 106, 19, { face: -1 }); ent('sprig', 109, 19, { face: -1 });
+  ent('sprig', 109, 19, { face: -1 });   /* (and a sapper: the gate is the idea here, not a bomb) */
   ent('torch', 103, 19); ent('torch', 115, 19);
 
   // ---- 5. The yard: every tool in one room. Free the fox, tip the brazier on the hounds, roll the barrel into the inner gate. ----
   ent('treehouse', 122, 7); ent('treehouse', 150, 6); ent('treehouse', 176, 8);
-  block(120, 128, 17, 19); ent('brute', 124, 16, { face: -1 }); coins([121, 15], [126, 15]);
+  block(120, 128, 17, 19); coins([121, 15], [126, 15]);
   ent('check', 131, 19);
   ent('sign', 133, 19, { text: 'THE YARD IS A WEAPON: FREE THE FOX, TIP THE BRAZIER, ROLL THE BARREL.' });
   ent('hound', 136, 19, { face: -1 }); ent('cage', 139, 19, { kind: 'fox' });
   ent('sprig', 144, 19, { face: -1 }); ent('brazier', 150, 19); ent('sprig', 153, 19, { face: 1 }); ent('hound', 157, 19, { face: -1 }); ent('sprig', 159, 19, { face: -1 });
   ent('barrel', 162, 19); ent('shield', 165, 19, { face: -1 }); ent('crank', 167, 19, { wall: 170 }); ent('brazier', 169, 19); // tip it into the stakes and the wall burns
   pal(170, 15, 19);
-  ent('brute', 175, 19, { face: -1 }); ent('sapper', 179, 19, { face: -1 }); ent('archer', 182, 19, { face: -1 });
+  ent('brute', 175, 19, { face: -1 }); ent('archer', 182, 19, { face: -1 });   /* a brute and an archer behind the burning gate (the sapper between them went) */
   ent('torch', 130, 19); ent('torch', 147, 19); ent('torch', 173, 19); ent('torch', 181, 19);
   coins([141, 17], [155, 17], [164, 17], [177, 18]);
   ent('check', 184, 19);
@@ -527,9 +543,9 @@ function theStockade() {
   block(203, 205, 15, 19); plat(202, 14, 5); ent('towertop', 204, 14); ent('archer', 204, 13, { face: -1, horn: true }); plat(199, 17, 2); plat(207, 17, 2); coins([203, 13], [207, 16]); // the third horn tower: silence it or the kennels empty onto you
   ent('torch', 214, 19); ent('brute', 217, 19, { face: -1 }); ent('check', 215, 19);
   ent('treehouse', 221, 6);
-  ent('barrel', 223, 19); ent('barrel', 226, 19); ent('crank', 229, 19, { wall: 232 }); ent('shield', 231, 19, { face: -1 }); ent('brazier', 228, 19);
+  ent('barrel', 223, 19); ent('barrel', 226, 19); ent('crank', 229, 19, { wall: 232 }); ent('brazier', 228, 19);
   pal(232, 15, 19);
-  ent('sprig', 236, 19, { face: -1 }); ent('hound', 240, 19, { face: -1 }); ent('torch', 235, 19); ent('torch', 246, 19);
+  ent('hound', 240, 19, { face: -1 }); ent('torch', 235, 19); ent('torch', 246, 19);
   coins([193, 17], [213, 17], [224, 16], [238, 17], [244, 18]);
   ent('check', 247, 19);
 
@@ -537,7 +553,7 @@ function theStockade() {
   for (let y = 20; y <= 27; y++) { set(250, y, 0); set(251, y, 0); } net(250, 251, 26); for (let y = 21; y <= 25; y++) set(250, y, T.NET); // miss the lift and the net catches you: rungs up to where it waits
   movers.push({ kind: 'lift', x: 250 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   block(252, 269, 12, 27);
-  ent('sapper', 260, 11, { face: -1 }); coins([256, 10], [264, 10]);
+  coins([256, 10], [264, 10]);   /* (a sapper met you off the lift: a fight at a landing) */
 
   // ---- 7. The high bridge and the second tower ----
   planks(270, 273, 12); planks(274, 281, 13); planks(282, 285, 12);
@@ -557,7 +573,7 @@ function theStockade() {
   for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26); for (let y = 20; y <= 25; y++) set(316, y, T.NET); // and rungs up out of this one to the floor
   movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
   floor(317, 365, 20);
-  ent('hound', 320, 19, { face: -1 }); ent('check', 323, 19);
+  ent('check', 323, 19);   /* (a hound stood at the foot of the lift: the hall's door is a breath, not a fight) */
 
   // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
   // the rafter climb, both sides, two tiles a jump, for when the hall burns; the gate sits on the top beam
@@ -572,7 +588,7 @@ function theStockade() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: undefined, music: 'stockade', night: true,
+    duskStart: undefined, music: 'stockade', night: true, lessons: [{ kind: 'dashatk', x0: 11, x1: 29 }],   /* the dash attack's lesson (lessonHint in main.js) */
     palette: { dress: 'camp', ledges: 'lashed', haze: 'rgba(24,18,44,0.3)', sky: 'night',   /* nothing in a goblin camp is sawn: split poles, laid side by side and lashed */ canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
@@ -588,12 +604,12 @@ function theStockade() {
   G.ent('sign', 249, 19, { text: 'SAPPERS CARRY POWDER. KILL THEM FROM A DISTANCE, OR BLOCK THE BLAST.', pyro: 'SAPPERS CARRY POWDER. KILL THEM FROM A DISTANCE: THAT IS WHAT EMBERS ARE FOR.', paladin: 'SAPPERS CARRY POWDER. KILL THEM FROM AFAR, OR TAKE THE BLAST ON THE AEGIS.' });
   for (const x of [256, 266, 276, 286]) G.ent('torch', x, 24);
   G.ent('deco', 254, 24, { kind: 'skullPile', v: 0 }); G.ent('deco', 273, 24, { kind: 'skullPile', v: 1 });   /* 281 was where the crate stack goes: the skulls were inside it */
-  G.ent('sprig', 258, 24, { face: -1 }); G.ent('barrel', 262, 24); G.crate(264, 24); G.ent('sapper', 270, 24, { face: -1 });
-  G.ent('sprig', 277, 24, { face: -1 }); /* (a bed of spikes under a roof you cannot jump in was here: no way past it but through) */ G.ent('barrel', 279, 24); G.crate(281, 24); G.crate(281, 23);
+  G.ent('sapper', 258, 24, { face: -1 }); G.ent('barrel', 262, 24);   /* the tunnel is its sappers: the first thing in it is one */ G.crate(264, 24); G.ent('sapper', 270, 24, { face: -1 });
+  /* (a sprig, and a bed of spikes under a roof you cannot jump in, were here) */ G.ent('barrel', 279, 24); G.crate(281, 24); G.crate(281, 23);
   G.ent('sapper', 284, 24, { face: -1 }); G.ent('brute', 288, 24, { face: -1 });
   G.coins([255, 23], [260, 23], [268, 23], [275, 22], [283, 23], [289, 23]);
   G.ent('check', 292, 19); G.ent('torch', 293, 19);
-  G.ent('treehouse', 262, 8); G.ent('treehouse', 278, 8); G.ent('sprig', 270, 13, { face: -1 }); G.coins([266, 12], [274, 12]); // goblins on the mound, out of reach and out of the way
+  G.ent('treehouse', 262, 8); G.ent('treehouse', 278, 8); G.coins([266, 12], [274, 12]);   /* (a goblin stood on the mound, out of reach and out of the way: a body the count paid for and the level did not) */
   G.ent('stray', 267, 24, { kind: 'coffer' });
   const R1 = G.done();
   // ---- 5d. THE WALL WALK: a caged squire at the fork. Above, planks along the top of a stake wall under archers, with a breach to jump. Below, the ditch: sappers, a hound, spikes, a brute. ----
@@ -607,9 +623,9 @@ function theStockade() {
   for (let x = 192; x <= 204; x++) W2.set(x, 14, T.PLANK); for (let x = 207; x <= 223; x++) W2.set(x, 14, T.PLANK);
   W2.block(192, 223, 22, 27);
   W2.R.interiors = (W2.R.interiors || []).concat([[192, 223, 18, 21, 'earth']]);
-  W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('sprig', 210, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });
+  W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });   /* the wall walk is its archers */
   W2.ent('stray', 212, 13, { kind: 'coffer' }); W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
-  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('sprig', 197, 21, { face: -1 }); W2.ent('hound', 203, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 214, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
+  W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('hound', 203, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 214, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
   W2.ent('stray', 222, 21, { kind: 'coffer' }); W2.coins([200, 20], [206, 20], [212, 20], [218, 20]);
   W2.block(224, 229, 20, 27); W2.ent('check', 227, 19); W2.coins([225, 18]);
   const R2 = W2.done();
@@ -617,7 +633,7 @@ function theStockade() {
   const C = grow(R2, R2, 30, 40);
   C.floor(30, 69, 20);
   C.ent('sign', 31, 19, { text: 'THE ENGINE THROWS BARRELS. DODGE THROUGH, CLOSE IN, WRECK IT.' });
-  C.ent('check', 36, 19); C.ent('sprig', 41, 19, { face: -1 }); C.crate(46, 19); C.crate(47, 19); C.crate(47, 18);
+  C.ent('check', 36, 19); C.crate(46, 19);   /* the engine is the idea: one sprig and the shield (the dash attack's exam) between you and it */ C.crate(47, 19); C.crate(47, 18);
   C.ent('sprig', 53, 19, { face: -1 }); C.ent('shield', 59, 19, { face: -1 });
   C.ent('catapult', 64, 19, { every: 2.6 }); C.ent('torch', 61, 19); C.ent('torch', 68, 19);
   C.coins([38, 18], [44, 17], [50, 18], [56, 18], [62, 17]);
@@ -6945,8 +6961,8 @@ function theMagesFolly() {
 
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
-  { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: RIDE THE PUNT, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
-  { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY SECTION HAS A BELL. CATCH THE SENTRY BEFORE HE REACHES IT.', build: theStockade, needs: 'marsh' },
+  { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
+  { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS PUT YOU TO SLEEP. CLEAR THE AIR BEFORE YOU FIGHT IN IT.', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
@@ -7020,7 +7036,20 @@ const rv = L => ({
 });
 const REVIEW = {
   // a checkpoint in the long run between the thorn cut and the high path
-  wood: L => { const R = rv(L); R.ent('check', 166, 21); },   /* not 171: the log step is right over it there, and the shrine ran up through it. (114 before THE THREE LESSONS grew the wood by 78 columns ahead of it) */
+  wood: L => { const R = rv(L); R.ent('check', 166, 21);
+    /* THE BADGER's own ground: one in the sett's dark run, where the corridor is four rows tall and a jump over it is still
+       a jump (it is met alone on the flat at 191 first, and it is in the Bramble Ride's first wave) */
+    R.ent('badger', 209, 21, { face: -1 });
+    /* THE HIVE IS FELT FROM THE START ("most of these honeycombs added throughout the level with wasps around them"). Its
+       paper combs hang in the trees behind five stretches of the wood, not only in the Queen's hall and the giant's glade,
+       and each keeps a couple of wasps posted high over it: never over a landing, a crate hop or the mover's gap, and at
+       least five rows over the floor, so the hop that reaches a crate does not reach them. The sett ridge and the helm
+       ridge have wasps of their own already, so their combs bring none. */
+    R.ent('deco', 38, 21, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 37, 15); R.ent('wasp', 39, 14);
+    R.ent('deco', 214, 13, { kind: 'hiveBg', v: 2 });
+    R.ent('deco', 348, 11, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 344, 7); R.ent('wasp', 347, 6);
+    R.ent('deco', 432, 14, { kind: 'hiveBg', v: 2 }); R.ent('wasp', 430, 9); R.ent('wasp', 435, 8);
+    R.ent('deco', 452, 8, { kind: 'hiveBg', v: 0 }); },   /* not 171: the log step is right over it there, and the shrine ran up through it. (114 before THE THREE LESSONS grew the wood by 78 columns ahead of it) */
   // a checkpoint by the old stones, and lily pads over the two long shallows (hop them and you are across
   // before a wader is halfway), with gold on the way
   marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
@@ -7298,7 +7327,7 @@ const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul
    is updateAmbush in src/main.js, and section Q of RULES-LEVELS-AND-BOSSES.md says what makes a good one. */
 const AMBUSH = {
   wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 288, wallR: 325, check: [278, 11],   /* (every column here is 78 past what it was: THE THREE LESSONS grew the wood ahead of the giant) */
-    waves: [[['sprig', 294], ['sprig', 321], ['thorn', 308], ['lurker', 300]], [['shield', 316], ['spit', 322], ['thorn', 294], ['crow', 306, 6]]] }],
+    waves: [[['sprig', 294], ['sprig', 321], ['thorn', 308], ['badger', 300]], [['shield', 316], ['spit', 322], ['thorn', 294], ['crow', 306, 6]]] }],
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
     waves: [[['hopper', 374], ['hopper', 386, 18], ['turtle', 380, 18]], [['thorn', 374], ['archer', 387], ['heronfoe', 381, 18], ['spit', 373]]] }],
   stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],

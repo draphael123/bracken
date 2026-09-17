@@ -19,7 +19,7 @@ export const THREAT = {
   eel: 2, urchin: 1, angler: 2.5, siren: 3, crab: 1.5, scout: 2, tideguard: 3, petrel: 1.5, gull: 1,
   watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
   assassin: 3.5, berserker: 5, grandmother: 6,
-  heronfoe: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
+  heronfoe: 2, badger: 2.5, gar: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2,
   dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
   frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
   reefmaw: 6, quarter: 6, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
