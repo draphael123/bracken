@@ -15299,7 +15299,17 @@ function updateKing(e, dt) {
 }
 // The litter lands and stays: four tiles of solid oak you can climb onto to be above the reach of the hand.
 function landThrone(x) { const A = L.arena, ty = Math.floor(A.floor / TS) - 1, tx0 = Math.max(Math.floor(A.x0 / TS) + 1, Math.min(Math.floor(A.x1 / TS) - 5, Math.floor(x / TS) - 2)); for (let dx = 0; dx < 4; dx++) for (let dy = 0; dy < 2; dy++) { const i = (ty - dy) * LW + tx0 + dx; L.grid[i] = T.SOLID; tileSpr[i] = null; } throneBlock = { x: (tx0 + 2) * TS, y: (ty + 1) * TS }; shakeCam(9); SFX.heavy(); SFX.crack(); zoomKick(1.12, 0.4); dust((tx0 + 2) * TS, (ty + 1) * TS, 20); for (const f of enemies) if (f.alive && f.t !== 'king' && f.t !== 'folk' && Math.abs(f.x - (tx0 + 2) * TS) < 40 && Math.abs(f.y - (ty + 1) * TS) < 20) hurtEnemy(f, 60, x, false); if (!P.dead && P.x > tx0 * TS - 6 && P.x < (tx0 + 4) * TS + 6 && P.y > ty * TS - 20 && P.y <= (ty + 1) * TS + 2) { P.y = (ty - 1) * TS; P.vy = -120; } }
-function kingCage(e) { let best = null; for (const c of props) if (c.t === 'dropcage' && c.boss && !c.dropped && Math.abs(c.x - e.x) > 44 && (!best || Math.abs(c.x - P.x) < Math.abs(best.x - P.x))) best = c; if (!best) return; best.dropped = true; best.landed = 0; best.hit.clear(); best.resetT = 5; SFX.stone(); number(best.x, best.y - 10, 'HOLD HIM', '#ff6b6b'); }
+/* AND WHEN THE LAST ONE IS SCRAP, THE COURT WINCHES THEM BACK UP. A cage that has held him is spent, and only a cage
+   brings his head down - so five catches that did not finish him left a king no blade in the game could touch, and the
+   fight could not be won at all. He calls for a cage and there is none: the whole rack goes back up (spent and all), and
+   the hall is told. Nothing is chained - each one still has to catch him, and this only fires when the rack is empty. */
+function kingCage(e) { let best = null;
+  const rack = props.filter(c => c.t === 'dropcage' && c.boss);
+  if (rack.length && !rack.some(c => !c.dropped && Math.abs(c.x - e.x) > 44)) {
+    let re = 0; for (const c of rack) { if (c.dropped || c.spent) { c.dropped = false; c.spent = false; c.landed = 0; c.y = c.y0; c.hit.clear(); re++; } }
+    if (re) { SFX.stone(); number(e.x, e.y - e.h - 28, 'THE CAGES GO BACK UP', '#ffd36b');
+      for (const pl of props) if (pl.t === 'plate' && rack.some(c => pl.cage === Math.floor(c.x / TS))) pl.down = false; } }
+  for (const c of props) if (c.t === 'dropcage' && c.boss && !c.dropped && Math.abs(c.x - e.x) > 44 && (!best || Math.abs(c.x - P.x) < Math.abs(best.x - P.x))) best = c; if (!best) return; best.dropped = true; best.landed = 0; best.hit.clear(); best.resetT = 5; SFX.stone(); number(best.x, best.y - 10, 'HOLD HIM', '#ff6b6b'); }
 function galleryVolley(e) { let n = 0; for (const f of enemies) if (f.alive && f.t === 'folk' && f.court && !f.cower && Math.random() < 0.7) { const sx = f.x, sy = f.y - 8, Tf = 0.9, G = 380, dx = P.x - sx, dy = (P.y - 8) - sy; seeds.push({ x: sx, y: sy, vx: Math.max(-200, Math.min(200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, g: G, goblet: true }); n++; } if (n) { number(e.x, e.y - 44, 'THE COURT JOINS IN', '#ffd36b'); SFX.clank(); } }
 // THE ALARM. A castle section (L.alarms) has a bell, its gates and a garrison. A sentry who sees you runs
 // for the bell; a rung bell drops that section's gates and turns the garrison out, and the gates lift again
