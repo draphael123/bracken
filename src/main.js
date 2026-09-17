@@ -108,6 +108,12 @@ const PROG = {}; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsg
    lines are up HERE because the hero's level and the save both have to ask about it, and both are written above it. */
 let players = null, coopWant = null, passOn = null;   /* passOn: whose pass is running, or null between them */
 const coop = () => !!players && players.length > 1;
+/* WHAT THE TOGGLE SHOWS. `coop()` is the level's own live truth; `coopWant` is the intent for the NEXT one - on the
+   map, or in the pause menu before it has applied, the level has not caught up yet and coopWant is the honest answer.
+   Turning it off clears both at once (see the pause menu and the map handlers), so the two are never out of step. */
+const coopShown = () => !!coopWant || coop();
+const coopShownHero = () => coopWant ? coopWant.hero : (players && players[1] ? players[1].hero : null);
+const coopShownAlly = () => coopWant ? !!coopWant.ally : !!(players && players[1] && players[1].ai);
 /* A BORROWED HERO. Player two plays a hero the save owns but has never levelled, so he is LENT player one's level
    (his own talents still come from the save, where it has any). Nothing is written back: see gainXp and saveProgress. */
 const coopLent = h => coop() && h !== players[0].hero && players.some(p => p !== players[0] && p.hero === h);
@@ -156,7 +162,11 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     if (had) for (const k of ['skill', 'skill2']) if (PROG[k] === 'setSpears') PROG[k] = 'none';
     PROG.talentVersion = 5; if (had) PROG.talentsBackHero = 'warden'; }
   try { for (const hh in PROG.talents) { const mm = PROG.talents[hh]; for (const id in mm) { const nd = TREE.find(q => q.hero === hh && q.id === id); if (!nd) delete mm[id]; else if (mm[id] > nd.max) mm[id] = nd.max; } } } catch {}   /* ranks past a trimmed tree come back as points */ }
-function loadSlot(i) { slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
+/* A SLOT SWITCH IS A NEW SESSION. coopWant and the live pair are runtime-only - never written to the save - so
+   loading a different slot mid-coop would otherwise leave the map showing yesterday's partner from a slot that
+   never asked for one. Every road into a slot (continue, boss rush, practice, local co-op, a fresh save) runs
+   through here, so clearing it here is the one place that keeps the toggle honest across the switch. */
+function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; for (const k in PROG) delete PROG[k]; Object.assign(PROG, readSlot(i) || {}); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { for (const k in PROG) delete PROG[k]; progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
@@ -3050,6 +3060,12 @@ function updateMap(dt) {
   if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === (nd.shop || 'shop')); selectStart(); } else { selI = nd.level; selectStart(); } }
   if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
   if (dodgePress && !map.walking) openEquip('map');
+  /* THE MAP'S OWN CO-OP TOGGLE, on F: off arms the same picker LOCAL CO-OP uses (a pick returns here, unlike the
+     title's own flow), on ends it at once - nothing else to ask, same as the pause menu's line. */
+  if (throwPress && !map.walking) {
+    if (coopShown()) { coopWant = null; if (coop()) coopEnd(); const [mx, my] = mapPos(); number(mx, my - 16, 'CO-OP OFF', '#9aa39a'); SFX.ui(); }
+    else { coopPickFrom = 'map'; coopPick = { i: 0, ally: false }; state = 'coop'; SFX.uiSel(); }
+  }
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node;
   { const [, py] = mapPos(); const want = Math.max(0, Math.min(MAPH - VH, py - VH * 0.55)); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
@@ -3093,6 +3109,17 @@ function drawMap() {
   { // the road not yet walked: dotted, past the last node you can enter
     let last = 0; for (let k = 0; k < NODES.length; k++) if (!nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)'; for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 4.5)) % (map.walking ? 6 : K.R.idle.length), px, py + 2, map.lastDir || 1, false);
+  /* BOTH HEROES ON THE ROAD. Player two (or the ally) walks a few pixels behind player one, the same baked preview
+     the co-op pick screen stands on its card, at the same scale and on the same step so the pair read as walking
+     together and not as two unrelated markers. His own colour cue (the HUD's P2 green, or the ally's violet) sits
+     over his head so it is never a guess which one he is. */
+  { const h2 = coopShownHero();
+    if (h2) {
+      const K2 = heroPreviewSet(h2), dir2 = map.lastDir || 1, ox = -dir2 * 7, x2 = px + ox;
+      g.drawImage(PROP.shadow, Math.round(x2) - 6, Math.round(py) - 1);
+      drawSet(K2, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 4.5)) % (map.walking ? 6 : K2.R.idle.length), x2, py + 2, dir2, false);
+      g.fillStyle = coopShownAlly() ? '#c9a0ff' : '#8fd160'; g.fillRect(Math.round(x2) - 1, Math.round(py) - 21, 3, 3);
+    } }
   // node labels
   // node plates. The name is on a board you can read over the trees, and what you have taken out of that
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
@@ -3187,9 +3214,13 @@ function drawMap() {
       }
     }
   }
-  { const line = 'ARROWS MOVE   Z ENTER   X BEASTS   V EQUIP';
+  { /* the hero standing beside player one already says WHO (see below); this just says the key and whether he is
+       there, so the line stays short enough to sit beside the rest of the footer without crowding it out - both
+       measured with textW at size 6: 234 + 66 leaves a clear 12px between them at 320 wide. */
+    const on = coopShown(), coopLbl = 'F CO-OP ' + (on ? 'ON' : 'OFF');
     g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
-    text(line, VW / 2, VH - 8, UI.dim, 'center', 6); }
+    text('ARROWS MOVE  Z ENTER  X BEASTS  V EQUIP', 4, VH - 8, UI.dim, 'left', 6);
+    text(coopLbl, VW - 4, VH - 8, on ? '#8fd160' : UI.dim, 'right', 6); }
   g.__world = false;
 }
 
@@ -3859,7 +3890,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Map', 'Talents', 'Equip', 'Hero', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+const PAUSE_ITEMS = ['Resume', 'Map', 'Co-op', 'Talents', 'Equip', 'Hero', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
 const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
@@ -3871,6 +3902,7 @@ const SETTING_TIPS = {
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been, and what is still to find (TAB)', 'Way-on arrow': 'an arrow at the edge of the screen to the next thing on the way',
+  'Co-op': 'a friend on a pad, or the game playing him',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts, shouts and cries from heroes and foes',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
@@ -3923,6 +3955,10 @@ function menuConfirm() {
   const k = menuItems()[menuI];
   if (k === 'Resume') { state = menuFrom; SFX.menuClose(); }
   else if (k === 'Map') { if (menuFrom !== 'play' || !fog) { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { mapOpen('pause'); SFX.uiSel(); } }
+  else if (k === 'Co-op') {
+    if (coopShown()) { coopWant = null; if (coop()) coopEnd(); menuMsg = 'co-op off'; menuMsgT = 2; SFX.ui(); }
+    else { coopPickFrom = 'pause'; coopPick = { i: 0, ally: false }; state = 'coop'; SFX.uiSel(); }
+  }
   else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
   else if (k === 'Talents') { treeFrom = 'menu'; treeI = 0; state = 'tree'; SFX.menuOpen(); }
@@ -4021,19 +4057,52 @@ function drawHeroPick() {
    should never be turned away for something the save has not bought yet. X arms AN ALLY instead, which is the same
    pick with the game playing him. The run itself starts from the map, the way every run in this game starts. */
 let coopPick = { i: 0, ally: false };
+/* WHERE THE PICK CAME FROM, and so where it answers to: the title's own flow ends on the map and a cancel goes back
+   to the title (unchanged); the PAUSE menu's "Co-op" and the overworld map's own toggle open this same screen to
+   turn it ON, and both a pick and a cancel from there land back exactly where they were, having touched nothing
+   else - the pause menu still paused, the map still the map. */
+let coopPickFrom = 'title';
 /* WHOEVER YOU ARE IS STILL ON THE LIST. This filtered out player one's own hero, so a player who had taken THE WARDEN found her missing
    from player two's choices and read it as her not being selectable at all. The owner's rule: two of the same hero is allowed - two
    knights, or two Wardens, side by side. Both starters are always here, and everything the save owns with them. */
 const coopPickList = () => PICK.filter(h => PROG.heroes[h] || h === 'knight' || h === 'warden' || godMode());
+/* THE SAME FACE WHEREVER A HERO IS ONLY A PICTURE: this pick screen and the map (both heroes, walking) both want a
+   hero standing there with no game state behind him, so they share one bake, cached by key (see `preview`). */
+function heroPreviewSet(h) {
+  return h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken))
+    : h === 'paladin' ? preview('pick:paladin', () => bakePaladin({}))
+    : h === 'pirate' ? preview('pick:pirate', () => bakeFreebooter({}))
+    : h === 'reaper' ? preview('pick:reaper', () => bakeReaper({}))
+    : h === 'warden' ? preview('pick:warden', () => bakeWarden({}))
+    : preview('pick:knight', () => bakeKnight({}));
+}
+function coopPickBack() { return coopPickFrom === 'pause' ? 'menu' : 'map'; }   /* 'title' and 'map' both answer to the map */
 function updateCoopPick() {
   const list = coopPickList();
-  if (!list.length) { state = 'title'; SFX.buzz(); return; }
+  if (!list.length) { state = coopPickFrom === 'title' ? 'title' : coopPickBack(); if (coopPickFrom === 'pause') menuKind = 'pause'; SFX.buzz(); return; }
   if (coopPick.i >= list.length) coopPick.i = 0;
   if (leftPress) { coopPick.i = (coopPick.i + list.length - 1) % list.length; SFX.ui(); }
   if (rightPress) { coopPick.i = (coopPick.i + 1) % list.length; SFX.ui(); }
   if (atkPress) { coopPick.ally = !coopPick.ally; SFX.ui(); }
-  if (confirmPress) { coopWant = { hero: list[coopPick.i], ally: coopPick.ally }; state = 'map'; SFX.equip(); SFX.sting(); }
-  if (pausePress) { coopWant = null; if (coop()) coopEnd(); state = 'title'; SFX.ui(); }
+  if (confirmPress) {
+    coopWant = { hero: list[coopPick.i], ally: coopPick.ally };
+    /* TURNING IT ON MID-WOOD: player two stands up right beside player one instead of making everybody wait for the
+       next load. Only the pause menu opens this screen with a wood actually running under it (the map and the title
+       never do), and only when nothing else already owns the body count (no trial, no shop, no rush already running,
+       and not already in co-op, or coopStart would hand out a second player two). */
+    if (coopPickFrom === 'pause' && menuFrom === 'play' && L && !L.trial && !L.shop && !rushOn() && !coop()) {
+      coopStart(coopWant.hero, coopWant.ally);
+      const p2 = players[1];
+      if (p2) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p2, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); }
+    }
+    if (coopPickFrom === 'pause') { state = 'menu'; menuKind = 'pause'; } else state = 'map';
+    SFX.equip(); SFX.sting();
+  }
+  if (pausePress) {
+    if (coopPickFrom === 'title') { coopWant = null; if (coop()) coopEnd(); state = 'title'; }
+    else { state = coopPickBack(); if (coopPickFrom === 'pause') menuKind = 'pause'; }
+    SFX.ui();
+  }
 }
 function drawCoopPick() {
   const list = coopPickList();
@@ -4049,12 +4118,7 @@ function drawCoopPick() {
     /* AND THE HERO HIMSELF, in front of his banner. This screen drew the banner and stopped, so co-op offered six coloured cloths and no
        faces - "the character sprites don't appear". The hero pick screen has always baked a preview a hero and stood him on the card;
        the same previews are used here (one bake, cached by key), a little smaller because this card is eight pixels shorter. */
-    { const set = h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken))
-        : h === 'paladin' ? preview('pick:paladin', () => bakePaladin({}))
-        : h === 'pirate' ? preview('pick:pirate', () => bakeFreebooter({}))
-        : h === 'reaper' ? preview('pick:reaper', () => bakeReaper({}))
-        : h === 'warden' ? preview('pick:warden', () => bakeWarden({}))
-        : preview('pick:knight', () => bakeKnight({}));
+    { const set = heroPreviewSet(h);
       const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 1.75 : 1.25;
       g.globalAlpha = sel ? 1 : 0.7;
       g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 6 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
@@ -4068,7 +4132,7 @@ function drawCoopPick() {
   COOP_RULES.forEach((ln, i) => text(ln, VW / 2, top + ch + 31 + i * BODY_LH, i === 1 ? '#e8c860' : UI.dim, 'center', 6));
   text('EVERY CREATURE AND BOSS: TWICE THE HEALTH AND HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);   /* the old wording ran off both edges at 320 wide, and fitText would not trim it: the line itself is shorter now */
   text('LEFT/RIGHT choose   Z take   X ally   ESC back', VW / 2, VH - 19, UI.sel, 'center', 6);
-  text('then start any wood from the map', VW / 2, VH - 10, UI.dim, 'center', 6);
+  text(coopPickFrom === 'title' ? 'then start any wood from the map' : 'PAUSE or the MAP turns it off again', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
 function selectStart() {
   const lv = LEVELS[selI];
@@ -17466,7 +17530,7 @@ function update(dt) {
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
-        else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPick = { i: 0, ally: false }; state = 'coop'; }
+        else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPickFrom = 'title'; coopPick = { i: 0, ally: false }; state = 'coop'; }
         else if (k === 'THE EDITOR') edEnter();
         else if (k === 'SETTINGS') openMenu('title');
         else if (k === 'CONTROLS') state = 'controls';
@@ -20073,13 +20137,17 @@ function drawMenu() {
     const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? onoff(SET.wayOn) : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : '';
+    const v = k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? onoff(SET.wayOn) : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
     const vw = vs ? textW(vs, 8) + 8 : 0;
     text(fitText(k, w - 30 - vw, 8), x + 16 + (sel ? 2 : 0), yy, col);
     if (vs) { g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(vs, x + w - 14, yy, col, 'right'); }
   });
-  { const k = M[menuI], tip = SETTING_TIPS[k], ty = y + h - 14;
+  { const k = M[menuI];
+    /* THE HERO GOES IN THE TIP, not the value column: "DEATH KNIGHT" alone is wider than the whole row has to
+       give once the value is wrapped in its selected "< >" - measured, not guessed, after it came up short. */
+    const tip = k === 'Co-op' ? (coopShown() ? 'on: ' + (HERO_SHORT[coopShownHero()] || '').toLowerCase() + (coopShownAlly() ? ', the game plays him' : ', a gamepad') : SETTING_TIPS[k]) : SETTING_TIPS[k];
+    const ty = y + h - 14;
     /* the level and its clock live in the strip when there is no tip to show: drawn above it, the strip sat on top of them */
     const lines = menuMsgT > 0 && menuMsg ? wrap(menuMsg, w - 18, 6) : tip ? wrap(tip, w - 18, 6) : [menuFrom === 'play' && L ? LEVELS[levelIndex].name + '  ' + fmt(levelTime) + '   ESC close' : 'ESC close'];
     const two = lines.slice(0, 2), col2 = menuMsgT > 0 && menuMsg ? '#ffd36b' : tip ? '#9aa39a' : UI.dim;
