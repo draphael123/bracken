@@ -337,6 +337,143 @@ export function bakeSailor() {
   return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, hook, hurt], X + 1, H + 1, 10, 18);
 }
 
+// ---------- MERROW SPEARFISHER ----------
+// bakeMerrowSpear()  MERROW SPEARFISHER — built on the drowned sailor's own canvas, anchor and boathook rig (a
+//   barbed head on a pole is already a harpoon), because a fish-folk thrower needs exactly his reach and his
+//   guard/tell/throw poses. What is hers: teal-green scaled hide in place of bloated grey-green flesh, a dorsal
+//   fin crest where his weed hair was, a bone-pale harpoon head in place of his wet iron, and a kelp-fibre wrap
+//   instead of a rotted jerkin. She throws the harpoon on a line: caught, it hauls the hero in exactly as the
+//   Flotilla's boarder grapple does; a raised shield turns the head; a roll through the line before it lands
+//   cuts it.
+const MF = { o: OUT, h: '#5ba888', s: '#3d7a64', S: '#28564a', g: '#173a30', e: '#dff7ee', m: '#241018',
+  k: '#3a9a80', K: '#227058', q: '#123c30',
+  j: '#2f6a3a', J: '#1d4224', u: '#12280f',
+  n: '#d8c894', N: '#7c6c3a',
+  w: '#8a6a44', W: '#5c4527',
+  i: '#e8e2c8', I: '#a89868', d: '#474e58', r: '#3fbfa0' };
+export function bakeMerrowSpear() {
+  const W = 40, H = 26, X = 19;
+  const q = G => outline(fromGrid(rowsOf(settle(G)), MF, 1), OUT);
+  const HEAD = [
+    '..kkKk...',
+    '.kKhhhkK.',
+    '.KhhhhhSs',
+    'hsShhSeSh',
+    '.qKhhhhms',
+    '..qKShhSs',
+    '...qKSs..',
+  ];
+  const TORSO = [
+    '..sShhS..',
+    '.jJjjjJu.',
+    'jJjjhjJJu',
+    'jJjjjjJJu',
+    'jJhrjjJJu',
+    'jJjjjjJJu',
+    '.jJjjjJu.',
+    '.uJJJJJu.',
+    '..SshsS..',
+    '..SshsS..',
+  ];
+  const LEGS = {
+    a: ['....SShh.....',
+      '...SS..hh....',
+      '...Sg...hh...',
+      '..gg....ss...',
+      '..gg....ss...',
+      '.ggg....ss...',
+      '.uJu...hhhh..'],
+    b: ['....SShh.....',
+      '....SShh.....',
+      '....Sghs.....',
+      '...gg..ss....',
+      '...gg..ss....',
+      '..gg...hhh...',
+      '..uJu........'],
+    c: ['....hhSS.....',
+      '...hh..SS....',
+      '...hs...Sg...',
+      '..ss....gg...',
+      '..ss....gg...',
+      '.hhh....ggg..',
+      'hhhh....uJu..'],
+    d: ['....hhSS.....',
+      '....hhSS.....',
+      '....hsSg.....',
+      '...ss..gg....',
+      '...ss..gg....',
+      '..hhh..uJu...',
+      '.hhhh........'],
+    guard: ['....SShh.....',
+      '...SS...hh...',
+      '..gg.....ss..',
+      '..gg.....ss..',
+      '.gg......ss..',
+      '.gg......ss..',
+      'uJJu....hhhh.'],
+    tell: ['....SShh.....',
+      '...SS..hh....',
+      '..gS...hs....',
+      '..gg...ss....',
+      '.gg....ss....',
+      '.gg....ss....',
+      'uJu...hhhh...'],
+    hook: ['....SShh.....',
+      '...SS...hh...',
+      '..gS.....hh..',
+      '..gg......ss.',
+      '.gg.......ss.',
+      '.gg.......ss.',
+      'uJu......hhhh'],
+  };
+  // the harpoon: a banded shaft, a bone ferrule, a spike at the tip and a barb hooked back off its side
+  const harpoon = (G, b, t, side) => {
+    const dx = t[0] - b[0], dy = t[1] - b[1], L = Math.hypot(dx, dy) || 1, u = [dx / L, dy / L], p = [-u[1] * side, u[0] * side];
+    gline(G, b[0], b[1], t[0], t[1], (i, n) => (i > n - 4 ? 'I' : i % 4 === 0 ? 'W' : 'w'));
+    const tip = [Math.round(t[0]), Math.round(t[1])];
+    const E = [tip[0] + p[0] * 2.2, tip[1] + p[1] * 2.2], K = [E[0] - u[0] * 3.4, E[1] - u[1] * 3.4];
+    put(G, tip[0], tip[1], 'i');
+    gline(G, tip[0] + p[0] * 0.9, tip[1] + p[1] * 0.9, E[0], E[1], 'I');
+    gline(G, E[0], E[1], K[0], K[1], (i, n) => (i > n - 2 ? 'i' : 'I'));
+  };
+  const arm = (G, sh, el, hd, far) => layer(G, g => {
+    limb(g, sh, el, 2.3, far ? ['u', 'u', 'J'] : ['u', 'J', 'j']);
+    limb(g, el, hd, 1.9, far ? ['g', 'S', 'S'] : ['S', 's', 'h']);
+    put(g, hd[0], hd[1], far ? 'S' : 'h');
+  });
+  const frame = o => {
+    const G = blank(W, H), B = X + (o.dx || 0), dy = o.dy || 0, O = B - 4;
+    const P = (u, v) => [B + u, v + dy], hk = [P(...o.hook[0]), P(...o.hook[1])];
+    if (o.back) layer(G, g => harpoon(g, hk[0], hk[1], o.side));
+    arm(G, [B - 2, 11 + dy], P(...o.far[0]), P(...o.far[1]), true);
+    stamp(G, B - 6, 19 + dy, LEGS[o.legs]);
+    stamp(G, O, 9 + dy, TORSO);
+    layer(G, g => stamp(g, O + (o.hx || 0), 2 + dy, HEAD));
+    if (!o.back) layer(G, g => harpoon(g, hk[0], hk[1], o.side));
+    arm(G, [B + 2, 11 + dy], P(...o.near[0]), P(...o.near[1]));
+    const c = q(G);
+    if (o.smear) smear(c, ...o.smear);
+    return c;
+  };
+  const walk = i => frame({ legs: 'abcd'[i], dy: i === 0 || i === 2 ? 1 : 0, side: 1,
+    hook: [[-9, 24], [6, 4]],
+    far: [[-4, 15], [-5, 19]], near: [[1, 13], [-1, 14]] });
+  const guard = frame({ legs: 'guard', dy: 1, side: 1,
+    hook: [[-8, 14], [9, 6]],
+    far: [[-2, 13], [-3, 12]], near: [[4, 10], [5, 8]] });
+  const tell = frame({ legs: 'tell', dx: -2, dy: 1, hx: -1, side: -1, back: true,
+    hook: [[6, 20], [-13, 8]],
+    far: [[0, 14], [2, 17]], near: [[0, 13], [-2, 15]] });
+  const hook = frame({ legs: 'hook', dx: 2, dy: 1, hx: 1, side: 1,
+    hook: [[-6, 11], [14, 20]],
+    far: [[-3, 11], [-3, 12]], near: [[3, 13], [3, 15]],
+    smear: [1 + X + 2, 1 + 13, 17, -112, 26, 26] });
+  const hurt = frame({ legs: 'tell', dx: -2, dy: 1, hx: -2, side: -1, back: true,
+    hook: [[4, 22], [-12, 3]],
+    far: [[-5, 13], [-8, 10]], near: [[-1, 14], [-4, 17]] });
+  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, hook, hurt], X + 1, H + 1, 10, 18);
+}
+
 // ---------- NETTER ----------
 export function bakeNetter() {
   const W = 34, H = 26, X = 16;

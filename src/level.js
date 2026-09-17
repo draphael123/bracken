@@ -2502,13 +2502,13 @@ function theDeep() {
   deck(58, 90, 64); hull(59, 89, 60, 63);
   stone(40, 41); stone(78, 47); stone(26, 55); stone(70, 63);
   coins([34, 41], [44, 41], [52, 41], [70, 47], [80, 47], [90, 47], [20, 55], [30, 55], [38, 55], [64, 63], [74, 63], [84, 63]);
-  ent('sailor', 48, 41, { face: -1 }); ent('netter', 84, 47, { face: -1 }); ent('angler', 24, 50);
+  ent('sailor', 48, 41, { face: -1 }); ent('merrowspear', 84, 47, { face: -1 }); ent('angler', 24, 50);   /* THE MERROW: her harpoon works as well off a hold's deck as off the reef */
   ent('scout', 34, 55, { face: 1 }); ent('eel', 96, 58); ent('crab', 68, 63, { face: 1 });
   ent('sailor', 74, 47, { face: 1 }); ent('crab', 38, 41, { face: -1 }); ent('netter', 22, 55, { face: 1 });
   ent('scout', 86, 63, { face: -1 }); ent('urchin', 52, 46); ent('urchin', 44, 60);
   ent('petrel', 66, 36); ent('angler', 88, 56); ent('eel', 30, 46);
   ent('siren', 60, 52); ent('tideguard', 92, 47, { face: -1 });
-  ent('boarder', 42, 41, { face: 1 }); ent('boarder', 80, 63, { face: -1 });
+  ent('boarder', 42, 41, { face: 1 }); ent('merrowbrute', 80, 63, { face: -1 });
   ent('wight', 56, 41, { face: -1 }); ent('wight', 36, 55, { face: 1 });
   ent('sailor', 90, 47, { face: -1 }); ent('sailor', 66, 63, { face: 1 }); ent('tideguard', 20, 55, { face: 1 });
   ent('check', 78, 47); ent('check', 62, 63);
@@ -7125,17 +7125,18 @@ const GARRISON = {
   spire: [['fledgling', 13], ['harpy', 10], ['bat', 7], ['sentry', 8], ['rockgoblin', 7], ['crow', 5], ['goat', 4], ['troll', 4], ['kite', 4], ['spider', 3], ['snuffer', 2]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
   storm: [['hearthgob', 5], ['cutter', 5], ['sentry', 2], ['pike', 1]],
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
-  longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 5], ['angler', 4], ['turtle', 4], ['heronfoe', 3]],
-  reef: [['angler', 11], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 3]],
+  longwater: [['scout', 5], ['tideguard', 6], ['crab', 6], ['siren', 5], ['eel', 5], ['netter', 2], ['angler', 4], ['turtle', 4], ['heronfoe', 3], ['merrowspear', 2], ['merrowbrute', 1]],   /* the tribe's own: replacing a scout and three of the netter's five, not piled on */
+  reef: [['angler', 11], ['crab', 7], ['sailor', 4], ['netter', 4], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 5], ['urchin', 4], ['lookout', 1], ['merrowspear', 3], ['merrowcaller', 2]],   /* the tribe's own: replacing three sailors, two netters and two of the lookout's three */
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['seawitch', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and her own sea witch, not another cutlass */
   mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3]],   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
   fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
-  causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 4], ['sailor', 4], ['crab', 4], ['netter', 3]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
+  causeway: [['scout', 8], ['tideguard', 6], ['watch', 2], ['feeler', 8], ['petrel', 5], ['cutlass', 4], ['sailor', 2], ['crab', 4], ['netter', 3], ['merrowcaller', 1], ['merrowbrute', 1]],   /* the drowned pilgrims' road: its dead, its crabs, the arms in the flats, and the tribe come up out of the channels - replacing two watch and two sailors */
   skyship: [['cutlass', 10], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings */
-  lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 4], ['netter', 3], ['urchin', 4], ['siren', 3]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
+  lamplit: [['watch', 5], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 7], ['sailor', 2], ['netter', 1], ['urchin', 4], ['siren', 3], ['merrowspear', 2], ['merrowbrute', 2]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown; the tribe's own replace four watch, two sailors and two of the netter's three
+
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
 // Measured across the campaign and they are bunched and then absent: Highcrown had ELEVEN of them and SEVEN
