@@ -196,6 +196,23 @@ function rotQuarter(c, q) { // rotate a square canvas by q quarter turns
   g.translate(c.width / 2, c.height / 2); g.rotate(q * Math.PI / 2); g.drawImage(c, -c.width / 2, -c.height / 2);
   return o;
 }
+/* LAID OUT ON THE WATER. A stroke is drawn STANDING - the kick in the legs, the reach in the arm, the weapon where that
+   hero keeps it when he swims - and turned a quarter onto its front, so the head leads and the chest is to the bottom.
+   The turn pivots on the canvas centre, which leaves the body a hand forward of the anchor and high; it is slid back
+   over the anchor and down onto the middle of the hitbox, so a swimmer is drawn where he actually is. */
+function laidOut(c, ox, oy) { const r = rotQuarter(c, 1), [o, g] = canvas(c.width, c.height); g.drawImage(r, ox, oy); return o; }
+/* THE STROKE, on the knight's rig (and so on everyone who borrows it). The arm goes up past the helm (forward, laid out),
+   sweeps down through the front (under him), pushes back along the belt and comes round over the back again, while the
+   legs flutter. `hand(hx, hy, ux, uy)` gives the weapon in the stroke hand, `carry` whatever is slung; TREAD is upright,
+   the legs working under him and the arm sculling low in front, with its own `tread(i)` carry. */
+const STROKE = [[1, -8], [6, -3], [6, 1], [-2, -5]], KICK = ['run1', 'run2', 'run5', 'run4'];
+const SCULL = [[5, 2], [6, 4], [5, 3], [4, 1]], TREAD_LEGS = ['run2', 'stand', 'run4', 'stand'], TREAD_DY = [0, 0, 1, 1];
+function swimRig(KF, sh, { hand = null, carry = {}, tread = () => ({}), ox = -3, oy = 0 }) {
+  const swim = STROKE.map(([ax, ay], i) => { const hx = sh[0] + ax, hy = sh[1] + ay, wx = 0.35, wy = -1, n = Math.hypot(wx, wy);   /* the blade is held to the lead through the whole stroke: it goes where he is going, never hangs under him */
+    return laidOut(KF({ legs: KICK[i], plume: i % 3, arm: [sh[0], sh[1], hx, hy], ...carry, ...(hand ? hand(hx, hy, wx / n, wy / n) : {}) }), ox, oy); });
+  const treadF = SCULL.map(([ax, ay], i) => KF({ legs: TREAD_LEGS[i], dy: TREAD_DY[i], plume: (i + 1) % 3, arm: [sh[0], sh[1] + TREAD_DY[i], sh[0] + ax, sh[1] + ay + TREAD_DY[i]], ...tread(i) }));
+  return { swim, tread: treadF };
+}
 
 /* THE RUN OF THREE. The combo is three swings and it drew one: every blow of a run was the same over-the-shoulder
    chop. The second is now a BACKHAND - low behind, up through the front and over - and the third, the heavy cut, a
@@ -337,6 +354,11 @@ export function bakeKnight(skin = {}, bare = false) {
     /* the blade hangs STEEP - a sword out at forty-five degrees is what his hurt frames do, and the two must not be
        the same picture - and his feet stay together under him, where being knocked about puts them apart */
     F.slump = [down(0), down(1)]; }
+  /* HIS SWIM: the kite slung on his back, where it cannot drag, and the sword kept in the stroke hand - it leads on the
+     reach, which is the one knight in the sea who still looks armed. Treading, the shield comes back to the off arm. */
+  { const S = swimRig(KF, sh, { carry: { kite: bare ? null : BACK }, hand: (hx, hy, ux, uy) => ({ sword: [hx, hy, Math.round(hx + ux * 6), Math.round(hy + uy * 6)] }),
+      tread: i => ({ sword: [sh[0] + SCULL[i][0], sh[1] + SCULL[i][1] + TREAD_DY[i], sh[0] + SCULL[i][0] + 6, sh[1] + SCULL[i][1] + TREAD_DY[i] + 3] }) });
+    F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
@@ -1338,6 +1360,13 @@ export function bakePyro(skin = {}) {
     pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [9, 13, 23, 10], arm: [16, 10, 19, 11], cowl: 0 }),
     F.atk[4],
   ];
+  /* HER SWIM, on her own rig: the robe drawn narrow and trailing, the boots kicking, the stroke arm reaching past the
+     cowl, and the staff along her back with the fire still in the cage - she will not let the sea have it. Treading,
+     the robe floats up round her, both sleeves scull, and the staff is held up in front with the flame over the water. */
+  { const kick = [[[10, 18], [15, 19]], [[11, 19], [15, 18]], [[10, 19], [15, 17]], [[11, 18], [15, 18]]];
+    F.swim = STROKE.map(([ax, ay], i) => laidOut(pyroFrame({ hemW: 9, feet: kick[i], arm: [16, 10, 16 + ax, 10 + ay], staff: [9, 20, 12, 2, 'back'], flame: i % 4, cowl: 1, flick: i % 2 }), -7, 1));
+    F.tread = SCULL.map(([ax, ay], i) => pyroFrame({ bell: 3 - TREAD_DY[i], hemW: 12, dy: TREAD_DY[i], feet: kick[i], arm: [16, 10, 16 + ax, 10 + ay], arm2: [10, 10, 10 - ax, 10 + ay],
+      staff: [18, 19, 20, 3], flame: (i + 1) % 4, cowl: 2 })); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1650,6 +1679,11 @@ export function bakeFreebooter(skin = {}) {
       arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], cutlass: [sh[0] + 4, sh[1] - 3 - d, sh[0] + 4, sh[1] + 5 - d],
       pistol: [sh[0] - 3, sh[1] + 3, sh[0] - 6, sh[1] + 5] });
     F.slump = [sat(0, 1), sat(1, 2)]; }
+  /* HIS SWIM: the cutlass kept in the stroke hand and the pistol left through his belt - a man who boards ships from the
+     water does not let go of either. Treading, the blade is held out low in front of him. */
+  { const S = swimRig(knightFrame, sh, { carry: { pistol: holster() }, hand: (hx, hy, ux, uy) => ({ cutlass: [hx, hy, Math.round(hx + ux * 7), Math.round(hy + uy * 7)] }),
+      tread: i => ({ pistol: holster(TREAD_DY[i]), cutlass: [sh[0] + SCULL[i][0], sh[1] + SCULL[i][1] + TREAD_DY[i], sh[0] + SCULL[i][0] + 6, sh[1] + SCULL[i][1] + TREAD_DY[i] + 2] }) });
+    F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1763,6 +1797,11 @@ export function bakeReaper(skin = {}) {
       arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], greatsword: [sh[0] - 2, sh[1] + 3, sh[0] - 14, sh[1] + 7 - d],
       bits: [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] });
     F.slump = [drag(0, 1), drag(1, 2)]; }
+  /* HIS SWIM: the greatsword down his back, grip at the shoulders and the point trailing past his boots, so what follows
+     him through the water is a length of steel as long as he is. Treading, it goes back up over the shoulder. */
+  { const S = swimRig(knightFrame, sh, { carry: { greatsword: [sh[0] - 5, sh[1] - 3, sh[0] - 4, sh[1] + 13], bits: flap([3, 4], 0, 1, 'r', 'r') },
+      tread: i => ({ greatsword: [sh[0] + 1, sh[1] + 4 + TREAD_DY[i], sh[0] - 7, sh[1] - 6 + TREAD_DY[i]], bits: flap([3, 4], TREAD_DY[i], 1 - TREAD_DY[i], 'r', 'r') }) });
+    F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -1962,6 +2001,11 @@ export function bakeWarden(skin = {}) {
   { const set = (d, hy) => knightFrame({ dy: 1 + d, hy, sho: -1, legs: 'stand', plume: 0,
       arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 5], spear: [sh[0] - 8, sh[1] + 8 - d, sh[0] + 12, sh[1] + 8 - d] });
     F.slump = [set(0, 2), set(1, 3)]; }
+  /* HER SWIM: the spear held along her in the off hand with the POINT LEADING - laid out, it runs on past her hat, and
+     at sixteen pixels that line out in front is the whole of her. Treading, she holds it upright, point to the sky. */
+  { const S = swimRig(knightFrame, sh, { carry: { spear: [sh[0] - 1, sh[1] + 9, sh[0], sh[1] - 12] },
+      tread: i => ({ spear: [sh[0] + 2, sh[1] + 4 + TREAD_DY[i], sh[0] + 3, sh[1] - 11 + TREAD_DY[i]], bits: flap([3, 4], TREAD_DY[i], 1, 'b', 'B') }) });
+    F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
@@ -2078,6 +2122,10 @@ export function bakePaladin(skin = {}) {
   { const kneel = (d, hy) => knightFrame({ dy: 5 + d, hy, legs: 'crouch', plume: 0,
       arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], maul: [sh[0] + 2, sh[1] - 2, sh[0] + 4, sh[1] + 4 - d] });
     F.slump = [kneel(0, 1), kneel(1, 2)]; }
+  /* HIS SWIM: the maul slung head-up across his back, where it rides above him like a keel turned over, and both
+     hands free for the water. Treading, it stays slung. */
+  { const S = swimRig(knightFrame, sh, { carry: { maul: [sh[0] - 3, sh[1] + 6, sh[0] - 7, sh[1] - 5] }, tread: i => ({ maul: carry(TREAD_DY[i]) }) });
+    F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);

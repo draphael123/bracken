@@ -5150,8 +5150,8 @@ function gainVigil(n) { if (!isWarden()) return; const was = (P.vigil || 0) >= 1
 const PHX_STEP = 22, PHX_REACH = 300, PHX_RISE = 0.14, PHX_HOLD = 1.5, PHX_LIFE = 1.9;
 let phalanx = [];
 function spendVigil() {
-  if (!P.ground || P.swim || P.climb) {
-    if (!PROG.phxFooting) { PROG.phxFooting = 1; saveProgress(); hintT = 4.5; hintMsg = 'THE PHALANX NEEDS FOOTING: TAP C ON THE GROUND. THE BAR IS KEPT.'; }
+  if ((!P.ground && !P.swim) || P.climb) {
+    if (!PROG.phxFooting) { PROG.phxFooting = 1; saveProgress(); hintT = 4.5; hintMsg = 'THE PHALANX NEEDS FOOTING: TAP C ON THE GROUND OR IN THE WATER. THE BAR IS KEPT.'; }
     SFX.buzz(); return;   /* the bar is not spent */
   }
   P.vigil = 0; P.blastT = 0.5; P.atk = -1; P.vx = 0; P.heavy = false; P.runThrough = false; trialEvent('meter');
@@ -5166,6 +5166,7 @@ function spendVigil() {
     if (isSolid(tx, Math.floor((P.y - 12) / TS))) break;                    /* a wall: the row ends where the room does */
     const ty0 = Math.floor(P.y / TS); let gy = null;
     for (let k = 0; k <= 3 && ty0 + k < LH; k++) if (isSolid(tx, ty0 + k)) { gy = (ty0 + k) * TS; break; }
+    if (gy === null && P.swim && inWater(x, P.y - 4)) gy = P.y;               /* BRACED AGAINST THE WATER: with no bed under them the points are set in the water itself, at her own depth */
     if (gy === null) continue;                                              /* a hole in the floor has no ground to come out of */
     phalanx.push({ x, y: gy, t: 0, delay: n * 0.045, hit, done: false, stay: PHX_LIFE });
     n++;
@@ -5301,7 +5302,8 @@ function lastCharge() {
 function updateLastCharge(dt, stunned) {
   if (!lcOn()) return;
   const dir = P.lcDir;
-  if (P.dead || stunned || P.swim || P.climb || !P.ground || hero() !== 'knight') { P.lcBrace = 0; P.lcLeft = 0; return; }   /* knocked out of it, or off his feet: the bar is gone and there is no slam */
+  if (P.dead || stunned || P.climb || (!P.ground && !P.swim) || hero() !== 'knight') { P.lcBrace = 0; P.lcLeft = 0; return; }
+  if (P.swim) P.vy = 0;   /* THE WATER VERSION: the sea holds him level, brace and charge, and the charge is a straight line through it */   /* knocked out of it, or off his feet: the bar is gone and there is no slam */
   P.face = dir; P.abuf = 0; P.jbuf = 0; P.dbuf = 0;
   if (P.lcBrace > 0) { P.vx = 0; P.lcBrace -= dt;   /* THE BRACE: the tell. He stands behind the shield and the light gathers on it */
     if (Math.random() < dt * 40) parts.push({ x: P.x + dir * (7 + Math.random() * 4), y: P.y - 4 - Math.random() * 14, vx: -dir * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
@@ -5315,7 +5317,7 @@ function updateLastCharge(dt, stunned) {
   const lead = P.x + dir * (P.w / 2 + 2), lx = Math.floor(lead / TS);
   if (isSolid(lx, Math.floor((P.y - 4) / TS)) || isSolid(lx, Math.floor((P.y - P.h + 2) / TS))) { SFX.clank(); sparks(lead, P.y - 10, -dir, 9); impactAt(lead, P.y - 10, 'steel'); lcSlam(dir, false); return; }   /* A WALL: iron on stone, and the slam is into it */
   const fx = Math.floor((P.x + dir * (P.w / 2 + 1)) / TS), fy = Math.floor((P.y + 2) / TS);
-  if (!P.onMover && !isSolid(fx, fy) && !isOneWay(tileAt(fx, fy))) { dust(P.x + dir * 5, P.y, 4); lcSlam(dir, false); return; }   /* A DROP: he pulls up at the lip, as the shield charge does */
+  if (!P.swim && !P.onMover && !isSolid(fx, fy) && !isOneWay(tileAt(fx, fy))) { dust(P.x + dir * 5, P.y, 4); lcSlam(dir, false); return; }   /* A DROP: he pulls up at the lip, as the shield charge does */
   const hb = dir > 0 ? { l: P.x - 2, r: P.x + 14, t: P.y - 22, b: P.y } : { l: P.x - 14, r: P.x + 2, t: P.y - 22, b: P.y };
   if (tal('bash')) for (const s of seeds) if (!s.dead && !s.reflected && overlap(hb, { l: s.x - 4, r: s.x + 4, t: s.y - 4, b: s.y + 4 })) reflectSeed(s);   /* BULL RUSH: what flies at him goes back the way it came, in this charge too */
   for (const e of enemies) {
@@ -5363,7 +5365,7 @@ function lcSlam(dir, big) {
 function updateCharge(dt) {
   if (!tal('heavy') || P.dead || state !== 'play') { P.atkHeld = 0; P.charge = 0; return; }
   if (isPirate() && !P.loaded) { if (keys.atk && !(P.emptySaid > 0)) { P.emptySaid = 1.2; SFX.clank(); number(P.x, P.y - 26, 'EMPTY', '#9aa39a'); } P.atkHeld = 0; P.charge = 0; return; }
-  const quick = isPirate() && tal('quickHands'), can = (P.ground || quick) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy && !(hero() === 'knight' && (thrown || rushing()));   /* QUICK HANDS: from the air, and out of a roll */   /* (the knight braces behind a shield: not while it is thrown, nor while he is still charging) */
+  const quick = isPirate() && tal('quickHands'), can = (P.ground || P.swim || quick) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy && !(hero() === 'knight' && (thrown || rushing()));   /* QUICK HANDS: from the air, and out of a roll */   /* (the knight braces behind a shield: not while it is thrown, nor while he is still charging) */
   if (!keys.atk || !can) { // let go (or lost the footing for it): if it was wound up, it lands
     if (P.charge > heavyWind() * 0.55 && can) fireHeavy();
     else if (P.charge > 0) { SFX.ui(); }
@@ -5847,7 +5849,7 @@ function fireHeavy() { noteVerb('heavy');
   if (isWarden()) { P.runThrough = true; P.rtWound = wound; P.vx = P.face * 40; P.rtHit = null; }   /* rtWound: how far it was wound is how far it carries her */
   SFX.heavy(); shakeCam(3, P.face * 2); zoomKick(1.03, 0.16);
   streaks(P.x + P.face * 14, P.y - 12, P.face, isPyro() ? '#ff9a5c' : '#dfe8ff');
-  if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9), sp: 200, hit: new Set(), sunder: !!tal('sunder') }); shakeCam(5); SFX.thud(); SFX.stone(); }
+  if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9) * (P.ground ? 1 : 0.7), sp: 200, hit: new Set(), sunder: !!tal('sunder'), water: !P.ground && P.swim }); shakeCam(5); SFX.thud(); SFX.stone(); }
   if (isPyro()) { // THE BELLOWS: a cone of fire out of the staff, and the heat goes up with it
     gainHeat(14);
     for (let i = 0; i < 3; i++) embers.push({ x: P.x + P.face * 12, y: P.y - 12 + (i - 1) * 6, vx: P.face * (150 + i * 30), vy: (i - 1) * 40, life: 0.42, hit: new Set(), cone: true });
@@ -5871,14 +5873,15 @@ function updateShieldCharge(dt, stunned) {
   if (P.rushRec > 0) P.rushRec = Math.max(0, P.rushRec - dt);
   if (!(P.rush > 0)) return;
   const dir = P.rushDir;
-  if (P.dead || stunned || !P.ground || P.swim || P.climb || hero() !== 'knight') { P.rush = 0; return; }   /* knocked off it, or off his feet: it is over */
+  if (P.dead || stunned || (!P.ground && !P.swim) || P.climb || hero() !== 'knight') { P.rush = 0; return; }
+  if (P.swim) P.vy = 0;   /* THE WATER VERSION: a straight drive through the water behind the shield, the same length as on the ground */   /* knocked off it, or off his feet: it is over */
   P.rush -= dt; P.face = dir; P.abuf = 0; P.jbuf = 0; P.dbuf = 0; P.vx = dir * RUSH_SPEED;
   if (Math.random() < dt * 30) dust(P.x - dir * 5, P.y, 1);
   const lead = P.x + dir * (P.w / 2 + 2), lx = Math.floor(lead / TS);
   if (isSolid(lx, Math.floor((P.y - 4) / TS)) || isSolid(lx, Math.floor((P.y - P.h + 2) / TS))) {   /* A WALL: iron on stone, and he stops */
     P.rush = 0; P.vx = 0; P.rushRec = 0.22; SFX.clank(); SFX.thud(); shakeCam(3, dir * 2); hitstop(0.05); sparks(lead, P.y - 10, -dir, 7); impactAt(lead, P.y - 10, 'steel'); return; }
   const fx = Math.floor((P.x + dir * (P.w / 2 + 1)) / TS), fy = Math.floor((P.y + 2) / TS);
-  if (!P.onMover && !isSolid(fx, fy) && !isOneWay(tileAt(fx, fy))) { P.rush = 0; P.vx = 0; P.rushRec = 0.18; dust(P.x + dir * 5, P.y, 3); return; }   /* A DROP: he pulls up at the lip */
+  if (!P.swim && !P.onMover && !isSolid(fx, fy) && !isOneWay(tileAt(fx, fy))) { P.rush = 0; P.vx = 0; P.rushRec = 0.18; dust(P.x + dir * 5, P.y, 3); return; }   /* A DROP: he pulls up at the lip */
   const hb = dir > 0 ? { l: P.x, r: P.x + 16, t: P.y - 20, b: P.y } : { l: P.x - 16, r: P.x, t: P.y - 20, b: P.y };
   if (tal('bash')) for (const s of seeds) if (!s.dead && !s.reflected && overlap(hb, { l: s.x - 4, r: s.x + 4, t: s.y - 4, b: s.y + 4 })) reflectSeed(s);   /* BULL RUSH: what flies at him goes back the way it came */
   const e = enemies.find(q => q.alive && !q.harmless && !(q.gone > 0) && !q.turncoat && overlap(hb, box(q)));
@@ -5991,7 +5994,7 @@ function updatePlayer(dt) {
     if (dn && !busy && Math.abs(P.vx) < 20) { P.dance = P.dance > 0 ? 0 : 0.0001; SFX.uiSel(); }
     if (P.dance > 0) { if (busy) P.dance = 0; else { P.dance += dt; P.vx = 0; } } }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
-  if (isPyro() && skillPress('fireWall') && P.ground && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('fireWall'); gainHeat(12); P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('fireWall'); gainHeat(12); P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('cinderStep'); gainHeat(10); P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); P.cinderT = 0.3; streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (skillPress('risingCut') && cdReady('risingCut') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { cdSet('risingCut'); P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); SFX.slash(); SFX.pPogo(); squash(0.8, 1.25, 0.12); dust(P.x, P.y, 6); ringAt(P.x, P.y - 10, 14, '#fff6e0', 0.2); streaks(P.x + P.face * 6, P.y - 16, 8, ['#fff6e0', '#c9d1dc'], 170); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } // RISING CUT: the blade goes up and so do you, and whatever it catches
   if (isPyro() && skillPress('vent') && cdReady('vent') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; cdSet('vent'); const dmg = Math.round(10 + heat * 0.5), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.light = 0; P.atk = -1; ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); for (let a = 0; a < 18; a++) { const an = a / 18 * Math.PI * 2, sp = 70 + heat * 1.2; parts.push({ x: P.x, y: P.y - 8, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.45, max: 0.45, col: '#ffd36b', size: 3, grav: -20, fire: true, drag: 2.5 }); } smoke(P.x, P.y - 10, 5, 8); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
@@ -6008,12 +6011,12 @@ function updatePlayer(dt) {
   if (P.riseT > 0) { P.riseT -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); const hb = { l: P.x - 11, r: P.x + 11, t: P.y - 36, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtEnemy(e, swordDmg() + 4, P.x, false); if (!big && e.t !== 'king' && e.t !== 'mother') { e.vy = -240; e.y -= 2; e.stagger = Math.max(e.stagger || 0, 0.7); e.air = true; } sparks(e.x, e.y - e.h / 2, P.face, 6); hitstop(0.05); } } }
   if (P.ground) P.riseUsed = false;
   // THE PALADIN'S SKILLS
-  if (isPaladin() && skillPress('consecrate') && P.ground && cdReady('consecrate') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('consecrate'); hallows.push({ x: P.x, y: P.y, life: 4 + tal('consecrate'), r: 40, tick: 0 }); SFX.mend(); SFX.heavy(); ringAt(P.x, P.y - 4, 40, '#ffd36b', 0.5); motes(P.x, P.y - 6, 14, 30); P.castT = 0.3; } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPaladin() && skillPress('consecrate') && (P.ground || P.swim) && cdReady('consecrate') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('consecrate'); hallows.push({ x: P.x, y: P.y, life: 4 + tal('consecrate'), r: 40, tick: 0 }); SFX.mend(); SFX.heavy(); ringAt(P.x, P.y - 4, 40, '#ffd36b', 0.5); motes(P.x, P.y - 6, 14, 30); P.castT = 0.3; } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPaladin() && skillPress('holyCharge') && cdReady('holyCharge') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('holyCharge'); P.chargeT = 0.3; P.dodge = 0.3; P.vx = P.face * 330; P.inv = Math.max(P.inv, 0.4); P.chargeHit = new Set(); SFX.throwWhoosh(); SFX.aegis(); streaks(P.x, P.y - 10, 8, ['#fff6c8', '#ffd36b'], 160); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPaladin() && skillPress('blessedHammer') && cdReady('blessedHammer') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(15)) { cdSet('blessedHammer'); hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map() }); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (P.chargeT > 0) { P.chargeT -= dt; P.vx = P.face * 330; if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * 6, y: P.y - 4 - Math.random() * 14, vx: -P.face * 60, vy: 0, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0, glow: true });
     for (const e of enemies) if (e.alive && !e.harmless && !P.chargeHit.has(e) && overlap({ l: P.x - 10, r: P.x + 10, t: P.y - 18, b: P.y }, box(e))) { P.chargeHit.add(e); hurtEnemy(e, Math.round(12 * amul('holyCharge')), P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1); e.vx = P.face * 240; e.vy = -150; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(3, P.face * 2); hitstop(0.04); } }
-  if (skillPress('groundSlam') && P.ground && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { cdSet('groundSlam'); P.block = false; P.atk = -1; shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.2, sp: 210, hit: new Set() }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+  if (skillPress('groundSlam') && (P.ground || P.swim) && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { cdSet('groundSlam'); P.block = false; P.atk = -1; shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: P.ground ? 1.2 : 0.8, sp: 210, hit: new Set(), water: !P.ground }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (skillPress('shieldThrow') && !thrown && cdReady('shieldThrow') && tal('shieldThrow') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   // ---- MORE ON THE KEYS ----
   const canAct = () => !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge;
@@ -6048,10 +6051,12 @@ function updatePlayer(dt) {
     thrownScythe = { x: P.x + P.face * 10, y: P.y - 12, dir: P.face, out: true, t: 0, reach: 96 + 16 * tal('scytheThrown'), hit: new Set() };
   } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   // GRAVE TIDE: hands out of the floor, holding what is standing on it
-  if (isReaper() && skillPress('graveTide') && cdReady('graveTide') && P.ground && canAct()) { if (spend(24)) { cdSet('graveTide');
+  if (isReaper() && skillPress('graveTide') && cdReady('graveTide') && (P.ground || P.swim) && canAct()) { if (spend(24)) { cdSet('graveTide');
     P.castT = 0.35; SFX.stone(); shakeCam(4);
     for (let k = 1; k <= 6; k++) { const hx = P.x + P.face * (18 + k * 13);
-      hands.push({ x: hx, y: P.y, life: 1.4 + 0.2 * tal('graveTide'), delay: k * 0.06, hit: new Set() }); }
+      /* THE WATER VERSION: the drowned come up for what swims at his depth - out of the bed if it is near, out of the dark under him if it is not */
+      let hy = P.y; if (!P.ground) { const t0 = Math.floor(P.y / TS); for (let q = 0; q <= 2; q++) if (isSolid(Math.floor(hx / TS), t0 + q)) { hy = (t0 + q) * TS; break; } }
+      hands.push({ x: hx, y: hy, life: 1.4 + 0.2 * tal('graveTide'), delay: k * 0.06, hit: new Set() }); }
   } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   // ---- THE HARVEST MOON: he plants the arc and walks away from it, and it keeps cutting ----
   if (isReaper() && skillPress('harvestMoon') && cdReady('harvestMoon') && canAct()) { if (spend(20)) { cdSet('harvestMoon');
@@ -6132,7 +6137,7 @@ function updatePlayer(dt) {
   if (isPaladin() && skillPress('divineShield') && cdReady('divineShield') && !P.dead && !(P.asleep > 0)) { cdSet('divineShield'); P.divineT = 2 + 0.5 * (tal('divineShield') - 1); SFX.aegis(); SFX.lightFull(); ringAt(P.x, P.y - 10, 24, '#ffd36b', 0.4); }
   if (P.divineT > 0) P.divineT -= dt;
   // HAMMER LEAP: up, and down with the maul
-  if (isPaladin() && skillPress('hammerLeap') && cdReady('hammerLeap') && P.ground && canAct()) { if (spend(25)) { cdSet('hammerLeap'); P.hleapT = 1.4; P.vy = -330; P.vx = P.face * 200; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.atk = -1; SFX.pJump(); SFX.throwWhoosh(); } else tired(); }
+  if (isPaladin() && skillPress('hammerLeap') && cdReady('hammerLeap') && (P.ground || P.swim) && canAct()) { if (spend(25)) { cdSet('hammerLeap'); P.hleapT = 1.4; P.hleapWet = !P.ground; P.vy = P.hleapWet ? 200 : -330; P.vx = P.face * (P.hleapWet ? 120 : 200);   /* THE WATER VERSION: there is nothing to leap off, so he drives DOWN through the water maul first, and it lands where he stops */ P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.atk = -1; SFX.pJump(); SFX.throwWhoosh(); } else tired(); }
   /* ==== THE WARDEN'S THREE SKILLS. Each one is a verb she already has, asked for on a key: the point that holds
      something down, the ground that grows spears, and the vault taken at a foe instead of at a gap. ==== */
   if (isWarden() && skillPress('skewer') && cdReady('skewer') && canAct()) { if (spend(18)) { cdSet('skewer');
@@ -6146,13 +6151,14 @@ function updatePlayer(dt) {
       sparks(best.x, best.y - (best.h || 16) / 2, P.face, 8);
       if (best.alive && pinFoe(best, PIN_HOLD)) number(best.x, best.y - (best.h || 16) - 20, 'PINNED', '#8fd160'); }
   } else tired(); }
-  if (isWarden() && skillPress('setSpears') && cdReady('setSpears') && P.ground && canAct()) { if (spend(22)) { cdSet('setSpears');
+  if (isWarden() && skillPress('setSpears') && cdReady('setSpears') && (P.ground || P.swim) && canAct()) { if (spend(22)) { cdSet('setSpears');
     P.blastT = 0.4; P.atk = -1; P.vx = 0; SFX.braceSet(); shakeCam(3); dust(P.x, P.y, 6);
     const hit = new Set();
     for (let i = 1; i <= 3; i++) { const x = P.x + P.face * i * 20, tx = Math.floor(x / TS);
       if (isSolid(tx, Math.floor((P.y - 12) / TS))) break;
       const ty0 = Math.floor(P.y / TS); let gy = null;
       for (let k = 0; k <= 3 && ty0 + k < LH; k++) if (isSolid(tx, ty0 + k)) { gy = (ty0 + k) * TS; break; }
+      if (gy === null && P.swim && inWater(x, P.y - 4)) gy = P.y;   /* in open water they are set at her depth */
       if (gy !== null) phalanx.push({ x, y: gy, t: 0, delay: (i - 1) * 0.05, hit, done: false }); }
   } else tired(); }
   if (isWarden() && skillPress('harrier') && cdReady('harrier') && canAct()) { if (spend(16)) { cdSet('harrier');
@@ -6165,10 +6171,10 @@ function updatePlayer(dt) {
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
     if (best) { best.stagger = Math.max(best.stagger || 0, 0.5); number(best.x, best.y - (best.h || 16) - 18, 'OVER YOU', '#8fd160'); }
   } else tired(); }
-  if (P.hleapT > 0) { P.hleapT -= dt; if (P.hleapT < 1.25 && P.ground) { P.hleapT = 0; shakeCam(8); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 40, '#ffd36b', 0.4); dust(P.x - 10, P.y, 8); dust(P.x + 10, P.y, 8); SFX.forgeHammer(); SFX.heavy(); hitstop(0.05);
-      for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 1.1, sp: 220, hit: new Set() });
+  if (P.hleapT > 0) { P.hleapT -= dt; if (P.hleapWet) P.vy = Math.max(P.vy, 140); if (P.hleapT < 1.25 && (P.ground || (P.hleapWet && P.hleapT < 1.08))) { P.hleapT = 0; const wet = !P.ground; P.hleapWet = false; shakeCam(8); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 40, '#ffd36b', 0.4); dust(P.x - 10, P.y, 8); dust(P.x + 10, P.y, 8); SFX.forgeHammer(); SFX.heavy(); hitstop(0.05);
+      for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: wet ? 0.7 : 1.1, sp: 220, hit: new Set(), water: wet });
       for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 42 && Math.abs(e.y - P.y) < 30) { hurtEnemy(e, Math.round(24 * amul('hammerLeap')), P.x, false); if (!e.maxHp) { e.vy = -180; e.stagger = Math.max(e.stagger || 0, 0.8); } } }
-    else if (P.hleapT > 0) P.vx = P.face * 200; }
+    else if (P.hleapT > 0) P.vx = P.face * (P.hleapWet ? 120 : 200); }
   if (P.counter) { P.counter.t -= dt; if (P.counter.t <= 0) { const c = P.counter; P.counter = null; counterLand(c); } }   /* COUNTERSTROKE and RIPOSTE land a beat after the guard */
   if (P.caged > 0) { P.caged -= dt; P.vx = 0; }
   if (P.cds) for (const k in P.cds) { const was = P.cds[k]; P.cds[k] = Math.max(0, was - dt);
@@ -6202,14 +6208,14 @@ function updatePlayer(dt) {
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     if (P.full && cDown && !stunned && !dodging && !P.plunge && !thrown) castPyre();
     if (keys.block) P.cHeld = (P.cHeld || 0) + dt; else { if (P.cHeld > 0 && P.cHeld < 0.14) castEmber(0); P.cHeld = 0; }
-    P.jet = keys.block && P.cHeld >= 0.14 && !P.full && !stunned && !dodging && !attacking && !P.plunge && !thrown && !(P.blastT > 0) && !(P.jetRecover > 0) && (P.ground || tal('updraft'));   /* GROUNDED: the jet is lit standing, and she stands still to pour it. UPDRAFT still lights it in the air */
+    P.jet = keys.block && P.cHeld >= 0.14 && !P.full && !stunned && !dodging && !attacking && !P.plunge && !thrown && !(P.blastT > 0) && !(P.jetRecover > 0) && (P.ground || P.swim || tal('updraft'));   /* (in the water she is held where she pours it, as on the ground) */   /* GROUNDED: the jet is lit standing, and she stands still to pour it. UPDRAFT still lights it in the air */
     if (P.infernoT > 0) { P.infernoT -= dt; P.heat = 100; if (P.infernoT <= 0) { P.infernoT = 0; P.heat = 0; number(P.x, P.y - 30, 'BURNT OUT', '#9aa39a'); SFX.puff(); } }   /* INFERNO: full, and nothing drains it, and then it is all gone */
     else if (P.jet) { P.heat += 18 * dt; if (P.heat >= 100) { P.heat = 100; P.jet = false; bankHeat(); } }
     else if (P.full && P.fullT > 0) P.fullT -= dt;   // banked: it holds a few seconds before it starts to go
     else { const floor = tal('pilot') ? Math.min(P.heat, 33) : 0; P.heat = Math.max(floor, P.heat - (P.asleep > 0 || P.sleepM > 0.2 ? 8 : 16) * dt); } // PILOT LIGHT: it never burns down below a third
     if (P.full && P.heat < 100) P.full = false;
     if (P.jetWas && !P.jet && !P.dead) P.jetRecover = 0.22; P.jetWas = P.jet;   /* PUTTING IT OUT TAKES A MOMENT: a beat rooted before she moves, dashes or lights it again */
-    if (P.ground && ((P.jet && !tal('jetWalk')) || P.jetRecover > 0)) P.rootT = Math.max(P.rootT || 0, 0.05);   /* WALKING FLAME: she can walk with it lit */
+    if ((P.ground || P.swim) && ((P.jet && !tal('jetWalk')) || P.jetRecover > 0)) P.rootT = Math.max(P.rootT || 0, 0.05);   /* WALKING FLAME: she can walk with it lit */
     if (tal('smoulder') && !P.dead && !(P.infernoT > 0) && fires.some(f => !(f.delay > 0) && Math.abs(P.x - f.x) < 10 && P.y > f.y - 14 && P.y <= f.y + 2)) { P.heat = Math.min(100, (P.heat || 0) + 25 * dt); if (P.heat >= 100) bankHeat(); }   /* SMOULDER */
     SFX.jet(P.jet && !P.dead); // the jet roars for as long as it is held
     if (P.full && Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 14, vx: 0, vy: -40 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
@@ -6220,7 +6226,7 @@ function updatePlayer(dt) {
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);
     if (cDown && free && P.light >= 100) { castJudgement(); P.cHeld = -99; }
-    else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.16 && free && P.ground && P.st > 0 && !(P.aegisCd > 0)) { P.aegisT = (P.aegisT || 0) + dt; if (P.aegisT > 1.5 && !tal('unwavering')) { P.aegisCd = 2; P.aegisT = 0; SFX.guardBreak(); ringAt(P.x, P.y - 10, 14, '#9a8a60', 0.3); } /* the ward holds a breath and a half, then it must rest */ } if (P.cHeld >= 0.16 && free && P.ground && P.st > 0 && !(P.aegisCd > 0)) { P.aegis = true; P.st = Math.max(0, P.st - 22 * dt * (1 - 0.15 * tal('stalwart'))); if (tal('sanctuary')) P.hp = Math.min(P.maxHp, P.hp + 3 * dt); P.stDelay = ST.delay; if (!P.aegisWas) { P.aegisUpT = time; SFX.block(); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); } } }
+    else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && !(P.aegisCd > 0)) { P.aegisT = (P.aegisT || 0) + dt; if (P.aegisT > 1.5 && !tal('unwavering')) { P.aegisCd = 2; P.aegisT = 0; SFX.guardBreak(); ringAt(P.x, P.y - 10, 14, '#9a8a60', 0.3); } /* the ward holds a breath and a half, then it must rest */ } if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && !(P.aegisCd > 0)) { P.aegis = true; P.st = Math.max(0, P.st - 22 * dt * (1 - 0.15 * tal('stalwart'))); if (tal('sanctuary')) P.hp = Math.min(P.maxHp, P.hp + 3 * dt); P.stDelay = ST.delay; if (!P.aegisWas) { P.aegisUpT = time; SFX.block(); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); } } }
     else { if (P.cHeld > 0 && P.cHeld < 0.16 && free) castMend(); P.cHeld = 0; P.aegisT = 0; }
     if (tal('crusade') && P.aegisWas && !P.aegis && !P.dead) { let any = false; // CRUSADE
       for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - P.y) < 34) { any = true; hurtEnemy(e, 10, P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1.1); e.vx = (Math.sign(e.x - P.x) || 1) * 260; } }
@@ -6243,7 +6249,7 @@ function updatePlayer(dt) {
     if (throwPress && skillNow() === 'raiseDead') { if (P.harvest >= 100) P.fHeld = 0.001; else if (free) raiseBody(); }
     if (P.fHeld > 0) { if (keys.throw && P.harvest >= 100) { P.fHeld += dt; if (P.fHeld >= SURGE_HOLD) { P.fHeld = 0; if (free) bloodSurge(); } } else { P.fHeld = 0; if (free) raiseBody(); } }
     if (keys.block) { P.cHeld = (P.cHeld || 0) + dt;
-      if (P.cHeld >= WARD_UP && free && !attacking && P.ground && P.st > 0 && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
+      if (P.cHeld >= WARD_UP && free && !attacking && (P.ground || P.swim) && P.st > 0 && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
         if (!(P.wardHeld > 0)) { P.wardHeld = 0.001; P.st = Math.max(0, P.st - WARD_RAISE); P.wardFull = (P.wardG || 0) >= wardCap() - 0.5; SFX.dkWard(); ringAt(P.x + P.face * 12, P.y - 18, 14, '#ff4a5a', 0.3); }
         P.warding = true; P.wardHeld += dt; P.wardKeepT = 3; if (!tal('drainWalk')) P.vx = 0;   /* WARD WALK: the blade comes with him, slowly */
         P.st = Math.max(0, P.st - WARD_HOLD * dt); P.stDelay = ST.delay;
@@ -6317,11 +6323,11 @@ function updatePlayer(dt) {
     P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     if (cDown && P.resolve >= 100 && !stunned && !dodging && !P.plunge && !rushing() && !thrown) {
-      if (P.ground && !P.swim && !P.climb) lastCharge();
-      else if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintT = 4.5; hintMsg = 'THE LAST CHARGE NEEDS FOOTING: TAP C ON THE GROUND. THE BAR IS KEPT.'; }   /* said once a save; the bar is not spent */
+      if ((P.ground || P.swim) && !P.climb) lastCharge();   /* in the water he braces against it and goes straight through it */
+      else if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintT = 4.5; hintMsg = 'THE LAST CHARGE NEEDS FOOTING: TAP C ON THE GROUND OR IN THE WATER. THE BAR IS KEPT.'; }   /* said once a save; the bar is not spent */
     }
   }
-  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !rushing() && hero() === 'knight';
+  P.block = !!keys.block && (P.ground || P.swim) && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !rushing() && hero() === 'knight';
   P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); if (P.ground) P.airRolled = false;
   if (isPyro() && P.jet && !P.ground && tal('updraft')) P.vy = Math.min(P.vy, 45); // UPDRAFT: the jet holds her up
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
@@ -6336,7 +6342,7 @@ function updatePlayer(dt) {
     if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* HOLD THE LINE */
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
-  P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && P.ground) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
+  P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
   const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
@@ -6478,6 +6484,12 @@ function updatePlayer(dt) {
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
      never from the air, and it wants ground under the plant. It is a RIDE and not a jump: the reach model must never
      count it as ordinary footing, or levels read as reachable when they are not (tools/reach.mjs). */
+  else if (isWarden() && P.jbuf > 0 && P.swim && !P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && P.st >= 10) {   /* THE WATER VERSION of the vault: no heel to plant, so it is a kick off the shaft - up and over, a stroke's height and not a leap's */
+    P.jbuf = 0; P.dash = 0; P.dashLate = 0; spend(10); P.vaultT = 0.3; P.vy = -190; P.vx = P.face * 240; P.inv = Math.max(P.inv, 0.2); noteVerb('vault'); SFX.braceSet(); squash(0.8, 1.2, 0.1); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#bfe6f5'], 120);
+  }
+  else if (isWarden() && P.jbuf > 0 && P.swim && !P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && P.st >= 10) {   /* THE WATER VERSION of the vault: no heel to plant, so it is a kick off the shaft - up and over, a stroke's height and not a leap's */
+    P.jbuf = 0; P.dash = 0; P.dashLate = 0; spend(10); P.vaultT = 0.3; P.vy = -190; P.vx = P.face * 240; P.inv = Math.max(P.inv, 0.2); noteVerb('vault'); SFX.braceSet(); squash(0.8, 1.2, 0.1); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#bfe6f5'], 120);
+  }
   else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0 || tal('vaulter')) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: no dash to set it up and no wind to pay for it */
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
@@ -6507,7 +6519,7 @@ function updatePlayer(dt) {
         gainHeat(10);
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0 && !P.swim) dashAttack(); else if (!P.swim && keys.up && !keys.down && (P.ground || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started */ else if (P.ground && !P.swim && keys.down) lowSweep(); else if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && P.plungeRec <= 0) { P.abuf = 0; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (P.dashLate > 0) dashAttack(); else if (keys.up && !keys.down && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && keys.down) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
   if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
@@ -6559,7 +6571,7 @@ function updatePlayer(dt) {
     P.vy += (heavy ? 330 : 150) * dt; if (under > 15 && !heavy) P.vy -= 300 * dt;
     if (keys.down) P.vy += 430 * dt; if (!heavy && (keys.up || (keys.jump && under > 30))) P.vy -= 430 * dt;
     if (heavy && keys.up) P.vy -= 90 * dt;                                   /* you can strain against it. Barely. */
-    P.vy = Math.max(heavy ? -40 : -190, Math.min(P.plunge ? 210 : heavy ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) { P.plunge = false; P.consecrate = false; } P.airRolled = false; P.canCut = true;
+    P.vy = Math.max(heavy ? -40 : -190, Math.min(P.plunge ? 210 : heavy ? 210 : 140, P.vy)); if (P.plunge && (P.vy < 40 || keys.up)) { P.plunge = false; P.consecrate = false; } P.airRolled = false; P.canCut = true; P.dashedAir = false; P.airDashN = 0;   /* the water is footing for the dash as it is for the roll: a stroke is not spent in the air */
     // LET IT GO. Underwater the jump key has always meant GO UP; when you are heavy the only way up
     // is to open your hands, so it is the same key doing the same thing by the only means left.
     if (P.jbuf > 0 && P.ballast) { P.jbuf = 0; dropBallast(true); }
@@ -16461,7 +16473,7 @@ function startSwing() { const quick = inRun(); gainHeat(5); P.swingKind = null; 
   /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
      flag goes on with it, so the deep box, the drive and everything that reads the lunge all see the same blow. */
   if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
-  if (P.heavySwing && P.ground && isPaladin() && tal('aftershock') && !P.heavy) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: tal('shockwave') ? 1.5 : 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.stone(); number(P.x, P.y - 30, 'AFTERSHOCK', '#ffe6a0'); }   /* AFTERSHOCK */
+  if (P.heavySwing && (P.ground || P.swim) && isPaladin() && tal('aftershock') && !P.heavy) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9) * (P.ground ? 1 : 0.7), sp: 200, hit: new Set(), water: !P.ground }); shakeCam(4); SFX.stone(); number(P.x, P.y - 30, 'AFTERSHOCK', '#ffe6a0'); }   /* AFTERSHOCK */
   if (P.heavySwing && P.combo >= 6 && hero() === 'knight' && tal('unbroken')) number(P.x, P.y - 32, 'UNBROKEN ' + P.combo, '#fff6e0');
   P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip ? 2 : 1);
   if (rip) { P.riposteT = 0; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
@@ -17186,7 +17198,9 @@ function updateWeather(dt) {
 function updatePwaves(dt) {
   for (const w of pwaves) {
     w.life -= dt; w.x += w.dir * w.sp * dt;
-    const tx = Math.floor(w.x / TS), ty = Math.floor(w.y / TS); if (!isSolid(tx, ty) && isSolid(tx, ty + 1)) w.y = (ty + 1) * TS; else if (isSolid(tx, ty - 1) || (!isSolid(tx, ty) && !isSolid(tx, ty + 1))) w.life = 0;
+    const tx = Math.floor(w.x / TS), ty = Math.floor(w.y / TS);
+    if (w.water && inWater(w.x, w.y)) { if (isSolid(Math.floor((w.x + w.dir * 4) / TS), Math.floor((w.y - 6) / TS))) w.life = 0; if (Math.random() < dt * 20) parts.push({ x: w.x, y: w.y - 6 + (Math.random() - 0.5) * 10, vx: -w.dir * 20, vy: -30, life: 0.5, max: 0.5, col: '#e8f4f0', size: 1, grav: -20 }); }   /* THROUGH THE WATER: a pressure wave needs no floor, only open water in front of it */
+    else if (!isSolid(tx, ty) && isSolid(tx, ty + 1)) w.y = (ty + 1) * TS; else if (isSolid(tx, ty - 1) || (!isSolid(tx, ty) && !isSolid(tx, ty + 1))) w.life = 0;
     if (Math.random() < dt * 30) parts.push({ x: w.x + (Math.random() - 0.5) * 6, y: w.y - Math.random() * 4, vx: w.dir * 30, vy: -60 - Math.random() * 60, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#ffd36b' : '#c9b27c', size: 2, grav: 300 });
     if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty);
     for (const e of enemies) { if (!e.alive || w.hit.has(e) || e.harmless || Math.abs(e.x - w.x) > 11 || Math.abs(e.y - w.y) > 14) continue; w.hit.add(e);
@@ -19047,7 +19061,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const v of vines) { if (v.t < v.tell) continue; const x1 = Math.round(v.x - cx), y = Math.round(v.y - cy), x0 = Math.round(v.x - v.dir * v.len - cx); const lo = Math.min(x0, x1), hi = Math.max(x0, x1); g.fillStyle = '#3f6e2c'; g.fillRect(lo, y - 4, hi - lo, 3); g.fillStyle = '#8fd160'; g.fillRect(lo, y - 4, hi - lo, 1); for (let x = lo; x < hi; x += 6) { g.fillStyle = '#dfffa0'; g.fillRect(x + ((y + x) % 3), y - 7, 1, 3); } g.fillStyle = '#3f6e2c'; g.fillRect(x1 - 2, y - 8, 4, 8); }
   for (const b of bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), k = b.life / 0.28; if (b.storm) { g.globalAlpha = Math.min(1, k); g.fillStyle = b.holy ? '#ffd36b' : '#9ab8ff'; g.fillRect(x - 3, y - 220, 7, 220); g.fillStyle = b.holy ? '#fff6c8' : '#eef4ff'; for (let s = 0; s < 220; s += 14) g.fillRect(x - 1 + ((s * 7) % 5) - 2, y - s - 14, 3, 15); g.globalAlpha = 1; continue; } g.globalAlpha = k; g.fillStyle = '#dfffa0'; g.fillRect(x - 1, y - 200, 3, 200); g.fillStyle = '#8fd160'; g.fillRect(x - 3, y - 200, 7, 200); g.globalAlpha = 1; g.fillStyle = '#fff6e0'; g.fillRect(x - 1, y - 200, 2, 200); }
   for (const r of rain) { if (r.fired) continue; const x = Math.round(r.x - cx), y = Math.round(r.y - cy), hot = Math.floor(time * 10) % 2 === 0; g.fillStyle = r.bolt ? (hot ? '#8fd160' : '#dfffa0') : hot ? '#ff6b6b' : '#ffd36b'; g.fillRect(x - 4, y - 8, 2, 2); g.fillRect(x + 2, y - 8, 2, 2); g.fillRect(x - 2, y - 6, 2, 2); g.fillRect(x, y - 6, 2, 2); g.fillRect(x - 1, y - 4, 2, 2); g.globalAlpha = 0.25; g.fillRect(x - 6, y - 1, 12, 1); g.globalAlpha = 1; }
-  for (const w of pwaves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); g.fillStyle = '#b8842a'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
+  for (const w of pwaves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); if (w.water) { g.globalAlpha = 0.8; g.fillStyle = '#e8f4f0'; g.fillRect(x + (w.dir > 0 ? 1 : -3), y - 14, 2, 12); g.fillStyle = '#7cc8c8'; g.fillRect(x + (w.dir > 0 ? -2 : 1), y - 12, 2, 8); g.fillRect(x + (w.dir > 0 ? 3 : -5), y - 11, 2, 6); g.globalAlpha = 1; continue; } g.fillStyle = '#b8842a'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
   drawRimeFx(cx, cy);
   for (const s of sceptres) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 16); g.fillStyle = '#c9a040'; g.fillRect(-9, -1, 18, 2); g.fillStyle = '#8a5ac0'; g.fillRect(6, -3, 5, 5); g.fillStyle = '#e0c0ff'; g.fillRect(7, -2, 2, 2); g.restore(); bloom(s.x - cx, s.y - cy, 10, 0.35, 'cool'); }
   for (const e of enemies) if (e.hill && e.alive && e.mode === 'heave') drawQuarryStone(Math.round(e.x - cx + (e.face || 1) * 2), Math.round(e.y - e.h * 1.7 - cy + 6), 0);   /* the stone over his head */
@@ -19110,6 +19124,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (P.block || P.jet || P.aegis || P.warding) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
       else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
+      else if (P.swim && !P.ground && K.R.swim) { const mv = Math.abs(P.vx) > 24; key = mv ? 'swim' : 'tread'; frame = Math.floor(time * (mv ? 9 : 5)) % K.R[key].length; }   /* IN THE WATER: laid out and stroking when he is going somewhere, upright and treading when he is not */
       else if (!P.ground) { key = P.vy < 0 ? 'jump' : 'fall'; frame = P.vy < 0 ? (P.vy < -150 ? 0 : 1) : (P.vy > 220 ? 1 : 0); if (Math.abs(P.vy) < 55 && K.R.apex) key = 'apex'; }
       else if (keys.down && Math.abs(P.vx) < 10) key = 'crouch';
       else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
