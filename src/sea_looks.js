@@ -26,6 +26,7 @@ function glowOf(rgb, r) {
   g.fillStyle = gr; g.fillRect(0, 0, r * 2, r * 2); GLOW.set(k, cv); return cv;
 }
 const inSwim = (x, y) => { for (const p of (L.pools || [])) if (p.swim && !p.dry && x > p.x0 && x < p.x1 && y > p.y + 4 && (p.bottom === undefined || p.bottom === null || y <= p.bottom + 12)) return true; return false; };
+const shadeHex = (h, k) => { const n = parseInt(h.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(k >= 0 ? v + (255 - v) * k : v * (1 + k)))); return '#' + [f(n >> 16), f((n >> 8) & 255), f(n & 255)].map(v => v.toString(16).padStart(2, '0')).join(''); };
 const tileAt = (tx, ty) => (tx < 0 || ty < 0 || tx >= L.W || ty >= L.H) ? 1 : L.grid[ty * L.W + tx];
 
 // ============================================================================================
@@ -200,20 +201,174 @@ function deepBack(g, cx, cy, VW, VH, time) {
 }
 
 // ============================================================================================
+// THE LIVING WATER. Built once, configured per level (LIFE below): schools of fish that scatter when you swim through them and
+// come back together behind you, crabs going about their business on the ledges, kelp that leans out of your way, jellyfish
+// drifting in the far water, strings of bubbles going up a long way off, and now and then something very big going past
+// behind all of it. ALL OF IT IS SCENERY: drawn behind the tiles and under the water's own wash, dimmer than any creature,
+// touching nothing. The FAR bubbles are only ever far and faint and have no white core, because a bright trickle of bubbles
+// is the game's word for AIR (airPlume) and must never be said by something that is not.
+// ============================================================================================
+const LIFE = {
+  reef:      { fish: ['#ffd36b', '#8fd8ec', '#ff9a5c', '#e8f0e0'], schools: 1, kelp: ['#2e5a36', '#5e8a48'], kelpP: 0.16, crab: '#b8583a', crabP: 0.035, jelly: '255,214,236', jellyP: 0.3, shadow: 'whale', bubbles: 1 },
+  deep:      { fish: ['#9fe8e0', '#c8a8ff', '#dff4fa'], schools: 0.45, kelp: ['#1e3a34', '#3e6a52'], kelpP: 0.05, crab: '#8a8e9e', crabP: 0.03, jelly: '190,160,255', jellyP: 0.22, shadow: 'leviathan', bubbles: 0.6 },
+  lamplit:   { fish: ['#9ac0a0', '#d0c890', '#b8c8c0'], schools: 0.9, kelp: ['#24463a', '#4e7a58'], kelpP: 0.12, crab: '#6e7e74', crabP: 0.03, jelly: null, shadow: null, bubbles: 0.5 },
+  longwater: { fish: ['#a8a870', '#c8b890', '#90a880'], schools: 1, kelp: ['#3e5a24', '#6e8a3a'], kelpP: 0.14, crab: '#b86a3a', crabP: 0.03, jelly: '230,236,255', jellyP: 0.18, jellyFromX: 330, shadow: null, bubbles: 0.5 },
+  causeway:  { fish: ['#b8c0b0', '#8aa8a8', '#d8d0b0'], schools: 0.8, kelp: ['#4e4a26', '#7a7038'], kelpP: 0.12, crab: '#9a5a3a', crabP: 0.035, jelly: '220,230,236', jellyP: 0.2, shadow: 'whale', bubbles: 0.7 },
+};
+const SOLIDT = new Set([1, 4, 7, 8, 11, 12, 13, 15, 16, 18]);   /* what a crab can walk on and a strand can root in (T.SOLID, CRATE, PALISADE, PLANK, SHELF, PORT, CLIMB, SOFT, ICE, CRYST) */
+const FISH_ART = {};
+function fishArt(col) {   /* a fish 7x4 facing right: a light back, a darker belly, an eye, and two frames of its tail; each flipped */
+  if (FISH_ART[col]) return FISH_ART[col];
+  const lit = shadeHex(col, 0.45), dark = shadeHex(col, -0.45);
+  const mk = f => { const [c, g] = canvas(7, 4); rect(g, 2, 1, 4, 2, col); rect(g, 3, 0, 2, 1, lit); rect(g, 2, 1, 3, 1, lit); rect(g, 2, 3, 3, 1, dark); px(g, 6, 2, col); px(g, 5, 1, '#1b1626');
+    px(g, 1, 2, col); if (f) { px(g, 0, 1, col); px(g, 0, 3, dark); } else { px(g, 0, 2, col); px(g, 1, 1, col); } return c; };
+  return (FISH_ART[col] = [mk(0), mk(1)].map(c => [c, flipX(c)]));
+}
+const CRAB_ART = {};
+function crabArt(col) {   /* a crab 7x4 seen from the side, two frames of legs */
+  if (CRAB_ART[col]) return CRAB_ART[col];
+  const mk = f => { const [c, g] = canvas(7, 4); rect(g, 1, 1, 5, 2, col); px(g, 0, 0, col); px(g, 6, 0, col); px(g, 2, 0, '#e8e0d0'); px(g, 4, 0, '#e8e0d0');
+    for (let k = 0; k < 3; k++) px(g, 1 + k * 2 + (f ? 1 : 0), 3, col); return c; };
+  return (CRAB_ART[col] = [mk(0), mk(1)]);
+}
+const JELLY_ART = {};
+function jellyArt(rgb) {   /* a far jelly 9x11: three frames of its bell opening and closing */
+  if (JELLY_ART[rgb]) return JELLY_ART[rgb];
+  const col = 'rgb(' + rgb + ')';
+  return (JELLY_ART[rgb] = [0, 1, 2].map(f => { const [c, g] = canvas(9, 11); const w = 7 - f;
+    rect(g, (9 - w) >> 1, 1, w, 3, col); rect(g, ((9 - w) >> 1) + 1, 0, w - 2, 1, col); g.globalAlpha = 0.6;
+    for (let k = 0; k < 4; k++) { const x = 2 + k * 2 - (f === 2 ? 0 : k < 2 ? -1 + f : 1 - f); for (let y = 4; y < 9 + (k % 2) * 2; y++) if ((y + k) % 3) px(g, x, y, col); }
+    g.globalAlpha = 1; return c; }));
+}
+const SHADOW_ART = {};
+function shadowArt(kind) {   /* the thing going past, far behind: a whale, or in the trench something longer */
+  if (SHADOW_ART[kind]) return SHADOW_ART[kind];
+  const [c, g] = canvas(kind === 'leviathan' ? 260 : 170, 60); const W = c.width;
+  if (kind === 'leviathan') { fillPoly(g, [[0, 30], [30, 16], [120, 10], [200, 18], [238, 26], [260, 10], [256, 32], [260, 52], [236, 36], [190, 42], [110, 48], [30, 44]], '#000');
+    fillPoly(g, [[90, 44], [120, 58], [134, 46]], '#000'); }
+  else { fillPoly(g, [[0, 30], [18, 18], [70, 12], [120, 18], [148, 28], [170, 14], [166, 32], [170, 50], [146, 36], [110, 42], [60, 46], [16, 42]], '#000');
+    fillPoly(g, [[56, 44], [80, 58], [88, 44]], '#000'); }
+  return (SHADOW_ART[kind] = [c, flipX(c)]);
+}
+
+function lifeLoad(id) {
+  const C = LIFE[id]; if (!C) return null;
+  const W = L.W, H = L.H, fish = [], kelp = [], crabs = [];
+  const wet = (tx, ty) => tx >= 0 && ty >= 0 && tx < W && ty < H && tileAt(tx, ty) === 0 && inSwim(tx * TS + 8, ty * TS + 8);
+  for (let tx = 1; tx < W - 1; tx++) for (let ty = 1; ty < H - 1; ty++) {
+    if (!wet(tx, ty)) continue;
+    const floor = SOLIDT.has(tileAt(tx, ty + 1)), h = hsh(tx, ty, 41);
+    // A STRAND OF KELP on a floor under water, two to six tiles of it where the water is that deep
+    if (floor && h < C.kelpP) { let room = 0; while (room < 6 && wet(tx, ty - room)) room++; if (room >= 2) kelp.push({ x: tx * TS + 3 + Math.floor(hsh(tx, ty, 42) * 10), y: (ty + 1) * TS, h: (Math.min(room, 2 + Math.floor(hsh(tx, ty, 43) * 5)) - 0.4) * TS, ph: hsh(tx, ty, 44) * 6, push: 0, tx, ty }); }
+    // A CRAB on the ledge, walking its own stretch of it
+    else if (floor && h > 1 - C.crabP) { let a = tx, b = tx; while (a > tx - 4 && wet(a - 1, ty) && SOLIDT.has(tileAt(a - 1, ty + 1))) a--; while (b < tx + 4 && wet(b + 1, ty) && SOLIDT.has(tileAt(b + 1, ty + 1))) b++;
+      if (b > a) crabs.push({ x0: a * TS + 4, x1: (b + 1) * TS - 11, y: (ty + 1) * TS - 4, ph: hsh(tx, ty, 45) * 20, sp: 6 + hsh(tx, ty, 46) * 8, col: C.crab, tx, ty }); }
+    // A SCHOOL, where there is water round it: on a coarse grid of the world so two never start on top of each other
+    if (tx % 9 === 4 && ty % 3 === 1 && hsh(tx, ty, 47) < 0.2 * C.schools && wet(tx - 2, ty) && wet(tx + 2, ty) && wet(tx, ty - 1) && wet(tx, ty + 1)) {
+      let a = tx, b = tx; while (a > tx - 6 && wet(a - 1, ty)) a--; while (b < tx + 6 && wet(b + 1, ty)) b++;
+      const n = 5 + Math.floor(hsh(tx, ty, 48) * 7), col = C.fish[Math.floor(hsh(tx, ty, 49) * C.fish.length)];
+      const sc = { hx: (a + b + 1) / 2 * TS, hy: ty * TS + 8, R: Math.max(0, Math.min(44, (b - a + 1) * TS / 2 - 18)), ph: hsh(tx, ty, 53) * 6, fx: 0, fy: 0, fear: 0, members: [] };
+      for (let i = 0; i < n; i++) sc.members.push({ ox: (hsh(i, tx, 50) - 0.5) * 22, oy: (hsh(ty, i, 51) - 0.5) * 10, col, ph: hsh(tx + i, ty, 52) * 6 });
+      fish.push(sc);
+    }
+  }
+  const bucket = (list, xOf) => { const m = new Map(); for (const it of list) { const k = Math.floor(xOf(it) / 256); if (!m.has(k)) m.set(k, []); m.get(k).push(it); } return m; };
+  return { C, fish, kelp: bucket(kelp, k => k.x), crabs: bucket(crabs, c => c.x0), t: null, counts: { schools: fish.length, fish: fish.reduce((s, q) => s + q.members.length, 0), kelp: kelp.length, crabs: crabs.length } };
+}
+const inView = (m, cx, VW, fn) => { for (let k = Math.floor((cx - 96) / 256); k <= Math.floor((cx + VW + 96) / 256); k++) { const a = m.get(k); if (a) for (const it of a) fn(it); } };
+
+/* THE FAR LIFE, drawn with the far water: jellies at half the world's speed, bubble strings at six tenths, and the shadow */
+function lifeFar(g, cx, cy, VW, VH, time) {
+  const F = S.life, C = F.C;
+  if (C.jelly) { const f = 0.5, cell = 110, fx0 = cx * f, fy0 = cy * f, art = jellyArt(C.jelly);
+    for (let j = Math.floor(fy0 / cell) - 1; j <= Math.floor((fy0 + VH) / cell) + 1; j++) for (let i = Math.floor(fx0 / cell) - 1; i <= Math.floor((fx0 + VW) / cell) + 1; i++) {
+      const h = hsh(i, j, 61); if (h > C.jellyP) continue;
+      const sx = Math.round(i * cell + hsh(i, j, 62) * cell + Math.sin(time * 0.2 + h * 30) * 16 - fx0), sy = Math.round(j * cell + hsh(i, j, 63) * cell - ((time * (3 + h * 4)) % 40) + Math.sin(time * 0.5 + h * 9) * 3 - fy0);
+      if (sx < -10 || sx > VW || sy < -12 || sy > VH) continue;
+      if (C.jellyFromX && sx + cx < C.jellyFromX * TS) continue;   /* only once the river is the sea */
+      if (!inSwim(sx + cx, sy + cy)) continue;
+      g.globalAlpha = 0.28 + 0.12 * Math.sin(time + h * 20); g.drawImage(art[Math.floor(time * 2 + h * 9) % 3], sx, sy); }
+    g.globalAlpha = 1; }
+  if (C.bubbles) { const f = 0.6, cell = 150, fx0 = cx * f;
+    g.fillStyle = '#bfe0e8';
+    for (let i = Math.floor(fx0 / cell) - 1; i <= Math.floor((fx0 + VW) / cell) + 1; i++) { const h = hsh(i, 3, 64); if (h > 0.45 * C.bubbles) continue;
+      const sx = Math.round(i * cell + hsh(i, 4, 65) * cell - fx0), base = VH - 10 - Math.floor(hsh(i, 5, 66) * 40);
+      for (let k = 0; k < 7; k++) { const t = (time * (0.18 + h * 0.2) + k / 7) % 1, by = Math.round(base - t * 110), bx = sx + Math.round(Math.sin(t * 8 + k + h * 9) * 2);
+        if (!inSwim(bx + cx, by + cy)) continue; g.globalAlpha = 0.22 * (1 - t); g.fillRect(bx, by, 1, 1); } }
+    g.globalAlpha = 1; }
+  // SOMETHING BIG, now and then: once a minute and a bit, for twenty seconds, far off and slower than anything, only where the view is sea
+  if (C.shadow) { const per = 70, t = (time + 23) % per; if (t < 22) {
+    const [a0, a1] = shadowArt(C.shadow), dir = Math.floor((time + 23) / per) % 2 ? -1 : 1, k = t / 22, w = a0.width;
+    const sx = Math.round(dir > 0 ? -w + k * (VW + w) : VW - k * (VW + w)), sy = Math.round(VH * 0.28 + Math.sin(k * 3) * 10);
+    let wetN = 0; for (const [px2, py2] of [[0.2, 0.3], [0.5, 0.3], [0.8, 0.3], [0.3, 0.6], [0.7, 0.6]]) if (inSwim(cx + VW * px2, cy + VH * py2)) wetN++;
+    if (wetN >= 4) { g.globalAlpha = 0.09 * Math.sin(k * Math.PI) * (wetN / 5); g.drawImage(dir > 0 ? a1 : a0, sx, sy); g.globalAlpha = 1; } } }
+}
+
+/* THE NEAR LIFE, behind the tiles: the kelp and the crabs, and the schools, which are the only things here with any memory */
+function lifeBack(g, cx, cy, VW, VH, time, hero) {
+  const F = S.life, C = F.C, dt = F.t === null ? 0 : Math.max(0, Math.min(0.1, time - F.t)); F.t = time;
+  const hx = hero ? hero.x : -1e9, hy = hero ? hero.y - 10 : -1e9;
+  // KELP, leaning away from you as you go past and swinging back after
+  inView(F.kelp, cx, VW, k => {
+    if (k.y - k.h > cy + VH || k.y < cy) return;
+    const wetNow = inSwim(k.x, k.y - 6), d = Math.abs(hx - k.x), near = d < 30 && hy > k.y - k.h - 16 && hy < k.y + 8;
+    k.push += ((near ? Math.sign(k.x - hx || 1) * 11 * (1 - d / 30) : 0) - k.push) * Math.min(1, dt * (near ? 6 : 1.6));
+    const n = Math.max(3, Math.round(k.h / 5)), hgt = wetNow ? k.h : k.h * 0.35;
+    let lx = k.x - cx, ly = k.y - cy;
+    for (let i = 1; i <= n; i++) { const t = i / n, nx = k.x + (wetNow ? Math.sin(time * 1.1 + k.ph + t * 3) * 4 * t * t : 4 * t) + k.push * t * t - cx, ny = k.y - hgt * t - cy;
+      g.fillStyle = C.kelp[0]; g.fillRect(Math.round(nx) - 1, Math.round(ny), 2, Math.ceil(ly - ny) + 1);
+      if (i % 2 === 0 && i < n) { g.fillStyle = C.kelp[1]; const s = (i >> 1) % 2 ? 1 : -1; g.fillRect(Math.round(nx) + (s > 0 ? 1 : -4), Math.round(ny) + 1, 3, 1); }
+      lx = nx; ly = ny; }
+  });
+  // CRABS, along their ledges and stopping to think about it
+  inView(F.crabs, cx, VW, c => {
+    if (c.y < cy - 8 || c.y > cy + VH) return;
+    const span = c.x1 - c.x0, u = (time * c.sp / Math.max(8, span) + c.ph) % 4, walk = u < 1 || (u >= 2 && u < 3), pos = u < 1 ? u : u < 2 ? 1 : u < 3 ? 3 - u : 0;
+    const x = Math.round(c.x0 + pos * span - cx), y = Math.round(c.y - cy); if (x < -8 || x > VW) return;
+    g.globalAlpha = 0.75; g.drawImage(crabArt(c.col)[walk ? Math.floor(time * 8) % 2 : 0], x, y); g.globalAlpha = 1;
+  });
+  // THE SCHOOLS: a school swims a slow loop of the water round its home, every fish holding its place in it, and when you come
+  // through it they all break away from you, spread out, and drift back together behind you. Where the school is, is a
+  // function of time; only the scare is remembered, so it looks the same however often it is drawn.
+  for (const sc of F.fish) {
+    if (sc.hx < cx - 160 || sc.hx > cx + VW + 160 || sc.hy < cy - 100 || sc.hy > cy + VH + 100) continue;
+    const t = time * 0.35 + sc.ph, bx = sc.hx + Math.cos(t) * sc.R, by = sc.hy + Math.sin(t * 1.7) * 5, dirX = -Math.sin(t) * sc.R;
+    if (dt > 0) {
+      const dx = bx + sc.fx - hx, dy = by + sc.fy - hy, d = Math.hypot(dx, dy), scared = d < 56;
+      sc.fear = scared ? 1 : Math.max(0, sc.fear - dt * 0.5);
+      const tx = scared ? (dx / (d || 1)) * 64 : 0, ty = scared ? (dy / (d || 1)) * 24 : 0;
+      sc.fx += (tx - sc.fx) * Math.min(1, dt * (scared ? 5 : 0.7)); sc.fy += (ty - sc.fy) * Math.min(1, dt * (scared ? 5 : 0.7));
+    }
+    const spread = 1 + sc.fear * 1.6, face = sc.fear > 0.4 ? Math.sign(sc.fx || 1) : Math.sign(dirX || 1);
+    for (const f of sc.members) {
+      const x = bx + sc.fx + f.ox * spread + Math.sin(time * 2 + f.ph) * 2, y = by + sc.fy + f.oy * spread + Math.cos(time * 1.6 + f.ph) * 1.5;
+      const sx = Math.round(x - cx), sy = Math.round(y - cy); if (sx < -6 || sx > VW || sy < -4 || sy > VH) continue;
+      if (!inSwim(x, y) || tileAt(Math.floor(x / TS), Math.floor(y / TS)) !== 0) continue;
+      const fr = fishArt(f.col)[Math.floor(time * (sc.fear > 0.3 ? 16 : 6) + f.ph * 3) % 2];
+      g.globalAlpha = 0.9; g.drawImage(face < 0 ? fr[1] : fr[0], sx - 3, sy - 2); }
+    g.globalAlpha = 1;
+  }
+}
+
+// ============================================================================================
 // THE HOOKS main.js calls
 // ============================================================================================
 const LOOKS = { deep: deepLook };
-/* at load: what this level looks like, and anything main.js has to swap for it (a parallax layer this level paints itself) */
+/* at load: what this level looks like, and anything main.js has to swap for it (a parallax layer or, in a dark level, the murk) */
 export function seaLoad(id, lv) {
-  L = lv; S = LOOKS[id] ? LOOKS[id]() : null;
+  L = lv; S = LOOKS[id] ? LOOKS[id]() : LIFE[id] ? { id } : null;
+  if (S) S.life = lifeLoad(id);
   return S ? { mid: S.mid || null, murk: S.murk || null } : null;
 }
-export function seaFar(g, cx, cy, VW, VH, time) { if (!S) return; if (S.id === 'deep') deepFar(g, cx, cy, VW, VH, time); }
-export function seaBack(g, cx, cy, VW, VH, time) { if (!S) return; if (S.id === 'deep') deepBack(g, cx, cy, VW, VH, time); }
-/* THE DEEP'S OWN LIGHT ON WHAT SWIMS IN IT: the line round a creature is the glow's colour and stronger, and the body carries
-   a sheen of it, because at the bottom of the trench the only light on anything is what the water makes */
-/* the ring itself: the silhouette grown by a pixel each way, in one colour, with the body cut back out of it. Kept on the frame's canvas */
+export function seaFar(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea) return; if (S.id === 'deep') deepFar(g, cx, cy, VW, VH, time); if (S.life) lifeFar(g, cx, cy, VW, VH, time); }
+export function seaBack(g, cx, cy, VW, VH, time, hero) { if (!S || globalThis.__noSea) return; if (S.life) lifeBack(g, cx, cy, VW, VH, time, hero); if (S.id === 'deep') deepBack(g, cx, cy, VW, VH, time); }
+/* what the living water has in it, for a harness (seaLife(true) is all of it). globalThis.__noSea = true draws a frame without any of this, for a before-and-after by the pixels */
+export function seaLife(all) { return S && S.life ? (all ? S.life : S.life.counts) : null; }
+/* THE RING round a swimmer: the silhouette grown by a pixel each way, in one colour, with the body cut back out of it, so a lit
+   edge can be drawn at full strength without washing the body's own colours out. Kept on the frame's canvas. */
 export function seaRing(c, col) { const k = '__ring' + col; if (c[k]) return c[k];
   const w = whiten(c, col), [r, g] = canvas(c.width, c.height); for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1]]) g.drawImage(w, ox, oy);
   g.globalCompositeOperation = 'destination-out'; g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-over'; return (c[k] = r); }
+/* THE DEEP'S OWN LIGHT ON WHAT SWIMS IN IT: the ring round a creature is the glow's colour, and its body a breath of it, because at
+   the bottom of the trench the only light on anything is what the water makes */
 export function seaRim() { return S && S.id === 'deep' ? { line: '#8ff4e6', lineA: 0.95, sheen: '#9fe8e0', sheenA: 0.14 } : null; }

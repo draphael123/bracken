@@ -18351,7 +18351,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawShafts(cx, cy);
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (!L.castle && !L.colosseum) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
-  SEA.seaBack(g, cx, cy, VW, VH, time);   /* and its living water, behind the tiles and everything that matters */
+  SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy);   /* the sky ship: her cloud, her gasbags, her sails */
   if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
     g.strokeStyle = 'rgba(160,120,70,0.75)'; g.lineWidth = 1; g.beginPath();
