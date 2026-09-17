@@ -5,9 +5,10 @@
 //   node tools/headless.mjs                      a short boss pass (knight and paladin, four bosses) and a kill-zone sweep
 //   node tools/headless.mjs boss spire,reef      the boss lab on those levels, every hero
 //   node tools/headless.mjs expr "BK.fightLab({ levels: ['wood'] })"
+//   node tools/headless.mjs runtimefloats         the playtest bot plays every level; RUNTIMEFLOAT findings + screenshots
 // Exit code 1 if a boss in the short pass goes unkilled or the page throws.
 import { spawn } from 'child_process';
-import { existsSync, mkdtempSync } from 'fs';
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -49,6 +50,25 @@ async function main() {
       for (const h of r.hits) console.log('  ' + h); for (const h of r.water) console.log('  WATER ' + h);
       console.log(r.levels + ' levels, ' + r.sprites + ' sprites. ' + (r.hits.length + r.water.length ? (r.hits.length + r.water.length) + ' in the air, through the ground or out of the water.' : 'nothing in the air, through the ground or out of the water.'));
       if (r.hits.length + r.water.length) code = 1; }
+    else if (mode === 'runtimefloats') {   /* src/playtest.js's play pass, sampled every half second: floaters.mjs and floatLab() only look at a level at rest */
+      const levels = arg ? arg.split(',') : null;
+      const steps = +(process.env.RF_STEPS || 5400);   /* 90s of play per level by default */
+      const expr = '(async () => { const r = await BK.playtest({ mode: "play", quiet: true, playSteps: ' + steps + (levels ? ', levels: ' + JSON.stringify(levels) : '') + ' }); ' +
+        'const rf = r.findings.filter(f => f.kind === "RUNTIMEFLOAT"); ' +
+        'return { perLevel: r.levels.map(l => ({ id: l.id, n: l.findings.filter(x => x.kind === "RUNTIMEFLOAT").length })), ' +
+        'findings: rf.map(f => ({ level: f.level, msg: f.msg, where: f.where })), shots: rf.filter(f => f.shot).map(f => ({ level: f.level, msg: f.msg, where: f.where, shot: f.shot })) }; })()';
+      const r = await evalp(expr);
+      console.log('per level:');
+      for (const l of r.perLevel) if (l.n) console.log('  ' + l.id.padEnd(12) + l.n + ' floating');
+      const clean = r.perLevel.filter(l => !l.n).length;
+      console.log('  (' + clean + ' of ' + r.perLevel.length + ' levels clean)');
+      if (r.findings.length) { console.log('\nfindings:'); for (const f of r.findings) console.log('  ' + f.level.padEnd(12) + f.msg + '   @' + f.where); }
+      const OUT = join(ROOT, 'tools', 'out', 'runtime-floaters');
+      if (r.shots.length) { mkdirSync(OUT, { recursive: true });
+        r.shots.forEach((s, n) => { const p = join(OUT, s.level + '-' + n + '.png');
+          writeFileSync(p, Buffer.from(s.shot.replace(/^data:image\/png;base64,/, ''), 'base64')); console.log('  screenshot: ' + p + ' (' + s.level + ': ' + s.msg + ')'); }); }
+      console.log(r.findings.length ? '\n' + r.findings.length + ' runtime floater(s).' : '\nnothing floats once the level has been played.');
+      if (r.findings.length) code = 1; }
     else {
       const bosses = mode === 'boss' && arg ? arg.split(',') : ['wood', 'kings', 'waymeet', 'undercrown'];
       const heroes = mode === 'boss' ? null : ['knight', 'paladin'];
