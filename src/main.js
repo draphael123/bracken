@@ -19068,6 +19068,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (P.block || P.jet || P.aegis || P.warding) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
       else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
+      else if (P.swim && !P.ground && K.R.swim) { const mv = Math.abs(P.vx) > 24; key = mv ? 'swim' : 'tread'; frame = Math.floor(time * (mv ? 9 : 5)) % K.R[key].length; }   /* IN THE WATER: laid out and stroking when he is going somewhere, upright and treading when he is not */
       else if (!P.ground) { key = P.vy < 0 ? 'jump' : 'fall'; frame = P.vy < 0 ? (P.vy < -150 ? 0 : 1) : (P.vy > 220 ? 1 : 0); if (Math.abs(P.vy) < 55 && K.R.apex) key = 'apex'; }
       else if (keys.down && Math.abs(P.vx) < 10) key = 'crouch';
       else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
