@@ -1346,7 +1346,7 @@ function underleaf() {
   plat(254, 21, 4); plat(262, 22, 4); plat(268, 24, 3);
   coins([255, 20], [263, 21], [269, 23], [258, 20], [265, 21]);
   ent('archer', 262, 21, { face: 1 }); ent('assassin', 254, 20, { face: 1 });
-  ent('sign', 254, R - 1, { text: 'THE BELLRINGER IS GOING FOR THE ROPE. STOP HIM: A BELL EMPTIES THE VILLAGE.' });
+  ent('sign', 254, R - 1, { text: 'THE BELL TOWER HAS A STRAW ROOF AND NOBODY ON IT. CLIMB UP: A CANDLE IS BURNING BY THE BELL.' });
   ent('deco', 252, R - 1, { kind: 'lychgate' });
   ent('deco', 260, R - 1, { kind: 'yew', v: 0 }); ent('deco', 300, R - 1, { kind: 'yew', v: 1 });
   for (const [gx, v] of [[256, 0], [258, 1], [266, 2], [269, 0], [272, 1], [304, 2], [308, 0], [312, 1]])
@@ -1385,10 +1385,8 @@ function underleaf() {
   thatch(314, 328, 21);
   ladder(313, 20); ladder(329, 20);
   plat(310, 27, 3); plat(330, 27, 3);
-  gateCol(330, 19, 20);
   ent('deco', 320, 20, { kind: 'bellTower' });
-  ent('berserker', 320, 20, { face: -1, mini: true });   /* asleep by his bell until you come up onto the roof: awake, he wandered down into the street before the fight began */
-  ent('bell', 320, 20);
+  ent('bell', 320, 20);   /* THE ROOF IS A REWARD, NOT A FIGHT: the Bellringer mini that held it was cut after a playtest, and his portcullis at column 330 with him. What is left up here is quiet straw, a coin run, the lamp and a bell nobody rings */
   coins([316, 20], [324, 20], [320, 20], [311, 26], [331, 26]);
   ent('stray', 326, 20, { kind: 'lamp' });
   ent('check', 334, R - 1);
@@ -1481,7 +1479,6 @@ function underleaf() {
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
     arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', camBelow: 1, music: 'grandmother', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
-    mini: { x0: 312 * TS, x1: 330 * TS, floor: 21 * TS, y0: 14 * TS, y1: 24 * TS, trigger: 317 * TS, wallL: 312, gate: 330, boss: 'berserker' },   /* (the gate is column 330: opening 325 left the tower shut after he fell) */
   };
 }
 

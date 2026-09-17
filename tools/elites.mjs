@@ -14,6 +14,7 @@ import { floodReach } from '../src/reachcore.js';
 import { readFileSync } from 'fs';
 
 const PENDING = new Set([]);   /* a level being rebuilt goes in here, and comes out of it when its elites land */
+const NO_KEEPER = new Set(['underleaf']);   /* Daniel's call, not a gap: UNDERLEAF's Bellringer mini was cut after a playtest (2026-09-17). It is the secret stealth village - you choose when it wakes - and nothing on its street holds a gate */
 const want = (process.argv[2] || '').split(',').filter(Boolean);
 const TS = 16;
 let bad = 0, n = 0;
@@ -28,7 +29,8 @@ for (const lv of LEVELS) {
   const rooms = [A, L.mini].filter(Boolean).map(Q => [Q.x0 / TS - 1, Q.x1 / TS + 1, Q.y0 !== undefined ? Q.y0 / TS - 1 : Q.floor / TS - 16, Q.floor / TS + 2])
     .concat((L.ambushes || []).map(Q => [Q.wallL - 1, Q.wallR + 1, (Q.y0 !== undefined ? Q.y0 : Q.row - 9) - 1, Q.row + 2]));
   const open = floodReach(L, T, { rides: true });
-  if (!els.length && !L.mini) out.push('no mini and no elite holding a gate');
+  if (NO_KEEPER.has(lv.id)) { /* no gatekeeper wanted */ }
+  else if (!els.length && !L.mini) out.push('no mini and no elite holding a gate');
   else if (!L.mini && !els.some(e => e.gate !== undefined)) out.push('no mini, and no elite here holds a gate');
   const HELD = new Set(['check', 'sign', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'npc', 'shrine', 'winch', 'lever']);
   for (const e of els) { n++;
