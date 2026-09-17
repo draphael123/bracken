@@ -3828,9 +3828,9 @@ const BEASTS = [
   { t: 'manta', name: 'MANTA', sub: 'off the open water', desc: 'Skims the sea beside the deck and dives at whoever is standing on it. Her shadow runs ahead of her on the boards: watch the boards, not the sky.' },
   { t: 'reefmaw', name: 'THE REEFMAW', sub: 'a moray the length of a mast', desc: 'It has four holes and is only in one: bubbles say which. Its hide turns a blade while it lurks. When its bite hits coral instead of you, its jaw sticks fast, and that is when it can be cut. The hole floods higher each phase; the coral stools and the diving bells are all that is left. Stand off from its hole and it spits the reef at you.' },
   { t: 'herald', name: 'THE TIDE HERALD', sub: 'he comes up with the sea', desc: 'An old knight of the drowned realm who walks on the water. His plate turns most of a blade. When he raises the glaive the sea comes across the square: get up on the stones. Then the tide goes out and leaves him in the mud, and the mud is where he bleeds.' },
-  { t: 'soldier', name: 'SOLDIER', sub: "the queen's line", desc: 'Sword and shield, and he knows how to use them. The shield turns anything from the front and he is slow to turn: get behind him, or cut him as he swings. Block the swing and he is open.' },
+  { t: 'soldier', name: 'SOLDIER', sub: "the queen's line", desc: 'Sword and shield, and he knows how to use them. The shield turns anything from the front and he is slow to turn: get behind him, or cut him as he swings. Hold the shield and it only turns his cut; raise it as it lands and he is wide open.' },
   { t: 'javelin', name: 'JAVELINEER', sub: 'the skirmish line', desc: 'Keeps his distance and throws at where you stand. Parry a javelin and it goes back at him. Close in and he runs. A throw that finds a wall stands in it for a while, and a spear in a wall is a step.' },
-  { t: 'heavy', name: 'HEAVY KNIGHT', sub: 'full plate', desc: 'Slow, and his plate turns most of a cut. A double mark is the overhead: get out from under it. A single mark is the sweep: block it and he is off balance. He is open while he drags his blade out of the floor, and a plunge finds the gaps in his helm. Hide behind your shield in front of him and he takes hold of it - a double mark, and the shield is no answer.' },
+  { t: 'heavy', name: 'HEAVY KNIGHT', sub: 'full plate', desc: 'Slow, and his plate turns most of a cut. A double mark is the overhead: get out from under it. A single mark is the sweep: a shield already up only turns it - he does not flinch - but raise it as it lands and he is rocked off balance. He is open while he drags his blade out of the floor, and a plunge finds the gaps in his helm. Hide behind your shield in front of him and he takes hold of it - a double mark, and the shield is no answer.' },
   { t: 'brute', name: 'BRUTE', sub: 'club goblin', desc: 'Two tells. A double mark is the overhead: it cannot be blocked, so dodge it. A single mark is the sweep, which the shield holds. Hit him while the club is raised or while he rests.' },
   { t: 'hound', name: 'WAR HOUND', sub: 'goblin dog', desc: 'Runs straight at you and leaps low at the last stride. Stomp it, swing as it lands, or put fire between you.' },
   { t: 'grub', name: 'CAVE GRUB', sub: 'it glows because it burns', desc: 'A soft thing lit from inside. Touching it burns, so do not stomp it barefoot: cut it, or keep out of the arc of acid it spits when you stand off. It leaves its light behind for a moment when it dies.' },
@@ -8292,7 +8292,12 @@ function updateTroop(e, dt) {
   if (e.t === 'soldier') { // he closes behind the shield, turns slowly, and swings on a clear tell
     near = ad < 150 && dy < 40 && !P.dead;
     if (e.mode === 'slashTell') { want = 0; if (e.modeT <= 0) { e.mode = 'slash'; e.modeT = 0.25; SFX.slash(); e.vx = e.face * 60;
-      if (!P.dead && Math.sign(d) === e.face && ad < 30 && dy < 22) { const res = damagePlayer(e.x, DMG.soldier); if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.9; e.stagger = 0.9; e.vx = -e.face * 50; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); SFX.clank(); } else if (res === 'hit') P.vx = e.face * 180; } } }
+      /* THE SAME LESSON AS THE SWORN SWORD: a shield raised on the beat (answered - a parry, a dodge, or a
+         block just raised) throws him wide open; one that was already up merely turns it, no PARRIED, no opening. */
+      if (!P.dead && Math.sign(d) === e.face && ad < 30 && dy < 22) { const res = damagePlayer(e.x, DMG.soldier);
+        if (answered(res)) { e.mode = 'rest'; e.modeT = 0.9; e.stagger = 0.9; e.cd = 1.3; e.vx = -e.face * 50; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); SFX.clank(); }
+        else if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.45; e.cd = 1.0; e.vx = -e.face * 20; }
+        else if (res === 'hit') P.vx = e.face * 180; } } }
     else if (e.mode === 'slash') { want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.45; e.cd = 1.1; } }
     else if (e.mode === 'rest') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
     else { e.mode = 'walk';
@@ -8314,7 +8319,9 @@ function updateTroop(e, dt) {
     if (e.mode === 'raise') { want = 0; if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.35; shakeCam(5); SFX.heavy(); SFX.stone(); dust(e.x + e.face * 18, e.y, 12);
       if (!P.dead && Math.sign(d) === e.face && ad < 40 && dy < 24) { const res = damagePlayer(e.x, DMG.heavySlam, { unblockable: true }); if (res === 'hit') { P.vx = e.face * 260; P.vy = -170; } } } }
     else if (e.mode === 'windUp') { want = 0; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; e.vx = e.face * 110; SFX.slash(); SFX.heavy();
-      if (!P.dead && Math.sign(d) === e.face && ad < 50 && dy < 24) { const res = damagePlayer(e.x, DMG.heavySweep); if (res === 'blocked') { e.parried = 1; e.stagger = 1; e.mode = 'rest'; e.modeT = 1.1; P.vx = e.face * 200; number(e.x, e.y - e.h - 10, 'OFF BALANCE', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 240; P.vy = -120; } } } }
+      /* THE SAME LESSON, ON PLATE: a shield already up merely turns the sweep (he does not flinch - the sweep
+         runs its own recovery); a shield raised as it lands (answered) rocks him OFF BALANCE, the only thing that does. */
+      if (!P.dead && Math.sign(d) === e.face && ad < 50 && dy < 24) { const res = damagePlayer(e.x, DMG.heavySweep); if (answered(res)) { e.parried = 1; e.stagger = 1; e.mode = 'rest'; e.modeT = 1.1; P.vx = e.face * 200; number(e.x, e.y - e.h - 10, 'OFF BALANCE', '#8fd160'); SFX.clank(); } else if (res === 'hit') { P.vx = e.face * 240; P.vy = -120; } } } }
     /* THE GRIP: a shield held up in front of a man in plate is a handle. He takes it and throws what is holding it. */
     else if (e.mode === 'grabTell') { want = 0; if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.35; SFX.grip();
       if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 24) { const res = damagePlayer(e.x, DMG.heavyGrab, { unblockable: true, up: true });
