@@ -2506,13 +2506,13 @@ function theDeep() {
   deck(58, 90, 64); hull(59, 89, 60, 63);
   stone(40, 41); stone(78, 47); stone(26, 55); stone(70, 63);
   coins([34, 41], [44, 41], [52, 41], [70, 47], [80, 47], [90, 47], [20, 55], [30, 55], [38, 55], [64, 63], [74, 63], [84, 63]);
-  ent('sailor', 48, 41, { face: -1 }); ent('netter', 84, 47, { face: -1 }); ent('angler', 24, 50);
+  ent('sailor', 48, 41, { face: -1 }); ent('merrowspear', 84, 47, { face: -1 }); ent('angler', 24, 50);   /* THE MERROW: her harpoon works as well off a hold's deck as off the reef */
   ent('scout', 34, 55, { face: 1 }); ent('eel', 96, 58); ent('crab', 68, 63, { face: 1 });
   ent('sailor', 74, 47, { face: 1 }); ent('crab', 38, 41, { face: -1 }); ent('netter', 22, 55, { face: 1 });
   ent('scout', 86, 63, { face: -1 }); ent('puffer', 52, 46); ent('urchin', 44, 60);
   ent('petrel', 66, 36); ent('angler', 88, 56); ent('eel', 30, 46);
   ent('siren', 60, 52); ent('tideguard', 92, 47, { face: -1 });
-  ent('boarder', 42, 41, { face: 1 }); ent('boarder', 80, 63, { face: -1 });
+  ent('boarder', 42, 41, { face: 1 }); ent('merrowbrute', 80, 63, { face: -1 });
   ent('wight', 56, 41, { face: -1 }); ent('wight', 36, 55, { face: 1 });
   ent('sailor', 90, 47, { face: -1 }); ent('sailor', 66, 63, { face: 1 }); ent('tideguard', 20, 55, { face: 1 });
   ent('check', 78, 47); ent('check', 62, 63);
@@ -7139,17 +7139,17 @@ const GARRISON = {
   spire: [['fledgling', 13], ['harpy', 10], ['bat', 7], ['sentry', 8], ['rockgoblin', 7], ['crow', 5], ['goat', 4], ['troll', 4], ['kite', 4], ['spider', 3], ['snuffer', 2]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
   storm: [['hearthgob', 5], ['cutter', 5], ['sentry', 2], ['pike', 1]],
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
-  longwater: [['scout', 6], ['tideguard', 6], ['crab', 6], ['siren', 4], ['eel', 3], ['netter', 5], ['angler', 3], ['turtle', 4], ['heronfoe', 3], ['lamprey', 2], ['puffer', 1], ['jelly', 1]],   // replacing weight, not piling on: three of the eel/angler/siren's slots go to the new wildlife
-  reef: [['angler', 9], ['crab', 7], ['sailor', 7], ['netter', 6], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 4], ['urchin', 2], ['lookout', 3], ['puffer', 2], ['lamprey', 2], ['jelly', 1]],
+  longwater: [['scout', 5], ['tideguard', 6], ['crab', 6], ['siren', 4], ['eel', 3], ['netter', 2], ['angler', 3], ['turtle', 4], ['heronfoe', 3], ['lamprey', 2], ['puffer', 1], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],   // replacing weight, not piling on: three of the eel/angler/siren's slots go to the new wildlife
+  reef: [['angler', 9], ['crab', 7], ['sailor', 4], ['netter', 4], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 4], ['urchin', 2], ['lookout', 1], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 3], ['merrowcaller', 2]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['seawitch', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and her own sea witch, not another cutlass */
   mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3]],   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
   fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
-  causeway: [['scout', 8], ['tideguard', 6], ['watch', 4], ['feeler', 8], ['petrel', 5], ['cutlass', 3], ['sailor', 3], ['crab', 4], ['netter', 2], ['jelly', 1], ['puffer', 1], ['lamprey', 1]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
+  causeway: [['scout', 8], ['tideguard', 6], ['watch', 2], ['feeler', 8], ['petrel', 5], ['cutlass', 3], ['sailor', 2], ['crab', 4], ['netter', 2], ['jelly', 1], ['puffer', 1], ['lamprey', 1], ['merrowcaller', 1], ['merrowbrute', 1]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
   skyship: [['cutlass', 8], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2], ['shield', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings - and now a shield in her roster too, so the squads rule (0.4) actually screens her bow, spear and sapper the way it already does in Kingswood's Knights' Road: two cutlass hands stood down to pay for it, the count unchanged */
-  lamplit: [['watch', 9], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
+  lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
 // Measured across the campaign and they are bunched and then absent: Highcrown had ELEVEN of them and SEVEN
@@ -7248,7 +7248,7 @@ function garrison(L, id) {
   const bySwim = (x, y) => pools.some(p => p.swim && (x + 1) * TS > p.x0 - 3 * TS && x * TS < p.x1 + 3 * TS && (y + 1) * TS >= p.y - 3 * TS && (y + 1) * TS <= (p.bottom !== undefined ? p.bottom : p.y + 60) + TS);   /* a siren sings over water you can drown in, not a wading pool */
   /* AND WATER IS NOT ROOM: a swim pool's spot can still have rock in it, and the Long Water put an eel a tile inside the bank
      the moment the new wildlife shifted the draw. A swimmer needs its own tile and the one over it clear. */
-  const clearHere = (x, y) => !solid(L.grid[y * L.W + x]) && !solid(L.grid[Math.max(0, y - 1) * L.W + x]);
+  const clearHere = (x, y) => [x - 1, x, x + 1].every(cx => cx < 0 || cx >= L.W || (!solid(L.grid[y * L.W + cx]) && !solid(L.grid[Math.max(0, y - 1) * L.W + cx])));   /* its own column is not enough: a fish is wider than a tile, and the reef put an angler's nose in the rock */
   const fits = (kind, x, y, isWet) => (!SWIMS.has(kind) || clearHere(x, y)) && (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
   const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];

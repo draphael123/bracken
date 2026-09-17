@@ -447,6 +447,42 @@ export function bakeShield() {
   return pack(frames, 7, 15, 10, 14);
 }
 
+// THE MERROW BRUTE - built on the shieldbearer's own frames (walk, the slow turn, the tucked shove) because the
+// tribe's heavy needs exactly that lesson: turn slowly, so cross behind it and strike, or plunge from above.
+// What is hers: teal-green scaled hide where the goblin's was, a barnacled, pale-nacre clam shell in place of
+// the round wood shield, and a kelp-wrap where the blue tabard was. Not throwable - it is the heavy.
+const MB = Object.assign({}, EP, { g: '#3d8a72', G: '#1f5a48', b: '#1d4a44', w: '#e8d4d0', y: '#c9a0c0', r: '#b8483a' });
+const mbSprite = rows => outline(fromGrid(rows, MB, 1), OUT);
+export function bakeMerrowBrute() {
+  const top = [
+    '...SSSSS......',
+    '..SsssssS.....',
+    '..SsssssS.....',
+    '..gggeoggg....',
+    '...gGGGg......',
+  ];
+  const torso = s => [
+    '..bbbbbb.' + (s ? 'wwww.' : '.....'),
+    '.Sbbbbbb.' + (s ? 'wwyww' : 'wwww.'),
+    '.Sbbbbbb.' + (s ? 'wwyww' : 'wwyww'),
+    '..bbbbbb.' + (s ? 'wwww.' : 'wwyww'),
+    '..rrrrrr.' + (s ? '.....' : 'wwww.'),
+    '..rrrrrr......',
+  ];
+  const legs = [['..GG..GG......', '..GG..GG......', '.GGG..GGG.....'], ['..GG.GG.......', '...GGGG.......', '..GGG.GG......'], ['...GGGG.......', '..GG..GG......', '.GGG..GGG.....'], ['..GG.GG.......', '..GG..GG......', '.GG...GGG.....']];
+  const frames = legs.map((l, i) => mbSprite([...top, ...torso(i % 2 === 0), ...l]));
+  const turnTorso = ['..bwwwwwb.....', '.Swwwywwwb....', '.Swwyyywwb....', '..wwwywwwb....', '..rwwwwwr.....', '..rrrrrr......'];
+  frames.push(mbSprite([...top, ...turnTorso, ...legs[0]]));
+  const hurtTop = ['....SSSSS.....', '...SsssssS....', '...SsssssS....', '...gogggog....', '....gg.gg.....'];
+  const hurtTorso = ['..bbbbbb..www.', '.Sbbbbbb.wwyww', '.Sbbbbbb.wwwww', '..bbbbbb......', '..rrrrrr......', '.rrrrrr.......'];
+  frames.push(mbSprite(['..SSSSS.......', '.SsssssS......', '.SsssssS......', '.gggeoggg.....', '..gGGGg.......',
+    '.bbbbbbwwww...', 'Sbbbbbbwwyw...', 'Sbbbbbbwyyw...', '.bbbbbbwwyw...', '.rrrrrrwwww...', '.rrrrrr.......', '.GG...GG......', 'GG.....GG.....', 'GG......GG....']));
+  frames.push(mbSprite(['....SSSSS.....', '...SsssssS....', '...SsssssS....', '...gggeoggg...', '....gGGGg.....',
+    '...bbbbbb.wwww', '..Sbbbbbb.wwyw', '..Sbbbbbb.wyyw', '...bbbbbb.wwyw', '...rrrrrr.wwww', '..rrrrrr......', '.GGG...GG.....', 'GG.......GG...', 'G..........GG.']));
+  frames.push(mbSprite([...hurtTop, ...hurtTorso, '..GG...GG.....', '.GG.....GG....', 'GG.......GG...']));
+  return pack(frames, 7, 15, 10, 14);
+}
+
 // Spitter — toadstool that spits seeds. 14×12. Frames: idle, cap-tilt, mouth open.
 export function bakeSpitter() {
   const cap = ['....rrrrrr....', '..rrrerrrrer..', '.rrrrrrrrrrrr.', 'rrerrrrrerrrrr', 'rrrrrrrrrrrrrr', '.RRRRRRRRRRRR.'];
@@ -3081,6 +3117,76 @@ const SW = Object.assign({}, EP, { r: '#8a2f3a', R: '#55202a', k: '#c9463d', s: 
   f: '#f3d2a8', u: '#8a5a32', m: '#ffffff', v: '#c9a0ff', y: '#e0b040' });
 export function bakeSeaWitch() {
   const r = rows => outline(fromGrid(rows, SW, 1), OUT);
+  const idle = r([
+    '............yy..',
+    '...........ymmy.',
+    '...........ymmy.',
+    '...........yyyy.',
+    '.....kkkk...u...',
+    '....kkkkkk..u...',
+    '....ddffdd..u...',
+    '....dfoofd..u...',
+    '.....ffff...u...',
+    '....ssssss..u...',
+    '...srrrrrrsfu...',
+    '...rrryyyrr.u...',
+    '...rRRyyyRR.u...',
+    '...rRRRRRRRru...',
+    '....RRRRRRR.....',
+    '....RR...RR.....',
+    '...RRR...RRR....',
+    '................']);
+  const cast = r([
+    '...........vvvv.',
+    '..........vmmmmv',
+    '..........vmmmmv',
+    '...........vvvv.',
+    '.....kkkk...u...',
+    '..f.kkkkkk..u...',
+    '..f.ddffdd..u...',
+    '...fdfoofd..u...',
+    '.....ffff...u...',
+    '....ssssss..u...',
+    '...srrrrrrsfu...',
+    '...rrryyyrr.u...',
+    '...rRRyyyRR.u...',
+    '...rRRRRRRRru...',
+    '....RRRRRRR.....',
+    '....RR...RR.....',
+    '...RRR...RRR....',
+    '................']);
+  const call = r([
+    '..m........vvvv.',
+    '..f.......vmmmmv',
+    '...f.kkkkvmmmmmv',
+    '....kkkkkkvvvvv.',
+    '....kkkkkk..u...',
+    '....ddffdd..u...',
+    '....dfoofd..u...',
+    '.....ffff...u...',
+    '....ssssss..u...',
+    '...srrrrrrsfu...',
+    '..srrryyyrrsu...',
+    '..rrRRyyyRRru...',
+    '..rRRRRRRRRru...',
+    '...rRRRRRRRru...',
+    '....RRRRRRR.....',
+    '...RR.....RR....',
+    '..RRR.....RRR...',
+    '................']);
+  return pack([idle, cast, call], 8, 17, 12, 16);
+}
+
+// THE MERROW TIDECALLER - built on the sea witch's own canvas, anchor and three-pose rig (a standing caster who
+// watches, channels and lets go), because the tribe's shaman needs exactly her stillness. What is hers: a
+// teal fin-crest where the kerchief was, sea-green scaled hide under a kelp-wrap instead of a sea-coat, a
+// driftwood staff topped with a pale shell in place of the storm lantern - dull bone while she watches, white
+// and aqua the instant the channel takes hold. She throws no bolt: the surge she calls shoves the hero along
+// whatever floor or water she is standing over, and any hit that lands on her while she holds it breaks it.
+const MC = Object.assign({}, EP, { r: '#1d4a44', R: '#102e2a', k: '#2a8a72', s: '#3f8a78', d: '#16221e',
+  f: '#8fc4ac', u: '#7a5a3a', m: '#ffffff', v: '#7ff0e0', y: '#d9c48a' });
+export function bakeMerrowCaller() {
+  const r = rows => outline(fromGrid(rows, MC, 1), OUT);
   const idle = r([
     '............yy..',
     '...........ymmy.',

@@ -751,6 +751,11 @@ const DIE = {
   lookout() { file('gobDie', 0.4, 1.3) || tone('square', 520, 150, 0.2, 0.16); noise(0.18, 0.18, 2600, 0.4, 0.05); tone('triangle', 700, 300, 0.2, 0.06, 0.12); },
   sailor() { file('gobDie', 0.5, 0.86) || tone('sawtooth', 250, 80, 0.3, 0.2); noise(0.24, 0.24, 900, 0.5, 0.06); },
   netter() { file('gobDie', 0.5, 1) || tone('square', 340, 110, 0.24, 0.18); noise(0.3, 0.2, 1600, 0.4, 0.06); /* the net falls in a heap */ },
+  // THE MERROW: not a goblin and not a drowned man, so no gobDie file, no gurgled human cry - a low croaking
+  // call going out under the water, in its own voice
+  merrowspear() { tone('sawtooth', 210, 70, 0.3, 0.2); tone('sine', 140, 50, 0.32, 0.16, 0.04); noise(0.2, 0.24, 1400, 0.4, 0.08); },   /* the harpoon goes down with her */
+  merrowcaller() { tone('triangle', 260, 90, 0.34, 0.16); noise(0.3, 0.22, 500, 0.5, 0.08); pad('sine', 300, 120, 0.6, 0.04, 0.1, 1400); },   /* the current she was holding goes out of the water with her */
+  merrowbrute() { tone('sawtooth', 160, 50, 0.4, 0.24); noise(0.3, 0.3, 300, 0.6, 0.08); SFX.crack(); },   /* the shell splits */
   // the fish: no voice at all, so all of it is water and body
   eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
   scarecrow() { noise(0.4, 0.26, 1200, 0.4); noise(0.3, 0.16, 600, 0.5, 0.1); },   /* it comes apart into what it was stuffed with */
@@ -921,6 +926,9 @@ const HURT = {
   herald() { tone('sine', 320, 200, 0.26, 0.14); pad('sine', 480, 300, 0.4, 0.05, 0.02, 2400); noise(0.16, 0.14, 900, 0.6); },
   sailor() { tone('sawtooth', 200, 110, 0.2, 0.16); noise(0.18, 0.2, 600, 0.6); },
   netter() { tone('sawtooth', 260, 140, 0.16, 0.14); noise(0.14, 0.18, 800, 0.6); },
+  merrowspear() { tone('sawtooth', 240, 150, 0.14, 0.14); noise(0.12, 0.16, 1200, 0.5); },
+  merrowcaller() { tone('triangle', 300, 180, 0.14, 0.12); noise(0.1, 0.14, 700, 0.5); },
+  merrowbrute() { SFX.clank(); tone('sawtooth', 180, 110, 0.16, 0.16); noise(0.14, 0.16, 500, 0.5); },
   cutlass() { file('hurt', 0.4, 1.18) || tone('square', 420, 260, 0.09, 0.14); },
   boarder() { file('hurt', 0.5, 0.86) || tone('square', 300, 180, 0.11, 0.16); },
   marine() { file('hurt', 0.4, 1.3) || tone('square', 480, 300, 0.08, 0.13); },
@@ -1012,6 +1020,7 @@ const CAST = {
   bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm6', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm5', rate: 1, mat: 'cloth', human: true },
   seawitch: { kit: 'f3', rate: 1.04, mat: 'cloth', human: true },   /* the only woman in the crew with a voice, and she is not a goblin: no gibberish, no gob laugh */
   netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
+  merrowspear: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, merrowcaller: { kit: 'f3', rate: 0.95, mat: 'cloth', human: true },   /* fish-folk, not goblins: no gibberish, no goblin laugh */
   watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
   troll: { kit: 'ogre', rate: 1 }, prince: { kit: 'zom', rate: 0.62, lp: 1500, mat: 'cloth' }, courtier: { kit: 'zom', rate: 1.3, lp: 2600 }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
