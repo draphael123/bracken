@@ -393,6 +393,82 @@ function lampOver(g, cx, cy, VW, VH, time) {
 }
 
 // ============================================================================================
+// THE LONG WATER — THE RIVER INTO THE SEA. The water is river water where it comes down off the mountain, green-brown and full
+// of reeds, with the fishermen's weirs staked across it and their boats sunk in it; by the time it reaches Saltreach it has
+// turned, and from the square on it is the sea's own blue. The turn is a colour laid over the water only (its hue, not its
+// light, so nothing in it reads any less), eased across the middle of the level from WORLD x.
+// ============================================================================================
+const LWC = { fresh: '#8a8a2e', salt: '#2a6ab8', reed: ['#5a6a2a', '#7a8a3a', '#9aa84a'], head: '#5a3a20', stake: '#5a4630', stakeL: '#7a6246', wattle: '#8a7450', boat: '#4e3e2c', boatL: '#6a5640', boatD: '#2e241a', weed: '#4e6a2a' };
+const LW_FRESH = 150, LW_SALT = 330;   /* tiles: river water to here, the sea from here */
+const saltAt = wx => Math.max(0, Math.min(1, (wx / TS - LW_FRESH) / (LW_SALT - LW_FRESH)));
+function bakeReeds(v) {   /* a clump of reeds 14x30, standing from its foot, with a head on one stalk in two */
+  const [c, g] = canvas(14, 30);
+  for (let k = 0; k < 5 + v; k++) { const x = 2 + Math.floor(hsh(k, v, 111) * 10), h = 14 + Math.floor(hsh(v, k, 112) * 15), lean = (hsh(k, v, 113) - 0.5) * 4;
+    line(g, x, 29, x + lean, 30 - h, LWC.reed[k % 3]);
+    if (k % 2 === 0) { rect(g, Math.round(x + lean) - 1, 30 - h, 2, 5, LWC.head); px(g, Math.round(x + lean), 29 - h, LWC.reed[2]); }
+    else { px(g, Math.round(x + lean / 2) + 1, 30 - Math.round(h * 0.6), LWC.reed[2]); } }
+  return c;
+}
+function bakeSunkBoat(v) {   /* a fishing boat on the river bed, 48x18: her strakes, a stove-in side with the ribs showing, her mast down, weed on her */
+  const [c, g] = canvas(48, 18);
+  fillPoly(g, [[1, 7], [47, 5], [42, 16], [8, 17]], LWC.boat);
+  for (let y = 8; y < 16; y += 3) line(g, 3, y, 44, y - 1, LWC.boatD);
+  line(g, 1, 7, 47, 5, LWC.boatL, 2);
+  fillPoly(g, [[18 + v * 6, 8], [30 + v * 6, 7], [28 + v * 6, 14], [20 + v * 6, 15]], '#1e2a24');
+  for (let x = 19 + v * 6; x < 29 + v * 6; x += 3) line(g, x, 8, x + 1, 14, LWC.boatL);
+  line(g, 34, 6, 46 - v * 30, 0, LWC.stake, 2);
+  for (let i = 0; i < 9; i++) { const x = 2 + Math.floor(hsh(i, v, 114) * 44); px(g, x, 5 + Math.floor(hsh(v, i, 115) * 3), LWC.weed); px(g, x, 4 + Math.floor(hsh(v, i, 115) * 3), LWC.weed); }
+  return c;
+}
+function lwLook() {
+  const S0 = { id: 'longwater', back: lwBack, over: lwOver, wet: lwWet, reeds: [0, 1, 2].map(bakeReeds), boats: [bakeSunkBoat(0), bakeSunkBoat(1)], reedAt: [], boatAt: [], weirs: [] };
+  const swimAt = (x, y) => (L.pools || []).find(p => p.swim && !p.dry && x > p.x0 && x < p.x1 && y > p.y - 2 && (p.bottom === undefined || p.bottom === null || y <= p.bottom + 4));
+  for (let tx = 1; tx < L.W - 1; tx++) for (let ty = 1; ty < L.H - 1; ty++) {
+    if (tileAt(tx, ty) !== 0 || !SOLIDT.has(tileAt(tx, ty + 1))) continue;
+    const t = saltAt(tx * TS), wx = tx * TS + 8, foot = (ty + 1) * TS, p = swimAt(wx, foot - 4);
+    // REEDS: in the shallows (two tiles of water or less over the floor) and on the bank beside the water
+    const shallow = p && foot - p.y <= 2 * TS + 4, bank = !p && [-3, -2, -1, 1, 2, 3].some(d => swimAt((tx + d) * TS + 8, foot + 10) || swimAt((tx + d) * TS + 8, foot - 6));
+    if ((shallow || bank) && hsh(tx, ty, 116) < 0.55 * (1 - t)) S0.reedAt.push({ x: tx * TS + 1, y: foot - 30, v: Math.floor(hsh(tx, ty, 117) * 3), ph: hsh(tx, ty, 118) * 6 });
+    // A SUNK BOAT on a bed of river water deep enough to hide her, on three tiles of floor
+    if (p && t < 0.9 && foot - p.y >= 3 * TS && SOLIDT.has(tileAt(tx + 1, ty + 1)) && SOLIDT.has(tileAt(tx + 2, ty + 1)) && tileAt(tx + 2, ty) === 0 && hsh(tx, ty, 119) < 0.05
+      && S0.boatAt.every(b => Math.abs(b.x - tx * TS) > 30 * TS)) S0.boatAt.push({ x: tx * TS, y: foot - 17, v: Math.floor(hsh(tx, ty, 120) * 2) });
+  }
+  // A WEIR staked across each stretch of river wide enough for one, a third of the way along it
+  for (const p of (L.pools || [])) { if (!p.swim || p.x1 - p.x0 < 7 * TS || saltAt(p.x0) > 0.7) continue;
+    const x = Math.round((p.x0 + (p.x1 - p.x0) * (0.3 + hsh(p.x0, 1, 121) * 0.4)) / TS) * TS; let bed = p.y; while (bed < L.H * TS && tileAt(Math.floor(x / TS), Math.floor(bed / TS)) === 0) bed += TS;
+    if (bed - p.y >= 2 * TS) S0.weirs.push({ x, y0: p.y - 8, y1: bed }); }
+  return S0;
+}
+function lwBack(g, cx, cy, VW, VH, time) {
+  for (const b of S.boatAt) if (b.x > cx - 50 && b.x < cx + VW && b.y > cy - 20 && b.y < cy + VH) g.drawImage(S.boats[b.v], Math.round(b.x - cx), Math.round(b.y - cy));
+  // THE WEIRS: a line of stakes out of the bed and up past the water, wattle woven along them under it
+  for (const w of S.weirs) { if (w.x < cx - 40 || w.x > cx + VW + 10 || w.y1 < cy || w.y0 > cy + VH) continue;
+    const x = Math.round(w.x - cx);
+    for (let k = 0; k < 4; k++) { const sx = x + k * 9, top = Math.round(w.y0 - cy) - (k % 2) * 3; g.fillStyle = LWC.stake; g.fillRect(sx, top, 3, Math.round(w.y1 - cy) - top); g.fillStyle = LWC.stakeL; g.fillRect(sx, top, 1, Math.round(w.y1 - cy) - top); }
+    /* the wattle is a WOVEN PANEL, solid, not rails: a row of rungs up a post is the game's ladder, and a weir must never read as one */
+    const py0 = Math.round(w.y0 - cy) + 12, py1 = Math.round(w.y1 - cy) - 2; if (py1 > py0) { g.fillStyle = LWC.wattle; g.fillRect(x - 2, py0, 34, py1 - py0); g.fillStyle = LWC.boatD;
+      for (let y = py0; y < py1; y += 2) for (let xx = ((y - py0) >> 1) % 2 ? 0 : 3; xx < 32; xx += 6) g.fillRect(x - 2 + xx, y, 3, 1);
+      g.fillStyle = LWC.stake; for (let k = 0; k < 4; k++) g.fillRect(x + k * 9, py0, 3, py1 - py0); g.fillStyle = LWC.weed; g.fillRect(x - 2, py1 - 3, 34, 3); } }
+}
+function lwWet(g, cx, cy, VW, VH, time) {
+  // THE WATER'S COLOUR, from river to sea: its hue laid over the water in bands, not its light
+  g.save(); g.globalCompositeOperation = 'color';
+  for (const p of (L.pools || [])) { if (p.dry || p.fire || p.x1 < cx || p.x0 > cx + VW) continue;
+    const top = Math.max(0, Math.round(p.y - cy)), bot = Math.min(VH, Math.round((p.bottom !== undefined && p.bottom !== null ? p.bottom : p.y + (p.depth || 0)) - cy)); if (bot <= top) continue;
+    for (let x = Math.max(p.x0, cx); x < Math.min(p.x1, cx + VW); x += 16) { const t = saltAt(x + 8), w = Math.min(16, Math.min(p.x1, cx + VW) - x);
+      g.globalAlpha = t < 0.5 ? 0.42 * (1 - t * 2) : 0.3 * (t * 2 - 1); if (g.globalAlpha < 0.01) continue;
+      g.fillStyle = t < 0.5 ? LWC.fresh : LWC.salt; g.fillRect(Math.round(x - cx), top, Math.ceil(w), bot - top); } }
+  g.restore();
+}
+function lwOver(g, cx, cy, VW, VH, time) {
+  // THE REEDS, under the creatures (a bank reed must never stand in front of what is on the bank) and swaying
+  for (const r of S.reedAt) { if (r.x < cx - 16 || r.x > cx + VW || r.y < cy - 30 || r.y > cy + VH) continue;
+    const k = Math.sin(time * 1.2 + r.ph) * 0.08;
+    g.setTransform(1, 0, k, 1, Math.round(r.x - cx) - k * 30, Math.round(r.y - cy)); g.drawImage(S.reeds[r.v], 0, 0); }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+// ============================================================================================
 // THE LIVING WATER. Built once, configured per level (LIFE below): schools of fish that scatter when you swim through them and
 // come back together behind you, crabs going about their business on the ledges, kelp that leans out of your way, jellyfish
 // drifting in the far water, strings of bubbles going up a long way off, and now and then something very big going past
@@ -545,7 +621,7 @@ function lifeBack(g, cx, cy, VW, VH, time, hero) {
 // ============================================================================================
 // THE HOOKS main.js calls
 // ============================================================================================
-const LOOKS = { deep: deepLook, reef: reefLook, lamplit: lampLook };
+const LOOKS = { deep: deepLook, reef: reefLook, lamplit: lampLook, longwater: lwLook };
 /* at load: what this level looks like, and anything main.js has to swap for it (a parallax layer or, in a dark level, the murk) */
 export function seaLoad(id, lv) {
   L = lv; S = LOOKS[id] ? LOOKS[id]() : LIFE[id] ? { id } : null;
@@ -560,6 +636,7 @@ export function seaOver(g, cx, cy, VW, VH, time) { if (!S || globalThis.__noSea)
 /* AFTER THE WATER'S WASH (drawSwimmers calls it first): what has to read through the water, put back over it, in this frame's camera */
 export function seaWet(g) { if (!S || globalThis.__noSea || !S.cam || !S.wet) return; const [cx, cy, VW, VH, time] = S.cam; S.wet(g, cx, cy, VW, VH, time); S.cam = null; }
 /* what the living water has in it, for a harness (seaLife(true) is all of it). globalThis.__noSea = true draws a frame without any of this, for a before-and-after by the pixels */
+export function seaLook() { return S; }   /* the whole look, for a harness */
 export function seaLife(all) { return S && S.life ? (all ? S.life : S.life.counts) : null; }
 /* THE RING round a swimmer: the silhouette grown by a pixel each way, in one colour, with the body cut back out of it, so a lit
    edge can be drawn at full strength without washing the body's own colours out. Kept on the frame's canvas. */
