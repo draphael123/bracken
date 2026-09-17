@@ -39,7 +39,8 @@ export const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground &&
 /* THE KEY VERB. The family table in main.js (FAMILY, read through BK.keyOf) says what each common body wants: the right tool lands half
    as hard again and the wrong one GLANCES. A bot that only cut and blocked was left chipping at plate and bouncing off shields - and it
    is the co-op ally - so it asks the table, one verb per body, the plainest one each hero has:
-     guard  - the LOW SWEEP under the shield (it trips, and a tripped guard is open to every cut); the held HEAVY while it cannot be tripped again
+     guard  - the DASH ATTACK from outside its reach: the table's head-on answer, it throws the guard OFF BALANCE and every cut after is open;
+              already inside its reach (or the dash still cooling), the LOW SWEEP under it; the held HEAVY while it cannot be tripped again
      plate, shell, beast - the held HEAVY
      small  - the LOW SWEEP          wing - the RISING CUT          shooter, crew - the DASH ATTACK, from just outside reach
    and whatever is OPEN (tripped, broken, reeling) takes the plain cut, which is quickest. Per hero: the freebooter's heavy is his pistol, so
@@ -52,7 +53,9 @@ export function keyVerb(BK, h, e) {
   const f = K.family, swim = !!P.swim;
   if (h === 'pirate' && P.loaded && f !== 'small' && e.t !== 'mimic') return 'heavy';
   if ((h === 'pirate' || h === 'reaper') && e.t === 'mimic') return swim ? 'light' : 'plunge';
-  if (f === 'guard') return K.tripped || swim ? 'heavy' : 'sweep';
+  if (f === 'guard') { const ad = Math.abs(e.x - P.x), reach = LAB_REACH[h] + (e.w || 12) / 2;
+    if (!swim && (P.dash > 0 || P.dashAtk > 0 || (ad > reach + 4 && !(P.dashCd > 0)))) return 'dash';   /* (and a dash under way is seen through) */
+    return K.tripped || swim ? 'heavy' : 'sweep'; }
   if (f === 'plate') return h === 'pirate' ? (swim ? 'light' : 'plunge') : 'heavy';
   if (f === 'shell' || f === 'beast') return 'heavy';
   if (f === 'small') return swim ? 'light' : 'sweep';
@@ -86,7 +89,7 @@ export function strike(BK, h, e, f) {
        A bot that stood off waiting for the dash to come round was measured: it gave an archer ten seconds of free shots. Once in reach it cuts. */
     if ((P.dash > 0 || P.dashLate > 0) && P.atk < 0 && P.st >= cost) { BK.press('atk'); swing = 1; }
     else if (f - S.tap === 2 && P.ground) { BK.press(dir > 0 ? 'right' : 'left'); k[dir > 0 ? 'right' : 'left'] = true; k[dir > 0 ? 'left' : 'right'] = false; }
-    else if (free && P.ground && !(P.dashCd > 0) && ad > reach + 4 && ad < reach + 40 && level && P.st >= cost + 12 && f - S.tap > 20) { S.tap = f; BK.press(dir > 0 ? 'right' : 'left'); k[dir > 0 ? 'right' : 'left'] = true; k[dir > 0 ? 'left' : 'right'] = false; }
+    else if (free && P.ground && !(P.dashCd > 0) && ad > reach + 4 && ad < reach + 40 && level && P.st >= cost + 22 && f - S.tap > 20)   /* (the wind for the dash, the swing and the dash attack's own cost on top) */ { S.tap = f; BK.press(dir > 0 ? 'right' : 'left'); k[dir > 0 ? 'right' : 'left'] = true; k[dir > 0 ? 'left' : 'right'] = false; }
     else if (ad < reach && free && level && P.st >= 8 && f - S.tap > 6) { BK.press('atk'); swing = 1; }   /* already on it: the plain cut, not a step back into its blade */
   } else if (free && ad < reach && level && P.st >= 8) { BK.press('atk'); swing = 1; }
   return { verb, want, swing };
