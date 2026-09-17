@@ -181,12 +181,17 @@ export async function fightLab(BK, opts = {}) {
     const fights = [];
     for (let rep = 0; rep < reps; rep++) {
       BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false;
-      for (const e of BK.enemies()) e.alive = false; BK.sim(20);
+      /* opts.home: a foe that needs its own ground (the marsh's gar needs its hole) is fought where the level put the first one,
+         with the hero set down six tiles short of it, instead of five tiles past the start */
+      const home = opts.home && BK.enemies().find(q => q.t === t && q.alive);
+      for (const e of BK.enemies()) if (e !== home) e.alive = false; BK.sim(20);
       const P = BK.P, k = BK.keys; P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0;
       /* opts.elite: the same foe as its ELITE (main.js), rule and all */
-      const before = BK.enemies().length; BK.spawnEnt(Object.assign({ t, x: Math.round(P.x / 16) + 5, y: Math.round(P.y / 16) - 1 }, opts.elite ? { elite: true } : {}));
-      const e = BK.enemies()[BK.enemies().length - 1];
-      if (BK.enemies().length === before || !e) { fights.push({ skipped: true }); continue; }
+      const before = BK.enemies().length;
+      if (home) { BK.tp(Math.round((home.hx !== undefined ? home.hx : home.x) / 16) - 6, Math.round(home.pool ? home.pool.y / 16 - 2 : home.y / 16 - 1)); BK.sim(20); P.hp = P.maxHp; }
+      else BK.spawnEnt(Object.assign({ t, x: Math.round(P.x / 16) + 5, y: Math.round(P.y / 16) - 1 }, opts.elite ? { elite: true } : {}));
+      const e = home || BK.enemies()[BK.enemies().length - 1];
+      if ((!home && BK.enemies().length === before) || !e) { fights.push({ skipped: true }); continue; }
       let f = 0, taken = 0, swings = 0, defends = 0, died = false, last = P.hp; const ehp = e.hp;
       for (; f < maxF && e.alive; f++) {
         /* opts.keepAlive: the hero's health is put back each frame and what the foe took off him is counted, as the boss lab does -

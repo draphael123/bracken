@@ -578,6 +578,12 @@ Object.assign(SFX, {
   golemShatter() { noise(0.4, 0.45, 3200, 0.7); [2093, 1760, 1396, 1046, 784].forEach((f, i) => tone('sine', f, f * 0.7, 0.35, 0.12, i * 0.05)); tone('sawtooth', 120, 40, 0.5, 0.2); },
   golemThrow() { noise(0.12, 0.2, 1800, 0.8); tone('sine', 1400, 2200, 0.1, 0.08); },
   kiteChatter() { for (let i = 0; i < 3; i++) tone('square', 900 + i * 120, 1300, 0.04, 0.06, i * 0.05); noise(0.05, 0.08, 2400, 1.2, 0.15); },
+  hornDraw() { tone('sawtooth', 96, 150, 1.9, 0.05); tone('square', 48, 75, 1.9, 0.025); },   /* THE STOCKADE'S HORN, drawn breath: a note that climbs the whole time he is putting it to his mouth */
+  badgerHuff() { noise(0.12, 0.22, 500, 0.6); tone('sawtooth', 160, 110, 0.12, 0.08); noise(0.08, 0.16, 1600, 0.5, 0.12); noise(0.08, 0.16, 1600, 0.5, 0.26); },   /* a snort, and its claws raking the ground twice */
+  badgerCharge() { tone('sawtooth', 120, 70, 0.18, 0.12); noise(0.3, 0.18, 400, 0.6, 0.02); },
+  badgerSkid() { noise(0.28, 0.2, 1100, 0.4); tone('square', 300, 180, 0.08, 0.05, 0.05); },
+  garRise() { for (let i = 0; i < 4; i++) tone('sine', 500 + i * 180, 900 + i * 180, 0.05, 0.05, i * 0.09); noise(0.2, 0.08, 2200, 0.5); },   /* bubbles coming up */
+  garFlop() { noise(0.06, 0.2, 900, 0.5); tone('sine', 220, 120, 0.06, 0.08); },
   hareSqueak() { tone('sine', 1800, 2600, 0.06, 0.08); tone('sine', 2400, 1900, 0.07, 0.06, 0.07); },
   wightMoan() { tone('sawtooth', 90, 70, 0.9, 0.12); tone('sine', 140, 95, 0.9, 0.1, 0.05); noise(0.9, 0.08, 600, 0.3); },
   callerChant() { tone('sawtooth', 220, 262, 0.35, 0.12); tone('sawtooth', 330, 392, 0.35, 0.08, 0.3); noise(0.7, 0.14, 500, 0.4); tone('sine', 880, 1320, 0.5, 0.05, 0.1); },
@@ -651,7 +657,7 @@ Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
   foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
     if (r) { file('gobHurt', 0.3, r * 1.2) || tone('square', 500 * r, 800 * r, 0.08, 0.08); tone('square', 700 * r, 1150 * r, 0.06, 0.04, 0.03); return; }
-    const B = { hound: SFX.bark, greathound: SFX.bark, goat: SFX.bleat, harpy: SFX.screech, spider: SFX.hiss, bat: SFX.chitter, wasp: SFX.buzz, hopper: SFX.ribbit, sporeling: SFX.squelch, wight: SFX.wightMoan, hare: SFX.hareSqueak, crow: SFX.caw, troll: SFX.bellow, grub: SFX.squelch, shardling: SFX.shardBristle, fledgling: SFX.caw, lurker: SFX.squelch }[t]; if (B) B(); },
+    const B = { hound: SFX.bark, greathound: SFX.bark, goat: SFX.bleat, harpy: SFX.screech, spider: SFX.hiss, bat: SFX.chitter, wasp: SFX.buzz, hopper: SFX.ribbit, sporeling: SFX.squelch, wight: SFX.wightMoan, hare: SFX.hareSqueak, badger: SFX.badgerHuff, gar: SFX.garRise, crow: SFX.caw, troll: SFX.bellow, grub: SFX.squelch, shardling: SFX.shardBristle, fledgling: SFX.caw, lurker: SFX.squelch }[t]; if (B) B(); },
   // it hit you, or you fell: the goblins laugh
   foeJeer(t) { if (!gate('jeer', 0.6)) return; const r = GOB_V[t] || 1; file('laugh', 0.28, r * 1.1) || [0, 1, 2].forEach(i => tone('square', 420 * r, 340 * r, 0.07, 0.07, i * 0.11)); },
   // goblin gibberish, muttered to itself while it waits
@@ -796,6 +802,8 @@ const DIE = {
   troll() { tone('sawtooth', 130, 34, 1.0, 0.28); tone('sawtooth', 128, 30, 1.0, 0.14, 0.02); noise(0.5, 0.4, 150, 0.7, 0.6); tone('sine', 60, 25, 0.5, 0.35, 0.65); },
   harpy() { tone('sawtooth', 1700, 420, 0.45, 0.14); tone('sawtooth', 1750, 400, 0.45, 0.08, 0.02); noise(0.4, 0.2, 1200, 0.3, 0.25); },
   goat() { tone('sawtooth', 520, 480, 0.12, 0.14); tone('sawtooth', 480, 560, 0.12, 0.14, 0.12); tone('sawtooth', 560, 180, 0.3, 0.14, 0.24); },
+  badger() { tone('sawtooth', 240, 90, 0.3, 0.14); noise(0.2, 0.24, 700, 0.5, 0.05); tone('sine', 110, 50, 0.3, 0.12, 0.15); },   /* a squall, and a heavy little body going over */
+  gar() { noise(0.18, 0.24, 1200, 0.5); tone('sine', 200, 70, 0.3, 0.12, 0.05); noise(0.12, 0.2, 700, 0.5, 0.18); },   /* one last flap on the grass */
   hare() { tone('sine', 2200, 2900, 0.06, 0.1); tone('sine', 2800, 1200, 0.16, 0.1, 0.06); noise(0.12, 0.2, 300, 0.6, 0.2); },
   wight() { tone('sine', 210, 90, 0.9, 0.18); tone('sine', 214, 92, 0.9, 0.1, 0.05); noise(0.9, 0.16, 500, 0.15, 0.1); },
   kite() {},
@@ -933,6 +941,8 @@ const HURT = {
   harpy() { SFX.screech(); },
   goat() { SFX.goatCry(); },
   hare() { SFX.hareSqueak(); },
+  badger() { SFX.badgerHuff(); },
+  gar() { noise(0.1, 0.2, 1400, 0.5); tone('sine', 300, 160, 0.08, 0.08); },
   wight() { tone('sine', 240, 160, 0.25, 0.14); },
   kite() { SFX.kiteChatter(); },
   folk() { file('gobHurt', 0.3, 1.6) || tone('sawtooth', 700, 400, 0.1, 0.08); },

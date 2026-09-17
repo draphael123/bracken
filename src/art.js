@@ -214,8 +214,8 @@ export function bakeShrineKind(kind, lit) {
     rect(g, 9, 20, 7, 2, '#4a3420');
     px(g, 5, 30, C.grassD); px(g, 14, 31, C.grassD); px(g, 7, 31, C.grass);
   } else if (kind === 'crag') {                             // a cairn with a brand pushed into the top of it
-    for (const [x, y, w, h] of [[3, 28, 14, 5], [4, 24, 12, 4], [5, 20, 10, 4], [6, 17, 8, 3], [7, 14, 6, 3]]) {
-      rect(g, x, y, w, h, C.stone); rect(g, x, y, w, 1, C.stoneL); rect(g, x, y + h - 1, w, 1, C.stoneD); }
+    /* fieldstones, not a stepped cake: the same stacking as bakeCairn (irregular, off the joints, moss and lichen) */
+    cairnStones(g, mulberry(216 + (lit ? 1 : 0)), [[6.5, 30.6, 5.2, 2.6, '#7a766e'], [14, 31, 3.8, 2.2, '#86786a'], [9.8, 26.4, 5.2, 2.4, '#8c8a84'], [15.2, 27.2, 2.2, 1.6, '#6e6a66'], [8.4, 22.4, 3.8, 2.1, '#968e82'], [11.6, 18.8, 3.4, 1.9, '#8a8478'], [9.6, 15.6, 2.6, 1.6, '#a8a298']]);
     rect(g, 9, 4, 2, 11, '#4a3420');
     rect(g, 7, 1, 6, 5, fire); if (lit) { rect(g, 8, 2, 4, 3, fireL); px(g, 9, 0, '#fff6e0'); }
   } else if (kind === 'myc') {                              // a cap on a stalk, and the gills glow
@@ -1546,7 +1546,32 @@ export function bakeHeather(seed) { const rnd = mulberry(seed); const [c, g] = c
 export function bakeGorse(seed) { const rnd = mulberry(seed); const [c, g] = canvas(18, 12); ellipse(g, 9, 8, 8, 4, '#3a5a2a', '#2a3a1a'); ellipse(g, 7, 5, 5, 3, '#4a6a3a'); for (let i = 0; i < 9; i++) px(g, 2 + ((rnd() * 14) | 0), 2 + ((rnd() * 8) | 0), rnd() < 0.7 ? '#e0c040' : '#ffe070'); return outline(c, OUT); }
 export function bakeThistle(seed) { const rnd = mulberry(seed); const [c, g] = canvas(8, 14); rect(g, 3, 5, 2, 9, '#4a6a3a'); for (let i = 0; i < 3; i++) rect(g, rnd() < 0.5 ? 0 : 5, 7 + i * 2, 3, 1, '#4a6a3a'); ellipse(g, 4, 4, 2.5, 3, '#6a8a4a'); ellipse(g, 4, 2, 2.5, 2, '#b070d0', '#8a4aa0'); px(g, 3, 1, '#e0a0f0'); return outline(c, OUT); }
 export function bakeStandingStone(seed) { const rnd = mulberry(seed); const [c, g] = canvas(16, 30); const w = 8 + ((rnd() * 5) | 0); fillPoly(g, [[3, 30], [4, 4], [4 + w * 0.4, 1], [3 + w, 3], [4 + w, 30]], '#7c8797'); fillPoly(g, [[4, 30], [5, 5], [5 + w * 0.3, 3], [5, 30]], '#9aa3b0'); for (let i = 0; i < 6; i++) px(g, 5 + ((rnd() * (w - 2)) | 0), 4 + ((rnd() * 24) | 0), rnd() < 0.5 ? '#5a6270' : '#8fb060'); return outline(c, OUT); }
-export function bakeCairn() { const [c, g] = canvas(12, 14); for (const [x, y, w] of [[1, 11, 10], [2, 8, 8], [3, 5, 6], [4, 2, 4]]) { rect(g, x, y, w, 3, '#7c8797'); rect(g, x, y, w, 1, '#9aa3b0'); rect(g, x, y + 2, w, 1, '#5a6270'); } return outline(c, OUT); }
+/* A CAIRN IS STONES. It was four grey slabs stepped into a symmetric pyramid with a black line round it, which read as a
+   sandcastle or a wedding cake. Now it is fieldstones picked up where they lay: rounded, every one a different size and a
+   different grey or brown, stacked the way a hand stacks them - a broad base pair, the next one sat off the joint, a
+   small one leaning on the top - each shaded from the light above-left, with moss in the joints of the lower ones and
+   flecks of lichen, pale and rust, on their faces. The line round it is a soft dark stone-brown, not ink. The lowest
+   pixel is still on the canvas's last opaque row, so every cairn in the game still stands where it stood. */
+export function bakeCairn() {
+  const rnd = mulberry(1549), [c, g] = canvas(18, 17);
+  // [centre x, centre y, rx, ry, base colour]: the base pair, a stone off the joint, a smaller one on it, a pebble leaning at the top
+  cairnStones(g, rnd, [[5.5, 13.2, 4.6, 2.6, '#7a766e'], [12.2, 13.6, 3.6, 2.2, '#86786a'], [8.2, 9.8, 4.1, 2.4, '#8c8a84'], [13.4, 10.6, 2.0, 1.5, '#6e6a66'], [7.4, 6.3, 3.0, 1.9, '#968e82'], [9.0, 3.4, 1.9, 1.5, '#a8a298']]);
+  // moss where the stones meet, on the lower courses, and a tuft at the foot
+  for (const [x, y] of [[3, 11], [4, 11], [9, 12], [10, 11], [11, 12], [6, 8], [12, 9], [1, 14], [15, 14]]) px(g, x, y, rnd() < 0.5 ? '#5e7e3e' : '#4a6a34');
+  for (const [x, y] of [[4, 10], [10, 10], [2, 13]]) px(g, x, y, '#7e9e4e');
+  return outline(c, '#2c2622');
+}
+/* a stack of rounded fieldstones, each shaded from above-left with lichen on its face (bakeCairn, and the crag shrine's cairn) */
+function cairnStones(g, rnd, STONES) {
+  for (const [x, y, rx, ry, col] of STONES) {
+    ellipse(g, x, y, rx, ry, shade(col, -0.28));                          /* the shadowed underside */
+    ellipse(g, x - 0.4, y - 0.5, rx - 0.5, ry - 0.5, col);                /* the stone */
+    ellipse(g, x - 1.1, y - 1.0, Math.max(0.8, rx - 2.0), Math.max(0.6, ry - 1.4), shade(col, 0.16));   /* the light on its shoulder */
+    px(g, Math.round(x - rx * 0.45), Math.round(y - ry * 0.6), shade(col, 0.34));
+    for (let i = 0; i < Math.round(rx); i++) { const lx = Math.round(x + (rnd() - 0.5) * rx * 1.4), ly = Math.round(y + (rnd() - 0.6) * ry);   /* lichen: pale green-white and rust */
+      if (rnd() < 0.55) px(g, lx, ly, rnd() < 0.7 ? '#c8cc9c' : '#c08a4a'); }
+  }
+}
 // Dry-stone wall tile and its cap: flat stones stacked without mortar.
 export function bakeDrystone(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 0; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } return c; }
 export function bakeDrystoneTop(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 3; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } for (let x = 0; x < T; x += 3) { rect(g, x, 0, 2, 3, '#8a919c'); px(g, x, 0, '#b0b8c4'); } return c; }
