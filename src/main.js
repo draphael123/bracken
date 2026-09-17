@@ -3856,12 +3856,12 @@ const BEASTS = [
   { t: 'sweep', name: 'CHIMNEY SWEEP', sub: 'up the flue', desc: 'He lives in the stacks. Walk past and he comes up out of one with a handful of soot, throws it, and stays up a moment to watch it land: that moment is the only time you can reach him. Then he is back down the flue.' },
   { t: 'stormshaman', name: 'STORM SHAMAN', sub: 'the weather is his', desc: 'A goblin with a staff who stands at the far end of a span and throws the storm at whoever is crossing it. His bolts are slow: strike one, or take it on a shield, and it goes back at him.' },
   { t: 'seawitch', name: 'THE SEA WITCH', sub: 'she signed the articles too', desc: "The ship's conjuror, in the crew's own coat, with a storm lantern on her crook. She marks a spot on the deck and the sky finds it a second later: no shield turns lightning, so move. Out of the weather she throws it by hand instead, slow enough to strike out of the air or send back off a shield." },
-  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door, and every blade turns on it except when he is committed. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. His thrust can be parried; the low sweep cannot, so jump it. His charges take the deck out behind him. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
+  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door, and every blade turns on it except when he is committed. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. Or MAKE the opening: a DASH ATTACK into his guard takes his feet out and he reels - it draws no blood itself, and he sets his feet against the next one for a while. Not while he is coming at you. His thrust can be parried; the low sweep cannot, so jump it. His charges take the deck out behind him. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
   { t: 'snuffer', name: 'THE SNUFFER', sub: 'lamp-killer', desc: 'It is not hunting you. It walks the boughs putting the village out, one lantern at a time, and the Reeve is glad of it. It swings the pole if you crowd it. Light what it snuffs, or cut it and the lamps stay lit.' },
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
   { t: 'crow', name: 'STORM CROW', sub: 'they do not turn', desc: 'They come down the wind over the high moor in strings of four and five, and a string does not turn for anyone. On the Sky Road there is no ground to stand and cut them from: go over, go under, or go through with a dart.' },
-  { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones you can pogo off. Block her dive and she is staggered on the floor, where she takes double damage. Jump or block her low sweep. Half health and she is enraged.' },
+  { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones you can pogo off. While TWO of them are up the swarm closes over her and turns most of a blow: cut the drones down, or catch her winded. Block her dive and she is staggered on the floor, where she takes double damage. Jump or block her low sweep. Half health and she is enraged.' },
   { t: 'frog', name: 'BULLFROG KING', sub: 'lord of the marsh', desc: 'Sits on his mud dais and hops the court. Tongue, leap, venom, and a great breath in: block to dig your heels in or be dragged to his teeth. His throat is soft mid-croak; his head takes two stomps before he hops off.' },
   { t: 'sporeling', name: 'SPORELING', sub: 'walking cap', desc: 'Wanders and bites. Kill it and it bursts into a spore cloud that slows and tires you, so finish it at range or step back.' },
   { t: 'spitcap', name: 'SPITCAP', sub: 'rooted lobber', desc: 'Rooted, so it lobs. The bomb is nothing: the sleeping cloud it leaves is everything. It swells before it throws, and while it is swollen it comes apart in one blow.' },
@@ -5176,6 +5176,18 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'dummy') { e.flash = 0.12; SFX.stone(); burst(e.x, e.y - 12, 6, COLS.dummy, 50, 0.4); if (dmg > 0) number(e.x, e.y - e.h - 6, Math.round(dmg), '#fff6e0'); return; } // straw takes it and stands
   if (L && L.trial && e.t === 'archer') { SFX.clank(); return; } // the trial's archer is there to shoot at you
   if (e.t === 'captain' && (e.ride || e.mode === 'ride')) { SFX.splash(); sparks(e.x, e.y - 16, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 44, 'THE SEA HAS HIM', '#9aa39a'); return; }
+  /* THE SWARM IS THE HORNET QUEEN'S ARMOUR. She was the shortest real fight in the game (18-73 s against a 90-150 s
+     target) because her drones were scenery: two of them hung over the hall, darted at you and changed nothing. Now
+     while TWO or more are up they close over her and she takes a third of any blow - so the first boss of the game
+     teaches the oldest rule in it, thin the small things before you go for the big one, and her CALLS THE SWARM is a
+     move with a cost instead of a flourish. Her own openings are still hers: winded on the floor after a dive, and
+     sitting in her slam, she takes it all whatever is flying. */
+  if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'slamRest' && e.mode !== 'buck') {
+    const swarm = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
+    if (swarm >= 2) { dmg = Math.max(1, Math.round(dmg * 0.45)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 10, e.y - 8, Math.sign(e.x - fromX) || 1, 3);
+      if (!(e.swarmSaid > 0)) { e.swarmSaid = 2.4; number(e.x, e.y - e.h - 14, 'THE SWARM CLOSES', '#ffd36b');
+        PROG.qSwarmTold = (PROG.qSwarmTold || 0) + 1;
+        if (PROG.qSwarmTold <= 3) { hintT = 4.5; hintMsg = 'HER DRONES CLOSE OVER HER AND TURN MOST OF A BLOW. CUT THE SWARM DOWN, OR CATCH HER WINDED ON THE FLOOR.'; } } } }
   if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
   else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
   if (e.t === 'lampreeve' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); } // stretched over a lamp with both hands
@@ -5256,6 +5268,17 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'golem' && !(e.crackT > 0) && e.mode !== 'stagger') { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); if (!(e.stoneSaid > 0)) { e.stoneSaid = 2; number(e.x, e.y - e.h - 12, 'STONE', '#c8bca8'); } return; }   /* STONE DOES NOT BLEED: only while a bell's note is in it, or while a face of it has just broken away */
   if (e.t === 'golem' && e.mode === 'stagger') dmg *= 1.5;
   if (e.t === 'suncatcher') { if (rimeOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.6)); if (Math.random() < 0.4) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 24, Math.sign(e.x - fromX) || 1, 3); } if (!(e.rimeSaid > 0)) { e.rimeSaid = 5; number(e.x, e.y - e.h - 8, 'THE RIME TURNS PART OF IT', '#9aa39a'); } } }   /* rimed it takes a little over half; thawed or cracked it takes half as much again */
+  /* THE SECOND WAY IN (and the same rule the shield family keeps): a DASH ATTACK into his guard knocks him OFF BALANCE
+     and his plate is no use to him lying down, so every hero has a way to MAKE an opening as well as wait for one.
+     It is a rule about what you did, not about who you are. Not while he is coming at you or bringing the shield round
+     (LANCE_BRACED): a man at a run is not knocked wide by a run. And not twice on the trot - he sets his feet for
+     braceT seconds after, so it opens the fight up without becoming the whole of it. */
+  if (e.t === 'lance' && !lanceOpen(e) && blowHas(blow, 'dash') && !LANCE_BRACED.has(e.mode)) {
+    if (e.braceT > time) { SFX.clank(); number(e.x, e.y - e.h - 20, 'HE HAS SET HIS FEET', '#9aa39a'); return; }
+    /* the run takes his FEET, not his blood: the plate turns this blow like any other, and what it buys is the
+       second and a bit after it, where every cut lands */
+    e.mode = 'reel'; e.modeT = OFF_BALANCE; e.stagger = OFF_BALANCE; e.vx = -e.face * 70; e.braceT = time + 7;
+    number(e.x, e.y - e.h - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); lessonHint('dashatk'); return; }
   if (e.t === 'lance') { if (lanceOpen(e)) { if (e.mode === 'planted') dmg = Math.round(dmg * 1.6); } else { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - e.h - 8, 'HIS PLATE TURNS IT', '#9aa39a'); return; } }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
@@ -8127,6 +8150,7 @@ function updateQueen(e, dt) {
   const A = L.arena, floor = A.floor, p2 = e.phase === 2;
   e.modeT -= dt; e.anim += dt;
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
+  e.swarmSaid = Math.max(0, (e.swarmSaid || 0) - dt);   /* THE SWARM CLOSES, said once and not every blow (hurtEnemy0) */
   const drones = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
   const hoverTo = (tx, ty, sp) => { e.vx += (Math.max(-sp, Math.min(sp, (tx - e.x) * 3)) - e.vx) * Math.min(1, dt * 4); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - e.vy) * Math.min(1, dt * 4); };
   switch (e.mode) {
@@ -8137,8 +8161,15 @@ function updateQueen(e, dt) {
       e.face = Math.sign(P.x - e.x) || e.face;
       if (e.modeT <= 0) {
         // pick a move she hasn't just used; drones first if the swarm is thin
-        const pool = ['dive', 'sweep', 'volley', 'slam']; if (drones < (p2 ? 3 : 2)) pool.push('call', 'call');
-        let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0];
+        /* AND SHE KEEPS HER SWARM UP, because it is her armour now (hurtEnemy0): with none of them left she calls at
+           once, and below two (three once she is enraged) the call is most of what she does instead of one chance in
+           three. That is the rhythm of the fight - thin the swarm, cut her while it is thin, thin it again. Measured:
+           calling EVERY time she was short put her out of four heroes' reach inside the 150 s cap, and leaving it at
+           one chance in three changed her length not at all, so it sits between the two. */
+        const pool = ['dive', 'sweep', 'volley', 'slam'];
+        if (drones < (p2 ? 3 : 2)) pool.push('call', 'call', 'call');
+        let pick = drones === 0 ? 'call' : pool[(Math.random() * pool.length) | 0];
+        if (pick === e.last && pick !== 'call') pick = pool[(Math.random() * pool.length) | 0];
         e.last = pick;
         if (pick === 'call') { e.mode = 'call'; e.modeT = 0.9; SFX.buzz(); number(e.x, e.y - 20, 'CALLS THE SWARM', '#ffd36b'); }
         else if (pick === 'dive') { e.mode = 'aim'; e.modeT = p2 ? 0.6 : 0.8; SFX.buzz(); }
@@ -14755,6 +14786,9 @@ function updateLance(e, dt) {
   if (r.hitX && e.mode === 'charge') { e.mode = 'planted'; e.modeT = 2.8; e.stagger = 2.8; e.vx = 0; SFX.heavy(); shakeCam(7); }
 }
 const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
+/* WHEN A RUN AT HIM IS A RUN AT A WALL: coming at you, or with the shield already coming round. Everything else he
+   is standing on his feet for, and a dash attack takes them out from under him (hurtEnemy0) */
+const LANCE_BRACED = new Set(['sleep', 'wake', 'couch', 'charge', 'rushTell', 'rush', 'bashTell', 'bash', 'vaultTell', 'vault', 'whirlTell', 'whirl']);
 
 // THE SNUFFER - it is not hunting you. It is putting the village out, one lamp at a time, and the Reeve likes that.
 function updateSnuffer(e, dt) {
@@ -15213,7 +15247,7 @@ function updateKing(e, dt) {
   const grab = () => { const reach = e.phase === 3 ? 74 : 62; if (!P.dead && Math.sign(P.x - e.x) === e.face && ad > 8 && ad < reach && P.y > e.y - 26 && P.y <= e.y + 4) { const res = damagePlayer(e.x, DMG.grab, { unblockable: true }); if (res === 'hit') { P.vx = e.face * 420; P.vy = -300; P.hurt = 0.7; P.ground = false; P.block = false; SFX.throwWhoosh(); SFX.bellow(); shakeCam(6); zoomKick(1.12, 0.3); } } };
   e.throwT = Math.max(0, (e.throwT || 0) - dt);
   e.open = Math.max(0, (e.open || 0) - dt);
-  if (e.mode === 'held') { if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.6; e.stagger = 0; e.open = 7; number(e.x, e.y - e.h - 16, 'HIS HEAD IS UP. HE IS OPEN', '#8fd160'); SFX.sting(); } return; } // after the cage he takes the blade like anyone for a while
+  if (e.mode === 'held') { if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.6; e.stagger = 0; e.open = 4; number(e.x, e.y - e.h - 16, 'HIS HEAD IS UP. HE IS OPEN', '#8fd160'); SFX.sting(); } return; } // after the cage he takes the blade like anyone for a while (four seconds, not seven: an opening is punctuation)
   if (e.phase === 1) { // carried: the wheeled litter paces the hall, then CHARGES it; goblets, guards, and the hand if you stand close
     e.y = floor - 9;
     if (e.mode === 'chargeTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 1.5; e.cdir = Math.sign(d) || e.dir; e.chargeHit = false; SFX.bellow(); SFX.rattle(1); } return; }
@@ -15241,7 +15275,12 @@ function updateKing(e, dt) {
     else if (e.cageT <= 0 && props.some(c => c.t === 'dropcage' && c.boss && !c.dropped && Math.abs(c.x - P.x) < 40)) { e.mode = 'cageTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; } }
   else if (e.mode === 'grabTell') { if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.3; e.grabT = 4.5; grab(); } }
   else if (e.mode === 'grab' && e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; }
-  else if (e.mode === 'shoutTell' && e.modeT <= 0) { e.mode = 'shout'; e.modeT = 0.4; e.shoutT = 7; SFX.roar(); shakeCam(5); ringAt(e.x, e.y - 30, 90, '#ffd36b', 0.4); if (!P.dead && ad < 100 && Math.abs(P.y - e.y) < 60) { damagePlayer(e.x, DMG.shout, { unblockable: true }); P.vx = (Math.sign(P.x - e.x) || 1) * 240; P.vy = -150; } }
+  /* AND THE COURT JOINS IN. The galleries at both ends of his hall were built to throw goblets when the King shouts
+     (level.js says so at the balconies) and galleryVolley was written for it and never once called - so the shout was
+     one blow instead of a blow and a rain of cups, and the court up there was scenery. It is the layer the fight was
+     short of: his own shout goes off, and a moment later the gallery empties its table at you, which is pressure while
+     you are picking yourself up. In phase three they cower instead, which is the arc: the rage empties his own hall. */
+  else if (e.mode === 'shoutTell' && e.modeT <= 0) { e.mode = 'shout'; e.modeT = 0.4; e.shoutT = 7; SFX.roar(); shakeCam(5); ringAt(e.x, e.y - 30, 90, '#ffd36b', 0.4); if (!P.dead && ad < 100 && Math.abs(P.y - e.y) < 60) { damagePlayer(e.x, DMG.shout, { unblockable: true }); P.vx = (Math.sign(P.x - e.x) || 1) * 240; P.vy = -150; } galleryVolley(e); }
   else if (e.mode === 'shout' && e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; }
   else if (e.mode === 'cageTell' && e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; e.cageT = 7; kingCage(e); }
   else if (e.mode === 'slamTell' && e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.4; shakeCam(7); SFX.heavy(); zoomKick(1.1, 0.25); dust(e.x + e.face * 26, e.y, 14); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 30, y: floor, dir: dd, life: 1.6, sp: 160 }); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 52 && Math.abs(P.y - e.y) < 24) damagePlayer(e.x, DMG.kingSlam, { unblockable: true }); }
@@ -17728,8 +17767,12 @@ function updateProps(dt) {
     if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }
     if (pr.t === 'ram' && pr.active > 0) { pr.active -= dt; pr.tm += dt; pr.th = Math.sin(pr.tm * 4.2) * 1.35 * Math.min(1, pr.active / 1.2); const pts = [30, 44, 58, 72].map(r => [pr.x + Math.sin(pr.th) * r, pr.y + Math.cos(pr.th) * r]); const nearSeg = (x, y) => pts.some(([qx, qy]) => Math.hypot(x - qx, y - qy) < 14); if (Math.abs(pr.th) > 0.12) { if (!P.dead && nearSeg(P.x, P.y - 8)) damagePlayer(pr.x, DMG.ram, { up: true, unblockable: true }); for (const e of enemies) if (e.alive && !pr.hit.has(e) && nearSeg(e.x, e.y - e.h / 2)) { pr.hit.add(e); hurtEnemy(e, 30, pr.x, false); } } if (pr.active <= 0) pr.th = 0; }
     if (pr.t === 'plate' && !pr.down) { const on = (!P.dead && P.ground && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 4) || enemies.some(e => e.alive && Math.abs(e.x - pr.x) < 10 && Math.abs(e.y - pr.y) < 4); if (on) { pr.down = true; SFX.stone(); const cg = props.find(c => c.t === 'dropcage' && Math.floor(c.x / TS) === pr.cage); if (cg && !cg.dropped) { cg.dropped = true; cg.landed = 0; cg.hit.clear(); if (cg.boss) cg.resetT = 5; number(cg.x, cg.y - 20, 'THE CAGE FALLS', '#ffd36b'); SFX.crack(); shakeCam(2); } } }
-    if (pr.t === 'dropcage' && pr.boss && pr.dropped && pr.landed > 0) { pr.resetT -= dt; if (pr.resetT <= 0) { pr.dropped = false; pr.landed = 0; pr.y = pr.y0; pr.hit.clear(); SFX.stone(); for (const pl of props) if (pl.t === 'plate' && pl.cage === Math.floor(pr.x / TS)) pl.down = false; } }
-    if (pr.t === 'dropcage' && pr.dropped) { if (pr.landed <= 0) { pr.y += 320 * dt; const ty = Math.floor((pr.y + 1) / TS); if (isSolid(Math.floor(pr.x / TS), ty)) { pr.y = ty * TS; pr.landed = 1; shakeCam(4); SFX.heavy(); dust(pr.x, pr.y, 8); if (!P.dead && Math.abs(P.x - pr.x) < 9 && Math.abs(P.y - pr.y) < 6) { damagePlayer(pr.x, DMG.cage, { up: true, unblockable: true, name: 'THE CAGE' }); P.caged = 1.4; number(P.x, P.y - 24, 'CAUGHT', '#ff6b6b'); } let caught = false; for (const e of enemies) if (e.alive && e.t !== 'bearer' && Math.abs(e.x - pr.x) < (e.t === 'king' ? 30 : 10) && Math.abs(e.y - pr.y) < (e.t === 'king' ? 16 : 8)) { if (e.t === 'king') { caught = true; e.mode = 'held'; e.modeT = 3.2; e.stagger = 3.2; e.vx = 0; e.open = 0; e.thrown = e.thrown || null; SFX.bellow(); hitstop(0.12); zoomKick(1.1, 0.3); } hurtEnemy(e, e.t === 'king' ? 40 : 30, pr.x, false); number(e.x, e.y - e.h - 12, 'CAUGHT', '#8fd160'); }
+    /* A CAGE THAT HAS HELD THE KING IS SCRAP (pr.spent). His five cages used to be winched back up five seconds after
+       they came down, held him 3.2 s and left him open for seven more - so one cage after another held him for the whole
+       fight and he was measured dead in 16-23 s without ever standing up. A cage that MISSED still comes back; the one
+       that caught him is bent round him and stays down, so the hall holds five openings and then it is a fight. */
+    if (pr.t === 'dropcage' && pr.boss && pr.dropped && pr.landed > 0 && !pr.spent) { pr.resetT -= dt; if (pr.resetT <= 0) { pr.dropped = false; pr.landed = 0; pr.y = pr.y0; pr.hit.clear(); SFX.stone(); for (const pl of props) if (pl.t === 'plate' && pl.cage === Math.floor(pr.x / TS)) pl.down = false; } }
+    if (pr.t === 'dropcage' && pr.dropped) { if (pr.landed <= 0) { pr.y += 320 * dt; const ty = Math.floor((pr.y + 1) / TS); if (isSolid(Math.floor(pr.x / TS), ty)) { pr.y = ty * TS; pr.landed = 1; shakeCam(4); SFX.heavy(); dust(pr.x, pr.y, 8); if (!P.dead && Math.abs(P.x - pr.x) < 9 && Math.abs(P.y - pr.y) < 6) { damagePlayer(pr.x, DMG.cage, { up: true, unblockable: true, name: 'THE CAGE' }); P.caged = 1.4; number(P.x, P.y - 24, 'CAUGHT', '#ff6b6b'); } let caught = false; for (const e of enemies) if (e.alive && e.t !== 'bearer' && Math.abs(e.x - pr.x) < (e.t === 'king' ? 30 : 10) && Math.abs(e.y - pr.y) < (e.t === 'king' ? 16 : 8)) { if (e.t === 'king') { caught = true; pr.spent = true; e.mode = 'held'; e.modeT = 3.2; e.stagger = 3.2; e.vx = 0; e.open = 0; e.thrown = e.thrown || null; SFX.bellow(); hitstop(0.12); zoomKick(1.1, 0.3); } hurtEnemy(e, e.t === 'king' ? 40 : 30, pr.x, false); number(e.x, e.y - e.h - 12, 'CAUGHT', '#8fd160'); }
       if (pr.boss && !caught && bossActive && !P.dead) { enemies.push({ t: 'hound', x: pr.x, y: pr.y, vx: 0, vy: -120, w: 12, h: 7, hp: EHP.hound, speed: 105, face: Math.sign(P.x - pr.x) || 1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0.3 }); number(pr.x, pr.y - 26, 'IT WAS NOT EMPTY', '#ff6b6b'); SFX.bark(); } /* the King keeps hounds in his cages */ } } }
     if (pr.t === 'vent') { // an updraft of spores on a timer: ride it up
       const wasOn = pr.active;
@@ -21714,7 +21757,11 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
   async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); }, async ambushLab(o) { const m = await import('./lab.js'); return m.ambushLab(window.BK, o || {}); },   /* each hero through a level's ambush room: window.__ambushLab */   /* every hero against the common foes, early to late: window.__lab */
   async bossLab(o) { const m = await import('./lab.js'); return m.bossLab(window.BK, o || {}); }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
   /* THE FAMILY KEY, for the hands that are not a player's: the lab bot and the co-op ally read which verb a body wants from the one table (null: not in it, or one blow of anything brings it down) */
-  keyOf(e) { const f = e && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null; return f ? { family: FAMILY_OF[e.t], key: f.key, glance: f.glance, open: foeOpen0(e), tripped: (e.tripImm || 0) > time } : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost),
+  keyOf(e) { const f = e && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null; return f ? { family: FAMILY_OF[e.t], key: f.key, glance: f.glance, open: foeOpen0(e), tripped: (e.tripImm || 0) > time } : null; },
+  /* WHETHER A BOSS'S OWN GATE IS OPEN, asked by the boss lab so the bot is not chipping at a plate that turns everything.
+     One answer, here, where the gate itself lives (hurtEnemy0): a second copy in the lab would drift the way the threat
+     table did. null means "this one has no gate of its own", and the lab treats it as always open, as it always did. */
+  bossOpen(e) { return e && e.t === 'lance' ? lanceOpen(e) : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 22 : isPirate() ? 7 : isReaper() ? 18 : sword().cost),
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */
