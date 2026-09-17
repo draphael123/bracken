@@ -7064,7 +7064,7 @@ const DRESS = {
   underleaf: [['barrels'], ['wares'], ['fence', 2], ['cart'], ['well'], ['lanternPost'], ['beehive'], ['idol', 2], ['hideRack', 2], ['cauldron'], ['cookSpit'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['clothStrip', 3], ['trophyRack', 2]],   /* a village at home: pots on, hides out, the household gods */
   undercrown: [['barrels'], ['wares'], ['bones', 2], ['cairn'], ['stone', 3], ['cart'], ['spearRack'], ['lootHeap', 2], ['cauldron'], ['boneChime', 2], ['skullTotem', 2], ['warnPost', 2], ['clothStrip', 3], ['ragBanner', 3]],   /* the mine: the dig's takings and its warnings */
   quarry: [['stone', 3], ['cairn'], ['bones', 2], ['cart'], ['barrels'], ['wares', 2], ['fence', 2], ['rock', 3], ['warnPost', 2], ['stakeFence', 2], ['cookSpit'], ['lootHeap', 2], ['gobPennant', 2]],   /* the diggers' camp: posts on the ledges, a spit going, what they have dug up */
-  deep: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['shellDrift', 2], ['seaChest']],
+  deep: [['glowCoral', 3], ['tubeWorms', 2], ['seaLily', 2], ['boneHeap', 2], ['tributeSpill', 2], ['shellDrift', 2], ['seaChest']],   /* THE TRENCH's own, not the reef's: coral that makes its light, worms off the warmth, lilies, bones and spilt tribute */
   longwater: [['coralTuft', 3], ['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['pierPost'], ['netPoles']],
   causeway: [['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['shellDrift', 2], ['fencePosts'], ['spar', 2], ['pierPost']],   /* the pilgrim road: wrack, shells, weed and what the tide leaves on the stone */
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
