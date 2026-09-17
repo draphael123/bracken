@@ -5177,16 +5177,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      sitting in her slam, she takes it all whatever is flying. */
   if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'slamRest' && e.mode !== 'buck') {
     const swarm = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
-    if (swarm >= 2) { dmg = Math.max(1, Math.round(dmg * 0.4)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 10, e.y - 8, Math.sign(e.x - fromX) || 1, 3);
+    if (swarm >= 2) { dmg = Math.max(1, Math.round(dmg * 0.45)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 10, e.y - 8, Math.sign(e.x - fromX) || 1, 3);
       if (!(e.swarmSaid > 0)) { e.swarmSaid = 2.4; number(e.x, e.y - e.h - 14, 'THE SWARM CLOSES', '#ffd36b');
         PROG.qSwarmTold = (PROG.qSwarmTold || 0) + 1;
         if (PROG.qSwarmTold <= 3) { hintT = 4.5; hintMsg = 'HER DRONES CLOSE OVER HER AND TURN MOST OF A BLOW. CUT THE SWARM DOWN, OR CATCH HER WINDED ON THE FLOOR.'; } } } }
   if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
-  /* up on the bier, out of an easy reach - but not by as much as it was. At 0.7 he was the only boss in the game that
-     no hero could finish: all six ran the 150 s cap out with 7-30% of him left (0/12 in the lab), because the whole of
-     his first two phases is spent up there and every blow into them was a third short. 0.85 is still "harder to reach
-     while they carry him" without the clock being the thing that beats you. */
-  else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.85)); }
+  else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
   if (e.t === 'lampreeve' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); } // stretched over a lamp with both hands
   if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, plunge); if (kd === false) return; dmg = kd; }
   if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, plunge); if (sd === false) return; dmg = sd; }
@@ -8158,8 +8154,15 @@ function updateQueen(e, dt) {
       e.face = Math.sign(P.x - e.x) || e.face;
       if (e.modeT <= 0) {
         // pick a move she hasn't just used; drones first if the swarm is thin
-        const pool = ['dive', 'sweep', 'volley', 'slam']; if (drones < (p2 ? 3 : 2)) pool.push('call', 'call');
-        let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0];
+        /* AND SHE KEEPS HER SWARM UP, because it is her armour now (hurtEnemy0): with none of them left she calls at
+           once, and below two (three once she is enraged) the call is most of what she does instead of one chance in
+           three. That is the rhythm of the fight - thin the swarm, cut her while it is thin, thin it again. Measured:
+           calling EVERY time she was short put her out of four heroes' reach inside the 150 s cap, and leaving it at
+           one chance in three changed her length not at all, so it sits between the two. */
+        const pool = ['dive', 'sweep', 'volley', 'slam'];
+        if (drones < (p2 ? 3 : 2)) pool.push('call', 'call', 'call');
+        let pick = drones === 0 ? 'call' : pool[(Math.random() * pool.length) | 0];
+        if (pick === e.last && pick !== 'call') pick = pool[(Math.random() * pool.length) | 0];
         e.last = pick;
         if (pick === 'call') { e.mode = 'call'; e.modeT = 0.9; SFX.buzz(); number(e.x, e.y - 20, 'CALLS THE SWARM', '#ffd36b'); }
         else if (pick === 'dive') { e.mode = 'aim'; e.modeT = p2 ? 0.6 : 0.8; SFX.buzz(); }
@@ -8830,9 +8833,7 @@ function updateTollmaster(e, dt) {
     case 'rod': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
     case 'darkTell': { want = 0;
       if (Math.random() < dt * 26) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 44 - Math.random() * 10, vx: 0, vy: -20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#2b403c' : '#9a5aa8', size: 2, grav: -18 });
-      /* AND THE WINDOW IT BUYS IS WORTH THE ROOM GOING DARK: 2.6 s of him with both hands over his head (2.1 in the
-         flood), at double damage. It was 2 and 1.5, which is where most of the missing damage in the fight was */
-      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 2.1 : 2.6; e.open = e.modeT; tollDark(e);
+      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 1.5 : 2; e.open = e.modeT; tollDark(e);
         number(e.x, e.y - 54, 'HIS HANDS ARE UP: CUT HIM', '#8fd160'); } break; }
     case 'dark': { want = 0;
       if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 40, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 });

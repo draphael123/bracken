@@ -425,7 +425,8 @@ export async function bossLab(BK, opts = {}) {
         else if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
           if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
-              if (boss.modeT < dkRel.at) { k.block = false; dkHold = 0; } } } } else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
+              if (boss.modeT < dkRel.at) { k.block = false; dkHold = 0; } } } }
+        else if (f % 6 === 0 && !P.climb) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }   /* YOU CANNOT ROLL ON A ROPE: a dodge lets go of the rungs, and the Quartermaster shoots at a climber every two seconds - the pyromancer rolled off her shrouds all the way back down into the hold */
       } else if (incoming && SHIELDED(h)) { P.face = Math.sign(incoming.x - P.x) || P.face; k.block = true; }
       /* THE QUARTERMASTER BEHIND HER GUARD: nothing a hero carries gets through it - a round shot is the only thing that does
          (updateBalls), which is what the deck guns and her own sign are for. So the hands do what the room says: to the nearest
@@ -442,7 +443,13 @@ export async function bossLab(BK, opts = {}) {
          so the hands thin it first, the way her hint says. A drone posts a tile and a half over the floor and darts at
          you, so it is taken with the rising cut when it is above and a plain one when it comes down. */
       else if (swarmT) { goal = swarmT.x;
-        if (Math.abs(swarmT.x - P.x) < LAB_REACH[h] + 10 && P.atk < 0) { P.face = Math.sign(swarmT.x - P.x) || P.face; if (swarmT.y < P.y - 8) k.up = true; BK.press('atk'); swings++; } }
+        /* a drone posts two and a half tiles over the floor: the rising cut reaches one that is a little up, and one
+           posted higher is jumped at (her own bestiary row says you can pogo off them) */
+        if (Math.abs(swarmT.x - P.x) < LAB_REACH[h] + 10 && P.atk < 0) { P.face = Math.sign(swarmT.x - P.x) || P.face;
+          const dyw = swarmT.y - P.y;
+          if (dyw < -26 && P.ground) { BK.press('jump'); P.labJump = 10; }
+          if (dyw < -8) k.up = true; BK.press('atk'); swings++; }
+        if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
@@ -460,10 +467,15 @@ export async function bossLab(BK, opts = {}) {
       else if (boss.t === 'troll') { goal = boss.x; strike = true;
         /* THE HILL TROLL: his stones drop from a hook a player jumps to strike - when he walks under one, the bot drops it, as a player at that hook would */
         const st = BK.props().find(q => q.t === 'weight' && q.crane && q.state === 'hang' && Math.abs(q.x - boss.x) < 12); if (st) { st.state = 'fall'; st.fy = st.y + st.len; st.vy = 0; } }
+      /* AND KING GORM IS CUT LIKE ANYONE (strike). His branch only ever walked to a cage and waited: he carries no gate
+         of his own, so the whole of the 16-23 s the survey measured was cage windows and nothing else - with the cage
+         hand switched off the bot swung at him ZERO times in 150 s and he finished on 100% health. Now the hands stand
+         by the nearest hanging cage, as a player on the plate would, and cut him whenever he comes inside reach. */
       else if (boss.t === 'king') { const cages = BK.props().filter(c => c.t === 'dropcage' && c.boss && !c.dropped);
-        const c = cages.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; goal = c ? c.x + (boss.x > c.x ? -22 : 22) : boss.x;
+        const c = cages.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; goal = c ? c.x + (boss.x > c.x ? -22 : 22) : boss.x; strike = true;
         // his cages drop from pressure plates up on the scaffold, where the bot cannot climb: when he walks under one, it drops it, as a player on that plate would
-        const under = cages.find(q => Math.abs(q.x - boss.x) < 18); if (under) { under.dropped = true; under.landed = 0; if (under.hit) under.hit.clear(); under.resetT = 5; } }
+        /* opts.noCage takes the cage hand away, which is how the above was found: without it, zero swings and 100% of him */
+        const under = opts.noCage ? null : cages.find(q => Math.abs(q.x - boss.x) < 18); if (under) { under.dropped = true; under.landed = 0; if (under.hit) under.hit.clear(); under.resetT = 5; } }
       else if (boss.t === 'gqueen') { const qx = Math.floor(boss.x / TS);
         const s = BK.props().find(p => p.t === 'support' && !p.broken && p.sx0 !== undefined && qx >= p.sx0 && qx <= p.sx1);
         if (s) { goal = s.x; if (Math.abs(s.x - P.x) < 18) { P.face = Math.sign(s.x - P.x) || P.face; if (P.atk < 0) { BK.press('atk'); swings++; } } } else goal = boss.x - Math.sign(d || 1) * 70; }
@@ -482,14 +494,35 @@ export async function bossLab(BK, opts = {}) {
           if (bestX !== null) goalUp = bestX * TS + 8; }
         /* THE FLOTILLA'S OWN ROUTE UP, because the nearest ledge over her is not a way to it: the main deck climbs by the block
            steps at the companion house (column 292 on), and her second deck to the poop by the nets at 338 */
-        if (lvId === 'flotilla' && boss.y < P.y - 30) { const px = P.x / TS, py = P.y / TS;
-          if (py > 20) goalUp = 306 * TS + 8;   /* the shrouds that run down to the main deck */
-          else if (py > 14 && boss.y < 14 * TS) goalUp = 366 * TS + 8; }   /* the one ladder to the quarterdeck she does not cut */
-        walker(goalUp); }
+        /* THE FLOTILLA'S OWN RUNGS, and they are CLIMBED BY HAND. Traced with opts.samples: left to the walker, the bot
+           went round and round between the quarterdeck and the hold while she sat on the poop at 33% of her health, and
+           when the phase-three deck fall took the main deck out from under it (fallFrom 366 to fallTo 304) it dropped
+           into the hold and stayed there 60 s with her 450 px away and five rows up. Her ship has two runs that survive
+           everything she cuts: the shroud at column 310, which reaches from the hold to the quarterdeck, and the ladder
+           at 366 from the quarterdeck to the poop. So: walk the deck to the foot of the run, then hold UP on the rungs -
+           and never jump while climbing, because a jump off a rope is how you let go of it. */
+        let flotClimb = false;
+        if (lvId === 'flotilla' && boss.y < P.y - 30) { const py = P.y / TS;
+          if (py > 17) goalUp = 310 * TS + 8;                    /* the shroud out of the hold and up the ship's side */
+          else if (boss.y < 14 * TS) goalUp = 366 * TS + 8;      /* the one ladder to the poop she does not cut */
+          flotClimb = true; }
+        if (flotClimb && Math.abs(goalUp - P.x) < 12) { k.left = false; k.right = false; k.up = true;
+          if (!P.climb && P.ground && f % 12 === 0) { BK.press('jump'); P.labJump = 12; }   /* a hop to find the rungs, only while it is not on them */
+          if (!P.climb && P.labJump > 0) { P.labJump--; k.jump = true; } }
+        else { walker(goalUp);
+          /* AND A STEP OF THREE ROWS IS A HELD JUMP (rule E4): her companion house is 48 px against a 49 px jump, so a
+             tap does not clear it. Walking and not moving means something that size is in the way. */
+          if (flotClimb && P.ground && Math.abs(P.vx) < 8 && (k.left || k.right) && f % 14 === 0) { BK.press('jump'); P.labJump = 18; }
+          if (P.labJump > 0) { P.labJump--; k.jump = true; } } }
       else if (goal !== null && !k.block) { const gd = goal - P.x;
         if (Math.abs(gd) > (strike ? Math.max(8, LAB_REACH[h] * 0.6) : 6)) k[gd > 0 ? 'right' : 'left'] = true;
         /* THE TOMB'S RUBBLE IS A STEP: walking and not moving there means a mound in the way, and a player hops it */
-        if (boss.t === 'prince' && (k.left || k.right) && P.ground && Math.abs(P.vx) < 4 && f % 15 === 0) BK.press('jump'); }
+        if (boss.t === 'prince' && (k.left || k.right) && P.ground && Math.abs(P.vx) < 4 && f % 15 === 0) BK.press('jump');
+        /* AND WATER HAS A SECOND AXIS. Outside the Deep's own swimming branch the hands only ever walked left and
+           right, so when the Tollmaster fills his square the bot floated at the surface with him on the stones below
+           it: every hero stalled between 3% and 27% of him, which is his flood phase and nothing else. A swimmer
+           strokes up and down as well. */
+        if (P.swim) { const dyb = (boss.y - 10) - P.y; if (dyb < -12) k.up = true; else if (dyb > 12) k.down = true; } }
       if (strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) BK.press('jump');   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
