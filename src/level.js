@@ -75,7 +75,7 @@ function brackenWood() {
   ent('shield', 71, 19, { face: -1 }); ent('sign', 56, 21, { text: 'A SHIELD ON A STEP: GET UP LEVEL WITH HIM, AND HOLD X. A PLAIN CUT ONLY RINGS OFF IT.' });   /* on the floor before the spitter's ledge: the shield is on the step past it. The heavy blow's second beat: the first is the lone guard on the flat before this (THE THREE LESSONS, at the end of this function) */
   plat(64, 18, 6);
   coins([66, 17], [68, 17]);
-  ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND ON A FOE TO BOUNCE; HOLD JUMP TO BOUNCE HIGHER.', pyro: 'DOWN+X IN THE AIR: FIREDROP. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.' });
+  ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND ON A FOE TO BOUNCE; HOLD JUMP TO BOUNCE HIGHER.', pyro: 'DOWN+X IN THE AIR: FIREDROP. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', warden: 'DOWN+X IN THE AIR: PLUNGE. PIN A FOE ON THE GROUND; OVER A DROP, VAULT OFF IT.' });
   ent('check', 82, 21);
 
   // ---- 3. Wasp pit: pogo chain ----

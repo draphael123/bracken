@@ -190,6 +190,10 @@ export const SFX = {
   shaftTurn() { tone('square', vary(520), 300, 0.06, 0.05); noise(0.05, 0.08, 1600, 1.1); tone('triangle', vary(2400), 1700, 0.05, 0.04, 0.02); },
   /* the heel going into the turf as she plants it, and a charge dying on the point */
   braceSet() { tone('square', vary(300), 180, 0.07, 0.05); noise(0.07, 0.1, 900, 0.8); tone('sine', 120, 70, 0.11, 0.09, 0.02); },
+  /* THE SHAFT SPRINGING: the vault off a thing over a drop. The ash bows under her and throws her on - a low woody
+     twang bending up, the grip creaking, air after it. Not the tip's bell (that is the good hit) and not the knight's
+     square-wave pogo: you can hear which of them went over the pit. */
+  spearVault() { tone('triangle', vary(170), vary(430), 0.14, 0.1); noise(0.05, 0.1, 1200, 0.9); tone('square', vary(340), 250, 0.04, 0.03, 0.01); noise(0.16, 0.06, 2600, 0.6, 0.05); },
   braceStop() { noise(0.18, 0.28, 560, 0.5); tone('sine', 88, 38, 0.32, 0.3); bell(1046, 0.5, 0.085); tone('triangle', vary(2200), 1400, 0.07, 0.05); },
   vigilFull() { bell(1568, 0.5, 0.08); bell(2093, 0.4, 0.05, 0.08); noise(0.3, 0.1, 3000, 0.5); },
   // the pyromancer's own fire

@@ -1110,7 +1110,7 @@ function coopRegroup() {
    at once, the pair of them wake at the last shrine and each is charged a death. */
 function goDown(killer) {
   P.down = DOWN_T; P.reviveT = 0; P.hp = 0; P.killer = killer || null;
-  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.deflectT = 0; P.deflectRec = 0; P.perch = 0;
+  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
@@ -5261,7 +5261,35 @@ function endPin(pulled) {
    higher than his rebound ever carried him (PERCH_KICK, against POGO's 330); let it run out and she slides down off
    the point and lands. Same button, same drop, opposite verb: he is thrown off it, she stays on it and decides. ==== */
 const PERCH_WIN = 0.34, PERCH_KICK = -430;
+/* ==== BUT NOT OVER A DROP: THERE SHE VAULTS. A point that goes in does not spring back out - into something standing on
+   the ground. A wasp over a pond has no ground under it to be held down on, and a perch on it was a stop in mid-air with
+   nothing ahead but the water: she could not cross a single pit the knight crosses off the backs of the wasps. So when the
+   thing under the point has NO FOOTING within two rows of its feet (FOOT_ROWS), the plunge does not pin it and does not
+   stand on it. The spear goes in, the shaft bends, and it throws her FORWARD over it in an arc, with no press at all -
+   so a line of wasps is a line of vaults. It is hers, not his: his rebound is straight up off the thing, hers is a pole
+   vault that carries her on the way she was facing (VAULT_FWD), in her vault pose and on the sound of the shaft
+   springing. HOLD JUMP as the point goes in and she goes higher (VAULT_HIGH against VAULT_LOW). The two heights are
+   sized against his POGO: the low one under it, the held one only a little over, so a crossing built for his bounce is
+   a crossing for her vault and she does not get over anything his bounce could not. ==== */
+const VAULT_LOW = -300, VAULT_HIGH = -345, VAULT_FWD = 110, VAULT_CARRY = 0.28, FOOT_ROWS = 2;
+function footUnder(e) {
+  const hw = Math.max(2, (e.w || 8) / 2 - 1), ty0 = Math.floor((e.y + 1) / TS);
+  for (let ty = ty0; ty <= ty0 + FOOT_ROWS; ty++) for (const px of [e.x - hw, e.x, e.x + hw]) { const t = tileAt(Math.floor(px / TS), ty); if (isSolid(Math.floor(px / TS), ty) || isOneWay(t)) return true; }
+  for (const m of movers) if (e.x > m.x - 2 && e.x < m.x + m.w + 2 && m.y >= e.y - 2 && m.y <= (ty0 + FOOT_ROWS + 1) * TS) return true;   /* a raft, a pad or a lift is footing too */
+  return false;
+}
+function wardenVault(e) {
+  const held = keys.jump || P.jbuf > 0;
+  P.plunge = false; P.canCut = false; P.hitSet.clear(); P.perch = 0; P.jbuf = 0;
+  P.ground = false; P.onMover = null; P.coyote = 0;
+  P.vy = held ? VAULT_HIGH : VAULT_LOW; P.vx = P.face * VAULT_FWD; P.vaultDir = P.face; P.vaultCarry = VAULT_CARRY; P.vaultT = 0.42;   /* up on the shaft (frame 1), and coming down off it (frame 0) */
+  if (e) e.stagger = Math.max(e.stagger || 0, 0.4);
+  SFX.spearVault(); hitstop(0.03); squash(0.78, 1.28, 0.12); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 120);
+  if (e) ringAt(e.x, e.y - (e.h || 8) / 2, 12, '#dff0d8', 0.2);
+  pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); }
+}
 function wardenPerch(e, x, y) {
+  if (e && !footUnder(e)) { wardenVault(e); return; }   /* nothing under it to stand the spear on: she goes over it instead */
   P.plunge = false; P.canCut = false; P.hitSet.clear();
   P.vx = 0; P.vy = 0; P.ground = false; P.perch = PERCH_WIN; P.vaultT = 0.42;   /* the vault pose IS up-on-the-shaft: it is hers already */
   SFX.tipRing(); hitstop(0.06); shakeCam(3); sparks(x, y, P.face, 6); ringAt(x, y, 16, '#dff0d8', 0.26); dust(P.x, P.y, 4);
@@ -6459,6 +6487,11 @@ function updatePlayer(dt) {
     const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 70 : 1100) : 200;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
   } else { P.vx *= Math.pow(0.05, dt); }
+  /* THE VAULT CARRIES HER ON: for the rise off the shaft her way is kept at VAULT_FWD whatever the stick does, unless it is
+     pulled back against the vault - then it is hers to brake, as any air is. Let go and she still goes over, not straight up. */
+  if (P.vaultCarry > 0) { P.vaultCarry -= dt;
+    if (P.ground || P.swim || P.climb || P.plunge || stunned || dodging) P.vaultCarry = 0;
+    else if (move !== -P.vaultDir && P.vx * P.vaultDir < VAULT_FWD) P.vx = P.vaultDir * VAULT_FWD; }
   if (P.plunge) {
     P.vx *= Math.pow(0.15, dt);
     let best = null, bd = 30;
@@ -6758,6 +6791,7 @@ function updatePlayer(dt) {
         hurtEnemy(e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true); if (tal('bounding')) P.st = Math.min(P.maxSt, P.st + 8); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
           /* THE PIN, before the bounce: the point goes through it and stays there. A boss or a mini is too big to hold,
              so pinFoe says no, it keeps the blow and the stagger, and she rides up off it exactly as she always did. */
+          if (isWarden() && !P.dead && !footUnder(e)) { wardenVault(e); continue; }   /* OVER A DROP: nothing to pin it to, so she vaults off it */
           if (isWarden() && e.alive && !P.dead && pinFoe(e, PIN_HOLD)) {
             P.pinning = { e, t: 0, stabs: 0 }; P.plunge = false; P.vy = 0; P.vx = 0; P.canCut = false; P.hitSet.clear();
             SFX.tipRing(); hitstop(0.1); shakeCam(4); dust(e.x, e.y, 6); ringAt(e.x, e.y - (e.h || 16) / 2, 18, '#8fd160', 0.3);
