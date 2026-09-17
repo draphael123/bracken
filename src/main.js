@@ -1531,6 +1531,14 @@ let FOGC = null, DARKC = null, darkNow = 0.5; const DARK_A = { cx: -1e9, cy: -1e
    scale) so the two passes that paint over them - the water's wash and the darkness - can bring them back up through it.
    Filled in drawWorld, emptied by drawSwimmers and drawDarkRims. */
 const swimQ = [], darkQ = [];
+/* THE SWIM TILT. He used to swim dead level no matter which way he was going - straight up read the same as straight
+   across - so it never looked like swimming, just sliding. Now the laid-out stroke leans toward wherever he is
+   actually moving: face's sign turns the velocity into a local heading (atan2 of vy and vx, each turned by face,
+   since a mirrored sprite's own +x already points the other way), clamped to a right angle each way so he never
+   reads as upside-down, eased onto a remembered angle (P.swimTiltA) so a stroke's wobble doesn't snap the sprite
+   frame to frame, and quantised to fifteen-degree steps once eased so the pixel art rotates in clean jumps instead
+   of turning to mush between them. Treading is always the eased angle chasing zero: upright at rest. */
+const SWIM_TILT_MAX = Math.PI / 2, SWIM_TILT_STEP = Math.PI / 12, SWIM_TILT_EASE = 10;
 let silvers = []; // the three silver coins of the level: { x, y, i, got }
 let marks = new Set(); // world changes that persist through death: 'tree:x' felled, 'pool:x0' drained, 'cat:x' wrecked, 'ferry:x0' paid, 'cage:x' opened
 function resetPools() { for (const p of (L.pools || [])) if (p.y0 !== undefined) { p.y = p.y0; p.shallow = p.shallow0; p.depth = p.depth0; p.draining = false; p.dry = false; p.frogDry = false; } } /* a pond the King drained is full again on the retry */
@@ -19455,7 +19463,7 @@ function drawWorld(cx, cy, showPlayer) {
     const vis = P.inv <= 0 || Math.floor(P.inv * 20) % 2 === 0;
     if (vis) {
       if (!P.fly) g.drawImage(PROP.shadow, Math.round(P.x) - 6 - cx, Math.round(P.y) - 2 - cy);
-      let key = 'idle', frame = Math.floor(P.anim * 4.5) % K.R.idle.length;
+      let key = 'idle', frame = Math.floor(P.anim * 4.5) % K.R.idle.length, swimRot = 0;
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
@@ -19482,7 +19490,10 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (P.block || P.jet || P.aegis || P.warding) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
       else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
-      else if (P.swim && !P.ground && K.R.swim) { const mv = Math.abs(P.vx) > 24; key = mv ? 'swim' : 'tread'; frame = Math.floor(time * (mv ? 9 : 5)) % K.R[key].length; }   /* IN THE WATER: laid out and stroking when he is going somewhere, upright and treading when he is not */
+      else if (P.swim && !P.ground && K.R.swim) { const mv = Math.hypot(P.vx, P.vy) > 24; key = mv ? 'swim' : 'tread'; frame = Math.floor(time * (mv ? 9 : 5)) % K.R[key].length;   /* IN THE WATER: laid out and stroking when he is going somewhere (any way, not only sideways), upright and treading when he is not */
+        const targetTilt = mv ? Math.max(-SWIM_TILT_MAX, Math.min(SWIM_TILT_MAX, Math.atan2(P.face * P.vy, P.face * P.vx))) : 0;
+        P.swimTiltA = (P.swimTiltA || 0) + (targetTilt - (P.swimTiltA || 0)) * Math.min(1, SWIM_TILT_EASE / 60);
+        swimRot = Math.round(P.swimTiltA / SWIM_TILT_STEP) * SWIM_TILT_STEP; }
       else if (!P.ground) { key = P.vy < 0 ? 'jump' : 'fall'; frame = P.vy < 0 ? (P.vy < -150 ? 0 : 1) : (P.vy > 220 ? 1 : 0); if (Math.abs(P.vy) < 55 && K.R.apex) key = 'apex'; }
       else if (keys.down && Math.abs(P.vx) < 10) key = 'crouch';
       else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
@@ -19504,23 +19515,24 @@ function drawWorld(cx, cy, showPlayer) {
         key = K.R[step[0]] ? step[0] : 'idle'; frame = step[1]; dFace = P.face * step[2];
         if (step[0] === 'jump') dY = -Math.round(Math.sin(ph * Math.PI) * 6);
         else if (step[0] === 'crouch' || step[0] === 'land') dY = 1; }
+      if (key !== 'swim' && key !== 'tread') swimRot = 0;   /* the victory dance can borrow the frame list mid-swim; nothing else in it should tilt */
       const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
       const br = 1;   /* at rest he breathes in the frames themselves now: a sub-pixel stretch on top of them only shimmered */
       const hs = isReaper() ? 1.22 : 1, shadowed = isReaper() && ((P.passT || 0) > 0 || P.dodge > 0);   /* the Death Knight is the biggest of them, and when he steps he is a shadow */
       const fy = P.flip ? P.y - P.h : P.y, fs = P.flip ? -1 : 1;   /* THE MAGE'S FOLLY: the room turned over draws him feet to the ceiling */
       const KD = hero() === 'knight' && thrown && K.bare ? K.bare : K;   /* SHIELD THROW: while it is out of his hand he is drawn without it - the cue that it is gone */
       P.lastKey = key; P.lastFrame = frame;   /* remembered for the audits (tools/audit-hitboxes.mjs), as e.lastFrame is for a creature */
-      drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, 0, P.x, P.y - 10);
-      drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1);
+      drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, swimRot, P.x, P.y - 10);
+      drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1, swimRot);
       if (key === 'plunge' && hero() === 'knight' && !P.swim && !P.flip && DOWN_STRIKE.knight) drawPokeStreak(cx, cy, DOWN_STRIKE.knight);
-      if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: 0, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it (drawSwimmers) */
-      if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, '#140a1c', 0.75);
+      if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: swimRot, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it, tilted the same way (drawSwimmers) */
+      if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#140a1c', 0.75);
       if (hero() === 'knight' && lcOn()) {   /* THE LAST CHARGE: a gold light on the face of the shield, pulsing, brace and rush */
         const lx = Math.round(P.x - cx) + P.face * 7, ly = Math.round(P.y - cy) - 12, pu = 0.6 + 0.4 * Math.sin(time * 38);
         g.globalAlpha = 0.35 * pu; g.fillStyle = '#ffd36b'; g.fillRect(lx - 4, ly - 7, 8, 14); g.globalAlpha = 0.85 * pu; g.fillStyle = '#fff6c8'; g.fillRect(lx - 1, ly - 4, 2, 8); g.globalAlpha = 1; }
       if (P.dance > 0) { for (let i = 0; i < 2; i++) { const t2 = (P.dance * 0.8 + i * 0.5) % 1, nx = Math.round(P.x - cx) + (i ? 10 : -12) + Math.round(Math.sin(t2 * 6) * 3), ny = Math.round(P.y - cy) - 30 - Math.round(t2 * 16);
         g.globalAlpha = 1 - t2; g.fillStyle = i ? '#ffd36b' : '#ff9ad0'; g.fillRect(nx, ny, 2, 2); g.fillRect(nx + 1, ny - 5, 1, 5); g.fillRect(nx + 2, ny - 5, 2, 1); } g.globalAlpha = 1; }   /* music notes off whoever is dancing */
-      drawWarm('tint', K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, 0, P.x, P.y - 10);
+      drawWarm('tint', K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, P.x, P.y - 10);
       if (P.hookT) { P.hookT.life -= 1 / 60; if (P.hookT.life <= 0) P.hookT = null;
         else { const h = P.hookT; g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath();
           g.moveTo(Math.round(P.x - cx), Math.round(P.y - 12 - cy)); g.lineTo(Math.round(h.x - cx), Math.round(h.y - cy)); g.stroke();
