@@ -3855,7 +3855,7 @@ const BEASTS = [
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
   { t: 'crow', name: 'STORM CROW', sub: 'they do not turn', desc: 'They come down the wind over the high moor in strings of four and five, and a string does not turn for anyone. On the Sky Road there is no ground to stand and cut them from: go over, go under, or go through with a dart.' },
-  { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones you can pogo off. Block her dive and she is staggered on the floor, where she takes double damage. Jump or block her low sweep. Half health and she is enraged.' },
+  { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones you can pogo off. While TWO of them are up the swarm closes over her and turns most of a blow: cut the drones down, or catch her winded. Block her dive and she is staggered on the floor, where she takes double damage. Jump or block her low sweep. Half health and she is enraged.' },
   { t: 'frog', name: 'BULLFROG KING', sub: 'lord of the marsh', desc: 'Sits on his mud dais and hops the court. Tongue, leap, venom, and a great breath in: block to dig your heels in or be dragged to his teeth. His throat is soft mid-croak; his head takes two stomps before he hops off.' },
   { t: 'sporeling', name: 'SPORELING', sub: 'walking cap', desc: 'Wanders and bites. Kill it and it bursts into a spore cloud that slows and tires you, so finish it at range or step back.' },
   { t: 'spitcap', name: 'SPITCAP', sub: 'rooted lobber', desc: 'Rooted, so it lobs. The bomb is nothing: the sleeping cloud it leaves is everything. It swells before it throws, and while it is swollen it comes apart in one blow.' },
@@ -5161,8 +5161,24 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'dummy') { e.flash = 0.12; SFX.stone(); burst(e.x, e.y - 12, 6, COLS.dummy, 50, 0.4); if (dmg > 0) number(e.x, e.y - e.h - 6, Math.round(dmg), '#fff6e0'); return; } // straw takes it and stands
   if (L && L.trial && e.t === 'archer') { SFX.clank(); return; } // the trial's archer is there to shoot at you
   if (e.t === 'captain' && (e.ride || e.mode === 'ride')) { SFX.splash(); sparks(e.x, e.y - 16, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 44, 'THE SEA HAS HIM', '#9aa39a'); return; }
+  /* THE SWARM IS THE HORNET QUEEN'S ARMOUR. She was the shortest real fight in the game (18-73 s against a 90-150 s
+     target) because her drones were scenery: two of them hung over the hall, darted at you and changed nothing. Now
+     while TWO or more are up they close over her and she takes a third of any blow - so the first boss of the game
+     teaches the oldest rule in it, thin the small things before you go for the big one, and her CALLS THE SWARM is a
+     move with a cost instead of a flourish. Her own openings are still hers: winded on the floor after a dive, and
+     sitting in her slam, she takes it all whatever is flying. */
+  if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'slamRest' && e.mode !== 'buck') {
+    const swarm = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
+    if (swarm >= 2) { dmg = Math.max(1, Math.round(dmg * 0.4)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 10, e.y - 8, Math.sign(e.x - fromX) || 1, 3);
+      if (!(e.swarmSaid > 0)) { e.swarmSaid = 2.4; number(e.x, e.y - e.h - 14, 'THE SWARM CLOSES', '#ffd36b');
+        PROG.qSwarmTold = (PROG.qSwarmTold || 0) + 1;
+        if (PROG.qSwarmTold <= 3) { hintT = 4.5; hintMsg = 'HER DRONES CLOSE OVER HER AND TURN MOST OF A BLOW. CUT THE SWARM DOWN, OR CATCH HER WINDED ON THE FLOOR.'; } } } }
   if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
-  else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
+  /* up on the bier, out of an easy reach - but not by as much as it was. At 0.7 he was the only boss in the game that
+     no hero could finish: all six ran the 150 s cap out with 7-30% of him left (0/12 in the lab), because the whole of
+     his first two phases is spent up there and every blow into them was a third short. 0.85 is still "harder to reach
+     while they carry him" without the clock being the thing that beats you. */
+  else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.85)); }
   if (e.t === 'lampreeve' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); } // stretched over a lamp with both hands
   if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, plunge); if (kd === false) return; dmg = kd; }
   if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, plunge); if (sd === false) return; dmg = sd; }
@@ -8121,6 +8137,7 @@ function updateQueen(e, dt) {
   const A = L.arena, floor = A.floor, p2 = e.phase === 2;
   e.modeT -= dt; e.anim += dt;
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
+  e.swarmSaid = Math.max(0, (e.swarmSaid || 0) - dt);   /* THE SWARM CLOSES, said once and not every blow (hurtEnemy0) */
   const drones = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
   const hoverTo = (tx, ty, sp) => { e.vx += (Math.max(-sp, Math.min(sp, (tx - e.x) * 3)) - e.vx) * Math.min(1, dt * 4); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - e.vy) * Math.min(1, dt * 4); };
   switch (e.mode) {
@@ -8796,7 +8813,9 @@ function updateTollmaster(e, dt) {
     case 'rod': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
     case 'darkTell': { want = 0;
       if (Math.random() < dt * 26) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 44 - Math.random() * 10, vx: 0, vy: -20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#2b403c' : '#9a5aa8', size: 2, grav: -18 });
-      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 1.5 : 2; e.open = e.modeT; tollDark(e);
+      /* AND THE WINDOW IT BUYS IS WORTH THE ROOM GOING DARK: 2.6 s of him with both hands over his head (2.1 in the
+         flood), at double damage. It was 2 and 1.5, which is where most of the missing damage in the fight was */
+      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 2.1 : 2.6; e.open = e.modeT; tollDark(e);
         number(e.x, e.y - 54, 'HIS HANDS ARE UP: CUT HIM', '#8fd160'); } break; }
     case 'dark': { want = 0;
       if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 40, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 });
@@ -15030,7 +15049,7 @@ function updateKing(e, dt) {
   const grab = () => { const reach = e.phase === 3 ? 74 : 62; if (!P.dead && Math.sign(P.x - e.x) === e.face && ad > 8 && ad < reach && P.y > e.y - 26 && P.y <= e.y + 4) { const res = damagePlayer(e.x, DMG.grab, { unblockable: true }); if (res === 'hit') { P.vx = e.face * 420; P.vy = -300; P.hurt = 0.7; P.ground = false; P.block = false; SFX.throwWhoosh(); SFX.bellow(); shakeCam(6); zoomKick(1.12, 0.3); } } };
   e.throwT = Math.max(0, (e.throwT || 0) - dt);
   e.open = Math.max(0, (e.open || 0) - dt);
-  if (e.mode === 'held') { if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.6; e.stagger = 0; e.open = 7; number(e.x, e.y - e.h - 16, 'HIS HEAD IS UP. HE IS OPEN', '#8fd160'); SFX.sting(); } return; } // after the cage he takes the blade like anyone for a while
+  if (e.mode === 'held') { if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.6; e.stagger = 0; e.open = 4; number(e.x, e.y - e.h - 16, 'HIS HEAD IS UP. HE IS OPEN', '#8fd160'); SFX.sting(); } return; } // after the cage he takes the blade like anyone for a while (four seconds, not seven: an opening is punctuation)
   if (e.phase === 1) { // carried: the wheeled litter paces the hall, then CHARGES it; goblets, guards, and the hand if you stand close
     e.y = floor - 9;
     if (e.mode === 'chargeTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 1.5; e.cdir = Math.sign(d) || e.dir; e.chargeHit = false; SFX.bellow(); SFX.rattle(1); } return; }
@@ -15058,7 +15077,12 @@ function updateKing(e, dt) {
     else if (e.cageT <= 0 && props.some(c => c.t === 'dropcage' && c.boss && !c.dropped && Math.abs(c.x - P.x) < 40)) { e.mode = 'cageTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; } }
   else if (e.mode === 'grabTell') { if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.3; e.grabT = 4.5; grab(); } }
   else if (e.mode === 'grab' && e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; }
-  else if (e.mode === 'shoutTell' && e.modeT <= 0) { e.mode = 'shout'; e.modeT = 0.4; e.shoutT = 7; SFX.roar(); shakeCam(5); ringAt(e.x, e.y - 30, 90, '#ffd36b', 0.4); if (!P.dead && ad < 100 && Math.abs(P.y - e.y) < 60) { damagePlayer(e.x, DMG.shout, { unblockable: true }); P.vx = (Math.sign(P.x - e.x) || 1) * 240; P.vy = -150; } }
+  /* AND THE COURT JOINS IN. The galleries at both ends of his hall were built to throw goblets when the King shouts
+     (level.js says so at the balconies) and galleryVolley was written for it and never once called - so the shout was
+     one blow instead of a blow and a rain of cups, and the court up there was scenery. It is the layer the fight was
+     short of: his own shout goes off, and a moment later the gallery empties its table at you, which is pressure while
+     you are picking yourself up. In phase three they cower instead, which is the arc: the rage empties his own hall. */
+  else if (e.mode === 'shoutTell' && e.modeT <= 0) { e.mode = 'shout'; e.modeT = 0.4; e.shoutT = 7; SFX.roar(); shakeCam(5); ringAt(e.x, e.y - 30, 90, '#ffd36b', 0.4); if (!P.dead && ad < 100 && Math.abs(P.y - e.y) < 60) { damagePlayer(e.x, DMG.shout, { unblockable: true }); P.vx = (Math.sign(P.x - e.x) || 1) * 240; P.vy = -150; } galleryVolley(e); }
   else if (e.mode === 'shout' && e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; }
   else if (e.mode === 'cageTell' && e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; e.cageT = 7; kingCage(e); }
   else if (e.mode === 'slamTell' && e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.4; shakeCam(7); SFX.heavy(); zoomKick(1.1, 0.25); dust(e.x + e.face * 26, e.y, 14); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 30, y: floor, dir: dd, life: 1.6, sp: 160 }); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 52 && Math.abs(P.y - e.y) < 24) damagePlayer(e.x, DMG.kingSlam, { unblockable: true }); }
@@ -17542,8 +17566,12 @@ function updateProps(dt) {
     if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }
     if (pr.t === 'ram' && pr.active > 0) { pr.active -= dt; pr.tm += dt; pr.th = Math.sin(pr.tm * 4.2) * 1.35 * Math.min(1, pr.active / 1.2); const pts = [30, 44, 58, 72].map(r => [pr.x + Math.sin(pr.th) * r, pr.y + Math.cos(pr.th) * r]); const nearSeg = (x, y) => pts.some(([qx, qy]) => Math.hypot(x - qx, y - qy) < 14); if (Math.abs(pr.th) > 0.12) { if (!P.dead && nearSeg(P.x, P.y - 8)) damagePlayer(pr.x, DMG.ram, { up: true, unblockable: true }); for (const e of enemies) if (e.alive && !pr.hit.has(e) && nearSeg(e.x, e.y - e.h / 2)) { pr.hit.add(e); hurtEnemy(e, 30, pr.x, false); } } if (pr.active <= 0) pr.th = 0; }
     if (pr.t === 'plate' && !pr.down) { const on = (!P.dead && P.ground && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 4) || enemies.some(e => e.alive && Math.abs(e.x - pr.x) < 10 && Math.abs(e.y - pr.y) < 4); if (on) { pr.down = true; SFX.stone(); const cg = props.find(c => c.t === 'dropcage' && Math.floor(c.x / TS) === pr.cage); if (cg && !cg.dropped) { cg.dropped = true; cg.landed = 0; cg.hit.clear(); if (cg.boss) cg.resetT = 5; number(cg.x, cg.y - 20, 'THE CAGE FALLS', '#ffd36b'); SFX.crack(); shakeCam(2); } } }
-    if (pr.t === 'dropcage' && pr.boss && pr.dropped && pr.landed > 0) { pr.resetT -= dt; if (pr.resetT <= 0) { pr.dropped = false; pr.landed = 0; pr.y = pr.y0; pr.hit.clear(); SFX.stone(); for (const pl of props) if (pl.t === 'plate' && pl.cage === Math.floor(pr.x / TS)) pl.down = false; } }
-    if (pr.t === 'dropcage' && pr.dropped) { if (pr.landed <= 0) { pr.y += 320 * dt; const ty = Math.floor((pr.y + 1) / TS); if (isSolid(Math.floor(pr.x / TS), ty)) { pr.y = ty * TS; pr.landed = 1; shakeCam(4); SFX.heavy(); dust(pr.x, pr.y, 8); if (!P.dead && Math.abs(P.x - pr.x) < 9 && Math.abs(P.y - pr.y) < 6) { damagePlayer(pr.x, DMG.cage, { up: true, unblockable: true, name: 'THE CAGE' }); P.caged = 1.4; number(P.x, P.y - 24, 'CAUGHT', '#ff6b6b'); } let caught = false; for (const e of enemies) if (e.alive && e.t !== 'bearer' && Math.abs(e.x - pr.x) < (e.t === 'king' ? 30 : 10) && Math.abs(e.y - pr.y) < (e.t === 'king' ? 16 : 8)) { if (e.t === 'king') { caught = true; e.mode = 'held'; e.modeT = 3.2; e.stagger = 3.2; e.vx = 0; e.open = 0; e.thrown = e.thrown || null; SFX.bellow(); hitstop(0.12); zoomKick(1.1, 0.3); } hurtEnemy(e, e.t === 'king' ? 40 : 30, pr.x, false); number(e.x, e.y - e.h - 12, 'CAUGHT', '#8fd160'); }
+    /* A CAGE THAT HAS HELD THE KING IS SCRAP (pr.spent). His five cages used to be winched back up five seconds after
+       they came down, held him 3.2 s and left him open for seven more - so one cage after another held him for the whole
+       fight and he was measured dead in 16-23 s without ever standing up. A cage that MISSED still comes back; the one
+       that caught him is bent round him and stays down, so the hall holds five openings and then it is a fight. */
+    if (pr.t === 'dropcage' && pr.boss && pr.dropped && pr.landed > 0 && !pr.spent) { pr.resetT -= dt; if (pr.resetT <= 0) { pr.dropped = false; pr.landed = 0; pr.y = pr.y0; pr.hit.clear(); SFX.stone(); for (const pl of props) if (pl.t === 'plate' && pl.cage === Math.floor(pr.x / TS)) pl.down = false; } }
+    if (pr.t === 'dropcage' && pr.dropped) { if (pr.landed <= 0) { pr.y += 320 * dt; const ty = Math.floor((pr.y + 1) / TS); if (isSolid(Math.floor(pr.x / TS), ty)) { pr.y = ty * TS; pr.landed = 1; shakeCam(4); SFX.heavy(); dust(pr.x, pr.y, 8); if (!P.dead && Math.abs(P.x - pr.x) < 9 && Math.abs(P.y - pr.y) < 6) { damagePlayer(pr.x, DMG.cage, { up: true, unblockable: true, name: 'THE CAGE' }); P.caged = 1.4; number(P.x, P.y - 24, 'CAUGHT', '#ff6b6b'); } let caught = false; for (const e of enemies) if (e.alive && e.t !== 'bearer' && Math.abs(e.x - pr.x) < (e.t === 'king' ? 30 : 10) && Math.abs(e.y - pr.y) < (e.t === 'king' ? 16 : 8)) { if (e.t === 'king') { caught = true; pr.spent = true; e.mode = 'held'; e.modeT = 3.2; e.stagger = 3.2; e.vx = 0; e.open = 0; e.thrown = e.thrown || null; SFX.bellow(); hitstop(0.12); zoomKick(1.1, 0.3); } hurtEnemy(e, e.t === 'king' ? 40 : 30, pr.x, false); number(e.x, e.y - e.h - 12, 'CAUGHT', '#8fd160'); }
       if (pr.boss && !caught && bossActive && !P.dead) { enemies.push({ t: 'hound', x: pr.x, y: pr.y, vx: 0, vy: -120, w: 12, h: 7, hp: EHP.hound, speed: 105, face: Math.sign(P.x - pr.x) || 1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0.3 }); number(pr.x, pr.y - 26, 'IT WAS NOT EMPTY', '#ff6b6b'); SFX.bark(); } /* the King keeps hounds in his cages */ } } }
     if (pr.t === 'vent') { // an updraft of spores on a timer: ride it up
       const wasOn = pr.active;

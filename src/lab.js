@@ -346,6 +346,12 @@ export async function bossLab(BK, opts = {}) {
         if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); }
         else if (f % 20 === 0 && ad < 110 && BK.skillNow() === 'summonSkeleton' && !(P.cds && P.cds.summonSkeleton > 0) && !BK.risen().some(r => r.life > 0)) BK.press('throw'); }
       let goal = null, strike = false, princeT = null;
+      /* HER DRONES, while two of them are up: the nearest one, and the queen's own openings come first */
+      const swarm = boss.t === 'queen' ? BK.enemies().filter(q => q.alive && q.t === 'wasp' && q.drone) : [];
+      const swarmT = swarm.length >= 2 && boss.mode !== 'winded' && boss.mode !== 'slamRest' ? swarm.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
+      /* THE GUN FOR HER GUARD: a deck gun on her own deck, cold, inside the arena - the nearest one to the bot */
+      const gunT = boss.t === 'quarter' && boss.guard ? BK.props().filter(q => q.t === 'cannon' && q.deck && !(q.cool > 0) && Math.abs(q.y - boss.y) < 30 && q.x > A.x0 - 16 && q.x < A.x1 + 16)
+        .sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
       const rushing = ((boss.mode === 'rush' || (boss.t === 'masthead' && boss.mode === 'sail')) && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */   /* THE RAM is answered as it arrives, like the shoulder */
@@ -408,11 +414,22 @@ export async function bossLab(BK, opts = {}) {
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
               if (boss.modeT < dkRel.at) { k.block = false; dkHold = 0; } } } } else if (f % 6 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }
       } else if (incoming && SHIELDED(h)) { P.face = Math.sign(incoming.x - P.x) || P.face; k.block = true; }
+      /* THE QUARTERMASTER BEHIND HER GUARD: nothing a hero carries gets through it - a round shot is the only thing that does
+         (updateBalls), which is what the deck guns and her own sign are for. So the hands do what the room says: to the nearest
+         cold gun on HER deck, and strike the breech. A bot that only swung at her measured 0 kills for all six heroes and a
+         wall at 31-33% of her health, which is where she raises it. */
+      else if (gunT) { goal = gunT.x + (P.x < gunT.x ? -10 : 10);
+        if (Math.abs(gunT.x - P.x) < 22 && P.atk < 0) { P.face = Math.sign(gunT.x - P.x) || P.face; BK.press('atk'); swings++; } }
       /* THE BURIED PRINCE, played the way his tomb teaches it: off the red mark while he is under the floor; in the dark, light
          a lamp; with him standing under a timber set, cut its post from outside the span it holds */
       else if (boss.t === 'prince' && boss.mode === 'sunk') goal = P.x + (Math.sign(P.x - (boss.markX || boss.x)) || 1) * 60;
       else if (boss.t === 'prince' && (princeT = princeTarget(BK, boss, A, P))) { goal = princeT.x;
         if (Math.abs(princeT.x - P.x) < 8 && P.atk < 0) { P.face = Math.sign(princeT.at - P.x) || P.face; BK.press('atk'); swings++; } }
+      /* THE HORNET QUEEN'S SWARM closes over her while two of her drones are up and turns most of a blow (hurtEnemy0),
+         so the hands thin it first, the way her hint says. A drone posts a tile and a half over the floor and darts at
+         you, so it is taken with the rising cut when it is above and a plain one when it comes down. */
+      else if (swarmT) { goal = swarmT.x;
+        if (Math.abs(swarmT.x - P.x) < LAB_REACH[h] + 10 && P.atk < 0) { P.face = Math.sign(swarmT.x - P.x) || P.face; if (swarmT.y < P.y - 8) k.up = true; BK.press('atk'); swings++; } }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
