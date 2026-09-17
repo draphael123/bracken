@@ -23,6 +23,7 @@ import * as RFT from './reef_tiles.js';
 import * as FLT from './flot_tiles.js';
 import * as CTT from './city_tiles.js';
 import * as HB from './redraw/harbour.js';   /* THE FLOTILLA in harbour light: the port, the moored hulls, the market, and everything on them that moves */
+import * as CAB from './redraw/cabins.js';   /* rooms of their own below decks: the galley, the magazine, the brig, the cabin and the chart room */
 import * as SM from './redraw/storm.js';   /* THE HURRICANE DECK: one ship in a storm - the open sea, the swells, the rain, the rags, the spray and the lightning */
 import * as CRT from './crown_tiles.js';
 import * as DPP from './deep_props.js';
@@ -18377,6 +18378,11 @@ function drawWorld(cx, cy, showPlayer) {
     if (sx > VW || sx + w < 0) continue;
     drawRoom(st, sx, sy, w, h, x0, y0);
   }
+  /* A CABIN IS A PLACE: L.cabins [x0, x1, top row, floor row, kind] dress a stretch of a ship's interior as the room it is (src/redraw/cabins.js) */
+  for (const cb of (L.cabins || [])) { const [x0, x1, y0, fl, kind] = cb, sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy);
+    if (sx > VW || sx + (x1 - x0 + 1) * TS < 0 || sy > VH || sy + (fl - y0) * TS < 0) continue;
+    if (!cb.spr) cb.spr = CAB.bakeCabin(kind, x0, x1, y0, fl, TS, (tx, ty) => tx >= 0 && ty >= 0 && tx < LW && ty < LH && L.grid[ty * LW + tx] !== T.SOLID);
+    g.drawImage(cb.spr, sx, sy); CAB.drawCabinLife(g, cb.spr, sx, sy, time, L.roll ? 1.6 : 1); }
   if (L.monk) drawMonkBack(cx, cy);   /* THE MONASTERY: the sun over the cloud, the cloud bank, the walkway posts and the prayer flags */
   if (L.fields) drawFieldsBack(cx, cy);   /* the boughs and the posts under the ledges */
   if (L.mage) drawMageBack(cx, cy);   /* THE MAGE'S FOLLY: the chains, the orrery's arms and hubs */
