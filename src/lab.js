@@ -20,28 +20,100 @@ export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper'
    the rest. It is edge-triggered, so the bot must let the key UP again between sweeps: DEFLECT_TAP is that beat.
    (Her dodge goes BACKWARD by itself, so the bot never has to aim it.) */
 export const DEFLECT_TAP = f => f % 8 < 2;
+/* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
+   it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
+   the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
+/* A BROKEN OR PINNED FOE IS NOT SWINGING. Its AI stands still (main.js skips it) with its wind-up frozen where it was, so its mode still
+   reads as a tell - and the bot that broke a brute with a heavy blow then stood behind its shield for the whole of the opening. Until the
+   last third of a second of it, that is time to cut, not to guard. (The boss lab keeps threatOf as it was: its numbers are its own.) */
+export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
+/* FIRE ON THE GROUND, under x (a sapper's pot, a burning stake): the fire hurts inside nine pixels of it, so the bot keeps fourteen off.
+   A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
+export const fireAt = (BK, x, y) => BK.fires ? BK.fires().find(q => !(q.delay > 0) && Math.abs(q.x - x) < 14 && y > q.y - 14 && y <= q.y + 2) : null;
+export const ON_THE_BEAT = e => !(typeof e.modeT === 'number' && e.modeT > 0.2 && e.modeT < 5);
 /* THE KNIGHT SPENDS HIS BAR. A full RESOLVE is THE LAST CHARGE on a tap of C with his feet under him - so the bot taps it (C not
    already held, or it is not a tap) when the foe is in front of him, inside a charge's run and on his level. A bot that never
    spent it would measure a knight who never charges. */
 export const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
-/* ONE FRAME OF THE LAB BOT against one foe: close to reach and swing; on a windup, defend the way the hero does. The fight lab and
-   the ambush lab both play with it, so a room and a single foe are measured by the same hands */
+/* THE KEY VERB. The family table in main.js (FAMILY, read through BK.keyOf) says what each common body wants: the right tool lands half
+   as hard again and the wrong one GLANCES. A bot that only cut and blocked was left chipping at plate and bouncing off shields - and it
+   is the co-op ally - so it asks the table, one verb per body, the plainest one each hero has:
+     guard  - the LOW SWEEP under the shield (it trips, and a tripped guard is open to every cut); the held HEAVY while it cannot be tripped again
+     plate, shell, beast - the held HEAVY
+     small  - the LOW SWEEP          wing - the RISING CUT          shooter, crew - the DASH ATTACK, from just outside reach
+   and whatever is OPEN (tripped, broken, reeling) takes the plain cut, which is quickest. Per hero: the freebooter's heavy is his pistol, so
+   loaded he shoots anything that is not small and empty he comes down on plate; his and the death knight's heavies go over the low mimic, so
+   they plunge it; the warden's rise goes over the haunt, so she cuts wings plain; under water there is no sweep and no dash, only the cut. */
+export function keyVerb(BK, h, e) {
+  const P = BK.P, K = BK.keyOf ? BK.keyOf(e) : null;
+  if (P.charge > 0 || P.atkHeld > 0) return 'heavy';   /* a blow being wound is finished, not dropped for another */
+  if (!K || K.open) return 'light';
+  const f = K.family, swim = !!P.swim;
+  if (h === 'pirate' && P.loaded && f !== 'small' && e.t !== 'mimic') return 'heavy';
+  if ((h === 'pirate' || h === 'reaper') && e.t === 'mimic') return swim ? 'light' : 'plunge';
+  if (f === 'guard') return K.tripped || swim ? 'heavy' : 'sweep';
+  if (f === 'plate') return h === 'pirate' ? (swim ? 'light' : 'plunge') : 'heavy';
+  if (f === 'shell' || f === 'beast') return 'heavy';
+  if (f === 'small') return swim ? 'light' : 'sweep';
+  if (f === 'wing') return h === 'warden' ? 'light' : 'rise';
+  if (f === 'shooter' || f === 'crew') return swim ? 'light' : 'dash';
+  return 'light';
+}
+/* WHERE EACH VERB WANTS TO STAND, in pixels from the foe: inside reach for a cut (and a dash, which is taken on the way in), a step out for the knight's charge and for the warden's lunge (it drives her a tile on, and must end with the point on it), well out of its reach for the freebooter's pistol (it carries 150 px), on top of it for a plunge */
+export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12) / 2; return verb === 'plunge' ? 0 : verb === 'heavy' ? (h === 'knight' ? reach + 6 : h === 'warden' ? reach + 12 : h === 'pirate' ? reach + 36 : reach - 4) : reach - 2; };
+/* THE HANDS FOR IT: one frame of whichever verb keyVerb chose. It presses and holds the action keys only (attack, up, down, jump, and the
+   double tap of a dash) and never lets one go (whoever calls it clears them first), and leaves the walking to whoever called it (wantOf).
+   Every one of them waits on the wind it costs: a bot that swung on an empty bar would stand there winded in front of the thing. */
+export function strike(BK, h, e, f) {
+  const P = BK.P, k = BK.keys, d = e.x - P.x, ad = Math.abs(d), dir = Math.sign(d) || P.face, dy = e.y - P.y;
+  const reach = LAB_REACH[h] + (e.w || 12) / 2, cost = BK.stepCost ? BK.stepCost() : 12, verb = keyVerb(BK, h, e);
+  const S = P.kvBot || (P.kvBot = { tap: -99 }), want = wantOf(h, e, verb); if (f < S.tap) S.tap = -99;   /* (a new fight counts its frames from nought) */
+  let swing = 0;
+  const level = Math.abs(dy) < 26, free = P.atk < 0 && !P.plunge && !(P.rush > 0);
+  if (verb === 'heavy') {
+    const winding = P.charge > 0 || P.atkHeld > 0;
+    if (winding || (free && !P.heavy && ad < want + 4 && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
+    else if (free && ad < reach && level && P.st < 20 && P.st >= 8 && h !== 'pirate') { BK.press('atk'); swing = 1; }   /* no wind for a heavy: a plain cut rather than standing idle */
+  } else if (verb === 'sweep' || verb === 'rise') {
+    if (free && ad < reach && level && (P.ground || P.swim) && P.st >= cost + 4) { k[verb === 'sweep' ? 'down' : 'up'] = true; BK.press('atk'); swing = 1; }
+  } else if (verb === 'plunge') {
+    if (P.ground && ad < reach + 10 && level && P.st >= cost + 6) { k.jump = true; BK.press('jump'); }
+    else if (!P.ground && !P.plunge && P.atk < 0 && P.vy > -80 && ad < (e.w || 12) / 2 + 6 && P.y < e.y - (e.h || 16) + 6) { k.down = true; BK.press('atk'); swing = 1; }
+    else if (!P.ground && P.vy < 0) k.jump = true;
+  } else if (verb === 'dash') {
+    /* ON THE WAY IN: walking up to it, and a dash's length out with the wind for it, tap toward it twice and cut while the dash carries.
+       A bot that stood off waiting for the dash to come round was measured: it gave an archer ten seconds of free shots. Once in reach it cuts. */
+    if ((P.dash > 0 || P.dashLate > 0) && P.atk < 0 && P.st >= cost) { BK.press('atk'); swing = 1; }
+    else if (f - S.tap === 2 && P.ground) { BK.press(dir > 0 ? 'right' : 'left'); k[dir > 0 ? 'right' : 'left'] = true; k[dir > 0 ? 'left' : 'right'] = false; }
+    else if (free && P.ground && !(P.dashCd > 0) && ad > reach + 4 && ad < reach + 40 && level && P.st >= cost + 12 && f - S.tap > 20) { S.tap = f; BK.press(dir > 0 ? 'right' : 'left'); k[dir > 0 ? 'right' : 'left'] = true; k[dir > 0 ? 'left' : 'right'] = false; }
+    else if (ad < reach && free && level && P.st >= 8 && f - S.tap > 6) { BK.press('atk'); swing = 1; }   /* already on it: the plain cut, not a step back into its blade */
+  } else if (free && ad < reach && level && P.st >= 8) { BK.press('atk'); swing = 1; }
+  return { verb, want, swing };
+}
+
+/* ONE FRAME OF THE LAB BOT against one foe: close to where its key verb wants it and strike; on a windup, defend the way the hero does.
+   The fight lab and the ambush lab both play with it, so a room and a single foe are measured by the same hands */
 function labBotFrame(BK, h, e, f) {
   const P = BK.P, k = BK.keys; let defend = 0, swing = 0;
-  const d = e.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + e.w / 2; P.face = Math.sign(d) || P.face;
-  const threat = threatOf(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
-  k.left = false; k.right = false; k.block = false;
+  const d = e.x - P.x, ad = Math.abs(d); if (!(P.dash > 0) && !(P.rush > 0)) P.face = Math.sign(d) || P.face;
+  const threat = threatOf(e) && !HELD(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
+  k.left = false; k.right = false; k.block = false; k.atk = false; k.up = false; k.down = false; k.jump = false;
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
-  if (threat && P.atk < 0) {
-    defend = 1;
+  if (threat && P.atk < 0 && !(P.dash > 0)) {
+    defend = 1;   /* (a heavy half wound goes if it can, and is dropped if it cannot) */
     if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
-    else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = DEFLECT_TAP(f); }   /* sweep at a yellow blow, step back off a red one */
+    else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }   /* sweep at a yellow blow, step back off a red one */
     else k.block = true;
-  } else if (ad > reach - 2) k[d > 0 ? 'right' : 'left'] = true;
-  else if (P.atk < 0 && P.st >= 8 && Math.abs(e.y - P.y) < 26) { BK.press('atk'); swing = 1; }
-  if (h === 'knight' && !threat && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
+  } else {
+    const s = strike(BK, h, e, f); swing = s.swing;
+    /* THE WARDEN KEEPS HER POINT OUT: inside the haft she only shoves, so she steps back out of it (her step goes backward by itself) */
+    if (h === 'warden' && ad < 20 && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');
+    if (!k.left && !k.right && !(P.charge > 0)) { if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
+  }
+  { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
+  if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
   return { defend, swing };
 }
 
@@ -122,7 +194,7 @@ export async function fightLab(BK, opts = {}) {
         BK.sim(1);
         if (P.hp < last) taken += last - P.hp; last = P.hp;
       }
-      k.left = false; k.right = false; k.block = false;
+      k.left = false; k.right = false; k.block = false; k.atk = false; k.up = false; k.down = false; k.jump = false;
       fights.push({ killed: !e.alive, died, secs: f * (BK.SET.speed || 1) / 60, taken, swings, defends, ehp, maxHp: P.maxHp });
       for (const q of BK.enemies()) q.alive = false;
       await yieldNow();
