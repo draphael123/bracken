@@ -178,16 +178,24 @@ export const SFX = {
     if (heroVoice === 'warden') { noise(0.22, 0.1, 2200, 1.4); tone('triangle', vary(760), vary(260), 0.2, 0.06); tone('sine', vary(190), 120, 0.1, 0.05, 0.03); return; }   /* the spear going down point first: a long thin hiss of air along the shaft, no mail */
     tone('square', vary(540), vary(200), 0.14, 0.07); chain(0.03, 3); noise(0.16, 0.12, 700, 0.5, 0.02); },
   /* THE DOWN ATTACK LANDING ON A BODY. The pogo's own chirp is the bounce; this is the blow under it, and it is heavier than any
-     ground swing: iron through a helm for the knight, the point punching in for the warden (the TIP'S BELL stays hers alone). */
+     ground swing: iron through a helm for the knight, the point punching in for the warden (the TIP'S BELL stays hers alone).
+     THE PYROMANCER'S own is a soft one - her boots still do no damage (18b5d38), so there is no iron to ring: a hiss of steam
+     where the heat meets whatever she landed on, not a blow at all. */
   pPlungeHit() { if (heroVoice === 'warden') { noise(0.06, 0.24, 900, 0.9); tone('sine', vary(150), 60, 0.16, 0.22); tone('square', vary(620), 300, 0.05, 0.05, 0.01); return; }
+    if (heroVoice === 'pyro') { noise(0.14, 0.2, 2600, 0.9); tone('sine', vary(340), 120, 0.16, 0.12); crackle(3, 0.02); return; }
     tone('square', vary(240), 70, 0.14, 0.2); noise(0.08, 0.26, 1500, 0.8); tone('sine', 90, 40, 0.2, 0.24); chain(0.03, 2); },
   /* AND ON THE GROUND: the knight's blade rung into the turf and the ring of it going out both ways; the warden's point driven in
-     with a dry crack running forward along the floor. Each is the sound of that down attack's shockwave. */
+     with a dry crack running forward along the floor. Each is the sound of that down attack's shockwave. THE PALADIN AND THE
+     DEATH KNIGHT never reach this call at all now (main.js plungeWave skips it, D.wave: null - HAMMERFALL and graveFall
+     already have their own). THE PYROMANCER'S is the ring catching: a bloom of fire instead of a ring of iron. */
   pPlungeGround() { if (heroVoice === 'warden') { tone('square', vary(420), 150, 0.07, 0.08); noise(0.16, 0.16, 520, 0.7); tone('triangle', vary(1300), 700, 0.05, 0.04, 0.04); noise(0.1, 0.08, 2600, 1.2, 0.05); return; }
+    if (heroVoice === 'pyro') { noise(0.22, 0.2, 1800, 0.8); tone('sine', vary(200), 60, 0.24, 0.14); crackle(5, 0.03); return; }
     tone('sine', 120, 42, 0.26, 0.3); noise(0.2, 0.2, 380, 0.5); bell(660, 0.3, 0.04, 0.01); tone('square', vary(900), 500, 0.05, 0.05); },
   /* THE DASH ATTACK, as a move of its own. The knight throws his weight in behind the shield with the blade out past it - mail, a
-     grunt of iron and the rush of air; the warden goes long and low along the shaft - a whip of ash through the air and the heel skidding. */
+     grunt of iron and the rush of air; the warden goes long and low along the shaft - a whip of ash through the air and the heel
+     skidding. THE PYROMANCER'S SLIDE is a hiss and a crackle low along the ground, no iron in it anywhere. */
   pDashStrike() { if (heroVoice === 'warden') { noise(0.2, 0.16, 3000, 1.3); tone('triangle', vary(300), vary(900), 0.12, 0.08); noise(0.14, 0.1, 500, 0.6, 0.05); return; }
+    if (heroVoice === 'pyro') { noise(0.16, 0.18, 2200, 0.8); tone('sine', vary(260), 500, 0.14, 0.1); crackle(4, 0.02); return; }
     noise(0.18, 0.18, 1600, 0.7); tone('square', vary(200), vary(90), 0.16, 0.12); chain(0.035, 3); tone('triangle', vary(700), 1100, 0.08, 0.05, 0.02); },
   /* AND WHAT IT HITS: a heavy blunt thump, a shade lower when it is stopped dead than when it carries on through */
   pDashHit(stopped) { tone('sine', stopped ? 80 : 120, 40, 0.18, 0.28); noise(0.09, 0.26, stopped ? 600 : 1100, 0.7); if (stopped) tone('square', vary(300), 120, 0.08, 0.08); },
@@ -352,6 +360,9 @@ const PAL = {
   pDodge() { noise(0.12, 0.22, 320, 0.6); tone('sine', 95, 40, 0.16, 0.22); plate(0.05); },
   pPogo() { tone('square', vary(380), vary(760), 0.12, 0.13); bell(1046, 0.35, 0.05, 0.02); },
   pPlunge() { tone('square', vary(420), vary(160), 0.14, 0.07); plate(0.05); noise(0.18, 0.12, 420, 0.5, 0.02); bell(784, 0.3, 0.035, 0.04); },   /* plate going over, and the bell: the consecration goes down with him */
+  // THE SHIELDLESS CHARGE: no shield to throw a shoulder in behind, so it is plate on plate, a maul-heavy grunt and
+  // the same iron feet as the shield charge slower and lower - the biggest, slowest dash attack in the wood.
+  pDashStrike() { noise(0.2, 0.2, 1200, 0.7); tone('square', vary(140), vary(70), 0.2, 0.14); plate(0.08); tone('triangle', vary(500), 800, 0.08, 0.05, 0.03); },
   pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, 1.1); },
 };
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
