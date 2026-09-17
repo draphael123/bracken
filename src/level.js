@@ -7225,17 +7225,20 @@ function garrison(L, id) {
   // got fourteen. A tall level spaces by HEIGHT instead.
   // WHO CAN BE PUT IN THE WATER. The Long Water is mostly water, so refusing every wet spot left the
   // sprinkler nowhere to work - and an eel belongs in the water anyway.
-  const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor']);
+  const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor', 'puffer', 'jelly', 'lamprey', 'manta']);   /* the new wildlife swims too: without this the sprinkler could only put a jellyfish on dry ground */
   // AND WHO MUST BE BY IT. SWIMS says who MAY be put in the water; nothing said who must. Anglers and urchins were put on
   // the paving over the Lamplit Street's floods and hung in the air there all level (thirteen of them), and crabs, herons
   // and turtles were put down a hundred tiles from any water. A swimmer takes a spot IN a swim pool; a siren and a wader
   // take one in the water or within three tiles of it, when the level has any.
-  const INWATER = new Set(['eel', 'angler', 'urchin']), BYWATER = new Set(['siren', 'turtle', 'crab', 'heronfoe', 'netter', 'sailor']);
+  const INWATER = new Set(['eel', 'angler', 'urchin', 'puffer', 'jelly', 'lamprey']), BYWATER = new Set(['siren', 'turtle', 'crab', 'heronfoe', 'netter', 'sailor']);
   const pools = L.pools || [];
   const swimIn = (x, y) => pools.some(p => p.swim && x * TS >= p.x0 + 12 && (x + 1) * TS <= p.x1 - 12 && (y + 1) * TS > p.y + 12);
   const byWater = (x, y) => pools.some(p => !p.harm && (x + 1) * TS > p.x0 - 3 * TS && x * TS < p.x1 + 3 * TS && (y + 1) * TS >= p.y - 3 * TS && (y + 1) * TS <= (p.bottom !== undefined ? p.bottom : p.y + 40) + TS);
   const bySwim = (x, y) => pools.some(p => p.swim && (x + 1) * TS > p.x0 - 3 * TS && x * TS < p.x1 + 3 * TS && (y + 1) * TS >= p.y - 3 * TS && (y + 1) * TS <= (p.bottom !== undefined ? p.bottom : p.y + 60) + TS);   /* a siren sings over water you can drown in, not a wading pool */
-  const fits = (kind, x, y, isWet) => (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
+  /* AND WATER IS NOT ROOM: a swim pool's spot can still have rock in it, and the Long Water put an eel a tile inside the bank
+     the moment the new wildlife shifted the draw. A swimmer needs its own tile and the one over it clear. */
+  const clearHere = (x, y) => !solid(L.grid[y * L.W + x]) && !solid(L.grid[Math.max(0, y - 1) * L.W + x]);
+  const fits = (kind, x, y, isWet) => (!SWIMS.has(kind) || clearHere(x, y)) && (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
   const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];
   const squads = set.some(([k]) => k === 'shield' || k === 'soldier'); let squadN = 0;
