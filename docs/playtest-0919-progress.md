@@ -111,3 +111,9 @@ Verified: 41 checks passed, direct exit 0 (`outputs/20-check.log` and `.exit`). 
 Three goblins now wait on supported Highcrown balconies, warn, and drop into the hall. Ambush captains must reach the normal defeat path to clear a room; accidental boundary escapes or despawns restore them at their authored footing. Fixed the waterfall lip so it meets its supplying stream, scales to the authored width and no longer draws a raised rectangular cap. Barn skins cover their foundation and climbable/breakable masonry without covering openings. Removed obsolete Sporewood sleep/storm instructions. Runtime footing fixtures now select levels by ID before campaign insertions.
 
 Verified: 43 checks passed, direct exit 0 (`outputs/21-check.log` and `.exit`). Browser regression verifies all three warned drops; captain fixtures reject escape/despawn and accept a real defeat. Captured and inspected waterfall, barn loft and gallery views (`outputs/21-joins-live`).
+
+## 22. A working climbing reward and new enraged Paladin attacks
+
+Climbing spurs now grip ordinary stone and ice walls while holding toward them, instead of only stopping slides on specially marked climbing tiles. All six heroes held a plain stone wall and jumped away in the browser regression. The Paladin gains a low unblockable oath sweep (jump it) and three fixed unblockable radiance columns (move between them), both restricted to enrage and followed by a 1.6-second opening. Added ground/column warnings, poses and bestiary instructions; regenerated tell metadata with the approved tool.
+
+Verified: forced both attacks in the live boss fight, including recovery openings; regression proves enrage gates, unblockable damage, jump/position counters. Full 45-check suite passed, direct exit 0 (`outputs/22-check.log` and `.exit`). Live attack receipt and captures: `outputs/22-paladin-live/result.json`. Final six-hero timing remains open.
