@@ -49,3 +49,7 @@ All five attacks and carry release verified in the mechanic test; terrain/ladder
 ## Item 10 — Gale Moor
 
 Added Wind Rivers with jump-release air rails and a downdraft cliff with timed lulls, shelter landings and exposed recovery ladders. Enriched the summit with runes, ribbons, altar, grass and phase-two hail; added lift-capable twister and warned lightning stone attacks. Live rail test carried the hero 80.62px and released at -260 vertical velocity. Three frames inspected. Corrected two buried recovery ladders after reachability checks. Final npm run check exit 0, all 30 checks (10-check-final.log). All six Windcaller labs killed in 21.8–58.5 seconds; duration remains for item 13. Human feel unverified.
+
+## Item 11 — Stormhold watchtowers
+
+Three framed towers have ladders, guarded inner floors, rooftop guards and rope slides. Their tops offer a horn blower, a weight winch and a local camp-gate winch. Live rope attachment, 25.2px travel and jump release verified; three tower frames inspected. The new tower rule test is wired into the suite. npm run check exit 0, all 31 checks (11-check.log). Human traversal and both winch payoff actions remain unverified.

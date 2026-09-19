@@ -2216,7 +2216,19 @@ function stormhold() {
     const drs = L.ents.filter(e => e.t === 'doorway' && !e.lock && e.y === fy - 1 && e.x > x0 && e.x < x1).map(e => e.x);
     return { x0: x0 + 1, x1: x1 - 1, y0: y + 1, y1: fy - 1, door: drs.length ? drs[0] : null, door2: drs.length > 1 ? drs[1] : null, seed: x0 }; }).filter(h => h.y1 >= h.y0 + 1);
 
+  // THE WATCHTOWERS: permanent banks carry the legs; each upper deck repays the climb.
+  const watchtowers=[{x0:28,x1:35,top:23,floor:34,kind:'timber',payoff:'horn'},{x0:180,x1:185,top:21,floor:32,kind:'timber',payoff:'weight'},{x0:277,x1:283,top:21,floor:30,kind:'timber',payoff:'gate'}],zipLines=[];
+  for(const [i,z] of watchtowers.entries()){
+    plat(z.x0,z.top,z.x1-z.x0+1);for(let y=z.top;y<z.floor;y++)set(z.x0,y,T.NET);
+    for(let x=z.x0+2;x<=z.x1;x++)if(L.grid[(z.top+5)*L.W+x]===T.AIR)set(x,z.top+5,T.ONEWAY);
+    ent('sprig',z.x0+3,z.top+4,{face:-1});ent(i===0?'horn':'archer',z.x0+3,z.top-1,{face:-1});
+    ent('sign',z.x0+1,z.floor-1,{text:i===0?'THE HORN TOWER. CLIMB INSIDE AND SILENCE IT. UP TAKES THE ROPE; JUMP LETS GO.':i===1?'THE SOOT WATCH. STRIKE THE WINCH TO DROP ITS WEIGHT ON THE ROOF BELOW.':'THE GATE WATCH. ITS TOP WINCH OPENS THE CAMP BARRIER. TAKE THE ROPE BACK DOWN.'});
+    const end=[42,204,295][i],endY=[29,27,27][i];zipLines.push({x0:(z.x1-1)*TS+8,y0:z.top*TS-18,x1:end*TS+8,y1:endY*TS-18,posts:[[(z.x1-1)*TS+8,z.top*TS-18,z.top*TS],[end*TS+8,endY*TS-18,(i===0?34:i===1?32:30)*TS]]});
+  }
+  ent('weight',187,19,{len:3,hang:true});ent('archer',187,25,{face:-1});ent('lever',184,20,{dropWeight:187});
+  gateCol(285,27,29);ent('lever',282,20,{openColumn:[285,27,29]});
   return {
+    watchtowers,structures:watchtowers,zipLines,ropes:zipLines,
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges, houses,
     indoorRow: 18, // rows 0-18 are the insides of the houses: the camera never shows them from the street, nor the street from inside
     duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,

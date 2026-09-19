@@ -1993,7 +1993,7 @@ function spawnEnt(e) {
       case 'thief': enemies.push({ ...base, t: 'thief', w: 8, h: 11, hp: EHP.thief, speed: 70, loot: 0, mode: 'stalk' }); break;
       case 'pike': enemies.push({ ...base, t: 'pike', w: 10, h: 12, hp: EHP.pike, speed: 20, mode: 'guard', modeT: 0 }); break;
       case 'bell': props.push({ t: 'bell', x: px, y: py, hp: 3, rung: false, broken: false, gate: e.gate, section: e.section, ringT: 0 }); break;
-      case 'lever': props.push({ t: 'lever', x: px, y: py, ram: e.ram, on: false }); break;
+      case 'lever': props.push({ t: 'lever', x: px, y: py, ram: e.ram, dropWeight:e.dropWeight, openColumn:e.openColumn, on: false }); break;
       case 'ram': props.push({ t: 'ram', x: px, y: py - 16, th: 0, active: 0, tm: 0, hit: new Set() }); break;
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, down: false }); break;
       case 'dropcage': props.push({ t: 'dropcage', x: px, y: py, y0: py, dropped: false, landed: 0, hit: new Set(), boss: !!e.boss, resetT: 0 }); break;
@@ -6819,7 +6819,7 @@ function updatePlayer(dt) {
       else if (stunned || P.hurt > 0 || !(here || netAt(P.x, P.y + 2))) P.climb = false;
       else if (cy < 0 && !netAt(P.x, P.y - 1) && netAt(P.x, P.y + 1)) { P.climb = false; P.y = Math.floor((P.y + 1) / TS) * TS; P.vy = 0; P.ground = true; } // over the top: stand on the last rung
     } }
-  updateMoorWind(dt);
+  updateMoorWind(dt); updateTowerSlides(dt);
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
   P.kickT = Math.max(0, (P.kickT || 0) - dt);
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
@@ -12053,6 +12053,21 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
   if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - Math.random() * 12, vx: 0, vy: -15, life: 0.6, max: 0.6, col: '#c8d8c8', size: 1, grav: 0 });
   if (!P.dead && ad < 10 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 1.2; SFX.wightTouch(); const res = damagePlayer(e.x, DMG.wight); if (res === 'hit') { P.vx *= 0.2; P.stDelay = 0.8; number(P.x, P.y - 24, 'COLD', '#c8d8c8'); } }
 }
+function updateTowerSlides(dt){
+  P.zipRelease=Math.max(0,(P.zipRelease||0)-dt);
+  if(P.dead||P.hurt>0||!L.zipLines||!L.zipLines.includes(P.zip))P.zip=null;
+  if(!P.zip&&keys.up&&!P.zipRelease&&!P.dead)P.zip=(L.zipLines||[]).find(z=>Math.hypot(P.x-z.x0,P.y-z.y0-12)<22)||null;
+  const z=P.zip;if(!z)return;
+  if(jumpPress){P.zip=null;P.zipRelease=.6;P.jbuf=0;P.vy=-240;P.ground=false;P.climb=false;SFX.pJump();return;}
+  const k=Math.max(0,Math.min(1,(P.x-z.x0)/(z.x1-z.x0))),ty=z.y0+(z.y1-z.y0)*k+12;
+  P.climb=false;P.cling=true;P.ground=false;P.coyote=0;P.vx=210;P.vy=(z.y1-z.y0)/(z.x1-z.x0)*210+(ty-P.y)*10;
+  if(P.x>=z.x1-5){P.zip=null;P.zipRelease=.6;P.vy=0;P.vx=100;}
+}
+function towerLever(pr){
+  if(pr.dropWeight!==undefined){const w=props.find(p=>p.t==='weight'&&Math.floor(p.x/TS)===pr.dropWeight&&p.state==='hang');if(w){w.state='tell';w.tellT=.5;w.fy=w.y+w.len;number(pr.x,pr.y-26,'THE WEIGHT GOES','#ffd36b');}}
+  if(pr.openColumn){const [x,y0,y1]=pr.openColumn;for(let y=y0;y<=y1;y++){const i=y*LW+x;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}resolveTiles();SFX.gateDrop();number(pr.x,pr.y-26,'THE CAMP GATE OPENS','#8fd160');}
+}
+
 function updateMoorWind(dt) {
   P.railRelease=Math.max(0,(P.railRelease||0)-dt);
   for(const z of (L.airRails||[]))if(!P.dead&&P.x>z.x0&&P.x<z.x1&&Math.abs(P.y-8-z.y)<24){
@@ -17779,7 +17794,7 @@ function updateProps(dt) {
     if (pr.t === 'npc' && pr.ride) { const fm = movers.find(mv => mv.ferry); if (fm) { pr.x = fm.x + 16; pr.y = fm.y; } }
     if (pr.t === 'npc' && pr.kind === 'ferryman' && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 30 && Math.abs(P.y - pr.y) < 24) { const fm = movers.find(mv => mv.ferry); if (fm && !fm.paid && !fm.free && fm.toll) { if (PROG.coins >= fm.toll) { PROG.coins -= fm.toll; saveProgress(); fm.paid = true; marks.add('ferry:' + fm.x0); SFX.coin(); SFX.uiSel(); number(pr.x, pr.y - 28, 'PAID ' + fm.toll + ' GOLD', '#ffd34a'); number(pr.x, pr.y - 38, 'STEP ABOARD', '#bfe6f5'); } else { SFX.clank(); number(pr.x, pr.y - 28, 'NOT ENOUGH GOLD', '#ff6b6b'); } } }
     if (pr.t === 'stray' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 15 && Math.abs(pr.y - P.y) < 22) { const Q = questOf(); pr.got = true; straysGot.add(pr.x); if (pr.kind === 'folk') freeFolk(pr); strayLast = { x: pr.x, y: pr.y }; if (pr.kind === 'sheep') SFX.bleat(); else if (pr.kind === 'canary' || pr.kind === 'pigeon') { SFX.bird(); SFX.sting(); } else { SFX.coin(); SFX.sting(); } burst(pr.x, pr.y - 4, 8, ['#e8e0d0', '#fff6c8'], 50, 0.5); number(pr.x, pr.y - 18, Q.name + ' ' + straysGot.size + '/' + Q.n, '#ffe6a0'); if (straysGot.size >= Q.n) questDone(pr.x, pr.y); }
-    if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }
+    if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; towerLever(pr); SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }
     if (pr.t === 'ram' && pr.active > 0) { pr.active -= dt; pr.tm += dt; pr.th = Math.sin(pr.tm * 4.2) * 1.35 * Math.min(1, pr.active / 1.2); const pts = [30, 44, 58, 72].map(r => [pr.x + Math.sin(pr.th) * r, pr.y + Math.cos(pr.th) * r]); const nearSeg = (x, y) => pts.some(([qx, qy]) => Math.hypot(x - qx, y - qy) < 14); if (Math.abs(pr.th) > 0.12) { if (!P.dead && nearSeg(P.x, P.y - 8)) damagePlayer(pr.x, DMG.ram, { up: true, unblockable: true }); for (const e of enemies) if (e.alive && !pr.hit.has(e) && nearSeg(e.x, e.y - e.h / 2)) { pr.hit.add(e); hurtEnemy(e, 30, pr.x, false); } } if (pr.active <= 0) pr.th = 0; }
     if (pr.t === 'plate' && !pr.down) { const on = (!P.dead && P.ground && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 4) || enemies.some(e => e.alive && Math.abs(e.x - pr.x) < 10 && Math.abs(e.y - pr.y) < 4); if (on) { pr.down = true; SFX.stone(); const cg = props.find(c => c.t === 'dropcage' && Math.floor(c.x / TS) === pr.cage); if (cg && !cg.dropped) { cg.dropped = true; cg.landed = 0; cg.hit.clear(); if (cg.boss) cg.resetT = 5; number(cg.x, cg.y - 20, 'THE CAGE FALLS', '#ffd36b'); SFX.crack(); shakeCam(2); } } }
     /* A CAGE THAT HAS HELD THE KING IS SCRAP (pr.spent). His five cages used to be winched back up five seconds after
