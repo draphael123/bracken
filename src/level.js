@@ -1,3 +1,4 @@
+import { singleAmbush } from './ambush.js';
 import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
@@ -7473,7 +7474,7 @@ const AMBUSH = {
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);
 function ambushRooms(L, id) {
   const list = (L.ambushes || []).concat(AMBUSH[id] || []); if (!list.length) return L;
-  L.ambushes = list.map(A => ({ ...A, waves: A.waves.map(w => w.map(f => f.slice())) }));   /* a copy per build: the run's state lives on it */
+  L.ambushes = list.map(A=>singleAmbush(A,id));   /* a copy per build: the run's state lives on it */
   for (const A of L.ambushes) {
     const y0 = A.y0 !== undefined ? A.y0 : A.row - 9, inRoom = (e, pad) => e.x >= A.wallL - pad && e.x <= A.wallR + pad && e.y >= y0 && e.y <= A.row + 2;
     L.ents = L.ents.filter(e => !(e.t === 'check' ? inRoom(e, 1) : THREAT[e.t] > 0 && !AMB_KEEP.has(e.t) && !e.boss && !e.mini && !e.stays && inRoom(e, 0)));   /* stays: a creature that belongs to the room's ground, not to its ambush */

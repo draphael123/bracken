@@ -523,22 +523,8 @@ and the gates lift with a heart and ten gold.
    never over swimming. The Shipwreck Reef and The Deep have none for that reason. *Earned:* the
    Hurricane, the Lamplit Quarter and Waymeet each had two, and the second was the same lesson again a
    few minutes on (THE ORLOP, THE STORM DRAIN and THE HORSE FAIR are ground again).
-3. **Wave one is the crowd; wave two is LED BY AN ELITE, and the elite's moves are the lesson.** Two
-   to four foes each from the level's own roster (GARRISON/MIX). Seventeen rooms had the same wave two
-   - a shield in front of a shooter, a heavy to break, one more - renamed per level; it taught one thing
-   seventeen times. Now wave two is `[kind, x, y, { elite: true }]` plus the crowd it leads: a kind of
-   the level's own, half as big again, with one or two MOVES OF ITS OWN built from what that creature is
-   (THE ARCHER CAPTAIN puts a rain of arrows on the floor you stand on and rolls away when you close in).
-   Its moves set the puzzle, so no two neighbouring levels are led by the same kind. Every move obeys
-   section A and rule H: one windup at a time, an honest mark, a tell you can read, an opening after.
-   The crowd beside it still uses the systems - something that plants, something that BREAKS, something
-   light enough to throw into the room's own hazard or SLAM into its shut gates - but there are fewer of
-   them, because the elite is most of the length (rule 4). A room's elite holds no gate (the room's walls
-   are its gate) and pays nothing of its own (the room pays the heart and the ten gold); it is put back
-   with the room on a death. Measure the leader with `BK.fightLab({ foes: [kind], elite: true,
-   keepAlive: true })` and the whole room with `BK.ambushLab({ levels: [id] })`, six heroes.
-4. **Short.** 20 to 40 seconds for a hero who plays it straight. A wave that runs past 70 seconds
-   slinks off by itself, and anything that leaves the room is out of the fight: a room never keeps you.
+3. **ONE CAPTAIN AND ONE CROWD.** One wave only: one named elite of the level's own roster, using its regular sprite with more health and about two distinct attacks, plus two to four complementary small foes. Adjacent rooms use different captain types. All are present when the gates lock. The captain's name announces the lock. Killing the captain opens the room immediately; surviving small foes flee without another wave. The room pays its purse and heart once. Death before the clear resets the whole encounter.
+4. **Short.** Target 15 to 35 seconds for a hero who plays it straight. Measure all six heroes with `BK.ambushLab`. A timer cannot award a clear while the captain is alive. The captain stays reachable within the room; knockback into its hazards is a legitimate kill.
 5. **The door is a checkpoint.** A checkpoint stands just outside every room, never inside it (the
    filler refuses ambush rooms), so a death inside wakes you at the door with the room put back.
 
@@ -555,8 +541,7 @@ and the gates lift with a heart and ten gold.
 - Runtime: `updateAmbush` in `src/main.js` (from `updateProps`). The gates are PORT tiles laid over
   AIR by `closeGate` on each wall column's own floor, up to ten high or the ceiling (`ambushWall`); only
   the tiles the room laid are taken up again, so a winch or key gate sharing a column is left alone.
-  Foes come through `spawnEnt`, dropped in from above where there is air to fall through (not the
-  `AMB_STILL` kinds, which have no legs to fall on). `ambushReset` (from `spawnEntities`) puts an
+  Foes come through `spawnEnt`, standing on their authored footing at the moment of lock. `ambushReset` (from `spawnEntities`) puts an
   unfinished room back on death; a cleared room stays cleared. `BK.ambushes()` shows the state.
 - `tools/curve.mjs` counts the waves as part of the level, and `levelFoes` counts them in the body count.
 - Prove a new one in the page: it locks, both waves spawn and land, it opens and pays, and a death

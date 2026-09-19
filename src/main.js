@@ -2208,15 +2208,11 @@ function spawnEntitiesTail() {
   if (changed) resolveTiles();
   spawnCritters();
 }
-/* AMBUSH ROOMS. A level names the places it means to jump you in L.ambushes (the table is AMBUSH in src/level.js). Walk into
-   the middle of one and both ends drop shut; dust and falling grit show where each of the first crowd will land, then they
-   land; when they are down, a beat, and a second crowd built so the combat has to be used - a shield planted in front of a
-   bow, a heavy that BREAKS, something light enough to throw into the room's spikes, water or its own gates. Clear it and the
-   gates lift with a heart and a purse. The run's state lives on the level's own ambush objects, so a fresh build is a fresh
-   room; dying inside puts the room back (the gates are PORT tiles laid over air, and they are taken up again), and a room
-   you cleared stays cleared. It never starts during a boss or a mini, and never in the rush. */
+/* ONE CAPTAIN CLOSES THE ROOM: the whole crowd stands on its footing when the gates fall.
+   His name is the warning, his death opens the gates, and the others flee. A cleared room pays once;
+   dying before the clear puts the same crowd back. A boss, a mini or the rush never starts one. */
 let ambushMsg = '', ambushSub = '', ambushMsgT = 0, ambushCol = '#ff6b6b';
-const AMB = { tell: 0.9, beat: 1.3, maxWave: 70, up: 10, down: 6, fly: 4 };   /* fly: how many rows over its own floor a shut room lets a flyer keep (ambushPen) */
+const AMB = { up: 10, down: 6, fly: 4 };   /* fly: how many rows over its own floor a shut room lets a flyer keep (ambushPen) */
 const AMB_FLY = new Set(['wasp', 'crow', 'bat', 'harpy', 'kite', 'drone', 'petrel', 'gull']);
 const AMB_STILL = new Set(['lancer', 'lurker', 'spit', 'spitcap', 'urchin', 'watch', 'sentry', 'turret', 'clinger', 'puffball']);   /* no legs to fall on: raised, they would hang in the air where they were put */
 /* A FLYER BELONGS TO THE ROOM, AND THE ROOM IS AS HIGH AS ITS FLOOR CAN REACH. THE CLOISTER was given a bat on
@@ -2271,21 +2267,19 @@ function ambushReset() {
   for (const A of ((L && L.ambushes) || [])) { if (A.st === 'done') continue;
     ambushLift(A, false); A.st = null; A.wave = 0; A.t = 0; A.foes = []; A.tells = []; A.cols = null; A.cam = false; }
 }
-function ambushTells(A) { A.tells = A.waves[A.wave].map(([t, x, y]) => ({ x: x * TS + 8, y: (ambushRow(A, t, y) + 1) * TS, rung: false })); }
 function ambushStart(A) {
-  A.st = 'tell'; A.wave = 0; A.t = AMB.tell + 0.5; A.foes = []; ambushShut(A); ambushTells(A);
+  A.wave = 0; A.foes = []; ambushShut(A); ambushSpawn(A); A.leader=A.foes.find(e=>e.elite);
+  if(A.leader)A.leader.ambushLeader=true;
   if (!camLock && (A.wallR - A.wallL + 1) * TS >= VW + 16) { camLock = { x0: A.wallL * TS, x1: (A.wallR + 1) * TS }; A.cam = true; }
-  ambushSay('AMBUSH', A.name || '', '#ff6b6b', 2.4); SFX.hornBlast(); shakeCam(5); zoomKick(1.08, 0.3); hitstop(0.06);
+  ambushSay(A.leader ? ELITE[A.leader.t].name : 'AMBUSH', A.name || '', '#ff6b6b', 2.4); SFX.hornBlast(); shakeCam(5); zoomKick(1.08, 0.3); hitstop(0.06);
 }
 function ambushSpawn(A) {
-  A.st = 'fight'; A.t = AMB.maxWave; A.foes = [];
+  A.st = 'fight'; A.t = 0; A.foes = [];
   for (const [t, x, y, o] of A.waves[A.wave]) {
     const row = ambushRow(A, t, y), n0 = enemies.length, px = x * TS + 8, py = (row + 1) * TS;
     spawnEnt(Object.assign({ t, x, y: row, face: px < P.x ? 1 : -1 }, o || {}));
-    /* DROPPED IN from the canopy, the rafters or the rigging, where there is air over the spot to fall through */
-    const drop = !AMB_FLY.has(t) && !AMB_STILL.has(t) && [1, 2, 3].every(k => tileAt(x, row - k) === T.AIR);
+    // THE WHOLE CROWD IS HERE: their captain closes the gates on a room already occupied.
     for (let i = n0; i < enemies.length; i++) { const e = enemies[i]; e.ambush = true; e.woke = 1; e.xpKey = 'a' + L.ambushes.indexOf(A) + '.' + A.wave + '.' + t + x + '.' + (i - n0); e.sleeper = false; e.stagger = Math.max(e.stagger || 0, 0.4);
-      if (drop && e.hy === undefined) { e.y -= 2.5 * TS; e.vy = 60; }
       if (AMB_FLY.has(t) || e.noGrav) ambushPen(A, e);   /* it comes in under the room's own ceiling, whatever it went looking for */
       A.foes.push(e); }
     burst(px, py - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(px, py, 8); ringAt(px, py - 8, 16, '#ff6b6b', 0.3);
@@ -2293,7 +2287,7 @@ function ambushSpawn(A) {
   shakeCam(3); SFX.thud();
 }
 function ambushClear(A) {
-  A.st = 'done'; ambushLift(A, true); if (A.cam) { camLock = null; A.cam = false; }
+  A.st = 'done'; for(const e of A.foes)if(e.alive){e.fleeT=2;e.harmless=true;e.face=e.x<P.x?-1:1;} ambushLift(A, true); if (A.cam) { camLock = null; A.cam = false; }
   ambushSay('THE WAY IS OPEN', A.name || '', '#8fd160', 2.2); SFX.medal(); shakeCam(3); zoomKick(1.05, 0.25);
   /* THE PURSE AND A HEART: a room that shuts you in pays for it */
   const gold = A.gold || 10; PROG.coins = (PROG.coins || 0) + gold; number(P.x, P.y - 34, gold, '#ffd34a');
@@ -2317,26 +2311,15 @@ function ambushHold(A) {
   if (n) resolveTiles();
 }
 function ambushRun(A, dt) {
-  A.t -= dt; ambushCarts(A); ambushHold(A);
-  if (A.st === 'tell') {
-    /* THE TELL: dust kicked up and grit falling where each one will land, long enough to step off the spot */
-    for (const s of A.tells) {
-      if (Math.random() < dt * 14) dust(s.x + (Math.random() - 0.5) * 12, s.y, 1);
-      if (Math.random() < dt * 10) parts.push({ x: s.x + (Math.random() - 0.5) * 10, y: s.y - 44 - Math.random() * 20, vx: 0, vy: 30, life: 0.55, max: 0.55, col: Math.random() < 0.5 ? '#9a8a6a' : '#c9b27c', size: 1, grav: 260 });
-      if (A.t < AMB.tell * 0.5 && !s.rung) { s.rung = true; ringAt(s.x, s.y - 6, 14, '#ff6b6b', 0.35); } }
-    if (A.t <= 0) ambushSpawn(A);
-    return; }
-  if (A.st === 'beat') { if (A.t <= 0) { A.wave++; A.st = 'tell'; A.t = AMB.tell; ambushTells(A); ambushSay('THE SECOND WAVE', '', '#ff9a5c', 1.6); SFX.hornBlast(); shakeCam(3); } return; }
+  A.t += dt; ambushCarts(A); ambushHold(A);
   for (const e of A.foes) if (e.alive && (AMB_FLY.has(e.t) || e.noGrav)) ambushPen(A, e);   /* the room holds its flyers inside it, and in reach of the floor the fight is on */
   const lx = (A.wallL - 1) * TS, rx = (A.wallR + 2) * TS;
   for (const e of A.foes) if (e.alive && (e.x < lx || e.x > rx || e.y > LH * TS + 8)) e.alive = false;   /* out of the room is out of the fight */
   /* AND ONE THAT GOES INTO THE ROOM'S OWN SPIKES STAYS THERE. Only a THROWN foe was ever impaled, so a sprig that walked into
      THE CLIFF HALL's pit after you, or a cutter that fell in, stood on the spikes for the rest of the wave where no blade could
-     reach it, and the room sat shut until the wave slunk off at seventy seconds */
+     reach it. The same hazard now defeats a captain and opens the gates. */
   for (const e of A.foes) if (e.alive && !(e.knock > 0) && !AMB_FLY.has(e.t) && !e.noGrav && [-3, 3].some(ox => tileAt(Math.floor((e.x + ox) / TS), Math.floor((e.y - 4) / TS)) === T.SPIKE)) hazardFoe(e);
-  if (A.t <= 0) for (const e of A.foes) if (e.alive) { e.alive = false; smoke(e.x, e.y - 8, 3, 8); }   /* a wave that outlasts its time slinks off: a room never keeps you */
-  if (A.foes.some(e => e.alive)) return;
-  if (A.wave + 1 < A.waves.length) { A.st = 'beat'; A.t = AMB.beat; SFX.sting(); return; }
+  if(!A.leader || A.leader.alive)return;
   ambushClear(A);
 }
 function updateAmbush(dt) {
@@ -2350,7 +2333,7 @@ function updateAmbush(dt) {
     if (tx >= x0 && tx <= A.wallR - 2 && row >= (A.y0 !== undefined ? A.y0 : A.row - 9) && row <= A.row + 1.5) ambushStart(A);
   }
 }
-/* THE CARD AND THE COUNT: AMBUSH over the room's name as it shuts, then the wave and a red pip for every one still up */
+/* THE CAPTAIN'S NAME LOCKS THE ROOM: one pip for every body still up, then the survivors lose their nerve. */
 function drawAmbushHud() {
   if (ambushMsgT > 0 && ambushMsg) { const k = Math.min(1, ambushMsgT / 0.35), y = Math.round(VH * 0.26), h = ambushSub ? 30 : 22;
     g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(0, y - 6, VW, h);
@@ -2359,9 +2342,9 @@ function drawAmbushHud() {
     if (ambushSub) text(ambushSub, VW / 2, y + 15, '#c9d1dc', 'center', 6);
     g.globalAlpha = 1; }
   const A = ambushLive(); if (!A) return;
-  const left = A.st === 'fight' ? A.foes.filter(e => e.alive).length : A.waves[A.wave].length, n = A.waves.length, w = 58, x = Math.round(topMid(w)), y = 16;   /* under the clock, clear of the HUD plate on the left and the quest label on the right */
+  const left = A.st === 'fight' ? A.foes.filter(e => e.alive).length : A.waves[A.wave].length, n = A.waves.length, w = 84, x = Math.round(topMid(w)), y = 16;   /* under the clock, clear of the HUD plate on the left and the quest label on the right */
   g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(x - w / 2, y, w, 16); hudRects.push([x - w / 2, y, w, 16]); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x - w / 2 + 0.5, y + 0.5, w - 1, 15);
-  text('WAVE ' + Math.min(n, A.wave + (A.st === 'beat' ? 2 : 1)) + '/' + n, x, y + 3, '#ffd0d0', 'center', 6);
+  text('THE CAPTAIN', x, y + 3, '#ffd0d0', 'center', 6);
   for (let i = 0; i < left; i++) { g.fillStyle = A.st === 'fight' ? '#ff6b6b' : 'rgba(255,107,107,0.35)'; g.fillRect(Math.round(x - left * 2 + i * 4), y + 11, 2, 3); }
 }
 /* THE ELITES. An ordinary creature of the level's own roster made a fight of its own (ELITES in src/level.js stands them):
@@ -2674,7 +2657,7 @@ const eliteMay = (e, reach) => !(e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.
 function eliteTake(e) { e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; lastTellT = time; }
 /* THE OLD SHARED RULES (wall, rally, call, slam, lunge), for every kind that has no moves of its own yet */
 function updateEliteRule(e, dt) {
-  const R = ELITE[e.t];
+  const R = e.ambush ? { ...ELITE[e.t], rule:(e.ambushMove||0)%2?'lunge':'slam' } : ELITE[e.t];
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) {
     e.elT -= dt;
@@ -2682,6 +2665,7 @@ function updateEliteRule(e, dt) {
     if (R.rule === 'call' && (e.called || e.hp > e.hp0 / 2)) return false;
     if (R.rule === 'lunge' && (ad < 30 || ad > 96 || dy > 16)) return false;
     if (R.rule === 'slam' && ad > 72) return false;   /* (a troll keeps his stone's throw off you: the shock reaches that far) */
+    if(e.ambush)e.ambushMove=(e.ambushMove||0)+1;
     eliteTake(e);
     if (R.rule === 'slam') { e.mode = 'eliteSlamTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
     else if (R.rule === 'lunge') { e.mode = 'eliteLungeTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
@@ -16711,6 +16695,7 @@ function updateEnemies(dt) {
     if (e.pFace === undefined) e.pFace = e.face; else if (e.face !== e.pFace) { if (Math.abs(e.vx) > 18 || e.lastSpeed > 18) e.turnT = 0.18; e.pFace = e.face; }
     e.lastSpeed = Math.abs(e.vx || 0);
     if (e.t === 'heart') { e.burn=0; e.bleed=0; } // the living membrane takes deliberate cuts only
+    if(e.fleeT>0){e.fleeT-=dt;e.vx=e.face*100;e.vy=Math.min(300,(e.vy||0)+900*dt);moveBody(e,e.vx*dt,e.vy*dt,false);if(e.fleeT<=0)e.alive=false;continue;}
     if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { e.hp -= 2; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; number(e.x, e.y - e.h - 8, 2, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
     if (e.bleed > 0) { e.bleed -= dt; e.bleedT = (e.bleedT || 0) - dt; if (e.bleedT <= 0) { e.bleedT = 0.5; if (e.alive) { e.hp -= (e.bleedN || 1); e.flash = 0.05; number(e.x, e.y - e.h - 8, e.bleedN || 1, '#c9463d'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } }
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - e.h / 2, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#8f2f28', size: 1, grav: 120 }); }

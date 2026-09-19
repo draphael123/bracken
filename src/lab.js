@@ -1,3 +1,4 @@
+import { AMBUSH_TARGET } from './ambush.js';
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
 // The playtest bot walks levels. These FIGHT, and measure what a player feels: how long a foe or a boss takes to
 // kill, and how much of your health it costs. Both yield between fights, so a page can be polled while they run.
@@ -123,33 +124,34 @@ function labBotFrame(BK, h, e, f) {
 
 // THE AMBUSH LAB. Each hero into each level's ambush room, played straight: walk in, fight whatever of the room is nearest (its
 // elite when nothing else is closer), defend on its tells. The hero's health is put back each frame and what the room took is
-// counted. It reports how long the room took to open (section Q rule 4: 20 to 40 seconds), how long its elite stood, and
-// whether it opened at all (a wave that runs 70 seconds slinks off, and that is not a clear).
+// counted. It reports how long the room took to open (section Q rule 4: 15 to 35 seconds), how long its elite stood, and
+// whether killing the captain opened it; surviving minions are allowed to flee.
 //   await BK.ambushLab({ levels: ['stockade'], heroes: [...], reps: 1 })   -> window.__ambushLab
 export async function ambushLab(BK, opts = {}) {
   const lvm = await import('./level.js');
-  const heroes = opts.heroes || HEROES, levels = opts.levels || ['stockade'], reps = opts.reps || 1, maxF = (opts.maxSecs || 150) * 60;
+  const heroes = opts.heroes || HEROES, levels = opts.levels || ['stockade'], reps = opts.reps || 1, maxSecs = opts.maxSecs || 150;
   const rows = [], out = { rows, started: Date.now() };
   if (typeof window !== 'undefined') window.__ambushLab = out;
   for (const lvId of levels) for (const h of heroes) for (let rep = 0; rep < reps; rep++) {
-    BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false; BK.sim(20);
+    BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false; BK.sim(300);
     const A = BK.ambushes()[opts.room || 0]; if (!A) { rows.push({ lvl: lvId, h, skipped: 'no ambush room' }); continue; }
     const P = BK.P, k = BK.keys, x0 = A.trigger !== undefined ? A.trigger : A.wallL + 3, mid = (A.wallL + A.wallR) / 2 * 16 + 8;
     for (const e of BK.enemies()) if (Math.abs(e.x - mid) < (A.wallR - A.wallL + 30) * 8 && !e.maxHp) e.alive = false;   /* the level's own creatures by the door are not the room's */
     BK.tp(x0 + 1, A.row); P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0;
     let f = 0, taken = 0, last = P.hp, elite = null, eliteSecs = null, eliteFrom = null, shutAt = null, waveAt = 0, slow = null;
-    const spd = BK.SET.speed || 1;
+    const spd = BK.SET.speed || 1, maxF = Math.round(maxSecs * 60 / spd);
     for (; f < maxF && A.st !== 'done'; f++) {
       if (P.hp < last) taken += Math.min(60, last - P.hp); P.hp = P.maxHp; last = P.hp; if (P.dead) break;
       if (A.st && shutAt === null) shutAt = f;
       const foes = (A.foes || []).filter(e => e.alive);
       if (A.st !== 'fight') waveAt = f;
-      else if (!slow && (f - waveAt) * spd / 60 > 40) slow = 'wave ' + (A.wave + 1) + ' still up at 40 s: ' + foes.map(e => e.t + (e.elite ? '*' : '')).join(', ');   /* what a room that runs long is waiting on */
+      else if (!slow && (f - waveAt) * spd / 60 > AMBUSH_TARGET.max) slow = 'captain still up at ' + AMBUSH_TARGET.max + ' s: ' + foes.map(e => e.t + (e.elite ? '*' : '')).join(', ');   /* what a room that runs long is waiting on */
       if (!elite) { elite = foes.find(e => e.elite) || null; if (elite) eliteFrom = f; }
       if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - eliteFrom) * spd / 60).toFixed(1);
-      const e = A.st === 'fight' && foes.length ? foes.reduce((b, q) => Math.abs(q.x - P.x) + Math.abs(q.y - P.y) < Math.abs(b.x - P.x) + Math.abs(b.y - P.y) ? q : b) : null;
+      const e = A.st === 'fight' && A.leader?.alive ? A.leader : null;
       if (e) labBotFrame(BK, h, e, f);
       else { k.block = false; k.left = P.x > mid + 20; k.right = P.x < mid - 20; }   /* between waves: to the middle of the room */
+      if(e&&Math.abs(e.y-P.y)>24){k.left=e.x<P.x;k.right=e.x>P.x;k.block=false;}
       /* A PLAYER JUMPS THE ROOM'S OWN PIT. The fight lab's bot fights on a flat floor and walked straight into THE CLIFF HALL's
          spikes after a sprig, and sat in them: it hops a gap or a spike a tile ahead of it, and hops out of one it is in */
       { const dir = k.right ? 1 : k.left ? -1 : 0, G = BK.L, at = (tx, ty) => G.grid[ty * G.W + tx], ty = Math.floor((P.y + 2) / 16);
@@ -157,12 +159,17 @@ export async function ambushLab(BK, opts = {}) {
         const inPit = [-5, 0, 5].some(ox => at(Math.floor((P.x + ox) / 16), Math.floor((P.y - 4) / 16)) === lvm.T.SPIKE || at(Math.floor((P.x + ox) / 16), Math.floor((P.y + 2) / 16)) === lvm.T.SPIKE);
         if (inPit) { const out = at(Math.floor((P.x - 24) / 16), ty - 1) === lvm.T.SOLID ? 1 : -1; k.left = out < 0; k.right = out > 0; k.block = false; k.jump = true; if (f % 6 === 0) BK.press('jump'); }
         else if (dir && P.ground && bad(Math.floor((P.x + dir * 12) / 16))) { k.jump = true; BK.press('jump'); } else k.jump = false; }
+      if(P.ground && (k.left||k.right) && (Math.abs(P.vx)<4 || (e&&e.y<P.y-18)) && f%12===0){BK.press('jump');P.ambJump=28;}
+      if(e&&e.y>P.y+24){P.ambJump=0;k.jump=false;}
+      else if(P.ambJump>0){P.ambJump--;k.jump=true;}
+      if(P.st<12)P.ambRest=true;if(P.st>=48)P.ambRest=false;
+      if(P.ambRest){k.atk=k.block=k.up=k.down=false;const wet=(BK.L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);if(wet&&P.ground){BK.press('jump');P.ambJump=28;}if(P.ambJump>0)k.jump=true;}
       BK.sim(1);
     }
     k.left = false; k.right = false; k.block = false; k.jump = false;
     if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - eliteFrom) * spd / 60).toFixed(1);
     const secs = shutAt === null ? null : +((f - shutAt) * spd / 60).toFixed(1);
-    rows.push({ lvl: lvId, room: A.name, h, opened: A.st === 'done', secs, leader: elite ? elite.t : null, eliteSecs, taken: Math.round(taken), takenPct: +(100 * taken / P.maxHp).toFixed(0), slow });
+    rows.push({ lvl: lvId, room: A.name, h, opened: A.st === 'done', secs, inTarget: A.st==='done' && secs>=AMBUSH_TARGET.min && secs<=AMBUSH_TARGET.max, leader: elite ? elite.t : null, eliteSecs, taken: Math.round(taken), takenPct: +(100 * taken / P.maxHp).toFixed(0), slow });
     await yieldNow();
   }
   out.done = true; out.ms = Date.now() - out.started;
