@@ -20,11 +20,11 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [x] Shipwreck Reef: themed platforms, grounded interiors and more environmental variety.
 - [x] Shared store music theme.
 - [x] Flotilla/Hurricane: reachable swinging platforms; more pirate content; collapsing storm-battered ship interiors; cannon-opened doors/walls; blockable/dodgeable waves.
-- [ ] Lamplit Street: more decorations, ghost and skeleton pirate enemies; remove goblin archers; clearer climb-down cues; fix pictured impossible jump.
+- [x] Lamplit Street: more decorations, ghost and skeleton pirate enemies; remove goblin archers; clearer climb-down cues; fix pictured impossible jump.
 - [x] Tollmaster: remove arena flooding; add lamp/darkness attack.
 - [x] The Deep: half-speed breath depletion; new diving-bell crab boss.
 - [x] Underwater Keep: move Drowned King here; design fight and add unique enemy.
-- [ ] Drowned Causeway: unique enemy, miniboss, pirates, flooded skeleton-pirate ship, visual variety.
+- [x] Drowned Causeway: unique enemy, miniboss, pirates, flooded skeleton-pirate ship, visual variety.
 - [x] Kraken: underwater shelter against surface attacks, surface flooding, tentacle HP bars, permanent severing linked to boss HP, cargo/water attacks after all arms die.
 - [x] New storm-wrecked harbor between Causeway and Waymeet.
 - [ ] Waymeet: remove sandcastle/unsuitable tree and log imagery, floating blocks and unnecessary stone platforms; add activity to sparse section.

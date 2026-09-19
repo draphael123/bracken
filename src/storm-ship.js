@@ -1,6 +1,7 @@
 export function stormShipPolish(L,id,T){
  if(!['flotilla','hurricane'].includes(id))return L;
  L.palette.ledges='cargo';
+ if(id==='flotilla')for(const e of L.ents)if(e.t==='sign'&&e.x===306&&e.y===15)e.x=308;
  // Lower the swing's entire arc toward its boarding deck; its rope length and travel remain unchanged.
  for(const m of L.moversExtra||[])if(m.kind==='swing'){
   const deck=id==='hurricane'?20:(m.px<50*16?26:m.px<130*16?24:23);
@@ -8,12 +9,13 @@ export function stormShipPolish(L,id,T){
  }
  if(id==='hurricane'){
   for(const e of L.ents)if(e.t==='cannon'&&e.deck){const door=L.ents.filter(q=>q.t==='bulkhead').sort((a,b)=>Math.abs(a.x-e.x)-Math.abs(b.x-e.x))[0];if(door&&Math.abs(door.x-e.x)<18)e.aim=Math.sign(door.x-e.x);}
+  for(const e of L.ents){if(e.t==='check'&&e.x===96&&e.y===19)e.x=98;if(e.t==='sign'&&e.x===580&&e.y===19)e.x=581;}
   L.deckBreaks=[];
   for(const [x0,x1,ladder]of [[90,94,95],[238,242,243],[572,578,579]]){
    L.deckBreaks.push({x0,x1,row:20,t:-1,down:false});
    // A safe hold floor and a rope out remain after the upper deck comes down.
    for(let y=19;y<=26;y++)for(let x=ladder;x<=ladder+1;x++)L.grid[y*L.W+x]=T.NET;
-   L.ents.push({t:'sign',x:x0-2,y:19,text:'THE DECK IS SPLITTING. FOLLOW THE HOLD AFT; THE ROPES LEAD BACK UP.'});
+   L.ents.push({t:'sign',x:x0===238?235:x0-2,y:19,text:'THE DECK IS SPLITTING. FOLLOW THE HOLD AFT; THE ROPES LEAD BACK UP.'});
    L.ents.push({t:'cutlass',x:x0+2,y:26,face:-1},{t:'deco',x:x1,y:26,kind:'rumBarrels',v:0});
   }
  }

@@ -954,3 +954,6 @@ ALLOWED_DECORATIONS.keep=[...ALLOWED_DECORATIONS.deep];
 
 GROUND_KITS.waymeet={density:.2,kinds:['flower','tuft']};
 ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels');
+
+ALLOWED_DECORATIONS.lamplit.push('kegStack','coiledCable','barrels','seaChest');
+ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');

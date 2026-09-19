@@ -147,3 +147,11 @@ Verified: every intended destination reachable in both levels, no trapped pocket
 - Added three warned deck collapses into pirate-occupied holds, each with a rope escape; the falling deck itself does not damage the hero.
 - Fixed Hurricane bulkhead cannons to preserve their authored target direction. The aft gun now fires left and opens its door.
 - Live gameplay verified all three collapses and all three doors. Six captures and exact results: outputs/26-ship-live/result.json. Full suite: outputs/26-check.log.
+
+## 27 — Ghosts and the drowned pirate road
+- Added three original foes with their own art, attacks, tells, recovery windows, damage tables and bestiary entries: Lantern Shade, Bone Corsair and Tide Marauder.
+- Lamplit now replaces its wights with ghosts/corsairs, excludes goblin archers, has additional dock debris, downward chain markers and full-height climb alternatives at four roof steps.
+- Causeway wrecks have timber hulls and enclosed ship walls. The large hold stays flooded at low tide and contains skeleton pirates; added living pirates elsewhere on the road.
+- Added the Tide Reaver miniboss and a gate that really holds the onward route until defeat. Its yellow harpoon is blockable; the red low rake is jumped.
+- Corrected four signs/checkpoints whose support was a chain or hatch, including three affected by the previous ship pass.
+- VM tests verify five attacks, defense marks and range counters. Geometry verifies gate closure, underwater hold and rope alternatives. Live checks verify every foe plus mini activation/defeat/opening; outputs/27-haunted-live/result.json and eight views. Full suite: outputs/27-check.log.

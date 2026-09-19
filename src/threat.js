@@ -10,7 +10,7 @@
 // It is not health. It is how much ATTENTION a thing takes: a sprig you walk through is 1, a thing you have
 // to stop and read is 3, a boss is 6. A hazard the player can turn against them (a hanging battering ram on
 // a lever, a firepit) is weighted low - it is not aimed at you until you aim it.
-export const THREAT = {
+export const THREAT = { lanternshade:2.5,bonecorsair:3,tidemarauder:4,
   sprig: 1, spit: 1, wasp: 1.5, hopper: 1, shield: 2, archer: 2, thorn: 2, spitter: 1.5, turtle: 1.5,
   brute: 3.5, sapper: 3, hound: 2.5, pike: 3, soldier: 3, javelin: 2.5, heavy: 4, crow: 1, bat: 1,
   sporeling: 1.5, lurker: 2.5, spitcap: 2, weaver: 3, shaman: 3, thief: 1, folk: 0, squirrel: 0,
