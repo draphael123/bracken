@@ -18058,7 +18058,7 @@ function drawOccluders(cx, cy) {
     if (h < 0.45) continue;
     const x = Math.round(i * step + (h - 0.5) * 90 - px), w = 9 + Math.round(h * 8);
     if (x < -60 || x > VW + 60) continue;
-    g.globalAlpha = 0.5 + h * 0.16;   /* (it used to thin itself within 26px of the hero; drawFront fades everything in front of him now, in one place) */
+    g.globalAlpha = 0.18 + h * 0.06;   /* distant scenery holds one soft value, even when the hero passes it */
     if (dress === 'crag' || dress === 'reef' || dress === 'shore') { // a shoulder of rock leaning into the frame
       g.fillStyle = '#181c22'; g.beginPath(); g.moveTo(x - w, VH); g.lineTo(x - w + 3, VH - 60 - h * 40); g.lineTo(x + w, VH - 40 - h * 30); g.lineTo(x + w + 5, VH); g.closePath(); g.fill();
       g.globalAlpha *= 0.5; g.fillStyle = tint; g.fillRect(x - w + 2, VH - 58 - h * 40, 2, 58 + h * 40);
@@ -18681,45 +18681,36 @@ function drawFg(cx, cy) {
   f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);
   let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);
   for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);
-  /* (it used to punch a soft hole round the hero here; drawFront fades whatever is over him now, this strip included) */
-  g.globalAlpha = 0.72; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;
+  /* Behind the actors now: no coverage test can make this strip flash. */
+  g.globalAlpha = 0.3; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;
 }
-// ANYTHING IN FRONT OF THE HERO FADES. One rule, in one place. Everything drawn between the world and the lens - the occluding
-// posts and rock shoulders, the near motes, the fg parallax strip, the near ledge and blades - goes onto its own sheet first,
-// and the sheet is read where the hero stands: if its ink covers his box, the window round him is laid down at half strength
-// (a soft ring outside it at three quarters, the rest of the sheet whole), eased over 0.15 s and eased back when he is clear.
-// It used to be two hacks in two places (the posts thinned within 26 px, the strip punched a hole) and nothing at all for
-// the near layer, which stood in front of the fight in the Stockade and the Underleaf like a wall.
-let FRONTC = null, frontFade = 0, frontT = -1, frontCovered = false, frontReadN = 0;
+// THE NEAR GRASS LEAVES A ROUND WINDOW: a hard-edged rectangular fade made glowing squares at night.
+// A continuous mask follows the hero, independent of whether a passing mote trips a coverage threshold.
+let FRONTC = null, frontFade = 0, frontCovered = false;
 let heroHidden = false, frontOff = false;   /* the readability pass's two switches (BK.hideHero, BK.frontOff): a frame without the hero, and the foreground as it was before this rule */
 function drawFront(cx, cy) {
   if (!FRONTC || FRONTC.width !== VW || FRONTC.height !== VH) { FRONTC = document.createElement('canvas'); FRONTC.width = VW; FRONTC.height = VH; }
   /* READ BACK CHEAPLY. The test below reads this sheet's pixels, and reading a GPU canvas back every frame stalls the graphics card - the
      castle levels, all posts and wall faces in front of the play, hitched with it. The sheet lives on the CPU side (willReadFrequently)
-     and is read a few times a second in play; a tool stepping single frames still gets a fresh read every frame. */
+     and the small coverage read is diagnostic only: it never switches the light or the fade. */
   const fc = FRONTC.getContext('2d', { willReadFrequently: true }); fc.globalAlpha = 1; fc.globalCompositeOperation = 'source-over'; fc.clearRect(0, 0, VW, VH);
   const g1 = g; g = fc;
-  try { drawOccluders(cx, cy); drawMotes(cx, cy, true); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
+  try { drawMotes(cx, cy, true);
     if (BG.storm && SET.ambient !== false) SM.drawStormFront(g, BG.storm, { cx, cy, time, VW, VH, TS, rails: stormRails(), quiet: stormQuiet(), calm: seaCalm() });   /* her rags, a block on its fall, the sea over her rail: on this sheet, so they fade off the hero */
     drawNear(cx); }
   finally { g = g1; }
   if (frontOff) { g.drawImage(FRONTC, 0, 0); return; }
-  /* THE TEST IS THE PIXELS: the hero's box on the sheet, and whether enough of it has ink over it to matter */
-  const hx = Math.round(P.x - cx), hy = Math.round(P.y - cy), bx0 = Math.max(0, hx - 8), by0 = Math.max(0, hy - 30), bx1 = Math.min(VW, hx + 8), by1 = Math.min(VH, hy);
-  frontReadN = (frontReadN + 1) % 4;
-  if (P.dead || !(bx1 > bx0 && by1 > by0)) frontCovered = false;
-  else if (frontReadN === 0 || frontT < 0 || time - frontT > 0.05) { const d = fc.getImageData(bx0, by0, bx1 - bx0, by1 - by0).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n++; frontCovered = n > (bx1 - bx0) * (by1 - by0) * 0.08; }   /* (between reads the last answer stands: the fade eases over 0.15 s anyway) */
-  /* eased on the game's own clock; a long gap (a load, a teleport, the bot's single frames) snaps it, the way the dark snaps */
-  const dtF = frontT < 0 ? 1 : Math.min(0.5, Math.max(0, time - frontT)); frontT = time;
-  const want = frontCovered ? 1 : 0, rate = dtF / 0.15; frontFade += Math.max(-rate, Math.min(rate, want - frontFade)); frontFade = Math.max(0, Math.min(1, frontFade));
-  if (frontFade < 0.01) { g.drawImage(FRONTC, 0, 0); return; }
-  const part = (x0, y0, x1, y1, a) => { x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(VW, x1); y1 = Math.min(VH, y1); if (x1 <= x0 || y1 <= y0) return; g.globalAlpha = a; g.drawImage(FRONTC, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0); };
-  const ox0 = hx - 48, oy0 = hy - 64, ox1 = hx + 48, oy1 = hy + 20, ix0 = hx - 32, iy0 = hy - 48, ix1 = hx + 32, iy1 = hy + 12;
-  part(0, 0, VW, oy0, 1); part(0, oy1, VW, VH, 1); part(0, oy0, ox0, oy1, 1); part(ox1, oy0, VW, oy1, 1);                     /* the sheet, whole, outside the ring */
-  const ra = 1 - 0.25 * frontFade, wa = 1 - 0.5 * frontFade;
-  part(ox0, oy0, ox1, iy0, ra); part(ox0, iy1, ox1, oy1, ra); part(ox0, iy0, ix0, iy1, ra); part(ix1, iy0, ox1, iy1, ra);   /* the ring */
-  part(ix0, iy0, ix1, iy1, wa);                                                                                              /* the window */
-  g.globalAlpha = 1;
+  const hx = Math.round(P.x - cx), hy = Math.round(P.y - cy) - 14;
+  frontFade = P.dead ? 0 : 1; frontCovered = false;
+  if (frontFade) {
+    const bx = Math.max(0, hx - 8), by = Math.max(0, hy - 16), bw = Math.min(VW - bx, 16), bh = Math.min(VH - by, 30);
+    if (bw > 0 && bh > 0) { const d = fc.getImageData(bx, by, bw, bh).data; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) { frontCovered = true; break; } }
+    fc.globalCompositeOperation = 'destination-out';
+    const mask = fc.createRadialGradient(hx, hy, 14, hx, hy, 64);
+    mask.addColorStop(0, 'rgba(0,0,0,0.65)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
+    fc.fillStyle = mask; fc.fillRect(hx - 64, hy - 64, 128, 128); fc.globalCompositeOperation = 'source-over';
+  }
+  g.drawImage(FRONTC, 0, 0);
 }
 function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
   g.fillStyle = ART.OUT; g.fillRect(x - 1, y - 1, w + 2, h + 2);
@@ -19340,6 +19331,8 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.monk) drawMonkBack(cx, cy);   /* THE MONASTERY: the sun over the cloud, the cloud bank, the walkway posts and the prayer flags */
   if (L.fields) drawFieldsBack(cx, cy);   /* the boughs and the posts under the ledges */
   if (L.mage) drawMageBack(cx, cy);   /* THE MAGE'S FOLLY: the chains, the orrery's arms and hubs */
+  // THE TRUNKS STAY BEHIND THE ROAD: scenery cannot turn into a wall, or flash when a hero crosses its ink.
+  drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
