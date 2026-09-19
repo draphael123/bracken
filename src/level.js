@@ -1672,8 +1672,13 @@ function hangingVillage() {
   ent('gate', 100, 19);
   coins([103, 51], [104, 50], [105, 51], [107, 51], [103, 43], [104, 43]); // the nook past the rock face pays
 
+
+  for(const m of movers)if(m.kind==='lift'){const tx=Math.floor((m.x+16)/TS);let row=Math.floor(Math.min(m.y0,m.y1)/TS)-1;while(row>0&&!L.grid[row*W+tx])row--;m.top=(row+1)*TS;}
+  // A house for every inhabited door; two large public buildings mark the roots and market.
+  for(const d of [...L.ents].filter(e=>e.t==='door'))ent('deco',d.x,d.y,{kind:(d.x===60&&d.y===107)||(d.x===50&&d.y===79)?'villageHall':'hangingHouse'});
+  for(const [x,y,k] of [[23,107,'barrels'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[27,93,'washing'],[63,51,'washing']])ent('deco',x,y,{kind:k});
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
+    hangingTown:true, W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'town', night: false, glowNight: true,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(140,90,150,0.12)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone: [], scree: [], snowLine: 52,

@@ -38,6 +38,7 @@ import * as CTP from './city_props.js';
 import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
 import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.js';
 import { bakeRimewright } from './redraw/frost.js';
+import {bakeHangingHouse,paintHouseSmoke} from './redraw/hanging-town.js';
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
 import { bakeSwornSword, bakeHedgeKnight, bakeRunner, bakeCrossbowman, bakeClosedHelm,
@@ -2137,7 +2138,7 @@ function spawnEnt(e) {
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
          even had its sprite baked and waiting in PROP.) tools/content-audit.mjs is what catches this. */
-      case 'deco': { const K = { fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
+      case 'deco': { const K = { hangingHouse: [hangingHouses()[0],true], villageHall: [hangingHouses()[1],true], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
@@ -2160,7 +2161,7 @@ function spawnEnt(e) {
           if (!isSolid(e.x, ty - 1)) break;                 /* nothing to hang it from: it does not exist */
           gy = ty; }
         /* a standing one was set down on its floor at load (groundEnts) */ const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && tileAt(e.x, gy + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
-        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS - spritePad(c)[0] : pyg - c.height + spritePad(c)[1] + (onPlank ? 3 : 0), c, bg: K[1], anim: K[2] || null, ph: Math.random() * 6, stand: decoStands(e), hang: decoHangs(e), moor: e.kind === 'airBell' ? moorOf(e.x, gy) : 0 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
+        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS - spritePad(c)[0] : pyg - c.height + spritePad(c)[1] + (onPlank ? 3 : 0), c, bg: true, anim: K[2] || null, ph: Math.random() * 6, stand: decoStands(e), hang: decoHangs(e), moor: e.kind === 'airBell' ? moorOf(e.x, gy) : 0 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
         if (e.kind === 'lanternDeck' && e.v !== 0) lights.push({ x: px, y: pyg - 18, r: 36, torch: true });
         if (e.kind === 'lamppost') lights.push({ x: px, y: pyg - 28, r: 44, glow: true }); if (e.kind === 'candelabra') lights.push({ x: px, y: pyg - 22, r: 34, glow: true, warm: true });   /* THE MAGE'S FOLLY: its lamps and its candles */
         if (e.kind === 'cookPot') lights.push({ x: px, y: pyg - 8, r: 26, torch: true });
@@ -6942,7 +6943,7 @@ function updatePlayer(dt) {
   { // crag rock faces: hold into the rock while airborne to cling and slide slowly; jump to kick up and away
     const dir = keys.left ? -1 : keys.right ? 1 : 0, tx = Math.floor((P.x + dir * 6) / TS), ty = Math.floor((P.y - 8) / TS);
     const grip = dir !== 0 && !P.ground && P.vy > -40 && !(P.hurt > 0) && !P.plunge && (tileAt(tx, ty) === T.CLIMB || tileAt(tx, ty + 1) === T.CLIMB);
-    if (grip) { if (!P.cling) { P.cling = true; SFX.pStep(); } P.vy = Math.min(P.vy, P.relic === 'spurs' ? 0 : 26); P.face = dir; if (Math.random() < dt * 10) parts.push({ x: P.x + dir * 6, y: P.y - 4, vx: -dir * 20, vy: 24, life: 0.3, max: 0.3, col: '#8a919c', size: 1, grav: 200 });
+    if (grip) { if (!P.cling) { P.cling = true; SFX.clank(); dust(P.x+dir*6,P.y-8,3); } P.vy = Math.min(P.vy, P.relic === 'spurs' ? 0 : 26); P.face = dir; if (Math.random() < dt * 10) parts.push({ x: P.x + dir * 6, y: P.y - 4, vx: -dir * 20, vy: 24, life: 0.3, max: 0.3, col: '#8a919c', size: 1, grav: 200 });
       if (P.jbuf > 0) { P.jbuf = 0; P.vy = JUMPV; P.vx = -dir * 150; P.cling = false; P.canCut = true; P.kicked = false; SFX.pJump(); dust(P.x + dir * 6, P.y - 6, 4); } }
     else P.cling = false;
   }
@@ -16818,7 +16819,7 @@ function updateEnemies(dt) {
     if (e.t === 'folk') { // townsfolk: bolt for the nearest door and slam it; the court folk cheer from the gallery
       if (e.court) { e.vy = 0; continue; }
       const near = !P.dead && Math.abs(P.x - e.x) < 110 && Math.abs(P.y - e.y) < 40; e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270;
-      if (near || e.running) { e.running = true; const dx = e.door - e.x; e.face = Math.sign(dx) || e.face; e.vx += (e.face * e.speed - e.vx) * Math.min(1, dt * 10); if (Math.abs(dx) < 5) { e.alive = false; const d = props.find(p => p.t === 'door' && Math.abs(p.x - e.door) < 6); if (d) d.shut = true; SFX.thud(); number(e.x, e.y - 16, 'SLAM', '#9aa39a'); continue; } if (!e.said) { e.said = true; number(e.x, e.y - 16, ['EEK', 'THE KNIGHT', 'RUN', 'MUM'][(Math.random() * 4) | 0], '#c9b27c'); } }
+      if (near || e.running) { e.running = true; const dx = e.door - e.x; e.face = Math.sign(dx) || e.face; e.vx += (e.face * e.speed - e.vx) * Math.min(1, dt * 10); if (Math.abs(dx) < 5) { e.alive = false; const d = props.find(p => p.t === 'door' && Math.abs(p.x - e.door) < 6 && Math.abs(p.y - e.y) < 16); if (d) d.shut = true; SFX.thud(); number(e.x, e.y - 16, 'SLAM', '#9aa39a'); continue; } if (!e.said) { e.said = true; number(e.x, e.y - 16, ['EEK', 'THE KNIGHT', 'RUN', 'MUM'][(Math.random() * 4) | 0], '#c9b27c'); } }
       else e.vx *= Math.pow(0.02, dt);
       const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; continue;
     }
@@ -19250,6 +19251,27 @@ function drawFacades(cx, cy) {
   }
 }
 
+
+let HANGING_HOUSES=null;const hangingHouses=()=>HANGING_HOUSES||(HANGING_HOUSES=[bakeHangingHouse(),bakeHangingHouse(true)]);
+const SOFT_SCENERY=new WeakMap();
+function softScenery(c){
+  if(SOFT_SCENERY.has(c))return SOFT_SCENERY.get(c);
+  const [out,cg]=canvas(c.width,c.height);cg.drawImage(c,0,0);const im=cg.getImageData(0,0,c.width,c.height),p=im.data,alpha=new Uint8Array(c.width*c.height);
+  for(let i=0;i<alpha.length;i++)alpha[i]=p[i*4+3];
+  for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const i=y*c.width+x,k=i*4;if(!alpha[i])continue;
+    const edge=x===0||y===0||x===c.width-1||y===c.height-1||!alpha[i-1]||!alpha[i+1]||!alpha[i-c.width]||!alpha[i+c.width];
+    if(edge&&p[k]+p[k+1]+p[k+2]<150){p[k+3]=0;continue;}
+    p[k]=Math.round(p[k]*.88+17);p[k+1]=Math.round(p[k+1]*.88+15);p[k+2]=Math.round(p[k+2]*.88+15);
+  }cg.putImageData(im,0,0);SOFT_SCENERY.set(c,out);return out;
+}
+function drawScenery(cx,cy){
+  g.save();g.globalAlpha=.78;
+  for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx,d.y-cy);
+    if(d.kind==='hangingHouse'||d.kind==='villageHall'){paintHouseSmoke(g,d.x+d.c.width-25-cx,d.y+10-cy,time+d.ph);g.globalAlpha=.78;}}
+  for(const d of decor){if(d.x<cx-d.c.width||d.x>cx+VW)continue;const c=d.fire?PROP.campfire[Math.floor(time*9+d.x)%3]:d.c;const sway=d.sway>0?Math.round(Math.sin(time*28)*d.sway*3):0;g.drawImage(softScenery(c),d.x-cx+sway,d.y-cy);}
+  g.restore();
+}
+
 function drawStructures(cx,cy) {
   for(const z of L.structures||[]){const l=z.x0*TS-cx,r=(z.x1+1)*TS-cx,t=z.top*TS-cy,b=z.floor*TS-cy;if(r<0||l>VW||b<0||t>VH)continue;
     g.fillStyle=z.kind==='timber'?'#755b43':'#827a67';
@@ -19338,7 +19360,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.fields) drawFieldsBack(cx, cy);   /* the boughs and the posts under the ledges */
   if (L.mage) drawMageBack(cx, cy);   /* THE MAGE'S FOLLY: the chains, the orrery's arms and hubs */
   // THE TRUNKS STAY BEHIND THE ROAD: scenery cannot turn into a wall, or flash when a hero crosses its ink.
-  drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
+  drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
@@ -19370,7 +19392,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'cart') { if (!m.gone) g.drawImage(PROP.mineCart[Math.abs(m.vx) > 20 ? Math.floor(time * 12) % 2 : 0], Math.round(m.x) - 1 - cx, Math.round(m.y) - 4 - cy); }
     else if (m.kind === 'orelift') { g.fillStyle = '#8b8378'; g.fillRect(Math.round(m.x) + 2 - cx, 0, 2, Math.round(m.y) - cy); g.fillRect(Math.round(m.x) + 60 - cx, 0, 2, Math.round(m.y) - cy); g.drawImage(PROP.orePan, Math.round(m.x) - cx, Math.round(m.y) - 3 - cy); }
     else if (m.kind === 'lift' && m.cw) drawBasket(m, cx, cy);   /* THE MONASTERY's counterweight baskets */
-    else if (m.kind === 'lift') { const ry = m.top !== undefined ? Math.round(m.top - cy) : 0; g.fillStyle = '#b8a888'; g.fillRect(Math.round(m.x) + 15 - cx, ry, 2, Math.round(m.y) - cy - ry); if (m.top !== undefined) { g.fillStyle = '#3a2618'; g.beginPath(); g.arc(Math.round(m.x) + 16 - cx, ry, 4, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(Math.round(m.x) + 15 - cx, ry - 1, 2, 2); } g.drawImage(PROP.lift, Math.round(m.x) - cx, Math.round(m.y) - cy); }
+    else if (m.kind === 'lift' && L.hangingTown) { const x=Math.round(m.x-cx),y=Math.round(m.y-cy),top=Math.round(m.top-cy);g.fillStyle='#ab956c';g.fillRect(x+15,top,2,y-top);g.fillStyle='#725840';g.fillRect(x,y,32,7);g.fillRect(x,y-10,2,12);g.fillRect(x+30,y-10,2,12);g.strokeStyle='#aa8d64';g.lineWidth=1;g.strokeRect(x+.5,y-10.5,31,16);g.beginPath();g.arc(x+16,top,5,0,7);g.stroke();} else if (m.kind === 'lift') { const ry = m.top !== undefined ? Math.round(m.top - cy) : 0; g.fillStyle = '#b8a888'; g.fillRect(Math.round(m.x) + 15 - cx, ry, 2, Math.round(m.y) - cy - ry); if (m.top !== undefined) { g.fillStyle = '#3a2618'; g.beginPath(); g.arc(Math.round(m.x) + 16 - cx, ry, 4, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(Math.round(m.x) + 15 - cx, ry - 1, 2, 2); } g.drawImage(PROP.lift, Math.round(m.x) - cx, Math.round(m.y) - cy); }
     else if (m.kind === 'orelift' && m.player) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x + 15, y - 200, 2, 200); g.fillStyle = '#3a3a44'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#8a919c'; g.fillRect(x, y, m.w, 1); g.fillRect(x, y - 22, 2, 22); g.fillRect(x + m.w - 2, y - 22, 2, 22); g.fillRect(x, y - 22, m.w, 2); for (let k = 4; k < m.w - 4; k += 6) g.fillRect(x + k, y - 20, 1, 20); }
     else if (m.kind === 'growcap') { const x = Math.round(m.x - cx), cxm = x + m.w / 2, top = Math.round(m.y - cy), base = Math.round(m.y0 + 8 - cy), wob = m.state === 'up' && m.upT < 1.5 ? Math.round(Math.sin(time * 30)) : 0;
       g.fillStyle = '#d8e0c0'; g.fillRect(cxm - 3 + wob, top + 6, 6, Math.max(0, base - top - 6)); g.fillStyle = '#a8b090'; g.fillRect(cxm + 1 + wob, top + 6, 2, Math.max(0, base - top - 6)); // the stalk
@@ -19449,7 +19471,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (!P.dead && Math.abs(P.x - pr.x) < 16 && Math.abs(P.y - pr.y) < 20 && !warp) {
         const barred = pr.needs && !hasKey(pr.needs);
         text(barred ? 'BARRED' : 'E', xx, yy - 36 + Math.round(Math.sin(time * 6)), barred ? '#ff9a5c' : '#8fd160', 'center', 6); } }
-    else if (pr.t === 'door') { if (pr.kind === 'cottage') g.drawImage(PROP.cottage[pr.shut ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 32 - cy); else g.drawImage(PROP.door[pr.shut ? 1 : 0], Math.round(pr.x) - 17 - cx, Math.round(pr.y) - 34 - cy); }
+    else if (pr.t === 'door') { if(L.hangingTown){const x=Math.round(pr.x-cx),y=Math.round(pr.y-cy);g.fillStyle=pr.shut?'#90745b':'#554d47';g.fillRect(x-6,y-24,12,23);g.fillStyle='#c9aa70';g.fillRect(x+3,y-12,1,2);} else if (pr.kind === 'cottage') g.drawImage(PROP.cottage[pr.shut ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 32 - cy); else g.drawImage(PROP.door[pr.shut ? 1 : 0], Math.round(pr.x) - 17 - cx, Math.round(pr.y) - 34 - cy); }
     else if (pr.t === 'carpet') g.drawImage(PROP.carpet, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 3 - cy);
     else if (pr.t === 'keg') { if (pr.gone || !PROP.flot) continue; const c = PROP.flot.keg[pr.fuse > 0 ? 1 : 0]; g.drawImage(c, Math.round(pr.x - c.width / 2 - cx), Math.round(pr.y - c.height - cy)); }
     else if (pr.t === 'well') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
@@ -19688,17 +19710,6 @@ function drawWorld(cx, cy, showPlayer) {
   for (const b of bombs) if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);
   for (const f of foxes) drawSet(SPR.fox, null, Math.floor(f.t * 10) % 2, f.x - cx, f.y - cy, f.face, false);
   if (L.deep) drawDeepBack(cx, cy);
-  for (const d of deco) if (d.bg && d.x > cx - 140 && d.x < cx + VW + 4) { if (d.moor) drawMoor(d, cx, cy); if (d.kind === 'hiveBg') { g.globalAlpha = 0.5; g.drawImage(d.c, d.x - cx, d.y - cy); g.globalAlpha = 1; } else g.drawImage(d.c, d.x - cx, d.y - cy); } // (the great combs sit back: they are scenery, not somewhere to stand)
-  for (const d of decor) if (d.bg && d.x > cx - 44 && d.x < cx + VW + 4) g.drawImage(d.c, d.x - cx, d.y - cy);
-  for (const d of decor) if (!d.bg && d.x > cx - 30 && d.x < cx + VW + 4) {
-    if (d.fire) { g.drawImage(PROP.campfire[Math.floor(time * 9 + d.x) % 3], d.x - cx, d.y - cy); continue; }
-    if (d.k === 'tiny') { g.globalAlpha = 0.75 + 0.25 * Math.sin(time * 3 + d.ph); g.drawImage(d.c, d.x - cx, d.y - cy); g.globalAlpha = 1; continue; }
-    if (d.k === 'cattail' || d.k === 'moss') { g.drawImage(d.c, d.x - cx + Math.round(Math.sin(time * 1.6 + d.x * 0.05) * (d.k === 'moss' ? 1 : 1.5) + (d.sway > 0 ? Math.sin(time * 28) * d.sway * 3 : 0)), d.y - cy); continue; }
-    if (d.sway > 0) g.drawImage(d.c, d.x - cx + Math.round(Math.sin(time * 28) * d.sway * 3), d.y - cy);
-    else if (d.wob > 0) { const k = 1 + Math.sin(time * 30) * d.wob * 0.4; g.drawImage(d.c, Math.round(d.x - cx + d.c.width * (1 - k) / 2), Math.round(d.y - cy + d.c.height * (1 - k)), Math.round(d.c.width * k), Math.round(d.c.height * k)); }
-    else g.drawImage(d.c, d.x - cx, d.y - cy);
-  }
-  for (const d of deco) if (!d.bg && d.x > cx - 60 && d.x < cx + VW + 4) { const c = d.anim ? d.anim[Math.floor(time * (d.kind === 'drip' ? 2 : 3) + d.ph) % d.anim.length] : d.c; if (d.moor) drawMoor(d, cx, cy); g.drawImage(c, d.x - cx, d.y - cy); }
   for (const s of signs) g.drawImage(PROP.sign, s.x - 9 - cx, s.y - 18 - cy);
   for (const pr of props) if (pr.t === 'npc' && pr.x > cx - 40 && pr.x < cx + VW + 40) { { const set = SPR[pr.kind] || SPR.shepherd, near = Math.abs(P.x - pr.x) < 90, ph = time + (pr.anim || 0) * 3, c0 = Array.isArray(set.R) ? set.R[0] : set.R, breathe = Math.sin(ph * 2.1) > 0.55 ? 1 + 1 / c0.height : 1;
         const face = near ? (P.x < pr.x ? -1 : 1) : (Math.floor(ph / 3.3) % 2 ? 1 : -1);
@@ -20117,7 +20128,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (P.block || P.jet || P.aegis || P.warding) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }
-      else if (P.climb) { key = 'climb'; frame = Math.floor((P.climbA || 0) / 7) % 2; }
+      else if (P.climb || P.cling) { key = 'climb'; frame = P.cling ? 0 : Math.floor((P.climbA || 0) / 7) % 2; }
       else if (P.swim && !P.ground && K.R.swim) { const mv = Math.hypot(P.vx, P.vy) > 24; key = mv ? 'swim' : 'tread'; frame = Math.floor(time * (mv ? 9 : 5)) % K.R[key].length;   /* IN THE WATER: laid out and stroking when he is going somewhere (any way, not only sideways), upright and treading when he is not */
         const targetTilt = mv ? Math.max(-SWIM_TILT_MAX, Math.min(SWIM_TILT_MAX, Math.atan2(P.face * P.vy, P.face * P.vx))) : 0;
         P.swimTiltA = (P.swimTiltA || 0) + (targetTilt - (P.swimTiltA || 0)) * Math.min(1, SWIM_TILT_EASE / 60);

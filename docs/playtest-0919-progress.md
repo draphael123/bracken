@@ -27,3 +27,9 @@ Added THE HUNTING STANDS after the fired wood and THE OLD STONE before the proce
 Two actual sword presses cut the stand, remove its deck and kill the patrol. Trap, pickup, spawn, elite and holder/bridge checks pass. The pixel pass caught a checkpoint intersecting a stair; moved it onto the ledge. Final `npm run check` exit 0, all 25 checks. Three views inspected. Curve introduces no new out-of-line steps; the pre-existing Fields/Mage steps remain.
 
 King lab: knight 19.3s, pyro 22.7s, paladin 18.7s, pirate 39s killed; Warden timed out at 7%, Reaper at 49%. Previous-commit comparison also timed out Warden at 7%, with Reaper winning at 143.6s. These boss duration/bot reliability gaps remain explicitly open for item 13. Human route feel unverified.
+
+## Item 7 — readable scenery and a hanging town
+
+All pass-through scenery draws behind collision tiles with softened colour and stripped dark outer outlines. Solid tiles retain their outlines. The shared rough climb face now has a grip pose, clank and contact dust. Thirteen slung/stilt houses, two public halls, smoke, stalls, washing and a pulley basket give the village a town silhouette. Residents select doors on their own tier, fixing a market resident shutting a roots-tier door.
+
+Five screenshots inspected. Live tests verified the correct door closure and a 24.8px/s wall grip. New readability and town tests are in the suite. `npm run check` exit 0, all 27 checks passed (outputs/07-check.log). Human traversal and combat feel remain unverified.
