@@ -3,6 +3,7 @@ import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
+import { GROUND_KITS } from './dressing.js';
 import { bakeFrog } from './redraw/frogking.js';
 import * as LWP from './lw_props.js';
 import * as RFP from './reef_props.js';
@@ -922,44 +923,20 @@ function resolveTiles() {
       if (up !== T.SOLID && up !== T.CRATE) {
         const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
-        const dress = (L.palette && L.palette.dress) || (L.palette && L.palette.myc ? 'myc' : 'wood');
-        const flat2 = tileAt(x + 1, y - 1) === T.AIR && tileAt(x + 1, y) === T.SOLID && tileAt(x + 2, y - 1) === T.AIR && tileAt(x + 2, y) === T.SOLID;
-        let roll = rnd();
-        if ((L.interiors || []).some(([ix0, ix1, iy0]) => x >= ix0 && x <= ix1 && y >= iy0 - 4 && y < iy0)) roll = 1; // a roof over a hall: no ferns, stumps or fences up there
-        if (L.snowLine !== undefined && y <= L.snowLine && rnd() < 0.85) decor.push({ k: 'snow', x: x * TS, y: y * TS - 3, c: PROP.snowCap });
-        const dressFrom = decor.length;   /* (see the end of the dressing: nothing grows up through a bed of spikes) */
-        /* NOTHING GROWS THROUGH A DECK. A top with boards laid over it (the wreck's deck on the flats, the lamp gallery round the
-           light) is under a floor, and the shore's rocks and rushes came up between the planks. Boards over it: it gets nothing */
-        if (tileAt(x, y - 1) === T.PLANK) roll = 1;
-        else if (dress === 'myc') { roll = 1; if (rnd() < 0.42) decor.push({ k: 'tiny', x: x * TS + ((rnd() * 10) | 0), y: y * TS - 6, c: PROP.tinyCap[(rnd() * 4) | 0], ph: rnd() * 6 }); if (rnd() < 0.08) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); }
-        else if (dress === 'none') { roll = 1; }
-        else if (dress === 'crag') { roll = 1; if (!inZone) { const r2 = rnd(); if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 6) | 0), y: y * TS - 7, c: PROP.heather[(rnd() * 3) | 0], sway: 0 }); else if (r2 < 0.21 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 12, c: PROP.gorse[(rnd() * 2) | 0], birds: false }); else if (r2 < 0.26) decor.push({ k: 'fern', x: x * TS + 4, y: y * TS - 14, c: PROP.thistle[(rnd() * 2) | 0], sway: 0 }); else if (r2 < 0.32) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 6, c: PROP.rock[(rnd() * 3) | 0] }); } }
-        else if (dress === 'camp') { roll = 1; const r2 = rnd(); if (r2 < 0.03 && flat2) decor.push({ k: 'cart', x: x * TS, y: y * TS - 16, c: PROP.cart, bg: true }); else if (r2 < 0.16) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 }); else if (r2 < 0.21) { decor.push({ k: 'skull', x: x * TS + 3, y: y * TS - 24, c: PROP.skullPost, crow: rnd() < 0.5 }); } else if (r2 < 0.25 && flat2) decor.push({ k: 'tent', x: x * TS - 4, y: y * TS - 22, c: PROP.tent[(rnd() * 2) | 0], bg: true }); else if (r2 < 0.28) { decor.push({ k: 'fire', x: x * TS + 1, y: y * TS - 14, c: PROP.campfire[0], fire: true }); lights.push({ x: x * TS + 8, y: y * TS - 6, r: 38 }); } else if (r2 < 0.34) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); }
-        else if (dress === 'village' && crownT) { roll = 1; }   /* NO CART PARKED ON A WALL-WALK: the masons' stone grows nothing */
-        else if (dress === 'village') { roll = 1; const r2 = rnd();
-          if (r2 < 0.03 && flat2) decor.push({ k: 'cart', x: x * TS, y: y * TS - 16, c: PROP.cart, bg: true });
-          else if (r2 < 0.06 && flat2) decor.push({ k: 'bush', x: x * TS - 2, y: y * TS - 16, c: PROP.beanpoles[(rnd() * 2) | 0], birds: false, bg: true });
-          else if (r2 < 0.09 && flat2) decor.push({ k: 'rock', x: x * TS, y: y * TS - 14, c: PROP.gardenWall[(rnd() * 3) | 0], bg: true });
-          else if (r2 < 0.11) decor.push({ k: 'rock', x: x * TS + 3, y: y * TS - 11, c: PROP.skep });
-          else if (r2 < 0.26) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 });
-          else if (r2 < 0.34) decor.push({ k: 'flower', x: x * TS + 3 + ((rnd() * 8) | 0), y: y * TS - 6, c: PROP.flower[(rnd() * 4) | 0], sway: 0 });
-          else if (r2 < 0.38) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); }
-        else if (dress === 'shore') { roll = 1; const wet = L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1], r2 = rnd();
-          if (wet) { if (r2 < 0.1) decor.push({ k: 'rock', x: x * TS + 3, y: y * TS - 4, c: PROP.lw.saltCrust[(rnd() * 2) | 0] }); else if (r2 < 0.16) decor.push({ k: 'rock', x: x * TS + 3, y: y * TS - 8, c: PROP.lw.coralTuft[(rnd() * 3) | 0] }); else if (r2 < 0.22) decor.push({ k: 'tuft', x: x * TS + 2, y: y * TS - 16, c: PROP.lw.rushes[(rnd() * 3) | 0], sway: 0 }); }
-          else { if (r2 < 0.14) decor.push({ k: 'tuft', x: x * TS + 2 + ((rnd() * 6) | 0), y: y * TS - 16, c: PROP.lw.rushes[(rnd() * 3) | 0], sway: 0 }); else if (r2 < 0.24) decor.push({ k: 'rock', x: x * TS + ((rnd() * 10) | 0), y: y * TS - 4, c: PROP.lw.shell[(rnd() * 3) | 0] }); else if (r2 < 0.27 && flat2) decor.push({ k: 'log', x: x * TS, y: y * TS - 7, c: PROP.lw.driftwood[(rnd() * 2) | 0] }); else if (r2 < 0.31) decor.push({ k: 'rock', x: x * TS, y: y * TS - 10, c: PROP.lw.barnacleRock[(rnd() * 2) | 0] }); } }
-        else if (dress === 'marsh') { const r2 = rnd(); if (r2 < 0.24) { decor.push({ k: 'cattail', x: x * TS + 3, y: y * TS - 22, c: PROP.cattail[(rnd() * 3) | 0], sway: 0 }); roll = 1; } else if (r2 < 0.34) { decor.push({ k: 'fern', x: x * TS + 1, y: y * TS - 10, c: PROP.fern[(rnd() * 3) | 0], sway: 0 }); roll = 1; } else if (r2 < 0.37 && flat2) { decor.push({ k: 'log', x: x * TS, y: y * TS - 10, c: PROP.fallenLog[(rnd() * 2) | 0] }); roll = 1; } else if (r2 < 0.42) { decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); roll = 1; } else roll = 0.5 + rnd() * 0.5; }
-        // NOTHING GREEN GROWS ON A SCRUBBED DECK. `dress: 'ship'` was not one of the cases, so a flotilla fell
-        // through to the wood's undergrowth and the Quartermaster's quarterdeck came up in ferns, flowers and
-        // MUSHROOMS. The sea sets get shells and salt and otherwise they get left alone.
-        else if (dress === 'ship' || dress === 'reef' || dress === 'city') { roll = 1; const r2 = rnd();
-          if (r2 < 0.08 && PROP.lw && PROP.lw.shell) decor.push({ k: 'rock', x: x * TS + 3 + ((rnd() * 7) | 0), y: y * TS - 4, c: PROP.lw.shell[(rnd() * 3) | 0] });
-          else if (r2 < 0.13 && PROP.lw && PROP.lw.saltCrust) decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 4, c: PROP.lw.saltCrust[(rnd() * 2) | 0] }); }
-        else if (L.masonry && dress === 'none') roll = 1;   /* A CASTLE ON A SNOW LINE GROWS NOTHING: 'none' fell through to the wood's ferns, stumps and mushrooms, on her ashlar */
-        else { const r2 = rnd(); if (r2 < 0.09) { decor.push({ k: 'fern', x: x * TS + 1, y: y * TS - 10, c: PROP.fern[(rnd() * 3) | 0], sway: 0 }); roll = 1; } else if (r2 < 0.13 && flat2) { decor.push({ k: 'stump', x: x * TS + 1, y: y * TS - 10, c: PROP.stump[(rnd() * 2) | 0] }); roll = 1; } else if (r2 < 0.16 && flat2) { decor.push({ k: 'log', x: x * TS, y: y * TS - 10, c: PROP.fallenLog[(rnd() * 2) | 0] }); roll = 1; } else if (r2 < 0.21) { decor.push({ k: 'rock', x: x * TS + 2, y: y * TS - 7, c: PROP.rock[(rnd() * 3) | 0] }); roll = 1; } else if (r2 < 0.235 && flat2 && dress === 'wood') { decor.push({ k: 'fence', x: x * TS, y: y * TS - 12, c: PROP.fence[(rnd() * 2) | 0], bg: true }); roll = 1; } }
-        if (roll < 0.36) decor.push({ k: 'tuft', x: x * TS + ((rnd() * 8) | 0), y: y * TS - 5, c: PROP.tuft[(rnd() * 4) | 0], sway: 0 });
-        else if (roll < 0.5) decor.push({ k: 'flower', x: x * TS + 3 + ((rnd() * 8) | 0), y: y * TS - 6, c: PROP.flower[(rnd() * 4) | 0], sway: 0 });
-        else if (roll < 0.58) decor.push({ k: 'mushroom', x: x * TS + 2 + ((rnd() * 7) | 0), y: y * TS - 6, c: PROP.mushroom[(rnd() * 2) | 0], wob: 0 });
-        else if (roll < 0.65 && tileAt(x + 1, y - 1) === T.AIR && tileAt(x + 1, y) === T.SOLID) decor.push({ k: 'bush', x: x * TS - 4, y: y * TS - 15, c: PROP.bush[(rnd() * 3) | 0], birds: rnd() < 0.5 });
+        const kit = GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
+        const dressFrom = decor.length;
+        const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
+        if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
+        if (clearGround && kit.kinds.length && rnd()<kit.density) {
+          const kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)];
+          const source=({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
+          const c=Array.isArray(source)?source[Math.floor(rnd()*source.length)]:source;
+          if(c && (c.width<=16 || (tileAt(x+1,y)===T.SOLID && tileAt(x+1,y-1)===T.AIR))) {
+            const k=({tinyCap:'tiny',campfire:'fire',skullPost:'skull',fallenLog:'log',heather:'tuft',gorse:'bush',thistle:'fern'})[kind]||kind;
+            decor.push({k,kind,x:x*TS,y:y*TS-c.height,c,bg:c.height>16,sway:0,ph:rnd()*6,fire:kind==='campfire'});
+            if(kind==='campfire'||kind==='stoneLantern')lights.push({x:x*TS+8,y:y*TS-8,r:30});
+          }
+        }
         /* A BED OF SPIKES IS NOT A GARDEN. A spike tile is not solid, so the ground under every railing and thorn bed read as open
            ground and grew skeps, tufts and flowers up through it. The dice are still thrown (every other tile keeps its dressing),
            and what landed under the spikes is taken back. */
@@ -2162,7 +2139,7 @@ function spawnEnt(e) {
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
-        bookshelf: [mo().bookshelf[(e.v || 0) % 2], true], shrine: [mo().shrine[(e.v || 0) % 2], false], flagPost: [mo().flagPost[(e.v || 0) % 2], false], statue: [mo().statue, false], portcullis: [mo().portcullis, false],   /* THE MONASTERY's */
+        stoneLantern: [mo().stoneLantern, true], herbBed: [mo().herbBed, true], pilgrimLeanTo: [mo().pilgrimLeanTo, true], prayerFlags: [mo().prayerFlags, true], incenseStand: [mo().incenseStand, true], monkChores: [mo().monkChores[0], true, mo().monkChores], bellFrame: [mo().bellFrame, true], bookshelf: [mo().bookshelf[(e.v || 0) % 2], true], shrine: [mo().shrine[(e.v || 0) % 2], false], flagPost: [mo().flagPost[(e.v || 0) % 2], false], statue: [mo().statue, false], portcullis: [mo().portcullis, false],   /* THE MONASTERY's */
         topiaryUrn: [ma().urn, false], sundial: [ma().sundial, false], stall: [ma().stall, true], ivyWall: [ma().ivy, true], lamppost: [ma().lamppost, false], lectern: [ma().lectern, false], bookpile: [ma().bookpile[(e.v || 0) % 2], false], candelabra: [ma().candelabra, false], nest: [ma().nest, false], globe: [ma().globe, false], cauldron: [ma().cauldron, false], bench: [ma().bench, false], jars: [ma().jars[(e.v || 0) % 2], false], retorts: [ma().retorts, false], wineRack: [ma().wineRack[(e.v || 0) % 2], true], still: [ma().still, false], orreryBase: [ma().orreryBase, true], desk: [ma().desk, false], chimneypot: [ma().chimneypot[(e.v || 0) % 2], false], telescope: [ma().telescope, true], starChart: [ma().starChart, true],   /* THE MAGE'S FOLLY */
         tubeWorms: [SEA.seaDeco('tubeWorms', e.v), false], glowCoral: [SEA.seaDeco('glowCoral', e.v), false], seaLily: [SEA.seaDeco('seaLily', e.v), false], boneHeap: [SEA.seaDeco('boneHeap', e.v), false], tributeSpill: [SEA.seaDeco('tributeSpill', e.v), false],   /* THE DEEP's own (src/sea_looks.js) */
         skep: [PROP.skep, false], trough: [PROP.trough, false], stocks: [PROP.stocks, false], dovecote: [PROP.dovecote, false],
@@ -8488,7 +8465,8 @@ function updateCrew(e, dt) {
     if (e.grap) { const g2 = e.grap; g2.t += dt; g2.x += g2.vx * dt; g2.y += g2.vy * dt; g2.vy += 200 * dt;
       if (!g2.hit && !P.dead && Math.abs(g2.x - P.x) < 12 && Math.abs(g2.y - (P.y - 9)) < 16) { g2.hit = true; e.grap = null; e.mode = 'haul'; e.modeT = 0.9; SFX.clank(); number(P.x, P.y - 26, 'HOOKED', '#ff9a5c'); }
       else if (g2.t > 0.9 || isSolid(Math.floor(g2.x / TS), Math.floor(g2.y / TS))) e.grap = null; }
-  } else if (e.t === 'marine') { grav = false; e.y = e.hy;
+  } else if (e.t === 'marine') {
+    e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); if (moveBody(e, 0, e.vy * dt, false).ground) e.vy = 0; e.hy = e.y;
     if (e.mode === 'shootTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'shoot'; e.modeT = 0.3; SFX.bowShot();
       const sx = e.x + e.face * 7, sy = e.y - 10, dd = Math.hypot(P.x - sx, (P.y - 8) - sy) || 1;
       seeds.push({ x: sx, y: sy, vx: (P.x - sx) / dd * 300, vy: ((P.y - 8) - sy) / dd * 300, g: 60, life: 2, arrow: true, rico: 1 }); } }
@@ -12066,7 +12044,8 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
   const d = P.x - e.x, ad = Math.abs(d);
   if (e.mode === 'rise') { e.y = e.riseY + Math.max(0, e.modeT) * 24; if (e.modeT <= 0) e.mode = 'drift'; return; }
   if (e.life <= 0 || P.dead) { e.alive = false; burst(e.x, e.y - 6, 6, COLS.wight, 20, 0.6, -10, 1); return; }
-  e.face = Math.sign(d) || e.face; e.x += e.face * 46 * dt; e.y = e.riseY - 1 + Math.sin(e.anim * 3) * 2;
+  e.face = Math.sign(d) || e.face; e.vy = Math.min(320, (e.vy || 0) + 1000 * dt);
+  if (moveBody(e, e.face * 46 * dt, e.vy * dt, false).ground) e.vy = 0; e.riseY = e.y;
   if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - Math.random() * 12, vx: 0, vy: -15, life: 0.6, max: 0.6, col: '#c8d8c8', size: 1, grav: 0 });
   if (!P.dead && ad < 10 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 1.2; SFX.wightTouch(); const res = damagePlayer(e.x, DMG.wight); if (res === 'hit') { P.vx *= 0.2; P.stDelay = 0.8; number(P.x, P.y - 24, 'COLD', '#c8d8c8'); } }
 }
@@ -16681,6 +16660,13 @@ function drawHornTell(e, cx, cy) {
   const f = e.face || 1, hx = x + f * 4, hy = Math.round(e.y - cy) - e.h + 2;
   g.fillStyle = '#e8dcc0'; g.fillRect(hx, hy, f * 4 || 4, 1); g.fillRect(hx + f * 4, hy - 1, f * 2 || 2, 3); g.fillStyle = '#8a6a40'; g.fillRect(hx - f, hy + 1, 1, 1);
 }
+// Do not freeze a falling walker at the range boundary after its bridge disappears.
+const SETTLED_FOES = new Set(['snuffer','lookout','marine','wight','swornsword','shardling']);
+function foeHasFooting(e) {
+  if (Math.abs(e.vy || 0)>1) return false;
+  const row=Math.floor((e.y+1)/TS);
+  return [e.x-e.w/2+1,e.x,e.x+e.w/2-1].some(x=>isSolid(Math.floor(x/TS),row)||isOneWay(tileAt(Math.floor(x/TS),row)));
+}
 function updateEnemies(dt) {
   updatePack(dt); eliteWatch();
   for (const e of enemies) {
@@ -16775,7 +16761,7 @@ function updateEnemies(dt) {
        anglers and urchins out there and left them hanging where the sea had been, for whoever came round the corner. */
     if ((e.t === 'eel' || e.t === 'angler' || e.t === 'urchin' || e.t === 'puffer' || e.t === 'jelly' || e.t === 'lamprey') && e.pool && !e.leap) {   /* (a river eel leaves its water on purpose: updateRiverEel keeps it in its column) */ const p = e.pool, bot = (p.bottom !== undefined ? p.bottom : p.y + 60) - 4; e.y = Math.min(bot, Math.max(p.y + 10, e.y));
       if (isSolid(Math.floor(e.x / TS), Math.floor((e.y - (e.h || 8) / 2) / TS))) sendHome(e, p.y + 10, bot); }   /* and not down into the wreck it was over */
-    if (Math.abs(e.x - P.x) > 420) continue; // (bosses above never sleep at range: the Ram Lord used to freeze mid-charge when the fold was wide)
+    if (Math.abs(e.x - P.x) > 420 && (!SETTLED_FOES.has(e.t) || foeHasFooting(e))) continue; // (bosses above never sleep at range: the Ram Lord used to freeze mid-charge when the fold was wide)
     { const bt = e.squirrel ? 'squirrel' : e.t; if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[bt] && PROG.beasts[bt].seen)) beastSeen(bt); }
     if (e.t === 'wasp') {
       if (e.drone && !P.dead) { // hive drones dart at you, then drift back to their post

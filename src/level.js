@@ -1766,15 +1766,19 @@ function theMonastery() {
   facades.push([14, 27, 209, 217, 'monkCurtain']);
   ent('npc', 8, 217, { kind: 'squire' });
   ent('sign', 4, 217, { text: 'THE MONASTERY. THE ROC DROVE THE MONKS OUT. WHAT THEY BUILT STILL ANSWERS A BLOW.' });
-  ent('deco', 17, 217, { kind: 'portcullis' }); ent('deco', 25, 217, { kind: 'cairn' });
+  ent('deco', 17, 217, { kind: 'portcullis' }); ent('deco', 25, 217, { kind: 'stoneLantern' });
   ent('check', 21, 217); coins([12, 216], [28, 216], [44, 216]);
   stair(218, 196, 30, 70, 34, 15);
+  // Grounded arcades carry the first terrace; their open arches leave the stair visible.
+  facades.push([1, 28, 196, 217, 'monkCurtain', {arch:[211,217]}], [72,94,196,217,'monkCurtain',{arch:[211,217]}]);
+  for(const [x,k] of [[13,'prayerFlags'],[76,'herbBed'],[81,'monkChores'],[90,'stoneLantern']]) ent('deco',x,217,{kind:k});
+  ent('deco',46,195,{kind:'well'}); ent('deco',64,195,{kind:'incenseStand'});
   ent('fledgling', 42, 217, { face: -1 });
   ent('sign', 62, 217, { text: 'A TRAPDOOR IN THE FLAGS. PRESS DOWN TO DROP IN, JUMP UP THROUGH IT TO COME OUT.' });
   cellar(66, 74, 218); coins([70, 217], [67, 220], [69, 220], [71, 220], [73, 220]);
   ent('grub', 68, 220, { face: 1 });                                // the undercroft has had nobody to sweep it for years
   ent('sprig', 54, 217, { face: -1 }); ent('sprig', 78, 217, { face: -1 });   // looters in the gate yard, going through the pilgrims' packs
-  ent('deco', 84, 217, { kind: 'tent' }); ent('deco', 89, 217, { kind: 'lanternPost' });
+  ent('deco', 84, 217, { kind: 'pilgrimLeanTo' }); ent('deco', 89, 217, { kind: 'lanternPost' });
   ent('deco', 92, 217, { kind: 'bones', v: 1 }); coins([80, 217], [87, 217]);
 
   // ---- 2. THE LOWER TERRACES: bean rows gone to seed, and the incense that still burns for nobody ----
@@ -1843,7 +1847,7 @@ function theMonastery() {
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
   ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 });
-  for (const [x, k, v] of [[52, 'lootHeap', 0], [63, 'tent', 1], [81, 'bones', 0]]) ent('deco', x, 131, { kind: k, v });
+  for (const [x, k, v] of [[52, 'herbBed', 0], [63, 'pilgrimLeanTo', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });
   ent('harpy', 30, 110); ent('kite', 58, 110); ent('harpy', 80, 106);
 
   // ---- 5. THE CLOUD CLOISTER. You come out of the grey into the sun, onto the monks' cloister ----
@@ -1932,7 +1936,7 @@ function theMonastery() {
   // the crawl under the roof ends in a hollow either side, and the second chimney comes up into the right one
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
-  ent('deco', 6, 35, { kind: 'cairn' }); coins([4, 35], [9, 35], [15, 35]);
+  ent('deco', 6, 35, { kind: 'stoneLantern' }); coins([4, 35], [9, 35], [15, 35]);
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
@@ -1961,7 +1965,7 @@ function theMonastery() {
   for (const x of [6, 12, 77, 90]) ent('deco', x, 29, { kind: 'eyrie' });   /* not 84: it ran through the plank laid over the thorns */
   for (const [x, v] of [[20, 0], [34, 1], [58, 0], [72, 1]]) ent('deco', x, 29, { kind: 'bones', v });
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
-  for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'cairn', v });
+  for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'stoneLantern', v });
   ent('sign', 30, 29, { text: 'THE NEST. EVERYTHING ON THIS ROOF CAME UP THE MOUNTAIN THE WAY YOU DID.' });
   // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
   // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
@@ -7086,12 +7090,12 @@ const REVIEW = {
   // held breath between the walls instead of another fight
   stockade: L => { L.ents = L.ents.filter(e => !((e.t === 'brute' && e.x === 372 && e.y >= 21) || (e.t === 'sapper' && e.x === 368 && e.y >= 21))); },
   // a silver four rows over the street: a step up to it
-  storm: L => { rv(L).plat(282, 28, 3); },
+  storm: L => { rv(L).plat(282, 28, 3); for (const e of L.ents) if (e.t === 'deco' && e.kind === 'cairn') { e.kind = 'skullTotem'; e.v = 0; } },
   // one spider in four goes: a fall off a climb should not land you in three more of them
   hanging: L => { let n = 0; for (let i = L.ents.length - 1; i >= 0; i--) { const e = L.ents[i]; if (e.t === 'spider' && !e.big && !e.mini && (n++ % 4) === 3) L.ents.splice(i, 1); } },
   // THE CLOUD CAMP: a foreman's tent and fire in the cloister's corner, and someone to tell you about the sun; and
   // the looters, digging in the terraces and under the stacks for whatever the monks buried
-  spire: L => { const R = rv(L); R.ent('deco', 4, 99, { kind: 'tent', v: 0 }); R.ent('npc', 8, 99, { kind: 'foreman' }); R.ent('brazier', 11, 99);
+  spire: L => { const R = rv(L); R.ent('deco', 4, 99, { kind: 'pilgrimLeanTo', v: 0 }); R.ent('npc', 8, 99, { kind: 'foreman' }); R.ent('brazier', 11, 99);
     R.ent('sign', 14, 99, { text: 'THE CLOUD CLOISTER. ABOVE THE CLOUD THE SMOKE GOES HIGHER AND THE BIRDS GET BOLDER.' });
     R.ent('miner', 32, 195, { face: -1 }); R.ent('miner', 20, 151, { face: 1 }); },
   // the castle had the fewest foes of anywhere: a watch in the ward, a hall guard, the kitchens staffed. And THE
@@ -7103,7 +7107,7 @@ const REVIEW = {
 // fungus, cairns and fences on the hills, barrels and lamp posts in the towns, the Queen's banners in her
 // castle. Only on open ground with room over it, spaced out, never in a boss room, never on a sign, a door,
 // a gate or a friend, and the same every time. (The per-100 dressing count was the thinnest number we had.)
-const DRESS = {
+export const DRESS = {
   wood: [['beehive'], ['birdhouse'], ['trunk', 3], ['fence', 2], ['deadTree', 2], ['cairn'], ['stone', 3], ['fern', 3], ['mushroom', 2], ['stump', 2], ['rock', 3], ['flower', 2], ['bushDeco', 3]],   /* the first wood was the thinnest: fences and stones */
   marsh: [['fishTrap', 2], ['lilyLantern'], ['deadTree', 2], ['fence', 2], ['barrels'], ['frogStatue', 1], ['cattail', 2], ['fern', 3], ['mushroom', 2], ['moss', 2], ['stump', 2]],
   stockade: [['barrels'], ['spearRack'], ['skullPile', 2], ['tent', 2], ['cart'], ['bones', 2], ['banner', 2], ['gobPennant', 3], ['warStandard', 2], ['ragBanner', 3], ['hideBanner', 2], ['skullTotem', 2], ['trophyRack', 2], ['stakeFence', 2], ['lootHeap', 2], ['cookSpit'], ['cauldron'], ['hideRack', 2], ['warnPost', 2], ['boneChime', 2]],   /* the war camp: every flag they have, and the camp's own mess */
@@ -7111,7 +7115,7 @@ const DRESS = {
   kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3], ['gobPennant', 3], ['ragBanner', 3], ['clothStrip', 3], ['skullTotem', 2], ['idol', 2], ['lootHeap', 2], ['trophyRack', 2], ['cauldron'], ['boneChime', 2], ['warnPost', 2]],   /* the court: idols, the king's takings, trophies */
   scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
   hanging: [['lanternPost'], ['barrels'], ['birdhouse'], ['beehive']],
-  spire: [['cairn'], ['bones', 2], ['stone', 3], ['shrine', 2], ['flagPost', 2]],
+  spire: [['stoneLantern'], ['prayerFlags'], ['herbBed'], ['skep'], ['incenseStand'], ['monkChores'], ['stone', 3], ['shrine', 2], ['flagPost', 2]],
   moor: [['stone', 3], ['cairn'], ['fence', 2], ['bones', 2], ['deadTree', 2]],
   storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2], ['warStandard', 2], ['hideBanner', 2], ['gobPennant', 3], ['stakeFence', 2], ['hideRack', 2], ['cookSpit'], ['cauldron'], ['trophyRack', 2], ['clothStrip', 3], ['boneChime', 2], ['warnPost', 2]],   /* the hill clans' hold: hides, stakes, standards */
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage'], ['clothStrip', 4], ['warStandard', 2], ['gobPennant', 4], ['lootHeap', 2], ['trophyRack', 2], ['idol', 2], ['cauldron'], ['boneChime', 2]],   /* the Queen's castle: her strips in the halls, the loot of the whole wood */
@@ -7468,7 +7472,7 @@ function elites(L, id) {
    prop on its last floor. Never a silver (three a level, the ledger reads three bits) and never a quest item (counted).
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
 const STASH = { mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
-  scree: 'cairn', spire: 'cairn', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
+  scree: 'cairn', spire: 'stoneLantern', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
   longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
 function payDeadEnds(L, id) {

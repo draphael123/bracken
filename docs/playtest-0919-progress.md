@@ -13,3 +13,9 @@ Fight lab sequence (sprig, shield, brute, archer): peaks 13.8, 31.8, 87.05, 100,
 ## Item 4 — Hornet Queen
 
 The fight keeps its wide camera through rendering. The ceiling comb is decoration; slams shake four warned wax chunks loose, which shatter without adding platforms. Low arena ledges remain. A machine check covers ceiling collision, the three-piece cap, warning time, unchanged footing and persistent zoom. Wide-view frames inspected. All six boss labs killed her (40.1, 79.2, 24.3, 43.0, 35.1, 57.4 seconds); these remain below the requested 90–150 seconds, as the baseline mostly was. Timing balance remains for item 13. `npm run check` exit 0, all 21 checks. Human combat feel unverified.
+
+## Item 5 — decoration kits, monastery and runtime footing
+
+Every registered level now has an explicit ground kit and a decoration allowlist covering scatter, DRESS and authored entities. Stormhold keeps its scatter density with camp objects and replaces its cairn with a skull totem. The monastery swaps tents for pilgrim lean-tos and adds herb beds, stone lanterns, prayer flags, incense stands and animated monks at chores; its existing wells, shrines, statues, cloister and bells remain. Grounded arcades support the first terrace visually.
+
+Seven support-loss tests reproduce a removed floor outside the active range: snuffer, lookout, two wights, marine, sworn sword and shardling each fall 80 pixels onto the lower floor. Marines no longer reset their height; wights follow footing, and these walkers settle before distance sleeping. Targeted floaters, spawn and decoration audits passed. Gate, terrace, cloister and Stormhold frames inspected. `npm run check` exit 0; all 23 checks passed, including the two new audits. Human traversal and final combat balance remain unverified.

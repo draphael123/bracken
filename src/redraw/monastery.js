@@ -261,8 +261,22 @@ export function bakeBeadIcon() {   /* a string of prayer beads with its tassel *
   rect(g, 4, 9, 2, 3, '#e8c84a'); px(g, 5, 9, BR[4]);
   return outline(c, OUT);
 }
+
+// Quiet work left on the terraces. These are scenery, painted without a collision outline.
+function terraceProp(kind, frame=0) {
+  const [c,g]=canvas(kind==='pilgrimLeanTo'?42:kind==='prayerFlags'?48:24,32);
+  const r=(x,y,w,h,col)=>rect(g,x,y,w,h,col);
+  if(kind==='stoneLantern'){r(7,29,12,3,ST.m);r(11,17,4,12,ST.l);r(7,8,12,10,ST.m);r(10,10,6,6,'#e6c776');r(5,7,16,3,ST.cap);r(9,4,8,3,ST.l);}
+  if(kind==='herbBed'){r(1,27,22,5,ST.m);r(3,27,18,2,'#67523e');for(let x=4;x<22;x+=4){r(x,21,2,7,'#697b4f');r(x-2,23,5,2,'#a4a568');}}
+  if(kind==='pilgrimLeanTo'){r(3,8,2,24,WD[2]);r(36,20,2,12,WD[2]);fillPoly(g,[[2,8],[39,20],[37,23],[2,11]],'#a99a78');r(6,28,28,4,'#82765d');r(25,24,7,4,'#a58e6b');}
+  if(kind==='prayerFlags'){r(1,8,2,24,WD[2]);r(44,8,2,24,WD[2]);line(g,2,10,45,10,WD[3]);for(let x=6;x<43;x+=8)r(x,11,5,8,['#b48b5e','#8c6a62','#9eab89'][Math.floor(x/8)%3]);}
+  if(kind==='incenseStand'){r(5,29,14,3,ST.m);r(9,22,6,7,ST.l);r(6,19,12,4,BR[2]);for(let y=7;y<20;y+=4)r(11+(y%3),y,2,3,'#c2b8a5');}
+  if(kind==='monkChores'){r(7,28,10,4,'#716153');fillPoly(g,[[9,15],[15,15],[19,29],[5,29]],'#a99979');circle(g,12,12,5,'#a99979');r(10,11,5,4,'#c7ac88');r(13,18,7,3,'#a99979');line(g,20,16,18+frame,30,WD[3]);r(16+frame,29,7,3,'#b5a472');}
+  return c;
+}
+
 export function bakeMonkProps() {
-  return { bell: [bell(0), bell(-1), bell(1)], bellFrame: bellFrame(), wheel: [0, 1, 2, 3].map(prayerWheel), basket: basket(), hoist: hoist(),
+  return { stoneLantern: terraceProp('stoneLantern'), herbBed: terraceProp('herbBed'), pilgrimLeanTo: terraceProp('pilgrimLeanTo'), prayerFlags: terraceProp('prayerFlags'), incenseStand: terraceProp('incenseStand'), monkChores: [terraceProp('monkChores'),terraceProp('monkChores',1)], bell: [bell(0), bell(-1), bell(1)], bellFrame: bellFrame(), wheel: [0, 1, 2, 3].map(prayerWheel), basket: basket(), hoist: hoist(),
     brazier: [brazierBowl(false), brazierBowl(true)], stone: looseStone(), bookshelf: [bookshelf(0), bookshelf(1)], shrine: [shrine(0), shrine(1)],
     flagPost: [flagPost(0), flagPost(2)], statue: statue(), portcullis: portcullis(), bead: bakeBeadIcon(), rubble: bakeRubbleTile() };
 }
