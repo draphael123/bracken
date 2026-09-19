@@ -2940,7 +2940,7 @@ function highcrown() {
   ent('gqueen', 246, 17);
   plat(213, 14, 24);                            // the gallery
   // (no archers on the gallery any more: the court has left her to it)
-  for (const x of [216, 226, 235]) ent('support', x, 19, { top: 14 });
+  for (const x of [216, 221, 226, 231, 235]) ent('support', x, 19, { top: 14 });
   for (const x of [212, 224, 236]) ent('deco', x, 13, { kind: 'hallWindow' });
   ent('deco', 219, 19, { kind: 'banner', v: 0 }); ent('deco', 233, 19, { kind: 'banner', v: 1 });
   for (const x of [210, 229]) ent('torch', x, 19);
@@ -3308,6 +3308,24 @@ function highcrownWhole() {
   R.calm = (R.calm || []).concat([[468, 545, 36, 49], [722, 765, 0, 9], [783, 791, 8, 12]]);   /* (and the bell turret's top is the sentry's alone: you land on it) */
   // the snow and the wind stop at the forge-house wall: past it is inside the walls, and on fire. They come back on the leads.
   R.weather = [{ x0: 0, x1: 468 * TS, kind: 'snow' }, { x0: 766 * TS, x1: 802 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 468 * TS, kind: 'wind' }, { x0: 766 * TS, x1: 802 * TS, kind: 'wind' }];
+  // The furnace approach and the captains' gallery each get a complete additional encounter.
+  { const X=470, n=40, F=grow(R,R,X,n); shiftCrown(F.R,X,n);
+    F.block(X,X+n-1,64,F.R.H-1); F.block(X,X+n-1,46,49);
+    F.R.interiors.push([X,X+n-1,50,63,'forge']); F.R.masonry.push([X,X+n-1,46,49],[X,X+n-1,64,66]);
+    F.ent('check',X+2,63); F.ent('sign',X+3,63,{text:'THE FURNACE LINE. CROSS THE HOT PLATES BETWEEN THEIR BURSTS.'});
+    for(const dx of [12,24,33]) { F.ent('hotplate',X+dx,63); F.ent('deco',X+dx-3,63,{kind:'barrels'}); }
+    for(const dx of [7,19,36]) F.ent('torch',X+dx,63);
+    F.ent('hearthgob',X+17,63,{face:-1}); F.ent('heavy',X+29,63,{face:-1});
+    F.coins([X+8,62],[X+15,62],[X+23,62],[X+32,62]); R=F.done(); }
+  { const X=762,n=48,F=grow(R,R,X,n);shiftCrown(F.R,X,n);
+    F.block(X,X+n-1,20,F.R.H-1); F.block(X,X+n-1,8,9);
+    F.R.interiors.push([X,X+n-1,10,19,'royal']); F.R.masonry.push([X,X+n-1,8,9],[X,X+n-1,20,26]);
+    F.ent('check',X+2,19);F.ent('sign',X+3,19,{text:'THE CAPTAINS HALL. WATCH THE CHAINS: FALLING LAMPS STRIKE BOTH SIDES.'});
+    for(const dx of [12,28,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.ent('soldier',X+dx+2,19,{face:-1}); }
+    F.ent('heavy',X+23,19,{face:-1});
+    for(const dx of [7,22,44])F.ent('torch',X+dx,19);
+    for(const dx of [9,20,34])F.ent('deco',X+dx,19,{kind:'longTable',v:0});
+    F.coins([X+8,18],[X+18,18],[X+31,18],[X+42,18]);R=F.done(); }
   return R;
 }
 
@@ -7374,7 +7392,7 @@ const GOBLIN_CAMP = {
   stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
   kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 432, 16, 0, true], ['skullTotem', 497, 13, 0], ['warStandard', 506, 13, 1], ['lootHeap', 684, 13, 1], ['idol', 702, 13, 0]],
   storm: [['warnPost', 86, 33, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['boneChime', 192, 19, 1, true], ['gobPennant', 200, 31, 1], ['cookSpit', 229, 29], ['cauldron', 287, 29]],
-  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 644, 7, 3], ['ragBanner', 676, 7, 2], ['cauldron', 666, 63], ['boneChime', 672, 54, 0, true], ['trophyRack', 670, 51, 1], ['skullTotem', 705, 51, 0], ['clothStrip', 684, 10, 3, true], ['warStandard', 698, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
+  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 684, 7, 3], ['ragBanner', 716, 7, 2], ['cauldron', 706, 63], ['boneChime', 712, 54, 0, true], ['trophyRack', 710, 51, 1], ['skullTotem', 745, 51, 0], ['clothStrip', 724, 10, 3, true], ['warStandard', 738, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
   underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 325, 33], ['lootHeap', 376, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
@@ -7508,7 +7526,7 @@ const ELITES = {
   storm: [['pike', 250, 29, { gate: 257 }]],
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */
-  crown: [['heavy', 208, 63], ['hearthgob', 670, 51]],
+  crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 419, 26, { gate: 427 }]],
   reef: [['tideguard', 355, 25, { gate: 361 }]],   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
   flotilla: [['boarder', 162, 21, { gate: 175 }]],
