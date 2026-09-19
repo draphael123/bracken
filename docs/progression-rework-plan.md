@@ -1,8 +1,8 @@
-# BRACKEN progression redesign — review draft, not implemented
+# BRACKEN progression redesign — approved; implementation under validation
 
 Replace the talent trees with automatic level growth, coin purchases and a small equipped skill loadout. Keep each hero's basic attack, held attack, defence, dash attack and plunge available from the start. The store sells additional choices rather than repairs to the basic controls.
 
-## Proposed player rules
+## Approved player rules
 
 - Keep per-hero XP and the existing XP curve initially. Level-ups automatically raise HP, stamina and damage. Start from the current hero base stats and consolidate existing level bonuses into one stat table; do not stack a second growth system over `applyUpgrades`, `LV_GROW` and damage helpers.
 - Give every owned skill the hero's level damage multiplier. Healing and shields use bounded fractions of maximum HP; movement distances and invulnerability durations stay fixed. Cooldowns stay fixed initially so growth does not erase the combat rhythm.
@@ -27,6 +27,8 @@ Record old/new versions, per-hero point entitlements, total refund, skill mappin
 2. Add pure growth, ownership, equip and migration modules with fixtures for all six heroes and every supported save version. Prove exact coin deltas, repeat-load idempotence, export/import round trips, corrupted-save handling and rollback.
 3. Update skill resolution and scaling, then shop/loadout/level-up UI, tutorials and controller/touch bindings. Remove tree readers only after each node has a migration destination.
 4. Run the full check suite, text-fit/screenshots, XP and coin simulations, pogo routes, six-hero boss labs and fresh/legacy/co-op playthrough samples. Verify that level scaling and slot unlocks do not invalidate attack commitments or stamina costs.
-5. Ship only after Daniel reviews this plan and the mapping. No progression code or save migration has been built in this pass.
+5. Daniel approved implementation on 2026-09-19. The runtime, migration, loadout and input changes are implemented locally. Full campaign economics, co-op playthroughs and combat timing remain acceptance work; this is not a deployment receipt.
 
 Review decisions: 25 coins per earned point; grandfather learned skills; slots at levels 1/8/16; active and passive techniques sharing the same slots. The safest first release retains the current stat curve and tunes prices from measured campaign income.
+
+Implementation details: `docs/progression-node-mapping.md` covers all 181 nodes. 168 become owned skills/techniques; eight numeric nodes and five held-attack ranks advance automatically. Each hero has a level-1 active skill. Legacy learned passives are grandfathered alongside active skills. The existing HP/stamina/basic-damage curve is centralized, skill cooldowns stay fixed, and numeric technique ranks arrive at levels 12 and 24. Exports/imports live in Settings and imports retain both the old destination and exact imported source.

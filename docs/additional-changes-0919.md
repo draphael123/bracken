@@ -37,3 +37,5 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Deliver consolidated list of every change across both passes, with exact verification and outstanding limitations.
 
 Partial items: the leader hall is longer with falling chandeliers; falling goblins remain. Room patterns are stable and clipped; the barn facade remains. Deep breath and wave defence are complete; the crab and ship rebuild remain. Boss timing is tracked separately and is not yet accepted.
+
+Approved progression runtime is implemented and the 41-check suite passes. Final campaign economy, co-op gameplay and combat timing acceptance remain open.

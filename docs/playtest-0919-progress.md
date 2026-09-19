@@ -97,3 +97,11 @@ Verified: live ward-versus-dazed damage comparison, new attack tell and three pr
 - All three shops share the original 40-second Warm Counter loop. WAV structure and browser decoding verified.
 - Validation: 39 checks passed, direct exit 0 (`outputs/18-check.log` and `.exit`). Live sea mechanics: `outputs/18-sea/result.json`.
 - Timing remains open. Pre-final-blow-fix boss lab: Kraken knight 144s, five timeouts (including the now-fixed zero-HP case); Tollmaster five kills 61.5–93.1s, Warden timeout at 12%. A passing harness exit is not acceptance.
+
+## 20. Approved progression implementation
+
+Replaced the talent-point screen with coin-purchased skills and per-hero loadouts. Two slots grow to three at level 8 and four at level 16; automatic growth preserves basic health, stamina and damage progression. All 181 old nodes have explicit destinations: 168 skills, eight growth effects and five baseline heavy attacks. Skills scale with level; keyboard, touch and controller support all four slots. Loadout changes require a safe location.
+
+Save migration preserves a verified raw backup before writing, retains learned skills, and refunds 25 coins per legitimately earned talent point once. Corrupt or unsupported saves are protected from overwrite. Added save export/import with destination and source backups.
+
+Verified: 41 checks passed, direct exit 0 (`outputs/20-check.log` and `.exit`). Regression fixtures cover all six heroes across six legacy versions, repeat migration, purchases, slot limits, backups, corrupt data and storage failures. Browser checks cover six heroes buying/equipping/casting skills, touch/controller/rebinding, combat restrictions and corrupt-save protection. Full text-fit audit passed. Campaign economy, co-op gameplay and final boss timing remain acceptance work.
