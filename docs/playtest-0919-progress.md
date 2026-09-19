@@ -19,3 +19,11 @@ The fight keeps its wide camera through rendering. The ceiling comb is decoratio
 Every registered level now has an explicit ground kit and a decoration allowlist covering scatter, DRESS and authored entities. Stormhold keeps its scatter density with camp objects and replaces its cairn with a skull totem. The monastery swaps tents for pilgrim lean-tos and adds herb beds, stone lanterns, prayer flags, incense stands and animated monks at chores; its existing wells, shrines, statues, cloister and bells remain. Grounded arcades support the first terrace visually.
 
 Seven support-loss tests reproduce a removed floor outside the active range: snuffer, lookout, two wights, marine, sworn sword and shardling each fall 80 pixels onto the lower floor. Marines no longer reset their height; wights follow footing, and these walkers settle before distance sleeping. Targeted floaters, spawn and decoration audits passed. Gate, terrace, cloister and Stormhold frames inspected. `npm run check` exit 0; all 23 checks passed, including the two new audits. Human traversal and final combat balance remain unverified.
+
+## Item 6 — Kingswood and supported fixtures
+
+Added THE HUNTING STANDS after the fired wood and THE OLD STONE before the processional: two climbable framed stands, rope bridge/swing, archers, a cuttable patrol stand, and a masonry gatehouse/aqueduct climb with a ram set piece. Older canopy platforms have legs and the swing logs remain. Standing props move to permanent bridge banks; a rule rejects props on breakable spans. Authored torches and perched lamps draw holders anchored in terrain, preserving dark lamps. Existing firepits stand on floors.
+
+Two actual sword presses cut the stand, remove its deck and kill the patrol. Trap, pickup, spawn, elite and holder/bridge checks pass. The pixel pass caught a checkpoint intersecting a stair; moved it onto the ledge. Final `npm run check` exit 0, all 25 checks. Three views inspected. Curve introduces no new out-of-line steps; the pre-existing Fields/Mage steps remain.
+
+King lab: knight 19.3s, pyro 22.7s, paladin 18.7s, pirate 39s killed; Warden timed out at 7%, Reaper at 49%. Previous-commit comparison also timed out Warden at 7%, with Reaper winning at 143.6s. These boss duration/bot reliability gaps remain explicitly open for item 13. Human route feel unverified.

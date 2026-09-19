@@ -4,6 +4,7 @@ import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: o
 import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { GROUND_KITS } from './dressing.js';
+import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
 import * as LWP from './lw_props.js';
 import * as RFP from './reef_props.js';
@@ -901,6 +902,7 @@ function resolveTiles() {
     const k = '' + (eL && openAir(x - 1, y) ? 1 : 0) + (eR && openAir(x + 1, y) ? 1 : 0) + (openAir(x, y + 1) ? 1 : 0);
     return set[k] ? set[k][i] : plain[i];
   };
+  if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   const rnd = mulberry(7);
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
@@ -963,7 +965,7 @@ function resolveTiles() {
          their own ledge off their palette; the castle, the mine and the goblin camp had no palette that
          said so and stood on the WOOD'S FELLED LOGS - three hundred of them inside Highcrown alone. A
          level names its own now. */
-      const named = L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
+      const named = crownT ? LEDGE_SETS.masonry : L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
       const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
@@ -1966,7 +1968,7 @@ function spawnEnt(e) {
       case 'wisp': props.push({ t: 'wisp', x: px, y: py, y0: py, cut: false, ph: Math.random() * 6 }); break;
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
       case 'crank': props.push({ t: 'crank', x: px, y: py, wall: e.wall, hits: 0, open: false }); break;
-      case 'torch': lights.push({ x: px, y: py - 10, r: 46, torch: true }); break;
+      case 'torch': lights.push({ x: px, y: py - 10, r: 46, torch: true, holder: true }); break;
       case 'treehouse': { /* A HOUSE IS HELD UP BY SOMETHING: find what is under it - water, or ground - so its stilts or its trunk can reach it */
         let gy = e.y + 1; while (gy < L.H && !isSolid(e.x, gy) && tileAt(e.x, gy) !== T.PLANK && tileAt(e.x, gy) !== T.ONEWAY) gy++;
         const pool = (L.pools || []).find(q => px >= q.x0 && px < q.x1 && q.y >= py && q.y <= gy * TS);
@@ -19247,6 +19249,26 @@ function drawFacades(cx, cy) {
     if (kind === 'burning') { g.globalAlpha = 0.045 + 0.03 * Math.sin(time * 7 + x0) + 0.015 * Math.sin(time * 17 + y0); g.fillStyle = '#ff8a3c'; g.fillRect(Math.max(0, sx), Math.max(0, sy + (h >> 2)), Math.min(VW, sx + w) - Math.max(0, sx), h - (h >> 2)); g.globalAlpha = 1; }
   }
 }
+
+function drawStructures(cx,cy) {
+  for(const z of L.structures||[]){const l=z.x0*TS-cx,r=(z.x1+1)*TS-cx,t=z.top*TS-cy,b=z.floor*TS-cy;if(r<0||l>VW||b<0||t>VH)continue;
+    g.fillStyle=z.kind==='timber'?'#755b43':'#827a67';
+    for(const x of [l+3,r-7]){g.fillRect(x,t,z.kind==='timber'?4:10,b-t);g.fillStyle=z.kind==='timber'?'#a18a61':'#b3a58b';g.fillRect(x,t,1,b-t);if(z.kind!=='timber'){g.fillStyle='#5d594e';for(let yy=t+8;yy<b;yy+=8)g.fillRect(x,yy,10,1);}}
+    if(z.kind==='timber'){g.strokeStyle='#8c7353';g.lineWidth=2;g.beginPath();g.moveTo(l+5,b-4);g.lineTo(r-5,t+8);g.moveTo(r-5,b-4);g.lineTo(l+5,t+8);g.stroke();}
+    else if(z.kind==='arch'){g.strokeStyle='#93866f';g.lineWidth=5;g.beginPath();g.moveTo(l+5,b);g.lineTo(l+5,t+28);g.quadraticCurveTo((l+r)/2,t+2,r-5,t+28);g.lineTo(r-5,b);g.stroke();}
+  }
+}
+// A light is attached to the world. Free torches stand on an iron pole; high lamps hang from a real ceiling or use a stanchion.
+function drawLightHolders(cx,cy) {
+  const list=lights.filter(l=>l.holder).map(l=>({x:l.x,y:l.y})).concat(props.filter(p=>p.t==='lantern'&&p.perch).map(p=>({x:p.x,y:p.y-10,lit:p.lit})));
+  for(const l of list){const x=Math.round(l.x-cx),y=Math.round(l.y-cy);if(x<-16||x>VW+16)continue;
+    const at=lightSupport(L,l.x,l.y);if(!at)continue;const ax=Math.round(at.x-cx),ay=Math.round(at.y-cy);
+    g.strokeStyle='#655b4a';g.lineWidth=3;g.beginPath();g.moveTo(x,y+3);g.lineTo(ax,ay);g.stroke();g.strokeStyle='#a18c66';g.lineWidth=1;g.stroke();
+    g.fillStyle='#5e5447';g.fillRect(ax-4,ay-3,9,3);g.fillRect(x-4,y+1,9,3);
+    if(l.lit!==false){g.fillStyle='#d49b49';g.fillRect(x-2,y-4,5,5);g.fillStyle='#f1d185';g.fillRect(x-1,y-3,2,4);}
+  }
+}
+
 function drawWorld(cx, cy, showPlayer) {
   g.__world = true;   /* a string drawn in here lives in the world and is allowed off the edge: the playtest bot reads this */
   swimQ.length = 0; darkQ.length = 0;   /* (a frame with no water pass or no dark pass must not carry last frame's swimmers into this one) */
@@ -19316,7 +19338,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.fields) drawFieldsBack(cx, cy);   /* the boughs and the posts under the ledges */
   if (L.mage) drawMageBack(cx, cy);   /* THE MAGE'S FOLLY: the chains, the orrery's arms and hubs */
   // THE TRUNKS STAY BEHIND THE ROAD: scenery cannot turn into a wall, or flash when a hero crosses its ink.
-  drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
+  drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);

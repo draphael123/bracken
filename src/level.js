@@ -25,7 +25,7 @@ function grow(L, ret, col, n) {
   const W2 = L.W + n, H = L.H; const P = painter(W2, H);
   for (let y = 0; y < H; y++) for (let x = 0; x < L.W; x++) P.grid[y * W2 + (x >= col ? x + n : x)] = L.grid[y * L.W + x];
   const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p, shpEnd = p => p > col * TS ? p + n * TS : p; // an exclusive end that sits on the cut stays put
-  const REF = ['ram', 'cage', 'gate', 'door', 'bell', 'at', 'wall', 'x1', 'pool', 'ifDrained'];
+  const REF = ['ram', 'cage', 'gate', 'door', 'bell', 'at', 'wall', 'x0', 'x1', 'pool', 'ifDrained'];
   for (const e of L.ents) { e.x = sh(e.x); for (const k of REF) if (typeof e[k] === 'number') e[k] = sh(e[k]); }
   const R = Object.assign({}, ret, { W: W2 });
   if (R.pools) R.pools = R.pools.map(p => ({ ...p, x0: shp(p.x0), x1: shpEnd(p.x1) }));
@@ -35,6 +35,7 @@ function grow(L, ret, col, n) {
   for (const k of ['arena', 'mini']) if (R[k]) { const A = { ...R[k] }; for (const f of ['x0', 'x1', 'trigger']) if (typeof A[f] === 'number') A[f] = shp(A[f]); for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = sh(A[f]); if (A.dais) A.dais = { ...A.dais, x0: shp(A.dais.x0), x1: shp(A.dais.x1) }; R[k] = A; }
   if (R.ambushes) R.ambushes = R.ambushes.map(A => ({ ...A, wallL: sh(A.wallL), wallR: sh(A.wallR), trigger: typeof A.trigger === 'number' ? sh(A.trigger) : A.trigger, check: Array.isArray(A.check) ? [sh(A.check[0]), A.check[1]] : A.check, waves: A.waves.map(w => w.map(([t, x, y, o]) => [t, sh(x), y, o])) }));   /* an ambush is in TILES, like the walls */
   if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1, st]) => [sh(x0), sh(x1), y0, y1, st]); // keep the room's KIND: dropping it made every grown level's interior the default timber
+  if (R.structures) R.structures = R.structures.map(z => ({...z,x0:sh(z.x0),x1:sh(z.x1)}));
   if (R.stone) R.stone = R.stone.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.scree) R.scree = R.scree.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));
   if (R.fog) R.fog = R.fog.map(z => ({ ...z, x0: shp(z.x0), x1: shpEnd(z.x1) }));
@@ -1052,7 +1053,32 @@ function kingswood() {
   K.plat(112, 12, 3); K.plat(116, 10, 3); K.plat(121, 11, 3); K.plat(125, 12, 3); K.plat(129, 12, 4);
   K.ent('archer', 117, 9, { face: -1 }); K.ent('thief', 104, 10, { face: -1 });
   K.coins([87, 11], [91, 9], [96, 11], [104, 10], [108, 9], [113, 11], [122, 10], [126, 11], [92, 18], [104, 18], [116, 18], [128, 18]);
-  return K.done();
+  const road=K.done();
+  // THE OLD STONE: the court built on a gatehouse and an aqueduct. The arches carry the high road.
+  const O=grow(road,road,472,48), a=472;
+  O.block(a,a+47,14,27); O.R.structures=[];
+  O.ent('sign',a+1,13,{text:'THE OLD STONE. CLIMB THE GATEHOUSE. THE RAM STILL GUARDS THE LAST ARCH.'});
+  for(const x of [a+8,a+17,a+28,a+39]) {O.block(x,x,8,13);O.R.structures.push({kind:'stone',x0:x,x1:x+1,top:8,floor:14});}
+  for(const x of [a+9,a+20,a+30]){O.plat(x,12,3);O.plat(x+3,10,3);}
+  O.plat(a+6,7,13);O.plat(a+23,7,9);O.plat(a+36,7,7);
+  for(const [x,y] of [[a+2,12],[a+4,10],[a+5,8],[a+19,9],[a+21,8],[a+32,9],[a+34,8],[a+43,9],[a+45,12]])O.plat(x,y,3);
+  O.R.structures.push({kind:'arch',x0:a+6,x1:a+18,top:7,floor:14},{kind:'arch',x0:a+23,x1:a+42,top:7,floor:14});
+  O.ent('archer',a+15,6,{face:-1});O.ent('shield',a+26,6,{face:-1});O.ent('brute',a+40,13,{face:-1});
+  O.ent('lever',a+34,13,{ram:a+39});O.ent('ram',a+39,8,{hang:true});O.ent('silver',a+30,6);O.ent('check',a+46,11);
+  O.coins([a+5,9],[a+11,6],[a+22,7],[a+37,6],[a+44,8]);
+  const stone=O.done(), HN=grow(stone,stone,354,48), h=354;
+  // THE HUNTING STANDS: ladders inside grounded towers, a rope walk, and one cuttable stand over the patrol.
+  HN.block(h,h+47,14,27);HN.ent('sign',h+1,13,{text:'THE HUNTING STANDS. CLIMB INSIDE. CUT THE CRACKED POST TO DROP ITS DECK ON THE PATROL.'});
+  for(const x of [h+5,h+29]){HN.plat(x,6,9);for(const [dx,y] of [[1,12],[4,10],[1,8]])HN.plat(x+dx,y,3);for(let y=6;y<=13;y++)HN.set(x+7,y,T.NET);HN.R.structures.push({kind:'timber',x0:x,x1:x+8,top:6,floor:14});HN.ent('archer',x+2,5,{face:-1});}
+  for(let x=h+14;x<h+29;x++)HN.set(x,6,T.PLANK);HN.ent('bridge',h+14,6,{x1:h+28});
+  HN.R.moversExtra.push({kind:'swing',px:(h+22)*TS,py:1*TS,arm:64,x:0,y:0,w:48,h:8,period:3.2,phase:0});
+  HN.plat(h+39,9,5);HN.ent('timber',h+39,13,{x0:h+39,x1:h+43,row:9,floor:13,deep:1,hp:2,mound:1});
+  HN.ent('sprig',h+41,13,{face:-1});HN.ent('shield',h+43,13,{face:-1});HN.ent('check',h+46,13);
+  HN.coins([h+7,11],[h+10,9],[h+8,7],[h+17,5],[h+25,5],[h+34,7],[h+42,8]);
+  const done=HN.done();done.playtestSections=[{name:'THE HUNTING STANDS',x0:354,x1:401},{name:'THE OLD STONE',x0:520,x1:567}];
+  // Older isolated canopy ledges now have timber legs; the swinging logs retain their ropes.
+  for(const [x,top,floor] of [[144,8,16],[159,8,16],[182,9,16],[311,13,25],[326,12,25]])done.structures.push({kind:'timber',x0:x,x1:x+2,top,floor});
+  done.timber=true;done.masonry=[[520,567,6,27]];done.palette.ledges='beam';return done;
 }
 
 
@@ -7084,7 +7110,7 @@ const REVIEW = {
   spore: L => { rv(L).ent('check', 330, 13);
     L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, 504, [200, 60, 150], 0.16]]; },
   // the court's long runs went a hundred and twenty tiles without a checkpoint
-  kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 357, 20); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
+  kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
   scree: L => { rv(L).ent('check', 330, 18); },
   // the sappers' tunnel was the busiest 38 tiles in the busiest level: the brute and one sapper go, and it is a
   // held breath between the walls instead of another fight
@@ -7298,7 +7324,7 @@ function garrison(L, id) {
    arena by hand, and tools/floaters.mjs checks the floors. */
 const GOBLIN_CAMP = {
   stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
-  kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 384, 16, 0, true], ['skullTotem', 449, 13, 0], ['warStandard', 458, 13, 1], ['lootHeap', 588, 13, 1], ['idol', 606, 13, 0]],
+  kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 432, 16, 0, true], ['skullTotem', 497, 13, 0], ['warStandard', 506, 13, 1], ['lootHeap', 684, 13, 1], ['idol', 702, 13, 0]],
   storm: [['warnPost', 86, 33, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['boneChime', 192, 19, 1, true], ['gobPennant', 200, 31, 1], ['cookSpit', 229, 29], ['cauldron', 287, 29]],
   crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 644, 7, 3], ['ragBanner', 676, 7, 2], ['cauldron', 666, 63], ['boneChime', 672, 54, 0, true], ['trophyRack', 670, 51, 1], ['skullTotem', 705, 51, 0], ['clothStrip', 684, 10, 3, true], ['warStandard', 698, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
   underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 325, 33], ['lootHeap', 376, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
@@ -7422,7 +7448,7 @@ const ELITES = {
   marsh: [['thorn', 65, 15, { gate: 72 }]],
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['thorn', 412, 13, { gate: 430, calls: 'sporeling' }]],
-  kings: [['brute', 385, 20]],
+  kings: [['brute', 433, 20]],
   scree: [['troll', 403, 18, { gate: 414 }]],
   hanging: [['shield', 85, 107]],
   /* THE MONASTERY keeps the Temple Guardian in its hall, so neither of its two holds a gate. Both stand on a floor the
@@ -7518,7 +7544,21 @@ function payDeadEnds(L, id) {
   }
   return L;
 }
-for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(elites(garrison(ambushRooms(L, id), id), id)))), id), id); }; }
+
+export const BRIDGE_STANDING = new Set(['deco','torch','brazier','lantern','firepit','sign','npc','check','bell','carpet']);
+export function bridgeSpanUnder(L,e) {return (L.ents||[]).find(b=>b.t==='bridge' && e!==b && e.x>=b.x && e.x<=(b.x1??b.x) && Math.abs(e.y+1-b.y)<0.01);}
+function bankBridgeProps(L) {
+  for(const e of L.ents){if(!BRIDGE_STANDING.has(e.t)||e.hang||e.perch)continue;const b=bridgeSpanUnder(L,e);if(!b)continue;
+    let best=null,dist=Infinity;
+    for(const edge of [b.x-2,(b.x1??b.x)+2])for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){
+      const x=edge+dx,y=e.y+dy;if(x<1||x>=L.W-1||y<1||y>=L.H-1)continue;
+      if(L.grid[y*L.W+x]!==T.AIR||![T.SOLID,T.ONEWAY].includes(L.grid[(y+1)*L.W+x])||bridgeSpanUnder(L,{x,y}))continue;
+      const d=Math.abs(x-e.x)+Math.abs(y-e.y)*3;if(d<dist){best={x,y};dist=d;}}
+    if(best)Object.assign(e,best);
+  }return L;
+}
+
+for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return bankBridgeProps(dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(elites(garrison(ambushRooms(L, id), id), id)))), id), id)); }; }
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };
