@@ -948,3 +948,6 @@ export const ALLOWED_DECORATIONS = {
     "stem"
   ]
 };
+
+GROUND_KITS.keep={...GROUND_KITS.deep};
+ALLOWED_DECORATIONS.keep=[...ALLOWED_DECORATIONS.deep];

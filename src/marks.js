@@ -73,6 +73,7 @@ export const MARK = {
   'angler|castTell': '!', 'angler|dive': '!', 'angler|hookTell': '!', 'angler|swellTell': '!', 'archer|draw': '!', 'archer|elVolleyTell': '!!',
   'archmage|blinkTell': '', 'archmage|boltTell': '!', 'archmage|openTell': '', 'archmage|rendTell': '!!', 'archmage|slamTell': '!!', 'archmage|spitTell': '!',
   'archmage|swipeTell': '!', 'archmage|wardTell': '', 'armour|swingTell': '!', 'assassin|markTell': '!!', 'assassin|stabTell': '!', 'badger|chargeTell': '!',
+  'bellcrab|ballastTell': '!!', 'bellcrab|clawTell': '!', 'bellcrab|pressureTell': '!', 'bellcrab|scuttleTell': '!!', 'bellguard|hookTell': '!', 'bellguard|knellTell': '!!',
   'berserker|flailTell': '!', 'berserker|windTell': '!!', 'boarder|shootTell': '!', 'boarder|slashTell': '!', 'boarder|swingTell': '!', 'boarder|throwTell': '!',
   'bosun|shootTell': '!', 'bosun|slashTell': '!', 'bosun|swingTell': '!', 'bosun|throwTell': '!', 'broom|dashTell': '!', 'brute|elCryTell': '',
   'brute|elCut1Tell': '!', 'brute|elCut2Tell': '!', 'brute|elOverTell': '!!', 'brute|raise': '!!', 'brute|wind': '!', 'captain|hookTell': '!',

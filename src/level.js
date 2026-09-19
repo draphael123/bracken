@@ -1,3 +1,4 @@
+import {crabTrench,underwaterKeep} from './deep-split.js';
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
 import { COMBAT } from './combat.js';
@@ -2489,7 +2490,9 @@ function undercrown() {
 // AND WHAT IS AT THE BOTTOM. Thirty years of the goblin Queen's tribute went into this trench,
 // hull on hull, and none of it was ever going to the goblins.
 // ============================================================================================
-function theDeep() {
+function theDeep(){return crabTrench(deepAndKeep(),T,TS);}
+function theUnderwaterKeep(){return underwaterKeep(deepAndKeep(),T,TS);}
+function deepAndKeep() {
   // THE SHAPE: down the trench through six places that each look and move differently, out along the cold road at the
   // bottom of it, and through his castle to his throne. W is wide for the castle; the trench is the left 112 columns.
   const W = 304, H = 204;
@@ -7106,10 +7109,11 @@ export const LEVELS = [
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
   { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: theDeep, needs: 'lamplit' },
+  { id: 'keep', name: 'THE UNDERWATER KEEP', sub: 'his court beneath the waves', rule: 'FOLLOW THE AIR THROUGH THE FLOODED VAULTS.', build: theUnderwaterKeep, needs: 'deep' },
   /* THE SECOND ROAD. The sea arc closes in the trench; this opens the one that goes inland, which is
      why it is allowed to be quieter than the boss before it - see the arc rule in tools/curve.mjs. */
   /* THE DROWNED CAUSEWAY: the last of the coast, after the Deep and before the road inland. The Kraken is the coast's last word */
-  { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: theDrownedCauseway, needs: 'deep' },
+  { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: theDrownedCauseway, needs: 'keep' },
   { id: 'harbor', name: 'STORMWRECK HARBOR', sub: 'the broken quays', rule: 'THE NETS BRING YOU BACK. THE CRANES CARRY YOU ABOVE.', build: ()=>stormwreckHarbor({painter,T,TS}), needs: 'causeway' },
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'harbor' },
@@ -7568,7 +7572,7 @@ function elites(L, id) {
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
 const STASH = { mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
   scree: 'cairn', spire: 'stoneLantern', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
-  longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
+  longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', keep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
 function payDeadEnds(L, id) {
   const owed = findDeadEnds(L, T).pockets.filter(p => !p.paid); if (!owed.length) return L;

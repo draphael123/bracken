@@ -22,8 +22,8 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Flotilla/Hurricane: reachable swinging platforms; more pirate content; collapsing storm-battered ship interiors; cannon-opened doors/walls; blockable/dodgeable waves.
 - [ ] Lamplit Street: more decorations, ghost and skeleton pirate enemies; remove goblin archers; clearer climb-down cues; fix pictured impossible jump.
 - [x] Tollmaster: remove arena flooding; add lamp/darkness attack.
-- [ ] The Deep: half-speed breath depletion; new diving-bell crab boss.
-- [ ] Underwater Keep: move Drowned King here; design fight and add unique enemy.
+- [x] The Deep: half-speed breath depletion; new diving-bell crab boss.
+- [x] Underwater Keep: move Drowned King here; design fight and add unique enemy.
 - [ ] Drowned Causeway: unique enemy, miniboss, pirates, flooded skeleton-pirate ship, visual variety.
 - [x] Kraken: underwater shelter against surface attacks, surface flooding, tentacle HP bars, permanent severing linked to boss HP, cargo/water attacks after all arms die.
 - [x] New storm-wrecked harbor between Causeway and Waymeet.
@@ -36,6 +36,6 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Complete relevant automated, visual and gameplay validation.
 - [ ] Deliver consolidated list of every change across both passes, with exact verification and outstanding limitations.
 
-Partial items: Deep breath and wave defence are complete; the crab and ship rebuild remain. Boss timing is tracked separately and is not yet accepted.
+Partial items: wave defence is complete; the ship rebuild remains. Deep and Keep content is implemented; six-hero timing remains open. Boss timing is tracked separately and is not yet accepted.
 
 Approved progression runtime is implemented and the 41-check suite passes. Final campaign economy, co-op gameplay and combat timing acceptance remain open.

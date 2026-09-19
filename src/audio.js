@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { stormharbor: './audio/stormharbor.wav', burial: './audio/burial.wav', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
+const TRACKS = { underkeep: './audio/underkeep.wav', stormharbor: './audio/stormharbor.wav', burial: './audio/burial.wav', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
@@ -397,7 +397,7 @@ export function loopCopy(ctx, b, len, dest, at, first) {
   return s;
 }
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
-const TRACK_GAIN = { stormharbor: 1.8, burial: 1.8, store: 1.8, hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
+const TRACK_GAIN = { underkeep: 1.8, stormharbor: 1.8, burial: 1.8, store: 1.8, hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
@@ -729,6 +729,8 @@ const DIE = {
   closedhelm() { tone('sine', 110, 44, 0.9, 0.26, 0.02); noise(0.5, 0.44, 300, 0.6, 0.05); for (let i = 0; i < 3; i++) tone('square', 420 - i * 80, 180, 0.2, 0.08, 0.26 + i * 0.15); tone('sine', 60, 40, 1.2, 0.14, 0.45); },
   prise() { noise(0.3, 0.24, 1400, 0.55); tone('square', 300, 120, 0.2, 0.1, 0.02); noise(0.16, 0.14, 500, 0.4, 0.14); },
   holdfast() { noise(0.36, 0.3, 500, 0.5); tone('sine', 180, 60, 0.4, 0.14, 0.03); },
+  bellcrab() { bell(98,2,.15);noise(.8,.25,380,.6); },
+  bellguard() { bell(196,1,.1);noise(.4,.2,200,.4); },
   drownedking() { tone('sine', 90, 36, 1.1, 0.3, 0.02); noise(0.6, 0.5, 240, 0.7, 0.06); SFX.heavy(); for (let i = 0; i < 3; i++) tone('triangle', 500 - i * 90, 200, 0.22, 0.07, 0.3 + i * 0.16); tone('sine', 50, 34, 1.4, 0.16, 0.5); },
   propman() { tone('square', 210, 90, 0.28, 0.16); noise(0.3, 0.2, 260, 0.5, 0.03); tone('sine', 110, 60, 0.3, 0.1, 0.1); },
   clinger() { noise(0.34, 0.3, 900, 0.6); tone('sine', 320, 90, 0.3, 0.12, 0.02); noise(0.2, 0.16, 260, 0.5, 0.16); },
@@ -881,6 +883,8 @@ const HURT = {
   closedhelm() { tone('sine', 150, 96, 0.24, 0.16); noise(0.22, 0.26, 420, 0.55); },
   prise() { noise(0.14, 0.18, 1600, 0.5); tone('square', 360, 240, 0.1, 0.08); },
   holdfast() { noise(0.18, 0.22, 600, 0.45); tone('sine', 220, 120, 0.14, 0.08); },
+  bellcrab() { bell(392,.3,.07);noise(.15,.15,900,.5); },
+  bellguard() { bell(523,.2,.06);noise(.1,.15,700,.5); },
   drownedking() { tone('sine', 130, 80, 0.3, 0.2); noise(0.26, 0.3, 300, 0.6); },
   propman() { tone('square', 260, 180, 0.14, 0.12); noise(0.14, 0.2, 400, 0.5); },
   clinger() { noise(0.16, 0.22, 1100, 0.5); tone('sine', 420, 180, 0.14, 0.08); },
@@ -1053,5 +1057,5 @@ export const heroKitTable = () => HERO_KIT;
 export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.startsWith('vo_')).map(k => k.slice(3).split('_')[0]))].sort();
 export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
+export const MUSIC_NAMES = ['underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];

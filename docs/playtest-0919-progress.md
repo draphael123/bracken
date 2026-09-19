@@ -125,3 +125,12 @@ Added two complete connecting stages. Stormwreck Harbor has broken quays, swim r
 Campaign now follows Causeway -> Harbor -> Waymeet -> Hexed Fields -> Burial Caverns -> Mage. Map stop indices are derived from actual node positions, and saved map locations use stable IDs with a legacy-index fallback.
 
 Verified: every intended destination reachable in both levels, no trapped pockets, guardian gates hold the exits with each guardian reachable from the entrance. Live defeats open both gates and both exits finish their levels; music decodes at 48 and 53.33 seconds. Inspected four level views and both map connections. Full 47-check suite passed, direct exit 0 (`outputs/23-check.log` and `.exit`); live receipt `outputs/23-areas-live/result.json`. Final campaign economy and encounter timing remain open.
+
+## 24 — The Deep and the Underwater Keep
+- Split the authored castle from the trench, translating its water, air, gates, lights, architecture and king arena together. Deep retains all three tribute coffers; Keep has three new silver rewards and its own map node/music.
+- Added the Diving Bell: original brass diving-bell crab art, claw/ballast/pressure/scuttle tells, positional counters, venting vulnerability and faster enraged charge.
+- Added the Keep-only Bellguard with original diver art, a blockable hook, an unblockable knell and a recovery window.
+- Preserve the Drowned King's swimming, pillars, anchor and air-pressure mechanics in the translated throne room.
+- Targeted verification: both stages reachable; no embedded creatures, impossible pickups or traps; required Keep air leg 2.89 seconds, arena round trip 3.0 seconds; both boss defeats reach the win screen; original 60-second Keep music decodes.
+- Added a Bellguard captain guarding the great hall. Its gate blocks the throne route, the captain can be reached with the gate shut, and the encounter activates while swimming.
+- Full suite and final six-hero timing are separate acceptance gates; timing remains pending.
