@@ -819,7 +819,17 @@ function sporewood() {
     { kind: 'growcap', x: 450 * TSZ + 8 - 16, y: 22 * TSZ - 8, y0: 22 * TSZ - 8, y1: 22 * TSZ - 64, w: 32, h: 8, rise: 56, state: 'bud', k: 0 },
     { kind: 'growcap', x: 456 * TSZ + 8 - 16, y: 18 * TSZ - 8, y0: 18 * TSZ - 8, y1: 18 * TSZ - 64, w: 32, h: 8, rise: 56, state: 'bud', k: 0 }]);
   Dg.R.dark = 0.01; Dg.R.darkZones = (Dg.R.darkZones || []).concat([{ x0: 430 * TSZ, x1: 448 * TSZ, y0: 9 * TSZ, y1: 26 * TSZ, dark: 0.9 }]);
-  return Dg.done();
+  const R=Dg.done();R.sleeps=[];R.storm=null;
+  R.ents=R.ents.filter(e=>!['puffball','roller','nest','shaman','drone','gill'].includes(e.t));
+  for(const e of R.ents)if(e.t==='sign'&&/SLEEP|SPORES|PUFFBALL|ROLLERS|GILLS|BROOD|NEST/.test(e.text||''))e.text='FOLLOW THE CAPS. BOUNCE TO THE HIGH ROAD; STRIKE GLOWBUDS TO LIGHT THE ROOTS.';
+  const A=R.arena,m=R.ents.find(e=>e.t==='mother'),mx=m.x,fy=A.floor/TS;
+  A.x0=(mx-15)*TS;A.x1=(mx+16)*TS;A.wallL=mx-16;A.wallR=mx+17;A.trigger=(mx-13)*TS;
+  for(let x=mx-15;x<=mx+16;x++)for(let y=fy-9;y<fy;y++)R.grid[y*R.W+x]=T.AIR;
+  for(const x of [mx-3,mx+3])R.grid[(fy-1)*R.W+x]=T.BOUNCER;
+  R.ents=R.ents.filter(e=>e.t==='mother'||e.x<mx-15||e.x>mx+16||['deco','glow','coin'].includes(e.t));
+  R.ents.push({t:'glowbud',x:mx-8,y:fy-1,motherNode:true},{t:'sign',x:mx-14,y:fy-1,text:'STRIKE THE ROOT KNOT. BOUNCE UP TO CUT THE HEART. WHEN IT CLOSES, WAKE THE KNOT AGAIN.'});
+  for(const x of [450,456])R.ents.push({t:'glowbud',x:x-1,y:x===450?21:17,mycelium:true});
+  return R;
 ;
 }
 
@@ -7482,7 +7492,7 @@ const ELITES = {
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
   stockade: [['brute', 302, 19, { gate: 317 }]],
-  spore: [['thorn', 412, 13, { gate: 430, calls: 'sporeling' }]],
+  spore: [['shield', 412, 13, { gate: 430 }]],
   kings: [['brute', 433, 20]],
   scree: [['troll', 403, 18, { gate: 414 }]],
   hanging: [['shield', 85, 107]],

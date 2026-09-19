@@ -347,6 +347,19 @@ export async function bossLab(BK, opts = {}) {
         if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open: boss.open > 0 });   /* THE CAMERA HOOK: with opts.draw the frame was rendered, and a recorder can take it */
         if (f % 600 === 599) await yieldNow();
         continue; }
+      if(boss.t==='mother'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const node=BK.props().find(p=>p.motherNode),heart=boss.heart;
+        let gx=node?node.x-12:boss.x;
+        if(P.ground)P.labSpring=false;if(P.vy<-350)P.labSpring=true;
+        if(boss.mode==='open')gx=P.labSpring?boss.x-(LAB_REACH[h]*.65):boss.x-3*TS;
+        if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
+        if(boss.mode==='open'&&P.ground&&Math.abs(P.x-(boss.x-3*TS))<20){BK.press('jump');P.labJump=16;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&P.vy>0&&Math.abs(P.y-8-(heart.y-7))<46&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
+        else if(boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
+        if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;BK.sim(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
+      }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
       if (open && !wasOpen) { opened++; if (opts.trace) { out.trace = out.trace || []; out.trace.push({ h, mode: boss.mode, startD: Math.round(ad), dy: Math.round(boss.y - P.y), minD: 9999, pressed: 0, swung: 0, hpAt: boss.hp }); } }
       if (!open && wasOpen && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.lost = tw.hpAt - boss.hp; }

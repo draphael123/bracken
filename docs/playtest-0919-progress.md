@@ -53,3 +53,9 @@ Added Wind Rivers with jump-release air rails and a downdraft cliff with timed l
 ## Item 11 — Stormhold watchtowers
 
 Three framed towers have ladders, guarded inner floors, rooftop guards and rope slides. Their tops offer a horn blower, a weight winch and a local camp-gate winch. Live rope attachment, 25.2px travel and jump release verified; three tower frames inspected. The new tower rule test is wired into the suite. npm run check exit 0, all 31 checks (11-check.log). Human traversal and both winch payoff actions remain unverified.
+
+## Item 12 — Sporewood
+
+Removed authored puffballs, rollers, nests, shamans, drones and sleep regions; sleep-cloud producers no longer put heroes to sleep. Replaced the summoning elite with a shield guard. Struck mycelium nodes grow the two temporary cap steps, and glowbuds still light the cellar. The Mother now occupies 31 tiles: strike a reusable root knot, bounce to the heart and cut it, then repeat. Root fan, root stab, folding cap and seed rain have tells; no brood returns. The heart ignores lingering burns/bleeds.
+
+Actual node strike grew both steps 56px; staircase and open-heart frames inspected. Six heroes killed in 92.6–98.6 seconds before the final root-stab addition; repeat in item 13. Final npm run check exit 0, all 32 checks (12-check-complete.log); newlevel spore passes. Human pacing, particularly the knot reset, remains unverified.
