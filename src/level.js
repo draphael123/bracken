@@ -1949,11 +1949,11 @@ function theMonastery() {
   spikes(4, 12, 29); spikes(80, 90, 29);
   masonry.push([1, W - 2, 30, 34]);
   // the old roof boards still lie in the stone where her dive puts her talons through them and holds her
-  const roofBoards = [[14, 19, 30], [49, 54, 30], [66, 71, 30]];
+  const roofBoards = [];
   // two braziers in the roof: when one breathes it throws its coals up, and a bird over it comes down
-  brazier(26, 30, 5, { period: 5, on: 2.4, phase: 0, lift: 220, ember: true });
-  brazier(60, 30, 5, { period: 5, on: 2.4, phase: 2.5, lift: 220, ember: true });
-  ent('sign', 16, 29, { text: 'THE ROC LANDS ON HER SHADOW. BRING HER DOWN ON THE OLD BOARDS AND HER TALONS STICK.' });
+
+
+  ent('sign', 16, 29, { text: 'THE BELFRY. THE ROC CLINGS OUTSIDE. STRIKE THE GREAT BELL WHEN HER EYE IS NEAR.' });
   // THE NEST BELL: it hangs on its frame between the two middle boards. She comes over it to scream at the roof,
   // and a bell struck under her goes through her like a blow - so the answer to her scream is here
   ent('tbell', 56, 29, { roc: true });
@@ -1997,16 +1997,19 @@ function theMonastery() {
   for (const [x, v] of [[20, 0], [34, 1], [58, 0], [72, 1]]) ent('deco', x, 29, { kind: 'bones', v });
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
   for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'stoneLantern', v });
-  ent('sign', 30, 29, { text: 'THE NEST. EVERYTHING ON THIS ROOF CAME UP THE MOUNTAIN THE WAY YOU DID.' });
+  ent('sign', 30, 29, { text: 'THE GREAT BELL NEVER FALLS SILENT. RING IT AGAIN WHEN SHE COMES BACK.' });
   // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
   // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
   masonry.push([1, 40, 218, 221], [1, 94, 172, 174], [1, 94, 152, 154], [1, 94, 132, 134], [40, 74, 100, 102], [29, 51, 56, 58]);
   interiors.push([1, 94, 135, 151, 'monkScript']);
+  // THE BELFRY'S BEAM WALK: a ladder from the ringing floor, with a sheltered landing either side.
+  plat(43,24,9);plat(59,24,9);plat(47,27,4);plat(61,27,4);
+  for(let y=24;y<30;y++)set(58,y,T.NET);
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 28,   /* snow only on the stones over the roof: on the roof it hid the boards */
-    monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
+    belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
     tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
     quest: { n: 3, item: 'bead', name: 'PRAYER BEADS', npc: 'squire', done: 'THE BEADS ARE RESTRUNG', reward: 'relic', relic: 'sunshard' },
     palette: { sky: [[146, 156, 172], [230, 216, 196]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',

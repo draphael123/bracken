@@ -2876,7 +2876,7 @@ export function bakeThrone() {
 }
 
 export function bakeRoc() {
-  const C = { h: '#8a8478', H: '#5a5448', d: '#3a3630', f: '#e8e0d0', F: '#b8b0a0', m: '#c9a83a', M: '#8a6a1a', c: '#d8c8a8', C: '#f2e8d4', q: '#9a8468', e: '#ff4a3a' };
+  const C = { h: '#78869b', H: '#47566f', d: '#272b3a', f: '#e8e0d0', F: '#b8b0a0', m: '#c9a83a', M: '#8a6a1a', c: '#d8c8a8', C: '#f2e8d4', q: '#9a8468', e: '#ff4a3a' };
   const W = 60, H = 44;
   const poly = (g, pts, k) => fillPoly(g, pts, C[k]);
   // a wing: shoulder, then the leading edge out to the tip, then back along the trailing edge. The last
@@ -2958,7 +2958,8 @@ export function bakeRoc() {
     frame({ wings: 'crown', head: 'thrown', legs: 'plant' }),
     frame({ wings: 'splay', head: 'low', legs: 'none', rot: 0.25, dy: 3 }),
   ];
-  return pack(F, 30, 41, 40, 30);
+  const big=F.map(f=>{const [c,g]=canvas(f.width*2,f.height*2);g.imageSmoothingEnabled=false;g.drawImage(f,0,0,c.width,c.height);return c;});
+  return pack(big,60,82,40,30);
 }
 
 export function bakeSuncatcher() {

@@ -459,11 +459,7 @@ export async function bossLab(BK, opts = {}) {
         goal = r ? null : boss.x - Math.sign(d || 1) * (reach + 24); }
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 42;                       // close enough to be swung at
       /* THE SHRIEK is answered from the room: to the nest bell, struck as she comes over it; with no bell near, off the boards */
-      else if (boss.t === 'roc' && (boss.mode === 'shriekGo' || boss.mode === 'shriekTell')) { const fk = BK.props().find(p => p.t === 'tbell' && p.roc);
-        /* (a bell on its frame stands a little proud of the floor: a hop is how you get round its posts) */
-        if (fk && Math.abs(fk.x - P.x) < 200) { goal = fk.x - 12; if (P.ground && Math.abs(P.vx) < 5 && Math.abs(goal - P.x) > 10 && f % 12 === 0) BK.press('jump'); if (Math.abs(fk.x - P.x) < 22 && fk.cool <= 0 && fk.over && P.atk < 0) { P.face = Math.sign(fk.x - P.x) || P.face; BK.press('atk'); swings++; } }
-        else { const fy = Math.floor(A.floor / TS), tx = Math.floor(P.x / TS); for (let r = 0; r < 12; r++) { const s = [tx + r, tx - r].find(x => L.grid[fy * L.W + x] === T.SOLID); if (s !== undefined) { goal = s * TS + 8; break; } } } }
-      else if (boss.t === 'roc' && glass.length) goal = glass[Math.floor(f / 75) % Math.min(3, glass.length)];   /* one of the three middle boards, a new one every second or so */
+      else if (boss.t === 'roc') {const fk=BK.props().find(p=>p.t==='tbell'&&p.roc);if(fk){goal=fk.x-14;if(Math.abs(fk.x-P.x)<24&&fk.cool<=0&&fk.over&&P.atk<0){k.block=false;P.face=Math.sign(fk.x-P.x)||1;BK.press('atk');swings++;}}if(boss.mode==='carry'){strike=true;goal=boss.x;}}
       else if (boss.t === 'troll') { goal = boss.x; strike = true;
         /* THE HILL TROLL: his stones drop from a hook a player jumps to strike - when he walks under one, the bot drops it, as a player at that hook would */
         const st = BK.props().find(q => q.t === 'weight' && q.crane && q.state === 'hang' && Math.abs(q.x - boss.x) < 12); if (st) { st.state = 'fall'; st.fy = st.y + st.len; st.vy = 0; } }
