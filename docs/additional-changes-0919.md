@@ -17,9 +17,9 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [x] Highcrown: more toppleable pillars, visible falling animation, no player damage from pillar collapse.
 - [x] Goblin Queen: new enraged attack and wall-impact vulnerability.
 - [x] Sea: repair water/fall texture joins.
-- [ ] Shipwreck Reef: themed platforms, grounded interiors and more environmental variety.
+- [x] Shipwreck Reef: themed platforms, grounded interiors and more environmental variety.
 - [x] Shared store music theme.
-- [ ] Flotilla/Hurricane: reachable swinging platforms; more pirate content; collapsing storm-battered ship interiors; cannon-opened doors/walls; blockable/dodgeable waves.
+- [x] Flotilla/Hurricane: reachable swinging platforms; more pirate content; collapsing storm-battered ship interiors; cannon-opened doors/walls; blockable/dodgeable waves.
 - [ ] Lamplit Street: more decorations, ghost and skeleton pirate enemies; remove goblin archers; clearer climb-down cues; fix pictured impossible jump.
 - [x] Tollmaster: remove arena flooding; add lamp/darkness attack.
 - [x] The Deep: half-speed breath depletion; new diving-bell crab boss.
@@ -36,6 +36,6 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Complete relevant automated, visual and gameplay validation.
 - [ ] Deliver consolidated list of every change across both passes, with exact verification and outstanding limitations.
 
-Partial items: wave defence is complete; the ship rebuild remains. Deep and Keep content is implemented; six-hero timing remains open. Boss timing is tracked separately and is not yet accepted.
+Partial items: ship changes include reachable lower swings, cargo decking, three warned deck collapses into occupied holds, escape ropes and corrected cannon doors. Deep and Keep content is implemented; six-hero timing remains open. Boss timing is tracked separately and is not yet accepted.
 
 Approved progression runtime is implemented and the 41-check suite passes. Final campaign economy, co-op gameplay and combat timing acceptance remain open.

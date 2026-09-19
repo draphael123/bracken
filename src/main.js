@@ -1,3 +1,4 @@
+import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
 import {bakeBellcrab,bakeBellguard} from './bellcrab.js';
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
@@ -1844,7 +1845,7 @@ function spawnEnt(e) {
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
       case 'cargo': case 'loosegun': case 'cargowall': case 'davit': props.push(seaProp(e, px, py)); break;   /* the Hurricane's loose things: see HER SEA STATE */
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
-      case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
+      case 'cannon': props.push({ t: 'cannon', x: px, y: py, hole: e.hole, aim:e.aim, deck: !!e.deck, cool: 0, fired: false, smoke: 0 }); break;
       case 'barricade': props.push({ t: 'barricade', x: px, y: py, tx: e.x, ty: e.y, w: e.w || 2, h: e.h || 2, alive: true, shake: 0 }); break;
       case 'resonance': props.push({ t: 'resonance', x: px, y: py, r: (e.r || 5) * TS, cool: 0, ring: 0, said: 0, roc: !!e.roc }); break;
       // AN IRON BULKHEAD. e.span is [x0, x1, y0, y1] in tiles; nothing but a round shot moves it.
@@ -7361,7 +7362,7 @@ function updateSea(dt, hb) {
   if (calm > 0.5 && eyeWas <= 0.5) { seaCue('THE EYE OF THE STORM. SHE IS QUIET, FOR NOW', '#dfe8ff', 3); SFX.seaBell(); }
   else if (calm <= 0.5 && eyeWas > 0.5 && L.eye && P.x > L.eye.x1 * TS - 4 * TS) { seaCue('AND SHE COMES BACK HARDER', '#ff6b6b', 2.6); SFX.thunder(); flash = Math.max(flash, 0.3); stormLit = 0.3; shakeCam(6); rumble(260, 0.7); }
   eyeWas = calm;
-  updateRoll(dt); updateFelled(dt); updateSeaProps(dt, hb);
+  updateRoll(dt); updateFelled(dt); updateDeckBreaks(L,P,dt,(x,y)=>{const i=y*LW+x;L.grid[i]=T.AIR;tileSpr[i]=null;},z=>{shakeCam(4);SFX.thud();burst((z.x0+z.x1+1)*8,z.row*16,20,['#ad855a','#514335'],90,.8);}); updateSeaProps(dt, hb);
   for (const e of enemies) if (e.heeled > 0) { e.heeled -= dt; if (e.alive) seaFoe(e); }
 }
 /* A CREATURE THE SHIP THREW INTO THE SEA, THE BILGE OR THE OIL. hazardFoe only knows deep water nobody swims in. */
@@ -7630,6 +7631,7 @@ function updateGullFlock(e, dt) {
 
 // ---- WHAT YOU SEE OF IT ----
 function drawSea(cx, cy) {
+  drawDeckBreaks(g,L,cx,cy,time);
   const R = L.roll, F = L.felled;
   if (!R && !F) return;
   if (R) {
@@ -15353,7 +15355,7 @@ function updateCastleProps(dt, hb) {
       const struck = hb && overlap(hb, { l: pr.x - 16, r: pr.x + 16, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr);
       if (struck) { P.hitSet.add(pr);
         if (pr.cool > 0) { SFX.clank(); number(pr.x, pr.y - 22, 'STILL HOT', '#9aa39a'); }
-        else { pr.cool = 7; pr.smoke = 1.2; pr.dir = boss && boss.alive ? (Math.sign(boss.x - pr.x) || 1) : P.face;
+        else { pr.cool = 7; pr.smoke = 1.2; pr.dir = pr.aim || (boss && boss.alive ? (Math.sign(boss.x - pr.x) || 1) : P.face);
           SFX.boom(); shakeCam(7); zoomKick(1.06, 0.25); rumble(200, 0.8);
           balls.push({ x: pr.x + pr.dir * 16, y: pr.y - 9, vx: pr.dir * 400, t: 0 });
           for (let q = 0; q < 10; q++) parts.push({ x: pr.x + pr.dir * 18, y: pr.y - 9, vx: pr.dir * (80 + Math.random() * 180), vy: (Math.random() - 0.5) * 70, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#e8dcc0' : '#9aa39a', size: 2, grav: -10 }); } }
@@ -19163,7 +19165,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'wheel') { if (m.mill && m.first) drawMillTower(m, cx, cy); const a = m.mill ? (m.ang || 0) + m.phase : time * 2 * Math.PI / m.period + m.phase; g.save(); g.translate(Math.round(m.px - cx), Math.round(m.py - cy)); g.rotate(a - Math.PI / 2); g.drawImage(PROP.sail, -5, 0); g.restore(); g.fillStyle = '#5c3a1d'; g.fillRect(Math.round(m.x - cx), Math.round(m.y - cy), m.w, 3); g.fillStyle = '#8a5a32'; g.fillRect(Math.round(m.x - cx), Math.round(m.y - cy), m.w, 1); }
     else if (m.kind === 'swing' && m.bucket) { const bx = Math.round(m.x - cx), by = Math.round(m.y - cy), px2 = Math.round(m.px - cx), py2 = Math.round(m.py - cy); g.strokeStyle = '#8a919c'; g.lineWidth = 1; g.beginPath(); g.moveTo(px2 + 0.5, py2); g.lineTo(bx + m.w / 2 + 0.5, by - 10); g.stroke(); g.beginPath(); g.moveTo(bx + 3, by); g.lineTo(bx + m.w / 2, by - 10); g.lineTo(bx + m.w - 3, by); g.stroke();
       g.fillStyle = '#3a2618'; g.fillRect(px2 - 3, py2 - 2, 6, 4); g.fillStyle = '#5a3a24'; g.fillRect(bx + 1, by, m.w - 2, 10); g.fillStyle = '#7a5234'; for (let k = 3; k < m.w - 2; k += 6) g.fillRect(bx + k, by + 1, 2, 8); g.fillStyle = '#8a919c'; g.fillRect(bx, by, m.w, 2); g.fillRect(bx + 1, by + 8, m.w - 2, 2); g.fillStyle = '#a89a80'; g.fillRect(bx + 4, by - 2, m.w - 8, 2); } // the mason's bucket: iron-bound, a load of stone in it
-    else if (m.kind === 'swing') { g.strokeStyle = m.vine ? '#3f6e2c' : '#c9b27c'; g.lineWidth = m.vine ? 2 : 1; g.beginPath(); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x - cx) + 2.5, Math.round(m.y - cy)); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x + m.w - cx) - 2.5, Math.round(m.y - cy)); g.stroke(); if (m.vine) { g.fillStyle = '#6faa4a'; for (let k = 1; k < 5; k++) { const t = k / 5; g.fillRect(Math.round(m.px + (m.x + 2 - m.px) * t - cx) + (k % 2 ? 1 : -3), Math.round(m.py + (m.y - m.py) * t - cy), 3, 2); g.fillRect(Math.round(m.px + (m.x + m.w - 2 - m.px) * t - cx) + (k % 2 ? -3 : 1), Math.round(m.py + (m.y - m.py) * t - cy) + 1, 3, 2); } } g.fillStyle = m.vine ? '#3f6e2c' : '#5c3a1d'; g.fillRect(Math.round(m.px - cx) - 3, Math.round(m.py - cy) - 3, 6, 4); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, Math.round(m.y) - cy); }
+    else if (m.kind === 'swing') { g.strokeStyle = m.vine ? '#3f6e2c' : '#c9b27c'; g.lineWidth = m.vine ? 2 : 1; g.beginPath(); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x - cx) + 2.5, Math.round(m.y - cy)); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x + m.w - cx) - 2.5, Math.round(m.y - cy)); g.stroke(); if (m.vine) { g.fillStyle = '#6faa4a'; for (let k = 1; k < 5; k++) { const t = k / 5; g.fillRect(Math.round(m.px + (m.x + 2 - m.px) * t - cx) + (k % 2 ? 1 : -3), Math.round(m.py + (m.y - m.py) * t - cy), 3, 2); g.fillRect(Math.round(m.px + (m.x + m.w - 2 - m.px) * t - cx) + (k % 2 ? -3 : 1), Math.round(m.py + (m.y - m.py) * t - cy) + 1, 3, 2); } } g.fillStyle = m.vine ? '#3f6e2c' : '#5c3a1d'; g.fillRect(Math.round(m.px - cx) - 3, Math.round(m.py - cy) - 3, 6, 4); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(m.nautical ? LEDGE_SETS.cargo.ledge[i%3] : i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, Math.round(m.y) - cy); }
     else if (m.tide) causeDrawBoat(m, cx, cy);   /* THE DROWNED CAUSEWAY: a boat on its mooring */
     else if (['waymeet','reef','longwater'].includes(curId())&&(!m.kind||m.kind==='lift')) drawWorkPlatform(g,m,cx,cy,curId()==='waymeet'?'town':'sea',L);
     else if (m.stone) { const n = Math.max(1, Math.round(m.w / TS)); // A PILLAR OF THE OLD SLUICE: wet stone, weed on its head

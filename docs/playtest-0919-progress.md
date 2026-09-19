@@ -141,3 +141,9 @@ Verified: every intended destination reachable in both levels, no trapped pocket
 - Extended Waymeet house facades to their roof width, removed mismatched dressing and added two bottle-throwing patrons to the beer garden.
 - Live captures: outputs/25-coast-live/result.json and eight views; no browser exceptions. Full suite recorded separately in outputs/25-check.log.
 - This pass preserves required route geometry; remaining Waymeet stone-block cleanup is still tracked.
+
+## 26 — Storm-battered ship routes
+- Lowered four Flotilla and eight Hurricane swings toward their boarding decks and replaced their log surfaces with iron-bound cargo planks.
+- Added three warned deck collapses into pirate-occupied holds, each with a rope escape; the falling deck itself does not damage the hero.
+- Fixed Hurricane bulkhead cannons to preserve their authored target direction. The aft gun now fires left and opens its door.
+- Live gameplay verified all three collapses and all three doors. Six captures and exact results: outputs/26-ship-live/result.json. Full suite: outputs/26-check.log.

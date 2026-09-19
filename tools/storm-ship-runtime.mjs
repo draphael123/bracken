@@ -1,0 +1,2 @@
+import {openPage} from './cdp.mjs';import{readFileSync}from'node:fs';import assert from'node:assert/strict';
+const pg=await openPage({port:5996});try{const r=await pg.evalp(readFileSync(new URL('./fixtures/ship-browser.js',import.meta.url),'utf8'));assert.equal(r.rows.length,6);assert.deepEqual(pg.errors,[]);console.log('Three deck collapses reach the hold; all three cannon bulkheads open, including the backward gun.');}finally{pg.close();}
