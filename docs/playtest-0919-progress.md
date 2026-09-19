@@ -155,3 +155,28 @@ Verified: every intended destination reachable in both levels, no trapped pocket
 - Added the Tide Reaver miniboss and a gate that really holds the onward route until defeat. Its yellow harpoon is blockable; the red low rake is jumped.
 - Corrected four signs/checkpoints whose support was a chain or hatch, including three affected by the previous ship pass.
 - VM tests verify five attacks, defense marks and range counters. Geometry verifies gate closure, underwater hold and rope alternatives. Live checks verify every foe plus mini activation/defeat/opening; outputs/27-haunted-live/result.json and eight views. Full suite: outputs/27-check.log.
+
+
+## 28 — Mage Tower and Falling Tower
+- Replaced outdoor mountain dressing with masonry, arcane platforms, ribs and windows; removed mismatched campfires, garden objects and two non-boss floor vats.
+- Pressure gates hold eight seconds and wait for either co-op player. The Archmage remains the final boss through all room phases.
+- Added the collapsing Falling Tower sequel, four warned collapses and return routes, rewards/checkpoints, original music, and the Familiar as its miniboss.
+- Full suite: outputs/28-check.log, exit 0, 55 checks. Focused live gates, phases, collapses, miniboss and exit: outputs/28-tower-live/result.json.
+
+## 29 — Progression input and economy follow-up
+- Death Knight short-release F casts the equipped skill; holding full blood triggers Blood Surge without also casting that skill. Verified independent co-op input.
+- Audited affordability using half of placed coins and a 30-coin reserve per stage. Every hero can afford the cheapest available active loadout at the sampled milestones; Warden has only three authored active skills.
+- Full suite: outputs/29-check.log, exit 0, 56 checks. See progression-followup-0919.md and progression-economy-0919.json.
+
+## 30 — Waymeet final cleanup
+- Removed eight redundant floating platform tiles, adjusted their coins, retained two refuges, and replaced four stepped bridge ornaments with lantern posts.
+- Full suite: outputs/30-check.log, exit 0, 57 checks. Four visual captures inspected; all reward and exit routes remain reachable.
+
+## 31 — Combat lab reliability (acceptance still open)
+- Boss pilots recognize both new underwater encounters, seek air, traverse the Archmage flood platforms, and use the Flotilla's surviving rigging and cut-deck gaps.
+- Ambush pilots leave shelves and choose clear landing positions instead of repeatedly bouncing on enemy heads.
+- Added optional plunge-only and mixed-attack comparison modes; they use real inputs and stamina.
+- Isolated boss/ambush simulation from animation and watchdog updates during asynchronous yields. A regression checks manual stepping, normal-loop resumption and cleanup after a thrown lab callback.
+- Broad timing receipts before this isolation are exploratory; they cannot establish repeatable acceptance. Isolated matrices and the full suite are recorded separately in outputs/31-*. No combat balance target is marked complete on the strength of pilot-only changes.
+
+- Isolated matrix: 119/144 boss kills, 54/144 in 90–150 seconds; 106/108 ambushes opened, 59/108 in 15–35 seconds. Strategy comparison: 24/24 kills, only 7/12 mixed cases keep plunge damage below other damage. Acceptance remains Partial. Full data: combat-acceptance-isolated-0919.json.

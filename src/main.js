@@ -21537,6 +21537,7 @@ let last = performance.now(), acc = 0, lastTick = 0, rafQueued = false; const ST
 let perf = { fps: 60, u: 0, r: 0, frames: 0, t0: 0 };
 function tick(now) {
   lastTick = performance.now();
+  if (window.BK?.manualSimulation) { last = now; acc = 0; return; }
   pollGamepad();
   let dt = (now - last) / 1000; last = now;
   if (!(dt >= 0)) dt = 0; if (dt > 0.12) dt = 0.12;

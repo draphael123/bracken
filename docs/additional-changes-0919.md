@@ -8,7 +8,7 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Resolve and rerun six-hero boss timing acceptance (90–150 seconds), separating pilot failures from combat balance.
 - [ ] Resolve and rerun ambush timing acceptance; verify captain death is the only victory condition.
 - [ ] Controlled plunge versus mixed-strategy damage comparison.
-- [ ] Implement approved progression plan with complete legacy-node mapping, backup, migration, ownership, shop, loadouts, controls and verification.
+- [x] Implement approved progression plan with complete legacy-node mapping, backup, migration, ownership, shop, loadouts, controls and verification.
 
 ## Document changes
 - [x] Highcrown: repair forge interior and lengthen foundry.
@@ -27,15 +27,15 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [x] Drowned Causeway: unique enemy, miniboss, pirates, flooded skeleton-pirate ship, visual variety.
 - [x] Kraken: underwater shelter against surface attacks, surface flooding, tentacle HP bars, permanent severing linked to boss HP, cargo/water attacks after all arms die.
 - [x] New storm-wrecked harbor between Causeway and Waymeet.
-- [ ] Waymeet: remove sandcastle/unsuitable tree and log imagery, floating blocks and unnecessary stone platforms; add activity to sparse section.
+- [x] Waymeet: remove sandcastle/unsuitable tree and log imagery, floating blocks and unnecessary stone platforms; add activity to sparse section.
 - [x] Waymeet rock-clinging reward: make functional, health reward if appropriate.
 - [x] Enraged paladin boss: more attacks including unblockable attacks.
 - [x] New haunted burial caverns between Hexed Woods and Mage Tower.
-- [ ] Mage Tower: masonry/tower theme, themed platforms/decor/background, remove campfire/poison pool/sandcastle mismatches; fix gates.
-- [ ] Mage Tower: wizard remains final boss; move familiar to collapsing-tower sequel as miniboss.
+- [x] Mage Tower: masonry/tower theme, themed platforms/decor/background, remove campfire/poison pool/sandcastle mismatches; fix gates.
+- [x] Mage Tower: wizard remains final boss; move familiar to collapsing-tower sequel as miniboss.
 - [ ] Complete relevant automated, visual and gameplay validation.
 - [ ] Deliver consolidated list of every change across both passes, with exact verification and outstanding limitations.
 
 Partial items: ship changes include reachable lower swings, cargo decking, three warned deck collapses into occupied holds, escape ropes and corrected cannon doors. Deep and Keep content is implemented; six-hero timing remains open. Boss timing is tracked separately and is not yet accepted.
 
-Approved progression runtime is implemented and the 41-check suite passes. Final campaign economy, co-op gameplay and combat timing acceptance remain open.
+Approved progression is implemented, including legacy mapping, backup/migration, the campaign economy audit, and independent co-op input verification. The last committed full suite passed 57 checks (item 30). A complete human campaign/co-op playthrough and combat timing acceptance remain open. Item 31 adds isolated lab timing; earlier timing receipts are exploratory because the background animation loop could advance during yields.
