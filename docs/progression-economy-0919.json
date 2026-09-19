@@ -1,0 +1,1894 @@
+{
+  "rows": [
+    {
+      "id": "wood",
+      "secret": false,
+      "stage": 1,
+      "foes": 56,
+      "foeXp": 350,
+      "bossXp": 150,
+      "clear": 210,
+      "quest": 18,
+      "run": 640,
+      "level": 1,
+      "old": 1,
+      "full": 728,
+      "fullLevel": 1,
+      "oldFull": 1,
+      "coins": 204,
+      "collected": 102,
+      "reserve": 30,
+      "available": 72,
+      "heroes": {
+        "knight": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "risingCut"
+          ]
+        },
+        "pyro": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "vent"
+          ]
+        },
+        "paladin": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "consecrate"
+          ]
+        },
+        "pirate": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "grapeshot"
+          ]
+        },
+        "reaper": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "summonSkeleton"
+          ]
+        },
+        "warden": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "skewer"
+          ]
+        }
+      }
+    },
+    {
+      "id": "marsh",
+      "secret": false,
+      "stage": 2,
+      "foes": 51,
+      "foeXp": 326,
+      "bossXp": 173,
+      "clear": 196,
+      "quest": 16,
+      "run": 1270,
+      "level": 2,
+      "old": 2,
+      "full": 1439,
+      "fullLevel": 2,
+      "oldFull": 2,
+      "coins": 185,
+      "collected": 92,
+      "reserve": 30,
+      "available": 134,
+      "heroes": {
+        "knight": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "risingCut"
+          ]
+        },
+        "pyro": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "vent"
+          ]
+        },
+        "paladin": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "consecrate"
+          ]
+        },
+        "pirate": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "grapeshot"
+          ]
+        },
+        "reaper": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "summonSkeleton"
+          ]
+        },
+        "warden": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "skewer"
+          ]
+        }
+      }
+    },
+    {
+      "id": "stockade",
+      "secret": false,
+      "stage": 3,
+      "foes": 31,
+      "foeXp": 278,
+      "bossXp": 195,
+      "clear": 167,
+      "quest": 14,
+      "run": 1854,
+      "level": 3,
+      "old": 3,
+      "full": 2093,
+      "fullLevel": 3,
+      "oldFull": 3,
+      "coins": 169,
+      "collected": 84,
+      "reserve": 30,
+      "available": 188,
+      "heroes": {
+        "knight": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "risingCut"
+          ]
+        },
+        "pyro": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "vent"
+          ]
+        },
+        "paladin": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "consecrate"
+          ]
+        },
+        "pirate": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "grapeshot"
+          ]
+        },
+        "reaper": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "summonSkeleton"
+          ]
+        },
+        "warden": {
+          "slots": 2,
+          "cost": 60,
+          "skills": [
+            "skewer"
+          ]
+        }
+      }
+    },
+    {
+      "id": "spore",
+      "secret": false,
+      "stage": 4,
+      "foes": 61,
+      "foeXp": 520,
+      "bossXp": 218,
+      "clear": 312,
+      "quest": 26,
+      "run": 2800,
+      "level": 4,
+      "old": 4,
+      "full": 3169,
+      "fullLevel": 4,
+      "oldFull": 4,
+      "coins": 190,
+      "collected": 95,
+      "reserve": 30,
+      "available": 253,
+      "heroes": {
+        "knight": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "risingCut",
+            "shieldThrow"
+          ]
+        },
+        "pyro": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "vent",
+            "wisp"
+          ]
+        },
+        "paladin": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "consecrate",
+            "holyCharge"
+          ]
+        },
+        "pirate": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "grapeshot",
+            "rum"
+          ]
+        },
+        "reaper": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon"
+          ]
+        },
+        "warden": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "skewer",
+            "setSpears"
+          ]
+        }
+      }
+    },
+    {
+      "id": "kings",
+      "secret": false,
+      "stage": 5,
+      "foes": 71,
+      "foeXp": 528,
+      "bossXp": 336,
+      "clear": 317,
+      "quest": 26,
+      "run": 3875,
+      "level": 5,
+      "old": 5,
+      "full": 4376,
+      "fullLevel": 5,
+      "oldFull": 5,
+      "coins": 262,
+      "collected": 131,
+      "reserve": 30,
+      "available": 354,
+      "heroes": {
+        "knight": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "risingCut",
+            "shieldThrow"
+          ]
+        },
+        "pyro": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "vent",
+            "wisp"
+          ]
+        },
+        "paladin": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "consecrate",
+            "holyCharge"
+          ]
+        },
+        "pirate": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "grapeshot",
+            "rum"
+          ]
+        },
+        "reaper": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon"
+          ]
+        },
+        "warden": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "skewer",
+            "setSpears"
+          ]
+        }
+      }
+    },
+    {
+      "id": "scree",
+      "secret": false,
+      "stage": 6,
+      "foes": 48,
+      "foeXp": 450,
+      "bossXp": 263,
+      "clear": 270,
+      "quest": 23,
+      "run": 4768,
+      "level": 6,
+      "old": 6,
+      "full": 6558,
+      "fullLevel": 7,
+      "oldFull": 7,
+      "coins": 195,
+      "collected": 97,
+      "reserve": 30,
+      "available": 421,
+      "heroes": {
+        "knight": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "risingCut",
+            "shieldThrow"
+          ]
+        },
+        "pyro": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "vent",
+            "wisp"
+          ]
+        },
+        "paladin": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "consecrate",
+            "holyCharge"
+          ]
+        },
+        "pirate": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "grapeshot",
+            "rum"
+          ]
+        },
+        "reaper": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon"
+          ]
+        },
+        "warden": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "skewer",
+            "setSpears"
+          ]
+        }
+      }
+    },
+    {
+      "id": "hanging",
+      "secret": false,
+      "stage": 7,
+      "foes": 44,
+      "foeXp": 378,
+      "bossXp": 399,
+      "clear": 227,
+      "quest": 19,
+      "run": 5696,
+      "level": 7,
+      "old": 7,
+      "full": 7581,
+      "fullLevel": 8,
+      "oldFull": 8,
+      "coins": 184,
+      "collected": 92,
+      "reserve": 30,
+      "available": 483,
+      "heroes": {
+        "knight": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "risingCut",
+            "shieldThrow"
+          ]
+        },
+        "pyro": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "vent",
+            "wisp"
+          ]
+        },
+        "paladin": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "consecrate",
+            "holyCharge"
+          ]
+        },
+        "pirate": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "grapeshot",
+            "rum"
+          ]
+        },
+        "reaper": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon"
+          ]
+        },
+        "warden": {
+          "slots": 2,
+          "cost": 180,
+          "skills": [
+            "skewer",
+            "setSpears"
+          ]
+        }
+      }
+    },
+    {
+      "id": "spire",
+      "secret": false,
+      "stage": 8,
+      "foes": 68,
+      "foeXp": 584,
+      "bossXp": 420,
+      "clear": 350,
+      "quest": 29,
+      "run": 6933,
+      "level": 8,
+      "old": 8,
+      "full": 8964,
+      "fullLevel": 9,
+      "oldFull": 9,
+      "coins": 293,
+      "collected": 146,
+      "reserve": 30,
+      "available": 599,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "moor",
+      "secret": false,
+      "stage": 9,
+      "foes": 75,
+      "foeXp": 602,
+      "bossXp": 315,
+      "clear": 361,
+      "quest": 30,
+      "run": 8091,
+      "level": 9,
+      "old": 9,
+      "full": 10272,
+      "fullLevel": 10,
+      "oldFull": 10,
+      "coins": 340,
+      "collected": 170,
+      "reserve": 30,
+      "available": 739,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "storm",
+      "secret": false,
+      "stage": 10,
+      "foes": 60,
+      "foeXp": 548,
+      "bossXp": 330,
+      "clear": 329,
+      "quest": 27,
+      "run": 9188,
+      "level": 9,
+      "old": 10,
+      "full": 11506,
+      "fullLevel": 11,
+      "oldFull": 11,
+      "coins": 211,
+      "collected": 105,
+      "reserve": 30,
+      "available": 814,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "crown",
+      "secret": false,
+      "stage": 11,
+      "foes": 100,
+      "foeXp": 1124,
+      "bossXp": 483,
+      "clear": 674,
+      "quest": 56,
+      "run": 11244,
+      "level": 11,
+      "old": 11,
+      "full": 13843,
+      "fullLevel": 13,
+      "oldFull": 12,
+      "coins": 418,
+      "collected": 209,
+      "reserve": 30,
+      "available": 993,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "longwater",
+      "secret": false,
+      "stage": 12,
+      "foes": 66,
+      "foeXp": 560,
+      "bossXp": 368,
+      "clear": 336,
+      "quest": 28,
+      "run": 12396,
+      "level": 12,
+      "old": 12,
+      "full": 16413,
+      "fullLevel": 14,
+      "oldFull": 14,
+      "coins": 217,
+      "collected": 108,
+      "reserve": 30,
+      "available": 1071,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "reef",
+      "secret": false,
+      "stage": 13,
+      "foes": 65,
+      "foeXp": 520,
+      "bossXp": 390,
+      "clear": 312,
+      "quest": 26,
+      "run": 13514,
+      "level": 12,
+      "old": 13,
+      "full": 17661,
+      "fullLevel": 15,
+      "oldFull": 15,
+      "coins": 203,
+      "collected": 101,
+      "reserve": 30,
+      "available": 1142,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "flotilla",
+      "secret": false,
+      "stage": 14,
+      "foes": 41,
+      "foeXp": 402,
+      "bossXp": 413,
+      "clear": 241,
+      "quest": 20,
+      "run": 14490,
+      "level": 13,
+      "old": 14,
+      "full": 18737,
+      "fullLevel": 16,
+      "oldFull": 16,
+      "coins": 213,
+      "collected": 106,
+      "reserve": 30,
+      "available": 1218,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "hurricane",
+      "secret": false,
+      "stage": 15,
+      "foes": 100,
+      "foeXp": 938,
+      "bossXp": 435,
+      "clear": 563,
+      "quest": 47,
+      "run": 16238,
+      "level": 14,
+      "old": 15,
+      "full": 20720,
+      "fullLevel": 17,
+      "oldFull": 17,
+      "coins": 302,
+      "collected": 151,
+      "reserve": 30,
+      "available": 1339,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lamplit",
+      "secret": false,
+      "stage": 16,
+      "foes": 102,
+      "foeXp": 958,
+      "bossXp": 641,
+      "clear": 575,
+      "quest": 48,
+      "run": 18220,
+      "level": 15,
+      "old": 16,
+      "full": 22942,
+      "fullLevel": 18,
+      "oldFull": 18,
+      "coins": 254,
+      "collected": 127,
+      "reserve": 30,
+      "available": 1436,
+      "heroes": {
+        "knight": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam"
+          ]
+        },
+        "pyro": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall"
+          ]
+        },
+        "paladin": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer"
+          ]
+        },
+        "pirate": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding"
+          ]
+        },
+        "reaper": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround"
+          ]
+        },
+        "warden": {
+          "slots": 3,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "deep",
+      "secret": false,
+      "stage": 17,
+      "foes": 101,
+      "foeXp": 942,
+      "bossXp": 480,
+      "clear": 565,
+      "quest": 47,
+      "run": 20019,
+      "level": 16,
+      "old": 17,
+      "full": 24976,
+      "fullLevel": 19,
+      "oldFull": 19,
+      "coins": 249,
+      "collected": 124,
+      "reserve": 30,
+      "available": 1530,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "keep",
+      "secret": false,
+      "stage": 18,
+      "foes": 24,
+      "foeXp": 256,
+      "bossXp": 683,
+      "clear": 154,
+      "quest": 0,
+      "run": 21061,
+      "level": 17,
+      "old": 18,
+      "full": 26069,
+      "fullLevel": 20,
+      "oldFull": 20,
+      "coins": 88,
+      "collected": 44,
+      "reserve": 30,
+      "available": 1544,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "causeway",
+      "secret": false,
+      "stage": 19,
+      "foes": 100,
+      "foeXp": 862,
+      "bossXp": 683,
+      "clear": 517,
+      "quest": 43,
+      "run": 22951,
+      "level": 18,
+      "old": 19,
+      "full": 28174,
+      "fullLevel": 21,
+      "oldFull": 21,
+      "coins": 270,
+      "collected": 135,
+      "reserve": 30,
+      "available": 1649,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "harbor",
+      "secret": false,
+      "stage": 20,
+      "foes": 24,
+      "foeXp": 214,
+      "bossXp": 198,
+      "clear": 128,
+      "quest": 0,
+      "run": 23448,
+      "level": 18,
+      "old": 20,
+      "full": 28714,
+      "fullLevel": 21,
+      "oldFull": 22,
+      "coins": 169,
+      "collected": 84,
+      "reserve": 30,
+      "available": 1703,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "waymeet",
+      "secret": false,
+      "stage": 21,
+      "foes": 66,
+      "foeXp": 930,
+      "bossXp": 609,
+      "clear": 558,
+      "quest": 47,
+      "run": 25359,
+      "level": 19,
+      "old": 21,
+      "full": 30858,
+      "fullLevel": 22,
+      "oldFull": 23,
+      "coins": 262,
+      "collected": 131,
+      "reserve": 30,
+      "available": 1804,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "fields",
+      "secret": false,
+      "stage": 22,
+      "foes": 72,
+      "foeXp": 634,
+      "bossXp": 651,
+      "clear": 380,
+      "quest": 32,
+      "run": 26897,
+      "level": 20,
+      "old": 22,
+      "full": 32555,
+      "fullLevel": 23,
+      "oldFull": 24,
+      "coins": 258,
+      "collected": 129,
+      "reserve": 30,
+      "available": 1903,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "burial",
+      "secret": false,
+      "stage": 23,
+      "foes": 32,
+      "foeXp": 322,
+      "bossXp": 195,
+      "clear": 193,
+      "quest": 0,
+      "run": 27543,
+      "level": 21,
+      "old": 23,
+      "full": 33265,
+      "fullLevel": 24,
+      "oldFull": 25,
+      "coins": 120,
+      "collected": 60,
+      "reserve": 30,
+      "available": 1933,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "mage",
+      "secret": false,
+      "stage": 24,
+      "foes": 86,
+      "foeXp": 770,
+      "bossXp": 704,
+      "clear": 462,
+      "quest": 39,
+      "run": 29325,
+      "level": 22,
+      "old": 24,
+      "full": 35240,
+      "fullLevel": 25,
+      "oldFull": 26,
+      "coins": 247,
+      "collected": 123,
+      "reserve": 30,
+      "available": 2026,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    },
+    {
+      "id": "fallingtower",
+      "secret": false,
+      "stage": 25,
+      "foes": 5,
+      "foeXp": 48,
+      "bossXp": 201,
+      "clear": 29,
+      "quest": 0,
+      "run": 29593,
+      "level": 22,
+      "old": 25,
+      "full": 35518,
+      "fullLevel": 25,
+      "oldFull": 27,
+      "coins": 175,
+      "collected": 87,
+      "reserve": 30,
+      "available": 2083,
+      "heroes": {
+        "knight": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "risingCut",
+            "shieldThrow",
+            "groundSlam",
+            "lunge"
+          ]
+        },
+        "pyro": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "vent",
+            "wisp",
+            "fireWall",
+            "meteor"
+          ]
+        },
+        "paladin": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "consecrate",
+            "holyCharge",
+            "blessedHammer",
+            "lightLance"
+          ]
+        },
+        "pirate": {
+          "slots": 4,
+          "cost": 520,
+          "skills": [
+            "grapeshot",
+            "rum",
+            "boarding",
+            "broadside"
+          ]
+        },
+        "reaper": {
+          "slots": 4,
+          "cost": 420,
+          "skills": [
+            "summonSkeleton",
+            "harvestMoon",
+            "unholyGround",
+            "scytheThrown"
+          ]
+        },
+        "warden": {
+          "slots": 4,
+          "cost": 300,
+          "skills": [
+            "skewer",
+            "setSpears",
+            "harrier"
+          ]
+        }
+      }
+    }
+  ],
+  "assumptions": [
+    "Half of placed coins collected; 30 coins reserved per stage for consumables.",
+    "No enemy drops, first-time medal purses, replay income or migration refunds counted.",
+    "One hero progressing through the campaign; buying every skill is not assumed."
+  ]
+}
