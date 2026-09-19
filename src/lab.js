@@ -6,6 +6,7 @@
 import { MARK } from './marks.js';   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // each hero's real reach (attackBox in main.js), so the bot swings from where the blow actually lands
+const LAB_STAND = {knight:12,warden:38,pyro:18,paladin:14,pirate:12,reaper:18};
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40 };   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 export const LAB_FOES = ['sprig', 'shield', 'swornsword', 'archer', 'hedgeknight', 'cutlass', 'harpy', 'crab', 'tideguard', 'scout'];
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
@@ -316,7 +317,15 @@ export async function bossLab(BK, opts = {}) {
        time behind it, so it is RETURNED. One release in ten is early. dkHold keeps the ward up a little past the end of a tell. */
     const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     for (; f < maxF && boss.alive; f++) {
-      P.hp = P.maxHp; P.dead = 0; P.st = Math.max(P.st, 40);
+      P.hp = P.maxHp; P.dead = 0; // health is observed separately; stamina must be earned back by the real recovery rule
+      if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
+      if(P.labRest&&!P.plunge){
+        k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
+        const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
+        if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(Math.abs(P.x-boss.x)<80){const dir=P.x<boss.x?-1:1;if(P.x+dir*30>A.x0&&P.x+dir*30<A.x1)k[dir>0?'right':'left']=true;}
+        const was=P.hp;BK.sim(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
+      }
       /* THE DEEP: THE KING SWIMS. No stone - a stone is a man standing on the floor, and he is not there. The bot swims at him, up
          and down as well as along; it leaves a marked charge by going across its line and a marked fall by going aside, keeps a
          shield up for what a shield turns, and cuts him whenever he is in reach. */
@@ -526,8 +535,8 @@ export async function bossLab(BK, opts = {}) {
              tap does not clear it. Walking and not moving means something that size is in the way. */
           if (flotClimb && P.ground && Math.abs(P.vx) < 8 && (k.left || k.right) && f % 14 === 0) { BK.press('jump'); P.labJump = 18; }
           if (P.labJump > 0) { P.labJump--; k.jump = true; } } }
-      else if (goal !== null && !k.block) { const gd = goal - P.x;
-        if (Math.abs(gd) > (strike ? Math.max(8, LAB_REACH[h] * 0.6) : 6)) k[gd > 0 ? 'right' : 'left'] = true;
+      else if (goal !== null && !k.block) { const desired=strike ? goal-(Math.sign(goal-P.x)||P.face)*(LAB_STAND[h]+(boss.w||20)/2) : goal; const gd = desired - P.x;
+        if (Math.abs(gd) > 4) k[gd > 0 ? 'right' : 'left'] = true;
         /* THE TOMB'S RUBBLE IS A STEP: walking and not moving there means a mound in the way, and a player hops it */
         if (boss.t === 'prince' && (k.left || k.right) && P.ground && Math.abs(P.vx) < 4 && f % 15 === 0) BK.press('jump');
         /* AND WATER HAS A SECOND AXIS. Outside the Deep's own swimming branch the hands only ever walked left and
@@ -535,6 +544,8 @@ export async function bossLab(BK, opts = {}) {
            it: every hero stalled between 3% and 27% of him, which is his flood phase and nothing else. A swimmer
            strokes up and down as well. */
         if (P.swim) { const dyb = (boss.y - 10) - P.y; if (dyb < -12) k.up = true; else if (dyb > 12) k.down = true; } }
+      if(P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
+      if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
       if (strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) BK.press('jump');   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
@@ -552,7 +563,7 @@ export async function bossLab(BK, opts = {}) {
     k.left = false; k.right = false; k.block = false;
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
     await yieldNow();
   }
   out.done = true; out.ms = Date.now() - out.started;

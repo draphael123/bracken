@@ -14,7 +14,7 @@ const TS = 16;
 export { fly };
 export const POGO_ROUTES = [
   { id: 'wood pit', lvl: 'wood', from: [106, 21], dir: 1, goal: [124, 132, 0, 21], fall: 22, note: 'four wasps over the pond; stumps under them' },
-  { id: 'wood tarn', lvl: 'wood', from: [404, 14], dir: 1, goal: [424, 432, 0, 14], fall: 16, note: 'three wasps; or fell the pine' },
+  { id: 'wood tarn', lvl: 'wood', from: [404, 14], dir: 1, goal: [421, 432, 0, 14], fall: 16, note: 'three wasps; or fell the pine' },
   { id: 'wood silver shaft', lvl: 'wood', from: [452, 8], dir: 1, goal: [465, 470, 0, 4], fall: 9, note: 'two wasps up the shaft to the silver on the boards' },
   { id: 'marsh west roof', lvl: 'marsh', from: [344, 15], dir: -1, goal: [334, 338, 0, 10], fall: 16, note: 'the wasp by the west hut up to its archer' },
   { id: 'marsh east roof', lvl: 'marsh', from: [352, 14], dir: 1, goal: [350, 354, 0, 10], fall: 16, note: 'the wasp by the east hut up to the silver' },
@@ -27,22 +27,30 @@ const yieldNow = () => new Promise(r => setTimeout(r, 0));
 /* one flight. opts: { takeoff (px before the bank's edge to press jump), steer ('hold' | 'aim'), high (hold jump through it) } */
 function fly(BK, r, o, maxF = 1000) {
   const P = BK.P, k = BK.keys, dir = r.dir;
-  P.x = r.from[0] * TS + 8; P.y = r.from[1] * TS + TS; P.vx = 0; P.vy = 0; P.ground = true; P.face = dir; P.st = P.maxSt; P.hp = P.maxHp; P.inv = 0;
+  P.x = r.from[0] * TS + 8; P.y = r.from[1] * TS + TS; P.vx = 0; P.vy = 0; P.ground = true; P.face = dir; P.st = P.maxSt; P.plungeN = 0; P.hp = P.maxHp; P.inv = 0;
+  Object.assign(P,{dead:0,down:0,hurt:0,asleep:0,climb:false,onMover:null,jbuf:0,abuf:0,abufDown:false,dbuf:0,atk:-1,dodge:0,plungeRec:0,canCut:true});
+  k.atk=k.block=k.dodge=false;
   for (const q of ['plunge', 'pinning']) P[q] = q === 'pinning' ? null : false; P.perch = 0;
   k.left = k.right = k.down = k.jump = k.up = false;
   const edgeX = (() => { let x = r.from[0]; while (BK.L.grid[(r.from[1] + 1) * BK.L.W + x + dir] && x > 0 && x < BK.L.W) x += dir; return x * TS + 8 + dir * 7; })();
   const jumpX = edgeX - dir * o.takeoff;
   let jumped = false, jumpHold = 0, bounces = 0, lastX = P.x, prevVy = 0, prevGround = true;
+  const used=new Set(); let target=null;
   const foes = () => BK.enemies().filter(e => e.alive && !e.harmless && !(e.gone > 0));
   for (let f = 0; f < maxF; f++) {
     if (P.dead || P.hp <= 0) return { ok: false, why: 'died', bounces, f };
     if (P.hp < P.maxHp) P.hp = P.maxHp;   /* a sting is not what is being measured: the knock is, so it stays */
-    const inGoal = P.ground && P.x >= r.goal[0] * TS && P.x < (r.goal[1] + 1) * TS && P.y <= (r.goal[3] + 1) * TS + 1 && P.y >= r.goal[2] * TS;
+    const inGoal = P.ground && P.x + P.w/2 > r.goal[0] * TS && P.x - P.w/2 < (r.goal[1] + 1) * TS && P.y <= (r.goal[3] + 1) * TS + 1 && P.y >= r.goal[2] * TS;
     if (inGoal) return { ok: true, bounces, f };
     if (P.y > (r.fall + 1) * TS + 2) return { ok: false, why: 'fell', bounces, f, x: Math.round(P.x / TS) };
     if (jumped && P.ground && !P.onMover && Math.abs(P.vy) < 1 && f > 4) { return { ok: false, why: 'landed ' + Math.floor(P.x / TS) + ',' + Math.floor(P.y / TS - 1), bounces, f }; }
+    if (jumped && !P.ground && !prevGround && prevVy >= 0 && P.vy < -200) { bounces++; lastX = P.x; if(target)used.add(target);target=null; }   /* thrown back up off something: a bounce, a vault or a kick */
     // the stick
     let want = dir;
+    if (jumped && o.steer === 'seek') {
+      if(!target||!target.alive||used.has(target))target=foes().filter(e=>e.t==='wasp'&&!used.has(e)&&Math.abs(e.x-P.x)<200&&Math.abs(e.y-P.y)<140).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
+      const tx=target?target.x:(r.goal[0]+r.goal[1]+1)/2*TS;want=Math.abs(tx-P.x)<3?0:Math.sign(tx-P.x);
+    }
     if (jumped && o.steer === 'aim') {
       const ahead = foes().filter(e => (e.x - lastX) * dir > 16 && e.y > P.y - 70 && e.y < (r.fall + 1) * TS).sort((a, b) => (a.x - b.x) * dir);
       const next = ahead[0];
@@ -58,7 +66,6 @@ function fly(BK, r, o, maxF = 1000) {
     if (jumped && !P.ground && P.vy > 20 && !P.plunge) for (const e of foes()) { const dy = (e.y - (e.h || 8)) - P.y; if (Math.abs(e.x - P.x) < 12 && dy > -6 && dy < 44) { k.down = true; BK.press('atk'); break; } }
     if (P.plunge) k.down = true;
     if (P.perch > 0 && o.kick !== false) BK.press('jump');   /* ON THE SHAFT (a perch): the kick is the only way off it, pressed on the first frame of the window (kick: false leaves it) */
-    if (jumped && !P.ground && !prevGround && prevVy >= 0 && P.vy < -200) { bounces++; lastX = P.x; }   /* thrown back up off something: a bounce, a vault or a kick */
     const prevVy0 = P.vy, prevGround0 = P.ground; if (o.trace && f % 6 === 0) o.trace.push([f, Math.round(P.x), Math.round(P.y), Math.round(P.vy), P.ground ? 'G' : '', P.plunge ? 'P' : '', k.left ? 'L' : k.right ? 'R' : '', k.jump ? 'J' : '', P.perch > 0 ? 'perch' : ''].join(' '));
     if (o.onFrame) o.onFrame(f); else BK.sim(1); prevVy = prevVy0; prevGround = prevGround0;   /* (onFrame: a harness that wants to draw the flight steps it itself) */
   }
@@ -71,7 +78,7 @@ function fly(BK, r, o, maxF = 1000) {
      node tools/headless.mjs expr "import('/src/pogolab.js').then(m => m.vaultChecks(BK))" */
 export async function vaultChecks(BK) {
   const lvm = await import('./level.js'), out = {};
-  const at = (h, lvl) => { BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvl)); BK.state = 'play'; BK.god = true; BK.sim(2); };
+  const at = (h, lvl) => { BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvl)); BK.state = 'play'; BK.god = true; BK.sim(300); };
   const dropOn = (e, held = false) => { const P = BK.P, k = BK.keys; BK.sim(30); P.vaultCarry = 0; P.vaultT = 0; P.x = e.x; P.y = e.y - (e.h || 8) - 30; P.vx = 0; P.vy = 40; P.ground = false; P.plunge = false; P.pinning = null; P.perch = 0; P.st = P.maxSt; P.face = 1;
     k.left = k.right = false; k.jump = held; k.down = true; BK.press('atk');
     let seen = null, went = false; for (let f = 0; f < 60 && !seen; f++) { BK.sim(1); if (P.plunge) went = true; else if (went) seen = { f, vy: Math.round(P.vy), vx: Math.round(P.vx), pinning: !!P.pinning, perch: P.perch > 0, carry: +(P.vaultCarry || 0).toFixed(2), vaultT: +(P.vaultT || 0).toFixed(2), alive: e.alive }; }
@@ -98,7 +105,7 @@ export async function pogoLab(BK, opts = {}) {
   for (const r of routes) for (const h of heroes) {
     let best = null, tries = 0, wins = 0, plain = 0, whys = {};
     BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === r.lvl)); BK.state = 'play'; BK.god = true; BK.sim(2);
-    for (const steer of ['hold', 'aim']) for (const high of [false, true]) for (const takeoff of takeoffs) {
+    for (const steer of (opts.steers||['hold', 'aim', 'seek'])) for (const high of [false, true]) for (const takeoff of takeoffs) {
       for (const e of BK.enemies()) e.alive = false; BK.respawnEnemies(); BK.sim(1);   /* the wasps a flight killed are put back, where they were built */
       const res = fly(BK, r, { takeoff, steer, high, kick: opts.kick }); tries++;
       if (res.why === 'died' || P0dead(BK)) { BK.load(lvm.LEVELS.findIndex(l => l.id === r.lvl)); BK.state = 'play'; BK.god = true; BK.sim(2); }

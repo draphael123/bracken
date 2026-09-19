@@ -1,0 +1,3646 @@
+{
+  "bossSamples": 138,
+  "bossKilled": 115,
+  "bossWithin90to150": 38,
+  "pogoSamples": 36,
+  "pogoCrossed": 36,
+  "notes": [
+    "Single randomized samples, not a robust balance estimate.",
+    "Baseline and retest files use different pilot revisions; see individual receipts.",
+    "Boss ledger covers hurtEnemy calls; it does not prove an anti-plunge strategy comparison."
+  ],
+  "rows": [
+    {
+      "lvl": "wood",
+      "boss": "queen",
+      "h": "knight",
+      "killed": true,
+      "secs": 91.5,
+      "bossHp": 198,
+      "hpLeftPct": 0,
+      "takenPerMin": 144,
+      "heroHp": 100,
+      "swings": 2667,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 198
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "wood",
+      "boss": "queen",
+      "h": "warden",
+      "killed": true,
+      "secs": 139,
+      "bossHp": 198,
+      "hpLeftPct": 0,
+      "takenPerMin": 172,
+      "heroHp": 90,
+      "swings": 4980,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 198
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "wood",
+      "boss": "queen",
+      "h": "pyro",
+      "killed": true,
+      "secs": 81.6,
+      "bossHp": 198,
+      "hpLeftPct": 0,
+      "takenPerMin": 85,
+      "heroHp": 88,
+      "swings": 2419,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 198
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "wood",
+      "boss": "queen",
+      "h": "paladin",
+      "killed": true,
+      "secs": 68.2,
+      "bossHp": 198,
+      "hpLeftPct": 0,
+      "takenPerMin": 127,
+      "heroHp": 120,
+      "swings": 1521,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 198
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "wood",
+      "boss": "queen",
+      "h": "pirate",
+      "killed": true,
+      "secs": 37.4,
+      "bossHp": 198,
+      "hpLeftPct": 0,
+      "takenPerMin": 24,
+      "heroHp": 90,
+      "swings": 879,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 198
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "wood",
+      "boss": "queen",
+      "h": "reaper",
+      "killed": true,
+      "secs": 50.3,
+      "bossHp": 198,
+      "hpLeftPct": 0,
+      "takenPerMin": 132,
+      "heroHp": 95,
+      "swings": 48,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 198
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "marsh",
+      "boss": "frog",
+      "h": "knight",
+      "killed": true,
+      "secs": 40.9,
+      "bossHp": 261,
+      "hpLeftPct": 0,
+      "takenPerMin": 195,
+      "heroHp": 104,
+      "swings": 127,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 261
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "marsh",
+      "boss": "frog",
+      "h": "warden",
+      "killed": true,
+      "secs": 34.4,
+      "bossHp": 261,
+      "hpLeftPct": 0,
+      "takenPerMin": 173,
+      "heroHp": 90,
+      "swings": 51,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 261
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "marsh",
+      "boss": "frog",
+      "h": "pyro",
+      "killed": true,
+      "secs": 36.5,
+      "bossHp": 261,
+      "hpLeftPct": 0,
+      "takenPerMin": 120,
+      "heroHp": 92,
+      "swings": 168,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 245
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "marsh",
+      "boss": "frog",
+      "h": "paladin",
+      "killed": true,
+      "secs": 34.1,
+      "bossHp": 261,
+      "hpLeftPct": 0,
+      "takenPerMin": 335,
+      "heroHp": 124,
+      "swings": 181,
+      "opened": 1,
+      "damage": {
+        "plunge": 20,
+        "other": 241
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "marsh",
+      "boss": "frog",
+      "h": "pirate",
+      "killed": true,
+      "secs": 26.1,
+      "bossHp": 261,
+      "hpLeftPct": 0,
+      "takenPerMin": 184,
+      "heroHp": 94,
+      "swings": 122,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 261
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "marsh",
+      "boss": "frog",
+      "h": "reaper",
+      "killed": true,
+      "secs": 23.7,
+      "bossHp": 261,
+      "hpLeftPct": 0,
+      "takenPerMin": 40,
+      "heroHp": 99,
+      "swings": 13,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 261
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "stockade",
+      "boss": "chief",
+      "h": "knight",
+      "killed": true,
+      "secs": 38.3,
+      "bossHp": 387,
+      "hpLeftPct": 0,
+      "takenPerMin": 135,
+      "heroHp": 100,
+      "swings": 131,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 387
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 4
+    },
+    {
+      "lvl": "stockade",
+      "boss": "chief",
+      "h": "warden",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 387,
+      "hpLeftPct": 80,
+      "takenPerMin": 0,
+      "heroHp": 90,
+      "swings": 12,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 79
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "stockade",
+      "boss": "chief",
+      "h": "pyro",
+      "killed": true,
+      "secs": 65.6,
+      "bossHp": 387,
+      "hpLeftPct": 0,
+      "takenPerMin": 54,
+      "heroHp": 88,
+      "swings": 158,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 387
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "stockade",
+      "boss": "chief",
+      "h": "paladin",
+      "killed": true,
+      "secs": 41.3,
+      "bossHp": 387,
+      "hpLeftPct": 0,
+      "takenPerMin": 157,
+      "heroHp": 120,
+      "swings": 115,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 387
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "stockade",
+      "boss": "chief",
+      "h": "pirate",
+      "killed": true,
+      "secs": 12.8,
+      "bossHp": 387,
+      "hpLeftPct": 0,
+      "takenPerMin": 80,
+      "heroHp": 90,
+      "swings": 47,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 387
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "stockade",
+      "boss": "chief",
+      "h": "reaper",
+      "killed": true,
+      "secs": 21.9,
+      "bossHp": 387,
+      "hpLeftPct": 0,
+      "takenPerMin": 169,
+      "heroHp": 95,
+      "swings": 21,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 387
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spore",
+      "boss": "mother",
+      "h": "knight",
+      "killed": true,
+      "secs": 90.5,
+      "bossHp": 8,
+      "hpLeftPct": 0,
+      "takenPerMin": 96,
+      "heroHp": 104,
+      "swings": 16,
+      "opened": 0,
+      "damage": {
+        "plunge": 0,
+        "other": 0
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spore",
+      "boss": "mother",
+      "h": "warden",
+      "killed": true,
+      "secs": 90.7,
+      "bossHp": 8,
+      "hpLeftPct": 0,
+      "takenPerMin": 102,
+      "heroHp": 94,
+      "swings": 23,
+      "opened": 0,
+      "damage": {
+        "plunge": 0,
+        "other": 0
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spore",
+      "boss": "mother",
+      "h": "pyro",
+      "killed": true,
+      "secs": 90,
+      "bossHp": 8,
+      "hpLeftPct": 0,
+      "takenPerMin": 103,
+      "heroHp": 92,
+      "swings": 19,
+      "opened": 0,
+      "damage": {
+        "plunge": 0,
+        "other": 0
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spore",
+      "boss": "mother",
+      "h": "paladin",
+      "killed": true,
+      "secs": 93,
+      "bossHp": 8,
+      "hpLeftPct": 0,
+      "takenPerMin": 81,
+      "heroHp": 124,
+      "swings": 16,
+      "opened": 0,
+      "damage": {
+        "plunge": 0,
+        "other": 0
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spore",
+      "boss": "mother",
+      "h": "pirate",
+      "killed": true,
+      "secs": 92.5,
+      "bossHp": 8,
+      "hpLeftPct": 0,
+      "takenPerMin": 85,
+      "heroHp": 94,
+      "swings": 21,
+      "opened": 0,
+      "damage": {
+        "plunge": 0,
+        "other": 0
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spore",
+      "boss": "mother",
+      "h": "reaper",
+      "killed": true,
+      "secs": 116.2,
+      "bossHp": 8,
+      "hpLeftPct": 0,
+      "takenPerMin": 73,
+      "heroHp": 99,
+      "swings": 44,
+      "opened": 0,
+      "damage": {
+        "plunge": 0,
+        "other": 0
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "kings",
+      "boss": "king",
+      "h": "knight",
+      "killed": true,
+      "secs": 43.1,
+      "bossHp": 435,
+      "hpLeftPct": 0,
+      "takenPerMin": 313,
+      "heroHp": 104,
+      "swings": 636,
+      "opened": 2,
+      "damage": {
+        "plunge": 0,
+        "other": 435
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "kings",
+      "boss": "king",
+      "h": "warden",
+      "killed": true,
+      "secs": 21.9,
+      "bossHp": 435,
+      "hpLeftPct": 0,
+      "takenPerMin": 181,
+      "heroHp": 94,
+      "swings": 159,
+      "opened": 2,
+      "damage": {
+        "plunge": 0,
+        "other": 435
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "kings",
+      "boss": "king",
+      "h": "pyro",
+      "killed": true,
+      "secs": 46.8,
+      "bossHp": 435,
+      "hpLeftPct": 0,
+      "takenPerMin": 210,
+      "heroHp": 92,
+      "swings": 913,
+      "opened": 2,
+      "damage": {
+        "plunge": 0,
+        "other": 435
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "kings",
+      "boss": "king",
+      "h": "paladin",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 435,
+      "hpLeftPct": 2,
+      "takenPerMin": 252,
+      "heroHp": 124,
+      "swings": 1064,
+      "opened": 2,
+      "damage": {
+        "plunge": 0,
+        "other": 426
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "kings",
+      "boss": "king",
+      "h": "pirate",
+      "killed": true,
+      "secs": 39,
+      "bossHp": 435,
+      "hpLeftPct": 0,
+      "takenPerMin": 288,
+      "heroHp": 94,
+      "swings": 648,
+      "opened": 2,
+      "damage": {
+        "plunge": 0,
+        "other": 435
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "kings",
+      "boss": "king",
+      "h": "reaper",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 435,
+      "hpLeftPct": 52,
+      "takenPerMin": 205,
+      "heroHp": 99,
+      "swings": 1976,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 208
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "scree",
+      "boss": "ram",
+      "h": "knight",
+      "killed": true,
+      "secs": 39.1,
+      "bossHp": 385,
+      "hpLeftPct": 0,
+      "takenPerMin": 267,
+      "heroHp": 104,
+      "swings": 1789,
+      "opened": 1,
+      "damage": {
+        "plunge": 210,
+        "other": 175
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "scree",
+      "boss": "ram",
+      "h": "warden",
+      "killed": true,
+      "secs": 40.5,
+      "bossHp": 385,
+      "hpLeftPct": 0,
+      "takenPerMin": 240,
+      "heroHp": 94,
+      "swings": 2092,
+      "opened": 1,
+      "damage": {
+        "plunge": 343,
+        "other": 42
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "scree",
+      "boss": "ram",
+      "h": "pyro",
+      "killed": true,
+      "secs": 40.6,
+      "bossHp": 385,
+      "hpLeftPct": 0,
+      "takenPerMin": 257,
+      "heroHp": 92,
+      "swings": 1877,
+      "opened": 1,
+      "damage": {
+        "plunge": 210,
+        "other": 159
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "scree",
+      "boss": "ram",
+      "h": "paladin",
+      "killed": true,
+      "secs": 67.6,
+      "bossHp": 385,
+      "hpLeftPct": 0,
+      "takenPerMin": 849,
+      "heroHp": 124,
+      "swings": 2404,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 385
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "scree",
+      "boss": "ram",
+      "h": "pirate",
+      "killed": true,
+      "secs": 43.8,
+      "bossHp": 385,
+      "hpLeftPct": 0,
+      "takenPerMin": 119,
+      "heroHp": 97,
+      "swings": 1980,
+      "opened": 1,
+      "damage": {
+        "plunge": 190,
+        "other": 195
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "scree",
+      "boss": "ram",
+      "h": "reaper",
+      "killed": true,
+      "secs": 55.7,
+      "bossHp": 385,
+      "hpLeftPct": 0,
+      "takenPerMin": 338,
+      "heroHp": 99,
+      "swings": 122,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 385
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hanging",
+      "boss": "owl",
+      "h": "knight",
+      "killed": true,
+      "secs": 19.5,
+      "bossHp": 353,
+      "hpLeftPct": 0,
+      "takenPerMin": 108,
+      "heroHp": 107,
+      "swings": 391,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 353
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hanging",
+      "boss": "owl",
+      "h": "warden",
+      "killed": true,
+      "secs": 73,
+      "bossHp": 353,
+      "hpLeftPct": 0,
+      "takenPerMin": 41,
+      "heroHp": 97,
+      "swings": 242,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 353
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hanging",
+      "boss": "owl",
+      "h": "pyro",
+      "killed": true,
+      "secs": 28.8,
+      "bossHp": 353,
+      "hpLeftPct": 0,
+      "takenPerMin": 125,
+      "heroHp": 95,
+      "swings": 551,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 353
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hanging",
+      "boss": "owl",
+      "h": "paladin",
+      "killed": true,
+      "secs": 24,
+      "bossHp": 353,
+      "hpLeftPct": 0,
+      "takenPerMin": 125,
+      "heroHp": 127,
+      "swings": 166,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 353
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hanging",
+      "boss": "owl",
+      "h": "pirate",
+      "killed": true,
+      "secs": 12.5,
+      "bossHp": 353,
+      "hpLeftPct": 0,
+      "takenPerMin": 120,
+      "heroHp": 97,
+      "swings": 46,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 353
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hanging",
+      "boss": "owl",
+      "h": "reaper",
+      "killed": true,
+      "secs": 24.1,
+      "bossHp": 353,
+      "hpLeftPct": 0,
+      "takenPerMin": 94,
+      "heroHp": 102,
+      "swings": 14,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 353
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spire",
+      "boss": "roc",
+      "h": "knight",
+      "killed": true,
+      "secs": 134.2,
+      "bossHp": 1238,
+      "hpLeftPct": 0,
+      "takenPerMin": 40,
+      "heroHp": 107,
+      "swings": 316,
+      "opened": 13,
+      "damage": {
+        "plunge": 45,
+        "other": 1193
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spire",
+      "boss": "roc",
+      "h": "warden",
+      "killed": true,
+      "secs": 113.5,
+      "bossHp": 1238,
+      "hpLeftPct": 0,
+      "takenPerMin": 41,
+      "heroHp": 94,
+      "swings": 180,
+      "opened": 11,
+      "damage": {
+        "plunge": 22,
+        "other": 1216
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spire",
+      "boss": "roc",
+      "h": "pyro",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 1238,
+      "hpLeftPct": 30,
+      "takenPerMin": 36,
+      "heroHp": 92,
+      "swings": 285,
+      "opened": 15,
+      "damage": {
+        "plunge": 49,
+        "other": 820
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "spire",
+      "boss": "roc",
+      "h": "paladin",
+      "killed": true,
+      "secs": 108.6,
+      "bossHp": 1238,
+      "hpLeftPct": 0,
+      "takenPerMin": 33,
+      "heroHp": 124,
+      "swings": 199,
+      "opened": 10,
+      "damage": {
+        "plunge": 36,
+        "other": 1202
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "spire",
+      "boss": "roc",
+      "h": "pirate",
+      "killed": true,
+      "secs": 107,
+      "bossHp": 1238,
+      "hpLeftPct": 0,
+      "takenPerMin": 30,
+      "heroHp": 94,
+      "swings": 166,
+      "opened": 11,
+      "damage": {
+        "plunge": 22,
+        "other": 1216
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "spire",
+      "boss": "roc",
+      "h": "reaper",
+      "killed": true,
+      "secs": 94,
+      "bossHp": 1238,
+      "hpLeftPct": 0,
+      "takenPerMin": 34,
+      "heroHp": 102,
+      "swings": 52,
+      "opened": 9,
+      "damage": {
+        "plunge": 19,
+        "other": 1219
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "moor",
+      "boss": "windcaller",
+      "h": "knight",
+      "killed": true,
+      "secs": 46.6,
+      "bossHp": 195,
+      "hpLeftPct": 0,
+      "takenPerMin": 201,
+      "heroHp": 111,
+      "swings": 902,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 195
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 3
+    },
+    {
+      "lvl": "moor",
+      "boss": "windcaller",
+      "h": "warden",
+      "killed": true,
+      "secs": 61.7,
+      "bossHp": 195,
+      "hpLeftPct": 0,
+      "takenPerMin": 210,
+      "heroHp": 97,
+      "swings": 920,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 195
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 4
+    },
+    {
+      "lvl": "moor",
+      "boss": "windcaller",
+      "h": "pyro",
+      "killed": true,
+      "secs": 93.6,
+      "bossHp": 195,
+      "hpLeftPct": 0,
+      "takenPerMin": 302,
+      "heroHp": 99,
+      "swings": 2269,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 195
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "moor",
+      "boss": "windcaller",
+      "h": "paladin",
+      "killed": true,
+      "secs": 44.7,
+      "bossHp": 195,
+      "hpLeftPct": 0,
+      "takenPerMin": 132,
+      "heroHp": 131,
+      "swings": 427,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 195
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "moor",
+      "boss": "windcaller",
+      "h": "pirate",
+      "killed": true,
+      "secs": 32.9,
+      "bossHp": 195,
+      "hpLeftPct": 0,
+      "takenPerMin": 120,
+      "heroHp": 101,
+      "swings": 373,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 195
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "moor",
+      "boss": "windcaller",
+      "h": "reaper",
+      "killed": true,
+      "secs": 26.2,
+      "bossHp": 195,
+      "hpLeftPct": 0,
+      "takenPerMin": 89,
+      "heroHp": 102,
+      "swings": 25,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 195
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 4
+    },
+    {
+      "lvl": "storm",
+      "boss": "lance",
+      "h": "knight",
+      "killed": true,
+      "secs": 68.9,
+      "bossHp": 445,
+      "hpLeftPct": 0,
+      "takenPerMin": 37,
+      "heroHp": 111,
+      "swings": 430,
+      "opened": 30,
+      "damage": {
+        "plunge": 0,
+        "other": 445
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "storm",
+      "boss": "lance",
+      "h": "warden",
+      "killed": true,
+      "secs": 117.2,
+      "bossHp": 445,
+      "hpLeftPct": 0,
+      "takenPerMin": 142,
+      "heroHp": 101,
+      "swings": 839,
+      "opened": 45,
+      "damage": {
+        "plunge": 0,
+        "other": 445
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 10
+    },
+    {
+      "lvl": "storm",
+      "boss": "lance",
+      "h": "pyro",
+      "killed": true,
+      "secs": 69.8,
+      "bossHp": 445,
+      "hpLeftPct": 0,
+      "takenPerMin": 88,
+      "heroHp": 99,
+      "swings": 614,
+      "opened": 27,
+      "damage": {
+        "plunge": 0,
+        "other": 317
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "storm",
+      "boss": "lance",
+      "h": "paladin",
+      "killed": true,
+      "secs": 96.2,
+      "bossHp": 445,
+      "hpLeftPct": 0,
+      "takenPerMin": 130,
+      "heroHp": 131,
+      "swings": 579,
+      "opened": 35,
+      "damage": {
+        "plunge": 0,
+        "other": 445
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "storm",
+      "boss": "lance",
+      "h": "pirate",
+      "killed": true,
+      "secs": 76.3,
+      "bossHp": 445,
+      "hpLeftPct": 0,
+      "takenPerMin": 106,
+      "heroHp": 101,
+      "swings": 286,
+      "opened": 27,
+      "damage": {
+        "plunge": 0,
+        "other": 445
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "storm",
+      "boss": "lance",
+      "h": "reaper",
+      "killed": true,
+      "secs": 123.4,
+      "bossHp": 445,
+      "hpLeftPct": 0,
+      "takenPerMin": 127,
+      "heroHp": 106,
+      "swings": 754,
+      "opened": 47,
+      "damage": {
+        "plunge": 0,
+        "other": 445
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 8
+    },
+    {
+      "lvl": "crown",
+      "boss": "gqueen",
+      "h": "knight",
+      "killed": true,
+      "secs": 77.9,
+      "bossHp": 775,
+      "hpLeftPct": 0,
+      "takenPerMin": 109,
+      "heroHp": 115,
+      "swings": 919,
+      "opened": 6,
+      "damage": {
+        "plunge": 0,
+        "other": 397
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "crown",
+      "boss": "gqueen",
+      "h": "warden",
+      "killed": true,
+      "secs": 108.5,
+      "bossHp": 775,
+      "hpLeftPct": 0,
+      "takenPerMin": 258,
+      "heroHp": 101,
+      "swings": 1133,
+      "opened": 9,
+      "damage": {
+        "plunge": 0,
+        "other": 235
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "crown",
+      "boss": "gqueen",
+      "h": "pyro",
+      "killed": true,
+      "secs": 78.4,
+      "bossHp": 775,
+      "hpLeftPct": 0,
+      "takenPerMin": 95,
+      "heroHp": 103,
+      "swings": 1187,
+      "opened": 7,
+      "damage": {
+        "plunge": 0,
+        "other": 381
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "crown",
+      "boss": "gqueen",
+      "h": "paladin",
+      "killed": true,
+      "secs": 102.7,
+      "bossHp": 775,
+      "hpLeftPct": 0,
+      "takenPerMin": 236,
+      "heroHp": 131,
+      "swings": 992,
+      "opened": 6,
+      "damage": {
+        "plunge": 0,
+        "other": 397
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "crown",
+      "boss": "gqueen",
+      "h": "pirate",
+      "killed": true,
+      "secs": 66.6,
+      "bossHp": 775,
+      "hpLeftPct": 0,
+      "takenPerMin": 92,
+      "heroHp": 105,
+      "swings": 510,
+      "opened": 6,
+      "damage": {
+        "plunge": 0,
+        "other": 451
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "crown",
+      "boss": "gqueen",
+      "h": "reaper",
+      "killed": true,
+      "secs": 118,
+      "bossHp": 775,
+      "hpLeftPct": 0,
+      "takenPerMin": 133,
+      "heroHp": 106,
+      "swings": 148,
+      "opened": 7,
+      "damage": {
+        "plunge": 0,
+        "other": 343
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "longwater",
+      "boss": "herald",
+      "h": "knight",
+      "killed": true,
+      "secs": 125,
+      "bossHp": 785,
+      "hpLeftPct": 0,
+      "takenPerMin": 148,
+      "heroHp": 104,
+      "swings": 344,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 785
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "longwater",
+      "boss": "herald",
+      "h": "warden",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 785,
+      "hpLeftPct": 45,
+      "takenPerMin": 150,
+      "heroHp": 90,
+      "swings": 342,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 430
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 3
+    },
+    {
+      "lvl": "longwater",
+      "boss": "herald",
+      "h": "pyro",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 785,
+      "hpLeftPct": 76,
+      "takenPerMin": 98,
+      "heroHp": 92,
+      "swings": 271,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 191
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "longwater",
+      "boss": "herald",
+      "h": "paladin",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 785,
+      "hpLeftPct": 48,
+      "takenPerMin": 104,
+      "heroHp": 124,
+      "swings": 515,
+      "opened": 1,
+      "damage": {
+        "plunge": 14,
+        "other": 398
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "longwater",
+      "boss": "herald",
+      "h": "pirate",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 785,
+      "hpLeftPct": 51,
+      "takenPerMin": 87,
+      "heroHp": 94,
+      "swings": 455,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 383
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "longwater",
+      "boss": "herald",
+      "h": "reaper",
+      "killed": true,
+      "secs": 125.5,
+      "bossHp": 785,
+      "hpLeftPct": 0,
+      "takenPerMin": 82,
+      "heroHp": 99,
+      "swings": 237,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 785
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "reef",
+      "boss": "reefmaw",
+      "h": "knight",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 454,
+      "hpLeftPct": 51,
+      "takenPerMin": 207,
+      "heroHp": 115,
+      "swings": 6629,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 222
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "reef",
+      "boss": "reefmaw",
+      "h": "warden",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 454,
+      "hpLeftPct": 66,
+      "takenPerMin": 196,
+      "heroHp": 101,
+      "swings": 5882,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 156
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "reef",
+      "boss": "reefmaw",
+      "h": "pyro",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 454,
+      "hpLeftPct": 65,
+      "takenPerMin": 204,
+      "heroHp": 103,
+      "swings": 6386,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 161
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "reef",
+      "boss": "reefmaw",
+      "h": "paladin",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 454,
+      "hpLeftPct": 61,
+      "takenPerMin": 67,
+      "heroHp": 131,
+      "swings": 2049,
+      "opened": 1,
+      "damage": {
+        "plunge": 14,
+        "other": 162
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "reef",
+      "boss": "reefmaw",
+      "h": "pirate",
+      "killed": true,
+      "secs": 65.4,
+      "bossHp": 454,
+      "hpLeftPct": 0,
+      "takenPerMin": 135,
+      "heroHp": 105,
+      "swings": 1402,
+      "opened": 1,
+      "damage": {
+        "plunge": 15,
+        "other": 439
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "reef",
+      "boss": "reefmaw",
+      "h": "reaper",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 454,
+      "hpLeftPct": 56,
+      "takenPerMin": 178,
+      "heroHp": 106,
+      "swings": 2865,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 198
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "flotilla",
+      "boss": "quarter",
+      "h": "knight",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 725,
+      "hpLeftPct": 45,
+      "takenPerMin": 170,
+      "heroHp": 104,
+      "swings": 2568,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 398
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "flotilla",
+      "boss": "quarter",
+      "h": "warden",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 725,
+      "hpLeftPct": 33,
+      "takenPerMin": 61,
+      "heroHp": 90,
+      "swings": 827,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 487
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "flotilla",
+      "boss": "quarter",
+      "h": "pyro",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 725,
+      "hpLeftPct": 27,
+      "takenPerMin": 108,
+      "heroHp": 92,
+      "swings": 417,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 514
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "flotilla",
+      "boss": "quarter",
+      "h": "paladin",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 725,
+      "hpLeftPct": 32,
+      "takenPerMin": 104,
+      "heroHp": 124,
+      "swings": 407,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 493
+      },
+      "ripostes": 2,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "flotilla",
+      "boss": "quarter",
+      "h": "pirate",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 725,
+      "hpLeftPct": 32,
+      "takenPerMin": 123,
+      "heroHp": 94,
+      "swings": 1519,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 493
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "flotilla",
+      "boss": "quarter",
+      "h": "reaper",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 725,
+      "hpLeftPct": 27,
+      "takenPerMin": 94,
+      "heroHp": 99,
+      "swings": 692,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 530
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 4
+    },
+    {
+      "lvl": "hurricane",
+      "boss": "captain",
+      "h": "knight",
+      "killed": true,
+      "secs": 34.6,
+      "bossHp": 823,
+      "hpLeftPct": 0,
+      "takenPerMin": 205,
+      "heroHp": 115,
+      "swings": 509,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 823
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "hurricane",
+      "boss": "captain",
+      "h": "warden",
+      "killed": true,
+      "secs": 64.5,
+      "bossHp": 823,
+      "hpLeftPct": 0,
+      "takenPerMin": 294,
+      "heroHp": 105,
+      "swings": 1659,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 823
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 5
+    },
+    {
+      "lvl": "hurricane",
+      "boss": "captain",
+      "h": "pyro",
+      "killed": true,
+      "secs": 54,
+      "bossHp": 823,
+      "hpLeftPct": 0,
+      "takenPerMin": 256,
+      "heroHp": 103,
+      "swings": 1425,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 709
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "hurricane",
+      "boss": "captain",
+      "h": "paladin",
+      "killed": true,
+      "secs": 63.8,
+      "bossHp": 823,
+      "hpLeftPct": 0,
+      "takenPerMin": 205,
+      "heroHp": 135,
+      "swings": 1477,
+      "opened": 1,
+      "damage": {
+        "plunge": 20,
+        "other": 803
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hurricane",
+      "boss": "captain",
+      "h": "pirate",
+      "killed": true,
+      "secs": 42.4,
+      "bossHp": 823,
+      "hpLeftPct": 0,
+      "takenPerMin": 206,
+      "heroHp": 108,
+      "swings": 850,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 823
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "hurricane",
+      "boss": "captain",
+      "h": "reaper",
+      "killed": true,
+      "secs": 49,
+      "bossHp": 823,
+      "hpLeftPct": 0,
+      "takenPerMin": 211,
+      "heroHp": 110,
+      "swings": 127,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 823
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 5
+    },
+    {
+      "lvl": "lamplit",
+      "boss": "tollmaster",
+      "h": "knight",
+      "killed": true,
+      "secs": 48,
+      "bossHp": 708,
+      "hpLeftPct": 0,
+      "takenPerMin": 304,
+      "heroHp": 115,
+      "swings": 1949,
+      "opened": 1,
+      "damage": {
+        "plunge": 95,
+        "other": 613
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "lamplit",
+      "boss": "tollmaster",
+      "h": "warden",
+      "killed": true,
+      "secs": 80.9,
+      "bossHp": 708,
+      "hpLeftPct": 0,
+      "takenPerMin": 229,
+      "heroHp": 105,
+      "swings": 2692,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 708
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "lamplit",
+      "boss": "tollmaster",
+      "h": "pyro",
+      "killed": true,
+      "secs": 64.2,
+      "bossHp": 708,
+      "hpLeftPct": 0,
+      "takenPerMin": 304,
+      "heroHp": 103,
+      "swings": 2784,
+      "opened": 1,
+      "damage": {
+        "plunge": 14,
+        "other": 620
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "lamplit",
+      "boss": "tollmaster",
+      "h": "paladin",
+      "killed": true,
+      "secs": 64.7,
+      "bossHp": 708,
+      "hpLeftPct": 0,
+      "takenPerMin": 205,
+      "heroHp": 135,
+      "swings": 2270,
+      "opened": 1,
+      "damage": {
+        "plunge": 118,
+        "other": 590
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "lamplit",
+      "boss": "tollmaster",
+      "h": "pirate",
+      "killed": true,
+      "secs": 58.2,
+      "bossHp": 708,
+      "hpLeftPct": 0,
+      "takenPerMin": 416,
+      "heroHp": 108,
+      "swings": 2103,
+      "opened": 1,
+      "damage": {
+        "plunge": 126,
+        "other": 582
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "lamplit",
+      "boss": "tollmaster",
+      "h": "reaper",
+      "killed": true,
+      "secs": 45.7,
+      "bossHp": 708,
+      "hpLeftPct": 0,
+      "takenPerMin": 299,
+      "heroHp": 110,
+      "swings": 432,
+      "opened": 1,
+      "damage": {
+        "plunge": 26,
+        "other": 682
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "underleaf",
+      "boss": "grandmother",
+      "h": "knight",
+      "killed": true,
+      "secs": 31,
+      "bossHp": 455,
+      "hpLeftPct": 0,
+      "takenPerMin": 293,
+      "heroHp": 118,
+      "swings": 638,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 455
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "underleaf",
+      "boss": "grandmother",
+      "h": "warden",
+      "killed": true,
+      "secs": 28,
+      "bossHp": 455,
+      "hpLeftPct": 0,
+      "takenPerMin": 223,
+      "heroHp": 105,
+      "swings": 238,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 455
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "underleaf",
+      "boss": "grandmother",
+      "h": "pyro",
+      "killed": true,
+      "secs": 32,
+      "bossHp": 455,
+      "hpLeftPct": 0,
+      "takenPerMin": 480,
+      "heroHp": 106,
+      "swings": 891,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 361
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "underleaf",
+      "boss": "grandmother",
+      "h": "paladin",
+      "killed": true,
+      "secs": 97.8,
+      "bossHp": 455,
+      "hpLeftPct": 0,
+      "takenPerMin": 489,
+      "heroHp": 138,
+      "swings": 1045,
+      "opened": 1,
+      "damage": {
+        "plunge": 31,
+        "other": 424
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "underleaf",
+      "boss": "grandmother",
+      "h": "pirate",
+      "killed": true,
+      "secs": 31,
+      "bossHp": 455,
+      "hpLeftPct": 0,
+      "takenPerMin": 308,
+      "heroHp": 108,
+      "swings": 598,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 455
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "underleaf",
+      "boss": "grandmother",
+      "h": "reaper",
+      "killed": true,
+      "secs": 37.8,
+      "bossHp": 455,
+      "hpLeftPct": 0,
+      "takenPerMin": 244,
+      "heroHp": 110,
+      "swings": 118,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 455
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 2
+    },
+    {
+      "lvl": "deep",
+      "boss": "drownedking",
+      "h": "knight",
+      "killed": true,
+      "secs": 69.9,
+      "bossHp": 1133,
+      "hpLeftPct": 0,
+      "takenPerMin": 78,
+      "heroHp": 118,
+      "swings": 168,
+      "opened": 8,
+      "damage": {
+        "plunge": 104,
+        "other": 1029
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "deep",
+      "boss": "drownedking",
+      "h": "warden",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 1133,
+      "hpLeftPct": 43,
+      "takenPerMin": 112,
+      "heroHp": 105,
+      "swings": 559,
+      "opened": 20,
+      "damage": {
+        "plunge": 105,
+        "other": 537
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "deep",
+      "boss": "drownedking",
+      "h": "pyro",
+      "killed": true,
+      "secs": 134.7,
+      "bossHp": 1133,
+      "hpLeftPct": 0,
+      "takenPerMin": 109,
+      "heroHp": 106,
+      "swings": 269,
+      "opened": 15,
+      "damage": {
+        "plunge": 331,
+        "other": 802
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "deep",
+      "boss": "drownedking",
+      "h": "paladin",
+      "killed": true,
+      "secs": 124.3,
+      "bossHp": 1133,
+      "hpLeftPct": 0,
+      "takenPerMin": 81,
+      "heroHp": 138,
+      "swings": 281,
+      "opened": 15,
+      "damage": {
+        "plunge": 173,
+        "other": 960
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "deep",
+      "boss": "drownedking",
+      "h": "pirate",
+      "killed": true,
+      "secs": 105.1,
+      "bossHp": 1133,
+      "hpLeftPct": 0,
+      "takenPerMin": 111,
+      "heroHp": 112,
+      "swings": 111,
+      "opened": 13,
+      "damage": {
+        "plunge": 203,
+        "other": 930
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "deep",
+      "boss": "drownedking",
+      "h": "reaper",
+      "killed": true,
+      "secs": 120.7,
+      "bossHp": 1133,
+      "hpLeftPct": 0,
+      "takenPerMin": 106,
+      "heroHp": 113,
+      "swings": 94,
+      "opened": 18,
+      "damage": {
+        "plunge": 204,
+        "other": 929
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "causeway",
+      "boss": "kraken",
+      "h": "knight",
+      "killed": true,
+      "secs": 110.7,
+      "bossHp": 675,
+      "hpLeftPct": 0,
+      "takenPerMin": 99,
+      "heroHp": 122,
+      "swings": 270,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 21
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "causeway",
+      "boss": "kraken",
+      "h": "warden",
+      "killed": true,
+      "secs": 105.1,
+      "bossHp": 675,
+      "hpLeftPct": 0,
+      "takenPerMin": 80,
+      "heroHp": 108,
+      "swings": 119,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 1
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "causeway",
+      "boss": "kraken",
+      "h": "pyro",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 675,
+      "hpLeftPct": 11,
+      "takenPerMin": 69,
+      "heroHp": 106,
+      "swings": 1240,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 0
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "causeway",
+      "boss": "kraken",
+      "h": "paladin",
+      "killed": true,
+      "secs": 133.6,
+      "bossHp": 675,
+      "hpLeftPct": 0,
+      "takenPerMin": 85,
+      "heroHp": 142,
+      "swings": 429,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 31
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "causeway",
+      "boss": "kraken",
+      "h": "pirate",
+      "killed": true,
+      "secs": 97.5,
+      "bossHp": 675,
+      "hpLeftPct": 0,
+      "takenPerMin": 86,
+      "heroHp": 112,
+      "swings": 78,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 22
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "causeway",
+      "boss": "kraken",
+      "h": "reaper",
+      "killed": true,
+      "secs": 126.7,
+      "bossHp": 675,
+      "hpLeftPct": 0,
+      "takenPerMin": 65,
+      "heroHp": 113,
+      "swings": 74,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 21
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "waymeet",
+      "boss": "closedhelm",
+      "h": "knight",
+      "killed": true,
+      "secs": 32.1,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 0,
+      "heroHp": 122,
+      "swings": 35,
+      "opened": 5,
+      "damage": {
+        "plunge": 0,
+        "other": 810
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 5
+    },
+    {
+      "lvl": "waymeet",
+      "boss": "closedhelm",
+      "h": "warden",
+      "killed": true,
+      "secs": 71.7,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 73,
+      "heroHp": 108,
+      "swings": 186,
+      "opened": 9,
+      "damage": {
+        "plunge": 0,
+        "other": 810
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 9
+    },
+    {
+      "lvl": "waymeet",
+      "boss": "closedhelm",
+      "h": "pyro",
+      "killed": true,
+      "secs": 74.7,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 26,
+      "heroHp": 110,
+      "swings": 458,
+      "opened": 11,
+      "damage": {
+        "plunge": 0,
+        "other": 620
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "waymeet",
+      "boss": "closedhelm",
+      "h": "paladin",
+      "killed": true,
+      "secs": 89.3,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 0,
+      "heroHp": 142,
+      "swings": 32,
+      "opened": 12,
+      "damage": {
+        "plunge": 0,
+        "other": 810
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "waymeet",
+      "boss": "closedhelm",
+      "h": "pirate",
+      "killed": true,
+      "secs": 38.8,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 49,
+      "heroHp": 116,
+      "swings": 30,
+      "opened": 6,
+      "damage": {
+        "plunge": 0,
+        "other": 810
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 6
+    },
+    {
+      "lvl": "waymeet",
+      "boss": "closedhelm",
+      "h": "reaper",
+      "killed": true,
+      "secs": 117.5,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 10,
+      "heroHp": 117,
+      "swings": 55,
+      "opened": 17,
+      "damage": {
+        "plunge": 0,
+        "other": 810
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 15
+    },
+    {
+      "lvl": "undercrown",
+      "boss": "prince",
+      "h": "knight",
+      "killed": true,
+      "secs": 37.2,
+      "bossHp": 1188,
+      "hpLeftPct": 0,
+      "takenPerMin": 92,
+      "heroHp": 122,
+      "swings": 716,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 1128
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "undercrown",
+      "boss": "prince",
+      "h": "warden",
+      "killed": true,
+      "secs": 27.9,
+      "bossHp": 1188,
+      "hpLeftPct": 0,
+      "takenPerMin": 233,
+      "heroHp": 112,
+      "swings": 226,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 1128
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 1
+    },
+    {
+      "lvl": "undercrown",
+      "boss": "prince",
+      "h": "pyro",
+      "killed": true,
+      "secs": 80.3,
+      "bossHp": 1188,
+      "hpLeftPct": 0,
+      "takenPerMin": 181,
+      "heroHp": 110,
+      "swings": 1532,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 1102
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "undercrown",
+      "boss": "prince",
+      "h": "paladin",
+      "killed": true,
+      "secs": 58.9,
+      "bossHp": 1188,
+      "hpLeftPct": 0,
+      "takenPerMin": 109,
+      "heroHp": 142,
+      "swings": 1047,
+      "opened": 1,
+      "damage": {
+        "plunge": 45,
+        "other": 1083
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "undercrown",
+      "boss": "prince",
+      "h": "pirate",
+      "killed": true,
+      "secs": 32,
+      "bossHp": 1188,
+      "hpLeftPct": 0,
+      "takenPerMin": 201,
+      "heroHp": 116,
+      "swings": 227,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 1158
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "undercrown",
+      "boss": "prince",
+      "h": "reaper",
+      "killed": true,
+      "secs": 51.2,
+      "bossHp": 1188,
+      "hpLeftPct": 0,
+      "takenPerMin": 136,
+      "heroHp": 117,
+      "swings": 61,
+      "opened": 1,
+      "damage": {
+        "plunge": 0,
+        "other": 1158
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 3
+    },
+    {
+      "lvl": "fields",
+      "boss": "strawking",
+      "h": "knight",
+      "killed": true,
+      "secs": 59.1,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 105,
+      "heroHp": 126,
+      "swings": 1166,
+      "opened": 1,
+      "damage": {
+        "plunge": 10,
+        "other": 800
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "fields",
+      "boss": "strawking",
+      "h": "warden",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 810,
+      "hpLeftPct": 25,
+      "takenPerMin": 255,
+      "heroHp": 112,
+      "swings": 5651,
+      "opened": 1,
+      "damage": {
+        "plunge": 85,
+        "other": 520
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "fields",
+      "boss": "strawking",
+      "h": "pyro",
+      "killed": false,
+      "secs": 150,
+      "bossHp": 810,
+      "hpLeftPct": 56,
+      "takenPerMin": 231,
+      "heroHp": 110,
+      "swings": 6884,
+      "opened": 1,
+      "damage": {
+        "plunge": 45,
+        "other": 308
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "fields",
+      "boss": "strawking",
+      "h": "paladin",
+      "killed": true,
+      "secs": 72.3,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 75,
+      "heroHp": 146,
+      "swings": 1281,
+      "opened": 1,
+      "damage": {
+        "plunge": 9,
+        "other": 801
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "fields",
+      "boss": "strawking",
+      "h": "pirate",
+      "killed": true,
+      "secs": 52,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 134,
+      "heroHp": 116,
+      "swings": 350,
+      "opened": 1,
+      "damage": {
+        "plunge": 50,
+        "other": 760
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "fields",
+      "boss": "strawking",
+      "h": "reaper",
+      "killed": true,
+      "secs": 58.6,
+      "bossHp": 810,
+      "hpLeftPct": 0,
+      "takenPerMin": 165,
+      "heroHp": 121,
+      "swings": 162,
+      "opened": 1,
+      "damage": {
+        "plunge": 90,
+        "other": 720
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "mage",
+      "boss": "archmage",
+      "h": "knight",
+      "killed": true,
+      "secs": 102.1,
+      "bossHp": 1029,
+      "hpLeftPct": 0,
+      "takenPerMin": 207,
+      "heroHp": 126,
+      "swings": 884,
+      "opened": 1,
+      "damage": {
+        "plunge": 148,
+        "other": 932
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "mage",
+      "boss": "archmage",
+      "h": "warden",
+      "killed": true,
+      "secs": 94.1,
+      "bossHp": 1029,
+      "hpLeftPct": 0,
+      "takenPerMin": 490,
+      "heroHp": 112,
+      "swings": 1175,
+      "opened": 1,
+      "damage": {
+        "plunge": 161,
+        "other": 919
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "mage",
+      "boss": "archmage",
+      "h": "pyro",
+      "killed": true,
+      "secs": 103.9,
+      "bossHp": 1029,
+      "hpLeftPct": 0,
+      "takenPerMin": 372,
+      "heroHp": 110,
+      "swings": 1373,
+      "opened": 1,
+      "damage": {
+        "plunge": 334,
+        "other": 730
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "mage",
+      "boss": "archmage",
+      "h": "paladin",
+      "killed": true,
+      "secs": 122.7,
+      "bossHp": 1029,
+      "hpLeftPct": 0,
+      "takenPerMin": 397,
+      "heroHp": 146,
+      "swings": 609,
+      "opened": 1,
+      "damage": {
+        "plunge": 26,
+        "other": 1054
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "mage",
+      "boss": "archmage",
+      "h": "pirate",
+      "killed": true,
+      "secs": 106.7,
+      "bossHp": 1029,
+      "hpLeftPct": 0,
+      "takenPerMin": 450,
+      "heroHp": 119,
+      "swings": 589,
+      "opened": 1,
+      "damage": {
+        "plunge": 261,
+        "other": 819
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    },
+    {
+      "lvl": "mage",
+      "boss": "archmage",
+      "h": "reaper",
+      "killed": true,
+      "secs": 89.7,
+      "bossHp": 1029,
+      "hpLeftPct": 0,
+      "takenPerMin": 347,
+      "heroHp": 121,
+      "swings": 46,
+      "opened": 1,
+      "damage": {
+        "plunge": 70,
+        "other": 1010
+      },
+      "ripostes": 0,
+      "wallOpens": 0,
+      "falls": 0,
+      "returns": 0
+    }
+  ],
+  "pogo": [
+    {
+      "route": "wood pit",
+      "hero": "knight",
+      "crossed": true,
+      "wins": "3/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": true,
+        "takeoff": 0,
+        "bounces": 4,
+        "secs": 4.26
+      },
+      "fails": {
+        "landed 118,21": 2,
+        "landed 122,21": 4,
+        "fell": 22,
+        "landed 121,21": 1
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "wood pit",
+      "hero": "warden",
+      "crossed": true,
+      "wins": "2/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": true,
+        "takeoff": 8,
+        "bounces": 3,
+        "secs": 3.83
+      },
+      "fails": {
+        "landed 118,21": 5,
+        "fell": 20,
+        "landed 117,21": 1,
+        "landed 122,21": 3,
+        "landed 119,21": 1
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "wood pit",
+      "hero": "pyro",
+      "crossed": true,
+      "wins": "2/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 8,
+        "bounces": 4,
+        "secs": 3.43
+      },
+      "fails": {
+        "landed 121,21": 3,
+        "landed 118,21": 4,
+        "landed 122,21": 4,
+        "fell": 15,
+        "landed 113,21": 2,
+        "landed 119,21": 2
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "wood pit",
+      "hero": "paladin",
+      "crossed": true,
+      "wins": "4/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": true,
+        "takeoff": 16,
+        "bounces": 4,
+        "secs": 4.22
+      },
+      "fails": {
+        "fell": 22,
+        "landed 111,21": 4,
+        "landed 122,21": 2
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "wood pit",
+      "hero": "pirate",
+      "crossed": true,
+      "wins": "2/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": true,
+        "takeoff": 0,
+        "bounces": 4,
+        "secs": 4.27
+      },
+      "fails": {
+        "landed 118,21": 2,
+        "landed 122,21": 6,
+        "fell": 20,
+        "landed 117,21": 1,
+        "landed 121,21": 1
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "wood pit",
+      "hero": "reaper",
+      "crossed": true,
+      "wins": "5/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 3,
+        "secs": 3.51
+      },
+      "fails": {
+        "landed 121,21": 4,
+        "fell": 19,
+        "landed 122,21": 4
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "wood tarn",
+      "hero": "knight",
+      "crossed": true,
+      "wins": "8/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 8,
+        "bounces": 2,
+        "secs": 3.12
+      },
+      "fails": {
+        "fell": 24
+      },
+      "receipt": "13-pogo-tarn-verified.log"
+    },
+    {
+      "route": "wood tarn",
+      "hero": "warden",
+      "crossed": true,
+      "wins": "9/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 3,
+        "secs": 3.43
+      },
+      "fails": {
+        "fell": 23
+      },
+      "receipt": "13-pogo-tarn-verified.log"
+    },
+    {
+      "route": "wood tarn",
+      "hero": "pyro",
+      "crossed": true,
+      "wins": "4/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 16,
+        "bounces": 3,
+        "secs": 3.22
+      },
+      "fails": {
+        "fell": 28
+      },
+      "receipt": "13-pogo-tarn-verified.log"
+    },
+    {
+      "route": "wood tarn",
+      "hero": "paladin",
+      "crossed": true,
+      "wins": "4/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 2,
+        "secs": 3.32
+      },
+      "fails": {
+        "fell": 24,
+        "landed 410,14": 4
+      },
+      "receipt": "13-pogo-tarn-verified.log"
+    },
+    {
+      "route": "wood tarn",
+      "hero": "pirate",
+      "crossed": true,
+      "wins": "10/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 3,
+        "secs": 3.56
+      },
+      "fails": {
+        "fell": 22
+      },
+      "receipt": "13-pogo-tarn-verified.log"
+    },
+    {
+      "route": "wood tarn",
+      "hero": "reaper",
+      "crossed": true,
+      "wins": "8/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 3,
+        "secs": 3.8
+      },
+      "fails": {
+        "fell": 24
+      },
+      "receipt": "13-pogo-tarn-verified.log"
+    },
+    {
+      "route": "marsh west roof",
+      "hero": "knight",
+      "crossed": true,
+      "wins": "11/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 24,
+        "bounces": 1,
+        "secs": 1.29
+      },
+      "fails": {
+        "landed 338,14": 4,
+        "landed 339,14": 1,
+        "landed 337,14": 16
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "marsh west roof",
+      "hero": "warden",
+      "crossed": true,
+      "wins": "19/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 24,
+        "bounces": 1,
+        "secs": 1.21
+      },
+      "fails": {
+        "landed 338,14": 4,
+        "landed 339,14": 2,
+        "landed 337,14": 7
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "marsh west roof",
+      "hero": "pyro",
+      "crossed": true,
+      "wins": "12/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 40,
+        "bounces": 1,
+        "secs": 1.1
+      },
+      "fails": {
+        "landed 337,14": 3,
+        "landed 338,14": 10,
+        "landed 339,14": 2,
+        "landed 336,14": 4,
+        "landed 340,14": 1
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "marsh west roof",
+      "hero": "paladin",
+      "crossed": true,
+      "wins": "3/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 16,
+        "bounces": 1,
+        "secs": 1.55
+      },
+      "fails": {
+        "landed 338,14": 6,
+        "landed 339,14": 3,
+        "landed 337,14": 20
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "marsh west roof",
+      "hero": "pirate",
+      "crossed": true,
+      "wins": "9/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 24,
+        "bounces": 1,
+        "secs": 1.29
+      },
+      "fails": {
+        "landed 338,14": 5,
+        "landed 339,14": 2,
+        "landed 337,14": 16
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "marsh west roof",
+      "hero": "reaper",
+      "crossed": true,
+      "wins": "11/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "hold",
+        "high": false,
+        "takeoff": 24,
+        "bounces": 1,
+        "secs": 1.32
+      },
+      "fails": {
+        "landed 338,14": 4,
+        "landed 339,14": 2,
+        "landed 337,14": 15
+      },
+      "receipt": "13-pogo-crossings.log"
+    },
+    {
+      "route": "wood silver shaft",
+      "hero": "knight",
+      "crossed": true,
+      "wins": "17/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 2,
+        "secs": 2.75
+      },
+      "fails": {
+        "fell": 11,
+        "landed 458,8": 2,
+        "landed 457,8": 2
+      },
+      "receipt": "13-pogo-silver-final.log"
+    },
+    {
+      "route": "wood silver shaft",
+      "hero": "warden",
+      "crossed": true,
+      "wins": "7/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": true,
+        "takeoff": 8,
+        "bounces": 2,
+        "secs": 2.98
+      },
+      "fails": {
+        "landed 461,8": 2,
+        "landed 460,8": 5,
+        "landed 459,8": 2,
+        "landed 458,8": 2,
+        "fell": 12,
+        "landed 457,8": 2
+      },
+      "receipt": "13-pogo-silver-final.log"
+    },
+    {
+      "route": "wood silver shaft",
+      "hero": "pyro",
+      "crossed": true,
+      "wins": "11/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 20,
+        "bounces": 2,
+        "secs": 2.48
+      },
+      "fails": {
+        "landed 460,8": 8,
+        "fell": 8,
+        "landed 459,8": 2,
+        "landed 458,8": 3
+      },
+      "receipt": "13-pogo-silver-final.log"
+    },
+    {
+      "route": "wood silver shaft",
+      "hero": "paladin",
+      "crossed": true,
+      "wins": "10/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 2,
+        "secs": 2.84
+      },
+      "fails": {
+        "fell": 15,
+        "landed 458,8": 2,
+        "landed 457,8": 2,
+        "landed 456,8": 2,
+        "landed 459,8": 1
+      },
+      "receipt": "13-pogo-silver-final.log"
+    },
+    {
+      "route": "wood silver shaft",
+      "hero": "pirate",
+      "crossed": true,
+      "wins": "16/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 2,
+        "secs": 2.74
+      },
+      "fails": {
+        "landed 458,8": 4,
+        "fell": 10,
+        "landed 457,8": 2
+      },
+      "receipt": "13-pogo-silver-final.log"
+    },
+    {
+      "route": "wood silver shaft",
+      "hero": "reaper",
+      "crossed": true,
+      "wins": "15/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 2,
+        "secs": 2.93
+      },
+      "fails": {
+        "landed 459,8": 1,
+        "fell": 12,
+        "landed 458,8": 2,
+        "landed 457,8": 2
+      },
+      "receipt": "13-pogo-silver-final.log"
+    },
+    {
+      "route": "marsh east roof",
+      "hero": "knight",
+      "crossed": true,
+      "wins": "7/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 12,
+        "bounces": 1,
+        "secs": 1.98
+      },
+      "fails": {
+        "died": 3,
+        "landed 353,14": 17,
+        "landed 354,14": 4,
+        "landed 357,14": 1
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof",
+      "hero": "warden",
+      "crossed": true,
+      "wins": "21/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 1,
+        "secs": 2.04
+      },
+      "fails": {
+        "landed 353,14": 3,
+        "landed 355,14": 5,
+        "landed 356,14": 1,
+        "landed 357,14": 2
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof",
+      "hero": "pyro",
+      "crossed": true,
+      "wins": "3/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 8,
+        "bounces": 1,
+        "secs": 2.07
+      },
+      "fails": {
+        "landed 356,14": 9,
+        "landed 357,14": 5,
+        "fell": 6,
+        "landed 353,14": 8,
+        "landed 354,14": 1
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof",
+      "hero": "paladin",
+      "crossed": true,
+      "wins": "8/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 1,
+        "secs": 2.22
+      },
+      "fails": {
+        "landed 353,14": 11,
+        "landed 354,14": 8,
+        "landed 357,14": 2,
+        "landed 356,14": 2,
+        "fell": 1
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof",
+      "hero": "pirate",
+      "crossed": true,
+      "wins": "10/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 1,
+        "secs": 2.11
+      },
+      "fails": {
+        "landed 353,14": 15,
+        "landed 354,14": 7
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof",
+      "hero": "reaper",
+      "crossed": true,
+      "wins": "14/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 1,
+        "secs": 2.29
+      },
+      "fails": {
+        "landed 353,14": 14,
+        "landed 354,14": 3,
+        "landed 357,14": 1
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof, from the east",
+      "hero": "knight",
+      "crossed": true,
+      "wins": "11/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 1,
+        "secs": 1.68
+      },
+      "fails": {
+        "landed 353,14": 9,
+        "landed 354,14": 3,
+        "fell": 9
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof, from the east",
+      "hero": "warden",
+      "crossed": true,
+      "wins": "12/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 1,
+        "secs": 1.6
+      },
+      "fails": {
+        "landed 353,14": 7,
+        "landed 356,14": 1,
+        "fell": 12
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof, from the east",
+      "hero": "pyro",
+      "crossed": true,
+      "wins": "6/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 24,
+        "bounces": 1,
+        "secs": 1.41
+      },
+      "fails": {
+        "landed 354,14": 5,
+        "landed 353,14": 15,
+        "fell": 5,
+        "landed 352,14": 1
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof, from the east",
+      "hero": "paladin",
+      "crossed": true,
+      "wins": "2/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 8,
+        "bounces": 1,
+        "secs": 1.52
+      },
+      "fails": {
+        "landed 353,14": 14,
+        "fell": 13,
+        "landed 354,14": 3
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof, from the east",
+      "hero": "pirate",
+      "crossed": true,
+      "wins": "10/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 4,
+        "bounces": 1,
+        "secs": 1.51
+      },
+      "fails": {
+        "landed 353,14": 10,
+        "fell": 9,
+        "landed 354,14": 3
+      },
+      "receipt": "13-pogo-gaps.log"
+    },
+    {
+      "route": "marsh east roof, from the east",
+      "hero": "reaper",
+      "crossed": true,
+      "wins": "10/32",
+      "plainJumps": 0,
+      "best": {
+        "steer": "seek",
+        "high": false,
+        "takeoff": 0,
+        "bounces": 1,
+        "secs": 1.78
+      },
+      "fails": {
+        "landed 353,14": 10,
+        "fell": 9,
+        "landed 354,14": 3
+      },
+      "receipt": "13-pogo-gaps.log"
+    }
+  ]
+}

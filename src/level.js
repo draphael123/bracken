@@ -1,3 +1,4 @@
+import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
@@ -83,7 +84,7 @@ function brackenWood() {
   ent('check', 82, 21);
 
   // ---- 3. Wasp pit: pogo chain ----
-  ent('wasp', 87, 18, { pogo: true }); ent('wasp', 90, 18, { pogo: true }); ent('wasp', 93, 18, { pogo: true }); ent('wasp', 96, 18, { pogo: true });   /* a pogo chain: THE MIX leaves these wasps */
+  ent('wasp', 87, 19, { pogo: true }); ent('wasp', 90, 19, { pogo: true }); ent('wasp', 93, 19, { pogo: true }); ent('wasp', 96, 19, { pogo: true });   /* a pogo chain: THE MIX leaves these wasps */
   plat(88, 22, 2); plat(92, 22, 2); plat(96, 22, 2);   /* STUMPS IN THE POND. The wasps were the only way over, so the wood could not be finished by anyone who killed them first. The wasps went up out of the way: a pogo is a shortcut now, not the road */
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
@@ -136,9 +137,9 @@ function brackenWood() {
   // ---- 8. The ridge: log climb under fire, a wasp gap, then the helm pit ----
   plat(236, 13, 3); plat(240, 11, 3);
   coins([237, 12], [241, 10]);
-  block(243, 250, 9, 27);
+  block(243, 252, 9, 27); // a longer takeoff lip puts the two paid bounces inside their reach
   ent('spit', 244, 8, { face: 1 });
-  ent('wasp', 252, 7); ent('wasp', 254, 7);
+  ent('wasp', 255, 7, { pogo: true }); ent('wasp', 259, 7, { pogo: true });
   block(255, 323, 9, 27);
   // the helm pit: four shieldbearers on posts over spikes. Their helms clank and bounce you across.
   for (let x = 258; x <= 266; x++) for (let y = 9; y <= 12; y++) set(x, y, 0);
@@ -176,11 +177,11 @@ function brackenWood() {
   G0.block(235, 241, 15, 27);
   G0.ent('sign', 236, 14, { text: 'FOUR STROKES FELL A PINE TO BRIDGE THE GAP. OR POGO ACROSS THE WASPS.' });
   G0.ent('felltree', 241, 14, { len: 14, dir: 1 });
-  G0.R.pools.push({ x0: 242 * TS, x1: 256 * TS, y: 21 * TS, depth: 3 * TS });
+  G0.R.pools.push({ x0: 242 * TS, x1: 253 * TS, y: 21 * TS, depth: 3 * TS });
   G0.block(242, 255, 24, 27);
-  G0.ent('wasp', 245, 13, { pogo: true }); G0.ent('wasp', 249, 13, { pogo: true }); G0.ent('wasp', 253, 13, { pogo: true }); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
+  G0.ent('wasp', 245, 13, { pogo: true }); G0.ent('wasp', 248, 13, { pogo: true }); G0.ent('wasp', 253, 13, { pogo: true }); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
   G0.coins([244, 13], [248, 13], [252, 13]);
-  G0.block(256, 270, 15, 27);
+  G0.block(253, 270, 15, 27); // the far lip is inside two paid bounces, even under the paladin's heavier feet
   G0.ent('check', 259, 14); G0.ent('sprig', 265, 14, { face: -1 }); G0.coins([262, 13], [268, 13]);
   const R0 = G0.done();
   const G = grow(R0, R0, 130, 46);
@@ -421,7 +422,7 @@ function marshWood() {
   // the pad crossing; this one is the village's own: boards and reed tufts that HOLD, hut to hut, in a fog you read one
   // plank at a time, with the archers loosing at you on footing that does not sink and the water under it biting.
   G.plat(303, 11, 3); G.ent('archer', 304, 10, { face: -1 }); G.plat(287, 11, 3); G.ent('archer', 288, 10, { face: -1 }); G.ent('silver', 306, 10);
-  G.ent('wasp', 293, 11); G.ent('wasp', 310, 11);   // (a row higher than they were: the boards reach a stride further now and the wasps hung over their ends. These two are the pogo steps up to the archers' roofs and the silver: they stay)
+  G.ent('wasp', 293, 13, { pogo: true }); G.ent('wasp', 309, 13, { pogo: true });   // THE BACKS ARE INSIDE A JUMP: the plunge carries you from the planks up to the roofs.
   // THE WATER UNDER THE VILLAGE BITES: a river eel in one gap, told on a count, and a GAR in the other, which throws itself up
   // onto the boards beside the gap (met alone at the gar hole first) and lies there to be swept off them.
   G.ent('gar', 292, 20, { face: -1 }); G.ent('eel', 309, 20, { leap: true });
@@ -7279,7 +7280,8 @@ function checkpoints(L) {
   return L;
 }
 function garrison(L, id) {
-  const set = GARRISON[id]; if (!set) return L;
+  const source = GARRISON[id]; if (!source) return L;
+  const set = source.map(([kind,n])=>[kind,Math.max(1,Math.round(n*COMBAT.garrison))]);
   const W = L.W, H = L.H, g = L.grid;
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;

@@ -3,6 +3,7 @@ import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
+import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -203,6 +204,7 @@ const EHP = { topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, 
    `bless` s, taking `take` of every blow. A blow on the priest while the censer is up breaks it: dazed `daze` s, and `cd`
    again before the next. Its health is two of a knight's blows at the monastery: the first breaks the rite, the second
    finishes it */
+for (const key of COMMON_BLOWS) if (DMG[key]) DMG[key] = Math.round(DMG[key]*COMBAT.commonDamage);
 const PRIEST = { first: 0.3, tell: 1.5, cd: 7, reach: 110, smoke: 150, mend: 0.35, bless: 6, take: 0.5, daze: 1.4 };
 /* THE GOBLIN MAGE's reach, in one place (updateGobMage). It sees you inside `sees` px, walks off to keep you `near`..`far` px
    away, throws a bolt that flies `reach` px at `boltV` px/s after a `boltTell` s yellow ! (every `boltCd` s), and writes a
@@ -382,7 +384,7 @@ const TREE = [];
   N('knight', 2, 1, 0, 'evasion', 'EVASION', 1, 'a dodge through a blow gives back 20 stamina and makes the next swing a third cut', 'momentum');
   N('knight', 2, 1, 1, 'groundSlam', 'GROUND SLAM', 1, 'F: quake the floor both ways', 'momentum', 'skill');
   N('knight', 2, 1, 2, 'airRoll', 'AIR ROLL', 1, 'dodge once in the air, every jump', 'bounding');
-  N('knight', 2, 2, 0, 'lightStep', 'LIGHT STEP', 1, 'the dodge cancels a swing at any moment of it, not only once the blow has landed', 'evasion');
+  N('knight', 2, 2, 0, 'lightStep', 'LIGHT STEP', 1, 'dodges cost three less stamina; a swung attack still has to finish', 'evasion');
   N('knight', 2, 2, 1, 'whirlwind', 'WHIRLWIND', 1, 'F: spin with the blade out: two cuts at everything around you', 'groundSlam', 'skill');
   N('knight', 2, 2, 2, 'hangCut', 'HANGING CUT', 1, 'every swing in a jump holds you in the air, not only the first', 'airRoll');
   N('knight', 2, 3, 2, 'airDash', 'SLIPSTREAM', 1, 'dash twice before you land', 'hangCut');
@@ -610,7 +612,7 @@ const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
 const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + Math.floor(heroLevel() / 2) + Math.floor(LV_GROW() * (isReaper() ? 1.5 : 1))) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
-const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal())), plungeCost = () => Math.max(12, ST.plunge - Math.round(2 * footTal()));
+const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal()) - 3*tal('lightStep')), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
 /* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
    less wind, and she may take a SECOND one straight away - it is for the constant small adjustments of range her
    tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
@@ -4560,7 +4562,7 @@ function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 // every blow used to hold the frame for the same three hundredths of a second, whatever it was. Weight it:
 // a tap is a tap, a heavy blow leans on it, and the blow that kills something leans hardest of all.
 function blowStop(e, dmg) {
-  let t = 0.03 + Math.min(0.07, (dmg || 0) / 450);   /* HEAVIER HANDS: the stop leans harder on a big number */
+  let t = impactPause(dmg || 0);   /* HEAVIER HANDS: the stop leans harder on a big number */
   if (P.heavy) t += 0.05;
   if (P.combo === 3) t += 0.025; if (P.dash > 0 || P.dashAtk > 0) t += 0.02; if (e && e.broken > 0) t += 0.02;
   t *= isPaladin() || isReaper() ? 1.35 : isPirate() ? 0.8 : 1;   /* the weight of the weapon is in the stop */
@@ -4860,6 +4862,7 @@ function spawnCorpse(e, dir) {
     case 'herald': Object.assign(c, { vx: 0, vy: 12, spin: 0, life: 2.4, max: 2.4, grav: 0, royal: true }); break; // he goes down into the water without a word
     case 'frog': Object.assign(c, { vx: -dir * 10, vy: -120, spin: dir * 0.8, life: 1.6, max: 1.6, grav: 600, royal: true }); break;
   }
+  if(c.max>.05 && !e.maxHp && !e.mini){c.life+=COMBAT.corpseLinger;c.max=c.life;}
   corpses.push(c);
 }
 // what the blade does besides cut
@@ -5149,6 +5152,7 @@ function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /*
      pass there is only ever one hero to mean. A burn or a bleed is booked to whoever lit it, which is right, and a
      creature killed by the room while a hero stands near it pays him the compliment, which is a friendly tally. */
   if (alive0 && hp0 > e.hp && !e.harmless && dmg > 0) { gainHeat(P.jetHit ? HEAT.jet : HEAT.hit); if (isPyro()) e.heatOwner = P; }   /* a miss or an invulnerable shell warms nothing */
+  if(e===boss&&hp0>e.hp){e.damageLedger=e.damageLedger||{plunge:0,other:0};e.damageLedger[plunge||blowHas(blow,'plunge')?'plunge':'other']+=Math.min(hp0, hp0-e.hp);}
   if (P.score) { P.score.dmg += Math.max(0, hp0 - e.hp); if (alive0 && !e.alive) P.score.kills++; }
   if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgE', t: e.t, e, dmg, fromX, plunge: !!plunge, hp0, hp: e.hp, alive: e.alive, poise0: po0, poise: e.poise || 0, broken: e.broken || 0, atk: P.atk, heavy: !!P.heavy, combo: P.combo, swingKind: P.swingKind || null, blow, glanced: e.glancedAt === time, keyed: e.keyHit === time, stop, shake, kick, time, stack: new Error().stack });   /* (the audits' ear: see damagePlayer) */
   return r; } finally { emitAt(was); } }
@@ -5286,10 +5290,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
   if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
   if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && e.knock > 0 && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
+  const finishCut = dmg>0 && !glance && !e.trainer && !e.maxHp && !e.mini && !e.elite && !FINISH_SKIP.has(e.t) && !P.jetHit && P.atk>=0 && (P.swingRiposte || (P.heavy && e.face && Math.sign(fromX-e.x)===-e.face));
+  if(finishCut){dmg=Math.round(dmg*COMBAT.finishMul);if(e.hp-dmg<=fullHp(e)*COMBAT.finishHealth){dmg=e.hp;number(e.x,e.y-e.h-32,P.swingRiposte?'RIPOSTE':'BACKSTAB','#ffd36b');finisher(e);}}
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
-  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : 0.35; e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -5329,7 +5335,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     if (glance) { /* IT GLANCED: no cry, no stop worth the name, no hurt pose, no flinch and no shove - it did not feel that, and it shows */ }
     else {
     const voice = SFX.hurtOf(e.t); if (voice) voice(); else SFX.hit(); // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
-    if (!P.jetHit) { blowStop(e, dmg, false); shakeCam(P.heavy ? 3 : 1.5, dir * (P.heavy ? 3 : 1.5)); }   /* a flame ticking over them does not stop the world ten times a second */
+    if (!P.jetHit) { if(dmg>=COMBAT.staggerDamage)SFX.thump(); blowStop(e, dmg, false); shakeCam(P.heavy ? 3 : 1.5, dir * (P.heavy ? 3 : 1.5)); }   /* a flame ticking over them does not stop the world ten times a second */
     sparks(e.x - dir * 2, e.y - e.h / 2, dir, P.heavy ? 9 : 5);
     if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
     e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) && !(e.t === 'prince' && (windingUp(e) || e.mode === 'buried' || e.mode === 'rise' || e.mode === 'cut')) ? 0.2 : 0;
@@ -6321,6 +6327,7 @@ function spend(cost) {
   P.st -= cost; P.stDelay = ST.delay; return true;
 }
 function updatePlayer(dt) {
+  if (P.ground) P.plungeN=0;
   if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
   if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
@@ -6527,7 +6534,7 @@ function updatePlayer(dt) {
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
   if (P.landT > 0 && (P.jbuf > 0 || P.dbuf > 0)) P.landT = 0; // a landing can always be left early: the controls never take the wheel
-  if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * (P.relic === 'fleece' ? 2 : 1) * (1 + 0.07 * LV_GROW()) * dt);
+  if (P.stDelay <= 0 && !(P.plungeN > 0) && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * (P.relic === 'fleece' ? 2 : 1) * (1 + 0.07 * LV_GROW()) * dt);
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
   // sleep spores: stay in the violet and you drop; block holds your breath; mash to wake
   const haven = props.some(pr => pr.t === 'glow' && pr.dark <= 0 && Math.abs(pr.x - P.x) < 30 && Math.abs(pr.y - P.y) < 30);
@@ -6706,8 +6713,8 @@ function updatePlayer(dt) {
      just after: P.dashLate) and dashAttack() carries the cut through. */
   if (P.dash > 0) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
   if (P.plunge && !P.swim && DOWN_STRIKE[hero()]) plungeTrail(DOWN_STRIKE[hero()]);
-  /* THE CANCEL: the back half of a swing - once the blow has landed - can be rolled out of, so a swing is never a commitment you cannot leave */
-  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && (!attacking || ((P.atk >= 0.18 || tal('lightStep')) && !P.heavy)) && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no roll out of it, nor out of its end-lag) */
+  /* THE BLADE COMMITS: once swung, its recovery finishes before the feet may roll. */
+  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && !attacking && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no roll out of it, nor out of its end-lag) */
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
     if (spend(isWarden() ? stepCost() : dodgeCost())) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
@@ -6859,7 +6866,7 @@ function updatePlayer(dt) {
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !(P.deflectRec > 0) && !rushing()) {   /* (a sweep that met nothing is a beat she cannot swing in) */
-    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
+    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { P.plungeN=(P.plungeN||0)+1; noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
         embers.push({ x: P.x, y: P.y - 4, vx: 0, vy: 300, life: 1.1, hit: new Set(), plunge: true });
@@ -7023,7 +7030,7 @@ function updatePlayer(dt) {
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
             for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - e.h / 2 - (P.y - 10)) < 30) { hurtEnemy(e, Math.round(swordDmg() * 0.5), P.x, false); e.stagger = Math.max(e.stagger || 0, 0.5); } } } } // HAMMERFALL: the maul comes down and the ground carries it both ways
     } else { const heavy = prevVy > 250; if (heavy && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
-      dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); if (L.hush && P.relic !== 'soles') noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { shakeCam(2); hitstop(0.02); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
+      dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); if (L.hush && P.relic !== 'soles') noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; if (heavy) { SFX.thud(); shakeCam(2); hitstop(0.035); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
   }
@@ -17400,7 +17407,7 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   // THE THIRD CUT. Every hero, no talent needed: this is what the attack IS, and the tree only sharpens it.
   if (L.hush) noiseAt(P.x, P.y, P.heavy ? 132 : P.combo % 3 === 0 ? 104 : 82, null);   /* a swing carries, and the third one carries further */
   if ((P.evadeCutT || 0) > time && hero() === 'knight') { P.evadeCutT = 0; P.combo = Math.ceil(P.combo / 3) * 3; }   /* EVASION: out of a dodge through a blow, the next swing is a third cut */
-  P.heavySwing = P.combo % 3 === 0; const rip = tal('riposte') && P.riposteT > 0;
+  P.heavySwing = P.combo % 3 === 0; const rip = P.riposteT > 0; P.swingRiposte=!!rip;
   /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
      flag goes on with it, so the deep box, the drive and everything that reads the lunge all see the same blow. */
   if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
