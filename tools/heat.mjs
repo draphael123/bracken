@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const src=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+const a=src.indexOf('const HEAT ='), b=src.indexOf('/* THE RISING CUT',a);
+const P={heat:0,dead:0};let full=0,pilot=false;
+const c=vm.createContext({P,isPyro:()=>true,varietyMul:()=>0.6,tal:()=>pilot,bankHeat:()=>{P.full=true;P.fullT=5;full++;}});
+vm.runInContext(src.slice(a,b),c);
+c.gainHeat(10);assert.equal(P.heat,8.5,'repeated hits keep at least 85 percent');
+for(let i=0;i<239;i++)c.coolHeat(1/60);assert.equal(P.heat,8.5,'four-second grace');
+for(let i=0;i<61;i++)c.coolHeat(1/60);assert(Math.abs(P.heat-5.5)<0.1,'three heat per second after grace');
+c.gainHeat(1000);assert.equal(P.heat,100);assert.equal(full,1);
+c.gainHeat(10);assert.equal(full,1,'full meter does not bank twice');assert.equal(P.heatGrace,4);
+P.full=false;P.heat=34;P.heatGrace=0;pilot=true;for(let i=0;i<120;i++)c.coolHeat(1/60);assert.equal(P.heat,33,'pilot keeps its floor');
+P.dead=1;c.gainHeat(10);assert.equal(P.heat,33,'dead heroes gain nothing');
+assert(!src.includes('P.heat += 18 * dt'),'holding an empty jet does not build heat');
+console.log('heat: landed gain floor, grace, gentle drain, bank, pilot and dead-state checks pass.');
