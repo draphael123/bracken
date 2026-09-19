@@ -43,8 +43,18 @@ export async function openPage(opts = {}) {
   for (let i = 0; i < 120 && !ready; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass').catch(() => false); if (!ready) await sleep(250); }
   if (!ready) throw new Error('the page never put up window.BK');
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
-  for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
+  if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
   const port = await evalp('location.port');
   if (String(port) !== String(PORT)) throw new Error('the page is on port ' + port + ', not ' + PORT);
-  return { evalp, errors, PORT, close() { try { ws.close(); } catch {} chrome.kill(); if (server) server.kill(); } };
+  const reload = async () => {
+    await evalp('localStorage.clear(); window.__labReloading = true;');
+    await send('Page.navigate', { url: URL0 });
+    let ready = false;
+    for (let i = 0; i < 120 && !ready; i++) {
+      ready = await evalp('!window.__labReloading && typeof window.BK === "object" && !!window.BK.lookPass').catch(() => false);
+      if (!ready) await sleep(100);
+    }
+    if (!ready) throw new Error('the fresh lab page did not initialize');
+  };
+  return { evalp, errors, PORT, reload, close() { try { ws.close(); } catch {} chrome.kill(); if (server) server.kill(); } };
 }

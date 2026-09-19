@@ -272,7 +272,7 @@ const MENU_MUSIC = [
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
 const HEROES = [
   { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X and let go: THE SHIELD CHARGE. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dash: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
-  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 80 health, quicker on foot, a lighter blow, one jump like anyone else. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dash: THE FLAMING SLIDE, through small foes, and a guard is thrown wide' },
+  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 88 health, quicker on foot, a lighter blow, one jump like anyone else. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dash: THE FLAMING SLIDE, through small foes, and a guard is thrown wide' },
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dash: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dash: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dash: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
@@ -15008,6 +15008,12 @@ function updateKing(e, dt) {
   const A = L.arena, floor = A.floor, d = P.x - e.x, ad = Math.abs(d); e.modeT -= dt; e.anim += dt;
   if (e.mode === 'sleep') { e.y = floor - 9; return; }
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'carried'; e.modeT = 0.5; } return; }
+  // An exhausted rack must recover independently of cageTell, which requires a hanging cage.
+  const spentRack = props.filter(c => c.t === 'dropcage' && c.boss);
+  if (e.mode !== 'held' && !(e.open > 0) && spentRack.length && spentRack.every(c => c.dropped && c.landed > 0 && c.spent)) {
+    e.rackWait = (e.rackWait || 0) + dt;
+    if (e.rackWait >= 2) { kingCage(e); e.rackWait = 0; }
+  } else e.rackWait = 0;
   const climbing = !P.dead && P.y < floor - 40; // you are up on the scaffold: he reaches for whatever is near
   const goblet = (skull = false) => { const sx = e.x + e.face * 20, sy = e.y - 30, Tf = skull ? 0.95 : 0.8, G = 380, dx = P.x - sx, dy = (P.y - 8) - sy; seeds.push({ x: sx, y: sy, vx: Math.max(-240, Math.min(240, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, g: G, goblet: true, skull }); if (skull) { SFX.throwWhoosh(); SFX.effort(); } else SFX.clank(); e.throwT = 0.35; };
   // THE ROYAL ARCHERS: stay up on the winch decks and he calls bowmen onto the roof perches at both ends; they lob arrows the length of the hall, a parried arrow knocks one down, and they go when you come down
@@ -15067,6 +15073,8 @@ function updateKing(e, dt) {
   if (e.stagger > 0 && e.mode !== 'slam') want = 0;
   e.vx += (want - e.vx) * Math.min(1, dt * 6);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; e.grounded = !!r.ground;
+  // His own fallen litter must not partition him from the remaining cages.
+  if (r.hitX && r.ground && e.mode === 'walk' && throneBlock && Math.abs(e.x - throneBlock.x) < 80) e.vy = -340;
   e.x = Math.max(A.x0 + 30, Math.min(A.x1 - 30, e.x));
 }
 // The litter lands and stays: four tiles of solid oak you can climb onto to be above the reach of the hand.
@@ -21565,7 +21573,15 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
      above the fourth storey, a room wall that stops a row short. Walking there to see it takes a minute a frame. This
      puts the hero and the camera on a tile and draws one frame, nothing updated, so a sweep of a level is a loop. */
   look(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; camX = P.x - VW / 2; camY = P.y - VH * 0.6; render(); return { cx: Math.round(Math.max(0, Math.min(LW * TS - VW, camX))), cy: Math.round(Math.max(0, Math.min(LH * TS - VH, camY))) }; },
-  reset() { Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
+  reset({ fresh = false } = {}) {
+    if (fresh) {
+      const identity = { n: P.n, hero: hero(), keys: P.keys, press: P.press, source: P.source, score: P.score };
+      for (const k of Object.keys(P)) delete P[k];
+      Object.assign(P, freshBody(), identity); applyUpgrades(); applySkin(); clearPresses();
+      time = 0; levelTime = 0; stop = 0; parts = []; leaves = []; nums = []; ghosts = []; trail = []; fireflies = []; birds = []; drops = []; pollen = []; lightT = 8; lightFlash = 0; thunderT = 0; shake = 0; kick = 0; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
+      for (const k of Object.keys(keys)) keys[k] = false;
+    }
+    Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
   enemies: () => enemies, movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
@@ -21623,10 +21639,10 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
   //   await BK.playtest()                                   every level, both passes
   //   await BK.playtest({ levels: ['reef'], mode: 'play' })  one level, one pass
   async playtest(o) { const m = await import('./playtest.js'); return m.run(window.BK, o || {}); },
-  async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); }, async ambushLab(o) { const m = await import('./lab.js'); return m.ambushLab(window.BK, o || {}); },   /* each hero through a level's ambush room: window.__ambushLab */   /* every hero against the common foes, early to late: window.__lab */
-  async bossLab(o) { const m = await import('./lab.js'); return m.bossLab(window.BK, o || {}); }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
+  async fightLab(o) { const m = await import('./lab.js'); return m.fightLab(window.BK, o || {}); }, async ambushLab(o) { const previous = window.BK.manualSimulation; window.BK.manualSimulation = true; try { const m = await import('./lab.js'); return await m.ambushLab(window.BK, o || {}); } finally { window.BK.manualSimulation = previous; } },   /* each hero through a level's ambush room: window.__ambushLab */   /* every hero against the common foes, early to late: window.__lab */
+  async bossLab(o) { const previous = window.BK.manualSimulation; window.BK.manualSimulation = true; try { const m = await import('./lab.js'); return await m.bossLab(window.BK, o || {}); } finally { window.BK.manualSimulation = previous; } }, async collectLab(o) { const m = await import('./lab.js'); return m.collectLab(window.BK, o || {}); }, async killLab(o) { const m = await import('./lab.js'); return m.killLab(window.BK, o || {}); },     /* every hero against six bosses: window.__bossLab */
   /* THE FAMILY KEY, for the hands that are not a player's: the lab bot and the co-op ally read which verb a body wants from the one table (null: not in it, or one blow of anything brings it down) */
-  keyOf(e) { const f = e && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null; return f ? { family: FAMILY_OF[e.t], key: f.key, glance: f.glance, open: foeOpen0(e), tripped: (e.tripImm || 0) > time } : null; },
+  keyOf(e) { const f = e && e.alive && !ONE_HIT.has(e.t) ? (familyOf(e) || (e.elite ? FAMILY[FAMILY_OF[e.t]] : null)) : null; return f ? { family: FAMILY_OF[e.t], key: f.key, glance: f.glance, open: foeOpen0(e), tripped: (e.tripImm || 0) > time } : null; },
   /* WHETHER A BOSS'S OWN GATE IS OPEN, asked by the boss lab so the bot is not chipping at a plate that turns everything.
      One answer, here, where the gate itself lives (hurtEnemy0): a second copy in the lab would drift the way the threat
      table did. null means "this one has no gate of its own", and the lab treats it as always open, as it always did. */

@@ -78,7 +78,7 @@ export function strike(BK, h, e, f) {
   const level = Math.abs(dy) < 26, free = P.atk < 0 && !P.plunge && !(P.rush > 0);
   if (verb === 'heavy') {
     const winding = P.charge > 0 || P.atkHeld > 0;
-    if (winding || (free && !P.heavy && ad < want + 4 && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
+    if (winding || (free && !P.heavy && ad < want + 4 && (h !== 'pirate' || ad > reach + 12) && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
     else if (free && ad < reach && level && P.st < 20 && P.st >= 8 && h !== 'pirate') { BK.press('atk'); swing = 1; }   /* no wind for a heavy: a plain cut rather than standing idle */
   } else if (verb === 'sweep' || verb === 'rise') {
     if (free && ad < reach && level && (P.ground || P.swim) && P.st >= cost + 4) { k[verb === 'sweep' ? 'down' : 'up'] = true; BK.press('atk'); swing = 1; }
@@ -124,7 +124,8 @@ function labBotFrame(BK, h, e, f) {
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
   if (threat && P.atk < 0 && !(P.dash > 0)) {
     defend = 1;   /* (a heavy half wound goes if it can, and is dropped if it cannot) */
-    if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
+    if (HARD_TELLS.has(e.t + '|' + e.mode)) { k[d > 0 ? 'left' : 'right'] = true; if (f % 14 === 0) BK.press('dodge'); }
+    else if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
     else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }   /* sweep at a yellow blow, step back off a red one */
     else k.block = true;
@@ -132,7 +133,7 @@ function labBotFrame(BK, h, e, f) {
     const s = strike(BK, h, e, f); swing = s.swing;
     /* THE WARDEN KEEPS HER POINT OUT: inside the haft she only shoves, so she steps back out of it (her step goes backward by itself) */
     if (h === 'warden' && ad < 20 && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');
-    if (!k.left && !k.right && !(P.charge > 0)) { if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
+    if (!k.left && !k.right && !(P.charge > 0)) { if (h === 'pirate' && s.verb === 'heavy' && ad < s.want - 8) k[d > 0 ? 'left' : 'right'] = true; else if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
   if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
@@ -156,7 +157,7 @@ async function runambushLab(BK, opts) {
   const rows = [], out = { rows, started: Date.now() };
   if (typeof window !== 'undefined') window.__ambushLab = out;
   for (const lvId of levels) for (const h of heroes) for (let rep = 0; rep < reps; rep++) {
-    BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false; BK.sim(300);
+    BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(300);
     const A = BK.ambushes()[opts.room || 0]; if (!A) { rows.push({ lvl: lvId, h, skipped: 'no ambush room' }); continue; }
     const P = BK.P, k = BK.keys, x0 = A.trigger !== undefined ? A.trigger : A.wallL + 3, mid = (A.wallL + A.wallR) / 2 * 16 + 8;
     for (const e of BK.enemies()) if (Math.abs(e.x - mid) < (A.wallR - A.wallL + 30) * 8 && !e.maxHp) e.alive = false;   /* the level's own creatures by the door are not the room's */
@@ -171,8 +172,10 @@ async function runambushLab(BK, opts) {
       else if (!slow && (f - waveAt) * spd / 60 > AMBUSH_TARGET.max) slow = 'captain still up at ' + AMBUSH_TARGET.max + ' s: ' + foes.map(e => e.t + (e.elite ? '*' : '')).join(', ');   /* what a room that runs long is waiting on */
       if (!elite) { elite = foes.find(e => e.elite) || null; if (elite) eliteFrom = f; }
       if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - eliteFrom) * spd / 60).toFixed(1);
+      if(P.st<12)P.ambRest=true;if(P.st>=48)P.ambRest=false;
       const e = A.st === 'fight' && A.leader?.alive ? A.leader : null;
-      if (e && e.y <= P.y+18) labBotFrame(BK, h, e, f);
+      if(P.ambRest){k.atk=k.block=k.up=k.down=false;}
+      else if (e && e.y <= P.y+18) labBotFrame(BK, h, e, f);
       else { k.block = false; k.left = P.x > mid + 20; k.right = P.x < mid - 20; }   /* between waves: to the middle of the room */
       if(e&&e.y>P.y+18){P.ambLandSide=P.ambLandSide||Math.sign(P.x-e.x)||1;if(P.ambLandX!==undefined&&BK.enemies().some(q=>q.alive&&!q.harmless&&Math.abs(q.y-e.y)<32&&Math.abs(q.x-P.ambLandX)<(q.w||16)/2+25))P.ambLandX=undefined;const gx=P.ambLandX??(P.ambLandX=lowerFooting(BK,e,lvm.T));k.left=P.x>gx+4;k.right=P.x<gx-4;k.up=k.down=k.jump=k.block=k.atk=false;if(P.ground&&[lvm.T.ONEWAY,lvm.T.PLANK,lvm.T.SHELF,lvm.T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');P.ambLandX=undefined;}}else{P.ambLandSide=0;P.ambLandX=undefined;if(e&&e.y<P.y-24){k.left=e.x<P.x;k.right=e.x>P.x;k.block=false;}}
       /* A PLAYER JUMPS THE ROOM'S OWN PIT. The fight lab's bot fights on a flat floor and walked straight into THE CLIFF HALL's
@@ -211,7 +214,7 @@ export async function fightLab(BK, opts = {}) {
   for (const lvId of levels) for (const h of heroes) for (const t of foes) {
     const fights = [];
     for (let rep = 0; rep < reps; rep++) {
-      BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false;
+      BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false;
       /* opts.home: a foe that needs its own ground (the marsh's gar needs its hole) is fought where the level put the first one,
          with the hero set down six tiles short of it, instead of five tiles past the start */
       const home = opts.home && BK.enemies().find(q => q.t === t && q.alive);
@@ -325,7 +328,7 @@ async function runbossLab(BK, opts) {
   const rows = [], out = { rows, started: Date.now(), progress: 0, total: bosses.length * heroes.length };
   if (typeof window !== 'undefined') window.__bossLab = out;
   for (const lvId of bosses) for (const h of heroes) {
-    BK.setHero(h); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.state = 'play'; BK.god = false; BK.sim(10);
+    BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
     /* A FRESH HERO EACH ROW. The last swing of the row before used to arrive with him - a heavy swing still going roots the
        paladin for a second on whatever he is dropped on, and at the Roc's door that is the glass over the shaft */
     BK.reset();
@@ -540,12 +543,11 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'troll') { goal = boss.x; strike = true;
         /* THE HILL TROLL: his stones drop from a hook a player jumps to strike - when he walks under one, the bot drops it, as a player at that hook would */
         const st = BK.props().find(q => q.t === 'weight' && q.crane && q.state === 'hang' && Math.abs(q.x - boss.x) < 12); if (st) { st.state = 'fall'; st.fy = st.y + st.len; st.vy = 0; } }
-      /* AND KING GORM IS CUT LIKE ANYONE (strike). His branch only ever walked to a cage and waited: he carries no gate
-         of his own, so the whole of the 16-23 s the survey measured was cage windows and nothing else - with the cage
-         hand switched off the bot swung at him ZERO times in 150 s and he finished on 100% health. Now the hands stand
-         by the nearest hanging cage, as a player on the plate would, and cut him whenever he comes inside reach. */
+      /* LURE THE CROWN UNDER A CAGE. While closed, stand beyond the cage without applying sword spacing to that
+         destination. The open branch above closes to sword reach after a catch. The cage activation below is an
+         environmental lab assist, not evidence that the pilot climbed to and operated its pressure plate. */
       else if (boss.t === 'king') { const cages = BK.props().filter(c => c.t === 'dropcage' && c.boss && !c.dropped);
-        const c = cages.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; goal = c ? c.x + (boss.x > c.x ? -22 : 22) : boss.x; strike = true;
+        const c = cages.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; goal = c ? c.x + (boss.x > c.x ? -60 : 60) : boss.x; strike = false;
         // his cages drop from pressure plates up on the scaffold, where the bot cannot climb: when he walks under one, it drops it, as a player on that plate would
         /* opts.noCage takes the cage hand away, which is how the above was found: without it, zero swings and 100% of him */
         const under = opts.noCage ? null : cages.find(q => Math.abs(q.x - boss.x) < 18); if (under) { under.dropped = true; under.landed = 0; if (under.hit) under.hit.clear(); under.resetT = 5; } }

@@ -30,7 +30,7 @@ export function fallingTower({painter,T,TS}){
  ent('check',5,23);ent('sign',10,23,{text:'THE CRACKS WARN YOU. FALL TO THE LOWER FLOOR. CLIMB THE CHAINS BACK.'});
  for(const x of [36,64]){ent('coin',x,22);ent('broom',x+9,23,{face:-1});}deco('bookpile',29,23);deco('candelabra',77,23);ent('silver',58,23);
  ent('check',96,29);ent('sign',102,29,{text:'HIS FAMILIAR SURVIVED. IT HOLDS THE LOWER DOOR. THE ARCHMAGE IS GONE.'});deco('desk',114,29);deco('globe',120,29);ent('armour',126,29,{face:-1});
- ent('silver',177,29);deco('bookpile',148,29);deco('retorts',194,29);ent('bonecorsair',185,39,{face:-1});ent('lanternshade',154,39,{face:-1});
+ ent('check',172,39);ent('silver',177,29);deco('bookpile',148,29);deco('retorts',194,29);ent('bonecorsair',185,39,{face:-1});ent('lanternshade',154,39,{face:-1});
  ent('check',224,39);block(230,292,26,27);interiors.push([230,291,28,39,'tower']);for(let y=0;y<40;y++)set(292,y,T.PORT);
  ent('sign',226,39,{text:'THE FAMILIAR. GUARD THE CLAW. JUMP THE RED SLAM. CUT THE EYE WHILE IT PANTS.'});ent('familiar',273,39,{mini:true,face:-1});
  deco('candelabra',233,39);deco('bookpile',287,39);ent('silver',312,39);ent('check',301,39);ent('gate',342,39);deco('telescope',330,39);
