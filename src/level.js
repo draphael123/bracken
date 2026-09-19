@@ -153,7 +153,7 @@ function brackenWood() {
   plat(292, 6, 3); plat(315, 6, 3);
   ent('deco', 296, 8, { kind: 'hiveBg' }); ent('deco', 314, 8, { kind: 'hiveBg' });
   ent('deco', 293, 5, { kind: 'drip', hang: true }); ent('deco', 300, 4, { kind: 'drip', hang: true }); ent('deco', 309, 5, { kind: 'drip', hang: true }); ent('deco', 318, 4, { kind: 'drip', hang: true });
-  for (let x = 290; x <= 319; x++) set(x, 3, T.ONEWAY);   /* her comb, over the whole hall: her own slams bring it down */
+  /* The comb hangs as wax, not footing: the Queen shakes pieces loose, but nobody can stand on her ceiling. */
   ent('queen', 304, 3);
 
   const ret = {

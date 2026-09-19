@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {LEVELS,T} from '../src/level.js';
+const src=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+const L=LEVELS.find(l=>l.id==='wood').build(), A=L.arena;
+for(let x=Math.floor(A.x0/16)+2;x<Math.ceil(A.x1/16)-1;x++)assert.notEqual(L.grid[3*L.W+x],T.ONEWAY,'ceiling comb is not footing');
+const rocks=[];const c=vm.createContext({L,rocks,TS:16,SFX:{crack(){}},number(){},spawnEnt(){}});
+vm.runInContext(src.slice(src.indexOf('function combFall('),src.indexOf('function drawWax(')),c);
+const before=Array.from(L.grid);for(let i=0;i<8;i++)c.combFall({x:A.x0+80});
+assert.deepEqual(Array.from(L.grid),before);assert.equal(rocks.length,12);assert(rocks.every(r=>r.comb&&r.delay>=0.6));
+const view=src.slice(src.indexOf('function desiredView()'),src.indexOf('// THE EDITOR',src.indexOf('function desiredView()')));
+assert(view.includes("boss.t === 'queen'"),'render must keep the wider Queen view');
+console.log('Queen: no ceiling footing, three told falling-comb pieces, unchanged grid and persistent wider view.');

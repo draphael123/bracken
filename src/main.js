@@ -1880,6 +1880,7 @@ function loadLevel(i) {
 function spawnEntities() {
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
+  if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
   ambushReset();
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) enemies[i].xpKey = k + '.' + (i - n0); });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
@@ -7256,40 +7257,35 @@ function setWall(col, solid) {
   if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.vine[(ty + col) % 4] : null; }
 }
 function bossStart() {
-  bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; setView('zoom'); } if (boss.t === 'closedhelm' || boss.t === 'drownedking' || boss.t === 'prince' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king' || boss.t === 'lance' || boss.t === 'suncatcher' || boss.t === 'roc' || boss.t === 'gqueen' || boss.t === 'grandmother' || boss.t === 'troll' || boss.t === 'masthead' || boss.t === 'kraken' || boss.t === 'strawking' || boss.t === 'archmage') setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
+  bossActive = true; if (boss.t === 'queen') setView('zoom'); boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; setView('zoom'); } if (boss.t === 'closedhelm' || boss.t === 'drownedking' || boss.t === 'prince' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king' || boss.t === 'lance' || boss.t === 'suncatcher' || boss.t === 'roc' || boss.t === 'gqueen' || boss.t === 'grandmother' || boss.t === 'troll' || boss.t === 'masthead' || boss.t === 'kraken' || boss.t === 'strawking' || boss.t === 'archmage') setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true);
   if (boss.t === 'prince') number(boss.x, boss.y - 14, 'FORGOTTEN UNDER THE HILL', '#c9d1dc');   /* his subtitle, under the name */
   ({ closedhelm: SFX.judgement, drownedking: SFX.bellow, prince: SFX.wightMoan, queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow, grandmother: SFX.heard, troll: SFX.snort, master: SFX.whistleCall, masthead: SFX.whistleCall, kraken: SFX.boreRoar, strawking: SFX.bellow, archmage: SFX.callerChant }[boss.t] || SFX.roar)(); shakeCam(6); music.stop(); bossMusicT = 1.1; number(boss.x, boss.y - 30, boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : 'THE GRANDMOTHER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.mode === 'whirl' || boss.mode === 'whirlTell' ? 'THE DROWNED KING  THE MAELSTROM' : boss.mode === 'gulp' || boss.mode === 'gulpTell' ? 'THE DROWNED KING  HE TAKES THE AIR' : boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'master' ? 'THE HOUND MASTER' : boss.t === 'kraken' ? 'THE KRAKEN' : boss.t === 'queen' ? 'THE HORNET QUEEN' : bossTitle(boss), '#ffd36b'); zoomKick(1.1, 0.4);   /* the rest ask the bestiary, the way the card does: the Herald, the Reefmaw, the Quartermaster, the Captain, the Tollmaster and the Masthead all woke as THE HORNET QUEEN */
   burst(L.arena.wallL * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6); burst(L.arena.wallR * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6);
 }
-// A SLAM SHAKES THE COMB LOOSE. The section over her head goes; it lodges three rows down as a ledge that
-// was not there before, and whatever was living in that cell comes out of the hole. Three of them, spread
-// across her hall, so she cannot bring the same piece down twice.
+// THE COMB IS WAX, NOT A BALCONY: a slam shakes a told piece loose; it breaks on the floor instead of becoming a ledge.
 function combFall(e) {
   const A = L.arena; if (!A || A.boss !== 'queen') return;
-  A.comb = A.comb || { rows: [], n: 0 };
-  if (A.comb.n >= 3) return;
+  A.comb = A.comb || { rows: [], n: 0 }; if (A.comb.n >= 3) return;
   const ax0 = Math.floor(A.x0 / TS) + 2, ax1 = Math.ceil(A.x1 / TS) - 5;
-  let cx = Math.max(ax0, Math.min(ax1, Math.floor(e.x / TS) - 1));
-  // never the same piece twice: step along until this one is still up
-  let tries = 0;
-  while (tries++ < 40 && (A.comb.rows.some(r => Math.abs(r - cx) < 5) || L.grid[3 * LW + cx] !== T.ONEWAY))
-    cx = ax0 + ((cx - ax0 + 6) % Math.max(1, ax1 - ax0));
-  if (L.grid[3 * LW + cx] !== T.ONEWAY) return;
-  A.comb.rows.push(cx); A.comb.n++;
-  const w = 4, ly = 6;
-  for (let x = cx; x < cx + w; x++) { const i = 3 * LW + x;
-    if (L.grid[i] === T.ONEWAY) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); }
-    for (let q = 0; q < 3; q++) parts.push({ x: x * TS + 8, y: 3 * TS + 10, vx: (Math.random() - 0.5) * 60, vy: 20 + Math.random() * 60, life: 1.1, max: 1.1, col: Math.random() < 0.5 ? '#e0b040' : '#c9a83a', size: 2, grav: 320 });
+  let tx = Math.max(ax0, Math.min(ax1, Math.floor(e.x / TS) - 1)), tries = 0;
+  while (tries++ < 40 && A.comb.rows.some(r => Math.abs(r - tx) < 5)) tx = ax0 + ((tx - ax0 + 6) % Math.max(1, ax1 - ax0));
+  if (A.comb.rows.some(r => Math.abs(r - tx) < 5)) return;
+  A.comb.rows.push(tx); A.comb.n++;
+  for (let q = 0; q < 4; q++) rocks.push({ x: (tx + q) * TS + 8, y: 3 * TS + 8, vy: 0, t: 0, dead: false, comb: true, delay: 0.65 });
+  SFX.crack(); number((tx + 2) * TS, A.floor - 32, 'THE COMB COMES DOWN', '#ffd36b');
+  for (let q = 0; q < 2; q++) spawnEnt({ t: 'wasp', x: tx + 1 + q * 2, y: 4, drone: true });
+}
+function drawWax(x, y) {
+  g.fillStyle = '#795322'; g.fillRect(x - 7, y - 5, 14, 10); g.fillStyle = '#d3a44b'; g.fillRect(x - 6, y - 4, 12, 8);
+  g.fillStyle = '#875a26'; for (const ox of [-3, 3]) { g.fillRect(x + ox - 1, y - 2, 3, 4); } g.fillStyle = '#f3ce77'; g.fillRect(x - 5, y - 4, 10, 1);
+}
+function drawComb(cx, cy) {
+  const A = L.arena; if (!A || A.boss !== 'queen') return;
+  for (let tx = Math.floor(A.x0 / TS) + 2; tx < Math.ceil(A.x1 / TS) - 1; tx++) {
+    if (A.comb && A.comb.rows.some(r => tx >= r && tx < r + 4)) continue;
+    const x = tx * TS + 8 - cx; if (x > -16 && x < VW + 16) drawWax(x, 3 * TS + 8 - cy);
   }
-  // it lodges three rows down, and that is a floor you did not have
-  for (let x = cx; x < cx + w; x++) { const i = ly * LW + x;
-    if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; destroyed.delete(i); } }
-  resolveTiles(); SFX.crack(); SFX.thud(); shakeCam(6); zoomKick(1.05, 0.2);
-  dust(cx * TS + w * TS / 2, ly * TS, 12);
-  number(cx * TS + w * TS / 2, ly * TS - 14, 'THE COMB COMES DOWN', '#ffd36b');
-  // and what was living in the cell comes out of the hole
-  for (let q = 0; q < 2; q++) spawnEnt({ t: 'wasp', x: cx + 1 + q * 2, y: 4, drone: true });
 }
 // HE GOES THROUGH IT. The stakes come out of the deck and that lane is open for the rest of the fight:
 // whatever the barricade was doing for you - stopping his javelins, breaking his gale, planting his charge -
@@ -15069,11 +15065,11 @@ function updateSlide(dt) {
 const slideFloor = x => { const tx = Math.floor(x / TS); for (let ty = 8; ty < LH; ty++) if (isSolid(tx, ty)) return ty * TS; return LH * TS; };
 function drawSlide(cx, cy) { if (!slide) return; const S = slide; for (let i = 0; i < 9; i++) { const bx = S.x - i * 11 + Math.sin(S.t * 6 + i) * 3, fl = slideFloor(bx), by = fl - 5 - Math.abs(Math.sin(S.t * 7 + i * 1.3)) * 12 - (i % 3) * 5; const r = 4 + (i % 3) * 2; g.fillStyle = i % 2 ? '#8a919c' : '#5a6270'; g.beginPath(); g.arc(Math.round(bx - cx), Math.round(by - cy), r, 0, 7); g.fill(); g.fillStyle = '#b0b8c4'; g.fillRect(Math.round(bx - cx) - 1, Math.round(by - cy) - r + 1, 2, 2); } }
 function updateRocks(dt) {
-  for (const r of rocks) { r.vy = Math.min(420, r.vy + 700 * dt); r.y += r.vy * dt; r.x += (r.vx || 0) * dt; r.t += dt;
+  for (const r of rocks) { if (r.delay > 0) { r.delay = Math.max(0, r.delay - dt); continue; } r.vy = Math.min(420, r.vy + 700 * dt); r.y += r.vy * dt; r.x += (r.vx || 0) * dt; r.t += dt;
     const tx = Math.floor(r.x / TS), ty = Math.floor((r.y + 1) / TS), t = tileAt(tx, ty);
     if (t === T.SOLID || (isOneWay(t) && r.vy > 0 && (r.y % TS) < 7) || r.y > LH * TS) { r.dead = true; shatterRock(r); continue; }
-    if (!P.dead && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock, name: r.hammerRock ? 'THE HAMMER' : 'THE ROCKFALL' }); shatterRock(r); continue; }
-    for (const e of enemies) if (e.alive && e.t !== 'ram' && e.t !== 'harpy' && !(e.t === 'troll' && r.thrown) && !e.harmless && Math.abs(e.x - r.x) < 9 && e.y > r.y - 4 && e.y - e.h < r.y + 6) { r.dead = true; hurtEnemy(e, 15, r.x, false); shatterRock(r); break; }
+    if (!P.dead && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.comb ? 10 : r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock, name: r.comb ? 'FALLING COMB' : r.hammerRock ? 'THE HAMMER' : 'THE ROCKFALL' }); shatterRock(r); continue; }
+    for (const e of enemies) if (e.alive && e.t !== 'ram' && e.t !== 'harpy' && !(r.comb && e.t === 'queen') && !(e.t === 'troll' && r.thrown) && !e.harmless && Math.abs(e.x - r.x) < 9 && e.y > r.y - 4 && e.y - e.h < r.y + 6) { r.dead = true; hurtEnemy(e, 15, r.x, false); shatterRock(r); break; }
   }
   rocks = rocks.filter(r => !r.dead);
 }
@@ -19348,6 +19344,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) drawMageTiles(cx, cy);   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice */
+  drawComb(cx, cy);
   drawGroundLight(cx, cy, tx0, ty0);
   SEA.seaOver(g, cx, cy, VW, VH, time);   /* a sea level's light on its own floors (under the creatures) */
   if (L.colosseum) drawArena(cx, cy);
@@ -20045,7 +20042,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (throneBlock) g.drawImage(PROP.palanquin, Math.round(throneBlock.x) - 36 - cx, Math.round(throneBlock.y) - 45 - cy, 72, 45);
   drawDrunkMarks(cx, cy);
   for (const r of rocks) if (r.thrown && r.tx !== undefined && !r.dead) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.tx / TS), gy) && !isOneWay(tileAt(Math.floor(r.tx / TS), gy))) gy++; const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(r.tx - cx), gy * TS - 1 - cy, 11, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-  for (const r of rocks) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.x / TS), gy) && !isOneWay(tileAt(Math.floor(r.x / TS), gy))) gy++; const k = Math.max(0.3, 1 - (gy * TS - r.y) / 200); g.globalAlpha = 0.35 * k; g.drawImage(PROP.shadow, Math.round(r.x - cx) - 6, gy * TS - 2 - cy, 12, 3); g.globalAlpha = 1; if (r.lamp) g.drawImage(SPR.chandelier, Math.round(r.x - cx) - 12, Math.round(r.y - cy) - 14); else if (r.apple) { const ax = Math.round(r.x - cx), ay = Math.round(r.y - cy); g.fillStyle = '#1b1626'; g.fillRect(ax - 4, ay - 5, 8, 8); g.fillStyle = '#8a2a1a'; g.fillRect(ax - 3, ay - 4, 6, 6); g.fillStyle = '#c85a3a'; g.fillRect(ax - 2, ay - 3, 2, 2); g.fillStyle = '#4a3020'; g.fillRect(ax, ay - 6, 1, 2); }   /* THE DEAD ORCHARD'S APPLES */ else if (r.hammerRock) drawHammerRock(r, cx, cy); else g.drawImage(PROP.boulder, Math.round(r.x - cx) - 7, Math.round(r.y - cy) - 11); }
+  for (const r of rocks) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.x / TS), gy) && !isOneWay(tileAt(Math.floor(r.x / TS), gy))) gy++; const k = Math.max(0.3, 1 - (gy * TS - r.y) / 200); g.globalAlpha = 0.35 * k; g.drawImage(PROP.shadow, Math.round(r.x - cx) - 6, gy * TS - 2 - cy, 12, 3); g.globalAlpha = 1; if (r.comb) { drawWax(Math.round(r.x - cx), Math.round(r.y - cy)); if (r.delay > 0) { g.globalAlpha = 0.4; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(r.x - cx) - 7, gy * TS - 2 - cy, 14, 2); g.globalAlpha = 1; text('!', Math.round(r.x - cx), gy * TS - 20 - cy, '#ffd36b', 'center'); } } else if (r.lamp) g.drawImage(SPR.chandelier, Math.round(r.x - cx) - 12, Math.round(r.y - cy) - 14); else if (r.apple) { const ax = Math.round(r.x - cx), ay = Math.round(r.y - cy); g.fillStyle = '#1b1626'; g.fillRect(ax - 4, ay - 5, 8, 8); g.fillStyle = '#8a2a1a'; g.fillRect(ax - 3, ay - 4, 6, 6); g.fillStyle = '#c85a3a'; g.fillRect(ax - 2, ay - 3, 2, 2); g.fillStyle = '#4a3020'; g.fillRect(ax, ay - 6, 1, 2); }   /* THE DEAD ORCHARD'S APPLES */ else if (r.hammerRock) drawHammerRock(r, cx, cy); else g.drawImage(PROP.boulder, Math.round(r.x - cx) - 7, Math.round(r.y - cy) - 11); }
   for (const v of vines) { if (v.t < v.tell) continue; const x1 = Math.round(v.x - cx), y = Math.round(v.y - cy), x0 = Math.round(v.x - v.dir * v.len - cx); const lo = Math.min(x0, x1), hi = Math.max(x0, x1); g.fillStyle = '#3f6e2c'; g.fillRect(lo, y - 4, hi - lo, 3); g.fillStyle = '#8fd160'; g.fillRect(lo, y - 4, hi - lo, 1); for (let x = lo; x < hi; x += 6) { g.fillStyle = '#dfffa0'; g.fillRect(x + ((y + x) % 3), y - 7, 1, 3); } g.fillStyle = '#3f6e2c'; g.fillRect(x1 - 2, y - 8, 4, 8); }
   for (const b of bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), k = b.life / 0.28; if (b.storm) { g.globalAlpha = Math.min(1, k); g.fillStyle = b.holy ? '#ffd36b' : '#9ab8ff'; g.fillRect(x - 3, y - 220, 7, 220); g.fillStyle = b.holy ? '#fff6c8' : '#eef4ff'; for (let s = 0; s < 220; s += 14) g.fillRect(x - 1 + ((s * 7) % 5) - 2, y - s - 14, 3, 15); g.globalAlpha = 1; continue; } g.globalAlpha = k; g.fillStyle = '#dfffa0'; g.fillRect(x - 1, y - 200, 3, 200); g.fillStyle = '#8fd160'; g.fillRect(x - 3, y - 200, 7, 200); g.globalAlpha = 1; g.fillStyle = '#fff6e0'; g.fillRect(x - 1, y - 200, 2, 200); }
   for (const r of rain) { if (r.fired) continue; const x = Math.round(r.x - cx), y = Math.round(r.y - cy), hot = Math.floor(time * 10) % 2 === 0; g.fillStyle = r.bolt ? (hot ? '#8fd160' : '#dfffa0') : hot ? '#ff6b6b' : '#ffd36b'; g.fillRect(x - 4, y - 8, 2, 2); g.fillRect(x + 2, y - 8, 2, 2); g.fillRect(x - 2, y - 6, 2, 2); g.fillRect(x, y - 6, 2, 2); g.fillRect(x - 1, y - 4, 2, 2); g.globalAlpha = 0.25; g.fillRect(x - 6, y - 1, 12, 1); g.globalAlpha = 1; }
@@ -21049,7 +21046,7 @@ function drawTransition() {
   } else { g.fillStyle = 'rgba(8,6,14,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function desiredView() { if (state === 'editor') return 'zoom';
-  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && (boss.t === 'mother' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king' || boss.t === 'lance' || boss.t === 'suncatcher' || boss.t === 'roc' || boss.t === 'gqueen' || boss.t === 'masthead' || boss.t === 'kraken'))) ? 'zoom' : 'normal'; }
+  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && (boss.t === 'queen' || boss.t === 'mother' || boss.t === 'owl' || boss.t === 'forgemaster' || boss.t === 'golem' || boss.t === 'windcaller' || boss.t === 'king' || boss.t === 'lance' || boss.t === 'suncatcher' || boss.t === 'roc' || boss.t === 'gqueen' || boss.t === 'masthead' || boss.t === 'kraken'))) ? 'zoom' : 'normal'; }
 
 // ==================================================================================
 // THE EDITOR
