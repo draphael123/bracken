@@ -33,3 +33,9 @@ King lab: knight 19.3s, pyro 22.7s, paladin 18.7s, pirate 39s killed; Warden tim
 All pass-through scenery draws behind collision tiles with softened colour and stripped dark outer outlines. Solid tiles retain their outlines. The shared rough climb face now has a grip pose, clank and contact dust. Thirteen slung/stilt houses, two public halls, smoke, stalls, washing and a pulley basket give the village a town silhouette. Residents select doors on their own tier, fixing a market resident shutting a roots-tier door.
 
 Five screenshots inspected. Live tests verified the correct door closure and a 24.8px/s wall grip. New readability and town tests are in the suite. `npm run check` exit 0, all 27 checks passed (outputs/07-check.log). Human traversal and combat feel remain unverified.
+
+## Item 8 — Owl Reeve lamp loop
+
+Six lamps sit on permanent footing, including three on the floor. A strike lights a 14-second wick; melee, plunge/dash contact, jet, fireballs and other player projectile paths share ignition. Their visible 78px glow drops a flying/perching Reeve into a three-second grounded opening. Hoots snuff nearby lamps; phase two tells and flies toward a lamp to beat it out. The lab now lights floor lamps and waits for a grounded opening. The new 116px sprite has barred wings, ear tufts, pale face, pinched dazzled eyes, hooked beak, talons, chain and torn tabard.
+
+Actual strike: lamp lit with 13.69 seconds remaining; moving the flying boss into that glow yielded grounded. Perched/grounded screenshots inspected. Lamp rule tests cover footing, fuel, dazzle, hoot and dive. `npm run check` exit 0, all 28 checks. All six lab heroes killed her in 14.1, 14, 36.3, 13.9, 12.6 and 17.5 seconds. Duration is below target and remains open for item 13; human feel and exhaustive skill-by-skill ignition are not yet verified.

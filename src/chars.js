@@ -1205,39 +1205,30 @@ export function bakeSquirrel() {
 // The Owl Reeve — a great horned owl, wings like sails. 32×20. Frames: perch, wings up, wings down, screech (grounded, beak open), crash (on its back),
 // glide, dive, land, and the round-two set: mantle (the skim's tell), skim, pinned (under the dead bough), stuck (talons in the boards), plunge.
 export function bakeOwl() {
-  const OP = Object.assign({}, EP, { h: '#7a5a3a', H: '#4a3620', f: '#e8dcc0', y: '#ffd36b', m: '#c9a83a', w: '#a08060', o: OUT, r: '#c9463d', b: '#6a4a2a', B: '#3e2a16', g: '#7a8a4a' });   /* b B g: the bark and lichen of the dead bough that pins him */
-  // TWICE THE SIZE. He is the reeve of a whole wood and he was thirty-four pixels across - smaller than the
-  // hill troll and half the golem. Each cell of the grid is drawn as a two-by-two block and the outline is
-  // laid on AFTER the scaling, so the silhouette stays one pixel thick and only his feathers get heavier,
-  // which is what a big owl ought to look like anyway. (fromGrid's third argument is the MARGIN, not a
-  // scale: there is no scale in it, which is why this does the blocks itself.)
-  const o = rows => { const m = 2, sc = 2;
-    const w = Math.max(...rows.map(r => r.length)) * sc + m * 2, h = rows.length * sc + m * 2;
-    const [c, g2] = canvas(w, h);
-    rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x];
-      if (k !== '.' && OP[k]) { g2.fillStyle = OP[k]; g2.fillRect(x * sc + m, y * sc + m, sc, sc); } } });
-    return outline(c, OUT); };
-  const headP = ['...........hh......hh...........', '..........hhhh....hhhh..........', '..........hhhhhhhhhhhh..........', '..........hffyffhffyff..........', '..........hffoffhffoff..........', '...........hffffmfff............', '............hffmmff.............'];
-  const perch = o([...headP, '...........hhhhhhhhhh...........', '..........hhhhhhhhhhhh..........', '..........hhwwhhhhwwhh..........', '..........hhhhhhhhhhhh..........', '...........hhhhhhhhhh...........', '............hhhhhhhh............', '.............mm..mm.............', '.............mm..mm.............']);
-  const wingsUp = o(['h..............................h', 'hh............................hh', 'hhh...........hh......hh.....hhh', 'hhhh.........hhhh....hhhh...hhhh', 'hhhhh........hhhhhhhhhhhh..hhhhh', '.hhhhh.......hffyffhffyff.hhhhh.', '..hhhhh......hffoffhffoff.hhhh..', '...hhhhh......hffffmfff..hhhh...', '....hhhhhhhhhhhhhhhhhhhhhhhhh...', '.....hhhhhhhhhhhhhhhhhhhhhhh....', '.......hhhhhhhhwwhhwwhhhhh......', '..........hhhhhhhhhhhh..........', '............hhhhhhhh............', '.............mm..mm.............', '................................']);
-  const wingsDown = o(['................................', '..............hh......hh........', '.............hhhh....hhhh.......', '.............hhhhhhhhhhhh.......', '.............hffyffhffyff.......', '.............hffoffhffoff.......', '..............hffffmfff.........', '........hhhhhhhhhhhhhhhhhhhh....', '......hhhhhhhhhhhhhhhhhhhhhhhh..', '....hhhhhhhhhhhhwwhhwwhhhhhhhhhh', '..hhhhh.....hhhhhhhhhhhh....hhhh', 'hhhh..........hhhhhhhh.........h', 'h..............mm..mm...........', '................................', '................................']);
-  const screech = o(['...........hh......hh...........', '..........hhhh....hhhh..........', '.........hhhhhhhhhhhhhh.........', '........hhffyffhffyffhh.........', '.......hhhffoffhffoffhhh........', '......hhhhhffffmfffhhhhh........', '.....hhhhhhhffmrrmffhhhhhh......', '....hhhhhhhhhhmrrmhhhhhhhhh.....', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '..hhhhhhhhhwwhhhhhhwwhhhhhhhhh..', '.hhhh......hhhhhhhhhhh......hhhh', 'hhh.........hhhhhhhhh.........hh', '.............mm..mm.............', '.............mm..mm.............', '................................']);
-  const crash = o(['................................', '................................', '................................', '..............mm..mm............', '.............hhhhhhhh...........', '...hhhhhhhhhhhhhhhhhhhhhhhhhh...', '.hhhhhhhhhhhhwwhhhhwwhhhhhhhhhh.', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', '.hhhhhhhhhhhffoffhffoffhhhhhhhh.', '...hhhhhhhhhffyffhffyffhhhhhh...', '............hhhhhhhhhhhh........', '.............hhhh..hhhh.........', '..............hh....hh..........', '................................', '................................']);
-  const glide = o(['................................', '..............hh......hh........', '.............hhhh....hhhh.......', '.............hhhhhhhhhhhh.......', '.............hffyffhffyff.......', '.............hffoffhffoff.......', '..............hffffmfff.........', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', 'hhhhhhhhhhhhhhhhwwhhwwhhhhhhhhhh', '..hhhhhhhhhhhhhhhhhhhhhhhhhhhh..', '.....hhhhh....hhhhhhhh....hhhh..', '..............hhhhhhhh..........', '...............mm..mm...........', '................................', '................................']);
-  const dive = o(['.........................hh.....', '........................hhhh....', '.......................hhhhhh...', '..............hh......hhhhhhh...', '.............hhhh....hhhhhhhh...', '.............hhhhhhhhhhhhhhhh...', '.............hffyffhffyffhhhh...', '.............hffoffhffoffhhh....', '..............hffffmfffhhh......', '.......hhhhhhhhhhhhhhhhhh.......', '.....hhhhhhhhhhwwhhwwhhhh.......', '...hhhhhhhhhhhhhhhhhhhh.........', '..............mm..mm............', '................................', '................................']);
-  const land = o(['h..............................h', 'hh............................hh', 'hhh...........hh......hh.....hhh', 'hhhh.........hhhh....hhhh...hhhh', 'hhhhh........hhhhhhhhhhhh..hhhhh', '.hhhhh.......hffyffhffyff.hhhhh.', '..hhhhh......hffoffhffoff.hhhh..', '...hhhhh......hffffmfff..hhhh...', '....hhhhhhhhhhhhhhhhhhhhhhhhh...', '.....hhhhhhhhhhhhhhhhhhhhhhh....', '.......hhhhhhhhwwhhwwhhhhh......', '..........hhhhhhhhhhhh..........', '............hhhhhhhh............', '............mm....mm............', '...........mm......mm...........']);
-  // THE ROUND-TWO FRAMES. MANTLE is the skim's tell: down on the boards with both wings thrown up over its head, which no other pose
-  // does, so it reads as a new thing coming. SKIM is flat to the floor with the talons out in front - the shape says 'jump this'.
-  // PINNED has the dead bough across its back in the frame itself, so the limb and the bird can never drift apart. STUCK and PLUNGE
-  // fix two old reads: talons in the boards used to be drawn on its back, exactly like the crash - a window it is not.
-  const mantle = o(['................................', '...hh......................hh...', '..hhhh....................hhhh..', '..hhHhh..................hhHhh..', '.hhhHhhh................hhhHhhh.', '.hhhhHhhh..hh......hh..hhhHhhhh.', '.hhhhhHhhhhhhh....hhhhhhhHhhhhh.', 'hhhhhhhHhhhhhhhhhhhhhhhhHhhhhhhh', 'hhhhhhhhhhhffyffhffyffhhhhhhhhhh', '.hhhhhhhhhhffoffhffoffhhhhhhhhh.', '..hhhhhhhhhhffffmfffhhhhhhhhhh..', '....hhhhhhhhhhhmmhhhhhhhhhhh....', '......hhhhwwhhhhhhhhwwhhhh......', '........mm.mm........mm.mm......', '.......mm...mm......mm...mm.....']);
-  const skim = o(['................................', '................................', '................................', '................................', '................................', '...................hh......hh...', 'hh................hhhh....hhhh..', 'hhhh..............hhhhhhhhhhhh..', '.hhhhhh...........hffyffhffyff..', '..hhhhhhhhh.......hffoffhffoff..', '...hhhhhhhhhhhhhhhhhffffmfffh...', '....hhhhhhhhwwhhwwhhhhhhhhhhhh..', '......hhhhhhhhhhhhhhhhhhhhhhmm..', '..........hhhhhhhhhhhhhh...mm.mm', '..............................m.']);
-  const pinned = o(['................................', '................................', '................................', '................................', '................................', '....................BB..........', '..................BBbB..........', 'BBbbbbbbbbbbbbbbbbbbbbbbbbbbbbBB', 'BbbgbbbbBbbbbbbbbbbgbbbbBbbbbbbB', '.BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB.', '..hhhhhhhhhhffHffhffHffhhhhhhhh.', 'hhhhhhhhhhhhfffffmffffhhhhhhhhhh', 'hhhhwwhhhhhhhhhfmmfhhhhhhhhwwhhh', '.hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.', '...hhhh..hhhh........hhhh..hhhh.']);
-  const stuck = o(['................................', '................................', '...........hh......hh...........', '..h.......hhhh....hhhh.......h..', '..hh......hhhhhhhhhhhh......hh..', '..hhh.....hffyffhffyff.....hhh..', '...hhh....hffoffhffoff....hhh...', '...hhhh....hffffmfff.....hhhh...', '....hhhhh...hffmrmff...hhhhh....', '.....hhhhhhhhhhhhhhhhhhhhhh.....', '......hhhhhhhwwhhwwhhhhhhh......', '..........hhhhhhhhhhhh..........', '.............mm..mm.............', '.............mm..mm.............', '...........HmmmHHmmmH...........']);
-  const plunge = o(['.....h....................h.....', '.....hh..................hh.....', '......hh................hh......', '......hhh..............hhh......', '.......hhh.hh......hh.hhh.......', '.......hhhhhhh....hhhhhhh.......', '........hhhhhhhhhhhhhhhh........', '.........hffyffhffyffhh.........', '.........hffoffhffoffh..........', '..........hhffffmfffhh..........', '...........hhhhmmhhhhh..........', '............hwwhhwwhh...........', '.............hhhhhhh............', '............mm.....mm...........', '...........mm.......mm..........']);
-  return pack([perch, wingsUp, wingsDown, screech, crash, glide, dive, land, mantle, skim, pinned, stuck, plunge], 34, 32, 44, 26);   /* the anchor and the body double with him; 8-12 are the round-two set (no hurt pose: the Reeve is not in HAS_HURT) */
+  // HER OFFICE OUTLASTS THE CLOTH: a tarnished chain over a torn tabard, pale eyes inside dark sails.
+  const frames=[];
+  for(let f=0;f<13;f++) {
+    const [c,g]=canvas(116,66), down=[4,10].includes(f), spread=![0,11].includes(f), lift=[1,7,8,12].includes(f)?-18:0;
+    const poly=(p,col)=>{g.fillStyle=col;g.beginPath();p.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();};
+    for(const side of [-1,1]) {
+      const X=n=>58+side*n;
+      poly([[X(8),28],[X(spread?50:22),14+lift],[X(spread?55:25),27+lift],[X(spread?42:21),44],[X(15),51]],'#302c3c');
+      for(let k=0;k<7;k++){const x=14+k*(spread?5:1.4),y=29+k*.9+lift*(k/7);poly([[X(x),y],[X(x+8),y-5],[X(x+3),y+15],[X(x-2),y+10]],k%2?'#554b5d':'#403747');g.fillStyle='#81717c';g.fillRect(Math.round(X(x)),Math.round(y+5),side*5,2);}
+    }
+    poly([[43,23],[71,23],[78,44],[69,57],[46,57],[38,44]],'#4a3d4e');
+    poly([[46,39],[69,39],[70,56],[64,53],[60,59],[55,54],[47,57]],'#374b54');
+    poly([[42,20],[41,4],[51,13],[64,13],[75,4],[73,24]],'#302c3c');
+    poly([[43,18],[51,14],[58,19],[66,14],[74,19],[71,31],[63,36],[57,33],[49,35],[42,27]],'#d9ceb2');
+    for(const x of [48,63]){g.fillStyle='#5a4d4e';g.fillRect(x-2,20,10,8);g.fillStyle='#edb24e';g.fillRect(x,down?24:21,6,down?1:5);if(!down){g.fillStyle='#241d28';g.fillRect(x+2,21,2,5);}}
+    poly([[55,28],[62,27],[60,35],[56,33]],'#b49a5e');
+    for(let k=0;k<9;k++){g.fillStyle=k%2?'#b59a55':'#756448';g.fillRect(46+k*3,35+Math.round(Math.sin(k/8*Math.PI)*7),2,3);}g.fillStyle='#bea15c';g.fillRect(56,42,5,5);
+    for(const x of [47,64]){g.fillStyle='#b79a60';g.fillRect(x,53,3,7);for(let k=0;k<3;k++){g.fillRect(x-3+k*3,59,2,3);g.fillStyle='#e4cf99';g.fillRect(x-3+k*3,61,2,2);g.fillStyle='#b79a60';}}
+    if(f===10){g.fillStyle='#513b30';g.fillRect(22,42,72,7);g.fillStyle='#83613c';g.fillRect(25,43,65,2);}
+    if(f===3){g.fillStyle='#34202b';g.fillRect(56,32,5,5);}
+    frames.push(outline(c,OUT));
+  }
+  return pack(frames,58,63,44,26);
 }
-
 
 // ---------- The Pyromancer. Not the knight in a hood any more: her own body, drawn from scratch. ----------
 // A tall cowl that droops back with two embers for eyes in the dark of it, a capelet, a robe to the

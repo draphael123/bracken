@@ -481,10 +481,13 @@ export async function bossLab(BK, opts = {}) {
         if (s) { goal = s.x; if (Math.abs(s.x - P.x) < 18) { P.face = Math.sign(s.x - P.x) || P.face; if (P.atk < 0) { BK.press('atk'); swings++; } } } else goal = boss.x - Math.sign(d || 1) * 70; }
       else { goal = boss.x; strike = true; }
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
-      if (boss.t === 'owl') { const df = BK.props().find(q => q.t === 'deadfall' && q.state === 'hung' && q.under); if (df) df.cutReq = true;
-        if (boss.mode === 'skim' && Math.abs(boss.x - P.x) < 64 && (boss.x - P.x) * boss.vx < 0 && P.ground) { k.jump = true; BK.press('jump'); } }
+      if (boss.t === 'owl') {
+        const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
+        if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(lamp){goal=lamp.x;if(!lamp.lit&&Math.abs(P.x-lamp.x)<22&&P.atk<0){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
+        if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
+      }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
-      if (walker && Math.abs(boss.y - P.y) > 30 && !k.block) {
+      if (walker && boss.t !== 'owl' && Math.abs(boss.y - P.y) > 30 && !k.block) {
         /* she is on another deck. Walking at HER x from under her deck only jumps on the spot: go to the nearest way UP -
            a rope or a ledge over the deck the bot stands on - and let the walker climb it */
         let goalUp = boss.x;

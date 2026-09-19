@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {LEVELS,T} from '../src/level.js';
+const s=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+const L=LEVELS.find(l=>l.id==='hanging').build(), lamps=L.ents.filter(p=>p.owl);
+assert(lamps.filter(p=>!p.perch&&p.y===19).length>=2);
+for(const p of lamps)assert([T.SOLID,T.ONEWAY,T.PLANK].includes(L.grid[(p.y+1)*L.W+p.x]),'lamp has a platform');
+const noop=()=>{}, props=lamps.map(p=>({...p,t:'lantern',x:p.x*16+8,y:(p.y+1)*16}));
+const c=vm.createContext({L,props,TS:16,P:{x:100,y:320,dead:true},enemies:[],SFX:new Proxy({},{get:()=>noop}),number:noop,burst:noop,ringAt:noop,dust:noop,shakeCam:noop,flash:0});
+vm.runInContext(s.slice(s.indexOf('function lightOwlLamp'),s.indexOf('// The Forgemaster.',s.indexOf('function lightOwlLamp'))),c);
+const pr=props[0];c.lightOwlLamp(pr);assert.equal(pr.lampT,14);assert(pr.lit);
+const b={mode:'hootTell',modeT:0,phase:1,x:pr.x+90,y:pr.y-30,face:1,perches:[{x:pr.x,y:pr.y-30}],perchI:0};c.updateOwl(b,1/60);assert(!pr.lit,'hoot snuffs near lamps');
+c.lightOwlLamp(pr);Object.assign(b,{mode:'fly',modeT:3,x:pr.x,y:pr.y-30});c.updateOwl(b,1/60);assert.equal(b.mode,'dazzled');
+for(let i=0;i<40;i++)c.updateOwl(b,1/60);assert.equal(b.mode,'grounded');assert(b.modeT<=3&&b.modeT>2);
+c.lightOwlLamp(pr);Object.assign(b,{mode:'douseDive',modeT:2,x:pr.x+111,y:pr.y-30,douseTarget:pr,phase:2});c.updateOwl(b,1/60);assert(!pr.lit,'phase two dive reaches the lamp and beats it out');
+assert(s.includes('pr.lampT-=dt;if(pr.lampT<=0)snuffOwlLamp(pr)'));
+console.log('Six supported lamps: 14-second fuel, continuous glow, three-second opening, hoot and dive extinguishing.');
