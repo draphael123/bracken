@@ -1,4 +1,5 @@
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
+import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
@@ -1953,6 +1954,7 @@ function spawnEnt(e) {
     { const made = enemies[enemies.length - 1];
       if (made && made.x === px && made.y === py) { if (e.sleeper) made.sleeper = true; if (e.mini) { made.mini = true; if (!made.maxHp) { made.hp = Math.round(made.hp * 1.8); made.miniBig = true; } }   /* a small creature holding a mini is bigger and tougher than its kind; a boss-sized one (it has maxHp) already is */ if (e.awake) made.woke = 1; } }
   }
+  if(e.balcony)for(let i=n0;i<enemies.length;i++)enemies[i].balcony={state:'wait',t:0};
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
   const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr) * (coop() ? 2 : 1)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
@@ -2074,12 +2076,18 @@ function ambushRun(A, dt) {
   A.t += dt; ambushCarts(A); ambushHold(A);
   for (const e of A.foes) if (e.alive && (AMB_FLY.has(e.t) || e.noGrav)) ambushPen(A, e);   /* the room holds its flyers inside it, and in reach of the floor the fight is on */
   const lx = (A.wallL - 1) * TS, rx = (A.wallR + 2) * TS;
-  for (const e of A.foes) if (e.alive && (e.x < lx || e.x > rx || e.y > LH * TS + 8)) e.alive = false;   /* out of the room is out of the fight */
+  for (const e of A.foes) {
+    if(e===A.leader&&!e.defeated&&(!e.alive||e.x<lx||e.x>rx||e.y>LH*TS+8)) {
+      /* Escaping the simulation is not a defeat. Put the captain back on its authored footing. */
+      const home=A.waves[0].find(f=>f[3]?.elite); e.alive=true;e.x=home[1]*TS+8;e.y=(ambushRow(A,e.t,home[2])+1)*TS;e.vx=e.vy=e.knock=0;e.hp=Math.max(1,e.hp);e.stagger=0.5;
+      if(!enemies.includes(e))enemies.push(e);
+    } else if(e.alive&&(e.x<lx||e.x>rx||e.y>LH*TS+8))e.alive=false;
+  }
   /* AND ONE THAT GOES INTO THE ROOM'S OWN SPIKES STAYS THERE. Only a THROWN foe was ever impaled, so a sprig that walked into
      THE CLIFF HALL's pit after you, or a cutter that fell in, stood on the spikes for the rest of the wave where no blade could
      reach it. The same hazard now defeats a captain and opens the gates. */
   for (const e of A.foes) if (e.alive && !(e.knock > 0) && !AMB_FLY.has(e.t) && !e.noGrav && [-3, 3].some(ox => tileAt(Math.floor((e.x + ox) / TS), Math.floor((e.y - 4) / TS)) === T.SPIKE)) hazardFoe(e);
-  if(!A.leader || A.leader.alive)return;
+  if(!A.leader || !A.leader.defeated)return;
   ambushClear(A);
 }
 function updateAmbush(dt) {
@@ -4915,7 +4923,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && e.alive && tal('bleed') && !isPyro() && !isPaladin()) { e.bleed = 3; e.bleedN = tal('bleed'); } // OPEN WOUND
   if (dmg > 0 && e.alive && isReaper() && tal('rend') && (e.mark || 0) > 0) { e.bleed = Math.max(e.bleed || 0, 3); e.bleedN = Math.max(e.bleedN || 0, 2); } // REND: the mark is a wound waiting for the blade
   if (e.hp <= 0) {
-    e.alive = false; kills++; xpKill(e); startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && tal('conflagration') && e.burn > 0) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < 46 && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
+    e.alive = false; if(e.ambushLeader)e.defeated=true; kills++; xpKill(e); startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && tal('conflagration') && e.burn > 0) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < 46 && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
     if (!P.ground && !P.plunge && !P.dead && !e.maxHp) { P.vy = -210; P.canCut = true; squash(0.88, 1.18, 0.1); } // KILLED IT IN THE AIR: up you go
     if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(e.t); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
     { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
@@ -9448,7 +9456,7 @@ function drawFieldsTiles(cx, cy) {
     g.strokeStyle = s.st === 'big' ? '#3a2e16' : HEX[2]; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1); }
   /* THE BUILDINGS: planks on the farmhouse and the barn, thatch on their roofs, coursed stone on the mill and the crypt */
   for (const [x0, x1, y0, y1, kind] of (L.fields.skins || [])) { if (x1 < tx0 || x0 > tx1) continue;
-    for (let ty = Math.max(y0, Math.floor(cy / TS)); ty <= Math.min(y1, Math.floor((cy + VH) / TS)); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.SOLID || FLD.shrinkCells.has(i)) continue;
+    for (let ty = Math.max(y0, Math.floor(cy / TS)); ty <= Math.min(y1, Math.floor((cy + VH) / TS)); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (![T.SOLID,T.CLIMB,T.SOFT,T.ICE].includes(L.grid[i]) || FLD.shrinkCells.has(i)) continue;
       g.drawImage(A.skin[kind][(tx * 7 + ty * 3) % 3], tx * TS - cx, ty * TS - cy);
       if (ty > 0 && L.grid[i - LW] === T.AIR) { g.fillStyle = 'rgba(236,214,168,0.55)'; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = 'rgba(236,214,168,0.2)'; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
     /* EACH BALE ITS OWN EDGE. Painted tile by tile, a half bale set against the lane's bank was more bank; with an edge
@@ -16306,6 +16314,14 @@ function foeHasFooting(e) {
   const row=Math.floor((e.y+1)/TS);
   return [e.x-e.w/2+1,e.x,e.x+e.w/2-1].some(x=>isSolid(Math.floor(x/TS),row)||isOneWay(tileAt(Math.floor(x/TS),row)));
 }
+function updateBalcony(e, dt) {
+  const b=e.balcony; if(!b)return false;
+  if(e.knock>0||e.stagger>0||e.hp<=0){e.balcony=null;return false;}
+  e.vx=0; e.vy=0; e.face=Math.sign(P.x-e.x)||e.face;
+  if(b.state==='wait'&&!P.dead&&Math.abs(P.x-e.x)<92&&P.y>e.y+24){b.state='warn';b.t=0.9;number(e.x,e.y-e.h-16,'LOOK UP','#ffd36b');SFX.hornBlast();}
+  if(b.state==='warn'){b.t-=dt;if(b.t<=0){e.y+=3;e.vy=60;e.air=true;e.stagger=0.25;e.balcony=null;dust(e.x,e.y,4);}}
+  return true;
+}
 function updateEnemies(dt) {
   updatePack(dt); eliteWatch();
   for (const e of enemies) {
@@ -16329,6 +16345,7 @@ function updateEnemies(dt) {
     if (e.turnT > 0) e.turnT = Math.max(0, e.turnT - dt);
     if (e.pFace === undefined) e.pFace = e.face; else if (e.face !== e.pFace) { if (Math.abs(e.vx) > 18 || e.lastSpeed > 18) e.turnT = 0.18; e.pFace = e.face; }
     e.lastSpeed = Math.abs(e.vx || 0);
+    if(updateBalcony(e,dt))continue;
     if (e.t === 'heart') { e.burn=0; e.bleed=0; } // the living membrane takes deliberate cuts only
     if(e.fleeT>0){e.fleeT-=dt;e.vx=e.face*100;e.vy=Math.min(300,(e.vy||0)+900*dt);moveBody(e,e.vx*dt,e.vy*dt,false);if(e.fleeT<=0)e.alive=false;continue;}
     if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { e.hp -= 2; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; number(e.x, e.y - e.h - 8, 2, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
@@ -17502,16 +17519,16 @@ function updateProps(dt) {
 // a tide pool's level: dry below its floor, wading shallow, swimming deep
 // THE FALLS: drawn over the player, a little see-through, so a cave behind one is a secret you find by walking in
 function drawFalls(cx, cy) {
-  for (const f of (L.falls || [])) { const x0 = Math.round(f.x0 - cx), w = Math.round(f.x1 - f.x0), y0 = Math.round(f.y0 - cy), h = Math.round(f.y1 - f.y0); if (x0 > VW || x0 + w < 0 || y0 > VH || y0 + h < 0) continue;
+  for (const raw of (L.falls || [])) { const f=fallBounds(raw,L.pools||[]); const x0 = Math.round(f.x0 - cx), w = Math.round(f.x1 - f.x0), y0 = Math.round(f.y0 - cy), h = Math.round(f.y1 - f.y0); if (x0 > VW || x0 + w < 0 || y0 > VH || y0 + h < 0) continue;
     const art = PROP.fallArt && (PROP.fallArt[h] || (PROP.fallArt[h] = PROP.fallArt.make ? PROP.fallArt.make(h) : null));
     g.globalAlpha = 0.86;
-    if (art && art.length) g.drawImage(art[Math.floor(time * 10) % art.length], x0, y0);
+    if (art && art.length) g.drawImage(art[Math.floor(time * 10) % art.length], x0, y0, w, h);
     else { g.fillStyle = '#7cc8c8'; g.fillRect(x0, y0, w, h); g.fillStyle = '#e8f4f0'; for (let k = 0; k < 7; k++) { const sx = x0 + 2 + ((k * 7) % (w - 4)), sy = y0 + ((Math.floor(time * 90) + k * 23) % Math.max(1, h)); g.fillRect(sx, sy, 2, Math.min(10, y0 + h - sy)); } g.fillStyle = '#4aa0a8'; g.fillRect(x0, y0, 2, h); g.fillRect(x0 + w - 2, y0, 2, h); }
     g.globalAlpha = 1;
     { const sea = L.palette && (L.palette.set === 'shore' || L.palette.set === 'reef');
-      g.fillStyle = sea ? '#4aa0a8' : '#5aa6c9'; g.fillRect(x0 - 3, y0 - 3, w + 6, 5); // the lip: the stream bending over the edge, in the stream's own colour
-      g.fillStyle = sea ? '#7cc8c8' : '#8fd0e8'; g.fillRect(x0 - 3, y0 - 3, w + 6, 1);
-      g.fillStyle = '#e8f4f0'; g.fillRect(x0 - 1, y0 + 1, w + 2, 2);
+      g.fillStyle = '#bfe6f5'; g.fillRect(x0, y0, w, 2);
+      g.fillStyle = '#7fc4e0'; g.fillRect(x0, y0 + 2, w, 1);
+      g.fillStyle = '#e8f4f0'; for(let k=0;k<5;k++){const fx=x0+2+k*4;g.fillRect(fx,y0+3+Math.floor((time*12+k)%3),2,3);}
       const by = y0 + h; g.globalAlpha = 0.85; g.fillStyle = '#e8f4f0'; // and the white water piling up where it lands
       g.beginPath(); g.ellipse(x0 + w / 2, by - 1, w * 0.62 + 3, 4 + Math.sin(time * 7) * 0.8, 0, 0, 7); g.fill();
       g.globalAlpha = 0.5; g.beginPath(); g.ellipse(x0 + w / 2, by - 1, w * 0.85 + 6, 6, 0, 0, 7); g.fill(); g.globalAlpha = 1; }

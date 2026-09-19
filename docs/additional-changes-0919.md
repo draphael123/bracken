@@ -12,11 +12,11 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 
 ## Document changes
 - [x] Highcrown: repair forge interior and lengthen foundry.
-- [ ] Highcrown: lengthen goblin-leader hall; falling goblins/chandeliers.
-- [ ] Stabilize chapel, throne-room, Hexed Woods and Mage Tower wall patterns during camera motion; repair clipped barn walls.
+- [x] Highcrown: lengthen goblin-leader hall; falling goblins/chandeliers.
+- [x] Stabilize chapel, throne-room, Hexed Woods and Mage Tower wall patterns during camera motion; repair clipped barn walls.
 - [x] Highcrown: more toppleable pillars, visible falling animation, no player damage from pillar collapse.
 - [x] Goblin Queen: new enraged attack and wall-impact vulnerability.
-- [ ] Sea: repair water/fall texture joins.
+- [x] Sea: repair water/fall texture joins.
 - [ ] Shipwreck Reef: themed platforms, grounded interiors and more environmental variety.
 - [x] Shared store music theme.
 - [ ] Flotilla/Hurricane: reachable swinging platforms; more pirate content; collapsing storm-battered ship interiors; cannon-opened doors/walls; blockable/dodgeable waves.
@@ -36,6 +36,6 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Complete relevant automated, visual and gameplay validation.
 - [ ] Deliver consolidated list of every change across both passes, with exact verification and outstanding limitations.
 
-Partial items: the leader hall is longer with falling chandeliers; falling goblins remain. Room patterns are stable and clipped; the barn facade remains. Deep breath and wave defence are complete; the crab and ship rebuild remain. Boss timing is tracked separately and is not yet accepted.
+Partial items: Deep breath and wave defence are complete; the crab and ship rebuild remain. Boss timing is tracked separately and is not yet accepted.
 
 Approved progression runtime is implemented and the 41-check suite passes. Final campaign economy, co-op gameplay and combat timing acceptance remain open.

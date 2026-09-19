@@ -105,3 +105,9 @@ Replaced the talent-point screen with coin-purchased skills and per-hero loadout
 Save migration preserves a verified raw backup before writing, retains learned skills, and refunds 25 coins per legitimately earned talent point once. Corrupt or unsupported saves are protected from overwrite. Added save export/import with destination and source backups.
 
 Verified: 41 checks passed, direct exit 0 (`outputs/20-check.log` and `.exit`). Regression fixtures cover all six heroes across six legacy versions, repeat migration, purchases, slot limits, backups, corrupt data and storage failures. Browser checks cover six heroes buying/equipping/casting skills, touch/controller/rebinding, combat restrictions and corrupt-save protection. Full text-fit audit passed. Campaign economy, co-op gameplay and final boss timing remain acceptance work.
+
+## 21. Gallery drops, scenery joins and captain defeat
+
+Three goblins now wait on supported Highcrown balconies, warn, and drop into the hall. Ambush captains must reach the normal defeat path to clear a room; accidental boundary escapes or despawns restore them at their authored footing. Fixed the waterfall lip so it meets its supplying stream, scales to the authored width and no longer draws a raised rectangular cap. Barn skins cover their foundation and climbable/breakable masonry without covering openings. Removed obsolete Sporewood sleep/storm instructions. Runtime footing fixtures now select levels by ID before campaign insertions.
+
+Verified: 43 checks passed, direct exit 0 (`outputs/21-check.log` and `.exit`). Browser regression verifies all three warned drops; captain fixtures reject escape/despawn and accept a real defeat. Captured and inspected waterfall, barn loft and gallery views (`outputs/21-joins-live`).

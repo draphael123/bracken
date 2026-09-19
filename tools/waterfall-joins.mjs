@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {fallBounds} from '../src/waterfalls.js';
+import {LEVELS} from '../src/level.js';
+const L=LEVELS.find(l=>l.id==='longwater').build();
+const joined=L.falls.map(f=>fallBounds(f,L.pools));
+assert(joined.filter(f=>f.joined).length>=3,'meltfalls should meet their supplying streams');
+for(const f of joined)assert(f.y1>f.y0);
+const f={x0:94,x1:120,y0:65,y1:140};
+assert.equal(fallBounds(f,[{x0:50,x1:100,y:66}]).y0,66);
+assert.equal(fallBounds(f,[{x0:50,x1:100,y:66,dry:true}]).y0,65);
+assert.equal(fallBounds(f,[{x0:50,x1:100,y:100}]).y0,65);
+console.log('Waterfall paint joins live stream surfaces and keeps dry or unrelated pools separate.');

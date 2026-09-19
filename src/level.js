@@ -729,7 +729,7 @@ function sporewood() {
   ent('shaman', 237, 13, { face: -1 }); ent('spitcap', 224, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
   ent('sign', 244, 13, { text: 'THE PILLARS. HOLD JUMP, OR PLUNGE INTO THE CAPS.' });
   ent('deco', 205, 13, { kind: 'deadTree', v: 0 }); ent('deco', 238, 13, { kind: 'deadTree', v: 1 }); ent('deco', 292, 13, { kind: 'deadTree', v: 0 });
-  ent('sign', 201, 13, { text: 'THE SPORE STORM COMES IN WAVES. SHELTER UNDER A LIT CAP, AND DO NOT HIT IT.' });
+  ent('sign', 201, 13, { text: 'THE CAPS GROW INTO STEPS. WAIT FOR THEM TO RISE, THEN CLIMB.' });
   coins([208, 12], [231, 11], [239, 11]);
 
   // ---- 7. The drone gauntlet: caps on pillars over the drop ----
@@ -3320,8 +3320,8 @@ function highcrownWhole() {
   { const X=762,n=48,F=grow(R,R,X,n);shiftCrown(F.R,X,n);
     F.block(X,X+n-1,20,F.R.H-1); F.block(X,X+n-1,8,9);
     F.R.interiors.push([X,X+n-1,10,19,'royal']); F.R.masonry.push([X,X+n-1,8,9],[X,X+n-1,20,26]);
-    F.ent('check',X+2,19);F.ent('sign',X+3,19,{text:'THE CAPTAINS HALL. WATCH THE CHAINS: FALLING LAMPS STRIKE BOTH SIDES.'});
-    for(const dx of [12,28,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.ent('soldier',X+dx+2,19,{face:-1}); }
+    F.ent('check',X+2,19);F.ent('sign',X+3,19,{text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
+    for(const dx of [12,28,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.plat(X+dx+1,14,3); for(let y=14;y<20;y++)F.set(X+dx+3,y,T.NET); F.ent('soldier',X+dx+2,13,{face:-1,balcony:true}); }
     F.ent('heavy',X+23,19,{face:-1});
     for(const dx of [7,22,44])F.ent('torch',X+dx,19);
     for(const dx of [9,20,34])F.ent('deco',X+dx,19,{kind:'longTable',v:0});
@@ -6748,7 +6748,7 @@ function theHexedFields() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts,
     music: 'fields', duskStart: 99999, duskLen: 1, night: true, nightA: 0.16, edgeLit: true,
     fields: { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, phantoms, shrinks, trunks, dusk: [30, 150], crypt: [659, 28],
-      skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 33, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale'], [55, 56, 32, 33, 'bale']] },
+      skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 35, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale'], [55, 56, 32, 33, 'bale']] },
     quest: { n: 3, item: 'sheep', name: 'THE LOST EWES', npc: 'shepherd', done: 'THE EWES ARE HOME', reward: 'relic', relic: 'lamp' },
     palette: { sky: [[40, 48, 96], [104, 120, 164]], far: 'fields', mid: 'fields', near: 'fields', dress: 'village', haze: 'rgba(130,150,210,0.10)',
       grass: '#7a946e', grassL: '#a4bc8e', grassD: '#4a6048', dirt: '#5e5444', dirtL: '#7a6c54', dirtD: '#3c3428', canopy: ['#161a2a', '#1e2436', '#262e44', '#303a52'] },
@@ -7081,7 +7081,7 @@ export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
-  { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS PUT YOU TO SLEEP. CLEAR THE AIR BEFORE YOU FIGHT IN IT.', build: sporewood, needs: 'stockade' },
+  { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'EIGHT FLOORS ON ONE CLIFF, AND THE WAY UP IS THROUGH THEM.', build: hangingVillage, needs: 'scree' },
