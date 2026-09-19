@@ -9,6 +9,10 @@ export function polishCoastAndTown(L,id,T){
  }
  if(id==='waymeet'){
   L.palette.ledges='awning';
+  for(const e of L.ents)if(e.t==='deco'&&e.kind==='bridgepost')e.kind='lanternPost';
+  // Two refuge bays are enough for the bridge riders. Remove the redundant raised slabs and lower their coins to the road.
+  for(const x0 of [485,513])for(let x=x0;x<x0+4;x++)if(L.grid[34*L.W+x]===T.ONEWAY)L.grid[34*L.W+x]=T.AIR;
+  for(const e of L.ents)if(e.t==='coin'&&[486,514].includes(e.x)&&e.y===33)e.y=34;
   const bad=new Set(['beanpoles','gardenWall','cairn','fallenLog','deadTree','yew']);
   L.ents=L.ents.filter(e=>!(e.t==='deco'&&bad.has(e.kind)));
   // Remove decorative miniature stone walls; keep every route tile, house roof and reward.
@@ -24,3 +28,4 @@ export function polishCoastAndTown(L,id,T){
  }
  return L;
 }
+
