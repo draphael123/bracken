@@ -134,3 +134,10 @@ Verified: every intended destination reachable in both levels, no trapped pocket
 - Targeted verification: both stages reachable; no embedded creatures, impossible pickups or traps; required Keep air leg 2.89 seconds, arena round trip 3.0 seconds; both boss defeats reach the win screen; original 60-second Keep music decodes.
 - Added a Bellguard captain guarding the great hall. Its gate blocks the throne route, the captain can be reached with the gate shut, and the encounter activates while swimming.
 - Full suite and final six-hero timing are separate acceptance gates; timing remains pending.
+
+## 25 — Coastal cargo platforms and Waymeet activity
+- Reef now places interior walls only inside the carrack and stern cabin, with separate open-water/coral/wreck tint bands and nautical decorations.
+- Replaced Reef ledges and Reef/Long Water moving stone/log platforms with cargo decking and grounded timber hoists. Waymeet uses cloth-edged awnings and work platforms, with visible posts supporting raised ledges.
+- Extended Waymeet house facades to their roof width, removed mismatched dressing and added two bottle-throwing patrons to the beer garden.
+- Live captures: outputs/25-coast-live/result.json and eight views; no browser exceptions. Full suite recorded separately in outputs/25-check.log.
+- This pass preserves required route geometry; remaining Waymeet stone-block cleanup is still tracked.
