@@ -3484,7 +3484,7 @@ function theShopSea() {
   ent('deco', 7, 17, { kind: 'seaChest' }); ent('deco', 13, 17, { kind: 'plunder', v: 0 });
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 21 }, pools: [], falls: [], moversExtra: [],
-    duskStart: -1, duskLen: 1, music: 'musSailor', night: true, shop: true, interiors: [[2, 41, 16, 21, 'ship']],
+    duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 41, 16, 21, 'ship']],
     palette: { set: 'ship', hall: true, sky: 'night', dress: 'none',
       dirt: '#4a4038', dirtL: '#5e5246', dirtD: '#2e2620', grass: '#6a5c4c', grassL: '#8a7a64', grassD: '#453c2c' },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
@@ -3502,7 +3502,7 @@ function theShopCrag() {
   ent('npc', 12, 19, { kind: 'shepherd' }); ent('npc', 35, 19, { kind: 'oldknight' });
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
-    duskStart: -1, duskLen: 1, music: 'select', night: true, shop: true, interiors: [[2, 37, 13, 19, 'stone']],
+    duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19, 'stone']],
     // No `stone` zone here. It used to carry one to mark the room as stone-dressed, but since the menhirs
     // became single organic sprites drawn OVER cleared tiles, a zone the size of the whole shop blanked
     // its floor and walls and left the keeper standing in the dark. palette.hall already dresses it.
@@ -3525,7 +3525,7 @@ function theShop() {
   ent('npc', 12, 19, { kind: 'bard' }); ent('npc', 34, 19, { kind: 'oldknight' }); // company in the store: a bard who sings the news and an old knight who knows the price of silver
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
-    duskStart: -1, duskLen: 1, music: 'select', night: true, shop: true, interiors: [[2, 37, 13, 19]],
+    duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19]],
     palette: { hall: true, sky: 'night', dress: 'none', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', grass: '#6a5a3a', grassL: '#8a7a4a', grassD: '#3a2a1a' },
     weather: [], ambient: [],
   };

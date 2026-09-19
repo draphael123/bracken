@@ -87,3 +87,13 @@ Verified: regression test covers eight interior styles with identical drawing co
 Added 40 columns of furnace approach and 48 columns of captains' gallery, with hot plates, guards, decoration, checkpoints and three unstable chandeliers that warn before dropping. Increased Queen gallery supports from three to five. Pillars visibly rotate as they fall; dropping a gallery section never damages the player. The Queen accepts damage while dazed after a wall charge, and at low health gains a told three-projectile crown rain. Updated the lab to recognize that dazed opening.
 
 Verified: live ward-versus-dazed damage comparison, new attack tell and three projectiles; collapse fixture verifies unchanged player health and Queen damage; room/attack screenshots inspected. Full 36-check suite passes, direct exit 0 (`outputs/17-check.log`). Six-hero Queen lab: 52.6/64.5/66/83/49.7/75.3 seconds, all kills, but below the 90–150 second target. Timing acceptance remains open.
+
+## 18–19. Sea rules and a shared store theme
+
+- The Deep consumes breath at half its previous rate. Hurricane waves now respect a successful guard or dodge without applying hit knockback.
+- Tollmaster replaces the final-phase flood with a lamp blackout and an exposed attack window.
+- Kraken tentacles have health bars, lose health alongside the boss and remain severed. With all arms gone he continues cargo and water attacks. Diving below the road shelters the hero from surface jets; jets flood above the road.
+- Fixed zero-health defeat handling for reflected water, cargo and bell blows; all three final-blow paths passed the browser regression.
+- All three shops share the original 40-second Warm Counter loop. WAV structure and browser decoding verified.
+- Validation: 39 checks passed, direct exit 0 (`outputs/18-check.log` and `.exit`). Live sea mechanics: `outputs/18-sea/result.json`.
+- Timing remains open. Pre-final-blow-fix boss lab: Kraken knight 144s, five timeouts (including the now-fixed zero-HP case); Tollmaster five kills 61.5–93.1s, Warden timeout at 12%. A passing harness exit is not acceptance.

@@ -130,7 +130,7 @@ export const MARK = {
   'strawking|lanternTell': '!!', 'strawking|leapTell': '!!', 'strawking|lightTell': '', 'strawking|slamTell': '!', 'strawking|sweepTell': '!!', 'suncatcher|clawTell': '!',
   'suncatcher|frostTell': '!!', 'suncatcher|hailTell': '!!', 'suncatcher|shardTell': '!', 'suncatcher|spireTell': '!!', 'swornsword|aim': '!', 'swornsword|cutTell': '!',
   'swornsword|leapTell': '!!', 'swornsword|shout': '!', 'swornsword|stabTell': '!', 'swornsword|swingTell': '!', 'thorn|wind': '!', 'tideguard|lungeTell': '!',
-  'tideguard|pinchTell': '!', 'tideguard|snapTell': '!', 'tideguard|strikeTell': '!', 'tideguard|thrustTell': '!', 'tollmaster|darkTell': '', 'tollmaster|floodTell': '',
+  'tideguard|pinchTell': '!', 'tideguard|snapTell': '!', 'tideguard|strikeTell': '!', 'tideguard|thrustTell': '!', 'tollmaster|blackoutTell': '!', 'tollmaster|darkTell': '',
   'tollmaster|ledgerTell': '!', 'tollmaster|rodTell': '!', 'tollmaster|tollTell': '!!', 'topiary|swipeTell': '!', 'troll|hurlTell': '!', 'troll|ripTell': '!!',
   'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'turret|chargeTell': '!', 'turtle|lungeTell': '!', 'turtle|pinchTell': '!',
   'turtle|snapTell': '!', 'turtle|strikeTell': '!', 'turtle|thrustTell': '!', 'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!',

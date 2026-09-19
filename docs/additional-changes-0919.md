@@ -11,21 +11,21 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Implement approved progression plan with complete legacy-node mapping, backup, migration, ownership, shop, loadouts, controls and verification.
 
 ## Document changes
-- [ ] Highcrown: repair forge interior and lengthen foundry.
+- [x] Highcrown: repair forge interior and lengthen foundry.
 - [ ] Highcrown: lengthen goblin-leader hall; falling goblins/chandeliers.
 - [ ] Stabilize chapel, throne-room, Hexed Woods and Mage Tower wall patterns during camera motion; repair clipped barn walls.
-- [ ] Highcrown: more toppleable pillars, visible falling animation, no player damage from pillar collapse.
-- [ ] Goblin Queen: new enraged attack and wall-impact vulnerability.
+- [x] Highcrown: more toppleable pillars, visible falling animation, no player damage from pillar collapse.
+- [x] Goblin Queen: new enraged attack and wall-impact vulnerability.
 - [ ] Sea: repair water/fall texture joins.
 - [ ] Shipwreck Reef: themed platforms, grounded interiors and more environmental variety.
-- [ ] Shared store music theme.
+- [x] Shared store music theme.
 - [ ] Flotilla/Hurricane: reachable swinging platforms; more pirate content; collapsing storm-battered ship interiors; cannon-opened doors/walls; blockable/dodgeable waves.
 - [ ] Lamplit Street: more decorations, ghost and skeleton pirate enemies; remove goblin archers; clearer climb-down cues; fix pictured impossible jump.
-- [ ] Tollmaster: remove arena flooding; add lamp/darkness attack.
+- [x] Tollmaster: remove arena flooding; add lamp/darkness attack.
 - [ ] The Deep: half-speed breath depletion; new diving-bell crab boss.
 - [ ] Underwater Keep: move Drowned King here; design fight and add unique enemy.
 - [ ] Drowned Causeway: unique enemy, miniboss, pirates, flooded skeleton-pirate ship, visual variety.
-- [ ] Kraken: underwater shelter against surface attacks, surface flooding, tentacle HP bars, permanent severing linked to boss HP, cargo/water attacks after all arms die.
+- [x] Kraken: underwater shelter against surface attacks, surface flooding, tentacle HP bars, permanent severing linked to boss HP, cargo/water attacks after all arms die.
 - [ ] New storm-wrecked harbor between Causeway and Waymeet.
 - [ ] Waymeet: remove sandcastle/unsuitable tree and log imagery, floating blocks and unnecessary stone platforms; add activity to sparse section.
 - [ ] Waymeet rock-clinging reward: make functional, health reward if appropriate.
@@ -35,3 +35,5 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Mage Tower: wizard remains final boss; move familiar to collapsing-tower sequel as miniboss.
 - [ ] Complete relevant automated, visual and gameplay validation.
 - [ ] Deliver consolidated list of every change across both passes, with exact verification and outstanding limitations.
+
+Partial items: the leader hall is longer with falling chandeliers; falling goblins remain. Room patterns are stable and clipped; the barn facade remains. Deep breath and wave defence are complete; the crab and ship rebuild remain. Boss timing is tracked separately and is not yet accepted.

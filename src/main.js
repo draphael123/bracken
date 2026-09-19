@@ -6915,7 +6915,7 @@ function updatePlayer(dt) {
     else if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
     const bell = nearAir(P.x, P.y - 8);
     if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5); P.drownT = 0; }
-    else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
+    else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1) * (curId() === 'deep' ? 0.5 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
       if (P.breath <= 0) { P.breath = 0; P.drownT = (P.drownT || 0) - dt;
         if (Math.random() < dt * 26) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - 14, vx: 0, vy: -50, life: 0.5, max: 0.5, col: '#e8f4f0', size: 1, grav: -40 });
         if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true, noKnock: true, name: 'DROWNED' }); } } }
@@ -7528,7 +7528,8 @@ function updateWash(dt) {
       P.washed = 0.8;
       if (!held && P.dodge > 0) { number(P.x, P.y - 30, 'UNDER IT', '#8fd160'); SFX.splash(); shakeCam(3); P.vx = wash.dir * 60; return; } // a roll goes under the crest
       if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash(); shakeCam(4); P.vx = wash.dir * 90; }
-      else { damagePlayer(P.x, Math.round(L.wash.dmg * stormK('dmg')), { unblockable: true, up: true });
+      else { const res = damagePlayer(P.x - wash.dir * 40, Math.round(L.wash.dmg * stormK('dmg')), { up: true });
+        if (res !== 'hit') { number(P.x, P.y - 30, res === 'blocked' ? 'BRACED' : 'THROUGH IT', '#8fd160'); SFX.splash(); return; }
         // it throws you down her deck, never straight off her: the rail stops the throw, so there is always
         // one beat on the far side of it to catch a line
         const rail = wash.dir > 0 ? W.x1 - 24 : W.x0 + 24, room = (rail - P.x) * wash.dir;
@@ -8856,15 +8857,15 @@ function cutLine(e, k) {
 //   THE DARK    (the signature) he puts out a ring of lamps, and the room gets smaller. While he does it he is
 //               stood still with both hands over his head and everything lands DOUBLE on him.
 // Phase two he sets the bier down and the four bearers come off it, and that is the only time he is slow.
-// Phase three he floods the square, and the last lamp is the only air in the room.
+// At low health he blacks out the lamps; relighting them restores the room.
 function updateTollmaster(e, dt) {
   const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt;
   const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 46;
   if (e.mode === 'sleep') { e.y = floor; return; }
   if (e.phase === 1 && e.hp < e.maxHp * 0.62) { e.phase = 2; e.mode = 'setDown'; e.modeT = 1.4; e.vx = 0;
     SFX.gateDrop ? SFX.gateDrop() : SFX.heavy(); shakeCam(6); number(e.x, e.y - 52, 'SET HIM DOWN', '#ffd36b'); }
-  if (e.phase === 2 && e.hp < e.maxHp * 0.3) { e.phase = 3; e.mode = 'floodTell'; e.modeT = 1.6; e.vx = 0;
-    SFX.waveCrash ? SFX.waveCrash() : SFX.wave(); number(e.x, e.y - 52, 'HE CALLS THE WATER UP', '#ff6b6b'); }
+  if (e.phase === 2 && e.hp < e.maxHp * 0.3) { e.phase = 3; e.mode = 'blackoutTell'; number(e.x,e.y-e.h-12,'!','#ffd36b'); e.modeT = 1.6; e.vx = 0;
+    SFX.waveCrash ? SFX.waveCrash() : SFX.wave(); number(e.x, e.y - 52, 'HE TAKES THE LIGHT', '#ff6b6b'); }
   const p2 = e.phase >= 2, p3 = e.phase >= 3;
   let want = 0;
   switch (e.mode) {
@@ -8917,13 +8918,9 @@ function updateTollmaster(e, dt) {
         SFX.gobBark ? SFX.gobBark() : SFX.clank(); number(e.x, e.y - 50, 'THEY COME OFF THE BIER', '#ff9a5c');
         e.mode = 'borne'; e.modeT = 0.6; }
       break; }
-    case 'floodTell': { want = 0; // THE SQUARE FILLS. The lamps are the only air left in the room.
-      if (Math.random() < dt * 40) parts.push({ x: A.x0 + Math.random() * (A.x1 - A.x0), y: floor - Math.random() * 10, vx: 0, vy: -60, life: 0.6, max: 0.6, col: '#7cc8c8', size: 2, grav: -40 });
-      if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.8; e.flooded = true;
-        const sq = (L.pools || []).find(q => q.square);
-        if (sq) { sq.base = floor + 8; sq.swim = true; sq.rising = floor - 256; number(P.x, P.y - 50, 'THE SQUARE IS FILLING', '#7cc8c8'); }
-        SFX.waveBreak(); shakeCam(8); }
-      break; }
+    case 'blackoutTell': want = 0;
+      if (e.modeT <= 0) { tollDark(e); e.open = 2; e.mode = 'dark'; e.modeT = 2; number(e.x,e.y-54,'HIS HANDS ARE UP: CUT HIM','#8fd160'); }
+      break;
     case 'dead': return;
   }
   if (e.stagger > 0) want = 0;
@@ -10628,10 +10625,7 @@ function krkArmPts(a, fl, limpT) {
 }
 function krakenSplash(x, y, n) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 24, y: y + 4, vx: (Math.random() - 0.5) * 140, vy: -120 - Math.random() * 200, life: 0.9, max: 0.9, col: Math.random() < 0.5 ? '#dff0f5' : '#7cc8c8', size: 2, grav: 520 }); }
 function krakenSever(K, a) {
-  /* OUT AT THE TIDE a cut arm is not lost: it goes back under hurt, and it is up again when the arms next come */
-  if ((K.stage === 2 && a.two) || (K.stage >= 3 && a.regrown)) { a.st = 'retreat'; a.t = 1.2; a.low = false; if (K.stage >= 3) a.back = 6;   /* (in the maw it is up again six seconds later) */ if (a.ae) a.ae.alive = false; if (K.mode === 'held' && K.armI === a.i) { K.mode = K.back; K.modeT = 0.6; }
-    for (let i = 0; i < 24; i++) parts.push({ x: a.tx + (Math.random() - 0.5) * 24, y: a.ty - Math.random() * 16, vx: (Math.random() - 0.5) * 180, vy: -60 - Math.random() * 180, life: 1, max: 1, col: ['#161018', '#7c3a4a', '#e6c2a6'][(Math.random() * 3) | 0], size: 2, grav: 420 });
-    hitstop(0.08); shakeCam(6); ringAt(a.tx, a.ty - 8, 26, '#e6c2a6', 0.4); SFX.crack(); SFX.bellow(); return; }
+  a.severed = true; a.hp = 0; a.back = 0;
   a.snap = krkArmPts(a, L.arena.floor, 0); a.cutT = 0; a.st = 'gone'; a.low = false; if (a.ae) a.ae.alive = false;
   if (K.mode === 'held' && K.armI === a.i) { K.mode = K.back; K.modeT = 0.6; }
   for (let i = 0; i < 46; i++) parts.push({ x: a.tx + (Math.random() - 0.5) * 30, y: a.ty - Math.random() * 20, vx: (Math.random() - 0.5) * 220, vy: -60 - Math.random() * 220, life: 1.2, max: 1.2, col: ['#161018', '#161018', '#7c3a4a', '#e6c2a6'][(Math.random() * 4) | 0], size: 2, grav: 420 });
@@ -10659,7 +10653,7 @@ function krakenAim(e) { const A = L.arena, beak0 = e.headX - 46; let stop = Math
   e.lungeStop = stop; e.lungeStuck = stuck; e.lungeX0 = e.headX; }
 function krakenArmsTick(e, dt) {
   const fl = L.arena.floor, ease = (a, x, y, k) => { a.tx += (x - a.tx) * Math.min(1, dt * k); a.ty += (y - a.ty) * Math.min(1, dt * k); };
-  for (const a of e.arms) { if (a.flash > 0) a.flash -= dt;
+  for (const a of e.arms) { if (a.severed) { a.st = 'gone'; a.low = false; a.cutT = (a.cutT || 0) + dt; if (a.ae) a.ae.alive = false; continue; } if (a.flash > 0) a.flash -= dt;
     switch (a.st) {
       case 'hid': ease(a, a.bx, fl + 60, 3); a.low = false;
         /* IN THE MAW A CUT ARM COMES BACK: the body is out of reach now, and an arm lost for good would leave the stage nothing to cut */
@@ -10705,7 +10699,7 @@ function krakenHurt(e, dmg, fromX, plunge) {
         for (const q of K.arms) if ((pin ? q.spear : q.two) && q.low && !krkLost(q) && q.st !== 'hold') { if (q.spear) { q.st = 'retreat'; q.t = 0.8; } else { q.st = 'drag'; q.t = 0.5; } q.low = false; }
         SFX.bellow(); } }
     const through = knell || pin || a.spear;
-    const take = through ? d : Math.min(d, a.hp); if (!through) a.hp -= d; e.hp = Math.max(0, a.hp); e.flash = 0.12; a.flash = 0.12;
+    const take = Math.min(d, a.hp); a.hp -= take; e.hp = Math.max(0, a.hp); e.flash = 0.12; a.flash = 0.12;
     /* THE LAST CUT is a blow on him, so it goes through hurtEnemy and he dies the way every boss does */
     krakenLedger(K, knell ? 'knell' : pin ? 'pin' : look ? 'look' : a.spear ? 'spear' : 'arm' + K.stage, take);
     if (K.stage >= 3 && K.hp - take <= 0) { K.passThrough = true; hurtEnemy(K, take, fromX, false); }
@@ -10729,11 +10723,11 @@ const krkLost = a => !a || a.st === 'gone' || a.st === 'retreat' || a.st === 'hi
    through to him two and a half times (krakenHurt). The eye he used to lay on the road is out of reach now; the arms are not */
 function krakenKnell(e) { const A = L.arena, fl = A.floor, chunk = Math.round(e.maxHp * 0.06); e.knellHit = false; e.openTaken = 0; e.mode = 'knelled'; e.modeT = 4.2; e.stagger = 4.2;
   krakenLedger(e, 'bell', Math.min(chunk, e.hp - e.stageFloor)); e.hp = Math.max(e.stageFloor, e.hp - chunk); e.flash = 0.3; e.recoil = 1; const eye = krakenEyeAt(e); number(eye.x, eye.y - 16, chunk, '#ffd36b');
-  krakenArmsLimp(e, 4.2);
+  krakenArmsLimp(e, 4.2); if (e.hp <= 0) { e.hp = 1; e.passThrough = true; hurtEnemy(e, 1, e.x, false); }
   SFX.bellow(); SFX.seaBell(); shakeCam(9); zoomKick(1.08, 0.3); }
 /* BOTH ARMS DOWN ACROSS THE ROAD, still: slapped down landward from where they come out of the sea, and lying there for `t` */
 function krakenArmsLimp(e, t) { const fl = L.arena.floor;
-  for (const a of e.arms) if (a.two && a.st !== 'gone') { const hp = Math.max(a.hp > 0 && !krkLost(a) ? a.hp : 0, Math.max(16, Math.round(a.max * 0.75)));
+  for (const a of e.arms) if (a.two && !a.severed && a.hp > 0) { const hp = a.hp;
     a.st = 'stun'; a.t = t; a.low = true; a.hp = hp; a.tx = a.bx + a.side * 78; a.ty = fl - 6; a.flash = 0; if (a.ae) { a.ae.alive = true; a.ae.hp = hp; a.ae.maxHp = Math.max(a.ae.maxHp || 0, hp); }
     krakenSplash(a.bx, fl, 12); dust(a.tx, fl, 8); }
   SFX.thud(); shakeCam(5); }
@@ -10741,7 +10735,7 @@ const krakenBreathing = b => b.mode === 'breath' || b.mode === 'surface';
 /* OUT AT SEA, AND WHILE IT BREATHES, THE ROAD IS CLEAR OF ARMS: whatever way the fight came into the far water, the arms go under */
 function krakenArmsUnder(e) { for (const a of e.arms) if (a.two && !krkLost(a) && a.st !== 'hold') { a.st = 'retreat'; a.t = 1; a.low = false; if (a.ae) a.ae.alive = false; } }
 function krakenArmsUp(e) { const fl = L.arena.floor;
-  for (const a of e.arms) if (a.two) { const hp = Math.max(16, Math.round(a.max * 0.75)); a.st = 'idle'; a.hp = hp; a.low = false; a.tx = a.bx; a.ty = fl - 20; a.flash = 0; if (a.ae) { a.ae.alive = true; a.ae.hp = hp; a.ae.maxHp = hp; } krakenSplash(a.bx, fl, 14); }
+  for (const a of e.arms) if (a.two && !a.severed && a.hp > 0) { const hp = a.hp; a.st = 'idle'; a.hp = hp; a.low = false; a.tx = a.bx; a.ty = fl - 20; a.flash = 0; if (a.ae) { a.ae.alive = true; a.ae.hp = hp; a.ae.maxHp = hp; } krakenSplash(a.bx, fl, 14); }
   SFX.splash(); shakeCam(4); }
 // ---- II. OUT AT SEA: what it throws, the water it shoots, and what stays on the road afterwards ----
 /* A CRATE MAY COME DOWN where the road is whole, there is room over it, and it would not sit in a break, on a bell or a stone */
@@ -10829,6 +10823,7 @@ function krakenShard(e, x, k = 'crate') {
 /* where a throw is going, while it flies: at his eye as he is NOW, so a throw at a body that is moving still comes down on it */
 function krakenShardAim(e, sh) { const eye = krakenEyeAt(e); if (eye.up > 0.15) { sh.tx += (eye.x - sh.tx) * 0.2; sh.ty += (eye.y - sh.ty) * 0.2; } }
 function krakenLandShard(e, sh) {
+  if (!e.alive) return;
   const A = L.arena, fl = A.floor, x = sh.x, y = sh.y, eyeHit = e.mode === 'look' || e.mode === 'knelled';
   const washBack = () => { if (e.stage === 2 && e.crates.length + e.drift.length < KRK_CRATE_MAX) { const n0 = e.drift.length; krakenTideCrate(e); if (e.drift.length > n0) e.drift[e.drift.length - 1].t = -0.9; } };
   if (krakenCargoPays(e)) {
@@ -10841,6 +10836,7 @@ function krakenLandShard(e, sh) {
       ringAt(x, y, eyeHit ? 30 : 22, '#fff6c8', 0.35); hitstop(eyeHit ? 0.09 : 0.06); shakeCam(eyeHit ? 8 : 6); SFX.crack(); SFX.heavy(); SFX.bellow();
       /* STUNG OUT IN THE FAR WATER: he breaks off the volley and comes up for air EARLY. The cargo does not replace the bell - it rings it sooner */
       if ((e.far || 0) > 0.3) { e.stung = true; krakenSplash(x, y + 20, 12); SFX.splash(); }
+      if (e.hp <= 0) { e.hp = 1; e.passThrough = true; hurtEnemy(e, 1, x, false); }
       return; }
     /* (at the floor of the stage there is nothing left in this stage to take: it glances, and says so) */ }
   if ((e.lurk || 0) > 0.5 || (e.near || 0) > 0.2 || (e.far || 0) > 0.15) {   /* LOW IN THE WATER: off the dome */
@@ -10963,8 +10959,8 @@ function updateKraken(e, dt) {
   const pick = arr => arr.slice().sort((a, b) => near(a) - near(b))[0], onRoad = P.y > fl - 20;
   if (e.inkT > 0) e.inkT -= dt;
   /* THE TURNS OF THE FIGHT */
-  if (e.stage === 1 && e.mode !== 'wake' && e.mode !== 'emerge' && e.arms.every(a => a.st === 'gone')) { e.mode = 'rise1'; e.modeT = 3.6; e.stage = 2; e.turnAt = [e.fightT]; e.phase = 2; e.hp = Math.min(e.hp, e.stageFloor); e.stageFloor = Math.round(e.maxHp * 0.35); e.back = 'stride2'; }
-  if (e.stage === 2 && e.hp <= e.stageFloor && e.mode !== 'rise1' && e.mode !== 'rise2') { krakenTideOut(e); (e.turnAt = e.turnAt || []).push(e.fightT); e.mode = 'rise2'; e.modeT = 3.8; e.stage = 3; e.phase = 3; e.stageFloor = 0; e.back = 'stride3'; }
+  if (e.stage === 1 && e.mode !== 'wake' && e.mode !== 'emerge' && e.arms.every(a => a.st === 'gone')) { e.mode = 'rise1'; e.modeT = 3.6; e.stage = 2; e.turnAt = [e.fightT]; e.phase = 2; e.hp = Math.min(e.hp, e.stageFloor); e.stageFloor = 0; e.back = 'stride2'; }
+  if (e.stage === 2 && e.arms.some(a => !a.severed) && e.hp <= e.stageFloor && e.mode !== 'rise1' && e.mode !== 'rise2') { krakenTideOut(e); (e.turnAt = e.turnAt || []).push(e.fightT); e.mode = 'rise2'; e.modeT = 3.8; e.stage = 3; e.phase = 3; e.stageFloor = 0; e.back = 'stride3'; }
   /* THE CARGO ARRIVES ON ITS OWN CLOCK, NOT ON HIS. Whatever he happens to be doing - arms on the road, out in the far water, up for
      air, up out of the drain - the flood is still running landward over the wreck field and still laying cargo on the stones. That is
      the change: a player always has something to work with, and never has to wait for him to throw one */
@@ -11033,7 +11029,7 @@ function updateKraken(e, dt) {
     case 'rise1': { const k = 1 - Math.max(0, e.modeT) / 3.6; e.skyT = 0.6; e.lurkWant = 0; e.nearWant = k > 0.12 && k < 0.7 ? 1 : 0; if (Math.random() < dt * 10) shakeCam(3);   /* up close behind the end of the road to roar, and down again */
       if (k > 0.3 && !e.roared1) { e.roared1 = true; SFX.roar(); SFX.boreRoar(); shakeCam(13); zoomKick(1.14, 0.6); flash = Math.max(flash, 0.15); if (!P.dead && Math.abs(P.y - fl) < 40) P.vx = -220; }
       if (k > 0.62 && !e.broke) { e.broke = true; krakenBreakRoad(); }
-      if (k > 0.8 && !e.armsBack) { e.armsBack = true; for (const a of e.arms) if (a.i === 0 || a.i === 3) a.two = true; krakenArmsUp(e); }   /* and two arms come back up out of the sea, thinner and quicker */
+      if (k > 0.8 && !e.armsBack) { e.armsBack = true; for (const a of e.arms) if (!a.severed && (a.i === 0 || a.i === 3)) a.two = true; krakenArmsUp(e); }   /* and two arms come back up out of the sea, thinner and quicker */
       if (e.modeT <= 0) { e.mode = 'stride2'; e.modeT = 0.9; e.T.beat = 9; e.T.hurl = 0.6; e.T.arm = 1.6; e.T.crate = 0.4; e.T.look = 4.5; } break; }
     /* ---------------- II. OUT AT SEA ---------------- */
     /* THE ARMS AND THE CARGO: two arms back up out of the sea, quicker than the four were, and what the wreck field held comes down on
@@ -11077,7 +11073,7 @@ function updateKraken(e, dt) {
        keep to the road. Whatever stands taller than the lane throws a shadow the water cannot reach, and the lane shows where */
     case 'jetTell': krakenLee(e); if (e.modeT <= 0) { e.mode = 'jet'; e.modeT = 1.35; e.jetHit = false; e.jetFront = A.x1 + 24; SFX.waveCrash(); SFX.hiss(); shakeCam(4); } break;
     case 'jet': { e.jetFront -= 620 * dt; const band = krakenBand(e), end = Math.max(A.x0, e.jetFront);
-      if (!e.jetHit && !P.dead && !P.swim && P.x > end && P.y > band[0] && P.y - P.h < band[1] && !krakenInLee(e, P.x)) { e.jetHit = true; const res = damagePlayer(A.x1, DMG.krakJet, { unblockable: true }); if (res === 'hit') { P.vx = -250; P.vy = e.jetHigh ? -90 : -210; P.ground = false; } }
+      if (!e.jetHit && !P.dead && !(P.y - P.h > fl + 4) && P.x > end && P.y > band[0] && P.y - P.h < band[1] && !krakenInLee(e, P.x)) { e.jetHit = true; const res = damagePlayer(A.x1, DMG.krakJet, { unblockable: true }); if (res === 'hit') { P.vx = -250; P.vy = e.jetHigh ? -90 : -210; P.ground = false; } }
       krakenJetWorks(e, end);
       if (e.modeT <= 0) { e.jetFront = null; e.mode = 'far'; e.modeT = 0.5; } break; }
     /* THE VOLLEY: it rears and spits the sea in balls that come down on marks. The shield turns one; a blade struck into one as it comes
@@ -11086,7 +11082,7 @@ function updateKraken(e, dt) {
     case 'orbs': { const hb = attackBox();
       for (const o of e.orbs) { o.t += dt;
         if (o.mx === null && o.t >= 0) { o.mx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x + [0, -52, 52, 0][o.i] + P.vx * 0.35)); o.from = krakenMouth(e); SFX.spit(); }
-        if (o.ret > 0) { o.ret += dt; if (o.ret > 0.7 && !o.done) { o.done = true; e.stung = true; krakenLedger(e, 'orb', 8); e.hp = Math.max(e.stageFloor, e.hp - 8); e.flash = 0.2; SFX.bellow(); SFX.splash(); shakeCam(6); } continue; }
+        if (o.ret > 0) { o.ret += dt; if (o.ret > 0.7 && !o.done && e.alive) { o.done = true; e.stung = true; krakenLedger(e, 'orb', 8); e.hp = Math.max(e.stageFloor, e.hp - 8); if (e.hp <= 0) { e.hp = 1; e.passThrough = true; hurtEnemy(e, 1, e.x, false); } e.flash = 0.2; SFX.bellow(); SFX.splash(); shakeCam(6); } continue; }
         if (o.done || o.mx === null) continue;
         const q = krakenOrbAt(e, o);
         if (hb && o.t > o.dur - 0.4 && overlap(hb, { l: q.x - 8, r: q.x + 8, t: q.y - 8, b: q.y + 8 })) { o.ret = 0.001; o.rx = q.x; o.ry = q.y; SFX.parry(); hitstop(0.06); sparks(q.x, q.y, P.face, 6); ringAt(q.x, q.y, 22, '#8fd160', 0.4); continue; }
@@ -11128,7 +11124,7 @@ function updateKraken(e, dt) {
       if (Math.random() < dt * 8) shakeCam(4);
       if (k > 0.2 && !e.bolted) { e.bolted = true; bolts.push({ x: A.x1 - 90, y: fl - 200, life: 0.5, storm: true }); SFX.thunder(); flash = Math.max(flash, 0.3); }
       if (k > 0.5 && !e.roared2) { e.roared2 = true; SFX.roar(); SFX.bellow(); shakeCam(15); zoomKick(1.16, 0.7); if (!P.dead && Math.abs(P.y - fl) < 40) P.vx = -260;
-        for (const a of e.arms) if (a.i === 1 || a.i === 2) { a.st = 'idle'; a.regrown = true; a.hp = a.max; a.low = false; a.tx = a.bx; a.ty = fl - 20; if (a.ae) { a.ae.alive = true; a.ae.hp = a.max; } krakenSplash(a.bx, fl, 18); } }
+        for (const a of e.arms) if (!a.severed && (a.i === 1 || a.i === 2)) { a.st = 'idle'; a.regrown = true; a.hp = a.max; a.low = false; a.tx = a.bx; a.ty = fl - 20; if (a.ae) { a.ae.alive = true; a.ae.hp = a.max; } krakenSplash(a.bx, fl, 18); } }
       if (e.modeT <= 0) { e.mode = 'stride3'; e.modeT = 1; e.T.lunge = 0.5; e.T.roar = 5; e.T.roll = 11; e.T.slam = 3; e.T.sweep = 7; e.T.rake = 4; e.T.grab = 999; e.T.look = 999; } break; }   /* the look is the tide's beat: in the maw he is up, and stays up */
     /* ---------------- III. THE MAW ---------------- */
     case 'stride3': { e.nearWant = 1; if (e.modeT > 0 || P.dead) break;
@@ -11167,7 +11163,7 @@ function updateKraken(e, dt) {
   // THE BODY UNDER IT ALL: the sea it stands in, the head, and what of it can be struck
   e.far += ((e.farWant || 0) - e.far) * Math.min(1, dt * (e.farWant > e.far ? 1.2 : 2));
   /* A BREAK FILLED TO THE BRIM by its jet or its spout: the sea stands at the road's edge a moment, and runs landward with a swimmer in it */
-  if (e.stage === 2) { if (e.brimT > 0) { e.brimT -= dt; e.seaWant = fl + 3; if (sea) sea.flow = P.swim ? -90 : 0; } else if (e.mode !== 'rise2') { e.seaWant = fl + 2 * TS; if (sea && sea.flow) sea.flow = 0; } }
+  if (e.stage === 2) { if (e.mode === 'jet' || e.mode === 'jetTell') { e.seaWant = fl - 18; } else if (e.brimT > 0) { e.brimT -= dt; e.seaWant = fl + 3; if (sea) sea.flow = P.swim ? -90 : 0; } else if (e.mode !== 'rise2') { e.seaWant = fl + 2 * TS; if (sea && sea.flow) sea.flow = 0; } }
   krakenCargoTick(e, dt);
   e.seaY += (e.seaWant - e.seaY) * Math.min(1, dt * 2.2); if (sea) poolLevel(sea, e.seaY);
   e.near += ((e.nearWant || 0) - e.near) * Math.min(1, dt * (e.nearWant > e.near ? 2.5 : 3));
@@ -11274,7 +11270,10 @@ function drawKraken(e, cx, cy) {
   const art = krkArt(), fl = A.floor, deadT = e.alive ? null : time - (e.deadAt || time);
   /* ONLY HIS ARMS ARE DRAWN HERE, on the road. His body is in the background (drawKrakenFar, from the sky pass): it is never drawn over
      the stones, and there is no head left that could be */
-  for (const a of e.arms) drawKrakArm(a, cx, cy, art, fl, deadT);
+  for (const a of e.arms) { drawKrakArm(a, cx, cy, art, fl, deadT);
+    if (e.alive && !a.severed && a.st !== 'hid' && a.st !== 'gone') { const x = Math.round(a.tx-cx)-12,y=Math.round(a.ty-cy)-28;
+      g.fillStyle='#15121d';g.fillRect(x-1,y-1,26,5);g.fillStyle='#50303c';g.fillRect(x,y,24,3);g.fillStyle='#e6b99a';g.fillRect(x,y,Math.round(24*Math.max(0,a.hp)/a.max),3); }
+  }
 }
 // THE PROPS OF THE ROAD: the tide bells, and the old tower's bell in the Kraken's reach
 function drawCauseProps(cx, cy) {
@@ -16585,7 +16584,7 @@ function drawCritters(cx, cy) {
 
 // ---------- enemies ----------
 // every enemy that winds up says so: the pose, the mark, and now a sound (a glint for the small, a bell for the big)
-const windingUp = e => (e.t === 'mother' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'golem' && e.mode === 'sweepTell') || (e.t === 'fledgling' && e.mode === 'peckTell') || (e.t === 'archmage' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'homunculus' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'strawking' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'kraken' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'floodTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell' || e.mode === 'whirlTell' || e.mode === 'gulpTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
+const windingUp = e => (e.t === 'mother' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'golem' && e.mode === 'sweepTell') || (e.t === 'fledgling' && e.mode === 'peckTell') || (e.t === 'archmage' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'homunculus' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'strawking' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'kraken' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'blackoutTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell' || e.mode === 'whirlTell' || e.mode === 'gulpTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -19896,7 +19895,7 @@ function drawWorld(cx, cy, showPlayer) {
       frame = ({ reel: 18, stumble: 19, planted: 12, couch: 5, thrustTell: 8, thrust: 9, sweepTell: 10, sweep: 11, bashTell: p2 ? 13 : 25, bash: p2 ? 16 : 26, vaultTell: 20, vault: 21, javTell: 22, javThrow: 23, rise: 24, guardTell: 14, guardSwing: 15, rushTell: 16 })[e.mode];
       if (frame === undefined) frame = e.mode === 'charge' ? 6 + Math.floor(e.anim * 12) % 2 : e.mode === 'rush' ? 16 + Math.floor(e.anim * 12) % 2 : e.mode === 'recover' ? (p2 ? 15 : 9) : (p2 || e.mode === 'guard') ? (mv ? 27 + Math.floor(e.anim * 8) % 2 : 13) : (mv ? 1 + Math.floor(e.anim * 9) % 4 : 0); }
     else if (e.t === 'tollmaster') frame = e.mode === 'ledgerTell' ? 1 : e.mode === 'ledger' ? 2 : e.mode === 'tollTell' ? 3 : e.mode === 'toll' ? 4
-      : e.mode === 'darkTell' ? 5 : e.mode === 'dark' ? 6 : e.mode === 'setDown' ? 7 : e.mode === 'floodTell' ? 10
+      : e.mode === 'darkTell' ? 5 : e.mode === 'dark' ? 6 : e.mode === 'setDown' ? 7 : e.mode === 'blackoutTell' ? 10
       : e.dying > 0 ? 12 : (e.stagger > 0 || e.mode === 'reel') ? 11 : e.mode === 'rodTell' ? 5 : e.mode === 'rod' ? 7
       : e.onFoot ? (Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 5) % 2 ? 9 : 8) : 8) : 0;
     else if (e.t === 'lampreeve') frame = e.mode === 'snuffTell' ? 4 : e.mode === 'snuff' ? 5 : e.mode === 'reach' ? 4
