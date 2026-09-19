@@ -117,3 +117,11 @@ Verified: 43 checks passed, direct exit 0 (`outputs/21-check.log` and `.exit`). 
 Climbing spurs now grip ordinary stone and ice walls while holding toward them, instead of only stopping slides on specially marked climbing tiles. All six heroes held a plain stone wall and jumped away in the browser regression. The Paladin gains a low unblockable oath sweep (jump it) and three fixed unblockable radiance columns (move between them), both restricted to enrage and followed by a 1.6-second opening. Added ground/column warnings, poses and bestiary instructions; regenerated tell metadata with the approved tool.
 
 Verified: forced both attacks in the live boss fight, including recovery openings; regression proves enrage gates, unblockable damage, jump/position counters. Full 45-check suite passed, direct exit 0 (`outputs/22-check.log` and `.exit`). Live attack receipt and captures: `outputs/22-paladin-live/result.json`. Final six-hero timing remains open.
+
+## 23. Stormwreck Harbor and the Burial Caverns
+
+Added two complete connecting stages. Stormwreck Harbor has broken quays, swim recovery nets, a customs hold and gallery, salvage cranes with high cargo, and a guarded inland exit. The Burial Caverns descend through candle paths, ossuary shelves, a sunken bridge with permanent recovery stairs/nets, and the sexton's guarded vault. Both have rewards, checkpoints, medals, their own original music, and named mini-boss encounters. The caverns use a new camera-stable ossuary wall style; harbor rain stops inside covered rooms.
+
+Campaign now follows Causeway -> Harbor -> Waymeet -> Hexed Fields -> Burial Caverns -> Mage. Map stop indices are derived from actual node positions, and saved map locations use stable IDs with a legacy-index fallback.
+
+Verified: every intended destination reachable in both levels, no trapped pockets, guardian gates hold the exits with each guardian reachable from the entrance. Live defeats open both gates and both exits finish their levels; music decodes at 48 and 53.33 seconds. Inspected four level views and both map connections. Full 47-check suite passed, direct exit 0 (`outputs/23-check.log` and `.exit`); live receipt `outputs/23-areas-live/result.json`. Final campaign economy and encounter timing remain open.

@@ -126,3 +126,5 @@ NOTE: boss4.ogg and king.mp3 are the same recording ("Great Boss"), and musSailo
 
 Original procedural music created for BRACKEN:
 - store.wav = "The Warm Counter", a 40-second, 96 BPM loop with plucked arpeggios, flute melody, bass and brushed percussion. Generated locally for this change; no sampled recordings. All three shops share this theme.
+
+Stormwreck Harbor (48s, 6/8) and The Burial Caverns (53.33s, 4/4): original synthesized compositions created for BRACKEN by Codex, 2026-09-19; no external samples.

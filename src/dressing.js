@@ -1,5 +1,7 @@
 // Per-level ground kits and allowed decoration kinds. Add a kind deliberately here before placing it.
 export const GROUND_KITS = {
+  "harbor": {"density":0,"kinds":[]},
+  "burial": {"density":0,"kinds":[]},
   "wood": {
     "density": 0.7,
     "kinds": [
@@ -252,6 +254,8 @@ export const GROUND_KITS = {
   }
 };
 export const ALLOWED_DECORATIONS = {
+  "harbor": ["pierPost","rumBarrels","wreckBow","anchor","mastStump","kegStack","chartTable","seaChest","plunder","capstan","coiledCable","lanternDeck","waterButt","cannon","netPoles","snow","stem"],
+  "burial": ["grave","bones","coffer","candelabra","snow","stem"],
   "wood": [
     "beehive",
     "birdhouse",

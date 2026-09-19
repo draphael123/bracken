@@ -26,11 +26,11 @@ Approved by Daniel: diving-bell crab for The Deep; storm-wrecked harbor between 
 - [ ] Underwater Keep: move Drowned King here; design fight and add unique enemy.
 - [ ] Drowned Causeway: unique enemy, miniboss, pirates, flooded skeleton-pirate ship, visual variety.
 - [x] Kraken: underwater shelter against surface attacks, surface flooding, tentacle HP bars, permanent severing linked to boss HP, cargo/water attacks after all arms die.
-- [ ] New storm-wrecked harbor between Causeway and Waymeet.
+- [x] New storm-wrecked harbor between Causeway and Waymeet.
 - [ ] Waymeet: remove sandcastle/unsuitable tree and log imagery, floating blocks and unnecessary stone platforms; add activity to sparse section.
 - [x] Waymeet rock-clinging reward: make functional, health reward if appropriate.
 - [x] Enraged paladin boss: more attacks including unblockable attacks.
-- [ ] New haunted burial caverns between Hexed Woods and Mage Tower.
+- [x] New haunted burial caverns between Hexed Woods and Mage Tower.
 - [ ] Mage Tower: masonry/tower theme, themed platforms/decor/background, remove campfire/poison pool/sandcastle mismatches; fix gates.
 - [ ] Mage Tower: wizard remains final boss; move familiar to collapsing-tower sequel as miniboss.
 - [ ] Complete relevant automated, visual and gameplay validation.

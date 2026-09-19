@@ -93,7 +93,7 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false };
-const TIER = { mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
+const TIER = { harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
@@ -1137,7 +1137,7 @@ function allyTick() {
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
-const MEDALS = { mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
+const MEDALS = { harbor: [330, 480, 700], burial: [360, 510, 740], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
@@ -2753,26 +2753,30 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 130, y: 25, name: 'THE HURRICANE DECK' },
   { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 40, y: 45, name: 'THE LAMPLIT STREET' },
   { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' },
-  { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' }];   /* the pilgrim road the sea took: the coast's last water, and the Kraken at the end of it */
-const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [160, 100], [125, 45], [140, 8]];
+  { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l=>l.id==='causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' },
+  { id: 'harbor', kind: 'level', level: LEVELS.findIndex(l=>l.id==='harbor'), x: 195, y: 25, name: 'STORMWRECK HARBOR' }];
+const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [160, 100], [195, 65], [195, 25], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
   { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 150, y: 140, name: 'THE HEXED FIELDS' },
+  { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 130, y: 82, name: 'THE BURIAL CAVERNS' },
   { id: 'mage', kind: 'level', level: LEVELS.findIndex(l => l.id === 'mage'), x: 214, y: 76, name: "THE MAGE'S FOLLY" }];   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
-const INLAND_PATH = [[140, 176], [95, 172], [40, 162], [95, 172], [150, 140], [186, 108], [214, 76]];
+const INLAND_PATH = [[140, 176], [95, 172], [40, 162], [95, 172], [150, 140], [130, 110], [130, 82], [170, 66], [214, 76]];
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })));
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]));
-const NODE_AT = [0, 3, 6, 8, 10, 12, 14, 20, 23, 25, 28, 31, 34, 39, 41, 46, 48, 50, 52, 54, 56, 58, 59, 64, 66, 68]; // PATH index of each node: wood 0-5, the crags, the coast, then the road inland
+const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.y)<Math.hypot(PATH[best][0]-n.x,PATH[best][1]-n.y)?i:best,0));
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'crag', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]]]);
 let mapCamY = MAPH - 180;
-function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; }
+function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id; }
 const HUT = ART.bakeHut(), FLAG = ART.bakeFlag();
 const map = { node: 0, seg: 0, t: 0, walking: 0, target: 0 }; // token position: on PATH segment seg at fraction t
 const nodeLocked = nd => nd.kind === 'level' ? levelLocked(LEVELS[nd.level]) : nd.kind === 'store' ? !godMode() && !!(nd.needs && !(PROG[nd.needs] && PROG[nd.needs].cleared) && !q.get('unlock')) : false;
 // THE MAP OPENS WHERE YOU LEFT IT. It used to walk you back to the first wood every time the game loaded.
 function mapToSaved() {
-  const n = Math.max(0, Math.min(NODES.length - 1, PROG.mapNode || 0));
-  map.node = (nodeLocked(NODES[n]) || nodeSecret(NODES[n])) ? 0 : n; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
+  const legacy=NODES.filter(n=>!['harbor','burial'].includes(n.id));
+  const savedId=PROG.mapNodeId||legacy[PROG.mapNode||0]?.id;
+  const n=Math.max(0,NODES.findIndex(n=>n.id===savedId));
+  map.node = (nodeLocked(NODES[n]) || nodeSecret(NODES[n])) ? 0 : n; PROG.mapNodeId=NODES[map.node].id; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
   const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
 }
 // what lives along the road, placed against the PATH so it is always beside the walk and never in the sea
@@ -2886,7 +2890,7 @@ function updateMap(dt) {
     else { coopPickFrom = 'map'; coopPick = { i: 0, ally: false }; state = 'coop'; SFX.uiSel(); }
   }
   if (pausePress) { state = 'title'; SFX.ui(); }
-  PROG.mapNode = map.node;
+  PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id;
   { const [, py] = mapPos(); const want = Math.max(0, Math.min(MAPH - VH, py - VH * 0.55)); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
 }
 function drawMap() {
@@ -20079,6 +20083,17 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
+  if(st==='ossuary'){
+    g.fillStyle='#30333b';g.fillRect(sx,sy,w,h);
+    for(let y=sy;y<sy+h;y+=12)for(let x=sx+((y/12|0)%2)*16;x<sx+w;x+=32){g.fillStyle='#44464e';g.fillRect(x,y,30,11);g.fillStyle='#55565d';g.fillRect(x,y,30,1);}
+    for(let y=sy+18;y<sy+h-12;y+=40)for(let x=sx+12;x<sx+w-18;x+=48){
+      g.fillStyle='#1d242a';g.fillRect(x,y,30,22);g.fillStyle='#69656a';g.fillRect(x-2,y+22,34,3);
+      for(let k=0;k<3;k++){const bx=x+3+k*9;g.fillStyle='#a7a091';g.fillRect(bx,y+13,6,5);g.fillRect(bx+1,y+18,4,2);g.fillStyle='#35343a';g.fillRect(bx+1,y+14,1,2);g.fillRect(bx+4,y+14,1,2);}
+      g.fillStyle='#78756f';g.fillRect(x+3,y+6,23,2);g.fillRect(x+6,y+4,2,6);
+    }
+    g.fillStyle='#777b7a';for(let x=sx+7;x<sx+w;x+=29){const n=3+Math.floor(hsh(x,ty0)*7);g.fillRect(x,sy,3,n);g.fillRect(x+1,sy+n,1,3);}
+    return;
+  }
   if (st === 'crystal') { g.fillStyle = '#3a3c5a'; g.fillRect(sx, sy, w, h);
     g.fillStyle = '#4a4e74'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7);
     g.fillStyle = '#2a2c44'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1);
