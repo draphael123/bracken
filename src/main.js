@@ -20403,6 +20403,13 @@ function drawArena(cx, cy) {
 }
 let HALLWALL = null;
 function drawRoom(st, sx, sy, w, h, tx0, ty0) {
+  // Paint in room-local coordinates: camera movement cannot reseed masonry or tapestry colours.
+  g.save(); g.translate(Math.round(sx), Math.round(sy));
+  g.beginPath(); g.rect(0, 0, w, h); g.clip();
+  drawRoomPaint(st, 0, 0, w, h, tx0, ty0);
+  g.restore();
+}
+function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };

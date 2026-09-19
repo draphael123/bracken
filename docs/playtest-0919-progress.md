@@ -79,3 +79,7 @@ All 18 live mechanic tests verified four fighters at lock, exactly one elite, ca
 ## Item 15 — design for review only
 
 The progression design and save-migration plan is in progression-rework-plan.md. It proposes automatic stats, level-scaled skills bought from the shared coin wallet, per-hero ownership, two slots growing to four, grandfathered learned skills and a one-time 25-coin refund per legitimately earned talent point. Prices, slot levels and refund rate are review proposals. No progression runtime or save-migration code was implemented. This is documentation only; the unchanged code is covered by the final item-14 full check (exit 0, 34 checks). Daniel review is required before building, as requested.
+## 16. Camera-stable interior textures
+Implemented a room-local paint origin and clipping at authored room boundaries. This removes camera-driven colour/pattern changes in royal, chapel, forge, ship and other shared interiors. It does not yet claim the separate barn facade or level geometry requests are resolved.
+
+Verified: regression test covers eight interior styles with identical drawing commands after camera translation; captured and inspected five game views; complete suite passes (35 checks), `outputs/16-check.log`, direct exit 0. Additional scope is tracked in `docs/additional-changes-0919.md`.
