@@ -1,6 +1,6 @@
 import {canvas} from './px.js';
 export function bakeRouteLedges(){
- const out={};for(const kind of ['cargo','awning']){const a=[];for(let v=0;v<3;v++){const[c,g]=canvas(16,16);g.fillStyle='#251e1a';g.fillRect(0,0,16,7);g.fillStyle=kind==='cargo'?'#ae8552':'#a57b56';g.fillRect(0,0,16,3);g.fillStyle='#e2c59a';g.fillRect(0,0,16,1);g.fillStyle=kind==='cargo'?'#67482f':'#813b47';g.fillRect(0,3,16,3);if(kind==='awning'){g.fillStyle='#c6a575';g.fillRect(v*4,3,4,3);}else{g.fillStyle='#526367';g.fillRect(3+v*4,1,2,5);g.fillStyle='#afc5c4';g.fillRect(3+v*4,1,1,1);}a.push(c);}out[kind]={ledge:a,ledgeL:a[0],ledgeR:a[2]};}return out;
+ const out={};for(const kind of ['cargo','awning','arcane']){const a=[];for(let v=0;v<3;v++){const[c,g]=canvas(16,16);g.fillStyle='#251e1a';g.fillRect(0,0,16,7);g.fillStyle=kind==='arcane'?'#a8a0c1':kind==='cargo'?'#ae8552':'#a57b56';g.fillRect(0,0,16,3);g.fillStyle='#e2c59a';g.fillRect(0,0,16,1);g.fillStyle=kind==='arcane'?'#514568':kind==='cargo'?'#67482f':'#813b47';g.fillRect(0,3,16,3);if(kind==='awning'){g.fillStyle='#c6a575';g.fillRect(v*4,3,4,3);}else{g.fillStyle='#526367';g.fillRect(3+v*4,1,2,5);g.fillStyle='#afc5c4';g.fillRect(3+v*4,1,1,1);}a.push(c);}out[kind]={ledge:a,ledgeL:a[0],ledgeR:a[2]};}return out;
 }
 export function drawRouteSupports(g,L,cx,cy){
  for(const p of L.routeSupports||[]){const x=Math.round(p.x*16+6-cx),y=Math.round(p.y*16+5-cy),bottom=Math.round(p.bottom*16-cy);if(x < -4||x>g.canvas.width+4||bottom<0||y>g.canvas.height)continue;

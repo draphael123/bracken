@@ -957,3 +957,7 @@ ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels');
 
 ALLOWED_DECORATIONS.lamplit.push('kegStack','coiledCable','barrels','seaChest');
 ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');
+
+GROUND_KITS.mage={density:0,kinds:[]};
+GROUND_KITS.fallingtower={density:0,kinds:[]};
+ALLOWED_DECORATIONS.fallingtower=ALLOWED_DECORATIONS.mage.slice();

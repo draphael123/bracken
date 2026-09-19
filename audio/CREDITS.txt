@@ -129,3 +129,5 @@ Original procedural music created for BRACKEN:
 
 Stormwreck Harbor (48s, 6/8) and The Burial Caverns (53.33s, 4/4): original synthesized compositions created for BRACKEN by Codex, 2026-09-19; no external samples.
 - underkeep.wav = "Under the Vaults", original synthesized brass-bell and bass score created for BRACKEN (Codex, 2026-09-19).
+
+fallingtower.wav — Fractured Stairs. Original synthesized bell and bass score created for BRACKEN, 2026-09-19. 40 seconds, mono PCM 22050 Hz.
