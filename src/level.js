@@ -29,6 +29,9 @@ function grow(L, ret, col, n) {
   for (const e of L.ents) { e.x = sh(e.x); for (const k of REF) if (typeof e[k] === 'number') e[k] = sh(e[k]); }
   const R = Object.assign({}, ret, { W: W2 });
   if (R.pools) R.pools = R.pools.map(p => ({ ...p, x0: shp(p.x0), x1: shpEnd(p.x1) }));
+  for(const key of ['gusts','hags','airRails','downCliffs'])if(R[key])R[key]=R[key].map(z=>({...z,x0:shp(z.x0),x1:shpEnd(z.x1),...(z.shelters?{shelters:z.shelters.map(([x0,x1,y])=>[shp(x0),shpEnd(x1),y])}:{})}));
+  if(R.roosts)R.roosts=R.roosts.map(([x,y])=>[sh(x),y]);
+  if(R.flight)R.flight={...R.flight,x1:sh(R.flight.x1)};
   if (R.sleeps) R.sleeps = R.sleeps.map(p => ({ ...p, x0: shp(p.x0), x1: shpEnd(p.x1) }));
   if (R.moversExtra) R.moversExtra = R.moversExtra.map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number') o[k] = shp(o[k]); return o; });
   for (const k of ['weather', 'ambient']) if (R[k]) R[k] = R[k].map(z => ({ ...z, x0: shp(z.x0), x1: z.x1 >= 99999 ? z.x1 : shpEnd(z.x1) }));
@@ -3677,7 +3680,7 @@ function galeMoor() {
   const roosts = [[868, 9], [882, 3], [897, 7], [875, 6], [890, 5]]; // where he stands: a stone's top, a ledge
   for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; } // the moor's wind lifts you well clear of whatever it is meant to lift you onto
 
-  return {
+  const base = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
     duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: false,
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
@@ -3687,6 +3690,18 @@ function galeMoor() {
     arena: { x0: 861 * TS, x1: 905 * TS, floor: 13 * TS, trigger: 868 * TS, wallL: 860, wallR: 906, boss: 'windcaller', music: 'musMountain', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
     flight: { x1: 864, speed: 78, camY: 2, down: [] }, // the Sky Road: the kite lets go over the summit's near edge
   };
+  // WIND RIVERS: the stream is the fast road; a bank ladder returns anyone who misses its exit.
+  const R=grow(base,base,240,48);R.floor(240,287,26);R.floor(240,244,22);R.floor(283,287,20);
+  for(let y=22;y<26;y++)R.set(241,y,T.NET);for(let y=20;y<26;y++)R.set(283,y,T.NET);
+  R.plat(272,17,4);R.ent('sign',242,21,{text:'WIND RIVERS. JUMP INTO THE WOOL STREAM. JUMP AGAIN TO LEAVE IT.'});R.ent('check',286,19);R.coins([250,18],[259,18],[270,18],[274,16],[281,19]);
+  R.R.airRails=[{x0:246*TS,x1:282*TS,y:19*TS,speed:280}];
+  const mid=R.done(),D=grow(mid,mid,558,40);D.floor(558,597,22);D.floor(558,562,14);D.block(584,588,7,21);D.floor(589,597,14);
+  for(let y=7;y<22;y++)D.set(583,y,T.NET);for(let y=14;y<22;y++)D.set(562,y,T.NET);
+  for(const row of [18,14,10])D.plat(580,row,4);
+  D.ent('sign',561,13,{text:'DOWNDRAFT CLIFF. CLIMB IN THE LULL. REST ON THE SHELTERED STONE LIPS.'});D.ent('check',595,13);D.coins([577,21],[581,17],[581,13],[581,9],[586,6]);
+  D.R.downCliffs=[{x0:579*TS,x1:585*TS,y0:7*TS,y1:22*TS,period:5,on:2.5,shelters:[18,14,10].map(y=>[580*TS,584*TS,y*TS])}];
+  D.R.stormSummit=true;D.R.playtestSections=[{name:'WIND RIVERS',x0:240,x1:287},{name:'DOWNDRAFT CLIFF',x0:558,x1:597}];
+  return D.done();
 }
 
 // MORE GOLD. Every real wood runs this after it is built: it finds the long walkable stretches that pay
@@ -7406,8 +7421,8 @@ const AMBUSH = {
     waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['archer', 66], ['cutter', 49]]] }],
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
-  moor: [{ name: 'THE CAIRN RIDGE', row: 13, wallL: 508, wallR: 545,
-    waves: [[['goat', 514], ['goat', 540], ['rockgoblin', 527], ['crow', 524, 7]], [['rockgoblin', 538], ['troll', 516, null, { elite: true }], ['goat', 532]]] }],
+  moor: [{ name: 'THE CAIRN RIDGE', row: 13, wallL: 596, wallR: 633,
+    waves: [[['goat', 602], ['goat', 628], ['rockgoblin', 615], ['crow', 612, 7]], [['rockgoblin', 626], ['troll', 604, null, { elite: true }], ['goat', 620]]] }],
   storm: [{ name: 'THE HEARTH HALL', row: 31, wallL: 98, wallR: 152, check: false,
     waves: [[['sprig', 104], ['sprig', 146], ['hearthgob', 128], ['cutter', 117]], [['shield', 140], ['archer', 148], ['pike', 126, null, { elite: true }]]] }],
   longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 293, wallR: 339, check: false,
@@ -7464,7 +7479,7 @@ const ELITES = {
      scriptorium, on the long walk from the trapdoor at 73-77 to the prayer wheel at 47, and the herd billy out on the
      shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
   spire: [['troll', 61, 171], ['goat', 62, 79]],
-  moor: [['goat', 168, 21, { gate: 200 }], ['troll', 384, 13]],
+  moor: [['goat', 168, 21, { gate: 200 }], ['troll', 432, 13]],
   storm: [['pike', 250, 29, { gate: 257 }]],
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */

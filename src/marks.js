@@ -134,7 +134,7 @@ export const MARK = {
   'troll|ripTell': '!!', 'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'turret|chargeTell': '!', 'turtle|lungeTell': '!',
   'turtle|pinchTell': '!', 'turtle|snapTell': '!', 'turtle|strikeTell': '!', 'turtle|thrustTell': '!', 'urchin|biteTell': '!', 'urchin|castTell': '!',
   'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'wasp|stingTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!',
-  'windcaller|howlTell': '', 'windcaller|stoneTell': '!', 'windcaller|wallTell': '!!',
+  'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!',
 };
 /* MARK:END */
 

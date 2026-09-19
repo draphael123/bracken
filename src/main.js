@@ -6819,6 +6819,7 @@ function updatePlayer(dt) {
       else if (stunned || P.hurt > 0 || !(here || netAt(P.x, P.y + 2))) P.climb = false;
       else if (cy < 0 && !netAt(P.x, P.y - 1) && netAt(P.x, P.y + 1)) { P.climb = false; P.y = Math.floor((P.y + 1) / TS) * TS; P.vy = 0; P.ground = true; } // over the top: stand on the last rung
     } }
+  updateMoorWind(dt);
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
   P.kickT = Math.max(0, (P.kickT || 0) - dt);
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
@@ -12052,6 +12053,28 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
   if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - Math.random() * 12, vx: 0, vy: -15, life: 0.6, max: 0.6, col: '#c8d8c8', size: 1, grav: 0 });
   if (!P.dead && ad < 10 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 1.2; SFX.wightTouch(); const res = damagePlayer(e.x, DMG.wight); if (res === 'hit') { P.vx *= 0.2; P.stDelay = 0.8; number(P.x, P.y - 24, 'COLD', '#c8d8c8'); } }
 }
+function updateMoorWind(dt) {
+  P.railRelease=Math.max(0,(P.railRelease||0)-dt);
+  for(const z of (L.airRails||[]))if(!P.dead&&P.x>z.x0&&P.x<z.x1&&Math.abs(P.y-8-z.y)<24){
+    if(jumpPress){P.railRelease=.6;P.vy=-260;P.ground=false;SFX.pJump();}
+    else if(!P.railRelease){P.vx=z.speed;P.vy=(z.y-(P.y-8))*12-18;P.ground=false;P.gustT=.25;}
+  }
+  for(const z of (L.downCliffs||[]))if(!P.dead&&P.x>z.x0&&P.x<z.x1&&P.y>z.y0&&P.y<z.y1&&time%z.period<z.on&&!z.shelters.some(([x0,x1,y])=>P.x>=x0&&P.x<=x1&&Math.abs(P.y-y)<25)){P.vy=Math.max(P.vy,100);P.gustT=.25;}
+}
+function drawMoorWeather(cx,cy) {
+  for(const z of (L.airRails||[])){if(z.x1<cx||z.x0>cx+VW)continue;for(let k=0;k<65;k++){const x=z.x0+((time*z.speed+k*29)%(z.x1-z.x0)),y=z.y+Math.sin(k*2.1)*12;g.fillStyle=k%3?'#c5d3cd':'#f1eee0';g.fillRect(Math.round(x-cx),Math.round(y-cy),k%3?11:3,k%3?1:3);}}
+  for(const z of (L.downCliffs||[])){if(z.x1<cx||z.x0>cx+VW)continue;const on=time%z.period<z.on;g.globalAlpha=on?.65:.15;g.fillStyle='#dfe6e5';for(let k=0;k<24;k++){const x=z.x0+k*9%(z.x1-z.x0),y=z.y0+(time*(on?220:25)+k*27)%(z.y1-z.y0);g.fillRect(Math.round(x-cx),Math.round(y-cy),1,on?14:3);}g.globalAlpha=1;}
+  if(!L.stormSummit)return;const A=L.arena;if(A.x1<cx||A.x0>cx+VW)return;const fl=A.floor-cy;
+  for(const [tx,ty] of L.roosts){const x=tx*TS+8-cx,y=(ty+1)*TS-cy,on=boss&&boss.alive&&Math.abs(boss.x-(tx*TS+8))<28;g.fillStyle=on?'#b9f0ff':'#6d8a94';for(let k=0;k<3;k++){g.fillRect(x-4,y+4+k*8,8,1);g.fillRect(x+(k%2?3:-4),y+4+k*8,1,6);}g.fillStyle='#b79174';for(let k=0;k<20;k++)g.fillRect(x+k,y+8+Math.round(Math.sin(time*7+k*.4)*3),1,3);}
+  const altar=(A.x0+A.x1)/2-cx;g.fillStyle='#777f87';g.fillRect(altar-26,fl-12,21,12);g.fillRect(altar+4,fl-8,23,8);g.fillStyle='#b0b7b9';g.fillRect(altar-28,fl-14,27,3);
+  for(let k=0;k<70;k++){const x=A.x0+k*11;g.fillStyle=k%2?'#768e5b':'#a1b374';g.fillRect(Math.round(x-cx+Math.sin(time*5+k)*2),fl-5,1,5);}
+  if(boss&&boss.phase===2){g.fillStyle='#e1eaf2';for(let k=0;k<50;k++)g.fillRect(Math.round(A.x0-cx+(k*53+time*90)%(A.x1-A.x0)),Math.round(fl-200+(k*31+time*240)%200),2,4);}
+  if(boss&&boss.t==='windcaller'){
+    if(boss.twister){const w=boss.twister;g.strokeStyle='#bfe6f5';for(let k=0;k<8;k++){g.beginPath();g.ellipse(w.x-cx+Math.sin(time*13+k)*3,fl-k*9,5+k*2,3,0,0,7);g.stroke();}}
+    if(boss.mode==='lightningTell'||boss.mode==='lightning'){const x=boss.lightningX-cx,hit=boss.mode==='lightning';g.strokeStyle=hit?'#f2fbff':'#9dc6e6';g.lineWidth=hit?3:1;g.beginPath();g.moveTo(x,fl-220);for(let k=1;k<9;k++)g.lineTo(x+(k%2?7:-7),fl-220+k*26);g.stroke();g.lineWidth=1;g.fillStyle=hit?'#d7f2ff':'#7e96ab';g.fillRect(x-100,fl-3,200,2);}
+  }
+}
+
 function updateWindcaller(e, dt) {
   // The shaman of the moor. He stands on a stone and throws bolts of sky at you. Struck twice, or left too long, he is gone in a gust and on another stone.
   // The wind is the only stair up to him. Every so often he calls it, and it takes you off your feet toward the thorns.
@@ -12062,7 +12085,14 @@ function updateWindcaller(e, dt) {
   e.face = Math.sign(d) || e.face;
   const castLen = p2 ? 4.5 : 6;
   const goBlink = () => { e.mode = 'blink'; e.modeT = 0.35; e.hits = 0; burst(e.x, e.y - 12, 14, ['#c9a0ff', '#e8dcc0', '#6faa4a'], 60, 0.5, -40, 1); SFX.puff(); };
+  e.specialT=(e.specialT===undefined?7:e.specialT-dt);
+  if(e.specialT<=0&&e.mode==='cast'){e.specialT=9;e.specialN=(e.specialN||0)+1;if(e.specialN%2){e.mode = 'twisterTell';e.modeT=.9;number(e.x,e.y-40,'!','#ffd36b');SFX.callerChant();}else{e.mode = 'lightningTell';e.modeT=1.2;e.lightningX=(roosts.reduce((a,b)=>Math.abs(a[0]*TS-P.x)<Math.abs(b[0]*TS-P.x)?a:b)[0])*TS+8;number(e.lightningX,A.floor-30,'!!','#ff6b6b');SFX.callerChant();}}
+  if(e.twister){const w=e.twister;w.life-=dt;w.x+=Math.sign(e.x-w.x)*55*dt;w.hitT=Math.max(0,w.hitT-dt);if(!P.dead&&Math.abs(P.x-w.x)<24&&P.y>A.floor-100){P.vy=-300;P.ground=false;if(w.hitT<=0){w.hitT=1;damagePlayer(w.x,8);}}if(w.life<=0)e.twister=null;}
   switch (e.mode) {
+    case 'twisterTell':if(e.modeT<=0){e.mode = 'twister';e.modeT=4.5;e.twister={x:P.x+Math.sign(e.x-P.x)*55,life:4.5,hitT:0};SFX.buzz();}break;
+    case 'twister':if(e.modeT<=0){e.mode = 'cast';e.modeT=castLen;}break;
+    case 'lightningTell':if(e.modeT<=0){e.mode = 'lightning';e.modeT=.5;e.lightningHit=false;SFX.heavy();shakeCam(5);}break;
+    case 'lightning':if(!e.lightningHit&&!P.dead&&(Math.abs(P.x-e.lightningX)<20||(Math.abs(P.x-e.lightningX)<100&&P.y>A.floor-18))){e.lightningHit=true;damagePlayer(e.lightningX,20,{unblockable: true,up:true});}if(e.modeT<=0){e.mode = 'cast';e.modeT=castLen;}break;
     case 'wake': if (e.modeT <= 0) { e.mode = 'cast'; e.modeT = castLen; e.castT = 0.9; e.howlT = 9; } break;
     case 'cast': { e.castT -= dt; e.howlT -= dt;
       if (e.castT <= 0 && !P.dead) { e.castT = p2 ? 1.2 : 1.8; e.castN = (e.castN || 0) + 1; const n = 1; const a0 = Math.atan2((P.y - 8) - (e.y - 14), P.x - e.x);
@@ -12103,7 +12133,7 @@ function updateWindcaller(e, dt) {
     case 'fallen': { e.y = Math.min(A.floor, e.y + 360 * dt); e.hits = 0; if (e.y >= A.floor && !e.fellT) { e.fellT = 1; dust(e.x, e.y, 10); SFX.thud(); shakeCam(4); } if (e.modeT <= 0) { e.fellT = 0; goBlink(); } break; }
   }
 }
-const callerOpen = e => e.mode === 'cast' || e.mode === 'howlTell' || e.mode === 'howl' || e.mode === 'ground' || e.mode === 'fallen';
+const callerOpen = e => e.mode === 'twister' || e.mode === 'lightning' || e.mode === 'cast' || e.mode === 'howlTell' || e.mode === 'howl' || e.mode === 'ground' || e.mode === 'fallen';
 // the wind in his arena drops while he is casting or down: the pushing is what the howl is for
 const callerCalm = () => !!(boss && boss.t === 'windcaller' && boss.alive && ['cast', 'ground', 'fallen', 'appear'].includes(boss.mode));
 // his bolts come back at him: struck, blocked, or caught in the Aegis
@@ -19348,7 +19378,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.fields) drawFieldsBack(cx, cy);   /* the boughs and the posts under the ledges */
   if (L.mage) drawMageBack(cx, cy);   /* THE MAGE'S FOLLY: the chains, the orrery's arms and hubs */
   // THE TRUNKS STAY BEHIND THE ROAD: scenery cannot turn into a wall, or flash when a hero crosses its ink.
-  drawBelfry(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
+  drawBelfry(cx, cy); drawMoorWeather(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   drawHouses(cx, cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
