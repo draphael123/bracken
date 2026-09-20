@@ -1,3 +1,4 @@
+import { attackPose } from './attack-animation.js';
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied} from './tower-finish.js';
 import {bakeCoastalFoe} from './coastal-foes.js';
@@ -6551,6 +6552,7 @@ function updatePlayer(dt) {
       const px0 = P.x + P.face * 2, py0 = P.y - 9;
       if (P.swingKind) swingKindTrail(k, px0);
       else if (isPyro()) { const reach = 10 + Math.min(1, k * 1.6) * 24; trail.push({ x0: px0, y0: py0, x: px0 + P.face * reach, y: py0 - 1, life: 0.09 }); for (let i = 0; i < 2; i++) parts.push({ x: px0 + P.face * (reach - Math.random() * 10), y: py0 + (Math.random() - 0.5) * 6, vx: P.face * (40 + Math.random() * 60), vy: -20 - Math.random() * 30, life: 0.22, max: 0.22, col: Math.random() < 0.4 ? '#fff6c8' : Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: Math.random() < 0.5 ? 1 : 2, grav: -40 }); }
+      else if (isWarden()) { const b = attackBox(); if (b) { const x = P.face > 0 ? b.r : b.l; trail.push({ x0: x - P.face * 10, y0: py0, x, y: py0, life: 0.08 }); } }
       else trail.push({ x0: px0, y0: py0, x: px0 + Math.cos(ang) * 18 * P.face, y: py0 + Math.sin(ang) * 18, life: 0.11 });
     }
   }
@@ -17071,8 +17073,8 @@ function swingKindHit(e) {
     else e.stagger = Math.max(e.stagger || 0, 0.3);
   } }
 function swingKindTrail(k, px0) { const c = specialCol()[0];
-  if (P.swingKind === 'rise') { const ang = 1.1 - k * 2.9; trail.push({ x0: px0, y0: P.y - 9, x: px0 + Math.cos(ang) * 20 * P.face, y: P.y - 9 + Math.sin(ang) * 20, life: 0.12 }); }
-  else trail.push({ x0: px0 - P.face * 4, y0: P.y - 2, x: px0 + P.face * (6 + k * 22), y: P.y - 1, life: 0.12 });
+  if (P.swingKind === 'rise') { const y = P.y - 4 - (isWarden() ? 39 : 35) * Math.min(1, k * 2); trail.push({ x0: px0 + P.face * 5, y0: Math.min(P.y - 4, y + 10), x: P.x + P.face * (isWarden() ? 8 : 12), y, life: 0.08 }); }
+  else { const reach = isWarden() ? 40 : isPyro() || isPaladin() || isReaper() ? 34 : 28, x = P.x + P.face * (8 + (reach - 8) * Math.min(1, k * 2)); trail.push({ x0: x - P.face * 10, y0: P.y - 4, x, y: P.y - 4, life: 0.08 }); }
   if (Math.random() < 0.5) parts.push({ x: px0 + P.face * 14, y: P.y - (P.swingKind === 'rise' ? 14 + k * 16 : 2), vx: P.face * 30, vy: P.swingKind === 'rise' ? -60 : -10, life: 0.2, max: 0.2, col: c, size: 1, grav: 0 }); }
 /* THE DASH ATTACK. A swing out of a dash used to stop the hero dead into an ordinary cut, so the two never added up to
    anything. Now the dash carries the blade through: the hero keeps going, the cut lands harder and throws what it hits. */
@@ -18903,11 +18905,28 @@ function drawFoeSmear(e, bigF, cx, cy) {
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 function drawSwing(cx, cy) {
+  if (!P.dead && P.atk >= 0 && !P.heavy && (P.swingKind === 'rise' || P.swingKind === 'sweep')) {
+    const rising = P.swingKind === 'rise', end = rising ? 0.17 : 0.15;
+    if (P.atk < 0.02 || P.atk >= end) return;
+    const k = (P.atk - 0.02) / (end - 0.02), x = Math.round(P.x - cx), y = Math.round(P.y - cy), f = P.face;
+    const reach = isWarden() ? 40 : isPyro() || isPaladin() || isReaper() ? 34 : 28;
+    g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = specialCol()[0]; g.lineWidth = 1;
+    g.globalAlpha = SET.reduceMotion ? 0.3 : 0.55 * (1 - k * 0.65); g.beginPath();
+    if (rising) { const top = isWarden() ? 43 : 39, tipY = y - 4 - (top - 4) * Math.min(1, k * 2);
+      g.moveTo(x + f * 7, Math.min(y - 4, tipY + 13)); g.lineTo(x + f * (isWarden() ? 8 : 12), tipY); }
+    else { const tipX = x + f * (8 + (reach - 8) * Math.min(1, k * 2)); g.moveTo(tipX - f * 12, y - 4); g.lineTo(tipX, y - 4); }
+    g.stroke(); g.restore(); return;
+  }
   if (P.atk < 0.02 || P.atk > (isReaper() ? 0.32 : 0.2) || P.dead) return;
   const px = Math.round(P.x - cx), py = Math.round(P.y - cy) - 9, f = P.face, k = (P.atk - 0.02) / 0.18;
   g.globalCompositeOperation = 'lighter';
-  if (isPyro()) { const len = 30 * Math.min(1, k * 2.5), a = 1 - k;
-    for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#ff9a5c'; const w = 2 + i * 2; g.fillRect(f > 0 ? px + 10 : px - 10 - len, py - 1 - i, len, w); } }
+  if (isWarden()) { const box = attackBox();
+    if (box) { const tip = Math.round((f > 0 ? box.r : box.l) - cx); g.globalAlpha = 0.45; g.strokeStyle = '#dff0d8'; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(tip - f * 10, py); g.lineTo(tip, py); g.stroke(); }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return;
+  }
+  if (isPyro()) { const len = (P.heavy ? 28 : 22) * Math.min(1, k * 2.5), a = 1 - k;
+    for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#ff9a5c'; const w = 2 + i * 2; g.fillRect(f > 0 ? px + 10 : px - 10 - len, py - 1 - i, len, w); } g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return; }
   if (isReaper()) {   /* THE CLEAVE: from over his head down through the front, steel with blood on the edge */
     if (P.heavy) { g.globalCompositeOperation = 'source-over'; return; }
     const kk = Math.max(0, Math.min(1, (P.atk - 0.1) / 0.16)); if (kk <= 0) { g.globalCompositeOperation = 'source-over'; return; }
@@ -18921,7 +18940,7 @@ function drawSwing(cx, cy) {
      thrust is not an arc at all but a line straight out through the point */
   { const pal = isPaladin(), cm = P.heavy ? 1 : (P.combo || 1) % 3, a0 = -1.25, sweep = 2.25 * Math.min(1, k * 2.2), r = pal ? 25 : 18;
     const col = i => pal ? (i === 0 ? '#fff6c8' : i === 1 ? '#ffd36b' : '#f0c040') : i === 0 ? '#ffffff' : i === 1 ? '#fff6e0' : '#dfe8ff';
-    if (cm === 0 && !isPyro()) { const len = (pal ? 22 : 28) * Math.min(1, k * 2.6), a = 1 - k;
+    if (cm === 0 && !isPyro()) { const len = (pal ? 18 : 14) * Math.min(1, k * 2.6), a = 1 - k;
       for (let i = 0; i < 3; i++) { g.globalAlpha = a * (0.55 - i * 0.15); g.fillStyle = col(i); const w = 1 + i; g.fillRect(f > 0 ? px + 8 : px - 8 - len, py + 1 - (i >> 1), len, w); } }
     else for (let i = 0; i < 4; i++) { const tail = 0.5 + i * 0.35; g.globalAlpha = (1 - k) * (0.5 - i * 0.1); g.strokeStyle = col(i); g.lineWidth = 3 - i * 0.6; g.beginPath();
       const s = a0 + Math.max(0, sweep - tail), e = a0 + sweep;
@@ -19947,14 +19966,12 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.rushRec > 0 && K.R.recover) key = 'recover';
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
-        if (P.atk >= (isReaper() ? 0.36 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
+        if (P.atk >= (isReaper() ? 0.36 : isWarden() ? 0.30 : 0.26) && K.R.atk && K.R.atk[3]) { key = 'atk'; frame = 3; } }
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
-      else if (P.atk >= 0) { { const cm = (P.combo || 1) % 3, ck = !P.ground && K.R.air ? 'air' : cm === 2 ? 'atkB' : cm === 0 ? 'atkC' : 'atk'; key = K.R[ck] ? ck : 'atk'; }   /* first swing, backhand, thrust */
-        frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.17 ? 2 : P.atk < 0.24 ? 3 : 4; }
+      else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
       else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
       else if ((isPyro() || isPaladin() || isPirate() || isReaper() || isWarden()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
-      else if (isWarden() && P.swingKind === 'rise' && P.atk >= 0) { key = 'cast'; frame = P.atk < 0.09 ? 0 : 1; }   /* the thrust straight up has its own pose: the spear over her head, not across her */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.castT > 0) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */

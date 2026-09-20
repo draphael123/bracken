@@ -63,8 +63,8 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    body centre stays at BX+8 and the set's single anchor still reads: drawSet mirrors with `c.width - set.ax`, which
    is measured off each frame's own canvas, so a 52-wide thrust flips to the right place beside a 34-wide idle.
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null }) {
-  const [c, g] = canvas(W + wide, H);
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0 }) {
+  const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
   if (kite && kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* slung on his back (the ladder): drawn first, so the body covers all but its rim */
@@ -251,6 +251,30 @@ function comboArcs(sh, key, len, extra = {}) {
   ];
   return { B, T, A, I };
 }
+/* ROOM ABOVE THE HAT. A rising weapon used to be clipped at the old frame's top and borrowed an air slash.
+   All poses gain the same transparent headroom and anchor shift, leaving their feet exactly where they were.
+   The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
+const ATTACK_HEADROOM = 24;
+function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = false, scale = 1 } = {}) {
+  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); memo.set(c, out); } return memo.get(c); };
+  for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(pad) : pad(F[key]);
+  const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : ['maul', 'greatsword', 'staff'].includes(weapon) ? 34 : 28;
+  const pose = (kind, i) => {
+    const rise = kind === 'rise', dx = [-1, 1, 2, 1][i], dy = rise ? [2, 0, -1, 0][i] : [2, 3, 3, 1][i];
+    const end = rise ? [[18, -3], [weapon === 'spear' ? 14 : 24, -25], [weapon === 'spear' ? 8 : 12, weapon === 'spear' ? -43 : -39], [18, -24]][i] : [[14, -12], [reach - 5, -5], [reach - 1, -4], [20, -10]][i];
+    const hand = rise ? [[1, -7], [6, -15], [5, -21], [4, -12]][i] : [[1, -9], [5, -6], [7, -6], [3, -8]][i];
+    const xy = ([x, y]) => [ax + Math.round(x / scale) - dx, ay + Math.round(y / scale) - dy];
+    const grip = xy(hand), tip = xy(end), arm = [16, 12, ...grip];
+    if (pyro) return pyroFrame({ top: ATTACK_HEADROOM, wide: 32, lean: dx, dy, sit: rise ? 0 : 2, trail: i === 1 || i === 2 ? 3 : 1,
+      feet: rise && i === 2 ? [[11, 17], [16, 16]] : [[9, 18], [17, 18]], hemW: rise ? 11 : 13,
+      staff: [...grip, ...tip], arm, arm2: [11, 11, grip[0] - 3, grip[1] + 2], cowl: i % 3, flame: i, flick: i % 2 });
+    return make({ ...extra, top: ATTACK_HEADROOM, wide: 32, dx, dy, legs: rise ? (i === 2 ? 'jump2' : 'wide') : 'crouch',
+      arm, [weapon]: [...grip, ...tip], plume: i === 1 || i === 2 ? 2 : 0, sho: i === 2 ? 1 : 0 });
+  };
+  F.rise = [0, 1, 2, 3].map(i => pose('rise', i)).concat(F.atk[4]);
+  F.sweep = [0, 1, 2, 3].map(i => pose('sweep', i)).concat(F.atk[4]);
+}
+
 /* THE BREATH, eight beats, for every hero on the knight's rig: [dy, hy, sho, plume]. The shoulders lift, the plume answers
    a beat late, the helm rises last and sinks last. Whatever rests on the ground - a sword point, a maul head - is given
    in ground coordinates by the baker, so the hands ride the chest and the weight stays put. */
@@ -375,10 +399,11 @@ export function bakeKnight(skin = {}, bare = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
+  directionalPoses(F, 'sword', { make: KF });
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
-  const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
   if (!bare) set.bare = bakeKnight(skin, true);   /* (the recursion sets KP from the same skin, so both sets wear it) */
   return set;
 }
@@ -1246,8 +1271,8 @@ const COWL = [
 ];
 function pyroFrame(o = {}) {
   const { lean = 0, dy = 0, trail = 0, hemW = 11, bell = 0, feet = [[11, 18], [15, 18]], arm = null, arm2 = null,
-    staff = null, cowl = 0, flick = 0, sit = 0, flare = null, palm = null, flame = null, sparks = null } = o;
-  const [c, g] = canvas(W, H);
+    staff = null, cowl = 0, flick = 0, sit = 0, flare = null, palm = null, flame = null, sparks = null, top: headroom = 0, wide = 0 } = o;
+  const [c, g] = canvas(W + wide, H + headroom); g.translate(0, headroom);
   const put = (x, y, k) => { if (KP[k]) px(g, Math.round(x), Math.round(y), KP[k]); };
   // the staff goes behind her when she carries it, in front when she works it
   const drawStaff = () => { if (!staff) return;
@@ -1420,6 +1445,7 @@ export function bakePyro(skin = {}) {
     F.tread = SCULL.map(([ax, ay], i) => pyroFrame({ bell: 3 - TREAD_DY[i], hemW: 12, dy: TREAD_DY[i], feet: kick[i], arm: [16, 10, 16 + ax, 10 + ay], arm2: [10, 10, 10 - ax, 10 + ay],
       staff: [18, 19, 20, 3], flame: (i + 1) % 4, cowl: 2 })); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  directionalPoses(F, 'staff', { pyro: true });
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -1427,7 +1453,7 @@ export function bakePyro(skin = {}) {
   /* HER FEET ARE TWO ROWS HIGHER IN HER FRAME than the knight's are in his (pyroFrame stands her boots on row 18, the staff's
      butt a row under them), so on the knight's anchor she stood two pixels off every floor. Her own foot line puts the boots on
      the ground and the butt of the staff a pixel into it. */
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay - 2 };
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay - 2 + ATTACK_HEADROOM };
 }
 
 // The keeper — an old badger merchant: spectacles, striped snout, a leather apron with a coin pouch, sleeves rolled. 14×16. Frames: idle, talk (a paw raised over the counter).
@@ -1747,11 +1773,12 @@ export function bakeFreebooter(skin = {}) {
       tread: i => ({ pistol: holster(TREAD_DY[i]), cutlass: [sh[0] + SCULL[i][0], sh[1] + SCULL[i][1] + TREAD_DY[i], sh[0] + SCULL[i][0] + 6, sh[1] + SCULL[i][1] + TREAD_DY[i] + 2] }) });
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  directionalPoses(F, 'cutlass', { extra: { pistol: holster() } });
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
 }
 // THE DEATH KNIGHT: a horned helm with nothing in it but two green lights, plate the colour of a cold
 // forge, a torn red surcoat, and a two-handed sword as long as he is with runes cut down the fuller.
@@ -1877,11 +1904,12 @@ export function bakeReaper(skin = {}) {
       tread: i => ({ greatsword: [sh[0] + 1, sh[1] + 4 + TREAD_DY[i], sh[0] - 7, sh[1] - 6 + TREAD_DY[i]], bits: flap([3, 4], TREAD_DY[i], 1 - TREAD_DY[i], 'r', 'r') }) });
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  directionalPoses(F, 'greatsword', { scale: 1.22 });
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
 }
 // THE WARDEN — THE CLOAKED WARDEN. A long cloak and a wide-brimmed hat, and a spear.
 // SHE WAS THE KNIGHT WITH A LONGER STICK. Drawn on his rig under a hood, at sixteen pixels she was his
@@ -2091,11 +2119,12 @@ export function bakeWarden(skin = {}) {
       tread: i => ({ spear: [sh[0] + 2, sh[1] + 4 + TREAD_DY[i], sh[0] + 3, sh[1] - 11 + TREAD_DY[i]], bits: flap([3, 4], TREAD_DY[i], 1, 'b', 'B') }) });
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  directionalPoses(F, 'spear', {});
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
 export function bakeBale() {
@@ -2222,11 +2251,12 @@ export function bakePaladin(skin = {}) {
   { const S = swimRig(knightFrame, sh, { carry: { maul: [sh[0] - 3, sh[1] + 6, sh[0] - 7, sh[1] - 5] }, tread: i => ({ maul: carry(TREAD_DY[i]) }) });
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  directionalPoses(F, 'maul', {});
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR };
+  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
 }
 // THE QUEEN'S LANCE, redrawn as what he is: a GOBLIN knight. Green face under an open kettle helm with a red
 // plume, ears out past the brim, a hooked nose and tusks; patched plate, the Queen's purple and gold, a kite
