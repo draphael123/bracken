@@ -440,6 +440,21 @@ async function runbossLab(BK, opts) {
         else if(!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
         if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
       }
+      if(boss.salvage){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const dx=boss.x-P.x,side=Math.sign(dx)||1;let gx=boss.x-side*Math.max(20,LAB_REACH[h]*.7);
+        const cargo=['salvageCargoTell','salvageCargo'].includes(boss.mode)&&(boss.cargo||[]).find(x=>Math.abs(P.x-x)<30);
+        if(cargo!==false&&cargo!==undefined){const gaps=[cargo-34,cargo+34].filter(x=>x>A.x0+18&&x<A.x1-18&&(boss.cargo||[]).every(m=>Math.abs(x-m)>27));gx=gaps.sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0]??P.x;}
+        const incoming=BK.seeds().some(s=>s.salvageShot&&!s.dead&&(P.x-s.x)*s.vx>0&&Math.abs(P.x-s.x)<90);
+        if(incoming&&P.ground){BK.press('jump');P.labJump=20;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        const guard=['salvagePinTell','salvageHookTell'].includes(boss.mode);
+        if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=side;}
+        else if(guard&&boss.modeT<.24){k[side>0?'left':'right']=true;BK.press('dodge');gx=P.x;}
+        if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
+        if(!guard&&!incoming&&(cargo===false||cargo===undefined)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<28&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.mode==='salvageRest'});if(f%600===599)await yieldNow();continue;
+      }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
       if (open && !wasOpen) { opened++; if (opts.trace) { out.trace = out.trace || []; out.trace.push({ h, mode: boss.mode, startD: Math.round(ad), dy: Math.round(boss.y - P.y), minD: 9999, pressed: 0, swung: 0, hpAt: boss.hp }); } }
       if (!open && wasOpen && opts.trace && out.trace && out.trace.length) { const tw = out.trace[out.trace.length - 1]; tw.lost = tw.hpAt - boss.hp; }

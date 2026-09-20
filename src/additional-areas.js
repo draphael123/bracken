@@ -38,17 +38,17 @@ export function stormwreckHarbor({painter,T,TS}) {
  ent('check',252,29);sign(254,'THE INLAND GATE. THE SALVAGE CAPTAIN HAS THE ROAD. PUT HIM DOWN TO REACH WAYMEET.');
  for(const x of [266,284])ent('marine',x,29,{face:-1});ent('boarder',276,29,{face:-1});
  deck(268,272,26);rope(272,26,29);ent('lookout',270,25,{face:-1});structures.push({x0:268,x1:272,top:26,floor:G,kind:'timber'});
- for(let y=18;y<30;y++)set(335,y,T.PORT);ent('check',297,29);ent('bosun',315,29,{mini:true,face:-1});ent('gate',352,29);
+ for(let y=18;y<30;y++)set(335,y,T.PORT);ent('check',297,29);ent('bosun',315,29,{mini:true,salvage:true,face:-1});ent('gate',352,29);
  interiors.push([303,334,20,29,'ship']);block(303,334,18,19);structures.push({x0:303,x1:334,top:20,floor:G,kind:'timber'});
  for(const x of [258,292,301,337,347])deco('lanternDeck',x,29,1);
  for(const x of [260,289,340])deco('waterButt',x,29);
- deco('cannon',306,29);deco('plunder',329,29,2);deco('netPoles',346,29);
+ sign(299,'BLOCK THE PIN AND HOOK. LEAVE THE CARGO MARKS. JUMP THE LOW CANNON SHOTS.');deco('plunder',329,29,2);deco('netPoles',346,29);
  for(let x=10;x<350;x+=6)if(L.grid[G*L.W+x]!==T.AIR)coins([x,28]);
  return {W:L.W,H:L.H,grid:L.grid,ents:L.ents,START:{x:4,y:29},pools,interiors,structures,moversExtra,falls:[],music:'stormharbor',duskStart:-1,duskLen:1,night:true,nightA:0.08,
   palette:{set:'shore',sky:'sea',far:'sea',mid:'wrecks',near:'reef',dress:'reef',grass:'#686963',grassL:'#9a9b85',grassD:'#434c4e',dirt:'#414b52',dirtL:'#677079',dirtD:'#2b353d',haze:'rgba(62,88,108,0.14)',canopy:['#101b29','#1c2d3a','#2a3c49','#354b57']},
   weather:[{x0:0,x1:96*TS,kind:'rain'},{x0:165*TS,x1:303*TS,kind:'rain'},{x0:335*TS,x1:99999,kind:'rain'}],ambient:[{x0:0,x1:96*TS,kind:'wind'},{x0:96*TS,x1:165*TS,kind:'hold'},{x0:165*TS,x1:99999,kind:'wind'}],
   calm:[[0,360,0,44]],
-  mini:{x0:302*TS,x1:335*TS,floor:G*TS,y0:20*TS,y1:(G+1)*TS,trigger:306*TS,wallL:302,gate:335,boss:'bosun',name:'THE SALVAGE CAPTAIN'}
+  mini:{salvage:true,x0:302*TS,x1:335*TS,floor:G*TS,y0:20*TS,y1:(G+1)*TS,trigger:306*TS,wallL:302,gate:335,boss:'bosun',name:'THE SALVAGE CAPTAIN'}
  };
 }
 

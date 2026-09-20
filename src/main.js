@@ -49,6 +49,7 @@ import * as CTP from './city_props.js';
 import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
 import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.js';
 import { bakeRimewright } from './redraw/frost.js';
+import {updateSalvageCaptain,drawSalvageCaptain} from './salvage-captain.js';
 import {bakeHangingHouse,paintHouseSmoke} from './redraw/hanging-town.js';
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
@@ -1668,7 +1669,7 @@ function spawnEnt(e) {
       case 'cutlass': enemies.push({ ...base, t: 'cutlass', w: 10, h: 18, hp: EHP.cutlass, speed: 42, mode: 'walk', modeT: 0, cd: 0.8 }); break;
       case 'boarder': enemies.push({ ...base, t: 'boarder', w: 12, h: 20, hp: EHP.boarder, speed: 30, mode: 'walk', modeT: 0, cd: 1.6 }); break;
       case 'marine': enemies.push({ ...base, t: 'marine', w: 10, h: 18, hp: EHP.marine, speed: 20, mode: 'perch', modeT: 1 + Math.random(), cd: 1.4, hx: px, hy: py }); break;
-      case 'bosun': enemies.push({ ...base, t: 'bosun', w: 12, h: 20, hp: EHP.bosun, speed: 26, mode: 'walk', modeT: 0, cd: 1.2, called: false }); break;
+      case 'bosun': enemies.push({ ...base, t: 'bosun', w: 12, h: 20, hp: e.salvage ? 360 : EHP.bosun, salvage: !!e.salvage, phase: 1, salvageN: 0, cargo: [], speed: 26, mode: 'walk', modeT: 0, cd: 1.2, called: false }); break;
       case 'lookout': enemies.push({ ...base, t: 'lookout', w: 8, h: 16, hp: EHP.lookout, speed: 24, mode: 'scan', modeT: 1.5, cd: 0, seen: 0 }); break;
       case 'captain': boss = { ...base, t: 'captain', w: 18, h: 28, hp: EHP.captain, maxHp: EHP.captain, mode: 'sleep', modeT: 0, face: -1, phase: 1, sabreT: 1.2, shotT: 2.6, hookT: 4.5, kegT: 7, callT: 10, ride: false, shots: 0 }; enemies.push(boss); break;
       /* THE MAGE'S FOLLY */
@@ -3413,7 +3414,7 @@ const BEASTS = [
   { t: 'cutlass', name: 'DECKHAND', sub: 'of the flotilla', desc: 'Quick, and the cutlass comes round in a wide swing that the shield holds easily. He guards while you wind up, so hit him on the end of his own swing. Two of them at once is the problem, not one.' },
   { t: 'boarder', name: 'BOARDER', sub: 'grapple and rope', desc: 'Throws a grapple from across a gap and hauls you in off your feet, which on these ships means into the water or into his mates. Break the line by putting something solid between you, or kill him while he hauls: he cannot let go and fight.' },
   { t: 'marine', name: 'MARINE', sub: 'in the tops', desc: 'Lives in the rigging and shoots down the length of a deck. He has to stand up to aim, and that is the moment to be somewhere else. Climb to him: he is nothing up close. His shot skips once off the deck, so the plank under you is not cover.' },
-  { t: 'bosun', name: 'BOSUN', sub: 'he calls the watch', desc: 'Hits like a door with a belaying pin, and if he sees you before you are on him he puts the whistle to his mouth and the whole town knows. Close the distance or lose the level.' },
+  { t: 'bosun', name: 'BOSUN', sub: 'he calls the watch', desc: 'Hits like a door with a belaying pin, and if he sees you before you are on him he puts the whistle to his mouth and the whole town knows. Close the distance or lose the level. The Salvage Captain also aims a grapnel, drops marked cargo and fires low quay guns: block the pin and hook, leave the cargo marks, jump the shots. Half wounded, both guns fire and three cargo lanes drop. Strike during his recovery.' },
   { t: 'lookout', name: 'LOOKOUT', sub: 'eyes, and a whistle', desc: 'Cannot fight at all. All he does is see you, and then fill his lungs. He needs a breath and a bit to do it: that is how long you have.' },
   { t: 'watch', name: 'THE DROWNED WATCH', sub: "a constable on his beat", desc: 'Still walking a beat in a city that drowned a hundred years ago. He guards with the haft of the halberd, so a light blow turns on it and only a HEAVY one gets through. He cannot see you under a burning lamp, and out of the light he hears you from twice as far and comes faster. His thrust has the longest reach of any foot soldier: step in or step out, never back. Crowd him and he takes your feet with the butt of the spear.' },
   { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it, and the fight gets smaller every time he does. Jump the low sweep of the pole; the black water he breathes hurts once and blinds you after; a line in your hand beats the hook. Reaching up to hood a lamp leaves him stretched and still, and everything lands double on him while he is.' },
@@ -6889,6 +6890,7 @@ const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss 
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
   if (!L.mini) return;
+  if(e?.salvage)for(const s of seeds)if(s.owner===e||s.from===e)s.dead=true;
   if (e) for (let i = 0; i < 4; i++) bossFx.push({ t: 0.06 + i * 0.12, x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * (e.h || 20), big: i === 3 });   /* a shorter run for a named fight */
   openGate(L.mini.gate, 0, LH - 1, true);
   setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
@@ -16564,6 +16566,7 @@ function updateEnemies(dt) {
       if (hazardFoe(e)) continue;
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
+    if(e.salvage){updateSalvageCaptain(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,pinDamage:DMG.bosunPin,cargoDamage:18,shotDamage:12,hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-e.h-20,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
     if (e.trainer) { if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x)); if (e.trainer === 'still' || (e.trialSt && e.trialSt.done)) { if (e.trainer !== 'still') { e.mode = 'walk'; e.modeT = 0; } e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); const r0 = moveBody(e, 0, e.vy * dt, false); if (r0 && r0.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; continue; } }   /* THE TRIAL'S STILL MEN face you and take it; the drills fight on below */
     if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
     if (e.wallT > 0) e.wallT -= dt;
@@ -19787,6 +19790,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'cutlass') frame = e.mode === 'slashTell' ? 5 : e.mode === 'slash' ? 6 : e.guardT > 0 ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 4 : 0;
     else if (e.t === 'boarder') frame = e.mode === 'throwTell' ? 4 : e.mode === 'throw' ? 5 : e.mode === 'haul' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
     else if (e.t === 'marine') frame = e.mode === 'shootTell' ? 2 : e.mode === 'shoot' ? 3 : Math.floor(e.anim * 0.7) % 2;
+    else if(e.salvage) frame=e.mode==='salvagePinTell'||e.mode==='salvageHookTell'?5:e.mode==='salvagePin'?6:/Tell$/.test(e.mode)||e.mode==='salvageRally'?4:Math.abs(e.vx)>4?Math.floor(e.anim*7)%4:0;
     else if (e.t === 'bosun') frame = e.mode === 'whistle' ? 4 : e.mode === 'swingTell' ? 5 : e.mode === 'swing' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
     else if (e.t === 'lookout') frame = e.mode === 'shout' ? 3 : e.mode === 'spot' ? 2 : e.modeT % 2 < 1 ? 1 : 0;
     else if (e.t === 'quarter') frame = ({ slashTell: 3, slash: 4, stanceTell: 3, riposte: 4, shootTell: 5, shoot: 6, leap: 7, cut: 8, reel: 9, dead: 10 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 5) % 2 : 0);
@@ -19943,6 +19947,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
+  drawSalvageCaptain(g,enemies.find(e=>e.salvage),L.mini,cx,cy,time);
   for (const s of seeds) { if (s.weight) { // THE COIN WEIGHT: lead on a chain, turning over as it goes
     const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
     g.strokeStyle = '#8e98a3'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - Math.round(s.vx * 0.05), y - Math.round(s.vy * 0.05) - 4); g.lineTo(x, y); g.stroke();
