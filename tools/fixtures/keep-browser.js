@@ -2,8 +2,8 @@
  const {LEVELS,T}=await import('./src/level.js'),shots=[],rows=[];
  for(const id of ['deep','keep']){
   BK.load(LEVELS.findIndex(l=>l.id===id));BK.state='play';BK.god=true;BK.sim(300);
-  if(id==='keep'){for(const [x,y,n]of[[60,58,'keep-ward'],[130,56,'keep-hall']]){BK.look(x,y);BK.sim(40);BK.step(0);shots.push({name:n,png:BK.view.buf.toDataURL()});}}
-  if(id==='keep'){const M=BK.L.mini;BK.look(M.trigger/16+2,M.floor/16-1);BK.sim(500);const mini=BK.enemies().find(e=>e.mini&&e.t==='bellguard');if(!BK.miniActive||!mini)throw Error('Keep mini failed to wake');BKT.hurtEnemy(mini,999999,mini.x+40,false);BK.sim(90);if(mini.alive||BK.miniActive)throw Error('Keep mini stayed active');if(BK.L.grid[58*BK.L.W+M.gate]===T.PORT)throw Error('Keep gate stayed shut');rows.push({id,mini:mini.t,defeated:true});}
+  if(id==='keep'){for(const [x,y,n]of[[460,58,'keep-ward'],[530,56,'keep-hall']]){BK.look(x,y);BK.sim(40);BK.step(0);shots.push({name:n,png:BK.view.buf.toDataURL()});}}
+  if(id==='keep'){const M=BK.L.mini;BK.look(M.trigger/16+2,M.floor/16-1);BK.sim(500);const mini=BK.enemies().find(e=>e.mini&&e.t==='bellguard');if(!BK.miniActive||!mini)throw Error('Keep mini failed to wake');for(const mode of ['vaultSpearTell','vaultRingTell','vaultPressureTell','vaultBandTell']){mini.mode=mode;mini.modeT=1;mini.aimX=BK.P.x;mini.aimY=BK.P.y-10;BK.step(0);shots.push({name:mode,png:BK.view.buf.toDataURL()});}BKT.hurtEnemy(mini,999999,mini.x+40,false);BK.sim(90);if(mini.alive||BK.miniActive)throw Error('Keep mini stayed active');if(BK.L.grid[58*BK.L.W+M.gate]===T.PORT)throw Error('Keep gate stayed shut');BK.respawnEnemies();if(BK.enemies().some(e=>e.vaultKeeper&&e.alive))throw Error('defeated Keeper returned on retry');rows.push({id,mini:mini.t,defeated:true,retry:true});}
   const A=BK.L.arena;BK.look(A.trigger/16+2,A.floor/16-1);BK.sim(1800);const e=BK.boss;
   if(!BK.bossActive||!e?.alive)throw Error(id+' boss did not activate');
   BK.reset();BK.look(e.x/16-8,e.y/16-1);BK.sim(30);BK.step(0);shots.push({name:id+'-boss',png:BK.view.buf.toDataURL()});

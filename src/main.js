@@ -1,3 +1,5 @@
+import {updateVaultKeeper,drawVaultKeeper} from './vault-keeper.js';
+import {breathCapacity} from './deepair.js';
 import {drawHarborLandmarks} from './harbor-landmarks.js';
 import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-boss.js';
 import { attackPose } from './attack-animation.js';
@@ -876,7 +878,7 @@ function coopEnd() { players = [players[0]]; coopFall = false; }
 function coopRegroup() {
   if (!coop()) return;
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + (P.n === 2 ? 14 : -14), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0 }); P.hitSet.clear(); }); }
+    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + (P.n === 2 ? 14 : -14), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L,P.relic), drownT: 0 }); P.hitSet.clear(); }); }
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
@@ -1149,7 +1151,7 @@ function allyTick() {
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
-const MEDALS = { fallingtower:[320,470,690], keep: [380,560,800], harbor: [850, 1200, 1700], burial: [360, 510, 740], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
+const MEDALS = { fallingtower:[320,470,690], keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [360, 510, 740], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
@@ -1626,6 +1628,7 @@ function loadLevel(i) {
   }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
   spawnEntities();
+  P.breath=breathCapacity(L,P.relic);P.drownT=0;
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
   fogReset(); wayRoute = null; wayTgt = null; wayMe = 0;   /* the map remembers this level from the save; the arrow's route is built again */
   /* ...and built HERE when the arrow is on: the fill with its rides takes a quarter of a second on the Deep, and on the arrow's first ask in
@@ -1637,7 +1640,7 @@ function spawnEntities() {
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
-  if(L.harborSections&&!rushOn()){miniDone=!!(PROG[LEVELS[levelIndex].id]||{}).mini;if(miniDone&&L.mini)for(let y=0;y<LH;y++){const i=y*LW+L.mini.gate;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}}
+  if((L.harborSections||L.keepExpansion)&&!rushOn()){miniDone=!!(PROG[LEVELS[levelIndex].id]||{}).mini;if(miniDone&&L.mini)for(let y=0;y<LH;y++){const i=y*LW+L.mini.gate;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}}
   ambushReset();
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) enemies[i].xpKey = k + '.' + (i - n0); });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
   spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); eliteGates();
@@ -1827,7 +1830,7 @@ function spawnEnt(e) {
       case 'bellcrab': {const e={...base,t:'bellcrab',w:42,h:43,hp:EHP.bellcrab,maxHp:EHP.bellcrab,mode:'sleep',modeT:0,face:-1,phase:1,turn:0,open:0};boss=e;enemies.push(e);}break;
       case 'lanternshade': case 'bonecorsair': case 'tidemarauder': enemies.push({...base,t:e.t,w:22,h:34,hp:EHP[e.t],mode:'walk',modeT:0,cd:1,turn:0});break;
       case 'familiar': enemies.push({...base,t:'familiar',w:56,h:60,hp:EHP.familiar,mode:'walk',modeT:0,cd:1,turn:0,open:0});break;
-      case 'bellguard': enemies.push({...base,t:'bellguard',w:20,h:33,hp:EHP.bellguard,mode:'walk',modeT:0,cd:1,turn:0,speed:24});break;
+      case 'bellguard': enemies.push({...base,t:'bellguard',w:20,h:33,hp:e.vaultKeeper?260:EHP.bellguard,vaultKeeper:!!e.vaultKeeper,phase:1,vaultTurn:0,open:0,mode:'walk',modeT:1.2,cd:1,turn:0,speed:24});break;
       case 'drownedking': { const dk = { ...base, t: 'drownedking', w: 30, h: 32, hp: Math.round(EHP.drownedking * 1.45), maxHp: Math.round(EHP.drownedking * 1.45), mode: 'sleep',   /* HE SWIMS NOW, and a fight you can take anywhere in the room is a fight that goes quicker: more of him to get through */ modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, haulT: 6, debtT: 10 }; boss = dk; enemies.push(dk); } break;
       case 'propman': enemies.push({ ...base, t: 'propman', w: 12, h: 13, hp: EHP.propman, mode: 'walk', modeT: 1, hitT: 0, swingT: 2, home: px, mini: !!e.mini }); break;
       case 'clinger': enemies.push({ ...base, t: 'clinger', w: 10, h: 11, hp: EHP.clinger, mode: 'cling', modeT: 0, hitT: 0, wallX: px, wallY: py, holdT: 0 }); break;
@@ -2505,6 +2508,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
+  P.breath=breathCapacity(L,P.relic);P.drownT=0;
   coopRegroup();   /* the room is back: whoever else is in the party is stood up at the same shrine, not left in the old one */
 }
 // the order is not the story order: a rush wants a ramp with a pulse in it, and the minis are the breathers
@@ -4846,6 +4850,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'masthead' && e.mode === 'sail') { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 50, 'THE SAIL TAKES IT', '#9aa39a'); return; }   /* under sail the canvas is in the way */
   if (e.t === 'masthead' && e.mode === 'fouled') dmg = Math.round(dmg * 2);   /* wrapped in his own canvas */
   if (e.t === 'masthead' && (e.mode === 'tangled' || e.mode === 'reel')) dmg = Math.round(dmg * 1.5);
+  if(e.vaultKeeper&&e.open>0)dmg=Math.round(dmg*1.2);
   if (e.t === 'harbormaster' && e.open > 0) dmg=Math.round(dmg*1.3);
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
@@ -6574,7 +6579,7 @@ function updatePlayer(dt) {
   // climbs out. Under the surface the breath runs down (the Tide Charm doubles it) and then the water starts to take you.
   const swimP = !P.dead && !P.climb && (L.pools || []).find(p => p.swim && !p.shallow && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 8 && (p.bottom === undefined || P.y <= p.bottom + 4));
   if (swimP && !P.swim) { if (P.vy > 90) { burst(P.x, swimP.y, 12, ['#e8f4f0', '#7cc8c8'], 80, 0.5, 400, 1); SFX.splash(); } P.plunge = false; P.vy *= 0.35; }
-  P.swim = !!swimP; const breathMax = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6;
+  P.swim = !!swimP; const breathMax = breathCapacity(L,P.relic);
   if (P.swim && swimP.flow) { // THE CURRENT: it carries you, and it carries you whether you are swimming or not
     const f = swimP.flow * (P.block || P.aegis ? 0.45 : 1);   // a shield braced across it holds you better
     // whole pixels only, with the fraction kept: a sub-pixel push is rounded away by the collision step and
@@ -6597,13 +6602,13 @@ function updatePlayer(dt) {
     if (P.jbuf > 0 && P.ballast) { P.jbuf = 0; dropBallast(true); }
     else if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
     const bell = nearAir(P.x, P.y - 8);
-    if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5); P.drownT = 0; }
+    if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5 * (L.breathScale||1)); P.drownT = 0; }
     else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1) * (curId() === 'deep' ? 0.5 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
       if (P.breath <= 0) { P.breath = 0; P.drownT = (P.drownT || 0) - dt;
         if (Math.random() < dt * 26) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - 14, vx: 0, vy: -50, life: 0.5, max: 0.5, col: '#e8f4f0', size: 1, grav: -40 });
         if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true, noKnock: true, name: 'DROWNED' }); } } }
-    else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
-  } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4); P.drownT = 0; }
+    else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3 * (L.breathScale||1)); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
+  } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4 * (L.breathScale||1)); P.drownT = 0; }
   snareTick(dt);
   if (P.whirlFree > 0) P.whirlFree = Math.max(0, P.whirlFree - dt);   /* the stroke that broke the Drowned King's current keeps you out of it a moment */
   if (P.soot > 0) P.soot = Math.max(0, P.soot - dt);   // the black water runs off the lens
@@ -6899,6 +6904,7 @@ function miniEnd(e) {
   if (!L.mini) return;
   if(e?.salvage)for(const s of seeds)if(s.owner===e||s.from===e)s.dead=true;
   if (e) for (let i = 0; i < 4; i++) bossFx.push({ t: 0.06 + i * 0.12, x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * (e.h || 20), big: i === 3 });   /* a shorter run for a named fight */
+  if(e?.vaultKeeper)for(const s of seeds)if(s.vaultShot)s.dead=true;
   openGate(L.mini.gate, 0, LH - 1, true);
   setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
   if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].mini = true; saveProgress(); }
@@ -8399,7 +8405,7 @@ function updateLamprey(e, dt) {
   const pl = e.pool = reefHome(e); const top = pl ? pl.y + 8 : e.y - 30, bot = pl ? (pl.bottom || pl.y + 80) - 4 : e.y + 30;
   if (e.mode === 'latched') {
     e.latchT -= dt; e.x = P.x + e.face * -6; e.y = P.y - 8;
-    if (P.swim) { const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6; P.breath = Math.max(0, (P.breath ?? mx) - dt * LAMPREY_DRAIN); }
+    if (P.swim) { const mx = breathCapacity(L,P.relic); P.breath = Math.max(0, (P.breath ?? mx) - dt * LAMPREY_DRAIN); }
     if (Math.random() < dt * 10) parts.push({ x: e.x, y: e.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#e8f4f0', size: 1, grav: 0 });
     if (P.dodge > 0 || P.dead || !P.swim || e.latchT <= 0) { e.mode = 'swim'; e.cd = 3; number(e.x, e.y - 12, P.dodge > 0 ? 'SHAKEN OFF' : 'LETS GO', '#8fd160'); e.vx = -e.face * 90; e.vy = -40; }
     return;
@@ -15989,7 +15995,7 @@ function drawAirSigns(cx, cy) {
    and the first time a kind of air gives you one it says what gave it you. This used to sit inside updateDeep, so on the
    reef, the flotilla and the hurricane - three levels whose whole rule is the breath - taking one did nothing at all. */
 function updateBreathCue(dt) {
-  const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, br = P.breath ?? mx;
+  const mx = breathCapacity(L,P.relic), br = P.breath ?? mx;
   BREATHCUE.gulpCd = Math.max(0, BREATHCUE.gulpCd - dt);
   if (P.swim && !P.dead) {
     const rising = br > BREATHCUE.last + 0.0005;
@@ -16745,6 +16751,7 @@ function updateEnemies(dt) {
     if (e.t === 'bonecorsair') {beastSeen(e.t);updateBonecorsair(e, dt);continue;}
     if (e.t === 'tidemarauder') {beastSeen(e.t);if(!e.mini||miniActive)updateTidemarauder(e, dt);continue;}
     if (e.t === 'familiar') {beastSeen(e.t);if(miniActive)updateFamiliar(e, dt);continue;}
+    if(e.vaultKeeper){updateVaultKeeper(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,move:(q,x,y)=>moveBody(q,x,y,false),hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-45,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
     if (e.t === 'bellguard') {beastSeen('bellguard');if(!e.mini||miniActive)updateBellguard(e, dt);continue;}
     if (e.t === 'drownedking') { updateDrownedKing(e, dt); continue; }
     if (e.t === 'propman') { updatePropman(e, dt); continue; }
@@ -17753,7 +17760,7 @@ function drawFalls(cx, cy) {
 // breath, as bubbles over your head while you are under
 function drawAirHint(cx, cy) { // when the air is going, the nearest diving bell gets an arrow at the edge of the screen
   const AIR = airList(); if (!P.swim || P.dead || !AIR.length) return;
-  const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b = P.breath ?? mx;
+  const mx = breathCapacity(L,P.relic), b = P.breath ?? mx;
   if (b > mx * 0.5) return;
   let best = null, bd = 1e9; for (const a of AIR) { const dd = Math.hypot(a.x - P.x, a.y - P.y); if (dd < bd) { bd = dd; best = a; } }
   if (!best || bd < 40) return;
@@ -17767,7 +17774,7 @@ function drawAirHint(cx, cy) { // when the air is going, the nearest diving bell
 }
 /* THE BAR FILLS WHERE YOU CAN SEE IT. It used to vanish the moment the breath was full, so the one frame that says "you
    got it" was the one frame it was not drawn: for a third of a second after a lungful it is drawn FULL and white instead. */
-function drawBreath(cx, cy) { if (!P.swim || P.dead) return; const mx = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b = P.breath ?? mx;
+function drawBreath(cx, cy) { if (!P.swim || P.dead) return; const mx = breathCapacity(L,P.relic), b = P.breath ?? mx;
   const caught = BREATHCUE.gulpCd > 0.55; if (b >= mx - 0.05 && !caught) return;
   const n = caught ? 6 : Math.ceil(b / (mx / 6));
   for (let k = 0; k < 6; k++) { const x = Math.round(P.x - cx) - 15 + k * 5, y = Math.round(P.y - cy) - 28; g.fillStyle = k < n ? (caught ? '#ffffff' : '#e8f4f0') : 'rgba(232,244,240,0.25)'; g.fillRect(x, y, 3, 3); if (k < n) { g.fillStyle = caught ? '#bfe6f5' : '#7cc8c8'; g.fillRect(x + 2, y + 2, 1, 1); } } }
@@ -19748,6 +19755,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'bellcrab') frame=({clawTell:2,claw:3,ballastTell:4,slam:5,pressureTell:6,pressure:7,scuttleTell:8,scuttle:9,vent:10})[e.mode]??(Math.abs(e.vx)>2?1:0);
     else if (['lanternshade','bonecorsair','tidemarauder'].includes(e.t)) frame=e.mode==='rest'?4:e.mode?.endsWith('Tell')?(/cleave|rake/.test(e.mode)?3:2):Math.abs(e.vx)>2?1:0;
     else if (e.t === 'familiar') frame=MF.FAMILIAR_F[e.mode]??MF.FAMILIAR_F.idle;
+    else if(e.vaultKeeper)frame=e.open>0?4:e.mode==='vaultHookTell'||e.mode==='vaultSpearTell'?2:e.mode.endsWith('Tell')?3:Math.abs(e.vx)+Math.abs(e.vy)>2?1:0;
     else if (e.t === 'bellguard') frame=({hookTell:2,knellTell:3,rest:4})[e.mode]??(Math.abs(e.vx)>2?1:0);
     else if (e.t === 'drownedking') frame = kingFrame(e);
     else if (e.t === 'propman') frame = (e.mode === 'setTell' || e.mode === 'set' || e.mode === 'throwTell') ? 2 : e.mode === 'seek' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 2 : 0;
@@ -20116,7 +20124,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy); drawVaultKeeper(g,enemies.find(e=>e.vaultKeeper),L.mini,cx,cy,time);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
@@ -21341,7 +21349,7 @@ function render() {
     // four damage every one and a third seconds arrived from nowhere. It is a bar now, with the other bars,
     // and it goes red and flashes before it starts costing you.
     if ((state === 'play' || state === 'talk') && P.swim && !P.dead) {
-      const mx2 = P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6, b2 = Math.max(0, P.breath ?? mx2), k2 = b2 / mx2;
+      const mx2 = breathCapacity(L,P.relic), b2 = Math.max(0, P.breath ?? mx2), k2 = b2 / mx2;
       const by = (SET.iron ? 41 : 29) + 10 + xpRow;
       const low = k2 < 0.34, fl = low && Math.floor(time * 8) % 2;
       g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(2, by - 4, low ? 92 + inkW(k2 <= 0 ? 'NO AIR' : 'BREATH', 6) + 4 : 104, 13, 3); g.fill(); hudRects.push([2, by - 4, low ? 128 : 104, 13]);   /* wide enough for the word it says */

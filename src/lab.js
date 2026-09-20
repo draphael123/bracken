@@ -1,3 +1,4 @@
+import {breathCapacity} from './deepair.js';
 import { AMBUSH_TARGET } from './ambush.js';
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
 // The playtest bot walks levels. These FIGHT, and measure what a player feels: how long a foe or a boss takes to
@@ -317,9 +318,10 @@ function dashIn(BK, h, e, f) {
 }
 export async function bossLab(BK, opts = {}) {
   const previous = BK.manualSimulation;
+  const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { BK.manualSimulation = previous; }
+  finally { BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
@@ -331,6 +333,7 @@ async function runbossLab(BK, opts) {
   const rows = [], out = { rows, healthMode, started: Date.now(), progress: 0, total: bosses.length * heroes.length };
   if (typeof window !== 'undefined') window.__bossLab = out;
   for (const lvId of bosses) for (const h of heroes) {
+    if(opts.mini && BK.PROG[lvId]) BK.PROG[lvId].mini=false;
     BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
     /* A FRESH HERO EACH ROW. The last swing of the row before used to arrive with him - a heavy swing still going roots the
        paladin for a second on whatever he is dropped on, and at the Roc's door that is the glass over the shaft */
@@ -339,7 +342,7 @@ async function runbossLab(BK, opts) {
     const L = BK.L, A = opts.mini ? L.mini : L.arena; out.progress++;
     if (!A) { rows.push({ lvl: lvId, h, skipped: opts.mini ? 'no mini' : 'no arena' }); continue; }
     /* A MINI IS THE ONE MARKED mini: the Weaver's level has small spiders, the Boatswain's ship has bosuns, the Overman's tomb has propmen - the first of the kind found was one of those */
-    const boss = (opts.mini && BK.enemies().find(e => e.t === A.boss && e.alive && e.mini)) || BK.enemies().find(e => e.t === A.boss && e.alive);
+    const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!opts.mini || e.mini));
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
     BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(30);
@@ -405,7 +408,7 @@ async function runbossLab(BK, opts) {
           if (boss.mode === 'whirl' && f % 18 === 0) BK.press('dodge'); }
         /* AND IT BREATHES. Under two and a half seconds of breath it goes to the nearest air he has not burst (and is not about to), and
            stays in it until the breath is back: a swimmer who fights him without breathing is a swimmer who drowns in the lab and not in play */
-        else if (air.length && ((P.breath ?? 6) < 3 || (P.labAir && (P.breath ?? 6) < (P.relic === 'tidecharm' ? 12 : P.relic === 'diverlamp' ? 9 : 6) - 0.3))) {
+        else if (air.length && ((P.breath ?? 6) < 3 || (P.labAir && (P.breath ?? 6) < (breathCapacity(BK.L,P.relic)) - 0.3))) {
           const live = air.filter(s => !(s.o.goneUntil > BK.time) && !(s.o.shiverUntil > BK.time));
           const src = live.sort((a, b) => Math.hypot(a.x - P.x, a.ty - P.y) - Math.hypot(b.x - P.x, b.ty - P.y))[0];
           if (src) { P.labAir = true; const gx = Math.max(src.l + 8, Math.min(src.r - 8, P.x)), gy = src.ty;
@@ -439,6 +442,20 @@ async function runbossLab(BK, opts) {
         if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&(h==='reaper'||P.vy>0)&&(h==='pyro'||h==='warden'||h==='reaper'?Math.abs(landingCutY-(heart.y+3))<16:Math.abs(P.y-8-(heart.y-7))<46)&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
         else if(!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
         if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.vaultKeeper){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const dx=boss.x-P.x,side=Math.sign(dx)||1,mode=boss.mode;let gx=boss.x-side*Math.max(20,LAB_REACH[h]*.65),gy=boss.y;
+        if(mode==='vaultRingTell'){gx=boss.x+(P.x<boss.x?-120:120);gy=boss.y-55;}
+        if(mode==='vaultPressureTell'){gx=boss.aimX+(P.x<boss.aimX?-52:52);gy=boss.aimY-45;}
+        if(mode==='vaultBandTell')gy=boss.aimY-48;
+        const mx=breathCapacity(L,P.relic);if(P.breath<4||(P.labAir&&P.breath<mx-.3)){P.labAir=true;const xs=[484.5,494.5,504.5].map(x=>x*TS);gx=xs.sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0];gy=A.floor-12;}else P.labAir=false;
+        gx=Math.max(A.x0+20,Math.min(A.x1-20,gx));gy=Math.max(A.floor-125,Math.min(A.floor-5,gy));
+        if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;if(gy<P.y-4)k.up=true;else if(gy>P.y+4)k.down=true;
+        const guard=['vaultHookTell','vaultSpearTell'].includes(mode);
+        if(guard&&SHIELDED(h)){k.block=true;k.left=k.right=k.up=k.down=false;P.face=side;}else if(guard&&boss.modeT<.2)BK.press('dodge');
+        if(!guard&&!P.labAir&&!mode.endsWith('Tell')&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<27&&P.atk<0){P.face=side;k.down=k.up=false;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='harbormaster'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;

@@ -11,12 +11,12 @@
 // water; a fight on the way is extra. Clams and bulbs count as air where they sit: struck, they give it there.
 //   node tools/breath.mjs [levelId=deep] [-v]
 import { LEVELS, T } from '../src/level.js';
-import { airBoxes } from '../src/deepair.js';
+import { airBoxes, breathCapacity } from '../src/deepair.js';
 
 const TS = 16, want = process.argv[2] && !process.argv[2].startsWith('-') ? process.argv[2] : 'deep', verbose = process.argv.includes('-v');
-const BREATH = 6, SIDE = 16 / 96, DOWN = 16 / 140, UP = 16 / 190;
+const SIDE = 16 / 96, DOWN = 16 / 140, UP = 16 / 190;
 const lv = LEVELS.find(l => l.id === want); if (!lv) { console.log('no level ' + want); process.exit(1); }
-const L = lv.build(), W = L.W, H = L.H, g = L.grid;
+const L = lv.build(), BREATH=breathCapacity(L), W = L.W, H = L.H, g = L.grid;
 const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
 const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
 const pools = (L.pools || []).filter(p => p.swim && !p.dry);

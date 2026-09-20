@@ -21,3 +21,5 @@ export function airBoxes(L) {
   for (const c of (D.wrecks || [])) { const x = c.x * TSZ + 8, bed = (c.y + 1) * TSZ; out.push({ l: x - 24, r: x + 24, t: bed - 30, b: bed + 4, kind: 'wreck' }); }
   return out;
 }
+
+export function breathCapacity(L,relic){return (relic==='tidecharm'?12:relic==='diverlamp'?9:6)*(L?.breathScale||1);}

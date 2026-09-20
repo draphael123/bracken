@@ -1,3 +1,4 @@
+import {expandKeep} from './keep-expansion.js';
 // Crop the authored trench and castle together with all of their water/air metadata.
 export function cropDeep(source, x0, y0, W, H, TS=16) {
  const x1=x0+W-1,y1=y0+H-1,R={...source,W,H,grid:new Uint8Array(W*H)};
@@ -34,7 +35,7 @@ export function underwaterKeep(source,T,TS=16){
  R.mini={x0:82*TS,x1:109*TS,floor:59*TS,trigger:84*TS,wallL:81,gate:109,swim:true,y0:14*TS,y1:60*TS,boss:'bellguard',name:'THE KEEPER OF THE VAULT'};
  for(let y=52;y<=58;y++)R.grid[y*R.W+109]=T.PORT;
  R.ents.push({t:'sign',x:4,y:58,text:'THE UNDERWATER KEEP. THE KING WAITS BEYOND HIS FLOODED COURTS. AIR HIDES UNDER THE VAULTS.'});
- return R;
+ return expandKeep(R,T,TS,cropDeep);
 }
 export function crabTrench(source,T,TS=16){
  const R=cropDeep(source,0,0,162,204,TS),set=(x,y,t)=>R.grid[y*R.W+x]=t;
