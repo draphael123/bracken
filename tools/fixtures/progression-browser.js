@@ -1,7 +1,7 @@
 (async()=>{const {LEVELS}=await import('./src/level.js'),{skillsFor}=await import('./src/progression.js'),{xpFloor}=await import('./src/xp.js');const shots=[],results=[];
 BK.load(LEVELS.findIndex(l=>l.id==='shop'));BK.god=false;BK.state='play';BK.sim(300);
 for(const h of ['knight','pyro','paladin','pirate','reaper','warden']){BK.setHero(h);BK.load(LEVELS.findIndex(l=>l.id==='shop'));BK.state='play';BK.sim(300);const p=BKT.PROG;p.xp[h]=xpFloor(16);p.coins=1000;p.skillOwned[h]={};p.loadouts[h]=[];BK.applyUpgrades();BK.state='play';dispatchEvent(new KeyboardEvent('keydown',{key:'q'}));BK.sim(1);dispatchEvent(new KeyboardEvent('keyup',{key:'q'}));if(BK.state!=='tree')throw Error('loadout did not open');
- const ns=skillsFor(h),active=ns.filter(n=>n.active);for(let i=0;i<Math.min(4,active.length);i++){BK.ui.treeI=ns.indexOf(active[i]);BK.press('confirm');BK.sim(1);BK.press(['throw','skill2','skill3','skill4'][i]);BK.sim(1);if(BKT.skillAt(i)!==active[i].id)throw Error(h+' slot '+i+' '+BKT.treeMsg);}
+ const ns=BKT.treeNodes(),active=ns.filter(n=>n.active);for(let i=0;i<Math.min(4,active.length);i++){BK.ui.treeI=ns.indexOf(active[i]);BK.press('confirm');BK.sim(1);BK.press(['throw','skill2','skill3','skill4'][i]);BK.sim(1);if(BKT.skillAt(i)!==active[i].id)throw Error(h+' slot '+i+' '+BKT.treeMsg);}
  BK.step(0);shots.push({name:h+'-loadout',png:BK.view.buf.toDataURL()});results.push({hero:h,coins:p.coins,loadout:[...p.loadouts[h]],safe:BKT.loadoutSafe()});
  BK.press('pause');BK.sim(1);BK.P.st=BK.P.maxSt;BK.P.hurt=0;BK.P.atk=-1;BK.press('skill3');BK.sim(10);results.at(-1).thirdCooldown=BK.P.cds?.[active[2]?.id]||0;if(!results.at(-1).thirdCooldown && !(h==='knight'&&BK.thrown))throw Error(h+' slot three failed to cast');
 }

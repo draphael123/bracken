@@ -366,7 +366,7 @@ const cdOf = k => k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3
 const amul = k => skillScale(heroLevel()); // skill damage grows, cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
-  skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
+  skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
   treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips() };   /* for the labs and the harnesses */
 /* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
@@ -3065,17 +3065,20 @@ function drawMap() {
 
 // ---------- store ----------
 let storeI = 0, storeMsg = '', storeMsgT = 0, storeTab = 0;
-function learnTalent(k) { treeFrom = state; treeI = 0; state = 'tree'; SFX.menuOpen(); }
+function learnTalent(k) { treeFrom = state; treeI = 0; treeBranch = 0; state = 'tree'; SFX.menuOpen(); }
 // ---------- the tree screen ----------
 let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
-const treeNodes = () => skillsFor(hero());
+const SKILL_NEEDS = { coldComfort: ['summonSkeleton'], gleaner: ['summonSkeleton'], press: ['summonSkeleton'], ossuary: ['summonSkeleton'], graveProvides: ['summonSkeleton'], gripAll: ['deathGrip'], bidden: ['summonSkeleton','gravecall'], secondDeath: ['summonSkeleton','gravecall'] };
+const skillNeeds = n => n?.hero === 'reaper' ? SKILL_NEEDS[n.id] || [] : [];
+const treeNodes = () => skillsFor(hero()).filter(n => !!n.active === (treeBranch === 0)).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));
 const loadoutSafe = () => { const from = state === 'tree' ? treeFrom : state, origin = from === 'menu' ? menuFrom : from;
   if (['map','select'].includes(origin) || (from === 'store' && equipFrom === 'map' && storeMode === 'equip')) return true;
   if (bossActive || miniActive || ambushLive()) return false;
   return !!(L && L.shop) || shrines.some(s => s.lit && Math.abs(s.x-P.x)<36 && Math.abs(s.y-P.y)<32) && !enemies.some(e => e.alive && !e.harmless && Math.abs(e.x-P.x)<140 && Math.abs(e.y-P.y)<70); };
 function updateTree(dt) {
  treeMsgT = Math.max(0, treeMsgT-dt); const ns=treeNodes();treeI=Math.max(0,Math.min(ns.length-1,treeI));const old=treeI;
- if(upPress)treeI=(treeI+ns.length-1)%ns.length;if(downPress)treeI=(treeI+1)%ns.length;if(leftPress)treeI=Math.max(0,treeI-6);if(rightPress)treeI=Math.min(ns.length-1,treeI+6);
+ if(leftPress||rightPress){treeBranch=1-treeBranch;treeI=0;treePage=0;treeMsgT=0;SFX.ui();return;}
+ if(upPress)treeI=(treeI+ns.length-1)%ns.length;if(downPress)treeI=(treeI+1)%ns.length;
  if(old!==treeI){treePage=0;SFX.ui();}if(morePress()&&treePages>1)treePage=(treePage+1)%treePages;
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
  if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
@@ -3226,11 +3229,13 @@ function drawTree() {
  g.drawImage(MAPC,0,0);g.fillStyle='rgba(10,9,18,0.94)';g.fillRect(0,0,VW,VH);panel(3,2,VW-6,VH-4);
  const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/4;
  text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
- for(let i=0;i<4;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G',String(SET.skill3Key).toUpperCase(),String(SET.skill4Key).toUpperCase()][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?key+(sk&&!sk.active?' PASSIVE':''):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
- const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=48+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
- if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s':'PASSIVE TECHNIQUE  1 SLOT'),12,112,UI.gold,'left',6);
- const lines=wrap(n.desc,VW-26,6),per=5;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,122+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:n.desc,pages:treePages});}
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('Z BUY  F/G/'+SET.skill3Key+'/'+SET.skill4Key+' EQUIP  X MORE  Q CLOSE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ for(let i=0;i<4;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G',String(SET.skill3Key).toUpperCase(),String(SET.skill4Key).toUpperCase()][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
+ for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
+ const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
+ if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):'PASSIVE TECHNIQUE  1 SLOT'),12,124,UI.gold,'left',6);
+ const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
+ const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('LEFT/RIGHT TABS  Z BUY  F/G/'+SET.skill3Key+'/'+SET.skill4Key+' EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
   if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
@@ -3319,8 +3324,8 @@ function drawStore() {
     // opposite ends with nothing measuring the gap, and on a long name they met in the middle
     const nameOf = () => (tab.talent && k.tier > 1 ? '  '.repeat(k.tier - 1) : '') + k.name;
     const rowName = (badge, extra = 0) => text(fitName(nameOf(), listW - 26 - (badge ? inkW(badge, 6) + 6 : 0) - extra, 6), listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
-    if (tab.talent) { const bg = ptsLeft(hero()) > 0 ? ptsLeft(hero()) + ' TO SPEND' : 'Z OPEN';
-      rowName(bg); text(bg, listX + listW - 4, yy, ptsLeft(hero()) > 0 ? UI.gold : UI.sel, 'right', 6); return; }
+    if (tab.talent) { const bg = 'Z OPEN';
+      rowName(bg); text(bg, listX + listW - 4, yy, UI.sel, 'right', 6); return; }
     if (k.consumable) { const bg = (PROG.tonics || 0) + '/' + k.max + '  ' + k.price + ' GOLD';
       rowName(bg); text(bg, listX + listW - 4, yy, (PROG.tonics || 0) >= k.max ? UI.sel : PROG.coins >= k.price ? UI.gold : '#ff6b6b', 'right', 6); return; }
     if (tab.rank) { const rr = rankOf(k.id); const bg = rr >= k.max ? 'PEAK' : k.prices[rr] + 'g';
@@ -3370,7 +3375,7 @@ function drawStore() {
       const locked = lockedOf(k);
       const owned = tab.rank ? rankOf(k.id) >= k.max : (k.id === 'none' || owns(tab, k.id));
       const eq = tab.key && PROG[tab.key] === k.id;
-      const cost = tab.talent ? 'LEVEL ' + heroLevel() + '  ' + ptsLeft(hero()) + ' POINTS' : k.consumable ? (PROG.tonics || 0) + ' OF ' + k.max + ' CARRIED' : tab.rank ? (rankOf(k.id) >= k.max ? 'AT ITS PEAK' : k.prices[rankOf(k.id)] + ' GOLD')
+      const cost = tab.talent ? 'LV ' + heroLevel() + '  COINS' : k.consumable ? (PROG.tonics || 0) + ' OF ' + k.max + ' CARRIED' : tab.rank ? (rankOf(k.id) >= k.max ? 'AT ITS PEAK' : k.prices[rankOf(k.id)] + ' GOLD')
         : tab.key === 'hero' && (eq || owned) ? (eq ? 'EQUIPPED  L' : 'OWNED  L') + heroLevel(k.id)   /* a hero carries his own level now: the card has to say which */
         : k.practice ? 'Z TO STEP THROUGH' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD');
       text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
@@ -3677,7 +3682,7 @@ function menuConfirm() {
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
   else if(k==='Export save'){ const raw=saveBlocked?localStorage.getItem(slotKey(slot)):exportProgress(PROG);if(!raw){menuMsg='No saved data to export';menuMsgT=4;return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bracken-slot-'+(slot+1)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);menuMsg='Save exported';menuMsgT=4; }
   else if(k==='Import save'){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{const file=input.files[0];if(!file)return;try{if(file.size>8000000)throw Error('Save file is too large');importProgress(localStorage,slotKey(slot),await file.text(),LEVELS.filter(l=>!l.hidden).map(l=>l.id));loadSlot(slot);applySkin();applyUpgrades();menuMsg='Imported; previous save backed up';}catch(error){menuMsg=error.message;}menuMsgT=8;};input.click(); }
-  else if (k === 'Skills') { treeFrom = 'menu'; treeI = 0; state = 'tree'; SFX.menuOpen(); }
+  else if (k === 'Skills') { treeFrom = 'menu'; treeI = 0; treeBranch = 0; state = 'tree'; SFX.menuOpen(); }
   else if (k === 'Equip') { openEquip('menu'); }
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
@@ -6039,7 +6044,7 @@ function updatePlayer(dt) {
   if (isPyro() && skillPress('flameRing') && cdReady('flameRing') && canAct()) { if (spend(20)) { cdSet('flameRing');  fireRings.push({ x: P.x, y: P.y - 8, r: 6, hit: new Set() }); SFX.puff(); SFX.heavy(); P.castT = 0.25; } else tired(); }
   // SPEAR OF LIGHT: straight ahead to the first wall, through everything
   /* DEATH GRIP: he does not go to it. It comes to him. */
-  if (isReaper() && skillPress('deathGrip') && cdReady('deathGrip') && canAct()) { if (spend(20)) { if (deathGrip()) cdSet('deathGrip'); } else tired(); }
+  if (isReaper() && skillPress('deathGrip') && cdReady('deathGrip') && canAct()) { if (P.st < 20) tired(); else if (deathGrip()) { spend(20); cdSet('deathGrip'); } }
   /* UNHOLY GROUND: a patch of floor that is his */
   if (isReaper() && skillPress('unholyGround') && cdReady('unholyGround') && canAct()) { if (spend(26)) { cdSet('unholyGround'); unholyGround(); } else tired(); }
   // THE SCYTHE THROWN: it goes out and it comes back, and it cuts both ways.
@@ -17217,7 +17222,7 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
       hintMsg = 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
 /* ==== THE TIP. The Warden's one rule, and the only thing a player has to learn about her: a blow pays by WHERE ALONG
    THE SPEAR it landed. The last quarter - 34 px out and beyond, which is the leaf of the head and a little behind it -
-   is the TIP and pays half as much again, with extra poise on it. The middle is a glancing blow at three quarters.
+   is the TIP and pays thirty percent more, with extra poise on it. The middle is a glancing blow at three quarters.
    Inside eighteen pixels she is hitting with the haft: less than a third, and it SHOVES, which is the only thing that
    blow is for - it buys back the ground and puts them out where the point is.
    It is measured to the NEAR EDGE of the foe, not its middle, so a wide body is judged by the part the spear reached.
@@ -17258,7 +17263,7 @@ function tipLesson(kind) {
   const k = kind === 'tip' ? 'tipSeen' : 'haftSeen';
   if ((PROG[k] || 0) >= 2) return;
   PROG[k] = (PROG[k] || 0) + 1; saveProgress(); hintT = 4.5;
-  hintMsg = kind === 'tip' ? 'THE POINT PAYS: THE LAST QUARTER OF THE SPEAR HITS HALF AS HARD AGAIN, AND RINGS WHEN IT DOES.'
+  hintMsg = kind === 'tip' ? 'THE POINT PAYS: THE LAST QUARTER OF THE SPEAR HITS 30% HARDER, AND RINGS WHEN IT DOES.'
     : 'THAT WAS THE HAFT. INSIDE THE SPEAR SHE BARELY SCRATCHES: IT SHOVES THEM BACK OUT TO THE POINT.';
 }
 function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gainResolve(8); P.lastStruck = e; const lesson = !!e.fat && lessonHint('third');   /* the wood's third-cut lesson, on the first blow that lands on the old fat sprig (and the dash-attack line below waits its turn) */
@@ -18116,7 +18121,7 @@ function update(dt) {
     return;
   }
   if (state === 'gameover') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); SFX.uiSel(); } return; }
-  if (talentsPress && (state === 'play' || state === 'map' || state === 'paused' || state === 'store' || state === 'equip')) { treeFrom = state === 'paused' ? 'paused' : state; treeI = 0; state = 'tree'; talentsPress = false; SFX.menuOpen(); }
+  if (talentsPress && (state === 'play' || state === 'map' || state === 'paused' || state === 'store' || state === 'equip')) { treeFrom = state === 'paused' ? 'paused' : state; treeI = 0; treeBranch = 0; state = 'tree'; talentsPress = false; SFX.menuOpen(); }
   if (state === 'map') { updateMap(dt); updateParticles(dt); return; }
   if (state === 'store') { updateStore(dt); updateParticles(dt); return; }
   if (state === 'tree') { updateTree(dt); updateParticles(dt); return; }
@@ -21338,7 +21343,7 @@ function render() {
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 152, 14); }
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], P.relic ? 164 : 152, 14); g.globalAlpha = 1; }
     // THE SKILL SLOTS: the icon, the key it is on, and the wait drawn down over it, so a skill on cooldown is obvious
-    { const slot = (sk, x, key, col) => { if (!sk) return;
+    { const slot = (sk, x, key, col) => { if (!sk || !skillFor(hero(),sk)?.active) return;
         const meta=skillFor(hero(),sk),cd = meta&&!meta.active?0:skillCd(sk), max = sk === 'summonSkeleton' ? cdOf(sk) : CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0, k = busy ? (cd > 0 ? cd / max : 1) : 0;
         g.fillStyle = 'rgba(16,14,24,0.8)'; g.fillRect(x, 11, 14, 16);
         g.globalAlpha = busy ? 0.4 : 1; g.drawImage(meta&&!meta.active?treeIcon(meta):skillIcon(sk), x + 2, 12); g.globalAlpha = 1;
@@ -21364,13 +21369,6 @@ function render() {
     if (state === 'play' && SET.timer && !(L && L.shop)) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
       g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); hudRects.push([tx - tw / 2, 2, tw, 13]);
       text(ts, tx, 5, 'rgba(224,216,196,0.82)', 'center'); }
-    // POINTS WAITING: a badge under the bars, so nobody finishes the game with ten points unspent
-    if (state === 'play' && !godMode() && ptsLeft(hero()) > 0 && !(L && L.shop)) { const n = ptsLeft(hero()), lab = 'Q  ' + n, w = lab.length * 6 + 12, k = 0.5 + 0.5 * Math.sin(time * 2.4), by = (isPyro() || isPaladin() ? 44 : 34) + xpRow;
-      g.fillStyle = 'rgba(24,36,18,0.88)'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill(); hudRects.push([4, by, w, 11]);   /* a plate too: the tells keep off it (a hero levels in a fight now, so the badge can be up in one) */
-      g.globalAlpha = 0.12 + 0.16 * k; g.fillStyle = '#8fd160'; g.beginPath(); g.roundRect(4, by, w, 11, 3); g.fill(); g.globalAlpha = 1;
-      g.strokeStyle = 'rgba(143,209,96,0.85)'; g.lineWidth = 1; g.beginPath(); g.roundRect(4.5, by + 0.5, w - 1, 10, 3); g.stroke();
-      g.fillStyle = '#8fd160'; for (let i = 0; i < 3; i++) g.fillRect(w - 3, by + 3 + i, 1 + i * 2, 1);   // the little chevron of a thing waiting to be spent
-      text(lab, 8, by + 3, '#eaffd8', 'left', 6); }
     if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }
     else if (hintT > 0 && state === 'play') { hintT -= 1 / 60; const k = Math.min(1, hintT * 2);
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
@@ -21658,6 +21656,7 @@ window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN'
     get storeTab() { return storeTab; }, set storeTab(v) { storeTab = v; },
     get storeI() { return storeI; }, set storeI(v) { storeI = v; },
     get treeI() { return treeI; }, set treeI(v) { treeI = v; },
+    get treeTab() { return treeBranch; }, set treeTab(v) { treeBranch = v === 1 ? 1 : 0; treeI = 0; treePage = 0; },
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },

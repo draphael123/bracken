@@ -1,0 +1,9 @@
+# Skill menu and initial balance pass
+
+The gameplay HUD shows only equipped active skills. Passive effects remain equipped and working, but have no HUD icon or misleading action key. The obsolete Q/unspent-points badge is removed. Q still opens the menu, also available through pause/store.
+
+The menu has ACTIVES and PASSIVES tabs, selected with Left/Right; Up/Down selects skills. Skills are sorted by unlock level, price and name, with pagination. Existing shared slot limits, ownership, saved loadouts and actual active key assignments are preserved. Passive slot cards say PASSIVE. The store no longer advertises obsolete talent points. Missing summon/grip companions are explained for the relevant Death Knight passives.
+
+Balance corrections: Death Grip spends no stamina or cooldown when no target is available. Black Spot describes its actual eight-second mark. Stand Fast describes its actual 1.5x stagger duration. The Warden's tip lesson now states the actual 30% damage bonus. Shield Throw explicitly states that its cooldown starts after catching the shield.
+
+Validation covers all34 actives in a controlled three-target arena, all134 passive equip/unequip and input states, six concrete passive-effect comparisons, six-class HUD/menu behavior, both tabs'168 descriptions, and the full regression suite. Active measurements use immobilized high-health targets at30/65/100 pixels, a six-second window and level16. They are mechanical observations, not DPS rankings or boss/campaign balance proof. A close-range uppercut may miss this formation; support/control skills cannot be judged by raw damage. Shield Throw enters cooldown on catch. No broad damage/cooldown changes were justified by this sample. Remaining work is individual conditional-passive effect coverage and purchased-loadout boss/campaign/co-op comparisons.

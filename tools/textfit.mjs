@@ -136,8 +136,8 @@ async function pageTextFit(input) {
         for (let i = 0; i < n; i++) frame('store ' + mode + ' [' + h + '] tab' + tb + ' #' + i, () => { BK.state = 'store'; BK.ui.storeMode = mode; BK.ui.storeTab = tb; BK.ui.storeI = i; }, { settle: 20 }); } }
     await yieldNow(); }
 
-  if (want('tree')) for (const h of HEROES) { BK.setHero(h); BK.state = 'tree'; const n = BK.ui.treeRows();
-    for (let i = 0; i < n; i++) frame('tree [' + h + '] #' + i, () => { BK.state = 'tree'; BK.ui.treeI = i; });
+  if (want('tree')) for (const h of HEROES) for (const tab of [0,1]) { BK.setHero(h); BK.state = 'tree'; BK.ui.treeTab=tab; const n = BK.ui.treeRows();
+    for (let i = 0; i < n; i++) frame('tree [' + h + '] tab'+tab+' #' + i, () => { BK.state = 'tree'; BK.ui.treeI = i; });
     await yieldNow(); }
 
   if (want('menu')) { toPlay(0, 'knight'); BK.state = 'menu'; const n = BK.ui.menuCount();
