@@ -69,7 +69,6 @@ export const GROUND_KITS = {
     "kinds": [
       "tuft",
       "flower",
-      "skep",
       "gardenWall"
     ]
   },
@@ -404,7 +403,6 @@ export const ALLOWED_DECORATIONS = {
     "lanternPost",
     "pillar",
     "shopSign",
-    "skep",
     "snow",
     "stall",
     "stem",
