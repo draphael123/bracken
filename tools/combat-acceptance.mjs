@@ -1,10 +1,10 @@
 // Reproducible acceptance audit, separate from structural regression checks.
-// node tools/combat-acceptance.mjs boss|ambush|strategy output.json [level,level]
+// node tools/combat-acceptance.mjs boss|ambush|strategy output.json [level,level] [hero,hero]
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { writeFileSync } from 'node:fs';
 import { completed, summarize } from './combat-results.mjs';
-const [kind,out,selection]=process.argv.slice(2);
+const [kind,out,selection,heroSelection]=process.argv.slice(2);
 if(!['boss','ambush','strategy'].includes(kind)||!out)throw Error('Usage: node tools/combat-acceptance.mjs boss|ambush|strategy output.json [level,level]');
 const ids=selection?selection.split(','):kind==='strategy'?['marsh','scree']:LEVELS.filter(l=>kind==='ambush'?l.build().ambushes?.length:(!l.hidden||l.secret)&&l.build().arena).map(l=>l.id);
 for (const id of ids) {
@@ -12,9 +12,11 @@ for (const id of ids) {
   if (!level) throw Error('Unknown level: ' + id);
   if (!(kind === 'ambush' ? level.build().ambushes?.length : level.build().arena)) throw Error('No ' + kind + ' encounter in ' + id);
 }
-const heroes=['knight','warden','pyro','paladin','pirate','reaper'];
+const allHeroes=['knight','warden','pyro','paladin','pirate','reaper'];
+const heroes=heroSelection?heroSelection.split(','):allHeroes;
+for(const h of heroes)if(!allHeroes.includes(h))throw Error('Unknown hero: '+h);
 const report={kind,seed:1919,started:new Date().toISOString(),limits:kind==='ambush'?[15,35]:[90,150],rows:[],complete:false};
-const pg=await openPage({audio:false});
+const pg=await openPage({audio:false,fonts:false});
 try{
   await pg.evalp('window.acceptanceBase=JSON.parse(JSON.stringify(BKT.PROG));');
   for(const id of ids)for(const h of heroes)for(const style of kind==='strategy'?['plunge','mixed']:[null]){

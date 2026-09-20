@@ -46,27 +46,27 @@ export const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground &&
      plate, shell, beast - the held HEAVY
      small  - the LOW SWEEP          wing - the RISING CUT          shooter, crew - the DASH ATTACK, from just outside reach
    and whatever is OPEN (tripped, broken, reeling) takes the plain cut, which is quickest. Per hero: the freebooter's heavy is his pistol, so
-   loaded he shoots anything that is not small and empty he comes down on plate; his and the death knight's heavies go over the low mimic, so
+   loaded he shoots from pistol range and otherwise uses his blade; his and the death knight's heavies go over the low mimic, so
    they plunge it; the warden's rise goes over the haunt, so she cuts wings plain; under water there is no sweep and no dash, only the cut. */
 export function keyVerb(BK, h, e) {
   const P = BK.P, K = BK.keyOf ? BK.keyOf(e) : null;
   if (P.charge > 0 || P.atkHeld > 0) return 'heavy';   /* a blow being wound is finished, not dropped for another */
   if (!K || K.open) return 'light';
   const f = K.family, swim = !!P.swim;
-  if (h === 'pirate' && P.loaded && f !== 'small' && e.t !== 'mimic') return 'heavy';
+  if (h === 'pirate' && P.loaded && f !== 'small' && e.t !== 'mimic' && Math.abs(e.x-P.x)>LAB_REACH[h]+(e.w||12)/2+12) return 'heavy';
   if ((h === 'pirate' || h === 'reaper') && e.t === 'mimic') return swim ? 'light' : 'plunge';
   if (f === 'guard') { const ad = Math.abs(e.x - P.x), reach = LAB_REACH[h] + (e.w || 12) / 2;
     if (!swim && (P.dash > 0 || P.dashAtk > 0 || (ad > reach + 4 && !(P.dashCd > 0)))) return 'dash';   /* (and a dash under way is seen through) */
-    return K.tripped || swim ? 'heavy' : 'sweep'; }
-  if (f === 'plate') return h === 'pirate' ? (swim ? 'light' : 'plunge') : 'heavy';
-  if (f === 'shell' || f === 'beast') return 'heavy';
+    return K.tripped || swim ? (h === 'pirate' ? 'light' : 'heavy') : 'sweep'; }
+  // A loaded pistol was selected above. An empty one cannot execute a heavy attack.
+  if (f === 'plate' || f === 'shell' || f === 'beast') return h === 'pirate' ? 'light' : 'heavy';
   if (f === 'small') return swim ? 'light' : 'sweep';
   if (f === 'wing') return h === 'warden' ? 'light' : 'rise';
   if (f === 'shooter' || f === 'crew') return swim ? 'light' : 'dash';
   return 'light';
 }
 /* WHERE EACH VERB WANTS TO STAND, in pixels from the foe: inside reach for a cut (and a dash, which is taken on the way in), a step out for the knight's charge and for the warden's lunge (it drives her a tile on, and must end with the point on it), well out of its reach for the freebooter's pistol (it carries 150 px), on top of it for a plunge */
-export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12) / 2; return verb === 'plunge' ? 0 : verb === 'heavy' ? (h === 'knight' ? reach + 6 : h === 'warden' ? reach + 12 : h === 'pirate' ? reach + 36 : reach - 4) : reach - 2; };
+export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12) / 2; return verb === 'plunge' ? 0 : verb === 'heavy' ? (h === 'knight' ? reach + 6 : h === 'warden' ? reach + 12 : h === 'pirate' ? Math.min(120,reach+80) : reach - 4) : reach - 2; };
 /* THE HANDS FOR IT: one frame of whichever verb keyVerb chose. It presses and holds the action keys only (attack, up, down, jump, and the
    double tap of a dash) and never lets one go (whoever calls it clears them first), and leaves the walking to whoever called it (wantOf).
    Every one of them waits on the wind it costs: a bot that swung on an empty bar would stand there winded in front of the thing. */
@@ -101,12 +101,12 @@ export function strike(BK, h, e, f) {
    The fight lab and the ambush lab both play with it, so a room and a single foe are measured by the same hands */
 
 // Find an actual edge of the shelf above the foe, not merely a sword's distance from its centre.
-function lowerFooting(BK, e, T) {
+function lowerFooting(BK, e, T, avoidTarget = true) {
   const P = BK.P, L = BK.L, ty = Math.floor(P.y / 16), ey = Math.floor(e.y / 16), px = Math.floor(P.x / 16);
   const floors = Object.values(T).filter(t => t !== T.AIR && t !== T.SPIKE);
   let best = null, score = Infinity;
   for (let x = Math.max(1, px - 20); x <= Math.min(L.W - 2, px + 20); x++) {
-    if (BK.enemies().some(q => q.alive && !q.harmless && Math.abs(q.y - e.y) < 32 &&
+    if (BK.enemies().some(q => (avoidTarget || q !== e) && q.alive && !q.harmless && Math.abs(q.y - e.y) < 32 &&
       Math.abs(x * 16 + 8 - q.x) < (q.w || 16) / 2 + (P.w || 10) / 2 + 20)) continue;
     let clear = true;
     for (let y = ty; y < ey; y++) if (L.grid[y * L.W + x] !== T.AIR) { clear = false; break; }
@@ -344,7 +344,7 @@ async function runbossLab(BK, opts) {
     const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
     const air = boss.t === 'bellcrab' ? (await import('./deepair.js')).airBoxes(L).filter(a=>a.kind==='vent' && a.l>A.x0 && a.r<A.x1).map(a=>({...a,x:(a.l+a.r)/2,ty:A.floor-12,o:{}})) : (boss.airs||[]);
     const P = BK.P, k = BK.keys, hp0 = boss.hp, maxF = Math.round(maxSecs * 60 / (BK.SET.speed || 1));
-    P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labMageLanding=null;
+    P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labMageLanding=null;P.labMageTap=-99;
     // the old roof boards in the roc's nest, once: her dive sticks in them
     const glass = []; if (boss.t === 'roc') for (const [x0, x1] of ((L.monk && L.monk.boards) || [])) for (let x = x0; x <= x1; x++) glass.push(x * TS + 8);
     /* nearest the middle of the room first; the bot moves between three of them so it is always standing on one when she comes down */
@@ -450,7 +450,6 @@ async function runbossLab(BK, opts) {
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
       const incoming = BK.seeds().find(s => (s.rubble || s.mawSpit || s.timber || s.shot || s.bolt) && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 34 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0);
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
-      /* (the Reefmaw bait was tried and reverted: holding outside its bite lost every opening the bot had; it needs a player's read of the holes) */
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
          pyromancer. The bash is rolled through as it arrives; the judgement is walked off its mark. */
@@ -488,6 +487,11 @@ async function runbossLab(BK, opts) {
           if (P.swim && f % 20 === 0) { BK.press('jump'); P.labJump = 32; } }   /* in the acid: leap out of it, and keep leaping */
         if (MA.sub===1 && P.swim){const spots=[{x:L.arena.x0+40},...(BK.mg().stacks||[]).filter(q=>q.up).map(q=>({x:q.x*16+16})),{x:L.mage.dais[0]*16+24}];P.labMageLanding=spots.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0].x;k.up=true;goal=P.labMageLanding;}else if(MA.sub===1&&P.labMageLanding&&!P.ground)goal=P.labMageLanding;else P.labMageLanding=null;
         if (MA.jump && P.ground) { BK.press('jump'); P.labJump = 32; }   /* the flood's stacks: a held jump off the edge of this footing onto the next */
+        // THE FLOOD'S BOOKS ARE TWO TILES APART: a double-tapped air dash carries the slower jump to the next stack.
+        if (MA.sub===1 && !P.ground && !P.swim && goal!==null && goal>P.x+32 && P.vy>-180 && !P.dashedAir && !(P.dashCd>0) && P.st>=10) {
+          if (f-(P.labMageTap??-99)>20) { P.labMageTap=f; BK.press('right'); }
+          else if (f-P.labMageTap===2) BK.press('right');
+        }
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       else /* THE SCARECROW KING is read from the field (BK.straw): cut the pole he hangs on, strike the trough by the vine he stands at,
          knock his lantern with the third blow of a run (a heavy one), and jump his low scythe and his bales */
@@ -608,7 +612,9 @@ async function runbossLab(BK, opts) {
       }
       // A blade cannot reach down from a step: leave the shelf and land beside the foe before choosing sword range.
       if(!walker&&!P.swim&&boss.y>P.y+24&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
-      if(P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
+      const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'||boss.t==='reefmaw'&&(P.ground||P.vy>=0));
+      if(descending){const gx=lowerFooting(BK,boss,T,boss.t!=='reefmaw');k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}
+      if(!descending&&P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
       const mixedHeavy=opts.attackStyle==='mixed' && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&ad<reach+8&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
