@@ -1740,7 +1740,7 @@ function spawnEnt(e) {
       case 'rack': props.push({ t: 'rack', x: px, y: py, kind: e.kind || 'club', hp: 3, broken: false }); break;
       case 'wisp': props.push({ t: 'wisp', x: px, y: py, y0: py, cut: false, ph: Math.random() * 6 }); break;
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
-      case 'crank': props.push({ t: 'crank', x: px, y: py, wall: e.wall, hits: 0, open: false }); break;
+      case 'crank': props.push({ t: 'crank', x: px, y: py, wall: e.wall, raftCall: e.raftCall, hits: 0, open: false }); break;
       case 'torch': lights.push({ x: px, y: py - 10, r: 46, torch: true, holder: true }); break;
       case 'treehouse': { /* A HOUSE IS HELD UP BY SOMETHING: find what is under it - water, or ground - so its stilts or its trunk can reach it */
         let gy = e.y + 1; while (gy < L.H && !isSolid(e.x, gy) && tileAt(e.x, gy) !== T.PLANK && tileAt(e.x, gy) !== T.ONEWAY) gy++;
@@ -2498,7 +2498,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
   mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
-  for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
+  for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
   coopRegroup();   /* the room is back: whoever else is in the party is stood up at the same shrine, not left in the old one */
 }
@@ -17380,6 +17380,7 @@ function talkers() { // everything that can be talked to and is in reach, neares
   const out = [];
   for (const sg of signs) if (Math.abs(sg.x - P.x) < 28 && Math.abs(sg.y - P.y) < 48) out.push({ x: sg.x, y: sg.y, lines: [sg.text], who: sg, name: null });
   for (const pr of props) {
+    if (pr.raftCall && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, who: pr, raftCall: true });
     if (pr.t === 'npc' && pr.kind !== 'keeper' && (pr.kind !== 'ferryman' || (movers.find(mv => mv.ferry) || {}).free) && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, lines: NPC_LINES(pr), who: pr, name: pr.name || NPC_NAME[pr.kind] || null });
     if (pr.t === 'torchbracket' && !pr.taken && Math.abs(P.x - pr.x) < 16 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y - 6, lines: ['TORCH'], who: pr, name: null, take: true });
     if (pr.t === 'cage' && pr.kind === 'squire' && !pr.open && Math.abs(P.x - pr.x) < 28 && Math.abs(P.y - pr.y) < 48) out.push({ x: pr.x, y: pr.y, lines: ['KNIGHT! BREAK THE BARS!', 'THEY TOOK MY KIT. THREE COFFERS, SOMEWHERE IN THE CAMP.'], who: pr, name: 'TAM' });
@@ -17391,7 +17392,16 @@ const camper = n => ({ t: 'npc', kind: 'hillfolk', x: (13 + n * 3) * TS + 8, y: 
 function freeFolk(pr) { const tx = Math.floor(pr.x / TS), room = (L.interiors || []).find(([x0, x1]) => tx >= x0 && tx <= x1); const door = room && L.ents.find(e => e.t === 'doorway' && e.lock && e.x >= room[0] && e.x <= room[1]);
   props.push({ t: 'npc', kind: 'hillfolk', x: pr.x, y: pr.y, walkTo: door ? door.x * TS + 8 : pr.x + 40, anim: 0, i: 9 });
   props.push(camper(straysGot.size - 1)); SFX.sting(); }
-function openTalk(t) { if (t.take) { takeTorch(t.who); return; } talk = { lines: t.lines.filter(Boolean), i: 0, who: t.who, name: t.name }; if (!talk.lines.length) { talk = null; return; } talkTo = t.who; state = 'talk'; SFX.text(); if (t.who && t.who.t === 'npc') t.who.lineI = 0; }
+// A reusable bank winch calls only its own raft. Riders keep their crossing, and paid passage stays paid.
+function callRaft(pr) {
+  const m = movers.find(q => q.kind === 'raft' && q.callId === pr.raftCall); if (!m) return;
+  let label = 'RAFT RETURNING';
+  if (players.some(p => !p.dead && p.onMover === m)) label = 'RAFT IN USE';
+  else if (m.x <= m.x0 + 1) label = 'RAFT READY';
+  else { m.returning = true; m.moving = false; m.called = true; m.offT = 0; }
+  SFX.clank(); number(pr.x, pr.y - 34, label, '#bfe6f5');
+}
+function openTalk(t) { if (t.raftCall) { callRaft(t.who); return; } if (t.take) { takeTorch(t.who); return; } talk = { lines: t.lines.filter(Boolean), i: 0, who: t.who, name: t.name }; if (!talk.lines.length) { talk = null; return; } talkTo = t.who; state = 'talk'; SFX.text(); if (t.who && t.who.t === 'npc') t.who.lineI = 0; }
 function closeTalk() { talk = null; talkTo = null; state = 'play'; SFX.menuClose(); }
 const talkGlyph = () => padLast ? 'UP' : touchOn ? '^' : 'E';
 function updateProps(dt) {
@@ -17534,7 +17544,7 @@ function updateProps(dt) {
       for (let i = 1; i <= 5; i++) fires.push({ x: pr.x + dir * i * 14, y: pr.y, life: 6 + i * 0.3, delay: i * 0.12 });
     }
     if (pr.t === 'firebox') updateFirebox(pr, hb, dt);
-    if (pr.t === 'crank' && !pr.open && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr)) {
+    if (pr.t === 'crank' && !pr.raftCall && !pr.open && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr)) {
       P.hitSet.add(pr); pr.hits++; SFX.stone(); sparks(pr.x, pr.y - 8, P.face, 4); number(pr.x, pr.y - 20, pr.hits >= 3 ? 'OPEN' : (3 - pr.hits) + ' MORE', '#ffd36b');
       if (pr.hits >= 3) { pr.open = true; for (let ty = 0; ty < LH; ty++) { const i = ty * LW + pr.wall; if (L.grid[i] === T.PALISADE) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(pr.wall * TS + 8, ty * TS + 8, 4, ['#8a5a32', '#5c3a1d'], 60, 0.5); } } SFX.heavy(); shakeCam(3); }
     }
@@ -17776,16 +17786,16 @@ function updateMovers(dt) {
     } else if (m.kind === 'raft') { // waits at the dock until you board, then poles downstream
       // THE POLE COMES BACK FOR THE LIVING: a swimmer has no respawn to bring the raft home. Give a jump
       // a breath before turning; once homeward, finish the trip even if someone climbs aboard on the way.
-      const aboard = P.onMover === m && !P.dead;
+      const aboard = players.some(p => !p.dead && p.onMover === m);
       if (!m.returning) {
         m.offT = !aboard && !P.dead && (m.moving || m.done) ? (m.offT || 0) + dt : 0;
         if (m.offT >= 1.2) { m.returning = true; m.moving = false; number(m.x + m.w / 2, m.y - 12, 'COMING BACK', '#bfe6f5'); }
         else if (aboard && !m.done && (!m.ferry || m.paid || m.free)) m.moving = true;
       }
       if (m.returning) {
-        m.x = Math.max(m.x0, m.x - m.speed * 0.6 * dt);
+        m.x = Math.max(m.x0, m.x - (m.called ? Math.max(96, m.speed) : m.speed * 0.6) * dt);
         if (Math.random() < dt * 8) parts.push({ x: m.x + m.w, y: m.y + 6, vx: 30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 });
-        if (m.x <= m.x0) { m.returning = false; m.done = false; m.offT = 0; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); }
+        if (m.x <= m.x0) { m.returning = false; m.called = false; m.done = false; m.offT = 0; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); }
       }
       if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const aboard = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length; if (m.frogT <= 0 && aboard < (m.frogMax || 3)) { m.frogT = (m.frogEvery || 3) + Math.random() * 2; const side = Math.random() < 0.5 ? -1 : 1; const fx = m.x + m.w / 2 + side * (m.w / 2 + 20); const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58; const col = ['green', 'green', 'yellow', 'blue'][(Math.random() * 4) | 0]; enemies.push({ t: 'hopper', color: col, x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: HOP[col].hp, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true }); burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } }
       if (m.moving) { m.x += m.speed * dt; if (m.x >= m.x1) { m.x = m.x1; m.moving = false; m.done = true; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); } if (Math.random() < dt * 8) parts.push({ x: m.x + (m.speed > 0 ? 0 : m.w), y: m.y + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
@@ -19302,7 +19312,8 @@ function drawWorld(cx, cy, showPlayer) {
       const rx = Math.round(pr.x - cx), ry = pr.gy - cy; g.fillStyle = '#6a6e78'; for (const [ox, w] of [[-7, 3], [-2, 2], [3, 3], [6, 2]]) g.fillRect(rx + ox, ry - 2, w, 2); g.fillStyle = '#9aa0aa'; g.fillRect(rx - 5, ry - 3, 2, 1); g.fillRect(rx + 4, ry - 3, 2, 1);
       if (Math.abs(P.x - pr.x) < 230 && pr.timer < 0.8) { const k = 1 - pr.timer / 0.8; g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(rx, ry - 1, 10 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
     else if (pr.t === 'brazier') g.drawImage(PROP.brazier[pr.lit ? 1 : 0], Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 16 - cy);
-    else if (pr.t === 'crank') g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
+    else if (pr.t === 'crank') { g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
+      if (pr.raftCall) { g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(Math.round(pr.x - cx) - 31, Math.round(pr.y - cy) - 46, 62, 12); text('CALL RAFT', pr.x - cx, pr.y - 38 - cy, '#ffe6a0', 'center', 6); } }
     else if (pr.t === 'throne') g.drawImage(PROP.throne, Math.round(pr.x) - 32 - cx, Math.round(pr.y) - 4 - cy);
     else if (pr.t === 'key' && !pr.got) { const yy = Math.round(pr.y + Math.sin(time * 3 + pr.ph) * 2 - cy), xx = Math.round(pr.x - cx);
       g.globalAlpha = 0.3 + 0.15 * Math.sin(time * 4); g.fillStyle = '#ffd34a'; g.beginPath(); g.arc(xx, yy - 4, 15, 0, 7); g.fill(); g.globalAlpha = 1;
@@ -19564,7 +19575,7 @@ function drawWorld(cx, cy, showPlayer) {
     const sway = pr.v >= 3 ? Math.round(Math.sin((time + pr.anim) * 1.6)) : 0;
     drawSet(set, null, fr, pr.x - cx + sway, pr.y - cy, pr.face, false);
     if (fr === 2) { drawEmote({ emote: 'laugh', emoteT: 0.5 }, Math.round(pr.x - cx), Math.round(pr.y - cy) - 32); g.globalAlpha = 1; } }
-  if (state === 'play' && !P.dead) { const t = talkers()[0]; if (t && !(t.who && t.who.t === 'npc')) text(talkGlyph(), t.x - cx, t.y - 26 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
+  if (state === 'play' && !P.dead) { const t = talkers()[0]; if (t && !(t.who && t.who.t === 'npc')) text(talkGlyph(), t.x - cx, t.y - (t.raftCall ? 50 : 26) - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
   // A CHECKPOINT BELONGS TO ITS WOOD: the same grey stone shrine used to stand in a bog, on a ship's deck, a
   // hundred feet under the sea and on a mountain of glass.
   if (L.causeTide || (L.arena && L.arena.boss === 'kraken')) drawCauseProps(cx, cy);

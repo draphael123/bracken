@@ -374,7 +374,8 @@ function marshWood() {
   ent('check', 296, 17);
   for (let x = 297; x <= 334; x++) for (let y = 18; y <= 27; y++) L.set(x, y, 0);
   water(297, 328, 19);
-  movers.push({ kind: 'raft', x0: 297 * TS, x1: 329 * TS - 144, x: 297 * TS, y: 18 * TS + 8, w: 144, h: 8, speed: 26, frogs: true, frogMax: 3, frogEvery: 2.8 });
+  ent('crank', 295, 17, { raftCall: 'marsh-grove' });
+  movers.push({ kind: 'raft', callId: 'marsh-grove', x0: 297 * TS, x1: 329 * TS - 144, x: 297 * TS, y: 18 * TS + 8, w: 144, h: 8, speed: 26, frogs: true, frogMax: 3, frogEvery: 2.8 });
   plat(309, 11, 3); ent('archer', 310, 10, { face: -1 }); plat(323, 11, 3); ent('archer', 324, 10, { face: -1 });
   ent('wasp', 313, 15); ent('wasp', 326, 15);
   coins([303, 15], [308, 10], [316, 15], [322, 10], [331, 15]);
@@ -449,7 +450,8 @@ function marshWood() {
   F.ent('sign', 162, 17, { text: 'PAY THE FERRY TO RIDE DRY, OR BREAK THE SLUICE AND WADE THE DRAINED CHANNEL.' });
   F.ent('sluice', 165, 17, { pool: 167, to: 21 });
   F.ent('npc', 168, 17, { kind: 'ferryman', ride: true });
-  F.R.moversExtra.push({ kind: 'raft', x0: 167 * TS, x1: 203 * TS - 64, x: 167 * TS, y: 18 * TS + 8, w: 64, h: 8, speed: 32, ferry: true, toll: 10 });
+  F.ent('crank', 164, 17, { raftCall: 'marsh-ferry' });
+  F.R.moversExtra.push({ kind: 'raft', callId: 'marsh-ferry', x0: 167 * TS, x1: 203 * TS - 64, x: 167 * TS, y: 18 * TS + 8, w: 64, h: 8, speed: 32, ferry: true, toll: 10 });
   F.R.pools.push({ x0: 167 * TS, x1: 203 * TS, y: 19 * TS, shallow: false, depth: 0, bottom: 22 * TS });   /* its bed is its floor: a fall in is a splash until the sluice drains it to shallows */
   F.block(167, 202, 22, 27);
   F.plat(181, 12, 3); F.ent('archer', 182, 11, { face: -1 }); F.plat(193, 12, 3); F.ent('archer', 194, 11, { face: -1 });
