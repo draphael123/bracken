@@ -322,10 +322,13 @@ export async function bossLab(BK, opts = {}) {
   finally { BK.manualSimulation = previous; }
 }
 async function runbossLab(BK, opts) {
+  const healthMode=opts.healthMode||'refill';
+  if(!['refill','normal'].includes(healthMode))throw Error('healthMode must be refill or normal');
+  const normalHealth=healthMode==='normal';
   const lvm = await import('./level.js'), T = lvm.T, TS = 16, PT = await import('./playtest.js');
   const heroes = opts.heroes || HEROES;
   const bosses = opts.bosses || ['wood', 'kings', 'spire', 'crown', 'reef', 'flotilla', 'hurricane', 'deep', 'waymeet', 'undercrown'], maxSecs = opts.maxSecs || 120;
-  const rows = [], out = { rows, started: Date.now(), progress: 0, total: bosses.length * heroes.length };
+  const rows = [], out = { rows, healthMode, started: Date.now(), progress: 0, total: bosses.length * heroes.length };
   if (typeof window !== 'undefined') window.__bossLab = out;
   for (const lvId of bosses) for (const h of heroes) {
     BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
@@ -344,6 +347,10 @@ async function runbossLab(BK, opts) {
     const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
     const air = boss.t === 'bellcrab' ? (await import('./deepair.js')).airBoxes(L).filter(a=>a.kind==='vent' && a.l>A.x0 && a.r<A.x1).map(a=>({...a,x:(a.l+a.r)/2,ty:A.floor-12,o:{}})) : (boss.airs||[]);
     const P = BK.P, k = BK.keys, hp0 = boss.hp, maxF = Math.round(maxSecs * 60 / (BK.SET.speed || 1));
+    // ONE LIFE TELLS A DIFFERENT STORY: normal mode never refills health or clears death between blows.
+    P.hp=P.maxHp;P.dead=0;
+    const health={mode:healthMode,startHp:P.hp,damageTaken:0,healthRecovered:0};
+    const advance=(n,draw=false)=>{const before=P.hp;BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);};
     P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labMageLanding=null;P.labMageTap=-99;
     // the old roof boards in the roc's nest, once: her dive sticks in them
     const glass = []; if (boss.t === 'roc') for (const [x0, x1] of ((L.monk && L.monk.boards) || [])) for (let x = x0; x <= x1; x++) glass.push(x * TS + 8);
@@ -357,15 +364,15 @@ async function runbossLab(BK, opts) {
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
        time behind it, so it is RETURNED. One release in ten is early. dkHold keeps the ward up a little past the end of a tell. */
     const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
-    for (; f < maxF && boss.alive; f++) {
-      P.hp = P.maxHp; P.dead = 0; // health is observed separately; stamina must be earned back by the real recovery rule
+    for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
+      if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
       if(P.labRest&&!P.plunge){
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
         if(Math.abs(P.x-boss.x)<80){const dir=P.x<boss.x?-1:1;if(P.x+dir*30>A.x0&&P.x+dir*30<A.x1)k[dir>0?'right':'left']=true;}
-        const was=P.hp;BK.sim(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
+        const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
       }
       // Optional controlled strategy comparison. Only real movement, jump and attack inputs; stamina is never restored.
       if(opts.attackStyle){
@@ -378,7 +385,7 @@ async function runbossLab(BK, opts) {
           if(f-(P.labPogoJump??-100)<24)k.jump=true;
           if(!P.ground&&P.vy>15&&!P.plunge&&Math.abs(dx)<18&&boss.y-boss.h-P.y>-10&&boss.y-boss.h-P.y<50){k.down=true;BK.press('atk');swings++;}
           if(P.plunge)k.down=true;if(P.perch>0)BK.press('jump');
-          const was=P.hp;BK.sim(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
+          const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
         }
       }
       /* THE DEEP: THE KING SWIMS. No stone - a stone is a man standing on the floor, and he is not there. The bot swims at him, up
@@ -409,7 +416,7 @@ async function runbossLab(BK, opts) {
           if (SHIELDED(h) && /Tell$/.test(boss.mode || '') && !HARD_TELLS.has(boss.t + '|' + boss.mode) && Math.hypot(dx, dy) < 120 && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.2)) { k.block = true; k.left = k.right = k.up = k.down = false; P.face = Math.sign(dx) || P.face; }
           else if (adx <= reach2 && Math.abs(dy) < 22 && P.atk < 0) { P.face = Math.sign(dx) || P.face; k.down = k.up = false; BK.press('atk'); swings++; } }   /* a cut, not a plunge: down held under the swing is a down attack, and the lab was plunging him to death */
         if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(dx), Math.round(dy), boss.open > 0 ? 'OPEN' : '', P.swim ? 'swim' : 'dry'].join(' ')); }
-        const was = P.hp, m0 = boss.mode; BK[opts.draw ? 'step' : 'sim'](1); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp); if (P.dead) falls++;
+        const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp); if (P.dead) falls++;
         if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open: boss.open > 0 });   /* THE CAMERA HOOK: with opts.draw the frame was rendered, and a recorder can take it */
         if (f % 600 === 599) await yieldNow();
         continue; }
@@ -424,7 +431,7 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&P.vy>0&&Math.abs(P.y-8-(heart.y-7))<46&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
         else if(boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
-        if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;BK.sim(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
+        if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
       }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
       if (open && !wasOpen) { opened++; if (opts.trace) { out.trace = out.trace || []; out.trace.push({ h, mode: boss.mode, startD: Math.round(ad), dy: Math.round(boss.y - P.y), minD: 9999, pressed: 0, swung: 0, hpAt: boss.hp }); } }
@@ -637,7 +644,7 @@ async function runbossLab(BK, opts) {
       if (h === 'knight' && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
       // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
       if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
-      const was = P.hp, m0 = boss.mode; BK[opts.draw ? 'step' : 'sim'](1); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
+      const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
         /* the ward took something: learn how late that tell's blow came, and let go now - the nova */
         if ((P.wardG || 0) > dkG + 0.5 && !(P.parryT > 0)) { if (dkEndM && f - dkEndF <= dkF(0.8)) dkLag[dkEndM] = Math.min(dkLag[dkEndM] ?? 9, (f - dkEndF) * (BK.SET.speed || 1) / 60); dkHold = 0; }
@@ -649,6 +656,7 @@ async function runbossLab(BK, opts) {
     k.left = false; k.right = false; k.block = false;
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
+      health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
       takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
     await yieldNow();
   }
