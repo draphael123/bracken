@@ -366,10 +366,10 @@ function marshWood() {
   block(260, 274, 18, 27);
   ent('check', 264, 17); crate(270, 17); ent('hopper', 268, 17, { face: -1, color: 'blue' });
 
-  // ---- 8. The flooded grove: a dip full of hoppers, then the slow raft under the archers ----
+  // ---- 8. The Reed Island: dry fighting ground, then the slow raft under the archers ----
   block(275, 296, 18, 27);
-  for (let x = 280; x <= 292; x++) L.set(x, 18, 0); water(280, 292, 18, true); pools[pools.length - 1].tide = true;
-  ent('hopper', 283, 18, { face: -1, color: 'yellow' }); ent('hopper', 289, 18, { face: -1, color: 'blue' });
+  // The ambush needs room to retreat: the old tidal dip is solid bank now.
+  ent('hopper', 283, 17, { face: -1, color: 'yellow' }); ent('hopper', 289, 17, { face: -1, color: 'blue' });
   reeds(294, 15, 3); coins([295, 14], [282, 15], [288, 15]);
   ent('check', 296, 17);
   for (let x = 297; x <= 334; x++) for (let y = 18; y <= 27; y++) L.set(x, y, 0);
@@ -7465,7 +7465,7 @@ const AMBUSH = {
   wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 288, wallR: 325, check: [278, 11],   /* (every column here is 78 past what it was: THE THREE LESSONS grew the wood ahead of the giant) */
     waves: [[['sprig', 294], ['sprig', 321], ['thorn', 308], ['badger', 300]], [['shield', 316], ['spit', 322], ['thorn', 294], ['crow', 306, 6]]] }],
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
-    waves: [[['hopper', 374], ['hopper', 386, 18], ['turtle', 380, 18]], [['thorn', 374], ['archer', 387], ['heronfoe', 381, 18], ['spit', 373]]] }],
+    waves: [[['hopper', 386], ['turtle', 380]], [['thorn', 384], ['archer', 387], ['heronfoe', 381], ['spit', 373]]] }],
   stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],
     waves: [[['sprig', 176], ['sprig', 203], ['hound', 196], ['hound', 182]], [['shield', 195], ['archer', 201, null, { elite: true }], ['sapper', 184]]] }],
   spore: [{ name: 'THE UNDERCAP', row: 19, wallL: 135, wallR: 170, check: [132, 19],
