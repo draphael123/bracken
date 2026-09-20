@@ -426,11 +426,18 @@ async function runbossLab(BK, opts) {
         let gx=node?node.x-12:boss.x;
         if(P.ground)P.labSpring=false;if(P.vy<-350)P.labSpring=true;
         if(boss.mode==='open')gx=P.labSpring?boss.x-(LAB_REACH[h]*.65):boss.x-3*TS;
+        // THE ROOT MOVES UNDER THE SHELVES. Step through a one-way shelf before swinging at a ground knot.
+        const descend=boss.mode!=='open'&&node&&P.ground&&P.y<node.y-20&&Math.abs(P.x-node.x)<32;
+        const column=(boss.zones||[]).find(z=>P.x>z.l-10&&P.x<z.r+10&&z.top<A.floor-100);
+        if(column){const left=column.l-18,right=column.r+18;gx=Math.abs(P.x-left)<Math.abs(P.x-right)?left:right;}
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
+        if(descend){k.down=true;BK.press('jump');}
+        if(boss.mode==='floorSurgeTell'&&boss.modeT<.2&&P.ground){BK.press('jump');P.labJump=22;}
         if(boss.mode==='open'&&P.ground&&Math.abs(P.x-(boss.x-3*TS))<20){BK.press('jump');P.labJump=16;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&P.vy>0&&Math.abs(P.y-8-(heart.y-7))<46&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
-        else if(boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
+        const lead=h==='reaper'?(.12/.34):h==='paladin'?.08:.06,landingCutY=P.y+P.vy*lead+600*lead*lead;
+        if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&(h==='reaper'||P.vy>0)&&(h==='pyro'||h==='warden'||h==='reaper'?Math.abs(landingCutY-(heart.y+3))<16:Math.abs(P.y-8-(heart.y-7))<46)&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
+        else if(!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
         if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
       }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
@@ -766,3 +773,4 @@ export async function killLab(BK, opts = {}) {
   out.done = true; out.bad = bad.length ? bad : 0;
   return out;
 }
+

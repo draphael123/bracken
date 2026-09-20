@@ -1,0 +1,5 @@
+import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';import{writeFileSync}from'node:fs';
+const pg=await openPage({audio:false,fonts:false}),results={};try{
+ for(const mode of ['refill','normal']){await pg.reload();const r=await pg.evalp(`(async()=>{BK.manualSimulation=true;return await BK.bossLab({bosses:['spore'],heroes:['knight','pyro','paladin','pirate','reaper','warden'],healthMode:${JSON.stringify(mode)},maxSecs:180})})()`,240000);assert.equal(r.rows.length,6);for(const row of r.rows){assert.equal(row.health.mode,mode);if(mode==='refill'){assert(row.killed,row.h+' must complete the relocating-root loop');assert(row.secs>=90&&row.secs<=150,row.h+' timing '+row.secs);}else assert(Math.abs(row.health.startHp+row.health.healthRecovered-row.health.damageTaken-row.health.endHp)<.001,'normal health must reconcile');}results[mode]=r.rows;}
+ assert.deepEqual(pg.errors,[]);if(process.env.MOTHER_BALANCE_OUT)writeFileSync(process.env.MOTHER_BALANCE_OUT,JSON.stringify(results,null,2));console.log(JSON.stringify(results));
+}finally{pg.close();}
