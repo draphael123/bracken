@@ -457,6 +457,21 @@ async function runbossLab(BK, opts) {
         if(!guard&&!P.labAir&&!mode.endsWith('Tell')&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<27&&P.atk<0){P.face=side;k.down=k.up=false;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='burieddead'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const add=BK.enemies().filter(e=>e.alive&&e.graveAdd&&e.mode!=='riseTell').sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
+        const target=add&&Math.abs(add.x-P.x)<130?add:boss,dx=target.x-P.x,side=Math.sign(dx)||1,mode=boss.mode;let gx=target.x-side*(target.graveAdd?12:Math.max(20,LAB_REACH[h]*.65));
+        const eruption=mode==='burrow'||mode==='eruptTell';
+        if(eruption){const near=Math.abs(P.x-boss.x)<65;gx=near?boss.x+(P.x>boss.x?1:-1)*80:P.x;if(gx<A.x0+20)gx=boss.x+80;if(gx>A.x1-20)gx=boss.x-80;}
+        if(mode==='slamTell'&&boss.modeT<.3&&P.ground){BK.press('jump');P.labJump=18;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(P.ground&&P.y<A.floor-20&&mode!=='slamTell'){k.down=true;BK.press('jump');}
+        const guard=!eruption&&(mode==='cleaveTell'&&Math.abs(boss.x-P.x)<95||target.graveAdd&&target.mode==='grabTell'&&target.modeT<.22);
+        if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=mode==='cleaveTell'?(Math.sign(boss.x-P.x)||1):side;}else if(guard){const gs=mode==='cleaveTell'?(Math.sign(boss.x-P.x)||1):side;gx=P.x-gs*65;if((mode==='cleaveTell'?boss:target).modeT<.2)BK.press('dodge');}
+        if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
+        if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='harbormaster'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const dx=boss.x-P.x,side=Math.sign(dx)||1;let gx=boss.x-side*Math.max(18,LAB_REACH[h]*.65);

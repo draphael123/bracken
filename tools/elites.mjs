@@ -14,13 +14,15 @@ import { floodReach } from '../src/reachcore.js';
 import { readFileSync } from 'fs';
 
 const PENDING = new Set([]);   /* a level being rebuilt goes in here, and comes out of it when its elites land */
-const NO_KEEPER = new Set(['underleaf']);   /* Daniel's call, not a gap: UNDERLEAF's Bellringer mini was cut after a playtest (2026-09-17). It is the secret stealth village - you choose when it wakes - and nothing on its street holds a gate */
+const NO_KEEPER = new Set(['underleaf', 'burial']);   /* Daniel's call, not a gap: UNDERLEAF's Bellringer mini was cut after a playtest (2026-09-17). It is the secret stealth village - you choose when it wakes - and nothing on its street holds a gate */
+// Burial's Sexton was explicitly removed: The Buried Dead is the requested final boss, not a replacement mini.
 const want = (process.argv[2] || '').split(',').filter(Boolean);
 const TS = 16;
 let bad = 0, n = 0;
 for (const lv of LEVELS) {
   if ((lv.hidden && !lv.secret) || lv.id === 'custom' || (want.length && !want.includes(lv.id))) continue;
   const L = lv.build(), els = L.ents.filter(e => e.elite), out = [];
+  if(lv.id==='burial' && L.arena?.boss!=='burieddead')out.push('Burial must retain its requested final boss');
   if (PENDING.has(lv.id) && !els.length) { console.log(' --  ' + lv.id.padEnd(11) + 'pending (being rebuilt)'); continue; }
   const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
   const A = L.arena, tx = A ? Math.floor(A.trigger / TS) : L.W - 3;

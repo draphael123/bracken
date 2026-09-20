@@ -1,0 +1,11 @@
+# Burial Caverns: The Buried Dead
+
+Expanded Burial Caverns from 380 to 1,140 tiles. The removed Sexton's Shade stays removed; the level now ends with a unique giant zombie boss, The Buried Dead.
+
+Added six extended sections: Grave Causeway, Restless Rows, Falling Gallery, Plague Vault, Bone Stairs and Last Procession. Poison-water crossings use fixed stone grave islands and exit nets. Buried zombies show moving earth before rising and wind up a short, breakable grab. Falling stone shakes and sheds dust before dropping, with lowered, supported cave ceilings so the traps activate from the path. Added checkpoints, distributed the three silver coins across the full route, and extended medal times. Existing wights in this level are now zombies; enemies in other levels retain their behavior.
+
+The Buried Dead has a jumpable ground slam, a blockable arm sweep, zombie summons, and a burrow/eruption sequence. Its moving shadow stops at a bright crack before eruption; underground invulnerability lasts 1.8 seconds. Each attack offers a 2.2-second recovery opening. Half health expands the slam and summons two zombies instead of one. Summoned zombies have lower health than level zombies, at most three can be alive, and all disappear on boss defeat. A distinct giant sprite, hurt sound, bestiary entry, boss bar, rush registration and exit cleanup are included.
+
+Validation: six classes cross the grave islands and climb the bone stairs with movement inputs; distant zombies remaining in their encounters and activating on approach, rock warning/drop states, summon cap, summon cleanup, boss activation, defeat gate and level completion pass. Unit checks cover warning delays, safe responses, shadow tracking/locking, phases and grab timing. Normal-health combat probes clear for all six classes in 81.9–111.8 seconds; refill probes clear in 82.1–113.2 seconds. Automated pilots now reserve Paladin stamina for guarding, approach zombies within short-weapon reach and prioritize eruption escape over guarding a summon. These probes are not human/co-op campaign acceptance; the broader 90–150-second timing target is not met by every class.
+
+Screenshots reviewed, including deliberately staged boss tells. Full-suite status and the exact local commit are recorded in the delivery receipt. Not deployed.

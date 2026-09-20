@@ -1,3 +1,4 @@
+import {extendBurial} from './burial-expansion.js';
 import {extendHarbor} from './harbor-expansion.js';
 // The coast's last settlement: recover through water, climb the salvage cranes, leave through customs.
 export function stormwreckHarbor({painter,T,TS}) {
@@ -56,7 +57,7 @@ export function stormwreckHarbor({painter,T,TS}) {
 
 // An intact footpath winds down through burial galleries and back to the tower stair.
 export function burialCaverns({painter,T,TS}) {
- const L=painter(380,60),{block,set,ent,coins,plat}=L,interiors=[],structures=[];
+ const L=painter(1140,60),{block,set,ent,coins,plat}=L,interiors=[],structures=[];
  block(0,379,0,59);
  const cut=(a,b,t,bottom)=>{for(let y=t;y<=bottom;y++)for(let x=a;x<=b;x++)set(x,y,T.AIR);};
  const floors=Array.from({length:380},(_,x)=>x<70?30:x<130?30+2*Math.floor((x-70)/10):x<260?42:x<320?42-2*Math.floor((x-260)/10):32);
@@ -91,12 +92,12 @@ export function burialCaverns({painter,T,TS}) {
  ent('check',209,41);sign(210,'THE BRIDGE HAS SUNK. THE LOWER CANDLE ROAD AND THE STONE STEPS BRING YOU BACK UP.');
  ent('wight',220,46,{face:-1});ent('boo',235,31,{face:-1});ent('bat',242,27);ent('silver',246,48);
  ent('torch',220,46);ent('torch',246,48);ent('torch',254,41);
- // 4. The sexton's vigil: one guardian holds the final vault; the stair beyond reaches the tower.
+ // 4. The final vault: an open candle path reaches the tower stair.
  for(const x of [264,285,306]){ent('wight',x,floor(x)-1,{face:-1});deco('candelabra',x+3);ent('torch',x+5,floor(x+5)-1);}
  ent('check',318,floor(318)-1);room(324,365,16,32);
- sign(321,'THE SEXTONS VIGIL. BREAK THE GUARDIAN, THEN TAKE THE LAST STAIR TO THE TOWER.');
- ent('haunt',346,31,{mini:true,face:-1});deco('grave',331);deco('grave',359,1);deco('coffer',362);ent('torch',328,31);ent('torch',364,31);
- for(let y=16;y<32;y++)set(365,y,T.PORT);ent('gate',374,31);
+ sign(321,'THE OLD VAULT. THE GRAVE ROAD CONTINUES BELOW.');
+ deco('grave',331);deco('grave',359,1);deco('coffer',362);ent('torch',328,31);ent('torch',364,31);
+
  for(const x of [36,65,137,201,255,280])ent('wight',x,floor(x)-1,{face:-1});
  for(const [x,y] of [[88,22],[154,25],[264,26]])ent('bat',x,y);
  for(const [x,y] of [[53,29],[177,41],[294,35]])ent('spider',x,y,{face:-1});
@@ -104,11 +105,12 @@ export function burialCaverns({painter,T,TS}) {
  sign(63,'KEEP A PALE FACE IN SIGHT. TURN AWAY AND IT FOLLOWS.');
  sign(133,'THE NETS REACH THE OSSUARY SHELVES. A FALL ALWAYS HAS A WAY BACK.');
  sign(258,'THE CANDLES CLIMB AGAIN. THE TOWER STAIR IS BEYOND THE LAST VAULT.');
- sign(367,'THE LAST VAULT IS BEHIND YOU. THE MAGE WAITS ABOVE.');
+ sign(367,'THE LOWER NECROPOLIS OPENS AHEAD. FOLLOW THE CANDLES.');
  for(let x=10;x<375;x+=5)coins([x,floor(x)-2]);
+ for(let i=L.ents.length-1;i>=0;i--)if(L.ents[i].t==='silver')L.ents.splice(i,1);for(const e of L.ents)if(e.t==='wight')e.t='zombie';
+ const expansion=extendBurial({L,T,TS,interiors,structures});
  return {W:L.W,H:L.H,grid:L.grid,ents:L.ents,START:{x:4,y:29},interiors,structures,pools:[],falls:[],moversExtra:[],music:'burial',underground:true,dark:0.08,edgeLit:true,duskStart:-1,duskLen:1,night:true,nightA:0.04,
   palette:{sky:'crag',far:'crag',mid:'crag',near:'crag',dress:'none',ledges:'staging',haze:'rgba(44,42,64,0.1)',murkCol:'#444651',murkLit:'#85808a',grass:'#747780',grassL:'#a8a3ab',grassD:'#484953',dirt:'#484650',dirtL:'#66626b',dirtD:'#303039',canopy:['#20202c','#292b37','#353643','#454653']},
-  weather:[],ambient:[{x0:0,x1:99999,kind:'cave'}],calm:[[0,380,0,60]],
-  mini:{x0:324*TS,x1:365*TS,floor:32*TS,y0:16*TS,y1:33*TS,trigger:329*TS,wallL:324,gate:365,boss:'haunt',name:'THE SEXTONS SHADE'}
+  weather:[],ambient:[{x0:0,x1:99999,kind:'cave'}],calm:[[0,1140,0,60]],...expansion
  };
 }
