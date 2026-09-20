@@ -113,7 +113,9 @@ function brackenWood() {
   block(144, 146, 10, 11);
   ent('spit', 145, 9, { face: -1 });
   ent('wasp', 145, 7);
-  plat(148, 5, 5); coins([149, 4], [150, 4], [151, 4], [152, 4]); ent('relic', 150, 4, { kind: 'crown' }); // pogo the wasp for the cache
+  /* THE CROWN STAYS WITHIN REACH AFTER THE WASP FALLS: permanent branch steps keep the cache a climb, not a spent enemy. */
+  plat(147, 8, 2); plat(145, 6, 2);
+  plat(148, 5, 5); coins([147, 7], [145, 5], [149, 4], [150, 4], [151, 4], [152, 4]); ent('relic', 150, 4, { kind: 'crown' });
   ent('thorn', 153, 11, { face: -1 });
   crate(157, 11);
   ent('mover', 161, 12, { len: 3, range: 8 });
