@@ -440,6 +440,21 @@ async function runbossLab(BK, opts) {
         else if(!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
         if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='harbormaster'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const dx=boss.x-P.x,side=Math.sign(dx)||1;let gx=boss.x-side*Math.max(18,LAB_REACH[h]*.65);
+        const pressure=['pressureTell','twinTell'].includes(boss.mode),marked=pressure&&(boss.marks||[]).some(x=>Math.abs(P.x-x)<31);
+        if(pressure){const gaps=(boss.marks||[]).flatMap(x=>[x-34,x+34]).filter(x=>x>A.x0+18&&x<A.x1-18&&(boss.marks||[]).every(m=>Math.abs(x-m)>30));gx=gaps.sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0]??P.x;}
+        if(boss.mode==='lowTell'&&boss.modeT<.25&&P.ground){BK.press('jump');P.labJump=18;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(boss.mode==='highTell'&&P.ground&&P.y<A.floor-20){k.down=true;BK.press('jump');}
+        const guard=['anchorTell','harpoonTell'].includes(boss.mode);
+        if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=side;}
+        else if(guard&&boss.modeT<.24){k[side>0?'left':'right']=true;BK.press('dodge');gx=P.x;}
+        if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
+        if(!guard&&!pressure&&!(boss.mode==='lowTell'&&boss.modeT<.65)&&!(boss.mode==='highTell'&&P.y<A.floor-20)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<30&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.salvage){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const dx=boss.x-P.x,side=Math.sign(dx)||1;let gx=boss.x-side*Math.max(20,LAB_REACH[h]*.7);

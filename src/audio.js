@@ -864,6 +864,7 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  harbormaster() { noise(.18,.26,620,.5); tone('sine',140,65,.24,.18); tone('triangle',420,180,.16,.12); },
   lanternshade() { bell(784,.25,.06);noise(.12,.1,1800,.35); },
   bonecorsair() { noise(.16,.2,1200,.65);tone('triangle',260,120,.14,.08); },
   tidemarauder() { noise(.18,.22,600,.5);tone('sine',170,90,.2,.1); },
@@ -1032,6 +1033,7 @@ const CAST = {
   watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
   troll: { kit: 'ogre', rate: 1 }, prince: { kit: 'zom', rate: 0.62, lp: 1500, mat: 'cloth' }, courtier: { kit: 'zom', rate: 1.3, lp: 2600 }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
+  harbormaster: { kit: 'm4', rate: .62, lp: 1300, mat: 'plate', human: true, boss: true },
   forgemaster: { kit: 'ogre', rate: 0.85, mat: 'plate' }, reefmaw: { kit: 'ogre', rate: 0.7 },
   hound: { kit: 'bark', rate: 1.2 }, greathound: { kit: 'bark', rate: 0.8 },
   harpy: { kit: 'scream', rate: 1.1 }, roc: { kit: 'scream', rate: 0.8 }, petrel: { kit: 'gull', rate: 1 }, queen: { kit: 'scream', rate: 1.05 },
