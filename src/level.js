@@ -835,11 +835,12 @@ function sporewood() {
   R.ents=R.ents.filter(e=>!['puffball','roller','nest','shaman','drone','gill'].includes(e.t));
   for(const e of R.ents)if(e.t==='sign'&&/SLEEP|SPORES|PUFFBALL|ROLLERS|GILLS|BROOD|NEST/.test(e.text||''))e.text='FOLLOW THE CAPS. BOUNCE TO THE HIGH ROAD; STRIKE GLOWBUDS TO LIGHT THE ROOTS.';
   const A=R.arena,m=R.ents.find(e=>e.t==='mother'),mx=m.x,fy=A.floor/TS;
-  A.x0=(mx-15)*TS;A.x1=(mx+16)*TS;A.wallL=mx-16;A.wallR=mx+17;A.trigger=(mx-13)*TS;
-  for(let x=mx-15;x<=mx+16;x++)for(let y=fy-9;y<fy;y++)R.grid[y*R.W+x]=T.AIR;
+  A.x0=(mx-23)*TS;A.x1=(mx+24)*TS;A.wallL=mx-24;A.wallR=mx+25;A.trigger=(mx-21)*TS;
+  for(let x=mx-23;x<=mx+24;x++)for(let y=fy-12;y<fy;y++)R.grid[y*R.W+x]=T.AIR;
+  for(const [dx,dy] of [[-18,2],[-14,4],[-10,6],[8,6],[12,4],[16,2]])for(let k=0;k<3;k++)R.grid[(fy-dy)*R.W+mx+dx+k]=T.ONEWAY;
   for(const x of [mx-3,mx+3])R.grid[(fy-1)*R.W+x]=T.BOUNCER;
-  R.ents=R.ents.filter(e=>e.t==='mother'||e.x<mx-15||e.x>mx+16||['deco','glow','coin'].includes(e.t));
-  R.ents.push({t:'glowbud',x:mx-8,y:fy-1,motherNode:true},{t:'sign',x:mx-14,y:fy-1,text:'STRIKE THE ROOT KNOT. BOUNCE UP TO CUT THE HEART. WHEN IT CLOSES, WAKE THE KNOT AGAIN.'});
+  R.ents=R.ents.filter(e=>e.t==='mother'||e.x<mx-23||e.x>mx+24||['deco','glow','coin'].includes(e.t));
+  R.ents.push({t:'glowbud',x:mx-8,y:fy-1,motherNode:true},{t:'sign',x:mx-22,y:fy-1,text:'STRIKE THE MARKED ROOT. SPRING TO THE HEART. THE ROOT MOVES AFTER EACH OPENING.'});
   for(const x of [450,456])R.ents.push({t:'glowbud',x:x-1,y:x===450?21:17,mycelium:true});
   return R;
 ;

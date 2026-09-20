@@ -3528,7 +3528,7 @@ const BEASTS = [
   { t: 'owl', name: 'THE OWL REEVE', sub: 'lord of the crown', desc: 'Perches out of reach and swoops in straight lines: step aside by a lit lantern and it crashes into the light. When it skims the boards, leave them. Cut a dead bough\'s peg while it is low beneath and the bough pins it. Past half its blood it beats out lanterns: strike them twice.' },
   { t: 'king', name: 'KING GORM UNDERLEAF', sub: 'lord of the court', desc: 'Three times the goblin. Rides a litter that four bearers can barely lift: cut them and the throne falls. Then the sceptre sweeps, the hand reaches for you and hurls you the length of the hall, cages drop from the rafters, and the court throws when he shouts. At the end he stands, the roof comes down where he walks, and he throws the throne itself.' },
   { t: 'chief', name: 'GOBLIN CHIEFTAIN', sub: 'lord of the stockade', desc: 'Red tells and a stamp: the club. Blue tells and a glint: sword and shield. Green: the bow. He swaps at the racks by the walls; break a rack and that weapon is out of the fight. The dais is beyond his club and sword, not his arrows or his leap. He swaps weapons every few swings. Club: dodge the slam and hit him while it is planted. Sword and shield: block his slash to parry it, or get behind the shield. Bow: parry the arrows back at him. Whatever he holds, when he crouches he is about to leap on you: move.' },
-  { t: 'mother', name: 'THE MOTHER CAP', sub: 'root of the wood', desc: 'Strike the glowing root knot to open her heart, then take a spring cap up and cut it. The heart closes after a hit; the knot rests ten seconds before it can open her again. Bounce over her root fan, stay beneath her folding cap, and step between the falling seeds.' },
+  { t: 'mother', name: 'THE MOTHER CAP', sub: 'root of the wood', desc: 'Strike the diamond-marked root to open her heart, then spring up and cut it. The root relocates between openings. The heart closes after a hit; the knot rests ten seconds before it can open her again. Use the stepped shelves to escape floor roots, duck the spore sweep, and leave marked columns. At half health she gains root columns and a radial spore burst.' },
   { t: 'harpy', name: 'CRAG HARPY', sub: 'diver of the cliffs', desc: 'Hangs in the wind above you, screams, and dives in a straight line. Block the dive and she hits the ground stunned: plunge her there. A sword hit sends her back to her perch.' },
   { t: 'goat', name: 'CRAG RAM', sub: 'the hill charger', desc: 'A wild ram of the scree. It charges and hops walls and ledges. Block the charge and it rears, turned and open for a moment.' },
   { t: 'troll', name: 'HILL TROLL', sub: 'boulder-thrower', desc: 'Slow, mossy, taller than a door. From range it hurls a boulder in an arc at where you are going: watch the shadow and the whistle. Up close it swats, heavy but blockable. Its hide is soft: the sword and the plunge both bite.' },
@@ -4884,7 +4884,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'queen' && e.mode === 'winded') dmg *= 2;
   if (e.t === 'chief' && e.mode === 'planted') dmg *= 2;
   if (e.t === 'ram' && ramOpen(e)) dmg *= 2;
-  if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
+  if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; mother.nodeMove=true; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
   if (e.t === 'owl' && (e.mode === 'crash' || e.mode === 'grounded')) dmg *= 2;
   if (e.t === 'owl' && e.mode === 'pinned') dmg = Math.round(dmg * 2.5); /* under the dead bough: the window the player made pays best */
   if (e.t === 'owl' && e.mode === 'sit') e.hits = (e.hits || 0) + 1;
@@ -16285,28 +16285,54 @@ function ringBell(b) {
 // THE ROOT KNOT: the same living knot opens each window; it never summons another creature.
 function wakeMycelium(pr){
   for(const m of movers)if(m.kind==='growcap'&&Math.abs(m.x-pr.x)<130){m.state='grow';m.k=Math.max(0,m.k||0);m.cd=0;}
-  if(pr.motherNode&&mother&&mother.alive&&bossActive&&!(mother.nodeRest>0)&&mother.mode!=='open'){
-    mother.mode = 'open';mother.modeT=8;mother.tipped=true;mother.gillsOpen=true;
+  if(pr.motherNode&&mother&&mother.alive&&bossActive&&!(mother.nodeRest>0)&&mother.mode!=='open'&&mother.mode!=='phaseRise'){
+    mother.mode = 'open';mother.modeT=8;mother.tipped=true;mother.gillsOpen=true;mother.zones=[];
     number(mother.x,mother.y-110,'THE HEART OPENS. TAKE THE SPRING.','#ff7a9a');SFX.gillOpen();
   }
+}
+// Grounded root anchors are reachable by every class; relocation happens during its rest.
+const MOTHER_ROOTS = [-8, 10, -16, 17];
+function motherZones(e,dt){
+  e.zones=(e.zones||[]).filter(z=>{z.t-=dt;if(z.t<=0)return false;if(z.t<=z.live&&overlap(box(P),{l:z.l,r:z.r,t:z.top,b:z.b}))damagePlayer((z.l+z.r)/2,16,{up:true,unblockable:true});return true;});
+}
+function motherPattern(e,kind){
+  const A=L.arena,f=A.floor;e.zones=[];
+  const zone=(l,r,t,b)=>e.zones.push({l,r,t:1.15+.55,top:t,b,live:.55});
+  // Store geometric top separately: t is the warning/lifetime clock.
+  if(kind==='floorSurge')zone(A.x0+8,A.x1-8,f-14,f);
+  if(kind==='sporeSweep')zone(A.x0+8,A.x1-8,f-64,f-42);
+  if(kind==='rootColumns')for(const dx of [-64,0,64]){const q=Math.max(A.x0+24,Math.min(A.x1-24,P.x+dx));zone(q-12,q+12,f-120,f);}
+  e.mode=kind+'Tell';e.modeT=1.15;e.aimX=P.x;e.aimY=P.y-10;
+  number(P.x,P.y-36,kind==='floorSurge'?'GET ABOVE THE ROOTS':kind==='sporeSweep'?'STAY LOW OR CLIMB':kind==='rootColumns'?'LEAVE THE MARKS':kind==='sporeWheel'?'SPORE BURST':'SPORE VOLLEY','#ffd36b');number(e.x,f-112,e.zones.length?'!!':'!',e.zones.length?'#ff6b6b':'#ffd36b');SFX.buzz();
 }
 function updateMother(e,dt){
   const A=L.arena,floor=A.floor;e.anim+=dt;e.modeT-=dt;e.nodeRest=Math.max(0,(e.nodeRest||0)-dt);
   if(e.mode==='sleep')return;
+  const node=props.find(p=>p.motherNode);
+  if(node&&e.nodeMove){e.nodeMove=false;e.nodeIndex=((e.nodeIndex||0)+1)%MOTHER_ROOTS.length;node.targetX=e.x+MOTHER_ROOTS[e.nodeIndex]*TS;node.lit=0;}
+  if(node&&node.targetX!==undefined){node.x+=Math.sign(node.targetX-node.x)*Math.min(Math.abs(node.targetX-node.x),180*dt);node.light.x=node.x;}
+  motherZones(e,dt);
   if(e.mode==='wake'){if(e.modeT<=0){e.mode = 'idle';e.modeT=2;e.attackN=0;}return;}
   if(!e.heart){e.heart={t:'heart',x:e.x,y:floor-68,vx:0,vy:0,w:28,h:24,hp:EHP.heart,face:1,alive:true,dying:0,anim:0,flash:0,stagger:0};enemies.push(e.heart);}
-  e.hp=e.heart.hp;e.maxHp=EHP.heart;e.phase=e.hp<=EHP.heart/2?2:1;
-  if(e.mode==='open'){if(e.modeT<=0){e.mode = 'idle';e.modeT=1;e.tipped=false;e.gillsOpen=false;e.nodeRest=3;}return;}
+  e.hp=e.heart.hp;e.maxHp=EHP.heart;const phase=e.hp<=EHP.heart/2?2:1;if(phase===2&&e.phase!==2){e.phase=2;e.mode='phaseRise';e.modeT=2;e.zones=[];e.tipped=false;e.gillsOpen=false;e.attackN=7;number(e.x,floor-90,'THE ROOTS AWAKEN','#ff7a9a');SFX.roar();}e.phase=phase;
+  if(e.mode==='phaseRise'){if(e.modeT<=0){e.mode='idle';e.modeT=.8;}return;}
+  if(e.mode==='open'){if(e.modeT<=0){e.mode = 'idle';e.modeT=1;e.tipped=false;e.gillsOpen=false;e.nodeRest=3;e.nodeMove=true;}return;}
   // THE CAP CLAPS above the spring line; the ROOT FAN crosses the floor. One asks you to stay low, the other to bounce.
-  if(e.mode==='idle'&&e.modeT<=0){e.attackN=(e.attackN||0)+1;if(e.attackN%4===1){e.mode = 'rootFanTell';e.modeT=.85;number(e.x,floor-110,'!!','#ff6b6b');}
-    else if(e.attackN%4===2){e.mode = 'capClapTell';e.modeT=1.1;number(e.x,floor-110,'!!','#ff6b6b');}
-    else if(e.attackN%4===3){e.mode = 'rootStabTell';e.modeT=.8;e.rootMark=P.x;number(e.rootMark,floor-28,'!!','#ff6b6b');}
+  if(e.mode==='idle'&&e.modeT<=0){e.attackN=(e.attackN||0)+1;const turn=(e.attackN-1)%(e.phase===2?9:7);if(turn>=4){motherPattern(e,['sporeVolley','floorSurge','sporeSweep','rootColumns','sporeWheel'][turn-4]);return;}if(turn===0){e.mode = 'rootFanTell';e.modeT=.85;number(e.x,floor-110,'!!','#ff6b6b');}
+    else if(turn===1){e.mode = 'capClapTell';e.modeT=1.1;number(e.x,floor-110,'!!','#ff6b6b');}
+    else if(turn===2){e.mode = 'rootStabTell';e.modeT=.8;e.rootMark=P.x;number(e.rootMark,floor-28,'!!','#ff6b6b');}
     else {e.mode = 'seedRainTell';e.modeT=.9;number(e.x,floor-110,'!','#ffd36b');}SFX.buzz();}
   if(e.mode==='rootStabTell'&&e.modeT<=0){e.mode = 'rootStab';e.modeT=.5;burst(e.rootMark,floor,18,['#8fd160','#4a4050'],90,.5);SFX.crack();if(Math.abs(P.x-e.rootMark)<18&&P.y>floor-24)damagePlayer(e.rootMark,DMG.root,{up:true,unblockable:true});}
   if(e.mode==='rootFanTell'&&e.modeT<=0){e.mode = 'rootFan';e.modeT=.8;for(const dir of [-1,1])vines.push({x:e.x,dir,y:floor,tell:.1,t:0,len:28,end:dir>0?A.x1-4:A.x0+4,hitT:0});SFX.crack();}
   if(e.mode==='capClapTell'&&e.modeT<=0){e.mode = 'capClap';e.modeT=.4;shakeCam(4);SFX.thud();if(Math.abs(P.x-e.x)<110&&P.y<floor-28&&P.y>floor-112)damagePlayer(e.x,18,{unblockable:true});burst(e.x,floor-65,22,['#9a5aa8','#e0b0f0'],140,.5);}
   if(e.mode==='seedRainTell'&&e.modeT<=0){e.mode = 'seedRain';e.modeT=.5;for(const dx of [-96,-48,0,48,96])seeds.push({x:e.x+dx,y:floor-130,vx:0,vy:40,dead:false,life:3,g:320});SFX.crack();}
-  if(['rootFan','capClap','seedRain','rootStab'].includes(e.mode)&&e.modeT<=0){e.mode = 'idle';e.modeT=e.phase===2?1.7:2.5;}
+  if(['sporeVolleyTell','floorSurgeTell','sporeSweepTell','rootColumnsTell','sporeWheelTell'].includes(e.mode)&&e.modeT<=0){
+    const kind=e.mode.slice(0,-4);e.mode=kind;e.modeT=.65;
+    if(kind==='sporeVolley'){const ang=Math.atan2(e.aimY-(floor-74),e.aimX-e.x);for(const d of [-.22,0,.22])seeds.push({x:e.x,y:floor-74,vx:Math.cos(ang+d)*125,vy:Math.sin(ang+d)*125,life:3,dead:false});}
+    if(kind==='sporeWheel')for(let k=0;k<10;k++){const a=k*Math.PI/5;seeds.push({x:e.x,y:floor-74,vx:Math.cos(a)*100,vy:Math.sin(a)*100,life:3,dead:false});}
+    SFX.crack();
+  }
+  if(['rootFan','capClap','seedRain','rootStab','sporeVolley','floorSurge','sporeSweep','rootColumns','sporeWheel'].includes(e.mode)&&e.modeT<=0){e.mode = 'idle';e.modeT=e.phase===2?1.7:2.5;}
 }
 
 // ---------- critters: harmless life that reacts to you ----------
@@ -20609,6 +20635,9 @@ function drawMother(cx, cy) {
   const ease = Math.min(1, (time - (m.openT0 || 0)) / 0.35); m.breathK = open ? ease : 1 - ease;
   const swell = 1 + m.breathK * 0.055, breathe = (1 + Math.sin(time * 1.2) * 0.02) * swell;
   const capY = fy - 96 + Math.round(Math.sin(time * 1.2) * 2) - Math.round(m.breathK * 3);
+  for(const z of (m.alive?(m.zones||[]):[])){const zx=Math.round(z.l-cx),zy=Math.round(z.top-cy),w=z.r-z.l,h=z.b-z.top;g.fillStyle=z.t>z.live?'rgba(255,190,90,0.18)':'rgba(201,70,61,0.65)';g.fillRect(zx,zy,w,h);g.strokeStyle=z.t>z.live?'#ffd36b':'#ff7a9a';g.strokeRect(zx+.5,zy+.5,w-1,h-1);for(let q=zx;q<zx+w;q+=12)g.fillRect(q,zy+h-4,3,4);}
+  const node=props.find(p=>p.motherNode);
+  if(node&&m.alive){const nx=Math.round(node.x-cx),ny=Math.round(node.y-cy)-10,ready=!(m.nodeRest>0)&&m.mode!=='open'&&m.mode!=='phaseRise';g.strokeStyle=ready?'#fff1a8':'#776b85';g.lineWidth=2;g.beginPath();g.moveTo(nx,ny-12);g.lineTo(nx+10,ny);g.lineTo(nx,ny+12);g.lineTo(nx-10,ny);g.closePath();g.stroke();g.lineWidth=1;if(nx>20&&nx<VW-20){g.fillStyle='rgba(12,10,22,.9)';g.fillRect(nx-37,ny-25,74,10);text(ready?'STRIKE ROOT':'ROOT RESTING',nx,ny-24,ready?'#fff1a8':'#b4a6c4','center',6);}else if(bossActive&&ready){const edge=nx<20?38:VW-38;g.fillStyle='rgba(12,10,22,.9)';g.fillRect(edge-34,Math.min(VH-36,Math.max(55,ny-24)),68,10);text(nx<20?'< ROOT':'ROOT >',edge,Math.min(VH-36,Math.max(55,ny-24))+1,'#fff1a8','center',6);}}
   const MC = PROP.motherCap;
   g.drawImage(MC.stalk, x - 16, fy - 100);
   g.save(); g.translate(x + shakeX, capY); g.rotate(tip * 0.45); g.scale(breathe, 1 / breathe);
