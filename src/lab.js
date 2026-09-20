@@ -575,7 +575,9 @@ async function runbossLab(BK, opts) {
         if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
       }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
-      if (walker && boss.t !== 'owl' && Math.abs(boss.y - P.y) > 30 && !k.block) {
+      // THE DECK MUST BE UNDER HER FEET: sword reach is not the top of the ladder.
+      const shipAscending=lvId==='flotilla'&&(boss.y<P.y-30||!P.ground&&boss.y<P.y+8);
+      if (walker && boss.t !== 'owl' && (Math.abs(boss.y - P.y) > 30 || shipAscending) && !k.block) {
         /* she is on another deck. Walking at HER x from under her deck only jumps on the spot: go to the nearest way UP -
            a rope or a ledge over the deck the bot stands on - and let the walker climb it */
         let goalUp = boss.x;
@@ -593,7 +595,7 @@ async function runbossLab(BK, opts) {
            at 366 from the quarterdeck to the poop. So: walk the deck to the foot of the run, then hold UP on the rungs -
            and never jump while climbing, because a jump off a rope is how you let go of it. */
         let flotClimb = false;
-        if (lvId === 'flotilla' && boss.y < P.y - 30) { const py = P.y / TS;
+        if (shipAscending) { const py = P.y / TS;
           if (py > 17 || (P.climb && py > 15.2)) goalUp = 310 * TS + 8;                    /* the shroud out of the hold and up the ship's side */
           else if (boss.y < 14 * TS) goalUp = 366 * TS + 8;      /* the one ladder to the poop she does not cut */
           flotClimb = true; }
@@ -614,7 +616,7 @@ async function runbossLab(BK, opts) {
            it: every hero stalled between 3% and 27% of him, which is his flood phase and nothing else. A swimmer
            strokes up and down as well. */
         if (P.swim) { const dyb = (boss.y - 10) - P.y; if (dyb < -12) k.up = true; else if (dyb > 12) k.down = true; } }
-      if(lvId==='flotilla' && boss.y<P.y-30){
+      if(shipAscending){
         if(P.climb && P.y<17.5*TS && P.y>15.2*TS && Math.abs(P.x-311*TS)<20 && !(P.labShipVault>0)){BK.press('jump');P.labShipVault=32;}
         if(P.ground&&(k.left||k.right)){const dir=k.right?1:-1,tx=Math.floor((P.x+dir*20)/TS),ty=Math.floor((P.y+2)/TS);if(!L.grid[ty*L.W+tx]){BK.press('jump');P.labShipVault=32;}}
         if(P.labShipVault>0){P.labShipVault--;k.left=false;k.right=true;k.up=k.down=k.block=false;k.jump=true;}
