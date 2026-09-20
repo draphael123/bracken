@@ -397,7 +397,7 @@ export function loopCopy(ctx, b, len, dest, at, first) {
   return s;
 }
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
-const TRACK_GAIN = { fallingtower:1.8, underkeep: 1.8, stormharbor: 1.8, burial: 1.8, store: 1.8, hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
+const TRACK_GAIN = { fallingtower: 5.0, underkeep: 5.0, stormharbor: 3.5, burial: 5.0, store: 1.8, hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
