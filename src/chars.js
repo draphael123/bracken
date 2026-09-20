@@ -255,9 +255,21 @@ function comboArcs(sh, key, len, extra = {}) {
    All poses gain the same transparent headroom and anchor shift, leaving their feet exactly where they were.
    The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
 const ATTACK_HEADROOM = 24;
-function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = false, scale = 1 } = {}) {
+function padHeroFrames(F) {
   const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); memo.set(c, out); } return memo.get(c); };
-  for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(pad) : pad(F[key]);
+  for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(c => c ? pad(c) : c) : pad(F[key]);
+}
+function storeFrames(card, knight, mode) {
+  const F = {};
+  if (mode !== 'atk' && mode !== 'weaponIcon') F.idle = card.idle();
+  if (mode === true || mode === 'atk' || mode === 'weaponIcon') F.atk = card.atk();
+  if (knight && F.idle && F.idle[2]) { const g = F.idle[2].getContext('2d'); g.fillStyle = '#dfe8ff'; g.fillRect(BX + 4, BY + 4, 1, 1); }
+  padHeroFrames(F);
+  KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
+  return { R: F };
+}
+function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = false, scale = 1 } = {}) {
+  padHeroFrames(F);
   const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : ['maul', 'greatsword', 'staff'].includes(weapon) ? 34 : 28;
   const pose = (kind, i) => {
     const rise = kind === 'rise', dx = [-1, 1, 2, 1][i], dy = rise ? [2, 0, -1, 0][i] : [2, 3, 3, 1][i];
@@ -284,7 +296,7 @@ const breathLag = i => BREATH[(i + BREATH.length - 1) % BREATH.length][0];   /* 
 const flap = (cols, dy, lag, k1, k2) => cols.flatMap(x => { const o = []; for (let y = 11; y <= 12 + lag - dy; y++) o.push([x, y, y === 11 ? k1 : k2]); return o; });
 /* FIDGETS PLAY AT ONE STEP A TENTH: a pose held longer is simply listed more than once */
 const holdFrames = seq => seq.flatMap(([f, n]) => Array(n).fill(f));
-export function bakeKnight(skin = {}, bare = false) {
+export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
   KP = Object.assign({}, KP0, skin);
   const sh = [BX + 8, BY + 7]; // shoulder (front)
   /* EVERY FRAME CARRIES THE SHIELD: lowered on the off arm (KITE), square across his front where a frame raises it, and
@@ -292,8 +304,25 @@ export function bakeKnight(skin = {}, bare = false) {
   const SIDE = { x: 4, y: 6 }, BACK = { x: -3, y: 4, back: true };
   const KF = o => knightFrame({ ...o, shield: !!o.shield && !bare, kite: bare || o.shield ? null : (o.kite || SIDE) });
   const rest = (d = 0) => [sh[0] + 1, sh[1] + 2 + d, sh[0] + 3, sh[1] + 9 + d];
+  // A STORE CARD NEEDS ONLY THE BREATH AND THE SWING, not the whole fighting life.
+  const card = {
+    idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 7 - dy] }))),
+    atk: () => ([
+      () => (// 0 anticipation: sword drawn back over the shoulder, body leans away
+      KF({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], sword: [sh[0] - 1, sh[1] - 4, sh[0] - 7, sh[1] - 10], plume: 1 })),
+      () => (// 1 swing: blade straight out, body lunges
+      KF({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 2 })),
+      () => (// 2 extended: blade angled down-forward, weight forward
+      KF({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], sword: [sh[0] + 3, sh[1] + 3, sh[0] + 11, sh[1] + 8], plume: 2 })),
+      () => (// 3 recover: blade low
+      KF({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], sword: [sh[0] + 2, sh[1] + 4, sh[0] + 6, sh[1] + 11], plume: 0 })),
+      () => (// 4 settle
+      KF({ legs: 'stand', sword: rest(), plume: 0 }))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+  };
+  if (previewOnly) return storeFrames(card, true, previewOnly);
   const F = {
-    idle: BREATH.map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 7 - dy] })),   /* the point stays in the turf - by one pixel: at +9 it was three under the ground line */
+    idle: card.idle(),   /* the point stays in the turf - by one pixel: at +9 it was three under the ground line */
     // run: body bobs, sword arm pumps
     run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, pump], i) =>
       KF({ legs: l, dy, plume: i % 3 === 0 ? 2 : 0, sword: [sh[0] + 1 + pump, sh[1] + 2, sh[0] + 4 + pump, sh[1] + 7 - Math.max(0, dy)], legsDy: 0 })),   /* the point skims the ground: it rides the bob up, never down into the turf */
@@ -315,18 +344,7 @@ export function bakeKnight(skin = {}, bare = false) {
       KF({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 0, kite: BACK }),
       KF({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], sword: [sh[0] - 3, sh[1] - 3, sh[0] - 7, sh[1] + 7], plume: 1, kite: BACK }),
     ],
-    atk: [
-      // 0 anticipation: sword drawn back over the shoulder, body leans away
-      KF({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], sword: [sh[0] - 1, sh[1] - 4, sh[0] - 7, sh[1] - 10], plume: 1 }),
-      // 1 swing: blade straight out, body lunges
-      KF({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 2 }),
-      // 2 extended: blade angled down-forward, weight forward
-      KF({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], sword: [sh[0] + 3, sh[1] + 3, sh[0] + 11, sh[1] + 8], plume: 2 }),
-      // 3 recover: blade low
-      KF({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], sword: [sh[0] + 2, sh[1] + 4, sh[0] + 6, sh[1] + 11], plume: 0 }),
-      // 4 settle
-      KF({ legs: 'stand', sword: rest(), plume: 0 }),
-    ],
+    atk: card.atk(),
     /* THE POKE: he tucks into a ball - helm sunk, knees drawn up level in front of him, the shield slung round onto his back - with both
        fists on the grip (gold pommel over the gauntlets, the guard under them) and the blade driven straight down past his boots, point
        first. No arc and no smear: a compact body on a long bright spike, where every swing is an upright man with the steel out ahead.
@@ -1322,15 +1340,27 @@ function pyroFrame(o = {}) {
   outline(c, OUT);
   return c;
 }
-export function bakePyro(skin = {}) {
+export function bakePyro(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PYRO_PAL, skin);
   const up = (dx = 0, d = 0) => [17 + dx, 18 + d, 18 + dx, 0 + d]; // the staff stood upright in the front hand, taller than her
   const hand = [16, 11, 17, 12];                                      // the front sleeve down to the staff
+  // A STORE CARD NEEDS ONLY THE BREATH AND THE SWING, not the whole fighting life.
+  const card = {
+    idle: () => ((previewOnly === 'icon' ? ([[0, 0], [0, 0], [1, 0], [1, 1], [1, 1], [0, 1], [0, 0], [0, -1]]).slice(0, 1) : ([[0, 0], [0, 0], [1, 0], [1, 1], [1, 1], [0, 1], [0, 0], [0, -1]])).map(([sit, trail], i) => pyroFrame({ sit, trail, staff: [17, 18, 19, 5], arm: [16, 11 + sit, 17, 11 + sit], flame: [0, 1, 2, 3, 1, 0, 3, 2][i], flick: i === 4 ? 1 : 0, cowl: 0 }))),
+    atk: () => ([
+      () => (pyroFrame({ lean: -1, feet: [[10, 18], [16, 18]], staff: [3, 11, 16, 10], arm: [15, 10, 13, 11], arm2: [11, 10, 9, 11], cowl: 0 })),
+      () => (pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [9, 11, 25, 10], arm: [16, 10, 20, 10], arm2: [12, 10, 15, 11], cowl: 1, flare: [26, 10, false] })),
+      () => (pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [10, 11, 26, 10], arm: [16, 10, 21, 10], arm2: [12, 10, 16, 11], cowl: 1, flare: [27, 10, true], flick: 1 })),
+      () => (pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [8, 13, 21, 8], arm: [16, 10, 18, 11], cowl: 0 })),
+      () => (pyroFrame({ staff: up(), arm: hand, cowl: 0 }))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+  };
+  if (previewOnly) return storeFrames(card, false, previewOnly);
   const F = {
     /* HER BREATH: the shoulders and the cowl settle a pixel while the hem and the boots stay where they stand, the robe
        swings a beat behind them, and the fire in the cage licks a new way on every beat. The staff is planted at a lean
        so the flame has room under the top of the frame. */
-    idle: [[0, 0], [0, 0], [1, 0], [1, 1], [1, 1], [0, 1], [0, 0], [0, -1]].map(([sit, trail], i) => pyroFrame({ sit, trail, staff: [17, 18, 19, 5], arm: [16, 11 + sit, 17, 11 + sit], flame: [0, 1, 2, 3, 1, 0, 3, 2][i], flick: i === 4 ? 1 : 0, cowl: 0 })),
+    idle: card.idle(),
     // she runs low and quick, the robe streaming behind and the staff carried like a lance
     run: [0, 1, 2, 3, 4, 5].map(i => pyroFrame({ lean: 2, dy: [0, -1, 0, 0, -1, 0][i], trail: 3 + (i % 3 === 1 ? 1 : 0), hemW: 11,
       feet: [[[9, 18], [16, 17]], [[11, 18], [15, 18]], [[13, 17], [12, 18]], [[16, 17], [9, 18]], [[15, 18], [11, 18]], [[12, 18], [13, 17]]][i],
@@ -1349,13 +1379,7 @@ export function bakePyro(skin = {}) {
       pyroFrame({ dy: 1, hemW: 9, feet: [[11, 15], [15, 18]], staff: [7, 17, 21, 4, 'back'], arm: [16, 10, 18, 6], arm2: [11, 10, 13, 3], cowl: 0, flick: 1 }),
     ],
     // the thrust: staff drawn back, driven straight out, flame off the end of it, pulled home
-    atk: [
-      pyroFrame({ lean: -1, feet: [[10, 18], [16, 18]], staff: [3, 11, 16, 10], arm: [15, 10, 13, 11], arm2: [11, 10, 9, 11], cowl: 0 }),
-      pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [9, 11, 25, 10], arm: [16, 10, 20, 10], arm2: [12, 10, 15, 11], cowl: 1, flare: [26, 10, false] }),
-      pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [10, 11, 26, 10], arm: [16, 10, 21, 10], arm2: [12, 10, 16, 11], cowl: 1, flare: [27, 10, true], flick: 1 }),
-      pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [8, 13, 21, 8], arm: [16, 10, 18, 11], cowl: 0 }),
-      pyroFrame({ staff: up(), arm: hand, cowl: 0 }),
-    ],
+    atk: card.atk(),
     // the plunge: the staff goes down first and she rides it, robe streaming up
     // HOLD THE FLAME: she gathers it back low with both hands and then drives the staff forward level
     heavy: [
@@ -1683,16 +1707,28 @@ const FREE_PLUME = [
 ];
 const FREE_PAL = { s: '#e8e0cc', S: '#b0a68e', b: '#2c3a56', B: '#18202f', r: '#a8323a', y: '#e0b040',
   k: '#d8a878', w: '#5c3f24', W: '#3a2a18', v: '#15181f' };
-export function bakeFreebooter(skin = {}) {
+export function bakeFreebooter(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, FREE_PAL, skin); BODY_REF = FREE_BODY; PLUME_REF = FREE_PLUME;
   const sh = [BX + 8, BY + 7];
   const rest = (d = 0) => [sh[0] + 1, sh[1] + 2 + d, sh[0] + 7, sh[1] + 7 + d];      // the cutlass low and out, ready
   const carry = (d = 0) => [sh[0], sh[1] + 3 + d, sh[0] + 5, sh[1] + 9 + d];         // and down at his side at a run
   const holster = (d = 0) => [sh[0] - 2, sh[1] + 3 + d, sh[0] - 5, sh[1] + 2 + d];   // the pistol through his belt
+  // A STORE CARD NEEDS ONLY THE BREATH AND THE SWING, not the whole fighting life.
+  const card = {
+    idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
+      return knightFrame({ dy, hy, sho, plume, cutlass: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 7 + lag - dy], pistol: holster(), bits: flap([1], dy, lag, 'b', 'B') }); })),
+    atk: () => ([
+      () => (knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 3], cutlass: [sh[0] - 1, sh[1] - 3, sh[0] - 6, sh[1] - 7], pistol: holster(), plume: 1 })),
+      () => (knightFrame({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 4], cutlass: [sh[0] + 3, sh[1] - 4, sh[0] + 9, sh[1] - 6], pistol: holster(), plume: 2 })),
+      () => (knightFrame({ dx: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], cutlass: [sh[0] + 4, sh[1] - 1, sh[0] + 12, sh[1] + 1], pistol: holster(), plume: 2 })),
+      () => (knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], cutlass: [sh[0] + 4, sh[1] + 2, sh[0] + 10, sh[1] + 7], pistol: holster(1), plume: 0 })),
+      () => (knightFrame({ cutlass: rest(), pistol: holster(), plume: 0 }))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+  };
+  if (previewOnly) return storeFrames(card, false, previewOnly);
   const F = {
     /* HIS BREATH: the hat and the feather ride it, the coat tail hangs a beat behind, and the cutlass point dips after the hand */
-    idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
-      return knightFrame({ dy, hy, sho, plume, cutlass: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 7 + lag - dy], pistol: holster(), bits: flap([1], dy, lag, 'b', 'B') }); }),
+    idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, cutlass: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8 - Math.max(0, dy)], pistol: holster() })),   /* carried down at his side, the point clear of the deck: carry()'s point went two and three pixels into it on the stride */
     jump: [knightFrame({ legs: 'jump', dy: -1, cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 5], pistol: holster(), plume: 1 }), knightFrame({ legs: 'jump2', cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 1 })],
     fall: [knightFrame({ legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], pistol: holster(), plume: 2 })],
@@ -1710,13 +1746,7 @@ export function bakeFreebooter(skin = {}) {
       knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], cutlass: carry(1), plume: 1 }),
     ],
     // FIVE BLOWS: nobody else gets a run this long, and none of them weigh anything
-    atk: [
-      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 3], cutlass: [sh[0] - 1, sh[1] - 3, sh[0] - 6, sh[1] - 7], pistol: holster(), plume: 1 }),
-      knightFrame({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 4], cutlass: [sh[0] + 3, sh[1] - 4, sh[0] + 9, sh[1] - 6], pistol: holster(), plume: 2 }),
-      knightFrame({ dx: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], cutlass: [sh[0] + 4, sh[1] - 1, sh[0] + 12, sh[1] + 1], pistol: holster(), plume: 2 }),
-      knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], cutlass: [sh[0] + 4, sh[1] + 2, sh[0] + 10, sh[1] + 7], pistol: holster(1), plume: 0 }),
-      knightFrame({ cutlass: rest(), pistol: holster(), plume: 0 }),
-    ],
+    atk: card.atk(),
     /* THE BOARDING STOMP: boot-first, the same tuck the knight's poke uses (both knees drawn up level, the legs
        gone from under him) so he reads as a man dropping onto a deck, not a man still falling - the cutlass trails
        point-down past his boots, one hand only, the pistol kept through the belt for when he lands. */
@@ -1805,20 +1835,32 @@ const REAP_PLUME = [
 ];
 const REAP_PAL = { s: '#b9c2cf', S: '#68707e', b: '#232a38', B: '#141824', r: '#5e1822', y: '#8fd160',
   k: '#0a0c10', w: '#6a5a42', W: '#3e3428', v: '#39404e' };
-export function bakeReaper(skin = {}) {
+export function bakeReaper(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, REAP_PAL, skin); BODY_REF = REAP_BODY; PLUME_REF = REAP_PLUME;
   const sh = [BX + 8, BY + 7];
   /* A TWO-HANDER IS CARRIED, NOT HELD OUT. At rest and at a run it lies back over the shoulder - that is
      the pose that says greatsword from across the room, and it keeps the blade out of his own legs. */
   const rest = (d = 0) => [sh[0] - 3, sh[1] + 5 + d, sh[0] + 13, sh[1] + 9 + d];    /* low guard, across the body, point forward and down */
   const carry = (d = 0) => [sh[0] - 4, sh[1] + 6 + d, sh[0] + 12, sh[1] + 11 + d];  /* at a run the point drops further: he is dragging it */
+  // A STORE CARD NEEDS ONLY THE BREATH AND THE SWING, not the whole fighting life.
+  const card = {
+    idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
+      /* the hands at his hip, not his knee: the cross hangs four rows under the grip, and from +5 it and the point both went into the ground */
+      return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 3 - Math.max(0, dy)], greatsword: [sh[0] - 3, sh[1] + 3 - Math.max(0, dy), sh[0] + 12, sh[1] + 6 + lag - dy],
+        bits: [...flap([3, 4], dy, lag, 'r', 'r'), ...(i === 6 ? [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] : [])] }); })),
+    atk: () => ([
+      () => (knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 2, sh[0] - 11, sh[1] - 6], plume: 1 })),
+      () => (knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], greatsword: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] - 16], plume: 2 })),
+      () => (knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 17, sh[1] - 1], plume: 2 })),
+      () => (knightFrame({ dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 })),
+      () => (knightFrame({ greatsword: rest(), plume: 0 }))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+  };
+  if (previewOnly) return storeFrames(card, false, previewOnly);
   const F = {
     /* HIS BREATH: the pauldrons lift, the torn surcoat drags a beat behind, the long point sinks after the hands, and once
        in the cycle the green in the helm goes out and comes back. The point is held a pixel short so it clears the frame. */
-    idle: BREATH.map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
-      /* the hands at his hip, not his knee: the cross hangs four rows under the grip, and from +5 it and the point both went into the ground */
-      return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 3 - Math.max(0, dy)], greatsword: [sh[0] - 3, sh[1] + 3 - Math.max(0, dy), sh[0] + 12, sh[1] + 6 + lag - dy],
-        bits: [...flap([3, 4], dy, lag, 'r', 'r'), ...(i === 6 ? [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] : [])] }); }),
+    idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 2], greatsword: [sh[0] - 4, sh[1] + 2, sh[0] + 12, sh[1] + 6 - Math.max(0, dy)] })),   /* dragged, not buried: carry() had the cross and the point four to six pixels under the ground */
     jump: [knightFrame({ legs: 'jump', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 6, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 7, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 4, sh[0] - 7, sh[1] - 4], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, greatsword: [sh[0] + 2, sh[1] + 3, sh[0] - 8, sh[1] - 2], plume: 2 })],
@@ -1837,13 +1879,7 @@ export function bakeReaper(skin = {}) {
       knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], greatsword: carry(1), plume: 1 }),
     ],
     /* THE SWATHE: back over the shoulder, up, and round in one flat wide arc that takes everything in front */
-    atk: [
-      knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 2, sh[0] - 11, sh[1] - 6], plume: 1 }),
-      knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], greatsword: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] - 16], plume: 2 }),
-      knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 17, sh[1] - 1], plume: 2 }),
-      knightFrame({ dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 }),
-      knightFrame({ greatsword: rest(), plume: 0 }),
-    ],
+    atk: card.atk(),
     /* THE GRAVE DRIVE: the same tuck the knight's poke uses - both hands stay on the grip, knees drawn up out from
        under him, and the whole length of the greatsword goes down past his boots ahead of the ground it is about
        to open (graveFall, main.js). Nothing here reads as his slow overhead swathe: the blade is a straight column,
@@ -1950,7 +1986,7 @@ const WARD_PLUME = [
    sets (WARD_SETS in main.js). Keying them to anything of their own would have left eighteen skins recolouring
    a spear and a pair of boots while the whole of the rest of her stayed green. */
 const WARD_PAL = { s: '#b8c2cc', S: '#6a737e', b: '#3f6e4a', B: '#1d3524', r: '#c9b27c', k: '#d8ac82', w: '#6a4a2a', W: '#402a16', y: '#e0b040', v: '#221c28' };
-export function bakeWarden(skin = {}) {
+export function bakeWarden(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, WARD_PAL, skin); BODY_REF = WARD_BODY; PLUME_REF = WARD_PLUME;
   const sh = [BX + 8, BY + 7];
   const WIDE = 30;                                                   // the canvas her forty-four pixels of reach needs
@@ -1962,10 +1998,22 @@ export function bakeWarden(skin = {}) {
   /* THE THRUST, in four beats and a settle: drawn back to the hip, driven, at full stretch, hauled home. Only the two
      middle frames carry the point out past the body, and those are the two frames the blow is live on. */
   const thrust = (gx, gy, tx, ty, o = {}) => knightFrame({ wide: WIDE, spear: [gx, gy, tx, ty], ...o });
-  const F = {
-    idle: BREATH.map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume,
+  // A STORE CARD NEEDS ONLY THE BREATH AND THE SWING, not the whole fighting life.
+  const card = {
+    idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume,
       arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1 - Math.max(0, dy)],
-      spear: rest(-dy), bits: flap([3, 4], dy, breathLag(i), 'b', 'B') })),
+      spear: rest(-dy), bits: flap([3, 4], dy, breathLag(i), 'b', 'B') }))),
+    atk: () => ([
+      () => (thrust(sh[0] - 6, sh[1] + 1, sh[0] + 8, sh[1] + 1, { dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 1], plume: 1 })),
+      () => (thrust(sh[0] + 2, sh[1], 45, sh[1], { dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1]], plume: 2 })),
+      () => (thrust(sh[0] + 5, sh[1], 57, sh[1], { dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 6, sh[1]], plume: 2 })),
+      () => (thrust(sh[0] + 2, sh[1] + 2, 39, sh[1] + 2, { dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], plume: 0 })),
+      () => (knightFrame({ legs: 'stand', spear: rest(), plume: 0 }))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+  };
+  if (previewOnly) return storeFrames(card, false, previewOnly);
+  const F = {
+    idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) =>
       knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], spear: carry() })),
     jump: [knightFrame({ legs: 'jump', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 4, sh[0] + 11, sh[1] - 6], plume: 1 }),
@@ -1979,13 +2027,7 @@ export function bakeWarden(skin = {}) {
     climb: [knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], spear: back(), plume: 0 }),
       knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], spear: back(1), plume: 1 })],
     /* THE LONG THRUST */
-    atk: [
-      thrust(sh[0] - 6, sh[1] + 1, sh[0] + 8, sh[1] + 1, { dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 1], plume: 1 }),
-      thrust(sh[0] + 2, sh[1], 45, sh[1], { dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1]], plume: 2 }),
-      thrust(sh[0] + 5, sh[1], 57, sh[1], { dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 6, sh[1]], plume: 2 }),
-      thrust(sh[0] + 2, sh[1] + 2, 39, sh[1] + 2, { dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], plume: 0 }),
-      knightFrame({ legs: 'stand', spear: rest(), plume: 0 }),
-    ],
+    atk: card.atk(),
     /* THE PLUNGE: she goes down behind the point, both hands high on the haft */
     /* ON THE SLANT: the haft laid down her front from over her shoulder to a point ahead of her boots, her weight behind it - a lance
        going in, not a sword stood on (his is straight down) */
@@ -2161,15 +2203,31 @@ const PAL_PLUME = [
   ['y..SSSS...', 'yySssssS..', 'yySsssssS.'],
 ];
 const PAL_PAL = { s: '#eef2f8', S: '#98a4ba', b: '#3a5ab8', B: '#243a78', r: '#f0c040', y: '#f0c040', w: '#b8c0cc', W: '#9a7a32', v: '#2a2f3d' };
-export function bakePaladin(skin = {}) {
+export function bakePaladin(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PAL_PAL, skin); BODY_REF = PAL_BODY; PLUME_REF = PAL_PLUME;
   const sh = [BX + 8, BY + 7];
   const rest = (d = 0) => [sh[0] + 2, sh[1] + 1 + d, sh[0] + 5, sh[1] + 9 + d];   // the head grounded in front of him
   const carry = (d = 0) => [sh[0] + 1, sh[1] + 3 + d, sh[0] - 8, sh[1] - 2 + d];  // slung back behind him at a run, clear of the helm
+  // A STORE CARD NEEDS ONLY THE BREATH AND THE SWING, not the whole fighting life.
+  const card = {
+    idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 9 - dy], bits: flap([3, 4], dy, breathLag(i), 'b', 'B') }))),
+    atk: () => ([
+      () => (knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 8], plume: 1 })),
+      () => (// drawn back over the shoulder
+      knightFrame({ dx: 0, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], maul: [sh[0] + 1, sh[1] - 3, sh[0] + 5, sh[1] - 8], plume: 2 })),
+      () => (// up and over
+      knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], maul: [sh[0] + 4, sh[1] + 2, sh[0] + 8, sh[1] + 7], plume: 2 })),
+      () => (// down
+      knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9], plume: 0 })),
+      () => (// the head in the ground
+      knightFrame({ maul: rest(), plume: 0 }))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+  };
+  if (previewOnly) return storeFrames(card, false, previewOnly);
   const F = {
     /* HIS BREATH: the head of the maul never leaves the ground - only the haft moves, with his hands - and the tabard below
        his belt gathers and falls a beat behind his chest */
-    idle: BREATH.map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 9 - dy], bits: flap([3, 4], dy, breathLag(i), 'b', 'B') })),
+    idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, maul: carry() })),
     jump: [knightFrame({ legs: 'jump', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 7], plume: 2 })],
@@ -2186,13 +2244,7 @@ export function bakePaladin(skin = {}) {
       knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], maul: carry(), plume: 0 }),
       knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], maul: carry(1), plume: 1 }),
     ],
-    atk: [
-      knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 8], plume: 1 }), // drawn back over the shoulder
-      knightFrame({ dx: 0, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], maul: [sh[0] + 1, sh[1] - 3, sh[0] + 5, sh[1] - 8], plume: 2 }),   // up and over
-      knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], maul: [sh[0] + 4, sh[1] + 2, sh[0] + 8, sh[1] + 7], plume: 2 }), // down
-      knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9], plume: 0 }), // the head in the ground
-      knightFrame({ maul: rest(), plume: 0 }),
-    ],
+    atk: card.atk(),
     /* THE MAUL SLAM: the knight's tuck again - both knees drawn up, nothing left under him - with the maul driven
        straight down past his boots on the way to HAMMERFALL (main.js). His overhead swing still winds through an
        arc (atk, heavy); this is a plumb line, and that is the whole of the difference at a glance. */

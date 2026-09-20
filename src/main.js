@@ -418,8 +418,8 @@ const WARD_SETS = { black: { b: '#2a2e34', B: '#15181c' }, purple: { b: '#4a2f6a
 function applySkin() { setHeroVoice(hero()); if (PROG.perHero) PROG.charm = (PROG.charmOf || {})[hero()] || null;   /* the charm follows the hero, not the save (and never before the save has been migrated, or an old one loses it) */
    K = heroSet(PROG.skin, PROG.sword); }
 /* THE HERO AS HE WILL LOOK in a skin and with a weapon. The game and the store's previews bake him the same way, so the WEAPONS tab shows the hero you play, not always the knight */
-function heroSet(skinId, swordId) { const sk = skinById(skinId); const pal = Object.assign({}, isPyro() ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(swordId).pal);
-  return isPyro() ? bakePyro(pal) : isPaladin() ? bakePaladin(PAL_SETS[sk.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[sk.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[sk.id] || {}) : isWarden() ? bakeWarden(WARD_SETS[sk.id] || {}) : bakeKnight(pal); }
+function heroSet(skinId, swordId, previewOnly = false, h = hero()) { const sk = skinById(skinId); const pal = Object.assign({}, h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(swordId).pal);
+  return h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : bakeKnight(pal, false, previewOnly); }
 function applyUpgrades() { const growth = growthAt(hero(), heroLevel()); P.maxHp = growth.hp + (PROG.items.heart ? 25 : 0); P.maxSt = growth.stamina + (PROG.items.wind ? 30 : 0); }
 let statFlash = 0; // the HUD plate flashes when a rank lands
 // THE BEAM A ROPE IS TIED TO. 16x6: a squared timber with an iron ring under it and a lashing round the ring.
@@ -3274,9 +3274,9 @@ const PORTAL_ICON = (() => { const [c, g2] = canvas(12, 14);
   g2.fillStyle = '#9fe6f0'; g2.fillRect(4, 3, 4, 8); g2.fillStyle = '#c9a0ff'; g2.fillRect(5, 5, 2, 4); g2.fillStyle = '#fff6e0'; g2.fillRect(5, 6, 1, 1);
   g2.fillStyle = '#6a5a44'; g2.fillRect(0, 12, 12, 2); return c; })();
 // a skin, shown on the hero you are playing: the pyromancer in its robes, the paladin in its plate and tabard
-const skinPreview = k => preview('skin:' + hero() + ':' + k.id + ':' + PROG.sword, () => isPyro() ? bakePyro(Object.assign({}, PYRO_SETS[k.id] || k.pal, swordById(PROG.sword).pal)) : isPaladin() ? bakePaladin(PAL_SETS[k.id] || {}) : isPirate() ? bakeFreebooter(FREE_SETS[k.id] || {}) : isReaper() ? bakeReaper(REAP_SETS[k.id] || {}) : bakeKnight(Object.assign({}, k.pal, swordById(PROG.sword).pal)));
+const skinPreview = (k, icon = false) => preview('skin:' + hero() + ':' + k.id + ':' + PROG.sword + ':' + icon, () => heroSet(k.id, PROG.sword, icon ? 'icon' : 'idle'));
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
-const weaponPreview = k => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id, () => heroSet(PROG.skin, k.id));
+const weaponPreview = (k, icon = false) => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id + ':' + icon, () => heroSet(PROG.skin, k.id, icon ? 'weaponIcon' : 'atk'));
 function drawStore() {
   if (storeMode === 'equip' && equipFrom !== 'map') { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); } else { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); }
   const x = 12, y = 6, w = VW - 24, h = VH - 12; const tabs = storeTabs();
@@ -3300,8 +3300,8 @@ function drawStore() {
   if (off + ROWS < items.length) text('v', listX - 5, y + h - 24, UI.dim, 'center', 6);
   if (!items.length) text('nothing here yet.', listX + listW / 2, y + 70, UI.dim, 'center');
   const iconOf = k => k.id === 'none' ? null
-    : tab.key === 'skin' ? skinPreview(k).R.idle[0]
-    : tab.key === 'sword' ? weaponPreview(k).R.atk[1]
+    : tab.key === 'skin' ? skinPreview(k, true).R.idle[0]
+    : tab.key === 'sword' ? weaponPreview(k, true).R.atk[1]
     : k.practice ? PORTAL_ICON : tab.talent ? treeIcon(treeNodes()[0]) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
     : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
@@ -3349,7 +3349,7 @@ function drawStore() {
       const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + BODY_LH * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
       const squeeze = Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
-        const set = tab.key === 'hero' ? (k.id === 'paladin' ? preview('hero:paladin:' + PROG.skin, () => bakePaladin(PAL_SETS[PROG.skin] || {})) : k.id === 'pyro' ? preview('hero:pyro', () => bakePyro(PYRO_SETS[PROG.skin] || {})) : k.id === 'pirate' ? preview('hero:pirate:' + PROG.skin, () => bakeFreebooter(FREE_SETS[PROG.skin] || {})) : k.id === 'reaper' ? preview('hero:reaper:' + PROG.skin, () => bakeReaper(REAP_SETS[PROG.skin] || {})) : k.id === 'warden' ? preview('hero:warden:' + PROG.skin, () => bakeWarden(WARD_SETS[PROG.skin] || {})) : preview('hero:knight', () => bakeKnight(Object.assign({}, skinById(PROG.skin).pal, swordById(PROG.sword).pal))))
+        const set = tab.key === 'hero' ? preview('hero:' + k.id + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, 'idle', k.id))
           : tab.key === 'skin' ? skinPreview(k)
           : weaponPreview(k);
         const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 4.5) % set.R.idle.length];
