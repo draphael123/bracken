@@ -68,9 +68,9 @@ for (const lv of LEVELS) {
   if (L.arena && L.arena.boss) {
     const trig = L.arena.trigger !== undefined ? L.arena.trigger : L.arena.x0;
     const checks = L.ents.filter(e => e.t === 'check').map(e => e.x * TS);
-    const before2 = checks.filter(x => x < trig);
+    const before2 = checks.filter(x => L.arena.reverse ? x > trig : x < trig);
     if (!before2.length) say(id, 'has no checkpoint before the boss trigger');
-    else { const d = (trig - Math.max(...before2)) / TS;
+    else { const d = (L.arena.reverse ? Math.min(...before2)-trig : trig-Math.max(...before2)) / TS;
       if (d > 40) say(id, `the last checkpoint is ${Math.round(d)} tiles before the boss: a death costs that walk every time`); }
   }
 

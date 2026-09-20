@@ -865,6 +865,7 @@ const DIE = {
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
   zombie() { noise(.2,.2,400,.4);tone('triangle',100,50,.2,.12); },
+  undeadmage() { noise(.2,.16,550,.7);tone('triangle',180,70,.3,.14); },
   burieddead() { noise(.3,.3,250,.5);tone('sine',80,30,.3,.2); },
   harbormaster() { noise(.18,.26,620,.5); tone('sine',140,65,.24,.18); tone('triangle',420,180,.16,.12); },
   lanternshade() { bell(784,.25,.06);noise(.12,.1,1800,.35); },

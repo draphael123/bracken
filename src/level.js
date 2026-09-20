@@ -7132,7 +7132,7 @@ export const LEVELS = [
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
   { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'FOLLOW THE CANDLES. THE LOWER ROAD ALWAYS LEADS BACK UP.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
   { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'burial' },
-  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way down', rule: 'FOLLOW THE CRACKS TO THE LOWER FLOOR. THE FAMILIAR HOLDS THE EXIT.', build: ()=>fallingTower({painter,T,TS}), needs: 'mage' },
+  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way down', rule: 'RETURN THROUGH THE COLLAPSING TOWER. THE DEAD MAGE WAITS BELOW.', build: ()=>fallingTower({source:theMagesFolly(),T,TS}), needs: 'mage' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 

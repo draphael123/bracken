@@ -345,7 +345,7 @@ async function runbossLab(BK, opts) {
     const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!opts.mini || e.mini));
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
-    BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(30);
+    BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1); BK.sim(30);
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
     const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
     const air = boss.t === 'bellcrab' ? (await import('./deepair.js')).airBoxes(L).filter(a=>a.kind==='vent' && a.l>A.x0 && a.r<A.x1).map(a=>({...a,x:(a.l+a.r)/2,ty:A.floor-12,o:{}})) : (boss.airs||[]);
@@ -456,6 +456,19 @@ async function runbossLab(BK, opts) {
         if(guard&&SHIELDED(h)){k.block=true;k.left=k.right=k.up=k.down=false;P.face=side;}else if(guard&&boss.modeT<.2)BK.press('dodge');
         if(!guard&&!P.labAir&&!mode.endsWith('Tell')&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<27&&P.atk<0){P.face=side;k.down=k.up=false;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='undeadmage'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        let lo=A.x0+20,hi=A.x1-20;for(const z of BK.L.towerSlabs)if(z.down||z.t>0){if(z.x0<48)lo=Math.max(lo,(z.x1+1)*16+16);else hi=Math.min(hi,z.x0*16-16);}
+        const dx=boss.x-P.x,side=Math.sign(dx)||1,m=boss.mode;let gx=boss.x-side*Math.max(16,LAB_REACH[h]*.65);
+        if(m==='collapse')gx=(lo+hi)/2;
+        if(m==='stormTell'&&Math.abs(P.x-boss.markX)<32)gx=boss.markX+(P.x>boss.markX?1:-1)*42;
+        gx=Math.max(lo,Math.min(hi,gx));if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
+        if((boss.shots||[]).some(q=>q.col==='#9be2ff'&&Math.abs(q.x-P.x)<60)&&P.ground){BK.press('jump');P.labJump=18;}if(P.labJump>0){P.labJump--;k.jump=true;}
+        const fire=(boss.shots||[]).some(q=>q.col==='#ff9b49'&&Math.abs(q.x-P.x)<65);
+        if(fire&&SHIELDED(h)){k.block=true;P.face=side;}else if(fire&&P.atk<0){P.face=side;BK.press('dodge');}
+        if(!fire&&!['collapse','blink','stormTell','iceTell','fireTell'].includes(m)&&Math.abs(dx)<LAB_REACH[h]+8&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='burieddead'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
