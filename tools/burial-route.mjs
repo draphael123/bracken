@@ -3,7 +3,10 @@ const pg=await openPage({audio:false,fonts:false});try{
  const r=await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out=[];
  for(const h of ['knight','warden','pyro','paladin','pirate','reaper']){BK.setHero(h);BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='burial'));BK.state='play';BK.god=false;for(const e of BK.enemies())e.alive=false;const p=BK.P;
   const jump=target=>{BK.press('jump');BK.keys.jump=true;let air=false,land=false;for(let f=0;f<150;f++){BK.keys.right=p.x<target-2;BK.keys.left=p.x>target+2;BK.sim(1);if(!p.ground)air=true;if(air&&p.ground){land=true;break;}}for(const k in BK.keys)BK.keys[k]=false;if(!land||p.dead)throw Error(h+' failed jump');BK.sim(3);};
-  BK.tp(407,31);BK.sim(8);jump(411*16+8);for(let x=412;x<=437;x+=5){while(p.x<x*16+8){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;jump((x+4)*16+8);if(p.y>32*16)throw Error(h+' poison crossing fell');}jump(445*16+8);
+  /* THE GRAVE SLABS ARE FOUR WIDE NOW, SIX APART: walk to the far edge of each slab and take the two-tile channel from there, the way a player crosses it */
+  BK.tp(407,31);BK.sim(8);jump(411*16+8);
+  for(const x of [410,416,422,428,434]){while(p.x<(x+3)*16+4){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;jump((x+7)*16+8);if(p.y>32*16)throw Error(h+' poison crossing fell at '+x);}
+  while(p.x<442*16+4){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;jump(446*16+8);if(p.y>32*16)throw Error(h+' poison crossing fell at the last slab');
   BK.tp(862,31);BK.sim(8);for(let step=0;step<4;step++){jump((864+step)*16+8);if(Math.abs(p.y-(30-step*2)*16)>1)throw Error(h+' bone stair '+step+' y='+p.y);}
   out.push({h,graveCrossing:true,boneStairs:true,alive:!p.dead});}
  BK.god=true;BK.tp(625,31);const rock=BK.props().find(p=>p.t==='stal'&&Math.abs(p.x-625*16-8)<5),rockStates=new Set();for(let f=0;f<100;f++){BK.sim(1);rockStates.add(rock.state);}if(!rockStates.has('shake')||!rockStates.has('gone'))throw Error('falling stone did not warn and drop');

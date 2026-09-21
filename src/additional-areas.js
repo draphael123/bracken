@@ -50,7 +50,7 @@ export function stormwreckHarbor({painter,T,TS}) {
  return {...extension,W:L.W,H:L.H,grid:L.grid,ents:L.ents,START:{x:4,y:29},pools,interiors,structures,moversExtra,falls:[],music:'stormharbor',duskStart:-1,duskLen:1,night:true,nightA:0.08,
   palette:{set:'shore',sky:'sea',far:'sea',mid:'wrecks',near:'reef',dress:'reef',grass:'#686963',grassL:'#9a9b85',grassD:'#434c4e',dirt:'#414b52',dirtL:'#677079',dirtD:'#2b353d',haze:'rgba(62,88,108,0.14)',canopy:['#101b29','#1c2d3a','#2a3c49','#354b57']},
   weather:[{x0:0,x1:96*TS,kind:'rain'},{x0:165*TS,x1:303*TS,kind:'rain'},{x0:335*TS,x1:688*TS,kind:'rain'},{x0:783*TS,x1:99999,kind:'rain'}],ambient:[{x0:0,x1:96*TS,kind:'wind'},{x0:96*TS,x1:165*TS,kind:'hold'},{x0:165*TS,x1:99999,kind:'wind'}],
-  calm:[[0,1080,0,44]],
+  calm:[],   /* A CALM OVER THE WHOLE LEVEL IS AN EMPTY LEVEL: this said [[0,1080,0,44]], which is every tile of the harbour, and garrison() skips anything inside a calm - so the sprinkler placed nothing here at all and the level was only ever the creatures placed by hand. The arena and the mini are excluded by their own rooms. */
   mini:{salvage:true,x0:302*TS,x1:335*TS,floor:G*TS,y0:20*TS,y1:(G+1)*TS,trigger:306*TS,wallL:302,gate:335,boss:'bosun',name:'THE SALVAGE CAPTAIN'}
  };
 }
@@ -111,6 +111,6 @@ export function burialCaverns({painter,T,TS}) {
  const expansion=extendBurial({L,T,TS,interiors,structures});
  return {W:L.W,H:L.H,grid:L.grid,ents:L.ents,START:{x:4,y:29},interiors,structures,pools:[],falls:[],moversExtra:[],music:'burial',underground:true,dark:0.08,edgeLit:true,duskStart:-1,duskLen:1,night:true,nightA:0.04,
   palette:{sky:'crag',far:'crag',mid:'crag',near:'crag',dress:'none',ledges:'staging',haze:'rgba(44,42,64,0.1)',murkCol:'#444651',murkLit:'#85808a',grass:'#747780',grassL:'#a8a3ab',grassD:'#484953',dirt:'#484650',dirtL:'#66626b',dirtD:'#303039',canopy:['#20202c','#292b37','#353643','#454653']},
-  weather:[],ambient:[{x0:0,x1:99999,kind:'cave'}],calm:[[0,1140,0,60]],...expansion
+  weather:[],ambient:[{x0:0,x1:99999,kind:'cave'}],calm:[],   /* likewise the caverns: [[0,1140,0,60]] was the whole hill, and it is why forty-four zombies were the entire population */...expansion
  };
 }

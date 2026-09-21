@@ -7255,12 +7255,19 @@ const GARRISON = {
   reef: [['angler', 9], ['crab', 7], ['sailor', 4], ['netter', 4], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 4], ['urchin', 2], ['lookout', 1], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 3], ['merrowcaller', 2]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
   hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['seawitch', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and her own sea witch, not another cutlass */
-  mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3]],   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
+  mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3], ['apprentice', 5], ['zombie', 3]],   /* AND THE FOLLY KEEPS ITS OWN DEAD: the apprentices who did not get out are in the tower before it falls, so the undead of the sequel are not a surprise it invents */   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
   fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
   frost: [['wight', 8], ['rockgoblin', 6], ['harpy', 6], ['troll', 6], ['shardling', 6], ['goat', 3], ['kite', 3], ['hearthgob', 4], ['bat', 2]],   // the fell's own: the buried cutters, the squatters in their camp, and what lives on the ice
   causeway: [['scout', 8], ['tideguard', 6], ['watch', 2], ['feeler', 8], ['petrel', 5], ['cutlass', 3], ['sailor', 2], ['crab', 4], ['netter', 2], ['jelly', 1], ['puffer', 1], ['lamprey', 1], ['merrowcaller', 1], ['merrowbrute', 1]],   /* the drowned pilgrims' road: its dead, its crabs, and the arms in the flats (its fish are put in the channels by hand: the sprinkler found the Kraken's own sea under the arena road) */
   skyship: [['cutlass', 8], ['boarder', 7], ['archer', 5], ['javelin', 4], ['sapper', 3], ['marine', 3], ['bosun', 2], ['lookout', 2], ['shield', 2]],   /* a goblin galleon's whole crew, over her decks, yards and slings - and now a shield in her roster too, so the squads rule (0.4) actually screens her bow, spear and sapper the way it already does in Kingswood's Knights' Road: two cutlass hands stood down to pay for it, the count unchanged */
+  /* THE FOUR LEVELS THE SPRINKLER HAD NEVER HEARD OF. Stormwreck Harbor, the Keep, the Burial Caverns and the Falling
+     Tower were built without a row here, so each of them was only ever the creatures its builder placed by hand:
+     1.4 to 2.3 a screen against Kingswood's 4.8 and Sporewood's 5.5, which is most of why they played empty. */
+  harbor: [['cutlass', 11], ['boarder', 10], ['scout', 11], ['tideguard', 10], ['petrel', 11], ['marine', 8], ['sailor', 8], ['netter', 6], ['crab', 8], ['angler', 8], ['eel', 6], ['lookout', 4], ['bosun', 4], ['bonecorsair', 6], ['lanternshade', 4], ['puffer', 2]],   /* the wrecked harbour's own: the crews the storm put ashore, the birds over them, and what the Lamplit Street's dead washed in with */
+  keep: [['wight', 14], ['tideguard', 10], ['watch', 9], ['eel', 9], ['angler', 7], ['siren', 5], ['merrowspear', 5], ['jelly', 5], ['merrowbrute', 3], ['manta', 3], ['urchin', 3], ['puffer', 3], ['lamprey', 3]],   /* a drowned castle: its own garrison still at their posts, and the deep water's wildlife moved in over them */
+  burial: [['zombie', 18], ['husk', 9], ['wight', 16], ['bat', 14], ['bonecorsair', 8], ['boo', 12], ['lanternshade', 5], ['haunt', 9], ['spider', 7]],   /* forty-four zombies and nothing else was the whole roster under the hill */
+  fallingtower: [['apprentice', 12], ['zombie', 10], ['broom', 9], ['imp', 9], ['armour', 7], ['haunt', 7], ['bat', 7], ['husk', 5], ['boo', 6], ['topiary', 4], ['turret', 4]],   /* the Folly's own staff, and the ones who did not get out of it: the dead outnumber the living in a dead man's tower */
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -7349,7 +7356,7 @@ function garrison(L, id) {
   // got fourteen. A tall level spaces by HEIGHT instead.
   // WHO CAN BE PUT IN THE WATER. The Long Water is mostly water, so refusing every wet spot left the
   // sprinkler nowhere to work - and an eel belongs in the water anyway.
-  const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor', 'puffer', 'jelly', 'lamprey', 'manta']);   /* the new wildlife swims too: without this the sprinkler could only put a jellyfish on dry ground */
+  const SWIMS = new Set(['eel', 'angler', 'siren', 'netter', 'petrel', 'turtle', 'urchin', 'heronfoe', 'gull', 'sailor', 'puffer', 'jelly', 'lamprey', 'manta', ...(L.swimGarrison || [])]);   /* L.swimGarrison: a level that IS water says who else belongs in it. The Underwater Keep is submerged end to end, so every spot the sprinkler found was wet and its own drowned garrison - wights, watchmen, the merrow - could not be put in any of them: it asked for sixty-eight and placed nineteen fish. */   /* the new wildlife swims too: without this the sprinkler could only put a jellyfish on dry ground */
   // AND WHO MUST BE BY IT. SWIMS says who MAY be put in the water; nothing said who must. Anglers and urchins were put on
   // the paving over the Lamplit Street's floods and hung in the air there all level (thirteen of them), and crabs, herons
   // and turtles were put down a hundred tiles from any water. A swimmer takes a spot IN a swim pool; a siren and a wader
@@ -7527,6 +7534,11 @@ function ambushRooms(L, id) {
    ambush room, never at a landing. tools/elites.mjs checks that the elite can be reached with its gate shut, that the
    gate actually holds the route, and that nothing counted stands in the gate. */
 const ELITES = {
+  /* and the same four had no elite either: every other level has its one big fight on the way to the boss */
+  harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
+  keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 430, 58, { face: -1 }]],
+  burial: [['husk', 300, 33, { face: -1 }], ['wight', 700, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],
+  fallingtower: [['armour', 561, 15, { face: 1 }], ['husk', 330, 39, { face: 1 }], ['armour', 158, 39, { face: 1 }]],
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
   stockade: [['brute', 302, 19, { gate: 317 }]],

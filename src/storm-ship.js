@@ -23,7 +23,11 @@ export function stormShipPolish(L,id,T){
 }
 export function updateDeckBreaks(L,P,dt,change,crash){
  for(const z of L.deckBreaks||[]){if(z.down)continue;
-  if(z.t<0&&P.x>=(z.x0-2)*16&&P.x<=(z.x1+2)*16&&P.y>=(z.row-3)*16&&P.y<=(z.row+1)*16)z.t=1.5;
+  /* BEHIND (the Falling Tower): it does not wait to be stood on, it waits to be LEFT. The hero has to have been
+     on this floor and then gone off its left end, and the shorter fuse is the tower closing the way back. */
+  if(z.behind){if(z.t<0){if(!z.seen&&P.x>=(z.x0-1)*16&&P.x<=(z.x1+1)*16&&P.y>=(z.row-4)*16&&P.y<=(z.row+1)*16)z.seen=true;
+   if(z.seen&&P.x<(z.x0-3)*16&&P.y<=(z.row+2)*16)z.t=1.1;}}
+  else if(z.t<0&&P.x>=(z.x0-2)*16&&P.x<=(z.x1+2)*16&&P.y>=(z.row-3)*16&&P.y<=(z.row+1)*16)z.t=1.5;
   if(z.t>=0){z.t-=dt;if(z.t<=0){z.down=true;for(let x=z.x0;x<=z.x1;x++)for(let y=z.row-1;y<=z.row;y++)change(x,y);crash(z);}}
  }
 }

@@ -706,6 +706,7 @@ export function bakeMap(w, h, nodes, path, seed, style = 'wood') {
   const rnd = mulberry(seed); const [c, g] = canvas(w, h);
   if (style === 'crag') return bakeCragMap(c, g, w, h, nodes, path, rnd);
   if (style === 'coast') return bakeCoastMap(c, g, w, h, nodes, path, rnd);
+  if (style === 'haunted') return bakeHauntedMap(c, g, w, h, nodes, path, rnd);
   rect(g, 0, 0, w, h, '#4f8a3a');
   // meadow patches and dark wood regions
   for (let i = 0; i < 7; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 50, 14 + rnd() * 20, '#5e9a44', '#4f8a3a');
@@ -768,6 +769,165 @@ function bakeCragMap(c, g, w, h, nodes, path, rnd) {
     if (nd.kind === 'pass') { fillPoly(g, [[ox - 22, oy + 12], [ox - 12, oy - 8], [ox - 2, oy + 12]], '#4a4a58'); fillPoly(g, [[ox + 2, oy + 12], [ox + 12, oy - 8], [ox + 22, oy + 12]], '#4a4a58'); } }
   const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(20,20,40,0)'); vg.addColorStop(1, 'rgba(20,20,40,0.45)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,20,40,0.35)'); circle(g, nd.x, nd.y, 7, '#3a3a44'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'pass' ? '#dfe8ee' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
+  return c;
+}
+/* THE ROAD INLAND IS SOMEBODY'S COUNTRY GONE OVER. Past Waymeet the fields still have their furrows in them, the town
+   still has its roofs and the yard still has its wall, and there is nobody in any of it - so this sheet is not the crags
+   in another colour. It is flat washed grey-green ground with fog lying in the hollows, bare trees standing where a wood
+   used to be, and the five things the road passes drawn where it passes them: a town with a snapped steeple, hedged
+   fields, a walled burial yard on its hill, the Archmage's tower out of plumb, and that same tower down the slope. */
+function bakeHauntedMap(c, g, w, h, nodes, path, rnd) {
+  rect(g, 0, 0, w, h, '#58604c');
+  for (let i = 0; i < 7; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 54, 14 + rnd() * 20, '#636b52', '#58604c');   // pasture gone to seed
+  for (let i = 0; i < 5; i++) ellipse(g, rnd() * w, rnd() * h, 26 + rnd() * 46, 12 + rnd() * 18, '#49523e', '#58604c');   // and the wet ground lying under it
+  for (let i = 0; i < w * h / 12; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#606850' : '#4e5644');
+  for (let i = 0; i < 80; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, ['#7a7a5e', '#6b6350', '#8a8a6a'][(rnd() * 3) | 0]);   // last year's grass, standing dead and pale in it
+  // the beck below the fields: nothing moving in it any more, dark water with a bone-coloured rim of dried mud
+  const beck = [[178, h + 4], [200, 168], [222, 152], [250, 146], [280, 154], [304, 174]];
+  for (let i = 0; i + 1 < beck.length; i++) { const [ax, ay] = beck[i], [bx, by] = beck[i + 1];
+    line(g, ax, ay, bx, by, '#7c7a62', 9); line(g, ax, ay, bx, by, '#323d38', 6); line(g, ax, ay, bx, by, '#44544c', 3); }
+  for (let i = 0; i < 14; i++) px(g, (190 + rnd() * 110) | 0, (146 + rnd() * 30) | 0, '#6f8479');
+  // BARE TREES. Not a canopy: a trunk with three or four forks off it, lit by nothing, laid down back to front.
+  const tree = (x, y, r) => {
+    ellipse(g, x, y, r * 0.45, 1.6, 'rgba(22,26,20,0.35)');
+    line(g, x, y, x, y - r, '#332f28', 1);
+    const lean = rnd() < 0.5 ? -1 : 1;
+    for (let k = 0; k < 3 + ((rnd() * 2) | 0); k++) {
+      const by = y - r * (0.4 + 0.2 * k), d = (k & 1 ? -1 : 1) * lean, len = r * (0.55 - 0.08 * k);
+      line(g, x, by, x + d * len, by - len * 0.85, '#413b31', 1);
+      if (rnd() < 0.6) line(g, x + d * len, by - len * 0.85, x + d * len * 1.35, by - len * 1.25, '#4c4539', 1);
+    }
+    px(g, x | 0, (y - r) | 0, '#4c4539');
+  };
+  const stand = [];
+  for (let i = 0; i < 58; i++) { const x = rnd() * w, y = 14 + rnd() * (h - 16); let near = false;
+    for (const p of path) if (Math.hypot(p[0] - x, p[1] - y) < 16) near = true;
+    for (const nd of nodes) if (Math.hypot(nd.x - x, nd.y - y) < 32) near = true;
+    if (!near) stand.push([x, y, 7 + rnd() * 9]); }
+  stand.sort((a, b) => a[1] - b[1]); for (const [x, y, r] of stand) tree(x, y, r);
+  /* FOG BANKS. A bank drawn as one ellipse is a puddle - it has an edge, and fog does not. Each one is a row of low
+     lobes at slightly different heights with a scatter of loose pixels torn off the top of it, and it lies FLAT:
+     three or four pixels tall against forty wide, because this is fog seen from above lying in a hollow. */
+  const bank = (x, y, rx, a) => {
+    const lobes = 3 + ((rnd() * 3) | 0), col = 'rgba(204,212,204,' + a + ')';
+    for (let k = 0; k < lobes; k++) ellipse(g, x + (k - (lobes - 1) / 2) * rx * 0.72, y + ((rnd() * 3) | 0) - 1, rx * (0.3 + rnd() * 0.22), 2 + rnd() * 2.4, col);
+    for (let k = 0; k < rx * 0.8; k++) px(g, (x - rx + rnd() * rx * 2) | 0, (y - 4 + rnd() * 8) | 0, 'rgba(214,220,212,' + (a * 0.9).toFixed(3) + ')');   // and the edge of it, torn
+  };   /* KEEP THE ALPHA LOW. Every lobe and every torn pixel composites separately, so a bank laid at the alpha a single
+        puff wants comes out as a white bar across the sheet - it reads as a snow drift, not as weather. */
+  for (let i = 0; i < 11; i++) bank(rnd() * w, 18 + rnd() * (h - 28), 20 + rnd() * 26, 0.055 + rnd() * 0.035);
+  // A TOWER, TWICE. The Archmage's folly and the half of it that came down are the same masonry, so they are the same
+  // baker: courses that narrow as they rise, a lit window every few storeys, and a cone on top only while it has one.
+  const tower = (bx, by, ht, lean, cone) => {
+    const bw = 13, tw = 9, tx = bx + lean;
+    fillPoly(g, [[bx - 1, by + 1], [bx + bw + 1, by + 1], [tx + tw + 1, by - ht - 1], [tx - 1, by - ht - 1]], '#292a23');   // its own dark edge: at this size a thing IS its silhouette, and fog eats an unedged one
+    fillPoly(g, [[bx, by], [bx + bw, by], [tx + tw, by - ht], [tx, by - ht]], '#7d7668');
+    fillPoly(g, [[bx, by], [bx + 3, by], [tx + 3, by - ht], [tx, by - ht]], '#938c7b');
+    fillPoly(g, [[bx + bw - 3, by], [bx + bw, by], [tx + tw, by - ht], [tx + tw - 3, by - ht]], '#5e5a4e');
+    for (let k = 4; k < ht; k += 5) { const t = k / ht, x0 = bx + (tx - bx) * t, x1 = x0 + bw + (tw - bw) * t; line(g, x0, by - k, x1, by - k, '#68634f', 1); }
+    for (const [t, dx] of [[0.28, 4], [0.56, 3], [0.8, 3]]) { if (ht * t < 6) continue; const x = bx + (tx - bx) * t + dx, y = by - ht * t;
+      rect(g, x, y, 2, 3, '#2b2b32'); px(g, x, y + 1, '#8fb07a'); }   // and a light left burning in three of them
+    if (cone) { fillPoly(g, [[tx - 4, by - ht + 1], [tx + tw / 2, by - ht - 13], [tx + tw + 4, by - ht + 1]], '#292a23');
+      fillPoly(g, [[tx - 3, by - ht], [tx + tw / 2, by - ht - 12], [tx + tw + 3, by - ht]], '#4e4a5c');
+      fillPoly(g, [[tx - 2, by - ht], [tx + tw / 2, by - ht - 11], [tx + tw / 2 - 2, by - ht]], '#5f5a70');
+      px(g, (tx + tw / 2) | 0, (by - ht - 13) | 0, '#8fb07a'); }
+  };
+  /* THE FIVE THINGS THE ROAD PASSES, found by their id and not by their place in the list: this sheet is dressed
+     off the same node array the road is drawn from, and a node renamed or reordered upstream must cost it a building,
+     not throw. Anything with no case here simply gets its disc and the country around it. */
+  for (const nd of nodes) {
+    const ox = nd.x, oy = nd.y;
+    // WAYMEET: roof after roof and not one of them straight, and the church tower broken off level with its bell stage
+    if (nd.id === 'waymeet') {
+      for (const [dx, dy, wd, tilt, slate] of [[-24, 4, 13, -2, 1], [-11, 11, 11, 2, 0], [3, 6, 12, -3, 1], [17, 12, 10, 2, 0], [-20, -8, 11, 3, 0], [6, -12, 12, -2, 1], [26, -4, 10, 2, 1], [36, 8, 11, -2, 0]]) {
+        const x = ox + dx, y = oy + dy;
+        fillPoly(g, [[x - 1, y + 5], [x - 1, y - 1], [x + wd / 2, y - 7 + tilt], [x + wd + 1, y - 1], [x + wd + 1, y + 5]], '#33362c');   // the whole house edged dark first, or the fog swallows it
+        rect(g, x, y, wd, 5, '#8a8272'); rect(g, x, y, wd, 1, '#9b9382'); rect(g, x, y + 4, wd, 1, '#5e574a');       // wattle and daub gone grey, still standing
+        rect(g, x, y, 1, 5, '#4b4437'); rect(g, x + wd - 1, y, 1, 5, '#4b4437'); rect(g, x + ((wd / 2) | 0), y + 1, 1, 4, '#4b4437');   // the corner posts, and one stud between them - any more and the daub stops reading
+        px(g, x + 2, y + 2, '#33302a'); if (rnd() < 0.5) px(g, x + wd - 4, y + 2, '#33302a');                        // a doorway and a window with nothing behind them
+        fillPoly(g, [[x - 1, y], [x + wd / 2, y - 6 + tilt], [x + wd + 1, y]], slate ? '#42413c' : '#57503f');       // slate on some of them and thatch on the rest, all of it lying over crooked
+        fillPoly(g, [[x - 1, y], [x + wd / 2, y - 6 + tilt], [x + wd / 2 - 2, y]], slate ? '#53524b' : '#6a6250');
+        if (rnd() < 0.5) px(g, (x + wd / 2) | 0, (y - 3 + tilt) | 0, '#25241f');                                     // and a hole through them
+        if (rnd() < 0.4) px(g, (x + wd - 3) | 0, (y + 2) | 0, '#8fb07a');                                            // a window with something still in it
+      }
+      const sx = ox + 13, sy = oy - 22;
+      rect(g, sx - 1, sy - 1, 9, 30, '#292a23');
+      rect(g, sx, sy, 7, 28, '#7a7568'); rect(g, sx, sy, 1, 28, '#918b7c'); rect(g, sx + 6, sy, 1, 28, '#5a5648');
+      for (let k = 5; k < 28; k += 5) rect(g, sx, sy + k, 7, 1, '#635f52');
+      for (const [dx, dy] of [[0, 3], [1, -1], [3, 1], [4, -2], [6, 2]]) rect(g, sx + dx, sy + dy - 2, 1, 4, '#292a23');                   // the break, where the spire used to carry on
+      for (const [dx, dy] of [[1, 1], [3, -1], [5, 0]]) rect(g, sx + dx, sy + dy, 1, 2, '#8b8576');
+      rect(g, sx + 2, sy + 9, 3, 6, '#25241f'); px(g, sx + 3, sy + 11, '#8a8474'); px(g, sx + 3, sy + 12, '#6e695c');                       // the louvre, with the bell still hung in it
+      for (const [dx, dy] of [[-6, 26], [9, 23], [-8, 21], [11, 28]]) { rect(g, sx + dx, sy + dy, 3, 2, '#6e695c'); px(g, sx + dx, sy + dy, '#8a8474'); px(g, sx + dx, sy + dy + 2, '#33362b'); }   // and the stone that came off it
+    }
+    // THE HEXED FIELDS: closes hedged off from one another, every one of them still ploughed, none of them reaped
+    if (nd.id === 'fields') {
+      const close = (x, y, wd, ht, skew) => {
+        fillPoly(g, [[x, y], [x + wd, y - skew], [x + wd, y - skew + ht], [x, y + ht]], '#59613f');
+        for (let k = 2; k < ht; k += 3) { line(g, x + 1, y + k, x + wd - 1, y - skew + k, '#464e2e', 1);
+          line(g, x + 1, y + k + 1, x + wd - 1, y - skew + k + 1, '#646c46', 1); }                       // the furrows, still in the ground: a dark one and the ridge thrown up beside it
+        line(g, x, y, x + wd, y - skew, '#37402c', 1); line(g, x, y + ht, x + wd, y - skew + ht, '#37402c', 1);
+        line(g, x, y, x, y + ht, '#37402c', 1); line(g, x + wd, y - skew, x + wd, y - skew + ht, '#37402c', 1);     // and the hedge round each one
+      };
+      for (const [dx, dy, wd, ht, sk] of [[-48, 2, 26, 13, 3], [-20, 8, 24, 12, 2], [8, 0, 26, 14, 3], [36, 8, 22, 12, 2], [-36, 20, 28, 12, 2], [-2, 22, 26, 12, 3]]) close(ox + dx, oy + dy, wd, ht, sk);
+      for (let i = 0; i < 12; i++) px(g, (ox - 44 + rnd() * 84) | 0, (oy + 2 + rnd() * 30) | 0, '#8fb07a');          // and whatever the moon left glowing in them
+      const kx = ox + 22, ky = oy - 10; line(g, kx, ky, kx, ky + 9, '#6b5f48', 1); line(g, kx - 4, ky + 3, kx + 4, ky + 2, '#6b5f48', 1);
+      px(g, kx, ky - 1, '#cfc7ae'); px(g, kx, ky - 2, '#b4ab92');                                                   // the scarecrow, still at its post
+    }
+    // THE BURIAL CAVERNS: a mound with a mouth cut into it, and the yard walled off below where the rows ran out of room
+    if (nd.id === 'burial') {
+      /* the barrow is built the way the wood's hills are - a mass, a smaller lighter one set up and back on it, and a
+         dark line under its foot - because a single flat ellipse of turf reads as a lawn, not as a hill with a hole in it */
+      ellipse(g, ox - 28, oy - 5, 28, 12, '#525b3d'); ellipse(g, ox - 31, oy - 9, 18, 7, '#5e6746', '#575f41');
+      ellipse(g, ox - 34, oy - 12, 9, 3, '#68714e'); line(g, ox - 54, oy + 6, ox - 2, oy + 6, '#3a4231', 1);
+      rect(g, ox - 33, oy - 8, 7, 8, '#232920'); px(g, ox - 33, oy - 8, '#525b3d'); px(g, ox - 27, oy - 8, '#525b3d'); rect(g, ox - 32, oy - 2, 5, 2, '#2e352a');   // the mouth, arched over
+      rect(g, ox - 34, oy - 10, 9, 2, '#7a7568'); px(g, ox - 34, oy - 10, '#918b7c');                                 // its lintel
+      rect(g, ox - 34, oy - 8, 1, 8, '#6a6558'); rect(g, ox - 26, oy - 8, 1, 8, '#6a6558'); px(g, ox - 30, oy - 3, '#8fb07a');   // its jambs, and the candle somebody left burning in between them
+      const yx = ox - 52, yy = oy + 9, yw = 42, yh = 19;
+      rect(g, yx - 1, yy + yh, yw + 2, 2, 'rgba(24,28,20,0.35)');                                                    // the yard: packed bare ground, and the wall throwing its shadow out onto the grass
+      rect(g, yx, yy, yw, yh, '#4c5440');
+      /* the wall goes round in FIVE runs, not as one rectangle: a frame drawn whole reads as a picture frame, and a
+         churchyard wall with a length of it down at the near corner reads as a wall nobody has repaired in a while. */
+      for (const [x, y, wd, ht] of [[yx, yy, yw - 7, 2], [yx, yy + yh - 2, 16, 2], [yx + 26, yy + yh - 2, 16, 2], [yx, yy, 2, yh], [yx + yw - 2, yy + 7, 2, yh - 7]]) {
+        rect(g, x, y, wd, ht, '#635e52'); rect(g, x, y, wd, 1, '#7f7a68'); }
+      for (let k = 2; k < yw; k += 4) px(g, yx + k, yy + 1, '#57533f');                                              // the courses along the top of it
+      for (const [x, y] of [[yx + yw - 6, yy + 2], [yx + yw - 9, yy + 5], [yx + 18, yy + yh], [yx + 21, yy + yh + 1]]) { rect(g, x, y, 3, 2, '#635e52'); px(g, x, y, '#7f7a68'); }   // and the stone off it, lying where it fell
+      for (let r = 0; r < 3; r++) for (let k = 0; k < 8; k++) {
+        if (rnd() < 0.34) continue;
+        const x = yx + 4 + k * 5 + ((rnd() * 2) | 0), y = yy + 5 + r * 4 + ((rnd() * 2) | 0), tip = rnd() < 0.34 ? 1 : 0;   // a third of them have gone over, and no row of them is straight
+        px(g, x + tip, y + 3, 'rgba(24,28,20,0.5)');
+        rect(g, x + tip, y, 2, 3, '#aaa492'); px(g, x + tip, y - 1, '#c4bea8'); px(g, x + 1 + tip, y + 2, '#7e7969');
+        if (rnd() < 0.3) px(g, x + tip, y + 1, '#8b8676');
+      }
+      tree(yx + 34, yy + 15, 10);                                                                                    // and the yew in the corner of it, as dead as everything else
+    }
+    // THE MAGE'S FOLLY: it was never straight, and it is worse now
+    if (nd.id === 'mage') { ellipse(g, ox + 12, oy + 16, 30, 12, '#3d4534'); ellipse(g, ox + 12, oy + 14, 29, 11, '#5a6342', '#525b3d'); tower(ox + 9, oy + 15, 44, -8, true); }
+    // THE FALLING TOWER: the same tower, snapped level with its third storey, the rest of it lying down the slope
+    if (nd.id === 'fallingtower') {
+      ellipse(g, ox + 6, oy + 18, 30, 12, '#3d4534'); ellipse(g, ox + 6, oy + 16, 29, 11, '#5a6342', '#525b3d');
+      tower(ox + 3, oy + 16, 16, -2, false);
+      for (const [dx, dy] of [[1, 1], [3, -2], [5, 0], [7, -3], [9, 1], [11, -1]]) rect(g, ox + dx, oy + dy - 1, 2, 3, '#8b8576');   // the break, left ragged where it went
+      const ax = ox + 12, ay = oy + 5, bx = ox + 31, by = oy + 19, dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+      const along = (t, s) => [ax + dx * t + nx * s, ay + dy * t + ny * s];
+      fillPoly(g, [along(-0.06, 7.5), along(1.06, 5.5), along(1.06, -5.5), along(-0.06, -7.5)], '#292a23');          // the rest of it lying across the hill, edged dark like the one still up
+      fillPoly(g, [along(0, 6), along(1, 4), along(1, -4), along(0, -6)], '#7d7668');
+      fillPoly(g, [along(0, 6), along(1, 4), along(1, 1), along(0, 2)], '#938c7b');
+      for (let k = 1; k < 5; k++) { const t = k / 5, hw = 6 - 2 * t, [x0, y0] = along(t, hw), [x1, y1] = along(t, -hw); line(g, x0, y0, x1, y1, '#68634f', 1); }
+      const [cx0, cy0] = along(1, 5.5), [cx1, cy1] = along(1, -5.5), [cx2, cy2] = along(1.45, 0);
+      fillPoly(g, [[cx0, cy0], [cx1, cy1], [cx2, cy2]], '#4e4a5c'); fillPoly(g, [[cx0, cy0], [cx2, cy2], [(cx0 + cx2) / 2, (cy0 + cy2) / 2 + 1]], '#5f5a70');   // its cone, half into the grass at the end of it
+      for (let i = 0; i < 16; i++) { const x = (ox - 10 + rnd() * 48) | 0, y = (oy + 8 + rnd() * 22) | 0; rect(g, x, y, 2 + ((rnd() * 2) | 0), 2, '#6e695c'); px(g, x, y, '#8b8576'); px(g, x, y + 2, 'rgba(24,28,20,0.4)'); }   // and the rubble it shed coming down
+    }
+  }
+  for (let i = 0; i < 4; i++) bank(rnd() * w, 26 + rnd() * (h - 36), 26 + rnd() * 30, 0.04 + rnd() * 0.025);
+  for (let i = 0; i < 9; i++) { const x = (rnd() * w) | 0, y = (14 + rnd() * (h - 22)) | 0;
+    px(g, x, y, '#bcebe0'); px(g, x, y + 1, 'rgba(188,235,224,0.5)'); px(g, x + 1, y, 'rgba(188,235,224,0.35)'); }   // the lights out over the fields that are not anybody's lantern
+  // the road: the same dark edge, sand and pebbles the wood and the crags have, because the token has to read on it
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#3a3628', 8);
+  for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#a8a088', 5);
+  for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5;
+    for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n);
+      px(g, x + (k & 1 ? 1 : -1), y, '#7c7660'); if (k % 3 === 0) px(g, x, y + 1, '#d8d2b8'); } }
+  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(22,28,24,0)'); vg.addColorStop(1, 'rgba(22,28,24,0.5)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(18,22,18,0.35)'); circle(g, nd.x, nd.y, 7, '#33382c'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
 // Soft cloud puffs for level skies and the map, three sizes.

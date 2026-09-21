@@ -11,5 +11,5 @@
   e.open=9;e.mode='vent';BKT.hurtEnemy(e,999999,e.x+80,false);BK.sim(60);if(e.alive||BK.bossActive)throw Error(id+' death gate failed');
   const exit=BK.L.ents.find(e=>e.t==='gate');BK.look(exit.x,exit.y);BK.sim(900);if(BK.state!=='win')throw Error(id+' exit did not finish '+BK.state);rows.push({id,boss:e.t,exit:BK.state});
  }
- const ctx=new AudioContext(),response=await fetch('./audio/underkeep.wav'),a=await ctx.decodeAudioData(await response.arrayBuffer());await ctx.close();return{rows,audioSeconds:a.duration,shots};
+ const ctx=new AudioContext(),response=await fetch('./audio/underkeep.ogg'),a=await ctx.decodeAudioData(await response.arrayBuffer());await ctx.close();return{rows,audioSeconds:a.duration,shots};
 })()

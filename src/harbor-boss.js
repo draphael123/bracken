@@ -19,7 +19,9 @@ export function updateWarden(e,dt,c){
  if(!e.mode.endsWith('Tell')||e.modeT>0)return;
  const move=e.mode.slice(0,-4);e.effect=move;e.effectT=.35;e.effectMarks=[...e.marks];
  if(move==='anchor'){
-  if(Math.sign(P.x-e.x)===e.face&&Math.abs(P.x-e.x)<66&&Math.abs(P.y-e.y)<48){if(hit(e.x,20,false)==='blocked'){rest(2.3);return;}}sound('heavy');
+  /* TURN THE ANCHOR AND IT COMES OUT OF HIS HANDS. Blocking it was worth half a second more than the rest he takes
+     after every other blow, so there was no reason to stand and meet it. Now it is the opening in this fight. */
+  if(Math.sign(P.x-e.x)===e.face&&Math.abs(P.x-e.x)<66&&Math.abs(P.y-e.y)<48){if(hit(e.x,20,false)==='blocked'){say('THE ANCHOR IS TORN LOOSE',true);sound('clank');rest(3.4);return;}}sound('heavy');
  }else if(move==='harpoon'){
   const x=e.x+e.face*18,y=e.y-30,d=Math.hypot(e.aimX-x,e.aimY-y)||1;
   seed({x,y,vx:(e.aimX-x)/d*220,vy:(e.aimY-y)/d*220,g:0,life:2,shot:true,dmg:16,owner:e,wardenShot:true});sound('grapple');

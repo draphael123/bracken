@@ -37,6 +37,9 @@ export function expandKeep(R,T,TS,crop){
  for(const e of K.ents)if(e.t==='bellguard'&&e.mini)e.vaultKeeper=true;
  ent('sign',480,58,{text:'THE VAULT KEEPER. SWIM OUT OF THE PRESSURE MARKS. GUARD HIS SPEAR. STRIKE AFTER THE BELL.'});
  for(const x of [484,494,504]){K.airRooms.push([x,x+2,52,58]);D.pockets.push([x,x+2,52,58]);D.vents.push({x:x+1,y:58,h:7,hot:false,drain:false});}
+ /* THE DROWNED GARRISON MAY BE PUT IN THE WATER. Every standable spot in a flooded castle is a wet one, and the
+    sprinkler will only put a swimmer in a wet spot - so the keep's own dead were the one roster it could not place. */
+ K.swimGarrison=['wight','tideguard','watch','merrowspear','merrowbrute','merrowcaller'];   /* not the bellguard: his three are placed by hand and counted */
  K.keepSections=sections.map(([name,x0,x1])=>({name,x0,x1})).concat([{name:'THE INNER KEEP',x0:400,x1:599}]);
  return K;
 }

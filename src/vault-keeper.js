@@ -11,6 +11,12 @@ export function updateVaultKeeper(e,dt,c){
   const moves=e.phase===2?['band','spear','pressure','ring','hook']:['hook','spear','ring','pressure'];const m=moves[e.vaultTurn++%moves.length];e.mode='vault'+m[0].toUpperCase()+m.slice(1)+'Tell';e.modeT=m==='hook'?.8:1.15;e.aimX=P.x;e.aimY=P.y-10;
   say(({hook:'HOOK: GUARD',spear:'SPEAR: GUARD OR SWIM ASIDE',ring:'BELL RING: SWIM AWAY',pressure:'PRESSURE: LEAVE THE CIRCLE',band:'PRESSURE BAND: SWIM UP OR DOWN'})[m],!['hook','spear'].includes(m));sound('seaBell');return;
  }
+ /* THE BELL IS HIS, AND IT CAN BE TURNED ON HIM. Cut him while it is swinging and the note breaks in the water:
+    that is the one window in this fight the player opens, and it is twice his own rest. */
+ if(e.mode==='vaultRingTell'){if(e.ringHp===undefined)e.ringHp=e.hp;
+  if(e.hp<e.ringHp){e.ringHp=undefined;e.mode='vaultStunned';e.modeT=2.9;e.open=2.9;say('THE BELL CRACKS',true);sound('clank');return;}}
+ else e.ringHp=undefined;
+ if(e.mode==='vaultStunned'){if(e.modeT<=0){e.mode='walk';e.modeT=1.2;}return;}
  if(!e.mode.endsWith('Tell')||e.modeT>0)return;
  const m=e.mode;e.fx=m;e.fxT=.4;
  if(m==='vaultHookTell'){if(Math.hypot(P.x-e.x,P.y-e.y)<65)hit(e.x,16,false);sound('clank');}

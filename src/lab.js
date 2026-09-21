@@ -370,7 +370,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge){
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -432,16 +432,38 @@ async function runbossLab(BK, opts) {
         // THE ROOT MOVES UNDER THE SHELVES. Step through a one-way shelf before swinging at a ground knot.
         const descend=boss.mode!=='open'&&node&&P.ground&&P.y<node.y-20&&Math.abs(P.x-node.x)<32;
         const column=(boss.zones||[]).find(z=>P.x>z.l-10&&P.x<z.r+10&&z.top<A.floor-100);
-        if(column){const left=column.l-18,right=column.r+18;gx=Math.abs(P.x-left)<Math.abs(P.x-right)?left:right;}
-        if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
-        if(descend){k.down=true;BK.press('jump');}
-        if(boss.mode==='floorSurgeTell'&&boss.modeT<.2&&P.ground){BK.press('jump');P.labJump=22;}
+        /* EVERY TELL HAS AN ANSWER, and the pilot now gives each one (the provenance run, outputs/56-mother-provenance-*.json, traced every blow it
+           took to the vine, the stab mark, the floor surge or a door spider): the marked ground is kept off, the fan and the surge are
+           jumped at the moment they arrive, and nothing is swung that would still be swinging when the jump is due. */
+        const fl=A.floor,m=boss.mode,danger=[];
+        for(const z of boss.zones||[])if(z.top<fl-100)danger.push([z.l-8,z.r+8]);
+        if(m==='rootStabTell')danger.push([boss.rootMark-32,boss.rootMark+32]);
+        if(m==='seedRainTell'||m==='seedRain')for(const sx of [-96,-48,0,48,96])danger.push([boss.x+sx-12,boss.x+sx+12]);
+        const bad=x=>danger.some(([l,r])=>x>l&&x<r);
+        let safe=false;const crosses=danger.some(([l,r])=>Math.min(P.x,gx)<r&&Math.max(P.x,gx)>l);
+        if(m!=='open'&&crosses&&!bad(P.x)){   /* standing clear already: go no further than the edge of this clear ground */
+          const lo=Math.max(A.x0+14,...danger.filter(([,r])=>r<=P.x).map(([,r])=>r+8)),hi=Math.min(A.x1-14,...danger.filter(([l])=>l>=P.x).map(([l])=>l-8));
+          gx=hi-lo<16?(lo+hi)/2:Math.max(lo,Math.min(hi,gx));safe=true;}
+        else if(m!=='open'&&crosses){   /* the free ground between the marks, and the middle of the nearest piece of it: a 24px gap is not overshot */
+          const cuts=[...danger].sort((a,b)=>a[0]-b[0]),free=[];let lo=A.x0+14;
+          for(const [l,r] of cuts){if(l>lo)free.push([lo,l]);lo=Math.max(lo,r);}if(lo<A.x1-14)free.push([lo,A.x1-14]);
+          const pick=free.map(([l,r])=>{const x=r-l<40?(l+r)/2:Math.max(l+12,Math.min(r-12,P.x));return x;}).sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0];
+          if(pick!==undefined){gx=pick;safe=true;}}
+        const shelf=P.ground&&P.y<fl-20;
+        const clap=m==='capClapTell'&&Math.abs(P.x-boss.x)<125,sweep=m==='sporeSweepTell'&&P.y<fl-30&&P.y>fl-80;
+        const vine=(BK.vines?BK.vines():[]).find(v=>v.t>=v.tell-.05&&(P.x-v.x)*v.dir>-6&&(P.x-v.x)*v.dir<34);
+        const surge=m==='floorSurgeTell'&&boss.modeT<.09||m==='floorSurge'&&boss.modeT>.25;
+        const hopSoon=m==='floorSurgeTell'&&boss.modeT<.75||m==='rootFanTell';
+        if(Math.abs(gx-P.x)>(safe?3+Math.abs(P.vx)*.12:5))k[gx>P.x?'right':'left']=true;
+        if((descend||(shelf&&(clap||sweep)))&&!surge){k.down=true;BK.press('jump');}
+        if(!shelf&&(surge||vine)&&!clap){BK.press('jump');if(!(P.labJump>0))P.labJump=22;}
         if(boss.mode==='open'&&P.ground&&Math.abs(P.x-(boss.x-3*TS))<20){BK.press('jump');P.labJump=16;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
+        const tired=P.labRest||P.st<14;
         const lead=h==='reaper'?(.12/.34):h==='paladin'?.08:.06,landingCutY=P.y+P.vy*lead+600*lead*lead;
         if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&(h==='reaper'||P.vy>0)&&(h==='pyro'||h==='warden'||h==='reaper'?Math.abs(landingCutY-(heart.y+3))<16:Math.abs(P.y-8-(heart.y-7))<46)&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
-        else if(!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
-        if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
+        else if(!tired&&!hopSoon&&!bad(P.x)&&!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
+        if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
       if(boss.vaultKeeper){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;

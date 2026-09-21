@@ -131,3 +131,18 @@ Stormwreck Harbor (48s, 6/8) and The Burial Caverns (53.33s, 4/4): original synt
 - underkeep.wav = "Under the Vaults", original synthesized brass-bell and bass score created for BRACKEN (Codex, 2026-09-19).
 
 fallingtower.wav — Fractured Stairs. Original synthesized bell and bass score created for BRACKEN, 2026-09-19. 40 seconds, mono PCM 22050 Hz.
+
+THE FOUR LEVELS ADDED IN THE 0919 PASS had script-synthesised 22 kHz mono WAVs, which sat thin and muffled
+next to the composed library above. Replaced 2026-09-20 with CC0 tracks, each lowpassed at 9 kHz and
+levelled to -15 LUFS like the rest, three of them from packs already credited here:
+- stormharbor.ogg = "wowchapter1.ogg" from "War on Water: Tracks" by yd (CC0)
+  https://opengameart.org/content/war-on-water-tracks - STORMWRECK HARBOR. The same LMMS/Sonatina naval
+  score that already gives hurricane.ogg (WoWChapter3) and drowned.ogg, so the harbour sits with the sea levels.
+- underkeep.ogg = "Sinking Feeling" by Umplix (CC0) https://opengameart.org/content/sinking-feeling
+  THE UNDERWATER KEEP. Echoing harp and synth; Umplix also writes the Closed Helm's theme.
+- burial.ogg = "Evil2 - Catacombs" from "JRPG Music Pack #3 [Evil]" by Juhani Junkala / SubspaceAudio (CC0)
+  https://opengameart.org/content/jrpg-pack-3-evil - THE BURIAL CAVERNS. Same pack as the Scarecrow King's
+  "Evil4 - Witch's Lair", same composer as the main theme.
+- fallingtower.ogg = "8-bit - Last Mission" (loop) by HydroGene (CC0)
+  https://opengameart.org/content/8-bit-last-mission - THE FALLING TOWER. The pack also ships a separate
+  intro cut, kept in reserve for the first collapse.

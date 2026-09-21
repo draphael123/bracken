@@ -40,6 +40,50 @@ export function returnThroughTower(L,T,TS){
  }
  // Leave the final fight free of furniture and distant enemies; preserve recognisable tower rooms.
  L.ents=L.ents.filter(e=>!(e.x>=617&&e.x<=630&&e.t==='deco'&&!e.hang));
- L.calm=[[0,L.W-1,0,L.H-1]];L.noCoin=[[0,L.W-1,0,13]];
+ L.noCoin=[[0,L.W-1,0,13]];
+
+ /* ================= THE TOWER COMES DOWN ==================================================================
+    The return used to be the Folly's own grid walked the other way with its puzzles, elites and checkpoints
+    deleted and the whole map marked calm: 2.3 creatures a screen against Kingswood's 4.8, no collapse outside
+    the boss room, no undead in a dead wizard's tower, and the last fight held OUTSIDE on the grass because
+    everything left of mage.outside=118 is the approach. Three rules fix all of it, and none of them needs new
+    tiles: the floor goes as you leave it, the staff never left, and the Archmage is fought indoors. */
+
+ // 1. THE FLOOR GOES BEHIND YOU. Every run of walkable floor along the route sheds a second after the hero is
+ //    clear of it, so the way back closes as the tower empties itself downward. Never underfoot: it arms only
+ //    once he has passed, which is spectacle and pressure without a fall he could not have seen coming.
+ const walk=(x,y)=>{const t=L.grid[y*L.W+x];return t===T.SOLID||t===T.ONEWAY||t===T.PLANK;};
+ const shed=[];
+ for(const [x0,x1,row] of [[500,700,16],[440,500,16],[300,440,40],[205,300,40],[120,205,40]]){
+  for(let x=x0;x+7<=x1;x+=8){let run=0;for(let k=0;k<8;k++)if(walk(x+k,row)&&L.grid[(row-1)*L.W+x+k]===T.AIR)run++;
+   // never over one of the four authored breaks: two collapse rules on the same tiles is one of them firing under him
+   if(run===8&&!L.deckBreaks.some(z=>z.row===row&&x<=z.x1&&x+7>=z.x0))shed.push({x0:x,x1:x+7,row,t:-1,down:false,behind:true});}
+ }
+ L.deckBreaks=L.deckBreaks.concat(shed);
+
+ // 2. THE STAFF NEVER LEFT - and the sprinkler is what puts them there. GARRISON has no row for this level, so the
+ //    only creatures in it were the handful the builder placed and the whole map was marked calm on top of that: that
+ //    is the 2.3 a screen. The row is in level.js with everyone else's, undead at the head of it; taking the calm off
+ //    lets the game populate its own tower the way it populates Kingswood.
+ // 3. AND HE IS FOUGHT INSIDE IT. The approach was still the Folly's outdoors, so the dead Archmage waited on
+ //    grass under a sky while his tower fell down somewhere off screen. The tower's own masonry is carried
+ //    down to the front door, and the hall is roofed.
+ L.mage.outside=0;L.mage.skins.unshift([0,117,0,L.H-1,'tower']);
+ rect(0,117,18,18,T.SOLID);
+ for(const x of [24,44,66,88]){let y=19;while(y<40&&L.grid[y*L.W+x]===T.AIR)y++;rect(x,x,19,Math.max(19,y-7),T.SOLID);}
+
+ // 4. MORE OF THE ROOF COMES WITH IT: dust and stone the whole way down, not ten pieces of it. These ones are HUNG
+ //    from masonry the tower already has - the first pass built a column down to each stone and two of those columns
+ //    walled off the route to the library silver, which is exactly the kind of thing tools/tower-finish.mjs is for.
+ for(const [x,floor] of [[672,16],[660,16],[612,16],[572,16],[535,16],[520,16],[466,40],[452,40],[425,40],[408,40],[352,40],[330,40],[312,40],[286,40],[268,40],[216,40],[198,40],[176,40],[160,40],[132,40]]){
+  if(L.grid[(floor-1)*L.W+x]!==T.AIR)continue;
+  let ceil=-1;for(let y=floor-4;y>=6;y--)if(L.grid[y*L.W+x]===T.SOLID){ceil=y;break;}
+  if(ceil<0)continue;
+  let top=ceil;while(top>0&&L.grid[(top-1)*L.W+x]===T.SOLID)top--;
+  if(top>22)continue;                                   // hung off a stub of shelf it is a rock floating in a room
+  if(L.grid[(ceil+1)*L.W+x]!==T.AIR)continue;
+  if((L.ents||[]).some(e=>e.t==='stal'&&Math.abs(e.x-x)<6))continue;
+  ent('stal',x,ceil+1,{stone:true});
+ }
  return L;
 }

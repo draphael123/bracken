@@ -13,10 +13,15 @@ export function updateUndeadMage(e,dt,c){
  const bounds=()=>liveTowerBounds(slabs),rest=()=>{e.mode='rest';e.modeT=2.5;e.open=2.5;};
  for(const q of e.shots){q.t-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(!q.hit&&Math.abs(P.x-q.x)<q.r+5&&Math.abs(P.y-9-q.y)<q.r+9){hit(q.x,q.dmg,false);q.hit=true;q.t=0;}}e.shots=e.shots.filter(q=>q.t>0);
  if(e.mode==='collapse'){
+  /* THE SPELL CAN BE BROKEN. He holds the floor down with both hands and was untouchable while he did it; cut him
+     here and the far slab survives the stage - the footing the player keeps is the footing he fought for. */
+  if(e.castHit>=2){e.castHit=0;const kept=slabs.filter(z=>z.stage===e.stage+1&&!z.down).sort((a,b)=>b.t-a.t)[0];
+   if(kept)kept.t=-1;e.mode='reel';e.modeT=3;e.open=3;e.stage++;say('THE SPELL BREAKS',true);sound('crack');return;}
   for(const z of slabs)if(z.stage===e.stage+1&&!z.down){z.t-=dt;if(z.t<=0){z.down=true;for(let x=z.x0;x<=z.x1;x++)for(let y=40;y<48;y++)change(x,y);}}
   if(e.modeT<=0){e.stage++;const[lo,hi]=bounds();e.x=Math.max(lo+24,Math.min(hi-24,e.x));e.y=A.floor;sound('stone');rest();}return;
  }
- if(e.stage<3&&e.hp<=e.hp0*(.75-.25*e.stage)+.01){e.mode='collapse';e.modeT=3;e.open=0;e.shots=[];for(const z of slabs)if(z.stage===e.stage+1)z.t=3;say('THE FLOOR BREAKS: MOVE IN',true);sound('crack');return;}
+ if(e.stage<3&&e.hp<=e.hp0*(.75-.25*e.stage)+.01){e.mode='collapse';e.modeT=3;e.open=0;e.castHit=0;e.shots=[];for(const z of slabs)if(z.stage===e.stage+1)z.t=3;say('THE FLOOR BREAKS: MOVE IN',true);sound('crack');return;}
+ if(e.mode==='reel'){if(e.modeT<=0){const[lo,hi]=bounds();e.x=Math.max(lo+24,Math.min(hi-24,e.x));e.y=A.floor;rest();}return;}
  if(e.mode==='wake'){if(e.modeT<=0)rest();return;}
  if(e.mode==='rest'){
   if(e.modeT>0)return;const[lo,hi]=bounds();const spots=[Math.max(lo+30,Math.min(hi-30,P.x-130)),(lo+hi)/2,Math.max(lo+30,Math.min(hi-30,P.x+130))];e.teleX=spots[(e.turn+1)%3];if(Math.abs(e.teleX-P.x)<36)e.teleX=spots.find(x=>Math.abs(x-P.x)>40)??spots[1];e.mode='blink';e.modeT=.7;say('TELEPORT',false);return;
