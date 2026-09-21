@@ -4,8 +4,8 @@
 // It starts serve.mjs on PORT (default 5892) when nothing answers there, and REFUSES a server that is serving another
 // checkout: the served src/lookpass.js must be byte-for-byte this checkout's.
 import { spawn } from 'child_process';
-import { existsSync, mkdtempSync, readFileSync } from 'fs';
-import { tmpdir } from 'os';
+import { existsSync, readFileSync } from 'fs';
+import { launchBrowser } from './browser-profile.mjs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -18,14 +18,16 @@ export async function openPage(opts = {}) {
   const PORT = +(process.env.PORT || opts.port || 5892), URL0 = 'http://localhost:' + PORT + '/';
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
   let server = null;
-  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT) } }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
+  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', () => { try { server.kill(); } catch {} }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
   if (!(await up())) throw new Error('dev server did not come up on ' + URL0);
   const mine = readFileSync(join(ROOT, 'src/lookpass.js'), 'utf8');
   const served = await (await fetch(URL0 + 'src/lookpass.js', {signal:AbortSignal.timeout(5000)})).text().catch(() => '');
   if (served !== mine) { if (server) server.kill(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
   const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
-  const dbg = 9300 + Math.floor(Math.random() * 400), prof = mkdtempSync(join(tmpdir(), 'bracken-look-'));
-  const chrome = spawn(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--user-data-dir=' + prof, '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], { stdio: 'ignore' });
+  const dbg = 9300 + Math.floor(Math.random() * 400);
+  /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
+  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'look'), chrome = run.child;
+  try {
   let wsUrl = null;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list', {signal:AbortSignal.timeout(2000)})).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
   if (!wsUrl) throw new Error('could not reach the browser');
@@ -66,5 +68,6 @@ export async function openPage(opts = {}) {
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
   };
-  return { evalp, errors, PORT, reload, close() { try { ws.close(); } catch {} chrome.kill(); if (server) server.kill(); } };
+  return { evalp, errors, PORT, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return run.close(); } };
+  } catch (e) { if (server) server.kill(); await run.close(); throw e; }
 }

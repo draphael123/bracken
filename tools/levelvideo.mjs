@@ -7,6 +7,7 @@
 // Writes <dir>/<level>.mp4, <dir>/<level>.json (teleports, deaths, hits by place, how far it got) and
 // <dir>/<level>-sheet.png (a 4x3 contact sheet of the run).
 // No god mode: the hero is topped up when low, so every hit is counted and only a pit or the sea kills it.
+import { launchBrowser } from './browser-profile.mjs';
 import { spawn, spawnSync } from 'child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
@@ -113,11 +114,11 @@ function pageSummary() { const V = window.__V; return { frames: V.f, end: V.end,
 /* ---------------- the browser ---------------- */
 async function browser() {
   const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
-  const dbg = 9300 + Math.floor(Math.random() * 600), prof = mkdtempSync(join(tmpdir(), 'bracken-video-'));
-  const chrome = spawn(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--user-data-dir=' + prof, '--mute-audio', '--no-first-run', '--window-size=1280,720', 'about:blank'], { stdio: 'ignore' });
+  const dbg = 9300 + Math.floor(Math.random() * 600);
+  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--mute-audio', '--no-first-run', '--window-size=1280,720', 'about:blank'], 'video'), chrome = run.child;
   let wsUrl = null;
   for (let i = 0; i < 80 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list')).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
-  if (!wsUrl) throw new Error('could not reach the browser');
+  if (!wsUrl) { await run.close(); throw new Error('could not reach the browser'); }
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
   let id = 0; const pending = new Map(), errors = [];
   ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
@@ -130,7 +131,7 @@ async function browser() {
   const open = async () => { if (globalThis.__ensure) await globalThis.__ensure(); await send('Page.navigate', { url: URL0 + '?v=' + Date.now() });
     for (let i = 0; i < 120; i++) { if (await evalp('typeof window.BK === "object" && !!window.BK.bossLab').catch(() => false)) break; await sleep(250); }
     await sleep(1500); };
-  const close = () => { try { ws.close(); } catch {} chrome.kill(); try { rmSync(prof, { recursive: true, force: true }); } catch {} };
+  const close = () => { try { ws.close(); } catch {} return run.close(); };
   return { evalp, open, close, errors };
 }
 
@@ -170,7 +171,7 @@ async function main() {
   /* THE SERVER IS LEFT RUNNING. A run that killed the server it started pulled it out from under every other run on the
      same port (two batches and a stills pass died that way). It is started detached and left up; stop it by hand. */
   const server = null;
-  const ensure = async () => { if (await up()) return; const s = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', detached: true, env: { ...process.env, PORT: String(PORT) } }); s.unref();
+  const ensure = async () => { if (await up()) return; const s = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, BRACKEN_PARENT: String(process.pid) }, detached: true, env: { ...process.env, PORT: String(PORT) } }); s.unref();
     for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); if (!(await up())) throw new Error('dev server did not come up on ' + URL0); };
   await ensure(); globalThis.__ensure = ensure;
   const list = LEVELS.filter(lv => (!lv.hidden || lv.secret) && (!want.length || want.includes(lv.id)));

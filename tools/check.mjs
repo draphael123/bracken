@@ -39,6 +39,9 @@ const walk = d => { for (const f of readdirSync(join(ROOT, d))) { const p = join
 walk('src'); walk('tools');
 
 const results = [];
+/* THE TEMP FOLDER, before and after: abandoned BRACKEN browser profiles (idle 30 min, no live process on them) go first, and at
+   the end anything THIS run made and did not take away again is a leak and fails the suite (tools/profile-sweep.mjs) */
+const SUITE_T0 = Date.now(); run('profile-sweep', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans']);
 { const bad = files.map(f => [f, spawnSync(process.execPath, ['--check', f], { cwd: ROOT, encoding: 'utf8' })]).filter(([, r]) => r.status !== 0);
   results.push({ name: 'syntax', ok: !bad.length, ms: 0, last: bad.length ? bad.map(([f]) => f).join(', ') : files.length + ' files parse', out: bad.map(([f, r]) => f + ': ' + r.stderr) }); }
 for (const t of ['tells', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'progression', 'progression-runtime', 'skill-menu', 'skill-passives', 'skill-balance-probe', 'reaper-input', 'traps', 'signs', 'killzones', 'collectables', 'keys', 'elites', 'spawns', 'deadends', 'rafts', 'raft-call', 'render-layers', 'room-patterns', 'heat', 'queen-comb', 'crown-route', 'crown-requests', 'gallery-runtime', 'waterfall-joins', 'paladin-enrage', 'spurs-runtime', 'additional-areas', 'additional-areas-runtime', 'keep', 'keep-runtime', 'keep-expansion', 'keep-passages', 'keep-expansion-runtime', 'storm-ship', 'storm-ship-runtime', 'haunted-coast', 'haunted-coast-runtime', 'tower-ascent', 'folly-runtime', 'sea-requests', 'sea-runtime', 'shop-theme', 'store-preview', 'dressing', 'runtime-footing', 'bridge-props', 'light-support', 'readability', 'town-live', 'waymeet-cleanup', 'owl-lamps', 'belfry', 'moor-wind', 'watchtowers', 'spore-loop', 'mother-cap', 'mother-pilot', 'salvage-captain', 'harbor-expansion', 'harbor-route', 'buried-dead', 'burial-route', 'burial-geometry', 'undercrown-variety', 'boss-openings', 'undead-foes', 'buried-attacks', 'combat-feel', 'attack-animation', 'attack-buffer', 'normal-health', 'ambush-single', 'reed-island', 'lab-clock', 'combat-replay', 'combat-results-test', 'king-refill', 'pilot-actions', 'pyre-pilot', 'herald-pirate', 'boss-navigation', 'cdp-recovery', 'swim-chain']) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
@@ -47,6 +50,8 @@ results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], {
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
 results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud', '--strict'], { PORT: '5994' }));
+results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */
+results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--check']));
 
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }

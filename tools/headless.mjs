@@ -7,6 +7,7 @@
 //   node tools/headless.mjs expr "BK.fightLab({ levels: ['wood'] })"
 //   node tools/headless.mjs runtimefloats         the playtest bot plays every level; RUNTIMEFLOAT findings + screenshots
 // Exit code 1 if a boss in the short pass goes unkilled or the page throws.
+import { launchBrowser } from './browser-profile.mjs';
 import { spawn } from 'child_process';
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
@@ -23,11 +24,11 @@ const up = async () => { try { const r = await fetch(URL0); return r.ok; } catch
 async function main() {
   const [mode = 'short', arg = ''] = process.argv.slice(2);
   let server = null;
-  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore' }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
+  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, BRACKEN_PARENT: String(process.pid) } }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
   if (!(await up())) throw new Error('dev server did not come up on ' + URL0);
   const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
-  const dbg = 9300 + Math.floor(Math.random() * 400), prof = mkdtempSync(join(tmpdir(), 'bracken-headless-'));
-  const chrome = spawn(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--user-data-dir=' + prof, '--mute-audio', '--no-first-run', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], { stdio: 'ignore' });
+  const dbg = 9300 + Math.floor(Math.random() * 400);
+  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--mute-audio', '--no-first-run', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'headless'), chrome = run.child;   /* a failed start or a thrown error ends in process.exit: browser-profile's exit hook takes the profile */
   let wsUrl = null;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list')).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
   if (!wsUrl) throw new Error('could not reach the browser');
@@ -78,7 +79,7 @@ async function main() {
     }
   } catch (e) { console.log('LAB FAILED: ' + e.message); code = 1; }
   if (errors.length) { console.log('page errors:\n  ' + errors.slice(0, 8).join('\n  ')); code = 1; }
-  ws.close(); chrome.kill(); if (server) server.kill();
+  ws.close(); await run.close(); if (server) server.kill();
   process.exit(code);
 }
 main().catch(e => { console.error(e.message); process.exit(1); });

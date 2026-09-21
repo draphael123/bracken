@@ -3,6 +3,8 @@ import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
 const PORT = process.env.PORT || 5860;
+/* STARTED BY A TOOL (tools/cdp.mjs), it goes when that tool goes - even one killed outright, whose own hooks never ran */
+if (process.env.BRACKEN_PARENT) { const ppid = +process.env.BRACKEN_PARENT; setInterval(() => { try { process.kill(ppid, 0); } catch { process.exit(0); } }, 2000).unref(); }
 const ROOT = import.meta.dirname;
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',

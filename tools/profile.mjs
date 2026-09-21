@@ -3,6 +3,7 @@
 // that cost the most time, and the frames that ran long. Same launcher as tools/headless.mjs: nothing to install.
 //   node tools/profile.mjs lamplit            walk Lamplit Street for 900 frames
 //   node tools/profile.mjs deep 1500          a longer walk
+import { launchBrowser } from './browser-profile.mjs';
 import { spawn } from 'child_process';
 import { existsSync, mkdtempSync } from 'fs';
 import { tmpdir } from 'os';
@@ -17,10 +18,10 @@ const up = async () => { try { return (await fetch(URL0)).ok; } catch { return f
 const [level = 'lamplit', framesArg = '900'] = process.argv.slice(2);
 
 let server = null;
-if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore' }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
+if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, BRACKEN_PARENT: String(process.pid) } }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
 const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
 const dbg = 9700 + Math.floor(Math.random() * 200);
-const chrome = spawn(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--user-data-dir=' + mkdtempSync(join(tmpdir(), 'bracken-prof-')), '--mute-audio', '--no-first-run', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], { stdio: 'ignore' });
+const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--mute-audio', '--no-first-run', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'prof'), chrome = run.child;
 let wsUrl = null;
 for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list')).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
 const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
@@ -44,5 +45,5 @@ console.log('== ' + level + ': ' + frames.length + ' frames, median ' + [...fram
 console.log('slow frames (ms @ tile): ' + slow.slice(0, 20).map(f => f[0] + '@' + f[1]).join('  '));
 console.log('\ntop self time:');
 for (const [n, ms] of top) console.log('  ' + ms.toFixed(0).padStart(6) + 'ms  ' + n);
-ws.close(); chrome.kill(); if (server) server.kill();
+ws.close(); await run.close(); if (server) server.kill();
 process.exit(0);
