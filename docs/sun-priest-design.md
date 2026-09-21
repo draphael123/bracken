@@ -33,8 +33,8 @@ King's Pyramid) and has to work for it in the dark (the Undercrown, the Burial C
 | no shield: THE DISC | turns a yellow blow met on the beat (a parry), and throws a missile back along its line | the Freebooter's parry window | he has a defence, and it is timing, not a wall |
 
 ## Talent branches (three, as `TBR` / `TREE_WHO` in main.js ~339)
-- **DAWN: THE BEAM, AND WHERE IT GOES**: a longer plant, the beam bouncing off one mirror of his own, the beam piercing a second foe,
-  UP+beam burning a column.
+- **DAWN: THE BEAM, AND WHERE IT GOES**: a longer plant, the beam piercing a second foe, UP+beam burning a column at full strength
+  (no mirror of his own: Daniel).
 - **NOON: THE LIGHT THAT MENDS**: bigger and longer CONSECRATE, RADIANCE filling faster, SUNFALL leaving a patch, SUNRISE mending more.
 - **DUSK: A LIGHT IN THE DARK**: a carried glow (he lights a tile round him), less drain in the dark, THE FLARE cheaper, the disc
   throwing a missile back lit (it burns).
@@ -56,8 +56,7 @@ King's Pyramid) and has to work for it in the dark (the Undercrown, the Burial C
 4. The dark levels (Undercrown, Burial, Keep, the Sealed Pyramid): one full run each at normal health, to see that his weakness is
    a weakness and not a wall.
 
-## Open questions for Daniel
-- Does he have a **mirror of his own** (DAWN's capstone: place one mirror anywhere)? Powerful in the pyramids; could be the reason
-  to take DAWN.
-- **Voice and look:** white and gold robes, a gilt sun-disc on the staff, a bronze face under a hood. The concept sheet shows this;
-  change it freely.
+## Decided (Daniel, 2026-09-21)
+- **No mirror of his own.** DAWN's capstone is not a placeable mirror: the rooms' mirrors stay the rooms' (the puzzles stay puzzles).
+  DAWN's last node is the beam piercing a second foe and burning a column (UP+beam) at full strength.
+- **The look is right:** white and gold robes, a gilt sun-disc on the staff, a bronze face under a hood (`docs/sun-priest-concept.png`).
