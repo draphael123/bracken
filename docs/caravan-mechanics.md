@@ -44,3 +44,15 @@ preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
   aimed at a hero at the wall covered the whole corner.
 - **Not proved: balance.** The bots are scripted, so "35 s vs 59 s" is a shape, not a number. The boss batch still owes
   the twelve wiring points (A8), a baker, and the real in-page pilot (21+ runs at normal health).
+
+## ART BAKED AHEAD (render in Node, no browser)
+- `src/redraw/desert.js` → `node tools/desert-art.mjs` → `docs/desert-art.png`: rock slopes, sky, mesas, dunes, quicksand,
+  sandfall, wagon, awnings, bones, cargo, scrub, a dead tree, the standard. `SHADE_OF` = the sunstroke rule's shade pixels.
+- `src/redraw/desert_foes.js` → `node tools/desert-foes.mjs` → `docs/desert-foes.png`: scorpion, vulture, sand goblin, THE DUNE
+  WORM (+ its lunge body). Every tell and the STUCK opening pose has its own frame.
+- `src/redraw/queue_bosses.js` → `node tools/queue-bosses.mjs` → `docs/queue-bosses.png`: THE GRAVE WARDEN (Burial rework),
+  THE HEDGE WARDEN and THE GATE GARGOYLE (Witchlight Stair), from their briefs. Frames for every attack in the brief and each
+  boss's opening pose (kneeling in a grave; the stump + regrowth; hanging from a broken slab). Known: the gargoyle's
+  raised-wing frames (3, 6, 9) read as slabs and want a second pass in the Witchlight batch.
+- `tools/node-canvas.mjs` is the shim that makes this possible: enough of a 2D canvas for px.js-style bakers (it throws on
+  paths/gradients/text instead of drawing them wrong). Checked against the game's own turtle, eel and heron bakers.
