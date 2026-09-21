@@ -20947,8 +20947,18 @@ function drawSelect() {
 // Title illustration: dusk in the wood, the mountain the whole game climbs on the skyline - the Sunspire
 // catching the last light and the Queen's castle on the peak beyond it - a knight at a campfire before
 // the great gate, and the menu on its own board to the right so it never sits on the picture.
-let titleLeaves = [], HORIZON = null, titleSince = 0;
-function bakeHorizon() {
+let titleLeaves = [], HORIZON = null, HORIZON_REGION = null, titleSince = 0;
+/* THE FAR COUNTRY ON THE TITLE SCREEN IS YOUR OWN. A new save and a save twenty woods deep looked at the same
+   ridge: now the horizon carries what you have been through - the crags, then the sea, then the haunted country
+   inland - and the picture ages with the campaign. */
+function titleRegion() {
+  const done = id => !!(PROG[id] && PROG[id].cleared);
+  if (['fields', 'mage', 'burial', 'fallingtower', 'waymeet'].some(done)) return 'inland';
+  if (['reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor', 'longwater'].some(done)) return 'coast';
+  if (['scree', 'hanging', 'spire', 'moor', 'storm', 'crown'].some(done)) return 'crag';
+  return 'wood';
+}
+function bakeHorizon(region = 'crag') {
   const W = 480, H = 96, [c, hg] = canvas(W, H), rnd = mulberry(4242);
   const ridge = (base, amp, col, rim, step) => { hg.fillStyle = col; hg.beginPath(); hg.moveTo(0, H); let y = base;
     const pts = []; for (let x = 0; x <= W; x += step) { y = Math.max(base - amp, Math.min(base + amp * 0.3, y + (rnd() - 0.55) * amp * 0.5)); pts.push([x, y]); hg.lineTo(x, y); }
@@ -20959,6 +20969,19 @@ function bakeHorizon() {
   hg.fillStyle = '#8fb8d8'; hg.beginPath(); hg.moveTo(sx + 2, 0); hg.lineTo(sx + 8, 10); hg.lineTo(sx + 26, 72); hg.lineTo(sx + 12, 72); hg.closePath(); hg.fill();
   hg.fillStyle = '#dff2ff'; hg.fillRect(sx + 2, 1, 1, 6); hg.fillRect(sx + 5, 8, 1, 10); hg.fillRect(sx + 9, 22, 1, 14);
   for (const [dx, h] of [[-34, 22], [-26, 30], [34, 26], [44, 18]]) { hg.fillStyle = '#56688a'; hg.beginPath(); hg.moveTo(sx + dx - 5, 72); hg.lineTo(sx + dx, 72 - h); hg.lineTo(sx + dx + 5, 72); hg.closePath(); hg.fill(); hg.fillStyle = '#a8cce4'; hg.fillRect(sx + dx, 72 - h + 2, 1, 4); }
+  if (region === 'coast') {   // the sea came up over the road: a flat band of water, a light on it, and masts
+    hg.fillStyle = '#2a4a5e'; hg.fillRect(0, 62, 150, 34);
+    hg.fillStyle = '#3d6a80'; for (let x = 0; x < 150; x += 8) hg.fillRect(x + (x / 8 % 2 ? 2 : 0), 64 + ((x * 7) % 10), 5, 1);
+    hg.fillStyle = '#2a2238'; hg.fillRect(96, 44, 7, 22); hg.fillStyle = '#ffd36b'; hg.fillRect(97, 46, 5, 4);
+    for (const mx of [40, 54, 66]) { hg.fillStyle = '#241f30'; hg.fillRect(mx, 50, 1, 14); hg.fillRect(mx - 4, 54, 9, 1); }
+  }
+  if (region === 'inland') {   // the dead country: fog on the fields, a leaning tower and a steeple with its top off
+    hg.fillStyle = '#2a3040'; hg.fillRect(0, 52, 120, 20);
+    hg.fillStyle = '#3b3550'; hg.fillRect(66, 30, 9, 42); hg.fillRect(64, 28, 13, 3); hg.fillStyle = '#4e4668'; hg.fillRect(68, 34, 2, 30);
+    hg.fillStyle = '#2a2238'; hg.fillRect(30, 44, 7, 28); hg.beginPath(); hg.moveTo(28, 44); hg.lineTo(33, 34); hg.lineTo(36, 44); hg.closePath(); hg.fill();
+    hg.globalAlpha = 0.22; hg.fillStyle = '#cfd6e8'; for (let i = 0; i < 4; i++) hg.fillRect(0, 58 + i * 5, 140 - i * 18, 2); hg.globalAlpha = 1;
+  }
+  if (region === 'wood') { hg.globalAlpha = 0.5; }   // the far peaks are still rumour when you have not left the wood
   // the castle on the far peak, a few windows lit
   const cx = 356; hg.fillStyle = '#2a2238'; hg.beginPath(); hg.moveTo(cx - 40, 72); hg.lineTo(cx - 8, 30); hg.lineTo(cx + 10, 26); hg.lineTo(cx + 44, 72); hg.closePath(); hg.fill();
   for (const [x, w, h] of [[-8, 8, 22], [2, 10, 30], [14, 7, 18], [-16, 6, 14]]) { hg.fillRect(cx + x, 30 - h + 8, w, h); for (let k = 0; k < w; k += 3) hg.fillRect(cx + x + k, 30 - h + 6, 2, 2); }
@@ -21020,7 +21043,7 @@ function drawTitleBracken() {
   }
 }
 function drawTitle(cx, cy) {
-  if (!HORIZON) HORIZON = bakeHorizon();
+  { const rg = titleRegion(); if (HORIZON_REGION !== rg) { HORIZON = bakeHorizon(rg); HORIZON_REGION = rg; } }
   g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH);
   g.drawImage(BG.sun, Math.round(VW * 0.62), 46);
   // a few long clouds lit from under
@@ -21032,10 +21055,18 @@ function drawTitle(cx, cy) {
   // the Sunspire glints now and then
   { const k = (time % 5) / 5; if (k < 0.12) { g.globalAlpha = Math.sin(k / 0.12 * Math.PI) * 0.8; g.fillStyle = '#ffffff'; g.fillRect(232, VH - 139 + Math.round(k * 200), 2, 5); g.globalAlpha = 1; } }
   drawLayer(BG.near, 0.55, VH - 300, 40 + time * 3, LH * TS - VH);
-  g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(90,70,120,0.5)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
+  /* (the second purple wash is gone: three multiplies over the same picture took the sun, the fire and the
+     gate's stone down to one flat value, and the game's own levels are not that grey) */
   drawTitleColumn();
   const gx = 36, gy = VH - 132; g.drawImage(PROP.gate, gx, gy, 120, 130);
-  for (const tx of [gx - 10, gx + 122]) { const f = Math.floor(time * 10 + tx) % 3; g.fillStyle = '#5c3a1d'; g.fillRect(tx + 2, gy + 60, 3, 22); g.fillStyle = '#ff9a5c'; g.fillRect(tx, gy + 52 - (f === 1 ? 1 : 0), 7, 9); g.fillStyle = '#ffd36b'; g.fillRect(tx + 2, gy + 55, 3, 5); g.globalAlpha = 0.16 + 0.04 * Math.sin(time * 9 + tx); g.fillStyle = '#ffb060'; g.beginPath(); g.arc(tx + 3, gy + 58, 34, 0, 7); g.fill(); g.globalAlpha = 1; }
+  /* THE TORCHES BESIDE THE GATE STAND ON THE GROUND. Their post was drawn 22 high from gy+60 and stopped at
+     gy+82, twenty-eight pixels short of the floor line at VH-22, so both of them hung in the air beside the
+     arch - the one thing tools/light-support.mjs checks on every level, on the one screen it never sees. */
+  for (const tx of [gx - 10, gx + 122]) { const f = Math.floor(time * 10 + tx) % 3; const post = (VH - 22) - (gy + 60);
+    g.fillStyle = '#5c3a1d'; g.fillRect(tx + 2, gy + 60, 3, post);
+    g.fillStyle = '#3a2214'; g.fillRect(tx + 1, VH - 25, 5, 3); g.fillRect(tx, VH - 23, 7, 2);   // and a foot in the dirt to stand on
+    g.fillStyle = '#6a4626'; g.fillRect(tx + 2, gy + 60, 1, post);
+    g.fillStyle = '#ff9a5c'; g.fillRect(tx, gy + 52 - (f === 1 ? 1 : 0), 7, 9); g.fillStyle = '#ffd36b'; g.fillRect(tx + 2, gy + 55, 3, 5); g.globalAlpha = 0.16 + 0.04 * Math.sin(time * 9 + tx); g.fillStyle = '#ffb060'; g.beginPath(); g.arc(tx + 3, gy + 58, 34, 0, 7); g.fill(); g.globalAlpha = 1; }
   for (const lf of titleLeaves) { g.globalAlpha = 0.85; g.fillStyle = lf.col; g.fillRect(Math.round(lf.x), Math.round(lf.y), 2, 2); g.globalAlpha = 1; }
   g.fillStyle = '#2a2230'; g.fillRect(0, VH - 22, VW, 22); for (let x = 0; x < VW; x += 16) g.drawImage(TILE.top['00'][(x / 16) % 4], x, VH - 22);
   g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(110,90,140,0.5)'; g.fillRect(0, VH - 22, VW, 22); g.globalCompositeOperation = 'source-over';
@@ -21050,7 +21081,13 @@ function drawTitle(cx, cy) {
       g.globalAlpha = (1 - ph) * 0.22; g.fillStyle = '#6a5a58';
       g.fillRect(Math.round(fx + Math.sin(i * 2.1 + time * 0.8 + ph * 3) * (4 + ph * 14)), Math.round(fy - 16 - ph * 62), 2 + Math.round(ph * 3), 2 + Math.round(ph * 2)); }
     g.globalAlpha = 1;
-    drawSet(K, 'idle', Math.floor(time * 4.5), fx + 20, fy, -1, false); }
+    drawSet(K, 'idle', Math.floor(time * 4.5), fx + 20, fy, -1, false);
+    /* AND THE ONES YOU HAVE WON STAND WITH HIM. The camp was one knight however far the save had got; every class
+       you own is at the fire now, so the title screen shows the roster - and the empty ground shows who is missing. */
+    { const seats = [[-40, 1], [-62, 1], [34, -1], [-84, 1], [-106, 1]];   /* all of them on the open ground: the menu board takes the right of the picture, and two of the old seats sat behind it */
+      PICK.filter(h => h !== 'knight' && PROG.heroes && PROG.heroes[h]).slice(0, seats.length).forEach((h, i) => {
+        const [dx, face] = seats[i], set = preview('titlecamp:' + h, () => heroSet(null, null, false, h));
+        drawSet(set, 'idle', Math.floor(time * 4.5 + i * 3), fx + dx, fy, face, false); }); } }
   drawTitleBracken();
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
@@ -21564,13 +21601,17 @@ function render() {
    : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); bossPlate(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && boss.t !== 'strawking' && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b'); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart : 1, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
   }
   if (state === 'title') {
-    const since = time - titleSince, e = easeOutBack(Math.min(1, since / 0.7)), ly = Math.round(10 - (1 - e) * 70);
-    const lw = 196, lh = Math.round(PROP.plank.height * 1.4), lx = VW / 2 - lw / 2;
+    /* THE BOARD HANGS OVER THE PICTURE, NOT UNDER THE MENU. Centred on VW/2 with the menu board 138 wide on the
+       right, the sign and its line ran in behind the panel and the subtitle was half-covered. It is centred on the
+       picture instead, and it swings a little on its post the way a hung sign does. */
+    const since = time - titleSince, e = easeOutBack(Math.min(1, since / 0.7));
+    const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(10 - (1 - e) * 70 + sway);
+    const lw = 196, lh = Math.round(PROP.plank.height * 1.4), tcx = Math.round((VW - 146) / 2), lx = Math.round(tcx - lw / 2);
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
-    text('BRACKEN', VW / 2 + 2, ly + 14, '#3a2214', 'center', 22); text('BRACKEN', VW / 2, ly + 12, UI.gold, 'center', 22);
+    text('BRACKEN', tcx + 2, ly + 14, '#3a2214', 'center', 22); text('BRACKEN', tcx, ly + 12, UI.gold, 'center', 22);
     // a glint runs along the letters every few seconds
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
-    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; text('a knight, a wood, a mountain', VW / 2, ly + 40, UI.text, 'center', 6); g.globalAlpha = 1; }
+    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; text('a knight, a wood, a mountain', tcx, ly + 40, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu, on its own board to the right of the picture
     { const items = titleItems(), mw = 138, mx = VW - mw - 8, mh = items.length * 13 + 24, my = Math.min(74, VH - 16 - mh);
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 140);
