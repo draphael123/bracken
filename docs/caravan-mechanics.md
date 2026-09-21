@@ -70,3 +70,19 @@ checks it (all passing); `node tools/caravan-map.mjs` draws it (`docs/caravan-dr
   posts standing across the road as walls (both now drawn behind); the caravanserai's first floor 4 rows up (a jump is 3), which cut off
   everything after it. All fixed.
 - The draft GARRISON row: scorpion 27, sand goblin 19, vulture 18, bandit 12, archer 3 (names to map to real spawn cases).
+- `src/redraw/desert2.js` → `node tools/desert-art2.mjs` → `docs/desert-art2.png`: THE GREAT RIBCAGE (behind the draft's rungs and
+  spine, its skull at the front), THE SINKING CARAVANSERAI's face, the arch pillars, the camp's winch and its great awning, the
+  sandstorm's two dust sheets (tile both ways), THE WORM'S HOLLOW backdrop (the bore where it comes and goes), level 2's well and
+  mud-brick walls, an oasis (real, or what a mirage shows), and UI: 4 sunstroke suns, the meter (a tick where the view starts to
+  swim), 4 waterskin states, the desert's map node.
+
+## MORE RULES: `src/desert-rules.js` (`node tools/desert-rules.mjs`, all passing)
+- THE SANDSTORM (level 6's approach, the Skeleton King's phase 3): calm 3.2 s, WARN 1.4 s (the horizon browns, an arrow), GUST 1.6 s;
+  the view closes to 120 px, never under 96; braced (holding block) a whole gust moves you 14 px, unbraced 195, jumping 254.
+- SANDFALLS: under one a jump rises 6 px (you go round, or wait), walking at 55%.
+- THE WATERSKIN (level 2): fill at a well (3 sips), drink = sunstroke cured, pour = a mud wall softens away or a fire goes out.
+- MIRAGES: whole from 150 px, gone by 60; only a mirage shimmers.
+## THE CREATURES' BEHAVIOUR: `src/desert-foes.js` (checked in `tools/caravan.mjs`)
+- SCORPION alternates CLAW (! 0.5 s) and STING (X 0.75 s, over its back); VULTURE marks your spot with its shadow as its eye goes red
+  and dives there 0.8 s later, then lands open; SAND GOBLIN waits as a mound, rises (the tell), cuts twice, burrows, comes up ahead.
+  A fighter answering each tell in 0.25 s takes 0 from all three; one ignoring them takes 5-15.
