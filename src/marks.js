@@ -101,7 +101,7 @@ export const MARK = {
   'golem|stompTell': '!!', 'golem|sweepTell': '!!', 'golem|throwTell': '!', 'gqueen|chandTell': '!!', 'gqueen|chargeTell': '!!', 'gqueen|crownTell': '!',
   'gqueen|decreeTell': '!', 'gqueen|gDropTell': '!!', 'gqueen|gLeapTell': '', 'gqueen|leapTell': '!!', 'gqueen|sceptreTell': '!', 'gqueen|shadowTell': '!!',
   'gqueen|slamTell': '!!', 'gqueen|slateTell': '!', 'gqueen|sweepTell': '!!', 'grandmother|feelTell': '!', 'grandmother|fireTell': '!', 'grandmother|listenTell': '',
-  'grandmother|sweepTell': '!!', 'grandmother|throwTell': '!!', 'grandmother|vanishTell': '', 'grub|spit': '!', 'harbormaster|anchorTell': '!', 'harbormaster|harpoonTell': '!',
+  'grandmother|sweepTell': '!', 'grandmother|throwTell': '!!', 'grandmother|vanishTell': '', 'grub|spit': '!', 'harbormaster|anchorTell': '!', 'harbormaster|harpoonTell': '!',
   'harbormaster|highTell': '!!', 'harbormaster|lowTell': '!!', 'harbormaster|pressureTell': '!!', 'harbormaster|twinTell': '!!', 'hare|run': '!', 'harpy|aim': '!',
   'haunt|throwTell': '!', 'hearthgob|raise': '!', 'heavy|grabTell': '!!', 'heavy|raise': '!!', 'heavy|slashTell': '!', 'heavy|windUp': '!',
   'hedgeknight|aim': '!', 'hedgeknight|cutTell': '!', 'hedgeknight|leapTell': '!!', 'hedgeknight|shout': '!', 'hedgeknight|stabTell': '!', 'hedgeknight|swingTell': '!',
