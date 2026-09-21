@@ -20,6 +20,15 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ours = () => new Set(readdirSync(TEMP).filter(n => PROFILE_RE.test(n)));
 const browsersOn = names => { if (!names.length) return 0; const r = spawnSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe' or Name='msedge.exe'\" | Select-Object -ExpandProperty CommandLine"], { encoding: 'utf8', windowsHide: true });
   return (r.stdout || '').split('\n').filter(l => names.some(n => l.includes(n))).length; };
+/* ANOTHER PROCESS'S LIVE BROWSER IS NOT OUR LEAK. The suite (or a second tool) may be running on this machine and making its
+   own bracken-* profiles while a case runs. A new profile that a running process has on its command line is in use - the same
+   test profile-sweep.mjs uses - and it is left out of the count, UNLESS the process using it is one this case started (the
+   'killed' case's orphaned browser is ours, and it must still be seen and swept). */
+const procs = () => { const r = spawnSync('powershell', ['-NoProfile', '-Command', 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress'], { encoding: 'utf8', maxBuffer: 64 << 20, windowsHide: true });
+  if (r.status !== 0 || !r.stdout) throw new Error('could not list processes'); return JSON.parse(r.stdout).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: (p.CommandLine || '').toLowerCase() })); };
+const descendants = (ps, root) => { const s = new Set([root]); let grew = true; while (grew) { grew = false; for (const p of ps) if (!s.has(p.pid) && s.has(p.ppid)) { s.add(p.pid); grew = true; } } return s; };
+/* the profiles in use by a running process that is not one of `mine` (pids) */
+const foreignInUse = (names, mine = new Set()) => { const ps = procs().filter(p => !mine.has(p.pid)); return new Set(names.filter(n => ps.some(p => p.cmd.includes(n.toLowerCase())))); };
 const PORT = 5991;
 /* and the dev server the tool started on PORT goes with it (serve.mjs watches BRACKEN_PARENT) */
 const serverGone = async () => { for (let i = 0; i < 40; i++) { try { await fetch('http://localhost:' + PORT + '/', { signal: AbortSignal.timeout(800) }); } catch { return true; } await new Promise(r => setTimeout(r, 250)); } return false; };
@@ -42,12 +51,14 @@ for (const [name, code] of Object.entries(CASES)) {
   const done = new Promise(r => child.once('exit', c => r(c)));
   if (name === 'killed') {
     for (let i = 0; i < 600 && !out.includes('READY'); i++) await new Promise(r => setTimeout(r, 100));
+    const mine = descendants(procs(), child.pid);                                     // this case's node, its server and its browser
     spawnSync('taskkill', ['/PID', String(child.pid), '/F'], { stdio: 'ignore' });   // the node process only: its browser is left behind, as it would be
     await done;
-    const orphaned = [...ours()].filter(n => !before.has(n));
+    const fresh = () => { const n = [...ours()].filter(x => !before.has(x)), f = foreignInUse(n, mine); return n.filter(x => !f.has(x)); };
+    const orphaned = fresh();
     const sweep = spawnSync(process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(t0 - 1000)], { cwd: ROOT, encoding: 'utf8' });
     const rep = JSON.parse(sweep.stdout.trim().split('\n').pop());
-    const left = [...ours()].filter(n => !before.has(n));
+    const left = fresh();
     const gone = await serverGone();
     rows.push({ name, orphanedBeforeSweep: orphaned.length, orphansKilled: rep.orphansKilled, left: left.length, browsers: browsersOn(orphaned), serverGone: gone });
     assert.ok(gone, 'the dev server of the killed tool must go too');
@@ -58,9 +69,10 @@ for (const [name, code] of Object.entries(CASES)) {
   const exit = await Promise.race([done, new Promise(r => setTimeout(() => r('timeout'), 120000))]);
   if (exit === 'timeout') child.kill();
   await new Promise(r => setTimeout(r, 300));
-  const made = [...ours()].filter(n => !before.has(n));
+  const fresh = [...ours()].filter(n => !before.has(n)), foreign = foreignInUse(fresh);   /* this case's own processes are gone by now */
+  const made = fresh.filter(n => !foreign.has(n));
   const gone = await serverGone();
-  rows.push({ name, exit, ready: out.includes('READY'), left: made.length, serverGone: gone });
+  rows.push({ name, exit, ready: out.includes('READY'), left: made.length, othersInUse: foreign.size, serverGone: gone });
   assert.ok(gone, name + ' left its dev server running');
   assert.notEqual(exit, 'timeout', name + ' hung');
   assert.equal(made.length, 0, name + ' left a profile behind: ' + made.join(', '));
