@@ -41,6 +41,15 @@ try {
    let cast=null,shot=0;
    for(let i=0;i<240;i++){BK.sim(1);if(a.mode==='castTell')cast=true;const s=BK.seeds().filter(q=>!q.dead&&q.owner===a);if(s.length)shot=Math.max(shot,s.length);}
    out.apprentice.cast=!!cast;out.apprentice.embers=shot;}
+  /* THE BONE GOBLIN: the one thing under the hill that can reach the hero across a room */
+  {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='burial'));BK.state='play';BK.god=true;BK.sim(10);
+   const gs=BK.enemies().filter(e=>e.alive&&e.t==='bonegob');const g0=gs[0];
+   if(!g0)return{error:'no bone goblin in the caverns'};
+   out.bonegob={count:gs.length,hp:g0.hp,sprite:!!(BK.SPR&&BK.SPR.bonegob)};
+   BK.tp(Math.round(g0.x/16)+6,Math.round(g0.y/16)-1);    // in its throwing band, out of its reach
+   let threw=false,skull=0;
+   for(let i=0;i<300;i++){BK.sim(1);if(g0.mode==='throw')threw=true;skull=Math.max(skull,BK.seeds().filter(q=>!q.dead&&q.skull).length);}
+   out.bonegob.threw=threw;out.bonegob.skulls=skull;}
   return out;})()`, 300000);
 
   assert.ok(!r.error, r.error);
@@ -55,6 +64,11 @@ try {
     assert.equal(r.husk.fromAfar.venom, 0, 'and leaves no poison'); }
   assert.ok(r.apprentice.cast, 'the apprentice must wind up his ember');
   assert.ok(r.apprentice.embers > 0, 'and it must actually leave his hand');
+
+  assert.ok(r.bonegob.count >= 4, 'the caverns must raise bone goblins: ' + r.bonegob.count);
+  assert.ok(r.bonegob.sprite, 'the bone goblin needs its own baked frames');
+  assert.ok(r.bonegob.threw, 'it keeps its distance and throws: it must wind up');
+  assert.ok(r.bonegob.skulls > 0, 'and the skull must leave its hands');
 
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));

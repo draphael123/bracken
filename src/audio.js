@@ -866,6 +866,7 @@ const DIE = {
 const HURT = {
   zombie() { noise(.2,.2,400,.4);tone('triangle',100,50,.2,.12); },
   husk() { noise(.26,.26,300,.5);tone('triangle',78,40,.26,.14); },
+  bonegob() { noise(.1,.1,900,.3);tone('square',420,180,.1,.07); },
   apprentice() { noise(.16,.18,520,.35);tone('triangle',150,90,.18,.1); },
   undeadmage() { noise(.2,.16,550,.7);tone('triangle',180,70,.3,.14); },
   burieddead() { noise(.3,.3,250,.5);tone('sine',80,30,.3,.2); },

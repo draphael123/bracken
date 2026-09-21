@@ -2755,6 +2755,23 @@ export function bakeGrandmother() {
   return pack([sit, rise, walk(0), walk(1), listen, sweep, thrown, rap, cast, vanish], 20, 46, 20, 40);
 }
 
+/* THE BONE GOBLIN. The same small goblin the wood is full of, dead a long time: the cutter's build with the
+   meat off it, so it still reads as a goblin and never as one of the dead men. Sockets instead of eyes, a
+   ribbed chest, and the skull it throws already in its hands. 10x13, frames: walk, lift, throw, turned away. */
+export function bakeBoneGob() {
+  const BP = Object.assign({}, EP, { g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', a: '#cdbf9a', A: '#8c8869' });
+  const f = rows => outline(fromGrid(rows, BP, 1), OUT);
+  const head = ['..gggggg....', '.ggeoggeog..', '.gggggggg...', '..gGGGGg....'];
+  const ribs = ['..gggggg....', '.gGgggGgg...', '.ggGggGgg...', '..gGGGGg....'];
+  const legsA = ['..GG..GG....', '.GGG..GGG...'], legsB = ['...GGGG.....', '..GG..GG....'];
+  const P = '............';
+  const walk = f([P, ...head, ...ribs, ...legsA]);
+  const lift = f(['....aaa.....', '....aAa.....', '.....g......', ...head, ...ribs, ...legsB]);
+  const thr  = f([P, '..gggggg.aaa', '.ggeoggeogaA', '.gggggggg.a.', '..gGGGGg....', ...ribs, ...legsA]);
+  const back = f([P, '..gggggg....', '.gggggggg...', '.gggggggg...', '..gGGGGg....', ...ribs, '..GG...GG...', '.GG.....GG..']);
+  return pack([walk, lift, thr, back], 6, 14, 10, 13);
+}
+
 export function bakeCutter() {
   const CP = Object.assign({}, EP, { a: '#8a919c', A: '#5a6270', u: '#8a5a32', U: '#5c3a1d' });
   const f = rows => outline(fromGrid(rows, CP, 1), OUT);
