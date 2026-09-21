@@ -55,7 +55,7 @@ export const QUIET = new Set(['updateTollmaster|floodTell', 'updateTollmaster|da
 // the creature calls where it calls one. 'type|mode' -> '!' | '!!' | '' ('draw' is the archer's bow, e.draw > 0.3).
 export const BY_HAND = {
  'bellguard|vaultHookTell':'!', 'bellguard|vaultSpearTell':'!', 'bellguard|vaultRingTell':'!!', 'bellguard|vaultPressureTell':'!!', 'bellguard|vaultBandTell':'!!',
-  'undeadmage|fireTell':'!','undeadmage|iceTell':'!','undeadmage|stormTell':'!!','burieddead|slamTell':'!!','burieddead|cleaveTell':'!','burieddead|callTell':'','burieddead|sinkTell':'','burieddead|eruptTell':'!!','zombie|riseTell':'','zombie|grabTell':'!',
+  'undeadmage|fireTell':'!','undeadmage|iceTell':'!','undeadmage|stormTell':'!!','undeadmage|poisonTell':'!','undeadmage|handTell':'!','undeadmage|markTell':'!!','burieddead|slamTell':'!!','burieddead|cleaveTell':'!','burieddead|callTell':'','burieddead|sinkTell':'','burieddead|eruptTell':'!!','zombie|riseTell':'','zombie|grabTell':'!',
   'harbormaster|anchorTell': '!', 'harbormaster|harpoonTell': '!', 'harbormaster|lowTell': '!!', 'harbormaster|highTell': '!!', 'harbormaster|pressureTell': '!!', 'harbormaster|twinTell': '!!',
   'bosun|salvagePinTell':'!', 'bosun|salvageHookTell':'!', 'bosun|salvageCargoTell':'!!', 'bosun|salvageBroadsideTell':'!!', 'bosun|salvageCrossfireTell':'!!',
   'mother|sporeVolleyTell': '!', 'mother|floorSurgeTell': '!!', 'mother|sporeSweepTell': '!!', 'mother|rootColumnsTell': '!!', 'mother|sporeWheelTell': '!',
@@ -146,7 +146,7 @@ export const MARK = {
   'tollmaster|blackoutTell': '!', 'tollmaster|darkTell': '', 'tollmaster|ledgerTell': '!', 'tollmaster|rodTell': '!', 'tollmaster|tollTell': '!!', 'topiary|swipeTell': '!',
   'troll|hurlTell': '!', 'troll|ripTell': '!!', 'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'turret|chargeTell': '!',
   'turtle|lungeTell': '!', 'turtle|pinchTell': '!', 'turtle|snapTell': '!', 'turtle|strikeTell': '!', 'turtle|thrustTell': '!', 'undeadmage|fireTell': '!',
-  'undeadmage|iceTell': '!', 'undeadmage|stormTell': '!!', 'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!',
+  'undeadmage|iceTell': '!', 'undeadmage|stormTell': '!!', 'undeadmage|poisonTell': '!', 'undeadmage|handTell': '!', 'undeadmage|markTell': '!!', 'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!',
   'urchin|swellTell': '!', 'wasp|stingTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!',
   'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };

@@ -6,7 +6,7 @@
      THE BURIED DEAD   slam him down on the ground he already erupted through
      THE BREAKWATER WARDEN  turn the anchor on the shield
      THE VAULT KEEPER  cut him while the bell is swinging
-     THE UNDEAD ARCHMAGE  cut him while he is bringing the floor down                                              */
+     THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight) */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
@@ -15,7 +15,7 @@ try {
   const r = await pg.evalp(`(async()=>{
   const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
   const boot=(id,hero)=>{BK.setHero(hero||'knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));BK.state='play';BK.god=true;
-    const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(150);return BK.boss;};
+    const A=BK.L.arena;if(A.carpet){BK.board();BK.sim(150);return BK.boss;}BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(150);return BK.boss;};
 
   /* THE BURIED DEAD: the slam onto his own broken ground */
   {const b=boot('burial');const A=BK.L.arena;
@@ -44,12 +44,15 @@ try {
    BKT.hurtEnemy(b,3,b.x-20,false);for(let i=0;i<10&&b.mode!=='vaultStunned';i++)BK.sim(1);
    out.keeper={ringing,mode:b.mode,open:+b.open.toFixed(1),mini:BK.miniActive};}
 
-  /* THE UNDEAD ARCHMAGE: the spell broken while he holds the floor */
-  {const b=boot('fallingtower');
-   b.hp=Math.round(b.hp0*.75);for(let i=0;i<8&&b.mode!=='collapse';i++)BK.sim(1);const casting=b.mode;
-   const standing=BK.L.towerSlabs.filter(z=>!z.down).length;
-   BKT.hurtEnemy(b,30,b.x-20,false);BK.sim(1);const oneBlow=b.mode;BKT.hurtEnemy(b,30,b.x-20,false);for(let i=0;i<8&&b.mode!=='reel';i++)BK.sim(1);
-   out.mage={casting,oneBlow,mode:b.mode,open:+b.open.toFixed(1),slabsBefore:standing,slabsAfter:BK.L.towerSlabs.filter(z=>!z.down).length};}
+  /* THE UNDEAD ARCHMAGE: the death mark, left to land and then flown out of */
+  {const b=boot('fallingtower');const hold=()=>{BK.P.vx=BK.P.vy=0;};
+   const lay=()=>{b.mode='markTell';b.spell='mark';b.modeT=0;b.mark=null;b.shots=[];b.clouds=[];b.blinkT=99;BK.sim(2);return !!b.mark;};
+   // left to land: he is NOT open
+   BK.god=false;BK.P.hp=BK.P.maxHp;const laid1=lay();const m1=b.mark&&{x:b.mark.x,y:b.mark.y};for(let i=0;i<200&&b.mark;i++){if(m1){BK.P.x=m1.x;BK.P.y=m1.y+8;}hold();BK.sim(1);}
+   const landed={mode:b.mode,open:+(b.open||0).toFixed(1),hurt:BK.P.hp<BK.P.maxHp};BK.P.hp=BK.P.maxHp;BK.god=true;
+   // flown out of: it comes back on him
+   b.mode='hover';b.modeT=1;BK.sim(5);const laid2=lay();const m2=b.mark&&{x:b.mark.x,y:b.mark.y};for(let i=0;i<200&&b.mark;i++){if(m2){BK.P.x=m2.x+b.mark.r+40;BK.P.y=m2.y+8;}hold();BK.sim(1);}
+   out.mage={laid:laid1&&laid2,landed,mode:b.mode,open:+(b.open||0).toFixed(1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -63,11 +66,11 @@ try {
   assert.equal(r.keeper.mode, 'vaultStunned', 'cutting him through the bell must break the note');
   assert.ok(r.keeper.open > 2.5, 'the cracked bell is the window: ' + r.keeper.open);
 
-  assert.equal(r.mage.casting, 'collapse', 'he must be holding the floor down to be interrupted');
-  assert.equal(r.mage.oneBlow, 'collapse', 'one blow must not be enough to break the spell');
-  assert.equal(r.mage.mode, 'reel', 'cutting him through the collapse must break the spell');
-  assert.ok(r.mage.open > 2.5, 'the broken spell is the window: ' + r.mage.open);
-  assert.ok(r.mage.slabsAfter >= r.mage.slabsBefore - 1, 'breaking the spell must save a slab: ' + JSON.stringify(r.mage));
+  assert.ok(r.mage.laid, 'the death mark must be laid');
+  assert.ok(r.mage.landed.hurt, 'left on it, the mark must land: ' + JSON.stringify(r.mage.landed));
+  assert.notEqual(r.mage.landed.mode, 'gather', 'a mark that lands opens nothing: ' + JSON.stringify(r.mage.landed));
+  assert.equal(r.mage.mode, 'gather', 'flown out of, the mark must come back on him');
+  assert.ok(r.mage.open > 2, 'the gathering is the window: ' + r.mage.open);
 
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));

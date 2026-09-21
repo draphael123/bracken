@@ -1,4 +1,5 @@
-import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,liveTowerBounds} from './undead-mage.js';
+import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
+import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
 import {updateBuriedDead as stepBuriedDead,updateZombie,bakeDead,deadFrame,drawBuriedDead} from './buried-dead.js';
 import {updateVaultKeeper,drawVaultKeeper} from './vault-keeper.js';
 import {breathCapacity} from './deepair.js';
@@ -6,7 +7,7 @@ import {drawHarborLandmarks} from './harbor-landmarks.js';
 import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-boss.js';
 import { attackPose } from './attack-animation.js';
 import { AMBUSH_HEALTH } from './ambush.js';
-import {drawTowerBackdrop,gateOccupied} from './tower-finish.js';
+import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
 import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
@@ -191,7 +192,7 @@ const DMG = { bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, 
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16 };
-const EHP = { bonegob:30, bonearcher:26, undeadmage:1100, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22,
+const EHP = { bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34 };
 /* THE GOBLIN PRIEST's rite, in one place (updateGobPriest): its first rite can come `first` seconds after it spawns, so the goblins round it are blessed the moment it sees you; the censer
    is up for `tell` when a foe within `reach` px needs it, and then every foe within `smoke` px (the censer's cloud: a
@@ -562,7 +563,7 @@ const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
 const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k);
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
-/* THE MAGE'S FOLLY: what got loose in the tower, the mini, the boss and his familiar, and the apprentice */ { try { SPR.topiary = MF.bakeTopiary(); SPR.armour = MF.bakeArmour(); SPR.piece = MF.bakePiece(); SPR.broom = MF.bakeBroom(); SPR.mimic = MF.bakeMimic(); SPR.imp = MF.bakeImp(); SPR.turret = MF.bakeTurret(); SPR.homunculus = MF.bakeHomunculus(); SPR.archmage = MF.bakeArchmage(); SPR.undeadmage=bakeUndeadMage(SPR.archmage); SPR.familiar = MF.bakeFamiliar(); SPR.familiarSmall=smallerFamiliar(SPR.familiar); SPR.apprentice = MF.bakeApprentice(); } catch (err) { console.error('the tower art', err); } }
+/* THE MAGE'S FOLLY: what got loose in the tower, the mini, the boss and his familiar, and the apprentice */ { try { SPR.topiary = MF.bakeTopiary(); SPR.armour = MF.bakeArmour(); SPR.piece = MF.bakePiece(); SPR.broom = MF.bakeBroom(); SPR.mimic = MF.bakeMimic(); SPR.imp = MF.bakeImp(); SPR.turret = MF.bakeTurret(); SPR.homunculus = MF.bakeHomunculus(); SPR.archmage = MF.bakeArchmage(); SPR.undeadmage=bakeUndeadMage(); SPR.familiar = MF.bakeFamiliar(); SPR.familiarSmall=smallerFamiliar(SPR.familiar); SPR.apprentice = MF.bakeApprentice(); } catch (err) { console.error('the tower art', err); } }
 const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.prince = bakeBuriedPrince(); SPR.courtier = bakeCourtier(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.bellcrab = bakeBellcrab(); SPR.harbormaster = bakeHarbormaster(); SPR.burieddead=bakeDead(true); SPR.bonegob=bakeBoneGob();SPR.bonearcher=bakeArcher({ H: '#3a3530', g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', r: '#2e2a24', w: '#6a5a44' });SPR.husk=bakeDead(false,'husk');SPR.apprentice=bakeDead(false,'apprentice');SPR.zombie=bakeDead(); SPR.bellguard = bakeBellguard(); SPR.lanternshade = bakeCoastalFoe('lanternshade'); SPR.bonecorsair = bakeCoastalFoe('bonecorsair'); SPR.tidemarauder = bakeCoastalFoe('tidemarauder'); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); SPR.drunk = bakeDrunk(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = MON.bakeGuardian(); SPR.fledgling = MON.bakeFledgling(); SPR.gobpriest = MON.bakeGoblinPriest(); SPR.gobmage = MON.bakeGoblinMage(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.badger = bakeBadger(); SPR.gar = bakeGar(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */ SPR.seawitch = bakeSeaWitch(); /* and the Hurricane's caster is the ship's own */ SPR.merrowspear = bakeMerrowSpear(); SPR.merrowcaller = bakeMerrowCaller(); SPR.merrowbrute = bakeMerrowBrute(); /* THE MERROW: the sea's own tribe */
 SPR.watch = bakeWatch(); SPR.lampreeve = bakeLampreeve(); SPR.tollmaster = bakeTollmaster();
 SPR.puffer = bakePuffer(); SPR.jelly = bakeJellyfish(); SPR.lamprey = bakeLamprey(); SPR.manta = bakeManta();   /* the sea's own new wildlife */
@@ -1155,7 +1156,7 @@ function allyTick() {
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
-const MEDALS = { fallingtower:[660,920,1300], keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [1000, 1450, 2100], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
+const MEDALS = { fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [1000, 1450, 2100], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
@@ -1640,9 +1641,10 @@ function loadLevel(i) {
   if (SET.wayOn && !L.trial) { try { wayRoute = wayBuild(); } catch (err) { wayRoute = null; } }
 }
 function spawnEntities() {
-  if(L.reverseTower){
-    for(const z of L.towerSlabs){z.t=-1;z.down=false;for(let y=40;y<LH;y++)for(let x=z.x0;x<=z.x1;x++)cellSet(x,y,grid0[y*LW+x]);}
-    for(const z of L.deckBreaks){z.t=-1;z.down=false;z.seen=false;for(let y=z.row-1;y<=z.row;y++)for(let x=z.x0;x<=z.x1;x++)cellSet(x,y,grid0[y*LW+x]);}   /* seen too: a span the hero had crossed before he died would otherwise be armed the moment he respawned behind it */
+  if(L.towerAscent){   /* THE TOWER STANDS AGAIN on a retry, and whatever is under the checkpoint goes again - silently, it is not news */
+    towerAscentReset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]),typeof checkpoint!=='undefined'&&checkpoint?checkpoint.y/TS:LH,(x,y)=>cellSet(x,y,T.AIR),(x,y)=>cellSet(x,y,T.SOLID));
+    for(const z of L.deckBreaks||[]){z.t=-1;z.down=false;z.seen=false;z.downT=0;for(let y=z.row-1;y<=z.row;y++)for(let x=z.x0;x<=z.x1;x++)cellSet(x,y,grid0[y*LW+x]);}
+    resetCarpet(L,typeof P!=='undefined'?P:null);
   }
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
@@ -1837,7 +1839,7 @@ function spawnEnt(e) {
       case 'zombie': enemies.push({...base,t:'zombie',w: 9, h: 27, hp: EHP.zombie,mode:e.buried?'buried':'walk',modeT:0});break;
       case 'husk': enemies.push({...base,t:'husk',w: 12, h: 32, hp: EHP.husk,husk:true,mode:e.buried?'buried':'walk',modeT:0});break;
       case 'apprentice': enemies.push({...base,t:'apprentice',w: 9, h: 27, hp: EHP.apprentice,apprentice:true,mode:'walk',modeT:0,castCd:1.5+Math.random()});break;
-      case 'undeadmage': boss={...base,t:'undeadmage',w:16,h:34,hp:EHP.undeadmage,maxHp:EHP.undeadmage,mode:'sleep',modeT:0,stage:0,turn:0,open:0,shots:[]};enemies.push(boss);break;
+      case 'undeadmage': boss={...base,t:'undeadmage',w:16,h:40,hp:EHP.undeadmage,maxHp:EHP.undeadmage,hp0:EHP.undeadmage,mode:'sleep',modeT:0,turn:0,open:0,shots:[],clouds:[],noGrav:true};enemies.push(boss);break;
       case 'burieddead': boss={...base,t:'burieddead',w: 28, h: 83, hp: EHP.burieddead,maxHp:EHP.burieddead,mode:'sleep',modeT:0,phase:1,turn:0,open:0};enemies.push(boss);break;
       case 'harbormaster': boss={...base,t:'harbormaster',w:26,h:49,hp:EHP.harbormaster,maxHp:EHP.harbormaster,mode:'sleep',modeT:0,phase:1,turn:0,open:0,marks:[]};enemies.push(boss);break;
       case 'bellcrab': {const e={...base,t:'bellcrab',w:42,h:43,hp:EHP.bellcrab,maxHp:EHP.bellcrab,mode:'sleep',modeT:0,face:-1,phase:1,turn:0,open:0};boss=e;enemies.push(e);}break;
@@ -2633,7 +2635,8 @@ function rushEnter(step) {
   rush.bossRef = boss;
   if (!boss) { rush.i++; rushLoad(); return; }
   if (step.mini) { miniActive = true; L.arena = L.mini; } // the mini's room IS the arena for the length of the rush
-  colosseumise(L.arena); colPortal = null;
+  if (L.arena.carpet) { resetCarpet(L, P); mountCarpet(P, L.carpetAt); L.carpetUp = true; checkpoint = { x: P.x, y: P.y }; camX = P.x - VW / 2; camY = P.y - VH / 2; }   /* THE SKY FIGHT keeps its sky: there is no floor to build a bowl on */
+  else colosseumise(L.arena); colPortal = null;
   bossActive = false; bossStart();
   bannerT = 2.6; rush.started = true; rush.deadFor = 0; rushMsg = 'FIGHT ' + (rush.i + 1) + ' OF ' + RUSH.length; rushMsgT = 2.6;
 }
@@ -3545,7 +3548,7 @@ const BEASTS = [
   { t: 'closedhelm', name: 'THE PALADIN', sub: 'sworn to the chapel', desc: 'A holy ward stands round him and every blade, bolt and flame comes off it. His own SWORD opens him: the cut and the thrust are single marks - meet them on the beat (a parry, a ward raised or let go as it lands, or a roll through it) and the ward breaks for a breath. THE BASH is a double mark along a red line: roll through it or be gone. JUDGEMENT marks where you stand: guard it or step off the mark. Enraged, his red OATH sweeps low: jump it. RADIANCE fixes three red columns: step into a gap. Neither can be blocked; both leave his ward open.' },
   { t: 'drunk', name: 'THE DRUNK', sub: 'a regular, gone rowdy', desc: 'He has been at the Broken Lance since noon and he has found a balcony. He throws what is to hand - a tankard, a turnip, a stool - and a yellow mark means the shield turns it. A red mark is a bottle: it cannot be blocked and it leaves glass. Watch the ring on the ground. One blow puts him on his back.' },
   { t: 'lancer', name: 'SERJEANT', sub: 'mounted, on the bridge', desc: 'A man-at-arms on a barded horse, riding his beat end to end. The charge is a single mark: take it on the shield and he goes over the back of his horse, or jump or roll it. Close to him he swipes with his sword. Mounted, the barding takes some of every cut; in the road he is a man with a sword and no horse.' },
-  { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Guard or roll through the fire, jump the low frost, and leave the lightning mark. His teleport destination glows first. Cracked outer slabs fall away as he weakens: move inward. The centre remains. Each spell leaves him open.'},
+  { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet over the fallen tower. Guard or fly from the fire, fly across the ice, leave the lightning mark, keep out of the poison cloud and out-fly the death hand. Fly out of the DEATH MARK before it goes off: when it finds no one it comes back on him, and he hangs open. Burning, he is faster, blinks more and the storm closes the sky.'},
   { t: 'burieddead', name: 'THE BURIED DEAD',sub:'the whole grave wakes',desc:'Jump the marked slam or climb a grave shelf. Guard the arm sweep. Follow the moving shadow, then leave the bright crack before he erupts. Cut down the zombies he calls. Each attack leaves him open; at half health his slam reaches farther and more dead answer.' },
   { t: 'zombie', name: 'ZOMBIE',sub:'earth in its hands',desc:'Moving soil warns before it rises. Guard its reaching hands or jump away. If caught, move, jump or strike to break the brief grab.' },
   { t: 'harbormaster', name: 'THE BREAKWATER WARDEN', sub: 'keeper of the sea gate', desc: 'Guard the anchor and harpoon. Jump the low surge; stay on the floor beneath the high surge. Leave the marked pressure columns. Each attack opens his helmet for a counterattack. At half strength he opens twin vents and calls the high tide.' },
@@ -4482,7 +4485,7 @@ function openYardRespawn(dt) {   // in the open yard a straw man is back on his 
     if (e.downT > 2) { e.downT = 0; e.alive = true; e.hp = e.hp0 || e.maxHp || EHP[e.t] || 20; e.dying = 0; e.flash = 0; e.stagger = 0; e.mode = e.mode0 || e.mode; burst(e.x, e.y - 8, 8, ['#e0c088', '#c9a040'], 40, 0.4); } }
 }
 function spawnCorpse(e, dir) {
-  if(e.t==='undeadmage')e.lastFrame=MF.ARCHMAGE_F.dead;
+  if(e.t==='undeadmage')e.lastFrame=UNDEADMAGE_F.dead;
   if(e.t==='familiar')e.lastFrame=MF.FAMILIAR_F.dead;
   if(e.t==='bellcrab') e.lastFrame=11;
   if (e.t === 'closedhelm') e.lastFrame = 12;   /* he goes down on one knee, the sword in the ground */
@@ -4855,7 +4858,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
-  if(e.t==='undeadmage'){if(e.mode==='blink')return;}
+  if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake')return;}   /* between two places, he is in neither */
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
   if(e.t==='familiar')dmg*=e.open>0?1.8:.6;
   if(e.t==='bellcrab') dmg*=e.open>0?1.35:.55;
@@ -4999,11 +5002,10 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
-  if(e.t==='undeadmage'&&e.stage<3)dmg=Math.min(dmg,Math.max(0,e.hp-e.hp0*(.75-.25*e.stage)));
+  if(e.t==='undeadmage'&&e.mode==='gather')dmg=Math.round(dmg*LICH.openMul);   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
-  if(e.t==='undeadmage'&&e.mode==='collapse')e.castHit=(e.castHit||0)+1;
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
@@ -6047,6 +6049,7 @@ function updatePlayer(dt) {
   if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
   if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
+  if (P.carpet) { carpetPlayer(dt); return; }   /* THE FALLING TOWER'S CARPET (carpet.js): no ground, no falling, eight ways */
   if (MG && P.flip && magePlayer(dt)) return;   /* THE MAGE'S FOLLY: the room turned over, and the hero walking its ceiling */
   /* THE DANCE: H, standing still on the ground, and again to stop. Anything else you do - move, jump, swing, block,
      take a blow - and the dance is over, because a fight is not a party. */
@@ -7110,7 +7113,7 @@ function bossEnd(e) {
       for (const pr of lamps) if (!pr.lit) { pr.lit = true; pr.gut = 0; burst(pr.x, pr.y - 40, 8, ['#ffd36b', '#fff6c8'], 50, 0.7); }
       for (let i = 0; i < 54; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - Math.random() * 46, vx: (Math.random() - 0.5) * 90, vy: -40 - Math.random() * 80, life: 2, max: 2, col: ['#5b3566', '#e6b94a', '#cfc6a8'][(Math.random() * 3) | 0], size: 2, grav: 60 });
       say('THE TOLL IS PAID', '#e6b94a'); break; }
-    case 'undeadmage': {e.shots=[];e.flashT=0;for(let x=12;x<=99;x++)cellSet(x,40,T.SOLID);for(const z of L.towerSlabs)z.t=-1;say('THE LAST SPELL IS BROKEN','#cadde7');SFX.stone();break;}
+    case 'undeadmage': {e.shots=[];e.clouds=[];e.mark=null;e.flashT=0;e.squeeze=0;shakeCam(10);zoomKick(1.14,0.6);burst(x,y-24,30,['#8fffb0','#3fe08a','#d9d6c0','#2e2840'],140,1.2,200,2);say('THE LAST SPELL IS BROKEN','#8fffb0');SFX.stone();break;}
     case 'burieddead': {for(const z of enemies)if(z.graveAdd)z.alive=false;e.effectT=0;shakeCam(10);SFX.heavy();burst(x,y-40,35,COLS.burieddead,90,.8);say('THE DEAD REST','#cbd8a5');break;}
     case 'harbormaster': {for(const s of seeds)if(s.wardenShot)s.dead=true;e.marks=[];e.effectT=0;shakeCam(9);SFX.seaBell();burst(x,y-30,35,['#427d79','#c1a05c','#b9f1eb'],90,.8);say('THE SEA GATE IS OPEN','#b9f1eb');break;}
     case 'captain': { // he goes down on his own quarterdeck, and the storm goes off her with him
@@ -13059,9 +13062,44 @@ function updateLancer(e, dt) {
 
 function throwGraveZombie(x){if(enemies.filter(q=>q.alive&&q.graveAdd).length>=3)return;spawnEnt({t:'zombie',x:Math.floor(x/TS),y:L.arena.floor/TS-1});const z=enemies[enemies.length-1];z.graveAdd=true;z.hp=Math.min(z.hp,28);z.hp0=z.hp;z.mode='riseTell';z.modeT=.6;burst(x,L.arena.floor-6,10,['#748459','#575846'],70,.5);}
 function summonGraveZombies(e,n){let live=enemies.filter(q=>q.alive&&q.graveAdd).length;for(let i=0;i<n&&live<3;i++,live++){const tx=Math.floor(Math.max(L.arena.x0+40,Math.min(L.arena.x1-40,e.x+(i%2?-1:1)*(80+40*i)))/TS);spawnEnt({t:'zombie',x:tx,y:L.arena.floor/TS-1,buried:true});const z=enemies[enemies.length-1];z.graveAdd=true;z.hp=Math.min(z.hp,28);z.hp0=z.hp;z.mode='riseTell';z.modeT=1.1;}}
+/* THE UNDEAD ARCHMAGE in the sky: his box is the carpet's, so nothing he does can be cast where you cannot fly */
 function updateUndeadMage(e,dt){
- stepUndeadMage(e,dt,{P,A:L.arena,slabs:L.towerSlabs,change:(x,y)=>cellSet(x,y,T.AIR),hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),say:(m,h)=>number(e.x,e.y-48,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});
- if(P.y>L.arena.floor+80&&!P.dead){damagePlayer(P.x,18,{unblockable:true,who:e});P.x=53.5*TS;P.y=L.arena.floor;P.vx=P.vy=0;P.ground=true;}
+ e.hp0??=e.maxHp;const A=L.arena,box=carpetBox(A,e.squeeze||0);
+ stepUndeadMage(e,dt,{P,box,rnd:Math.random,
+  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+  venom:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);},
+  say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});
+ e.x=Math.max(A.x0,Math.min(A.x1,e.x));e.y=Math.max(A.y0+30,Math.min(A.floor+10,e.y));
+}
+/* THE CARPET, the player's half: the kite's controls in all eight directions, the kite's air swing, a dash */
+function carpetPlayer(dt){
+ for(const k of ['inv','grace','hurt','stFlash','sqT'])P[k]=Math.max(0,(P[k]||0)-dt);P.hpShown+=(P.hp-P.hpShown)*Math.min(1,dt*6);
+ const ax=(keys.right?1:0)-(keys.left?1:0),ay=(keys.down?1:0)-((keys.up||keys.jump)?1:0);
+ P.dodgeCd=Math.max(0,(P.dodgeCd||0)-dt);P.stDelay=Math.max(0,P.stDelay-dt);if(P.stDelay<=0&&P.st<P.maxSt)P.st=Math.min(P.maxSt,P.st+ST.regen*dt);
+ if(dodgePress&&P.dodgeCd<=0&&spend(dodgeCost())){P.dodge=0.22;P.dodgeCd=0.55;P.inv=Math.max(P.inv,0.3);P.vx=(ax||P.face)*300;P.vy=ay*260;SFX.pDodge();}
+ const sky=carpetBox(L.arena,boss&&boss.t==='undeadmage'?boss.squeeze||0:0);
+ if(P.dodge>0){P.dodge-=dt;ghosts.push({x:P.x,y:P.y,face:P.face,life:0.2,frame:0});P.x=Math.max(sky.x0,Math.min(sky.x1,P.x+P.vx*dt));P.y=Math.max(sky.y0,Math.min(sky.y1,P.y+P.vy*dt));}
+ P.block=!!keys.block&&P.atk<0&&!(P.dodge>0);
+ if(!(P.dodge>0))stepCarpet(P,{ax:P.block?ax*0.5:ax,ay:P.block?ay*0.5:ay},dt,sky);
+ if(ax&&!P.block)P.face=ax;P.anim+=dt;P.ground=false;P.swim=false;P.climb=false;
+ P.abuf=Math.max(0,(P.abuf||0)-dt);
+ if(P.abuf>0&&P.atk<0){P.abuf=0;if(spend((P.relic==='gauntlet'?0.5:1)*(isPaladin()?22:sword().cost))){P.atk=0;P.hitSet.clear();SFX.pSlash();P.swingMul=1;P.heavySwing=false;}}
+ if(P.atk>=0){P.atk+=dt*(isPaladin()?0.56:1);if(P.atk>0.3)P.atk=-1;}
+ {const hb=attackBox();if(hb)for(const e of enemies){if(!e.alive||P.hitSet.has(e)||e.gone>0||!overlap(hb,box(e)))continue;P.hitSet.add(e);openBefore(e);hurtAs(meleeBlow(false),e,swingDmg(e),P.x,false);swordEffect(e);if(isPaladin())gainLight(8);}}
+ for(const a of acorns)if(!a.got&&Math.abs(a.x-P.x)<12&&Math.abs(a.y-(P.y-7))<14)collectAcorn(a);
+ if(Math.random()<dt*10)parts.push({x:P.x+(Math.random()-.5)*28,y:P.y+4,vx:-P.vx*.2,vy:10,life:.4,max:.4,col:Math.random()<.5?'#e0b050':'#c9463d',size:1,grav:0});
+}
+/* THE FALLING TOWER, every frame: the floors going under you, and the carpet at the top */
+function updateAscent(dt){
+ if(!L.towerAscent)return;
+ updateTowerAscent(L,P,dt,{
+  change:(x,y,how)=>{const i=y*LW+x,t=L.grid[i];
+   if(how==='seal'){cellSet(x,y,T.SOLID);return true;}
+   if(how==='restore'){cellSet(x,y,grid0[i]);return true;}
+   if(t===T.AIR)return false;cellSet(x,y,T.AIR);if(Math.random()<0.08)parts.push({x:x*TS+8,y:y*TS+8,vx:(Math.random()-.5)*60,vy:-20,life:1.2,max:1.2,col:Math.random()<.5?'#726a8a':'#c0b4d0',size:2,grav:420});return true;},
+  crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},
+  warn:f=>{shakeCam(3);SFX.rumble&&SFX.rumble();if(!f.last)number(P.x,P.y-40,f.name+' GOES DOWN BEHIND YOU','#ff9a5c');}});
+ updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();number(P.x,P.y-30,'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();}});
 }
 function updateBuriedDead(e,dt){
  stepBuriedDead(e,dt,{P,A:L.arena,hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),summon:n=>summonGraveZombies(e,n),say:(msg,hard)=>number(e.x,e.y-95,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>(SFX[k]||SFX.charge)(),
@@ -15408,8 +15446,8 @@ function drawMillTower(m, cx, cy) {
 // the Sunspire's stalactites: pass under one and it shivers, then drops; seven seconds later the glass has grown back
 function updateStals(dt) {
   for (const pr of props) { if (pr.t !== 'stal') continue;
-    if (pr.state === 'hang') { if (!P.dead && Math.abs(P.x - pr.x) < 14 && P.y > pr.y && P.y - pr.y < 150) { pr.state = 'shake'; pr.t0 = (L.burialSections||L.reverseTower) && pr.stone ? 0.85 : 0.55; SFX.crack(); } }
-    else if (pr.state === 'shake') { if(pr.stone&&(L.burialSections||L.reverseTower)&&Math.random()<dt*18)parts.push({x:pr.x+(Math.random()-.5)*12,y:pr.y+10,vx:0,vy:28,grav:110,life:.7,max:.7,col:'#a8987c',size:1});pr.t0 -= dt; if (pr.t0 <= 0) { pr.state = 'gone'; pr.t0 = 7; shards.push({ x: pr.x, y: pr.y + 12, vy: 60, life: 2.4, hit: new Set(), stone: !!pr.stone }); SFX.clank(); burst(pr.x, pr.y + 6, 6, pr.stone ? ['#a8987c', '#6a6258'] : ['#dff2ff', '#8fc8e8'], 50, 0.4); } }
+    if (pr.state === 'hang') { if (!P.dead && Math.abs(P.x - pr.x) < 14 && P.y > pr.y && P.y - pr.y < 150) { pr.state = 'shake'; pr.t0 = (L.burialSections||L.towerAscent) && pr.stone ? 0.85 : 0.55; SFX.crack(); } }
+    else if (pr.state === 'shake') { if(pr.stone&&(L.burialSections||L.towerAscent)&&Math.random()<dt*18)parts.push({x:pr.x+(Math.random()-.5)*12,y:pr.y+10,vx:0,vy:28,grav:110,life:.7,max:.7,col:'#a8987c',size:1});pr.t0 -= dt; if (pr.t0 <= 0) { pr.state = 'gone'; pr.t0 = 7; shards.push({ x: pr.x, y: pr.y + 12, vy: 60, life: 2.4, hit: new Set(), stone: !!pr.stone }); SFX.clank(); burst(pr.x, pr.y + 6, 6, pr.stone ? ['#a8987c', '#6a6258'] : ['#dff2ff', '#8fc8e8'], 50, 0.4); } }
     else { pr.t0 -= dt; if (pr.t0 <= 0) { pr.state = 'hang'; burst(pr.x, pr.y + 4, 4, ['#dff2ff'], 30, 0.3); } }
   }
 }
@@ -17566,7 +17604,7 @@ function updateProps(dt) {
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
-  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateGasVents(L,P,dt,time,x=>{damagePlayer(x,9,{unblockable:true,noKnock:true,name:'THE GAS'});P.venomT=Math.max(P.venomT||0,2.4);number(P.x,P.y-30,'POISONED','#a6e04a');}); if (L.siphons || L.blight) updateKeepPassages(L,P,dt,time,{breathMax:breathCapacity(L,P.relic),inAir:(x,y)=>!!nearAir(x,y),move:(dx,dy)=>moveBody(P,dx,dy,false),emit:p=>parts.push(p),poison:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss&&SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);}}); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); updateRush(dt);
+  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateAscent(dt); updateGasVents(L,P,dt,time,x=>{damagePlayer(x,9,{unblockable:true,noKnock:true,name:'THE GAS'});P.venomT=Math.max(P.venomT||0,2.4);number(P.x,P.y-30,'POISONED','#a6e04a');}); if (L.siphons || L.blight) updateKeepPassages(L,P,dt,time,{breathMax:breathCapacity(L,P.relic),inAir:(x,y)=>!!nearAir(x,y),move:(dx,dy)=>moveBody(P,dx,dy,false),emit:p=>parts.push(p),poison:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss&&SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);}}); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); updateRush(dt);
   { const fp = (L.pools || []).find(p => p.harm && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
       if (Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 14, vx: 0, vy: -20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7a8a4a' : '#4a5a2a', size: 1, grav: -10 });
@@ -19807,7 +19845,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'sapper') frame = e.fleeT > 0 ? 4 + Math.floor(e.anim * 12) % 2 : Math.floor(e.anim * 12) % 4;
     else if (e.t === 'sporeling') frame = Math.abs(e.vx) > 4 ? [0, 2, 1, 3][Math.floor(e.anim * 9) % 4] : 0;
     else if (e.t === 'masthead') frame = ({ slashTell: 3, slash: 4, sailTell: 5, sail: 6, climb: 7, dropTell: 7, drop: 8, boomTell: 9, boom: 10, fouled: 11, tangled: 12, reel: 12, dead: 12 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 6) % 2 : 0);
-    else if(e.t==='undeadmage')frame=MF.ARCHMAGE_F[e.mode==='blink'?'blink':e.open>0?'open':e.mode?.endsWith('Tell')?'boltTell':'idle'];
+    else if(e.t==='undeadmage')frame=undeadFrame(e,UNDEADMAGE_F);
     else if(e.t==='burieddead'||e.t==='zombie'||e.t==='husk'||e.t==='apprentice')frame=deadFrame(e);
     else if (e.t === 'harbormaster') frame = wardenFrame(e);
     else if (e.t === 'captain') frame = e.mode === 'sabreTell' ? 3 : e.mode === 'sabre1' ? 4 : (e.mode === 'sabre2' || e.mode === 'keg') ? 5
@@ -20073,7 +20111,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
-  drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,L.arena,L.towerSlabs,cx,cy,time);
+  drawCarpetWorld(g,L,P,cx,cy,time);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time);
   drawWarden(g,boss?.t==='harbormaster'?boss:null,L.arena,cx,cy,time);
   drawSalvageCaptain(g,enemies.find(e=>e.salvage),L.mini,cx,cy,time);
@@ -20128,7 +20166,8 @@ function drawWorld(cx, cy, showPlayer) {
         g.fillRect(Math.round(gh.x - cx) - 4, Math.round(gh.y - cy) - 20, 8, 1); g.globalAlpha = 1; } }
     const vis = P.inv <= 0 || Math.floor(P.inv * 20) % 2 === 0;
     if (vis) {
-      if (!P.fly) g.drawImage(PROP.shadow, Math.round(P.x) - 6 - cx, Math.round(P.y) - 2 - cy);
+      if (P.carpet) drawRug(g, P.x - cx, P.y - cy + 1 + P.carpet.bob, time, P.carpet.tilt);   /* the rug under his feet, and no shadow: the ground is a long way down */
+      else if (!P.fly) g.drawImage(PROP.shadow, Math.round(P.x) - 6 - cx, Math.round(P.y) - 2 - cy);
       let key = 'idle', frame = Math.floor(P.anim * 4.5) % K.R.idle.length, swimRot = 0;
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
@@ -21795,7 +21834,8 @@ loadLevel(0);
 document.getElementById('boot').remove();
 window.BK = { phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false),   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
-  P, god: false, keys, SET, PROG, SPR, get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
+  P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
+  get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   tileSpr: () => tileSpr, resolve: () => resolveTiles(),
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are

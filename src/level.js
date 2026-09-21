@@ -1,4 +1,4 @@
-import {polishTower,fallingTower} from './tower-finish.js';
+import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
@@ -7165,7 +7165,7 @@ export const LEVELS = [
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
   { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'FOLLOW THE CANDLES. THE LOWER ROAD ALWAYS LEADS BACK UP.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
   { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'burial' },
-  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way down', rule: 'RETURN THROUGH THE COLLAPSING TOWER. THE DEAD MAGE WAITS BELOW.', build: ()=>fallingTower({source:theMagesFolly(),T,TS}), needs: 'mage' },
+  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. EVERY FLOOR YOU LEAVE FALLS. THE DEAD MAGE WAITS IN THE SKY.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -7300,7 +7300,7 @@ const GARRISON = {
   harbor: [['cutlass', 11], ['boarder', 10], ['scout', 11], ['tideguard', 10], ['petrel', 11], ['marine', 8], ['sailor', 8], ['netter', 6], ['crab', 8], ['angler', 8], ['eel', 6], ['lookout', 4], ['bosun', 4], ['bonecorsair', 6], ['lanternshade', 4], ['puffer', 2]],   /* the wrecked harbour's own: the crews the storm put ashore, the birds over them, and what the Lamplit Street's dead washed in with */
   keep: [['wight', 14], ['tideguard', 10], ['watch', 9], ['eel', 9], ['angler', 7], ['siren', 5], ['merrowspear', 5], ['jelly', 5], ['merrowbrute', 3], ['manta', 3], ['urchin', 3], ['puffer', 3], ['lamprey', 3]],   /* a drowned castle: its own garrison still at their posts, and the deep water's wildlife moved in over them */
   burial: [['zombie', 16], ['husk', 9], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['bonecorsair', 7], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* forty-four zombies and nothing else was the whole roster under the hill */
-  fallingtower: [['apprentice', 12], ['zombie', 10], ['broom', 9], ['imp', 9], ['armour', 7], ['haunt', 7], ['bat', 7], ['husk', 5], ['boo', 6], ['topiary', 4], ['turret', 4]],   /* the Folly's own staff, and the ones who did not get out of it: the dead outnumber the living in a dead man's tower */
+  fallingtower: [['apprentice', 3], ['zombie', 3], ['husk', 2], ['haunt', 2], ['bat', 2], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and the ones who did not get out of it: the dead outnumber the living in a dead man's tower. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors) */
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -7381,8 +7381,9 @@ function garrison(L, id) {
     if (rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     if (keep.some(([kx, ky]) => Math.abs(kx - x) < 4 && Math.abs(ky - y) < 4)) continue;
     if (deepUnder(x, y)) break;   /* the bed of deep water is no floor for anyone: it put a heron, a spitter and a thorn on the Marsh ferry channel's */
-    spots.push([x, y, wet(x, y)]); break;                                                   // one per column: the highest floor
+    spots.push([x, y, wet(x, y)]); if (!L.stackedFloors) break; y += 2;                     // one per column: the highest floor (a tower of floors stacked on each other offers every one of them)
   }
+  if (L.stackedFloors) spots.sort((a, b) => a[1] - b[1] || a[0] - b[0]);   /* and banded by HEIGHT, so every floor gets its share */
   if (spots.length < 8) return L;
   // HOW FAR APART IS FAR ENOUGH depends on the shape of the level. Eight columns is right for a road; on a
   // tower ninety-six wide it rejects nearly every spot, which is why the Sunspire asked for fifty-five and
@@ -7571,7 +7572,7 @@ const ELITES = {
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 700, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],
-  fallingtower: [['armour', 561, 15, { face: 1 }], ['husk', 330, 39, { face: 1 }], ['armour', 158, 39, { face: 1 }]],
+  fallingtower: [['armour', 44, 179, { face: -1 }], ['husk', 37, 146, { face: -1 }], ['armour', 38, 119, { face: 1, gate: 30 }]],   /* the ascent (2026-09-21): the orrery's guard, the cistern's husk over the poison, and the bell loft's warden, whose gate shuts the way to the first lift */
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
   stockade: [['brute', 302, 19, { gate: 317 }]],

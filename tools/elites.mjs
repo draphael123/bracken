@@ -48,7 +48,8 @@ for (const lv of LEVELS) {
     if (!near(shut, e.x, e.y)) out.push(tag + ' cannot be reached with its gate @' + e.gate + ' shut');
     /* THE GATE HOLDS when most of what lies past it (on the side away from the elite) is only reached through it. The boss
        room is the first thing asked; where the model cannot see into it (a ride, a canopy), the ground past the gate is */
-    const side = Math.sign(e.gate - e.x), past = R => [...R.seen].filter(k => (+k.split(',')[0] - e.gate) * side > 2).length;
+    /* PAST IT is further along the way the level goes: along for a road, UP for a tower of stacked floors (the Falling Tower) */
+    const side = Math.sign(e.gate - e.x), past = R => [...R.seen].filter(k => L.stackedFloors ? +k.split(',')[1] < G.top : (+k.split(',')[0] - e.gate) * side > 2).length;
     const walkedRound = arenaIn(open) ? arenaIn(shut) : past(shut) > past(open) * 0.25;
     if (walkedRound) out.push('the gate @' + e.gate + ' (rows ' + G.top + '-' + G.bot + ') can be walked round: ' + past(shut) + ' of ' + past(open) + ' tiles past it are still reached with it shut');
     for (const q of L.ents) if (HELD.has(q.t) && Math.abs(q.x - G.col) <= 1 && q.y >= G.top - 1 && q.y <= G.bot + 1) out.push('the gate @' + e.gate + ' comes down on a ' + q.t + ' @' + q.x + ',' + q.y);

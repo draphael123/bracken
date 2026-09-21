@@ -345,7 +345,8 @@ async function runbossLab(BK, opts) {
     const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!opts.mini || e.mini));
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
-    BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1); BK.sim(30);
+    if (A.carpet) { BK.board(); BK.sim(30); }   /* THE SKY FIGHT: its fight starts when the carpet is boarded */
+    else { BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1); BK.sim(30); }
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
     const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
     const air = boss.t === 'bellcrab' ? (await import('./deepair.js')).airBoxes(L).filter(a=>a.kind==='vent' && a.l>A.x0 && a.r<A.x1).map(a=>({...a,x:(a.l+a.r)/2,ty:A.floor-12,o:{}})) : (boss.airs||[]);
@@ -370,7 +371,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -479,18 +480,35 @@ async function runbossLab(BK, opts) {
         if(!guard&&!P.labAir&&!mode.endsWith('Tell')&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<27&&P.atk<0){P.face=side;k.down=k.up=false;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
+      /* THE UNDEAD ARCHMAGE, FROM THE CARPET (batch 4). The bot flies: out of the storm column sideways, straight out of a death
+         mark's ring, around the poison clouds, across the line of anything thrown at it (or onto the shield, for the three who
+         carry one), and away from the death hand. Otherwise it closes on him and cuts - and when the mark has come back on him
+         (gather) it goes in hard. Resting is done on the wing, away from him. */
       if(boss.t==='undeadmage'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        let lo=A.x0+20,hi=A.x1-20;for(const z of BK.L.towerSlabs)if(z.down||z.t>0){if(z.x0<48)lo=Math.max(lo,(z.x1+1)*16+16);else hi=Math.min(hi,z.x0*16-16);}
-        const dx=boss.x-P.x,side=Math.sign(dx)||1,m=boss.mode;let gx=boss.x-side*Math.max(16,LAB_REACH[h]*.65);
-        if(m==='collapse')gx=(lo+hi)/2;
-        if(m==='stormTell'&&Math.abs(P.x-boss.markX)<32)gx=boss.markX+(P.x>boss.markX?1:-1)*42;
-        gx=Math.max(lo,Math.min(hi,gx));if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
-        if((boss.shots||[]).some(q=>q.col==='#9be2ff'&&Math.abs(q.x-P.x)<60)&&P.ground){BK.press('jump');P.labJump=18;}if(P.labJump>0){P.labJump--;k.jump=true;}
-        const fire=(boss.shots||[]).some(q=>q.col==='#ff9b49'&&Math.abs(q.x-P.x)<65);
-        if(fire&&SHIELDED(h)){k.block=true;P.face=side;}else if(fire&&P.atk<0){P.face=side;BK.press('dodge');}
-        if(!fire&&!['collapse','blink','stormTell','iceTell','fireTell'].includes(m)&&Math.abs(dx)<LAB_REACH[h]+8&&P.atk<0){P.face=side;BK.press('atk');swings++;}
-        const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
+        const py=P.y-8,by=boss.y-24,dx=boss.x-P.x,dy=by-py,side=Math.sign(dx)||1,m=boss.mode;let vx=0,vy=0,threat=false;
+        if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        const away=(x,y,r,w=1)=>{const ex=P.x-x,ey=py-y,d=Math.hypot(ex,ey)||1;if(d<r){vx+=ex/d*w;vy+=ey/d*w;threat=true;}};
+        if(m==='stormTell'&&Math.abs(P.x-boss.markX)<44){vx+=P.x>=boss.markX?1:-1;threat=true;}
+        if(boss.mark)away(boss.mark.x,boss.mark.y,boss.mark.r+18,2);
+        for(const c of boss.clouds||[])away(c.x,c.y,c.r+30,3);
+        let block=false;
+        for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
+          if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
+          if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
+          const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
+          if(SHIELDED(h)&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
+          const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
+        const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
+        if(!threat){const want=boss.open>0?LAB_REACH[h]*0.55:(rest?150:LAB_REACH[h]*0.7);const gx=boss.x-side*want,gy=by;
+          if(Math.abs(gx-P.x)>6)vx+=Math.sign(gx-P.x);if(Math.abs(gy-py)>6)vy+=Math.sign(gy-py);}
+        if(vx>0.3)k.right=true;else if(vx<-0.3)k.left=true;if(vy>0.3)k.down=true;else if(vy<-0.3)k.up=true;
+        if(block){k.block=true;}
+        else if(!rest&&!['blinkOut','blinkIn','wake'].includes(m)&&Math.abs(dx)<LAB_REACH[h]+10&&Math.abs(dy)<20&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        if(threat&&m==='markWait'&&boss.mark&&Math.hypot(P.x-boss.mark.x,py-boss.mark.y)<boss.mark.r&&P.st>20&&f%20===0)BK.press('dodge');
+        const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(P.dead)falls++;
+        if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
+        if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='burieddead'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
