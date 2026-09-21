@@ -134,3 +134,6 @@ export function buildSunkenCaravan(T) {
   return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors: [], sections, marks, arena, quicksand: qs, shade,
     draft: true, palette: { set: 'desert' }, rule: 'THE SUN', lengthCols: ax0 };
 }
+/* for tools/draft-level.mjs (tools/caravan-level.mjs is this level's own, older check; both must pass) */
+export const build = buildSunkenCaravan;
+export const meta = { name: 'THE SUNKEN CARAVAN', orientation: 'h', landmarks: ['leadwagon', 'ribcage', 'slide', 'winch', 'caravanserai'], sun: true, density: [3.5, 4.5], foes: ['scorpion', 'sandgob', 'vulture', 'bandit', 'archer'] };
