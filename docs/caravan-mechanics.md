@@ -56,3 +56,17 @@ preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
   raised-wing frames (3, 6, 9) read as slabs and want a second pass in the Witchlight batch.
 - `tools/node-canvas.mjs` is the shim that makes this possible: enough of a 2D canvas for px.js-style bakers (it throws on
   paths/gradients/text instead of drawing them wrong). Checked against the game's own turtle, eel and heron bakers.
+
+## THE LEVEL, AS A GREYBOX DRAFT: `src/draft/sunken-caravan.js`
+Not in LEVELS, nothing loads it: the level's STRUCTURE, measured before a build session spends time on it. `node tools/caravan-level.mjs`
+checks it (all passing); `node tools/caravan-map.mjs` draws it (`docs/caravan-draft.png`). 547 x 40, 505 columns to the arena.
+- Seven sections (F1): THE WAY DOWN 65, THE CARAVAN ROAD 91, THE OX LINE 76, THE DUNE SEA 73, THE TRADERS' CAMP 69, THE SINKING WAY 70,
+  THE HOLLOW'S RIM 61, then THE WORM'S HOLLOW (40 tiles, three wrecks).
+- Five landmarks (F2): THE LEAD WAGON (its tipped bed), THE GREAT RIBCAGE (climb the ribs, swing from the spine over quicksand), THE LONG
+  SLIDE (slide, jump the basin at its foot), THE AWNING WINCH (F5: rolls shade out over the camp yard), THE SINKING CARAVANSERAI (in, up, out).
+- The measure: reach gets all 3 silvers, 3 strays and the relic and reaches the arena (B1/F7); 8 checkpoints, widest gap 95 (B6); nothing
+  in the air (B2); 18 shades along the road, no walk in the sun over 7.5 s; 3.8 foes a screen; 4.7 standable heights a screen, no flat screens.
+- What the measure caught in the first layout: 60% flat screens; 17 s in the sun across the dune sea; a rock arch and the camp's canopy
+  posts standing across the road as walls (both now drawn behind); the caravanserai's first floor 4 rows up (a jump is 3), which cut off
+  everything after it. All fixed.
+- The draft GARRISON row: scorpion 27, sand goblin 19, vulture 18, bandit 12, archer 3 (names to map to real spawn cases).
