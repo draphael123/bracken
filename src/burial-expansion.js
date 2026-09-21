@@ -46,6 +46,30 @@ export function extendBurial({L,T,TS,interiors,structures}){
   if(row===23&&clearRun(x-1,x+12))shelfAt(x+2,x+7,27);   // a step up to the high one
   gal++;
  }
+ /* ===== THE CAVERNS STOP BEING A CORRIDOR (Daniel, 2026-09-21) ===== */
+ // A. THE LOWER CRYPT, under the Restless Rows: a wall shuts the road, and the way on is down, along and up.
+ {const x0=504,x1=588;
+  for(let y=34;y<=38;y++)for(let x=x0;x<=x1;x++)set(x,y,T.AIR);       // the crypt: 33 is its roof, 39 its floor
+  for(let x=x0;x<=x0+2;x++){set(x,32,T.AIR);set(x,33,T.AIR);}          // the hole down into it
+  rope(x0+3,32,38);                                                    // a rope to climb back the way you came
+  for(let y=32;y<=33;y++)set(x1,y,T.AIR);rope(x1,31,38);               // and the rope up and out at the far end
+  block(552,554,16,31);                                                // the fallen ossuary wall across the road above
+  for(let x=x0+8;x<x1-6;x+=11){ent('torch',x,38);coins([x+3,37]);}
+  ent('bonegob',530,38,{face:-1});ent('husk',574,38,{face:-1});}
+ // B. POISON PITS in the Falling Gallery: a stone in the middle of each, two-tile jumps either side of it.
+ for(const x of [646,690,714]){
+  for(let y=32;y<=38;y++)for(let k=0;k<5;k++)set(x+k,y,T.AIR);
+  block(x+2,x+2,33,38);                                                // the stone to land on
+  rope(x,33,38);rope(x+4,33,38);                                       // a way out of the poison on either side
+  pools.push({x0:x*TS,x1:(x+5)*TS,y:36*TS,depth:3*TS,bottom:39*TS,swim:true,clear:true,harm:true,poison:true,foulCol:'#5c8a24',foulColL:'#a6e04a',foulColD:'#1c3212'});
+  coins([x+2,30]);}
+ // C. THE CLIMB at the Bone Stairs: the road is walled below the gallery; the arch at 864 is the way up and over.
+ {for(let x=876;x<=905;x++)if(L.grid[24*L.W+x]===T.AIR)set(x,24,T.ONEWAY);
+  structures.push({x0:876,x1:905,top:24,floor:32,kind:'arch'});
+  block(896,898,25,31);rope(906,24,31);coins([884,23],[892,23],[900,23]);}
+ // D. GAS VENTS: x, the floor row the grate sits in, and where in its cycle it starts.
+ const gasVents=[[520,39,0],[540,39,1.2],[565,39,2.1],[728,32,0.4],[736,32,1.8],[790,32,0.9],[796,32,2.4],[838,32,1.4],[990,32,0.7],[1015,32,2.0],[1050,32,1.1]]
+  .map(([x,y,phase])=>({x,y,phase,period:3.4,hitT:0}));
  ent('silver',434,28);ent('silver',933,23);ent('silver',162,31);
  ent('check',1076,31);sign(1077,'THE BURIED DEAD. JUMP THE SLAM. TRACK HIS SHADOW, THEN LEAVE THE CRACK.');
  for(const x of [1087,1110]){for(let j=x;j<x+4;j++)set(j,29,T.ONEWAY);structures.push({x0:x,x1:x+3,top:29,floor:32,kind:'arch'});}
@@ -53,5 +77,22 @@ export function extendBurial({L,T,TS,interiors,structures}){
  interiors.push([1079,1137,16,31,'ossuary']);deco('grave',1084);deco('grave',1118);
  ent('burieddead',1100,31);ent('gate',1133,31);ent('torch',1082,31);ent('torch',1120,31);
  for(let i=L.ents.length-1;i>=0;i--){const e=L.ents[i];if(e.t==='zombie'&&L.ents.some(q=>q.t==='check'&&Math.abs(q.x-e.x)<6)){L.ents.splice(i,1);continue;}if(e.x<380||!['torch','deco','zombie','sign','check'].includes(e.t))continue;while(e.y>16&&L.grid[e.y*L.W+e.x]===T.SOLID)e.y--;if(pools.some(p=>e.x*TS>=p.x0&&e.x*TS<p.x1)&&L.grid[(e.y+1)*L.W+e.x]===T.AIR)L.ents.splice(i,1);}
- return {pools,burialSections:sections,arena:{x0:1080*TS,x1:1122*TS,floor:32*TS,y0:16*TS,y1:33*TS,trigger:1083*TS,wallL:1079,wallR:1122,boss:'burieddead',music:'boss3',tint:'#526044',tintA:.1}};
+ return {pools,gasVents,burialSections:sections,arena:{x0:1080*TS,x1:1122*TS,floor:32*TS,y0:16*TS,y1:33*TS,trigger:1083*TS,wallL:1079,wallR:1122,boss:'burieddead',music:'boss3',tint:'#526044',tintA:.1}};
+}
+
+/* THE GAS VENTS. A cycle you can read: idle, then 0.9s of hiss and rising wisps, then 1.1s of poison standing a hand
+   higher than the hero. Standing in the column costs a little health and leaves the caverns' 2.4s poison on you -
+   the same poison as the green water, so the level has one kind of harm with two shapes. */
+export function gasVentState(v,time){const t=((time+v.phase)%v.period+v.period)%v.period;return t>v.period-1.1?'puff':t>v.period-2?'warn':'idle';}
+export function updateGasVents(L,P,dt,time,hurt){
+ for(const v of L.gasVents||[]){v.hitT=Math.max(0,(v.hitT||0)-dt);v.state=gasVentState(v,time);
+  if(v.state==='puff'&&!P.dead&&v.hitT<=0&&Math.abs(P.x-(v.x*16+8))<11&&P.y>v.y*16-52&&P.y<=v.y*16+2){v.hitT=.7;hurt(v.x*16+8);}}
+}
+export function drawGasVents(g,L,cx,cy,time){
+ for(const v of L.gasVents||[]){const x=Math.round(v.x*16-cx),y=Math.round(v.y*16-cy);if(x<-20||x>g.canvas.width+20)continue;
+  g.fillStyle='#1c1a16';g.fillRect(x+2,y-2,12,3);g.fillStyle='#4a4436';for(let k=0;k<4;k++)g.fillRect(x+3+k*3,y-2,1,3);
+  const st=gasVentState(v,time);
+  if(st==='warn'){for(let k=0;k<4;k++){const ph=((time*1.6+k*.27)%1);g.globalAlpha=.55*(1-ph);g.fillStyle='#a6e04a';g.fillRect(x+4+((k*5)%9),y-4-ph*16,2,2);}g.globalAlpha=1;}
+  if(st==='puff'){g.globalAlpha=.34;g.fillStyle='#5c8a24';g.fillRect(x+1,y-52,14,50);g.globalAlpha=.5;g.fillStyle='#a6e04a';
+   for(let k=0;k<7;k++){const ph=((time*2.2+k*.19)%1);g.fillRect(x+2+((k*7)%11),y-4-ph*46,2,2);}g.globalAlpha=1;}}
 }

@@ -10,6 +10,7 @@ import {drawTowerBackdrop,gateOccupied} from './tower-finish.js';
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
 import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
+import {updateGasVents,drawGasVents} from './burial-expansion.js';
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
 import {bakeBellcrab,bakeBellguard} from './bellcrab.js';
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
@@ -7724,6 +7725,7 @@ function updateGullFlock(e, dt) {
 // ---- WHAT YOU SEE OF IT ----
 function drawSea(cx, cy) {
   drawDeckBreaks(g,L,cx,cy,time);
+  drawGasVents(g,L,cx,cy,time);
   const R = L.roll, F = L.felled;
   if (!R && !F) return;
   if (R) {
@@ -17562,7 +17564,7 @@ function updateProps(dt) {
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
-  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); updateRush(dt);
+  updateBore(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateGasVents(L,P,dt,time,x=>{damagePlayer(x,9,{unblockable:true,noKnock:true,name:'THE GAS'});P.venomT=Math.max(P.venomT||0,2.4);number(P.x,P.y-30,'POISONED','#a6e04a');}); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); updateRush(dt);
   { const fp = (L.pools || []).find(p => p.harm && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
       if (Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 14, vx: 0, vy: -20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7a8a4a' : '#4a5a2a', size: 1, grav: -10 });

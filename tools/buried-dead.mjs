@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {LEVELS,T} from '../src/level.js';
 import {updateBuriedDead,updateZombie} from '../src/buried-dead.js';
-const L=LEVELS.find(l=>l.id==='burial').build();assert.equal(L.W,1140);assert.equal(L.arena.boss,'burieddead');assert(!L.mini);assert.equal(L.ents.filter(e=>e.t==='silver').length,3);assert(L.ents.filter(e=>e.t==='zombie').length>35);assert(L.ents.filter(e=>e.t==='stal').length>=9);assert.equal(L.pools.length,4);for(const p of L.pools)assert(p.poison&&p.harm&&p.foulCol&&p.clear);
+const L=LEVELS.find(l=>l.id==='burial').build();assert.equal(L.W,1140);assert.equal(L.arena.boss,'burieddead');assert(!L.mini);assert.equal(L.ents.filter(e=>e.t==='silver').length,3);assert(L.ents.filter(e=>e.t==='zombie').length>35);assert(L.ents.filter(e=>e.t==='stal').length>=9);assert.equal(L.pools.length,7);/* four green-water crossings + the three Falling Gallery pits (2026-09-21) */for(const p of L.pools)assert(p.poison&&p.harm&&p.foulCol&&p.clear);
 const A={x0:0,x1:672,floor:500},P={x:320,y:500,h:22,dead:false};let hits=[],calls=[];
 const c={P,A,hit:(...v)=>hits.push(v),summon:n=>calls.push(n),say:()=>{},sound:()=>{}};
 const boss=mode=>({alive:true,hp:100,hp0:100,phase:1,mode,modeT:.5,x:300,y:500,anim:0,turn:0,markX:320});
