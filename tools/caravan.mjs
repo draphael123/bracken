@@ -103,5 +103,41 @@ ok(bait.hp === 0 && (open.hp > 0 || open.time > bait.time * 1.3), `the opening m
 ok(bait.hitsTaken + open.hitsTaken === 0, `a bot that moves off each tell as it is shown takes ${bait.hitsTaken + open.hitsTaken} hits: every red attack has a clean answer in time`);
 if (bait.hitBy || open.hitBy) console.log('    ', JSON.stringify({ bait: bait.hitBy, open: open.hitBy }));
 
+// ================= THE DESERT FOES (src/desert-foes.js) =================
+log('THE DESERT FOES: every attack told, a quarter-second reaction answers it, ignoring it hurts');
+{ const F = await import('../src/desert-foes.js');
+  /* a fighter on flat ground at y 320. It walks in to fight (to 16 px) and, if `reacts`, answers each tell 0.25 s after it
+     shows: '!' -> raise the shield until the blow is over; 'X' -> run away from the foe for 0.7 s. Counts blows that land. */
+  function duel(make, step, reacts, secs = 30, open = null) {
+    const floor = 320, e = make(); let px = e.x - 90, face = 1, t = 0, block = 0, flee = 0, fleeFrom, inv = 0, pending = [], hits = 0, blocked = 0, tells = {}, opens = 0, lastOpen = false;
+    while (t < secs) {
+      const out = step(e, { px, py: floor, pface: face, time: t }, 1 / 60);
+      for (const o of out) { if (o.t === 'tell') { tells[o.what] = (tells[o.what] || 0) + 1; if (reacts) pending.push([t + 0.25, o.mark, o.x]); }
+        if (o.t === 'hit' && inv <= 0 && px >= o.box[0] - 5 && px <= o.box[1] + 5 && floor - 14 <= o.box[3] && floor >= o.box[2]) { if (o.blockable && block > 0) blocked++; else hits++; inv = 0.6; } }   /* (0.6 s of grace after a blow, as the game gives) */
+      pending = pending.filter(([at, mark, mx]) => { if (t < at) return true; if (mark === '!') block = 0.7; else { flee = 0.7; fleeFrom = mx; } return false; });   /* an X with a marked spot: leave the spot; without one, back off the foe */
+      const ex = e.x; if (flee > 0) { const from = fleeFrom ?? ex; px += (Math.sign(px - from) || -1) * 92 / 60; flee -= 1 / 60; if (flee <= 0) fleeFrom = undefined; } else if (Math.abs(ex - px) > 16) { px += Math.sign(ex - px) * 92 / 60 * (block > 0 ? 0.35 : 1); face = Math.sign(ex - px) || face; }
+      block = Math.max(0, block - 1 / 60); inv = Math.max(0, inv - 1 / 60);
+      if (open) { const o = open(e); if (o && !lastOpen) opens++; lastOpen = o; }
+      t += 1 / 60; }
+    return { hits, blocked, tells, opens };
+  }
+  const cases = [
+    ['scorpion', () => F.newScorpion(400, 320), F.scorpionStep, ['claw', 'sting'], null],
+    ['vulture', () => F.newVulture(400, 320), F.vultureStep, ['dive'], F.vultureOpen],
+    ['sand goblin', () => F.newSandGob(400, 320), F.sandGobStep, ['rise', 'knife'], null],
+  ];
+  for (const [name, mk, st, kinds, open] of cases) {
+    const r = duel(mk, st, true, 30, open), p = duel(mk, st, false, 30, open);
+    ok(kinds.every(k => r.tells[k] > 0) && r.hits === 0 && p.hits > 0, `${name}: told ${kinds.map(k => k + ' x' + (r.tells[k] || 0)).join(', ')}; a fighter who answers each tell in 0.25 s takes ${r.hits} (${r.blocked} blocked), one who ignores them takes ${p.hits}${open ? '; it landed open ' + r.opens + ' times' : ''}`);
+  }
+  ok(F.SCORPION.stingTell > F.SCORPION.clawTell && F.SANDGOB.knifeTell >= 0.4, `the sting (X, move) is told longer than the claw (!, block): ${F.SCORPION.stingTell} s against ${F.SCORPION.clawTell} s`);
+  { const v = F.newVulture(400, 320); const xs = []; for (let i = 0; i < 240; i++) { F.vultureStep(v, { px: 900, py: 320, time: i / 60 }, 1 / 60); if (i % 60 === 0) xs.push(vultureShade(v, 320)[0] + 14); }
+    ok(new Set(xs.map(Math.round)).size > 2, `a circling vulture's shade moves with it (${xs.map(x => Math.round(x)).join(' -> ')} px): shade that hunts you`); }
+  { const g = F.newSandGob(400, 320); ok(!F.sandGobTouchable(g), 'a buried sand goblin cannot be hit (and is only a mound with eyes)');
+    let px = 300; const w = () => ({ px, py: 320, pface: 1, time: 0 }); for (let i = 0; i < 1200 && g.mode !== 'under'; i++) { px = Math.min(px + 1.5, 420); F.sandGobStep(g, w(), 1 / 60); }
+    for (let i = 0; i < 120 && g.mode !== 'buried'; i++) F.sandGobStep(g, w(), 1 / 60);
+    ok(g.mode === 'buried' && g.x > px, `after two cuts it burrows and comes up AHEAD of you as a mound (at ${Math.round(g.x)}, you at ${Math.round(px)})`); }
+}
+
 console.log(fails ? `\ncaravan: ${fails} FAILED` : '\ncaravan: all passed');
 process.exit(fails ? 1 : 0);
