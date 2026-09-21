@@ -3,7 +3,7 @@ import {LEVELS,T} from '../src/level.js';
 import {breathCapacity,airBoxes} from '../src/deepair.js';
 import {updateVaultKeeper} from '../src/vault-keeper.js';
 const L=LEVELS.find(l=>l.id==='keep').build();
-assert.equal(L.W,600);assert.equal(L.keepSections.length,7);
+assert.equal(L.W,760);assert.equal(L.keepSections.length,9);
 for(const r of [null,'diverlamp','tidecharm']){assert.equal(breathCapacity(L,r),3*breathCapacity({},r));assert.equal(breathCapacity(LEVELS.find(l=>l.id==='deep').build(),r),breathCapacity({},r));}
 assert(L.airRooms.length>=20);assert.equal(L.ents.filter(e=>e.vaultKeeper).length,1);
 for(const x of [219,245]){assert.equal(L.grid[40*L.W+x],T.PORT);assert.equal(L.grid[30*L.W+x],T.AIR);assert(L.deep.gates.some(q=>q.col===x));}

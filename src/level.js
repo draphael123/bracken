@@ -7536,7 +7536,7 @@ function ambushRooms(L, id) {
 const ELITES = {
   /* and the same four had no elite either: every other level has its one big fight on the way to the boss */
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
-  keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 430, 58, { face: -1 }]],
+  keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 700, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],
   fallingtower: [['armour', 561, 15, { face: 1 }], ['husk', 330, 39, { face: 1 }], ['armour', 158, 39, { face: 1 }]],
   wood: [['shield', 147, 21, { gate: 157 }]],
