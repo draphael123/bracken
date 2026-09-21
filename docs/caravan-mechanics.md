@@ -43,7 +43,7 @@ preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
 - Changed while testing: a far ripple used to burst short of its locked spot, somewhere you couldn't read, and a lunge
   aimed at a hero at the wall covered the whole corner.
 - **Not proved: balance.** The bots are scripted, so "35 s vs 59 s" is a shape, not a number. The boss batch still owes
-  the twelve wiring points (A8), a baker, and the real in-page pilot (21+ runs at normal health).
+  the twelve wiring points (A8) and the real in-page pilot (21+ runs at normal health); the baker is done (desert_foes.js).
 
 ## ART BAKED AHEAD (render in Node, no browser)
 - `src/redraw/desert.js` → `node tools/desert-art.mjs` → `docs/desert-art.png`: rock slopes, sky, mesas, dunes, quicksand,
