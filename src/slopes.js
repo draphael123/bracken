@@ -215,7 +215,7 @@ export function footSlope(tileAt, b) { const sl = slopeInColumn(tileAt, b.x, b.y
    bleeds off slowly while DOWN is held; jump out of it and the air keeps most of what the hill gave you.
    slideStep(s, dt, {kind, ground, down, move}) -> mutates s = { vx, sliding, carry } and returns it. `kind` is the slope
    under the foot (0 on flat). The caller skips its own walk/friction for the frame while s.sliding or s.carry is set. */
-export const SLIDE = { acc: 700, maxSteep: 170, maxGentle: 140, flatFric: 150, airFric: 60, endSpeed: 60 };   /* tuned in tools/slopes.mjs: the leap out of a steep slide ~+70% on a full-run jump, not a new traversal verb */
+export const SLIDE = { acc: 700, maxSteep: 180, maxGentle: 140, flatFric: 150, airFric: 50, endSpeed: 60 };   /* tuned in tools/slopes.mjs: the leap out of a steep slide ~+70% on a full-run jump, not a new traversal verb */
 export function slideStep(s, dt, { kind, ground, down, jumped }) {
   if (ground && kind && down) {
     const dirDown = -slopeRise(kind), max = slopeGrade(kind) === 1 ? SLIDE.maxSteep : SLIDE.maxGentle;

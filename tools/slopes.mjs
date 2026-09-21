@@ -18,6 +18,7 @@ import { LEVELS, T, TS } from '../src/level.js';
 import { SLOPE, SLOPE_NAMES, isSlope, heightAt, moveBodySlopes, moveBodySquare, aheadTile, footSlope, slideStep, slopeRise } from '../src/slopes.js';
 import { slopeReachGrid, slopeReachTile, slopeLint } from '../src/reach-slopes.js';
 import { floodReach } from '../src/reachcore.js';
+import { buildDuneYard, DUNE_YARD_FLOOR } from '../src/dune-yard.js';
 
 const QUICK = process.argv.includes('--quick');
 let fails = 0; const T0 = Date.now(); const out = { push: s => console.log(s + '  [' + ((Date.now() - T0) / 1000).toFixed(1) + 's]') };
@@ -318,6 +319,37 @@ function walkAcross(Y, dir, dt, extra = {}) {
   { const g = new Uint8Array(10 * 10); g[5 * 10 + 4] = SLOPE.R1; g[6 * 10 + 5] = T.SOLID; g[5 * 10 + 5] = SLOPE.L1; g[4 * 10 + 5] = T.SOLID;
     const bad = slopeLint({ W: 10, H: 10, grid: g }, T); ok(bad.length === 2, `slopeLint names a slope with no rock under it and one roofed by rock (${bad.map(b => b.join(' ')).join('; ')})`); }
   ok(slopeReachTile(SLOPE.R1, T) === T.AIR && slopeReachTile(SLOPE.R2B, T) === T.AIR && slopeReachTile(T.PLANK, T) === T.PLANK, 'the mapping: every slope is the cell you stand in, on the rock under it; the rest untouched');
+}
+// ================= 4. THE DUNE YARD (src/dune-yard.js) =================
+{
+  out.push('THE DUNE YARD (src/dune-yard.js: phase 2 lists it as trial_slopes)');
+  const L = buildDuneYard(T), S = L.sections, tA = tileFn(L.grid, L.W, L.H), mv = newMove(tA), fy = x => { const tx = Math.floor(x / TS); for (let y = 0; y < L.H; y++) { const t = L.grid[y * L.W + tx]; if (isSlope(t)) return y * TS + heightAt(t, x - tx * TS); if (t === T.SOLID) return y * TS; } return Infinity; };
+  ok(slopeLint(L, T).length === 0, `slopeLint is clean on the yard (${slopeLint(L, T).length} complaints)`);
+  const R = floodReach(slopeReachGrid(L, T), T); let far = 0; for (let x = 2; x < L.W - 2; x++) if (R.seen.has(x + ',' + (DUNE_YARD_FLOOR - 1)) || [...R.seen].some(k => k.startsWith(x + ','))) far = x;
+  ok(far >= L.W - 3, `the reach fill runs the whole yard (to column ${far} of ${L.W - 1})`);
+  // every hill section walked right, no hop, foot on the surface
+  for (const [name, x0, x1] of [['steep', S.steep - 2, S.gentle - 2], ['gentle', S.gentle - 2, S.peak - 2], ['peak', S.peak - 2, S.valley - 2], ['valley', S.valley - 2, S.slide - 2]]) {
+    const P = newKnight(x0 * TS + 8, fy(x0 * TS + 8)); P.ground = true; P._sg = true; let hops = 0, worst = 0, f = 0;
+    while (P.x < x1 * TS && f++ < 3000) { const r = knightStep(P, { move: 1 }, 0.6 / 60, mv(P), tA); if (f > 3 && !r.ground) hops++; worst = Math.max(worst, Math.abs(P.y - fy(P.x))); }
+    ok(hops === 0 && worst < 0.01 && P.x >= x1 * TS, `${name} section walked end to end: ${hops} hops, worst foot gap ${worst.toFixed(3)} px`); }
+  // the slide gap: a running (sprint-capped) jump from the lip falls in; a slide jump from the same lip clears it
+  { const lip = S.gap[0] * TS - 1, far = (S.gap[1] + 1) * TS;
+    const tryIt = slide => { const top = (S.slide + 5) * TS + 4, P = newKnight(top, fy(top)); P.ground = true; P._sg = true; P.vx = RUN;   /* the same start: the hilltop, at a run */
+      let f = 0; while (P.x < lip - 4 && f++ < 3000) knightStep(P, { move: 1, down: slide, cap: 1.15 }, 0.6 / 60, mv(P), tA, slide);   /* down the far side walking at the sprint's speed, or sliding */
+      knightStep(P, { move: 1, jumpPress: true, jump: true, down: slide, cap: 1.15 }, 0.6 / 60, mv(P), tA, slide); let up = false;
+      let atWall = null;   /* where the feet were when the body first reached the far wall's line: the mantle catches a lip 3-11 px over the feet */
+      for (f = 0; f < 600; f++) { const r = knightStep(P, { move: 1, jump: true, cap: 1.15 }, 0.6 / 60, mv(P), tA, slide); if (atWall === null && (r.hitX || P.x + P.w / 2 >= far - 1)) atWall = P.y - DUNE_YARD_FLOOR * TS; if (P.vy < 0) up = true; if (r.ground && up) break; }
+      return { x: P.x, y: P.y, cleared: P.x > far && P.y <= DUNE_YARD_FLOOR * TS + 0.01, past: (P.x - far) / TS, below: atWall ?? Infinity }; };   /* Infinity: it never reached the far wall at all */
+    const run = tryIt(false), sl = tryIt(true);
+    ok(!run.cleared && run.below > 16 && sl.cleared && sl.past > 0.5, `the slide gap (${S.gap[1] - S.gap[0] + 1} tiles): down the same hill at the sprint's speed and jumping at the lip meets the far wall with its feet ${Number.isFinite(run.below) ? run.below.toFixed(0) + ' px' : 'never reaching it,'} under the lip (the mantle reaches 11) and falls in; sliding and jumping there lands ${sl.past.toFixed(1)} tiles past the far edge`); }
+  // the face stops a walk; the lone R1 is walked up and stepped off
+  { const P = newKnight((S.face) * TS, DUNE_YARD_FLOOR * TS); P.ground = true; P._sg = true; let hit = 0; for (let f = 0; f < 300; f++) if (knightStep(P, { move: 1 }, 0.6 / 60, mv(P), tA).hitX) hit++;
+    ok(hit > 0 && P.x < S.faceTile * TS, `the face tile stops a walk at x ${(P.x / TS).toFixed(2)} (its face at ${S.faceTile})`); }
+  // the soldiers: dropped where the yard puts them, they patrol their hill and never turn at its top
+  for (const e of L.ents.filter(e => e.t === 'soldier')) { const w = newWalker(e.x * TS + 8, (e.y + 1) * TS, 10, 14, 30); w.face = e.face; const m0 = newMove(tA)(null); let air = 0;
+    for (let f = 0; f < 4000; f++) { const r = walkerStep(w, 1 / 60, m0, newProbe, tA); if (f > 5 && !r.ground) air++; }
+    const falseEdges = w.turnAt.filter(t => t[0] === 'edge' && !(t[1] >= (S.gap[0] - 2) * TS && t[1] <= (S.gap[1] + 2) * TS));   // the pit's lip is a real edge
+    ok(falseEdges.length === 0 && air === 0, `the soldier on column ${e.x} patrols with ${w.turns} turns (walls, the pit's lip), ${falseEdges.length} at false edges, ${air} frames in the air`); }
 }
 function lintOk(L) { return slopeLint(L, T).length === 0; }
 

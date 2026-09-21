@@ -68,10 +68,10 @@ Name the state **`P.sandSlide = { vx, sliding, carry }`**. Do NOT call it `slide
 - DOWN on the ground already means: climb down a rope (6540, needs a rope below), drop through a ledge (6576, only with
   jump, only on a one-way), the crouch pose (20221), and the low swing. The slide needs DOWN held ON A SLOPE TILE, which
   none of those do. The pose: while `P.sandSlide.sliding`, show `'crouch'` (or a new slide pose) facing downhill.
-- Tuning (`SLIDE` in slopes.js): steep top speed 170, gentle 140 (RUN is 92). Measured: 36% faster than walking down a
-  steep 4-row hill, 30% on a gentle one; it carries 77 px onto the flat; a jump at the foot goes 103 px against 64 for a
-  full-run jump (+60%).
-- **Reach consequence:** a slide jump crosses about 6.5 tiles. reachcore's `JUMP_ACROSS` is 6. Either design no gap
+- Tuning (`SLIDE` in slopes.js): steep top speed 180, gentle 140 (RUN is 92), air drag 50. Measured: 38% faster than
+  walking down a steep 4-row hill, 30% on a gentle one; it carries onto the flat with DOWN held; a jump at the foot goes
+  111 px against 64 for a full-run jump (+73%).
+- **Reach consequence:** a slide jump crosses about 7 tiles. reachcore's `JUMP_ACROSS` is 6. Either design no gap
   that needs the slide, or teach reachcore a slide jump from the foot of a slope 2+ rows tall. Phase 2 should just not
   put one in. That is a design choice for the Sunken Caravan.
 
@@ -140,20 +140,18 @@ Name the state **`P.sandSlide = { vx, sliding, carry }`**. Do NOT call it `slide
 | `tools/reach.mjs`, `deadends.mjs`, `traps.mjs`, `additional-areas.mjs` | through reachcore | covered by the reachcore line |
 | `work/claude/shape.mjs`, `vshape.mjs` | standable heights per screen | a slope tile's standable height is its row (the reach rule) |
 
-## 7. The test yard
+## 7. The test yard: BUILT, `src/dune-yard.js`
 
-A new hidden practice level **`trial_slopes`** ("THE DUNE YARD") built like `openYard()` (level.js:3377), listed next to
-`trial_open` (level.js:7144) and reachable from the practice menu (main.js:3281). 160 x 30, walled, floor at row 22, left
-to right:
-1. flat 8 · **steep hill** R1 x3 up, 3 flat, L1 x3 down · flat 6
-2. **gentle hill** R2 x3 (A,B pairs) up, 3 flat, L2 x3 down · flat 6
-3. **a peak with no flat**: R1, R2, R1, L2, L1, L2 · flat 6
-4. **a valley**: L1 x2 down into a 4-wide pit floor, R2 x2 up · flat 6
-5. **the slide run**: R1 x4 up, 2 flat, L1 x4 down onto 10 flat, then a gap of 5 tiles (a slide jump clears it,
-   a run jump does not) with a flat landing
-6. **the face**: a lone L1 on the flat with its tall side facing the way you arrive (a wall), then a lone R1 walked up and off
-7. straw men on every flat, and two patrolling goblins, one on each hill, to watch the walkers go over
-`palette: sand`, `noCoin: true`, `reachExact: true`. `slopeLint` must be clean on it.
+`buildDuneYard(T)` builds THE DUNE YARD (160 x 30, walled, floor row 22), proved in `tools/slopes.mjs`. Phase 2 imports it into
+level.js, lists `{ id: 'trial_slopes', name: 'THE DUNE YARD', sub: 'slopes, slides and a gap only a slide clears', build: () => buildDuneYard(T), hidden: true }`
+next to `trial_open` (level.js:7144), and puts it on the practice menu (main.js:3281). `L.sections` gives each section's first column.
+Sections, left to right: a steep hill, a gentle hill, a peak with no flat, a valley, THE SLIDE RUN (4 rows up and down, then a
+6-tile pit at the very foot, 3 rows deep so you can climb out), THE FACE (a lone L1 met from its tall side), a lone R1.
+Two soldiers patrol the two hills; straw men on the flats. Proved in Node: slopeLint clean; the reach fill runs the whole
+yard; every hill section walked with 0 hops; the slide gap: a jump at the lip without sliding (even at sprint speed) meets
+the far wall 48 px under the lip (the mantle reaches 11) and falls in, and a slide jump lands a full tile past the far edge;
+the face stops a walk; both soldiers patrol with 0 false edges.
+Phase 2 still has to give it the desert palette (`palette: { set: 'desert' }` is set; main.js has to learn that set).
 
 ## 8. Suite checks to add (`tools/check.mjs`)
 
