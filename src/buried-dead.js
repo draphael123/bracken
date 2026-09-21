@@ -2,10 +2,19 @@ import {canvas,outline,flipX,whiten} from './px.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function updateBuriedDead(e,dt,c){
  const{P,A,hit,summon,say,sound}=c;if(!e.alive||P.dead||e.mode==='sleep')return;
+ const ring=c.ring||(()=>{}),throwZombie=c.throwZombie||(()=>{}),shake=c.shake||(()=>{});
  e.anim+=dt;e.modeT-=dt;e.open=Math.max(0,(e.open||0)-dt);e.effectT=Math.max(0,(e.effectT||0)-dt);e.y=A.floor;e.vx=e.vy=0;
  const rest=()=>{e.mode='rest';e.modeT=2.2;e.open=2.2;};
  if(e.phase===1&&e.hp<=e.hp0*.5&&e.mode!=='burrow'&&e.mode!=='eruptTell'){e.phase=2;e.mode='rally';e.modeT=1.5;e.turn=0;say('THE GRAVES ANSWER',true);sound('roar');return;}
  e.brokeT=Math.max(0,(e.brokeT||0)-dt);
+ if(e.flying){const q=e.flying;q.t+=dt;q.vy+=560*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.spin+=dt*9;
+  if(q.y>=A.floor-2){e.flying=null;shake(3);sound('heavy');
+   if(Math.abs(P.x-q.x)<22&&P.y>A.floor-30)hit(q.x,14,false);
+   throwZombie(clamp(q.x,A.x0+30,A.x1-30));}}
+ /* THE BODY SLAM IN THE AIR: he goes up and over to where you were standing, and comes down on it */
+ if(e.mode==='bodyFly'){const k=1-Math.max(0,e.modeT)/.6;e.x=e.flyX0+(e.markX-e.flyX0)*k;e.y=A.floor-Math.sin(Math.min(1,k)*Math.PI)*56;
+  if(e.modeT<=0){e.x=e.markX;e.y=A.floor;shake(9);sound('heavy');ring(e.x,A.floor-6,80,'#ff9a5c');
+   if(Math.abs(P.x-e.x)<78&&P.y>A.floor-44)hit(e.x,28,true);e.mode='rest';e.modeT=2.4;e.open=2.4;}return;}
  if(e.mode==='stuck'){if(e.modeT<=0){e.mode='walk';e.modeT=.9;say('HE TEARS IT FREE',false);}return;}
  if(['wake','rest','rally'].includes(e.mode)){if(e.modeT<=0){e.mode='walk';e.modeT=.9;}return;}
  if(e.mode==='burrow'){
@@ -14,12 +23,17 @@ export function updateBuriedDead(e,dt,c){
  }
  if(e.mode==='walk'){
   const dx=P.x-e.x;e.face=Math.sign(dx)||e.face;if(Math.abs(dx)>58){e.vx=e.face*36;e.x=clamp(e.x+e.vx*dt,A.x0+38,A.x1-38);}if(e.modeT>0)return;
-  const m=['slamTell','callTell','sinkTell','cleaveTell'][e.turn++%4];e.mode=m;e.modeT=m==='callTell'?1.3:1;e.markX=e.x;
-  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT'})[m],m==='slamTell');sound('charge');return;
+  const turns=e.phase===2?['slamTell','throwTell','bodyTell','novaTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','sinkTell','novaTell','cleaveTell','callTell'];
+  const m=turns[e.turn++%turns.length];e.mode=m;e.modeT=m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):e.x;
+  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell');sound('charge');return;
  }
  if(e.modeT>0||!e.mode.endsWith('Tell'))return;
  const m=e.mode;e.effect=m;e.effectT=.35;
  if(m==='sinkTell'){e.mode='burrow';e.modeT=.7;sound('hiss');return;}
+ if(m==='novaTell'){ring(e.x,A.floor-20,112,'#a6e04a');sound('hiss');
+  if(Math.abs(P.x-e.x)<112&&P.y>A.floor-80){hit(e.x,18,true);P.venomT=Math.max(P.venomT||0,2.4);}}
+ if(m==='throwTell'){const tx=clamp(P.x,A.x0+30,A.x1-30),T=.85;e.flying={x:e.x+e.face*20,y:A.floor-70,vx:(tx-(e.x+e.face*20))/T,vy:(70-.5*560*T*T)/T,t:0,spin:0};   /* from 70 above the floor to the floor in T under 560 gravity: it lands where you were standing */sound('charge');}
+ if(m==='bodyTell'){e.flyX0=e.x;if(!Number.isFinite(e.markX))e.markX=clamp(P.x,A.x0+40,A.x1-40);e.mode='bodyFly';e.modeT=.6;sound('roar');return;}   /* the mark is where you stood when he wound up; a slam with no mark would send him to NaN */
  if(m==='slamTell'){if(Math.abs(P.x-e.x)<(e.phase===2?175:145)&&P.y>A.floor-25)hit(e.x,24,true);sound('heavy');
   /* THE GROUND HE ALREADY BROKE WILL NOT HOLD HIS FIST. Every opening he had was the rest he takes anyway, so there was
      nothing in this fight the player caused: stand over the hole he erupted from, let the slam come down on it, and the
@@ -48,7 +62,7 @@ export function updateZombie(e,dt,c){
  if(Math.abs(P.x-e.x)<25&&Math.abs(P.y-e.y)<25){e.mode='grabTell';e.modeT=.7;say('GRAB',false);return;}
  e.vx=solid(e.x+e.face*16,e.y+4)?e.face*(e.husk?17:e.apprentice?22:25):0;if(move(e,e.vx*dt,e.vy*dt)?.ground)e.vy=0;
 }
-export function deadFrame(e){return e.mode==='stuck'?5:e.mode==='burrow'||e.mode==='eruptTell'||e.mode==='buried'||e.mode==='riseTell'?6:e.open>0?5:e.mode==='slamTell'?3:e.mode==='callTell'?4:e.mode?.endsWith('Tell')?2:Math.abs(e.vx)>2?Math.floor(e.anim*5)%2:0;}
+export function deadFrame(e){return e.mode==='novaTell'?4:e.mode==='throwTell'||e.mode==='bodyTell'?3:e.mode==='bodyFly'?2:e.mode==='stuck'?5:e.mode==='burrow'||e.mode==='eruptTell'||e.mode==='buried'||e.mode==='riseTell'?6:e.open>0?5:e.mode==='slamTell'?3:e.mode==='callTell'?4:e.mode?.endsWith('Tell')?2:Math.abs(e.vx)>2?Math.floor(e.anim*5)%2:0;}
 /* THE SAME DEAD MAN, RAISED SOMEWHERE ELSE. kind picks who got up: the caverns' bloated husk, swollen and green and
    a head taller, and the tower's apprentice, still in the robe he died in. One silhouette is not two enemies, so the
    husk carries its own bulk and the apprentice his hood - the tint alone would only have made a recoloured zombie. */
@@ -76,6 +90,10 @@ export function bakeDead(big=false,kind=''){
 export function drawBuriedDead(g,e,A,cx,cy,time){
  if(!e?.alive||!A)return;const x=e.x-cx,y=A.floor-cy;g.save();g.globalCompositeOperation='source-over';
  if(['burrow','eruptTell','sinkTell'].includes(e.mode)){const locked=e.mode==='eruptTell';g.fillStyle=locked?'#a86048':'#292320';g.beginPath();g.ellipse(x,y-2,locked?42:28,6,0,0,7);g.fill();g.strokeStyle=locked?'#ffd36b':'#b29e78';g.lineWidth=2;g.stroke();for(let k=-20;k<=20;k+=10)g.fillRect(x+k,y-5-Math.sin(time*12+k)*3,3,3);}
+ if(e.mode==='novaTell'){const k=1-Math.max(0,e.modeT)/1.2;g.strokeStyle='rgba(166,224,74,'+(.35+.4*k)+')';g.lineWidth=2;g.beginPath();g.ellipse(x,y-20,112*k,26*k+8,0,0,7);g.stroke();g.fillStyle='rgba(92,138,36,'+(.12+.12*k)+')';g.fill();}
+ if(e.mode==='bodyTell'||e.mode==='bodyFly'){const mx=e.markX-cx;g.fillStyle='rgba(255,107,107,.3)';g.beginPath();g.ellipse(mx,y-2,78,7,0,0,7);g.fill();g.strokeStyle='#ff9a5c';g.lineWidth=2;g.stroke();}
+ if(e.flying){const q=e.flying,fx=q.x-cx,fy=q.y-cy;g.save();g.translate(fx,fy);g.rotate(q.spin);g.fillStyle='#748459';g.fillRect(-5,-10,10,14);g.fillStyle='#98a374';g.fillRect(-4,-16,8,7);g.fillStyle='#575846';g.fillRect(-5,4,4,6);g.fillRect(1,4,4,6);g.restore();
+  g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(q.x+q.vx*.2-cx,y-1,10,3,0,0,7);g.fill();}
  if(e.mode==='slamTell'||e.effect==='slamTell'&&e.effectT>0){const r=e.phase===2?175:145;g.fillStyle='rgba(244,126,85,.28)';g.fillRect(x-r,y-25,r*2,25);g.strokeStyle='#ffc082';g.strokeRect(x-r,y-25,r*2,25);}
  g.restore();
 }

@@ -664,7 +664,7 @@ export function bakeQueen() {
 function merge(a, b) { let s = ''; for (let i = 0; i < Math.max(a.length, b.length); i++) { const x = a[i] || '.', y = b[i] || '.'; s += x !== '.' ? x : y; } return s; }
 
 // Goblin archer — hooded sprig with a shortbow. 12×12. Frames: idle, draw (bow bent, arrow nocked), walk1, walk2.
-export function bakeArcher() {
+export function bakeArcher(over = {}) {   /* over: a palette on top of his - the caverns' bone archer is this archer with the meat off */
   /* THE ARCHER is his BOW: a stave as tall as he is, strung and carried upright at his front, so the goblin
      with a long curve standing off the side of him is the one that shoots. It was three pixels of stick. */
   const hood = ['....HHHH....', '...HHHHHH...', '..HHgeoggeH.', '..HHgggggg..', '...HgGGGg...'];
@@ -672,7 +672,7 @@ export function bakeArcher() {
   const bodyDraw = ['..bbbbbb....', '..bbbbbbaaaa', '..rrrrrr....', '..GG..GG....', '.GG....GG...'];
   const walk1 = ['..bbbbbb....', '..bbbbbb....', '..rrrrrr....', '..GG.GG.....', '..GG..GG....'];
   const walk2 = ['..bbbbbb....', '..bbbbbb....', '..rrrrrr....', '...GGGG.....', '..GG..GG....'];
-  const P2 = Object.assign({}, EP, { H: '#3f5a33', b: '#6b4a2a', a: '#e8dcc0', l: '#e8dcc0' });
+  const P2 = Object.assign({}, EP, { H: '#3f5a33', b: '#6b4a2a', a: '#e8dcc0', l: '#e8dcc0' }, over);
   const spr = rows => outline(fromGrid(rows, P2, 1), OUT);
   const hoodLook = [hood[0], hood[1], '..HHggeogge.', hood[3], hood[4]];
   const bow = (rows, drawn) => { const out = ['............', '............', ...rows].map(r => r.split(''));
