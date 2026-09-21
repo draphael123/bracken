@@ -4,9 +4,10 @@
 // rpoly for anything laid at an angle), parts that cross the body are laid with an inner outline (layer()), then
 // fromGrid + OUT outline - the way frost.js builds the Rimewright and masthead.js the Masthead.
 //
-// bakeBuriedPrince()  THE BURIED PRINCE (boss) — a tall, gaunt goblin prince dead a long time and forgotten longer:
-//   grey-green skin gone to leather over bone, a long hooked nose and a lipless jaw, sunken sockets with a cold green
-//   light in them, two long torn ears hanging off the back of the skull, a tarnished crown too big for him slipping back
+// bakeBuriedPrince()  THE BURIED PRINCE (boss) — a tall goblin prince dead a long time and forgotten longer, and a
+//   GOBLIN first: a big head, a goblin's green gone dead, a snub-hooked nose, a wide mouth with tusks and the jaw under
+//   it rotted to the bone, a patch of bare skull, big sockets with a cold green light in them, two long torn ears
+//   standing OUT off the back of the skull, a tarnished crown too big for him slipping back
 //   over one ear, a rotted royal coat with a high collar and its gold trim gone brown and a tear over the ribs, a
 //   tattered black cloak with grave dirt in its hem, burial wrappings round the wrists and shins, and a long rusted
 //   ceremonial sword. He is BIG and he STANDS: every standing frame has both feet on the floor row.
@@ -115,7 +116,7 @@ function sinkGrid(G, n) { const w = G[0].length; for (let i = 0; i < n; i++) { G
 // the cloak k/K; grave dirt n/N; the wrappings w/W; the sword's rust r/R, what steel is left i/I, the grip h; the mouth m;
 // timber u/U/j (a beam fallen across him)
 const PR = { o: OUT,
-  s: '#a7b394', S: '#798a6c', 3: '#55634d', 4: '#36402f',
+  s: '#9cb46c', S: '#6c8a4c', 3: '#4a6238', 4: '#2c3e24',   /* a GOBLIN's green, gone dead: it was grey leather, which is anybody */
   b: '#e4dcc2', B: '#aaa088',
   q: '#120e16', e: '#e2ffd8', E: '#6ee48c',
   y: '#d4b24e', Y: '#8c7232', z: '#524628', v: '#6ea48c', g: '#a6e8a8',
@@ -151,35 +152,51 @@ function crown(G, o, deg) {
 }
 
 // ---------- THE HEAD, drawn upright in its own grid and turned onto the body ----------
-const HG = 44, HC = 22;
+// AN UNDEAD GOBLIN'S HEAD (Daniel, 2026-09-21: "the Buried Prince to look like an undead goblin"). The old head was a
+// gaunt hook-nosed skull with its ears hanging down the back of it, and on a tall body in a long coat that read as a
+// lich. What says GOBLIN in this game is the rock goblin's: a BIG head, a snub-hooked nose, a wide mouth, and two long
+// ears that stand OUT off the skull. What says DEAD: half the jaw rotted to the bone, a patch of bare skull, a stitch,
+// tusks gone yellow and the cold green in the sockets. The grid is drawn at HEAD_S times its size (head()).
+const HG = 44, HC = 22, HEAD_S = 1.22;
 function headGrid(o) {
   const T = blank(HG, HG), q = (x, y) => [HC + x, HC + y];
-  gpoly(T, [q(-3, -5), q(-8, -7), q(-14, -2), q(-12, -1), q(-6, -3)], () => '4');                                // the far ear, behind: a dark sliver
-  limb(T, q(-2, -1), q(1, -2), 11.5, SKIN);                                                                        // the skull
-  gpoly(T, [q(1, -3), q(8, -1), q(8, 3), q(3, 6.5), q(-3, 5)], (x, y) => (y > HC + 3 ? '3' : 'S'));               // the long face
-  limb(T, q(5, -1), q(10, 2), 2.8, SKIN); put(T, ...q(10, 3), 'S'); put(T, ...q(10, 4), '3');                    // the nose, hooked
-  gline(T, ...q(0, 2), ...q(5, 3), '4'); put(T, ...q(1, 1), 's'); put(T, ...q(2, 1), 's');                        // the cheekbone, and the hollow under it
-  limb(T, q(3, -2), q(5, -1), 4, ['q', 'q', 'q']);                                                                // the socket, sunk deep
-  /* THE EYE IS A COLD GREEN LIGHT, two pixels of it with a white core: a single pale dot read as a highlight, not an eye */
-  put(T, ...q(4, -2), o.eyes === 'dim' ? 'E' : 'e'); put(T, ...q(5, -2), 'E'); put(T, ...q(4, -1), 'E');
-  if (o.eyes === 'dim') put(T, ...q(5, -2), 'q');
-  if (o.eyes === 'flare') { put(T, ...q(5, -2), 'e'); put(T, ...q(3, -2), 'E'); put(T, ...q(4, -3), 'E'); put(T, ...q(6, -2), 'E'); }
-  gline(T, ...q(-1, -4), ...q(7, -4), '4');                                                                         // the brow
-  if (o.jaw === 'open') { gpoly(T, [q(1, 3), q(8, 3), q(7, 9), q(1, 8)], () => 'm'); for (const x of [2, 4, 6]) put(T, ...q(x, 3), 'b'); for (const x of [2, 4]) put(T, ...q(x, 8), 'b'); }
-  else { gline(T, ...q(1, 4), ...q(7, 3), 'm'); put(T, ...q(2, 4), 'b'); put(T, ...q(4, 4), 'b'); put(T, ...q(6, 3), 'b'); }
-  if (o.crown !== 'on') { gline(T, ...q(-6, -6), ...q(4, -7), 'B'); put(T, ...q(-2, -8), 'W'); put(T, ...q(1, -9), 'W'); }   // bareheaded: the pale band where it sat
-  // THE NEAR EAR: long and NARROW, drooping off the back of the skull and torn at the tip. A wide ear with no edge
-  // between it and the skull turned the whole head into a green mop - it is a blade of skin with a dark rim now.
-  gpoly(T, [q(-3, -3), q(-6, -3), q(-16, 6), q(-15, 9), q(-12, 6), q(-11, 8), q(-8, 3), q(-3, 0)], (x, y) => (y < HC + 1 ? 'S' : '3'));
-  gline(T, ...q(-4, -3), ...q(-15, 6), '4'); gline(T, ...q(-4, -1), ...q(-12, 5), 's');
-  put(T, ...q(-13, 7), '.'); put(T, ...q(-14, 8), '.');
-  if (o.crown === 'on') crown(T, q(-1, -6.5), -20);
+  // the far ear, behind: out and up off the back of the skull, dark
+  gpoly(T, [q(-3, -4), q(-12, -9), q(-19, -13), q(-16, -8), q(-8, -1)], () => '4');
+  limb(T, q(-2, -2), q(2, -2), 12.5, SKIN);                                                                          // the skull, round and big
+  gpoly(T, [q(0, -2), q(9, 0), q(9, 4), q(4, 7.5), q(-2, 6)], (x, y) => (y > HC + 3 ? '3' : 'S'));                // the face, wide under the eyes
+  /* BONE SHOWING: a patch of bare skull where the scalp went, with a crack in it */
+  gpoly(T, [q(-6, -8), q(-1, -9), q(0, -6), q(-5, -4)], () => 'b'); gline(T, ...q(-4, -8), ...q(-3, -5), 'B');
+  limb(T, q(6, -1), q(11, 1), 3.4, SKIN); put(T, ...q(12, 2), 'S'); put(T, ...q(11, 3), '3');                     // the nose: a goblin's, long and turned down
+  limb(T, q(2.5, -3), q(4.5, -2.5), 3.6, ['q', 'q', 'q']);                                                               // the socket, big and sunk
+  /* THE EYE: a cold green light, bigger than the old one - a goblin's eyes are the size of his head's intent */
+  put(T, ...q(3, -3), o.eyes === 'dim' ? 'E' : 'e'); put(T, ...q(4, -3), o.eyes === 'dim' ? 'q' : 'e'); put(T, ...q(3, -2), 'E'); put(T, ...q(4, -2), 'E');
+  if (o.eyes === 'flare') { put(T, ...q(2, -3), 'E'); put(T, ...q(5, -3), 'E'); put(T, ...q(3, -4), 'E'); put(T, ...q(4, -4), 'E'); }
+  gline(T, ...q(-1, -5), ...q(7, -4), '4');                                                                         // the brow, heavy
+  // THE MOUTH: wide, ear-ward, and the lower jaw is bone - the flesh has gone off it. Tusks up out of the underbite.
+  if (o.jaw === 'open') {
+    gpoly(T, [q(-1, 3), q(9, 3), q(8, 10), q(-1, 9)], () => 'm');
+    gpoly(T, [q(-1, 8), q(8, 9), q(7, 11), q(-1, 10.5)], () => 'b'); for (const x of [0, 2, 4, 6]) put(T, ...q(x, 9), 'B');
+    for (const x of [1, 3, 5, 7]) put(T, ...q(x, 3), 'b');
+    put(T, ...q(1, 8), 'b'); put(T, ...q(1, 7), 'b'); put(T, ...q(6, 8), 'b'); put(T, ...q(6, 7), 'b');                   // the tusks, reaching up
+  } else {
+    gpoly(T, [q(-1, 5), q(7, 5), q(6, 8), q(-1, 7.5)], () => 'b'); gline(T, ...q(0, 6), ...q(6, 6), 'B');              // the bare jawbone
+    gline(T, ...q(-1, 4), ...q(9, 3), 'm'); for (const x of [0, 2, 4]) put(T, ...q(x, 5), 'b');
+    put(T, ...q(1, 3), 'b'); put(T, ...q(1, 2), 'b'); put(T, ...q(7, 3), 'b'); put(T, ...q(7, 2), 'b');                 // the tusks
+  }
+  gline(T, ...q(-2, 1), ...q(-2, 5), 'W'); put(T, ...q(-3, 2), 'W'); put(T, ...q(-1, 4), 'W');                     // a stitch down the cheek
+  if (o.crown !== 'on') { gline(T, ...q(-6, -9), ...q(4, -9), 'B'); put(T, ...q(-2, -10), 'W'); put(T, ...q(1, -10), 'W'); }   // bareheaded: the pale band where it sat
+  // THE NEAR EAR: a goblin's - LONG, standing out and up off the back of the skull, with a dark rim, a pink-grey
+  // inside, and a torn notch. A drooping ear read as hair; an ear that stands out reads as a goblin at any size.
+  gpoly(T, [q(-3, -4), q(-10, -8), q(-21, -12), q(-18, -7), q(-15, -6), q(-16, -4), q(-9, -1), q(-3, 1)], (x, y) => (y < HC - 6 ? 'S' : 's'));
+  gline(T, ...q(-4, -4), ...q(-20, -12), '4'); gline(T, ...q(-5, -2), ...q(-15, -7), '3'); gline(T, ...q(-6, -1), ...q(-12, -4), '3');
+  put(T, ...q(-17, -7), '.'); put(T, ...q(-16, -6), '.');                                                           // the notch torn out of it
+  if (o.crown === 'on') crown(T, q(0, -7.5), -14);
   return T;
 }
 function head(G, hd, o) {
-  const T = headGrid(o), a = (o.ha || 0) * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
-  for (let wy = -HC; wy < HC; wy++) for (let wx = -HC; wx < HC; wx++) {
-    const lx = Math.round(cs * wx + sn * wy) + HC, ly = Math.round(-sn * wx + cs * wy) + HC, row = T[ly], k = row && row[lx];
+  const T = headGrid(o), a = (o.ha || 0) * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a), R = Math.ceil(HC * HEAD_S);
+  for (let wy = -R; wy < R; wy++) for (let wx = -R; wx < R; wx++) {
+    const lx = Math.round((cs * wx + sn * wy) / HEAD_S) + HC, ly = Math.round((-sn * wx + cs * wy) / HEAD_S) + HC, row = T[ly], k = row && row[lx];
     if (!k || k === '.') continue;
     put(G, hd[0] + wx, hd[1] + wy, k);
   }

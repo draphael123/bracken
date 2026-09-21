@@ -2287,10 +2287,10 @@ function stormhold() {
 // Highcrown, which is the opposite instruction to the same castle.
 // ============================================================================================
 function undercrown() {
-  const L = painter(104, 196);
+  const L = painter(154, 196);
   const { block, floor, plat, ent, coins, set, spikes } = L;
   const movers = [], interiors = [], pools = [];
-  block(0, 103, 0, 195);                             // it is all rock until something is dug out of it
+  block(0, 153, 0, 195);                             // it is all rock until something is dug out of it
   const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   // A GALLERY: a level driven into the rock, timbered, with a roof course over it that can be brought down.
   const gallery = (x0, x1, fl, h = 4) => { cut(x0, x1, fl - h, fl - 1); interiors.push([x0, x1, fl - h, fl - 1, 'mine']);   /* 'mine', not the burrows' 'earth': the mine's wall is lit enough to stand a walkway off (drawRoom) */ };
@@ -2420,11 +2420,44 @@ function undercrown() {
   plat(74, 100, 6);
   ent('check', 94, 121);
 
+  // ---- 4b. THE GLITTER VEIN (rows 106-121, east of the stope). The iron ran out into THIS: a cavern of glass. They
+  //          crossed its poison on ledges of the stuff, and a crystal ledge takes your weight for about a breath
+  //          before it crazes and goes - it grows back, slowly. (CRYST: the Sunspire's tile, and hasCryst below.)
+  cut(97, 150, 106, 121); interiors.push([97, 150, 106, 121, 'crystal']);
+  ent('check', 99, 121);
+  ent('sign', 101, 121, { text: 'THE GLITTER VEIN. THE IRON RAN OUT INTO GLASS. IT WILL NOT HOLD YOU FOR LONG.' });
+  for (let x = 106; x <= 140; x++) set(x, 122, T.AIR);
+  water(106, 140, 122, 20, 123);                                   /* the vein's floor is the same dead water as the flooded level */
+  const glass = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.CRYST); };
+  glass(107, 109, 120); glass(113, 115, 119); glass(119, 121, 120); glass(125, 127, 119); glass(131, 133, 120); glass(137, 139, 119);
+  glass(116, 119, 116); glass(128, 131, 116);                      /* the high way: two more, for the silver and the brave */
+  ent('silver', 130, 114);
+  coins([108, 118], [114, 117], [120, 118], [126, 117], [132, 118], [138, 117], [117, 114], [118, 114], [129, 114]);
+  ent('minerlamp', 102, 121, { lit: true }); ent('minerlamp', 146, 121, { lit: true }); ent('minerlamp', 104, 121, { lit: false });
+  ent('deco', 99, 121, { kind: 'barrels' }); ent('deco', 148, 121, { kind: 'wares' });
+  ent('shardling', 103, 121, { face: -1 }); ent('rockgoblin', 144, 121, { face: -1 }); ent('miner', 142, 121, { face: -1 }); ent('shardling', 149, 121, { face: -1 });
+  ent('bat', 112, 110); ent('bat', 124, 108); ent('bat', 136, 110);
+  // THE WAY DOWN is a shaft off the east bank, into the barrow the miners broke into last and walled up first.
+  shaft(144, 6, 122, 130);
+
+  // ---- 4c. THE GOBLIN BARROW (rows 131-140). The Prince's people, buried in rows in the rock, and what is left of
+  //          them getting up. The miners walled it up; the drift you want goes west out of it.
+  cut(96, 150, 131, 140); interiors.push([96, 150, 131, 140, 'ossuary']);
+  ent('check', 146, 140);
+  ent('sign', 142, 140, { text: 'THE GOBLIN BARROW. HIS PEOPLE WERE BURIED IN ROWS. THEY ARE NOT STAYING DOWN.' });
+  plat(104, 137, 5); plat(120, 136, 6); plat(134, 137, 5);         /* the biers: three stone shelves the dead were laid on */
+  ent('bonegob', 138, 140, { face: -1 }); ent('bonegob', 124, 140, { face: -1 }); ent('bonegob', 110, 140, { face: 1 });
+  ent('bonearcher', 122, 135, { face: -1 }); ent('bonegob', 100, 140, { face: 1 });
+  ent('bat', 116, 133); ent('bat', 130, 133);
+  ent('gas', 116, 140); ent('gas', 130, 140);                       /* barrow air, in the low places between the biers */
+  for (const [x, k, v] of [[102, 'stone', 0], [108, 'bones', 0], [114, 'stone', 1], [118, 'bones', 1], [128, 'stone', 0], [132, 'bones', 0], [140, 'stone', 1], [106, 'banner', 0]]) ent('deco', x, 140, { kind: k, ...(v ? { v } : {}) });
+  ent('minerlamp', 144, 140, { lit: true }); ent('minerlamp', 112, 140, { lit: false }); ent('minerlamp', 98, 140, { lit: true });
+  coins([106, 136], [122, 135], [124, 135], [136, 136], [142, 139], [128, 139], [114, 139], [102, 139]);
+
   // ---- 5. THE LAST DRIFT AND THE PIT. A boss arena is entered from the LEFT - the trigger is a line you
-  //         cross going right - so the shaft does not drop you into his pit. It drops you into a low drift
-  //         over it, and you walk the length of that drift to the ladder at the far end before you meet him.
-  shaft(84, 8, 122, 136);
-  cut(10, 92, 137, 140); interiors.push([10, 92, 137, 140, 'mine']);
+  //         cross going right - so nothing drops you into his pit. The barrow lets out into a low drift over it,
+  //         and you walk the whole length of that drift to the ladder at the far end before you meet him.
+  cut(10, 95, 137, 140); interiors.push([10, 95, 137, 140, 'mine']);
   ent('check', 86, 140);
   ent('sign', 82, 140, { text: 'THE LAST DRIFT. THE LADDER DOWN IS AT THE FAR END.' });
   ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
@@ -2463,11 +2496,11 @@ function undercrown() {
   // EVERY LADDER IS HUNG LAST. A gallery cut after a ladder erases the rungs it runs through and does it
   // silently: the shaft still looks like a shaft, and there is a four-course gap in the middle of it that
   // you only find by falling down it. Nothing is dug after this line.
-  ladder(46, 18, 43); ladder(90, 28, 55); ladder(10, 56, 87); ladder(88, 121, 136); ladder(14, 141, 166); ladder(78, 100, 121);
+  ladder(46, 18, 43); ladder(90, 28, 55); ladder(10, 56, 87); ladder(146, 121, 139); ladder(14, 141, 166); ladder(78, 100, 121);
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
-    timber: true, dark: 0.14, edgeLit: true, underground: true,   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
+    timber: true, hasCryst: true, dark: 0.14, edgeLit: true, underground: true,   /* hasCryst: the Glitter Vein's ledges craze under you (updateCrystal) */   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
     duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,   /* the readability pass: under the night wash, the tall gloom and the murk the open air measured L* 6-9 (a walkway needs 20 to read): the washes thinner, the far wall a lit brown, and the gloom a mine's grey, not the canopy's green */
     tall: { top: 10 * TS, bottom: 168 * TS, col: '18,16,22', deepest: 0.12 },
     quest: { n: 3, item: 'lamp', name: 'DEAD MEN\'S LAMPS', npc: 'squire', done: 'THEY ARE ALL ACCOUNTED FOR', reward: 'relic', relic: 'soles' },
