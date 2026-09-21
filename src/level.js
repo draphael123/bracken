@@ -7125,7 +7125,7 @@ export const LEVELS = [
   { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: theDrownedCauseway, needs: 'keep' },
   { id: 'harbor', name: 'STORMWRECK HARBOR', sub: 'from broken quay to lighthouse', rule: 'CROSS THE MARKET, DRYDOCK AND STORM WALL. THE WARDEN HOLDS THE SEA GATE.', build: ()=>stormwreckHarbor({painter,T,TS}), needs: 'causeway' },
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
-    rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'harbor' },
+    rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'causeway' },   /* the causeway again: Stormwreck Harbor is out of the campaign (Daniel, 2026-09-20: 'it offers nothing new') */
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'waymeet' },

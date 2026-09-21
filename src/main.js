@@ -2544,7 +2544,6 @@ const RUSH = [
   { lv: 'reef', boss: 'reefmaw' },
   { lv: 'flotilla', boss: 'quarter' },
   { lv: 'hurricane', boss: 'captain' },
-  { lv: 'harbor', boss: 'harbormaster' },
   { lv: 'burial', boss: 'burieddead' },
   {lv:'fallingtower',boss:'undeadmage'},
   { lv: 'lamplit', boss: 'lampreeve', mini: true }, { lv: 'lamplit', boss: 'tollmaster' },
@@ -2793,9 +2792,8 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 40, y: 45, name: 'THE LAMPLIT STREET' },
   { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' },
   { id: 'keep', kind: 'level', level: LEVELS.findIndex(l=>l.id==='keep'), x: 105, y: 80, name: 'THE UNDERWATER KEEP' },
-  { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l=>l.id==='causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' },
-  { id: 'harbor', kind: 'level', level: LEVELS.findIndex(l=>l.id==='harbor'), x: 195, y: 25, name: 'STORMWRECK HARBOR' }];
-const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [195, 65], [195, 25], [140, 8]];
+  { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l=>l.id==='causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' }];   /* STORMWRECK HARBOR IS GONE FROM THE ROAD (Daniel, 2026-09-20: it offered nothing the coast had not). Its level still builds and is still tested; it is simply not on the map, and Waymeet needs the Causeway again. */
+const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [195, 65], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
   { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 150, y: 140, name: 'THE HEXED FIELDS' },
@@ -2815,7 +2813,7 @@ const nodeLocked = nd => nd.kind === 'level' ? levelLocked(LEVELS[nd.level]) : n
 // THE MAP OPENS WHERE YOU LEFT IT. It used to walk you back to the first wood every time the game loaded.
 function mapToSaved() {
   const legacy=NODES.filter(n=>!['harbor','burial','keep','fallingtower'].includes(n.id));
-  const savedId=PROG.mapNodeId||legacy[PROG.mapNode||0]?.id;
+  const savedId=PROG.mapNodeId==='harbor'?'causeway':(PROG.mapNodeId||legacy[PROG.mapNode||0]?.id);
   const n=Math.max(0,NODES.findIndex(n=>n.id===savedId));
   map.node = (nodeLocked(NODES[n]) || nodeSecret(NODES[n])) ? 0 : n; PROG.mapNodeId=NODES[map.node].id; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
   const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
