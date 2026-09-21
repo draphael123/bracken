@@ -79,7 +79,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   // ---- 3. THE BURST CISTERN. The cistern has let go: the floor is poison water, crossed on stones, and the first
   //      ledges over it give way when stood on. ----
   { const F = floors[2], surf = F.bot - 4;
-    pools.push({ x0: (X0) * TS, x1: (X1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: F.bot * TS, harm: true, poison: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' });
+    pools.push({ x0: (X0) * TS, x1: (X1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: F.bot * TS, harm: true, poison: true, deadly: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' });   /* DEADLY: four rows deep and a jump is three - nobody climbs out of it, so it says so and it kills (deadly-water.js) */
     /* the stepping stones, their tops two rows over the water, laid from the one the orrery's rope comes up through */
     const [hx0, hlen] = floors[1].tiers[floors[1].tiers.length - 1], hx = hx0 + (hlen >> 1);
     for (let x = hx - 1 - 6 * 8; x < X1 - 2; x += 6) if (x > X0 + 10) rect(x, x + 1, surf - 2, F.bot - 1, T.SOLID);

@@ -2398,13 +2398,13 @@ function undercrown() {
   boards(30, 44, 112); boards(52, 66, 112); boards(40, 56, 100);
   plat(46, 106, 6); plat(24, 106, 6); plat(68, 106, 6);
   plat(10, 90, 6); plat(17, 94, 6); plat(24, 98, 8); plat(33, 100, 7);   /* the stages down the west wall: off the rope, and onto the top walkway */
-  ent('propman', 36, 111, { face: 1, mini: true });
+  ent('propman', 36, 111, { face: 1 });   /* he was THE OVERMAN, the stope's mini: cut 2026-09-21 (Daniel). A propman like the rest now */
   ent('propman', 60, 111, { face: -1 });
   ent('rockgoblin', 46, 99, { face: 1 }); ent('miner', 54, 99, { face: -1 });
   ent('rockgoblin', 26, 121, { face: 1 }); ent('miner', 94, 121, { face: -1 }); ent('sprig', 82, 121, { face: -1 });
   ent('sprig', 32, 111, { face: 1 }); ent('miner', 64, 111, { face: -1 });
   ent('check', 46, 105);
-  ent('sign', 30, 111, { text: 'THE OVERMAN RESETS WHAT YOU CUT. TAKE HIM OFF THE SPAN FIRST; MIND YOUR OWN.' });
+  ent('sign', 30, 111, { text: 'THE PROPMEN RESET WHAT YOU CUT. TAKE THEM OFF THE SPAN FIRST; MIND YOUR OWN.' });
   ent('clinger', 7, 96, { face: 1 }); ent('clinger', 95, 104, { face: -1 });
   ent('bat', 40, 92); ent('bat', 62, 92); ent('bat', 52, 94); ent('bat', 30, 96); ent('bat', 74, 96);
   ent('rockgoblin', 52, 111, { face: -1 }); ent('sprig', 44, 99, { face: 1 });
@@ -2508,7 +2508,6 @@ function undercrown() {
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
-    mini: { x0: 30 * TS, x1: 70 * TS, floor: 112 * TS, trigger: 36 * TS, wallL: 29, gate: 71, boss: 'propman', y0: 96 * TS, y1: 114 * TS },
     arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'prince', music: 'musDungeon', tint: '#1e2420', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }

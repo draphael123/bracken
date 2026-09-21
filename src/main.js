@@ -1,4 +1,5 @@
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
+import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
 import {updateBuriedDead as stepBuriedDead,updateZombie,bakeDead,deadFrame,drawBuriedDead} from './buried-dead.js';
 import {updateVaultKeeper,drawVaultKeeper} from './vault-keeper.js';
@@ -9746,7 +9747,8 @@ function magePlayer(dt) {
   { const tx = Math.floor(P.x / TS), ty0 = Math.floor((P.y - P.h + 1) / TS), ty1 = Math.floor((P.y - 1) / TS); for (let ty = ty0; ty <= ty1; ty++) if (tileAt(tx, ty) === T.SPIKE && !P.dead) { damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true }); break; } }
   /* THE ACID: it eats a hero walking the ceiling exactly as it eats one walking the floor */
   { const pl = (L.pools || []).find(p => p.harm && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 4 && (p.bottom === undefined || P.y <= p.bottom + 4));
-    if (pl && !P.dead) { P.acidT = (P.acidT || 0) - dt; if (P.acidT <= 0) { P.acidT = 0.6; damagePlayer(P.x, DMG.foul, { unblockable: true, noKnock: true }); } P.vy = Math.min(P.vy, 40);
+    if (pl && pl.deadly && !P.dead && P.y > pl.y + 10) { P.hp = 0; P.dead = 1.2; P.vx = 0; P.vy = 0; SFX.splash(); SFX.pDie(); burst(P.x, pl.y, 16, ['#1c3212', '#a6e04a', '#d9d6c0'], 90, 0.6, 300, 2); number(P.x, pl.y - 20, 'THE WATER KILLS', '#ff6b6b'); }   /* DEADLY WATER is a death, and quick: not five seconds of sinking (deadly-water.js) */
+    else if (pl && !P.dead) { P.acidT = (P.acidT || 0) - dt; if (P.acidT <= 0) { P.acidT = 0.6; damagePlayer(P.x, DMG.foul, { unblockable: true, noKnock: true }); } P.vy = Math.min(P.vy, 40);
       /* AND THE GREEN WATER SAYS SO. It was taking twelve health a tick in silence, with the hero bobbing upright at the
          waterline as if he were standing on a green floor: measured, it hurt; played, it read as scenery. Now it names
          itself on the way in, it pulls you under instead of floating you, and it comes out of the water with you. */
@@ -18795,6 +18797,24 @@ function drawFirePool(p, x0, x1, y, h, cx, cy, front) {
     const hsh = Math.abs(Math.sin(wx * 3.7) * 1e4) % 1, lift = Math.round(Math.abs(Math.sin(time * (3 + hsh * 2) + hsh * 9)) * 5);
     g.drawImage(PROP.fire[(Math.floor(time * 10 + hsh * 3)) % 3], sx - 2, Math.round(y - 13 - lift), 16, 16 + lift); }
 }
+/* DEADLY WATER: its own look, over the foul water's. Near-black, bones turning in it, a slow sick pulse, a skull post on each
+   bank, and the first time it is on the screen, THIS WATER KILLS over it. Any pool can be drawn foul; this one is a death. */
+function drawDeadly(p, x0, x1, y, h, cx, cy) {
+  g.globalAlpha = 0.72; g.fillStyle = '#060c06'; g.fillRect(x0, y + 3, x1 - x0, Math.max(0, h - 3)); g.globalAlpha = 1;
+  g.globalAlpha = 0.22 + 0.12 * Math.sin(time * 1.6); g.fillStyle = '#6fe08a'; g.fillRect(x0, y - 3, x1 - x0, 3); g.globalAlpha = 1;
+  for (let x = Math.floor(p.x0 / 30) * 30 + 11; x < p.x1; x += 30) {   /* the bones in it: skulls and a long bone, bobbing and turning */
+    const sx = Math.round(x - cx + Math.sin(time * 0.6 + x) * 4), by = Math.round(y + 2 + Math.sin(time * 1.3 + x * 0.1) * 1.2); if (sx < x0 - 6 || sx > x1 + 6) continue;
+    if (((x / 30) | 0) % 2) { g.fillStyle = '#d9d6c0'; g.fillRect(sx - 3, by - 3, 6, 4); g.fillRect(sx - 2, by + 1, 4, 1); g.fillStyle = '#0a100c'; g.fillRect(sx - 2, by - 2, 1, 1); g.fillRect(sx + 1, by - 2, 1, 1); }
+    else { g.fillStyle = '#b8b098'; g.fillRect(sx - 5, by, 10, 1); g.fillRect(sx - 6, by - 1, 2, 3); g.fillRect(sx + 4, by - 1, 2, 3); } }
+  /* the warning posts, on the banks at the water's real edges (the pool's box runs on under the rock): found once */
+  if (!p.posts) { p.posts = []; const sr = Math.floor(p.y / TS), c0 = Math.ceil(p.x0 / TS), c1 = Math.floor(p.x1 / TS) - 1; let a = -1, b = -1;
+    for (let x = c0; x <= c1; x++) if (tileAt(x, sr) === T.AIR) { if (a < 0) a = x; b = x; }
+    for (const bx of a < 0 ? [] : [a - 1, b + 1]) { let t = sr - 4; while (t <= sr && tileAt(bx, t) === T.AIR) t++; if (t <= sr) p.posts.push([bx * TS + 8, t * TS]); } }
+  for (const [px, py] of p.posts) { const sx = Math.round(px - cx), sy = Math.round(py - cy); if (sx < -10 || sx > VW + 10) continue;
+    g.fillStyle = '#4a3a2c'; g.fillRect(sx - 1, sy - 16, 2, 16); g.fillStyle = '#d9d6c0'; g.fillRect(sx - 3, sy - 22, 6, 5); g.fillRect(sx - 2, sy - 17, 4, 1);
+    g.fillStyle = '#c9463d'; g.fillRect(sx - 2, sy - 21, 1, 2); g.fillRect(sx + 1, sy - 21, 1, 2); }
+  if (!p.warned && x1 > 24 && x0 < VW - 24 && y > 10 && y < VH - 10) { p.warned = true; number(Math.max(p.x0 + 40, Math.min(p.x1 - 40, P.x)), p.y - 26, 'THIS WATER KILLS', '#ff6b6b'); SFX.buzz(); }
+}
 function drawFoul(p, x0, x1, y, h, cx, cy) {
   const scum = p.foulCol || '#7a8a3a', scumL = p.foulColL || '#a8b85a', dark = p.foulColD || '#3a4a1e';
   g.globalAlpha = 0.42; g.fillStyle = dark; g.fillRect(x0, y + 2, x1 - x0, Math.max(0, h - 2)); g.globalAlpha = 1;
@@ -18925,7 +18945,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
       g.globalAlpha = 1;
     }
     if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, true); continue; }
-    if (p.harm) { drawFoul(p, x0, x1, y, h, cx, cy); continue; } // it hurts, so it does not get the clean blue surface
+    if (p.harm) { drawFoul(p, x0, x1, y, h, cx, cy); if (p.deadly) drawDeadly(p, x0, x1, y, h, cx, cy); continue; } // it hurts, so it does not get the clean blue surface
     if (!p.shallow && !p.swim) { drawDeadWater(p, x0, x1, y, h, cx, cy); continue; } // and neither does water with no bottom to it
     drawFlow(p, x0, x1, y, h, cx, cy);
     // surface: a bright band with travelling crests, and a darker line under it
