@@ -1,6 +1,6 @@
 // tools/desert-rules.mjs — the sandstorm, sandfalls, the waterskin and mirages (src/desert-rules.js), proved in Node before any
 // level uses them. usage: node tools/desert-rules.mjs     exit 1 on any failure
-import { STORM, newStorm, stormStep, gustDrift, SANDFALL, sandfallMods, inSandfall, SKIN, newSkin, fillAt, drink, pour, MIRAGE, mirageAlpha, mirageShimmer } from '../src/desert-rules.js';
+import { FLOOD, newFlood, floodStep, floodHits, STORM, newStorm, stormStep, gustDrift, SANDFALL, sandfallMods, inSandfall, SKIN, newSkin, fillAt, drink, pour, MIRAGE, mirageAlpha, mirageShimmer } from '../src/desert-rules.js';
 let fails = 0; const log = s => console.log(s), ok = (c, m) => { log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const DT = 1 / 60;
 
@@ -40,6 +40,14 @@ log('MIRAGES');
   ok(mirageAlpha(m, 200) === 1 && mirageAlpha(m, 500 - MIRAGE.near + 1) === 0 && mirageAlpha(m, 400) > 0 && mirageAlpha(m, 400) < 1, `a mirage is whole from afar, fades from ${MIRAGE.far} px and is gone by ${MIRAGE.near} px`);
   let sh = 0, rs = 0; for (let t = 0; t < 2; t += 0.05) { sh = Math.max(sh, Math.abs(mirageShimmer(m, t))); rs = Math.max(rs, Math.abs(mirageShimmer(real, t))); }
   ok(sh > 0.5 && rs === 0, 'a mirage always shimmers and a real oasis never does: the tell, for a player who is looking'); }
+
+log('THE FLASH FLOOD (level 3)');
+{ const F = newFlood(); let t = 0, horns = [], hornAt = null, floods = 0, last = 'dry'; const ch = { x0: 352, x1: 432 };
+  let hitIn = 0, hitOut = 0;
+  while (t < 60) { const st = floodStep(F, DT); t += DT; if (st.phase === 'horn' && last !== 'horn') hornAt = t; if (st.phase === 'flood' && last === 'horn') { horns.push(t - hornAt); floods++; }
+    if (floodHits(st, ch, 400)) hitIn++; if (floodHits(st, ch, 300)) hitOut++; last = st.phase; }
+  ok(floods >= 4 && Math.min(...horns) >= 2.3, `every flood is heralded: ${floods} floods a minute, each after ${Math.min(...horns).toFixed(2)} s of horn - time to walk ${(Math.min(...horns) * 92 / 16).toFixed(0)} tiles off a bridge`);
+  ok(hitIn > 0 && hitOut === 0, 'the torrent takes only the channel: in it you are swept; a ledge beside it is dry'); }
 
 console.log(fails ? `\ndesert-rules: ${fails} FAILED` : '\ndesert-rules: all passed');
 process.exit(fails ? 1 : 0);

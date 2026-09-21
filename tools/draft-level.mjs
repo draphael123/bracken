@@ -32,7 +32,7 @@ const lint = slopeLint(L, T); ok(lint.length === 0, `slopeLint: ${lint.length} c
 const R = floodReach(slopeReachGrid(D.asPlayed ? D.asPlayed(L, T) : L, T), T, { rides: true });   /* reach as the player plays it (a level whose rule opens the way says how: asPlayed) */
 const want = t => L.ents.filter(e => e.t === t), got = e => R.jumpNear(e.x, e.y), cnt = t => `${want(t).filter(got).length}/${want(t).length}`;
 ok(want('silver').length === 3 && want('stray').length === 3 && want('relic').length === 1 && [...want('silver'), ...want('stray'), ...want('relic')].every(got), `F7 + reach: silvers ${cnt('silver')}, strays ${cnt('stray')}, relic ${cnt('relic')} got by the fill`);
-let arenaReached = false; for (let x = ax0; x < ax1; x++) for (let y = 0; y < H; y++) if (R.seen.has(x + ',' + y)) arenaReached = true;
+let arenaReached = false; for (let x = ax0; x < ax1; x++) for (let y = V ? afl - 12 : 0; y < (V ? afl : H); y++) if (R.seen.has(x + ',' + y)) arenaReached = true;   /* a climb's arena is ON TOP: its columns run all the way down the level (the first check counted the gorge floor) */
 ok(arenaReached, `B1: the start reaches the arena (${A.boss})`);
 ok(ax1 - ax0 <= 44, `A7: the arena is ${ax1 - ax0} tiles across`);
 // B6

@@ -55,3 +55,15 @@ export function pour(skin, L, x, y, face, fires = []) {
 export const MIRAGE = { far: 150, near: 60, shimmer: 1 };
 export function mirageAlpha(m, px) { const d = Math.abs(m.x - px); return d >= MIRAGE.far ? 1 : d <= MIRAGE.near ? 0 : (d - MIRAGE.near) / (MIRAGE.far - MIRAGE.near); }
 export const mirageShimmer = (m, time) => m.mirage ? Math.sin(time * 9 + m.x * 0.05) * MIRAGE.shimmer : 0;
+
+// ================= THE FLASH FLOOD (level 3: THE RED GORGE) =================
+/* The flood comes down the canyon's channel on a cycle: DRY -> HORN (a horn from above, the first trickle, a roar building) ->
+   FLOOD (the torrent: anything in the channel is swept down and hurt) -> dry. The ledges up the walls are safe; the rope bridges
+   across the channel are not. FLOOD.warn is long enough to walk a bridge's length off it (the draft's check). */
+export const FLOOD = { dry: 7.5, warn: 2.4, run: 2.2, push: 260, dmg: 10 };
+export function newFlood(phase = 0) { return { phase: 'dry', t: FLOOD.dry - phase }; }
+export function floodStep(F, dt) { F.t -= dt;
+  if (F.t <= 0) { if (F.phase === 'dry') { F.phase = 'horn'; F.t += FLOOD.warn; } else if (F.phase === 'horn') { F.phase = 'flood'; F.t += FLOOD.run; } else { F.phase = 'dry'; F.t += FLOOD.dry; } }
+  return { phase: F.phase, warnLeft: F.phase === 'horn' ? F.t : 0 }; }
+/* what the torrent does to a body this frame: in the channel during a flood, pushed down and hurt; anywhere else, nothing */
+export const floodHits = (st, channel, x) => st.phase === 'flood' && x >= channel.x0 && x <= channel.x1 ? { push: FLOOD.push, dmg: FLOOD.dmg } : null;
