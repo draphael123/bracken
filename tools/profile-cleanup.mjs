@@ -24,8 +24,9 @@ const browsersOn = names => { if (!names.length) return 0; const r = spawnSync('
    own bracken-* profiles while a case runs. A new profile that a running process has on its command line is in use - the same
    test profile-sweep.mjs uses - and it is left out of the count, UNLESS the process using it is one this case started (the
    'killed' case's orphaned browser is ours, and it must still be seen and swept). */
+/* (a raw control character in some process's command line comes out of PowerShell 5.1's JSON unescaped and breaks the parse: they are blanked first) */
 const procs = () => { const r = spawnSync('powershell', ['-NoProfile', '-Command', 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress'], { encoding: 'utf8', maxBuffer: 64 << 20, windowsHide: true });
-  if (r.status !== 0 || !r.stdout) throw new Error('could not list processes'); return JSON.parse(r.stdout).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: (p.CommandLine || '').toLowerCase() })); };
+  if (r.status !== 0 || !r.stdout) throw new Error('could not list processes'); return JSON.parse(r.stdout.replace(/[\x00-\x1f]/g, ' ')).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: (p.CommandLine || '').toLowerCase() })); };
 const descendants = (ps, root) => { const s = new Set([root]); let grew = true; while (grew) { grew = false; for (const p of ps) if (!s.has(p.pid) && s.has(p.ppid)) { s.add(p.pid); grew = true; } } return s; };
 /* the profiles in use by a running process that is not one of `mine` (pids) */
 const foreignInUse = (names, mine = new Set()) => { const ps = procs().filter(p => !mine.has(p.pid)); return new Set(names.filter(n => ps.some(p => p.cmd.includes(n.toLowerCase())))); };
@@ -44,7 +45,10 @@ const CASES = {
   killed: page + `await new Promise(r=>setTimeout(r,60000));`,
 };
 const rows = [];
-for (const [name, code] of Object.entries(CASES)) {
+/* THE HARD KILL IS A RACE: most times the browser outlives its node and leaves its profile to be swept, but sometimes it goes down
+   with it and takes its own profile along, and then the case has nothing to prove. That one is run again, once, before it fails */
+const order = Object.keys(CASES); let killTries = 0;
+for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES[name];
   const before = ours(), t0 = Date.now();
   const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = ''; child.stdout.on('data', d => { out += d; }); child.stderr.on('data', () => {});
@@ -56,6 +60,8 @@ for (const [name, code] of Object.entries(CASES)) {
     await done;
     const fresh = () => { const n = [...ours()].filter(x => !before.has(x)), f = foreignInUse(n, mine); return n.filter(x => !f.has(x)); };
     const orphaned = fresh();
+    if (!orphaned.length) console.error('killed: new', [...ours()].filter(x => !before.has(x)), 'mine', [...mine].length);
+    if (!orphaned.length && ++killTries < 2) { await serverGone(); order.push('killed'); continue; }
     const sweep = spawnSync(process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(t0 - 1000)], { cwd: ROOT, encoding: 'utf8' });
     const rep = JSON.parse(sweep.stdout.trim().split('\n').pop());
     const left = fresh();

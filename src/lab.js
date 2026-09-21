@@ -371,7 +371,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromander'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -509,6 +509,40 @@ async function runbossLab(BK, opts) {
         const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
         if(f%600===599)await yieldNow();continue;
+      }
+      /* THE PYROMANDER (batch 5): the bot reads the square. It never stands on burning ground (a burning or catching cell of the
+         village's fire grid), keeps out of the firedrop's landing ring, the jet's cone and the vent's ring, takes his embers on
+         the shield (the three who carry one) or rolls through them, and otherwise stays in reach and cuts - which is what keeps
+         him from venting and takes him over the top into OVERHEAT, where it goes in. Resting is done on clear ground, away. */
+      if(boss.t==='pyromander'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        const VGr=BK.village?BK.village().G():null,fl=A.floor,m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1;
+        const hotAt=x=>{if(fireAt(BK,x,fl-1))return true;if(!VGr)return false;const c=VGr.get(Math.floor(x/16),Math.floor(fl/16)-1);return !!c&&(c.s===2||c.s===1);};   /* the square's grid AND every other flame on the floor: his embers and his drop leave fire where they land */
+        const danger=[];
+        if(m==='ventTell'||m==='vent')danger.push([boss.x-84,boss.x+84]);
+        if(m==='dropTell'||m==='rise'||m==='drop')danger.push([(boss.tx??P.x)-56,(boss.tx??P.x)+56]);
+        if((m==='jetTell'||m==='jet')&&!SHIELDED(h))danger.push(boss.face>0?[boss.x,boss.x+100]:[boss.x-100,boss.x]);
+        if((m==='jetTell'||m==='jet')&&SHIELDED(h)&&Math.abs(dx)<100){k.block=true;P.face=side;}   /* the jet is a '!' now: the three with a guard hold it */
+        const bad=x=>danger.some(([l,r])=>x>l&&x<r)||hotAt(x),free=x=>x>A.x0+16&&x<A.x1-16&&!bad(x);
+        const rest=P.st<14||(P.labRest&&P.st<44);P.labRest=rest;
+        let gx=rest?boss.x-side*150:boss.x-side*Math.max(18,LAB_REACH[h]*.65);
+        if(!free(gx)){let best=null;for(let s=6;s<440&&best===null;s+=6){if(free(gx-s))best=gx-s;else if(free(gx+s))best=gx+s;}if(best!==null)gx=best;}
+        if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
+        if(P.ground&&Math.abs(gx-P.x)>12){const dir=gx>P.x?1:-1;if(hotAt(P.x+dir*8)||hotAt(P.x+dir*22)||hotAt(P.x+dir*34)){BK.press('jump');P.labJump=16;}}   /* a player jumps the flames between him and where he is going - a full jump, held: a tapped hop is six pixels and the fire reaches fourteen */
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(P.ground&&P.y<fl-20){k.down=true;BK.press('jump');}   /* off a stall: the fight is on the floor */
+        const inRing=danger.length&&bad(P.x)&&Math.abs(gx-P.x)>40;
+        if(inRing&&(m==='drop'||m==='vent'||m==='jet'||(m.endsWith('Tell')&&boss.modeT<.18))&&P.st>20&&!(P.dodge>0))BK.press('dodge');
+        const inc=BK.seeds().find(s=>s.pyroEmber&&!s.dead&&Math.abs(s.x-P.x)<80&&Math.abs(s.y-(P.y-8))<30&&(s.x-P.x)*s.vx<0);
+        const volley=(m==='emberTell'||m==='ember')&&Math.abs(dx)<220;   /* his ember '!': a player with a shield guards the whole volley, facing him */
+        if(volley&&SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}
+        else if(inc&&SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=Math.sign(inc.x-P.x)||P.face;}
+        else if(inc&&P.st>20&&!(P.dodge>0)&&Math.abs(inc.x-P.x)<24)BK.press('dodge');
+        else if(!rest&&!danger.length&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        if(opts.samples&&f%60===0){out.samples=out.samples||[];out.samples.push([h,Math.round(f/60),m,Math.round(boss.heat),boss.open>0?'OPEN':'',Math.round(dx),hotAt(P.x)?'HOT':''].join(' '));}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='burieddead'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;

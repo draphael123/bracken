@@ -1,5 +1,6 @@
 // Per-level ground kits and allowed decoration kinds. Add a kind deliberately here before placing it.
 export const GROUND_KITS = {
+  "burning": {"density":0.34,"kinds":["tuft","rock","stump","campfire"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
   "harbor": {"density":0,"kinds":[]},
   "burial": {"density":0,"kinds":[]},
   "wood": {
@@ -253,6 +254,7 @@ export const GROUND_KITS = {
   }
 };
 export const ALLOWED_DECORATIONS = {
+  "burning": ["tuft","rock","stump","campfire","barrels","fence","cart","hayBale","brokenCart","milkChurn","waterPump","crookedFence","lanternPost"],
   "harbor": ["stall","pierPost","rumBarrels","wreckBow","anchor","mastStump","kegStack","chartTable","seaChest","plunder","capstan","coiledCable","lanternDeck","waterButt","cannon","netPoles","snow","stem"],
   "burial": ["grave","bones","coffer","candelabra","snow","stem"],
   "wood": [

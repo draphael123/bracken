@@ -6,7 +6,8 @@
      THE BURIED DEAD   slam him down on the ground he already erupted through
      THE BREAKWATER WARDEN  turn the anchor on the shield
      THE VAULT KEEPER  cut him while the bell is swinging
-     THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight) */
+     THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight)
+     THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5) */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
@@ -53,6 +54,12 @@ try {
    // flown out of: it comes back on him
    b.mode='hover';b.modeT=1;BK.sim(5);const laid2=lay();const m2=b.mark&&{x:b.mark.x,y:b.mark.y};for(let i=0;i<200&&b.mark;i++){if(m2){BK.P.x=m2.x+b.mark.r+40;BK.P.y=m2.y+8;}hold();BK.sim(1);}
    out.mage={laid:laid1&&laid2,landed,mode:b.mode,open:+(b.open||0).toFixed(1)};}
+  /* THE PYROMANDER: the same hot boss, left alone (he vents) and struck (he overheats) */
+  {const b=boot('burning');BK.P.x=b.x-110;
+   b.heat=75;b.calmT=5;b.mode='stalk';b.cd=0;b.open=0;let openA=0;for(let i=0;i<240;i++){BK.sim(1);openA=Math.max(openA,b.open||0);}
+   const alone={open:+openA.toFixed(1),heat:Math.round(b.heat)};
+   b.heat=75;b.calmT=0;b.mode='stalk';b.cd=0;b.open=0;let openS=0;for(let i=0;i<600&&!(b.open>0);i++){if(i%30===0)BKT.hurtEnemy(b,1,b.x-20,false);BK.sim(1);}openS=b.open||0;
+   out.pyro={alone,mode:b.mode,open:+openS.toFixed(1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -71,6 +78,10 @@ try {
   assert.notEqual(r.mage.landed.mode, 'gather', 'a mark that lands opens nothing: ' + JSON.stringify(r.mage.landed));
   assert.equal(r.mage.mode, 'gather', 'flown out of, the mark must come back on him');
   assert.ok(r.mage.open > 2, 'the gathering is the window: ' + r.mage.open);
+
+  assert.equal(r.pyro.alone.open, 0, 'left alone while hot, he vents and opens nothing: ' + JSON.stringify(r.pyro.alone));
+  assert.equal(r.pyro.mode, 'overheat', 'struck while hot, he overheats: ' + JSON.stringify(r.pyro));
+  assert.ok(r.pyro.open > 2, 'the overheat is the window: ' + r.pyro.open);
 
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));

@@ -20,11 +20,12 @@ const DRY = argv.includes('--dry-run'), CHECK = argv.includes('--check'), ORPHAN
 const JOBS = Math.max(1, +opt('jobs', 1)), MEASURE = argv.includes('--measure');   /* --jobs N: N deletes at once (the cost is per file: ~5 ms each on this disk); --measure: add up the bytes first */
 const IDLE = +opt('idle', 30) * 60000, SINCE = opt('since', null) === null ? null : +opt('since');
 
+/* (a raw control character in some process's command line comes out of PowerShell 5.1's JSON unescaped and breaks the parse: they are blanked first) */
 function processes() {
   if (process.platform !== 'win32') { const r = spawnSync('ps', ['-eo', 'pid=,ppid=,args='], { encoding: 'utf8' }); return (r.stdout || '').split('\n').filter(Boolean).map(l => { const m = l.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/); return m && { pid: +m[1], ppid: +m[2], cmd: m[3] }; }).filter(Boolean); }
   const r = spawnSync('powershell', ['-NoProfile', '-Command', 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress'], { encoding: 'utf8', maxBuffer: 64 << 20, windowsHide: true });
   if (r.status !== 0 || !r.stdout) throw new Error('could not list processes: refusing to decide what is in use');
-  return JSON.parse(r.stdout).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: p.CommandLine || '' }));
+  return JSON.parse(r.stdout.replace(/[\x00-\x1f]/g, ' ')).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: p.CommandLine || '' }));
 }
 /* the newest modification anywhere in it; null when anything in it cannot be read (then we do not know it is idle) */
 function newest(dir) {

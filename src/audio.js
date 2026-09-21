@@ -663,7 +663,7 @@ Object.assign(SFX, {
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
 });
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
-const GOB_V = { sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
+const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
 Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
   foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
@@ -708,6 +708,9 @@ export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, cu
 const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
 const DIE = {
+  burngob() { gob(0.95, 0.7) || tone('sawtooth', 260, 60, 0.35, 0.2); noise(0.5, 0.2, 2600, 0.5, 0.12); },   /* THE BURNING VILLAGE */
+  emberwisp() { noise(0.3, 0.18, 3200, 0.6); tone('sine', 900, 200, 0.25, 0.08); },
+  pyromander() { noise(1.2, 0.36, 1800, 0.5); tone('sawtooth', 160, 40, 1.4, 0.22); },
   /* THE MAGE'S FOLLY: a hedge falling to bits, a suit coming apart, a bucket over, a chest breaking, a jar's worth of squeal, glass, and the tower's two */
   topiary() { noise(0.3, 0.24, 1600, 0.4); noise(0.2, 0.16, 700, 0.5, 0.1); tone('square', 200, 90, 0.16, 0.06, 0.05); },
   armour() { file('clang', 0.3, 0.55) || tone('sine', 500, 300, 0.2, 0.14); for (let i = 0; i < 4; i++) { tone('square', 1400 - i * 200, 900 - i * 150, 0.14, 0.08, 0.15 + i * 0.12); noise(0.06, 0.2, 2000, 0.5, 0.15 + i * 0.12); } },
@@ -864,6 +867,9 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  burngob() { gobH(0.95, 0.5) || tone('sawtooth', 260, 150, 0.14, 0.16); noise(0.1, 0.1, 2600, 0.6); },
+  emberwisp() { noise(0.08, 0.1, 3600, 0.5); },
+  pyromander() { noise(0.18, 0.2, 1400, 0.5); tone('triangle', 200, 120, 0.2, 0.14); },
   zombie() { noise(.2,.2,400,.4);tone('triangle',100,50,.2,.12); },
   husk() { noise(.26,.26,300,.5);tone('triangle',78,40,.26,.14); },
   bonegob() { noise(.1,.1,900,.3);tone('square',420,180,.1,.07); },

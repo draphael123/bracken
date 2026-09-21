@@ -1,4 +1,5 @@
 import {polishTower,buildTowerAscent} from './tower-ascent.js';
+import {buildBurningVillage} from './burning-village.js';
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
@@ -7165,6 +7166,9 @@ export const LEVELS = [
   { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'FOLLOW THE CANDLES. THE LOWER ROAD ALWAYS LEADS BACK UP.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
   { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'burial' },
   { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. EVERY FLOOR YOU LEAVE FALLS. THE DEAD MAGE WAITS IN THE SKY.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage' },
+  /* THE BURNING VILLAGE (batch 5): the Pyromancer's class level, off the Stockade on the road to Sporewood. Appended here, not
+     between them, so no level's index moves (the map's nodes and the saves count by index) */
+  { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -7268,6 +7272,7 @@ export const DRESS = {
   causeway: [['barnacleRock', 2], ['saltCrust', 2], ['kelp', 3], ['shellDrift', 2], ['fencePosts'], ['spar', 2], ['pierPost']],   /* the pilgrim road: wrack, shells, weed and what the tide leaves on the stone */
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
   frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
+  burning: [['barrels'], ['fence', 2], ['cart'], ['hayBale', 2], ['brokenCart'], ['milkChurn'], ['waterPump'], ['crookedFence', 2], ['lanternPost'], ['stump', 2]],   /* a farming village on the road: its carts, its hay, its pumps */
   mage: [['candelabra'], ['bookpile', 2], ['jars', 2], ['topiaryUrn'], ['lamppost'], ['ivyWall'], ['stone', 3]],   /* the tower: candles, books and jars; the grounds: urns, lamps and ivy */
   fields: [['deadCorn', 3], ['crookedFence', 2], ['hayStack', 2], ['pumpkinPatch'], ['farmLantern'], ['milkChurn'], ['plough'], ['brokenCart'], ['waterPump'], ['fieldGrave', 3], ['stone', 3], ['deadTree', 2]],   /* the farm, gone wrong: dead corn, crooked fences, the lanterns they left in the fields */
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
@@ -7298,6 +7303,7 @@ const GARRISON = {
      1.4 to 2.3 a screen against Kingswood's 4.8 and Sporewood's 5.5, which is most of why they played empty. */
   harbor: [['cutlass', 11], ['boarder', 10], ['scout', 11], ['tideguard', 10], ['petrel', 11], ['marine', 8], ['sailor', 8], ['netter', 6], ['crab', 8], ['angler', 8], ['eel', 6], ['lookout', 4], ['bosun', 4], ['bonecorsair', 6], ['lanternshade', 4], ['puffer', 2]],   /* the wrecked harbour's own: the crews the storm put ashore, the birds over them, and what the Lamplit Street's dead washed in with */
   keep: [['wight', 14], ['tideguard', 10], ['watch', 9], ['eel', 9], ['angler', 7], ['siren', 5], ['merrowspear', 5], ['jelly', 5], ['merrowbrute', 3], ['manta', 3], ['urchin', 3], ['puffer', 3], ['lamprey', 3]],   /* a drowned castle: its own garrison still at their posts, and the deep water's wildlife moved in over them */
+  burning: [['sprig', 10], ['archer', 4], ['burngob', 4], ['emberwisp', 4], ['thief', 3], ['hound', 3], ['sapper', 3], ['shield', 2], ['pike', 2]],   /* THE BURNING VILLAGE: the Stockade's goblins down the road, his burning ones, and his wisps */
   burial: [['zombie', 16], ['husk', 9], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['bonecorsair', 7], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* forty-four zombies and nothing else was the whole roster under the hill */
   fallingtower: [['apprentice', 3], ['zombie', 3], ['husk', 2], ['haunt', 2], ['bat', 2], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and the ones who did not get out of it: the dead outnumber the living in a dead man's tower. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors) */
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
@@ -7365,7 +7371,7 @@ function garrison(L, id) {
     .concat((L.ambushes || []).map(A => [A.wallL - 1, A.wallR + 1, (A.y0 !== undefined ? A.y0 : A.row - 9) - 1, A.row + 2])).concat(L.calm || []);   /* an ambush room is empty until it shuts, and a calm is kept calm */
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const deepUnder = (x, y) => (L.pools || []).some(p => !p.shallow && !p.swim && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
-  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest', 'sheet']);
+  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'mover', 'capstan', 'pump', 'cannon', 'bulkhead', 'plank', 'cart', 'bell', 'seabell', 'winch', 'crank', 'support', 'nest', 'sheet', 'captive', 'watertrough', 'villagewell']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   /* NOT ON TOP OF ONE ALREADY THERE (L.noStack). The sprinkler never looked at the creatures a builder put down by hand, so
      a spot it took could be the very tile an archer stands on: after the Marsh's crossings were calmed, four of its
@@ -7568,6 +7574,7 @@ function ambushRooms(L, id) {
    gate actually holds the route, and that nothing counted stands in the gate. */
 const ELITES = {
   /* and the same four had no elite either: every other level has its one big fight on the way to the boss */
+  burning: [['brute', 386, 25, { face: -1, gate: 398 }]],   /* THE BARN CAPTAIN holds the barn's far door */
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 700, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],
@@ -7625,7 +7632,7 @@ function elites(L, id) {
    packed against the end, a heart that waits for you when the pocket is long, wet or spiked, and the level's own stash
    prop on its last floor. Never a silver (three a level, the ledger reads three bits) and never a quest item (counted).
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
-const STASH = { mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
+const STASH = { burning: 'barrels', mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
   scree: 'cairn', spire: 'stoneLantern', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
   longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', keep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
