@@ -136,13 +136,13 @@ export function bakeHedgeWarden() {
 const GG = { s: '#8a8a94', S: '#a6a6b0', sd: '#6e6e78', sD: '#4e4e58', moss: '#6a8a4a', mossL: '#8aaa5a', iron: '#4a4a52', ironL: '#7a7a84', witch: '#b8ff9a', witchL: '#effff0', claw: '#3e3e46', slab: '#7a7a84', slabL: '#9a9aa4', slabD: '#5a5a64' };
 export function bakeGateGargoyle() {
   const W = 84, H = 64, cx = 40;
-  /* A BAT'S WING IN STONE: the arm up and back from the shoulder to the wrist, three fingers fanning down from it, the
-     membrane between them. `lift` raises the wrist; `spread` is how far back it reaches. */
-  const wing = (g, x, y, lift, spread, far = false) => { const wx = x - spread * 0.55, wy = y - lift - 8, col = far ? GG.sd : GG.s, bone = far ? GG.sD : GG.S;
-    const tips = [[x - spread, wy + 4 + lift * 0.1], [x - spread * 0.8, y + 6], [x - spread * 0.45, y + 10]];
-    let prev = [x - 2, y + 4];
-    for (const t of tips) { fillPoly(g, [[wx, wy], prev, [(prev[0] + t[0]) / 2 + 1, (prev[1] + t[1]) / 2 - 3], t], col); prev = t; }
-    fillPoly(g, [[x, y - 2], [wx, wy], [x - 2, y + 4]], col);
+  /* A BAT'S WING IN STONE: the arm up from the shoulder to the WRIST, three fingers FANNING from the wrist - up-back, back,
+     down-back - and the membrane between them scalloped toward the wrist. (The first pass ran the fingers from the wrist down to
+     the body, so a raised wing was a tall slab.) `lift` raises the wrist; `spread` is how long the fingers are. */
+  const wing = (g, x, y, lift, spread, far = false) => { const wx = x - spread * 0.45, wy = y - Math.max(-4, lift) * 0.5 - 4, col = far ? GG.sd : GG.s, bone = far ? GG.sD : GG.S;   /* the wrist goes up AND BACK */
+    const th0 = lift > 12 ? -0.72 * Math.PI : lift < 0 ? -0.95 * Math.PI : -0.8 * Math.PI, tips = [0, 1, 2].map(k => { const th = th0 - k * 0.24 * Math.PI, len = spread * (0.85 - k * 0.12); return [wx + Math.cos(th) * len, wy + Math.sin(th) * len]; });   /* the fingers sweep behind: a sail, not a column */
+    const pull = (a, b) => [(a[0] + b[0]) / 2 + (wx - (a[0] + b[0]) / 2) * 0.35, (a[1] + b[1]) / 2 + (wy - (a[1] + b[1]) / 2) * 0.35];   // the scallop, drawn in toward the wrist
+    fillPoly(g, [[x, y - 2], [wx, wy], tips[0], pull(tips[0], tips[1]), tips[1], pull(tips[1], tips[2]), tips[2], [x - 3, y + 6]], col);
     thick(g, x, y - 1, wx, wy, bone, 2); for (const t of tips) line(g, wx, wy, t[0], t[1], bone); px(g, wx, wy - 1, GG.claw); px(g, wx + 1, wy - 2, GG.claw); };
   const body = (g, x, y, crouch = 0, head = 0) => {
     ellipse(g, x, y, 11, 9 - crouch, GG.s); ellipse(g, x - 2, y - 3, 8, 5, GG.S);                                        // the hunched torso

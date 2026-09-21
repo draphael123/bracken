@@ -52,8 +52,8 @@ preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
   WORM (+ its lunge body). Every tell and the STUCK opening pose has its own frame.
 - `src/redraw/queue_bosses.js` → `node tools/queue-bosses.mjs` → `docs/queue-bosses.png`: THE GRAVE WARDEN (Burial rework),
   THE HEDGE WARDEN and THE GATE GARGOYLE (Witchlight Stair), from their briefs. Frames for every attack in the brief and each
-  boss's opening pose (kneeling in a grave; the stump + regrowth; hanging from a broken slab). Known: the gargoyle's
-  raised-wing frames (3, 6, 9) read as slabs and want a second pass in the Witchlight batch.
+  boss's opening pose (kneeling in a grave; the stump + regrowth; hanging from a broken slab). The gargoyle's wings
+  were redrawn as fanned, swept-back bat wings (they read as slabs).
 - `tools/node-canvas.mjs` is the shim that makes this possible: enough of a 2D canvas for px.js-style bakers (it throws on
   paths/gradients/text instead of drawing them wrong). Checked against the game's own turtle, eel and heron bakers.
 
@@ -86,3 +86,13 @@ checks it (all passing); `node tools/caravan-map.mjs` draws it (`docs/caravan-dr
 - SCORPION alternates CLAW (! 0.5 s) and STING (X 0.75 s, over its back); VULTURE marks your spot with its shadow as its eye goes red
   and dives there 0.8 s later, then lands open; SAND GOBLIN waits as a mound, rises (the tell), cuts twice, burrows, comes up ahead.
   A fighter answering each tell in 0.25 s takes 0 from all three; one ignoring them takes 5-15.
+
+## THE REST OF THE ARC, AHEAD OF ITS BATCHES (all on `claude/slopes`, none wired in)
+- LIGHT (`src/light.js`, `node tools/light.mjs`): beams, mirrors, sun-doors, the dark, burning the dead, the Sun Temple's moving sun,
+  and `solve()` - the fewest mirror turns that open a room, or null when it cannot be opened.
+- THE SKELETON KING (`src/skeleton-king.js`, `node tools/skeleton-king.mjs`): the world boss on the light. His armour (60% until a
+  beam burns him, then 200%) is a design choice to confirm with Daniel.
+- LEVEL DRAFTS (`node tools/draft-level.mjs <name>`, `node tools/draft-map.mjs <name>`): sunken-caravan, well-town, red-gorge, all
+  passing. Each draft names its own rule check (the Well Town: the mud walls are load-bearing and the water budget holds; the Red
+  Gorge: every place in the flood channel is a short walk from dry rock, and the climb must cross it).
+- THE SUN PRIEST (`docs/sun-priest-design.md`, concept frames `docs/sun-priest-concept.png`).
