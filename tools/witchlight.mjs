@@ -119,6 +119,7 @@ try {
   const r = await pg.evalp(`(async()=>{
     const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(${I});BK.state='play';BK.god=true;BK.P.hp=BK.P.maxHp;BK.sim(10);};
     const clear=keep=>{for(const e of BK.enemies())if(e.t!=='hedgewarden'&&!(keep&&keep(e)))e.alive=false;};
+    const need=(v,what)=>{if(!v)throw new Error('the stair did not put up '+what+' (a contended page: the level had not settled)');return v;};   /* a missing thing names itself: under a loaded machine this used to read as "cannot read properties of undefined" */
     const out={};
     boot();BK.sim(120);out.boot={id:BK.L.witch?'witch':'?',hp:BK.P.hp,dead:!!BK.P.dead};
     /* THE CLOISTER: on the first glyph, holding right, he is turned over, walks the roof over the brambles and comes down at the next */
@@ -126,29 +127,29 @@ try {
      for(let i=0;i<420;i++){BK.sim(1);if(BK.P.flip)up=true;if(up&&!BK.P.flip&&BK.P.ground)break;}BK.keys.right=false;BK.sim(30);
      out.cloister={up,x:Math.floor(BK.P.x/16),row:Math.round(BK.P.y/16)-1,flip:!!BK.P.flip,hurt:hp0-BK.P.hp};BK.god=true;}
     /* A RUNE COLUMN lifts him */
-    {boot();clear();const v=BK.props().find(p=>p.t==='vent'&&p.rune);BK.tp(Math.floor(v.x/16),Math.round(v.y/16)-1);const y0=BK.P.y;let top=y0;for(let i=0;i<360;i++){BK.sim(1);top=Math.min(top,BK.P.y);}
+    {boot();clear();const v=need(BK.props().find(p=>p.t==='vent'&&p.rune),'a rune column');BK.tp(Math.floor(v.x/16),Math.round(v.y/16)-1);const y0=BK.P.y;let top=y0;for(let i=0;i<360;i++){BK.sim(1);top=Math.min(top,BK.P.y);}
      out.rune={rise:Math.round((y0-top)/16)};}
     /* THE SINKING SLAB: stood on, it goes down; left, it comes back */
-    {boot();clear();const m=BK.movers().find(q=>q.sink);BK.P.x=m.x+m.w/2;BK.P.y=m.y-1;BK.P.vy=0;BK.sim(4);const y0=m.y;BK.sim(300);const sunk=Math.round((m.y-y0)/16);
+    {boot();clear();const m=need(BK.movers().find(q=>q.sink),'the sinking slab');BK.P.x=m.x+m.w/2;BK.P.y=m.y-1;BK.P.vy=0;BK.sim(4);const y0=m.y;BK.sim(300);const sunk=Math.round((m.y-y0)/16);
      BK.P.x=m.x0-120;BK.P.y=m.y0-200;BK.sim(900);out.sink={sunk,back:Math.round((m.y-m.y0)/16),rode:0};}
     /* THE SWEEP: a broom by his slab sweeps an unguarded hero off it; a shield braces him */
-    {const run=guard=>{boot();clear(e=>e.t==='broom'&&e.sweep);const b=BK.enemies().filter(e=>e.t==='broom'&&e.sweep).sort((a,c)=>a.x-c.x)[0];for(const e of BK.enemies())if(e.t==='broom'&&e!==b)e.alive=false;
+    {const run=guard=>{boot();clear(e=>e.t==='broom'&&e.sweep);const b=need(BK.enemies().filter(e=>e.t==='broom'&&e.sweep).sort((a,c)=>a.x-c.x)[0],'a sweeping broom');for(const e of BK.enemies())if(e.t==='broom'&&e!==b)e.alive=false;
        BK.tp(52,${WL.PIER});BK.sim(20);b.x=BK.P.x+60;b.y=BK.P.y-30;b.cd=0;b.mode='fly';BK.god=false;BK.P.hp=BK.P.maxHp;const x0=BK.P.x;let told=false,off=false;
        for(let i=0;i<150;i++){if(guard)BK.keys.block=true;BK.sim(1);if(b.mode==='sweepTell')told=true;if(Math.abs(BK.P.vx)>150&&!BK.P.ground)off=true;}BK.keys.block=false;BK.god=true;
        return {told,off,moved:Math.round(BK.P.x-x0),hurt:BK.P.maxHp-BK.P.hp};};
      out.sweep={open:run(false),guarded:run(true)};}
     /* THE ROOF ARMOUR hangs from the roof while he walks the floor, and falls with him when he turns over */
-    {boot();clear(e=>e.t==='armour'&&e.ceiling);const a=BK.enemies().filter(e=>e.t==='armour'&&e.ceiling).sort((p,q)=>p.x-q.x)[0];BK.tp(145,${WL.PIER});BK.sim(90);const before={gs:a.gs,row:+(a.y/16).toFixed(1)};
+    {boot();clear(e=>e.t==='armour'&&e.ceiling);const a=need(BK.enemies().filter(e=>e.t==='armour'&&e.ceiling).sort((p,q)=>p.x-q.x)[0],'a roof armour');BK.tp(145,${WL.PIER});BK.sim(90);const before={gs:a.gs,row:+(a.y/16).toFixed(1)};
      BK.keys.right=true;for(let i=0;i<200&&!BK.P.flip;i++)BK.sim(1);BK.keys.right=false;BK.sim(90);const flipped={gs:a.gs,row:+(a.y/16).toFixed(1),ground:!!a.onGround};
      out.armour={before,flipped};}
     /* THE HEDGE WARDEN: he wakes at the trigger; standing in him costs nothing; his gate opens on his death */
-    {boot();const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='hedgewarden');
+    {boot();const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=need(BK.enemies().find(e=>e.t==='hedgewarden'),'the Hedge Warden');
      const woke={active:!!BK.miniActive,mode:w.mode};BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
      for(let i=0;i<90;i++){w.cd=99;if(w.mode!=='stalk')w.mode='stalk';BK.P.x=w.x;BK.P.y=w.y;BK.sim(1);}const touch=hp0-BK.P.hp;BK.god=true;
      const gi=(Math.round(M.floor/16)-1)*BK.L.W+M.gate,before=BK.L.grid[gi];w.growth=2;w.mode='stump';w.modeT=9;w.hp=3;BKT.hurtEnemy(w,50,w.x-20,false);BK.sim(120);
      out.warden={woke,touch,alive:w.alive,gateBefore:before,gateAfter:BK.L.grid[gi]};}
     /* THE GATE GARGOYLE: asleep on the gate until you are on his slabs; touching him costs nothing; his kill wins the level */
-    {boot();clear(e=>e.t==='gargoyle');const g=BK.enemies().find(e=>e.t==='gargoyle');const asleep=g.mode;const s=BK.movers().filter(m=>m.arena&&!m.cracked).sort((a,b)=>a.x-b.x)[0];
+    {boot();clear(e=>e.t==='gargoyle');const g=need(BK.enemies().find(e=>e.t==='gargoyle'),'the Gate Gargoyle');const asleep=g.mode;const s=need(BK.movers().filter(m=>m.arena&&!m.cracked).sort((a,b)=>a.x-b.x)[0],'his slabs');
      BK.P.x=s.x+s.w/2;BK.P.y=s.y-1;BK.P.vy=0;BK.sim(90);const woke={active:!!BK.bossActive,mode:g.mode};BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
      for(let i=0;i<90;i++){g.mode='hover';g.cd=99;g.x=BK.P.x;g.y=BK.P.y;BK.sim(1);}const touch=hp0-BK.P.hp;BK.god=true;
      g.hp=1;BKT.hurtEnemy(g,40,g.x-20,false);let won=false;for(let i=0;i<900&&!won;i++){BK.sim(1);if(BK.state!=='play')won=BK.state;}
