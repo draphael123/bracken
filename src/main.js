@@ -5023,7 +5023,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
-  if(e.t==='undeadmage'&&e.mode==='gather')dmg=Math.round(dmg*LICH.openMul);   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
+  if(e.t==='undeadmage'&&e.mode==='gather')dmg=Math.round(dmg*LICH.openMul);
+  if(e.t==='owl'&&e.lampT>0)dmg=Math.round(dmg*2);   /* THE OWL REEVE, lamp-struck: double (Daniel, 2026-09-21) */   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
@@ -12176,8 +12177,9 @@ function updateOwl(e, dt) {
   if (e.mode === 'sleep') return;
   const lanterns = props.filter(pr => pr.t === 'lantern' && pr.owl);
   // THE LIGHT TAKES ITS EYES: light the lantern on the perch it sits on, or flare a lit floor lantern while it is close, and it drops
-  const dazzle = why => { if (['grounded', 'dazzled', 'descend', 'carry', 'wake', 'sleep', 'crash', 'stuckTalons', 'pinned'].includes(e.mode)) return; e.mode = 'dazzled'; e.vx = 0; e.vy = 0; e.hits = 0; number(e.x, e.y - 24, why, '#ffd36b'); SFX.screech(); SFX.golemShatter(); flash = Math.max(flash, 0.25); shakeCam(5); burst(e.x, e.y - 8, 16, ['#fff6c8', '#ffd36b'], 90, 0.6); };
-  for (const pr of lanterns) if (pr.lit && Math.hypot(pr.x-e.x, pr.y-30-(e.y-12)) < 78) dazzle('THE LIGHT IN HER EYES');
+  const dazzle = why => { if (['grounded', 'dazzled', 'descend', 'carry', 'wake', 'sleep', 'crash', 'stuckTalons', 'pinned'].includes(e.mode)) return; e.mode = 'dazzled'; e.vx = 0; e.vy = 0; e.hits = 0; e.lampT = 4; number(e.x, e.y - 24, why, '#ffd36b'); number(e.x, e.y - 36, 'DOUBLE DAMAGE', '#8fd160'); SFX.screech(); SFX.golemShatter(); flash = Math.max(flash, 0.25); shakeCam(5); burst(e.x, e.y - 8, 16, ['#fff6c8', '#ffd36b'], 90, 0.6); };
+  e.lampT = Math.max(0, (e.lampT || 0) - dt);   /* THE LAMP'S WINDOW (Daniel, 2026-09-21): lit into her eyes or crashed into, she takes double for four seconds */
+  for (const pr of lanterns) if (pr.lit && Math.hypot(pr.x-e.x, pr.y-30-(e.y-12)) < 110) dazzle('THE LIGHT IN HER EYES');   /* (78 -> 110: Daniel, the lamps reach further) */
   const perchLit = k => lanterns.some(pr => pr.perch && pr.lit && Math.abs(pr.x - e.perches[k].x) < 40);
   const openPerches = () => e.perches.map((p, k) => k).filter(k => !perchLit(k));
   const toward = (tx, ty, sp) => { const dx = tx - e.x, dy = ty - e.y, dd = Math.hypot(dx, dy) || 1; const st = Math.min(dd, sp * dt); e.x += dx / dd * st; e.y += dy / dd * st; return dd - st; };
@@ -12207,7 +12209,7 @@ function updateOwl(e, dt) {
     case 'riseUp': { const left = toward(e.x, A.floor - 12 * TS, 260); if (left <= 1 || e.modeT <= 0) { e.mode = 'stalk'; e.modeT = p2 ? 1.0 : 1.3; e.y = A.floor - 12 * TS; } break; }
     case 'stalk': { e.y = A.floor - 12 * TS; const tx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)); e.x += Math.sign(tx - e.x) * Math.min(Math.abs(tx - e.x), 150 * dt); if (e.modeT <= 0) { e.mode = 'plunge'; e.vy = 520; SFX.leap(); } break; }
     case 'plunge': { e.y += e.vy * dt;
-      for (const pr of lanterns) if (pr.lit && !pr.perch && Math.abs(pr.x - e.x) < 20 && e.y > pr.y - 40) { e.mode = 'crash'; e.modeT = p2 ? 2.0 : 2.5; e.stagger = e.modeT; e.y = floor - 8; e.vy = 0; number(e.x, e.y - 24, 'INTO THE LANTERN: HIT IT', '#8fd160'); SFX.heavy(); shakeCam(6); burst(e.x, e.y, 16, COLS.owl, 80, 0.7); break; }
+      for (const pr of lanterns) if (pr.lit && !pr.perch && Math.abs(pr.x - e.x) < 30 && e.y > pr.y - 40) { e.lampT = 4; e.mode = 'crash'; e.modeT = p2 ? 2.0 : 2.5; e.stagger = e.modeT; e.y = floor - 8; e.vy = 0; number(e.x, e.y - 24, 'INTO THE LANTERN: HIT IT', '#8fd160'); SFX.heavy(); shakeCam(6); burst(e.x, e.y, 16, COLS.owl, 80, 0.7); break; }
       if (e.mode === 'plunge' && e.y >= floor - 8) { e.y = floor - 8; e.vy = 0; e.mode = 'stuckTalons'; e.modeT = p2 ? 1.1 : 1.4; e.stagger = e.modeT; SFX.heavy(); SFX.stone(); shakeCam(7); dust(e.x, floor, 12); if (!P.dead && Math.abs(P.x - e.x) < 20 && Math.abs(P.y - floor) < 24) { damagePlayer(e.x, DMG.owlPlunge, { unblockable: true, up: true }); } } break; }
     case 'stuckTalons': { e.y = floor - 8; if (e.modeT <= 0) { e.stagger = 0; const open = openPerches(); e.next = open.length ? open[Math.floor(Math.random() * open.length)] : e.perchI; e.mode = 'takeoff'; e.modeT = 0.25; e.willSwoop = false; SFX.screech(); } break; }
     // THE SKIM. Down off the branch to the boards beside you, wings thrown up over its head, then along the floor at ankle height.
@@ -12220,7 +12222,7 @@ function updateOwl(e, dt) {
     case 'skim': { e.x += e.vx * dt; e.y = floor - 8; e.skimLeft -= Math.abs(e.vx) * dt; e.face = Math.sign(e.vx) || e.face;
       if (Math.random() < dt * 40) parts.push({ x: e.x - e.skimDir * 12, y: floor - 1, vx: -e.vx * 0.15, vy: -30 - Math.random() * 40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#c9a83a' : '#8a6a4a', size: 1, grav: 260 });
       if (!P.dead && e.hitT <= 0 && Math.abs(P.x - e.x) < 20 && P.y > floor - 16) { e.hitT = 1; const res = damagePlayer(e.x, DMG.owlSkim, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(e.vx) * 240; P.vy = -150; P.ground = false; } }
-      for (const pr of lanterns) if (pr.lit && !pr.perch && Math.abs(pr.x - e.x) < 14 && Math.abs(pr.y - floor) < 20) { e.mode = 'crash'; e.modeT = p2 ? 2.0 : 2.5; e.stagger = e.modeT; e.vx = 0; number(e.x, e.y - 24, 'INTO THE LANTERN: HIT IT', '#8fd160'); SFX.heavy(); SFX.screech(); shakeCam(6); burst(e.x, e.y, 16, COLS.owl, 80, 0.7); break; }
+      for (const pr of lanterns) if (pr.lit && !pr.perch && Math.abs(pr.x - e.x) < 22 && Math.abs(pr.y - floor) < 20) { e.lampT = 4; e.mode = 'crash'; e.modeT = p2 ? 2.0 : 2.5; e.stagger = e.modeT; e.vx = 0; number(e.x, e.y - 24, 'INTO THE LANTERN: HIT IT', '#8fd160'); SFX.heavy(); SFX.screech(); shakeCam(6); burst(e.x, e.y, 16, COLS.owl, 80, 0.7); break; }
       if (e.mode === 'skim' && (e.skimLeft <= 0 || e.x <= A.x0 + 16 || e.x >= A.x1 - 16)) { e.vx = 0; const open = openPerches(); e.next = open.length ? open[Math.floor(Math.random() * open.length)] : e.perchI; e.mode = 'takeoff'; e.modeT = 0.3; e.willSwoop = false; e.grab = false; SFX.screech(); } break; }
     // PINNED. A dead bough came down across its back (the deadfall prop cut it loose). The widest window in the fight, and the only
     // one the player MAKES rather than waits for: 2.5x damage for 3.2 s (2.6 s past half its blood), and the bough takes 5% as it lands.
