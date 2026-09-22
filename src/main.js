@@ -190,7 +190,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.075 * LV_GROW())); // (HEAVY PLUNGE and FIREDROP were two ranks of this: the level brings it now)
-const DMG = { squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroDrop:12, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 20, bellSlam: 28, bellPressure: 18, bellCharge: 26, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
+const DMG = { pyroStaff:9, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroDrop:12, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 20, bellSlam: 28, bellPressure: 18, bellCharge: 26, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16 };
@@ -14577,7 +14577,9 @@ function bakeEmberWispSet() {
 }
 function villageReset() {
   VG = L && L.village ? fireGrid(L) : null; if (!VG) return;
-  for (const [x, y] of L.stillFires || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true });
+  for (const [x, y, per, ph] of L.stillFires || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, pillar: !!per, per: per || 4, ph: ph || 0, tall: 14 });   /* FLAME PILLARS (villageTick) */
+  for (const z of L.deckBreaks || []) if (z.log) { for (let x = z.x0; x <= z.x1; x++) fires.push({ x: x * TS + 8, y: (z.row + 2) * TS, life: 1e9, delay: 0, still: true, dmg: DMG.squareFire }); }   /* the embers in the pits under the logs */
+  vflee = []; vfleeT = 2;
   for (const [x, y, bx, by] of L.beams || []) props.push({ t: 'vbeam', x: x * TS + 8, y: y * TS + 6, cx: bx, cy: by, state: 'hung', vy: 0, tellT: 0 });
 }
 function villageAshes(e) {   /* where a burning goblin falls, the ground catches: that is its whole idea */
@@ -14606,8 +14608,50 @@ function backdraft(pr) {   /* THE DOOR WAS HOT: the fire behind it takes the air
   number(pr.x, pr.y - 44, 'BACKDRAFT', '#ff6b2c');
 }
 const standAt = (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty));
+/* THE VILLAGE'S OWN FIRE, the second pass (Daniel, 2026-09-21 night): its pillars roar and drop back, its logs burn through
+   under you and grow back, and its goblins run from what they lit. */
+let vflee = [], vfleeT = 2;
+const PILLAR = { on: 1.7, tall: 46, warn: 0.6 };
+function villageTick(dt) {
+  for (const f of fires) { if (!f.pillar) continue;
+    const ph = (time + f.ph) % f.per, on = ph < PILLAR.on;
+    if (on) { f.delay = 0; f.tall = PILLAR.tall * Math.min(1, ph / 0.2); }
+    else { f.delay = Math.max(0.001, f.per - ph); f.tall = 0; if (f.per - ph < PILLAR.warn && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 30) parts.push({ x: f.x + (Math.random() - 0.5) * 10, y: f.y - 2, vx: 0, vy: -60 - Math.random() * 60, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#ff6b2c', size: 1, grav: -20 }); } }
+  /* THE LOGS: they burn through a moment after you stand on them, and grow back once you are out of their way */
+  updateDeckBreaks(L, P, dt, (x, y) => { const z = L.deckBreaks.find(q => x >= q.x0 && x <= q.x1); if (z && y === z.row) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; } }, z => { SFX.crack(); shakeCam(2); burst((z.x0 + z.x1 + 1) * 8, z.row * 16, 18, ['#ff9a5c', '#5c3a1d', '#ffd36b'], 90, 0.7); number((z.x0 + z.x1 + 1) * 8, z.row * 16 - 20, 'THE LOG BURNS THROUGH', '#ff9a5c'); });   /* (updateSea does not reach this level: memory's rule, and the Falling Tower calls it for itself too) */
+  for (const z of L.deckBreaks || []) { if (!z.log || !z.down) continue; z.downT = (z.downT || 0) + dt;
+    if (z.downT > 5 && !(P.x > z.x0 * TS - 8 && P.x < (z.x1 + 1) * TS + 8 && P.y > (z.row - 1) * TS && P.y < (z.row + 3) * TS)) { for (let x = z.x0; x <= z.x1; x++) { const i = z.row * LW + x; L.grid[i] = T.ONEWAY; tileSpr[i] = null; } z.down = false; z.t = -1; z.downT = 0; } }
+  /* THE GOBLINS WHO LIT IT RUN FROM IT: out of a burning front ahead of you, arms up, away down the road. They fight nobody */
+  if (!bossActive && !P.dead) { vfleeT -= dt; if (vfleeT <= 0) { vfleeT = 3 + Math.random() * 3;
+      const src = (L.facades || []).filter(([a, b, , , k]) => k === 'burning' && a * TS > P.x + 60 && a * TS < P.x + 300)[0];
+      const x = src ? (src[0] + src[1]) * 8 : P.x + 180 + Math.random() * 60, gy = Math.floor(L.arena.floor / TS);
+      if (x < L.arena.x0 - 60) { const ty = (() => { for (let y = 2; y < LH - 1; y++) if (isSolid(Math.floor(x / TS), y) && !isSolid(Math.floor(x / TS), y - 1) && Math.abs(y * TS - P.y) < 60) return y; return null; })();
+        if (ty !== null) { const n = 1 + (Math.random() < 0.6 ? 1 : 0) + (Math.random() < 0.3 ? 1 : 0); for (let i = 0; i < n; i++) vflee.push({ x: x + i * 12, y: ty * TS, vx: 95 + Math.random() * 30, vy: 0, t: 0, face: 1, hop: Math.random() }); if (Math.random() < 0.7) SFX.gobHurt ? SFX.gobHurt() : SFX.gobDie(); } } } }
+  for (const r of vflee) { r.t += dt; r.vy = Math.min(420, r.vy + 900 * dt); r.x += r.vx * dt; r.y += r.vy * dt;
+    const tx = Math.floor(r.x / TS), ty = Math.floor(r.y / TS);
+    if (r.vy >= 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { r.y = ty * TS; r.vy = r.t % 0.6 < 0.3 ? -120 : 0; }
+    if (isSolid(Math.floor((r.x + 6) / TS), Math.floor((r.y - 6) / TS))) r.vy = -300;
+    if (Math.random() < dt * 8) parts.push({ x: r.x - 4, y: r.y - 12, vx: -20, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a4a4a', size: 1, grav: -10 }); }
+  vflee = vflee.filter(r => r.t < 7 && r.x < camX + VW + 80);
+}
+/* THE TOWN BEHIND IT, BURNING: rooftops in silhouette on a red sky, fires in the windows and on the thatch, smoke going up.
+   Drawn behind the play at a third of its pace. */
+function drawBurningTown(cx, cy) {
+  if (!VG) return;
+  const par = 0.35, base = VH - 58 - Math.round((cy - (L.arena.floor - VH + 40)) * 0.15), off = cx * par;
+  g.globalAlpha = 0.35; g.fillStyle = '#ff5a1c'; g.fillRect(0, base - 64, VW, 70); g.globalAlpha = 0.25; g.fillStyle = '#ffb040'; g.fillRect(0, base - 16, VW, 24); g.globalAlpha = 1;
+  for (let k = Math.floor(off / 46) - 1; k < Math.floor((off + VW) / 46) + 2; k++) {
+    const h = 26 + ((k * 37) % 5) * 7, w = 30 + ((k * 13) % 3) * 8, x = Math.round(k * 46 - off), y = base - h, peak = 10 + ((k * 7) % 3) * 4, lit = (k * 11) % 4;
+    g.fillStyle = '#1a0e10'; g.fillRect(x, y, w, h + 30); g.beginPath(); g.moveTo(x - 3, y + 1); g.lineTo(x + w / 2, y - peak); g.lineTo(x + w + 3, y + 1); g.fill();
+    if ((k * 5) % 3 === 0) { g.fillRect(x + w - 9, y - peak - 6, 5, peak + 6); }   /* a chimney */
+    g.fillStyle = Math.floor(time * 6 + k) % 3 ? '#ff9a3c' : '#ffd36b'; for (let q = 0; q < 1 + lit; q++) g.fillRect(x + 5 + q * 9, y + 8 + (q % 2) * 7, 3, 4);   /* windows alight */
+    if (lit >= 2) { const fx = x + w / 2, fy = y - peak + 2; for (let q = 0; q < 3; q++) { const fh = 8 + Math.round(Math.sin(time * 9 + k * 3 + q) * 3) + q * 2; g.fillStyle = q === 0 ? '#ffd36b' : q === 1 ? '#ff9a3c' : '#ff5a1c'; g.fillRect(Math.round(fx - 5 + q * 3 - 3), fy - fh, 5, fh); } }   /* the thatch burning */
+    if ((k * 3) % 4 === 1) { g.fillStyle = 'rgba(40,24,28,0.45)'; for (let q = 0; q < 5; q++) { const sy = y - peak - 10 - q * 14 - ((time * 12) % 14), sx = x + w / 2 + Math.sin(time * 0.8 + q + k) * (4 + q * 3); g.beginPath(); g.arc(Math.round(sx), Math.round(sy), 5 + q * 2, 0, 7); g.fill(); } }   /* smoke */
+  }
+}
 function updateVillage(dt) {
   if (!VG) return;
+  villageTick(dt);
   const hb = attackBox();
   stepFire(VG, dt);
   const pm = boss && boss.t === 'pyromander' ? boss : null;
@@ -14650,6 +14694,14 @@ function updateVillage(dt) {
 /* THE STRAW, THE CHAR AND THE PROPS, under the flames */
 function drawVillage(cx, cy) {
   if (!VG) return;
+  for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn;   /* a pillar at rest: its vent glowing, and brighter just before it goes */
+    g.fillStyle = '#2a1410'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = soon ? (Math.floor(time * 16) % 2 ? '#ffd36b' : '#ff6b2c') : '#8a2a14'; g.fillRect(x - 4, y - 3, 8, 1); g.fillRect(x - 2 + Math.round(Math.sin(time * 7 + f.x) * 2), y - 5, 3, 2); }
+  for (const z of L.deckBreaks || []) { if (!z.log || z.down) continue; const x = Math.round(z.x0 * TS - cx), y = Math.round(z.row * TS - cy), w = (z.x1 - z.x0 + 1) * TS; if (x > VW || x + w < 0) continue;   /* THE BURNING LOG */
+    const hot = z.t >= 0; g.fillStyle = '#1b1626'; g.fillRect(x - 1, y - 1, w + 2, 9); g.fillStyle = hot ? '#6a2a14' : '#4a2e1a'; g.fillRect(x, y, w, 7); g.fillStyle = '#7a4a2a'; g.fillRect(x, y, w, 2);
+    g.fillStyle = '#2e1c12'; for (let q = 6; q < w; q += 11) g.fillRect(x + q, y + 2, 1, 4);
+    g.fillStyle = hot ? (Math.floor(time * 14) % 2 ? '#ffd36b' : '#ff6b2c') : '#ff7a2c'; for (let q = 2; q < w; q += 5) if ((q * 7 + Math.floor(time * 4)) % 3 === 0 || hot) g.fillRect(x + q, y + 5 + ((q >> 2) % 2), 2, 1);
+    if (hot || Math.random() < 0.06) parts.push({ x: z.x0 * TS + Math.random() * w, y: z.row * TS, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#ff9a5c', size: 1, grav: -10 }); }
+  for (const r of vflee) { const set = SPR.hearthgob; if (!set) break; drawSet(set, null, 4 + Math.floor(r.t * 12) % 2, Math.round(r.x - cx), Math.round(r.y - cy), 1, false); g.fillStyle = '#ff9a5c'; if (Math.floor(r.t * 10) % 2) g.fillRect(Math.round(r.x - cx) - 6, Math.round(r.y - cy) - 17, 2, 2); }   /* goblins running from what they lit */
   const x0 = Math.floor(cx / TS) - 1, x1 = Math.ceil((cx + VW) / TS) + 1;
   for (const c of VG.cells) { if (c.x < x0 || c.x > x1) continue; const sx = c.x * TS - cx, sy = (c.y + 1) * TS - cy; if (sy < -8 || sy > VH + 8) continue;
     if (c.s === BURNT) { g.fillStyle = '#1a1210'; g.fillRect(sx, sy - 1, TS, 3); g.fillStyle = '#4a4040'; for (let k = 0; k < 4; k++) g.fillRect(sx + ((c.x * 7 + k * 5) % 15), sy - 2, 1, 1); continue; }
@@ -14750,6 +14802,9 @@ function updatePyromander(e, dt) {
       if (e.cd > 0 || P.dead) break;
       e.turn = (e.turn || 0) + 1;
       const onStall = P.ground && P.y < floor - 20;
+      /* THE CLASS'S OWN BASIC BLOW (Daniel): up close he swings the staff, told and blockable; and ENRAGED he casts THE FIRE WALL */
+      if (ad < 34 && Math.abs(P.y - e.y) < 24 && e.turn % 3 !== 0) { e.mode = 'staffTell'; e.modeT = 0.4; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
+      if (p2 && e.turn % 5 === 2) { e.mode = 'wallTell'; e.modeT = 0.7; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - 56, 'FIRE WALL', '#ff9a5c'); SFX.charge(); break; }
       if (onStall || e.turn % 4 === 0) { e.mode = 'dropTell'; e.modeT = 0.6; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
       else if (ad < 72 && e.turn % 2 === 0) { e.mode = 'jetTell'; e.modeT = 0.65; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }   /* THE JET is every other choice up close, and a shield turns it: the brief's bellows cone, '!' */
       else { e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }
@@ -14777,6 +14832,12 @@ function updatePyromander(e, dt) {
       if (e.modeT <= 0) { e.mode = 'vent'; e.modeT = 0.5; e.heat = 0; shakeCam(5); SFX.roar(); ringAt(e.x, e.y - 16, 66, '#ff6b2c', 0.5); ringAt(e.x, e.y - 16, 40, '#ffd36b', 0.35);
         if (!P.dead && Math.hypot(P.x - e.x, (P.y - 10) - (e.y - 16)) < 66) damagePlayer(e.x, DMG.pyroVent, { unblockable: true, who: e, name: 'THE VENT' }); } break;
     case 'vent': if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 1.0; } break;
+    case 'staffTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'staff'; e.modeT = 0.35; SFX.slash();
+      if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 38 && Math.abs(P.y - e.y) < 26) { const r = damagePlayer(e.x, DMG.pyroStaff, { who: e, name: 'THE STAFF' }); if (r === 'blocked') { e.stagger = 0.6; number(e.x, e.y - 30, 'PARRIED', '#8fd160'); } } heat(6); } break;
+    case 'staff': if (e.modeT <= 0) after(); break;
+    case 'wallTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'wall'; e.modeT = 0.6; SFX.heavy(); SFX.puff(); shakeCam(2);
+      for (let i = 1; i <= 5; i++) fires.push({ x: e.x + e.face * i * 14, y: floor, life: 3, delay: i * 0.08, dmg: DMG.squareFire + 2 }); heat(14); } break;   /* the Pyromancer's FIRE WALL: five flames marching off the staff */
+    case 'wall': if (e.modeT <= 0) after(); break;
   }
   if (e.mode === 'stalk' || e.mode === 'wake') e.vx += (want - e.vx) * Math.min(1, dt * 6);
   else if (e.mode !== 'rise') e.vx *= Math.max(0, 1 - dt * 10);
@@ -14784,7 +14845,7 @@ function updatePyromander(e, dt) {
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX) e.vx = 0;
   const edge = e.mode === 'rise' || e.mode === 'drop' ? 14 : 60; e.x = Math.max(A.x0 + edge, Math.min(A.x1 - edge, e.x));   /* he keeps off the walls: there is always a way round him, never a corner he hides in behind his own fire */
 }
-const PYRO_ANIM = { stalk: 'run', wake: 'idle', emberTell: 'cast', ember: 'cast', jetTell: 'block', jet: 'block', dropTell: 'crouch', rise: 'jump', drop: 'plunge', land: 'land', overheat: 'hurt', ventTell: 'blast', vent: 'blast', sleep: 'idle' };
+const PYRO_ANIM = { staffTell: 'cast', staff: 'block', wallTell: 'blast', wall: 'blast', stalk: 'run', wake: 'idle', emberTell: 'cast', ember: 'cast', jetTell: 'block', jet: 'block', dropTell: 'crouch', rise: 'jump', drop: 'plunge', land: 'land', overheat: 'hurt', ventTell: 'blast', vent: 'blast', sleep: 'idle' };
 function drawPyromander(e, cx, cy) {
   const set = SPR.pyromanderKit; if (!set) return;
   let key = PYRO_ANIM[e.mode] || 'idle'; if (key === 'run' && Math.abs(e.vx) < 6) key = 'idle';
@@ -18194,7 +18255,7 @@ function updateProps(dt) {
           fires.push({ x: nx, y: f.y, life: 2.2, delay: 0.3, own: true, gen: (f.gen || 0) + 1 }); }
       if ((f.gen || 0) === 0 && time - (P.grassSaidAt || -9) > 4) { P.grassSaidAt = time; number(f.x, f.y - 24, 'THE GRASS CATCHES', '#ff9a5c'); } }
     if (!f.vent && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 9) flame(f.x, f.y - 7, 1, 5, 45, 3);
-    { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - 14 && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, f.dmg || DMG.fire, { up: true, unblockable: true, name: 'THE FIRE' }); } for (const e of enemies) if (e.alive && !f.still && !FIREPROOF.has(e.t) && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, Math.round(10*(f.own ? amul('fireWall') : 1)), f.x, false); } }
+    { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - Math.max(14, f.tall || 0) && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, f.dmg || DMG.fire, { up: true, unblockable: true, name: 'THE FIRE' }); } for (const e of enemies) if (e.alive && !f.still && !FIREPROOF.has(e.t) && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, Math.round(10*(f.own ? amul('fireWall') : 1)), f.x, false); } }
   fires = fires.filter(f => f.life > 0);
   for (const e of enemies) if (e.fireT > 0) e.fireT -= dt;
   // rope bridges: the cutter at the far end saws through once you're out over the drop
@@ -19765,7 +19826,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawHarborLandmarks(g,L,cx,cy);
   drawBelfry(cx, cy); drawMoorWeather(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
-  drawTowerBackdrop(g,L,cx,cy); drawHouses(cx, cy); drawRouteSupports(g,L,cx,cy); drawClimbCues(g,L,cx,cy);
+  drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); drawRouteSupports(g,L,cx,cy); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
@@ -20105,7 +20166,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (bossActive && L.arena && L.arena.tint && SET.tint !== 'off') { g.globalAlpha = (L.arena.tintA || 0.14) * (SET.tint === 'half' ? 0.5 : 1); g.fillStyle = L.arena.tint; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
   drawEscape(cx, cy);
   drawVillage(cx, cy);   /* THE BURNING VILLAGE's straw, char, doors, troughs and beams, under the flames */
-  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }
+  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if (f.pillar && f.tall > 14) { const n = Math.ceil(f.tall / 12); for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } continue; } g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }   /* (a FLAME PILLAR at its roar is a column of them) */
   for (const e of enemies) if (e.alive && (e.t === 'spider' || e.t === 'weaver')) { g.strokeStyle = 'rgba(230,230,240,0.7)'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(e.x - cx) + 0.5, Math.round(e.restY - 26 - cy)); g.lineTo(Math.round(e.x - cx) + 0.5, Math.round(e.y - 8 - cy)); g.stroke(); }
   for (const b of pyres) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), pulse = Math.sin(time * 30) * 1.2;
     g.globalAlpha = 0.35; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(x - b.dir * 6, y, 9 + pulse, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;

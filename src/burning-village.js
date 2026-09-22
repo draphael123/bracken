@@ -35,6 +35,10 @@ export function buildBurningVillage({ painter, T, TS }) {
     for (let k = 0; k < n; k++) { const row = S - 3 * (k + 1) + 1, off = 2 * (n - 1 - k);
       if (side < 0) plat(x0 - 3 - off, row, 3); else plat(x1 + 1 + off, row, 3); } };
   const captive = (x, y, o) => ent('captive', x, y, o || {});
+  /* A BURNING LOG over an ember pit: the log is the road, it smoulders, and a moment after you stand on it it burns through
+     (deckBreaks) and drops you two rows into embers - fire, not death: you jump out, and the log is back five seconds later */
+  const pits = [], logs = [];
+  const pit = (x0, x1) => { pits.push([x0, x1]); for (let x = x0; x <= x1; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R, T.ONEWAY); } logs.push([x0, x1, R]); coins([x0 + 1, R + 1]); };
   const still = (x, y) => stillFires.push([x, y]);
 
   floor(0, W - 1, R);
@@ -51,6 +55,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   plat(80, 23, 4); plat(84, 20, 4); coins([81, 22], [85, 19], [87, 19]);
   foe('sprig', 88, S);
 
+  pit(45, 48);
   // ---- 2. THE CROFTS ----
   ent('sign', 92, S, { text: 'A HOT DOOR BLOWS OUT WHEN IT IS OPENED. STRIKE THE TROUGH AND WATER IT FIRST.' });
   house(96, 108, 19, 1); captive(101, S, { hot: true }); ent('watertrough', 106, S);
@@ -62,6 +67,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   plat(172, 23, 4); plat(176, 20, 4); foe('emberwisp', 178, 18); coins([173, 22], [177, 19]);
   ent('check', 187, S);
 
+  pit(188, 191);
   // ---- 3. THE LONG STREET ----
   house(194, 206, 19, -1); captive(200, S);
   foe('sprig', 204, S); foe('thief', 209, S);
@@ -94,6 +100,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   foe('brute', 386, S);                                // THE BARN CAPTAIN (the ELITES row makes him, and his gate)
   coins([330, 19], [338, 19], [366, 19], [380, 19]);
 
+  pit(290, 293);
   // ---- 5. THE WELL YARD ----
   ent('check', 404, S);
   ent('villagewell', 414, S);
@@ -111,12 +118,20 @@ export function buildBurningVillage({ painter, T, TS }) {
   facades.push([448, 500, 12, F - 1, 'burning']);
   ent('gate', 504, F - 1);
 
+  /* FLAME PILLARS, not campfires (Daniel): the village's own fire is columns that ROAR up and drop back to embers on a clock,
+     so the road through them is timed, and every screen has fire on it. Placed on bare ground (never on straw: the village's
+     fire does not spread) and never on a sign, door, trough or checkpoint; each is [x, y, period, phase]. */
+  const busyAt = x => L.ents.some(e => Math.abs(e.x - x) <= 1 && e.y >= S - 1 && e.y <= S && ['sign', 'captive', 'watertrough', 'villagewell', 'check', 'gate', 'deco'].includes(e.t)) || burn.some(([a, b, r]) => r === S && x >= a - 1 && x <= b + 1) || pits.some(([a, b]) => x >= a - 1 && x <= b + 1);
+  const pillarsAt = [15, 36, 69, 88, 118, 131, 163, 190, 213, 232, 248, 289, 313, 408, 436];
+  const pillars = [];
+  for (const want of pillarsAt) { let x = want; for (let k = 0; k < 6 && busyAt(x); k++) x = want + (k % 2 ? -1 : 1) * (1 + (k >> 1)); if (!busyAt(x)) pillars.push([x, S, 3.6 + (x % 3) * 0.4, (x * 0.37) % 3.6]); }
+  stillFires.length = 0; stillFires.push(...pillars);
   const houses = roofs.map(([x0, x1, y]) => ({ x0: x0 + 1, x1: x1 - 1, y0: y + 3, y1: S, door: null, door2: null, seed: x0, thatch: true, burning: true }))
     .filter(h => h.y1 >= h.y0 && h.x1 > h.x0);
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: [], interiors, roofs, houses, facades,
-    burn, stillFires, beams, village: true,
+    burn, stillFires, beams, village: true, emberPits: pits, deckBreaks: logs.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, log: true })),
     quest: { n: 6, item: 'folk', name: 'SAVED', done: 'THE VILLAGE IS OUT', thanks: 'THE VILLAGE THANKS YOU' },   /* the villagers are the level's quest: the count on the HUD and on the card */ night: true, glowNight: true, nightA: 0.18, duskStart: -1, duskLen: 1,
     music: 'quarry',                                    /* "Cavern and Blade" (zesona, CC0): the Quarry Pass's, benched with it */
     palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'village', haze: 'rgba(255,120,48,0.14)',

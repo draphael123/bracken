@@ -530,7 +530,9 @@ async function runbossLab(BK, opts) {
         if(m==='ventTell'||m==='vent')danger.push([boss.x-84,boss.x+84]);
         if(m==='dropTell'||m==='rise'||m==='drop')danger.push([(boss.tx??P.x)-56,(boss.tx??P.x)+56]);
         if((m==='jetTell'||m==='jet')&&!SHIELDED(h))danger.push(boss.face>0?[boss.x,boss.x+100]:[boss.x-100,boss.x]);
-        if((m==='jetTell'||m==='jet')&&SHIELDED(h)&&Math.abs(dx)<100){k.block=true;P.face=side;}   /* the jet is a '!' now: the three with a guard hold it */
+        if((m==='jetTell'||m==='jet')&&SHIELDED(h)&&Math.abs(dx)<100){k.block=true;P.face=side;}
+        if(m==='staffTell'){if(SHIELDED(h)){k.block=true;P.face=side;}else danger.push([boss.x-44,boss.x+44]);}   /* his staff: guarded, or stepped back from */
+        if(m==='wallTell')danger.push(boss.face>0?[boss.x,boss.x+90]:[boss.x-90,boss.x]);   /* the fire wall's line */   /* the jet is a '!' now: the three with a guard hold it */
         const bad=x=>danger.some(([l,r])=>x>l&&x<r)||hotAt(x),free=x=>x>A.x0+16&&x<A.x1-16&&!bad(x);
         const rest=P.st<14||(P.labRest&&P.st<44);P.labRest=rest;
         let gx=rest?boss.x-side*150:boss.x-side*Math.max(18,LAB_REACH[h]*.65);

@@ -1,6 +1,6 @@
 // Per-level ground kits and allowed decoration kinds. Add a kind deliberately here before placing it.
 export const GROUND_KITS = {
-  "burning": {"density":0.34,"kinds":["tuft","rock","stump","campfire"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
+  "burning": {"density":0.34,"kinds":["tuft","rock","stump"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
   "harbor": {"density":0,"kinds":[]},
   "burial": {"density":0,"kinds":[]},
   "wood": {
