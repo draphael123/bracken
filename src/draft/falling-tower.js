@@ -14,6 +14,10 @@
 //   6 THE BELL LOFT          as live (the frames' lifts)
 //   7 THE OPEN CROWN         as live, and the carpet to the Undead Archmage
 // Fewer zombies: 3 zombies and 1 husk in the whole tower (the live one has 8 and 6); tomes and the Folly's own foes carry the rest.
+// BUILT 2026-09-22 (src/tower-ascent.js, the integration plan's step 4). What the shipped level does differently, and why:
+//   the greybox's 3 strays and its relic are the draft kit's F7 rule (every NEW level carries them); the Falling Tower is not a
+//   new level and has never had either, so the shipped tower keeps its own three silvers and pays the second pendulum landing in
+//   COINS instead. Its one husk is the cistern's ELITE (level.js ELITES), which stands on this roster's husk rather than beside it.
 // Checked by `node tools/draft-level.mjs falling-tower` (+ meta.extra: both new floors are LOAD-BEARING - without the flip, or
 // without the pendulums, nothing above them is reached). Map: `node tools/draft-map.mjs falling-tower`.
 export const FT = { W: 72, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 };
@@ -65,7 +69,7 @@ export function build(T) {
     ent('check', 40, slab - 1);                                                                     /* on the gallery: the flip is not asked twice */
     deco('readingDesk', 30, F.bot - 1); deco('globe', 52, F.bot - 1); deco('candelabra', 26, slab - 1);
     for (const [t, x, y] of [['tome', 24, F.bot - 7], ['apprentice', 32, F.bot - 7], ['tome', 40, F.bot - 12], ['armour', 48, F.bot - 13], ['tome', 30, under + 3], ['imp', 20, under + 4],
-      ['tome', 36, under - 1], ['armour', 46, slab - 1], ['tome', 28, slab - 8], ['apprentice', 26, slab - 7], ['tome', 52, slab - 4], ['boo', 18, F.bot - 12]]) foe(t, x, y);
+      ['tome', 36, under + 5], ['armour', 46, slab - 1], ['tome', 28, slab - 8], ['apprentice', 26, slab - 7], ['tome', 52, slab - 4], ['boo', 18, F.bot - 12]]) foe(t, x, y);
     ent('stray', 56, slab - 1); }
 
   // ---- 3. THE ORRERY CAGE ----
@@ -125,7 +129,7 @@ export function build(T) {
     const who = ['imp', 'apprentice', 'bat', 'armour', 'tome', 'apprentice', 'haunt', 'imp', 'tome', 'bat', 'armour'];
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row)); ent('stray', 15, F.bot - 1); }
   /* THE SEAMS between floors, where a screen was empty: books over the cistern's poison, the gallery's top, the loft's floor, the crown's parapet */
-  for (const [t, x, y] of [['tome', 30, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['bat', 50, floors[3].top + 2], ['apprentice', 14, floors[3].bot - 1],
+  for (const [t, x, y] of [['tome', 28, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['bat', 50, floors[3].top + 2], ['apprentice', 14, floors[3].bot - 1],
     ['armour', 40, floors[5].bot - 1], ['tome', 30, floors[5].bot - 4], ['tome', 20, floors[0].top + 3], ['boo', 46, floors[0].top + 2], ['imp', 22, SKY + 3], ['tome', 48, SKY + 2]]) foe(t, x, y);
   ent('gate', 34, SKY); ent('undeadmage', 36, 42, { face: -1, hung: true });
 

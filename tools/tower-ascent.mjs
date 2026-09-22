@@ -1,7 +1,9 @@
 /* tools/tower-ascent.mjs — THE FALLING TOWER, rebuilt (batch 4, 2026-09-21). Replaces tower-return.mjs, tower-finish.mjs
    and their runtime twins, which pinned the old shape (the Folly walked backwards to an indoor arena).
-     BUILT   an upward level: five floors, each its own room kind, a rope through every divider, a GARRISON row that
+     BUILT   an upward level: SEVEN floors, each its own room kind, a rope through every divider, a GARRISON row that
              places on every floor, no blanket calm, the elites on this layout, 3 silvers, a checkpoint on every floor
+     LONGER  (2026-09-22) THE READING ROOM and THE PENDULUM GALLERY, both LOAD-BEARING: take the flip away and nothing
+             over the gallery is reached, take the pendulums away and the cistern is not; and FEWER ZOMBIES (3 + 1 husk)
      REACH   the fill climbs from the Folly's foot to the parapet and every silver/checkpoint; the sky has no footing
      CARPET  8-way flight at ~160 px/s, normalised diagonals, no falling (the box holds it), knockback pushes it away
      MAGE    every spell told; storm and mark are unblockable and dodged by leaving; the opening is CAUSED (a mark that
@@ -13,7 +15,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs'; import vm from 'node:vm';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { TOWER, gateOccupied } from '../src/tower-ascent.js';
+import { TOWER, SWING, gateOccupied } from '../src/tower-ascent.js';
 import { CARPET, carpetBox, mountCarpet, stepCarpet, knockCarpet } from '../src/carpet.js';
 import { updateUndeadMage, MAGE, UNDEADMAGE_F } from '../src/undead-mage.js';
 import { openPage } from './cdp.mjs';
@@ -23,9 +25,10 @@ const at = (x, y) => L.grid[y * W + x];
 // ---- BUILT ----
 assert.equal(lv.needs, 'mage'); assert.equal(L.music, 'fallingtower'); assert.equal(lv.name, 'THE FALLING TOWER');
 assert.ok(L.H >= 200 && L.W < 100, 'a tower stood on its end: ' + L.W + 'x' + L.H);
-assert.equal(L.towerFloors.length, 5);
-const kinds = new Set(L.interiors.map(i => i[4])); assert.ok(kinds.size >= 5, 'five floors, five rooms: ' + [...kinds]);
-for (const f of L.towerFloors.slice(0, 4)) { const [x, y0, y1] = f.hole; for (let y = y0; y <= y1; y++) assert.equal(at(x, y), T.NET, f.name + ': the rope goes through its divider'); }
+assert.equal(L.towerFloors.length, 7, 'seven floors since the tower was made longer');
+assert.equal(L.H, 306, 'and 306 rows (it was 240)');
+const kinds = new Set(L.interiors.map(i => i[4])); assert.equal(kinds.size, 7, 'seven floors, seven rooms: ' + [...kinds]);
+for (const f of L.towerFloors.slice(0, 6)) { const [x, y0, y1] = f.hole; for (let y = y0; y <= y1; y++) assert.equal(at(x, y), T.NET, f.name + ': the rope goes through its divider'); }
 assert.ok(!L.calm || !L.calm.length, 'no blanket calm (the rule the Codex levels broke)');
 const garrison = L.ents.filter(e => e.garrison); assert.ok(garrison.length >= 8, 'the GARRISON row places: ' + garrison.length);
 const gRows = new Set(garrison.map(e => L.towerFloors.findIndex(f => e.y >= f.top && e.y < f.bot))); assert.ok(gRows.size >= 3, 'and on more than the top floor (stackedFloors): ' + [...gRows]);
@@ -45,6 +48,32 @@ for (const f of L.towerFloors) assert.ok([...R.seen].some(s => { const y = +s.sp
 assert.ok(![...R.seen].some(s => +s.split(',')[1] < TOWER.SKY - 1), 'nothing to stand on in the sky');
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.y).sort((a, b) => a - b);
 for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name); assert.ok(checks[0] <= TOWER.SKY, 'and one on the parapet, for the sky fight');
+// ---- THE TWO NEW FLOORS (2026-09-22) ----
+{ const F = Object.fromEntries(L.towerFloors.map(f => [f.name, f]));
+  const R2 = L.ents.filter(e => e.t === 'glyph');
+  assert.equal(R2.length, 2, 'THE READING ROOM has two glyphs'); assert.ok(R2.some(e => e.ceiling) && R2.some(e => !e.ceiling), 'one on the floor, one on the ceiling');
+  const read = F['THE READING ROOM'];
+  for (const e of R2) assert.ok(e.y > read.top - 1 && e.y < read.bot, 'and both are in the Reading Room: ' + e.y);
+  assert.equal(L.glyphBridges.length, 1, 'and the reach model is told the flip joins the room (L.glyphBridges)');
+  const sw = L.moversExtra.filter(m => m.kind === 'swing'); assert.equal(sw.length, 3, 'THE PENDULUM GALLERY has three pendulums');
+  const gal = F['THE PENDULUM GALLERY'];
+  for (const m of sw) { assert.equal(m.arm, SWING.arm); assert.ok(m.py / 16 > gal.top && m.py / 16 < gal.bot, 'each hangs inside the gallery'); }
+  assert.ok(new Set(sw.map(m => m.phase)).size === 3 && new Set(sw.map(m => m.period)).size === 3, 'and no two swing together');
+  const pit = []; for (let x = TOWER.X0; x <= TOWER.X1; x++) if (at(x, gal.bot - 1) === T.SPIKE) pit.push(x);
+  assert.ok(pit.length >= 14, 'the gear pit bites under them: ' + pit.length + ' tiles of spike');
+  // FEWER ZOMBIES (Daniel, 2026-09-21): three zombies and one husk in the whole tower - the live one had 8 and 6
+  const n = t => L.ents.filter(e => e.t === t).length;
+  assert.equal(n('zombie'), 3, 'three zombies in the tower'); assert.equal(n('husk'), 1, 'and one husk');
+  assert.ok(L.ents.filter(e => e.t === 'husk')[0].elite, 'and it is the cistern elite, not one more on top of it');
+  assert.ok(n('tome') >= 24, 'THE TOMES carry what they carried: ' + n('tome'));
+  const perFloor = L.towerFloors.map(f => L.ents.filter(e => e.t === 'tome' && e.y >= f.top && e.y < f.bot).length);
+  assert.ok(perFloor.every(k => k >= 2), 'on every floor: ' + perFloor.join(','));
+  // AND BOTH NEW FLOORS ARE LOAD-BEARING. Take the rule away and the fill stops at it.
+  const noFlip = floodReach({ ...L, glyphBridges: [] }, T, { rides: true });
+  assert.ok(!noFlip.jumpNear(40, F['THE READING ROOM'].top + 9), 'without the flip the gallery is out of reach');
+  assert.ok(![...noFlip.seen].some(k => +k.split(',')[1] < read.top), 'and so is every floor over it');
+  const noSwing = floodReach({ ...L, moversExtra: L.moversExtra.filter(m => m.kind !== 'swing') }, T, { rides: true });
+  assert.ok(![...noSwing.seen].some(k => +k.split(',')[1] < gal.top), 'without the pendulums the cistern and everything over it is out of reach'); }
 // ---- CARPET ----
 { const P = { x: 500, y: 500, vx: 0, vy: 0 }, box = { x0: 100, x1: 900, y0: 100, y1: 700 };
   mountCarpet(P, { x: 500, y: 500 });
@@ -108,11 +137,11 @@ try {
    // a floor you went back under waits for you
    BK.tp(16,F[1].top-9);BK.sim(20);BK.tp(24,F[1].bot-1);BK.sim(200);out.waited=!F[1].done&&F[1].front===null;
    // the carpet, boarded at the top, starts the fight; the crown goes under it
-   BK.tp(30,${TOWER.SKY});BK.sim(5);BK.board();BK.sim(5);out.carpet=!!BK.carpet();out.active=BK.bossActive;BK.sim(120);out.crownGone=F[4].done||F[4].front!==null;
+   BK.tp(30,${TOWER.SKY});BK.sim(5);BK.board();BK.sim(5);out.carpet=!!BK.carpet();out.active=BK.bossActive;BK.sim(120);out.crownGone=F[6].done||F[6].front!==null;
    const y0=BK.P.y;for(let i=0;i<120;i++){BK.keys.down=true;BK.sim(1);}BK.keys.down=false;out.floorHeld=BK.P.y<=BK.L.arena.floor;out.fellNot=!!BK.carpet();
    for(let i=0;i<60;i++){BK.keys.up=true;BK.keys.right=true;BK.sim(1);}BK.keys.up=BK.keys.right=false;out.flew=Math.round(y0-BK.P.y);
    // a death in the sky puts the tower back and the carpet waiting
-   BK.god=false;BK.P.hp=0;BK.P.dead=0.01;BK.sim(400);out.retry={carpet:!!BK.carpet(),crown:!F[4].done,below:F[0].done,boss:BK.boss&&BK.boss.alive,mode:BK.boss&&BK.boss.mode};
+   BK.god=false;BK.P.hp=0;BK.P.dead=0.01;BK.sim(400);out.retry={carpet:!!BK.carpet(),crown:!F[6].done,below:F[0].done,boss:BK.boss&&BK.boss.alive,mode:BK.boss&&BK.boss.mode};
    return out;})()`, 240000);
   assert.ok(r.armedOver, 'the library arms when you are over its divider'); assert.ok(r.done, 'and falls'); assert.equal(r.sealed, T.SOLID, 'its rope hole is sealed');
   assert.ok(r.cleared < 10, 'nothing of the floor is left standing: ' + r.cleared); assert.ok(r.waited, 'a floor you went back under waits for you');

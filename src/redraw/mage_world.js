@@ -9,7 +9,7 @@
 //   bakeMidMage(w, h)       480x140 the garden walls and the yews of the grounds, the tower's outer wall on the right
 //   bakeNearMage(w, h)      640x300 yew trunks and hedge tops
 // SKINS (16x16, three variants each)   bakeTowerSkins() -> { tower, gate, hedge, hedgeTop, ice, crack, hole }
-// ROOM PAINTS   paintRoom(g, st, sx, sy, w, h, tx0) draws a room's back wall: 'library', 'lab', 'orrery', 'flip', 'dome'
+// ROOM PAINTS   paintRoom(g, st, sx, sy, w, h, tx0) draws a room's back wall: 'library', 'reading', 'orrery', 'clock', 'lab', 'flip', 'dome'
 // PROPS (bottom row = ground unless said)
 //   bakeGlyph()             28x8    a rune circle on the floor (drawn flipped on a ceiling): it turns the room over
 //   bakePlate()             [up, down] 22x6   the counterweight, struck: up on its chain, then dropped
@@ -21,7 +21,8 @@
 //   DECO: bakeUrn 16x22, bakeSundial 18x14, bakeStall 44x34, bakeIvy 24x30, bakeLamppost(lit) 10x32, bakeLectern 14x20,
 //         bakeBookpile(v) 18x10, bakeCandelabra 14x26, bakeNest 30x10, bakeGlobe 16x20, bakeCauldron 24x18, bakeBench 40x18,
 //         bakeJars(v) 22x14, bakeRetorts 26x18, bakeWineRack(v) 32x22, bakeStill 26x30, bakeOrreryBase 52x26, bakeDesk 30x16,
-//         bakeChimneypot(v) 10x16, bakeTelescope 44x44, bakeStarChart 24x18 (hung: top row = the ceiling)
+//         bakeChimneypot(v) 10x16, bakeTelescope 44x44, bakeStarChart 24x18 (hung: top row = the ceiling),
+//         bakeReadingDesk 38x20, bakeGears 40x34, bakeClockface 44x46 (hung)
 import { canvas, px, rect, fillPoly, line, circle, outline, mulberry } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -79,6 +80,7 @@ export function bakeTowerSkins() {
 }
 
 // ---------- the rooms' back walls ----------
+const xC = (i, sx, w) => sx + 34 + i * 76;   /* where the clock gallery's wheels sit across its wall */
 export function paintRoom(g, st, sx, sy, w, h, tx0, time) {
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
   if (st === 'library') {   /* stacks to the ceiling in the wall itself: shelves every 12 rows, the spines in reds, greens and violets */
@@ -108,6 +110,33 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, time) {
     g.fillStyle = '#3a3448'; g.fillRect(sx, sy, w, h);
     g.fillStyle = '#2e2838'; for (let yy = sy + 7; yy < sy + h; yy += 16) g.fillRect(sx, yy, w, 1);
     for (let xx = sx + 10; xx < sx + w; xx += 28) { const k = hsh(xx, 3), yy = sy + 10 + Math.floor(k * (h - 30)); g.fillStyle = k < 0.5 ? VIOLET[1] : '#b04040'; g.fillRect(xx, yy, 5, 1); g.fillRect(xx + 2, yy - 3, 1, 7); g.fillRect(xx, yy + 3, 5, 1); if (k > 0.7) g.fillRect(xx + 4, yy - 3, 1, 3); }
+    return true; }
+  if (st === 'reading') {   /* THE READING ROOM: oak panelling to waist height, plaster over it, tall shuttered windows, a frieze of copied letters */
+    g.fillStyle = '#332a3e'; g.fillRect(sx, sy, w, h);
+    g.fillStyle = '#3e3448'; for (let yy = sy + 5; yy < sy + h; yy += 26) g.fillRect(sx, yy, w, 13);            /* the plaster courses */
+    for (let xx = sx + 8; xx < sx + w; xx += 84) {                                                              /* the windows: shuttered, a little night through the slats */
+      const k = hsh(tx0 * 16 + (xx - sx), 11), yy = sy + 14 + Math.floor(k * 10);
+      g.fillStyle = '#1b1626'; g.fillRect(xx, yy, 22, 46); g.fillStyle = WOOD[1]; g.fillRect(xx - 2, yy - 2, 26, 3); g.fillRect(xx - 2, yy + 46, 26, 3);
+      for (let s2 = 0; s2 < 7; s2++) { g.fillStyle = s2 % 2 ? WOOD[2] : WOOD[1]; g.fillRect(xx, yy + 3 + s2 * 6, 22, 5); }
+      g.fillStyle = 'rgba(176,124,240,0.16)'; g.fillRect(xx + 2, yy + 3, 18, 40); }
+    g.fillStyle = WOOD[0]; g.fillRect(sx, sy + h - 34, w, 34);                                                  /* the panelling */
+    g.fillStyle = WOOD[1]; for (let xx = sx; xx < sx + w; xx += 20) g.fillRect(xx, sy + h - 34, 2, 34);
+    g.fillStyle = WOOD[2]; g.fillRect(sx, sy + h - 36, w, 2);
+    g.fillStyle = '#6a5a80'; for (let xx = sx + 3; xx < sx + w; xx += 6) { const k = hsh(tx0 * 16 + (xx - sx), 29); if (k < 0.3) continue; g.fillRect(xx, sy + h - 44, 3, 1); if (k > 0.66) g.fillRect(xx, sy + h - 42, 2, 1); }   /* the frieze: a line of copied letters, too far off to read */
+    return true; }
+  if (st === 'clock') {   /* THE PENDULUM GALLERY: the back of the clock - a dark case, its great wheels turning behind the work */
+    g.fillStyle = '#241f30'; g.fillRect(sx, sy, w, h);
+    g.fillStyle = '#2e2838'; for (let yy = sy; yy < sy + h; yy += 24) g.fillRect(sx, yy, w, 2);
+    const t2 = (time || 0) * 0.35;
+    for (let i = 0; xC(i, sx, w) < sx + w; i++) {                                                               /* the wheels, each turning a little slower than the last */
+      const cxw = xC(i, sx, w), cyw = sy + 30 + ((i % 3) * 46), r = 22 - (i % 3) * 5, a0 = t2 / (1 + i % 3) * (i % 2 ? -1 : 1);
+      g.strokeStyle = BRASS[0]; g.lineWidth = 3; g.beginPath(); g.arc(cxw, cyw, r, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = BRASS[1]; g.lineWidth = 1; g.beginPath(); g.arc(cxw, cyw, r, 0, Math.PI * 2); g.stroke();
+      for (let k = 0; k < 8; k++) { const a = a0 + k * Math.PI / 4; g.beginPath(); g.moveTo(cxw, cyw); g.lineTo(cxw + Math.cos(a) * r, cyw + Math.sin(a) * r); g.stroke();
+        g.fillStyle = BRASS[2]; g.fillRect(Math.round(cxw + Math.cos(a) * (r + 2)) - 1, Math.round(cyw + Math.sin(a) * (r + 2)) - 1, 2, 2); }   /* the teeth */
+      g.fillStyle = BRASS[2]; g.fillRect(cxw - 2, cyw - 2, 4, 4); }
+    g.lineWidth = 1; g.fillStyle = 'rgba(0,0,0,0.30)'; g.fillRect(sx, sy, w, h);                                /* the case shuts it all back into the dark */
+    g.fillStyle = STONE[1]; for (let xx = sx + 6; xx < sx + w; xx += 58) g.fillRect(xx, sy, 5, h);              /* the case's uprights */
     return true; }
   if (st === 'dome') {   /* the observatory: night through the glass, brass ribs, the stars turning */
     g.fillStyle = '#363064'; g.fillRect(sx, sy, w, h);   /* night through the glass, but lit by the moon on it: a black dome read as no room at all */
@@ -178,3 +207,27 @@ export function bakeDesk() { const [c, g] = canvas(30, 16); rect(g, 2, 12, 3, 4,
 export function bakeChimneypot(v) { const [c, g] = canvas(10, 16); rect(g, 1, 12, 8, 4, STONE[1]); rect(g, 2, 3, 6, 9, v ? '#6a4a3a' : '#5a4a4a'); rect(g, 2, 3, 1, 9, v ? '#8a6a5a' : '#7a6a6a'); rect(g, 1, 1, 8, 3, v ? '#8a6a5a' : '#7a6a6a'); rect(g, 3, 0, 4, 1, '#3a3a44'); return outline(c, OUT); }
 export function bakeTelescope() { const [c, g] = canvas(44, 44); rect(g, 12, 40, 20, 4, BRASS[0]); rect(g, 20, 26, 4, 14, BRASS[1]); rect(g, 12, 24, 20, 3, BRASS[1]); line(g, 8, 36, 20, 28, BRASS[0]); line(g, 36, 36, 24, 28, BRASS[0]); fillPoly(g, [[6, 30], [36, 6], [42, 12], [12, 36]], BRASS[1]); fillPoly(g, [[6, 30], [36, 6], [38, 8], [8, 32]], BRASS[2]); fillPoly(g, [[36, 4], [43, 11], [41, 13], [34, 6]], GLASS[1]); px(g, 38, 8, GLASS[3]); rect(g, 4, 30, 5, 5, BRASS[0]); return outline(c, OUT); }
 export function bakeStarChart() { const [c, g] = canvas(24, 18); rect(g, 10, 0, 4, 3, WOOD[1]); rect(g, 0, 3, 24, 15, '#e8dcc0'); rect(g, 0, 3, 24, 1, '#c8b898'); rect(g, 0, 17, 24, 1, '#c8b898'); for (let i = 0; i < 9; i++) px(g, 2 + (i * 5) % 20, 5 + (i * 3) % 10, '#3a2a5a'); line(g, 3, 6, 9, 9, VIOLET[1]); line(g, 9, 9, 15, 7, VIOLET[1]); circle(g, 17, 12, 2, VIOLET[2]); return outline(c, OUT); }
+
+/* THE READING ROOM's own furniture (the Falling Tower's second floor, 2026-09-22) */
+export function bakeReadingDesk() { const [c, g] = canvas(38, 20); rect(g, 3, 15, 4, 5, WOOD[1]); rect(g, 31, 15, 4, 5, WOOD[1]); rect(g, 2, 17, 34, 2, WOOD[0]);
+  rect(g, 0, 10, 38, 5, WOOD[2]); rect(g, 0, 10, 38, 1, WOOD[3]);                                            /* the top */
+  fillPoly(g, [[6, 10], [16, 10], [14, 3], [8, 3]], '#e8dcc0'); fillPoly(g, [[8, 4], [14, 4], [13, 9], [9, 9]], '#c8b898');   /* an open book on a slope */
+  for (let i = 0; i < 4; i++) rect(g, 9, 5 + i, 4, 1, '#8a8070');
+  rect(g, 20, 6, 5, 4, VIOLET[1]); rect(g, 20, 6, 5, 1, VIOLET[2]); rect(g, 26, 5, 4, 5, '#5a2a3a'); rect(g, 26, 5, 4, 1, '#8a4050');   /* two stacked volumes */
+  rect(g, 33, 4, 2, 6, BRASS[1]); rect(g, 32, 2, 4, 2, BRASS[2]); px(g, 34, 1, '#ffd36b');                    /* a candle stub, still lit */
+  return outline(c, OUT); }
+/* THE PENDULUM GALLERY's (hung: the top row is the ceiling) */
+export function bakeClockface() { const [c, g] = canvas(44, 46); rect(g, 20, 0, 4, 8, BRASS[0]); rect(g, 21, 0, 1, 8, BRASS[2]);   /* the bracket it hangs from */
+  circle(g, 22, 28, 18, STONE[1], BRASS[0]); circle(g, 22, 28, 15, '#e8dcc0');
+  for (let k = 0; k < 12; k++) { const a = k * Math.PI / 6, r = 13; rect(g, 22 + Math.round(Math.sin(a) * r) - 1, 28 - Math.round(Math.cos(a) * r) - 1, 2, 2, k % 3 ? '#8a8070' : '#3a2e40'); }
+  line(g, 22, 28, 22 + 9, 28 - 4, '#3a2e40'); line(g, 22, 28, 22 - 3, 28 - 10, '#3a2e40'); px(g, 22, 28, BRASS[2]);
+  rect(g, 20, 8, 4, 2, BRASS[1]);
+  return outline(c, OUT); }
+export function bakeGears() { const [c, g] = canvas(40, 34); rect(g, 0, 31, 40, 3, STONE[1]); rect(g, 0, 31, 40, 1, STONE[3]);
+  for (const [gx, gy, r] of [[12, 18, 11], [29, 22, 8], [22, 8, 6]]) {
+    g.strokeStyle = BRASS[0]; g.lineWidth = 3; g.beginPath(); g.arc(gx, gy, r, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = BRASS[1]; g.lineWidth = 1; g.beginPath(); g.arc(gx, gy, r, 0, Math.PI * 2); g.stroke();
+    for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; line(g, gx, gy, Math.round(gx + Math.cos(a) * r), Math.round(gy + Math.sin(a) * r), BRASS[0]);
+      rect(g, Math.round(gx + Math.cos(a) * (r + 2)) - 1, Math.round(gy + Math.sin(a) * (r + 2)) - 1, 2, 2, BRASS[2]); }
+    circle(g, gx, gy, 2, BRASS[2]); }
+  g.lineWidth = 1; return outline(c, OUT); }
