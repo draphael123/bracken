@@ -33,22 +33,23 @@ const R = floodReach(slopeReachGrid(D.asPlayed ? D.asPlayed(L, T) : L, T), T, { 
 const want = t => L.ents.filter(e => e.t === t), got = e => R.jumpNear(e.x, e.y), cnt = t => `${want(t).filter(got).length}/${want(t).length}`;
 ok(want('silver').length === 3 && want('stray').length === 3 && want('relic').length === 1 && [...want('silver'), ...want('stray'), ...want('relic')].every(got), `F7 + reach: silvers ${cnt('silver')}, strays ${cnt('stray')}, relic ${cnt('relic')} got by the fill`);
 let arenaReached = false; for (let x = ax0; x < ax1; x++) for (let y = V ? afl - 12 : 0; y < (V ? afl : H); y++) if (R.seen.has(x + ',' + y)) arenaReached = true;   /* a climb's arena is ON TOP: its columns run all the way down the level (the first check counted the gorge floor) */
-ok(arenaReached, `B1: the start reaches the arena (${A.boss})`);
-ok(ax1 - ax0 <= 44, `A7: the arena is ${ax1 - ax0} tiles across`);
+if (meta.skyArena && L.carpetAt && R.jumpNear(Math.floor(L.carpetAt.x / TS), Math.floor(L.carpetAt.y / TS) - 1)) arenaReached = true;   /* a SKY arena is reached by reaching its carpet */
+ok(arenaReached, `B1: the start reaches the arena (${A.boss}${meta.skyArena ? ', by its carpet' : ''})`);
+ok(ax1 - ax0 <= 44 || meta.skyArena, `A7: the arena is ${ax1 - ax0} tiles across${meta.skyArena ? ' (a SKY arena, flown on the carpet: exempt by design)' : ''}`);
 // B6
 const checks = want('check'), pos = checks.map(e => V ? e.y : e.x).sort((a, b) => V && !DOWN ? b - a : a - b), gaps = pos.slice(1).map((p, i) => Math.abs(p - pos[i]));
 const outside = checks.some(e => DOWN ? (e.y < afl - 1 && e.y >= afl - 16) : V ? (e.y >= afl && e.y <= afl + 6 && e.x >= ax0 - 4 && e.x <= ax1 + 4) || (e.y > afl) : (e.x < ax0 && e.x >= ax0 - 6));   /* a descent's last checkpoint is just above the arena */
 const first = V ? Math.abs(L.START.y - pos[0]) : pos[0];
 ok(Math.max(first, ...gaps) <= (V ? 40 : 100) && outside && checks.every(e => R.near(e.x, e.y)), `B6: ${checks.length} checkpoints, the widest gap ${Math.max(...gaps)} ${V ? 'rows' : 'columns'}, one outside the arena, all reachable`);
 // B2
-const standT = t => t === T.SOLID || t === T.ONEWAY || t === T.PLANK || t === T.NET || t === T.CRATE || isSlope(t);
-const flyers = new Set(['vulture', 'silver', 'coin', 'raptor', 'bat', 'wisp']);
+const standT = t => t === T.SOLID || t === T.ONEWAY || t === T.PLANK || t === T.NET || t === T.CRATE || t === T.CRYST || t === T.SHELF || isSlope(t);
+const flyers = new Set(['vulture', 'silver', 'coin', 'raptor', 'bat', 'wisp', ...(meta.flyers || [])]);
 const floating = L.ents.filter(e => !flyers.has(e.t) && !e.hung && !standT(at(e.x, e.y + 1)) && !isSlope(at(e.x, e.y)));
 ok(floating.length === 0, `B2: nothing stands in the air (${floating.length}: ${floating.slice(0, 4).map(e => e.t + '@' + e.x + ',' + e.y).join(' ')})`);
 // density (and shape, across)
 const FOES = new Set(meta.foes);
 let win = 0, foes = 0, minF = 99, flat = 0, hs = 0; const seen = [...R.seen].map(k => k.split(',').map(Number));
-if (V) { for (let y = H - 12; y - 12 >= 0; y -= 12) { if (y <= afl + 1 && y >= afl - 12) continue; win++; const n = L.ents.filter(e => FOES.has(e.t) && e.y >= y - 12 && e.y < y).length; foes += n; minF = Math.min(minF, n); } }
+if (V) { for (let y = H - 12; y - 12 >= 0; y -= 12) { if (y <= afl + 1 && y >= afl - 12) continue; if (!DOWN && y - 12 < afl - 12) continue;   /* a climb's screens stop at its arena (not the sky over it) */ win++; const n = L.ents.filter(e => FOES.has(e.t) && e.y >= y - 12 && e.y < y).length; foes += n; minF = Math.min(minF, n); } }
 else for (let x = 0; x + 24 <= ax0; x += 24) { win++; const n = L.ents.filter(e => FOES.has(e.t) && e.x >= x && e.x < x + 24).length; foes += n; minF = Math.min(minF, n);
   const ys = new Set(seen.filter(([sx]) => sx >= x && sx < x + 24).map(([, y]) => y)); hs += ys.size; if (ys.size <= 2) flat++; }
 const per = foes / win;
