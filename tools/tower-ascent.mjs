@@ -35,7 +35,11 @@ const gRows = new Set(garrison.map(e => L.towerFloors.findIndex(f => e.y >= f.to
 const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 3);
 for (const e of elites) { assert.ok(e.x > TOWER.X0 && e.x < TOWER.X1 && e.y > TOWER.SKY && e.y < L.H, 'elite inside the tower: ' + JSON.stringify(e)); assert.notEqual(at(e.x, e.y + 1), T.AIR, 'elite stands on something'); }
 assert.equal(L.ents.filter(e => e.t === 'silver').length, 3);
-const non = new Set(['check', 'sign', 'coin', 'deco', 'silver', 'stal', 'gate', 'mover', 'undeadmage']);
+/* A GLYPH IS A RUNE ON THE FLOOR AND A MEND IS A HEALING SHRINE: neither is a creature, and counting them as foes
+   put the longer tower at 4.87 a screen against its own 3.5-4.6 band. The band is not widened and the level is not
+   thinned - the tower's 94 creatures over 20.75 screens are 4.53. It only ever mattered here because no tower before
+   this one had gravity glyphs in it. */
+const non = new Set(['check', 'sign', 'coin', 'deco', 'silver', 'stal', 'gate', 'mover', 'undeadmage', 'glyph', 'mend']);
 const foes = L.ents.filter(e => !non.has(e.t)), climb = L.START.y - TOWER.SKY;
 const density = foes.length / (climb / 12); assert.ok(density >= 3.5 && density <= 4.6, 'foes per screen of climb: ' + density.toFixed(2));
 assert.ok(L.arena.carpet && L.arena.boss === 'undeadmage' && L.arena.trigger > L.W * 16, 'the fight is started by the carpet, not by walking');
@@ -132,7 +136,11 @@ try {
    const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);};
    boot();const F=BK.towerFloors(),hole=F[0].hole;
    // the floor goes once you are over it, and its rope is sealed
-   BK.tp(34,F[0].top-6);BK.sim(30);out.armedOver=F[0].t>0||F[0].front!==null;BK.sim(240);out.done=F[0].done;out.sealed=BK.L.grid[hole[1]*BK.L.W+hole[0]];
+   /* ONTO THE GALLERY, not six rows over the divider. The old spot happened to have footing in the five-floor tower;
+      in the seven-floor one it is open air over the Reading Room, so the hero fell to its floor - ONE ROW below the
+      'above the divider' line - and the library never armed. The test was reading its own bad teleport as a bug in
+      the level. Put him somewhere he can stand, well clear of the line, and let the rule be the thing tested. */
+   BK.tp(40,F[1].top+9);BK.sim(60);out.stoodAt=Math.round(BK.P.y/16);out.armedOver=F[0].t>0||F[0].front!==null;BK.sim(300);out.done=F[0].done;out.sealed=BK.L.grid[hole[1]*BK.L.W+hole[0]];
    out.cleared=(()=>{let n=0;for(let y=F[0].top;y<F[0].bot;y++)for(let x=12;x<=59;x++)if(BK.L.grid[y*BK.L.W+x])n++;return n;})();
    // a floor you went back under waits for you
    BK.tp(16,F[1].top-9);BK.sim(20);BK.tp(24,F[1].bot-1);BK.sim(200);out.waited=!F[1].done&&F[1].front===null;
