@@ -43,3 +43,16 @@ hurt), **petrel** (reads as a seabird: white belly, yellow beak; the dive a dart
 all ten OK), and appends the new frames. `FRAMES_V2` gives each foe's baker, its kept and added frames, and the one change to its
 frame pick in main.js. Wiring is one line to swap the baker and one to the frame pick, per foe. (The hurt frames want a hurt timer
 tested at the head of each pick; most foes set `e.flash` on a hit, which will do.)
+
+## The five weak desert sprites, redrawn: `src/redraw/desert_v2.js` (before/after `docs/desert-v2.png`, `node tools/desert-v2.mjs`)
+The Glass Colossus, the Sand Warden, the Hourglass King, the gorge crab and the Fallen High Priest, each keeping its frame count, order,
+anchor and box. Swap the baker; nothing else changes.
+
+## Death by material: `src/death-fx.js` (film `docs/death-fx.png`, `node tools/death-fx.mjs`)
+The game already throws the dead foe's sprite as a corpse; this layers a burst of what it was made of on top: bone (a skull that arcs
+and bounces, bones that clatter, a scatter left), armour (a helm and plates that clang down with sparks), spirit (comes apart upward),
+rot and slime (clumps and a stain that fades), fur, feathers and paper (drift down), chitin, glass (glinting shards), sand (runs out
+into a heap), wood (splinters), clockwork (a cog and springs), water (a splash), and cloth for everything unlisted (a puff and a
+scrap). 15 materials, every foe mapped, at most 24 pieces a death, all gone in 2.5 s (decals 4 s), nothing through the floor, all
+flying away from the blow. **Wiring:** three calls in main.js - `deathBurst(materialOf(e.t), ...)` beside `corpses.push(c)` in the kill,
+`stepDeathFx` in update and `drawDeathFx` after the corpses in drawWorld - and the bounces' `clack` flag wants SFX.clatter.
