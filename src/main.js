@@ -14577,6 +14577,7 @@ function bakeEmberWispSet() {
 }
 function villageReset() {
   VG = L && L.village ? fireGrid(L) : null; if (!VG) return;
+  for (const [x, y] of L.roofFire || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, barrier: true, tall: 46 });   /* THE FIRE ACROSS THE BARN ROOF: water puts it out for a while (villageSplash) */
   for (const [x, y, per, ph] of L.stillFires || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, pillar: !!per, per: per || 4, ph: ph || 0, tall: 14 });   /* FLAME PILLARS (villageTick) */
   for (const z of L.deckBreaks || []) if (z.log) { for (let x = z.x0; x <= z.x1; x++) fires.push({ x: x * TS + 8, y: (z.row + 2) * TS, life: 1e9, delay: 0, still: true, dmg: DMG.squareFire }); }   /* the embers in the pits under the logs */
   vflee = []; vfleeT = 2;
@@ -14591,6 +14592,7 @@ function villageAshes(e) {   /* where a burning goblin falls, the ground catches
 function villageSplash(x, y, r, cool) {
   const n = douse(VG, Math.floor(x / TS), Math.floor((y - 1) / TS), r);
   for (const f of fires) if (!f.still && !f.grid && Math.abs(f.x - x) < r * TS && Math.abs(f.y - y) < 40) f.life = 0;
+  if (fires.some(f => f.barrier && Math.abs(f.x - x) < (r + 3) * TS && Math.abs(f.y - y) < 40)) { const bs = fires.filter(f => f.barrier); if (bs.some(f => !(f.delay > 0))) number(bs[0].x + 16, bs[0].y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); for (const f of bs) f.delay = 12; }   /* the roof's fire: out for twelve seconds, and back */
   for (const pr of props) if (pr.t === 'captive' && !pr.freed && Math.abs(pr.x - x) < cool * TS && Math.abs(pr.y - y) < 3 * TS) { pr.coolT = 12; pr.cooled = true; if (pr.hot || pr.hotNear) number(pr.x, pr.y - 40, 'COOLED', '#9ad0ff'); }
   for (let i = 0; i < 26; i++) parts.push({ x: x + (Math.random() - 0.5) * 16, y: y - 10, vx: (Math.random() - 0.5) * r * 40, vy: -120 - Math.random() * 120, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); number(x, y - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff');
@@ -20166,7 +20168,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (bossActive && L.arena && L.arena.tint && SET.tint !== 'off') { g.globalAlpha = (L.arena.tintA || 0.14) * (SET.tint === 'half' ? 0.5 : 1); g.fillStyle = L.arena.tint; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
   drawEscape(cx, cy);
   drawVillage(cx, cy);   /* THE BURNING VILLAGE's straw, char, doors, troughs and beams, under the flames */
-  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if (f.pillar && f.tall > 14) { const n = Math.ceil(f.tall / 12); for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } continue; } g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }   /* (a FLAME PILLAR at its roar is a column of them) */
+  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if ((f.pillar || f.barrier) && f.tall > 14) { const n = Math.ceil(f.tall / 12); for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } continue; } g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }   /* (a FLAME PILLAR at its roar is a column of them) */
   for (const e of enemies) if (e.alive && (e.t === 'spider' || e.t === 'weaver')) { g.strokeStyle = 'rgba(230,230,240,0.7)'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(e.x - cx) + 0.5, Math.round(e.restY - 26 - cy)); g.lineTo(Math.round(e.x - cx) + 0.5, Math.round(e.y - 8 - cy)); g.stroke(); }
   for (const b of pyres) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), pulse = Math.sin(time * 30) * 1.2;
     g.globalAlpha = 0.35; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(x - b.dir * 6, y, 9 + pulse, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;

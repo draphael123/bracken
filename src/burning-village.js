@@ -86,7 +86,15 @@ export function buildBurningVillage({ painter, T, TS }) {
 
   // ---- 4. THE BARN ----
   block(322, 322, 12, 22); block(398, 398, 12, 22); block(322, 398, 10, 11);
-  net(321, 9, 25); block(397, 398, 4, 9);              /* a ladder up the barn's near gable onto the roof, and what the roof holds pays for the climb; the far gable stands five rows over it, so the roof is a dead end and never a way round the captain's door */
+  net(321, 9, 25); block(397, 398, 4, 9);
+  /* THE ROOF IS A WAY, NOT A DEAD END (Daniel): at its far end a HATCH drops you into the barn on the captain's side of his
+     door, so the roof is a route round the hay but never round him. A wall of fire burns across the roof in front of the
+     hatch; the WATER BUTT beside it puts it out for twelve seconds when struck, and fills again in eight (the troughs' own
+     rule), so the water comes back. */
+  for (let x = 390; x <= 392; x++) { set(x, 10, T.AIR); set(x, 11, T.AIR); }
+  ent('watertrough', 381, 9);
+  ent('sign', 378, 9, { text: 'THE ROOF IS ALIGHT. STRIKE THE WATER BUTT, THEN DROP THROUGH THE HATCH.' });
+  const roofFire = [[385, 9], [386, 9], [387, 9]];              /* a ladder up the barn's near gable onto the roof, and what the roof holds pays for the climb; the far gable stands five rows over it, so the roof is a dead end and never a way round the captain's door */
   interiors.push([323, 397, 12, 25, 'timber']);
   plat(327, 20, 67); net(326, 20, 25); net(394, 20, 25);                       // the hayloft, a ladder at each end
   plat(340, 16, 41); net(342, 16, 19);                                          // and the upper loft over it
@@ -131,7 +139,7 @@ export function buildBurningVillage({ painter, T, TS }) {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: [], interiors, roofs, houses, facades,
-    burn, stillFires, beams, village: true, emberPits: pits, deckBreaks: logs.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, log: true })),
+    burn, stillFires, beams, roofFire, village: true, emberPits: pits, deckBreaks: logs.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, log: true })),
     quest: { n: 6, item: 'folk', name: 'SAVED', done: 'THE VILLAGE IS OUT', thanks: 'THE VILLAGE THANKS YOU' },   /* the villagers are the level's quest: the count on the HUD and on the card */ night: true, glowNight: true, nightA: 0.18, duskStart: -1, duskLen: 1,
     music: 'quarry',                                    /* "Cavern and Blade" (zesona, CC0): the Quarry Pass's, benched with it */
     palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'village', haze: 'rgba(255,120,48,0.14)',
