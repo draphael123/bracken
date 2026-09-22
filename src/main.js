@@ -47,7 +47,9 @@ import { bakeMasthead } from './redraw/masthead.js';
 import * as KRA from './redraw/kraken.js';
 import * as FW from './redraw/fields_world.js';   /* THE HEXED FIELDS: its sky, its layers, its props and its movers */
 import * as FF from './redraw/fields_foes.js';
-import * as MW from './redraw/mage_world.js';   /* THE MAGE'S FOLLY: the tower's skins, rooms, furniture and the potion machinery */
+import * as MW from './redraw/mage_world.js';
+import * as CRR from './redraw/crag_redress.js';   /* THE REDRESS (docs/visual-audit.md): Scree, the Hanging Village and Stormhold each get their own sky, backdrops, rock and dressing */
+import * as RD2 from './redraw/redress2.js';      /* ... and Highcrown, the Undercrown, the tower, the Monastery and the three shops */   /* THE MAGE'S FOLLY: the tower's skins, rooms, furniture and the potion machinery */
 import * as MF from './redraw/mage_foes.js';   /* its creatures, the Homunculus, the Archmage and his familiar, and the three forms */
 import * as SK from './redraw/strawking.js';   /* THE SCARECROW KING and THE HEADLESS PLOUGHMAN */   /* THE DROWNED CAUSEWAY: the Kraken, its arms, the feeler, the drowned fields */
 import * as LWT from './lw_tiles.js';
@@ -585,6 +587,19 @@ const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp
 const BIRD = bakeBird();
 const PARTS = bakeSpitterParts();
 const PAL0 = Object.assign({}, ART.C);
+/* WHICH LEVEL WEARS WHICH REDRESS: [module, theme]. Burial and the Witchlight Stair keep their own. The mage and monastery themes
+   bring backdrops only (their ground returns null: those levels keep their own tiles). An indoor theme has no sky: its far layer is
+   the whole 320x180 back wall, drawn in place of the sky (BG.wall). */
+const REDRESS = { scree: ['crag', 'scree'], hanging: ['crag', 'hanging'], storm: ['crag', 'storm'], crown: ['rd', 'castle'], undercrown: ['rd', 'undercrown'],
+  mage: ['rd', 'mage'], fallingtower: ['rd', 'mage'], spire: ['rd', 'monastery'], shop: ['rd', 'shopWood'], shopCrag: ['rd', 'shopCrag'], shopSea: ['rd', 'shopSea'] };
+const REDRESS_GROUND = {}, REDRESS_PROPS = {};
+const redressOf = () => REDRESS[(LEVELS[levelIndex] || {}).id] || null;
+function redressGround() { const r = redressOf(); if (!r) return null; const k = r.join(':');
+  if (!(k in REDRESS_GROUND)) REDRESS_GROUND[k] = r[0] === 'crag' ? CRR.bakeCragGround(r[1]) : RD2.bakeRedressGround(r[1]);
+  return REDRESS_GROUND[k]; }
+function redressProps() { const r = redressOf(); if (!r) return null; const k = r.join(':');
+  if (!(k in REDRESS_PROPS)) REDRESS_PROPS[k] = { kit: r[0] === 'crag' ? CRR.CRAG_KITS[r[1]] : RD2.REDRESS_KITS[r[1]], props: r[0] === 'crag' ? CRR.bakeCragProps(r[1]) : RD2.bakeRedressProps(r[1]) };
+  return REDRESS_PROPS[k]; }
 let TILE, PROP, BG, VILL = null, SHORE = null, REEF = null, FLOT = null, CITY = null, CROWN = null, MONK = null, RAINART = null;
 function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
@@ -631,6 +646,11 @@ function bakeAll(pal = {}) {
   const sky = (pal.sky === 'mage' || pal.sky === 'fields' || pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
   CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
   BG = { sky: pal.sky === 'mage' && MW.bakeSkyMage ? MW.bakeSkyMage(VH) : pal.sky === 'fields' && FW.bakeSkyFields ? FW.bakeSkyFields(VH) : pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'harbour' ? HB.bakeSkyHarbour(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'mage' && MW.bakeFarMage ? MW.bakeFarMage(320, 90, 1) : pal.far === 'fields' && FW.bakeFarFields ? FW.bakeFarFields(320, 90, 1) : pal.far === 'causeway' ? KRA.bakeFarCauseway(320, 90, 1) : pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'harbour' ? HB.bakeFarHarbour() : pal.far === 'stormsea' ? SM.bakeStormSea() : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'mage' && MW.bakeMidMage ? MW.bakeMidMage(480, 140, 2) : pal.mid === 'fields' && FW.bakeMidFields ? FW.bakeMidFields(480, 140, 2) : pal.mid === 'causeway' ? KRA.bakeMidCauseway(480, 140, 2) : pal.mid === 'crown' ? CRT.bakeMidCrown(480, 140, 2) : pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'harbour' ? HB.bakeMidHarbour() : pal.mid === 'swells' ? SM.bakeSwells() : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'mage' && MW.bakeNearMage ? MW.bakeNearMage(640, 300, 3) : pal.near === 'fields' && FW.bakeNearFields ? FW.bakeNearFields(640, 300, 3) : pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'harbour' ? HB.bakeNearHarbour() : pal.near === 'none' ? canvas(VW, 1)[0] : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
+  { let r = null; try { r = L ? redressOf() : null; } catch { }   /* the first bakeAll runs before L and levelIndex exist */
+    if (r) { const M = r[0] === 'crag' ? { sky: CRR.bakeCragSky, far: CRR.bakeCragFar, mid: CRR.bakeCragMid, near: CRR.bakeCragNear } : { sky: RD2.bakeRedressSky, far: RD2.bakeRedressFar, mid: RD2.bakeRedressMid, near: RD2.bakeRedressNear };
+      const sky = M.sky(r[1], VH), far = M.far(r[1]); if (sky) { BG.sky = sky; BG.ownLight = r[1]; }   /* its sky IS the hour: the generic dusk wash is not laid over it */
+      if (far.height >= 180) { BG.wall = far; BG.far = canvas(320, 1)[0]; BG.ownLight = r[1]; } else BG.far = far;   /* indoors there is no hour to wash over */
+      BG.mid = M.mid(r[1]); BG.near = M.near(r[1]); BG.nearTrees = null; } }
   if (pal.far === 'stormsea') BG.storm = { far: BG.far, mid: BG.mid, rain: SM.bakeRainSheets(), farS: SM.silhouette(BG.far), midS: SM.silhouette(BG.mid, '#10161c') };
 }
 bakeAll();
@@ -695,6 +715,7 @@ function resolveTiles() {
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   const rnd = mulberry(7);
+  const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null;
@@ -705,7 +726,7 @@ function resolveTiles() {
        ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
        being the same grey rock with grass on it. */
     const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* the monks laid warm limestone; the Queen laid granite */
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -716,13 +737,13 @@ function resolveTiles() {
       if (up !== T.SOLID && up !== T.CRATE) {
         const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
-        const kit = GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
+        const kit = (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
         const dressFrom = decor.length;
         const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
         if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
         if (clearGround && kit.kinds.length && rnd()<kit.density) {
           const kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)];
-          const source=({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
+          const source=(RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
           const c=Array.isArray(source)?source[Math.floor(rnd()*source.length)]:source;
           if(c && (c.width<=16 || (tileAt(x+1,y)===T.SOLID && tileAt(x+1,y-1)===T.AIR))) {
             const k=({tinyCap:'tiny',campfire:'fire',skullPost:'skull',fallenLog:'log',heather:'tuft',gorse:'bush',thistle:'fern'})[kind]||kind;
@@ -760,7 +781,7 @@ function resolveTiles() {
       const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
-      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
+      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : RDG ? (!l ? RDG.ledgeL : !r ? RDG.ledgeR : RDG.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
     } else if (t === T.REED) s = TILE.reeds[(rnd() * 3) | 0];
     else if (t === T.PALISADE) s = TILE.palisade[(rnd() * 3) | 0];
     else if (t === T.BOUNCER) { s = TILE.bouncer[0];
@@ -1653,7 +1674,7 @@ function spawnEntities() {
     towerAscentReset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]),typeof checkpoint!=='undefined'&&checkpoint?checkpoint.y/TS:LH,(x,y)=>cellSet(x,y,T.AIR),(x,y)=>cellSet(x,y,T.SOLID));
     for(const z of L.deckBreaks||[]){z.t=-1;z.down=false;z.seen=false;z.downT=0;for(let y=z.row-1;y<=z.row;y++)for(let x=z.x0;x<=z.x1;x++)cellSet(x,y,grid0[y*LW+x]);}
     resetCarpet(L,typeof P!=='undefined'?P:null);
-  }
+  } else if (typeof P !== 'undefined' && P && P.carpet) P.carpet = null;   /* a rug ridden out of the tower (quit mid-fight) must not fly into the next level: carpetBox reads L.arena and threw every frame */
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
@@ -19206,6 +19227,13 @@ function bakePigeonIcon() { return [0, 1].map(f => { const [c, g2] = canvas(16, 
    and everything above it was bare gradient - the sun sank INTO the moat. A level that says `bgSpan` squeezes its whole
    height into that many pixels of slide. Levels that do not say it are drawn exactly as they were. */
 function bgDY(cy) { const d = (LH * TS - VH) - cy; return L && L.bgSpan ? d * L.bgSpan / Math.max(1, LH * TS - VH) : d; }
+/* THE BACK WALL of an indoor redress (320x180), tiled across at the far layer's pace and sat on the bottom of the view; a taller view
+   repeats its top course upward rather than stretching the pixels */
+function drawBackWall(cx, cy) {
+  const c = BG.wall, w = c.width, h = c.height;
+  let x = ((-cx * 0.15) % w + w) % w; if (x > 0) x -= w;
+  for (; x < VW; x += w) { const X = Math.round(x); g.drawImage(c, X, VH - h); for (let yy = VH - h - 16; yy > -16; yy -= 16) g.drawImage(c, 0, 0, w, 16, X, yy, w, 16); }
+}
 function drawLayer(c, f, baseY, cx, cy) {
   const w = c.width; const dY = bgDY(cy);
   let x = ((-cx * f) % w + w) % w; if (x > 0) x -= w;
@@ -19886,15 +19914,18 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.colosseum) { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#0e0c12'); gr.addColorStop(0.6, '#191620'); gr.addColorStop(1, '#241f28'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10; g.fillStyle = '#ffd36b'; for (let i = 0; i < 40; i++) { const x = ((i * 137) % VW), y = ((i * 61) % VH); g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; }
   else g.drawImage(BG.sky, 0, 0, 1, VH, 0, 0, VW, VH);
+  if (BG.wall && !L.colosseum) drawBackWall(cx, cy);   /* an indoor redress: the back wall is the sky */
   if (L.fields) drawFieldsSky(cx, cy);   /* THE HEXED FIELDS: the dusk going, the stars, the moon and its cloud */
   const dk = L.colosseum ? 0 : dusk();
-  if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
+  if (dk > 0 && BG.ownLight) { if (BG.ownLight === 'scree') { g.globalAlpha = dk; g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; } }
+  else if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.dark) { const P0 = L.palette || {};
     /* THE HURRICANE is dark, but it is not a room: her murk was a wall of wrecks, which is a fleet. Her own sky goes down under a
        storm-dark wash and the sea is drawn over it, so the dark is weather and not a back wall */
     if (BG.storm) { g.fillStyle = 'rgba(18,22,28,0.55)'; g.fillRect(0, 0, VW, VH); if (SET.parallax !== 'off') SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() }); g.fillStyle = 'rgba(18,22,28,0.3)'; g.fillRect(0, 0, VW, VH); }
+    else if (BG.wall) { drawBackWall(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }   /* the Undercrown's pit: its own foundations, not the shared murk */
     else { g.fillStyle = P0.murk || '#1a1a22'; g.fillRect(0, 0, VW, VH);
     drawMurk(cx);                                                 /* the far wall of a dark room: rooftops, rock or wrecks, anchored to the SCREEN */
     g.fillStyle = '#22222c'; for (let k = 0; k < 6; k++) g.fillRect(((k * 97 - cx * 0.2) % (VW + 80) + VW + 80) % (VW + 80) - 40, 20 + k * 25, 60 + k * 9, 8); }
@@ -22012,6 +22043,7 @@ function drawEdPalette() {
 }
 
 function render() {
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;   /* one bad draw (a throw between a save and its restore) must never poison the frames after it: the Falling Tower purple screen */
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, camX)) + kick + (sh ? (Math.random() - 0.5) * sh * 2 : 0)), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, camY)) + (sh ? (Math.random() - 0.5) * sh * 2 : 0)); /* never past the level's edge, whatever moved the camera */

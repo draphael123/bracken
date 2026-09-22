@@ -105,7 +105,7 @@ export function updateUndeadMage(e, dt, c) {
 }
 export function undeadFrame(e, F) {
   if (e.hurtT > 0) return F.hurt;
-  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, wake: F.idle })[e.mode]
+  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 export function drawUndeadMage(g, e, cx, cy, time) {
