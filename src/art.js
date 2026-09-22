@@ -2181,7 +2181,16 @@ export function bakeRockPillar(seed) { const rnd = mulberry(seed); const [c, g] 
 // A timber strut that holds a mountain ledge against the rock. 40×18, background.
 export function bakeStrut(v) { const [c, g] = canvas(40, 18); const flip = v === 1; const X = x => flip ? 39 - x : x; line(g, X(2), 2, X(36), 15, '#5c3a1d', 3); line(g, X(2), 1, X(36), 14, '#8a5a32', 1); rect(g, X(0), 0, flip ? 40 : 40, 2, '#5c3a1d'); rect(g, X(0), 2, flip ? 6 : 6, 16, '#5c3a1d'); px(g, X(3), 4, '#8b8378'); px(g, X(3), 12, '#8b8378'); return c; }
 // The whole world on one sheet: the Crags stacked above the Wood, joined by the pass. Each region bakes in its own style with its own share of the path.
-export function bakeWorldMap(w, h, regions, connectors) { const [c, g] = canvas(w, h); for (const r of regions) { const part = bakeMap(r.w, r.h, r.nodes, r.path, r.seed, r.style); g.drawImage(part, r.x, r.y); } for (const [a, b] of connectors) { line(g, a[0], a[1], b[0], b[1], '#5e3b21', 8); line(g, a[0], a[1], b[0], b[1], '#b8a888', 5); } for (const r of regions) if (r.seam) { const gr = g.createLinearGradient(0, r.seam - 26, 0, r.seam + 6); gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(94,110,80,0.5)'); gr.addColorStop(1, 'rgba(79,138,58,0)'); g.fillStyle = gr; g.fillRect(0, r.seam - 26, w, 32); } return c; }
+export function bakeWorldMap(w, h, regions, connectors) { const [c, g] = canvas(w, h); for (const r of regions) { const part = bakeMap(r.w, r.h, r.nodes, r.path, r.seed, r.style); g.drawImage(part, r.x, r.y);
+    /* THE SPURS. An optional level hangs OFF the road on a short dashed branch instead of standing in it, so that a
+       glance at the map says which way is on and which way is a choice. The junction is the nearest point of this
+       region's own road; the dashes are laid by hand because a pixel map has no business with setLineDash. */
+    for (const nd of (r.nodes || [])) { if (!nd.spur || !r.path || !r.path.length) continue;
+      let j = r.path[0]; for (const p of r.path) if (Math.hypot(p[0] - nd.x, p[1] - nd.y) < Math.hypot(j[0] - nd.x, j[1] - nd.y)) j = p;
+      const dx = nd.x - j[0], dy = nd.y - j[1], len = Math.hypot(dx, dy) || 1;
+      for (let d = 3; d < len - 2; d += 5) { const px0 = r.x + j[0] + dx * d / len, py0 = r.y + j[1] + dy * d / len;
+        const px1 = r.x + j[0] + dx * Math.min(len - 2, d + 2.6) / len, py1 = r.y + j[1] + dy * Math.min(len - 2, d + 2.6) / len;
+        line(g, px0, py0, px1, py1, '#5e3b21', 3); line(g, px0, py0, px1, py1, '#c8b088', 1); } } } for (const [a, b] of connectors) { line(g, a[0], a[1], b[0], b[1], '#5e3b21', 8); line(g, a[0], a[1], b[0], b[1], '#b8a888', 5); } for (const r of regions) if (r.seam) { const gr = g.createLinearGradient(0, r.seam - 26, 0, r.seam + 6); gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(94,110,80,0.5)'); gr.addColorStop(1, 'rgba(79,138,58,0)'); g.fillStyle = gr; g.fillRect(0, r.seam - 26, w, 32); } return c; }
 
 // ---------- The Mineworks ----------
 // Rails on sleepers over rock. 16×16, standable like a plank.

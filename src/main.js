@@ -2863,12 +2863,13 @@ const WOOD_NODES = [
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 66, name: 'THE STORE' },
   { id: 'marsh', kind: 'level', level: 1, x: 246, y: 118, name: 'MARSH WOOD' },
   { id: 'stockade', kind: 'level', level: 2, x: 296, y: 34, name: 'THE STOCKADE' },
-  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 258, y: 22, name: 'THE BURNING VILLAGE' },   /* on the road to Sporewood, off the Stockade: the Pyromancer's class level */
+  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 262, y: 6, spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
   { id: 'spore', kind: 'level', level: 3, x: 214, y: 26, name: 'SPOREWOOD' },
   { id: 'kings', kind: 'level', level: 4, x: 120, y: 30, name: 'KINGSWOOD' },
-  { id: 'underleaf', kind: 'level', level: 16, x: 64, y: 54, name: 'UNDERLEAF' },   /* the secret: off the road until you have earned it */
+  { id: 'underleaf', kind: 'level', level: 16, x: 74, y: 76, spur: true, name: 'UNDERLEAF' },   /* the secret, and now off the road in the picture as well as in the fiction */
 ];
-const WOOD_PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118], [268, 84], [296, 34], [258, 22], [214, 26], [170, 22], [120, 30], [92, 42], [64, 54], [40, 64]];
+/* the road itself, and nothing but: the Burning Village and Underleaf hang off it on spurs (NODES `spur: true`) */
+const WOOD_PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118], [268, 84], [296, 34], [252, 28], [214, 26], [170, 22], [120, 30], [92, 42], [64, 54], [40, 64]];
 const CRAG_NODES = [
   { id: 'scree', kind: 'level', level: 5, x: 120, y: 92, name: 'THE SCREE PATH' },
   { id: 'hanging', kind: 'level', level: 6, x: 214, y: 58, name: 'THE HANGING VILLAGE' },
@@ -2877,7 +2878,7 @@ const CRAG_NODES = [
   { id: 'moor', kind: 'level', level: 8, x: 160, y: 150, name: 'GALE MOOR' },
   { id: 'storm', kind: 'level', level: 9, x: 82, y: 150, name: 'STORMHOLD' },
   { id: 'crown', kind: 'level', level: 10, x: 50, y: 40, name: 'HIGHCROWN' },
-  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 26, y: 66, name: 'THE UNDERCROWN' },   /* straight down out of her cellars: off the road until four in five of her garrison are down */
+  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 18, y: 88, spur: true, name: 'THE UNDERCROWN' },   /* straight down out of her cellars: a spur off the road, as a way down out of a castle should be */
 ];
 const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [54, 162], [22, 140], [18, 100], [30, 66], [50, 40], [38, 54], [26, 66], [38, 54], [50, 40]];   /* the Undercrown hangs off Highcrown on a spur of its own: out and back, not on the road */
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
@@ -2980,7 +2981,11 @@ function drawMapLife() {
     if (nd && !nodeLocked(nd)) { if (Math.random() < 0.4) mapPuffs.push({ x: nd.x + (Math.random() - 0.5) * 10, y: nd.y - 2, vx: (Math.random() - 0.5) * 4, vy: -12 - Math.random() * 8, life: 1.4 });
       g.globalAlpha = 0.10 + 0.05 * Math.sin(time * 2.2); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(nd.x, nd.y, 9, 0, 7); g.fill(); g.globalAlpha = 1; } }
 }
-function mapPos() { const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; return [a[0] + (b[0] - a[0]) * map.t, a[1] + (b[1] - a[1]) * map.t]; }
+/* WHERE THE WALKER IS. On the road, between two of its points. STOOD ON A SPUR he is on the NODE, off the road -
+   he walked to the junction and then stepped off it, which is the whole point of a spur being a spur. */
+function mapPos() { const nd = NODES[map.node];
+  if (!map.walking && nd && nd.spur) return [nd.x, nd.y];
+  const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; return [a[0] + (b[0] - a[0]) * map.t, a[1] + (b[1] - a[1]) * map.t]; }
 // A SECRET IS ONLY HIDDEN UNTIL YOU HAVE WALKED THE LEVEL IT HANGS OFF. After that it is a door on
 // the road with its price written on it: you are told there is something there and what it costs, and
 // you are not told what it is. The other thing was a coin toss.
