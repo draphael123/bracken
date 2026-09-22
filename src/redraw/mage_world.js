@@ -80,7 +80,6 @@ export function bakeTowerSkins() {
 }
 
 // ---------- the rooms' back walls ----------
-const xC = (i, sx, w) => sx + 34 + i * 76;   /* where the clock gallery's wheels sit across its wall */
 export function paintRoom(g, st, sx, sy, w, h, tx0, time) {
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
   if (st === 'library') {   /* stacks to the ceiling in the wall itself: shelves every 12 rows, the spines in reds, greens and violets */
@@ -111,31 +110,41 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, time) {
     g.fillStyle = '#2e2838'; for (let yy = sy + 7; yy < sy + h; yy += 16) g.fillRect(sx, yy, w, 1);
     for (let xx = sx + 10; xx < sx + w; xx += 28) { const k = hsh(xx, 3), yy = sy + 10 + Math.floor(k * (h - 30)); g.fillStyle = k < 0.5 ? VIOLET[1] : '#b04040'; g.fillRect(xx, yy, 5, 1); g.fillRect(xx + 2, yy - 3, 1, 7); g.fillRect(xx, yy + 3, 5, 1); if (k > 0.7) g.fillRect(xx + 4, yy - 3, 1, 3); }
     return true; }
-  if (st === 'reading') {   /* THE READING ROOM: oak panelling to waist height, plaster over it, tall shuttered windows, a frieze of copied letters */
+  if (st === 'reading') {   /* THE READING ROOM: oak panelling, plaster over it, tall shuttered windows and a frieze of copied
+       letters - and all of it REPEATED down the wall, because the room is thirty-four rows tall and a band of dressing at the
+       top of it is a blank wall everywhere the player actually stands. */
     g.fillStyle = '#332a3e'; g.fillRect(sx, sy, w, h);
     g.fillStyle = '#3e3448'; for (let yy = sy + 5; yy < sy + h; yy += 26) g.fillRect(sx, yy, w, 13);            /* the plaster courses */
-    for (let xx = sx + 8; xx < sx + w; xx += 84) {                                                              /* the windows: shuttered, a little night through the slats */
-      const k = hsh(tx0 * 16 + (xx - sx), 11), yy = sy + 14 + Math.floor(k * 10);
-      g.fillStyle = '#1b1626'; g.fillRect(xx, yy, 22, 46); g.fillStyle = WOOD[1]; g.fillRect(xx - 2, yy - 2, 26, 3); g.fillRect(xx - 2, yy + 46, 26, 3);
-      for (let s2 = 0; s2 < 7; s2++) { g.fillStyle = s2 % 2 ? WOOD[2] : WOOD[1]; g.fillRect(xx, yy + 3 + s2 * 6, 22, 5); }
-      g.fillStyle = 'rgba(176,124,240,0.16)'; g.fillRect(xx + 2, yy + 3, 18, 40); }
-    g.fillStyle = WOOD[0]; g.fillRect(sx, sy + h - 34, w, 34);                                                  /* the panelling */
+    for (let yy = sy + 10; yy < sy + h - 60; yy += 116) for (let xx = sx + 8; xx < sx + w; xx += 84) {          /* the windows: shuttered, a little night through the slats */
+      const k = hsh(tx0 * 16 + (xx - sx), yy - sy), y0 = yy + Math.floor(k * 10);
+      g.fillStyle = '#1b1626'; g.fillRect(xx, y0, 22, 46); g.fillStyle = WOOD[1]; g.fillRect(xx - 2, y0 - 2, 26, 3); g.fillRect(xx - 2, y0 + 46, 26, 3);
+      for (let s2 = 0; s2 < 7; s2++) { g.fillStyle = s2 % 2 ? WOOD[2] : WOOD[1]; g.fillRect(xx, y0 + 3 + s2 * 6, 22, 5); }
+      g.fillStyle = 'rgba(176,124,240,0.16)'; g.fillRect(xx + 2, y0 + 3, 18, 40); }
+    for (let yy = sy + 68; yy < sy + h - 40; yy += 116) {                                                       /* a run of shelving between the window bands: this IS a library tower */
+      g.fillStyle = WOOD[0]; g.fillRect(sx, yy, w, 30); g.fillStyle = WOOD[1]; g.fillRect(sx, yy + 28, w, 2);
+      for (let xx = sx + 1; xx < sx + w; xx += 3) { const k = hsh(tx0 * 16 + (xx - sx), yy - sy); if (k < 0.18) continue;
+        g.fillStyle = ['#5a2a3a', '#2a4a3a', '#3a2a5a', '#5a4a2a'][Math.floor(k * 4)]; const bh = 14 + Math.floor(k * 8); g.fillRect(xx, yy + 28 - bh, 2, bh); } }
+    g.fillStyle = WOOD[0]; g.fillRect(sx, sy + h - 34, w, 34);                                                  /* the panelling, along the floor */
     g.fillStyle = WOOD[1]; for (let xx = sx; xx < sx + w; xx += 20) g.fillRect(xx, sy + h - 34, 2, 34);
     g.fillStyle = WOOD[2]; g.fillRect(sx, sy + h - 36, w, 2);
     g.fillStyle = '#6a5a80'; for (let xx = sx + 3; xx < sx + w; xx += 6) { const k = hsh(tx0 * 16 + (xx - sx), 29); if (k < 0.3) continue; g.fillRect(xx, sy + h - 44, 3, 1); if (k > 0.66) g.fillRect(xx, sy + h - 42, 2, 1); }   /* the frieze: a line of copied letters, too far off to read */
     return true; }
-  if (st === 'clock') {   /* THE PENDULUM GALLERY: the back of the clock - a dark case, its great wheels turning behind the work */
+  if (st === 'clock') {   /* THE PENDULUM GALLERY: the back of the clock - a dark case with its great wheels turning behind the work,
+       spread down the whole wall so the room reads as machinery wherever you are standing in it. */
     g.fillStyle = '#241f30'; g.fillRect(sx, sy, w, h);
     g.fillStyle = '#2e2838'; for (let yy = sy; yy < sy + h; yy += 24) g.fillRect(sx, yy, w, 2);
-    const t2 = (time || 0) * 0.35;
-    for (let i = 0; xC(i, sx, w) < sx + w; i++) {                                                               /* the wheels, each turning a little slower than the last */
-      const cxw = xC(i, sx, w), cyw = sy + 30 + ((i % 3) * 46), r = 22 - (i % 3) * 5, a0 = t2 / (1 + i % 3) * (i % 2 ? -1 : 1);
-      g.strokeStyle = BRASS[0]; g.lineWidth = 3; g.beginPath(); g.arc(cxw, cyw, r, 0, Math.PI * 2); g.stroke();
-      g.strokeStyle = BRASS[1]; g.lineWidth = 1; g.beginPath(); g.arc(cxw, cyw, r, 0, Math.PI * 2); g.stroke();
+    const t2 = (time || 0) * 0.35, span = Math.max(1, h - 80);
+    for (let i = 0; i * 76 < w + 76; i++) for (let row = 0; row * 84 < span; row++) {
+      const cxw = sx + 34 + i * 76 + (row % 2 ? 38 : 0), cyw = sy + 40 + row * 84;
+      if (cxw > sx + w + 24) continue;
+      const r = 24 - ((i + row) % 3) * 6, a0 = t2 / (1 + (i + row) % 3) * ((i + row) % 2 ? -1 : 1);
+      g.strokeStyle = BRASS[0]; g.lineWidth = 4; g.beginPath(); g.arc(cxw, cyw, r, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = BRASS[2]; g.lineWidth = 1; g.beginPath(); g.arc(cxw, cyw, r - 1, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = BRASS[1]; g.lineWidth = 2;
       for (let k = 0; k < 8; k++) { const a = a0 + k * Math.PI / 4; g.beginPath(); g.moveTo(cxw, cyw); g.lineTo(cxw + Math.cos(a) * r, cyw + Math.sin(a) * r); g.stroke();
         g.fillStyle = BRASS[2]; g.fillRect(Math.round(cxw + Math.cos(a) * (r + 2)) - 1, Math.round(cyw + Math.sin(a) * (r + 2)) - 1, 2, 2); }   /* the teeth */
       g.fillStyle = BRASS[2]; g.fillRect(cxw - 2, cyw - 2, 4, 4); }
-    g.lineWidth = 1; g.fillStyle = 'rgba(0,0,0,0.30)'; g.fillRect(sx, sy, w, h);                                /* the case shuts it all back into the dark */
+    g.lineWidth = 1; g.fillStyle = 'rgba(12,8,24,0.16)'; g.fillRect(sx, sy, w, h);                              /* the case's glass over the work: behind the room, not hidden by it */
     g.fillStyle = STONE[1]; for (let xx = sx + 6; xx < sx + w; xx += 58) g.fillRect(xx, sy, 5, h);              /* the case's uprights */
     return true; }
   if (st === 'dome') {   /* the observatory: night through the glass, brass ribs, the stars turning */

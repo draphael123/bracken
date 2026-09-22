@@ -48,10 +48,10 @@ console.log('THE TOME');
   ok(h === 0 && b > 0, `THE SHIELD answers it in ${REACT} s: ${h} hits, ${b} blocked in 7 fights`); }
 { let h = 0, na = 0; for (let k = 0; k < 7; k++) { const f = fight('dodge', 20, k); h += f.hits; na += f.noAnswer; }
   ok(h === 0, `A STEP OR A JUMP answers it too (it darts at the spot, it does not steer: a step or a jump found for every dart, ${na} without one): ${h} hits in 7 fights`); }
-{ const e = newTome(100, FLOOR - 30), tok = newToken(); e.mode = 'dart'; e.t = 0.3; tomeBlocked(e, false, tok); let fell = 0;
+{ const e = newTome(100, FLOOR - 30), tok = newToken(); e.mode = 'dart'; e.modeT = 0.3; tomeBlocked(e, false, tok); let fell = 0;
   for (let i = 0; i < 60 * 1.2; i++) { tomeStep(e, { px: 400, py: FLOOR, floorY: () => FLOOR }, DT, tok); } fell = e.y;
   const d = tomeHurt(e, 8, tok); ok(e.mode === 'shut' && fell === FLOOR && d === 16, `the shield SHUTS it: down on the floor (y ${fell}), still shut after 1.2 s, a blow does double (${d})`);
-  const p = newTome(100, FLOOR - 30); p.mode = 'dart'; tomeBlocked(p, true, tok); ok(p.t === TOME.shutPerfect, `a perfect block keeps it shut longer (${TOME.shutPerfect} s against ${TOME.shut})`); }
+  const p = newTome(100, FLOOR - 30); p.mode = 'dart'; tomeBlocked(p, true, tok); ok(p.modeT === TOME.shutPerfect, `a perfect block keeps it shut longer (${TOME.shutPerfect} s against ${TOME.shut})`); }
 { const b = [], d = []; for (let k = 0; k < 7; k++) { b.push(fight('block', 60, k).t); d.push(fight('dodge', 60, k).t); } const med = a => a.sort((x, y) => x - y)[3];
   ok(med(b) < med(d), `the shield pays more than the dodge: ${med(b).toFixed(1)} s to kill it blocking, ${med(d).toFixed(1)} s dodging (median of 7)`);
   const light = Math.ceil(TOME.hp / 8), shut = Math.ceil(TOME.hp / 16); ok(light >= 3 && shut <= 2, `not a one-hit foe: ${light} light blows standing, ${shut} once it is shut`); }
