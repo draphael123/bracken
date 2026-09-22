@@ -41,3 +41,14 @@ harbour-and-slab look is Stormwreck Harbor's, and the Sky Ship (not in the level
 2. HIGHCROWN + THE UNDERCROWN: a castle set (banners, tapestries, pillars, windows with light shafts; foundations and roots below).
 3. THE SHOPS: three interiors (a forest store, a mountain store, a chandler's) with a backdrop wall, shelves of wares, a counter.
 4. De-wallpaper Burial and the Mage's tower: break the grid (vary spacing, mix 3-4 motifs, add depth layers).
+
+## Fix 1 done (as art, not wired): THE CRAG REDRESS - `src/redraw/crag_redress.js`, scenes in `docs/crag-redress.png`
+Three looks for the three levels that shared one: **Scree Path** (dusk: amber sky, a low sun behind a snowcapped range, foothills with
+scree fans and pines, a ruined watchtower), **the Hanging Village** (morning: a clear sky, the cliff face with ledges, moss and cracks,
+timber houses on stilts with lit windows and rope bridges between), **Stormhold** (storm: slate cloud, lightning behind jagged peaks,
+the hold's walls and towers on the ridge, rain). All three stand on ROCK instead of the slab: layered strata that carry across tiles,
+grass that lips over its corners, lit west faces and shaded east ones, a slab ledge, mud, and their own dressing kits.
+**Wiring (after the Burning Village):** in main.js's backdrop setup (~626) add `pal.sky/far/mid/near === 'screeDusk' | 'hangingMorning'
+| 'stormhold'` cases calling `bakeCragSky/Far/Mid/Near(theme)`; in resolveTiles (~701) a `pal.set === 'crag:<theme>'` arm that uses
+`bakeCragGround(theme)` as SET2 (its shape is the game's own); `GROUND_KITS[id]` from `CRAG_KITS[theme]` + the props; then set the
+three levels' palettes in level.js. Tools/check would then want the readability pass re-run on them (L* of foes against the new skies).
