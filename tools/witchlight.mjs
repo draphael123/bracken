@@ -1,90 +1,132 @@
-/* tools/witchlight.mjs — THE WITCHLIGHT STAIR (batch 4c, 2026-09-22). Brief: .claude/briefs/witchlight-stair.md.
-   Proves, by the map (Node) and then on the page:
+/* tools/witchlight.mjs — THE WITCHLIGHT STAIR, REDESIGNED (2026-09-22). Brief: .claude/briefs/witchlight-redesign.md.
+   Daniel rejected the first build ("climb and go right with a massive enemy gauntlet... looks like a repeat"). This proves the
+   redesign by the map (Node) and then on the page:
      1. it is plugged in: appended to LEVELS (no index moves), needs the Burial Caverns, and the Folly needs it
-     2. the climb: from the cavern's mouth the reach model gets to the tower gate, every silver and every checkpoint; the
-        reachable band is 70+ rows, and about half the road is the two stairs
-     3. the loose magic: a slab over the brambles, three slabs that rise up bends, rune columns, and two glyph crossings the
-        road cannot be walked without (take the glyphs' footing away and the gate is out of reach)
-     4. THE HEDGE WARDEN holds the garden gate: a mini with a height (y0), his gate a portcullis the way on goes through
-     5. the level rules: a GARRISON row and no blanket calm, an ELITES row, 3.5-4.5 foes a screen along the road and no stretch
-        under 2.5, three silvers, no water, one ambush at most, his marks (! for the cut and the rush, red for the thorns)
-     6. on the page: it boots clean; a brief glyph turns the hero over and lets him go; a rune column lifts; he wakes at his
-        gate, touching him costs nothing, and his gate opens when he dies
+     2. FIVE PLACES, each walked from the cavern mouth: the Bramble Foot, the Drifting Aqueduct, the Upside-Down Cloister, the
+        Rune Stair, the Topiary Maze - and the Gargoyle's slabs on top; every silver and checkpoint reached; the tower gate reached;
+        about a third of it vertical, not half; route-breaks finds nothing
+     3. ONE VERB A PLACE: the aqueduct's slabs (seven, at different speeds, one that SINKS, one that rises) and its sweeping
+        brooms, with a rope up every pier out of the gorge; the cloister floored with brambles and crossed only by the glyphs
+        (take their footing away and it is cut), under a roof of tiles within the flip's reach; the rune stair's three columns lit
+        one after another, and the library chunk; the garden's hedges to go under and over
+     4. THE HEDGE WARDEN holds the garden gate (moved as-is): a mini with a height, his gate a portcullis the way on goes through
+     5. ENCOUNTERS, NOT A SPRINKLE: every group 3-5 strong, at least one a place, no GARRISON row and no calm, a total in the range
+        of its neighbours, the elites captains of encounters, one a place at most
+     6. ITS OWN LOOK: the light by place (twilight and witchlight-night tints, the dusk grade under 0.45), its own runed stone, one
+        landmark a place, its own music
+     7. on the page: it boots clean; a glyph turns the hero over and the roof carries him over the brambles to the next glyph; a
+        rune column lifts; the sinking slab sinks under him and comes back; a sweeping broom takes an unguarded hero off his slab
+        and a shield braces him; the roof armour hangs from the roof until he turns over, then falls with him; the Hedge Warden
+        wakes at his gate, touching him costs nothing, and his gate opens when he dies
    His opening: tools/boss-openings.mjs. His pilot (24 fights, normal health): tools/hedge-warden-pilot.mjs. */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { WITCH, bendsBelow } from '../src/witchlight.js';
+import { WL } from '../src/witchlight.js';
 import { markOf } from '../src/marks.js';
+import { audit } from './route-breaks.mjs';
 import { openPage } from './cdp.mjs';
 
 const TS = 16, idx = id => LEVELS.findIndex(l => l.id === id);
 const build = () => LEVELS[idx('witchlight')].build();
 // 1. plugged in
 assert.ok(idx('witchlight') > idx('burning'), 'appended after the village: no level index moves');
-assert.equal(LEVELS[idx('witchlight')].needs, 'burial'); assert.equal(LEVELS[idx('mage')].needs, 'witchlight', 'the Folly needs the stair now');
+assert.equal(LEVELS[idx('witchlight')].needs, 'burial'); assert.equal(LEVELS[idx('mage')].needs, 'witchlight', 'the Folly needs the stair');
 const L = build(), R = floodReach(L, T, { rides: true }), reached = (x, y) => R.seen.has(x + ',' + y);
 const seen = [...R.seen].map(k => k.split(',').map(Number)), rows = seen.map(([, y]) => y);
-// 2. the climb
+const near = e => { for (let dy = -2; dy <= 5; dy++) for (let dx = -3; dx <= 3; dx++) if (reached(e.x + dx, e.y + dy)) return true; return false; };
+const at = (x, y) => L.grid[y * L.W + x];
+// 2. five places
+for (const [name, [a, b]] of Object.entries(WL.PLACES)) { const n = seen.filter(([x]) => x >= a && x <= b).length; assert.ok(n > 25, name + ' is walked: ' + n); }
 const gate = L.ents.find(e => e.t === 'gate'); assert.ok(gate && reached(gate.x, gate.y), 'the tower gate is reached from the cavern mouth');
+assert.ok(seen.some(([x, y]) => x >= WL.ARENA.x0 && x <= WL.ARENA.x1 && y <= 31), "the Gargoyle's slabs are reached");
 const silvers = L.ents.filter(e => e.t === 'silver'); assert.equal(silvers.length, 3, 'three silvers');
-for (const s of silvers) assert.ok(reached(s.x, s.y), 'silver reachable at ' + s.x + ',' + s.y);
-for (const c of L.ents.filter(e => e.t === 'check')) assert.ok(reached(c.x, c.y), 'checkpoint reachable at ' + c.x + ',' + c.y);
-assert.ok(Math.max(...rows) - Math.min(...rows) >= 70, 'the band climbs 70+ rows: ' + Math.min(...rows) + '-' + Math.max(...rows));
-const stairCells = seen.filter(([x]) => WITCH.SHAFTS.some(([a, b]) => x >= a && x <= b)).length;
-assert.ok(stairCells / seen.length > 0.45, 'about half the road is the stairs: ' + Math.round(100 * stairCells / seen.length) + '%');
-// 3. the loose magic
-const slabs = L.ents.filter(e => e.t === 'mover' && e.slab), runes = L.ents.filter(e => e.t === 'vent' && e.rune), glyphs = L.ents.filter(e => e.t === 'glyph');
-assert.equal(slabs.filter(e => e.vert).length, 3, 'three slabs rise up bends'); assert.equal(slabs.filter(e => !e.vert).length, 1, 'one drifts over the brambles');
-assert.ok(runes.length >= 4, 'rune columns up two bends and to two silvers: ' + runes.length);
-assert.equal(glyphs.length, 4); assert.ok(glyphs.every(g => g.brief > 0), 'every glyph here is brief');
-{ const S = build(); S.glyphBridges = []; const Rs = floodReach(S, T, { rides: true }); assert.ok(!Rs.seen.has(gate.x + ',' + gate.y), 'without the glyphs the broken road cannot be crossed'); }
-for (const [x0, x1, row] of WITCH.GAPS) { for (let x = x0; x <= x1; x++) assert.equal(L.grid[(row + 1) * L.W + x], T.AIR, 'the road is broken at ' + x + ',' + (row + 1));
-  for (let x = x0; x <= x1; x++) { let y = row; while (y > 0 && L.grid[y * L.W + x] === T.AIR) y--; assert.ok(row - y <= 7, 'a road overhead to walk upside down at ' + x); } }
-assert.deepEqual([bendsBelow(L.witch.bends, WITCH.GROUND), bendsBelow(L.witch.bends, WITCH.GARDEN.row), bendsBelow(L.witch.bends, WITCH.TOP)], [0, 4, L.witch.bends.length - 1], 'the tower grows a step at every bend');
+for (const s of silvers) assert.ok(near(s), 'silver reachable at ' + s.x + ',' + s.y);
+for (const c of L.ents.filter(e => e.t === 'check')) assert.ok(near(c), 'checkpoint reachable at ' + c.x + ',' + c.y);
+const band = Math.max(...rows) - Math.min(...rows); assert.ok(band >= 45, 'the stair climbs: a band of ' + band + ' rows');
+{ const up = seen.filter(([x]) => (x >= 220 && x <= 249) || (x >= 336 && x <= 425)).length / seen.length;
+  assert.ok(up > 0.15 && up < 0.45, 'about a third of it vertical, not half: ' + Math.round(100 * up) + '%'); }
+{ const f = audit(L).findings; for (const q of f) console.log('  route-break ' + q.k + ' ' + q.what); assert.equal(f.length, 0, 'route-breaks finds nothing on the stair'); }
+// 3. one verb a place
+const inX = ([a, b]) => e => e.x >= a && e.x <= b;
+const slabs = L.ents.filter(e => e.t === 'mover' && e.slab && inX(WL.PLACES.aqueduct)(e));
+assert.ok(slabs.length >= 7, 'the aqueduct is crossed on seven slabs: ' + slabs.length);
+assert.equal(slabs.filter(e => e.sink).length, 1, 'one of them sinks'); assert.equal(slabs.filter(e => e.vert).length, 1, 'one of them rises');
+assert.ok(new Set(slabs.filter(e => !e.vert && !e.sink).map(e => e.speed)).size >= 3, 'the sliders go at different speeds');
+assert.ok(L.ents.filter(e => e.t === 'broom' && e.sweep && inX(WL.PLACES.aqueduct)(e)).length >= 4, 'brooms that sweep you off the slabs');
+for (const [a] of WL.PIERS.slice(1)) assert.equal(at(a - 1, WL.PIER + 2), T.NET, 'a rope up the face of the pier at ' + a);
+{ let spikes = 0; for (let x = 140; x <= 219; x++) if (at(x, WL.PIER) === T.SPIKE) spikes++; assert.ok(spikes / 80 > 0.55, 'the cloister is floored with brambles: ' + spikes + ' of 80'); }
+{ const g = L.ents.filter(e => e.t === 'glyph'); assert.equal(g.length, 6); assert.equal(g.filter(e => e.ceiling).length, 3, 'three glyphs up, three down'); assert.ok(g.every(e => !e.brief), 'toggle glyphs, not brief ones');
+  for (const [u, d] of WL.GLYPHS) { assert.notEqual(at(u, WL.PIER), T.SPIKE, 'the up glyph at ' + u + ' is on safe floor'); assert.notEqual(at(d, WL.PIER), T.SPIKE, 'the down glyph at ' + d + ' lands on safe floor');
+    for (let x = u; x <= d; x++) { let k = 1; while (k <= 14 && at(x, WL.PIER - k) === T.AIR) k++; assert.ok(k <= 14 && at(x, WL.PIER - k) === T.SOLID, 'a roof of tiles within the flip\'s 14 rows at ' + x); } } }
+{ const S = build(); S.glyphBridges = []; const Rs = floodReach(S, T, { rides: true }); assert.ok(![...Rs.seen].some(k => +k.split(',')[0] > 214), 'without the glyphs the cloister cannot be crossed'); }
+{ const cols = L.ents.filter(e => e.t === 'vent' && e.rune && inX(WL.PLACES.runestair)(e)); assert.equal(cols.length, 3, 'three rune columns up the shaft');
+  assert.equal(new Set(cols.map(e => e.phase)).size, 3, 'lit one after another'); const [a, b, y0, y1] = L.witch.library;
+  for (let y = y0; y <= y1; y++) for (let x = a; x <= b; x++) assert.equal(at(x, y), T.SOLID, 'the library chunk is stone'); assert.ok(silvers.some(s => s.x >= a && s.x <= b && s.y === y0 - 1), 'a silver on the library chunk'); }
+{ const hs = L.mage.hedges.filter(([a]) => a >= 250 && a < WL.MINI.x0), G = WL.GARDEN;
+  assert.ok(hs.some(([a, b, y0, y1]) => y1 <= G - 3 && at(a, G) === T.AIR && at(a, G - 2) === T.AIR), 'a tall hedge to go under');
+  assert.ok(hs.some(([a, b, y0, y1]) => y1 === G && y0 >= G - 1), 'a low hedge to hop'); }
 // 4. the Hedge Warden
 assert.equal(L.mini.boss, 'hedgewarden'); assert.ok(L.ents.find(e => e.t === 'hedgewarden' && e.mini), 'he is placed, marked the mini');
-assert.ok(L.mini.y0 !== undefined && L.mini.y1 !== undefined, 'his room has a height: the stair runs under it');
-assert.equal(L.grid[(L.mini.floor / TS - 1) * L.W + L.mini.gate], T.PORT, 'his gate is a portcullis');
+assert.ok(L.mini.y0 !== undefined && L.mini.y1 !== undefined, 'his room has a height');
+assert.equal(at(L.mini.gate, L.mini.floor / TS - 1), T.PORT, 'his gate is a portcullis');
 { const S = build(); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + S.mini.gate] === T.PORT) S.grid[y * S.W + S.mini.gate] = T.SOLID;
   const Rs = floodReach(S, T, { rides: true }); assert.ok(!Rs.seen.has(gate.x + ',' + gate.y), 'his gate holds the way on'); }
 assert.equal(L.witch.braziers.length, 2); for (const [x] of L.witch.braziers) assert.ok(x * TS > L.mini.x0 && x * TS < L.mini.x1, 'his braziers stand in his room');
 assert.deepEqual(['cutTell', 'rushTell', 'thornTell'].map(mode => markOf({ t: 'hedgewarden', mode })), ['!', '!', '!!'], 'the cut and the rush a shield turns; the thorns wear the red mark');
-// 5. the level rules
+assert.equal(markOf({ t: 'broom', mode: 'sweepTell' }), '!', 'the broom\'s sweep a shield braces against');
+// 5. encounters
 const src = readFileSync(new URL('../src/level.js', import.meta.url), 'utf8');
-for (const table of ['GARRISON', 'ELITES']) { const at = src.indexOf('const ' + table + ' = {'); assert.ok(at > 0 && src.slice(at, at + 20000).includes('\n  witchlight: [['), table + ' has a witchlight row'); }
-assert.ok(!(L.calm || []).length, 'no blanket calm: the garrison walks the whole stair');
-assert.ok(!(L.pools || []).length, 'no water on the hill'); assert.ok((L.ambushes || []).length <= 1, 'one ambush at most');
-const NOT = new Set(['sign', 'check', 'coin', 'deco', 'silver', 'vent', 'mover', 'glyph', 'gate', 'hedgewarden', 'heart', 'coffer', 'stray', 'key', 'shrine', 'stal']);
+{ const at0 = src.indexOf('const GARRISON = {'); assert.ok(!src.slice(at0, at0 + 20000).includes('\n  witchlight: [['), 'no GARRISON row: its creatures are authored'); }
+assert.ok(!(L.calm || []).length, 'no calm');
+const NOT = new Set(['sign', 'check', 'coin', 'deco', 'silver', 'vent', 'mover', 'glyph', 'gate', 'hedgewarden', 'heart', 'coffer', 'stray', 'key', 'shrine', 'stal', 'mend']);
 const foes = L.ents.filter(e => !NOT.has(e.t));
-/* THE ROAD, stretch by stretch: [x0, x1, standing row] - the foot, each terrace of each stair, the garden walk (his room is not road) */
-const road = [[0, 61, WITCH.GROUND]].concat(...WITCH.SHAFTS.map(([a, b, rs]) => rs.map(r => [a, b, r])), [[161, 190, WITCH.GARDEN.row]]);
-const per = road.map(([a, b, r]) => { const n = foes.filter(e => e.x >= a && e.x <= b && e.y <= r && e.y >= r - 7).length; return { a, r, n, per: n / ((b - a + 1) / 24) }; });
-const total = per.reduce((s, p) => s + p.n, 0), screens = road.reduce((s, [a, b]) => s + (b - a + 1) / 24, 0), mean = total / screens;
-console.log('foes a screen along the road: ' + mean.toFixed(2) + ' (' + total + ' on ' + screens.toFixed(1) + ' screens); by stretch ' + per.map(p => p.a + '/' + p.r + ':' + p.per.toFixed(1)).join(' '));
-assert.ok(mean >= 3.5 && mean <= 4.5, 'foes a screen along the road ' + mean.toFixed(2) + ' (3.5-4.5)');
-for (const p of per) assert.ok(p.per >= 2.5, 'the stretch at x ' + p.a + ' row ' + p.r + ' is thin: ' + p.per.toFixed(1));
+for (const e of L.encounters) assert.ok(e.n >= 3 && e.n <= 5, e.name + ' is 3-5 strong: ' + e.n);
+for (const [name, [a, b]] of Object.entries(WL.PLACES)) if (name !== 'top') assert.ok(L.encounters.some(e => e.x0 >= a - 2 && e.x0 <= b), name + ' has an encounter');
+const loose = foes.filter(e => !e.enc && !e.straggler); assert.deepEqual(loose.map(e => e.t + '@' + e.x), [], 'every creature is in an encounter or a straggler of the dead');
+assert.ok(foes.filter(e => e.straggler).length <= 6, 'a handful of stragglers, not a sprinkle');
+const perScreen = foes.length / (L.W / 24);
+console.log('  ' + L.encounters.length + ' encounters (' + L.encounters.map(e => e.n).join(' ') + '), ' + foes.length + ' creatures, ' + perScreen.toFixed(2) + ' a screen');
+assert.ok(foes.length >= 40 && foes.length <= 75 && perScreen >= 2.2 && perScreen <= 4.2, 'a total in the range of its neighbours (Fields 2.9, Folly 3.2, Burial 3.9 a screen)');
+{ const els = foes.filter(e => e.elite); assert.ok(els.length >= 1 && els.every(e => e.enc), 'the elites are captains of encounters');
+  for (const [name, [a, b]] of Object.entries(WL.PLACES)) assert.ok(els.filter(e => e.x >= a && e.x <= b).length <= 1, 'one elite in ' + name + ' at most'); }
+// 6. its own look
+assert.equal(L.music, 'witchlight', 'its own music');
+assert.ok(L.duskLen && (L.W * TS) / L.duskLen < 0.45, 'the dusk grade stays under 0.45: ' + ((L.W * TS) / L.duskLen).toFixed(2));
+assert.ok(L.tints.some(([a, b]) => a === 140) && L.tints.some(([a, b]) => b === L.W - 1), 'the light changes by place: twilight from the cloister, witchlight night from the garden');
+assert.ok(L.mage.skins.filter(s => s[4] === 'witch').length >= 5, 'its own runed stone');
+assert.equal(Object.keys(L.marks).length, 6, 'one landmark a place and the tower');
 
-// 6. on the page
+// 7. on the page
+const I = idx('witchlight');
 const pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{const I=BK.LEVELS?BK.LEVELS.findIndex(l=>l.id==='witchlight'):${idx('witchlight')};
-    const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(I);BK.state='play';BK.god=true;BK.P.hp=BK.P.maxHp;BK.sim(10);};
-    const clear=()=>{for(const e of BK.enemies())if(e.t!=='hedgewarden')e.alive=false;};
+  const r = await pg.evalp(`(async()=>{
+    const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(${I});BK.state='play';BK.god=true;BK.P.hp=BK.P.maxHp;BK.sim(10);};
+    const clear=keep=>{for(const e of BK.enemies())if(e.t!=='hedgewarden'&&!(keep&&keep(e)))e.alive=false;};
     const out={};
     boot();BK.sim(120);out.boot={id:BK.L.witch?'witch':'?',hp:BK.P.hp,dead:!!BK.P.dead};
-    /* THE GLYPH: stand on the first one, and it turns him over; three and a half seconds later he is let go */
-    {boot();clear();const gl=BK.props().filter(p=>p.t==='glyph').sort((a,b)=>a.x-b.x)[0];BK.tp(Math.round(gl.x/16),Math.round(gl.y/16)-1);let flipped=false,at=0;
-     for(let i=0;i<60&&!flipped;i++){BK.sim(1);if(BK.P.flip){flipped=true;at=i;}}let held=0;for(let i=0;i<400&&BK.P.flip;i++){BK.sim(1);held++;}
-     out.glyph={brief:gl.brief,flipped,released:!BK.P.flip,held:+(held/60).toFixed(2)};}
-    /* AND IT CROSSES THE GAP: on the glyph, holding the way on, he walks the road overhead and comes down past the break */
-    for(const [gi,dir] of [[0,1],[3,-1]]){boot();clear();const gl=BK.props().filter(p=>p.t==='glyph').sort((a,b)=>a.x-b.x)[gi];BK.tp(Math.round(gl.x/16),Math.round(gl.y/16)-1);
-     BK.keys[dir>0?'right':'left']=true;for(let i=0;i<60&&!BK.P.flip;i++)BK.sim(1);for(let i=0;i<500&&BK.P.flip;i++)BK.sim(1);BK.keys.right=BK.keys.left=false;BK.sim(90);
-     (out.cross||(out.cross=[])).push({from:Math.round(gl.x/16),dir,x:Math.floor(BK.P.x/16),row:Math.round(BK.P.y/16)-1,ground:BK.P.ground});}
-    /* A RUNE COLUMN: stand in the first one and wait for it to glow: it lifts him */
+    /* THE CLOISTER: on the first glyph, holding right, he is turned over, walks the roof over the brambles and comes down at the next */
+    {boot();clear();BK.tp(145,${WL.PIER});BK.sim(20);BK.keys.right=true;let up=false,hurt=0;const hp0=BK.P.hp;BK.god=false;
+     for(let i=0;i<420;i++){BK.sim(1);if(BK.P.flip)up=true;if(up&&!BK.P.flip&&BK.P.ground)break;}BK.keys.right=false;BK.sim(30);
+     out.cloister={up,x:Math.floor(BK.P.x/16),row:Math.round(BK.P.y/16)-1,flip:!!BK.P.flip,hurt:hp0-BK.P.hp};BK.god=true;}
+    /* A RUNE COLUMN lifts him */
     {boot();clear();const v=BK.props().find(p=>p.t==='vent'&&p.rune);BK.tp(Math.floor(v.x/16),Math.round(v.y/16)-1);const y0=BK.P.y;let top=y0;for(let i=0;i<360;i++){BK.sim(1);top=Math.min(top,BK.P.y);}
      out.rune={rise:Math.round((y0-top)/16)};}
+    /* THE SINKING SLAB: stood on, it goes down; left, it comes back */
+    {boot();clear();const m=BK.movers().find(q=>q.sink);BK.P.x=m.x+m.w/2;BK.P.y=m.y-1;BK.P.vy=0;BK.sim(4);const y0=m.y;BK.sim(300);const sunk=Math.round((m.y-y0)/16);
+     BK.P.x=m.x0-120;BK.P.y=m.y0-200;BK.sim(900);out.sink={sunk,back:Math.round((m.y-m.y0)/16),rode:0};}
+    /* THE SWEEP: a broom by his slab sweeps an unguarded hero off it; a shield braces him */
+    {const run=guard=>{boot();clear(e=>e.t==='broom'&&e.sweep);const b=BK.enemies().filter(e=>e.t==='broom'&&e.sweep).sort((a,c)=>a.x-c.x)[0];for(const e of BK.enemies())if(e.t==='broom'&&e!==b)e.alive=false;
+       BK.tp(52,${WL.PIER});BK.sim(20);b.x=BK.P.x+60;b.y=BK.P.y-30;b.cd=0;b.mode='fly';BK.god=false;BK.P.hp=BK.P.maxHp;const x0=BK.P.x;let told=false,off=false;
+       for(let i=0;i<150;i++){if(guard)BK.keys.block=true;BK.sim(1);if(b.mode==='sweepTell')told=true;if(Math.abs(BK.P.vx)>150&&!BK.P.ground)off=true;}BK.keys.block=false;BK.god=true;
+       return {told,off,moved:Math.round(BK.P.x-x0),hurt:BK.P.maxHp-BK.P.hp};};
+     out.sweep={open:run(false),guarded:run(true)};}
+    /* THE ROOF ARMOUR hangs from the roof while he walks the floor, and falls with him when he turns over */
+    {boot();clear(e=>e.t==='armour'&&e.ceiling);const a=BK.enemies().filter(e=>e.t==='armour'&&e.ceiling).sort((p,q)=>p.x-q.x)[0];BK.tp(145,${WL.PIER});BK.sim(90);const before={gs:a.gs,row:+(a.y/16).toFixed(1)};
+     BK.keys.right=true;for(let i=0;i<200&&!BK.P.flip;i++)BK.sim(1);BK.keys.right=false;BK.sim(90);const flipped={gs:a.gs,row:+(a.y/16).toFixed(1),ground:!!a.onGround};
+     out.armour={before,flipped};}
     /* THE HEDGE WARDEN: he wakes at the trigger; standing in him costs nothing; his gate opens on his death */
     {boot();const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='hedgewarden');
      const woke={active:!!BK.miniActive,mode:w.mode};BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
@@ -94,14 +136,15 @@ try {
     out.errors=(window.__errs||[]).slice(0,3);return out;})()`, 300000);
   console.log(JSON.stringify(r));
   assert.ok(!r.boot.dead && r.boot.id === 'witch', 'the stair boots: ' + JSON.stringify(r.boot));
-  assert.ok(r.glyph.flipped && r.glyph.released, 'a brief glyph turns him over and lets him go: ' + JSON.stringify(r.glyph));
-  assert.ok(r.glyph.held >= r.glyph.brief - 0.1 && r.glyph.held <= r.glyph.brief / 0.5, 'it holds for its brief, in game seconds (the default speed runs the world at 60%): ' + JSON.stringify(r.glyph));
-  for (const c of r.cross) { const gap = WITCH.GAPS.find(([a, b2]) => Math.abs(c.from - (c.dir > 0 ? a - 3 : b2 + 3)) <= 1);
-    assert.ok(gap && c.row === gap[2] && (c.dir > 0 ? c.x > gap[1] : c.x < gap[0]), 'holding the way on, the glyph carries him over the break: ' + JSON.stringify(c)); }
-  assert.ok(r.rune.rise >= 8, 'a rune column lifts him up the bend: ' + JSON.stringify(r.rune));
+  assert.ok(r.cloister.up && !r.cloister.flip && r.cloister.x >= 166 && r.cloister.x <= 175 && Math.abs(r.cloister.row - WL.PIER) <= 1 && r.cloister.hurt === 0, 'a glyph turns him over and the roof carries him over the brambles to the safe pocket, unhurt: ' + JSON.stringify(r.cloister));
+  assert.ok(r.rune.rise >= 8, 'a rune column lifts him: ' + JSON.stringify(r.rune));
+  assert.ok(r.sink.sunk >= 3 && r.sink.back === 0, 'the slab sinks under him and comes back when he leaves it: ' + JSON.stringify(r.sink));
+  assert.ok(r.sweep.open.told && r.sweep.open.off && r.sweep.open.hurt > 0, 'a sweeping broom tells, then takes an unguarded hero off his feet: ' + JSON.stringify(r.sweep));
+  assert.ok(r.sweep.guarded.told && !r.sweep.guarded.off && r.sweep.guarded.hurt === 0, 'a shield braces him against it: ' + JSON.stringify(r.sweep));
+  assert.ok(r.armour.before.gs === -1 && r.armour.flipped.gs === -1, 'the roof armour hangs from the roof until he turns over, and stays with him up there: ' + JSON.stringify(r.armour));
   assert.ok(r.warden.woke.active && r.warden.woke.mode !== 'sleep', 'he wakes at his gate: ' + JSON.stringify(r.warden));
   assert.equal(r.warden.touch, 0, 'touching him costs nothing (the touch rule)');
   assert.ok(!r.warden.alive && r.warden.gateBefore === T.PORT && r.warden.gateAfter !== T.PORT, 'his gate opens when he dies: ' + JSON.stringify(r.warden));
   assert.deepEqual(pg.errors.slice(0, 3), [], 'no errors on the page');
 } finally { pg.close(); }
-console.log('THE WITCHLIGHT STAIR: plugged in, climbed, its loose magic carries the road, the Hedge Warden holds the gate.');
+console.log('THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - and the Hedge Warden holds the gate.');

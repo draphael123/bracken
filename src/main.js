@@ -1,7 +1,8 @@
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
 import { bakeGraveWarden, bakeHedgeWarden } from './redraw/queue_bosses.js';
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake } from './hedge-warden.js';   /* THE HEDGE WARDEN (batch 4c) */
-import { drawWitchTower, bendsBelow } from './witchlight.js';   /* THE WITCHLIGHT STAIR's tower in the backdrop */
+import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
+import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
@@ -1162,7 +1163,7 @@ function allyTick() {
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
-const MEDALS = { witchlight: [300, 450, 680],   /* the stair (batch 4c): ~670 tiles of road at 92 px/s is two minutes of walking, the rest fights and the Hedge Warden - an ESTIMATE, no climbing pilot */ burning: [480, 680, 980], fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [1000, 1450, 2100], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
+const MEDALS = { witchlight: [300, 450, 680],   /* the stair, redesigned (2026-09-22): ~430 tiles of road and a 36-row shaft, slab crossings and the cloister's roof walk, thirteen encounters and the Hedge Warden - an ESTIMATE, no climbing pilot */ burning: [480, 680, 980], fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [1000, 1450, 2100], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
@@ -1696,9 +1697,9 @@ function spawnEnt(e) {
       case 'captain': boss = { ...base, t: 'captain', w: 18, h: 28, hp: EHP.captain, maxHp: EHP.captain, mode: 'sleep', modeT: 0, face: -1, phase: 1, sabreT: 1.2, shotT: 2.6, hookT: 4.5, kegT: 7, callT: 10, ride: false, shots: 0 }; enemies.push(boss); break;
       /* THE MAGE'S FOLLY */
       case 'topiary': enemies.push({ ...base, t: 'topiary', w: 16, h: 22, hp: EHP.topiary, mode: 'still', modeT: 0.5, cd: 0.5 }); break;
-      case 'armour': enemies.push({ ...base, t: 'armour', w: 12, h: 26, hp: EHP.armour, mode: 'walk', modeT: 0, cd: 1 }); break;
+      case 'armour': enemies.push({ ...base, t: 'armour', w: 12, h: 26, hp: EHP.armour, mode: 'walk', modeT: 0, cd: 1, ...(e.ceiling ? { ceiling: true, gs: -1, y: e.y * TS + 26 } : {}) }); break;   /* ceiling: THE WITCHLIGHT STAIR's cloister armour, which falls whichever way the hero falls */
       case 'piece': enemies.push({ ...base, t: 'piece', w: 8, h: 6, hp: EHP.piece, mode: 'crawl', modeT: 0, cd: 0.5 }); break;
-      case 'broom': enemies.push({ ...base, t: 'broom', w: 12, h: 10, hp: EHP.broom, mode: 'fly', modeT: 0, cd: 1 + Math.random(), noGrav: true }); break;
+      case 'broom': enemies.push({ ...base, t: 'broom', w: 12, h: 10, hp: EHP.broom, mode: 'fly', modeT: 0, cd: 1 + Math.random(), noGrav: true, sweep: !!e.sweep }); break;   /* sweep: THE WITCHLIGHT STAIR's aqueduct brooms, which sweep you off a slab */
       case 'mimic': enemies.push({ ...base, t: 'mimic', w: 16, h: 12, hp: EHP.mimic, mode: 'shut', modeT: 0, cd: 0.5, harmless: true }); break;
       case 'imp': enemies.push({ ...base, t: 'imp', w: 10, h: 12, hp: EHP.imp, mode: 'hover', modeT: 0, cd: 1.5 + Math.random(), noGrav: true }); break;
       case 'turret': enemies.push({ ...base, t: 'turret', w: 12, h: 14, hp: EHP.turret, mode: 'idle', modeT: 0.5, cd: 1, noGrav: true, ceiling: !!e.ceiling }); break;
@@ -2000,7 +2001,7 @@ function spawnEnt(e) {
       case 'chainpost': { const cut = marks.has('chain:' + e.x); props.push({ t: 'chainpost', x: px, y: py, hp: 3, cut, tx: e.x }); break; }
       case 'glowbud': { const pr = { t: 'glowbud', x: px, y: py, lit: 0, mycelium:e.mycelium, motherNode:e.motherNode }; props.push(pr); lights.push({ x: px, y: py - 8, r: 18, glow: true }); pr.light = lights[lights.length - 1]; break; } // dim until you strike it
       case 'glow': props.push({ t: 'glow', x: px, y: py, dark: 0 }); lights.push({ x: px, y: py - 8, r: 52, glow: true, ref: null }); lights[lights.length - 1].ref = props[props.length - 1]; break;
-      case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone, slab: !!e.slab, ghost: e.ghost || null, tide: !!e.tide }); break;
+      case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone, slab: !!e.slab, ghost: e.ghost || null, tide: !!e.tide, sink: !!e.sink, sinkK: 0, cracked: !!e.cracked, arena: !!e.arena }); break;
       case 'vent': props.push({ t: 'vent', x: px, y: py, period: e.period || 4, on: e.on || 1.6, phase: e.phase || 0, h: e.h || 112, wind: !!e.wind, heat: !!e.heat, glass: !!e.glass, incense: !!e.incense, ember: !!e.ember, rune: !!e.rune, lift: e.lift || 190, w: e.w || 13 }); break;
       case 'roller': props.push({ t: 'roller', x: px, y: py, vx: (e.face || 1) * (e.speed || 55), alive: true, rot: 0 }); break;
     }
@@ -9599,9 +9600,12 @@ function drawFieldsTower(cx, cy) {
   for (let v = 0; v < 2; v++) { const c = A.tower[v]; if (!c) continue; const al = v === 0 ? 0.6 * (1 - prog) + 0.15 : 0.8 * prog; if (al <= 0.02) continue; const w = Math.round(c.width * sc), h = Math.round(c.height * sc); g.globalAlpha = al; g.drawImage(c, x - (w >> 1), hz - h + 4, w, h); }
   g.globalAlpha = 1; if (prog > 0.6) fbloom(x, hz - Math.round(130 * sc), 20 + 20 * prog, 0.25 * prog, 'warm');
 }
-/* THE WITCHLIGHT STAIR: the tower on its hill, nearer at every bend you are over (eased, so a bend is a change you watch) */
-function drawWitchBack(cy) { const W = L.witch, n = W.bends.length, want = Math.max(0, bendsBelow(W.bends, Math.floor(P.y / TS)));
+/* THE WITCHLIGHT STAIR: its sky (stars and witchlight ribbons, stronger as you climb), and the tower on its hill, a step nearer at
+   every place you come into (eased, so a step is a change you watch) */
+function drawWitchBack(cx, cy) { const W = L.witch, n = W.steps.length, tx = (cx + VW / 2) / TS, want = towerStep(L, tx);
+  drawWitchSky(g, stairProgress(L, tx), time, VW, VH, cx);
   W.k = W.k === undefined ? want : W.k + (want - W.k) * 0.03; drawWitchTower(g, fa().tower, W.k, n, VW, VH, bgDY(cy)); }
+let WSKIN = null; const witchSkins = () => WSKIN || (WSKIN = bakeWitchSkins());   /* THE WITCHLIGHT STAIR's runed stone, baked when first seen */
 function drawFieldsBack(cx, cy) {
   if (!FLD) return;
   for (const [x, top, bot] of (L.fields.trunks || [])) { const sx = Math.round(x * TS + 6 - cx), y0 = Math.round(top * TS - cy), y1 = Math.round((bot + 1) * TS - cy); if (sx < -8 || sx > VW + 8 || y1 < 0 || y0 > VH) continue;
@@ -9884,7 +9888,11 @@ function updateTopiary(e, dt) {
 }
 /* THE ARMOUR: it walks at you slowly and holds the sword high for a long beat before it comes down; it breaks into pieces */
 function updateArmour(e, dt) {
-  e.modeT -= dt; e.cd = (e.cd || 0) - dt; e.vy += 1000 * dt; if (e.vy > 320) e.vy = 320;
+  /* THE CEILING ARMOUR (THE WITCHLIGHT STAIR's cloister) falls whichever way the hero falls: walk the roof and it walks the roof */
+  if (e.ceiling && P.flip && Math.abs(P.x - e.x) < 320 && Math.abs(P.y - e.y) < 220) e.woke = true;   /* it waits on the roof until it has seen you turned over */
+  if (e.ceiling && e.woke && Math.abs(P.x - e.x) < 320 && Math.abs(P.y - e.y) < 220) { const want = P.flip ? -1 : 1; if (want !== e.gs) { e.gs = want; e.onGround = false; e.mode = 'walk'; } }
+  const gs = e.gs || 1;
+  e.modeT -= dt; e.cd = (e.cd || 0) - dt; e.vy += 1000 * dt * gs; if (e.vy * gs > 320) e.vy = 320 * gs;
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   switch (e.mode) {
     case 'swingTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.35; SFX.throwWhoosh(); SFX.heavy(); if (!P.dead && ad < 36 && dy < 30 && Math.sign(d) === e.face) damagePlayer(e.x, DMG.armour); } break;
@@ -9893,7 +9901,8 @@ function updateArmour(e, dt) {
       if (!P.dead && ad < 240 && dy < 60) { e.face = Math.sign(d) || e.face; e.vx += (e.face * 22 - e.vx) * Math.min(1, dt * 3); } else e.vx *= Math.pow(0.1, dt);
       if (!P.dead && ad < 32 && dy < 26 && e.cd <= 0) { e.mode = 'swingTell'; e.modeT = 0.9; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.clank(); }
   }
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX) e.vx = 0;
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.hitX) e.vx = 0;
+  if (gs > 0) { e.onGround = !!r.ground; if (r.ground) e.vy = 0; } else { e.onGround = r.hitY && e.vy < 0; if (r.hitY) e.vy = 0; }
   if (e.onGround && Math.abs(e.vx) > 4 && Math.random() < dt * 3) SFX.clank();
 }
 /* what a suit of armour leaves: two gauntlets that crawl */
@@ -9913,6 +9922,7 @@ function updatePiece(e, dt) {
 function updateBroom(e, dt) {
   e.modeT -= dt; e.cd = (e.cd || 0) - dt; if (e.hx === undefined) { e.hx = e.x; e.hy = e.y; }
   const d = P.x - e.x, ad = Math.abs(d), dy = (P.y - 10) - e.y;
+  if (e.sweep && sweepBroom(e, dt, d, ad)) return;
   switch (e.mode) {
     case 'dashTell': e.vx *= Math.pow(0.05, dt); e.vy *= Math.pow(0.05, dt); if (e.modeT <= 0) { e.mode = 'dash'; e.modeT = 0.5; const dd = Math.hypot(d, dy) || 1; e.vx = d / dd * 260; e.vy = dy / dd * 260; e.hitP = false; SFX.throwWhoosh(); } break;
     case 'dash': e.x += e.vx * dt; e.y += e.vy * dt; if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 12 && Math.abs((P.y - 8) - e.y) < 14) { e.hitP = true; const res = damagePlayer(e.x, DMG.broom); if (res !== 'blocked') { P.vx += Math.sign(e.vx) * 120; } else { e.vx = -e.vx * 0.6; e.stagger = 0.6; } }
@@ -9923,6 +9933,24 @@ function updateBroom(e, dt) {
       if (isSolid(Math.floor(e.x / TS), Math.floor((e.y - 4) / TS))) e.y += 40 * dt;
       if (!P.dead && ad < 90 && Math.abs(dy) < 60 && e.cd <= 0) { e.mode = 'dashTell'; e.modeT = 0.5; number(e.x, e.y - 14, '!', '#ffd36b'); SFX.rattle(); }
   }
+}
+/* THE SWEEPING BROOM (THE WITCHLIGHT STAIR's aqueduct). It hangs by the slabs, and when you stand on one it drops to the height
+   of your feet at one side, shakes (the yellow !, half a second and a bit), and sweeps along the slab at your ankles. Unguarded,
+   it takes you off your feet and out over the gorge; a shield braces you, and the broom rebounds off it, knocked silly. */
+function sweepBroom(e, dt, d, ad) {
+  const side = e.side || -1, footY = P.y - 5;
+  if (e.mode === 'sweepTell') { const tx = P.x - side * 46, ty = footY; e.vx += ((tx - e.x) * 5 - e.vx) * Math.min(1, dt * 8); e.vy += ((ty - e.y) * 5 - e.vy) * Math.min(1, dt * 8);
+    e.x += e.vx * dt; e.y += e.vy * dt; e.face = side;
+    if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.55; e.vx = side * 230; e.vy = 0; e.sy = e.y; e.hitP = false; SFX.throwWhoosh(); } return true; }
+  if (e.mode === 'sweep') { e.x += e.vx * dt; e.y = e.sy; e.face = Math.sign(e.vx) || e.face;
+    if (Math.random() < dt * 30) parts.push({ x: e.x - Math.sign(e.vx) * 6, y: e.y + 3, vx: -e.vx * 0.2, vy: -10, life: 0.3, max: 0.3, col: '#c8b890', size: 1, grav: 0 });
+    if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 13 && Math.abs(footY - e.y) < 14) { e.hitP = true; const res = damagePlayer(e.x, Math.round(DMG.broom * 0.6), { who: e, blow: 'sweep' });
+      if (res === 'blocked') { e.vx = -e.vx * 0.5; e.stagger = 0.8; e.mode = 'fly'; e.cd = 2.4; number(P.x, P.y - 30, 'BRACED', '#bfe6f5'); return true; }
+      if (!P.dead) { P.vx = Math.sign(e.vx) * 250; P.vy = Math.min(P.vy, -170); P.ground = false; P.onMover = null; number(P.x, P.y - 30, 'SWEPT OFF', '#ffd36b'); } }
+    if (e.modeT <= 0 || isSolid(Math.floor((e.x + Math.sign(e.vx) * 6) / TS), Math.floor(e.y / TS))) { e.mode = 'fly'; e.cd = 2.2; } return true; }
+  /* hanging by the slabs, it goes for you only when you stand on something it can sweep you off */
+  if (!P.dead && P.ground && !P.flip && ad < 130 && Math.abs(P.y - e.y) < 90 && e.cd <= 0 && !(e.stagger > 0)) { e.side = d > 0 ? 1 : -1; e.mode = 'sweepTell'; e.modeT = 0.65; number(e.x, e.y - 14, '!', '#ffd36b'); SFX.rattle(); return true; }
+  return false;
 }
 /* THE MIMIC: a chest until you are close or you strike it; then teeth, a snap, and it hops after you */
 function updateMimic(e, dt) {
@@ -10257,7 +10285,7 @@ const MAGE_FRAME = {
   topiary: e => e.mode === 'shiver' ? 1 : e.mode === 'lurch' ? (e.vy < 0 ? 2 : 3) : e.mode === 'swipeTell' ? 4 : e.mode === 'swipe' ? 5 : 0,
   armour: e => e.mode === 'swingTell' ? 3 : e.mode === 'swing' ? 4 : Math.abs(e.vx) > 3 ? 1 + Math.floor(e.anim * 3) % 2 : 0,
   piece: e => Math.abs(e.vx) > 3 ? Math.floor(e.anim * 8) % 2 : 0,
-  broom: e => e.mode === 'dashTell' ? 2 : e.mode === 'dash' ? 3 : Math.floor(e.anim * 6) % 2,
+  broom: e => e.mode === 'dashTell' || e.mode === 'sweepTell' ? 2 : e.mode === 'dash' || e.mode === 'sweep' ? 3 : Math.floor(e.anim * 6) % 2,
   mimic: e => e.mode === 'shut' ? 0 : e.mode === 'biteTell' ? 2 : e.mode === 'bite' ? 3 : e.mode === 'hop' ? 4 : 1,
   imp: e => e.mode === 'throwTell' ? 2 : e.mode === 'throw' ? 3 : e.mode === 'puff' ? 4 : Math.floor(e.anim * 5) % 2,
   turret: e => e.mode === 'chargeTell' ? 1 : e.mode === 'fire' ? 2 : 0,
@@ -10282,8 +10310,8 @@ function drawMageTiles(cx, cy) {
   if (!MG || !L.mage) return; const A = ma(), S = A.skins; if (!S) return;
   const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(0, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, Math.floor((cy + VH) / TS) + 1);
   const lip = (x, y) => { g.fillStyle = 'rgba(236,224,255,0.55)'; g.fillRect(x, y, TS, 1); g.fillStyle = 'rgba(236,224,255,0.2)'; g.fillRect(x, y + 1, TS, 1); };
-  for (const [x0, x1, y0, y1, kind] of (L.mage.skins || [])) { if (x1 < tx0 || x0 > tx1 || y1 < ty0 || y0 > ty1) continue; const set = kind === 'gate' ? S.gate : S.tower;
-    for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.SOLID) continue; g.drawImage(set[(tx * 7 + ty * 3) % 3], tx * TS - cx, ty * TS - cy); if (ty > 0 && L.grid[i - LW] === T.AIR) lip(tx * TS - cx, ty * TS - cy); } }
+  for (const [x0, x1, y0, y1, kind] of (L.mage.skins || [])) { if (x1 < tx0 || x0 > tx1 || y1 < ty0 || y0 > ty1) continue; const set = kind === 'gate' ? S.gate : kind === 'witch' ? witchSkins().witch : kind === 'books' ? witchSkins().books : kind === 'ledge' ? witchSkins().ledge : S.tower, want = kind === 'ledge' ? T.ONEWAY : T.SOLID;   /* (the Witchlight Stair's runed stone, its library books, and its stone ledges over the one-way tiles) */
+    for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== want) continue; g.drawImage(set[(tx * 7 + ty * 3) % set.length], tx * TS - cx, ty * TS - cy); if (want === T.SOLID && ty > 0 && L.grid[i - LW] === T.AIR) lip(tx * TS - cx, ty * TS - cy); } }
   for (const [x0, x1, y0, y1] of (L.mage.hedges || [])) { if (x1 < tx0 || x0 > tx1) continue;
     for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.SOLID) continue; g.drawImage((ty === y0 ? S.hedgeTop : S.hedge)[(tx * 5 + ty) % 3], tx * TS - cx, ty * TS - cy); } }
   for (const s of MG.shelves) { if (s.x1 < tx0 || s.x0 > tx1) continue; const yTop = s.up ? s.yDown - (s.yDown - s.yUp) * s.k : s.yDown; const x = s.x0 * TS - cx, y = Math.round(yTop * TS - cy), w = (s.x1 - s.x0 + 1) * TS, hh = s.h * TS;
@@ -17034,7 +17062,7 @@ function startle(dead) { let who = null;
 // a hop when startled or laughing, a shake when nearly dead; drawn over whatever frame the creature is on
 function poseOf(e, wind) {
   const o = { dx: 0, dy: 0, sx: 1, sy: 1, face: e.lookT > 0 && !e.seenP ? -e.face : e.face };
-  if (e.ceiling) { o.sy = -1; o.dy = -e.h; }   /* THE MAGE'S FOLLY: a turret hung under a ceiling is drawn feet up from its root */
+  if (e.ceiling && !(e.gs > 0)) { o.sy = -1; o.dy = -e.h; }   /* THE MAGE'S FOLLY: a turret hung under a ceiling is drawn feet up from its root (and THE WITCHLIGHT STAIR's roof armour, while it walks the roof: e.gs) */
   if (!e.alive) return o;
   const fly = FLYERS.has(e.t), mv = Math.abs(e.vx || 0) > 4, seed = ((e.hx || e.x0 || 0) * 0.37) % 6;
   if (wind) { o.sy *= 0.9; o.sx *= 1.08; }
@@ -18462,9 +18490,13 @@ function updateMovers(dt) {
         m.y = m.y0 - m.rise * e2; m.dy = m.y - oldY;
         if (m.dy < -0.4 && Math.random() < 0.5) parts.push({ x: m.x + Math.random() * m.w, y: m.y + 8, vx: 0, vy: 40, life: 0.4, max: 0.4, col: m.slab ? (Math.random() < 0.5 ? '#e0c8ff' : '#9a5ad0') : Math.random() < 0.5 ? '#dff0f5' : '#7fc4e0', size: 1, grav: 140 });
       }
-      else { m.p += m.dir * m.speed / m.range * dt;
+      else if (m.range > 0) { m.p += m.dir * m.speed / m.range * dt;
       if (m.p >= 1) { m.p = 1; m.dir = -1; } else if (m.p <= 0) { m.p = 0; m.dir = 1; }
       m.x = m.x0 + m.p * m.range; }
+      /* A SINKING SLAB (THE WITCHLIGHT STAIR's aqueduct): the spell holding it up gives under a weight - five tiles down in about
+         three game seconds (five at the default speed) while you stand on it, and back up at half the pace when you leave it */
+      if (m.sink) { const on = (players || [P]).some(p => !p.dead && p.onMover === m); m.sinkK = Math.max(0, Math.min(1, m.sinkK + (on ? 0.33 : -0.15) * dt));
+        m.y = m.y0 + m.sinkK * 5 * TS; m.dy = m.y - oldY; if (on && Math.random() < dt * 10) parts.push({ x: m.x + Math.random() * m.w, y: m.y + 9, vx: 0, vy: 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#e0c8ff' : '#6a6280', size: 1, grav: 200 }); }
     }
     m.dx = m.x - oldX;
   }
@@ -18477,6 +18509,7 @@ function updatePolish(dt) {
   for (const e of enemies) if (e.alive && e.t === 'hopper' && !e.air && Math.random() < dt * 0.5) for (const p of (L.pools || [])) if (p.shallow && e.x > p.x0 && e.x < p.x1 && Math.abs(e.y - (p.y + 12)) < 8) ripples.push({ x: e.x, life: 1 });
   if (P.hp > 0 && P.hp <= 30 && !P.dead) { heartT -= dt; if (heartT <= 0) { heartT = P.hp <= 15 ? 0.55 : 0.85; SFX.heart(); } } else heartT = 0;
   if (L.dark && SET.ambient && state === 'play') { dripT -= dt; if (dripT <= 0) { dripT = 0.35 + Math.random() * 0.5; const tx = Math.floor((camX + Math.random() * VW) / TS); let ty = Math.floor(camY / TS); while (ty < LH - 1 && tileAt(tx, ty) !== T.AIR) ty++; if (ty < LH - 1 && tileAt(tx, ty) === T.AIR && tileAt(tx, ty - 1) === T.SOLID) { parts.push({ x: tx * TS + 4 + Math.random() * 8, y: ty * TS + 1, vx: 0, vy: 10, life: 1.4, max: 1.4, col: '#8ab0c8', size: 1, grav: 420, drip: true }); if (Math.random() < 0.35) SFX.drip(); } } }
+  if (L.witch && state === 'play' && !L.colosseum) { witchMotes(parts, stairProgress(L, (camX + VW / 2) / TS), dt, camX, camY, VW, VH); libraryBooks(parts, L.witch, dt); }   /* THE WITCHLIGHT STAIR's loose magic in the air */
   if (dusk() > 0.5 && SET.ambient) { cricketT -= dt; if (cricketT <= 0) { cricketT = 0.5 + Math.random() * 1.2; SFX.cricket(); } }
   for (const c of clouds) { c.x += c.sp * dt; if (c.x > camX * 0.1 + VW + 80) c.x -= VW + 160; }
   fishT -= dt;
@@ -19852,7 +19885,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
-  if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cy);   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
+  if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
   else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
@@ -19866,6 +19899,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   /* UNDERGROUND: a mine has no sky. The shafts and caverns showed the crags' sunset through the rock; the whole view is its own back wall first */
   if (L.underground) drawRoom('mine', -(((cx % TS) + TS) % TS), -(((cy % TS) + TS) % TS), VW + TS, VH + TS, Math.floor(cx / TS), Math.floor(cy / TS));
+  if (L.witch && !L.colosseum) drawWitchLandmarks(g, L, cx, cy, time, VW, VH);   /* THE WITCHLIGHT STAIR: its arches, its colonnade, its statues, its orrery ring */
   drawFacades(cx, cy);
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;

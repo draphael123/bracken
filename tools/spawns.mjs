@@ -34,9 +34,9 @@ for (const lv of LEVELS) {
   const L = lv.build(), W = L.W, H = L.H, pools = L.pools || [];
   const solid = (tx, ty) => tx < 0 || tx >= W ? true : ty < 0 || ty >= H ? false : SOLID.has(L.grid[ty * W + tx]);
   const out = [];
-  const look = (t, x, y, from, big, leap) => {
+  const look = (t, x, y, from, big, leap, hung) => {
     const box = BOX[t]; if (!box) return; n++;
-    const px = x * TS + 8, py = (y + 1) * TS, w = box[0][big ? 1 : 0], h = box[1][big ? 1 : 0];
+    const w = box[0][big ? 1 : 0], h = box[1][big ? 1 : 0], px = x * TS + 8, py = hung ? y * TS + h : (y + 1) * TS;   /* hung: it spawns with its FEET on the ceiling over row y (the Witchlight Stair's roof armour) */
     if (!IN_ROCK.has(t)) { let hit = 0;
       for (let ty = Math.floor((py - h + 2) / TS); ty <= Math.floor((py - 2) / TS); ty++) for (let tx = Math.floor((px - w / 2 + 2) / TS); tx <= Math.floor((px + w / 2 - 2) / TS); tx++) if (solid(tx, ty)) hit++;   /* two pixels in: a troll's eighteen-pixel box grazes the next column by one and walks out of it */
       if (hit) out.push('STUCK ' + t + '@' + x + ',' + y + from + ' (' + hit + ' tile' + (hit > 1 ? 's' : '') + ')'); }
@@ -48,7 +48,7 @@ for (const lv of LEVELS) {
     if (t === 'siren' && !pools.some(p => p.swim && px > p.x0 - 3 * TS && px < p.x1 + 3 * TS && py > surface(p) - 3 * TS && py < (p.bottom !== undefined ? p.bottom : p.y + 60) + TS))
       out.push('DRY siren@' + x + ',' + y + from + ' has no water to sit by');
   };
-  for (const e of L.ents) look(e.t, e.x, e.y, e.garrison ? ' (garrison)' : '', !!e.big, !!e.leap);
+  for (const e of L.ents) look(e.t, e.x, e.y, e.garrison ? ' (garrison)' : '', !!e.big, !!e.leap, e.t === 'armour' && !!e.ceiling);
   for (const A of (L.ambushes || [])) for (const wv of A.waves) for (const [t, x, y] of wv) look(t, x, y === undefined || y === null ? A.row : y, ' (ambush ' + A.name + ')');
   if (out.length) { bad += out.length; console.log('  ' + lv.id.padEnd(11) + out.length + ': ' + out.join('  ')); }
 }
