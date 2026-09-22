@@ -120,7 +120,7 @@ export function build(T) {
 
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* EVERY ROPE IS HUNG LAST (the Gale Moor bug) */
   return {
-    W, H, grid: P.grid, ents: P.ents, START: { x: 3, y: FOOT }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
+    W, H, grid: P.grid, ents: P.ents, START: { x: 3, y: FOOT }, music: 'witchlight', pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
     glyphBridges, encounters, marks: WL2.MARKS, light: WL2.LIGHT, places: WL2.PLACES,
     mage: { shelves: [], skins: [[426, 429, 0, H - 1, 'tower']], hedges, chains: [], hung: [], outside: 300 },
     witch: { braziers: M.braziers.map(x => [x, G]) },

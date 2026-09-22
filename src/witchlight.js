@@ -126,7 +126,7 @@ export function buildWitchlight({ painter, T, TS }) {
   const bends = [...S1[2], ...S2[2].slice(1)];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: GROUND }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
-    music: 'musForest', duskStart: 0, duskLen: W * TS * 2.2,   /* the dusk deepens as you climb, to under half the engine's grade: the hedge still reads green */ stackedFloors: true, hasCryst: false,
+    music: 'witchlight', duskStart: 0, duskLen: W * TS * 2.2,   /* the dusk deepens as you climb, to under half the engine's grade: the hedge still reads green */ stackedFloors: true, hasCryst: false,
     witch: { bends, braziers: WITCH.GARDEN.braziers.map(x => [x, WITCH.GARDEN.row]), glyphs },
     glyphBridges: bridges,                                          // the reach model's footing for a glyph crossing (reachcore.js)
     mage: { shelves: [], skins, hedges, chains: [], hung: [], outside: 200 },   /* the Folly's machinery runs the glyphs; it chimes near the tower */
