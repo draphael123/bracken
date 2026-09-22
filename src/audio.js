@@ -696,6 +696,12 @@ Object.assign(SFX, {
   flaskClink() { tone('sine', 2400, 2350, 0.12, 0.08); tone('sine', 3100, 3000, 0.1, 0.06, 0.07); noise(0.05, 0.08, 3600, 1.2, 0.02); },   /* THE HOMUNCULUS takes a flask off the shelf: two bottles knock */
   flaskBreak() { noise(0.18, 0.35, 4200, 0.8); [3136, 2637, 2093].forEach((f, i) => tone('triangle', f, f * 0.8, 0.12, 0.07, i * 0.03)); noise(0.5, 0.12, 1800, 1.4, 0.12); tone('sine', 300, 120, 0.3, 0.06, 0.1); },   /* and it breaks: glass, then the acid fizzing */
   rattle(v = 1) { noise(0.05, 0.16 * v, 1400, 0.9); tone('square', 180 + Math.random() * 60, 120, 0.05, 0.05 * v, 0.01); },
+  /* THE TOME (the Falling Tower's floating book). Three sounds and they are all paper: the covers flung open on the
+     yellow ! (a fan of pages, going up), the dart (one hard flap and the pages streaming), and the SHUT - the sound
+     the shield is paid in, a board clapping onto a board with the dust coming out of it. */
+  tomeOpen() { noise(0.22, 0.1, 2600, 0.7); noise(0.16, 0.07, 1500, 0.9, 0.05); tone('triangle', 900, 1500, 0.14, 0.035, 0.02); },
+  tomeDart() { noise(0.1, 0.16, 2200, 0.8); noise(0.26, 0.07, 900, 0.5, 0.04); tone('sine', 420, 260, 0.14, 0.04, 0.02); },
+  tomeShut() { noise(0.06, 0.26, 700, 0.5); tone('square', 150, 70, 0.08, 0.12); noise(0.4, 0.06, 2000, 0.8, 0.05); tone('sine', 110, 60, 0.22, 0.06, 0.03); },
   rumble() { tone('sine', 60, 30, 0.7, 0.3); noise(0.6, 0.3, 180, 0.5); tone('sawtooth', 48, 34, 0.5, 0.1, 0.1); },
   heartbeatUI() { tone('sine', 80, 50, 0.12, 0.25); tone('sine', 70, 40, 0.14, 0.2, 0.16); },
   // THE BOO. A small, close, breathy whimper while it drifts (not the wight's long moan - this one is shy, not
