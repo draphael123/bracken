@@ -28,10 +28,10 @@ const arch = (g, x, y, w, h, col) => { rect(g, x, y + (w >> 1), w, h - (w >> 1),
 
 export const REDRESS_PAL = {
   castle: { stone: '#5e6878', stoneL: '#7a8698', stoneD: '#465060', mortar: '#343a46', floor: '#6a6e7a', floorL: '#8a8e9a', floorD: '#4a4e5a', rug: '#7a2a4a', rugL: '#a83e62', gold: '#d8b048', banner: '#6a2a5a', bannerL: '#9a3e84', torch: '#ffb85a', night: '#1a1e36', moon: '#e8ecff', plank: '#5e6878', plankL: '#8a94a4', plankD: '#343a46' },
-  undercrown: { stone: '#4e4640', stoneL: '#6a6058', stoneD: '#3a332e', mortar: '#26201c', floor: '#4a3e34', floorL: '#6a5a4a', floorD: '#2e2620', root: '#5a4632', rootL: '#7e6448', timber: '#6a5236', timberL: '#8e7050', timberD: '#3e2e1e', drip: '#6a8a9a', lamp: '#ffc860', plank: '#6a5236', plankL: '#8e7050', plankD: '#3e2e1e' },
+  undercrown: { stone: '#4e4640', stoneL: '#6a6058', stoneD: '#3a332e', mortar: '#26201c', floor: '#5a4430', floorL: '#86684a', floorD: '#34281e', root: '#7a4a32', rootL: '#a0643e', timber: '#6a5236', timberL: '#8e7050', timberD: '#3e2e1e', drip: '#6a8a9a', lamp: '#ffc860', plank: '#6a5236', plankL: '#8e7050', plankD: '#3e2e1e' },
   mage: { wall: '#2a2244', wallL: '#3a3058', wallD: '#1c1630', wood: '#4a3024', woodL: '#6a4630', woodD: '#2e1e16', books: ['#8a2a3a', '#2a5a8a', '#3a7a4a', '#9a7a2a', '#6a3a8a', '#8a5a3a'], gold: '#e8c24a', candle: '#fff0b0', flame: '#ffb84a', moon: '#dfe6ff', window: '#3a4a88' },
   monastery: { stone: '#d8c8a8', stoneL: '#f0e4c8', stoneD: '#a8987c', roof: '#8a3a2a', roofL: '#b04e36', flags: ['#e8c24a', '#c84a3a', '#3a8ac8', '#4aa86a', '#f0f0e0'], pine: '#2e5a3e', pineL: '#447a52', cloud: '#f4f6fa', cloudD: '#c8d4e4' },
-  shopWood: { wall: '#6a4a30', wallL: '#8a6440', wallD: '#4a3220', floor: '#7a5a3a', floorL: '#9a7650', floorD: '#4e3a26', shelf: '#5a3e28', stone: '#6e5a48', stoneL: '#8a7460', stoneD: '#4e3e32', mortar: '#3a2c22', plank: '#7a5a3a', plankL: '#9a7650', plankD: '#4e3a26', lamp: '#ffc860' },
+  shopWood: { wall: '#4e3622', wallL: '#6a4a30', wallD: '#36241a', floor: '#b08a58', floorL: '#d0aa72', floorD: '#7a5a3a', shelf: '#5a3e28', stone: '#6e5a48', stoneL: '#8a7460', stoneD: '#4e3e32', mortar: '#3a2c22', plank: '#7a5a3a', plankL: '#9a7650', plankD: '#4e3a26', lamp: '#ffc860' },
   shopCrag: { wall: '#5e5a60', wallL: '#7a7680', wallD: '#44404a', floor: '#6a6468', floorL: '#8a8488', floorD: '#48444a', shelf: '#5a4232', stone: '#5e5a60', stoneL: '#7a7680', stoneD: '#44404a', mortar: '#2e2c32', plank: '#6a6468', plankL: '#8a8488', plankD: '#48444a', lamp: '#ffc860' },
   shopSea: { wall: '#4a5a62', wallL: '#627680', wallD: '#34424a', floor: '#7a6448', floorL: '#9a8260', floorD: '#4e3e2c', shelf: '#5a4230', stone: '#4a5a62', stoneL: '#627680', stoneD: '#34424a', mortar: '#26303a', plank: '#7a6448', plankL: '#9a8260', plankD: '#4e3e2c', lamp: '#ffd070', brass: '#c8a040' },
 };
@@ -76,12 +76,17 @@ export function bakeRedressFar(theme) {
       circle(g, x + 7, 44, 4, P.moon); for (let k = 0; k < 5; k++) px(g, x + 3 + k * 5, 90 + (k % 2) * 8, '#8a90b8'); rect(g, x - 4, 120, 34, 4, '#5a6474'); }
     for (const x of [100, 210]) { rect(g, x, 20, 16, 70, P.banner); rect(g, x, 20, 16, 2, P.gold); fillPoly(g, [[x, 90], [x + 8, 82], [x + 16, 90]], '#4a5262'); rect(g, x + 2, 22, 1, 66, P.bannerL);
       ellipse(g, x + 8, 44, 4, 5, P.gold); ellipse(g, x + 8, 43, 2, 3, P.banner); }                      // the queen's banner: a gold crown-knot on plum
+    for (const x of [100, 210]) for (let dy = -30; dy <= 30; dy++) for (let dx = -30; dx <= 30; dx++) { const d = Math.hypot(dx, dy * 1.2) / 30; if (d >= 1) continue;   // torchlight pooled on the wall: a dithered warm glow, densest at the flame
+      const b = BAYER[((dy + 64) & 3) * 4 + ((dx + 64) & 3)] / 16; if (b < (1 - d) * 0.75) px(g, x + 8 + dx, 100 + dy, d < 0.35 ? '#c88a4a' : d < 0.65 ? '#9a6a48' : '#6e5650'); }
+    for (const x of [100, 210]) { rect(g, x + 6, 104, 4, 8, '#3a3030'); ellipse(g, x + 8, 100, 3, 5, P.torch); px(g, x + 8, 97, '#fff0c0'); }
     rect(g, 0, 150, 320, 30, '#3a4150'); rect(g, 0, 150, 320, 2, '#5a6474'); });
   if (theme === 'undercrown') return mk(320, 180, g => {                    // THE PIT: dark earth, the castle's foundation arches overhead, water finding its way down
     rect(g, 0, 0, 320, 180, '#1e1a18'); for (let k = 0; k < 300; k++) px(g, (rnd() * 320) | 0, (rnd() * 180) | 0, rnd() < 0.5 ? '#2a2420' : '#161210');
     for (const x of [0, 110, 220]) { courses(g, rnd, { stone: '#3e3834', stoneL: '#524a44', stoneD: '#2e2a26', mortar: '#1a1614' }, x + 10, 0, 90, 34, 12, 6); arch(g, x + 30, 18, 50, 40, '#1e1a18'); }
     for (let k = 0; k < 7; k++) { const x = 20 + k * 45; for (let y = 34, xx = x; y < 70 + (k % 3) * 20; y++) { px(g, xx, y, P.root); if (y % 6 === 0) xx += (k % 2) ? 1 : -1; } }
-    for (const x of [70, 190, 280]) for (let y = 40; y < 180; y += 9) px(g, x, y, P.drip); });
+    for (const x of [70, 190, 280]) for (let y = 40; y < 180; y += 9) px(g, x, y, P.drip);
+    for (let k = 0; k < 60; k++) { const x = (k * 53) % 320, y = 28 + (k * 7) % 12; rect(g, x, y, 3, 2, k % 3 ? '#4a6a34' : '#6a8a44'); }   // moss where the water runs off the foundations
+    for (const x of [40, 150, 260]) { for (let r = 22; r > 0; r -= 5) circle(g, x, 120, r, r > 16 ? '#2a2018' : r > 10 ? '#4a3420' : '#7a5228'); rect(g, x - 2, 116, 5, 7, '#2a2420'); rect(g, x - 1, 118, 3, 3, P.lamp); } });   // lamps hung on the shoring, each in its pool of light
   if (theme === 'mage') return mk(320, 90, g => {                           // THE TOWER'S HIGH WALL, far off: tall windows and the moon
     rect(g, 0, 20, 320, 70, P.wallD); for (const x of [30, 120, 210, 290]) { arch(g, x, 26, 16, 50, P.window); rect(g, x + 7, 26, 2, 50, P.wallD); } circle(g, 250, 12, 7, P.moon); });
   if (theme === 'monastery') return mk(320, 90, g => {                      // THE CLOUD SEA, and far peaks standing out of it

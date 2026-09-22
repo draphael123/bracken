@@ -19,7 +19,7 @@ import { canvas, px, rect, fillPoly, line, ellipse, circle, mulberry } from '../
 const T = 16;
 export const CRAG_PAL = {
   scree: { r: ['#8a7a70', '#9c8b7e', '#7a6a62', '#6c5d56'], crack: '#4a3e3a', peb: '#b0a090', pebD: '#5e514a', soil: '#4a3a30', grass: '#7a8a3a', grassL: '#b0bc50', grassD: '#4e5a2a', rim: '#d8aa7c', shade: '#5a4a58', mud: '#5e4a3a', mudL: '#8a7058', water: '#6a6a8a', plank: '#6e6258', plankL: '#a09080', plankD: '#443a34' },
-  hanging: { r: ['#9a968a', '#aca89a', '#8a867c', '#78746a'], crack: '#56524c', peb: '#c8c4b4', pebD: '#66625a', soil: '#4e4438', grass: '#5e9a44', grassL: '#8ccc5c', grassD: '#3a6a2e', rim: '#f0e6cc', shade: '#6a6a7e', mud: '#5a5044', mudL: '#8a7e6a', water: '#7a9ab8', plank: '#7e7a70', plankL: '#b4b0a2', plankD: '#4e4a44' },
+  hanging: { r: ['#7a6e62', '#8c8072', '#6a5e54', '#584e46'], crack: '#3e362e', peb: '#b0a490', pebD: '#4e463e', soil: '#3e3228', grass: '#5e9a44', grassL: '#8ccc5c', grassD: '#3a6a2e', rim: '#f0e6cc', shade: '#6a6a7e', mud: '#5a5044', mudL: '#8a7e6a', water: '#7a9ab8', plank: '#7e7a70', plankL: '#b4b0a2', plankD: '#4e4a44' },
   storm: { r: ['#5a5e68', '#686c76', '#4e525c', '#42454e'], crack: '#2e3038', peb: '#848894', pebD: '#383a42', soil: '#2e2c30', grass: '#4a6a4a', grassL: '#6e9068', grassD: '#2e4430', rim: '#a8bcd0', shade: '#34384a', mud: '#3a3a40', mudL: '#5a5a64', water: '#4a5a70', plank: '#50535c', plankL: '#7c808c', plankD: '#2c2e34' },
 };
 const tile = fn => { const [c, g] = canvas(T, T); fn(g); return c; };
@@ -100,7 +100,7 @@ export function bakeCragMid(theme = 'scree') {
     for (let k = 0; k < 26; k++) { const x = (k * 37 + 11) % W, b = 90 + ((k * 13) % 40); pine(g, x, b, 12 + (k % 4) * 3, '#3e3448', '#54465e'); }
     rect(g, 330, 58, 10, 26, '#5a4458'); rect(g, 328, 56, 14, 3, '#6e5470'); rect(g, 333, 64, 3, 5, '#2a2030'); px(g, 334, 66, '#ffc860');   // a ruined watchtower, one lamp still lit
   } else if (theme === 'hanging') {
-    range(g, W, H, x => 18 + 8 * per(W, 3, x) + 4 * per(W, 11, x, 1), '#8c8a84', '#b8b4a8', null, 0);                          // the cliff face the village hangs on
+    range(g, W, H, x => 18 + 8 * per(W, 3, x) + 4 * per(W, 11, x, 1), '#7e7468', '#b0a490', null, 0);                          // the cliff face the village hangs on (warm, and a step darker than the sky)
     for (let k = 0; k < 16; k++) { const y = 34 + k * 7, x0 = (k * 71) % W; for (let x = 0; x < 90 + (k % 3) * 30; x++) { px(g, (x0 + x) % W, y + Math.round(Math.sin(x * 0.1) * 1.5), '#a8a498'); px(g, (x0 + x) % W, y + 1 + Math.round(Math.sin(x * 0.1) * 1.5), '#6e6c66'); } }   // ledges along the strata, lit over shaded
     for (let k = 0; k < 40; k++) { const x = (k * 97) % W, y = 30 + (k * 43) % 100; rect(g, x, y, 3 + (k % 3), 2, k % 2 ? '#6e8a4c' : '#587040'); }   // moss and scrub in the cracks
     for (let k = 0; k < 12; k++) { let x = (k * 41 + 9) % W; for (let y = 24 + (k * 17) % 40, n = 0; n < 30; y++, n++) { px(g, x, y, '#5e5c58'); if (n % 5 === 0) x += (k % 2) ? 1 : -1; } }   // cracks down the face
