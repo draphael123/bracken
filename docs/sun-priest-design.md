@@ -23,7 +23,7 @@ King's Pyramid) and has to work for it in the dark (the Undercrown, the Burial C
 | verb | what it does | numbers (first pass) | why |
 |---|---|---|---|
 | X, a run of three | staff: a jab, a sweep, the third a FLASH (a short burst of light, 1 tile) | 9 / 9 / 14, light and quick | the plain fight; the flash is a small light source (it counts for RADIANCE for a moment) |
-| **HOLD X: THE SUNBEAM** | a beam along the row to the first opaque tile (UP+hold: up the column). It is a real light source in `src/light.js`: it lights the dark, powers sun-doors, and mirrors turn it | 20 st to plant, 22/s to the dead, 6/s to the living, x(0.75..1.15) by RADIANCE | his signature, and the arc's light puzzles become his to solve without the sun. It **chips** THE SKELETON KING but does **not** open him: only the sun does (so the world boss stays the same fight for everyone) |
+| **HOLD X: THE SUNBEAM** | a beam along the row to the first opaque tile (UP+hold: up the column). It is a real light source in `src/light.js`: it lights the dark, and mirrors turn it | 20 st to plant, 22/s to the dead, 6/s to the living, x(0.75..1.15) by RADIANCE | his signature, and the arc's light puzzles become his to solve without the sun. It **chips** THE SKELETON KING but does **not** open him: only the sun does (so the world boss stays the same fight for everyone) |
 | RADIANCE (the bar) | fills standing in a lit tile (sun, a beam, a consecrated patch, a lamp) and when his beam burns; drains slowly in the dark | fills 0 to full in ~6 s in light; drains full to 0 in ~20 s in the dark; damage x0.75 empty, x1.15 full | **weaker in the dark**, as a number he can see and fix |
 | tap C: CONSECRATE | a 3-tile patch of sunlight on the ground for 6 s: mends him standing in it, burns undead crossing it, lights it | a third of the bar; mends 4/s; burns 12/s | carries light into dark levels (his answer to the dark); a place to stand in a fight |
 | hold C: THE FLARE | a flash round him (3 tiles): stops any wind-up in range, dazzles the living for 0.8 s | half the bar; one flare per foe per 8 s (no lock) | the save; it answers a red ✕ he can't dodge, at a price |
@@ -57,6 +57,9 @@ King's Pyramid) and has to work for it in the dark (the Undercrown, the Burial C
    a weakness and not a wall.
 
 ## Decided (Daniel, 2026-09-21)
+- **Sun-doors and plates answer to the SUN only.** His beam lights the dark, burns the dead, fills his bar and chips the Skeleton
+  King, but never opens a door or a plate: as first designed it opened all 35 light rooms with no mirror turned
+  (`docs/sun-priest-rooms.md`). `src/sun-priest.js` `doorsLit`; checked by `tools/sun-priest.mjs` (0 of 35 open to his beam).
 - **No mirror of his own.** DAWN's capstone is not a placeable mirror: the rooms' mirrors stay the rooms' (the puzzles stay puzzles).
   DAWN's last node is the beam piercing a second foe and burning a column (UP+beam) at full strength.
 - **The look is right:** white and gold robes, a gilt sun-disc on the staff, a bronze face under a hood (`docs/sun-priest-concept.png`).

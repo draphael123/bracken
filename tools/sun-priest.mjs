@@ -125,6 +125,15 @@ const rows = []; let zero = 0, fewer = 0, total = 0;
 log(rows.map(r => `    ${r[0].padEnd(15)} ${r[1].padEnd(11)} sun ${String(r[2]).padEnd(2)} priest ${String(r[3]).padEnd(5)} ${r[4]}`).join('\n'));
 ok(rows.length === 35, `all ${rows.length} rooms measured (21 galleries, 14 chambers)`);
 log(`    => he opens ${zero} of ${total} with NO turn at all, and ${fewer} with fewer turns than the sun needs`);
+{ /* THE RULE (Daniel, 2026-09-21): doors answer to the sun. Every room again with his beam from every tile and every direction, doors
+     read through doorsLit (the sun's receivers): none opens, and the sun still opens each one */
+  const P = newPriest(0, 0); let opened = 0, sunOpens = 0;
+  for (const [lvl, D0] of [['kp', await import('../src/draft/kings-pyramid.js')], ['st', await import('../src/draft/sun-temple.js')]]) { const L = D0.build(T), at = (x, y) => (x < 0 || x >= L.W) ? T.SOLID : (y < 0 || y >= L.H) ? T.AIR : L.grid[y * L.W + x], opts = { opaque, W: L.W, H: L.H };
+    for (const r of (L.galleries || L.rooms)) { const plate = r.plate, mirrors = r.mirrors, suns = r.ports || r.win, box = r.ports ? [3, L.W - 4, r.f - 8, r.f - 1] : [r.cx, r.cx + (L.rooms[1].cx - L.rooms[0].cx) - 2, r.win[0].y + 1, plate.y + 3];
+      if (solve(at, r.ports ? suns : [suns[0]], mirrors, [plate], opts) || (!r.ports && suns.some(src => solve(at, [src], mirrors, [plate], opts)))) sunOpens++;
+      for (const [x, y] of standTiles(at, ...box)) for (const up of [false, true]) for (const face of [1, -1]) { P.x = x * 16 + 8; P.y = (y + 1) * 16; P.face = face; beamOn(P, up);
+        if (S.doorsLit(lights(at, [], mirrors, [plate], opts, P)).size) opened++; } } }
+  ok(opened === 0 && sunOpens === 35, `THE RULE: sun-doors answer to the sun. His beam, from every tile, either way and UP, opens ${opened} of 35 rooms; the sun still opens all ${sunOpens}`); }
 writeFileSync(new URL('../docs/sun-priest-rooms.md', import.meta.url), `# The rooms the Sun Priest solves alone (\`node tools/sun-priest.mjs\`)
 
 His beam powers sun-doors (docs/sun-priest-design.md), so in the two light levels some rooms are his without the sun. This is the
@@ -133,11 +142,11 @@ fewest mirror turns that open it with the sun (the best hour, in the temple); **
 best tile he can stand on, and where (E/W along the row, UP the column; the pyramid's y is rows above the gallery floor, the
 temple's is the tile row).
 
-**He opens ${zero} of ${total} with no turn at all, and ${fewer} with fewer turns than the sun.**
+**If his beam powered the doors, he would open ${zero} of ${total} with no turn at all, and ${fewer} with fewer turns than the sun.** Decided (Daniel, 2026-09-21): **sun-doors and plates answer to the sun only** (doorsLit), so the table below is the case against it, kept for the record.
 ${zero > total / 2 ? `
 **So as designed, his beam skips the arc's light puzzles.** A mirror always turns a beam 90 degrees, and he can come at it from
 any side (UP from under it, or along its row from a ledge), so whatever state a mirror is in, some line of his reaches the plate.
-Recommendation: **sun-doors and plates answer to the SUN only** (\`lights().sun.hit\`, the same rule as the Skeleton King). His beam
+The rule taken: **sun-doors and plates answer to the SUN only** (\`lights().sun.hit\`, the same rule as the Skeleton King). His beam
 still lights the dark, burns the dead, shows the way and chips the King: it is his answer to the DARK, not to the puzzles.
 (Alternatives: a few "priest rooms" per level where his beam is the intended key, or plates that need the sun AND his beam.)
 ` : ''}

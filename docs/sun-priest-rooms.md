@@ -6,11 +6,11 @@ fewest mirror turns that open it with the sun (the best hour, in the temple); **
 best tile he can stand on, and where (E/W along the row, UP the column; the pyramid's y is rows above the gallery floor, the
 temple's is the tile row).
 
-**He opens 35 of 35 with no turn at all, and 35 with fewer turns than the sun.**
+**If his beam powered the doors, he would open 35 of 35 with no turn at all, and 35 with fewer turns than the sun.** Decided (Daniel, 2026-09-21): **sun-doors and plates answer to the sun only** (doorsLit), so the table below is the case against it, kept for the record.
 
 **So as designed, his beam skips the arc's light puzzles.** A mirror always turns a beam 90 degrees, and he can come at it from
 any side (UP from under it, or along its row from a ledge), so whatever state a mirror is in, some line of his reaches the plate.
-Recommendation: **sun-doors and plates answer to the SUN only** (`lights().sun.hit`, the same rule as the Skeleton King). His beam
+The rule taken: **sun-doors and plates answer to the SUN only** (`lights().sun.hit`, the same rule as the Skeleton King). His beam
 still lights the dark, burns the dead, shows the way and chips the King: it is his answer to the DARK, not to the puzzles.
 (Alternatives: a few "priest rooms" per level where his beam is the intended key, or plates that need the sun AND his beam.)
 

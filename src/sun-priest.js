@@ -4,14 +4,16 @@
 // HE FIGHTS WITH THE LIGHT IN THE ROOM.
 //   RADIANCE   a 0..1 bar: fills standing in a lit tile (the sun, any beam - his own too - a consecrated patch, a lamp), drains in the
 //              dark. His blows and beam are x0.75 empty .. x1.15 full.
-//   THE BEAM   (hold X) a real light SOURCE from his tile along the row (UP: the column). It lights the dark, powers sun-doors and
-//              plates, and the rooms' mirrors turn it. It burns the dead hard and the living a little.
+//   THE BEAM   (hold X) a real light SOURCE from his tile along the row (UP: the column). It lights the dark and the rooms' mirrors
+//              turn it; it burns the dead hard and the living a little. It never opens a sun-door (the sun does).
 //   CONSECRATE (tap C) a 3-tile patch of sunlight on the floor for 6 s: mends him, burns the dead on it, lights it. A third of the bar.
 //   THE FLARE  (hold C) stops every wind-up within 3 tiles. Half the bar. Never the same foe twice in 8 s (no locking a boss).
 //   SUNRISE    (full bar + C) 6 s of the whole screen in the light: everything visible, his beam burning double.
 //   SUNFALL    (the plunge) a 2-tile ring of light where he lands, a patch for 2 s.
-// THE ONE HARD RULE: his light is not the SUN. Doors, plates, sight, burning: everything answers to his beam; THE SKELETON KING's
-// opening answers only to the sun. `lights(...)` returns both traces: give kingStep `sun`, never `all`.
+// THE HARD RULE (Daniel, 2026-09-21): his light is not the SUN. Sight and burning answer to his beam; SUN-DOORS, PLATES and THE
+// SKELETON KING's opening answer only to the sun. `lights(...)` returns both traces: give doors/plates `doorsLit(L)` (the sun's
+// receivers) and kingStep `L.sun`, never `L.all`. (As first designed his beam opened all 35 light rooms with no mirror turned:
+// docs/sun-priest-rooms.md.)
 import { trace, litBox, LIGHT } from './light.js';
 
 export const PRIEST = {
@@ -37,7 +39,7 @@ export function consecrate(P) { const C = PRIEST.consecrate; if (P.rad < C.cost 
 export function sunfall(P) { patchAt(P, PRIEST.sunfall.half, PRIEST.sunfall.t, 'sunfall'); }
 export function sunrise(P) { if (P.rad < 1 - 1e-9) return false; P.rad = 0; P.sunrise = PRIEST.sunrise.t; return true; }
 /* EVERYTHING LIT. sun: the room's own sources (windows, shafts, the capstone). Returns { sun, all }: `sun` is the sun alone (what the
-   Skeleton King answers to); `all` adds his beam, his patches, and (in SUNRISE) every tile, and is what doors, sight and burning use. */
+   Skeleton King answers to); `all` adds his beam, his patches, and (in SUNRISE) every tile, and is what sight and burning use (doors: doorsLit). */
 export function lights(tileAt, sunSources, mirrors, receivers, opts, P) {
   const sun = trace(tileAt, sunSources, mirrors, receivers, opts);
   const mine = trace(tileAt, [...sunSources, ...priestSources(P)], mirrors, receivers, opts);
@@ -45,6 +47,8 @@ export function lights(tileAt, sunSources, mirrors, receivers, opts, P) {
   if (P.sunrise > 0) mine.everywhere = true;
   return { sun, all: mine };
 }
+/* what a sun-door or plate sees: the SUN's receivers only (his beam never opens one) */
+export const doorsLit = L => L.sun.hit;
 export const lit = (res, box) => !!res.everywhere || litBox(res, box);
 export const bodyBox = b => [b.x - b.w / 2, b.x + b.w / 2, b.y - b.h, b.y];
 
