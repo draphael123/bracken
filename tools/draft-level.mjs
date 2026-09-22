@@ -18,10 +18,10 @@ const { SUN, shadeZones, inShade, roofShade, sunStretches } = await import('../s
 
 let fails = 0; const log = s => console.log(s), ok = (c, m) => { log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const L = D.build(T), W = L.W, H = L.H, TS = 16, at = (x, y) => (x < 0 || x >= W) ? T.SOLID : (y < 0 || y >= H) ? T.AIR : L.grid[y * W + x];
-const V = meta.orientation === 'v', A = L.arena, ax0 = A.x0 / TS, ax1 = A.x1 / TS, afl = A.floor / TS;
-log(`${meta.name} (draft): ${W} x ${H} tiles, ${L.ents.length} ents, ${V ? 'a climb' : 'left to right'}`);
+const V = meta.orientation === 'v', DOWN = V && !!meta.down, A = L.arena, ax0 = A.x0 / TS, ax1 = A.x1 / TS, afl = A.floor / TS;
+log(`${meta.name} (draft): ${W} x ${H} tiles, ${L.ents.length} ents, ${V ? (DOWN ? 'a descent' : 'a climb') : 'left to right'}`);
 // F1 / F2
-const SEC = Object.entries(L.sections).filter(([k]) => k !== 'arena').sort((a, b) => V ? b[1] - a[1] : a[1] - b[1]);
+const SEC = Object.entries(L.sections).filter(([k]) => k !== 'arena').sort((a, b) => V && !DOWN ? b[1] - a[1] : a[1] - b[1]);   /* a climb lists bottom first, a descent top first */
 const endOf = V ? (L.sections.arena ?? 0) : (L.sections.arena ?? ax0);
 const lens = SEC.map(([k, v], i) => [k, Math.abs((i + 1 < SEC.length ? SEC[i + 1][1] : endOf) - v)]);
 const [lo, hi] = V ? [20, 40] : [60, 100];
@@ -36,8 +36,8 @@ let arenaReached = false; for (let x = ax0; x < ax1; x++) for (let y = V ? afl -
 ok(arenaReached, `B1: the start reaches the arena (${A.boss})`);
 ok(ax1 - ax0 <= 44, `A7: the arena is ${ax1 - ax0} tiles across`);
 // B6
-const checks = want('check'), pos = checks.map(e => V ? e.y : e.x).sort((a, b) => V ? b - a : a - b), gaps = pos.slice(1).map((p, i) => Math.abs(p - pos[i]));
-const outside = checks.some(e => V ? (e.y >= afl && e.y <= afl + 6 && e.x >= ax0 - 4 && e.x <= ax1 + 4) || (e.y > afl) : (e.x < ax0 && e.x >= ax0 - 6));
+const checks = want('check'), pos = checks.map(e => V ? e.y : e.x).sort((a, b) => V && !DOWN ? b - a : a - b), gaps = pos.slice(1).map((p, i) => Math.abs(p - pos[i]));
+const outside = checks.some(e => DOWN ? (e.y < afl - 1 && e.y >= afl - 16) : V ? (e.y >= afl && e.y <= afl + 6 && e.x >= ax0 - 4 && e.x <= ax1 + 4) || (e.y > afl) : (e.x < ax0 && e.x >= ax0 - 6));   /* a descent's last checkpoint is just above the arena */
 const first = V ? Math.abs(L.START.y - pos[0]) : pos[0];
 ok(Math.max(first, ...gaps) <= (V ? 40 : 100) && outside && checks.every(e => R.near(e.x, e.y)), `B6: ${checks.length} checkpoints, the widest gap ${Math.max(...gaps)} ${V ? 'rows' : 'columns'}, one outside the arena, all reachable`);
 // B2
