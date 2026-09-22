@@ -1,4 +1,4 @@
-// fire-spread.js — THE BURNING VILLAGE's fire (batch 5, 2026-09-21). Daniel's rule: ONLY THE PYROMANDER'S FIRES SPREAD -
+// fire-spread.js — THE BURNING VILLAGE's fire (batch 5, 2026-09-21). Daniel's rule: ONLY THE PYROMANCER'S FIRES SPREAD -
 // his, and the ones his burning goblins carry. The village's own fire (the thatch alight behind the street, the bonfires in
 // the yards) is authored dressing and hazard, and it never creeps: it is not in this grid at all.
 //
@@ -17,7 +17,7 @@
 // every other flame in the game) and tools/burning-village.mjs drives this module directly.
 export const FIRE = { CATCH: 1.2, SPREAD: 2.4, BURN: 9 };
 export const UNLIT = 0, CATCHING = 1, ALIGHT = 2, BURNT = 3;
-export const SPREADERS = new Set(['pyromander', 'burngob']);
+export const SPREADERS = new Set(['pyromancer', 'burngob']);
 
 export function fireGrid(L) {
   const cells = [], at = new Map();
@@ -69,7 +69,7 @@ export function douse(G, x, y, r) {
 export function squareHeat(G, heat) {
   if (!G) return;
   for (const c of G.cells) { if (!c.square) continue;
-    if (heat >= c.thr && c.s === UNLIT) { c.s = CATCHING; c.t = 0; c.src = 'pyromander'; }
+    if (heat >= c.thr && c.s === UNLIT) { c.s = CATCHING; c.t = 0; c.src = 'pyromancer'; }
     else if (heat < c.thr - 5 && c.s !== UNLIT) { c.s = UNLIT; c.t = 0; } }
 }
 export const burning = c => c && (c.s === ALIGHT);

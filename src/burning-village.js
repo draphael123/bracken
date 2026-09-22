@@ -4,7 +4,7 @@
 // buildings, you cut them free, and they run for the gate themselves. They cannot die - the fire only pins them.
 //
 // THE FIRE (src/fire-spread.js): the straw on the ground, the thatch on the roofs and the hay in the barn are the village's
-// burnable ground (L.burn). Only the Pyromander and his burning goblins light it, and what they light spreads; the
+// burnable ground (L.burn). Only the Pyromancer and his burning goblins light it, and what they light spreads; the
 // village's own fire - the burning fronts behind the street (L.facades 'burning') and the still flames in the yards
 // (L.stillFires) - is dressing and hazard, and never creeps. Water from the troughs and the well puts the spread out.
 //
@@ -13,7 +13,7 @@
 //   190-320  THE LONG STREET  roofs at three heights, beams over the street that fall when their thatch burns out
 //   320-400  THE BARN         one big room of hay, two villagers, the fire crossing it; its captain holds the far door
 //   400-450  THE WELL YARD    the well, the last villager, the way up to the square
-//   450-508  THE SQUARE       THE PYROMANDER. The square burns as his heat climbs and clears when he vents.
+//   450-508  THE SQUARE       THE PYROMANCER. The square burns as his heat climbs and clears when he vents.
 export const VILLAGE = { W: 508, H: 34, R: 26 };
 
 export function buildBurningVillage({ painter, T, TS }) {
@@ -122,7 +122,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   ent('check', 446, F - 1);
   plat(461, F - 3, 5); plat(475, F - 3, 5); plat(488, F - 3, 5);            // three market stalls: somewhere off the burning floor
   burn.push([455, 495, F - 1, { square: true }]);
-  foe('pyromander', 484, F - 1, { boss: true });
+  foe('pyromancer', 484, F - 1, { boss: true });
   facades.push([448, 500, 12, F - 1, 'burning']);
   ent('gate', 504, F - 1);
 
@@ -146,7 +146,7 @@ export function buildBurningVillage({ painter, T, TS }) {
       grass: '#4a4a2e', grassL: '#6a6436', grassD: '#2e2c1c', dirt: '#4a3a2e', dirtL: '#5e4a38', dirtD: '#2e241c',
       canopy: ['#2a1a16', '#3a221a', '#4a2c1e', '#5e3822'] },
     weather: [{ x0: 0, x1: 99999, kind: 'embers' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 454 * TS, x1: 496 * TS, floor: F * TS, trigger: 458 * TS, wallL: 453, wallR: 497, boss: 'pyromander', music: 'hilltroll',
+    arena: { x0: 454 * TS, x1: 496 * TS, floor: F * TS, trigger: 458 * TS, wallL: 453, wallR: 497, boss: 'pyromancer', music: 'hilltroll',
       tint: '#ff6b2c', tintA: 0.1, fx: 'embers' },
   };
 }

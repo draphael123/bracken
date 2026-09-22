@@ -371,7 +371,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromander'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -517,11 +517,11 @@ async function runbossLab(BK, opts) {
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
         if(f%600===599)await yieldNow();continue;
       }
-      /* THE PYROMANDER (batch 5): the bot reads the square. It never stands on burning ground (a burning or catching cell of the
+      /* THE PYROMANCER (batch 5): the bot reads the square. It never stands on burning ground (a burning or catching cell of the
          village's fire grid), keeps out of the firedrop's landing ring, the jet's cone and the vent's ring, takes his embers on
          the shield (the three who carry one) or rolls through them, and otherwise stays in reach and cuts - which is what keeps
          him from venting and takes him over the top into OVERHEAT, where it goes in. Resting is done on clear ground, away. */
-      if(boss.t==='pyromander'){
+      if(boss.t==='pyromancer'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const VGr=BK.village?BK.village().G():null,fl=A.floor,m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1;

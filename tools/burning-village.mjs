@@ -1,14 +1,14 @@
 /* tools/burning-village.mjs — THE BURNING VILLAGE KEEPS ITS PROMISES (batch 5, 2026-09-21).
    Briefs: .claude/briefs/burning-village-pitch.md + -design.md. What this proves, in the order the design lists it:
-     1. fire spreads only from the Pyromander's and the burning goblins' fires; the village's own fire never creeps
+     1. fire spreads only from the Pyromancer's and the burning goblins' fires; the village's own fire never creeps
      2. water sets a catching cell back to unlit
      3. a trapped villager is freed by a real attack, runs, is counted - and nothing the fire does can kill one
      4. the wisp hurts on contact and nothing turns it; the burning goblin's touch costs nothing, only its swing
-     5. the Pyromander's heat rises with his attacks; struck, he overheats and OPENS; left alone he vents and does not;
+     5. the Pyromancer's heat rises with his attacks; struck, he overheats and OPENS; left alone he vents and does not;
         the square burns with his bar and clears when he vents
      6. the level meets the density bar (3.5-4.5 foes a screen, no run of flat screens), is plugged in (garrison, elite,
         three silvers, checkpoints), and clearing it opens the Pyromancer for coins (~800) beside her ten silver
-   The pilot (all six heroes, normal health, 21+ runs) is tools/pyromander-pilot.mjs: it is too long for the suite. */
+   The pilot (all six heroes, normal health, 21+ runs) is tools/pyromancer-pilot.mjs: it is too long for the suite. */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'fs';
 import { LEVELS, T } from '../src/level.js';
@@ -35,10 +35,10 @@ const L = lv.build();
   assert.ok(lit.every(c => c.x >= 26 && c.x <= 30), 'along its bale and no further: the road between bales is bare, so a fire never shuts the whole street: ' + lit.map(c => c.x).join(','));
   assert.ok(lit.every(c => SPREADERS.has(c.src)), 'every flame traces back to a spreader');
   // ---- 2. WATER ----
-  const G2 = fireGrid(L); ignite(G2, 116, 25, 'pyromander'); stepFire(G2, 0.5);
+  const G2 = fireGrid(L); ignite(G2, 116, 25, 'pyromancer'); stepFire(G2, 0.5);
   assert.equal(G2.get(116, 25).s, CATCHING, 'lit, it is catching first (the warning)');
   assert.ok(douse(G2, 117, 25, 4) >= 1, 'water reaches it'); assert.equal(G2.get(116, 25).s, UNLIT, 'water sets a catching cell back to unlit');
-  ignite(G2, 116, 25, 'pyromander'); stepFire(G2, 2); assert.equal(G2.get(116, 25).s, ALIGHT); douse(G2, 114, 25, 4); assert.equal(G2.get(116, 25).s, UNLIT, 'and a burning one');
+  ignite(G2, 116, 25, 'pyromancer'); stepFire(G2, 2); assert.equal(G2.get(116, 25).s, ALIGHT); douse(G2, 114, 25, 4); assert.equal(G2.get(116, 25).s, UNLIT, 'and a burning one');
   // ---- the square follows his bar ----
   const G3 = fireGrid(L), sq = G3.cells.filter(c => c.square);
   assert.ok(sq.length >= 30, 'the square is burnable ground: ' + sq.length);
@@ -62,7 +62,7 @@ const L = lv.build();
   assert.equal(L.ents.filter(e => e.t === 'captive').length, 6, 'six villagers to save');
   assert.ok(L.ents.some(e => e.elite && e.gate), 'an elite holds a gate');
   assert.ok(L.ents.filter(e => e.t === 'check').length >= 5, 'checkpoints');
-  const kinds = new Set(L.ents.map(e => e.t)); for (const k of ['burngob', 'emberwisp', 'pyromander', 'sprig', 'archer']) assert.ok(kinds.has(k), 'it places ' + k);
+  const kinds = new Set(L.ents.map(e => e.t)); for (const k of ['burngob', 'emberwisp', 'pyromancer', 'sprig', 'archer']) assert.ok(kinds.has(k), 'it places ' + k);
   const lsrc = readFileSync(new URL('../src/level.js', import.meta.url), 'utf8');
   assert.match(lsrc, /\n  burning: \[\['/, 'a GARRISON row for the village');
   const calm = L.calm || []; assert.ok(!calm.some(([a, b]) => b - a > 80), 'no blanket calm');
@@ -98,7 +98,7 @@ try {
    for(let i=0;i<45;i++){BK.P.x=gb.x;BK.P.y=gb.y;gb.cd=99;gb.swingT=99;if(gb.mode!=='walk')gb.mode='walk';BK.sim(1);}const touch=hp0-BK.P.hp;
    BK.P.hp=BK.P.maxHp;BK.P.inv=0;gb.cd=0;gb.swingT=0;BK.P.x=gb.x+12*gb.face;for(let i=0;i<90&&BK.P.hp===BK.P.maxHp;i++){BK.P.x=gb.x+12*gb.face;BK.P.y=gb.y;BK.sim(1);}
    const lit=BK.village().G().cells.filter(c=>c.s>0).length;out.gob={touch,swing:BK.P.maxHp-BK.P.hp,lit};}
-  /* 5. THE PYROMANDER */
+  /* 5. THE PYROMANCER */
   {boot();const A=BK.L.arena;BK.god=true;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;
    const G=()=>BK.village().G(),sqLit=()=>G().cells.filter(c=>c.square&&c.s===2).length;
    // his attacks heat him
