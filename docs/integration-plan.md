@@ -68,6 +68,19 @@ Reference renders: `docs/crag-redress.png`, `docs/redress2.png`.
 - Lengthening the tower shifts every hand-placed row: re-check the GARRISON row, ELITES coords (`tools/elites.mjs`), the checkpoints,
   and the carpet arena (`L.arena`, `carpetAt`, `skyRow`). `npm run check` must stay green.
 
-## 5. Then
-Daniel playtests the changed levels. After that: the combat tuning (the feel probe: three in four common fights end in one swing;
-measure with `BK.fightLab` before and after), the hero's animation pass, and the desert arc (slopes phase 2, `docs/slopes-integration.md`).
+## 5. THE COMBAT TUNING (`docs/combat-tuning.md`: measured, ready to apply)
+- **Fodder health x2.4, nothing else**: sprig, shield, cutlass, crab, scout, archer, harpy (a per-type multiplier on their `EHP` entries,
+  or in the tier scaling for these types - not a global scale: that balloons the hedge knight, sworn sword and tide guard).
+- Before shipping, run `BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], reps: 2 })` for ALL SIX heroes, before and
+  after (only the knight and the Freebooter were measured): no hero may start dying where it did not, and the fodder should take 2-4
+  blows in the middle and late game. (A hidden browser pane throttles the lab's timers; drive it in a visible pane, or see the note in
+  combat-tuning.md.) Then measure the other common types (sporeling, lurker, thief, hound, miner, bat, snuffer, sailer, soldier) the
+  same way and give them the same treatment where they die in one swing.
+- **Investigate, don't tune: the Freebooter kills fodder in 0.28 s whatever its health** (even 126 hp). Find the action that does it
+  (a finisher? the pistol?) and report whether it is intended before changing anything.
+
+## 6. Then
+Hold every changed level to `docs/art-direction.md` (`python tools/art-rules.py` on fresh screenshots of it). Daniel playtests the
+changed levels. After that, the enemy animation work continues (`docs/animation-audit.md`: the next ten foes), and the desert arc
+(slopes phase 2, `docs/slopes-integration.md`). The heroes do not need an animation pass (`docs/hero-animation-audit.md`): only a
+3-4 frame jump arc and a landing if time allows.
