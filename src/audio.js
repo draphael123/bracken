@@ -712,6 +712,7 @@ const DIE = {
   emberwisp() { noise(0.3, 0.18, 3200, 0.6); tone('sine', 900, 200, 0.25, 0.08); },
   pyromander() { noise(1.2, 0.36, 1800, 0.5); tone('sawtooth', 160, 40, 1.4, 0.22); },
   /* THE MAGE'S FOLLY: a hedge falling to bits, a suit coming apart, a bucket over, a chest breaking, a jar's worth of squeal, glass, and the tower's two */
+  gargoyle() { noise(1.0, 0.38, 600, 0.5); tone('square', 120, 40, 0.9, 0.18); noise(0.5, 0.25, 1800, 0.4, 0.3); },   /* THE GATE GARGOYLE: a gate's worth of stone coming down */
   hedgewarden() { noise(0.7, 0.3, 1400, 0.4); noise(0.4, 0.22, 700, 0.5, 0.2); tone('square', 170, 60, 0.6, 0.1, 0.1); },   /* THE HEDGE WARDEN: a whole hedge coming down */
   topiary() { noise(0.3, 0.24, 1600, 0.4); noise(0.2, 0.16, 700, 0.5, 0.1); tone('square', 200, 90, 0.16, 0.06, 0.05); },
   armour() { file('clang', 0.3, 0.55) || tone('sine', 500, 300, 0.2, 0.14); for (let i = 0; i < 4; i++) { tone('square', 1400 - i * 200, 900 - i * 150, 0.14, 0.08, 0.15 + i * 0.12); noise(0.06, 0.2, 2000, 0.5, 0.15 + i * 0.12); } },
@@ -883,6 +884,7 @@ const HURT = {
   tidemarauder() { noise(.18,.22,600,.5);tone('sine',170,90,.2,.1); },
   familiar() { tone('sawtooth',120,65,.25,.13);noise(.24,.22,350,.5); },
   /* THE MAGE'S FOLLY: leaves, plate, a slopped bucket, a wooden jaw, a thing out of a jar, brass, and the two at the top */
+  gargoyle() { noise(0.14, 0.22, 900, 0.5); tone('square', 150, 90, 0.08, 0.06); },
   hedgewarden() { noise(0.16, 0.2, 1500, 0.4); noise(0.1, 0.14, 800, 0.5, 0.05); tone('square', 210, 140, 0.1, 0.05, 0.02); },
   topiary() { noise(0.12, 0.2, 1800, 0.4); noise(0.08, 0.14, 900, 0.5, 0.05); tone('square', 260, 180, 0.06, 0.04, 0.02); },
   armour() { file('clang', 0.2, 0.7) || tone('sine', 700, 500, 0.12, 0.1); noise(0.08, 0.14, 1400, 0.5); },

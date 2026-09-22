@@ -9,7 +9,9 @@
      THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight)
      THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5)
      THE GRAVE WARDEN  let his dig mark you beside an open grave and leave late: the spade goes in and he kneels (batch 4b)
-     THE HEDGE WARDEN  cut him down beside a witchlight brazier: the stump burns, open, and cannot regrow while it does (batch 4c) */
+     THE HEDGE WARDEN  cut him down beside a witchlight brazier: the stump burns, open, and cannot regrow while it does (batch 4c)
+     THE GATE GARGOYLE  stand on a CRACKED slab and leave it late: his dive goes through it and he hangs from the next one's edge;
+                        the same dive on a solid slab opens nothing, and leaving early only moves his aim (the stair's top, 2026-09-22) */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
@@ -76,6 +78,17 @@ try {
    const lawn=fell(143*16);BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp)};
    const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};
    out.hedgeWarden={lawn,grew,fire,burning};}
+  /* THE GATE GARGOYLE: the same dive three times - on a solid slab left late, on a cracked slab left late, on a cracked slab left early */
+  {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='witchlight'));BK.state='play';BK.god=true;
+   const g=BK.enemies().find(e=>e.t==='gargoyle');for(const e of BK.enemies())if(e!==g)e.alive=false;const sl=BK.movers().filter(m=>m.arena);
+   const on=m=>{BK.P.x=m.x+m.w/2;BK.P.y=m.y;BK.P.vy=0;BK.P.onMover=m;BK.P.ground=true;};
+   on(sl[0]);BK.sim(90);
+   const next=m=>sl.filter(q=>q!==m&&!q.broken&&!q.cracked).sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
+   const dive=(m,late)=>{g.mode='hover';g.hp=g.maxHp;g.phase=1;BK.sim(2);on(m);g.mode='diveTell';g.modeT=0.4;g.tgt=m;g.off=m.w/2;g.cd=99;g.queue=[];
+     if(!late)on(next(m));for(let i=0;i<120&&g.mode==='diveTell';i++){if(late)on(m);BK.sim(1);}
+     if(late)on(next(m));for(let i=0;i<120&&g.mode==='dive';i++)BK.sim(1);const o={mode:g.mode,open:+(g.open||0).toFixed(1),broken:!!m.broken,aim:g.tgt===m};g.mode='hover';g.modeT=0;return o;};
+   const solid=dive(sl.find(m=>!m.cracked),true),early=dive(sl.find(m=>m.cracked&&!m.broken),false),cracked=dive(sl.find(m=>m.cracked&&!m.broken),true);
+   out.gargoyle={solid,early,cracked};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -105,6 +118,9 @@ try {
   assert.equal(r.hedgeWarden.lawn.mode, 'felled', 'a blow through his root fells him: ' + JSON.stringify(r.hedgeWarden));
   assert.equal(r.hedgeWarden.lawn.open, 0, 'felled on the open lawn, the stump is not open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(!['felled', 'stump'].includes(r.hedgeWarden.grew.mode) && r.hedgeWarden.grew.hp === r.hedgeWarden.grew.full, 'a stump left alone grows him back whole: ' + JSON.stringify(r.hedgeWarden));
+  assert.ok(r.gargoyle.solid.mode === 'land' && r.gargoyle.solid.open === 0 && !r.gargoyle.solid.broken, 'his dive on a solid slab opens nothing: ' + JSON.stringify(r.gargoyle));
+  assert.ok(!r.gargoyle.early.aim && !r.gargoyle.early.broken && r.gargoyle.early.open === 0, 'leaving a cracked slab early only moves his aim: ' + JSON.stringify(r.gargoyle));
+  assert.ok(r.gargoyle.cracked.mode === 'hang' && r.gargoyle.cracked.open > 2 && r.gargoyle.cracked.broken, 'left late, a cracked slab breaks under him and he hangs, open: ' + JSON.stringify(r.gargoyle));
   assert.ok(r.hedgeWarden.fire.open > 2, 'felled beside a brazier, the stump burns open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.burning.mode === 'stump' && r.hedgeWarden.burning.open > 0, 'a burning stump does not regrow: ' + JSON.stringify(r.hedgeWarden));
 

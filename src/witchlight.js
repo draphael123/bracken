@@ -23,6 +23,9 @@ export const WL = {
   GLYPHS: [[147, 169], [173, 194], [198, 214]],          // [up (on the floor), down (under the roof)]
   MINI: { x0: 300, x1: 331, gate: 332, wallL: 299, braziers: [305, 326] },
   ARENA: { x0: 346, x1: 425 },
+  SLABS: [[349, 30, { speed: 14 }], [357, 28, { cracked: true }], [364, 29, { speed: 12 }], [372, 28, { cracked: true }], [379, 30, { speed: 16 }],
+    [387, 28, { cracked: true }], [394, 29, { speed: 13 }], [402, 28, { cracked: true }], [409, 30, { speed: 15 }], [417, 29, { speed: 10 }]],
+  LIFTS: [[362, 0], [392, 1.5], [407, 3]],               // rune columns from the terrace, under the gaps between the slabs
   LIGHT: [[0, 139, 'dusk'], [140, 259, 'twilight'], [260, 429, 'witchlight']],
   STEPS: [0, 50, 140, 220, 262, 333],                    // where the tower in the backdrop takes a step nearer
   MARKS: { cavern: 4, aqueduct: 92, colonnade: 180, library: 243, orrery: 316, tower: 426 },
@@ -118,16 +121,15 @@ export function buildWitchlight({ painter, T, TS }) {
 
   // ---- THE STAIR'S TOP (c 333-429): onto the Gargoyle's slabs ----
   rune(340, G, 25); ledge(342, 27, 8);                                                // the last column, up to the arena's lip
-  const S = [[350, 30, { range: 8 }], [364, 28, { range: 1, speed: 4, len: 4, cracked: true }], [372, 31, { range: 9 }], [386, 28, { range: 1, speed: 4, len: 4, cracked: true }],
-    [392, 29, { range: 10 }], [408, 28, { range: 1, speed: 4, len: 4, cracked: true }]];
-  for (const [x, row, o] of S) slab(x, row, Object.assign({ arena: true }, o));
-  rune(384, G, 26, 0.8); rune(404, G, 26, 2.6);                                      // back up after a fall to the terrace
+  /* THE GARGOYLE'S SLABS: a chain of them over the garden terrace, a short hop apart, solid ones drifting a little and CRACKED ones
+     (his opening) held still between them. A fall lands on the terrace; three rune columns under the gaps lift you back up. */
+  for (const [x, row, o] of WL.SLABS) slab(x, row, Object.assign({ arena: true, len: o.cracked ? 4 : 5, range: o.cracked ? 0 : 2 }, o));
+  for (const [x, ph] of WL.LIFTS) rune(x, G, 26, ph);
   block(426, 429, 0, H - 1); skins.push([426, 429, 0, H - 1, 'tower']);            // the tower's foot
-  ent('gate', 424, G);                                                               // (until the Gargoyle: the tower's gate is the way in)
+  ent('gargoyle', 422, 23, { face: -1 });                                            // bolted over the gate: the level ends on his fall
   ent('check', 336, G);
   ent('sign', 334, G, { text: "THE STAIR'S TOP. SOMETHING IS BOLTED OVER THE TOWER GATE, AND IT IS AWAKE." });
-  coins([343, 26], [347, 26], [352, 29], [375, 30], [396, 28]);
-  dead('zombie', 352, G); dead('husk', 372, G);                                      // the dead on the terrace, under the slabs
+  coins([343, 26], [347, 26]);
 
   // the dead that followed you up, in the quiet between the encounters
   dead('zombie', 64, GORGE); dead('husk', 124, GORGE);   /* (in the gorge: a fall costs a fight) */
@@ -143,6 +145,7 @@ export function buildWitchlight({ painter, T, TS }) {
     palette: { sky: [[64, 46, 96], [236, 150, 112]], far: 'mage', mid: 'mage', near: 'none', dress: 'village', haze: 'rgba(200,120,160,0.08)',
       grass: '#5a6a4a', grassL: '#7c8c5c', grassD: '#3a4632', dirt: '#5a4c5a', dirtL: '#76647a', dirtD: '#382e3c', canopy: ['#2a2238', '#3a2e4a', '#4e3a5c', '#6a4a6e'] },
     weather: [{ x0: 0, x1: 140 * TS, kind: 'leaves' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    arena: { x0: WL.ARENA.x0 * TS, x1: WL.ARENA.x1 * TS, floor: (G + 1) * TS, y0: 12 * TS, top: 28 * TS, trigger: (WL.ARENA.x0 + 4) * TS, wallL: WL.ARENA.x0 - 1, wallR: WL.ARENA.x1, boss: 'gargoyle', music: 'boss4' },
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'hedgewarden', name: 'THE HEDGE WARDEN' },
     noCoin: [[0, 9, 0, FOOT - 6], [140, 219, 0, WL.ROOF[0] - 1]],
   };

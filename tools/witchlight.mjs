@@ -3,8 +3,10 @@
    redesign by the map (Node) and then on the page:
      1. it is plugged in: appended to LEVELS (no index moves), needs the Burial Caverns, and the Folly needs it
      2. FIVE PLACES, each walked from the cavern mouth: the Bramble Foot, the Drifting Aqueduct, the Upside-Down Cloister, the
-        Rune Stair, the Topiary Maze - and the Gargoyle's slabs on top; every silver and checkpoint reached; the tower gate reached;
-        about a third of it vertical, not half; route-breaks finds nothing
+        Rune Stair, the Topiary Maze - and the Gargoyle's slabs on top; every silver and checkpoint reached; about a third of it
+        vertical, not half; route-breaks finds nothing
+     2b. THE GATE GARGOYLE on top: his arena of slabs over the garden terrace, some CRACKED and held still, three rune columns from
+        the terrace back up past the slabs, no gate - the level ends on his kill; his marks (red for the dive and the flare)
      3. ONE VERB A PLACE: the aqueduct's slabs (seven, at different speeds, one that SINKS, one that rises) and its sweeping
         brooms, with a rope up every pier out of the gorge; the cloister floored with brambles and crossed only by the glyphs
         (take their footing away and it is cut), under a roof of tiles within the flip's reach; the rune stair's three columns lit
@@ -17,7 +19,9 @@
      7. on the page: it boots clean; a glyph turns the hero over and the roof carries him over the brambles to the next glyph; a
         rune column lifts; the sinking slab sinks under him and comes back; a sweeping broom takes an unguarded hero off his slab
         and a shield braces him; the roof armour hangs from the roof until he turns over, then falls with him; the Hedge Warden
-        wakes at his gate, touching him costs nothing, and his gate opens when he dies
+        wakes at his gate, touching him costs nothing, and his gate opens when he dies; the Gargoyle wakes when you come onto his
+        slabs, touching him costs nothing, and his kill wins the level
+   The Gargoyle's opening: tools/boss-openings.mjs. His pilot: tools/gargoyle-pilot.mjs.
    His opening: tools/boss-openings.mjs. His pilot (24 fights, normal health): tools/hedge-warden-pilot.mjs. */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -39,8 +43,8 @@ const near = e => { for (let dy = -2; dy <= 5; dy++) for (let dx = -3; dx <= 3; 
 const at = (x, y) => L.grid[y * L.W + x];
 // 2. five places
 for (const [name, [a, b]] of Object.entries(WL.PLACES)) { const n = seen.filter(([x]) => x >= a && x <= b).length; assert.ok(n > 25, name + ' is walked: ' + n); }
-const gate = L.ents.find(e => e.t === 'gate'); assert.ok(gate && reached(gate.x, gate.y), 'the tower gate is reached from the cavern mouth');
-assert.ok(seen.some(([x, y]) => x >= WL.ARENA.x0 && x <= WL.ARENA.x1 && y <= 31), "the Gargoyle's slabs are reached");
+const onSlabs = Rs => [...Rs.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= WL.ARENA.x0 && x <= WL.ARENA.x1 && y <= 31; });
+assert.ok(onSlabs(R), "the Gargoyle's slabs are reached from the cavern mouth");
 const silvers = L.ents.filter(e => e.t === 'silver'); assert.equal(silvers.length, 3, 'three silvers');
 for (const s of silvers) assert.ok(near(s), 'silver reachable at ' + s.x + ',' + s.y);
 for (const c of L.ents.filter(e => e.t === 'check')) assert.ok(near(c), 'checkpoint reachable at ' + c.x + ',' + c.y);
@@ -48,6 +52,16 @@ const band = Math.max(...rows) - Math.min(...rows); assert.ok(band >= 45, 'the s
 { const up = seen.filter(([x]) => (x >= 220 && x <= 249) || (x >= 336 && x <= 425)).length / seen.length;
   assert.ok(up > 0.15 && up < 0.45, 'about a third of it vertical, not half: ' + Math.round(100 * up) + '%'); }
 { const f = audit(L).findings; for (const q of f) console.log('  route-break ' + q.k + ' ' + q.what); assert.equal(f.length, 0, 'route-breaks finds nothing on the stair'); }
+// 2b. the Gate Gargoyle
+{ const A = L.arena, TSZ = 16; assert.equal(A.boss, 'gargoyle'); const g = L.ents.find(e => e.t === 'gargoyle'); assert.ok(g && g.x > WL.ARENA.x1 - 6, 'he is bolted over the tower gate');
+  assert.ok(!L.ents.some(e => e.t === 'gate'), 'no gate: the level ends on his kill');
+  const sl = L.ents.filter(e => e.t === 'mover' && e.arena), cr = sl.filter(e => e.cracked); assert.ok(sl.length >= 8 && cr.length >= 3, 'slabs, some cracked: ' + sl.length + '/' + cr.length);
+  assert.ok(cr.every(e => !e.range), 'a cracked slab holds still: his opening is a place you choose to stand');
+  for (const e of sl) assert.ok(e.y < A.floor / TSZ - 8, 'every slab is over the terrace, not on it');
+  const lifts = L.ents.filter(e => e.t === 'vent' && e.rune && e.x > WL.ARENA.x0 && e.x < WL.ARENA.x1); assert.ok(lifts.length >= 3, 'rune columns from the terrace back up');
+  for (const v of lifts) { assert.ok(v.y === A.floor / TSZ - 1 && v.y + 1 - v.h / TSZ < Math.min(...sl.map(e => e.y)), 'the column at ' + v.x + ' lifts from the terrace past the slabs');
+    assert.ok(!sl.some(e => v.x >= e.x && v.x < e.x + (e.len || 3)), 'nothing over the column at ' + v.x); }
+  assert.deepEqual(['diveTell', 'flareTell', 'gustTell', 'spitTell'].map(mode => markOf({ t: 'gargoyle', mode })), ['!!', '!!', '!', '!'], 'the dive and the flare wear the red mark; a shield turns the gust and the spit'); }
 // 3. one verb a place
 const inX = ([a, b]) => e => e.x >= a && e.x <= b;
 const slabs = L.ents.filter(e => e.t === 'mover' && e.slab && inX(WL.PLACES.aqueduct)(e));
@@ -72,7 +86,7 @@ assert.equal(L.mini.boss, 'hedgewarden'); assert.ok(L.ents.find(e => e.t === 'he
 assert.ok(L.mini.y0 !== undefined && L.mini.y1 !== undefined, 'his room has a height');
 assert.equal(at(L.mini.gate, L.mini.floor / TS - 1), T.PORT, 'his gate is a portcullis');
 { const S = build(); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + S.mini.gate] === T.PORT) S.grid[y * S.W + S.mini.gate] = T.SOLID;
-  const Rs = floodReach(S, T, { rides: true }); assert.ok(!Rs.seen.has(gate.x + ',' + gate.y), 'his gate holds the way on'); }
+  const Rs = floodReach(S, T, { rides: true }); assert.ok(!onSlabs(Rs), 'his gate holds the way on'); }
 assert.equal(L.witch.braziers.length, 2); for (const [x] of L.witch.braziers) assert.ok(x * TS > L.mini.x0 && x * TS < L.mini.x1, 'his braziers stand in his room');
 assert.deepEqual(['cutTell', 'rushTell', 'thornTell'].map(mode => markOf({ t: 'hedgewarden', mode })), ['!', '!', '!!'], 'the cut and the rush a shield turns; the thorns wear the red mark');
 assert.equal(markOf({ t: 'broom', mode: 'sweepTell' }), '!', 'the broom\'s sweep a shield braces against');
@@ -80,7 +94,7 @@ assert.equal(markOf({ t: 'broom', mode: 'sweepTell' }), '!', 'the broom\'s sweep
 const src = readFileSync(new URL('../src/level.js', import.meta.url), 'utf8');
 { const at0 = src.indexOf('const GARRISON = {'); assert.ok(!src.slice(at0, at0 + 20000).includes('\n  witchlight: [['), 'no GARRISON row: its creatures are authored'); }
 assert.ok(!(L.calm || []).length, 'no calm');
-const NOT = new Set(['sign', 'check', 'coin', 'deco', 'silver', 'vent', 'mover', 'glyph', 'gate', 'hedgewarden', 'heart', 'coffer', 'stray', 'key', 'shrine', 'stal', 'mend']);
+const NOT = new Set(['sign', 'check', 'coin', 'deco', 'silver', 'vent', 'mover', 'glyph', 'gate', 'hedgewarden', 'gargoyle', 'heart', 'coffer', 'stray', 'key', 'shrine', 'stal', 'mend']);
 const foes = L.ents.filter(e => !NOT.has(e.t));
 for (const e of L.encounters) assert.ok(e.n >= 3 && e.n <= 5, e.name + ' is 3-5 strong: ' + e.n);
 for (const [name, [a, b]] of Object.entries(WL.PLACES)) if (name !== 'top') assert.ok(L.encounters.some(e => e.x0 >= a - 2 && e.x0 <= b), name + ' has an encounter');
@@ -133,6 +147,12 @@ try {
      for(let i=0;i<90;i++){w.cd=99;if(w.mode!=='stalk')w.mode='stalk';BK.P.x=w.x;BK.P.y=w.y;BK.sim(1);}const touch=hp0-BK.P.hp;BK.god=true;
      const gi=(Math.round(M.floor/16)-1)*BK.L.W+M.gate,before=BK.L.grid[gi];w.growth=2;w.mode='stump';w.modeT=9;w.hp=3;BKT.hurtEnemy(w,50,w.x-20,false);BK.sim(120);
      out.warden={woke,touch,alive:w.alive,gateBefore:before,gateAfter:BK.L.grid[gi]};}
+    /* THE GATE GARGOYLE: asleep on the gate until you are on his slabs; touching him costs nothing; his kill wins the level */
+    {boot();clear(e=>e.t==='gargoyle');const g=BK.enemies().find(e=>e.t==='gargoyle');const asleep=g.mode;const s=BK.movers().filter(m=>m.arena&&!m.cracked).sort((a,b)=>a.x-b.x)[0];
+     BK.P.x=s.x+s.w/2;BK.P.y=s.y-1;BK.P.vy=0;BK.sim(90);const woke={active:!!BK.bossActive,mode:g.mode};BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
+     for(let i=0;i<90;i++){g.mode='hover';g.cd=99;g.x=BK.P.x;g.y=BK.P.y;BK.sim(1);}const touch=hp0-BK.P.hp;BK.god=true;
+     g.hp=1;BKT.hurtEnemy(g,40,g.x-20,false);let won=false;for(let i=0;i<900&&!won;i++){BK.sim(1);if(BK.state!=='play')won=BK.state;}
+     out.gargoyle={asleep,woke,touch,alive:g.alive,won};}
     out.errors=(window.__errs||[]).slice(0,3);return out;})()`, 300000);
   console.log(JSON.stringify(r));
   assert.ok(!r.boot.dead && r.boot.id === 'witch', 'the stair boots: ' + JSON.stringify(r.boot));
@@ -145,6 +165,9 @@ try {
   assert.ok(r.warden.woke.active && r.warden.woke.mode !== 'sleep', 'he wakes at his gate: ' + JSON.stringify(r.warden));
   assert.equal(r.warden.touch, 0, 'touching him costs nothing (the touch rule)');
   assert.ok(!r.warden.alive && r.warden.gateBefore === T.PORT && r.warden.gateAfter !== T.PORT, 'his gate opens when he dies: ' + JSON.stringify(r.warden));
+  assert.ok(r.gargoyle.asleep === 'sleep' && r.gargoyle.woke.active && r.gargoyle.woke.mode !== 'sleep', 'the Gargoyle sleeps on his gate and wakes when you come onto his slabs: ' + JSON.stringify(r.gargoyle));
+  assert.equal(r.gargoyle.touch, 0, 'touching the Gargoyle costs nothing (the touch rule)');
+  assert.ok(!r.gargoyle.alive && r.gargoyle.won, 'his kill ends the level: ' + JSON.stringify(r.gargoyle));
   assert.deepEqual(pg.errors.slice(0, 3), [], 'no errors on the page');
 } finally { pg.close(); }
-console.log('THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - and the Hedge Warden holds the gate.');
+console.log('THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - the Hedge Warden holds the gate, and the Gargoyle the top.');
