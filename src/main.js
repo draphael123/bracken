@@ -16704,24 +16704,60 @@ function ringBell(b) {
 function wakeMycelium(pr){
   for(const m of movers)if(m.kind==='growcap'&&Math.abs(m.x-pr.x)<130){m.state='grow';m.k=Math.max(0,m.k||0);m.cd=0;}
   if(pr.motherNode&&mother&&mother.alive&&bossActive&&!(mother.nodeRest>0)&&mother.mode!=='open'&&mother.mode!=='phaseRise'){
-    mother.mode = 'open';mother.modeT=8;mother.tipped=true;mother.gillsOpen=true;mother.zones=[];
+    mother.mode = 'open';mother.modeT=MOTHER_T.open[mother.phase||1];mother.tipped=true;mother.gillsOpen=true;mother.zones=[];
     number(mother.x,mother.y-110,'THE HEART OPENS. TAKE THE SPRING.','#ff7a9a');SFX.gillOpen();
   }
 }
 // Grounded root anchors are reachable by every class; relocation happens during its rest.
 const MOTHER_ROOTS = [-8, 10, -16, 17];
-function motherZones(e,dt){
-  e.zones=(e.zones||[]).filter(z=>{z.t-=dt;if(z.t<=0)return false;if(z.t<=z.live&&overlap(box(P),{l:z.l,r:z.r,t:z.top,b:z.b}))damagePlayer((z.l+z.r)/2,16,{up:true,unblockable:true});return true;});
+/* THE MOTHER CAP, HARDER (batch 4a, 2026-09-21 - Daniel: "way, way too easy... I like the general design, it just needs
+   challenge"; the pilot had cleared her 6 of 6 without a scratch). Her tells, marks and the knot that opens her stay; what
+   changes is the pressure. (1) Barely a breath between attacks. (2) SHE READS YOU: no fixed rotation - the next attack is
+   drawn by where you stand (a shelf brings the clap and the sweep, the floor the roots and the surge, far off the volley
+   and the rain), never the same one twice running, and one she has not used for a while grows likelier, so nothing is
+   ever skipped for long and there is no safe spot to wait in. (3) PHASE TWO LAYERS: a floor pattern comes with something
+   thrown, and her gills drop sporelings (never more than two at once). (4) THE MYCELIUM creeps in from both walls in phase two
+   and poisons whoever stands on it; it stops short of every knot, and it goes back when she dies. (5) PHASE THREE, under a
+   quarter: seed rain the whole time, the roots come faster, the heart opens for less. (6) The zones and the clap hurt more. */
+const MOTHER_T = { idle: [2.5, 1.2, 0.9, 0.75], zoneTell: 0.92, zoneLive: 0.55, zoneDmg: 22, clap: 24, open: [8, 8, 8, 5.5],
+  creepMax: 64, creepRate: 1.8, creepClear: 28, spores: 2, sporeEvery: 10, rainEvery: 3 };
+const MOTHER_POOL = [null, ['rootFan', 'capClap', 'rootStab', 'seedRain', 'sporeVolley', 'floorSurge', 'sporeSweep'],
+  ['rootFan', 'capClap', 'rootStab', 'seedRain', 'sporeVolley', 'floorSurge', 'sporeSweep', 'rootColumns', 'sporeWheel']];
+function motherPick(e) {
+  const f = L.arena.floor, pool = MOTHER_POOL[Math.min(2, e.phase || 1)], high = P.y < f - 20, far = Math.abs(P.x - e.x) > 200;
+  const want = { capClap: high ? 5 : 0.6, sporeSweep: high ? 5 : 0.6, rootStab: high ? 1 : 3, floorSurge: high ? 1 : 3, rootFan: high ? 1 : 2,
+    rootColumns: high ? 1 : 2, sporeVolley: far ? 4 : 1, seedRain: far ? 3 : 1, sporeWheel: 1 };
+  e.since = e.since || {}; let tot = 0;
+  const w = pool.map(k => { const v = k === e.last ? 0 : (want[k] || 1) * (1 + 0.6 * (e.since[k] || 0)); tot += v; return v; });
+  let r = Math.random() * tot, pick = null;
+  for (let i = 0; i < pool.length; i++) if (w[i] > 0) { pick = pick || pool[i]; r -= w[i]; if (r <= 0) { pick = pool[i]; break; } }
+  for (const k of pool) e.since[k] = k === pick ? 0 : (e.since[k] || 0) + 1;
+  e.last = pick; e.picks = e.picks || []; e.picks.push([pick, high, far]); if (e.picks.length > 400) e.picks.shift();
+  return pick;
 }
+function motherZones(e,dt){
+  e.zones=(e.zones||[]).filter(z=>{z.t-=dt;if(z.t<=0)return false;if(z.t<=z.live&&overlap(box(P),{l:z.l,r:z.r,t:z.top,b:z.b}))damagePlayer((z.l+z.r)/2,MOTHER_T.zoneDmg,{up:true,unblockable:true});return true;});
+}
+function motherVolley(e){const f=L.arena.floor,ang=Math.atan2(e.aimY-(f-74),e.aimX-e.x);for(const d of [-.22,0,.22])seeds.push({x:e.x,y:f-74,vx:Math.cos(ang+d)*125,vy:Math.sin(ang+d)*125,life:3,dead:false});}
+function motherRain(e,xs,bg){const f=L.arena.floor;for(const dx of xs)seeds.push({x:e.x+dx,y:f-130,vx:0,vy:40,dead:false,life:3,g:320,mrain:!!bg});}
 function motherPattern(e,kind){
-  const A=L.arena,f=A.floor;e.zones=[];
-  const zone=(l,r,t,b)=>e.zones.push({l,r,t:1.15+.55,top:t,b,live:.55});
+  const A=L.arena,f=A.floor,T=MOTHER_T.zoneTell;e.zones=[];
+  const zone=(l,r,t,b)=>e.zones.push({l,r,t:T+MOTHER_T.zoneLive,top:t,b,live:MOTHER_T.zoneLive});
   // Store geometric top separately: t is the warning/lifetime clock.
   if(kind==='floorSurge')zone(A.x0+8,A.x1-8,f-14,f);
   if(kind==='sporeSweep')zone(A.x0+8,A.x1-8,f-64,f-42);
   if(kind==='rootColumns')for(const dx of [-64,0,64]){const q=Math.max(A.x0+24,Math.min(A.x1-24,P.x+dx));zone(q-12,q+12,f-120,f);}
-  e.mode=kind+'Tell';e.modeT=1.15;e.aimX=P.x;e.aimY=P.y-10;
-  number(P.x,P.y-36,kind==='floorSurge'?'GET ABOVE THE ROOTS':kind==='sporeSweep'?'STAY LOW OR CLIMB':kind==='rootColumns'?'LEAVE THE MARKS':kind==='sporeWheel'?'SPORE BURST':'SPORE VOLLEY','#ffd36b');number(e.x,f-112,e.zones.length?'!!':'!',e.zones.length?'#ff6b6b':'#ffd36b');SFX.buzz();
+  /* PHASE TWO LAYERS a floor pattern with something thrown: the surge comes with a volley, the columns with the rain */
+  e.layer=e.phase>=2&&kind==='floorSurge'?'sporeVolley':e.phase>=2&&kind==='rootColumns'?'seedRain':null;
+  e.mode=kind+'Tell';e.modeT=T;e.aimX=P.x;e.aimY=P.y-10;
+  number(P.x,P.y-36,kind==='floorSurge'?(e.layer?'GET ABOVE THE ROOTS - AND THE SPORES':'GET ABOVE THE ROOTS'):kind==='sporeSweep'?'STAY LOW OR CLIMB':kind==='rootColumns'?(e.layer?'LEAVE THE MARKS - SEEDS FALLING':'LEAVE THE MARKS'):kind==='sporeWheel'?'SPORE BURST':'SPORE VOLLEY','#ffd36b');number(e.x,f-112,e.zones.length?'!!':'!',e.zones.length?'#ff6b6b':'#ffd36b');SFX.buzz();
+}
+/* THE MYCELIUM, in from both walls: it stops MOTHER_T.creepClear short of the knot wherever the knot is */
+function motherCreep(e,dt,node){
+  const A=L.arena;if(e.phase<2){e.creep=0;return;}
+  let max=MOTHER_T.creepMax;if(node){const dl=node.x-A.x0,dr=A.x1-node.x;max=Math.min(max,Math.max(0,Math.min(dl,dr)-MOTHER_T.creepClear));}
+  e.creep=Math.min(max,(e.creep||0)+MOTHER_T.creepRate*(e.phase>=3?1.5:1)*dt);
+  const c=e.creep;if(c>1&&!P.dead&&P.y>=A.floor-3&&(P.x<A.x0+c||P.x>A.x1-c)){if(!(P.venomT>0)){number(P.x,P.y-30,'THE MYCELIUM POISONS','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,1.2);}
 }
 function updateMother(e,dt){
   const A=L.arena,floor=A.floor;e.anim+=dt;e.modeT-=dt;e.nodeRest=Math.max(0,(e.nodeRest||0)-dt);
@@ -16732,25 +16768,40 @@ function updateMother(e,dt){
   motherZones(e,dt);
   if(e.mode==='wake'){if(e.modeT<=0){e.mode = 'idle';e.modeT=2;e.attackN=0;}return;}
   if(!e.heart){e.heart={t:'heart',x:e.x,y:floor-68,vx:0,vy:0,w:28,h:24,hp:EHP.heart,face:1,alive:true,dying:0,anim:0,flash:0,stagger:0};enemies.push(e.heart);}
-  e.hp=e.heart.hp;e.maxHp=EHP.heart;const phase=e.hp<=EHP.heart/2?2:1;if(phase===2&&e.phase!==2){e.phase=2;e.mode='phaseRise';e.modeT=2;e.zones=[];e.tipped=false;e.gillsOpen=false;e.attackN=7;number(e.x,floor-90,'THE ROOTS AWAKEN','#ff7a9a');SFX.roar();}e.phase=phase;
+  e.hp=e.heart.hp;e.maxHp=EHP.heart;const phase=e.hp<=EHP.heart/4?3:e.hp<=EHP.heart/2?2:1;
+  if(phase>(e.phase||1)){const was=e.phase||1;e.phase=phase;e.mode='phaseRise';e.modeT=phase===3&&was===2?1.2:2;e.zones=[];e.tipped=false;e.gillsOpen=false;e.attackN=7;e.sporeT=1.5;e.rainT=1;
+    if(phase===2||was===1){number(e.x,floor-90,'THE ROOTS AWAKEN','#ff7a9a');SFX.roar();}if(phase===3){number(e.x,floor-104,'THE KNOT BURNS','#ff6b6b');SFX.roar();}}
+  e.phase=phase;
+  motherCreep(e,dt,node);
+  /* HER GILLS DROP SPORELINGS in phase two: something between her attacks, never more than two of them */
+  if(e.phase>=2&&e.mode!=='phaseRise'&&e.mode!=='open'){e.sporeT=(e.sporeT??MOTHER_T.sporeEvery)-dt;   /* (not while her heart is open: the gills are the heart's, and they are busy) */if(e.sporeT<=0){e.sporeT=MOTHER_T.sporeEvery;
+    const alive=enemies.filter(q=>q.alive&&q.fromMother).length,n=Math.min(2,MOTHER_T.spores-alive);
+    for(let i=0;i<n;i++){const d=i?1:-1;enemies.push({t:'sporeling',x:e.x+d*26,y:floor-40,vx:d*40,vy:-80,w:8,h:10,hp:EHP.sporeling||6,speed:26,face:d,alive:true,dying:0,anim:0,flash:0,stagger:.5,fromMother:true});}
+    if(n>0){number(e.x,floor-120,'THE GILLS DROP SPORES','#e0b0f0');SFX.squelch?SFX.squelch():SFX.puff();}}}
+  /* PHASE THREE: seed rain the whole time, three at a time where you might be standing */
+  if(e.phase>=3&&e.mode!=='phaseRise'){e.rainT=(e.rainT??1)-dt;if(e.rainT<=0){e.rainT=MOTHER_T.rainEvery;const xs=[];for(let i=0;i<3;i++){const x=A.x0+30+Math.random()*(A.x1-A.x0-60);xs.push(x-e.x);}motherRain(e,xs,true);}}
   if(e.mode==='phaseRise'){if(e.modeT<=0){e.mode='idle';e.modeT=.8;}return;}
   if(e.mode==='open'){if(e.modeT<=0){e.mode = 'idle';e.modeT=1;e.tipped=false;e.gillsOpen=false;e.nodeRest=3;e.nodeMove=true;}return;}
   // THE CAP CLAPS above the spring line; the ROOT FAN crosses the floor. One asks you to stay low, the other to bounce.
-  if(e.mode==='idle'&&e.modeT<=0){e.attackN=(e.attackN||0)+1;const turn=(e.attackN-1)%(e.phase===2?9:7);if(turn>=4){motherPattern(e,['sporeVolley','floorSurge','sporeSweep','rootColumns','sporeWheel'][turn-4]);return;}if(turn===0){e.mode = 'rootFanTell';e.modeT=.85;number(e.x,floor-110,'!!','#ff6b6b');}
-    else if(turn===1){e.mode = 'capClapTell';e.modeT=1.1;number(e.x,floor-110,'!!','#ff6b6b');}
-    else if(turn===2){e.mode = 'rootStabTell';e.modeT=.8;e.rootMark=P.x;number(e.rootMark,floor-28,'!!','#ff6b6b');}
-    else {e.mode = 'seedRainTell';e.modeT=.9;number(e.x,floor-110,'!','#ffd36b');}SFX.buzz();}
+  if(e.mode==='idle'&&e.modeT<=0){e.attackN=(e.attackN||0)+1;const kind=motherPick(e),fast=e.phase>=3;
+    if(kind==='rootFan'){e.mode = 'rootFanTell';e.modeT=fast?.55:.7;number(e.x,floor-110,'!!','#ff6b6b');}
+    else if(kind==='capClap'){e.mode = 'capClapTell';e.modeT=.9;number(e.x,floor-110,'!!','#ff6b6b');}
+    else if(kind==='rootStab'){e.mode = 'rootStabTell';e.modeT=fast?.5:.65;e.rootMark=P.x;number(e.rootMark,floor-28,'!!','#ff6b6b');}
+    else if(kind==='seedRain'){e.mode = 'seedRainTell';e.modeT=.72;number(e.x,floor-110,'!','#ffd36b');}
+    else {motherPattern(e,kind);return;}
+    SFX.buzz();}
   if(e.mode==='rootStabTell'&&e.modeT<=0){e.mode = 'rootStab';e.modeT=.5;burst(e.rootMark,floor,18,['#8fd160','#4a4050'],90,.5);SFX.crack();if(Math.abs(P.x-e.rootMark)<18&&P.y>floor-24)damagePlayer(e.rootMark,DMG.root,{up:true,unblockable:true});}
   if(e.mode==='rootFanTell'&&e.modeT<=0){e.mode = 'rootFan';e.modeT=.8;for(const dir of [-1,1])vines.push({x:e.x,dir,y:floor,tell:.1,t:0,len:28,end:dir>0?A.x1-4:A.x0+4,hitT:0});SFX.crack();}
-  if(e.mode==='capClapTell'&&e.modeT<=0){e.mode = 'capClap';e.modeT=.4;shakeCam(4);SFX.thud();if(Math.abs(P.x-e.x)<110&&P.y<floor-28&&P.y>floor-112)damagePlayer(e.x,18,{unblockable:true});burst(e.x,floor-65,22,['#9a5aa8','#e0b0f0'],140,.5);}
-  if(e.mode==='seedRainTell'&&e.modeT<=0){e.mode = 'seedRain';e.modeT=.5;for(const dx of [-96,-48,0,48,96])seeds.push({x:e.x+dx,y:floor-130,vx:0,vy:40,dead:false,life:3,g:320});SFX.crack();}
+  if(e.mode==='capClapTell'&&e.modeT<=0){e.mode = 'capClap';e.modeT=.4;shakeCam(4);SFX.thud();if(Math.abs(P.x-e.x)<110&&P.y<floor-28&&P.y>floor-112)damagePlayer(e.x,MOTHER_T.clap,{unblockable:true});burst(e.x,floor-65,22,['#9a5aa8','#e0b0f0'],140,.5);}
+  if(e.mode==='seedRainTell'&&e.modeT<=0){e.mode = 'seedRain';e.modeT=.5;motherRain(e,[-96,-48,0,48,96]);SFX.crack();}
   if(['sporeVolleyTell','floorSurgeTell','sporeSweepTell','rootColumnsTell','sporeWheelTell'].includes(e.mode)&&e.modeT<=0){
     const kind=e.mode.slice(0,-4);e.mode=kind;e.modeT=.65;
-    if(kind==='sporeVolley'){const ang=Math.atan2(e.aimY-(floor-74),e.aimX-e.x);for(const d of [-.22,0,.22])seeds.push({x:e.x,y:floor-74,vx:Math.cos(ang+d)*125,vy:Math.sin(ang+d)*125,life:3,dead:false});}
+    if(kind==='sporeVolley'||e.layer==='sporeVolley')motherVolley(e);
+    if(e.layer==='seedRain')motherRain(e,[-96,-48,0,48,96]);
     if(kind==='sporeWheel')for(let k=0;k<10;k++){const a=k*Math.PI/5;seeds.push({x:e.x,y:floor-74,vx:Math.cos(a)*100,vy:Math.sin(a)*100,life:3,dead:false});}
-    SFX.crack();
+    e.layer=null;SFX.crack();
   }
-  if(['rootFan','capClap','seedRain','rootStab','sporeVolley','floorSurge','sporeSweep','rootColumns','sporeWheel'].includes(e.mode)&&e.modeT<=0){e.mode = 'idle';e.modeT=e.phase===2?1.7:2.5;}
+  if(['rootFan','capClap','seedRain','rootStab','sporeVolley','floorSurge','sporeSweep','rootColumns','sporeWheel'].includes(e.mode)&&e.modeT<=0){e.mode = 'idle';e.modeT=MOTHER_T.idle[e.phase||1];}
 }
 
 // ---------- critters: harmless life that reacts to you ----------
@@ -21111,6 +21162,8 @@ function drawMother(cx, cy) {
   const swell = 1 + m.breathK * 0.055, breathe = (1 + Math.sin(time * 1.2) * 0.02) * swell;
   const capY = fy - 96 + Math.round(Math.sin(time * 1.2) * 2) - Math.round(m.breathK * 3);
   for(const z of (m.alive?(m.zones||[]):[])){const zx=Math.round(z.l-cx),zy=Math.round(z.top-cy),w=z.r-z.l,h=z.b-z.top;g.fillStyle=z.t>z.live?'rgba(255,190,90,0.18)':'rgba(201,70,61,0.65)';g.fillRect(zx,zy,w,h);g.strokeStyle=z.t>z.live?'#ffd36b':'#ff7a9a';g.strokeRect(zx+.5,zy+.5,w-1,h-1);for(let q=zx;q<zx+w;q+=12)g.fillRect(q,zy+h-4,3,4);}
+  if((m.creep||0)>0.5){if(!m.alive)m.creep=Math.max(0,m.creep-2);const A=L.arena,gy=Math.round(A.floor-cy);   /* THE MYCELIUM: in from both walls, and back to them when she dies */
+    for(const [l,r] of [[A.x0,A.x0+m.creep],[A.x1-m.creep,A.x1]]){const zx=Math.round(l-cx),w=Math.max(1,Math.round(r-l));g.fillStyle='rgba(92,150,48,0.55)';g.fillRect(zx,gy-3,w,3);g.fillStyle='#a6e04a';for(let q=0;q<w;q+=5){const hh=2+((q*7+Math.floor(time*3))%3);g.fillRect(zx+q,gy-2-hh,1,hh);}g.fillStyle='#d8ffb0';for(let q=2;q<w;q+=11)g.fillRect(zx+q,gy-5-((q*3)%4),2,2);}}
   const node=props.find(p=>p.motherNode);
   if(node&&m.alive){const nx=Math.round(node.x-cx),ny=Math.round(node.y-cy)-10,ready=!(m.nodeRest>0)&&m.mode!=='open'&&m.mode!=='phaseRise';g.strokeStyle=ready?'#fff1a8':'#776b85';g.lineWidth=2;g.beginPath();g.moveTo(nx,ny-12);g.lineTo(nx+10,ny);g.lineTo(nx,ny+12);g.lineTo(nx-10,ny);g.closePath();g.stroke();g.lineWidth=1;if(nx>20&&nx<VW-20){g.fillStyle='rgba(12,10,22,.9)';g.fillRect(nx-37,ny-25,74,10);text(ready?'STRIKE ROOT':'ROOT RESTING',nx,ny-24,ready?'#fff1a8':'#b4a6c4','center',6);}else if(bossActive&&ready){const edge=nx<20?38:VW-38;g.fillStyle='rgba(12,10,22,.9)';g.fillRect(edge-34,Math.min(VH-36,Math.max(55,ny-24)),68,10);text(nx<20?'< ROOT':'ROOT >',edge,Math.min(VH-36,Math.max(55,ny-24))+1,'#fff1a8','center',6);}}
   const MC = PROP.motherCap;

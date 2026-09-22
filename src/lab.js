@@ -439,7 +439,10 @@ async function runbossLab(BK, opts) {
         const fl=A.floor,m=boss.mode,danger=[];
         for(const z of boss.zones||[])if(z.top<fl-100)danger.push([z.l-8,z.r+8]);
         if(m==='rootStabTell')danger.push([boss.rootMark-32,boss.rootMark+32]);
-        if(m==='seedRainTell'||m==='seedRain')for(const sx of [-96,-48,0,48,96])danger.push([boss.x+sx-12,boss.x+sx+12]);
+        if(m==='seedRainTell'||m==='seedRain'||boss.layer==='seedRain')for(const sx of [-96,-48,0,48,96])danger.push([boss.x+sx-12,boss.x+sx+12]);
+        /* THE HARDER MOTHER (batch 4a): the mycelium at the walls, and phase three's rain wherever it is falling */
+        if((boss.creep||0)>1){danger.push([A.x0-20,A.x0+boss.creep+8]);danger.push([A.x1-boss.creep-8,A.x1+20]);}
+        for(const s of BK.seeds())if(s.mrain&&!s.dead)danger.push([s.x-14,s.x+14]);
         const bad=x=>danger.some(([l,r])=>x>l&&x<r);
         let safe=false;const crosses=danger.some(([l,r])=>Math.min(P.x,gx)<r&&Math.max(P.x,gx)>l);
         if(m!=='open'&&crosses&&!bad(P.x)){   /* standing clear already: go no further than the edge of this clear ground */
@@ -450,6 +453,9 @@ async function runbossLab(BK, opts) {
           for(const [l,r] of cuts){if(l>lo)free.push([lo,l]);lo=Math.max(lo,r);}if(lo<A.x1-14)free.push([lo,A.x1-14]);
           const pick=free.map(([l,r])=>{const x=r-l<40?(l+r)/2:Math.max(l+12,Math.min(r-12,P.x));return x;}).sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0];
           if(pick!==undefined){gx=pick;safe=true;}}
+        /* HER SPORELINGS (batch 4a) are cut down when they come close, the way a player clears an add before going back to the knot */
+        const add=BK.enemies().filter(q=>q.alive&&q.fromMother&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0],addNear=add&&boss.mode!=='open'&&Math.abs(add.x-P.x)<110;
+        if(addNear&&!bad(add.x)){gx=add.x-(Math.sign(add.x-P.x)||1)*LAB_REACH[h]*.6;safe=false;}
         const shelf=P.ground&&P.y<fl-20;
         const clap=m==='capClapTell'&&Math.abs(P.x-boss.x)<125,sweep=m==='sporeSweepTell'&&P.y<fl-30&&P.y>fl-80;
         const vine=(BK.vines?BK.vines():[]).find(v=>v.t>=v.tell-.05&&(P.x-v.x)*v.dir>-6&&(P.x-v.x)*v.dir<34);
@@ -463,6 +469,7 @@ async function runbossLab(BK, opts) {
         const tired=P.labRest||P.st<14;
         const lead=h==='reaper'?(.12/.34):h==='paladin'?.08:.06,landingCutY=P.y+P.vy*lead+600*lead*lead;
         if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&(h==='reaper'||P.vy>0)&&(h==='pyro'||h==='warden'||h==='reaper'?Math.abs(landingCutY-(heart.y+3))<16:Math.abs(P.y-8-(heart.y-7))<46)&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
+        else if(addNear&&!hopSoon&&!bad(P.x)&&Math.abs(add.x-P.x)<LAB_REACH[h]+add.w/2+2&&P.atk<0){P.face=Math.sign(add.x-P.x)||1;BK.press('atk');swings++;}
         else if(!tired&&!hopSoon&&!bad(P.x)&&!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
         if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
