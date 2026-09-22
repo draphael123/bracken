@@ -30,3 +30,16 @@ the top 24 at x3: `docs/audit/anim-0..2.png`.
 
 **The redraw pass takes the ones that read worst for how often they are met:** bat, zombie, apprentice (its own body at last), wight,
 thief, hedge knight, crow, petrel, wasp, snuffer. `src/redraw/foes_v2.js` (next commit).
+
+## The redraw pass, done (not wired): `src/redraw/foes_v2.js`, before/after in `docs/foes-v2.png`
+Ten sets: **bat** (membrane wings, a three-beat stroke, hurt, death), **zombie** and **the apprentice** (one posed body, two people: the
+apprentice in his violet robe and hood with a satchel, no longer the zombie recoloured; every old pose kept - flung, throw tell, nova
+tell, stuck, buried - plus a second walk step, hurt, death), **wight** (a shroud that moves, hollow eyes, streaming tatters, hurt,
+unravelling), **thief** (a four-beat run with the sack, a glance back, hurt with the sack flying), **hedge knight** (helm with its
+leaf crest, a real shield and sword, a raised-blade tell, the cut, the leap, a second step, hurt behind the shield), **crow** (glide,
+hurt), **petrel** (reads as a seabird: white belly, yellow beak; the dive a dart; hurt), **wasp** (bands, a stinger that shows),
+**snuffer** (hooded, the snuffer's cup on its pole: raised to the lamp as the tell, swung as the swipe; second step, hurt).
+**The contract:** each keeps its old frame indices meaning what they meant, its anchor and its hit box (checked against the game:
+all ten OK), and appends the new frames. `FRAMES_V2` gives each foe's baker, its kept and added frames, and the one change to its
+frame pick in main.js. Wiring is one line to swap the baker and one to the frame pick, per foe. (The hurt frames want a hurt timer
+tested at the head of each pick; most foes set `e.flash` on a hit, which will do.)
