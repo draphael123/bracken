@@ -1835,7 +1835,7 @@ function theMonastery() {
   ent('fledgling', 42, 217, { face: -1 });
   ent('sign', 62, 217, { text: 'A TRAPDOOR IN THE FLAGS. PRESS DOWN TO DROP IN, JUMP UP THROUGH IT TO COME OUT.' });
   cellar(66, 74, 218); coins([70, 217], [67, 220], [69, 220], [71, 220], [73, 220]);
-  ent('grub', 68, 220, { face: 1 });                                // the undercroft has had nobody to sweep it for years
+  ent('sprig', 68, 220, { face: 1 });                               // a looter in the undercroft: nobody has swept it for years
   ent('sprig', 54, 217, { face: -1 }); ent('sprig', 78, 217, { face: -1 });   // looters in the gate yard, going through the pilgrims' packs
   ent('deco', 84, 217, { kind: 'pilgrimLeanTo' }); ent('deco', 89, 217, { kind: 'lanternPost' });
   ent('deco', 92, 217, { kind: 'bones', v: 1 }); coins([80, 217], [87, 217]);
@@ -1845,7 +1845,7 @@ function theMonastery() {
   ent('sign', 6, 195, { text: 'THE LOWER TERRACES. THE MONKS GREW BEANS HERE. THE GOBLINS DIG FOR THEIR SILVER.' });
   ent('check', 8, 195); coins([21, 194], [75, 194]);
   cellar(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
-  ent('grub', 20, 198, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // the root cellar's grub, and a looter in the bean rows
+  ent('sentry', 20, 198, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // a lookout posted on the root cellar, and a looter in the bean rows
   for (const [x, k, v] of [[26, 'beanpoles', 0], [35, 'gardenWall', 1], [40, 'skep', 0], [54, 'beanpoles', 1], [58, 'gardenWall', 2]]) ent('deco', x, 195, { kind: k, v });
   ent('deco', 91, 195, { kind: 'bones' }); coins([88, 195], [92, 195]);
   ent('sign', 48, 195, { text: 'THE INCENSE STILL BURNS. STAND IN THE SMOKE AS IT RISES, AND STEER OFF AT THE TOP.' });
@@ -1883,7 +1883,7 @@ function theMonastery() {
   air(19, 40, 132, 134);                                            // broken through where the hoist rises
   chimneyL(151, 132);                                               // and the slow way up, that nothing can take away
   ent('sign', 52, 136, { text: 'STAND IN A BASKET AND IT SINKS, AND THE OTHER COMES UP PAST YOU. JUMP ACROSS AS IT GOES BY.' });
-  ent('miner', 12, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140);
+  ent('rockgoblin', 12, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140);   /* a miner belongs in a mine; the rock goblin throws what this mountain is made of */
   ent('gobmage', 40, 136, { face: 1 });   // and a second one out on the hanging walkway, reading over the stacks where the harpy was: it has the steps up from the check below it, and nowhere to walk off to but the walkway's end
   ent('check', 72, 151); coins([32, 136], [40, 136], [48, 136], [8, 151], [16, 151]);
   for (const [x, k, v] of [[48, 'bookshelf', 0], [52, 'bookshelf', 1], [84, 'bookpile', 0]]) ent('deco', x, 151, { kind: k, v });
@@ -1907,7 +1907,7 @@ function theMonastery() {
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
   ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 });
   for (const [x, k, v] of [[52, 'herbBed', 0], [63, 'pilgrimLeanTo', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });
-  ent('harpy', 30, 110); ent('kite', 58, 110); ent('harpy', 80, 106);
+  ent('harpy', 30, 110); ent('fledgling', 58, 110); ent('harpy', 80, 106);   /* her chicks, not a kite: the eyrie is the one thing up here that was already hers */
 
   // ---- 5. THE CLOUD CLOISTER. You come out of the grey into the sun, onto the monks' cloister ----
   band(100, 85, 5);
@@ -7246,7 +7246,7 @@ const REVIEW = {
   // the looters, digging in the terraces and under the stacks for whatever the monks buried
   spire: L => { const R = rv(L); R.ent('deco', 4, 99, { kind: 'pilgrimLeanTo', v: 0 }); R.ent('npc', 8, 99, { kind: 'foreman' }); R.ent('brazier', 11, 99);
     R.ent('sign', 14, 99, { text: 'THE CLOUD CLOISTER. ABOVE THE CLOUD THE SMOKE GOES HIGHER AND THE BIRDS GET BOLDER.' });
-    R.ent('miner', 32, 195, { face: -1 }); R.ent('miner', 20, 151, { face: 1 }); },
+    R.ent('rockgoblin', 32, 195, { face: -1 }); R.ent('sentry', 20, 151, { face: 1 }); },   /* were MINERS: the pick is about to be the Ore Road's own thing (a throw that disarms him), and two of them up here diluted both levels */
   // the castle had the fewest foes of anywhere: a watch in the ward, a hall guard, the kitchens staffed. And THE
   // LEADS: from the choir loft up through a hatch onto the keep roof, a run along it with the whole mountain
   // below, and a second hatch down at the far end of the chapel
@@ -7295,7 +7295,11 @@ const GARRISON = {
   moor: [['goat', 5], ['rockgoblin', 5], ['harpy', 4], ['kite', 4], ['troll', 2], ['sailer', 3]],   // seven kinds over NINE HUNDRED columns, and twenty-three of them crows
   scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],
   hanging: [['snuffer', 3], ['cutter', 2], ['rockgoblin', 2]],   // thirty-four creatures over eight floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood
-  spire: [['fledgling', 13], ['harpy', 10], ['bat', 7], ['sentry', 8], ['rockgoblin', 7], ['crow', 5], ['goat', 4], ['troll', 4], ['kite', 4], ['spider', 3], ['snuffer', 2]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
+  /* EIGHT KINDS, NOT ELEVEN (2026-09-22). The crow, the goat, the kite, the spider and the snuffer each landed once or
+     twice over six hundred columns - a cast nobody can learn, so no encounter on the mountain had a shape. What is left
+     is the mountain's own (the birds, the bats, the rock) and the goblins who took the monastery, who are the False
+     Abbot's congregation now and so belong here twice over. The weights still total 67: the density does not move. */
+  spire: [['fledgling', 14], ['harpy', 11], ['bat', 9], ['sentry', 9], ['rockgoblin', 9], ['troll', 5], ['gobpriest', 5], ['gobmage', 5]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
   storm: [['hearthgob', 5], ['cutter', 5], ['sentry', 2], ['pike', 1]],
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
   longwater: [['scout', 5], ['tideguard', 6], ['crab', 6], ['siren', 4], ['eel', 3], ['netter', 2], ['angler', 3], ['turtle', 4], ['heronfoe', 3], ['lamprey', 2], ['puffer', 1], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],   // replacing weight, not piling on: three of the eel/angler/siren's slots go to the new wildlife
