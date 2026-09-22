@@ -7310,7 +7310,7 @@ const GARRISON = {
   keep: [['wight', 14], ['tideguard', 10], ['watch', 9], ['eel', 9], ['angler', 7], ['siren', 5], ['merrowspear', 5], ['jelly', 5], ['merrowbrute', 3], ['manta', 3], ['urchin', 3], ['puffer', 3], ['lamprey', 3]],   /* a drowned castle: its own garrison still at their posts, and the deep water's wildlife moved in over them */
   burning: [['sprig', 10], ['archer', 4], ['burngob', 4], ['emberwisp', 4], ['thief', 3], ['hound', 3], ['sapper', 3], ['shield', 2], ['pike', 2]],   /* THE BURNING VILLAGE: the Stockade's goblins down the road, his burning ones, and his wisps */
   burial: [['zombie', 16], ['husk', 9], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['bonecorsair', 7], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* forty-four zombies and nothing else was the whole roster under the hill */
-  witchlight: [['imp', 15], ['broom', 12], ['zombie', 16], ['husk', 7], ['bonearcher', 7], ['bonegob', 6], ['armour', 5], ['topiary', 4], ['apprentice', 4], ['bat', 5]],   /* THE WITCHLIGHT STAIR: what got out of the tower, and the dead that followed you up from the caverns (every terrace is a floor: L.stackedFloors) */
+  /* witchlight: NO ROW. The redesigned stair (2026-09-22) is authored ENCOUNTERS of 3-5 with quiet between - Daniel agreed to it over an even sprinkle (src/witchlight.js) */
   fallingtower: [['apprentice', 3], ['zombie', 3], ['husk', 2], ['haunt', 2], ['bat', 2], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and the ones who did not get out of it: the dead outnumber the living in a dead man's tower. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors) */
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
@@ -7584,7 +7584,7 @@ const ELITES = {
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 396, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],   /* (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
-  witchlight: [['armour', 180, 76, { face: -1 }], ['husk', 233, 58, { face: -1 }]],   /* the topiary walk's armour, and a husk on the second stair's glyph road */
+  witchlight: [['husk', 108, 76, { face: -1 }], ['armour', 286, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver */
   fallingtower: [['armour', 44, 179, { face: -1 }], ['husk', 37, 146, { face: -1 }], ['armour', 38, 119, { face: 1, gate: 30 }]],   /* the ascent (2026-09-21): the orrery's guard, the cistern's husk over the poison, and the bell loft's warden, whose gate shuts the way to the first lift */
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
