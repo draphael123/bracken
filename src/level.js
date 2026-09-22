@@ -1825,12 +1825,12 @@ function theMonastery() {
   facades.push([14, 27, 209, 217, 'monkCurtain']);
   ent('npc', 8, 217, { kind: 'squire' });
   ent('sign', 4, 217, { text: 'THE MONASTERY. THE ROC DROVE THE MONKS OUT. WHAT THEY BUILT STILL ANSWERS A BLOW.' });
-  ent('deco', 17, 217, { kind: 'portcullis' }); ent('deco', 25, 217, { kind: 'stoneLantern' });
+  ent('deco', 17, 217, { kind: 'portcullis' }); ent('deco', 25, 217, { kind: 'shrine', v: 0 });   /* was a stoneLantern: see THE SAND CASTLES below */
   ent('check', 21, 217); coins([12, 216], [28, 216], [44, 216]);
   stair(218, 196, 30, 70, 34, 15);
   // Grounded arcades carry the first terrace; their open arches leave the stair visible.
   facades.push([1, 28, 196, 217, 'monkCurtain', {arch:[211,217]}], [72,94,196,217,'monkCurtain',{arch:[211,217]}]);
-  for(const [x,k] of [[13,'prayerFlags'],[76,'herbBed'],[81,'monkChores'],[90,'stoneLantern']]) ent('deco',x,217,{kind:k});
+  for(const [x,k] of [[13,'prayerFlags'],[76,'herbBed'],[81,'monkChores'],[90,'flagPost']]) ent('deco',x,217,{kind:k});
   ent('deco',46,195,{kind:'well'}); ent('deco',64,195,{kind:'incenseStand'});
   ent('fledgling', 42, 217, { face: -1 });
   ent('sign', 62, 217, { text: 'A TRAPDOOR IN THE FLAGS. PRESS DOWN TO DROP IN, JUMP UP THROUGH IT TO COME OUT.' });
@@ -1995,7 +1995,7 @@ function theMonastery() {
   // the crawl under the roof ends in a hollow either side, and the second chimney comes up into the right one
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
-  ent('deco', 6, 35, { kind: 'stoneLantern' }); coins([4, 35], [9, 35], [15, 35]);
+  ent('deco', 6, 35, { kind: 'prayerFlags', v: 1 }); coins([4, 35], [9, 35], [15, 35]);
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
@@ -7264,7 +7264,11 @@ export const DRESS = {
   kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3], ['gobPennant', 3], ['ragBanner', 3], ['clothStrip', 3], ['skullTotem', 2], ['idol', 2], ['lootHeap', 2], ['trophyRack', 2], ['cauldron'], ['boneChime', 2], ['warnPost', 2]],   /* the court: idols, the king's takings, trophies */
   scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
   hanging: [['lanternPost'], ['barrels'], ['birdhouse'], ['beehive']],
-  spire: [['stoneLantern'], ['prayerFlags'], ['herbBed'], ['skep'], ['incenseStand'], ['monkChores'], ['stone', 3], ['shrine', 2], ['flagPost', 2]],
+  /* THE SAND CASTLES (Daniel, 2026-09-22, with a screenshot of one): the stone lantern is a pale tan stack with a wide
+     flat cap, and at 320x180 against the sky that silhouette is a sandcastle turret and nothing else - it was in this
+     roster AND it was the level's dead-end stash, so eight of them stood along the mountain. The monastery has plenty
+     that reads: flags on a post, a shrine with a roof on it, a censer stand, the bee skeps. */
+  spire: [['prayerFlags', 2], ['herbBed'], ['skep'], ['incenseStand', 2], ['monkChores'], ['stone', 3], ['shrine', 2], ['flagPost', 2]],
   moor: [['stone', 3], ['cairn'], ['fence', 2], ['bones', 2], ['deadTree', 2]],
   storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2], ['warStandard', 2], ['hideBanner', 2], ['gobPennant', 3], ['stakeFence', 2], ['hideRack', 2], ['cookSpit'], ['cauldron'], ['trophyRack', 2], ['clothStrip', 3], ['boneChime', 2], ['warnPost', 2]],   /* the hill clans' hold: hides, stakes, standards */
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage'], ['clothStrip', 4], ['warStandard', 2], ['gobPennant', 4], ['lootHeap', 2], ['trophyRack', 2], ['idol', 2], ['cauldron'], ['boneChime', 2]],   /* the Queen's castle: her strips in the halls, the loot of the whole wood */
@@ -7641,7 +7645,7 @@ function elites(L, id) {
    prop on its last floor. Never a silver (three a level, the ledger reads three bits) and never a quest item (counted).
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
 const STASH = { witchlight: 'coffer', burning: 'barrels', mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
-  scree: 'cairn', spire: 'stoneLantern', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
+  scree: 'cairn', spire: 'shrine', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
   longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', keep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
 function payDeadEnds(L, id) {

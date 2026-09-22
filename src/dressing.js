@@ -962,4 +962,4 @@ ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');
 
 GROUND_KITS.mage={density:0,kinds:[]};
 GROUND_KITS.fallingtower={density:0,kinds:[]};
-ALLOWED_DECORATIONS.fallingtower=ALLOWED_DECORATIONS.mage.slice();
+ALLOWED_DECORATIONS.fallingtower=ALLOWED_DECORATIONS.mage.slice().concat(['readingDesk','clockface','gears']);   /* THE READING ROOM's desk and THE PENDULUM GALLERY's clock face and wheels: the two floors the tower grew in 2026-09-22 (src/tower-ascent.js). They are the tower's own, not the Folly's, so they are added here and not to the mage's list. */
