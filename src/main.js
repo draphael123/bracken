@@ -14027,14 +14027,12 @@ function drawBelfry(cx,cy){
 }
 function drawRocArch(e,cx,cy){
  const x=Math.round(e.x-cx),y=Math.round(e.y-cy),fl=L.arena.floor-cy;g.fillStyle='#434c60';
- // A great eye watches from outside. The hooked gold beak never fits through the stonework.
- g.beginPath();g.moveTo(x-39,y-28);g.lineTo(x-24,y-54);g.lineTo(x-8,y-60);g.lineTo(x+22,y-52);g.lineTo(x+34,y-30);g.lineTo(x+17,y-8);g.lineTo(x-28,y-12);g.closePath();g.fill();
- for(let k=0;k<5;k++){g.fillStyle=k%2?'#7c8798':'#5d6c81';g.fillRect(x-29+k*9,y-45-k%2*4,11,8);}
- g.fillStyle='#c3b483';g.fillRect(x-16,y-35,28,13);g.fillStyle='#f0d36e';g.fillRect(x-9,y-32,16,7);g.fillStyle='#282635';g.fillRect(x-2,y-33,3,10);
- g.fillStyle='#cba64f';g.beginPath();g.moveTo(x+15,y-27);g.lineTo(x+44,y-17);g.lineTo(x+34,y-6);g.lineTo(x+28,y-17);g.lineTo(x+14,y-19);g.closePath();g.fill();
+ /* THE ROC OUTSIDE THE BELFRY is drawn as herself now (Daniel, 2026-09-22: 'the rock glitched out?'): this used to paint a
+    stand-in - a slate hexagon with a slit eye and a beak - that read as a broken sprite floating in the sky. Only what she
+    DOES from out there is drawn here: the gust off her wings and the talons coming down (the sprite and her tell mark
+    are the ordinary enemy pass's) */
  if(e.mode==='gust'||e.mode==='gustTell'||e.mode==='shedTell'){for(let k=0;k<10;k++){g.fillStyle=k%2?'#747f91':'#515e73';g.fillRect(x-105+k*15,y-8+k*3,20,9);g.fillStyle='#cab574';g.fillRect(x-105+k*15,y-8+k*3,3,9);}}
  if(['talonTell','talon','grabTell','grab','carry'].includes(e.mode)){const tx=Math.round((e.mode==='carry'?e.x:e.tx)-cx),hit=['talon','grab','carry'].includes(e.mode),ty=hit?(e.mode==='carry'?y+12:fl-15):fl-100;g.fillStyle='#74664c';g.fillRect(tx-5,ty-45,10,43);for(let k=0;k<3;k++){g.fillStyle='#c6a553';g.fillRect(tx-17+k*12,ty-5,8,12);g.fillStyle='#f0d895';g.fillRect(tx-17+k*12,ty+5,5,4);}g.globalAlpha=.45;g.fillStyle='#1e1928';g.fillRect(tx-27,fl-3,54,3);g.globalAlpha=1;}
- if(/Tell$/.test(e.mode)){const red=['talonTell','grabTell','shriekTell'].includes(e.mode);tellQ.push({txt:red?'!!':'!',x,y:y-58,col:red?'#ff6b6b':'#ffd36b',a:1});}
 }
 function updateRoc(e, dt) {
   const A=L.arena, floor=A.floor, bell=props.find(p=>p.t==='tbell'&&p.roc), home=bell?bell.x:(A.x0+A.x1)/2;
@@ -20224,7 +20222,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (!e.alive || e.gone > 0 || e.x < cx - 40 || e.x > cx + VW + 40) continue;
     if (e.t === 'mother' || e.t === 'heart') continue;
     if (e.t === 'emberwisp') { drawEmberWisp(e, cx, cy); continue; } if (e.t === 'pyromander') { drawPyromander(e, cx, cy); continue; }
-    if(e.t==='roc'&&L.belfry&&!rocOpen(e)&&e.mode!=='rise'){drawRocArch(e,cx,cy);continue;}
+    if(e.t==='roc'&&L.belfry&&!rocOpen(e)&&e.mode!=='rise')drawRocArch(e,cx,cy);   /* her gust and talons; she herself is drawn below like anyone */
     if (e.t === 'gobmage' && e.mode === 'runeTell' && e.markX !== undefined) {   /* THE RUNE on the floor where it will go off: red, because no shield turns it, and closing as it comes */
       const k = 1 - Math.max(0, e.modeT) / MAGE.runeTell, x = Math.round(e.markX - cx), y1 = Math.round(e.markY - cy), rr = 18 - Math.round(k * 3);
       g.globalAlpha = 0.12 + 0.3 * k; g.fillStyle = '#c9a0ff'; g.fillRect(x - rr, y1 - 2 - Math.round(k * 26), rr * 2, 2 + Math.round(k * 26)); g.globalAlpha = 1;
