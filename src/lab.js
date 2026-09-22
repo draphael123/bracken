@@ -832,6 +832,17 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 42;                       // close enough to be swung at
       /* THE SHRIEK is answered from the room: to the nest bell, struck as she comes over it; with no bell near, off the boards */
       else if (boss.t === 'roc') {const fk=BK.props().find(p=>p.t==='tbell'&&p.roc);if(fk){goal=fk.x-14;if(Math.abs(fk.x-P.x)<24&&fk.cool<=0&&fk.over&&P.atk<0){k.block=false;P.face=Math.sign(fk.x-P.x)||1;BK.press('atk');swings++;}}if(boss.mode==='carry'){strike=true;goal=boss.x;}}
+      /* THE FALSE ABBOT is a BELL FIGHT, and the bot was fighting him with the sword alone: it had a branch for the
+         Roc's nest bell and none for his, so the first pilot measured brute force against a five-times ward and came
+         back 7/24. A sim cannot measure a strategy the bot cannot play. It plays it now: keep station by the bell,
+         ring it the moment he is under it, and swing at him the rest of the time - the ward makes that poor, which is
+         the point of the bell. */
+      else if (boss.t === 'abbot') { const bl = BK.props().find(p => p.t === 'tbell' && p.abbot);
+        if (bl) { const under = Math.abs(boss.x - bl.x) < 40;
+          if (under && bl.cool <= 0 && Math.abs(bl.x - P.x) < 26 && P.atk < 0) { k.block = false; P.face = Math.sign(bl.x - P.x) || 1; BK.press('atk'); swings++; }
+          else if (boss.open > 0) { goal = boss.x; strike = true; }              /* downed: get on him, the window is worth three blows */
+          else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
+        } else { goal = boss.x; strike = true; } }
       else if (boss.t === 'troll') { goal = boss.x; strike = true;
         /* THE HILL TROLL: his stones drop from a hook a player jumps to strike - when he walks under one, the bot drops it, as a player at that hook would */
         const st = BK.props().find(q => q.t === 'weight' && q.crane && q.state === 'hang' && Math.abs(q.x - boss.x) < 12); if (st) { st.state = 'fall'; st.fy = st.y + st.len; st.vy = 0; } }
