@@ -17,7 +17,7 @@ browser play was possible while two build sessions run, so feel is taken from th
 3. COMMON FIGHTS END IN ONE SWING (the feel probe): fodder health x2.4 is being applied by the slopes session.
 4. THE CRAG/CASTLE LOOK IS ONE LOOK: Scree, Hanging Village, Stormhold, Highcrown, the Undercrown share a sky, a gravel slab
    and no dressing. The art to fix it exists (crag_redress.js, redress2.js) and is being wired now.
-5. 13 LEVELS HAVE NO MINI-BOSS (Daniel: "not every level has a mini boss"): wood, marsh, stockade, spore, scree, moor,
+5. 15 LEVELS HAVE NO MINI-BOSS (Daniel: "not every level has a mini boss"): wood, marsh, stockade, spore, scree, moor,
    storm, longwater, reef, flotilla, hurricane, underleaf, deep, burning, fallingtower.
 6. ONLY 7 BOSSES HAVE A PLAYER-MADE OPENING PROVEN BY A TEST (boss-openings.mjs); many older ones have designed openings
    (winded, planted, pinned, caged) that no test proves are CAUSED. And only 4 bosses have ever been piloted at normal health
@@ -112,7 +112,7 @@ MINIS
 | 12 | THE GREAT HOUND (Kingswood) | - | NO told attacks at all: give him a told pounce and a howl |
 | 13 | THE BOUGH SPIDER / WEAVER (Hanging) | a big spider (180 hp), four `!` attacks | nothing red and no opening: webs across the lane (red) and a told drop she can be cut out of |
 Also: the Gate Gargoyle, the Standard-Bearer, the First Death Knight, the Gate Serjeant are designed and waiting (sprites
-drawn for three). 13 levels still want a mini - the cheapest adds: Bracken Wood (a Hive Guard), Marsh (the Old Heron), the
+drawn for three). 15 levels still want a mini - the cheapest adds: Bracken Wood (a Hive Guard), Marsh (the Old Heron), the
 Stockade (the Gatekeeper), the Long Water (the Net Captain), the Flotilla (the Master Gunner), Gale Moor (the Kite Chief).
 
 ---------------------------------------------------------------------------------------------------------------------------
