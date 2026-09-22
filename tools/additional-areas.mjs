@@ -8,7 +8,7 @@ for(const id of ['harbor','burial']){
  const L=LEVELS.find(l=>l.id===id).build(),reach=floodReach(L,T,{rides:true}),exit=L.ents.find(e=>e.t==='gate');
  for(const e of L.ents.filter(e=>['check','silver','gate'].includes(e.t)))assert(reach.jumpNear(e.x,e.y),id+' unreachable '+JSON.stringify(e));
  assert.equal(findDeadEnds(L,T).pockets.filter(p=>!p.paid).length,0);
- if(id==='burial'){assert.equal(L.mini,undefined);assert(!L.ents.some(e=>e.mini));assert.equal(L.arena.boss,'burieddead');assert.equal(L.W,1140);assert(reach.jumpNear(exit.x,exit.y),'burial exit reachable after boss');continue;}
+ if(id==='burial'){assert.equal(L.mini.boss,'gravewarden','THE GRAVE WARDEN holds the ossuary (batch 4b)');assert.equal(L.arena.boss,'burieddead');assert.equal(L.W,1140);assert(reach.jumpNear(exit.x,exit.y),'burial exit reachable after boss');}   /* and on through the guardian checks: his door must hold */
  const shut={...L,grid:L.grid.slice()};for(let i=0;i<shut.grid.length;i++)if(shut.grid[i]===T.PORT)shut.grid[i]=T.SOLID;
  const closed=floodReach(shut,T,{rides:true});assert(!closed.near(exit.x,exit.y),id+' guardian gate must hold the exit');
  const mini=L.ents.find(e=>e.mini);assert(closed.jumpNear(mini.x,mini.y),id+' guardian must be reachable with gate shut');

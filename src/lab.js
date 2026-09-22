@@ -371,7 +371,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromander'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromander'&&boss.t!=='gravewarden'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -552,6 +552,34 @@ async function runbossLab(BK, opts) {
         if(opts.samples&&f%60===0){out.samples=out.samples||[];out.samples.push([h,Math.round(f/60),m,Math.round(boss.heat),boss.open>0?'OPEN':'',Math.round(dx),hotAt(P.x)?'HOT':''].join(' '));}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
+      }
+      /* THE GRAVE WARDEN (batch 4b): the bot plays him as a player does - jumps the lantern when it comes round, is off the crack
+         when the hand comes up, guards the spade and the dirt (or backs off without a shield), cuts his risen dead when they are
+         close, and puts everything into him while he kneels in the grave. It does not hunt the opening on purpose: it gets the
+         kneels a player gets by moving off a dig that was aimed beside a grave. */
+      if(boss.t==='gravewarden'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        const fl=A.floor,m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,danger=[];
+        if(m==='digTell'||m==='dig')danger.push([boss.markX-30,boss.markX+30]);
+        const bad=x=>danger.some(([l,r])=>x>l&&x<r),free=x=>x>A.x0+16&&x<A.x1-16&&!bad(x);
+        const add=BK.enemies().filter(q=>q.alive&&q.fromWarden&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
+        const rest=P.st<14||(P.labRest&&P.st<44);P.labRest=rest;
+        let gx=m==='kneel'?boss.x-side*Math.max(14,LAB_REACH[h]*.6):rest?boss.x-side*120:boss.x-side*Math.max(20,LAB_REACH[h]*.7);
+        if((m==='cleaveTell'||m==='tossTell')&&!SHIELDED(h))gx=boss.x-side*80;
+        if(add&&Math.abs(add.x-P.x)<70&&m!=='kneel')gx=add.x-(Math.sign(add.x-P.x)||1)*LAB_REACH[h]*.6;
+        if(!free(gx)){let best=null;for(let s=6;s<300&&best===null;s+=6){if(free(gx-s))best=gx-s;else if(free(gx+s))best=gx+s;}if(best!==null)gx=best;}
+        if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
+        const swingNow=(m==='swing'&&boss.modeT<.42&&boss.modeT>.2)||(m==='swingTell'&&boss.modeT<.12);
+        if(swingNow&&P.ground&&Math.abs(dx)<70){BK.press('jump');P.labJump=18;}
+        const skull=(boss.skulls||[]).find(s=>Math.abs(s.x-P.x)<40&&(s.x-P.x)*s.vx<0);if(skull&&P.ground){BK.press('jump');P.labJump=18;}
+        if(P.ground&&P.y>fl+2){BK.press('jump');P.labJump=18;k[gx>P.x?'right':'left']=true;}   /* down in an open grave: out of it */
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if((m==='cleaveTell'||m==='tossTell'||m==='toss')&&SHIELDED(h)&&Math.abs(dx)<120){k.block=true;k.left=k.right=false;P.face=side;}
+        else if(add&&Math.abs(add.x-P.x)<LAB_REACH[h]+add.w/2+2&&Math.abs(add.y-P.y)<24&&P.atk<0&&m!=='kneel'){P.face=Math.sign(add.x-P.x)||1;BK.press('atk');swings++;}
+        else if(!rest&&!bad(P.x)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&(m==='kneel'||m==='stalk'||m==='toll'||m==='tollTell'||m==='dig'||m==='toss')){P.face=side;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='burieddead'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;

@@ -7,7 +7,8 @@
      THE BREAKWATER WARDEN  turn the anchor on the shield
      THE VAULT KEEPER  cut him while the bell is swinging
      THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight)
-     THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5) */
+     THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5)
+     THE GRAVE WARDEN  let his dig mark you beside an open grave and leave late: the spade goes in and he kneels (batch 4b) */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
@@ -60,6 +61,12 @@ try {
    const alone={open:+openA.toFixed(1),heat:Math.round(b.heat)};
    b.heat=75;b.calmT=0;b.mode='stalk';b.cd=0;b.open=0;let openS=0;for(let i=0;i<600&&!(b.open>0);i++){if(i%30===0)BKT.hurtEnemy(b,1,b.x-20,false);BK.sim(1);}openS=b.open||0;
    out.pyro={alone,mode:b.mode,open:+openS.toFixed(1)};}
+  /* THE GRAVE WARDEN: his dig, on solid floor and then beside an open grave, the hero gone from the mark both times */
+  {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='burial'));BK.state='play';BK.god=true;
+   const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='gravewarden');
+   const dig=markX=>{w.mode='digTell';w.modeT=0;w.markX=markX;w.cd=99;BK.P.x=markX+90;BK.sim(3);return {mode:w.mode,open:+(w.open||0).toFixed(1)};};
+   const solid=dig(734*16);w.mode='stalk';w.modeT=0;BK.sim(2);const grave=dig((742+1)*16+6);
+   out.graveWarden={solid,grave};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -82,6 +89,10 @@ try {
   assert.equal(r.pyro.alone.open, 0, 'left alone while hot, he vents and opens nothing: ' + JSON.stringify(r.pyro.alone));
   assert.equal(r.pyro.mode, 'overheat', 'struck while hot, he overheats: ' + JSON.stringify(r.pyro));
   assert.ok(r.pyro.open > 2, 'the overheat is the window: ' + r.pyro.open);
+
+  assert.notEqual(r.graveWarden.solid.mode, 'kneel', 'a dig that misses on solid floor opens nothing: ' + JSON.stringify(r.graveWarden));
+  assert.equal(r.graveWarden.grave.mode, 'kneel', 'a dig into an open grave puts him on his knees: ' + JSON.stringify(r.graveWarden));
+  assert.ok(r.graveWarden.grave.open > 2, 'the kneel is the window: ' + JSON.stringify(r.graveWarden));
 
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));

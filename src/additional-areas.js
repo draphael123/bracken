@@ -1,3 +1,4 @@
+import {reworkBurial} from './burial-rework.js';
 import {extendBurial} from './burial-expansion.js';
 import {extendHarbor} from './harbor-expansion.js';
 // The coast's last settlement: recover through water, climb the salvage cranes, leave through customs.
@@ -57,8 +58,8 @@ export function stormwreckHarbor({painter,T,TS}) {
 
 // An intact footpath winds down through burial galleries and back to the tower stair.
 export function burialCaverns({painter,T,TS}) {
- const L=painter(1140,60),{block,set,ent,coins,plat}=L,interiors=[],structures=[];
- block(0,379,0,59);
+ const L=painter(1140,112),{block,set,ent,coins,plat}=L,interiors=[],structures=[];
+ block(0,379,0,59);block(0,1139,60,111);   /* THE DESCENT (batch 4b) goes fifty rows under the old floor: burial-rework.js */
  const cut=(a,b,t,bottom)=>{for(let y=t;y<=bottom;y++)for(let x=a;x<=b;x++)set(x,y,T.AIR);};
  const floors=Array.from({length:380},(_,x)=>x<70?30:x<130?30+2*Math.floor((x-70)/10):x<260?42:x<320?42-2*Math.floor((x-260)/10):32);
  for(let x=2;x<378;x++)cut(x,x,Math.max(4,floors[x]-16),floors[x]-1);
@@ -109,8 +110,9 @@ export function burialCaverns({painter,T,TS}) {
  for(let x=10;x<375;x+=5)coins([x,floor(x)-2]);
  for(let i=L.ents.length-1;i>=0;i--)if(L.ents[i].t==='silver')L.ents.splice(i,1);for(const e of L.ents)if(e.t==='wight')e.t='zombie';
  const expansion=extendBurial({L,T,TS,interiors,structures});
+ const rework=reworkBurial({L,T,TS,interiors,structures,ex:expansion});   /* THE BARROW, THE CHARNEL GALLERIES, THE DROWNED OSSUARY and back up */
  return {W:L.W,H:L.H,grid:L.grid,ents:L.ents,START:{x:4,y:29},interiors,structures,pools:[],falls:[],moversExtra:[],music:'burial',underground:true,dark:0.08,edgeLit:true,duskStart:-1,duskLen:1,night:true,nightA:0.04,
   palette:{sky:'crag',far:'crag',mid:'crag',near:'crag',dress:'none',ledges:'staging',haze:'rgba(44,42,64,0.1)',murkCol:'#444651',murkLit:'#85808a',grass:'#747780',grassL:'#a8a3ab',grassD:'#484953',dirt:'#484650',dirtL:'#66626b',dirtD:'#303039',canopy:['#20202c','#292b37','#353643','#454653']},
-  weather:[],ambient:[{x0:0,x1:99999,kind:'cave'}],calm:[],   /* likewise the caverns: [[0,1140,0,60]] was the whole hill, and it is why forty-four zombies were the entire population */...expansion
+  weather:[],ambient:[{x0:0,x1:99999,kind:'cave'}],calm:[],   /* likewise the caverns: [[0,1140,0,60]] was the whole hill, and it is why forty-four zombies were the entire population */...expansion,...rework
  };
 }

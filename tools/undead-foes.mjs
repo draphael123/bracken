@@ -28,7 +28,7 @@ try {
    out.husk.burst={alive:h.alive,hpLost:hp0-BK.P.hp,venom:venom0};
    // and killed from across the room it costs nothing
    const far=husks[1];
-   if(far){BK.P.x=far.x+240;BK.P.hp=BK.P.maxHp;BK.P.venomT=0;BK.P.inv=0;const f0=BK.P.hp;BKT.hurtEnemy(far,9999,far.x-10,false);BK.sim(90);
+   if(far){for(const e of BK.enemies())if(e!==far)e.alive=false;BK.P.x=far.x+240;BK.P.y=far.y;BK.P.vx=BK.P.vy=0;BK.P.hp=BK.P.maxHp;   /* on its own floor, nothing else up: this measures the gas and only the gas (the caverns got deeper in batch 4b and the hero's old height put him among other foes) */BK.P.venomT=0;BK.P.inv=0;const f0=BK.P.hp;BKT.hurtEnemy(far,9999,far.x-10,false);BK.sim(90);
     out.husk.fromAfar={hpLost:f0-BK.P.hp,venom:+(BK.P.venomT||0).toFixed(1)};}}
 
   /* THE DEAD APPRENTICE: an ember thrown from a distance no other dead man can reach */

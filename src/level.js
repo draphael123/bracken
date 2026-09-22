@@ -7577,7 +7577,7 @@ const ELITES = {
   burning: [['brute', 386, 25, { face: -1, gate: 398 }]],   /* THE BARN CAPTAIN holds the barn's far door */
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
-  burial: [['husk', 300, 33, { face: -1 }], ['wight', 700, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],
+  burial: [['husk', 300, 33, { face: -1 }], ['wight', 396, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],   /* (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
   fallingtower: [['armour', 44, 179, { face: -1 }], ['husk', 37, 146, { face: -1 }], ['armour', 38, 119, { face: 1, gate: 30 }]],   /* the ascent (2026-09-21): the orrery's guard, the cistern's husk over the poison, and the bell loft's warden, whose gate shuts the way to the first lift */
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],

@@ -21,7 +21,7 @@ export function extendBurial({L,T,TS,interiors,structures}){
  sign(394,'GREEN WATER IS POISON. CROSS THE STONE GRAVES. NETS AT EACH END LET YOU CLIMB OUT.');
  poison(408,445);poison(458,474);poison(742,773);poison(800,831);   /* 445, not 444: at six tiles a slab the old width fitted this pool exactly and left a one-column pocket at the net that the dead-end payer would not pay */
  sign(493,'THE DIRT IS MOVING. LEAVE THE CRACKS BEFORE THE DEAD RISE. JUMP OR STRIKE TO BREAK A GRAB.');
- for(const x of [506,530,555,578,733,787,839,994,1023,1050])ent('zombie',x,31,{buried:true,face:-1});
+ for(const x of [510,530,555,578,733,787,839,994,1023,1050])ent('zombie',x,31,{buried:true,face:-1});
  sign(612,'DUST FALLS BEFORE STONE. KEEP MOVING WHEN THE ROOF SHAKES.');
  for(const x of [625,650,662,696,704,712,991,1010,1042]){block(x-2,x+2,16,25);ent('stal',x,26,{stone:true});}
  for(const x of [632,676,864,922]){for(let y=30;y<32;y++)set(x,y,T.SOLID);for(let y=28;y<32;y++)set(x+1,y,T.SOLID);for(let y=26;y<32;y++)set(x+2,y,T.SOLID);for(let j=x+3;j<x+12;j++)set(j,24,T.ONEWAY);structures.push({x0:x+3,x1:x+11,top:24,floor:32,kind:'arch'});rope(x+11,23,31);coins([x+5,23],[x+9,23]);}
