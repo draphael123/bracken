@@ -48,6 +48,10 @@ import * as KRA from './redraw/kraken.js';
 import * as FW from './redraw/fields_world.js';   /* THE HEXED FIELDS: its sky, its layers, its props and its movers */
 import * as FF from './redraw/fields_foes.js';
 import * as MW from './redraw/mage_world.js';
+import { updateTideReaver as stepTideReaver, drawTideReaver, reaverFrame, reaverTake, reaverOpen } from './tide-reaver.js';   /* THE TIDE REAVER, the Causeway's mini (2026-09-22) */
+import * as FV2 from './redraw/foes_v2.js';        /* THE REDRAW PASS: ten foes redrawn, same indices, anchors and boxes, new hurt/death/step frames (FRAMES_V2) */
+import { rimSet, needsRim } from './contrast-rim.js';   /* a light rim for a dark foe on a dark backdrop, per level */
+import { deathBurst, stepDeathFx, drawDeathFx, materialOf } from './death-fx.js';   /* what a foe was made of, as it goes */
 import * as CRR from './redraw/crag_redress.js';   /* THE REDRESS (docs/visual-audit.md): Scree, the Hanging Village and Stormhold each get their own sky, backdrops, rock and dressing */
 import * as RD2 from './redraw/redress2.js';      /* ... and Highcrown, the Undercrown, the tower, the Monastery and the three shops */   /* THE MAGE'S FOLLY: the tower's skins, rooms, furniture and the potion machinery */
 import * as MF from './redraw/mage_foes.js';   /* its creatures, the Homunculus, the Archmage and his familiar, and the three forms */
@@ -202,7 +206,7 @@ const DMG = { hedgewarden:18, gravewarden:20, pyroStaff:9, squareFire:5, burngob
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16 };
-const EHP = { hedgewarden:420, gargoyle:410, gravewarden:380, burngob:26, emberwisp:8, pyromander:460, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22,
+const EHP = { tidereaver:560, gargoyle:410, hedgewarden:420, gravewarden:380, burngob:26, emberwisp:8, pyromander:460, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34 };
 /* THE GOBLIN PRIEST's rite, in one place (updateGobPriest): its first rite can come `first` seconds after it spawns, so the goblins round it are blessed the moment it sees you; the censer
    is up for `tell` when a foe within `reach` px needs it, and then every foe within `smoke` px (the censer's cloud: a
@@ -582,6 +586,11 @@ SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: 
   const tilt = rows.map((r, i) => i < 14 ? '.' + r.slice(0, -1) : r);
   const f = r => outline(fromGrid(r, pal, 1), '#1b1626'); const R = [f(rows), f(tilt)], white = R.map(c => whiten(c));
   return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 7, ay: 21, w: 10, h: 18 }; })(); /* the trials' straw man */ SPR.sweep = bakeSweep(); SPR.foreman = bakeForeman(); SPR.cook = bakeCook(); SPR.snuffer = bakeSnuffer(); SPR.sailer = bakeSailer(); SPR.masthead = bakeMasthead(); SPR.kraken = KRA.bakeKraken(); SPR.feeler = KRA.bakeFeeler(); SPR.hearthgob = bakeHearthGob(); SPR.gravewarden = bakeGraveWarden(); SPR.hedgewarden = bakeHedgeWarden(); SPR.gargoyle = bakeGateGargoyle(); SPR.burngob = charGob(SPR.hearthgob); SPR.pyromanderKit = bakePyro(PYRO_SETS.black); SPR.pyromander = poseSet(SPR.pyromanderKit, 'idle'); SPR.emberwisp = bakeEmberWispSet();   /* the kit is drawn by pose (drawPyromander); the flat sets are for everything that reads SPR[t] by frame: the bestiary, the body, the contact sheet */ SPR.cutter = bakeCutter(); SPR.assassin = bakeAssassin(); SPR.berserker = bakeBerserker(); SPR.grandmother = bakeGrandmother(); SPR.lance = bakeGoblinLance(); SPR.shardling = bakeShardling(); SPR.suncatcher = bakeRimewright(); SPR.roc = bakeRoc(); SPR.sentry = bakeSentry(); SPR.gqueen = bakeGoblinQueen(); SPR.throne = bakeThrone(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.masterRider = bakeHoundMaster(); SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
+/* THE REDRAW PASS (docs/animation-audit.md): the ten foes met most whose animation was thinnest. Each keeps its old frame indices, anchor
+   and box; the new frames are appended (FV2.FRAMES_V2) and the picks below use them. */
+for (const t of Object.keys(FV2.FRAMES_V2)) { try { SPR[t] = FV2.FRAMES_V2[t].bake(); } catch (err) { console.error('the redraw', t, err); } }
+const V2_HURT = Object.fromEntries(Object.entries(FV2.FRAMES_V2).filter(([, v]) => v.add.hurt !== undefined).map(([t, v]) => [t, v.add.hurt]));
+const V2_DEATH = Object.fromEntries(Object.entries(FV2.FRAMES_V2).filter(([, v]) => v.add.death !== undefined).map(([t, v]) => [t, v.add.death]));
 // hopper kinds: hop cooldown, hop speed, health, damage
 const HOP = { green: { cd: 1.1, sp: 1, hp: 10, dmg: 15 }, yellow: { cd: 0.55, sp: 1.35, hp: 10, dmg: 12 }, blue: { cd: 1.9, sp: 0.75, hp: 20, dmg: 22 } };
 const BIRD = bakeBird();
@@ -833,6 +842,7 @@ const freshBody = () => ({ x: 0, y: 0, vx: 0, vy: 0, w: 10, h: 14, face: 1, grou
 /* P IS A LIVE ALIAS NOW, not a fixed object: "the hero this code means". In single player it never once changes,
    and the thousands of lines that name it are the same lines they were. See the CO-OP block below. */
 let P = freshBody();
+let deathFx = [];
 let enemies = [], seeds = [], movers = [], parts = [], leaves = [], nums = [], ghosts = [], corpses = [], trail = [], fireflies = [], waves = [];
 let acorns = [], signs = [], shrines = [], gate = null;
 let checkpoint = { x: 0, y: 0 };
@@ -1661,13 +1671,35 @@ function loadLevel(i) {
     if (e.t === 'gate') gate = { x: px, y: py };
   }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
-  spawnEntities();
+  spawnEntities(); applyLevelRims();
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
   fogReset(); wayRoute = null; wayTgt = null; wayMe = 0;   /* the map remembers this level from the save; the arrow's route is built again */
   /* ...and built HERE when the arrow is on: the fill with its rides takes a quarter of a second on the Deep, and on the arrow's first ask in
      play that was fifteen frames of hitch. Inside a load nobody sees it. (Off by default, so the labs and tools never pay for it.) */
   if (SET.wayOn && !L.trial) { try { wayRoute = wayBuild(); } catch (err) { wayRoute = null; } }
+}
+/* THE CONTRAST RIM (src/contrast-rim.js, docs/sprite-quality-audit.md): on each level, a common foe whose body sits in the same value as
+   most of this level's backdrop gets a one-pixel light rim along its top edges, tinted against that backdrop. The level's own sets are
+   baked once and the plain ones put back on the next level. */
+const SPR_PLAIN = {}, RIMMED = {};
+const lstar = (r, g2, b) => { const f = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; const Y = 0.2126 * f(r) + 0.7152 * f(g2) + 0.0722 * f(b); return Y > 0.008856 ? 116 * Math.cbrt(Y) - 16 : 903.3 * Y; };
+function histOf(cv, hist, step = 3) { if (!cv || !cv.getContext) return; let d; try { d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; } catch { return; }
+  for (let i = 0; i < d.length; i += 4 * step) if (d[i + 3] > 127) hist[Math.round(lstar(d[i], d[i + 1], d[i + 2]))]++; }
+function bodyL(set) { const c = set && Array.isArray(set.R) && set.R[0]; if (!c) return null; const h = new Array(101).fill(0); histOf(c, h, 1);
+  const n = h.reduce((a, b) => a + b, 0); if (!n) return null; let k = 0; for (let L0 = 0; L0 <= 100; L0++) { k += h[L0]; if (k >= n / 2) return L0; } return null; }
+function applyLevelRims() {
+  for (const t of Object.keys(SPR_PLAIN)) SPR[t] = SPR_PLAIN[t];
+  const id = curId(); if (!BG || !id) return;
+  if (!RIMMED[id]) { const hist = new Array(101).fill(0);
+    histOf(BG.sky, hist, 1); histOf(BG.wall, hist); histOf(BG.far, hist); histOf(BG.mid, hist);
+    if (L.dark) { const n = hist.reduce((a, b) => a + b, 0); hist[14] += n * 3; }   /* a dark room's backdrop is mostly its murk */
+    let bgL = 0, n = 0; hist.forEach((v, i) => { bgL += v * i; n += v; }); bgL = n ? bgL / n : 30;
+    const out = {};
+    for (const t of new Set(enemies.filter(e => !e.maxHp && !e.mini && !e.harmless).map(e => e.t))) { const set = SPR_PLAIN[t] || SPR[t]; const bl = bodyL(set);
+      if (bl === null || !set.ax) continue; if (needsRim(bl, hist) > 0.45) { try { out[t] = rimSet(set, bgL); } catch (err) { console.error('rim', t, err); } } }
+    RIMMED[id] = out; }
+  for (const [t, set] of Object.entries(RIMMED[id])) { SPR_PLAIN[t] = SPR_PLAIN[t] || SPR[t]; SPR[t] = set; }
 }
 function spawnEntities() {
   if(L.towerAscent){   /* THE TOWER STANDS AGAIN on a retry, and whatever is under the checkpoint goes again - silently, it is not news */
@@ -1678,7 +1710,7 @@ function spawnEntities() {
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
-  washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
+  washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
   if((L.harborSections||L.keepExpansion||L.reverseTower)&&!rushOn()){miniDone=!!(PROG[LEVELS[levelIndex].id]||{}).mini;if(miniDone&&L.mini)for(let y=0;y<LH;y++){const i=y*LW+L.mini.gate;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}}
   ambushReset();
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) enemies[i].xpKey = k + '.' + (i - n0); });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
@@ -1872,7 +1904,7 @@ function spawnEnt(e) {
       case 'burieddead': boss={...base,t:'burieddead',w: 28, h: 83, hp: EHP.burieddead,maxHp:EHP.burieddead,mode:'sleep',modeT:0,phase:1,turn:0,open:0};enemies.push(boss);break;
       case 'harbormaster': boss={...base,t:'harbormaster',w:26,h:49,hp:EHP.harbormaster,maxHp:EHP.harbormaster,mode:'sleep',modeT:0,phase:1,turn:0,open:0,marks:[]};enemies.push(boss);break;
       case 'bellcrab': {const e={...base,t:'bellcrab',w:42,h:43,hp:EHP.bellcrab,maxHp:EHP.bellcrab,mode:'sleep',modeT:0,face:-1,phase:1,turn:0,open:0};boss=e;enemies.push(e);}break;
-      case 'lanternshade': case 'bonecorsair': case 'tidemarauder': enemies.push({...base,t:e.t,w:22,h:34,hp:EHP[e.t],mode:'walk',modeT:0,cd:1,turn:0});break;
+      case 'lanternshade': case 'bonecorsair': case 'tidemarauder': enemies.push({...base,t:e.t,w:22,h:34,hp:e.t==='tidemarauder'&&e.mini?EHP.tidereaver:EHP[e.t],maxHp:e.t==='tidemarauder'&&e.mini?EHP.tidereaver:undefined,mode:'walk',modeT:0,cd:1,turn:0});break;   /* the one holding the road is the TIDE REAVER (tide-reaver.js): a mini's bar */
       case 'familiar': enemies.push({...base,t:'familiar',w:39,h:42,hp:EHP.familiar,mode:'walk',modeT:0,cd:1,turn:0,open:0});break;
       case 'bellguard': enemies.push({...base,t:'bellguard',w:20,h:33,hp:e.vaultKeeper?260:EHP.bellguard,vaultKeeper:!!e.vaultKeeper,phase:1,vaultTurn:0,open:0,mode:'walk',modeT:1.2,cd:1,turn:0,speed:24});break;
       case 'drownedking': { const dk = { ...base, t: 'drownedking', w: 30, h: 32, hp: Math.round(EHP.drownedking * 1.45), maxHp: Math.round(EHP.drownedking * 1.45), mode: 'sleep',   /* HE SWIMS NOW, and a fight you can take anywhere in the room is a fight that goes quicker: more of him to get through */ modeT: 0, face: -1, phase: 1, hitT: 0, slamT: 3, haulT: 6, debtT: 10 }; boss = dk; enemies.push(dk); } break;
@@ -4618,7 +4650,9 @@ function spawnCorpse(e, dir) {
     case 'frog': Object.assign(c, { vx: -dir * 10, vy: -120, spin: dir * 0.8, life: 1.6, max: 1.6, grav: 600, royal: true }); break;
   }
   if(c.max>.05 && !e.maxHp && !e.mini){c.life+=COMBAT.corpseLinger;c.max=c.life;}
+  if (V2_DEATH[e.t] !== undefined && c.t === e.t) c.frame = V2_DEATH[e.t];   /* the redrawn ones have a death of their own */
   corpses.push(c);
+  if (deathFx.length < 12) { const fx = deathBurst(materialOf(e.t), e.x, e.y, dir || 1, (e.x * 31 + e.y * 17) | 0, e.h || 16); fx.y0 = e.y - (e.h || 16); deathFx.push(fx); }   /* DEATH BY MATERIAL: bone clatters, armour sheds, a spirit comes apart upward */
 }
 // what the blade does besides cut
 function swordEffect(e) {
@@ -5066,8 +5100,9 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
-  if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);
-  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE: double while he hangs from a broken edge (gate-gargoyle.js) */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
+  if (e.t === 'tidemarauder' && e.mini) dmg = reaverTake(e, dmg);   /* THE TIDE REAVER disarmed: every blow twice (tide-reaver.js) */
+  if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
+  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE: double while he hangs from a broken edge (gate-gargoyle.js) */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
@@ -13190,6 +13225,18 @@ function updateGraveWardenBoss(e, dt) {
 }
 /* THE HEDGE WARDEN's hands on the world (hedge-warden.js is the fight): the braziers he can be burnt at, and the cuttings he throws off */
 const hedgeBraziers = () => ((L.witch && L.witch.braziers) || []).map(([x]) => x * TS + 8);
+function updateTideReaverBoss(e, dt) {
+  const A = L.mini && L.mini.boss === 'tidemarauder' ? L.mini : L.arena; if (!A) return;
+  e.maxHp ??= e.hp;
+  stepTideReaver(e, dt, { P, A: { x0: A.x0, x1: A.x1, floor: A.floor },
+    hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
+    say: (m, red, green) => number(e.x, e.y - 44, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
+    sound: k => ({ clank: SFX.clank, slash: SFX.slash, splash: SFX.splash, whoosh: SFX.throwWhoosh, reel: SFX.rattle, thud: SFX.thud, crack: SFX.crack }[k] || SFX.thud)(),
+    shake: n => shakeCam(n), ring: (x, y, r) => ringAt(x, y, r, '#ff6b6b', 0.4),
+    pull: x => { if (P.dead) return; P.x = Math.max(A.x0 + 10, Math.min(A.x1 - 10, x)); P.vx = 0; } });
+  if (e.mode !== 'fetch') e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
+  e.y = A.floor;
+}
 function updateHedgeWardenBoss(e, dt) {
   const A = L.mini && L.mini.boss === 'hedgewarden' ? L.mini : L.arena;
   stepHedgeWarden(e, dt, { P, A: { x0: A.x0, x1: A.x1, floor: A.floor },
@@ -17424,7 +17471,7 @@ function updateEnemies(dt) {
     if (e.t === 'drunk') { beastSeen('drunk'); updateDrunk(e, dt); continue; }
     if (e.t === 'lanternshade') {beastSeen(e.t);updateLanternshade(e, dt);continue;}
     if (e.t === 'bonecorsair') {beastSeen(e.t);updateBonecorsair(e, dt);continue;}
-    if (e.t === 'tidemarauder') {beastSeen(e.t);if(!e.mini||miniActive)updateTidemarauder(e, dt);continue;}
+    if (e.t === 'tidemarauder') {beastSeen(e.t);if(e.mini){if(miniActive||rushOn())updateTideReaverBoss(e,dt);}else updateTidemarauder(e, dt);continue;}
     if (e.t === 'familiar') {beastSeen(e.t);if(miniActive)updateFamiliar(e, dt);continue;}
     if(e.vaultKeeper){updateVaultKeeper(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,move:(q,x,y)=>moveBody(q,x,y,false),hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-45,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
     if (e.t === 'bellguard') {beastSeen('bellguard');if(!e.mini||miniActive)updateBellguard(e, dt);continue;}
@@ -17719,6 +17766,10 @@ function updateCorpses(dt) {
     ringAt(f.x, f.y, f.big ? 60 : 22, f.big ? '#ffffff' : '#ffd36b', f.big ? 0.55 : 0.3); shakeCam(f.big ? 7 : 3);
     if (f.big) { killFlash = Math.max(killFlash, 0.1); SFX.boom(); } else SFX.crack(); } }
   bossFx = bossFx.filter(f => !f.done);
+  deathFx = deathFx.filter(fx => { const was = fx.parts.reduce((n, p) => n + (p.clack ? 1 : 0), 0);
+    const on = stepDeathFx(fx, dt, x => { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor(fx.y0 / TS)); ty < Math.min(LH, Math.floor(fx.y0 / TS) + 16); ty++) if (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) return ty * TS; return null; });
+    if (fx.parts.some(p => p.clack) && fx.parts.reduce((n, p) => n + (p.clack ? 1 : 0), 0) > was && !fx.clacked) { fx.clacked = true; SFX.clatter(); }
+    for (const p of fx.parts) p.clack = false; return on; });
   for (const c of corpses) {
     c.life -= dt; c.sq = Math.max(0, (c.sq || 0) - dt);
     if (c.life <= 0 && !c.poofed && c.max > 0.05) { c.poofed = true; smoke(c.x, c.y - 4, 3, 5); }   /* it does not blink out: it goes to smoke */
@@ -20373,6 +20424,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (SPR[c.t] || c.t === 'hopper') { const q = c.sq > 0 ? c.sq / 0.16 : 0, sink = c.settled ? Math.round((1 - c.life / c.max) * 2) : 0;   /* squash where it lands, sink as it goes */
       drawRot(c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t], c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
+  for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
   for (const e of enemies) {
     if (e.alive && (e.poise > 0 || e.broken > 0)) drawPoise(e, cx, cy);   /* the stagger bar over its head */
     if (e.t === 'kraken') { drawKraken(e, cx, cy); continue; }   /* most of it is off the screen and in the sea: it draws itself, dead or alive */
@@ -20427,7 +20479,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'sporeling') frame = Math.abs(e.vx) > 4 ? [0, 2, 1, 3][Math.floor(e.anim * 9) % 4] : 0;
     else if (e.t === 'masthead') frame = ({ slashTell: 3, slash: 4, sailTell: 5, sail: 6, climb: 7, dropTell: 7, drop: 8, boomTell: 9, boom: 10, fouled: 11, tangled: 12, reel: 12, dead: 12 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 6) % 2 : 0);
     else if(e.t==='undeadmage')frame=undeadFrame(e,UNDEADMAGE_F);
-    else if(e.t==='burieddead'||e.t==='zombie'||e.t==='husk'||e.t==='apprentice')frame=deadFrame(e);
+    else if(e.t==='burieddead'||e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){frame=deadFrame(e);if((e.t==='zombie'||e.t==='apprentice')&&frame<=1&&Math.abs(e.vx)>2)frame=[0,1,0,7][Math.floor(e.anim*6)%4];}   /* the redrawn dead walk on both feet */
     else if (e.t === 'harbormaster') frame = wardenFrame(e);
     else if (e.t === 'captain') frame = e.mode === 'sabreTell' ? 3 : e.mode === 'sabre1' ? 4 : (e.mode === 'sabre2' || e.mode === 'keg') ? 5
       : e.mode === 'shootTell' ? 6 : e.mode === 'shoot' ? 7 : (e.mode === 'hookTell' || e.mode === 'kegTell') ? 8 : e.mode === 'hook' ? 9
@@ -20446,9 +20498,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'shield') frame = e.mode === 'elChargeTell' || e.mode === 'elWallTell' ? 5 : e.mode === 'elCharge' ? 6 : e.mode === 'elDazed' || e.mode === 'elChargeEnd' ? 4 : e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
     else if (e.t === 'sprig' && (e.mode === 'biteTell' || e.mode === 'bite')) frame = e.mode === 'biteTell' ? 5 : 6;   /* the crouch, and the leap */
     else if (e.t === 'sprig' || e.t === 'bearer') frame = Math.abs(e.vx) > 4 || e.t === 'bearer' ? Math.floor(e.anim * 10) % 4 : (Math.floor(e.anim * 0.7) % 4 === 1 ? 4 : 0);
-    else if (e.t === 'thief') frame = e.loot > 0 || Math.abs(e.vx) > 8 ? Math.floor(e.anim * 12) % 2 : (Math.floor(e.anim * 0.8) % 3 === 1 ? 2 : 0);
+    else if (e.t === 'thief') frame = e.loot > 0 || Math.abs(e.vx) > 8 ? [0, 3, 1, 4][Math.floor(e.anim * 12) % 4] : (Math.floor(e.anim * 0.8) % 3 === 1 ? 2 : 0);
     else if (e.t === 'miner') frame = e.mode === 'dig' ? 2 : e.mode === 'swingTell' || e.mode === 'swing' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
-    else if (e.t === 'bat') { frame = e.mode === 'hang' ? 0 : 1 + Math.floor(e.anim * 16) % 2;
+    else if (e.t === 'bat') { frame = e.mode === 'hang' ? 0 : [1, 3, 2, 3][Math.floor(e.anim * 16) % 4];   /* a three-beat stroke: up, level, down, level */
       if (e.roost) { const rx = Math.round(e.hx - cx), ry = Math.round(e.hy - cy) - 5;   // the claw-hold it left on the stone
         g.fillStyle = '#1e1a26'; g.fillRect(rx - 3, ry, 6, 2); g.fillRect(rx - 1, ry + 2, 2, 1);
         if (e.mode !== 'hang') { g.globalAlpha = 0.35; g.fillStyle = '#3a3448'; g.fillRect(rx - 2, ry + 2, 4, 1); g.globalAlpha = 1; } } }
@@ -20458,7 +20510,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'seawitch') frame = e.mode === 'callTell' || e.mode === 'call' ? 2 : e.castFlash > 0 ? 1 : 0;   /* watching, casting, and both arms up on the call */
     else if (e.t === 'dummy') frame = e.flash > 0 ? 1 : 0;
     else if (e.t === 'sweep') frame = e.mode === 'pop' ? 2 : e.mode === 'throw' ? 1 : 0;
-    else if (e.t === 'crow') frame = Math.floor(e.anim * 10) % 3;
+    else if (e.t === 'crow') frame = Math.abs(e.vy || 0) < 12 && Math.floor(e.anim * 2) % 3 === 0 ? 3 : Math.floor(e.anim * 10) % 3;   /* it glides between strokes when it is not climbing or diving */
     else if (e.t === 'horn') frame = e.mode === 'blow' || e.mode === 'sent' ? 2 : e.mode === 'tell' || e.mode === 'whistleTell' ? 1 : 0;
     else if (e.t === 'bale') frame = ((Math.floor(e.spin || 0) % 4) + 4) % 4;
     else if (e.t === 'badger') frame = e.mode === 'chargeTell' ? 2 : e.mode === 'charge' ? 3 :(e.mode === 'dazed' || e.mode === 'skid' || e.stagger > 0.3) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
@@ -20469,12 +20521,13 @@ function drawWorld(cx, cy, showPlayer) {
     /* THE ROAD PEOPLE. Their whole read is the wind-up, so the tell frame has to be on screen for the
        whole tell and not a beat of it - each of these is keyed off the MODE, never off a timer. */
     else if (e.t === 'swornsword') frame = e.mode === 'cutTell' ? 2 : e.mode === 'cut' ? 3 : (e.mode === 'reel' || e.mode === 'rest') ? 4 : Math.abs(e.vx) > 6 ? [0, 5, 1, 6][Math.floor(e.anim * 8) % 4] : 0;
-    else if (e.t === 'hedgeknight') frame = e.mode === 'swingTell' ? 2 : e.mode === 'swing' ? 3 : (e.mode === 'leapTell' || e.mode === 'leap') ? 4 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 5) % 2) : 0;
+    else if (e.t === 'hedgeknight') frame = e.mode === 'swingTell' ? 2 : e.mode === 'swing' ? 3 : (e.mode === 'leapTell' || e.mode === 'leap') ? 4 : Math.abs(e.vx) > 6 ? [1, 0, 5, 0][Math.floor(e.anim * 5) % 4] : 0;
     else if (e.t === 'runner') frame = e.mode === 'shout' ? 2 : (e.mode === 'stabTell' || e.mode === 'stab') ? 3 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 9) % 2) : 0;
     else if (e.t === 'crossbow') frame = e.mode === 'span' ? 0 : e.mode === 'loose' ? 2 : 1;
     else if (e.t === 'drunk') frame = e.mode === 'lobTell' ? 4 : e.mode === 'lob' ? 5 : e.mode === 'bottleTell' ? 6 : e.mode === 'down' ? 7 : e.mode === 'getup' ? 8 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 4) % 2 : Math.floor(e.anim * 1.6) % 2;   /* he sways where he stands, and the tell is on screen for all of it */
     else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ oathTell: 3, radianceTell: 9, oathRecover: 11, cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
     else if (e.t === 'bellcrab') frame=({clawTell:2,claw:3,ballastTell:4,slam:5,pressureTell:6,pressure:7,scuttleTell:8,scuttle:9,vent:10})[e.mode]??(Math.abs(e.vx)>2?1:0);
+    else if (e.t === 'tidemarauder' && e.mini) frame = reaverFrame(e);
     else if (['lanternshade','bonecorsair','tidemarauder'].includes(e.t)) frame=e.mode==='rest'?4:e.mode?.endsWith('Tell')?(/cleave|rake/.test(e.mode)?3:2):Math.abs(e.vx)>2?1:0;
     else if (e.t === 'familiar') frame=MF.FAMILIAR_F[{dashTell:'swipeTell',dash:'swipe',volleyTell:'spitTell'}[e.mode]||e.mode]??MF.FAMILIAR_F.idle;
     else if(e.vaultKeeper)frame=e.open>0?4:e.mode==='vaultHookTell'||e.mode==='vaultSpearTell'?2:e.mode.endsWith('Tell')?3:Math.abs(e.vx)+Math.abs(e.vy)>2?1:0;
@@ -20522,7 +20575,7 @@ function drawWorld(cx, cy, showPlayer) {
       : e.mode === 'sweepTell' ? 6 : e.mode === 'sweep' ? 7 : (e.mode === 'drawTell' || e.mode === 'draw') ? 8 : e.mode === 'douse' ? 9
       : e.dying > 0 ? 11 : e.stagger > 0 ? 10 : Math.abs(e.vx) > 6 ? Math.floor(e.anim * 8) % 4 : 0;
     else if (e.t === 'watch') frame = (e.mode === 'thrust' || e.mode === 'sweep') ? 6 : (e.mode === 'thrustTell' || e.mode === 'sweepTell') ? 5 : (e.mode === 'guard' || e.guardT > 0) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
-    else if (e.t === 'snuffer') frame = e.mode === 'snuffTell' ? 2 : (e.mode === 'swipeTell' || e.mode === 'swipe') ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 2 : 0;
+    else if (e.t === 'snuffer') frame = e.mode === 'snuffTell' ? 2 : (e.mode === 'swipeTell' || e.mode === 'swipe') ? 3 : Math.abs(e.vx) > 4 ? [1, 0, 4, 0][Math.floor(e.anim * 9) % 4] : 0;
     else if (e.t === 'sailer') frame = e.mode === 'tumble' ? 2 : e.mode === 'sail' ? 1 : 0;
     else if (e.t === 'troll') frame = e.mode === 'throwTell' || e.mode === 'throw' || e.mode === 'hurlTell' || e.mode === 'hurl' || e.mode === 'heave' || e.mode === 'slamTell' ? 3 : e.mode === 'swatTell' || e.mode === 'swat' || e.mode === 'ripTell' ? 4 : e.mode === 'slam' || e.mode === 'pinned' ? 0 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
     else if (e.t === 'harpy') frame = e.mode === 'dive' ? 2 : e.mode === 'downed' ? 3 : e.mode === 'aim' ? 4 : Math.floor(e.anim * 6) % 2;
@@ -20643,6 +20696,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'closedhelm' && e.alive && e.mode !== 'sleep') drawPaladinMarks(e, cx, cy);
     if (e.t === 'lancer' && e.alive && e.mounted && e.mode === 'chargeTell') { const k = 0.5 + 0.5 * Math.sin(time * 20), fy = Math.round(e.y - cy) - 2, ex = Math.round(e.x - cx); g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(ex, fy); g.lineTo(Math.round((e.face > 0 ? e.hx1 : e.hx0) - cx), fy); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE LINE HE WILL RIDE, for the length of the tell */
     if (e.t === 'lancer' && e.alive && !e.mounted && e.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 14 + k * 2, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+    /* THE HURT FRAME (the redraw pass): a blow that lands shows on the body - but never over a windup, which is the tell */
+    if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
     const sprSet = e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.stage === 3 ? SPR.familiar : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
@@ -20696,7 +20751,8 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
-  drawCarpetWorld(g,L,P,cx,cy,time);{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time);if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
+  drawCarpetWorld(g,L,P,cx,cy,time);{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const tr=L.mini&&L.mini.boss==='tidemarauder'&&enemies.find(q=>q.t==='tidemarauder'&&q.mini&&q.alive);if(tr)drawTideReaver(g,tr,cx,cy,time,L.mini.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
+  if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time);
   drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time);
   drawWarden(g,boss?.t==='harbormaster'?boss:null,L.arena,cx,cy,time);
   drawSalvageCaptain(g,enemies.find(e=>e.salvage),L.mini,cx,cy,time);
