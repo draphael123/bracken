@@ -1,5 +1,6 @@
 import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {buildBurningVillage} from './burning-village.js';
+import {buildWitchlight} from './witchlight.js';
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
@@ -3785,7 +3786,7 @@ function galeMoor() {
   R.R.airRails=[{x0:246*TS,x1:282*TS,y:19*TS,speed:280}];
   const mid=R.done(),D=grow(mid,mid,558,40);D.floor(558,597,22);D.floor(558,562,14);D.block(584,588,7,21);D.floor(589,597,14);
   for(let y=7;y<22;y++)D.set(583,y,T.NET);for(let y=14;y<22;y++)D.set(562,y,T.NET);
-  for(const row of [18,14,10])D.plat(580,row,4);
+  for(const row of [18,14,10])D.plat(580,row,3);   /* THE LIPS STOP SHORT OF THE ROPE (Daniel 2026-09-22): four wide, they were laid over column 583 and cut the rope in three - the climb stopped under every lip and the level could not be finished */
   D.ent('sign',561,13,{text:'DOWNDRAFT CLIFF. CLIMB IN THE LULL. REST ON THE SHELTERED STONE LIPS.'});D.ent('check',595,13);D.coins([577,21],[581,17],[581,13],[581,9],[586,6]);
   D.R.downCliffs=[{x0:579*TS,x1:585*TS,y0:7*TS,y1:22*TS,period:5,on:2.5,shelters:[18,14,10].map(y=>[580*TS,584*TS,y*TS])}];
   D.R.stormSummit=true;D.R.playtestSections=[{name:'WIND RIVERS',x0:240,x1:287},{name:'DOWNDRAFT CLIFF',x0:558,x1:597}];
@@ -7164,11 +7165,14 @@ export const LEVELS = [
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'waymeet' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
   { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'FOLLOW THE CANDLES. THE LOWER ROAD ALWAYS LEADS BACK UP.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
-  { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'burial' },
+  { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'witchlight' },   /* (batch 4c: the Witchlight Stair is the road up to it now) */
   { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. EVERY FLOOR YOU LEAVE FALLS. THE DEAD MAGE WAITS IN THE SKY.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage' },
   /* THE BURNING VILLAGE (batch 5): the Pyromancer's class level, off the Stockade on the road to Sporewood. Appended here, not
      between them, so no level's index moves (the map's nodes and the saves count by index) */
   { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade' },
+  /* THE WITCHLIGHT STAIR (batch 4c): the run up the tower's hill between the Burial Caverns and the Folly. Appended, like the
+     village, so no index moves; the Folly needs it now */
+  { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: ()=>buildWitchlight({painter,T,TS}), needs: 'burial' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 
@@ -7273,6 +7277,7 @@ export const DRESS = {
   reef: [['coralFan', 3], ['brainCoral', 2], ['urchinRock', 2], ['kelpTall', 3], ['spar', 2], ['mastStump']],
   frost: [['cairn'], ['stone', 3], ['bones', 2], ['deadTree', 2], ['frozen', 2]],
   burning: [['barrels'], ['fence', 2], ['cart'], ['hayBale', 2], ['brokenCart'], ['milkChurn'], ['waterPump'], ['crookedFence', 2], ['lanternPost'], ['stump', 2]],   /* a farming village on the road: its carts, its hay, its pumps */
+  witchlight: [['topiaryUrn', 2], ['lamppost', 2], ['ivyWall', 2], ['stone', 3], ['grave', 2], ['bones', 2]],   /* THE WITCHLIGHT STAIR: the tower's garden going wild down the hill, and the graves of the dead that followed you up */
   mage: [['candelabra'], ['bookpile', 2], ['jars', 2], ['topiaryUrn'], ['lamppost'], ['ivyWall'], ['stone', 3]],   /* the tower: candles, books and jars; the grounds: urns, lamps and ivy */
   fields: [['deadCorn', 3], ['crookedFence', 2], ['hayStack', 2], ['pumpkinPatch'], ['farmLantern'], ['milkChurn'], ['plough'], ['brokenCart'], ['waterPump'], ['fieldGrave', 3], ['stone', 3], ['deadTree', 2]],   /* the farm, gone wrong: dead corn, crooked fences, the lanterns they left in the fields */
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
@@ -7305,6 +7310,7 @@ const GARRISON = {
   keep: [['wight', 14], ['tideguard', 10], ['watch', 9], ['eel', 9], ['angler', 7], ['siren', 5], ['merrowspear', 5], ['jelly', 5], ['merrowbrute', 3], ['manta', 3], ['urchin', 3], ['puffer', 3], ['lamprey', 3]],   /* a drowned castle: its own garrison still at their posts, and the deep water's wildlife moved in over them */
   burning: [['sprig', 10], ['archer', 4], ['burngob', 4], ['emberwisp', 4], ['thief', 3], ['hound', 3], ['sapper', 3], ['shield', 2], ['pike', 2]],   /* THE BURNING VILLAGE: the Stockade's goblins down the road, his burning ones, and his wisps */
   burial: [['zombie', 16], ['husk', 9], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['bonecorsair', 7], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* forty-four zombies and nothing else was the whole roster under the hill */
+  witchlight: [['imp', 15], ['broom', 12], ['zombie', 16], ['husk', 7], ['bonearcher', 7], ['bonegob', 6], ['armour', 5], ['topiary', 4], ['apprentice', 4], ['bat', 5]],   /* THE WITCHLIGHT STAIR: what got out of the tower, and the dead that followed you up from the caverns (every terrace is a floor: L.stackedFloors) */
   fallingtower: [['apprentice', 3], ['zombie', 3], ['husk', 2], ['haunt', 2], ['bat', 2], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and the ones who did not get out of it: the dead outnumber the living in a dead man's tower. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors) */
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
@@ -7578,6 +7584,7 @@ const ELITES = {
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 396, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],   /* (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
+  witchlight: [['armour', 180, 76, { face: -1 }], ['husk', 233, 58, { face: -1 }]],   /* the topiary walk's armour, and a husk on the second stair's glyph road */
   fallingtower: [['armour', 44, 179, { face: -1 }], ['husk', 37, 146, { face: -1 }], ['armour', 38, 119, { face: 1, gate: 30 }]],   /* the ascent (2026-09-21): the orrery's guard, the cistern's husk over the poison, and the bell loft's warden, whose gate shuts the way to the first lift */
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
@@ -7632,7 +7639,7 @@ function elites(L, id) {
    packed against the end, a heart that waits for you when the pocket is long, wet or spiked, and the level's own stash
    prop on its last floor. Never a silver (three a level, the ledger reads three bits) and never a quest item (counted).
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
-const STASH = { burning: 'barrels', mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
+const STASH = { witchlight: 'coffer', burning: 'barrels', mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
   scree: 'cairn', spire: 'stoneLantern', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
   longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', keep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };

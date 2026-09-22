@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import vm from 'node:vm';import {LEVELS,T} from '../src/level.js';
 const L=LEVELS.find(l=>l.id==='moor').build(),s=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+/* EVERY ROPE IS ONE ROPE (2026-09-22): the downdraft cliff's lips were laid over its rope and cut it in three - the climb stopped under each lip */
+{const cols={};for(let y=0;y<L.H;y++)for(let x=0;x<L.W;x++)if(L.grid[y*L.W+x]===T.NET)(cols[x]||=[]).push(y);for(const [x,ys] of Object.entries(cols))assert.equal(ys[ys.length-1]-ys[0]+1,ys.length,'the rope at x '+x+' is cut: rows '+ys.join(','));}
 assert.equal(L.W,996);assert.equal(L.flight.x1,952);assert(L.roosts.every(([x])=>x*16>L.arena.x0&&x*16<L.arena.x1));assert.equal(L.grid[25*L.W+283],T.NET);assert(L.ambushes.every(a=>a.waves.flat().every(e=>e[1]>a.wallL&&e[1]<a.wallR)));
 const noop=()=>{},P={x:250*16,y:19*16+8,vx:0,vy:20,dead:false,ground:false};const c=vm.createContext({L,P,time:0,jumpPress:false,SFX:new Proxy({},{get:()=>noop})});vm.runInContext(s.slice(s.indexOf('function updateMoorWind'),s.indexOf('function drawMoorWeather')),c);c.updateMoorWind(1/60);assert.equal(P.vx,280);c.jumpPress=true;c.updateMoorWind(1/60);assert.equal(P.vy,-260);assert.equal(P.railRelease,.6);c.jumpPress=false;
 Object.assign(P,{x:583*16+8,y:21*16,vy:-74});c.updateMoorWind(1/60);assert.equal(P.vy,100);c.time=3;P.vy=-74;c.updateMoorWind(1/60);assert.equal(P.vy,-74);c.time=0;P.y=18*16;P.vy=-74;c.updateMoorWind(1/60);assert.equal(P.vy,-74);

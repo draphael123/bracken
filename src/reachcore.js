@@ -51,6 +51,9 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
      a ferry raft (x0..x1 along one row) are a band of footing: step on anywhere along the run, step off anywhere along it.
      They were why a third of the rivers and decks came back ASSISTED with their silver in doubt. */
   if (!plain) for (const e of (L.ents || [])) if (e.t === 'mover') lifts.push(e.vert ? { kind: 'mover ' + (e.ghost || ''), x0: e.x, x1: e.x + (e.len || 2) - 1, y0: e.y - (e.rise || e.range || 4), y1: e.y } : { kind: 'mover ' + (e.ghost || ''), x0: e.x, x1: e.x + (e.len || 2) - 1 + (e.range || 0), y0: e.y, y1: e.y });
+  /* A GLYPH CROSSING (the Witchlight Stair): a pair of brief glyphs either side of a gap in a road with a ceiling over it -
+     you fall up, walk the underside and drop on the other side, from either end. L.glyphBridges [x0, x1, floor row] */
+  if (!plain) for (const [x0, x1, y] of (L.glyphBridges || [])) lifts.push({ kind: 'glyph', x0, x1, y0: y, y1: y });
   if (!plain) for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap' && m.kind !== 'hexvine') lifts.push({ kind: m.kind, x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
   const swings = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
   /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a

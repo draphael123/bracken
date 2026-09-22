@@ -18,5 +18,5 @@ vm.runInContext(main.slice(main.indexOf('const MAPW ='),main.indexOf('const MAPC
 const {NODES,NODE_AT,PATH}=ctx.route;
 assert.equal(NODES.length,NODE_AT.length);
 for(let i=0;i<NODES.length;i++){assert(PATH[NODE_AT[i]]);assert(Math.hypot(PATH[NODE_AT[i]][0]-NODES[i].x,PATH[NODE_AT[i]][1]-NODES[i].y)<1,NODES[i].id+' map path mismatch');}
-for(const [a,b] of [['causeway','waymeet'],['waymeet','fields'],['fields','burial'],['burial','mage']]){assert.equal(LEVELS.find(l=>l.id===b).needs,a);assert(NODES.findIndex(n=>n.id===a)<NODES.findIndex(n=>n.id===b));}
+for(const [a,b] of [['causeway','waymeet'],['waymeet','fields'],['fields','burial'],['burial','witchlight'],['witchlight','mage']]   /* (batch 4c: the Witchlight Stair between the caverns and the Folly) */){assert.equal(LEVELS.find(l=>l.id===b).needs,a);assert(NODES.findIndex(n=>n.id===a)<NODES.findIndex(n=>n.id===b));}
 console.log('Both areas have reachable rewards; Burial has its final boss and Harbor retains its guardian; all map nodes meet their paths and campaign links follow the intended order.');

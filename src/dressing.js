@@ -1,5 +1,6 @@
 // Per-level ground kits and allowed decoration kinds. Add a kind deliberately here before placing it.
 export const GROUND_KITS = {
+  "witchlight": {"density":0.3,"kinds":["tuft","rock","flower","stone"]},   /* THE WITCHLIGHT STAIR: a hillside road at dusk */
   "burning": {"density":0.34,"kinds":["tuft","rock","stump"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
   "harbor": {"density":0,"kinds":[]},
   "burial": {"density":0,"kinds":[]},
@@ -254,6 +255,7 @@ export const GROUND_KITS = {
   }
 };
 export const ALLOWED_DECORATIONS = {
+  "witchlight": ["tuft","rock","flower","stone","topiaryUrn","lamppost","ivyWall","grave","bones","candelabra","coffer"],
   "burning": ["tuft","rock","stump","campfire","barrels","fence","cart","hayBale","brokenCart","milkChurn","waterPump","crookedFence","lanternPost"],
   "harbor": ["stall","pierPost","rumBarrels","wreckBow","anchor","mastStump","kegStack","chartTable","seaChest","plunder","capstan","coiledCable","lanternDeck","waterButt","cannon","netPoles","snow","stem"],
   "burial": ["grave","bones","coffer","candelabra","snow","stem"],
