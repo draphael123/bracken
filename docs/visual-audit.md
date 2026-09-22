@@ -52,3 +52,20 @@ grass that lips over its corners, lit west faces and shaded east ones, a slab le
 | 'stormhold'` cases calling `bakeCragSky/Far/Mid/Near(theme)`; in resolveTiles (~701) a `pal.set === 'crag:<theme>'` arm that uses
 `bakeCragGround(theme)` as SET2 (its shape is the game's own); `GROUND_KITS[id]` from `CRAG_KITS[theme]` + the props; then set the
 three levels' palettes in level.js. Tools/check would then want the readability pass re-run on them (L* of foes against the new skies).
+
+## Fixes 2-4 done (as art, not wired): `src/redraw/redress2.js`, scenes in `docs/redress2.png`
+- **HIGHCROWN** (`castle`): the great hall's granite back wall, three arched windows on the night with the moon, the queen's plum
+  banners between, columns with torches, tapestries, chandeliers; flagstone floor and corbelled balconies; armour, braziers, rugs.
+- **THE UNDERCROWN** (`undercrown`): the pit under the castle, its foundation arches overhead, water dripping, roots hanging, timber
+  shoring and lamps; packed rubble ground, shoring-plank ledges; rubble, props and lamps as dressing.
+- **THE MAGE'S TOWER** (`mage`, the Folly and the Falling Tower; their tiles stay): the bookcase wallpaper broken up. Cases of
+  different heights and widths, gaps with moonlit windows, rolling ladders, floating candles, hanging lamps.
+- **THE MONASTERY** (`monastery`; the monks' tiles stay): a deep high-altitude blue over a sea of cloud with far peaks, and the
+  terraces down the mountain, each with a red-roofed hall, pines and prayer flags. Its pale stone now has something to stand against.
+- **THE SHOPS** (`shopWood`, `shopCrag`, `shopSea`): a log store (hanging herbs, jars and sacks), a mountain store (stone, pelts,
+  rope, lanterns), a chandler's (hull planking, nets, a ship's wheel, brass), each with its own floor and shelf ledges.
+- **Burial Caverns** is left to the session reworking it now (`src/burial-expansion.js` in the main repo); its candle-shelf
+  wallpaper should be broken the same way as the Mage's bookcases.
+**Wiring** is as for the crag: backdrop cases (main.js ~626) calling `bakeRedressSky/Far/Mid/Near(theme)`, a `pal.set` arm in
+resolveTiles using `bakeRedressGround(theme)` as SET2 where it returns one, `GROUND_KITS` from `REDRESS_KITS`. Indoor themes
+return no sky: draw the far layer (320x180) as the back wall.
