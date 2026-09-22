@@ -3001,7 +3001,7 @@ function drawMap() {
   // node plates. The name is on a board you can read over the trees, and what you have taken out of that
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
   const placed = [], hit = (x, y, w, h) => placed.some(r => x < r.x + r.w + 2 && x + w + 2 > r.x && y < r.y + r.h + 2 && y + h + 2 > r.y);
-  for (const n2 of NODES) { if (nodeSecret(n2)) continue; placed.push({ x: n2.x - 8, y: n2.y - 20, w: 16, h: 26 }); } // the nodes and their flags are not to be covered either
+  for (const n2 of NODES) { if (nodeSecret(n2)) continue; placed.push(n2.kind === 'store' ? { x: n2.x - 12, y: n2.y - 22, w: 24, h: 28 } : { x: n2.x - 8, y: n2.y - 20, w: 16, h: 26 }); }   /* (the store's hut is wider than a node) */ // the nodes and their flags are not to be covered either
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
@@ -3014,6 +3014,10 @@ function drawMap() {
       const tries = [[0, 12], [-tw / 2 - 4, 12], [tw / 2 + 4, 12], [0, -22 - th], [0, 22], [-tw / 2 - 4, -10], [tw / 2 + 4, -10]];
       for (const [dx, dy] of tries) { const x = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x + dx)), y = nd.y + dy; if (!hit(x - tw / 2, y, tw, th)) { lx = x; ly = y; break; } }
       if (mine) placed.push(mine); placed.push({ x: lx - tw / 2, y: ly, w: tw, h: th }); }
+    /* A BOARD PUSHED AWAY FROM ITS NODE points back at it. On a crowded road the long names get shoved wherever there is room,
+       and THE BURNING VILLAGE's board landed on the Store's hut: players walked to the Store and pressed Z (Daniel, 2026-09-21) */
+    { const bx = Math.max(lx - tw / 2, Math.min(lx + tw / 2, nd.x)), by = Math.max(ly, Math.min(ly + th, nd.y)), far = Math.hypot(bx - nd.x, by - nd.y);
+      if (far > 14) { g.strokeStyle = lk ? 'rgba(140,130,120,0.5)' : here ? UI.sel : 'rgba(232,210,150,0.85)'; g.lineWidth = 1; g.setLineDash([2, 2]); g.beginPath(); g.moveTo(bx + 0.5, by + 0.5); g.lineTo(nd.x + 0.5, nd.y - 2.5); g.stroke(); g.setLineDash([]); g.fillStyle = g.strokeStyle; g.fillRect(nd.x - 1, nd.y - 4, 3, 3); } }
     g.fillStyle = lk ? 'rgba(18,14,24,0.78)' : 'rgba(28,22,18,0.86)'; g.fillRect(lx - tw / 2, ly, tw, th);
     g.strokeStyle = here ? UI.sel : lk ? 'rgba(140,130,120,0.35)' : 'rgba(201,178,124,0.55)'; g.lineWidth = 1;
     g.strokeRect(lx - tw / 2 + 0.5, ly + 0.5, tw - 1, th - 1);
@@ -16705,7 +16709,7 @@ function wakeMycelium(pr){
   for(const m of movers)if(m.kind==='growcap'&&Math.abs(m.x-pr.x)<130){m.state='grow';m.k=Math.max(0,m.k||0);m.cd=0;}
   if(pr.motherNode&&mother&&mother.alive&&bossActive&&!(mother.nodeRest>0)&&mother.mode!=='open'&&mother.mode!=='phaseRise'){
     mother.mode = 'open';mother.modeT=MOTHER_T.open[mother.phase||1];mother.tipped=true;mother.gillsOpen=true;mother.zones=[];
-    number(mother.x,mother.y-110,'THE HEART OPENS. TAKE THE SPRING.','#ff7a9a');SFX.gillOpen();
+    number(mother.x,mother.y-110,'THE HEART OPENS. TAKE THE SPRING.','#ff7a9a');SFX.gillOpen();shakeCam(5);burst(mother.x,L.arena.floor-70,34,['#ff7a9a','#fff1a8','#e0b0f0'],150,.8);   /* the cap tears open: the moment she becomes cuttable is a thing you see */
   }
 }
 // Grounded root anchors are reachable by every class; relocation happens during its rest.
@@ -16766,6 +16770,9 @@ function updateMother(e,dt){
   if(node&&e.nodeMove){e.nodeMove=false;e.nodeIndex=((e.nodeIndex||0)+1)%MOTHER_ROOTS.length;node.targetX=e.x+MOTHER_ROOTS[e.nodeIndex]*TS;node.lit=0;}
   if(node&&node.targetX!==undefined){node.x+=Math.sign(node.targetX-node.x)*Math.min(Math.abs(node.targetX-node.x),180*dt);node.light.x=node.x;}
   motherZones(e,dt);
+  /* THE TRANSITION (Daniel, 2026-09-21: 'she needs an animation when she is vulnerable'): openK runs 0 -> 1 over half a second as
+     the heart opens and back over the same as she seals, and drawMother draws everything off it - the cap lifting, the heart swelling in */
+  {const was=e.openK||0;e.openK=Math.max(0,Math.min(1,was+(e.mode==='open'?1:-1)*dt/.5));if(was>0&&e.openK===0&&e.mode!=='open')e.sealT=.6;e.sealT=Math.max(0,(e.sealT||0)-dt);}
   if(e.mode==='wake'){if(e.modeT<=0){e.mode = 'idle';e.modeT=2;e.attackN=0;}return;}
   if(!e.heart){e.heart={t:'heart',x:e.x,y:floor-68,vx:0,vy:0,w:28,h:24,hp:EHP.heart,face:1,alive:true,dying:0,anim:0,flash:0,stagger:0};enemies.push(e.heart);}
   e.hp=e.heart.hp;e.maxHp=EHP.heart;const phase=e.hp<=EHP.heart/4?3:e.hp<=EHP.heart/2?2:1;
@@ -16781,7 +16788,7 @@ function updateMother(e,dt){
   /* PHASE THREE: seed rain the whole time, three at a time where you might be standing */
   if(e.phase>=3&&e.mode!=='phaseRise'){e.rainT=(e.rainT??1)-dt;if(e.rainT<=0){e.rainT=MOTHER_T.rainEvery;const xs=[];for(let i=0;i<3;i++){const x=A.x0+30+Math.random()*(A.x1-A.x0-60);xs.push(x-e.x);}motherRain(e,xs,true);}}
   if(e.mode==='phaseRise'){if(e.modeT<=0){e.mode='idle';e.modeT=.8;}return;}
-  if(e.mode==='open'){if(e.modeT<=0){e.mode = 'idle';e.modeT=1;e.tipped=false;e.gillsOpen=false;e.nodeRest=3;e.nodeMove=true;}return;}
+  if(e.mode==='open'){if(e.modeT<=0){e.mode = 'idle';e.modeT=1;e.tipped=false;e.gillsOpen=false;e.nodeRest=3;e.nodeMove=true;number(e.x,floor-110,'SHE SEALS','#c9b8e8');SFX.thud();}return;}
   // THE CAP CLAPS above the spring line; the ROOT FAN crosses the floor. One asks you to stay low, the other to bounce.
   if(e.mode==='idle'&&e.modeT<=0){e.attackN=(e.attackN||0)+1;const kind=motherPick(e),fast=e.phase>=3;
     if(kind==='rootFan'){e.mode = 'rootFanTell';e.modeT=fast?.55:.7;number(e.x,floor-110,'!!','#ff6b6b');}
@@ -21153,10 +21160,11 @@ function drawReflections(cx, cy) {
 // The Mother Cap: drawn from shapes; stalk, cap, gills, and the heart once she tips.
 function drawMother(cx, cy) {
   const m = mother, floor = L.arena.floor, x = Math.round(m.x - cx), fy = Math.round(floor - cy);
-  const tip = m.tipped ? 1 : m.mode === 'tip' ? Math.min(1, 1 - m.modeT / 1.6) : 0;
-  const shakeX = m.mode === 'shake' ? Math.round(Math.sin(time * 40) * 3) : 0;
+  const oK = m.openK ?? (m.tipped ? 1 : 0), oE = oK * oK * (3 - 2 * oK);   /* how far open she is: 0 sealed, 1 open, eased */
+  const tip = m.mode === 'tip' ? Math.min(1, 1 - m.modeT / 1.6) : oE;
+  const shakeX = (m.mode === 'shake' ? Math.round(Math.sin(time * 40) * 3) : 0) + (oK > 0.02 && oK < 0.98 ? Math.round(Math.sin(time * 46) * 2.5 * (1 - oE)) : 0);   /* she shudders as she tears open, and as she closes */
   // her breath IS the fight, so it is on her body: sealed she draws in and narrows, open she flares and lights up
-  const open = !!m.gillsOpen && m.mode !== 'open', torn = m.tipped || m.mode === 'open';
+  const open = !!m.gillsOpen && m.mode !== 'open', torn = oK > 0.45;
   if (m.openWas !== open) { m.openWas = open; m.openT0 = time; }
   const ease = Math.min(1, (time - (m.openT0 || 0)) / 0.35); m.breathK = open ? ease : 1 - ease;
   const swell = 1 + m.breathK * 0.055, breathe = (1 + Math.sin(time * 1.2) * 0.02) * swell;
@@ -21174,10 +21182,14 @@ function drawMother(cx, cy) {
   if (open && !torn) { g.globalAlpha = 0.10 + 0.06 * Math.sin(time * 3); g.fillStyle = '#c9a0ff'; g.beginPath(); g.ellipse(x, capY + 16, 78, 22, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
   if (Math.random() < 0.12) parts.push({ x: m.x + 20 + Math.random() * 60, y: capY + cy + 8, vx: 0, vy: 30, life: 0.9, max: 0.9, col: '#b8c060', size: Math.random() < 0.4 ? 2 : 1, grav: 160 });
   // eyes under the cap, watching
-  if (!m.tipped) { const ex = x + Math.sign(P.x - m.x) * 3, blink = Math.floor(time * 0.7) % 7 === 0; g.fillStyle = '#ffd0ff'; if (!blink) { g.fillRect(ex - 24, capY + 4, 5, 3); g.fillRect(ex + 19, capY + 4, 5, 3); g.fillStyle = '#1b1626'; g.fillRect(ex - 23 + Math.sign(P.x - m.x), capY + 5, 2, 2); g.fillRect(ex + 20 + Math.sign(P.x - m.x), capY + 5, 2, 2); } else { g.fillRect(ex - 24, capY + 5, 5, 1); g.fillRect(ex + 19, capY + 5, 5, 1); } }
+  if (oK < 0.35) { const ex = x + Math.sign(P.x - m.x) * 3, blink = Math.floor(time * 0.7) % 7 === 0; g.fillStyle = '#ffd0ff'; if (!blink) { g.fillRect(ex - 24, capY + 4, 5, 3); g.fillRect(ex + 19, capY + 4, 5, 3); g.fillStyle = '#1b1626'; g.fillRect(ex - 23 + Math.sign(P.x - m.x), capY + 5, 2, 2); g.fillRect(ex + 20 + Math.sign(P.x - m.x), capY + 5, 2, 2); } else { g.fillRect(ex - 24, capY + 5, 5, 1); g.fillRect(ex + 19, capY + 5, 5, 1); } }
   // the heart, once exposed
   const heart = enemies.find(e => e.alive && e.t === 'heart');
-  if (heart && mother && mother.mode === 'open') { const hx = Math.round(heart.x - cx), hy = Math.round(heart.y - 6 - cy); const pulse = 1 + Math.sin(time * 6) * 0.12; g.globalAlpha = 0.5; g.fillStyle = '#ff7a9a'; g.beginPath(); g.ellipse(hx, hy, 14 * pulse, 12 * pulse, 0, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#c9463d'; g.beginPath(); g.ellipse(hx, hy, 7 * pulse, 6 * pulse, 0, 0, 7); g.fill(); g.fillStyle = '#ffd0ff'; g.fillRect(hx - 3, hy - 3, 2, 2); if (heart.flash > 0) { g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(hx, hy, 8, 7, 0, 0, 7); g.fill(); } }
+  /* THE SEAL: a pale sheen runs across the cap as it closes - she is armoured again */
+  if (m.sealT > 0 && m.alive) { const k = m.sealT / 0.6, bx = x - 80 + Math.round((1 - k) * 160); g.globalAlpha = 0.55 * k; g.fillStyle = '#efe6ff'; for (let q = 0; q < 3; q++) g.fillRect(bx + q * 6, capY - 26 + q * 2, 3, 44 - q * 4); g.globalAlpha = 1; }
+  /* the moment she opens: a ring of light off the heart that says NOW */
+  if (heart && oK > 0.02 && oK < 1 && m.mode === 'open') { const hx = Math.round(heart.x - cx), hy = Math.round(heart.y - 6 - cy); g.globalAlpha = 0.8 * (1 - oE); g.strokeStyle = '#fff1a8'; g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, 12 + 50 * oE, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+  if (heart && mother && oK > 0.03) { const hx = Math.round(heart.x - cx), hy = Math.round(heart.y - 6 - cy); const pulse = (1 + Math.sin(time * 6) * 0.12) * (0.25 + 0.75 * oE);   /* the heart swells in as the cap lifts, and shrinks away as it seals */ g.globalAlpha = 0.5; g.fillStyle = '#ff7a9a'; g.beginPath(); g.ellipse(hx, hy, 14 * pulse, 12 * pulse, 0, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#c9463d'; g.beginPath(); g.ellipse(hx, hy, 7 * pulse, 6 * pulse, 0, 0, 7); g.fill(); g.fillStyle = '#ffd0ff'; g.fillRect(hx - 3, hy - 3, 2, 2); if (heart.flash > 0) { g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(hx, hy, 8, 7, 0, 0, 7); g.fill(); } }
 }
 function drawHeroCard() { // who you are right now: the numbers behind the bars
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);

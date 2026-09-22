@@ -37,6 +37,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   rect(0, W - 1, 0, H - 1, T.SOLID);
   rect(0, W - 1, 0, SKY - 1, T.AIR);                                   // the sky over the crown
   const interiors = [], pools = [], moversExtra = [], nets = [], floors = [], breaks = [], hung = [];
+  let cistern = null;
   const net = (x, y0, y1) => nets.push([x, y0, y1]);
   const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: x < 36 ? 1 : -1 }, o || {}));
@@ -79,12 +80,12 @@ export function buildTowerAscent({ painter, T, TS }) {
   // ---- 3. THE BURST CISTERN. The cistern has let go: the floor is poison water, crossed on stones, and the first
   //      ledges over it give way when stood on. ----
   { const F = floors[2], surf = F.bot - 4;
-    pools.push({ x0: (X0) * TS, x1: (X1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: F.bot * TS, harm: true, poison: true, deadly: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' });   /* DEADLY: four rows deep and a jump is three - nobody climbs out of it, so it says so and it kills (deadly-water.js) */
+    cistern = { surf, bot: F.bot };   /* its water is laid at the end, once the stones and the rope are in: see WATER ONLY WHERE THERE IS WATER */
     /* the stepping stones, their tops two rows over the water, laid from the one the orrery's rope comes up through */
     const [hx0, hlen] = floors[1].tiers[floors[1].tiers.length - 1], hx = hx0 + (hlen >> 1);
     for (let x = hx - 1 - 6 * 8; x < X1 - 2; x += 6) if (x > X0 + 10) rect(x, x + 1, surf - 2, F.bot - 1, T.SOLID);
     rect(X0, X0 + 8, surf - 2, F.bot - 1, T.SOLID); rect(X1 - 2, X1, surf - 2, F.bot - 1, T.SOLID);   /* the banks: the rope from the orrery comes up through the left one */
-    F.tiers.forEach(([x0, len, row], j) => { if (row >= surf - 2) return; ledge(x0, len, row); if (j === 2 || j === 4) breaks.push([x0, x0 + len - 1, row]); });
+    F.tiers.forEach(([x0, len, row], j) => { if (row >= surf - 2) return; ledge(x0, len, row); });   /* (two of these ledges gave way 1.5 s after you stood on them. That was built for poison you could climb out of; since the cistern was made DEADLY (e0ab1dc) a ledge that gives way under you is a death with no answer - Daniel: 'impossible to beat'. They hold now) */
     ent('check', X0 + 2, surf - 3); ent('sign', X0 + 5, surf - 3, { text: 'THE CISTERN BURST. THE WATER IS POISON, AND THE LOW LEDGES WILL NOT HOLD YOU LONG.' });
     for (const [j, kind] of [[4, 'still'], [6, 'retorts'], [8, 'jars']]) { const [x0, , row] = F.tiers[j]; deco(kind, x0 + 2, row - 1); }   /* on the tier's own ledge */
     const who = ['husk', 'apprentice', 'imp', 'husk', 'zombie', 'apprentice', 'broom', 'husk', 'apprentice', 'imp'];
@@ -129,6 +130,13 @@ export function buildTowerAscent({ painter, T, TS }) {
 
   // EVERY ROPE IS HUNG LAST (rule I): nothing is dug after this line
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
+  /* WATER ONLY WHERE THERE IS WATER. The cistern was one pool from wall to wall, so the stones and the rope the orrery comes up
+     by were 'in' it too - and since the water was made DEADLY (e0ab1dc) the climb up that rope killed you before you were out
+     of it (Daniel: 'takes you right into poison water... impossible to beat'). One pool per open gap between the stones now:
+     each four rows deep with a stone either side, so each is still a trap and still DEADLY (deadly-water.js). */
+  if (cistern) { const { surf, bot } = cistern, open = x => L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR;
+    for (let x = X0; x <= X1; x++) { if (!open(x)) continue; let x1 = x; while (x1 + 1 <= X1 && open(x1 + 1)) x1++;
+      pools.push({ x0: x * TS, x1: (x1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: bot * TS, harm: true, poison: true, deadly: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' }); x = x1; } }
 
   const skins = [[0, X0 - 1, SKY, H - 1, 'tower'], [X1 + 1, W - 1, SKY, H - 1, 'tower']].concat(floors.slice(0, 4).map(F => [X0, X1, F.divider, F.divider + 1, 'tower']), [[X0, X1, H - 10, H - 1, 'tower']]);
   const START = { x: 20, y: 229 };
