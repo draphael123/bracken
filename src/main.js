@@ -9840,23 +9840,62 @@ function formGround(gs) { const l = P.x - P.w / 2 + 0.5, r = P.x + P.w / 2 - 0.5
   for (let tx = Math.floor(l / TS); tx <= Math.floor(r / TS); tx++) { const t = tileAt(tx, ty); if (isSolid(tx, ty) || (gs > 0 && isOneWay(t) && !(P.drop > 0)) || (gs < 0 && t === T.NET)) return true; } return false; }
 /* THE PLAYER IN A ROOM THAT HAS TURNED OVER. Runs instead of the hero's own update (updatePlayer hands over to it), so
    the swim, the ladders and the plunge never see a hero standing on a ceiling. What it keeps of him: the timers, his
-   own swing, the coins, the shrines, the spikes, the acid, and the boss walls. */
+   own swing, HIS GUARD, HIS ROLL AND HIS PLUNGE, the coins, the shrines, the spikes, the acid, and the boss walls.
+   (Daniel, 2026-09-22: "the upside down sections should allow players to block, dodge and use the plunge attack. They
+   don't currently." They did not: this update kept the walk, the jump and the swing and quietly dropped every answer
+   the player has, so a turned-over room was a room you could only run away in - and the Falling Tower's new Reading
+   Room fights you on its ceiling. The three below are the same three verbs updatePlayer raises, with the gravity sign
+   put through them: the guard and the roll need no sign at all - a shield does not care which way up you are, and a
+   roll is sideways - and only the plunge does, because a plunge goes at the floor and the floor is overhead.) */
 function magePlayer(dt) {
   if (!MG || !P.flip) return false;
-  for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT', 'dodgeCd', 'stDelay']) P[k] = Math.max(0, (P[k] || 0) - dt);
+  for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT', 'dodgeCd', 'stDelay', 'guardTired', 'parryT', 'riposteT', 'plungeRec']) P[k] = Math.max(0, (P[k] || 0) - dt);
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); P.anim += dt; if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * dt);
-  const gs = -1, move = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), stunned = P.hurt > 0;
+  const gs = -1, stunned = P.hurt > 0, attacking = P.atk >= 0;
+  let dodging = P.dodge > 0;
+  /* THE GUARD. damagePlayer0 reads P.block, P.face and P.st and nothing else, so raising it here is the whole of it:
+     the turn, the parry window (P.blockT), the guard break and the stamina are all the shield's own and already work. */
+  P.block = !!keys.block && P.ground && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && hero() === 'knight';
+  P.blockT = P.block ? (P.blockT || 0) + dt : 0;
+  if (P.block) { if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;
+    if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } }
+  /* THE ROLL, off the ceiling he is standing on. No air roll: a hero falling UP has nothing under him to push off. */
+  P.dbuf = Math.max(0, (P.dbuf || 0) - dt);
+  if (P.dbuf > 0 && P.ground && !attacking && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0) {
+    P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
+    if (spend(isWarden() ? stepCost() : dodgeCost())) {
+      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : 0.3; P.dodgeCd = 0.5; P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;
+      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? 230 : isReaper() ? 205 : isWarden() ? -175 : 215);   /* THE WARDEN STEPS BACKWARD, here as everywhere */
+      P.block = false; dodging = true; dodges++; trialEvent('dodge'); SFX.pDodge(); dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1);
+    } else number(P.x, P.y - 22, 'TIRED', '#ffd36b');
+  }
+  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }
+  const move = (stunned || dodging) ? 0 : (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
   /* walking */
   if (!stunned) { if (move) { const acc = P.ground ? 1000 : 600; P.vx += move * acc * dt; if (Math.abs(P.vx) > RUN) P.vx = move * RUN; P.face = move; } else { const fr = P.ground ? 1100 : 200, s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0; } }
   else P.vx *= Math.pow(0.1, dt);
+  P.abuf = Math.max(0, (P.abuf || 0) - dt);   /* the swing buffer is spent by the plunge OR by the sword, so it ages once, up here */
+  /* THE PLUNGE, the other way up: down + swing in the air drives him at his floor, and his floor is the ceiling.
+     The one verb the sign really changes - it commits, it accelerates, and the blow is over his head, not under his feet. */
+  if (P.abuf > 0 && !P.ground && (keys.down || P.abufDown) && !stunned && !P.plunge && !dodging) {
+    P.abuf = 0; P.abufDown = false;
+    if (spend(plungeCost())) { P.plungeN = (P.plungeN || 0) + 1; noteVerb('plunge'); P.plunge = true; P.vy = Math.min(P.vy, -60); P.atk = -1; P.hitSet.clear(); SFX.pPlunge(); }
+  }
+  if (P.plunge) {
+    P.vy = Math.max(-340, P.vy - 600 * dt);                                  /* it drives: the same cap the right way up has */
+    const hb = { l: P.x - 10, r: P.x + 10, t: P.y - P.h - 12, b: P.y - P.h + 6 };
+    for (const e of enemies) { if (!e.alive || P.hitSet.has(e) || e.gone > 0 || e.harmless || !overlap(hb, box(e))) continue;
+      P.hitSet.add(e); openBefore(e); hurtAs('plunge', e, plungeDmg(), P.x, true); swordEffect(e);
+      P.vy = POGO * gs; P.plunge = false; P.ground = false; P.canCut = true; P.hitSet.clear(); SFX.pPogo(); squash(0.8, 1.25, 0.1); break; }   /* and it pogoes off what it lands on, away from the ceiling */
+  }
   /* his own sword, upside down: X swings, and the blow is the hero's own */
-  if (!stunned) { P.abuf = Math.max(0, (P.abuf || 0) - dt);
+  if (!stunned && !dodging && !P.plunge) {
     if (P.abuf > 0 && P.atk < 0) { P.abuf = 0; if (spend(isPaladin() ? 22 : sword().cost)) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); P.swingMul = 1; P.heavySwing = false; P.heavy = false; P.swingKind = null; } }
     if (P.atk >= 0) { P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : 1); if (P.atk > 0.3) { P.atk = -1; P.swingMul = 1; } if (P.atk >= 0.03 && P.atk < 0.17) { const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6, px0 = P.x + P.face * 2, py0 = P.y - 9 * gs; trail.push({ x0: px0, y0: py0, x: px0 + Math.cos(ang) * 18 * P.face, y: py0 + Math.sin(ang) * 18 * gs, life: 0.11 }); } }
     { const hb = P.atk >= 0 ? attackBox() : null; if (hb) for (const e of enemies) { if (!e.alive || P.hitSet.has(e) || e.gone > 0 || !overlap(hb, box(e))) continue; P.hitSet.add(e); openBefore(e); hurtAs(meleeBlow(false), e, Math.round(swingDmg(e) * (P.swingMul || 1)), P.x, false); swordEffect(e); } } }
-  else { P.abuf = 0; if (P.atk >= 0) P.atk = -1; }
+  else if (stunned) { P.abuf = 0; if (P.atk >= 0) P.atk = -1; }
   P.jbuf = Math.max(0, (P.jbuf || 0) - dt);
-  if (P.jbuf > 0 && P.ground && !stunned) { P.jbuf = 0; P.vy = JUMPV * gs; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; SFX.pJump(); dust(P.x, P.y, 2); }
+  if (P.jbuf > 0 && P.ground && !stunned && !dodging && !P.plunge && !P.block) { P.jbuf = 0; P.vy = JUMPV * gs; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; SFX.pJump(); dust(P.x, P.y, 2); }
   if (!keys.jump && P.canCut && P.vy * gs < -110) P.vy = -110 * gs;   /* the short hop, downward */
   if (!P.ground) P.vy += GRAV * dt * gs; if (P.vy * gs > 300) P.vy = 300 * gs;
   /* THE MOVE, with the collision run the right way up for the gravity */
@@ -9865,6 +9904,9 @@ function magePlayer(dt) {
   if (r.hitX) P.vx = 0;
   if (gs > 0) { if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = 0.1; } else if (r.hitY) P.vy = 0; }
   else { if (r.hitY && P.vy < 0) { P.ground = true; P.vy = 0; } else if (r.ground && P.vy > 0) P.vy = 0; if (P.ground && !formGround(-1)) P.ground = false; }
+  /* AND THE PLUNGE LANDS - on the ceiling, which is what he was diving at */
+  if (P.ground && P.plunge) { P.plunge = false; P.plungeRec = 0.12; P.canCut = true; P.hitSet.clear(); shakeCam(3); dust(P.x, P.y - P.h, 10); SFX.thud(); squash(1.4, 0.6, 0.14); ringAt(P.x, P.y - P.h + 2, 22, '#e8dcc0', 0.3); }
+  if (P.ground) P.plungeN = 0;
   /* THE STEP, upside down: a one-tile step in the way of a walking body is stepped onto, the way the knight's mantle catches a lip for him */
   if (r.hitX && P.ground && move && !stunned) { const fx = Math.floor((P.x + move * (P.w / 2 + 2)) / TS), cxT = Math.floor(P.x / TS);
     const top = Math.floor((P.y - P.h) / TS); if (isSolid(fx, top) && !isSolid(fx, top + 1) && !isSolid(fx, top + 2) && !isSolid(cxT, top + 1) && !isSolid(cxT, top + 2)) { P.y += TS; P.x += move * 3; } }
