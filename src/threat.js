@@ -49,6 +49,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromander: 5, captive: 0, w
   tbell: 0, pwheel: 0,
   /* and the goblins who moved in: the priest throws no blow at all, but a blessed room takes twice the killing, so it is worth what it costs you */
   gobpriest: 2,
+  /* THE FALSE ABBOT: a boss, and one whose ward makes every other thing in the room worth more */
+  abbot: 6,
   /* the mage is a shooter that moves and a floor you must leave: the storm shaman's job with a red half, at his weight */
   gobmage: 3,
   /* THE HEXED FIELDS: a scarecrow is a read (where are you looking), a rook a step as much as a threat, the wisp worth more to you dead */

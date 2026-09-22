@@ -1981,12 +1981,12 @@ function theMonastery() {
   // two braziers in the roof: when one breathes it throws its coals up, and a bird over it comes down
 
 
-  ent('sign', 16, 29, { text: 'THE BELFRY. THE ROC CLINGS OUTSIDE. STRIKE THE GREAT BELL WHEN HER EYE IS NEAR.' });
+  ent('sign', 16, 29, { text: 'THE BELFRY. A GOBLIN IN THE ABBOT\'S CHAIR, BLESSING HIS OWN.' });
   // THE NEST BELL: it hangs on its frame between the two middle boards. She comes over it to scream at the roof,
   // and a bell struck under her goes through her like a blow - so the answer to her scream is here
-  ent('tbell', 56, 29, { roc: true });
-  ent('sign', 22, 29, { text: 'STRIKE THE NEST BELL WHEN SHE IS OVER IT: THE NOTE GOES THROUGH HER AND SHE FALLS.' });
-  ent('roc', 72, 29);
+  ent('tbell', 56, 29, { abbot: true });
+  ent('sign', 22, 29, { text: 'STRIKE THE GREAT BELL WITH HIM UNDER IT: THE NOTE GOES THROUGH THE RITE.' });
+  ent('abbot', 72, 29);   /* THE FALSE ABBOT, at the far end of the ringing floor: the great bell is at 56, and getting him under it is the fight */
   // the last hop to the gate is over the thorns on two stones set on a pillar
   plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29);
   ent('check', 18, 29); ent('gate', 92, 29);
@@ -2018,14 +2018,15 @@ function theMonastery() {
   ent('bat', 60, 205); ent('bat', 24, 186); ent('harpy', 20, 142);
   ent('harpy', 40, 44); ent('fledgling', 62, 55, { face: -1 });
 
-  // ---- THE NEST ITSELF. The summit was one more ledge on the way up until it had a nest on it: the thing has been
-  // living here a long time and the roof says so - bones it did not finish, the shells of what it hatched, and
-  // the wall of the nest heaped round the rim out of the monks' own rafters.
-  for (const x of [6, 12, 77, 90]) ent('deco', x, 29, { kind: 'eyrie' });   /* not 84: it ran through the plank laid over the thorns */
-  for (const [x, v] of [[20, 0], [34, 1], [58, 0], [72, 1]]) ent('deco', x, 29, { kind: 'bones', v });
-  for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'skullPile', v });
-  for (const [x, v] of [[44, 1], [80, 0]]) ent('deco', x, 29, { kind: 'stoneLantern', v });
-  ent('sign', 30, 29, { text: 'THE GREAT BELL NEVER FALLS SILENT. RING IT AGAIN WHEN SHE COMES BACK.' });
+  // ---- THE RINGING FLOOR. It was a NEST while the Roc had it - heaped rafters, bones she did not finish, the shells
+  // of what she hatched - and with her gone the roof stays ON (she is what tore it off, mid-fight), so this is a ROOM
+  // again: the floor the monks rang their bells from, with the goblins' own squalor spread over the top of it.
+  for (const [x, v] of [[10, 0], [86, 1]]) ent('deco', x, 29, { kind: 'bellFrame', v });      /* the two lesser bells' frames, empty: those bells went down the mountain */
+  for (const [x, v] of [[20, 0], [44, 1], [72, 0]]) ent('deco', x, 29, { kind: 'incenseStand', v });   /* what he fills the censer from */
+  for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'bookshelf', v });      /* the psalters, still on their shelf */
+  ent('deco', 34, 29, { kind: 'statue' }); ent('deco', 80, 29, { kind: 'monkChores', v: 0 });
+  for (const [x, v] of [[6, 0], [90, 1]]) ent('deco', x, 29, { kind: 'prayerFlags', v });
+  ent('sign', 30, 29, { text: 'HE WILL NOT STAND UNDER IT. GUARD HIS CHAIN AND IT HAULS HIM THERE.' });
   // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
   // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
   masonry.push([1, 40, 218, 221], [1, 94, 172, 174], [1, 94, 152, 154], [1, 94, 132, 134], [40, 74, 100, 102], [29, 51, 56, 58]);
@@ -2044,7 +2045,7 @@ function theMonastery() {
       haze: 'rgba(222,208,190,0.14)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
       dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'roc', music: 'roc', tint: '#ffe0b0', tintA: 0.12, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest */
+    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
     mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS },
   };
 }
@@ -7132,7 +7133,7 @@ export const LEVELS = [
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'EIGHT FLOORS ON ONE CLIFF, AND THE WAY UP IS THROUGH THEM.', build: hangingVillage, needs: 'scree' },
-  { id: 'spire', name: 'THE MONASTERY', sub: 'on the cliff the roc took', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
+  { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'moor' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },

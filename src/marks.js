@@ -60,6 +60,7 @@ export const BY_HAND = {
   'tidemarauder|thrustTell':'!','tidemarauder|castTell':'!','tidemarauder|reelThrust':'!','tidemarauder|undertowTell':'!!',   /* THE TIDE REAVER (tide-reaver.js, by hand): the thrust, the cast and the thrust after the reel a shield turns; the rake and the wave nothing does */
   'hedgewarden|cutTell':'!','hedgewarden|rushTell':'!','hedgewarden|thornTell':'!!',   /* THE HEDGE WARDEN (hedge-warden.js, by hand): the cut and the rush a shield turns; the thorns nothing does */
   'broom|sweepTell':'!',
+  'abbot|censerTell':'!','abbot|castTell':'!','abbot|processTell':'!!','abbot|coalsTell':'!!','abbot|knellTell':'!!','abbot|riteTell':'',   /* THE FALSE ABBOT (false-abbot.js, by hand: a module-file boss the audit cannot follow): the censer and the chain a shield turns; the procession, the coals and the knell nothing does; the rite throws no blow at all */
   'tome|tell':'!',   /* THE TOME (tome.js, by hand: a module-file foe the audit cannot follow): the dart is a blow, and the shield does not just turn it - it SHUTS the book */
   'gargoyle|diveTell':'!!','gargoyle|gustTell':'!','gargoyle|spitTell':'!','gargoyle|flareTell':'!!',   /* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the gust and the spit a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */
   'gravewarden|cleaveTell':'!','gravewarden|tossTell':'!','gravewarden|swingTell':'!!','gravewarden|digTell':'!!','gravewarden|tollTell':'',   /* THE GRAVE WARDEN (grave-warden.js, by hand like the Archmage): spade and dirt a shield turns; the lantern and the hand nothing does; the toll strikes nobody */
@@ -82,7 +83,8 @@ export const BY_HAND = {
 // 'type|mode' -> '!' (a shield turns it) | '!!' (nothing does) | '' (not a blow). '*|mode' is any elite's own move.
 /* MARK:BEGIN */
 export const MARK = {
-  '*|callTell': '', '*|eliteLungeTell': '!', '*|eliteSlamTell': '!!', '*|rallyTell': '', '*|wallTell': '', 'angler|biteTell': '!',
+  '*|callTell': '', '*|eliteLungeTell': '!', '*|eliteSlamTell': '!!', '*|rallyTell': '', '*|wallTell': '', 'abbot|castTell': '!',
+  'abbot|censerTell': '!', 'abbot|coalsTell': '!!', 'abbot|knellTell': '!!', 'abbot|processTell': '!!', 'abbot|riteTell': '', 'angler|biteTell': '!',
   'angler|castTell': '!', 'angler|dive': '!', 'angler|hookTell': '!', 'angler|swellTell': '!', 'archer|draw': '!', 'archer|elVolleyTell': '!!',
   'archmage|blinkTell': '', 'archmage|boltTell': '!', 'archmage|openTell': '', 'archmage|rendTell': '!!', 'archmage|slamTell': '!!', 'archmage|spitTell': '!',
   'archmage|swipeTell': '!', 'archmage|wardTell': '', 'armour|swingTell': '!', 'assassin|markTell': '!!', 'assassin|stabTell': '!', 'badger|chargeTell': '!',
