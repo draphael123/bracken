@@ -20,10 +20,12 @@ art) are a separate job and are not costed here.
 | **The doorway is a portal in the Archmage fight, not a sandy ending.** | §5 rewritten around the portal. It also **corrects an error in this brief's first draft**: the sandy path is real and already shipped — it is in `src/sanctum.js`, which I had not read, not in `buildTowerAscent`, which I had. |
 | **THE POWDER DECK attaches to THE FLOTILLA**, `needs: 'flotilla'`, per the written brief. | §4.2 carries the Flotilla siting and nothing else; the Hurricane Deck alternative is **withdrawn**. §7.3 keeps the record of why it was a real question. |
 | **`.claude/briefs/` has landed** (`5493df8`). | THE UNBURIED FIELD, THE CHURCH and THE POWDER DECK are confirmed from their own briefs instead of inferred. |
+| **§7.1: 40, there is no twelfth level** (2026-09-24). | Build to **40 level nodes, 43 nodes** (the three existing stores, see §7.2). The "41" in DESIGN.md and QUEUE §2b was a counting slip. |
+| **§7.2: the Well Town IS the desert's shop** — no store node. | Row 3 of §4.1's table is **deleted**: eight desert nodes, not nine. `DESERT_PATH` keeps `[170,136]` only as a bend in the road, not a stop. The inland sheet's missing store is still its own unasked question. |
+| **§7.5: step PAST spurs; the side level-select panel reaches them.** | `mapGo` left/right walk the required road only and skip every `spur: true` node. The way onto a spur is the lane-B side toggle menu, so that menu is **no longer cosmetic**: without it, spurs become unreachable. It has to land with (or before) the `mapGo` change, never after. |
+| **§7.6: sheet + style only.** | Step 2 of §8 as written: the fifth sheet, a desert `bakeMap` style, the green-to-gold seam and the sand road from THE FALLING TOWER. **No per-node desert scenery** until each level lands. |
 
-Still Daniel's, and **deliberately not resolved here**: the node count (§7.1), the desert store (§7.2), spur stepping
-(§7.5) and how much desert to paint (§7.6). §7.4's ambiguity is left standing as well — the map is the same under
-both readings of it, so it blocks nothing.
+**§7.4 is still open** — the map is identical under both readings, so it blocks nothing here.
 
 ---
 
