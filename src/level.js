@@ -7135,6 +7135,12 @@ function theMagesFolly() {
   };
 }
 
+/* THIS ARRAY IS AN APPEND LOG. ITS ORDER IS NOT THE CAMPAIGN'S ORDER — the `needs` chain is, and nothing else.
+   New levels go on the END, always, because map nodes and saves count levels by ARRAY INDEX and inserting one in
+   the middle moves every node and every save after it. So `burning`, `witchlight` and `oreroad` sit in this tail
+   while belonging in the middle of the road. If you are writing anything that asks "which level comes before this
+   one", READ `needs`, NEVER THE ROW ABOVE. Two tools did it the other way and measured six of 28 levels against a
+   level they do not follow (tools/curve.mjs, tools/one-new-foe.mjs; docs/AGENT-HANDOFF.md, EXPENSIVE LESSONS). */
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
