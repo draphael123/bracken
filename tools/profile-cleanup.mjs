@@ -18,14 +18,28 @@ import { TEMP, PROFILE_RE } from './browser-profile.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ours = () => new Set(readdirSync(TEMP).filter(n => PROFILE_RE.test(n)));
-const browsersOn = names => { if (!names.length) return 0; const r = spawnSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe' or Name='msedge.exe'\" | Select-Object -ExpandProperty CommandLine"], { encoding: 'utf8', windowsHide: true });
-  return (r.stdout || '').split('\n').filter(l => names.some(n => l.includes(n))).length; };
+/* also not Windows-only. Unguarded this did not throw on Linux - powershell is simply absent, r.stdout is empty and
+   it answers ZERO, which is worse than throwing: "and ends its browser" would have passed by knowing nothing. */
+const browsersOn = names => { if (!names.length) return 0;
+  const r = process.platform !== 'win32'
+    ? spawnSync('ps', ['-eo', 'args='], { encoding: 'utf8', maxBuffer: 64 << 20 })
+    : spawnSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe' or Name='msedge.exe'\" | Select-Object -ExpandProperty CommandLine"], { encoding: 'utf8', windowsHide: true });
+  const lines = (r.stdout || '').split('\n').filter(l => process.platform === 'win32' || /chrome|chromium|msedge/i.test(l));
+  return lines.filter(l => names.some(n => l.includes(n))).length; };
 /* ANOTHER PROCESS'S LIVE BROWSER IS NOT OUR LEAK. The suite (or a second tool) may be running on this machine and making its
    own bracken-* profiles while a case runs. A new profile that a running process has on its command line is in use - the same
    test profile-sweep.mjs uses - and it is left out of the count, UNLESS the process using it is one this case started (the
    'killed' case's orphaned browser is ours, and it must still be seen and swept). */
 /* (a raw control character in some process's command line comes out of PowerShell 5.1's JSON unescaped and breaks the parse: they are blanked first) */
-const procs = () => { const r = spawnSync('powershell', ['-NoProfile', '-Command', 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress'], { encoding: 'utf8', maxBuffer: 64 << 20, windowsHide: true });
+/* NOT WINDOWS-ONLY, because the suite runs on an ubuntu runner too. This threw 'could not list processes' on every
+   CI run from the day the check was added: PowerShell is not there, `procs()` raised at the FIRST case, and the
+   whole check died in ten seconds against 176 locally. profile-sweep.mjs:27 already had the ps branch; this file
+   simply never got it. The same pids, ppids and command lines, off `ps` instead of Win32_Process. */
+const procs = () => {
+  if (process.platform !== 'win32') { const r = spawnSync('ps', ['-eo', 'pid=,ppid=,args='], { encoding: 'utf8', maxBuffer: 64 << 20 });
+    if (r.status !== 0 || !r.stdout) throw new Error('could not list processes');
+    return r.stdout.split('\n').filter(Boolean).map(l => { const m = l.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/); return m && { pid: +m[1], ppid: +m[2], cmd: m[3].toLowerCase() }; }).filter(Boolean); }
+  const r = spawnSync('powershell', ['-NoProfile', '-Command', 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress'], { encoding: 'utf8', maxBuffer: 64 << 20, windowsHide: true });
   if (r.status !== 0 || !r.stdout) throw new Error('could not list processes'); return JSON.parse(r.stdout.replace(/[\x00-\x1f]/g, ' ')).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: (p.CommandLine || '').toLowerCase() })); };
 const descendants = (ps, root) => { const s = new Set([root]); let grew = true; while (grew) { grew = false; for (const p of ps) if (!s.has(p.pid) && s.has(p.ppid)) { s.add(p.pid); grew = true; } } return s; };
 /* the profiles in use by a running process that is not one of `mine` (pids) */
@@ -56,7 +70,12 @@ for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES
   if (name === 'killed') {
     for (let i = 0; i < 600 && !out.includes('READY'); i++) await new Promise(r => setTimeout(r, 100));
     const mine = descendants(procs(), child.pid);                                     // this case's node, its server and its browser
-    spawnSync('taskkill', ['/PID', String(child.pid), '/F'], { stdio: 'ignore' });   // the node process only: its browser is left behind, as it would be
+    /* the node process only: its browser is left behind, as it would be. GUARDED — taskkill is Windows-only, and
+       this was the one of three call sites that forgot (profile-sweep.mjs:28 and browser-profile.mjs:53 both check
+       the platform). Unguarded it is an ENOENT no-op on a Linux runner: the child is never killed, so the case
+       cannot orphan the profile it exists to orphan, and it trips its own "else this case proves nothing" assert. */
+    if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(child.pid), '/F'], { stdio: 'ignore', windowsHide: true });
+    else try { process.kill(child.pid, 'SIGKILL'); } catch { /* already gone */ }
     await done;
     const fresh = () => { const n = [...ours()].filter(x => !before.has(x)), f = foreignInUse(n, mine); return n.filter(x => !f.has(x)); };
     const orphaned = fresh();
