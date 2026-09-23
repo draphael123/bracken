@@ -13582,8 +13582,8 @@ function carpetPlayer(dt){
  /* THE FLOOR OF HIS ROOM. carpetBox's bottom was an invisible floor you could not fall through, so the lowest part of
     the arena was the safest part of it. It burns now: a warning glow, then a bite and a shove back up, every tick you
     stay. It HURTS AND DOES NOT KILL - the way out is up, and up is always there. */
- if(L.sanctum&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#8fffb0':'#d9ffe8',size:1,grav:-40});}}))
-  {damagePlayer(P.x,DMG.sanctumFire,{unblockable:true,blow:'THE FLOOR BURNS'});SFX.sizzle?SFX.sizzle():SFX.crack();shakeCam(3);burst(P.x,P.y+4,10,['#8fffb0','#3fe08a','#d9ffe8'],90,.6,-30,1);}
+ if(L.sanctum&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
+  {damagePlayer(P.x,DMG.sanctumFire,{unblockable:true,blow:'THE FLOOR BURNS'});SFX.sizzle?SFX.sizzle():SFX.crack();shakeCam(3);burst(P.x,P.y+4,10,['#c88aff','#9a52e0','#ffe9ff'],90,.6,-30,1);}
 }
 /* THE FALLING TOWER, every frame: the floors going under you, and the carpet at the top */
 function updateAscent(dt){
@@ -20386,9 +20386,7 @@ function drawWorld(cx, cy, showPlayer) {
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
   if (L.sandWalk) drawSandDawn(g, L, cx, cy, time);   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
-  if (L.sanctum && L.carpetUp && !L.sandWalk) { drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0)); }
   drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); drawRouteSupports(g,L,cx,cy); drawClimbCues(g,L,cx,cy);
-  if (L.sanctum) drawSanctumDoors(g, L, cx, cy, time);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
@@ -20400,6 +20398,12 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) drawMageTiles(cx, cy);   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice */
+  /* HIS HALL GOES ON AFTER THE TILES, NOT BEFORE THEM. Drawn first, the level's own tiles painted straight back over it -
+     and the tower keeps two rows of CRENELLATIONS at rows 46-49, which are inside the room's box, so the merlons stood up
+     through the floor of a sealed hall like masonry floating in mid-air. Nothing up here is supposed to be tiles at all
+     (see the head of src/sanctum.js), so the room covering them is the right way round as well as the good-looking one. */
+  if (L.sanctum && L.carpetUp && !L.sandWalk) drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0));
+  if (L.sanctum) drawSanctumDoors(g, L, cx, cy, time);
   drawComb(cx, cy);
   drawGroundLight(cx, cy, tx0, ty0);
   SEA.seaOver(g, cx, cy, VW, VH, time);   /* a sea level's light on its own floors (under the creatures) */

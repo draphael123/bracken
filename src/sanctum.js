@@ -54,7 +54,12 @@ export function burnSanctum(P, A, dt, ctx) {
 
 // ---------------------------------------------------------------- the room
 const STONE = ['#1a1428', '#2a2238', '#352c46', '#141020', '#4a4058', '#0e0a18'];
-const FIRE = ['#8fffb0', '#3fe08a', '#d9ffe8', '#1d6b46', '#0e2a1c'];
+/* [hot, body, white core, the deep of it, the char under it]. IT WAS GREEN, AND GREEN FIRE AT THE BOTTOM OF A SCREEN
+   IS GRASS. It looked like arcane fire in a Node render and like a verge the moment it was in the game with a boss bar
+   sitting on it - which is the exact thing Daniel reported at the top of this tower, one floor up. Violet cannot be
+   read as vegetation at any size, it belongs to the tower, and it buys a second thing for nothing: THE ARCHMAGE'S OWN
+   SPELLS ARE GREEN, so on a green floor half his telegraphs were camouflaged against the hazard. */
+const FIRE = ['#c88aff', '#9a52e0', '#ffe9ff', '#5a2a8a', '#2a1040'];
 const NIGHT = ['#241c3c', '#9a8fd0'];   /* what shows through his windows: the tower's own violet night, and a star in it */
 /* a steady per-column wobble, so the fire's edge is a line of flame and not a ruled edge */
 const lick = (x, t) => Math.sin(x * 0.21 + t * 3.1) * 2 + Math.sin(x * 0.07 - t * 1.7) * 2;
@@ -94,7 +99,7 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
     g.fillStyle = STONE[3]; for (let y = top - SANCTUM.vault; y < flr; y += 9) g.fillRect(sx, y, SANCTUM.wall, 1);
     const inner = dir > 0 ? sx + SANCTUM.wall - 2 : sx;
     g.fillStyle = STONE[4]; g.fillRect(inner, top - SANCTUM.vault, 2, (flr - top) + SANCTUM.vault);
-    g.fillStyle = 'rgba(143,255,176,0.10)'; g.fillRect(inner - (dir > 0 ? 0 : 2), ft - 40, 4, 40);   /* firelight up the wall */
+    g.fillStyle = 'rgba(200,138,255,0.12)'; g.fillRect(inner - (dir > 0 ? 0 : 2), ft - 40, 4, 40);   /* firelight up the wall */
   }
   // THE VAULT: ribs springing off both walls to a ridge, and black above it
   band(L0, top - SANCTUM.vault - 40, w + SANCTUM.wall * 2, 40, STONE[5]);
@@ -117,7 +122,7 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
     /* the body of it: DARKER AS IT GOES DOWN, so the fire has a depth. A single flat fill for the whole band was the
        lawn again, just lower down the screen. */
     band(L0, ft + 4, w + SANCTUM.wall * 2, flr - ft + 8, FIRE[3]);
-    band(L0, ft + 15, w + SANCTUM.wall * 2, flr - ft - 11, '#124430');
+    band(L0, ft + 15, w + SANCTUM.wall * 2, flr - ft - 11, '#3d1a66');
     band(L0, ft + 21, w + SANCTUM.wall * 2, flr - ft - 9, FIRE[4]);
     /* THE TONGUES. Evenly spaced columns of an even height are a level meter, not a fire, so each one takes its height
        from two beats at different rates PLUS a fixed per-column offset, and a third of them are skipped outright to
@@ -143,7 +148,7 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
       if ((((wx / 3) | 0) + Math.floor(time * 7)) % 11 === 0) { g.fillStyle = FIRE[2]; g.fillRect(x + 1, base - h0 - 3 - (Math.floor(time * 9 + wx) % 4), 1, 2); }   /* embers off the tips */
     }
     g.globalCompositeOperation = 'lighter';
-    for (let k = 0; k < 5; k++) band(L0, ft - 6 - k * 9, w + SANCTUM.wall * 2, 9, 'rgba(63,224,138,0.05)');
+    for (let k = 0; k < 5; k++) band(L0, ft - 6 - k * 9, w + SANCTUM.wall * 2, 9, 'rgba(154,82,224,0.055)');
     g.globalCompositeOperation = 'source-over';
   }
 }

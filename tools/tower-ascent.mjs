@@ -164,14 +164,19 @@ try {
    // the carpet, boarded at the top, starts the fight; the crown goes under it
    BK.tp(30,${TOWER.SKY});BK.sim(5);BK.board();BK.sim(5);out.carpet=!!BK.carpet();out.active=BK.bossActive;BK.sim(120);out.crownGone=F[6].done||F[6].front!==null;
    const y0=BK.P.y;for(let i=0;i<120;i++){BK.keys.down=true;BK.sim(1);}BK.keys.down=false;out.floorHeld=BK.P.y<=BK.L.arena.floor;out.fellNot=!!BK.carpet();
-   for(let i=0;i<60;i++){BK.keys.up=true;BK.keys.right=true;BK.sim(1);}BK.keys.up=BK.keys.right=false;out.flew=Math.round(y0-BK.P.y);
+   /* THE RISE IS MEASURED FROM THE BOTTOM OF THE DIVE, NOT FROM WHERE HE BOARDED. y0 used to be both: the carpet put
+      him on the parapet, which was the lowest point in the arena, so y0-P.y happened to be the climb. Boarding now
+      puts him in the middle of the SANCTUM, well above the floor, and the same subtraction measured the distance back
+      to his starting height instead - it read -22 for a carpet that was flying perfectly well. */
+   out.sank=Math.round(BK.P.y-y0); const yLow=BK.P.y;
+   for(let i=0;i<60;i++){BK.keys.up=true;BK.keys.right=true;BK.sim(1);}BK.keys.up=BK.keys.right=false;out.flew=Math.round(yLow-BK.P.y);
    // a death in the sky puts the tower back and the carpet waiting
    BK.god=false;BK.P.hp=0;BK.P.dead=0.01;BK.sim(400);out.retry={carpet:!!BK.carpet(),crown:!F[6].done,below:F[0].done,boss:BK.boss&&BK.boss.alive,mode:BK.boss&&BK.boss.mode};
    return out;})()`, 240000);
   assert.ok(r.armedOver, 'the library arms when you are over its divider'); assert.ok(r.done, 'and falls'); assert.equal(r.sealed, T.SOLID, 'its rope hole is sealed');
   assert.ok(r.cleared < 10, 'nothing of the floor is left standing: ' + r.cleared); assert.ok(r.waited, 'a floor you went back under waits for you');
   assert.ok(r.carpet && r.active, 'boarding the carpet starts the fight'); assert.ok(r.crownGone, 'the crown falls away under the carpet');
-  assert.ok(r.floorHeld && r.fellNot, 'there is no falling off the carpet'); assert.ok(r.flew > 40, 'it flies up: ' + r.flew);
+  assert.ok(r.floorHeld && r.fellNot, 'there is no falling off the carpet'); assert.ok(r.flew > 40, 'it flies up: ' + r.flew); assert.ok(r.sank > 10, 'and it sinks when you hold down: ' + r.sank);
   assert.ok(!r.retry.carpet && r.retry.crown && r.retry.below && r.retry.boss, 'a retry: the carpet waits again, the crown stands, the floors under it stay gone: ' + JSON.stringify(r.retry));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
