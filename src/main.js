@@ -3110,6 +3110,10 @@ function drawMapLife() {
   { const nd = NODES.find(n => n.id === 'lamplit');
     if (nd && !nodeLocked(nd)) { if (Math.random() < 0.4) mapPuffs.push({ x: nd.x + (Math.random() - 0.5) * 10, y: nd.y - 2, vx: (Math.random() - 0.5) * 4, vy: -12 - Math.random() * 8, life: 1.4 });
       g.globalAlpha = 0.10 + 0.05 * Math.sin(time * 2.2); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(nd.x, nd.y, 9, 0, 7); g.fill(); g.globalAlpha = 1; } }
+  // THE WITCHLIGHT STAIR: a torch that doesn't burn steady - it gutters, on its own uneven clock, not the frame clock
+  { const nd = NODES.find(n => n.id === 'witchlight');
+    if (nd && !nodeLocked(nd)) { const flicker = 0.5 + 0.5 * Math.sin(time * 9.1) * Math.sin(time * 2.7 + 1.3);
+      g.globalAlpha = 0.12 + 0.10 * flicker; g.fillStyle = '#8fd6ff'; g.beginPath(); g.arc(nd.x, nd.y - 6, 5 + flicker, 0, 7); g.fill(); g.globalAlpha = 1; } }
 }
 /* WHERE THE WALKER IS. On the road, between two of its points. STOOD ON A SPUR he is on the NODE, off the road -
    he walked to the junction and then stepped off it, which is the whole point of a spur being a spur. */
@@ -3179,6 +3183,10 @@ function drawMap() {
   if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   // river sparkle (the river is on the wood sheet)
   g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, WOOD_Y], [VW - 58, 40 + WOOD_Y], [VW - 26, 82 + WOOD_Y], [VW - 70, 122 + WOOD_Y], [VW - 44, VH + WOOD_Y]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
+  /* THE COAST SHIMMER: the whole sheet is sea, so this is a fixed scatter of points (seeded, not random every
+     frame - a reseeding sparkle reads as noise, not water) that only some of them light on any given frame. */
+  if (mapCamY < CRAG_Y && mapCamY + VH > INLAND_Y) { g.fillStyle = 'rgba(210,240,255,0.75)';
+    for (let i = 0; i < 18; i++) { const sx = 20 + (i * 53) % 280, sy = COAST_Y + 16 + (i * 37) % 148; if (Math.sin(time * 2.4 + i * 1.7) > 0.55) g.fillRect(sx, sy, 1, 1); } }
   // cloud shadows drift over the land, then the clouds themselves later
   for (const c of mapClouds) { c.x += c.sp * 0.016; if (c.x > VW + 60) c.x = -60; g.globalAlpha = 0.18; g.fillStyle = '#0a1a0a'; g.beginPath(); g.ellipse(c.x + 6, c.y + 10, CLOUD[c.k].width * 0.5, CLOUD[c.k].height * 0.45, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   // boss portraits: the queen hangs over the wood, the frog sits by the pond
@@ -3192,7 +3200,10 @@ function drawMap() {
     if (ns) drawSet(SPR.chief, null, Math.floor(time * 4) % 2, ns.x - 22, ns.y + 6, 1, false, 0.7, 0.7, cl('stockade'));
     if (np) drawSet(SPR.mother, null, 0, np.x + 26, np.y + 8, 1, false, 0.5, 0.5, cl('spore'));
     if (nk) drawSet(SPR.king, null, 0, nk.x - 24, nk.y + 6, 1, false, 0.7, 0.7, cl('kings'));
-    const st = nd('store'); if (st && Math.random() < 0.5) parts.push({ x: st.x + 3 + camX, y: st.y - 22 + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); }
+    /* SMOKE OFF EVERY TOWN AND STORE, not just the first one (map-life-and-select §2). Cheap: a store's own hut
+       chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
+       particle spawns a frame at most, using the same drifting-puff particle the store already had. */
+    for (const id of ['store', 'highstore', 'chandler', 'waymeet']) { const sn = nd(id); if (sn && Math.random() < (id === 'waymeet' ? 0.35 : 0.5)) parts.push({ x: sn.x + (id === 'waymeet' ? -6 : 3) + camX, y: sn.y - (id === 'waymeet' ? 14 : 22) + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); } }
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */
     g.drawImage(MAPSIGN, nd.x + 8, nd.y - 12);
@@ -3221,6 +3232,11 @@ function drawMap() {
   { // the road not yet walked: dotted, past the last node you can enter
     let last = 0; for (let k = 0; k < NODES.length; k++) if (!NODES[k].spur && !nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)';   /* FROM THE LAST REQUIRED NODE WALKED, not the highest unlocked index (map-redesign §2d/§6.4) - a spur that unlocks out of order used to switch the whole dotted section off */ for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 4.5)) % (map.walking ? 6 : K.R.idle.length), px, py + 2, map.lastDir || 1, false);
+  /* A PENNANT ON THE TOKEN. A pole planted on the hero's own shoulder, and the cloth waves on the map's clock -
+     three pixels, cheap, the one thing on the token itself that moves besides his legs. */
+  { const wave = Math.sin(time * 6) * 1.4, poleX = Math.round(px) + (map.lastDir < 0 ? -4 : 4), poleTop = Math.round(py) - 13;
+    g.fillStyle = '#5c3a1d'; g.fillRect(poleX, poleTop, 1, 6);
+    g.fillStyle = '#c9463d'; g.fillRect(poleX + (map.lastDir < 0 ? -3 : 1), poleTop, 3, 1); g.fillRect(poleX + (map.lastDir < 0 ? -2 - wave / 2 : 1 + wave / 2) | 0, poleTop + 1, 2, 1); }
   /* BOTH HEROES ON THE ROAD. Player two (or the ally) walks a few pixels behind player one, the same baked preview
      the co-op pick screen stands on its card, at the same scale and on the same step so the pair read as walking
      together and not as two unrelated markers. His own colour cue (the HUD's P2 green, or the ally's violet) sits
