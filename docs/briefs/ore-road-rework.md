@@ -124,3 +124,11 @@ it at a composed track that fits the crags. A new one is better but is not somet
 Tests: `tools/ore-road.mjs` (Node), `tools/ore-ride.mjs` (page — **keep every line's end 0.75 of a tile inside its
 deck** or fast lines drop riders), `tools/winchmaster-pilot.mjs`. Trace before piloting: the bot needed seven pilots
 and never converged. A held density pass sits in `work/claude/oreroad-density-HELD.patch`.
+
+## 10. DECIDED BY DANIEL, 2026-09-23 (appended here, not in §8, so it cannot collide with claude/integ's §8 edit)
+
+- **THE REWORK PROPOSAL AS WRITTEN IS APPROVED**, the Winchmaster section (§6) included. Build to it.
+- **MUSIC: A NEW TRACK.** Not `mineworks` (a sparse synth track that plays as silence) and not a reused library
+  track. Owned by the integrator, not lane A: lane A leaves `L.music` alone until the track lands.
+- **WALK ORDER: UNCHANGED.** He answered every other question and did not ask for this one to move, so the level
+  stays between STORMHOLD and HIGHCROWN. Re-ask only if the measured INDEX makes the slot indefensible.
