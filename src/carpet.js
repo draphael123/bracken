@@ -45,12 +45,22 @@ export function knockCarpet(P, fromX, fromY, power = CARPET.knock) {
 export function updateCarpet(L, P, dt, ctx) {
   if (!L.carpetAt) return;
   const W = L.carpetWait || (L.carpetWait = { t: 0, ruin: [] }); W.t += dt;
+  /* THE DOOR STANDS WHERE THE RUG LAY, so this one proximity test opens it and nothing else has to: what changed is
+     only WHERE IT PUTS YOU. Without a sanctum you rise off the parapet as before; with one you step through and come
+     out inside his hall (src/sanctum.js), and the rug is under you when you get there. */
   if (!P.carpet && !L.carpetUp && !P.dead && Math.abs(P.x - L.carpetAt.x) < CARPET.board[0] && Math.abs(P.y - L.carpetAt.y) < CARPET.board[1]) {
-    mountCarpet(P, L.carpetAt); L.carpetUp = true; ctx.board();
+    mountCarpet(P, L.sanctum ? L.sanctum.spawn : L.carpetAt); L.carpetUp = true; ctx.board();
   }
-  if (L.carpetUp && Math.random() < dt * 5) W.ruin.push({ x: L.arena.x0 + Math.random() * (L.arena.x1 - L.arena.x0), y: L.arena.y0 - 40, vy: 40 + Math.random() * 60, s: 2 + (Math.random() * 5 | 0), r: Math.random() * 6, life: 5 });
+  /* THE TOWER STILL COMING DOWN. In the open sky it fell past you from above the top of the arena; INSIDE HIS HALL that
+     would be rubble dropping through a painted stone vault, so in the sanctum it is shaken loose FROM the vault instead,
+     and between the room's own walls rather than the arena's wider box. */
+  if (L.carpetUp && Math.random() < dt * 5) { const b = L.sanctum ? carpetBox(L.arena, 0) : { x0: L.arena.x0, x1: L.arena.x1 };
+    W.ruin.push({ x: b.x0 + Math.random() * (b.x1 - b.x0), y: L.sanctum ? L.arena.y0 + 26 : L.arena.y0 - 40, vy: 40 + Math.random() * 60, s: 2 + (Math.random() * 5 | 0), r: Math.random() * 6, life: 5 }); }
   for (const q of W.ruin) { q.y += q.vy * dt; q.vy += 90 * dt; q.r += dt * 2; q.life -= dt; }
-  W.ruin = W.ruin.filter(q => q.life > 0 && q.y < L.arena.floor + 200);
+  /* the tower still coming down, seen from inside his room: in the sanctum the rubble goes INTO the fire and is done,
+     rather than falling on through a floor that is now burning stone */
+  const floor = L.sanctum ? L.arena.floor - 30 : L.arena.floor + 200;
+  W.ruin = W.ruin.filter(q => q.life > 0 && q.y < floor);
 }
 export function resetCarpet(L, P) { if (P) P.carpet = null; L.carpetUp = false; if (L.carpetWait) L.carpetWait.ruin = []; }
 
@@ -71,7 +81,7 @@ export function drawRug(g, x, y, t, tilt = 0) {
 export function drawCarpetWorld(g, L, P, cx, cy, time) {
   if (!L.carpetAt) return;
   const W = L.carpetWait; if (W) for (const q of W.ruin) { g.fillStyle = q.s > 4 ? '#4a4258' : '#6a6280'; g.fillRect(Math.round(q.x - cx), Math.round(q.y - cy), q.s, q.s); }
-  if (!P.carpet && !L.carpetUp) {   /* waiting: it hovers a hand over the walk and turns its tassels in the wind */
+  if (!P.carpet && !L.carpetUp && !L.sanctum) {   /* waiting: it hovers a hand over the walk and turns its tassels in the wind (with a sanctum there is a door here instead) */
     const x = L.carpetAt.x - cx, y = L.carpetAt.y - cy - 6 + Math.sin(time * 2.4) * 2;
     drawRug(g, x, y, time); g.fillStyle = 'rgba(224,176,80,.18)'; g.fillRect(Math.round(x) - 16, Math.round(y) + 6, 32, 2);
   }

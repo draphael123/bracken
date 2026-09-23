@@ -8,7 +8,7 @@
 //   bakeFarMage(w, h)       320x90  the fields below the hill, far hedges, a moon-lit mist; horizon row ~52
 //   bakeMidMage(w, h)       480x140 the garden walls and the yews of the grounds, the tower's outer wall on the right
 //   bakeNearMage(w, h)      640x300 yew trunks and hedge tops
-// SKINS (16x16, three variants each)   bakeTowerSkins() -> { tower, gate, hedge, hedgeTop, ice, crack, hole }
+// SKINS (16x16, three variants each)   bakeTowerSkins() -> { tower, gate, hedge, hedgeTop, ice, crack, hole, sand }
 // ROOM PAINTS   paintRoom(g, st, sx, sy, w, h, tx0) draws a room's back wall: 'library', 'reading', 'orrery', 'clock', 'lab', 'flip', 'dome'
 // PROPS (bottom row = ground unless said)
 //   bakeGlyph()             28x8    a rune circle on the floor (drawn flipped on a ceiling): it turns the room over
@@ -76,7 +76,15 @@ export function bakeTowerSkins() {
   const ice = tile((g, v) => { g.fillStyle = '#9ad0e8'; g.fillRect(0, 0, 16, 16); g.fillStyle = '#e8f8ff'; g.fillRect(0, 0, 16, 2); g.fillStyle = '#6aa8c8'; g.fillRect(0, 14, 16, 2); g.fillRect((v * 6 + 2) % 16, 3, 1, 10); g.fillStyle = '#c8ecff'; g.fillRect((v * 6 + 8) % 16, 4, 1, 6); });
   const crack = tile((g, v) => { g.fillStyle = '#4a4258'; g.fillRect(0, 0, 16, 16); g.fillStyle = '#5e5670'; g.fillRect(0, 0, 16, 1); g.fillStyle = '#1b1626'; line(g, 2 + v, 1, 7 + v, 8, '#1b1626'); line(g, 7 + v, 8, 4 + v, 15, '#1b1626'); line(g, 7 + v, 8, 13, 11, '#1b1626'); line(g, 9, 1, 11 - v, 5, '#1b1626'); g.fillStyle = FORM_COL.golem[1]; g.fillRect(6 + v, 7, 2, 1); g.fillRect(3 + v, 12, 1, 1); });
   const hole = tile((g, v) => { g.fillStyle = '#2e2838'; g.fillRect(0, 0, 16, 16); g.fillStyle = '#1b1626'; g.fillRect(2, 4, 12, 10); g.fillStyle = '#221c2c'; g.fillRect(2, 4, 12, 2); g.fillStyle = FORM_COL.mouse[1]; g.fillRect(3 + v, 12, 2, 1); g.fillRect(10 - v, 13, 2, 1); });
-  return { tower, gate, hedge, hedgeTop, ice, crack, hole };
+  /* SANDSTONE, for the cutting past the second door. Everything else in this file is violet tower stone; this is the
+     one warm thing in the level, because it is the first thing the next world is going to be made of. */
+  const sand = tile((g, v) => { g.fillStyle = '#c08a5e'; g.fillRect(0, 0, 16, 16);
+    g.fillStyle = '#a06e46'; g.fillRect(0, 6 + v, 16, 1); g.fillRect(0, 13, 16, 1);
+    g.fillStyle = '#dcae7c'; g.fillRect(0, 0, 16, 1); g.fillRect(0, 7 + v, 16, 1);
+    for (let i = 0; i < 9; i++) { const x = (i * 7 + v * 5) % 16, y = (i * 11 + v * 3) % 16;
+      g.fillStyle = (i + v) % 3 ? '#b07a4e' : '#d09a6c'; g.fillRect(x, y, 1, 1); }
+    if (v === 2) { g.fillStyle = '#8a5a3a'; g.fillRect(4, 10, 3, 1); } });
+  return { tower, gate, hedge, hedgeTop, ice, crack, hole, sand };
 }
 
 // ---------- the rooms' back walls ----------

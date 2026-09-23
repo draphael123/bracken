@@ -5,6 +5,8 @@
      LONGER  (2026-09-22) THE READING ROOM and THE PENDULUM GALLERY, both LOAD-BEARING: take the flip away and nothing
              over the gallery is reached, take the pendulums away and the cistern is not; and FEWER ZOMBIES (3 + 1 husk)
      REACH   the fill climbs from the Folly's foot to the parapet and every silver/checkpoint; the sky has no footing
+     ROOM    (2026-09-23) the crown ends at a DOOR, not a rug on a grass mat; his hall is behind it and the sandy path
+             is behind that, reachable only through the second door - see tools/archmage-room.mjs for the room itself
      CARPET  8-way flight at ~160 px/s, normalised diagonals, no falling (the box holds it), knockback pushes it away
      MAGE    every spell told; storm and mark are unblockable and dodged by leaving; the opening is CAUSED (a mark that
              finds no one opens him, one that lands does not); enraged he is faster and blinks more, the sky narrows
@@ -15,7 +17,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs'; import vm from 'node:vm';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { TOWER, SWING, gateOccupied } from '../src/tower-ascent.js';
+import { TOWER, SAND, SWING, gateOccupied } from '../src/tower-ascent.js';
 import { CARPET, carpetBox, mountCarpet, stepCarpet, knockCarpet } from '../src/carpet.js';
 import { updateUndeadMage, MAGE, UNDEADMAGE_F } from '../src/undead-mage.js';
 import { openPage } from './cdp.mjs';
@@ -47,9 +49,24 @@ assert.ok(L.ents.some(e => e.t === 'undeadmage' && e.y < TOWER.SKY), 'he waits i
 // ---- REACH ----
 const R = floodReach(L, T, { rides: true });
 assert.ok(R.jumpNear(Math.round(L.carpetAt.x / 16), TOWER.SKY), 'the fill climbs to the carpet');
-for (const e of L.ents.filter(e => ['silver', 'check', 'gate'].includes(e.t))) assert.ok(R.jumpNear(e.x, e.y), e.t + ' unreachable at ' + e.x + ',' + e.y);
+/* THE GATE IS NOT IN THIS LIST ANY MORE. It stands on the sandy path, and the sandy path is behind the second door -
+   the climb is not supposed to reach it, and if it ever does, something has gone wrong with the sky. So the gate gets
+   its own fill below, started where the door puts you down: the requirement was never 'the gate can be walked to from
+   the start', it was 'once you are through, the gate can be walked to', and that is what is asserted now. */
+for (const e of L.ents.filter(e => ['silver', 'check'].includes(e.t))) assert.ok(R.jumpNear(e.x, e.y), e.t + ' unreachable at ' + e.x + ',' + e.y);
+{ const gate = L.ents.find(e => e.t === 'gate');
+  assert.ok(!R.jumpNear(gate.x, gate.y), 'the gate can be climbed to without the door: the level can be finished without the fight');
+  const sand = floodReach({ ...L, START: { x: SAND.x0 + 2, y: SAND.row - 1 } }, T, { rides: true });
+  assert.ok(sand.jumpNear(gate.x, gate.y), 'through the second door and the gate cannot be walked to: the level cannot be finished'); }
 for (const f of L.towerFloors) assert.ok([...R.seen].some(s => { const y = +s.split(',')[1]; return y >= f.top && y < f.bot; }), f.name + ' is climbed');
-assert.ok(![...R.seen].some(s => +s.split(',')[1] < TOWER.SKY - 1), 'nothing to stand on in the sky');
+/* NOTHING TO STAND ON IN THE SKY - still true, and it now has to be said more carefully. The sky rows are no longer
+   empty: THE SANDY PATH is built up there (SAND, rows 18-24), where the second door puts you when the Archmage is down.
+   What matters is that THE CLIMB CANNOT REACH IT. If the fill ever touches the sand, the sand has become a floor under
+   the boss arena and the sky fight has a place to land - so this asserts the flood is clear of the sky rows, and then
+   asserts the sand is really there, because an empty sky would pass the first line for the wrong reason. */
+assert.ok(![...R.seen].some(s => +s.split(',')[1] < TOWER.SKY - 1), 'the climb reaches into the sky rows: the sky fight has a floor now');
+assert.equal(at(SAND.x0 + 4, SAND.row), T.SOLID, 'the sandy path is gone, so the line above passes for the wrong reason');
+assert.ok(![...R.seen].some(s => +s.split(',')[1] === SAND.row - 1), 'the sandy path can be WALKED to: it is meant to be reached only through the second door');
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.y).sort((a, b) => a - b);
 for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name); assert.ok(checks[0] <= TOWER.SKY, 'and one on the parapet, for the sky fight');
 // ---- THE TWO NEW FLOORS (2026-09-22) ----
