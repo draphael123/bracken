@@ -74,21 +74,24 @@ export function cableLines() {
   const A = OR.ARENA, [pa0, pa1] = OR.PYLON_A, [pb0, pb1] = OR.PYLON_B;
   return [
     /* THE FIRST SPAN: one line, two rests. It runs flat across each pylon's deck so the rims come level with it - step off, step on */
+    /* AND EVERY LINE RUNS FLAT THROUGH ITS STATION LIPS. A sag that meets a rock deck comes up to it from BELOW, and a
+       rider still under the deck's surface is carried into the cliff face: this line's last stretch put him 14 px into
+       the sorting tower's rock and stood him at its foot (tools/ore-road.mjs now checks the whole line for this). */
     { id: 'first', speed: 62, gap: 100, ret: 220, pts: join(
-      sagPts(67.5, OR.YARD, pa0, OR.YARD, 3), sagPts(pa0, OR.YARD, pa1, OR.YARD, 0, 1),
+      sagPts(67.5, OR.YARD, 69, OR.YARD, 0, 1), sagPts(69, OR.YARD, pa0, OR.YARD, 3), sagPts(pa0, OR.YARD, pa1, OR.YARD, 0, 1),
       sagPts(pa1, OR.YARD, pb0, OR.YARD, 2), sagPts(pb0, OR.YARD, pb1, OR.YARD, 0, 1),
-      sagPts(pb1, OR.YARD, 136.75, OR.YARD, 2)) },
+      sagPts(pb1, OR.YARD, 135, OR.YARD, 2), sagPts(135, OR.YARD, 136.75, OR.YARD, 0, 1)) },
     /* THE ORE CHUTE: the fast one. Down thirteen rows from the tower's top deck to the foot, flat over the tipple house half way,
        and at 96 px/s it is steered rather than waited out - which is the answer to "riding on lifts is boring" */
     { id: 'chute', speed: 96, gap: 100, ret: 240, pts: join(
       sagPts(203.5, OR.TOWER[2], OR.TIPPLE[0], OR.TIPPLE_ROW, 1), sagPts(OR.TIPPLE[0], OR.TIPPLE_ROW, OR.TIPPLE[1], OR.TIPPLE_ROW, 0, 1),
       sagPts(OR.TIPPLE[1], OR.TIPPLE_ROW, 268.75, OR.FOOT_ROW, 1)) },
     /* THE DOWN LINE crosses the chute on its way back up to the tower's middle deck, and it comes back LOADED WITH GOBLINS */
-    { id: 'down', speed: 58, gap: 128, ret: 220, riders: true, pts: sagPts(268.5, OR.FOOT_ROW, 203.25, OR.TOWER[1], 2) },
+    { id: 'down', speed: 58, gap: 128, ret: 220, riders: true, pts: join(sagPts(268.5, OR.FOOT_ROW, OR.FOOT[0] - 0.5, OR.FOOT_ROW, 0, 1), sagPts(OR.FOOT[0] - 0.5, OR.FOOT_ROW, 203.25, OR.TOWER[1], 2)) },
     /* THE STEEP LINE: up out of the gorge to the winch house over a second pillar, and every third bucket is rust that will not hold you */
     { id: 'steep', speed: 58, gap: 96, ret: 200, cracked: 3, pts: join(
-      sagPts(352.5, OR.PILLAR[1], OR.PILLAR_BX[0], OR.PILLAR_B, 2), sagPts(OR.PILLAR_BX[0], OR.PILLAR_B, OR.PILLAR_BX[1], OR.PILLAR_B, 0, 1),
-      sagPts(OR.PILLAR_BX[1], OR.PILLAR_B, 408.75, OR.WINCH, 2)) },
+      sagPts(352.5, OR.PILLAR[1], 354, OR.PILLAR[1], 0, 1), sagPts(354, OR.PILLAR[1], OR.PILLAR_BX[0], OR.PILLAR_B, 2), sagPts(OR.PILLAR_BX[0], OR.PILLAR_B, OR.PILLAR_BX[1], OR.PILLAR_B, 0, 1),
+      sagPts(OR.PILLAR_BX[1], OR.PILLAR_B, 407, OR.WINCH, 2), sagPts(407, OR.WINCH, 408.75, OR.WINCH, 0, 1)) },
     /* THE DRUM LINE: the arena's, into the great drum. The Winchmaster REVERSES it, sends buckets down it, and a rider jams it */
     { id: 'drum', speed: 52, gap: 80, ret: 160, drum: true, pts: [[480.5 * TS, surf(A.deck)], [A.ledge[0] * TS, surf(A.deck)]] },
   ];
@@ -148,7 +151,7 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 4, YARD, { text: 'THE ORE ROAD. THE BUCKETS ARE THE ONLY FLOOR OVER THE GORGE, AND THEY COME ON A CLOCK.' });
   ent('sign', 17, YARD, { text: 'HOLD DOWN ON A LOADED SKIP AND IT TIPS. EMPTY IT RIDES HIGH, LOADED IT RIDES LOW.' });
   ent('sign', 49, YARD, { text: 'HOLD THE SHIELD ON A BUCKET AND THE LINE STOPS. STOPPED IS WHERE YOU CAN FIGHT.' });
-  ent('check', 5, YARD); ent('check', 34, YARD); ent('check', 64, YARD);
+  ent('check', 5, YARD); ent('check', 37, YARD); ent('check', 64, YARD);   /* 37, not 34: column 34 is the crusher's east lip, and a checkpoint over the pit respawns you onto its teeth (audit FLOAT) */
   meet('THE PICK LINE', 14, 40, [['miner', 16, YARD], ['rockgoblin', 10, YARD - 2], ['sprig', 40, YARD]]);
   meet('THE LOADING HOUSE', 52, 67, [['miner', 58, YARD], ['rockgoblin', 66, YARD], ['sapper', 56, YARD]]);
   ent('tippler', 60, YARD - 8, { face: -1 });                                   /* THE FIRST TIPPLER, over a floor and not yet over a drop: the level shows you the stream where you can walk out of it */

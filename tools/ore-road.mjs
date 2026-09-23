@@ -51,6 +51,23 @@ for (const l of C.lines) {
   ok(footing(at(Math.floor(a[0] / TS), ra)) || footing(at(Math.floor(a[0] / TS) + (dir > 0 ? -1 : 1), ra)), `and it leaves from a deck at column ${Math.floor(a[0] / TS)}`);
 }
 
+/* ---- AND THE RIDER'S BODY NEVER GOES INTO ROCK ON THE WAY THERE. Ending inside the deck is not enough: the first
+   span's last stretch sagged two rows, so the skip came up to the sorting tower's rock FROM BELOW, and a rider still
+   15 px under the deck's surface was carried flat into the cliff face and shelled off onto its foot, alive and going
+   nowhere (ore-ride, 2026-09-23: "at [136,38], end [137,37]"). A one-way plank is walked up through and does not
+   count; SOLID does. Checked over the whole line, at both heights a skip rides (loaded, and emptied OR.BUCKET.lift
+   higher), with the widest hero's box (14 x 18), so the next sag anyone adds is caught here and not by a night. */
+for (const l of C.lines) {
+  if (l.drum) continue;
+  const xs = l.pts.map(p => p[0]), x0 = Math.min(...xs), x1 = Math.max(...xs); let bad = null;
+  for (let x = x0; x <= x1 && !bad; x += 2) { const y0 = lineYAt(l, x); if (y0 == null) continue;
+    for (const lift of [0, OR.BUCKET.lift]) { const y = y0 - lift;
+      for (let c = Math.floor((x - 7) / TS); c <= Math.floor((x + 6) / TS) && !bad; c++)
+        for (let r = Math.floor((y - 18) / TS); r <= Math.floor((y - 1) / TS) && !bad; r++)
+          if (at(c, r) === T.SOLID) bad = `x ${Math.round(x)} (column ${c}, row ${r}), riding ${lift ? 'empty' : 'loaded'}`; } }
+  ok(!bad, `the ${l.id} line never carries its rider into rock` + (bad ? ` - it does at ${bad}` : ''));
+}
+
 /* ---- SEVEN SECTIONS OF 60 TO 100, TILING THE LEVEL (F1). "Too short, really only one mechanic" is answered by
    the shape as much as by the length: eight named places, seven of them walked, none of them the same twice. */
 { const ps = Object.entries(OR.PLACES).sort((a, b) => a[1][0] - b[1][0]);
