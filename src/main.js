@@ -2966,7 +2966,7 @@ const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id; }
-const HUT = ART.bakeHut(), FLAG = ART.bakeFlag();
+const HUT = ART.bakeHut(), FLAG = ART.bakeFlag(), MAPICON = ART.bakeMapIcons();
 const map = { node: 0, seg: 0, t: 0, walking: 0, target: 0 }; // token position: on PATH segment seg at fraction t
 /* THE SIDE LEVEL-SELECT PANEL (map-life-and-select §1). It is the only way onto a spur now that mapGo steps past
    them (§7.5), so this is load-bearing and not cosmetic. Every node is listed, locked ones included and greyed -
@@ -3197,6 +3197,16 @@ function drawMap() {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */
     g.drawImage(MAPSIGN, nd.x + 8, nd.y - 12);
     const lk = nodeLocked(nd); const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
+    /* THE ICON, on the disc itself: one per level (never two alike, docs/map-icons.png is the contact sheet),
+       one shared coin for every store. The RIM around it is the one thing that changes frame to frame - gold
+       cleared, pale open, dim locked - which is why it is drawn here and not baked with the disc. A SPUR gets a
+       dashed rim instead of a solid one, the same grammar the road itself uses for a spur's stub, so a glance
+       says "side trip" before you have even read the name. */
+    { const icon = MAPICON[nd.id]; if (icon) g.drawImage(icon, nd.x - icon.width / 2, nd.y - icon.height / 2);
+      g.strokeStyle = lk ? 'rgba(120,120,140,0.85)' : (p && p.cleared) ? '#ffd36b' : '#e8dcc0'; g.lineWidth = 1;
+      if (nd.spur) g.setLineDash([2, 2]);
+      g.beginPath(); g.arc(nd.x, nd.y, 6, 0, 7); g.stroke();
+      if (nd.spur) g.setLineDash([]); }
     if (nd.kind === 'store') g.drawImage(HUT, nd.x - 10, nd.y - 20);
     else if (lk) g.drawImage(PROP.lock, nd.x - 3, nd.y - 16);
     else if (p && p.cleared) g.drawImage(FLAG, nd.x - 3, nd.y - 18);
