@@ -118,6 +118,17 @@ export function buildSunkenCaravan(T) {
   ent('sign', sections.rim + 4, on(sections.rim + 4), { text: 'THE GROUND IS MOVING.' });
   ent('awning', marks.rimshade - 2, on(marks.rimshade - 2), { torn: true });                          // a torn lean-to on the rim
   for (const dx of [8, 20, 32]) ent('wagon', ax0 + dx, on(ax0 + dx), { wreck: true });              // the three wrecks: the places to make THE OPENING
+  /* THE RIM'S OVERHANG (Daniel, 2026-09-23) - THE ONE PIECE OF SHADE THE WORM CANNOT TAKE. The hollow's shade used to be
+     the three wrecks and nothing else, and phase 2 SMASHES every wreck it sticks in (src/dune-worm.js), so past phase 2
+     there was no shade left in the arena at all - while the brief says in the same breath that the sun keeps working in
+     there and to fight in the shade when you can. Sunstroke's first damage lands at 9.7 s of open sun and the fight runs
+     far longer, so the level's own rule turned unanswerable exactly where it should bite hardest: A12, the room ceasing
+     to supply what the rule assumes. Built as a lintel of the rim's own sandstone, the same way THE ARCH is built in the
+     dune sea - its pillars are decoration drawn BEHIND, so they never wall the hollow off. */
+  const ovL = ax0 + 2, ovR = ax0 + 8, ovRow = floor - 5;                                           /* 5 rows up: inside SUN.roof, and clear over the breach column */
+  for (let x = ovL; x <= ovR; x++) set(x, ovRow, T.SOLID);
+  ent('deco', ovL, on(ovL), { kind: 'archPillar', behind: true }); ent('deco', ovR, on(ovR), { kind: 'archPillar', behind: true });
+  shade.push([ovL * TS, (ovR + 1) * TS, ovRow * TS, floor * TS + 1]);                              /* said as a rect too, so a tool with no tileAt still sees it */
   const arena = { x0: ax0 * TS, x1: (ax1 + 1) * TS, floor: floor * TS, trigger: (ax0 + 5) * TS, wallL: ax0 - 1, wallR: ax1 + 1, boss: 'duneworm', music: 'boss2', tint: '#e2bb7a', tintA: 0.1, fx: 'sand' };
 
   // ---- THE GARRISON (a draft of the level's GARRISON row, placed so it can be measured): ~4 a screen, 3 in the first ----
