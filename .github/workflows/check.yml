@@ -14,7 +14,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      # A RED RUN MUST SAY WHAT WENT RED WITHOUT A SIGN-IN. Run #108 failed on 2026-09-24 and the only thing anybody
+      # could read from outside was "Process completed with exit code 1": the log itself needs a signed-in session
+      # with admin rights, and the annotations carried nothing. Two sessions spent an afternoon on hypotheses -
+      # case sensitivity, path separators, the 40-minute cap - and every one of them was wrong, because none of us
+      # could see the one line that says which check failed. `::error::` annotations ARE readable unauthenticated,
+      # so the FAIL lines go there and the next red run explains itself to anyone with the URL.
       - name: audits
-        run: npm run check
+        run: |
+          set -o pipefail
+          npm run check 2>&1 | tee check.log || {
+            echo "::error title=npm run check failed::$(grep -E '^[0-9]+ check\(s\) failed' check.log | head -1)"
+            grep -E '^FAIL ' check.log | while IFS= read -r l; do echo "::error title=failing check::$l"; done
+            sed -n '/^---- /,$p' check.log | head -40 | while IFS= read -r l; do echo "::error title=detail::$l"; done
+            exit 1
+          }
       - name: headless boss pass and kill-zone sweep
         run: node tools/headless.mjs
