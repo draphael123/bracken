@@ -14,7 +14,7 @@ export const skillsFor = h => BY_HERO[h]||[];
 export const skillScale = lv => 1 + Math.min(Math.max(0,lv),24) / 120;
 export function growthAt(h,lv){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12;
- return {hp:({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:90}[h]||100)+3*lv+Math.round(8*ranks),stamina:100+5*lv,damage:Math.floor(lv/2)+Math.floor(ranks*(h==='reaper'?1.5:1)),ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)};
+ return {hp:({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100}[h]||100)+3*lv+Math.round(8*ranks),stamina:100+5*lv,damage:Math.floor(lv/2)+Math.floor(ranks*(h==='reaper'?1.5:1)),ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)};
 }
 export function checksum(raw){let h=14695981039346656037n;for(let i=0;i<raw.length;i++){h^=BigInt(raw.charCodeAt(i));h=BigInt.asUintN(64,h*1099511628211n);}return h.toString(16).padStart(16,'0');}
 export function validateProgress(p){

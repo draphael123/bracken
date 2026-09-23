@@ -319,7 +319,7 @@ const HEROES = [
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dash: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dash: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dash: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
-  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 90 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dash: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
+  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dash: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
    not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
@@ -372,7 +372,7 @@ const TREE_WHO = { knight: ['COMBOS, BLEEDS AND FINISHERS', 'THE SHIELD: TURN IT
   paladin: ['THE LIGHT, AND WHAT IT JUDGES', 'THE AEGIS: A WALL THAT WALKS', 'THE MAUL AND THE GROUND IT SHAKES'],
   pirate: ['THE PISTOL: ONE BALL, MADE TO COUNT', 'GOLD: THE PURSE IS A WEAPON', 'CUTLASS AND HOOK: CLOSE, AND CLOSER'],
   reaper: ['THE GREATSWORD, THE MARK, THE WOUND', 'SUMMON SKELETON (F): THE DEAD ON CALL', 'THE WARD STOPS, THE NOVA PAYS'],
-  warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE SHAFT: TURN IT, AND HOLD THE LINE', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'] };
+  warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE SHAFT: TURN IT, AND HOLD THEM OFF', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'] };
 const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
@@ -3913,7 +3913,7 @@ function drawHeroPick() {
     paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
     pirate: ['cutlass and pistol', 'gold is his powder', '90 health'],
     reaper: ['a greatsword: slow, and it cuts them ALL', 'his ward banks what it stops', '95 health', 'HARDER'],
-    warden: ['a spear: everything at its point', 'C PLANTS IT: a charge dies on it', '90 health'] };
+    warden: ['a spear: everything at its point', 'C PLANTS IT: a charge dies on it', '100 health'] };
   const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 62;
   PICK.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
     g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
@@ -5349,7 +5349,7 @@ function spendVigil() {
 }
 function updatePhalanx(dt) {
   if (!phalanx.length) return;
-  /* HOLD THE LINE (her capstone): the row does not go back down. It STANDS, as a wall of points, and it keeps asking
+  /* HEDGE OF SPEARS (her capstone; it was HOLD THE LINE, which the knight also had): the row does not go back down. It STANDS, as a wall of points, and it keeps asking
      - so anything that walks into it afterwards is pinned again, and the room has a side she owns. */
   const wall = tal('holdTheLine');
   for (const s of phalanx) {
@@ -6557,7 +6557,7 @@ function updatePlayer(dt) {
   }
   if (keys.block && thrown && !P.saidNoShield) { P.saidNoShield = true; number(P.x, P.y - 22, 'NO SHIELD', '#9aa39a'); } if (!thrown) P.saidNoShield = false;
   if (P.block) {
-    if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* HOLD THE LINE */
+    if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* STEADY ARM (the knight's; it was HOLD THE LINE, a name the warden's capstone also had) */
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
