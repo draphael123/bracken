@@ -46,9 +46,7 @@ import { chainOf } from './campaign-order.mjs';
 /* Named, with a reason each. THE ORE ROAD IS BEING REWORKED and must leave this list when it lands. */
 const GRANDFATHERED = {
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
-  crown: 'ANSWERED, AND BEING FIXED - Daniel agreed 2026-09-24 that it should bring a new foe. THE TEMPERER is briefed in docs/briefs/crown-temperer.md; this entry goes when he lands.',
-  keep: 'ANSWERED, AND BEING FIXED - THE LEADFOOT is briefed in docs/briefs/keep-leadfoot.md; this entry goes when he lands.',
-};
+};   /* THE UNDERWATER KEEP LEFT THIS LIST when THE LEADFOOT landed (docs/briefs/keep-leadfoot.md), which is the tool working as written: the stale check above is what put him on the board. */ /* HIGHCROWN LEFT IT TOO, when THE TEMPERER landed (docs/briefs/crown-temperer.md). */
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const ehp = src.slice(src.indexOf('const EHP = {'));

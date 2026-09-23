@@ -65,8 +65,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 1,
-    "price": 60
+    "level": 3,
+    "price": 100
   },
   {
     "id": "sunder",
@@ -116,8 +116,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 8,
-    "price": 220
+    "level": 7,
+    "price": 190
   },
   {
     "id": "execute",
@@ -235,8 +235,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 4,
-    "price": 120
+    "level": 1,
+    "price": 60
   },
   {
     "id": "vengeance",
@@ -286,8 +286,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 8,
-    "price": 220
+    "level": 12,
+    "price": 360
   },
   {
     "id": "bulwark",
@@ -312,7 +312,7 @@ export const LEGACY_NODES = [
     "branch": 1,
     "row": 3,
     "col": 0,
-    "name": "HOLD THE LINE",
+    "name": "STEADY ARM",
     "max": 1,
     "desc": "holding the shield up costs no wind: only what lands on it does",
     "parent": "bash",
@@ -405,8 +405,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 4,
-    "price": 120
+    "level": 5,
+    "price": 140
   },
   {
     "id": "airRoll",
@@ -456,8 +456,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 8,
-    "price": 220
+    "level": 9,
+    "price": 240
   },
   {
     "id": "hangCut",
@@ -2802,8 +2802,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 4,
-    "price": 120
+    "level": 5,
+    "price": 140
   },
   {
     "id": "sendBack",
@@ -2896,7 +2896,7 @@ export const LEGACY_NODES = [
     "branch": 1,
     "row": 3,
     "col": 1,
-    "name": "HOLD THE LINE",
+    "name": "HEDGE OF SPEARS",
     "max": 1,
     "desc": "the phalanx STAYS UP: a standing wall of spears for three seconds, and what walks into it is pinned again",
     "parent": "widerRow",
@@ -2972,8 +2972,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 4,
-    "price": 120
+    "level": 3,
+    "price": 100
   },
   {
     "id": "longVault",

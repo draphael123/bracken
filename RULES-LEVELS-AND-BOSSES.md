@@ -270,8 +270,10 @@ worst in the game.
 **AND THE BOSS DOES NOT COUNT**, which the first draft of this rule missed: written as plain "one new foe", it PASSED
 the Ore Road, whose one new creature is the Winchmaster. A rule that does not catch the level it was earned from is
 not a rule. Every level with a boss would get a free pass. **Checked** (`tools/one-new-foe.mjs`), and the measurement
-behind the threshold: **the median level brings FIVE new foes**, so one is a floor and not a target. Five levels
-predate the rule and are named in the tool with a reason each.
+behind the threshold: **the median level brings FIVE new foes**, so one is a floor and not a target. The levels that
+predate the rule are named in the tool with a reason each, and the list is meant to SHRINK: the tool fails a level
+that sits on it without needing to, so an entry cannot outlive the foe that answers it. HIGHCROWN left it on
+2026-09-24 when THE TEMPERER landed (`docs/briefs/crown-temperer.md`).
 
 ---
 

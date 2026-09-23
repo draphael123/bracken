@@ -3376,6 +3376,18 @@ function highcrownWhole() {
     for(const dx of [7,22,44])F.ent('torch',X+dx,19);
     for(const dx of [9,20,34])F.ent('deco',X+dx,19,{kind:'longTable',v:0});
     F.coins([X+8,18],[X+18,18],[X+31,18],[X+42,18]);R=F.done(); }
+
+  // ---- THE TEMPERERS (docs/briefs/crown-temperer.md) ----
+  // Highcrown is a working forge with an anvil, a hammer, a boiler, six hot plates and six braziers in it, and
+  // until now not one regular foe touched any of it. He does: he breaks off the fight, runs to the nearest LIT
+  // brazier, and comes back with the blade glowing and one blow no shield turns. So he goes where the braziers
+  // are - 187, 252, 263, 619, 718 and 740 - and NEVER in the forge hall at 482-570, which is the Forgemaster's
+  // and does not want a second fire idea in it. Three of them, each one standing in somebody else's fight,
+  // because alone he is a non-event and that is correct.
+  //
+  // THESE ARE FINAL COLUMNS. Nothing is grown after this line, so what is written here is what the built level
+  // has; every grow() and shiftCrown() above is already done.
+  for (const [x, y] of [[255, 63], [624, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
   return R;
 }
 

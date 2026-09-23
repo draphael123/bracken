@@ -663,7 +663,7 @@ Object.assign(SFX, {
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
 });
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
-const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, tippler: 0.7, sheargob: 1.2, gaffer: 0.95, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
+const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, temperer: 0.85, miner: 0.9, tippler: 0.7, sheargob: 1.2, gaffer: 0.95, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
 Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
   foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
@@ -770,6 +770,9 @@ const DIE = {
   merrowspear() { tone('sawtooth', 210, 70, 0.3, 0.2); tone('sine', 140, 50, 0.32, 0.16, 0.04); noise(0.2, 0.24, 1400, 0.4, 0.08); },   /* the harpoon goes down with her */
   merrowcaller() { tone('triangle', 260, 90, 0.34, 0.16); noise(0.3, 0.22, 500, 0.5, 0.08); pad('sine', 300, 120, 0.6, 0.04, 0.1, 1400); },   /* the current she was holding goes out of the water with her */
   merrowbrute() { tone('sawtooth', 160, 50, 0.4, 0.24); noise(0.3, 0.3, 300, 0.6, 0.08); SFX.crack(); },   /* the shell splits */
+  /* THE LEADFOOT has no voice: there has been nothing alive in that helm for a long time. What goes down is the armour -
+     the plate opening, the last of his air leaving the seams at once, and the anchor hitting the stone after him. */
+  leadfoot() { SFX.clank(); tone('sine', 90, 42, 0.55, 0.2, 0.05); noise(0.5, 0.34, 420, 0.6, 0.06); SFX.rattle(1.2); },
   // the fish: no voice at all, so all of it is water and body
   eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
   scarecrow() { noise(0.4, 0.26, 1200, 0.4); noise(0.3, 0.16, 600, 0.5, 0.1); },   /* it comes apart into what it was stuffed with */
@@ -853,6 +856,7 @@ const DIE = {
   gobmage() { gob(1.15) || tone('square', 560, 120, 0.3, 0.16); for (let i = 0; i < 5; i++) noise(0.04, 0.1, 4800, 1.4, 0.1 + i * 0.05); tone('sine', 900, 200, 0.4, 0.05, 0.1); SFX.thud(); /* the pages go everywhere, and the book lands */ },
   sentry() { gob(1.05) || tone('square', 500, 110, 0.22, 0.16); bell(988, 0.8, 0.07, 0.12); SFX.clatter(); /* his bell hits the floor */ },
   hearthgob() { gob(0.7, 0.65) || tone('sawtooth', 240, 60, 0.4, 0.22); noise(0.6, 0.18, 2400, 0.5, 0.12); tone('sine', 90, 40, 0.3, 0.25, 0.1); /* the fire goes out with him */ },
+  temperer() { gob(0.85, 0.6) || tone('sawtooth', 250, 70, 0.35, 0.2); SFX.clatter(); noise(0.35, 0.16, 1800, 0.5, 0.12); tone('sine', 1500, 300, 0.3, 0.05, 0.1); /* the two-hander goes down on the flags, and the heat sighs out of it */ },
   sweep() { gob(1.25) || tone('square', 560, 120, 0.22, 0.16); noise(0.45, 0.24, 520, 0.4, 0.05); SFX.clatter(); /* a cloud of soot and the brush */ },
   stormshaman() { noise(0.5, 0.28, 900, 0.4); tone('triangle', 900, 200, 0.4, 0.13); SFX.stormZap(); pad('sine', 1200, 300, 0.8, 0.05, 0.2, 2500); },
   seawitch() { tone('sine', 660, 170, 0.5, 0.12); noise(0.5, 0.22, 640, 0.35); SFX.stormZap(); bell(1568, 0.5, 0.05, 0.12); pad('sine', 990, 240, 0.9, 0.045, 0.2, 2400); },   /* the note falls out of her, her lantern breaks, and the weather goes with it */
@@ -965,6 +969,7 @@ const HURT = {
   merrowspear() { tone('sawtooth', 240, 150, 0.14, 0.14); noise(0.12, 0.16, 1200, 0.5); },
   merrowcaller() { tone('triangle', 300, 180, 0.14, 0.12); noise(0.1, 0.14, 700, 0.5); },
   merrowbrute() { SFX.clank(); tone('sawtooth', 180, 110, 0.16, 0.16); noise(0.14, 0.16, 500, 0.5); },
+  leadfoot() { SFX.clank(); tone('sine', 150, 100, 0.2, 0.14); noise(0.12, 0.2, 340, 0.5, 0.04); },   /* struck plate under water: a deep dull bell, and bubbles */
   cutlass() { file('hurt', 0.4, 1.18) || tone('square', 420, 260, 0.09, 0.14); },
   boarder() { file('hurt', 0.5, 0.86) || tone('square', 300, 180, 0.11, 0.16); },
   marine() { file('hurt', 0.4, 1.3) || tone('square', 480, 300, 0.08, 0.13); },
@@ -1020,6 +1025,7 @@ const HURT = {
   gobmage() { gobH(1.15) || tone('square', 620, 380, 0.08, 0.13); noise(0.05, 0.08, 5000, 1.5, 0.02); /* and a page tears */ },
   sentry() { gobH(1.05) || tone('square', 560, 340, 0.08, 0.12); bell(988, 0.25, 0.04, 0.02); },
   hearthgob() { gobH(0.7, 0.5) || tone('sawtooth', 240, 140, 0.14, 0.16); noise(0.12, 0.1, 2400, 0.6); },
+  temperer() { gobH(0.85) || tone('square', 440, 280, 0.09, 0.14); tone('sine', 1900, 1000, 0.07, 0.035, 0.02); /* and the blade rings where it is struck */ },
   sweep() { gobH(1.3) || tone('square', 640, 400, 0.08, 0.12); noise(0.14, 0.1, 600, 0.5, 0.03); /* a cough of soot */ },
   stormshaman() { tone('triangle', 900, 500, 0.1, 0.12); noise(0.06, 0.14, 3000, 0.8); },
   seawitch() { tone('sine', 740, 460, 0.1, 0.11); noise(0.06, 0.12, 2200, 0.7); bell(1568, 0.12, 0.02, 0.02); },
