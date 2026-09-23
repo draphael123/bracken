@@ -707,6 +707,7 @@ export function bakeMap(w, h, nodes, path, seed, style = 'wood') {
   if (style === 'crag') return bakeCragMap(c, g, w, h, nodes, path, rnd);
   if (style === 'coast') return bakeCoastMap(c, g, w, h, nodes, path, rnd);
   if (style === 'haunted') return bakeHauntedMap(c, g, w, h, nodes, path, rnd);
+  if (style === 'desert') return bakeDesertMap(c, g, w, h, nodes, path, rnd);
   rect(g, 0, 0, w, h, '#4f8a3a');
   // meadow patches and dark wood regions
   for (let i = 0; i < 7; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 50, 14 + rnd() * 20, '#5e9a44', '#4f8a3a');
@@ -928,6 +929,27 @@ function bakeHauntedMap(c, g, w, h, nodes, path, rnd) {
       px(g, x + (k & 1 ? 1 : -1), y, '#7c7660'); if (k % 3 === 0) px(g, x, y + 1, '#d8d2b8'); } }
   const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(22,28,24,0)'); vg.addColorStop(1, 'rgba(22,28,24,0.5)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(18,22,18,0.35)'); circle(g, nd.x, nd.y, 7, '#33382c'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
+  return c;
+}
+/* THE DESERT SHEET: STYLE + SEAM + SAND ROAD ONLY, no per-node scenery (Daniel, §7.6 settled - the desert arc has
+   no built levels yet, so painting a caravan or a pyramid here would be work redone when each one actually lands).
+   Dunes lit from the top-left the way the wood's hills and the crags' peaks are, so the sheet reads as the same
+   map and not a different game; the node-dressing loop below only ever runs against an empty `nodes` array today. */
+function bakeDesertMap(c, g, w, h, nodes, path, rnd) {
+  rect(g, 0, 0, w, h, '#d9b877');
+  for (let i = 0; i < 8; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 54, 12 + rnd() * 18, '#e0c488', '#d9b877');
+  for (let i = 0; i < 5; i++) ellipse(g, rnd() * w, rnd() * h, 26 + rnd() * 40, 10 + rnd() * 16, '#c9a562', '#d9b877');
+  for (let i = 0; i < w * h / 14; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#e3c890' : '#cfab6c');
+  for (let i = 0; i < 5; i++) { const dx = 20 + i * 56 + rnd() * 20, dy = 40 + rnd() * 90, r = 26 + rnd() * 14;
+    ellipse(g, dx, dy, r, r * 0.4, '#e0c488'); ellipse(g, dx - 4, dy - 2, r * 0.6, r * 0.25, '#f0dca0', '#e0c488'); line(g, dx - r, dy + 2, dx + r, dy + 2, '#b89354', 1); }
+  if (path.length > 1) {
+    for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#5e3b21', 8);
+    for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#e0d0a0', 5);
+    for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5;
+      for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n); px(g, x + (k & 1 ? 1 : -1), y, '#c9a562'); if (k % 3 === 0) px(g, x, y + 1, '#f0dca0'); } }
+  }
+  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(80,54,20,0)'); vg.addColorStop(1, 'rgba(80,54,20,0.3)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(60,40,10,0.3)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
 // Soft cloud puffs for level skies and the map, three sizes.
@@ -2198,7 +2220,19 @@ export function bakeWorldMap(w, h, regions, connectors) { const [c, g] = canvas(
       const dx = nd.x - j[0], dy = nd.y - j[1], len = Math.hypot(dx, dy) || 1;
       for (let d = 3; d < len - 2; d += 5) { const px0 = r.x + j[0] + dx * d / len, py0 = r.y + j[1] + dy * d / len;
         const px1 = r.x + j[0] + dx * Math.min(len - 2, d + 2.6) / len, py1 = r.y + j[1] + dy * Math.min(len - 2, d + 2.6) / len;
-        line(g, px0, py0, px1, py1, '#5e3b21', 3); line(g, px0, py0, px1, py1, '#c8b088', 1); } } } for (const [a, b] of connectors) { line(g, a[0], a[1], b[0], b[1], '#5e3b21', 8); line(g, a[0], a[1], b[0], b[1], '#b8a888', 5); } for (const r of regions) if (r.seam) { const gr = g.createLinearGradient(0, r.seam - 26, 0, r.seam + 6); gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(94,110,80,0.5)'); gr.addColorStop(1, 'rgba(79,138,58,0)'); g.fillStyle = gr; g.fillRect(0, r.seam - 26, w, 32); } return c; }
+        line(g, px0, py0, px1, py1, '#5e3b21', 3); line(g, px0, py0, px1, py1, '#c8b088', 1); } } }
+  /* A connector may carry a third element, 'sand' - the seam into the desert is drawn in the desert's own road
+     colours rather than the road-brown every other seam uses, so the material changes as it crosses (map-redesign §5). */
+  for (const conn of connectors) { const [a, b, mat] = conn;
+    if (mat === 'sand') { line(g, a[0], a[1], b[0], b[1], '#c9b27c', 8); line(g, a[0], a[1], b[0], b[1], '#e0d0a0', 5); }
+    else { line(g, a[0], a[1], b[0], b[1], '#5e3b21', 8); line(g, a[0], a[1], b[0], b[1], '#b8a888', 5); } }
+  /* A seam is either a plain Y (the grey-green every region but the desert's uses) or {y, gold: true} - the
+     INLAND/DESERT seam reads green-to-gold instead, answering the gold portal on the level side (map-redesign §5). */
+  for (const r of regions) if (r.seam) { const y = typeof r.seam === 'object' ? r.seam.y : r.seam, gold = typeof r.seam === 'object' && r.seam.gold;
+    const gr = g.createLinearGradient(0, y - 26, 0, y + 6);
+    if (gold) { gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(197,158,74,0.5)'); gr.addColorStop(1, 'rgba(224,176,64,0)'); }
+    else { gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(94,110,80,0.5)'); gr.addColorStop(1, 'rgba(79,138,58,0)'); }
+    g.fillStyle = gr; g.fillRect(0, y - 26, w, 32); } return c; }
 
 // ---------- The Mineworks ----------
 // Rails on sleepers over rock. 16×16, standable like a plank.
