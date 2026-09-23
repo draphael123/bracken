@@ -108,7 +108,7 @@ function findCrossings(path, label) {
   // the connectors, exactly as main.js builds them for bakeWorldMap - drawn as their own road-coloured lines,
   // so a crossing here misreads the same way even though it is not part of the walk
   const connectors = [
-    [[40, 64 + WOOD_Y], [110, 200 + CRAG_Y]], [[110, 200 + CRAG_Y], [CRAG_PATH[0][0], CRAG_PATH[0][1] + CRAG_Y]],
+    [[40, 64 + WOOD_Y], [CRAG_PATH[0][0], 200 + CRAG_Y]], [[CRAG_PATH[0][0], 200 + CRAG_Y], [CRAG_PATH[0][0], CRAG_PATH[0][1] + CRAG_Y]],
     [[CRAG_PATH[CRAG_PATH.length - 1][0], CRAG_PATH[CRAG_PATH.length - 1][1] + CRAG_Y], [COAST_PATH[0][0], COAST_PATH[0][1] + COAST_Y]],
     [[COAST_PATH[COAST_PATH.length - 1][0], COAST_PATH[COAST_PATH.length - 1][1] + COAST_Y], [INLAND_PATH[0][0], INLAND_PATH[0][1] + INLAND_Y]],
     [[INLAND_PATH[INLAND_PATH.length - 1][0], INLAND_PATH[INLAND_PATH.length - 1][1] + INLAND_Y], [DESERT_PATH[0][0], DESERT_PATH[0][1] + DESERT_Y]],
