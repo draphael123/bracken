@@ -38,7 +38,7 @@ const NODES = [
   ['longwater', 'THE LONG WATER'], ['reef', 'THE SHIPWRECK REEF'], ['chandler', 'THE CHANDLER'], ['flotilla', 'THE FLOTILLA'],
   ['hurricane', 'THE HURRICANE DECK'], ['lamplit', 'THE LAMPLIT STREET'], ['deep', 'THE DEEP'], ['keep', 'THE UNDERWATER KEEP'],
   ['causeway', 'THE DROWNED CAUSEWAY'], ['waymeet', 'WAYMEET'], ['fields', 'THE HEXED FIELDS'], ['burial', 'THE BURIAL CAVERNS'],
-  ['witchlight', 'THE WITCHLIGHT STAIR'], ['mage', "THE MAGE'S FOLLY"], ['fallingtower', 'THE FALLING TOWER'],
+  ['witchlight', 'THE WITCHLIGHT STAIR'], ['mage', "THE MAGE'S FOLLY"], ['fallingtower', 'THE FALLING TOWER'], ['unburied', 'THE UNBURIED FIELD'],
 ];
 
 const ICONS = ART.bakeMapIcons();
