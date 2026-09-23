@@ -20,8 +20,8 @@ const GRANDFATHERED = {
   oreroad: 'REJECTED BY DANIEL AND BEING REWORKED - its only new creature is the Winchmaster, and "no new enemies/idea other than riding lifts" is exactly what this rule now measures. It must leave this list when the rework lands.',
   witchlight: 'rejected 2026-09-22 on a related count (rules met is not a good level); its only new creature is the Gate Gargoyle.',
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
-  crown: 'late-arc castle: it closes out the goblin roster the crags spent five levels establishing, and brings a boss and a mini rather than a new rank-and-file. LOOK AT THIS ONE - it may be deliberate, or it may be the same fault as the Ore Road in a level nobody has complained about yet.',
-  keep: 'same shape as crown, and the same open question.',
+  crown: 'ANSWERED, AND BEING FIXED - Daniel agreed 2026-09-24 that it should bring a new foe. THE TEMPERER is briefed in docs/briefs/crown-temperer.md; this entry goes when he lands.',
+  keep: 'ANSWERED, AND BEING FIXED - THE LEADFOOT is briefed in docs/briefs/keep-leadfoot.md; this entry goes when he lands.',
 };
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
