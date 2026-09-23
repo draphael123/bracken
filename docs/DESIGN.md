@@ -42,9 +42,10 @@ Then say it three ways (**C4**), so a player who misses one still learns it:
 
 ## Enemies
 
-- **F10. EVERY LEVEL BRINGS AT LEAST ONE FOE THE GAME HAS NEVER SEEN.** Not a recolour, not the same creature with
-  more health: a new kind with its own silhouette and its own told blow. *Earned: THE ORE ROAD shipped with nine foe
-  kinds of which one was new, and reads as "no new enemies/idea other than riding lifts".*
+- **F10. EVERY LEVEL BRINGS AT LEAST ONE FOE THE GAME HAS NEVER SEEN — AND IT IS NOT ITS BOSS.** Not a recolour, not
+  the same creature with more health: a new kind with its own silhouette and its own told blow. **The median level
+  brings FIVE**, so one is a floor, not a target. *Earned: THE ORE ROAD's one new creature is the Winchmaster, its
+  boss — so the first draft of this rule passed the very level it came from.* **Checked** (`tools/one-new-foe.mjs`).
 - **Fill gaps, not variety.** A new foe should answer a question the roster cannot currently ask.
 - **Q. ONE AMBUSH ROOM A LEVEL** — a short locked fight led by an elite captain of the level's own roster.
 
