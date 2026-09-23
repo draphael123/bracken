@@ -649,7 +649,7 @@ function bakeAll(pal = {}) {
   }
   PROP = {
     coin: ART.bakeCoin(), shrine: [ART.bakeShrine(false), ART.bakeShrine(true)],
-    shrineOf: Object.fromEntries(['wood', 'marsh', 'crag', 'myc', 'hall', 'ship', 'reef', 'city'].map(k => [k, [ART.bakeShrineKind(k, false), ART.bakeShrineKind(k, true)]])), gate: ART.bakeGate(), sign: ART.bakeSign(),
+    shrineOf: Object.fromEntries(['wood', 'marsh', 'crag', 'myc', 'hall', 'ship', 'reef', 'city', 'mine'].map(k => [k, [ART.bakeShrineKind(k, false), ART.bakeShrineKind(k, true)]])), gate: ART.bakeGate(), sign: ART.bakeSign(),
     tuft: [0, 1, 2, 3].map(i => ART.bakeTuft(200 + i)), flower: [0, 1, 2, 3].map(i => ART.bakeFlower(210 + i)),
     mushroom: [0, 1].map(i => ART.bakeMushroom(220 + i)), bush: [0, 1, 2].map(i => ART.bakeBush(230 + i)),
     shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), padBig: ART.bakeLilyPad(32), lilyFlowerBig: ART.bakeLilyFlowerBig(), padSpring: ART.bakeSpringPad(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
@@ -2044,7 +2044,7 @@ function spawnEnt(e) {
       case 'npc': props.push({ t: 'npc', x: px, y: py, kind: e.kind, ride: !!e.ride, anim: Math.random() * 6, lines: e.lines, name: e.name }); break;
       case 'exit': props.push({ t: 'exit', x: px, y: py }); break;
       case 'stray': props.push({ t: 'stray', kind: e.kind || 'sheep', x: px, y: py, got: straysGot.has(px), anim: Math.random() * 6 }); if (e.kind === 'folk' && straysGot.has(px)) props.push(camper([...straysGot].indexOf(px))); break;
-      case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + (e.x % 3) * 0.5, apple: !!e.apple }); break; /* a steady beat, no dice: learn it and walk it */
+      case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + (e.x % 3) * 0.5, apple: !!e.apple, tellT: e.tell || 0.8, seen: !!e.seen, lane: e.lane }); break;   /* tell/seen/lane: opt-in (THE ORE ROAD) - a longer tell, only on screen, and a mark on the cable it crosses */ /* a steady beat, no dice: learn it and walk it */
       case 'crusher': props.push({ t: 'crusher', x: px, y: py, every: e.every || 3, timer: 1 + (e.phase || 0), st: 'up', h: 0, D: 7 * TS }); break;
       case 'beam': props.push({ t: 'beam', x: px, y: py, cd: 0 }); break;
       case 'torchbracket': props.push({ t: 'torchbracket', x: px, y: py, taken: false, respawnT: 0 }); lights.push({ x: px, y: py - 14, r: 40, glow: true, warm: true, bracket: props[props.length - 1] }); break;
@@ -16736,6 +16736,7 @@ function spritePad(c) {
   padOf.set(c, pad); return pad;
 }
 function shrineKind() { const p = L.palette || {}, d = p.dress, st = p.set;
+  if (L.oreRoad) return 'mine';   /* THE ORE ROAD, underground: a pit lamp on a sill, not a cairn (tools/ore-road.mjs, tools/floaters.mjs) */
   if (st === 'ship') return 'ship'; if (st === 'city') return 'city';
   if (st === 'reef' || st === 'shore') return 'reef';
   if (d === 'myc' || p.myc) return 'myc'; if (d === 'marsh') return 'marsh';
@@ -19188,7 +19189,13 @@ function updateProps(dt) {
       if (pr.timer <= 0) { pr.timer = pr.every; pr.on = 0.8; fires.push({ x: pr.x, y: pr.y, life: 0.8, delay: 0, vent: true }); SFX.puff(); burst(pr.x, pr.y - 14, 6, ['#ff9a5c', '#ffd36b'], 40, 0.4, -60, 2); }
       if (pr.on > 0 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 8, y: pr.y - 12 - Math.random() * 16, vx: (Math.random() - 0.5) * 10, vy: -60, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: 0 });
     }
-    if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt; if (pr.timer < 0.8 && Math.random() < dt * 45) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
+    if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt;
+      /* A ROCK THAT FALLS OFF THE SCREEN WAS NEVER TOLD: a `seen` rockfall only falls if its spot was on the screen for its WHOLE
+         tell; otherwise that beat is skipped. (Holding the tell until it came into view synchronised every rock with the rider
+         arriving under it - tools/ore-ride.mjs was knocked off the chute by it - so the beat keeps its own time.) */
+      if (pr.seen) { const inV = pr.x > camX + 8 && pr.x < camX + VW - 8 && (pr.lane || pr.gy || pr.y) > camY + 8 && pr.y < camY + VH; pr.seenT = inV ? (pr.seenT || 0) + dt : 0;
+        if (pr.timer <= 0 && pr.seenT < (pr.tellT || 0.8)) pr.timer = pr.every; }
+      if (pr.timer < (pr.tellT || 0.8) && Math.random() < dt * 45) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
     /* THE COUNTER BELONGS TO THE STORE, AND TO NOTHING ELSE. This fired on any keeper anywhere, and eight of them stood
        about in real levels selling to passers-by: press UP at the miller in the Hexed Fields and the run you were in the
        middle of was left standing while the shop menu came up over it. The keepers are gone from every level now, and the
@@ -20966,7 +20973,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'barrel' && !pr.gone) g.drawImage(PROP.barrel, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
     else if (pr.t === 'rockfall') { if (pr.gy === undefined) { let gy = Math.floor(pr.y / TS) + 1; while (gy < LH && !isSolid(Math.floor(pr.x / TS), gy) && !isOneWay(tileAt(Math.floor(pr.x / TS), gy))) gy++; pr.gy = gy * TS; } /* the fall line: rubble where they land, and a red mark that pulses as the next one works loose */
       const rx = Math.round(pr.x - cx), ry = pr.gy - cy; g.fillStyle = '#6a6e78'; for (const [ox, w] of [[-7, 3], [-2, 2], [3, 3], [6, 2]]) g.fillRect(rx + ox, ry - 2, w, 2); g.fillStyle = '#9aa0aa'; g.fillRect(rx - 5, ry - 3, 2, 1); g.fillRect(rx + 4, ry - 3, 2, 1);
-      if (Math.abs(P.x - pr.x) < 230 && pr.timer < 0.8) { const k = 1 - pr.timer / 0.8; g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(rx, ry - 1, 10 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
+      if (Math.abs(P.x - pr.x) < 230 && pr.timer < (pr.tellT || 0.8)) { const k = 1 - pr.timer / (pr.tellT || 0.8); g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(rx, ry - 1, 10 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke();
+        if (pr.lane) { const ly = pr.lane - cy; g.beginPath(); g.ellipse(rx, ly - 1, 12 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ff6b4a'; g.globalAlpha = 0.25 + 0.4 * k; g.fillRect(rx - 1, Math.round(pr.y - cy) + 4, 2, Math.max(0, Math.round(ly - pr.y) - 8)); }   /* THE ORE ROAD: where it crosses the cable, and the fall line down to it */
+        g.globalAlpha = 1; } }
     else if (pr.t === 'brazier') g.drawImage(PROP.brazier[pr.lit ? 1 : 0], Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 16 - cy);
     else if (pr.t === 'crank') { g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
       if (pr.raftCall) { g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(Math.round(pr.x - cx) - 31, Math.round(pr.y - cy) - 46, 62, 12); text('CALL RAFT', pr.x - cx, pr.y - 38 - cy, '#ffe6a0', 'center', 6); } }

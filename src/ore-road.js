@@ -69,6 +69,7 @@ export const OR = {
      a fight instead of a nuisance you cannot answer. `lift` is how much higher an EMPTIED skip rides. */
   BUCKET: { w: 46, h: 6, hang: 30, lift: 18 },
   CRACK: 0.9,                                                    // how long a rusted bucket holds you
+  ROCK_TELL: 1.0,                                                // how long every falling rock is told before it falls
   DUMP: 0.3,                                                     // how long DOWN must be held before the skip tips
   BRAKE: 0.5,                                                    // how long the brake takes to bring a bucket to a stand
 };
@@ -207,7 +208,7 @@ export function buildOreRoad({ painter, T }) {
      floor the gorge never had, and it is drawn as what it is - broken ore in a steel trough, red-lit from below. */
   block(232, 244, WRECK_BED + 3, H - 1); spikes(232, 244, WRECK_BED + 2);
   plat(TIPPLE[0], TIPPLE_ROW + 1, TIPPLE[1] - TIPPLE[0] + 1);                   // THE TIPPLE HOUSE: the one rest on the chute
-  plat(231, TIPPLE_ROW - 3, 8); rope(230, TIPPLE_ROW - 3, TIPPLE_ROW);          // and the tipping stage over it, with the ladder up
+  plat(231, TIPPLE_ROW - 3, 8); rope(239, TIPPLE_ROW - 3, TIPPLE_ROW);          // and the tipping stage over it, with the ladder up its EAST end (at 230 it stood in the checkpoint's base)
   ent('check', 229, TIPPLE_ROW);
   meet('THE TIPPLE HOUSE', TIPPLE[0], TIPPLE[1], [['tippler', 235, TIPPLE_ROW - 4], ['sheargob', 238, TIPPLE_ROW], ['miner', 233, TIPPLE_ROW]]);
   ent('rockfall', 216, TIPPLE_ROW - 6, { every: 2.5 }); ent('rockfall', 252, 29, { every: 2.9 });
@@ -255,7 +256,7 @@ export function buildOreRoad({ painter, T }) {
   rope(417, WINCH - 4, WINCH);                                                  // up into the winch house's loft
   rope(413, WINCH - 7, WINCH); rope(453, WINCH - 9, WINCH);                     // and on up through a hole in each roof, to the frames on top (the shed's one rope serves its loft and its roof)
   ent('silver', 422, WINCH - 4);                                                // SILVER THREE: in the loft
-  ent('check', 414, WINCH); ent('check', 446, WINCH); ent('check', 468, WINCH);
+  ent('check', 415, WINCH); ent('check', 446, WINCH);   /* 415, not 414: the rope at 413 stood in its base */ ent('check', 468, WINCH);
   ent('sign', 430, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
   meet('THE WINCH CREW', 410, 444, [['miner', 410, WINCH], ['rockgoblin', 436, WINCH], ['sheargob', 419, WINCH - 4]]);
   meet('THE DRUM YARD', 448, 475, [['heavy', 455, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH]]);
@@ -276,6 +277,11 @@ export function buildOreRoad({ painter, T }) {
 
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
   const cable = cableLines();
+  /* EVERY FALLING ROCK IS TOLD (Daniel's playtest, 2026-09-25). A full second of dust from the spot and a red ring where it
+     lands (tell), never begun off the screen (seen), and - out over the gorge, where the ground it lands on is a hundred feet
+     down - the ring is ALSO on the cable it crosses, which is where a rider is (lane: that line's height under it) */
+  for (const e of L.ents) if (e.t === 'rockfall') { e.tell = OR.ROCK_TELL; e.seen = true;
+    const ys = cable.map(l => lineYAt(l, e.x * TS + 8)).filter(y => y !== null && y > (e.y + 1) * TS); if (ys.length) e.lane = Math.min(...ys); }
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: YARD }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
     music: 'oreroad',   /* its own track at last (Daniel 2026-09-23): 'mineworks' was a sparse synth that played as silence. audio/CREDITS.txt */ duskStart: -1, duskLen: 1, night: false,

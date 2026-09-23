@@ -19,8 +19,11 @@ import { openPage } from './cdp.mjs';
 import { cableLines } from '../src/ore-road.js';   /* only to prove COVERAGE: that the page rode every line the source declares */
 const pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{
+  const R0 = await pg.evalp(`(async()=>{
     const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad'), out = [];
+    const rockSeen = new WeakSet(), rocksAt = { inView: 0, off: [] };   /* EVERY FALLING ROCK IS TOLD: each one that falls while a line is ridden, and was its spot on the screen */
+    const watchRocks = () => { const [cx, cy] = BK.cam; for (const r of BK.rocks()) { if (rockSeen.has(r)) continue; rockSeen.add(r); if (r.thrown || r.ore || r.apple) continue;
+      if (r.x > cx && r.x < cx + 320 && r.y < cy + 180) rocksAt.inView++; else rocksAt.off.push([Math.round(r.x / 16), Math.round(r.y / 16)]); } };
     /* ask the level which lines the road is crossed on, rather than naming them here */
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.sim(1);
     if (!BK.L.cableway) return [{ id: '(none)', ok: false, why: 'the level built no cableway at all' }];
@@ -57,13 +60,14 @@ try {
           if (skip) { k[dir > 0 ? 'right' : 'left'] = true; walks++; wait = 0; }
           else { wait++; if (wait > waitMax) waitMax = wait; }
         } else wait = 0;
-        BK.sim(1);
+        BK.sim(1); watchRocks();
         if (P.dead) break;
         if (!P.onMover && P.ground && Math.abs(P.x - end[0]) < 40 && Math.abs(P.y - end[1]) < 6) break;
       }
       out.push({ id, ok: !P.dead && f < maxF, secs: +(f / 60).toFixed(1), at: [Math.round(P.x / 16), Math.round(P.y / 16)], end: [Math.round(end[0] / 16), Math.round(end[1] / 16)], dead: !!P.dead, hops, walked: +(walks / 60).toFixed(1), waited: +(waitMax / 60).toFixed(1) });
     }
-    return out; })()`, 600000);
+    return { rows: out, rocks: rocksAt }; })()`, 600000);
+  const r = R0.rows; r.rocks = R0.rocks;
   for (const x of r) console.log((x.ok ? '  ok   ' : '  FAIL ') + JSON.stringify(x));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
   /* COVERAGE, so that "all green" can never mean "it rode nothing": every line the source declares but the drum's
@@ -79,6 +83,8 @@ try {
     console.log(`  ok   the ${l.id} line's rests hold him ${x.waited}s at the lip, against the ${(l.gap / l.speed).toFixed(1)}s its own skips come`);
     assert(x.waited <= cap, `the ${l.id} line left him standing ${x.waited}s on a rest; its skips come ${(l.gap / l.speed).toFixed(2)}s apart, so anything over ${cap.toFixed(2)}s means the rest is not being served`);
   }
+  console.log(`  ${r.rocks.off.length ? 'FAIL' : 'ok  '} ${r.rocks.inView} rocks fell while the lines were ridden, every one of them on the screen` + (r.rocks.off.length ? ' - not ' + JSON.stringify(r.rocks.off.slice(0, 5)) : ''));
+  assert(r.rocks.inView > 0 && !r.rocks.off.length, 'every rock that falls, falls on the screen (it is told there, or it waits)');
   assert(!pg.errors.length, 'no page errors');
   console.log('every line of the ore road carries you across');
 } finally { pg.close(); }

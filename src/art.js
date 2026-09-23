@@ -252,6 +252,17 @@ export function bakeShrineKind(kind, lit) {
     rect(g, 6, 22, 8, 2, '#3a464e');
     rect(g, 8, 24, 4, 5, fire); if (lit) { rect(g, 9, 25, 2, 3, fireL); }
     for (const x of [6, 14]) px(g, x, 20, '#7cc8c8');
+  } else if (kind === 'mine') {                             // THE ORE ROAD: a pit lamp on a propped timber, on a sawn sill flat on the floor
+    /* Daniel, 2026-09-25: the crag cairn read as "a checkpoint lamp standing on a heap of rubble, not sitting on the floor".
+       Underground it is a pit prop: a sill as wide as the marker, the post stepped into it with two braces, and the lamp
+       hung off the arm. The sill is the whole last three rows (tools/ore-road.mjs asserts a flat foot) */
+    rect(g, 1, 31, 18, 3, '#4a321e'); rect(g, 1, 31, 18, 1, '#6a4a2c'); rect(g, 1, 33, 18, 1, '#2e2014');
+    rect(g, 4, 4, 3, 27, '#5a3e24'); rect(g, 4, 4, 1, 27, '#7a5634');
+    line(g, 1, 30, 4, 25, '#4a321e', 1); line(g, 9, 30, 7, 25, '#4a321e', 1);
+    rect(g, 3, 3, 14, 2, '#4a321e'); rect(g, 3, 3, 14, 1, '#6a4a2c');
+    rect(g, 13, 5, 1, 3, '#2a2a30');
+    rect(g, 10, 8, 7, 2, '#2a2a30'); rect(g, 10, 10, 7, 8, '#3a3a42'); rect(g, 11, 11, 5, 6, fire); if (lit) { rect(g, 12, 12, 3, 4, fireL); px(g, 13, 13, '#fff6e0'); }
+    rect(g, 10, 18, 7, 2, '#2a2a30');
   } else if (kind === 'city') {                             // a hooded street lamp, the way the drowned city lights itself
     rect(g, 6, 31, 8, 3, '#3a3e46'); rect(g, 6, 31, 8, 1, '#525862');
     rect(g, 9, 12, 2, 19, '#3a3e46'); rect(g, 9, 12, 1, 19, '#565e68');

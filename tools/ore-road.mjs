@@ -120,6 +120,36 @@ for (const l of C.lines) {
   const fresh = [...mine].filter(t => !seen.has(t) && !bosses.has(t));
   ok(fresh.length >= 3, `it brings ${fresh.length} creatures the game had never fought, and not one of them is its boss: ${fresh.join(', ')}`); }
 
+/* ---- EVERY CHECKPOINT STANDS ON THE FLOOR (Daniel's playtest, 2026-09-25: "a checkpoint lamp standing on a heap of rubble,
+   not sitting on the floor"). FIX THE RULE, NOT THE ROW: two halves, and both are checked for every checkpoint in the level.
+   THE FLOOR: the three tiles under its 20 px base are all footing (rock or plank - never a rope, never air), the three it
+   stands in are clear, and nothing else stands in them. THE MARKER: the level's own checkpoint drawing (main.js shrineKind,
+   rendered here from src/art.js) has a FLAT FOOT - its last row is one unbroken run at least 12 px wide - so what you see
+   sits on the floor and is not a pile of stones balanced on it. The crag cairn this level used fails the second half at
+   every one of its checkpoints, which is what Daniel saw. */
+{ const { install } = await import('./node-canvas.mjs'); install();
+  const ARTM = await import('../src/art.js'), MAINS = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const kind = /function shrineKind\(\) \{[^\n]*\n\s*if \(L\.oreRoad\) return '(\w+)'/.exec(MAINS)?.[1] || 'crag';
+  const cv = ARTM.bakeShrineKind(kind, false), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+  let run = 0, best = 0; for (let x = 0; x < cv.width; x++) { if (d[((cv.height - 1) * cv.width + x) * 4 + 3] > 0) { run++; best = Math.max(best, run); } else run = 0; }
+  const bad = [];
+  for (const e of L.ents.filter(q => q.t === 'check')) {
+    const why = [];
+    for (const dx of [-1, 0, 1]) { const u = at(e.x + dx, e.y + 1); if (!(u === T.SOLID || u === T.PLANK || u === T.ONEWAY)) why.push(`no floor under column ${e.x + dx}`); if (at(e.x + dx, e.y) !== T.AIR) why.push(`column ${e.x + dx} is not clear`); }
+    const crowd = L.ents.filter(q => q !== e && q.t === 'deco' && Math.abs(q.x - e.x) <= 1 && q.y === e.y); if (crowd.length) why.push('a ' + crowd[0].kind + ' in its base');
+    if (best < 12) why.push(`its marker ('${kind}') has no flat foot (${best} px)`);
+    if (why.length) bad.push(`${e.x},${e.y}: ${why.join(', ')}`); }
+  ok(!bad.length, `every checkpoint (${L.ents.filter(q => q.t === 'check').length}) stands on a flat floor under its whole base, and its marker ('${kind}') sits on it with a flat foot ${best} px wide` + (bad.length ? ` - ${bad.length} do not: ` + bad.slice(0, 4).join('; ') : '')); }
+
+/* ---- EVERY FALLING ROCK IS TOLD (Daniel's playtest): a second of warning, never begun off screen, and over the gorge the
+   ring is on the cable a rider is on, not a hundred feet under it. (The page half - that each one really falls in view - is
+   tools/ore-ride.mjs.) */
+{ const rf = L.ents.filter(e => e.t === 'rockfall'), C0 = cableLines();
+  const noLane = rf.filter(e => C0.some(l => { const y = lineYAt(l, e.x * TS + 8); return y !== null && y > (e.y + 1) * TS; }) && !(e.lane > 0));
+  ok(rf.length >= 5 && rf.every(e => e.tell >= 0.9 && e.seen) && !noLane.length, `every one of the ${rf.length} rockfalls is told for ${OR.ROCK_TELL} s, only on screen, and marked on the cable it crosses` + (noLane.length ? ' - not ' + noLane.map(e => e.x).join(',') : ''));
+  const MS = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(/if \(pr\.timer <= 0 && pr\.seenT < \(pr\.tellT \|\| 0\.8\)\) pr\.timer = pr\.every/.test(MS) && /if \(pr\.lane\)/.test(MS), 'and main.js honours all three (a beat whose spot was not on screen for its whole tell does not fall, and the ring on the lane)'); }
+
 /* ---- A12: EVERY TIPPING FRAME HAS A FLOOR UNDER THE GOBLIN AND A FLOOR UNDER HIS STREAM. The Tippler's whole
    attack is a column of ore going straight down, so a tippler over open gorge is an attack the room cannot give. */
 { const DROP = 15;   /* TIPPLER.drop in main.js is 230 px, which is fourteen rows and a bit */
