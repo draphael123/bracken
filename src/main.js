@@ -306,7 +306,7 @@ const ABILITIES = [
   { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 25 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'knight' },
   { id: 'fireWall', name: 'FIRE WALL', price: 80, desc: 'F: a line of flame ahead for 3s. 25 stamina, 4s', needs: 'stockade', needsName: 'the Stockade', hero: 'pyro' },
   { id: 'cinderStep', name: 'CINDER STEP', price: 90, desc: 'F: a burning dash you cannot be hit in. 20 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'pyro' },
-  { id: 'risingCut', name: 'RISING CUT', price: 100, desc: 'F: an uppercut that launches you and the foe. plunge after it. 20 stamina, 2s', needs: 'scree', needsName: 'the Scree Path', hero: 'knight' },
+  { id: 'risingCut', name: 'RISING CUT', price: 100, desc: 'F: an upward cut that carries the foe up with you and holds it there. 20 stamina, 2s', needs: 'scree', needsName: 'the Scree Path', hero: 'knight' },
   { id: 'vent', name: 'VENT', price: 100, desc: 'F: blast all your heat out at once. the hotter, the harder. lights lamps. 15 stamina', needs: 'scree', needsName: 'the Scree Path', hero: 'pyro' },
   { id: 'kindle', name: 'KINDLE', price: 90, desc: 'always on: fire mends you instead of burning you. stand in your own wall', needs: 'hanging', needsName: 'the Hanging Village', hero: 'pyro', passive: true },
   { id: 'wisp', name: 'WISP', price: 120, desc: 'F: a flame that follows you, lights every lamp it passes and dives at foes. 20 stamina, 8s', needs: 'oreroad', needsName: 'the Ore Road', hero: 'pyro' },   /* was 'mineworks', which is this level's MUSIC TRACK and not a level: PROG['mineworks'] never existed, so WISP was unbuyable from the day it was written (tools/shop-gates.mjs) */
@@ -5168,7 +5168,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && hero() === 'knight' && P.heavySwing && P.parryFoe === e && time < (P.parryFoeUntil || 0)) { P.parryFoe = null; dmg = Math.round(dmg * 1.5); number(e.x, e.y - e.h - 26, 'OPENED UP', '#ffd36b'); if (poiseMax(e) && !(e.broken > 0)) { e.poiseCd = 0; e.poise = poiseMax(e); } }   /* KNIGHT: the parry, then the heavy blow into the gap it made */
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
   if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
-  if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && e.knock > 0 && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
+  if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && (e.knock > 0 || e.carried > 0) && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
   const finishCut = dmg>0 && !glance && !e.trainer && !e.maxHp && !e.mini && !e.elite && !FINISH_SKIP.has(e.t) && !P.jetHit && P.atk>=0 && (P.swingRiposte || (P.heavy && e.face && Math.sign(fromX-e.x)===-e.face));
   if(finishCut){dmg=Math.round(dmg*COMBAT.finishMul);if(e.hp-dmg<=fullHp(e)*COMBAT.finishHealth){dmg=e.hp;number(e.x,e.y-e.h-32,P.swingRiposte?'RIPOSTE':'BACKSTAB','#ffd36b');finisher(e);}}
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
@@ -6234,7 +6234,12 @@ function updatePlayer(dt) {
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
   if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('fireWall');  P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('cinderStep');  P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); P.cinderT = 0.3; streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (skillPress('risingCut') && cdReady('risingCut') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { cdSet('risingCut'); P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); SFX.slash(); SFX.pPogo(); squash(0.8, 1.25, 0.12); dust(P.x, P.y, 6); ringAt(P.x, P.y - 10, 14, '#fff6e0', 0.2); streaks(P.x + P.face * 6, P.y - 16, 8, ['#fff6e0', '#c9d1dc'], 170); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } // RISING CUT: the blade goes up and so do you, and whatever it catches
+  if (skillPress('risingCut') && cdReady('risingCut') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { cdSet('risingCut'); P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); P.riseCarry = null; SFX.riseCut(); squash(0.9, 1.12, 0.1); riseSparks(10); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+  /* RISING CUT, THE BOUGHT ONE. UP+X is already a free rising cut, so this one has to be more than a taller jump: THE FIRST
+     FOE THE BLADE CATCHES GOES UP WITH HIM, riding the edge in front of him, and is HELD at the top of the climb (RISE_HOLD)
+     for an air combo while it cannot fall, turn or strike - every blow on it landing a third harder. It READS AS A CUT: his
+     frames are the upward cut from hip to overhead (key 'rise'), a tall crescent is drawn on the arc above him
+     (drawRiseCrescent), the sparks go up the blade, the sound is steel rising, and a catch lands with weight. */
   if (isPyro() && skillPress('vent') && cdReady('vent') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; cdSet('vent'); const dmg = Math.round((10 + heat * 0.5)*amul('vent')), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.light = 0; P.atk = -1; ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); for (let a = 0; a < 18; a++) { const an = a / 18 * Math.PI * 2, sp = 70 + heat * 1.2; parts.push({ x: P.x, y: P.y - 8, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.45, max: 0.45, col: '#ffd36b', size: 3, grav: -20, fire: true, drag: 2.5 }); } smoke(P.x, P.y - 10, 5, 8); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
   if (isPyro() && skillPress('wisp') && cdReady('wisp') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('wisp');  wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
   // THE PASSING: he goes thin, and what is left behind him is a line of him going out. Six after-images over
@@ -6246,7 +6251,11 @@ function updatePlayer(dt) {
     if (Math.random() < 0.8) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 22, vx: -P.face * 24, vy: -8 - Math.random() * 20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#1a0c24' : '#3a2046', size: 3, grav: -20 });   /* smoke off him */
     if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * (2 + Math.random() * 8), y: P.y - 4 - Math.random() * 16, vx: -P.face * 20, vy: -18 - Math.random() * 22, life: 0.35, max: 0.35, col: Math.random() < 0.35 ? '#8fd160' : '#10160f', size: 2, grav: -8 }); }
   if (P.cinderT > 0) { P.cinderT -= dt; flame(P.x - P.face * 4, P.y - 7, 2, 4, 30, 3); ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.12, frame: 1 }); } // the cinder step leaves fire where you were
-  if (P.riseT > 0) { P.riseT -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 }); const hb = { l: P.x - 11, r: P.x + 11, t: P.y - 36, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtAs('rise', e, Math.round((swordDmg() + 4)*amul('risingCut')), P.x, false); if (!big && e.t !== 'king' && e.t !== 'mother') { e.vy = -240; e.y -= 2; e.stagger = Math.max(e.stagger || 0, 0.7); e.air = true; } sparks(e.x, e.y - e.h / 2, P.face, 6); hitstop(0.05); } } }
+  if (P.riseT > 0) { P.riseT -= dt; if (Math.random() < dt * 30) riseSparks(1); const hb = { l: P.x - 11 + Math.min(0, P.face * 8), r: P.x + 11 + Math.max(0, P.face * 8), t: P.y - 40, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtAs('rise', e, Math.round((swordDmg() + 4)*amul('risingCut')), P.x, false);
+      const carry = e.alive && !P.riseCarry && riseCarries(e);
+      if (carry) { P.riseCarry = e; e.carried = P.riseT + RISE_HOLD; e.launchedT = time + P.riseT + RISE_HOLD; e.liftImm = time + 2; e.knock = 0; e.airSaid = false; number(e.x, e.y - e.h - 10, 'CARRIED UP', '#ffd36b'); zoomKick(1.07, 0.16); }
+      else if (!big && e.t !== 'king' && e.t !== 'mother') { e.vy = -240; e.y -= 2; e.stagger = Math.max(e.stagger || 0, 0.7); e.air = true; }
+      sparks(e.x, e.y - e.h / 2, P.face, 12); burst(e.x, e.y - e.h / 2, 8, ['#fff6e0', '#dfe8ff'], 110, 0.35, -80, 1); hitstop(carry ? 0.1 : 0.08); shakeCam(carry ? 4 : 3); SFX.riseBite(); } } }
   if (P.ground) P.riseUsed = false;
   // THE PALADIN'S SKILLS
   if (isPaladin() && skillPress('consecrate') && (P.ground || P.swim) && cdReady('consecrate') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('consecrate'); hallows.push({ x: P.x, y: P.y, life: 4 + tal('consecrate'), r: 40, tick: 0 }); SFX.mend(); SFX.heavy(); ringAt(P.x, P.y - 4, 40, '#ffd36b', 0.5); motes(P.x, P.y - 6, 14, 30); P.castT = 0.3; } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
@@ -17848,6 +17857,16 @@ function updateEnemies(dt) {
     /* PINNED: the Warden has it on the end of a spear. It stands exactly where the point put it - no walk, no swing, no
        turn - and it is let go when the time runs out. It is checked ABOVE every creature's own update, as BROKEN is,
        because anything checked below one is driven on again by that creature's next frame. */
+    /* CARRIED: the knight's bought RISING CUT has it on the edge. While he climbs it rides in front of him; at the top it is
+       HELD there (RISE_HOLD) - no fall, no turn, no swing - for the air combo, and then it drops. A blow that throws it
+       (a third cut) takes it off the hook at once. */
+    if (e.carried > 0 && e.knock > 0.05) e.carried = 0;
+    if (e.carried > 0) { e.carried -= dt; e.vx = 0; e.vy = 0; e.knock = 0; e.stagger = Math.max(e.stagger || 0, 0.25);
+      if (P.riseCarry === e && P.riseT > 0) moveBody(e, P.x + P.face * 13 - e.x, P.y - 2 - e.y, false);
+      else if (P.riseCarry === e && !P.ground && P.atk >= 0 && Math.abs(P.x - e.x) < 34 && Math.abs(P.y - e.y) < 30) P.vy = Math.min(P.vy, 30);   /* and every cut he throws at it up there holds HIM up too: the combo is free while it hangs */
+      if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) * Math.random(), vx: 0, vy: -26, life: 0.3, max: 0.3, col: '#fff6e0', size: 1, grav: 0 });
+      if (e.carried > 0 && e.alive) continue;
+      e.carried = 0; e.knockAir = 0; e.knock = 0.3; e.kvx = 0; e.kvy = 0; e.bounced = false; e.slammed = false; }
     if (e.pinned > 0) { e.pinned -= dt; e.vx = 0; e.vy = Math.max(0, e.vy || 0);
       if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) * Math.random(), vx: 0, vy: -16, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: 0 });
       continue; }
@@ -18408,6 +18427,23 @@ function gainHeat(n) { if (!isPyro() || P.dead) return; P.heatGrace = HEAT.grace
    creature into the air for the air cut or the plunge to finish; down with it runs along the ground, under a raised shield,
    and takes the feet from whatever stands there. Each hero does it with what they carry. */
 function specialCol() { return isPyro() ? ['#ff9a5c', '#ffd36b'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : isReaper() ? ['#c0303a', '#e8dcc0'] : isPirate() ? ['#ffd34a', '#fff6e0'] : isWarden() ? ['#dff0d8', '#8fd160'] : ['#fff6e0', '#dfe8ff']; }
+/* THE BOUGHT RISING CUT's pieces (the press is in updatePlayer). What it may carry is what the free one may launch, and not
+   a flier (it has nothing to be held up off) nor anything pinned, broken or already on the hook. */
+const RISE_HOLD = 0.9;
+const riseCarries = e => !e.maxHp && !e.mini && !e.noGrav && !KNOCK_SKIP.has(e.t) && e.t !== 'king' && e.t !== 'mother' && !(e.pinned > 0) && !(e.carried > 0);
+function riseSparks(n) { for (let i = 0; i < n; i++) { const up = 0.35 + Math.random() * 0.65; parts.push({ streak: true, x: P.x + P.face * (4 + Math.random() * 12), y: P.y - 6 - Math.random() * 26, vx: P.face * (10 + Math.random() * 40), vy: -(170 + Math.random() * 190) * up, life: 0.18 + Math.random() * 0.14, max: 0.32, col: Math.random() < 0.5 ? '#fff6e0' : '#dfe8ff', size: 1, grav: 0 }); } }
+/* THE CRESCENT: the arc the blade drew, from his hip in front up to over his head, tall and bright and gone in a breath */
+function drawRiseCrescent(cx, cy) {
+  if (!(P.riseT > 0) || P.dead) return;
+  const k = Math.min(1, (0.3 - P.riseT) / 0.16), fade = Math.min(1, P.riseT / 0.12), f = P.face, x = Math.round(P.x - cx) + f * 2, y = Math.round(P.y - cy) - 14;
+  const A0 = 0.75, head = A0 - 2.75 * k;
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 4; i++) { const tail = Math.min(A0, head + 1.1 + i * 0.35); if (tail <= head) continue;
+    g.globalAlpha = (SET.reduceMotion ? 0.35 : 1) * fade * [0.85, 0.55, 0.32, 0.18][i]; g.strokeStyle = ['#ffffff', '#fff6e0', '#dfe8ff', '#8fb0ff'][i]; g.lineWidth = [1.5, 2.5, 3.5, 5][i];
+    const rx = 17 - i, ry = 25 - i; g.beginPath();
+    if (f > 0) g.ellipse(x, y, rx, ry, 0, head, tail); else g.ellipse(x, y, rx, ry, 0, Math.PI - tail, Math.PI - head);
+    g.stroke(); }
+  g.restore(); }
 function risingCut() { if (!spend(4)) { P.vx = P.face * 75; return; } P.swingKind = 'rise'; noteVerb('rise'); P.swingMul = Math.max(P.swingMul || 1, 1.1);
   P.vx = P.face * 40; P.vy = isPaladin() || isReaper() ? -150 : -250; P.ground = false; P.canCut = false; P.airHang = true;   /* a leaping uppercut; the maul and the greatsword barely leave the floor */
   const c = specialCol(); streaks(P.x + P.face * 8, P.y - 6, P.face, c, 120);
@@ -20313,6 +20349,7 @@ function drawFoeSmear(e, bigF, cx, cy) {
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 function drawSwing(cx, cy) {
+  drawRiseCrescent(cx, cy);
   if (!P.dead && P.atk >= 0 && !P.heavy && (P.swingKind === 'rise' || P.swingKind === 'sweep')) {
     const rising = P.swingKind === 'rise', end = rising ? 0.17 : 0.15;
     if (P.atk < 0.02 || P.atk >= end) return;
@@ -21432,7 +21469,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
-      else if (P.riseT > 0) { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; }
+      else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper() || isWarden()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
       else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.castT > 0) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */

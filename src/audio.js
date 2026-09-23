@@ -1092,6 +1092,12 @@ export const castTable = () => CAST;
 export const heroKitTable = () => HERO_KIT;
 export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.startsWith('vo_')).map(k => k.slice(3).split('_')[0]))].sort();
 export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
+/* THE KNIGHT'S BOUGHT RISING CUT. It was the pogo's square-wave hop, which is a jump's sound: now it is steel drawn UP - a
+   bright scrape bending upward with a thin ring on the end of it - and what it catches bites with iron and a low thump. */
+Object.assign(SFX, {
+  riseCut() { noise(0.16, 0.2, 2400, 1.1); tone('sawtooth', vary(260), vary(1500), 0.15, 0.06); tone('triangle', vary(700), vary(2300), 0.12, 0.05, 0.03); bell(2349, 0.22, 0.035, 0.1); },
+  riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
+});
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];

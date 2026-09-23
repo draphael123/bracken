@@ -59,7 +59,7 @@ export const LEGACY_NODES = [
     "col": 1,
     "name": "RISING CUT",
     "max": 1,
-    "desc": "an uppercut that launches you and the foe. plunge after it",
+    "desc": "an upward cut that carries the first foe up with you and holds it in the air for your cuts",
     "parent": "thirdCut",
     "active": true,
     "cap": false,
