@@ -21,8 +21,7 @@ const GRANDFATHERED = {
   witchlight: 'rejected 2026-09-22 on a related count (rules met is not a good level); its only new creature is the Gate Gargoyle.',
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
   crown: 'ANSWERED, AND BEING FIXED - Daniel agreed 2026-09-24 that it should bring a new foe. THE TEMPERER is briefed in docs/briefs/crown-temperer.md; this entry goes when he lands.',
-  keep: 'ANSWERED, AND BEING FIXED - THE LEADFOOT is briefed in docs/briefs/keep-leadfoot.md; this entry goes when he lands.',
-};
+};   /* THE UNDERWATER KEEP LEFT THIS LIST when THE LEADFOOT landed (docs/briefs/keep-leadfoot.md), which is the tool working as written: the stale check above is what put him on the board. */
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const ehp = src.slice(src.indexOf('const EHP = {'));
