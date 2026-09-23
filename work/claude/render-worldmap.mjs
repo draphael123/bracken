@@ -36,8 +36,8 @@ const MAPC = ART.bakeWorldMap(MAPW, MAPH, [
   { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y },
   { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' },
 ], [
-  [[40, 64 + WOOD_Y], [110, 200 + CRAG_Y]], [[110, 200 + CRAG_Y], [CRAG_PATH[0][0], CRAG_PATH[0][1] + CRAG_Y]],
-  [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]],
+  [[40, 64 + WOOD_Y], [CRAG_PATH[0][0], 200 + CRAG_Y]], [[CRAG_PATH[0][0], 200 + CRAG_Y], [CRAG_PATH[0][0], CRAG_PATH[0][1] + CRAG_Y]],
+  [[CRAG_PATH[CRAG_PATH.length - 1][0], CRAG_PATH[CRAG_PATH.length - 1][1] + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]],
   [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand'],
 ]);
 
