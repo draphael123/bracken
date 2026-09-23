@@ -25,7 +25,8 @@ const footing = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY || t === T
 const JUMP = 92 * (2 * 320 / 1000);                              // the running jump, in pixels: 92 px/s for two thirds of a second at world speed
 console.log('THE ORE ROAD');
 ok(lv.needs === 'storm' && LEVELS.find(l => l.id === 'crown').needs === 'oreroad', 'it sits between Stormhold and Highcrown: it needs Stormhold, and Highcrown needs it');
-ok(L.music === 'mineworks' && L.arena.boss === 'winchmaster', "its own theme ('mineworks'), and the Winchmaster in its arena");
+ok(L.music === 'oreroad' && L.arena.boss === 'winchmaster', "its own track ('oreroad', a real recording - 'mineworks' was a synth that played as silence), and the Winchmaster in its arena");
+ok(/oreroad: '\.\/audio\/oreroad\.ogg'/.test(readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8')), 'and that track is a FILE in TRACKS, not a name that falls through to the synth');
 
 /* ---- THE SKIP. Daniel found this one himself and the whole rework stands on it: at 24 px, against a knight
    whose box is 10 to 14, there was no room to swing or to dodge, so NO FIGHT COULD HAPPEN ON A BUCKET AT ALL. */

@@ -149,3 +149,7 @@ levelled to -15 LUFS like the rest, three of them from packs already credited he
 
 - witchlight.ogg = "Iremos Forest Theme Loop" by beardalaxy, CC0 - https://opengameart.org/content/iremos-forest-theme-loop
   (iremos_forest_in_game.ogg, a 25.6 s loop, -15.2 dB mean) - THE WITCHLIGHT STAIR. Daniel chose a CC0 track, 2026-09-22.
+
+- oreroad.ogg = "215 [Super Action Chiptunes] bgm_stage_6" from "12 Music Loops" by SubspaceAudio (Juhani Junkala), CC0 -
+  https://opengameart.org/content/12-music-loops - THE ORE ROAD, replacing the synthesised 'mineworks'. Lowpassed at 9 kHz and
+  level-matched to its neighbours Stormhold and Highcrown (-10.6 LUFS), loop length untouched (55.4 s).

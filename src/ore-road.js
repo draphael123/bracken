@@ -260,7 +260,7 @@ export function buildOreRoad({ painter, T }) {
   const cable = cableLines();
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: YARD }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
-    music: 'mineworks', duskStart: -1, duskLen: 1, night: false,
+    music: 'oreroad',   /* its own track at last (Daniel 2026-09-23): 'mineworks' was a sparse synth that played as silence. audio/CREDITS.txt */ duskStart: -1, duskLen: 1, night: false,
     cable, encounters, places: OR.PLACES, oreRoad: true,
     /* THE AMBUSH ROOM (Q), returned by the builder rather than written into level.js's table, so its columns live beside the
        geometry they are read off. THE SORTING FLOOR is the tower's middle deck: a trestle floor 27 tiles between its gates -
