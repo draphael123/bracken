@@ -8,20 +8,22 @@ what you don't want, and the build is whatever is left.
 > has never held. A layout built for 29 and stretched is how the mandatory Ore Road already came to read as a detour."*
 
 **Scope:** the world map only — `src/main.js` 2873–3200 (the node tables, the road polylines, the walk and the draw),
-`src/art.js` `bakeMap`/`bakeWorldMap`, and the map half of `tools/additional-areas.mjs`. No level changes. The lane B
-cosmetics (side toggle menu, live motion, richer per-region art) are a separate job and are not costed here.
+`src/art.js` `bakeMap`/`bakeWorldMap`, the map half of `tools/additional-areas.mjs`, and one new check,
+`tools/map-grammar.mjs` (§9). No level changes. The lane B cosmetics (side toggle menu, live motion, richer per-region
+art) are a separate job and are not costed here.
 
-### Second draft — what Daniel has answered, and what it changed here
+### What Daniel has answered, and what each answer changed here
 
 | he said | what moved in this brief |
 |---|---|
 | **Waymeet's location is fine.** | §2b rewritten so the defect is the POLYLINE and not the place, and §6 2b now moves **one** node — THE HEXED FIELDS — with Waymeet, the seam, the Burial Caverns, the Witchlight Stair, the Folly and the tower all staying put. The two options that moved the town or the seam are **withdrawn**. |
-| **The doorway is a portal in the Archmage fight, not a sandy ending.** | §5 rewritten. It also **corrects an error in the first draft**: the sandy path is real and already shipped — it is in `src/sanctum.js`, which I did not read, not in `buildTowerAscent`, which I did. |
-| **THE POWDER DECK hangs off the water levels.** | §4.2 now carries confirmed-from-source coordinates for both candidates, because **the brief that has now landed says FLOTILLA** while the newer word points at THE HURRICANE DECK. §7.3 sets the two against each other rather than picking. |
-| **`.claude/briefs/` has landed** (`5493df8`). | THE UNBURIED FIELD and THE CHURCH are now confirmed from their own briefs instead of inferred. |
+| **The doorway is a portal in the Archmage fight, not a sandy ending.** | §5 rewritten around the portal. It also **corrects an error in this brief's first draft**: the sandy path is real and already shipped — it is in `src/sanctum.js`, which I had not read, not in `buildTowerAscent`, which I had. |
+| **THE POWDER DECK attaches to THE FLOTILLA**, `needs: 'flotilla'`, per the written brief. | §4.2 carries the Flotilla siting and nothing else; the Hurricane Deck alternative is **withdrawn**. §7.3 keeps the record of why it was a real question. |
+| **`.claude/briefs/` has landed** (`5493df8`). | THE UNBURIED FIELD, THE CHURCH and THE POWDER DECK are confirmed from their own briefs instead of inferred. |
 
-Still Daniel's, and still flagged: the node count (§7.1), the desert store (§7.2), spur stepping (§7.5) and how much
-desert to paint (§7.6).
+Still Daniel's, and **deliberately not resolved here**: the node count (§7.1), the desert store (§7.2), spur stepping
+(§7.5) and how much desert to paint (§7.6). §7.4's ambiguity is left standing as well — the map is the same under
+both readings of it, so it blocks nothing.
 
 ---
 
@@ -194,10 +196,11 @@ fragile. **Every coordinate in this brief is indicative and wants a rendered she
 - **THE CHURCH** — off **WAYMEET**. Confirmed by its own design: it renames Waymeet's boss to THE CRUSADER so the
   church's boss can be THE PALADIN (`.claude/briefs/the-lit-church.md`, `docs/briefs/hero-kits.md` §7). Inland sheet,
   node **(32,140)**, junction Waymeet (40,162) at **23.4px**; next nearest 35px.
-- **THE POWDER DECK** — coast sheet. **Its brief and Daniel's latest word disagree, and it is one of two levels —
-  see §7.3.** Coordinates for both, so whichever he says is a one-line change:
-  - off **THE HURRICANE DECK** (130,25) — node **(126,48)**, junction at **23.3px**; `needs: 'hurricane'`.
-  - off **THE FLOTILLA** (220,55) — node **(232,36)**, junction at **22.5px**; `needs: 'flotilla'`.
+- **THE POWDER DECK** — off **THE FLOTILLA**, settled by Daniel and matching its own brief:
+  `.claude/briefs/the-powder-deck.md` §Placement, *"A prize ship at anchor off THE FLOTILLA, on the coast sheet beside
+  its node: `{ id: 'powder', name: 'THE POWDER DECK', needs: 'flotilla' }`."* Coast sheet, node **(232,36)**, junction
+  the Flotilla (220,55) at **22.5px**; next nearest road point 61px. `needs: 'flotilla'`. (§7.3 keeps the record of
+  why this had to be asked.)
 
 ### 4.3 The counts do not reconcile, and this matters
 
@@ -213,12 +216,20 @@ until that is settled** (§7.1).
 
 ## 5. How the desert attaches: THE DOORWAY IS A PORTAL, AND IT IS ALREADY BUILT
 
-> Daniel: *"The falling tower needs a portal that takes you to the sandy level, and that's the final phase of the
+**The best statement of what the map work is for is already in the game, in `src/sanctum.js:25–26`:**
+
+> *"THE SANDY PATH is dressing and nothing else: **no map node, no `needs:` link, no level behind it.** It is the last
+> ten seconds of the world, and it is warm and full of sand, because the next world is."*
+
+**A map node, a `needs:` link and a level behind it are exactly what this brief places.** The doorway does not need
+building; it needs somewhere to go.
+
+> Daniel, now: *"The falling tower needs a portal that takes you to the sandy level, and that's the final phase of the
 > undead archmage fight. There are portals that move you through the fight."*
 
-**Correction to the first draft of this brief, which said there was no sandy path.** There is. It is in
-`src/sanctum.js`, not in `buildTowerAscent` — I looked in the tower's ascent builder and reported an absence from the
-wrong file. What the code actually has, today, shipped:
+**Correction to the first draft of this brief, which said there was no sandy path.** There is, and it is shipped. It
+lives in `src/sanctum.js`, not in `buildTowerAscent` — I looked in the tower's ascent builder and reported an absence
+from the wrong file. What the code actually has, today:
 
 - The Archmage's sanctum has **two portals** (`src/sanctum.js`, `drawPortal`, `PORT`). The **in** portal stands where
   the rug used to lie and is violet — *"a well going down into his tower"*; boarding the carpet carries you through it.
@@ -232,13 +243,8 @@ wrong file. What the code actually has, today, shipped:
 - Daniel, quoted at the head of `src/sanctum.js`: *"When the boss ends you enter a portal which takes you to the goal,
   which is on a sandy path"*, and on the sand itself: *"wink at the desert, which will be the next set of levels."*
 
-**And `src/sanctum.js:24–25` says exactly what is missing, in its own words:**
-
-> *"THE SANDY PATH is dressing and nothing else: **no map node, no `needs:` link, no level behind it.** It is the last
-> ten seconds of the world, and it is warm and full of sand, because the next world is."*
-
-**That is this brief's whole job at the seam.** The doorway is built, told, and gold. What it lacks is a map node on
-the other side and a `needs:` link — which is precisely the map node and `needs:` this brief is placing. So:
+So the doorway is built, told, and gold — and the comment at the top of this section is the module's own account of
+what it is still waiting for. The seam work is therefore small:
 
 1. **On the map (this brief).** The road leaves the inland sheet at THE FALLING TOWER (260,34), already the last point
    of `INLAND_PATH`. A fifth connector joins it to the desert sheet's entry at `[274,174]`; the seam runs almost
@@ -315,7 +321,7 @@ already uses.** Every spur proposed in §4 has been sited to fit it:
 | THE SUN TEMPLE (44,64) | `[60,78]` | 21.3px | 61px |
 | THE UNBURIED FIELD (158,46) | witchlight (170,66) | 23.3px | 63px |
 | THE CHURCH (32,140) | waymeet (40,162) | 23.4px | 35px |
-| THE POWDER DECK (126,48) *or* (232,36) | hurricane *or* flotilla | 23.3px / 22.5px | 47px / 61px |
+| THE POWDER DECK (232,36) | flotilla (220,55) | 22.5px | 61px |
 | THE UNDERCROWN, re-sited (24,54) | `[44,64]` | 22.4px | 29px |
 
 So the cap costs nothing: it is a tightening of the check from 44 to 24 and not a redesign. The "next nearest" column
@@ -335,25 +341,22 @@ Wood has a store node on the road (`shop`, `shopCrag`, `shopSea`) — but `docs/
 *is* the arc's shop and hub, which would make it an in-level shop with no node. **And the inland sheet has no store at
 all, which is its own question**: six levels, nothing to spend on, and F7 asks for a shop or a shrine inside the arc.
 
-**7.3 THE POWDER DECK: THE FLOTILLA or THE HURRICANE DECK?** Narrowed from open to a one-word answer, and the brief
-and the latest word disagree, so it is put here rather than picked.
+**7.3 SETTLED — THE POWDER DECK attaches to THE FLOTILLA.** Daniel, choosing the written brief's reading:
+`needs: 'flotilla'`. §4.2 has the siting. Kept here rather than deleted, because *why* it had to be asked is worth
+remembering when the next placement is read off a brief:
 
-- **`.claude/briefs/the-powder-deck.md`, §Placement:** *"A prize ship at anchor off THE FLOTILLA, on the coast sheet
-  beside its node: `{ id: 'powder', name: 'THE POWDER DECK', needs: 'flotilla' }`."* — but that section is headed
-  **PROPOSED**, and the brief's own preamble says *"decisions marked PROPOSED are Daniel's to change"*. Its pitch
-  (`.claude/briefs/the-powder-deck-pitch.md`, open question 1) leaves it genuinely open: *"a wreck reachable from the
+- `.claude/briefs/the-powder-deck.md` §Placement says Flotilla — but that section is headed **PROPOSED**, and the
+  brief's own preamble says *"decisions marked PROPOSED are Daniel's to change"*. Its pitch
+  (`.claude/briefs/the-powder-deck-pitch.md`, open question 1) left it genuinely open: *"a wreck reachable from the
   Flotilla, or a sail-away from Stormwreck Harbor?"*
-- **Daniel, since:** *"after the stormy ship level, as an optional level."*
+- Daniel, in passing since: *"after the stormy ship level, as an optional level."* The pitch's other option,
+  **Stormwreck Harbor, could not host it** — shelved on purpose, and the one level in `LEVELS` with no map node
+  (`docs/QUEUE.md` §6). And **`src/storm-ship.js` is not a level**: it is `stormShipPolish`, a dressing pass whose
+  first line is `if(!['flotilla','hurricane'].includes(id)) return L`, so "the storm ship level" resolves in code to
+  *both* ship levels and chose neither.
 
-Reading those together: the pitch's second option, **Stormwreck Harbor, cannot host it** — it is shelved on purpose and
-is the one level in `LEVELS` with no map node (`docs/QUEUE.md` §6). That leaves the two ship levels.
-**`src/storm-ship.js` is not a level** — it is `stormShipPolish`, a dressing pass whose first line is
-`if(!['flotilla','hurricane'].includes(id)) return L`, applied to both of them — so "the storm ship level" resolves in
-code to exactly that pair and does not choose between them.
-
-**THE HURRICANE DECK is the better fit** — *"one ship, one storm"*, against THE FLOTILLA's *"the town of ships"* — and
-"after" matches it too, since `hurricane` has `needs: 'flotilla'` and is the later of the two. **But the written brief
-says Flotilla**, and a brief is not overruled by inference. §4.2 carries coordinates for both; one word settles it.
+**The lesson, for the next time:** a `PROPOSED` heading means a brief records a preference, not a decision, and a
+remark in passing does not overrule a written brief in either direction. Ask.
 
 **7.4 "The final phase of the undead archmage fight" — which moment, exactly?** §5 shows the doorway is already built:
 a gold out portal that opens when he falls and puts you on the sandy path. Daniel's phrasing — *"that's the final phase
@@ -398,18 +401,21 @@ geometry now, and let each node row arrive with its level**:
 2. **The fifth sheet, empty.** `MAPH = 900`, the region offsets, the desert `bakeMap` style, the sand-coloured seam,
    the connector from the Falling Tower — with `DESERT_NODES = []`. A sheet you can scroll onto and see, with nothing
    on it yet. Costs nothing later and proves the seam.
-3. **The check** (§9), which locks 1 and 2 in before anything is stretched again.
+3. **`tools/map-grammar.mjs`** (§9), which locks 1 and 2 in before anything is stretched again.
 4. **Each node row, with its level**, at the coordinates this brief reserved — plus its id in `mapToSaved`'s legacy
    list and, if it has a `needs`, its pair in the check's ordering list.
 
 ---
 
-## 9. The check that makes it stick
+## 9. `tools/map-grammar.mjs` — the check that makes it stick
 
 The repo's own answer to this class of problem — `tools/dangling-paths.mjs`: *"not a fix to the row, a check that
-fails the next one."* The map already has one, in `tools/additional-areas.mjs` (every non-spur node on the road to the
-pixel, every spur 4–44px off its junction, at least three spurs, the `needs` chain in `NODES` order). It should grow,
-or a sibling should sit beside it, asserting:
+fails the next one."* The map already has half of one, in `tools/additional-areas.mjs` (every non-spur node on the road
+to the pixel, every spur 4–44px off its junction, at least three spurs, the `needs` chain in `NODES` order) — but that
+tool is mostly about the Harbor and Burial levels and the map rules are a tenant in it. **`tools/map-grammar.mjs` is
+the sibling: the grammar of §3, enforced.** It needs no page and no port — `tools/additional-areas.mjs:17` already
+shows how to read `NODES`/`NODE_AT`/`PATH` out of `src/main.js` with `vm.runInContext`, and this tool is that trick
+and nothing else. Add it to the list in `tools/check.mjs:74`. It asserts:
 
 - **no road polyline revisits a point** — catches both retraces, today;
 - **a non-spur node has road on both sides of it** — i.e. its `NODE_AT` index is neither the first nor the last point
@@ -427,12 +433,11 @@ or a sibling should sit beside it, asserting:
 
 The last one is the only expensive one and it is the one that will actually fail when the sheet gets to forty-four.
 
-**The new tool is described and deliberately not named here.** `b70847c` exempts briefs from being scanned as citation
-sources — but it exempts `.claude/briefs/` only (`if (f.startsWith('.claude/briefs/')) continue;`), and **this brief
-lives in `docs/briefs/`, which is still scanned**, as are `ore-road-rework.md`, `hero-kits.md` and
-`burial-caverns-rework.md`. Naming a file that does not exist yet from here would fail `tools/dangling-paths.mjs`. Name
-it when it is written — or widen that exemption to `docs/briefs/` too, which looks like an oversight rather than a
-decision, since the two directories now hold the same kind of document.
+*(This tool went unnamed in the first two drafts. `b70847c` exempted briefs from citation scanning but covered
+`.claude/briefs/` only, so naming a not-yet-written file from `docs/briefs/` would have failed
+`tools/dangling-paths.mjs`. **`ea4a04f` widened the exemption to `docs/briefs/` as well**, on the grounds that the
+split between the two directories is an accident of which machine a file was written on — so a brief in either one may
+now name the work it is asking for, which is what a brief is.)*
 
 ---
 
