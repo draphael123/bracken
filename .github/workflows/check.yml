@@ -26,7 +26,12 @@ jobs:
           npm run check 2>&1 | tee check.log || {
             echo "::error title=npm run check failed::$(grep -E '^[0-9]+ check\(s\) failed' check.log | head -1)"
             grep -E '^FAIL ' check.log | while IFS= read -r l; do echo "::error title=failing check::$l"; done
-            sed -n '/^---- /,$p' check.log | head -40 | while IFS= read -r l; do echo "::error title=detail::$l"; done
+            # THE WHOLE DETAIL BLOCK, AS ONE ANNOTATION. The first version emitted 40 lines as 40 separate
+            # annotations and that was too narrow twice over: profile-cleanup's detail was cut off entirely while
+            # dangling-paths' fitted, so a red run named two checks and explained only one. A GitHub workflow
+            # command takes newlines as %0A, so the entire block goes in a single message and there is no per-line
+            # annotation cap to run into. check.mjs prints the last 30 lines per failing check, so this is bounded.
+            echo "::error title=check detail::$(sed -n '/^---- /,$p' check.log | head -400 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
             exit 1
           }
       - name: headless boss pass and kill-zone sweep

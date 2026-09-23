@@ -56,7 +56,12 @@ for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES
   if (name === 'killed') {
     for (let i = 0; i < 600 && !out.includes('READY'); i++) await new Promise(r => setTimeout(r, 100));
     const mine = descendants(procs(), child.pid);                                     // this case's node, its server and its browser
-    spawnSync('taskkill', ['/PID', String(child.pid), '/F'], { stdio: 'ignore' });   // the node process only: its browser is left behind, as it would be
+    /* the node process only: its browser is left behind, as it would be. GUARDED — taskkill is Windows-only, and
+       this was the one of three call sites that forgot (profile-sweep.mjs:28 and browser-profile.mjs:53 both check
+       the platform). Unguarded it is an ENOENT no-op on a Linux runner: the child is never killed, so the case
+       cannot orphan the profile it exists to orphan, and it trips its own "else this case proves nothing" assert. */
+    if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(child.pid), '/F'], { stdio: 'ignore', windowsHide: true });
+    else try { process.kill(child.pid, 'SIGKILL'); } catch { /* already gone */ }
     await done;
     const fresh = () => { const n = [...ours()].filter(x => !before.has(x)), f = foreignInUse(n, mine); return n.filter(x => !f.has(x)); };
     const orphaned = fresh();
