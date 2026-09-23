@@ -3,6 +3,11 @@
 Companion to `docs/AGENT-HANDOFF.md`. **That document is HOW to work** (worktrees, ports, rules, lessons).
 **This one is WHAT to work on, and in what order.** Read the handoff first.
 
+**The law is `RULES-LEVELS-AND-BOSSES.md`** — 626 lines, sections A-R, and most of it is enforced by tools.
+Read A (the fight) and F (the shape of a level) before designing either. Four rules were added 2026-09-24: **A10**
+phase two must change something you can name, **A11** the opening is caused not waited for, **A12** the arena must
+supply what the attacks assume, **F10** every level brings at least one new foe.
+
 **State:** branch `codex/playtest-0919`. Production is **`be6983a`**, deployed 2026-09-24 and verified byte-for-byte
 with a clean boot. Full suite green: **108 checks**.
 
@@ -32,6 +37,32 @@ These were designed on 2026-09-20/21 and live in **`.claude/briefs/`**. Do not r
 | **THE CHURCH** | Paladin | brief + pitch. Renames Waymeet's boss to **THE CRUSADER** so the church's own boss is **THE PALADIN** — you beat the Paladin to buy the Paladin | |
 | **THE SUNKEN CARAVAN** | — (desert 1) | brief + greybox | lane E |
 | desert levels 2-7 | — | briefs in `docs/briefs/` | after level 1 |
+
+## 2b. ELEVEN NEW LEVELS ARE QUEUED — the order, and the scope
+
+The game has **30 real levels**. What is queued is **+11, a 37% expansion**, and it is further along than it looks:
+**all eight desert levels have greyboxes**, not just the caravan, and the arc carries its own class (the Sun Priest)
+and world boss (the Skeleton King). It is a whole new act, and the sandy path at the end of THE FALLING TOWER is its
+doorway.
+
+**THE ORDER, agreed with Daniel 2026-09-24:**
+
+1. **THE ORE ROAD REWORK.** It is live and he rejected it. Fixing a bad level beats adding good ones.
+2. **THE MAP REDESIGN — before the levels, not after.** There are 29 level nodes across five regions today and this
+   queue adds eleven more, most of them a region the map has never had to hold. A layout built for 29 and stretched
+   to 41 is exactly how the left margin already ended up making the mandatory Ore Road read as a detour. The desert
+   wants a sixth region designed IN, and every class level needs a spur, which is layout and not decoration.
+3. **THE UNBURIED FIELD.** Brief *and* greybox, gates the Death Knight, self-contained. The cheapest real win here.
+4. **THE DESERT ARC**, as one sustained push — eight greyboxed levels sharing a tileset, a class and a boss want
+   continuity rather than being interleaved with other work.
+5. **THE POWDER DECK and THE CHURCH** last; they are the least specified of the three class levels.
+
+**PARKED: the Burial Caverns rework.** Its INDEX turned out fine (108, not the 56 I first reported) once the threat
+table was fixed. "It is boring" is real but it is the vaguest item here and it competes with eleven levels that
+already have briefs.
+
+**ON SCOPE, honestly:** eleven levels is months at the pace this has been going. If only a subset actually matters
+for shipping, saying so aims the work far better than working the list top to bottom.
 
 ## 3. THE MAP TELLS THE TRUTH ABOUT WHAT IS OPTIONAL — lane B
 

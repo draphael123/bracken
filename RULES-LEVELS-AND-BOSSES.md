@@ -54,6 +54,34 @@ ends) and a branch on the **boss bar** (or it is called HORNET QUEEN). **Four of
 *Earned:* the Reefmaw and the mid-fights land well; the Flotilla and the Long Water went trash-to-boss for
 three rounds. **Advised.**
 
+**A10. PHASE TWO MUST CHANGE SOMETHING YOU CAN NAME.** Half health is not a phase; it is a number. Crossing it must
+alter what the fight ASKS OF YOU - a new told attack, an attack that stops, a room that moves, a speed the old reads
+no longer fit - and a player who has just crossed it should be able to say what changed in one sentence. An extra
+attack bolted onto the same rotation is the weakest version of this and should be the floor, not the plan.
+*Earned:* Daniel, 2026-09-24, asked for this as a rule in as many words - "second phase has to have at least some
+change" - after the Buried Dead, who has seven turns before he is enraged and gains exactly one after.
+**Checkable and not yet checked:** a boss that picks its turns from a list (`e.phase === 2 ? [...] : [...]`) can have
+the two lists compared, and a tool can fail when they differ only by an append.
+
+**A11. THE OPENING IS CAUSED, NOT WAITED FOR.** A6 says every untouchable phase owes an open one. This says WHO opens
+it. A window that arrives on the boss's own timer teaches nothing and rewards nothing; a window the player MAKES is
+the whole fight. Ring the great bell, jam the drum with a loaded bucket, cut the chain and drop the chandelier on
+her, land the death mark on nobody so it comes back on him.
+*Earned:* the False Abbot's ward is a fifth of incoming damage and the bell is the only answer to it - that fight
+works. The Winchmaster's jam works. The bosses that read as 'he does basically nothing' are the ones whose only
+opening was the rest they were always going to take. **Advised** - what causes an opening is too various to check,
+but a boss whose only `open` comes from its own rest should be looked at hard.
+
+**A12. THE ARENA MUST SUPPLY WHAT THE ATTACKS ASSUME.** If an attack carries a height condition, a distance, a wall,
+a hazard or a prop, the room has to HAVE that thing. An attack you can only answer by standing somewhere the room
+does not contain is an attack with no answer.
+*Earned:* twice in one day, 2026-09-23. THE BURIED DEAD's nova only lands within 80px of the floor, his erupt within
+90 and his body slam within 44 - and his ossuary had one tier at 48px, so there was nowhere in the room his poison
+could not reach, in a fight whose own code says there should be. THE PALADIN's bash only lands within 44px and his
+oath within 28, and his yard was eleven rows of open air over a flat street. Both fights were WRITTEN for height and
+neither room had any. **Checkable:** an attack's guard conditions are in its resolve branch and the arena's standable
+rows are in the grid; a tool can read both and fail when nothing in the room satisfies a condition an attack tests.
+
 ---
 
 ## B. The room
@@ -223,6 +251,14 @@ ways it says it (C2/C4). If the sentence is "there are more goblins", stop.
 
 **F9. WALK IT BEFORE YOU DRESS IT.** The whole level, start to gate, with no god mode, once per hero that can
 reach it. Every tool in `tools/` passes before the art goes on, and the audit's FLOAT count is zero.
+
+**F10. EVERY LEVEL BRINGS AT LEAST ONE FOE THE GAME HAS NEVER SEEN.** Not a recolour and not the same creature with
+more health: one new kind, with its own silhouette, its own told blow and its own place in the gaps the roster already
+has (fill GAPS, not variety). A level built entirely out of foes you have already fought is a level about its
+geometry, and geometry alone does not carry 400-700 columns.
+*Earned:* THE ORE ROAD shipped with nine foe kinds of which exactly ONE was new, and Daniel's playtest verdict was
+"no new enemies/idea other than riding lifts" - the level scores INDEX 59 against neighbours at 92-113 and is the
+worst in the game. **Checkable:** every level's roster against every earlier level's, which is a set difference.
 
 ---
 
