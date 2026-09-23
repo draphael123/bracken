@@ -229,8 +229,23 @@ export function buildTowerAscent({ painter, T, TS }) {
   /* THE PARAPET WAS GROWING GRASS. Every solid row in here is skinned as tower stone except this one, which nobody
      listed - so it fell through to the default ground kit and painted itself with palette.grass, a green mat lying on
      the crown of a stone tower two hundred rows up. Daniel saw it before I did. The sand bank is the other way out. */
+  /* ANYTHING SOLID INDOORS WEARS THE TOWER. Listing skins by hand is how the parapet and the crenellations came to be
+     growing grass, and the same hole was still open three floors down: the library's bookcases, THE READING ROOM'S
+     GALLERY - the one you walk on when the room turns over - and the cistern's floor were all bare, 334 cells of tower
+     interior falling through to the default ground kit. So the rule is swept rather than listed, and any structure a
+     future floor puts indoors is skinned the moment it is built. Runs of one row keep the list short.
+     (T.SOLID only: the one-way ledges, planks, crystal and rope have looks of their own.) */
+  const indoor = [];
+  for (const [ix0, ix1, iy0, iy1] of interiors) for (let y = iy0; y <= iy1; y++) {
+    let run = -1;
+    for (let x = ix0; x <= ix1 + 1; x++) {
+      const solid = x <= ix1 && L.grid[y * W + x] === T.SOLID;
+      if (solid && run < 0) run = x;
+      else if (!solid && run >= 0) { indoor.push([run, x - 1, y, y, 'tower']); run = -1; }
+    }
+  }
   const skins = [[0, X0 - 1, SKY - 4, H - 1, 'tower'], [X1 + 1, W - 1, SKY - 4, H - 1, 'tower']].concat(floors.slice(0, N - 1).map(F => [X0, X1, F.divider, F.divider + 1, 'tower']),
-    [[X0, X1, H - 6, H - 1, 'tower'], [28, 43, SKY + 1, SKY + 1, 'tower'], [SAND.x0 - 2, SAND.x1 + 2, SAND.sky, SAND.deep, 'sand']]);
+    [[X0, X1, H - 6, H - 1, 'tower'], [28, 43, SKY + 1, SKY + 1, 'tower'], [SAND.x0 - 2, SAND.x1 + 2, SAND.sky, SAND.deep, 'sand']], indoor);
   const START = { x: 20, y: floors[0].bot - 1 };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges,
