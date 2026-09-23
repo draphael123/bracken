@@ -1,8 +1,8 @@
 # THE SUNKEN CARAVAN: mechanics built ahead of the level
 
 Built on `claude/slopes` while THE BURNING VILLAGE was being built. Pure modules, none wired in. Proved by
-`node tools/caravan.mjs` (29 checks, <1 s - it was 22 when this was written). Brief: `.claude/briefs/sunken-caravan.md`
-(NOT IN THIS REPOSITORY - see the known hole in `tools/dangling-paths.mjs`). Art: `src/redraw/desert.js`,
+`node tools/caravan.mjs` (29 checks, <1 s - it was 22 when this was written). Brief: `.claude/briefs/sunken-caravan.md`.
+Art: `src/redraw/desert.js`,
 preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
 
 ## SUNSTROKE: `src/sunstroke.js`
