@@ -11,6 +11,18 @@ what you don't want, and the build is whatever is left.
 `src/art.js` `bakeMap`/`bakeWorldMap`, and the map half of `tools/additional-areas.mjs`. No level changes. The lane B
 cosmetics (side toggle menu, live motion, richer per-region art) are a separate job and are not costed here.
 
+### Second draft — what Daniel has answered, and what it changed here
+
+| he said | what moved in this brief |
+|---|---|
+| **Waymeet's location is fine.** | §2b rewritten so the defect is the POLYLINE and not the place, and §6 2b now moves **one** node — THE HEXED FIELDS — with Waymeet, the seam, the Burial Caverns, the Witchlight Stair, the Folly and the tower all staying put. The two options that moved the town or the seam are **withdrawn**. |
+| **The doorway is a portal in the Archmage fight, not a sandy ending.** | §5 rewritten. It also **corrects an error in the first draft**: the sandy path is real and already shipped — it is in `src/sanctum.js`, which I did not read, not in `buildTowerAscent`, which I did. |
+| **THE POWDER DECK hangs off the water levels.** | §4.2 now carries confirmed-from-source coordinates for both candidates, because **the brief that has now landed says FLOTILLA** while the newer word points at THE HURRICANE DECK. §7.3 sets the two against each other rather than picking. |
+| **`.claude/briefs/` has landed** (`5493df8`). | THE UNBURIED FIELD and THE CHURCH are now confirmed from their own briefs instead of inferred. |
+
+Still Daniel's, and still flagged: the node count (§7.1), the desert store (§7.2), spur stepping (§7.5) and how much
+desert to paint (§7.6).
+
 ---
 
 ## 1. What is on the map today, counted
@@ -46,13 +58,40 @@ leaves the body of the sheet, drops into the bottom-left corner and crawls up th
 sheet. Daniel's verdict on this is already in `docs/QUEUE.md` §3. **A node in the margin at the end of a limb reads as
 optional whatever its data says**, and the Ore Road's data is correct — `crown` has `needs: 'oreroad'`.
 
-**b. Waymeet is the same bug, unnoticed, and it is worse.**
+**This one is the road AND the place**, which is what separates it from (b) below: 18px from the edge of a 320px sheet
+is the margin, and no re-drawing of the polyline moves it out of there.
 
-`INLAND_PATH = [[140,176], [95,172], [40,162], [95,172], [150,140], ...]`. The road enters the inland sheet at x=140,
-runs 100px left to Waymeet, and **retraces the same two points back**. That out-and-back is drawn at full road weight
-(8px dark, 5px sand). Waymeet's own source comment calls it *"a spur of its own"* — but it carries no `spur: true`,
-and `THE HEXED FIELDS` has `needs: 'waymeet'`, so **the entire inland act is gated behind a node drawn as a
-cul-de-sac.** This is §3's complaint with a second instance nobody has reported.
+**b. WAYMEET IS DRAWN AS A CUL-DE-SAC. WAYMEET'S POSITION IS NOT THE PROBLEM.**
+
+*(Daniel, on the first draft of this brief: the town's location is fine. It is. Nothing in this brief moves it, and the
+first draft buried that under two alternatives that did. Stated plainly this time, because the defect is in one array.)*
+
+**The defect is one line of `src/main.js`, line 2917:**
+
+```
+const INLAND_PATH = [[140, 176], [95, 172], [40, 162], [95, 172], [150, 140], ...];
+                                  ^^^^^^^^^             ^^^^^^^^^
+                                  the same point, twice
+```
+
+The road enters the inland sheet at `[140,176]`, walks out to Waymeet at `[40,162]`, and then **walks back over the
+points it just came in on.** `bakeMap` draws every segment of that array at full road weight — 8px dark, 5px sand — so
+the return leg is painted on top of the outbound one and the whole entrance reads as a limb with a town on the end of
+it. **Waymeet is at exactly the right place; the road is drawn going nowhere and coming back.**
+
+And it is required, twice over:
+
+- `src/level.js:7176` — `{ id: 'fields', name: 'THE HEXED FIELDS', … needs: 'waymeet' }`, verbatim.
+- `tools/additional-areas.mjs:30` — a **green suite check** asserts it:
+  `for (const [a,b] of [['causeway','waymeet'], ['waymeet','fields'], …]) assert.equal(LEVELS.find(l=>l.id===b).needs, a)`.
+
+*(This was queried as unreproducible. Both lines are above; `grep -n "needs: 'waymeet'" src/level.js` returns
+7176. A search for `needs:'waymeet'` without the space, or one restricted to the map section of `src/main.js`, finds
+nothing — the gate is on the LEVEL, not the node.)*
+
+So the entire inland act is gated behind a node the map paints as a dead end. It carries no `spur: true` — correctly —
+yet its own source comment calls it *"a spur of its own"*, which is how the polyline came to be written that way. This
+is `docs/QUEUE.md` §3's complaint with a second instance nobody has reported, and **the fix is the polyline** (§6, 2b).
 
 **c. The Undercrown gets both treatments at once.**
 
@@ -131,7 +170,7 @@ Nine nodes, from `docs/desert-arc-brief.md` and the greyboxes in `src/draft/`:
 | 3 | *(the desert store)* | store | 170,136 | **open — see §7.2** |
 | 4 | THE RED GORGE | level | 136,120 | |
 | 5 | THE GLASS SEA | level | 92,102 | |
-| 6 | **THE SUN TEMPLE** | level, `spur: true` | 34,62 | optional, forks off the Glass Sea; gates the Sun Priest |
+| 6 | **THE SUN TEMPLE** | level, `spur: true` | 44,64 | optional, forks off the Glass Sea; gates the Sun Priest |
 | 7 | THE BURIED CITY | level | 98,58 | |
 | 8 | THE SEALED PYRAMID | level | 150,44 | |
 | 9 | THE KING'S PYRAMID | level | 248,14 | the Skeleton King, at the top of the world |
@@ -139,22 +178,26 @@ Nine nodes, from `docs/desert-arc-brief.md` and the greyboxes in `src/draft/`:
 `DESERT_PATH = [[274,174], [248,158], [206,146], [170,136], [136,120], [92,102], [60,78], [98,58], [150,44], [206,30], [248,14]]`
 
 One entry at the bottom-right, one continuous S that climbs to the apex, no retrace. The Sun Temple's junction is
-`[60,78]` at 30.5px — inside the 4–44px band `tools/additional-areas.mjs` already enforces, and 70px from the next
-nearest road point, so the snap is not fragile. **Every coordinate in this brief is indicative and wants a rendered
-sheet before it is believed** (`ART.bakeWorldMap` is the only thing that can show label crowding).
+`[60,78]` at **21.3px**, inside the cap proposed in §6.5 and 61px from the next nearest road point, so the snap is not
+fragile. **Every coordinate in this brief is indicative and wants a rendered sheet before it is believed**
+(`ART.bakeWorldMap` is the only thing that can show label crowding).
 
 ### 4.2 Three class-level spurs
 
-`docs/QUEUE.md` §3: *"each gets `spur: true` the day it is placed."*
+`docs/QUEUE.md` §3: *"each gets `spur: true` the day it is placed."* **All three briefs are now in the repository**
+(`.claude/briefs/`, landed in `5493df8`), so these are confirmed from source rather than inferred.
 
-- **THE UNBURIED FIELD** — off **THE WITCHLIGHT STAIR**, stated in the greybox's own header
-  (`src/draft/unburied-field.js:1`: *"the optional Death Knight level off the Witchlight Stair"*). Inland sheet,
-  indicative (140,44), junction the Witchlight node at 34.4px.
-- **THE CHURCH** — off **WAYMEET**, which its own design requires: it renames Waymeet's boss to THE CRUSADER so the
-  church's boss can be THE PALADIN (`docs/briefs/hero-kits.md` §7). Inland sheet, indicative (28,134), junction
-  Waymeet at 30.5px.
-- **THE POWDER DECK** — coast sheet, off **THE HURRICANE DECK**, indicative (128,52), junction at 27.1px.
-  **This one is a reading, not a fact — see §7.3.**
+- **THE UNBURIED FIELD** — off **THE WITCHLIGHT STAIR**. `.claude/briefs/unburied-field.md`, first line and §"Where it
+  sits": *"A side road off THE WITCHLIGHT STAIR on the world map, revealed when the Stair is cleared. Optional: it
+  gates nothing … `needs: 'witchlight'`."* Inland sheet, node **(158,46)**, junction the Witchlight node (170,66) at
+  **23.3px**; next nearest road point 63px away.
+- **THE CHURCH** — off **WAYMEET**. Confirmed by its own design: it renames Waymeet's boss to THE CRUSADER so the
+  church's boss can be THE PALADIN (`.claude/briefs/the-lit-church.md`, `docs/briefs/hero-kits.md` §7). Inland sheet,
+  node **(32,140)**, junction Waymeet (40,162) at **23.4px**; next nearest 35px.
+- **THE POWDER DECK** — coast sheet. **Its brief and Daniel's latest word disagree, and it is one of two levels —
+  see §7.3.** Coordinates for both, so whichever he says is a one-line change:
+  - off **THE HURRICANE DECK** (130,25) — node **(126,48)**, junction at **23.3px**; `needs: 'hurricane'`.
+  - off **THE FLOTILLA** (220,55) — node **(232,36)**, junction at **22.5px**; `needs: 'flotilla'`.
 
 ### 4.3 The counts do not reconcile, and this matters
 
@@ -168,22 +211,44 @@ until that is settled** (§7.1).
 
 ---
 
-## 5. How the desert attaches
+## 5. How the desert attaches: THE DOORWAY IS A PORTAL, AND IT IS ALREADY BUILT
 
-The road leaves the inland sheet at THE FALLING TOWER (260,34), which is already the last point of `INLAND_PATH`. A
-fifth connector joins it to the desert sheet's entry at `[274,174]`, so the seam crossing runs almost straight up at
-x≈260–274. The other three seams already work exactly this way.
+> Daniel: *"The falling tower needs a portal that takes you to the sandy level, and that's the final phase of the
+> undead archmage fight. There are portals that move you through the fight."*
 
-**And the doorway is told, not just drawn.** `docs/DESIGN.md`: *"the sandy path at the end of THE FALLING TOWER is its
-doorway."* That phrase appears in `docs/DESIGN.md` and `docs/QUEUE.md` and **nowhere in the level** — there is no sandy
-path in `buildTowerAscent` today. Two halves, and they are separable:
+**Correction to the first draft of this brief, which said there was no sandy path.** There is. It is in
+`src/sanctum.js`, not in `buildTowerAscent` — I looked in the tower's ascent builder and reported an absence from the
+wrong file. What the code actually has, today, shipped:
 
-1. **On the map (this brief).** The seam connector is drawn in the road's browns for the three existing seams; the
-   desert connector is drawn in sand (`#c9b27c` over `#e0d0a0`, the same pair `bakeMap` already uses for the road's
-   surface and its pebbles), and the seam gradient between INLAND and DESERT goes green-to-gold instead of the
-   grey-green it uses now. The road changes material as it crosses. One `bakeWorldMap` argument, no new art.
-2. **In the level (NOT this brief).** If the Falling Tower is to end on sand, that is a level change and wants its own
-   brief. **Flagged, not proposed** (§7.4).
+- The Archmage's sanctum has **two portals** (`src/sanctum.js`, `drawPortal`, `PORT`). The **in** portal stands where
+  the rug used to lie and is violet — *"a well going down into his tower"*; boarding the carpet carries you through it.
+  The **out** portal is gold — *"a hole full of MORNING … so that after a whole level of violet night you can see where
+  it goes before you reach it."*
+- `openSanctumDoor` is called from `src/main.js:18106` **when the Archmage falls**, and it opens where he fell,
+  *"because the hole he leaves IS the way out, and it is walked into, never pressed, so it cannot be missed."*
+- Walking into it (`updateSanctum` → `ctx.leave`, `src/main.js:13620`) sets `L.sandWalk` and puts you on
+  `L.sanctum.sand` — **the sandy path** — with `drawSandDawn` painting dunes at sunrise behind it, and the level's GATE
+  rather than the kill is what ends the level (`src/main.js:7079`).
+- Daniel, quoted at the head of `src/sanctum.js`: *"When the boss ends you enter a portal which takes you to the goal,
+  which is on a sandy path"*, and on the sand itself: *"wink at the desert, which will be the next set of levels."*
+
+**And `src/sanctum.js:24–25` says exactly what is missing, in its own words:**
+
+> *"THE SANDY PATH is dressing and nothing else: **no map node, no `needs:` link, no level behind it.** It is the last
+> ten seconds of the world, and it is warm and full of sand, because the next world is."*
+
+**That is this brief's whole job at the seam.** The doorway is built, told, and gold. What it lacks is a map node on
+the other side and a `needs:` link — which is precisely the map node and `needs:` this brief is placing. So:
+
+1. **On the map (this brief).** The road leaves the inland sheet at THE FALLING TOWER (260,34), already the last point
+   of `INLAND_PATH`. A fifth connector joins it to the desert sheet's entry at `[274,174]`; the seam runs almost
+   straight up at x≈260–274, exactly as the other three do. **The connector is drawn in sand, not road-brown** —
+   `#c9b27c` over `#e0d0a0`, the same pair `bakeMap` already uses for the road's surface and its pebbles — and the
+   INLAND/DESERT seam gradient goes green-to-gold instead of the grey-green the others use. The road changes material
+   as it crosses, answering the gold portal on the level side. One `bakeWorldMap` argument, no new art.
+2. **In the fight (NOT this brief).** `THE SUNKEN CARAVAN` becomes the node the out portal leads to, with
+   `needs: 'fallingtower'`. Whether that means the existing out portal simply now *goes somewhere*, or a new portal
+   during a late stage of the fight, is a fight question — **see §7.4, which is narrower than it was, not closed.**
 
 ---
 
@@ -203,11 +268,36 @@ the entry and exit — and the Ore Road corner goes away.
 with the Undercrown moved to (24,54), junction `[44,64]` at 22.4px, hanging down-left out of Highcrown's cellars as
 its fiction says. One climb, no corner, no margin, no retrace, and the Ore Road sits on it with road on both sides.
 
-*Indicative inland (replacing the whole polyline):*
-`[[140,176], [40,162] waymeet, [74,126] fields, [112,96] burial, [160,72] witchlight, [214,76] mage, [260,34] tower]`
-The road enters bottom-right, runs left along the bottom **through** Waymeet, then climbs right. An L, not an
-out-and-back. It moves three nodes (fields, burial, witchlight) and it makes the required town a place you pass
-through. Two cheaper variants and their costs are in §7.5.
+**Here the NODE has to move and not only the road**, which is what separates the Ore Road from Waymeet below: at
+(18,118) it is 18px from the edge of a 320px sheet, and no polyline redrawn around it takes it out of the margin.
+Moving it inboard to (44,112) is the direct answer to Daniel's own complaint in `docs/QUEUE.md` §3.
+
+**2b. Waymeet — the road is redrawn and the town does not move.**
+
+**Waymeet stays at (40,162). The seam stays at x=140. THE BURIAL CAVERNS, THE WITCHLIGHT STAIR, THE MAGE'S FOLLY and
+THE FALLING TOWER all stay exactly where they are.** One node moves, and it is not the town.
+
+*Proposed `INLAND_PATH` (`src/main.js:2917`):*
+
+```
+[[140,176], [40,162] waymeet, [62,122] fields, [130,82] burial, [170,66] witchlight, [214,76] mage, [260,34] tower]
+```
+
+The road enters bottom-right, runs left along the bottom **through** Waymeet, and then climbs away to the right. An L
+with one turn, no repeated point, and the required town is a place you pass through rather than the end of a limb.
+
+**Why something has to move at all, since the town does not.** Deleting the duplicated `[95,172]` is not enough on its
+own. With Waymeet at (40,162) and THE HEXED FIELDS at its present (150,140), the road still has to come in from
+`[140,176]` and go back out to `[150,140]` — two full-weight 8px roads whose legs are within about 14px of each other
+for most of their length. They would overlap into one fat limb and read exactly as they do now. **The road can only
+leave Waymeet in a new direction if the node after Waymeet is in a new direction**, so:
+
+> **THE HEXED FIELDS moves from (150,140) to (62,122)** — up-left of Waymeet instead of back across the entrance. It is
+> the only node in this fix that moves, and the fiction survives it: the farms sit under the Archmage's hill, and the
+> hill (the Folly, the tower) is still up and to the right of them.
+
+If even that one move is unwanted, the fallback is to accept the V and narrow it — but the V is the defect, and
+narrowing it only makes the limb shorter, not a road.
 
 **3. Give each sheet one direction.** The road advances and turns at most twice. A node you pass through is required;
 a node you step off to is optional. Once that holds the grammar is the map's, not each sheet's.
@@ -215,12 +305,22 @@ a node you step off to is optional. Once that holds the grammar is the map's, no
 **4. Fix the dotted overlay** to follow the road from the last *required* node walked, not from the highest unlocked
 index (§2d). Otherwise seven spurs switch it off.
 
-**5. Cap the spur stub.** The check's band is 4–44px, and 44px is long enough for a stub to read as a second road on a
-320px sheet. Measured, today: the Burning Village **24.2px**, Underleaf **24.2px**, the Undercrown **12.0px**. Nothing
-live uses more than 25, so the band is nearly twice as loose as anything in it, and **the number the map actually uses
-is about 24.** The four new spurs in §4 are sited at 27–34px and should be pulled in to match once the cap is agreed —
-they are drawn that long only because §4's coordinates were chosen for room, not for the cap. A number for Daniel, and
-then a straightforward adjustment of four pairs of coordinates.
+**5. Cap the spur stub at 24px.** The check's band is 4–44px, and 44 is long enough for a stub to read as a second road
+on a 320px sheet. Measured, today: the Burning Village **24.2px**, Underleaf **24.2px**, the Undercrown **12.0px** —
+nothing live uses more than 25, so the band is nearly twice as loose as anything in it, and **24 is the number the map
+already uses.** Every spur proposed in §4 has been sited to fit it:
+
+| spur | junction | stub | next nearest road point |
+|---|---|---|---|
+| THE SUN TEMPLE (44,64) | `[60,78]` | 21.3px | 61px |
+| THE UNBURIED FIELD (158,46) | witchlight (170,66) | 23.3px | 63px |
+| THE CHURCH (32,140) | waymeet (40,162) | 23.4px | 35px |
+| THE POWDER DECK (126,48) *or* (232,36) | hurricane *or* flotilla | 23.3px / 22.5px | 47px / 61px |
+| THE UNDERCROWN, re-sited (24,54) | `[44,64]` | 22.4px | 29px |
+
+So the cap costs nothing: it is a tightening of the check from 44 to 24 and not a redesign. The "next nearest" column
+matters as much as the stub — a spur whose two nearest road points are a pixel apart has a `NODE_AT` junction that can
+flip under any later edit to the polyline.
 
 ---
 
@@ -235,31 +335,47 @@ Wood has a store node on the road (`shop`, `shopCrag`, `shopSea`) — but `docs/
 *is* the arc's shop and hub, which would make it an in-level shop with no node. **And the inland sheet has no store at
 all, which is its own question**: six levels, nothing to spend on, and F7 asks for a shop or a shrine inside the arc.
 
-**7.3 Which level does THE POWDER DECK hang off?** Its brief is in the ignored directory `docs/QUEUE.md` §2 describes
-— it is in no commit, and `tools/dangling-paths.mjs` lists that hole every run. All this repo knows is
-`docs/QUEUE.md` §2: *"An optional ship level going between decks, unlocking doors — deliberately not a fourth
-above-deck level."* THE HURRICANE DECK is the obvious host and is what §4.2 proposes, but **that is a guess about a
-document no clone has** and it should be confirmed rather than built on. Same directory, same caveat, for anything
-else the class-level briefs decided about placement.
+**7.3 THE POWDER DECK: THE FLOTILLA or THE HURRICANE DECK?** Narrowed from open to a one-word answer, and the brief
+and the latest word disagree, so it is put here rather than picked.
 
-**7.4 Does the Falling Tower actually get a sandy ending?** §5. The phrase is in two design documents and in no level.
-If yes it is a level brief of its own; if no, the map carries the whole doorway and the phrase should come out of
-`docs/DESIGN.md` and `docs/QUEUE.md` so nobody builds to it.
+- **`.claude/briefs/the-powder-deck.md`, §Placement:** *"A prize ship at anchor off THE FLOTILLA, on the coast sheet
+  beside its node: `{ id: 'powder', name: 'THE POWDER DECK', needs: 'flotilla' }`."* — but that section is headed
+  **PROPOSED**, and the brief's own preamble says *"decisions marked PROPOSED are Daniel's to change"*. Its pitch
+  (`.claude/briefs/the-powder-deck-pitch.md`, open question 1) leaves it genuinely open: *"a wreck reachable from the
+  Flotilla, or a sail-away from Stormwreck Harbor?"*
+- **Daniel, since:** *"after the stormy ship level, as an optional level."*
 
-**7.5 Waymeet: re-route the inland road, or move the seam?** §6 proposal 2 moves three nodes and keeps the seam at
-x=140. The alternative is to move the COAST→INLAND connector to the left so the road arrives *at* Waymeet — cleaner in
-principle, but the coast sheet's top-left already holds THE LAMPLIT STREET and its road, and a new leg up to x≈44
-passes within about 5px of the Hurricane-to-Lamplit road. Two 8px roads 5px apart merge into one. **The cheap third
-option is to move Waymeet right, onto the road between the seam and the Hexed Fields** — that shrinks the limb from
-100px to about 28px without removing it, and it changes where the town *is*, which is fiction and not layout.
+Reading those together: the pitch's second option, **Stormwreck Harbor, cannot host it** — it is shelved on purpose and
+is the one level in `LEVELS` with no map node (`docs/QUEUE.md` §6). That leaves the two ship levels.
+**`src/storm-ship.js` is not a level** — it is `stormShipPolish`, a dressing pass whose first line is
+`if(!['flotilla','hurricane'].includes(id)) return L`, applied to both of them — so "the storm ship level" resolves in
+code to exactly that pair and does not choose between them.
 
-**7.6 Do left and right step through a spur, or past it?** `mapGo` skips secrets and unearned hidden levels and
+**THE HURRICANE DECK is the better fit** — *"one ship, one storm"*, against THE FLOTILLA's *"the town of ships"* — and
+"after" matches it too, since `hurricane` has `needs: 'flotilla'` and is the later of the two. **But the written brief
+says Flotilla**, and a brief is not overruled by inference. §4.2 carries coordinates for both; one word settles it.
+
+**7.4 "The final phase of the undead archmage fight" — which moment, exactly?** §5 shows the doorway is already built:
+a gold out portal that opens when he falls and puts you on the sandy path. Daniel's phrasing — *"that's the final phase
+of the undead archmage fight"* — has two readings, and **the map is identical under both**, so this blocks nothing here:
+
+- **(a) The portal that already exists now leads somewhere.** `openSanctumDoor` fires at `src/main.js:18106` on his
+  death, which is the end of the fight; `src/sanctum.js` already calls the sand *"the last ten seconds of the world"*.
+  This is a `needs:` link and a map node — no fight change at all.
+- **(b) A new portal during a late stage of the fight**, before he dies. That is a boss change and wants its own brief.
+  Worth saying that `src/undead-mage.js` has **no `phase` or `stage` field** (125 lines, zero matches for either), so
+  there is no "final phase" in the code to hang it on yet — it would have to be built.
+
+(a) is what the code and Daniel's earlier quote at the head of `src/sanctum.js` both describe. If he means (b), this
+brief is unaffected and a fight brief is owed.
+
+**7.5 Do left and right step through a spur, or past it?** `mapGo` skips secrets and unearned hidden levels and
 nothing else, so today you walk through every optional node to reach the next required one. At three spurs that is
 fine. At seven — four class levels plus Underleaf, the Undercrown and the Burning Village — it is most of the road.
 If spurs should be stepped *onto* rather than through, that needs an input, and up/down are already taken by the
 difficulty toggle.
 
-**7.7 How much of the desert sheet is worth painting now?** `docs/QUEUE.md` §2b, on scope: *"eleven levels is months
+**7.6 How much of the desert sheet is worth painting now?** `docs/QUEUE.md` §2b, on scope: *"eleven levels is months
 at the pace this has gone."* A fifth `bakeMap` style plus per-node desert scenery is real work for a sheet with no
 playable levels on it yet.
 
@@ -270,7 +386,8 @@ playable levels on it yet.
 **No node can be added before its level exists.** `NODES` rows read `LEVELS.findIndex(l => l.id === '…')`, which is
 **−1** for a level that is not in `LEVELS`; `nodeLocked` then dereferences `LEVELS[-1]` and throws on the map's first
 frame. None of the twelve levels is in `LEVELS` today — the eight desert levels and the Unburied Field exist only as
-greyboxes in `src/draft/`, and the Powder Deck and the Church have neither.
+greyboxes in `src/draft/`, and the Powder Deck and the Church have briefs (`.claude/briefs/`, landed in `5493df8`)
+but no greybox.
 
 So "the map before the levels" cannot mean shipping forty-four rows. It means **decide the layout now, land the
 geometry now, and let each node row arrive with its level**:
@@ -299,7 +416,9 @@ or a sibling should sit beside it, asserting:
   of its region's polyline, unless it is a seam entry or exit. Catches the Ore Road's corner and Waymeet's limb;
 - **no road point within 24px of a sheet edge**, except an entry or exit;
 - **each region's road turns at most twice** (a direction-change count on the polyline);
-- **the spur stub is within the agreed cap**, once §6.5 is settled;
+- **the spur stub is within the agreed cap** — the band tightened from 4–44 to 4–24 (§6, item 5), plus **the next
+  nearest road point is at least twice the stub away**, so a `NODE_AT` junction cannot flip under a later polyline
+  edit;
 - **every node's `level` index is ≥ 0** — the −1 crash in §8, which would have been caught the first time anyone
   added a node ahead of its level;
 - **every node id added since the last save format is in `mapToSaved`'s legacy list** — §2e, currently guarded by
@@ -307,6 +426,13 @@ or a sibling should sit beside it, asserting:
 - **every label places without overlap** at every sheet, by running the same solver `drawMap` uses.
 
 The last one is the only expensive one and it is the one that will actually fail when the sheet gets to forty-four.
+
+**The new tool is described and deliberately not named here.** `b70847c` exempts briefs from being scanned as citation
+sources — but it exempts `.claude/briefs/` only (`if (f.startsWith('.claude/briefs/')) continue;`), and **this brief
+lives in `docs/briefs/`, which is still scanned**, as are `ore-road-rework.md`, `hero-kits.md` and
+`burial-caverns-rework.md`. Naming a file that does not exist yet from here would fail `tools/dangling-paths.mjs`. Name
+it when it is written — or widen that exemption to `docs/briefs/` too, which looks like an oversight rather than a
+decision, since the two directories now hold the same kind of document.
 
 ---
 
