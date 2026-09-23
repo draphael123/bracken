@@ -7607,7 +7607,7 @@ const ELITES = {
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 396, 31, { face: -1 }], ['husk', 950, 31, { face: -1 }]],   /* (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
-  oreroad: [['heavy', 322, 12, { face: -1, gate: 329 }]],   /* THE ORE ROAD: the winch crew's foreman holds the gate onto the drum house's deck */
+  oreroad: [['heavy', 455, 12, { face: -1, gate: 472 }]],   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck (the rework of 2026-09-25 moved the whole level east, so his column moved with it) */
   witchlight: [['husk', 108, 76, { face: -1 }], ['armour', 286, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver */
   fallingtower: [['armour', 28, 215, { face: -1 }], ['husk', 52, 146, { face: -1 }], ['armour', 38, 119, { face: 1, gate: 30 }]],   /* the ascent (2026-09-21): the orrery's guard, the cistern's husk over the poison, and the bell loft's warden, whose gate shuts the way to the first lift. The orrery moved 36 rows up when the Reading Room and the Pendulum Gallery went in (2026-09-22) and its guard came with it; the cistern and the loft did not move. The husk sits ON the cistern's own first-tier husk, so it is UPGRADED, not added: one husk in the tower, and it is this one. */
   wood: [['shield', 147, 21, { gate: 157 }]],

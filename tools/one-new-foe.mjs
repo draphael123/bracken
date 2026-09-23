@@ -17,7 +17,6 @@ import { LEVELS } from '../src/level.js';
 
 /* Named, with a reason each. THE ORE ROAD IS BEING REWORKED and must leave this list when it lands. */
 const GRANDFATHERED = {
-  oreroad: 'REJECTED BY DANIEL AND BEING REWORKED - its only new creature is the Winchmaster, and "no new enemies/idea other than riding lifts" is exactly what this rule now measures. It must leave this list when the rework lands.',
   witchlight: 'rejected 2026-09-22 on a related count (rules met is not a good level); its only new creature is the Gate Gargoyle.',
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
   crown: 'ANSWERED, AND BEING FIXED - Daniel agreed 2026-09-24 that it should bring a new foe. THE TEMPERER is briefed in docs/briefs/crown-temperer.md; this entry goes when he lands.',

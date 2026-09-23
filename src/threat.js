@@ -25,7 +25,12 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   frog: 5, chief: 5, queen: 4, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
   reefmaw: 6, quarter: 6, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, dummy: 0, bale: 0.5, fisher: 0,
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
-  miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3, seawitch: 3,   /* the Hurricane's own caster does the shaman's job, so she is worth what he was */
+  miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3, seawitch: 3,
+  /* THE ORE ROAD'S OWN THREE, weighed against the men already here rather than invented. A rockfall is a 2 and a
+     javelineer 2.5, and the TIPPLER is a rockfall with a mind, so 2.5. A soldier is a 3 and the SHEARGOB does
+     less damage than one but takes the floor away, which costs more than the blow. The GAFFER is worth what a
+     brute is (3.5) because the reach is the creature: he is the only foe in the game you cannot walk past. */
+  tippler: 2.5, sheargob: 3, gaffer: 3.5,   /* the Hurricane's own caster does the shaman's job, so she is worth what he was */
   /* THE MERROW: the sea's own tribe. The spearfisher is worth what a sailor is (a reach weapon and a reel to
      answer); the tidecaller is worth what a caster is (a read, then a long window to punish); the brute is a
      shield you must go round or break, so it sits between the shieldgob and a knight's plate. */

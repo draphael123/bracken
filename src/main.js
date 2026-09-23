@@ -1,7 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
-import { OR, makeCableway, stepCableway, bucketAt, lineYAt, drawCables, drawBucket, drawOreStructures, drawOreBackdrop } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
+import { OR, makeCableway, stepCableway, bucketAt, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
@@ -86,7 +86,7 @@ import {bakeHangingHouse,paintHouseSmoke} from './redraw/hanging-town.js';
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
 import { bakeSwornSword, bakeHedgeKnight, bakeRunner, bakeCrossbowman, bakeClosedHelm,
-  bakeBoneGob, bakePrise, bakeHoldfast, bakeDrownedKing, bakePropman, bakeClinger, bakeSweep, bakePaladin, bakeFreebooter, bakeReaper, bakeWarden, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeAssassin, bakeBerserker, bakeGrandmother, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeSpitcap, bakeWeaver, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman, bakeSeaWitch, bakeMerrowCaller, bakeMerrowBrute } from './chars.js';
+  bakeBoneGob, bakePrise, bakeHoldfast, bakeDrownedKing, bakePropman, bakeClinger, bakeSweep, bakePaladin, bakeFreebooter, bakeReaper, bakeWarden, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeCutter, bakeAssassin, bakeBerserker, bakeGrandmother, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeTippler, bakeSheargob, bakeGaffer, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeSpitcap, bakeWeaver, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman, bakeSeaWitch, bakeMerrowCaller, bakeMerrowBrute } from './chars.js';
 import { bakeQueen, bakeChief } from './redraw/queenchief.js';
 import { bakeWindcaller, bakeRamLord } from './redraw/callerram.js';
 import { bakeThornback, bakeHopper, bakeHarpy, bakeHound } from './redraw/foes1.js';
@@ -214,9 +214,9 @@ const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (
 const DMG = { sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroStaff:9, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroStep:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 20, bellSlam: 28, bellPressure: 18, bellCharge: 26, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
-  priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16 };
+  priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, tipplerBar: 15, tipplerOre: 14, shearSnip: 12, shearCut: 16, gafferHook: 16, gafferHaft: 13, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16 };
 const EHP = { winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, tidereaver:560, gargoyle:410, hedgewarden:420, gravewarden:380, burngob:26, emberwisp:8, pyromancer:510, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22,
-  prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34 };
+  prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, tippler: 26, sheargob: 30, gaffer: 44, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34 };
 
 /* THE FODDER STANDS UP LONGER (docs/combat-tuning.md, measured 2026-09-22). Three in four common fights ended in ONE swing. Scaling
    every foe balloons the tough ones (the hedge knight, sworn sword and tide guard go to 15-20 swings), so it is the fodder alone:
@@ -595,7 +595,7 @@ const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
 /* THE MAGE'S FOLLY: what got loose in the tower, the mini, the boss and his familiar, and the apprentice */ { try { SPR.topiary = MF.bakeTopiary(); SPR.armour = MF.bakeArmour(); SPR.piece = MF.bakePiece(); SPR.broom = MF.bakeBroom(); SPR.mimic = MF.bakeMimic(); SPR.imp = MF.bakeImp(); SPR.turret = MF.bakeTurret(); SPR.homunculus = MF.bakeHomunculus(); SPR.archmage = MF.bakeArchmage(); SPR.undeadmage=bakeUndeadMage(); SPR.familiar = MF.bakeFamiliar(); SPR.familiarSmall=smallerFamiliar(SPR.familiar); SPR.apprentice = MF.bakeApprentice(); SPR.tome = bakeTome(); } catch (err) { console.error('the tower art', err); } }
-const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.prince = bakeBuriedPrince(); SPR.courtier = bakeCourtier(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.bellcrab = bakeBellcrab(); SPR.harbormaster = bakeHarbormaster(); SPR.burieddead=bakeDead(true); SPR.bonegob=bakeBoneGob();SPR.bonearcher=bakeArcher({ H: '#3a3530', g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', r: '#2e2a24', w: '#6a5a44' });SPR.husk=bakeDead(false,'husk');SPR.apprentice=bakeDead(false,'apprentice');SPR.zombie=bakeDead(); SPR.bellguard = bakeBellguard(); SPR.lanternshade = bakeCoastalFoe('lanternshade'); SPR.bonecorsair = bakeCoastalFoe('bonecorsair'); SPR.tidemarauder = bakeCoastalFoe('tidemarauder'); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); SPR.drunk = bakeDrunk(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = MON.bakeGuardian(); SPR.fledgling = MON.bakeFledgling(); SPR.gobpriest = MON.bakeGoblinPriest(); SPR.gobmage = MON.bakeGoblinMage(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.badger = bakeBadger(); SPR.gar = bakeGar(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */ SPR.seawitch = bakeSeaWitch(); /* and the Hurricane's caster is the ship's own */ SPR.merrowspear = bakeMerrowSpear(); SPR.merrowcaller = bakeMerrowCaller(); SPR.merrowbrute = bakeMerrowBrute(); /* THE MERROW: the sea's own tribe */
+const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.tippler = bakeTippler(); SPR.sheargob = bakeSheargob(); SPR.gaffer = bakeGaffer();   /* THE ORE ROAD'S OWN THREE */ SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.prince = bakeBuriedPrince(); SPR.courtier = bakeCourtier(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.bellcrab = bakeBellcrab(); SPR.harbormaster = bakeHarbormaster(); SPR.burieddead=bakeDead(true); SPR.bonegob=bakeBoneGob();SPR.bonearcher=bakeArcher({ H: '#3a3530', g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', r: '#2e2a24', w: '#6a5a44' });SPR.husk=bakeDead(false,'husk');SPR.apprentice=bakeDead(false,'apprentice');SPR.zombie=bakeDead(); SPR.bellguard = bakeBellguard(); SPR.lanternshade = bakeCoastalFoe('lanternshade'); SPR.bonecorsair = bakeCoastalFoe('bonecorsair'); SPR.tidemarauder = bakeCoastalFoe('tidemarauder'); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); SPR.drunk = bakeDrunk(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = MON.bakeGuardian(); SPR.fledgling = MON.bakeFledgling(); SPR.gobpriest = MON.bakeGoblinPriest(); SPR.gobmage = MON.bakeGoblinMage(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.badger = bakeBadger(); SPR.gar = bakeGar(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */ SPR.seawitch = bakeSeaWitch(); /* and the Hurricane's caster is the ship's own */ SPR.merrowspear = bakeMerrowSpear(); SPR.merrowcaller = bakeMerrowCaller(); SPR.merrowbrute = bakeMerrowBrute(); /* THE MERROW: the sea's own tribe */
 SPR.watch = bakeWatch(); SPR.lampreeve = bakeLampreeve(); SPR.tollmaster = bakeTollmaster();
 SPR.puffer = bakePuffer(); SPR.jelly = bakeJellyfish(); SPR.lamprey = bakeLamprey(); SPR.manta = bakeManta();   /* the sea's own new wildlife */
 SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: '#6a4a2c', W: '#4a3220', y: '#c9b27c', Y: '#9a8050', r: '#c9463d' };
@@ -1872,6 +1872,9 @@ function spawnEnt(e) {
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, down: false }); break;
       case 'dropcage': props.push({ t: 'dropcage', x: px, y: py, y0: py, dropped: false, landed: 0, hit: new Set(), boss: !!e.boss, resetT: 0 }); break;
       case 'miner': enemies.push({ ...base, t: 'miner', w: 10, h: 11, hp: EHP.miner, speed: 26, mode: 'walk', modeT: 0, digT: 0, glass: !!e.glass }); break;
+      case 'tippler': enemies.push({ ...base, t: 'tippler', w: 12, h: 12, hp: EHP.tippler, speed: 0, mode: 'idle', modeT: 0, cd: 1 + Math.random() }); break;
+      case 'sheargob': enemies.push({ ...base, t: 'sheargob', w: 10, h: 12, hp: EHP.sheargob, speed: 30, mode: 'walk', modeT: 0, cd: 0.8 }); break;
+      case 'gaffer': enemies.push({ ...base, t: 'gaffer', w: 10, h: 11, hp: EHP.gaffer, speed: 24, mode: 'walk', modeT: 0, cd: 0.6 }); break;
       // A BAT HANGS OFF SOMETHING. It always flew back to the exact point it was placed at, and if that point
       // had open sky over it the bat spent the whole level hanging in the middle of the air. It now finds the
       // rock above where it was put and hangs an inch under it, and its roost is drawn on that rock.
@@ -2288,6 +2291,7 @@ const ELITE = {
   husk: { name: 'THE GRAVE CAPTAIN', rule: 'call', calls: 'zombie', hp: 3 },   /* the caverns' captain: a husk that calls up the dead (batch 4b) */
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', own: true }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
   archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },   /* own: moves of its own (updateEliteArcher), no shared rule */
+  gaffer: { name: 'THE DECK FOREMAN', rule: 'lunge', hp: 2 },   /* THE ORE ROAD's captain: the lunge IS a gaffer - a long rush with the pole out, and a shield taken on it leaves him open. hp 2 because 44 x 3 x the room's own multiplier was a minute-long fight in a room rule Q wants over in thirty seconds */
   boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
 /* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
@@ -3658,6 +3662,9 @@ const BEASTS = [
   { t: 'spider', name: 'BOUGH SPIDER', sub: 'thread and fang', desc: 'Hangs from the bough above on a thread. Walk under it and it drops, bites, and yanks you sideways off the ledge. It climbs back up slowly: hit it then, or stomp it as it hangs. The big one, the Weaver, casts a line at you when you stand off and reels you in under the drop.' },
   { t: 'squirrel', name: 'SQUIRREL KNIGHT', sub: 'the tree-city\'s cutpurse', desc: 'A red squirrel in a tabard. Snatches your gold on touch and hops up the tree with it. Catch it before it climbs out of reach and the gold comes back with interest.' },
   { t: 'miner', name: 'GOBLIN MINER', sub: 'pick and candle', desc: 'Digs through soft rock toward you and leaves the tunnel behind for you to use. Swings a pick with a slow, heavy tell: block it and he is open. Across a gap he THROWS it - and then he has nothing at all until he walks over and picks it up again, and he will not take it out from under your feet. Drops his lamp when he dies, and the lamp stays lit.' },
+  { t: 'tippler', name: 'THE TIPPLER', sub: 'he works the frame', desc: 'He minds a tipping frame and he never comes after you. He waits until something is UNDER him, heaves the bar - a red cross, and a second of it - and a skip of ore goes over the edge. No shield turns falling rock, so the answer is not to be there: brake the bucket short, or be past him before the bar comes up. Close in he has the bar itself, and that a shield does turn.' },
+  { t: 'sheargob', name: 'THE SHEARGOB', sub: 'the long shears', desc: 'A lineman with cable shears taller than he is, and he reads the V over his head: carried shut, he is only walking. He LEAPS ONTO THE BUCKET YOU ARE RIDING and starts on its hanger, and when the shears close the skip goes into the gorge with you in it. The bucket is wide enough to fight him on - that is what it is wide for. Kill him, or get off.' },
+  { t: 'gaffer', name: 'THE GAFFER', sub: 'eight feet of boat hook', desc: 'The longest reach of anything in the game, and he only uses it on something that is MOVING PAST him. Ride by and the hook takes you off the bucket and out over the drop, and no shield turns a hook. Stop short of him and he is an ordinary goblin with an awkward weapon: the brake is the answer to him, which is the whole lesson of the road.' },
   { t: 'bat', name: 'CAVE BAT', sub: 'hunter of lamps', desc: 'Hangs in the dark and cannot see you. It sees light: a lamp, a fire, an ember, the lamp you carry. Stand in the dark and it stays put; carry light through its roost and it comes. One hit kills it.' },
   { t: 'windcaller', name: 'THE WINDCALLER', sub: 'lord of the moor', desc: 'The goblin shaman of the moor. He stands on the standing stones and throws bolts of sky at you, and the moment you cut him twice he is gone in a gust and on another stone. The wind is the only stair up to him: the gust for the ledges, the updrafts for the high stones. Every so often he calls the wind itself, and it drags you toward the thorns. Below half he throws three at once and will not stay for a second blow.' },
   { t: 'kite', name: 'KITE GOBLIN', sub: 'hangs under a box kite', desc: 'Drifts on the gusts, edges over you and drops a stone. One cut, to the string or the goblin, and both come down: the goblin gets up as a sprig.' },
@@ -3809,7 +3816,7 @@ const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
 const BOSS_T = ['bellcrab', 'archmage', 'strawking', 'kraken', 'closedhelm', 'drownedking', 'prince', 'queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter', 'master', 'masthead'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
-const BEAST_SHORT = { winchmaster:'THE WINCHMASTER', abbot:'THE FALSE ABBOT', hedgewarden:'HEDGE WARDEN', gargoyle:'GATE GARGOYLE', gravewarden:'GRAVE WARDEN', burngob:'BURNING GOB', emberwisp:'EMBER WISP', pyromancer:'THE PYROMANCER', bonegob:'BONE GOBLIN', undeadmage:'UNDEAD ARCHMAGE', burieddead:'THE BURIED DEAD',zombie:'ZOMBIE', husk:'GRAVE HUSK', apprentice:'DEAD APPRENTICE', harbormaster: 'HARBOR WARDEN', familiar:'THE FAMILIAR', lanternshade:'LANTERN SHADE',bonecorsair:'BONE CORSAIR',tidemarauder:'TIDE MARAUDER', bellcrab: 'THE DIVING BELL', bellguard: 'BELLGUARD', homunculus: 'HOMUNCULUS', archmage: 'THE ARCHMAGE', armour: 'ARMOUR', topiary: 'TOPIARY', broom: 'BROOM', tome: 'THE TOME', mimic: 'MIMIC', turret: 'TURRET', piece: 'PIECE', ploughman: 'THE PLOUGHMAN', kraken: 'THE KRAKEN', swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', drunk: 'THE DRUNK', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', prince: 'BURIED PRINCE', courtier: 'COURTIER', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', tideguard: 'TIDEGUARD', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
+const BEAST_SHORT = { winchmaster:'THE WINCHMASTER', abbot:'THE FALSE ABBOT', hedgewarden:'HEDGE WARDEN', gargoyle:'GATE GARGOYLE', gravewarden:'GRAVE WARDEN', burngob:'BURNING GOB', emberwisp:'EMBER WISP', pyromancer:'THE PYROMANCER', bonegob:'BONE GOBLIN', undeadmage:'UNDEAD ARCHMAGE', burieddead:'THE BURIED DEAD',zombie:'ZOMBIE', husk:'GRAVE HUSK', apprentice:'DEAD APPRENTICE', harbormaster: 'HARBOR WARDEN', familiar:'THE FAMILIAR', lanternshade:'LANTERN SHADE',bonecorsair:'BONE CORSAIR',tidemarauder:'TIDE MARAUDER', bellcrab: 'THE DIVING BELL', bellguard: 'BELLGUARD', homunculus: 'HOMUNCULUS', archmage: 'THE ARCHMAGE', armour: 'ARMOUR', topiary: 'TOPIARY', broom: 'BROOM', tome: 'THE TOME', mimic: 'MIMIC', turret: 'TURRET', piece: 'PIECE', ploughman: 'THE PLOUGHMAN', kraken: 'THE KRAKEN', swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', drunk: 'THE DRUNK', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', tippler: 'THE TIPPLER', sheargob: 'THE SHEARGOB', gaffer: 'THE GAFFER', prince: 'BURIED PRINCE', courtier: 'COURTIER', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', tideguard: 'TIDEGUARD', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
 function openMenu(from) { if (from === 'play') fogSave(); menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
@@ -4418,7 +4425,7 @@ const COLS = { winchmaster:['#5a3a22','#6faa4a','#9a9aa4'], abbot:['#8e3a32','#f
   badger: ['#8a8690', '#eeeae0', '#24202a'], gar: ['#5e6e34', '#d4d2a0', '#bfe6f5'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   closedhelm: ['#eef2f6', '#f2cc58', '#3d5eb0'], lancer: ['#3a5a8a', '#8a6a4a', '#c9d1dc'], drunk: ['#5e7a3a', '#c9a040', '#d0503e'],
-  prise: ['#b8a898', '#e0d4c4', '#c9463d'], holdfast: ['#4a8a7a', '#c9463d', '#6a8a80'], drownedking: ['#4a7a6e', '#c9a83a', '#7ff0e0'], propman: ['#6faa4a', '#8a5a32', '#c9b27c'], clinger: ['#cfc8b8', '#9a9280', '#c9463d'], prince: ['#798a6c', '#5a3350', '#d4b24e'], courtier: ['#d8cfb4', '#4e2c48', '#c9a84a'], grandmother: ['#6a5a7a', '#7aa85a', '#f6f6ee'], assassin: ['#26222e', '#3a3448', '#d8e070'], berserker: ['#8fd160', '#4a7a32', '#c9463d'], watch: ['#36535e', '#9fb8a8', '#ccd4dc'], lampreeve: ['#2a3a34', '#8a6a44', '#14201e'], tollmaster: ['#5b3566', '#e6b94a', '#cfc6a8'], captain: ['#d14a3a', '#e6b94a', '#191622'], cutlass: ['#c9463d', '#8a4a2a', '#e8dcc0'], boarder: ['#8a6a3a', '#5a4424', '#c9b27c'], marine: ['#4a5a6a', '#2e3a48', '#c9d1dc'], bosun: ['#7a4a3a', '#4a2c22', '#ffd36b'], lookout: ['#9aa39a', '#6a7268', '#e8dcc0'], quarter: ['#3a2a4a', '#22182e', '#ffd36b'], sailor: ['#6a7a68', '#48584a', '#8a9a84'], netter: ['#5a6a60', '#3e4a44', '#7a8a80'], urchin: ['#2a2630', '#4a4458', '#8a84a0'], angler: ['#2e3a3e', '#1c2428', '#7ff0e0'], petrel: ['#3a3a44', '#22222a', '#c9d1dc'], reefmaw: ['#2e4a3a', '#1c2c24', '#8fb08a'], turtle: ['#5a6a3a', '#3e4a28', '#7a8a4a'], eel: ['#2a3a3a', '#3e5452', '#a8b8a0'], heronfoe: ['#8a96a0', '#c8d0d4', '#e0b040'], crab: ['#b8483a', '#e07060', '#e8c8a8'], scout: ['#a8cfc6', '#4a6a2a', '#7ff0e0'], siren: ['#a8cfc6', '#1f3a36', '#7ff0e0'], tideguard: ['#e07a6a', '#4a9a8a', '#a8cfc6'], herald: ['#e07a6a', '#4a9a8a', '#6a8a3a'], soldier: ['#5d4a8a', '#c9d1dc', '#6faa4a'], javelin: ['#8a5a32', '#5d4a8a', '#6faa4a'], heavy: ['#7c8797', '#c9d1dc', '#5d4a8a'], dummy: ['#c9b27c', '#8a5a32', '#e8dcc0'], sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a', '#c9a0ff', '#e8dcc0'], seawitch: ['#8a2f3a', '#c9a0ff', '#4a9a8a'], crow: ['#2a2433', '#4a4458', '#ff4a3a'], horn: ['#6faa4a', '#e0b040', '#c9463d'], bale: ['#d9b44a', '#8a6a32', '#9a5aa8'], shardling: ['#bfe6f5', '#eefaff', '#7aa8c8'], fledgling: ['#8a7a64', '#d8c8a8', '#e8b040'], gobpriest: ['#8e3a32', '#e8a83a', '#c9a44a'], gobmage: ['#34467a', '#f6f0dc', '#c9a44a'], suncatcher: ['#bfe6f5', '#7fe8ff', '#4a6a90'], roc: ['#8a8478', '#bfe6f5', '#c9a83a'], sentry: ['#6faa4a', '#5a2a7a', '#e0b040'], gqueen: ['#5a2a7a', '#6faa4a', '#e0b040'], hearthgob: ['#6faa4a', '#c9463d', '#8a5a32'], cutter: ['#6faa4a', '#8a919c', '#5d4a8a'], lance: ['#9aa3b0', '#c9463d', '#e0b040'], snuffer: ['#3a3448', '#8a5a32', '#ffd36b'], sailer: ['#6faa4a', '#c9b27c', '#c9463d'], miner: ['#6faa4a', '#c9b27c', '#8a919c'], bat: ['#3a3448', '#5a5468'], grub: ['#b8d878', '#e8ff9a', '#7a9a48'], rockgoblin: ['#6faa4a', '#8a919c', '#ffd36b'], golem: ['#9a9082', '#c8bca8', '#6e7a44'], kite: ['#c9463d', '#ffd36b', '#6faa4a'], hare: ['#8a6a4a', '#e8dcc0'], wight: ['#c8d8c8', '#8aa08a'], windcaller: ['#6faa4a', '#c9a0ff', '#e8dcc0'], forgemaster: ['#8a919c', '#6a4a3a', '#ffd36b'], greathound: ['#5a4a3a', '#3a2e22', '#ff4a3a'], spider: ['#3a3448', '#5a5468'], owl: ['#7a5a3a', '#e8dcc0', '#ffd36b'], troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], spitcap: ['#9a5aa8', '#e8e0f0', '#c9a0ff'], weaver: ['#c8bcd0', '#8a7e9a', '#ff4a3a'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'],
+  prise: ['#b8a898', '#e0d4c4', '#c9463d'], holdfast: ['#4a8a7a', '#c9463d', '#6a8a80'], drownedking: ['#4a7a6e', '#c9a83a', '#7ff0e0'], propman: ['#6faa4a', '#8a5a32', '#c9b27c'], clinger: ['#cfc8b8', '#9a9280', '#c9463d'], prince: ['#798a6c', '#5a3350', '#d4b24e'], courtier: ['#d8cfb4', '#4e2c48', '#c9a84a'], grandmother: ['#6a5a7a', '#7aa85a', '#f6f6ee'], assassin: ['#26222e', '#3a3448', '#d8e070'], berserker: ['#8fd160', '#4a7a32', '#c9463d'], watch: ['#36535e', '#9fb8a8', '#ccd4dc'], lampreeve: ['#2a3a34', '#8a6a44', '#14201e'], tollmaster: ['#5b3566', '#e6b94a', '#cfc6a8'], captain: ['#d14a3a', '#e6b94a', '#191622'], cutlass: ['#c9463d', '#8a4a2a', '#e8dcc0'], boarder: ['#8a6a3a', '#5a4424', '#c9b27c'], marine: ['#4a5a6a', '#2e3a48', '#c9d1dc'], bosun: ['#7a4a3a', '#4a2c22', '#ffd36b'], lookout: ['#9aa39a', '#6a7268', '#e8dcc0'], quarter: ['#3a2a4a', '#22182e', '#ffd36b'], sailor: ['#6a7a68', '#48584a', '#8a9a84'], netter: ['#5a6a60', '#3e4a44', '#7a8a80'], urchin: ['#2a2630', '#4a4458', '#8a84a0'], angler: ['#2e3a3e', '#1c2428', '#7ff0e0'], petrel: ['#3a3a44', '#22222a', '#c9d1dc'], reefmaw: ['#2e4a3a', '#1c2c24', '#8fb08a'], turtle: ['#5a6a3a', '#3e4a28', '#7a8a4a'], eel: ['#2a3a3a', '#3e5452', '#a8b8a0'], heronfoe: ['#8a96a0', '#c8d0d4', '#e0b040'], crab: ['#b8483a', '#e07060', '#e8c8a8'], scout: ['#a8cfc6', '#4a6a2a', '#7ff0e0'], siren: ['#a8cfc6', '#1f3a36', '#7ff0e0'], tideguard: ['#e07a6a', '#4a9a8a', '#a8cfc6'], herald: ['#e07a6a', '#4a9a8a', '#6a8a3a'], soldier: ['#5d4a8a', '#c9d1dc', '#6faa4a'], javelin: ['#8a5a32', '#5d4a8a', '#6faa4a'], heavy: ['#7c8797', '#c9d1dc', '#5d4a8a'], dummy: ['#c9b27c', '#8a5a32', '#e8dcc0'], sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a', '#c9a0ff', '#e8dcc0'], seawitch: ['#8a2f3a', '#c9a0ff', '#4a9a8a'], crow: ['#2a2433', '#4a4458', '#ff4a3a'], horn: ['#6faa4a', '#e0b040', '#c9463d'], bale: ['#d9b44a', '#8a6a32', '#9a5aa8'], shardling: ['#bfe6f5', '#eefaff', '#7aa8c8'], fledgling: ['#8a7a64', '#d8c8a8', '#e8b040'], gobpriest: ['#8e3a32', '#e8a83a', '#c9a44a'], gobmage: ['#34467a', '#f6f0dc', '#c9a44a'], suncatcher: ['#bfe6f5', '#7fe8ff', '#4a6a90'], roc: ['#8a8478', '#bfe6f5', '#c9a83a'], sentry: ['#6faa4a', '#5a2a7a', '#e0b040'], gqueen: ['#5a2a7a', '#6faa4a', '#e0b040'], hearthgob: ['#6faa4a', '#c9463d', '#8a5a32'], cutter: ['#6faa4a', '#8a919c', '#5d4a8a'], lance: ['#9aa3b0', '#c9463d', '#e0b040'], snuffer: ['#3a3448', '#8a5a32', '#ffd36b'], sailer: ['#6faa4a', '#c9b27c', '#c9463d'], miner: ['#6faa4a', '#c9b27c', '#8a919c'], tippler: ['#6faa4a', '#5a4a3a', '#8a919c'], sheargob: ['#6faa4a', '#c9d1dc', '#c9b27c'], gaffer: ['#6faa4a', '#8a7a68', '#8a5a32'], bat: ['#3a3448', '#5a5468'], grub: ['#b8d878', '#e8ff9a', '#7a9a48'], rockgoblin: ['#6faa4a', '#8a919c', '#ffd36b'], golem: ['#9a9082', '#c8bca8', '#6e7a44'], kite: ['#c9463d', '#ffd36b', '#6faa4a'], hare: ['#8a6a4a', '#e8dcc0'], wight: ['#c8d8c8', '#8aa08a'], windcaller: ['#6faa4a', '#c9a0ff', '#e8dcc0'], forgemaster: ['#8a919c', '#6a4a3a', '#ffd36b'], greathound: ['#5a4a3a', '#3a2e22', '#ff4a3a'], spider: ['#3a3448', '#5a5468'], owl: ['#7a5a3a', '#e8dcc0', '#ffd36b'], troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], spitcap: ['#9a5aa8', '#e8e0f0', '#c9a0ff'], weaver: ['#c8bcd0', '#8a7e9a', '#ff4a3a'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'],
   puffer: ['#d9b968', '#a3813a', '#efe3b8'], jelly: ['#c890d8', '#8f5aa8', '#f0d8ff'], lamprey: ['#5c6858', '#38402f', '#7a2c3a'], manta: ['#3a4a5c', '#22303e', '#6c8598'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'],
   merrowspear: ['#3a9a80', '#173a30', '#e8e2c8'], merrowcaller: ['#2a8a72', '#1d4a44', '#7ff0e0'], merrowbrute: ['#3d8a72', '#1f5a48', '#e8d4d0'] };
 
@@ -11891,7 +11898,10 @@ function minerThrow(e) {
   e.pick = 'thrown'; e.mode = 'throw'; e.modeT = 0.3; e.throwCd = MINER.cd; SFX.throwWhoosh();
 }
 function minerPickStep(e, dt) {
-  const k = e.pk; if (k.st !== 'air') return;
+  const k = e.pk;
+  if (k.st === 'bucket') { orePickRide(e, k); return; }
+  if (k.st === 'back') { orePickBack(e, k, dt); return; }
+  if (k.st !== 'air') return;
   k.vy += MINER.grav * dt; k.spin += dt * 18 * Math.sign(k.vx || 1);
   const nx = k.x + k.vx * dt, ny = k.y + k.vy * dt, tx = Math.floor(nx / TS), ty = Math.floor(ny / TS);
   if (!k.struck && !P.dead && !P.downed && Math.abs(nx - P.x) < 8 && ny > P.y - 20 && ny < P.y + 2) { k.struck = true;
@@ -11899,6 +11909,7 @@ function minerPickStep(e, dt) {
     if (res === 'blocked') { number(P.x, P.y - 26, 'TURNED', '#8fd160'); k.vx = -k.vx * 0.25; k.vy = -140; }   /* off the shield, and down at your feet */
     else { k.vx *= 0.1; k.vy = Math.max(0, k.vy); }
     k.x = nx; k.y = ny; return; }
+  { const bm = orePickBucket(nx, ny); if (k.vy > 0 && bm) { k.st = 'bucket'; k.m = bm; k.off = Math.max(-bm.w / 2 + 6, Math.min(bm.w / 2 - 6, nx - (bm.x + bm.w / 2))); k.x = bm.x + bm.w / 2 + k.off; k.y = bm.y - 1; k.vx = 0; k.vy = 0; SFX.clank(); number(k.x, k.y - 18, 'IT LANDS IN THE SKIP', '#c9b27c'); return; } }   /* THE ORE ROAD: a bucket under it catches it, and takes it away from him */
   if (ty >= LH) { e.pk = null; e.pick = 'lost'; if (e.mode === 'bare') e.mode = 'lost'; number(e.x, e.y - e.h - 10, 'HIS PICK IS GONE', '#9aa39a'); return; }   /* into the gorge */
   if (isSolid(tx, Math.floor(k.y / TS))) { k.vx = -k.vx * 0.15; SFX.clank(); }                        /* a wall: it rings off and drops */
   else k.x = nx;
@@ -11923,8 +11934,8 @@ function minerBare(e, dt, d, ad, near) {
 /* the pick itself, in the air (turning over) or on the floor */
 function drawMinerPicks(g, cx, cy) {
   for (const e of enemies) { const k = e.alive && e.t === 'miner' && e.pk; if (!k) continue;
-    const x = Math.round(k.x - cx), y = Math.round(k.y - cy), a = k.st === 'air' ? k.spin : 0.35;
-    g.save(); g.translate(x, k.st === 'air' ? y : y - 2); g.rotate(a);
+    const x = Math.round(k.x - cx), y = Math.round(k.y - cy), a = (k.st === 'air' || k.st === 'back') ? k.spin : 0.35;
+    g.save(); g.translate(x, k.st === 'floor' ? y - 2 : y); g.rotate(a);
     g.fillStyle = '#1a1410'; g.fillRect(-1, -6, 3, 12); g.fillRect(-5, -7, 10, 4);
     g.fillStyle = '#8a5a32'; g.fillRect(0, -5, 1, 10); g.fillStyle = '#8a919c'; g.fillRect(-4, -6, 8, 2); g.fillStyle = '#c8ccd4'; g.fillRect(-4, -6, 3, 1);
     g.restore();
@@ -11957,6 +11968,147 @@ function updateMiner(e, dt) {
   const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
   if (r.ground && tileAt(ftx, fty) === T.AIR && !isOneWay(tileAt(ftx, fty))) { e.vx = 0; if (!near) e.face = -e.face; }
+  if (r.hitX) { e.vx = 0; if (!near) e.face = -e.face; }
+}
+
+/* ================= THE ORE ROAD'S OWN THREE (2026-09-25) =================
+   F10 says a level must bring a foe the game has never fought, and it says FILL GAPS, NOT VARIETY. These three
+   were chosen against the ROSTER, not against the fiction - one for each question the Ore Road can ask that
+   nothing already in the game can:
+     THE TIPPLER   does not aim at you. He aims at a PLACE and waits for you to be in it. The roster has shooters
+                   that lead you and shooters that do not; it has nothing that drops its shot on the lane.
+     THE SHEARGOB  puts a CLOCK on the thing you are standing on. The clinger rides you down, the propman costs
+                   you time, the sapper blows a hole - none of them takes your footing away on a timer you can see.
+     THE GAFFER    is the only foe in the game whose window is YOUR OWN SPEED. Go past and he has you; stop short
+                   of him and he cannot reach; stop inside the pole and he can. He is why the brake is a verb.
+   All three are interrupted OUTSIDE their switch, so every windup's own block hands to exactly one mode and
+   tools/tells.mjs can follow it to the blow at the end (rule H, and the reason the marks below can be trusted). */
+const TIPPLER = { tell: 0.85, every: 3.6, drop: 230, bar: 26 };
+/* THE TIPPLER. He minds a tipping frame over a lane and he never comes after you: he waits until there is
+   something UNDER him, heaves the bar, and a skip of ore goes over the edge. It is Daniel's falling rock with a
+   goblin behind it - the same shot the level's rockfalls throw, but aimed, told, and killable. Close in he has
+   the bar itself, which is the one thing about him a shield answers. */
+function updateTippler(e, dt) {
+  e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt);
+  e.vy = Math.min(320, e.vy + 1000 * dt); const rr = moveBody(e, 0, e.vy * dt, false); if (rr.ground) e.vy = 0;
+  if (e.stagger > 0 && (e.mode === 'heaveTell' || e.mode === 'barTell')) { e.mode = 'idle'; e.modeT = 0.9; e.cd = Math.max(e.cd, 1.2); number(e.x, e.y - e.h - 10, 'SPILLED', '#8fd160'); }
+  const d = P.x - e.x, ad = Math.abs(d), below = P.y - e.y, onScreen = e.x > camX + 6 && e.x < camX + VW - 6;
+  switch (e.mode) {
+    case 'heaveTell':
+      if (e.modeT <= 0) { e.mode = 'tip'; e.modeT = 0.55; e.cd = TIPPLER.every; SFX.stone(); SFX.heavy(); shakeCam(2);
+        for (let k = -1; k <= 1; k++) rocks.push({ x: e.x + k * 8, y: e.y + 3, vx: k * 14, vy: 40, t: 0, dead: false, thrown: true, ore: true }); }
+      break;
+    case 'tip': if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.4; } break;
+    case 'barTell': e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'bar'; e.modeT = 0.3; SFX.clank();
+        if (!P.dead && Math.sign(d) === e.face && ad < TIPPLER.bar && Math.abs(P.y - e.y) < 22) {
+          const res = damagePlayer(e.x, DMG.tipplerBar, { who: e, name: 'THE TIPPING BAR' });
+          if (res === 'hit') P.vx = e.face * 200; else if (res === 'blocked') { e.stagger = 1.1; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } }
+      break;
+    case 'bar': if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.5; } break;
+    default:
+      if (P.dead || e.stagger > 0 || e.modeT > 0) break;
+      e.face = Math.sign(d) || e.face;
+      if (ad < TIPPLER.bar && Math.abs(P.y - e.y) < 22) { e.mode = 'barTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.gobHurt(); break; }
+      /* THE STREAM FALLS STRAIGHT DOWN, so it is only ever thrown at something that is under him - and only from
+         where you can watch the bar come up. A column of rock out of an off-screen goblin is a memory test (C3). */
+      if (e.cd <= 0 && below > 20 && below < TIPPLER.drop && ad < 44 && onScreen) {
+        e.mode = 'heaveTell'; e.modeT = TIPPLER.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.tell(true); }
+  }
+}
+const SHEAR = { tell: 0.5, cut: 1.5, leap: 108, snip: 24 };
+/* THE SHEARGOB. A lineman with cable shears, and the whole creature is the V over his head. On the ground he is
+   an ordinary goblin with an awkward weapon; the moment you are riding, he LEAPS ONTO YOUR BUCKET and starts on
+   its hanger. A second and a half of red, and then the skip goes into the gorge with you on it. The bucket is
+   46 px wide so there is room to turn round and kill him - that is what the widening was for. */
+function updateSheargob(e, dt) {
+  e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt);
+  /* his ride ending, or a blow landing, both put the shears down - outside the switch, so the windup stays a chain */
+  if (e.bucket && (!e.bucket.vis || e.bucket.fallen > 0)) { e.bucket = null; if (e.mode === 'cutTell' || e.mode === 'cut') { e.mode = 'walk'; e.modeT = 0.5; e.cd = 2; } }
+  if (e.stagger > 0 && (e.mode === 'cutTell' || e.mode === 'snipTell')) { e.mode = 'walk'; e.modeT = 0.8; e.cd = 1.4; number(e.x, e.y - e.h - 10, 'THE SHEARS DROP', '#8fd160'); }
+  const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 190 && Math.abs(e.y - P.y) < 90;
+  if (!e.bucket && e.mode !== 'leap') e.vy = Math.min(320, e.vy + 1000 * dt);
+  let want = 0;
+  switch (e.mode) {
+    case 'leap': {   /* across onto your skip. It throws no blow and it is not a windup, so it wears no mark */
+      const m = e.tgt;
+      if (!m || !m.vis || m.fallen > 0 || e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; e.cd = 2; break; }
+      const tx = m.x + m.w / 2 - 14, ty = m.y;
+      e.x += (tx - e.x) * Math.min(1, dt * 9); e.y += (ty - e.y) * Math.min(1, dt * 9);
+      if (Math.abs(e.x - tx) < 5 && Math.abs(e.y - ty) < 5) { e.bucket = m; e.bucketOff = -14; e.vy = 0;
+        e.mode = 'cutTell'; e.modeT = SHEAR.cut; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.tell(true); SFX.clank(); }
+      break; }
+    case 'cutTell':
+      if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.45; e.cd = 3.4; SFX.crack(); SFX.clank(); shakeCam(4);
+        const m = e.bucket;
+        if (m && !(m.fallen > 0)) { m.fallen = 0.01; m.fallV = 0; m.broken = true; burst(m.x + m.w / 2, m.y + 4, 14, ['#8a919c', '#b09a5a', '#3a3440'], 90, 0.6); number(m.x + m.w / 2, m.y - 24, 'THE HANGER PARTS', '#ff6b6b'); }
+        if (!P.dead && Math.abs(P.x - e.x) < 36 && Math.abs(P.y - e.y) < 28) damagePlayer(e.x, DMG.shearCut, { unblockable: true, who: e, name: 'THE SHEARS' }); }
+      break;
+    case 'cut': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; } break;
+    case 'snipTell': e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'snip'; e.modeT = 0.28; SFX.slash();
+        if (!P.dead && Math.sign(d) === e.face && ad < SHEAR.snip && Math.abs(P.y - e.y) < 20) {
+          const res = damagePlayer(e.x, DMG.shearSnip, { who: e, name: 'THE SHEARS' });
+          if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } }
+      break;
+    case 'snip': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; } break;
+    default:
+      if (e.bucket || P.dead || e.stagger > 0) { want = 0; break; }
+      if (!near) { want = e.face * 10; break; }
+      e.face = Math.sign(d) || e.face;
+      if (ad < SHEAR.snip && Math.abs(P.y - e.y) < 20 && e.modeT <= 0) { e.mode = 'snipTell'; e.modeT = SHEAR.tell; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.gobHurt(); break; }
+      { const m = P.onMover;
+        if (m && m.kind === 'bucket' && m.vis && !(m.fallen > 0) && e.cd <= 0 && e.modeT <= 0 && !enemies.some(q => q.alive && q.t === 'sheargob' && q.bucket === m)
+          && Math.hypot(m.x + m.w / 2 - e.x, m.y - e.y) < SHEAR.leap && e.x > camX - 8 && e.x < camX + VW + 8) {
+          e.mode = 'leap'; e.tgt = m; e.modeT = 1.2; e.vy = 0; SFX.gobHurt(); number(e.x, e.y - e.h - 12, 'HE JUMPS FOR THE HANGER', '#c9d1dc'); break; } }
+      want = ad > 18 ? e.face * e.speed : 0;
+  }
+  if (e.bucket || e.mode === 'leap') { e.vx = 0; return; }
+  e.vx += (want - e.vx) * Math.min(1, dt * 6);
+  const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+  if (r.ground && tileAt(ftx, fty) === T.AIR) { e.vx = 0; if (!near) e.face = -e.face; }
+  if (r.hitX) { e.vx = 0; if (!near) e.face = -e.face; }
+}
+const GAFFER = { tell: 0.65, reach: 58, haft: 26, every: 2.2 };
+/* THE GAFFER. Eight feet of boat hook, and the reach is the creature: 58 px, more than twice a goblin's swing
+   and further than anything else in the game can touch you. He only uses it on something GOING PAST - a rider,
+   or a hero out past the haft - and what it costs is not the hit, it is the bucket: he takes you off it and out
+   over the drop. Brake short of the pole and he is an ordinary goblin with an awkward weapon. */
+function updateGaffer(e, dt) {
+  e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt);
+  e.vy = Math.min(320, e.vy + 1000 * dt);
+  if (e.stagger > 0 && (e.mode === 'hookTell' || e.mode === 'haftTell')) { e.mode = 'walk'; e.modeT = 0.8; e.cd = 1.5; number(e.x, e.y - e.h - 10, 'THE POLE DROPS', '#8fd160'); }
+  const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 200 && Math.abs(e.y - P.y) < 80;
+  let want = 0;
+  switch (e.mode) {
+    case 'hookTell': e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.45; e.cd = GAFFER.every; SFX.throwWhoosh(); SFX.clank();
+        if (!P.dead && Math.sign(d) === e.face && ad < GAFFER.reach && Math.abs(P.y - e.y) < 26) {
+          damagePlayer(e.x, DMG.gafferHook, { unblockable: true, who: e, name: 'THE GAFF' });
+          P.onMover = null; P.ground = false; P.vx = -Math.sign(d) * 150; P.vy = -70; number(P.x, P.y - 26, 'OFF THE BUCKET', '#ff6b6b'); } }
+      break;
+    case 'hook': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; } break;
+    case 'haftTell': e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'haft'; e.modeT = 0.3; SFX.clank();
+        if (!P.dead && Math.sign(d) === e.face && ad < GAFFER.haft && Math.abs(P.y - e.y) < 22) {
+          const res = damagePlayer(e.x, DMG.gafferHaft, { who: e, name: 'THE HAFT' });
+          if (res === 'hit') P.vx = e.face * 170; else if (res === 'blocked') { e.stagger = 1.0; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } }
+      break;
+    case 'haft': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; } break;
+    default:
+      if (P.dead || e.stagger > 0) { want = 0; break; }
+      if (!near) { want = e.face * 10; break; }
+      e.face = Math.sign(d) || e.face;
+      if (ad < GAFFER.haft && Math.abs(P.y - e.y) < 22 && e.modeT <= 0) { e.mode = 'haftTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.gobHurt(); break; }
+      if (e.cd <= 0 && e.modeT <= 0 && ad < GAFFER.reach && Math.abs(P.y - e.y) < 26 && (P.onMover || ad > GAFFER.haft)) {
+        e.mode = 'hookTell'; e.modeT = GAFFER.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.tell(true); break; }
+      want = ad > 22 ? e.face * e.speed : 0;
+  }
+  e.vx += (want - e.vx) * Math.min(1, dt * 6);
+  const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+  if (r.ground && tileAt(ftx, fty) === T.AIR) { e.vx = 0; if (!near) e.face = -e.face; }
   if (r.hitX) { e.vx = 0; if (!near) e.face = -e.face; }
 }
 // how bright the knight is: the lamp relic, the pyromancer's flare, nearby fires
@@ -13453,28 +13605,88 @@ function updateFalseAbbotBoss(e, dt) {
 function oreBuild() {
   L.cableway = makeCableway(L.cable);
   L.cableway.lines.forEach((ln, li) => { for (let i = 0; i < ln.n; i++) movers.push({ kind: 'bucket', line: li, i, w: OR.BUCKET.w, h: OR.BUCKET.h, x: 0, y: -9999, dx: 0, dy: 0, vis: false,
-    cracked: !!(ln.cracked && i % ln.cracked === 0), crackT: 0, fallen: 0, empty: !!ln.riders }); });
+    cracked: !!(ln.cracked && i % ln.cracked === 0), crackT: 0, fallen: 0, ore: !ln.riders, lift: ln.riders ? OR.BUCKET.lift : 0, brake: 0, dump: 0 }); });
+}
+/* THE BRAKE (brief section 3). Hold the shield while you are standing on a skip and you haul on its grip: the grip
+   bites, the line stalls, and it comes back up to speed as slowly as it went down. It is ONE LINE-WIDE state, because
+   that is what a grip on a hauling cable does, and it costs you two things at once - your progress and your shield -
+   which is the whole point. MOVING IS PROGRESS; STOPPED IS WHERE YOU CAN FIGHT, and everything that flies over this
+   gorge keeps coming while you are stopped. The drum line is not brakeable: the Winchmaster drives that one. */
+function oreBrake(dt) {
+  const m = P.onMover;
+  for (const l of L.cableway.lines) {
+    const held = !l.drum && !P.dead && !!keys.block && !!m && m.kind === 'bucket' && L.cableway.lines[m.line] === l && m.vis && !(m.fallen > 0);
+    l.hold = brakeStep(l.hold, held, dt);
+    l.saidBrake = Math.max(0, (l.saidBrake || 0) - dt);
+    if (held && l.hold > 0.9 && !l.saidBrake) { l.saidBrake = 3; number(P.x, P.y - 32, 'THE LINE STOPS', '#ffd36b'); SFX.clank(); }
+  }
+}
+/* THE PICK IN YOUR SKIP (brief section 3: THE MINER BECOMES LOAD-BEARING). Over a gorge a thrown pick used to be
+   simply gone - it fell out of the world and the miner stood there for ever. Now a bucket under it CATCHES it, and
+   it rides away: its owner can never fetch it, which is what turns a disarmed miner from a gimmick into a passenger
+   you ride past or knock off. And a pick lying in the skip you are standing on is a WEAPON. Swing at it and it goes
+   back the way it came - the only thing in this game you throw at a goblin is the thing he threw at you. */
+const orePickBucket = (x, y) => movers.find(m => m.kind === 'bucket' && m.vis && !(m.fallen > 0) && x > m.x && x < m.x + m.w && y > m.y - 12 && y < m.y + m.h + 6);
+function orePickRide(e, k) {
+  const m = k.m;
+  if (!m || !m.vis || m.fallen > 0) { e.pk = null; e.pick = 'lost'; number(e.x, e.y - e.h - 10, 'HIS PICK IS GONE', '#9aa39a'); return; }
+  k.x = m.x + m.w / 2 + (k.off || 0); k.y = m.y - 1; k.spin = 0.35;
+  if (P.dead || P.onMover !== m) return;
+  const hb = attackBox();
+  if (hb && !P.hitSet.has(k) && overlap(hb, { l: k.x - 6, r: k.x + 6, t: k.y - 9, b: k.y + 5 })) {
+    P.hitSet.add(k); k.st = 'back'; k.m = null; k.vx = P.face * 300; k.vy = -60;
+    SFX.throwWhoosh(); SFX.clank(); number(k.x, k.y - 18, 'THROWN BACK', '#8fd160');
+  }
+}
+function orePickBack(e, k, dt) {
+  k.vy += MINER.grav * 0.55 * dt; k.spin += dt * 22 * Math.sign(k.vx || 1);
+  k.x += k.vx * dt; k.y += k.vy * dt;
+  for (const q of enemies) if (q.alive && !q.harmless && !q.boss && Math.abs(q.x - k.x) < 10 && k.y > q.y - (q.h || 10) - 4 && k.y < q.y + 4) {
+    hurtEnemy(q, 22, k.x, false); e.pk = null; e.pick = 'lost'; burst(k.x, k.y, 6, ['#8a919c', '#c8ccd4'], 60, 0.4); SFX.clank(); return; }
+  const tx = Math.floor(k.x / TS), ty = Math.floor(k.y / TS);
+  if (ty >= LH || tx < 0 || tx >= LW || isSolid(tx, ty)) { e.pk = null; e.pick = 'lost'; SFX.clank(); burst(k.x, k.y, 4, ['#8a919c'], 40, 0.3); }
 }
 const oreRiders = () => (players || [P]).filter(p => !p.dead);
 function updateBucket(m, dt) {
   const ln = L.cableway.lines[m.line], b = bucketAt(ln, m.i), ox = m.x, oy = m.y, wasVis = m.vis;
-  if (!b.vis) {   /* in the return, inside a station house: nobody rides it there, and a rusted one comes back mended */
+  if (!b.vis) {   /* in the return, inside a station house: nobody rides it there, and a rusted one comes back mended - AND RELOADED, which is why the ore is a decision you get to make again and not a resource you spend */
     if (wasVis) { for (const p of oreRiders()) if (p.onMover === m) p.onMover = null; for (const e of enemies) if (e.bucket === m && e.alive) { e.alive = false; e.silentGone = true; } }
-    m.vis = false; m.fallen = 0; m.fallV = 0; m.crackT = 0; m.broken = false; m.y = -9999; m.dx = 0; m.dy = 0; return; }
+    m.vis = false; m.fallen = 0; m.fallV = 0; m.crackT = 0; m.broken = false; m.y = -9999; m.dx = 0; m.dy = 0;
+    m.ore = !ln.riders; m.lift = ln.riders ? OR.BUCKET.lift : 0; m.dump = 0; return; }
   m.vis = true;
+  const rider = oreRiders().find(p => p.onMover === m);
+  /* THE ORE (brief section 3). HOLD DOWN ON A LOADED SKIP AND IT TIPS. One button, no new art, and it is exactly
+     what a loaded cableway does: the skip empties, rides OR.BUCKET.lift px higher on its hanger for the rest of the
+     run, and the ore goes down on whatever is under it. So every span is a decision about what you clear and what
+     you pass under, instead of a wait. Falling rock already hurts both sides; the mine flag keeps your own load
+     off your own head. */
+  if (m.ore && !m.fallen && rider && keys.down) { m.dump += dt;
+    if (m.dump >= OR.DUMP) { m.ore = false; m.dump = 0;
+      for (let k = -1; k <= 1; k++) rocks.push({ x: m.x + m.w / 2 + k * 12, y: m.y + 10, vx: k * 18, vy: 60, t: 0, dead: false, thrown: true, ore: true, mine: true });
+      SFX.stone(); shakeCam(2); burst(m.x + m.w / 2, m.y + 6, 12, ['#b09a5a', '#7a7080', '#3a3440'], 80, 0.5); number(m.x + m.w / 2, m.y - 28, 'THE SKIP TIPS', '#b09a5a'); } }
+  else m.dump = 0;
+  m.lift = liftStep(m.lift, m.ore, dt); m.brake = ln.hold || 0;
   if (m.fallen > 0) { m.fallV += 900 * dt; m.fallen += m.fallV * dt; }
-  m.x = b.x - m.w / 2; m.y = b.y + m.fallen;
+  m.x = b.x - m.w / 2; m.y = b.y + m.fallen - m.lift;
   m.dx = wasVis ? m.x - ox : 0; m.dy = wasVis ? m.y - oy : 0;
+  /* CUT THE CABLE (brief section 3). A severed hanger drops everything on the skip. The Sheargob uses it on you;
+     this is you using it on his crew - swing at a loaded bucket you are NOT standing on and it goes into the gorge
+     with its passengers. A cuttable route is never the only route (B4): every line has a deck at both ends. */
+  if (!m.fallen && P.onMover !== m && !P.dead) { const hb = attackBox();
+    if (hb && !P.hitSet.has(m) && overlap(hb, { l: m.x, r: m.x + m.w, t: m.y - (OR.BUCKET.hang - (m.lift || 0)), b: m.y + m.h })) {
+      P.hitSet.add(m); m.fallen = 0.01; m.fallV = 0; m.broken = true; SFX.crack(); SFX.clank(); shakeCam(3); sparks(m.x + m.w / 2, m.y - 10, P.face, 6);
+      burst(m.x + m.w / 2, m.y + 4, 14, ['#8a919c', '#b09a5a', '#3a3440'], 90, 0.6); number(m.x + m.w / 2, m.y - 28, 'THE CABLE PARTS', '#8fd160'); } }
+  if (m.fallen > 0 && m.y > (LH - 1) * TS) for (const e of enemies) if (e.bucket === m && e.alive) { e.bucket = null; hurtEnemy(e, 9999, m.x + m.w / 2, false); }
   /* A RUSTED BUCKET holds you for OR.CRACK seconds, shaking, then goes: be on the next one */
   if (m.cracked && !m.fallen) { const on = oreRiders().some(p => p.onMover === m);
     if (on) { m.crackT += dt; if (m.crackT > OR.CRACK) { m.fallen = 0.01; m.fallV = 0; m.broken = true; SFX.crack(); burst(m.x + m.w / 2, m.y + 6, 10, ['#9a5230', '#6a3420', '#b09a5a'], 70, 0.5); number(m.x + m.w / 2, m.y - 20, 'IT GIVES', '#ff9a5c'); } }
     else m.crackT = Math.max(0, m.crackT - dt * 0.5); }
   if (m.fallen > 0) for (const p of oreRiders()) if (p.onMover === m) { p.onMover = null; p.ground = false; }
   /* THE DOWN LINE brings goblins back with it: one on every other bucket that comes out while you are on the crossing */
-  if (ln.riders && !wasVis && m.i % 2 === 0 && P.x > 140 * TS && P.x < 240 * TS && enemies.filter(e => e.alive && e.bucket).length < 2) {
-    const n0 = enemies.length; spawnEnt({ t: 'sprig', x: Math.floor((m.x + m.w / 2) / TS), y: Math.floor(m.y / TS) - 1, face: -1 });
+  if (ln.riders && !wasVis && m.i % 2 === 0 && P.x > 200 * TS && P.x < 290 * TS && enemies.filter(e => e.alive && e.bucket).length < 2) {
+    const n0 = enemies.length; spawnEnt({ t: m.i % 4 === 0 ? 'miner' : 'sheargob', x: Math.floor((m.x + m.w / 2) / TS), y: Math.floor(m.y / TS) - 1, face: -1 });
     for (let k = n0; k < enemies.length; k++) { enemies[k].bucket = m; enemies[k].seenP = true; } }
-  for (const e of enemies) if (e.bucket === m && e.alive) { e.x = m.x + m.w / 2; e.y = m.y; e.vy = 0; if (e.vx) e.vx = 0; }
+  for (const e of enemies) if (e.bucket === m && e.alive) { e.x = m.x + m.w / 2 + (e.bucketOff || 0); e.y = m.y; e.vy = 0; if (e.vx) e.vx = 0; }
   /* THE DRUM: a bucket with someone in it that reaches the drum JAMS it, and throws him off the housing */
   if (ln.drum && ln.dir > 0 && !(ln.jam > 0) && b.s > ln.len - 12 && oreRiders().some(p => p.onMover === m) && boss && boss.t === 'winchmaster' && boss.alive && bossActive) winchJamWorld();
 }
@@ -15869,7 +16081,7 @@ function updateRocks(dt) {
   for (const r of rocks) { if (r.delay > 0) { r.delay = Math.max(0, r.delay - dt); continue; } r.vy = Math.min(420, r.vy + 700 * dt); r.y += r.vy * dt; r.x += (r.vx || 0) * dt; r.t += dt;
     const tx = Math.floor(r.x / TS), ty = Math.floor((r.y + 1) / TS), t = tileAt(tx, ty);
     if (t === T.SOLID || (isOneWay(t) && r.vy > 0 && (r.y % TS) < 7) || r.y > LH * TS) { r.dead = true; shatterRock(r); continue; }
-    if (!P.dead && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.roof ? 12 : r.comb ? 10 : r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock, name: r.roof ? 'ROOF TILE' : r.comb ? 'FALLING COMB' : r.hammerRock ? 'THE HAMMER' : 'THE ROCKFALL' }); shatterRock(r); continue; }
+    if (!P.dead && !r.mine && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.roof ? 12 : r.comb ? 10 : r.ore ? DMG.tipplerOre : r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock, name: r.roof ? 'ROOF TILE' : r.comb ? 'FALLING COMB' : r.ore ? 'THE ORE' : r.hammerRock ? 'THE HAMMER' : 'THE ROCKFALL' }); shatterRock(r); continue; }   /* r.mine: the ore YOU tipped out of your own skip goes past you, not through you */
     for (const e of enemies) if (e.alive && e.t !== 'ram' && e.t !== 'harpy' && !(r.comb && e.t === 'queen') && !(r.roof && e.t === 'roc') && !(e.t === 'troll' && r.thrown) && !e.harmless && Math.abs(e.x - r.x) < 9 && e.y > r.y - 4 && e.y - e.h < r.y + 6) { r.dead = true; hurtEnemy(e, 15, r.x, false); shatterRock(r); break; }
   }
   rocks = rocks.filter(r => !r.dead);
@@ -17837,6 +18049,9 @@ function updateEnemies(dt) {
     if (e.t === 'clinger') { updateClinger(e, dt); continue; }
     if (e.t === 'courtier') { updateCourtier(e, dt); continue; }
     if (e.t === 'wight') { updateWight(e, dt); continue; }
+    if (e.t === 'tippler') { updateTippler(e, dt); continue; }
+    if (e.t === 'sheargob') { updateSheargob(e, dt); continue; }
+    if (e.t === 'gaffer') { updateGaffer(e, dt); continue; }
     if (e.t === 'rockgoblin') { updateRockGoblin(e, dt); continue; }
     if (e.t === 'spider') { updateSpider(e, dt); continue; }
     if (e.t === 'harpy') { updateHarpy(e, dt); continue; }
@@ -18897,7 +19112,7 @@ function drawBore(cx, cy) {
 }
 function updateMovers(dt) {
   updateCarts(dt);
-  if (L.cableway) stepCableway(L.cableway, dt);   /* THE ORE ROAD's clock: every bucket on a line is the same clock */
+  if (L.cableway) { oreBrake(dt); stepCableway(L.cableway, dt); }   /* THE ORE ROAD's clock: every bucket on a line is the same clock, and the brake is a hand on it */
   for (const m of movers) {
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
@@ -20917,6 +21132,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'wight') frame = Math.floor(e.anim * 6) % 4;
     else if (e.t === 'windcaller') frame = e.mode === 'fallen' ? 2 : e.mode === 'ground' ? 3 : e.mode === 'blink' || e.mode === 'appear' ? 2 : (e.mode === 'howlTell' || e.mode === 'howl') ? 3 : e.castFlash > 0 ? 1 : Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'golem') frame = e.mode === 'stagger' ? 5 : e.mode === 'sweepTell' ? 7 : e.mode === 'sweep' ? 8 : (e.mode === 'shroudTell' || e.mode === 'shroud') ? 6 : (e.mode === 'stompTell' || e.mode === 'stomp') ? 3 : e.mode === 'throwTell' || e.mode === 'throw' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
+    else if (e.t === 'tippler') frame = e.mode === 'heaveTell' ? 2 : e.mode === 'tip' ? 3 : (e.mode === 'barTell' || e.mode === 'bar') ? 4 : Math.abs(e.vx) > 4 ? 1 : Math.floor(e.anim * 2) % 2;
+    else if (e.t === 'sheargob') frame = (e.mode === 'cutTell' || e.mode === 'leap') ? 2 : e.mode === 'cut' ? 3 : (e.mode === 'snipTell' || e.mode === 'snip') ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
+    else if (e.t === 'gaffer') frame = e.mode === 'hookTell' ? 2 : e.mode === 'hook' ? 3 : (e.mode === 'haftTell' || e.mode === 'haft') ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'rockgoblin') frame = e.mode === 'throw' ? 2 : e.liftT > 0 ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'forgemaster') frame = e.mode === 'stun' || e.mode === 'scald' ? 15 : e.mode === 'tongsTell' ? 5 : e.mode === 'tongs' ? (e.tongsFr || 9) : e.mode === 'whirlTell' ? 10 : e.mode === 'whirl' ? (e.whirlHigh ? 12 : 11) : e.mode === 'ladleTell' ? 13 : e.mode === 'ladle' ? 14 : e.mode === 'slamTell' || e.mode === 'anvilTell' || e.mode === 'hurlTell' ? 1 : e.mode === 'slam' || e.mode === 'anvil' || e.mode === 'hurl' ? 2 : e.mode === 'drag' || e.mode === 'dragTell' || e.mode === 'spray' || e.mode === 'sprayTell' ? 3 : e.mode === 'breath' || e.mode === 'breathTell' ? 6 : Math.abs(e.vx) > 10 ? [7, 0, 8, 0][Math.floor(e.anim * (Math.abs(e.vx) > 60 ? 4.5 : 3)) % 4] : 0; // he walks now: plant, pass, plant (his anim runs at twice time)
     else if (e.t === 'greathound') frame = e.mode === 'stun' || e.mode === 'skid' || e.mode === 'whine' || e.mode === 'landed' ? 6 : e.mode === 'howlTell' || e.mode === 'howl' ? 5 : e.mode === 'pounce' ? 4 : e.mode === 'lungeTell' || e.mode === 'pounceTell' || e.mode === 'snapTell' ? 3 : Math.abs(e.vx) > 10 ? 1 + Math.floor(e.anim * 14) % 2 : 0;

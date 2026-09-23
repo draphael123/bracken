@@ -663,7 +663,7 @@ Object.assign(SFX, {
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
 });
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
-const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
+const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, miner: 0.9, tippler: 0.7, sheargob: 1.2, gaffer: 0.95, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
 Object.assign(SFX, {
   // it has seen you: a goblin's startled "hup!", a beast's own cry
   foeNotice(t) { if (!gate('notice', 0.3)) return; { const c = CAST[t]; if (c && (c.human || c.alert) && voice(c.alert || VOK(c.kit, 'alert'), 0.34, c.rate, c.lp || 0)) return; } const r = GOB_V[t];
@@ -816,6 +816,9 @@ const DIE = {
   pike() { gob(0.9) || tone('square', 380, 90, 0.28, 0.18); for (let i = 0; i < 3; i++) noise(0.04, 0.2, 1800 + i * 300, 0.5, 0.12 + i * 0.06); /* the pike clatters */ },
   thief() { gob(1.1) || tone('square', 480, 110, 0.22, 0.18); [1568, 2093, 1760].forEach((f, i) => tone('triangle', f, f, 0.12, 0.08, 0.06 + i * 0.05)); /* the purse spills */ },
   miner() { gob(0.85) || tone('square', 340, 80, 0.3, 0.18); tone('square', 1500, 1400, 0.12, 0.12, 0.1); noise(0.06, 0.2, 2200, 0.5, 0.1); /* the pick drops */ },
+  tippler() { gob(0.7, 0.6) || tone('square', 280, 70, 0.34, 0.2); tone('sine', 120, 50, 0.3, 0.22, 0.06); noise(0.4, 0.3, 260, 0.7, 0.12); /* the bar goes over with him, and a skip of ore after it */ },
+  sheargob() { gob(1.2) || tone('square', 560, 120, 0.22, 0.17); [2400, 1900].forEach((f, i) => tone('triangle', f, f * 0.6, 0.1, 0.1, 0.05 + i * 0.07)); noise(0.05, 0.18, 3200, 0.6, 0.16); /* the shears ring open on the rock */ },
+  gaffer() { gob(0.95) || tone('square', 330, 85, 0.3, 0.19); tone('sawtooth', 200, 90, 0.26, 0.12, 0.08); noise(0.1, 0.26, 700, 0.5, 0.14); /* the pole clatters away down the deck */ },
   master() { gob(0.72, 0.7) || tone('square', 300, 70, 0.4, 0.2); tone('triangle', 440, 330, 0.5, 0.14, 0.15); tone('triangle', 330, 220, 0.5, 0.1, 0.35); /* the horn falls silent */ },
   rockgoblin() { tone('square', 260, 420, 0.08, 0.16); tone('square', 420, 120, 0.2, 0.16, 0.08); noise(0.4, 0.35, 300, 0.7, 0.1); noise(0.15, 0.2, 900, 0.5, 0.3); /* it comes apart like scree */ },
   wasp() { tone('sawtooth', 900, 700, 0.12, 0.14); tone('sawtooth', 700, 200, 0.2, 0.14, 0.1); noise(0.05, 0.3, 1500, 0.4, 0.28); },
@@ -979,6 +982,9 @@ const HURT = {
   pike() { gobH(0.92) || tone('square', 460, 280, 0.08, 0.14); },
   thief() { gobH(1.1) || tone('square', 560, 340, 0.08, 0.14); tone('triangle', 1760, 1760, 0.06, 0.06, 0.03); },
   miner() { gobH(0.88) || tone('square', 420, 260, 0.09, 0.14); },
+  tippler() { gobH(0.72, 0.5) || tone('square', 330, 210, 0.11, 0.15); },
+  sheargob() { gobH(1.18) || tone('square', 600, 380, 0.08, 0.13); tone('triangle', 2200, 2200, 0.05, 0.05, 0.02); },
+  gaffer() { gobH(0.95) || tone('square', 430, 270, 0.09, 0.14); },
   master() { gobH(0.72, 0.5) || tone('square', 320, 200, 0.12, 0.14); },
   rockgoblin() { noise(0.05, 0.3, 1500, 0.5); tone('square', 300, 180, 0.08, 0.12, 0.02); },
   wasp() { tone('sawtooth', 1100, 800, 0.08, 0.12); },

@@ -1559,6 +1559,67 @@ export function bakeMiner() {
   const helpless = mspr([E, E, '.x.......x..', '.x..y....x..', '..xcccccx...', '..cCCCCCCc..', '..ggeoggeog.', '...gggggg...', '...gGGGGg...', '...xxxxx....', '..xxxxxx....', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
   return pack([walk1, walk2, dig, swing, bare1, bare2, throwTell, helpless], 7, 15, 10, 11);
 }
+
+/* ============================================================================================
+   THE ORE ROAD'S OWN THREE (2026-09-25). F10 asks every level for a creature the game has never seen, and the
+   Ore Road brought NONE - the miner has been in the mines since the Undercrown, and a boss does not count.
+   These three are read from ACROSS THE SCREEN by the tool each carries, because that is all a 12 px goblin has:
+     THE TIPPLER   a bar the full width of the sprite, held level. Nothing else in the game is that wide and that straight.
+     THE SHEARGOB  a V of open blades standing over his head, taller than he is.
+     THE GAFFER    a pole out in FRONT of him with a hook on the end - the longest thing any foe in the game carries.
+   ============================================================================================ */
+/* THE TIPPLER - 12x11. The goblin who works a tipping frame: an iron hood against what comes off the skip, a
+   leather apron, and the BAR. He does not chase you; he heaves the bar and a skipful of ore goes over the edge
+   onto whatever is under him. Frames: idle1, idle2, heave (the bar up over his head, which is the tell), tip
+   (the bar gone over and him leaning after it), swing (the bar shoved forward, close in). */
+export function bakeTippler() {
+  const TP = Object.assign({}, KG, { i: '#8a919c', I: '#5a6270', h: '#5a4a3a', H: '#3a2e22' });
+  const t = rows => outline(fromGrid(rows, TP, 1), OUT);
+  const hood = ['..IIIIIIII..', '.IiiiiiiiiI.', '..ggeoggeo..', '...gggggg...'];
+  const body = ['..hhhhhhhh..', '.hhhhhhhhhh.', '..hhhhhhhh..', '..hhhhhhhh..'];
+  const legsA = ['..GG....GG..', '..GG....GG..'], legsB = ['...GG..GG...', '..GG....GG..'];
+  const BAR = 'IIIIIIIIIIII';
+  const idle1 = t([...hood, BAR, ...body, ...legsA]);
+  const idle2 = t([...hood, BAR, ...body, ...legsB]);
+  const heave = t([BAR, ...hood, ...body, ...legsA]);
+  const tip = t([...hood, ...body, BAR, ...legsA]);
+  const swing = t([...hood, '..hhhhhhIIII', '.hhhhhhhhhh.', '..hhhhhhhh..', '..hhhhhhhh..', ...legsB]);
+  return pack([idle1, idle2, heave, tip, swing], 7, 12, 12, 12);
+}
+/* THE SHEARGOB - 12x13. A lineman with the long cable shears. He is thin, he works high on the cable, and the
+   whole read is the V standing over his head: closed he is only carrying them, OPEN is the tell, shut is the cut.
+   Frames: walk1, walk2, open (the tell), cut (driven down), snip (a short close blow). */
+export function bakeSheargob() {
+  const SP = Object.assign({}, KG, { s: '#c9d1dc', S: '#8a919c' });
+  const s = rows => outline(fromGrid(rows, SP, 1), OUT);
+  const head = ['...gggggg...', '..ggeoggeo..', '...gggggg...', '...gGGGGg...'];
+  const torso = ['...xxxxxx...', '..xxxxxxxx..', '...xxxxxx...'];
+  const legsA = ['...GG..GG...', '..GG....GG..'], legsB = ['....GGGG....', '...GG..GG...'];
+  const shut = ['.....SS.....', '.....SS.....', '.....SS.....', '....sSSs....'];
+  const wide = ['.SS......SS.', '..SS....SS..', '...SS..SS...', '....sSSs....'];
+  const walk1 = s([...shut, ...head, ...torso, ...legsA]);
+  const walk2 = s([...shut, ...head, ...torso, ...legsB]);
+  const open = s([...wide, ...head, ...torso, ...legsA]);
+  const cut = s(['............', '............', '.....SS.....', '....sSSs....', ...head, ...torso.slice(0, 2), '...xxxSSSS..', ...legsA]);
+  const snip = s(['............', '............', '............', '....sSSs....', ...head, '...xxxxxxSS.', '..xxxxxxSS..', '...xxxxxx...', ...legsB]);
+  return pack([walk1, walk2, open, cut, snip], 7, 14, 10, 12);
+}
+/* THE GAFFER - 16x11. A dock goblin with a boat hook eight feet long, and the reach IS the creature: he takes
+   you off a bucket that is going past him. The pole is drawn out in front in every frame, so his silhouette
+   says his range before he ever swings. Frames: walk1, walk2, draw (the hook pulled back over his shoulder -
+   the tell), hook (the pole at full stretch), haft (the shaft brought across, close in). */
+export function bakeGaffer() {
+  const GP = Object.assign({}, KG, { s: '#c9d1dc', S: '#8a919c', f: '#8a7a68', F: '#5a4e42', w: '#8a5a32', W: '#5c3a1d' });
+  const q = rows => outline(fromGrid(rows, GP, 1), OUT);
+  const head = ['...gggg.........', '..gggggg........', '..geoggeo.......', '...gggggg.......', '...gGGGGg.......'];
+  const legsA = ['...GG.GG........', '..GG...GG.......'], legsB = ['...GGGG.........', '...GG.GG........'];
+  const walk1 = q([...head, '..ffffffwwwwwwwS', '.ffffffff.....SS', '..ffffff........', '..ffffff........', ...legsA]);
+  const walk2 = q([...head, '..ffffffwwwwwwwS', '.ffffffff.....SS', '..ffffff........', '..ffffff........', ...legsB]);
+  const draw = q(['S...............', 'SSw.gggg........', '..wgggggg.......', '...wgeoggeo.....', '...wgggggg......', '...gGGGGg.......', '..ffffff........', '.ffffffff.......', '..ffffff........', '..ffffff........', '...GG.GG........']);
+  const hook = q(['................', '...gggg.........', '..gggggg........', '..geoggeo.......', '...gggggg.......', '..fffffwwwwwwwww', '.ffffffff......S', '..ffffff......SS', '..ffffff........', ...legsA]);
+  const haft = q(['................', '...gggg.........', '..gggggg........', '..geoggeo.......', '..wgggggg.......', '..wgGGGGg.......', '..wffffff.......', '.wffffffff......', '..ffffff........', ...legsB]);
+  return pack([walk1, walk2, draw, hook, haft], 6, 12, 10, 11);
+}
 // ============================================================================================
 // THE UNDERCROWN, two of them (the Pit Warden is retired: THE BURIED PRINCE has his tomb, in src/redraw/prince.js).
 // ============================================================================================
