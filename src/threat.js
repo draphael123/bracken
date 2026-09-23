@@ -59,6 +59,23 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE MAGE'S FOLLY: a topiary is a read (it shivers first), the armour a slow wall, a piece and a broom nearly nothing, a mimic a trap, an imp a shooter that moves, a turret one that does not */
   topiary: 3, armour: 3.5, piece: 0.5, broom: 1.5, mimic: 2.5, imp: 2.5, turret: 2, tome: 2.5, homunculus: 5, archmage: 6, glyph: 0, gplate: 0, vatspit: 0, rune: 0,
   scarecrow: 3, rook: 1.5, farmhand: 3, pumpkin: 2.5, marshlight: 1.5, haunt: 2.5, boo: 2.5, ploughman: 5, strawking: 6, hexspill: 0, croppole: 0, thresher: 0,
+  /* THE DEAD, who had no weight at all until 2026-09-23 - 153 placements of them across the Burial Caverns, the
+     Folly, the Falling Tower, the Witchlight Stair and the Undercrown, every one scoring ZERO, including the Burial
+     Caverns' single most common enemy. Weighed against the men already in this table rather than invented: a soldier
+     is 34 health and a 14 point swing and he is a 3, an archer is a 2 and a crossbowman a 3, an imp - 'a shooter that
+     moves' - is 2.5, a shieldgob is 2 and a rock goblin 2.5.
+       zombie      38 health, 12, slow and telegraphed, but it rises out of the ground and its grab SNARES you
+       bonegob     30 health, 14: a skeleton of the shieldgob's weight, without the shield
+       bonearcher  26 health, 16 and a thrown skull: an archer that also lobs, so over the plain archer
+       apprentice  34 health, 12 and an ember it throws: the imp's job exactly, at the imp's price
+       husk        74 health, 16 AND a gas cloud: twice the soldier's health and more than his swing */
+  zombie: 2, bonegob: 2, bonearcher: 2.5, apprentice: 2.5, husk: 3,
+  /* AND THEIR BOSSES. This table says plainly that a boss is a 6, and abbot, winchmaster, archmage, kraken, roc, owl,
+     king and the rest all are - but closedhelm, bellcrab, drownedking and prince are written 0, and nothing explains
+     why. These five follow the DOCUMENTED rule rather than the four exceptions; the grave warden is a mini, and the
+     Tide Reaver, the only other mini here, is a 4. THE FOUR ZEROES ARE LEFT ALONE AND FLAGGED: which of the two
+     conventions is right is Daniel's call, not a thing to settle inside a bug fix. */
+  burieddead: 6, undeadmage: 6, harbormaster: 6, hedgewarden: 6, gargoyle: 6, gravewarden: 4,
   /* SEA WILDLIFE: a puffer is nearly nothing until it swells, a jelly is a timing problem more than a fight, a
      lamprey costs you air rather than health, and a manta is a diving strike off her own open water */
   puffer: 1, jelly: 1, lamprey: 2.5, manta: 2.5,
