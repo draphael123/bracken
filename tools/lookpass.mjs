@@ -9,9 +9,9 @@
 // not. lookpass.json beside them has every frame's numbers. REPORT MODE: it prints and exits 0 unless the page throws.
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { openPage } from './cdp.mjs';
+import { openPage, ROOT } from './cdp.mjs';
 
-const OUT = process.env.OUT || 'C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-OneDrive-Desktop-Claude-Cowork/ec08cdbf-cdf3-4173-bf3b-817b3da483be/scratchpad/audit-readability';
+const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 //   node tools/lookpass.mjs --at "hurricane:60,18 flotilla:32,22"   a picture at each of those tiles only (into OUT/at/<level>)
 const AT = process.argv.indexOf('--at') >= 0 ? process.argv[process.argv.indexOf('--at') + 1] : null;
 const arg = AT ? '' : process.argv[2] || '';

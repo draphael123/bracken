@@ -9,9 +9,9 @@
 // Report mode: prints, writes popclutter.json, exits 0.
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { openPage } from './cdp.mjs';
+import { openPage, ROOT } from './cdp.mjs';
 
-const OUT = process.env.OUT || 'C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-OneDrive-Desktop-Claude-Cowork/ec08cdbf-cdf3-4173-bf3b-817b3da483be/scratchpad/audit-readability';
+const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const arg = process.argv[2] || 'boss:kings,boss:spire,boss:waymeet,boss:undercrown,boss:deep,amb:wood,amb:stockade,amb:waymeet';
 
 async function pageClutter(input) {

@@ -32,13 +32,13 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   merrowspear: 2.5, merrowcaller: 3, merrowbrute: 3,
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
-  propman: 2.5, clinger: 2, prince: 0, courtier: 0, minerlamp: 0, timber: 0, gas: 0,
-  prise: 3, holdfast: 2.5, bellcrab: 0, bellguard: 3, drownedking: 0, ballast: 0,
+  propman: 2.5, clinger: 2, prince: 6, courtier: 0, minerlamp: 0, timber: 0, gas: 0,
+  prise: 3, holdfast: 2.5, bellcrab: 6, bellguard: 3, drownedking: 6, ballast: 0,
   /* THE ROAD PEOPLE, weighed against the men already in the table: a soldier is 34 health and a 14 point
      swing and he is a 3, so a sworn sword at 44 and 18 is more than that; a heavy knight is 120 and an
      unblockable overhead at 4, and a hedge knight is 92 with an unblockable leap. And the runner is
      worth more than the hurt he does, because what he costs you is everybody else. */
-  swornsword: 3.5, hedgeknight: 4.5, runner: 1.5, crossbow: 3, closedhelm: 0,
+  swornsword: 3.5, hedgeknight: 4.5, runner: 1.5, crossbow: 3, closedhelm: 6,
   /* THE SERJEANT: a charge down a bridge you cannot walk round, and a man with a sword when he is off the horse */
   lancer: 5,
   /* THE DRUNK: 22 health and a lob you can see the ring of - but he is always above the thing you are crossing */
@@ -71,10 +71,12 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
        husk        74 health, 16 AND a gas cloud: twice the soldier's health and more than his swing */
   zombie: 2, bonegob: 2, bonearcher: 2.5, apprentice: 2.5, husk: 3,
   /* AND THEIR BOSSES. This table says plainly that a boss is a 6, and abbot, winchmaster, archmage, kraken, roc, owl,
-     king and the rest all are - but closedhelm, bellcrab, drownedking and prince are written 0, and nothing explains
-     why. These five follow the DOCUMENTED rule rather than the four exceptions; the grave warden is a mini, and the
-     Tide Reaver, the only other mini here, is a 4. THE FOUR ZEROES ARE LEFT ALONE AND FLAGGED: which of the two
-     conventions is right is Daniel's call, not a thing to settle inside a bug fix. */
+     king and the rest all are. closedhelm, bellcrab, drownedking and prince were written 0 with nothing explaining
+     why, and were left alone and flagged because which convention was right was Daniel's call rather than a thing to
+     settle inside a bug fix. HE RULED ON 2026-09-23: A BOSS IS A 6, and those four are 6 now like the rest, so this
+     table says one thing instead of two. The grave warden stays a mini, and the Tide Reaver, the only other mini
+     here, is a 4. Every INDEX taken before this - and before 77a559a, which gave the five common dead any weight at
+     all - was read off a table that scored part of its own input as nothing, so it is SMALLER THAN THE TRUTH. */
   burieddead: 6, undeadmage: 6, harbormaster: 6, hedgewarden: 6, gargoyle: 6, gravewarden: 4,
   /* SEA WILDLIFE: a puffer is nearly nothing until it swells, a jelly is a timing problem more than a fight, a
      lamprey costs you air rather than health, and a manta is a diving strike off her own open water */

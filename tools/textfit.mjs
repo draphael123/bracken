@@ -21,7 +21,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { openPage, ROOT } from './cdp.mjs';
 
-const OUT = process.env.OUT || 'C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-OneDrive-Desktop-Claude-Cowork/ec08cdbf-cdf3-4173-bf3b-817b3da483be/scratchpad/audit-readability';
+const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 

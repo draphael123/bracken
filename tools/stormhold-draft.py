@@ -1,5 +1,6 @@
-import io
-p = r"C:/Users/danie/OneDrive/Desktop/Claude Cowork/bracken/src/level.js"
+import io, os
+# NOT A PATH ON ONE MACHINE: this script lives in tools/, so the level it edits is ../src/level.js from here.
+p = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "src", "level.js")
 s = io.open(p, encoding='utf8').read()
 
 LEVEL = r'''

@@ -171,7 +171,7 @@ try {
    out.sank=Math.round(BK.P.y-y0); const yLow=BK.P.y;
    for(let i=0;i<60;i++){BK.keys.up=true;BK.keys.right=true;BK.sim(1);}BK.keys.up=BK.keys.right=false;out.flew=Math.round(yLow-BK.P.y);
    // a death in the sky puts the tower back and the carpet waiting
-   BK.god=false;BK.P.hp=0;BK.P.dead=0.01;BK.sim(400);out.retry={carpet:!!BK.carpet(),crown:!F[6].done,below:F[0].done,boss:BK.boss&&BK.boss.alive,mode:BK.boss&&BK.boss.mode};
+   BK.god=false;BK.P.hp=0;BK.P.dead=0.01;BK.sim(400);for(let i=0;i<900&&(BK.carpet()||(BK.boss&&BK.boss.mode==='wake'));i++)BK.sim(1);out.retry={carpet:!!BK.carpet(),crown:!F[6].done,below:F[0].done,boss:BK.boss&&BK.boss.alive,mode:BK.boss&&BK.boss.mode};
    return out;})()`, 240000);
   assert.ok(r.armedOver, 'the library arms when you are over its divider'); assert.ok(r.done, 'and falls'); assert.equal(r.sealed, T.SOLID, 'its rope hole is sealed');
   assert.ok(r.cleared < 10, 'nothing of the floor is left standing: ' + r.cleared); assert.ok(r.waited, 'a floor you went back under waits for you');
