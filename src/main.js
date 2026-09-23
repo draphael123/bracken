@@ -15235,7 +15235,7 @@ function unbDied(e) {
 function unbReset() {
   UNB_FIELD = UNBF.newField(L, TS);
   if (UNB_FIELD) for (const p of UNB_FIELD.pegs) p.orig = {};
-  if (window.BK) window.BK.unbField = () => UNB_FIELD;
+  if (window.BK) Object.assign(window.BK, { unbField: () => UNB_FIELD, unbU: UNBF, unbSpawn: e => spawnEnt(e) });   /* for the harnesses (tools/boss-openings.mjs) */
 }
 function updateUnburied(dt) {
   const F = UNB_FIELD; if (!F) return;

@@ -56,12 +56,12 @@ export function buildUnburiedField({ painter, T, TS }) {
   for (const [a, b] of UF.STAKES) stakes(a, b);
   mud(62, 70, G + 4);                                                                                        // the second trench has water in the bottom of it
   cover(18, 'shields'); cover(47, 'wagon');
-  ent('silver', 65, G + 3); ent('check', 8, G);
+  ent('silver', 65, G + 3); ent('check', 6, G);   /* off the crater's lip (8-13) */
   ent('sign', 5, G, { text: 'THE DEAD HERE STILL FIGHT THEIR BATTLE. CUT THE BANNER-BEARERS OR THE FALLEN RISE.' });
   ent('sign', 16, G, { text: 'A HORN, THEN THE VOLLEY. GET BEHIND SOMETHING.' });
   ent('sign', 33, G, { text: 'STAKE LINE. THEY PLANTED THESE AGAINST HORSE, AND THE HORSE STILL COMES.' });
   coins([12, G], [26, G + 4], [43, G - 2], [55, G], [66, G + 3]);
-  meet('THE FIRST BANNER', 32, 42, [['bannerbearer', 36, G], ['corpse', 34, G], ['corpse', 38, G], ['zombie', 41, G - 2]]);   // 41 sits on the grave mound (G-1..G solid): the mound's top is G-2
+  meet('THE FIRST BANNER', 32, 42, [['bannerbearer', 38, G], ['corpse', 33, G], ['corpse', 39, G], ['zombie', 41, G - 2]]);   /* off the stake line (34-36): 34 and 36 stood over the notch and fell into it */   // 41 sits on the grave mound (G-1..G solid): the mound's top is G-2
   meet('THE TRENCH GUARD', 58, 74, [['zombie', 62, G + 4], ['zombie', 67, G + 4], ['bonearcher', 74, G]]);
 
   // ---- 2. THE SHIELD CROSSING (c 70-129): sixty columns of open ground under the ridge. Cover to cover, on the horn ----
@@ -93,8 +93,8 @@ export function buildUnburiedField({ painter, T, TS }) {
   ent('oilbarrel', 200, G + 5, { spill: [190, 212] });                                                          // knock it over and the trench takes a line of fire
   ent('trebuchet', 230, G, { aim: [257, 33], knocks: 'tower' });   /* its stone breaks the tower's fallen base open at the foot: a way through under the climb */                                                 // the engines you work
   ent('check', 142, G); ent('check', 196, G + 5);
-  ent('sign', 144, G, { text: 'HIGH OVER THE WRECKS IS DRY AND IN THE VOLLEYS. LOW IN THE TRENCH IS SHELTERED, SLOW AND FULL.' });
-  ent('sign', 149, G, { text: 'HORNS AND DUST ON THE HORIZON. THE HORSE COME DOWN THIS LANE AND THEY DO NOT STOP.' });
+  ent('sign', 140, G, { text: 'HIGH OVER THE WRECKS IS DRY AND IN THE VOLLEYS. LOW IN THE TRENCH IS SHELTERED, SLOW AND FULL.' });
+  ent('sign', 148, G - 3, { text: 'HORNS AND DUST ON THE HORIZON. THE HORSE COME DOWN THIS LANE AND THEY DO NOT STOP.' });
   ent('sign', 228, G, { text: 'SIEGE OIL AND A TREBUCHET STILL LOADED. BOTH OF THEM WORK.' });
   coins([152, G + 5], [166, 28], [178, G + 5], [190, 30], [204, G + 5], [216, 29], [224, G]);
   meet('THE CHARGE LANE', 152, 172, [['corpse', 154, G + 5], ['zombie', 158, G + 5], ['bonegob', 164, G + 5], ['corpse', 170, G + 5]]);
