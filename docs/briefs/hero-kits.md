@@ -29,6 +29,24 @@ choose**, so the Skills & Loadout screen is empty for two thirds of the cast.
 Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge."* **The slot exists, the
 prompt exists, and there is nothing that can go in it.**
 
+## 1b. ABILITIES ARE BOUGHT; PASSIVES COME WITH LEVELS — Daniel, 2026-09-24
+
+*"I want abilities, not talents. We can remove passives, they become default as you level up. You can see in the hero
+menu the passives that will unlock at certain levels."*
+
+The shop tab is **already called SKILLS** in the UI — `TALENTS` is only the internal array name, which is what made
+this read as a change to something already dropped. The rule from here:
+
+- **the shop sells ACTIVE ABILITIES ONLY** — the F-key kind;
+- **passives are never bought.** They unlock automatically at hero levels, and the hero menu shows which arrive when;
+- today exactly **one** existing skill is passive — `kindle` (Pyromancer) — so the migration of what already exists
+  is a single item.
+
+Hero XP and levels already exist (`heroXp`, `levelUp`, the `LV` in the HUD) to hang the unlocks on.
+
+**Every proposal below is marked.** As written they come to **eight abilities and eight passives** — two of each per
+hero, which also answers the open question about scope: two *purchases* a hero rather than four.
+
 ## 2. The shape an existing talent takes
 
 `{ id, name, price, desc, needs: <level id>, needsName, hero, passive? }` — bought with coins, gated behind a level
@@ -39,37 +57,37 @@ you must have finished, mostly `F`-key actives with one passive each. Prices run
 Her whole identity is **distance**: the last quarter of the shaft hits half again as hard, the middle glances, the
 haft shoves people back out to the point. So her talents should be about *keeping* the range, not adding damage.
 
-- **BRACE** *(active)* — plant the butt in the ground. A charge that runs onto the point is spitted **whatever colour
+- **BRACE** *(ABILITY — bought in the shop)* — plant the butt in the ground. A charge that runs onto the point is spitted **whatever colour
   it is**. Today only a YELLOW charge spits, which means her signature move is switched off against half the game.
-- **THE LONG WATCH** *(passive)* — the tip band widens from the last quarter of the shaft to the last third. A pure
+- **THE LONG WATCH** *(PASSIVE — arrives with a hero level, not bought)* — the tip band widens from the last quarter of the shaft to the last third. A pure
   reach buff, which is the most Warden thing possible.
-- **SWEEP THE LINE** *(active)* — a low horizontal arc that knocks a whole row back out to point range. Her one real
+- **SWEEP THE LINE** *(ABILITY — bought in the shop)* — a low horizontal arc that knocks a whole row back out to point range. Her one real
   weakness is being crowded; this answers it with her own vocabulary instead of a panic button.
-- **THE STANDARD** *(passive, VIGIL)* — the Phalanx she plants also stops what flies at it, and keeps filling VIGIL
+- **THE STANDARD** *(PASSIVE — arrives with a hero level, not bought)* — the Phalanx she plants also stops what flies at it, and keeps filling VIGIL
   while it stands.
 
 ## 4. THE DEATH KNIGHT — fill the empty slot first
 
-- **BLOOD DRAWN** *(active)* — hurl the planted blade; it drags back through everything in the line, and every hit on
+- **BLOOD DRAWN** *(ABILITY — bought in the shop)* — hurl the planted blade; it drags back through everything in the line, and every hit on
   the way home returns blood.
-- **GRAVE CHILL** *(active)* — the freeze from Blood Surge, on a tap, for a fraction of the bar.
-- **HAEMORRHAGE** *(passive)* — the nova's marks spread to whatever a marked foe touches.
-- **SECOND HEART** *(passive)* — a full ward that breaks no longer reels him. Once a fight.
+- **GRAVE CHILL** *(ABILITY — bought in the shop)* — the freeze from Blood Surge, on a tap, for a fraction of the bar.
+- **HAEMORRHAGE** *(PASSIVE — arrives with a hero level, not bought)* — the nova's marks spread to whatever a marked foe touches.
+- **SECOND HEART** *(PASSIVE — arrives with a hero level, not bought)* — a full ward that breaks no longer reels him. Once a fight.
 
 ## 5. THE FREEBOOTER
 
-- **POWDER AND SHOT** *(passive)* — gold loads two chambers, so there is a second shot before the reload.
-- **GRAPPLE SHOT** *(active)* — the hook fires along the pistol's line and pulls **you** to the foe, not him to you.
-- **DUTCH COURAGE** *(passive)* — rum's reckless phase widens the parry window instead of only raising the risk.
-- **BROADSIDE** *(active)* — a spread that takes a whole row, through guards, and empties him.
+- **POWDER AND SHOT** *(PASSIVE — arrives with a hero level, not bought)* — gold loads two chambers, so there is a second shot before the reload.
+- **GRAPPLE SHOT** *(ABILITY — bought in the shop)* — the hook fires along the pistol's line and pulls **you** to the foe, not him to you.
+- **DUTCH COURAGE** *(PASSIVE — arrives with a hero level, not bought)* — rum's reckless phase widens the parry window instead of only raising the risk.
+- **BROADSIDE** *(ABILITY — bought in the shop)* — a spread that takes a whole row, through guards, and empties him.
 
 ## 6. THE PALADIN
 
-- **CONSECRATE** *(active)* — ground that burns the dead and refills LIGHT while he stands in it. He already takes
+- **CONSECRATE** *(ABILITY — bought in the shop)* — ground that burns the dead and refills LIGHT while he stands in it. He already takes
   double against the dead; this makes that a place as well as a number.
-- **REBUKE** *(active)* — Aegis released outward as a shove that staggers what it turns.
-- **LAY ON HANDS** *(passive)* — Mend also clears venom and bleed.
-- **OATHBOUND** *(passive)* — LIGHT fills from blows he *takes*, not only from blows he turns aside.
+- **REBUKE** *(ABILITY — bought in the shop)* — Aegis released outward as a shove that staggers what it turns.
+- **LAY ON HANDS** *(PASSIVE — arrives with a hero level, not bought)* — Mend also clears venom and bleed.
+- **OATHBOUND** *(PASSIVE — arrives with a hero level, not bought)* — LIGHT fills from blows he *takes*, not only from blows he turns aside.
 
 ## 7. Class levels — CORRECTED 2026-09-24
 

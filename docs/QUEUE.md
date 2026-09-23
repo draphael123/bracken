@@ -59,17 +59,35 @@ node off the road on a dashed branch. The map is currently wrong in both directi
    blade drawn on its live frame (28px on the planted heavy); the fix is the sprite, NOT the box. His reach does not
    change - only the picture of it becomes honest.
 
+4. **ABILITIES, NOT TALENTS — AND PASSIVES COME FROM LEVELLING.** Daniel, 2026-09-24: *"I want abilities, not
+   talents. We can remove passives, they become default as you level up. You can see in the hero menu the passives
+   that will unlock at certain levels."* The shop tab is already called **SKILLS** in the UI (`TALENTS` is only the
+   internal array name, which is what made this sound like a bigger change than it is). So:
+   - the shop sells **ACTIVE ABILITIES ONLY** — the F-key kind;
+   - **passives stop being purchasable** and unlock automatically at hero levels. Today exactly one is passive,
+     `kindle` (Pyromancer), so the migration is one item;
+   - **the hero menu lists which passives arrive at which level**, so the player can see what is coming.
+   Hero XP and levels already exist (`heroXp`, `levelUp`, the `LV` in the HUD) to hang this on. Every proposal in
+   `docs/briefs/hero-kits.md` is now split into abilities (buyable) and passives (level unlocks) accordingly.
+5. **THE FOUR BOSSES WRITTEN `0` BECOME `6`.** closedhelm, bellcrab, drownedking and prince in `src/threat.js`, while
+   eight other bosses are already 6 and the table states plainly that a boss is a 6. This RAISES those levels' INDEX,
+   so re-measure the ramp after it rather than before.
+6. **FIRE RESPECTS INVULNERABILITY AND THE OPEN BONUS.** `wardedDamage` folds in the five damage-reduction wards.
+   It now also folds in the Archmage's stage gate (which can refuse a blow outright — so burn does nothing while he
+   is invulnerable) and the Undead Archmage's `gather` bonus (so burn is doubled while he is open). Damage is damage,
+   whether it arrives from a sword or over time.
+7. **THE QUEEN'S WALKWAY GOES, AND THE CHANDELIER REPLACES IT.** Her gallery on three breakable pillars is currently
+   her ONLY damage window (`gqOpen` is `mode === 'pinned'`). Remove it and **cut the chandelier's chain to drop it on
+   her**, which pins her exactly as the gallery did. She already has a chandelier attack (`chandTell`), so the room
+   already owns the prop — this needs a cuttable chain, not a new idea. It also makes her opening something you
+   CAUSE, which is what makes the False Abbot's bell and the Winchmaster's jammed drum work.
+
 ## 5. NEEDS DANIEL — do not decide these alone
 
-2. **The four bosses weighted `0`** in `src/threat.js` (closedhelm, bellcrab, drownedking, prince) while eight others
-   are `6`. The table says a boss is a 6.
-4. **The Queen's walkway.** Daniel asked for it removed; it is her ONLY damage window (`gqOpen` is `mode==='pinned'`
-   and only her own gallery pins her). Ask again before deleting.
-6. **Burn and the two non-ward multipliers** — `wardedDamage` folds in the five wards, deliberately not the
-   Archmage's stage gate (which can refuse a blow) or the Undead Archmage's `gather` bonus.
-7. **Sixteen proposed talents** across four heroes (`docs/briefs/hero-kits.md`). Is four each right, or two?
-8. **Flattening the ramp** means editing shipped levels. Bring numbers and a proposal, do not rebalance the campaign
-   unasked.
+1. **Flattening the campaign ramp.** Levels should get harder roughly steadily and this one jumps around. But **every
+   measurement of it was taken off the broken threat table**, so its real shape is not yet known — lane F is
+   re-measuring. Do NOT rebalance shipped levels on the old numbers. Bring Daniel the corrected picture and a
+   proposal; he has not been asked yet and this is the one thing deliberately left open.
 
 ## 6. KNOWN DEBT
 
