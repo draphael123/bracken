@@ -305,7 +305,7 @@ const ABILITIES = [
   { id: 'risingCut', name: 'RISING CUT', price: 100, desc: 'F: an uppercut that launches you and the foe. plunge after it. 20 stamina, 2s', needs: 'scree', needsName: 'the Scree Path', hero: 'knight' },
   { id: 'vent', name: 'VENT', price: 100, desc: 'F: blast all your heat out at once. the hotter, the harder. lights lamps. 15 stamina', needs: 'scree', needsName: 'the Scree Path', hero: 'pyro' },
   { id: 'kindle', name: 'KINDLE', price: 90, desc: 'always on: fire mends you instead of burning you. stand in your own wall', needs: 'hanging', needsName: 'the Hanging Village', hero: 'pyro', passive: true },
-  { id: 'wisp', name: 'WISP', price: 120, desc: 'F: a flame that follows you, lights every lamp it passes and dives at foes. 20 stamina, 8s', needs: 'mineworks', needsName: 'the Mineworks', hero: 'pyro' },
+  { id: 'wisp', name: 'WISP', price: 120, desc: 'F: a flame that follows you, lights every lamp it passes and dives at foes. 20 stamina, 8s', needs: 'oreroad', needsName: 'the Ore Road', hero: 'pyro' },   /* was 'mineworks', which is this level's MUSIC TRACK and not a level: PROG['mineworks'] never existed, so WISP was unbuyable from the day it was written (tools/shop-gates.mjs) */
 ];
 const MENU_MUSIC = [
   { id: 'select', name: 'STAGE SELECT', price: 0, desc: 'the map tune you know' },

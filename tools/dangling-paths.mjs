@@ -78,8 +78,12 @@ for (const f of tracked) {
      citations would fail the suite for the crime of having a plan, and the fix a tired person reaches for is
      deleting the check. So DESIGN DOCUMENTS ARE NOT SCANNED AS SOURCES. They are still scanned as TARGETS: a
      document that cites a brief nobody has is exactly the bug this tool was written for. The cost is that a
-     genuinely wrong path inside a brief goes unseen, which is the right side to err on. */
-  if (f.startsWith('.claude/briefs/')) continue;
+     genuinely wrong path inside a brief goes unseen, which is the right side to err on.
+     BOTH brief directories, because they hold the same kind of document and the split between them is an accident
+     of which machine a file was written on - docs/briefs/ore-road-rework.md asks for work exactly as
+     .claude/briefs/unburied-field.md does. Exempting only one of them would have failed the next brief to name its
+     own tool, for no reason a reader could defend. */
+  if (f.startsWith('.claude/briefs/') || f.startsWith('docs/briefs/')) continue;
   const isDoc = /\.(md|txt)$/.test(f), isSrc = /\.(m?js)$/.test(f);
   if (!isDoc && !isSrc) continue;
   let raw;
