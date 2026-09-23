@@ -25,7 +25,7 @@ art) are a separate job and are not costed here.
 | **§7.5: step PAST spurs; the side level-select panel reaches them.** | `mapGo` left/right walk the required road only and skip every `spur: true` node. The way onto a spur is the lane-B side toggle menu, so that menu is **no longer cosmetic**: without it, spurs become unreachable. It has to land with (or before) the `mapGo` change, never after. |
 | **§7.6: sheet + style only.** | Step 2 of §8 as written: the fifth sheet, a desert `bakeMap` style, the green-to-gold seam and the sand road from THE FALLING TOWER. **No per-node desert scenery** until each level lands. |
 
-**§7.4 is still open** — the map is identical under both readings, so it blocks nothing here.
+| **§7.4: reading (a)** — the existing gold out portal leads to THE SUNKEN CARAVAN. | No fight change. §5 step 2 is a `needs:` link and a node, nothing more. |
 
 ---
 
@@ -360,7 +360,10 @@ remembering when the next placement is read off a brief:
 **The lesson, for the next time:** a `PROPOSED` heading means a brief records a preference, not a decision, and a
 remark in passing does not overrule a written brief in either direction. Ask.
 
-**7.4 "The final phase of the undead archmage fight" — which moment, exactly?** §5 shows the doorway is already built:
+**7.4 — SETTLED 2026-09-23: reading (a).** Daniel: the gold out portal that already opens when the Undead Archmage falls
+now LEADS to THE SUNKEN CARAVAN (`needs: 'fallingtower'`, a map node, no fight change). No mid-fight portal, no boss brief owed.
+
+**7.4 "The final phase of the undead archmage fight" — which moment, exactly?** *(the question as it was asked)* §5 shows the doorway is already built:
 a gold out portal that opens when he falls and puts you on the sandy path. Daniel's phrasing — *"that's the final phase
 of the undead archmage fight"* — has two readings, and **the map is identical under both**, so this blocks nothing here:
 
