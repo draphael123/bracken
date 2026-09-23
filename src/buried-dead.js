@@ -26,7 +26,10 @@ export function updateBuriedDead(e,dt,c){
   /* THE HANDS are in BOTH turns, so he has seven before he is enraged and eight after (Daniel: "he can use just one
      more attack pre-enrage"). They exist because the ossuary grew a nova-safe upper tier: high ground that nothing
      could answer would be a camp, not a choice. */
-  const turns=e.phase===2?['slamTell','throwTell','bodyTell','novaTell','clawTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','sinkTell','novaTell','clawTell','cleaveTell','callTell'];
+  const turns=e.phase===2?['slamTell','throwTell','bodyTell','novaTell','clawTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','novaTell','clawTell','cleaveTell','sinkTell','callTell'];
+  /* SINK SITS SIXTH IN PHASE ONE, NOT THIRD (Daniel approved, docs/briefs/buried-dead-rotation.md option A). His one caused
+     opening needs the slam to land while the ground he broke still lives (brokeT 14 s). Third, four turns stood between the
+     erupt and the next slam - 21.0 s - so the arm-in-the-ground punish was never reachable before enrage. Sixth, it is 8.5 s. */
   const m=turns[e.turn++%turns.length];e.mode=m;e.modeT=m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='clawTell'?1:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):m==='clawTell'?clamp(P.x,A.x0+20,A.x1-20):e.x;if(m==='clawTell')e.markY=Number.isFinite(P.y)?P.y:A.floor;   /* WHERE YOU ARE STANDING WHEN HE WINDS UP, floor or ledge: leaving is the answer, exactly as the erupt works */
   say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE',clawTell:'THE HANDS COME UP: MOVE YOUR FEET'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell'||m==='clawTell');sound('charge');return;
  }
