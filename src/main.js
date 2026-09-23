@@ -2916,7 +2916,7 @@ const CRAG_NODES = [
 /* THE CRAG TAIL history: map-redesign §6 first fixed the corner-dive; the integrator then caught that fix
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
-   relaid instead (docs/crag-options.md, option B). See the comment on CRAG_NODES above for this option's shape. */
+   relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
 const CRAG_PATH = [[40, 152], [48, 136], [72, 121], [108, 105], [150, 89], [192, 73], [228, 58], [252, 42], [260, 26]];
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
