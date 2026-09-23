@@ -100,7 +100,7 @@ a dashed branch; without it the road runs through it. **Right now the map is wro
 |---|---|---|---|
 | THE BURNING VILLAGE | optional (Pyromancer class level) | spur | correct |
 | UNDERLEAF, THE UNDERCROWN | optional (secrets) | spur | correct |
-| **STORMWRECK HARBOR** | **OPTIONAL** - `causeway` branches to *both* `harbor` and `waymeet`, and waymeet carries the rest of the game, so harbor is a dead end you can skip | **on the road** | **WRONG - make it a spur** |
+| **STORMWRECK HARBOR** | **OUT OF THE GAME** - the only level in `LEVELS` with no map node. It builds, it has content, it has suite checks, and it is unreachable | not drawn at all | **leave it. Restore-or-retire is Daniel's call, see docs/QUEUE.md §4** |
 | **THE ORE ROAD** | **REQUIRED** - Highcrown is gated behind it | on the road, but the road dives into the bottom-left corner (`[82,150] -> [54,162] -> [22,140] -> [18,118]`) and climbs back up the left edge, with the Undercrown spur at (18,88) beside it, so the whole margin reads as a side-branch cluster | **WRONG - it must READ as the main road** |
 | THE FALLING TOWER | leaf, but it is the FINALE | on the road | correct |
 
