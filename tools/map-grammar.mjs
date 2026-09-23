@@ -79,6 +79,54 @@ for (const r of REGIONS) {
     assert(!bad, r.name + ' PATH[' + i + '] (' + x + ',' + y + ') is within ' + MARGIN + 'px of the sheet edge — required nodes belong in the body of the sheet'); });
 }
 
+// 4b. NO ROAD POLYLINE CROSSES ITSELF. A corner reads as a limb; a crossing reads as a FORK, which is worse -
+//    "the road is a spine, and a spur is a limb" says nothing may look like a second road, and a self-crossing
+//    is exactly that, an X where none of the four legs is a spur's dashed stub. Checked over every non-adjacent
+//    pair of segments of the GLOBAL walked path (all five sheets concatenated, in main.js's own order - a
+//    crossing could in principle straddle a seam) and, separately, the seam connectors bakeWorldMap draws as
+//    their own lines, against the main path and against each other. Adjacent segments share an endpoint by
+//    construction (the road turning a corner) and are not tested against each other.
+function orient(p, q, r) { return (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]); }
+function onSeg(p, q, r) { return Math.min(p[0], r[0]) <= q[0] && q[0] <= Math.max(p[0], r[0]) && Math.min(p[1], r[1]) <= q[1] && q[1] <= Math.max(p[1], r[1]); }
+function segsCross(p1, p2, p3, p4) {
+  const o1 = orient(p1, p2, p3), o2 = orient(p1, p2, p4), o3 = orient(p3, p4, p1), o4 = orient(p3, p4, p2);
+  if (o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0) return (o1 > 0) !== (o2 > 0) && (o3 > 0) !== (o4 > 0);
+  if (o1 === 0 && onSeg(p1, p3, p2)) return true; if (o2 === 0 && onSeg(p1, p4, p2)) return true;
+  if (o3 === 0 && onSeg(p3, p1, p4)) return true; if (o4 === 0 && onSeg(p3, p2, p4)) return true;
+  return false;
+}
+function findCrossings(path, label) {
+  const bad = [];
+  for (let i = 0; i + 1 < path.length; i++) for (let j = i + 2; j + 1 < path.length; j++) {
+    if (segsCross(path[i], path[i + 1], path[j], path[j + 1])) bad.push(label + ' segment [' + i + '-' + (i + 1) + '] ' + JSON.stringify(path[i]) + '-' + JSON.stringify(path[i + 1]) + ' crosses segment [' + j + '-' + (j + 1) + '] ' + JSON.stringify(path[j]) + '-' + JSON.stringify(path[j + 1]));
+  }
+  return bad;
+}
+{
+  const crossings = findCrossings(PATH, 'GLOBAL PATH');
+  assert.equal(crossings.length, 0, crossings.length + ' self-crossing(s) in the walked road:\n' + crossings.join('\n'));
+  // the connectors, exactly as main.js builds them for bakeWorldMap - drawn as their own road-coloured lines,
+  // so a crossing here misreads the same way even though it is not part of the walk
+  const connectors = [
+    [[40, 64 + WOOD_Y], [110, 200 + CRAG_Y]], [[110, 200 + CRAG_Y], [CRAG_PATH[0][0], CRAG_PATH[0][1] + CRAG_Y]],
+    [[CRAG_PATH[CRAG_PATH.length - 1][0], CRAG_PATH[CRAG_PATH.length - 1][1] + CRAG_Y], [COAST_PATH[0][0], COAST_PATH[0][1] + COAST_Y]],
+    [[COAST_PATH[COAST_PATH.length - 1][0], COAST_PATH[COAST_PATH.length - 1][1] + COAST_Y], [INLAND_PATH[0][0], INLAND_PATH[0][1] + INLAND_Y]],
+    [[INLAND_PATH[INLAND_PATH.length - 1][0], INLAND_PATH[INLAND_PATH.length - 1][1] + INLAND_Y], [DESERT_PATH[0][0], DESERT_PATH[0][1] + DESERT_Y]],
+  ];
+  // A connector's own endpoints are BY DESIGN shared with PATH (or with the next connector in the chain) - that
+  // is the seam, not a crossing, so any pair sharing a vertex is skipped rather than tested.
+  const samePt = (p, q) => p[0] === q[0] && p[1] === q[1];
+  const sharesVertex = (p1, p2, p3, p4) => samePt(p1, p3) || samePt(p1, p4) || samePt(p2, p3) || samePt(p2, p4);
+  const connBad = [];
+  for (const [a, b] of connectors) {
+    for (let i = 0; i + 1 < PATH.length; i++) { if (sharesVertex(a, b, PATH[i], PATH[i + 1])) continue;
+      if (segsCross(a, b, PATH[i], PATH[i + 1])) connBad.push('connector ' + JSON.stringify(a) + '-' + JSON.stringify(b) + ' crosses PATH[' + i + '-' + (i + 1) + ']'); }
+    for (const [c, d] of connectors) { if (a === c && b === d) continue; if (sharesVertex(a, b, c, d)) continue;
+      if (segsCross(a, b, c, d)) connBad.push('connector ' + JSON.stringify(a) + '-' + JSON.stringify(b) + ' crosses connector ' + JSON.stringify(c) + '-' + JSON.stringify(d)); }
+  }
+  assert.equal(connBad.length, 0, connBad.length + ' connector crossing(s):\n' + connBad.join('\n'));
+}
+
 // 5. EVERY NODE'S LEVEL INDEX IS ≥ 0. LEVELS.findIndex(...) is -1 for a level not yet landed; nodeLocked derefs
 //    LEVELS[-1] and throws on the map's first frame if a node for it is ever added ahead of its level (§8).
 for (const n of NODES) if (n.kind === 'level') assert(n.level >= 0, n.id + ' has no matching entry in LEVELS (level === -1) — a node cannot exist before its level does');

@@ -2911,8 +2911,24 @@ const CRAG_NODES = [
 /* THE CRAG TAIL, RE-ROUTED (map-redesign §6). The old polyline dove into the bottom-left corner and then retraced
    itself out to the Undercrown - the Ore Road read as a dead-end limb six pixels off the sheet, and the retrace was
    drawn at full road weight on top of the spur's own dashed stub. One climb now: no corner, no retrace, and both
-   THE ORE ROAD and HIGHCROWN sit on the body of the road with road on both sides of them. */
-const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [60, 132], [44, 112], [36, 88], [44, 64], [50, 40]];
+   THE ORE ROAD and HIGHCROWN sit on the body of the road with road on both sides of them.
+
+   THE ENTRY, MOVED (integrator round two). A first fix kept the entry at (36,128) and only reshaped the STORM ->
+   OREROAD tail - and every such attempt, proven by exhaustive search (work/claude/crag-route-search.mjs and its
+   later passes), crosses SOMETHING: the entry's own climb to SCREE ([36,128]->[120,92], four bends), the
+   WOOD->CRAG connector's wall (x 36-38 for the whole of y 128-200), or the CRAG->COAST seam near CROWN. This is
+   not a local defect: STORM (82,150) and OREROAD/CROWN (44,112 / 50,40) sit on OPPOSITE sides of the entry-to-
+   scree line, and reaching from one to the other without crossing it, its bounded segment, or either connector
+   is topologically impossible while SCREE, HANGING, HIGHSTORE, SPIRE, MOOR and STORM stay exactly where they
+   are - millions of randomised trials across every combination (entry position, tail shape, even moving OREROAD/
+   CROWN/UNDERCROWN themselves) never found a solution that stays clear of HIGHSTORE's corner. So the entry moves
+   instead, past HIGHSTORE and down again to SCREE - the one route the search actually found, chosen for the
+   smallest entry displacement among the working family. It is UGLY: the road runs close to HIGHSTORE's own
+   approach for a stretch before separating (see docs/worldmap-crag.png). It is not self-crossing - map-grammar
+   proves that - but it reads busier than any other seam on the map, and it is flagged in the report as wanting a
+   fuller redesign of this sheet's layout (moving HANGING/HIGHSTORE/SPIRE/MOOR themselves) rather than a patch,
+   if Daniel doesn't accept it as is. */
+const CRAG_PATH = [[188, 146], [288, 116], [282, 24], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [44, 112], [36, 88], [44, 64], [50, 40]];
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 140, y: 140, name: 'THE LONG WATER' },
@@ -2924,7 +2940,14 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' },
   { id: 'keep', kind: 'level', level: LEVELS.findIndex(l=>l.id==='keep'), x: 105, y: 80, name: 'THE UNDERWATER KEEP' },
   { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l=>l.id==='causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' }];   /* STORMWRECK HARBOR IS GONE FROM THE ROAD (Daniel, 2026-09-20: it offered nothing the coast had not). Its level still builds and is still tested; it is simply not on the map, and Waymeet needs the Causeway again. */
-const COAST_PATH = [[48, 172], [95, 155], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [195, 65], [140, 8]];   /* [95,155]: nudged 3px off the bottom margin, same rule */
+/* [160,100] -> [26,96] -> [26,26] -> [140,8]: the exit tail was [160,100] -> [195,65] -> [140,8] until the
+   integrator's crossing check caught it - that rightward swing toward the seam cut back across the FLOTILLA ->
+   HURRICANE leg. A first re-fix ([110,50]) cleared that leg but still crossed the NEXT one, HURRICANE -> LAMPLIT
+   ([130,25] -> [85,32]) - hurricane sits close enough to both its neighbours that nothing threading between them
+   at a middling height gets through clean. The tail now hugs the LEFT margin instead, past hurricane and
+   lamplit entirely, before cutting right at the very top to the seam - proven by exhaustive search
+   (work/claude/coast-tail-search.mjs) against every other segment on the sheet. */
+const COAST_PATH = [[48, 172], [95, 155], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [26, 96], [26, 26], [140, 8]];   /* [95,155]: nudged 3px off the bottom margin, same rule */
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
   { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 62, y: 122, name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
@@ -2944,9 +2967,9 @@ const INLAND_PATH = [[140, 176], [40, 162], [62, 122], [130, 82], [170, 66], [21
 const DESERT_NODES = [];
 const DESERT_PATH = [[274, 174]];
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })), DESERT_NODES.map(n => ({ ...n, y: n.y + DESERT_Y })));
-const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]), DESERT_PATH.map(([x, y]) => [x, y + DESERT_Y]));
+const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[110, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]), DESERT_PATH.map(([x, y]) => [x, y + DESERT_Y]));
 const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.y)<Math.hypot(PATH[best][0]-n.x,PATH[best][1]-n.y)?i:best,0));
-const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
+const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [110, 200 + CRAG_Y]], [[110, 200 + CRAG_Y], [188, 146 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id; }
 const HUT = ART.bakeHut(), FLAG = ART.bakeFlag();
