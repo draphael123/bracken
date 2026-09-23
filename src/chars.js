@@ -3621,3 +3621,75 @@ export function bakeClosedHelm() {
   const open = wspr(top3(lay(openRows, [E, ...crest])));
   return pack([stand, walk, raise, cut, stamp, open], 14, 31, 20, 26);
 }
+
+// THE TEMPERER - the one goblin in the game whose power is something he has to GO AND GET. 10x14.
+// Read him BY THE BLADE, not the body: cold he is a plain goblin in a smith's apron with an over-long
+// two-hander, deliberately unremarkable, because the point is that you stop watching him. At the fire the
+// same blade comes back the brightest thing in the room, and every frame of him is baked twice - once in
+// steel and once in ember - off the same grids, so the hot pose is unmistakably the SAME creature.
+// Frames: 0 idle, 1/2 walk, 3 cutTell (overhand up), 4 cut, 5 shove, 6/7 run, 8 at the fire,
+//         9 hot idle, 10 hot walk, 11 quenchTell, 12 quench, 13 hurt (LAST: HAS_HURT reads the last frame).
+export function bakeTemperer() {
+  const W = 18, ROWS = 20;
+  /* a = the smith's leather apron, the one thing on him that is not a goblin; m/M = the blade, and the
+     whole creature is the two palettes below telling you which state he is in */
+  const COLD = Object.assign({}, EP, { a: '#6b4a2a', A: '#3a2416', m: '#c9d1dc', M: '#7c8797' });
+  const HOT = Object.assign({}, EP, { a: '#6b4a2a', A: '#3a2416', m: '#ffd36b', M: '#ff6b2c' });
+  const blank = () => Array.from({ length: ROWS }, () => '.'.repeat(W));
+  const put = (R, y, x, s) => { if (y < 0 || y >= ROWS) return; const a = R[y].split('');
+    for (let k = 0; k < s.length; k++) if (s[k] !== '.' && x + k >= 0 && x + k < W) a[x + k] = s[k]; R[y] = a.join(''); };
+  const f = (R, hot) => outline(fromGrid(R, hot ? HOT : COLD, 1), OUT);
+  // the goblin: head, apron, and the eyes shut when he has been hit
+  const body = (R, dx = 0, dy = 0, shut = false) => {
+    put(R, 8 + dy, 4 + dx, 'gggggg'); put(R, 9 + dy, 3 + dx, shut ? 'ggGGggGGg' : 'ggeoggeog');
+    put(R, 10 + dy, 3 + dx, 'gggggggg'); put(R, 11 + dy, 4 + dx, 'gGGGGg');
+    put(R, 12 + dy, 4 + dx, 'aaaaaa'); put(R, 13 + dy, 3 + dx, 'agggggga');
+    put(R, 14 + dy, 3 + dx, 'agggggga'); put(R, 15 + dy, 3 + dx, 'aaaaaaaa'); put(R, 16 + dy, 4 + dx, 'aaaaaa');
+  };
+  const LEGS = {
+    stand: [[17, 4, 'GG..GG'], [18, 4, 'GG..GG'], [19, 3, 'GGG..GGG']],
+    stepA: [[17, 5, 'GGGG'], [18, 4, 'GG..GG'], [19, 3, 'GG....GG']],
+    stepB: [[17, 4, 'GG..GG'], [18, 3, 'GG....GG'], [19, 2, 'GG......GG']],
+    runA: [[17, 3, 'GG...GG'], [18, 2, 'GG.....GG'], [19, 1, 'GG.......GG']],
+    runB: [[17, 5, 'GGGG'], [18, 4, 'GG..GG'], [19, 4, 'GGGG']],
+    lunge: [[17, 4, 'GG...GG'], [18, 2, 'GG.....GG'], [19, 1, 'GG'], [19, 11, 'GG']],
+    kneel: [[18, 4, 'GGGG..GG'], [19, 3, 'GGGGG..GG']],
+  };
+  const legs = (R, k) => { for (const [y, x, s] of LEGS[k]) put(R, y, x, s); };
+  /* THE LOW CARRY. Both hands at his hip and five rows of blade running down past his boot: it is longer
+     than he is and it is the only line on him that is not a goblin's. */
+  const lowBlade = (R, dx = 0, dy = 0) => { put(R, 14 + dy, 12 + dx, 'ww'); put(R, 15 + dy, 13 + dx, 'mM');
+    put(R, 16 + dy, 14 + dx, 'mM'); put(R, 17 + dy, 15 + dx, 'mM'); put(R, 18 + dy, 16 + dx, 'mM'); };
+  const grids = {};
+  { const R = blank(); body(R); legs(R, 'stand'); lowBlade(R); grids.idle = R; }
+  { const R = blank(); body(R); legs(R, 'stepA'); lowBlade(R); grids.walkA = R; }
+  { const R = blank(); body(R); legs(R, 'stepB'); lowBlade(R); grids.walkB = R; }
+  /* THE LONG CUT, told: the whole blade goes straight up over him, both arms with it, and it is on screen
+     for every frame of the wind-up (the road people's lesson: the read is the wind-up, not a beat of it) */
+  { const R = blank(); body(R); legs(R, 'stand');
+    for (let y = 1; y <= 5; y++) put(R, y, 11, 'mM');
+    put(R, 6, 10, 'ymMy'); put(R, 7, 11, 'ww');
+    put(R, 8, 11, 'GG'); put(R, 9, 11, 'GG'); put(R, 10, 11, 'GG'); put(R, 11, 11, 'G'); put(R, 12, 10, 'G');
+    grids.cutTell = R; }
+  { const R = blank(); body(R); legs(R, 'stepA');
+    put(R, 12, 10, 'Gww'); put(R, 13, 10, 'G.mM'); put(R, 14, 13, 'mM'); put(R, 15, 14, 'mM'); put(R, 16, 15, 'mM');
+    grids.cut = R; }
+  /* THE SHOULDER: he leans the whole apron into you to make room, and the blade never leaves the low carry.
+     It is not much of a blow. It is how he gets out from under you, which is the thing it is really telling you. */
+  { const R = blank(); body(R, 1); legs(R, 'lunge'); put(R, 12, 4, 'aaaaaaa'); put(R, 13, 4, 'aggggggga');
+    lowBlade(R, 1); grids.shove = R; }
+  { const R = blank(); body(R, 1); legs(R, 'runA'); lowBlade(R, 1); grids.runA = R; }
+  { const R = blank(); body(R, 1); legs(R, 'runB'); lowBlade(R, 1); grids.runB = R; }
+  /* AT THE FIRE: stooped over it with his back half turned, the blade held straight down into the coals in
+     both hands. Nothing about this pose is a guard, and that is the whole point of it. */
+  { const R = blank(); body(R, 1, 2); legs(R, 'kneel'); put(R, 13, 13, 'ww');
+    for (let y = 14; y <= 19; y++) put(R, y, 13, 'mM');
+    grids.fire = R; }
+  { const R = blank(); body(R, -1, 0, true); legs(R, 'stand'); put(R, 13, 10, 'ww'); put(R, 14, 11, 'mM');
+    put(R, 15, 12, 'mM'); put(R, 16, 13, 'mM'); put(R, 17, 14, 'mM'); grids.hurt = R; }
+  return pack([f(grids.idle), f(grids.walkA), f(grids.walkB), f(grids.cutTell), f(grids.cut), f(grids.shove),
+    f(grids.runA), f(grids.runB), f(grids.fire),
+    /* and the same four poses again in ember: this is the whole silhouette rule, baked */
+    f(grids.idle, true), f(grids.walkA, true), f(grids.cutTell, true), f(grids.cut, true),
+    f(grids.hurt)], 8, 22, 10, 14);
+}

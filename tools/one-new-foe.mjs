@@ -47,7 +47,6 @@ import { chainOf } from './campaign-order.mjs';
 const GRANDFATHERED = {
   oreroad: 'REJECTED BY DANIEL AND BEING REWORKED - its only new creature is the Winchmaster, and "no new enemies/idea other than riding lifts" is exactly what this rule now measures. It must leave this list when the rework lands.',
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
-  crown: 'ANSWERED, AND BEING FIXED - Daniel agreed 2026-09-24 that it should bring a new foe. THE TEMPERER is briefed in docs/briefs/crown-temperer.md; this entry goes when he lands.',
   keep: 'ANSWERED, AND BEING FIXED - THE LEADFOOT is briefed in docs/briefs/keep-leadfoot.md; this entry goes when he lands.',
 };
 
