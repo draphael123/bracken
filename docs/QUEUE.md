@@ -49,26 +49,29 @@ node off the road on a dashed branch. The map is currently wrong in both directi
 
 ## 4. NEEDS DANIEL — do not decide these alone
 
-1. **STORMWRECK HARBOR is out of the game.** It is the **only** level in `LEVELS` with no map node: it builds, it has
-   content, it has suite checks, and it is unreachable. **Restore it or retire it?**
-2. **Hero unlocks are implemented once out of six.** Only `pyro` carries a `coinNeeds` gate (the Burning Village).
+1. **Hero unlocks are implemented once out of six.** Only `pyro` carries a `coinNeeds` gate (the Burning Village).
    The Death Knight, Freebooter, Paladin and Warden are all buyable with no level behind them — so the design every
    class-level brief assumes barely exists yet.
-3. **The four bosses weighted `0`** in `src/threat.js` (closedhelm, bellcrab, drownedking, prince) while eight others
+2. **The four bosses weighted `0`** in `src/threat.js` (closedhelm, bellcrab, drownedking, prince) while eight others
    are `6`. The table says a boss is a 6.
-4. **The Paladin's charge is now 4.7s** of total warning (was 3.3s). That is what was asked for; it may be too
+3. **The Paladin's charge is now 4.7s** of total warning (was 3.3s). That is what was asked for; it may be too
    telegraphed. Needs a human hand on it.
-5. **The Queen's walkway.** Daniel asked for it removed; it is her ONLY damage window (`gqOpen` is `mode==='pinned'`
+4. **The Queen's walkway.** Daniel asked for it removed; it is her ONLY damage window (`gqOpen` is `mode==='pinned'`
    and only her own gallery pins her). Ask again before deleting.
-6. **The Death Knight's hitbox** reaches 24px past the blade the art draws — shorten the box or lengthen the art?
+5. **The Death Knight's hitbox** reaches 24px past the blade the art draws — shorten the box or lengthen the art?
    That is a call about his reach.
-7. **Burn and the two non-ward multipliers** — `wardedDamage` folds in the five wards, deliberately not the
+6. **Burn and the two non-ward multipliers** — `wardedDamage` folds in the five wards, deliberately not the
    Archmage's stage gate (which can refuse a blow) or the Undead Archmage's `gather` bonus.
-8. **Sixteen proposed talents** across four heroes (`docs/briefs/hero-kits.md`). Is four each right, or two?
-9. **Flattening the ramp** means editing shipped levels. Bring numbers and a proposal, do not rebalance the campaign
+7. **Sixteen proposed talents** across four heroes (`docs/briefs/hero-kits.md`). Is four each right, or two?
+8. **Flattening the ramp** means editing shipped levels. Bring numbers and a proposal, do not rebalance the campaign
    unasked.
 
 ## 5. KNOWN DEBT
+
+- **STORMWRECK HARBOR is SHELVED ON PURPOSE.** Daniel, 2026-09-24: *"by out of commission I mean we don't need
+  it right now."* It is the only level in `LEVELS` with no map node - it builds, it has content, it has its own suite
+  checks, and it is deliberately unreachable. **Leave it alone.** Do not restore it, do not give it a spur, and do not
+  count it when measuring the campaign. Nothing is pending here.
 
 - **`audits/` is dated 2026-09-16** and `src/main.js` has moved a long way since. The first item I picked off it was
   already fixed. **Regenerate before working from it** — the audit tools need a page.
