@@ -57,10 +57,16 @@ cul-de-sac.** This is §3's complaint with a second instance nobody has reported
 **c. The Undercrown gets both treatments at once.**
 
 `CRAG_PATH` ends `... [30,66], [50,40], [38,54], [26,66], [38,54], [50,40]` — a literal out-and-back appended for the
-Undercrown, comment and all. But `NODE_AT` resolves the Undercrown to `[18,100]` (12.0px away), not to `[26,66]`
-(23.4px away), so **the retrace the polyline exists for is not the road the walk uses.** What it does do is draw
-full-weight road to the one node on that sheet that is genuinely optional, on top of its dashed stub — and make
-leaving the Undercrown for the Coast walk the zig-zag twice.
+Undercrown, comment and all. But `NODE_AT` resolves the Undercrown to `[18,100]` (**12.0px** away, global segment 38),
+not to `[26,66]` (23.4px), so **the retrace the polyline exists for is not the road the walk uses.** Highcrown resolves
+to segment **40**, so the Undercrown is the one node in the game whose segment goes *backwards* as its array index goes
+forwards, and `updateMap` reaches it by overshooting and snapping. What the retrace does do is draw full-weight road to
+the one node on that sheet that is genuinely optional, on top of its dashed stub — and make leaving the Undercrown for
+the Coast walk the zig-zag twice.
+
+Measured over the whole global `PATH`: **exactly three points are revisited** — `[38,414]`, `[50,400]` (the Undercrown
+retrace) and `[95,172]` (Waymeet's). There are no others. Both retraces are the bug in 2a and 2b, and nothing else in
+the map does this.
 
 **d. The dotted "not yet walked" overlay is driven by the highest unlocked index.**
 
@@ -209,10 +215,12 @@ a node you step off to is optional. Once that holds the grammar is the map's, no
 **4. Fix the dotted overlay** to follow the road from the last *required* node walked, not from the highest unlocked
 index (§2d). Otherwise seven spurs switch it off.
 
-**5. Cap the spur stub.** The check's band is 4–44px. 44px is long enough for a stub to read as a second road on a
-320px sheet; **24px** is the proposal, and every spur in this brief already fits it except the three inherited ones
-(burning 28px, underleaf 34px, undercrown as re-sited 22px) — so either tighten to 36px and keep them, or move them.
-A number for Daniel, not for the builder.
+**5. Cap the spur stub.** The check's band is 4–44px, and 44px is long enough for a stub to read as a second road on a
+320px sheet. Measured, today: the Burning Village **24.2px**, Underleaf **24.2px**, the Undercrown **12.0px**. Nothing
+live uses more than 25, so the band is nearly twice as loose as anything in it, and **the number the map actually uses
+is about 24.** The four new spurs in §4 are sited at 27–34px and should be pulled in to match once the cap is agreed —
+they are drawn that long only because §4's coordinates were chosen for room, not for the cap. A number for Daniel, and
+then a straightforward adjustment of four pairs of coordinates.
 
 ---
 
