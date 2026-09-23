@@ -91,6 +91,23 @@ scroll, select, jump to node), **live motion** in `drawMap()` — smoke off the 
 flicker, a pennant on the token; it cannot be baked if it moves — and **richer per-style art** in `bakeMap()` (five
 styles: wood, coast, crag, haunted, mark). Do the menu and the motion first. Render to PNG in Node for approval.
 
+**AND THE MAP MUST TELL THE TRUTH ABOUT WHAT IS OPTIONAL.** Daniel, 2026-09-24: *"the optional levels should be on a
+side path that are not required to complete (the burning village isn't), and the other levels that seem optional like
+the one before the queen's castle level should not be optional."* A node carries `spur: true` to hang off the road on
+a dashed branch; without it the road runs through it. **Right now the map is wrong in both directions:**
+
+| level | truth | how it is drawn | |
+|---|---|---|---|
+| THE BURNING VILLAGE | optional (Pyromancer class level) | spur | correct |
+| UNDERLEAF, THE UNDERCROWN | optional (secrets) | spur | correct |
+| **STORMWRECK HARBOR** | **OPTIONAL** - `causeway` branches to *both* `harbor` and `waymeet`, and waymeet carries the rest of the game, so harbor is a dead end you can skip | **on the road** | **WRONG - make it a spur** |
+| **THE ORE ROAD** | **REQUIRED** - Highcrown is gated behind it | on the road, but the road dives into the bottom-left corner (`[82,150] -> [54,162] -> [22,140] -> [18,118]`) and climbs back up the left edge, with the Undercrown spur at (18,88) beside it, so the whole margin reads as a side-branch cluster | **WRONG - it must READ as the main road** |
+| THE FALLING TOWER | leaf, but it is the FINALE | on the road | correct |
+
+**THE RULE FOR EVERY CLASS LEVEL, INCLUDING THE THREE NOT YET BUILT.** THE UNBURIED FIELD (Death Knight), THE POWDER
+DECK (Freebooter) and THE CHURCH (Paladin) are all optional unlocks like the Burning Village, so each one gets
+`spur: true` the day it is placed. See `docs/briefs/hero-kits.md` §7 - their briefs are in `.claude/briefs/`.
+
 ### C. ART — two bosses that do not look like themselves
 `src/redraw/*` · `src/chars.js` · the `SPR.` assignments in `main.js` ~597.
 
