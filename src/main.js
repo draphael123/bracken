@@ -13797,17 +13797,20 @@ function updateBucket(m, dt) {
      he is standing on JAMS it and throws him off. A skip jumped on at the drum's mouth has no weight behind it, and an emptied one
      rides high over the jaws (the ore verb: brief section 3) - so the opening is a ride you commit to, not a step */
   if (ln.drum) { const dd = drumDist(ln, b.s), on = oreRiders().some(p => p.onMover === m);
-    if (!on) m.boardD = undefined; else if (m.boardD === undefined) m.boardD = dd === null ? 0 : dd;
+    /* a hop over a sent bucket or the hook, landing back in the same skip, is still the same ride: the boarding distance is only
+       forgotten once the skip has been empty for a second */
+    if (!on) { m.offT = (m.offT || 0) + dt; if (m.offT > 1) m.boardD = undefined; } else { m.offT = 0; if (m.boardD === undefined) m.boardD = dd === null ? 0 : dd; }
     if (on && dd !== null && dd < 12 && !(ln.jam > 0) && m.ore && !m.fallen && m.boardD >= WINCH.rideIn && boss && boss.t === 'winchmaster' && boss.alive && bossActive && winchInto(ln) === boss.at) winchJamWorld(); }
 }
 const drumLine = () => L.cableway && L.cableway.lines.find(l => l.id === 'low');   /* the Great Drum's: the draw turns the drums with it */
 const winchLine = Hs => L.cableway && L.cableway.lines.find(l => l.id === Hs.line);
 /* which housing a drum line is running INTO right now: its end while dir > 0, its start while dir < 0 */
 const winchInto = ln => OR.ARENA.housings.findIndex(Hs => Hs.line === ln.id && (Hs.at === 'end') === (ln.dir > 0));
-/* THE THREE HOUSINGS in pixels, off the lines as the level built them (so what he aims at is what the buckets ride on) */
+/* THE THREE HOUSINGS in pixels, off the lines as the level built them (so what he aims at is what the buckets ride on). A jam throws
+   him to the FAR end of his ledge, against his own housing: the jammed skip and the near end are the room a hero fights him from */
 function winchHousings() {
   return OR.ARENA.housings.map(Hs => { const ln = winchLine(Hs), p = ln ? ln.pts : [[0, 0], [0, 0]], near = Hs.at === 'end' ? p[p.length - 1] : p[0], far = Hs.at === 'end' ? p[0] : p[p.length - 1];
-    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, ledgeX: (Hs.ledge[0] + 1.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS,
+    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, ledgeX: (Hs.at === 'end' ? Hs.ledge[1] + 0.5 : Hs.ledge[0] + 0.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS,
       drumX: near[0], mouthY: near[1], away: Math.sign(far[0] - near[0]) || -1, sense: Hs.at === 'end' ? 1 : -1, ln }; });
 }
 function winchC(e) {

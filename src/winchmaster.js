@@ -33,7 +33,7 @@
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/ore-road.mjs "THE WINCHMASTER".
 import { OR } from './ore-road.js';   /* the bucket he sends is the road's own bucket: one width, so what hurts is what is drawn (C1) */
 export const WINCH = {
-  hp: 520, pace: 22,
+  hp: 600, pace: 22,
   tell: { reverse: 0.45, send: 0.8, hook: 0.7, lever: 0.55, letgo: 0.7 },
   cd: 1.4, cdP2: 1.0,
   /* THE REVERSE. He throws it only at a rider inside revRange of his drum, and it carries that rider back revT x revMul of the
