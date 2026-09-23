@@ -83,7 +83,7 @@ opened. Nobody should redesign them.
 | **THE UNBURIED FIELD** (`.claude/briefs/unburied-field.md`) | Death Knight | brief + **greybox** `src/draft/unburied-field.js`, with `tools/unburied-field-draft.mjs` |
 | **THE POWDER DECK** (`.claude/briefs/the-powder-deck.md` + `-pitch.md`) | Freebooter | brief, no greybox |
 | **THE CHURCH** (`.claude/briefs/the-lit-church.md` + `-pitch.md`) | Paladin | brief, no greybox. Renames Waymeet's boss to THE CRUSADER so the church's own boss can be THE PALADIN |
-| — | **Warden** | **nothing.** The only hero with neither a class level nor a talent |
+| — | **Warden** | **no class level WANTED** - Daniel, 2026-09-24: *"we do not need a warden class level (they are unlocked from the start)."* Her gap is TALENTS, of which she has none |
 | — | Knight | starting hero; no unlock needed |
 
 **THE UNBURIED FIELD IS THE ONE THAT IS NEARLY READY** — brief plus a greybox that passes its own draft tool. It is

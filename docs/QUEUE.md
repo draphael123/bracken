@@ -89,8 +89,10 @@ node off the road on a dashed branch. The map is currently wrong in both directi
 
 ## 6. NOT DESIGNED YET
 
-- **A Warden class level.** She is the only hero with neither a class level nor a single talent, and Daniel has asked
-  for more Warden abilities specifically. Proposals in `docs/briefs/hero-kits.md` §3; nothing is agreed.
+- **THE WARDEN NEEDS TALENTS, NOT A CLASS LEVEL.** Daniel, 2026-09-24: *"we do not need a warden class level (they
+  are unlocked from the start)."* So she is unlocked deliberately and the gap is her KIT: she is the only hero with no
+  talents at all and Daniel has asked for more Warden abilities by name. Four proposals in `docs/briefs/hero-kits.md`
+  §3, rooted in her reach bands, her deflect and VIGIL - none agreed yet.
 - **The Burial Caverns rework.** `docs/briefs/burial-caverns-rework.md` — but read its correction header first: it is
   INDEX **108**, not the 56 I first reported, and its problem is SHAPE (1,386 columns, the longest level in the game,
   ~230 columns a place) rather than emptiness.
