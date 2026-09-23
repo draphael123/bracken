@@ -24,7 +24,6 @@ art) are a separate job and are not costed here.
 | **§7.2: the Well Town IS the desert's shop** — no store node. | Row 3 of §4.1's table is **deleted**: eight desert nodes, not nine. `DESERT_PATH` keeps `[170,136]` only as a bend in the road, not a stop. The inland sheet's missing store is still its own unasked question. |
 | **§7.5: step PAST spurs; the side level-select panel reaches them.** | `mapGo` left/right walk the required road only and skip every `spur: true` node. The way onto a spur is the lane-B side toggle menu, so that menu is **no longer cosmetic**: without it, spurs become unreachable. It has to land with (or before) the `mapGo` change, never after. |
 | **§7.6: sheet + style only.** | Step 2 of §8 as written: the fifth sheet, a desert `bakeMap` style, the green-to-gold seam and the sand road from THE FALLING TOWER. **No per-node desert scenery** until each level lands. |
-
 | **§7.4: reading (a)** — the existing gold out portal leads to THE SUNKEN CARAVAN. | No fight change. §5 step 2 is a `needs:` link and a node, nothing more. |
 
 ---
