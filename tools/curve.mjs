@@ -23,7 +23,12 @@
 // IS well defined for every level but the first is THE LEVEL IT NEEDS, and that is the only thing the step check
 // compares against. The table prints the longest road from the root, then each branch that hangs off it, and every
 // row carries an `after` column so no reading depends on which line is above it.
+//
+// The walk itself lives in tools/campaign-order.mjs, because tools/one-new-foe.mjs had the same bug for the same
+// reason, and two tools answering "what is the level before this one?" out of two copies of the walk is exactly
+// how the THREAT table drifted by twenty entries.
 import { LEVELS, T, TS } from '../src/level.js';
+import { chainOf, gateOf } from './campaign-order.mjs';
 import { THREAT, spanOf, indexOf, worstGap, RAMP_DROP, RAMP_WALL } from '../src/threat.js';
 
 const HAZ = new Set([T.SPIKE]);
@@ -52,51 +57,19 @@ for (const lv of LEVELS) {
   const span = spanOf(cols, R.H);
   const per100 = threat / (span / 100);
   const index = indexOf({ threat, kinds: kinds.size, hazTiles, gap, span });
-  rows.push({ id: lv.id, needs: lv.needs || null, arc: lv.arc || null, cols: span, foes, threat: Math.round(threat), kinds: kinds.size, per100: +per100.toFixed(1), haz: hazTiles, checks, gap, index });
+  rows.push({ id: lv.id, needs: gateOf(lv), arc: lv.arc || null, cols: span, foes, threat: Math.round(threat), kinds: kinds.size, per100: +per100.toFixed(1), haz: hazTiles, checks, gap, index });
 }
 
-// ---- THE CAMPAIGN ORDER, walked off `needs` ----------------------------------------------------------------
-const byId = new Map(rows.map(r => [r.id, r]));
-const kids = new Map(rows.map(r => [r.id, []]));
-const roots = [], orphans = [], cyclic = [];
-for (const r of rows) {
-  if (!r.needs) { roots.push(r.id); continue; }
-  // A level whose `needs` is not a visible level is NOT on the campaign road: it is either pointing at a hidden
-  // level or at nothing. Say so rather than dropping it into the line at whatever spot the array happened to give.
-  if (!byId.has(r.needs)) { orphans.push(r); continue; }
-  kids.get(r.needs).push(r.id);
-}
-// a needs-loop would hang every walk below it, so find it before walking anything
-for (const r of rows) {
-  const seen = new Set([r.id]);
-  for (let c = r.needs; c && byId.has(c); c = byId.get(c).needs) { if (seen.has(c)) { cyclic.push(r.id); break; } seen.add(c); }
-}
-if (cyclic.length) { console.error('\n`needs` runs in a circle through: ' + cyclic.join(', ') + '\n  The campaign has no order until that is untangled. Nothing measured.'); process.exit(1); }
-if (!roots.length) { console.error('\nNo level has an empty `needs`: the campaign has no first level. Nothing measured.'); process.exit(1); }
-
-// HOW FAR THE CHAIN STILL RUNS from each level. At a fork the longer continuation is the road and the shorter one
-// is a branch off it - which is a PRINTING choice and nothing more: every level is still measured against the level
-// it needs, whichever line it is printed on.
-const runOf = new Map();
-const runLen = id => { if (runOf.has(id)) return runOf.get(id); let n = 0;
-  for (const k of kids.get(id)) n = Math.max(n, 1 + runLen(k)); runOf.set(id, n); return n; };
-for (const r of rows) runLen(r.id);
-const pickOrder = ids => ids.slice().sort((a, b) => runLen(b) - runLen(a));
-
-const road = [];                 // the longest road from the first level
-const branches = [];             // { from, rows: [...] } - everything that hangs off it
-const placed = new Set();
-function walk(startId, into) {
-  for (let id = startId; id; ) {
-    into.push(byId.get(id)); placed.add(id);
-    const next = pickOrder(kids.get(id));
-    for (const spur of next.slice(1)) branches.push({ from: id, start: spur });
-    id = next[0];
-  }
-}
-walk(roots[0], road);
-for (const extra of roots.slice(1)) branches.push({ from: null, start: extra });   // a second root is its own road
-for (let i = 0; i < branches.length; i++) { branches[i].rows = []; walk(branches[i].start, branches[i].rows); }
+// ---- THE CAMPAIGN ORDER, walked off the gate chain ---------------------------------------------------------
+const C = chainOf(rows);
+const { byId, kids, roots, forks, leaves, placed, pickOrder } = C;
+if (C.cyclic.length) { console.error('\nthe gate chain runs in a circle through: ' + C.cyclic.join(', ') + '\n  The campaign has no order until that is untangled. Nothing measured.'); process.exit(1); }
+if (!roots.length) { console.error('\nNo level has an empty gate: the campaign has no first level. Nothing measured.'); process.exit(1); }
+const road = C.road.map(id => byId.get(id));
+const branches = C.branches.map(b => ({ from: b.from, rows: b.ids.map(id => byId.get(id)) }));
+// A level whose gate is not a visible level is NOT on the campaign road: it is pointing at a hidden level or at
+// nothing. Say so rather than dropping it into the line at whatever spot the array happened to give it.
+const orphans = C.orphans.map(id => byId.get(id));
 
 const pad = (s, n) => String(s).padEnd(n);
 const padl = (s, n) => String(s).padStart(n);
@@ -113,7 +86,7 @@ console.log(HEAD);
 for (const r of road) console.log(line(r));
 for (const b of branches) {
   console.log('\n  -- a branch off ' + (b.from || '(a second first level)') + ': ' + b.rows.map(r => r.id).join(' -> ')
-    + ' -- ' + (b.from ? byId.get(b.from).id + ' is also continued by ' + pickOrder(kids.get(b.from))[0] + ', so this is not "after" anything on the road above' : ''));
+    + ' -- ' + (b.from ? b.from + ' is also continued by ' + pickOrder(b.from)[0] + ', so this is not "after" anything on the road above' : ''));
   for (const r of b.rows) console.log(line(r));
 }
 if (orphans.length) {
@@ -122,8 +95,6 @@ if (orphans.length) {
 }
 
 // WHAT SHAPE THE CHAIN IS, said plainly rather than smoothed over.
-const forks = [...kids].filter(([, v]) => v.length > 1);
-const leaves = rows.filter(r => kids.has(r.id) && !kids.get(r.id).length);
 console.log('\nTHE SHAPE OF THE CHAIN');
 console.log('  first level (no `needs`): ' + roots.join(', ') + (roots.length > 1 ? '   <- more than one: the campaign has more than one beginning' : ''));
 if (!forks.length) console.log('  no forks: the chain is a single line, and "the level before" is unambiguous.');
@@ -132,7 +103,7 @@ else {
   console.log('  well defined for every level here - but the levels AFTER a fork are not in one order, and none is invented:');
   for (const [id, v] of forks) console.log('    ' + v.length + ' levels need ' + id + ': ' + v.join(', ') + ' - a player can meet them in either order');
 }
-console.log('  ends of a branch (nothing needs them): ' + (leaves.length ? leaves.map(r => r.id).join(', ') : 'none'));
+console.log('  ends of a branch (nothing needs them): ' + (leaves.length ? leaves.join(', ') : 'none'));
 console.log('  ' + rows.length + ' visible levels, ' + placed.size + ' on the chain, ' + orphans.length + ' off it.');
 
 // where the ramp goes backwards by more than a little - MEASURED AGAINST THE LEVEL IT NEEDS
