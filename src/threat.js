@@ -30,6 +30,9 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      answer); the tidecaller is worth what a caster is (a read, then a long window to punish); the brute is a
      shield you must go round or break, so it sits between the shieldgob and a knight's plate. */
   merrowspear: 2.5, merrowcaller: 3, merrowbrute: 3,
+  /* THE LEADFOOT sits over both of the Keep's other heavies. He is slower than the Tideguard and the Merrow Brute and
+     harder to LEAVE than either, because leaving him is the thing he charges for: the way round him costs you air. */
+  leadfoot: 3.5,
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
   propman: 2.5, clinger: 2, prince: 6, courtier: 0, minerlamp: 0, timber: 0, gas: 0,

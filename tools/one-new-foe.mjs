@@ -47,8 +47,7 @@ import { chainOf } from './campaign-order.mjs';
 const GRANDFATHERED = {
   oreroad: 'REJECTED BY DANIEL AND BEING REWORKED - its only new creature is the Winchmaster, and "no new enemies/idea other than riding lifts" is exactly what this rule now measures. It must leave this list when the rework lands.',
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
-  keep: 'ANSWERED, AND BEING FIXED - THE LEADFOOT is briefed in docs/briefs/keep-leadfoot.md; this entry goes when he lands.',
-};
+};   /* THE UNDERWATER KEEP LEFT THIS LIST when THE LEADFOOT landed (docs/briefs/keep-leadfoot.md), which is the tool working as written: the stale check above is what put him on the board. */ /* HIGHCROWN LEFT IT TOO, when THE TEMPERER landed (docs/briefs/crown-temperer.md). */
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const ehp = src.slice(src.indexOf('const EHP = {'));

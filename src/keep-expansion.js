@@ -41,6 +41,12 @@ export function expandKeep(R,T,TS,crop){
  sign(333,'THE BELL APPROACH. TAKE AIR BETWEEN THE JELLIES. THE FAR END NARROWS OVER DEAD WATER.');
  box(372,396,24,44,T.SOLID);K.blight.push([372,386,55,58]);K.siphons.push({x:380,y:44});   /* drawn up toward the roof's drain or down into the dead water */
  for(const [t,x,y]of [['eel',35,39],['angler',53,54],['manta',127,34],['puffer',110,52],['jelly',140,41],['eel',161,50],['angler',180,30],['merrowspear',210,58],['merrowcaller',239,58],['puffer',266,38],['manta',290,30],['eel',322,48],['jelly',344,38],['jelly',366,49],['merrowbrute',390,58]])ent(t,x,y,{face:-1});
+ /* THE LEADFOOT, three times and never a crowd: one of him and the room's own swimmers IS the encounter, because his
+    job is to change how you fight the others. He goes where there is a FLOOR WORTH DENYING and nowhere else - not in
+    the open court, and not in the Drowned King's arena. The library's low pass between the stacks; the sluice wheel
+    you have to stand on the stones to strike three times; and the cistern floor the ballast stones lie on. In each
+    one the thing the room asks of you is done with your feet down, and he is standing on them. */
+ for(const x of [178,234,300])ent('leadfoot',x,58,{face:-1});
  for(let x=12;x<399;x+=8){let y=51;while(y>26&&K.grid[y*K.W+x]!==T.AIR)y--;if(K.grid[y*K.W+x]===T.AIR)ent('coin',x,y);}
  for(const x of [16,64,92,134,202,258,332,376])D.props.push({k:'statue',x,y:58,v:x%2});
  for(const x of [12,56,127,136,200,256,332,360])D.shafts.push({x,y0:24,y1:58,w:4,lean:.1});
