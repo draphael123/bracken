@@ -38,6 +38,27 @@ These were designed on 2026-09-20/21 and live in **`.claude/briefs/`**. Do not r
 | **THE SUNKEN CARAVAN** | — (desert 1) | brief + greybox | lane E |
 | desert levels 2-7 | — | briefs in `docs/briefs/` | after level 1 |
 
+## 2a. THE THREE CHECKS THE NEW RULES ASK FOR — cheap, and overdue
+
+A10, A12 and F10 were written 2026-09-24 and **all three are checkable and none is checked.** Every problem they
+describe was found by Daniel PLAYING the game, which is the most expensive way to find anything. These are small
+tools and they belong in the suite beside `tools/skins.mjs` and `tools/threat-holes.mjs`.
+
+1. **F10 — one new foe a level.** A set difference: every level's roster against the union of every earlier level's.
+   Fail when a level introduces nothing. *Would have caught:* the Ore Road shipping with nine foe kinds, one new.
+2. **A10 — phase two must change.** Any boss that picks its turns from `e.phase === 2 ? [...] : [...]` can have the
+   two lists compared. **Fail when they differ only by an append.** *Would catch, today:* see the fix below.
+3. **A12 — the arena supplies what the attacks assume.** An attack's guard conditions live in its resolve branch
+   (`P.y > A.floor - 80`, `ad < 44`, `dyP < 40`) and the arena's standable rows are in the grid. Read both, fail when
+   nothing in the room can satisfy a condition an attack tests. *Would have caught:* the Buried Dead's nova reaching
+   80px over a room whose only tier was 48, and the Paladin's bash reaching 44 over a flat street.
+
+**AND ONE FIX THE NEW RULES DEMAND IMMEDIATELY: THE BURIED DEAD FAILS A10.** He has seven turns before he is enraged
+and eight after — the one appended attack that A10 calls the floor rather than the plan. His phase two currently adds
+`bodyTell` and changes nothing else. That is my own work from 2026-09-23, caught by the rule Daniel wrote the day
+after, and it should be fixed before the rule is used to judge anybody else's boss. `src/buried-dead.js`, the two
+`turns` arrays.
+
 ## 2b. ELEVEN NEW LEVELS ARE QUEUED — the order, and the scope
 
 The game has **30 real levels**. What is queued is **+11, a 37% expansion**, and it is further along than it looks:
