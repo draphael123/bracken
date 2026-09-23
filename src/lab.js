@@ -38,6 +38,9 @@ export const ON_THE_BEAT = e => !(typeof e.modeT === 'number' && e.modeT > 0.2 &
 /* THE KNIGHT SPENDS HIS BAR. A full RESOLVE is THE LAST CHARGE on a tap of C with his feet under him - so the bot taps it (C not
    already held, or it is not a tap) when the foe is in front of him, inside a charge's run and on his level. A bot that never
    spent it would measure a knight who never charges. */
+/* THE KNIGHT'S HELD SWING IS THE HEAVY CUT (2026-09-23): it comes down when it is LET GO, at whatever stage it reached, and never by
+   itself until 1.8 s - so a bot that held X until something fired stood there with the sword up. The bot lets go at the chop, or at the guard-break on anything with a bar. */
+export const KNIGHT_CUT = 0.72, knightCutAt = e => e && (e.maxHp || e.elite || e.mini) ? KNIGHT_CUT : 0.32;   /* a thing with a bar (a duelist, an elite, a boss) is worth the guard-break; the rest take the chop, which is sooner (measured: fightLab, 2026-09-23) */
 export const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
 /* THE KEY VERB. The family table in main.js (FAMILY, read through BK.keyOf) says what each common body wants: the right tool lands half
@@ -68,7 +71,7 @@ export function keyVerb(BK, h, e) {
   return 'light';
 }
 /* WHERE EACH VERB WANTS TO STAND, in pixels from the foe: inside reach for a cut (and a dash, which is taken on the way in), a step out for the knight's charge and for the warden's lunge (it drives her a tile on, and must end with the point on it), well out of its reach for the freebooter's pistol (it carries 150 px), on top of it for a plunge */
-export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12) / 2; return verb === 'plunge' ? 0 : verb === 'heavy' ? (h === 'knight' ? reach + 6 : h === 'warden' ? reach + 12 : h === 'pirate' ? Math.min(120,reach+80) : reach - 4) : reach - 2; };
+export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12) / 2; return verb === 'plunge' ? 0 : verb === 'heavy' ? (h === 'knight' ? reach + 2 : h === 'warden' ? reach + 12 : h === 'pirate' ? Math.min(120,reach+80) : reach - 4) : reach - 2; };
 /* THE HANDS FOR IT: one frame of whichever verb keyVerb chose. It presses and holds the action keys only (attack, up, down, jump, and the
    double tap of a dash) and never lets one go (whoever calls it clears them first), and leaves the walking to whoever called it (wantOf).
    Every one of them waits on the wind it costs: a bot that swung on an empty bar would stand there winded in front of the thing. */
@@ -80,7 +83,8 @@ export function strike(BK, h, e, f) {
   const level = Math.abs(dy) < 26, free = P.atk < 0 && !P.plunge && !(P.rush > 0);
   if (verb === 'heavy') {
     const winding = P.charge > 0 || P.atkHeld > 0;
-    if (winding || (free && !P.heavy && ad < want + 4 && (h !== 'pirate' || ad > reach + 12) && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
+    if (h === 'knight' && winding && P.atkHeld >= knightCutAt(e)) { /* let go: THE HEAVY CUT comes down */ }
+    else if (winding || (free && !P.heavy && ad < want + 4 && (h !== 'pirate' || ad > reach + 12) && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
     else if (free && ad < reach && level && P.st < 20 && P.st >= 8 && h !== 'pirate') { BK.press('atk'); swing = 1; }   /* no wind for a heavy: a plain cut rather than standing idle */
   } else if (verb === 'sweep' || verb === 'rise') {
     if (free && ad < reach && level && (P.ground || P.swim) && P.st >= cost + 4) { k[verb === 'sweep' ? 'down' : 'up'] = true; BK.press('atk'); swing = 1; }
@@ -978,9 +982,10 @@ async function runbossLab(BK, opts) {
       if(!descending&&P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
       // THE HERALD'S STONES LEAVE PISTOL ROOM: a loaded shot reaches across them; the short C release answers his yellow thrust.
-      const mixedHeavy=(opts.attackStyle==='mixed'||h==='pirate'&&boss.t==='herald'&&P.loaded) && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
+      const cutGo=h==='knight'&&P.atkHeld>=KNIGHT_CUT;   /* the heavy cut is let go at the guard-break */
+      const mixedHeavy=(opts.attackStyle==='mixed'||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
-      if (!mixedHeavy && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
+      if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */

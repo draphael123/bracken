@@ -374,7 +374,6 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
       KF({ legs: 'wide', dy: 1, shield: true, sword: [sh[0] - 4, sh[1] + 4, sh[0] - 6, sh[1] + 11] }),
     ],
   };
-  F.heavy = [F.brace, F.bash, F.recover];   /* (the name the draw and the other heroes use for a held swing) */
   const tuck = KF({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
   { const arcs = comboArcs(sh, 'sword', 12, bare ? {} : { kite: SIDE }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the backhand and the thrust */
@@ -418,6 +417,18 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   directionalPoses(F, 'sword', { make: KF });
+  /* THE HEAVY CUT (his held swing since 2026-09-23; it was THE SHIELD CHARGE). The WIND-UP is the sword raised over the shield, the
+     kite square across him: straight up, then tipped back, then cocked right back behind the helm - one frame a stage, so how long
+     he has held it is on the body (main.js reads cutStage). The CUT comes from over his head down into the floor ahead of him.
+     Made after the padding, with the headroom of their own (the blade goes above the helm). */
+  { const top = ATTACK_HEADROOM;
+    F.windup = [KF({ top, legs: 'wide', shield: true, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 6], sword: [sh[0] - 1, sh[1] - 6, sh[0] - 2, sh[1] - 17], plume: 1 }),
+      KF({ top, legs: 'wide', shield: true, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 6], sword: [sh[0] - 1, sh[1] - 6, sh[0] - 7, sh[1] - 16], plume: 2 }),
+      KF({ top, legs: 'wide', dy: 1, shield: true, arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 6], sword: [sh[0] - 2, sh[1] - 6, sh[0] - 11, sh[1] - 13], plume: 2 })];
+    F.heavy = [KF({ top, wide: 10, dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 7], sword: [sh[0] + 1, sh[1] - 7, sh[0] + 6, sh[1] - 18], plume: 2 }),
+      KF({ top, wide: 10, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 4], sword: [sh[0] + 4, sh[1] - 4, sh[0] + 15, sh[1] - 8], plume: 2 }),
+      KF({ top, wide: 10, dx: 3, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 9], plume: 0,
+        bits: [[sh[0] + 14 - BX, sh[1] + 9 - BY, '#ffffff'], [sh[0] + 15 - BX, sh[1] + 8 - BY, '#fff6c8'], [sh[0] + 13 - BX, sh[1] + 8 - BY, '#fff6c8']] })]; }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);

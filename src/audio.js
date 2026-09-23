@@ -1096,6 +1096,11 @@ export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k,
    bright scrape bending upward with a thin ring on the end of it - and what it catches bites with iron and a low thump. */
 Object.assign(SFX, {
   riseCut() { noise(0.16, 0.2, 2400, 1.1); tone('sawtooth', vary(260), vary(1500), 0.15, 0.06); tone('triangle', vary(700), vary(2300), 0.12, 0.05, 0.03); bell(2349, 0.22, 0.035, 0.1); },
+  /* THE HEAVY CUT. Each stage of the wind-up rings a note higher on the raised blade; the cut is iron coming down, heavier by stage;
+     the knockdown's blade into the floor is stone answering. None of it is the shield's scrape: the charge is gone from X. */
+  cutStage(n) { bell([0, 1175, 1568, 2093][n] || 1568, 0.2 + 0.08 * n, 0.05 + 0.015 * n); tone('triangle', vary(700 + 300 * n), 1400 + 400 * n, 0.07, 0.04); if (n === 3) { noise(0.2, 0.08, 3000, 0.6); tone('sine', 110, 90, 0.3, 0.06); } },
+  heavyCut(n) { noise(0.16 + 0.03 * n, 0.2 + 0.04 * n, 1500 - 200 * n, 0.6); tone('sawtooth', vary(700), vary(160), 0.14 + 0.03 * n, 0.06 + 0.02 * n); SFX.slash(); if (n >= 2) tone('square', 240, 90, 0.12, 0.06, 0.05); },
+  cutQuake() { SFX.stone && SFX.stone(); tone('sine', 90, 36, 0.4, 0.3); noise(0.3, 0.28, 520, 0.5); },
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
