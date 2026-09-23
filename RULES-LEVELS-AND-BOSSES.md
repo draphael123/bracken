@@ -60,8 +60,16 @@ no longer fit - and a player who has just crossed it should be able to say what 
 attack bolted onto the same rotation is the weakest version of this and should be the floor, not the plan.
 *Earned:* Daniel, 2026-09-24, asked for this as a rule in as many words - "second phase has to have at least some
 change" - after the Buried Dead, who has seven turns before he is enraged and gains exactly one after.
-**Checkable and not yet checked:** a boss that picks its turns from a list (`e.phase === 2 ? [...] : [...]`) can have
-the two lists compared, and a tool can fail when they differ only by an append.
+**ADVISED, NOT CHECKED, AND HERE IS WHY** - I tried three times to check this statically and produced a different
+class of false positive each time. Looking for `phase === 2 ? a : b` ternaries failed SEVENTEEN healthy bosses,
+because most write `if (e.phase >= 2 && ...)` instead. Counting any comparison still failed NINE, because scoping a
+boss's body inside main.js is unreliable - `updateArchmage` and `updateArchmageRoom` match the same pattern. And some
+bosses have no phase NUMBER at all: the Dune Worm keeps a boolean `W.phase2`, and its second phase does two real
+things no search for `phase === 2` will ever see. `tools/phase-two.mjs` is therefore a READING AID, not a gate: it
+prints every phase line per boss, marked as transition or behaviour, and judges nothing.
+*It has earned its keep once already:* **THE SKELETON KING**, the desert arc's unbuilt world boss, declares phases at
+2/3 and 1/3 health and gates EVERY behavioural change he has - speed, attack chain, cooldowns - on phase THREE.
+Nothing reads phase two except the transition that leaves it. His second phase is an announcement and an animation.
 
 **A11. THE OPENING IS CAUSED, NOT WAITED FOR.** A6 says every untouchable phase owes an open one. This says WHO opens
 it. A window that arrives on the boss's own timer teaches nothing and rewards nothing; a window the player MAKES is

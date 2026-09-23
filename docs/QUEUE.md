@@ -53,11 +53,14 @@ tools and they belong in the suite beside `tools/skins.mjs` and `tools/threat-ho
    nothing in the room can satisfy a condition an attack tests. *Would have caught:* the Buried Dead's nova reaching
    80px over a room whose only tier was 48, and the Paladin's bash reaching 44 over a flat street.
 
-**AND ONE FIX THE NEW RULES DEMAND IMMEDIATELY: THE BURIED DEAD FAILS A10.** He has seven turns before he is enraged
-and eight after — the one appended attack that A10 calls the floor rather than the plan. His phase two currently adds
-`bodyTell` and changes nothing else. That is my own work from 2026-09-23, caught by the rule Daniel wrote the day
-after, and it should be fixed before the rule is used to judge anybody else's boss. `src/buried-dead.js`, the two
-`turns` arrays.
+**WITHDRAWN: THE BURIED DEAD DOES NOT FAIL A10.** I claimed he did, from reading his two turn arrays and nothing
+else. His phase two also widens the slam from 145 to 175 and doubles the summon — three changes, not one appended
+attack. Nothing to fix.
+
+**WHAT DOES FAIL A10 IS THE SKELETON KING**, the desert arc's unbuilt world boss. He declares phases at 2/3 and 1/3
+health and gates every behavioural change on phase THREE — speed, attack chain, cooldowns. Nothing reads phase two
+except the transition that leaves it, so his second phase is an announcement and a 'shut' animation and then he
+fights exactly as before. **Fix it in the brief before he is wired in** (`src/skeleton-king.js`, `KING.CHAIN`).
 
 ## 2b. ELEVEN NEW LEVELS ARE QUEUED — the order, and the scope
 
