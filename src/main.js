@@ -536,6 +536,10 @@ const MORE_ICONS = {
   poleSpring: pixIcon(['....y.....', '...yyy....', '..y.w.y...', '....w.....', '....s.....', '....b.....', '....b.....', '....b.....', '....b.....', '....b.....', 'ssssssssss', 'bbbbbbbbbb']),
   fullStretch: pixIcon(['..........', '..........', '..........', 'y.......y.', '.y.......y', 'bbbbbbbssw', '.y.......y', 'y.......y.', '..........', '..........', '..........', '..........']),
   spearDance: pixIcon(['..........', 'bbbbssww..', '..........', '.bbbbssww.', '..........', 'bbbbssww..', '..........', '.bbbbssww.', '..........', 'y.y.y.y...', '..........', '..........']),
+  /* THE KNIGHT'S THREE: a hooked blade taking a shield away, a closed helm, and a sword with the light coming off it */
+  disarm: pixIcon(['..........', '.s......yy', '.ss....yyy', '..ss....y.', '...ss.....', '....ss....', '..b.sss...', '...b.ww...', '....b.....', '.....b....', '..........', '..........']),
+  ironclad: pixIcon(['..........', '...ssss...', '..swwwws..', '.sswwwwss.', '.ssddddss.', '.sswwwwss.', '.ssssssss.', '..ssssss..', 'y.ssssss.y', '.y......y.', '..........', '..........']),
+  swordOfRealm: pixIcon(['....y.....', '.y..w..y..', '..y.w.y...', '....w.....', 'y...w...y.', '....w.....', '...yyy....', '....b.....', '....b.....', '...yyy....', 'yyyyyyyyyy', '..........']),
   rainOfSpears: pixIcon(['..........', 'b...b...b.', 'b...b...b.', 'b.b.b.b.b.', 's.b.s.b.s.', 'w.b.w.b.w.', '..s...s...', '..w...w...', '..........', 'y.y.y.y.y.', 'ssssssssss', 'bbbbbbbbbb']) };
 // the new actives borrow the icon of their nearest kin: a flame on a Reaper's tree reads as a bug
 const SKILL_KIN = { harvestMoon: 'scytheThrown', gravecall: 'graveTide', broadside: 'grapeshot', blackSpot: 'grapeshot', keelhaul: 'boarding',
@@ -596,7 +600,7 @@ function drawHoly(cx, cy) {
   for (const m of hammers) { g.save(); g.translate(Math.round(m.x - cx), Math.round(m.y - cy)); g.rotate(m.t * 14); g.fillStyle = '#c9a040'; g.fillRect(-1, -1, 2, 7); g.fillStyle = '#fff6c8'; g.fillRect(-4, -5, 8, 4); g.fillStyle = '#ffd36b'; g.fillRect(-4, -5, 8, 1); g.restore(); bloom(m.x - cx, m.y - cy, 10, 0.4, 'gold'); }
 }
 const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
-const CD_MAX = { summonSkeleton: 18, deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 16, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5, skewer: 4, setSpears: 8, harrier: 5, wheel: 5, javelin: 5, poleSpring: 7, fullStretch: 16, spearDance: 8, rainOfSpears: 18 };
+const CD_MAX = { summonSkeleton: 18, deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 16, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 2.5, groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5, skewer: 4, setSpears: 8, harrier: 5, wheel: 5, javelin: 5, poleSpring: 7, fullStretch: 16, spearDance: 8, rainOfSpears: 18, disarm: 6, ironclad: 12, swordOfRealm: 22 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
 const GOLD_CD = 15, goldReady = k => isPirate() && tal('paidInGold') && (PROG.coins || 0) >= GOLD_CD && skillCd(k) > 0;   /* PAID IN GOLD: a wait bought off */
 const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
@@ -2644,8 +2648,8 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
-  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
-  mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; wardJav = null; spearRain = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
+  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
+  mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
@@ -3397,7 +3401,7 @@ function drawTree() {
  for(let i=0;i<4;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G',String(SET.skill3Key).toUpperCase(),String(SET.skill4Key).toUpperCase()][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
  const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
- if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):'PASSIVE TECHNIQUE  1 SLOT'),12,124,UI.gold,'left',6);
+ if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):'PASSIVE TECHNIQUE  1 SLOT'),12,124,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
  const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('LEFT/RIGHT TABS  Z BUY  F/G/'+SET.skill3Key+'/'+SET.skill4Key+' EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
@@ -4291,7 +4295,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES']);   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED']);   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -4464,7 +4468,8 @@ function reflectSeed(s) { s.dead = false; s.reflected = true; s.g = 0; s.life = 
   SFX.parry(); streaks(s.x, s.y, 5, ['#fff6e0', '#c9d1dc'], 120); }
 function phoenixBurst() { SFX.pyreBoom(); shakeCam(8); zoomKick(1.1, 0.3); ringAt(P.x, P.y - 10, 50, '#ff6b2c', 0.5); flame(P.x, P.y - 10, 24, 14, 110, 4); smoke(P.x, P.y - 10, 6, 10);
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 64 && Math.abs(e.y - P.y) < 50) { hurtEnemy(e, 20, P.x, false); e.burn = Math.max(e.burn || 0, 2); } }
-function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null } = {}) {   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
+function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null } = {}) {
+  { const src = who || updFoe; if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE)); }   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (P.relic === 'banner') dmg = Math.max(1, Math.round(dmg * 0.8)); // the Queen's banner: they pull their blows
   if (!P.dead && P.dodge > 0 && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; P.st = Math.min(P.maxSt, P.st + 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
@@ -4574,8 +4579,10 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   // lighter, on the shoulder) and the cut still lands. Everything else still gets cancelled.
   /* HE DOES NOT FLINCH. Anyone else has hyperarmour on a heavy; a two-hander that can be interrupted
      halfway round is a two-hander nobody would ever swing, because it is slower than what it is hitting. */
-  const armoured = P.atk >= 0 && !P.plunge && (P.heavy || P.heavySwing || isReaper());
-  if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); }
+  const iron = hero() === 'knight' && P.ironT > 0;   /* IRONCLAD: nothing staggers him or stops his swing - and it all still hurts */
+  const armoured = iron || (P.atk >= 0 && !P.plunge && (P.heavy || P.heavySwing || isReaper()));
+  if (iron) { SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 5); }
+  else if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); }
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
   P.hp -= dmg; P.inv = armoured ? 0.55 : 0.8; P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
   if (!armoured) { P.atk = -1; P.plunge = false; if (dashStriking()) endDashStrike(false); } P.block = false; impactAt(P.x, P.y - 9, 'red');
@@ -4813,7 +4820,7 @@ const famHas = (list, blow) => !!list && [].concat(list).some(v => blowHas(blow,
 function hurtAs(blow, e, dmg, fromX, plunge) { BLOW = blow; return hurtEnemy(e, dmg, fromX, plunge); }
 const meleeBlow = plunge => plunge || P.plunge ? 'plunge' : P.heavy ? 'heavy' : P.swingKind === 'sweep' ? 'sweep' : P.swingKind === 'rise' ? 'rise' : P.dashCut ? 'dash' : 'light';
 const familyOf = e => (e.xpRole || e.mini || e.elite || e.big || e.trainer || e.turncoat || e === boss) ? null : FAMILY[FAMILY_OF[e.t]] || null;   /* (not maxHp: Waymeet's sworn swords and hedge knights carry one, and are the common roster all the same) */
-const foeOpen0 = e => e.broken > 0 || e.open > 0 || e.parried > 0 || (e.stagger || 0) >= 0.5 || e.knock > 0 || e.frozen > 0 || (e.launchedT || 0) > time;
+const foeOpen0 = e => (e.disarmOpenT || 0) > time || e.broken > 0 || e.open > 0 || e.parried > 0 || (e.stagger || 0) >= 0.5 || e.knock > 0 || e.frozen > 0 || (e.launchedT || 0) > time;
 /* OPEN BEFORE THE BLOW, not because of it: the swing pass works out a cut's damage (swingDmg, which staggers on a third cut) before
    the cut lands, so it looks first (openBefore) and the blow is judged on what it found */
 const openBefore = e => { e.openPre = foeOpen0(e); e.openPreT = time; };
@@ -5170,7 +5177,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
          does not come round, so walking behind one was a free kill and the heavy blow was never needed. Now a plain cut from behind
          LANDS - and it wheels on you, guard up, and shoulders you off. Going round buys one cut; going through (a heavy blow, or a
          sweep under it, until its bar breaks) buys all of them. */
-      if (fam === FAMILY.guard && !keyed && blowHas(blow, 'light') && e.t !== 'heavy' && e.face && Math.sign(fromX - e.x) === -e.face && !foeOpen(e) && !windingUp(e)) wheel = true; } }   /* (never mid-windup: turning a blow already coming would aim it at you) */
+      if (fam === FAMILY.guard && !keyed && !e.disarmed && blowHas(blow, 'light') && e.t !== 'heavy' && e.face && Math.sign(fromX - e.x) === -e.face && !foeOpen(e) && !windingUp(e)) wheel = true; } }   /* (never mid-windup: turning a blow already coming would aim it at you) */
   if (P.mixedT > time && blow && dmg > 0 && !glance && e.alive && !e.harmless && !(e.xpRole || e.mini || e === boss) && e.t !== 'dummy') { dmg = Math.round(dmg * 1.5); mixedUp(e); mixed = true; }   /* MIXED UP: three verbs, and the next one that lands puts it down */
   /* HERO COMBOS: each hero's own two moves, used in the right order, land harder than either alone */
   if (dmg > 0 && hero() === 'knight' && P.heavySwing && P.parryFoe === e && time < (P.parryFoeUntil || 0)) { P.parryFoe = null; dmg = Math.round(dmg * 1.5); number(e.x, e.y - e.h - 26, 'OPENED UP', '#ffd36b'); if (poiseMax(e) && !(e.broken > 0)) { e.poiseCd = 0; e.poise = poiseMax(e); } }   /* KNIGHT: the parry, then the heavy blow into the gap it made */
@@ -5508,7 +5515,7 @@ function runThroughDrive(e) {
   }
 }
 /* A guard is not an answer to a held blow: the point goes through it. (VIGIL used to buy this too, invisibly.) */
-const throughGuard = e => P.heavy || (!!e && P.dashCut && P.atk >= 0 && famHas((familyOf(e) || {}).unbalance, 'dash'));   /* and a DASH ATTACK goes through the guard the table says it unbalances (FAMILY.guard) */
+const throughGuard = e => (!!e && e.disarmed) || P.heavy || (!!e && P.dashCut && P.atk >= 0 && famHas((familyOf(e) || {}).unbalance, 'dash'));   /* and a DASH ATTACK goes through the guard the table says it unbalances (FAMILY.guard) */
 function gainResolve(n) { if (hero() !== 'knight' || lcOn()) return; const was = (P.resolve || 0) >= 100; P.resolve = Math.min(100, (P.resolve || 0) + n * varietyMul()); if (!was && P.resolve >= 100) meterReady('#ffd36b'); }
 /* THE LAST CHARGE. The shield charge (his held swing) is a shove; this is the whole bar spent at once. A told brace - shield up, a
    gold ring, a war cry - and then he goes, fast and about a screen, behind the shield: THROUGH every ordinary foe in the way, each
@@ -6469,7 +6476,7 @@ function updatePlayer(dt) {
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
     if (best) { best.stagger = Math.max(best.stagger || 0, 0.5); number(best.x, best.y - (best.h || 16) - 18, 'OVER YOU', '#8fd160'); }
   } else tired(); }
-  wardenKit(dt, canAct, tired);   /* THE WARDEN'S SIX BOUGHT ACTIVES (below updatePlayer): the wheel, the javelin, the pole spring, the stretch, the dance, the rain */
+  wardenKit(dt, canAct, tired); knightKit(dt, canAct, tired);   /* (and the Knight's three: DISARM, IRONCLAD, SWORD OF THE REALM) */   /* THE WARDEN'S SIX BOUGHT ACTIVES (below updatePlayer): the wheel, the javelin, the pole spring, the stretch, the dance, the rain */
   if (P.hleapT > 0) { P.hleapT -= dt; if (P.hleapWet) P.vy = Math.max(P.vy, 140); if (P.hleapT < 1.25 && (P.ground || (P.hleapWet && P.hleapT < 1.08))) { P.hleapT = 0; const wet = !P.ground; P.hleapWet = false; shakeCam(8); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 40, '#ffd36b', 0.4); dust(P.x - 10, P.y, 8); dust(P.x + 10, P.y, 8); SFX.forgeHammer(); SFX.heavy(); hitstop(0.05);
       for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: wet ? 0.7 : 1.1, sp: 220, hit: new Set(), water: wet });
       for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 42 && Math.abs(e.y - P.y) < 30) { hurtAs('plunge', e, Math.round(24 * amul('hammerLeap')), P.x, false); if (!e.maxHp) { e.vy = -180; e.stagger = Math.max(e.stagger || 0, 0.8); } } }
@@ -17879,6 +17886,7 @@ function updateBalcony(e, dt) {
 function updateEnemies(dt) {
   updatePack(dt); eliteWatch();
   for (const e of enemies) {
+    disarmTick(); updFoe = e; updSeedN = seeds.length;   /* DISARM: whose blow this is, and what it throws (knightKit) */
     if (!e.alive) continue;
     /* WHO THIS ONE MEANS BY "the player": the nearest hero still on his feet. One line, and every creature and every
        boss in the game answers to whichever of them walked into it, with no branch of its own. (P is put back to
@@ -18357,6 +18365,7 @@ function updateEnemies(dt) {
       e.face = -e.face; e.vx = 0;
     }
   }
+  disarmTick(); updFoe = null;
   for (const w of waves) {
     w.life -= dt; w.x += w.dir * w.sp * dt;
     { const tx = Math.floor(w.x / TS), ty = Math.floor(w.y / TS); if (!isSolid(tx, ty) && isSolid(tx, ty + 1)) w.y = (ty + 1) * TS; else if (isSolid(tx, ty - 1)) w.life = 0; }
@@ -18365,7 +18374,7 @@ function updateEnemies(dt) {
     if (!P.dead && P.ground && Math.abs(P.x - w.x) < (w.block ? 12 : 9) && P.y > w.y - 4) { if (damagePlayer(w.x - w.dir * 20, w.block ? DMG.trollStone : DMG.wave, w.block ? { unblockable: true, up: true } : undefined)) w.life = 0; }
   }
   waves = waves.filter(w => w.life > 0);
-  updateJavHolds(dt);
+  updateJavHolds(dt); if (realmWaves.length) updateKnightKit(dt);
   for (const s of seeds) {
     if (s.dead) continue; if (s.g) s.vy += s.g * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
     /* A RICOCHET: a shot that can skip turns off the first thing it meets, once */
@@ -18647,6 +18656,65 @@ function drawWardenKit(cx, cy) {
     if (s.st === 'wait' || s.st === 'fall') { g.globalAlpha = 0.5 + 0.25 * Math.sin(time * 20); g.fillStyle = '#dff0d8'; g.fillRect(x - 4, gy - 2, 9, 2); g.fillStyle = '#8fd160'; g.fillRect(x - 2, gy - 3, 5, 1); g.globalAlpha = 0.3; g.fillStyle = '#dff0d8'; g.fillRect(x, Math.max(0, gy - 80), 1, 76); g.globalAlpha = 1; }
     if (s.st === 'fall' || s.st === 'stuck') { const y = Math.round(s.y - cy); g.globalAlpha = s.st === 'stuck' ? Math.min(1, s.life / 0.4) : 1;
       g.fillStyle = '#8a5a32'; g.fillRect(x, y - 22, 2, 18); g.fillStyle = '#dff0d8'; g.fillRect(x - 1, y - 5, 4, 4); g.fillStyle = '#ffffff'; g.fillRect(x, y - 1, 1, 1); g.globalAlpha = 1; } } }
+/* ==== THE KNIGHT'S BOUGHT ACTIVES AT 14, 17 AND 20 (2026-09-23).
+   DISARM             a hooking cut, low to high: the first thing it catches loses its shield or its weapon FOR THE REST OF
+                      THE FIGHT. Shielded, its guard is gone (throughGuard, and no wheel onto you); armed, it fights bare:
+                      what it hits you with lands at DISARMED_TAKE, and what it would have thrown or loosed never leaves
+                      its hand (disarmTick). The thing it lost lies on the floor where it fell. A BOSS or a mini cannot
+                      be stripped of the fight it was built around: it is OPENED for DISARM_OPEN seconds instead (foeOpen).
+   IRONCLAD           four seconds in which no blow staggers him, throws him or stops his swing - it still hurts, all of
+                      it (damagePlayer0: the heavy cut's hyperarmour, without the quarter off). He is drawn in steel.
+   SWORD OF THE REALM ten seconds in which every swing he starts on his feet sends a wave of light along the floor, and a
+                      third cut (or a heavy cut) a great one; the cast itself answers with a great one each way. Against a
+                      boss or a mini a wave is capped at REALM_CAP of its bar, so it can never be what kills one outright. ==== */
+const DISARMED_TAKE = 0.4, DISARM_OPEN = 1.5, REALM_CAP = 0.03;
+let updFoe = null, updSeedN = 0, droppedArms = [], realmWaves = [];
+function disarmTick() { if (updFoe && updFoe.disarmed) for (let i = updSeedN; i < seeds.length; i++) if (!seeds[i].reflected) seeds[i].dead = true; }
+function knightKit(dt, canAct, tired) {
+  if (hero() !== 'knight') return;
+  if (P.dead) { P.disarmT = 0; P.ironT = 0; P.realmT = 0; }
+  /* DISARM */
+  if (skillPress('disarm') && cdReady('disarm') && canAct()) { if (spend(20)) { cdSet('disarm'); P.disarmT = 0.26; P.disarmHit = false; P.atk = -1; P.block = false; P.vx = P.face * 60; SFX.disarmSwing(); } else tired(); }
+  if (P.disarmT > 0) { P.disarmT -= dt;
+    if (!P.disarmHit && P.disarmT < 0.2 && P.disarmT > 0.06) { const f = P.face, hb = f > 0 ? { l: P.x + 2, r: P.x + 32, t: P.y - 22, b: P.y + 1 } : { l: P.x - 32, r: P.x - 2, t: P.y - 22, b: P.y + 1 };
+      const e = enemies.filter(q => q.alive && !q.harmless && !(q.gone > 0) && !q.turncoat && overlap(hb, box(q))).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+      if (e) { P.disarmHit = true; hurtAs('light', e, Math.round(swordDmg() * amul('disarm')), P.x, false); sparks(e.x, e.y - (e.h || 16) / 2, f, 8); hitstop(0.07); shakeCam(3, f * 2);
+        if (e.alive && lcBig(e)) { e.disarmOpenT = time + DISARM_OPEN; e.stagger = Math.max(e.stagger || 0, 0.4); number(e.x, e.y - (e.h || 16) - 20, 'OPENED UP', '#ffd36b'); SFX.disarm(); }
+        else if (e.alive && !e.disarmed) { e.disarmed = true; e.guardT = 0; e.stagger = Math.max(e.stagger || 0, 0.6); number(e.x, e.y - (e.h || 16) - 20, 'DISARMED', '#ffd36b'); SFX.disarm();
+          const ax = e.x + f * 14; let gy = e.y; for (let k = 0; k < 6 && !isSolid(Math.floor(ax / TS), Math.floor((gy + 1) / TS)); k++) gy += TS / 2;
+          droppedArms.push({ x: ax, y: Math.floor((gy + 1) / TS) * TS, t: 0, dir: f });
+          for (let i = 0; i < 6; i++) parts.push({ x: e.x + f * 4, y: e.y - (e.h || 16) / 2, vx: f * (60 + Math.random() * 80), vy: -120 - Math.random() * 60, life: 0.5, max: 0.5, col: i % 2 ? '#c9d1dc' : '#8a5a32', size: 2, grav: 600 }); } } } }
+  /* IRONCLAD */
+  if (skillPress('ironclad') && cdReady('ironclad') && !P.dead && !(P.asleep > 0)) { if (spend(25)) { cdSet('ironclad'); P.ironT = 4; SFX.ironclad(); ringAt(P.x, P.y - 10, 20, '#c9d1dc', 0.4); shakeCam(3); number(P.x, P.y - 30, 'IRONCLAD', '#c9d1dc'); } else tired(); }
+  if (P.ironT > 0) { P.ironT -= dt; if (Math.random() < dt * 10) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 16, vx: 0, vy: -14, life: 0.35, max: 0.35, col: '#dfe8ff', size: 1, grav: 0 }); }
+  /* SWORD OF THE REALM */
+  if (skillPress('swordOfRealm') && cdReady('swordOfRealm') && canAct()) { if (spend(40)) { cdSet('swordOfRealm'); P.realmT = 10; SFX.realm(); ringAt(P.x, P.y - 12, 34, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 18, '#fff6c8', 0.35); shakeCam(5); zoomKick(1.08, 0.25); number(P.x, P.y - 32, 'SWORD OF THE REALM', '#ffd36b');
+    if (P.ground || P.swim) for (const d of [-1, 1]) realmWaves.push({ x: P.x + d * 12, y: P.y, dir: d, life: 0.8, sp: 300, big: true, hit: new Set(), delay: 0.1 }); } else tired(); }
+  if (P.realmT > 0) { P.realmT -= dt; if (Math.random() < dt * 16) parts.push({ x: P.x + P.face * (4 + Math.random() * 10), y: P.y - 8 - Math.random() * 10, vx: 0, vy: -24, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 }); }
+}
+function realmWave(big) { realmWaves.push({ x: P.x + P.face * 12, y: P.y, dir: P.face, life: big ? 0.8 : 0.5, sp: big ? 300 : 260, big, hit: new Set(), delay: 0.07 }); SFX.realmWave(big); }
+function updateKnightKit(dt) {
+  for (const w of realmWaves) { if (w.delay > 0) { w.delay -= dt; continue; } w.life -= dt; w.x += w.dir * w.sp * dt;
+    const tx = Math.floor(w.x / TS), ty = Math.floor((w.y - 1) / TS);
+    if (isSolid(Math.floor((w.x + w.dir * 3) / TS), Math.floor((w.y - 6) / TS))) w.life = 0;   /* a wall stops it */
+    else if (!isSolid(tx, ty + 1) && !isOneWay(tileAt(tx, ty + 1)) && !inWater(w.x, w.y - 4)) w.life = 0;   /* and it runs along a floor: over the edge it is gone */
+    if (Math.random() < dt * (w.big ? 50 : 30)) parts.push({ x: w.x - w.dir * 4, y: w.y - Math.random() * (w.big ? 20 : 12), vx: -w.dir * 30, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 });
+    for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || w.hit.has(e) || Math.abs(e.x - w.x) > (e.w || 12) / 2 + (w.big ? 8 : 5) || e.y - (e.h || 16) > w.y || e.y < w.y - (w.big ? 26 : 16)) continue;
+      w.hit.add(e); let dmg = Math.round(swordDmg() * (w.big ? 1.2 : 0.6) * amul('swordOfRealm'));
+      if (lcBig(e)) dmg = Math.min(dmg, Math.max(3, Math.round((e.maxHp || e.hp) * REALM_CAP)));   /* never what kills a boss outright */
+      hurtAs(w.big ? 'heavy' : 'light', e, dmg, w.x - w.dir * 20, false); sparks(e.x, e.y - (e.h || 16) / 2, w.dir, w.big ? 8 : 4); if (w.big && e.alive && !lcBig(e)) e.stagger = Math.max(e.stagger || 0, 0.5); } }
+  realmWaves = realmWaves.filter(w => w.life > 0 || w.delay > 0); }
+function drawKnightKit(cx, cy) {
+  for (const a of droppedArms) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); g.fillStyle = '#5a3a1e'; g.fillRect(x - 5, y - 2, 4, 2); g.fillStyle = '#9aa3ae'; g.fillRect(x - 1, y - 2, 8, 1); g.fillStyle = '#c9d1dc'; g.fillRect(x - 1, y - 3, 7, 1); }   /* what it was carrying, on the floor where it fell */
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const w of realmWaves) { if (w.delay > 0) continue; const x = Math.round(w.x - cx), y = Math.round(w.y - cy), h = w.big ? 20 : 12, a = Math.min(1, w.life / 0.2);
+    g.globalAlpha = 0.35 * a; g.fillStyle = '#ffd36b'; g.fillRect(x - (w.big ? 4 : 3), y - h, w.big ? 8 : 6, h);
+    g.globalAlpha = 0.9 * a; g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y - h + 2, 2, h - 2); g.fillStyle = '#ffffff'; g.fillRect(x - 1 + w.dir, y - h, 1, h);
+    g.globalAlpha = 0.5 * a; g.fillStyle = '#ffd36b'; g.fillRect(w.dir > 0 ? x - 14 : x + 2, y - 2, 12, 2); }
+  if (hero() === 'knight' && P.disarmT > 0 && P.disarmT < 0.22) { const k = 1 - P.disarmT / 0.22, x = Math.round(P.x - cx) + P.face * 4, y = Math.round(P.y - cy) - 8, f = P.face;
+    g.globalAlpha = 0.7 * (1 - k * 0.6); g.strokeStyle = '#fff6e0'; g.lineWidth = 2; g.beginPath();   /* THE HOOK: low in front, up and back towards him */
+    if (f > 0) g.arc(x, y, 20, 0.9 - 2.2 * k, 0.9); else g.arc(x, y, 20, Math.PI - 0.9, Math.PI - 0.9 + 2.2 * k); g.stroke(); }
+  g.restore(); }
 function risingCut() { if (!spend(4)) { P.vx = P.face * 75; return; } P.swingKind = 'rise'; noteVerb('rise'); P.swingMul = Math.max(P.swingMul || 1, 1.1);
   P.vx = P.face * 40; P.vy = isPaladin() || isReaper() ? -150 : -250; P.ground = false; P.canCut = false; P.airHang = true;   /* a leaping uppercut; the maul and the greatsword barely leave the floor */
   const c = specialCol(); streaks(P.x + P.face * 8, P.y - 6, P.face, c, 120);
@@ -18803,6 +18871,7 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   if (L.hush) noiseAt(P.x, P.y, P.heavy ? 132 : P.combo % 3 === 0 ? 104 : 82, null);   /* a swing carries, and the third one carries further */
   if ((P.evadeCutT || 0) > time && hero() === 'knight') { P.evadeCutT = 0; P.combo = Math.ceil(P.combo / 3) * 3; }   /* EVASION: out of a dodge through a blow, the next swing is a third cut */
   P.heavySwing = P.combo % 3 === 0; const rip = P.riposteT > 0; P.swingRiposte=!!rip;
+  if (hero() === 'knight' && P.realmT > 0 && (P.ground || P.swim)) realmWave(P.heavySwing || P.heavy);   /* SWORD OF THE REALM: every swing sends light along the floor, a third or heavy one a great wave */
   /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
      flag goes on with it, so the deep box, the drive and everything that reads the lunge all see the same blow. */
   if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
@@ -21692,6 +21761,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
+      else if (hero() === 'knight' && P.disarmT > 0 && K.R.atkB) { key = 'atkB'; frame = Math.min(3, Math.floor((0.26 - P.disarmT) / 0.065)); }   /* DISARM: the backhand, low to high - the hook */
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper() || isWarden()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
@@ -21736,6 +21806,8 @@ function drawWorld(cx, cy, showPlayer) {
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1, swimRot);
       if (key === 'plunge' && hero() === 'knight' && !P.swim && !P.flip && DOWN_STRIKE.knight) drawPokeStreak(cx, cy, DOWN_STRIKE.knight);
       if (key === 'windup' && hero() === 'knight') drawCutGlint(cx, cy);
+      if (hero() === 'knight' && P.ironT > 0) drawTinted(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, swimRot, '#dfe8ff', (P.ironT < 0.8 && Math.floor(P.ironT * 10) % 2 ? 0.1 : 0.28) + 0.08 * Math.sin(time * 8));   /* IRONCLAD: drawn in steel, flickering as it runs out */
+      if (hero() === 'knight' && P.realmT > 0) { const gx = Math.round(P.x - cx) + P.face * 9, gy = Math.round(P.y - cy) - 12; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 12); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(gx, gy, 5, 0, 7); g.fill(); g.restore(); }   /* SWORD OF THE REALM: the light on the blade */
       if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: swimRot, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it, tilted the same way (drawSwimmers) */
       if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#140a1c', 0.75);
       if (hero() === 'knight' && lcOn()) {   /* THE LAST CHARGE: a gold light on the face of the shield, pulsing, brace and rush */
@@ -21750,7 +21822,7 @@ function drawWorld(cx, cy, showPlayer) {
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
       if (!coop() || P === players[0]) {   /* these are the LEVEL'S own lists, not this hero's: drawn once, or a second pass doubles their alpha */
       drawPortal(cx, cy);
-      drawWardenKit(cx, cy); drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); drawAirSigns(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
+      drawWardenKit(cx, cy); drawKnightKit(cx, cy); drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); drawAirSigns(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
@@ -23387,7 +23459,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
   waterKin: () => HEEL_SWIMS,   /* what the sea does not drown: it lives IN or BY the water, not on a floor tile - the same list the runtime floater sample reads instead of keeping a second one */
   risen: () => risen, bodies: () => bodies,
-  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, realmWaves: () => realmWaves, damagePlayer: (x, d, o) => damagePlayer(x, d, o), skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   /* LOCAL CO-OP, for a harness driving the page: the list, whether it is on, and a way to arm and start it */
   players: () => players, get coop() { return coop(); }, coopArm(h, ally) { coopWant = h ? { hero: h, ally: !!ally } : null; return coopWant; },

@@ -1113,6 +1113,12 @@ Object.assign(SFX, {
   danceThrust() { noise(0.06, 0.12, 3200, 1.4); tone('triangle', vary(1100), 700, 0.05, 0.03); },
   rainCall() { tone('triangle', 300, 1200, 0.4, 0.07); noise(0.4, 0.12, 2400, 0.8); bell(2093, 0.5, 0.04, 0.3); },
   rainHit() { tone('square', vary(260), 130, 0.06, 0.05); noise(0.05, 0.1, 1100, 0.8); },
+  /* THE KNIGHT'S THREE: the hook and what it tears loose; iron closing over him; the realm's chord and each wave of it. */
+  disarmSwing() { noise(0.14, 0.18, 1800, 0.7); tone('triangle', vary(400), vary(1100), 0.12, 0.05); },
+  disarm() { SFX.clank(); tone('square', vary(900), 300, 0.18, 0.05, 0.03); noise(0.1, 0.14, 2600, 1, 0.05); },
+  ironclad() { SFX.clank(); tone('sine', 110, 70, 0.5, 0.2); bell(784, 0.5, 0.05, 0.05); noise(0.2, 0.1, 600, 0.6); },
+  realm() { bell(523, 0.9, 0.06); bell(659, 0.9, 0.05, 0.05); bell(784, 0.9, 0.05, 0.1); bell(1046, 1.1, 0.05, 0.16); noise(0.5, 0.08, 3000, 0.6); },
+  realmWave(big) { tone('triangle', vary(big ? 500 : 800), vary(big ? 1400 : 1600), big ? 0.25 : 0.14, big ? 0.06 : 0.035); noise(big ? 0.25 : 0.12, 0.08, 3500, 1); },
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
