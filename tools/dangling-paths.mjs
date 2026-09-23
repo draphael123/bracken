@@ -38,7 +38,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /* KNOWN HOLES. Each one is a path a tracked file points at that no clone has, with why. Delete a line the moment the
    file is committed - the tool tells you when that happens. A list that only ever grows is a way of not fixing it. */
 const MISSING = new Map([
-  ['.claude/briefs/', 'THE DESIGN IS ON ONE MACHINE. Ignored since the rule was written, never in any commit; the ignore is now narrowed (.claude/* + !.claude/briefs/) so the machine that has them can `git add .claude/briefs/` with no -f. Until it does, every citation below is half a sentence and THE UNBURIED FIELD cannot be built.'],
+  ['.claude/briefs/desert-arc.md', 'AN INSTRUCTION NOT YET CARRIED OUT, not lost design. docs/desert-arc-brief.md:5 says to copy itself here when its branch merges; the branch has not merged, and the design is readable at docs/desert-arc-brief.md meanwhile. Delete this line when the copy happens - or drop the instruction if the arc is going to keep living in docs/.'],
   ['work/', 'SCRATCH, AND SEVERAL OF THESE CARRY A SESSION UUID (work/a33bc100-.../). Tracked documents cite a directory no clone has. Harmless where it is an aside about how a number was got; a dead end where a reader is told to go and read it. Re-point or drop them as each document is next touched.'],
   ['audits/audio-audit.json', 'GENERATED. tools/audit-audio.mjs writes it; audits/*/ and this file are tool output, kept out of git on purpose. The citation is a tool naming its own output, which is right.'],
   ['audits/combat/', 'GENERATED. tools/audit-lib.mjs writes it; ignored by audits/*/ on purpose.'],
@@ -72,6 +72,14 @@ const forgivenHits = [];  /* { file, line, path } - cited, not tracked, on the M
 
 for (const f of tracked) {
   if (SKIP.has(f)) continue;
+  /* A BRIEF NAMES THE WORK IT IS ASKING FOR, and that work does not exist yet - that is what a brief IS.
+     .claude/briefs/unburied-field.md:73 says to write tools/unburied.mjs; the-powder-deck.md:60 says
+     tools/powder-deck.mjs; falling-tower-redesign.md names src/tower-finish.js. Reading those as dangling
+     citations would fail the suite for the crime of having a plan, and the fix a tired person reaches for is
+     deleting the check. So DESIGN DOCUMENTS ARE NOT SCANNED AS SOURCES. They are still scanned as TARGETS: a
+     document that cites a brief nobody has is exactly the bug this tool was written for. The cost is that a
+     genuinely wrong path inside a brief goes unseen, which is the right side to err on. */
+  if (f.startsWith('.claude/briefs/')) continue;
   const isDoc = /\.(md|txt)$/.test(f), isSrc = /\.(m?js)$/.test(f);
   if (!isDoc && !isSrc) continue;
   let raw;
