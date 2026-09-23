@@ -71,7 +71,7 @@ export function extendBurial({L,T,TS,interiors,structures}){
  const gasVents=[[520,39,0],[540,39,1.2],[565,39,2.1],[728,32,0.4],[736,32,1.8],[790,32,0.9],[796,32,2.4],[838,32,1.4],[990,32,0.7],[1015,32,2.0],[1050,32,1.1]]
   .map(([x,y,phase])=>({x,y,phase,period:3.4,hitT:0}));
  ent('silver',434,28);ent('silver',933,23);ent('silver',162,31);
- ent('check',1076,31);sign(1077,'THE BURIED DEAD. JUMP THE SLAM. THE HIGH LEDGES ARE OVER HIS POISON - BUT THE HANDS REACH THEM.');
+ ent('check',1076,31);sign(1077,'THE BURIED DEAD. THE HIGH LEDGES CLEAR HIS POISON. THE HANDS REACH THEM.');
  /* THE OSSUARY HAS TIERS NOW. Daniel: "the buried dead boss fight also needs more platforms so you can avoid some of
     his attacks" - and the fight was already BUILT for that and never given the ground to do it with. Every one of his
     attacks carries a height condition: the poison nova only lands within 80px of the floor, the erupt within 90, the
