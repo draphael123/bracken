@@ -13800,7 +13800,11 @@ function updateBucket(m, dt) {
     /* a hop over a sent bucket or the hook, landing back in the same skip, is still the same ride: the boarding distance is only
        forgotten once the skip has been empty for a second */
     if (!on) { m.offT = (m.offT || 0) + dt; if (m.offT > 1) m.boardD = undefined; } else { m.offT = 0; if (m.boardD === undefined) m.boardD = dd === null ? 0 : dd; }
-    if (on && dd !== null && dd < 12 && !(ln.jam > 0) && m.ore && !m.fallen && m.boardD >= WINCH.rideIn && boss && boss.t === 'winchmaster' && boss.alive && bossActive && winchInto(ln) === boss.at) winchJamWorld(); }
+    /* AND A HOP OVER THE BRAKE BAR IS STILL THE RIDE: a hero with no shield jumps the bar at the mouth and is in the air as the skip
+       goes in - measured, the warden never once jammed a drum for it. So a rider who left this skip under 0.8 s ago and is over it,
+       at the mouth, jams it as surely as one standing in it */
+    const hop = !on && (m.offT || 0) < 0.8 && !P.dead && Math.abs(P.x - (m.x + m.w / 2)) < 30 && P.y <= m.y + 2 && P.y > m.y - 70;
+    if ((on || hop) && dd !== null && dd < 12 && !(ln.jam > 0) && m.ore && !m.fallen && m.boardD >= WINCH.rideIn && boss && boss.t === 'winchmaster' && boss.alive && bossActive && winchInto(ln) === boss.at) winchJamWorld(); }
 }
 const drumLine = () => L.cableway && L.cableway.lines.find(l => l.id === 'low');   /* the Great Drum's: the draw turns the drums with it */
 const winchLine = Hs => L.cableway && L.cableway.lines.find(l => l.id === Hs.line);
@@ -13832,6 +13836,8 @@ function winchC(e) {
     riding: h => { const m = pm(), q = H[h]; if (!m || !q || !q.ln || L.cableway.lines[m.line] !== q.ln || m.fallen > 0) return null;
       const s = bucketS(q.ln, m.i), dist = q.sense > 0 ? q.ln.len - s : s; return { coming: q.ln.dir * q.sense > 0 && !(q.ln.jam > 0), dist }; },
     atMouth: (h, r) => { const q = H[h]; return !!q && !P.dead && Math.abs(P.y - q.mouthY) < 12 && Math.abs(P.x - q.drumX) < r; },
+    /* is he on the hero's screen: the game's own camera, so a tell is never begun where it cannot be seen */
+    seen: () => e.x + 12 > camX && e.x - 12 < camX + VW && e.y > camY && e.y - (e.h || 36) < camY + VH,
     onLine: h => { const q = H[h]; if (!q || !q.ln || P.dead || P.onMover || !P.ground) return false; const xs = q.ln.pts.map(p => p[0]);
       return Math.abs(P.y - q.mouthY) < 8 && P.x > Math.min(...xs) - 24 && P.x < Math.max(...xs) + 24; },
   };

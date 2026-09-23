@@ -655,7 +655,9 @@ async function runbossLab(BK, opts) {
         /* THE THREAT ON THE WAY: the sent bucket, the hook in flight, the bar at the mouth - answered wherever the hands are */
         const rw=boss.runaway&&!(boss.runaway.delay>0)?boss.runaway:null;
         let rwX=null;if(rw){const d=drumOf(HS[rw.at]);rwX=d.x+d.away*rw.s;}
-        const rwNear=rwX!==null&&Math.abs(rwX-P.x)<56&&Math.abs(P.y-drumOf(HS[rw.at]).y)<16;
+        const md0=drumOf(HS[boss.at||0]);
+        /* close in, the sent bucket is on you the moment it is let go: jump as its tell runs out, as a player reads the red line */
+        const rwNear=(rwX!==null&&Math.abs(rwX-P.x)<56&&Math.abs(P.y-drumOf(HS[rw.at]).y)<16)||(m==='sendTell'&&boss.modeT<0.1&&Math.abs(P.y-md0.y)<16&&Math.abs(P.x-md0.x)<150);
         const hk=boss.hk&&boss.hk.st==='out'?boss.hk:null,hkNear=hk&&Math.hypot(hk.x-P.x,hk.y-(P.y-9))<46;
         const md=drumOf(HS[boss.at||0]),barNow=m==='leverTell'&&Math.abs(P.x-md.x)<96&&Math.abs(P.y-md.y)<14;
         let dodged=false;

@@ -20,6 +20,11 @@ MUT = [
   ('src/ore-road.js', "{ id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 4,", "{ id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 5,", ['THE HEAD FRAME (row 5']),
   ('src/ore-road.js', "ropes: [[481, 13, 22], [484, 9, 22], [498, 9, 22]]", "ropes: [[481, 13, 22], [484, 8, 22], [498, 9, 22]]", ['THE HEAD FRAME (row 4']),
   ('src/main.js', "keys.down && !ln.drum) { m.dump += dt;", "keys.down) { m.dump += dt;", ["a drum line's skips cannot be tipped"]),
+  ('src/winchmaster.js', "if (((riding && riding.dist > WINCH.sendMin) || c.onLine(e.at)) && !atMouth", "if ((riding || c.onLine(e.at)) && !atMouth", ['is never sent a bucket']),
+  ('src/winchmaster.js', "const pick = can.length > 1 ? can.find(k => k !== e.last) : can[0];", "const pick = can[0];", ['in turn, never one starving']),
+  ('src/winchmaster.js', "if (!c.seen()) { e.cd = Math.max(e.cd, 0.25); return; }", "", ['off the hero']),
+  ('src/winchmaster.js', "if (r.delay <= 0 && c.atMouth(r.at, WINCH.sendR * 2 + 8)) e.runaway = r.next || null;", "", ['not sent the second one on top']),
+  ('src/winchmaster.js', "if (r.delay > 0) { if (prev) prev.next = null; else e.runaway = null; break; }", "", ['a jammed drum lets nothing go']),
   ('src/marks.js', "'winchmaster|hookTell': '!!',", "'winchmaster|cutTell': '!!',", ['no longer shows a cut']),
 ]
 bad = 0

@@ -197,7 +197,7 @@ function world(o = {}) {
     lineY: (h, x) => lineYAt(H[h].ln, x), crash: () => log.push(['crash']), solidAt: (x, y) => T.SOLID === at(Math.floor(x / TS), Math.floor(y / TS)), pVel: () => [0, 0],
     riding: h => w.ride && w.ride.h === h ? { coming: H[h].ln.dir * H[h].sense > 0 && !(H[h].ln.jam > 0), dist: w.ride.dist } : null,
     atMouth: (h, r) => !P.dead && Math.abs(P.y - H[h].mouthY) < 12 && Math.abs(P.x - H[h].drumX) < r,
-    onLine: () => false };
+    seen: () => o.unseen ? false : true, onLine: () => false };
   const e = { t: 'winchmaster', alive: true, hp: WINCH.hp, maxHp: WINCH.hp, mode: 'wake', modeT: 0.1, cd: 0, x: H[0].homeX, y: H[0].topY, face: -1, phase: 1 };
   const modes = new Set();
   Object.assign(w, { c, e, modes, place, step() { place(); updateWinchmaster(e, 1 / 60, c); modes.add(e.mode); }, run(sec) { for (let t = 0; t < sec; t += 1 / 60) w.step(); } });
@@ -240,6 +240,24 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   ok(w.log.some(q => q[0] === 'hit' && q[1] === 'THE BRAKE BAR' && q[3] === false) && !w.log.some(q => q[0] === 'shove'), 'and it is a blow a shield turns (yellow): shielded, you ride on in');
   const w2 = world(); w2.run(0.3); w2.ride = { h: 0, dist: 40 }; w2.e.cd = 0; w2.e.revCd = 9; w2.run(0.05 + WINCH.tell.lever + 0.1);
   ok(w2.log.some(q => q[0] === 'shove'), 'unshielded, it knocks you off the bucket and out over the drop'); }
+/* ---- NEVER A SEND AT THE MOUTH (it would start inside the rider: a blow with no answer), and SEND and THE HOOK take turns */
+{ const w = world(); w.run(0.3); w.e.revCd = 99; w.e.leverCd = 99; w.ride = { h: 0, dist: WINCH.sendMin - 4 }; w.e.cd = 0; w.run(6);
+  ok(!w.modes.has('sendTell'), `a rider inside ${Math.round(WINCH.sendMin)} px of the drum is never sent a bucket: it would be let go on top of them, and the bar is for the mouth`);
+  const w2 = world(); w2.run(0.3); w2.e.revCd = 99; w2.e.leverCd = 99; w2.ride = { h: 0, dist: 120 }; const seq = []; let last = null;
+  for (let t = 0; t < 40 * 60; t++) { w2.step(); if (w2.e.mode !== last) { last = w2.e.mode; if (last === 'sendTell' || last === 'hookTell') seq.push(last[0]); }
+    if (w2.e.mode === 'stalk') { w2.e.sendCd = w2.e.hookCd = 0; w2.e.runaway = null; w2.e.hk = null; } }   /* both ready every time: only the rotation decides */
+  ok(seq.length >= 6 && !/ss|hh/.test(seq.join('')), 'a rider in reach of both gets SEND and THE HOOK in turn, never one starving the other: ' + seq.join('')); }
+/* ---- PHASE TWO SENDS TWO: the second never starts on top of a rider who has reached the mouth, and a jam stops it being sent */
+{ const w = world(); w.run(0.3); w.e.phase = 2; w.e.hp = w.e.maxHp * 0.4; w.e.revCd = 99; w.e.hookCd = 99; w.e.leverCd = 99; w.ride = { h: 0, dist: 200 }; w.e.cd = 0;
+  w.run(WINCH.tell.send + 0.1); ok(w.e.runaway && w.e.runaway.next, 'phase two: a SEND lets go two buckets, the second half a second behind');
+  w.run(0.8); w.ride = { h: 0, dist: 20 }; const n0 = w.log.length; w.run(2.6);   /* the first has passed the rider; now he is at the mouth */   /* the second waits for the first to reach the far end, then half a second */
+  ok(!w.log.slice(n0).some(q => q[0] === "hit" && q[1] === "A LOADED BUCKET") && !w.e.runaway, 'and a rider who has reached the mouth by then is not sent the second one on top of them');
+  const w2 = world(); w2.run(0.3); w2.e.phase = 2; w2.e.hp = w2.e.maxHp * 0.4; w2.e.revCd = 99; w2.e.hookCd = 99; w2.e.leverCd = 99; w2.ride = { h: 0, dist: 200 }; w2.e.cd = 0;
+  w2.run(WINCH.tell.send + 0.1); winchJam(w2.e, w2.c); let second = false; for (let r = w2.e.runaway; r; r = r.next) if (r.delay > 0) second = true;
+  ok(!second, 'and a jam stops the second going at all: a jammed drum lets nothing go'); }
+/* ---- A TELL YOU CANNOT SEE IS NOT TOLD (A1): off the hero's screen he begins nothing - not even at a rider at his drum */
+{ const w = world({ unseen: true }); w.run(0.3); w.ride = { h: 0, dist: 100 }; w.e.cd = 0; w.run(20);
+  ok(![...w.modes].some(m => m.endsWith('Tell')) && !w.e.runaway && !w.e.hk, "off the hero's screen he begins no tell at all, even with a rider coming at his drum (the page measured 96% of his sends begun off screen)"); }
 /* ---- THE OPENING IS CAUSED (A11) */
 { const w = world(); w.c.P.x = 478 * TS; let opened = false; for (let t = 0; t < 60 * 60; t++) { w.step(); if (winchOpen(w.e)) opened = true; } done(w);
   ok(!opened && w.e.at === 0, 'THE OPENING IS CAUSED: a minute of him left alone, sending and hooking, and he never once goes down or leaves his drum'); }
@@ -279,7 +297,7 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
 /* ---- A1/A2/A3/A8, read off the files */
 { const wsrc = readFileSync(new URL('../src/winchmaster.js', import.meta.url), 'utf8'), msrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const { BY_HAND, MARK } = await import('../src/marks.js');
-  const tells = [...new Set([...wsrc.matchAll(/begin\(e, '([a-z]+)'/g)].map(m => m[1] + 'Tell'))].sort();
+  const tells = [...new Set([...wsrc.matchAll(/begin\(e, '([a-z]+)'|can\.push\('([a-z]+)'\)/g)].map(m => (m[1] || m[2]) + 'Tell'))].sort();
   ok(tells.join() === 'hookTell,leverTell,reverseTell,sendTell', 'A1: FOUR TOLD ATTACKS, each a named Tell with its own say: ' + tells.join(', '));
   ok(tells.every(t => ('winchmaster|' + t) in BY_HAND) && !Object.keys(BY_HAND).some(k => k.startsWith('winchmaster|') && !tells.includes(k.split('|')[1])), 'and every one has a mark row (and there is no row for an attack he no longer has)');
   ok(BY_HAND['winchmaster|leverTell'] === '!' && ['sendTell', 'hookTell'].every(t => BY_HAND['winchmaster|' + t] === '!!') && BY_HAND['winchmaster|reverseTell'] === '', 'exactly one blow a shield turns (the brake bar, yellow), two it does not (red), and a quiet reverse');

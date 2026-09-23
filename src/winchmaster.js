@@ -43,6 +43,10 @@ export const WINCH = {
   revT: 2.5, revMul: 1.5, revCd: 12.0, revCdP2: 10.0, revRange: 200,
   /* SEND: sendR IS HALF A BUCKET - a thing that hurts is the size it looks (C1) */
   sendV: 300, sendCd: 5.0, sendCdP2: 3.6, sendR: OR.BUCKET.w / 2, sendH: 14,
+  /* AND NEVER AT A RIDER WHO WILL BE AT THE MOUTH WHEN IT IS LET GO: begun at 80 px, a 0.8 s tell brought a rider to 32 px and the
+     bucket started on top of them - a blow with no answer (the lab took it every jam). So a rider must be sendMin px out when
+     it is begun: two bucket-widths, and the tell's worth of the fastest line in phase two */
+  sendMin: OR.BUCKET.w + 0.8 * 60 * 1.25,
   /* THE HOOK: thrown at where you will be hookLead s from now, it flies hookV px/s to hookR and comes back; hookHit is the
      radius of the iron. It is thrown at anyone inside hookR - which the room has at every housing (A12, tools/ore-road.mjs) */
   hookV: 300, hookR: 250, hookLead: 0.35, hookHit: 11, hookCd: 4.5, hookCdP2: 3.4,
@@ -52,7 +56,7 @@ export const WINCH = {
   /* THE OPENING, and the circuit */
   rideIn: 64, thrownT: 0.7, downT: 4.5, downMul: 2, swingT: 1.1,
   p2Stay: 14, p2Mul: 1.25,
-  dmg: { send: 22, hook: 12, lever: 20 },
+  dmg: { send: 28, hook: 18, lever: 26 },
 };
 const SAY = { reverseTell: 'HE THROWS THE BRAKE', sendTell: 'HE SENDS ONE DOWN', hookTell: 'THE HOOK', leverTell: 'THE BRAKE BAR' };
 const RED = new Set(['sendTell', 'hookTell']);
@@ -94,6 +98,8 @@ export function winchJam(e, c) {
   if (!e || !e.alive || e.mode === 'thrown' || e.mode === 'downed' || e.mode === 'letgo' || e.mode === 'swing' || e.mode === 'sleep' || e.mode === 'wake') return false;
   const H = c.H[e.at];
   e.mode = 'thrown'; e.modeT = WINCH.thrownT; e.fromY = e.y; e.fromX = e.x; e.toX = H.ledgeX; e.toY = H.ledgeY; e.vx = 0; e.revT = 0; e.hk = null;
+  /* a jammed drum lets nothing go: a bucket still waiting to be sent is not sent (one already on the line goes on) */
+  for (let r = e.runaway, prev = null; r; r = r.next) { if (r.delay > 0) { if (prev) prev.next = null; else e.runaway = null; break; } prev = r; }
   c.say('THE DRUM JAMS: HE GOES OFF THE HOUSING', false, true); c.sound('crash'); c.shake(7);
   return true;
 }
@@ -116,7 +122,11 @@ export function updateWinchmaster(e, dt, c) {
   /* THE REVERSE runs out on its own clock, whatever he is doing */
   if (e.revT > 0) { e.revT -= dt; if (e.revT <= 0) c.drive(e.revAt ?? e.at, 1, mulOf(e)); }
   /* THE RUNAWAY BUCKET, once let go, goes down its line whatever becomes of him */
-  if (e.runaway) { const r = e.runaway; if (r.delay > 0) r.delay -= dt; else { r.s += WINCH.sendV * dt;
+  if (e.runaway) { const r = e.runaway;
+    /* the second bucket of a phase-two SEND is let go half a second after the first - and not at all if the rider has reached
+       the mouth by then: it would start on top of them (the lab took it at every jam in phase two) */
+    if (r.delay > 0) { r.delay -= dt; if (r.delay <= 0 && c.atMouth(r.at, WINCH.sendR * 2 + 8)) e.runaway = r.next || null; }
+    else { r.s += WINCH.sendV * dt;
       const R = c.H[r.at], x = R.drumX + R.away * r.s, ly = c.lineY(r.at, x);
       if (ly === null) { c.crash(x, R.mouthY); e.runaway = r.next || null; }
       else if (!r.hit && !P.dead && Math.abs(P.x - x) < WINCH.sendR && Math.abs(P.y - ly) < WINCH.sendH) { r.hit = true;
@@ -159,15 +169,27 @@ export function updateWinchmaster(e, dt, c) {
   e.x += want * WINCH.pace * dt; e.vx = want * WINCH.pace; e.face = Math.sign(P.x - e.x) || e.face;
   /* PHASE TWO: he does not wait to be knocked off */
   if (e.phase === 2 && e.stay <= 0) { letGo(e, c, 'HE WILL NOT STAY PUT: HE TAKES THE CABLE'); return; }
-  if (e.cd > 0 || P.dead) return;
-  /* WHAT HE DOES IS WHAT HE SEES. Anyone at his drum's mouth gets the bar; a rider coming at him inside revRange is reversed;
-     a rider on his line gets a bucket sent down it; anyone in reach of the chain gets the hook */
-  const riding = c.riding(e.at);
+  if (P.dead) return;
+  /* A TELL YOU CANNOT SEE IS NOT TOLD (A1). The game's camera follows the hero, and from most of the low line the Great Drum is
+     off the right of the screen: measured in the page (work/claude/winch-seen.mjs), 96% of his SEND wind-ups and 63% of his
+     REVERSEs there were begun off screen. So he begins nothing while he is not on your screen - what he does is what he sees,
+     and what he sees can see him. The sent bucket and the reverse, once begun, go on as before */
+  if (!c.seen()) { e.cd = Math.max(e.cd, 0.25); return; }
+  /* THE BRAKE BAR GUARDS THE MOUTH, and it does not wait for his last job to cool: whoever reaches the drum's mouth gets the bar
+     if the bar is ready. It is the drum's own defence and the one blow the shield answers - a rider who shields it rides on in */
   if (c.atMouth(e.at, WINCH.leverReach) && e.leverCd <= 0) { begin(e, 'lever', c); return; }
+  if (e.cd > 0) return;
+  /* WHAT HE DOES IS WHAT HE SEES. A rider coming at him inside revRange is reversed; otherwise a rider on his line gets a bucket
+     sent down it or the hook, whichever he did NOT do last (a rotation, so neither starves the other). Never a SEND at someone
+     already at the mouth: the bucket would start inside them, a blow with no answer, and the bar is for the mouth */
+  const riding = c.riding(e.at), atMouth = c.atMouth(e.at, WINCH.leverReach);
   if (riding && riding.coming && riding.dist < WINCH.revRange && e.revCd <= 0 && !(e.revT > 0)) { begin(e, 'reverse', c); return; }
-  if ((riding || c.onLine(e.at)) && e.sendCd <= 0 && !e.runaway) { begin(e, 'send', c); return; }
-  if (!e.hk && e.hookCd <= 0 && Math.hypot(P.x - e.x, (P.y - 9) - (e.y - 26)) < WINCH.hookR * 0.9) { begin(e, 'hook', c); return; }
-  if (e.sendCd <= 0 && !e.runaway && c.rand() < 0.4) { begin(e, 'send', c); return; }
+  const can = [];
+  if (((riding && riding.dist > WINCH.sendMin) || c.onLine(e.at)) && !atMouth && e.sendCd <= 0 && !e.runaway) can.push('send');
+  if (!e.hk && e.hookCd <= 0 && Math.hypot(P.x - e.x, (P.y - 9) - (e.y - 26)) < WINCH.hookR * 0.9) can.push('hook');
+  const pick = can.length > 1 ? can.find(k => k !== e.last) : can[0];
+  if (pick) { e.last = pick; begin(e, pick, c); return; }
+  if (e.sendCd <= 0 && !e.runaway && !atMouth && !(riding && riding.dist <= WINCH.sendMin) && c.rand() < 0.4) { e.last = 'send'; begin(e, 'send', c); return; }
   e.cd = 0.4;
 }
 /* THE LOOK OF THE FIGHT, rects only (so tools/winch-art.mjs can render it in Node): the runaway bucket, the red line under a
