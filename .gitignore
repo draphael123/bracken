@@ -3,6 +3,9 @@ node_modules
 
 .vercel
 
-# agent worktrees and local tooling: never committed, never deployed
-.claude/
+# agent worktrees and local tooling: never committed, never deployed.
+# EXCEPT .claude/briefs/, which is DESIGN, not tooling: approved briefs that docs/QUEUE.md §2 and
+# docs/briefs/ refer to by path. Ignored, they existed on one machine only. Narrow the rule, never force-add.
+.claude/*
+!.claude/briefs/
 .env*.local
