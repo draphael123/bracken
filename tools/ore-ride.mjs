@@ -8,9 +8,11 @@
 // 'crossing', 'down', 'steep' - and the rework replaced THE CROSSING with THE ORE CHUTE. `findIndex` answered -1,
 // `lines[-1]` is undefined, and the tool died in the page on `.pts` with a TypeError that named nothing: a whole
 // level's worth of red for a line that had simply been renamed. So it asks the LEVEL which lines it has and rides
-// every one of them but the drum's - the arena's own, which ends AT THE DRUM and not on a deck (the one exemption
-// tools/ore-road.mjs makes for the three-quarter-tile rule as well). A line added to the level is ridden the day it
-// is added, and a line renamed cannot be missed. The names that are left are reported, never looked up.
+// every one of them. A line added to the level is ridden the day it is added, and a line renamed cannot be missed.
+// THE DRUM LINES TOO, since the Winchmaster's rework (2026-09-25): he REVERSES them, so they end three-quarters of a
+// tile inside a ledge at BOTH ends now, and a rider must be set down alive at either. They are ridden the way they
+// run at the start of the fight (the high line runs WEST, into the Head Frame), with him out of the room - the ride,
+// not the fight; tools/ore-road.mjs has the fight.
 // usage: node tools/ore-ride.mjs
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
@@ -22,16 +24,15 @@ try {
     /* ask the level which lines the road is crossed on, rather than naming them here */
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.sim(1);
     if (!BK.L.cableway) return [{ id: '(none)', ok: false, why: 'the level built no cableway at all' }];
-    const ids = BK.L.cableway.lines.filter(l => !l.drum).map(l => l.id);
-    if (!ids.length) return [{ id: '(none)', ok: false, why: 'the level has no line but the drum one, which is the arena and not a crossing' }];
+    const ids = BK.L.cableway.lines.map(l => l.id);
     for (const id of ids) {
       BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
-      for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;   /* the ride, not the fight */
       const L = BK.L, li = L.cableway.lines.findIndex(l => l.id === id), ln = L.cableway.lines[li];
+      for (const e of BK.enemies()) if (!e.maxHp || ln && ln.drum) e.alive = false;   /* the ride, not the fight (and on a drum line, not him either) */
       if (!ln) { out.push({ id, ok: false, why: 'the level rebuilt without this line' }); continue; }   /* say WHICH line, rather than read .pts off lines[-1] */
-      const P = BK.P, end = ln.pts[ln.pts.length - 1], dir = Math.sign(end[0] - ln.pts[0][0]);
+      const P = BK.P, fwd = ln.dir > 0, start = fwd ? ln.pts[0] : ln.pts[ln.pts.length - 1], end = fwd ? ln.pts[ln.pts.length - 1] : ln.pts[0], dir = Math.sign(end[0] - start[0]);
       /* wait for a sound bucket just out of its station, and stand in it */
-      let m = null; for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && !q.cracked && Math.abs(q.x + q.w / 2 - (ln.pts[0][0] + dir * 44)) < 10); }   /* clear of the deck's edge: a hero on a tile never looks for a mover under him */
+      let m = null; for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && !q.cracked && Math.abs(q.x + q.w / 2 - (start[0] + dir * 44)) < 10); }   /* clear of the deck's edge: a hero on a tile never looks for a mover under him */
       if (!m) { out.push({ id, ok: false, why: 'no bucket came out' }); continue; }
       P.x = m.x + m.w / 2; P.y = m.y - 1; P.vx = 0; P.vy = 0; BK.sim(2);
       const TS = 16, T = lvm.T, cell = (c, r) => (c < 0 || r < 0 || c >= L.W || r >= L.H) ? T.SOLID : L.grid[r * L.W + c];
@@ -67,8 +68,8 @@ try {
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
   /* COVERAGE, so that "all green" can never mean "it rode nothing": every line the source declares but the drum's
      was ridden. This is what a typed list of names could not give - it could only ever go quietly stale. */
-  const want = cableLines().filter(l => !l.drum).map(l => l.id).sort(), got = r.map(x => x.id).sort();
-  assert.deepEqual(got, want, `it must ride every line of the cableway but the drum's: wanted ${want.join(', ')}, rode ${got.join(', ') || '(nothing)'}`);
+  const want = cableLines().map(l => l.id).sort(), got = r.map(x => x.id).sort();
+  assert.deepEqual(got, want, `it must ride every line of the cableway, the drum lines included: wanted ${want.join(', ')}, rode ${got.join(', ') || '(nothing)'}`);
   assert(r.every(x => x.ok), 'every line carries a hero who does nothing (and hops the rust) from station to station');
   /* AND NO REST STRANDS HIM. A line hands its skips over at gap/speed seconds apart, so that - and no more - is how
      long a rest can hold a hero waiting at its lip for the next one. A rework that widened a gap or slowed a line
