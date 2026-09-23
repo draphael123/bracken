@@ -13186,7 +13186,15 @@ function updateRoadman(e, dt) {
    death knight (their guards never set blockT), which would make the ward a wall you lean on. Here it has to be ON THE
    BEAT for everyone: the knight's perfect guard, the freebooter's parry, the aegis raised in the last breath before
    the blow, the blood ward LET GO as it lands (a release that returns it), or a roll through the blade for the two who roll. */
-const PAL = { cut: [1.15, 0.95], thrust: [1.0, 0.85], bash: [1.2, 1.0], judge: [1.35, 1.15], gap: [1.3, 0.75], open: 2.0 };
+/* THE BASH IS UNBLOCKABLE, so the only answer to it is to not be there - and it was crossing the yard at 220px/s
+   behind a 1.2s tell, which is not enough road to read it and leave. Daniel: "I'd like his charge attack to be a
+   lot slower as well to give you time to dodge it since it's unblockable." The tell is longer AND the charge
+   itself is slower; see PAL_BASH for the speed and why its clock had to grow with it. */
+const PAL = { cut: [1.15, 0.95], thrust: [1.0, 0.85], bash: [1.6, 1.4], judge: [1.35, 1.15], gap: [1.3, 0.75], open: 2.0 };
+/* [speed, phase-two speed, how long the charge may run]. THE CLOCK HAD TO GROW WITH THE SPEED: the charge ends
+   when he reaches bashX1 (170px away) OR when its timer runs out, and at 145px/s 170px takes 1.17s - so the old
+   0.9s would have stopped him 40px short every single time and quietly turned a charge into a shuffle. */
+const PAL_BASH = { speed: 145, speed2: 170, run: 1.45 };
 /* THE BEAT IS A PERSON'S BEAT. The knight's perfect guard is a tenth of a second, and against him that was the only
    answer: a bot could do it, a player could not, and so he could not be beaten. Now any guard RAISED as his sword
    flashes (the last PAL_BEAT seconds of the swing) meets it; a guard held up from the start of the tell still only
@@ -13265,9 +13273,9 @@ function updateClosedHelm(e, dt) {
     case 'thrust': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
     /* THE BASH: down behind the shield, the shield lit, a red line along the floor as far as he will go - and then he goes */
     case 'bashTell': want = 0; if (Math.random() < dt * 18) dust(e.x - e.face * 12, floor, 2);
-      if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = 0.9; e.bashHit = false; SFX.shoulder(); SFX.heavy(); }
+      if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = PAL_BASH.run; e.bashHit = false; SFX.shoulder(); SFX.heavy(); }
       break;
-    case 'bash': { want = e.face * (p2 ? 250 : 220); e.vx = want;
+    case 'bash': { want = e.face * (p2 ? PAL_BASH.speed2 : PAL_BASH.speed); e.vx = want;
       if (!e.bashHit && !P.dead && Math.abs(P.x - (e.x + e.face * 10)) < 24 && dyP < 44) { e.bashHit = true;
         const res = damagePlayer(e.x, DMG.palBash, { unblockable: true, up: true });
         if (res === 'hit') { P.vx = e.face * 300; P.vy = -220; P.ground = false; number(P.x, P.y - 30, 'BASHED', '#ff6b6b'); shakeCam(6); } }

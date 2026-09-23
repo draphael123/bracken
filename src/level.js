@@ -5524,6 +5524,14 @@ function waymeet() {
   for (const [x, v] of [[712, 0], [720, 1], [728, 2], [736, 0], [744, 1], [752, 2]]) ent('deco', x, R - 1, { kind: 'grave', v });
   ent('deco', 708, R - 1, { kind: 'yew', v: 1 }); ent('deco', 756, R - 1, { kind: 'yew', v: 0 });
   ent('deco', 748, R - 1, { kind: 'lychgate' }); ent('deco', 724, R - 1, { kind: 'grave', v: 0 });   /* a cairn stood here too: the same stepped stone pile that reads as a sandcastle, swapped for one more headstone in the row it already keeps */
+  /* SOMETHING TO GET OFF THE GROUND ONTO. Daniel: "I'd like some more platforms in waymeet for the paladin boss
+     fight" - and as in the ossuary, the fight was already written for it: THE BASH only lands within 44px of the
+     floor, the OATH within 28. The yard was eleven rows of open air over a flat street, so neither could ever be
+     answered with your feet. Table tombs at R-3 (48px: over the bash and the oath) and the tower stair and lychgate
+     roof at R-6 (96px). Deliberately NOT higher: JUDGEMENT reaches 110px, and a ledge over that would be a roof to
+     sit on rather than a place to stand. Each upper ledge touches a lower one, so it is a three-row hop, not a leap. */
+  for (const x of [710, 740]) { for (let j = x; j < x + 4; j++) if (L.grid[(R - 3) * W + j] === T.AIR) set(j, R - 3, T.ONEWAY); }
+  for (const x of [706, 744]) { for (let j = x; j < x + 4; j++) if (L.grid[(R - 6) * W + j] === T.AIR) set(j, R - 6, T.ONEWAY); }
   post(702); post(754); post(730);
   ent('closedhelm', 738, R - 1, { face: -1 });
   ent('gate', 770, R - 1);
