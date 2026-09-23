@@ -84,11 +84,14 @@ export function buildUnburiedField({ painter, T, TS }) {
   for (const [x, row, n] of [[148, 32, 6], [155, 30, 5], [161, 31, 6], [168, 29, 5], [174, 31, 6], [181, 29, 6], [188, 31, 5], [194, 29, 6], [201, 31, 5], [207, 30, 6], [214, 31, 6], [221, 32, 5]])
     plat(x, row, n);                                                                                            // THE HIGH ROUTE: wreckage, broken wagons, a siege engine's frame
   pegWall(154, 24, [33, 31, 29, 27, 25], 'the high route without the long way round');
-  cover(159, 'mantlet', 30); cover(202, 'shields', 31); cover(218, 'wagon', 30);                                // the brief: the high route is DRY AND EXPOSED - exposed is not bare
+  cover(159, 'mantlet', 29); cover(202, 'shields', 30); cover(218, 'wagon', 30);   /* each seated on its own ledge (159 and 202 were a row low, standing in the plank) */
+  /* WRECKS IN THE CHARGE LANE (C5): the cavalry rides the trench floor, and these are the ground you get off it onto - one
+     jump up, never more than seven tiles from the next, so the escape is in sight from anywhere in the lane */
+  for (const x of [157, 170, 183, 196, 209, 219]) plat(x, G + 3, 3);                                // the brief: the high route is DRY AND EXPOSED - exposed is not bare
   for (const [x, period, phase] of UF.SWINGS) moversExtra.push({ kind: 'swing', px: x * TS, py: 22 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period, phase });   // catapult arms and chains over the trench gaps
   ent('ballista', 130, G, { aim: [150, G + 5] }); ent('ballista', 188, 28, { aim: [210, 30] });
   ent('oilbarrel', 200, G + 5, { spill: [190, 212] });                                                          // knock it over and the trench takes a line of fire
-  ent('trebuchet', 230, G, { aim: [246, 20], knocks: 'tower' });                                                 // the engines you work
+  ent('trebuchet', 230, G, { aim: [257, 33], knocks: 'tower' });   /* its stone breaks the tower's fallen base open at the foot: a way through under the climb */                                                 // the engines you work
   ent('check', 142, G); ent('check', 196, G + 5);
   ent('sign', 144, G, { text: 'HIGH OVER THE WRECKS IS DRY AND IN THE VOLLEYS. LOW IN THE TRENCH IS SHELTERED, SLOW AND FULL.' });
   ent('sign', 149, G, { text: 'HORNS AND DUST ON THE HORIZON. THE HORSE COME DOWN THIS LANE AND THEY DO NOT STOP.' });
@@ -121,7 +124,7 @@ export function buildUnburiedField({ painter, T, TS }) {
   const A2 = UF.AMBUSH; ent('sign', 314, G, { text: 'THE FALLEN ORDER\'S CRYPT. THE DOOR SHUTS BEHIND YOU.' });
   ent('silver', 322, G - 3); plat(320, G - 2, 5);                                                              // silver 3: on the crypt's tomb
   pegWall(330, 26, [34, 32, 30, 28], 'the chapel\'s gallery and its coins'); plat(332, 25, 4); coins([333, 24], [335, 24]);
-  ent('oilbarrel', 336, G, { spill: [328, 344] });
+  ent('oilbarrel', 336, G, { spill: [333, 344] });   /* clear of the gallery's peg wall at 330: fire burns palisade */
   ent('ballista', 358, G, { aim: [372, G] });
   ent('check', 352, G); ent('check', 370, G);                                                                   // B6: one outside the arena walls
   coins([307, G], [316, G], [326, G], [344, G], [356, G], [366, G]);
@@ -143,7 +146,7 @@ export function buildUnburiedField({ painter, T, TS }) {
     /* RULE Q: ONE wave, led by a named captain of the level's own roster, and the room opens the moment he is down. */
     ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G], captain: 'wight',
       waves: [[['wight', 328, G, { captain: true, name: 'THE CRYPT WARDEN' }], ['zombie', 324, G], ['husk', 338, G], ['corpse', 342, G]]] }],   // 330-331 is the gallery peg wall: the captain stands clear of it
-    mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'standardbearer' },
+    mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'standardbearer', name: 'THE STANDARD-BEARER' },
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight' },
   };
 }

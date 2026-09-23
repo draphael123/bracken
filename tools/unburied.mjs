@@ -16,11 +16,8 @@
    is kept as the greybox record); this file is the one in the suite.
 
    WHAT IT STILL CANNOT SEE, SAID OUT LOUD:
-     - the FIGHTS. A10/A11 are not statically checkable (RULES section A says so in as many words), and neither the
-       Standard-Bearer's nor the Death Knight's combat AI exists in src/main.js yet - see the Lane C report for the
-       exact list of what a build needs (EHP entries, tell/attack logic, the corpse-rise/banner rule, volleys, cover,
-       the cavalry charge, the arrow-peg climb, the three engines). The level's DATA is complete; none of it is wired
-       to gameplay, so F9 (walk it, no god mode) cannot be run in the page or the bot harness yet.
+     - the FIGHTS. A10/A11 are not statically checkable here; they are wired now (src/unburied-foes.js, Lane C2) and
+       driven in Node by tools/unburied-fights.mjs, and in the page by tools/boss-openings.mjs.
      - the ART, the music, the tints and the ghost armies in the backdrop: the brief's fourth distinct feature is a look.
      - the GARRISON and ELITES rows are carried on the level as data and counted below, but nothing here proves a
        renderer honours them (there is no renderer for these foes yet).
@@ -162,8 +159,12 @@ assert.ok(L.pools.every(p => p.shallow && !p.harm && !p.poison), 'no deadly wate
   assert.ok(EHP.size > 80, 'only ' + EHP.size + ' creatures read out of EHP: the parse has stopped working');
   const bosses = new Set([L.arena.boss, L.mini.boss]);
   const roster = new Set(ents.filter(e => e.enc).map(e => e.t).concat(L.garrison.map(r => r[0])));
-  const news = [...roster].filter(t => !EHP.has(t) && !bosses.has(t));
+  /* WIRED NOW (Lane C2): the new foes ARE in EHP, so "not in EHP" stopped meaning new. New is: in EHP (a real creature
+     the game can spawn) and placed by no OTHER level. tools/one-new-foe.mjs asks the same along the gate chain. */
+  const elsewhere = new Set(); for (const lv of LEVELS) { if (lv.id === 'unburied' || /^(shop|trial|custom)/.test(lv.id)) continue; let B; try { B = lv.build(); } catch { continue; } for (const e of B.ents || []) elsewhere.add(e.t); }
+  const news = [...roster].filter(t => EHP.has(t) && !elsewhere.has(t) && !bosses.has(t));
   assert.ok(news.length >= 1, 'F10: the level must bring a foe the road has never fought, and its boss does not count');
+  for (const t of [...bosses, ...news]) assert.ok(EHP.has(t), t + ' has no EHP row: it cannot be spawned');
   ok('F10 new foes (not the boss)', news.join(', ')); }
 
 /* ---- 9. ROUTE-BREAKS ---- */
@@ -172,6 +173,4 @@ assert.ok(L.pools.every(p => p.shallow && !p.harm && !p.poison), 'no deadly wate
   assert.equal(f.length, 0, 'route-breaks finds nothing'); }
 
 console.log('ok  unburied       THE UNBURIED FIELD matches its brief, read off the ' + SOURCE);
-console.log('      STILL UNBUILT, and this tool cannot see any of it: the map spur (Lane B\'s, not this level\'s), both fights\'');
-console.log('      combat AI (A10/A11 are not statically checkable and neither boss nor the mini nor the bannerbearer/corpse');
-console.log('      exist in src/main.js), the art, the music and the look.');
+console.log('      NOT SEEN HERE: the map spur (Lane B), the music and the look; the fights are tools/unburied-fights.mjs.');
