@@ -146,8 +146,11 @@ describe was found by playing the game, which is the most expensive way to find 
    only by an append.
 3. **A12** — read an attack's guard conditions against the arena's standable rows; fail when nothing in the room can
    satisfy a condition an attack tests.
-4. **Fix THE BURIED DEAD, who fails A10 today** — seven turns before enrage, eight after, the extra one appended and
-   nothing else changed.
+4. ~~Fix THE BURIED DEAD, who fails A10~~ — **WRONG, AND WITHDRAWN 2026-09-24.** He does not fail it. I read his two
+   turn arrays (seven modes, then eight), concluded "one appended and nothing else changed", and never looked at the
+   rest of the file. His phase two also widens the slam from **145 to 175** and **doubles the summon**. Three changes,
+   not one. **Instead: THE SKELETON KING really does fail A10** — every change he has is gated on phase *three*, and
+   nothing reads phase two but the transition. He is unbuilt, so fix the brief before he is wired in.
 
 **Then the content.** The game has **30 real levels; 11 are queued — a 37% expansion.** All eight desert levels have
 greyboxes, and the arc carries its own class (the Sun Priest) and world boss (the Skeleton King): it is a whole new

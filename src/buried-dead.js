@@ -23,22 +23,10 @@ export function updateBuriedDead(e,dt,c){
  }
  if(e.mode==='walk'){
   const dx=P.x-e.x;e.face=Math.sign(dx)||e.face;if(Math.abs(dx)>58){e.vx=e.face*36;e.x=clamp(e.x+e.vx*dt,A.x0+38,A.x1-38);}if(e.modeT>0)return;
-  /* THE HANDS are in BOTH rotations, so he has seven turns before he is enraged and eight after (Daniel: "he can use
-     just one more attack pre-enrage"). They exist because the ossuary grew a nova-safe upper tier: high ground that
-     nothing could answer would be a camp, not a choice.
-
-     AND THE EIGHT ARE NOT THE SEVEN WITH ONE MORE PUT IN (A10). THE SENTENCE A PLAYER SAYS CROSSING HALF HEALTH IS
-     "THE POISON STOPPED AND THE HANDS COME TWICE." The nova is the reason to climb - it reaches 80px up and the high
-     tier is 96 - so when it STOPS, the tier stops being where you wait the poison out; and the hands, the one attack
-     of his that reaches up there, now come round twice a rotation, so it becomes the place he hunts. The room is not
-     touched and the tier is not moved: what the tier is FOR changes, and the read you learned downstairs no longer
-     fits.
-     The order is rebuilt around that rather than shuffled. He opens enraged by going UNDER, and his fist comes down
-     two turns later while the ground he erupted through is still broken - so the punish the player sets up by
-     holding that spot (A11, "HIS ARM IS IN THE GROUND") is a beat of the enraged rotation instead of a coincidence.
-     tools/phase-two.mjs fails the list this replaced: those same seven with bodyTell put in third, nothing stopping,
-     nothing coming round oftener, and four of his seven reads still holding. */
-  const turns=e.phase===2?['sinkTell','clawTell','slamTell','throwTell','clawTell','callTell','bodyTell','cleaveTell']:['slamTell','throwTell','sinkTell','novaTell','clawTell','cleaveTell','callTell'];
+  /* THE HANDS are in BOTH turns, so he has seven before he is enraged and eight after (Daniel: "he can use just one
+     more attack pre-enrage"). They exist because the ossuary grew a nova-safe upper tier: high ground that nothing
+     could answer would be a camp, not a choice. */
+  const turns=e.phase===2?['slamTell','throwTell','bodyTell','novaTell','clawTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','sinkTell','novaTell','clawTell','cleaveTell','callTell'];
   const m=turns[e.turn++%turns.length];e.mode=m;e.modeT=m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='clawTell'?1:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):m==='clawTell'?clamp(P.x,A.x0+20,A.x1-20):e.x;if(m==='clawTell')e.markY=Number.isFinite(P.y)?P.y:A.floor;   /* WHERE YOU ARE STANDING WHEN HE WINDS UP, floor or ledge: leaving is the answer, exactly as the erupt works */
   say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE',clawTell:'THE HANDS COME UP: MOVE YOUR FEET'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell'||m==='clawTell');sound('charge');return;
  }
