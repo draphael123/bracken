@@ -23,9 +23,12 @@ export function updateBuriedDead(e,dt,c){
  }
  if(e.mode==='walk'){
   const dx=P.x-e.x;e.face=Math.sign(dx)||e.face;if(Math.abs(dx)>58){e.vx=e.face*36;e.x=clamp(e.x+e.vx*dt,A.x0+38,A.x1-38);}if(e.modeT>0)return;
-  const turns=e.phase===2?['slamTell','throwTell','bodyTell','novaTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','sinkTell','novaTell','cleaveTell','callTell'];
-  const m=turns[e.turn++%turns.length];e.mode=m;e.modeT=m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):e.x;
-  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell');sound('charge');return;
+  /* THE HANDS are in BOTH turns, so he has seven before he is enraged and eight after (Daniel: "he can use just one
+     more attack pre-enrage"). They exist because the ossuary grew a nova-safe upper tier: high ground that nothing
+     could answer would be a camp, not a choice. */
+  const turns=e.phase===2?['slamTell','throwTell','bodyTell','novaTell','clawTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','sinkTell','novaTell','clawTell','cleaveTell','callTell'];
+  const m=turns[e.turn++%turns.length];e.mode=m;e.modeT=m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='clawTell'?1:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):m==='clawTell'?clamp(P.x,A.x0+20,A.x1-20):e.x;if(m==='clawTell')e.markY=Number.isFinite(P.y)?P.y:A.floor;   /* WHERE YOU ARE STANDING WHEN HE WINDS UP, floor or ledge: leaving is the answer, exactly as the erupt works */
+  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE',clawTell:'THE HANDS COME UP: MOVE YOUR FEET'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell'||m==='clawTell');sound('charge');return;
  }
  if(e.modeT>0||!e.mode.endsWith('Tell'))return;
  const m=e.mode;e.effect=m;e.effectT=.35;
@@ -39,6 +42,11 @@ export function updateBuriedDead(e,dt,c){
      nothing in this fight the player caused: stand over the hole he erupted from, let the slam come down on it, and the
      arm goes in to the shoulder. That is a punish you set up, and it is twice the window his own rest gives. */
   if(e.brokeT>0&&Math.abs(e.x-e.brokeX)<30){e.mode='stuck';e.modeT=3.4;e.open=3.4;e.brokeT=0;say('HIS ARM IS IN THE GROUND',true);sound('crack');return;}}
+ /* THE HANDS. They come up through whatever you were standing on when he wound up - the floor, or the ledge you
+    climbed to get away from the poison. This is the one attack in the fight that reaches the high tier, and it is why
+    the high tier is a decision rather than a roof. Unblockable on purpose: the answer is your feet, not your shield. */
+ if(m==='clawTell'){const gy=Number.isFinite(e.markY)?e.markY:A.floor;ring(e.markX,gy-6,46,'#a6e04a');sound('hiss');
+  if(Math.abs(P.x-e.markX)<34&&Math.abs(P.y-gy)<30)hit(e.markX,20,true);}
  if(m==='cleaveTell'){if(Math.abs(P.x-e.x)<82&&Math.abs(P.y-e.y)<58)hit(e.x,20,false);sound('heavy');}
  if(m==='callTell'){summon(e.phase===2?2:1);sound('roar');}
  if(m==='eruptTell'){if(Math.abs(P.x-e.markX)<42&&P.y>A.floor-90)hit(e.markX,26,true);sound('heavy');e.brokeX=e.markX;e.brokeT=14;}

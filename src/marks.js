@@ -66,7 +66,7 @@ export const BY_HAND = {
   'tome|tell':'!',   /* THE TOME (tome.js, by hand: a module-file foe the audit cannot follow): the dart is a blow, and the shield does not just turn it - it SHUTS the book */
   'gargoyle|diveTell':'!!','gargoyle|gustTell':'!','gargoyle|spitTell':'!','gargoyle|flareTell':'!!',   /* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the gust and the spit a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */
   'gravewarden|cleaveTell':'!','gravewarden|tossTell':'!','gravewarden|swingTell':'!!','gravewarden|digTell':'!!','gravewarden|tollTell':'',   /* THE GRAVE WARDEN (grave-warden.js, by hand like the Archmage): spade and dirt a shield turns; the lantern and the hand nothing does; the toll strikes nobody */
-  'undeadmage|fireTell':'!','undeadmage|iceTell':'!','undeadmage|stormTell':'!!','undeadmage|poisonTell':'!','undeadmage|handTell':'!','undeadmage|markTell':'!!','burieddead|slamTell':'!!','burieddead|cleaveTell':'!','burieddead|callTell':'','burieddead|sinkTell':'','burieddead|eruptTell':'!!','zombie|riseTell':'','zombie|grabTell':'!',
+  'undeadmage|fireTell':'!','undeadmage|iceTell':'!','undeadmage|stormTell':'!!','undeadmage|poisonTell':'!','undeadmage|handTell':'!','undeadmage|markTell':'!!','burieddead|clawTell':'!!','burieddead|slamTell':'!!','burieddead|cleaveTell':'!','burieddead|callTell':'','burieddead|sinkTell':'','burieddead|eruptTell':'!!','zombie|riseTell':'','zombie|grabTell':'!',
   'harbormaster|anchorTell': '!', 'harbormaster|harpoonTell': '!', 'harbormaster|lowTell': '!!', 'harbormaster|highTell': '!!', 'harbormaster|pressureTell': '!!', 'harbormaster|twinTell': '!!',
   'bosun|salvagePinTell':'!', 'bosun|salvageHookTell':'!', 'bosun|salvageCargoTell':'!!', 'bosun|salvageBroadsideTell':'!!', 'bosun|salvageCrossfireTell':'!!',
   'mother|sporeVolleyTell': '!', 'mother|floorSurgeTell': '!!', 'mother|sporeSweepTell': '!!', 'mother|rootColumnsTell': '!!', 'mother|sporeWheelTell': '!',
@@ -96,7 +96,7 @@ export const MARK = {
   'bonecorsair|cutTell': '!', 'bonegob|throw': '!', 'bosun|salvageBroadsideTell': '!!', 'bosun|salvageCargoTell': '!!', 'bosun|salvageCrossfireTell': '!!', 'bosun|salvageHookTell': '!',
   'bosun|salvagePinTell': '!', 'bosun|shootTell': '!', 'bosun|slashTell': '!', 'bosun|swingTell': '!', 'bosun|throwTell': '!', 'broom|dashTell': '!',
   'broom|sweepTell': '!', 'brute|elCryTell': '', 'brute|elCut1Tell': '!', 'brute|elCut2Tell': '!', 'brute|elOverTell': '!!', 'brute|raise': '!!',
-  'brute|wind': '!', 'burieddead|callTell': '', 'burieddead|cleaveTell': '!', 'burieddead|eruptTell': '!!', 'burieddead|sinkTell': '', 'burieddead|slamTell': '!!',
+  'brute|wind': '!', 'burieddead|callTell': '', 'burieddead|clawTell': '!!', 'burieddead|cleaveTell': '!', 'burieddead|eruptTell': '!!', 'burieddead|sinkTell': '', 'burieddead|slamTell': '!!',
   'burngob|swingTell': '!', 'captain|hookTell': '!', 'captain|kegTell': '!!', 'captain|sabreTell': '!', 'captain|shootTell': '!!', 'chief|bashWind': '!!',
   'chief|crouch': '!!', 'chief|rainAim': '!', 'chief|raise': '!!', 'chief|slashWind': '!', 'chief|whirlWind': '!', 'chief|wind': '!',
   'closedhelm|bashTell': '!!', 'closedhelm|cutTell': '!', 'closedhelm|judgeTell': '!', 'closedhelm|oathTell': '!!', 'closedhelm|radianceTell': '!!', 'closedhelm|thrustTell': '!',

@@ -71,8 +71,18 @@ export function extendBurial({L,T,TS,interiors,structures}){
  const gasVents=[[520,39,0],[540,39,1.2],[565,39,2.1],[728,32,0.4],[736,32,1.8],[790,32,0.9],[796,32,2.4],[838,32,1.4],[990,32,0.7],[1015,32,2.0],[1050,32,1.1]]
   .map(([x,y,phase])=>({x,y,phase,period:3.4,hitT:0}));
  ent('silver',434,28);ent('silver',933,23);ent('silver',162,31);
- ent('check',1076,31);sign(1077,'THE BURIED DEAD. JUMP THE SLAM. TRACK HIS SHADOW, THEN LEAVE THE CRACK.');
+ ent('check',1076,31);sign(1077,'THE BURIED DEAD. JUMP THE SLAM. THE HIGH LEDGES ARE OVER HIS POISON - BUT THE HANDS REACH THEM.');
+ /* THE OSSUARY HAS TIERS NOW. Daniel: "the buried dead boss fight also needs more platforms so you can avoid some of
+    his attacks" - and the fight was already BUILT for that and never given the ground to do it with. Every one of his
+    attacks carries a height condition: the poison nova only lands within 80px of the floor, the erupt within 90, the
+    body slam within 44, the fist within 25. There was one tier at row 29, which is 48px up: it clears the slam and
+    just clears the body slam, and does nothing at all about the nova or the erupt. So there was nowhere in this room
+    to stand that the nova could not reach, in a fight whose code says there should be.
+    LOW at row 29 (48px: under the nova), HIGH at row 26 (96px: over it). The high tier overlaps the low one rather
+    than sitting across a gap, so it is a three-row hop and not a leap of faith - and it is deliberately NOT safe,
+    because THE HANDS (buried-dead.js clawTell) come up through whatever you are standing on. */
  for(const x of [1087,1110]){for(let j=x;j<x+4;j++)set(j,29,T.ONEWAY);structures.push({x0:x,x1:x+3,top:29,floor:32,kind:'arch'});}
+ for(const x of [1091,1106]){for(let j=x;j<x+4;j++)set(j,26,T.ONEWAY);structures.push({x0:x,x1:x+3,top:26,floor:32,kind:'arch'});}
  for(let y=16;y<32;y++)set(1122,y,T.PORT);
  interiors.push([1079,1137,16,31,'ossuary']);deco('grave',1084);deco('grave',1118);
  ent('burieddead',1100,31);ent('gate',1133,31);ent('torch',1082,31);ent('torch',1120,31);
