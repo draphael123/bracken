@@ -30,6 +30,15 @@ One worktree and one branch each; the file lists in the handoff are the point. *
 
 These were designed on 2026-09-20/21 and live in **`.claude/briefs/`**. Do not redesign them.
 
+> **AND THAT DIRECTORY IS NOT IN THIS REPOSITORY YET — 2026-09-24.** `.gitignore` ignored the whole of `.claude/`,
+> so the briefs were never committed and exist on ONE machine: `git log --all -- .claude/briefs` is empty. On any
+> other clone every citation in this section is half a sentence, and THE UNBURIED FIELD cannot be built at all.
+> The rule is now narrowed (`.claude/*` plus `!.claude/briefs/`), so on the machine that HAS them this is
+> `git add .claude/briefs/` with no `-f` — and `.vercelignore` still excludes all of `.claude/`, so they stay
+> tracked and never deployed. Until that lands, **do not go looking in an ignored directory and do not redesign
+> what is missing — ask.** `tools/dangling-paths.mjs` fails the suite for any NEW path a document cites that a
+> fresh clone cannot open, and lists this hole every run until it is closed.
+
 | level | unlocks | state | |
 |---|---|---|---|
 | **THE UNBURIED FIELD** | Death Knight | brief **+ greybox** (`src/draft/unburied-field.js`, `tools/unburied-field-draft.mjs`) | **the closest to ready of anything in this file** |
