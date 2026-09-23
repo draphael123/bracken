@@ -965,6 +965,49 @@ export function bakeClouds() {
 }
 // A tiny signpost for map node labels, 10×12.
 export function bakeMapSign() { const [c, g] = canvas(10, 12); rect(g, 4, 5, 2, 7, C.woodD); rect(g, 0, 0, 10, 6, C.wood); rect(g, 0, 0, 10, 1, C.woodL); rect(g, 2, 2, 6, 1, C.woodD); return outline(c, OUT); }
+/* MAP NODE ICONS, 9×9, one per level (never two alike) plus one shared coin for every store. Baked once - the
+   nodes never move, so this has no business being drawn per frame. Each is 2-4 colours, no fine detail, chosen
+   to read as a silhouette at 1x on top of the node's own disc: docs/map-icons.png is the contact sheet these
+   came from, at 1x and 4x with every level's name under it, so this was approved before it was wired in. */
+const MAP_ICON_DEFS = {
+  coin: g => { circle(g, 4, 4, 3, '#a8730a'); circle(g, 4, 4, 2.3, '#ffd36b'); px(g, 3, 3, '#fff6c8'); },
+  wood: g => { rect(g, 2, 6, 5, 2, '#8a5a32'); rect(g, 1, 4, 7, 2, '#a8743f'); rect(g, 2, 2, 5, 2, '#c9924f'); px(g, 4, 7, '#2a1a10'); },
+  marsh: g => { ellipse(g, 4, 5, 3, 2, '#5a8a3a'); px(g, 2, 3, '#1b1626'); px(g, 6, 3, '#1b1626'); px(g, 2, 2, '#eafbe0'); px(g, 6, 2, '#eafbe0'); },
+  stockade: g => { rect(g, 1, 3, 2, 5, '#8a5a32'); rect(g, 4, 2, 2, 6, '#a8743f'); rect(g, 6, 3, 2, 5, '#8a5a32'); px(g, 1, 2, '#5c3a1d'); px(g, 4, 1, '#5c3a1d'); px(g, 7, 2, '#5c3a1d'); },
+  burning: g => { circle(g, 4, 5, 3, '#c9463d'); circle(g, 4, 4, 2, '#e08030'); px(g, 4, 3, '#ffd36b'); },
+  spore: g => { ellipse(g, 4, 3, 3, 2, '#c9463d'); rect(g, 3, 5, 2, 3, '#e8dcc0'); px(g, 2, 2, '#fff6c8'); px(g, 5, 3, '#fff6c8'); px(g, 3, 2, '#fff6c8'); },
+  kings: g => { rect(g, 3, 4, 3, 3, '#8a5a32'); line(g, 3, 4, 1, 1, '#5c3a1d'); line(g, 6, 4, 8, 1, '#5c3a1d'); px(g, 2, 2, '#5c3a1d'); px(g, 7, 2, '#5c3a1d'); },
+  underleaf: g => { fillPoly(g, [[4, 0], [7, 4], [4, 8], [1, 4]], '#3f7a2c'); line(g, 4, 1, 4, 7, '#264a1f'); },
+  scree: g => { fillPoly(g, [[1, 8], [3, 2], [5, 8]], '#8a8478'); fillPoly(g, [[4, 8], [6, 3], [8, 8]], '#6a6f8a'); px(g, 3, 2, '#e8ecf4'); px(g, 6, 3, '#e8ecf4'); },
+  hanging: g => { rect(g, 2, 2, 5, 3, '#8a5a32'); fillPoly(g, [[1, 2], [4, 0], [7, 2]], '#5c3a1d'); rect(g, 2, 5, 1, 3, '#5c3a1d'); rect(g, 6, 5, 1, 3, '#5c3a1d'); },
+  spire: g => { fillPoly(g, [[4, 0], [6, 8], [2, 8]], '#8b8378'); rect(g, 3, 6, 3, 2, '#5f5a52'); px(g, 4, 4, '#dfe8ee'); },
+  moor: g => { line(g, 1, 3, 7, 3, '#c9d4dc'); line(g, 2, 5, 8, 5, '#a8a090'); line(g, 1, 7, 6, 7, '#c9d4dc'); },
+  storm: g => { rect(g, 2, 4, 5, 4, '#5f5a52'); rect(g, 3, 2, 1, 2, '#5f5a52'); rect(g, 5, 2, 1, 2, '#5f5a52'); ellipse(g, 4, 1, 3, 1.4, '#3a3a44'); },
+  oreroad: g => { line(g, 0, 1, 8, 1, '#5f5a52'); line(g, 4, 1, 4, 3, '#3a3a44'); rect(g, 2, 3, 4, 3, '#8a5a32'); rect(g, 2, 3, 4, 1, '#5c3a1d'); },
+  crown: g => { fillPoly(g, [[1, 7], [1, 3], [3, 5], [4, 2], [5, 5], [7, 3], [7, 7]], '#ffd36b'); rect(g, 1, 7, 6, 1, '#e0b040'); px(g, 4, 4, '#c9463d'); },
+  undercrown: g => { fillPoly(g, [[4, 1], [7, 4], [4, 7], [1, 4]], '#a07ab8'); fillPoly(g, [[4, 1], [7, 4], [4, 4]], '#c9a0ff'); },
+  longwater: g => { line(g, 0, 3, 8, 3, '#3b7fae'); line(g, 0, 5, 8, 5, '#5aa6c9'); line(g, 1, 7, 7, 7, '#3b7fae'); },
+  reef: g => { rect(g, 4, 1, 1, 7, '#5c3a1d'); fillPoly(g, [[4, 1], [7, 3], [4, 3]], '#e8dcc0'); rect(g, 1, 7, 6, 1, '#2a5f8a'); },
+  flotilla: g => { fillPoly(g, [[1, 6], [7, 6], [6, 8], [2, 8]], '#5c3a1d'); rect(g, 4, 1, 1, 5, '#3a2618'); fillPoly(g, [[4, 1], [4, 5], [7, 4]], '#e8dcc0'); },
+  hurricane: g => { circle(g, 4, 4, 3, '#8a5a32'); circle(g, 4, 4, 1.4, '#3a2618'); line(g, 4, 1, 4, 7, '#3a2618'); line(g, 1, 4, 7, 4, '#3a2618'); },
+  lamplit: g => { rect(g, 3, 1, 2, 2, '#3a3444'); px(g, 4, 2, '#ffd36b'); rect(g, 3, 3, 2, 4, '#5f5a52'); rect(g, 2, 7, 4, 1, '#5f5a52'); },
+  deep: g => { line(g, 4, 1, 4, 4, '#4a2a5a', 2); line(g, 4, 4, 1, 7, '#4a2a5a', 2); px(g, 1, 7, '#6a4a7a'); px(g, 6, 2, '#6a4a7a'); },
+  keep: g => { rect(g, 3, 3, 3, 5, '#5f5a52'); fillPoly(g, [[2, 3], [4, 0], [6, 3]], '#3a3a44'); circle(g, 7, 2, 1, '#8fd6ff'); },
+  causeway: g => { rect(g, 0, 5, 8, 3, '#2a5f8a'); circle(g, 1, 5, 1, '#8b8378'); circle(g, 4, 5, 1, '#8b8378'); circle(g, 7, 5, 1, '#8b8378'); },
+  waymeet: g => { rect(g, 3, 2, 2, 6, '#8a5a32'); rect(g, 1, 2, 3, 1, '#5c3a1d'); rect(g, 4, 4, 3, 1, '#5c3a1d'); },
+  fields: g => { line(g, 4, 2, 4, 7, '#8a5a32'); line(g, 1, 4, 7, 4, '#8a5a32'); rect(g, 3, 0, 2, 2, '#c9b27c'); },
+  burial: g => { ellipse(g, 4, 3, 3, 2.5, '#e8dcc0'); px(g, 2, 3, '#1b1626'); px(g, 6, 3, '#1b1626'); rect(g, 3, 5, 2, 1, '#1b1626'); },
+  witchlight: g => { circle(g, 4, 5, 2, '#8fd6ff'); circle(g, 4, 4, 1.2, '#c8f0ff'); px(g, 4, 2, '#4ab0c0'); },
+  mage: g => { fillPoly(g, [[4, 0], [7, 7], [1, 7]], '#7a4aa8'); rect(g, 1, 7, 6, 1, '#5a3288'); px(g, 5, 3, '#ffd36b'); },
+  fallingtower: g => { fillPoly(g, [[3, 8], [5, 1], [7, 2], [5, 8]], '#8b8378'); rect(g, 4, 1, 2, 1, '#5f5a52'); },
+};
+export function bakeMapIcons() {
+  const out = {};
+  for (const [id, draw] of Object.entries(MAP_ICON_DEFS)) { const [c, g] = canvas(9, 9); draw(g); out[id] = outline(c, OUT); }
+  // every store shares the coin - a store is never a level and never collides with a level id
+  out.store = out.coin; out.highstore = out.coin; out.chandler = out.coin;
+  return out;
+}
 // A little fish, 5×3, silver.
 export function bakeFish() { const [c, g] = canvas(6, 4); rect(g, 1, 1, 3, 2, '#c9d1dc'); px(g, 0, 0, '#9aa39a'); px(g, 0, 3, '#9aa39a'); px(g, 4, 1, '#dfe8ff'); px(g, 2, 1, '#2a2f3d'); return c; }
 // A hut for the store node, 20×18.
