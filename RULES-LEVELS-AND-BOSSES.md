@@ -252,13 +252,18 @@ ways it says it (C2/C4). If the sentence is "there are more goblins", stop.
 **F9. WALK IT BEFORE YOU DRESS IT.** The whole level, start to gate, with no god mode, once per hero that can
 reach it. Every tool in `tools/` passes before the art goes on, and the audit's FLOAT count is zero.
 
-**F10. EVERY LEVEL BRINGS AT LEAST ONE FOE THE GAME HAS NEVER SEEN.** Not a recolour and not the same creature with
+**F10. EVERY LEVEL BRINGS AT LEAST ONE FOE THE GAME HAS NEVER SEEN, AND IT IS NOT ITS BOSS.** Not a recolour and not the same creature with
 more health: one new kind, with its own silhouette, its own told blow and its own place in the gaps the roster already
 has (fill GAPS, not variety). A level built entirely out of foes you have already fought is a level about its
 geometry, and geometry alone does not carry 400-700 columns.
 *Earned:* THE ORE ROAD shipped with nine foe kinds of which exactly ONE was new, and Daniel's playtest verdict was
 "no new enemies/idea other than riding lifts" - the level scores INDEX 59 against neighbours at 92-113 and is the
-worst in the game. **Checkable:** every level's roster against every earlier level's, which is a set difference.
+worst in the game.
+**AND THE BOSS DOES NOT COUNT**, which the first draft of this rule missed: written as plain "one new foe", it PASSED
+the Ore Road, whose one new creature is the Winchmaster. A rule that does not catch the level it was earned from is
+not a rule. Every level with a boss would get a free pass. **Checked** (`tools/one-new-foe.mjs`), and the measurement
+behind the threshold: **the median level brings FIVE new foes**, so one is a floor and not a target. Five levels
+predate the rule and are named in the tool with a reason each.
 
 ---
 
