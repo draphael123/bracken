@@ -15242,12 +15242,12 @@ function updateUnburied(dt) {
   UNBF.stepField(F, dt, { P, sound: unbSnd, say: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
     bearerAlive: name => enemies.some(q => q.alive && q.t === 'bannerbearer' && q.enc === name),
     hurtP: (x, d, name) => damagePlayer(x, d, { unblockable: true, name }), hurtFoe: (q, d, fx) => hurtEnemy(q, d, fx, false), struck: unbStruck,
-    wallStands: p => L.grid[F.G * LW + p.x] === T.PALISADE,
+    wallStands: p => L.grid[p.top * LW + p.x] === T.PALISADE,
     pegs: (p, on) => { for (const r of p.rows) { const i = r * LW + p.x - 1; if (on) { if (!(r in p.orig)) p.orig[r] = L.grid[i]; if (L.grid[i] === T.AIR) L.grid[i] = T.ONEWAY; } else if (r in p.orig) { L.grid[i] = p.orig[r]; delete p.orig[r]; } tileSpr[i] = null; } },
     spill: (x0, x1, y) => { const mid = (x0 + x1) / 2; for (let x = x0; x < x1; x += TS) fires.push({ x: x + 8, y, life: 7, delay: 0.1 + Math.abs(x - mid) / 500, dmg: DMG.fire, unb: true });
       for (const q of enemies) if (q.alive && !q.maxHp && q.x > x0 && q.x < x1 && Math.abs(q.y - y) < 24) q.burn = Math.max(q.burn || 0, 3); },
-    breach: () => { for (let y = F.G - 5; y <= F.G; y++) for (const x of [257, 258]) { const i = y * LW + x; if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null; burst(x * TS + 8, y * TS + 8, 4, ['#6a6a74', '#5a3e26'], 90, 0.6); } }
-      shakeCam(8); SFX.heavy(); SFX.crack(); number(257 * TS, (F.G - 7) * TS, 'THE TOWER\'S BASE BREAKS OPEN', '#ffd36b'); } });
+    breach: () => { for (let y = F.G - 5; y <= F.G; y++) for (const x of [246, 247, 257, 258]) { const i = y * LW + x; if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null; burst(x * TS + 8, y * TS + 8, 4, ['#6a6a74', '#5a3e26'], 90, 0.6); } }
+      shakeCam(8); SFX.heavy(); SFX.crack(); number(252 * TS, (F.G - 7) * TS, 'THE TOWER BREAKS OPEN AT THE FOOT', '#ffd36b'); } });
   /* the pitch keeps burning what stands in it: a corpse burned stays down */
   for (const f of fires) if (f.unb && f.delay <= 0) for (const q of enemies) if (q.alive && !q.maxHp && Math.abs(q.x - f.x) < 10 && Math.abs(q.y - f.y) < 12) q.burn = Math.max(q.burn || 0, 1.5);
 }

@@ -33,8 +33,8 @@
 import { canvas, rect, line, circle, fillPoly, outline, flipX, whiten } from './px.js';
 
 export const UNB = {
-  hp: { bannerbearer: 56, corpse: 30, standardbearer: 540, deathknight: 1150 },
-  dmg: { pole: 12, corpseCut: 10, sbSweep: 18, sbCharge: 16, sbBash: 12, swathe: 20, swatheIn: 4, reap: 16, mark: 22, dkCut: 14, volley: 8, cavalry: 18 },
+  hp: { bannerbearer: 56, corpse: 30, standardbearer: 680, deathknight: 1150 },
+  dmg: { pole: 12, corpseCut: 10, sbSweep: 18, sbCharge: 16, sbBash: 12, swathe: 20, swatheIn: 4, reap: 16, mark: 16, dkCut: 14, volley: 8, cavalry: 18 },
   bannerR: 120,        /* a planted standard raises the fallen within this many pixels of its foot */
   riseT: 1.1, downT: 3.2, plantRange: 150, tether: 44,
   corpseSpeed: 21, bearerSpeed: 26,
@@ -42,7 +42,7 @@ export const UNB = {
     order: ['sweep', 'plant', 'charge', 'sweep', 'charge', 'plant'] },
   dk: { walk: 34, keep: 48, cd: 1.15, cdP2: 0.85, tell: { swathe: 0.9, reap: 1.1, pass: 0.8, raise: 1.2, cut: 0.6 },
     swatheIn: 28, swatheOut: 104, reapR: 112, pullR: 150, pullV: 95, passStep: 60, markT: 1.3, markR: 34, cutR: 40, openT: 3.4, openMul: 1.5,
-    raise: 2, raiseP2: 3, adds: 3, addsP2: 5,
+    raise: 2, raiseP2: 3, adds: 2, addsP2: 4,
     order: ['swathe', 'raise', 'reap', 'pass', 'cut', 'swathe', 'raise', 'reap', 'pass'],
     orderP2: ['raise', 'reap', 'swathe', 'pass', 'raise', 'reap', 'cut', 'pass'] },
 };

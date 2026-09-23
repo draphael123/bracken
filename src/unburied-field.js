@@ -74,7 +74,7 @@ export function buildUnburiedField({ painter, T, TS }) {
   region(114, 118, G - 1, G - 1, T.SOFT); air(114, 118, G, G + 3); plat(114, G + 1, 2); plat(117, G + 1, 2);
   ent('sign', 120, G, { text: 'THE MOUNDS ARE NOT GROUND. THEY ARE WHAT IS LEFT OF THE SECOND DAY.' });
   coins([88, G], [98, G + 4], [116, G + 3], [127, G]);
-  meet('THE MOUND LINE', 86, 102, [['bannerbearer', 92, G], ['corpse', 90, G], ['corpse', 94, G], ['wight', 100, G + 4]]);
+  meet('THE MOUND LINE', 86, 102, [['bannerbearer', 93, G], ['corpse', 89, G], ['corpse', 95, G], ['wight', 100, G + 4]]   /* off the stake line (90-92) */);
   meet('THE COVER RUN', 110, 128, [['bonearcher', 111, G], ['corpse', 116, G - 2], ['zombie', 121, G], ['husk', 126, G]]);
 
   // ---- 3. THE BROKEN CHARGE (c 130-229): the low route is a long trench of mud, the high route the wreckage over it ----
@@ -91,11 +91,11 @@ export function buildUnburiedField({ painter, T, TS }) {
   for (const [x, period, phase] of UF.SWINGS) moversExtra.push({ kind: 'swing', px: x * TS, py: 22 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period, phase });   // catapult arms and chains over the trench gaps
   ent('ballista', 130, G, { aim: [150, G + 5] }); ent('ballista', 188, 28, { aim: [210, 30] });
   ent('oilbarrel', 200, G + 5, { spill: [190, 212] });                                                          // knock it over and the trench takes a line of fire
-  ent('trebuchet', 230, G, { aim: [257, 33], knocks: 'tower' });   /* its stone breaks the tower's fallen base open at the foot: a way through under the climb */                                                 // the engines you work
+  ent('trebuchet', 230, G, { aim: [246, 33], knocks: 'tower' });   /* its stone breaks the tower open at the foot - its palisade (246) and its fallen base (257) - a ground road under the climb; the climb stays (B4) */                                                 // the engines you work
   ent('check', 142, G); ent('check', 196, G + 5);
   ent('sign', 140, G, { text: 'HIGH OVER THE WRECKS IS DRY AND IN THE VOLLEYS. LOW IN THE TRENCH IS SHELTERED, SLOW AND FULL.' });
   ent('sign', 148, G - 3, { text: 'HORNS AND DUST ON THE HORIZON. THE HORSE COME DOWN THIS LANE AND THEY DO NOT STOP.' });
-  ent('sign', 228, G, { text: 'SIEGE OIL AND A TREBUCHET STILL LOADED. BOTH OF THEM WORK.' });
+  ent('sign', 227, G - 3, { text: 'SIEGE OIL AND A TREBUCHET STILL LOADED. BOTH OF THEM WORK.' });
   coins([152, G + 5], [166, 28], [178, G + 5], [190, 30], [204, G + 5], [216, 29], [224, G]);
   meet('THE CHARGE LANE', 152, 172, [['corpse', 154, G + 5], ['zombie', 158, G + 5], ['bonegob', 164, G + 5], ['corpse', 170, G + 5]]);
   meet('THE TRENCH MELEE', 180, 206, [['bannerbearer', 186, G + 5], ['corpse', 182, G + 5], ['corpse', 190, G + 5], ['zombie', 199, G + 5], ['husk', 204, G + 5]]);
@@ -109,9 +109,9 @@ export function buildUnburiedField({ painter, T, TS }) {
   pegWall(246, 18, [31, 29, 27], 'the tower\'s top deck without its ladder');
   ent('silver', t0 + 13, 20);                                                                                   // silver 2: on the tower's top deck
   plat(t1 + 3, 21, 4); block(t1 + 7, 262, 22, G);                                                               // off the top onto the fallen base's crest, and down
-  ent('check', 240, G); ent('check', 263, 21);
+  ent('check', 240, G); ent('check', 261, 20); ent('check', 263, G);   /* and one on the ground road the trebuchet opens, so a death at the Standard-Bearer does not send you back up the tower */   /* on the crest ledge (259-262, row 21), not beside it */
   coins([t0 + 2, 32], [t0 + 7, 29], [t0 + 12, 26], [t0 + 8, 23], [t0 + 15, 20], [260, 21]);
-  ent('sign', 233, G, { text: 'THEY GOT THIS FAR AND IT WENT OVER WITH THEM STILL IN IT.' });
+  ent('sign', 237, G, { text: 'THEY GOT THIS FAR AND IT WENT OVER WITH THEM STILL IN IT.' });
   meet('THE TOWER CREW', 236, 250, [['bonegob', t0 + 7, 29], ['bonearcher', t0 + 12, 26], ['bannerbearer', t0 + 2, G], ['corpse', t0 + 4, G]]);
 
   // ---- 5. THE STANDARD (c 266-299): open field, the gate behind him ----
