@@ -2,6 +2,7 @@
 // yellow ones answerable two ways and the red ones one, THE RITE that cannot be out-swung, and THE OPENING CAUSED -
 // the great bell downs him when he is under it and does nothing when he is not, and two of his own attacks are what
 // put him there. usage: node tools/false-abbot.mjs
+import { readFileSync } from 'node:fs';
 import { ABBOT, updateFalseAbbot, abbotBellRung, abbotOpen, abbotBlessed, abbotTake, abbotFrame } from '../src/false-abbot.js';
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const DT = 1 / 60, FLOOR = 480, BELL = 900, A = { x0: 32, x1: 1504, floor: FLOOR };
@@ -150,6 +151,18 @@ console.log('THE FALSE ABBOT');
   const fs = modes.map(m => abbotFrame({ mode: m, anim: 0, vx: 0, hurtT: 0 }));
   ok(fs.every(f => Number.isInteger(f) && f >= 0 && f <= 17), `the frame table answers every mode (${Math.min(...fs)}-${Math.max(...fs)})`);
   ok(abbotFrame({ mode: 'stalk', anim: 0, vx: 0, hurtT: 0.2 }) === 17, 'and hurt is the last frame, over everything but a named mode'); }
+
+/* THE WARD HAS TO HOLD AGAINST FIRE TOO, and that cannot be tested from this module because the burn tick lives in
+   main.js - which is exactly how it went wrong. It wrote `e.hp -= 2` straight into the boss, so fire walked through a
+   FIFTH-DAMAGE ward at full strength and the Pyromancer's 4/4 against him measured nothing. The rule is pinned at the
+   source, because a convention nothing checks is a wish. */
+{ const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const tick = main.split(String.fromCharCode(10)).find(l => l.includes('e.burnTick = 0.3'));
+  ok(!!tick, 'the burn tick is still in main.js');
+  ok(!!tick && tick.includes('wardedDamage(e, 2)'), 'BURN BYPASSES EVERY WARD AGAIN: the tick must go through wardedDamage, not write e.hp directly');
+  ok(!!tick && !/e[.]hp -= 2[^0-9]/.test(tick), 'the burn tick writes e.hp directly again');
+  ok(main.includes('function wardedDamage(e, dmg)'), 'wardedDamage is gone: the wards are inline again and burn will be skipping them');
+  ok(Math.max(1, Math.round(2 * ABBOT.wardTake)) === 1, 'a burn tick through the rite should be 1, not ' + Math.max(1, Math.round(2 * ABBOT.wardTake))); }
 
 console.log(fails ? `\n${fails} FAILED` : '\nall false abbot checks pass');
 process.exit(fails ? 1 : 0);

@@ -4981,6 +4981,21 @@ function hazardFoe(e) {
   if (!why) return false;
   number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
 }
+/* EVERY WARD AND EVERY OPENING, IN ONE PLACE. These five lived inline in hurtEnemy0, which meant a blow went through
+   them and BURN DID NOT: the burn tick wrote `e.hp -= 2` straight into the boss. The False Abbot's rite wards him to a
+   FIFTH, so fire was doing five times its intended damage through a ward whose whole purpose is to make the great bell
+   the answer - which is why the Pyromancer kept coming out 4/4 against him in pilots that meant nothing.
+   PARKED, deliberately, for Daniel: the Archmage's stage gate (archHurt) and the Undead Archmage's `gather` bonus are
+   NOT folded in here. They are not wards - one can refuse a blow outright and the other is a reward for opening him -
+   so routing damage-over-time through them is a balance change rather than a bug fix, and it is his call. */
+function wardedDamage(e, dmg) {
+  if (e.t === 'tidemarauder' && e.mini) dmg = reaverTake(e, dmg);   /* THE TIDE REAVER disarmed: every blow twice (tide-reaver.js) */
+  if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
+  if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e)));   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
+  if (e.t === 'winchmaster') dmg = Math.max(1, Math.round(dmg * winchTake(e)));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge */
+  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE: double while he hangs from a broken edge (gate-gargoyle.js) */
+  return dmg;
+}
 function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /* taken at once, so nothing this blow sets off inherits it */
   const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, alive0 = e.alive, r = hurtEnemy0(e, dmg, fromX, plunge, blow);
   /* WHOSE BLOW IT WAS. During a hero's pass P is that hero, so the damage and the kill go on HIS tally; outside a
@@ -5146,11 +5161,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
-  if (e.t === 'tidemarauder' && e.mini) dmg = reaverTake(e, dmg);   /* THE TIDE REAVER disarmed: every blow twice (tide-reaver.js) */
-  if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
-  if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e)));
-  if (e.t === 'winchmaster') dmg = Math.max(1, Math.round(dmg * winchTake(e)));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
-  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE: double while he hangs from a broken edge (gate-gargoyle.js) */
+  dmg = wardedDamage(e, dmg);   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
@@ -17600,7 +17611,7 @@ function updateEnemies(dt) {
     if(updateBalcony(e,dt))continue;
     if (e.t === 'heart') { e.burn=0; e.bleed=0; } // the living membrane takes deliberate cuts only
     if(e.fleeT>0){e.fleeT-=dt;e.vx=e.face*100;e.vy=Math.min(300,(e.vy||0)+900*dt);moveBody(e,e.vx*dt,e.vy*dt,false);if(e.fleeT<=0)e.alive=false;continue;}
-    if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { e.hp -= 2; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; number(e.x, e.y - e.h - 8, 2, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
+    if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { const bd = wardedDamage(e, 2); e.hp -= bd; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; number(e.x, e.y - e.h - 8, bd, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
     if (e.bleed > 0) { e.bleed -= dt; e.bleedT = (e.bleedT || 0) - dt; if (e.bleedT <= 0) { e.bleedT = 0.5; if (e.alive) { e.hp -= (e.bleedN || 1); e.flash = 0.05; number(e.x, e.y - e.h - 8, e.bleedN || 1, '#c9463d'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } }
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - e.h / 2, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#8f2f28', size: 1, grav: 120 }); }
     if (e.frozen > 0) e.frozen -= dt;
