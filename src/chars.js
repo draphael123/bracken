@@ -526,6 +526,66 @@ export function bakeMerrowBrute() {
   return pack(frames, 7, 15, 10, 14);
 }
 
+/* THE LEADFOOT — the drowned keep's man-at-arms, sealed in plate, who WALKS where everything else swims.
+   Drawn AGAINST his level: every other body in the Underwater Keep is a long horizontal shape and he is an
+   upright one, a head taller than any of them, helm shut with a black slit and no face behind it. The halberd
+   rides upright on the march so the silhouette stays vertical from across a flooded hall, and the anchor hangs
+   at his back hip on its chain. The bubble line out of his seams is not in the sprite: it is emitted by
+   updateLeadfoot, because it has to be there when he is off screen too.
+   18x22 grid. frames: 0-3 walk (a heavy shuffle with a one-pixel sink on the contact frames)
+     4 plant tell (braced wide, the haft brought down across his front)   5 sweep tell (drawn back low behind)
+     6 sweep (out low in front, along the floor)                          7 plant (driven straight up overhead)
+     8 anchor tell (anchor swung back on its chain)                       9 anchor (thrown, chain out in front)
+     10 hurt (helm snapped back, knees gone, the haft dropped)  -- LAST, which is the frame HAS_HURT reads. */
+const LF = Object.assign({}, EP, { S: '#6b7783', s: '#98a5b1', D: '#3c4650', v: '#3f8f7d', r: '#8a4a2a',
+  w: '#6b4a2a', W: '#42301c', b: '#cfd8e0', c: '#8a919c', e: '#0d1216', d: '#2a323a' });
+const LFW = 18, LFH = 22;
+const lfBlank = () => Array(LFH).fill('.'.repeat(LFW));
+const lfPut = (rows, x, y, ch) => { if (y < 0 || y >= LFH || x < 0 || x >= LFW) return;
+  const a = rows[y].split(''); a[x] = ch; rows[y] = a.join(''); };
+const lfStamp = (rows, art, x0, y0) => art.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] !== '.') lfPut(rows, x0 + i, y0 + j, r[i]); });
+const lfLine = (rows, x0, y0, x1, y1, ch) => { const n = Math.max(1, Math.abs(x1 - x0), Math.abs(y1 - y0));
+  for (let i = 0; i <= n; i++) lfPut(rows, Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), ch); };
+const LF_HELM = ['.DDDDDD.', 'DSSSSSSD', 'DSssssSD', 'DSeeeeSD', 'DSSSSSSD', '.DvvvvD.'];
+const LF_TORSO = ['SSSSSSSSSS', 'DSSSSSSSSD', 'DSsvvvvsSD', 'DSSSSSSSSD', '.DSSSSSSD.', '.DSrrrrSD.', '..DSSSSD..', '..DSSSSD..'];
+const LF_LEGS = [
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '.DSSD.DSSD', '.dddd.dddd'],
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '.SS....SS.', '.SS....SS.', '.SS....SS.', 'DSSD..DSSD', 'dddd..dddd'],
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS...SS.', '..SS...SS.', '.DSSD.DSSD', '.dddd.dddd'],
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS...SS.', '.SS....SS.', '.SS....SS.', 'DSSD..DSSD', 'dddd..dddd'],
+];
+const LF_BRACE = ['..SS..SS..', '..SS..SS..', '.SS....SS.', '.SS....SS.', 'SS......SS', 'SS......SS', 'SS......SS', 'dddd..dddd'];
+const LF_BUCKLE = ['..........', '..SS..SS..', '..SS..SS..', '.SS....SS.', '.SS....SS.', 'SS......SS', 'SSD....DSS', 'ddd....ddd'];
+const LF_AXE_UP = ['.b.', '.b.', '.bb', 'bbb', '.bb', '.b.'];
+const LF_AXE_R = ['..b', 'bbb', 'bbb', '..b'];
+const LF_AXE_L = ['b..', 'bbb', 'bbb', 'b..'];
+const LF_ANCHOR = ['.c.', 'ccc', '.c.', 'c.c', 'ccc'];
+export function bakeLeadfoot() {
+  const lf = rows => outline(fromGrid(rows, LF, 1), OUT);
+  const body = (rows, dy) => { lfStamp(rows, LF_HELM, 4, dy); lfStamp(rows, LF_TORSO, 3, 6 + dy); };
+  const shoulderArms = (rows, dy) => { lfLine(rows, 12, 9 + dy, 14, 10 + dy, 'S'); lfPut(rows, 13, 12 + dy, 'S'); };
+  const upright = (rows, dy) => { lfLine(rows, 14, 2 + dy, 14, 17, 'w'); lfPut(rows, 14, 17, 'W'); lfStamp(rows, LF_AXE_UP, 13, dy); shoulderArms(rows, dy); };
+  const frames = [];
+  for (let i = 0; i < 4; i++) { const r = lfBlank(), dy = i % 2 === 0 ? 1 : 0;
+    lfStamp(r, LF_ANCHOR, 0, 11 + dy); lfPut(r, 3, 11 + dy, 'c');
+    body(r, dy); lfStamp(r, LF_LEGS[i], 3, 14); upright(r, dy); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_BRACE, 3, 14); lfStamp(r, LF_ANCHOR, 0, 11);   /* 4 THE PLANT, told: he sets his feet and drops the haft across his front */
+    lfLine(r, 11, 10, 15, 17, 'w'); lfPut(r, 11, 10, 'W'); lfStamp(r, LF_AXE_R, 15, 16); lfLine(r, 12, 10, 13, 12, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_LEGS[0], 3, 14); lfStamp(r, LF_ANCHOR, 0, 11);   /* 5 THE HALBERD SWEEP, told: the whole haft drawn back behind his heels */
+    lfLine(r, 13, 11, 2, 18, 'w'); lfPut(r, 13, 11, 'W'); lfStamp(r, LF_AXE_L, 0, 17); lfLine(r, 12, 11, 13, 12, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 1); lfStamp(r, LF_BRACE, 3, 14);                                   /* 6 THE SWEEP: a long low arc out along the floor */
+    lfLine(r, 5, 12, 15, 19, 'w'); lfPut(r, 5, 12, 'W'); lfStamp(r, LF_AXE_R, 15, 18); lfLine(r, 11, 13, 13, 15, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_BRACE, 3, 14); lfStamp(r, LF_ANCHOR, 0, 11);     /* 7 THE PLANT: driven straight up into the water over him */
+    lfLine(r, 10, 13, 15, 2, 'w'); lfPut(r, 10, 13, 'W'); lfStamp(r, LF_AXE_UP, 14, 0); lfLine(r, 12, 7, 14, 4, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_LEGS[0], 3, 14); upright(r, 0);                  /* 8 THE ANCHOR THROW, told: it comes off his hip and swings back behind his shoulder */
+    lfStamp(r, LF_ANCHOR, 0, 5); lfLine(r, 2, 8, 4, 11, 'c'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_BRACE, 3, 14); upright(r, 0);                    /* 9 THE ANCHOR, out in front on its chain */
+    lfStamp(r, LF_ANCHOR, 15, 7); lfLine(r, 12, 10, 15, 9, 'c'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 1); lfStamp(r, LF_BUCKLE, 3, 14); lfStamp(r, LF_ANCHOR, 0, 12);    /* 10 HURT */
+    lfLine(r, 12, 12, 16, 19, 'w'); lfPut(r, 12, 12, 'W'); lfStamp(r, LF_AXE_R, 15, 18); frames.push(lf(r)); }
+  return pack(frames, 8, LFH + 1, 12, LFH);
+}
+
 // Spitter — toadstool that spits seeds. 14×12. Frames: idle, cap-tilt, mouth open.
 export function bakeSpitter() {
   const cap = ['....rrrrrr....', '..rrrerrrrer..', '.rrrrrrrrrrrr.', 'rrerrrrrerrrrr', 'rrrrrrrrrrrrrr', '.RRRRRRRRRRRR.'];
@@ -3620,4 +3680,76 @@ export function bakeClosedHelm() {
     '......dd..........dd........'], W);
   const open = wspr(top3(lay(openRows, [E, ...crest])));
   return pack([stand, walk, raise, cut, stamp, open], 14, 31, 20, 26);
+}
+
+// THE TEMPERER - the one goblin in the game whose power is something he has to GO AND GET. 10x14.
+// Read him BY THE BLADE, not the body: cold he is a plain goblin in a smith's apron with an over-long
+// two-hander, deliberately unremarkable, because the point is that you stop watching him. At the fire the
+// same blade comes back the brightest thing in the room, and every frame of him is baked twice - once in
+// steel and once in ember - off the same grids, so the hot pose is unmistakably the SAME creature.
+// Frames: 0 idle, 1/2 walk, 3 cutTell (overhand up), 4 cut, 5 shove, 6/7 run, 8 at the fire,
+//         9 hot idle, 10 hot walk, 11 quenchTell, 12 quench, 13 hurt (LAST: HAS_HURT reads the last frame).
+export function bakeTemperer() {
+  const W = 18, ROWS = 20;
+  /* a = the smith's leather apron, the one thing on him that is not a goblin; m/M = the blade, and the
+     whole creature is the two palettes below telling you which state he is in */
+  const COLD = Object.assign({}, EP, { a: '#6b4a2a', A: '#3a2416', m: '#c9d1dc', M: '#7c8797' });
+  const HOT = Object.assign({}, EP, { a: '#6b4a2a', A: '#3a2416', m: '#ffd36b', M: '#ff6b2c' });
+  const blank = () => Array.from({ length: ROWS }, () => '.'.repeat(W));
+  const put = (R, y, x, s) => { if (y < 0 || y >= ROWS) return; const a = R[y].split('');
+    for (let k = 0; k < s.length; k++) if (s[k] !== '.' && x + k >= 0 && x + k < W) a[x + k] = s[k]; R[y] = a.join(''); };
+  const f = (R, hot) => outline(fromGrid(R, hot ? HOT : COLD, 1), OUT);
+  // the goblin: head, apron, and the eyes shut when he has been hit
+  const body = (R, dx = 0, dy = 0, shut = false) => {
+    put(R, 8 + dy, 4 + dx, 'gggggg'); put(R, 9 + dy, 3 + dx, shut ? 'ggGGggGGg' : 'ggeoggeog');
+    put(R, 10 + dy, 3 + dx, 'gggggggg'); put(R, 11 + dy, 4 + dx, 'gGGGGg');
+    put(R, 12 + dy, 4 + dx, 'aaaaaa'); put(R, 13 + dy, 3 + dx, 'agggggga');
+    put(R, 14 + dy, 3 + dx, 'agggggga'); put(R, 15 + dy, 3 + dx, 'aaaaaaaa'); put(R, 16 + dy, 4 + dx, 'aaaaaa');
+  };
+  const LEGS = {
+    stand: [[17, 4, 'GG..GG'], [18, 4, 'GG..GG'], [19, 3, 'GGG..GGG']],
+    stepA: [[17, 5, 'GGGG'], [18, 4, 'GG..GG'], [19, 3, 'GG....GG']],
+    stepB: [[17, 4, 'GG..GG'], [18, 3, 'GG....GG'], [19, 2, 'GG......GG']],
+    runA: [[17, 3, 'GG...GG'], [18, 2, 'GG.....GG'], [19, 1, 'GG.......GG']],
+    runB: [[17, 5, 'GGGG'], [18, 4, 'GG..GG'], [19, 4, 'GGGG']],
+    lunge: [[17, 4, 'GG...GG'], [18, 2, 'GG.....GG'], [19, 1, 'GG'], [19, 11, 'GG']],
+    kneel: [[18, 4, 'GGGG..GG'], [19, 3, 'GGGGG..GG']],
+  };
+  const legs = (R, k) => { for (const [y, x, s] of LEGS[k]) put(R, y, x, s); };
+  /* THE LOW CARRY. Both hands at his hip and five rows of blade running down past his boot: it is longer
+     than he is and it is the only line on him that is not a goblin's. */
+  const lowBlade = (R, dx = 0, dy = 0) => { put(R, 14 + dy, 12 + dx, 'ww'); put(R, 15 + dy, 13 + dx, 'mM');
+    put(R, 16 + dy, 14 + dx, 'mM'); put(R, 17 + dy, 15 + dx, 'mM'); put(R, 18 + dy, 16 + dx, 'mM'); };
+  const grids = {};
+  { const R = blank(); body(R); legs(R, 'stand'); lowBlade(R); grids.idle = R; }
+  { const R = blank(); body(R); legs(R, 'stepA'); lowBlade(R); grids.walkA = R; }
+  { const R = blank(); body(R); legs(R, 'stepB'); lowBlade(R); grids.walkB = R; }
+  /* THE LONG CUT, told: the whole blade goes straight up over him, both arms with it, and it is on screen
+     for every frame of the wind-up (the road people's lesson: the read is the wind-up, not a beat of it) */
+  { const R = blank(); body(R); legs(R, 'stand');
+    for (let y = 1; y <= 5; y++) put(R, y, 11, 'mM');
+    put(R, 6, 10, 'ymMy'); put(R, 7, 11, 'ww');
+    put(R, 8, 11, 'GG'); put(R, 9, 11, 'GG'); put(R, 10, 11, 'GG'); put(R, 11, 11, 'G'); put(R, 12, 10, 'G');
+    grids.cutTell = R; }
+  { const R = blank(); body(R); legs(R, 'stepA');
+    put(R, 12, 10, 'Gww'); put(R, 13, 10, 'G.mM'); put(R, 14, 13, 'mM'); put(R, 15, 14, 'mM'); put(R, 16, 15, 'mM');
+    grids.cut = R; }
+  /* THE SHOULDER: he leans the whole apron into you to make room, and the blade never leaves the low carry.
+     It is not much of a blow. It is how he gets out from under you, which is the thing it is really telling you. */
+  { const R = blank(); body(R, 1); legs(R, 'lunge'); put(R, 12, 4, 'aaaaaaa'); put(R, 13, 4, 'aggggggga');
+    lowBlade(R, 1); grids.shove = R; }
+  { const R = blank(); body(R, 1); legs(R, 'runA'); lowBlade(R, 1); grids.runA = R; }
+  { const R = blank(); body(R, 1); legs(R, 'runB'); lowBlade(R, 1); grids.runB = R; }
+  /* AT THE FIRE: stooped over it with his back half turned, the blade held straight down into the coals in
+     both hands. Nothing about this pose is a guard, and that is the whole point of it. */
+  { const R = blank(); body(R, 1, 2); legs(R, 'kneel'); put(R, 13, 13, 'ww');
+    for (let y = 14; y <= 19; y++) put(R, y, 13, 'mM');
+    grids.fire = R; }
+  { const R = blank(); body(R, -1, 0, true); legs(R, 'stand'); put(R, 13, 10, 'ww'); put(R, 14, 11, 'mM');
+    put(R, 15, 12, 'mM'); put(R, 16, 13, 'mM'); put(R, 17, 14, 'mM'); grids.hurt = R; }
+  return pack([f(grids.idle), f(grids.walkA), f(grids.walkB), f(grids.cutTell), f(grids.cut), f(grids.shove),
+    f(grids.runA), f(grids.runB), f(grids.fire),
+    /* and the same four poses again in ember: this is the whole silhouette rule, baked */
+    f(grids.idle, true), f(grids.walkA, true), f(grids.cutTell, true), f(grids.cut, true),
+    f(grids.hurt)], 8, 22, 10, 14);
 }
