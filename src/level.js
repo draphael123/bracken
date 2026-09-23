@@ -13,6 +13,7 @@ import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
+import { buildUnburiedField } from './unburied-field.js';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
@@ -7205,6 +7206,11 @@ export const LEVELS = [
   /* THE ORE ROAD (2026-09-23): the castle's supply line, a cableway over the gorge between Stormhold and Highcrown. Appended so no
      index moves; Highcrown needs it now */
   { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'storm' },
+  /* THE UNBURIED FIELD (Lane C, 2026-09-23/25): the optional Death Knight class level, a spur off THE WITCHLIGHT STAIR.
+     Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
+     in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
+     that is Lane B's, per the Lane C report. */
+  { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
 ];
 

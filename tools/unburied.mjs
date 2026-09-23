@@ -9,27 +9,32 @@
    signature - and three shipped rules were broken (a 121-column checkpoint gap, a 57-tile arena, a two-wave ambush).
    A convention nothing checks is a wish, and so is a brief. This is the brief, asserted.
 
-   WHAT IT READS TODAY. The DRAFT, because the level is not in LEVELS yet: there is no 'unburied' entry, no map node, no
-   bannerbearer/corpse/standardbearer/deathknight in EHP and no art. WHEN THE LEVEL IS WIRED, the first line of this file
-   changes from the draft's build() to LEVELS[idx('unburied')].build() and everything below it should still hold - the
-   numbers here are the brief's numbers, not the draft's. Until then it is honest about what it cannot see, and it says so
-   in its own output rather than quietly scoring a smaller number.
+   WHAT IT READS TODAY (Lane C, 2026-09-25: WIRED). 'unburied' is a real entry in LEVELS now (src/unburied-field.js,
+   src/level.js), gated on hero 'reaper' via coinNeeds: 'unburied' in src/main.js. The geometry below is read off
+   LEVELS' own build(), not the draft's, and everything below still holds - the numbers here are the brief's numbers.
+   tools/unburied-field-draft.mjs still reads the draft directly (it measures the geometry only, and the draft file
+   is kept as the greybox record); this file is the one in the suite.
 
-   WHAT IT CANNOT SEE, SAID OUT LOUD:
-     - the FIGHTS. A10/A11 are not statically checkable (RULES section A says so in as many words) and neither boss exists.
+   WHAT IT STILL CANNOT SEE, SAID OUT LOUD:
+     - the FIGHTS. A10/A11 are not statically checkable (RULES section A says so in as many words), and neither the
+       Standard-Bearer's nor the Death Knight's combat AI exists in src/main.js yet - see the Lane C report for the
+       exact list of what a build needs (EHP entries, tell/attack logic, the corpse-rise/banner rule, volleys, cover,
+       the cavalry charge, the arrow-peg climb, the three engines). The level's DATA is complete; none of it is wired
+       to gameplay, so F9 (walk it, no god mode) cannot be run in the page or the bot harness yet.
      - the ART, the music, the tints and the ghost armies in the backdrop: the brief's fourth distinct feature is a look.
-     - the GARRISON and ELITES rows are carried on the draft as data. A build moves them into src/level.js and this counts
-       them either way, but nothing here proves a placer honoured them.
-     - F7's shop/shrine, three quest strays and a relic: those live on the LEVELS entry, which does not exist yet. */
+     - the GARRISON and ELITES rows are carried on the level as data and counted below, but nothing here proves a
+       renderer honours them (there is no renderer for these foes yet).
+     - F7's shop/shrine, three quest strays and a relic: not part of this brief's named scope. */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { T } from '../src/level.js';
+import { T, LEVELS } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { build, UF } from '../src/draft/unburied-field.js';
+import { UF } from '../src/draft/unburied-field.js';
 import { audit } from './route-breaks.mjs';
 
-const SOURCE = 'DRAFT src/draft/unburied-field.js';
-const L = build(T), { W, H, G } = UF, TS = 16;
+const SOURCE = 'LEVELS src/unburied-field.js';
+const build = () => LEVELS.find(l => l.id === 'unburied').build();
+const L = build(), { W, H, G } = UF, TS = 16;
 const fill = S => { const R = floodReach(S, T, { rides: true }); return { R, seen: [...R.seen].map(k => k.split(',').map(Number)) }; };
 const { R, seen } = fill(L);
 const near = e => { for (let dy = -2; dy <= 5; dy++) for (let dx = -3; dx <= 3; dx++) if (R.seen.has((e.x + dx) + ',' + (e.y + dy))) return true; return false; };
@@ -82,7 +87,7 @@ assert.ok(of('trebuchet').some(e => e.knocks === 'tower'), 'a trebuchet shot kno
    the only way on: delete every peg wall and the level must still be crossed end to end. */
 assert.ok(L.pegs && L.pegs.length >= 3, 'ARROW PEGS: the brief\'s signature, and the first greybox had none');
 for (const p of L.pegs) { assert.ok(p.rows.length >= 3 && p.why, 'a peg wall says what it is for'); assert.equal(L.grid[G * W + p.x], T.PALISADE, 'a peg wall is a wooden wall at x ' + p.x); }
-{ const S = build(T); for (const p of S.pegs) for (let y = p.top; y <= G; y++) for (let x = p.x; x <= p.x + 1; x++) S.grid[y * S.W + x] = T.AIR;
+{ const S = build(); for (const p of S.pegs) for (let y = p.top; y <= G; y++) for (let x = p.x; x <= p.x + 1; x++) S.grid[y * S.W + x] = T.AIR;
   const s2 = fill(S).seen; assert.ok(s2.some(([x]) => x >= UF.ARENA.x0 + 4), 'WITH EVERY ARROW PEG DELETED the field is still crossed: no peg is on the only way on'); }
 assert.ok(L.moversExtra.filter(m => m.kind === 'swing').length >= 2, 'catapult arms and chains to swing the trench gaps');
 /* CORPSE MOUNDS that give way into mass-grave pits, and rule B3: every pocket has a way out */
@@ -109,7 +114,7 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
   /* A12, the part a grid can answer: the room has standable ground OFF the floor as well as on it */
   assert.ok(box(a.x0 / TS, a.x1 / TS, 0, G - 1) > 4, 'A12: the Death Knight\'s room has footing off its floor');
   /* THE GATE the brief asks for: the mini holds the way on */
-  const S = build(T); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + UF.MINI.gate] === T.PORT) S.grid[y * S.W + UF.MINI.gate] = T.SOLID;
+  const S = build(); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + UF.MINI.gate] === T.PORT) S.grid[y * S.W + UF.MINI.gate] = T.SOLID;
   assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'THE STANDARD-BEARER holds the way on');
   ok('the mini and the boss', 'mini ' + mw + ' tiles, arena ' + aw + ' tiles, the gate holds'); }
 
@@ -167,5 +172,6 @@ assert.ok(L.pools.every(p => p.shallow && !p.harm && !p.poison), 'no deadly wate
   assert.equal(f.length, 0, 'route-breaks finds nothing'); }
 
 console.log('ok  unburied       THE UNBURIED FIELD matches its brief, read off the ' + SOURCE);
-console.log('      STILL UNBUILT, and this tool cannot see any of it: the LEVELS entry and its map spur, the coinNeeds gate on');
-console.log('      the Death Knight, both fights (A10/A11 are not statically checkable), the art, the music and the look.');
+console.log('      STILL UNBUILT, and this tool cannot see any of it: the map spur (Lane B\'s, not this level\'s), both fights\'');
+console.log('      combat AI (A10/A11 are not statically checkable and neither boss nor the mini nor the bannerbearer/corpse');
+console.log('      exist in src/main.js), the art, the music and the look.');
