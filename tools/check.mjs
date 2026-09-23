@@ -29,6 +29,14 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));   /* not .pathname: a space in the folder name arrives as %20 */
+/* A SUBSET, FOR THE BUILD LOOP. `npm run check` with no arguments is the GATE and is unchanged - all of it, and the
+   only thing that may be called green. `npm run check -- tower,tome,elites` runs just the checks whose names contain
+   one of those, which is seconds instead of half an hour, so a batch can be checked three times while it is being
+   written instead of once when it is finished. A subset PRINTS THAT IT IS ONE, every time, and never says the suite
+   passed: "8 of 101" is not a pass, and the difference between those two is the whole reason the gate exists. */
+const WANT = process.argv.slice(2).flatMap(a => a.split(',')).map(x => x.trim()).filter(Boolean);
+const SUBSET = WANT.length > 0, wanted = name => !SUBSET || WANT.some(w => name.includes(w));
+let skipped = 0; const take = name => { const y = wanted(name); if (!y) skipped++; return y; };
 const run = (name, cmd, args, env) => {
   const t0 = Date.now(), r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', env: env ? { ...process.env, ...env } : process.env });
   const out = ((r.stdout || '') + (r.stderr || '')).trim().split('\n');
@@ -37,6 +45,13 @@ const run = (name, cmd, args, env) => {
 const files = [];
 const walk = d => { for (const f of readdirSync(join(ROOT, d))) { const p = join(d, f); if (statSync(join(ROOT, p)).isDirectory()) walk(p); else if (/\.(m?js)$/.test(f)) files.push(p); } };
 walk('src'); walk('tools');
+/* ON A SUBSET, SYNTAX-CHECK ONLY WHAT CHANGED. The sweep spawns `node --check` once per file, and across ~150 files
+   that was 55 of the 60 seconds a two-check subset took - the checks themselves were four and a half. The FULL run
+   still parses everything, because that is the gate; a subset parses what git says you touched. */
+if (SUBSET) { const ch = spawnSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' });
+  const norm = f => f.replace(/\\/g, '/');
+  const touched = new Set((ch.stdout || '').split(String.fromCharCode(10)).map(l => norm(l.slice(3).trim())).filter(f => /\.(js|mjs)$/.test(f)));
+  for (let i = files.length - 1; i >= 0; i--) if (!touched.has(norm(files[i]))) files.splice(i, 1); }
 
 const results = [];
 /* THE TEMP FOLDER, before and after: abandoned BRACKEN browser profiles (idle 30 min, no live process on them) go first, and at
@@ -44,19 +59,22 @@ const results = [];
 const SUITE_T0 = Date.now(); run('profile-sweep', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans']);
 { const bad = files.map(f => [f, spawnSync(process.execPath, ['--check', f], { cwd: ROOT, encoding: 'utf8' })]).filter(([, r]) => r.status !== 0);
   results.push({ name: 'syntax', ok: !bad.length, ms: 0, last: bad.length ? bad.map(([f]) => f).join(', ') : files.length + ' files parse', out: bad.map(([f, r]) => f + ': ' + r.stderr) }); }
-for (const t of ['tells', 'ore-road', 'ore-ride', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'progression', 'progression-runtime', 'skill-menu', 'skill-passives', 'skill-balance-probe', 'reaper-input', 'traps', 'signs', 'killzones', 'collectables', 'keys', 'elites', 'spawns', 'deadends', 'rafts', 'raft-call', 'render-layers', 'room-patterns', 'heat', 'queen-comb', 'crown-route', 'crown-requests', 'gallery-runtime', 'waterfall-joins', 'paladin-enrage', 'spurs-runtime', 'additional-areas', 'additional-areas-runtime', 'keep', 'keep-runtime', 'keep-expansion', 'keep-passages', 'keep-expansion-runtime', 'storm-ship', 'storm-ship-runtime', 'haunted-coast', 'haunted-coast-runtime', 'tide-reaver', 'tome', 'false-abbot', 'tower-ascent', 'folly-runtime', 'deadly-water', 'burning-village', 'witchlight', 'sea-requests', 'sea-runtime', 'shop-theme', 'store-preview', 'dressing', 'runtime-footing', 'bridge-props', 'light-support', 'readability', 'town-live', 'waymeet-cleanup', 'owl-lamps', 'belfry', 'moor-wind', 'watchtowers', 'spore-loop', 'mother-cap', 'mother-pilot', 'salvage-captain', 'harbor-expansion', 'harbor-route', 'buried-dead', 'burial-route', 'burial-geometry', 'burial-rework', 'undercrown-variety', 'boss-openings', 'undead-foes', 'buried-attacks', 'combat-feel', 'attack-animation', 'attack-buffer', 'normal-health', 'ambush-single', 'reed-island', 'lab-clock', 'combat-replay', 'combat-results-test', 'king-refill', 'pilot-actions', 'pyre-pilot', 'herald-pirate', 'boss-navigation', 'cdp-recovery', 'swim-chain']) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
+for (const t of ['tells', 'ore-road', 'ore-ride', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'progression', 'progression-runtime', 'skill-menu', 'skill-passives', 'skill-balance-probe', 'reaper-input', 'traps', 'signs', 'killzones', 'collectables', 'keys', 'elites', 'spawns', 'deadends', 'rafts', 'raft-call', 'render-layers', 'room-patterns', 'heat', 'queen-comb', 'crown-route', 'crown-requests', 'gallery-runtime', 'waterfall-joins', 'paladin-enrage', 'spurs-runtime', 'additional-areas', 'additional-areas-runtime', 'keep', 'keep-runtime', 'keep-expansion', 'keep-passages', 'keep-expansion-runtime', 'storm-ship', 'storm-ship-runtime', 'haunted-coast', 'haunted-coast-runtime', 'tide-reaver', 'tome', 'false-abbot', 'tower-ascent', 'folly-runtime', 'deadly-water', 'burning-village', 'witchlight', 'sea-requests', 'sea-runtime', 'shop-theme', 'store-preview', 'dressing', 'runtime-footing', 'bridge-props', 'light-support', 'readability', 'town-live', 'waymeet-cleanup', 'owl-lamps', 'belfry', 'moor-wind', 'watchtowers', 'spore-loop', 'mother-cap', 'mother-pilot', 'salvage-captain', 'harbor-expansion', 'harbor-route', 'buried-dead', 'burial-route', 'burial-geometry', 'burial-rework', 'undercrown-variety', 'boss-openings', 'undead-foes', 'buried-attacks', 'combat-feel', 'attack-animation', 'attack-buffer', 'normal-health', 'ambush-single', 'reed-island', 'lab-clock', 'combat-replay', 'combat-results-test', 'king-refill', 'pilot-actions', 'pyre-pilot', 'herald-pirate', 'boss-navigation', 'cdp-recovery', 'swim-chain']) if (take(t)) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
 /* THE PIXELS NEED THE PAGE: a headless Chrome on a port of its own, so a dev server left running from another checkout is never the one measured */
-results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: '5993' }));
+if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: '5993' }));
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
-results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud', '--strict'], { PORT: '5994' }));
-results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */
-results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--check']));
+if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud', '--strict'], { PORT: '5994' }));
+if (!SUBSET) results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */   /* the full run only: a subset did not make the mess and must not be failed by it */
+if (!SUBSET) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--check']));
 
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }
 for (const r of results) if (!r.ok) { console.log('\n---- ' + r.name + ' ----'); console.log(r.out.slice(-30).join('\n')); }
-console.log(failed ? '\n' + failed + ' check(s) failed.' : '\nall checks pass.');
+console.log(failed ? '\n' + failed + ' check(s) failed.'
+  : SUBSET ? '\n' + results.length + ' of ' + (results.length + skipped) + ' checks pass - A SUBSET (' + WANT.join(', ') + '), NOT THE SUITE.'
+      + '\nRun `npm run check` with no arguments before a commit that matters, and before any deploy.'
+  : '\nall checks pass.');
 process.exitCode = failed ? 1 : 0;
 
 
