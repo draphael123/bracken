@@ -30,7 +30,7 @@
 //   c 272-339  THE COLLAPSED SPAN ON FOOT.   The cable is snapped; climb the fallen towers over their own splinters
 //   c 340-407  THE STEEP LINE     HOP.       Rusted buckets, two pillars, and the Sheargobs cutting hangers
 //   c 408-475  THE WINCH HOUSE    ON FOOT.   His crew, the gated elite, the last checkpoint
-//   c 476-523  THE DRUM HOUSE     THE WINCHMASTER (src/winchmaster.js - his rework is stage two, not this pass)
+//   c 476-523  THE DRUM HOUSE     THE WINCHMASTER (src/winchmaster.js): three housings on two lines, and he goes round them
 //
 // THE CABLEWAY is pure and lives here: a LINE is a polyline the buckets' tops follow, a speed, and a spacing. Every
 // bucket on a line is the same clock offset by its spacing, so they arrive like a clock and not like a spawner. The
@@ -47,7 +47,21 @@ export const OR = {
   PILLAR: [29, 20], PILLAR_X: [340, 352],                        // the brakeman's pillar: rock, and the loft on it
   PILLAR_B: 16, PILLAR_BX: [376, 384],                           // the second pillar, out in the gorge
   WINCH: 12,
-  ARENA: { x0: 476, x1: 519, deck: 12, walk: 9, housing: 8, spoil: 22, ledge: [507, 509], house: [510, 518], spans: [[482, 488], [491, 496], [499, 503]] },
+  /* THE DRUM HOUSE (brief section 6, approved as written). THREE HOUSINGS ON TWO LINES, and no jump reaches any of them: the
+     housing is always four rows over its own ledge, and eight tiles of air from any footing at its height. `top` is the row he
+     stands in, `ledge`/`ledgeTop` where a jam throws him, `line`/`at` which end of which line his drum is on. The LOW line runs
+     from the entrance deck into the Great Drum; the HIGH line runs between the Head Frame and the Tail Wheel and he drives it
+     toward whichever of them he is on. Ropes out of the spoil go up to the deck and to both high ledges - the ledges are where
+     you board the high line, and where a jam puts him. Each rope's top is level with the surface it serves (the crusher's
+     convention), so nobody stands on a rope-end a row higher than the ledge. FOUR ROWS IS ENOUGH ONLY BECAUSE A DRUM LINE'S SKIPS
+     CANNOT BE TIPPED: an emptied skip rides OR.BUCKET.lift higher, and 18 px under a 64 px housing is a 46 px jump. `housing`
+     is the Great Drum's row: main.js seats him there before the fight */
+  ARENA: { x0: 476, x1: 519, deck: 12, housing: 8, spoil: 22, highRow: 8, ledge: [507, 509], house: [510, 518],
+    housings: [
+      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 512.5, ledge: [507, 509], ledgeTop: 12, line: 'low', at: 'end' },
+      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 4, home: 478.5, ledge: [481, 483], ledgeTop: 8, line: 'high', at: 'start' },
+      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 505, top: 4, home: 503.5, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end' }],
+    ropes: [[481, 13, 22], [484, 9, 22], [498, 9, 22]] },
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
      knight's box is 10-14 px, so a 24 px skip had no room to swing or to dodge on and NO FIGHT COULD HAPPEN ON ONE.
@@ -92,15 +106,18 @@ export function cableLines() {
     { id: 'steep', speed: 58, gap: 96, ret: 200, cracked: 3, pts: join(
       sagPts(352.5, OR.PILLAR[1], 354, OR.PILLAR[1], 0, 1), sagPts(354, OR.PILLAR[1], OR.PILLAR_BX[0], OR.PILLAR_B, 2), sagPts(OR.PILLAR_BX[0], OR.PILLAR_B, OR.PILLAR_BX[1], OR.PILLAR_B, 0, 1),
       sagPts(OR.PILLAR_BX[1], OR.PILLAR_B, 407, OR.WINCH, 2), sagPts(407, OR.WINCH, 408.75, OR.WINCH, 0, 1)) },
-    /* THE DRUM LINE: the arena's, into the great drum. The Winchmaster REVERSES it, sends buckets down it, and a rider jams it */
-    { id: 'drum', speed: 52, gap: 80, ret: 160, drum: true, pts: [[480.5 * TS, surf(A.deck)], [A.ledge[0] * TS, surf(A.deck)]] },
+    /* THE DRUM LINES: the arena's two. The LOW line runs from the entrance deck into the Great Drum; the HIGH line runs between
+       the Head Frame's ledge and the Tail Wheel's, and he drives it into whichever housing he is on. Both END THREE-QUARTERS OF A
+       TILE INSIDE THEIR LEDGES AT BOTH ENDS, because he REVERSES them: a rider is carried back out to the far end as well as in */
+    { id: 'low', speed: 60, gap: 90, ret: 160, drum: true, pts: [[480.25 * TS, surf(A.deck)], [(A.ledge[0] + 0.75) * TS, surf(A.deck)]] },
+    { id: 'high', speed: 52, gap: 90, ret: 160, drum: true, dir0: -1, pts: [[(A.housings[1].ledge[1] + 0.25) * TS, surf(A.highRow)], [(A.housings[2].ledge[0] + 0.75) * TS, surf(A.highRow)]] },
   ];
 }
 /* the state the level carries (L.cable): each line with its measured length and its clock */
 export function makeCableway(lines) {
   return { lines: lines.map(l => { const seg = []; let len = 0;
     for (let i = 1; i < l.pts.length; i++) { const d = Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]); seg.push(d); len += d; }
-    const n = Math.max(2, Math.ceil((len + l.ret) / l.gap)); return { ...l, seg, len, n, total: n * l.gap, t: 0, dir: 1, mul: 1, jam: 0 }; }) };
+    const n = Math.max(2, Math.ceil((len + l.ret) / l.gap)); return { ...l, seg, len, n, total: n * l.gap, t: 0, dir: l.dir0 || 1, mul: 1, jam: 0 }; }) };
 }
 /* where along the line a distance s puts a bucket's top */
 export function pointAt(line, s) {
@@ -117,8 +134,9 @@ export function stepCableway(C, dt) { for (const l of C.lines) { if (l.jam > 0) 
 /* bucket i of a line: its distance along the loop, and whether it is out on the cable (vis) or in the return */
 export function bucketS(line, i) { return mod(line.t + i * line.gap, line.total); }
 export function bucketAt(line, i) { const s = bucketS(line, i); if (s >= line.len) return { s, vis: false, x: 0, y: 0 }; const [x, y] = pointAt(line, s); return { s, vis: true, x, y }; }
-/* is this the bucket a rider can ride INTO the drum on: out on the drum line, and within a bucket's width of its end */
-export const atDrum = (line, i) => { const s = bucketS(line, i); return line.drum && line.dir > 0 && s < line.len && s > line.len - 10; };
+/* HOW FAR A BUCKET IS FROM THE DRUM IT IS RUNNING INTO: a drum line runs into its END while dir > 0 and into its START while
+   dir < 0. null when it is in the return, or on a line that is not a drum line */
+export const drumDist = (line, s) => !line.drum || s >= line.len ? null : line.dir > 0 ? line.len - s : s;
 /* THE BRAKE, as arithmetic, so a tool can check it with no page: how far ON the shoe is this frame. A braked bucket does not
    stop dead - it drags to a stand over OR.BRAKE seconds and lets go just as slowly - and NOTHING ELSE ON THE LINE STOPS WITH
    IT, which is what makes braking a decision instead of a pause button: the one behind you keeps coming. */
@@ -244,17 +262,17 @@ export function buildOreRoad({ painter, T }) {
   ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the frames on the two roofs: each has the yard under it */
   coins([419, WINCH - 4], [432, WINCH - 1], [458, WINCH - 4], [464, WINCH - 1]);
 
-  // ---- THE DRUM HOUSE (c 476-523): the arena. His rework is stage two; this is the room it was, moved east ----
-  block(A.ledge[0], A.ledge[1], A.deck + 1, A.deck + 2);                        // the drum's ledge, reached by bucket only
-  block(A.house[0], W - 1, A.housing + 1, H - 1);                               // the housing: he stands on it
+  // ---- THE DRUM HOUSE (c 476-523): the arena. Three housings, two lines, and he goes round them (src/winchmaster.js) ----
+  for (const Hs of A.housings) {
+    block(Hs.ledge[0], Hs.ledge[1], Hs.ledgeTop + 1, Hs.ledgeTop + (Hs.id === 'A' ? 2 : 1));   /* its ledge: where a jam throws him */
+    if (Hs.id === 'A') block(Hs.x0, W - 1, Hs.top + 1, H - 1);                                /* THE GREAT DRUM's housing: the east face of the gorge */
+    else block(Hs.x0, Hs.x1, Hs.top + 1, Hs.top + 2);                                         /* the two high housings: timber decks on legs (drawn) */
+  }
   block(A.x1, W - 1, 0, H - 1);
-  block(481, A.house[0] - 1, A.spoil + 1, H - 1);                               // THE SPOIL HEAP under the drop AND the drum's ledge: a fall costs a climb, not a life
-  rope(482, A.walk + 2, A.spoil);   /* up under the FIRST catwalk's west end: jump up through it, or - if he has cut it - step west onto the deck.
-                                       Never at the line's mouth (he sends buckets there), never under a catwalk that can be cut out from over
-                                       it with nowhere else to go, never beside a catwalk's east end where you drop onto a bucket */
-  for (const [a, b] of A.spans) for (let x = a; x <= b; x++) set(x, A.walk + 1, T.PLANK);   /* the catwalks: HE CUTS THEM */
-  ent('winchmaster', 514, A.housing, { face: -1 });
-  ent('sign', 477, A.deck, { text: 'RIDE A BUCKET INTO THE DRUM AND IT JAMS. HE WILL TRY TO STOP YOU.' });
+  block(481, A.house[0] - 1, A.spoil + 1, H - 1);                               // THE SPOIL HEAP under the whole room: a fall costs a climb, not a life
+  for (const [x, y0, y1] of A.ropes) rope(x, y0, y1);   /* out of the spoil: to the deck (the low line), and to each high ledge (the high line) */
+  ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
+  ent('sign', 477, A.deck, { text: 'RIDE A LOADED BUCKET INTO HIS DRUM AND IT JAMS. HE HAS THREE, AND HE WILL NOT STAY ON ONE.' });
 
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
   const cable = cableLines();
@@ -356,14 +374,24 @@ export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {
   if (on(OR.PILLAR_BX[0] - 4, OR.PILLAR_BX[1] + 4)) { const x0 = OR.PILLAR_BX[0] * TS - cx, x1 = (OR.PILLAR_BX[1] + 1) * TS - cx, top = surf(OR.PILLAR_B) - cy;
     g.fillStyle = '#4a4438'; g.beginPath(); g.moveTo(x0 + 2, top); g.lineTo(x1 - 2, top); g.lineTo(x1 - 26, bottom); g.lineTo(x0 + 22, bottom); g.closePath(); g.fill();
     g.fillStyle = '#5e5648'; g.fillRect(x0 + 6, top, 10, bottom - top); beam(x0 + 14, top - OR.BUCKET.hang - 8, x1 - x0 - 28, 6, IRON); }
-  /* THE DRUM HOUSE: the great drum at the housing's west face, turning with the line, and the gantry over it */
+  /* THE DRUM HOUSE: three drums, each on the face of its housing, turning with its own line - and the two high housings stood
+     on braced legs down into the gorge (B9: a timber deck in the air is stepped into something). The live drum, the one he is
+     driving, turns; a drum whose line is jammed stands still (drumAng is the world's, one angle per housing) */
   const A = OR.ARENA;
-  if (on(A.ledge[0] - 4, A.x1)) { const dx = A.house[0] * TS - cx, dy = surf(A.deck) - OR.BUCKET.hang - cy, r = 22;
-    beam(dx - 4, surf(A.housing) - cy - 60, (A.x1 - A.house[0]) * TS + 8, 6); for (const x of [dx, dx + 60, dx + 124]) beam(x, surf(A.housing) - cy - 56, 5, 56);
-    g.fillStyle = IRON[0]; g.beginPath(); g.arc(dx, dy, r + 3, 0, Math.PI * 2); g.fill(); g.fillStyle = IRON[1]; g.beginPath(); g.arc(dx, dy, r, 0, Math.PI * 2); g.fill();
-    g.fillStyle = IRON[2]; for (let q = 0; q < 8; q++) { const an = (drumAng || 0) + q * Math.PI / 4; g.fillRect(Math.round(dx + Math.cos(an) * (r - 4)) - 2, Math.round(dy + Math.sin(an) * (r - 4)) - 2, 4, 4); }
-    g.fillStyle = IRON[3]; g.beginPath(); g.arc(dx, dy, 5, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#c9a44a'; for (let q = -r + 4; q < r - 4; q += 3) g.fillRect(dx - 2 + Math.round(Math.sin(q + (drumAng || 0) * 3)), dy + q, 1, 2); }   /* the cable wound on it */
+  if (on(A.x0 - 4, A.x1)) {
+    for (let k = 0; k < A.housings.length; k++) { const Hs = A.housings[k], hang = OR.BUCKET.hang;
+      const face = (Hs.at === 'end' ? Hs.x0 : Hs.x1 + 1) * TS - cx, row = Hs.id === 'A' ? A.deck : A.highRow, dy = surf(row) - hang - cy, r = Hs.id === 'A' ? 22 : 15;
+      if (Hs.id === 'A') { beam(face - 4, surf(Hs.top) - cy - 60, (A.x1 - Hs.x0) * TS + 8, 6); for (const x of [face, face + 60, face + 124]) beam(x, surf(Hs.top) - cy - 56, 5, 56); }
+      else { const x0 = Hs.x0 * TS - cx, x1 = (Hs.x1 + 1) * TS - cx, top = surf(Hs.top) - cy + 32;
+        for (const x of [x0 + 4, x1 - 9]) beam(x, top, 5, bottom - top);
+        g.fillStyle = TIMBER[0]; for (let y = top + 12; y < bottom; y += 36) for (let q = 0; q < 36; q++) { g.fillRect(Math.round(x0 + 8 + (x1 - x0 - 16) * q / 36), y + q, 2, 1); g.fillRect(Math.round(x1 - 10 - (x1 - x0 - 16) * q / 36), y + q, 2, 1); }
+        beam(x0 - 2, surf(Hs.top) - cy - 40, x1 - x0 + 4, 5); beam(x0 + 2, surf(Hs.top) - cy - 36, 4, 36); beam(x1 - 6, surf(Hs.top) - cy - 36, 4, 36); }
+      const ang = Array.isArray(drumAng) ? drumAng[k] || 0 : drumAng || 0;
+      g.fillStyle = IRON[0]; g.beginPath(); g.arc(face, dy, r + 3, 0, Math.PI * 2); g.fill(); g.fillStyle = IRON[1]; g.beginPath(); g.arc(face, dy, r, 0, Math.PI * 2); g.fill();
+      g.fillStyle = IRON[2]; for (let q = 0; q < 8; q++) { const an = ang + q * Math.PI / 4; g.fillRect(Math.round(face + Math.cos(an) * (r - 4)) - 2, Math.round(dy + Math.sin(an) * (r - 4)) - 2, 4, 4); }
+      g.fillStyle = IRON[3]; g.beginPath(); g.arc(face, dy, 4, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#c9a44a'; for (let q = -r + 4; q < r - 4; q += 3) g.fillRect(face - 2 + Math.round(Math.sin(q + ang * 3)), dy + q, 1, 2); }   /* the cable wound on it */
+  }
 }
 /* THE FAR SIDE: the castle she keeps on the peak, and the cableway's pylons marching to it across the far gorge - drawn in the sky layer */
 export function drawOreBackdrop(g, VW, VH, cx, time) {

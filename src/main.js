@@ -1,8 +1,8 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
-import { OR, makeCableway, stepCableway, bucketAt, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
-import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* THE WINCHMASTER, the Ore Road's boss */
+import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
+import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
@@ -13766,7 +13766,7 @@ function updateBucket(m, dt) {
      run, and the ore goes down on whatever is under it. So every span is a decision about what you clear and what
      you pass under, instead of a wait. Falling rock already hurts both sides; the mine flag keeps your own load
      off your own head. */
-  if (m.ore && !m.fallen && rider && keys.down) { m.dump += dt;
+  if (m.ore && !m.fallen && rider && keys.down && !ln.drum) { m.dump += dt;   /* (not on a DRUM line: the Winchmaster's skips are his, and an emptied one riding high would put a jump onto his housing) */
     if (m.dump >= OR.DUMP) { m.ore = false; m.dump = 0;
       for (let k = -1; k <= 1; k++) rocks.push({ x: m.x + m.w / 2 + k * 12, y: m.y + 10, vx: k * 18, vy: 60, t: 0, dead: false, thrown: true, ore: true, mine: true });
       SFX.stone(); shakeCam(2); burst(m.x + m.w / 2, m.y + 6, 12, ['#b09a5a', '#7a7080', '#3a3440'], 80, 0.5); number(m.x + m.w / 2, m.y - 28, 'THE SKIP TIPS', '#b09a5a'); } }
@@ -13774,7 +13774,7 @@ function updateBucket(m, dt) {
   m.lift = liftStep(m.lift, m.ore, dt); m.brake = ln.hold || 0;
   if (m.fallen > 0) { m.fallV += 900 * dt; m.fallen += m.fallV * dt; }
   m.x = b.x - m.w / 2; m.y = b.y + m.fallen - m.lift;
-  m.dx = wasVis ? m.x - ox : 0; m.dy = wasVis ? m.y - oy : 0;
+  m.dx = wasVis ? m.x - ox : 0; m.dy = wasVis ? m.y - oy : 0; m.vxs = dt > 0 ? m.dx / dt : 0; m.vys = dt > 0 ? m.dy / dt : 0;   /* per second: the Winchmaster's hook leads a rider by it */
   /* CUT THE CABLE (brief section 3). A severed hanger drops everything on the skip. The Sheargob uses it on you;
      this is you using it on his crew - swing at a loaded bucket you are NOT standing on and it goes into the gorge
      with its passengers. A cuttable route is never the only route (B4): every line has a deck at both ends. */
@@ -13793,40 +13793,54 @@ function updateBucket(m, dt) {
     const n0 = enemies.length; spawnEnt({ t: m.i % 4 === 0 ? 'miner' : 'sheargob', x: Math.floor((m.x + m.w / 2) / TS), y: Math.floor(m.y / TS) - 1, face: -1 });
     for (let k = n0; k < enemies.length; k++) { enemies[k].bucket = m; enemies[k].seenP = true; } }
   for (const e of enemies) if (e.bucket === m && e.alive) { e.x = m.x + m.w / 2 + (e.bucketOff || 0); e.y = m.y; e.vy = 0; if (e.vx) e.vx = 0; }
-  /* THE DRUM: a bucket with someone in it that reaches the drum JAMS it, and throws him off the housing */
-  if (ln.drum && ln.dir > 0 && !(ln.jam > 0) && b.s > ln.len - 12 && oreRiders().some(p => p.onMover === m) && boss && boss.t === 'winchmaster' && boss.alive && bossActive) winchJamWorld();
+  /* THE DRUM: a LOADED bucket with someone in it, who got on it at least WINCH.rideIn px out, that reaches the drum of the housing
+     he is standing on JAMS it and throws him off. A skip jumped on at the drum's mouth has no weight behind it, and an emptied one
+     rides high over the jaws (the ore verb: brief section 3) - so the opening is a ride you commit to, not a step */
+  if (ln.drum) { const dd = drumDist(ln, b.s), on = oreRiders().some(p => p.onMover === m);
+    if (!on) m.boardD = undefined; else if (m.boardD === undefined) m.boardD = dd === null ? 0 : dd;
+    if (on && dd !== null && dd < 12 && !(ln.jam > 0) && m.ore && !m.fallen && m.boardD >= WINCH.rideIn && boss && boss.t === 'winchmaster' && boss.alive && bossActive && winchInto(ln) === boss.at) winchJamWorld(); }
 }
-const drumLine = () => L.cableway && L.cableway.lines.find(l => l.drum);
-const winchArena = () => { const A = L.arena, O = OR.ARENA; return { x0: A.x0, x1: A.x1, housingY: (O.housing + 1) * TS, deckY: (O.deck + 1) * TS, ledgeX: (O.ledge[0] + 1.5) * TS, homeX: (O.house[0] + 4) * TS, drumX: O.ledge[0] * TS }; };
-const winchSpans = () => OR.ARENA.spans.map(([a, b], k) => ({ k, x0: a * TS, x1: (b + 1) * TS, y: (OR.ARENA.walk + 1) * TS, up: tileAt(a, OR.ARENA.walk + 1) === T.PLANK }));
-function winchRestoreSpans() { for (const [a, b] of OR.ARENA.spans) for (let x = a; x <= b; x++) { const i = (OR.ARENA.walk + 1) * LW + x; if (L.grid[i] !== T.PLANK) { L.grid[i] = T.PLANK; tileSpr[i] = null; } } }
+const drumLine = () => L.cableway && L.cableway.lines.find(l => l.id === 'low');   /* the Great Drum's: the draw turns the drums with it */
+const winchLine = Hs => L.cableway && L.cableway.lines.find(l => l.id === Hs.line);
+/* which housing a drum line is running INTO right now: its end while dir > 0, its start while dir < 0 */
+const winchInto = ln => OR.ARENA.housings.findIndex(Hs => Hs.line === ln.id && (Hs.at === 'end') === (ln.dir > 0));
+/* THE THREE HOUSINGS in pixels, off the lines as the level built them (so what he aims at is what the buckets ride on) */
+function winchHousings() {
+  return OR.ARENA.housings.map(Hs => { const ln = winchLine(Hs), p = ln ? ln.pts : [[0, 0], [0, 0]], near = Hs.at === 'end' ? p[p.length - 1] : p[0], far = Hs.at === 'end' ? p[0] : p[p.length - 1];
+    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, ledgeX: (Hs.ledge[0] + 1.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS,
+      drumX: near[0], mouthY: near[1], away: Math.sign(far[0] - near[0]) || -1, sense: Hs.at === 'end' ? 1 : -1, ln }; });
+}
 function winchC(e) {
-  const A = winchArena(), O = OR.ARENA, ln = drumLine();
-  return { P, A, lineX0: 336.5 * TS, drumX: A.drumX,
+  const A = L.arena, H = winchHousings(), pm = () => { const m = P.onMover; return m && m.kind === 'bucket' ? m : null; };
+  return { P, A: { x0: A.x0, x1: A.x1 }, H,
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
     say: (m, red, green) => number(e.x, e.y - 48, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
     sound: k => ({ crash: SFX.crack, clank: SFX.clank, heavy: SFX.heavy, crack: SFX.crack, whoosh: SFX.throwWhoosh, roar: SFX.roar, thud: SFX.thud }[k] || SFX.thud)(),
-    shake: n => shakeCam(n),
+    shake: n => shakeCam(n), rand: () => Math.random(),
     shove: (vx, vy) => { P.vx = vx; P.vy = vy; P.ground = false; P.onMover = null; },
-    drive: (dir, mul) => { if (ln) { ln.dir = dir; ln.mul = mul; } },
-    lineY: x => ln ? lineYAt(ln, x) : null,
-    crash: x => { const y = ln ? lineYAt(ln, Math.max(x, ln.pts[0][0])) : A.deckY; burst(x, y, 12, ['#b09a5a', '#6a6a74', '#3a3440'], 90, 0.6); SFX.crack(); shakeCam(3); },
-    cut: k => { const s = O.spans[k]; if (!s) return; for (let x = s[0]; x <= s[1]; x++) { const i = (O.walk + 1) * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; burst(x * TS + 8, (O.walk + 1) * TS + 2, 3, ['#8a6a44', '#4a321e'], 60, 0.6, 400, 2); }
-      if (P.ground && !P.onMover && Math.abs(P.y - (O.walk + 1) * TS) < 3 && P.x > s[0] * TS - 4 && P.x < (s[1] + 1) * TS + 4) P.ground = false; number((s[0] + s[1]) * 8, (O.walk) * TS - 8, 'THE SPAN GOES', '#ff6b6b'); },
-    spansLeft: () => winchSpans().filter(s => s.up).map(s => s.k),
-    playerSpan: () => { if (!P.ground || P.onMover) return null; const s = winchSpans().find(q => q.up && Math.abs(P.y - q.y) < 3 && P.x > q.x0 - 4 && P.x < q.x1 + 4); return s ? s.k : null; },
-    span: k => winchSpans()[k],
-    riding: () => { const m = P.onMover; if (!m || m.kind !== 'bucket' || !ln || L.cableway.lines[m.line] !== ln) return null; return { coming: ln.dir > 0 && !(ln.jam > 0) }; },
-    onLedge: () => !P.dead && P.x > O.ledge[0] * TS - 6 && P.x < (O.ledge[1] + 1) * TS + 2 && Math.abs(P.y - A.deckY) < 8,
-    atLineMouth: () => !P.dead && !P.onMover && P.x > 333 * TS && P.x < 337 * TS + 8 && Math.abs(P.y - A.deckY) < 8,
+    /* THE HOOK DRAGS YOU TOWARD THE DROP: off whatever you stand on, toward him, and down */
+    drag: dir => { P.vx = dir * 170; P.vy = 90; P.ground = false; P.onMover = null; P.climb = false; },
+    /* sense +1 drives housing h's line INTO its drum, -1 out of it */
+    drive: (h, sense, mul) => { const q = H[h]; if (q && q.ln) { q.ln.dir = sense * q.sense; q.ln.mul = mul; } },
+    lineY: (h, x) => H[h] && H[h].ln ? lineYAt(H[h].ln, x) : null,
+    crash: (x, y) => { burst(x, y, 12, ['#b09a5a', '#6a6a74', '#3a3440'], 90, 0.6); SFX.crack(); shakeCam(3); },
+    solidAt: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)),
+    pVel: () => { const m = pm(); return [(P.vx || 0) + (m ? m.vxs || 0 : 0), (P.vy || 0) + (m ? m.vys || 0 : 0)]; },
+    riding: h => { const m = pm(), q = H[h]; if (!m || !q || !q.ln || L.cableway.lines[m.line] !== q.ln || m.fallen > 0) return null;
+      const s = bucketS(q.ln, m.i), dist = q.sense > 0 ? q.ln.len - s : s; return { coming: q.ln.dir * q.sense > 0 && !(q.ln.jam > 0), dist }; },
+    atMouth: (h, r) => { const q = H[h]; return !!q && !P.dead && Math.abs(P.y - q.mouthY) < 12 && Math.abs(P.x - q.drumX) < r; },
+    onLine: h => { const q = H[h]; if (!q || !q.ln || P.dead || P.onMover || !P.ground) return false; const xs = q.ln.pts.map(p => p[0]);
+      return Math.abs(P.y - q.mouthY) < 8 && P.x > Math.min(...xs) - 24 && P.x < Math.max(...xs) + 24; },
   };
 }
-function winchJamWorld() { const e = boss, c = winchC(e); if (!winchJam(e, c)) return; const ln = drumLine();
-  if (ln) { ln.jam = WINCH.thrownT + WINCH.downT + 0.4; ln.dir = 1; ln.mul = 1; } e.revT = 0;
-  zoomKick(1.1, 0.3); rumble(200, 0.8); burst(c.A.drumX, c.A.deckY - 20, 24, ['#b09a5a', '#9a9aa4', '#ffd36b'], 120, 0.7); }
+function winchJamWorld() { const e = boss, c = winchC(e), q = c.H[e.at]; if (!winchJam(e, c)) return;
+  if (q && q.ln) { q.ln.jam = WINCH.thrownT + WINCH.downT + 0.4; q.ln.dir = q.sense; q.ln.mul = 1; }
+  zoomKick(1.1, 0.3); rumble(200, 0.8); burst(q.drumX, q.mouthY - 20, 24, ['#b09a5a', '#9a9aa4', '#ffd36b'], 120, 0.7); }
 function updateWinchBoss(e, dt) {
   if (!L.arena) return;
-  if (e.mode === 'wake' && !e.restored) { e.restored = true; winchRestoreSpans(); }
+  /* A FRESH FIGHT STARTS AT THE GREAT DRUM with both lines running as the level built them: a death mid-reverse or mid-jam must
+     not hand the next attempt a line running the wrong way */
+  if (e.mode === 'wake' && !e.restored) { e.restored = true; e.at = 0; for (const l of L.cableway.lines) if (l.drum) { l.jam = 0; l.mul = 1; l.dir = l.dir0 || 1; } }
   stepWinchmaster(e, dt, winchC(e));
   e.x = Math.max(L.arena.x0 + 16, Math.min(L.arena.x1 - 16, e.x));
 }
