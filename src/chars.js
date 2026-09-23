@@ -526,6 +526,66 @@ export function bakeMerrowBrute() {
   return pack(frames, 7, 15, 10, 14);
 }
 
+/* THE LEADFOOT — the drowned keep's man-at-arms, sealed in plate, who WALKS where everything else swims.
+   Drawn AGAINST his level: every other body in the Underwater Keep is a long horizontal shape and he is an
+   upright one, a head taller than any of them, helm shut with a black slit and no face behind it. The halberd
+   rides upright on the march so the silhouette stays vertical from across a flooded hall, and the anchor hangs
+   at his back hip on its chain. The bubble line out of his seams is not in the sprite: it is emitted by
+   updateLeadfoot, because it has to be there when he is off screen too.
+   18x22 grid. frames: 0-3 walk (a heavy shuffle with a one-pixel sink on the contact frames)
+     4 plant tell (braced wide, the haft brought down across his front)   5 sweep tell (drawn back low behind)
+     6 sweep (out low in front, along the floor)                          7 plant (driven straight up overhead)
+     8 anchor tell (anchor swung back on its chain)                       9 anchor (thrown, chain out in front)
+     10 hurt (helm snapped back, knees gone, the haft dropped)  -- LAST, which is the frame HAS_HURT reads. */
+const LF = Object.assign({}, EP, { S: '#6b7783', s: '#98a5b1', D: '#3c4650', v: '#3f8f7d', r: '#8a4a2a',
+  w: '#6b4a2a', W: '#42301c', b: '#cfd8e0', c: '#8a919c', e: '#0d1216', d: '#2a323a' });
+const LFW = 18, LFH = 22;
+const lfBlank = () => Array(LFH).fill('.'.repeat(LFW));
+const lfPut = (rows, x, y, ch) => { if (y < 0 || y >= LFH || x < 0 || x >= LFW) return;
+  const a = rows[y].split(''); a[x] = ch; rows[y] = a.join(''); };
+const lfStamp = (rows, art, x0, y0) => art.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] !== '.') lfPut(rows, x0 + i, y0 + j, r[i]); });
+const lfLine = (rows, x0, y0, x1, y1, ch) => { const n = Math.max(1, Math.abs(x1 - x0), Math.abs(y1 - y0));
+  for (let i = 0; i <= n; i++) lfPut(rows, Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), ch); };
+const LF_HELM = ['.DDDDDD.', 'DSSSSSSD', 'DSssssSD', 'DSeeeeSD', 'DSSSSSSD', '.DvvvvD.'];
+const LF_TORSO = ['SSSSSSSSSS', 'DSSSSSSSSD', 'DSsvvvvsSD', 'DSSSSSSSSD', '.DSSSSSSD.', '.DSrrrrSD.', '..DSSSSD..', '..DSSSSD..'];
+const LF_LEGS = [
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '.DSSD.DSSD', '.dddd.dddd'],
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '.SS....SS.', '.SS....SS.', '.SS....SS.', 'DSSD..DSSD', 'dddd..dddd'],
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS...SS.', '..SS...SS.', '.DSSD.DSSD', '.dddd.dddd'],
+  ['..SS..SS..', '..SS..SS..', '..SS..SS..', '..SS...SS.', '.SS....SS.', '.SS....SS.', 'DSSD..DSSD', 'dddd..dddd'],
+];
+const LF_BRACE = ['..SS..SS..', '..SS..SS..', '.SS....SS.', '.SS....SS.', 'SS......SS', 'SS......SS', 'SS......SS', 'dddd..dddd'];
+const LF_BUCKLE = ['..........', '..SS..SS..', '..SS..SS..', '.SS....SS.', '.SS....SS.', 'SS......SS', 'SSD....DSS', 'ddd....ddd'];
+const LF_AXE_UP = ['.b.', '.b.', '.bb', 'bbb', '.bb', '.b.'];
+const LF_AXE_R = ['..b', 'bbb', 'bbb', '..b'];
+const LF_AXE_L = ['b..', 'bbb', 'bbb', 'b..'];
+const LF_ANCHOR = ['.c.', 'ccc', '.c.', 'c.c', 'ccc'];
+export function bakeLeadfoot() {
+  const lf = rows => outline(fromGrid(rows, LF, 1), OUT);
+  const body = (rows, dy) => { lfStamp(rows, LF_HELM, 4, dy); lfStamp(rows, LF_TORSO, 3, 6 + dy); };
+  const shoulderArms = (rows, dy) => { lfLine(rows, 12, 9 + dy, 14, 10 + dy, 'S'); lfPut(rows, 13, 12 + dy, 'S'); };
+  const upright = (rows, dy) => { lfLine(rows, 14, 2 + dy, 14, 17, 'w'); lfPut(rows, 14, 17, 'W'); lfStamp(rows, LF_AXE_UP, 13, dy); shoulderArms(rows, dy); };
+  const frames = [];
+  for (let i = 0; i < 4; i++) { const r = lfBlank(), dy = i % 2 === 0 ? 1 : 0;
+    lfStamp(r, LF_ANCHOR, 0, 11 + dy); lfPut(r, 3, 11 + dy, 'c');
+    body(r, dy); lfStamp(r, LF_LEGS[i], 3, 14); upright(r, dy); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_BRACE, 3, 14); lfStamp(r, LF_ANCHOR, 0, 11);   /* 4 THE PLANT, told: he sets his feet and drops the haft across his front */
+    lfLine(r, 11, 10, 15, 17, 'w'); lfPut(r, 11, 10, 'W'); lfStamp(r, LF_AXE_R, 15, 16); lfLine(r, 12, 10, 13, 12, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_LEGS[0], 3, 14); lfStamp(r, LF_ANCHOR, 0, 11);   /* 5 THE HALBERD SWEEP, told: the whole haft drawn back behind his heels */
+    lfLine(r, 13, 11, 2, 18, 'w'); lfPut(r, 13, 11, 'W'); lfStamp(r, LF_AXE_L, 0, 17); lfLine(r, 12, 11, 13, 12, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 1); lfStamp(r, LF_BRACE, 3, 14);                                   /* 6 THE SWEEP: a long low arc out along the floor */
+    lfLine(r, 5, 12, 15, 19, 'w'); lfPut(r, 5, 12, 'W'); lfStamp(r, LF_AXE_R, 15, 18); lfLine(r, 11, 13, 13, 15, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_BRACE, 3, 14); lfStamp(r, LF_ANCHOR, 0, 11);     /* 7 THE PLANT: driven straight up into the water over him */
+    lfLine(r, 10, 13, 15, 2, 'w'); lfPut(r, 10, 13, 'W'); lfStamp(r, LF_AXE_UP, 14, 0); lfLine(r, 12, 7, 14, 4, 'S'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_LEGS[0], 3, 14); upright(r, 0);                  /* 8 THE ANCHOR THROW, told: it comes off his hip and swings back behind his shoulder */
+    lfStamp(r, LF_ANCHOR, 0, 5); lfLine(r, 2, 8, 4, 11, 'c'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 0); lfStamp(r, LF_BRACE, 3, 14); upright(r, 0);                    /* 9 THE ANCHOR, out in front on its chain */
+    lfStamp(r, LF_ANCHOR, 15, 7); lfLine(r, 12, 10, 15, 9, 'c'); frames.push(lf(r)); }
+  { const r = lfBlank(); body(r, 1); lfStamp(r, LF_BUCKLE, 3, 14); lfStamp(r, LF_ANCHOR, 0, 12);    /* 10 HURT */
+    lfLine(r, 12, 12, 16, 19, 'w'); lfPut(r, 12, 12, 'W'); lfStamp(r, LF_AXE_R, 15, 18); frames.push(lf(r)); }
+  return pack(frames, 8, LFH + 1, 12, LFH);
+}
+
 // Spitter — toadstool that spits seeds. 14×12. Frames: idle, cap-tilt, mouth open.
 export function bakeSpitter() {
   const cap = ['....rrrrrr....', '..rrrerrrrer..', '.rrrrrrrrrrrr.', 'rrerrrrrerrrrr', 'rrrrrrrrrrrrrr', '.RRRRRRRRRRRR.'];
