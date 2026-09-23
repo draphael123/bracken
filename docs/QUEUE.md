@@ -41,7 +41,7 @@ These were designed on 2026-09-20/21 and live in **`.claude/briefs/`**. Do not r
 
 | level | unlocks | state | |
 |---|---|---|---|
-| **THE UNBURIED FIELD** | Death Knight | brief **+ greybox** (`src/draft/unburied-field.js`, `tools/unburied-field-draft.mjs`) | **the closest to ready of anything in this file** |
+| **THE UNBURIED FIELD** | Death Knight | brief **+ greybox, RECONCILED 2026-09-25** (`src/draft/unburied-field.js`, `tools/unburied-field-draft.mjs`, and **`tools/unburied.mjs` in the suite** — the brief asserted, feature by feature) | **the closest to ready of anything in this file.** The design is settled and now machine-checked; what is left is the vertical slice: a `LEVELS` entry and a spur node, the `bannerbearer` and `corpse` foes, THE STANDARD-BEARER and THE FIRST DEATH KNIGHT, `coinNeeds` on `reaper`, and all of the art |
 | **THE POWDER DECK** | Freebooter | brief + pitch. An optional ship level going *between* decks, unlocking doors — deliberately not a fourth above-deck level | |
 | **THE CHURCH** | Paladin | brief + pitch. Renames Waymeet's boss to **THE CRUSADER** so the church's own boss is **THE PALADIN** — you beat the Paladin to buy the Paladin | |
 | **THE SUNKEN CARAVAN** | — (desert 1) | brief + greybox | lane E |
