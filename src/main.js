@@ -1,5 +1,6 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
+import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { OR, makeCableway, stepCableway, bucketAt, lineYAt, drawCables, drawBucket, drawOreStructures, drawOreBackdrop } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
@@ -15053,7 +15054,7 @@ function villageSplash(x, y, r, cool) {
   const n = douse(VG, Math.floor(x / TS), Math.floor((y - 1) / TS), r);
   for (const f of fires) if (!f.still && !f.grid && Math.abs(f.x - x) < r * TS && Math.abs(f.y - y) < 40) f.life = 0;
   if (fires.some(f => f.barrier && Math.abs(f.x - x) < (r + 3) * TS && Math.abs(f.y - y) < 40)) { const bs = fires.filter(f => f.barrier); if (bs.some(f => !(f.delay > 0))) number(bs[0].x + 16, bs[0].y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); for (const f of bs) f.delay = 12; }   /* the roof's fire: out for twelve seconds, and back */
-  for (const pr of props) if (pr.t === 'captive' && !pr.freed && Math.abs(pr.x - x) < cool * TS && Math.abs(pr.y - y) < 3 * TS) { pr.coolT = 12; pr.cooled = true; if (pr.hot || pr.hotNear) number(pr.x, pr.y - 40, 'COOLED', '#9ad0ff'); }
+  for (const pr of props) if (pr.t === 'captive' && !pr.freed && !pr.lost && Math.abs(pr.x - x) < cool * TS && Math.abs(pr.y - y) < 3 * TS) { pr.coolT = 12; pr.cooled = true; if (pr.hot || pr.hotNear) number(pr.x, pr.y - 40, 'COOLED', '#9ad0ff'); }
   for (let i = 0; i < 26; i++) parts.push({ x: x + (Math.random() - 0.5) * 16, y: y - 10, vx: (Math.random() - 0.5) * r * 40, vy: -120 - Math.random() * 120, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); number(x, y - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff');
 }
@@ -15062,6 +15063,12 @@ function freeCaptive(pr) {
   props.push({ t: 'vrunner', x: pr.x, y: pr.y, vy: 0, t0: 0, alt: pr.alt, anim: 0 });
   const Q = questOf(); number(pr.x, pr.y - 36, 'SAVED ' + straysGot.size + ' OF ' + Q.n, '#8fd160'); SFX.sting(); burst(pr.x, pr.y - 14, 10, ['#8fd160', '#fff6e0'], 50, 0.6, -20, 1);
   if (straysGot.size >= Q.n) questDone(pr.x, pr.y);
+}
+function loseCaptive(pr) {   /* THE HOUSE HAS THEM: the roof comes in over the door, and that villager is gone for this run */
+  shakeCam(4); SFX.crumble ? SFX.crumble() : SFX.crack(); SFX.roar(); burst(pr.x, pr.y - 20, 26, ['#ff6b2c', '#ffd36b', '#3a2a22', '#1a1010'], 90, 0.9, -30, 2);
+  for (const dx of [-10, 0, 10]) fires.push({ x: pr.x + dx, y: pr.y, life: 3, delay: Math.abs(dx) / 100 });
+  const lost = props.filter(q => q.t === 'captive' && q.lost).length;
+  number(pr.x, pr.y - 44, 'THEY ARE GONE', '#9aa39a'); number(pr.x, pr.y - 56, lost + ' LOST', '#9aa39a');
 }
 function backdraft(pr) {   /* THE DOOR WAS HOT: the fire behind it takes the air the moment it is opened */
   shakeCam(5); SFX.roar(); SFX.puff(); burst(pr.x, pr.y - 12, 30, ['#ff6b2c', '#ffd36b', '#fff6c8', '#3a2a22'], 150, 0.7, -40, 2); ringAt(pr.x, pr.y - 12, 40, '#ff9a5c', 0.4);
@@ -15101,14 +15108,14 @@ function villageTick(dt) {
 function drawBurningTown(cx, cy) {
   if (!VG) return;
   const par = 0.35, base = VH - 58 - Math.round((cy - (L.arena.floor - VH + 40)) * 0.15), off = cx * par;
-  g.globalAlpha = 0.35; g.fillStyle = '#ff5a1c'; g.fillRect(0, base - 64, VW, 70); g.globalAlpha = 0.25; g.fillStyle = '#ffb040'; g.fillRect(0, base - 16, VW, 24); g.globalAlpha = 1;
+  drawBurningBackdrop(g, VW, VH, base, off, time, VG.heat || 0);   /* banded glow + the far ridge, driven by the fire that is really burning */
   for (let k = Math.floor(off / 46) - 1; k < Math.floor((off + VW) / 46) + 2; k++) {
     const h = 26 + ((k * 37) % 5) * 7, w = 30 + ((k * 13) % 3) * 8, x = Math.round(k * 46 - off), y = base - h, peak = 10 + ((k * 7) % 3) * 4, lit = (k * 11) % 4;
     g.fillStyle = '#1a0e10'; g.fillRect(x, y, w, h + 30); g.beginPath(); g.moveTo(x - 3, y + 1); g.lineTo(x + w / 2, y - peak); g.lineTo(x + w + 3, y + 1); g.fill();
     if ((k * 5) % 3 === 0) { g.fillRect(x + w - 9, y - peak - 6, 5, peak + 6); }   /* a chimney */
     g.fillStyle = Math.floor(time * 6 + k) % 3 ? '#ff9a3c' : '#ffd36b'; for (let q = 0; q < 1 + lit; q++) g.fillRect(x + 5 + q * 9, y + 8 + (q % 2) * 7, 3, 4);   /* windows alight */
     if (lit >= 2) { const fx = x + w / 2, fy = y - peak + 2; for (let q = 0; q < 3; q++) { const fh = 8 + Math.round(Math.sin(time * 9 + k * 3 + q) * 3) + q * 2; g.fillStyle = q === 0 ? '#ffd36b' : q === 1 ? '#ff9a3c' : '#ff5a1c'; g.fillRect(Math.round(fx - 5 + q * 3 - 3), fy - fh, 5, fh); } }   /* the thatch burning */
-    if ((k * 3) % 4 === 1) { g.fillStyle = 'rgba(40,24,28,0.45)'; for (let q = 0; q < 5; q++) { const sy = y - peak - 10 - q * 14 - ((time * 12) % 14), sx = x + w / 2 + Math.sin(time * 0.8 + q + k) * (4 + q * 3); g.beginPath(); g.arc(Math.round(sx), Math.round(sy), 5 + q * 2, 0, 7); g.fill(); } }   /* smoke */
+    if ((k * 3) % 4 === 1 || (VG.heat || 0) > 0.5 && (k * 3) % 4 === 3) drawPixelSmoke(g, x + w / 2, y - peak - 10, time, k, VG.heat || 0);   /* pixel smoke, thicker as the fire grows */
   }
 }
 function updateVillage(dt) {
@@ -15116,6 +15123,7 @@ function updateVillage(dt) {
   villageTick(dt);
   const hb = attackBox();
   stepFire(VG, dt);
+  { let n = 0; for (const c of VG.cells) if (c.s === ALIGHT && !c.square && Math.abs(c.x * TS - (camX + VW / 2)) < VW) n++; VG.heat = (VG.heat || 0) + (Math.min(1, 0.15 + n / 24) - (VG.heat || 0)) * Math.min(1, dt * 1.5); }   /* THE SKY BEHIND THE TOWN follows the fire that is burning near you */
   const pm = boss && boss.t === 'pyromancer' ? boss : null;
   if (pm) squareHeat(VG, pm.alive && bossActive ? (pm.heat || 0) : 0);
   for (const c of VG.cells) {
@@ -15127,8 +15135,15 @@ function updateVillage(dt) {
   for (const e of enemies) if (e.t === 'burngob' && e.alive && e.onGround) { e.litT = (e.litT || 0) - dt;
     if (e.litT <= 0) { e.litT = 0.6; const c = cellNear(VG, Math.floor(e.x / TS), Math.floor((e.y - 1) / TS)); if (c) ignite(VG, c.x, c.y, 'burngob'); } }
   for (const pr of props) {
-    if (pr.t === 'captive') { if (pr.freed) continue;
+    if (pr.t === 'captive') { if (pr.freed || pr.lost) continue;
       pr.coolT = Math.max(0, (pr.coolT || 0) - dt); pr.cooled = pr.coolT > 0;
+      /* THE STAKES: a fuse on every captive (burning-village.js stepFuse) - a hot door's from the moment they call, any other
+         door's only while the fire is on their house. Water pauses it. Run out, and the house has them */
+      { let near = 0; for (const c of VG.cells) if (c.s === ALIGHT && !c.square && Math.abs(c.x * TS + 8 - pr.x) <= 6 * TS && (c.y + 1) * TS - pr.y >= -6 * TS && (c.y + 1) * TS - pr.y <= TS) near++;
+        const ev = stepFuse(pr, dt, near);
+        if (ev === 'half') number(pr.x, pr.y - 40, 'THE ROOF IS COMING IN!', '#ff9a5c');
+        else if (ev === 'last') { number(pr.x, pr.y - 40, 'HURRY!', '#ff6b6b'); SFX.charge(); }
+        else if (ev === 'lost') { loseCaptive(pr); continue; } }
       pr.hotNow = !pr.cooled && (pr.hot || (pr.hotNear && VG.cells.some(c => c.s === ALIGHT && Math.abs(c.x * TS + 8 - pr.x) < 5 * TS && Math.abs((c.y + 1) * TS - pr.y) < 3 * TS)));
       if (pr.hotNow && Math.random() < dt * 10) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y - 2, vx: (Math.random() - 0.5) * 20, vy: -20 - Math.random() * 20, life: 1, max: 1, col: Math.random() < 0.6 ? '#3a3036' : '#ff9a5c', size: 2, grav: -30 });
       if (pr.blowT > 0) { pr.blowT -= dt; if (pr.blowT <= 0) { backdraft(pr); freeCaptive(pr); } continue; }
@@ -15172,7 +15187,12 @@ function drawVillage(cx, cy) {
     g.fillStyle = hot ? (Math.floor(time * 12 + c.x) % 2 ? '#ffd36b' : '#ff6b2c') : '#b09256';
     for (let k = 0; k < 5; k++) { const kx = (h * 3 + k * 4) % 15; g.fillRect(sx + kx, sy - 3 - ((k + h) % 2), 1, 2 + ((k + h) % 2)); } }
   for (const pr of props) { if (pr.x < cx - 40 || pr.x > cx + VW + 40) continue; const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
-    if (pr.t === 'captive' && !pr.freed) {
+    if (pr.t === 'captive' && pr.lost) { g.fillStyle = '#0e0a0a'; g.fillRect(x - 11, y - 30, 22, 30); g.fillStyle = '#2a1a14'; g.fillRect(x - 11, y - 30, 22, 2); g.fillRect(x - 8, y - 12, 6, 2); g.fillRect(x + 3, y - 20, 7, 2);   /* the charred doorway */
+      g.fillStyle = Math.floor(time * 4 + pr.x) % 2 ? '#ff6b2c' : '#7a2a14'; g.fillRect(x - 6, y - 3, 2, 2); g.fillRect(x + 4, y - 2, 2, 1); }
+    else if (pr.t === 'captive' && !pr.freed) {
+      if ((pr.fuse || 0) > 0) { const left = fuseLeft(pr), bw = Math.round(22 * left);   /* THE FUSE: a flame bar burning down over the door */
+        g.fillStyle = '#1a0e0a'; g.fillRect(x - 12, y - 38, 24, 4); g.fillStyle = left < 0.2 ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : left < 0.5 ? '#ff9a3c' : '#ffd36b'; g.fillRect(x - 11, y - 37, bw, 2);
+        if (pr.fuseOn) { g.fillStyle = '#fff0b0'; g.fillRect(x - 11 + bw - 1, y - 38 + (Math.floor(time * 10) % 2), 1, 2); } }
       if (pr.hotNow) { g.globalAlpha = 0.22 + 0.1 * Math.sin(time * 9 + pr.x); g.fillStyle = '#ff6b2c'; g.fillRect(x - 11, y - 30, 22, 30); g.globalAlpha = 1; }
       g.fillStyle = '#1e140c'; g.fillRect(x - 10, y - 30, 20, 30);                        /* the doorway, dark behind them */
       drawSet(pr.alt ? SPR.folk2 : SPR.folk, null, 2, pr.x - cx, pr.y - cy, P.x < pr.x ? -1 : 1, false);

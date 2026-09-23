@@ -150,3 +150,58 @@ export function buildBurningVillage({ painter, T, TS }) {
       tint: '#ff6b2c', tintA: 0.1, fx: 'embers' },
   };
 }
+
+// ============================================================================================ THE STAKES (2026-09-23)
+// KICKOFF 4%: "NOTHING CAN EVER BE LOST: SAVED 0/6 is guaranteed, so every system is texture." A captive is LOSABLE now, on a
+// FUSE, and that makes the fire, the troughs and the well a fight against the clock instead of dressing:
+//   A HOT DOOR (an authored house already burning): its fuse starts the moment the villager behind it calls for help and runs
+//                  CAPTIVE.hot seconds. Water on the door (a trough, the well) pauses it while the door is cooled.
+//   ANY OTHER DOOR: its fuse runs only while the Pyromancer's fire (the grid) is ALIGHT on the house - CAPTIVE.near cells or
+//                  more within CAPTIVE.r tiles - so he and his burning goblins are what put a villager at risk, and putting
+//                  the fire out is what saves them. CAPTIVE.reached seconds of that and the house has them.
+// A villager lost is lost for THIS RUN only (the count resets with the level, like the saved one), so a player can come back
+// and do better. Pure: main.js counts the fire and draws; tools/village-stakes.mjs drives this directly.
+export const CAPTIVE = { hot: 40, reached: 20, near: 2, r: 6 };
+/* one frame of a captive's fuse. `alightNear` is the count of burning grid cells about their house. Returns what just
+   happened for the world to say - 'half', 'last', 'lost' - or null */
+export function stepFuse(pr, dt, alightNear) {
+  if (pr.freed || pr.lost) return null;
+  pr.fuseMax = pr.hot ? CAPTIVE.hot : CAPTIVE.reached;
+  const run = !pr.cooled && (pr.hot ? !!pr.said : alightNear >= CAPTIVE.near);
+  pr.fuseOn = run;
+  if (run) pr.fuse = (pr.fuse || 0) + dt;
+  const k = (pr.fuse || 0) / pr.fuseMax;
+  if (k >= 1) { pr.lost = true; return 'lost'; }
+  if (k >= 0.8 && !pr.warn2) { pr.warn2 = pr.warn1 = true; return 'last'; }
+  if (k >= 0.5 && !pr.warn1) { pr.warn1 = true; return 'half'; }
+  return null;
+}
+export const fuseLeft = pr => pr.fuseMax ? Math.max(0, 1 - (pr.fuse || 0) / pr.fuseMax) : 1;
+
+/* THE FIRE BEHIND THE TOWN, redrawn (KICKOFF 4%: it was two flat full-width fills at 0.35 and 0.25 - a colour wash, not fire -
+   anti-aliased arc smoke in a game of placed pixels, and one layer with no depth; and it ignored the real fire entirely).
+   Now: a HARD-BANDED glow, brightest at the rooflines, with a checkered pixel row between bands; a second, dimmer ridge of
+   roofs further back; square pixel smoke; and all of it driven by `heat` (0..1), the share of the village's fire grid that is
+   burning near the camera - put the fire out and the sky behind the town goes down with it. */
+const GLOW = ['#2a0e10', '#4a1612', '#7a2414', '#b03c16', '#e0641c', '#ff9a3c'];
+export function drawBurningBackdrop(g, VW, VH, base, off, time, heat) {
+  const k = Math.max(0, Math.min(1, heat)), bands = GLOW.length, bh = 11, top = base - bands * bh - 4;
+  const lift = Math.round(k * 2);                                   // a hotter fire lights a band higher
+  for (let i = 0; i < bands; i++) { const ci = Math.min(bands - 1, i + lift - 1 < 0 ? 0 : i + lift - 1), y = top + i * bh;
+    g.globalAlpha = 0.28 + 0.5 * k * (i + 1) / bands; g.fillStyle = GLOW[ci]; g.fillRect(0, y, VW, bh);
+    if (i + 1 < bands) { g.fillStyle = GLOW[Math.min(bands - 1, ci + 1)]; for (let x = (i & 1); x < VW; x += 2) g.fillRect(x, y + bh - 1, 1, 1); } }
+  g.globalAlpha = 1;
+  /* THE FAR RIDGE: a second row of roofs, smaller, slower and darker, with the odd window */
+  const off2 = off * 0.55;
+  for (let q = Math.floor(off2 / 30) - 1; q < Math.floor((off2 + VW) / 30) + 2; q++) {
+    const h = 14 + ((q * 29) % 4) * 4, w = 20 + ((q * 17) % 3) * 6, x = Math.round(q * 30 - off2), y = base - 10 - h, peak = 6 + ((q * 5) % 3) * 3;
+    g.fillStyle = '#2a1014'; g.fillRect(x, y, w, h + 12); g.beginPath(); g.moveTo(x - 2, y + 1); g.lineTo(x + w / 2, y - peak); g.lineTo(x + w + 2, y + 1); g.fill();
+    if ((q * 7) % 5 === 0) { g.fillStyle = k > 0.3 ? '#ff9a3c' : '#7a3a1c'; g.fillRect(x + 6, y + 6, 2, 3); } }
+}
+/* SMOKE, in pixels: squares that rise, drift and thin from a roof - 2 px near the fire, 3 px as they spread */
+export function drawPixelSmoke(g, x, y, time, seed, heat) {
+  const n = 5 + Math.round(heat * 4);
+  for (let q = 0; q < n; q++) { const t = (time * 0.6 + q * 0.37 + seed * 0.13) % 1, sy = Math.round(y - t * 70), sx = Math.round(x + Math.sin(time * 0.8 + q + seed) * (3 + t * 10) + t * 6), s = t < 0.4 ? 2 : 3;
+    g.globalAlpha = 0.55 * (1 - t); g.fillStyle = t < 0.2 ? '#4a2a22' : '#2a1c1e'; g.fillRect(sx, sy, s, s); }
+  g.globalAlpha = 1;
+}
