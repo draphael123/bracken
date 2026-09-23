@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';import{writeFileSync}from'node:fs';
+/* every active the shop sells is cast here: counted from the catalog, so a new one is measured the day it is added (34 before the starter kits) */
+const {SKILLS}=await import('../src/progression.js'),SKILLS_ACTIVE=SKILLS.filter(n=>n.active).length;assert(SKILLS_ACTIVE>=40);
 const pg=await openPage({audio:false,fonts:false});try{
 const r=await pg.evalp(`(async()=>{const {SKILLS}=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js');BK.manualSimulation=true;BK.SET.speed=1;const rows=[];
 for(const n of SKILLS.filter(n=>n.active)){
@@ -8,5 +10,5 @@ for(const n of SKILLS.filter(n=>n.active)){
  const st=BK.P.st,hp=BK.P.hp;BK.press('skill2');BK.sim(1);const cast=BK.P.cds?.[n.id]||0,cost=st-BK.P.st;
  for(let f=0;f<360;f++){foes.forEach(e=>{e.stagger=999;});BK.sim(1);}
  rows.push({hero:n.hero,id:n.id,cast:cast>0||n.id==='shieldThrow'&&cost>0,cooldown:+cast.toFixed(2),stamina:+cost.toFixed(2),damage:foes.reduce((a,e)=>a+10000-e.hp,0),healing:+(BK.P.hp-hp).toFixed(2)});
-}return rows})()`);assert.equal(r.length,34);assert(r.every(n=>n.cast),'every active must execute in a valid setup');assert(r.every(n=>Number.isFinite(n.damage)&&Number.isFinite(n.stamina)),'finite combat results');assert.deepEqual(pg.errors,[]);if(process.env.SKILL_BALANCE_OUT)writeFileSync(process.env.SKILL_BALANCE_OUT,JSON.stringify(r,null,2));console.log(JSON.stringify(r));
+}return rows})()`);assert.equal(r.length,SKILLS_ACTIVE);assert(r.every(n=>n.cast),'every active must execute in a valid setup');assert(r.every(n=>Number.isFinite(n.damage)&&Number.isFinite(n.stamina)),'finite combat results');assert.deepEqual(pg.errors,[]);if(process.env.SKILL_BALANCE_OUT)writeFileSync(process.env.SKILL_BALANCE_OUT,JSON.stringify(r,null,2));console.log(JSON.stringify(r));
 }finally{pg.close();}

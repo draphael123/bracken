@@ -63,6 +63,7 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    body centre stays at BX+8 and the set's single anchor still reads: drawSet mirrors with `c.width - set.ax`, which
    is measured off each frame's own canvas, so a 52-wide thrust flips to the right place beside a 34-wide idle.
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
+let SPEARLESS = false;   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
 function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0 }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
@@ -103,7 +104,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     for (let t = -1; t <= 1; t++) across(t, 2.5, t === -1 ? '#6e7a8c' : t === 1 ? '#e8eef6' : '#aab6c6');
     across(-3, 1.6, KP.y);                                                                // the langet, gold on the haft
   }
-  if (spear) { // THE WARDEN'S SPEAR: an ash haft, a bronze collar, a long leaf head, and an iron spike at the heel.
+  if (spear && !SPEARLESS) { // THE WARDEN'S SPEAR: an ash haft, a bronze collar, a long leaf head, and an iron spike at the heel.
     // A sword is read by its blade and a spear by its LENGTH and its POINT, so the haft is one clean pixel the whole
     // way out and every bright pixel is saved for the last four. At sixteen pixels that point is the entire hero.
     const [x0, y0, x1, y1] = spear.map((v, i) => v + (i & 1 ? dy : dx));
@@ -2244,7 +2245,9 @@ export function bakeWarden(skin = {}, previewOnly = false) {
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
+  const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
+  if (!SPEARLESS) { SPEARLESS = true; try { set.bare = bakeWarden(skin); } finally { SPEARLESS = false; } }   /* drawn while the JAVELIN is out: the cue that it is gone */
+  return set;
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
 export function bakeBale() {

@@ -1101,6 +1101,18 @@ Object.assign(SFX, {
   cutStage(n) { bell([0, 1175, 1568, 2093][n] || 1568, 0.2 + 0.08 * n, 0.05 + 0.015 * n); tone('triangle', vary(700 + 300 * n), 1400 + 400 * n, 0.07, 0.04); if (n === 3) { noise(0.2, 0.08, 3000, 0.6); tone('sine', 110, 90, 0.3, 0.06); } },
   heavyCut(n) { noise(0.16 + 0.03 * n, 0.2 + 0.04 * n, 1500 - 200 * n, 0.6); tone('sawtooth', vary(700), vary(160), 0.14 + 0.03 * n, 0.06 + 0.02 * n); SFX.slash(); if (n >= 2) tone('square', 240, 90, 0.12, 0.06, 0.05); },
   cutQuake() { SFX.stone && SFX.stone(); tone('sine', 90, 36, 0.4, 0.3); noise(0.3, 0.28, 520, 0.5); },
+  /* THE WARDEN'S SIX: ash through air low along the floor; a spear leaving the hand, going into wood or stone, whistling home and
+     slapped into the palm; the spring's landing, the stretch's rising note, the dance's short whips, the rain called and landing. */
+  wheel() { noise(0.3, 0.18, 700, 0.5); tone('triangle', vary(180), vary(420), 0.28, 0.07); SFX.shaftTurn(); },
+  javThrow() { noise(0.18, 0.2, 2600, 1.2); tone('triangle', vary(900), vary(400), 0.16, 0.06); },
+  javStick() { tone('square', vary(220), 120, 0.07, 0.07); noise(0.06, 0.14, 900, 0.8); tone('sine', 140, 70, 0.14, 0.12); },
+  javBack() { tone('sine', vary(600), vary(1200), 0.3, 0.05); noise(0.25, 0.08, 3000, 1.2); },
+  javCatch() { tone('square', vary(300), 200, 0.05, 0.06); noise(0.04, 0.1, 1400, 0.9); },
+  springLand() { SFX.braceStop(); tone('sine', 110, 50, 0.3, 0.2); },
+  stretch() { tone('triangle', 520, 1040, 0.35, 0.06); bell(1568, 0.4, 0.05, 0.12); },
+  danceThrust() { noise(0.06, 0.12, 3200, 1.4); tone('triangle', vary(1100), 700, 0.05, 0.03); },
+  rainCall() { tone('triangle', 300, 1200, 0.4, 0.07); noise(0.4, 0.12, 2400, 0.8); bell(2093, 0.5, 0.04, 0.3); },
+  rainHit() { tone('square', vary(260), 130, 0.06, 0.05); noise(0.05, 0.1, 1100, 0.8); },
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
