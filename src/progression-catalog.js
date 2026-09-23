@@ -8,7 +8,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "THIRD CUT",
     "max": 1,
-    "desc": "the third cut of a run throws what it hits bodily, like the charge's bash: into the wall, the water or the spikes",
+    "desc": "the third cut of a run throws what it hits bodily, like the heavy cut: into the wall, the water or the spikes",
     "parent": null,
     "active": false,
     "cap": false,
@@ -23,9 +23,9 @@ export const LEGACY_NODES = [
     "branch": 0,
     "row": 0,
     "col": 2,
-    "name": "SHIELD CHARGE",
+    "name": "HEAVY CUT",
     "max": 2,
-    "desc": "you already have it: HOLD the swing to brace, let go to rush behind the shield and bash through a guard. 15% harder and quicker to wind up a point",
+    "desc": "you already have it: HOLD the swing and let go to bring the sword down. held longer it breaks a guard, longer still it floors them. harder and quicker a point",
     "parent": null,
     "active": false,
     "cap": false,
@@ -59,7 +59,7 @@ export const LEGACY_NODES = [
     "col": 1,
     "name": "RISING CUT",
     "max": 1,
-    "desc": "an uppercut that launches you and the foe. plunge after it",
+    "desc": "an upward cut that carries the first foe up with you and holds it in the air for your cuts",
     "parent": "thirdCut",
     "active": true,
     "cap": false,
@@ -76,7 +76,7 @@ export const LEGACY_NODES = [
     "col": 2,
     "name": "SUNDER",
     "max": 1,
-    "desc": "whatever the charge bashes takes the next blow twice as hard",
+    "desc": "whatever the heavy cut lands on takes the next blow twice as hard",
     "parent": "heavy",
     "active": false,
     "cap": false,
@@ -127,7 +127,7 @@ export const LEGACY_NODES = [
     "col": 2,
     "name": "EXECUTION",
     "max": 1,
-    "desc": "the charge's bash or a third cut finishes any foe already under a quarter of its health",
+    "desc": "the heavy cut or a third cut finishes any foe already under a quarter of its health",
     "parent": "sunder",
     "active": false,
     "cap": false,
@@ -263,7 +263,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "BULL RUSH",
     "max": 1,
-    "desc": "the shield charge runs a tile further and its bash staggers twice as long. both charges knock back what flies at you",
+    "desc": "THE LAST CHARGE runs four tiles further and what it strikes staggers twice as long. it knocks back what flies at you",
     "parent": "parry",
     "active": false,
     "cap": false,
@@ -3078,4 +3078,18 @@ export const LEGACY_NODES = [
     "price": 360
   }
 ];
-export const SKILLS = LEGACY_NODES.filter(n => n.destination === 'skill');
+/* THE STARTER KITS' NEW ACTIVES (2026-09-23): bought abilities that were never talents, so they are kept out of the frozen
+   historical mapping above (a save from before them has nothing to migrate) and joined onto what the shop sells. Their
+   level and price follow the one ladder (tools/talents.mjs PRICE_AT). */
+export const STARTER_SKILLS = [
+  { "id": "disarm", "hero": "knight", "branch": 0, "row": 4, "col": 1, "name": "DISARM", "max": 1, "desc": "a hooking cut that strips a foe of its shield or its weapon for the rest of the fight. a boss is only opened a moment", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 14, "price": 400 },
+  { "id": "ironclad", "hero": "knight", "branch": 1, "row": 4, "col": 1, "name": "IRONCLAD", "max": 1, "desc": "for four seconds no blow staggers him or stops his swing. they still hurt", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 17, "price": 460 },
+  { "id": "swordOfRealm", "hero": "knight", "branch": 2, "row": 4, "col": 1, "name": "SWORD OF THE REALM", "max": 1, "desc": "for ten seconds every swing sends a wave of light along the floor, and a third cut sends a great one", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 20, "price": 520 },
+  { "id": "wheel", "hero": "warden", "branch": 1, "row": 4, "col": 1, "name": "THE WHEEL", "max": 1, "desc": "a low sweep of the shaft all the way round her: everything in reach goes down on its back", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 7, "price": 190 },
+  { "id": "javelin", "hero": "warden", "branch": 0, "row": 4, "col": 1, "name": "JAVELIN", "max": 1, "desc": "hurl the spear: it pins the first foe to what is behind it, or sticks in a wall as a step. F again brings it back", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 9, "price": 240 },
+  { "id": "poleSpring", "hero": "warden", "branch": 2, "row": 4, "col": 1, "name": "POLE SPRING", "max": 1, "desc": "plant the spear and vault straight up, then come down point first: what she lands on is pinned", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 12, "price": 360 },
+  { "id": "fullStretch", "hero": "warden", "branch": 0, "row": 5, "col": 1, "name": "FULL STRETCH", "max": 1, "desc": "for five seconds the spear reaches half again as far, and every blow of it lands as the tip", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 14, "price": 400 },
+  { "id": "spearDance", "hero": "warden", "branch": 0, "row": 6, "col": 1, "name": "SPEAR DANCE", "max": 1, "desc": "six quick thrusts from where she stands: each one that lands on the point rings", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 17, "price": 460 },
+  { "id": "rainOfSpears", "hero": "warden", "branch": 1, "row": 6, "col": 1, "name": "RAIN OF SPEARS", "max": 1, "desc": "spears thrown at the sky come down across the room and pin what they find", "parent": null, "active": true, "cap": false, "cost": 3, "destination": "skill", "level": 20, "price": 520 },
+];
+export const SKILLS = LEGACY_NODES.filter(n => n.destination === 'skill').concat(STARTER_SKILLS);

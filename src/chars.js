@@ -63,6 +63,7 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    body centre stays at BX+8 and the set's single anchor still reads: drawSet mirrors with `c.width - set.ax`, which
    is measured off each frame's own canvas, so a 52-wide thrust flips to the right place beside a 34-wide idle.
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
+let SPEARLESS = false;   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
 function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0 }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
@@ -103,7 +104,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     for (let t = -1; t <= 1; t++) across(t, 2.5, t === -1 ? '#6e7a8c' : t === 1 ? '#e8eef6' : '#aab6c6');
     across(-3, 1.6, KP.y);                                                                // the langet, gold on the haft
   }
-  if (spear) { // THE WARDEN'S SPEAR: an ash haft, a bronze collar, a long leaf head, and an iron spike at the heel.
+  if (spear && !SPEARLESS) { // THE WARDEN'S SPEAR: an ash haft, a bronze collar, a long leaf head, and an iron spike at the heel.
     // A sword is read by its blade and a spear by its LENGTH and its POINT, so the haft is one clean pixel the whole
     // way out and every bright pixel is saved for the last four. At sixteen pixels that point is the entire hero.
     const [x0, y0, x1, y1] = spear.map((v, i) => v + (i & 1 ? dy : dx));
@@ -374,7 +375,6 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
       KF({ legs: 'wide', dy: 1, shield: true, sword: [sh[0] - 4, sh[1] + 4, sh[0] - 6, sh[1] + 11] }),
     ],
   };
-  F.heavy = [F.brace, F.bash, F.recover];   /* (the name the draw and the other heroes use for a held swing) */
   const tuck = KF({ dy: 4, legs: 'crouch', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 5, sh[1] + 5] });
   F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
   { const arcs = comboArcs(sh, 'sword', 12, bare ? {} : { kite: SIDE }); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the backhand and the thrust */
@@ -418,6 +418,18 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
   directionalPoses(F, 'sword', { make: KF });
+  /* THE HEAVY CUT (his held swing since 2026-09-23; it was THE SHIELD CHARGE). The WIND-UP is the sword raised over the shield, the
+     kite square across him: straight up, then tipped back, then cocked right back behind the helm - one frame a stage, so how long
+     he has held it is on the body (main.js reads cutStage). The CUT comes from over his head down into the floor ahead of him.
+     Made after the padding, with the headroom of their own (the blade goes above the helm). */
+  { const top = ATTACK_HEADROOM;
+    F.windup = [KF({ top, legs: 'wide', shield: true, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 6], sword: [sh[0] - 1, sh[1] - 6, sh[0] - 2, sh[1] - 17], plume: 1 }),
+      KF({ top, legs: 'wide', shield: true, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 6], sword: [sh[0] - 1, sh[1] - 6, sh[0] - 7, sh[1] - 16], plume: 2 }),
+      KF({ top, legs: 'wide', dy: 1, shield: true, arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 6], sword: [sh[0] - 2, sh[1] - 6, sh[0] - 11, sh[1] - 13], plume: 2 })];
+    F.heavy = [KF({ top, wide: 10, dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 7], sword: [sh[0] + 1, sh[1] - 7, sh[0] + 6, sh[1] - 18], plume: 2 }),
+      KF({ top, wide: 10, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 4], sword: [sh[0] + 4, sh[1] - 4, sh[0] + 15, sh[1] - 8], plume: 2 }),
+      KF({ top, wide: 10, dx: 3, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 9], plume: 0,
+        bits: [[sh[0] + 14 - BX, sh[1] + 9 - BY, '#ffffff'], [sh[0] + 15 - BX, sh[1] + 8 - BY, '#fff6c8'], [sh[0] + 13 - BX, sh[1] + 8 - BY, '#fff6c8']] })]; }
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2294,7 +2306,9 @@ export function bakeWarden(skin = {}, previewOnly = false) {
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
-  return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
+  const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
+  if (!SPEARLESS) { SPEARLESS = true; try { set.bare = bakeWarden(skin); } finally { SPEARLESS = false; } }   /* drawn while the JAVELIN is out: the cue that it is gone */
+  return set;
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
 export function bakeBale() {

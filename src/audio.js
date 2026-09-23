@@ -1098,6 +1098,35 @@ export const castTable = () => CAST;
 export const heroKitTable = () => HERO_KIT;
 export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.startsWith('vo_')).map(k => k.slice(3).split('_')[0]))].sort();
 export const clipCount = () => Object.fromEntries(Object.entries(clips).map(([k, v]) => [k, v.filter(Boolean).length]));
+/* THE KNIGHT'S BOUGHT RISING CUT. It was the pogo's square-wave hop, which is a jump's sound: now it is steel drawn UP - a
+   bright scrape bending upward with a thin ring on the end of it - and what it catches bites with iron and a low thump. */
+Object.assign(SFX, {
+  riseCut() { noise(0.16, 0.2, 2400, 1.1); tone('sawtooth', vary(260), vary(1500), 0.15, 0.06); tone('triangle', vary(700), vary(2300), 0.12, 0.05, 0.03); bell(2349, 0.22, 0.035, 0.1); },
+  /* THE HEAVY CUT. Each stage of the wind-up rings a note higher on the raised blade; the cut is iron coming down, heavier by stage;
+     the knockdown's blade into the floor is stone answering. None of it is the shield's scrape: the charge is gone from X. */
+  cutStage(n) { bell([0, 1175, 1568, 2093][n] || 1568, 0.2 + 0.08 * n, 0.05 + 0.015 * n); tone('triangle', vary(700 + 300 * n), 1400 + 400 * n, 0.07, 0.04); if (n === 3) { noise(0.2, 0.08, 3000, 0.6); tone('sine', 110, 90, 0.3, 0.06); } },
+  heavyCut(n) { noise(0.16 + 0.03 * n, 0.2 + 0.04 * n, 1500 - 200 * n, 0.6); tone('sawtooth', vary(700), vary(160), 0.14 + 0.03 * n, 0.06 + 0.02 * n); SFX.slash(); if (n >= 2) tone('square', 240, 90, 0.12, 0.06, 0.05); },
+  cutQuake() { SFX.stone && SFX.stone(); tone('sine', 90, 36, 0.4, 0.3); noise(0.3, 0.28, 520, 0.5); },
+  /* THE WARDEN'S SIX: ash through air low along the floor; a spear leaving the hand, going into wood or stone, whistling home and
+     slapped into the palm; the spring's landing, the stretch's rising note, the dance's short whips, the rain called and landing. */
+  wheel() { noise(0.3, 0.18, 700, 0.5); tone('triangle', vary(180), vary(420), 0.28, 0.07); SFX.shaftTurn(); },
+  javThrow() { noise(0.18, 0.2, 2600, 1.2); tone('triangle', vary(900), vary(400), 0.16, 0.06); },
+  javStick() { tone('square', vary(220), 120, 0.07, 0.07); noise(0.06, 0.14, 900, 0.8); tone('sine', 140, 70, 0.14, 0.12); },
+  javBack() { tone('sine', vary(600), vary(1200), 0.3, 0.05); noise(0.25, 0.08, 3000, 1.2); },
+  javCatch() { tone('square', vary(300), 200, 0.05, 0.06); noise(0.04, 0.1, 1400, 0.9); },
+  springLand() { SFX.braceStop(); tone('sine', 110, 50, 0.3, 0.2); },
+  stretch() { tone('triangle', 520, 1040, 0.35, 0.06); bell(1568, 0.4, 0.05, 0.12); },
+  danceThrust() { noise(0.06, 0.12, 3200, 1.4); tone('triangle', vary(1100), 700, 0.05, 0.03); },
+  rainCall() { tone('triangle', 300, 1200, 0.4, 0.07); noise(0.4, 0.12, 2400, 0.8); bell(2093, 0.5, 0.04, 0.3); },
+  rainHit() { tone('square', vary(260), 130, 0.06, 0.05); noise(0.05, 0.1, 1100, 0.8); },
+  /* THE KNIGHT'S THREE: the hook and what it tears loose; iron closing over him; the realm's chord and each wave of it. */
+  disarmSwing() { noise(0.14, 0.18, 1800, 0.7); tone('triangle', vary(400), vary(1100), 0.12, 0.05); },
+  disarm() { SFX.clank(); tone('square', vary(900), 300, 0.18, 0.05, 0.03); noise(0.1, 0.14, 2600, 1, 0.05); },
+  ironclad() { SFX.clank(); tone('sine', 110, 70, 0.5, 0.2); bell(784, 0.5, 0.05, 0.05); noise(0.2, 0.1, 600, 0.6); },
+  realm() { bell(523, 0.9, 0.06); bell(659, 0.9, 0.05, 0.05); bell(784, 0.9, 0.05, 0.1); bell(1046, 1.1, 0.05, 0.16); noise(0.5, 0.08, 3000, 0.6); },
+  realmWave(big) { tone('triangle', vary(big ? 500 : 800), vary(big ? 1400 : 1600), big ? 0.25 : 0.14, big ? 0.06 : 0.035); noise(big ? 0.25 : 0.12, 0.08, 3500, 1); },
+  riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
+});
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];

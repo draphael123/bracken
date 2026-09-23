@@ -4,7 +4,7 @@ import{xpFloor}from'../src/xp.js';
 const memory=()=>{const m=new Map();return{getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k),m};};
 assert.equal(LEGACY_NODES.length,181);assert.equal(new Set(LEGACY_NODES.map(n=>n.hero+'/'+n.id)).size,181);assert(LEGACY_NODES.every(n=>['baseline','growth','skill'].includes(n.destination)));
 for(let version=1;version<=6;version++)for(const hero of HERO_IDS){
- const learned=SKILLS.filter(n=>n.hero===hero&&n.active),talents=Object.fromEntries(learned.map(n=>[n.id,true]));
+ const learned=LEGACY_NODES.filter(n=>n.hero===hero&&n.destination==='skill'&&n.active),talents=Object.fromEntries(learned.map(n=>[n.id,true]));
  const raw=JSON.stringify({hero,heroes:{[hero]:true},xpVersion:1,xp:{[hero]:xpFloor(12)},coins:83,silverSpent:3,items:{heart:true},done:{[hero]:{wood:1}},talentVersion:version,talents:{[hero]:talents},skill:learned[0].id,skill2:learned[1]?.id,skin:'tide',inventory:{token:1}});
  const r=migrateProgress(raw),p=r.progress;assert.equal(p.coins,383);assert.equal(r.receipt.points[hero],12);for(const n of learned)assert(p.skillOwned[hero][n.id]);assert.equal(p.loadouts[hero][0],hero==='reaper'?'summonSkeleton':learned[0].id);assert.equal(p.loadouts[hero].length,3);assert.deepEqual(p.inventory,{token:1});assert.deepEqual(p.items,{heart:true});assert.deepEqual(p.done,{[hero]:{wood:1}});assert.equal(p.xp[hero],xpFloor(12));
  const again=migrateProgress(JSON.stringify(p));assert.equal(again.changed,false);assert.deepEqual(again.progress,p);
