@@ -9,3 +9,8 @@ node_modules
 .claude/*
 !.claude/briefs/
 .env*.local
+
+# generated audit output: the .md reports in audits/ are written, the subdirectories are TOOL OUTPUT.
+# textfit, lookpass and popclutter used to default into one person's home directory; they now default into
+# the repo (audits/readability/), which is right - but their pictures and json must not be committed.
+audits/*/
