@@ -26,6 +26,17 @@ git worktree add ../bracken-<name> -b claude/<name> origin/codex/playtest-0919
 git merge claude/archroom      # you almost certainly want tonight's fixes
 ```
 
+## ONE SUITE AT A TIME, MACHINE-WIDE
+
+Worktrees mean agents can edit, run Node checks and run 8-second subsets in parallel all they like. **FULL
+`npm run check` RUNS MUST BE SERIALISED.** Not for comfort - for correctness. Several checks measure TIMING and fail
+under load: on 2026-09-23 `mother-pilot` and `undercrown-variety` failed in both of one session's full runs and
+passed alone every time, and `attack-animation` recorded 8.3 hours for a check that takes 45 seconds. A false red
+costs more to chase than the parallelism saves.
+
+Before starting a full run, say so to the other agents and wait for the machine. After it, say it is free. If a check
+fails, **re-run it alone before believing it** - `node tools/<name>.mjs` - and say in your report whether it passed.
+
 ## RULES, FROM DANIEL, NOT NEGOTIABLE
 
 1. **Nothing deploys.** Ever, without him saying so in that session.
