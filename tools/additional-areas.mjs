@@ -23,7 +23,10 @@ assert.equal(NODES.length,NODE_AT.length);
    not a second road. NODE_AT still snaps it to its junction, which is what the walk uses. */
 for(let i=0;i<NODES.length;i++){ const n=NODES[i]; assert(PATH[NODE_AT[i]], n.id+' has no road point');
   const d=Math.hypot(PATH[NODE_AT[i]][0]-n.x, PATH[NODE_AT[i]][1]-n.y);
-  if(n.spur) assert(d>4&&d<44, n.id+' is a SPUR and must hang OFF the road: it is '+d.toFixed(1)+'px from its junction, wanted 4-44');
+  /* THE CAP TIGHTENED FROM 4-44 TO 4-25 (map-redesign §6 item 5). 44px was loose enough for a stub to read as a
+     second road on a 320px sheet; nothing live has ever used more than ~24.2 (Burning Village, Underleaf), which
+     is the number the brief calls "24" - 25 is that measured value rounded up, not a new redesign of the band. */
+  if(n.spur) assert(d>4&&d<25, n.id+' is a SPUR and must hang OFF the road: it is '+d.toFixed(1)+'px from its junction, wanted 4-25');
   else assert(d<1, n.id+' map path mismatch'); }
 { const spurs=NODES.filter(n=>n.spur); assert(spurs.length>=3, 'the optional levels hang off the road: '+spurs.map(n=>n.id).join(', '));
   for(const n of spurs) assert(!PATH.some(p=>Math.hypot(p[0]-n.x,p[1]-n.y)<1), n.id+' is still a point ON the road'); }

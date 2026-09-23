@@ -2897,8 +2897,10 @@ const killPct = lv => { const n = lv.needsKills; if (!n) return 1; const p = PRO
 const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
 
 // ---------- world map ----------
-// One map, two regions: the Wood on the lower sheet, the Crags above it. The path climbs through the pass once Kingswood falls.
-const MAPW = 320, MAPH = 720, CRAG_H = 180, INLAND_Y = 0, COAST_Y = 180, CRAG_Y = 360, WOOD_Y = 540; // three regions stacked: the coast, the crags, the wood
+// Five sheets stacked into one tall canvas: the Desert on top, then the road inland, the coast, the crags, the wood at the
+// bottom. Play runs bottom to top; the sheet order above is top to bottom, which is why every offset below reads backwards
+// from the walk.
+const MAPW = 320, MAPH = 900, DESERT_Y = 0, INLAND_Y = 180, COAST_Y = 360, CRAG_Y = 540, WOOD_Y = 720;
 const WOOD_NODES = [
   { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, name: 'BRACKEN WOOD' },
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 66, name: 'THE STORE' },
@@ -2910,19 +2912,28 @@ const WOOD_NODES = [
   { id: 'underleaf', kind: 'level', level: 16, x: 74, y: 76, spur: true, name: 'UNDERLEAF' },   /* the secret, and now off the road in the picture as well as in the fiction */
 ];
 /* the road itself, and nothing but: the Burning Village and Underleaf hang off it on spurs (NODES `spur: true`) */
-const WOOD_PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118], [268, 84], [296, 34], [252, 28], [214, 26], [170, 22], [120, 30], [92, 42], [64, 54], [40, 64]];
+const WOOD_PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118], [268, 84], [296, 34], [252, 28], [214, 26], [170, 26], [120, 30], [92, 42], [64, 54], [40, 64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
+/* OPTION B — THE SINGLE DIAGONAL S (docs/crag-options.png, letter B). Every node moved. One continuous climb from
+   bottom-left to top-right, X sweeping through a smooth ogee (half-sine) curve as Y falls strictly - no hairpins,
+   no loop, one line the eye can follow start to finish. Correct by construction: strictly-falling Y means no two
+   segments can share a Y-range, so none can cross, whatever X does. THE ORE ROAD is the second-to-last node,
+   mid-climb with road on both sides. THE UNDERCROWN is a short stub off HIGHCROWN, clear of OREROAD (~27px). */
 const CRAG_NODES = [
-  { id: 'scree', kind: 'level', level: 5, x: 120, y: 92, name: 'THE SCREE PATH' },
-  { id: 'hanging', kind: 'level', level: 6, x: 214, y: 58, name: 'THE HANGING VILLAGE' },
-  { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 280, y: 36, name: 'THE HIGH STORE' },
-  { id: 'spire', kind: 'level', level: 7, x: 232, y: 118, name: 'THE SUNSPIRE' },
-  { id: 'moor', kind: 'level', level: 8, x: 160, y: 150, name: 'GALE MOOR' },
-  { id: 'storm', kind: 'level', level: 9, x: 82, y: 150, name: 'STORMHOLD' },
-  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 18, y: 118, name: 'THE ORE ROAD' },   /* the castle's supply line, between Stormhold and her gate (2026-09-23) */
-  { id: 'crown', kind: 'level', level: 10, x: 50, y: 40, name: 'HIGHCROWN' },
-  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 18, y: 88, spur: true, name: 'THE UNDERCROWN' },   /* straight down out of her cellars: a spur off the road, as a way down out of a castle should be */
+  { id: 'scree', kind: 'level', level: 5, x: 48, y: 136, name: 'THE SCREE PATH' },
+  { id: 'hanging', kind: 'level', level: 6, x: 72, y: 121, name: 'THE HANGING VILLAGE' },
+  { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 108, y: 105, name: 'THE HIGH STORE' },
+  { id: 'spire', kind: 'level', level: 7, x: 150, y: 89, name: 'THE SUNSPIRE' },
+  { id: 'moor', kind: 'level', level: 8, x: 192, y: 73, name: 'GALE MOOR' },
+  { id: 'storm', kind: 'level', level: 9, x: 228, y: 58, name: 'STORMHOLD' },
+  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 252, y: 42, name: 'THE ORE ROAD' },   /* mid-climb, road on both sides */
+  { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, name: 'HIGHCROWN' },
+  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 278, y: 36, spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
 ];
-const CRAG_PATH = [[36, 128], [62, 120], [92, 104], [120, 92], [150, 84], [184, 66], [214, 58], [250, 50], [280, 36], [270, 72], [252, 100], [232, 118], [210, 134], [184, 146], [160, 150], [134, 148], [108, 144], [82, 150], [54, 162], [22, 140], [18, 118], [18, 100], [30, 66], [50, 40], [38, 54], [26, 66], [38, 54], [50, 40]];   /* the Undercrown hangs off Highcrown on a spur of its own: out and back, not on the road */
+/* THE CRAG TAIL history: map-redesign §6 first fixed the corner-dive; the integrator then caught that fix
+   self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
+   no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
+   relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
+const CRAG_PATH = [[40, 152], [48, 136], [72, 121], [108, 105], [150, 89], [192, 73], [228, 58], [252, 42], [260, 26]];
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 140, y: 140, name: 'THE LONG WATER' },
@@ -2934,24 +2945,117 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' },
   { id: 'keep', kind: 'level', level: LEVELS.findIndex(l=>l.id==='keep'), x: 105, y: 80, name: 'THE UNDERWATER KEEP' },
   { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l=>l.id==='causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' }];   /* STORMWRECK HARBOR IS GONE FROM THE ROAD (Daniel, 2026-09-20: it offered nothing the coast had not). Its level still builds and is still tested; it is simply not on the map, and Waymeet needs the Causeway again. */
-const COAST_PATH = [[48, 172], [95, 158], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [195, 65], [140, 8]];
+/* [160,100] -> [26,96] -> [26,26] -> [140,8]: the exit tail was [160,100] -> [195,65] -> [140,8] until the
+   integrator's crossing check caught it - that rightward swing toward the seam cut back across the FLOTILLA ->
+   HURRICANE leg. A first re-fix ([110,50]) cleared that leg but still crossed the NEXT one, HURRICANE -> LAMPLIT
+   ([130,25] -> [85,32]) - hurricane sits close enough to both its neighbours that nothing threading between them
+   at a middling height gets through clean. The tail now hugs the LEFT margin instead, past hurricane and
+   lamplit entirely, before cutting right at the very top to the seam - proven by exhaustive search
+   (work/claude/coast-tail-search.mjs) against every other segment on the sheet. */
+/* THE ENTRY, MOVED (option-B seam fix). It was [48,172] - far left - which put the CRAG->COAST connector on a
+   long diagonal slash the full width of the sheet, from Highcrown's node (crag-local x=260) down to here. The
+   entry now sits at x=260 too, directly under Highcrown, so that connector is short and near-vertical like
+   every other seam on the map. LONGWATER stays the first stop; the entry->longwater leg is the only thing that
+   changed, and it clears every later segment (verified, no self-crossing). */
+const COAST_PATH = [[260, 172], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [26, 96], [26, 26], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
-  { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 150, y: 140, name: 'THE HEXED FIELDS' },
+  { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 62, y: 122, name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
   { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 130, y: 82, name: 'THE BURIAL CAVERNS' },
   { id: 'witchlight', kind: 'level', level: LEVELS.findIndex(l => l.id === 'witchlight'), x: 170, y: 66, name: 'THE WITCHLIGHT STAIR' },   /* the road up the tower hill, between the caverns and the Folly (batch 4c) */
   { id: 'mage', kind: 'level', level: LEVELS.findIndex(l => l.id === 'mage'), x: 214, y: 76, name: "THE MAGE'S FOLLY" },
   { id: 'fallingtower', kind: 'level',level:LEVELS.findIndex(l=>l.id==='fallingtower'),x:260,y:34,name:'THE FALLING TOWER'}];   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
-const INLAND_PATH = [[140, 176], [95, 172], [40, 162], [95, 172], [150, 140], [130, 110], [130, 82], [170, 66], [214, 76], [260,34]];
-const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })));
-const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[38, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]));
+/* WAYMEET, REDRAWN (map-redesign §6, 2b). The old polyline walked out to Waymeet and back over the same two points -
+   the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
+   Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
+   moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
+const INLAND_PATH = [[140, 176], [40, 162], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
+/* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
+   levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
+   frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
+   the connector that carries the road up out of THE FALLING TOWER to meet it. */
+const DESERT_NODES = [];
+const DESERT_PATH = [[274, 174]];
+const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })), DESERT_NODES.map(n => ({ ...n, y: n.y + DESERT_Y })));
+const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[40, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]), DESERT_PATH.map(([x, y]) => [x, y + DESERT_Y]));
 const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.y)<Math.hypot(PATH[best][0]-n.x,PATH[best][1]-n.y)?i:best,0));
-const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [38, 200 + CRAG_Y]], [[38, 200 + CRAG_Y], [36, 128 + CRAG_Y]], [[50, 40 + CRAG_Y], [48, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]]]);
+const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id; }
-const HUT = ART.bakeHut(), FLAG = ART.bakeFlag();
+const HUT = ART.bakeHut(), FLAG = ART.bakeFlag(), MAPICON = ART.bakeMapIcons();
 const map = { node: 0, seg: 0, t: 0, walking: 0, target: 0 }; // token position: on PATH segment seg at fraction t
-const nodeLocked = nd => nd.kind === 'level' ? levelLocked(LEVELS[nd.level]) : nd.kind === 'store' ? !godMode() && !!(nd.needs && !(PROG[nd.needs] && PROG[nd.needs].cleared) && !q.get('unlock')) : false;
+/* THE SIDE LEVEL-SELECT PANEL (map-life-and-select §1). It is the only way onto a spur now that mapGo steps past
+   them (§7.5), so this is load-bearing and not cosmetic. Every node is listed, locked ones included and greyed -
+   "a picture of the campaign and of your progress through it, not a list of what is currently clickable" - and a
+   locked row says what unlocks it. TAB opens and closes it; up/down move the cursor row by row and it scrolls to
+   keep the cursor in view; Z jumps the token there and closes the panel; a locked row buzzes instead. */
+const mapPanel = { open: false, sel: 0, scroll: 0 };
+const MAP_PANEL_ROWS = 10, MAP_PANEL_W = 148;   /* rows visible in drawMapPanel's list - kept here too so mapPanelToggle/mapPanelMove scroll to the same count they are drawn with */
+/* mapPanel.sel/scroll INDEX INTO THIS LIST, not into NODES directly. A node you have not found is not on the
+   map itself (drawMap's own loop skips it the same way) - it must not be in the panel either, and it must not
+   eat a row's worth of blank space or a keypress on its way to being skipped, the way indexing straight into
+   NODES did the first time this was drawn (a found-but-secret Underleaf left a blank line in the middle of the
+   Wood's rows and cost the cursor an extra press to move past). */
+function mapPanelIdx() { const out = []; for (let i = 0; i < NODES.length; i++) if (!nodeSecret(NODES[i])) out.push(i); return out; }
+function mapPanelToggle() { mapPanel.open = !mapPanel.open; if (mapPanel.open) { const vis = mapPanelIdx(); let at = vis.indexOf(map.node); if (at < 0) at = 0;
+    mapPanel.sel = at; mapPanel.scroll = Math.max(0, Math.min(Math.max(0, vis.length - MAP_PANEL_ROWS), at - (MAP_PANEL_ROWS >> 1))); } SFX.ui(); }
+function mapPanelMove(dir) { const vis = mapPanelIdx(); mapPanel.sel = Math.max(0, Math.min(vis.length - 1, mapPanel.sel + dir));
+  if (mapPanel.sel < mapPanel.scroll) mapPanel.scroll = mapPanel.sel;
+  if (mapPanel.sel >= mapPanel.scroll + MAP_PANEL_ROWS) mapPanel.scroll = mapPanel.sel - MAP_PANEL_ROWS + 1;
+  SFX.ui(); }
+function mapPanelJump() { const vis = mapPanelIdx(); const i = vis[mapPanel.sel]; const nd = NODES[i];
+  if (!nd || nodeLocked(nd)) { SFX.buzz(); return; }
+  map.node = i; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; mapPanel.open = false;
+  PROG.mapNode = map.node; PROG.mapNodeId = nd.id;
+  const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
+  SFX.uiSel(); }
+function updateMapPanel(dt) {
+  if (upPress) mapPanelMove(-1); if (downPress) mapPanelMove(1);
+  if (confirmPress) mapPanelJump();
+  if (pausePress) mapPanelToggle();   /* ESC closes the panel here instead of leaving the map (TAB already toggled it, above) */
+}
+/* ONE LINE PER ROW. A locked row's own "what unlocks it" used to print as a second line under its name at the
+   same 11px row height as everything else, and on a crowded sheet (28+ rows in 147px) it ran straight into the
+   next row's name - unreadable, not just tight. The list stays one line each; what a locked row needs is shown
+   once, for whichever row the cursor is ON, in a detail strip under the list - moving the cursor onto it is what
+   "a locked row should say what unlocks it" (map-life-and-select §1) asks for, without stacking 40-some subtitles
+   into a buffer that was never going to hold them. */
+function drawMapPanel() {
+  const [px] = mapPos(); const onRight = px < VW / 2;
+  const x0 = onRight ? VW - MAP_PANEL_W - 4 : 4, y0 = 21, h0 = VH - 12 - 21, rowH = 11, detailH = 15;
+  const listH = h0 - 12 - detailH, rows = Math.max(1, Math.floor(listH / rowH));
+  panel(x0, y0, MAP_PANEL_W, h0, UI.sel);
+  g.fillStyle = 'rgba(10,8,16,0.55)'; g.fillRect(x0 + 1, y0 + 1, MAP_PANEL_W - 2, 10);
+  text('LEVELS', x0 + 5, y0 + 3, UI.title, 'left', 6);
+  const vis = mapPanelIdx();
+  if (mapPanel.scroll < mapPanel.sel - rows + 1) mapPanel.scroll = mapPanel.sel - rows + 1;   /* a resize/reflow safety net; mapPanelMove keeps this true day to day */
+  for (let i = 0; i < rows; i++) { const k = mapPanel.scroll + i; if (k >= vis.length) break;
+    const nd = NODES[vis[k]];
+    const ry = y0 + 12 + i * rowH, lk = nodeLocked(nd), sel = k === mapPanel.sel, here = vis[k] === map.node;
+    if (sel) { g.fillStyle = 'rgba(143,209,96,0.18)'; g.fillRect(x0 + 1, ry - 1, MAP_PANEL_W - 2, rowH); }
+    const nm = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && lk) ? '? ? ?' : LEVELS[nd.level].name;
+    const spurTag = nd.spur ? '•' : ''; const cleared = nd.kind === 'level' && PROG[LEVELS[nd.level].id] && PROG[LEVELS[nd.level].id].cleared;
+    const col = lk ? '#6a6a78' : here ? UI.sel : cleared ? '#8fd160' : UI.text;
+    text(fitText(spurTag + nm, MAP_PANEL_W - 14, 6), x0 + 5, ry, col, 'left', 6);
+    if (here) { g.fillStyle = '#8fd160'; g.fillRect(x0 + MAP_PANEL_W - 8, ry + 1, 3, 3); }
+  }
+  if (mapPanel.scroll > 0) text('↑', x0 + MAP_PANEL_W - 10, y0 + 12, UI.dim, 'left', 6);
+  if (mapPanel.scroll + rows < vis.length) text('↓', x0 + MAP_PANEL_W - 10, y0 + 12 + (rows - 1) * rowH, UI.dim, 'left', 6);
+  // the detail strip: what the cursor is on, and what it is owed if it is locked
+  { const dy = y0 + h0 - detailH; g.strokeStyle = 'rgba(201,178,124,0.4)'; g.beginPath(); g.moveTo(x0 + 1, dy); g.lineTo(x0 + MAP_PANEL_W - 1, dy); g.stroke();
+    const nd = NODES[vis[mapPanel.sel]], lk = nd && nodeLocked(nd);
+    if (lk && nd.kind === 'level') { const need = LEVELS[nd.level].needs, nname = need && (NODES.find(n => n.level === LEVELS.findIndex(l => l.id === need)) || {}).name;
+      text(fitText(nname ? 'NEEDS ' + nname : LEVELS[nd.level].locked ? 'LOCKED' : 'NOT YET', MAP_PANEL_W - 10, 6), x0 + 5, dy + 4, '#c9463d', 'left', 6); }
+    else if (lk) text('SHUT', x0 + 5, dy + 4, '#c9463d', 'left', 6);
+    else text('↑↓ SELECT  Z JUMP', x0 + 5, dy + 4, UI.dim, 'left', 6); }
+}
+/* A NODE WHOSE LEVEL IS NOT IN LEVELS YET IS LOCKED, NOT A CRASH. nd.level is LEVELS.findIndex(...), which is -1
+   for any of the twelve queued levels not yet landed (map-redesign §8; map-life-and-select §1, "the first line of
+   this job"). LEVELS[-1] is undefined, and levelLocked(undefined) used to throw reading .locked off it - a node
+   placed ahead of its level took down the map's first frame. Locked-and-unbuilt is the same as locked: nothing
+   can ever clear a level that is not there to clear. tools/map-grammar.mjs asserts every level index is >= 0 so
+   this branch is dead in a green suite; it is the fallback for the day it briefly isn't. */
+const nodeLocked = nd => nd.kind === 'level' ? (nd.level < 0 || !LEVELS[nd.level] ? true : levelLocked(LEVELS[nd.level])) : nd.kind === 'store' ? !godMode() && !!(nd.needs && !(PROG[nd.needs] && PROG[nd.needs].cleared) && !q.get('unlock')) : false;
 // THE MAP OPENS WHERE YOU LEFT IT. It used to walk you back to the first wood every time the game loaded.
 function mapToSaved() {
   const legacy=NODES.filter(n=>!['harbor','burial','keep','fallingtower','burning','witchlight'].includes(n.id));
@@ -3022,6 +3126,10 @@ function drawMapLife() {
   { const nd = NODES.find(n => n.id === 'lamplit');
     if (nd && !nodeLocked(nd)) { if (Math.random() < 0.4) mapPuffs.push({ x: nd.x + (Math.random() - 0.5) * 10, y: nd.y - 2, vx: (Math.random() - 0.5) * 4, vy: -12 - Math.random() * 8, life: 1.4 });
       g.globalAlpha = 0.10 + 0.05 * Math.sin(time * 2.2); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(nd.x, nd.y, 9, 0, 7); g.fill(); g.globalAlpha = 1; } }
+  // THE WITCHLIGHT STAIR: a torch that doesn't burn steady - it gutters, on its own uneven clock, not the frame clock
+  { const nd = NODES.find(n => n.id === 'witchlight');
+    if (nd && !nodeLocked(nd)) { const flicker = 0.5 + 0.5 * Math.sin(time * 9.1) * Math.sin(time * 2.7 + 1.3);
+      g.globalAlpha = 0.12 + 0.10 * flicker; g.fillStyle = '#8fd6ff'; g.beginPath(); g.arc(nd.x, nd.y - 6, 5 + flicker, 0, 7); g.fill(); g.globalAlpha = 1; } }
 }
 /* WHERE THE WALKER IS. On the road, between two of its points. STOOD ON A SPUR he is on the NODE, off the road -
    he walked to the junction and then stepped off it, which is the whole point of a spur being a spur. */
@@ -3047,13 +3155,19 @@ function secretWants(lv) {
 function mapGo(dir) {
   if (map.walking) return;
   let nx = map.node + dir;
-  while (nx >= 0 && nx < NODES.length && (nodeSecret(NODES[nx]) || (NODES[nx].kind === 'level' && LEVELS[NODES[nx].level].hidden && nodeLocked(NODES[nx])))) nx += dir;   /* walk straight past what you have not found - and past a found secret you have not earned: the road does not wait on it */
+  /* LEFT AND RIGHT WALK THE REQUIRED ROAD ONLY (Daniel, §7.5: step PAST a spur, not onto it). A spur is precisely a
+     node the map draws off the road on purpose - the Burning Village, Underleaf, the Undercrown, and every class
+     level to come - and the side panel (mapPanelJump) is the only way onto one now. Without this the panel is
+     cosmetic; §7.5 is explicit that the two land together. */
+  while (nx >= 0 && nx < NODES.length && (NODES[nx].spur || nodeSecret(NODES[nx]) || (NODES[nx].kind === 'level' && LEVELS[NODES[nx].level].hidden && nodeLocked(NODES[nx])))) nx += dir;   /* walk straight past a spur, past what you have not found - and past a found secret you have not earned: the road does not wait on any of them */
   if (nx < 0 || nx >= NODES.length) { SFX.buzz(); return; }
   if (nodeLocked(NODES[nx]) && NODES[nx].kind === 'level') { const lv = LEVELS[NODES[nx].level];
     SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, lv.secret ? 'NOT YET' : 'LOCKED', '#9aa39a'); return; }
   map.target = nx; map.walking = dir; SFX.ui();
 }
 function updateMap(dt) {
+  if (mapPress && !map.walking) mapPanelToggle();
+  if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
   if (map.walking) {
     const goal = NODE_AT[map.target]; const sp = 1.6 * dt; // segments per second-ish, scaled below by length
     const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
@@ -3085,6 +3199,10 @@ function drawMap() {
   if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   // river sparkle (the river is on the wood sheet)
   g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, WOOD_Y], [VW - 58, 40 + WOOD_Y], [VW - 26, 82 + WOOD_Y], [VW - 70, 122 + WOOD_Y], [VW - 44, VH + WOOD_Y]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
+  /* THE COAST SHIMMER: the whole sheet is sea, so this is a fixed scatter of points (seeded, not random every
+     frame - a reseeding sparkle reads as noise, not water) that only some of them light on any given frame. */
+  if (mapCamY < CRAG_Y && mapCamY + VH > INLAND_Y) { g.fillStyle = 'rgba(210,240,255,0.75)';
+    for (let i = 0; i < 18; i++) { const sx = 20 + (i * 53) % 280, sy = COAST_Y + 16 + (i * 37) % 148; if (Math.sin(time * 2.4 + i * 1.7) > 0.55) g.fillRect(sx, sy, 1, 1); } }
   // cloud shadows drift over the land, then the clouds themselves later
   for (const c of mapClouds) { c.x += c.sp * 0.016; if (c.x > VW + 60) c.x = -60; g.globalAlpha = 0.18; g.fillStyle = '#0a1a0a'; g.beginPath(); g.ellipse(c.x + 6, c.y + 10, CLOUD[c.k].width * 0.5, CLOUD[c.k].height * 0.45, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   // boss portraits: the queen hangs over the wood, the frog sits by the pond
@@ -3098,11 +3216,24 @@ function drawMap() {
     if (ns) drawSet(SPR.chief, null, Math.floor(time * 4) % 2, ns.x - 22, ns.y + 6, 1, false, 0.7, 0.7, cl('stockade'));
     if (np) drawSet(SPR.mother, null, 0, np.x + 26, np.y + 8, 1, false, 0.5, 0.5, cl('spore'));
     if (nk) drawSet(SPR.king, null, 0, nk.x - 24, nk.y + 6, 1, false, 0.7, 0.7, cl('kings'));
-    const st = nd('store'); if (st && Math.random() < 0.5) parts.push({ x: st.x + 3 + camX, y: st.y - 22 + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); }
+    /* SMOKE OFF EVERY TOWN AND STORE, not just the first one (map-life-and-select §2). Cheap: a store's own hut
+       chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
+       particle spawns a frame at most, using the same drifting-puff particle the store already had. */
+    for (const id of ['store', 'highstore', 'chandler', 'waymeet']) { const sn = nd(id); if (sn && Math.random() < (id === 'waymeet' ? 0.35 : 0.5)) parts.push({ x: sn.x + (id === 'waymeet' ? -6 : 3) + camX, y: sn.y - (id === 'waymeet' ? 14 : 22) + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); } }
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */
     g.drawImage(MAPSIGN, nd.x + 8, nd.y - 12);
     const lk = nodeLocked(nd); const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
+    /* THE ICON, on the disc itself: one per level (never two alike, docs/map-icons.png is the contact sheet),
+       one shared coin for every store. The RIM around it is the one thing that changes frame to frame - gold
+       cleared, pale open, dim locked - which is why it is drawn here and not baked with the disc. A SPUR gets a
+       dashed rim instead of a solid one, the same grammar the road itself uses for a spur's stub, so a glance
+       says "side trip" before you have even read the name. */
+    { const icon = MAPICON[nd.id]; if (icon) g.drawImage(icon, nd.x - icon.width / 2, nd.y - icon.height / 2);
+      g.strokeStyle = lk ? 'rgba(120,120,140,0.85)' : (p && p.cleared) ? '#ffd36b' : '#e8dcc0'; g.lineWidth = 1;
+      if (nd.spur) g.setLineDash([2, 2]);
+      g.beginPath(); g.arc(nd.x, nd.y, 6, 0, 7); g.stroke();
+      if (nd.spur) g.setLineDash([]); }
     if (nd.kind === 'store') g.drawImage(HUT, nd.x - 10, nd.y - 20);
     else if (lk) g.drawImage(PROP.lock, nd.x - 3, nd.y - 16);
     else if (p && p.cleared) g.drawImage(FLAG, nd.x - 3, nd.y - 18);
@@ -3115,8 +3246,13 @@ function drawMap() {
   for (const c of mapClouds) { g.globalAlpha = 0.7; g.drawImage(CLOUD[c.k], Math.round(c.x), Math.round(c.y)); g.globalAlpha = 1; }
   if (map.walking) map.lastDir = map.walking < 0 ? -1 : 1;
   { // the road not yet walked: dotted, past the last node you can enter
-    let last = 0; for (let k = 0; k < NODES.length; k++) if (!nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)'; for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
+    let last = 0; for (let k = 0; k < NODES.length; k++) if (!NODES[k].spur && !nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)';   /* FROM THE LAST REQUIRED NODE WALKED, not the highest unlocked index (map-redesign §2d/§6.4) - a spur that unlocks out of order used to switch the whole dotted section off */ for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 4.5)) % (map.walking ? 6 : K.R.idle.length), px, py + 2, map.lastDir || 1, false);
+  /* A PENNANT ON THE TOKEN. A pole planted on the hero's own shoulder, and the cloth waves on the map's clock -
+     three pixels, cheap, the one thing on the token itself that moves besides his legs. */
+  { const wave = Math.sin(time * 6) * 1.4, poleX = Math.round(px) + (map.lastDir < 0 ? -4 : 4), poleTop = Math.round(py) - 13;
+    g.fillStyle = '#5c3a1d'; g.fillRect(poleX, poleTop, 1, 6);
+    g.fillStyle = '#c9463d'; g.fillRect(poleX + (map.lastDir < 0 ? -3 : 1), poleTop, 3, 1); g.fillRect(poleX + (map.lastDir < 0 ? -2 - wave / 2 : 1 + wave / 2) | 0, poleTop + 1, 2, 1); }
   /* BOTH HEROES ON THE ROAD. Player two (or the ally) walks a few pixels behind player one, the same baked preview
      the co-op pick screen stands on its card, at the same scale and on the same step so the pair read as walking
      together and not as two unrelated markers. His own colour cue (the HUD's P2 green, or the ally's violet) sits
@@ -3170,8 +3306,8 @@ function drawMap() {
   g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
   g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
-  { const region = mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
-  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
+  { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
+  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
@@ -3231,8 +3367,9 @@ function drawMap() {
        measured with textW at size 6: 234 + 66 leaves a clear 12px between them at 320 wide. */
     const on = coopShown(), coopLbl = 'F CO-OP ' + (on ? 'ON' : 'OFF');
     g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
-    text('ARROWS MOVE  Z ENTER  X BEASTS  V EQUIP', 4, VH - 8, UI.dim, 'left', 6);
+    text(mapPanel.open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS MOVE  Z ENTER  X BEASTS  V EQUIP', 4, VH - 8, UI.dim, 'left', 6);
     text(coopLbl, VW - 4, VH - 8, on ? '#8fd160' : UI.dim, 'right', 6); }
+  if (mapPanel.open) drawMapPanel();   /* over everything else, on the side away from the token so it never covers it or the node you are standing on */
   g.__world = false;
 }
 

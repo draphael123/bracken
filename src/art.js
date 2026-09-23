@@ -707,6 +707,7 @@ export function bakeMap(w, h, nodes, path, seed, style = 'wood') {
   if (style === 'crag') return bakeCragMap(c, g, w, h, nodes, path, rnd);
   if (style === 'coast') return bakeCoastMap(c, g, w, h, nodes, path, rnd);
   if (style === 'haunted') return bakeHauntedMap(c, g, w, h, nodes, path, rnd);
+  if (style === 'desert') return bakeDesertMap(c, g, w, h, nodes, path, rnd);
   rect(g, 0, 0, w, h, '#4f8a3a');
   // meadow patches and dark wood regions
   for (let i = 0; i < 7; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 50, 14 + rnd() * 20, '#5e9a44', '#4f8a3a');
@@ -930,6 +931,27 @@ function bakeHauntedMap(c, g, w, h, nodes, path, rnd) {
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(18,22,18,0.35)'); circle(g, nd.x, nd.y, 7, '#33382c'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
+/* THE DESERT SHEET: STYLE + SEAM + SAND ROAD ONLY, no per-node scenery (Daniel, §7.6 settled - the desert arc has
+   no built levels yet, so painting a caravan or a pyramid here would be work redone when each one actually lands).
+   Dunes lit from the top-left the way the wood's hills and the crags' peaks are, so the sheet reads as the same
+   map and not a different game; the node-dressing loop below only ever runs against an empty `nodes` array today. */
+function bakeDesertMap(c, g, w, h, nodes, path, rnd) {
+  rect(g, 0, 0, w, h, '#d9b877');
+  for (let i = 0; i < 8; i++) ellipse(g, rnd() * w, rnd() * h, 30 + rnd() * 54, 12 + rnd() * 18, '#e0c488', '#d9b877');
+  for (let i = 0; i < 5; i++) ellipse(g, rnd() * w, rnd() * h, 26 + rnd() * 40, 10 + rnd() * 16, '#c9a562', '#d9b877');
+  for (let i = 0; i < w * h / 14; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#e3c890' : '#cfab6c');
+  for (let i = 0; i < 5; i++) { const dx = 20 + i * 56 + rnd() * 20, dy = 40 + rnd() * 90, r = 26 + rnd() * 14;
+    ellipse(g, dx, dy, r, r * 0.4, '#e0c488'); ellipse(g, dx - 4, dy - 2, r * 0.6, r * 0.25, '#f0dca0', '#e0c488'); line(g, dx - r, dy + 2, dx + r, dy + 2, '#b89354', 1); }
+  if (path.length > 1) {
+    for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#5e3b21', 8);
+    for (let i = 0; i + 1 < path.length; i++) line(g, path[i][0], path[i][1], path[i + 1][0], path[i + 1][1], '#e0d0a0', 5);
+    for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5;
+      for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n); px(g, x + (k & 1 ? 1 : -1), y, '#c9a562'); if (k % 3 === 0) px(g, x, y + 1, '#f0dca0'); } }
+  }
+  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(80,54,20,0)'); vg.addColorStop(1, 'rgba(80,54,20,0.3)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(60,40,10,0.3)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
+  return c;
+}
 // Soft cloud puffs for level skies and the map, three sizes.
 export function bakeClouds() {
   return [[28, 10], [40, 13], [56, 16]].map(([w, h], i) => {
@@ -943,6 +965,49 @@ export function bakeClouds() {
 }
 // A tiny signpost for map node labels, 10×12.
 export function bakeMapSign() { const [c, g] = canvas(10, 12); rect(g, 4, 5, 2, 7, C.woodD); rect(g, 0, 0, 10, 6, C.wood); rect(g, 0, 0, 10, 1, C.woodL); rect(g, 2, 2, 6, 1, C.woodD); return outline(c, OUT); }
+/* MAP NODE ICONS, 9×9, one per level (never two alike) plus one shared coin for every store. Baked once - the
+   nodes never move, so this has no business being drawn per frame. Each is 2-4 colours, no fine detail, chosen
+   to read as a silhouette at 1x on top of the node's own disc: docs/map-icons.png is the contact sheet these
+   came from, at 1x and 4x with every level's name under it, so this was approved before it was wired in. */
+const MAP_ICON_DEFS = {
+  coin: g => { circle(g, 4, 4, 3, '#a8730a'); circle(g, 4, 4, 2.3, '#ffd36b'); px(g, 3, 3, '#fff6c8'); },
+  wood: g => { rect(g, 2, 6, 5, 2, '#8a5a32'); rect(g, 1, 4, 7, 2, '#a8743f'); rect(g, 2, 2, 5, 2, '#c9924f'); px(g, 4, 7, '#2a1a10'); },
+  marsh: g => { ellipse(g, 4, 5, 3, 2, '#5a8a3a'); px(g, 2, 3, '#1b1626'); px(g, 6, 3, '#1b1626'); px(g, 2, 2, '#eafbe0'); px(g, 6, 2, '#eafbe0'); },
+  stockade: g => { rect(g, 1, 3, 2, 5, '#8a5a32'); rect(g, 4, 2, 2, 6, '#a8743f'); rect(g, 6, 3, 2, 5, '#8a5a32'); px(g, 1, 2, '#5c3a1d'); px(g, 4, 1, '#5c3a1d'); px(g, 7, 2, '#5c3a1d'); },
+  burning: g => { circle(g, 4, 5, 3, '#c9463d'); circle(g, 4, 4, 2, '#e08030'); px(g, 4, 3, '#ffd36b'); },
+  spore: g => { ellipse(g, 4, 3, 3, 2, '#c9463d'); rect(g, 3, 5, 2, 3, '#e8dcc0'); px(g, 2, 2, '#fff6c8'); px(g, 5, 3, '#fff6c8'); px(g, 3, 2, '#fff6c8'); },
+  kings: g => { rect(g, 3, 4, 3, 3, '#8a5a32'); line(g, 3, 4, 1, 1, '#5c3a1d'); line(g, 6, 4, 8, 1, '#5c3a1d'); px(g, 2, 2, '#5c3a1d'); px(g, 7, 2, '#5c3a1d'); },
+  underleaf: g => { fillPoly(g, [[4, 0], [7, 4], [4, 8], [1, 4]], '#3f7a2c'); line(g, 4, 1, 4, 7, '#264a1f'); },
+  scree: g => { fillPoly(g, [[1, 8], [3, 2], [5, 8]], '#8a8478'); fillPoly(g, [[4, 8], [6, 3], [8, 8]], '#6a6f8a'); px(g, 3, 2, '#e8ecf4'); px(g, 6, 3, '#e8ecf4'); },
+  hanging: g => { rect(g, 2, 2, 5, 3, '#8a5a32'); fillPoly(g, [[1, 2], [4, 0], [7, 2]], '#5c3a1d'); rect(g, 2, 5, 1, 3, '#5c3a1d'); rect(g, 6, 5, 1, 3, '#5c3a1d'); },
+  spire: g => { fillPoly(g, [[4, 0], [6, 8], [2, 8]], '#8b8378'); rect(g, 3, 6, 3, 2, '#5f5a52'); px(g, 4, 4, '#dfe8ee'); },
+  moor: g => { line(g, 1, 3, 7, 3, '#c9d4dc'); line(g, 2, 5, 8, 5, '#a8a090'); line(g, 1, 7, 6, 7, '#c9d4dc'); },
+  storm: g => { rect(g, 2, 4, 5, 4, '#5f5a52'); rect(g, 3, 2, 1, 2, '#5f5a52'); rect(g, 5, 2, 1, 2, '#5f5a52'); ellipse(g, 4, 1, 3, 1.4, '#3a3a44'); },
+  oreroad: g => { line(g, 0, 1, 8, 1, '#5f5a52'); line(g, 4, 1, 4, 3, '#3a3a44'); rect(g, 2, 3, 4, 3, '#8a5a32'); rect(g, 2, 3, 4, 1, '#5c3a1d'); },
+  crown: g => { fillPoly(g, [[1, 7], [1, 3], [3, 5], [4, 2], [5, 5], [7, 3], [7, 7]], '#ffd36b'); rect(g, 1, 7, 6, 1, '#e0b040'); px(g, 4, 4, '#c9463d'); },
+  undercrown: g => { fillPoly(g, [[4, 1], [7, 4], [4, 7], [1, 4]], '#a07ab8'); fillPoly(g, [[4, 1], [7, 4], [4, 4]], '#c9a0ff'); },
+  longwater: g => { line(g, 0, 3, 8, 3, '#3b7fae'); line(g, 0, 5, 8, 5, '#5aa6c9'); line(g, 1, 7, 7, 7, '#3b7fae'); },
+  reef: g => { rect(g, 4, 1, 1, 7, '#5c3a1d'); fillPoly(g, [[4, 1], [7, 3], [4, 3]], '#e8dcc0'); rect(g, 1, 7, 6, 1, '#2a5f8a'); },
+  flotilla: g => { fillPoly(g, [[1, 6], [7, 6], [6, 8], [2, 8]], '#5c3a1d'); rect(g, 4, 1, 1, 5, '#3a2618'); fillPoly(g, [[4, 1], [4, 5], [7, 4]], '#e8dcc0'); },
+  hurricane: g => { circle(g, 4, 4, 3, '#8a5a32'); circle(g, 4, 4, 1.4, '#3a2618'); line(g, 4, 1, 4, 7, '#3a2618'); line(g, 1, 4, 7, 4, '#3a2618'); },
+  lamplit: g => { rect(g, 3, 1, 2, 2, '#3a3444'); px(g, 4, 2, '#ffd36b'); rect(g, 3, 3, 2, 4, '#5f5a52'); rect(g, 2, 7, 4, 1, '#5f5a52'); },
+  deep: g => { line(g, 4, 1, 4, 4, '#4a2a5a', 2); line(g, 4, 4, 1, 7, '#4a2a5a', 2); px(g, 1, 7, '#6a4a7a'); px(g, 6, 2, '#6a4a7a'); },
+  keep: g => { rect(g, 3, 3, 3, 5, '#5f5a52'); fillPoly(g, [[2, 3], [4, 0], [6, 3]], '#3a3a44'); circle(g, 7, 2, 1, '#8fd6ff'); },
+  causeway: g => { rect(g, 0, 5, 8, 3, '#2a5f8a'); circle(g, 1, 5, 1, '#8b8378'); circle(g, 4, 5, 1, '#8b8378'); circle(g, 7, 5, 1, '#8b8378'); },
+  waymeet: g => { rect(g, 3, 2, 2, 6, '#8a5a32'); rect(g, 1, 2, 3, 1, '#5c3a1d'); rect(g, 4, 4, 3, 1, '#5c3a1d'); },
+  fields: g => { line(g, 4, 2, 4, 7, '#8a5a32'); line(g, 1, 4, 7, 4, '#8a5a32'); rect(g, 3, 0, 2, 2, '#c9b27c'); },
+  burial: g => { ellipse(g, 4, 3, 3, 2.5, '#e8dcc0'); px(g, 2, 3, '#1b1626'); px(g, 6, 3, '#1b1626'); rect(g, 3, 5, 2, 1, '#1b1626'); },
+  witchlight: g => { circle(g, 4, 5, 2, '#8fd6ff'); circle(g, 4, 4, 1.2, '#c8f0ff'); px(g, 4, 2, '#4ab0c0'); },
+  mage: g => { fillPoly(g, [[4, 0], [7, 7], [1, 7]], '#7a4aa8'); rect(g, 1, 7, 6, 1, '#5a3288'); px(g, 5, 3, '#ffd36b'); },
+  fallingtower: g => { fillPoly(g, [[3, 8], [5, 1], [7, 2], [5, 8]], '#8b8378'); rect(g, 4, 1, 2, 1, '#5f5a52'); },
+};
+export function bakeMapIcons() {
+  const out = {};
+  for (const [id, draw] of Object.entries(MAP_ICON_DEFS)) { const [c, g] = canvas(9, 9); draw(g); out[id] = outline(c, OUT); }
+  // every store shares the coin - a store is never a level and never collides with a level id
+  out.store = out.coin; out.highstore = out.coin; out.chandler = out.coin;
+  return out;
+}
 // A little fish, 5×3, silver.
 export function bakeFish() { const [c, g] = canvas(6, 4); rect(g, 1, 1, 3, 2, '#c9d1dc'); px(g, 0, 0, '#9aa39a'); px(g, 0, 3, '#9aa39a'); px(g, 4, 1, '#dfe8ff'); px(g, 2, 1, '#2a2f3d'); return c; }
 // A hut for the store node, 20×18.
@@ -2198,7 +2263,19 @@ export function bakeWorldMap(w, h, regions, connectors) { const [c, g] = canvas(
       const dx = nd.x - j[0], dy = nd.y - j[1], len = Math.hypot(dx, dy) || 1;
       for (let d = 3; d < len - 2; d += 5) { const px0 = r.x + j[0] + dx * d / len, py0 = r.y + j[1] + dy * d / len;
         const px1 = r.x + j[0] + dx * Math.min(len - 2, d + 2.6) / len, py1 = r.y + j[1] + dy * Math.min(len - 2, d + 2.6) / len;
-        line(g, px0, py0, px1, py1, '#5e3b21', 3); line(g, px0, py0, px1, py1, '#c8b088', 1); } } } for (const [a, b] of connectors) { line(g, a[0], a[1], b[0], b[1], '#5e3b21', 8); line(g, a[0], a[1], b[0], b[1], '#b8a888', 5); } for (const r of regions) if (r.seam) { const gr = g.createLinearGradient(0, r.seam - 26, 0, r.seam + 6); gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(94,110,80,0.5)'); gr.addColorStop(1, 'rgba(79,138,58,0)'); g.fillStyle = gr; g.fillRect(0, r.seam - 26, w, 32); } return c; }
+        line(g, px0, py0, px1, py1, '#5e3b21', 3); line(g, px0, py0, px1, py1, '#c8b088', 1); } } }
+  /* A connector may carry a third element, 'sand' - the seam into the desert is drawn in the desert's own road
+     colours rather than the road-brown every other seam uses, so the material changes as it crosses (map-redesign §5). */
+  for (const conn of connectors) { const [a, b, mat] = conn;
+    if (mat === 'sand') { line(g, a[0], a[1], b[0], b[1], '#c9b27c', 8); line(g, a[0], a[1], b[0], b[1], '#e0d0a0', 5); }
+    else { line(g, a[0], a[1], b[0], b[1], '#5e3b21', 8); line(g, a[0], a[1], b[0], b[1], '#b8a888', 5); } }
+  /* A seam is either a plain Y (the grey-green every region but the desert's uses) or {y, gold: true} - the
+     INLAND/DESERT seam reads green-to-gold instead, answering the gold portal on the level side (map-redesign §5). */
+  for (const r of regions) if (r.seam) { const y = typeof r.seam === 'object' ? r.seam.y : r.seam, gold = typeof r.seam === 'object' && r.seam.gold;
+    const gr = g.createLinearGradient(0, y - 26, 0, y + 6);
+    if (gold) { gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(197,158,74,0.5)'); gr.addColorStop(1, 'rgba(224,176,64,0)'); }
+    else { gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(94,110,80,0.5)'); gr.addColorStop(1, 'rgba(79,138,58,0)'); }
+    g.fillStyle = gr; g.fillRect(0, y - 26, w, 32); } return c; }
 
 // ---------- The Mineworks ----------
 // Rails on sleepers over rock. 16×16, standable like a plank.
