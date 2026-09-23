@@ -10,7 +10,7 @@ const noop = () => {};
 function fixture(extra = {}) {
   const m = { kind: 'raft', x0: 100, x1: 500, x: 100, y: 80, w: 64, speed: 32, ...extra };
   const P = { dead: 0, onMover: null };
-  const c = vm.createContext({ movers: [m], P, players: [P], enemies: [], parts: [], updateCarts: noop, number: noop, SFX: { thud: noop, splash: noop }, burst: noop, HOP: { green: { hp: 3 }, yellow: { hp: 3 }, blue: { hp: 3 } } });
+  const c = vm.createContext({ L: {}, movers: [m], P, players: [P], enemies: [], parts: [], updateCarts: noop, number: noop, SFX: { thud: noop, splash: noop }, burst: noop, HOP: { green: { hp: 3 }, yellow: { hp: 3 }, blue: { hp: 3 } } });
   vm.runInContext(update, c);
   const step = n => { for (let i = 0; i < n; i++) c.updateMovers(1 / 60); };
   return { m, P, c, step };

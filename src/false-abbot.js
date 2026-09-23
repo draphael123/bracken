@@ -33,7 +33,7 @@
 //
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/false-abbot.mjs.
 export const ABBOT = {
-  hp: 660, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
+  hp: 900, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.55, cast: 0.7, process: 0.9, coals: 0.75, rite: 1.5, knell: 1.0 },
   dmg: { censer: 20, cast: 16, reel: 10, process: 24, knell: 22 },
   censerR: 46,            // the chain's reach past his body
@@ -45,7 +45,7 @@ export const ABBOT = {
   bless: 6, mend: 0.3, blessR: 130, wardTake: 0.2,   // the rite: who it reaches, what it mends, how long it holds, and what a blow is worth against it
   downT: 4.2, downMul: 2,             // the bell's window, and what a blow is worth in it
   bellUnder: 40,                      // how near the bell he has to be for the note to find him
-  adds: 4, addEvery: 6.5, addEveryP2: 4.2, daze: 2.2,
+  adds: 3, addEvery: 6.5, addEveryP2: 4.2, daze: 2.2,
   order: ['censer', 'cast', 'process', 'censer', 'coals', 'cast', 'process', 'knell'],   /* the rite is NOT in here: it is his heartbeat, taken the moment the ward lapses */
 };
 /* EVERY MODE IS ITS KEY PLUS 'Tell' - no exceptions, because the one exception there was (coals -> coalTell) cost two
@@ -149,7 +149,10 @@ export function updateFalseAbbot(e, dt, c) {
        which is the whole reason to stand on the far side of the bell. TAKEN, it reels YOU in and the swing follows. */
     if (!e.castHit && !P.dead) { const lo = Math.min(e.x, e.castX), hi = Math.max(e.x, e.castX);
       if (P.x > lo - 8 && P.x < hi + 8 && Math.abs(P.y - floor) < 30) { e.castHit = true;
-        const r = hit(e.castX, ABBOT.dmg.cast, false, 'THE CHAIN');
+        /* FROM HIM, NOT FROM ITS HEAD. castX is thrown twenty pixels PAST you, so a blow said to come from there came from
+           BEHIND a hero who was facing him - and the guard only turns what is in front. For its first day nobody could guard
+           the chain at all, which is the one thing the fight asks of you (found by the lab pilot, 2026-09-23). */
+        const r = hit(e.x, ABBOT.dmg.cast, false, 'THE CHAIN');
         if (r === 'blocked') { e.mode = 'haul'; e.modeT = 0.5;
           const to = e.x + e.face * ABBOT.castPull; e.x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, to));
           c.say('THE CHAIN SNAPS TAUT: IT HAULS HIM', false); c.sound('clank'); c.shake(3); return; }

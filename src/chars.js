@@ -1550,7 +1550,14 @@ export function bakeMiner() {
   const walk2 = mspr(shoulder([...head, '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '...GGGG.....', '...GG.GG....']));
   const dig = mspr([E, E, E, ...head, '..xxxxxxxxx.', '.xxxxxxxxxxi', '..xxxxxx..II', '..GG..GG..I.', '.GG....GG...']);
   const swing = mspr([E, E, E, '....y.......', '...cccccc...', '..cCCCCCCcii', '..ggeoggeoII', '...gggggg.I.', '...gGGGGgxI.', '..xxxxxxxxx.', '.xxxxxxxxx..', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
-  return pack([walk1, walk2, dig, swing], 7, 15, 10, 11);
+  /* WITHOUT IT (2026-09-23, the pick is thrown now): the same goblin with nothing on his shoulder, which is the whole read -
+     the hook is gone off the top of his outline. Then the throw's windup (the pick right back behind his head) and HELPLESS,
+     both hands up, which is what he is until he has it back. */
+  const bare1 = mspr([E, E, E, ...head, '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
+  const bare2 = mspr([E, E, E, ...head, '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '...GGGG.....', '...GG.GG....']);
+  const throwTell = mspr(['IIII........', '.Ii.........', '..ix........', '...xy.......', '...cccccc...', '..cCCCCCCc..', '..ggeoggeog.', '...gggggg...', '...gGGGGg...', '..xxxxxxx...', '.xxxxxxxx...', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
+  const helpless = mspr([E, E, '.x.......x..', '.x..y....x..', '..xcccccx...', '..cCCCCCCc..', '..ggeoggeog.', '...gggggg...', '...gGGGGg...', '...xxxxx....', '..xxxxxx....', '..xxxxxx....', '..GG..GG....', '.GG....GG...']);
+  return pack([walk1, walk2, dig, swing, bare1, bare2, throwTell, helpless], 7, 15, 10, 11);
 }
 // ============================================================================================
 // THE UNDERCROWN, two of them (the Pit Warden is retired: THE BURIED PRINCE has his tomb, in src/redraw/prince.js).

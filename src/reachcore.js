@@ -56,6 +56,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
      A FOURTH NUMBER makes it a CLIMB instead of a crossing (the Falling Tower's Reading Room): the room turns over, you
      walk its ceiling, and the second glyph puts you down on the gallery, so the pair joins a band of rows and not one. */
   if (!plain) for (const [x0, x1, y, yb] of (L.glyphBridges || [])) lifts.push({ kind: 'glyph', x0, x1, y0: Math.min(y, yb ?? y), y1: Math.max(y, yb ?? y) });
+  /* A CABLEWAY LINE (the Ore Road): its buckets are a clock of platforms along one cable - board anywhere along it, leave anywhere. L.cableBridges [x0, x1, y0, y1] */
+  if (!plain) for (const [x0, x1, y0, y1] of (L.cableBridges || [])) lifts.push({ kind: 'cable', x0, x1, y0, y1 });
   if (!plain) for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap' && m.kind !== 'hexvine') lifts.push({ kind: m.kind, x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
   const swings = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
   /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a

@@ -5,7 +5,8 @@ import { AMBUSH_TARGET } from './ambush.js';
 // kill, and how much of your health it costs. Both yield between fights, so a page can be polled while they run.
 //   await BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], foes: [...], reps: 2 })   -> window.__lab
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
-import { MARK } from './marks.js';   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
+import { MARK } from './marks.js';
+import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // each hero's real reach (attackBox in main.js), so the bot swings from where the blow actually lands
 const LAB_STAND = {knight:12,warden:38,pyro:18,paladin:14,pirate:12,reaper:18};
@@ -630,6 +631,47 @@ async function runbossLab(BK, opts) {
          column and onto a slab at its top; on a slab, it leaves LATE when his shadow is on its slab (after he has dropped, so the aim
          is his and a cracked slab breaks under him), gets off a slab whose glyph is lit, guards the gust and the rubble (or rolls
          them), and cuts him wherever he is in reach - most of all hanging from a broken edge, from the slab he hangs on. */
+      /* THE WINCHMASTER, played the way his fight is built: he stands where no jump reaches, so every blow is bought by RIDING A
+         BUCKET INTO THE DRUM. He reverses any rider he sees coming, so the hands BAIT it - drop onto a bucket from the last catwalk
+         and, if the line runs back, jump back up to the catwalk - and while the brake is cooling, drop again and ride it in. Down on
+         his ledge he is cut; then off the ledge into the spoil, up the rope, and round again. A sent bucket is hopped. */
+      if(boss.t==='winchmaster'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        const O=OR.ARENA,TZ=16,Lv=BK.L,deckY=(O.deck+1)*TZ,walkY=(O.walk+1)*TZ,grid=Lv.grid,W=Lv.W;
+        const spans=O.spans.filter(([a])=>grid[(O.walk+1)*W+a]===T.PLANK),lines=Lv.cableway.lines,dl=lines.find(l=>l.drum);
+        const on=P.onMover&&P.onMover.kind==='bucket'?P.onMover:null,go=x=>{if(Math.abs(x-P.x)>3)k[x>P.x?'right':'left']=true;};
+        const rw=boss.runaway&&!(boss.runaway.delay>0)?boss.runaway:null,reach2=LAB_REACH[h]+boss.w/2;
+        const cur=spans.find(([a,b])=>P.x>=a*TZ-4&&P.x<=(b+1)*TZ+4),last=spans[spans.length-1];
+        if(P.ground||P.climb)P.labAir=null;const hop=d=>{P.labAir=d;k[d]=true;BK.press('jump');P.labJump=16;};   /* a jump keeps its direction all the way over the gap */
+        if(boss.mode==='downed'||boss.mode==='thrown'){ const dx=boss.x-P.x;
+          if(Math.abs(dx)>reach2-4)go(boss.x-Math.sign(dx)*(reach2-8));else{P.face=Math.sign(dx)||1;if(P.atk<0&&boss.mode==='downed'){BK.press('atk');swings++;}}}
+        else if(on){
+          if(rw&&rw.x>P.x-10&&rw.x-P.x<56&&P.ground){BK.press('jump');P.labJump=16;}
+          else if(dl.dir<0&&cur&&P.ground){BK.press('jump');P.labJump=20;}    /* THE REVERSE, baited: back up onto the catwalk overhead */
+        }
+        else if(((P.ground&&P.y>deckY+20)||(P.climb&&P.y>walkY+6)||(P.ground&&P.y>walkY+6&&P.y<deckY-4))&&!P.labAir&&!on){   /* the spoil heap and the rope (x 338) up out of it */
+          const first=spans[0]&&spans[0][0]===O.spans[0][0];
+          if(Math.abs(338.5*TZ-P.x)>3&&!P.climb&&P.y>deckY+20)go(338.5*TZ);
+          else if(P.y>walkY+30)k.up=true;
+          else if(first){k.up=true;if(f%12===0){BK.press('jump');P.labJump=18;}}   /* the first catwalk is over the rope: straight up through it */
+          else if(f%12===0)hop('left'); }                                           /* cut: a step west onto the deck */
+        else if(Math.abs(P.y-deckY)<6&&P.x>=O.ledge[0]*TZ-8){ k.left=true; if(P.ground&&f%20===0)BK.press('jump'); }   /* the ledge, after the window: off it */
+        else if(Math.abs(P.y-walkY)<5&&cur){
+          if(boss.mode==='cutTell'&&O.spans.indexOf(cur)===boss.arg){ const alt=spans.filter(s=>s!==cur).sort((p,q)=>Math.abs(p[0]*TZ-P.x)-Math.abs(q[0]*TZ-P.x))[0];
+            if(alt){const dir=alt[0]>cur[0]?1:-1,edge=dir>0?(cur[1]+1)*TZ:cur[0]*TZ;k[dir>0?'right':'left']=true;if(Math.abs(edge-P.x)<14&&P.ground)hop(dir>0?'right':'left');} }
+          else if(cur!==last){ k.right=true; if(Math.abs((cur[1]+1)*TZ-P.x)<14&&P.ground)hop('right'); }
+          else { go((cur[1]+0.3)*TZ);
+            const under=BK.movers().find(m=>m.kind==='bucket'&&m.vis&&lines[m.line]===dl&&dl.dir>0&&!(dl.jam>0)&&m.x+m.w/2>P.x-26&&m.x+m.w/2<P.x-6);   /* where it WILL be: a drop of three rows takes a third of a second, and the bucket goes on */
+            const ride=(O.ledge[0]*TZ-P.x)/dl.speed+0.8,ready=(boss.revCd||0)<=0.05||(boss.revCd||0)-(boss.revT>0?boss.revT:0)>ride;   /* bait it, or ride in on its cooldown */
+            if(under&&ready&&P.ground&&!rw&&Math.abs((cur[1]+0.3)*TZ-P.x)<10){k.down=true;BK.press('jump');} }   /* drop in: a bait if the brake is ready, the ride in if it is cooling */
+        }
+        else if(Math.abs(P.y-deckY)<6){ const first=spans[0]; if(first){const lip=first[0]*TZ;if(P.x<lip-20)go(lip-16);else{k.right=true;if(P.ground)hop('right');}} else go(336.5*TZ); }
+        else if(P.labAir&&!on) k[P.labAir]=true;                                                 /* in the air: keep going the way the jump went */
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='gargoyle'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
@@ -838,10 +880,28 @@ async function runbossLab(BK, opts) {
          ring it the moment he is under it, and swing at him the rest of the time - the ward makes that poor, which is
          the point of the bell. */
       else if (boss.t === 'abbot') { const bl = BK.props().find(p => p.t === 'tbell' && p.abbot);
+        /* AND THE REST OF THE STRATEGY (2026-09-23). The first version of this branch only waited by the bell, so it stood
+           still while his chain reeled it in from across the floor and his congregation hit it from behind: 3/24, every
+           death a cast TAKEN and an add's blow. A player does two more things, and both are his design, not an assist:
+           GUARD THE CHAIN at any range (guarded, it hauls HIM a step toward you - it is how he is walked under the bell;
+           a hero with no shield hops it), and CUT THE CONGREGATION that reaches you while you wait. */
+        const far = !bl || Math.abs(boss.x - bl.x) > 70;   /* he is nowhere near the bell: time to thin his congregation, as a player would */
+        const add = BK.enemies().filter(q => q.alive && q !== boss && !q.boss && Math.abs(q.y - P.y) < 26 && Math.abs(q.x - P.x) < (far ? 150 : LAB_REACH[h] + 18)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+        const arrow = BK.seeds().find(s => s.arrow && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 60 && Math.abs(s.y - (P.y - 8)) < 40 && (s.x - P.x) * (s.vx || 0) < 0);   /* HIS ARCHERS: 18 a shaft, and the old guard only watched for rubble and shot */
+        const chain = boss.mode === 'castTell' || (boss.mode === 'cast' && !boss.castHit);
+        const proc = (boss.mode === 'process' || boss.mode === 'processTell') && (P.x - boss.x) * (boss.procDir || boss.face) > 0 && ad < 44;
         if (bl) { const under = Math.abs(boss.x - bl.x) < 40;
-          if (under && bl.cool <= 0 && Math.abs(bl.x - P.x) < 26 && P.atk < 0) { k.block = false; P.face = Math.sign(bl.x - P.x) || 1; BK.press('atk'); swings++; }
+          if (under && bl.cool <= 0 && Math.abs(bl.x - P.x) < 26 && P.atk < 0 && !chain) { k.block = false; P.face = Math.sign(bl.x - P.x) || 1; BK.press('atk'); swings++; }
           else if (boss.open > 0) { goal = boss.x; strike = true; }              /* downed: get on him, the window is worth three blows */
+          else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
+            if (SHIELDED(h)) { k.block = true; if (h === 'paladin') holdC = f + 20; }
+            else if (h === 'warden') k.block = DEFLECT_TAP(f);
+            else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }   /* the chain is judged the frame it flies: be off the boards by then */
+          else if (proc) { if (P.ground) { BK.press('jump'); P.labJump = 16; } goal = boss.x + (boss.procDir || boss.face) * 30; }
+          else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (h === 'warden') k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
+          else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { BK.press('atk'); swings++; } }
           else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
+          if (P.labJump > 0) { P.labJump--; k.jump = true; }
         } else { goal = boss.x; strike = true; } }
       else if (boss.t === 'troll') { goal = boss.x; strike = true;
         /* THE HILL TROLL: his stones drop from a hook a player jumps to strike - when he walks under one, the bot drops it, as a player at that hook would */

@@ -717,6 +717,7 @@ const DIE = {
   burngob() { gob(0.95, 0.7) || tone('sawtooth', 260, 60, 0.35, 0.2); noise(0.5, 0.2, 2600, 0.5, 0.12); },   /* THE BURNING VILLAGE */
   emberwisp() { noise(0.3, 0.18, 3200, 0.6); tone('sine', 900, 200, 0.25, 0.08); },
   pyromancer() { noise(1.2, 0.36, 1800, 0.5); tone('sawtooth', 160, 40, 1.4, 0.22); },
+  winchmaster() { gob(0.6, 0.8) || tone('sawtooth', 140, 30, 1.0, 0.24); noise(0.9, 0.3, 700, 0.5); },
   /* THE MAGE'S FOLLY: a hedge falling to bits, a suit coming apart, a bucket over, a chest breaking, a jar's worth of squeal, glass, and the tower's two */
   gargoyle() { noise(1.0, 0.38, 600, 0.5); tone('square', 120, 40, 0.9, 0.18); noise(0.5, 0.25, 1800, 0.4, 0.3); },   /* THE GATE GARGOYLE: a gate's worth of stone coming down */
   hedgewarden() { noise(0.7, 0.3, 1400, 0.4); noise(0.4, 0.22, 700, 0.5, 0.2); tone('square', 170, 60, 0.6, 0.1, 0.1); },   /* THE HEDGE WARDEN: a whole hedge coming down */
@@ -878,6 +879,7 @@ const HURT = {
   burngob() { gobH(0.95, 0.5) || tone('sawtooth', 260, 150, 0.14, 0.16); noise(0.1, 0.1, 2600, 0.6); },
   emberwisp() { noise(0.08, 0.1, 3600, 0.5); },
   pyromancer() { noise(0.18, 0.2, 1400, 0.5); tone('triangle', 200, 120, 0.2, 0.14); },
+  winchmaster() { gobH(0.6, 0.55) || tone('sawtooth', 140, 70, 0.22, 0.2); noise(0.12, 0.14, 900, 0.5); },   /* THE WINCHMASTER: the big goblin's grunt, and iron on iron */
   zombie() { noise(.2,.2,400,.4);tone('triangle',100,50,.2,.12); },
   husk() { noise(.26,.26,300,.5);tone('triangle',78,40,.26,.14); },
   bonegob() { noise(.1,.1,900,.3);tone('square',420,180,.1,.07); },

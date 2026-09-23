@@ -135,7 +135,7 @@ console.log('THE FALSE ABBOT');
 { const r = rig({ px: 1060, x: 1100 }); r.e.addT = 0; let worst = 0;
   for (let i = 0; i < 60 * 120; i++) { updateFalseAbbot(r.e, DT, r.c); worst = Math.max(worst, r.c.adds()); }
   ok(worst <= ABBOT.adds, `THE CONGREGATION never has more than ${ABBOT.adds} on the floor at once (worst ${worst})`);
-  ok(r.log.summons > 3, `and it keeps coming: ${r.log.summons} up the ladder in two minutes`); }
+  ok(r.log.summons >= ABBOT.adds, `and it keeps coming: ${r.log.summons} up the ladder in two minutes`); }
 
 // ---- phase two: the rope is his too, and it costs the room its answer ----
 { const r = rig({ px: 1060, x: 1100, hp: ABBOT.hp }); r.run(0.2);
