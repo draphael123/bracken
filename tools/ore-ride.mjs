@@ -85,6 +85,25 @@ try {
   }
   console.log(`  ${r.rocks.off.length ? 'FAIL' : 'ok  '} ${r.rocks.inView} rocks fell while the lines were ridden, every one of them on the screen` + (r.rocks.off.length ? ' - not ' + JSON.stringify(r.rocks.off.slice(0, 5)) : ''));
   assert(r.rocks.inView > 0 && !r.rocks.off.length, 'every rock that falls, falls on the screen (it is told there, or it waits)');
+  /* THE VEINS, in the page: a hero strikes a seam three times and it spills its coins; and a miner left alone works one */
+  const V = await pg.evalp(`(async()=>{
+    const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad');
+    BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = true; BK.sim(5);
+    const L = BK.L, P = BK.P, v = L.veins.find(q => q.x > 30 && q.y > 20), a0 = BK.acorns().length;
+    BK.tp(v.x - 1, v.y); BK.sim(20); P.face = 1; let n = 0;
+    for (let k = 0; k < 6 && !v.mined; k++) { P.face = 1; BK.press('atk'); BK.sim(28); n++; }
+    const spilled = BK.acorns().length - a0; BK.sim(90);
+    const got = BK.acorns().filter(q => q.vein && q.got).length;
+    /* the miners, with no hero near: send the hero far off and watch */
+    BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = true; BK.sim(5); BK.tp(300, 30); BK.sim(5);
+    let chips = 0, carried = 0, working = 0;
+    for (let f = 0; f < 60 * 40; f++) { BK.sim(1); for (const e of BK.enemies()) if (e.t === 'miner' && e.oreWork) { working = Math.max(working, 1); chips = Math.max(chips, e.oreWork.chips || 0); } if ((BK.L.carrying || []).length) carried++; if (P.x < 280 * 16) BK.tp(300, 30); }
+    return { at: [v.x, v.y], blows: n, mined: v.mined, spilled, got, chips, carried };
+  })()`, 600000);
+  console.log(`  ${V.mined && V.spilled === 3 ? 'ok  ' : 'FAIL'} a seam at ${V.at} struck ${V.blows} times is mined and spills ${V.spilled} coins (${V.got} picked up where they fell)`);
+  console.log(`  ${V.chips > 0 && V.carried > 0 ? 'ok  ' : 'FAIL'} with no hero near, the miners work the seams (${V.chips} blows at one) and carry the ore off (${V.carried} frames carrying)`);
+  assert(V.mined && V.blows === 3 && V.spilled === 3, 'three blows mine a seam, and it spills three coins');
+  assert(V.chips > 0 && V.carried > 0, 'a miner left alone works a seam and carries its ore to the buckets');
   assert(!pg.errors.length, 'no page errors');
   console.log('every line of the ore road carries you across');
 } finally { pg.close(); }

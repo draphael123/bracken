@@ -141,6 +141,24 @@ for (const l of C.lines) {
     if (why.length) bad.push(`${e.x},${e.y}: ${why.join(', ')}`); }
   ok(!bad.length, `every checkpoint (${L.ents.filter(q => q.t === 'check').length}) stands on a flat floor under its whole base, and its marker ('${kind}') sits on it with a flat foot ${best} px wide` + (bad.length ? ` - ${bad.length} do not: ` + bad.slice(0, 4).join('; ') : '')); }
 
+/* ---- ONE VAST CAVERN (Daniel's playtest, 2026-09-25): no sky, a rock ceiling that never comes down into anybody's jump, lamps
+   to pool the dark around, and seams you can mine that never stand in the way */
+{ const P0 = L.palette || {}, lum = c => 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
+  ok(L.dark >= 0.2 && L.night && P0.sky.every(c => lum(c) < 40) && (L.ambient || []).every(a => a.kind === 'cave'), `underground: the engine's dark at ${L.dark}, a black sky, the cave's own ambience (no wind)`);
+  const use = new Array(L.W).fill(L.H);
+  for (let x = 0; x < L.W; x++) for (let y = 1; y < L.H; y++) if (footing(at(x, y)) && !footing(at(x, y - 1))) { use[x] = y - 1; break; }
+  for (const l of cableLines()) for (let x = Math.ceil(Math.min(l.pts[0][0], l.pts[l.pts.length - 1][0]) / TS); x * TS <= Math.max(l.pts[0][0], l.pts[l.pts.length - 1][0]); x++) { const y = lineYAt(l, x * TS + 8); if (y !== null) use[x] = Math.min(use[x], Math.floor((y - OR.BUCKET.hang - 10) / TS)); }
+  let low = null; for (let x = 0; x < L.W; x++) for (let k = -5; k <= 5; k++) { const c = x + k; if (c < 0 || c >= L.W) continue; if (L.ceil[x] > 0 && L.ceil[x] > use[c] - OR.CEIL_GAP) low = low || `column ${x} (row ${L.ceil[x]}) over something at ${c},${use[c]}`; }
+  ok(L.ceil.length === L.W && !low, `the ceiling keeps ${OR.CEIL_GAP} rows over everything anyone uses within five columns - a jump never reaches it` + (low ? ' - it does not at ' + low : ''));
+  const fl = L.ents.filter(e => e.t === 'bat' || e.t === 'harpy' || e.t === 'crow');
+  ok(!L.ents.some(e => e.t === 'crow') && fl.every(e => e.y > L.ceil[e.x]), `the ${fl.length} fliers are under the rock (and a crow is a bat down here)`);
+  ok(L.ents.filter(e => e.t === 'rockfall').every(e => e.y === L.ceil[e.x] + 1), 'every rockfall hangs from the ceiling\'s underside: they fall from the stalactites');
+  const lamps = L.ents.filter(e => e.t === 'minerlamp'), badL = lamps.filter(e => !(footing(at(e.x, e.y + 1)) && at(e.x, e.y + 1) !== T.NET && at(e.x, e.y) === T.AIR));
+  ok(lamps.length >= 20 && !badL.length, `${lamps.length} pit lamps, every one standing on a floor` + (badL.length ? ' - not ' + badL.map(e => e.x).join(',') : ''));
+  const V = L.veins || [], badV = V.filter(v => !(at(v.x, v.y) === T.AIR && at(v.x, v.y - 1) === T.AIR && footing(at(v.x, v.y + 1)) && at(v.x, v.y + 1) !== T.NET) || L.ents.some(e => e.t !== 'coin' && e.x === v.x && e.y === v.y));
+  ok(V.length >= 12 && !badV.length, `${V.length} seams to mine, each in the back wall over a floor its spill lands on, standing in nobody's way (the cell in front is clear and holds nothing)` + (badV.length ? ' - not ' + badV.map(v => v.x + ',' + v.y).join(' ') : ''));
+  ok(OR.VEIN_HITS === 3 && V.every(v => v.coins === OR.VEIN_COINS) && /total \+= \(L\.veins \|\| \[\]\)\.reduce/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), `three blows a seam, ${OR.VEIN_COINS} coins each, and main.js counts them into the level's total the way it counts a crate's`); }
+
 /* ---- EVERY FALLING ROCK IS TOLD (Daniel's playtest): a second of warning, never begun off screen, and over the gorge the
    ring is on the cable a rider is on, not a hundred feet under it. (The page half - that each one really falls in view - is
    tools/ore-ride.mjs.) */

@@ -1,7 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
-import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
+import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
@@ -1692,6 +1692,7 @@ function loadLevel(i) {
     if (e.t === 'gate') gate = { x: px, y: py };
   }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
+  total += (L.veins || []).reduce((a, v) => a + (v.coins || 0), 0);   /* THE ORE ROAD's seams: what they spill is counted like a crate's */
   spawnEntities(); applyLevelRims();
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
@@ -13712,6 +13713,9 @@ function oreBuild() {
   L.cableway = makeCableway(L.cable);
   L.cableway.lines.forEach((ln, li) => { for (let i = 0; i < ln.n; i++) movers.push({ kind: 'bucket', line: li, i, w: OR.BUCKET.w, h: OR.BUCKET.h, x: 0, y: -9999, dx: 0, dy: 0, vis: false,
     cracked: !!(ln.cracked && i % ln.cracked === 0), crackT: 0, fallen: 0, ore: !ln.riders, lift: ln.riders ? OR.BUCKET.lift : 0, brake: 0, dump: 0 }); });
+  /* UNDERGROUND: a gem seam glows (a hole in the dark, violet), and so do the glints in the ceiling (cyan). An ore seam does not */
+  for (const v of (L.veins || [])) if (v.gem && !v.mined) lights.push({ x: v.x * TS + 8, y: v.y * TS + 4, r: 30, glow: true, pink: true, vein: v });
+  for (const [gx, gy] of (L.glints || [])) lights.push({ x: gx * TS + 8, y: gy * TS + 10, r: 24, glow: true });
 }
 /* THE BRAKE (brief section 3). Hold the shield while you are standing on a skip and you haul on its grip: the grip
    bites, the line stalls, and it comes back up to speed as slowly as it went down. It is ONE LINE-WIDE state, because
@@ -13719,6 +13723,7 @@ function oreBuild() {
    which is the whole point. MOVING IS PROGRESS; STOPPED IS WHERE YOU CAN FIGHT, and everything that flies over this
    gorge keeps coming while you are stopped. The drum line is not brakeable: the Winchmaster drives that one. */
 function oreBrake(dt) {
+  oreVeinsStep(dt);   /* (the ore road's per-frame hook: the veins and the miners working them ride on it) */
   const m = P.onMover;
   for (const l of L.cableway.lines) {
     const held = !l.drum && !P.dead && !!keys.block && !!m && m.kind === 'bucket' && L.cableway.lines[m.line] === l && m.vis && !(m.fallen > 0);
@@ -13726,6 +13731,51 @@ function oreBrake(dt) {
     l.saidBrake = Math.max(0, (l.saidBrake || 0) - dt);
     if (held && l.hold > 0.9 && !l.saidBrake) { l.saidBrake = 3; number(P.x, P.y - 32, 'THE LINE STOPS', '#ffd36b'); SFX.clank(); }
   }
+}
+/* THE VEINS AND THE MEN WHO WORK THEM (Daniel's playtest, 2026-09-25, item 4). A seam in the back wall takes OR.VEIN_HITS blows
+   and spills OR.VEIN_COINS (counted into the level's total at load, the way a crate's is); its state is on L.veins, so a death
+   does not refill it and a reload does. The MINERS work them while you are away: a miner with his pick and no hero within
+   OR.WORK_FAR walks to the nearest seam on his own floor and chips at it (his dig and swing frames, turn about, with the chips
+   flying), and after OR.WORK_CHIPS blows he carries the ore to the nearest bucket station on his floor and tips it in, and goes
+   back. Come near and he drops it and is a miner again - updateMiner has him from then on */
+const oreFloorY = v => (v.y + 1) * TS;
+function oreVeinsStep(dt) {
+  const V = L.veins || [];
+  for (const v of V) { v.flash = Math.max(0, (v.flash || 0) - dt); if (v.mined || P.dead) continue;
+    const hb = attackBox(); if (!hb || P.hitSet.has(v)) continue;
+    if (!overlap(hb, { l: v.x * TS, r: v.x * TS + TS, t: v.y * TS - 4, b: v.y * TS + 14 })) continue;
+    P.hitSet.add(v); v.hits++; v.flash = 0.12; SFX.clank(); sparks(v.x * TS + 8, v.y * TS + 4, P.face, 5);
+    burst(v.x * TS + 8, v.y * TS + 4, 5, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 60, 0.35);
+    if (v.hits >= OR.VEIN_HITS) { v.mined = true; SFX.stone(); shakeCam(1.5); burst(v.x * TS + 8, v.y * TS + 4, 14, v.gem ? ['#c08aff', '#6fe0d8', '#fff6e0'] : ['#e0a040', '#b09a5a', '#fff6e0'], 90, 0.6);
+      for (let k = 0; k < v.coins; k++) acorns.push({ x: v.x * TS + 8 + (k - (v.coins - 1) / 2) * 6, y: v.y * TS + 4, got: false, ph: k, vy: -90 - k * 25, vein: true });
+      number(v.x * TS + 8, v.y * TS - 14, v.gem ? 'GEMS' : 'ORE', v.gem ? '#c08aff' : '#e0a040');
+      const lt = lights.find(q => q.vein === v); if (lt) lt.r = 0; } }
+  L.carrying = [];
+  for (const e of enemies) { if (!e.alive || e.t !== 'miner') continue;
+    const far = Math.abs(P.x - e.x) > OR.WORK_FAR || Math.abs(P.y - e.y) > 90 || P.dead, armed = !e.pk && e.mode !== 'bare' && e.mode !== 'lost' && e.mode !== 'grab' && e.pick !== 'lost';
+    const w = e.oreWork;
+    if (!far || !armed || e.stagger > 0 || !(e.mode === 'walk' || e.mode === 'idle' || e.mode === undefined || w)) { if (w) { e.oreWork = null; if (e.mode === 'dig' || e.mode === 'swing') { e.mode = 'walk'; e.modeT = 0.3; } } continue; }
+    if (!w) { const v = V.filter(q => !q.mined && Math.abs(oreFloorY(q) - e.y) < 6 && Math.abs(q.x * TS + 8 - e.x) < 6 * TS).sort((a, b) => Math.abs(a.x * TS - e.x) - Math.abs(b.x * TS - e.x))[0];
+      if (v) e.oreWork = { v, chips: 0, t: 0, carry: false, st: null }; continue; }
+    const v = w.v;
+    /* HE WALKS ON HIS OWN LEGS: a miner out past the update cull is not moved by updateMiner, so the work moves him (at a
+       walk) whenever nothing else did this frame */
+    const amble = () => { if (e.x === w.lastX) { const r = moveBody(e, e.face * OR.WORK_WALK * dt, 0, false); if (r.hitX) { e.oreWork = null; e.mode = 'walk'; } } w.lastX = e.x; };
+    if (w.carry) { /* to the station, the ore on his shoulder */
+      L.carrying.push({ x: e.x, y: e.y - (e.h || 12) - 3 });
+      if (w.st === null) { let best = null; for (const l of L.cableway.lines) for (const p of [l.pts[0], l.pts[l.pts.length - 1]]) if (Math.abs(p[1] - e.y) < 6 && Math.abs(p[0] - e.x) < 20 * TS && (!best || Math.abs(p[0] - e.x) < Math.abs(best - e.x))) best = p[0];
+        w.st = best === null ? e.x + e.face * 3 * TS : best; }
+      const d = w.st - e.x; e.mode = 'walk'; e.face = Math.sign(d) || e.face; amble();
+      if (Math.abs(d) < 14) { w.carry = false; w.chips = 0; w.st = null; if (e.x > camX - 20 && e.x < camX + VW + 20) { burst(e.x + e.face * 10, e.y - 8, 8, ['#7a7080', '#b09a5a'], 50, 0.4); SFX.stone(); } }
+      continue; }
+    const vx = v.x * TS + 8, d = vx - e.x;
+    if (v.mined) { e.oreWork = null; e.mode = 'walk'; continue; }
+    if (Math.abs(d) > 14) { e.mode = 'walk'; e.face = Math.sign(d) || e.face; amble(); continue; }
+    /* AT THE FACE: the pick goes up and comes down, turn about, and the chips fly */
+    e.face = Math.sign(d) || e.face; e.vx = 0; w.t -= dt;
+    if (w.t <= 0) { w.t = OR.WORK_CHIP; const down = e.mode !== 'dig'; e.mode = down ? 'dig' : 'swing'; e.modeT = 9; e.digT = 9;
+      if (down) { w.chips++; v.flash = 0.06; if (vx > camX - 20 && vx < camX + VW + 20 && Math.abs(v.y * TS - camY - VH / 2) < VH) { burst(vx - e.face * 4, v.y * TS + 4, 3, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 40, 0.3); if (Math.random() < 0.5) SFX.clank(); } }
+      if (w.chips >= OR.WORK_CHIPS && e.mode === 'swing') { w.carry = true; e.mode = 'walk'; e.modeT = 0.3; } } }
 }
 /* THE PICK IN YOUR SKIP (brief section 3: THE MINER BECOMES LOAD-BEARING). Over a gorge a thrown pick used to be
    simply gone - it fell out of the world and the miner stood there for ever. Now a bucket under it CATCHES it, and
@@ -20831,7 +20881,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
-  if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
+  if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
   else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
@@ -20895,7 +20945,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const r of (L.ropes || [])) { g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(r.x0 - cx) + 0.5, Math.round(r.y0 - cy) + 0.5); g.lineTo(Math.round(r.x1 - cx) + 0.5, Math.round(r.y1 - cy) + 0.5); g.stroke(); for (const [px, py, gy] of (r.posts || [])) { const x = Math.round(px - cx); g.fillStyle = '#4a3020'; g.fillRect(x - 2, Math.round(py - cy) - 4, 4, gy - py + 4); g.fillStyle = '#6a4a30'; g.fillRect(x - 1, Math.round(py - cy) - 4, 1, gy - py + 4); g.fillStyle = '#8b8378'; g.fillRect(x - 4, Math.round(py - cy) - 6, 8, 3); } }
   drawShards(cx, cy);
   drawWater(cx, cy, false);
-  if (L.cableway) drawCables(g, L.cableway, cx, cy, time, VW);   /* THE ORE ROAD's cables, and the empties coming back behind them */
+  if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
   for (const m of movers) {
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
