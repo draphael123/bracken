@@ -55,28 +55,41 @@ export function burnSanctum(P, A, dt, ctx) {
 // ---------------------------------------------------------------- the room
 const STONE = ['#1a1428', '#2a2238', '#352c46', '#141020', '#4a4058', '#0e0a18'];
 const FIRE = ['#8fffb0', '#3fe08a', '#d9ffe8', '#1d6b46', '#0e2a1c'];
+const NIGHT = ['#241c3c', '#9a8fd0'];   /* what shows through his windows: the tower's own violet night, and a star in it */
 /* a steady per-column wobble, so the fire's edge is a line of flame and not a ruled edge */
 const lick = (x, t) => Math.sin(x * 0.21 + t * 3.1) * 2 + Math.sin(x * 0.07 - t * 1.7) * 2;
 
-/* THE HALL. Drawn at the UNSQUEEZED box, always: the storm walls close inside the masonry, they do not move it. */
+/* THE HALL. Drawn at the UNSQUEEZED box, always: the storm walls close inside the masonry, they do not move it.
+   EVERY HORIZONTAL LOOP IN HERE IS CLAMPED TO THE VIEWPORT. The room is a thousand pixels wide and the screen is 320,
+   so walking the whole width per frame was ~1000 fillRects a pass for scenery that is almost all off-screen. */
 export function drawSanctum(g, L, A, cx, cy, time, box) {
   const x0 = Math.round(box.x0 - cx), x1 = Math.round(box.x1 - cx), w = x1 - x0;
   const top = Math.round(box.y0 - cy), flr = Math.round(A.floor - cy), ft = Math.round(fireTop(A) - cy);
-  const H = g.canvas.height;
+  const H = g.canvas.height, VW = g.canvas.width;
+  const L0 = x0 - SANCTUM.wall, R0 = x1 + SANCTUM.wall;
+  const vx0 = Math.max(L0, -8), vx1 = Math.min(R0, VW + 8);              /* nothing is drawn past the edges of the screen */
+  const band = (x, y, ww, hh, col) => { const a = Math.max(x, -8), b = Math.min(x + ww, VW + 8); if (b > a) { g.fillStyle = col; g.fillRect(a, y, b - a, hh); } };
   // the room's own dark, over the level's sky: inside here there is no sky
-  g.fillStyle = STONE[0]; g.fillRect(x0 - SANCTUM.wall - 40, top - SANCTUM.vault - 40, w + SANCTUM.wall * 2 + 80, (flr - top) + SANCTUM.vault + 80);
-  // THE BACK WALL: ashlar courses, and a blind arcade of tall pointed recesses behind him
-  g.fillStyle = STONE[1]; g.fillRect(x0, top, w, flr - top);
-  g.fillStyle = STONE[2]; for (let y = top; y < flr; y += 11) g.fillRect(x0, y, w, 1);
-  for (let ax = x0 + 26; ax < x1 - 20; ax += 78) {
-    const ah = Math.min(96, flr - top - 24), ay = flr - 16 - ah;
-    g.fillStyle = STONE[3]; g.fillRect(ax, ay + 12, 34, ah - 12);
-    for (let k = 0; k < 12; k++) g.fillRect(ax + k, ay + 12 - k, 34 - k * 2, 1);          /* the point of the arch, stepped */
-    g.fillStyle = STONE[4]; g.fillRect(ax + 16, ay + 1, 2, 2);                             /* the keystone catches the light */
-    g.fillStyle = 'rgba(143,255,176,0.05)'; g.fillRect(ax + 2, ay + 16, 30, ah - 18);      /* his fire gets into every recess */
-  }
+  band(L0 - 40, top - SANCTUM.vault - 40, w + SANCTUM.wall * 2 + 80, (flr - top) + SANCTUM.vault + 80, STONE[0]);
+  // THE BACK WALL: ashlar courses, a string course, and the tower's night showing through tall lancet windows
+  band(x0, top, w, flr - top, STONE[1]);
+  for (let y = top; y < flr; y += 11) band(x0, y, w, 1, STONE[2]);
+  /* WINDOWS, NOT A BLIND ARCADE. The arcade was dark recesses standing on the floor, and at play size it read as a row
+     of gravestones on a lawn. An opening with a LIT JAMB and the night behind it reads as a wall from the first frame,
+     and it puts the one cold colour in the room where it can do some good. They sit high, clear of the fire. */
+  { const wy = top + 22, wh = Math.min(70, Math.max(24, (ft - 30) - wy));
+    for (let ax = x0 + 30 + (((-(x0 + 30) + vx0 - 100) / 86 | 0) * 86); ax < vx1 + 40; ax += 86) {
+      if (ax < x0 + 20 || ax + 18 > x1 - 20 || ax > VW + 20 || ax + 18 < -20) continue;
+      g.fillStyle = STONE[3]; g.fillRect(ax, wy + 9, 14, wh - 9);
+      for (let k = 0; k < 9; k++) g.fillRect(ax + k, wy + 9 - k, 14 - k * 2, 1);          /* the lancet's point, stepped */
+      g.fillStyle = NIGHT[0]; g.fillRect(ax + 2, wy + 11, 10, wh - 13);                    /* the night outside his tower */
+      g.fillStyle = NIGHT[1]; g.fillRect(ax + 4 + ((ax >> 2) % 5), wy + 16 + ((ax >> 1) % 17), 1, 1);   /* one star in some of them */
+      g.fillStyle = STONE[4]; g.fillRect(ax - 2, wy + 8, 2, wh - 8); g.fillRect(ax + 14, wy + 8, 2, wh - 8);   /* the lit jamb */
+      g.fillRect(ax - 3, wy + wh - 2, 20, 2);                                              /* and a sill under it */
+    } }
   // THE SIDE WALLS, with a lit inner course: the room has to read as held in, not cropped
-  for (const [sx, dir] of [[x0 - SANCTUM.wall, 1], [x1, -1]]) {
+  for (const [sx, dir] of [[L0, 1], [x1, -1]]) {
+    if (sx > VW + 8 || sx + SANCTUM.wall < -8) continue;
     g.fillStyle = STONE[1]; g.fillRect(sx, top - SANCTUM.vault, SANCTUM.wall, (flr - top) + SANCTUM.vault + 8);
     g.fillStyle = STONE[3]; for (let y = top - SANCTUM.vault; y < flr; y += 9) g.fillRect(sx, y, SANCTUM.wall, 1);
     const inner = dir > 0 ? sx + SANCTUM.wall - 2 : sx;
@@ -84,37 +97,66 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
     g.fillStyle = 'rgba(143,255,176,0.10)'; g.fillRect(inner - (dir > 0 ? 0 : 2), ft - 40, 4, 40);   /* firelight up the wall */
   }
   // THE VAULT: ribs springing off both walls to a ridge, and black above it
-  g.fillStyle = STONE[5]; g.fillRect(x0 - SANCTUM.wall, top - SANCTUM.vault - 40, w + SANCTUM.wall * 2, 40);
-  g.fillStyle = STONE[1]; g.fillRect(x0, top - SANCTUM.vault, w, SANCTUM.vault);
+  band(L0, top - SANCTUM.vault - 40, w + SANCTUM.wall * 2, 40, STONE[5]);
+  band(x0, top - SANCTUM.vault, w, SANCTUM.vault, STONE[1]);
   g.fillStyle = STONE[3];
-  for (let rx = x0 - 40; rx < x1 + 40; rx += 64) for (let k = 0; k < SANCTUM.vault; k++) { const s = Math.round(k * 1.1); g.fillRect(rx + s, top - SANCTUM.vault + k, 2, 1); g.fillRect(rx + 64 - s - 2, top - SANCTUM.vault + k, 2, 1); }
-  g.fillStyle = STONE[4]; g.fillRect(x0 - SANCTUM.wall, top - SANCTUM.vault, w + SANCTUM.wall * 2, 1);
+  for (let rx = L0 - 40 + ((((vx0 - (L0 - 40)) / 64 | 0)) * 64); rx < vx1 + 64; rx += 64)
+    for (let k = 0; k < SANCTUM.vault; k++) { const s = Math.round(k * 1.1); g.fillRect(rx + s, top - SANCTUM.vault + k, 2, 1); g.fillRect(rx + 64 - s - 2, top - SANCTUM.vault + k, 2, 1); }
+  band(L0, top - SANCTUM.vault, w + SANCTUM.wall * 2, 1, STONE[4]);
   // THE BRAZIERS on the side walls, burning the same green: the only light in here is his
   for (const [bx, by] of [[x0 + 6, top + 40], [x1 - 10, top + 40], [x0 + 6, ft - 66], [x1 - 10, ft - 66]]) {
-    if (by < -20 || by > H + 20) continue;
+    if (by < -20 || by > H + 20 || bx < -20 || bx > VW + 20) continue;
     g.fillStyle = STONE[4]; g.fillRect(bx, by, 4, 12); g.fillRect(bx - 2, by - 3, 8, 3);
     const f = Math.sin(time * 7 + bx) * 1.5;
     g.fillStyle = FIRE[1]; g.fillRect(bx - 1, by - 8 + f, 6, 6); g.fillStyle = FIRE[2]; g.fillRect(bx + 1, by - 6 + f, 2, 3);
   }
-  // THE FLOOR OF FIRE, wall to wall, and the glow it throws up the room
-  if (ft < H && flr > 0) {
-    g.fillStyle = FIRE[4]; g.fillRect(x0 - SANCTUM.wall, ft, w + SANCTUM.wall * 2, flr - ft + 8);
-    for (let x = x0 - SANCTUM.wall; x < x1 + SANCTUM.wall; x++) {
-      const l = lick(x + cx, time), y = ft + Math.round(l);
-      g.fillStyle = FIRE[3]; g.fillRect(x, y + 5, 1, flr - y - 3);
-      g.fillStyle = FIRE[1]; g.fillRect(x, y + 1, 1, 5);
-      g.fillStyle = FIRE[0]; g.fillRect(x, y, 1, 2);
-      if ((((x + cx) | 0) + Math.floor(time * 6)) % 17 === 0) { g.fillStyle = FIRE[2]; g.fillRect(x, y - 2 - Math.round(Math.abs(l)), 1, 3); }
+  /* THE FLOOR OF FIRE. This was a flat green slab with a wavy top edge, and at play size that is not fire, it is A
+     LAWN - the one thing this batch has just finished scraping off the top of the tower. Fire is TONGUES: a charred
+     bed you can see between them, each one its own height and its own beat, tapering to a hot tip. */
+  if (ft < H + 24 && flr > -24) {
+    /* the body of it: DARKER AS IT GOES DOWN, so the fire has a depth. A single flat fill for the whole band was the
+       lawn again, just lower down the screen. */
+    band(L0, ft + 4, w + SANCTUM.wall * 2, flr - ft + 8, FIRE[3]);
+    band(L0, ft + 15, w + SANCTUM.wall * 2, flr - ft - 11, '#124430');
+    band(L0, ft + 21, w + SANCTUM.wall * 2, flr - ft - 9, FIRE[4]);
+    /* THE TONGUES. Evenly spaced columns of an even height are a level meter, not a fire, so each one takes its height
+       from two beats at different rates PLUS a fixed per-column offset, and a third of them are skipped outright to
+       leave gaps you can see the burnt bed through. */
+    /* THE MOLTEN SURFACE. Without it the tongues were a row of green spikes standing on a dark strip - a level meter.
+       A fire needs the thing it is burning ON to be alight too: one continuous glowing line, rolling slowly, and the
+       tongues rise out of that. */
+    for (let x = vx0; x < vx1; x++) {
+      const wx = x + cx, s = Math.round(Math.sin(wx * 0.13 + time * 2.2) * 1.6 + Math.sin(wx * 0.41 - time * 3.1) * 0.9);
+      g.fillStyle = FIRE[1]; g.fillRect(x, ft + 12 + s, 1, 5);
+      g.fillStyle = FIRE[0]; g.fillRect(x, ft + 12 + s, 1, 2);
+      if ((((wx) | 0) + Math.floor(time * 5)) % 23 === 0) { g.fillStyle = FIRE[2]; g.fillRect(x, ft + 12 + s, 1, 1); }
+    }
+    for (let x = vx0; x < vx1; x += 3) {
+      const wx = x + cx, base = ft + 14, seed = Math.sin(wx * 12.9898) * 43758.5453, r = seed - Math.floor(seed);
+      if (r < 0.15) continue;
+      const h0 = 3 + r * 5 + Math.abs(Math.sin(wx * 0.19 + time * 2.6) + Math.sin(wx * 0.052 - time * 1.5) * 0.7) * 9;
+      for (let k = 0; k < h0; k++) {
+        const u = k / h0, wid = u > 0.7 ? 1 : u > 0.35 ? 2 : 3;
+        g.fillStyle = u > 0.86 ? FIRE[2] : u > 0.42 ? FIRE[0] : FIRE[1];
+        g.fillRect(x + ((3 - wid) >> 1), base - k, wid, 1);
+      }
+      if ((((wx / 3) | 0) + Math.floor(time * 7)) % 11 === 0) { g.fillStyle = FIRE[2]; g.fillRect(x + 1, base - h0 - 3 - (Math.floor(time * 9 + wx) % 4), 1, 2); }   /* embers off the tips */
     }
     g.globalCompositeOperation = 'lighter';
-    for (let k = 0; k < 5; k++) { g.fillStyle = 'rgba(63,224,138,0.05)'; g.fillRect(x0 - SANCTUM.wall, ft - 8 - k * 9, w + SANCTUM.wall * 2, 9); }
+    for (let k = 0; k < 5; k++) band(L0, ft - 6 - k * 9, w + SANCTUM.wall * 2, 9, 'rgba(63,224,138,0.05)');
     g.globalCompositeOperation = 'source-over';
   }
 }
 
 // ---------------------------------------------------------------- the doors
-const PORT = { in: ['#b07cf0', '#e0c8ff', '#4a2a7a', '#2a1840'], out: ['#e0b050', '#ffe9b0', '#8a5a1a', '#3a2410'] };
-/* A DOOR IN THE AIR: a standing oval of light, its rim turning, and the dark of somewhere else inside it. 28x40.
+/* [spark, hot spark, and the THREE COLOURS OF WHAT IS THROUGH IT, rim inward]. The two doors are opposites on purpose:
+   the first is a well going down into his tower and gets darker towards the middle; the second is a hole full of
+   MORNING and gets brighter, so that after a whole level of violet night you can see where it goes before you reach it. */
+const PORT = {
+  in: ['#b07cf0', '#e0c8ff', '#4a2a7a', '#32205a', '#1c1030'],
+  out: ['#e0b050', '#ffe9b0', '#a06a24', '#e0975e', '#ffe9b0'],
+};
+/* A DOOR IN THE AIR: a standing oval, its rim turning, and somewhere else inside it. 28x40.
    `on` runs 0..1 so a portal can open rather than appear. */
 export function drawPortal(g, x, y, time, kind = 'in', on = 1) {
   const C = PORT[kind] || PORT.in, k = Math.max(0, Math.min(1, on));
@@ -124,8 +166,12 @@ export function drawPortal(g, x, y, time, kind = 'in', on = 1) {
     const f = 1 - (dy / rh) * (dy / rh); if (f <= 0) continue;
     const half = Math.round(rw * Math.sqrt(f) + Math.sin(time * 4 + dy * 0.5) * 0.8);
     if (half < 1) continue;
-    g.fillStyle = C[3]; g.fillRect(x - half, y + dy - rh, half * 2, 1);                       /* the dark of the other side */
-    g.fillStyle = C[2]; g.fillRect(x - half, y + dy - rh, 1, 1); g.fillRect(x + half - 1, y + dy - rh, 1, 1);
+    /* the three bands of the other side, so an oval of one flat colour becomes a way THROUGH something */
+    for (let dx = -half; dx < half; dx++) {
+      const u = Math.max(Math.abs(dx) / Math.max(1, half), Math.abs(dy) / rh);
+      g.fillStyle = u > 0.82 ? C[2] : u > 0.45 ? C[3] : C[4];
+      g.fillRect(x + dx, y + dy - rh, 1, 1);
+    }
   }
   /* the rim: sparks running round it, and two that are always brightest */
   for (let i = 0; i < 22; i++) {
@@ -168,14 +214,34 @@ export function drawSanctumDoors(g, L, cx, cy, time) {
    will look like, seen for ten seconds at the end of this one. Drawn behind the sand tiles, camera-parallaxed. */
 export function drawSandDawn(g, L, cx, cy, time) {
   const H = g.canvas.height, W = g.canvas.width;
-  const sky = ['#2a2038', '#5a3a52', '#a8635a', '#e0975e', '#f2c98a'];
-  for (let i = 0; i < sky.length; i++) { g.fillStyle = sky[i]; g.fillRect(0, Math.round(H * i / sky.length), W, Math.ceil(H / sky.length) + 1); }
-  const sunY = Math.round(H * 0.62 - cy * 0.02);
-  g.fillStyle = '#ffe9b0'; for (let dy = -9; dy <= 9; dy++) { const half = Math.round(Math.sqrt(Math.max(0, 81 - dy * dy))); g.fillRect(Math.round(W * 0.7 - half - cx * 0.02), sunY + dy, half * 2, 1); }
-  /* two bands of dune, the far one barely moving: it is a long way to the desert yet */
-  for (const [par, col, base, amp] of [[0.06, '#8a5a52', 0.78, 7], [0.14, '#c08a5e', 0.9, 11]]) {
-    const y0 = Math.round(H * base - cy * par * 0.4);
-    for (let x = 0; x < W; x++) { const wx = x + cx * par; g.fillStyle = col; g.fillRect(x, y0 + Math.round(Math.sin(wx * 0.013) * amp + Math.sin(wx * 0.031) * (amp * 0.4)), 1, H); }
+  /* THE SKY IS A RAMP, NOT A FLAG. Five equal bands of flat colour read as a test card; a dawn is dark for most of its
+     height and does all its work in the last third, so the stops are WEIGHTED towards the horizon and every boundary
+     is dithered a row at a time instead of ruled. */
+  const sky = [[0, '#1e1830'], [0.34, '#3a2842'], [0.56, '#6e3e56'], [0.72, '#a8635a'], [0.84, '#d4835a'], [0.93, '#e8a866'], [1, '#f2c98a']];
+  for (let i = 0; i < sky.length - 1; i++) {
+    const y0 = Math.round(H * sky[i][0]), y1 = Math.round(H * sky[i + 1][0]);
+    g.fillStyle = sky[i][1]; g.fillRect(0, y0, W, y1 - y0 + 1);
+    const n = Math.min(6, Math.max(2, (y1 - y0) >> 2));                         /* a dithered seam into the next stop */
+    for (let k = 0; k < n; k++) { g.fillStyle = sky[i + 1][1]; for (let x = (k & 1); x < W; x += 2) g.fillRect(x, y1 - n + k, 1, 1); }
+  }
+  g.fillStyle = sky[sky.length - 1][1]; g.fillRect(0, Math.round(H * sky[sky.length - 1][0]) - 1, W, H);
+  /* THE HORIZON IS THE PATH'S OWN, not a fraction of the screen. Placed by screen fraction, every dune sat BELOW the
+     top of the sand bank you are walking on and was hidden behind it - the whole backdrop was doing its work off the
+     bottom of the picture. It hangs off the world row the bank stands at, so the dunes are always in the gap between
+     the sky and the ground, wherever the camera is. */
+  const horizon = (L.sanctum ? L.sanctum.sand.y : H * 0.8 + cy) - cy - 6;
+  const sunX = Math.round(W * 0.68 - cx * 0.02), sunY = Math.round(horizon - 16);
+  for (const [r, col] of [[22, 'rgba(255,233,176,0.10)'], [16, 'rgba(255,233,176,0.16)'], [11, '#ffe9b0'], [8, '#fff6e0']])
+    for (let dy = -r; dy <= r; dy++) { const half = Math.round(Math.sqrt(Math.max(0, r * r - dy * dy))); if (!half) continue; g.fillStyle = col; g.fillRect(sunX - half, sunY + dy, half * 2, 1); }
+  /* THREE bands of dune, the far one barely moving, each with a lit crest and a shadowed face: a sine-edged slab of
+     flat colour is a hill on a graph, and the crest line is what makes it sand */
+  for (const [par, col, lit, drop, amp] of [[0.05, '#7a4e52', '#9a6660', 26, 7], [0.11, '#a86a54', '#c8886a', 14, 9], [0.2, '#c08a5e', '#e0ae7e', 2, 11]]) {
+    const y0 = Math.round(horizon - drop);
+    for (let x = 0; x < W; x++) {
+      const wx = x + cx * par, y = y0 + Math.round(Math.sin(wx * 0.011) * amp + Math.sin(wx * 0.027 + 1.3) * (amp * 0.45) + Math.sin(wx * 0.061) * 2);
+      g.fillStyle = col; g.fillRect(x, y, 1, H);
+      g.fillStyle = lit; g.fillRect(x, y, 1, 2);
+    }
   }
   /* sand on the wind, blowing the way you are walking */
   for (let i = 0; i < 30; i++) { const px = ((i * 137 + time * 42) % (W + 40)) - 20, py = (i * 53 + Math.sin(time + i) * 6) % H;
