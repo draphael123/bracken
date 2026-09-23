@@ -5,3 +5,4 @@ node_modules
 
 # agent worktrees and local tooling: never committed, never deployed
 .claude/
+.env*.local

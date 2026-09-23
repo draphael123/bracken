@@ -71,12 +71,27 @@ haft shoves people back out to the point. So her talents should be about *keepin
 - **LAY ON HANDS** *(passive)* — Mend also clears venom and bleed.
 - **OATHBOUND** *(passive)* — LIGHT fills from blows he *takes*, not only from blows he turns aside.
 
-## 7. Class levels
+## 7. Class levels — CORRECTED 2026-09-24
 
-The Burning Village is the Pyromancer's and it is the only one. Four more would complete the set — one per hero,
-each teaching its hero's kit the way the Village teaches fire. **I have not designed these**, because a class level
-is a level, and I don't build levels you haven't seen a brief for. If you want them, say so and they get briefs of
-their own.
+**I got this wrong the first time.** I wrote that only the Pyromancer has a class level and offered to design the
+rest. Three of them were designed on 2026-09-20 and 09-21 and live in **`.claude/briefs/`**, a directory I had not
+opened. Nobody should redesign them.
+
+| level | unlocks | state |
+|---|---|---|
+| **THE BURNING VILLAGE** | Pyromancer | BUILT, and the only hero with a `coinNeeds` unlock gate wired |
+| **THE UNBURIED FIELD** (`.claude/briefs/unburied-field.md`) | Death Knight | brief + **greybox** `src/draft/unburied-field.js`, with `tools/unburied-field-draft.mjs` |
+| **THE POWDER DECK** (`.claude/briefs/the-powder-deck.md` + `-pitch.md`) | Freebooter | brief, no greybox |
+| **THE CHURCH** (`.claude/briefs/the-lit-church.md` + `-pitch.md`) | Paladin | brief, no greybox. Renames Waymeet's boss to THE CRUSADER so the church's own boss can be THE PALADIN |
+| — | **Warden** | **nothing.** The only hero with neither a class level nor a talent |
+| — | Knight | starting hero; no unlock needed |
+
+**THE UNBURIED FIELD IS THE ONE THAT IS NEARLY READY** — brief plus a greybox that passes its own draft tool. It is
+the obvious next class level to build, and it needs no new design work.
+
+**AND THE GATE IS NOT WIRED FOR ANYONE ELSE.** Only `pyro` has `coinNeeds`; the Death Knight, Freebooter, Paladin and
+Warden can all be bought with no level behind them, so the design these briefs assume — beat the level, unlock the
+hero — is implemented exactly once out of six.
 
 ## 8. What I will not decide alone
 
