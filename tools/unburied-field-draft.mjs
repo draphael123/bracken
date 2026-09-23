@@ -1,7 +1,9 @@
 /* tools/unburied-field-draft.mjs — measures the DRAFT Unburied Field (src/draft/unburied-field.js), Node only: every act walked;
    BOTH act-two routes walked (the high one over the wrecks, the low one in the trench) and each alone still carries you on;
    the siege tower climbed to its top; the Standard-Bearer's gate holds the way on; the Death Knight's arena reached; three
-   silvers and every checkpoint reached; encounters 3-5; route-breaks clean. */
+   silvers and every checkpoint reached; encounters 3-5; route-breaks clean.
+   THIS TOOL MEASURES THE GEOMETRY ONLY. tools/unburied.mjs measures the same draft against the BRIEF - its features, its
+   hazards, its rooms and the rules the brief's last line names - and that is the one in the suite. */
 import assert from 'node:assert/strict';
 import { T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
@@ -23,7 +25,7 @@ assert.ok(seen.some(([x, y]) => x >= UF.ARENA.x0 + 4 && y === UF.G), 'the Death 
 const silvers = L.ents.filter(e => e.t === 'silver'); assert.equal(silvers.length, 3); for (const s of silvers) assert.ok(near(s), 'silver reached at ' + s.x + ',' + s.y);
 for (const c of L.ents.filter(e => e.t === 'check')) assert.ok(near(c), 'checkpoint reached at ' + c.x + ',' + c.y);
 for (const e of L.encounters) assert.ok(e.n >= 3 && e.n <= 5, e.name + ': ' + e.n);
-console.log('  ' + L.encounters.length + ' encounters (' + L.encounters.map(e => e.n).join(' ') + '), 1 ambush (' + L.ambushes[0].waves.flat().length + ' in two waves)');
+console.log('  ' + L.encounters.length + ' encounters (' + L.encounters.map(e => e.n).join(' ') + '), 1 ambush (' + L.ambushes[0].waves.flat().length + ' in ' + L.ambushes[0].waves.length + ' wave)');
 const f = audit(L).findings.filter(q => 'ABCD'.includes(q.k)); for (const q of f) console.log('  route-break ' + q.k + ' ' + q.what);
 assert.equal(f.length, 0, 'route-breaks finds nothing');
 console.log('the field is crossed high or low, the tower climbed, the banner holds the way, the chapel reached.');
