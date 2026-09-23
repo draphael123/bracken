@@ -191,8 +191,11 @@ export function drawPortal(g, x, y, time, kind = 'in', on = 1) {
    pressed, so it cannot be missed. */
 export function openSanctumDoor(S, A, x, y) {
   if (!S || S.open) return;
-  const b = { x0: A.x0 + 60, x1: A.x1 - 60 };
-  S.out = { x: Math.max(b.x0, Math.min(b.x1, x)), y: Math.min(y, fireTop(A) - 44) };   /* never in the fire, never in a wall */
+  /* CLAMPED ON ALL FOUR SIDES. It was clamped on three: never in a wall, never in the fire - and nothing stopped a
+     boss who died high from opening the way out INSIDE THE VAULT, where it cannot be flown into. The room's ceiling is
+     carpetBox's y0 (A.y0 + 24); the door hangs a portal's height below it. */
+  const x0 = A.x0 + 60, x1 = A.x1 - 60, top = A.y0 + 24 + 30, bot = fireTop(A) - 44;
+  S.out = { x: Math.max(x0, Math.min(x1, x)), y: Math.max(top, Math.min(bot, y)) };
   S.open = true; S.outOpen = 0;
 }
 export function updateSanctum(L, P, dt, ctx) {

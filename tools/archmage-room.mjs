@@ -71,6 +71,9 @@ for (const [name, x, y] of [['far left', A.x0 - 200, 700], ['far right', A.x1 + 
   assert.ok(S2.open, 'the door did not open (' + name + ')');
   assert.ok(S2.out.x >= A.x0 + 60 && S2.out.x <= A.x1 - 60, 'the way out opened in a wall (' + name + ': x ' + S2.out.x + ')');
   assert.ok(S2.out.y <= ft - 44, 'the way out opened in the fire (' + name + ': y ' + S2.out.y + ', fire at ' + ft + ')');
+  /* and the side this test USED to leave open: a boss who dies high must not put the door in the vault */
+  assert.ok(S2.out.y >= box.y0, 'the way out opened above the ceiling (' + name + ': y ' + S2.out.y + ', vault at ' + box.y0 + ')');
+  assert.ok(S2.out.y - 19 >= box.y0 - 2, 'the top of the way out is inside the vault (' + name + ')');
 }
 { const S2 = { open: true, out: { x: 1, y: 1 }, outOpen: 1 }; openSanctumDoor(S2, A, 600, 600);
   assert.deepEqual(S2.out, { x: 1, y: 1 }, 'the door re-opened somewhere else after it was already open'); }
