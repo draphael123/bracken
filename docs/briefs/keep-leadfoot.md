@@ -1,10 +1,17 @@
 # THE LEADFOOT — a new foe for THE UNDERWATER KEEP (brief)
 
 Daniel, 2026-09-24, on the Keep and Highcrown: *"underwater keep should probably bring a new foe, as should
-highcrown's level."* This is the Keep's. **Nothing is built.**
+highcrown's level."* This is the Keep's.
+
+**BUILT on `claude/leadfoot`.** `SPR.leadfoot`/`bakeLeadfoot` in `src/chars.js`, `updateLeadfoot` and his tables in
+`src/main.js`, weight 3.5 in `src/threat.js`, voice in `src/audio.js`, three of him placed in `src/keep-expansion.js`,
+and `tools/keep.mjs` now forces all three of his tells, their counters and his footing. **THE UNDERWATER KEEP HAS LEFT
+THE GRANDFATHER LIST in `tools/one-new-foe.mjs`.** Two things below are still Daniel's and are NOT settled by the
+build: **his name** (he ships as THE LEADFOOT, the id `leadfoot`), and **the anchor haul**, which is built as the
+pull-toward-him this brief names as the likely better idea and NOT as a pin to the floor — see the last section.
 
 Rule it satisfies: **F10** — every level brings at least one foe the game has never seen, and it is not its boss.
-The Keep currently fails F10: its only new creature is the Drowned King.
+The Keep failed F10 before him: its only new creature was the Drowned King.
 
 ---
 
@@ -77,3 +84,17 @@ Not in the Drowned King's arena.
   Merrow Brute — he wants something in that register.
 - **Whether the anchor haul is a good idea at all.** It takes control away from the player, and this game has been
   careful about that. It may be better as a pull *toward* him rather than a pin to the floor.
+
+### What the build did with those two, and why (2026-09-23, still yours to settle)
+
+- **The name is unchanged and unbuilt-on.** He is `leadfoot` in the code and THE LEADFOOT on the bestiary page. The
+  display name is two rows (`BEAST_SHORT` and the bestiary entry, both `src/main.js`); the id is a rename across
+  eleven sites. Neither is expensive, but neither is mine.
+- **The anchor is the pull, not the pin.** Built as this brief's own second option: it is red, unblockable, it hauls
+  you 58 px toward him and nothing else — no pin, no lock, no input taken. It is also aimed **where you were when the
+  windup started** and only catches within 28 px of that spot, so moving in the 0.8 s beats it outright. Two reasons
+  beyond the brief's own worry: a pin is control taken away, and the Drowned King in the room at the end of this same
+  level already has **THE ANCHOR** and **THE UNDERTOW** — a rank-and-file foe doing both of his boss's tricks reads as
+  a smaller Drowned King, which is not what this creature is for. The pin is a one-line change if you want it back:
+  `LEAD.haul` and the `case 'anchor'` branch in `updateLeadfoot`.
+- **He has no fourth attack and no phase**, on purpose: A1's four is a boss's floor, and this brief's three is his.

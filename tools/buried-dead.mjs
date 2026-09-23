@@ -34,3 +34,10 @@ assert(L.arena.floor-26*16>80,'the high tier no longer clears the nova (it is '+
 assert(L.arena.floor-29*16<80,'the low tier now clears the nova too, so there is no reason to climb');
 
 console.log('Burial 3x length, poison crossings, zombies, falling stone, boss attacks/counters, THE HANDS and the two tiers, bounded tracking, phase two and grab warnings pass.');
+
+/* HIS ONE CAUSED OPENING IS IN PHASE ONE TOO (docs/briefs/buried-dead-rotation.md, option A, Daniel 2026-09-23). With sinkTell third,
+   four turns stood between the erupt and the next slam - 21 s against broken ground that lives 14 - and the arm went into the ground
+   ZERO times before enrage. A hero who stands where he erupted and never moves must see it in phase one. (Red against the old array.) */
+{const Pp={x:320,y:500,h:22,dead:false},cc={P:Pp,A,hit:()=>{},summon:()=>{},say:()=>{},sound:()=>{},ring:()=>{}},e={alive:true,hp:100,hp0:100,phase:1,mode:'walk',modeT:.5,x:320,y:500,anim:0,turn:0,markX:320};let stuck=0;
+ for(let f=0;f<60*120;f++){e.hp=100;const was=e.mode;updateBuriedDead(e,1/60,cc);if(e.mode==='stuck'&&was!=='stuck')stuck++;}
+ assert.equal(e.phase,1);assert(stuck>=2,'the arm-in-the-ground punish comes round in phase one: '+stuck+' in 120 s');}
