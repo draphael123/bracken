@@ -1,7 +1,8 @@
 # THE SUNKEN CARAVAN: mechanics built ahead of the level
 
 Built on `claude/slopes` while THE BURNING VILLAGE was being built. Pure modules, none wired in. Proved by
-`node tools/caravan.mjs` (22 checks, <1 s). Brief: `.claude/briefs/sunken-caravan.md`. Art: `src/redraw/desert.js`,
+`node tools/caravan.mjs` (29 checks, <1 s - it was 22 when this was written). Brief: `.claude/briefs/sunken-caravan.md`
+(NOT IN THIS REPOSITORY - see the known hole in `tools/dangling-paths.mjs`). Art: `src/redraw/desert.js`,
 preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
 
 ## SUNSTROKE: `src/sunstroke.js`
@@ -13,7 +14,9 @@ preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
   paints violet) and `L.shade` rects.
 - Numbers: swim starts at 5.0 s of open sun, the first damage at 9.7 s (a 4.7 s warning); 1.2 s of shade resets it.
   The level rule is `SUN.maxWalk` = 7.5 s: no stretch of the road longer than that without shade. `sunStretches(route, isShaded)`
-  gives the level tool its numbers. Put it in `tools/sunken-caravan.mjs` and make it fail over 7.5 s.
+  gives the level tool its numbers. DONE, under another name: the level tool is `tools/caravan-level.mjs`, and it does
+  fail the road over `SUN.maxWalk` (verified 2026-09-23 by lowering the rule to 3 s and watching it fail on the 7.3 s
+  walk at columns 463-505). This line used to ask for a sunken-caravan tool of its own; no such file was ever written.
 - Changed while testing: shade cooled over 2.2 s at first, and 7.5 s walks with 1.5 s stops crept up to harm. SHADE
   RESETS IT, as the brief says.
 
