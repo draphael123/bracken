@@ -192,7 +192,7 @@ export function updateWinchmaster(e, dt, c) {
   if (e.sendCd <= 0 && !e.runaway && !atMouth && !(riding && riding.dist <= WINCH.sendMin) && c.rand() < 0.4) { e.last = 'send'; begin(e, 'send', c); return; }
   e.cd = 0.4;
 }
-/* THE LOOK OF THE FIGHT, rects only (so tools/winch-art.mjs can render it in Node): the runaway bucket, the red line under a
+/* THE LOOK OF THE FIGHT, rects only (so work/claude/winch-art.mjs can render it in Node): the runaway bucket, the red line under a
    SEND, the chain and the hook, the bar's arc over the mouth, the line's arrows while it runs backwards, and the ring under
    him while he is down */
 export function drawWinchFx(g, e, c, cx, cy, time) {

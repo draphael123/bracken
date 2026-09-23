@@ -272,7 +272,7 @@ export function buildOreRoad({ painter, T }) {
   block(481, A.house[0] - 1, A.spoil + 1, H - 1);                               // THE SPOIL HEAP under the whole room: a fall costs a climb, not a life
   for (const [x, y0, y1] of A.ropes) rope(x, y0, y1);   /* out of the spoil: to the deck (the low line), and to each high ledge (the high line) */
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
-  ent('sign', 477, A.deck, { text: 'RIDE A LOADED BUCKET INTO HIS DRUM AND IT JAMS. HE HAS THREE, AND HE WILL NOT STAY ON ONE.' });
+  ent('sign', 477, A.deck, { text: 'RIDE A LOADED BUCKET INTO HIS DRUM AND IT JAMS. HE HAS THREE.' });
 
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
   const cable = cableLines();
