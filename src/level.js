@@ -2,6 +2,7 @@ import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildOreRoad } from './ore-road.js';
+import { reworkScree } from './scree-rework.js';
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
@@ -1266,7 +1267,7 @@ function screePath() {
   Q.ent('deco', 439, 8, { kind: 'stone' }); Q.ent('deco', 474, 8, { kind: 'stone', v: 1 });
   Q.ent('deco', 444, 8, { kind: 'cairn' }); Q.ent('silver', 456, 3);
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
-  return Q.done();
+  return reworkScree(Q.done(), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js */
 ;
 }
 

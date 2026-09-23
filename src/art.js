@@ -1083,6 +1083,14 @@ export function bakeBouncer() {
 }
 // Shelf fungus: a one-way ledge that snaps after you stand on it.
 export function bakeShelf(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 2, T, 5, '#d9a55b'); rect(g, 0, 2, T, 1, '#f0d090'); rect(g, 0, 6, T, 1, '#8a5a32'); for (let i = 0; i < 4; i++) rect(g, 2 + i * 4, 4, 1, 2, '#b8813a'); if (rnd() < 0.5) px(g, (rnd() * T) | 0, 3, '#fff1c0'); return c; }
+/* LOOSE ROCK (THE SCREE PATH, 2026-09-23): the snapping shelf in stone - a slab of the hill split off its bed, a crack across it,
+   grit already trickling off its underside. It must read as footing AND as a slab that is not holding. */
+export function bakeLooseRock(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 1, T, 6, '#6e6e7a'); rect(g, 0, 1, T, 1, '#a8a8b4'); rect(g, 0, 6, T, 1, '#3a3a44'); rect(g, 1, 7, T - 3, 1, '#4a4a56');
+  const cx = 4 + ((rnd() * 8) | 0); for (let y = 1; y < 7; y++) px(g, cx + ((y % 2) ? 1 : 0), y, '#2a2a34');   /* the crack */
+  for (let i = 0; i < 5; i++) px(g, (rnd() * T) | 0, 2 + ((rnd() * 4) | 0), '#8a8a96');
+  for (let i = 0; i < 3; i++) px(g, 1 + ((rnd() * (T - 2)) | 0), 8 + ((rnd() * 4) | 0), '#5a5a66');             /* grit under it */
+  return c; }
 // Puffball: a pale ball that bursts into spores.
 export function bakePuffball() { const [c, g] = canvas(14, 12); ellipse(g, 7, 7, 6.5, 5, '#e8e0d0', '#c8bcb0'); ellipse(g, 5, 5, 3, 2, '#fff8f0'); px(g, 7, 2, '#b8a8a0'); rect(g, 5, 11, 4, 1, '#a89890'); return outline(c, OUT); }
 // Glow mushroom: teal light. Frame 1 = dark.
