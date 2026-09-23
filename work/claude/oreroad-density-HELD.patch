@@ -1,0 +1,23 @@
+diff --git a/src/ore-road.js b/src/ore-road.js
+index 639b9e7..9e2e68b 100644
+--- a/src/ore-road.js
++++ b/src/ore-road.js
+@@ -152,6 +152,18 @@ export function buildOreRoad({ painter, T }) {
+   ent('winchmaster', 370, A.housing, { face: -1 });
+   ent('sign', 333, A.deck, { text: 'RIDE A BUCKET INTO THE DRUM AND IT JAMS. HE WILL TRY TO STOP YOU.' });
+ 
++  /* THE ROAD IS GARRISONED (2026-09-23, after tools/curve.mjs put it at INDEX 59 between Stormhold's 116 and Highcrown's 120: 27 foes
++     over 470 columns). The castle's supply line is guarded like one: a lookout at every station, throwers on the tower, and the
++     gorge's fliers thick over every span. (The index still cannot see this level's real hazard - every fall off a line is a death,
++     and it counts only spikes and water.) */
++  meet('THE LOADING HOUSE', 36, 46, [['sentry', 42, YARD], ['sprig', 45, YARD]]);
++  meet('THE PYLON THROWER', p0, p1, [['rockgoblin', p0 + 3, YARD]]);
++  meet('THE SPAN HARPIES', 60, 118, [['harpy', 78, YARD - 7], ['harpy', 112, YARD - 8]]);
++  meet('THE TOWER TOP', 121, 146, [['archer', 138, TOWER[2]], ['rockgoblin', 126, TOWER[1]]]);
++  meet('THE CROSSING HARPIES', 160, 228, [['harpy', 165, 16], ['harpy', 222, 18], ['crow', 190, 14]]);
++  meet("THE BRAKEMAN'S LOFT", 238, 246, [['archer', 245, PILLAR[1]]]);
++  meet('THE STEEP FLIERS', 260, 308, [['harpy', 300, 6], ['crow', 270, 9], ['harpy', 288, 5]]);
++  meet('THE WINCH YARD', 311, 331, [['sentry', 315, WINCH], ['rockgoblin', 317, WINCH - 4]]);
+   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
+   const cable = cableLines();
+   return {

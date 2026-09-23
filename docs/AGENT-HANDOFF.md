@@ -163,6 +163,17 @@ ramp means editing shipped levels — bring Daniel numbers and a proposal before
   the rule found 12 more, then 334.
 - **A metric that skips unknown inputs LIES.** It does not fail, it returns a confident smaller number. Before tuning
   anything to hit a number, check what fraction of the input the number actually scored.
+- **`LEVELS` IS AN APPEND LOG. ITS ORDER IS NOT THE CAMPAIGN'S.** The campaign order is the `needs` chain and
+  nothing else. `burning`, `witchlight` and `oreroad` were each appended at the END on purpose, because map nodes
+  and saves count levels by array index — so the array's tail is three levels that belong in the middle. This was
+  never a typo and could never have been one. Any tool reading "the level before this one" off array position is
+  measuring against the wrong neighbour, and two were: `tools/curve.mjs` judged SIX of 28 levels against a level
+  they do not follow, and `tools/one-new-foe.mjs` inherited the same mistake and called THE WITCHLIGHT STAIR an
+  F10 failure when it introduces five foes, the campaign median — `mage` was credited with them only because it
+  sits earlier in the array. With the threat table having scored four bosses as 0 until 2026-09-23, **every INDEX
+  in these documents taken before 2026-09-24 is suspect.** The chain is a TREE, not a line: `stockade` forks to
+  `{spore, burning}` and `causeway` to `{harbor, waymeet}`, and two hidden levels hang off `needsTime`/`needsKills`
+  rather than `needs` at all.
 - **Verify a fix against the OLD code.** Stash it, watch the check fail, restore it. Several checks written tonight
   would otherwise have been passing vacuously.
 - **A convention nothing checks is a wish.**
