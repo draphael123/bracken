@@ -7323,7 +7323,11 @@ function updatePlayer(dt) {
 let titleI = 0, titleBarY = null;
 const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {}).cleared);
 const titleItems = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP'], rushUnlocked() ? ['BOSS RUSH'] : [], ['PRACTICE', 'THE EDITOR', 'SETTINGS', 'CONTROLS']); };
+  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ['SETTINGS', 'CONTROLS']); };
+/* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
+   these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
+   new bosses, tiles or terrain to either while this is true. */
+const MODES_PARKED = !q.get('modes');
 let miniActive = false, miniDone = false, miniIntroT = 0;
 // THE NAME ON THE CARD. The intro banner used to carry its own chain of boss names and it had never been
 // extended past the crags, so THE CAPTAIN, THE QUARTERMASTER, THE REEFMAW and the TIDE HERALD all announced
