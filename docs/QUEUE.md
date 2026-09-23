@@ -47,26 +47,31 @@ node off the road on a dashed branch. The map is currently wrong in both directi
 - **The rule for every class level:** THE UNBURIED FIELD, THE POWDER DECK and THE CHURCH are optional unlocks like
   the Burning Village, so each gets `spur: true` **the day it is placed**.
 
-## 4. NEEDS DANIEL — do not decide these alone
+## 4. DECIDED BY DANIEL, 2026-09-24 — build to these
 
-1. **Hero unlocks are implemented once out of six.** Only `pyro` carries a `coinNeeds` gate (the Burning Village).
-   The Death Knight, Freebooter, Paladin and Warden are all buyable with no level behind them — so the design every
-   class-level brief assumes barely exists yet.
+1. **ALL THREE CLASS LEVELS GATE THEIR HERO.** *"All are gated behind their class levels."* So THE UNBURIED FIELD
+   gates the Death Knight, THE POWDER DECK the Freebooter, THE CHURCH the Paladin - each needs a `coinNeeds` entry on
+   its hero the day its level is placed, exactly as `pyro` has `coinNeeds: 'burning'` today. **THE WARDEN IS THE
+   DELIBERATE EXCEPTION** and stays unlocked from the start.
+2. **THE PALADIN'S CHARGE STAYS AS IT IS.** *"Paladins slow is fine."* 145px/s behind a 1.6s tell, 4.7s of total
+   warning. Live in production. Do not re-tune it.
+3. **THE DEATH KNIGHT'S ART GROWS TO MEET HIS HITBOX.** *"Lengthen the art."* The blade box reaches 24px past the
+   blade drawn on its live frame (28px on the planted heavy); the fix is the sprite, NOT the box. His reach does not
+   change - only the picture of it becomes honest.
+
+## 5. NEEDS DANIEL — do not decide these alone
+
 2. **The four bosses weighted `0`** in `src/threat.js` (closedhelm, bellcrab, drownedking, prince) while eight others
    are `6`. The table says a boss is a 6.
-3. **The Paladin's charge is now 4.7s** of total warning (was 3.3s). That is what was asked for; it may be too
-   telegraphed. Needs a human hand on it.
 4. **The Queen's walkway.** Daniel asked for it removed; it is her ONLY damage window (`gqOpen` is `mode==='pinned'`
    and only her own gallery pins her). Ask again before deleting.
-5. **The Death Knight's hitbox** reaches 24px past the blade the art draws — shorten the box or lengthen the art?
-   That is a call about his reach.
 6. **Burn and the two non-ward multipliers** — `wardedDamage` folds in the five wards, deliberately not the
    Archmage's stage gate (which can refuse a blow) or the Undead Archmage's `gather` bonus.
 7. **Sixteen proposed talents** across four heroes (`docs/briefs/hero-kits.md`). Is four each right, or two?
 8. **Flattening the ramp** means editing shipped levels. Bring numbers and a proposal, do not rebalance the campaign
    unasked.
 
-## 5. KNOWN DEBT
+## 6. KNOWN DEBT
 
 - **STORMWRECK HARBOR is SHELVED ON PURPOSE.** Daniel, 2026-09-24: *"by out of commission I mean we don't need
   it right now."* It is the only level in `LEVELS` with no map node - it builds, it has content, it has its own suite
@@ -87,7 +92,7 @@ node off the road on a dashed branch. The map is currently wrong in both directi
 - **Seven levels use stock library music** (theme, theme2, theme3, theme4, cave, town, adventure), and the Ore Road
   uses `mineworks`, a sparse synthesised track with no audio file — which is why it sounds like silence.
 
-## 6. NOT DESIGNED YET
+## 7. NOT DESIGNED YET
 
 - **THE WARDEN NEEDS TALENTS, NOT A CLASS LEVEL.** Daniel, 2026-09-24: *"we do not need a warden class level (they
   are unlocked from the start)."* So she is unlocked deliberately and the gap is her KIT: she is the only hero with no
