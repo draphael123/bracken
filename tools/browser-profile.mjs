@@ -12,9 +12,12 @@ import { spawn, spawnSync } from 'child_process';
 import { lstatSync, mkdtempSync, realpathSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { basename, dirname, join } from 'path';
+import { runTag } from './ports.mjs';   /* this suite run's own tag, so a leak check can tell its browsers from another session's */
 
 export const KINDS = ['look', 'headless', 'prof', 'video', 'prod'];
-export const PROFILE_RE = new RegExp('^bracken-(' + KINDS.join('|') + ')-[A-Za-z0-9]{6}$');
+/* bracken-<kind>-<run>-<rand> since 2026-09-23; the run tag is OPTIONAL in the pattern so that profiles left behind by
+   older builds are still recognised as ours and still get cleaned up. */
+export const PROFILE_RE = new RegExp('^bracken-(' + KINDS.join('|') + ')-(?:[A-Za-z0-9]{6}-)?[A-Za-z0-9]{6}$');
 export const TEMP = realpathSync(tmpdir());
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const busyWait = ms => { const t = Date.now() + ms; while (Date.now() < t) { /* a sync retry has nothing else to wait with */ } };
@@ -65,7 +68,8 @@ function hook() {
 export function launchBrowser(exe, args, kind = 'look') {
   if (!KINDS.includes(kind)) throw new Error('unknown profile kind ' + kind);
   hook();
-  const prof = mkdtempSync(join(TEMP, 'bracken-' + kind + '-'));
+  const tag = runTag();
+  const prof = mkdtempSync(join(TEMP, 'bracken-' + kind + '-' + (tag ? tag + '-' : '')));
   let child;
   try { child = spawn(exe, [...args, '--user-data-dir=' + prof], { stdio: 'ignore', detached: process.platform !== 'win32' }); }
   catch (e) { removeProfileSync(prof); throw e; }

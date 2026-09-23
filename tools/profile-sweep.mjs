@@ -19,6 +19,9 @@ const argv = process.argv.slice(2), opt = (k, d) => { const i = argv.indexOf('--
 const DRY = argv.includes('--dry-run'), CHECK = argv.includes('--check'), ORPHANS = argv.includes('--kill-orphans');
 const JOBS = Math.max(1, +opt('jobs', 1)), MEASURE = argv.includes('--measure');   /* --jobs N: N deletes at once (the cost is per file: ~5 ms each on this disk); --measure: add up the bytes first */
 const IDLE = +opt('idle', 30) * 60000, SINCE = opt('since', null) === null ? null : +opt('since');
+/* --run <tag>: only this suite run's own profiles count. Without it the check asked "made since T0?", which another
+   session's KILLED browser also answers yes to - its orphan stops being "in use" and lands in our leak list. */
+const RUN = opt('run', null);
 
 /* (a raw control character in some process's command line comes out of PowerShell 5.1's JSON unescaped and breaks the parse: they are blanked first) */
 function processes() {
@@ -50,6 +53,7 @@ for (const name of readdirSync(TEMP)) {
   if (!PROFILE_RE.test(name)) continue;
   const p = join(TEMP, name); report.found++;
   if (!isOurProfile(p)) { report.skipped.notOurs++; continue; }
+  if (RUN && !name.includes('-' + RUN + '-')) { report.skipped.otherRun = (report.skipped.otherRun || 0) + 1; continue; }
   if (cmds.some(c => c.includes(name.toLowerCase()))) { report.skipped.inUse++; continue; }
   if (SINCE !== null) { try { if (lstatSync(p).birthtimeMs < SINCE) { report.skipped.beforeRun++; continue; } } catch { report.skipped.uncertain++; continue; } }   /* made before this run: not this run's leak, and no walk */
   const t = newest(p); if (t === null) { report.skipped.uncertain++; continue; }

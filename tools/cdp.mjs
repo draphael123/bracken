@@ -1,13 +1,15 @@
 // tools/cdp.mjs — THE PAGE, HEADLESS, FOR A TOOL. The same approach as tools/headless.mjs (the installed Chrome or Edge,
 // driven over the DevTools protocol with Node's own WebSocket), as a helper the readability tools share.
 //   const pg = await openPage();  await pg.evalp('BK.state');  pg.close();
-// It starts serve.mjs on PORT (default 5892) when nothing answers there, and REFUSES a server that is serving another
+// It starts serve.mjs on PORT (default: this checkout's own block, tools/ports.mjs) when nothing answers there, and
+// REFUSES a server that is serving another
 // checkout: the served src/lookpass.js must be byte-for-byte this checkout's.
 import { spawn } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import { launchBrowser } from './browser-profile.mjs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
+import { PORT_BASE } from './ports.mjs';   /* a port block per checkout, so two worktrees do not fight over 5892 (tools/ports.mjs) */
 
 export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const BROWSERS = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
@@ -15,7 +17,7 @@ const BROWSERS = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/P
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export async function openPage(opts = {}) {
-  const PORT = +(process.env.PORT || opts.port || 5892), URL0 = 'http://localhost:' + PORT + '/';
+  const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
   let server = null;
   if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', () => { try { server.kill(); } catch {} }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }

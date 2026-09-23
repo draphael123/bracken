@@ -28,6 +28,7 @@ import { readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 
+import { portFor, newRunTag } from './ports.mjs';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));   /* not .pathname: a space in the folder name arrives as %20 */
 /* A SUBSET, FOR THE BUILD LOOP. `npm run check` with no arguments is the GATE and is unchanged - all of it, and the
    only thing that may be called green. `npm run check -- tower,tome,elites` runs just the checks whose names contain
@@ -56,17 +57,21 @@ if (SUBSET) { const ch = spawnSync('git', ['status', '--porcelain'], { cwd: ROOT
 const results = [];
 /* THE TEMP FOLDER, before and after: abandoned BRACKEN browser profiles (idle 30 min, no live process on them) go first, and at
    the end anything THIS run made and did not take away again is a leak and fails the suite (tools/profile-sweep.mjs) */
+/* THIS RUN'S OWN TAG. Children inherit it, browser-profile.mjs writes it into every profile directory name, and the
+   leak check below counts only profiles wearing it - so another session's crashed browser can no longer be reported
+   as this run's leak, which is exactly the false red that threw away a full run on 2026-09-22. */
+process.env.BRACKEN_RUN = process.env.BRACKEN_RUN || newRunTag();
 const SUITE_T0 = Date.now(); run('profile-sweep', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans']);
 { const bad = files.map(f => [f, spawnSync(process.execPath, ['--check', f], { cwd: ROOT, encoding: 'utf8' })]).filter(([, r]) => r.status !== 0);
   results.push({ name: 'syntax', ok: !bad.length, ms: 0, last: bad.length ? bad.map(([f]) => f).join(', ') : files.length + ' files parse', out: bad.map(([f, r]) => f + ': ' + r.stderr) }); }
 for (const t of ['tells', 'ore-road', 'ore-ride', 'scree-rework', 'village-stakes', 'comments', 'floaters', 'audit', 'content-audit', 'talents', 'progression', 'progression-runtime', 'skill-menu', 'skill-passives', 'skill-balance-probe', 'reaper-input', 'traps', 'signs', 'killzones', 'collectables', 'keys', 'elites', 'spawns', 'deadends', 'rafts', 'raft-call', 'render-layers', 'room-patterns', 'heat', 'queen-comb', 'crown-route', 'crown-requests', 'gallery-runtime', 'waterfall-joins', 'paladin-enrage', 'spurs-runtime', 'additional-areas', 'additional-areas-runtime', 'keep', 'keep-runtime', 'keep-expansion', 'keep-passages', 'keep-expansion-runtime', 'storm-ship', 'storm-ship-runtime', 'haunted-coast', 'haunted-coast-runtime', 'tide-reaver', 'tome', 'false-abbot', 'tower-ascent', 'archmage-room', 'skins', 'folly-runtime', 'deadly-water', 'burning-village', 'witchlight', 'sea-requests', 'sea-runtime', 'shop-theme', 'store-preview', 'dressing', 'runtime-footing', 'bridge-props', 'light-support', 'readability', 'town-live', 'waymeet-cleanup', 'owl-lamps', 'belfry', 'moor-wind', 'watchtowers', 'spore-loop', 'mother-cap', 'mother-pilot', 'salvage-captain', 'harbor-expansion', 'harbor-route', 'buried-dead', 'burial-route', 'burial-geometry', 'burial-rework', 'undercrown-variety', 'boss-openings', 'undead-foes', 'buried-attacks', 'combat-feel', 'attack-animation', 'attack-buffer', 'normal-health', 'ambush-single', 'reed-island', 'lab-clock', 'combat-replay', 'combat-results-test', 'king-refill', 'pilot-actions', 'pyre-pilot', 'herald-pirate', 'boss-navigation', 'cdp-recovery', 'swim-chain']) if (take(t)) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
 /* THE PIXELS NEED THE PAGE: a headless Chrome on a port of its own, so a dev server left running from another checkout is never the one measured */
-if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: '5993' }));
+if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
-if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud', '--strict'], { PORT: '5994' }));
+if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud', '--strict'], { PORT: String(portFor(4)) }));
 if (!SUBSET) results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */   /* the full run only: a subset did not make the mess and must not be failed by it */
-if (!SUBSET) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--check']));
+if (!SUBSET) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--run', process.env.BRACKEN_RUN, '--check']));
 
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }
