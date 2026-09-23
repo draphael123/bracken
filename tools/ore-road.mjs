@@ -33,6 +33,14 @@ ok(L.ents.filter(e => e.t === 'silver').length === 3, 'three silvers');
   const d = [...Array(l.n).keys()].map(i => bucketAt(l, i)).filter(b => b.vis).map(b => b.s).sort((a, b) => a - b);
   ok(d.slice(1).every((s, i) => Math.abs(s - d[i] - l.gap) < 0.01), `and they come ${l.gap} px apart, like a clock`); }
 
+/* A BUCKET IS SOMEWHERE YOU CAN FIGHT. It was 24 px wide against a hero who is 10-14 across with a blade that reaches further,
+   so there was nowhere on it to step, swing or dodge, and the level's signature floor was a thing you stood still on. Daniel's
+   verdict was "riding on lifts is boring", and this is that verdict in pixels. THE HOLE BETWEEN TWO BUCKETS IS THE THING THE
+   PLAYER READS, so it is spaced by its hole (ore-road.js GAP) and the width may grow without moving a single crossing */
+{ ok(OR.BUCKET.w >= 44 && OR.BUCKET.w <= 48, `a bucket is ${OR.BUCKET.w} px - about three tiles, so a hero 14 wide has room either side of him to swing and to dodge`);
+  ok(OR.BUCKET.w > OR.BUCKET.WAS * 1.8, `and that is ${(OR.BUCKET.w / OR.BUCKET.WAS).toFixed(1)}x what shipped (${OR.BUCKET.WAS} px)`);
+  for (const l of C.lines) ok(l.gap - OR.BUCKET.w >= 40, `the ${l.id} line still leaves a ${l.gap - OR.BUCKET.w} px hole between buckets: what you hop is unchanged`); }
+
 /* A RUSTED BUCKET CAN BE HOPPED OFF: the next one is a jump away in the bucket's own frame (you keep its speed when you leave it) */
 { const l = C.lines.find(q => q.id === 'steep'), hole = l.gap - OR.BUCKET.w, jump = 92 * (2 * 320 / 1000);
   ok(l.cracked === 3 && hole < jump - 6, `on the steep line every ${l.cracked}rd bucket is rust, and the hole to the next is ${hole} px against a ${Math.round(jump)} px running jump`);
@@ -67,7 +75,8 @@ function world(o = {}) {
   w.c.P.x = w.c.A.drumX - 60; w.c.P.y = lineYAt(w.l, w.c.P.x); w.run(0.5);
   ok(w.log.some(q => q[0] === 'hit' && q[1] === 'A LOADED BUCKET' && q[3] === true), 'and it takes a hero at the line\'s height, and no shield turns it');
   const w3 = world({ riding: true }); w3.e.revCd = 9; w3.run(0.1 + WINCH.tell.send + 0.05); w3.c.P.x = w3.c.A.drumX - 60; w3.c.P.y = lineYAt(w3.l, w3.c.P.x) - 40; w3.run(0.5);
-  ok(!w3.log.some(q => q[0] === 'hit'), 'a hero in the air over it is missed'); }
+  ok(!w3.log.some(q => q[0] === 'hit'), 'a hero in the air over it is missed');
+  ok(WINCH.sendR === OR.BUCKET.w / 2, `and it takes you over exactly the width it is drawn (${WINCH.sendR * 2} px, half either side): what hurts is the size it looks`); }
 { const w = world({ span: 2 }); w.e.sendCd = 9; w.run(0.1); ok(w.e.mode === 'cutTell' && w.e.arg === 2, 'a hero on a catwalk: HE CUTS THAT SPAN'); w.run(WINCH.tell.cut + 0.1); ok(!w.spans[2], 'and it is gone');
   w.e.cutCd = 0; w.e.cd = 0; w.run(0.2); w.e.cutCd = 0; w.e.cd = 0; w.run(WINCH.tell.cut + 0.3); w.e.cutCd = 0; w.e.cd = 0; w.run(WINCH.tell.cut + 0.3);
   ok(w.spans.filter(Boolean).length === 1, 'but never the last one: ' + w.spans.filter(Boolean).length + ' left'); }

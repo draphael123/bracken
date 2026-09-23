@@ -26,7 +26,12 @@ export const OR = {
   PYLON: [82, 86],
   ARENA: { x0: 332, x1: 375, deck: 12, walk: 9, housing: 8, spoil: 22, ledge: [363, 365], house: [366, 374], spans: [[338, 344], [347, 352], [355, 359]] },
   PLACES: { yard: [0, 47], span1: [48, 120], tower: [121, 146], crossing: [147, 231], pillar: [232, 246], steep: [247, 310], winch: [311, 331], drum: [332, 379] },
-  BUCKET: { w: 24, h: 6, hang: 30 },
+  /* THE BUCKET IS THREE TILES WIDE. It was 24 px and the knight is 10-14 across with a blade that reaches further, so there
+     was no room on one to step, swing or dodge, and no fight could happen on the level's own floor (Daniel found this; the
+     brief's number is 44-48). 46 leaves a tile of deck either side of him. EVERY LINE'S GAP GREW BY THE SAME 22, so the HOLE
+     between two buckets - which is the thing you actually hop, and what tools/ore-road.mjs measures against the running jump
+     - is exactly what it was. A wider bucket on the old spacing would have made the steep line a continuous bridge */
+  BUCKET: { w: 46, h: 6, hang: 30, WAS: 24 },
   CRACK: 0.9,                                                    // how long a rusted bucket holds you
 };
 const TS = 16;
@@ -38,17 +43,20 @@ const join = (...parts) => parts.reduce((a, p) => a.concat(a.length ? p.slice(1)
 /* THE LINES. dir 1 runs the buckets along pts from first to last; ret is the length of the hidden return, in pixels. EVERY LINE ENDS
    THREE-QUARTERS OF A TILE INSIDE ITS DECK: a line that ended on the deck's edge let the bucket go while its rider still straddled
    the lip, and at speed he went down between them (tools/ore-ride.mjs found it) */
+/* A LINE IS SPACED BY ITS HOLE, NOT BY ITS GAP. What a player reads and jumps is the air BETWEEN two buckets; the gap is that
+   plus a bucket. Writing it this way is what let the bucket grow from 24 px to 46 without changing a single crossing */
+const GAP = hole => hole + OR.BUCKET.w;
 export function cableLines() {
   const A = OR.ARENA;
   return [
-    { id: 'first', speed: 60, gap: 88, ret: 200, pts: join(sagPts(47.5, OR.YARD, 82, OR.YARD, 3), sagPts(82, OR.YARD, 86, OR.YARD, 0, 1), sagPts(86, OR.YARD, 121.75, OR.YARD, 3)) },
-    { id: 'crossing', speed: 66, gap: 96, ret: 220, pts: sagPts(146.5, OR.TOWER[2], 232.75, OR.PILLAR[0], 2) },
+    { id: 'first', speed: 60, gap: GAP(64), ret: 200, pts: join(sagPts(47.5, OR.YARD, 82, OR.YARD, 3), sagPts(82, OR.YARD, 86, OR.YARD, 0, 1), sagPts(86, OR.YARD, 121.75, OR.YARD, 3)) },
+    { id: 'crossing', speed: 66, gap: GAP(72), ret: 220, pts: sagPts(146.5, OR.TOWER[2], 232.75, OR.PILLAR[0], 2) },
     /* THE DOWN LINE: back the other way from the brakeman's loft to the tower's middle deck, and it comes back LOADED WITH GOBLINS */
-    { id: 'down', speed: 60, gap: 112, ret: 220, riders: true, pts: sagPts(238, OR.PILLAR[1], 145.75, OR.TOWER[1], 2) },
+    { id: 'down', speed: 60, gap: GAP(88), ret: 220, riders: true, pts: sagPts(238, OR.PILLAR[1], 145.75, OR.TOWER[1], 2) },
     /* THE STEEP LINE: up out of the gorge to the winch house, and every third bucket is rust that will not hold you */
-    { id: 'steep', speed: 58, gap: 72, ret: 200, cracked: 3, pts: sagPts(246.5, OR.PILLAR[1], 311.75, OR.WINCH, 3) },
+    { id: 'steep', speed: 58, gap: GAP(48), ret: 200, cracked: 3, pts: sagPts(246.5, OR.PILLAR[1], 311.75, OR.WINCH, 3) },
     /* THE DRUM LINE: the arena's, into the great drum. The Winchmaster REVERSES it, sends buckets down it, and a rider jams it */
-    { id: 'drum', speed: 52, gap: 80, ret: 160, drum: true, pts: [[336.5 * TS, surf(A.deck)], [A.ledge[0] * TS, surf(A.deck)]] },
+    { id: 'drum', speed: 52, gap: GAP(56), ret: 160, drum: true, pts: [[336.5 * TS, surf(A.deck)], [A.ledge[0] * TS, surf(A.deck)]] },
   ];
 }
 /* the state the level carries (L.cable): each line with its measured length and its clock */
@@ -199,13 +207,20 @@ export function drawBucket(g, m, cx, cy, time) {
   if (!m.vis) return;
   const R = m.cracked, pal = R ? RUST : IRON, shake = m.crackT > 0 ? Math.round(Math.sin(time * 60) * Math.min(2, m.crackT * 3)) : 0;
   const x = Math.round(m.x - cx) + shake, y = Math.round(m.y - cy), w = m.w, hang = OR.BUCKET.hang, mid = x + (w >> 1);
-  g.fillStyle = IRON[0]; g.fillRect(mid - 1, y - hang, 2, hang - 2); g.fillRect(mid - 4, y - hang - 1, 8, 2);   // the hanger and its grip on the cable
+  /* THE YOKE. A skip three tiles wide cannot hang off one stem without looking like it is about to tip, so the stem comes down
+     to a crossbar and the crossbar to two legs on the rim - which is also what says, from across the room, WHERE YOU CAN STAND */
+  const yoke = Math.max(6, (w >> 1) - 6);
+  g.fillStyle = IRON[0]; g.fillRect(mid - 1, y - hang, 2, hang - 12); g.fillRect(mid - 4, y - hang - 1, 8, 2);   // the stem and its grip on the cable
+  g.fillRect(mid - yoke, y - 12, yoke * 2, 2);                                                                   // the crossbar
+  for (const s of [-1, 1]) g.fillRect(mid + s * yoke - (s < 0 ? 0 : 2), y - 11, 2, 11);                           // its legs down to the rim
+  g.fillStyle = IRON[2]; g.fillRect(mid - yoke, y - 12, yoke * 2, 1);
   if (R) { g.fillStyle = '#c9463d'; g.fillRect(mid + 1, y - hang + 6, 4, 3); g.fillRect(mid + 3, y - hang + 9, 2, 3); }   /* THE RAG: this one will not hold */
   g.fillStyle = pal[0]; g.fillRect(x, y, w, 2); g.fillRect(x + 1, y + 2, w - 2, 8); g.fillRect(x + 3, y + 10, w - 6, 3);
   g.fillStyle = pal[2]; g.fillRect(x + 1, y, w - 2, 1); g.fillStyle = pal[1]; g.fillRect(x + 2, y + 2, w - 4, 7); g.fillStyle = pal[3]; g.fillRect(x + 2, y + 2, 2, 7);
   g.fillStyle = pal[0]; for (let r = 4; r < w - 4; r += 6) g.fillRect(x + r, y + 3, 1, 1);   // rivets
-  if (R) { g.fillStyle = '#1a0e08'; g.fillRect(x + 9, y + 3, 1, 3); g.fillRect(x + 10, y + 6, 1, 3); g.fillRect(x + 11, y + 9, 1, 2); }
-  if (!m.empty) { g.fillStyle = ORE[1]; g.fillRect(x + 3, y - 1, w - 6, 1); g.fillStyle = ORE[3]; g.fillRect(x + 6, y - 1, 2, 1); g.fillRect(x + 14, y - 1, 1, 1); }
+  if (R) { g.fillStyle = '#1a0e08'; for (let k = 0; k < 3; k++) g.fillRect(x + (w >> 2) + k, y + 3 + k * 3, 1, 3); }   // rust running down it
+  if (!m.empty) { g.fillStyle = ORE[1]; g.fillRect(x + 3, y - 1, w - 6, 1); g.fillStyle = ORE[3];
+    for (let k = 1; k < 5; k++) g.fillRect(x + Math.round(w * k / 5) - 1, y - 1, k % 2 ? 2 : 1, 1); }   // the heap's bright ore, spread the bucket's width
 }
 /* THE PYLON, the tower's timber, the brakeman's loft and the drum house: drawn behind the tiles (none of it is solid beyond the tiles) */
 export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {

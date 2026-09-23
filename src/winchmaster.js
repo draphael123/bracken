@@ -15,6 +15,7 @@
 // Touching him never hurts (the touch rule).
 //
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/ore-road.mjs.
+import { OR } from './ore-road.js';   /* the bucket he sends is the road's own bucket: one width, so what hurts is what is drawn (C1) */
 export const WINCH = {
   hp: 520, pace: 26,
   tell: { reverse: 0.45, send: 0.8, cut: 1.0, lever: 0.55 },
@@ -23,7 +24,9 @@ export const WINCH = {
      the ride from it to the drum is 19 tiles, about 6 s - at 8 s of cooldown there was no window at all (the lab measured it: he
      reversed every rider a tile short of the drum, forever). The opening must be there for a player who reads him */
   revT: 3.0, revMul: 1.6, revCd: 11.0, revCdP2: 9.0,
-  sendV: 300, sendCd: 5.0, sendCdP2: 3.6, sendR: 14,
+  /* sendR IS HALF A BUCKET. It was 14 against a 26 px drawing of a 24 px bucket; the bucket is 46 now and a thing that hurts
+     must be the size it looks (C1), so this follows the road's own width instead of being a number of its own */
+  sendV: 300, sendCd: 5.0, sendCdP2: 3.6, sendR: OR.BUCKET.w / 2,
   cutCd: 7.0,
   leverCd: 2.2, leverReach: 30,
   thrownT: 0.7, downT: 4.5, climbT: 0.8, downMul: 2,
@@ -116,10 +119,11 @@ export function updateWinchmaster(e, dt, c) {
 export function drawWinchFx(g, e, c, cx, cy, time) {
   if (!e?.alive) return;
   const r = e.runaway;
+  const hw = OR.BUCKET.w / 2;
   for (let q = r; q; q = q.next) { if (q.delay > 0) continue; const ly = c.lineY(q.x); if (ly === null) continue; const x = Math.round(q.x - cx), y = Math.round(ly - cy);
-    g.fillStyle = '#2a2a30'; g.fillRect(x - 13, y - 1, 26, 13); g.fillStyle = '#6a6a74'; g.fillRect(x - 12, y, 24, 10); g.fillStyle = '#b09a5a'; g.fillRect(x - 10, y - 3, 20, 3);
+    g.fillStyle = '#2a2a30'; g.fillRect(x - hw - 1, y - 1, hw * 2 + 2, 13); g.fillStyle = '#6a6a74'; g.fillRect(x - hw, y, hw * 2, 10); g.fillStyle = '#b09a5a'; g.fillRect(x - hw + 3, y - 3, hw * 2 - 6, 3);
     g.fillStyle = '#2a2a30'; g.fillRect(x - 1, y - 30, 2, 29);
-    g.globalAlpha = 0.5; g.fillStyle = '#fff0d0'; for (let k = 1; k < 5; k++) g.fillRect(x + 12 + k * 6, y + 2 + k, 4, 1); g.globalAlpha = 1; }
+    g.globalAlpha = 0.5; g.fillStyle = '#fff0d0'; for (let k = 1; k < 5; k++) g.fillRect(x + hw + k * 6, y + 2 + k, 4, 1); g.globalAlpha = 1; }
   if (e.mode === 'sendTell') { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.send; g.globalAlpha = 0.25 + 0.5 * k; g.fillStyle = '#ff6b6b';
     for (let x = c.lineX0; x < c.drumX; x += 6) { const ly = c.lineY(x); if (ly !== null) g.fillRect(Math.round(x - cx), Math.round(ly - cy) - 2, 3, 2); } g.globalAlpha = 1; }
   if (e.mode === 'cutTell' && e.arg != null) { const s = c.span(e.arg); if (s) { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.cut; g.globalAlpha = 0.3 + 0.5 * k * (0.5 + 0.5 * Math.sin(time * 30));
