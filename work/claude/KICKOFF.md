@@ -6,7 +6,7 @@
   profile-cleanup fix 9e0e28a), deployed, 98/98 files verified, clean boot. Suite: 95/96 green; the one red (profile-cleanup's
   hard-kill case, a race + a PowerShell JSON control-char crash) was fixed after and passes alone 4/4 - watch it next run.
 - Batch 5 notes: the level is APPENDED to LEVELS (map nodes count by index) and is an optional fork (Sporewood still needs the
-  Stockade). Pyromander pilot `node tools/pyromander-pilot.mjs 4` = 14/24 (58%) at normal health, median win 76 s (below the
+  Stockade). Pyromancer pilot `node tools/pyromancer-pilot.mjs 4` = 14/24 (58%) at normal health, median win 76 s (below the
   90-150 band; knight 1/4 is the weakest). Street straw is in bales of 5 (a 23-tile strip burning at once walled the road).
 - Two sessions once ran the same batch in one tree: check `git status` for untracked batch files AND for another check.mjs.
 - Lesson from batch 3: `shape.mjs` can't measure a vertical level - use `work/claude/vshape.mjs <id> [srcRoot]`. reachcore's
