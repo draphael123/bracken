@@ -10,6 +10,7 @@ import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGarg
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake } from './hedge-warden.js';   /* THE HEDGE WARDEN (batch 4c) */
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
 import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
+import { levelHasSlopes, moveBodySquare, moveBodySlopes } from './slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
@@ -1667,6 +1668,7 @@ function drainPool(pr) { const p = (L.pools || []).find(p => p.x0 === pr.pool); 
 function loadLevel(i) {
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); bakeAll(L.palette || {});
+  SLOPES_ON = levelHasSlopes(L.grid);   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
   airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS }));
@@ -4195,39 +4197,18 @@ function bakeWebTile() { const [c, g] = canvas(16, 16);
   px(hx, hy, '#ffffff'); px(11, 4, 'rgba(255,255,255,0.95)'); px(12, 4, 'rgba(180,220,255,0.6)');
   return c; }
 const isOneWay = t => t === T.ONEWAY || t === T.REED || t === T.PLANK || t === T.NET || t === T.BOUNCER || t === T.SHELF || t === T.RAIL || t === T.CRYST;
+/* THE SLOPES, WIRED IN (docs/slopes-integration.md §1.1). moveBody KEEPS ITS NAME - about 138 call sites use it - and
+   becomes a two-way switch. A level whose grid holds no slope tile runs moveBodySquare, which is the function that used
+   to live on these lines copied out line for line; tools/slopes.mjs proves that copy against the ORIGINAL, cut out of
+   git at the pre-slopes commit 9e0e28a (fuzz on 2,000 grids and every campaign level: 0 frames differ), and
+   tools/slopes-trace.mjs proves the swap frame-for-frame in the real page on four shipped levels.
+   isSolid and isOneWay above are deliberately NOT taught ids 20-25: a slope is neither solid nor a one-way. */
+let SLOPES_ON = false;                       /* set in loadLevel off the level's own grid: 30 levels pay nothing for this */
+const MB = { allowDrop: false, P: null };    /* ONE object, reused - moveBody runs for every body every frame */
 function moveBody(b, dx, dy, allowDrop = false) {
-  const r = { hitX: false, hitY: false, ground: false, groundTile: null };
-  if (dx !== 0) {
-    const dir = Math.sign(dx); let nx = b.x + dx;
-    const edge = dir > 0 ? nx + b.w / 2 - 0.01 : nx - b.w / 2;
-    const tx = Math.floor(edge / TS);
-    // LEDGE ASSIST, the knight's only: in the air, a ledge whose lip is within a few pixels of your feet is a step
-    // up, not a wall. A full jump clears three rows by half a pixel; without this a three-row jump was a coin toss.
-    if (b === P && !P.fly && !P.ground && P.vy > -90) { const fr = Math.floor((b.y - 0.5) / TS), lip = fr * TS;
-      if (isSolid(tx, fr) && b.y - lip > 0 && b.y - lip <= 6) { let room = true; for (let ty = Math.floor((lip - b.h) / TS); ty < fr && room; ty++) if (isSolid(tx, ty) || isSolid(Math.floor(b.x / TS), ty)) room = false; if (room) { b.y = lip; P.vy = Math.min(P.vy, 0); } } }
-    const top = b.y - b.h + 0.5, bot = b.y - 0.5;
-    const ty0 = Math.floor(top / TS), ty1 = Math.floor(bot / TS);
-    for (let ty = ty0; ty <= ty1; ty++) if (isSolid(tx, ty)) { nx = dir > 0 ? tx * TS - b.w / 2 : (tx + 1) * TS + b.w / 2; r.hitX = true; break; }
-    b.x = nx;
-  }
-  if (dy !== 0) {
-    const dir = Math.sign(dy); let ny = b.y + dy;
-    const l = b.x - b.w / 2 + 0.5, rr = b.x + b.w / 2 - 0.5;
-    const tx0 = Math.floor(l / TS), tx1 = Math.floor(rr / TS);
-    if (dir > 0) {
-      const ty = Math.floor((ny - 0.01) / TS);
-      for (let tx = tx0; tx <= tx1; tx++) {
-        const t = tileAt(tx, ty);
-        if (t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT) { ny = ty * TS; r.ground = true; r.hitY = true; r.groundTile = t; break; }
-        if (isOneWay(t) && !allowDrop && b.y <= ty * TS + (b === P && !P.fly ? 6 : 0.5)) { ny = ty * TS; r.ground = true; r.groundTile = t; } // the knight is caught by a jump-through he is a few pixels short of
-      }
-    } else {
-      const ty = Math.floor((ny - b.h) / TS);
-      for (let tx = tx0; tx <= tx1; tx++) if (isSolid(tx, ty)) { ny = (ty + 1) * TS + b.h; r.hitY = true; break; }
-    }
-    b.y = ny;
-  }
-  return r;
+  if (!SLOPES_ON) return moveBodySquare(b, dx, dy, tileAt, allowDrop, P);
+  MB.allowDrop = allowDrop; MB.P = P;
+  return moveBodySlopes(b, dx, dy, tileAt, MB);
 }
 const box = b => ({ l: b.x - b.w / 2, r: b.x + b.w / 2, t: b.y - b.h, b: b.y });
 const overlap = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
@@ -6851,7 +6832,10 @@ function updatePlayer(dt) {
   // ground at six times his own speed, on some stretches and not others, depending on where the loop could
   // start. He must now be genuinely BELOW the lip, and he cannot catch another for a quarter of a second.
   P.mantleCd = Math.max(0, (P.mantleCd || 0) - dt);
-  if (!P.ground && !P.plunge && !P.climb && !dodging && !(P.mantleCd > 0) && P.vy > -30 && P.vy < 260 && move) {
+  /* `!r.slope`: main.js clears P.ground before moveBody, so this test runs EVERY frame, and on a slope the rock under
+     the next slope tile up reads as a lip a few pixels above the foot - which gave a "CAUGHT IT" hop 23-45 times on a
+     single steep walk. r.slope is 0 from the square path, so on every level that ships today this is a no-op. */
+  if (!P.ground && !P.plunge && !P.climb && !dodging && !(P.mantleCd > 0) && !r.slope && P.vy > -30 && P.vy < 260 && move) {
     const fx = Math.floor((P.x + move * 9) / TS), fy = Math.floor((P.y + 2) / TS);
     const top = fy * TS;
     if (isSolid(fx, fy) && !isSolid(fx, fy - 1) && !isSolid(fx, fy - 2) && P.y - top > 3 && P.y - top < 11) {
