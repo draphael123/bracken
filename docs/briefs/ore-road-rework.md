@@ -108,11 +108,27 @@ it at a composed track that fits the crags. A new one is better but is not somet
 
 ## 8. What I am NOT deciding without Daniel
 
-- Whether the **ore / brake** verbs go in at all, or whether he wants only falling rocks + bats. They are the biggest
-  change here and they alter how the whole level plays.
-- The **music** choice.
-- Whether the Winchmaster keeps his current sprite and name, or whether the rework wants a different boss entirely.
-- Whether the level stays where it is in the walk order, given it follows Highcrown's 120.
+### DECIDED — 2026-09-23/24. Build to these; they are not open any more.
+
+- **THE FULL SECTION 3 GOES IN.** The ore verb, the brake, the load-bearing miner and cutting cables. All four, not
+  a subset, and not "only falling rocks + bats".
+- **THE WINCHMASTER KEEPS HIS SPRITE AND HIS NAME** and is reworked per section 6. His 13-frame sprite in
+  `src/redraw/winchmaster.js` is reused as-is: this is a FIGHT rework, not an art job.
+- **TWO NEW FOES ARE PRE-APPROVED, AND THEY MUST BE CABLEWAY-NATIVE.** Daniel, 2026-09-24: *"pre-approve the two new
+  foes, just keep them cableway-native"*. So they do not need a brief of their own before they are built — but
+  "cableway-native" is the whole condition and it is not decoration. A thing that would fight the same way on flat
+  ground is not one of them. They must belong to the gorge and the line: something that owns the air over the drop,
+  something that uses the buckets, something that answers a question the roster cannot currently ask (F10 says fill
+  GAPS, not variety). The miner is the third kind and he already exists; these two are the ones being added.
+  **A LEVEL'S OWN BOSS AND MINI CANNOT BE THE ANSWER** — `tools/one-new-foe.mjs` excludes them on purpose, because
+  every level has a boss and a check that counts one can never fail. The Winchmaster is not one of the three.
+
+### STILL OPEN — park these, do not guess
+
+- **The music.** `mineworks` is one of the two synthesised tracks, no audio file, a sparse ~48 BPM pattern, and it
+  is why Daniel hears none. `tools/newlevel.mjs` requires a theme no other level uses, so it cannot quietly borrow
+  a neighbour's. Bring him the options; do not pick.
+- **Whether the level stays where it is in the walk order**, given it follows Highcrown's 120.
 
 ## 9. Files (from the session that built it)
 
