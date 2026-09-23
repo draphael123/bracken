@@ -1,7 +1,12 @@
 # BRACKEN — parallel build handoff (2026-09-23)
 
-Everything below is true as of commit `77a559a` on branch **`claude/archroom`**, which is **pushed and NOT merged**
-into `codex/playtest-0919`. Twelve commits ahead.
+Everything below is true as of branch **`codex/playtest-0919`**, which is the branch to work from. Fourteen commits
+landed on it on 2026-09-23 and the **full suite is green on them: 108 checks, no failures**. Nothing is deployed;
+production is still on `d02af58`.
+
+**Setting up from scratch:** clone it, check that branch out, and run. There is nothing to install - `package.json`
+declares no dependencies, there is no `node_modules` and no build step. You need Node, and Chrome or Edge installed
+for the page checks to drive.
 
 ---
 
@@ -23,7 +28,6 @@ server) and the fix is `BRACKEN_PORT_BASE=<n>`.
 
 ```
 git worktree add ../bracken-<name> -b claude/<name> origin/codex/playtest-0919
-git merge claude/archroom      # you almost certainly want tonight's fixes
 ```
 
 ## ONE SUITE AT A TIME, MACHINE-WIDE
