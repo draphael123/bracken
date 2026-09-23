@@ -6,6 +6,7 @@
 // It follows doorways (each names the doorway it lets out at) and vents (ride the column, steer off the
 // top). It cannot model a mover, a swing or a gust, so a level that leans on those comes back ASSISTED and
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
+import { slopeReachGrid } from './reach-slopes.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
 const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
 const JUMP_ACROSS = 6;                                        // with a run-up, about six tiles of float
@@ -13,6 +14,12 @@ const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws
 const BUD_UP = Math.floor((420 * 420) / (2 * G) / TSZ);       // a bud pad throws you a tier: five rows (floor, not ceil: 89 px is not six rows)
 
 export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones)
+  /* SLOPES, and it has to be the FIRST line: a slope tile is the cell you stand in, ON THE ROCK UNDER IT, so the fill
+     reads slopes as AIR and stands on that rock. Pessimistic by up to 16 px and never optimistic - the reasoning is in
+     src/reach-slopes.js. A level with no slopes gets the SAME OBJECT back, so nothing about today's 30 levels changes,
+     and the mapping is IDEMPOTENT (a second pass finds no slopes left), so a caller that already wrapped its level -
+     tools/caravan-level.mjs and tools/draft-level.mjs both do - is not harmed by this one. tools/slopes.mjs asserts both. */
+  L = slopeReachGrid(L, T);
   const W = L.W, H = L.H, g = L.grid.slice(); // a copy: the things the PLAYER can open are opened in it first
   /* opts.noAssist: THE PLAIN MODEL. Nothing that moves and nothing that is only there sometimes - no hex vine, no
      grown cap, no ghost furniture, no cart, no wheel, no swing, no lily pad, and the fields' phantom planks are air
