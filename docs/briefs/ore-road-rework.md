@@ -114,6 +114,20 @@ it at a composed track that fits the crags. A new one is better but is not somet
   a subset, and not "only falling rocks + bats".
 - **THE WINCHMASTER KEEPS HIS SPRITE AND HIS NAME** and is reworked per section 6. His 13-frame sprite in
   `src/redraw/winchmaster.js` is reused as-is: this is a FIGHT rework, not an art job.
+- **THE THREE FOES ARE BUILT AND DANIEL HAS SEEN THEM. APPROVED 2026-09-24.** He was sent all three rendered to
+  PNG — ten frames each, hit-flash frames dropped — and said yes. So the two-versus-three question the build opened
+  is settled at THREE, and they are no longer unreviewed work:
+  | | size | what it is |
+  |---|---|---|
+  | **THE TIPPLER** | 14x13 | a rockfall with a mind. Threat 2.5, weighed against a rockfall at 2 and a javelineer at 2.5. |
+  | **THE SHEARGOB** | 14x15 | takes the floor away: it cuts the line. Threat 3 — less damage than a soldier, but what it costs you is the ground. |
+  | **THE GAFFER** | 18x13 | the one foe you cannot walk past. Threat 3.5, a brute's weight, because THE REACH IS THE CREATURE. |
+  The gaffer is the widest by 4px and the pole IS the silhouette, which is C1 working: it tells you walking past is
+  not an option before you are in range. All three are wired end to end — bakers in chars.js, weights in threat.js,
+  tells in marks.js, voices and death/hurt sounds in audio.js.
+  **STILL UNVERIFIED: none of them has been FOUGHT.** They pass tells, they have never been played. And Node
+  renders lie about light, so anything on them meant to glow has to be looked at in the running game.
+
 - **TWO NEW FOES ARE PRE-APPROVED, AND THEY MUST BE CABLEWAY-NATIVE.** Daniel, 2026-09-24: *"pre-approve the two new
   foes, just keep them cableway-native"*. So they do not need a brief of their own before they are built — but
   "cableway-native" is the whole condition and it is not decoration. A thing that would fight the same way on flat
