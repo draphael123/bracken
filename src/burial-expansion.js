@@ -71,7 +71,7 @@ export function extendBurial({L,T,TS,interiors,structures}){
  const gasVents=[[520,39,0],[540,39,1.2],[565,39,2.1],[728,32,0.4],[736,32,1.8],[790,32,0.9],[796,32,2.4],[838,32,1.4],[990,32,0.7],[1015,32,2.0],[1050,32,1.1]]
   .map(([x,y,phase])=>({x,y,phase,period:3.4,hitT:0}));
  ent('silver',434,28);ent('silver',933,23);ent('silver',162,31);
- ent('check',1076,31);sign(1077,'THE BURIED DEAD. THE HIGH LEDGES CLEAR HIS POISON. THE HANDS REACH THEM.');
+ ent('check',1076,31);sign(1077,'THE BURIED DEAD. LEDGES CLEAR HIS POISON. HIS HANDS AND SKULLS REACH THEM.');
  /* THE OSSUARY HAS TIERS NOW. Daniel: "the buried dead boss fight also needs more platforms so you can avoid some of
     his attacks" - and the fight was already BUILT for that and never given the ground to do it with. Every one of his
     attacks carries a height condition: the poison nova only lands within 80px of the floor, the erupt within 90, the
@@ -83,6 +83,15 @@ export function extendBurial({L,T,TS,interiors,structures}){
     because THE HANDS (buried-dead.js clawTell) come up through whatever you are standing on. */
  for(const x of [1087,1110]){for(let j=x;j<x+4;j++)set(j,29,T.ONEWAY);structures.push({x0:x,x1:x+3,top:29,floor:32,kind:'arch'});}
  for(const x of [1091,1106]){for(let j=x;j<x+4;j++)set(j,26,T.ONEWAY);structures.push({x0:x,x1:x+3,top:26,floor:32,kind:'arch'});}
+ /* A REAL PLATFORMING FIGHT (Daniel, 2026-09-24: "platforms to jump on in his arena"). Four ledges were somewhere to stand;
+    these make them a ROUTE, over his head and back: a step at each wall (48px, under the nova, over his slam and his body
+    slam), and THE CROWN - a bier hung on chains from the vault, 128px up, two rows over the high tier with a two-tile gap
+    each side, right over the grave he rises from. Wall step, low, high, crown, high, low, wall step: the whole room is one
+    line you can run without touching the floor, which is exactly what his SKULLS are for (buried-dead.js): the ledges clear
+    the poison, the hands and the skulls reach them. A12 holds: the nova (80px) still has somewhere it cannot reach, the
+    hands reach whatever you stood on, and the floor over the broken ground is still there for the arm-in-the-ground punish. */
+ for(const x of [1081,1117]){for(let j=x;j<x+3;j++)set(j,29,T.ONEWAY);structures.push({x0:x,x1:x+2,top:29,floor:32,kind:'arch'});}
+ for(let j=1097;j<=1103;j++)set(j,24,T.ONEWAY);structures.push({x0:1097,x1:1103,top:16,floor:24,kind:'chains'});
  for(let y=16;y<32;y++)set(1122,y,T.PORT);
  interiors.push([1079,1137,16,31,'ossuary']);deco('grave',1084);deco('grave',1118);
  ent('burieddead',1100,31);ent('gate',1133,31);ent('torch',1082,31);ent('torch',1120,31);

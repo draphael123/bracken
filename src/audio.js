@@ -581,6 +581,7 @@ Object.assign(SFX, {
   bellow() { file('roar', 0.6, 0.62) || tone('sawtooth', 110, 60, 0.4, 0.3); tone('sawtooth', 70, 44, 0.5, 0.2, 0.04); noise(0.3, 0.3, 220, 0.6); }, // a ram: lower, and it carries
   snort() { noise(0.14, 0.3, 420, 0.6); tone('sawtooth', 140, 70, 0.16, 0.16); },
   clatter() { tone('square', 1100, 320, 0.06, 0.1); noise(0.06, 0.2, 2600, 1.1); tone('square', 800, 260, 0.05, 0.08, 0.05); },
+  skullThrow() { noise(0.2, 0.2, 1400, 0.5); tone('triangle', 320, 140, 0.18, 0.08); tone('square', 900, 300, 0.05, 0.05, 0.04); },   /* THE BURIED DEAD'S SKULL leaves his hand: a hollow rattle going away */
   ribbit() { file('croak', 0.45, 1.5) || (tone('sawtooth', 200, 300, 0.09, 0.14), tone('sawtooth', 280, 170, 0.1, 0.12, 0.09)); },
   thump() { tone('sine', 110, 40, 0.16, 0.3); noise(0.08, 0.25, 250, 0.7); },
   gobDieLow() { file('gobDie', 0.7, 0.72) || (tone('sawtooth', 220, 60, 0.3, 0.22), noise(0.2, 0.2, 500, 0.6)); },

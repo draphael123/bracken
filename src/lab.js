@@ -744,7 +744,7 @@ async function runbossLab(BK, opts) {
         if(mode==='slamTell'&&boss.modeT<.3&&P.ground){BK.press('jump');P.labJump=18;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(P.ground&&P.y<A.floor-20&&mode!=='slamTell'){k.down=true;BK.press('jump');}
-        const guard=!eruption&&(mode==='cleaveTell'&&Math.abs(boss.x-P.x)<95||target.graveAdd&&target.mode==='grabTell'&&target.modeT<.22);
+        const guard=!eruption&&(mode==='cleaveTell'&&Math.abs(boss.x-P.x)<95||(boss.skulls||[]).some(q=>q.t>=0&&Math.abs(q.x-P.x)<70)||target.graveAdd&&target.mode==='grabTell'&&target.modeT<.22);
         if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=mode==='cleaveTell'?(Math.sign(boss.x-P.x)||1):side;}else if(guard){const gs=mode==='cleaveTell'?(Math.sign(boss.x-P.x)||1):side;gx=P.x-gs*65;if((mode==='cleaveTell'?boss:target).modeT<.2)BK.press('dodge');}
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
         if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
