@@ -5,7 +5,7 @@ import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, b
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { bakeScalder } from './redraw/scalder.js';
-import { bakeStoneFront } from './redraw/stone-town.js';
+import { bakeStoneFront, bakeTownRow } from './redraw/stone-town.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
 import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
@@ -21452,6 +21452,7 @@ function drawFacades(cx, cy) {
   for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f;
     const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
+    if (!f.spr && kind === 'townrow') f.spr = bakeTownRow(x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7);   /* STORMHOLD: the houses behind the square (src/redraw/stone-town.js) */
     if (!f.spr) f.spr = (String(kind).startsWith('monk') ? MON.bakeFacade : CRT.bakeFacade)(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, Object.assign({}, o || {}, o && o.arch ? { arch: [o.arch[0] - y0, o.arch[1] - y0] } : {}));
     g.drawImage(f.spr, sx, sy);
     if (kind === 'burning') { g.globalAlpha = 0.045 + 0.03 * Math.sin(time * 7 + x0) + 0.015 * Math.sin(time * 17 + y0); g.fillStyle = '#ff8a3c'; g.fillRect(Math.max(0, sx), Math.max(0, sy + (h >> 2)), Math.min(VW, sx + w) - Math.max(0, sx), h - (h >> 2)); g.globalAlpha = 1; }

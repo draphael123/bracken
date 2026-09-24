@@ -64,3 +64,34 @@ export function bakeStoneFront(h) {
   for (const d of doorAt) { const x = d - 10; rect(g, x, ht - 30, 20, 2, STONE_L); rect(g, x, ht - 28, 2, 28, STONE_D); rect(g, x + 18, ht - 28, 2, 28, STONE_D); rect(g, x + 7, ht - 32, 6, 3, STONE_L); }
   return c;
 }
+
+// THE TOWN BEHIND THE STREET (L.facades kind 'townrow', drawn behind the play by drawFacades). A market square with
+// nothing round it is a car park: this is the row of tall houses standing behind the square and the close - stepped
+// gables, steep slate with snow on it, chimneys, a lit window here and there - a shade darker and cooler than the
+// houses you walk past, so it sits back and never reads as something to stand on.
+export function bakeTownRow(tw, th, seed) {
+  const W = tw * TS, H = th * TS, rnd = mulberry((seed | 0) * 7 + 3), [c, g] = canvas(W, H);
+  const wall = ['#5e5446', '#554c40', '#62574a'], wash = ['#7a7266', '#6e675c'], slate = '#262a36', slateL = '#343a4a';
+  let x = -((rnd() * 20) | 0);
+  while (x < W) {
+    const w = 34 + ((rnd() * 4) | 0) * 8, eaves = Math.round(H * (0.3 + rnd() * 0.2)), peak = Math.max(2, eaves - 16 - ((rnd() * 12) | 0));
+    const timber = rnd() < 0.45, body = timber ? wash[(rnd() * 2) | 0] : wall[(rnd() * 3) | 0];
+    rect(g, x, eaves, w, H - eaves, body);
+    if (!timber) for (let y = eaves + 7; y < H; y += 8) rect(g, x, y, w, 1, '#3e372e');   /* coursed */
+    else { for (let k = x + 6; k < x + w - 2; k += 12) rect(g, k, eaves, 2, H - eaves, '#2e241c'); rect(g, x, eaves + 16, w, 2, '#2e241c'); }
+    // the gable: a steep slate roof, snow along its slopes
+    const mid = x + (w >> 1);
+    for (let y = peak; y < eaves + 2; y++) { const half = Math.round((y - peak + 1) / (eaves + 2 - peak) * (w / 2 + 3)); rect(g, mid - half, y, half * 2, 1, (y & 3) === 3 ? slate : slateL);
+      if (rnd() < 0.7) { px(g, mid - half, y, '#dfe6f2'); px(g, mid + half - 1, y, '#dfe6f2'); } }
+    rect(g, mid - 1, peak - 1, 2, 2, '#dfe6f2');
+    if (rnd() < 0.7) { const cx = x + 4 + ((rnd() * (w - 12)) | 0), top = peak + 2 + ((rnd() * 6) | 0); rect(g, cx, top - 8, 5, 10, '#3a3430'); rect(g, cx - 1, top - 9, 7, 2, '#dfe6f2'); }   /* a chimney, snow on its cap */
+    // windows: a few lit, most dark - it is late
+    for (let wy = eaves + 10; wy < H - 14; wy += 22) for (let wx = x + 7; wx < x + w - 10; wx += 13) {
+      const lit = rnd() < 0.3; rect(g, wx - 1, wy - 1, 7, 10, '#2a2420'); rect(g, wx, wy, 5, 8, lit ? '#e8a040' : '#1e1c26'); if (lit) px(g, wx + 1, wy + 1, '#ffe0a0'); }
+    rect(g, x + w - 1, eaves, 1, H - eaves, '#2a2420');   /* the party wall */
+    x += w;
+  }
+  // and the whole row pushed back into the night a little
+  g.globalAlpha = 0.28; rect(g, 0, 0, W, H, '#141826'); g.globalAlpha = 1;
+  return c;
+}

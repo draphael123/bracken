@@ -119,11 +119,12 @@ export function stormholdTown({ painter, T, TS }) {
   roof(91, 97, 27);   // the chandler's, against the wall
   ent('check', 95, 31);
   // the square itself (the ambush room, 98-138: AMBUSH.storm in level.js) - a town's furniture with a goblin army camped in it
-  for (const [k, x, v] of [['stall', 103, 0], ['trough', 108, 0], ['stall', 113, 1], ['well', 119, 0], ['stall', 125, 2], ['column', 131, 0], ['stall', 135, 0]]) ent('deco', x, 31, { kind: k, v });
+  for (const [k, x, v] of [['counter', 103, 0], ['wares', 108, 0], ['kegStack', 113, 0], ['well', 119, 0], ['counter', 125, 0], ['wares', 129, 1], ['hayBale', 133, 0], ['cart', 136, 0]]) ent('deco', x, 31, { kind: k, v });   /* the traders' counters and shelves, a well, a cart come in with hay */
   ent('deco', 101, 31, { kind: 'lanternPost' }); ent('deco', 137, 31, { kind: 'lanternPost' });
   for (const x of [104, 118, 132]) ent('deco', x, 22, { kind: 'bunting', hang: true });
   coins([102, 30], [106, 30], [110, 29], [116, 30], [122, 29], [128, 30], [134, 30]);
   ent('sign', 99, 31, { text: 'THE MARKET SQUARE. THE GOBLINS KEEP THEIR SERJEANT HERE.' });
+  facades.push([98, 138, 24, 31, 'townrow']);   /* the houses round the square, behind it */
   // the rows beyond it, and the ROOF ROAD over them: up the lean-to at the Smithy's east end, back west along the slates
   roof(139, 151, 27); roof(154, 170, 27);   // the cooper's and the Smithy
   ent('doorway', 157, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
@@ -176,6 +177,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('sign', 294, 31, { text: 'THE BELL WATCH HOLDS THE IRON KEY. IN BY THE ARCH, OR OVER THE ROOFS.' });
   ent('check', 274, 31); coins([270, 28], [275, 26], [279, 26], [286, 24], [290, 24], [299, 27], [300, 24], [298, 20]);
   // the close: a churchyard under the tower, the east house and its archer, and the inner wall
+  facades.push([315, 337, 24, 31, 'townrow']);
   for (const [x, v] of [[312, 0], [318, 1], [324, 2], [330, 0]]) ent('deco', x, 31, { kind: 'grave', v });
   ent('deco', 336, 31, { kind: 'yew', v: 1 });
   roof(306, 314, 27); ent('archer', 311, 24, { face: -1 });
@@ -206,6 +208,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('check', 388, 29);
   ent('pike', 405, 29, { face: -1 }); ent('pike', 411, 29, { face: -1 }); ent('shield', 417, 29, { face: -1 });
   ent('torch', 404, 29); ent('deco', 422, 29, { kind: 'banner', v: 0 });
+  facades.push([403, 429, 22, 29, 'townrow'], [0, 12, 28, 35, 'townrow'], [27, 38, 28, 35, 'townrow']);
   ent('check', 425, 29); coins([392, 28], [399, 28], [408, 28], [414, 28], [420, 28], [426, 28]);
 
   // ============================ 6. THE CURTAIN WALL (430-543): the gorge, the wall face, the walk, THE WALL WATCH ============================
