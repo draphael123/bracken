@@ -10,7 +10,11 @@ import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGarg
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake } from './hedge-warden.js';   /* THE HEDGE WARDEN (batch 4c) */
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
 import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
-import { levelHasSlopes, moveBodySquare, moveBodySlopes } from './slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
+import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile } from './slopes.js';
+import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
+import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
+import { qsPatchAt, qsStep } from './quicksand.js';
+import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
@@ -138,7 +142,7 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false };
-const TIER = { unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
+const TIER = { caravan: 2.4, unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
@@ -222,7 +226,7 @@ const DMG = { sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lev
   /* THE LEADFOOT. The sweep is the worst of the three because it is the one you take for standing on his ground;
      the plant is the price of crossing over him; and the anchor hurts least of all - what it costs you is where you are. */
   leadSweep: 18, leadPlant: 16, leadAnchor: 14 };
-const EHP = { bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, standardbearer:UNBF.UNB.hp.standardbearer, deathknight:UNBF.UNB.hp.deathknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, tidereaver:560, gargoyle:410, hedgewarden:420, gravewarden:380, burngob:26, emberwisp:8, pyromancer:510, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30,
+const EHP = { scorpion: DF.SCORPION.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, standardbearer:UNBF.UNB.hp.standardbearer, deathknight:UNBF.UNB.hp.deathknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, tidereaver:560, gargoyle:410, hedgewarden:420, gravewarden:380, burngob:26, emberwisp:8, pyromancer:510, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, tippler: 26, sheargob: 30, gaffer: 44, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34,
   leadfoot: 64 };   /* THE LEADFOOT: over the Merrow Brute's 50 and the Tideguard's 44, under a heavy knight - he is the thing in the Keep you cannot simply leave */
 
@@ -709,7 +713,7 @@ function bakeAll(pal = {}) {
   };
   PROP.town = { longTable: [0, 1].map(v => TWN.bakeLongTable(v)), bench: TWN.bakeBench(), hearth: TWN.bakeHearth(), caskRack: TWN.bakeCaskRack(), mugShelf: TWN.bakeMugShelf(),
     hayBale: [0, 1].map(v => TWN.bakeHayBale(v)), bunting: TWN.bakeBunting(96), shopSign: [0, 1, 2, 3].map(v => TWN.bakeShopSign(v)) };
-  PROP.relic.fleece = ART.bakeFleeceIcon(); PROP.relic.spurs = ART.bakeSpursIcon(); PROP.relic.shoes = ART.bakeShoesIcon(); PROP.relic.sunshard = MON.bakeBeadIcon(); PROP.relic.crampons = bakeCramponIcon(); PROP.relic.banner = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#5a6270'; g2.fillRect(1, 0, 1, 12); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 1, 7, 7); g2.fillStyle = '#e0b040'; g2.fillRect(4, 3, 3, 3); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 8, 3, 2); g2.fillRect(6, 8, 3, 2); return c; })(); PROP.sealIcon = (() => { const [c, g2] = canvas(10, 10); g2.fillStyle = '#7a1c24'; g2.beginPath(); g2.arc(5, 5, 4.5, 0, 7); g2.fill(); g2.fillStyle = '#c9463d'; g2.beginPath(); g2.arc(5, 5, 3, 0, 7); g2.fill(); g2.fillStyle = '#e0b040'; g2.fillRect(3, 3, 1, 1); g2.fillRect(6, 3, 1, 1); g2.fillRect(4, 5, 2, 2); g2.fillRect(3, 7, 4, 1); return c; })(); PROP.relic.lamp = PROP.relic.lamp || PROP.lampIcon; PROP.relic.tidecharm = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#c9b27c'; g2.fillRect(4, 0, 2, 3); g2.fillStyle = '#e8f4f0'; g2.beginPath(); g2.moveTo(5, 3); g2.lineTo(9, 7); g2.lineTo(8, 11); g2.lineTo(2, 11); g2.lineTo(1, 7); g2.closePath(); g2.fill(); g2.fillStyle = '#7cc8c8'; for (const x of [3, 5, 7]) g2.fillRect(x, 5, 1, 6); g2.fillStyle = '#4aa0a8'; g2.fillRect(2, 10, 7, 1); return c; })(); /* the Tide Charm: a scallop on a cord */ /* the miner's lamp relic had no icon: the HUD threw every frame once you held it */ PROP.relic.keelstone = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#9f8752'; g.fillRect(3, 0, 4, 1); g.fillRect(2, 1, 1, 3); g.fillRect(7, 1, 1, 3); g.fillStyle = '#3a3228'; g.fillRect(2, 4, 6, 8); g.fillRect(1, 6, 8, 4); g.fillStyle = '#6e6450'; g.fillRect(3, 5, 4, 6); g.fillRect(2, 7, 6, 2); g.fillStyle = '#c9b27c'; g.fillRect(3, 5, 2, 1); g.fillRect(3, 6, 1, 1); return c; })(); /* THE KEEL STONE: ballast off the sky ship, on a cord */ PROP.relic.windcloak = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(5, 0); g.lineTo(9, 3); g.lineTo(9, 11); g.lineTo(5, 9); g.lineTo(1, 11); g.lineTo(1, 3); g.closePath(); g.fill(); g.fillStyle = '#7aa8c8'; g.fillRect(4, 1, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(4, 0, 2, 1); return c; })();
+  PROP.relic.veil = bakeVeilIcon(); PROP.relic.fleece = ART.bakeFleeceIcon(); PROP.relic.spurs = ART.bakeSpursIcon(); PROP.relic.shoes = ART.bakeShoesIcon(); PROP.relic.sunshard = MON.bakeBeadIcon(); PROP.relic.crampons = bakeCramponIcon(); PROP.relic.banner = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#5a6270'; g2.fillRect(1, 0, 1, 12); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 1, 7, 7); g2.fillStyle = '#e0b040'; g2.fillRect(4, 3, 3, 3); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 8, 3, 2); g2.fillRect(6, 8, 3, 2); return c; })(); PROP.sealIcon = (() => { const [c, g2] = canvas(10, 10); g2.fillStyle = '#7a1c24'; g2.beginPath(); g2.arc(5, 5, 4.5, 0, 7); g2.fill(); g2.fillStyle = '#c9463d'; g2.beginPath(); g2.arc(5, 5, 3, 0, 7); g2.fill(); g2.fillStyle = '#e0b040'; g2.fillRect(3, 3, 1, 1); g2.fillRect(6, 3, 1, 1); g2.fillRect(4, 5, 2, 2); g2.fillRect(3, 7, 4, 1); return c; })(); PROP.relic.lamp = PROP.relic.lamp || PROP.lampIcon; PROP.relic.tidecharm = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#c9b27c'; g2.fillRect(4, 0, 2, 3); g2.fillStyle = '#e8f4f0'; g2.beginPath(); g2.moveTo(5, 3); g2.lineTo(9, 7); g2.lineTo(8, 11); g2.lineTo(2, 11); g2.lineTo(1, 7); g2.closePath(); g2.fill(); g2.fillStyle = '#7cc8c8'; for (const x of [3, 5, 7]) g2.fillRect(x, 5, 1, 6); g2.fillStyle = '#4aa0a8'; g2.fillRect(2, 10, 7, 1); return c; })(); /* the Tide Charm: a scallop on a cord */ /* the miner's lamp relic had no icon: the HUD threw every frame once you held it */ PROP.relic.keelstone = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#9f8752'; g.fillRect(3, 0, 4, 1); g.fillRect(2, 1, 1, 3); g.fillRect(7, 1, 1, 3); g.fillStyle = '#3a3228'; g.fillRect(2, 4, 6, 8); g.fillRect(1, 6, 8, 4); g.fillStyle = '#6e6450'; g.fillRect(3, 5, 4, 6); g.fillRect(2, 7, 6, 2); g.fillStyle = '#c9b27c'; g.fillRect(3, 5, 2, 1); g.fillRect(3, 6, 1, 1); return c; })(); /* THE KEEL STONE: ballast off the sky ship, on a cord */ PROP.relic.windcloak = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(5, 0); g.lineTo(9, 3); g.lineTo(9, 11); g.lineTo(5, 9); g.lineTo(1, 11); g.lineTo(1, 3); g.closePath(); g.fill(); g.fillStyle = '#7aa8c8'; g.fillRect(4, 1, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(4, 0, 2, 1); return c; })();
   const sky = (pal.sky === 'mage' || pal.sky === 'fields' || pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
   CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
   BG = { sky: pal.sky === 'mage' && MW.bakeSkyMage ? MW.bakeSkyMage(VH) : pal.sky === 'fields' && FW.bakeSkyFields ? FW.bakeSkyFields(VH) : pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'harbour' ? HB.bakeSkyHarbour(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'mage' && MW.bakeFarMage ? MW.bakeFarMage(320, 90, 1) : pal.far === 'fields' && FW.bakeFarFields ? FW.bakeFarFields(320, 90, 1) : pal.far === 'causeway' ? KRA.bakeFarCauseway(320, 90, 1) : pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'harbour' ? HB.bakeFarHarbour() : pal.far === 'stormsea' ? SM.bakeStormSea() : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'mage' && MW.bakeMidMage ? MW.bakeMidMage(480, 140, 2) : pal.mid === 'fields' && FW.bakeMidFields ? FW.bakeMidFields(480, 140, 2) : pal.mid === 'causeway' ? KRA.bakeMidCauseway(480, 140, 2) : pal.mid === 'crown' ? CRT.bakeMidCrown(480, 140, 2) : pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'harbour' ? HB.bakeMidHarbour() : pal.mid === 'swells' ? SM.bakeSwells() : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'mage' && MW.bakeNearMage ? MW.bakeNearMage(640, 300, 3) : pal.near === 'fields' && FW.bakeNearFields ? FW.bakeNearFields(640, 300, 3) : pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'harbour' ? HB.bakeNearHarbour() : pal.near === 'none' ? canvas(VW, 1)[0] : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
@@ -718,6 +722,7 @@ function bakeAll(pal = {}) {
       const sky = M.sky(r[1], VH), far = M.far(r[1]); if (sky) { BG.sky = sky; BG.ownLight = r[1]; }   /* its sky IS the hour: the generic dusk wash is not laid over it */
       if (far.height >= 180) { BG.wall = far; BG.far = canvas(320, 1)[0]; BG.ownLight = r[1]; } else BG.far = far;   /* indoors there is no hour to wash over */
       BG.mid = M.mid(r[1]); BG.near = M.near(r[1]); BG.nearTrees = null; } }
+  if (pal.set === 'desert') cvBackdrop();   /* THE SUNKEN CARAVAN's own sky, mesas and dunes */
   if (pal.far === 'stormsea') BG.storm = { far: BG.far, mid: BG.mid, rain: SM.bakeRainSheets(), farS: SM.silhouette(BG.far), midS: SM.silhouette(BG.mid, '#10161c') };
 }
 bakeAll();
@@ -786,6 +791,7 @@ function resolveTiles() {
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null;
+    if (L.caravan && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
     const villT = L.palette && L.palette.set === 'village' && VILL;
@@ -1253,7 +1259,7 @@ function allyTick() {
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
-const MEDALS = { unburied: [330, 480, 720],   /* THE UNBURIED FIELD: 420 columns, a mini and a boss, eleven encounters and an ambush - an ESTIMATE off the stair's, no pilot yet */ witchlight: [300, 450, 680],   /* the stair, redesigned (2026-09-22): ~430 tiles of road and a 36-row shaft, slab crossings and the cloister's roof walk, thirteen encounters and the Hedge Warden - an ESTIMATE, no climbing pilot */ burning: [480, 680, 980], fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [1000, 1450, 2100], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
+const MEDALS = { caravan: [300, 440, 660],   /* THE SUNKEN CARAVAN: 505 columns to the hollow and one ambush, no boss yet - an ESTIMATE off the stair's, no pilot yet */ unburied: [330, 480, 720],   /* THE UNBURIED FIELD: 420 columns, a mini and a boss, eleven encounters and an ambush - an ESTIMATE off the stair's, no pilot yet */ witchlight: [300, 450, 680],   /* the stair, redesigned (2026-09-22): ~430 tiles of road and a 36-row shaft, slab crossings and the cloister's roof walk, thirteen encounters and the Hedge Warden - an ESTIMATE, no climbing pilot */ burning: [480, 680, 980], fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [1000, 1450, 2100], mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [600, 840, 1180], longwater: [540, 760, 1080], crown: [660, 900, 1260], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
@@ -1266,7 +1272,7 @@ let clouds2 = [], roots = [], vines = [], shelfT = {}, mother = null;
 let throneBlock = null, talkTo = null, talk = null; // talk: the open dialogue { lines, i, who, name }; the world stands still while it is up // talkTo: the person you pressed UP beside; their words show while you stand there // the King's thrown litter, once it lands: solid tiles you can stand on
 let glassPatches = [];   /* THE DRUNK'S BOTTLES: where one broke, glass on the ground for a breath */
 let impacts = [], rings = [], critters = [], escape = null, stormT = 0, thrown = null, deco = [], pwaves = [], rain = [], bolts = [], rocks = [], straysGot = new Set(), strayLast = null;
-const RELICS = { crampons: { name: "THE CUTTERS' CRAMPONS", desc: 'iron teeth on your boots: ice does not run away with you', col: '#bfe6f5' }, keelstone: { name: 'THE KEEL STONE', desc: 'the wind pushes you half as hard', col: '#c9b27c' }, soles: { name: 'THE FELTED SOLES', desc: 'your feet make no sound, and you land like a cat', col: '#8fd160' }, wick: { name: "THE LAMPLIGHTER'S WICK", desc: 'the fire in your hand stays lit, even when a blow lands', col: '#ffd36b' }, stormline: { name: 'THE STORM LINE', desc: 'a line round your waist: the sea soaks you, but it cannot take you off her', col: '#a8cfc6' }, blackflag: { name: 'THE BLACK FLAG', desc: 'their own colours: whoever you stagger stays down half as long again', col: '#c9b27c' }, diverlamp: { name: "THE DIVER'S LAMP", desc: 'it lights the water around you, and the air lasts longer', col: '#bfe6f5' }, tidecharm: { name: 'TIDE CHARM', desc: 'hold your breath twice as long under the water', col: '#7cc8c8' }, banner: { name: 'THE QUEEN\'S BANNER', desc: 'goblins pull their blows: a fifth less hurt', col: '#c9a0ff' }, sunshard: { name: "THE ABBOT'S BEADS", desc: 'a rising breath carries you a fifth higher', col: '#e8c88a' }, shoes: { name: 'IRON SHOES', desc: 'the planks do not give under you', col: '#8a919c' }, spurs: { name: 'CLIMBING SPURS', desc: 'hold into stone walls to cling without sliding', col: '#c9d1dc' }, lamp: { name: "MINER'S LAMP", desc: 'light around you in the dark', col: '#ffd36b' }, fleece: { name: 'GOLDEN FLEECE', desc: 'stamina returns twice as fast', col: '#ffe6a0' }, crown: { name: 'HORNET CROWN', desc: 'stomps strike like plunges', col: '#e0b040' }, charm: { name: "HUNTER'S CHARM", desc: 'gold comes to you', col: '#ffd34a' }, gauntlet: { name: 'IRON GAUNTLET', desc: 'every swing and heavy blow costs half the wind', col: '#c9d1dc' }, lantern: { name: 'GLOW LANTERN', desc: 'spores cannot put you to sleep', col: '#4aa0b0' }, windcloak: { name: 'WINDCLOAK', desc: 'hold jump to glide', col: '#bfe6f5' }, cloak: { name: 'THIEF CLOAK', desc: 'thieves cannot take your gold', col: '#6a3aa0' } };
+const RELICS = { veil: { name: "THE TRADER'S VEIL", desc: 'the sun takes you half as fast', col: '#e8c24a' }, crampons: { name: "THE CUTTERS' CRAMPONS", desc: 'iron teeth on your boots: ice does not run away with you', col: '#bfe6f5' }, keelstone: { name: 'THE KEEL STONE', desc: 'the wind pushes you half as hard', col: '#c9b27c' }, soles: { name: 'THE FELTED SOLES', desc: 'your feet make no sound, and you land like a cat', col: '#8fd160' }, wick: { name: "THE LAMPLIGHTER'S WICK", desc: 'the fire in your hand stays lit, even when a blow lands', col: '#ffd36b' }, stormline: { name: 'THE STORM LINE', desc: 'a line round your waist: the sea soaks you, but it cannot take you off her', col: '#a8cfc6' }, blackflag: { name: 'THE BLACK FLAG', desc: 'their own colours: whoever you stagger stays down half as long again', col: '#c9b27c' }, diverlamp: { name: "THE DIVER'S LAMP", desc: 'it lights the water around you, and the air lasts longer', col: '#bfe6f5' }, tidecharm: { name: 'TIDE CHARM', desc: 'hold your breath twice as long under the water', col: '#7cc8c8' }, banner: { name: 'THE QUEEN\'S BANNER', desc: 'goblins pull their blows: a fifth less hurt', col: '#c9a0ff' }, sunshard: { name: "THE ABBOT'S BEADS", desc: 'a rising breath carries you a fifth higher', col: '#e8c88a' }, shoes: { name: 'IRON SHOES', desc: 'the planks do not give under you', col: '#8a919c' }, spurs: { name: 'CLIMBING SPURS', desc: 'hold into stone walls to cling without sliding', col: '#c9d1dc' }, lamp: { name: "MINER'S LAMP", desc: 'light around you in the dark', col: '#ffd36b' }, fleece: { name: 'GOLDEN FLEECE', desc: 'stamina returns twice as fast', col: '#ffe6a0' }, crown: { name: 'HORNET CROWN', desc: 'stomps strike like plunges', col: '#e0b040' }, charm: { name: "HUNTER'S CHARM", desc: 'gold comes to you', col: '#ffd34a' }, gauntlet: { name: 'IRON GAUNTLET', desc: 'every swing and heavy blow costs half the wind', col: '#c9d1dc' }, lantern: { name: 'GLOW LANTERN', desc: 'spores cannot put you to sleep', col: '#4aa0b0' }, windcloak: { name: 'WINDCLOAK', desc: 'hold jump to glide', col: '#bfe6f5' }, cloak: { name: 'THIEF CLOAK', desc: 'thieves cannot take your gold', col: '#6a3aa0' } };
 function impactAt(x, y, kind = 'hit') { if (SET.impact) impacts.push({ x, y, t: 0, kind }); }
 function ringAt(x, y, r = 18, col = '#fff6e0', life = 0.28) { if (SET.impact) rings.push({ x, y, r, col, t: 0, life }); }
 let hushT = 0, slowT = 0, bossFx = [], bossBodies = [], lastTellT = -9, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
@@ -1898,6 +1904,11 @@ function spawnEnt(e) {
       case 'towertop': props.push({ t: 'towertop', x: px, y: py }); lights.push({ x: px, y: py - 10, r: 40 }); break;
       case 'bridge': bridges.push({ x0: e.x, x1: e.x1, y: e.y, cut: cutBridges.has(e.x), cutT: 0 }); break;
       case 'throne': props.push({ t: 'throne', x: px, y: py }); break;
+      /* THE SUNKEN CARAVAN (desert-foes.js keeps each one's machine in e.st; updateDesertFoe is its hands) */
+      case 'scorpion': { const st = DF.newScorpion(px, py); st.face = e.face || 1; enemies.push({ ...base, t: 'scorpion', w: DF.SCORPION.w, h: DF.SCORPION.h, hp: EHP.scorpion, mode: st.mode, st }); break; }
+      case 'sandgob': { const st = DF.newSandGob(px, py); enemies.push({ ...base, t: 'sandgob', w: DF.SANDGOB.w, h: DF.SANDGOB.h, hp: EHP.sandgob, mode: st.mode, st }); break; }
+      case 'vulture': { const st = DF.newVulture(px, py); st.a = (e.x % 7) * 0.9; enemies.push({ ...base, t: 'vulture', w: DF.VULTURE.w, h: DF.VULTURE.h, hp: EHP.vulture, noGrav: true, y: st.y, mode: st.mode, st }); break; }
+      case 'awningwinch': props.push({ t: 'awningwinch', x: px, y: py, canopy: e.canopy, out: 1, k: 1, cd: 0 }); break;
       case 'relic': props.push({ t: 'relic', x: px, y: py, kind: e.kind, got: false, ph: Math.random() * 6 }); break;
       /* A HEART PUT DOWN FOR GOOD: the dead-end stashes (payDeadEnds in src/level.js). It does not fall or fade like a crate's,
          it waits where it lies until you are hurt enough to take it, and once taken it stays taken until the level restarts */
@@ -2100,7 +2111,7 @@ function spawnEnt(e) {
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
          even had its sprite baked and waiting in PROP.) tools/content-audit.mjs is what catches this. */
-      case 'deco': { const K = { hangingHouse: [hangingHouses()[0],true], villageHall: [hangingHouses()[1],true], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
+      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouses()[0],true], villageHall: [hangingHouses()[1],true], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
@@ -2348,7 +2359,8 @@ const ELITE = {
   thorn: { name: 'THE IRONBACK', rule: 'call', calls: 'sprig', hp: 4 }, goat: { name: 'THE HERD BILLY', rule: 'call', calls: 'goat', hp: 5 }, watch: { name: 'THE WATCH SERJEANT', rule: 'call', calls: 'wight', hp: 1.8 }, scarecrow: { name: 'THE TALL MAN', rule: 'call', calls: 'rook' },
   husk: { name: 'THE GRAVE CAPTAIN', rule: 'call', calls: 'zombie', hp: 3 },   /* the caverns' captain: a husk that calls up the dead (batch 4b) */
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', own: true }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
-  archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },   /* own: moves of its own (updateEliteArcher), no shared rule */
+  archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },
+  scorpion: { name: 'THE OLD STINGER', rule: 'lunge', hp: 2.5 },   /* THE SUNKEN CARAVAN's yard: a long rush pincers-first, and a shield taken on it leaves him open */   /* own: moves of its own (updateEliteArcher), no shared rule */
   gaffer: { name: 'THE DECK FOREMAN', rule: 'lunge', hp: 2 },   /* THE ORE ROAD's captain: the lunge IS a gaffer - a long rush with the pole out, and a shield taken on it leaves him open. hp 2 because 44 x 3 x the room's own multiplier was a minute-long fight in a room rule Q wants over in thirty seconds */
   boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
@@ -3033,8 +3045,10 @@ const INLAND_PATH = [[140, 176], [40, 162], [62, 122], [130, 82], [170, 66], [21
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
    the connector that carries the road up out of THE FALLING TOWER to meet it. */
-const DESERT_NODES = [];
-const DESERT_PATH = [[274, 174]];
+/* THE SUNKEN CARAVAN (2026-09-24) is its first node, where map-redesign §4.1 row 1 puts it, and the sand connector up out of
+   THE FALLING TOWER meets the road at the sheet's entry. The road stops at the caravan until the Well Town is built. */
+const DESERT_NODES = [{ id: 'caravan', kind: 'level', level: LEVELS.findIndex(l => l.id === 'caravan'), x: 248, y: 158, name: 'THE SUNKEN CARAVAN' }];
+const DESERT_PATH = [[274, 174], [248, 158]];
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })), DESERT_NODES.map(n => ({ ...n, y: n.y + DESERT_Y })));
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[40, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]), DESERT_PATH.map(([x, y]) => [x, y + DESERT_Y]));
 const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.y)<Math.hypot(PATH[best][0]-n.x,PATH[best][1]-n.y)?i:best,0));
@@ -3117,7 +3131,7 @@ function drawMapPanel() {
 const nodeLocked = nd => nd.kind === 'level' ? (nd.level < 0 || !LEVELS[nd.level] ? true : levelLocked(LEVELS[nd.level])) : nd.kind === 'store' ? !godMode() && !!(nd.needs && !(PROG[nd.needs] && PROG[nd.needs].cleared) && !q.get('unlock')) : false;
 // THE MAP OPENS WHERE YOU LEFT IT. It used to walk you back to the first wood every time the game loaded.
 function mapToSaved() {
-  const legacy=NODES.filter(n=>!['harbor','burial','keep','fallingtower','burning','witchlight','unburied'].includes(n.id));
+  const legacy=NODES.filter(n=>!['harbor','burial','keep','fallingtower','burning','witchlight','unburied','caravan'].includes(n.id));
   const savedId=PROG.mapNodeId==='harbor'?'causeway':(PROG.mapNodeId||legacy[PROG.mapNode||0]?.id);
   const n=Math.max(0,NODES.findIndex(n=>n.id===savedId));
   map.node = (nodeLocked(NODES[n]) || nodeSecret(NODES[n])) ? 0 : n; PROG.mapNodeId=NODES[map.node].id; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
@@ -5321,6 +5335,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if(e.vaultKeeper&&e.open>0)dmg=Math.round(dmg*1.2);
   if ((e.t === 'burieddead'||e.t === 'harbormaster') && e.open > 0) dmg=Math.round(dmg*1.3);
   if (e.t === 'gravewarden' && graveOpen(e)) dmg = Math.round(dmg * GRAVE_W.kneelMul);
+  if (e.t === 'sandgob' && e.st && !DF.sandGobTouchable(e.st)) return;   /* THE SAND GOBLIN under its mound: the blade goes through sand */
   if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Standard-Bearer open */   /* ON HIS KNEES IN THE GRAVE: double */
   if (e.t === 'pyromancer') { if (e.open > 0) dmg = Math.round(dmg * 1.5); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
@@ -7166,12 +7181,12 @@ function updatePlayer(dt) {
   if (P.soot > 0) P.soot = Math.max(0, P.soot - dt);   // the black water runs off the lens
   if (!P.climb && !P.swim) { // THE ARC: light at the apex, heavier coming down, heaviest if you ask for it
     const rising = P.vy < 0, apex = Math.abs(P.vy) < 62 && !P.ground;
-    const fast = !P.ground && keys.down && !P.plunge && P.vy > -40 ? 2.1 : 1; // FAST FALL: ask for the ground and it comes
+    const fast = !P.ground && keys.down && !P.plunge && P.vy > -40 && !(P.sandSlide && P.sandSlide.carry) ? 2.1 : 1; // FAST FALL: ask for the ground and it comes
     const gk = P.plunge ? 1.6 : apex ? 0.62 : rising ? 1 : 1.2 * fast;
     P.vy += GRAV * dt * gk;
     if (apex && !P.hangFx) { P.hangFx = true; } else if (!apex) P.hangFx = false;
   }
-  const maxFall = P.plunge ? 340 : (!P.ground && keys.down && P.vy > 0 ? 380 : 270); if (P.vy > maxFall) P.vy = maxFall; // FAST FALL gets its own ceiling, or the cap eats it
+  const maxFall = P.plunge ? 340 : (!P.ground && keys.down && P.vy > 0 && !(P.sandSlide && P.sandSlide.carry) ? 380 : 270); if (P.vy > maxFall) P.vy = maxFall; // FAST FALL gets its own ceiling, or the cap eats it
   { // crag rock faces: hold into the rock while airborne to cling and slide slowly; jump to kick up and away
     const dir = keys.left ? -1 : keys.right ? 1 : 0, tx = Math.floor((P.x + dir * 6) / TS), ty = Math.floor((P.y - 8) / TS);
     const grip = dir !== 0 && !P.ground && P.vy > -40 && !(P.hurt > 0) && !P.plunge && ([tileAt(tx,ty),tileAt(tx,ty+1)].some(t=>t===T.CLIMB||(P.relic==='spurs'&&(t===T.SOLID||t===T.ICE))));
@@ -7180,6 +7195,13 @@ function updatePlayer(dt) {
     else P.cling = false;
   }
 
+  /* THE SAND SLIDE (docs/slopes-integration.md §2): hold DOWN on a slope and you go down it fast; jump at the foot and the air keeps
+     most of it. The slide owns vx while it runs (the walk above is undone), exactly as tools/slopes.mjs's knight does. P.ground here
+     is still last frame's footing. Only on a level with slopes (SLOPES_ON): every other level never enters this. */
+  if (SLOPES_ON && !P.swim && !P.climb) { const ss = P.sandSlide || (P.sandSlide = { vx: 0, sliding: false, carry: false });
+    const kind = P.ground ? footSlope(tileAt, P) : 0, owned = ss.sliding || ss.carry;
+    if (P.hurt > 0 || dodging) { ss.sliding = false; ss.carry = false; }
+    else if (kind || owned) { if (!owned) ss.vx = P.vx; slideStep(ss, dt, { kind, ground: P.ground, down: keys.down, jumped: P.jumpT === time }); if (ss.sliding || ss.carry) P.vx = ss.vx; else if (owned) P.vx = ss.vx; } }
   updateShieldCharge(dt, stunned);   /* THE SHIELD CHARGE: after the legs have had their say, so nothing else sets his speed under it */
   updateLastCharge(dt, stunned);     /* and THE LAST CHARGE, for the same reason */
   updatePhalanx(dt);                 /* THE PHALANX's row of spears: up out of the ground, and back down into it */
@@ -15895,8 +15917,161 @@ function updateUnburied(dt) {
 }
 function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UNBF.drawField(g, UNB_FIELD, cx, cy, time, VW, VH); UNBF.drawUnbWorld(g, enemies, cx, cy, time); }
 
+/* ================= THE SUNKEN CARAVAN (src/sunken-caravan.js builds it; src/desert-foes.js, src/sunstroke.js and src/quicksand.js
+   are its rules, pure and tested in tools/caravan.mjs; this is only their hands) =================
+   THE SUN: open sand builds SUNSTROKE, shade resets it. The swim is drawn over the view, the meter is on the HUD, and every piece
+   of shade on the screen is the same violet (C4). QUICKSAND holds you and never kills: jump, and keep jumping. THE AWNING WINCH
+   rolls the camp's great awning out over the yard (the yard is shade) and back (the looters in the yard are in the sun). */
+const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture']);
+let CV = null, CVART = null;
+SPR.scorpion = DFA.bakeScorpion(); SPR.vulture = DFA.bakeVulture(); SPR.sandgob = DFA.bakeSandGoblin();
+HAS_HURT.add('scorpion');   /* its set ends in its hurt pose; the vulture's ends perched and the goblin's burrowing, so they do not */
+const cvS = k => { const f = SFX[k]; if (typeof f === 'function') f(); };
+function cvArt() {
+  if (CVART) return CVART;
+  const B = DZ.bakeBones(), C = DZ.bakeCargo();
+  CVART = { wagon: [DZ.bakeWagonWreck(0), DZ.bakeWagonWreck(1)], awning: [DZ.bakeAwning(0), DZ.bakeAwning(1)], bones: B, cargo: C, scrub: [DZ.bakeScrub(0), DZ.bakeScrub(1)],
+    deadTree: DZ.bakeDeadTree(), standard: DZ.bakeStandard(), qs: DZ.bakeQuicksand(), pillar: DZ2.bakeArchPillar(), winch: DZ2.bakeWinch(), canopy: DZ2.bakeCanopy(), ui: DZ2.bakeUI(),
+    sand: bakeSandSlopes(), rock: DZ.bakeRockSlopes() };
+  return CVART;
+}
+/* THE DRESSING (the deco table in spawnEnt reads this): [canvas, stands, frames] like every other kind */
+function cvDeco(e) {
+  if (!L || !L.caravan) return {};
+  const A = cvArt(), v = e.v || 0, one = c => (Array.isArray(c) ? c[0] : c);
+  return { wagon: [A.wagon[v % 2], true], wagonSunk: [A.wagon[(v + 1) % 2], true], awning: [A.awning[0], true], awningTorn: [A.awning[1], true], caravanStandard: [one(A.standard), true],
+    oxRibs: [one(A.bones.ribs), false], oxSkull: [one(A.bones.skull), false], oxHorn: [one(A.bones.horn), false], archPillar: [A.pillar, true], canopyPost: [A.pillar, true],
+    scrub: [A.scrub[v % 2], false], deadTreeD: [A.deadTree, true], amphora: [one(v % 2 ? A.cargo.amphoraDown : A.cargo.amphora), false], cargoSack: [one(A.cargo.sack), false],
+    cargoChest: [one(A.cargo.chest), false], rug: [one(A.cargo.rug), false] };
+}
+/* THE VEIL: THE SUNKEN CARAVAN's relic, in the trader's tent */
+function bakeVeilIcon() { const [c, g2] = canvas(10, 12); g2.fillStyle = '#e8c24a'; g2.fillRect(2, 1, 6, 2); g2.fillStyle = '#e3d2a8'; g2.fillRect(1, 3, 8, 7);
+  g2.fillStyle = '#b9a57e'; for (let y = 4; y < 10; y += 2) g2.fillRect(2, y, 6, 1); g2.fillStyle = '#b8463a'; g2.fillRect(1, 10, 8, 1); return outline(c, ART.OUT); }
+/* THE SKY AND THE FAR LAND: bleached at the horizon, mesas in the haze, the dune crests nearer (src/redraw/desert.js) */
+function cvBackdrop() { BG.sky = DZ.bakeDesertSky(VH); BG.far = DZ.bakeFarMesas(320, 70); BG.mid = DZ.bakeMidDunes(480, 80); BG.nearTrees = null; }
+/* THE GROUND: the sand skin on every slope and every flat top, the skin carried down under a slope, and the rock's own skin
+   (sandstone) where the level says it is rock - the arch, the caravanserai, the rim's overhang */
+function cvTile(x, y, t) {
+  const A = cvArt(), i = y * LW + x, h = ((x * 7 + y * 13) % 3 + 3) % 3;
+  const rock = (L.rockZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]), S = rock ? A.rock : A.sand;
+  if (isSlope(t)) { tileSpr[i] = S[t][h]; return true; }
+  if (t !== T.SOLID) return false;
+  const up = tileAt(x, y - 1);
+  tileSpr[i] = isSlope(up) ? S.under[up][h] : (up === T.SOLID || up === T.CRATE) ? S.fill[h] : S.top[h];
+  return true;
+}
+function caravanReset() {
+  CV = null; if (!L || !L.caravan) return;
+  const w = props.find(p => p.t === 'awningwinch');
+  CV = { zones: shadeZones(L), winch: w || null, swim: 0, burnT: 0, shaded: false };
+  for (const pp of players) pp.sun = { v: 0 };
+  if (w) { w.k = 1; w.out = 1; w.cd = 0; }
+  if (window.BK) Object.assign(window.BK, { caravan: () => CV });
+}
+const cvCanopy = () => { const w = CV && CV.winch; if (!w || !w.canopy || w.k < 0.95) return null; const c = w.canopy; return [c.x0 * TS, (c.x1 + 1) * TS, c.row * TS, LH * TS]; };
+function cvShaded(x, y, h) {
+  if (inShade(CV.zones, x, y - 1)) return true;
+  const cz = cvCanopy(); if (cz && inShade([cz], x, y - 1)) return true;
+  if (roofShade(tileAt, x, y - h, t => t === T.SOLID)) return true;
+  for (const e of enemies) if (e.alive && e.t === 'vulture' && e.st && inShade([vultureShade(e, e.st.groundY)], x, y - 1)) return true;   /* the thing hunting you is the thing that cools you */
+  return false;
+}
+function updateCaravan(dt) {
+  if (!CV) return;
+  /* THE AWNING WINCH: struck, it rolls the other way; it rolls over a second and a bit, and it can be struck again once it is there */
+  const w = CV.winch;
+  if (w) { w.cd = Math.max(0, w.cd - dt); const hb = attackBox();
+    if (hb && w.cd <= 0 && overlap(hb, { l: w.x - 10, r: w.x + 10, t: w.y - 26, b: w.y })) { w.out = w.out ? 0 : 1; w.cd = 1.3; cvS('clank'); cvS('ropeHaul');
+      number(w.x, w.y - 34, w.out ? 'THE AWNING ROLLS OUT' : 'THE AWNING ROLLS IN', '#ffd36b'); sparks(w.x, w.y - 14, P.face || 1, 4); }
+    w.k += Math.sign(w.out - w.k) * Math.min(Math.abs(w.out - w.k), dt / 1.2);
+    /* ROLL IT BACK AND THEY BURN: the looters working the yard are not desert creatures, and the sun takes them too */
+    if (w.k < 0.05 && w.canopy) { CV.burnT -= dt; if (CV.burnT <= 0) { CV.burnT = SUN.hurtEvery;
+      for (const e of enemies) if (e.alive && (e.t === 'thief' || e.t === 'archer') && e.x > w.canopy.x0 * TS && e.x < (w.canopy.x1 + 1) * TS) { hurtEnemy(e, 6, e.x, false); number(e.x, e.y - 22, 'SUNSTROKE', '#ff9a5c'); } } } }
+  /* THE SUN */
+  for (const pp of players) { if (!pp.sun) pp.sun = { v: 0 };
+    if (pp.dead || state !== 'play') continue;
+    const sh = cvShaded(pp.x, pp.y, pp.h || 14); if (pp === P) CV.shaded = sh;
+    const r = sunStep(pp.sun, pp.relic === 'veil' && !sh ? dt * 0.5 : dt, sh);
+    if (pp === P) CV.swim = r.swim;
+    if (r.hurt) asPlayer(pp, () => damagePlayer(P.x, r.hurt, { unblockable: true, noKnock: true, name: 'SUNSTROKE' })); }
+  /* QUICKSAND: it holds you and slows you; a jump heaves you up it, and at the surface a jump takes you out */
+  for (const pp of players) asPlayer(pp, () => { if (P.dead) return;
+    const q = qsPatchAt(L, P.x, P.y); if (!q && !P.qsDepth) return;
+    const jp = P.jbuf > 0; if (jp) P.jbuf = 0;
+    const move = keys.left ? -1 : keys.right ? 1 : 0, was = P.qsDepth || 0;
+    const r = qsStep(P, q, dt, { move, jumpPress: jp });
+    if (r.held) { P.coyote = 0; P.ground = false; if (!was) { cvS('squelch'); dust(P.x, q.y, 4); number(P.x, P.y - 26, 'JUMP! AND KEEP JUMPING', '#ffd36b'); } if (jp) dust(P.x, q.y, 3); }
+    else if (r.out) { cvS('pJump'); dust(P.x, q.y, 5); } });
+}
+/* THE CREATURES: src/desert-foes.js keeps each one's state machine in e.st (its own `t` is a timer, and ours is the kind), and
+   this turns its events into the game: a told blow lands through damagePlayer, a walker walks through moveBody and stops at
+   an edge or the quicksand, and the sand goblin's rise ahead of you comes up only where there is ground to come up on */
+function cvGround(x, y) { const tx = Math.floor(x / TS), ty = Math.floor((y + 2) / TS); const t = aheadTile(tileAt, tx, ty, y, 10);
+  return !(t === T.AIR || t === T.SPIKE) && !qsPatchAt(L, x, y + 2); }
+function updateDesertFoe(e, dt) {
+  if (Math.abs(e.x - P.x) > 420) return;
+  if (Math.abs(e.x - P.x) < 190) beastSeen(e.t);
+  const s = e.st; if (!s) return;
+  const grav = () => { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; };
+  if (e.stagger > 0 && e.t !== 'vulture') { grav(); return; }   /* knocked about: its machine waits */
+  s.x = e.x; s.y = e.y;
+  const w = { px: P.x, py: P.y, time, pface: P.face || 1 };
+  const was = s.mode, x0 = e.x;
+  const evs = e.t === 'scorpion' ? DF.scorpionStep(s, w, dt) : e.t === 'sandgob' ? DF.sandGobStep(s, w, dt) : DF.vultureStep(s, w, dt);
+  if (e.t === 'vulture') { e.x = s.x; e.y = s.y; }
+  else {
+    let dx = s.x - x0;
+    if (e.t === 'sandgob' && was === 'under' && s.mode === 'buried') {   /* it comes up AHEAD of you, as a mound - where there is ground */
+      if (!cvGround(s.x, e.y) || isSolid(Math.floor(s.x / TS), Math.floor((e.y - 8) / TS))) s.x = x0; dx = 0; e.x = s.x; }
+    else if (dx !== 0 && !cvGround(e.x + Math.sign(dx) * (e.w / 2 + 3), e.y)) { dx = 0; s.x = x0; if (e.t === 'scorpion' && s.mode === 'walk') s.face = -s.face; }
+    if (dx) { const r = moveBody(e, dx, 0, false); if (r.hitX && e.t === 'scorpion') s.face = -s.face; }
+    grav(); s.x = e.x; }
+  e.face = s.face || e.face; e.mode = s.mode === 'stingTell' ? 'tailTell' : s.mode;   /* tailTell: the wasp already owns 'stingTell' in the marks table, and its dart a shield turns */ e.vx = (e.x - x0) / Math.max(dt, 1e-4);
+  if (s.mode !== was) e.cvHit = false;
+  for (const v of evs) {
+    if (v.t === 'tell') { if (v.what === 'rise') { cvS('puff'); dust(e.x, e.y, 5); } else if (v.what === 'dive') cvS('screech'); continue; }
+    if (v.t !== 'hit' || e.cvHit || P.dead) continue;
+    const [l, r, t, b] = v.box; if (!overlap({ l, r, t, b }, box(P))) continue;
+    e.cvHit = true;
+    damagePlayer(e.x, v.dmg, { unblockable: !v.blockable, who: e, name: v.what === 'sting' ? 'THE STING' : v.what === 'dive' ? 'THE DIVE' : null });
+  }
+}
+function drawCaravan(cx, cy) {
+  if (!CV) return;
+  const A = cvArt();
+  /* THE SHADE THE LEVEL CASTS (the ribcage, the caravanserai, the overhangs): the one violet, the same everywhere */
+  g.fillStyle = DZ.DESERT.shade;
+  for (const z of (L.shadeArt || [])) { if (z[1] < cx || z[0] > cx + VW) continue; g.globalAlpha = 0.22; g.fillRect(Math.round(z[0] - cx), Math.round(z[2] - cy), z[1] - z[0], z[3] - z[2]); }
+  g.globalAlpha = 1;
+  /* THE QUICKSAND: it turns in on itself */
+  const qf = Math.floor(time * 5) % A.qs.length;
+  for (const q of (L.quicksand || [])) { if (q.x1 < cx || q.x0 > cx + VW) continue; for (let x = q.x0; x < q.x1; x += TS) g.drawImage(A.qs[qf], Math.round(x - cx), Math.round(q.y - cy)); }
+  /* THE WINCH AND ITS GREAT AWNING */
+  const w = CV.winch;
+  if (w) { g.drawImage(A.winch, Math.round(w.x - A.winch.width / 2 - cx), Math.round(w.y - A.winch.height - cy));
+    const c = w.canopy; if (c && w.k > 0.02) { const x0 = c.x0 * TS, x1 = (c.x1 + 1) * TS, len = (x1 - x0) * w.k, y = c.row * TS;
+      if (w.k > 0.95) { g.globalAlpha = 0.24; g.fillStyle = DZ.DESERT.shade; g.fillRect(Math.round(x0 - cx), Math.round(y + 10 - cy), Math.round(len), Math.round(LH * TS - y)); g.globalAlpha = 1; }
+      for (let x = 0; x < len; x += A.canopy.width) g.drawImage(A.canopy, 0, 0, Math.min(A.canopy.width, len - x), A.canopy.height, Math.round(x0 + x - cx), Math.round(y - cy), Math.min(A.canopy.width, len - x), A.canopy.height); } }
+  /* THE VULTURES' SHADOWS on the sand: moving shade, and the mark of the dive */
+  for (const e of enemies) { if (!e.alive || e.t !== 'vulture' || !e.st) continue; const s = e.st, gx = Math.round((s.mode === 'watch' || s.mode === 'dive' ? s.tx : e.x) - cx), gy = Math.round(s.groundY - cy);
+    if (gx < -30 || gx > VW + 30) continue;
+    g.globalAlpha = 0.35; g.fillStyle = DZ.DESERT.shadeD; g.beginPath(); g.ellipse(gx, gy - 1, 14, 3, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+    if (s.mode === 'watch') { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.moveTo(gx - 4, gy - 5); g.lineTo(gx + 4, gy + 1); g.moveTo(gx + 4, gy - 5); g.lineTo(gx - 4, gy + 1); g.stroke(); } }
+}
+/* THE SWIM AND THE METER: the view swims before anything hurts, and the meter says how long you have */
+function drawCaravanHud() {
+  if (!CV) return;
+  const A = cvArt(), v = (P.sun && P.sun.v) || 0, sw = CV.swim;
+  if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw; g.fillStyle = '#ffb060'; g.fillRect(0, 0, VW, VH);
+    g.globalAlpha = 0.12 * sw; g.fillStyle = '#fff1c8'; for (let y = 0; y < VH; y += 6) { const o = Math.sin(time * 7 + y * 0.3) * 3 * sw; g.fillRect(Math.round(o), y, VW, 2); } g.globalAlpha = 1; }
+  const x = 22, y = 50, k = v >= 1 ? 3 : v >= SUN.swimAt ? 2 : v > 0.2 ? 1 : 0;
+  g.drawImage(A.ui.sun[k], x - 14, y - 3); g.drawImage(A.ui.meter, x, y);
+  g.fillStyle = v >= 1 ? '#ff5a3c' : v >= SUN.swimAt ? '#ff9a4c' : '#ffd36b'; g.fillRect(x + 1, y + 2, Math.round(42 * v), 3);
+  if (CV.shaded) text('SHADE', x + 22, y + 9, '#c9b0e0', 'center', 6);
+}
+
 function villageReset() {
-  unbReset();   /* THE UNBURIED FIELD rides the village's hooks: reset, step and draw */
+  unbReset(); caravanReset();   /* THE UNBURIED FIELD rides the village's hooks: reset, step and draw */
   VG = L && L.village ? fireGrid(L) : null; if (!VG) return;
   for (const [x, y] of L.roofFire || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, barrier: true, tall: 46 });   /* THE FIRE ACROSS THE BARN ROOF: water puts it out for a while (villageSplash) */
   for (const [x, y, per, ph] of L.stillFires || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, pillar: !!per, per: per || 4, ph: ph || 0, tall: 14 });   /* FLAME PILLARS (villageTick) */
@@ -15979,7 +16154,7 @@ function drawBurningTown(cx, cy) {
   }
 }
 function updateVillage(dt) {
-  updateUnburied(dt);
+  updateUnburied(dt); updateCaravan(dt);
   if (!VG) return;
   villageTick(dt);
   const hb = attackBox();
@@ -16031,7 +16206,7 @@ function updateVillage(dt) {
 }
 /* THE STRAW, THE CHAR AND THE PROPS, under the flames */
 function drawVillage(cx, cy) {
-  drawUnburied(cx, cy);
+  drawUnburied(cx, cy); drawCaravan(cx, cy);
   if (!VG) return;
   for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn;   /* a pillar at rest: its vent glowing, and brighter just before it goes */
     g.fillStyle = '#2a1410'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = soon ? (Math.floor(time * 16) % 2 ? '#ffd36b' : '#ff6b2c') : '#8a2a14'; g.fillRect(x - 4, y - 3, 8, 1); g.fillRect(x - 2 + Math.round(Math.sin(time * 7 + f.x) * 2), y - 5, 3, 2); }
@@ -18429,7 +18604,7 @@ const TOUCH_ALWAYS = new Set(['anvil', 'barrel', 'boiler', 'cargo', 'cargowall',
 const BODY_BLOW = new Set(['frog', 'queen', 'ramlord', 'golem', 'hound', 'dog', 'badger', 'crow', 'kite', 'fledgling', 'gar', 'weaver', 'sailer', 'broom', 'mimic', 'familiar', 'topiary']);
 const BODY_MOVE = /charge|dive|lunge|pounce|swoop|leap|ram|butt|roll|dash|bite|sting|stomp|slam|rush|drop|tackle|sweep|hop|jump|peck|claw|trample|spin|buck|fly/i;
 const bodyAttacking = e => typeof e.mode === 'string' && !/Tell$|Wind$|Hang$|Up$|crouch|aim|rest|idle|wake|sleep|stun|winded|dazed|stuck|recover/i.test(e.mode) && BODY_MOVE.test(e.mode);
-const windingUp = e => ((e.t === 'deathknight' || e.t === 'standardbearer' || e.t === 'bannerbearer' || e.t === 'corpse') && typeof e.mode === 'string' && e.mode.endsWith('Tell') && e.mode !== 'riseTell') || (e.t === 'gargoyle' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'winchmaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'hedgewarden' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'pyromancer' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'burieddead' || e.t === 'zombie')&&e.mode.endsWith('Tell')) || (e.t === 'harbormaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'bellcrab' || e.t === 'bellguard') && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'mother' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'golem' && e.mode === 'sweepTell') || (e.t === 'fledgling' && e.mode === 'peckTell') || (e.t === 'archmage' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'homunculus' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'strawking' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'kraken' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'tome' && e.mode === 'tell') || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'blackoutTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell' || e.mode === 'whirlTell' || e.mode === 'gulpTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
+const windingUp = e => (e.t === 'vulture' && e.mode === 'watch') || ((e.t === 'deathknight' || e.t === 'standardbearer' || e.t === 'bannerbearer' || e.t === 'corpse') && typeof e.mode === 'string' && e.mode.endsWith('Tell') && e.mode !== 'riseTell') || (e.t === 'gargoyle' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'winchmaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'hedgewarden' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'pyromancer' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'burieddead' || e.t === 'zombie')&&e.mode.endsWith('Tell')) || (e.t === 'harbormaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'bellcrab' || e.t === 'bellguard') && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'mother' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'golem' && e.mode === 'sweepTell') || (e.t === 'fledgling' && e.mode === 'peckTell') || (e.t === 'archmage' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'homunculus' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'strawking' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'kraken' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'tome' && e.mode === 'tell') || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'blackoutTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell' || e.mode === 'whirlTell' || e.mode === 'gulpTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -18615,6 +18790,7 @@ function updateEnemies(dt) {
     if(e.t==='undeadmage'){if(bossActive){beastSeen(e.t);updateUndeadMage(e,dt);}continue;}
     if(e.t==='burieddead'){if(bossActive){beastSeen(e.t);updateBuriedDead(e,dt);}continue;}
     if (UNBF.UNB_FOES.has(e.t)) { updateUnbFoe(e, dt); continue; }   /* THE UNBURIED FIELD */
+    if (CV_FOES.has(e.t)) { updateDesertFoe(e, dt); continue; }   /* THE SUNKEN CARAVAN */
     if (e.t === 'pyromancer') { if (bossActive) { beastSeen('pyromancer'); updatePyromancer(e, dt); } continue; }
     if (e.t === 'abbot') { if (bossActive || rushOn()) { beastSeen('abbot'); updateFalseAbbotBoss(e, dt); } continue; }
     if (e.t === 'winchmaster') { if (bossActive || rushOn()) { beastSeen('winchmaster'); updateWinchBoss(e, dt); } else e.y = (OR.ARENA.housing + 1) * TS; continue; }
@@ -22065,9 +22241,10 @@ function drawWorld(cx, cy, showPlayer) {
       e.lastSet = SPR.greathound; e.lastFrame = 6; e.lastBigF = 1; e.lastRider = { set: SPR.masterRider, frame: 7, dx: -e.face * 6, dy: -11 }; continue; }   /* the huntsman goes down with his hound */
     if (e.t === 'folk') { const set = e.alt ? SPR.folk2 : SPR.folk; const fr = e.cower ? 2 : (e.court ? (Math.floor(e.anim * 4) % 2) : (Math.abs(e.vx) > 8 ? Math.floor(e.anim * 12) % 2 : 0)); drawSet(set, null, fr, e.x - cx, e.y - cy + (e.court && !e.cower ? -Math.round(Math.abs(Math.sin(e.anim * 6)) * 3) : 0), e.face, e.flash > 0, 1, 1); continue; }
     if (e.t === 'gill') { g.drawImage(PROP.gillpod[Math.floor(e.anim * 3) % 2], Math.round(e.x) - 6 - cx, Math.round(e.y) - 8 - cy); if (mother && !mother.gillsOpen && !mother.tipped) { g.globalAlpha = 0.35 + 0.1 * Math.sin(time * 5 + e.x); g.fillStyle = '#c9a0ff'; g.beginPath(); g.ellipse(Math.round(e.x) - cx, Math.round(e.y) - 3 - cy, 10, 8, 0, 0, 7); g.fill(); g.globalAlpha = 1; } if (e.flash > 0) { g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(Math.round(e.x) - 6 - cx, Math.round(e.y) - 8 - cy, 12, 10); } continue; }
-    if (e.t !== 'wasp' && e.t !== 'queen' && e.t !== 'drone') g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, Math.round(e.y) - 2 - cy);
+    if (e.t !== 'wasp' && e.t !== 'queen' && e.t !== 'drone' && e.t !== 'vulture') g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, Math.round(e.y) - 2 - cy);
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);
+    else if (CV_FOES.has(e.t)) frame = e.hurtT > 0 && e.t === 'scorpion' ? 6 : e.st ? e.st.frame : 0;   /* THE SUNKEN CARAVAN: desert-foes.js names the frame */
     else if (UNBF.UNB_FOES.has(e.t)) frame = UNBF.unbFrame(e);   /* THE UNBURIED FIELD: each set ends in its hurt pose, and a corpse lying down is not one */   /* mounted and on foot share one set: his hurt pose depends on which */
     /* THE ARCHMAGE'S LAST FRAME IS HIS BODY, not his hurt: his set ends hurt, dead, so every blow laid him out across the floor for a
        moment while his hurt box stood 34 px tall over him, and a swing over the fallen robe still cut him. And the familiar's set
@@ -23895,7 +24072,7 @@ function render() {
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
       g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 46.5, w - 1, 10); text(lab, VW / 2, 49, '#ffd0d0', 'center', 6);
       g.fillStyle = '#ff6b6b'; g.fillRect(VW / 2 - w / 2, 56, Math.round(w * k), 1); }
-    if (state === 'play') { drawAlarmHud(); drawAmbushHud(); }
+    if (state === 'play') { drawAlarmHud(); drawAmbushHud(); drawCaravanHud(); }
     drawEscapeHUD();
       // THE HEAVY BLOW, WINDING UP: a bar over his head that fills, and goes gold and wide when it is there
       if (hero() === 'knight' && knightWinding() && !P.dead) {   /* THE HEAVY CUT'S THREE STAGES: three pips over him, each lit in its own colour as it arrives */

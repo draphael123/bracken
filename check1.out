@@ -1,0 +1,4 @@
+
+> check
+> node tools/check.mjs syntax,comments,slopes,map-grammar,additional-areas,keys,audit,traps,killzones,collectables,spawns,deadends,floaters,checkpoints,skins,dressing,signs,one-new-foe,threat-holes,tells
+
