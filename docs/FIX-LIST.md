@@ -1,0 +1,25 @@
+# THE FIX LIST (from the ranking, 24 Sept 2026)
+
+Daniel sent this list to be worked. Source: `docs/audit/ranking-2026-09-24.md` on `claude/audit` (measured at 341cb78). Readable version: https://claude.ai/artifact/BFsVyTLpqnxWEwa5E44nSW
+
+Each item is a lane in the usual form: its own branch, only its named checks, push after every green commit, never touch master (the integrator releases it). Follow RULES-LEVELS-AND-BOSSES.md and docs/AGENT-HANDOFF.md "EXPENSIVE LESSONS". Prove every new assertion red first. Bosses: re-pilot with bossLab (dice pinned, `opts.salt` for passes) before and after. Levels: INDEX with tools/curve.mjs before and after.
+
+The fixes below are the audit's recommendations, and Daniel approved the DIRECTION. Anything that goes beyond them, or picks between options, is a question for Daniel. Stop and ask.
+
+Already fixed since the audit (do not redo): the Undead Archmage crash; the silent windups of the Hornet Queen, Chieftain and Tide Herald; the Great Hound's `mini: true`. The Winchmaster was reworked in Ore Road round 3.
+
+## Order
+1. **THE BURIAL CAVERNS (3/10), the biggest problem.** Cut it from 1,386 to ~700 columns by dropping two of its six sections (docs/briefs/burial-caverns-rework.md), give the candle path a machine the player works (a bell-rope or an ossuary lift), and put the 72-tile quiet stretch (route x~619, THE FALLING GALLERY) under a fight or a crossing. **Fold this into LANE 3 (claude/burial)**, which is already adding variety there, rather than starting a second Burial lane. The cut must keep the dark areas and crumbling bridges that lane builds.
+2. **KINGSWOOD'S +42 WALL (the curve).** Act one sits at INDEX 73-76, then Kingswood is 118. Recommend raising SPOREWOOD to ~95 (more and harder foes, one new foe kind) rather than gutting Kingswood, a 6/10 level. Branch `claude/curve-kingswood`. Checks: curve (tools/curve.mjs), one-new-foe, threat-holes, spawns, floaters, audit, skins, dressing, comments, syntax.
+3. **THE FALLING TOWER, the finale easier than the level before it (-26).** Add an ambush room of the tower's own casters on a falling floor (rule Q), and one new foe that uses the falling floors (F10). Target INDEX ~120-130. Branch `claude/tower-finale`. Checks: tower-ascent, archmage-room, curve, one-new-foe, threat-holes, spawns, checkpoints, floaters, audit, comments, syntax.
+4. **THE LAMPREEVE (2/10), Lamplit Street mini.** The window becomes the LAMP's: strike the lamp he is hooding and the flare blinds him (open, 2x, ~2.5 s); a lamp he reaches unstruck gives him nothing. Add `draw` to `windingUp()`. Phase two: with one lamp left he unhooks it and carries it, so the only light in the room moves. Branch `claude/boss-lampreeve`.
+5. **THE DIVING BELL (3/10), The Deep.** Take `vent()` off the end of every attack; he vents only when the player drops a ballast stone on the valve on his crown (the level already teaches ballast). Phase two gets a NEW told attack (e.g. he sits on an air vent and starves it until knocked off), not just speed. Branch `claude/boss-divingbell`.
+6. **THE GREAT HOUND (3/10), Kingswood mini.** A blocked lunge's skid becomes the fight: 2x in the skid window, ~0.6x outside it, so a jumped lunge opens nothing. Add a fourth told attack: a told pack-call where the howl is now. Branch `claude/boss-hound`.
+7. **THE WEAVER and THE HEADLESS PLOUGHMAN (3/10 each), minis.** Stop giving the opening away. The Weaver: cut her thread during `dropTell` and she falls and lies open, and a drop left alone climbs back; add a web-snare attack; bring her 55-wide room to ~40. The Ploughman: stuck only when his charge is baited into a fence post or furrow stone, and on open ground he turns and comes back; add a fourth told attack. Branch `claude/boss-minis` (one lane, two bosses).
+8. **GALE MOOR (5/10).** Cut 996 columns to ~700 and make the wind an OBSTACLE, not scenery: gusts that carry you over a pit you must cross in the lulls, placed over the 19 empty route stretches. Branch `claude/gale-moor`.
+9. **THE HANGING VILLAGE (5/10).** It dips 20 below the Scree Path. One authored encounter per floor, and a new foe with its own verb (a cliff creature that cuts ropes), bringing INDEX back to ~110. Branch `claude/hanging-village`.
+10. **STORMHOLD: Daniel decides.** Its rebuild (`claude/stormhold`) is written to his "too short" and HELD. Do not merge it. Remind Daniel to play it and say ship or change.
+
+Boss lanes (4-7) keep these green: boss-openings, boss-fight-end, arena-supplies, tells, one-new-foe, threat-holes, bestiary if present, plus the boss's own check if it has one, comments, syntax. Every new attack is told (A1: a named tell, a mark row in src/marks.js BY_HAND if hand-dispatched, a sound) and is in `windingUp()` (A2).
+
+Small known bugs to fold into whichever lane touches the file: the Serjeant of the Lists' parried swipe prints OPEN but never sets `e.open`; the King's phase-three rockfall is disabled code (`if(false&&...)`); the Ore Road mine's catch-up banner says "THIS WOOD EXPECTS LEVEL 9"; there is a duplicate Warden water-vault branch in src/main.js (~line 7082).
