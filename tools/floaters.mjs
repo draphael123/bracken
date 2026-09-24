@@ -50,6 +50,22 @@ const FOOT_ROW = 31;   /* within two pixels of the bottom of the 34-row marker i
 const args = process.argv.slice(2);
 let bad = 0, checked = 0, moved = 0, unhung = 0;
 
+// THE SAND CASTLES (Daniel, 2026-09-23, a screenshot of the Monastery's rope bridge): a stoneLantern reading as a
+// sandcastle turret was one bug and got fixed by name; this is the RULE it left unenforced. dressLevel()'s "is this
+// spot standing ground" test (src/level.js, search "b !== T.SOLID && b !== T.PLANK") treats a one-tile PLANK bridge
+// exactly like a mountain: legal ground for its sprinkler to scatter shrines, standing stones and cauldrons on. A
+// bridge laid over a short drop is a floor - the same test the Monastery's own bell-tower floors pass. A bridge laid
+// over open sky is not: nothing reads as "resting" on a single board hanging over a misty drop, it reads as floating.
+// A heavy prop dropped there IS a sand castle - the game just did not have a name for the shape before. The sprinkler
+// tags everything it places `dressed: true`, so this checks only its own placements, not the level's own hand-laid
+// bridge furniture (bridgepost, bridgetower), which is placed and checked by eye already.
+const PLANK_DROP = 6;   /* rows of open air under a plank before it reads as a drop, not a floor (the Monastery's own bell-tower floors clear this by 2+) */
+const sandCastles = (R, tile) => { const { ents } = R, hits = [];
+  for (const e of ents) { if (e.t !== 'deco' || !e.dressed || tile(e.x, e.y + 1) !== T.PLANK) continue;
+    let d = 0, y = e.y + 2; while (d < PLANK_DROP && tile(e.x, y) === T.AIR) { d++; y++; }
+    if (d >= PLANK_DROP) hits.push((e.kind || e.t) + '@' + e.x + ',' + e.y); }
+  return hits; };
+
 for (const lv of LEVELS) {
   if (args.length && !args.includes(lv.id)) continue;
   let R;
@@ -58,7 +74,7 @@ for (const lv of LEVELS) {
   const tile = (x, y) => (x < 0 || x >= W) ? T.SOLID : (y < 0 || y >= H) ? T.AIR : grid[y * W + x];
   const gnd = (x, y) => SOLID.has(tile(x, y)) || LEDGE.has(tile(x, y));
   const settle = (x, y0) => { let y = y0, n = 0; while (gnd(x, y) && n++ < 3) y--; if (gnd(x, y)) return null; n = 0; while (!gnd(x, y + 1) && n++ < 3) y++; return gnd(x, y + 1) ? y : null; };
-  const dropped = [], air = [], marks = [];
+  const dropped = [], air = [], marks = [], castles = sandCastles(R, tile);
   for (const e of ents) {
     const dec = e.t === 'deco';
     if (dec && decoHangs(e)) { let k = 0; while (k < 5 && !SOLID.has(tile(e.x, e.y - 1 - k))) k++; if (k >= 5) unhung++; continue; }   /* main.js leaves it out: not in the air */
@@ -74,6 +90,7 @@ for (const lv of LEVELS) {
   else if (foot < FOOT_ROW) for (const e of ents) if (e.t === 'check' && !SOLID.has(tile(e.x, e.y - 2)) && !SOLID.has(tile(e.x, e.y - 3))) marks.push(mk + ' marker@' + e.x + ',' + e.y);   /* drawn hanging from its top, three rows up */
   const say = (list, what) => { if (!list.length) return; bad += list.length; console.log('  ' + lv.id.padEnd(10) + list.length + ' ' + what + ': ' + list.slice(0, 12).join(' ') + (list.length > 12 ? ' ...' : '')); };
   say(dropped, 'with no floor near them, left out'); say(air, 'with no floor near them, left in the air'); say(marks, 'checkpoints drawn hanging from nothing');
+  say(castles, 'sprinkled onto a bridge over open sky (sand castles)');
 }
 
 console.log('\n' + checked + ' standing things checked (' + moved + ' set down a row or more at load; ' + unhung + ' hung ones with no rock over them are left out). ' + (bad ? bad + ' cannot be set down.' : 'every one can be set down.'));
